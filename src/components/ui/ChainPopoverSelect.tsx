@@ -32,7 +32,7 @@ export function ChainPopoverSelect({
     >
       <div
         className={`
-          cursor-pointer flex px-3 py-1 gap-1.5 items-center rounded-full
+          cursor-pointer flex px-2.5 py-1.5 gap-2 items-center rounded-[.1875rem]
           text-[--synapse-select-text]
           bg-[--synapse-select-bg]
           border border-solid border-[--synapse-select-border]
@@ -49,7 +49,7 @@ export function ChainPopoverSelect({
           {options.map((option) => (
             <li
               key={option.id}
-              className={`cursor-pointer pl-2 pr-3 py-2 rounded border border-solid hover:border-[--synapse-focus] active:opacity-40 whitespace-nowrap ${
+              className={`cursor-pointer pl-2.5 pr-8 py-2.5 rounded border border-solid hover:border-[--synapse-focus] active:opacity-40 whitespace-nowrap ${
                 option?.name === selected?.name
                   ? 'border-[--synapse-focus] hover:opacity-70'
                   : 'border-transparent'
@@ -59,11 +59,11 @@ export function ChainPopoverSelect({
               {option?.name}
             </li>
           ))}
-          <div className="pl-2 text-sm underline">Other chains</div>
+          <div className="px-2.5 py-2 mt-2 text-sm text-[--synapse-secondary] cursor-default sticky top-0 bg-[--synapse-surface]">Other chains</div>
           {remaining.map((option) => (
             <li
               key={option.id}
-              className={`cursor-pointer pl-2 pr-3 py-2 rounded border border-solid hover:border-[--synapse-focus] active:opacity-40 whitespace-nowrap ${
+              className={`cursor-pointer pl-2.5 pr-8 py-2.5 rounded border border-solid hover:border-[--synapse-focus] active:opacity-40 whitespace-nowrap ${
                 option?.name === selected?.name
                   ? 'border-[--synapse-focus] hover:opacity-70'
                   : 'border-transparent'

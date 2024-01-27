@@ -59,7 +59,7 @@ export function TokenPopoverSelect({
     >
       <div
         className={`
-          cursor-pointer flex px-3 py-1 gap-1.5 items-center rounded-full
+          cursor-pointer flex px-2.5 py-1.5 gap-2 items-center rounded-[.1875rem]
           text-[--synapse-select-text]
           bg-[--synapse-select-bg]
           border border-solid border-[--synapse-select-border]
@@ -81,7 +81,7 @@ export function TokenPopoverSelect({
               parsedBalance={option?.parsedBalance}
             />
           ))}
-          <div className="pl-2 text-sm underline">Other tokens</div>
+          <div className="px-2.5 py-2 mt-2 text-sm text-[--synapse-secondary] cursor-default sticky top-0 bg-[--synapse-surface]">Other tokens</div>
           {sortedRemainingWithBalances?.map((option: TokenBalance, index) => (
             <TokenOption
               option={option?.token}
@@ -143,13 +143,13 @@ const TokenOption = ({
       }`}
       onClick={() => onSelect(option)}
     >
-      <abbr title={option?.name} className="p-2 no-underline">
+      <abbr title={option?.name} className="p-2.5 no-underline">
         {option?.symbol}
       </abbr>
       <data
         value={parsedBalance}
         className={`
-        text-sm p-2
+        text-sm p-2.5
         ${
           parsedBalance
             ? 'text-[--synapse-secondary]'

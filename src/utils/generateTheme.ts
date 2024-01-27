@@ -52,8 +52,8 @@ export function generateTheme(theme: CustomThemeVariables = {}) {
           '--synapse-secondary': hslString(h, s / 2, l, a, 0.6),
           '--synapse-border': hslString(h, s, l, a, 0.12),
           '--synapse-object': hslString(h, s, l, a, 0.25),
-          '--synapse-surface': hslString(h, s, l, a, 0.12),
-          '--synapse-root': hslString(h, s, l, a, 0.07),
+          '--synapse-surface': hslString(h, s, l, a, 0.13),
+          '--synapse-root': hslString(h, s, l, a, 0.08),
 
           '--synapse-focus': 'var(--synapse-secondary)',
 

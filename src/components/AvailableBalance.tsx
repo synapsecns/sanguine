@@ -46,7 +46,7 @@ export const AvailableBalance = ({
     <div
       className={`
       row-start-3 col-start-1 col-end-3
-      flex items-center gap-1 p-1 text-sm justify-self-end
+      flex items-center gap-1.5 px-1 text-sm justify-self-end
     `}
     >
       <div

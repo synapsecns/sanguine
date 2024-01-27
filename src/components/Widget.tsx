@@ -353,7 +353,7 @@ export const Widget = ({
   `
 
   const inputStyle = `
-    text-3xl w-full font-semibold bg-transparent border-none py-1
+    text-3xl w-full font-regular bg-transparent border-none block
     text-[--synapse-text] placeholder:text-[--synapse-secondary] focus:outline-none disabled:cursor-not-allowed font-sans
   `
 
@@ -381,7 +381,7 @@ export const Widget = ({
             value={inputAmount}
             onChange={handleUserInput}
           />
-          <div className="flex flex-col items-end justify-center">
+          <div className="flex flex-col gap-2 items-end justify-center">
             <TokenSelect
               label="In"
               isOrigin={true}
@@ -394,7 +394,7 @@ export const Widget = ({
             />
           </div>
         </section>
-        <section className={cardStyle}>
+        <section className={`${cardStyle} gap-3 pb-2.5`}>
           <ChainSelect
             label="To"
             isOrigin={false}

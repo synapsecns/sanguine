@@ -36,9 +36,8 @@ export const BridgeButton = ({
     switchNetwork(originChainId, provider)
   }, [originChainId, provider])
 
-  const buttonStyle = `
-    p-2 text-lg font-sans font-semibold rounded-md w-full 
-    bg-[--synapse-button-bg]
+  const buttonClassName = `
+    p-2 text-lg font-sans font-medium tracking-wide rounded-md w-full 
     border border-solid border-[--synapse-button-border] 
     hover:border-[--synapse-focus] disabled:hover:border-[--synapse-button-border] 
     active:opacity-40 disabled:opacity-70 
@@ -46,11 +45,15 @@ export const BridgeButton = ({
     cursor-pointer disabled:cursor-not-allowed
   `
 
+  const buttonStyle = {
+    background: 'var(--synapse-button-bg)',
+  }
+
   const tooltipPositionStyle = '-top-8'
 
   if (!onSelectedChain) {
     return (
-      <button className={buttonStyle} onClick={handleSwitchNetwork}>
+      <button className={buttonClassName} style={buttonStyle} onClick={handleSwitchNetwork}>
         Connect to {originChain?.name}
       </button>
     )
@@ -61,7 +64,7 @@ export const BridgeButton = ({
         hoverText="Amount may not exceed available balance"
         positionStyles={tooltipPositionStyle}
       >
-        <button className={buttonStyle} disabled>
+        <button className={buttonClassName} style={buttonStyle} disabled>
           Send
         </button>
       </Tooltip>
@@ -73,7 +76,7 @@ export const BridgeButton = ({
         hoverText="Enter valid amount"
         positionStyles={tooltipPositionStyle}
       >
-        <button className={buttonStyle} disabled>
+        <button className={buttonClassName} style={buttonStyle} disabled>
           Send
         </button>
       </Tooltip>
@@ -81,7 +84,7 @@ export const BridgeButton = ({
   }
   if (!isValidQuote) {
     return (
-      <button className={buttonStyle} disabled>
+      <button className={buttonClassName} style={buttonStyle} disabled>
         Send
       </button>
     )
@@ -92,7 +95,7 @@ export const BridgeButton = ({
         <button
           disabled={isBridgePending}
           onClick={!isBridgePending ? handleBridge : () => null}
-          className={buttonStyle}
+          className={buttonClassName} style={buttonStyle}
         >
           {isBridgePending ? 'Confirm in Wallet' : 'Send'}
         </button>
@@ -104,7 +107,7 @@ export const BridgeButton = ({
           <button
             disabled={isApprovalPending}
             onClick={!isApprovalPending && handleApprove}
-            className={buttonStyle}
+            className={buttonClassName} style={buttonStyle}
           >
             {isApprovalPending ? 'Approve in Wallet' : 'Approve & Sign'}
           </button>
