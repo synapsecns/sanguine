@@ -6,6 +6,7 @@ import (
 	"math/big"
 
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp/testcctp"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -187,9 +188,9 @@ func (n MetaSwapDeployer) Deploy(ctx context.Context) (contracts.DeployedContrac
 //nolint:dupl
 func (n CCTPDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	tokenMessengerContract, err := n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return cctp.DeployMessageTransmitter(transactOps, backend)
+		return testcctp.DeployMessageTransmitter(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return cctp.NewMessageTransmitter(address, backend)
+		return testcctp.NewMessageTransmitter(address, backend)
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to deploy tokenMessengerContract %w", err)
