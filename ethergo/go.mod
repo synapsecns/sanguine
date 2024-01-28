@@ -36,7 +36,7 @@ require (
 	github.com/mattn/go-isatty v0.0.19
 	github.com/miguelmota/go-ethereum-hdwallet v0.1.1
 	github.com/neverlee/keymutex v0.0.0-20171121013845-f593aa834bf9
-	github.com/nsmithuk/local-kms v0.0.0-20220503165244-1bbbfed09b08
+	github.com/nsmithuk/local-kms v0.0.0-20231025161602-e4d9425700fe
 	github.com/ory/dockertest/v3 v3.10.0
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
 	github.com/pkg/errors v0.9.1
