@@ -439,12 +439,9 @@ func (s *STIPRelayer) CalculateTransferAmount(transaction *db.STIPTransactions) 
 		return nil, fmt.Errorf("token configuration not found for token %s", transaction.Token)
 	}
 
-	rebateInBPS := tokenConfig.Rebate
-
-	// Convert amountUSD to big.Float for precision during calculations
+	// Convert values to big.Float for precision during calculations
 	amountUSD := new(big.Float).SetFloat64(transaction.AmountUSD)
-
-	rebateBPS := new(big.Float).SetFloat64(float64(rebateInBPS))
+	rebateBPS := new(big.Float).SetFloat64(tokenConfig.RebateBps)
 
 	// Calculate rebate in USD (amountUSD * rebateBPS / 10000)
 	// Divide rebateBPS by 10000 to get the actual rebate rate
