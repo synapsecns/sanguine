@@ -21,7 +21,7 @@ type DatabaseConfig struct {
 
 // FeeRebate represents the fee and rebate values.
 type FeeRebate struct {
-	Fee       int     `yaml:"fee"`        // Fee is the cost that will be charged.
+	Fee       float64 `yaml:"fee"`        // Fee is the cost that will be charged.
 	RebateBps float64 `yaml:"rebate_bps"` // RebateBps is the amount that will be returned, in units of basis points.
 }
 
