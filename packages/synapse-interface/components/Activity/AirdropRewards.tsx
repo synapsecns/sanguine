@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import _ from 'lodash'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Address, useAccount } from 'wagmi'
 import { arbitrum } from 'viem/chains'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
@@ -9,6 +9,7 @@ import { getErc20TokenTransfers } from '@/utils/actions/getErc20TokenTransfers'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { shortenAddress } from '@/utils/shortenAddress'
 import { ARBITRUM } from '@/constants/chains/master'
+import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import TransactionArrow from '../icons/TransactionArrow'
 import arbitrumImg from '@assets/chains/arbitrum.svg'
 
@@ -100,12 +101,12 @@ export const AirdropRewards = () => {
   return (
     <div
       id="airdrop-rewards"
-      className="flex border rounded-lg cursor-pointer text-secondary border-surface bg-background"
+      className="flex items-center mb-2 border rounded-lg cursor-pointer text-secondary border-surface bg-background"
       onClick={handleToggle}
     >
-      <div className="text-green-500">Rebate</div>
+      <div className="p-3 text-green-500">Rebate</div>
       <TransactionArrow className="stroke-surface fill-transparent" />
-      <div>
+      <div className="p-3">
         <NetworkDisplay name={ARB.name} icon={ARB.icon} />
         <TokenAmountDisplay
           symbol={ARB.symbol}
@@ -131,12 +132,19 @@ const RewardsDialog = ({
   open: boolean
   setOpen: (value: React.SetStateAction<boolean>) => void
 }) => {
+  const dialogRef = useRef(null)
+
+  const handleClose = () => setOpen(false)
+
+  useCloseOnOutsideClick(dialogRef, handleClose)
+
   return (
     <dialog
+      ref={dialogRef}
       open={open}
       className="fixed top-[40%] z-10 p-3 text-white border rounded-lg bg-background w-96 border-separator"
     >
-      <div className="text-lg">Rewards</div>
+      <div className="my-2 text-2xl">Rewards</div>
       {_.isEmpty(transactions) ? (
         <div>No rewards found.</div>
       ) : (
