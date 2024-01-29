@@ -193,16 +193,17 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 }
 
 func (i *IntegrationSuite) TestETHtoETH() {
+
 	// Send ETH to the relayer on destination
-	i.destBackend.FundAccount(i.GetTestContext(), i.relayerWallet.Address(), *big.NewInt(100000))
+	const initialBalance = 10
+	i.destBackend.FundAccount(i.GetTestContext(), i.relayerWallet.Address(), *big.NewInt(initialBalance))
 
 	// let's give the user some money as well
 	const userWantAmount = 1
 	i.originBackend.FundAccount(i.GetTestContext(), i.userWallet.Address(), *big.NewInt(userWantAmount))
 
 	// non decimal adjusted user want amount
-	ethDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil)
-	realWantAmount := new(big.Int).Mul(big.NewInt(userWantAmount), ethDecimalsFactor)
+	realWantAmount := new(big.Int).Mul(big.NewInt(userWantAmount), big.NewInt(1e18))
 
 	// now our friendly user is going to check the quote and send us some ETH on the origin chain.
 	i.Eventually(func() bool {
@@ -230,6 +231,7 @@ func (i *IntegrationSuite) TestETHtoETH() {
 	// now we can send the money
 	_, originFastBridge := i.manager.GetFastBridge(i.GetTestContext(), i.originBackend)
 	auth := i.originBackend.GetTxContext(i.GetTestContext(), i.userWallet.AddressPtr())
+	auth.TransactOpts.Value = realWantAmount
 	// we want 499 ETH for 500 requested within a day
 	tx, err := originFastBridge.Bridge(auth.TransactOpts, fastbridge.IFastBridgeBridgeParams{
 		DstChainId:   uint32(i.destBackend.GetChainID()),
@@ -238,7 +240,7 @@ func (i *IntegrationSuite) TestETHtoETH() {
 		SendChainGas: true,
 		DestToken:    chain.EthAddress,
 		OriginAmount: realWantAmount,
-		DestAmount:   new(big.Int).Sub(realWantAmount, big.NewInt(1000)),
+		DestAmount:   new(big.Int).Sub(realWantAmount, big.NewInt(1e17)),
 		Deadline:     new(big.Int).SetInt64(time.Now().Add(time.Hour * 24).Unix()),
 	})
 	i.NoError(err)
@@ -281,7 +283,7 @@ func (i *IntegrationSuite) TestETHtoETH() {
 				// we should now have some ETH on the origin chain since we claimed
 				// this should be offered up as inventory
 				destAmountBigInt, _ := new(big.Int).SetString(quote.DestAmount, 10)
-				if destAmountBigInt.Cmp(big.NewInt(0)) > 0 {
+				if destAmountBigInt.Cmp(realWantAmount) > 0 {
 					// we found our quote!
 					// now we can move on
 					return true
