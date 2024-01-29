@@ -1,13 +1,18 @@
 import { useEffect } from 'react'
+
 import { useAppDispatch } from '@/store/hooks'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { BridgeState, setIsLoading, initialState } from './reducer'
+import {
+  BridgeState,
+  setIsLoading,
+  initialState,
+} from '@/slices/bridge/reducer'
 import {
   updateDebouncedFromValue,
   updateDebouncedToTokensFromValue,
-} from './actions'
+} from '@/slices/bridge/actions'
 
-export default function Updater(): null {
+export const useBridgeListener = () => {
   const dispatch = useAppDispatch()
   const { fromValue, debouncedFromValue }: BridgeState = useBridgeState()
 
