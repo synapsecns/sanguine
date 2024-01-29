@@ -1,19 +1,22 @@
+import _ from 'lodash'
 import { useEffect } from 'react'
+import { useAccount } from 'wagmi'
+
 import { useAppDispatch } from '@/store/hooks'
-import { use_TransactionsState } from './hooks'
-import { addTransaction } from './reducer'
-import { useTransactionsState } from '../transactions/hooks'
+import { use_TransactionsState } from '@/slices/_transactions/hooks'
+import { addTransaction } from '@/slices/_transactions/reducer'
+import { useTransactionsState } from '@/slices/transactions/hooks'
 import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
 import {
   PendingBridgeTransaction,
   removePendingBridgeTransaction,
-} from '../transactions/actions'
-import _ from 'lodash'
+} from '@/slices/transactions/actions'
 
-export default function Updater() {
+export const use_TransactionsListener = () => {
   const dispatch = useAppDispatch()
   const { pendingBridgeTransactions } = useTransactionsState()
   const { transactions } = use_TransactionsState()
+  const { address } = useAccount()
 
   /** Add transaction if not in _transactions store */
   useEffect(() => {
@@ -27,7 +30,7 @@ export default function Updater() {
         const txnExists =
           transactions &&
           transactions.some(
-            (storedTx) => tx.transactionHash == storedTx.originTxHash
+            (storedTx) => tx.transactionHash === storedTx.originTxHash
           )
 
         /** Remove pendingBridgeTransaction once stored in transactions */
@@ -38,6 +41,7 @@ export default function Updater() {
         if (txnConfirmed && !txnExists) {
           dispatch(
             addTransaction({
+              address,
               originTxHash: tx.transactionHash,
               originValue: tx.originValue,
               originChain: tx.originChain,

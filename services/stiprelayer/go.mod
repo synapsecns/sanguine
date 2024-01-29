@@ -6,6 +6,7 @@ require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/ethereum/go-ethereum v1.11.6
+	github.com/gin-gonic/gin v1.9.1
 	github.com/ipfs/go-log v1.0.5
 	github.com/jftuga/ellipsis v1.0.0
 	github.com/stretchr/testify v1.8.4
@@ -98,7 +99,6 @@ require (
 	github.com/gin-contrib/requestid v0.0.6 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-contrib/zap v0.1.0 // indirect
-	github.com/gin-gonic/gin v1.9.1 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
 	github.com/go-git/go-billy/v5 v5.4.1 // indirect
 	github.com/go-git/go-git/v5 v5.8.1 // indirect

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/synapsecns/sanguine/ethergo/util"
@@ -271,7 +272,8 @@ func ProcessLogs(ctx context.Context, logs []ethTypes.Log, chainID uint32, event
 			}
 			parsedLog, err := eventParser.Parse(ctx, logs[logIdx], chainID)
 			if err != nil || parsedLog == nil {
-				if err.Error() == parser.ErrUnknownTopic {
+				// TODO: this should really, REALLY use errors.IS and wrap the underlying error
+				if strings.Contains(err.Error(), parser.ErrUnknownTopic) {
 					logger.Warnf("could not parse log (ErrUnknownTopic) %d, %s %s blocknumber: %d, %s", chainID, logs[logIdx].TxHash, logs[logIdx].Address, logs[logIdx].BlockNumber, err)
 				} else { // retry
 					logger.Errorf("could not parse log %d, %s blocknumber: %d, %s", chainID, logs[logIdx].Address, logs[logIdx].BlockNumber, err)
