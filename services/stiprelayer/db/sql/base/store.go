@@ -42,7 +42,7 @@ func (s *Store) GetTotalArbRebated(ctx context.Context, address string) (*big.In
 		if !ok {
 			return nil, fmt.Errorf("failed to convert arb amount rebated to number")
 		}
-		totalRebated = totalRebated.Add(totalRebated, rebatedAmount)
+		totalRebated.Add(totalRebated, rebatedAmount)
 	}
 	return totalRebated, nil
 }
