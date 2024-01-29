@@ -146,8 +146,25 @@ const RewardsDialog = ({
       open={open}
       className="fixed top-[40%] z-10 p-4 text-white border rounded-lg bg-background w-96 border-separator cursor-default"
     >
-      <div className="flex justify-between mb-2">
-        <div className="text-2xl">Rewards</div>
+      <div className="space-y-4">
+        <div className="flex justify-between mb-2">
+          <div className="text-2xl">ARB Rewards</div>
+          <CloseButton onClick={null} />
+        </div>
+        <p>
+          Through Mar 31, ARB rewards are automatically applied to select routes
+          to and from Arbitrum.
+        </p>
+        <p>
+          Click{' '}
+          <Link
+            href="https://synapse.mirror.xyz/NpzSkXDUlistuxNQaMwP6HQ9k2gVJsI-G1Y7-gaLxfQ"
+            className="underline text-blueText"
+          >
+            here
+          </Link>{' '}
+          for full route and rebate inforamtion.
+        </p>
       </div>
       {_.isEmpty(transactions) ? (
         <div>No rewards found.</div>
