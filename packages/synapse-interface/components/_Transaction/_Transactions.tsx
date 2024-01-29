@@ -12,12 +12,21 @@ export const _Transactions = ({
   connectedAddress: string
 }) => {
   const { transactions } = use_TransactionsState()
-  const sortedTransactions = _.orderBy(transactions, ['timestamp'], ['desc'])
   const hasTransactions: boolean = checkTransactionsExist(transactions)
 
   const currentTime = useIntervalTimer(5000)
 
   if (hasTransactions) {
+    const address = connectedAddress.toLowerCase()
+    const filteredTransactions = transactions.filter(
+      (txn) => txn.address?.toLowerCase() === address
+    )
+
+    const sortedTransactions = _.orderBy(
+      filteredTransactions,
+      ['timestamp'],
+      ['desc']
+    )
     return (
       <TransactionsContainer>
         {sortedTransactions.slice(0, 5).map((tx: _TransactionDetails) => (

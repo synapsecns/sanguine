@@ -1,15 +1,19 @@
 import { useEffect } from 'react'
 import { useAccount } from 'wagmi'
-import { useApplicationState } from './hooks'
-import { ApplicationState } from './reducer'
-import { updateLastConnectedAddress, updateLastConnectedTime } from './actions'
+
+import { useApplicationState } from '@/slices/application/hooks'
+import { ApplicationState } from '@/slices/application/reducer'
+import {
+  updateLastConnectedAddress,
+  updateLastConnectedTime,
+  resetReduxCache,
+} from '@/slices/application/actions'
 import { useAppDispatch } from '@/store/hooks'
 import { isValidAddress, getValidAddress } from '@/utils/isValidAddress'
 import { getTimeMinutesBeforeNow } from '@/utils/time'
-import { resetReduxCache } from './actions'
-import { resetTransactionsState } from '../transactions/actions'
+import { resetTransactionsState } from '@/slices/transactions/actions'
 
-export default function Updater(): null {
+export const useApplicationListener = () => {
   const dispatch = useAppDispatch()
   const { address } = useAccount()
 
