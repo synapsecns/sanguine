@@ -104,7 +104,7 @@ export const AirdropRewards = () => {
       onClick={handleToggle}
     >
       <div className="text-green-500">Rebate</div>
-      <TransactionArrow />
+      <TransactionArrow className="stroke-surface fill-transparent" />
       <div>
         <NetworkDisplay name={ARB.name} icon={ARB.icon} />
         <TokenAmountDisplay
@@ -134,7 +134,7 @@ const RewardsDialog = ({
   return (
     <dialog
       open={open}
-      className="absolute p-3 text-white border rounded-lg bg-background w-96 border-separator"
+      className="fixed top-[40%] z-10 p-3 text-white border rounded-lg bg-background w-96 border-separator"
     >
       <div className="text-lg">Rewards</div>
       {_.isEmpty(transactions) ? (
