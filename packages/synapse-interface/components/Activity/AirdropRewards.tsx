@@ -145,7 +145,7 @@ const RewardsDialog = ({
       id="rewards-dialog"
       ref={dialogRef}
       open={open}
-      className="fixed top-[40%] z-10 p-4 text-white border rounded-lg bg-background w-96 border-separator"
+      className="fixed top-[40%] z-10 p-4 text-white border rounded-lg bg-background w-96 border-separator cursor-default"
     >
       <div className="mb-2 text-2xl">Rewards</div>
       {_.isEmpty(transactions) ? (
