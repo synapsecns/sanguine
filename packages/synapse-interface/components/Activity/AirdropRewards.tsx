@@ -9,6 +9,7 @@ import { getErc20TokenTransfers } from '@/utils/actions/getErc20TokenTransfers'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { shortenAddress } from '@/utils/shortenAddress'
 import { ARBITRUM } from '@/constants/chains/master'
+import { CloseButton } from '../StateManagedBridge/components/CloseButton'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import TransactionArrow from '../icons/TransactionArrow'
 import arbitrumImg from '@assets/chains/arbitrum.svg'
@@ -94,9 +95,8 @@ export const AirdropRewards = () => {
 
   const [open, setOpen] = useState<boolean>(false)
 
-  const handleOpen = () => {
-    setOpen(true)
-  }
+  const handleOpen = () => setOpen(true)
+  const handleClose = () => setOpen(false)
 
   return (
     <div
@@ -117,6 +117,7 @@ export const AirdropRewards = () => {
       <RewardsDialog
         open={open}
         setOpen={setOpen}
+        onClose={handleClose}
         transactions={transactions}
       />
     </div>
@@ -126,19 +127,17 @@ export const AirdropRewards = () => {
 const RewardsDialog = ({
   open,
   setOpen,
+  onClose,
   transactions,
 }: {
-  transactions: any[]
   open: boolean
   setOpen: (value: React.SetStateAction<boolean>) => void
+  onClose
+  transactions: any[]
 }) => {
   const dialogRef = useRef(null)
 
-  const handleClose = () => setOpen(false)
-
-  useCloseOnOutsideClick(dialogRef, handleClose)
-
-  console.log('dialogRef:', dialogRef)
+  useCloseOnOutsideClick(dialogRef, onClose)
 
   return (
     <dialog
@@ -147,7 +146,9 @@ const RewardsDialog = ({
       open={open}
       className="fixed top-[40%] z-10 p-4 text-white border rounded-lg bg-background w-96 border-separator cursor-default"
     >
-      <div className="mb-2 text-2xl">Rewards</div>
+      <div className="flex justify-between mb-2">
+        <div className="text-2xl">Rewards</div>
+      </div>
       {_.isEmpty(transactions) ? (
         <div>No rewards found.</div>
       ) : (
