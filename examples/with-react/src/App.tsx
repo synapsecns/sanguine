@@ -7,7 +7,7 @@ import {
   CustomRpcs,
 } from '@abtestingalpha/widget'
 import { useEthereumWallet } from './hooks/useEthereumWallet'
-import { ChangeEventHandler, useState } from 'react'
+import { ChangeEventHandler, useEffect, useState } from 'react'
 import Header from './Header'
 import Footer from './Footer'
 // import { Install, Developer, Support } from './icons'
@@ -24,10 +24,12 @@ function App() {
   const [customTheme, setCustomTheme] = useState({})
   const [container, setContainer] = useState(true)
 
-  const inputChangeHandler = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+  const inputChangeHandler = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ): void => {
     const target = e.target as HTMLSelectElement
 
-    switch(target.value) {
+    switch (target.value) {
       case 'dark':
       case 'light':
         setCustomTheme({ bgColor: target.value })
@@ -58,12 +60,14 @@ function App() {
       case 'hercules':
         setCustomTheme({
           bgColor: 'dark',
-          '--synapse-button-bg': 'linear-gradient(90deg, hsl(43deg 79% 74%), hsl(21deg 76% 60%))',
+          '--synapse-button-bg':
+            'linear-gradient(90deg, hsl(43deg 79% 74%), hsl(21deg 76% 60%))',
           '--synapse-button-text': 'black',
-          '--synapse-focus': 'hsl(32deg 77.5% 67%)'
+          '--synapse-focus': 'hsl(32deg 77.5% 67%)',
         })
         break
-      default: setCustomTheme({ bgColor: 'dark' })
+      default:
+        setCustomTheme({ bgColor: 'dark' })
     }
   }
 
@@ -106,7 +110,7 @@ function App() {
                 targetTokens={targetTokens}
                 customTheme={customTheme}
                 container={container}
-                targetChainIds={[137]}
+                targetChainIds={[42161]}
               />
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>

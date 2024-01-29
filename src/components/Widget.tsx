@@ -67,6 +67,7 @@ import { useSynapseContext } from '@/providers/SynapseProvider'
 import { getFromTokens } from '@/utils/routeMaker/getFromTokens'
 import { getSymbol } from '@/utils/routeMaker/generateRoutePossibilities'
 import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
+import { switchNetwork } from '@/utils/actions/switchNetwork'
 
 interface WidgetProps {
   theme?: 'light' | 'dark'
@@ -89,7 +90,8 @@ export const Widget = ({
   const { synapseSDK, synapseProviders } = useSynapseContext()
 
   const web3Context = useContext(Web3Context)
-  const { connectedAddress, signer, provider } = web3Context.web3Provider
+  const { connectedAddress, signer, provider, networkId } =
+    web3Context.web3Provider
 
   const [inputAmount, setInputAmount] = useState('')
 
@@ -126,6 +128,10 @@ export const Widget = ({
       (provider) => Number(provider?._network?.chainId) === originChainId
     )
   }, [originChainId])
+
+  useEffect(() => {
+    dispatch(setOriginChainId(networkId))
+  }, [networkId])
 
   useEffect(() => {
     dispatch(setTargetTokens(targetTokens))
@@ -235,9 +241,10 @@ export const Widget = ({
 
   const handleOriginChainSelection = useCallback(
     (newOriginChain: Chain) => {
+      switchNetwork(newOriginChain.id, provider)
       dispatch(setOriginChainId(newOriginChain.id))
     },
-    [dispatch]
+    [dispatch, provider]
   )
 
   const handleDestinationChainSelection = useCallback(
@@ -381,7 +388,7 @@ export const Widget = ({
             value={inputAmount}
             onChange={handleUserInput}
           />
-          <div className="flex flex-col gap-2 items-end justify-center">
+          <div className="flex flex-col items-end justify-center gap-2">
             <TokenSelect
               label="In"
               isOrigin={true}
