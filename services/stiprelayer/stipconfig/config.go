@@ -55,6 +55,16 @@ type Config struct {
 	ArbCapPerAddress int64                  `yaml:"arb_cap_per_address"`
 }
 
+const defaultArbCapPerAddress = 2000
+
+// GetArbCapPerAddress returns the configured arb cap per address, in human-readable units.
+func (c Config) GetArbCapPerAddress() int64 {
+	if c.ArbCapPerAddress == 0 {
+		return defaultArbCapPerAddress
+	}
+	return c.ArbCapPerAddress
+}
+
 // LoadConfig loads the config from the given path.
 func LoadConfig(path string) (config Config, err error) {
 	input, err := os.ReadFile(filepath.Clean(path))

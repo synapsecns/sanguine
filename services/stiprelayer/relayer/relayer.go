@@ -483,7 +483,7 @@ func (s *STIPRelayer) applyRebateCap(ctx context.Context, transaction *db.STIPTr
 	if err != nil {
 		return nil, fmt.Errorf("could not get total ARB rebated: %w", err)
 	}
-	cap := new(big.Int).Mul(big.NewInt(s.cfg.ArbCapPerAddress), big.NewInt(1e18)) // Convert to wei
+	cap := new(big.Int).Mul(big.NewInt(s.cfg.GetArbCapPerAddress()), big.NewInt(1e18)) // Convert to wei
 	remainingAmount := new(big.Int).Sub(cap, totalArbRebated)
 
 	if remainingAmount.Cmp(big.NewInt(0)) <= 0 {
