@@ -66,7 +66,7 @@ const parseTokenValue = (rawValue: bigint, tokenDecimals: number) => {
 }
 
 export const AirdropRewards = () => {
-  const [rewards, setRewards] = useState<string>(undefined)
+  const [rewards, setRewards] = useState<string>('0')
   const [transactions, setTransactions] = useState<any[]>([])
   const { address: connectedAddress } = useAccount()
 
@@ -151,10 +151,12 @@ const RewardsDialog = ({
           <div className="text-2xl">ARB Rewards</div>
           <CloseButton onClick={null} />
         </div>
+
         <p>
           Through Mar 31, ARB rewards are automatically applied to select routes
           to and from Arbitrum.
         </p>
+
         <p>
           Click{' '}
           <Link
@@ -165,7 +167,19 @@ const RewardsDialog = ({
           </Link>{' '}
           for full route and rebate inforamtion.
         </p>
+
+        <div className="flex text-left">
+          <div className="w-1/2">
+            <div>Total Arb</div>
+            <div>+0</div>
+          </div>
+          <div className="w-1/2">
+            <div>Days remaining</div>
+            <div>-</div>
+          </div>
+        </div>
       </div>
+
       {_.isEmpty(transactions) ? (
         <div>No rewards found.</div>
       ) : (
@@ -215,7 +229,7 @@ const AirdropTransaction = ({
       >
         {shortenAddress(transactionHash, 5)}
       </Link>
-      <div className="text-green-500">+ {value} ARB</div>
+      <div className="text-greenText">+ {value} ARB</div>
       <div>{blockNumber}</div>
     </div>
   )
