@@ -2,6 +2,8 @@ package base
 
 import (
 	"context"
+	"fmt"
+	"math/big"
 
 	"github.com/synapsecns/sanguine/services/stiprelayer/db"
 	"gorm.io/gorm/clause"
@@ -18,6 +20,31 @@ func (s *Store) GetSTIPTransactionsNotRebated(ctx context.Context) ([]*db.STIPTr
 		return nil, result.Error
 	}
 	return stipTransactions, nil
+}
+
+// GetTotalArbRebated gets the total amount of arb rebated for a given address.
+func (s *Store) GetTotalArbRebated(ctx context.Context, address string) (*big.Int, error) {
+	var stipTransactions []*db.STIPTransactions
+
+	// Fetch all transactions that have been rebated for the given address
+	result := s.db.WithContext(ctx).
+		Where("rebated = ?", true).
+		Where("address = ?", address).
+		Find(&stipTransactions)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	// Compute the sum of arb rebated across all transactions
+	totalRebated := big.NewInt(0)
+	for _, stipTransaction := range stipTransactions {
+		rebatedAmount, ok := new(big.Int).SetString(stipTransaction.ArbAmountRebated, 10)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert arb amount rebated to number")
+		}
+		totalRebated = totalRebated.Add(totalRebated, rebatedAmount)
+	}
+	return totalRebated, nil
 }
 
 // UpdateSTIPTransactionRebated updates the rebated status of a transaction.
