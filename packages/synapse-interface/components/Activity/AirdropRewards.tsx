@@ -94,15 +94,15 @@ export const AirdropRewards = () => {
 
   const [open, setOpen] = useState<boolean>(false)
 
-  const handleToggle = () => {
-    setOpen(!open)
+  const handleOpen = () => {
+    setOpen(true)
   }
 
   return (
     <div
       id="airdrop-rewards"
       className="flex items-center mb-2 border rounded-lg cursor-pointer text-secondary border-surface bg-background"
-      onClick={handleToggle}
+      onClick={handleOpen}
     >
       <div className="p-3 text-green-500">Rebate</div>
       <TransactionArrow className="stroke-surface fill-transparent" />
@@ -138,8 +138,11 @@ const RewardsDialog = ({
 
   useCloseOnOutsideClick(dialogRef, handleClose)
 
+  console.log('dialogRef:', dialogRef)
+
   return (
     <dialog
+      id="rewards-dialog"
       ref={dialogRef}
       open={open}
       className="fixed top-[40%] z-10 p-4 text-white border rounded-lg bg-background w-96 border-separator"
