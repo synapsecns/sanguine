@@ -183,19 +183,18 @@ const RewardsDialog = ({
             for full route and rebate information.
           </p>
 
-          <div className="flex text-left">
-            <div className="w-1/2">
-              <div className="text-lg text-greenText">Total Arb</div>
-              <div className="flex space-x-1">
-                <div className="text-2xl text-greenText">+{rewards}</div>
-                <div className="text-2xl text-secondary">
-                  (${convertTokensToDollarValue(rewards, tokenPrice)})
-                </div>
+          <div>
+            <div className="text-lg">Days remaining</div>
+            <div className="text-2xl">{calculateDaysUntilStipEnds()}</div>
+          </div>
+
+          <div>
+            <div className="text-lg text-greenText">Total Arb</div>
+            <div className="flex space-x-1">
+              <div className="text-2xl text-greenText">+{rewards}</div>
+              <div className="text-2xl text-secondary">
+                (${convertTokensToDollarValue(rewards, tokenPrice)})
               </div>
-            </div>
-            <div className="w-1/2">
-              <div className="text-lg">Days remaining</div>
-              <div className="text-2xl">{calculateDaysUntilStipEnds()}</div>
             </div>
           </div>
 
