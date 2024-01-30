@@ -178,18 +178,22 @@ const RewardsDialog = ({
             <div>-</div>
           </div>
         </div>
-      </div>
 
-      <div>
         <AirdropTxHeader />
-        {transactions.map((transaction) => (
-          <AirdropTransaction
-            transactionHash={transaction.transactionHash}
-            value={parseTokenValue(transaction.transferValue, ARB.decimals)} // TODO: Make dynamic so we do not hardcode decimals
-            blockNumber={transaction.blockNumber.toString()}
-            explorerUrl={ARB.explorerUrl}
-          />
-        ))}
+        {_.isEmpty(transactions) ? (
+          <div className="text-center text-secondary">
+            Individual rebates will appear here
+          </div>
+        ) : (
+          transactions.map((transaction) => (
+            <AirdropTransaction
+              transactionHash={transaction.transactionHash}
+              value={parseTokenValue(transaction.transferValue, ARB.decimals)} // TODO: Make dynamic so we do not hardcode decimals
+              blockNumber={transaction.blockNumber.toString()}
+              explorerUrl={ARB.explorerUrl}
+            />
+          ))
+        )}
       </div>
     </dialog>
   )
