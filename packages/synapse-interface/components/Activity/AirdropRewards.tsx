@@ -33,47 +33,6 @@ const Rewarder = {
   startBlock: 174234366n, // Start of STIP Rewards on Arbitrum
 }
 
-const getArbStipRewards = async (connectedAddress: Address) => {
-  const { logs, data } = await getErc20TokenTransfers(
-    ARB.tokenAddress,
-    Rewarder.address,
-    connectedAddress,
-    ARB.network,
-    Rewarder.startBlock
-  )
-
-  const cumulativeRewards = calculateTotalTransferValue(data)
-
-  return {
-    logs: logs ?? [],
-    transactions: data,
-    cumulativeRewards,
-  }
-}
-
-const calculateTotalTransferValue = (data: any[]): bigint => {
-  let total: bigint = 0n
-  for (const item of data) {
-    if (item.transferValue) {
-      total += item.transferValue
-    }
-  }
-  return total
-}
-
-const parseTokenValue = (rawValue: bigint, tokenDecimals: number) => {
-  return trimTrailingZeroesAfterDecimal(
-    formatBigIntToString(rawValue, tokenDecimals, 3)
-  )
-}
-
-const convertTokensToDollarValue = (
-  tokenAmount: number | string,
-  tokenPrice: number | string
-) => {
-  return (Number(tokenAmount) * Number(tokenPrice)).toFixed(2)
-}
-
 export const AirdropRewards = () => {
   const [rewards, setRewards] = useState<string>('0')
   const [transactions, setTransactions] = useState<any[]>([])
@@ -100,15 +59,10 @@ export const AirdropRewards = () => {
     }
   }, [connectedAddress])
 
+  /** Dialog state */
   const [open, setOpen] = useState<boolean>(false)
-
-  const handleToggle = () => {
-    setOpen(!open)
-  }
-
-  const handleClose = () => {
-    setOpen(false)
-  }
+  const handleToggle = () => setOpen(!open)
+  const handleClose = () => setOpen(false)
 
   return (
     <>
@@ -122,7 +76,6 @@ export const AirdropRewards = () => {
         <div className="flex justify-between flex-1 p-3">
           <RewardAmountDisplay
             symbol={ARB.symbol}
-            icon={ARB.icon}
             tokenAmount={rewards}
             dollarAmount={convertTokensToDollarValue(rewards, arbPrice)}
           />
@@ -145,11 +98,11 @@ export const AirdropRewards = () => {
 const DialogWrapper = ({ open, children }) => {
   useEffect(() => {
     if (open) {
-      // Disable scroll on the body when open
+      // Disable scroll on the body when dialog is open
       document.body.style.overflow = 'hidden'
     }
 
-    // Clean up; Re-enable scroll when the component unmounts
+    // Clean up; Re-enable scroll when dialog unmounts
     return () => {
       document.body.style.overflow = 'auto'
     }
@@ -246,7 +199,7 @@ const RewardsDialog = ({
               tokenValue={parseTokenValue(
                 transaction.transferValue,
                 ARB.decimals
-              )} // TODO: Make dynamic so we do not hardcode decimals
+              )}
               tokenPrice={tokenPrice}
               explorerUrl={ARB.explorerUrl}
             />
@@ -254,16 +207,6 @@ const RewardsDialog = ({
         )}
       </dialog>
     </DialogWrapper>
-  )
-}
-
-const AirdropTxHeader = () => {
-  return (
-    <div className="grid grid-cols-3 text-white border-none">
-      <div className="text-greenText">ARB</div>
-      <div>Value</div>
-      <div className="mr-4 text-right">Tx Hash</div>
-    </div>
   )
 }
 
@@ -303,15 +246,14 @@ const AirdropTransaction = ({
   )
 }
 
-// TODO: Check if pattern works with other explorers, can move to utils
-export const getBlockExplorerTransactionLink = ({
-  explorerUrl,
-  transactionHash,
-}: {
-  explorerUrl: string
-  transactionHash: string
-}) => {
-  return `${explorerUrl}/tx/${transactionHash}`
+const AirdropTxHeader = () => {
+  return (
+    <div className="grid grid-cols-3 text-white border-none">
+      <div className="text-greenText">ARB</div>
+      <div>Value</div>
+      <div className="mr-4 text-right">Tx Hash</div>
+    </div>
+  )
 }
 
 const RewardsTitle = ({ icon }) => {
@@ -329,12 +271,10 @@ const RewardsTitle = ({ icon }) => {
 
 const RewardAmountDisplay = ({
   symbol,
-  icon,
   tokenAmount,
   dollarAmount,
 }: {
   symbol: string
-  icon: string
   tokenAmount: string
   dollarAmount: string
 }) => {
@@ -351,14 +291,64 @@ const RewardAmountDisplay = ({
   )
 }
 
+/** Helper Functions */
+const getArbStipRewards = async (connectedAddress: Address) => {
+  const { logs, data } = await getErc20TokenTransfers(
+    ARB.tokenAddress,
+    Rewarder.address,
+    connectedAddress,
+    ARB.network,
+    Rewarder.startBlock
+  )
+
+  const cumulativeRewards = calculateTotalTransferValue(data)
+
+  return {
+    logs: logs ?? [],
+    transactions: data,
+    cumulativeRewards,
+  }
+}
+
+const calculateTotalTransferValue = (data: any[]): bigint => {
+  let total: bigint = 0n
+  for (const item of data) {
+    if (item.transferValue) {
+      total += item.transferValue
+    }
+  }
+  return total
+}
+
+const parseTokenValue = (rawValue: bigint, tokenDecimals: number) => {
+  return trimTrailingZeroesAfterDecimal(
+    formatBigIntToString(rawValue, tokenDecimals, 3)
+  )
+}
+
+const convertTokensToDollarValue = (
+  tokenAmount: number | string,
+  tokenPrice: number | string
+) => {
+  return (Number(tokenAmount) * Number(tokenPrice)).toFixed(2)
+}
+
 const calculateDaysUntilStipEnds = () => {
   const currentDate = new Date()
-
   const targetDate = new Date('2024-03-31')
 
   const timeDifference = Number(targetDate) - Number(currentDate)
-
   const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24))
 
   return daysDifference
+}
+
+export const getBlockExplorerTransactionLink = ({
+  explorerUrl,
+  transactionHash,
+}: {
+  explorerUrl: string
+  transactionHash: string
+}) => {
+  return `${explorerUrl}/tx/${transactionHash}`
 }
