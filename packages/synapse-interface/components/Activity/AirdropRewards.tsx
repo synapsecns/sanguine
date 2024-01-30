@@ -110,12 +110,12 @@ export const AirdropRewards = () => {
   return (
     <div
       id="airdrop-rewards"
-      className="flex items-center mb-2 border rounded-lg cursor-pointer text-white border-greenText bg-[#0A381B]"
+      className="flex items-center mb-2 border  cursor-pointer text-white border-greenText bg-[#0A381B]"
       onClick={handleOpen}
     >
       <RewardsTitle icon={ARB.icon} />
       <TransactionArrow className="stroke-greenText fill-transparent" />
-      <div className="flex justify-between flex-1">
+      <div className="flex justify-between flex-1 p-3">
         <RewardAmountDisplay
           symbol={ARB.symbol}
           icon={ARB.icon}
@@ -260,7 +260,7 @@ export const getBlockExplorerTransactionLink = ({
 
 const RewardsTitle = ({ icon }) => {
   return (
-    <div id="rewards-title" className="flex items-center space-x-1.5">
+    <div id="rewards-title" className="flex items-center space-x-1.5 p-3">
       <Image
         src={icon}
         alt="reward chain icon"
