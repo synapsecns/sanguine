@@ -309,41 +309,47 @@ var defaultChainConfig = ChainConfig{}
 // It returns the value from Chains[chainID] if non-zero,
 // else from BaseChainConfig if non-zero,
 // else from defaultChainConfig.
-func getChainConfigValue(config Config, chainID int, fieldName string) (interface{}, error) {
-	chainConfig, ok := config.Chains[chainID]
+func (c Config) getChainConfigValue(chainID int, fieldName string) (interface{}, error) {
+	chainConfig, ok := c.Chains[chainID]
 	if ok {
-		value := getFieldValue(chainConfig, fieldName)
+		value, err := getFieldValue(chainConfig, fieldName)
+		if err != nil {
+			return nil, err
+		}
 		if isNonZero(value) {
 			return value, nil
 		}
 	}
 
-	baseValue := getFieldValue(config.BaseChainConfig, fieldName)
+	baseValue, err := getFieldValue(c.BaseChainConfig, fieldName)
+	if err != nil {
+		return nil, err
+	}
 	if isNonZero(baseValue) {
 		return baseValue, nil
 	}
 
-	defaultValue := getFieldValue(defaultChainConfig, fieldName)
-	if isNonZero(defaultValue) {
-		return defaultValue, nil
+	defaultValue, err := getFieldValue(defaultChainConfig, fieldName)
+	if err != nil {
+		return nil, err
 	}
-	return nil, fmt.Errorf("unrecognized config field: %s", fieldName)
+	return defaultValue, nil
 }
 
-func getFieldValue(obj interface{}, fieldName string) interface{} {
+func getFieldValue(obj interface{}, fieldName string) (interface{}, error) {
 	val := reflect.ValueOf(obj)
 	fieldVal := val.FieldByName(fieldName)
 
 	if !fieldVal.IsValid() {
-		return nil
+		return nil, fmt.Errorf("invalid field: %s", fieldName)
 	}
 
-	return fieldVal.Interface()
+	return fieldVal.Interface(), nil
 }
 
 // GetOriginGasEstimate returns the OriginGasEstimate for the given chainID.
-func GetOriginGasEstimate(config Config, chainID int) (value int, err error) {
-	rawValue, err := getChainConfigValue(config, chainID, "OriginGasEstimate")
+func (c Config) GetOriginGasEstimate(chainID int) (value int, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "OriginGasEstimate")
 	if err != nil {
 		return value, err
 	}
