@@ -3,6 +3,7 @@ package quoter
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/big"
 	"strconv"
@@ -259,7 +260,10 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 
 				// Calculate the quote amount for this route
 				quoteAmount, err := m.getQuoteAmount(ctx, origin, chainID, address, balance)
-				if err != nil {
+				// don't quote if gas exceeds quote
+				if errors.Is(err, errMinGasExceedsQuoteAmount) {
+					quoteAmount = big.NewInt(0)
+				} else if err != nil {
 					return nil, err
 				}
 
@@ -354,7 +358,7 @@ func (m *Manager) getQuoteAmount(parentCtx context.Context, origin, dest int, ad
 		}
 		quoteAmount = new(big.Int).Sub(quoteAmount, minGasToken)
 		if quoteAmount.Cmp(big.NewInt(0)) < 0 {
-			err = fmt.Errorf("min gas token exceeds quote amount")
+			err = errMinGasExceedsQuoteAmount
 			span.AddEvent(err.Error(), trace.WithAttributes(
 				attribute.String("quote_amount", quoteAmount.String()),
 				attribute.String("min_gas_token", minGasToken.String()),
@@ -364,6 +368,8 @@ func (m *Manager) getQuoteAmount(parentCtx context.Context, origin, dest int, ad
 	}
 	return quoteAmount, nil
 }
+
+var errMinGasExceedsQuoteAmount = errors.New("min gas token exceeds quote amount")
 
 func (m *Manager) getDestAmount(parentCtx context.Context, quoteAmount *big.Int) *big.Int {
 	_, span := m.metricsHandler.Tracer().Start(parentCtx, "getDestAmount", trace.WithAttributes(
