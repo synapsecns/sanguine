@@ -301,7 +301,7 @@ export const getBlockExplorerTransactionLink = ({
   return `${explorerUrl}/tx/${transactionHash}`
 }
 
-const RewardsTitle = ({ icon }) => {
+const RewardsTitle = ({ rewards, icon }) => {
   return (
     <div id="rewards-title" className="flex items-center space-x-1.5 p-3">
       <Image
