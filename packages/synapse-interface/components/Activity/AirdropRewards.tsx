@@ -143,6 +143,18 @@ export const AirdropRewards = () => {
 }
 
 const DialogWrapper = ({ open, children }) => {
+  useEffect(() => {
+    if (open) {
+      // Disable scroll on the body when open
+      document.body.style.overflow = 'hidden'
+    }
+
+    // Clean up; Re-enable scroll when the component unmounts
+    return () => {
+      document.body.style.overflow = 'auto'
+    }
+  }, [open])
+
   return (
     <div
       className={`${
@@ -154,6 +166,7 @@ const DialogWrapper = ({ open, children }) => {
     </div>
   )
 }
+
 const RewardsDialog = ({
   open,
   setOpen,
@@ -179,7 +192,7 @@ const RewardsDialog = ({
         id="rewards-dialog"
         ref={dialogRef}
         open={open}
-        className="absolute top-[40%] z-50 p-4 text-white border rounded-lg bg-background w-96 border-separator cursor-default"
+        className="absolute z-50 p-4 m-auto text-white border rounded-lg cursor-default bg-background w-96 border-separator"
       >
         <div className="space-y-4">
           <div className="flex justify-between mb-2">
@@ -301,7 +314,7 @@ export const getBlockExplorerTransactionLink = ({
   return `${explorerUrl}/tx/${transactionHash}`
 }
 
-const RewardsTitle = ({ rewards, icon }) => {
+const RewardsTitle = ({ icon }) => {
   return (
     <div id="rewards-title" className="flex items-center space-x-1.5 p-3">
       <Image
