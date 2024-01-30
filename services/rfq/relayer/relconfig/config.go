@@ -412,15 +412,20 @@ func (c Config) GetL1FeeDestGasEstimate(chainID int) (value int, err error) {
 }
 
 // GetMinGasToken returns the MinGasToken for the given chainID.
-func (c Config) GetMinGasToken(chainID int) (value string, err error) {
+func (c Config) GetMinGasToken(chainID int) (value *big.Int, err error) {
 	rawValue, err := c.getChainConfigValue(chainID, "MinGasToken")
 	if err != nil {
 		return value, err
 	}
 
-	value, ok := rawValue.(string)
+	strValue, ok := rawValue.(string)
 	if !ok {
 		return value, fmt.Errorf("failed to cast MinGasToken to int")
+	}
+
+	value, ok = new(big.Int).SetString(strValue, 10)
+	if !ok {
+		return value, fmt.Errorf("failed to cast MinGasToken to bigint")
 	}
 	return value, nil
 }

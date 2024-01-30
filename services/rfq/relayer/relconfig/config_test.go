@@ -127,15 +127,15 @@ func TestGetters(t *testing.T) {
 	t.Run("GetMinGasToken", func(t *testing.T) {
 		defaultVal, err := cfg.GetMinGasToken(badChainID)
 		assert.NoError(t, err)
-		assert.Equal(t, defaultVal, defaultChainConfig.MinGasToken)
+		assert.Equal(t, defaultVal.String(), defaultChainConfig.MinGasToken)
 
 		baseVal, err := cfgWithBase.GetMinGasToken(badChainID)
 		assert.NoError(t, err)
-		assert.Equal(t, baseVal, cfgWithBase.BaseChainConfig.MinGasToken)
+		assert.Equal(t, baseVal.String(), cfgWithBase.BaseChainConfig.MinGasToken)
 
 		chainVal, err := cfgWithBase.GetMinGasToken(chainID)
 		assert.NoError(t, err)
-		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].MinGasToken)
+		assert.Equal(t, chainVal.String(), cfgWithBase.Chains[chainID].MinGasToken)
 	})
 
 	t.Run("GetQuotePct", func(t *testing.T) {
