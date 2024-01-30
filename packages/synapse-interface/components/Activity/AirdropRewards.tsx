@@ -66,6 +66,13 @@ const parseTokenValue = (rawValue: bigint, tokenDecimals: number) => {
   )
 }
 
+const convertTokensToDollarValue = (
+  tokenAmount: number | string,
+  tokenPrice: number | string
+) => {
+  return (Number(tokenAmount) * Number(tokenPrice)).toFixed(2)
+}
+
 export const AirdropRewards = () => {
   const [rewards, setRewards] = useState<string>('0')
   const [transactions, setTransactions] = useState<any[]>([])
@@ -112,9 +119,8 @@ export const AirdropRewards = () => {
         <RewardAmountDisplay
           symbol={ARB.symbol}
           icon={ARB.icon}
-          tokenAmount={''}
-          dollarAmount={''}
-          // amount={`+ ${rewards}`}
+          tokenAmount={rewards}
+          dollarAmount={convertTokensToDollarValue(rewards, arbPrice)}
         />
 
         <div>Now - Mar 31</div>
