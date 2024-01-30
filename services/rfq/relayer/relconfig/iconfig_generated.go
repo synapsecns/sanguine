@@ -3,6 +3,10 @@
 package relconfig
 
 import (
+	"math/big"
+	"time"
+
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/ethergo/signer/config"
 )
 
@@ -32,4 +36,29 @@ type IConfig interface {
 	GetTokens(chainID uint32) (map[string]TokenConfig, error)
 	// GetTokenName returns the token name for the given chain and address.
 	GetTokenName(chain uint32, addr string) (string, error)
+	// GetMinQuoteAmount returns the quote amount for the given chain and address.
+	// Note that this getter returns the value in native token decimals.
+	GetMinQuoteAmount(chainID int, addr common.Address) *big.Int
+	// GetDeadlineBuffer returns the DeadlineBuffer for the given chainID.
+	GetDeadlineBuffer(chainID int) (seconds time.Duration, err error)
+	// GetOriginGasEstimate returns the OriginGasEstimate for the given chainID.
+	GetOriginGasEstimate(chainID int) (value int, err error)
+	// GetDestGasEstimate returns the DestGasEstimate for the given chainID.
+	GetDestGasEstimate(chainID int) (value int, err error)
+	// GetL1FeeChainID returns the L1FeeChainID for the given chainID.
+	GetL1FeeChainID(chainID int) (value uint32, err error)
+	// GetL1FeeOriginGasEstimate returns the L1FeeOriginGasEstimate for the given chainID.
+	GetL1FeeOriginGasEstimate(chainID int) (value int, err error)
+	// GetL1FeeDestGasEstimate returns the L1FeeDestGasEstimate for the given chainID.
+	GetL1FeeDestGasEstimate(chainID int) (value int, err error)
+	// GetMinGasToken returns the MinGasToken for the given chainID.
+	GetMinGasToken(chainID int) (value *big.Int, err error)
+	// GetQuotePct returns the QuotePct for the given chainID.
+	GetQuotePct(chainID int) (value float64, err error)
+	// GetQuoteOffsetBps returns the QuoteOffsetBps for the given chainID.
+	GetQuoteOffsetBps(chainID int) (value float64, err error)
+	// GetFixedFeeMultiplier returns the FixedFeeMultiplier for the given chainID.
+	GetFixedFeeMultiplier(chainID int) (value float64, err error)
+	// GetL1FeeParams returns the L1 fee params for the given chain.
+	GetL1FeeParams(chainID uint32, origin bool) (uint32, int, bool)
 }
