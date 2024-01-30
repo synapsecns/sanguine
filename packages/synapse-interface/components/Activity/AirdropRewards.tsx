@@ -207,17 +207,19 @@ const RewardsDialog = ({
             Individual rebates will appear here.
           </div>
         ) : (
-          transactions.map((transaction) => (
-            <AirdropTransaction
-              transactionHash={transaction.transactionHash}
-              tokenValue={parseTokenValue(
-                transaction.transferValue,
-                ARB.decimals
-              )}
-              tokenPrice={tokenPrice}
-              explorerUrl={ARB.explorerUrl}
-            />
-          ))
+          <div className="overflow-y-scroll max-h-72">
+            {transactions.map((transaction) => (
+              <AirdropTransaction
+                transactionHash={transaction.transactionHash}
+                tokenValue={parseTokenValue(
+                  transaction.transferValue,
+                  ARB.decimals
+                )}
+                tokenPrice={tokenPrice}
+                explorerUrl={ARB.explorerUrl}
+              />
+            ))}
+          </div>
         )}
       </dialog>
     </DialogWrapper>
