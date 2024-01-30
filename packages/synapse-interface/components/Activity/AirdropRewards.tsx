@@ -313,7 +313,7 @@ export const HoverContentIcon = ({ children }) => {
       onMouseLeave={() => setIsHovered(false)}
     >
       <QuestionMarkCircleIcon
-        className="w-5 h-5"
+        className="w-5 h-5 fill-white stroke-[#0A381B]"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       />
