@@ -451,6 +451,9 @@ func (c Config) GetQuoteOffsetBps(chainID int) (value float64, err error) {
 	if !ok {
 		return value, fmt.Errorf("failed to cast QuoteOffsetBps to int")
 	}
+	if value <= 0 {
+		value = defaultChainConfig.QuoteOffsetBps
+	}
 	return value, nil
 }
 
