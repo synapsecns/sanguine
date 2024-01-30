@@ -70,11 +70,11 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         </div>
       )}
 
-      {/* TODO: Update AirdropRewards to work for masquerade */}
-      {viewingAddress && <AirdropRewards />}
-
       {viewingAddress && !isLoading && hasHistoricalTransactions && (
         <ActivitySection title="Recent">
+          {/* TODO: Update AirdropRewards to work for masquerade */}
+          <AirdropRewards />
+
           {userHistoricalTransactions &&
             filteredHistoricalTransactions
               .slice(0, isSearchInputActive ? 100 : 6)
