@@ -224,13 +224,30 @@ jobs:
       - name: Push Docker Images (Snapshot)
         if: steps.branch-name.outputs.is_default != 'true' && steps.image_check.outputs.has_images == 'true'
         run: |
-          docker_image=$(yq '.dockers | length' dist/config.yaml)
-          if [ $docker_image -eq "0" ]; then
+          # Load the number of docker configurations
+          docker_configs=$(yq e '.dockers | length' dist/config.yaml)
+
+          # Check if there are no docker configurations
+          if [ "$docker_configs" -eq "0" ]; then
             echo "No docker images to push"
             exit 0
           fi
-          docker tag ghcr.io/synapsecns/sanguine/$image_name:latest ghcr.io/synapsecns/$image_name:${GITHUB_SHA}
-          docker push ghcr.io/synapsecns/sanguine/$image_name:${GITHUB_SHA}
+
+          # Iterate through each docker configuration
+            i=0
+          while [ "$i" -lt "$docker_configs" ]; do
+            # Extract the first image template
+            image_template=$(yq e ".dockers[$i].image_templates[0]" dist/config.yaml)
+
+            # Extract the base name from the image template
+            image_name=$(echo "$image_template" | sed -E 's|^(.*):[^:]+$|\1|')
+
+            # Tag and push the docker image
+            docker tag "$image_name:latest" "$image_name:${GITHUB_SHA}"
+            docker push "$image_name:${GITHUB_SHA}"
+
+            i=$((i + 1))
+          done
         env:
           image_name: ${{ steps.project_id.outputs.project_name }}
 
@@ -276,3 +293,11 @@ jobs:
           destination_repo: 'trajan0x/terraform-provider-kubeproxy'
           tag_name: ${{ steps.tag_version.outputs.new_tag }}
           strip_prefix: 'contrib/terraform-provider-kubeproxy/'
+
+      - name: Refresh Report Card
+        if: steps.branch-name.outputs.is_default == 'true'
+        working-directory: ${{matrix.package}}/
+        run: |
+          module_name=$(go mod edit -json | jq -r '.Module.Path')
+          curl -X POST -F "repo=$module_name" https://goreportcard.com/checks
+

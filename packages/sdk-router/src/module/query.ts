@@ -103,14 +103,17 @@ export const hasComplexBridgeAction = (destQuery: Query): boolean => {
 }
 
 /**
- * Modifies the deadline of the query and returns the modified query.
+ * Applies the deadline to the query and returns the modified query.
  * Note: the original query is preserved unchanged.
  *
  * @param query - The query to modify.
  * @param deadline - The new deadline.
  * @returns The modified query with the new deadline.
  */
-export const modifyDeadline = (query: Query, deadline: BigNumber): Query => {
+export const applyDeadlineToQuery = (
+  query: Query,
+  deadline: BigNumber
+): Query => {
   return {
     ...query,
     deadline,
@@ -128,7 +131,7 @@ export const modifyDeadline = (query: Query, deadline: BigNumber): Query => {
  * @returns The modified query with the reduced minAmountOut.
  * @throws If the slippage fraction is invalid (<0, >1, or NaN)
  */
-export const applySlippage = (
+export const applySlippageToQuery = (
   query: Query,
   slipNumerator: number,
   slipDenominator: number
@@ -149,19 +152,18 @@ export const applySlippage = (
 }
 
 /**
- * Applies the slippage (in basis points) to the query's minAmountOut (rounded down), and returns the modified query
- * with the reduced minAmountOut.
- * Note: the original query is preserved unchanged.
- * Note: the slippage is applied as a fraction of 10000, e.g. 100 bips = 1%.
+ * Creates a Query object for a no-swap bridge action.
  *
- * @param query - The query to modify.
- * @param slipBasisPoints - The slippage in basis points.
- * @returns The modified query with the reduced minAmountOut.
- * @throws If the basis points are invalid (<0, >10000)
+ * @param token - The token to bridge.
+ * @param amount - The amount of token to bridge.
+ * @returns The Query object for a no-swap bridge action.
  */
-export const applySlippageInBips = (
-  query: Query,
-  slipBasisPoints: number
-): Query => {
-  return applySlippage(query, slipBasisPoints, 10000)
+export const createNoSwapQuery = (token: string, amount: BigNumber): Query => {
+  return {
+    routerAdapter: AddressZero,
+    tokenOut: token,
+    minAmountOut: amount,
+    deadline: BigNumber.from(0),
+    rawParams: '0x',
+  }
 }

@@ -5,9 +5,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/internal/testconsts"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
-	hardhatParser "github.com/synapsecns/sanguine/ethergo/parser/hardhat"
-	"github.com/tenderly/tenderly-cli/hardhat"
-	"github.com/tenderly/tenderly-cli/providers"
+	"github.com/synapsecns/sanguine/ethergo/parser/hardhat"
 	"path/filepath"
 	"testing"
 )
@@ -17,7 +15,7 @@ func TestParser(t *testing.T) {
 	Nil(t, err)
 
 	deploymentsFolder := filepath.Join(repoRoot.Path, "ethergo", "internal", "test-data", "deployments")
-	contracts, err := hardhatParser.GetDeployments(deploymentsFolder)
+	contracts, err := hardhat.GetDeployments(deploymentsFolder)
 	Nil(t, err)
 
 	for _, contract := range contracts {
@@ -36,8 +34,8 @@ func TestGetNetworks(t *testing.T) {
 	address := mocks.MockAddress()
 
 	contractDir := filepath.Join(repoRoot.Path, "ethergo", "internal", "test-data", "deployments", "arbitrum")
-	networks, err := hardhatParser.GetNetworks(hardhat.HardhatContract{
-		Contract: &providers.Contract{},
+	networks, err := hardhat.GetNetworks(hardhat.HardhatContract{
+		Contract: hardhat.Contract{},
 		Address:  address.String(),
 	}, contractDir)
 	Nil(t, err)
@@ -48,7 +46,7 @@ func TestGetNetworks(t *testing.T) {
 }
 
 func TestGetMetadata(t *testing.T) {
-	metadata, err := hardhatParser.GetMetadata(hardhat.HardhatContract{Metadata: string(testconsts.AmplificationUtilsMetadata)}, "")
+	metadata, err := hardhat.GetMetadata(hardhat.HardhatContract{Metadata: string(testconsts.AmplificationUtilsMetadata)}, "")
 	Nil(t, err)
 
 	Equal(t, metadata.GetCompiler().Version, "0.6.12+commit.27d51765")

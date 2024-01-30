@@ -1,6 +1,5 @@
 import _ from 'lodash'
 import { configureStore } from '@reduxjs/toolkit'
-import { getAccount } from '@wagmi/core'
 import { persistStore } from 'redux-persist'
 
 import { api } from '@/slices/api/slice'
@@ -43,11 +42,10 @@ export type AppDispatch = typeof store.dispatch
 let previousState = store.getState()
 
 store.subscribe(() => {
-  const account = getAccount()
-  const { address } = account
-
   const currentState = store.getState()
   const bridgeState = currentState.bridge
+
+  const address = currentState.application?.lastConnectedAddress
 
   let eventTitle
   let eventData
@@ -61,7 +59,7 @@ store.subscribe(() => {
   ) {
     const { outputAmountString, routerAddress, exchangeRate } =
       bridgeState.bridgeQuote
-    const { fromChainId, toChainId, fromToken, toToken, fromValue } =
+    const { fromChainId, toChainId, fromToken, toToken, debouncedFromValue } =
       bridgeState
 
     eventTitle = `[Bridge System Action] Generate bridge quote`
@@ -71,7 +69,7 @@ store.subscribe(() => {
       toChainId,
       fromToken: fromToken?.symbol,
       toToken: toToken?.symbol,
-      inputAmountString: fromValue,
+      inputAmountString: debouncedFromValue,
       outputAmountString,
       routerAddress,
       exchangeRate: BigInt(exchangeRate.toString()),

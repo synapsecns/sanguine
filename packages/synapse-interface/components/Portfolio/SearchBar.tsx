@@ -24,11 +24,8 @@ export const SearchBar = () => {
   const dispatch = useAppDispatch()
   const { onSearchInput, clearSearchInput, clearSearchResults } =
     usePortfolioActionHandlers()
-  const {
-    activeTab,
-    searchInput,
-    searchedBalancesAndAllowances,
-  }: PortfolioState = usePortfolioState()
+  const { activeTab, searchInput, searchedBalances }: PortfolioState =
+    usePortfolioState()
 
   const [mounted, setMounted] = useState<boolean>(false)
   const [isFocused, setIsFocused] = useState<boolean>(false)
@@ -73,8 +70,7 @@ export const SearchBar = () => {
   }, [searchInput])
 
   useEffect(() => {
-    const masqueradeActive: boolean =
-      Object.keys(searchedBalancesAndAllowances).length > 0
+    const masqueradeActive: boolean = Object.keys(searchedBalances).length > 0
     if (checksumValidAddress && !masqueradeActive) {
       dispatch(
         fetchAndStoreSearchInputPortfolioBalances(
@@ -86,7 +82,7 @@ export const SearchBar = () => {
     if (masqueradeActive && checksumValidAddress) {
       clearSearchInput()
     }
-  }, [checksumValidAddress, searchedBalancesAndAllowances])
+  }, [checksumValidAddress, searchedBalances])
 
   useEffect(() => {
     if (searchInputIsTransactionHash) {

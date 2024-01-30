@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/puzpuzpuz/xsync/v2"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -168,7 +169,7 @@ func (t *txSubmitterImpl) getNonce(parentCtx context.Context, chainID *big.Int, 
 	}()
 
 	g, ctx := errgroup.WithContext(ctx)
-	// onChainNonce is the latest nonce from eth_transactionCount. DB nonce is latest nonce from db + 1
+	// onChainNonce is the latest nonce from eth_transactionCount. db nonce is latest nonce from db + 1
 	// locks are not built into this method or the insertion level of the db
 	var onChainNonce, dbNonce uint64
 
@@ -212,15 +213,16 @@ func (t *txSubmitterImpl) getNonce(parentCtx context.Context, chainID *big.Int, 
 	return dbNonce, nil
 }
 
-func (t *txSubmitterImpl) storeTX(ctx context.Context, tx *types.Transaction, status db.Status) (err error) {
+func (t *txSubmitterImpl) storeTX(ctx context.Context, tx *types.Transaction, status db.Status, UUID string) (err error) {
 	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.StoreTX", trace.WithAttributes(
-		append(txToAttributes(tx), attribute.String("status", status.String()))...))
+		append(txToAttributes(tx, UUID), attribute.String("status", status.String()))...))
 
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
 
 	err = t.db.PutTXS(ctx, db.TX{
+		UUID:        UUID,
 		Transaction: tx,
 		Status:      status,
 	})
@@ -326,7 +328,7 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	defer locker.Unlock()
 
 	// now that we've stored the tx
-	err = t.storeTX(ctx, tx, db.Stored)
+	err = t.storeTX(ctx, tx, db.Stored, uuid.New().String())
 	if err != nil {
 		return 0, fmt.Errorf("could not store transaction: %w", err)
 	}
@@ -467,19 +469,17 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	// if it needs a dynamic gas estimate, we'll get it.
-	if t.config.GetDynamicGasEstimate(chainID) {
-		call, err := util.TxToCall(tx)
-		if err != nil {
-			return 0, fmt.Errorf("could not convert tx to call: %w", err)
-		}
+	// since we checked for dynamic gas estimate above, we can fetch the gas estimate here
+	call, err := util.TxToCall(tx)
+	if err != nil {
+		return 0, fmt.Errorf("could not convert tx to call: %w", err)
+	}
 
-		gasEstimate, err = chainClient.EstimateGas(ctx, *call)
-		if err != nil {
-			span.AddEvent("could not estimate gas", trace.WithAttributes(attribute.String("error", err.Error())))
-			// fallback to default
-			return t.config.GetGasEstimate(chainID), nil
-		}
+	gasEstimate, err = chainClient.EstimateGas(ctx, *call)
+	if err != nil {
+		span.AddEvent("could not estimate gas", trace.WithAttributes(attribute.String("error", err.Error())))
+		// fallback to default
+		return t.config.GetGasEstimate(chainID), nil
 	}
 
 	return gasEstimate, nil

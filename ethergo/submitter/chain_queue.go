@@ -160,13 +160,9 @@ func (c *chainQueue) bumpTX(parentCtx context.Context, ogTx db.TX) {
 			metrics.EndSpanWithErr(span, err)
 		}()
 
-		newGasEstimate := tx.Gas()
-
-		if c.config.GetDynamicGasEstimate(c.chainIDInt()) {
-			newGasEstimate, err = c.getGasEstimate(ctx, c.client, c.chainIDInt(), tx)
-			if err != nil {
-				return fmt.Errorf("could not get gas estimate: %w", err)
-			}
+		newGasEstimate, err := c.getGasEstimate(ctx, c.client, c.chainIDInt(), tx)
+		if err != nil {
+			return fmt.Errorf("could not get gas estimate: %w", err)
 		}
 
 		transactor, err := c.signer.GetTransactor(ctx, c.chainID)
@@ -213,9 +209,10 @@ func (c *chainQueue) bumpTX(parentCtx context.Context, ogTx db.TX) {
 			return fmt.Errorf("could not sign tx: %w", err)
 		}
 
-		span.AddEvent("add to reprocess queue", trace.WithAttributes(txToAttributes(tx)...))
+		span.AddEvent("add to reprocess queue", trace.WithAttributes(txToAttributes(tx, ogTx.UUID)...))
 
 		c.addToReprocessQueue(db.TX{
+			UUID:        ogTx.UUID,
 			Transaction: tx,
 			Status:      db.Stored,
 		})

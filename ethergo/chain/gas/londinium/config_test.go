@@ -14,8 +14,8 @@ func (l LondoniumSuite) TestLondoniumConfig() {
 	newConfig := gasprice.Config{
 		Blocks:           int(gofakeit.Int64()),
 		Percentile:       gofakeit.Number(1, 100),
-		MaxHeaderHistory: int(gofakeit.Int64()),
-		MaxBlockHistory:  int(gofakeit.Int64()),
+		MaxHeaderHistory: gofakeit.Uint64(),
+		MaxBlockHistory:  gofakeit.Uint64(),
 		Default:          defaultPrice,
 		MaxPrice:         big.NewInt(0).Mul(defaultPrice, big.NewInt(2)),
 		IgnorePrice:      big.NewInt(0).Div(defaultPrice, big.NewInt(2)),

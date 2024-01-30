@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/lmittmann/w3"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/instrumentation"
@@ -15,6 +16,7 @@ import (
 type captureClient struct {
 	ethClient *ethclient.Client
 	w3Client  *w3.Client
+	rpcClient *rpc.Client
 }
 
 func newCaptureClient(ctx context.Context, url string, handler metrics.Handler, capture bool) (*captureClient, error) {
@@ -35,5 +37,6 @@ func newCaptureClient(ctx context.Context, url string, handler metrics.Handler, 
 	return &captureClient{
 		ethClient: ethClient,
 		w3Client:  w3Client,
+		rpcClient: c,
 	}, nil
 }

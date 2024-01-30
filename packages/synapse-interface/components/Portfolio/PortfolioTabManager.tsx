@@ -1,12 +1,14 @@
 import { useAppDispatch } from '@/store/hooks'
+import { useAccount } from 'wagmi'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { PortfolioTabs, setActiveTab } from '@/slices/portfolio/actions'
-import { MostRecentTransaction } from './Transaction/MostRecentTransaction'
 import { SearchBar } from './SearchBar'
+import { _Transactions } from '../_Transaction/_Transactions'
 
 export const PortfolioTabManager = () => {
   const dispatch = useAppDispatch()
   const { activeTab } = usePortfolioState()
+  const { address } = useAccount()
 
   const handleTabChange = (newTab: PortfolioTabs) => {
     dispatch(setActiveTab(newTab))
@@ -29,11 +31,7 @@ export const PortfolioTabManager = () => {
         />
         <SearchBar />
       </div>
-      <div
-        className={activeTab === PortfolioTabs.ACTIVITY ? 'hidden' : 'block'}
-      >
-        <MostRecentTransaction />
-      </div>
+      {address && <_Transactions connectedAddress={address} />}
     </div>
   )
 }

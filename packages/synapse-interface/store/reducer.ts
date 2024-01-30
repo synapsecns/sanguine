@@ -3,6 +3,7 @@ import { PersistConfig, persistReducer } from 'redux-persist'
 import storage from 'redux-persist/lib/storage'
 
 import application from '@/slices/application/reducer'
+import _transactions from '@/slices/_transactions/reducer'
 import bridge from '@/slices/bridge/reducer'
 import portfolio from '@/slices/portfolio/reducer'
 import swap from '@/slices/swap/reducer'
@@ -14,18 +15,20 @@ import poolUserData from '@/slices/poolUserDataSlice'
 import poolWithdraw from '@/slices/poolWithdrawSlice'
 import priceData from '@/slices/priceDataSlice'
 import swapDisplay from '@/slices/swapDisplaySlice'
+import feeAndRebate from '@/slices/feeAndRebateSlice'
 import { api } from '@/slices/api/slice'
 import { RootActions } from '@/slices/application/actions'
 
 const persistedReducers = {
   application,
   transactions,
+  _transactions,
 }
 
 export const storageKey: string = 'synapse-interface'
 
 export const persistConfig: PersistConfig<AppState> = {
-  version: 1, // upgrade to reset cache when updated data structures throw errors
+  version: 2, // upgrade to reset cache when updated data structures throw errors
   key: storageKey,
   storage,
   whitelist: Object.keys(persistedReducers),
@@ -42,6 +45,7 @@ export const appReducer = combineReducers({
   poolWithdraw,
   priceData,
   swapDisplay,
+  feeAndRebate,
   [api.reducerPath]: api.reducer,
   ...persistedReducers,
 })

@@ -19,7 +19,6 @@ import (
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
-	"math"
 	"math/big"
 	"time"
 )
@@ -107,7 +106,7 @@ func (e *exporter) vpriceStats(ctx context.Context, chainID int, tokenID string)
 		}
 
 		// Use floatVPrice as required
-		o.ObserveFloat64(vpriceMetric, bigToDecimals(realvPrice, decimals), metric.WithAttributeSet(attributes))
+		o.ObserveFloat64(vpriceMetric, core.BigToDecimals(realvPrice, decimals), metric.WithAttributeSet(attributes))
 
 		return nil
 	}, vpriceMetric); err != nil {
@@ -201,13 +200,13 @@ func (e *exporter) getTokenBalances(ctx context.Context) error {
 			}
 
 			// eth is always 18 decimals
-			o.ObserveFloat64(gasBalanceMetric, bigToDecimals(&realGasBalance, 18), metric.WithAttributes(attribute.Int(metrics.ChainID, chainID)))
+			o.ObserveFloat64(gasBalanceMetric, core.BigToDecimals(&realGasBalance, 18), metric.WithAttributes(attribute.Int(metrics.ChainID, chainID)))
 
 			for _, td := range allTokenData {
 				tokenAttributes := attribute.NewSet(attribute.String("tokenID", td.metadata.TokenID), attribute.Int(metrics.ChainID, td.metadata.ChainID))
-				o.ObserveFloat64(bridgeBalanceMetric, bigToDecimals(td.contractBalance, td.metadata.TokenDecimals), metric.WithAttributeSet(tokenAttributes))
-				o.ObserveFloat64(feeBalanceMetric, bigToDecimals(td.feeBalance, td.metadata.TokenDecimals), metric.WithAttributeSet(tokenAttributes))
-				o.ObserveFloat64(totalSupplyMetric, bigToDecimals(td.totalSuppply, td.metadata.TokenDecimals), metric.WithAttributeSet(tokenAttributes))
+				o.ObserveFloat64(bridgeBalanceMetric, core.BigToDecimals(td.contractBalance, td.metadata.TokenDecimals), metric.WithAttributeSet(tokenAttributes))
+				o.ObserveFloat64(feeBalanceMetric, core.BigToDecimals(td.feeBalance, td.metadata.TokenDecimals), metric.WithAttributeSet(tokenAttributes))
+				o.ObserveFloat64(totalSupplyMetric, core.BigToDecimals(td.totalSuppply, td.metadata.TokenDecimals), metric.WithAttributeSet(tokenAttributes))
 			}
 
 			return nil
@@ -333,19 +332,4 @@ type TokenConfig struct {
 	TokenDecimals uint8
 	HasUnderlying bool
 	IsUnderlying  bool
-}
-
-func bigToDecimals(bigInt *big.Int, decimals uint8) float64 {
-	// Convert vpriceMetric to *big.Float
-	bigVPrice := new(big.Float).SetInt(bigInt)
-
-	// Calculate the divisor for decimals
-	divisor := new(big.Float).SetFloat64(math.Pow10(int(decimals)))
-
-	// Divide bigVPrice by the divisor to account for decimals
-	realVPrice := new(big.Float).Quo(bigVPrice, divisor)
-
-	// Convert the final value to float64
-	floatVPrice, _ := realVPrice.Float64()
-	return floatVPrice
 }

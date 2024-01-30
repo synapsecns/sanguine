@@ -12,9 +12,15 @@ import {
 } from '@/styles/chains'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import {
-  TokenWithBalanceAndAllowances,
+  TokenAndBalance,
   sortTokensByBalanceDescending,
 } from '@/utils/actions/fetchPortfolioBalances'
+import {
+  ELIGIBILITY_DEFAULT_TEXT,
+  isChainEligible,
+  useStipEligibility,
+} from '@/utils/hooks/useStipEligibility'
+import { useBridgeState } from '@/slices/bridge/hooks'
 
 export const SelectSpecificNetworkButton = ({
   itemChainId,
@@ -59,7 +65,7 @@ export const SelectSpecificNetworkButton = ({
       className={`
         flex items-center justify-between
         transition-all duration-75
-        w-full
+        w-full h-[62px]
         px-2 py-4
         cursor-pointer
         border-[1px] border-[#423F44]
@@ -87,14 +93,17 @@ function ButtonContent({
   isOrigin: boolean
 }) {
   const chain = CHAINS_BY_ID[chainId]
-  const { balancesAndAllowances } = usePortfolioState()
+  const { balances } = usePortfolioState()
+  const { fromChainId, fromToken } = useBridgeState()
 
   const balanceTokens =
-    balancesAndAllowances &&
-    balancesAndAllowances[chainId] &&
+    balances &&
+    balances[chainId] &&
     sortTokensByBalanceDescending(
-      balancesAndAllowances[chainId].filter((bt) => bt.balance > 0n)
+      balances[chainId].filter((bt) => bt.balance > 0n)
     )
+
+  const isEligible = isChainEligible(fromChainId, chain.id, fromToken)
 
   return chain ? (
     <>
@@ -106,6 +115,11 @@ function ButtonContent({
         />
         <div className="flex-col text-left">
           <div className="text-lg font-normal text-white">{chain.name}</div>
+          {!isOrigin && isEligible && (
+            <div className="text-sm text-greenText">
+              {ELIGIBILITY_DEFAULT_TEXT}
+            </div>
+          )}
         </div>
       </div>
       {isOrigin && balanceTokens && balanceTokens.length > 0 ? (
@@ -118,7 +132,7 @@ function ButtonContent({
 const ChainTokens = ({
   balanceTokens = [],
 }: {
-  balanceTokens: TokenWithBalanceAndAllowances[]
+  balanceTokens: TokenAndBalance[]
 }) => {
   const [isT1Hovered, setIsT1Hovered] = useState<boolean>(false)
   const [isT2Hovered, setIsT2Hovered] = useState<boolean>(false)
@@ -204,19 +218,17 @@ const ChainTokens = ({
       )}
       <div className="relative inline-block">
         <HoverContent isHovered={isT3Hovered}>
-          {balanceTokens?.map(
-            (token: TokenWithBalanceAndAllowances, key: number) => {
-              if (key > 1) {
-                const tokenSymbol = token.token.symbol
-                const balance = token.parsedBalance
-                return (
-                  <div className="whitespace-nowrap" key={key}>
-                    {balance} {tokenSymbol}
-                  </div>
-                )
-              }
+          {balanceTokens?.map((token: TokenAndBalance, key: number) => {
+            if (key > 1) {
+              const tokenSymbol = token.token.symbol
+              const balance = token.parsedBalance
+              return (
+                <div className="whitespace-nowrap" key={key}>
+                  {balance} {tokenSymbol}
+                </div>
+              )
             }
-          )}
+          })}
         </HoverContent>
       </div>
     </div>
