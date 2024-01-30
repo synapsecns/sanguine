@@ -296,6 +296,7 @@ jobs:
 
       - name: Refresh Report Card
         if: steps.branch-name.outputs.is_default == 'true'
+        working-directory: ${{matrix.package}}/
         run: |
           module_name=$(go mod edit -json | jq -r '.Module.Path')
           curl -X POST -F "repo=$module_name" https://goreportcard.com/checks
