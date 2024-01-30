@@ -6,6 +6,7 @@ import postcss from 'rollup-plugin-postcss'
 import json from '@rollup/plugin-json'
 import terser from '@rollup/plugin-terser'
 import peerDepsExternal from 'rollup-plugin-peer-deps-external'
+import sourcemaps from 'rollup-plugin-sourcemaps'
 
 import packageJson from './package.json' assert { type: 'json' }
 
@@ -15,14 +16,26 @@ export default [
     output: [
       {
         file: packageJson.main,
+        sourcemap: true,
         format: 'cjs',
       },
       {
         file: packageJson.module,
+        sourcemap: true,
         format: 'esm',
       },
     ],
-    external: ['react', 'react/jsx-runtime', 'ethers'],
+    external: [
+      'react',
+      'react/jsx-runtime',
+      'ethers',
+      'react-redux',
+      '@reduxjs/toolkit',
+      '@synapsecns/sdk-router',
+      '@ethersproject/providers',
+      '@ethersproject/units',
+      'lodash',
+    ],
     plugins: [
       peerDepsExternal(),
       resolve(),
@@ -37,6 +50,7 @@ export default [
       }),
       json(),
       terser(),
+      sourcemaps(),
     ],
     watch: {
       buildDelay: 200,

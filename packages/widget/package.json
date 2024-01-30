@@ -34,17 +34,18 @@
     "@types/react": "^18.2.39",
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.31",
-    "rollup": "^4.6.0",
+    "rollup": "^3.29.4",
     "rollup-plugin-dts": "^6.1.0",
     "rollup-plugin-peer-deps-external": "^2.2.4",
     "rollup-plugin-postcss": "^4.0.2",
+    "rollup-plugin-sourcemaps": "^0.6.3",
     "tailwindcss": "^3.3.5",
     "tslib": "^2.6.2",
     "typescript": "^5.3.2"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.0.1",
-    "@synapsecns/sdk-router": "^0.3.19",
+    "@synapsecns/sdk-router": "^0.3.21",
     "ethers": "^6.9.1",
     "lodash": "^4.17.21",
     "react-redux": "^9.0.2"
