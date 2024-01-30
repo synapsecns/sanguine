@@ -184,7 +184,7 @@ const RewardsDialog = ({
           </p>
 
           <div className="flex flex-wrap-reverse">
-            <div className="min-w-1/2">
+            <div className="mr-4 min-w-1/2">
               <div className="text-lg text-greenText">Total Arb</div>
               <div className="flex space-x-1">
                 <div className="text-2xl text-greenText">+{rewards}</div>
@@ -237,26 +237,24 @@ const AirdropTransaction = ({
 }) => {
   const [isHovered, setIsHovered] = useState<boolean>(false)
   return (
-    <div
+    <Link
       id="airdrop-transaction"
-      className="grid grid-cols-3 py-1.5 text-white hover:bg-tint cursor-pointer"
+      href={getBlockExplorerTransactionLink({ explorerUrl, transactionHash })}
+      referrerPolicy="no-referrer"
+      target="_blank"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      className="grid grid-cols-3 py-1.5 text-white hover:bg-tint cursor-pointer"
     >
       <div className="text-greenText">+ {tokenValue}</div>
       <div>${convertTokensToDollarValue(tokenValue, tokenPrice)}</div>
-      <Link
-        href={getBlockExplorerTransactionLink({ explorerUrl, transactionHash })}
-        referrerPolicy="no-referrer"
-        target="_blank"
-        className="flex items-center text-right"
-      >
+      <div className="flex items-center ml-auto text-right">
         {shortenAddress(transactionHash, 5)}
         {isHovered && (
           <ArrowUpRightIcon className="w-4 h-4 stroke-[3px] ml-1" />
         )}
-      </Link>
-    </div>
+      </div>
+    </Link>
   )
 }
 
@@ -265,7 +263,7 @@ const AirdropTxHeader = () => {
     <div className="grid grid-cols-3 text-white border-none">
       <div className="text-greenText">ARB</div>
       <div>Value</div>
-      <div className="mr-4 text-right">Tx Hash</div>
+      <div className="text-right">Tx Hash</div>
     </div>
   )
 }
