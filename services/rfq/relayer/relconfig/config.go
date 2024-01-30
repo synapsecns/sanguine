@@ -3,10 +3,13 @@ package relconfig
 
 import (
 	"fmt"
+	"math/big"
 	"os"
 	"reflect"
 	"strings"
+	"time"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/jftuga/ellipsis"
 	"github.com/synapsecns/sanguine/ethergo/signer/config"
 	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
@@ -73,7 +76,7 @@ type ChainConfig struct {
 	// QuotePct is the percent of balance to quote.
 	QuotePct float64 `yaml:"quote_pct"`
 	// QuoteOffsetBps is the number of basis points to deduct from the dest amount.
-	QuoteOffsetBps int `yaml:"quote_offset_bps"`
+	QuoteOffsetBps float64 `yaml:"quote_offset_bps"`
 	// FixedFeeMultiplier is the multiplier for the fixed fee.
 	FixedFeeMultiplier float64 `yaml:"fixed_fee_multiplier"`
 }
@@ -232,75 +235,40 @@ func (c Config) getChainConfig(chainID int) (ChainConfig, error) {
 	return chainConfig, nil
 }
 
-// const defaultQuotePct = 100.
+const defaultMinQuoteAmount = 0
 
-// // GetQuotePct returns the quote percentage.
-// func (c Config) GetQuotePct() float64 {
-// 	if c.QuotePct <= 0 {
-// 		return defaultQuotePct
-// 	}
-// 	return c.QuotePct
-// }
+// GetMinQuoteAmount returns the quote amount for the given chain and address.
+// Note that this getter returns the value in native token decimals.
+func (c Config) GetMinQuoteAmount(chainID int, addr common.Address) *big.Int {
+	chainCfg, ok := c.Chains[chainID]
+	if !ok {
+		return big.NewInt(defaultMinQuoteAmount)
+	}
 
-// const defaultQuoteOffsetBps = 0
+	var tokenCfg *TokenConfig
+	for _, cfg := range chainCfg.Tokens {
+		if strings.EqualFold(cfg.Address, addr.String()) {
+			cfgCopy := cfg
+			tokenCfg = &cfgCopy
+			break
+		}
+	}
+	if tokenCfg == nil {
+		return big.NewInt(defaultMinQuoteAmount)
+	}
+	quoteAmountFlt, ok := new(big.Float).SetString(tokenCfg.MinQuoteAmount)
+	if !ok {
+		return big.NewInt(defaultMinQuoteAmount)
+	}
+	if quoteAmountFlt.Cmp(big.NewFloat(0)) <= 0 {
+		return big.NewInt(defaultMinQuoteAmount)
+	}
 
-// // GetQuoteOffsetBps returns the quote offset in basis points.
-// func (c Config) GetQuoteOffsetBps() int {
-// 	if c.QuoteOffsetBps <= 0 {
-// 		return defaultQuoteOffsetBps
-// 	}
-// 	return c.QuoteOffsetBps
-// }
-
-// const defaultMinQuoteAmount = 0
-
-// // GetMinQuoteAmount returns the quote amount for the given chain and address.
-// // Note that this getter returns the value in native token decimals.
-// func (c Config) GetMinQuoteAmount(chainID int, addr common.Address) *big.Int {
-// 	chainCfg, ok := c.Chains[chainID]
-// 	if !ok {
-// 		return big.NewInt(defaultMinQuoteAmount)
-// 	}
-
-// 	var tokenCfg *TokenConfig
-// 	for _, cfg := range chainCfg.Tokens {
-// 		if strings.EqualFold(cfg.Address, addr.String()) {
-// 			cfgCopy := cfg
-// 			tokenCfg = &cfgCopy
-// 			break
-// 		}
-// 	}
-// 	if tokenCfg == nil {
-// 		return big.NewInt(defaultMinQuoteAmount)
-// 	}
-// 	quoteAmountFlt, ok := new(big.Float).SetString(tokenCfg.MinQuoteAmount)
-// 	if !ok {
-// 		return big.NewInt(defaultMinQuoteAmount)
-// 	}
-// 	if quoteAmountFlt.Cmp(big.NewFloat(0)) <= 0 {
-// 		return big.NewInt(defaultMinQuoteAmount)
-// 	}
-
-// 	// Scale the minQuoteAmount by the token decimals.
-// 	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenCfg.Decimals)), nil)
-// 	quoteAmountScaled, _ := new(big.Float).Mul(quoteAmountFlt, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
-// 	return quoteAmountScaled
-// }
-
-// const defaultDeadlineBufferSeconds = 600
-
-// // GetDeadlineBuffer returns the deadline buffer for relaying a transaction.
-// func (c Config) GetDeadlineBuffer(chainID int) time.Duration {
-// 	deadlineBufferSeconds := defaultDeadlineBufferSeconds
-// 	if c.BaseDeadlineBufferSeconds > 0 {
-// 		deadlineBufferSeconds = c.BaseDeadlineBufferSeconds
-// 	}
-// 	chainCfg, ok := c.Chains[chainID]
-// 	if ok && chainCfg.DeadlineBufferSeconds > 0 {
-// 		deadlineBufferSeconds = chainCfg.DeadlineBufferSeconds
-// 	}
-// 	return time.Duration(deadlineBufferSeconds) * time.Second
-// }
+	// Scale the minQuoteAmount by the token decimals.
+	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenCfg.Decimals)), nil)
+	quoteAmountScaled, _ := new(big.Float).Mul(quoteAmountFlt, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
+	return quoteAmountScaled
+}
 
 // TODO: implement
 var defaultChainConfig = ChainConfig{}
@@ -347,6 +315,25 @@ func getFieldValue(obj interface{}, fieldName string) (interface{}, error) {
 	return fieldVal.Interface(), nil
 }
 
+func isNonZero(value interface{}) bool {
+	return reflect.ValueOf(value).Interface() != reflect.Zero(reflect.TypeOf(value)).Interface()
+}
+
+// GetDeadlineBufferSeconds returns the DeadlineBufferSeconds for the given chainID.
+func (c Config) GetDeadlineBufferSeconds(chainID int) (seconds time.Duration, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "DeadlineBufferSeconds")
+	if err != nil {
+		return seconds, err
+	}
+
+	value, ok := rawValue.(int)
+	if !ok {
+		return seconds, fmt.Errorf("failed to cast DeadlineBufferSeconds to int")
+	}
+	seconds = time.Duration(value) * time.Second
+	return seconds, nil
+}
+
 // GetOriginGasEstimate returns the OriginGasEstimate for the given chainID.
 func (c Config) GetOriginGasEstimate(chainID int) (value int, err error) {
 	rawValue, err := c.getChainConfigValue(chainID, "OriginGasEstimate")
@@ -361,8 +348,116 @@ func (c Config) GetOriginGasEstimate(chainID int) (value int, err error) {
 	return value, nil
 }
 
-func isNonZero(value interface{}) bool {
-	return reflect.ValueOf(value).Interface() != reflect.Zero(reflect.TypeOf(value)).Interface()
+// GetDestGasEstimate returns the DestGasEstimate for the given chainID.
+func (c Config) GetDestGasEstimate(chainID int) (value int, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "DestGasEstimate")
+	if err != nil {
+		return value, err
+	}
+
+	value, ok := rawValue.(int)
+	if !ok {
+		return value, fmt.Errorf("failed to cast DestGasEstimate to int")
+	}
+	return value, nil
+}
+
+// GetL1FeeChainID returns the L1FeeChainID for the given chainID.
+func (c Config) GetL1FeeChainID(chainID int) (value uint32, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "L1FeeChainID")
+	if err != nil {
+		return value, err
+	}
+
+	value, ok := rawValue.(uint32)
+	if !ok {
+		return value, fmt.Errorf("failed to cast L1FeeChainID to int")
+	}
+	return value, nil
+}
+
+// GetL1FeeOriginGasEstimate returns the L1FeeOriginGasEstimate for the given chainID.
+func (c Config) GetL1FeeOriginGasEstimate(chainID int) (value int, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "L1FeeOriginGasEstimate")
+	if err != nil {
+		return value, err
+	}
+
+	value, ok := rawValue.(int)
+	if !ok {
+		return value, fmt.Errorf("failed to cast L1FeeOriginGasEstimate to int")
+	}
+	return value, nil
+}
+
+// GetL1FeeDestGasEstimate returns the L1FeeDestGasEstimate for the given chainID.
+func (c Config) GetL1FeeDestGasEstimate(chainID int) (value int, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "L1FeeDestGasEstimate")
+	if err != nil {
+		return value, err
+	}
+
+	value, ok := rawValue.(int)
+	if !ok {
+		return value, fmt.Errorf("failed to cast L1FeeDestGasEstimate to int")
+	}
+	return value, nil
+}
+
+// GetMinGasToken returns the MinGasToken for the given chainID.
+func (c Config) GetMinGasToken(chainID int) (value string, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "MinGasToken")
+	if err != nil {
+		return value, err
+	}
+
+	value, ok := rawValue.(string)
+	if !ok {
+		return value, fmt.Errorf("failed to cast MinGasToken to int")
+	}
+	return value, nil
+}
+
+// GetQuotePct returns the QuotePct for the given chainID.
+func (c Config) GetQuotePct(chainID int) (value float64, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "QuotePct")
+	if err != nil {
+		return value, err
+	}
+
+	value, ok := rawValue.(float64)
+	if !ok {
+		return value, fmt.Errorf("failed to cast QuotePct to int")
+	}
+	return value, nil
+}
+
+// GetQuoteOffsetBps returns the QuoteOffsetBps for the given chainID.
+func (c Config) GetQuoteOffsetBps(chainID int) (value float64, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "QuoteOffsetBps")
+	if err != nil {
+		return value, err
+	}
+
+	value, ok := rawValue.(float64)
+	if !ok {
+		return value, fmt.Errorf("failed to cast QuoteOffsetBps to int")
+	}
+	return value, nil
+}
+
+// GetFixedFeeMultiplier returns the FixedFeeMultiplier for the given chainID.
+func (c Config) GetFixedFeeMultiplier(chainID int) (value float64, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "FixedFeeMultiplier")
+	if err != nil {
+		return value, err
+	}
+
+	value, ok := rawValue.(float64)
+	if !ok {
+		return value, fmt.Errorf("failed to cast FixedFeeMultiplier to int")
+	}
+	return value, nil
 }
 
 var _ IConfig = &Config{}
