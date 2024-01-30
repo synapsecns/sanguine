@@ -104,7 +104,7 @@ RUN \
 ENV PATH=${PATH}:/etc/musl/x86_64-linux-musl-native/bin:/etc/musl/aarch64-linux-musl-cross/bin:/usr/local/go/bin
 
 # Install node 20
-RUN apt-get install -y curl ca-certificates gnupg zip
+RUN apt-get install -y curl ca-certificates gnupg zip jq
 
 RUN mkdir -p /etc/apt/keyrings
 
