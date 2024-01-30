@@ -14,7 +14,7 @@ export const Receipt = ({ quote, send, receive }) => {
 
   return quote.outputAmount ? (
     <details className="text-sm text-right group">
-      <summary className="hover:bg-[--synapse-border] pl-2 pr-1 py-1 gap-1 rounded active:opacity-40 cursor-pointer list-none inline-flex items-center">
+      <summary className="hover:bg-[--synapse-select-border] pl-2 pr-1 py-1 gap-1 rounded active:opacity-40 cursor-pointer list-none inline-flex items-center">
         {estTime ? (
           <>
             {' '}
@@ -22,7 +22,7 @@ export const Receipt = ({ quote, send, receive }) => {
           </>
         ) : null}
       </summary>
-      <dl className="receipt mt-1 mb-0 p-2 text-sm rounded border border-solid border-[--synapse-border] grid grid-cols-[auto_auto] gap-0.5">
+      <dl className="receipt mt-1 mb-0 p-2 text-sm rounded border border-solid border-[--synapse-select-border] grid grid-cols-[auto_auto] gap-1">
         <dt className="text-left">Router</dt>
         <dd className="m-0 text-right justify-self-end">
           {quote?.bridgeModuleName}

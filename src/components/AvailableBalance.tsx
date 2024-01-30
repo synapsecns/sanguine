@@ -55,7 +55,7 @@ export const AvailableBalance = ({
       >
         Available {tokenBalance.parsedBalance ?? '0.0'}
       </div>
-      {!hasEnoughBalance && (
+      {tokenBalance.parsedBalance && !hasEnoughBalance && (
         <Tooltip
           hoverText="Amount may not exceed available balance"
           positionStyles="-right-1 -top-8"

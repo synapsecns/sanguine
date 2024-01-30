@@ -49,12 +49,14 @@ function App() {
         break
       case 'gmx':
         setCustomTheme({
-          bgColor: 'hsl(210deg 100% 20%',
-          '--synapse-root': 'hsl(237deg 54% 7%)',
-          '--synapse-surface': 'hsl(237deg 31% 13%)',
+          '--synapse-text': 'white',
+          '--synapse-secondary': '#ffffffb3',
+          '--synapse-root': '#16182e',
+          '--synapse-surface': 'linear-gradient(90deg, #1e223de6, #262b47e6)',
           '--synapse-border': 'transparent',
-          '--synapse-select-bg': 'transparent',
-          '--synapse-select-border': 'hsl(237deg 16% 24%)',
+          '--synapse-select-bg': 'hsl(231.5deg 32% 19.5%',
+          '--synapse-select-border': 'hsl(233deg 34% 34%)',
+          '--synapse-button-bg': '#2d42fc'
         })
         break
       case 'hercules':

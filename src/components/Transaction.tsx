@@ -113,9 +113,9 @@ export const Transaction = ({
       data-test-id="transaction"
       className={`
         flex flex-wrap-reverse gap-1 justify-end items-center pl-2.5 pr-1.5 py-1
-        bg-[--synapse-surface]
         border border-solid border-[--synapse-border] rounded-md
       `}
+      style={{background: 'var(--synapse-surface'}}
     >
       {isTxFinalized ? 'Complete' : 'Pending'}
       <div className="flex items-center justify-end gap-2 grow">

@@ -34,18 +34,21 @@ export function ChainPopoverSelect({
         className={`
           cursor-pointer flex px-2.5 py-1.5 gap-2 items-center rounded-[.1875rem]
           text-[--synapse-select-text]
-          bg-[--synapse-select-bg]
           border border-solid border-[--synapse-select-border]
           hover:border-[--synapse-focus]
           whitespace-nowrap
         `}
+        style={{background: 'var(--synapse-select-bg)'}}
         onClick={() => togglePopover()}
       >
         {selected?.name || 'Network'}
         <DownArrow />
       </div>
       {isOpen && (
-        <ul className="absolute z-50 mt-1 p-0 bg-[--synapse-surface] border border-solid border-[--synapse-border] rounded shadow popover text-left list-none overflow-y-auto max-h-60">
+        <ul
+          className="absolute z-50 mt-1 p-0 border border-solid border-[--synapse-select-border] rounded shadow popover text-left list-none overflow-y-auto max-h-60"
+          style={{background: 'var(--synapse-select-bg)'}}
+        >
           {options.map((option) => (
             <li
               key={option.id}
@@ -59,7 +62,12 @@ export function ChainPopoverSelect({
               {option?.name}
             </li>
           ))}
-          <div className="px-2.5 py-2 mt-2 text-sm text-[--synapse-secondary] cursor-default sticky top-0 bg-[--synapse-surface]">Other chains</div>
+          <div
+            className="px-2.5 py-2 mt-2 text-sm text-[--synapse-secondary] cursor-default sticky top-0"
+            style={{background: 'var(--synapse-select-bg)'}}
+          >
+            Other chains
+          </div>
           {remaining.map((option) => (
             <li
               key={option.id}

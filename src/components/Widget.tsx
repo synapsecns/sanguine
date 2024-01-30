@@ -355,7 +355,7 @@ export const Widget = ({
 
   const cardStyle = `
     grid grid-cols-[1fr_auto] 
-    bg-[--synapse-surface] rounded-md p-2 gap-1
+    rounded-md p-2 gap-1
     border border-solid border-[--synapse-border]
   `
 
@@ -370,12 +370,11 @@ export const Widget = ({
       className={`synapse-widget ${container && 'max-w-400px'}`}
     >
       <div
-        className={`
-        bg-[--synapse-root] grid gap-2 text-[--synapse-text] w-full ${containerStyle}
-        `}
+        className={`grid gap-2 text-[--synapse-text] w-full ${containerStyle}`}
+        style={{background: 'var(--synapse-root'}}
       >
         <Transactions connectedAddress={connectedAddress} />
-        <section className={cardStyle}>
+        <section className={cardStyle} style={{background: 'var(--synapse-surface)'}}>
           <ChainSelect
             label="From"
             isOrigin={true}

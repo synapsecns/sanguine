@@ -61,17 +61,20 @@ export function TokenPopoverSelect({
         className={`
           cursor-pointer flex px-2.5 py-1.5 gap-2 items-center rounded-[.1875rem]
           text-[--synapse-select-text]
-          bg-[--synapse-select-bg]
           border border-solid border-[--synapse-select-border]
           hover:border-[--synapse-focus]
         `}
+        style={{background: 'var(--synapse-select-bg)'}}
         onClick={() => togglePopover()}
       >
         {selected?.symbol || 'Token'}
         <DownArrow />
       </div>
       {isOpen && (
-        <ul className="absolute z-50 mt-1 p-0 bg-[--synapse-surface] border border-solid border-[--synapse-border] rounded shadow popover list-none right-0 overflow-y-auto max-h-80">
+        <ul
+          className="absolute z-50 mt-1 p-0 border border-solid border-[--synapse-select-border] rounded shadow popover list-none right-0 overflow-y-auto max-h-80"
+          style={{background: 'var(--synapse-select-bg)'}}
+        >
           {sortedOptionsWithBalances?.map((option: TokenBalance, index) => (
             <TokenOption
               option={option?.token}
@@ -81,7 +84,12 @@ export function TokenPopoverSelect({
               parsedBalance={option?.parsedBalance}
             />
           ))}
-          <div className="px-2.5 py-2 mt-2 text-sm text-[--synapse-secondary] cursor-default sticky top-0 bg-[--synapse-surface]">Other tokens</div>
+          <div
+            className="px-2.5 py-2 mt-2 text-sm text-[--synapse-secondary] cursor-default sticky top-0"
+            style={{background: 'var(--synapse-select-bg)'}}
+          >
+            Other tokens
+          </div>
           {sortedRemainingWithBalances?.map((option: TokenBalance, index) => (
             <TokenOption
               option={option?.token}
