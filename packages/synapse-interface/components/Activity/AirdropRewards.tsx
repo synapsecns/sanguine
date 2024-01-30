@@ -294,7 +294,7 @@ const RewardAmountDisplay = ({
   return (
     <div
       id="reward-amount-display"
-      className="flex items-center space-x-1.5 leading-none"
+      className="flex items-center space-x-1.5 leading-1"
     >
       <div className="text-white text-md">+${dollarAmount}</div>
       <div className="text-sm text-secondary">
