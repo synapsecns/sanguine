@@ -13,7 +13,7 @@
     "access": "public"
   },
   "scripts": {
-    "rollup-build-lib": "rollup -c --bundleConfigAsCjs",
+    "build": "rollup -c --bundleConfigAsCjs",
     "watch": "rollup -c -w --bundleConfigAsCjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
