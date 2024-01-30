@@ -439,12 +439,9 @@ func (s *STIPRelayer) CalculateTransferAmount(transaction *db.STIPTransactions) 
 		return nil, fmt.Errorf("token configuration not found for token %s", transaction.Token)
 	}
 
-	rebateInBPS := tokenConfig.Rebate
-
-	// Convert amountUSD to big.Float for precision during calculations
+	// Convert values to big.Float for precision during calculations
 	amountUSD := new(big.Float).SetFloat64(transaction.AmountUSD)
-
-	rebateBPS := new(big.Float).SetFloat64(float64(rebateInBPS))
+	rebateBPS := new(big.Float).SetFloat64(tokenConfig.RebateBps)
 
 	// Calculate rebate in USD (amountUSD * rebateBPS / 10000)
 	// Divide rebateBPS by 10000 to get the actual rebate rate
@@ -461,12 +458,11 @@ func (s *STIPRelayer) CalculateTransferAmount(transaction *db.STIPTransactions) 
 	// Multiply by 10^18 to get the value in wei (like params.Ether does)
 	transferAmountFloatWei := new(big.Float).Mul(transferAmountFloat, big.NewFloat(1e18))
 	transferAmount, _ := transferAmountFloatWei.Int(nil) // Truncate fractional part
-	// Check if transferAmount is greater than 750 ARB (750 * 10^18 wei)
-	// TODO: Change hard-coded safety limit
-	limit := big.NewInt(750)
+	// Check if transferAmount is greater than configured max ARB (MaxAmount * 10^18 wei)
+	limit := big.NewInt(s.cfg.ARBMaxTransfer)
 	limit = limit.Mul(limit, big.NewInt(1e18)) // Convert to wei
 	if transferAmount.Cmp(limit) > 0 {
-		return nil, fmt.Errorf("transfer amount exceeds the limit of 750 ARB")
+		return nil, fmt.Errorf("transfer amount exceeds the limit of %d ARB", s.cfg.ARBMaxTransfer)
 	}
 	// If you need to round to the nearest integer instead of truncating, use the following:
 	// transferAmount := new(big.Int)

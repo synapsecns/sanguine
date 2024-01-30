@@ -21,8 +21,8 @@ type DatabaseConfig struct {
 
 // FeeRebate represents the fee and rebate values.
 type FeeRebate struct {
-	Fee    int `yaml:"fee"`    // Fee is the cost that will be charged.
-	Rebate int `yaml:"rebate"` // Rebate is the amount that will be returned.
+	Fee       float64 `yaml:"fee"`        // Fee is the cost that will be charged.
+	RebateBps float64 `yaml:"rebate_bps"` // RebateBps is the amount that will be returned, in units of basis points.
 }
 
 // TokenFeeRebate is a map where the key is a string representing a token,
@@ -51,6 +51,7 @@ type Config struct {
 	DuneInterval    time.Duration          `yaml:"dune_interval"`
 	RebateInterval  time.Duration          `yaml:"rebate_interval"`
 	StipAPIPort     string                 `yaml:"stip_api_port"`
+	ARBMaxTransfer  int64                  `yaml:"ARB_max_transfer"`
 }
 
 // LoadConfig loads the config from the given path.
