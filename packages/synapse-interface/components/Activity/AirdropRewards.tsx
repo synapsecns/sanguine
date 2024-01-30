@@ -158,7 +158,7 @@ const RewardsDialog = ({
         id="rewards-dialog"
         ref={dialogRef}
         open={open}
-        className="absolute z-50 p-4 m-auto text-white border rounded-lg cursor-default bg-background w-96 border-separator"
+        className="absolute z-50 max-w-md p-4 m-auto text-white border rounded-lg cursor-default bg-background border-separator"
       >
         <div className="space-y-4">
           <div className="flex justify-between mb-2">
@@ -183,18 +183,20 @@ const RewardsDialog = ({
             for full route and rebate information.
           </p>
 
-          <div>
-            <div className="text-lg">Days remaining</div>
-            <div className="text-2xl">{calculateDaysUntilStipEnds()}</div>
-          </div>
-
-          <div>
-            <div className="text-lg text-greenText">Total Arb</div>
-            <div className="flex space-x-1">
-              <div className="text-2xl text-greenText">+{rewards}</div>
-              <div className="text-2xl text-secondary">
-                (${convertTokensToDollarValue(rewards, tokenPrice)})
+          <div className="flex flex-wrap-reverse">
+            <div className="min-w-1/2">
+              <div className="text-lg text-greenText">Total Arb</div>
+              <div className="flex space-x-1">
+                <div className="text-2xl text-greenText">+{rewards}</div>
+                <div className="text-2xl text-secondary">
+                  (${convertTokensToDollarValue(rewards, tokenPrice)})
+                </div>
               </div>
+            </div>
+
+            <div>
+              <div className="text-lg">Days remaining</div>
+              <div className="text-2xl">{calculateDaysUntilStipEnds()}</div>
             </div>
           </div>
 
