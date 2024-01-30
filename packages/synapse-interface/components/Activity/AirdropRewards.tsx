@@ -83,10 +83,10 @@ export const AirdropRewards = () => {
           />
 
           <div className="flex items-center space-x-2">
-            <div>Now - Mar 31</div>
+            <div>Now - Mar 29</div>
             <HoverContentIcon>
               <p>
-                Through Mar 31, ARB rewards are automatically
+                Through Mar 29, ARB rewards are automatically
                 <br />
                 applied to select routes to and from Arbitrum.
               </p>
@@ -167,7 +167,7 @@ const RewardsDialog = ({
           </div>
 
           <p>
-            Through Mar 31, ARB rewards are automatically applied to select
+            Through Mar 29, ARB rewards are automatically applied to select
             routes to and from Arbitrum.
           </p>
 
@@ -366,7 +366,7 @@ const convertTokensToDollarValue = (
 
 const calculateDaysUntilStipEnds = () => {
   const currentDate = new Date()
-  const targetDate = new Date('2024-03-31')
+  const targetDate = new Date('2024-03-29')
 
   const timeDifference = Number(targetDate) - Number(currentDate)
   const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24))
