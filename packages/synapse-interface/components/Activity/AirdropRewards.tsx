@@ -104,26 +104,31 @@ export const AirdropRewards = () => {
 
   const [open, setOpen] = useState<boolean>(false)
 
-  const handleToggle = () => setOpen(!open)
+  const handleToggle = () => {
+    console.log('getting clicked')
+    setOpen(!open)
+  }
   const handleClose = () => setOpen(false)
 
   return (
-    <div
-      id="airdrop-rewards"
-      className="flex items-center mb-2 border  cursor-pointer text-white border-greenText bg-[#0A381B]"
-      onClick={handleToggle}
-    >
-      <RewardsTitle icon={ARB.icon} />
-      <TransactionArrow className="stroke-greenText fill-transparent" />
-      <div className="flex justify-between flex-1 p-3">
-        <RewardAmountDisplay
-          symbol={ARB.symbol}
-          icon={ARB.icon}
-          tokenAmount={rewards}
-          dollarAmount={convertTokensToDollarValue(rewards, arbPrice)}
-        />
+    <>
+      <div
+        id="airdrop-rewards"
+        className="flex items-center mb-2 border  cursor-pointer text-white border-greenText bg-[#0A381B]"
+        onClick={handleToggle}
+      >
+        <RewardsTitle icon={ARB.icon} />
+        <TransactionArrow className="stroke-greenText fill-transparent" />
+        <div className="flex justify-between flex-1 p-3">
+          <RewardAmountDisplay
+            symbol={ARB.symbol}
+            icon={ARB.icon}
+            tokenAmount={rewards}
+            dollarAmount={convertTokensToDollarValue(rewards, arbPrice)}
+          />
 
-        <div>Now - Mar 31</div>
+          <div>Now - Mar 31</div>
+        </div>
       </div>
       <RewardsDialog
         open={open}
@@ -133,7 +138,7 @@ export const AirdropRewards = () => {
         rewards={rewards}
         tokenPrice={arbPrice}
       />
-    </div>
+    </>
   )
 }
 
