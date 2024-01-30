@@ -15,6 +15,8 @@ import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import TransactionArrow from '../icons/TransactionArrow'
 import arbitrumImg from '@assets/chains/arbitrum.svg'
 import { ArrowUpRightIcon } from '../icons/ArrowUpRightIcon'
+import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
+import { HoverContent } from '../Portfolio/PortfolioContent/SingleNetworkPortfolio'
 
 /** ARB Token */
 const ARB = {
@@ -80,7 +82,18 @@ export const AirdropRewards = () => {
             dollarAmount={convertTokensToDollarValue(rewards, arbPrice)}
           />
 
-          <div>Now - Mar 31</div>
+          <div className="flex items-center space-x-2">
+            <div>Now - Mar 31</div>
+            <HoverContentIcon>
+              <p>
+                Through Mar 31, ARB rewards are automatically
+                <br />
+                applied to select routes to and from Arbitrum.
+              </p>
+
+              <p>Click for more info.</p>
+            </HoverContentIcon>
+          </div>
         </div>
       </div>
       <RewardsDialog
@@ -287,6 +300,24 @@ const RewardAmountDisplay = ({
       <div className="text-sm text-secondary">
         ({tokenAmount} {symbol})
       </div>
+    </div>
+  )
+}
+
+export const HoverContentIcon = ({ children }) => {
+  const [isHovered, setIsHovered] = useState<boolean>(false)
+  return (
+    <div
+      id="hover-content-icon"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <QuestionMarkCircleIcon
+        className="w-5 h-5"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      />
+      <HoverContent isHovered={isHovered}>{children}</HoverContent>
     </div>
   )
 }
