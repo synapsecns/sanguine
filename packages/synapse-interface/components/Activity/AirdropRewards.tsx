@@ -214,7 +214,7 @@ const RewardsDialog = ({
             >
               here
             </Link>{' '}
-            for full route and rebate inforamtion.
+            for full route and rebate information.
           </p>
 
           <div className="flex text-left">
@@ -234,24 +234,24 @@ const RewardsDialog = ({
           </div>
 
           <AirdropTxHeader />
-          {_.isEmpty(transactions) ? (
-            <div className="text-center text-secondary">
-              Individual rebates will appear here
-            </div>
-          ) : (
-            transactions.map((transaction) => (
-              <AirdropTransaction
-                transactionHash={transaction.transactionHash}
-                tokenValue={parseTokenValue(
-                  transaction.transferValue,
-                  ARB.decimals
-                )} // TODO: Make dynamic so we do not hardcode decimals
-                tokenPrice={tokenPrice}
-                explorerUrl={ARB.explorerUrl}
-              />
-            ))
-          )}
         </div>
+        {_.isEmpty(transactions) ? (
+          <div className="h-64 pt-6 text-center text-secondary">
+            Individual rebates will appear here.
+          </div>
+        ) : (
+          transactions.map((transaction) => (
+            <AirdropTransaction
+              transactionHash={transaction.transactionHash}
+              tokenValue={parseTokenValue(
+                transaction.transferValue,
+                ARB.decimals
+              )} // TODO: Make dynamic so we do not hardcode decimals
+              tokenPrice={tokenPrice}
+              explorerUrl={ARB.explorerUrl}
+            />
+          ))
+        )}
       </dialog>
     </DialogWrapper>
   )
@@ -282,11 +282,11 @@ const AirdropTransaction = ({
   return (
     <div
       id="airdrop-transaction"
-      className="grid grid-cols-3 text-white hover:bg-tint"
+      className="grid grid-cols-3 py-1.5 text-white hover:bg-tint cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="text-greenText">+ {tokenValue} ARB</div>
+      <div className="text-greenText">+ {tokenValue}</div>
       <div>${convertTokensToDollarValue(tokenValue, tokenPrice)}</div>
       <Link
         href={getBlockExplorerTransactionLink({ explorerUrl, transactionHash })}
