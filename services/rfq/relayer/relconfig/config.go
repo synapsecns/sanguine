@@ -3,12 +3,10 @@ package relconfig
 
 import (
 	"fmt"
-	"math/big"
 	"os"
+	"reflect"
 	"strings"
-	"time"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/jftuga/ellipsis"
 	"github.com/synapsecns/sanguine/ethergo/signer/config"
 	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
@@ -24,6 +22,8 @@ import (
 type Config struct {
 	// Chains is a map of chainID -> chain config.
 	Chains map[int]ChainConfig `yaml:"bridges"`
+	// BaseChainConfig applies to all chains except those values that are overriden in Chains.
+	BaseChainConfig ChainConfig `yaml:"base_chain_config"`
 	// OmniRPCURL is the URL of the OmniRPC server.
 	OmniRPCURL string `yaml:"omnirpc_url"`
 	// RfqAPIURL is the URL of the RFQ API.
@@ -40,12 +40,6 @@ type Config struct {
 	SubmitterConfig submitterConfig.Config `yaml:"submitter_config"`
 	// FeePricer is the fee pricer config.
 	FeePricer FeePricerConfig `yaml:"fee_pricer"`
-	// MinGasToken is minimum amount of gas that should be leftover after bridging a gas token.
-	MinGasToken string `yaml:"min_gas_token"`
-	// QuotePct is the percent of balance to quote.
-	QuotePct float64 `yaml:"quote_pct"`
-	// QuoteOffsetBps is the number of basis points to deduct from the dest amount.
-	QuoteOffsetBps int `yaml:"quote_offset_bps"`
 	// ScreenerAPIUrl is the TRM API key.
 	ScreenerAPIUrl string `yaml:"screener_api_url"`
 	// BaseDeadlineBufferSeconds is the deadline buffer for relaying a transaction.
@@ -64,6 +58,24 @@ type ChainConfig struct {
 	NativeToken string `yaml:"native_token"`
 	// DeadlineBufferSeconds is the deadline buffer for relaying a transaction.
 	DeadlineBufferSeconds int `yaml:"deadline_buffer_seconds"`
+	// OriginGasEstimate is the gas estimate to use for origin transactions (this will override base gas estimates).
+	OriginGasEstimate int `yaml:"origin_gas_estimate"`
+	// DestGasEstimate is the gas estimate to use for destination transactions (this will override base gas estimates).
+	DestGasEstimate int `yaml:"dest_gas_estimate"`
+	// L1FeeChainID indicates the chain ID for the L1 fee (if needed, for example on optimism).
+	L1FeeChainID uint32 `yaml:"l1_fee_chain_id"`
+	// L1FeeOriginGasEstimate is the gas estimate for the L1 fee on origin.
+	L1FeeOriginGasEstimate int `yaml:"l1_fee_origin_gas_estimate"`
+	// L1FeeDestGasEstimate is the gas estimate for the L1 fee on destination.
+	L1FeeDestGasEstimate int `yaml:"l1_fee_dest_gas_estimate"`
+	// MinGasToken is minimum amount of gas that should be leftover after bridging a gas token.
+	MinGasToken string `yaml:"min_gas_token"`
+	// QuotePct is the percent of balance to quote.
+	QuotePct float64 `yaml:"quote_pct"`
+	// QuoteOffsetBps is the number of basis points to deduct from the dest amount.
+	QuoteOffsetBps int `yaml:"quote_offset_bps"`
+	// FixedFeeMultiplier is the multiplier for the fixed fee.
+	FixedFeeMultiplier float64 `yaml:"fixed_fee_multiplier"`
 }
 
 // TokenConfig represents the configuration for a token.
@@ -90,28 +102,10 @@ type FeePricerConfig struct {
 	BaseOriginGasEstimate int `yaml:"base_origin_gas_estimate"`
 	// BaseDestGasEstimate is the gas required to execute relay transaction on destination chain.
 	BaseDestGasEstimate int `yaml:"base_dest_gas_estimate"`
-	// FixedFeeMultiplier is the multiplier for the fixed fee.
-	FixedFeeMultiplier float64 `yaml:"fixed_fee_multiplier"`
 	// GasPriceCacheTTLSeconds is the TTL for the gas price cache.
 	GasPriceCacheTTLSeconds int `yaml:"gas_price_cache_ttl"`
 	// TokenPriceCacheTTLSeconds is the TTL for the token price cache.
 	TokenPriceCacheTTLSeconds int `yaml:"token_price_cache_ttl"`
-	// ChainFeeParams are parameters that correspond to specific chains.
-	ChainFeeParams map[uint32]ChainFeeParams `yaml:"chain_fee_params"`
-}
-
-// ChainFeeParams represents the chain fee params.
-type ChainFeeParams struct {
-	// OriginGasEstimate is the gas estimate to use for origin transactions (this will override base gas estimates).
-	OriginGasEstimate int `yaml:"origin_gas_estimate"`
-	// DestGasEstimate is the gas estimate to use for destination transactions (this will override base gas estimates).
-	DestGasEstimate int `yaml:"dest_gas_estimate"`
-	// L1FeeChainID indicates the chain ID for the L1 fee (if needed, for example on optimism).
-	L1FeeChainID uint32 `yaml:"l1_fee_chain_id"`
-	// L1FeeOriginGasEstimate is the gas estimate for the L1 fee on origin.
-	L1FeeOriginGasEstimate int `yaml:"l1_fee_origin_gas_estimate"`
-	// L1FeeDestGasEstimate is the gas estimate for the L1 fee on destination.
-	L1FeeDestGasEstimate int `yaml:"l1_fee_dest_gas_estimate"`
 }
 
 // LoadConfig loads the config from the given path.
@@ -230,147 +224,139 @@ func (c Config) GetTokenName(chain uint32, addr string) (string, error) {
 	return "", fmt.Errorf("no tokenName found for chain %d and address %s", chain, addr)
 }
 
-const defaultFixedFeeMultiplier = 1
-
-// GetFixedFeeMultiplier returns the fixed fee multiplier.
-func (c Config) GetFixedFeeMultiplier() float64 {
-	if c.FeePricer.FixedFeeMultiplier <= 0 {
-		return defaultFixedFeeMultiplier
-	}
-	return c.FeePricer.FixedFeeMultiplier
-}
-
-// GetMinGasToken returns the min gas token.
-func (c Config) GetMinGasToken() (*big.Int, error) {
-	if c.MinGasToken == "" {
-		return big.NewInt(0), nil
-	}
-	minGasToken, ok := new(big.Int).SetString(c.MinGasToken, 10)
+func (c Config) getChainConfig(chainID int) (ChainConfig, error) {
+	chainConfig, ok := c.Chains[chainID]
 	if !ok {
-		return nil, fmt.Errorf("could not parse min gas token %s", c.MinGasToken)
+		return ChainConfig{}, fmt.Errorf("no chain config for chain %d", chainID)
 	}
-	return minGasToken, nil
+	return chainConfig, nil
 }
 
-// GetChainFeeParams returns the chain fee params for the given chain.
-func (c Config) getChainFeeParams(chainID uint32) (ChainFeeParams, error) {
-	chainFeeParams, ok := c.FeePricer.ChainFeeParams[chainID]
-	if !ok {
-		return ChainFeeParams{}, fmt.Errorf("no chain fee params for chain %d", chainID)
-	}
-	return chainFeeParams, nil
-}
+// const defaultQuotePct = 100.
 
-// GetOriginGasEstimate returns the origin gas estimate for the given chain.
-func (c Config) GetOriginGasEstimate(chainID uint32) int {
-	gasEstimate := c.FeePricer.BaseOriginGasEstimate
-	chainFeeParams, err := c.getChainFeeParams(chainID)
-	if err != nil {
-		return gasEstimate
-	}
-	if chainFeeParams.OriginGasEstimate > 0 {
-		gasEstimate = chainFeeParams.OriginGasEstimate
-	}
-	return gasEstimate
-}
+// // GetQuotePct returns the quote percentage.
+// func (c Config) GetQuotePct() float64 {
+// 	if c.QuotePct <= 0 {
+// 		return defaultQuotePct
+// 	}
+// 	return c.QuotePct
+// }
 
-// GetDestGasEstimate returns the destination gas estimate for the given chain.
-func (c Config) GetDestGasEstimate(chainID uint32) int {
-	gasEstimate := c.FeePricer.BaseDestGasEstimate
-	chainFeeParams, err := c.getChainFeeParams(chainID)
-	if err != nil {
-		return gasEstimate
-	}
-	if chainFeeParams.DestGasEstimate > 0 {
-		gasEstimate = chainFeeParams.DestGasEstimate
-	}
-	return gasEstimate
-}
+// const defaultQuoteOffsetBps = 0
 
-// GetL1FeeParams returns the L1 fee params for the given chain.
-func (c Config) GetL1FeeParams(chainID uint32, origin bool) (uint32, int, bool) {
-	chainFeeParams, err := c.getChainFeeParams(chainID)
-	if err != nil {
-		return 0, 0, false
-	}
-	gasEstimate := chainFeeParams.L1FeeDestGasEstimate
-	if origin {
-		gasEstimate = chainFeeParams.L1FeeOriginGasEstimate
-	}
-	if chainFeeParams.L1FeeChainID <= 0 || gasEstimate <= 0 {
-		return 0, 0, false
-	}
-	return chainFeeParams.L1FeeChainID, gasEstimate, true
-}
+// // GetQuoteOffsetBps returns the quote offset in basis points.
+// func (c Config) GetQuoteOffsetBps() int {
+// 	if c.QuoteOffsetBps <= 0 {
+// 		return defaultQuoteOffsetBps
+// 	}
+// 	return c.QuoteOffsetBps
+// }
 
-const defaultQuotePct = 100.
+// const defaultMinQuoteAmount = 0
 
-// GetQuotePct returns the quote percentage.
-func (c Config) GetQuotePct() float64 {
-	if c.QuotePct <= 0 {
-		return defaultQuotePct
-	}
-	return c.QuotePct
-}
+// // GetMinQuoteAmount returns the quote amount for the given chain and address.
+// // Note that this getter returns the value in native token decimals.
+// func (c Config) GetMinQuoteAmount(chainID int, addr common.Address) *big.Int {
+// 	chainCfg, ok := c.Chains[chainID]
+// 	if !ok {
+// 		return big.NewInt(defaultMinQuoteAmount)
+// 	}
 
-const defaultQuoteOffsetBps = 0
+// 	var tokenCfg *TokenConfig
+// 	for _, cfg := range chainCfg.Tokens {
+// 		if strings.EqualFold(cfg.Address, addr.String()) {
+// 			cfgCopy := cfg
+// 			tokenCfg = &cfgCopy
+// 			break
+// 		}
+// 	}
+// 	if tokenCfg == nil {
+// 		return big.NewInt(defaultMinQuoteAmount)
+// 	}
+// 	quoteAmountFlt, ok := new(big.Float).SetString(tokenCfg.MinQuoteAmount)
+// 	if !ok {
+// 		return big.NewInt(defaultMinQuoteAmount)
+// 	}
+// 	if quoteAmountFlt.Cmp(big.NewFloat(0)) <= 0 {
+// 		return big.NewInt(defaultMinQuoteAmount)
+// 	}
 
-// GetQuoteOffsetBps returns the quote offset in basis points.
-func (c Config) GetQuoteOffsetBps() int {
-	if c.QuoteOffsetBps <= 0 {
-		return defaultQuoteOffsetBps
-	}
-	return c.QuoteOffsetBps
-}
+// 	// Scale the minQuoteAmount by the token decimals.
+// 	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenCfg.Decimals)), nil)
+// 	quoteAmountScaled, _ := new(big.Float).Mul(quoteAmountFlt, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
+// 	return quoteAmountScaled
+// }
 
-const defaultMinQuoteAmount = 0
+// const defaultDeadlineBufferSeconds = 600
 
-// GetMinQuoteAmount returns the quote amount for the given chain and address.
-// Note that this getter returns the value in native token decimals.
-func (c Config) GetMinQuoteAmount(chainID int, addr common.Address) *big.Int {
-	chainCfg, ok := c.Chains[chainID]
-	if !ok {
-		return big.NewInt(defaultMinQuoteAmount)
-	}
+// // GetDeadlineBuffer returns the deadline buffer for relaying a transaction.
+// func (c Config) GetDeadlineBuffer(chainID int) time.Duration {
+// 	deadlineBufferSeconds := defaultDeadlineBufferSeconds
+// 	if c.BaseDeadlineBufferSeconds > 0 {
+// 		deadlineBufferSeconds = c.BaseDeadlineBufferSeconds
+// 	}
+// 	chainCfg, ok := c.Chains[chainID]
+// 	if ok && chainCfg.DeadlineBufferSeconds > 0 {
+// 		deadlineBufferSeconds = chainCfg.DeadlineBufferSeconds
+// 	}
+// 	return time.Duration(deadlineBufferSeconds) * time.Second
+// }
 
-	var tokenCfg *TokenConfig
-	for _, cfg := range chainCfg.Tokens {
-		if strings.EqualFold(cfg.Address, addr.String()) {
-			cfgCopy := cfg
-			tokenCfg = &cfgCopy
-			break
+// TODO: implement
+var defaultChainConfig = ChainConfig{}
+
+// getChainConfigValue gets the value of a field from ChainConfig.
+// It returns the value from Chains[chainID] if non-zero,
+// else from BaseChainConfig if non-zero,
+// else from defaultChainConfig.
+func getChainConfigValue(config Config, chainID int, fieldName string) (interface{}, error) {
+	chainConfig, ok := config.Chains[chainID]
+	if ok {
+		value := getFieldValue(chainConfig, fieldName)
+		if isNonZero(value) {
+			return value, nil
 		}
 	}
-	if tokenCfg == nil {
-		return big.NewInt(defaultMinQuoteAmount)
-	}
-	quoteAmountFlt, ok := new(big.Float).SetString(tokenCfg.MinQuoteAmount)
-	if !ok {
-		return big.NewInt(defaultMinQuoteAmount)
-	}
-	if quoteAmountFlt.Cmp(big.NewFloat(0)) <= 0 {
-		return big.NewInt(defaultMinQuoteAmount)
+
+	baseValue := getFieldValue(config.BaseChainConfig, fieldName)
+	if isNonZero(baseValue) {
+		return baseValue, nil
 	}
 
-	// Scale the minQuoteAmount by the token decimals.
-	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenCfg.Decimals)), nil)
-	quoteAmountScaled, _ := new(big.Float).Mul(quoteAmountFlt, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
-	return quoteAmountScaled
+	defaultValue := getFieldValue(defaultChainConfig, fieldName)
+	if isNonZero(defaultValue) {
+		return defaultValue, nil
+	}
+	return nil, fmt.Errorf("unrecognized config field: %s", fieldName)
 }
 
-const defaultDeadlineBufferSeconds = 600
+func getFieldValue(obj interface{}, fieldName string) interface{} {
+	val := reflect.ValueOf(obj)
+	fieldVal := val.FieldByName(fieldName)
 
-// GetDeadlineBuffer returns the deadline buffer for relaying a transaction.
-func (c Config) GetDeadlineBuffer(chainID int) time.Duration {
-	deadlineBufferSeconds := defaultDeadlineBufferSeconds
-	if c.BaseDeadlineBufferSeconds > 0 {
-		deadlineBufferSeconds = c.BaseDeadlineBufferSeconds
+	if !fieldVal.IsValid() {
+		return nil
 	}
-	chainCfg, ok := c.Chains[chainID]
-	if ok && chainCfg.DeadlineBufferSeconds > 0 {
-		deadlineBufferSeconds = chainCfg.DeadlineBufferSeconds
+
+	return fieldVal.Interface()
+}
+
+// GetOriginGasEstimate returns the OriginGasEstimate for the given chainID.
+func GetOriginGasEstimate(config Config, chainID int) (value int, err error) {
+	rawValue, err := getChainConfigValue(config, chainID, "OriginGasEstimate")
+	if err != nil {
+		return value, err
 	}
-	return time.Duration(deadlineBufferSeconds) * time.Second
+
+	value, ok := rawValue.(int)
+	if !ok {
+		return value, fmt.Errorf("failed to cast OriginGasEstimate to int")
+	}
+	return value, nil
+}
+
+func isNonZero(value interface{}) bool {
+	return reflect.ValueOf(value).Interface() != reflect.Zero(reflect.TypeOf(value)).Interface()
 }
 
 var _ IConfig = &Config{}
