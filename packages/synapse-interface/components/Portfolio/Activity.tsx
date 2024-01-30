@@ -70,7 +70,9 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         </div>
       )}
 
-      <AirdropRewards />
+      {/* TODO: Update AirdropRewards to work for masquerade */}
+      {viewingAddress && <AirdropRewards />}
+
       {viewingAddress && !isLoading && hasHistoricalTransactions && (
         <ActivitySection title="Recent">
           {userHistoricalTransactions &&
