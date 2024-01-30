@@ -270,8 +270,15 @@ func (c Config) GetMinQuoteAmount(chainID int, addr common.Address) *big.Int {
 	return quoteAmountScaled
 }
 
-// TODO: implement
-var defaultChainConfig = ChainConfig{}
+var defaultChainConfig = ChainConfig{
+	DeadlineBufferSeconds: 600,
+	OriginGasEstimate:     160000,
+	DestGasEstimate:       100000,
+	MinGasToken:           "0",
+	QuotePct:              100,
+	QuoteOffsetBps:        0,
+	FixedFeeMultiplier:    1,
+}
 
 // getChainConfigValue gets the value of a field from ChainConfig.
 // It returns the value from Chains[chainID] if non-zero,
