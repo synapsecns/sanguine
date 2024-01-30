@@ -37,11 +37,11 @@ export const BridgeButton = ({
   }, [originChainId, provider])
 
   const buttonClassName = `
-    p-2 text-lg font-sans font-medium tracking-wide rounded-md w-full 
-    border border-solid border-[--synapse-button-border] 
-    hover:border-[--synapse-focus] disabled:hover:border-[--synapse-button-border] 
-    active:opacity-40 disabled:opacity-70 
-    text-[--synapse-button-text] disabled:text-[--synapse-secondary] 
+    p-2 text-lg font-sans font-medium tracking-wide rounded-md w-full
+    border border-solid border-[--synapse-button-border]
+    hover:border-[--synapse-focus] disabled:hover:border-[--synapse-button-border]
+    active:opacity-40 disabled:opacity-70
+    text-[--synapse-button-text] disabled:text-[--synapse-secondary]
     cursor-pointer disabled:cursor-not-allowed
   `
 
@@ -53,7 +53,11 @@ export const BridgeButton = ({
 
   if (!onSelectedChain) {
     return (
-      <button className={buttonClassName} style={buttonStyle} onClick={handleSwitchNetwork}>
+      <button
+        className={buttonClassName}
+        style={buttonStyle}
+        onClick={handleSwitchNetwork}
+      >
         Connect to {originChain?.name}
       </button>
     )
@@ -95,7 +99,8 @@ export const BridgeButton = ({
         <button
           disabled={isBridgePending}
           onClick={!isBridgePending ? handleBridge : () => null}
-          className={buttonClassName} style={buttonStyle}
+          className={buttonClassName}
+          style={buttonStyle}
         >
           {isBridgePending ? 'Confirm in Wallet' : 'Send'}
         </button>
@@ -107,7 +112,8 @@ export const BridgeButton = ({
           <button
             disabled={isApprovalPending}
             onClick={!isApprovalPending && handleApprove}
-            className={buttonClassName} style={buttonStyle}
+            className={buttonClassName}
+            style={buttonStyle}
           >
             {isApprovalPending ? 'Approve in Wallet' : 'Approve & Sign'}
           </button>
