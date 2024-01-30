@@ -344,7 +344,7 @@ const RewardAmountDisplay = ({
       className="flex items-center space-x-1.5 leading-none"
     >
       <div className="text-white text-md">+${dollarAmount}</div>
-      <div>
+      <div className="text-sm text-secondary">
         ({tokenAmount} {symbol})
       </div>
     </div>
