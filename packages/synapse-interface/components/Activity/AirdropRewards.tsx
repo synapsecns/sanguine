@@ -250,7 +250,7 @@ const AirdropTransaction = ({
     >
       <div className="text-greenText">+ {tokenValue}</div>
       <div>${convertTokensToDollarValue(tokenValue, tokenPrice)}</div>
-      <div className="flex items-center ml-auto text-right">
+      <div className="flex items-center ml-auto mr-4 text-right">
         {shortenAddress(transactionHash, 5)}
         {isHovered && (
           <ArrowUpRightIcon className="w-4 h-4 stroke-[3px] ml-1" />
@@ -265,7 +265,7 @@ const AirdropTxHeader = () => {
     <div className="grid grid-cols-3 text-white border-none">
       <div className="text-greenText">ARB</div>
       <div>Value</div>
-      <div className="text-right">Tx Hash</div>
+      <div className="mr-4 text-right">Tx Hash</div>
     </div>
   )
 }
