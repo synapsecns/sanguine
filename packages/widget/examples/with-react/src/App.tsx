@@ -56,7 +56,7 @@ function App() {
           '--synapse-border': 'transparent',
           '--synapse-select-bg': 'hsl(231.5deg 32% 19.5%',
           '--synapse-select-border': 'hsl(233deg 34% 34%)',
-          '--synapse-button-bg': '#2d42fc'
+          '--synapse-button-bg': '#2d42fc',
         })
         break
       case 'hercules':

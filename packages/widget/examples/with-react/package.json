@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@abtestingalpha/widget": "0.0.6",
+    "@abtestingalpha/widget": "file:../../dist/cjs",
     "@types/node": "^16.18.65",
     "@types/react": "^18.2.39",
     "@types/react-dom": "^18.2.17",
