@@ -93,6 +93,7 @@ func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 	s.manager.SetConfig(s.config)
 
 	quotes, err = s.manager.GenerateQuotes(s.GetTestContext(), int(s.destinationEth), chain.EthAddress, balance)
+	s.NoError(err)
 	s.Equal(quotes[0].DestAmount, "0")
 	s.Equal(quotes[0].MaxOriginAmount, "0")
 }
