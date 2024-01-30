@@ -70,9 +70,9 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
         </div>
       )}
 
+      <AirdropRewards />
       {viewingAddress && !isLoading && hasHistoricalTransactions && (
         <ActivitySection title="Recent">
-          <AirdropRewards />
           {userHistoricalTransactions &&
             filteredHistoricalTransactions
               .slice(0, isSearchInputActive ? 100 : 6)

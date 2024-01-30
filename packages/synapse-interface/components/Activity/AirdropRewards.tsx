@@ -130,6 +130,8 @@ export const AirdropRewards = () => {
         setOpen={setOpen}
         onClose={handleClose}
         transactions={transactions}
+        rewards={rewards}
+        tokenPrice={arbPrice}
       />
     </div>
   )
@@ -140,11 +142,15 @@ const RewardsDialog = ({
   setOpen,
   onClose,
   transactions,
+  rewards,
+  tokenPrice,
 }: {
   open: boolean
   setOpen: (value: React.SetStateAction<boolean>) => void
   onClose
   transactions: any[]
+  rewards
+  tokenPrice
 }) => {
   const dialogRef = useRef(null)
 
@@ -183,7 +189,12 @@ const RewardsDialog = ({
         <div className="flex text-left">
           <div className="w-1/2">
             <div className="text-greenText">Total Arb</div>
-            <div className="text-greenText">+0</div>
+            <div className="flex space-x-1">
+              <div className="text-greenText">+{rewards}</div>
+              <div className="text-secondary">
+                (${convertTokensToDollarValue(rewards, tokenPrice)})
+              </div>
+            </div>
           </div>
           <div className="w-1/2">
             <div>Days remaining</div>
@@ -200,8 +211,11 @@ const RewardsDialog = ({
           transactions.map((transaction) => (
             <AirdropTransaction
               transactionHash={transaction.transactionHash}
-              value={parseTokenValue(transaction.transferValue, ARB.decimals)} // TODO: Make dynamic so we do not hardcode decimals
-              blockNumber={transaction.blockNumber.toString()}
+              tokenValue={parseTokenValue(
+                transaction.transferValue,
+                ARB.decimals
+              )} // TODO: Make dynamic so we do not hardcode decimals
+              tokenPrice={tokenPrice}
               explorerUrl={ARB.explorerUrl}
             />
           ))
@@ -223,19 +237,19 @@ const AirdropTxHeader = () => {
 
 const AirdropTransaction = ({
   transactionHash,
-  value,
-  blockNumber,
+  tokenValue,
+  tokenPrice,
   explorerUrl,
 }: {
   transactionHash: string
-  value: string
-  blockNumber: string
+  tokenValue: string
+  tokenPrice: string | number
   explorerUrl: string
 }) => {
   return (
     <div className="grid grid-cols-3 text-white">
-      <div className="text-greenText">+ {value} ARB</div>
-      <div>${value}</div>
+      <div className="text-greenText">+ {tokenValue} ARB</div>
+      <div>${convertTokensToDollarValue(tokenValue, tokenPrice)}</div>
       <Link
         href={getBlockExplorerTransactionLink({ explorerUrl, transactionHash })}
         referrerPolicy="no-referrer"
@@ -284,19 +298,13 @@ const RewardAmountDisplay = ({
 }) => {
   return (
     <div
-      id="token-amount-display"
+      id="reward-amount-display"
       className="flex items-center space-x-1.5 leading-none"
     >
-      {/* <div className="text-sm">{symbol}</div> */}
       <div className="text-white text-md">+${dollarAmount}</div>
       <div>
         ({tokenAmount} {symbol})
       </div>
-      {/* <Image
-        src={icon}
-        alt={`${symbol} icon`}
-        className="w-5 h-5 rounded-full"
-      /> */}
     </div>
   )
 }
