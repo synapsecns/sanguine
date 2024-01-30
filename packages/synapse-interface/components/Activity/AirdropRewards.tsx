@@ -110,11 +110,11 @@ export const AirdropRewards = () => {
   return (
     <div
       id="airdrop-rewards"
-      className="flex items-center mb-2 border rounded-lg cursor-pointer text-secondary border-surface bg-background"
+      className="flex items-center mb-2 border rounded-lg cursor-pointer text-white border-greenText bg-[#0A381B]"
       onClick={handleOpen}
     >
       <RewardsTitle icon={ARB.icon} />
-      <TransactionArrow className="stroke-surface fill-transparent" />
+      <TransactionArrow className="stroke-greenText fill-transparent" />
       <div className="flex justify-between flex-1">
         <RewardAmountDisplay
           symbol={ARB.symbol}
