@@ -14,6 +14,7 @@ import { CloseButton } from '../StateManagedBridge/components/CloseButton'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import TransactionArrow from '../icons/TransactionArrow'
 import arbitrumImg from '@assets/chains/arbitrum.svg'
+import { ArrowUpRightIcon } from '../icons/ArrowUpRightIcon'
 
 /** ARB Token */
 const ARB = {
@@ -105,10 +106,12 @@ export const AirdropRewards = () => {
   const [open, setOpen] = useState<boolean>(false)
 
   const handleToggle = () => {
-    console.log('getting clicked')
     setOpen(!open)
   }
-  const handleClose = () => setOpen(false)
+
+  const handleClose = () => {
+    setOpen(false)
+  }
 
   return (
     <>
@@ -235,7 +238,7 @@ const AirdropTxHeader = () => {
     <div className="grid grid-cols-3 text-white border-none">
       <div className="text-greenText">ARB</div>
       <div>Value</div>
-      <div className="text-right">Tx Hash</div>
+      <div className="mr-4 text-right">Tx Hash</div>
     </div>
   )
 }
@@ -251,17 +254,26 @@ const AirdropTransaction = ({
   tokenPrice: string | number
   explorerUrl: string
 }) => {
+  const [isHovered, setIsHovered] = useState<boolean>(false)
   return (
-    <div className="grid grid-cols-3 text-white">
+    <div
+      id="airdrop-transaction"
+      className="grid grid-cols-3 text-white hover:bg-tint"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <div className="text-greenText">+ {tokenValue} ARB</div>
       <div>${convertTokensToDollarValue(tokenValue, tokenPrice)}</div>
       <Link
         href={getBlockExplorerTransactionLink({ explorerUrl, transactionHash })}
         referrerPolicy="no-referrer"
         target="_blank"
-        className="text-right"
+        className="flex items-center text-right"
       >
         {shortenAddress(transactionHash, 5)}
+        {isHovered && (
+          <ArrowUpRightIcon className="w-4 h-4 stroke-[3px] ml-1" />
+        )}
       </Link>
     </div>
   )
