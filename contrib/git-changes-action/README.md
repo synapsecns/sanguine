@@ -12,6 +12,7 @@ This GitHub Action exports a variable that contains the list of Go modules chang
     Check out the current pull request using the actions/checkout action. It's recommended to set fetch-depth to 0 and submodules to recursive to ensure that all necessary dependencies are fetched.
 
 
+
 ```yaml
     steps:
       - uses: actions/checkout@v4
