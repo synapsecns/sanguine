@@ -104,14 +104,14 @@ export const AirdropRewards = () => {
 
   const [open, setOpen] = useState<boolean>(false)
 
-  const handleOpen = () => setOpen(true)
+  const handleToggle = () => setOpen(!open)
   const handleClose = () => setOpen(false)
 
   return (
     <div
       id="airdrop-rewards"
       className="flex items-center mb-2 border  cursor-pointer text-white border-greenText bg-[#0A381B]"
-      onClick={handleOpen}
+      onClick={handleToggle}
     >
       <RewardsTitle icon={ARB.icon} />
       <TransactionArrow className="stroke-greenText fill-transparent" />
