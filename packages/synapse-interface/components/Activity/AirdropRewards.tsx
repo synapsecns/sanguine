@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import _ from 'lodash'
+import { useAppSelector } from '@/store/hooks'
 import { useState, useEffect, useRef } from 'react'
 import { Address, useAccount } from 'wagmi'
 import { arbitrum } from 'viem/chains'
@@ -69,6 +70,7 @@ export const AirdropRewards = () => {
   const [rewards, setRewards] = useState<string>('0')
   const [transactions, setTransactions] = useState<any[]>([])
   const { address: connectedAddress } = useAccount()
+  const { arbPrice } = useAppSelector((state) => state.priceData)
 
   const fetchStipAirdropRewards = async (address: Address) => {
     const { transactions, cumulativeRewards } = await getArbStipRewards(address)
@@ -104,15 +106,18 @@ export const AirdropRewards = () => {
       className="flex items-center mb-2 border rounded-lg cursor-pointer text-secondary border-surface bg-background"
       onClick={handleOpen}
     >
-      <div className="p-3 text-green-500">Rebate</div>
+      <RewardsTitle icon={ARB.icon} />
       <TransactionArrow className="stroke-surface fill-transparent" />
-      <div className="p-3">
-        <NetworkDisplay name={ARB.name} icon={ARB.icon} />
-        <TokenAmountDisplay
+      <div className="flex justify-between flex-1">
+        <RewardAmountDisplay
           symbol={ARB.symbol}
           icon={ARB.icon}
-          amount={`+ ${rewards}`}
+          tokenAmount={''}
+          dollarAmount={''}
+          // amount={`+ ${rewards}`}
         />
+
+        <div>Now - Mar 31</div>
       </div>
       <RewardsDialog
         open={open}
@@ -149,7 +154,7 @@ const RewardsDialog = ({
       <div className="space-y-4">
         <div className="flex justify-between mb-2">
           <div className="text-2xl">ARB Rewards</div>
-          <CloseButton onClick={null} />
+          <CloseButton onClick={onClose} />
         </div>
 
         <p>
@@ -161,6 +166,7 @@ const RewardsDialog = ({
           Click{' '}
           <Link
             href="https://synapse.mirror.xyz/NpzSkXDUlistuxNQaMwP6HQ9k2gVJsI-G1Y7-gaLxfQ"
+            target="_blank"
             className="underline text-blueText"
           >
             here
@@ -170,8 +176,8 @@ const RewardsDialog = ({
 
         <div className="flex text-left">
           <div className="w-1/2">
-            <div>Total Arb</div>
-            <div>+0</div>
+            <div className="text-greenText">Total Arb</div>
+            <div className="text-greenText">+0</div>
           </div>
           <div className="w-1/2">
             <div>Days remaining</div>
@@ -221,7 +227,9 @@ const AirdropTransaction = ({
   explorerUrl: string
 }) => {
   return (
-    <div className="flex justify-between text-white">
+    <div className="grid grid-cols-3 text-white">
+      <div className="text-greenText">+ {value} ARB</div>
+      <div>${value}</div>
       <Link
         href={getBlockExplorerTransactionLink({ explorerUrl, transactionHash })}
         referrerPolicy="no-referrer"
@@ -229,8 +237,6 @@ const AirdropTransaction = ({
       >
         {shortenAddress(transactionHash, 5)}
       </Link>
-      <div className="text-greenText">+ {value} ARB</div>
-      <div>{blockNumber}</div>
     </div>
   )
 }
@@ -246,36 +252,45 @@ export const getBlockExplorerTransactionLink = ({
   return `${explorerUrl}/tx/${transactionHash}`
 }
 
-const NetworkDisplay = ({ name, icon }: { name: string; icon: string }) => {
+const RewardsTitle = ({ icon }) => {
   return (
-    <div id="network-display" className="flex items-center space-x-1.5">
-      <Image src={icon} alt={`${name} icon`} className="w-4 h-4 rounded-full" />
-      <div className="text-md">{name}</div>
+    <div id="rewards-title" className="flex items-center space-x-1.5">
+      <Image
+        src={icon}
+        alt="reward chain icon"
+        className="w-4 h-4 rounded-full"
+      />
+      <div className="text-md">Rewards</div>
     </div>
   )
 }
 
-const TokenAmountDisplay = ({
+const RewardAmountDisplay = ({
   symbol,
   icon,
-  amount,
+  tokenAmount,
+  dollarAmount,
 }: {
   symbol: string
   icon: string
-  amount: string
+  tokenAmount: string
+  dollarAmount: string
 }) => {
   return (
     <div
       id="token-amount-display"
       className="flex items-center space-x-1.5 leading-none"
     >
-      <Image
+      {/* <div className="text-sm">{symbol}</div> */}
+      <div className="text-white text-md">+${dollarAmount}</div>
+      <div>
+        ({tokenAmount} {symbol})
+      </div>
+      {/* <Image
         src={icon}
         alt={`${symbol} icon`}
         className="w-5 h-5 rounded-full"
-      />
-      <div className="text-white text-md">{amount}</div>
-      <div className="text-sm">{symbol}</div>
+      /> */}
     </div>
   )
 }
