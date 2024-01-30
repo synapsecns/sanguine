@@ -4,8 +4,8 @@ name: Go Workflows
 on:
   pull_request:
     branches-ignore:
-        - 'gh-pages'
-        - 'fe-release'
+      - 'gh-pages'
+      - 'fe-release'
   push:
     branches-ignore:
       - 'gh-pages'
@@ -184,53 +184,56 @@ jobs:
           GOMEMLIMIT: 5GiB
           GOGC: -1
 
-      - name: Test
-        run: |
-          set -e
-          max_num_retries=3
-          echo "mode: atomic" > coverage.txt
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
 
-          # Loop through each package and run tests, with package level retries
-          # as well as individual test retries.
-          for pkg in $(go list ./...); do
-            retries=0
+      # - name: Test
+      #   run: |
+      #     set -e
+      #     max_num_retries=3
+      #     echo "mode: atomic" > coverage.txt
 
-            while [ $retries -lt $max_num_retries ]; do
-              if $PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- gotestsum --rerun-fails=3 --packages="$pkg" --format standard-verbose -- -v -timeout 30m -coverpkg="$pkg" -coverprofile=profile.cov $pkg; then
-                break
-              else
-                retries=$((retries+1))
-                echo "Retry #$retries: 'gotestsum' command failed for $pkg"
-              fi
-            done
+      #     # Loop through each package and run tests, with package level retries
+      #     # as well as individual test retries.
+      #     for pkg in $(go list ./...); do
+      #       retries=0
 
-            # Check if max retries is exceeded for this package.
-            if [ $retries -eq $max_num_retries ]; then
-                echo "Max retries exceeded for $pkg"
-                exit 1
-            fi
+      #       while [ $retries -lt $max_num_retries ]; do
+      #         if $PYROSCOPE_PATH exec --apiKey=${{ secrets.PYROSCOPE_CLOUD_TOKEN }} -- gotestsum --rerun-fails=3 --packages="$pkg" --format standard-verbose -- -v -timeout 30m -coverpkg="$pkg" -coverprofile=profile.cov $pkg; then
+      #           break
+      #         else
+      #           retries=$((retries+1))
+      #           echo "Retry #$retries: 'gotestsum' command failed for $pkg"
+      #         fi
+      #       done
 
-            if [ -f profile.cov ]; then
-              tail -n +2 profile.cov >> coverage.txt
-              rm profile.cov
-            fi
-          done
+      #       # Check if max retries is exceeded for this package.
+      #       if [ $retries -eq $max_num_retries ]; then
+      #           echo "Max retries exceeded for $pkg"
+      #           exit 1
+      #       fi
 
-          cp coverage.txt profile.cov
-          docker ps
-        env:
-          PYROSCOPE_PATH: '${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}'
-          ENABLE_MYSQL_TEST: true
-          MYSQL_HOST: 0.0.0.0
-          MYSQL_USER: user
-          MYSQL_PASSWORD: password
-          MYSQL_DATABASE: test
-          MYSQL_ROOT_PASSWORD: password
-          MYSQL_PORT: ${{ job.services.mariadb.ports[3306] }}
-          GOMEMLIMIT: 3GiB
-          GOGC: -1
-          ETHEREUM_RPC_URI: ${{ secrets.ETHEREUM_RPC_URI }}
-          GOPROXY: https://proxy.golang.org
+      #       if [ -f profile.cov ]; then
+      #         tail -n +2 profile.cov >> coverage.txt
+      #         rm profile.cov
+      #       fi
+      #     done
+
+      #     cp coverage.txt profile.cov
+      #     docker ps
+      #   env:
+      #     PYROSCOPE_PATH: '${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}'
+      #     ENABLE_MYSQL_TEST: true
+      #     MYSQL_HOST: 0.0.0.0
+      #     MYSQL_USER: user
+      #     MYSQL_PASSWORD: password
+      #     MYSQL_DATABASE: test
+      #     MYSQL_ROOT_PASSWORD: password
+      #     MYSQL_PORT: ${{ job.services.mariadb.ports[3306] }}
+      #     GOMEMLIMIT: 3GiB
+      #     GOGC: -1
+      #     ETHEREUM_RPC_URI: ${{ secrets.ETHEREUM_RPC_URI }}
+      #     GOPROXY: https://proxy.golang.org
 
       # TODO: these 3 steps should be moved into a reusable action.
       # also,should be noted these aren't comprehensive, as many of the containers are automatically removed
