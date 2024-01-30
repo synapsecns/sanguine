@@ -166,7 +166,7 @@ const RewardsDialog = ({
       id="rewards-dialog"
       ref={dialogRef}
       open={open}
-      className="fixed top-[40%] z-10 p-4 text-white border rounded-lg bg-background w-96 border-separator cursor-default"
+      className="fixed top-[40%] z-50 p-4 text-white border rounded-lg bg-background w-96 border-separator cursor-default"
     >
       <div className="space-y-4">
         <div className="flex justify-between mb-2">
@@ -193,17 +193,17 @@ const RewardsDialog = ({
 
         <div className="flex text-left">
           <div className="w-1/2">
-            <div className="text-greenText">Total Arb</div>
+            <div className="text-lg text-greenText">Total Arb</div>
             <div className="flex space-x-1">
-              <div className="text-greenText">+{rewards}</div>
-              <div className="text-secondary">
+              <div className="text-2xl text-greenText">+{rewards}</div>
+              <div className="text-2xl text-secondary">
                 (${convertTokensToDollarValue(rewards, tokenPrice)})
               </div>
             </div>
           </div>
           <div className="w-1/2">
-            <div>Days remaining</div>
-            <div>-</div>
+            <div className="text-lg">Days remaining</div>
+            <div className="text-2xl">{calculateDaysUntilStipEnds()}</div>
           </div>
         </div>
 
@@ -235,7 +235,7 @@ const AirdropTxHeader = () => {
     <div className="grid grid-cols-3 text-white border-none">
       <div className="text-greenText">ARB</div>
       <div>Value</div>
-      <div>Tx Hash</div>
+      <div className="text-right">Tx Hash</div>
     </div>
   )
 }
@@ -259,6 +259,7 @@ const AirdropTransaction = ({
         href={getBlockExplorerTransactionLink({ explorerUrl, transactionHash })}
         referrerPolicy="no-referrer"
         target="_blank"
+        className="text-right"
       >
         {shortenAddress(transactionHash, 5)}
       </Link>
@@ -312,4 +313,16 @@ const RewardAmountDisplay = ({
       </div>
     </div>
   )
+}
+
+const calculateDaysUntilStipEnds = () => {
+  const currentDate = new Date()
+
+  const targetDate = new Date('2024-03-31')
+
+  const timeDifference = Number(targetDate) - Number(currentDate)
+
+  const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24))
+
+  return daysDifference
 }
