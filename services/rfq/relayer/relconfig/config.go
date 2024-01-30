@@ -101,10 +101,6 @@ type DatabaseConfig struct {
 
 // FeePricerConfig represents the configuration for the fee pricer.
 type FeePricerConfig struct {
-	// BaseOriginGasEstimate is the gas required to execute prove + claim transactions on origin chain.
-	BaseOriginGasEstimate int `yaml:"base_origin_gas_estimate"`
-	// BaseDestGasEstimate is the gas required to execute relay transaction on destination chain.
-	BaseDestGasEstimate int `yaml:"base_dest_gas_estimate"`
 	// GasPriceCacheTTLSeconds is the TTL for the gas price cache.
 	GasPriceCacheTTLSeconds int `yaml:"gas_price_cache_ttl"`
 	// TokenPriceCacheTTLSeconds is the TTL for the token price cache.
@@ -469,7 +465,33 @@ func (c Config) GetFixedFeeMultiplier(chainID int) (value float64, err error) {
 	if !ok {
 		return value, fmt.Errorf("failed to cast FixedFeeMultiplier to int")
 	}
+	if value <= 0 {
+		value = defaultChainConfig.FixedFeeMultiplier
+	}
 	return value, nil
+}
+
+// GetL1FeeParams returns the L1 fee params for the given chain.
+func (c Config) GetL1FeeParams(chainID uint32, origin bool) (uint32, int, bool) {
+	var gasEstimate int
+	var err error
+	if origin {
+		gasEstimate, err = c.GetL1FeeOriginGasEstimate(int(chainID))
+		if err != nil {
+			return 0, 0, false
+		}
+	} else {
+		gasEstimate, err = c.GetL1FeeDestGasEstimate(int(chainID))
+		if err != nil {
+			return 0, 0, false
+		}
+	}
+
+	l1FeeChainID, err := c.GetL1FeeChainID(int(chainID))
+	if err != nil || l1FeeChainID <= 0 || gasEstimate <= 0 {
+		return 0, 0, false
+	}
+	return l1FeeChainID, gasEstimate, true
 }
 
 var _ IConfig = &Config{}

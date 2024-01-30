@@ -11,7 +11,6 @@ import (
 	clientMocks "github.com/synapsecns/sanguine/ethergo/client/mocks"
 	fetcherMocks "github.com/synapsecns/sanguine/ethergo/submitter/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 )
 
 func (s *PricerSuite) TestGetOriginFee() {
@@ -52,13 +51,11 @@ func (s *PricerSuite) TestGetOriginFee() {
 func (s *PricerSuite) TestGetOriginFeeWithOverrides() {
 	// Set chain fee overrides.
 	l1ChainID := uint32(1)
-	s.config.FeePricer.ChainFeeParams[s.origin] = relconfig.ChainFeeParams{
-		OriginGasEstimate:      5_000_000,
-		DestGasEstimate:        10_000_000,
-		L1FeeChainID:           l1ChainID,
-		L1FeeOriginGasEstimate: 1_000_000,
-		L1FeeDestGasEstimate:   2_000_000,
-	}
+	s.config.BaseChainConfig.OriginGasEstimate = 5_000_000
+	s.config.BaseChainConfig.DestGasEstimate = 10_000_000
+	s.config.BaseChainConfig.L1FeeChainID = l1ChainID
+	s.config.BaseChainConfig.L1FeeOriginGasEstimate = 1_000_000
+	s.config.BaseChainConfig.L1FeeDestGasEstimate = 2_000_000
 
 	// Build a new FeePricer with a mocked client for fetching gas price.
 	clientFetcher := new(fetcherMocks.ClientFetcher)
@@ -137,13 +134,11 @@ func (s *PricerSuite) TestGetDestinationFee() {
 func (s *PricerSuite) TestGetDestinationFeeWithOverrides() {
 	// Set chain fee overrides.
 	l1ChainID := uint32(1)
-	s.config.FeePricer.ChainFeeParams[s.destination] = relconfig.ChainFeeParams{
-		OriginGasEstimate:      5_000_000,
-		DestGasEstimate:        10_000_000,
-		L1FeeChainID:           l1ChainID,
-		L1FeeOriginGasEstimate: 1_000_000,
-		L1FeeDestGasEstimate:   2_000_000,
-	}
+	s.config.BaseChainConfig.OriginGasEstimate = 5_000_000
+	s.config.BaseChainConfig.DestGasEstimate = 10_000_000
+	s.config.BaseChainConfig.L1FeeChainID = l1ChainID
+	s.config.BaseChainConfig.L1FeeOriginGasEstimate = 1_000_000
+	s.config.BaseChainConfig.L1FeeDestGasEstimate = 2_000_000
 
 	// Build a new FeePricer with a mocked client for fetching gas price.
 	clientFetcher := new(fetcherMocks.ClientFetcher)
@@ -244,7 +239,7 @@ func (s *PricerSuite) TestGetGasPrice() {
 
 func (s *PricerSuite) TestGetTotalFeeWithMultiplier() {
 	// Override the fixed fee multiplier to greater than 1.
-	s.config.FeePricer.FixedFeeMultiplier = 2
+	s.config.BaseChainConfig.FixedFeeMultiplier = 2
 
 	// Build a new FeePricer with a mocked client for fetching gas price.
 	clientFetcher := new(fetcherMocks.ClientFetcher)
@@ -268,7 +263,7 @@ func (s *PricerSuite) TestGetTotalFeeWithMultiplier() {
 	s.Equal(expectedFee, fee)
 
 	// Override the fixed fee multiplier to less than 1; should default to 1.
-	s.config.FeePricer.FixedFeeMultiplier = -1
+	s.config.BaseChainConfig.FixedFeeMultiplier = -1
 
 	// Build a new FeePricer with a mocked client for fetching gas price.
 	clientOrigin.On(testsuite.GetFunctionName(clientOrigin.HeaderByNumber), mock.Anything, mock.Anything).Once().Return(headerOrigin, nil)
@@ -287,7 +282,7 @@ func (s *PricerSuite) TestGetTotalFeeWithMultiplier() {
 	s.Equal(expectedFee, fee)
 
 	// Reset the fixed fee multiplier to zero; should default to 1
-	s.config.FeePricer.FixedFeeMultiplier = 0
+	s.config.BaseChainConfig.FixedFeeMultiplier = 0
 
 	// Build a new FeePricer with a mocked client for fetching gas price.
 	clientOrigin.On(testsuite.GetFunctionName(clientOrigin.HeaderByNumber), mock.Anything, mock.Anything).Once().Return(headerOrigin, nil)
