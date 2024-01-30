@@ -322,8 +322,8 @@ func isNonZero(value interface{}) bool {
 	return reflect.ValueOf(value).Interface() != reflect.Zero(reflect.TypeOf(value)).Interface()
 }
 
-// GetDeadlineBufferSeconds returns the DeadlineBufferSeconds for the given chainID.
-func (c Config) GetDeadlineBufferSeconds(chainID int) (seconds time.Duration, err error) {
+// GetDeadlineBuffer returns the DeadlineBuffer for the given chainID.
+func (c Config) GetDeadlineBuffer(chainID int) (seconds time.Duration, err error) {
 	rawValue, err := c.getChainConfigValue(chainID, "DeadlineBufferSeconds")
 	if err != nil {
 		return seconds, err
