@@ -180,31 +180,27 @@ const RewardsDialog = ({
         </div>
       </div>
 
-      {_.isEmpty(transactions) ? (
-        <div>No rewards found.</div>
-      ) : (
-        <div>
-          <RewardsHeader />
-          {transactions.map((transaction) => (
-            <AirdropTransaction
-              transactionHash={transaction.transactionHash}
-              value={parseTokenValue(transaction.transferValue, ARB.decimals)} // TODO: Make dynamic so we do not hardcode decimals
-              blockNumber={transaction.blockNumber.toString()}
-              explorerUrl={ARB.explorerUrl}
-            />
-          ))}
-        </div>
-      )}
+      <div>
+        <AirdropTxHeader />
+        {transactions.map((transaction) => (
+          <AirdropTransaction
+            transactionHash={transaction.transactionHash}
+            value={parseTokenValue(transaction.transferValue, ARB.decimals)} // TODO: Make dynamic so we do not hardcode decimals
+            blockNumber={transaction.blockNumber.toString()}
+            explorerUrl={ARB.explorerUrl}
+          />
+        ))}
+      </div>
     </dialog>
   )
 }
 
-const RewardsHeader = () => {
+const AirdropTxHeader = () => {
   return (
-    <div className="flex justify-between text-white">
-      <div>Transaction</div>
-      <div>Amount</div>
-      <div>Block Number</div>
+    <div className="grid grid-cols-3 text-white border-none">
+      <div className="text-greenText">ARB</div>
+      <div>Value</div>
+      <div>Tx Hash</div>
     </div>
   )
 }
