@@ -2,8 +2,11 @@ package pricer
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"math/big"
+	"net/http"
 	"time"
 
 	"github.com/jellydator/ttlcache/v3"
@@ -40,7 +43,11 @@ type feePricer struct {
 	clientFetcher submitter.ClientFetcher
 	// handler is the metrics handler.
 	handler metrics.Handler
+	// client is a http client.
+	client *http.Client
 }
+
+const httpTimeoutMs = 1000
 
 // NewFeePricer creates a new fee pricer.
 func NewFeePricer(config relconfig.Config, clientFetcher submitter.ClientFetcher, handler metrics.Handler) FeePricer {
@@ -54,6 +61,7 @@ func NewFeePricer(config relconfig.Config, clientFetcher submitter.ClientFetcher
 		tokenPriceCache: ttlcache.New[string, *big.Int](ttlcache.WithTTL[string, *big.Int](time.Second * time.Duration(config.GetFeePricer().TokenPriceCacheTTLSeconds))),
 		clientFetcher:   clientFetcher,
 		handler:         handler,
+		client:          &http.Client{Timeout: time.Duration(httpTimeoutMs) * time.Millisecond},
 	}
 }
 
@@ -282,6 +290,55 @@ func (f *feePricer) GetGasPrice(ctx context.Context, chainID uint32) (*big.Int, 
 
 // getTokenPrice returns the price of a token in USD.
 func (f *feePricer) getTokenPrice(ctx context.Context, token string) (float64, error) {
+	// try to get price from coingecko
+	price, err := f.getTokenPriceFromCoingecko(ctx, token)
+	if err != nil {
+		// fallback to configured token price
+		price, err = f.getTokenPriceFromConfig(token)
+	}
+	return price, err
+}
+
+var coingeckoIDLookup = map[string]string{
+	"ETH": "ethereum",
+}
+
+func (f *feePricer) getTokenPriceFromCoingecko(ctx context.Context, token string) (float64, error) {
+	coingeckoID, ok := coingeckoIDLookup[token]
+	if !ok {
+		return 0, fmt.Errorf("could not get coingecko id for token: %s", token)
+	}
+	url := fmt.Sprintf("https://api.coingecko.com/api/v3/simple/price?ids=%s&vs_currencies=USD", coingeckoID)
+
+	// fetch price from coingecko
+	r, err := f.client.Get(url)
+	if err != nil {
+		return 0, fmt.Errorf("could not get price from coingecko: %w", err)
+	}
+	if r.StatusCode != http.StatusOK {
+		return 0, fmt.Errorf("bad status code fetching price from coingecko: %v", r.Status)
+	}
+	defer r.Body.Close()
+
+	respBytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		return 0, fmt.Errorf("could not read response body: %w", err)
+	}
+
+	// parse the price
+	var resp map[string]map[string]float64
+	err = json.Unmarshal(respBytes, &resp)
+	if err != nil {
+		return 0, fmt.Errorf("could not unmarshal response body: %w", err)
+	}
+	price, ok := resp[coingeckoID]["usd"]
+	if !ok {
+		return 0, fmt.Errorf("could not get price from coingecko response: %v", resp)
+	}
+	return price, nil
+}
+
+func (f *feePricer) getTokenPriceFromConfig(token string) (float64, error) {
 	for _, chainConfig := range f.config.GetChains() {
 		for tokenName, tokenConfig := range chainConfig.Tokens {
 			if token == tokenName {
