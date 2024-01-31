@@ -152,6 +152,8 @@ const RewardsDialog = ({
 
   useCloseOnOutsideClick(dialogRef, onClose)
 
+  const maxHeight = window.innerHeight > 768 ? 300 : 200
+
   return (
     <DialogWrapper open={open}>
       <dialog
@@ -207,7 +209,7 @@ const RewardsDialog = ({
             Individual rebates will appear here.
           </div>
         ) : (
-          <div className="overflow-y-scroll max-h-72">
+          <div className={`overflow-y-scroll`} style={{ maxHeight: maxHeight }}>
             {transactions.map((transaction) => (
               <AirdropTransaction
                 transactionHash={transaction.transactionHash}
