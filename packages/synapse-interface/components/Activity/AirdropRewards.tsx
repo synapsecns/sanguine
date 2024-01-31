@@ -250,13 +250,17 @@ const AirdropTransaction = ({
       onMouseLeave={() => setIsHovered(false)}
       className="grid grid-cols-3 py-1.5 text-primary hover:bg-tint cursor-pointer"
     >
-      <div className="text-greenText">+ {tokenValue}</div>
+      <div className="ml-1 text-greenText">+{tokenValue}</div>
+
       <div>${convertTokensToDollarValue(tokenValue, tokenPrice)}</div>
-      <div className="flex items-center ml-auto mr-4 text-right">
-        {shortenAddress(transactionHash, 5)}
-        {isHovered && (
-          <ArrowUpRightIcon className="w-4 h-4 stroke-[3px] ml-1" />
-        )}
+
+      <div className="flex items-center ml-auto text-right">
+        <div>{shortenAddress(transactionHash, 5)}</div>
+        <div className="w-6">
+          {isHovered && (
+            <ArrowUpRightIcon className="w-4 h-4 stroke-[3px] ml-1" />
+          )}
+        </div>
       </div>
     </Link>
   )
@@ -265,9 +269,9 @@ const AirdropTransaction = ({
 const AirdropTxHeader = () => {
   return (
     <div className="grid grid-cols-3 border-none text-primary">
-      <div className="text-greenText">ARB</div>
+      <div className="ml-1 text-greenText">ARB</div>
       <div>Value</div>
-      <div className="mr-4 text-right">Tx Hash</div>
+      <div className="mr-3 text-right">Tx Hash</div>
     </div>
   )
 }
