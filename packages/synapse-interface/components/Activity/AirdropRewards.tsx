@@ -391,10 +391,10 @@ const convertTokensToDollarValue = (
 
 const calculateDaysUntilStipEnds = () => {
   const currentDate = new Date()
-  const targetDate = new Date('2024-03-29')
+  const targetDate = new Date('2024-03-30')
 
   const timeDifference = Number(targetDate) - Number(currentDate)
-  const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24))
+  const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24)) + 1 // account for leap year
 
   return daysDifference
 }
