@@ -2,11 +2,8 @@ package pricer
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
 	"math/big"
-	"net/http"
 	"time"
 
 	"github.com/jellydator/ttlcache/v3"
@@ -43,8 +40,8 @@ type feePricer struct {
 	clientFetcher submitter.ClientFetcher
 	// handler is the metrics handler.
 	handler metrics.Handler
-	// client is a http client.
-	client *http.Client
+	// priceFetcher is used to fetch prices from coingecko.
+	priceFetcher CoingeckoPriceFetcher
 }
 
 const httpTimeoutMs = 1000
@@ -65,7 +62,7 @@ func NewFeePricer(config relconfig.Config, clientFetcher submitter.ClientFetcher
 		tokenPriceCache: tokenPriceCache,
 		clientFetcher:   clientFetcher,
 		handler:         handler,
-		client:          &http.Client{Timeout: time.Duration(httpTimeoutMs) * time.Millisecond},
+		priceFetcher:    newCoingeckoPriceFetcher(httpTimeoutMs),
 	}
 }
 
@@ -298,7 +295,7 @@ func (f *feePricer) getTokenPrice(ctx context.Context, token string) (price floa
 	tokenPriceItem := f.tokenPriceCache.Get(token)
 	if tokenPriceItem == nil {
 		// Try to get price from coingecko.
-		price, err = f.getTokenPriceFromCoingecko(ctx, token)
+		price, err = f.priceFetcher.GetPrice(ctx, token)
 		if err == nil {
 			f.tokenPriceCache.Set(token, price, 0)
 		} else {
@@ -310,45 +307,6 @@ func (f *feePricer) getTokenPrice(ctx context.Context, token string) (price floa
 		}
 	} else {
 		price = tokenPriceItem.Value()
-	}
-	return price, nil
-}
-
-var coingeckoIDLookup = map[string]string{
-	"ETH": "ethereum",
-}
-
-func (f *feePricer) getTokenPriceFromCoingecko(ctx context.Context, token string) (float64, error) {
-	coingeckoID, ok := coingeckoIDLookup[token]
-	if !ok {
-		return 0, fmt.Errorf("could not get coingecko id for token: %s", token)
-	}
-	url := fmt.Sprintf("https://api.coingecko.com/api/v3/simple/price?ids=%s&vs_currencies=USD", coingeckoID)
-
-	// fetch price from coingecko
-	r, err := f.client.Get(url)
-	if err != nil {
-		return 0, fmt.Errorf("could not get price from coingecko: %w", err)
-	}
-	if r.StatusCode != http.StatusOK {
-		return 0, fmt.Errorf("bad status code fetching price from coingecko: %v", r.Status)
-	}
-	defer r.Body.Close()
-
-	respBytes, err := io.ReadAll(r.Body)
-	if err != nil {
-		return 0, fmt.Errorf("could not read response body: %w", err)
-	}
-
-	// parse the price
-	var resp map[string]map[string]float64
-	err = json.Unmarshal(respBytes, &resp)
-	if err != nil {
-		return 0, fmt.Errorf("could not unmarshal response body: %w", err)
-	}
-	price, ok := resp[coingeckoID]["usd"]
-	if !ok {
-		return 0, fmt.Errorf("could not get price from coingecko response: %v", resp)
 	}
 	return price, nil
 }
