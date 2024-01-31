@@ -394,7 +394,7 @@ const calculateDaysUntilStipEnds = () => {
   const targetDate = new Date('2024-03-30')
 
   const timeDifference = Number(targetDate) - Number(currentDate)
-  const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24)) + 1 // account for leap year
+  const daysDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24))
 
   return daysDifference
 }
