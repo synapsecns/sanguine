@@ -160,9 +160,9 @@ const RewardsDialog = ({
         id="rewards-dialog"
         ref={dialogRef}
         open={open}
-        className="absolute z-50 max-w-md p-4 m-auto border rounded-md cursor-default text-primary bg-background border-separator"
+        className="absolute z-50 max-w-md py-5 m-auto border rounded-md cursor-default text-primary bg-background border-separator"
       >
-        <div className="space-y-4">
+        <div className="px-4 space-y-4">
           <div className="flex justify-between mb-2">
             <div className="text-2xl">ARB Rewards</div>
             <CloseButton onClick={onClose} />
@@ -209,7 +209,10 @@ const RewardsDialog = ({
             Individual rebates will appear here.
           </div>
         ) : (
-          <div className={`overflow-y-scroll`} style={{ maxHeight: maxHeight }}>
+          <div
+            className="px-1 overflow-y-scroll"
+            style={{ maxHeight: maxHeight }}
+          >
             {transactions.map((transaction) => (
               <AirdropTransaction
                 transactionHash={transaction.transactionHash}
@@ -248,18 +251,18 @@ const AirdropTransaction = ({
       target="_blank"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="grid grid-cols-3 py-1.5 text-primary hover:bg-tint cursor-pointer"
+      className="grid grid-cols-3 py-1.5 p-4 text-primary hover:bg-tint cursor-pointer"
     >
-      <div className="ml-1 text-greenText">+{tokenValue}</div>
+      <div className="text-greenText">+{tokenValue}</div>
 
       <div>${convertTokensToDollarValue(tokenValue, tokenPrice)}</div>
 
       <div className="flex items-center ml-auto text-right">
         <div>{shortenAddress(transactionHash, 5)}</div>
-        <div className="w-6">
-          {isHovered && (
-            <ArrowUpRightIcon className="w-4 h-4 stroke-[3px] ml-1" />
-          )}
+        <div className="w-3">
+          <ArrowUpRightIcon
+            className={`${!isHovered && 'hidden'} w-4 h-4 stroke-[3px] ml-1`}
+          />
         </div>
       </div>
     </Link>
@@ -271,7 +274,7 @@ const AirdropTxHeader = () => {
     <div className="grid grid-cols-3 border-none text-primary">
       <div className="ml-1 text-greenText">ARB</div>
       <div>Value</div>
-      <div className="mr-3 text-right">Tx Hash</div>
+      <div className="mr-4 text-right">Tx Hash</div>
     </div>
   )
 }
