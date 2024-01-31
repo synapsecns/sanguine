@@ -1,4 +1,5 @@
 import { ZeroAddress, ethers } from 'ethers'
+
 import erc20ABI from '../../constants/abis/erc20.json'
 
 export const fetchErc20TokenAllowance = async ({

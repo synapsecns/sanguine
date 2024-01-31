@@ -6,17 +6,16 @@ import {
   useRef,
   useState,
 } from 'react'
-import { Web3Context } from '@/providers/Web3Provider'
+import { BridgeableToken, Chain, CustomThemeVariables } from 'types'
+import { ZeroAddress } from 'ethers'
 
+import { Web3Context } from '@/providers/Web3Provider'
 import { formatBigIntToString } from '@/utils/formatBigIntToString'
 import { stringToBigInt } from '@/utils/stringToBigInt'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import { Receipt } from '@/components/Receipt'
-
-import { BridgeableToken, Chain, CustomThemeVariables } from 'types'
 import { ChainSelect } from '@/components/ui/ChainSelect'
 import { TokenSelect } from '@/components/ui/TokenSelect'
-
 import { useAppDispatch } from '@/state/hooks'
 import {
   setDestinationChainId,
@@ -33,21 +32,16 @@ import {
   fetchAndStoreTokenBalances,
 } from '@/state/slices/wallet/hooks'
 import { BridgeButton } from '@/components/BridgeButton'
-
 import { AvailableBalance } from '@/components/AvailableBalance'
-import { ZeroAddress } from 'ethers'
 import { useValidations } from '@/hooks/useValidations'
-
 import {
   fetchBridgeQuote,
   useBridgeQuoteState,
 } from '@/state/slices/bridgeQuote/hooks'
-
 import {
   EMPTY_BRIDGE_QUOTE,
   resetQuote,
 } from '@/state/slices/bridgeQuote/reducer'
-
 import {
   executeBridgeTxn,
   useBridgeTransactionState,
@@ -59,9 +53,7 @@ import {
 } from '@/state/slices/approveTransaction/hooks'
 import { ApproveTransactionStatus } from '@/state/slices/approveTransaction/reducer'
 import { useThemeVariables } from '@/hooks/useThemeVariables'
-
 import { Transactions } from '@/components/Transactions'
-
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { useSynapseContext } from '@/providers/SynapseProvider'
 import { getFromTokens } from '@/utils/routeMaker/getFromTokens'
@@ -125,7 +117,7 @@ export const Widget = ({
 
   const originChainProvider = useMemo(() => {
     return synapseProviders.find(
-      (provider) => Number(provider?._network?.chainId) === originChainId
+      (p) => Number(p?._network?.chainId) === originChainId
     )
   }, [originChainId])
 
@@ -304,8 +296,8 @@ export const Widget = ({
         executeBridgeTxn({
           destinationAddress: connectedAddress,
           originRouterAddress: bridgeQuote?.routerAddress,
-          originChainId: originChainId,
-          destinationChainId: destinationChainId,
+          originChainId,
+          destinationChainId,
           tokenAddress: originToken?.addresses[originChainId],
           amount: stringToBigInt(
             debouncedInputAmount,

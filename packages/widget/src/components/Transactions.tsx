@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+
 import { useTransactionsState } from '@/state/slices/transactions/hooks'
 import { TransactionDetails } from '@/state/slices/transactions/reducer'
 import { Transaction } from '@/components/Transaction'

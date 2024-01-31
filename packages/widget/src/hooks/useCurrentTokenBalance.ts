@@ -1,6 +1,7 @@
-import { useBridgeState } from '@/state/slices/bridge/hooks'
 import { useContext, useMemo } from 'react'
 import { Web3Context } from 'providers/Web3Provider'
+
+import { useBridgeState } from '@/state/slices/bridge/hooks'
 import { TokenBalance } from '@/utils/actions/fetchTokenBalances'
 import { useWalletState } from '@/state/slices/wallet/hooks'
 
@@ -31,7 +32,7 @@ export const useCurrentTokenBalance = () => {
       return {
         rawBalance: matchedTokenBalance?.balance,
         parsedBalance: matchedTokenBalance?.parsedBalance,
-        decimals: decimals,
+        decimals,
       }
     }
   }, [balances, originToken, originChainId, connectedAddress])

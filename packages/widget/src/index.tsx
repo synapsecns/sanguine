@@ -1,14 +1,13 @@
 import './index.css'
 ;('use client')
 import { BridgeProps } from 'types'
-import { Widget } from '@/components/Widget'
-import { Web3Provider } from 'providers/Web3Provider'
 import { Provider } from 'react-redux'
-import { store } from '@/state/store'
-
-import * as BRIDGEABLE from '@/constants/bridgeable'
-
+import { Web3Provider } from 'providers/Web3Provider'
 import { SynapseProvider } from 'providers/SynapseProvider'
+
+import { Widget } from '@/components/Widget'
+import { store } from '@/state/store'
+import * as BRIDGEABLE from '@/constants/bridgeable'
 import { CHAINS_ARRAY } from '@/constants/chains'
 import { BackgroundListenerProvider } from '@/providers/BackgroundListenerProvider'
 

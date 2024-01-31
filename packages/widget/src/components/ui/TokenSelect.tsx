@@ -1,7 +1,8 @@
 import _ from 'lodash'
+import { BridgeableToken } from 'types'
+
 import { useBridgeState } from '@/state/slices/bridge/hooks'
 import { BridgeState } from '@/state/slices/bridge/reducer'
-import { BridgeableToken } from 'types'
 import { TokenPopoverSelect } from '@/components/ui/TokenPopoverSelect'
 import { useWalletState } from '@/state/slices/wallet/hooks'
 
@@ -12,7 +13,7 @@ type Props = {
   token: BridgeableToken
 }
 
-export function TokenSelect({ label, isOrigin, token, onChange }: Props) {
+export const TokenSelect = ({ label, isOrigin, token, onChange }: Props) => {
   const { originTokens, destinationTokens, targetTokens }: BridgeState =
     useBridgeState()
 

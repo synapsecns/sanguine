@@ -1,12 +1,13 @@
 import { Contract, ethers, AbiCoder, ZeroAddress } from 'ethers'
 import { BridgeableToken } from 'types'
+
 import { formatBigIntToString } from '../formatBigIntToString'
 import multicallAbi from '../../constants/abis/multicall.json'
 import erc20Abi from '../../constants/abis/erc20.json'
 
 const multicallAddress: string = `0xcA11bde05977b3631167028862bE2a173976CA11`
 
-function useMulticallContract(signerOrProvider: any): Contract {
+const useMulticallContract = (signerOrProvider: any): Contract => {
   return new Contract(multicallAddress, multicallAbi, signerOrProvider)
 }
 
@@ -16,7 +17,7 @@ export interface TokenBalance {
   parsedBalance: string
 }
 
-export async function fetchTokenBalances({
+export const fetchTokenBalances = async ({
   address,
   chainId,
   tokens,
@@ -26,7 +27,7 @@ export async function fetchTokenBalances({
   chainId: number
   tokens: BridgeableToken[]
   signerOrProvider: any // TODO: handle for two distinct types
-}): Promise<TokenBalance[]> {
+}): Promise<TokenBalance[]> => {
   const multicall: Contract = useMulticallContract(signerOrProvider)
 
   if (!signerOrProvider) {

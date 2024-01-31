@@ -1,5 +1,6 @@
-import { MAX_UINT256 } from '@/constants/index'
 import { JsonRpcApiProvider, BrowserProvider, ethers } from 'ethers'
+
+import { MAX_UINT256 } from '@/constants/index'
 import erc20ABI from '../../constants/abis/erc20.json'
 
 export const approveErc20Token = async ({

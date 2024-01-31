@@ -1,12 +1,13 @@
 import { useContext, useMemo } from 'react'
+import { ZeroAddress } from 'ethers'
+import { Web3Context } from 'providers/Web3Provider'
+
 import { useBridgeState } from '@/state/slices/bridge/hooks'
 import { checkExists } from '@/utils/checkExists'
 import { useCurrentTokenBalance } from '@/hooks/useCurrentTokenBalance'
 import { stringToBigInt } from '@/utils/stringToBigInt'
-import { Web3Context } from 'providers/Web3Provider'
 import { isOnlyZeroes } from '@/utils/isOnlyZeroes'
 import { useWalletState } from '@/state/slices/wallet/hooks'
-import { ZeroAddress } from 'ethers'
 
 export const useValidations = (): {
   hasValidSelections: boolean

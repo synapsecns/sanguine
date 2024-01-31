@@ -1,7 +1,8 @@
-import { Chain } from 'types'
-import { Tooltip } from '@/components/ui/Tooltip'
-import { Web3Context } from 'providers/Web3Provider'
 import { useCallback, useContext } from 'react'
+import { Chain } from 'types'
+import { Web3Context } from 'providers/Web3Provider'
+
+import { Tooltip } from '@/components/ui/Tooltip'
 import { useBridgeState } from '@/state/slices/bridge/hooks'
 import { switchNetwork } from '@/utils/actions/switchNetwork'
 import { useValidations } from '@/hooks/useValidations'

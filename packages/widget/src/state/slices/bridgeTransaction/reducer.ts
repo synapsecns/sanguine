@@ -1,4 +1,5 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice } from '@reduxjs/toolkit'
+
 import { executeBridgeTxn } from './hooks'
 
 export enum BridgeTransactionStatus {

@@ -1,7 +1,8 @@
-import { useAppSelector, useAppDispatch } from '@/state/hooks'
-import { RootState } from '@/state/store'
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { ZeroAddress } from 'ethers'
+
+import { useAppSelector } from '@/state/hooks'
+import { RootState } from '@/state/store'
 import { getTimeMinutesFromNow } from '@/utils/getTimeMinutesFromNow'
 
 export const useBridgeTransactionState = (): RootState['bridgeTransaction'] => {

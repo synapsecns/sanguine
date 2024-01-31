@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useCallback } from 'react'
+
 import { useAppDispatch } from '@/state/hooks'
 import { getTxBlockExplorerLink } from '@/utils/getTxBlockExplorerLink'
 import { getExplorerAddressUrl } from '@/utils/getExplorerAddressLink'
@@ -63,7 +64,9 @@ export const Transaction = ({
   const remainingTime: number = estimatedTime - elapsedTime
 
   const isEstimatedTimeReached: boolean = useMemo(() => {
-    if (!currentTime || !estimatedTime || !timestamp) return false
+    if (!currentTime || !estimatedTime || !timestamp) {
+      return false
+    }
     return currentTime - timestamp > estimatedTime
   }, [estimatedTime, currentTime, timestamp])
 
@@ -75,7 +78,7 @@ export const Transaction = ({
     bridgeModuleName,
     kappa,
     checkStatus: !isStoredComplete || isEstimatedTimeReached,
-    currentTime: currentTime,
+    currentTime,
   })
 
   /** Check if store already marked tx as complete, otherwise check hook status */
@@ -115,7 +118,7 @@ export const Transaction = ({
         flex flex-wrap-reverse gap-1 justify-end items-center pl-2.5 pr-1.5 py-1
         border border-solid border-[--synapse-border] rounded-md
       `}
-      style={{background: 'var(--synapse-surface'}}
+      style={{ background: 'var(--synapse-surface' }}
     >
       {isTxFinalized ? 'Complete' : 'Pending'}
       <div className="flex items-center justify-end gap-2 grow">

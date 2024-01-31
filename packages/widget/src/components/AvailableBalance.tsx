@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+
 import { useAppDispatch } from '@/state/hooks'
 import { formatBigIntToString } from '@/utils/formatBigIntToString'
 import { Warning } from '@/components/icons/Warning'
@@ -32,7 +33,9 @@ export const AvailableBalance = ({
     setInputAmount(maxAmount)
   }, [dispatch, tokenBalance, originToken, originChainId])
 
-  if (!connectedAddress) return
+  if (!connectedAddress) {
+    return
+  }
 
   if (!originToken) {
     return (

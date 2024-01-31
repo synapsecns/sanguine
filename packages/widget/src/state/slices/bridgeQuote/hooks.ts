@@ -1,12 +1,13 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
+import { commify } from '@ethersproject/units'
+import { BridgeableToken } from 'types'
+
 import { useAppSelector } from '@/state/hooks'
 import { RootState } from '@/state/store'
 import { stringToBigInt } from '@/utils/stringToBigInt'
 import { powBigInt } from '@/utils/powBigInt'
-import { commify } from '@ethersproject/units'
 import { formatBigIntToString } from '@/utils/formatBigIntToString'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
-import { BridgeableToken } from 'types'
 
 export const useBridgeQuoteState = (): RootState['bridgeQuote'] => {
   return useAppSelector((state) => state.bridgeQuote)
@@ -47,9 +48,7 @@ export const fetchBridgeQuote = createAsyncThunk(
     //   return
     // }
 
-    const rfqQuote = allQuotes.find(
-      (quote) => quote.bridgeModuleName === 'SynapseRFQ'
-    )
+    const rfqQuote = allQuotes.find((q) => q.bridgeModuleName === 'SynapseRFQ')
 
     let quote
 
@@ -103,14 +102,14 @@ export const fetchBridgeQuote = createAsyncThunk(
         toValueBigInt,
         destinationToken.decimals[destinationChainId]
       ),
-      feeAmount: feeAmount,
+      feeAmount,
       delta: BigInt(maxAmountOut.toString()),
       quotes: {
         originQuery: originQueryWithSlippage,
         destQuery: destQueryWithSlippage,
       },
-      estimatedTime: estimatedTime,
-      bridgeModuleName: bridgeModuleName,
+      estimatedTime,
+      bridgeModuleName,
     }
   }
 )

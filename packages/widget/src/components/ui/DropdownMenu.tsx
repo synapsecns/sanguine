@@ -1,4 +1,5 @@
 import { useState } from 'react'
+
 import { DownArrow } from '@/components/icons/DownArrow'
 
 export const DropdownMenu = ({ children }) => {
@@ -18,7 +19,7 @@ export const DropdownMenu = ({ children }) => {
           hover:border-[--synapse-focus]
           cursor-pointer
         `}
-        style={{background: 'var(--synapse-select-bg'}}
+        style={{ background: 'var(--synapse-select-bg' }}
       >
         <DownArrow />
       </div>
@@ -28,7 +29,7 @@ export const DropdownMenu = ({ children }) => {
           className={`
             absolute z-50 mt-1 p-0 border border-solid border-[--synapse-select-border] rounded shadow popover -right-1 list-none text-left text-sm
           `}
-          style={{background: 'var(--synapse-select-bg)'}}
+          style={{ background: 'var(--synapse-select-bg)' }}
         >
           {children}
         </ul>

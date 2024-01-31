@@ -1,7 +1,8 @@
+import { createAsyncThunk } from '@reduxjs/toolkit'
+
 import { useAppSelector } from '@/state/hooks'
 import { RootState } from '@/state/store'
 import { approveErc20Token } from '@/utils/actions/approveErc20Token'
-import { createAsyncThunk } from '@reduxjs/toolkit'
 
 export const useApproveTransactionState =
   (): RootState['approveTransaction'] => {

@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
 
-function usePopover() {
+const usePopover = () => {
   const [isOpen, setIsOpen] = useState(false)
   const popoverRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    function handleClickOutside(event) {
+    const handleClickOutside = (event) => {
       if (popoverRef.current && !popoverRef.current.contains(event.target)) {
         setIsOpen(false)
       }

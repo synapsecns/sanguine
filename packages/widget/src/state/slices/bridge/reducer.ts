@@ -1,13 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { BridgeableToken } from 'types'
+
 import { getFromTokens } from '@/utils/routeMaker/getFromTokens'
 import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
-
 import {
   getRoutePossibilities,
   getSymbol,
 } from '@/utils/routeMaker/generateRoutePossibilities'
-
 import { getToChainIds } from '@/utils/routeMaker/getToChainIds'
 import { getToTokens } from '@/utils/routeMaker/getToTokens'
 import { findValidToken } from '@/utils/findValidTokens'

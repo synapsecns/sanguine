@@ -20,7 +20,7 @@ export const Tooltip = ({
       {isHovered && hoverText && (
         <div
           className={`absolute w-max z-10 px-2 py-1 rounded-md text-sm border border-solid border-[--synapse-border] cursor-default shadow ${positionStyles}`}
-          style={{background: 'var(--synapse-select-bg)'}}
+          style={{ background: 'var(--synapse-select-bg)' }}
         >
           {hoverText}
         </div>

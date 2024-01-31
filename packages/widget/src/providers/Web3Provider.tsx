@@ -29,7 +29,7 @@ export const Web3Provider = ({
   })
 
   useEffect(() => {
-    async function fetchData() {
+    const fetchData = async () => {
       try {
         const signer = await config.getSigner()
         const address = await signer.getAddress()

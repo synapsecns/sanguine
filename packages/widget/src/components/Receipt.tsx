@@ -1,9 +1,12 @@
 import { useMemo } from 'react'
+
 import { DoubleDownArrow } from '@/components/icons/DoubleDownArrow'
 
 export const Receipt = ({ quote, send, receive }) => {
   const estTime = useMemo(() => {
-    if (!quote.estimatedTime) return null
+    if (!quote.estimatedTime) {
+      return null
+    }
 
     if (quote?.estimatedTime > 60) {
       return Math.ceil(quote?.estimatedTime / 60) + ' minutes'

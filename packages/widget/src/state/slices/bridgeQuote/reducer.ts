@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+
 import { fetchBridgeQuote } from './hooks'
 
 export enum FetchState {

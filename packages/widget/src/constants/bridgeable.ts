@@ -1,4 +1,5 @@
 import { ZeroAddress } from 'ethers'
+
 import { CHAINS } from '@/constants/chains'
 
 export const GOHM = {

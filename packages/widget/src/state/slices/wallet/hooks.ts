@@ -1,4 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
+import { BridgeableToken } from 'types'
+
 import { RootState } from '@/state/store'
 import { useAppSelector } from '@/state/hooks'
 import {
@@ -7,7 +9,6 @@ import {
 } from '@/utils/actions/fetchTokenBalances'
 import { fetchErc20TokenAllowance } from '@/utils/actions/fetchErc20TokenAllowance'
 import { formatBigIntToString } from '@/utils/formatBigIntToString'
-import { BridgeableToken } from 'types'
 
 export const useWalletState = (): RootState['wallet'] => {
   return useAppSelector((state) => state.wallet)

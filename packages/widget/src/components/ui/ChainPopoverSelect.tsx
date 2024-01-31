@@ -1,6 +1,7 @@
+import { Chain } from 'types'
+
 import usePopover from '@/hooks/usePopoverRef'
 import { DownArrow } from '@/components/icons/DownArrow'
-import { Chain } from 'types'
 
 type PopoverSelectProps = {
   options: Chain[]
@@ -10,13 +11,13 @@ type PopoverSelectProps = {
   label: string
 }
 
-export function ChainPopoverSelect({
+export const ChainPopoverSelect = ({
   options,
   remaining,
   onSelect,
   selected,
   label,
-}: PopoverSelectProps) {
+}: PopoverSelectProps) => {
   const { popoverRef, isOpen, togglePopover, closePopover } = usePopover()
 
   const handleSelect = (option: Chain) => {
@@ -38,7 +39,7 @@ export function ChainPopoverSelect({
           hover:border-[--synapse-focus]
           whitespace-nowrap
         `}
-        style={{background: 'var(--synapse-select-bg)'}}
+        style={{ background: 'var(--synapse-select-bg)' }}
         onClick={() => togglePopover()}
       >
         {selected?.name || 'Network'}
@@ -47,7 +48,7 @@ export function ChainPopoverSelect({
       {isOpen && (
         <ul
           className="absolute z-50 mt-1 p-0 border border-solid border-[--synapse-select-border] rounded shadow popover text-left list-none overflow-y-auto max-h-60"
-          style={{background: 'var(--synapse-select-bg)'}}
+          style={{ background: 'var(--synapse-select-bg)' }}
         >
           {options.map((option) => (
             <li
@@ -64,7 +65,7 @@ export function ChainPopoverSelect({
           ))}
           <div
             className="px-2.5 py-2 mt-2 text-sm text-[--synapse-secondary] cursor-default sticky top-0"
-            style={{background: 'var(--synapse-select-bg)'}}
+            style={{ background: 'var(--synapse-select-bg)' }}
           >
             Other chains
           </div>

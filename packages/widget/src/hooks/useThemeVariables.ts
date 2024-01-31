@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+
 import { generateTheme } from '@/utils/generateTheme'
 
 export const useThemeVariables = (theme, customTheme) => {

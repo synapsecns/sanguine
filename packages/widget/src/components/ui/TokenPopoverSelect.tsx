@@ -1,9 +1,9 @@
 import _ from 'lodash'
+import { BridgeableToken } from 'types'
 
 import usePopover from '@/hooks/usePopoverRef'
 import { TokenBalance } from '@/utils/actions/fetchTokenBalances'
 import { DownArrow } from '@/components/icons/DownArrow'
-import { BridgeableToken } from 'types'
 
 type PopoverSelectProps = {
   options: BridgeableToken[]
@@ -13,13 +13,13 @@ type PopoverSelectProps = {
   selected: BridgeableToken
 }
 
-export function TokenPopoverSelect({
+export const TokenPopoverSelect = ({
   options,
   remaining,
   balances,
   onSelect,
   selected,
-}: PopoverSelectProps) {
+}: PopoverSelectProps) => {
   const { popoverRef, isOpen, togglePopover, closePopover } = usePopover()
 
   const handleSelect = (option: BridgeableToken) => {
@@ -64,7 +64,7 @@ export function TokenPopoverSelect({
           border border-solid border-[--synapse-select-border]
           hover:border-[--synapse-focus]
         `}
-        style={{background: 'var(--synapse-select-bg)'}}
+        style={{ background: 'var(--synapse-select-bg)' }}
         onClick={() => togglePopover()}
       >
         {selected?.symbol || 'Token'}
@@ -73,7 +73,7 @@ export function TokenPopoverSelect({
       {isOpen && (
         <ul
           className="absolute z-50 mt-1 p-0 border border-solid border-[--synapse-select-border] rounded shadow popover list-none right-0 overflow-y-auto max-h-80"
-          style={{background: 'var(--synapse-select-bg)'}}
+          style={{ background: 'var(--synapse-select-bg)' }}
         >
           {sortedOptionsWithBalances?.map((option: TokenBalance, index) => (
             <TokenOption
@@ -86,7 +86,7 @@ export function TokenPopoverSelect({
           ))}
           <div
             className="px-2.5 py-2 mt-2 text-sm text-[--synapse-secondary] cursor-default sticky top-0"
-            style={{background: 'var(--synapse-select-bg)'}}
+            style={{ background: 'var(--synapse-select-bg)' }}
           >
             Other tokens
           </div>
@@ -105,15 +105,15 @@ export function TokenPopoverSelect({
   )
 }
 
-function mergeTokenOptionsWithBalances(
+const mergeTokenOptionsWithBalances = (
   tokens: BridgeableToken[],
   balances: TokenBalance[]
-) {
+) => {
   return tokens?.map((token) => {
     /** If token balance does not exist, set balance to null */
     if (_.isArray(balances) && _.isEmpty(balances)) {
       return {
-        token: token,
+        token,
         balance: null,
         parsedBalance: null,
       }
@@ -122,7 +122,7 @@ function mergeTokenOptionsWithBalances(
         (currentToken: TokenBalance) => currentToken.token === token
       )
       return {
-        token: token,
+        token,
         balance: matchedTokenBalance?.balance,
         parsedBalance: matchedTokenBalance?.parsedBalance,
       }

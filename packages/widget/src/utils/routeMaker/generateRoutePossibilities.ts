@@ -1,7 +1,7 @@
 import _ from 'lodash'
+import { BridgeableToken } from 'types'
 
 import { flattenPausedTokens } from '../flattenPausedTokens'
-import { BridgeableToken } from 'types'
 import { getToChainIds } from './getToChainIds'
 import { getFromChainIds } from './getFromChainIds'
 import { getFromTokens } from './getFromTokens'

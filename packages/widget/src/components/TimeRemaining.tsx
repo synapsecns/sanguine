@@ -9,7 +9,9 @@ export const TimeRemaining = ({
   remainingTime: number
   isDelayed: boolean
 }) => {
-  if (isComplete) return
+  if (isComplete) {
+    return
+  }
 
   if (isDelayed) {
     return <div>Waiting...</div>

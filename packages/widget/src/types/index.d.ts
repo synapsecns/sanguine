@@ -1,5 +1,4 @@
-import { JsonRpcApiProvider, BrowserProvider, Provider } from 'ethers'
-// import { Provider } from '@ethersproject/abstract-provider';
+import { JsonRpcApiProvider, BrowserProvider } from 'ethers'
 
 export interface BridgeableToken {
   addresses: {}

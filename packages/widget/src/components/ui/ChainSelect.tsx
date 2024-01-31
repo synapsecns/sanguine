@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import { Chain } from 'types'
+
 import { ChainPopoverSelect } from '@/components/ui/ChainPopoverSelect'
 import { CHAINS_ARRAY, CHAINS_BY_ID } from '@/constants/chains'
 import { useBridgeState } from '@/state/slices/bridge/hooks'
@@ -11,10 +12,10 @@ type Props = {
   chain: Chain
 }
 
-export function ChainSelect({ label, isOrigin, chain, onChange }: Props) {
+export const ChainSelect = ({ label, isOrigin, chain, onChange }: Props) => {
   const { originChainIds, destinationChainIds } = useBridgeState()
 
-  const allChainIds = CHAINS_ARRAY.map((chain) => chain.id)
+  const allChainIds = CHAINS_ARRAY.map((c) => c.id)
 
   let options
   let remaining

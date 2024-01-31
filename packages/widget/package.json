@@ -15,7 +15,9 @@
   "scripts": {
     "build": "rollup -c --bundleConfigAsCjs",
     "watch": "rollup -c -w --bundleConfigAsCjs",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test:coverage": "echo 'No tests defined.'",
+    "lint:check": "eslint . --max-warnings=0",
+    "ci:lint": "npm run lint:check"
   },
   "keywords": [
     "widget"
@@ -43,6 +45,8 @@
     "typescript": "^5.3.2"
   },
   "dependencies": {
+    "@ethersproject/providers": "^5.7.2",
+    "@ethersproject/units": "^5.7.0",
     "@reduxjs/toolkit": "^2.0.1",
     "@synapsecns/sdk-router": "^0.3.21",
     "ethers": "^6.9.1",
