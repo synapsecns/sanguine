@@ -38,7 +38,7 @@ type feePricer struct {
 	// gasPriceCache maps chainID -> gas price
 	gasPriceCache *ttlcache.Cache[uint32, *big.Int]
 	// tokenPriceCache maps token name -> token price
-	tokenPriceCache *ttlcache.Cache[string, *big.Int]
+	tokenPriceCache *ttlcache.Cache[string, float64]
 	// clientFetcher is used to fetch clients.
 	clientFetcher submitter.ClientFetcher
 	// handler is the metrics handler.
@@ -55,10 +55,14 @@ func NewFeePricer(config relconfig.Config, clientFetcher submitter.ClientFetcher
 		ttlcache.WithTTL[uint32, *big.Int](time.Second*time.Duration(config.GetFeePricer().GasPriceCacheTTLSeconds)),
 		ttlcache.WithDisableTouchOnHit[uint32, *big.Int](),
 	)
+	tokenPriceCache := ttlcache.New[string, float64](
+		ttlcache.WithTTL[string, float64](time.Second*time.Duration(config.GetFeePricer().TokenPriceCacheTTLSeconds)),
+		ttlcache.WithDisableTouchOnHit[string, float64](),
+	)
 	return &feePricer{
 		config:          config,
 		gasPriceCache:   gasPriceCache,
-		tokenPriceCache: ttlcache.New[string, *big.Int](ttlcache.WithTTL[string, *big.Int](time.Second * time.Duration(config.GetFeePricer().TokenPriceCacheTTLSeconds))),
+		tokenPriceCache: tokenPriceCache,
 		clientFetcher:   clientFetcher,
 		handler:         handler,
 		client:          &http.Client{Timeout: time.Duration(httpTimeoutMs) * time.Millisecond},
@@ -289,14 +293,25 @@ func (f *feePricer) GetGasPrice(ctx context.Context, chainID uint32) (*big.Int, 
 }
 
 // getTokenPrice returns the price of a token in USD.
-func (f *feePricer) getTokenPrice(ctx context.Context, token string) (float64, error) {
-	// try to get price from coingecko
-	price, err := f.getTokenPriceFromCoingecko(ctx, token)
-	if err != nil {
-		// fallback to configured token price
-		price, err = f.getTokenPriceFromConfig(token)
+func (f *feePricer) getTokenPrice(ctx context.Context, token string) (price float64, err error) {
+	// Attempt to fetch gas price from cache.
+	tokenPriceItem := f.tokenPriceCache.Get(token)
+	if tokenPriceItem == nil {
+		// Try to get price from coingecko.
+		price, err = f.getTokenPriceFromCoingecko(ctx, token)
+		if err == nil {
+			f.tokenPriceCache.Set(token, price, 0)
+		} else {
+			// Fallback to configured token price.
+			price, err = f.getTokenPriceFromConfig(token)
+			if err != nil {
+				return 0, err
+			}
+		}
+	} else {
+		price = tokenPriceItem.Value()
 	}
-	return price, err
+	return price, nil
 }
 
 var coingeckoIDLookup = map[string]string{
