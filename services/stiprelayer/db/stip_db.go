@@ -3,6 +3,7 @@ package db
 
 import (
 	"context"
+	"math/big"
 	"time"
 
 	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
@@ -30,6 +31,7 @@ type STIPTransactions struct {
 // STIPDBReader is the interface for reading from the database.
 type STIPDBReader interface {
 	GetSTIPTransactionsNotRebated(ctx context.Context) ([]*STIPTransactions, error)
+	GetTotalArbRebated(ctx context.Context, address string) (*big.Int, error)
 }
 
 // STIPDBWriter is the interface for writing to the database.
