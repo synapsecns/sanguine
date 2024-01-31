@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { ProgressBar } from './ProgressBar'
 import { getTimeMinutesFromNow } from '@/utils/time'
+import { AnimatedProgressBar } from './AnimateProgressBar'
 
 export const TestProgressBar = () => {
   const [startTime, setStartTime] = useState(null)
@@ -68,12 +69,23 @@ export const TestProgressBar = () => {
           Reset Timer
         </button>
       </div>
+      <div>Linear</div>
       {startTime ? (
         <ProgressBar
-          initialTime={startTime}
+          startTime={startTime}
           targetTime={Number(startTime) + Number(estimatedTime)}
-          // estimatedDurationTime={estimatedTime}
+          estDuration={estimatedTime * 2}
           isComplete={isComplete}
+        />
+      ) : null}
+
+      <br />
+      <div>Spline</div>
+      {startTime ? (
+        <AnimatedProgressBar
+          estDuration={estimatedTime * 2}
+          isComplete={isComplete}
+          startTime={startTime}
         />
       ) : null}
     </div>

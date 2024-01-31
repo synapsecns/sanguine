@@ -15,6 +15,7 @@ import { DropdownMenu } from './components/DropdownMenu'
 import { MenuItem } from './components/MenuItem'
 import { useBridgeTxUpdater } from './helpers/useBridgeTxUpdater'
 import { ProgressBar } from './components/ProgressBar'
+import { AnimatedProgressBar } from './components/AnimateProgressBar'
 
 interface _TransactionProps {
   connectedAddress: string
@@ -173,11 +174,18 @@ export const _Transaction = ({
         </div>
       </div>
       <ProgressBar
-        initialTime={timestamp}
+        startTime={timestamp}
         targetTime={timestamp + estimatedTime * 2} // Double estimated time for visual buffer
-        // estimatedDurationTime={estimatedTime * 2} // Double time for visual buffer
+        estDuration={estimatedTime * 2} // Double time for visual buffer
         isComplete={isTxFinalized}
       />
+      <div className="w-full mt-4">
+        <AnimatedProgressBar
+          startTime={timestamp}
+          estDuration={estimatedTime * 2}
+          isComplete={isTxFinalized}
+        />
+      </div>
     </div>
   )
 }
