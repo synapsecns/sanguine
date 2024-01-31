@@ -11,16 +11,20 @@ import (
 	clientMocks "github.com/synapsecns/sanguine/ethergo/client/mocks"
 	fetcherMocks "github.com/synapsecns/sanguine/ethergo/submitter/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
+	priceMocks "github.com/synapsecns/sanguine/services/rfq/relayer/pricer/mocks"
 )
 
-func (s *PricerSuite) TestGetOriginFee() {
+func (s *PricerSuite) TestGetOriginFeeA() {
 	// Build a new FeePricer with a mocked client for fetching gas price.
 	clientFetcher := new(fetcherMocks.ClientFetcher)
 	client := new(clientMocks.EVM)
+	priceFetcher := new(priceMocks.CoingeckoPriceFetcher)
 	currentHeader := &types.Header{BaseFee: big.NewInt(100_000_000_000)} // 100 gwei
 	client.On(testsuite.GetFunctionName(client.HeaderByNumber), mock.Anything, mock.Anything).Once().Return(currentHeader, nil)
 	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, mock.Anything).Twice().Return(client, nil)
-	feePricer := pricer.NewFeePricer(s.config, clientFetcher, metrics.NewNullHandler())
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "ETH").Return(1000., nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "USDC").Return(1., nil)
+	feePricer := pricer.NewFeePricerWithFetchers(s.config, clientFetcher, metrics.NewNullHandler(), priceFetcher)
 	go func() { feePricer.Start(s.GetTestContext()) }()
 
 	// Calculate the origin fee.
@@ -35,10 +39,10 @@ func (s *PricerSuite) TestGetOriginFee() {
 		fee_usdc_decimals: fee_usdc * usdc_decimals_factor
 		fee_usdc_decimals = (((gas_price * gas_estimate / native_decimals_factor) * eth_price_usd) * usdc_price_usd) * usdc_decimals_factor
 		So, with our numbers:
-		fee_denom = (((100e9 * 500000 / 1e18) * 2000) * 1) * 1e6 = 100_000_000
+		fee_denom = (((100e9 * 500000 / 1e18) * 1000) * 1) * 1e6 = 50_000_000
 	*/
 
-	expectedFee := big.NewInt(100_000_000) // 100 usd
+	expectedFee := big.NewInt(50_000_000) // 50 usd
 	s.Equal(expectedFee, fee)
 
 	// Ensure that the fee has been cached.
