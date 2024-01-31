@@ -70,7 +70,7 @@ export const AirdropRewards = () => {
     <>
       <div
         id="airdrop-rewards"
-        className="flex items-center mb-2 border rounded-md cursor-pointer text-white border-greenText bg-[#0A381B]"
+        className="flex items-center mb-2 border rounded-md cursor-pointer text-primary border-greenText bg-[#0A381B] hover:bg-[#17492D]"
         onClick={handleToggle}
       >
         <RewardsTitle icon={ARB.icon} />
@@ -160,7 +160,7 @@ const RewardsDialog = ({
         id="rewards-dialog"
         ref={dialogRef}
         open={open}
-        className="absolute z-50 max-w-md p-4 m-auto text-white border rounded-md cursor-default bg-background border-separator"
+        className="absolute z-50 max-w-md p-4 m-auto border rounded-md cursor-default text-primary bg-background border-separator"
       >
         <div className="space-y-4">
           <div className="flex justify-between mb-2">
@@ -248,7 +248,7 @@ const AirdropTransaction = ({
       target="_blank"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="grid grid-cols-3 py-1.5 text-white hover:bg-tint cursor-pointer"
+      className="grid grid-cols-3 py-1.5 text-primary hover:bg-tint cursor-pointer"
     >
       <div className="text-greenText">+ {tokenValue}</div>
       <div>${convertTokensToDollarValue(tokenValue, tokenPrice)}</div>
@@ -264,7 +264,7 @@ const AirdropTransaction = ({
 
 const AirdropTxHeader = () => {
   return (
-    <div className="grid grid-cols-3 text-white border-none">
+    <div className="grid grid-cols-3 border-none text-primary">
       <div className="text-greenText">ARB</div>
       <div>Value</div>
       <div className="mr-4 text-right">Tx Hash</div>
