@@ -52,6 +52,19 @@ export const BridgeButton = ({
 
   const tooltipPositionStyle = '-top-8'
 
+  if (!originChainId) {
+    return (
+      <Tooltip
+        hoverText="Select origin chain"
+        positionStyles={tooltipPositionStyle}
+      >
+        <button className={buttonClassName} style={buttonStyle} disabled>
+          Connect
+        </button>
+      </Tooltip>
+    )
+  }
+
   if (!onSelectedChain) {
     return (
       <button

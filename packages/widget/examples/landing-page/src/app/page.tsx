@@ -1,13 +1,81 @@
 'use client'
 
-import { Bridge, USDC, USDT, DAI, ETH, CustomRpcs } from '@synapsecns/widget'
+import {
+  Bridge,
+  USDC,
+  USDT,
+  DAI,
+  ETH,
+  METISUSDC,
+  CustomRpcs,
+} from '@synapsecns/widget'
 import { useEthereumWallet } from '@/hooks/useEthereumWallet'
 import { useState } from 'react'
-import Header from '@/components/Header'
-import Footer from '@/components/Footer'
-import Instructions from '@/components/Instructions'
+import { Header } from '@/components/Header'
+import { Footer } from '@/components/Footer'
+import { Instructions } from '@/components/Instructions'
+import { PackageInstall } from '@/components/PackageInstall'
 
-const targetTokens = [USDC, USDT, DAI, ETH]
+const initialConfig = {
+  theme: {
+    bgColor: 'dark',
+  },
+  targetTokens: [],
+  targetChainIds: [],
+}
+
+const consumerExamples = {
+  dark: {
+    theme: {
+      bgColor: 'dark',
+    },
+  },
+  light: {
+    theme: {
+      bgColor: 'light',
+    },
+  },
+  gmx: {
+    theme: {
+      '--synapse-text': 'white',
+      '--synapse-secondary': '#ffffffb3',
+      '--synapse-root': '#16182e',
+      '--synapse-surface': 'linear-gradient(90deg, #1e223de6, #262b47e6)',
+      '--synapse-border': 'transparent',
+      '--synapse-select-bg': 'hsl(231.5deg 32% 19.5%',
+      '--synapse-select-border': 'hsl(233deg 34% 34%)',
+      '--synapse-button-bg': '#2d42fc',
+    },
+    targetTokens: [ETH, USDC, USDT],
+    targetChainIds: [42161, 43114],
+  },
+  hercules: {
+    theme: {
+      bgColor: 'dark',
+      '--synapse-button-bg':
+        'linear-gradient(90deg, hsl(43deg 79% 74%), hsl(21deg 76% 60%))',
+      '--synapse-button-text': 'black',
+      '--synapse-focus': 'hsl(32deg 77.5% 67%)',
+    },
+    targetTokens: [METISUSDC],
+    targetChainIds: [1088],
+  },
+  dfk: {
+    theme: {
+      bgColor: 'light',
+      '--synapse-text': 'hsl(12deg 85% 13%)',
+      '--synapse-secondary': 'hsl(12deg 85% 20%)',
+      '--synapse-select-bg': 'hsl(35deg 100% 87%)',
+      '--synapse-surface': 'hsl(32deg 69% 78%)',
+      '--synapse-root': 'hsl(35deg 100% 87%)',
+      '--synapse-border': 'hsl(29deg 53% 68%)',
+      '--synapse-focus': 'hsl(12deg 85% 15%)',
+      '--synapse-accent': 'hsl(12deg 85% 15%)',
+    },
+    targetTokens: [ETH, USDC],
+    targetChainIds: [42161, 43114],
+  },
+}
 
 const customRpcs: CustomRpcs = {
   1: 'https://eth.llamarpc.com',
@@ -15,68 +83,31 @@ const customRpcs: CustomRpcs = {
 }
 
 export default function Home() {
-  const [customTheme, setCustomTheme] = useState({})
+  const [config, setConfig] = useState<any>(initialConfig)
   const [container, setContainer] = useState(true)
+
+  const { web3Provider } = useEthereumWallet()
 
   const inputChangeHandler = (
     e: React.ChangeEvent<HTMLSelectElement>
   ): void => {
-    const target = e.target as HTMLSelectElement
+    const selection = e.target.value
 
-    switch (target.value) {
-      case 'dark':
-      case 'light':
-        setCustomTheme({ bgColor: target.value })
-        break
-      case 'dfk':
-        setCustomTheme({
-          bgColor: 'light',
-          '--synapse-text': 'hsl(12deg 85% 13%)',
-          '--synapse-secondary': 'hsl(12deg 85% 20%)',
-          '--synapse-select-bg': 'hsl(35deg 100% 87%)',
-          '--synapse-surface': 'hsl(32deg 69% 78%)',
-          '--synapse-root': 'hsl(35deg 100% 87%)',
-          '--synapse-border': 'hsl(29deg 53% 68%)',
-          '--synapse-focus': 'hsl(12deg 85% 15%)',
-          '--synapse-accent': 'hsl(12deg 85% 15%)',
-        })
-        break
-      case 'gmx':
-        setCustomTheme({
-          '--synapse-text': 'white',
-          '--synapse-secondary': '#ffffffb3',
-          '--synapse-root': '#16182e',
-          '--synapse-surface': 'linear-gradient(90deg, #1e223de6, #262b47e6)',
-          '--synapse-border': 'transparent',
-          '--synapse-select-bg': 'hsl(231.5deg 32% 19.5%',
-          '--synapse-select-border': 'hsl(233deg 34% 34%)',
-          '--synapse-button-bg': '#2d42fc',
-        })
-        break
-      case 'hercules':
-        setCustomTheme({
-          bgColor: 'dark',
-          '--synapse-button-bg':
-            'linear-gradient(90deg, hsl(43deg 79% 74%), hsl(21deg 76% 60%))',
-          '--synapse-button-text': 'black',
-          '--synapse-focus': 'hsl(32deg 77.5% 67%)',
-        })
-        break
-      default:
-        setCustomTheme({ bgColor: 'dark' })
-    }
+    const newConfig =
+      consumerExamples[selection as keyof typeof consumerExamples] ||
+      initialConfig
+    setConfig(newConfig)
   }
 
-  function createCustomTheme() {
+  const createCustomTheme = () => {
     const colorPicker = document.getElementById(
       'color-picker'
     ) as HTMLInputElement | null
-
-    setCustomTheme({ bgColor: colorPicker?.value })
+    setConfig((prevConfig: any) => ({
+      ...prevConfig,
+      theme: { bgColor: colorPicker?.value },
+    }))
   }
-
-  const { web3Provider, connectedAddress, connectedNetwork } =
-    useEthereumWallet()
 
   const toggleContainer = (e: React.ChangeEvent<HTMLInputElement>) =>
     setContainer(e.target.checked)
@@ -86,11 +117,10 @@ export default function Home() {
   return (
     <>
       <Header />
-
       <main>
         <header>
           <h1>Install the Synapse Bridge</h1>
-          <pre>npm synapse-widget</pre>
+          <PackageInstall />
           <p>
             Easily onboard new users by adding a custom instance of the Synapse
             Bridge to your React project.
@@ -103,10 +133,10 @@ export default function Home() {
               <Bridge
                 web3Provider={web3Provider}
                 customRpcs={customRpcs}
-                targetTokens={targetTokens}
-                customTheme={customTheme}
+                targetTokens={config.targetTokens}
+                customTheme={config.theme}
                 container={container}
-                targetChainIds={[42161]}
+                targetChainIds={config.targetChainIds}
               />
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -126,8 +156,8 @@ export default function Home() {
                 </div>
                 <select onChange={inputChangeHandler}>
                   <option>Select preset</option>
-                  <option value="dark">Synapse Dark</option>
                   <option value="light">Synapse Light</option>
+                  <option value="dark">Synapse Dark</option>
                   <option value="dfk">DeFi Kingdoms</option>
                   <option value="gmx">GMX</option>
                   <option value="hercules">Hercules</option>
@@ -139,7 +169,6 @@ export default function Home() {
         </header>
         <Instructions />
       </main>
-
       <Footer />
     </>
   )

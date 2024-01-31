@@ -1,6 +1,7 @@
 import { Install, Developer, Support } from './Icons'
+import { PackageInstall } from './PackageInstall'
 
-export default function Instructions() {
+export function Instructions() {
   return (
     <article>
       <h2>
@@ -8,8 +9,7 @@ export default function Instructions() {
         Install
       </h2>
       <p>Install the Synapse Widget in your Next.js or React project</p>
-      <pre style={{ fontSize: '100%' }}>npm synapse-widget</pre>
-
+      <PackageInstall />
       <h2>
         <Developer />
         Setup

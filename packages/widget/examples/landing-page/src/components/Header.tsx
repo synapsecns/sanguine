@@ -25,7 +25,7 @@ function HeaderSection({ links }: Props) {
   )
 }
 
-export default function Header() {
+export function Header() {
   return (
     <header>
       <a href="https://synapseprotocol.com/landing">
