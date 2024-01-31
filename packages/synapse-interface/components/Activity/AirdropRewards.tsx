@@ -17,6 +17,7 @@ import arbitrumImg from '@assets/chains/arbitrum.svg'
 import { ArrowUpRightIcon } from '../icons/ArrowUpRightIcon'
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
 import { HoverContent } from '../Portfolio/PortfolioContent/SingleNetworkPortfolio'
+import numeral from 'numeral'
 
 /** ARB Token */
 const ARB = {
@@ -33,6 +34,11 @@ const ARB = {
 const Rewarder = {
   address: '0x48fa1ebda1af925898c826c566f5bb015e125ead' as Address,
   startBlock: 174234366n, // Start of STIP Rewards on Arbitrum
+}
+
+const formatValueWithCommas = (value: string | number) => {
+  const format = '0,0.00'
+  return numeral(value).format(format)
 }
 
 export const AirdropRewards = () => {
@@ -78,8 +84,10 @@ export const AirdropRewards = () => {
         <div className="flex justify-between flex-1 p-3">
           <RewardsAmountDisplay
             symbol={ARB.symbol}
-            tokenAmount={rewards}
-            dollarAmount={convertTokensToDollarValue(rewards, arbPrice)}
+            tokenAmount={formatValueWithCommas(rewards)}
+            dollarAmount={formatValueWithCommas(
+              convertTokensToDollarValue(rewards, arbPrice)
+            )}
           />
 
           <div className="flex items-center mt-px space-x-2 text-sm">
@@ -143,16 +151,16 @@ const RewardsDialog = ({
 }: {
   open: boolean
   setOpen: (value: React.SetStateAction<boolean>) => void
-  onClose
+  onClose: () => void
   transactions: any[]
-  rewards
-  tokenPrice
+  rewards: string
+  tokenPrice: number
 }) => {
   const dialogRef = useRef(null)
 
   useCloseOnOutsideClick(dialogRef, onClose)
 
-  const maxHeight = window.innerHeight > 768 ? 300 : 200
+  const maxHeight = window.innerHeight > 768 ? 400 : 200
 
   return (
     <DialogWrapper open={open}>
@@ -188,10 +196,16 @@ const RewardsDialog = ({
           <div className="flex flex-wrap-reverse">
             <div className="mr-4 min-w-1/2">
               <div className="text-lg text-greenText">Total ARB</div>
-              <div className="flex space-x-1">
-                <div className="text-2xl text-greenText">+{rewards}</div>
-                <div className="text-2xl text-secondary">
-                  (${convertTokensToDollarValue(rewards, tokenPrice)})
+              <div className="flex space-x-1 text-2xl">
+                <div className="text-greenText">
+                  +{formatValueWithCommas(rewards)}
+                </div>
+                <div className="text-secondary">
+                  ($
+                  {formatValueWithCommas(
+                    convertTokensToDollarValue(rewards, tokenPrice)
+                  )}
+                  )
                 </div>
               </div>
             </div>
