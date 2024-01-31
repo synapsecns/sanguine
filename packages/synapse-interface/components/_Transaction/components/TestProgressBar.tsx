@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { ProgressBar } from './ProgressBar'
 import { getTimeMinutesFromNow } from '@/utils/time'
-import { AnimatedProgressBar } from './AnimateProgressBar'
+import { AnimatedProgressBar } from './AnimatedProgressBar'
 
 export const TestProgressBar = () => {
   const [startTime, setStartTime] = useState(null)
