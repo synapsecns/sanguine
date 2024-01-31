@@ -10,6 +10,8 @@ import (
 )
 
 // CoingeckoPriceFetcher is an interface for fetching prices from coingecko.
+//
+//go:generate go run github.com/vektra/mockery/v2 --name CoingeckoPriceFetcher --output ./mocks --case=underscore
 type CoingeckoPriceFetcher interface {
 	GetPrice(ctx context.Context, token string) (float64, error)
 }
