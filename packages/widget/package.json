@@ -1,6 +1,6 @@
 {
-  "name": "@abtestingalpha/widget",
-  "description": "Test Widget",
+  "name": "@synapsecns/widget",
+  "description": "Widget library for interacting with the Synapse Protocol",
   "version": "0.0.20",
   "license": "ISC",
   "main": "dist/cjs/index.js",
@@ -12,6 +12,11 @@
   "publishConfig": {
     "access": "public"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/synapsecns/sanguine.git"
+  },
+  "homepage": "https://github.com/synapsecns/sanguine/blob/master/packages/widget/README.md",
   "scripts": {
     "build": "rollup -c --bundleConfigAsCjs",
     "watch": "rollup -c -w --bundleConfigAsCjs",
@@ -20,6 +25,16 @@
     "ci:lint": "npm run lint:check"
   },
   "keywords": [
+    "blockchain",
+    "bridge",
+    "cross-chain",
+    "dapp",
+    "interoperability",
+    "library",
+    "plugin",
+    "rfq",
+    "synapse",
+    "web3",
     "widget"
   ],
   "peerDependencies": {

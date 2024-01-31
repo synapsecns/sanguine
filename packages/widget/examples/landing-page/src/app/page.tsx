@@ -1,13 +1,6 @@
 'use client'
 
-import {
-  Bridge,
-  USDC,
-  USDT,
-  DAI,
-  ETH,
-  CustomRpcs,
-} from '@abtestingalpha/widget'
+import { Bridge, USDC, USDT, DAI, ETH, CustomRpcs } from '@synapsecns/widget'
 import { useEthereumWallet } from '@/hooks/useEthereumWallet'
 import { useState } from 'react'
 import Header from '@/components/Header'
