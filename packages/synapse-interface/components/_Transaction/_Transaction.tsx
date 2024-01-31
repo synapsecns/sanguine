@@ -14,7 +14,6 @@ import { getEstimatedTimeStatus } from './helpers/getEstimatedTimeStatus'
 import { DropdownMenu } from './components/DropdownMenu'
 import { MenuItem } from './components/MenuItem'
 import { useBridgeTxUpdater } from './helpers/useBridgeTxUpdater'
-import { ProgressBar } from './components/ProgressBar'
 import { AnimatedProgressBar } from './components/AnimatedProgressBar'
 
 interface _TransactionProps {
