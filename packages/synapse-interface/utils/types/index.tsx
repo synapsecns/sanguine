@@ -62,6 +62,7 @@ export type BridgeQuote = {
   quotes: { originQuery: any; destQuery: any }
   estimatedTime: number
   bridgeModuleName: string
+  gasDropAmount: bigint
 }
 interface TokensByChain {
   [cID: string]: Token[]
