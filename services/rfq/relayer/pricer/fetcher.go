@@ -16,12 +16,14 @@ type CoingeckoPriceFetcher interface {
 	GetPrice(ctx context.Context, token string) (float64, error)
 }
 
-type coingeckoPriceFetcherImpl struct {
+// CoingeckoPriceFetcherImpl is an implementation of CoingeckoPriceFetcher.
+type CoingeckoPriceFetcherImpl struct {
 	client *http.Client
 }
 
-func newCoingeckoPriceFetcher(timeoutMs int) *coingeckoPriceFetcherImpl {
-	return &coingeckoPriceFetcherImpl{
+// NewCoingeckoPriceFetcher creates a new instance of CoingeckoPriceFetcherImpl.
+func NewCoingeckoPriceFetcher(timeoutMs int) *CoingeckoPriceFetcherImpl {
+	return &CoingeckoPriceFetcherImpl{
 		client: &http.Client{
 			Timeout: time.Duration(timeoutMs) * time.Millisecond,
 		},
@@ -32,7 +34,8 @@ var coingeckoIDLookup = map[string]string{
 	"ETH": "ethereum",
 }
 
-func (c *coingeckoPriceFetcherImpl) GetPrice(ctx context.Context, token string) (float64, error) {
+// GetPrice fetches the price of a token from coingecko.
+func (c *CoingeckoPriceFetcherImpl) GetPrice(ctx context.Context, token string) (float64, error) {
 	coingeckoID, ok := coingeckoIDLookup[token]
 	if !ok {
 		return 0, fmt.Errorf("could not get coingecko id for token: %s", token)

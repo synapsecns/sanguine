@@ -44,10 +44,8 @@ type feePricer struct {
 	priceFetcher CoingeckoPriceFetcher
 }
 
-const httpTimeoutMs = 1000
-
 // NewFeePricer creates a new fee pricer.
-func NewFeePricer(config relconfig.Config, clientFetcher submitter.ClientFetcher, handler metrics.Handler) FeePricer {
+func NewFeePricer(config relconfig.Config, clientFetcher submitter.ClientFetcher, priceFetcher CoingeckoPriceFetcher, handler metrics.Handler) FeePricer {
 	gasPriceCache := ttlcache.New[uint32, *big.Int](
 		ttlcache.WithTTL[uint32, *big.Int](time.Second*time.Duration(config.GetFeePricer().GasPriceCacheTTLSeconds)),
 		ttlcache.WithDisableTouchOnHit[uint32, *big.Int](),
@@ -62,7 +60,7 @@ func NewFeePricer(config relconfig.Config, clientFetcher submitter.ClientFetcher
 		tokenPriceCache: tokenPriceCache,
 		clientFetcher:   clientFetcher,
 		handler:         handler,
-		priceFetcher:    newCoingeckoPriceFetcher(httpTimeoutMs),
+		priceFetcher:    priceFetcher,
 	}
 }
 
