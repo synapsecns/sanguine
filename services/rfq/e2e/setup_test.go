@@ -161,6 +161,9 @@ func (i *IntegrationSuite) Approve(backend backends.SimulatedTestBackend, token 
 	i.NoError(err)
 
 	// TODO: can also use in mem cache
+	if allowance == nil {
+		i.T().Fatal("allowance is nil")
+	}
 	if allowance.Cmp(big.NewInt(0)) == 0 {
 		txOpts := backend.GetTxContext(i.GetTestContext(), user.AddressPtr())
 		tx, err := erc20.Approve(txOpts.TransactOpts, fastBridge.Address(), core.CopyBigInt(abi.MaxUint256))
