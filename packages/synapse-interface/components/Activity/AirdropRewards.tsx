@@ -76,7 +76,7 @@ export const AirdropRewards = () => {
         <RewardsTitle icon={ARB.icon} />
         <TransactionArrow className="stroke-greenText fill-transparent" />
         <div className="flex justify-between flex-1 p-3">
-          <RewardAmountDisplay
+          <RewardsAmountDisplay
             symbol={ARB.symbol}
             tokenAmount={rewards}
             dollarAmount={convertTokensToDollarValue(rewards, arbPrice)}
@@ -283,7 +283,7 @@ const RewardsTitle = ({ icon }) => {
   )
 }
 
-const RewardAmountDisplay = ({
+const RewardsAmountDisplay = ({
   symbol,
   tokenAmount,
   dollarAmount,
@@ -294,8 +294,8 @@ const RewardAmountDisplay = ({
 }) => {
   return (
     <div
-      id="reward-amount-display"
-      className="flex items-center space-x-1.5 leading-1"
+      id="rewards-amount-display"
+      className="flex flex-wrap items-center space-x-1.5 leading-1"
     >
       <div className="text-white text-md">+${dollarAmount}</div>
       <div className="text-sm text-secondary">
