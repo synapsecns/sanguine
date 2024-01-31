@@ -70,7 +70,7 @@ export const AirdropRewards = () => {
     <>
       <div
         id="airdrop-rewards"
-        className="flex items-center mb-2 border  cursor-pointer text-white border-greenText bg-[#0A381B]"
+        className="flex items-center mb-2 border rounded-md cursor-pointer text-white border-greenText bg-[#0A381B]"
         onClick={handleToggle}
       >
         <RewardsTitle icon={ARB.icon} />
@@ -82,7 +82,7 @@ export const AirdropRewards = () => {
             dollarAmount={convertTokensToDollarValue(rewards, arbPrice)}
           />
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center mt-px space-x-2 text-sm">
             <div>Now - Mar 29</div>
             <HoverContentIcon>
               <p>
@@ -160,7 +160,7 @@ const RewardsDialog = ({
         id="rewards-dialog"
         ref={dialogRef}
         open={open}
-        className="absolute z-50 max-w-md p-4 m-auto text-white border rounded-lg cursor-default bg-background border-separator"
+        className="absolute z-50 max-w-md p-4 m-auto text-white border rounded-md cursor-default bg-background border-separator"
       >
         <div className="space-y-4">
           <div className="flex justify-between mb-2">
@@ -187,7 +187,7 @@ const RewardsDialog = ({
 
           <div className="flex flex-wrap-reverse">
             <div className="mr-4 min-w-1/2">
-              <div className="text-lg text-greenText">Total Arb</div>
+              <div className="text-lg text-greenText">Total ARB</div>
               <div className="flex space-x-1">
                 <div className="text-2xl text-greenText">+{rewards}</div>
                 <div className="text-2xl text-secondary">
@@ -278,7 +278,7 @@ const RewardsTitle = ({ icon }) => {
       <Image
         src={icon}
         alt="reward chain icon"
-        className="w-4 h-4 rounded-full"
+        className="w-4 h-4 mt-px rounded-full"
       />
       <div className="text-md">Rewards</div>
     </div>
@@ -297,10 +297,10 @@ const RewardsAmountDisplay = ({
   return (
     <div
       id="rewards-amount-display"
-      className="flex flex-wrap items-center space-x-1.5 leading-1"
+      className="flex flex-wrap items-center space-x-1.5 leading-none"
     >
       <div className="text-white text-md">+${dollarAmount}</div>
-      <div className="text-sm text-secondary">
+      <div className="mt-px text-sm text-secondary">
         ({tokenAmount} {symbol})
       </div>
     </div>
