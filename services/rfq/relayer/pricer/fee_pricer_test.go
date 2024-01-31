@@ -14,17 +14,14 @@ import (
 	priceMocks "github.com/synapsecns/sanguine/services/rfq/relayer/pricer/mocks"
 )
 
-func (s *PricerSuite) TestGetOriginFeeA() {
-	// Build a new FeePricer with a mocked client for fetching gas price.
+func (s *PricerSuite) TestGetOriginFee() {
+	// Build a new FeePricer with a mocked client for fetching gas price and token price.
 	clientFetcher := new(fetcherMocks.ClientFetcher)
 	client := new(clientMocks.EVM)
-	priceFetcher := new(priceMocks.CoingeckoPriceFetcher)
 	currentHeader := &types.Header{BaseFee: big.NewInt(100_000_000_000)} // 100 gwei
 	client.On(testsuite.GetFunctionName(client.HeaderByNumber), mock.Anything, mock.Anything).Once().Return(currentHeader, nil)
 	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, mock.Anything).Twice().Return(client, nil)
-	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "ETH").Return(1000., nil)
-	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "USDC").Return(1., nil)
-	feePricer := pricer.NewFeePricerWithFetchers(s.config, clientFetcher, metrics.NewNullHandler(), priceFetcher)
+	feePricer := pricer.NewFeePricer(s.config, clientFetcher, metrics.NewNullHandler())
 	go func() { feePricer.Start(s.GetTestContext()) }()
 
 	// Calculate the origin fee.
@@ -63,11 +60,14 @@ func (s *PricerSuite) TestGetOriginFeeWithOverrides() {
 
 	// Build a new FeePricer with a mocked client for fetching gas price.
 	clientFetcher := new(fetcherMocks.ClientFetcher)
+	priceFetcher := new(priceMocks.CoingeckoPriceFetcher)
 	client := new(clientMocks.EVM)
 	currentHeader := &types.Header{BaseFee: big.NewInt(100_000_000_000)} // 100 gwei
 	client.On(testsuite.GetFunctionName(client.HeaderByNumber), mock.Anything, mock.Anything).Return(currentHeader, nil)
 	clientFetcher.On(testsuite.GetFunctionName(clientFetcher.GetClient), mock.Anything, mock.Anything).Return(client, nil)
-	feePricer := pricer.NewFeePricer(s.config, clientFetcher, metrics.NewNullHandler())
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "ETH").Return(1000., nil)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, "USDC").Return(1., nil)
+	feePricer := pricer.NewFeePricerWithFetchers(s.config, clientFetcher, metrics.NewNullHandler(), priceFetcher)
 	go func() { feePricer.Start(s.GetTestContext()) }()
 
 	// Calculate the origin fee.
@@ -87,10 +87,10 @@ func (s *PricerSuite) TestGetOriginFeeWithOverrides() {
 		Then, add the l1 fee component:
 		fee_denom = (((100e9 * 1000000 / 1e18) * 2000) * 1) * 1e6 = 200_000_000
 
-		So, the total is: 1_200_000_000
+		So, the total is: 600_000_000
 	*/
 
-	expectedFee := big.NewInt(1_200_000_000) // 1200 usd
+	expectedFee := big.NewInt(600_000_000) // 600 usd
 	s.Equal(expectedFee, fee)
 
 	// Ensure that the fee has been cached.
