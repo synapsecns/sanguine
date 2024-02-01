@@ -57,12 +57,15 @@ export const bridgeQuoteSlice = createSlice({
       state.error = null
       state.isLoading = false
     },
+    setIsLoading: (state, action: PayloadAction<boolean>) => {
+      state.isLoading = action.payload
+    },
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchBridgeQuote.pending, (state) => {
         state.status = FetchState.LOADING
-        state.isLoading = true
+        // state.isLoading = true
       })
       .addCase(
         fetchBridgeQuote.fulfilled,
@@ -81,6 +84,6 @@ export const bridgeQuoteSlice = createSlice({
   },
 })
 
-export const { resetQuote } = bridgeQuoteSlice.actions
+export const { resetQuote, setIsLoading } = bridgeQuoteSlice.actions
 
 export default bridgeQuoteSlice.reducer
