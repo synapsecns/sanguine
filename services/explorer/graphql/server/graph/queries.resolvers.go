@@ -49,7 +49,7 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainIDFrom []*i
 
 	wg.Wait()
 	if originErr != nil || destinationErr != nil {
-		return nil, fmt.Errorf("error while getting txs. orgin err: %w, destination err: %w", originErr, destinationErr)
+		return nil, fmt.Errorf("error while getting txs. origin err: %w, destination err: %w", originErr, destinationErr)
 	}
 	results = r.mergeBridgeTransactions(fromResults, toResults)
 	sort.Sort(SortBridgeTxType(results))

@@ -139,7 +139,7 @@ func ConvertFeesAndRebatesToJSON(feesAndRebates stipconfig.FeesAndRebates) map[i
 
 			for token, feeRebate := range tokenFeeRebate {
 				// Convert each FeeRebate into a map with "fee" and "rebate" as keys
-				moduleMap[token] = map[string]int{"fee": feeRebate.Fee, "rebate": feeRebate.Rebate}
+				moduleMap[token] = map[string]float64{"fee": feeRebate.Fee, "rebate": feeRebate.RebateBps}
 			}
 		}
 	}

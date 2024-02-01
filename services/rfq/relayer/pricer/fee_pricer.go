@@ -205,14 +205,25 @@ func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint3
 	}
 	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(denomTokenDecimals)), nil)
 
-	// Compute the fee in ETH terms.
+	// Compute the fee.
+	var feeDenom *big.Float
 	feeWei := new(big.Float).Mul(new(big.Float).SetInt(gasPrice), new(big.Float).SetFloat64(float64(gasEstimate)))
-	feeEth := new(big.Float).Quo(feeWei, new(big.Float).SetInt(nativeDecimalsFactor))
-	feeUSD := new(big.Float).Mul(feeEth, new(big.Float).SetFloat64(nativeTokenPrice))
-	feeUSDC := new(big.Float).Mul(feeUSD, new(big.Float).SetFloat64(denomTokenPrice))
-	// Note that this rounds towards zero- we may need to apply rounding here if
-	// we want to be conservative and lean towards overestimating fees.
-	feeUSDCDecimals := new(big.Float).Mul(feeUSDC, new(big.Float).SetInt(denomDecimalsFactor))
+	if denomToken == nativeToken {
+		// Denomination token is native token, so no need for unit conversion.
+		feeDenom = feeWei
+	} else {
+		// Convert the fee from ETH to denomToken terms.
+		feeEth := new(big.Float).Quo(feeWei, new(big.Float).SetInt(nativeDecimalsFactor))
+		feeUSD := new(big.Float).Mul(feeEth, new(big.Float).SetFloat64(nativeTokenPrice))
+		feeUSDC := new(big.Float).Mul(feeUSD, new(big.Float).SetFloat64(denomTokenPrice))
+		feeDenom = new(big.Float).Mul(feeUSDC, new(big.Float).SetInt(denomDecimalsFactor))
+		span.SetAttributes(
+			attribute.String("fee_wei", feeWei.String()),
+			attribute.String("fee_eth", feeEth.String()),
+			attribute.String("fee_usd", feeUSD.String()),
+			attribute.String("fee_usdc", feeUSDC.String()),
+		)
+	}
 
 	multiplier := f.config.GetFixedFeeMultiplier()
 	if !useMultiplier {
@@ -220,17 +231,16 @@ func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint3
 	}
 
 	// Apply the fixed fee multiplier.
-	feeUSDCDecimalsScaled, _ := new(big.Float).Mul(feeUSDCDecimals, new(big.Float).SetFloat64(multiplier)).Int(nil)
+	// Note that this step rounds towards zero- we may need to apply rounding here if
+	// we want to be conservative and lean towards overestimating fees.
+	feeUSDCDecimalsScaled, _ := new(big.Float).Mul(feeDenom, new(big.Float).SetFloat64(multiplier)).Int(nil)
 	span.SetAttributes(
 		attribute.String("gas_price", gasPrice.String()),
 		attribute.Float64("native_token_price", nativeTokenPrice),
 		attribute.Float64("denom_token_price", denomTokenPrice),
 		attribute.Int("denom_token_decimals", int(denomTokenDecimals)),
 		attribute.String("fee_wei", feeWei.String()),
-		attribute.String("fee_eth", feeEth.String()),
-		attribute.String("fee_usd", feeUSD.String()),
-		attribute.String("fee_usdc", feeUSDC.String()),
-		attribute.String("fee_usdc_decimals", feeUSDCDecimals.String()),
+		attribute.String("fee_denom", feeDenom.String()),
 		attribute.String("fee_usdc_decimals_scaled", feeUSDCDecimalsScaled.String()),
 	)
 	return feeUSDCDecimalsScaled, nil
