@@ -15,7 +15,7 @@ var DefaultChainConfig = ChainConfig{
 	DeadlineBufferSeconds: 600,
 	OriginGasEstimate:     160000,
 	DestGasEstimate:       100000,
-	MinGasToken:           "0",
+	MinGasToken:           "100000000000000000", // 1 ETH
 	QuotePct:              100,
 	QuoteOffsetBps:        0,
 	FixedFeeMultiplier:    1,
