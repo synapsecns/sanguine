@@ -195,7 +195,7 @@ func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint3
 	if err != nil {
 		return nil, err
 	}
-	nativeToken, err := f.config.GetNativeToken(gasChain)
+	nativeToken, err := f.config.GetNativeToken(int(gasChain))
 	if err != nil {
 		return nil, err
 	}
