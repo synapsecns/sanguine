@@ -17,7 +17,7 @@ function App() {
           web3Provider={web3Provider}
           targetTokens={targetTokens}
           targetChainIds={[137]}
-          theme="light"
+          customTheme={{ bgColor: 'light' }}
           container={true}
         />
       </div>

@@ -98,13 +98,13 @@ Note: Token naming convention is based on the tokens provided by `@synapsecns/wi
 
 ## Theme Customization
 
-The widget is designed to be easily customized to match your app's theme. The widget accepts an optional `theme` parameter of `'dark'` and `'light'` for respective modes:
+The widget is designed to be easily customized to match your app's theme. The widget accepts an optional `customTheme` configurable `bgColor` parameter for `'dark'` and `'light'` modes:
 
 ```tsx
-<Bridge web3Provider={web3Provider} theme="dark" />
+<Bridge web3Provider={web3Provider} customTheme={{ bgColor: 'light' }} />
 ```
 
-Additionally, the widget supports more complex custom themes with a `customTheme` property. This allows for more fine-grained control over the widget's colors and fonts.
+Additionally, the widget supports more complex custom themes with the `customTheme` property. This allows for more fine-grained control over the widget's colors and fonts.
 
 ```tsx
 const customTheme = {

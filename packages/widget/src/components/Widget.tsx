@@ -62,7 +62,6 @@ import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
 import { switchNetwork } from '@/utils/actions/switchNetwork'
 
 interface WidgetProps {
-  theme?: 'light' | 'dark'
   customTheme: CustomThemeVariables
   container?: Boolean
   targetTokens?: BridgeableToken[]
@@ -70,7 +69,6 @@ interface WidgetProps {
 }
 
 export const Widget = ({
-  theme,
   customTheme,
   container,
   targetChainIds,
@@ -113,7 +111,7 @@ export const Widget = ({
   const { bridgeTxnStatus } = useBridgeTransactionState()
   const { approveTxnStatus } = useApproveTransactionState()
 
-  const themeVariables = useThemeVariables(theme, customTheme)
+  const themeVariables = useThemeVariables(customTheme)
 
   const originChainProvider = useMemo(() => {
     return synapseProviders.find(

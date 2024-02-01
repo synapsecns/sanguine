@@ -26,7 +26,7 @@ function App() {
             web3Provider={web3Provider}
             customRpcs={customRpcs}
             targetTokens={targetTokens}
-            theme="light"
+            customTheme={{ bgColor: 'light' }}
             container={true}
             targetChainIds={[42161]}
           />

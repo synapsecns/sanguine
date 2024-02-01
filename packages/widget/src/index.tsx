@@ -11,12 +11,9 @@ import * as BRIDGEABLE from '@/constants/bridgeable'
 import { CHAINS_ARRAY } from '@/constants/chains'
 import { BackgroundListenerProvider } from '@/providers/BackgroundListenerProvider'
 
-// TODO: Can we clarify browserProvider vs. web3Provider vs. web3Context
-
 export const Bridge = ({
   web3Provider,
   customRpcs,
-  theme,
   customTheme,
   container,
   targetChainIds,
@@ -28,7 +25,6 @@ export const Bridge = ({
         <Provider store={store}>
           <BackgroundListenerProvider>
             <Widget
-              theme={theme}
               customTheme={customTheme}
               container={container}
               targetChainIds={targetChainIds}

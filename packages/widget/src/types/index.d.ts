@@ -23,7 +23,6 @@ export interface CustomThemeVariables {
   '--synapse-accent'?: string
 }
 
-// TODO: Determine if this type if needed, or move to correct location
 export type CustomRpcs = {
   [chainId: number]: string
 }
@@ -34,9 +33,6 @@ export interface BridgeProps {
 
   /** Consumer selected RPCs */
   customRpcs?: CustomRpcs
-
-  /** Selected Day/Night Theme */
-  theme?: 'light' | 'dark'
 
   /** Apply Custom Themes */
   customTheme?: CustomThemeVariables
