@@ -67,6 +67,48 @@ func isNonZero(value interface{}) bool {
 	return reflect.ValueOf(value).Interface() != reflect.Zero(reflect.TypeOf(value)).Interface()
 }
 
+// GetBridge returns the Bridge for the given chainID.
+func (c Config) GetBridge(chainID int) (value string, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "Bridge")
+	if err != nil {
+		return value, err
+	}
+
+	value, ok := rawValue.(string)
+	if !ok {
+		return value, fmt.Errorf("failed to cast Bridge to string")
+	}
+	return value, nil
+}
+
+// GetConfirmations returns the Confirmations for the given chainID.
+func (c Config) GetConfirmations(chainID int) (value uint64, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "Confirmations")
+	if err != nil {
+		return value, err
+	}
+
+	value, ok := rawValue.(uint64)
+	if !ok {
+		return value, fmt.Errorf("failed to cast Confirmations to int")
+	}
+	return value, nil
+}
+
+// GetNativeToken returns the NativeToken for the given chainID.
+func (c Config) GetNativeToken(chainID int) (value string, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "NativeToken")
+	if err != nil {
+		return value, err
+	}
+
+	value, ok := rawValue.(string)
+	if !ok {
+		return value, fmt.Errorf("failed to cast NativeToken to string")
+	}
+	return value, nil
+}
+
 // GetDeadlineBuffer returns the DeadlineBuffer for the given chainID.
 func (c Config) GetDeadlineBuffer(chainID int) (seconds time.Duration, err error) {
 	rawValue, err := c.getChainConfigValue(chainID, "DeadlineBufferSeconds")
@@ -293,18 +335,6 @@ func (c Config) GetQuotableTokens(token string) ([]string, error) {
 		return nil, fmt.Errorf("no quotable tokens for token %s", token)
 	}
 	return tokens, nil
-}
-
-// GetNativeToken returns the native token for the given chain.
-func (c Config) GetNativeToken(chainID uint32) (string, error) {
-	chainConfig, ok := c.Chains[int(chainID)]
-	if !ok {
-		return "", fmt.Errorf("could not get chain config for chainID: %d", chainID)
-	}
-	if len(chainConfig.NativeToken) == 0 {
-		return "", fmt.Errorf("chain config for chainID %d does not have a native token", chainID)
-	}
-	return chainConfig.NativeToken, nil
 }
 
 // GetTokenDecimals returns the token decimals for the given chain and token.

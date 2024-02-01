@@ -2,6 +2,7 @@ package relconfig
 
 import (
 	"testing"
+	"time"
 
 	"github.com/alecthomas/assert"
 )
@@ -12,6 +13,9 @@ func TestGetters(t *testing.T) {
 	cfgWithBase := Config{
 		Chains: map[int]ChainConfig{
 			chainID: {
+				Bridge:                 "0x123",
+				Confirmations:          1,
+				NativeToken:            "MATIC",
 				DeadlineBufferSeconds:  10,
 				OriginGasEstimate:      10000,
 				DestGasEstimate:        20000,
@@ -25,6 +29,9 @@ func TestGetters(t *testing.T) {
 			},
 		},
 		BaseChainConfig: ChainConfig{
+			Bridge:                 "0x1234",
+			Confirmations:          2,
+			NativeToken:            "ARB",
 			DeadlineBufferSeconds:  11,
 			OriginGasEstimate:      10001,
 			DestGasEstimate:        20001,
@@ -40,6 +47,9 @@ func TestGetters(t *testing.T) {
 	cfg := Config{
 		Chains: map[int]ChainConfig{
 			chainID: {
+				Bridge:                 "0x123",
+				Confirmations:          1,
+				NativeToken:            "MATIC",
 				DeadlineBufferSeconds:  10,
 				OriginGasEstimate:      10000,
 				DestGasEstimate:        20000,
@@ -53,6 +63,62 @@ func TestGetters(t *testing.T) {
 			},
 		},
 	}
+
+	t.Run("GetBridge", func(t *testing.T) {
+		defaultVal, err := cfg.GetBridge(badChainID)
+		assert.NoError(t, err)
+		assert.Equal(t, defaultVal, defaultChainConfig.Bridge)
+
+		baseVal, err := cfgWithBase.GetBridge(badChainID)
+		assert.NoError(t, err)
+		assert.Equal(t, baseVal, cfgWithBase.BaseChainConfig.Bridge)
+
+		chainVal, err := cfgWithBase.GetBridge(chainID)
+		assert.NoError(t, err)
+		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].Bridge)
+	})
+
+	t.Run("GetConfirmations", func(t *testing.T) {
+		defaultVal, err := cfg.GetConfirmations(badChainID)
+		assert.NoError(t, err)
+		assert.Equal(t, defaultVal, defaultChainConfig.Confirmations)
+
+		baseVal, err := cfgWithBase.GetConfirmations(badChainID)
+		assert.NoError(t, err)
+		assert.Equal(t, baseVal, cfgWithBase.BaseChainConfig.Confirmations)
+
+		chainVal, err := cfgWithBase.GetConfirmations(chainID)
+		assert.NoError(t, err)
+		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].Confirmations)
+	})
+
+	t.Run("GetNativeToken", func(t *testing.T) {
+		defaultVal, err := cfg.GetNativeToken(badChainID)
+		assert.NoError(t, err)
+		assert.Equal(t, defaultVal, defaultChainConfig.NativeToken)
+
+		baseVal, err := cfgWithBase.GetNativeToken(badChainID)
+		assert.NoError(t, err)
+		assert.Equal(t, baseVal, cfgWithBase.BaseChainConfig.NativeToken)
+
+		chainVal, err := cfgWithBase.GetNativeToken(chainID)
+		assert.NoError(t, err)
+		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].NativeToken)
+	})
+
+	t.Run("GetDeadlineBuffer", func(t *testing.T) {
+		defaultVal, err := cfg.GetDeadlineBuffer(badChainID)
+		assert.NoError(t, err)
+		assert.Equal(t, defaultVal, time.Duration(defaultChainConfig.DeadlineBufferSeconds)*time.Second)
+
+		baseVal, err := cfgWithBase.GetDeadlineBuffer(badChainID)
+		assert.NoError(t, err)
+		assert.Equal(t, baseVal, time.Duration(cfgWithBase.BaseChainConfig.DeadlineBufferSeconds)*time.Second)
+
+		chainVal, err := cfgWithBase.GetDeadlineBuffer(chainID)
+		assert.NoError(t, err)
+		assert.Equal(t, chainVal, time.Duration(cfgWithBase.Chains[chainID].DeadlineBufferSeconds)*time.Second)
+	})
 
 	t.Run("GetOriginGasEstimate", func(t *testing.T) {
 		defaultVal, err := cfg.GetOriginGasEstimate(badChainID)
