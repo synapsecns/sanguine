@@ -2,7 +2,8 @@ import Grid from '@tw/Grid'
 import Link from 'next/link'
 
 import {
-  BRIDGE_PATH, BUILD_ON_URL,
+  BRIDGE_PATH,
+  BUILD_ON_URL,
   DISCORD_URL,
   DOCS_URL,
   FORUM_URL,
@@ -11,7 +12,8 @@ import {
   POOLS_PATH,
   PRIVACY_POLICY_PATH,
   STAKE_PATH,
-  SWAP_PATH, TELEGRAM_URL,
+  SWAP_PATH,
+  TELEGRAM_URL,
   TERMS_OF_SERVICE_PATH,
   TWITTER_URL,
 } from '@/constants/urls'
@@ -105,25 +107,25 @@ const supportList: FooterDataProps[] = [
     type: FooterType.URL,
     url: FORUM_URL,
   },
-    {
-      text: 'Telegram',
-      type: 'url',
-      url: TELEGRAM_URL,
-    },
+  {
+    text: 'Telegram',
+    type: 'url',
+    url: TELEGRAM_URL,
+  },
 ]
 
 export function PageFooter() {
   return (
     <footer>
-      <div className="p-8 flex flex-wrap gap-8 justify-between max-w-4xl m-auto">
-          <SynapseTitleLogo showText={true} />
-          <div className="flex flex-wrap gap-8">
-            <FooterBlock elements={functionsList} />
-            <FooterBlock elements={developersList} />
-            <FooterBlock elements={supportList} />
-          </div>
+      <div className="flex flex-wrap justify-between max-w-4xl gap-8 p-8 m-auto">
+        <SynapseTitleLogo showText={true} />
+        <div className="flex flex-wrap gap-8">
+          <FooterBlock elements={functionsList} />
+          <FooterBlock elements={developersList} />
+          <FooterBlock elements={supportList} />
+        </div>
       </div>
-      <div className="text-secondaryTextColor pb-12 flex gap-2 justify-center">
+      <div className="flex justify-center gap-2 pb-12 text-secondaryTextColor">
         <div className="text-opacity-50 text-secondaryTextColor">
           <a
             className="duration-75 hover:text-white transform-gpu hover:transition-all"
@@ -188,6 +190,6 @@ function DisplayText({ element }: { element: FooterDataProps }) {
       </div>
     )
   } else {
-    return <div className="opacity-80">{text}</div>
+    return <div className="text-opacity-80">{text}</div>
   }
 }
