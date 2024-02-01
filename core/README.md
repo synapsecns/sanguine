@@ -3,8 +3,8 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/synapsecns/sanguine/core.svg)](https://pkg.go.dev/github.com/synapsecns/sanguine/core)
 [![Go Report Card](https://goreportcard.com/badge/github.com/synapsecns/sanguine/core)](https://goreportcard.com/report/github.com/synapsecns/sanguine/core)
 
-
 Core contains common libraries used across the synapse Go repositories.
+
 
 ## Directory Structure
 
