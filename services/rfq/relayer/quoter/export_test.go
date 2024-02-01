@@ -14,8 +14,8 @@ func (m *Manager) GenerateQuotes(ctx context.Context, chainID int, address commo
 	return m.generateQuotes(ctx, chainID, address, balance)
 }
 
-func (m *Manager) GetQuoteAmount(ctx context.Context, chainID int, address common.Address, balance *big.Int) *big.Int {
-	return m.getQuoteAmount(ctx, chainID, address, balance)
+func (m *Manager) GetQuoteAmount(ctx context.Context, origin, dest int, address common.Address, balance *big.Int) (*big.Int, error) {
+	return m.getQuoteAmount(ctx, origin, dest, address, balance)
 }
 
 func (m *Manager) GetDestAmount(ctx context.Context, quoteAmount *big.Int) *big.Int {
