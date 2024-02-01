@@ -1,11 +1,4 @@
-import {
-  Bridge,
-  USDC,
-  USDT,
-  DAI,
-  ETH,
-  CustomRpcs,
-} from '@abtestingalpha/widget'
+import { Bridge, USDC, USDT, DAI, ETH, CustomRpcs } from '@synapsecns/widget'
 import { useEthereumWallet } from './hooks/useEthereumWallet'
 
 const targetTokens = [USDC, USDT, DAI, ETH]
