@@ -32,7 +32,7 @@ export const TokenSelect = ({ label, isOrigin, token, onChange }: Props) => {
   if (isOrigin) {
     options = originTokens
 
-    if (targetChainIds.length > 0 && targetChainIds.includes(originChainId)) {
+    if (targetChainIds?.length > 0 && targetChainIds.includes(originChainId)) {
       remaining = generateOriginRemainingTokens(
         originChainId,
         destinationChainId,
@@ -61,7 +61,7 @@ export const TokenSelect = ({ label, isOrigin, token, onChange }: Props) => {
     }
   } else {
     if (
-      targetChainIds.length > 0 &&
+      targetChainIds?.length > 0 &&
       targetChainIds.includes(destinationChainId)
     ) {
       /* If consumer provides no target tokens, then we just show the destination tokens */
