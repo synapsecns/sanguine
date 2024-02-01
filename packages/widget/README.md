@@ -1,6 +1,6 @@
 This explains how to integrate the bridge widget into your dApp in just a few minutes. This widget enables users to bridge tokens directly on your site, utilizing the Synapse Protocol.
 
-<img src="./images/dark.png" alt="Dark Theme" width="400"/>
+<img src="https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/widget/images/dark.png" alt="Dark Theme" width="400"/>
 
 Live version of the widget:
 
@@ -138,6 +138,6 @@ The widget additionally supports a `container` property of `true` or `false` to 
 
 Within the repository's `/examples` folder, there are three example apps. The `landing-page` folder contains a fully functional demo with customizations of the widget. The `with-react` and `with-next` folders contain a simple implementation of the widget using React and Next.js, respectively.
 
-<img src="./images/dark.png" alt="Dark Theme" width="400"/>
-<img src="./images/light.png" alt="Light Theme" width="400"/>
-<img src="./images/blue.png" alt="Blue Theme" width="400"/>
+<img src="https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/widget/images/dark.png" alt="Dark Theme" width="400"/>
+<img src="https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/widget/images/light.png" alt="Light Theme" width="400"/>
+<img src="https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/widget/images/blue.png" alt="Blue Theme" width="400"/>
