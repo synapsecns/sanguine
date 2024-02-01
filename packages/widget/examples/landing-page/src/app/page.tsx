@@ -17,7 +17,7 @@ import { Instructions } from '@/components/Instructions'
 import { PackageInstall } from '@/components/PackageInstall'
 
 const initialConfig = {
-  theme: {
+  customTheme: {
     bgColor: 'dark',
   },
   targetTokens: [],
@@ -26,17 +26,17 @@ const initialConfig = {
 
 const consumerExamples = {
   dark: {
-    theme: {
+    customTheme: {
       bgColor: 'dark',
     },
   },
   light: {
-    theme: {
+    customTheme: {
       bgColor: 'light',
     },
   },
   gmx: {
-    theme: {
+    customTheme: {
       '--synapse-text': 'white',
       '--synapse-secondary': '#ffffffb3',
       '--synapse-root': '#16182e',
@@ -50,7 +50,7 @@ const consumerExamples = {
     targetChainIds: [42161, 43114],
   },
   hercules: {
-    theme: {
+    customTheme: {
       bgColor: 'dark',
       '--synapse-button-bg':
         'linear-gradient(90deg, hsl(43deg 79% 74%), hsl(21deg 76% 60%))',
@@ -61,7 +61,7 @@ const consumerExamples = {
     targetChainIds: [1088],
   },
   dfk: {
-    theme: {
+    customTheme: {
       bgColor: 'light',
       '--synapse-text': 'hsl(12deg 85% 13%)',
       '--synapse-secondary': 'hsl(12deg 85% 20%)',
@@ -105,7 +105,7 @@ export default function Home() {
     ) as HTMLInputElement | null
     setConfig((prevConfig: any) => ({
       ...prevConfig,
-      theme: { bgColor: colorPicker?.value },
+      customTheme: { bgColor: colorPicker?.value },
     }))
   }
 
@@ -134,9 +134,9 @@ export default function Home() {
                 web3Provider={web3Provider}
                 customRpcs={customRpcs}
                 targetTokens={config.targetTokens}
-                customTheme={config.theme}
-                container={container}
                 targetChainIds={config.targetChainIds}
+                customTheme={config.customTheme}
+                container={container}
               />
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
