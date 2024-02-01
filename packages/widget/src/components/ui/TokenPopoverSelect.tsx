@@ -84,12 +84,15 @@ export const TokenPopoverSelect = ({
               parsedBalance={option?.parsedBalance}
             />
           ))}
-          <div
-            className="px-2.5 py-2 mt-2 text-sm text-[--synapse-secondary] cursor-default sticky top-0"
-            style={{ background: 'var(--synapse-select-bg)' }}
-          >
-            Other tokens
-          </div>
+
+          {remaining?.length > 0 && (
+            <div
+              className="px-2.5 py-2 mt-2 text-sm text-[--synapse-secondary] cursor-default sticky top-0"
+              style={{ background: 'var(--synapse-select-bg)' }}
+            >
+              Other tokens
+            </div>
+          )}
           {sortedRemainingWithBalances?.map((option: TokenBalance, index) => (
             <TokenOption
               option={option?.token}
