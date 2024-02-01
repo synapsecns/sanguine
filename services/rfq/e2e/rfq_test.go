@@ -62,6 +62,11 @@ const (
 func (i *IntegrationSuite) SetupTest() {
 	i.TestSuite.SetupTest()
 
+	// TODO: no need for this when anvil CI issues are fixed
+	if core.GetEnvBool("CI", false) {
+		return
+	}
+
 	i.manager = testutil.NewDeployManager(i.T())
 	// TODO: consider jaeger
 	i.metrics = metrics.NewNullHandler()
@@ -71,7 +76,6 @@ func (i *IntegrationSuite) SetupTest() {
 	// setup the api server
 	i.setupQuoterAPI()
 	i.setupRelayer()
-
 }
 
 // getOtherBackend gets the backend that is not the current one. This is a helper
@@ -86,6 +90,9 @@ func (i *IntegrationSuite) getOtherBackend(backend backends.SimulatedTestBackend
 }
 
 func (i *IntegrationSuite) TestUSDCtoUSDC() {
+	if core.GetEnvBool("CI", false) {
+		i.T().Skip("skipping until anvil issues are fixed in CI")
+	}
 	// Before we do anything, we're going to mint ourselves some USDC on the destination chain.
 	// 100k should do.
 	i.manager.MintToAddress(i.GetTestContext(), i.destBackend, testutil.USDCType, i.relayerWallet.Address(), big.NewInt(100000))
@@ -193,8 +200,9 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 }
 
 func (i *IntegrationSuite) TestETHtoETH() {
-	i.T().Skip("skipping until anvil issues are fixed in CI")
-
+	if core.GetEnvBool("CI", false) {
+		i.T().Skip("skipping until anvil issues are fixed in CI")
+	}
 	// Send ETH to the relayer on destination
 	const initialBalance = 10
 	i.destBackend.FundAccount(i.GetTestContext(), i.relayerWallet.Address(), *big.NewInt(initialBalance))
