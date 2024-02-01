@@ -41,7 +41,6 @@ import {
 import {
   EMPTY_BRIDGE_QUOTE,
   resetQuote,
-  setIsLoading,
 } from '@/state/slices/bridgeQuote/reducer'
 import {
   executeBridgeTxn,
@@ -206,6 +205,7 @@ export const Widget = ({
             ),
             debouncedInputAmount,
             synapseSDK,
+            requestId: thisRequestId,
           })
         )
       }
@@ -355,6 +355,9 @@ export const Widget = ({
     text-[--synapse-text] placeholder:text-[--synapse-secondary] focus:outline-none disabled:cursor-not-allowed font-sans
   `
 
+  const isCurrentRequestedQuote =
+    bridgeQuote?.requestId === currentSDKRequestID.current
+
   return (
     <div
       style={themeVariables}
@@ -409,7 +412,10 @@ export const Widget = ({
             disabled={true}
             placeholder=""
             value={
-              isLoading || !bridgeQuote || !destinationToken
+              isLoading ||
+              !bridgeQuote ||
+              !destinationToken ||
+              !isCurrentRequestedQuote
                 ? '...'
                 : formatBigIntToString(
                     bridgeQuote?.delta,

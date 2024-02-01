@@ -19,6 +19,7 @@ export type BridgeQuote = {
   quotes: { originQuery: {}; destQuery: {} }
   estimatedTime: number
   bridgeModuleName: string
+  requestId: number
 }
 
 export const EMPTY_BRIDGE_QUOTE = {
@@ -31,6 +32,7 @@ export const EMPTY_BRIDGE_QUOTE = {
   quotes: { originQuery: null, destQuery: null },
   estimatedTime: null,
   bridgeModuleName: null,
+  requestId: null,
 }
 
 export interface BridgeQuoteState {
@@ -57,15 +59,12 @@ export const bridgeQuoteSlice = createSlice({
       state.error = null
       state.isLoading = false
     },
-    setIsLoading: (state, action: PayloadAction<boolean>) => {
-      state.isLoading = action.payload
-    },
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchBridgeQuote.pending, (state) => {
         state.status = FetchState.LOADING
-        // state.isLoading = true
+        state.isLoading = true
       })
       .addCase(
         fetchBridgeQuote.fulfilled,
@@ -84,6 +83,6 @@ export const bridgeQuoteSlice = createSlice({
   },
 })
 
-export const { resetQuote, setIsLoading } = bridgeQuoteSlice.actions
+export const { resetQuote } = bridgeQuoteSlice.actions
 
 export default bridgeQuoteSlice.reducer
