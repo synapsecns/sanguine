@@ -358,6 +358,22 @@ export const Widget = ({
   const isCurrentRequestedQuote =
     bridgeQuote?.requestId === currentSDKRequestID.current
 
+  const destinationValue = useMemo(() => {
+    if (isLoading) {
+      return '...'
+    } else if (!hasValidSelections) {
+      return ''
+    } else if (!bridgeQuote) {
+      return ''
+    } else if (bridgeQuote.outputAmountString === '') {
+      return '0'
+    } else if (!isCurrentRequestedQuote) {
+      return '...'
+    }
+
+    return bridgeQuote.outputAmountString
+  }, [isLoading, bridgeQuote, isCurrentRequestedQuote, hasValidSelections])
+
   return (
     <div
       style={themeVariables}
@@ -411,18 +427,7 @@ export const Widget = ({
             className={inputStyle}
             disabled={true}
             placeholder=""
-            value={
-              isLoading ||
-              !bridgeQuote ||
-              !destinationToken ||
-              !isCurrentRequestedQuote
-                ? '...'
-                : formatBigIntToString(
-                    bridgeQuote?.delta,
-                    destinationToken?.decimals[destinationChainId],
-                    4
-                  ) || ''
-            }
+            value={destinationValue}
           />
           <div className="flex flex-col items-end justify-center">
             <TokenSelect
