@@ -135,9 +135,9 @@ export const Transaction = ({
           {!isNull(destExplorerAddressLink) && (
             <MenuItem text={destExplorerName} link={destExplorerAddressLink} />
           )}
-          {!isNull(synapseExplorerLink) && (
+          {/* {!isNull(synapseExplorerLink) && (
             <MenuItem text="Synapse Explorer" link={synapseExplorerLink} />
-          )}
+          )} */}
           <MenuItem
             text="Contact Support"
             link="https://discord.gg/synapseprotocol"
