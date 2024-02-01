@@ -3,7 +3,7 @@ import { useAccount } from 'wagmi'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { PortfolioTabs, setActiveTab } from '@/slices/portfolio/actions'
 import { SearchBar } from './SearchBar'
-import { _Transactions } from '../_Transaction/_Transactions'
+import { _Transactions } from '../../_Transaction/_Transactions'
 
 export const PortfolioTabManager = () => {
   const dispatch = useAppDispatch()
@@ -47,7 +47,7 @@ const Tab = ({ display, activeTab, tabType, handleTabChange }: TabProps) => {
   const isCurrentlyActive: boolean = activeTab === tabType
   return (
     <button
-      data-test-id="tab"
+      id="tab"
       onClick={() => handleTabChange(tabType)}
       className={`
         font-medium text-2xl text-gray-500

@@ -21,7 +21,7 @@ export function ConnectWalletButton() {
   }
 
   return (
-    <div data-test-id="connect-wallet-button">
+    <div id="connect-wallet-button">
       {clientReady && (
         <ConnectButton.Custom>
           {({ account, chain, openConnectModal, mounted, openChainModal }) => {

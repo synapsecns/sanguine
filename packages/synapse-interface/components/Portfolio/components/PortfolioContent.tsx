@@ -1,16 +1,13 @@
 import React, { useMemo } from 'react'
 import { Address } from 'wagmi'
-import Link from 'next/link'
 import {
   NetworkTokenBalances,
   TokenAndBalance,
 } from '@/utils/actions/fetchPortfolioBalances'
 import { SingleNetworkPortfolio } from './SingleNetworkPortfolio'
 import { FetchState } from '@/slices/portfolio/actions'
-import { ConnectWalletButton } from './components/ConnectWalletButton'
-import { Chain } from '@/utils/types'
-import { DISCORD_URL, TWITTER_URL } from '@/constants/urls'
-import { shortenAddress } from '@/utils/shortenAddress'
+import { ConnectWalletButton } from './ConnectWalletButton'
+import { NoSearchResultsContent } from './NoSearchResultContent'
 
 type PortfolioContentProps = {
   connectedAddress: Address | string
@@ -70,7 +67,7 @@ export const PortfolioContent = ({
 
   return (
     <div
-      data-test-id="portfolio-content"
+      id="portfolio-content"
       className={`${visibility ? 'block' : 'hidden'}`}
     >
       {!connectedAddress && !searchInputActive && <HomeContent />}
@@ -140,56 +137,16 @@ function getCurrentNetworkPortfolio(
 const LoadingPortfolioContent = () => {
   return (
     <>
-      <p data-test-id="loading-portfolio-content" className="text-[#CCCAD3BF]">
+      <p id="loading-portfolio-content" className="text-[#CCCAD3BF]">
         Loading assets...
       </p>
     </>
   )
 }
 
-export const EmptyPortfolioContent = ({
-  connectedAddress,
-  connectedChain,
-}: {
-  connectedAddress: Address
-  connectedChain: Chain
-}) => {
-  const shortened: string = shortenAddress(connectedAddress)
+const HomeContent = () => {
   return (
-    <div data-test-id="empty-portfolio-content" className="p-4">
-      <p className="text-[#C2C2D6] mb-4">
-        No bridgeable assets found {connectedAddress && `for ${shortened}`} on{' '}
-        {connectedChain?.name}.
-      </p>
-      <p className="text-[#C2C2D6] mb-4">
-        Don't see a chain or token you want to bridge?
-      </p>
-      <a className="text-[#C2C2D6]">
-        Let us know on
-        <Link
-          className="text-[#99E6FF] underline px-1"
-          href={TWITTER_URL}
-          target="_blank"
-        >
-          Twitter
-        </Link>
-        or
-        <Link
-          className="text-[#99E6FF] underline pl-1"
-          href={DISCORD_URL}
-          target="_blank"
-        >
-          Discord
-        </Link>
-        .
-      </a>
-    </div>
-  )
-}
-
-export const HomeContent = () => {
-  return (
-    <div data-test-id="portfolio-home-content" className="text-white">
+    <div id="portfolio-home-content" className="text-white">
       <p className="mb-3">
         Synapse is the most widely used, extensible, and secure cross-chain
         communications network.
@@ -199,21 +156,6 @@ export const HomeContent = () => {
         are ready to submit a transaction.
       </p>
       <ConnectWalletButton />
-    </div>
-  )
-}
-
-export const NoSearchResultsContent = ({
-  searchStr,
-}: {
-  searchStr: string
-}) => {
-  return (
-    <div
-      data-test-id="portfolio-no-search-results-content"
-      className="text-white"
-    >
-      <p className="mb-3 break-words">No results found for '{searchStr}'.</p>
     </div>
   )
 }
