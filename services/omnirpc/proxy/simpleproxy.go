@@ -233,7 +233,7 @@ func (r *SimpleProxy) makeReq(parentCtx context.Context, body []byte) (_ []byte,
 	return respBody, nil
 }
 
-const expectedVersion = "Harmony (C) 2023. harmony, version v8196-v2023.4.2-0-g8717ccf6"
+const expectedVersion = "Harmony (C) 2023. harmony, version v8197-v2023.4.2-1-g40a2374d"
 
 func (r *SimpleProxy) getHarmonyReceiptVerify(parentCtx context.Context, txHash common.Hash, rawBody []byte, checkVersion bool) (_ []byte, err error) {
 	ctx, span := r.tracer.Start(parentCtx, "getHarmonyReceiptVerify")
