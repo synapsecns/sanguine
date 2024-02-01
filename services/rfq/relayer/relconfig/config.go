@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -112,6 +113,24 @@ type ChainFeeParams struct {
 	L1FeeOriginGasEstimate int `yaml:"l1_fee_origin_gas_estimate"`
 	// L1FeeDestGasEstimate is the gas estimate for the L1 fee on destination.
 	L1FeeDestGasEstimate int `yaml:"l1_fee_dest_gas_estimate"`
+}
+
+const tokenIDDelimiter = "-"
+
+// SanitizeTokenID takes a raw string, makes sure it is a valid token ID,
+// and returns the token ID as string with a checksummed address.
+func SanitizeTokenID(id string) (sanitized string, err error) {
+	split := strings.Split(id, tokenIDDelimiter)
+	if len(split) != 2 {
+		return sanitized, fmt.Errorf("invalid token ID: %s", id)
+	}
+	chainID, err := strconv.Atoi(split[0])
+	if err != nil {
+		return sanitized, fmt.Errorf("invalid chain ID: %s", split[0])
+	}
+	addr := common.HexToAddress(split[1])
+	sanitized = fmt.Sprintf("%d%s%s", chainID, tokenIDDelimiter, addr.Hex())
+	return sanitized, nil
 }
 
 // LoadConfig loads the config from the given path.
@@ -222,8 +241,7 @@ func (c Config) GetTokenName(chain uint32, addr string) (string, error) {
 		return "", fmt.Errorf("no chain config for chain %d", chain)
 	}
 	for tokenName, tokenConfig := range chainConfig.Tokens {
-		// TODO: probably a better way to do this.
-		if strings.ToLower(tokenConfig.Address) == strings.ToLower(addr) {
+		if common.HexToAddress(tokenConfig.Address).Hex() == common.HexToAddress(addr).Hex() {
 			return tokenName, nil
 		}
 	}
@@ -335,7 +353,7 @@ func (c Config) GetMinQuoteAmount(chainID int, addr common.Address) *big.Int {
 
 	var tokenCfg *TokenConfig
 	for _, cfg := range chainCfg.Tokens {
-		if strings.EqualFold(cfg.Address, addr.String()) {
+		if common.HexToAddress(cfg.Address).Hex() == addr.Hex() {
 			cfgCopy := cfg
 			tokenCfg = &cfgCopy
 			break

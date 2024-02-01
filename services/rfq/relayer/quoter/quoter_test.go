@@ -28,7 +28,7 @@ func (s *QuoterSuite) TestGenerateQuotes() {
 	expectedQuotes := []model.PutQuoteRequest{
 		{
 			OriginChainID:   int(s.origin),
-			OriginTokenAddr: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+			OriginTokenAddr: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
 			DestChainID:     int(s.destination),
 			DestTokenAddr:   "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85",
 			DestAmount:      balance.String(),
