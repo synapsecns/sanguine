@@ -22,7 +22,8 @@
     "watch": "rollup -c -w --bundleConfigAsCjs",
     "test:coverage": "echo 'No tests defined.'",
     "lint:check": "eslint . --max-warnings=0",
-    "ci:lint": "npm run lint:check"
+    "ci:lint": "npm run lint:check",
+    "prepare": "rollup -c --bundleConfigAsCjs"
   },
   "keywords": [
     "blockchain",
