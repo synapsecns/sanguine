@@ -257,6 +257,7 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 	var quotes []model.PutQuoteRequest
 	for keyTokenID, itemTokenIDs := range m.quotableTokens {
 		for _, tokenID := range itemTokenIDs {
+			//nolint: nestif
 			if tokenID == destTokenID {
 				originStr := strings.Split(keyTokenID, "-")[0]
 				origin, err := strconv.Atoi(originStr)

@@ -1,17 +1,18 @@
-package relconfig
+package relconfig_test
 
 import (
 	"testing"
 	"time"
 
 	"github.com/alecthomas/assert"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 )
 
 func TestGetters(t *testing.T) {
 	chainID := 1
 	badChainID := 2
-	cfgWithBase := Config{
-		Chains: map[int]ChainConfig{
+	cfgWithBase := relconfig.Config{
+		Chains: map[int]relconfig.ChainConfig{
 			chainID: {
 				Bridge:                 "0x123",
 				Confirmations:          1,
@@ -28,7 +29,7 @@ func TestGetters(t *testing.T) {
 				FixedFeeMultiplier:     1.1,
 			},
 		},
-		BaseChainConfig: ChainConfig{
+		BaseChainConfig: relconfig.ChainConfig{
 			Bridge:                 "0x1234",
 			Confirmations:          2,
 			NativeToken:            "ARB",
@@ -44,8 +45,8 @@ func TestGetters(t *testing.T) {
 			FixedFeeMultiplier:     1.2,
 		},
 	}
-	cfg := Config{
-		Chains: map[int]ChainConfig{
+	cfg := relconfig.Config{
+		Chains: map[int]relconfig.ChainConfig{
 			chainID: {
 				Bridge:                 "0x123",
 				Confirmations:          1,
@@ -67,7 +68,7 @@ func TestGetters(t *testing.T) {
 	t.Run("GetBridge", func(t *testing.T) {
 		defaultVal, err := cfg.GetBridge(badChainID)
 		assert.NoError(t, err)
-		assert.Equal(t, defaultVal, defaultChainConfig.Bridge)
+		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.Bridge)
 
 		baseVal, err := cfgWithBase.GetBridge(badChainID)
 		assert.NoError(t, err)
@@ -81,7 +82,7 @@ func TestGetters(t *testing.T) {
 	t.Run("GetConfirmations", func(t *testing.T) {
 		defaultVal, err := cfg.GetConfirmations(badChainID)
 		assert.NoError(t, err)
-		assert.Equal(t, defaultVal, defaultChainConfig.Confirmations)
+		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.Confirmations)
 
 		baseVal, err := cfgWithBase.GetConfirmations(badChainID)
 		assert.NoError(t, err)
@@ -95,7 +96,7 @@ func TestGetters(t *testing.T) {
 	t.Run("GetNativeToken", func(t *testing.T) {
 		defaultVal, err := cfg.GetNativeToken(badChainID)
 		assert.NoError(t, err)
-		assert.Equal(t, defaultVal, defaultChainConfig.NativeToken)
+		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.NativeToken)
 
 		baseVal, err := cfgWithBase.GetNativeToken(badChainID)
 		assert.NoError(t, err)
@@ -109,7 +110,7 @@ func TestGetters(t *testing.T) {
 	t.Run("GetDeadlineBuffer", func(t *testing.T) {
 		defaultVal, err := cfg.GetDeadlineBuffer(badChainID)
 		assert.NoError(t, err)
-		assert.Equal(t, defaultVal, time.Duration(defaultChainConfig.DeadlineBufferSeconds)*time.Second)
+		assert.Equal(t, defaultVal, time.Duration(relconfig.DefaultChainConfig.DeadlineBufferSeconds)*time.Second)
 
 		baseVal, err := cfgWithBase.GetDeadlineBuffer(badChainID)
 		assert.NoError(t, err)
@@ -123,7 +124,7 @@ func TestGetters(t *testing.T) {
 	t.Run("GetOriginGasEstimate", func(t *testing.T) {
 		defaultVal, err := cfg.GetOriginGasEstimate(badChainID)
 		assert.NoError(t, err)
-		assert.Equal(t, defaultVal, defaultChainConfig.OriginGasEstimate)
+		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.OriginGasEstimate)
 
 		baseVal, err := cfgWithBase.GetOriginGasEstimate(badChainID)
 		assert.NoError(t, err)
@@ -137,7 +138,7 @@ func TestGetters(t *testing.T) {
 	t.Run("GetDestGasEstimate", func(t *testing.T) {
 		defaultVal, err := cfg.GetDestGasEstimate(badChainID)
 		assert.NoError(t, err)
-		assert.Equal(t, defaultVal, defaultChainConfig.DestGasEstimate)
+		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.DestGasEstimate)
 
 		baseVal, err := cfgWithBase.GetDestGasEstimate(badChainID)
 		assert.NoError(t, err)
@@ -151,7 +152,7 @@ func TestGetters(t *testing.T) {
 	t.Run("GetL1FeeChainID", func(t *testing.T) {
 		defaultVal, err := cfg.GetL1FeeChainID(badChainID)
 		assert.NoError(t, err)
-		assert.Equal(t, defaultVal, defaultChainConfig.L1FeeChainID)
+		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.L1FeeChainID)
 
 		baseVal, err := cfgWithBase.GetL1FeeChainID(badChainID)
 		assert.NoError(t, err)
@@ -165,7 +166,7 @@ func TestGetters(t *testing.T) {
 	t.Run("GetL1FeeOriginGasEstimate", func(t *testing.T) {
 		defaultVal, err := cfg.GetL1FeeOriginGasEstimate(badChainID)
 		assert.NoError(t, err)
-		assert.Equal(t, defaultVal, defaultChainConfig.L1FeeOriginGasEstimate)
+		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.L1FeeOriginGasEstimate)
 
 		baseVal, err := cfgWithBase.GetL1FeeOriginGasEstimate(badChainID)
 		assert.NoError(t, err)
@@ -179,7 +180,7 @@ func TestGetters(t *testing.T) {
 	t.Run("GetL1FeeDestGasEstimate", func(t *testing.T) {
 		defaultVal, err := cfg.GetL1FeeDestGasEstimate(badChainID)
 		assert.NoError(t, err)
-		assert.Equal(t, defaultVal, defaultChainConfig.L1FeeDestGasEstimate)
+		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.L1FeeDestGasEstimate)
 
 		baseVal, err := cfgWithBase.GetL1FeeDestGasEstimate(badChainID)
 		assert.NoError(t, err)
@@ -193,7 +194,7 @@ func TestGetters(t *testing.T) {
 	t.Run("GetMinGasToken", func(t *testing.T) {
 		defaultVal, err := cfg.GetMinGasToken(badChainID)
 		assert.NoError(t, err)
-		assert.Equal(t, defaultVal.String(), defaultChainConfig.MinGasToken)
+		assert.Equal(t, defaultVal.String(), relconfig.DefaultChainConfig.MinGasToken)
 
 		baseVal, err := cfgWithBase.GetMinGasToken(badChainID)
 		assert.NoError(t, err)
@@ -207,7 +208,7 @@ func TestGetters(t *testing.T) {
 	t.Run("GetQuotePct", func(t *testing.T) {
 		defaultVal, err := cfg.GetQuotePct(badChainID)
 		assert.NoError(t, err)
-		assert.Equal(t, defaultVal, defaultChainConfig.QuotePct)
+		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.QuotePct)
 
 		baseVal, err := cfgWithBase.GetQuotePct(badChainID)
 		assert.NoError(t, err)
@@ -221,7 +222,7 @@ func TestGetters(t *testing.T) {
 	t.Run("GetQuoteOffsetBps", func(t *testing.T) {
 		defaultVal, err := cfg.GetQuoteOffsetBps(badChainID)
 		assert.NoError(t, err)
-		assert.Equal(t, defaultVal, defaultChainConfig.QuoteOffsetBps)
+		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.QuoteOffsetBps)
 
 		baseVal, err := cfgWithBase.GetQuoteOffsetBps(badChainID)
 		assert.NoError(t, err)
@@ -235,7 +236,7 @@ func TestGetters(t *testing.T) {
 	t.Run("GetFixedFeeMultiplier", func(t *testing.T) {
 		defaultVal, err := cfg.GetFixedFeeMultiplier(badChainID)
 		assert.NoError(t, err)
-		assert.Equal(t, defaultVal, defaultChainConfig.FixedFeeMultiplier)
+		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.FixedFeeMultiplier)
 
 		baseVal, err := cfgWithBase.GetFixedFeeMultiplier(badChainID)
 		assert.NoError(t, err)

@@ -23,7 +23,7 @@ import (
 type Config struct {
 	// Chains is a map of chainID -> chain config.
 	Chains map[int]ChainConfig `yaml:"bridges"`
-	// BaseChainConfig applies to all chains except those values that are overriden in Chains.
+	// BaseChainConfig applies to all chains except those values that are overridden in Chains.
 	BaseChainConfig ChainConfig `yaml:"base_chain_config"`
 	// OmniRPCURL is the URL of the OmniRPC server.
 	OmniRPCURL string `yaml:"omnirpc_url"`

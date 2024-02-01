@@ -88,7 +88,7 @@ func (f *feePricer) GetOriginFee(parentCtx context.Context, origin, destination 
 	// Calculate the origin fee
 	gasEstimate, err := f.config.GetOriginGasEstimate(int(origin))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not get origin gas estimate: %w", err)
 	}
 	fee, err := f.getFee(ctx, origin, destination, gasEstimate, denomToken, useMultiplier)
 	if err != nil {
@@ -123,7 +123,7 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 	// Calculate the destination fee
 	gasEstimate, err := f.config.GetDestGasEstimate(int(destination))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not get dest gas estimate: %w", err)
 	}
 	fee, err := f.getFee(ctx, destination, destination, gasEstimate, denomToken, useMultiplier)
 	if err != nil {
@@ -237,7 +237,7 @@ func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint3
 	if useMultiplier {
 		multiplier, err = f.config.GetFixedFeeMultiplier(int(gasChain))
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("could not get fixed fee multiplier: %w", err)
 		}
 	}
 

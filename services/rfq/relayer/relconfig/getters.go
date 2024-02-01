@@ -10,7 +10,8 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/config"
 )
 
-var defaultChainConfig = ChainConfig{
+// DefaultChainConfig is the default chain config.
+var DefaultChainConfig = ChainConfig{
 	DeadlineBufferSeconds: 600,
 	OriginGasEstimate:     160000,
 	DestGasEstimate:       100000,
@@ -23,7 +24,7 @@ var defaultChainConfig = ChainConfig{
 // getChainConfigValue gets the value of a field from ChainConfig.
 // It returns the value from Chains[chainID] if non-zero,
 // else from BaseChainConfig if non-zero,
-// else from defaultChainConfig.
+// else from DefaultChainConfig.
 func (c Config) getChainConfigValue(chainID int, fieldName string) (interface{}, error) {
 	chainConfig, ok := c.Chains[chainID]
 	if ok {
@@ -44,7 +45,7 @@ func (c Config) getChainConfigValue(chainID int, fieldName string) (interface{},
 		return baseValue, nil
 	}
 
-	defaultValue, err := getFieldValue(defaultChainConfig, fieldName)
+	defaultValue, err := getFieldValue(DefaultChainConfig, fieldName)
 	if err != nil {
 		return nil, err
 	}
@@ -238,7 +239,7 @@ func (c Config) GetQuoteOffsetBps(chainID int) (value float64, err error) {
 		return value, fmt.Errorf("failed to cast QuoteOffsetBps to int")
 	}
 	if value <= 0 {
-		value = defaultChainConfig.QuoteOffsetBps
+		value = DefaultChainConfig.QuoteOffsetBps
 	}
 	return value, nil
 }
@@ -255,7 +256,7 @@ func (c Config) GetFixedFeeMultiplier(chainID int) (value float64, err error) {
 		return value, fmt.Errorf("failed to cast FixedFeeMultiplier to int")
 	}
 	if value <= 0 {
-		value = defaultChainConfig.FixedFeeMultiplier
+		value = DefaultChainConfig.FixedFeeMultiplier
 	}
 	return value, nil
 }
