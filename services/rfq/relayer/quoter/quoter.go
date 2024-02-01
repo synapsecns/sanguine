@@ -396,7 +396,7 @@ func (m *Manager) getDestAmount(parentCtx context.Context, quoteAmount *big.Int,
 
 	quoteOffsetBps, err := m.config.GetQuoteOffsetBps(chainID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting quote offset bps: %w", err)
 	}
 	quoteOffsetFraction := new(big.Float).Quo(new(big.Float).SetInt64(int64(quoteOffsetBps)), new(big.Float).SetInt64(10000))
 	quoteOffsetFactor := new(big.Float).Sub(new(big.Float).SetInt64(1), quoteOffsetFraction)
