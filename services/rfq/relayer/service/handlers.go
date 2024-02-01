@@ -107,13 +107,13 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, _ trace.Span, requ
 		// shouldn't process from here on out
 		return nil
 	}
-	// get destination commitable balancs
-	commitableBalance, err := q.Inventory.GetCommittableBalance(ctx, int(q.Dest.ChainID), request.Transaction.DestToken)
+	// get destination committable balancs
+	committableBalance, err := q.Inventory.GetCommittableBalance(ctx, int(q.Dest.ChainID), request.Transaction.DestToken)
 	if err != nil {
-		return fmt.Errorf("could not get commitable balance: %w", err)
+		return fmt.Errorf("could not get committable balance: %w", err)
 	}
-	// if commitableBalance > destAmount
-	if commitableBalance.Cmp(request.Transaction.DestAmount) < 0 {
+	// if committableBalance > destAmount
+	if committableBalance.Cmp(request.Transaction.DestAmount) < 0 {
 		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.NotEnoughInventory)
 		if err != nil {
 			return fmt.Errorf("could not update request status: %w", err)
@@ -304,12 +304,12 @@ func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, _ trace.Spa
 //
 // handleNotEnoughInventory handles the not enough inventory status.
 func (q *QuoteRequestHandler) handleNotEnoughInventory(ctx context.Context, _ trace.Span, request reldb.QuoteRequest) (err error) {
-	commitableBalance, err := q.Inventory.GetCommittableBalance(ctx, int(q.Dest.ChainID), request.Transaction.DestToken)
+	committableBalance, err := q.Inventory.GetCommittableBalance(ctx, int(q.Dest.ChainID), request.Transaction.DestToken)
 	if err != nil {
-		return fmt.Errorf("could not get commitable balance: %w", err)
+		return fmt.Errorf("could not get committable balance: %w", err)
 	}
-	// if commitableBalance > destAmount
-	if commitableBalance.Cmp(request.Transaction.DestAmount) > 0 {
+	// if committableBalance > destAmount
+	if committableBalance.Cmp(request.Transaction.DestAmount) > 0 {
 		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.CommittedPending)
 		if err != nil {
 			return fmt.Errorf("could not update request status: %w", err)
