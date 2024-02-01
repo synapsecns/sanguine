@@ -40,6 +40,8 @@ type Config struct {
 	SubmitterConfig submitterConfig.Config `yaml:"submitter_config"`
 	// FeePricer is the fee pricer config.
 	FeePricer FeePricerConfig `yaml:"fee_pricer"`
+	// MinGasToken is minimum amount of gas that should be leftover after bridging a gas token.
+	MinGasToken string `yaml:"min_gas_token"`
 	// QuotePct is the percent of balance to quote.
 	QuotePct float64 `yaml:"quote_pct"`
 	// QuoteOffsetBps is the number of basis points to deduct from the dest amount.
@@ -236,6 +238,18 @@ func (c Config) GetFixedFeeMultiplier() float64 {
 		return defaultFixedFeeMultiplier
 	}
 	return c.FeePricer.FixedFeeMultiplier
+}
+
+// GetMinGasToken returns the min gas token.
+func (c Config) GetMinGasToken() (*big.Int, error) {
+	if c.MinGasToken == "" {
+		return big.NewInt(0), nil
+	}
+	minGasToken, ok := new(big.Int).SetString(c.MinGasToken, 10)
+	if !ok {
+		return nil, fmt.Errorf("could not parse min gas token %s", c.MinGasToken)
+	}
+	return minGasToken, nil
 }
 
 // GetChainFeeParams returns the chain fee params for the given chain.

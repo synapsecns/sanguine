@@ -371,7 +371,7 @@ func (s *STIPRelayer) SubmitAndRebateTransaction(ctx context.Context, transactio
 	// Calculate the transfer amount based on transaction details
 	// This function encapsulates the logic for determining the transfer amount
 	// You can define it elsewhere and call it here
-	transferAmount, err := s.CalculateTransferAmount(transaction)
+	transferAmount, err := s.CalculateTransferAmount(ctx, transaction)
 	if err != nil {
 		err := s.db.UpdateSTIPTransactionDoNotProcess(ctx, transaction.Hash)
 		if err != nil {
@@ -418,7 +418,7 @@ func (s *STIPRelayer) SubmitAndRebateTransaction(ctx context.Context, transactio
 }
 
 // CalculateTransferAmount determines the amount to transfer based on the transaction.
-func (s *STIPRelayer) CalculateTransferAmount(transaction *db.STIPTransactions) (*big.Int, error) {
+func (s *STIPRelayer) CalculateTransferAmount(ctx context.Context, transaction *db.STIPTransactions) (*big.Int, error) {
 	var toChainID int
 	switch transaction.Direction {
 	case "ARB":
@@ -439,12 +439,9 @@ func (s *STIPRelayer) CalculateTransferAmount(transaction *db.STIPTransactions) 
 		return nil, fmt.Errorf("token configuration not found for token %s", transaction.Token)
 	}
 
-	rebateInBPS := tokenConfig.Rebate
-
-	// Convert amountUSD to big.Float for precision during calculations
+	// Convert values to big.Float for precision during calculations
 	amountUSD := new(big.Float).SetFloat64(transaction.AmountUSD)
-
-	rebateBPS := new(big.Float).SetFloat64(float64(rebateInBPS))
+	rebateBPS := new(big.Float).SetFloat64(tokenConfig.RebateBps)
 
 	// Calculate rebate in USD (amountUSD * rebateBPS / 10000)
 	// Divide rebateBPS by 10000 to get the actual rebate rate
@@ -471,5 +468,28 @@ func (s *STIPRelayer) CalculateTransferAmount(transaction *db.STIPTransactions) 
 	// transferAmount := new(big.Int)
 	// transferAmountFloat.Int(transferAmount) // Round to the nearest integer
 
+	// Finally, apply the rebate cap
+	var err error
+	transferAmount, err = s.applyRebateCap(ctx, transaction, transferAmount)
+	if err != nil {
+		return nil, fmt.Errorf("could not apply rebate cap: %w", err)
+	}
+
 	return transferAmount, nil
+}
+
+func (s *STIPRelayer) applyRebateCap(ctx context.Context, transaction *db.STIPTransactions, amount *big.Int) (*big.Int, error) {
+	totalArbRebated, err := s.db.GetTotalArbRebated(ctx, transaction.Address)
+	if err != nil {
+		return nil, fmt.Errorf("could not get total ARB rebated: %w", err)
+	}
+	rebateCap := new(big.Int).Mul(big.NewInt(s.cfg.GetArbCapPerAddress()), big.NewInt(1e18)) // Convert to wei
+	remainingAmount := new(big.Int).Sub(rebateCap, totalArbRebated)
+
+	if remainingAmount.Cmp(big.NewInt(0)) <= 0 {
+		return nil, fmt.Errorf("address has reached the ARB rebate cap: %s", rebateCap.String())
+	} else if amount.Cmp(remainingAmount) >= 0 {
+		return remainingAmount, nil
+	}
+	return amount, nil
 }
