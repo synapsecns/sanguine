@@ -18,8 +18,8 @@ import (
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
-	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"go.opentelemetry.io/otel/attribute"
@@ -29,20 +29,26 @@ import (
 )
 
 // Manager is the interface for the inventory manager.
+//
+//go:generate go run github.com/vektra/mockery/v2 --name Manager --output ./mocks --case=underscore
 type Manager interface {
 	// GetCommittableBalance gets the total balance available for quotes
 	// this does not include on-chain balances committed in previous quotes that may be
 	// refunded in the event of a revert.
 	GetCommittableBalance(ctx context.Context, chainID int, token common.Address, options ...BalanceFetchArgOption) (*big.Int, error)
-	// GetCommitableBalances gets the total balances commitable for all tracked tokens.
-	GetCommitableBalances(ctx context.Context, options ...BalanceFetchArgOption) (map[int]map[common.Address]*big.Int, error)
+	// GetCommittableBalances gets the total balances committable for all tracked tokens.
+	GetCommittableBalances(ctx context.Context, options ...BalanceFetchArgOption) (map[int]map[common.Address]*big.Int, error)
 	// ApproveAllTokens approves all tokens for the relayer address.
 	ApproveAllTokens(ctx context.Context, submitter submitter.TransactionSubmitter) error
+	// HasSufficientGas checks if there is sufficient gas for a given route.
+	HasSufficientGas(ctx context.Context, origin, dest int) (bool, error)
 }
 
 type inventoryManagerImpl struct {
 	// map chainID->address->tokenMetadata
 	tokens map[int]map[common.Address]*tokenMetadata
+	// map chainID->balance
+	gasBalances map[int]*big.Int
 	// mux contains the mutex
 	mux sync.RWMutex
 	// handler is the metrics handler
@@ -52,20 +58,26 @@ type inventoryManagerImpl struct {
 	// relayerAddress contains the relayer address
 	relayerAddress common.Address
 	// chainClient is an omnirpc client
-	chainClient omnirpcClient.RPCClient
+	chainClient submitter.ClientFetcher
 	db          reldb.Service
 }
 
-// GetCommittableBalance gets the commitable balances.
+// GetCommittableBalance gets the committable balances.
 func (i *inventoryManagerImpl) GetCommittableBalance(ctx context.Context, chainID int, token common.Address, options ...BalanceFetchArgOption) (*big.Int, error) {
-	commitableBalances, err := i.GetCommitableBalances(ctx, options...)
+	committableBalances, err := i.GetCommittableBalances(ctx, options...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get balances: %w", err)
 	}
-	return commitableBalances[chainID][token], nil
+	balance := committableBalances[chainID][token]
+	// the gas token may not be registered in the inventory tokens map,
+	// but it is always tracked in gasBalances.
+	if balance == nil && token == chain.EthAddress {
+		balance = i.gasBalances[chainID]
+	}
+	return balance, nil
 }
 
-func (i *inventoryManagerImpl) GetCommitableBalances(ctx context.Context, options ...BalanceFetchArgOption) (res map[int]map[common.Address]*big.Int, err error) {
+func (i *inventoryManagerImpl) GetCommittableBalances(ctx context.Context, options ...BalanceFetchArgOption) (res map[int]map[common.Address]*big.Int, err error) {
 	reqOptions := makeOptions(options)
 	// TODO: hard fail if cache skip breaks
 	if reqOptions.skipCache {
@@ -109,6 +121,7 @@ type tokenMetadata struct {
 	balance        *big.Int
 	decimals       uint8
 	startAllowance *big.Int
+	isGasToken     bool
 }
 
 var (
@@ -122,12 +135,12 @@ var (
 const defaultPollPeriod = 5
 
 // NewInventoryManager creates a list of tokens we should use.
-func NewInventoryManager(ctx context.Context, client omnirpcClient.RPCClient, handler metrics.Handler, cfg relconfig.Config, relayer common.Address, db reldb.Service) (Manager, error) {
+func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetcher, handler metrics.Handler, cfg relconfig.Config, relayer common.Address, db reldb.Service) (Manager, error) {
 	i := inventoryManagerImpl{
 		relayerAddress: relayer,
 		handler:        handler,
 		cfg:            cfg,
-		chainClient:    client,
+		chainClient:    clientFetcher,
 		db:             db,
 	}
 
@@ -165,14 +178,14 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context, submitter s
 	defer i.mux.RUnlock()
 
 	for chainID, tokenMap := range i.tokens {
-		backendClient, err := i.chainClient.GetChainClient(ctx, chainID)
+		backendClient, err := i.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
 		if err != nil {
 			return fmt.Errorf("could not get chain client: %w", err)
 		}
 
 		for address, token := range tokenMap {
 			// if startAllowance is 0
-			if token.startAllowance.Cmp(big.NewInt(0)) == 0 {
+			if address != chain.EthAddress && token.startAllowance.Cmp(big.NewInt(0)) == 0 {
 				chainID := chainID // capture func literal
 				address := address // capture func literal
 				// init an approval in submitter. Note: in the case where submitter hasn't finished from last boot, this will double submit approvals unfortanutely
@@ -198,6 +211,25 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context, submitter s
 	return nil
 }
 
+// HasSufficientGas checks if there is sufficient gas for a given route.
+func (i *inventoryManagerImpl) HasSufficientGas(ctx context.Context, origin, dest int) (sufficient bool, err error) {
+	gasThresh, err := i.cfg.GetMinGasToken()
+	if err != nil {
+		return false, fmt.Errorf("error getting min gas token: %w", err)
+	}
+	gasOrigin, err := i.GetCommittableBalance(ctx, origin, chain.EthAddress)
+	if err != nil {
+		return false, fmt.Errorf("error getting committable gas on origin: %w", err)
+	}
+	gasDest, err := i.GetCommittableBalance(ctx, dest, chain.EthAddress)
+	if err != nil {
+		return false, fmt.Errorf("error getting committable gas on dest: %w", err)
+	}
+
+	sufficient = gasOrigin.Cmp(gasThresh) >= 0 && gasDest.Cmp(gasThresh) >= 0
+	return sufficient, nil
+}
+
 // initializes tokens converts the configuration into a data structure we can use to determine inventory
 // it gets metadata like name, decimals, etc once and exports these to prometheus for ease of debugging.
 func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg relconfig.Config) (err error) {
@@ -216,6 +248,7 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 
 	// TODO: this needs to be a struct bound variable otherwise will be stuck.
 	i.tokens = make(map[int]map[common.Address]*tokenMetadata)
+	i.gasBalances = make(map[int]*big.Int)
 
 	type registerCall func() error
 	// TODO: this can be pre-capped w/ len(cfg.Tokens) for each chain id.
@@ -226,24 +259,44 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 	// iterate through all tokens to get the metadata
 	for chainID, chainCfg := range cfg.GetChains() {
 		i.tokens[chainID] = map[common.Address]*tokenMetadata{}
+
+		// set up balance fetching for this chain's gas token
+		i.gasBalances[chainID] = new(big.Int)
+		deferredCalls[chainID] = append(deferredCalls[chainID],
+			eth.Balance(i.relayerAddress, nil).Returns(i.gasBalances[chainID]),
+		)
+
+		// assign metadata for each configured token
 		for tokenName, tokenCfg := range chainCfg.Tokens {
-			if tokenName == chainCfg.NativeToken {
-				continue
+			rtoken := &tokenMetadata{
+				isGasToken: tokenName == chainCfg.NativeToken,
 			}
 
-			token := common.HexToAddress(tokenCfg.Address)
-			rtoken := &tokenMetadata{}
+			var token common.Address
+			if rtoken.isGasToken {
+				token = chain.EthAddress
+			} else {
+				token = common.HexToAddress(tokenCfg.Address)
+			}
 			i.tokens[chainID][token] = rtoken
+
 			// requires non-nil pointer
 			rtoken.balance = new(big.Int)
 			rtoken.startAllowance = new(big.Int)
 
-			deferredCalls[chainID] = append(deferredCalls[chainID],
-				eth.CallFunc(funcBalanceOf, token, i.relayerAddress).Returns(rtoken.balance),
-				eth.CallFunc(funcDecimals, token).Returns(&rtoken.decimals),
-				eth.CallFunc(funcName, token).Returns(&rtoken.name),
-				eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(i.cfg.Chains[chainID].Bridge)).Returns(rtoken.startAllowance),
-			)
+			if rtoken.isGasToken {
+				rtoken.decimals = 18
+				rtoken.name = tokenName
+				rtoken.balance = i.gasBalances[chainID]
+				// TODO: start allowance?
+			} else {
+				deferredCalls[chainID] = append(deferredCalls[chainID],
+					eth.CallFunc(funcBalanceOf, token, i.relayerAddress).Returns(rtoken.balance),
+					eth.CallFunc(funcDecimals, token).Returns(&rtoken.decimals),
+					eth.CallFunc(funcName, token).Returns(&rtoken.name),
+					eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(i.cfg.Chains[chainID].Bridge)).Returns(rtoken.startAllowance),
+				)
+			}
 
 			chainID := chainID // capture func literal
 			deferredRegisters = append(deferredRegisters, func() error {
@@ -258,7 +311,7 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 	for chainID := range deferredCalls {
 		chainID := chainID // capture func literal
 
-		chainClient, err := i.chainClient.GetChainClient(ctx, chainID)
+		chainClient, err := i.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
 		if err != nil {
 			return fmt.Errorf("can't initialize tokens, no chain client available for chain %d: %w", chainID, err)
 		}
@@ -303,16 +356,22 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 	wg.Add(len(i.tokens))
 
 	for chainID, tokenMap := range i.tokens {
-		chainClient, err := i.chainClient.GetChainClient(ctx, chainID)
+		chainClient, err := i.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
 		if err != nil {
 			return fmt.Errorf("could not get chain client: %w", err)
 		}
-		var deferredCalls []w3types.Caller
 
+		// queue gas token balance fetch
+		deferredCalls := []w3types.Caller{
+			eth.Balance(i.relayerAddress, nil).Returns(i.gasBalances[chainID]),
+		}
+
+		// queue token balance fetches
 		for tokenAddress, token := range tokenMap {
-			// update the balance
 			// TODO: make sure Returns does nothing on error
-			deferredCalls = append(deferredCalls, eth.CallFunc(funcBalanceOf, tokenAddress, i.relayerAddress).Returns(token.balance))
+			if !token.isGasToken {
+				deferredCalls = append(deferredCalls, eth.CallFunc(funcBalanceOf, tokenAddress, i.relayerAddress).Returns(token.balance))
+			}
 		}
 
 		chainID := chainID // capture func literal
