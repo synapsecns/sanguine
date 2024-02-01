@@ -4,7 +4,10 @@ package relconfig
 import (
 	"fmt"
 	"os"
+	"strconv"
+	"strings"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/jftuga/ellipsis"
 	"github.com/synapsecns/sanguine/ethergo/signer/config"
 	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
@@ -100,6 +103,24 @@ type FeePricerConfig struct {
 	GasPriceCacheTTLSeconds int `yaml:"gas_price_cache_ttl"`
 	// TokenPriceCacheTTLSeconds is the TTL for the token price cache.
 	TokenPriceCacheTTLSeconds int `yaml:"token_price_cache_ttl"`
+}
+
+const tokenIDDelimiter = "-"
+
+// SanitizeTokenID takes a raw string, makes sure it is a valid token ID,
+// and returns the token ID as string with a checksummed address.
+func SanitizeTokenID(id string) (sanitized string, err error) {
+	split := strings.Split(id, tokenIDDelimiter)
+	if len(split) != 2 {
+		return sanitized, fmt.Errorf("invalid token ID: %s", id)
+	}
+	chainID, err := strconv.Atoi(split[0])
+	if err != nil {
+		return sanitized, fmt.Errorf("invalid chain ID: %s", split[0])
+	}
+	addr := common.HexToAddress(split[1])
+	sanitized = fmt.Sprintf("%d%s%s", chainID, tokenIDDelimiter, addr.Hex())
+	return sanitized, nil
 }
 
 // LoadConfig loads the config from the given path.

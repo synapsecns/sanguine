@@ -5,7 +5,6 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/dbcommon"
@@ -74,14 +73,14 @@ type QuoteRequest struct {
 // for some reason, this is specified as [chainid]-[tokenaddr] in the config.
 // this represents the origin pair.
 func (q QuoteRequest) GetOriginIDPair() string {
-	return strings.ToLower(fmt.Sprintf("%d-%s", q.Transaction.OriginChainId, q.Transaction.OriginToken.String()))
+	return fmt.Sprintf("%d-%s", q.Transaction.OriginChainId, q.Transaction.OriginToken.Hex())
 }
 
 // GetDestIDPair gets the destination chain id and token address pair.
 // for some reason, this is specified as [chainid]-[tokenaddr] in the config.
 // this represents the destination pair.
 func (q QuoteRequest) GetDestIDPair() string {
-	return strings.ToLower(fmt.Sprintf("%d-%s", q.Transaction.DestChainId, q.Transaction.DestToken.String()))
+	return fmt.Sprintf("%d-%s", q.Transaction.DestChainId, q.Transaction.DestToken.Hex())
 }
 
 // QuoteRequestStatus is the status of a quote request in the db.

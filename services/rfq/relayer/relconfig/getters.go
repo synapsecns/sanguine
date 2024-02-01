@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math/big"
 	"reflect"
-	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -367,8 +366,7 @@ func (c Config) GetTokenName(chain uint32, addr string) (string, error) {
 		return "", fmt.Errorf("no chain config for chain %d", chain)
 	}
 	for tokenName, tokenConfig := range chainConfig.Tokens {
-		// TODO: probably a better way to do this.
-		if strings.ToLower(tokenConfig.Address) == strings.ToLower(addr) {
+		if common.HexToAddress(tokenConfig.Address).Hex() == common.HexToAddress(addr).Hex() {
 			return tokenName, nil
 		}
 	}
@@ -395,7 +393,7 @@ func (c Config) GetMinQuoteAmount(chainID int, addr common.Address) *big.Int {
 
 	var tokenCfg *TokenConfig
 	for _, cfg := range chainCfg.Tokens {
-		if strings.EqualFold(cfg.Address, addr.String()) {
+		if common.HexToAddress(cfg.Address).Hex() == addr.Hex() {
 			cfgCopy := cfg
 			tokenCfg = &cfgCopy
 			break
