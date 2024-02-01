@@ -13,6 +13,13 @@ import { useBridgeState } from '@/slices/bridge/hooks'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { findChainIdsWithPausedToken } from '@/constants/tokens'
 import LoadingDots from '@/components/ui/tailwind/LoadingDots'
+import {
+  BridgeModules,
+  ELIGIBILITY_DEFAULT_TEXT,
+  useStipEligibility,
+} from '@/utils/hooks/useStipEligibility'
+import { getUnderlyingBridgeTokens } from '@/utils/getUnderlyingBridgeTokens'
+import { ARBITRUM, AVALANCHE, ETH } from '@/constants/chains/master'
 
 const SelectSpecificTokenButton = ({
   showAllChains,
@@ -133,10 +140,16 @@ export const OptionDetails = ({
   exchangeRate: string
   estimatedDurationInSeconds: number
 }) => {
-  const estimatedDurationInMinutes: number =
-    estimatedDurationInSeconds < 60
-      ? Math.ceil(estimatedDurationInSeconds / 60)
-      : Math.floor(estimatedDurationInSeconds / 60)
+  let showTime
+  let timeUnit
+
+  if (estimatedDurationInSeconds > 60) {
+    showTime = Math.floor(estimatedDurationInSeconds / 60)
+    timeUnit = 'min'
+  } else {
+    showTime = estimatedDurationInSeconds
+    timeUnit = 'seconds'
+  }
 
   return (
     <div data-test-id="option-details" className="flex flex-col">
@@ -146,8 +159,8 @@ export const OptionDetails = ({
         </div>
         <div className="mb-[1px] text-primary">{exchangeRate}</div>
       </div>
-      <div className="text-sm text-right text-secondary">
-        {estimatedDurationInMinutes} min
+      <div className="text-xs text-right text-secondary">
+        {showTime} {timeUnit}
       </div>
     </div>
   )
@@ -178,38 +191,97 @@ const ButtonContent = memo(
           className="w-8 h-8 ml-2 mr-4 rounded-full"
           src={token?.icon?.src}
         />
-        <Coin token={token} showAllChains={showAllChains} />
+        <Coin token={token} showAllChains={showAllChains} isOrigin={isOrigin} />
         {isOrigin && (
-          <TokenBalance
-            token={token}
-            chainId={chainId}
-            parsedBalance={parsedBalance}
-          />
+          <TokenBalance token={token} parsedBalance={parsedBalance} />
         )}
       </div>
     )
   }
 )
 
-const Coin = ({ token, showAllChains }: { token; showAllChains: boolean }) => {
+const Coin = ({
+  token,
+  showAllChains,
+  isOrigin,
+}: {
+  token
+  showAllChains: boolean
+  isOrigin: boolean
+}) => {
+  const isEligible = isTokenEligible(token)
+
   return (
     <div className="flex-col text-left">
       <div className="text-lg text-primaryTextColor">{token?.symbol}</div>
       <div className="flex items-center space-x-2 text-xs text-secondaryTextColor">
-        <div>{token?.name}</div>
+        {isOrigin && isEligible ? (
+          <div className="text-greenText">{ELIGIBILITY_DEFAULT_TEXT}</div>
+        ) : (
+          <div>{token?.name}</div>
+        )}
         {showAllChains && <AvailableChains token={token} />}
       </div>
     </div>
   )
 }
 
+/*
+Synapse:Bridge
+  Tokens: nETH, nUSD, GMX
+  From Any to ARB: all txs (don't limit this to "user has to receive ETH / USDC / ...")
+  ARB to ETH txs: nETH, nUSD
+  ARB to AVAX txs: GMX
+
+Synapse:CCTP
+  Tokens: USDC
+  Any to ARB: all txs
+  ARB to ETH: all txs
+
+Synapse: RFQ
+  Tokens: USDC
+  Any to ARB: all txs
+  ARB to ETH: all txs
+*/
+
+const isTokenEligible = (token: Token) => {
+  const { fromChainId, toChainId, bridgeQuote } = useBridgeState()
+
+  const underlyingBridgeTokens = getUnderlyingBridgeTokens(token, fromChainId)
+
+  if (!underlyingBridgeTokens) {
+    return false
+  }
+
+  return (
+    (underlyingBridgeTokens.includes('USDC') && toChainId === ARBITRUM.id) ||
+    (underlyingBridgeTokens.includes('USDC') &&
+      fromChainId === ARBITRUM.id &&
+      toChainId === ETH.id) ||
+    (underlyingBridgeTokens.includes('USDC') && toChainId === ARBITRUM.id) ||
+    (underlyingBridgeTokens.includes('USDC') &&
+      fromChainId === ARBITRUM.id &&
+      toChainId === ETH.id) ||
+    (_.some(['nETH', 'nUSD', 'GMX'], (value) =>
+      _.includes(underlyingBridgeTokens, value)
+    ) &&
+      toChainId === ARBITRUM.id) ||
+    (_.some(['nETH', 'nUSD'], (value) =>
+      _.includes(underlyingBridgeTokens, value)
+    ) &&
+      fromChainId === ARBITRUM.id &&
+      toChainId === ETH.id) ||
+    (_.some(['GMX'], (value) => _.includes(underlyingBridgeTokens, value)) &&
+      fromChainId === ARBITRUM.id &&
+      toChainId === AVALANCHE.id)
+  )
+}
+
 const TokenBalance = ({
   token,
-  chainId,
   parsedBalance,
 }: {
   token: Token
-  chainId: number
   parsedBalance?: string
 }) => {
   return (

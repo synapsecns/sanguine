@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -40,8 +41,14 @@ type Config struct {
 	SubmitterConfig submitterConfig.Config `yaml:"submitter_config"`
 	// FeePricer is the fee pricer config.
 	FeePricer FeePricerConfig `yaml:"fee_pricer"`
+	// MinGasToken is minimum amount of gas that should be leftover after bridging a gas token.
+	MinGasToken string `yaml:"min_gas_token"`
 	// QuotePct is the percent of balance to quote.
 	QuotePct float64 `yaml:"quote_pct"`
+	// QuoteOffsetBps is the number of basis points to deduct from the dest amount.
+	QuoteOffsetBps int `yaml:"quote_offset_bps"`
+	// ScreenerAPIUrl is the TRM API key.
+	ScreenerAPIUrl string `yaml:"screener_api_url"`
 	// BaseDeadlineBufferSeconds is the deadline buffer for relaying a transaction.
 	BaseDeadlineBufferSeconds int `yaml:"base_deadline_buffer_seconds"`
 }
@@ -106,6 +113,24 @@ type ChainFeeParams struct {
 	L1FeeOriginGasEstimate int `yaml:"l1_fee_origin_gas_estimate"`
 	// L1FeeDestGasEstimate is the gas estimate for the L1 fee on destination.
 	L1FeeDestGasEstimate int `yaml:"l1_fee_dest_gas_estimate"`
+}
+
+const tokenIDDelimiter = "-"
+
+// SanitizeTokenID takes a raw string, makes sure it is a valid token ID,
+// and returns the token ID as string with a checksummed address.
+func SanitizeTokenID(id string) (sanitized string, err error) {
+	split := strings.Split(id, tokenIDDelimiter)
+	if len(split) != 2 {
+		return sanitized, fmt.Errorf("invalid token ID: %s", id)
+	}
+	chainID, err := strconv.Atoi(split[0])
+	if err != nil {
+		return sanitized, fmt.Errorf("invalid chain ID: %s", split[0])
+	}
+	addr := common.HexToAddress(split[1])
+	sanitized = fmt.Sprintf("%d%s%s", chainID, tokenIDDelimiter, addr.Hex())
+	return sanitized, nil
 }
 
 // LoadConfig loads the config from the given path.
@@ -216,8 +241,7 @@ func (c Config) GetTokenName(chain uint32, addr string) (string, error) {
 		return "", fmt.Errorf("no chain config for chain %d", chain)
 	}
 	for tokenName, tokenConfig := range chainConfig.Tokens {
-		// TODO: probably a better way to do this.
-		if strings.ToLower(tokenConfig.Address) == strings.ToLower(addr) {
+		if common.HexToAddress(tokenConfig.Address).Hex() == common.HexToAddress(addr).Hex() {
 			return tokenName, nil
 		}
 	}
@@ -232,6 +256,18 @@ func (c Config) GetFixedFeeMultiplier() float64 {
 		return defaultFixedFeeMultiplier
 	}
 	return c.FeePricer.FixedFeeMultiplier
+}
+
+// GetMinGasToken returns the min gas token.
+func (c Config) GetMinGasToken() (*big.Int, error) {
+	if c.MinGasToken == "" {
+		return big.NewInt(0), nil
+	}
+	minGasToken, ok := new(big.Int).SetString(c.MinGasToken, 10)
+	if !ok {
+		return nil, fmt.Errorf("could not parse min gas token %s", c.MinGasToken)
+	}
+	return minGasToken, nil
 }
 
 // GetChainFeeParams returns the chain fee params for the given chain.
@@ -295,6 +331,16 @@ func (c Config) GetQuotePct() float64 {
 	return c.QuotePct
 }
 
+const defaultQuoteOffsetBps = 0
+
+// GetQuoteOffsetBps returns the quote offset in basis points.
+func (c Config) GetQuoteOffsetBps() int {
+	if c.QuoteOffsetBps <= 0 {
+		return defaultQuoteOffsetBps
+	}
+	return c.QuoteOffsetBps
+}
+
 const defaultMinQuoteAmount = 0
 
 // GetMinQuoteAmount returns the quote amount for the given chain and address.
@@ -307,7 +353,7 @@ func (c Config) GetMinQuoteAmount(chainID int, addr common.Address) *big.Int {
 
 	var tokenCfg *TokenConfig
 	for _, cfg := range chainCfg.Tokens {
-		if strings.EqualFold(cfg.Address, addr.String()) {
+		if common.HexToAddress(cfg.Address).Hex() == addr.Hex() {
 			cfgCopy := cfg
 			tokenCfg = &cfgCopy
 			break

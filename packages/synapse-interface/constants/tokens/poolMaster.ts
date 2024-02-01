@@ -157,7 +157,7 @@ export const POLYGON_POOL_SWAP_TOKEN = new Token({
   swapAddresses: {
     [CHAINS.POLYGON.id]: '0x85fCD7Dd0a1e1A9FCD5FD886ED522dE8221C3EE5',
   },
-  poolTokens: [NUSD, DAI, USDC, USDT],
+  poolTokens: [NUSD, DAI, USDCe, USDT],
   description: "Synapse's 4pool stableswap LP token on Polygon/Matic",
   display: true,
   priorityPool: true,

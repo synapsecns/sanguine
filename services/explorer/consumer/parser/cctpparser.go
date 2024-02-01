@@ -115,11 +115,11 @@ func (c *CCTPParser) MatureLogs(ctx context.Context, cctpEvent *model.CCTPEvent,
 	}
 	decimals := uint8(usdcDecimals)
 	// Hotfix
-	if chainID == 8453 &&(cctpEvent.Token == "0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93" || cctpEvent.Token == "0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb") {
+	if chainID == 8453 && (cctpEvent.Token == "0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93" || cctpEvent.Token == "0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb") {
 		decimals = 18
 	}
 	cctpEvent.TokenSymbol = tokenData.TokenID()
-	if (cctpEvent.Token == "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1") {
+	if cctpEvent.Token == "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1" {
 		decimals = 18
 		cctpEvent.TokenSymbol = "DAI"
 	}
