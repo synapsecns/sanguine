@@ -1,5 +1,8 @@
 import { Install, Developer, Support } from './Icons'
 import { PackageInstall } from './PackageInstall'
+import { GetStarted } from './GetStarted'
+import { RecommendedParameters } from './RecommendedParameters'
+import { TokenAndChainCustomization } from './TokenAndChainCustomization'
 
 export function Instructions() {
   return (
@@ -14,35 +17,11 @@ export function Instructions() {
         <Developer />
         Setup
       </h2>
-      <h3>Supported tokens</h3>
-      <p>
-        While the Synapse Widget supports{' '}
-        <a href="https://synapseprotocol.com" target="_blank" rel="noreferrer">
-          hundreds of tokens and chains
-        </a>
-        , for a streamlined user experience, you can render a separate instance
-        of the bridge for each user need.
-      </p>
-      <p>
-        For example: separate <code>BridgeIn</code> and <code>BridgeOut</code>{' '}
-        functions allow you to define the tokens you support sending and
-        receiving.
-      </p>
-      <p className="info">
-        <strong>Note</strong>: Whitelisting one side of a transaction limits the
-        other side to compatible tokens automatically.
-      </p>
-      <pre>
-        {`// Bridge in
-      tokenList = {
-        source: [], destination: [ token, token, token ]
-      }
-
-      // Bridge out
-      tokenList = {
-        source: [ token, token, token ], destination: [],
-      }`}
-      </pre>
+      <GetStarted />
+      <h3>Recommended parameters</h3>
+      <RecommendedParameters />
+      <h3>Token and Chain Customization</h3>
+      <TokenAndChainCustomization />
 
       <h3>Appearance</h3>
       <h4>Dark mode</h4>
@@ -121,6 +100,15 @@ export function Instructions() {
         For help and feedback, reach out to our Support team in the{' '}
         <a href="#" target="_blank" rel="noreferrer">
           Synapse Discord channel.
+        </a>
+      </p>
+      <p>
+        npm package is located{' '}
+        <a
+          href="https://www.npmjs.com/package/@synapsecns/widget"
+          target="_blank"
+        >
+          here
         </a>
       </p>
     </article>
