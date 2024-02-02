@@ -76,7 +76,7 @@ export const TokenPopoverSelect = ({
         onClick={() => togglePopover()}
         style={{ background: 'var(--synapse-select-bg)' }}
         className={`
-          flex px-2.5 py-1.5 gap-2 items-center rounded-lg
+          flex px-2.5 py-1.5 gap-2 items-center rounded
           text-[--synapse-select-text] whitespace-nowrap
           border border-solid border-[--synapse-select-border]
           cursor-pointer hover:border-[--synapse-focus]
@@ -89,7 +89,7 @@ export const TokenPopoverSelect = ({
         <div
           style={{ background: 'var(--synapse-select-bg)' }}
           className={`
-            absolute right-0 z-50 mt-1 p-1 max-h-80 min-w-48 rounded-lg
+            absolute right-0 z-50 mt-1 max-h-80 min-w-48 rounded
             shadow popover text-left list-none overflow-y-auto
             border border-solid border-[--synapse-select-border]
           `}
@@ -101,7 +101,7 @@ export const TokenPopoverSelect = ({
             isActive={isOpen}
           />
           {hasFilteredResults ? (
-            <ul className="p-0 mt-px mb-0 space-y-px">
+            <ul className="p-0 m-0">
               {filteredSortedOptionsWithBalances?.map(
                 (option: TokenBalance, index) => (
                   <TokenOption
@@ -115,10 +115,9 @@ export const TokenPopoverSelect = ({
               )}
               {hasFilteredRemaining && (
                 <div
-                  style={{ background: 'var(--synapse-select-bg)' }}
                   className={`
-                    sticky top-0 px-2.5 py-2 mt-2
-                    text-sm text-[--synapse-secondary]
+                    sticky top-0 px-2.5 py-2 mt-2 text-sm
+                    text-[--synapse-secondary] bg-[--synapse-surface]
                   `}
                 >
                   Other tokens
@@ -137,7 +136,7 @@ export const TokenPopoverSelect = ({
               )}
             </ul>
           ) : (
-            <div className="p-2 break-all">
+            <div className="p-2 text-sm break-all">
               No tokens found
               <br />
               matching '{filterValue}'.
@@ -165,7 +164,7 @@ const TokenOption = ({
       data-test-id="token-option"
       className={`
         flex gap-4 items-center justify-between
-        cursor-pointer rounded-lg border border-solid
+        cursor-pointer rounded border border-solid
         hover:border-[--synapse-focus] active:opacity-40
         ${
           option?.symbol === selected?.symbol

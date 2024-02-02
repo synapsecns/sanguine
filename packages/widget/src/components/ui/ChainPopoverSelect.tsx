@@ -47,7 +47,7 @@ export const ChainPopoverSelect = ({
         onClick={() => togglePopover()}
         style={{ background: 'var(--synapse-select-bg)' }}
         className={`
-          flex px-2.5 py-1.5 gap-2 items-center rounded-lg
+          flex px-2.5 py-1.5 gap-2 items-center rounded
           text-[--synapse-select-text] whitespace-nowrap
           border border-solid border-[--synapse-select-border]
           cursor-pointer hover:border-[--synapse-focus]
@@ -60,7 +60,7 @@ export const ChainPopoverSelect = ({
         <div
           style={{ background: 'var(--synapse-select-bg)' }}
           className={`
-            absolute z-50 mt-1 p-1 max-h-60 min-w-48 rounded-lg
+            absolute z-50 mt-1 max-h-60 min-w-48 rounded
             shadow popover text-left list-none overflow-y-auto
             border border-solid border-[--synapse-select-border]
           `}
@@ -72,7 +72,7 @@ export const ChainPopoverSelect = ({
             isActive={isOpen}
           />
           {hasFilteredResults ? (
-            <ul className="p-0 mt-px mb-0 space-y-px">
+            <ul className="p-0 m-0">
               {filteredOptions.map((option, i) => (
                 <ChainOption
                   key={i}
@@ -83,10 +83,9 @@ export const ChainPopoverSelect = ({
               ))}
               {hasFilteredRemaining && (
                 <div
-                  style={{ background: 'var(--synapse-select-bg)' }}
                   className={`
-                    sticky top-0 px-2.5 py-2 mt-2
-                    text-sm text-[--synapse-secondary]
+                    sticky top-0 px-2.5 py-2 mt-2 text-sm
+                    text-[--synapse-secondary] bg-[--synapse-surface]
                   `}
                 >
                   Other chains
@@ -102,7 +101,7 @@ export const ChainPopoverSelect = ({
               ))}
             </ul>
           ) : (
-            <div className="p-2 break-all">
+            <div className="p-2 text-sm break-all">
               No chains found
               <br />
               matching '{filterValue}'.
@@ -126,7 +125,7 @@ const ChainOption = ({
   <li
     key={option.id}
     className={`
-      pl-2.5 pr-8 py-2.5 rounded-lg border border-solid
+      pl-2.5 pr-8 py-2.5 rounded-[.1875rem] border border-solid
       hover:border-[--synapse-focus] active:opacity-40
       cursor-pointer whitespace-nowrap
       ${
