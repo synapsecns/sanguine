@@ -1,14 +1,25 @@
-import React, { Dispatch, SetStateAction } from 'react'
+import React, { Dispatch, SetStateAction, useRef, useEffect } from 'react'
 
 export const SearchInput = ({
   inputValue,
   setInputValue,
   placeholder,
+  isActive,
 }: {
   inputValue: string
   setInputValue: Dispatch<SetStateAction<string>>
   placeholder: string
+  isActive: boolean
 }) => {
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  // Focus on the input when isActive
+  useEffect(() => {
+    if (isActive && inputRef.current) {
+      inputRef.current.focus()
+    }
+  }, [isActive])
+
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(event.target.value)
   }
@@ -20,15 +31,16 @@ export const SearchInput = ({
     >
       <input
         type="text"
+        ref={inputRef}
         placeholder={placeholder}
         value={inputValue}
         onChange={handleInputChange}
+        style={{ background: 'var(--synapse-select-bg)' }}
         className={`
           text-[--synapse-secondary]
           w-full border-none shadow-none
           focus:ring-0 focus:border-none focus:outline-none
         `}
-        style={{ background: 'var(--synapse-select-bg)' }}
       />
     </div>
   )

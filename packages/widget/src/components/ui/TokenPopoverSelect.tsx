@@ -98,6 +98,7 @@ export const TokenPopoverSelect = ({
             inputValue={filterValue}
             setInputValue={setFilterValue}
             placeholder="Search Tokens"
+            isActive={isOpen}
           />
           {hasFilteredResults ? (
             <ul className="p-0 mt-px mb-0 space-y-px">

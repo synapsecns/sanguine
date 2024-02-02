@@ -69,6 +69,7 @@ export const ChainPopoverSelect = ({
             inputValue={filterValue}
             setInputValue={setFilterValue}
             placeholder="Search Chains"
+            isActive={isOpen}
           />
           {hasFilteredResults ? (
             <ul className="p-0 mt-px mb-0 space-y-px">
