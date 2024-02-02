@@ -53,25 +53,17 @@ export const TokenPopoverSelect = ({
     ['desc', 'asc']
   )
 
-  const [inputValue, setInputValue] = useState('')
-
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(event.target.value)
-  }
-
-  let filteredOptionsWithBalances = _.filter(
+  /** Filters tokens based on User Input */
+  const [filterValue, setFilterValue] = useState('')
+  const filteredOptionsWithBalances = _.filter(
     sortedOptionsWithBalances,
     (option) => {
       const symbol = option.token.symbol
       const lowerSymbol = symbol.toLowerCase()
-      const lowerFilter = inputValue.toLowerCase()
+      const lowerFilter = filterValue.toLowerCase()
       return lowerSymbol.includes(lowerFilter) || lowerSymbol === lowerFilter
     }
   )
-
-  console.log('sortedOptionsWithBalances:', sortedOptionsWithBalances)
-
-  console.log('filteredOptionsWithBalances: ', filteredOptionsWithBalances)
 
   return (
     <div
@@ -94,7 +86,10 @@ export const TokenPopoverSelect = ({
       </div>
       {isOpen && (
         <div>
-          <input type="text" value={inputValue} onChange={handleInputChange} />
+          <InputFilter
+            inputValue={filterValue}
+            setInputValue={setFilterValue}
+          />
           <ul
             className="absolute z-50 mt-1 p-0 border border-solid border-[--synapse-select-border] rounded shadow popover list-none right-0 overflow-y-auto max-h-80"
             style={{ background: 'var(--synapse-select-bg)' }}
