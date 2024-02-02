@@ -81,9 +81,9 @@ export const ChainPopoverSelect = ({
               <div
                 style={{ background: 'var(--synapse-select-bg)' }}
                 className={`
-                            sticky top-0 px-2.5 py-2 mt-2
-                            text-sm text-[--synapse-secondary]
-                          `}
+                  sticky top-0 px-2.5 py-2 mt-2
+                  text-sm text-[--synapse-secondary]
+                `}
               >
                 Other chains
               </div>
@@ -97,7 +97,9 @@ export const ChainPopoverSelect = ({
             </ul>
           ) : (
             <div className="p-2 break-all">
-              No chains found matching '{filterValue}'.
+              No chains found
+              <br />
+              matching '{filterValue}'.
             </div>
           )}
         </div>
