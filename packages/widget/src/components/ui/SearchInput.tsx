@@ -37,7 +37,7 @@ export const SearchInput = ({
         onChange={handleInputChange}
         style={{ background: 'var(--synapse-select-bg)' }}
         className={`
-          text-[--primary] placeholder:text-[--synapse-secondary]
+          text-[--synapse-text] placeholder:text-[--synapse-secondary]
           w-full border-none shadow-none text-base
           focus:ring-0 focus:border-none focus:outline-none
         `}
