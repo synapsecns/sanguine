@@ -60,7 +60,7 @@ export const ChainPopoverSelect = ({
         <div
           style={{ background: 'var(--synapse-select-bg)' }}
           className={`
-            absolute z-50 mt-1 p-1 max-h-60 min-w-48 rounded
+            absolute z-50 mt-1 max-h-60 min-w-48 rounded
             shadow popover text-left list-none overflow-y-auto
             border border-solid border-[--synapse-select-border]
           `}
