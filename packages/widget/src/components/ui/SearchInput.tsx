@@ -24,11 +24,7 @@ export const SearchInput = ({
     setInputValue(event.target.value)
   }
   return (
-    <div
-      data-test-id="search-input"
-      className="p-2 border border-solid rounded border-[--synapse-focus]"
-      style={{ background: 'var(--synapse-select-bg)' }}
-    >
+    <div data-test-id="search-input">
       <input
         type="text"
         ref={inputRef}
@@ -38,8 +34,8 @@ export const SearchInput = ({
         style={{ background: 'var(--synapse-select-bg)' }}
         className={`
           text-[--synapse-text] placeholder:text-[--synapse-secondary]
-          w-full border-none shadow-none text-base
-          focus:ring-0 focus:border-none focus:outline-none
+          w-full border border-solid rounded border-[--synapse-select-border] shadow-none text-base
+          focus:ring-0 focus:border-[--synapse-select-border] focus:outline-none px-2 py-1.5
         `}
       />
     </div>
