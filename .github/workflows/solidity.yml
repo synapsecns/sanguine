@@ -4,11 +4,13 @@ on:
   pull_request:
     paths:
       - 'packages/contracts-core/**'
+      - 'packages/contracts-interchain/**'
       - 'packages/contracts-rfq/**'
       - '.github/workflows/solidity.yml'
   push:
     paths:
       - 'packages/contracts-core/**'
+      - 'packages/contracts-interchain/**'
       - 'packages/contracts-rfq/**'
       - '.github/workflows/solidity.yml'
 
