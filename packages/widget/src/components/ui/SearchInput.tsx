@@ -34,8 +34,8 @@ export const SearchInput = ({
         style={{ background: 'var(--synapse-select-bg)' }}
         className={`
           text-[--synapse-text] placeholder:text-[--synapse-secondary]
-          w-full border border-solid border-[--synapse-select-border] shadow-none text-base
-          focus:ring-0 focus:border-[--synapse-select-border] focus:outline-none
+          w-full border border-solid border-[--synapse-focus] shadow-none text-base
+          focus:ring-0 focus:border-[--synapse-focus] focus:outline-none
           px-2 py-1.5 rounded
         `}
       />
