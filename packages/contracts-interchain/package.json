@@ -3,6 +3,15 @@
   "version": "1.0.0",
   "description": "Smart contracts for the Synapse Interchain Network (SIN)",
   "private": true,
+  "scripts": {
+    "build:contracts": "forge build",
+    "build:slither": "forge build --out=out --build-info --force",
+    "test": "forge test",
+    "lint:contracts:fix": "forge fmt && solhint --fix -c .solhint.json '{src,script,test}/**/*.sol'",
+    "lint:fix": "yarn lint:contracts:fix",
+    "lint": "forge fmt",
+    "ci:lint": "forge fmt --check && solhint -c .solhint.json '{src,script,test}/**/*.sol'"
+  },
   "dependencies": {
     "@openzeppelin/contracts": "5.0.1"
   },
