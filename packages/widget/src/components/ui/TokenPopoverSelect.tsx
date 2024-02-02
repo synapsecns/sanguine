@@ -55,8 +55,17 @@ export const TokenPopoverSelect = ({
 
   /** Filters tokens based on User Input */
   const [filterValue, setFilterValue] = useState('')
-  const filteredOptionsWithBalances = _.filter(
+  const filteredSortedOptionsWithBalances = _.filter(
     sortedOptionsWithBalances,
+    (option) => {
+      const symbol = option.token.symbol
+      const lowerSymbol = symbol.toLowerCase()
+      const lowerFilter = filterValue.toLowerCase()
+      return lowerSymbol.includes(lowerFilter) || lowerSymbol === lowerFilter
+    }
+  )
+  const filteredSortedRemainingWithBalances = _.filter(
+    sortedRemainingWithBalances,
     (option) => {
       const symbol = option.token.symbol
       const lowerSymbol = symbol.toLowerCase()
@@ -99,15 +108,17 @@ export const TokenPopoverSelect = ({
             // className="absolute z-50 mt-1 p-0 border border-solid border-[--synapse-select-border] rounded shadow popover list-none right-0 overflow-y-auto max-h-80"
             // style={{ background: 'var(--synapse-select-bg)' }}
           >
-            {filteredOptionsWithBalances?.map((option: TokenBalance, index) => (
-              <TokenOption
-                option={option?.token}
-                key={index}
-                onSelect={handleSelect}
-                selected={selected}
-                parsedBalance={option?.parsedBalance}
-              />
-            ))}
+            {filteredSortedOptionsWithBalances?.map(
+              (option: TokenBalance, index) => (
+                <TokenOption
+                  option={option?.token}
+                  key={index}
+                  onSelect={handleSelect}
+                  selected={selected}
+                  parsedBalance={option?.parsedBalance}
+                />
+              )
+            )}
 
             {remaining?.length > 0 && (
               <div
@@ -117,15 +128,17 @@ export const TokenPopoverSelect = ({
                 Other tokens
               </div>
             )}
-            {sortedRemainingWithBalances?.map((option: TokenBalance, index) => (
-              <TokenOption
-                option={option?.token}
-                key={index}
-                onSelect={handleSelect}
-                selected={selected}
-                parsedBalance={option?.parsedBalance}
-              />
-            ))}
+            {filteredSortedRemainingWithBalances?.map(
+              (option: TokenBalance, index) => (
+                <TokenOption
+                  option={option?.token}
+                  key={index}
+                  onSelect={handleSelect}
+                  selected={selected}
+                  parsedBalance={option?.parsedBalance}
+                />
+              )
+            )}
           </ul>
         </div>
       )}
