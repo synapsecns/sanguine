@@ -2,6 +2,7 @@ import {
   CCTP_SUPPORTED_CHAIN_IDS,
   RFQ_SUPPORTED_CHAIN_IDS,
   SUPPORTED_CHAIN_IDS,
+  SupportedChainId,
 } from './chainIds'
 
 export type AddressMap = {
@@ -52,6 +53,16 @@ export const CCTP_ROUTER_ADDRESS_MAP: AddressMap = generateAddressMap(
   CCTP_ROUTER_ADDRESS,
   CCTP_ROUTER_EXCEPTION_MAP
 )
+
+// https://developers.circle.com/stablecoins/docs/evm-smart-contracts#tokenminter-mainnet
+export const CCTP_TOKEN_MINTER_MAP: AddressMap = {
+  [SupportedChainId.ETH]: '0xc4922d64a24675E16e1586e3e3Aa56C06fABe907',
+  [SupportedChainId.AVALANCHE]: '0x420F5035fd5dC62a167E7e7f08B604335aE272b8',
+  [SupportedChainId.OPTIMISM]: '0x33E76C5C31cb928dc6FE6487AB3b2C0769B1A1e3',
+  [SupportedChainId.ARBITRUM]: '0xE7Ed1fa7f45D05C508232aa32649D89b73b8bA48',
+  [SupportedChainId.BASE]: '0xe45B133ddc64bE80252b0e9c75A8E74EF280eEd6',
+  [SupportedChainId.POLYGON]: '0x10f7835F827D6Cf035115E10c50A853d7FB2D2EC',
+}
 
 /**
  * FastBridgeRouter contract address for all chains except ones from FAST_BRIDGE_ROUTER_EXCEPTION_MAP.
