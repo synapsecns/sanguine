@@ -137,7 +137,7 @@ export const TokenPopoverSelect = ({
               )}
             </ul>
           ) : (
-            <div className="p-2 break-all">
+            <div className="p-2 text-sm break-all">
               No tokens found
               <br />
               matching '{filterValue}'.

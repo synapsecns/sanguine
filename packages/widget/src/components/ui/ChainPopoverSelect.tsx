@@ -102,7 +102,7 @@ export const ChainPopoverSelect = ({
               ))}
             </ul>
           ) : (
-            <div className="p-2 break-all">
+            <div className="p-2 break-all text-sm">
               No chains found
               <br />
               matching '{filterValue}'.
