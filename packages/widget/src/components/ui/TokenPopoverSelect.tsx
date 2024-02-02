@@ -72,22 +72,26 @@ export const TokenPopoverSelect = ({
       ref={popoverRef}
     >
       <div
-        className={`
-          cursor-pointer flex px-2.5 py-1.5 gap-2 items-center rounded-[.1875rem]
-          text-[--synapse-select-text]
-          border border-solid border-[--synapse-select-border]
-          hover:border-[--synapse-focus]
-        `}
-        style={{ background: 'var(--synapse-select-bg)' }}
         onClick={() => togglePopover()}
+        style={{ background: 'var(--synapse-select-bg)' }}
+        className={`
+          flex px-2.5 py-1.5 gap-2 items-center rounded-lg
+          text-[--synapse-select-text] whitespace-nowrap
+          border border-solid border-[--synapse-select-border]
+          cursor-pointer hover:border-[--synapse-focus]
+        `}
       >
         {selected?.symbol || 'Token'}
         <DownArrow />
       </div>
       {isOpen && (
         <div
-          className="absolute z-50 mt-1 p-0 border border-solid border-[--synapse-select-border] rounded shadow popover list-none right-0 overflow-y-auto max-h-80 min-w-48"
           style={{ background: 'var(--synapse-select-bg)' }}
+          className={`
+            absolute right-0 z-50 mt-1 p-0 max-h-80 min-w-48 rounded-lg
+            shadow popover text-left list-none overflow-y-auto
+            border border-solid border-[--synapse-select-border]
+          `}
         >
           <SearchInput
             inputValue={filterValue}
@@ -114,8 +118,11 @@ export const TokenPopoverSelect = ({
 
               {remaining?.length > 0 && (
                 <div
-                  className="px-2.5 py-2 mt-2 text-sm text-[--synapse-secondary] cursor-default sticky top-0"
                   style={{ background: 'var(--synapse-select-bg)' }}
+                  className={`
+                    sticky top-0 px-2.5 py-2 mt-2
+                    text-sm text-[--synapse-secondary]
+                  `}
                 >
                   Other tokens
                 </div>
@@ -139,31 +146,6 @@ export const TokenPopoverSelect = ({
   )
 }
 
-const mergeTokenOptionsWithBalances = (
-  tokens: BridgeableToken[],
-  balances: TokenBalance[]
-) => {
-  return tokens?.map((token) => {
-    /** If token balance does not exist, set balance to null */
-    if (_.isArray(balances) && _.isEmpty(balances)) {
-      return {
-        token,
-        balance: null,
-        parsedBalance: null,
-      }
-    } else {
-      const matchedTokenBalance: TokenBalance = balances?.find(
-        (currentToken: TokenBalance) => currentToken.token === token
-      )
-      return {
-        token,
-        balance: matchedTokenBalance?.balance,
-        parsedBalance: matchedTokenBalance?.parsedBalance,
-      }
-    }
-  })
-}
-
 const TokenOption = ({
   option,
   onSelect,
@@ -178,11 +160,16 @@ const TokenOption = ({
   return (
     <li
       data-test-id="token-option"
-      className={`cursor-pointer rounded border border-solid hover:border-[--synapse-focus] active:opacity-40 flex gap-4 items-center justify-between ${
-        option?.symbol === selected?.symbol
-          ? 'border-[--synapse-focus] hover:opacity-70'
-          : 'border-transparent'
-      }`}
+      className={`
+        flex gap-4 items-center justify-between
+        cursor-pointer rounded border border-solid
+        hover:border-[--synapse-focus] active:opacity-40
+        ${
+          option?.symbol === selected?.symbol
+            ? 'border-[--synapse-focus] hover:opacity-70'
+            : 'border-transparent'
+        }
+      `}
       onClick={() => onSelect(option)}
     >
       <abbr title={option?.name} className="p-2.5 no-underline">
@@ -191,13 +178,13 @@ const TokenOption = ({
       <data
         value={parsedBalance}
         className={`
-        text-sm p-2.5
-        ${
-          parsedBalance
-            ? 'text-[--synapse-secondary]'
-            : 'text-[--synapse-focus]'
-        }
-      `}
+          text-sm p-2.5
+          ${
+            parsedBalance
+              ? 'text-[--synapse-secondary]'
+              : 'text-[--synapse-focus]'
+          }
+        `}
       >
         {parsedBalance ?? '−'}
       </data>
@@ -240,4 +227,29 @@ const useTokenInputFilter = (
     filteredRemaining,
     noFilteredResults,
   }
+}
+
+const mergeTokenOptionsWithBalances = (
+  tokens: BridgeableToken[],
+  balances: TokenBalance[]
+) => {
+  return tokens?.map((token) => {
+    /** If token balance does not exist, set balance to null */
+    if (_.isArray(balances) && _.isEmpty(balances)) {
+      return {
+        token,
+        balance: null,
+        parsedBalance: null,
+      }
+    } else {
+      const matchedTokenBalance: TokenBalance = balances?.find(
+        (currentToken: TokenBalance) => currentToken.token === token
+      )
+      return {
+        token,
+        balance: matchedTokenBalance?.balance,
+        parsedBalance: matchedTokenBalance?.parsedBalance,
+      }
+    }
+  })
 }
