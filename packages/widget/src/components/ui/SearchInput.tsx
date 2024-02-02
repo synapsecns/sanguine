@@ -26,7 +26,7 @@ export const SearchInput = ({
   return (
     <div
       data-test-id="search-input"
-      className="p-2 border border-solid rounded-lg border-[--synapse-focus]"
+      className="p-2 border border-solid rounded border-[--synapse-focus]"
       style={{ background: 'var(--synapse-select-bg)' }}
     >
       <input

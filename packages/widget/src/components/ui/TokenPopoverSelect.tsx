@@ -76,7 +76,7 @@ export const TokenPopoverSelect = ({
         onClick={() => togglePopover()}
         style={{ background: 'var(--synapse-select-bg)' }}
         className={`
-          flex px-2.5 py-1.5 gap-2 items-center rounded-lg
+          flex px-2.5 py-1.5 gap-2 items-center rounded
           text-[--synapse-select-text] whitespace-nowrap
           border border-solid border-[--synapse-select-border]
           cursor-pointer hover:border-[--synapse-focus]
@@ -89,7 +89,7 @@ export const TokenPopoverSelect = ({
         <div
           style={{ background: 'var(--synapse-select-bg)' }}
           className={`
-            absolute right-0 z-50 mt-1 p-1 max-h-80 min-w-48 rounded-lg
+            absolute right-0 z-50 mt-1 p-1 max-h-80 min-w-48 rounded
             shadow popover text-left list-none overflow-y-auto
             border border-solid border-[--synapse-select-border]
           `}
@@ -165,7 +165,7 @@ const TokenOption = ({
       data-test-id="token-option"
       className={`
         flex gap-4 items-center justify-between
-        cursor-pointer rounded-lg border border-solid
+        cursor-pointer rounded border border-solid
         hover:border-[--synapse-focus] active:opacity-40
         ${
           option?.symbol === selected?.symbol
