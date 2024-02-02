@@ -55,9 +55,8 @@ export const TokenPopoverSelect = ({
 
   const {
     filterValue,
-    setFilterValue,
-    filteredSortedOptionsWithBalances,
-    filteredSortedRemainingWithBalances,
+    filteredOptions: filteredSortedOptionsWithBalances,
+    filteredRemaining: filteredSortedRemainingWithBalances,
     noFilteredResults,
     TokenInputFilter,
   } = useTokenInputFilter(
@@ -240,15 +239,15 @@ const TokenOption = ({
 const useTokenInputFilter = (
   options: TokenBalance[],
   remaining: TokenBalance[],
-  isOpen: boolean
+  isActive: boolean
 ) => {
   const [filterValue, setFilterValue] = useState('')
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!isActive) {
       setFilterValue('')
     }
-  }, [isOpen])
+  }, [isActive])
 
   const filterTokens = (tokens: TokenBalance[], filter: string) => {
     const lowerFilter = filter.toLowerCase()
@@ -258,14 +257,11 @@ const useTokenInputFilter = (
     })
   }
 
-  const filteredSortedOptionsWithBalances = filterTokens(options, filterValue)
-  const filteredSortedRemainingWithBalances = filterTokens(
-    remaining,
-    filterValue
-  )
+  const filteredOptions = filterTokens(options, filterValue)
+  const filteredRemaining = filterTokens(remaining, filterValue)
 
-  const noFilteredOptions = _.isEmpty(filteredSortedOptionsWithBalances)
-  const noFilteredRemaining = _.isEmpty(filteredSortedRemainingWithBalances)
+  const noFilteredOptions = _.isEmpty(filteredOptions)
+  const noFilteredRemaining = _.isEmpty(filteredRemaining)
   const noFilteredResults = noFilteredOptions && noFilteredRemaining
 
   const TokenInputFilter = () => {
@@ -281,8 +277,8 @@ const useTokenInputFilter = (
   return {
     filterValue,
     setFilterValue,
-    filteredSortedOptionsWithBalances,
-    filteredSortedRemainingWithBalances,
+    filteredOptions,
+    filteredRemaining,
     noFilteredResults,
     TokenInputFilter,
   }
