@@ -33,6 +33,7 @@ export const ChainPopoverSelect = ({
     setFilterValue,
     filteredOptions,
     filteredRemaining,
+    hasFilteredRemaining,
     hasFilteredResults,
   } = useChainInputFilter(options, remaining, isOpen)
 
@@ -78,15 +79,17 @@ export const ChainPopoverSelect = ({
                   onSelect={() => handleSelect(option)}
                 />
               ))}
-              <div
-                style={{ background: 'var(--synapse-select-bg)' }}
-                className={`
+              {hasFilteredRemaining && (
+                <div
+                  style={{ background: 'var(--synapse-select-bg)' }}
+                  className={`
                   sticky top-0 px-2.5 py-2 mt-2
                   text-sm text-[--synapse-secondary]
                 `}
-              >
-                Other chains
-              </div>
+                >
+                  Other chains
+                </div>
+              )}
               {filteredRemaining.map((option) => (
                 <ChainOption
                   option={option}

@@ -112,7 +112,6 @@ export const TokenPopoverSelect = ({
                   />
                 )
               )}
-
               {hasFilteredRemaining && (
                 <div
                   style={{ background: 'var(--synapse-select-bg)' }}
