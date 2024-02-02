@@ -36,6 +36,14 @@ export const ChainPopoverSelect = ({
     const lowerFilter = filterValue.toLowerCase()
     return lowerName.includes(lowerFilter) || lowerName === lowerFilter
   })
+  const filteredRemaining = _.filter(remaining, (option) => {
+    const name = option.name
+    const lowerName = name.toLowerCase()
+    const lowerFilter = filterValue.toLowerCase()
+    return lowerName.includes(lowerFilter) || lowerName === lowerFilter
+  })
+
+  const noFilteredOptions = _.isEmpty(filteredOptions)
 
   return (
     <div
