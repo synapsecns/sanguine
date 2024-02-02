@@ -37,6 +37,7 @@ export class SynapseCCTPRouter extends Router {
 
   private readonly routerContract: SynapseCCTPRouterContract
   private cctpContractCache?: SynapseCCTPContract
+  private tokenCache: { [symbol: string]: string } = {}
 
   // All possible events emitted by the SynapseCCTP contract in the origin transaction
   private readonly originEvents = ['CircleRequestSent']
@@ -176,6 +177,15 @@ export class SynapseCCTPRouter extends Router {
     }
     // Return the cached contract
     return this.cctpContractCache
+  }
+
+  private async getTokenAddress(symbol: string): Promise<string> {
+    // Populate the cache if necessary
+    if (!this.tokenCache[symbol]) {
+      const cctpContract = await this.getCctpContract()
+      this.tokenCache[symbol] = await cctpContract.symbolToToken(symbol)
+    }
+    return this.tokenCache[symbol]
   }
 
   /**
