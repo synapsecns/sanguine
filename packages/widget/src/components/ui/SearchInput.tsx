@@ -15,7 +15,8 @@ export const SearchInput = ({
   return (
     <div
       data-test-id="search-input"
-      className="m-0.5 p-2 bg-white border-1 border-black rounded-md"
+      className="m-0.5 p-2 bg-white border border-solid rounded-md border-[--synapse-focus]"
+      style={{ background: 'var(--synapse-select-bg)' }}
     >
       <input
         type="text"
@@ -23,10 +24,11 @@ export const SearchInput = ({
         value={inputValue}
         onChange={handleInputChange}
         className={`
-          w-full
-          border-none shadow-none
+          text-[--synapse-secondary]
+          w-full border-none shadow-none
           focus:ring-0 focus:border-none focus:outline-none
         `}
+        style={{ background: 'var(--synapse-select-bg)' }}
       />
     </div>
   )
