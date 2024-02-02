@@ -13,13 +13,17 @@ export const InputFilter = ({
     setInputValue(event.target.value)
   }
   return (
-    <div data-test-id="input-filter" className="w-full bg--synapse-select-bg">
+    <div data-test-id="input-filter" className="px-2 py-4 bg-white">
       <input
         type="text"
         placeholder={placeholder}
         value={inputValue}
         onChange={handleInputChange}
-        className="focus:outline-none focus:ring-0 focus:border-none"
+        className={`
+          w-full
+          border-none shadow-none
+          focus:ring-0 focus:border-none focus:outline-none
+        `}
       />
     </div>
   )

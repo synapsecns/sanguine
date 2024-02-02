@@ -85,14 +85,15 @@ export const TokenPopoverSelect = ({
         <DownArrow />
       </div>
       {isOpen && (
-        <div>
+        <div className="absolute z-50 mt-1 p-0 border border-solid border-[--synapse-select-border] rounded shadow popover list-none right-0 overflow-y-auto max-h-80 min-w-48">
           <InputFilter
             inputValue={filterValue}
             setInputValue={setFilterValue}
             placeholder="Search Tokens"
           />
           <ul
-            className="absolute z-50 mt-1 p-0 border border-solid border-[--synapse-select-border] rounded shadow popover list-none right-0 overflow-y-auto max-h-80"
+            // className="absolute z-50 mt-1 p-0 border border-solid border-[--synapse-select-border] rounded shadow popover list-none right-0 overflow-y-auto max-h-80"
+            className="p-0 m-0"
             style={{ background: 'var(--synapse-select-bg)' }}
           >
             {filteredOptionsWithBalances?.map((option: TokenBalance, index) => (
