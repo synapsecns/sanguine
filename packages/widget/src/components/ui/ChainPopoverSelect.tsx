@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import _ from 'lodash'
 import { Chain } from 'types'
 
@@ -30,6 +30,13 @@ export const ChainPopoverSelect = ({
 
   /** Filters chains based on User Input */
   const [filterValue, setFilterValue] = useState('')
+
+  useEffect(() => {
+    if (!isOpen) {
+      setFilterValue('')
+    }
+  }, [isOpen])
+
   const filteredOptions = _.filter(options, (option) => {
     const name = option.name
     const lowerName = name.toLowerCase()

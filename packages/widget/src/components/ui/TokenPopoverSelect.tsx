@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import _ from 'lodash'
 import { BridgeableToken } from 'types'
 
@@ -55,6 +55,13 @@ export const TokenPopoverSelect = ({
 
   /** Filters tokens based on User Input */
   const [filterValue, setFilterValue] = useState('')
+
+  useEffect(() => {
+    if (!isOpen) {
+      setFilterValue('')
+    }
+  }, [isOpen])
+
   const filteredSortedOptionsWithBalances = _.filter(
     sortedOptionsWithBalances,
     (option) => {
