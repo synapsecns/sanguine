@@ -3,8 +3,9 @@ import invariant from 'tiny-invariant'
 import { Contract, PopulatedTransaction } from '@ethersproject/contracts'
 import { Interface } from '@ethersproject/abi'
 import { BigNumber } from '@ethersproject/bignumber'
+import { Zero } from '@ethersproject/constants'
 
-import cctpRouterAbi from '../abi/SynapseCCTPRouter.json'
+import { FiatTokenV2_2 as FiatTokenContract } from '../typechain/FiatTokenV2_2'
 import { SynapseCCTP as SynapseCCTPContract } from '../typechain/SynapseCCTP'
 import { SynapseCCTPRouter as SynapseCCTPRouterContract } from '../typechain/SynapseCCTPRouter'
 import { Router } from './router'
@@ -16,10 +17,12 @@ import {
   reduceToBridgeToken,
   reduceToQuery,
 } from '../module'
+import cctpRouterAbi from '../abi/SynapseCCTPRouter.json'
 import cctpAbi from '../abi/SynapseCCTP.json'
+import fiatTokenAbi from '../abi/FiatTokenV2_2.json'
 import { adjustValueIfNative } from '../utils/handleNativeToken'
 import { getMatchingTxLog } from '../utils/logs'
-import { BigintIsh } from '../constants'
+import { BigintIsh, CCTP_TOKEN_MINTER_MAP } from '../constants'
 import { DestRequest } from './types'
 
 /**
@@ -173,5 +176,31 @@ export class SynapseCCTPRouter extends Router {
     }
     // Return the cached contract
     return this.cctpContractCache
+  }
+
+  /**
+   * Returns the remaining minter allowance for a Circle token. Will return zero if the allowance could not be fetched.
+   *
+   * @param token - The Circle token address.
+   * @returns The remaining minter allowance.
+   */
+  private async getTokenMinterAllowance(token: string): Promise<BigNumber> {
+    const tokenMinter = CCTP_TOKEN_MINTER_MAP[this.chainId]
+    if (!tokenMinter) {
+      return Zero
+    }
+    const fiatTokenContract = new Contract(
+      token,
+      new Interface(fiatTokenAbi),
+      this.provider
+    ) as FiatTokenContract
+    try {
+      const minterAllowance = await fiatTokenContract.minterAllowance(
+        tokenMinter
+      )
+      return minterAllowance
+    } catch (error) {
+      return Zero
+    }
   }
 }
