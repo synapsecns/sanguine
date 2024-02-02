@@ -15,7 +15,7 @@ export const InputFilter = ({
   return (
     <div
       data-test-id="input-filter"
-      className="m-0.5 p-2 bg-white border-1 border-black"
+      className="m-0.5 p-2 bg-white border-1 border-black rounded-md"
     >
       <input
         type="text"
