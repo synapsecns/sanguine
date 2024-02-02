@@ -96,7 +96,7 @@ export const _Transaction = ({
     <div
       data-test-id="_transaction"
       className={`
-        flex flex-col gap-1 justify-end items-center my-2
+        flex flex-col relative gap-1 justify-end items-center my-2
         bg-tint fill-surface text-primary
         border border-solid border-surface rounded-md
         text-xs md:text-base
@@ -133,7 +133,10 @@ export const _Transaction = ({
         {/* TODO: Update visual format */}
         <div className="flex justify-between gap-2 pr-2 ml-auto">
           {isTxFinalized ? (
-            <TransactionStatus string="Complete" className="text-green-300" />
+            <TransactionStatus
+              string="Complete"
+              className="text-greenProgress"
+            />
           ) : (
             <TransactionStatus string="Pending" />
           )}

@@ -26,12 +26,13 @@ export const AnimatedProgressBar = memo(
     const synapsePurple = 'hsl(265deg 100% 75%)'
 
     return (
-      <div id="animated-progress-bar" className="w-full">
+      <div id="animated-progress-bar" className="absolute right-1 left-1">
         <svg
           key={Date.now()}
           width="100%"
           height="3"
           xmlns="http://www.w3.org/2000/svg"
+          className="rounded-sm"
         >
           <rect width="100%" height="100%" fill="#444" />
           <rect height="100%">
