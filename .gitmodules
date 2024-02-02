@@ -23,3 +23,7 @@
 [submodule "services/rfq/external/canonical-weth"]
 	path = services/rfq/external/canonical-weth
 	url = https://github.com/gnosis/canonical-weth
+[submodule "packages/contracts-interchain/lib/forge-std"]
+	path = packages/contracts-interchain/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+	branch = v1
