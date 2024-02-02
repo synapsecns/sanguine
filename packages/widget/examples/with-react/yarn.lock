@@ -7,17 +7,6 @@
   resolved "https://registry.yarnpkg.com/@aashutoshrathi/word-wrap/-/word-wrap-1.2.6.tgz#bd9154aec9983f77b3a034ecaa015c2e4201f6cf"
   integrity sha512-1Yjs2SvM8TflER/OD3cOjhWWOZb58A2t7wpE2S9XfBYTiIl+XFhQG2bjy4Pu1I+EAlCNUzRDYDdFwFYUKvXcIA==
 
-"@abtestingalpha/widget@0.0.20":
-  version "0.0.20"
-  resolved "https://registry.yarnpkg.com/@abtestingalpha/widget/-/widget-0.0.20.tgz#214a0c57a98d5408656b433568108180a908d9cc"
-  integrity sha512-tta/Iuego2cA1PhQrKPlg8oxd6EYg6kz6zHA630YnPcAJh8P/P+cI9I3SsMJAgupXcb29Qj2ZxmSOGGN4gE33g==
-  dependencies:
-    "@reduxjs/toolkit" "^2.0.1"
-    "@synapsecns/sdk-router" "^0.3.21"
-    ethers "^6.9.1"
-    lodash "^4.17.21"
-    react-redux "^9.0.2"
-
 "@adraffy/ens-normalize@1.10.0":
   version "1.10.0"
   resolved "https://registry.yarnpkg.com/@adraffy/ens-normalize/-/ens-normalize-1.10.0.tgz#d2a39395c587e092d77cbbc80acf956a54f38bf7"
@@ -1503,7 +1492,7 @@
   dependencies:
     "@ethersproject/logger" "^5.7.0"
 
-"@ethersproject/providers@5.7.2":
+"@ethersproject/providers@5.7.2", "@ethersproject/providers@^5.7.2":
   version "5.7.2"
   resolved "https://registry.yarnpkg.com/@ethersproject/providers/-/providers-5.7.2.tgz#f8b1a4f275d7ce58cf0a2eec222269a08beb18cb"
   integrity sha512-g34EWZ1WWAVgr4aptGlVBF8mhl3VWjv+8hoAnzStu8Ah22VHBsuGzP17eb6xDVRzw895G4W7vvx60lFFur/1Rg==
@@ -1602,7 +1591,7 @@
     "@ethersproject/rlp" "^5.7.0"
     "@ethersproject/signing-key" "^5.7.0"
 
-"@ethersproject/units@5.7.0":
+"@ethersproject/units@5.7.0", "@ethersproject/units@^5.7.0":
   version "5.7.0"
   resolved "https://registry.yarnpkg.com/@ethersproject/units/-/units-5.7.0.tgz#637b563d7e14f42deeee39245275d477aae1d8b1"
   integrity sha512-pD3xLMy3SJu9kG5xDGI7+xhTEmGXlEqXU4OfNapmfnxLVY4EMSSRp7j1k7eezutBPH7RBN/7QPnwR7hzNlEFeg==
@@ -2266,6 +2255,19 @@
     tiny-invariant "^1.2.0"
     toformat "^2.0.0"
     ts-xor "^1.1.0"
+
+"@synapsecns/widget@0.0.26":
+  version "0.0.26"
+  resolved "https://registry.yarnpkg.com/@synapsecns/widget/-/widget-0.0.26.tgz#c6b922a8e4324d15188b5370a85794c8b117dfa5"
+  integrity sha512-Q18+qpDdonO7Bi+riYFaHqx6rlU+AHHCW66vsI0IezFxnP5zrz4VRT+KVEzJA7i28+HwnUVZarJ8V4/3tsKNQQ==
+  dependencies:
+    "@ethersproject/providers" "^5.7.2"
+    "@ethersproject/units" "^5.7.0"
+    "@reduxjs/toolkit" "^2.0.1"
+    "@synapsecns/sdk-router" "^0.3.21"
+    ethers "^6.9.1"
+    lodash "^4.17.21"
+    react-redux "^9.0.2"
 
 "@tootallnate/once@1":
   version "1.1.2"
