@@ -58,7 +58,8 @@ export const TokenPopoverSelect = ({
     setFilterValue,
     filteredOptions: filteredSortedOptionsWithBalances,
     filteredRemaining: filteredSortedRemainingWithBalances,
-    noFilteredResults,
+    hasFilteredRemaining,
+    hasFilteredResults,
   } = useTokenInputFilter(
     sortedOptionsWithBalances,
     sortedRemainingWithBalances,
@@ -98,11 +99,7 @@ export const TokenPopoverSelect = ({
             setInputValue={setFilterValue}
             placeholder="Search Tokens"
           />
-          {noFilteredResults ? (
-            <div className="p-2 break-all">
-              No tokens found matching '{filterValue}'.
-            </div>
-          ) : (
+          {hasFilteredResults ? (
             <ul className="p-0 m-0">
               {filteredSortedOptionsWithBalances?.map(
                 (option: TokenBalance, index) => (
@@ -116,13 +113,13 @@ export const TokenPopoverSelect = ({
                 )
               )}
 
-              {remaining?.length > 0 && (
+              {hasFilteredRemaining && (
                 <div
                   style={{ background: 'var(--synapse-select-bg)' }}
                   className={`
-                    sticky top-0 px-2.5 py-2 mt-2
-                    text-sm text-[--synapse-secondary]
-                  `}
+                  sticky top-0 px-2.5 py-2 mt-2
+                  text-sm text-[--synapse-secondary]
+                `}
                 >
                   Other tokens
                 </div>
@@ -139,6 +136,10 @@ export const TokenPopoverSelect = ({
                 )
               )}
             </ul>
+          ) : (
+            <div className="p-2 break-all">
+              No tokens found matching '{filterValue}'.
+            </div>
           )}
         </div>
       )}
@@ -216,16 +217,18 @@ const useTokenInputFilter = (
   const filteredOptions = filterTokens(options, filterValue)
   const filteredRemaining = filterTokens(remaining, filterValue)
 
-  const noFilteredOptions = _.isEmpty(filteredOptions)
-  const noFilteredRemaining = _.isEmpty(filteredRemaining)
-  const noFilteredResults = noFilteredOptions && noFilteredRemaining
+  const hasFilteredOptions = !_.isEmpty(filteredOptions)
+  const hasFilteredRemaining = !_.isEmpty(filteredRemaining)
+  const hasFilteredResults = hasFilteredOptions || hasFilteredRemaining
 
   return {
     filterValue,
     setFilterValue,
     filteredOptions,
     filteredRemaining,
-    noFilteredResults,
+    hasFilteredOptions,
+    hasFilteredRemaining,
+    hasFilteredResults,
   }
 }
 

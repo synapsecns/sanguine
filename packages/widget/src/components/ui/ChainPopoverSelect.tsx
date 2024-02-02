@@ -33,7 +33,7 @@ export const ChainPopoverSelect = ({
     setFilterValue,
     filteredOptions,
     filteredRemaining,
-    noFilteredResults,
+    hasFilteredResults,
   } = useChainInputFilter(options, remaining, isOpen)
 
   return (
@@ -69,11 +69,7 @@ export const ChainPopoverSelect = ({
             setInputValue={setFilterValue}
             placeholder="Search Chains"
           />
-          {noFilteredResults ? (
-            <div className="p-2 break-all">
-              No chains found matching '{filterValue}'.
-            </div>
-          ) : (
+          {hasFilteredResults ? (
             <ul className="p-0 m-0">
               {filteredOptions.map((option) => (
                 <ChainOption
@@ -85,9 +81,9 @@ export const ChainPopoverSelect = ({
               <div
                 style={{ background: 'var(--synapse-select-bg)' }}
                 className={`
-                  sticky top-0 px-2.5 py-2 mt-2
-                  text-sm text-[--synapse-secondary]
-                `}
+                            sticky top-0 px-2.5 py-2 mt-2
+                            text-sm text-[--synapse-secondary]
+                          `}
               >
                 Other chains
               </div>
@@ -99,6 +95,10 @@ export const ChainPopoverSelect = ({
                 />
               ))}
             </ul>
+          ) : (
+            <div className="p-2 break-all">
+              No chains found matching '{filterValue}'.
+            </div>
           )}
         </div>
       )}
@@ -157,15 +157,17 @@ const useChainInputFilter = (
   const filteredOptions = filterChains(options, filterValue)
   const filteredRemaining = filterChains(remaining, filterValue)
 
-  const noFilteredOptions = _.isEmpty(filteredOptions)
-  const noFilteredRemaining = _.isEmpty(filteredRemaining)
-  const noFilteredResults = noFilteredOptions && noFilteredRemaining
+  const hasFilteredOptions = !_.isEmpty(filteredOptions)
+  const hasFilteredRemaining = !_.isEmpty(filteredRemaining)
+  const hasFilteredResults = hasFilteredOptions || hasFilteredRemaining
 
   return {
     filterValue,
     setFilterValue,
     filteredOptions,
     filteredRemaining,
-    noFilteredResults,
+    hasFilteredOptions,
+    hasFilteredRemaining,
+    hasFilteredResults,
   }
 }
