@@ -28,7 +28,7 @@ export const ChainPopoverSelect = ({
     closePopover()
   }
 
-  /** Filters tokens based on User Input */
+  /** Filters chains based on User Input */
   const [filterValue, setFilterValue] = useState('')
   const filteredOptions = _.filter(options, (option) => {
     const name = option.name
