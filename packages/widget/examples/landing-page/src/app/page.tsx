@@ -7,6 +7,9 @@ import {
   DAI,
   ETH,
   METISUSDC,
+  WJEWEL,
+  JEWEL,
+  XJEWEL,
   CustomRpcs,
 } from '@synapsecns/widget'
 import { useEthereumWallet } from '@/hooks/useEthereumWallet'
@@ -72,8 +75,8 @@ const consumerExamples = {
       '--synapse-focus': 'hsl(12deg 85% 15%)',
       '--synapse-accent': 'hsl(12deg 85% 15%)',
     },
-    targetTokens: [ETH, USDC],
-    targetChainIds: [42161, 43114],
+    targetTokens: [ETH, USDC, JEWEL, XJEWEL, WJEWEL],
+    targetChainIds: [53935, 43114],
   },
 }
 

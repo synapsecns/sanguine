@@ -129,9 +129,6 @@ export const Widget = ({
     if (targetChainIds && targetChainIds.length > 0) {
       dispatch(setDestinationChainId(targetChainIds[0]))
     }
-    if (targetTokens && targetTokens.length > 0) {
-      dispatch(setDestinationToken(targetTokens[0]))
-    }
   }, [targetTokens, targetChainIds, targetTokens])
 
   /** Debounce user input to fetch bridge quote (in ms) */
