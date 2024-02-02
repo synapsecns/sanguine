@@ -44,6 +44,8 @@ export const ChainPopoverSelect = ({
   })
 
   const noFilteredOptions = _.isEmpty(filteredOptions)
+  const noFilteredRemaining = _.isEmpty(filteredRemaining)
+  const noFilteredResults = noFilteredOptions && noFilteredRemaining
 
   return (
     <div
@@ -81,17 +83,22 @@ export const ChainPopoverSelect = ({
             // style={{ background: 'var(--synapse-select-bg)' }}
           >
             {filteredOptions.map((option) => (
-              <li
-                key={option.id}
-                className={`cursor-pointer pl-2.5 pr-8 py-2.5 rounded border border-solid hover:border-[--synapse-focus] active:opacity-40 whitespace-nowrap ${
-                  option?.name === selected?.name
-                    ? 'border-[--synapse-focus] hover:opacity-70'
-                    : 'border-transparent'
-                }`}
-                onClick={() => handleSelect(option)}
-              >
-                {option?.name}
-              </li>
+              // <li
+              //   key={option.id}
+              //   className={`cursor-pointer pl-2.5 pr-8 py-2.5 rounded border border-solid hover:border-[--synapse-focus] active:opacity-40 whitespace-nowrap ${
+              //     option?.name === selected?.name
+              //       ? 'border-[--synapse-focus] hover:opacity-70'
+              //       : 'border-transparent'
+              //   }`}
+              //   onClick={() => handleSelect(option)}
+              // >
+              //   {option?.name}
+              // </li>
+              <ChainOption
+                option={option}
+                isSelected={option?.name === selected?.name}
+                onSelect={() => handleSelect(option)}
+              />
             ))}
             <div
               className="px-2.5 py-2 mt-2 text-sm text-[--synapse-secondary] cursor-default sticky top-0"
@@ -100,17 +107,22 @@ export const ChainPopoverSelect = ({
               Other chains
             </div>
             {remaining.map((option) => (
-              <li
-                key={option.id}
-                className={`cursor-pointer pl-2.5 pr-8 py-2.5 rounded border border-solid hover:border-[--synapse-focus] active:opacity-40 whitespace-nowrap ${
-                  option?.name === selected?.name
-                    ? 'border-[--synapse-focus] hover:opacity-70'
-                    : 'border-transparent'
-                }`}
-                onClick={() => handleSelect(option)}
-              >
-                {option?.name}
-              </li>
+              // <li
+              //   key={option.id}
+              //   className={`cursor-pointer pl-2.5 pr-8 py-2.5 rounded border border-solid hover:border-[--synapse-focus] active:opacity-40 whitespace-nowrap ${
+              //     option?.name === selected?.name
+              //       ? 'border-[--synapse-focus] hover:opacity-70'
+              //       : 'border-transparent'
+              //   }`}
+              //   onClick={() => handleSelect(option)}
+              // >
+              //   {option?.name}
+              // </li>
+              <ChainOption
+                option={option}
+                isSelected={option?.name === selected?.name}
+                onSelect={() => handleSelect(option)}
+              />
             ))}
           </ul>
         </div>
@@ -118,3 +130,25 @@ export const ChainPopoverSelect = ({
     </div>
   )
 }
+
+const ChainOption = ({
+  option,
+  isSelected,
+  onSelect,
+}: {
+  option: Chain
+  isSelected: boolean
+  onSelect: (option: Chain) => void
+}) => (
+  <li
+    key={option.id}
+    className={`cursor-pointer pl-2.5 pr-8 py-2.5 rounded border border-solid hover:border-[--synapse-focus] active:opacity-40 whitespace-nowrap ${
+      isSelected
+        ? 'border-[--synapse-focus] hover:opacity-70'
+        : 'border-transparent'
+    }`}
+    onClick={() => onSelect(option)}
+  >
+    {option.name}
+  </li>
+)
