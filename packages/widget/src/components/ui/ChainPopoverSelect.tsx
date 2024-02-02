@@ -1,7 +1,10 @@
+import { useState } from 'react'
+import _ from 'lodash'
 import { Chain } from 'types'
 
 import usePopover from '@/hooks/usePopoverRef'
 import { DownArrow } from '@/components/icons/DownArrow'
+import { InputFilter } from './InputFilter'
 
 type PopoverSelectProps = {
   options: Chain[]
@@ -25,6 +28,15 @@ export const ChainPopoverSelect = ({
     closePopover()
   }
 
+  /** Filters tokens based on User Input */
+  const [filterValue, setFilterValue] = useState('')
+  const filteredOptions = _.filter(options, (option) => {
+    const name = option.name
+    const lowerName = name.toLowerCase()
+    const lowerFilter = filterValue.toLowerCase()
+    return lowerName.includes(lowerFilter) || lowerName === lowerFilter
+  })
+
   return (
     <div
       data-test-id="chain-popover-select"
@@ -46,43 +58,51 @@ export const ChainPopoverSelect = ({
         <DownArrow />
       </div>
       {isOpen && (
-        <ul
-          className="absolute z-50 mt-1 p-0 border border-solid border-[--synapse-select-border] rounded shadow popover text-left list-none overflow-y-auto max-h-60"
-          style={{ background: 'var(--synapse-select-bg)' }}
-        >
-          {options.map((option) => (
-            <li
-              key={option.id}
-              className={`cursor-pointer pl-2.5 pr-8 py-2.5 rounded border border-solid hover:border-[--synapse-focus] active:opacity-40 whitespace-nowrap ${
-                option?.name === selected?.name
-                  ? 'border-[--synapse-focus] hover:opacity-70'
-                  : 'border-transparent'
-              }`}
-              onClick={() => handleSelect(option)}
-            >
-              {option?.name}
-            </li>
-          ))}
-          <div
-            className="px-2.5 py-2 mt-2 text-sm text-[--synapse-secondary] cursor-default sticky top-0"
+        <div className="absolute z-50 mt-1 p-0 border border-solid border-[--synapse-select-border] rounded shadow popover text-left list-none overflow-y-auto max-h-60  min-w-36">
+          <InputFilter
+            inputValue={filterValue}
+            setInputValue={setFilterValue}
+            placeholder="Search Chains"
+          />
+          <ul
+            // className="absolute z-50 mt-1 p-0 border border-solid border-[--synapse-select-border] rounded shadow popover text-left list-none overflow-y-auto max-h-60"
+            className="p-0 m-0"
             style={{ background: 'var(--synapse-select-bg)' }}
           >
-            Other chains
-          </div>
-          {remaining.map((option) => (
-            <li
-              key={option.id}
-              className={`cursor-pointer pl-2.5 pr-8 py-2.5 rounded border border-solid hover:border-[--synapse-focus] active:opacity-40 whitespace-nowrap ${
-                option?.name === selected?.name
-                  ? 'border-[--synapse-focus] hover:opacity-70'
-                  : 'border-transparent'
-              }`}
-              onClick={() => handleSelect(option)}
+            {filteredOptions.map((option) => (
+              <li
+                key={option.id}
+                className={`cursor-pointer pl-2.5 pr-8 py-2.5 rounded border border-solid hover:border-[--synapse-focus] active:opacity-40 whitespace-nowrap ${
+                  option?.name === selected?.name
+                    ? 'border-[--synapse-focus] hover:opacity-70'
+                    : 'border-transparent'
+                }`}
+                onClick={() => handleSelect(option)}
+              >
+                {option?.name}
+              </li>
+            ))}
+            <div
+              className="px-2.5 py-2 mt-2 text-sm text-[--synapse-secondary] cursor-default sticky top-0"
+              style={{ background: 'var(--synapse-select-bg)' }}
             >
-              {option?.name}
-            </li>
-          ))}
-        </ul>
+              Other chains
+            </div>
+            {remaining.map((option) => (
+              <li
+                key={option.id}
+                className={`cursor-pointer pl-2.5 pr-8 py-2.5 rounded border border-solid hover:border-[--synapse-focus] active:opacity-40 whitespace-nowrap ${
+                  option?.name === selected?.name
+                    ? 'border-[--synapse-focus] hover:opacity-70'
+                    : 'border-transparent'
+                }`}
+                onClick={() => handleSelect(option)}
+              >
+                {option?.name}
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
     </div>
   )
