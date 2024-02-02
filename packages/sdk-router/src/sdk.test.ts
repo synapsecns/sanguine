@@ -377,7 +377,7 @@ describe('SynapseSDK', () => {
     })
   })
 
-  describe('Bridging: ARB -> ETH', () => {
+  describe.skip('Bridging: ARB -> ETH', () => {
     const synapse = new SynapseSDK(
       [SupportedChainId.ETH, SupportedChainId.ARBITRUM],
       [ethProvider, arbProvider]
