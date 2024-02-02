@@ -60,7 +60,7 @@ export const ChainPopoverSelect = ({
         <div
           style={{ background: 'var(--synapse-select-bg)' }}
           className={`
-            absolute z-50 mt-1 p-0 max-h-60 min-w-48 rounded-lg
+            absolute z-50 mt-1 p-1 max-h-60 min-w-48 rounded-lg
             shadow popover text-left list-none overflow-y-auto
             border border-solid border-[--synapse-select-border]
           `}
@@ -71,7 +71,7 @@ export const ChainPopoverSelect = ({
             placeholder="Search Chains"
           />
           {hasFilteredResults ? (
-            <ul className="p-0 m-0">
+            <ul className="p-0 mt-px space-y-px">
               {filteredOptions.map((option) => (
                 <ChainOption
                   option={option}
@@ -83,9 +83,9 @@ export const ChainPopoverSelect = ({
                 <div
                   style={{ background: 'var(--synapse-select-bg)' }}
                   className={`
-                  sticky top-0 px-2.5 py-2 mt-2
-                  text-sm text-[--synapse-secondary]
-                `}
+                    sticky top-0 px-2.5 py-2 mt-2
+                    text-sm text-[--synapse-secondary]
+                  `}
                 >
                   Other chains
                 </div>
@@ -123,7 +123,7 @@ const ChainOption = ({
   <li
     key={option.id}
     className={`
-      pl-2.5 pr-8 py-2.5 rounded border border-solid
+      pl-2.5 pr-8 py-2.5 rounded-lg border border-solid
       hover:border-[--synapse-focus] active:opacity-40
       cursor-pointer whitespace-nowrap
       ${

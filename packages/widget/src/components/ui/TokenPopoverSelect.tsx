@@ -89,7 +89,7 @@ export const TokenPopoverSelect = ({
         <div
           style={{ background: 'var(--synapse-select-bg)' }}
           className={`
-            absolute right-0 z-50 mt-1 p-0 max-h-80 min-w-48 rounded-lg
+            absolute right-0 z-50 mt-1 p-1 max-h-80 min-w-48 rounded-lg
             shadow popover text-left list-none overflow-y-auto
             border border-solid border-[--synapse-select-border]
           `}
@@ -100,7 +100,7 @@ export const TokenPopoverSelect = ({
             placeholder="Search Tokens"
           />
           {hasFilteredResults ? (
-            <ul className="p-0 m-0">
+            <ul className="p-0 mt-px space-y-px">
               {filteredSortedOptionsWithBalances?.map(
                 (option: TokenBalance, index) => (
                   <TokenOption
@@ -164,7 +164,7 @@ const TokenOption = ({
       data-test-id="token-option"
       className={`
         flex gap-4 items-center justify-between
-        cursor-pointer rounded border border-solid
+        cursor-pointer rounded-lg border border-solid
         hover:border-[--synapse-focus] active:opacity-40
         ${
           option?.symbol === selected?.symbol
