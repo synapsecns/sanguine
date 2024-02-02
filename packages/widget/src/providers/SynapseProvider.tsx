@@ -3,6 +3,7 @@ import { createContext, useContext, memo, useMemo } from 'react'
 import {
   StaticJsonRpcProvider,
   FallbackProvider,
+  FallbackProviderConfig,
 } from '@ethersproject/providers'
 import { Chain, CustomRpcs } from 'types'
 
@@ -20,7 +21,27 @@ export const SynapseProvider = memo(
   }) => {
     const synapseProviders = useMemo(() => {
       return chains.map((chain) => {
-        return configureFallbackProvider(chain, customRpcs)
+        let providerUrls
+
+        if (customRpcs && customRpcs[chain.id]) {
+          providerUrls = [
+            customRpcs[chain.id],
+            chain?.rpcUrls.primary,
+            chain?.rpcUrls.fallback,
+          ]
+        } else {
+          providerUrls = [chain?.rpcUrls.primary, chain?.rpcUrls.fallback]
+        }
+
+        const providerConfigs: FallbackProviderConfig[] = providerUrls.map(
+          (url, index) => ({
+            provider: new StaticJsonRpcProvider(url, chain.id),
+            priority: index,
+            stallTimeout: 750,
+          })
+        )
+
+        return new FallbackProvider(providerConfigs, 1)
       })
     }, [chains])
 
@@ -38,7 +59,6 @@ export const SynapseProvider = memo(
       () => new SynapseSDK(chainIds, synapseProviders),
       [chainIds, synapseProviders]
     )
-
     return (
       <SynapseContext.Provider
         value={{ synapseSDK, providerMap, synapseProviders }}
@@ -50,41 +70,3 @@ export const SynapseProvider = memo(
 )
 
 export const useSynapseContext = () => useContext(SynapseContext)
-
-/**
- * Configure providers based on custom RPCs and chain data.
- *
- * Set available rpcs to equivalent priorities to ensure
- * highest level of resilience in FallbackProvider if one fails
- */
-const configureFallbackProvider = (chain: Chain, customRpcs?: CustomRpcs) => {
-  const stallTime = 750 // in ms
-  let providerConfigs
-
-  if (customRpcs && customRpcs[chain.id]) {
-    // Custom RPC available
-    providerConfigs = [
-      { url: customRpcs[chain.id], priority: 1 },
-      { url: chain.rpcUrls.primary, priority: 1 },
-      { url: chain.rpcUrls.fallback, priority: 1 },
-    ]
-  } else {
-    // Default RPCs provided
-    providerConfigs = [
-      { url: chain.rpcUrls.primary, priority: 1 },
-      { url: chain.rpcUrls.fallback, priority: 1 },
-    ]
-  }
-
-  const providers = providerConfigs.map(
-    (config) => new StaticJsonRpcProvider(config.url, chain.id)
-  )
-
-  const fallbackProviderConfig = providerConfigs.map((config, index) => ({
-    provider: providers[index],
-    priority: config.priority,
-    stallTimeout: stallTime,
-  }))
-
-  return new FallbackProvider(fallbackProviderConfig, 1)
-}
