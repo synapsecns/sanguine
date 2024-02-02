@@ -1,9 +1,11 @@
+import { useState } from 'react'
 import _ from 'lodash'
 import { BridgeableToken } from 'types'
 
 import usePopover from '@/hooks/usePopoverRef'
 import { TokenBalance } from '@/utils/actions/fetchTokenBalances'
 import { DownArrow } from '@/components/icons/DownArrow'
+import { InputFilter } from './InputFilter'
 
 type PopoverSelectProps = {
   options: BridgeableToken[]
@@ -51,6 +53,26 @@ export const TokenPopoverSelect = ({
     ['desc', 'asc']
   )
 
+  const [inputValue, setInputValue] = useState('')
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(event.target.value)
+  }
+
+  let filteredOptionsWithBalances = _.filter(
+    sortedOptionsWithBalances,
+    (option) => {
+      const symbol = option.token.symbol
+      const lowerSymbol = symbol.toLowerCase()
+      const lowerFilter = inputValue.toLowerCase()
+      return lowerSymbol.includes(lowerFilter) || lowerSymbol === lowerFilter
+    }
+  )
+
+  console.log('sortedOptionsWithBalances:', sortedOptionsWithBalances)
+
+  console.log('filteredOptionsWithBalances: ', filteredOptionsWithBalances)
+
   return (
     <div
       data-test-id="token-popover-select"
@@ -71,38 +93,41 @@ export const TokenPopoverSelect = ({
         <DownArrow />
       </div>
       {isOpen && (
-        <ul
-          className="absolute z-50 mt-1 p-0 border border-solid border-[--synapse-select-border] rounded shadow popover list-none right-0 overflow-y-auto max-h-80"
-          style={{ background: 'var(--synapse-select-bg)' }}
-        >
-          {sortedOptionsWithBalances?.map((option: TokenBalance, index) => (
-            <TokenOption
-              option={option?.token}
-              key={index}
-              onSelect={handleSelect}
-              selected={selected}
-              parsedBalance={option?.parsedBalance}
-            />
-          ))}
+        <div>
+          <input type="text" value={inputValue} onChange={handleInputChange} />
+          <ul
+            className="absolute z-50 mt-1 p-0 border border-solid border-[--synapse-select-border] rounded shadow popover list-none right-0 overflow-y-auto max-h-80"
+            style={{ background: 'var(--synapse-select-bg)' }}
+          >
+            {filteredOptionsWithBalances?.map((option: TokenBalance, index) => (
+              <TokenOption
+                option={option?.token}
+                key={index}
+                onSelect={handleSelect}
+                selected={selected}
+                parsedBalance={option?.parsedBalance}
+              />
+            ))}
 
-          {remaining?.length > 0 && (
-            <div
-              className="px-2.5 py-2 mt-2 text-sm text-[--synapse-secondary] cursor-default sticky top-0"
-              style={{ background: 'var(--synapse-select-bg)' }}
-            >
-              Other tokens
-            </div>
-          )}
-          {sortedRemainingWithBalances?.map((option: TokenBalance, index) => (
-            <TokenOption
-              option={option?.token}
-              key={index}
-              onSelect={handleSelect}
-              selected={selected}
-              parsedBalance={option?.parsedBalance}
-            />
-          ))}
-        </ul>
+            {remaining?.length > 0 && (
+              <div
+                className="px-2.5 py-2 mt-2 text-sm text-[--synapse-secondary] cursor-default sticky top-0"
+                style={{ background: 'var(--synapse-select-bg)' }}
+              >
+                Other tokens
+              </div>
+            )}
+            {sortedRemainingWithBalances?.map((option: TokenBalance, index) => (
+              <TokenOption
+                option={option?.token}
+                key={index}
+                onSelect={handleSelect}
+                selected={selected}
+                parsedBalance={option?.parsedBalance}
+              />
+            ))}
+          </ul>
+        </div>
       )}
     </div>
   )
