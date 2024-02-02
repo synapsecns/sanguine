@@ -1,5 +1,5 @@
 import { BigNumber } from '@ethersproject/bignumber'
-import { AddressZero } from '@ethersproject/constants'
+import { AddressZero, Zero } from '@ethersproject/constants'
 import invariant from 'tiny-invariant'
 import { XOR } from 'ts-xor'
 
@@ -163,7 +163,23 @@ export const createNoSwapQuery = (token: string, amount: BigNumber): Query => {
     routerAdapter: AddressZero,
     tokenOut: token,
     minAmountOut: amount,
-    deadline: BigNumber.from(0),
+    deadline: Zero,
+    rawParams: '0x',
+  }
+}
+
+/**
+ * Creates a Query object signalling that no path is available to the final token.
+ *
+ * @param token - The final token.
+ * @returns The Query object "no path available".
+ */
+export const createEmptyQuery = (token: string): Query => {
+  return {
+    routerAdapter: AddressZero,
+    tokenOut: token,
+    minAmountOut: Zero,
+    deadline: Zero,
     rawParams: '0x',
   }
 }

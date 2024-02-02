@@ -10,6 +10,7 @@ import {
   applyDeadlineToQuery,
   applySlippageToQuery,
   createNoSwapQuery,
+  createEmptyQuery,
 } from './query'
 
 describe('#query', () => {
@@ -318,6 +319,17 @@ describe('#query', () => {
       routerAdapter: '0x0000000000000000000000000000000000000000',
       tokenOut: '1',
       minAmountOut: BigNumber.from(2),
+      deadline: BigNumber.from(0),
+      rawParams: '0x',
+    })
+  })
+
+  it('createEmptyQuery', () => {
+    const query = createEmptyQuery('1')
+    expect(query).toEqual({
+      routerAdapter: '0x0000000000000000000000000000000000000000',
+      tokenOut: '1',
+      minAmountOut: BigNumber.from(0),
       deadline: BigNumber.from(0),
       rawParams: '0x',
     })
