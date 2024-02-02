@@ -73,6 +73,9 @@ export const TokenPopoverSelect = ({
       return lowerSymbol.includes(lowerFilter) || lowerSymbol === lowerFilter
     }
   )
+  const noFilteredOptions = _.isEmpty(filteredSortedOptionsWithBalances)
+  const noFilteredRemaining = _.isEmpty(filteredSortedRemainingWithBalances)
+  const noFilteredResults = noFilteredOptions && noFilteredRemaining
 
   return (
     <div
@@ -103,43 +106,49 @@ export const TokenPopoverSelect = ({
             setInputValue={setFilterValue}
             placeholder="Search Tokens"
           />
-          <ul
-            className="p-0 m-0"
-            // className="absolute z-50 mt-1 p-0 border border-solid border-[--synapse-select-border] rounded shadow popover list-none right-0 overflow-y-auto max-h-80"
-            // style={{ background: 'var(--synapse-select-bg)' }}
-          >
-            {filteredSortedOptionsWithBalances?.map(
-              (option: TokenBalance, index) => (
-                <TokenOption
-                  option={option?.token}
-                  key={index}
-                  onSelect={handleSelect}
-                  selected={selected}
-                  parsedBalance={option?.parsedBalance}
-                />
-              )
-            )}
+          {noFilteredResults ? (
+            <div className="p-2 break-all">
+              No tokens found matching '{filterValue}'.
+            </div>
+          ) : (
+            <ul
+              className="p-0 m-0"
+              // className="absolute z-50 mt-1 p-0 border border-solid border-[--synapse-select-border] rounded shadow popover list-none right-0 overflow-y-auto max-h-80"
+              // style={{ background: 'var(--synapse-select-bg)' }}
+            >
+              {filteredSortedOptionsWithBalances?.map(
+                (option: TokenBalance, index) => (
+                  <TokenOption
+                    option={option?.token}
+                    key={index}
+                    onSelect={handleSelect}
+                    selected={selected}
+                    parsedBalance={option?.parsedBalance}
+                  />
+                )
+              )}
 
-            {remaining?.length > 0 && (
-              <div
-                className="px-2.5 py-2 mt-2 text-sm text-[--synapse-secondary] cursor-default sticky top-0"
-                style={{ background: 'var(--synapse-select-bg)' }}
-              >
-                Other tokens
-              </div>
-            )}
-            {filteredSortedRemainingWithBalances?.map(
-              (option: TokenBalance, index) => (
-                <TokenOption
-                  option={option?.token}
-                  key={index}
-                  onSelect={handleSelect}
-                  selected={selected}
-                  parsedBalance={option?.parsedBalance}
-                />
-              )
-            )}
-          </ul>
+              {remaining?.length > 0 && (
+                <div
+                  className="px-2.5 py-2 mt-2 text-sm text-[--synapse-secondary] cursor-default sticky top-0"
+                  style={{ background: 'var(--synapse-select-bg)' }}
+                >
+                  Other tokens
+                </div>
+              )}
+              {filteredSortedRemainingWithBalances?.map(
+                (option: TokenBalance, index) => (
+                  <TokenOption
+                    option={option?.token}
+                    key={index}
+                    onSelect={handleSelect}
+                    selected={selected}
+                    parsedBalance={option?.parsedBalance}
+                  />
+                )
+              )}
+            </ul>
+          )}
         </div>
       )}
     </div>

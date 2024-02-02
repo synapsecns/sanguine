@@ -78,7 +78,9 @@ export const ChainPopoverSelect = ({
             placeholder="Search Chains"
           />
           {noFilteredResults ? (
-            <div className="p-2">No chains found matching '{filterValue}'.</div>
+            <div className="p-2 break-all">
+              No chains found matching '{filterValue}'.
+            </div>
           ) : (
             <ul
               className="p-0 m-0"
