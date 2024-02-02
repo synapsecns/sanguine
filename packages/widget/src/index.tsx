@@ -19,6 +19,10 @@ export const Bridge = ({
   targetChainIds,
   targetTokens,
 }: BridgeProps) => {
+  if (!web3Provider) {
+    return null
+  }
+
   return (
     <Web3Provider config={web3Provider}>
       <SynapseProvider chains={CHAINS_ARRAY} customRpcs={customRpcs}>
