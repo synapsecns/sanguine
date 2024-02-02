@@ -36,32 +36,6 @@ export const ChainPopoverSelect = ({
     noFilteredResults,
   } = useChainInputFilter(options, remaining, isOpen)
 
-  /** Filters chains based on User Input */
-  // const [filterValue, setFilterValue] = useState('')
-
-  // useEffect(() => {
-  //   if (!isOpen) {
-  //     setFilterValue('')
-  //   }
-  // }, [isOpen])
-
-  // const filteredOptions = _.filter(options, (option) => {
-  //   const name = option.name
-  //   const lowerName = name.toLowerCase()
-  //   const lowerFilter = filterValue.toLowerCase()
-  //   return lowerName.includes(lowerFilter) || lowerName === lowerFilter
-  // })
-  // const filteredRemaining = _.filter(remaining, (option) => {
-  //   const name = option.name
-  //   const lowerName = name.toLowerCase()
-  //   const lowerFilter = filterValue.toLowerCase()
-  //   return lowerName.includes(lowerFilter) || lowerName === lowerFilter
-  // })
-
-  // const noFilteredOptions = _.isEmpty(filteredOptions)
-  // const noFilteredRemaining = _.isEmpty(filteredRemaining)
-  // const noFilteredResults = noFilteredOptions && noFilteredRemaining
-
   return (
     <div
       data-test-id="chain-popover-select"

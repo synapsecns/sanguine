@@ -65,37 +65,6 @@ export const TokenPopoverSelect = ({
     isOpen
   )
 
-  /** Filters tokens based on User Input */
-  // const [filterValue, setFilterValue] = useState('')
-
-  // useEffect(() => {
-  //   if (!isOpen) {
-  //     setFilterValue('')
-  //   }
-  // }, [isOpen])
-
-  // const filteredSortedOptionsWithBalances = _.filter(
-  //   sortedOptionsWithBalances,
-  //   (option) => {
-  //     const symbol = option.token.symbol
-  //     const lowerSymbol = symbol.toLowerCase()
-  //     const lowerFilter = filterValue.toLowerCase()
-  //     return lowerSymbol.includes(lowerFilter) || lowerSymbol === lowerFilter
-  //   }
-  // )
-  // const filteredSortedRemainingWithBalances = _.filter(
-  //   sortedRemainingWithBalances,
-  //   (option) => {
-  //     const symbol = option.token.symbol
-  //     const lowerSymbol = symbol.toLowerCase()
-  //     const lowerFilter = filterValue.toLowerCase()
-  //     return lowerSymbol.includes(lowerFilter) || lowerSymbol === lowerFilter
-  //   }
-  // )
-  // const noFilteredOptions = _.isEmpty(filteredSortedOptionsWithBalances)
-  // const noFilteredRemaining = _.isEmpty(filteredSortedRemainingWithBalances)
-  // const noFilteredResults = noFilteredOptions && noFilteredRemaining
-
   return (
     <div
       data-test-id="token-popover-select"
