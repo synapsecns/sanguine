@@ -73,8 +73,9 @@ export const ChainPopoverSelect = ({
           />
           {hasFilteredResults ? (
             <ul className="p-0 mt-px mb-0 space-y-px">
-              {filteredOptions.map((option) => (
+              {filteredOptions.map((option, i) => (
                 <ChainOption
+                  key={i}
                   option={option}
                   isSelected={option?.name === selected?.name}
                   onSelect={() => handleSelect(option)}
@@ -91,8 +92,9 @@ export const ChainPopoverSelect = ({
                   Other chains
                 </div>
               )}
-              {filteredRemaining.map((option) => (
+              {filteredRemaining.map((option, i) => (
                 <ChainOption
+                  key={i}
                   option={option}
                   isSelected={option?.name === selected?.name}
                   onSelect={() => handleSelect(option)}
