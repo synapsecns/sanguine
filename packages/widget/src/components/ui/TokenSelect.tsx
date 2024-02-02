@@ -102,6 +102,8 @@ export const TokenSelect = ({ label, isOrigin, token, onChange }: Props) => {
     }
   }
 
+  console.log('options:', options)
+
   return (
     <TokenPopoverSelect
       options={options}
