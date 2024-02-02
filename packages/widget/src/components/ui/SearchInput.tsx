@@ -1,6 +1,6 @@
 import React, { Dispatch, SetStateAction } from 'react'
 
-export const InputFilter = ({
+export const SearchInput = ({
   inputValue,
   setInputValue,
   placeholder,
@@ -14,7 +14,7 @@ export const InputFilter = ({
   }
   return (
     <div
-      data-test-id="input-filter"
+      data-test-id="search-input"
       className="m-0.5 p-2 bg-white border-1 border-black rounded-md"
     >
       <input

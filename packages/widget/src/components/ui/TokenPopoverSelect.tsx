@@ -5,7 +5,7 @@ import { BridgeableToken } from 'types'
 import usePopover from '@/hooks/usePopoverRef'
 import { TokenBalance } from '@/utils/actions/fetchTokenBalances'
 import { DownArrow } from '@/components/icons/DownArrow'
-import { InputFilter } from './InputFilter'
+import { SearchInput } from './SearchInput'
 
 type PopoverSelectProps = {
   options: BridgeableToken[]
@@ -120,7 +120,7 @@ export const TokenPopoverSelect = ({
           className="absolute z-50 mt-1 p-0 border border-solid border-[--synapse-select-border] rounded shadow popover list-none right-0 overflow-y-auto max-h-80 min-w-48"
           style={{ background: 'var(--synapse-select-bg)' }}
         >
-          <InputFilter
+          <SearchInput
             inputValue={filterValue}
             setInputValue={setFilterValue}
             placeholder="Search Tokens"

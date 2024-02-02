@@ -4,7 +4,7 @@ import { Chain } from 'types'
 
 import usePopover from '@/hooks/usePopoverRef'
 import { DownArrow } from '@/components/icons/DownArrow'
-import { InputFilter } from './InputFilter'
+import { SearchInput } from './SearchInput'
 
 type PopoverSelectProps = {
   options: Chain[]
@@ -87,7 +87,7 @@ export const ChainPopoverSelect = ({
           className="absolute z-50 mt-1 p-0 border border-solid border-[--synapse-select-border] rounded shadow popover text-left list-none overflow-y-auto max-h-60  min-w-48"
           style={{ background: 'var(--synapse-select-bg)' }}
         >
-          <InputFilter
+          <SearchInput
             inputValue={filterValue}
             setInputValue={setFilterValue}
             placeholder="Search Chains"
