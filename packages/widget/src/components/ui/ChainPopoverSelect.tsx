@@ -58,16 +58,19 @@ export const ChainPopoverSelect = ({
         <DownArrow />
       </div>
       {isOpen && (
-        <div className="absolute z-50 mt-1 p-0 border border-solid border-[--synapse-select-border] rounded shadow popover text-left list-none overflow-y-auto max-h-60  min-w-36">
+        <div
+          className="absolute z-50 mt-1 p-0 border border-solid border-[--synapse-select-border] rounded shadow popover text-left list-none overflow-y-auto max-h-60  min-w-36"
+          style={{ background: 'var(--synapse-select-bg)' }}
+        >
           <InputFilter
             inputValue={filterValue}
             setInputValue={setFilterValue}
             placeholder="Search Chains"
           />
           <ul
-            // className="absolute z-50 mt-1 p-0 border border-solid border-[--synapse-select-border] rounded shadow popover text-left list-none overflow-y-auto max-h-60"
             className="p-0 m-0"
-            style={{ background: 'var(--synapse-select-bg)' }}
+            // className="absolute z-50 mt-1 p-0 border border-solid border-[--synapse-select-border] rounded shadow popover text-left list-none overflow-y-auto max-h-60"
+            // style={{ background: 'var(--synapse-select-bg)' }}
           >
             {filteredOptions.map((option) => (
               <li

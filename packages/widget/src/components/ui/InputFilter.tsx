@@ -13,7 +13,7 @@ export const InputFilter = ({
     setInputValue(event.target.value)
   }
   return (
-    <div data-test-id="input-filter" className="px-2 py-4 bg-white">
+    <div data-test-id="input-filter" className="p-2 bg-white">
       <input
         type="text"
         placeholder={placeholder}
