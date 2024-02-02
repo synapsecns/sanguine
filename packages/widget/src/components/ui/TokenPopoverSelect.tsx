@@ -101,7 +101,7 @@ export const TokenPopoverSelect = ({
             isActive={isOpen}
           />
           {hasFilteredResults ? (
-            <ul className="p-0 mt-px mb-0 space-y-px">
+            <ul className="p-0 m-0">
               {filteredSortedOptionsWithBalances?.map(
                 (option: TokenBalance, index) => (
                   <TokenOption
@@ -115,10 +115,9 @@ export const TokenPopoverSelect = ({
               )}
               {hasFilteredRemaining && (
                 <div
-                  style={{ background: 'var(--synapse-select-bg)' }}
                   className={`
-                    sticky top-0 px-2.5 py-2 mt-2
-                    text-sm text-[--synapse-secondary]
+                    sticky top-0 px-2.5 py-2 mt-2 text-sm
+                    text-[--synapse-secondary] bg-[--synapse-surface]
                   `}
                 >
                   Other tokens
