@@ -71,7 +71,7 @@ export const ChainPopoverSelect = ({
             placeholder="Search Chains"
           />
           {hasFilteredResults ? (
-            <ul className="p-0 mt-px space-y-px">
+            <ul className="p-0 mt-px mb-0 space-y-px">
               {filteredOptions.map((option) => (
                 <ChainOption
                   option={option}

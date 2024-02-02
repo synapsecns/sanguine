@@ -100,7 +100,7 @@ export const TokenPopoverSelect = ({
             placeholder="Search Tokens"
           />
           {hasFilteredResults ? (
-            <ul className="p-0 mt-px space-y-px">
+            <ul className="p-0 mt-px mb-0 space-y-px">
               {filteredSortedOptionsWithBalances?.map(
                 (option: TokenBalance, index) => (
                   <TokenOption
