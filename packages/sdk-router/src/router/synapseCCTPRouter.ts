@@ -42,6 +42,10 @@ export class SynapseCCTPRouter extends Router {
   // All possible events emitted by the SynapseCCTP contract in the origin transaction
   private readonly originEvents = ['CircleRequestSent']
 
+  // CCTP request will be filtered out if the CCTP Minter allowance
+  // is less than this value times the requested amount.
+  private readonly MINTER_ALLOWANCE_MIN_BUFFER = BigNumber.from(10)
+
   constructor(chainId: number, provider: Provider, address: string) {
     // Parent constructor throws if chainId or provider are undefined
     super(chainId, provider)
@@ -71,8 +75,9 @@ export class SynapseCCTPRouter extends Router {
     requests: DestRequest[],
     tokenOut: string
   ): Promise<Query[]> {
+    const updatedRequests = await this.filterDestRequests(requests)
     return this.routerContract
-      .getDestinationAmountOut(requests, tokenOut)
+      .getDestinationAmountOut(updatedRequests, tokenOut)
       .then((queries) => {
         return queries.map(reduceToQuery)
       })
@@ -177,6 +182,37 @@ export class SynapseCCTPRouter extends Router {
     }
     // Return the cached contract
     return this.cctpContractCache
+  }
+
+  private async filterDestRequests(
+    destRequests: DestRequest[]
+  ): Promise<DestRequest[]> {
+    // Get all the unique symbols from the requests and their respective minter allowances
+    const symbols = Array.from(
+      new Set(destRequests.map((request) => request.symbol))
+    )
+    const symbolAllowances = await Promise.all(
+      symbols.map(async (symbol) => {
+        const token = await this.getTokenAddress(symbol)
+        return this.getTokenMinterAllowance(token)
+      })
+    )
+    const allowanceMap: { [symbol: string]: BigNumber } = {}
+    symbols.forEach((symbol, index) => {
+      allowanceMap[symbol] = symbolAllowances[index]
+    })
+    // Update the requests for the amounts that are too big
+    return destRequests.map((request) => {
+      const minAllowance = this.MINTER_ALLOWANCE_MIN_BUFFER.mul(
+        request.amountIn
+      )
+      return {
+        ...request,
+        amountIn: allowanceMap[request.symbol].gte(minAllowance)
+          ? request.amountIn
+          : Zero,
+      }
+    })
   }
 
   private async getTokenAddress(symbol: string): Promise<string> {
