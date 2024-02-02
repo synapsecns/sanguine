@@ -1,0 +1,12 @@
+{
+  "name": "@synapsecns/contracts-interchain",
+  "version": "1.0.0",
+  "description": "Smart contracts for the Synapse Interchain Network (SIN)",
+  "private": true,
+  "dependencies": {
+    "@openzeppelin/contracts": "5.0.1"
+  },
+  "devDependencies": {
+    "solhint": "^4.1.1"
+  }
+}
