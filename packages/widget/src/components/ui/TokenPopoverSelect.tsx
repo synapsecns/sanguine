@@ -1,9 +1,11 @@
+import { useState, useEffect } from 'react'
 import _ from 'lodash'
 import { BridgeableToken } from 'types'
 
 import usePopover from '@/hooks/usePopoverRef'
 import { TokenBalance } from '@/utils/actions/fetchTokenBalances'
 import { DownArrow } from '@/components/icons/DownArrow'
+import { SearchInput } from './SearchInput'
 
 type PopoverSelectProps = {
   options: BridgeableToken[]
@@ -51,6 +53,19 @@ export const TokenPopoverSelect = ({
     ['desc', 'asc']
   )
 
+  const {
+    filterValue,
+    setFilterValue,
+    filteredOptions: filteredSortedOptionsWithBalances,
+    filteredRemaining: filteredSortedRemainingWithBalances,
+    hasFilteredRemaining,
+    hasFilteredResults,
+  } = useTokenInputFilter(
+    sortedOptionsWithBalances,
+    sortedRemainingWithBalances,
+    isOpen
+  )
+
   return (
     <div
       data-test-id="token-popover-select"
@@ -58,54 +73,165 @@ export const TokenPopoverSelect = ({
       ref={popoverRef}
     >
       <div
-        className={`
-          cursor-pointer flex px-2.5 py-1.5 gap-2 items-center rounded-[.1875rem]
-          text-[--synapse-select-text]
-          border border-solid border-[--synapse-select-border]
-          hover:border-[--synapse-focus]
-        `}
-        style={{ background: 'var(--synapse-select-bg)' }}
         onClick={() => togglePopover()}
+        style={{ background: 'var(--synapse-select-bg)' }}
+        className={`
+          flex px-2.5 py-1.5 gap-2 items-center rounded-lg
+          text-[--synapse-select-text] whitespace-nowrap
+          border border-solid border-[--synapse-select-border]
+          cursor-pointer hover:border-[--synapse-focus]
+        `}
       >
         {selected?.symbol || 'Token'}
         <DownArrow />
       </div>
       {isOpen && (
-        <ul
-          className="absolute z-50 mt-1 p-0 border border-solid border-[--synapse-select-border] rounded shadow popover list-none right-0 overflow-y-auto max-h-80"
+        <div
           style={{ background: 'var(--synapse-select-bg)' }}
+          className={`
+            absolute right-0 z-50 mt-1 p-1 max-h-80 min-w-48 rounded-lg
+            shadow popover text-left list-none overflow-y-auto
+            border border-solid border-[--synapse-select-border]
+          `}
         >
-          {sortedOptionsWithBalances?.map((option: TokenBalance, index) => (
-            <TokenOption
-              option={option?.token}
-              key={index}
-              onSelect={handleSelect}
-              selected={selected}
-              parsedBalance={option?.parsedBalance}
-            />
-          ))}
-
-          {remaining?.length > 0 && (
-            <div
-              className="px-2.5 py-2 mt-2 text-sm text-[--synapse-secondary] cursor-default sticky top-0"
-              style={{ background: 'var(--synapse-select-bg)' }}
-            >
-              Other tokens
+          <SearchInput
+            inputValue={filterValue}
+            setInputValue={setFilterValue}
+            placeholder="Search Tokens"
+            isActive={isOpen}
+          />
+          {hasFilteredResults ? (
+            <ul className="p-0 mt-px mb-0 space-y-px">
+              {filteredSortedOptionsWithBalances?.map(
+                (option: TokenBalance, index) => (
+                  <TokenOption
+                    option={option?.token}
+                    key={index}
+                    onSelect={handleSelect}
+                    selected={selected}
+                    parsedBalance={option?.parsedBalance}
+                  />
+                )
+              )}
+              {hasFilteredRemaining && (
+                <div
+                  style={{ background: 'var(--synapse-select-bg)' }}
+                  className={`
+                    sticky top-0 px-2.5 py-2 mt-2
+                    text-sm text-[--synapse-secondary]
+                  `}
+                >
+                  Other tokens
+                </div>
+              )}
+              {filteredSortedRemainingWithBalances?.map(
+                (option: TokenBalance, index) => (
+                  <TokenOption
+                    option={option?.token}
+                    key={index}
+                    onSelect={handleSelect}
+                    selected={selected}
+                    parsedBalance={option?.parsedBalance}
+                  />
+                )
+              )}
+            </ul>
+          ) : (
+            <div className="p-2 break-all">
+              No tokens found
+              <br />
+              matching '{filterValue}'.
             </div>
           )}
-          {sortedRemainingWithBalances?.map((option: TokenBalance, index) => (
-            <TokenOption
-              option={option?.token}
-              key={index}
-              onSelect={handleSelect}
-              selected={selected}
-              parsedBalance={option?.parsedBalance}
-            />
-          ))}
-        </ul>
+        </div>
       )}
     </div>
   )
+}
+
+const TokenOption = ({
+  option,
+  onSelect,
+  selected,
+  parsedBalance,
+}: {
+  option: BridgeableToken
+  onSelect: (option: BridgeableToken) => void
+  selected: BridgeableToken
+  parsedBalance: string
+}) => {
+  return (
+    <li
+      data-test-id="token-option"
+      className={`
+        flex gap-4 items-center justify-between
+        cursor-pointer rounded-lg border border-solid
+        hover:border-[--synapse-focus] active:opacity-40
+        ${
+          option?.symbol === selected?.symbol
+            ? 'border-[--synapse-focus] hover:opacity-70'
+            : 'border-transparent'
+        }
+      `}
+      onClick={() => onSelect(option)}
+    >
+      <abbr title={option?.name} className="p-2.5 no-underline">
+        {option?.symbol}
+      </abbr>
+      <data
+        value={parsedBalance}
+        className={`
+          text-sm p-2.5
+          ${
+            parsedBalance
+              ? 'text-[--synapse-secondary]'
+              : 'text-[--synapse-focus]'
+          }
+        `}
+      >
+        {parsedBalance ?? '−'}
+      </data>
+    </li>
+  )
+}
+
+const useTokenInputFilter = (
+  options: TokenBalance[],
+  remaining: TokenBalance[],
+  isActive: boolean
+) => {
+  const [filterValue, setFilterValue] = useState('')
+
+  useEffect(() => {
+    if (!isActive) {
+      setFilterValue('')
+    }
+  }, [isActive])
+
+  const filterTokens = (tokens: TokenBalance[], filter: string) => {
+    const lowerFilter = filter.toLowerCase()
+    return _.filter(tokens, (option) => {
+      const symbol = option.token.symbol.toLowerCase()
+      return symbol.includes(lowerFilter) || symbol === lowerFilter
+    })
+  }
+
+  const filteredOptions = filterTokens(options, filterValue)
+  const filteredRemaining = filterTokens(remaining, filterValue)
+
+  const hasFilteredOptions = !_.isEmpty(filteredOptions)
+  const hasFilteredRemaining = !_.isEmpty(filteredRemaining)
+  const hasFilteredResults = hasFilteredOptions || hasFilteredRemaining
+
+  return {
+    filterValue,
+    setFilterValue,
+    filteredOptions,
+    filteredRemaining,
+    hasFilteredOptions,
+    hasFilteredRemaining,
+    hasFilteredResults,
+  }
 }
 
 const mergeTokenOptionsWithBalances = (
@@ -131,45 +257,4 @@ const mergeTokenOptionsWithBalances = (
       }
     }
   })
-}
-
-const TokenOption = ({
-  option,
-  onSelect,
-  selected,
-  parsedBalance,
-}: {
-  option: BridgeableToken
-  onSelect: (option: BridgeableToken) => void
-  selected: BridgeableToken
-  parsedBalance: string
-}) => {
-  return (
-    <li
-      data-test-id="token-option"
-      className={`cursor-pointer rounded border border-solid hover:border-[--synapse-focus] active:opacity-40 flex gap-4 items-center justify-between ${
-        option?.symbol === selected?.symbol
-          ? 'border-[--synapse-focus] hover:opacity-70'
-          : 'border-transparent'
-      }`}
-      onClick={() => onSelect(option)}
-    >
-      <abbr title={option?.name} className="p-2.5 no-underline">
-        {option?.symbol}
-      </abbr>
-      <data
-        value={parsedBalance}
-        className={`
-        text-sm p-2.5
-        ${
-          parsedBalance
-            ? 'text-[--synapse-secondary]'
-            : 'text-[--synapse-focus]'
-        }
-      `}
-      >
-        {parsedBalance ?? '−'}
-      </data>
-    </li>
-  )
 }
