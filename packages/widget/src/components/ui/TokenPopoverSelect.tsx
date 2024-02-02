@@ -53,36 +53,49 @@ export const TokenPopoverSelect = ({
     ['desc', 'asc']
   )
 
-  /** Filters tokens based on User Input */
-  const [filterValue, setFilterValue] = useState('')
-
-  useEffect(() => {
-    if (!isOpen) {
-      setFilterValue('')
-    }
-  }, [isOpen])
-
-  const filteredSortedOptionsWithBalances = _.filter(
+  const {
+    filterValue,
+    setFilterValue,
+    filteredSortedOptionsWithBalances,
+    filteredSortedRemainingWithBalances,
+    noFilteredResults,
+    TokenInputFilter,
+  } = useTokenInputFilter(
     sortedOptionsWithBalances,
-    (option) => {
-      const symbol = option.token.symbol
-      const lowerSymbol = symbol.toLowerCase()
-      const lowerFilter = filterValue.toLowerCase()
-      return lowerSymbol.includes(lowerFilter) || lowerSymbol === lowerFilter
-    }
-  )
-  const filteredSortedRemainingWithBalances = _.filter(
     sortedRemainingWithBalances,
-    (option) => {
-      const symbol = option.token.symbol
-      const lowerSymbol = symbol.toLowerCase()
-      const lowerFilter = filterValue.toLowerCase()
-      return lowerSymbol.includes(lowerFilter) || lowerSymbol === lowerFilter
-    }
+    isOpen
   )
-  const noFilteredOptions = _.isEmpty(filteredSortedOptionsWithBalances)
-  const noFilteredRemaining = _.isEmpty(filteredSortedRemainingWithBalances)
-  const noFilteredResults = noFilteredOptions && noFilteredRemaining
+
+  /** Filters tokens based on User Input */
+  // const [filterValue, setFilterValue] = useState('')
+
+  // useEffect(() => {
+  //   if (!isOpen) {
+  //     setFilterValue('')
+  //   }
+  // }, [isOpen])
+
+  // const filteredSortedOptionsWithBalances = _.filter(
+  //   sortedOptionsWithBalances,
+  //   (option) => {
+  //     const symbol = option.token.symbol
+  //     const lowerSymbol = symbol.toLowerCase()
+  //     const lowerFilter = filterValue.toLowerCase()
+  //     return lowerSymbol.includes(lowerFilter) || lowerSymbol === lowerFilter
+  //   }
+  // )
+  // const filteredSortedRemainingWithBalances = _.filter(
+  //   sortedRemainingWithBalances,
+  //   (option) => {
+  //     const symbol = option.token.symbol
+  //     const lowerSymbol = symbol.toLowerCase()
+  //     const lowerFilter = filterValue.toLowerCase()
+  //     return lowerSymbol.includes(lowerFilter) || lowerSymbol === lowerFilter
+  //   }
+  // )
+  // const noFilteredOptions = _.isEmpty(filteredSortedOptionsWithBalances)
+  // const noFilteredRemaining = _.isEmpty(filteredSortedRemainingWithBalances)
+  // const noFilteredResults = noFilteredOptions && noFilteredRemaining
 
   return (
     <div
@@ -108,11 +121,7 @@ export const TokenPopoverSelect = ({
           className="absolute z-50 mt-1 p-0 border border-solid border-[--synapse-select-border] rounded shadow popover list-none right-0 overflow-y-auto max-h-80 min-w-48"
           style={{ background: 'var(--synapse-select-bg)' }}
         >
-          <InputFilter
-            inputValue={filterValue}
-            setInputValue={setFilterValue}
-            placeholder="Search Tokens"
-          />
+          <TokenInputFilter />
           {noFilteredResults ? (
             <div className="p-2 break-all">
               No tokens found matching '{filterValue}'.
@@ -226,4 +235,55 @@ const TokenOption = ({
       </data>
     </li>
   )
+}
+
+const useTokenInputFilter = (
+  options: TokenBalance[],
+  remaining: TokenBalance[],
+  isOpen: boolean
+) => {
+  const [filterValue, setFilterValue] = useState('')
+
+  useEffect(() => {
+    if (!isOpen) {
+      setFilterValue('')
+    }
+  }, [isOpen])
+
+  const filterTokens = (tokens: TokenBalance[], filter: string) => {
+    const lowerFilter = filter.toLowerCase()
+    return _.filter(tokens, (option) => {
+      const symbol = option.token.symbol.toLowerCase()
+      return symbol.includes(lowerFilter) || symbol === lowerFilter
+    })
+  }
+
+  const filteredSortedOptionsWithBalances = filterTokens(options, filterValue)
+  const filteredSortedRemainingWithBalances = filterTokens(
+    remaining,
+    filterValue
+  )
+
+  const noFilteredOptions = _.isEmpty(filteredSortedOptionsWithBalances)
+  const noFilteredRemaining = _.isEmpty(filteredSortedRemainingWithBalances)
+  const noFilteredResults = noFilteredOptions && noFilteredRemaining
+
+  const TokenInputFilter = () => {
+    return (
+      <InputFilter
+        inputValue={filterValue}
+        setInputValue={setFilterValue}
+        placeholder="Search Tokens"
+      />
+    )
+  }
+
+  return {
+    filterValue,
+    setFilterValue,
+    filteredSortedOptionsWithBalances,
+    filteredSortedRemainingWithBalances,
+    noFilteredResults,
+    TokenInputFilter,
+  }
 }
