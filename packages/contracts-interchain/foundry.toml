@@ -1,0 +1,12 @@
+[profile.default]
+auto_detect_solc = true
+evm_version = "paris"
+optimizer = true
+optimizer_runs = 100_000
+out = "artifacts"
+src = "src"
+
+[fmt]
+line_length = 120
+multiline_func_header = 'attributes_first'
+number_underscore = 'thousands'
