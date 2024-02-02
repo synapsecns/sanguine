@@ -55,10 +55,10 @@ export const TokenPopoverSelect = ({
 
   const {
     filterValue,
+    setFilterValue,
     filteredOptions: filteredSortedOptionsWithBalances,
     filteredRemaining: filteredSortedRemainingWithBalances,
     noFilteredResults,
-    TokenInputFilter,
   } = useTokenInputFilter(
     sortedOptionsWithBalances,
     sortedRemainingWithBalances,
@@ -120,17 +120,17 @@ export const TokenPopoverSelect = ({
           className="absolute z-50 mt-1 p-0 border border-solid border-[--synapse-select-border] rounded shadow popover list-none right-0 overflow-y-auto max-h-80 min-w-48"
           style={{ background: 'var(--synapse-select-bg)' }}
         >
-          <TokenInputFilter />
+          <InputFilter
+            inputValue={filterValue}
+            setInputValue={setFilterValue}
+            placeholder="Search Tokens"
+          />
           {noFilteredResults ? (
             <div className="p-2 break-all">
               No tokens found matching '{filterValue}'.
             </div>
           ) : (
-            <ul
-              className="p-0 m-0"
-              // className="absolute z-50 mt-1 p-0 border border-solid border-[--synapse-select-border] rounded shadow popover list-none right-0 overflow-y-auto max-h-80"
-              // style={{ background: 'var(--synapse-select-bg)' }}
-            >
+            <ul className="p-0 m-0">
               {filteredSortedOptionsWithBalances?.map(
                 (option: TokenBalance, index) => (
                   <TokenOption
@@ -264,22 +264,11 @@ const useTokenInputFilter = (
   const noFilteredRemaining = _.isEmpty(filteredRemaining)
   const noFilteredResults = noFilteredOptions && noFilteredRemaining
 
-  const TokenInputFilter = () => {
-    return (
-      <InputFilter
-        inputValue={filterValue}
-        setInputValue={setFilterValue}
-        placeholder="Search Tokens"
-      />
-    )
-  }
-
   return {
     filterValue,
     setFilterValue,
     filteredOptions,
     filteredRemaining,
     noFilteredResults,
-    TokenInputFilter,
   }
 }

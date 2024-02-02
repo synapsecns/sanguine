@@ -28,31 +28,39 @@ export const ChainPopoverSelect = ({
     closePopover()
   }
 
+  const {
+    filterValue,
+    setFilterValue,
+    filteredOptions,
+    filteredRemaining,
+    noFilteredResults,
+  } = useChainInputFilter(options, remaining, isOpen)
+
   /** Filters chains based on User Input */
-  const [filterValue, setFilterValue] = useState('')
+  // const [filterValue, setFilterValue] = useState('')
 
-  useEffect(() => {
-    if (!isOpen) {
-      setFilterValue('')
-    }
-  }, [isOpen])
+  // useEffect(() => {
+  //   if (!isOpen) {
+  //     setFilterValue('')
+  //   }
+  // }, [isOpen])
 
-  const filteredOptions = _.filter(options, (option) => {
-    const name = option.name
-    const lowerName = name.toLowerCase()
-    const lowerFilter = filterValue.toLowerCase()
-    return lowerName.includes(lowerFilter) || lowerName === lowerFilter
-  })
-  const filteredRemaining = _.filter(remaining, (option) => {
-    const name = option.name
-    const lowerName = name.toLowerCase()
-    const lowerFilter = filterValue.toLowerCase()
-    return lowerName.includes(lowerFilter) || lowerName === lowerFilter
-  })
+  // const filteredOptions = _.filter(options, (option) => {
+  //   const name = option.name
+  //   const lowerName = name.toLowerCase()
+  //   const lowerFilter = filterValue.toLowerCase()
+  //   return lowerName.includes(lowerFilter) || lowerName === lowerFilter
+  // })
+  // const filteredRemaining = _.filter(remaining, (option) => {
+  //   const name = option.name
+  //   const lowerName = name.toLowerCase()
+  //   const lowerFilter = filterValue.toLowerCase()
+  //   return lowerName.includes(lowerFilter) || lowerName === lowerFilter
+  // })
 
-  const noFilteredOptions = _.isEmpty(filteredOptions)
-  const noFilteredRemaining = _.isEmpty(filteredRemaining)
-  const noFilteredResults = noFilteredOptions && noFilteredRemaining
+  // const noFilteredOptions = _.isEmpty(filteredOptions)
+  // const noFilteredRemaining = _.isEmpty(filteredRemaining)
+  // const noFilteredResults = noFilteredOptions && noFilteredRemaining
 
   return (
     <div
@@ -89,11 +97,7 @@ export const ChainPopoverSelect = ({
               No chains found matching '{filterValue}'.
             </div>
           ) : (
-            <ul
-              className="p-0 m-0"
-              // className="absolute z-50 mt-1 p-0 border border-solid border-[--synapse-select-border] rounded shadow popover text-left list-none overflow-y-auto max-h-60"
-              // style={{ background: 'var(--synapse-select-bg)' }}
-            >
+            <ul className="p-0 m-0">
               {filteredOptions.map((option) => (
                 <ChainOption
                   option={option}
@@ -107,7 +111,7 @@ export const ChainPopoverSelect = ({
               >
                 Other chains
               </div>
-              {remaining.map((option) => (
+              {filteredRemaining.map((option) => (
                 <ChainOption
                   option={option}
                   isSelected={option?.name === selected?.name}
@@ -143,3 +147,40 @@ const ChainOption = ({
     {option.name}
   </li>
 )
+
+const useChainInputFilter = (
+  options: Chain[],
+  remaining: Chain[],
+  isActive: boolean
+) => {
+  const [filterValue, setFilterValue] = useState('')
+
+  useEffect(() => {
+    if (!isActive) {
+      setFilterValue('')
+    }
+  }, [isActive])
+
+  const filterChains = (chains: Chain[], filter: string) => {
+    const lowerFilter = filter.toLowerCase()
+    return _.filter(chains, (option) => {
+      const name = option.name.toLowerCase()
+      return name.includes(lowerFilter) || name === lowerFilter
+    })
+  }
+
+  const filteredOptions = filterChains(options, filterValue)
+  const filteredRemaining = filterChains(remaining, filterValue)
+
+  const noFilteredOptions = _.isEmpty(filteredOptions)
+  const noFilteredRemaining = _.isEmpty(filteredRemaining)
+  const noFilteredResults = noFilteredOptions && noFilteredRemaining
+
+  return {
+    filterValue,
+    setFilterValue,
+    filteredOptions,
+    filteredRemaining,
+    noFilteredResults,
+  }
+}
