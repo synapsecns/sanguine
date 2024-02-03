@@ -10,7 +10,8 @@
     "lint:contracts:fix": "forge fmt && solhint --fix -c .solhint.json '{src,script,test}/**/*.sol'",
     "lint:fix": "yarn lint:contracts:fix",
     "lint": "forge fmt",
-    "ci:lint": "forge fmt --check && solhint -c .solhint.json '{src,script,test}/**/*.sol'"
+    "lint:check": "forge fmt --check && solhint -c .solhint.json '{src,script,test}/**/*.sol'",
+    "ci:lint": "yarn lint:check"
   },
   "dependencies": {
     "@openzeppelin/contracts": "5.0.1"
