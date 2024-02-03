@@ -53,6 +53,16 @@ abstract contract AbstractProcessorTest is Test {
         assertEq(processor.calculateSwap(1, 0, 100), 100);
     }
 
+    function test_calculateSwap_returnsZeroForSameToken() public {
+        assertEq(processor.calculateSwap(0, 0, 100), 0);
+        assertEq(processor.calculateSwap(1, 1, 100), 0);
+    }
+
+    function test_calculateSwap_returnsZeroForOutOfBoundsIndex() public {
+        assertEq(processor.calculateSwap(2, 0, 100), 0);
+        assertEq(processor.calculateSwap(0, 2, 100), 0);
+    }
+
     function test_swap_revert_equalIndices() public {
         vm.expectRevert(abi.encodeWithSelector(AbstractProcessor.AbstractProcessor__EqualIndices.selector, 1));
         vm.prank(user);
