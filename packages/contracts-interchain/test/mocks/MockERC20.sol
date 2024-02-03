@@ -8,7 +8,12 @@ contract MockERC20 is ERC20 {
     constructor(string memory name_) ERC20(name_, name_) {}
 
     /// @notice For testing purposes, mints tokens to the given account
-    function mintPublic(address account, uint256 amount) public {
+    function mintPublic(address account, uint256 amount) external {
         _mint(account, amount);
+    }
+
+    // solhint-disable-next-line no-empty-blocks
+    function testMockERC20() external pure {
+        // This function is only used to remove MockERC20 from coverage reports
     }
 }

@@ -46,6 +46,11 @@ contract MockInterchainERC20 is MockERC20, InterchainERC20 {
         return _mintLimits[controller];
     }
 
+    // solhint-disable-next-line no-empty-blocks
+    function testMockInterchainERC20() external pure {
+        // This function is only used to remove MockInterchainERC20 from coverage reports
+    }
+
     function _spendLimit(
         mapping(address => uint256) storage limits,
         address controller,

@@ -18,4 +18,9 @@ contract MockGMX is MockERC20, Ownable {
     function mint(address account, uint256 amount) external onlyOwner {
         _mint(account, amount);
     }
+
+    // solhint-disable-next-line no-empty-blocks
+    function testMockGMX() external pure {
+        // This function is only used to remove MockGMX from coverage reports
+    }
 }
