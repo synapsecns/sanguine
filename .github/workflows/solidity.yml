@@ -26,15 +26,16 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # if any of these packages use submodules in the future, please uncomment this line
-          # submodules: 'recursive'
+          submodules: 'recursive'
       - uses: dorny/paths-filter@v2
         id: filter_solidity
         with:
           #  make sure to update run-goreleaser when adding a new package here
           # also add to the get-project-id step
+          # TODO: forge doc, get-project-id for contracts-interchain
           filters: |
             contracts-core: 'packages/contracts-core/**'
+            contracts-interchain: 'packages/contracts-interchain/**'
             contracts-rfq: 'packages/contracts-rfq/**'
       - id: length
         run: |
