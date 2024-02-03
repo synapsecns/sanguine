@@ -8,6 +8,8 @@ import {MockInterchainERC20} from "../mocks/MockInterchainERC20.sol";
 
 import {Test} from "forge-std/Test.sol";
 
+// solhint-disable func-name-mixedcase
+// solhint-disable ordering
 abstract contract AbstractProcessorTest is Test {
     AbstractProcessor public processor;
     MockInterchainERC20 public icToken;
@@ -37,8 +39,8 @@ abstract contract AbstractProcessorTest is Test {
     function deployProcessor() internal virtual;
 
     function test_constructor() public {
-        assertEq(address(processor.interchainToken()), address(icToken));
-        assertEq(address(processor.underlyingToken()), address(token));
+        assertEq(address(processor.INTERCHAIN_TOKEN()), address(icToken));
+        assertEq(address(processor.UNDERLYING_TOKEN()), address(token));
     }
 
     function test_getToken() public {

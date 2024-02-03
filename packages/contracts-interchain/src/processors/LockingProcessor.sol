@@ -26,14 +26,14 @@ contract LockingProcessor is AbstractProcessor {
     /// @dev Burns the InterchainERC20 token taken from `msg.sender`, then
     /// unlocks the same amount of the underlying token to `msg.sender`.
     function _burnInterchainToken(uint256 amount) internal override {
-        InterchainERC20(interchainToken).burn(amount);
-        IERC20(underlyingToken).safeTransfer(msg.sender, amount);
+        InterchainERC20(INTERCHAIN_TOKEN).burn(amount);
+        IERC20(UNDERLYING_TOKEN).safeTransfer(msg.sender, amount);
     }
 
     /// @dev Locks the underlying token taken from `msg.sender`, then
     /// mints the same amount of the InterchainERC20 token to `msg.sender`.
     function _mintInterchainToken(uint256 amount) internal override {
-        // underlyingToken is already transferred to this contract, no extra steps for locking are needed
-        InterchainERC20(interchainToken).mint(msg.sender, amount);
+        // UNDERLYING_TOKEN is already transferred to this contract, no extra steps for locking are needed
+        InterchainERC20(INTERCHAIN_TOKEN).mint(msg.sender, amount);
     }
 }

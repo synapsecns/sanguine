@@ -8,6 +8,8 @@ import {MockInterchainERC20} from "../mocks/MockInterchainERC20.sol";
 
 import {AbstractProcessorTest} from "./AbstractProcessor.t.sol";
 
+// solhint-disable func-name-mixedcase
+// solhint-disable ordering
 contract LockingProcessorTest is AbstractProcessorTest {
     function deployTokens() internal virtual override {
         token = new MockERC20("Token");

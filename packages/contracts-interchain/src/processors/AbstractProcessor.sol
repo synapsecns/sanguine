@@ -17,15 +17,15 @@ import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
 abstract contract AbstractProcessor is IDefaultPool {
     using SafeERC20 for IERC20;
 
+    address public immutable INTERCHAIN_TOKEN;
+    address public immutable UNDERLYING_TOKEN;
+
     error AbstractProcessor__EqualIndices(uint8 index);
     error AbstractProcessor__IndexOutOfBounds(uint8 index);
 
-    address public immutable interchainToken;
-    address public immutable underlyingToken;
-
     constructor(address interchainToken_, address underlyingToken_) {
-        interchainToken = interchainToken_;
-        underlyingToken = underlyingToken_;
+        INTERCHAIN_TOKEN = interchainToken_;
+        UNDERLYING_TOKEN = underlyingToken_;
     }
 
     /// @inheritdoc IDefaultPool
@@ -49,7 +49,7 @@ abstract contract AbstractProcessor is IDefaultPool {
         uint256 balanceBefore = IERC20(tokenFrom).balanceOf(address(this));
         IERC20(tokenFrom).safeTransferFrom(msg.sender, address(this), dx);
         amountOut = IERC20(tokenFrom).balanceOf(address(this)) - balanceBefore;
-        if (tokenTo == interchainToken) {
+        if (tokenTo == INTERCHAIN_TOKEN) {
             _mintInterchainToken(amountOut);
         } else {
             _burnInterchainToken(amountOut);
@@ -81,9 +81,9 @@ abstract contract AbstractProcessor is IDefaultPool {
     /// @inheritdoc IDefaultPool
     function getToken(uint8 index) public view returns (address token) {
         if (index == 0) {
-            return interchainToken;
+            return INTERCHAIN_TOKEN;
         } else if (index == 1) {
-            return underlyingToken;
+            return UNDERLYING_TOKEN;
         }
         revert AbstractProcessor__IndexOutOfBounds(index);
     }

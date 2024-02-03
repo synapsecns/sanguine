@@ -13,6 +13,7 @@ contract MockInterchainERC20 is MockERC20, InterchainERC20 {
 
     constructor(string memory name_) MockERC20(name_) {}
 
+    // solhint-disable custom-errors
     function burn(uint256 amount) external {
         _spendLimit(_burnLimits, msg.sender, amount, "Burn limit exceeded");
         _burn(msg.sender, amount);
