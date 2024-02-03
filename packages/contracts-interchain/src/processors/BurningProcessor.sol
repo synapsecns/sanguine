@@ -1,8 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.23;
 
-import {IDefaultPool} from "../interfaces/IDefaultPool.sol";
 import {AbstractProcessor} from "./AbstractProcessor.sol";
+
+import {IBurnableGMX} from "../interfaces/IBurnableGMX.sol";
+import {InterchainERC20} from "../interfaces/InterchainERC20.sol";
+
+import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /// @notice BurningProcessor is a contract that enables the conversion between
 /// the ERC20 token (underlying) and its InterchainERC20 counterpart by using the mint-burn
@@ -19,14 +23,16 @@ contract BurningProcessor is AbstractProcessor {
     {}
 
     /// @dev Burns the InterchainERC20 token taken from `msg.sender`, then
-    /// transfers the same amount of the underlying token to `msg.sender`.
+    /// mints the same amount of the underlying token to `msg.sender`.
     function _burnInterchainToken(uint256 amount) internal override {
-        // TODO: implement
+        InterchainERC20(interchainToken).burn(amount);
+        IBurnableGMX(underlyingToken).mint(msg.sender, amount);
     }
 
-    /// @dev Handles the underlying token taken from `msg.sender`, then
+    /// @dev Burns the underlying token taken from `msg.sender`, then
     /// mints the same amount of the InterchainERC20 token to `msg.sender`.
     function _mintInterchainToken(uint256 amount) internal override {
-        // TODO: implement
+        IBurnableGMX(underlyingToken).burn(address(this), amount);
+        InterchainERC20(interchainToken).mint(msg.sender, amount);
     }
 }

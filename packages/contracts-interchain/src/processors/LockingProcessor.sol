@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.23;
 
-import {IDefaultPool} from "../interfaces/IDefaultPool.sol";
 import {AbstractProcessor} from "./AbstractProcessor.sol";
+
+import {InterchainERC20} from "../interfaces/InterchainERC20.sol";
+
+import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /// @notice LockingProcessor is a contract that enables the conversion between
 /// the ERC20 token (underlying) and its InterchainERC20 counterpart by using the lock-unlock
@@ -11,6 +14,8 @@ import {AbstractProcessor} from "./AbstractProcessor.sol";
 /// - ERC20 token is unlocked when the Interchain token is burned.
 /// See AbstractProcessor.sol for more details.
 contract LockingProcessor is AbstractProcessor {
+    using SafeERC20 for IERC20;
+
     constructor(
         address interchainToken_,
         address underlyingToken_
@@ -19,14 +24,16 @@ contract LockingProcessor is AbstractProcessor {
     {}
 
     /// @dev Burns the InterchainERC20 token taken from `msg.sender`, then
-    /// transfers the same amount of the underlying token to `msg.sender`.
+    /// unlocks the same amount of the underlying token to `msg.sender`.
     function _burnInterchainToken(uint256 amount) internal override {
-        // TODO: implement
+        InterchainERC20(interchainToken).burn(amount);
+        IERC20(underlyingToken).safeTransfer(msg.sender, amount);
     }
 
-    /// @dev Handles the underlying token taken from `msg.sender`, then
+    /// @dev Locks the underlying token taken from `msg.sender`, then
     /// mints the same amount of the InterchainERC20 token to `msg.sender`.
     function _mintInterchainToken(uint256 amount) internal override {
-        // TODO: implement
+        // underlyingToken is already transferred to this contract, no extra steps for locking are needed
+        InterchainERC20(interchainToken).mint(msg.sender, amount);
     }
 }
