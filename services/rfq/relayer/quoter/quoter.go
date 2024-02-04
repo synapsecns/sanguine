@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/synapsecns/sanguine/contrib/screener-api/client"
 
@@ -204,10 +205,13 @@ func (m *Manager) isProfitableQuote(parentCtx context.Context, quote reldb.Quote
 
 // SubmitAllQuotes submits all quotes to the RFQ API.
 func (m *Manager) SubmitAllQuotes(parentCtx context.Context) (err error) {
-	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "submitQuotes")
+	timeCtx, cancel := context.WithTimeout(parentCtx, time.Minute*2)
+
+	ctx, span := m.metricsHandler.Tracer().Start(timeCtx, "submitQuotes")
 	defer func() {
 		logger.Error(err)
 		metrics.EndSpanWithErr(span, err)
+		cancel()
 	}()
 
 	var inv map[int]map[common.Address]*big.Int
