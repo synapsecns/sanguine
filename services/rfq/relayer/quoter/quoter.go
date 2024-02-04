@@ -206,17 +206,15 @@ func (m *Manager) isProfitableQuote(parentCtx context.Context, quote reldb.Quote
 func (m *Manager) SubmitAllQuotes(parentCtx context.Context) (err error) {
 	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "submitQuotes")
 	defer func() {
-		fmt.Println(err)
+		logger.Error(err)
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	fmt.Println("<commit>")
 	var inv map[int]map[common.Address]*big.Int
 	inv, err = m.inventoryManager.GetCommittableBalances(ctx)
 	if err != nil {
 		return fmt.Errorf("error getting committable balances: %w", err)
 	}
-	fmt.Println("</commit>")
 	return m.prepareAndSubmitQuotes(ctx, inv)
 }
 
@@ -224,12 +222,12 @@ func (m *Manager) SubmitAllQuotes(parentCtx context.Context) (err error) {
 func (m *Manager) prepareAndSubmitQuotes(parentCtx context.Context, inv map[int]map[common.Address]*big.Int) (err error) {
 	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "prepareAndSubmitQuotes")
 	defer func() {
-		fmt.Println(err)
+		logger.Error(err)
 		metrics.EndSpanWithErr(span, err)
 	}()
 
 	var allQuotes []model.PutQuoteRequest
-	fmt.Println("<gen>")
+
 	// First, generate all quotes
 	for chainID, balances := range inv {
 		for address, balance := range balances {
@@ -241,9 +239,6 @@ func (m *Manager) prepareAndSubmitQuotes(parentCtx context.Context, inv map[int]
 			allQuotes = append(allQuotes, quotes...)
 		}
 	}
-	fmt.Println("</gen>")
-
-	fmt.Println("<submit>")
 
 	// Now, submit all the generated quotes
 	for _, quote := range allQuotes {
@@ -251,7 +246,6 @@ func (m *Manager) prepareAndSubmitQuotes(parentCtx context.Context, inv map[int]
 			return err
 		}
 	}
-	fmt.Println("</submit>")
 
 	return nil
 }
@@ -263,7 +257,6 @@ func (m *Manager) prepareAndSubmitQuotes(parentCtx context.Context, inv map[int]
 func (m *Manager) generateQuotes(parentCtx context.Context, chainID int, address common.Address, balance *big.Int) (_ []model.PutQuoteRequest, err error) {
 	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "generateQuotes", trace.WithAttributes(attribute.Int(metrics.ChainID, chainID)))
 	defer func() {
-		fmt.Println(err)
 		metrics.EndSpanWithErr(span, err)
 	}()
 
