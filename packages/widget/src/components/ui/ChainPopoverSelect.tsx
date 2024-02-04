@@ -1,13 +1,13 @@
-import { useState, useEffect, useContext } from 'react'
+import { useState, useEffect } from 'react'
 import _ from 'lodash'
 import { Chain } from 'types'
 
 import usePopover from '@/hooks/usePopoverRef'
 import { DownArrow } from '@/components/icons/DownArrow'
 import { SearchInput } from './SearchInput'
-import { useBridgeState } from '@/state/slices/bridge/hooks'
-import { Web3Context } from '@/providers/Web3Provider'
-import { ConnectedIndicator } from '@/components/icons/ConnectedIndicator'
+import { TabOption, ToggleTabs } from './ToggleTabs'
+import { ChainOption } from './ChainOption'
+import { useChainInputFilter } from '@/hooks/useChainInputFilter'
 
 type PopoverSelectProps = {
   options: Chain[]
@@ -163,152 +163,6 @@ export const ChainPopoverSelect = ({
             )
           ) : null}
         </div>
-      )}
-    </div>
-  )
-}
-
-const ChainOption = ({
-  option,
-  isSelected,
-  onSelect,
-}: {
-  option: Chain
-  isSelected: boolean
-  onSelect: (option: Chain) => void
-}) => {
-  const web3Context = useContext(Web3Context)
-
-  const { networkId } = web3Context.web3Provider
-
-  return (
-    <li
-      key={option.id}
-      className={`
-      pl-2.5 pr-2.5 py-2.5 rounded-[.1875rem] border border-solid
-      hover:border-[--synapse-focus] active:opacity-40
-      cursor-pointer whitespace-nowrap
-      ${
-        isSelected
-          ? 'border-[--synapse-focus] hover:opacity-70'
-          : 'border-transparent'
-      }
-    `}
-      onClick={() => onSelect(option)}
-    >
-      <div className="flex justify-between">
-        <div>{option.name}</div>
-        {option.id === networkId && <ConnectedIndicator />}
-      </div>
-    </li>
-  )
-}
-
-const useChainInputFilter = (
-  options: Chain[],
-  remaining: Chain[],
-  targets: Chain[],
-  isActive: boolean
-) => {
-  const [filterValue, setFilterValue] = useState('')
-
-  useEffect(() => {
-    if (!isActive) {
-      setFilterValue('')
-    }
-  }, [isActive])
-
-  const filterChains = (chains: Chain[], filter: string) => {
-    const lowerFilter = filter.toLowerCase()
-    return _.filter(chains, (option) => {
-      const name = option.name.toLowerCase()
-      return name.includes(lowerFilter) || name === lowerFilter
-    })
-  }
-
-  const filteredOptions = filterChains(options, filterValue)
-  const filteredRemaining = filterChains(remaining, filterValue)
-  const filteredTargets = filterChains(targets, filterValue)
-
-  const hasFilteredOptions = !_.isEmpty(filteredOptions)
-  const hasFilteredRemaining = !_.isEmpty(filteredRemaining)
-  const hasFilteredResults = hasFilteredOptions || hasFilteredRemaining
-  const hasFilteredTargets = !_.isEmpty(filteredTargets)
-
-  return {
-    filterValue,
-    setFilterValue,
-    filteredOptions,
-    filteredRemaining,
-    filteredTargets,
-    hasFilteredOptions,
-    hasFilteredRemaining,
-    hasFilteredResults,
-    hasFilteredTargets,
-  }
-}
-
-type TabOption = 'All' | 'Target'
-
-type ToggleTabsProps = {
-  selectedTab: TabOption
-  onTabSelect: (tab: TabOption) => void
-  isOrigin: boolean
-}
-
-const ToggleTabs: React.FC<ToggleTabsProps> = ({
-  selectedTab,
-  onTabSelect,
-  isOrigin,
-}) => {
-  const { protocolName } = useBridgeState()
-  const baseTabClass =
-    'flex-grow text-sm font-medium text-center text-[--synapse-primary] rounded-sm p-1 '
-
-  const activeTabClass = 'bg-[var(--synapse-surface)]'
-  const inactiveTabClass =
-    'bg-[var(--synapse-select-bg)] hover:bg-[var-(--synapse-surface)] hover:cursor-pointer'
-
-  return (
-    <div className="flex mt-2 mb-2" role="group">
-      {isOrigin ? (
-        <>
-          <div
-            className={`${baseTabClass} ${
-              selectedTab === 'All' ? activeTabClass : inactiveTabClass
-            }`}
-            onClick={() => onTabSelect('All')}
-          >
-            All
-          </div>
-          <div
-            className={`${baseTabClass} ${
-              selectedTab === 'Target' ? activeTabClass : inactiveTabClass
-            }`}
-            onClick={() => onTabSelect('Target')}
-          >
-            {protocolName ?? 'Target'}
-          </div>
-        </>
-      ) : (
-        <>
-          <div
-            className={`${baseTabClass} ${
-              selectedTab === 'Target' ? activeTabClass : inactiveTabClass
-            }`}
-            onClick={() => onTabSelect('Target')}
-          >
-            {protocolName ?? 'Target'}
-          </div>
-          <div
-            className={`${baseTabClass} ${
-              selectedTab === 'All' ? activeTabClass : inactiveTabClass
-            }`}
-            onClick={() => onTabSelect('All')}
-          >
-            All
-          </div>
-        </>
       )}
     </div>
   )
