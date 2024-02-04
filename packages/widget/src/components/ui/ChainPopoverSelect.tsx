@@ -5,27 +5,49 @@ import { Chain } from 'types'
 import usePopover from '@/hooks/usePopoverRef'
 import { DownArrow } from '@/components/icons/DownArrow'
 import { SearchInput } from './SearchInput'
+import { useBridgeState } from '@/state/slices/bridge/hooks'
 
 type PopoverSelectProps = {
   options: Chain[]
   remaining: Chain[]
+  targets: Chain[]
   onSelect: (selected: Chain) => void
   selected: Chain
   label: string
+  isOrigin: boolean
 }
 
 export const ChainPopoverSelect = ({
   options,
   remaining,
+  targets,
   onSelect,
   selected,
   label,
+  isOrigin,
 }: PopoverSelectProps) => {
   const { popoverRef, isOpen, togglePopover, closePopover } = usePopover()
+  const [activeTab, setActiveTab] = useState<TabOption>(
+    isOrigin ? 'All' : 'Target'
+  )
+
+  useEffect(() => {
+    if (!targets || _.isEmpty(targets)) {
+      setActiveTab('All')
+    } else if (isOrigin) {
+      setActiveTab('All')
+    } else if (!isOrigin) {
+      setActiveTab('Target')
+    }
+  }, [targets, isOrigin])
 
   const handleSelect = (option: Chain) => {
     onSelect(option)
     closePopover()
+  }
+
+  const handleTabSelect = (tab: TabOption) => {
+    setActiveTab(tab)
   }
 
   const {
@@ -33,9 +55,11 @@ export const ChainPopoverSelect = ({
     setFilterValue,
     filteredOptions,
     filteredRemaining,
+    filteredTargets,
     hasFilteredRemaining,
     hasFilteredResults,
-  } = useChainInputFilter(options, remaining, isOpen)
+    hasFilteredTargets,
+  } = useChainInputFilter(options, remaining, targets, isOpen)
 
   return (
     <div
@@ -71,42 +95,71 @@ export const ChainPopoverSelect = ({
             placeholder="Search Chains"
             isActive={isOpen}
           />
-          {hasFilteredResults ? (
-            <ul className="p-0 m-0">
-              {filteredOptions.map((option, i) => (
-                <ChainOption
-                  key={i}
-                  option={option}
-                  isSelected={option?.name === selected?.name}
-                  onSelect={() => handleSelect(option)}
-                />
-              ))}
-              {hasFilteredRemaining && (
-                <div
-                  className={`
+          {targets && targets.length > 0 && (
+            <ToggleTabs
+              selectedTab={activeTab}
+              onTabSelect={handleTabSelect}
+              isOrigin={isOrigin}
+            />
+          )}
+          {activeTab === 'All' ? (
+            hasFilteredResults ? (
+              <ul className="p-0 m-0">
+                {filteredOptions.map((option, i) => (
+                  <ChainOption
+                    key={i}
+                    option={option}
+                    isSelected={option?.name === selected?.name}
+                    onSelect={() => handleSelect(option)}
+                  />
+                ))}
+                {hasFilteredRemaining && (
+                  <div
+                    className={`
                     sticky top-0 px-2.5 py-2 mt-2 text-sm
                     text-[--synapse-secondary] bg-[--synapse-surface]
                   `}
-                >
-                  Other chains
-                </div>
-              )}
-              {filteredRemaining.map((option, i) => (
-                <ChainOption
-                  key={i}
-                  option={option}
-                  isSelected={option?.name === selected?.name}
-                  onSelect={() => handleSelect(option)}
-                />
-              ))}
-            </ul>
-          ) : (
-            <div className="p-2 text-sm break-all">
-              No chains found
-              <br />
-              matching '{filterValue}'.
-            </div>
-          )}
+                  >
+                    Other chains
+                  </div>
+                )}
+                {filteredRemaining.map((option, i) => (
+                  <ChainOption
+                    key={i}
+                    option={option}
+                    isSelected={option?.name === selected?.name}
+                    onSelect={() => handleSelect(option)}
+                  />
+                ))}
+              </ul>
+            ) : (
+              <div className="p-2 text-sm break-all">
+                No chains found
+                <br />
+                matching '{filterValue}'.
+              </div>
+            )
+          ) : null}
+          {activeTab === 'Target' ? (
+            hasFilteredTargets ? (
+              <ul className="p-0 m-0">
+                {filteredTargets.map((option, i) => (
+                  <ChainOption
+                    key={i}
+                    option={option}
+                    isSelected={option?.name === selected?.name}
+                    onSelect={() => handleSelect(option)}
+                  />
+                ))}
+              </ul>
+            ) : (
+              <div className="p-2 text-sm break-all">
+                No chains found
+                <br />
+                matching '{filterValue}'.
+              </div>
+            )
+          ) : null}
         </div>
       )}
     </div>
@@ -143,6 +196,7 @@ const ChainOption = ({
 const useChainInputFilter = (
   options: Chain[],
   remaining: Chain[],
+  targets: Chain[],
   isActive: boolean
 ) => {
   const [filterValue, setFilterValue] = useState('')
@@ -163,18 +217,88 @@ const useChainInputFilter = (
 
   const filteredOptions = filterChains(options, filterValue)
   const filteredRemaining = filterChains(remaining, filterValue)
+  const filteredTargets = filterChains(targets, filterValue)
 
   const hasFilteredOptions = !_.isEmpty(filteredOptions)
   const hasFilteredRemaining = !_.isEmpty(filteredRemaining)
   const hasFilteredResults = hasFilteredOptions || hasFilteredRemaining
+  const hasFilteredTargets = !_.isEmpty(filteredTargets)
 
   return {
     filterValue,
     setFilterValue,
     filteredOptions,
     filteredRemaining,
+    filteredTargets,
     hasFilteredOptions,
     hasFilteredRemaining,
     hasFilteredResults,
+    hasFilteredTargets,
   }
+}
+
+type TabOption = 'All' | 'Target'
+
+type ToggleTabsProps = {
+  selectedTab: TabOption
+  onTabSelect: (tab: TabOption) => void
+  isOrigin: boolean
+}
+
+const ToggleTabs: React.FC<ToggleTabsProps> = ({
+  selectedTab,
+  onTabSelect,
+  isOrigin,
+}) => {
+  const { protocolName } = useBridgeState()
+  const baseTabClass =
+    'flex-grow text-sm font-medium text-center text-[--synapse-primary] rounded-sm p-1 '
+
+  const activeTabClass = 'bg-[var(--synapse-surface)]'
+  const inactiveTabClass =
+    'bg-[var(--synapse-select-bg)] hover:bg-[var-(--synapse-surface)] hover:cursor-pointer'
+
+  return (
+    <div className="flex mt-2 mb-2" role="group">
+      {isOrigin ? (
+        <>
+          <div
+            className={`${baseTabClass} ${
+              selectedTab === 'All' ? activeTabClass : inactiveTabClass
+            }`}
+            onClick={() => onTabSelect('All')}
+          >
+            All
+          </div>
+          <div
+            className={`${baseTabClass} ${
+              selectedTab === 'Target' ? activeTabClass : inactiveTabClass
+            }`}
+            onClick={() => onTabSelect('Target')}
+          >
+            {protocolName ?? 'Target'}
+          </div>
+        </>
+      ) : (
+        <>
+          <div
+            className={`${baseTabClass} ${
+              selectedTab === 'Target' ? activeTabClass : inactiveTabClass
+            }`}
+            onClick={() => onTabSelect('Target')}
+          >
+            {protocolName ?? 'Target'}
+          </div>
+          <div
+            className={`${baseTabClass} ${
+              selectedTab === 'All' ? activeTabClass : inactiveTabClass
+            }`}
+            onClick={() => onTabSelect('All')}
+          >
+            All
+          </div>
+        </>
+      )}
+    </div>
+  )
 }

@@ -13,9 +13,11 @@ type Props = {
 }
 
 export const ChainSelect = ({ label, isOrigin, chain, onChange }: Props) => {
-  const { originChainIds, destinationChainIds } = useBridgeState()
+  const { originChainIds, destinationChainIds, targetChainIds } =
+    useBridgeState()
 
   const allChainIds = CHAINS_ARRAY.map((c) => c.id)
+  const targets = targetChainIds?.map((chainId) => CHAINS_BY_ID[chainId])
 
   let options
   let remaining
@@ -36,11 +38,13 @@ export const ChainSelect = ({ label, isOrigin, chain, onChange }: Props) => {
     <ChainPopoverSelect
       options={options}
       remaining={remaining}
+      targets={targets}
       onSelect={(selected) => {
         onChange(selected)
       }}
       selected={chain}
       label={label}
+      isOrigin={isOrigin}
     />
   )
 }

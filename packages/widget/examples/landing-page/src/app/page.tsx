@@ -51,6 +51,7 @@ const consumerExamples = {
     },
     targetTokens: [ETH, USDC, USDT],
     targetChainIds: [42161, 43114],
+    protocolName: 'GMX',
   },
   hercules: {
     customTheme: {
@@ -62,6 +63,7 @@ const consumerExamples = {
     },
     targetTokens: [METISUSDC],
     targetChainIds: [1088],
+    protocolName: 'Hercules',
   },
   dfk: {
     customTheme: {
@@ -77,6 +79,7 @@ const consumerExamples = {
     },
     targetTokens: [ETH, USDC, JEWEL, XJEWEL, WJEWEL],
     targetChainIds: [53935, 43114],
+    protocolName: 'DFK',
   },
 }
 
@@ -139,6 +142,7 @@ export default function Home() {
                 targetTokens={config.targetTokens}
                 targetChainIds={config.targetChainIds}
                 customTheme={config.customTheme}
+                protocolName={config.protocolName}
                 container={container}
               />
             </div>

@@ -25,6 +25,7 @@ export interface BridgeState {
 
   targetTokens: BridgeableToken[]
   targetChainIds: number[]
+  protocolName: string | null
 }
 
 const initialState: BridgeState = {
@@ -40,6 +41,7 @@ const initialState: BridgeState = {
 
   targetTokens: [],
   targetChainIds: [],
+  protocolName: null,
 }
 
 export const bridgeSlice = createSlice({
@@ -51,6 +53,9 @@ export const bridgeSlice = createSlice({
       action: PayloadAction<string>
     ) => {
       state.debouncedInputAmount = action.payload
+    },
+    setProtocolName: (state: BridgeState, action: PayloadAction<string>) => {
+      state.protocolName = action.payload
     },
     setOriginChainId: (state: BridgeState, action: PayloadAction<number>) => {
       const incomingFromChainId = action.payload
@@ -440,6 +445,7 @@ export const {
   setDestinationToken,
   setTargetTokens,
   setTargetChainIds,
+  setProtocolName,
 } = bridgeSlice.actions
 
 export default bridgeSlice.reducer
