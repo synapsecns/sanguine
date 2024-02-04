@@ -203,14 +203,15 @@ func (m *Manager) isProfitableQuote(parentCtx context.Context, quote reldb.Quote
 }
 
 // SubmitAllQuotes submits all quotes to the RFQ API.
-func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
-	ctx, span := m.metricsHandler.Tracer().Start(ctx, "submitQuotes")
+func (m *Manager) SubmitAllQuotes(parentCtx context.Context) (err error) {
+	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "submitQuotes")
 	defer func() {
 		logger.Error(err)
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	inv, err := m.inventoryManager.GetCommittableBalances(ctx)
+	var inv map[int]map[common.Address]*big.Int
+	inv, err = m.inventoryManager.GetCommittableBalances(ctx)
 	if err != nil {
 		return fmt.Errorf("error getting committable balances: %w", err)
 	}
@@ -218,13 +219,20 @@ func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 }
 
 // Prepares and submits quotes based on inventory.
-func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[common.Address]*big.Int) error {
+func (m *Manager) prepareAndSubmitQuotes(parentCtx context.Context, inv map[int]map[common.Address]*big.Int) (err error) {
+	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "prepareAndSubmitQuotes")
+	defer func() {
+		logger.Error(err)
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	var allQuotes []model.PutQuoteRequest
 
 	// First, generate all quotes
 	for chainID, balances := range inv {
 		for address, balance := range balances {
-			quotes, err := m.generateQuotes(ctx, chainID, address, balance)
+			var quotes []model.PutQuoteRequest
+			quotes, err = m.generateQuotes(ctx, chainID, address, balance)
 			if err != nil {
 				return err
 			}
