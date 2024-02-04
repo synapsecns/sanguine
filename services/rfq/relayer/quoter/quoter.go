@@ -206,6 +206,7 @@ func (m *Manager) isProfitableQuote(parentCtx context.Context, quote reldb.Quote
 func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 	ctx, span := m.metricsHandler.Tracer().Start(ctx, "submitQuotes")
 	defer func() {
+		logger.Error(err)
 		metrics.EndSpanWithErr(span, err)
 	}()
 
