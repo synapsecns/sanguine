@@ -17,7 +17,9 @@ export const ChainSelect = ({ label, isOrigin, chain, onChange }: Props) => {
     useBridgeState()
 
   const allChainIds = CHAINS_ARRAY.map((c) => c.id)
-  const targets = targetChainIds?.map((chainId) => CHAINS_BY_ID[chainId])
+  const targets = targetChainIds
+    ?.map((chainId) => CHAINS_BY_ID[chainId])
+    .filter(Boolean)
 
   let options
   let remaining

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import _ from 'lodash'
 import { Chain } from 'types'
 
@@ -6,6 +6,8 @@ import usePopover from '@/hooks/usePopoverRef'
 import { DownArrow } from '@/components/icons/DownArrow'
 import { SearchInput } from './SearchInput'
 import { useBridgeState } from '@/state/slices/bridge/hooks'
+import { Web3Context } from '@/providers/Web3Provider'
+import { ConnectedIndicator } from '@/components/icons/ConnectedIndicator'
 
 type PopoverSelectProps = {
   options: Chain[]
@@ -174,11 +176,16 @@ const ChainOption = ({
   option: Chain
   isSelected: boolean
   onSelect: (option: Chain) => void
-}) => (
-  <li
-    key={option.id}
-    className={`
-      pl-2.5 pr-8 py-2.5 rounded-[.1875rem] border border-solid
+}) => {
+  const web3Context = useContext(Web3Context)
+
+  const { networkId } = web3Context.web3Provider
+
+  return (
+    <li
+      key={option.id}
+      className={`
+      pl-2.5 pr-2.5 py-2.5 rounded-[.1875rem] border border-solid
       hover:border-[--synapse-focus] active:opacity-40
       cursor-pointer whitespace-nowrap
       ${
@@ -187,11 +194,15 @@ const ChainOption = ({
           : 'border-transparent'
       }
     `}
-    onClick={() => onSelect(option)}
-  >
-    {option.name}
-  </li>
-)
+      onClick={() => onSelect(option)}
+    >
+      <div className="flex justify-between">
+        <div>{option.name}</div>
+        {option.id === networkId && <ConnectedIndicator />}
+      </div>
+    </li>
+  )
+}
 
 const useChainInputFilter = (
   options: Chain[],
