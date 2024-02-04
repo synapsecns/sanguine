@@ -247,7 +247,7 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 // We can do this by looking at the quotableTokens map, and finding the key that matches the destination chain token.
 // Generates quotes for a given chain ID, address, and balance.
 func (m *Manager) generateQuotes(parentCtx context.Context, chainID int, address common.Address, balance *big.Int) (_ []model.PutQuoteRequest, err error) {
-	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "isProfitableQuote", trace.WithAttributes(attribute.Int(metrics.ChainID, chainID)))
+	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "generateQuotes", trace.WithAttributes(attribute.Int(metrics.ChainID, chainID)))
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
