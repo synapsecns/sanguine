@@ -80,6 +80,8 @@ func NewAuthenticatedClient(metrics metrics.Handler, rfqURL string, reqSigner si
 			return nil
 		})
 
+	otelresty.TraceClient(authedClient, otelresty.WithTracerProvider(metrics.GetTracerProvider()), otelresty.WithPropagators(metrics.Propagator()))
+
 	return &clientImpl{
 		UnauthenticatedClient: unauthedClient,
 		rClient:               authedClient,
