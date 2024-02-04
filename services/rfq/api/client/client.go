@@ -95,7 +95,7 @@ func NewUnauthenticaedClient(metricHandler metrics.Handler, rfqURL string) (Unau
 			return nil
 		})
 
-	otelresty.TraceClient(client, otelresty.WithTracerProvider(metricHandler.GetTracerProvider()))
+	otelresty.TraceClient(client, otelresty.WithTracerProvider(metricHandler.GetTracerProvider()), otelresty.WithPropagators(metricHandler.Propagator()))
 	return &unauthenticatedClient{client}, nil
 }
 
