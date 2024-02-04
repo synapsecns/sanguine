@@ -88,6 +88,7 @@ var logger = log.Logger("rfq-api")
 func (r *QuoterAPIServer) Run(ctx context.Context) error {
 	// TODO: Use Gin Helper
 	engine := ginhelper.New(logger)
+	engine.Use(r.handler.Gin())
 	h := NewHandler(r.db)
 
 	// Apply AuthMiddleware only to the PUT route
