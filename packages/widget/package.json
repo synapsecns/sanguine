@@ -23,6 +23,8 @@
     "test:coverage": "echo 'No tests defined.'",
     "lint:check": "eslint . --max-warnings=0",
     "ci:lint": "npm run lint:check",
+    "build:go": " ",
+    "build:slither": " ",
     "prepare": "rollup -c --bundleConfigAsCjs"
   },
   "keywords": [
