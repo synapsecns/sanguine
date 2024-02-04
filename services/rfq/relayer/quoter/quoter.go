@@ -258,7 +258,7 @@ func (m *Manager) prepareAndSubmitQuotes(parentCtx context.Context, inv map[int]
 // Essentially, if we know a destination chain token balance, then we just need to find which tokens are bridgeable to it.
 // We can do this by looking at the quotableTokens map, and finding the key that matches the destination chain token.
 // Generates quotes for a given chain ID, address, and balance.
-// nolint: nestif
+// nolint: nestif, cyclop
 func (m *Manager) generateQuotes(parentCtx context.Context, chainID int, address common.Address, balance *big.Int) (_ []model.PutQuoteRequest, err error) {
 	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "generateQuotes", trace.WithAttributes(attribute.Int(metrics.ChainID, chainID)))
 	defer func() {
