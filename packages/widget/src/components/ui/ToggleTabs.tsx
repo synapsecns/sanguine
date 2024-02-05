@@ -19,7 +19,7 @@ export const ToggleTabs: React.FC<ToggleTabsProps> = ({
 
   const activeTabClass = 'bg-[var(--synapse-surface)]'
   const inactiveTabClass =
-    'bg-[var(--synapse-select-bg)] hover:bg-[var-(--synapse-surface)] hover:cursor-pointer'
+    'bg-[var(--synapse-select-bg)] hover:bg-[var(--synapse-surface)] hover:cursor-pointer'
 
   return (
     <div className="flex mt-2 mb-2" role="group">
