@@ -1,7 +1,7 @@
 {
   "name": "@synapsecns/widget",
   "description": "Widget library for interacting with the Synapse Protocol",
-  "version": "0.0.32",
+  "version": "0.0.34",
   "license": "MIT",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
@@ -23,6 +23,8 @@
     "test:coverage": "echo 'No tests defined.'",
     "lint:check": "eslint . --max-warnings=0",
     "ci:lint": "npm run lint:check",
+    "build:go": " ",
+    "build:slither": " ",
     "prepare": "rollup -c --bundleConfigAsCjs"
   },
   "keywords": [

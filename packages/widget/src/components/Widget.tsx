@@ -25,6 +25,7 @@ import {
   setTargetTokens,
   setDebouncedInputAmount,
   setTargetChainIds,
+  setProtocolName,
 } from '@/state/slices/bridge/reducer'
 import { useBridgeState } from '@/state/slices/bridge/hooks'
 import {
@@ -66,6 +67,7 @@ interface WidgetProps {
   container?: Boolean
   targetTokens?: BridgeableToken[]
   targetChainIds?: number[]
+  protocolName?: string
 }
 
 export const Widget = ({
@@ -73,6 +75,7 @@ export const Widget = ({
   container,
   targetChainIds,
   targetTokens,
+  protocolName,
 }: WidgetProps) => {
   const dispatch = useAppDispatch()
   const currentSDKRequestID = useRef(0)
@@ -129,7 +132,8 @@ export const Widget = ({
     if (targetChainIds && targetChainIds.length > 0) {
       dispatch(setDestinationChainId(targetChainIds[0]))
     }
-  }, [targetTokens, targetChainIds, targetTokens])
+    dispatch(setProtocolName(protocolName))
+  }, [targetTokens, targetChainIds, targetTokens, protocolName])
 
   /** Debounce user input to fetch bridge quote (in ms) */
   /** TODO: Can this be moved to the input component? */

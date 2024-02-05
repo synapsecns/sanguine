@@ -18,6 +18,7 @@ export const Bridge = ({
   container,
   targetChainIds,
   targetTokens,
+  protocolName,
 }: BridgeProps) => {
   if (!web3Provider) {
     return null
@@ -33,6 +34,7 @@ export const Bridge = ({
               container={container}
               targetChainIds={targetChainIds}
               targetTokens={targetTokens}
+              protocolName={protocolName}
             />
           </BackgroundListenerProvider>
         </Provider>
