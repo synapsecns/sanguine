@@ -14,54 +14,34 @@ export const ToggleTabs: React.FC<ToggleTabsProps> = ({
   isOrigin,
 }) => {
   const { protocolName } = useBridgeState()
-  const baseTabClass =
-    'flex-grow text-sm font-medium text-center text-[--synapse-primary] rounded-sm p-1 '
-
-  const activeTabClass = 'bg-[var(--synapse-surface)]'
-  const inactiveTabClass =
-    'bg-[var(--synapse-select-bg)] hover:bg-[var(--synapse-surface)] hover:cursor-pointer'
+  
+  const baseTabClass = 'basis-full rounded p-1.5'
+  const activeTabClass = `${baseTabClass} cursor-pointer hover:opacity-70`
+  const activeStyle = {
+    background: 'var(--synapse-button-bg)',
+    color: 'var(--synapse-button-text',
+  }
 
   return (
-    <div className="flex mt-2 mb-2" role="group">
-      {isOrigin ? (
-        <>
-          <div
-            className={`${baseTabClass} ${
-              selectedTab === 'All' ? activeTabClass : inactiveTabClass
-            }`}
-            onClick={() => onTabSelect('All')}
-          >
-            All
-          </div>
-          <div
-            className={`${baseTabClass} ${
-              selectedTab === 'Target' ? activeTabClass : inactiveTabClass
-            }`}
-            onClick={() => onTabSelect('Target')}
-          >
-            {protocolName ?? 'Target'}
-          </div>
-        </>
-      ) : (
-        <>
-          <div
-            className={`${baseTabClass} ${
-              selectedTab === 'Target' ? activeTabClass : inactiveTabClass
-            }`}
-            onClick={() => onTabSelect('Target')}
-          >
-            {protocolName ?? 'Target'}
-          </div>
-          <div
-            className={`${baseTabClass} ${
-              selectedTab === 'All' ? activeTabClass : inactiveTabClass
-            }`}
-            onClick={() => onTabSelect('All')}
-          >
-            All
-          </div>
-        </>
-      )}
+    <div
+      className="flex mx-1 my-2 text-sm text-center cursor-default rounded border border-solid border-[--synapse-border]"
+      style={{ background: 'var(--synapse-root'}}
+      role="group"
+    >
+      <div
+        className={selectedTab === 'All' ? baseTabClass : activeTabClass}
+        style={selectedTab === 'All' ? activeStyle : {}}
+        onClick={() => onTabSelect('All')}
+      >
+        All
+      </div>
+      <div
+        className={selectedTab === 'Target' ? baseTabClass : activeTabClass}
+        style={selectedTab === 'Target' ? activeStyle : {}}
+        onClick={() => onTabSelect('Target')}
+      >
+        {protocolName ?? 'Target'}
+      </div>
     </div>
   )
 }
