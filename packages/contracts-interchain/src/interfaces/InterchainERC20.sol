@@ -38,10 +38,20 @@ interface InterchainERC20 is IERC20 {
     function mint(address account, uint256 amount) external;
 
     /// @notice Returns the maximum amount of tokens that could be burned by `bridge` at the moment.
-    /// Bridge has a daily burn limit, which is reset at the end of the day.
-    function getBurnLimit(address bridge) external view returns (uint256);
+    /// Bridge has a total burn limit, which is spent by burning tokens. This limit is replenished
+    /// at a constant rate, and can never surpass the total burn limit for the bridge.
+    function getCurrentBurnLimit(address bridge) external view returns (uint256);
 
     /// @notice Returns the maximum amount of tokens that could be minted by `bridge` at the moment.
-    /// Bridge has a daily burn limit, which is reset at the end of the day.
-    function getMintLimit(address bridge) external view returns (uint256);
+    /// Bridge has a total mint limit, which is spent by minting tokens. This limit is replenished
+    /// at a constant rate, and can never surpass the total mint limit for the bridge.
+    function getCurrentMintLimit(address bridge) external view returns (uint256);
+
+    /// @notice Returns the maximum value that `bridge` burn limit could reach.
+    /// Note: it takes 24 hours to fully replenish the burn limit (assuming no mints are performed during that time).
+    function getTotalBurnLimit(address bridge) external view returns (uint256);
+
+    /// @notice Returns the maximum value that `bridge` mint limit could reach.
+    /// Note: it takes 24 hours to fully replenish the mint limit (assuming no burns are performed during that time).
+    function getTotalMintLimit(address bridge) external view returns (uint256);
 }

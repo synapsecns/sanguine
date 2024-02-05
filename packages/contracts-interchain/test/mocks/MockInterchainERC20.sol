@@ -30,20 +30,28 @@ contract MockInterchainERC20 is MockERC20, InterchainERC20 {
         _mint(account, amount);
     }
 
-    function setBurnLimit(address controller, uint256 limit) external {
-        _burnLimits[controller] = limit;
+    function setBurnLimit(address bridge, uint256 limit) external {
+        _burnLimits[bridge] = limit;
     }
 
-    function setMintLimit(address controller, uint256 limit) external {
-        _mintLimits[controller] = limit;
+    function setMintLimit(address bridge, uint256 limit) external {
+        _mintLimits[bridge] = limit;
     }
 
-    function getBurnLimit(address controller) external view returns (uint256) {
-        return _burnLimits[controller];
+    function getCurrentBurnLimit(address bridge) external view returns (uint256) {
+        return _burnLimits[bridge];
     }
 
-    function getMintLimit(address controller) external view returns (uint256) {
-        return _mintLimits[controller];
+    function getCurrentMintLimit(address bridge) external view returns (uint256) {
+        return _mintLimits[bridge];
+    }
+
+    function getTotalBurnLimit(address bridge) external view override returns (uint256) {
+        return _burnLimits[bridge];
+    }
+
+    function getTotalMintLimit(address bridge) external view override returns (uint256) {
+        return _mintLimits[bridge];
     }
 
     // solhint-disable-next-line no-empty-blocks
@@ -53,13 +61,13 @@ contract MockInterchainERC20 is MockERC20, InterchainERC20 {
 
     function _spendLimit(
         mapping(address => uint256) storage limits,
-        address controller,
+        address bridge,
         uint256 amount,
         string memory errorMsg
     )
         internal
     {
-        require(limits[controller] >= amount, errorMsg);
-        limits[controller] -= amount;
+        require(limits[bridge] >= amount, errorMsg);
+        limits[bridge] -= amount;
     }
 }
