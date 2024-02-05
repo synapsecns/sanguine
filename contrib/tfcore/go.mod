@@ -117,6 +117,8 @@ require (
 )
 
 replace (
+	cloud.google.com/go/bigtable => cloud.google.com/go/bigtable v1.18.0
+	github.com/google/s2a-go => github.com/google/s2a-go v0.1.7
 	golang.org/x/oauth2 => golang.org/x/oauth2 v0.0.0-20221014153046-6fdb5e3db783
 	google.golang.org/api => google.golang.org/api v0.86.0
 )

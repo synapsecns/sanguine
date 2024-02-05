@@ -5,8 +5,8 @@ cloud.google.com/go v0.100.2/go.mod h1:4Xra9TjzAeYHrl5+oeLlzbM2k3mjVhZh4UqTZ//w9
 cloud.google.com/go v0.102.0/go.mod h1:oWcCzKlqJ5zgHQt9YsaeTY9KzIvjyy0ArmiBUgpQ+nc=
 cloud.google.com/go v0.111.0 h1:YHLKNupSD1KqjDbQ3+LVdQ81h/UJbJyZG203cEfnQgM=
 cloud.google.com/go v0.111.0/go.mod h1:0mibmpKP1TyOOFYQY5izo0LnT+ecvOQ0Sg3OdmMiNRU=
-cloud.google.com/go/bigtable v1.19.0 h1:wiq9LT0kukfInzvy1joMDijCw/OD1UChpSbORXYn0LI=
-cloud.google.com/go/bigtable v1.19.0/go.mod h1:xl5kPa8PTkJjdBxg6qdGH88464nNqmbISHSRU+D2yFE=
+cloud.google.com/go/bigtable v1.18.0 h1:OzxQqEBRNcUt0u3V9HobUS95hr1GVVPNHtPGrCeXBfU=
+cloud.google.com/go/bigtable v1.18.0/go.mod h1:TwTdxeNeIwj2lOmtvqISXlRWuIovWkjSZsd03sCLz2U=
 cloud.google.com/go/compute v0.1.0/go.mod h1:GAesmwr110a34z04OlxYkATPBEfVhkymfTBXtfbBFow=
 cloud.google.com/go/compute v1.6.0/go.mod h1:T29tfhtVbq1wvAPo0E3+7vhgmkOYeXjhFvz/FMzPu0s=
 cloud.google.com/go/compute v1.6.1/go.mod h1:g85FgpzFvNULZ+S8AYq87axRKuf2Kh7deLqV/jJ3thU=
