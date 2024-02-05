@@ -1,13 +1,16 @@
 package provider
 
 import (
+	context2 "context"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/synapsecns/sanguine/contrib/tfcore/generated/google"
+	"github.com/hashicorp/terraform-provider-google/v4/google"
+	"github.com/synapsecns/sanguine/contrib/tfcore/utils"
 	"log"
 	"net/http"
 	"net/url"
+	"reflect"
 	"time"
 )
 
@@ -68,6 +71,9 @@ func dataSourceKeepAlive(d *schema.ResourceData, meta interface{}) error {
 
 	timer := time.After(time.Duration(timeout) * time.Second)
 
+	cfgReflection := reflect.ValueOf(config)
+	context := utils.GetUnexportedField(cfgReflection.FieldByName("context")).(context2.Context)
+
 	for {
 		select {
 		case <-timer:
@@ -88,7 +94,7 @@ func dataSourceKeepAlive(d *schema.ResourceData, meta interface{}) error {
 			_ = resp.Body.Close()
 			log.Printf("[INFO] successfully connected through proxy %s", proxyURL)
 			continue
-		case <-config.GetContext().Done():
+		case <-context.Done():
 			log.Printf("[ERROR] contet canceled before timeout (%d seconds)", timeout)
 			return fmt.Errorf("context was canceled")
 		}

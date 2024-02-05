@@ -6,9 +6,10 @@ import (
 	"github.com/google/uuid"
 	provider_diag "github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-provider-google/google/transport"
 	"github.com/phayes/freeport"
-	"github.com/synapsecns/sanguine/contrib/tfcore/generated/google"
 	"github.com/synapsecns/sanguine/contrib/tfcore/generated/tunnel"
+	"github.com/synapsecns/sanguine/contrib/tfcore/utils"
 	"log"
 	"net/http"
 	"net/url"
@@ -85,7 +86,7 @@ func dataSourceProxyDelete(d *schema.ResourceData, meta interface{}) error {
 
 // nolint: cyclop
 func dataSourceProxy(d *schema.ResourceData, meta interface{}) error {
-	config, ok := meta.(*google.Config)
+	config, ok := meta.(*transport.Config)
 	if !ok {
 		return fmt.Errorf("could not cast config of type %T to %T", meta, config)
 	}
@@ -125,7 +126,7 @@ func dataSourceProxy(d *schema.ResourceData, meta interface{}) error {
 		Interface:  iface,
 	}
 
-	tm.SetTokenSource(config.GetTokenSource())
+	tm.SetTokenSource(utils.GetTokenSource(config))
 
 	errChan := make(chan error)
 

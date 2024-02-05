@@ -12,11 +12,12 @@ import (
 	provider_diag "github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	google "github.com/hashicorp/terraform-provider-google/google/provider"
+	"github.com/hashicorp/terraform-provider-google/google/transport"
 	"github.com/hashicorp/terraform-provider-kubernetes/manifest/test/logging"
 	"github.com/synapsecns/sanguine/contrib/terraform-provider-kubeproxy/generated/configschema"
 	"github.com/synapsecns/sanguine/contrib/terraform-provider-kubeproxy/generated/convert"
 	"github.com/synapsecns/sanguine/contrib/terraform-provider-kubeproxy/generated/manifest"
-	"github.com/synapsecns/sanguine/contrib/tfcore/generated/google"
 	"github.com/synapsecns/sanguine/contrib/tfcore/utils"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
@@ -191,7 +192,7 @@ func googConfigureContextFunc(ctx context.Context, d *schema.ResourceData) (_ in
 		return nil, gdg
 	}
 
-	googleConfig, ok := gface.(*google.Config)
+	googleConfig, ok := gface.(*transport.Config)
 	if !ok {
 		return nil, append(gdg, provider_diag.Diagnostic{
 			Severity: provider_diag.Error,

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-provider-google/google/transport"
 	"github.com/phayes/freeport"
-	"github.com/synapsecns/sanguine/contrib/tfcore/generated/google"
 	"github.com/synapsecns/sanguine/contrib/tfcore/generated/tunnel"
 	"log"
 	"net/http"
@@ -15,7 +15,7 @@ import (
 
 // StartTunnel and returns the proxy url
 // nolint: cyclop
-func StartTunnel(ctx context.Context, d *schema.ResourceData, config *google.Config) (proxyURL string, err error) {
+func StartTunnel(ctx context.Context, d *schema.ResourceData, config *transport.Config) (proxyURL string, err error) {
 	project, ok := d.Get("project").(string)
 	if !ok {
 		return proxyURL, fmt.Errorf("could not cast project of type %T to %T for project", d.Get("project"), project)
@@ -51,7 +51,7 @@ func StartTunnel(ctx context.Context, d *schema.ResourceData, config *google.Con
 		Interface:  iface,
 	}
 
-	tm.SetTokenSource(config.GetTokenSource())
+	tm.SetTokenSource(GetTokenSource(config))
 
 	errChan := make(chan error)
 

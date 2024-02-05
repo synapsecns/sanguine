@@ -5,8 +5,9 @@ import (
 	"context"
 	provider_diag "github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	google "github.com/hashicorp/terraform-provider-google/google/provider"
+	"github.com/hashicorp/terraform-provider-google/google/transport"
 	"github.com/hashicorp/terraform-provider-helm/helm"
-	"github.com/synapsecns/sanguine/contrib/tfcore/generated/google"
 	"github.com/synapsecns/sanguine/contrib/tfcore/utils"
 	"log"
 	"os"
@@ -14,7 +15,7 @@ import (
 
 type configuredProvider struct {
 	// googleIface is the google interface
-	googleIface *google.Config
+	googleIface *transport.Config
 	// helmIface is the helm interface
 	helmIface *helm.Meta
 }
@@ -50,7 +51,7 @@ func Provider() *schema.Provider {
 				return nil, gdg
 			}
 			dg = append(dg, gdg...)
-			cp.googleIface, ok = giface.(*google.Config)
+			cp.googleIface, ok = giface.(*transport.Config)
 			if !ok {
 				return nil, append(gdg, provider_diag.Diagnostic{
 					Severity: provider_diag.Error,
