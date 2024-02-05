@@ -68,13 +68,13 @@ const consumerExamples = {
   dfk: {
     customTheme: {
       bgColor: 'light',
-      '--synapse-text': 'hsl(12deg 85% 13%)',
-      '--synapse-secondary': 'hsl(12deg 85% 20%)',
+      '--synapse-text': 'hsl(12deg 85% 10%)',
+      '--synapse-secondary': 'hsl(12deg 40% 40%)',
       '--synapse-select-bg': 'hsl(35deg 100% 87%)',
       '--synapse-surface': 'hsl(32deg 69% 78%)',
       '--synapse-root': 'hsl(35deg 100% 87%)',
       '--synapse-border': 'hsl(29deg 53% 68%)',
-      '--synapse-focus': 'hsl(12deg 85% 15%)',
+      '--synapse-focus': 'hsl(12deg 85% 25%)',
       '--synapse-accent': 'hsl(12deg 85% 15%)',
     },
     targetTokens: [ETH, USDC, JEWEL, XJEWEL, WJEWEL],
@@ -90,7 +90,7 @@ const customRpcs: CustomRpcs = {
 
 export default function Home() {
   const [config, setConfig] = useState<any>(initialConfig)
-  const [container, setContainer] = useState(true)
+  const [container, setContainer] = useState(false)
 
   const { web3Provider } = useEthereumWallet()
 

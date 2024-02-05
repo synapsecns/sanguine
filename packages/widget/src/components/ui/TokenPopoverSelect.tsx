@@ -95,12 +95,14 @@ export const TokenPopoverSelect = ({
             animate-slide-down origin-top
           `}
         >
-          <SearchInput
-            inputValue={filterValue}
-            setInputValue={setFilterValue}
-            placeholder="Search Tokens"
-            isActive={isOpen}
-          />
+          <div className="p-1">
+            <SearchInput
+              inputValue={filterValue}
+              setInputValue={setFilterValue}
+              placeholder="Search Tokens"
+              isActive={isOpen}
+            />
+          </div>
           {hasFilteredResults ? (
             <ul className="p-0 m-0">
               {filteredSortedOptionsWithBalances?.map(
@@ -160,13 +162,14 @@ const TokenOption = ({
   selected: BridgeableToken
   parsedBalance: string
 }) => {
+  console.log(option.symbol, parsedBalance)
   return (
     <li
       data-test-id="token-option"
       className={`
         flex gap-4 items-center justify-between
         cursor-pointer rounded border border-solid
-        hover:border-[--synapse-focus] active:opacity-40
+        hover:border-[--synapse-focus] active:opacity-40 group
         ${
           option?.symbol === selected?.symbol
             ? 'border-[--synapse-focus] hover:opacity-70'
@@ -189,7 +192,17 @@ const TokenOption = ({
           }
         `}
       >
-        {parsedBalance ?? '−'}
+        {parsedBalance ? (
+          parsedBalance === '0.0' ? (
+            '−'
+          ) : (
+            parsedBalance
+          )
+        ) : (
+          <span className="opacity-0 text-sm text-[--synapse-secondary] group-hover:opacity-100">
+            Receive
+          </span>
+        )}
       </data>
     </li>
   )
