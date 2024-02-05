@@ -84,6 +84,170 @@ contract RateLimitingLibraryTest is Test {
         amount = bound(randomValue, currentRemaining + 1, currentRemaining + 1 ether);
     }
 
+    // ════════════════════════════════════════ TESTS: SETTING TOTAL LIMIT ═════════════════════════════════════════════
+
+    function changeLimitAndCheck(uint256 newLimit, uint256 expectedRemaining) public {
+        harness.setTotalLimit(newLimit);
+        (uint256 lastUpdatedAt, uint256 lastRemaining, uint256 totalLimit) = harness.rateLimit();
+        assertEq(lastUpdatedAt, block.timestamp);
+        assertEq(lastRemaining, expectedRemaining);
+        assertEq(totalLimit, newLimit);
+    }
+
+    function test_setTotalLimit_fromZero(uint256 newLimit) public {
+        newLimit = bound(newLimit, 1 ether, 1000 ether);
+        changeLimitAndCheck({newLimit: newLimit, expectedRemaining: newLimit});
+    }
+
+    function test_setTotalLimit_zeroTimePassed_limitIncreased(RateLimit memory rateLimit, uint256 newLimit) public {
+        useRateLimitFixture(rateLimit);
+        newLimit = bound(newLimit, rateLimit.totalLimit + 1, rateLimit.totalLimit + 1 ether);
+        uint256 expectedRemaining = rateLimit.lastRemaining + newLimit - rateLimit.totalLimit;
+        changeLimitAndCheck(newLimit, expectedRemaining);
+    }
+
+    function test_setTotalLimit_zeroTimePassed_limitDecreased_overPreviouslySpent(
+        RateLimit memory rateLimit,
+        uint256 newLimit
+    )
+        public
+    {
+        useRateLimitFixture(rateLimit);
+        uint256 previouslySpent = rateLimit.totalLimit - rateLimit.lastRemaining;
+        vm.assume(previouslySpent < rateLimit.totalLimit - 1);
+        newLimit = bound(newLimit, previouslySpent, rateLimit.totalLimit - 1);
+        uint256 expectedRemaining = rateLimit.lastRemaining + newLimit - rateLimit.totalLimit;
+        changeLimitAndCheck(newLimit, expectedRemaining);
+    }
+
+    function test_setTotalLimit_zeroTimePassed_limitDecreased_underPreviouslySpent(
+        RateLimit memory rateLimit,
+        uint256 newLimit
+    )
+        public
+    {
+        useRateLimitFixture(rateLimit);
+        uint256 previouslySpent = rateLimit.totalLimit - rateLimit.lastRemaining;
+        vm.assume(previouslySpent > 0.1 ether);
+        newLimit = bound(newLimit, 0.1 ether, previouslySpent - 1);
+        uint256 expectedRemaining = 0;
+        changeLimitAndCheck(newLimit, expectedRemaining);
+    }
+
+    function test_setTotalLimit_zeroTimePassed_limitDecreased_toZero(RateLimit memory rateLimit) public {
+        useRateLimitFixture(rateLimit);
+        uint256 newLimit = 0;
+        uint256 expectedRemaining = 0;
+        changeLimitAndCheck(newLimit, expectedRemaining);
+    }
+
+    function test_setTotalLimit_timePassed_replenishUnderTotalLimit_limitIncreased(
+        RateLimit memory rateLimit,
+        uint256 randomValue,
+        uint256 newLimit
+    )
+        public
+    {
+        useRateLimitFixture(rateLimit);
+        (uint256 timePassed, uint256 replenished) = replenishUnderTotalLimitParams(rateLimit, randomValue);
+        skip(timePassed);
+        newLimit = bound(newLimit, rateLimit.totalLimit + 1, rateLimit.totalLimit + 1 ether);
+        uint256 expectedRemaining = rateLimit.lastRemaining + replenished + newLimit - rateLimit.totalLimit;
+        changeLimitAndCheck(newLimit, expectedRemaining);
+    }
+
+    function test_setTotalLimit_timePassed_replenishUnderTotalLimit_limitDecreased_overPreviouslySpent(
+        RateLimit memory rateLimit,
+        uint256 randomValue,
+        uint256 newLimit
+    )
+        public
+    {
+        useRateLimitFixture(rateLimit);
+        (uint256 timePassed, uint256 replenished) = replenishUnderTotalLimitParams(rateLimit, randomValue);
+        skip(timePassed);
+        uint256 previouslySpent = rateLimit.totalLimit - (rateLimit.lastRemaining + replenished);
+        vm.assume(previouslySpent < rateLimit.totalLimit - 1);
+        newLimit = bound(newLimit, previouslySpent, rateLimit.totalLimit - 1);
+        uint256 expectedRemaining = rateLimit.lastRemaining + replenished + newLimit - rateLimit.totalLimit;
+        changeLimitAndCheck(newLimit, expectedRemaining);
+    }
+
+    function test_setTotalLimit_timePassed_replenishUnderTotalLimit_limitDecreased_underPreviouslySpent(
+        RateLimit memory rateLimit,
+        uint256 randomValue,
+        uint256 newLimit
+    )
+        public
+    {
+        useRateLimitFixture(rateLimit);
+        (uint256 timePassed, uint256 replenished) = replenishUnderTotalLimitParams(rateLimit, randomValue);
+        skip(timePassed);
+        uint256 previouslySpent = rateLimit.totalLimit - (rateLimit.lastRemaining + replenished);
+        vm.assume(previouslySpent > 0.1 ether);
+        newLimit = bound(newLimit, 0.1 ether, previouslySpent - 1);
+        uint256 expectedRemaining = 0;
+        changeLimitAndCheck(newLimit, expectedRemaining);
+    }
+
+    function test_setTotalLimit_timePassed_replenishUnderTotalLimit_limitDecreased_toZero(
+        RateLimit memory rateLimit,
+        uint256 randomValue
+    )
+        public
+    {
+        useRateLimitFixture(rateLimit);
+        (uint256 timePassed,) = replenishUnderTotalLimitParams(rateLimit, randomValue);
+        skip(timePassed);
+        uint256 newLimit = 0;
+        uint256 expectedRemaining = 0;
+        changeLimitAndCheck(newLimit, expectedRemaining);
+    }
+
+    function test_setTotalLimit_timePassed_replenishOverTotalLimit_limitIncreased(
+        RateLimit memory rateLimit,
+        uint256 randomValueTime,
+        uint256 newLimit
+    )
+        public
+    {
+        useRateLimitFixture(rateLimit);
+        uint256 timePassed = replenishOverTotalLimitParams(rateLimit, randomValueTime);
+        skip(timePassed);
+        newLimit = bound(newLimit, rateLimit.totalLimit + 1, rateLimit.totalLimit + 1 ether);
+        uint256 expectedRemaining = newLimit;
+        changeLimitAndCheck(newLimit, expectedRemaining);
+    }
+
+    function test_setTotalLimit_timePassed_replenishOverTotalLimit_limitDecreased(
+        RateLimit memory rateLimit,
+        uint256 randomValueTime,
+        uint256 newLimit
+    )
+        public
+    {
+        useRateLimitFixture(rateLimit);
+        uint256 timePassed = replenishOverTotalLimitParams(rateLimit, randomValueTime);
+        skip(timePassed);
+        newLimit = bound(newLimit, 0.1 ether, rateLimit.totalLimit - 1);
+        uint256 expectedRemaining = newLimit;
+        changeLimitAndCheck(newLimit, expectedRemaining);
+    }
+
+    function test_setTotalLimit_timePassed_replenishOverTotalLimit_limitDecreased_toZero(
+        RateLimit memory rateLimit,
+        uint256 randomValueTime
+    )
+        public
+    {
+        useRateLimitFixture(rateLimit);
+        uint256 timePassed = replenishOverTotalLimitParams(rateLimit, randomValueTime);
+        skip(timePassed);
+        uint256 newLimit = 0;
+        uint256 expectedRemaining = 0;
+        changeLimitAndCheck(newLimit, expectedRemaining);
+    }
+
     // ═══════════════════════════════════════════ TESTS: SPENDING LIMIT ═══════════════════════════════════════════════
 
     function test_spendLimit_zeroTimePassed_spendWithinLimit(RateLimit memory rateLimit, uint256 randomValue) public {

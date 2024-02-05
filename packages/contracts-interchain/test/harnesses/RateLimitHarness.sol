@@ -10,6 +10,10 @@ contract RateLimitHarness {
         rateLimit = rateLimit_;
     }
 
+    function setTotalLimit(uint256 newLimit) public {
+        RateLimiting.setTotalLimit(rateLimit, newLimit);
+    }
+
     function spendLimit(uint256 amount) public {
         RateLimiting.spendLimit(rateLimit, amount);
     }

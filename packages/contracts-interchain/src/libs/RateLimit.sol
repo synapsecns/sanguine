@@ -25,6 +25,24 @@ library RateLimiting {
     /// @notice Error that is thrown when the rate limit is exceeded.
     error RateLimiting__LimitExceeded(uint256 amount, uint256 limit);
 
+    /// @notice Updates the total limit for the operation. The remaining amount will be
+    /// updated to the new limit.
+    /// The remaining amount will be set to zero if the new limit is lower than the
+    /// amount spent from the previous limit.
+    /// @dev Note: this function will update the RateLimit struct in storage.
+    /// @param self     The RateLimit struct
+    /// @param newLimit The new total limit
+    function setTotalLimit(RateLimit storage self, uint256 newLimit) internal {
+        // Figure out how much was spent from the previous limit
+        unchecked {
+            // getCurrentLimit(self) <= self.totalLimit, therefore can use unchecked
+            uint256 spent = self.totalLimit - getCurrentLimit(self);
+            self.lastRemaining = newLimit < spent ? 0 : newLimit - spent;
+        }
+        self.totalLimit = newLimit;
+        self.lastUpdatedAt = block.timestamp;
+    }
+
     /// @notice Spend the limit associated with the operation by the given amount.
     /// @dev Will revert if the amount exceeds the current limit.
     /// Note: this function will update the RateLimit struct in storage.
