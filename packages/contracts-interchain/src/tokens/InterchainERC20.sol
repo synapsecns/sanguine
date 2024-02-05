@@ -69,13 +69,25 @@ contract InterchainERC20 is ERC20, AccessControl, Pausable, ICERC20 {
     // ══════════════════════════════════════════════ TOKEN FUNCTIONS ══════════════════════════════════════════════════
 
     /// @inheritdoc ICERC20
-    function burn(uint256 amount) external {
-        // TODO: Implement
+    function burn(uint256 amount) external whenNotPaused {
+        // Processor is allowed to burn tokens without any rate limits
+        if (msg.sender != PROCESSOR) {
+            // Spend from the Bridge's burn limit (will revert if the limit is exceeded)
+            _burnLimits[msg.sender].spendLimit(amount);
+        }
+        _burn(msg.sender, amount);
     }
 
     /// @inheritdoc ICERC20
-    function burnFrom(address account, uint256 amount) external {
-        // TODO: Implement
+    function burnFrom(address account, uint256 amount) external whenNotPaused {
+        // Spend token transfer allowance regardless of the caller
+        _spendAllowance(account, msg.sender, amount);
+        // Processor is allowed to burn tokens without any rate limits
+        if (msg.sender != PROCESSOR) {
+            // Spend from the Bridge's burn limit (will revert if the limit is exceeded)
+            _burnLimits[msg.sender].spendLimit(amount);
+        }
+        _burn(account, amount);
     }
 
     /// @inheritdoc ICERC20
@@ -91,8 +103,8 @@ contract InterchainERC20 is ERC20, AccessControl, Pausable, ICERC20 {
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @inheritdoc ICERC20
-    function getCurrentBurnLimit(address bridge) external view returns (uint256) {
-        return _burnLimits[bridge].getCurrentLimit();
+    function getCurrentBurnLimit(address burner) external view returns (uint256) {
+        return burner == PROCESSOR ? type(uint256).max : _burnLimits[burner].getCurrentLimit();
     }
 
     /// @inheritdoc ICERC20
@@ -101,8 +113,8 @@ contract InterchainERC20 is ERC20, AccessControl, Pausable, ICERC20 {
     }
 
     /// @inheritdoc ICERC20
-    function getTotalBurnLimit(address bridge) external view override returns (uint256) {
-        return _burnLimits[bridge].getTotalLimit();
+    function getTotalBurnLimit(address burner) external view override returns (uint256) {
+        return burner == PROCESSOR ? type(uint256).max : _burnLimits[burner].getTotalLimit();
     }
 
     /// @inheritdoc ICERC20
