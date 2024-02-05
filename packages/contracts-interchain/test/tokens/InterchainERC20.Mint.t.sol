@@ -2,7 +2,7 @@
 pragma solidity 0.8.23;
 
 import {InterchainERC20Test} from "./InterchainERC20.t.sol";
-import {RateLimiting} from "../../src/libs/RateLimit.sol";
+import {RateLimiting, RateLimit} from "../../src/libs/RateLimit.sol";
 
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 
@@ -37,7 +37,15 @@ contract InterchainERC20MintTest is InterchainERC20Test {
     function checkBridgeMint(uint256 amount) public {
         assertEq(token.balanceOf(user), amount);
         assertEq(token.totalSupply(), INITIAL_MINTED + amount);
+    }
+
+    function checkBridgeMintLimit(uint256 expectedCurrent) public {
+        assertEq(token.getCurrentMintLimit(bridge), expectedCurrent);
         assertEq(token.getTotalMintLimit(bridge), INITIAL_TOTAL_LIMIT);
+        RateLimit memory limit = token.exposed__getMintRateLimit(bridge);
+        assertEq(limit.lastUpdatedAt, block.timestamp);
+        assertEq(limit.lastRemaining, expectedCurrent);
+        assertEq(limit.totalLimit, INITIAL_TOTAL_LIMIT);
     }
 
     function test_mint_revert_unauthorized() public {
@@ -50,14 +58,14 @@ contract InterchainERC20MintTest is InterchainERC20Test {
         uint256 amount = INITIAL_CURRENT_LIMIT / 10;
         authMintToken(user, amount);
         checkBridgeMint(amount);
-        assertEq(token.getCurrentMintLimit(bridge), INITIAL_CURRENT_LIMIT - amount);
+        checkBridgeMintLimit(INITIAL_CURRENT_LIMIT - amount);
     }
 
     function test_mint_zeroTimePassed_mintExactlyLimit() public {
         uint256 amount = INITIAL_CURRENT_LIMIT;
         authMintToken(user, amount);
         checkBridgeMint(amount);
-        assertEq(token.getCurrentMintLimit(bridge), 0);
+        checkBridgeMintLimit(0);
     }
 
     function test_mint_zeroTimePassed_revert_mintOverLimit() public {
@@ -74,7 +82,7 @@ contract InterchainERC20MintTest is InterchainERC20Test {
         uint256 amount = SMALL_PERIOD_CURRENT_LIMIT / 10;
         authMintToken(user, amount);
         checkBridgeMint(amount);
-        assertEq(token.getCurrentMintLimit(bridge), SMALL_PERIOD_CURRENT_LIMIT - amount);
+        checkBridgeMintLimit(SMALL_PERIOD_CURRENT_LIMIT - amount);
     }
 
     function test_mint_timePassed_replenishUnderTotalLimit_mintExactlyLimit() public {
@@ -82,7 +90,7 @@ contract InterchainERC20MintTest is InterchainERC20Test {
         uint256 amount = SMALL_PERIOD_CURRENT_LIMIT;
         authMintToken(user, amount);
         checkBridgeMint(amount);
-        assertEq(token.getCurrentMintLimit(bridge), 0);
+        checkBridgeMintLimit(0);
     }
 
     function test_mint_timePassed_replenishUnderTotalLimit_revert_mintOverLimit() public {
@@ -102,7 +110,7 @@ contract InterchainERC20MintTest is InterchainERC20Test {
         uint256 amount = INITIAL_TOTAL_LIMIT / 10;
         authMintToken(user, amount);
         checkBridgeMint(amount);
-        assertEq(token.getCurrentMintLimit(bridge), INITIAL_TOTAL_LIMIT - amount);
+        checkBridgeMintLimit(INITIAL_TOTAL_LIMIT - amount);
     }
 
     function test_mint_timePassed_replenishOverTotalLimit_mintExactlyLimit() public {
@@ -110,7 +118,7 @@ contract InterchainERC20MintTest is InterchainERC20Test {
         uint256 amount = INITIAL_TOTAL_LIMIT;
         authMintToken(user, amount);
         checkBridgeMint(amount);
-        assertEq(token.getCurrentMintLimit(bridge), 0);
+        checkBridgeMintLimit(0);
     }
 
     function test_mint_timePassed_replenishOverTotalLimit_revert_mintOverLimit() public {
@@ -131,7 +139,7 @@ contract InterchainERC20MintTest is InterchainERC20Test {
         assertEq(token.balanceOf(user), 100);
         assertEq(token.totalSupply(), INITIAL_MINTED + 100);
         // Should not affect the bridge's mint limit
-        assertEq(token.getCurrentMintLimit(bridge), INITIAL_CURRENT_LIMIT);
+        checkBridgeMintLimit(INITIAL_CURRENT_LIMIT);
         assertEq(token.getTotalMintLimit(bridge), INITIAL_TOTAL_LIMIT);
         // Should not affect the processor's mint limit
         assertEq(token.getCurrentMintLimit(processor), type(uint256).max);
@@ -145,7 +153,7 @@ contract InterchainERC20MintTest is InterchainERC20Test {
         assertEq(token.balanceOf(user), amount);
         assertEq(token.totalSupply(), INITIAL_MINTED + amount);
         // Should not affect the bridge's mint limit
-        assertEq(token.getCurrentMintLimit(bridge), INITIAL_CURRENT_LIMIT);
+        checkBridgeMintLimit(INITIAL_CURRENT_LIMIT);
         assertEq(token.getTotalMintLimit(bridge), INITIAL_TOTAL_LIMIT);
         // Should not affect the processor's mint limit
         assertEq(token.getCurrentMintLimit(processor), type(uint256).max);

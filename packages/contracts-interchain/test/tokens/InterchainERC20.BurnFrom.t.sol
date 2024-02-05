@@ -2,7 +2,7 @@
 pragma solidity 0.8.23;
 
 import {InterchainERC20Test} from "./InterchainERC20.t.sol";
-import {RateLimiting} from "../../src/libs/RateLimit.sol";
+import {RateLimiting, RateLimit} from "../../src/libs/RateLimit.sol";
 
 import {IERC20Errors} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
@@ -55,12 +55,19 @@ contract InterchainERC20BurnTest is InterchainERC20Test {
         assertEq(token.allowance(user, bridge), INITIAL_APPROVE_AMOUNT - amount);
         assertEq(token.balanceOf(user), INITIAL_USER_BALANCE - amount);
         assertEq(token.totalSupply(), INITIAL_TOTAL_SUPPLY - amount);
+    }
+
+    function checkBridgeBurnLimit(uint256 expectedCurrent) public {
+        assertEq(token.getCurrentBurnLimit(bridge), expectedCurrent);
         assertEq(token.getTotalBurnLimit(bridge), INITIAL_TOTAL_LIMIT);
+        RateLimit memory limit = token.exposed__getBurnRateLimit(bridge);
+        assertEq(limit.lastUpdatedAt, block.timestamp);
+        assertEq(limit.lastRemaining, expectedCurrent);
+        assertEq(limit.totalLimit, INITIAL_TOTAL_LIMIT);
     }
 
     function test_setUp() public {
-        assertEq(token.getCurrentBurnLimit(bridge), INITIAL_CURRENT_LIMIT);
-        assertEq(token.getTotalBurnLimit(bridge), INITIAL_TOTAL_LIMIT);
+        checkBridgeBurnLimit(INITIAL_CURRENT_LIMIT);
         assertEq(token.allowance(user, bridge), INITIAL_APPROVE_AMOUNT);
         assertEq(token.allowance(user, processor), 0);
         assertEq(token.balanceOf(user), INITIAL_USER_BALANCE);
@@ -80,14 +87,14 @@ contract InterchainERC20BurnTest is InterchainERC20Test {
         uint256 amount = INITIAL_CURRENT_LIMIT / 10;
         authBurnFrom(user, amount);
         checkBridgeBurnFrom(amount);
-        assertEq(token.getCurrentBurnLimit(bridge), INITIAL_CURRENT_LIMIT - amount);
+        checkBridgeBurnLimit(INITIAL_CURRENT_LIMIT - amount);
     }
 
     function test_burnFrom_zeroTimePassed_burnExactlyLimit() public {
         uint256 amount = INITIAL_CURRENT_LIMIT;
         authBurnFrom(user, amount);
         checkBridgeBurnFrom(amount);
-        assertEq(token.getCurrentBurnLimit(bridge), 0);
+        checkBridgeBurnLimit(0);
     }
 
     function test_burnFrom_zeroTimePassed_revert_burnOverLimit() public {
@@ -104,7 +111,7 @@ contract InterchainERC20BurnTest is InterchainERC20Test {
         uint256 amount = SMALL_PERIOD_CURRENT_LIMIT / 10;
         authBurnFrom(user, amount);
         checkBridgeBurnFrom(amount);
-        assertEq(token.getCurrentBurnLimit(bridge), SMALL_PERIOD_CURRENT_LIMIT - amount);
+        checkBridgeBurnLimit(SMALL_PERIOD_CURRENT_LIMIT - amount);
     }
 
     function test_burnFrom_timePassed_replenishUnderTotalLimit_burnExactlyLimit() public {
@@ -112,7 +119,7 @@ contract InterchainERC20BurnTest is InterchainERC20Test {
         uint256 amount = SMALL_PERIOD_CURRENT_LIMIT;
         authBurnFrom(user, amount);
         checkBridgeBurnFrom(amount);
-        assertEq(token.getCurrentBurnLimit(bridge), 0);
+        checkBridgeBurnLimit(0);
     }
 
     function test_burnFrom_timePassed_replenishUnderTotalLimit_revert_burnOverLimit() public {
@@ -132,7 +139,7 @@ contract InterchainERC20BurnTest is InterchainERC20Test {
         uint256 amount = INITIAL_TOTAL_LIMIT / 10;
         authBurnFrom(user, amount);
         checkBridgeBurnFrom(amount);
-        assertEq(token.getCurrentBurnLimit(bridge), INITIAL_TOTAL_LIMIT - amount);
+        checkBridgeBurnLimit(INITIAL_TOTAL_LIMIT - amount);
     }
 
     function test_burnFrom_timePassed_replenishOverTotalLimit_burnExactlyLimit() public {
@@ -140,7 +147,7 @@ contract InterchainERC20BurnTest is InterchainERC20Test {
         uint256 amount = INITIAL_TOTAL_LIMIT;
         authBurnFrom(user, amount);
         checkBridgeBurnFrom(amount);
-        assertEq(token.getCurrentBurnLimit(bridge), 0);
+        checkBridgeBurnLimit(0);
     }
 
     function test_burnFrom_timePassed_replenishOverTotalLimit_revert_burnOverLimit() public {
@@ -163,7 +170,7 @@ contract InterchainERC20BurnTest is InterchainERC20Test {
         assertEq(token.balanceOf(user), INITIAL_USER_BALANCE - 100);
         assertEq(token.totalSupply(), INITIAL_TOTAL_SUPPLY - 100);
         // Should not affect the bridge's burn limit
-        assertEq(token.getCurrentBurnLimit(bridge), INITIAL_CURRENT_LIMIT);
+        checkBridgeBurnLimit(INITIAL_CURRENT_LIMIT);
         assertEq(token.getTotalBurnLimit(bridge), INITIAL_TOTAL_LIMIT);
         // Should not affect the processor's burn limit
         assertEq(token.getCurrentBurnLimit(processor), type(uint256).max);
@@ -181,7 +188,7 @@ contract InterchainERC20BurnTest is InterchainERC20Test {
         assertEq(token.balanceOf(user), INITIAL_USER_BALANCE);
         assertEq(token.totalSupply(), INITIAL_TOTAL_SUPPLY - INITIAL_PROCESSOR_BALANCE);
         // Should not affect the bridge's burn limit
-        assertEq(token.getCurrentBurnLimit(bridge), INITIAL_CURRENT_LIMIT);
+        checkBridgeBurnLimit(INITIAL_CURRENT_LIMIT);
         assertEq(token.getTotalBurnLimit(bridge), INITIAL_TOTAL_LIMIT);
         // Should not affect the processor's burn limit
         assertEq(token.getCurrentBurnLimit(processor), type(uint256).max);
