@@ -66,8 +66,10 @@ contract InterchainERC20 is ERC20, AccessControl, Pausable, ICERC20 {
     }
 
     /// @inheritdoc ICERC20
-    function mint(address account, uint256 amount) external {
-        // TODO: Implement
+    function mint(address account, uint256 amount) external whenNotPaused {
+        // Spend from the Bridge's mint limit (will revert if the limit is exceeded)
+        _mintLimits[msg.sender].spendLimit(amount);
+        _mint(account, amount);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
