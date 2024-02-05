@@ -89,6 +89,7 @@ export const ChainPopoverSelect = ({
             absolute z-50 mt-1 max-h-60 min-w-48 rounded
             shadow popover text-left list-none overflow-y-auto
             border border-solid border-[--synapse-select-border]
+            animate-slide-down origin-top
           `}
         >
           <SearchInput
