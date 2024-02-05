@@ -45,6 +45,9 @@ export interface BridgeProps {
 
   /* Target chain ids of Consumer */
   targetChainIds?: number[]
+
+  /* Custom name prop for consumer protocol */
+  protocolName?: string
 }
 
 export interface Chain {
