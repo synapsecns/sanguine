@@ -92,6 +92,7 @@ export const TokenPopoverSelect = ({
             absolute right-0 z-50 mt-1 max-h-80 min-w-48 rounded
             shadow popover text-left list-none overflow-y-auto
             border border-solid border-[--synapse-select-border]
+            animate-slide-down origin-top
           `}
         >
           <SearchInput
