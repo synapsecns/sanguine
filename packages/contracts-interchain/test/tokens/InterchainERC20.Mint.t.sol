@@ -126,17 +126,59 @@ contract InterchainERC20MintTest is InterchainERC20Test {
         authMintToken(user, INITIAL_TOTAL_LIMIT + 1);
     }
 
+    // ═════════════════════════════════════════ TESTS: MINT BY PROCESSOR ══════════════════════════════════════════════
+
+    function test_mint_byProcessor() public {
+        vm.prank(processor);
+        token.mint(user, 100);
+        assertEq(token.balanceOf(user), 100);
+        assertEq(token.totalSupply(), INITIAL_MINTED + 100);
+        // Should not affect the bridge's mint limit
+        assertEq(token.getCurrentMintLimit(bridge), INITIAL_CURRENT_LIMIT);
+        assertEq(token.getTotalMintLimit(bridge), INITIAL_TOTAL_LIMIT);
+        // Should not affect the processor's mint limit
+        assertEq(token.getCurrentMintLimit(processor), type(uint256).max);
+        assertEq(token.getTotalMintLimit(processor), type(uint256).max);
+    }
+
+    function test_mint_byProcessor_bigAmount() public {
+        uint256 amount = INITIAL_TOTAL_LIMIT * 10;
+        vm.prank(processor);
+        token.mint(user, amount);
+        assertEq(token.balanceOf(user), amount);
+        assertEq(token.totalSupply(), INITIAL_MINTED + amount);
+        // Should not affect the bridge's mint limit
+        assertEq(token.getCurrentMintLimit(bridge), INITIAL_CURRENT_LIMIT);
+        assertEq(token.getTotalMintLimit(bridge), INITIAL_TOTAL_LIMIT);
+        // Should not affect the processor's mint limit
+        assertEq(token.getCurrentMintLimit(processor), type(uint256).max);
+        assertEq(token.getTotalMintLimit(processor), type(uint256).max);
+    }
+
     // ════════════════════════════════════════════ TESTS: MINT + PAUSE ════════════════════════════════════════════════
 
     function test_mint_revert_whenPaused() public {
         authPause();
         vm.expectRevert(Pausable.EnforcedPause.selector);
-        authMintToken(user, 100);        
+        authMintToken(user, 100);
     }
 
     function test_mint_works_whenPausedAndUnpaused() public {
         authPause();
         authUnpause();
         test_mint_zeroTimePassed_mintUnderLimit();
+    }
+
+    function test_mint_byProcessor_revert_whenPaused() public {
+        authPause();
+        vm.expectRevert(Pausable.EnforcedPause.selector);
+        vm.prank(processor);
+        token.mint(user, 100);
+    }
+
+    function test_mint_byProcessor_works_whenPausedAndUnpaused() public {
+        authPause();
+        authUnpause();
+        test_mint_byProcessor();
     }
 }
