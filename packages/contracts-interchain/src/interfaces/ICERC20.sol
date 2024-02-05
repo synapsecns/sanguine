@@ -3,13 +3,13 @@ pragma solidity ^0.8.20;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-/// @notice Interface for the InterChain ERC20 token.
+/// @notice Interface for the InterChain ERC20 token (ICERC20).
 /// Burning/minting of this token is rate limited for Bridge and unlimited for Processor contracts.
 /// - Bridge contracts are minting or burning interchain tokens to facilitate the transfer of tokens between chains.
 /// - Processor contracts are turning the interchain tokens into the underlying token and vice versa.
 /// NOTE: the Bridge rate limits for initial issuance of interchain tokens make it possible to
 /// let the Processor contract mint or burn the tokens without rate limits.
-interface InterchainERC20 is IERC20 {
+interface ICERC20 is IERC20 {
     /// @notice Burn `amount` tokens from `msg.sender`
     /// @dev Could be called by Bridge or Processor contracts.
     /// - Bridge's burning limit is applied: will revert if the limit is

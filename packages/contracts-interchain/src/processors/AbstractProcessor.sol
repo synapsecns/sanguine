@@ -6,9 +6,9 @@ import {IDefaultPool} from "../interfaces/IDefaultPool.sol";
 import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /// @notice AbstractProcessor is an abstraction for a contract that enables the conversion between
-/// the ERC20 token (underlying) and its InterchainERC20 counterpart. The exact implementation
+/// the ERC20 token (underlying) and its ICERC20 counterpart (interchain). The exact implementation
 /// of the conversion mechanism is defined in the derived contracts.
-/// NOTE: InterchainERC20 token issuance by the Bridge is rate limited by burn and mint limits,
+/// NOTE: ICERC20 token issuance by the Bridge is rate limited by burn and mint limits,
 /// while the Processor is simply a tool for Token<>InterchainToken conversion.
 /// Therefore, the minting/burning of both tokens does not require a separate
 /// minting/burning limit for the Processor.
@@ -88,11 +88,11 @@ abstract contract AbstractProcessor is IDefaultPool {
         revert AbstractProcessor__IndexOutOfBounds(index);
     }
 
-    /// @dev Burns the InterchainERC20 token taken from `msg.sender`, then
+    /// @dev Burns the ICERC20 token taken from `msg.sender`, then
     /// transfers the same amount of the underlying token to `msg.sender`.
     function _burnInterchainToken(uint256 amount) internal virtual;
 
     /// @dev Handles the underlying token taken from `msg.sender`, then
-    /// mints the same amount of the InterchainERC20 token to `msg.sender`.
+    /// mints the same amount of the ICERC20 token to `msg.sender`.
     function _mintInterchainToken(uint256 amount) internal virtual;
 }

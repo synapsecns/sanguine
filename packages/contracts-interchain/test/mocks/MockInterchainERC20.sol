@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.20;
 
-import {InterchainERC20} from "../../src/interfaces/InterchainERC20.sol";
+import {ICERC20} from "../../src/interfaces/ICERC20.sol";
 import {MockERC20} from "./MockERC20.sol";
 
-/// @notice MockInterchainERC20 is a mock ERC20 token that follows the InterchainERC20 interface
+/// @notice MockInterchainERC20 is a mock ERC20 token that follows the ICERC20 interface
 /// @dev Make sure to set the burn and mint limits for Bridge, and set infinite limits for Processor
 /// in the tests.
-contract MockInterchainERC20 is MockERC20, InterchainERC20 {
+contract MockInterchainERC20 is MockERC20, ICERC20 {
     mapping(address => uint256) internal _burnLimits;
     mapping(address => uint256) internal _mintLimits;
 
