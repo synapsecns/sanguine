@@ -14,7 +14,7 @@ export const ToggleTabs: React.FC<ToggleTabsProps> = ({
   isOrigin,
 }) => {
   const { protocolName } = useBridgeState()
-  
+
   const baseTabClass = 'basis-full rounded p-1.5'
   const activeTabClass = `${baseTabClass} cursor-pointer hover:opacity-70`
   const activeStyle = {
@@ -25,7 +25,7 @@ export const ToggleTabs: React.FC<ToggleTabsProps> = ({
   return (
     <div
       className="flex mx-1 my-2 text-sm text-center cursor-default rounded border border-solid border-[--synapse-border]"
-      style={{ background: 'var(--synapse-root'}}
+      style={{ background: 'var(--synapse-root' }}
       role="group"
     >
       <div
