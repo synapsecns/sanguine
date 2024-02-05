@@ -12,13 +12,26 @@ contract InterchainERC20 is ERC20, AccessControl, Pausable, ICERC20 {
     bytes32 public constant EMERGENCY_PAUSER_ROLE = keccak256("EMERGENCY_PAUSER_ROLE");
     bytes32 public constant GOVERNOR_ROLE = keccak256("GOVERNOR_ROLE");
 
+    /// @notice Address of the processor contract, responsible for Token<>InterchainToken conversions
+    /// Note: this should be left as zero address, if the InterchainERC20 is used as a "native token deployment"
+    /// on the chain rather than an interchain representation of an existing token.
+    address public immutable PROCESSOR;
+
     /// @dev Rate Limit for Bridge's burn operations
     mapping(address bridge => RateLimit) internal _burnLimits;
     /// @dev Rate Limit for Bridge's mint operations
     mapping(address bridge => RateLimit) internal _mintLimits;
 
-    constructor(string memory name_, string memory symbol_, address initialAdmin_) ERC20(name_, symbol_) {
+    constructor(
+        string memory name_,
+        string memory symbol_,
+        address initialAdmin_,
+        address processor_
+    )
+        ERC20(name_, symbol_)
+    {
         _grantRole(DEFAULT_ADMIN_ROLE, initialAdmin_);
+        PROCESSOR = processor_;
     }
 
     // ══════════════════════════════════════════════ ADMIN FUNCTIONS ══════════════════════════════════════════════════

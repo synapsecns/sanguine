@@ -12,13 +12,15 @@ contract InterchainERC20Test is Test {
     address public admin;
     address public emergencyPauser;
     address public governor;
+    address public processor;
 
     function setUp() public virtual {
         admin = makeAddr("Admin");
         emergencyPauser = makeAddr("EmergencyPauser");
         governor = makeAddr("Governor");
+        processor = makeAddr("Processor");
 
-        token = new InterchainERC20Harness("Token Name", "Token Symbol", admin);
+        token = new InterchainERC20Harness("Token Name", "Token Symbol", admin, processor);
         vm.startPrank(admin);
         token.grantRole(token.EMERGENCY_PAUSER_ROLE(), emergencyPauser);
         token.grantRole(token.GOVERNOR_ROLE(), governor);
@@ -48,5 +50,6 @@ contract InterchainERC20Test is Test {
     function test_constructor() public {
         assertEq(token.name(), "Token Name");
         assertEq(token.symbol(), "Token Symbol");
+        assertEq(token.PROCESSOR(), processor);
     }
 }
