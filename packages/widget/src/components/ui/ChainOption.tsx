@@ -15,7 +15,9 @@ export const ChainOption = ({
 }) => {
   const web3Context = useContext(Web3Context)
 
-  const { networkId } = web3Context.web3Provider
+  const {
+    web3Provider: { networkId },
+  } = web3Context
 
   return (
     <li

@@ -14,6 +14,7 @@ export const ToggleTabs: React.FC<ToggleTabsProps> = ({
   isOrigin,
 }) => {
   const { protocolName } = useBridgeState()
+  
   const baseTabClass = 'basis-full rounded p-1.5'
   const activeTabClass = `${baseTabClass} cursor-pointer hover:opacity-70`
   const activeStyle = {
