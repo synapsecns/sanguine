@@ -34,6 +34,12 @@ contract InterchainERC20MintTest is InterchainERC20Test {
         token.mint(account, amount);
     }
 
+    function checkBridgeMint(uint256 amount) public {
+        assertEq(token.balanceOf(user), amount);
+        assertEq(token.totalSupply(), INITIAL_MINTED + amount);
+        assertEq(token.getTotalMintLimit(bridge), INITIAL_TOTAL_LIMIT);
+    }
+
     function test_mint_revert_unauthorized() public {
         vm.expectRevert(abi.encodeWithSelector(RateLimiting.RateLimiting__LimitExceeded.selector, 100, 0));
         vm.prank(user);
@@ -43,18 +49,15 @@ contract InterchainERC20MintTest is InterchainERC20Test {
     function test_mint_zeroTimePassed_mintUnderLimit() public {
         uint256 amount = INITIAL_CURRENT_LIMIT / 10;
         authMintToken(user, amount);
-        assertEq(token.balanceOf(user), amount);
-        assertEq(token.totalSupply(), INITIAL_MINTED + amount);
+        checkBridgeMint(amount);
         assertEq(token.getCurrentMintLimit(bridge), INITIAL_CURRENT_LIMIT - amount);
-        assertEq(token.getTotalMintLimit(bridge), INITIAL_TOTAL_LIMIT);
     }
 
     function test_mint_zeroTimePassed_mintExactlyLimit() public {
-        authMintToken(user, INITIAL_CURRENT_LIMIT);
-        assertEq(token.balanceOf(user), INITIAL_CURRENT_LIMIT);
-        assertEq(token.totalSupply(), INITIAL_MINTED + INITIAL_CURRENT_LIMIT);
+        uint256 amount = INITIAL_CURRENT_LIMIT;
+        authMintToken(user, amount);
+        checkBridgeMint(amount);
         assertEq(token.getCurrentMintLimit(bridge), 0);
-        assertEq(token.getTotalMintLimit(bridge), INITIAL_TOTAL_LIMIT);
     }
 
     function test_mint_zeroTimePassed_revert_mintOverLimit() public {
@@ -70,19 +73,16 @@ contract InterchainERC20MintTest is InterchainERC20Test {
         skip(SMALL_PERIOD);
         uint256 amount = SMALL_PERIOD_CURRENT_LIMIT / 10;
         authMintToken(user, amount);
-        assertEq(token.balanceOf(user), amount);
-        assertEq(token.totalSupply(), INITIAL_MINTED + amount);
+        checkBridgeMint(amount);
         assertEq(token.getCurrentMintLimit(bridge), SMALL_PERIOD_CURRENT_LIMIT - amount);
-        assertEq(token.getTotalMintLimit(bridge), INITIAL_TOTAL_LIMIT);
     }
 
     function test_mint_timePassed_replenishUnderTotalLimit_mintExactlyLimit() public {
         skip(SMALL_PERIOD);
-        authMintToken(user, SMALL_PERIOD_CURRENT_LIMIT);
-        assertEq(token.balanceOf(user), SMALL_PERIOD_CURRENT_LIMIT);
-        assertEq(token.totalSupply(), INITIAL_MINTED + SMALL_PERIOD_CURRENT_LIMIT);
+        uint256 amount = SMALL_PERIOD_CURRENT_LIMIT;
+        authMintToken(user, amount);
+        checkBridgeMint(amount);
         assertEq(token.getCurrentMintLimit(bridge), 0);
-        assertEq(token.getTotalMintLimit(bridge), INITIAL_TOTAL_LIMIT);
     }
 
     function test_mint_timePassed_replenishUnderTotalLimit_revert_mintOverLimit() public {
@@ -101,19 +101,16 @@ contract InterchainERC20MintTest is InterchainERC20Test {
         skip(LARGE_PERIOD);
         uint256 amount = INITIAL_TOTAL_LIMIT / 10;
         authMintToken(user, amount);
-        assertEq(token.balanceOf(user), amount);
-        assertEq(token.totalSupply(), INITIAL_MINTED + amount);
+        checkBridgeMint(amount);
         assertEq(token.getCurrentMintLimit(bridge), INITIAL_TOTAL_LIMIT - amount);
-        assertEq(token.getTotalMintLimit(bridge), INITIAL_TOTAL_LIMIT);
     }
 
     function test_mint_timePassed_replenishOverTotalLimit_mintExactlyLimit() public {
         skip(LARGE_PERIOD);
-        authMintToken(user, INITIAL_TOTAL_LIMIT);
-        assertEq(token.balanceOf(user), INITIAL_TOTAL_LIMIT);
-        assertEq(token.totalSupply(), INITIAL_MINTED + INITIAL_TOTAL_LIMIT);
+        uint256 amount = INITIAL_TOTAL_LIMIT;
+        authMintToken(user, amount);
+        checkBridgeMint(amount);
         assertEq(token.getCurrentMintLimit(bridge), 0);
-        assertEq(token.getTotalMintLimit(bridge), INITIAL_TOTAL_LIMIT);
     }
 
     function test_mint_timePassed_replenishOverTotalLimit_revert_mintOverLimit() public {
