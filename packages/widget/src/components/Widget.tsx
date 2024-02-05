@@ -343,7 +343,7 @@ export const Widget = ({
   }
 
   const containerStyle = `
-    ${container === false ? 'p-0' : 'p-2 rounded-lg'}`
+    ${container === false ? 'p-2 rounded-[inherit]' : 'p-2 rounded-lg'}`
 
   const cardStyle = `
     grid grid-cols-[1fr_auto]
