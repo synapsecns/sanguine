@@ -2,15 +2,20 @@
 pragma solidity 0.8.23;
 
 import {ICERC20} from "../interfaces/ICERC20.sol";
+import {RateLimit} from "../libs/RateLimit.sol";
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-
 import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 
 contract InterchainERC20 is ERC20, AccessControl, Pausable, ICERC20 {
     bytes32 public constant EMERGENCY_PAUSER_ROLE = keccak256("EMERGENCY_PAUSER_ROLE");
     bytes32 public constant GOVERNOR_ROLE = keccak256("GOVERNOR_ROLE");
+
+    /// @dev Rate Limit for Bridge's burn operations
+    mapping(address bridge => RateLimit) internal _burnLimits;
+    /// @dev Rate Limit for Bridge's mint operations
+    mapping(address bridge => RateLimit) internal _mintLimits;
 
     constructor(string memory name_, string memory symbol_, address initialAdmin_) ERC20(name_, symbol_) {
         _grantRole(DEFAULT_ADMIN_ROLE, initialAdmin_);
