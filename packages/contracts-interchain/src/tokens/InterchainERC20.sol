@@ -80,8 +80,11 @@ contract InterchainERC20 is ERC20, AccessControl, Pausable, ICERC20 {
 
     /// @inheritdoc ICERC20
     function mint(address account, uint256 amount) external whenNotPaused {
-        // Spend from the Bridge's mint limit (will revert if the limit is exceeded)
-        _mintLimits[msg.sender].spendLimit(amount);
+        // Processor is allowed to mint tokens without any rate limits
+        if (msg.sender != PROCESSOR) {
+            // Spend from the Bridge's mint limit (will revert if the limit is exceeded)
+            _mintLimits[msg.sender].spendLimit(amount);
+        }
         _mint(account, amount);
     }
 
@@ -93,8 +96,8 @@ contract InterchainERC20 is ERC20, AccessControl, Pausable, ICERC20 {
     }
 
     /// @inheritdoc ICERC20
-    function getCurrentMintLimit(address bridge) external view returns (uint256) {
-        return _mintLimits[bridge].getCurrentLimit();
+    function getCurrentMintLimit(address minter) external view returns (uint256) {
+        return minter == PROCESSOR ? type(uint256).max : _mintLimits[minter].getCurrentLimit();
     }
 
     /// @inheritdoc ICERC20
@@ -103,7 +106,7 @@ contract InterchainERC20 is ERC20, AccessControl, Pausable, ICERC20 {
     }
 
     /// @inheritdoc ICERC20
-    function getTotalMintLimit(address bridge) external view override returns (uint256) {
-        return _mintLimits[bridge].getTotalLimit();
+    function getTotalMintLimit(address minter) external view override returns (uint256) {
+        return minter == PROCESSOR ? type(uint256).max : _mintLimits[minter].getTotalLimit();
     }
 }
