@@ -1,5 +1,7 @@
 [profile.default]
 auto_detect_solc = true
+# 2024-01-01
+block_timestamp = 1_704_067_200
 evm_version = "paris"
 optimizer = true
 optimizer_runs = 100_000

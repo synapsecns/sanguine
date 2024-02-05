@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.23;
 
-import {InterchainERC20} from "../../src/tokens/InterchainERC20.sol";
+import {InterchainERC20Harness} from "../harnesses/InterchainERC20Harness.sol";
 
 import {Test} from "forge-std/Test.sol";
 
 // solhint-disable func-name-mixedcase
 contract InterchainERC20Test is Test {
-    InterchainERC20 public token;
+    InterchainERC20Harness public token;
 
     address public admin;
     address public emergencyPauser;
@@ -18,7 +18,7 @@ contract InterchainERC20Test is Test {
         emergencyPauser = makeAddr("EmergencyPauser");
         governor = makeAddr("Governor");
 
-        token = new InterchainERC20("Token Name", "Token Symbol", admin);
+        token = new InterchainERC20Harness("Token Name", "Token Symbol", admin);
         vm.startPrank(admin);
         token.grantRole(token.EMERGENCY_PAUSER_ROLE(), emergencyPauser);
         token.grantRole(token.GOVERNOR_ROLE(), governor);

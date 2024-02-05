@@ -10,6 +10,16 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 /// NOTE: the Bridge rate limits for initial issuance of interchain tokens make it possible to
 /// let the Processor contract mint or burn the tokens without rate limits.
 interface ICERC20 is IERC20 {
+    /// @notice Emitted when a new burn limit is set for the `bridge`.
+    /// @param bridge       The bridge contract address
+    /// @param limit        The new burn limit
+    event BurnLimitSet(address indexed bridge, uint256 limit);
+
+    /// @notice Emitted when a new mint limit is set for the `bridge`.
+    /// @param bridge       The bridge contract address
+    /// @param limit        The new mint limit
+    event MintLimitSet(address indexed bridge, uint256 limit);
+
     /// @notice Burn `amount` tokens from `msg.sender`
     /// @dev Could be called by Bridge or Processor contracts.
     /// - Bridge's burning limit is applied: will revert if the limit is
