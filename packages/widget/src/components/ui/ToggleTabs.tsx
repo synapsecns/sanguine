@@ -5,13 +5,11 @@ export type TabOption = 'All' | 'Target'
 type ToggleTabsProps = {
   selectedTab: TabOption
   onTabSelect: (tab: TabOption) => void
-  isOrigin: boolean
 }
 
 export const ToggleTabs: React.FC<ToggleTabsProps> = ({
   selectedTab,
   onTabSelect,
-  isOrigin,
 }) => {
   const { protocolName } = useBridgeState()
 

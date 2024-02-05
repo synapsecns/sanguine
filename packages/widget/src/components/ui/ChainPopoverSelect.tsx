@@ -98,11 +98,7 @@ export const ChainPopoverSelect = ({
             isActive={isOpen}
           />
           {targets && targets.length > 0 && (
-            <ToggleTabs
-              selectedTab={activeTab}
-              onTabSelect={handleTabSelect}
-              isOrigin={isOrigin}
-            />
+            <ToggleTabs selectedTab={activeTab} onTabSelect={handleTabSelect} />
           )}
           {activeTab === 'All' ? (
             hasFilteredResults ? (
