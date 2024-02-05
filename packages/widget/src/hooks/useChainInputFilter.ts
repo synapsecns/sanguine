@@ -20,7 +20,7 @@ export const useChainInputFilter = (
     const lowerFilter = filter.toLowerCase()
     return _.filter(chains, (option) => {
       const name = option.name.toLowerCase()
-      return name.includes(lowerFilter) || name === lowerFilter
+      return name.includes(lowerFilter)
     })
   }
 
