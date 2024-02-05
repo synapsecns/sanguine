@@ -23,12 +23,26 @@ contract InterchainERC20 is ERC20, AccessControl, Pausable, ICERC20 {
 
     // ══════════════════════════════════════════════ ADMIN FUNCTIONS ══════════════════════════════════════════════════
 
+    /// @notice Sets a new total burn limit for the given bridge. This also updates the current burn limit,
+    /// based on the amount spent from the previous limit.
+    /// Note: setting the limit to 0 effectively disables the bridge's burn operations.
+    /// @dev Could only be called by the Governor.
+    /// @param bridge   The address of the bridge
+    /// @param limit    The new total limit
     function setTotalBurnLimit(address bridge, uint256 limit) external onlyRole(GOVERNOR_ROLE) {
-        // TODO: Implement
+        _burnLimits[bridge].setTotalLimit(limit);
+        emit BurnLimitSet(bridge, limit);
     }
 
+    /// @notice Sets a new total mint limit for the given bridge. This also updates the current mint limit,
+    /// based on the amount spent from the previous limit.
+    /// Note: setting the limit to 0 effectively disables the bridge's mint operations.
+    /// @dev Could only be called by the Governor.
+    /// @param bridge   The address of the bridge
+    /// @param limit    The new total limit
     function setTotalMintLimit(address bridge, uint256 limit) external onlyRole(GOVERNOR_ROLE) {
-        // TODO: Implement
+        _mintLimits[bridge].setTotalLimit(limit);
+        emit MintLimitSet(bridge, limit);
     }
 
     function pause() external onlyRole(EMERGENCY_PAUSER_ROLE) {
@@ -60,21 +74,21 @@ contract InterchainERC20 is ERC20, AccessControl, Pausable, ICERC20 {
 
     /// @inheritdoc ICERC20
     function getCurrentBurnLimit(address bridge) external view returns (uint256) {
-        // TODO: Implement
+        return _burnLimits[bridge].getCurrentLimit();
     }
 
     /// @inheritdoc ICERC20
     function getCurrentMintLimit(address bridge) external view returns (uint256) {
-        // TODO: Implement
+        return _mintLimits[bridge].getCurrentLimit();
     }
 
     /// @inheritdoc ICERC20
     function getTotalBurnLimit(address bridge) external view override returns (uint256) {
-        // TODO: Implement
+        return _burnLimits[bridge].getTotalLimit();
     }
 
     /// @inheritdoc ICERC20
     function getTotalMintLimit(address bridge) external view override returns (uint256) {
-        // TODO: Implement
+        return _mintLimits[bridge].getTotalLimit();
     }
 }
