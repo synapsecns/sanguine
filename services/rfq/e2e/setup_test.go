@@ -31,6 +31,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/api/db/sql"
 	"github.com/synapsecns/sanguine/services/rfq/api/rest"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
@@ -200,6 +201,7 @@ func (i *IntegrationSuite) setupRelayer() {
 				Confirmations: 0,
 				Tokens: map[string]relconfig.TokenConfig{
 					"ETH": {
+						Address:  chain.EthAddress.String(),
 						PriceUSD: 2000,
 						Decimals: 18,
 					},
@@ -210,12 +212,13 @@ func (i *IntegrationSuite) setupRelayer() {
 				Bridge:        i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeType).Address().String(),
 				Confirmations: 0,
 				Tokens: map[string]relconfig.TokenConfig{
-					"MATIC": {
-						PriceUSD: 0.5,
+					"ETH": {
+						Address:  chain.EthAddress.String(),
+						PriceUSD: 2000,
 						Decimals: 18,
 					},
 				},
-				NativeToken: "MATIC",
+				NativeToken: "ETH",
 			},
 		},
 		OmniRPCURL: i.omniServer,
@@ -232,11 +235,13 @@ func (i *IntegrationSuite) setupRelayer() {
 			File: filet.TmpFile(i.T(), "", i.relayerWallet.PrivateKeyHex()).Name(),
 		},
 		RelayerAPIPort: strconv.Itoa(relayerAPIPort),
+		BaseChainConfig: relconfig.ChainConfig{
+			OriginGasEstimate: 500000,
+			DestGasEstimate:   1000000,
+		},
 		FeePricer: relconfig.FeePricerConfig{
 			GasPriceCacheTTLSeconds:   60,
 			TokenPriceCacheTTLSeconds: 60,
-			BaseOriginGasEstimate:     500000,
-			BaseDestGasEstimate:       1000000,
 		},
 	}
 
@@ -276,7 +281,14 @@ func (i *IntegrationSuite) setupRelayer() {
 				cfg.QuotableTokens[quotableTokenID] = append(cfg.QuotableTokens[quotableTokenID], fmt.Sprintf("%d-%s", otherBackend.GetChainID(), otherToken))
 			}
 		}
+	}
 
+	// Add ETH as quotable token from origin to destination
+	cfg.QuotableTokens[fmt.Sprintf("%d-%s", originBackendChainID, chain.EthAddress)] = []string{
+		fmt.Sprintf("%d-%s", destBackendChainID, chain.EthAddress),
+	}
+	cfg.QuotableTokens[fmt.Sprintf("%d-%s", destBackendChainID, chain.EthAddress)] = []string{
+		fmt.Sprintf("%d-%s", originBackendChainID, chain.EthAddress),
 	}
 
 	// TODO: good chance we wanna leave actually starting this up to the indiividual test.

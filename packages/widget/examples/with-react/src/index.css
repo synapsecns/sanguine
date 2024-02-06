@@ -1,0 +1,72 @@
+:root {
+  --strong: hsl(240deg 100% 0%);
+  --primary: hsl(240deg 20% 20%);
+  --secondary: hsl(240deg 20% 40%);
+  --separator: hsl(240deg 20% 82%);
+  --surface: hsl(240deg 20% 82%);
+  --background: hsl(240deg 50% 96%);
+  --tint: hsl(240deg 50% 98%);
+  --bg-strong: hsl(240deg 100% 99%);
+
+  --info-bg: hsl(210deg 50% 90%);
+  --info-border: hsl(210deg 50% 67%);
+  --info-text: hsl(210deg 80% 40%);
+
+  background: var(--background);
+  color: var(--primary);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --strong: hsl(240deg 100% 100%);
+    --primary: hsl(240deg 20% 80%);
+    --secondary: hsl(240deg 15% 70%);
+    --separator: hsl(240deg 20% 18%);
+    --surface: hsl(240deg 20% 18%);
+    --background: hsl(240deg 25% 8%);
+    --tint: hsl(240deg 50% 4%);
+    --bg-strong: hsl(240deg 100% 1%);
+
+    --info-bg: hsl(240deg 100% 10%);
+    --info-border: hsl(240deg 100% 20%);
+    --info-text: hsl(210deg 100% 78%);
+  }  
+}
+
+* { box-sizing: border-box }
+
+html { margin: 0 }
+
+body {
+  margin: 0;
+  font-family: system-ui;
+}
+
+#root {
+  letter-spacing: 0.5px;
+  margin: auto;
+  color: var(--primary);
+}
+  
+#root > header {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 14px;
+  padding: 1.25rem 0.5rem 1.25rem 1rem;
+  align-items: center;
+  max-width: 1024px;
+  margin: auto;
+}
+
+#root > main {
+  display: flex;
+  gap: 1rem;
+  flex-direction: column;
+  align-items: center;
+}
+
+
+
+
+  

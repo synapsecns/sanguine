@@ -3,6 +3,7 @@ package quoter
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/big"
 	"strconv"
@@ -16,6 +17,7 @@ import (
 
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
@@ -73,12 +75,19 @@ func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, i
 	qt := make(map[string][]string)
 
 	// fix any casing issues.
-	for token, destTokens := range config.QuotableTokens {
-		processedDestTokens := make([]string, len(destTokens))
-		for i := range destTokens {
-			processedDestTokens[i] = strings.ToLower(destTokens[i])
+	for tokenID, destTokenIDs := range config.QuotableTokens {
+		processedDestTokens := make([]string, len(destTokenIDs))
+		for i := range destTokenIDs {
+			processedDestTokens[i], err = relconfig.SanitizeTokenID(destTokenIDs[i])
+			if err != nil {
+				return nil, fmt.Errorf("error sanitizing dest token ID: %w", err)
+			}
 		}
-		qt[strings.ToLower(token)] = processedDestTokens
+		sanitizedID, err := relconfig.SanitizeTokenID(tokenID)
+		if err != nil {
+			return nil, fmt.Errorf("error sanitizing token ID: %w", err)
+		}
+		qt[sanitizedID] = processedDestTokens
 	}
 
 	var ss client.ScreenerClient
@@ -138,7 +147,7 @@ func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequ
 
 	// allowed pairs for this origin token on the destination
 	destPairs := m.quotableTokens[quote.GetOriginIDPair()]
-	if !(slices.Contains(destPairs, strings.ToLower(quote.GetDestIDPair()))) {
+	if !(slices.Contains(destPairs, quote.GetDestIDPair())) {
 		span.AddEvent(fmt.Sprintf("%s not in %s or %s not found", quote.GetDestIDPair(), strings.Join(destPairs, ", "), quote.GetOriginIDPair()))
 		return false, nil
 	}
@@ -156,7 +165,12 @@ func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequ
 		span.RecordError(fmt.Errorf("error checking if quote is profitable: %w", err))
 		return false, err
 	}
-	return isProfitable, nil
+	if !isProfitable {
+		return false, nil
+	}
+
+	// all checks have passed
+	return true, nil
 }
 
 // isProfitableQuote determines if a quote is profitable, i.e. we will not lose money on it, net of fees.
@@ -195,9 +209,9 @@ func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	inv, err := m.inventoryManager.GetCommitableBalances(ctx)
+	inv, err := m.inventoryManager.GetCommittableBalances(ctx)
 	if err != nil {
-		return fmt.Errorf("error getting commitable balances: %w", err)
+		return fmt.Errorf("error getting committable balances: %w", err)
 	}
 	return m.prepareAndSubmitQuotes(ctx, inv)
 }
@@ -232,23 +246,37 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 // We can do this by looking at the quotableTokens map, and finding the key that matches the destination chain token.
 // Generates quotes for a given chain ID, address, and balance.
 func (m *Manager) generateQuotes(ctx context.Context, chainID int, address common.Address, balance *big.Int) ([]model.PutQuoteRequest, error) {
-	quoteAmount := m.getQuoteAmount(ctx, chainID, address, balance)
+
 	destChainCfg, ok := m.config.Chains[chainID]
 	if !ok {
 		return nil, fmt.Errorf("error getting chain config for destination chain ID %d", chainID)
 	}
+
 	destTokenID := fmt.Sprintf("%d-%s", chainID, address.Hex())
 
 	var quotes []model.PutQuoteRequest
 	for keyTokenID, itemTokenIDs := range m.quotableTokens {
 		for _, tokenID := range itemTokenIDs {
-			// TODO: probably a better way to do this.
-			if strings.ToLower(tokenID) == strings.ToLower(destTokenID) {
+			//nolint:nestif
+			if tokenID == destTokenID {
+				// Parse token info
 				originStr := strings.Split(keyTokenID, "-")[0]
 				origin, err := strconv.Atoi(originStr)
 				if err != nil {
 					return nil, fmt.Errorf("error converting origin chainID: %w", err)
 				}
+				originTokenAddr := common.HexToAddress(strings.Split(keyTokenID, "-")[1])
+
+				// Calculate the quote amount for this route
+				quoteAmount, err := m.getQuoteAmount(ctx, origin, chainID, address, balance)
+				// don't quote if gas exceeds quote
+				if errors.Is(err, errMinGasExceedsQuoteAmount) {
+					quoteAmount = big.NewInt(0)
+				} else if err != nil {
+					return nil, err
+				}
+
+				// Calculate the fee for this route
 				destToken, err := m.config.GetTokenName(uint32(chainID), address.Hex())
 				if err != nil {
 					return nil, fmt.Errorf("error getting dest token ID: %w", err)
@@ -261,12 +289,18 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 				if !ok {
 					return nil, fmt.Errorf("error getting chain config for origin chain ID %d", origin)
 				}
+
+				// Build the quote
+				destAmount, err := m.getDestAmount(ctx, quoteAmount, chainID)
+				if err != nil {
+					return nil, fmt.Errorf("error getting dest amount: %w", err)
+				}
 				quote := model.PutQuoteRequest{
 					OriginChainID:           origin,
-					OriginTokenAddr:         strings.Split(keyTokenID, "-")[1],
+					OriginTokenAddr:         originTokenAddr.Hex(),
 					DestChainID:             chainID,
 					DestTokenAddr:           address.Hex(),
-					DestAmount:              m.getDestAmount(ctx, quoteAmount).String(),
+					DestAmount:              destAmount.String(),
 					MaxOriginAmount:         quoteAmount.String(),
 					FixedFee:                fee.String(),
 					OriginFastBridgeAddress: originChainCfg.Bridge,
@@ -279,25 +313,41 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 	return quotes, nil
 }
 
-func (m *Manager) getQuoteAmount(parentCtx context.Context, chainID int, address common.Address, balance *big.Int) *big.Int {
-	_, span := m.metricsHandler.Tracer().Start(parentCtx, "getQuoteAmount", trace.WithAttributes(
-		attribute.String(metrics.ChainID, strconv.Itoa(chainID)),
+// getQuoteAmount calculates the quote amount for a given route.
+func (m *Manager) getQuoteAmount(parentCtx context.Context, origin, dest int, address common.Address, balance *big.Int) (quoteAmount *big.Int, err error) {
+	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "getQuoteAmount", trace.WithAttributes(
+		attribute.String(metrics.Origin, strconv.Itoa(origin)),
+		attribute.String(metrics.Destination, strconv.Itoa(dest)),
 		attribute.String("address", address.String()),
 		attribute.String("balance", balance.String()),
 	))
 
-	var quoteAmount *big.Int
 	defer func() {
 		span.SetAttributes(attribute.String("quote_amount", quoteAmount.String()))
-		metrics.EndSpan(span)
+		metrics.EndSpanWithErr(span, err)
 	}()
 
+	// First, check if we have enough gas to complete the a bridge for this route
+	// If not, set the quote amount to zero to make sure a stale quote won't be used
+	// TODO: handle in-flight gas; for now we can set a high min_gas_token
+	sufficentGas, err := m.inventoryManager.HasSufficientGas(ctx, origin, dest)
+	if err != nil {
+		return nil, fmt.Errorf("error checking sufficient gas: %w", err)
+	}
+	if !sufficentGas {
+		return big.NewInt(0), nil
+	}
+
 	// Apply the quotePct
+	quotePct, err := m.config.GetQuotePct(dest)
+	if err != nil {
+		return nil, fmt.Errorf("error getting quote pct: %w", err)
+	}
 	balanceFlt := new(big.Float).SetInt(balance)
-	quoteAmount, _ = new(big.Float).Mul(balanceFlt, new(big.Float).SetFloat64(m.config.GetQuotePct()/100)).Int(nil)
+	quoteAmount, _ = new(big.Float).Mul(balanceFlt, new(big.Float).SetFloat64(quotePct/100)).Int(nil)
 
 	// Clip the quoteAmount by the minQuoteAmount
-	minQuoteAmount := m.config.GetMinQuoteAmount(chainID, address)
+	minQuoteAmount := m.config.GetMinQuoteAmount(dest, address)
 	if quoteAmount.Cmp(minQuoteAmount) < 0 {
 		span.AddEvent("quote amount less than min quote amount", trace.WithAttributes(
 			attribute.String("quote_amount", quoteAmount.String()),
@@ -314,10 +364,31 @@ func (m *Manager) getQuoteAmount(parentCtx context.Context, chainID int, address
 		))
 		quoteAmount = balance
 	}
-	return quoteAmount
+
+	// Deduct gas cost from the quote amount, if necessary
+	if chain.IsGasToken(address) {
+		// Deduct the minimum gas token balance from the quote amount
+		var minGasToken *big.Int
+		minGasToken, err = m.config.GetMinGasToken(dest)
+		if err != nil {
+			return nil, fmt.Errorf("error getting min gas token: %w", err)
+		}
+		quoteAmount = new(big.Int).Sub(quoteAmount, minGasToken)
+		if quoteAmount.Cmp(big.NewInt(0)) < 0 {
+			err = errMinGasExceedsQuoteAmount
+			span.AddEvent(err.Error(), trace.WithAttributes(
+				attribute.String("quote_amount", quoteAmount.String()),
+				attribute.String("min_gas_token", minGasToken.String()),
+			))
+			return nil, err
+		}
+	}
+	return quoteAmount, nil
 }
 
-func (m *Manager) getDestAmount(parentCtx context.Context, quoteAmount *big.Int) *big.Int {
+var errMinGasExceedsQuoteAmount = errors.New("min gas token exceeds quote amount")
+
+func (m *Manager) getDestAmount(parentCtx context.Context, quoteAmount *big.Int, chainID int) (*big.Int, error) {
 	_, span := m.metricsHandler.Tracer().Start(parentCtx, "getDestAmount", trace.WithAttributes(
 		attribute.String("quote_amount", quoteAmount.String()),
 	))
@@ -325,18 +396,21 @@ func (m *Manager) getDestAmount(parentCtx context.Context, quoteAmount *big.Int)
 		metrics.EndSpan(span)
 	}()
 
-	quoteOffsetBps := m.config.GetQuoteOffsetBps()
+	quoteOffsetBps, err := m.config.GetQuoteOffsetBps(chainID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting quote offset bps: %w", err)
+	}
 	quoteOffsetFraction := new(big.Float).Quo(new(big.Float).SetInt64(int64(quoteOffsetBps)), new(big.Float).SetInt64(10000))
 	quoteOffsetFactor := new(big.Float).Sub(new(big.Float).SetInt64(1), quoteOffsetFraction)
 	destAmount, _ := new(big.Float).Mul(new(big.Float).SetInt(quoteAmount), quoteOffsetFactor).Int(nil)
 
 	span.SetAttributes(
-		attribute.Int("quote_offset_bps", quoteOffsetBps),
+		attribute.Float64("quote_offset_bps", quoteOffsetBps),
 		attribute.String("quote_offset_fraction", quoteOffsetFraction.String()),
 		attribute.String("quote_offset_factor", quoteOffsetFactor.String()),
 		attribute.String("dest_amount", destAmount.String()),
 	)
-	return destAmount
+	return destAmount, nil
 }
 
 // Submits a single quote.

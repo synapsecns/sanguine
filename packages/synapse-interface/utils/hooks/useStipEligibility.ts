@@ -233,9 +233,7 @@ const calculateRebate = (
 
   const {
     bridgeModuleName,
-    quotes: {
-      originQuery: { tokenOut },
-    },
+    originQuery: { tokenOut },
   } = bridgeQuote
 
   const bridgeToken = findTokenByAddressAndChain(tokenOut, fromChainId)

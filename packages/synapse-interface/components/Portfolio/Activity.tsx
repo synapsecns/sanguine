@@ -12,8 +12,9 @@ import { TransactionsState } from '@/slices/transactions/reducer'
 import { PortfolioState } from '@/slices/portfolio/reducer'
 import { Transaction, TransactionType } from './Transaction/Transaction'
 import { UserExplorerLink } from './Transaction/components/TransactionExplorerLink'
-import { NoSearchResultsContent } from './PortfolioContent/PortfolioContent'
+import { NoSearchResultsContent } from './components/NoSearchResultContent'
 import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
+import { AirdropRewards } from '../Activity/AirdropRewards'
 
 export const Activity = ({ visibility }: { visibility: boolean }) => {
   const { address } = useAccount()
@@ -71,6 +72,9 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
 
       {viewingAddress && !isLoading && hasHistoricalTransactions && (
         <ActivitySection title="Recent">
+          {/* TODO: Update AirdropRewards to work for masquerade */}
+          <AirdropRewards />
+
           {userHistoricalTransactions &&
             filteredHistoricalTransactions
               .slice(0, isSearchInputActive ? 100 : 6)
