@@ -114,13 +114,13 @@ export const Transaction = ({
     <div
       data-test-id="transaction"
       className={`
-        flex flex-col w-full
+        flex flex-col
         gap-1 justify-end items-center pl-2.5 pr-1.5 py-1
         border border-solid border-[--synapse-border] rounded-md
       `}
       style={{ background: 'var(--synapse-surface' }}
     >
-      <div className="flex flex-wrap-reverse justify-between">
+      <div className="flex flex-wrap-reverse items-center justify-between w-full">
         <TransactionBridgeDetail
           tokenAmount={originAmount}
           originTokenSymbol={originTokenSymbol}
@@ -165,11 +165,15 @@ export const Transaction = ({
   )
 }
 
+// TODO: Add FAQ link
 const TransactionSupport = () => {
   return (
-    <div id="transaction-support" className="flex items-center justify-between">
+    <div
+      id="transaction-support"
+      className="flex items-center justify-between w-full"
+    >
       <div>What's taking so long?</div>
-      <div className="flex">
+      <div className="flex items-center">
         <a
           href=""
           target="_blank"
