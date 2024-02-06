@@ -18,7 +18,7 @@ export function Instructions() {
         Setup
       </h2>
       <GetStarted />
-      <h3>Recommended parameters</h3>
+      <h3>Enhanced and Reliable Performance</h3>
       <RecommendedParameters />
       <h3>Token and Chain Customization</h3>
       <TokenAndChainCustomization />
