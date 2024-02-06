@@ -1,3 +1,4 @@
+vresion: '2'
 # this is currently timing out for no reason.
 # see: https://codeclimate.com/github/synapsecns/sanguine/builds/5046
 # support ticket has been filed.
