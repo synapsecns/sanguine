@@ -92,15 +92,20 @@ export const ChainPopoverSelect = ({
             animate-slide-down origin-top
           `}
         >
-          <SearchInput
-            inputValue={filterValue}
-            setInputValue={setFilterValue}
-            placeholder="Search Chains"
-            isActive={isOpen}
-          />
-          {targets && targets.length > 0 && (
-            <ToggleTabs selectedTab={activeTab} onTabSelect={handleTabSelect} />
-          )}
+          <div className="grid gap-1 p-1">
+            <SearchInput
+              inputValue={filterValue}
+              setInputValue={setFilterValue}
+              placeholder="Search Chains"
+              isActive={isOpen}
+            />
+            {targets && targets.length > 0 && (
+              <ToggleTabs
+                selectedTab={activeTab}
+                onTabSelect={handleTabSelect}
+              />
+            )}
+          </div>
           {activeTab === 'All' ? (
             hasFilteredResults ? (
               <ul className="p-0 m-0">
@@ -110,6 +115,7 @@ export const ChainPopoverSelect = ({
                     option={option}
                     isSelected={option?.name === selected?.name}
                     onSelect={() => handleSelect(option)}
+                    isOrigin={isOrigin}
                   />
                 ))}
                 {hasFilteredRemaining && (
@@ -128,6 +134,7 @@ export const ChainPopoverSelect = ({
                     option={option}
                     isSelected={option?.name === selected?.name}
                     onSelect={() => handleSelect(option)}
+                    isOrigin={isOrigin}
                   />
                 ))}
               </ul>
@@ -148,6 +155,7 @@ export const ChainPopoverSelect = ({
                     option={option}
                     isSelected={option?.name === selected?.name}
                     onSelect={() => handleSelect(option)}
+                    isOrigin={isOrigin}
                   />
                 ))}
               </ul>

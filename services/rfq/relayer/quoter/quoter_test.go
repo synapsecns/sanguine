@@ -2,7 +2,6 @@ package quoter_test
 
 import (
 	"math/big"
-	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/mock"
@@ -53,7 +52,7 @@ func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 	expectedQuotes := []model.PutQuoteRequest{
 		{
 			OriginChainID:   int(s.origin),
-			OriginTokenAddr: strings.ToLower(chain.EthAddress.String()),
+			OriginTokenAddr: chain.EthAddress.String(),
 			DestChainID:     int(s.destinationEth),
 			DestTokenAddr:   chain.EthAddress.String(),
 			DestAmount:      expectedQuoteAmount.String(),
@@ -78,7 +77,7 @@ func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 	expectedQuotes = []model.PutQuoteRequest{
 		{
 			OriginChainID:   int(s.origin),
-			OriginTokenAddr: strings.ToLower(chain.EthAddress.String()),
+			OriginTokenAddr: chain.EthAddress.String(),
 			DestChainID:     int(s.destinationEth),
 			DestTokenAddr:   chain.EthAddress.String(),
 			DestAmount:      expectedQuoteAmount.String(),
