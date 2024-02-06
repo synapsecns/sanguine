@@ -892,7 +892,8 @@ export const METIS_WETH_SWAP_TOKEN_MIGRATED = new Token({
   priorityRank: 6,
   chainId: CHAINS.METIS.id,
   incentivized: false,
-  miniChefAddress: '0xaB0D8Fc46249DaAcd5cB36c5F0bC4f0DAF34EBf5',
+  customRewardToken: 'METIS',
+  miniChefAddress: '0x86AebDd89357217039368831a8AB9273BBF3A48f',
 })
 
 export const METIS_POOL_SWAP_TOKEN_MIGRATED = new Token({
@@ -917,5 +918,6 @@ export const METIS_POOL_SWAP_TOKEN_MIGRATED = new Token({
   priorityRank: 6,
   chainId: CHAINS.METIS.id,
   incentivized: false,
-  miniChefAddress: '0xaB0D8Fc46249DaAcd5cB36c5F0bC4f0DAF34EBf5',
+  customRewardToken: 'METIS',
+  miniChefAddress: '0x86AebDd89357217039368831a8AB9273BBF3A48f',
 })
