@@ -13,23 +13,22 @@ import { RootState } from '@/store/store'
 import { resetPoolDeposit } from '@/slices/poolDepositSlice'
 import { resetPoolWithdraw } from '@/slices/poolWithdrawSlice'
 import LoadingDots from '@/components/ui/tailwind/LoadingDots'
-import { POOL_BY_ROUTER_INDEX } from "@constants/tokens";
+import { POOL_BY_ROUTER_INDEX } from '@constants/tokens'
 
-export const getStaticPaths = (async () => {
+export const getStaticPaths = async () => {
   const paths = Object.keys(POOL_BY_ROUTER_INDEX).map((key) => ({
-    params: { poolId: key }
-  }));
+    params: { poolId: key },
+  }))
 
   return {
     paths,
     fallback: false, // false or "blocking"
   }
-});
+}
 
-export const getStaticProps = (async (context) => {
-  return { props: {  } }
-})
-
+export const getStaticProps = async (context) => {
+  return { props: {} }
+}
 
 const PoolPage = () => {
   const router = useRouter()
@@ -40,7 +39,6 @@ const PoolPage = () => {
   const [isClient, setIsClient] = useState(false)
 
   const { pool, isLoading } = useSelector((state: RootState) => state.poolData)
-
 
   const dispatch: any = useDispatch()
 
