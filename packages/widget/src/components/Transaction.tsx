@@ -59,12 +59,6 @@ export const Transaction = ({
     destinationChainId,
     connectedAddress
   )
-  const synapseExplorerLink = getTxSynapseExplorerLink({
-    originChainId,
-    destinationChainId,
-    txHash: originTxHash,
-    kappa,
-  })
 
   const elapsedTime: number = currentTime - timestamp // in seconds
   const remainingTime: number = estimatedTime - elapsedTime
@@ -134,14 +128,7 @@ export const Transaction = ({
         originTokenSymbol={originTokenSymbol}
         destinationChain={CHAINS_BY_ID[destinationChainId]}
       />
-      {/* {isTxFinalized ? 'Complete' : 'Pending'} */}
       <div className="flex items-center justify-end gap-2 grow">
-        {/* <TimeRemaining
-          isComplete={isTxFinalized as boolean}
-          remainingTime={remainingTime}
-          isDelayed={isEstimatedTimeReached}
-        /> */}
-
         <DropdownMenu
           menuTitleElement={
             <TimeRemaining
@@ -158,9 +145,6 @@ export const Transaction = ({
           {!isNull(destExplorerAddressLink) && (
             <MenuItem text={destExplorerName} link={destExplorerAddressLink} />
           )}
-          {/* {!isNull(synapseExplorerLink) && (
-            <MenuItem text="Synapse Explorer" link={synapseExplorerLink} />
-          )} */}
           <MenuItem
             text="Contact Support"
             link="https://discord.gg/synapseprotocol"

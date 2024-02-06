@@ -18,7 +18,6 @@ export const DropdownMenu = ({ menuTitleElement, children }) => {
           px-2 py-1 rounded space-x-2 cursor-pointer
           hover:border-[--synapse-focus] hover:bg-[--synapse-select-bg]
         `}
-        // style={{ background: 'var(--synapse-select-bg' }}
       >
         {menuTitleElement}
         <DownArrow />
