@@ -8,10 +8,11 @@ contract InterchainERC20Harness is InterchainERC20 {
     constructor(
         string memory name_,
         string memory symbol_,
+        uint8 decimals_,
         address initialAdmin_,
         address processor_
     )
-        InterchainERC20(name_, symbol_, initialAdmin_, processor_)
+        InterchainERC20(name_, symbol_, decimals_, initialAdmin_, processor_)
     {}
 
     function exposed__setBurnRateLimit(address bridge, RateLimit memory limit) external {

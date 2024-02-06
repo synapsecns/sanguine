@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.23;
 
-import {InterchainERC20Harness} from "../harnesses/InterchainERC20Harness.sol";
+import {InterchainERC20, InterchainERC20Harness} from "../harnesses/InterchainERC20Harness.sol";
 
 import {Test} from "forge-std/Test.sol";
 
@@ -20,7 +20,7 @@ contract InterchainERC20Test is Test {
         governor = makeAddr("Governor");
         processor = makeAddr("Processor");
 
-        token = new InterchainERC20Harness("Token Name", "Token Symbol", admin, processor);
+        token = new InterchainERC20Harness("Token Name", "Token Symbol", 18, admin, processor);
         vm.startPrank(admin);
         token.grantRole(token.EMERGENCY_PAUSER_ROLE(), emergencyPauser);
         token.grantRole(token.GOVERNOR_ROLE(), governor);
@@ -51,5 +51,11 @@ contract InterchainERC20Test is Test {
         assertEq(token.name(), "Token Name");
         assertEq(token.symbol(), "Token Symbol");
         assertEq(token.PROCESSOR(), processor);
+        assertEq(token.decimals(), 18);
+    }
+
+    function test_differentDecimals() public {
+        assertEq(new InterchainERC20("A", "B", 6, admin, processor).decimals(), 6);
+        assertEq(new InterchainERC20("A", "B", 32, admin, processor).decimals(), 32);
     }
 }

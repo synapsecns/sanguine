@@ -17,6 +17,9 @@ contract InterchainERC20 is ERC20, AccessControl, Pausable, ICERC20 {
     /// on the chain rather than an interchain representation of an existing token.
     address public immutable PROCESSOR;
 
+    /// @dev Number of decimals for the token, setup during the contract deployment
+    uint8 internal immutable _DECIMALS;
+
     /// @dev Rate Limit for Bridge's burn operations
     mapping(address bridge => RateLimit) internal _burnLimits;
     /// @dev Rate Limit for Bridge's mint operations
@@ -25,12 +28,14 @@ contract InterchainERC20 is ERC20, AccessControl, Pausable, ICERC20 {
     constructor(
         string memory name_,
         string memory symbol_,
+        uint8 decimals_,
         address initialAdmin_,
         address processor_
     )
         ERC20(name_, symbol_)
     {
         _grantRole(DEFAULT_ADMIN_ROLE, initialAdmin_);
+        _DECIMALS = decimals_;
         PROCESSOR = processor_;
     }
 
@@ -120,5 +125,10 @@ contract InterchainERC20 is ERC20, AccessControl, Pausable, ICERC20 {
     /// @inheritdoc ICERC20
     function getTotalMintLimit(address minter) external view override returns (uint256) {
         return minter == PROCESSOR ? type(uint256).max : _mintLimits[minter].getTotalLimit();
+    }
+
+    /// @inheritdoc ERC20
+    function decimals() public view override returns (uint8) {
+        return _DECIMALS;
     }
 }
