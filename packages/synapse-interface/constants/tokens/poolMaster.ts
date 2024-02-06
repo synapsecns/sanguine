@@ -451,7 +451,6 @@ export const METIS_POOL_SWAP_TOKEN = new Token({
   priorityRank: 6,
   chainId: CHAINS.METIS.id,
   incentivized: true,
-  customRewardToken: 'METIS',
   miniChefAddress: MINICHEF_ADDRESSES[CHAINS.METIS.id],
 })
 
@@ -783,7 +782,6 @@ export const METIS_WETH_SWAP_TOKEN = new Token({
   priorityRank: 6,
   chainId: CHAINS.METIS.id,
   incentivized: true,
-  customRewardToken: 'METIS',
   miniChefAddress: MINICHEF_ADDRESSES[CHAINS.METIS.id],
 })
 
