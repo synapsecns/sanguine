@@ -7,7 +7,7 @@ export const TransactionSupport = () => {
     >
       <div>What's taking so long?</div>
       <div className="flex items-center">
-        <a
+        {/* <a
           href=""
           target="_blank"
           className={`
@@ -17,7 +17,7 @@ export const TransactionSupport = () => {
         >
           F.A.Q
         </a>
-        <div>/</div>
+        <div>/</div> */}
         <a
           href="https://discord.gg/synapseprotocol"
           target="_blank"
