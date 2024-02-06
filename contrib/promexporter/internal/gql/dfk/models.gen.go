@@ -1257,6 +1257,12 @@ type Hero struct {
 	Offhand2              *Accessory `json:"offhand2,omitempty"`
 	Armor                 *Armor     `json:"armor,omitempty"`
 	Accessory             *Accessory `json:"accessory,omitempty"`
+	Weapon1Visage         *Weapon    `json:"weapon1Visage,omitempty"`
+	Weapon2Visage         *Weapon    `json:"weapon2Visage,omitempty"`
+	Offhand1Visage        *Accessory `json:"offhand1Visage,omitempty"`
+	Offhand2Visage        *Accessory `json:"offhand2Visage,omitempty"`
+	ArmorVisage           *Armor     `json:"armorVisage,omitempty"`
+	AccessoryVisage       *Accessory `json:"accessoryVisage,omitempty"`
 }
 
 type HeroFilter struct {

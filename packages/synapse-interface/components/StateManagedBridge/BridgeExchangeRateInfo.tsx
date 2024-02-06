@@ -138,10 +138,7 @@ const Fee = () => {
     fromToken,
     fromChainId,
     isLoading,
-    bridgeQuote: {
-      feeAmount,
-      quotes: { originQuery },
-    },
+    bridgeQuote: { feeAmount, originQuery },
   } = useBridgeState()
 
   if (!originQuery || originQuery.minAmountOut === 0n) return
