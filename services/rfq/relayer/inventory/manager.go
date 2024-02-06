@@ -268,7 +268,7 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 
 		// assign metadata for each configured token
 		for tokenName, tokenCfg := range chainCfg.Tokens {
-			nativeToken, err := cfg.GetNativeToken(int(chainID))
+			nativeToken, err := cfg.GetNativeToken(chainID)
 			if err != nil {
 				return fmt.Errorf("could not get native token: %w", err)
 			}
