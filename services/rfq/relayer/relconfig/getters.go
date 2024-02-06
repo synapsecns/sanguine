@@ -316,7 +316,7 @@ func (c Config) GetFeePricer() FeePricerConfig {
 
 // GetTokenID returns the tokenID for the given chain and address.
 func (c Config) GetTokenID(chain int, addr string) (string, error) {
-	chainConfig, ok := c.Chains[int(chain)]
+	chainConfig, ok := c.Chains[chain]
 	if !ok {
 		return "", fmt.Errorf("no chain config for chain %d", chain)
 	}
@@ -372,14 +372,6 @@ func (c Config) GetTokenName(chain uint32, addr string) (string, error) {
 		}
 	}
 	return "", fmt.Errorf("no tokenName found for chain %d and address %s", chain, addr)
-}
-
-func (c Config) getChainConfig(chainID int) (ChainConfig, error) {
-	chainConfig, ok := c.Chains[chainID]
-	if !ok {
-		return ChainConfig{}, fmt.Errorf("no chain config for chain %d", chainID)
-	}
-	return chainConfig, nil
 }
 
 const defaultMinQuoteAmount = 0
