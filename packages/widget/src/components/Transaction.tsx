@@ -76,6 +76,9 @@ export const Transaction = ({
     return currentTime - timestamp > estimatedTime
   }, [estimatedTime, currentTime, timestamp])
 
+  const delayedTime = isEstimatedTimeReached ? remainingTime : null
+  const delayedTimeInMin = remainingTime ? Math.floor(remainingTime / 60) : null
+
   const [isTxComplete, _kappa] = useBridgeTxStatus({
     synapseSDK,
     originChainId,
@@ -126,7 +129,7 @@ export const Transaction = ({
       `}
       style={{ background: 'var(--synapse-surface' }}
     >
-      <TransactionDetail
+      <TransactionBridgeDetail
         tokenAmount={originAmount}
         originTokenSymbol={originTokenSymbol}
         destinationChain={CHAINS_BY_ID[destinationChainId]}
@@ -145,6 +148,7 @@ export const Transaction = ({
               isComplete={isTxFinalized as boolean}
               remainingTime={remainingTime}
               isDelayed={isEstimatedTimeReached}
+              delayedTime={delayedTime}
             />
           }
         >
@@ -174,7 +178,7 @@ export const Transaction = ({
   )
 }
 
-const TransactionDetail = ({
+const TransactionBridgeDetail = ({
   tokenAmount,
   originTokenSymbol,
   destinationChain,
