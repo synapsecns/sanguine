@@ -16,13 +16,6 @@ import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
 contract LockingProcessor is AbstractProcessor {
     using SafeERC20 for IERC20;
 
-    constructor(
-        address interchainToken_,
-        address underlyingToken_
-    )
-        AbstractProcessor(interchainToken_, underlyingToken_)
-    {}
-
     /// @dev Burns the ICERC20 token taken from `msg.sender`, then
     /// unlocks the same amount of the underlying token to `msg.sender`.
     function _burnInterchainToken(uint256 amount) internal override {

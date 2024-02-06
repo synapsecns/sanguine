@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import {IDefaultPool} from "../interfaces/IDefaultPool.sol";
+import {IProcessorFactory} from "../interfaces/IProcessorFactory.sol";
 
 import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
@@ -23,9 +24,8 @@ abstract contract AbstractProcessor is IDefaultPool {
     error AbstractProcessor__EqualIndices(uint8 index);
     error AbstractProcessor__IndexOutOfBounds(uint8 index);
 
-    constructor(address interchainToken_, address underlyingToken_) {
-        INTERCHAIN_TOKEN = interchainToken_;
-        UNDERLYING_TOKEN = underlyingToken_;
+    constructor() {
+        (INTERCHAIN_TOKEN, UNDERLYING_TOKEN) = IProcessorFactory(msg.sender).getProcessorDeployParameters();
     }
 
     /// @inheritdoc IDefaultPool

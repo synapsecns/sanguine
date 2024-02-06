@@ -13,13 +13,6 @@ import {ICERC20} from "../interfaces/ICERC20.sol";
 /// - ERC20 token is minted when the Interchain token is burned.
 /// See AbstractProcessor.sol for more details.
 contract BurningProcessor is AbstractProcessor {
-    constructor(
-        address interchainToken_,
-        address underlyingToken_
-    )
-        AbstractProcessor(interchainToken_, underlyingToken_)
-    {}
-
     /// @dev Burns the ICERC20 token taken from `msg.sender`, then
     /// mints the same amount of the underlying token to `msg.sender`.
     function _burnInterchainToken(uint256 amount) internal override {
