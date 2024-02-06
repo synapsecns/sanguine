@@ -162,7 +162,6 @@ const TokenOption = ({
   selected: BridgeableToken
   parsedBalance: string
 }) => {
-  console.log(option.symbol, parsedBalance)
   return (
     <li
       data-test-id="token-option"
