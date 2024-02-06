@@ -72,7 +72,7 @@ interface WidgetProps {
 
 export const Widget = ({
   customTheme,
-  container,
+  container = false,
   targetChainIds,
   targetTokens,
   protocolName,
