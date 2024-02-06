@@ -4,24 +4,33 @@ export const TimeRemaining = ({
   isComplete,
   remainingTime,
   isDelayed,
+  delayedTime,
 }: {
   isComplete: boolean
   remainingTime: number
   isDelayed: boolean
+  delayedTime: number | null
 }) => {
   if (isComplete) {
-    return
+    return <div>Complete!</div>
   }
 
   if (isDelayed) {
-    return <div>Waiting...</div>
+    const delayedTimeInMin = Math.floor(delayedTime / 60)
+    const absoluteDelayedTime = Math.abs(delayedTimeInMin)
+    const showDelayedTime = delayedTimeInMin < -1
+    return (
+      <div>
+        Waiting... {showDelayedTime ? `(${absoluteDelayedTime}m)` : null}
+      </div>
+    )
   }
 
   const estTime = useMemo(() => {
     if (remainingTime > 60) {
-      return Math.ceil(remainingTime / 60) + ' minutes'
+      return Math.ceil(remainingTime / 60) + 'm remaining'
     } else {
-      return remainingTime + ' seconds'
+      return remainingTime + 's remaining'
     }
   }, [remainingTime])
 
