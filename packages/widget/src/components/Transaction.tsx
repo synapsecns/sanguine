@@ -101,14 +101,10 @@ export const Transaction = ({
   useEffect(() => {
     const txKappa = kappa ?? _kappa
 
-    if (isTxComplete && originTxHash && txKappa) {
-      if (transactions[originTxHash]?.isComplete === false) {
-        dispatch(
-          completeTransaction({ originTxHash, kappa: txKappa as string })
-        )
-      }
+    if (!isStoredComplete && isTxComplete && originTxHash && txKappa) {
+      dispatch(completeTransaction({ originTxHash, kappa: txKappa as string }))
     }
-  }, [isTxComplete, dispatch, transactions])
+  }, [isStoredComplete, isTxComplete, dispatch, transactions])
 
   const handleClearTransaction = useCallback(() => {
     dispatch(removeTransaction({ originTxHash }))
