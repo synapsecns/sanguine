@@ -35,7 +35,7 @@ export const TestProgressBar = () => {
   }, [startTime, isComplete, completedTime])
 
   return (
-    <div className="bg-white border border-purple-500 max-w-[600px] mx-auto my-5">
+    <div className="relative bg-white border border-purple-500 max-w-[600px] mx-auto my-5">
       <div className="flex items-center justify-between">
         <div>
           <div>Estimated time (in seconds) </div>
