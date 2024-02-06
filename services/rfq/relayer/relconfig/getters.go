@@ -53,6 +53,9 @@ func (c Config) getChainConfigValue(chainID int, fieldName string) (interface{},
 }
 
 func getFieldValue(obj interface{}, fieldName string) (interface{}, error) {
+	if !isChainConfigField(fieldName) {
+		return nil, fmt.Errorf("invalid chain config field: %s", fieldName)
+	}
 	val := reflect.ValueOf(obj)
 	fieldVal := val.FieldByName(fieldName)
 
@@ -61,6 +64,23 @@ func getFieldValue(obj interface{}, fieldName string) (interface{}, error) {
 	}
 
 	return fieldVal.Interface(), nil
+}
+
+var chainConfigFields map[string]bool
+
+// isChainConfigField returns true if the field is a valid field in ChainConfig.
+// We use this to avoid unsafe-reflect-by-name.
+func isChainConfigField(fieldName string) bool {
+	// Cache the fields for faster lookups.
+	if chainConfigFields == nil {
+		chainConfigFields = make(map[string]bool)
+		for i := 0; i < reflect.TypeOf(ChainConfig{}).NumField(); i++ {
+			chainConfigFields[reflect.TypeOf(ChainConfig{}).Field(i).Name] = true
+		}
+	}
+
+	_, ok := chainConfigFields[fieldName]
+	return ok
 }
 
 func isNonZero(value interface{}) bool {
