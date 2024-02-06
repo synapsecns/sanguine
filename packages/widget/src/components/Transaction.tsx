@@ -18,6 +18,7 @@ import { TimeRemaining } from '@/components/TimeRemaining'
 import { DropdownMenu } from '@/components/ui/DropdownMenu'
 import { MenuItem } from '@/components/ui/MenuItem'
 import { CHAINS_BY_ID } from '@/constants/chains'
+import { TransactionSupport } from './TransactionSupport'
 
 export const Transaction = ({
   connectedAddress,
@@ -72,6 +73,10 @@ export const Transaction = ({
 
   const delayedTime = isEstimatedTimeReached ? remainingTime : null
   const delayedTimeInMin = remainingTime ? Math.floor(remainingTime / 60) : null
+
+  const showTransactionSupport = delayedTimeInMin
+    ? delayedTimeInMin <= -5
+    : false
 
   const [isTxComplete, _kappa] = useBridgeTxStatus({
     synapseSDK,
@@ -160,43 +165,7 @@ export const Transaction = ({
           </DropdownMenu>
         </div>
       </div>
-      <TransactionSupport />
-    </div>
-  )
-}
-
-// TODO: Add FAQ link
-const TransactionSupport = () => {
-  return (
-    <div
-      id="transaction-support"
-      className="flex items-center justify-between w-full"
-    >
-      <div>What's taking so long?</div>
-      <div className="flex items-center">
-        <a
-          href=""
-          target="_blank"
-          className={`
-            px-2 py-1 underline text-[--synapse-text]
-            hover:rounded hover:bg-[--synapse-select-bg] hover:no-underline
-          `}
-        >
-          F.A.Q
-        </a>
-        <div>/</div>
-        <a
-          href="https://discord.gg/synapseprotocol"
-          target="_blank"
-          className={`
-            px-2 py-1 underline text-[--synapse-text]
-            hover:rounded hover:bg-[--synapse-select-bg] hover:no-underline
-            min-[360px]:after:content-['_(Discord)']
-          `}
-        >
-          Support
-        </a>
-      </div>
+      {showTransactionSupport && <TransactionSupport />}
     </div>
   )
 }
