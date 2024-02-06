@@ -191,7 +191,7 @@ export const AVALANCHE_POOL_SWAP_TOKEN = new Token({
   description: "Synapse's 3pool stableswap LP token on Avalanche",
   priorityRank: 6,
   chainId: CHAINS.AVALANCHE.id,
-  incentivized: false,
+  incentivized: true,
   miniChefAddress: MINICHEF_ADDRESSES[CHAINS.AVALANCHE.id],
 })
 
@@ -214,7 +214,7 @@ export const LEGACY_AVALANCHE_POOL_SWAP_TOKEN = new Token({
   description: "Synapse's 4pool stableswap LP token on Avalanche",
   priorityRank: 6,
   chainId: CHAINS.AVALANCHE.id,
-  incentivized: true,
+  incentivized: false,
   miniChefAddress: MINICHEF_ADDRESSES[CHAINS.AVALANCHE.id],
 })
 
