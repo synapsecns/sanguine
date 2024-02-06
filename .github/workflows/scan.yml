@@ -12,6 +12,7 @@ jobs:
   sonarcloud:
     name: SonarCloud
     runs-on: ubuntu-latest
+# these are pretty disruptive
 #    permissions:
 #      contents: write
 #      pull-requests: write
