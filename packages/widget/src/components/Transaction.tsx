@@ -173,17 +173,24 @@ const TransactionSupport = () => {
         <a
           href=""
           target="_blank"
-          className="px-2 py-1 underline hover:rounded hover:bg-[--synapse-select-bg]"
+          className={`
+            px-2 py-1 underline
+            hover:rounded hover:bg-[--synapse-select-bg] hover:no-underline
+          `}
         >
-          Help page
+          F.A.Q
         </a>
         <div>/</div>
         <a
           href="https://discord.gg/synapseprotocol"
           target="_blank"
-          className="px-2 py-1 underline hover:rounded hover:bg-[--synapse-select-bg]"
+          className={`
+            px-2 py-1 underline
+            hover:rounded hover:bg-[--synapse-select-bg] hover:no-underline
+            min-[360px]:after:content-['_(Discord)']
+          `}
         >
-          Support (Discord)
+          Support
         </a>
       </div>
     </div>
