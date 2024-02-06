@@ -262,10 +262,8 @@ const StateManagedBridge = () => {
             ),
             feeAmount,
             delta: BigInt(maxAmountOut.toString()),
-            quotes: {
-              originQuery: originQueryWithSlippage,
-              destQuery: destQueryWithSlippage,
-            },
+            originQuery: originQueryWithSlippage,
+            destQuery: destQueryWithSlippage,
             estimatedTime: estimatedTime,
             bridgeModuleName: bridgeModuleName,
             gasDropAmount: BigInt(gasDropAmount.toString()),
@@ -380,8 +378,8 @@ const StateManagedBridge = () => {
         toChainId,
         fromToken?.addresses[fromChainId as keyof Token['addresses']],
         stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId]),
-        bridgeQuote.quotes.originQuery,
-        bridgeQuote.quotes.destQuery
+        bridgeQuote.originQuery,
+        bridgeQuote.destQuery
       )
 
       const payload =
