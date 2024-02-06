@@ -102,7 +102,7 @@ export const Transaction = ({
     const txKappa = kappa ?? _kappa
 
     if (isTxComplete && originTxHash && txKappa) {
-      if (transactions[originTxHash]?.isComplete === false) {
+      if (!transactions[originTxHash]?.isComplete) {
         dispatch(
           completeTransaction({ originTxHash, kappa: txKappa as string })
         )
