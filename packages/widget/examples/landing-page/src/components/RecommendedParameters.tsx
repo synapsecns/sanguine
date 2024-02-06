@@ -31,7 +31,7 @@ export const RecommendedParameters = () => {
       <p>
         While the widget is primed for immediate use without configuration as it
         provides some basic primary and fallback JSON-RPC endpoints, we
-        encourage developers to specify their own for enhancd performance. This
+        encourage developers to specify their own for enhanced performance. This
         can be done by including a <code>customRpcs</code> parameter in the
         format of an object with chain ids as keys and their associated RPC
         endpoints as values.

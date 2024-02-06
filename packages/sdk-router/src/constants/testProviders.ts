@@ -9,17 +9,17 @@ import { SupportedChainId } from './chainIds'
 
 const PUBLIC_PROVIDER_URLS: Partial<Record<SupportedChainId, string[]>> = {
   [SupportedChainId.ETH]: [
-    'https://eth.llamarpc.com',
+    // 'https://eth.llamarpc.com',
     'https://ethereum.publicnode.com',
     'https://eth-pokt.nodies.app',
   ],
   [SupportedChainId.OPTIMISM]: [
-    'https://optimism.llamarpc.com',
+    // 'https://optimism.llamarpc.com',
     'https://optimism.publicnode.com',
     'https://op-pokt.nodies.app',
   ],
   [SupportedChainId.BSC]: [
-    'https://binance.llamarpc.com',
+    // 'https://binance.llamarpc.com',
     'https://bsc.publicnode.com',
     'https://bsc-pokt.nodies.app',
   ],
@@ -29,7 +29,7 @@ const PUBLIC_PROVIDER_URLS: Partial<Record<SupportedChainId, string[]>> = {
     'https://moonbeam.public.blastapi.io',
   ],
   [SupportedChainId.ARBITRUM]: [
-    'https://arbitrum.llamarpc.com',
+    // 'https://arbitrum.llamarpc.com',
     'https://arbitrum-one.publicnode.com',
     'https://arb-pokt.nodies.app',
   ],
