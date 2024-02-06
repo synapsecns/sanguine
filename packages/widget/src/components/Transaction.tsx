@@ -131,7 +131,7 @@ export const Transaction = ({
         originTokenSymbol={originTokenSymbol}
         destinationChain={CHAINS_BY_ID[destinationChainId]}
       />
-      {isTxFinalized ? 'Complete' : 'Pending'}
+      {/* {isTxFinalized ? 'Complete' : 'Pending'} */}
       <div className="flex items-center justify-end gap-2 grow">
         <TimeRemaining
           isComplete={isTxFinalized as boolean}

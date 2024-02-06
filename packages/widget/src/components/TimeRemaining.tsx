@@ -10,11 +10,18 @@ export const TimeRemaining = ({
   isDelayed: boolean
 }) => {
   if (isComplete) {
-    return
+    return <div>Complete!</div>
   }
 
   if (isDelayed) {
-    return <div>Waiting...</div>
+    const delayedTime = Math.floor(remainingTime / 60)
+    const absoluteDelayedTime = Math.abs(delayedTime)
+    const showDelayedTime = delayedTime < -1
+    return (
+      <div>
+        Waiting...{showDelayedTime ? `(${absoluteDelayedTime}m)` : null}
+      </div>
+    )
   }
 
   const estTime = useMemo(() => {
