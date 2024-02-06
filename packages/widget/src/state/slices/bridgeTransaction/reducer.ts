@@ -12,6 +12,7 @@ export enum BridgeTransactionStatus {
 export interface BridgeTransactionState {
   txHash: string
   bridgeModuleName: string
+  originAmount: string
   originChainId: number
   destinationChainId: number
   estimatedTime: number
@@ -23,6 +24,7 @@ export interface BridgeTransactionState {
 const initialState: BridgeTransactionState = {
   txHash: null,
   bridgeModuleName: null,
+  originAmount: null,
   originChainId: null,
   destinationChainId: null,
   estimatedTime: null,
@@ -48,6 +50,7 @@ export const bridgeTransactionSlice = createSlice({
             payload: {
               txHash,
               bridgeModuleName,
+              parsedOriginAmount,
               originChainId,
               destinationChainId,
               estimatedTime,
@@ -58,6 +61,7 @@ export const bridgeTransactionSlice = createSlice({
           state.bridgeTxnStatus = BridgeTransactionStatus.SUCCESS
           state.txHash = txHash
           state.bridgeModuleName = bridgeModuleName
+          state.originAmount = parsedOriginAmount
           state.originChainId = originChainId
           state.destinationChainId = destinationChainId
           state.estimatedTime = estimatedTime

@@ -303,6 +303,7 @@ export const Widget = ({
             debouncedInputAmount,
             originToken?.decimals[originChainId]
           ),
+          parsedOriginAmount: debouncedInputAmount,
           originQuery: bridgeQuote?.quotes.originQuery,
           destinationQuery: bridgeQuote?.quotes.destQuery,
           bridgeModuleName: bridgeQuote?.bridgeModuleName,
