@@ -176,6 +176,7 @@ export const _Transaction = ({
         </div>
       </div>
       <AnimatedProgressBar
+        id={originTxHash}
         startTime={timestamp}
         estDuration={estimatedTime * 2} // 2x buffer
         isComplete={isTxFinalized}

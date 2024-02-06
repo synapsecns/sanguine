@@ -29,6 +29,9 @@ export const AnimatedProgressBar = memo(
     const synapsePurple = 'hsl(265deg 100% 75%)'
     const height = 3
 
+    const progressId = `progress-${id}`
+    const maskId = `mask-${id}`
+
     return (
       <div id="animated-progress-bar" className="absolute right-1 left-1">
         <svg
@@ -41,7 +44,7 @@ export const AnimatedProgressBar = memo(
         >
           <defs>
             <linearGradient
-              id={`progress-${id}`}
+              id={progressId}
               spreadMethod="reflect"
               x1="0"
               x2="1"
@@ -67,7 +70,7 @@ export const AnimatedProgressBar = memo(
                 repeatCount="indefinite"
               />
             </linearGradient>
-            <clipPath id={`mask-${id}`}>
+            <clipPath id={maskId}>
               <rect height="100%">
                 <animate
                   attributeName="width"
@@ -83,8 +86,8 @@ export const AnimatedProgressBar = memo(
           <rect
             width="100%"
             height={height}
-            fill={`url(#progress-${id})`}
-            clip-path={`url(#mask-${id})`}
+            fill={`url(#${progressId})`}
+            clip-path={`url(#${maskId})`}
           >
             {isComplete && (
               <animate
