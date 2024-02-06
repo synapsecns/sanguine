@@ -2,16 +2,19 @@ import { memo } from 'react'
 import { getTimeMinutesBeforeNow } from '@/utils/time'
 
 /**
+ * @param id unique identifier for progress bar instance
  * @param startTime timestamp in seconds
  * @param estDuration total duration in seconds
  * @param isComplete completion status
  */
 export const AnimatedProgressBar = memo(
   ({
+    id,
     startTime,
     estDuration,
     isComplete,
   }: {
+    id: string
     startTime: number
     estDuration: number
     isComplete: boolean
@@ -37,7 +40,12 @@ export const AnimatedProgressBar = memo(
           style={{ background: '#444' }}
         >
           <defs>
-            <linearGradient id="progress" spreadMethod="reflect" x1="0" x2="1">
+            <linearGradient
+              id={`progress-${id}`}
+              spreadMethod="reflect"
+              x1="0"
+              x2="1"
+            >
               <stop stop-color={synapsePurple} />
               <stop stop-color={synapsePurple} offset=".25" />
               <stop
@@ -59,7 +67,7 @@ export const AnimatedProgressBar = memo(
                 repeatCount="indefinite"
               />
             </linearGradient>
-            <clipPath id="mask">
+            <clipPath id={`mask-${id}`}>
               <rect height="100%">
                 <animate
                   attributeName="width"
@@ -75,8 +83,8 @@ export const AnimatedProgressBar = memo(
           <rect
             width="100%"
             height={height}
-            fill="url(#progress)"
-            clip-path="url(#mask)"
+            fill={`url(#progress-${id})`}
+            clip-path={`url(#mask-${id})`}
           >
             {isComplete && (
               <animate

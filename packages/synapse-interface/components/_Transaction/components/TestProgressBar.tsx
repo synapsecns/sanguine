@@ -70,6 +70,7 @@ export const TestProgressBar = () => {
       </div>
       {startTime ? (
         <AnimatedProgressBar
+          id={'test'}
           estDuration={estimatedTime * 2}
           isComplete={isComplete}
           startTime={startTime}
