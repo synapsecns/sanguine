@@ -235,11 +235,13 @@ func (i *IntegrationSuite) setupRelayer() {
 			File: filet.TmpFile(i.T(), "", i.relayerWallet.PrivateKeyHex()).Name(),
 		},
 		RelayerAPIPort: strconv.Itoa(relayerAPIPort),
+		BaseChainConfig: relconfig.ChainConfig{
+			OriginGasEstimate: 500000,
+			DestGasEstimate:   1000000,
+		},
 		FeePricer: relconfig.FeePricerConfig{
 			GasPriceCacheTTLSeconds:   60,
 			TokenPriceCacheTTLSeconds: 60,
-			BaseOriginGasEstimate:     500000,
-			BaseDestGasEstimate:       1000000,
 		},
 	}
 
