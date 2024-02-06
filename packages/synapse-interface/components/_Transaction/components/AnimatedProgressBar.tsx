@@ -24,13 +24,14 @@ export const AnimatedProgressBar = memo(
     let duration = isComplete ? 0.5 : remainingTime
 
     const synapsePurple = 'hsl(265deg 100% 75%)'
+    const height = 3
 
     return (
       <div id="animated-progress-bar" className="absolute right-1 left-1">
         <svg
           key={Date.now()}
           width="100%"
-          height="3"
+          height={height}
           xmlns="http://www.w3.org/2000/svg"
           className="rounded-sm"
           style={{ background: '#444' }}
@@ -73,7 +74,7 @@ export const AnimatedProgressBar = memo(
           </defs>
           <rect
             width="100%"
-            height="2"
+            height={height}
             fill="url(#progress)"
             clip-path="url(#mask)"
           >
