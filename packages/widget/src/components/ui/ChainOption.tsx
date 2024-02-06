@@ -21,8 +21,6 @@ export const ChainOption = ({
     web3Provider: { networkId },
   } = web3Context
 
-  console.log('isOrigin', isOrigin)
-
   return (
     <li
       key={option.id}
