@@ -1,3 +1,4 @@
+// Package pricer contains pricing logic for RFQ relayer quotes.
 package pricer
 
 import (
@@ -291,6 +292,7 @@ func (f *feePricer) GetGasPrice(ctx context.Context, chainID uint32) (*big.Int, 
 func (f *feePricer) getTokenPrice(ctx context.Context, token string) (price float64, err error) {
 	// Attempt to fetch gas price from cache.
 	tokenPriceItem := f.tokenPriceCache.Get(token)
+	//nolint:nestif
 	if tokenPriceItem == nil {
 		// Try to get price from coingecko.
 		price, err = f.priceFetcher.GetPrice(ctx, token)
