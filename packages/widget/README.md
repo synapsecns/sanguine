@@ -51,11 +51,25 @@ const MyApp = () => {
 
 Your site should now display a fully operational bridge widget integrating the routes and tokens supported by the Synapse protocol. By utilizing Synapse's multiple routers, you will be able to find the best quotes to support your bridging use case.
 
-## Recommended Parameters
+## Bridge Widget Props
+
+The widget accepts a number of props to customize its functionality and appearance. Below is a quick summary with more detailed explanations later on.
+
+```
+web3Provider: Web3Provider. Required.
+customRpcs?: Custom JSON-RPC endpoints for your consumer application.
+customTheme?: Custom theme for the widget. If not provided, defaults to light theme.
+container?: HTML element to render the widget in. If not provided, false.
+targetChainIds?: List of chain IDs for the destination side of your consumer app. If not provided, defaults to all Synapse Protocol supported networks.
+targetTokens?: List of tokens to display in the widget. If not provided, defaults to all Synapse Protocol supported tokens.
+protocolName?: A short name for users of the widget to identify the protocol. If not provided, defaults to 'Target'.
+```
+
+## Enhanced and Reliable Performance
 
 The bridge widget is a React component designed for straightforward integration into any React-based project. Engineered for immediate functionality, and apart from a `web3Provider`, it requires no initial parameters or web3 setup to begin operation. The widget facilitates bridging across all networks where the Synapse Protocol is active.
 
-While the widget is primed for immediate use without configuration as it provides some basic primary and fallback JSON-RPC endpoints, we encourage developers to specify their own for enhancd performance. This can be done by including a `customRpcs` parameter in the format of an object with chain ids as keys and their associated RPC endpoints as values.
+While the widget is primed for immediate use without configuration as it provides some basic primary and fallback JSON-RPC endpoints, we encourage developers to specify their own for enhanced performance. This can be done by including a `customRpcs` parameter in the format of an object with chain ids as keys and their associated RPC endpoints as values.
 
 ```tsx
 import { Bridge, CustomRpcs } from ‘@synapsecns/widget’

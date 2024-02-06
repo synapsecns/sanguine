@@ -93,6 +93,7 @@ linters:
     - contextcheck
     - nosnakecase
     - depguard
+    - testifylint
   fast: false
 
 issues:

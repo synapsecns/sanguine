@@ -1,7 +1,7 @@
 {
   "name": "@synapsecns/widget",
   "description": "Widget library for interacting with the Synapse Protocol",
-  "version": "0.0.35",
+  "version": "0.0.40",
   "license": "MIT",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
@@ -66,7 +66,7 @@
     "@ethersproject/providers": "^5.7.2",
     "@ethersproject/units": "^5.7.0",
     "@reduxjs/toolkit": "^2.0.1",
-    "@synapsecns/sdk-router": "^0.3.21",
+    "@synapsecns/sdk-router": "^0.3.22",
     "ethers": "^6.9.1",
     "lodash": "^4.17.21",
     "react-redux": "^9.0.2"

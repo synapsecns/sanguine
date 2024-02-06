@@ -514,6 +514,7 @@ jobs:
         with:
           label: 'needs-go-generate-${{matrix.package}}'
 
+  # TODO: consider adding go work sync step to prevent https://github.com/golang/go/issues/65363
   check-generation:
     name: Go Generate (Module Changes)
     runs-on: ubuntu-latest

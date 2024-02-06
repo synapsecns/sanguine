@@ -33,6 +33,8 @@ export const Transactions = ({
     return transactions.map((transaction: TransactionDetails) => (
       <Transaction
         connectedAddress={connectedAddress}
+        originAmount={transaction.originAmount}
+        originTokenSymbol={transaction.originTokenSymbol}
         originChainId={transaction.originChainId}
         destinationChainId={transaction.destinationChainId}
         originTxHash={transaction.originTxHash}

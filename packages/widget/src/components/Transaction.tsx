@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useCallback } from 'react'
+import { Chain } from 'types'
 
 import { useAppDispatch } from '@/state/hooks'
 import { getTxBlockExplorerLink } from '@/utils/getTxBlockExplorerLink'
@@ -16,9 +17,12 @@ import { useSynapseContext } from '@/providers/SynapseProvider'
 import { TimeRemaining } from '@/components/TimeRemaining'
 import { DropdownMenu } from '@/components/ui/DropdownMenu'
 import { MenuItem } from '@/components/ui/MenuItem'
+import { CHAINS_BY_ID } from '@/constants/chains'
 
 export const Transaction = ({
   connectedAddress,
+  originAmount,
+  originTokenSymbol,
   originChainId,
   destinationChainId,
   originTxHash,
@@ -30,6 +34,8 @@ export const Transaction = ({
   isStoredComplete,
 }: {
   connectedAddress: string
+  originAmount: string
+  originTokenSymbol: string
   originChainId: number
   destinationChainId: number
   originTxHash: string
@@ -53,12 +59,6 @@ export const Transaction = ({
     destinationChainId,
     connectedAddress
   )
-  const synapseExplorerLink = getTxSynapseExplorerLink({
-    originChainId,
-    destinationChainId,
-    txHash: originTxHash,
-    kappa,
-  })
 
   const elapsedTime: number = currentTime - timestamp // in seconds
   const remainingTime: number = estimatedTime - elapsedTime
@@ -69,6 +69,9 @@ export const Transaction = ({
     }
     return currentTime - timestamp > estimatedTime
   }, [estimatedTime, currentTime, timestamp])
+
+  const delayedTime = isEstimatedTimeReached ? remainingTime : null
+  const delayedTimeInMin = remainingTime ? Math.floor(remainingTime / 60) : null
 
   const [isTxComplete, _kappa] = useBridgeTxStatus({
     synapseSDK,
@@ -98,14 +101,10 @@ export const Transaction = ({
   useEffect(() => {
     const txKappa = kappa ?? _kappa
 
-    if (isTxComplete && originTxHash && txKappa) {
-      if (transactions[originTxHash]?.isComplete === false) {
-        dispatch(
-          completeTransaction({ originTxHash, kappa: txKappa as string })
-        )
-      }
+    if (!isStoredComplete && isTxComplete && originTxHash && txKappa) {
+      dispatch(completeTransaction({ originTxHash, kappa: txKappa as string }))
     }
-  }, [isTxComplete, dispatch, transactions])
+  }, [isStoredComplete, isTxComplete, dispatch, transactions])
 
   const handleClearTransaction = useCallback(() => {
     dispatch(removeTransaction({ originTxHash }))
@@ -122,15 +121,22 @@ export const Transaction = ({
       style={{ background: 'var(--synapse-surface' }}
     >
       <div className="flex flex-wrap-reverse justify-between w-full">
-        {isTxFinalized ? 'Complete' : 'Pending'}
+        <TransactionBridgeDetail
+          tokenAmount={originAmount}
+          originTokenSymbol={originTokenSymbol}
+          destinationChain={CHAINS_BY_ID[destinationChainId]}
+        />
         <div className="flex items-center justify-end gap-2 grow">
-          <TimeRemaining
-            isComplete={isTxFinalized as boolean}
-            remainingTime={remainingTime}
-            isDelayed={isEstimatedTimeReached}
-          />
-
-          <DropdownMenu>
+          <DropdownMenu
+            menuTitleElement={
+              <TimeRemaining
+                isComplete={isTxFinalized as boolean}
+                remainingTime={remainingTime}
+                isDelayed={isEstimatedTimeReached}
+                delayedTime={delayedTime}
+              />
+            }
+          >
             {!isNull(originTxExplorerLink) && (
               <MenuItem text={originExplorerName} link={originTxExplorerLink} />
             )}
@@ -140,9 +146,6 @@ export const Transaction = ({
                 link={destExplorerAddressLink}
               />
             )}
-            {/* {!isNull(synapseExplorerLink) && (
-            <MenuItem text="Synapse Explorer" link={synapseExplorerLink} />
-          )} */}
             <MenuItem
               text="Contact Support"
               link="https://discord.gg/synapseprotocol"
@@ -183,6 +186,22 @@ const TransactionSupport = () => {
           Support (Discord)
         </a>
       </div>
+    </div>
+  )
+}
+
+const TransactionBridgeDetail = ({
+  tokenAmount,
+  originTokenSymbol,
+  destinationChain,
+}: {
+  tokenAmount: string
+  originTokenSymbol: string
+  destinationChain: Chain
+}) => {
+  return (
+    <div className="flex">
+      {tokenAmount} {originTokenSymbol} to {destinationChain.name}
     </div>
   )
 }
