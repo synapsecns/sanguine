@@ -133,13 +133,21 @@ export const Transaction = ({
       />
       {/* {isTxFinalized ? 'Complete' : 'Pending'} */}
       <div className="flex items-center justify-end gap-2 grow">
-        <TimeRemaining
+        {/* <TimeRemaining
           isComplete={isTxFinalized as boolean}
           remainingTime={remainingTime}
           isDelayed={isEstimatedTimeReached}
-        />
+        /> */}
 
-        <DropdownMenu>
+        <DropdownMenu
+          menuTitleElement={
+            <TimeRemaining
+              isComplete={isTxFinalized as boolean}
+              remainingTime={remainingTime}
+              isDelayed={isEstimatedTimeReached}
+            />
+          }
+        >
           {!isNull(originTxExplorerLink) && (
             <MenuItem text={originExplorerName} link={originTxExplorerLink} />
           )}

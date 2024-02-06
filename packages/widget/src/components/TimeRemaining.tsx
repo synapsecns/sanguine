@@ -19,7 +19,7 @@ export const TimeRemaining = ({
     const showDelayedTime = delayedTime < -1
     return (
       <div>
-        Waiting...{showDelayedTime ? `(${absoluteDelayedTime}m)` : null}
+        Waiting... {showDelayedTime ? `(${absoluteDelayedTime}m)` : null}
       </div>
     )
   }
