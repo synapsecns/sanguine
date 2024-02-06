@@ -11,6 +11,7 @@ export const useTransactionListener = () => {
   const {
     txHash,
     originAmount,
+    originTokenSymbol,
     originChainId,
     destinationChainId,
     bridgeModuleName,
@@ -27,6 +28,7 @@ export const useTransactionListener = () => {
       dispatch(
         addTransaction({
           originAmount,
+          originTokenSymbol,
           originTxHash: txHash,
           originChainId,
           destinationChainId,

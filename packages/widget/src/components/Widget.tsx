@@ -304,6 +304,7 @@ export const Widget = ({
             originToken?.decimals[originChainId]
           ),
           parsedOriginAmount: debouncedInputAmount,
+          originTokenSymbol: originToken?.symbol,
           originQuery: bridgeQuote?.quotes.originQuery,
           destinationQuery: bridgeQuote?.quotes.destQuery,
           bridgeModuleName: bridgeQuote?.bridgeModuleName,

@@ -19,6 +19,8 @@ import { MenuItem } from '@/components/ui/MenuItem'
 
 export const Transaction = ({
   connectedAddress,
+  originAmount,
+  originTokenSymbol,
   originChainId,
   destinationChainId,
   originTxHash,
@@ -30,6 +32,8 @@ export const Transaction = ({
   isStoredComplete,
 }: {
   connectedAddress: string
+  originAmount: string
+  originTokenSymbol: string
   originChainId: number
   destinationChainId: number
   originTxHash: string

@@ -13,6 +13,7 @@ export interface BridgeTransactionState {
   txHash: string
   bridgeModuleName: string
   originAmount: string
+  originTokenSymbol: string
   originChainId: number
   destinationChainId: number
   estimatedTime: number
@@ -25,6 +26,7 @@ const initialState: BridgeTransactionState = {
   txHash: null,
   bridgeModuleName: null,
   originAmount: null,
+  originTokenSymbol: null,
   originChainId: null,
   destinationChainId: null,
   estimatedTime: null,
@@ -51,6 +53,7 @@ export const bridgeTransactionSlice = createSlice({
               txHash,
               bridgeModuleName,
               parsedOriginAmount,
+              originTokenSymbol,
               originChainId,
               destinationChainId,
               estimatedTime,
@@ -62,6 +65,7 @@ export const bridgeTransactionSlice = createSlice({
           state.txHash = txHash
           state.bridgeModuleName = bridgeModuleName
           state.originAmount = parsedOriginAmount
+          state.originTokenSymbol = originTokenSymbol
           state.originChainId = originChainId
           state.destinationChainId = destinationChainId
           state.estimatedTime = estimatedTime
