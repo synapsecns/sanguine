@@ -103,6 +103,8 @@ type FeePricerConfig struct {
 	GasPriceCacheTTLSeconds int `yaml:"gas_price_cache_ttl"`
 	// TokenPriceCacheTTLSeconds is the TTL for the token price cache.
 	TokenPriceCacheTTLSeconds int `yaml:"token_price_cache_ttl"`
+	// HTTPTimeoutMs is the number of milliseconds to timeout on a HTTP request.
+	HTTPTimeoutMs int `yaml:"http_timeout_ms"`
 }
 
 const tokenIDDelimiter = "-"

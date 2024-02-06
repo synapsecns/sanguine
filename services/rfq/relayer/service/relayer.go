@@ -43,9 +43,6 @@ type Relayer struct {
 
 var logger = log.Logger("relayer")
 
-// TODO: configure
-const httpTimeoutMs = 1000
-
 // NewRelayer creates a new relayer.
 //
 // The relayer is the core of the application. It is responsible for starting the listener and quoter event loops.
@@ -90,7 +87,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		return nil, fmt.Errorf("could not add imanager: %w", err)
 	}
 
-	priceFetcher := pricer.NewCoingeckoPriceFetcher(httpTimeoutMs)
+	priceFetcher := pricer.NewCoingeckoPriceFetcher(cfg.GetHTTPTimeout())
 	fp := pricer.NewFeePricer(cfg, omniClient, priceFetcher, metricHandler)
 
 	q, err := quoter.NewQuoterManager(cfg, metricHandler, im, sg, fp)

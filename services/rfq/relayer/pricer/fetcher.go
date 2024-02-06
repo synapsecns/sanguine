@@ -22,10 +22,10 @@ type CoingeckoPriceFetcherImpl struct {
 }
 
 // NewCoingeckoPriceFetcher creates a new instance of CoingeckoPriceFetcherImpl.
-func NewCoingeckoPriceFetcher(timeoutMs int) *CoingeckoPriceFetcherImpl {
+func NewCoingeckoPriceFetcher(timeout time.Duration) *CoingeckoPriceFetcherImpl {
 	return &CoingeckoPriceFetcherImpl{
 		client: &http.Client{
-			Timeout: time.Duration(timeoutMs) * time.Millisecond,
+			Timeout: timeout,
 		},
 	}
 }
