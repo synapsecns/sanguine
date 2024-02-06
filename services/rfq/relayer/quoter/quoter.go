@@ -75,12 +75,19 @@ func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, i
 	qt := make(map[string][]string)
 
 	// fix any casing issues.
-	for token, destTokens := range config.QuotableTokens {
-		processedDestTokens := make([]string, len(destTokens))
-		for i := range destTokens {
-			processedDestTokens[i] = strings.ToLower(destTokens[i])
+	for tokenID, destTokenIDs := range config.QuotableTokens {
+		processedDestTokens := make([]string, len(destTokenIDs))
+		for i := range destTokenIDs {
+			processedDestTokens[i], err = relconfig.SanitizeTokenID(destTokenIDs[i])
+			if err != nil {
+				return nil, fmt.Errorf("error sanitizing dest token ID: %w", err)
+			}
 		}
-		qt[strings.ToLower(token)] = processedDestTokens
+		sanitizedID, err := relconfig.SanitizeTokenID(tokenID)
+		if err != nil {
+			return nil, fmt.Errorf("error sanitizing token ID: %w", err)
+		}
+		qt[sanitizedID] = processedDestTokens
 	}
 
 	var ss client.ScreenerClient
@@ -140,7 +147,7 @@ func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequ
 
 	// allowed pairs for this origin token on the destination
 	destPairs := m.quotableTokens[quote.GetOriginIDPair()]
-	if !(slices.Contains(destPairs, strings.ToLower(quote.GetDestIDPair()))) {
+	if !(slices.Contains(destPairs, quote.GetDestIDPair())) {
 		span.AddEvent(fmt.Sprintf("%s not in %s or %s not found", quote.GetDestIDPair(), strings.Join(destPairs, ", "), quote.GetOriginIDPair()))
 		return false, nil
 	}
@@ -250,13 +257,15 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 	var quotes []model.PutQuoteRequest
 	for keyTokenID, itemTokenIDs := range m.quotableTokens {
 		for _, tokenID := range itemTokenIDs {
-			// TODO: probably a better way to do this.
-			if strings.ToLower(tokenID) == strings.ToLower(destTokenID) {
+			//nolint:nestif
+			if tokenID == destTokenID {
+				// Parse token info
 				originStr := strings.Split(keyTokenID, "-")[0]
 				origin, err := strconv.Atoi(originStr)
 				if err != nil {
 					return nil, fmt.Errorf("error converting origin chainID: %w", err)
 				}
+				originTokenAddr := common.HexToAddress(strings.Split(keyTokenID, "-")[1])
 
 				// Calculate the quote amount for this route
 				quoteAmount, err := m.getQuoteAmount(ctx, origin, chainID, address, balance)
@@ -288,7 +297,7 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 				}
 				quote := model.PutQuoteRequest{
 					OriginChainID:           origin,
-					OriginTokenAddr:         strings.Split(keyTokenID, "-")[1],
+					OriginTokenAddr:         originTokenAddr.Hex(),
 					DestChainID:             chainID,
 					DestTokenAddr:           address.Hex(),
 					DestAmount:              destAmount.String(),
@@ -389,7 +398,7 @@ func (m *Manager) getDestAmount(parentCtx context.Context, quoteAmount *big.Int,
 
 	quoteOffsetBps, err := m.config.GetQuoteOffsetBps(chainID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting quote offset bps: %w", err)
 	}
 	quoteOffsetFraction := new(big.Float).Quo(new(big.Float).SetInt64(int64(quoteOffsetBps)), new(big.Float).SetInt64(10000))
 	quoteOffsetFactor := new(big.Float).Sub(new(big.Float).SetInt64(1), quoteOffsetFraction)

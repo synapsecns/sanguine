@@ -3,15 +3,14 @@ import Fuse from 'fuse.js'
 import { Address, useAccount, useNetwork } from 'wagmi'
 import { useAppDispatch } from '@/store/hooks'
 import { setFromChainId } from '@/slices/bridge/reducer'
-import { PortfolioTabManager } from './PortfolioTabManager'
+import { PortfolioTabManager } from './components/PortfolioTabManager'
 import {
   NetworkTokenBalances,
   TokenAndBalance,
 } from '@/utils/actions/fetchPortfolioBalances'
-import { PortfolioContent } from './PortfolioContent/PortfolioContent'
+import { PortfolioContent } from './components/PortfolioContent'
 import {
   useFetchPortfolioBalances,
-  fetchAndStorePortfolioBalances,
   usePortfolioState,
 } from '@/slices/portfolio/hooks'
 import {
@@ -24,9 +23,9 @@ import { PortfolioState } from '@/slices/portfolio/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeState } from '@/slices/bridge/reducer'
 import { resetBridgeInputs } from '@/slices/bridge/actions'
-import { isValidAddress } from '@/utils/isValidAddress'
-import { ViewSearchAddressBanner } from './SearchBar'
+import { ViewSearchAddressBanner } from './components/ViewSearchAddressBanner'
 import { Activity } from './Activity'
+import { useSearchInputState } from './helpers/useSearchInputStatus'
 
 export const Portfolio = () => {
   const dispatch = useAppDispatch()
@@ -49,79 +48,37 @@ export const Portfolio = () => {
   const { balances: portfolioData, status: fetchState } =
     useFetchPortfolioBalances()
 
-  const filteredPortfolioDataForBalances: NetworkTokenBalances =
+  const filteredPortfolioData: NetworkTokenBalances =
     filterPortfolioBalancesWithBalances(portfolioData)
 
-  const searchInputActive: boolean = useMemo(() => {
-    return searchInput.length > 0
-  }, [searchInput])
-
-  const searchInputIsAddress: boolean = useMemo(() => {
-    return isValidAddress(searchInput)
-  }, [searchInput])
-
-  const masqueradeActive: boolean = useMemo(() => {
-    return Object.keys(searchedBalances).length > 0
-  }, [searchedBalances])
+  const {
+    isSearchInputActive,
+    isSearchInputAddress,
+    isMasqueradeActive,
+    masqueradeAddress,
+  } = useSearchInputState()
 
   const filteredSearchedPortfolioDataForBalances = useMemo(() => {
-    if (masqueradeActive) {
-      const queriedAddress: Address = Object.keys(
-        searchedBalances
-      )[0] as Address
+    if (isMasqueradeActive) {
       return {
         balances: filterPortfolioBalancesWithBalances(
-          searchedBalances[queriedAddress]
+          searchedBalances[masqueradeAddress]
         ),
-        address: queriedAddress,
+        address: masqueradeAddress,
       }
     }
     return {
       balances: {},
       address: '',
     }
-  }, [searchedBalances, masqueradeActive, searchInput])
+  }, [searchedBalances, isMasqueradeActive, searchInput])
 
-  const flattenedPortfolioData: TokenAndBalance[] = useMemo(() => {
-    const flattened: TokenAndBalance[] = []
-    const portfolio: NetworkTokenBalances = masqueradeActive
-      ? filteredSearchedPortfolioDataForBalances.balances
-      : filteredPortfolioDataForBalances
-    Object.entries(portfolio).forEach(([chainId, tokens]) => {
-      tokens.forEach((token: TokenAndBalance) => {
-        flattened.push({ ...token })
-      })
-    })
-    return flattened
-  }, [
-    masqueradeActive,
-    filteredPortfolioDataForBalances,
-    filteredSearchedPortfolioDataForBalances,
-  ])
+  const flattenedPortfolioData = flattenData(filteredPortfolioData)
 
-  const filteredBySearchInput: NetworkTokenBalances = useMemo(() => {
-    const searchFiltered: NetworkTokenBalances = {}
-    const fuseOptions = {
-      includeScore: true,
-      threshold: 0.33,
-      distance: 20,
-      keys: ['queriedChain.name', 'token.name', 'token.symbol'],
-    }
-    const fuse = new Fuse(flattenedPortfolioData, fuseOptions)
-
-    if (searchInput.length > 0) {
-      const results = fuse
-        .search(searchInput)
-        .map((i: Fuse.FuseResult<TokenAndBalance>) => i.item)
-        .forEach((item: TokenAndBalance) => {
-          const chainId: number = item.queriedChain.id
-          searchFiltered[chainId] = searchFiltered[chainId]
-            ? [...searchFiltered[chainId], item]
-            : [item]
-        })
-    }
-    return searchFiltered
-  }, [searchInput, flattenedPortfolioData])
+  const filteredBySearchInput = filterBySearchInput(
+    flattenedPortfolioData,
+    searchInput
+  )
 
   useEffect(() => {
     if (address && chain?.id) {
@@ -144,7 +101,7 @@ export const Portfolio = () => {
             {searchStatus === FetchState.LOADING && (
               <div className="pb-3 text-secondary">Loading new address...</div>
             )}
-            {masqueradeActive ? (
+            {isMasqueradeActive ? (
               <>
                 <ViewSearchAddressBanner
                   viewingAddress={
@@ -153,18 +110,18 @@ export const Portfolio = () => {
                 />
                 <PortfolioContent
                   connectedAddress={
-                    filteredSearchedPortfolioDataForBalances.address as Address
+                    filteredSearchedPortfolioDataForBalances.address
                   }
                   connectedChainId={chain?.id}
                   selectedFromChainId={fromChainId}
                   networkPortfolioWithBalances={
-                    searchInputActive && !searchInputIsAddress
+                    isSearchInputActive && !isSearchInputAddress
                       ? filteredBySearchInput
                       : filteredSearchedPortfolioDataForBalances.balances
                   }
                   fetchState={searchStatus}
                   visibility={activeTab === PortfolioTabs.PORTFOLIO}
-                  searchInputActive={searchInputActive}
+                  searchInputActive={isSearchInputActive}
                   searchStatus={searchStatus}
                   searchInput={searchInput}
                 />
@@ -182,13 +139,13 @@ export const Portfolio = () => {
                   connectedChainId={chain?.id}
                   selectedFromChainId={fromChainId}
                   networkPortfolioWithBalances={
-                    searchInputActive
+                    isSearchInputActive
                       ? filteredBySearchInput
-                      : filteredPortfolioDataForBalances
+                      : filteredPortfolioData
                   }
                   fetchState={fetchState}
                   visibility={activeTab === PortfolioTabs.PORTFOLIO}
-                  searchInputActive={searchInputActive}
+                  searchInputActive={isSearchInputActive}
                   searchStatus={searchStatus}
                   searchInput={searchInput}
                 />
@@ -200,6 +157,45 @@ export const Portfolio = () => {
       </div>
     </div>
   )
+}
+
+function flattenData(portfolioData: NetworkTokenBalances): TokenAndBalance[] {
+  const flattened: TokenAndBalance[] = []
+  Object.entries(portfolioData).forEach(([chainId, tokens]) => {
+    tokens.forEach((token: TokenAndBalance) => {
+      flattened.push({ ...token })
+    })
+  })
+  return flattened
+}
+
+function filterBySearchInput(
+  portfolioData: TokenAndBalance[],
+  searchInput: string
+) {
+  const searchFiltered: NetworkTokenBalances = {}
+  const fuseOptions = {
+    includeScore: true,
+    threshold: 0.33,
+    distance: 20,
+    keys: ['queriedChain.name', 'token.name', 'token.symbol'],
+  }
+  const fuse = new Fuse(portfolioData, fuseOptions)
+
+  if (searchInput.length > 0) {
+    fuse
+      .search(searchInput)
+      .map((i: Fuse.FuseResult<TokenAndBalance>) => i.item)
+      .forEach((item) => {
+        const chainId = item.queriedChain.id
+        if (!searchFiltered[chainId]) {
+          searchFiltered[chainId] = []
+        }
+        searchFiltered[chainId].push(item)
+      })
+  }
+
+  return searchFiltered
 }
 
 export function filterPortfolioBalancesWithBalances(

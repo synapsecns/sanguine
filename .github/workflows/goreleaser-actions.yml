@@ -293,3 +293,11 @@ jobs:
           destination_repo: 'trajan0x/terraform-provider-kubeproxy'
           tag_name: ${{ steps.tag_version.outputs.new_tag }}
           strip_prefix: 'contrib/terraform-provider-kubeproxy/'
+
+      - name: Refresh Report Card
+        if: steps.branch-name.outputs.is_default == 'true'
+        working-directory: ${{matrix.package}}/
+        run: |
+          module_name=$(go mod edit -json | jq -r '.Module.Path')
+          curl -X POST -F "repo=$module_name" https://goreportcard.com/checks
+

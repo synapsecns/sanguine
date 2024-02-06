@@ -1,0 +1,74 @@
+{
+  "name": "@synapsecns/widget",
+  "description": "Widget library for interacting with the Synapse Protocol",
+  "version": "0.0.37",
+  "license": "MIT",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/synapsecns/sanguine.git"
+  },
+  "homepage": "https://github.com/synapsecns/sanguine/blob/master/packages/widget/README.md",
+  "scripts": {
+    "build": "rollup -c --bundleConfigAsCjs",
+    "watch": "rollup -c -w --bundleConfigAsCjs",
+    "test:coverage": "echo 'No tests defined.'",
+    "lint:check": "eslint . --max-warnings=0",
+    "ci:lint": "npm run lint:check",
+    "build:go": " ",
+    "build:slither": " ",
+    "prepare": "rollup -c --bundleConfigAsCjs"
+  },
+  "keywords": [
+    "blockchain",
+    "bridge",
+    "cross-chain",
+    "dapp",
+    "interoperability",
+    "library",
+    "plugin",
+    "rfq",
+    "synapse",
+    "web3",
+    "widget"
+  ],
+  "peerDependencies": {
+    "react": ">=17.0.1",
+    "react-dom": ">=17.0.1"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-json": "^6.0.1",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.1.5",
+    "@types/react": "^18.2.39",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.31",
+    "rollup": "^3.29.4",
+    "rollup-plugin-dts": "^6.1.0",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
+    "rollup-plugin-postcss": "^4.0.2",
+    "rollup-plugin-sourcemaps": "^0.6.3",
+    "tailwindcss": "^3.3.5",
+    "tslib": "^2.6.2",
+    "typescript": "^5.3.2"
+  },
+  "dependencies": {
+    "@ethersproject/providers": "^5.7.2",
+    "@ethersproject/units": "^5.7.0",
+    "@reduxjs/toolkit": "^2.0.1",
+    "@synapsecns/sdk-router": "^0.3.22",
+    "ethers": "^6.9.1",
+    "lodash": "^4.17.21",
+    "react-redux": "^9.0.2"
+  }
+}

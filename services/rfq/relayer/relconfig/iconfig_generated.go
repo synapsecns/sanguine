@@ -2,63 +2,6 @@
 
 package relconfig
 
-import (
-	"math/big"
-	"time"
-
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/synapsecns/sanguine/ethergo/signer/config"
-)
-
 // IConfig ...
 type IConfig interface {
-	// GetChains returns the chains config.
-	GetChains() map[int]ChainConfig
-	// GetOmniRPCURL returns the OmniRPCURL.
-	GetOmniRPCURL() string
-	// GetRfqAPIURL returns the RFQ API URL.
-	GetRfqAPIURL() string
-	// GetDatabase returns the database config.
-	GetDatabase() DatabaseConfig
-	// GetSigner returns the signer config.
-	GetSigner() config.SignerConfig
-	// GetFeePricer returns the fee pricer config.
-	GetFeePricer() FeePricerConfig
-	// GetTokenID returns the tokenID for the given chain and address.
-	GetTokenID(chain int, addr string) (string, error)
-	// GetQuotableTokens returns the quotable tokens for the given token.
-	GetQuotableTokens(token string) ([]string, error)
-	// GetNativeToken returns the native token for the given chain.
-	GetNativeToken(chainID uint32) (string, error)
-	// GetTokenDecimals returns the token decimals for the given chain and token.
-	GetTokenDecimals(chainID uint32, token string) (uint8, error)
-	// GetTokens returns the tokens for the given chain.
-	GetTokens(chainID uint32) (map[string]TokenConfig, error)
-	// GetTokenName returns the token name for the given chain and address.
-	GetTokenName(chain uint32, addr string) (string, error)
-	// GetMinQuoteAmount returns the quote amount for the given chain and address.
-	// Note that this getter returns the value in native token decimals.
-	GetMinQuoteAmount(chainID int, addr common.Address) *big.Int
-	// GetDeadlineBuffer returns the DeadlineBuffer for the given chainID.
-	GetDeadlineBuffer(chainID int) (seconds time.Duration, err error)
-	// GetOriginGasEstimate returns the OriginGasEstimate for the given chainID.
-	GetOriginGasEstimate(chainID int) (value int, err error)
-	// GetDestGasEstimate returns the DestGasEstimate for the given chainID.
-	GetDestGasEstimate(chainID int) (value int, err error)
-	// GetL1FeeChainID returns the L1FeeChainID for the given chainID.
-	GetL1FeeChainID(chainID int) (value uint32, err error)
-	// GetL1FeeOriginGasEstimate returns the L1FeeOriginGasEstimate for the given chainID.
-	GetL1FeeOriginGasEstimate(chainID int) (value int, err error)
-	// GetL1FeeDestGasEstimate returns the L1FeeDestGasEstimate for the given chainID.
-	GetL1FeeDestGasEstimate(chainID int) (value int, err error)
-	// GetMinGasToken returns the MinGasToken for the given chainID.
-	GetMinGasToken(chainID int) (value *big.Int, err error)
-	// GetQuotePct returns the QuotePct for the given chainID.
-	GetQuotePct(chainID int) (value float64, err error)
-	// GetQuoteOffsetBps returns the QuoteOffsetBps for the given chainID.
-	GetQuoteOffsetBps(chainID int) (value float64, err error)
-	// GetFixedFeeMultiplier returns the FixedFeeMultiplier for the given chainID.
-	GetFixedFeeMultiplier(chainID int) (value float64, err error)
-	// GetL1FeeParams returns the L1 fee params for the given chain.
-	GetL1FeeParams(chainID uint32, origin bool) (uint32, int, bool)
 }
