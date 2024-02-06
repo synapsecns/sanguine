@@ -85,7 +85,8 @@ const consumerExamples = {
 
 const customRpcs: CustomRpcs = {
   1: 'https://eth.llamarpc.com',
-  42161: 'https://arbitrum.llamarpc.com',
+  42161:
+    'https://arb-mainnet.g.alchemy.com/v2/7kjdkqKTh1zQ1mRYGi4nJJbxbyJXHkef',
 }
 
 export default function Home() {
