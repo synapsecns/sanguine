@@ -36,7 +36,16 @@ export const ChainOption = ({
     `}
       onClick={() => onSelect(option)}
     >
-      {option.name}
+      <div className="flex items-center">
+        {option?.imgUrl && (
+          <img
+            src={option?.imgUrl}
+            alt={`${option?.name} chain icon`}
+            className="inline w-4 h-4 mr-2"
+          />
+        )}
+        {option?.name}
+      </div>
       {isOrigin &&
         (option.id === networkId ? (
           <ConnectedIndicator />
