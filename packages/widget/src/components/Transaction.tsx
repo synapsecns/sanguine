@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useCallback } from 'react'
+import { Chain } from 'types'
 
 import { useAppDispatch } from '@/state/hooks'
 import { getTxBlockExplorerLink } from '@/utils/getTxBlockExplorerLink'
@@ -16,6 +17,7 @@ import { useSynapseContext } from '@/providers/SynapseProvider'
 import { TimeRemaining } from '@/components/TimeRemaining'
 import { DropdownMenu } from '@/components/ui/DropdownMenu'
 import { MenuItem } from '@/components/ui/MenuItem'
+import { CHAINS_BY_ID } from '@/constants/chains'
 
 export const Transaction = ({
   connectedAddress,
@@ -124,6 +126,11 @@ export const Transaction = ({
       `}
       style={{ background: 'var(--synapse-surface' }}
     >
+      <TransactionDetail
+        tokenAmount={originAmount}
+        originTokenSymbol={originTokenSymbol}
+        destinationChain={CHAINS_BY_ID[destinationChainId]}
+      />
       {isTxFinalized ? 'Complete' : 'Pending'}
       <div className="flex items-center justify-end gap-2 grow">
         <TimeRemaining
@@ -155,6 +162,22 @@ export const Transaction = ({
           )}
         </DropdownMenu>
       </div>
+    </div>
+  )
+}
+
+const TransactionDetail = ({
+  tokenAmount,
+  originTokenSymbol,
+  destinationChain,
+}: {
+  tokenAmount: string
+  originTokenSymbol: string
+  destinationChain: Chain
+}) => {
+  return (
+    <div className="flex">
+      {tokenAmount} {originTokenSymbol} to {destinationChain.name}
     </div>
   )
 }
