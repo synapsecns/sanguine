@@ -114,13 +114,13 @@ export const Transaction = ({
     <div
       data-test-id="transaction"
       className={`
-        flex flex-col
+        flex flex-col w-full
         gap-1 justify-end items-center pl-2.5 pr-1.5 py-1
         border border-solid border-[--synapse-border] rounded-md
       `}
       style={{ background: 'var(--synapse-surface' }}
     >
-      <div className="flex flex-wrap-reverse justify-between w-full">
+      <div className="flex flex-wrap-reverse justify-between">
         <TransactionBridgeDetail
           tokenAmount={originAmount}
           originTokenSymbol={originTokenSymbol}
@@ -174,7 +174,7 @@ const TransactionSupport = () => {
           href=""
           target="_blank"
           className={`
-            px-2 py-1 underline
+            px-2 py-1 underline text-[--synapse-text]
             hover:rounded hover:bg-[--synapse-select-bg] hover:no-underline
           `}
         >
@@ -185,7 +185,7 @@ const TransactionSupport = () => {
           href="https://discord.gg/synapseprotocol"
           target="_blank"
           className={`
-            px-2 py-1 underline
+            px-2 py-1 underline text-[--synapse-text]
             hover:rounded hover:bg-[--synapse-select-bg] hover:no-underline
             min-[360px]:after:content-['_(Discord)']
           `}
