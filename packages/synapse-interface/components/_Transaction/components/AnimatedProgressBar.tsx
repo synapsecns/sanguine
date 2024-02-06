@@ -22,7 +22,7 @@ export const AnimatedProgressBar = memo(
     const currentTime = getTimeMinutesBeforeNow(0)
     const elapsedTime = currentTime - startTime
     const remainingTime = estDuration - elapsedTime
-    const percentElapsed = (elapsedTime / estDuration) * 100
+    const percentElapsed = isComplete ? 100 : (elapsedTime / estDuration) * 100
 
     let duration = isComplete ? 0.5 : remainingTime
 
