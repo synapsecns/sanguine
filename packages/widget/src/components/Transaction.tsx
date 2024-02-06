@@ -115,41 +115,73 @@ export const Transaction = ({
     <div
       data-test-id="transaction"
       className={`
-        flex flex-wrap-reverse gap-1 justify-end items-center pl-2.5 pr-1.5 py-1
+        flex flex-col
+        gap-1 justify-end items-center pl-2.5 pr-1.5 py-1
         border border-solid border-[--synapse-border] rounded-md
       `}
       style={{ background: 'var(--synapse-surface' }}
     >
-      {isTxFinalized ? 'Complete' : 'Pending'}
-      <div className="flex items-center justify-end gap-2 grow">
-        <TimeRemaining
-          isComplete={isTxFinalized as boolean}
-          remainingTime={remainingTime}
-          isDelayed={isEstimatedTimeReached}
-        />
+      <div className="flex flex-wrap-reverse justify-between w-full">
+        {isTxFinalized ? 'Complete' : 'Pending'}
+        <div className="flex items-center justify-end gap-2 grow">
+          <TimeRemaining
+            isComplete={isTxFinalized as boolean}
+            remainingTime={remainingTime}
+            isDelayed={isEstimatedTimeReached}
+          />
 
-        <DropdownMenu>
-          {!isNull(originTxExplorerLink) && (
-            <MenuItem text={originExplorerName} link={originTxExplorerLink} />
-          )}
-          {!isNull(destExplorerAddressLink) && (
-            <MenuItem text={destExplorerName} link={destExplorerAddressLink} />
-          )}
-          {/* {!isNull(synapseExplorerLink) && (
+          <DropdownMenu>
+            {!isNull(originTxExplorerLink) && (
+              <MenuItem text={originExplorerName} link={originTxExplorerLink} />
+            )}
+            {!isNull(destExplorerAddressLink) && (
+              <MenuItem
+                text={destExplorerName}
+                link={destExplorerAddressLink}
+              />
+            )}
+            {/* {!isNull(synapseExplorerLink) && (
             <MenuItem text="Synapse Explorer" link={synapseExplorerLink} />
           )} */}
-          <MenuItem
-            text="Contact Support"
-            link="https://discord.gg/synapseprotocol"
-          />
-          {isTxFinalized && (
             <MenuItem
-              text="Clear Transaction"
-              link={null}
-              onClick={handleClearTransaction}
+              text="Contact Support"
+              link="https://discord.gg/synapseprotocol"
             />
-          )}
-        </DropdownMenu>
+            {isTxFinalized && (
+              <MenuItem
+                text="Clear Transaction"
+                link={null}
+                onClick={handleClearTransaction}
+              />
+            )}
+          </DropdownMenu>
+        </div>
+      </div>
+      <TransactionSupport />
+    </div>
+  )
+}
+
+const TransactionSupport = () => {
+  return (
+    <div id="transaction-support" className="flex items-center justify-between">
+      <div>What's taking so long?</div>
+      <div className="flex">
+        <a
+          href=""
+          target="_blank"
+          className="px-2 py-1 underline hover:rounded hover:bg-[--synapse-select-bg]"
+        >
+          Help page
+        </a>
+        <div>/</div>
+        <a
+          href="https://discord.gg/synapseprotocol"
+          target="_blank"
+          className="px-2 py-1 underline hover:rounded hover:bg-[--synapse-select-bg]"
+        >
+          Support (Discord)
+        </a>
       </div>
     </div>
   )
