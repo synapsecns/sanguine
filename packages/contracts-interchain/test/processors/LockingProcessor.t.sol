@@ -17,9 +17,10 @@ contract LockingProcessorTest is AbstractProcessorTest {
     }
 
     function deployProcessor() internal virtual override {
-        processor = new LockingProcessor(address(icToken), address(token));
+        address deployedProcessor = factory.deployLockingProcessor(address(icToken), address(token));
+        processor = LockingProcessor(deployedProcessor);
         // Mint the underlying token to the processor (backing the user IC token balance)
-        token.mintPublic(address(processor), START_BALANCE);
+        token.mintPublic(deployedProcessor, START_BALANCE);
     }
 
     // Lock token: token (1) -> icToken (0)

@@ -17,9 +17,10 @@ contract BurningProcessorTest is AbstractProcessorTest {
     }
 
     function deployProcessor() internal virtual override {
-        processor = new BurningProcessor(address(icToken), address(token));
+        address deployedProcessor = factory.deployBurningProcessor(address(icToken), address(token));
+        processor = BurningProcessor(deployedProcessor);
         // Processor should be able to mint the underlying GMX token
-        MockGMX(address(token)).transferOwnership(address(processor));
+        MockGMX(address(token)).transferOwnership(deployedProcessor);
     }
 
     // Burn token: token (1) -> icToken (0)
