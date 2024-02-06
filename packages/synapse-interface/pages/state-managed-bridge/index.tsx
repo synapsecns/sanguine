@@ -151,6 +151,10 @@ const StateManagedBridge = () => {
     currentSDKRequestID.current += 1
     const thisRequestId = currentSDKRequestID.current
     // will have to handle deadlineMinutes here at later time, gets passed as optional last arg in .bridgeQuote()
+
+    /* clear stored bridge quote before requesting new bridge quote */
+    dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
+
     try {
       dispatch(setIsLoading(true))
 
