@@ -257,12 +257,15 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 	var quotes []model.PutQuoteRequest
 	for keyTokenID, itemTokenIDs := range m.quotableTokens {
 		for _, tokenID := range itemTokenIDs {
+			//nolint:nestif
 			if tokenID == destTokenID {
+				// Parse token info
 				originStr := strings.Split(keyTokenID, "-")[0]
 				origin, err := strconv.Atoi(originStr)
 				if err != nil {
 					return nil, fmt.Errorf("error converting origin chainID: %w", err)
 				}
+				originTokenAddr := common.HexToAddress(strings.Split(keyTokenID, "-")[1])
 
 				// Calculate the quote amount for this route
 				quoteAmount, err := m.getQuoteAmount(ctx, origin, chainID, address, balance)
@@ -290,7 +293,7 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 				// Build the quote
 				quote := model.PutQuoteRequest{
 					OriginChainID:           origin,
-					OriginTokenAddr:         strings.Split(keyTokenID, "-")[1],
+					OriginTokenAddr:         originTokenAddr.Hex(),
 					DestChainID:             chainID,
 					DestTokenAddr:           address.Hex(),
 					DestAmount:              m.getDestAmount(ctx, quoteAmount).String(),
