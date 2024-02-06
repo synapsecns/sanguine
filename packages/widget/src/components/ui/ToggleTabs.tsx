@@ -22,7 +22,7 @@ export const ToggleTabs: React.FC<ToggleTabsProps> = ({
 
   return (
     <div
-      className="flex mx-1 my-2 text-sm text-center cursor-default rounded border border-solid border-[--synapse-border]"
+      className="flex text-sm text-center cursor-default rounded border border-solid border-[--synapse-border]"
       style={{ background: 'var(--synapse-root' }}
       role="group"
     >
