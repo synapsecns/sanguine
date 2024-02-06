@@ -12,10 +12,10 @@ jobs:
   sonarcloud:
     name: SonarCloud
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-      checks: write
+#    permissions:
+#      contents: write
+#      pull-requests: write
+#      checks: write
     steps:
       - uses: actions/checkout@v4
         with:
