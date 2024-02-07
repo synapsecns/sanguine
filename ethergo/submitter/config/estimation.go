@@ -28,8 +28,8 @@ func isArbitrumChain(chainID int) bool {
 }
 
 // GetGasEstimationMethod returns the gas estimation method to use for the chain.
-func (c *Config) GetGasEstimationMethod(chainID int) GasEstimationMethod {
-	if c.NativeGasEstimation(chainID) && isArbitrumChain(chainID) {
+func GetGasEstimationMethod(cfg IConfig, chainID int) GasEstimationMethod {
+	if cfg.NativeGasEstimation(chainID) && isArbitrumChain(chainID) {
 		return ArbitrumGasEstimation
 	}
 	return GethGasEstimation

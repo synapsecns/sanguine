@@ -17,6 +17,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/params"
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/mapmutex"
@@ -24,6 +25,8 @@ import (
 	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/ethergo/chain/gas"
 	"github.com/synapsecns/sanguine/ethergo/client"
+	"github.com/synapsecns/sanguine/ethergo/sdks/arbitrum/contracts/nodeinterface"
+	"github.com/synapsecns/sanguine/ethergo/sdks/arbitrum/internal"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/submitter/config"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
@@ -453,7 +456,6 @@ func (t *txSubmitterImpl) getGasBlock(ctx context.Context, chainClient client.EV
 }
 
 // getGasEstimate gets the gas estimate for the given transaction.
-// TODO: handle l2s w/ custom gas pricing through contracts.
 func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client.EVM, chainID int, tx *types.Transaction) (gasEstimate uint64, err error) {
 	if !t.config.GetDynamicGasEstimate(chainID) {
 		return t.config.GetGasEstimate(chainID), nil
@@ -475,11 +477,40 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 		return 0, fmt.Errorf("could not convert tx to call: %w", err)
 	}
 
-	gasEstimate, err = chainClient.EstimateGas(ctx, *call)
-	if err != nil {
-		span.AddEvent("could not estimate gas", trace.WithAttributes(attribute.String("error", err.Error())))
-		// fallback to default
-		return t.config.GetGasEstimate(chainID), nil
+	// fetch the gas estimate
+	switch config.GetGasEstimationMethod(t.config, chainID) {
+	case config.ArbitrumGasEstimation:
+		nodeRef, err := nodeinterface.NewNodeInterfaceRef(internal.GetNodeInterfaceAddress(), chainClient)
+		if err != nil {
+			span.AddEvent("could not get node interface ref", trace.WithAttributes(attribute.String("error", err.Error())))
+			// fallback to default
+			return t.config.GetGasEstimate(chainID), nil
+		}
+		gasEstimateForL2, gasEstimateForL1, _, _, err := nodeRef.GetGasEstimateComponents(&bind.TransactOpts{
+			Nonce:    big.NewInt(0),
+			Context:  ctx,
+			From:     common.BigToAddress(big.NewInt(0)),
+			GasPrice: big.NewInt(params.GWei),
+		}, common.BigToAddress(big.NewInt(0)), false, []byte(""))
+		if err != nil {
+			span.AddEvent("could not get gas estimate components", trace.WithAttributes(attribute.String("error", err.Error())))
+			// fallback to default
+			return t.config.GetGasEstimate(chainID), nil
+		}
+		gasEstimate = gasEstimateForL2 + gasEstimateForL1
+		span.SetAttributes(
+			attribute.Int64("l2_gas_estimate", int64(gasEstimateForL2)),
+			attribute.Int64("l1_gas_estimate", int64(gasEstimateForL1)),
+		)
+	case config.GethGasEstimation:
+		gasEstimate, err = chainClient.EstimateGas(ctx, *call)
+		if err != nil {
+			span.AddEvent("could not estimate gas", trace.WithAttributes(attribute.String("error", err.Error())))
+			// fallback to default
+			return t.config.GetGasEstimate(chainID), nil
+		}
+	default:
+		return 0, fmt.Errorf("unknown gas estimation method")
 	}
 
 	return gasEstimate, nil
