@@ -23,9 +23,13 @@ func (g GasEstimationMethod) String() string {
 const arbitrumChainID = 42161
 const arbitrumSepoliaChainID = 421614
 
+func isArbitrumChain(chainID int) bool {
+	return chainID == arbitrumChainID || chainID == arbitrumSepoliaChainID
+}
+
 // GetGasEstimationMethod returns the gas estimation method to use for the chain.
 func (c *Config) GetGasEstimationMethod(chainID int) GasEstimationMethod {
-	if chainID == arbitrumChainID || chainID == arbitrumSepoliaChainID {
+	if c.NativeGasEstimation(chainID) && isArbitrumChain(chainID) {
 		return ArbitrumGasEstimation
 	}
 	return GethGasEstimation
