@@ -42,14 +42,6 @@ export const fetchBridgeQuote = createAsyncThunk(
       amount
     )
 
-    /** TODO: Handle when invalid quote returns or no quotes */
-
-    // if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
-    //   // dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
-    //   // dispatch(setIsLoading(false))
-    //   return
-    // }
-
     const rfqQuote = allQuotes.find((q) => q.bridgeModuleName === 'SynapseRFQ')
 
     let quote
@@ -106,10 +98,8 @@ export const fetchBridgeQuote = createAsyncThunk(
       ),
       feeAmount,
       delta: BigInt(maxAmountOut.toString()),
-      quotes: {
-        originQuery: originQueryWithSlippage,
-        destQuery: destQueryWithSlippage,
-      },
+      originQuery: originQueryWithSlippage,
+      destQuery: destQueryWithSlippage,
       estimatedTime,
       bridgeModuleName,
       requestId,

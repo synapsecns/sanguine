@@ -9,6 +9,14 @@ export enum FetchState {
   INVALID = 'invalid',
 }
 
+type QuoteQuery = {
+  deadline: bigint
+  minAmountOut: bigint
+  rawParams: string
+  swapAdapter: string
+  tokenOut: string
+}
+
 export type BridgeQuote = {
   outputAmount: bigint
   outputAmountString: string
@@ -16,7 +24,8 @@ export type BridgeQuote = {
   exchangeRate: bigint
   feeAmount: bigint
   delta: bigint
-  quotes: { originQuery: {}; destQuery: {} }
+  originQuery: QuoteQuery
+  destQuery: QuoteQuery
   estimatedTime: number
   bridgeModuleName: string
   requestId: number
@@ -29,7 +38,8 @@ export const EMPTY_BRIDGE_QUOTE = {
   exchangeRate: 0n,
   feeAmount: 0n,
   delta: 0n,
-  quotes: { originQuery: null, destQuery: null },
+  originQuery: null,
+  destQuery: null,
   estimatedTime: null,
   bridgeModuleName: null,
   requestId: null,

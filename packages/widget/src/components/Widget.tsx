@@ -193,6 +193,8 @@ export const Widget = ({
       currentSDKRequestID.current += 1
       const thisRequestId = currentSDKRequestID.current
 
+      dispatch(resetQuote())
+
       if (thisRequestId === currentSDKRequestID.current) {
         dispatch(
           fetchBridgeQuote({
@@ -305,8 +307,8 @@ export const Widget = ({
           ),
           parsedOriginAmount: debouncedInputAmount,
           originTokenSymbol: originToken?.symbol,
-          originQuery: bridgeQuote?.quotes.originQuery,
-          destinationQuery: bridgeQuote?.quotes.destQuery,
+          originQuery: bridgeQuote?.originQuery,
+          destQuery: bridgeQuote?.destQuery,
           bridgeModuleName: bridgeQuote?.bridgeModuleName,
           estimatedTime: bridgeQuote?.estimatedTime,
           synapseSDK,
