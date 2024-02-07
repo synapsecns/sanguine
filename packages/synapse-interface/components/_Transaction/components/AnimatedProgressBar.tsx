@@ -27,85 +27,92 @@ export const AnimatedProgressBar = memo(
     let duration = isComplete ? 0.5 : remainingTime
 
     const synapsePurple = 'hsl(265deg 100% 75%)'
+    const tailwindGreen400 = 'rgb(74 222 128)'
     const height = 3
 
     const progressId = `progress-${id}`
     const maskId = `mask-${id}`
 
     return (
-      // <div id="animated-progress-bar">
-        <svg
-          id="animated-progress-bar"
-          key={Date.now()}
-          width="100%"
-          height={height}
-          xmlns="http://www.w3.org/2000/svg"
-          className="rounded-sm"
-          // style={{ background: '#444' }}
-        >
-          <defs>
-            <linearGradient
-              id={progressId}
-              spreadMethod="reflect"
-              x1="0"
-              x2="1"
-            >
-              <stop stop-color={synapsePurple} />
-              <stop stop-color={synapsePurple} offset=".25" />
-              <stop
-                stop-color={synapsePurple}
-                stop-opacity=".67"
-                offset=".75"
-              />
-              <stop stop-color={synapsePurple} stop-opacity=".67" offset="1" />
-              <animate
-                attributeName="x1"
-                values="0%; -6%"
-                dur=".67s"
-                repeatCount="indefinite"
-              />
-              <animate
-                attributeName="x2"
-                values="3%; -3%"
-                dur=".67s"
-                repeatCount="indefinite"
-              />
-            </linearGradient>
-            <clipPath id={maskId}>
-              <rect height="100%">
-                <animate
-                  attributeName="width"
-                  values={`${percentElapsed}%; 100%`}
-                  dur={duration}
-                  fill="freeze"
-                  calcMode={isComplete && 'spline'}
-                  keySplines=".8 0 .2 1;"
-                />
-              </rect>
-            </clipPath>
-          </defs>
-          <rect
-            width="100%"
-            height={height}
-            fill={`url(#${progressId})`}
-            clip-path={`url(#${maskId})`}
+      <svg
+        id="animated-progress-bar"
+        key={Date.now()}
+        width="100%"
+        height={height}
+        xmlns="http://www.w3.org/2000/svg"
+        className="rounded-sm"
+      >
+        <defs>
+          <linearGradient
+            id={progressId}
+            spreadMethod="reflect"
+            x1="0"
+            x2="1"
           >
-            {isComplete && (
+            <stop stop-color={synapsePurple} />
+            <stop stop-color={synapsePurple} offset=".25" />
+            <stop
+              stop-color={synapsePurple}
+              stop-opacity=".67"
+              offset=".75"
+            />
+            <stop stop-color={synapsePurple} stop-opacity=".67" offset="1" />
+            <animate
+              attributeName="x1"
+              values="0%; -6%"
+              dur=".67s"
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="x2"
+              values="3%; -3%"
+              dur=".67s"
+              repeatCount="indefinite"
+            />
+          </linearGradient>
+          <clipPath id={maskId}>
+            <rect height="100%">
               <animate
-                attributeName="fill"
-                values={`${synapsePurple}; ${
-                  isComplete
-                    ? `hsl(185deg 100% 40%); rgb(74 222 128)`
-                    : `${synapsePurple}; hsl(15deg 100% 65%)`
-                }`}
-                keyTimes={`0; .5; 1`}
+                attributeName="width"
+                values={`${percentElapsed}%; 100%`}
                 dur={duration}
                 fill="freeze"
+                calcMode={isComplete && 'spline'}
+                keySplines=".8 0 .2 1"
               />
-            )}
-          </rect>
-        </svg>
-      // </div>
+            </rect>
+          </clipPath>
+        </defs>
+        <rect
+          width="100%"
+          height={height}
+          fill={`url(#${progressId})`}
+          clip-path={`url(#${maskId})`}
+        >
+          {isComplete && (
+            <animate
+              attributeName="fill"
+              values={
+                `${synapsePurple}; hsl(185deg 100% 40%); ${tailwindGreen400}`
+              }
+              keyTimes="0; .5; 1"
+              dur={duration}
+              fill="freeze"
+            />
+          )}
+        </rect>
+        {isComplete && (
+          <animate
+            attributeName="height"
+            values={`${height}; ${height}; 0`}
+            keyTimes="0; .5; 1"
+            calcMode="spline"
+            keySplines="0 0 1 1; .8 0 .2 1"
+            dur={duration * 1.5}
+            fill="freeze"
+          />
+        )}
+      </svg>
     )
   }
 )

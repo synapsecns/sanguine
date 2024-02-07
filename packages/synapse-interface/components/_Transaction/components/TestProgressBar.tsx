@@ -35,13 +35,14 @@ export const TestProgressBar = () => {
   }, [startTime, isComplete, completedTime])
 
   return (
-    <div className="relative bg-white border border-purple-500 max-w-[600px] mx-auto my-5">
+    <div className="relative border border-[#444] text-[#ccc] max-w-[600px] mx-auto my-5">
       <div className="flex items-center justify-between">
         <div>
           <div>Estimated time (in seconds) </div>
           <div className="text-xs">Represents max timer duration </div>
         </div>
         <input
+          className="text-black"
           type="number"
           onChange={handleEstimatedTime}
           value={estimatedTime}
@@ -55,6 +56,7 @@ export const TestProgressBar = () => {
           </div>
         </div>
         <input
+          className="text-black"
           type="number"
           onChange={handleCompletedTime}
           value={completedTime}
