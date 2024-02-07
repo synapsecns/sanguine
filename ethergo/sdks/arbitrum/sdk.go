@@ -53,7 +53,8 @@ func (a *arbitrumSDKImpl) EstimateGas(ctx context.Context, call ethereum.CallMsg
 	}
 	// TODO: maybe need to copy the logic that sets the gasprice if it's empty?
 	gasEstimate, gasEstimateForL1, _, _, err := a.nodeInterface.GetGasEstimateComponents(&bind.TransactOpts{
-		From: call.From,
+		Context: ctx,
+		From:    call.From,
 		// note: this is ignored
 		GasLimit:  call.Gas,
 		GasPrice:  core.CopyBigInt(call.GasPrice),
@@ -67,9 +68,11 @@ func (a *arbitrumSDKImpl) EstimateGas(ctx context.Context, call ethereum.CallMsg
 	return gasEstimate + gasEstimateForL1, nil
 }
 
-// this is a type assertion used to make sure the arbitrum sdk matches the standard contracttransactor interface
-// methods for gas without doing the whole things
-// will fail to compile if methods are different
+// This is a type assertion used to make sure the arbitrum sdk matches the standard contracttransactor interface
+// methods for gas without doing the whole things.
+// It will fail to compile if methods are different.
+//
+//nolint:deadcode
 type unfiormMethodAssertion interface {
 	bind.ContractTransactor
 	SDK

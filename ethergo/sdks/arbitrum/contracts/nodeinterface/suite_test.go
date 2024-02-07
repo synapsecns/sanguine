@@ -1,7 +1,12 @@
+// Package nodeinterface_test defines the basic test suite.
 package nodeinterface_test
 
 import (
 	"context"
+	"math/big"
+	"testing"
+	"time"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
@@ -13,9 +18,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/sdks/arbitrum/contracts/nodeinterface"
 	"github.com/synapsecns/sanguine/ethergo/sdks/arbitrum/internal"
-	"math/big"
-	"testing"
-	"time"
 )
 
 // NodeInterfaceSuite defines the basic test suite.
@@ -64,6 +66,6 @@ func (n *NodeInterfaceSuite) TestGetGasEstimateComponents() {
 
 		//nolint: wrapcheck
 		return err
-	}, retry.WithMaxAttempts(5), retry.WithMaxAttemptsTime(time.Second*30), retry.WithMin(time.Second*5))
+	}, retry.WithMaxAttempts(5), retry.WithMaxAttemptTime(time.Second*30), retry.WithMin(time.Second*5))
 	n.Require().NoError(err)
 }
