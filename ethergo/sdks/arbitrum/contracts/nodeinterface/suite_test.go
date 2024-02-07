@@ -1,3 +1,4 @@
+// Package nodeinterface_test defines the basic test suite.
 package nodeinterface_test
 
 import (
