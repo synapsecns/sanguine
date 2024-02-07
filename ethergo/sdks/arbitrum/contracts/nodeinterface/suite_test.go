@@ -50,7 +50,7 @@ func (n *NodeInterfaceSuite) TestGetGasEstimateComponents() {
 
 	// TODO: disable this if it's causing too many network related test fails
 	err = retry.WithBackoff(n.GetTestContext(), func(ctx context.Context) error {
-		gasEstimate, gasEstimateForL1, baseFee, l1BaseFeeEstiamte, err := nodeRef.GetGasEstimateComponents(&bind.TransactOpts{
+		gasEstimate, gasEstimateForL1, baseFee, l1BaseFeeEstimate, err := nodeRef.GetGasEstimateComponents(&bind.TransactOpts{
 			Nonce:    big.NewInt(0),
 			Context:  ctx,
 			From:     common.BigToAddress(big.NewInt(0)),
@@ -60,8 +60,7 @@ func (n *NodeInterfaceSuite) TestGetGasEstimateComponents() {
 		assert.NotZero(n.T(), gasEstimate)
 		assert.NotZero(n.T(), gasEstimateForL1)
 		assert.NotZero(n.T(), baseFee)
-
-		assert.NotZero(n.T(), l1BaseFeeEstiamte)
+		assert.NotZero(n.T(), l1BaseFeeEstimate)
 
 		//nolint: wrapcheck
 		return err
