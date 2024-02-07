@@ -17,7 +17,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/params"
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/mapmutex"
@@ -25,8 +24,7 @@ import (
 	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/ethergo/chain/gas"
 	"github.com/synapsecns/sanguine/ethergo/client"
-	"github.com/synapsecns/sanguine/ethergo/sdks/arbitrum/contracts/nodeinterface"
-	"github.com/synapsecns/sanguine/ethergo/sdks/arbitrum/internal"
+	"github.com/synapsecns/sanguine/ethergo/sdks/arbitrum"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/submitter/config"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
@@ -74,6 +72,8 @@ type txSubmitterImpl struct {
 	lastGasBlockCache *xsync.MapOf[int, *types.Header]
 	// config is the config for the transaction submitter.
 	config config.IConfig
+	// arbitrumSDK is arbitrum SDK.
+	arbitrumSDK arbitrum.SDK
 }
 
 // ClientFetcher is the interface for fetching a chain client.
@@ -480,18 +480,16 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 	// fetch the gas estimate
 	switch config.GetGasEstimationMethod(t.config, chainID) {
 	case config.ArbitrumGasEstimation:
-		nodeRef, err := nodeinterface.NewNodeInterfaceRef(internal.GetNodeInterfaceAddress(), chainClient)
-		if err != nil {
-			span.AddEvent("could not get node interface ref", trace.WithAttributes(attribute.String("error", err.Error())))
-			// fallback to default
-			return t.config.GetGasEstimate(chainID), nil
+		if t.arbitrumSDK == nil {
+			t.arbitrumSDK, err = arbitrum.NewArbitrumSDK(chainClient)
+			if err != nil {
+				span.AddEvent("could not get arbitrum SDK", trace.WithAttributes(attribute.String("error", err.Error())))
+				// fallback to default
+				return t.config.GetGasEstimate(chainID), nil
+			}
 		}
-		gasEstimateForL2, gasEstimateForL1, _, _, err := nodeRef.GetGasEstimateComponents(&bind.TransactOpts{
-			Nonce:    big.NewInt(0),
-			Context:  ctx,
-			From:     common.BigToAddress(big.NewInt(0)),
-			GasPrice: big.NewInt(params.GWei),
-		}, common.BigToAddress(big.NewInt(0)), false, []byte(""))
+		// Call GetGasEstimateComponents so that we can trace both the l1 and l2 gas limit components.
+		gasEstimateForL2, gasEstimateForL1, _, _, err := t.arbitrumSDK.GetGasEstimateComponents(ctx, *call)
 		if err != nil {
 			span.AddEvent("could not get gas estimate components", trace.WithAttributes(attribute.String("error", err.Error())))
 			// fallback to default
@@ -499,8 +497,8 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 		}
 		gasEstimate = gasEstimateForL2 + gasEstimateForL1
 		span.SetAttributes(
-			attribute.Int64("l2_gas_estimate", int64(gasEstimateForL2)),
 			attribute.Int64("l1_gas_estimate", int64(gasEstimateForL1)),
+			attribute.Int64("l2_gas_estimate", int64(gasEstimateForL2)),
 		)
 	case config.GethGasEstimation:
 		gasEstimate, err = chainClient.EstimateGas(ctx, *call)
