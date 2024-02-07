@@ -41,7 +41,7 @@ type ChainConfig struct {
 	// IsL2 is whether or not this chain is an L2 chain
 	IsL2 bool `yaml:"is_l2"`
 	// NativeGasEstimation is whether or not to use native gas estimation.
-	NativeGasEstimation bool `yaml:native_gas_estimation`
+	NativeGasEstimation bool `yaml:"native_gas_estimation"`
 	// GasEstimate is the gas estimate to use for transactions
 	// if dynamic gas estimation is enabled, this is only used as a default if the estimate fails
 	GasEstimate uint64 `yaml:"gas_estimate"`
