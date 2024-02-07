@@ -40,6 +40,8 @@ type ChainConfig struct {
 	GasBumpPercentage int `yaml:"gas_bump_percentage"`
 	// IsL2 is whether or not this chain is an L2 chain
 	IsL2 bool `yaml:"is_l2"`
+	// NativeGasEstimation is whether or not to use native gas estimation.
+	NativeGasEstimation bool `yaml:native_gas_estimation`
 	// GasEstimate is the gas estimate to use for transactions
 	// if dynamic gas estimation is enabled, this is only used as a default if the estimate fails
 	GasEstimate uint64 `yaml:"gas_estimate"`
@@ -152,6 +154,16 @@ func (c *Config) IsL2(chainID int) bool {
 	}
 
 	return c.ChainConfig.IsL2
+}
+
+// NativeGasEstimation returns native gas estimation method should be used.
+func (c *Config) NativeGasEstimation(chainID int) bool {
+	chainConfig, ok := c.Chains[chainID]
+	if ok {
+		return chainConfig.NativeGasEstimation
+	}
+
+	return c.ChainConfig.NativeGasEstimation
 }
 
 // GetGasBumpPercentage returns the percentage to bump the gas price by
