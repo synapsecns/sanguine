@@ -93,5 +93,5 @@ interface ISnapshotHub {
      * @param stateIndex    Index of state in the attestation's snapshot
      * @return snapProof    The snapshot proof
      */
-    function getSnapshotProof(uint32 attNonce, uint256 stateIndex) external view returns (bytes32[] memory snapProof);
+    function getSnapshotProof(uint32 attNonce, uint8 stateIndex) external view returns (bytes32[] memory snapProof);
 }

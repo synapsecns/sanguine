@@ -2,17 +2,20 @@ package node_test
 
 import (
 	"fmt"
+	"math/big"
+	"testing"
+
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
+	"github.com/synapsecns/sanguine/services/explorer/metadata"
 	"github.com/synapsecns/sanguine/services/explorer/testutil/testcontracts"
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
-	"github.com/synapsecns/sanguine/services/scribe/metadata"
-	"math/big"
-	"testing"
+	scribeMetadata "github.com/synapsecns/sanguine/services/scribe/metadata"
 
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/stretchr/testify/suite"
@@ -38,6 +41,7 @@ type NodeSuite struct {
 	// blockConfigChainID is the chain ID of the block config.
 	blockConfigChainID uint32
 	scribeMetrics      metrics.Handler
+	explorerMetrics    metrics.Handler
 }
 
 // NewConsumerSuite creates an end-to-end test suite.
@@ -84,9 +88,20 @@ func (c *NodeSuite) SetupTest() {
 func (c *NodeSuite) SetupSuite() {
 	c.TestSuite.SetupSuite()
 
-	localmetrics.SetupTestJaeger(c.GetSuiteContext(), c.T())
+	// don't use metrics on ci for integration tests
+	isCI := core.GetEnvBool("CI", false)
+	useMetrics := !isCI
+	metricsHandler := metrics.Null
+
+	if useMetrics {
+		localmetrics.SetupTestJaeger(c.GetSuiteContext(), c.T())
+		metricsHandler = metrics.Jaeger
+	}
+
 	var err error
-	c.scribeMetrics, err = metrics.NewByType(c.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	c.scribeMetrics, err = metrics.NewByType(c.GetSuiteContext(), scribeMetadata.BuildInfo(), metricsHandler)
+	c.Require().Nil(err)
+	c.explorerMetrics, err = metrics.NewByType(c.GetSuiteContext(), metadata.BuildInfo(), metricsHandler)
 	c.Require().Nil(err)
 }
 

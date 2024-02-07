@@ -13,6 +13,7 @@ import (
 
 // GetGormLogger gets a gorm logger at the correct level
 // TODO investigate https://github.com/moul/zapgorm, we want to use the same write group.
+// TODO: otel logging.
 func GetGormLogger(zapLogger *log.ZapEventLogger) gormLogger.Interface {
 	// use a more performant logger in prod since we don't care about logging misses, etc
 	return gormLogger.New(

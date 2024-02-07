@@ -6,6 +6,7 @@ import (
 	"testing"
 )
 
+// nolint:staticcheck
 func TestWrapSchemaResource(t *testing.T) {
 	resource := &schema.Resource{
 		Create: func(data *schema.ResourceData, meta interface{}) error {

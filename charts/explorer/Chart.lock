@@ -1,9 +1,9 @@
 dependencies:
 - name: omnirpc
   repository: file://../omnirpc/
-  version: 0.2.5
+  version: 0.2.92
 - name: clickhouse
   repository: https://sentry-kubernetes.github.io/charts
   version: 3.1.3
-digest: sha256:acc2ec824a9f1bae61dc7a7d2937598f99f65aa1a35730f18dd62499e59e9a20
-generated: "2023-05-22T18:32:07.89572-04:00"
+digest: sha256:d41e7713f0f1e6b9e17f8a30cc38497a76fb9c2fdb9b884682ebe55234816444
+generated: "2023-11-14T22:07:32.395834-06:00"

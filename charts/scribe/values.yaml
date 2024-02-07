@@ -35,7 +35,15 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  port: 80
+  ingressPort: 80
+  ports:
+  - containerPort: 5080
+    port: 80
+    protocol: TCP
+    name: http
+
+serviceMonitor:
+  enabled: false
 
 ingress:
   enabled: false
@@ -53,18 +61,6 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
-
 indexer:
   enabled: true
   args: ["scribe", "--db=mysql", "--path=root:MysqlPassword@tcp(scribe-mysql:3306)/scribe?parseTime=true", "--config=/config/config.yaml"]
@@ -73,6 +69,13 @@ indexer:
   nodeSelector: {}
   podSecurityContext: {}
   affinity: {}
+  resources: {}
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
   env:
     - name: GOLOG_LOG_FMT
       value: "json"
@@ -130,6 +133,13 @@ server:
   nodeSelector: {}
   podSecurityContext: {}
   affinity: {}
+  resources: {}
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
   env:
     - name: GOLOG_LOG_FMT
       value: "json"

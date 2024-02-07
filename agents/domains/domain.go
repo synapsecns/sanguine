@@ -5,6 +5,9 @@ import (
 	"errors"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/event"
 	"github.com/synapsecns/sanguine/agents/config"
@@ -43,8 +46,8 @@ type DomainClient interface {
 
 // OriginContract represents the origin contract on a particular chain.
 type OriginContract interface {
-	// FetchSortedMessages fetches all messages in order form lowest->highest in a given block range
-	FetchSortedMessages(ctx context.Context, from uint32, to uint32) (messages []types.CommittedMessage, err error)
+	// IsValidState checks if the given state is valid on its origin.
+	IsValidState(ctx context.Context, statePayload []byte) (isValid bool, err error)
 	// SuggestLatestState gets the latest state on the origin
 	SuggestLatestState(ctx context.Context) (types.State, error)
 	// SuggestState gets the state on the origin with the given nonce if it exists
@@ -61,46 +64,108 @@ type SummitContract interface {
 	GetLatestNotaryAttestation(ctx context.Context, notarySigner signer.Signer) (types.NotaryAttestation, error)
 	// WatchAttestationSaved looks for attesation saved events
 	WatchAttestationSaved(ctx context.Context, sink chan<- *summit.SummitAttestationSaved) (event.Subscription, error)
+	// IsValidAttestation checks if the given attestation is valid on the summit
+	IsValidAttestation(ctx context.Context, attestation []byte) (bool, error)
+	// GetNotarySnapshot gets the snapshot payload corresponding to a given attestation
+	GetNotarySnapshot(ctx context.Context, attPayload []byte) (types.Snapshot, error)
+	// GetAttestation gets an attestation for a given attestationNonce.
+	GetAttestation(ctx context.Context, attNonce uint32) (types.NotaryAttestation, error)
 }
 
 // InboxContract contains the interface for the inbox.
 type InboxContract interface {
+	// SubmitStateReportWithSnapshot reports to the inbox that a state within a snapshot is invalid.
+	SubmitStateReportWithSnapshot(transactor *bind.TransactOpts, stateIndex uint8, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error)
 	// SubmitSnapshot submits a snapshot to the inbox (via the Inbox).
-	SubmitSnapshot(ctx context.Context, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) error
+	SubmitSnapshot(transactor *bind.TransactOpts, encodedSnapshot []byte, signature signer.Signature) (tx *ethTypes.Transaction, err error)
+	// VerifyAttestation verifies a snapshot on the inbox.
+	VerifyAttestation(transactor *bind.TransactOpts, attestation []byte, attSignature []byte) (tx *ethTypes.Transaction, err error)
+	// SubmitStateReportWithAttestation submits a state report corresponding to an attesation for an invalid state.
+	SubmitStateReportWithAttestation(transactor *bind.TransactOpts, stateIndex uint8, signature signer.Signature, snapPayload, attPayload, attSignature []byte) (tx *ethTypes.Transaction, err error)
+	// SubmitReceipt submits a receipt to the inbox.
+	SubmitReceipt(transactor *bind.TransactOpts, rcptPayload []byte, rcptSignature signer.Signature, paddedTips *big.Int, headerHash [32]byte, bodyHash [32]byte) (tx *ethTypes.Transaction, err error)
+	// VerifyReceipt verifies a receipt on the inbox.
+	VerifyReceipt(transactor *bind.TransactOpts, rcptPayload []byte, rcptSignature []byte) (tx *ethTypes.Transaction, err error)
+	// SubmitReceiptReport submits a receipt report to the inbox.
+	SubmitReceiptReport(transactor *bind.TransactOpts, rcptPayload []byte, rcptSignature []byte, rrSignature []byte) (tx *ethTypes.Transaction, err error)
 }
 
 // BondingManagerContract contains the interface for the bonding manager.
 type BondingManagerContract interface {
 	// GetAgentStatus returns the current agent status for the given agent.
-	GetAgentStatus(ctx context.Context, signer signer.Signer) (types.AgentStatus, error)
+	GetAgentStatus(ctx context.Context, address common.Address) (types.AgentStatus, error)
+	// GetAgentRoot gets the current agent root
+	GetAgentRoot(ctx context.Context) ([32]byte, error)
+	// GetProof gets the proof that the agent is in the Agent Merkle Tree
+	GetProof(ctx context.Context, address common.Address) ([][32]byte, error)
+	// DisputeStatus gets the dispute status for the given agent.
+	DisputeStatus(ctx context.Context, address common.Address) (disputeStatus DisputeStatus, err error)
+	// GetDispute gets the dispute for a given dispute index.
+	// TODO: Add more returned values here as needed.
+	GetDispute(ctx context.Context, index *big.Int) (err error)
+	// GetDisputeStatus gets the dispute status for the given agent.
+	GetDisputeStatus(ctx context.Context, agent common.Address) (disputeStatus types.DisputeStatus, err error)
+	// CompleteSlashing completes the slashing of an agent.
+	CompleteSlashing(transactor *bind.TransactOpts, domain uint32, agent common.Address, proof [][32]byte) (tx *ethTypes.Transaction, err error)
+	// GetAgent gets an agent status and address for a given agent index.
+	GetAgent(ctx context.Context, index *big.Int) (types.AgentStatus, common.Address, error)
 }
 
 // DestinationContract contains the interface for the destination.
 type DestinationContract interface {
 	// Execute executes a message on the destination.
-	Execute(ctx context.Context, signer signer.Signer, message types.Message, originProof [32][32]byte, snapshotProof [][32]byte, index *big.Int, gasLimit uint64) error
+	Execute(transactor *bind.TransactOpts, message types.Message, originProof [32][32]byte, snapshotProof [][32]byte, index uint8, gasLimit uint64) (tx *ethTypes.Transaction, err error) // AttestationsAmount retrieves the number of attestations submitted to the destination.
 	// AttestationsAmount retrieves the number of attestations submitted to the destination.
 	AttestationsAmount(ctx context.Context) (uint64, error)
 	// GetAttestationNonce gets the nonce of the attestation by snap root
 	GetAttestationNonce(ctx context.Context, snapRoot [32]byte) (uint32, error)
+	// MessageStatus takes a message and returns whether it has been executed or not. 0: None, 1: Failed, 2: Success.
+	MessageStatus(ctx context.Context, message types.Message) (uint8, error)
+	// IsValidReceipt checks if the given receipt is valid on the destination
+	IsValidReceipt(ctx context.Context, rcptPayload []byte) (bool, error)
+	// PassAgentRoot passes the agent root to the destination.
+	PassAgentRoot(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error)
 }
 
 // LightInboxContract contains the interface for the light inbox.
 type LightInboxContract interface {
+	// SubmitStateReportWithSnapshot reports to the inbox that a state within a snapshot is invalid.
+	SubmitStateReportWithSnapshot(transactor *bind.TransactOpts, stateIndex uint8, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error)
 	// SubmitAttestation submits an attestation to the destination chain (via the light inbox contract)
 	SubmitAttestation(
-		ctx context.Context,
-		signer signer.Signer,
+		transactor *bind.TransactOpts,
 		attPayload []byte,
 		signature signer.Signature,
 		agentRoot [32]byte,
-		snapGas []*big.Int) error
+		snapGas []*big.Int,
+	) (tx *ethTypes.Transaction, err error)
+	// SubmitStateReportWithAttestation submits a state report corresponding to an attesation for an invalid state.
+	SubmitStateReportWithAttestation(transactor *bind.TransactOpts, stateIndex uint8, signature signer.Signature, snapPayload, attPayload, attSignature []byte) (tx *ethTypes.Transaction, err error)
+	// VerifyStateWithSnapshot verifies a state within a snapshot.
+	VerifyStateWithSnapshot(transactor *bind.TransactOpts, stateIndex uint8, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error)
+	// SubmitAttestationReport submits an attestation report to the inbox (via the light inbox contract)
+	SubmitAttestationReport(transactor *bind.TransactOpts, attestation, arSignature, attSignature []byte) (tx *ethTypes.Transaction, err error)
+	// VerifyStateWithAttestation verifies a state with attestation.
+	VerifyStateWithAttestation(transactor *bind.TransactOpts, stateIndex uint8, snapPayload []byte, attPayload []byte, attSignature []byte) (tx *ethTypes.Transaction, err error)
+	// VerifyReceipt verifies a receipt on the inbox.
+	VerifyReceipt(transactor *bind.TransactOpts, rcptPayload []byte, rcptSignature []byte) (tx *ethTypes.Transaction, err error)
 }
 
 // LightManagerContract contains the interface for the light manager.
 type LightManagerContract interface {
 	// GetAgentStatus returns the current agent status for the given agent.
-	GetAgentStatus(ctx context.Context, signer signer.Signer) (types.AgentStatus, error)
+	GetAgentStatus(ctx context.Context, address common.Address) (types.AgentStatus, error)
+	// GetAgentRoot gets the current agent root
+	GetAgentRoot(ctx context.Context) ([32]byte, error)
+	// UpdateAgentStatus updates the agent status on the remote chain.
+	UpdateAgentStatus(
+		transactor *bind.TransactOpts,
+		agentAddress common.Address,
+		agentStatus types.AgentStatus,
+		agentProof [][32]byte) (*ethTypes.Transaction, error)
+	// GetDispute gets the dispute for a given dispute index.
+	// TODO: Add more returned values here as needed.
+	GetDispute(ctx context.Context, index *big.Int) (err error)
 }
 
 // TestClientContract contains the interface for the test client.

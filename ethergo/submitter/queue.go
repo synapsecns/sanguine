@@ -69,7 +69,7 @@ func (t *txSubmitterImpl) processQueue(parentCtx context.Context) (err error) {
 	// fetch txes into a map by chainid.
 	sortedTXsByChainID := sortTxesByChainID(pendingTxes)
 
-	wg.Add(len(sortedTXsByChainID) + 1)
+	wg.Add(len(sortedTXsByChainID))
 
 	for chainID := range sortedTXsByChainID {
 		go func(chainID uint64) {
@@ -147,6 +147,15 @@ func (t *txSubmitterImpl) checkAndSetConfirmation(ctx context.Context, chainClie
 		return nil
 	}
 
+	// we're going to take every tx for this nonce and get a receipt for it
+	// because there can only be one transaction per nonce, as soon as we know which one has a receipt, we can assume all the
+	// others are replaced.
+	//
+	// There are a few constraints on the logic below as it's currently implemented. Namely that the number of txes
+	// can't be bigger than batch size.
+	//
+	// the other constraint is we treat all errors as "tx not found" errors. This is fine because we only store txes in cases
+	//
 	calls := make([]w3types.Caller, len(txes))
 	receipts := make([]types.Receipt, len(txes))
 	for i := range calls {
@@ -155,7 +164,6 @@ func (t *txSubmitterImpl) checkAndSetConfirmation(ctx context.Context, chainClie
 
 	err := chainClient.BatchWithContext(ctx, calls...)
 	foundSuccessfulTX := false
-
 	if err != nil {
 		// there's no way around this type inference
 		//nolint: errorlint
@@ -173,7 +181,7 @@ func (t *txSubmitterImpl) checkAndSetConfirmation(ctx context.Context, chainClie
 				txes[i].Status = db.Confirmed
 			}
 		}
-	} else if receipts[0].TxHash != txes[0].Hash() {
+	} else if receipts[0].TxHash == txes[0].Hash() {
 		// there must be only one tx, so we can just check the first one
 		// TODO: handle the case where there is more than one
 		txes[0].Status = db.Confirmed

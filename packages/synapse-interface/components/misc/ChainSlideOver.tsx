@@ -6,7 +6,7 @@ import { SelectSpecificNetworkButton } from '@components/buttons/SelectSpecificN
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { DrawerButton } from '@components/buttons/DrawerButton'
 import { useNetwork } from 'wagmi'
-import { DisplayType } from '@/pages/bridge/BridgeCard'
+import { DisplayType } from '@/pages/bridge/DisplayType'
 import { sortChains } from '@constants/chains'
 
 export const ChainSlideOver = ({
@@ -106,8 +106,8 @@ export const ChainSlideOver = ({
   useEffect(enterPressedFunc, [enterPressed])
 
   return (
-    <div className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide rounded-3xl">
-      <div className="absolute z-10 w-full px-6 pt-3 bg-bgLight rounded-t-xl">
+    <div className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide rounded-lg">
+      <div className="absolute z-10 w-full px-6 pt-3 bg-bgLight rounded-t-md">
         <div className="flex items-center float-right mb-2 font-medium sm:float-none">
           <SlideSearchBox
             placeholder="Search by asset, name, or chainID..."
@@ -117,10 +117,7 @@ export const ChainSlideOver = ({
           <DrawerButton onClick={onClose} isOrigin={isOrigin} />
         </div>
       </div>
-      <div
-        data-test-id={dataId}
-        className="px-3 pt-20 pb-8 space-y-4 bg-bgLighter md:px-6"
-      >
+      <div data-test-id={dataId} className="pt-20 pb-8 space-y-4 bg-bgLighter">
         {networks.map(({ id: mapChainId }, idx) => {
           let onClickSpecificNetwork
           if (chainId === mapChainId) {

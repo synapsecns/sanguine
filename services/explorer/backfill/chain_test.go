@@ -3,11 +3,14 @@ package backfill_test
 import (
 	gosql "database/sql"
 	"fmt"
+	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
+	"math/big"
+
+	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher/tokenprice"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/parser/tokendata"
 	"github.com/synapsecns/sanguine/services/explorer/static"
 	messageBusTypes "github.com/synapsecns/sanguine/services/explorer/types/messagebus"
-	"math/big"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
@@ -15,13 +18,14 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/explorer/backfill"
-	"github.com/synapsecns/sanguine/services/explorer/config"
+	indexerConfig "github.com/synapsecns/sanguine/services/explorer/config/indexer"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/parser"
 	parserpkg "github.com/synapsecns/sanguine/services/explorer/consumer/parser"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	"github.com/synapsecns/sanguine/services/explorer/testutil/testcontracts"
 	bridgeTypes "github.com/synapsecns/sanguine/services/explorer/types/bridge"
+	cctpTypes "github.com/synapsecns/sanguine/services/explorer/types/cctp"
 	swapTypes "github.com/synapsecns/sanguine/services/explorer/types/swap"
 )
 
@@ -36,66 +40,76 @@ func arrayToTokenIndexMap(input []*big.Int) map[uint8]string {
 //nolint:maintidx
 func (b *BackfillSuite) TestBackfill() {
 	testChainID := b.testBackend.GetBigChainID()
+
 	bridgeContract, bridgeRef := b.testDeployManager.GetTestSynapseBridge(b.GetTestContext(), b.testBackend)
 	bridgeV1Contract, bridgeV1Ref := b.testDeployManager.GetTestSynapseBridgeV1(b.GetTestContext(), b.testBackend)
 	swapContractA, swapRefA := b.testDeployManager.GetTestSwapFlashLoan(b.GetTestContext(), b.testBackend)
 	metaSwapContract, metaSwapRef := b.testDeployManager.GetTestMetaSwap(b.GetTestContext(), b.testBackend)
 	messageBusContract, messageBusRef := b.testDeployManager.GetTestMessageBusUpgradeable(b.GetTestContext(), b.testBackend)
+	cctpContract, cctpRef := b.testDeployManager.GetTestCCTP(b.GetTestContext(), b.testBackend)
 	testDeployManagerB := testcontracts.NewDeployManager(b.T())
+
 	swapContractB, swapRefB := testDeployManagerB.GetTestSwapFlashLoan(b.GetTestContext(), b.testBackend)
 
 	lastBlock := uint64(12)
 	transactOpts := b.testBackend.GetTxContext(b.GetTestContext(), nil)
 
 	// Initialize testing config.
-	contractConfigBridge := config.ContractConfig{
+	contractConfigBridge := indexerConfig.ContractConfig{
 		ContractType: "bridge",
 		Address:      bridgeContract.Address().String(),
 		StartBlock:   0,
 	}
-	contractConfigBridgeV1 := config.ContractConfig{
+	contractConfigBridgeV1 := indexerConfig.ContractConfig{
 		ContractType: "bridge",
 		Address:      bridgeV1Contract.Address().String(),
 		StartBlock:   0,
 	}
-	contractConfigSwap1 := config.ContractConfig{
+	contractConfigSwap1 := indexerConfig.ContractConfig{
 		ContractType: "swap",
 		Address:      swapContractA.Address().String(),
 		StartBlock:   0,
 	}
-	contractConfigSwap2 := config.ContractConfig{
+	contractConfigSwap2 := indexerConfig.ContractConfig{
 		ContractType: "swap",
 		Address:      swapContractB.Address().String(),
 		StartBlock:   0,
 	}
-	contractConfigMetaSwap := config.ContractConfig{
+	contractConfigMetaSwap := indexerConfig.ContractConfig{
 		ContractType: "metaswap",
 		Address:      metaSwapContract.Address().String(),
 		StartBlock:   0,
 	}
-	contractMessageBus := config.ContractConfig{
+	contractMessageBus := indexerConfig.ContractConfig{
 		ContractType: "messagebus",
 		Address:      messageBusContract.Address().String(),
 		StartBlock:   0,
 	}
 
+	// CCTP config
+	contractCCTP := indexerConfig.ContractConfig{
+		ContractType: "cctp",
+		Address:      cctpContract.Address().String(),
+		StartBlock:   0,
+	}
+
 	// Create the chain configs
-	chainConfigs := []config.ChainConfig{
+	chainConfigs := []indexerConfig.ChainConfig{
 		{
 			ChainID:             uint32(testChainID.Uint64()),
 			RPCURL:              gofakeit.URL(),
 			FetchBlockIncrement: 2,
 			MaxGoroutines:       2,
-			Contracts:           []config.ContractConfig{contractConfigBridge, contractConfigSwap1, contractConfigSwap2, contractMessageBus, contractConfigMetaSwap},
+			Contracts:           []indexerConfig.ContractConfig{contractConfigBridge, contractConfigSwap1, contractConfigSwap2, contractMessageBus, contractConfigMetaSwap, contractCCTP},
 		},
 	}
-	chainConfigsV1 := []config.ChainConfig{
+	chainConfigsV1 := []indexerConfig.ChainConfig{
 		{
 			ChainID:             uint32(testChainID.Uint64()),
 			RPCURL:              gofakeit.URL(),
 			FetchBlockIncrement: 2,
 			MaxGoroutines:       2,
-			Contracts:           []config.ContractConfig{contractConfigBridgeV1, contractConfigSwap1, contractConfigSwap2, contractMessageBus, contractConfigMetaSwap},
+			Contracts:           []indexerConfig.ContractConfig{contractConfigBridgeV1, contractConfigSwap1, contractConfigSwap2, contractMessageBus, contractConfigMetaSwap},
 		},
 	}
 
@@ -287,15 +301,32 @@ func (b *BackfillSuite) TestBackfill() {
 	callRevertedLog, err := b.storeTestLog(messageTx, uint32(testChainID.Uint64()), 7)
 	Nil(b.T(), err)
 
+	// Store every cctp event.
+	var requestID [32]byte
+	requestIDBytes := common.Hex2Bytes(mocks.NewMockHash(b.T()).String())
+	copy(requestID[:], requestIDBytes)
+
+	requestSentTx, err := cctpRef.TestSendCircleToken(transactOpts.TransactOpts, testChainID, common.BigToAddress(big.NewInt(gofakeit.Int64())), 1, common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(gofakeit.Int64()), 1, []byte(gofakeit.Paragraph(2, 5, 30, " ")), requestID)
+	Nil(b.T(), err)
+	b.storeEthTx(requestSentTx, testChainID, big.NewInt(int64(5)), 5)
+	requestSentLog, err := b.storeTestLog(requestSentTx, uint32(testChainID.Uint64()), 5)
+	Nil(b.T(), err)
+
+	requestFulfilledTx, err := cctpRef.TestReceiveCircleToken(transactOpts.TransactOpts, uint32(testChainID.Int64()), common.BigToAddress(big.NewInt(gofakeit.Int64())), common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(gofakeit.Int64()), common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(gofakeit.Int64()), requestID)
+	Nil(b.T(), err)
+	b.storeEthTx(requestFulfilledTx, testChainID, big.NewInt(int64(6)), 6)
+	requestFulfilledLog, err := b.storeTestLog(requestFulfilledTx, uint32(testChainID.Uint64()), 6)
+	Nil(b.T(), err)
+
 	// Go through each contract and save the end height in scribe
 	for i := range chainConfigs[0].Contracts {
 		//  the last block store per contract
-		err = b.eventDB.StoreLastIndexed(b.GetTestContext(), common.HexToAddress(chainConfigs[0].Contracts[i].Address), uint32(testChainID.Uint64()), lastBlock)
+		err = b.eventDB.StoreLastIndexed(b.GetTestContext(), common.HexToAddress(chainConfigs[0].Contracts[i].Address), uint32(testChainID.Uint64()), lastBlock, scribeTypes.IndexingConfirmed)
 		Nil(b.T(), err)
 	}
 	for i := range chainConfigsV1[0].Contracts {
 		//  the last block store per contract
-		err = b.eventDB.StoreLastIndexed(b.GetTestContext(), common.HexToAddress(chainConfigsV1[0].Contracts[i].Address), uint32(testChainID.Uint64()), lastBlock)
+		err = b.eventDB.StoreLastIndexed(b.GetTestContext(), common.HexToAddress(chainConfigsV1[0].Contracts[i].Address), uint32(testChainID.Uint64()), lastBlock, scribeTypes.IndexingConfirmed)
 		Nil(b.T(), err)
 	}
 
@@ -310,56 +341,75 @@ func (b *BackfillSuite) TestBackfill() {
 	tokenPriceService, err := tokenprice.NewPriceDataService()
 	Nil(b.T(), err)
 
-	bp, err := parser.NewBridgeParser(b.db, bridgeContract.Address(), tokenDataService, b.consumerFetcher, tokenPriceService)
+	bp, err := parser.NewBridgeParser(b.db, bridgeContract.Address(), tokenDataService, b.consumerFetcher, tokenPriceService, false)
 	Nil(b.T(), err)
-	bpv1, err := parser.NewBridgeParser(b.db, bridgeV1Contract.Address(), tokenDataService, b.consumerFetcher, tokenPriceService)
+	bpv1, err := parser.NewBridgeParser(b.db, bridgeV1Contract.Address(), tokenDataService, b.consumerFetcher, tokenPriceService, false)
 	Nil(b.T(), err)
 
 	// srB is the swap ref for getting token data
 	srA, err := fetcher.NewSwapFetcher(swapContractA.Address(), b.testBackend, false)
 	Nil(b.T(), err)
-	spA, err := parser.NewSwapParser(b.db, swapContractA.Address(), false, b.consumerFetcher, &srA, tokenDataService, tokenPriceService)
+	spA, err := parser.NewSwapParser(b.db, swapContractA.Address(), false, b.consumerFetcher, srA, tokenDataService, tokenPriceService)
 	Nil(b.T(), err)
 
 	// srB is the swap ref for getting token data
 	srB, err := fetcher.NewSwapFetcher(swapContractB.Address(), b.testBackend, false)
 	Nil(b.T(), err)
-	spB, err := parser.NewSwapParser(b.db, swapContractB.Address(), false, b.consumerFetcher, &srB, tokenDataService, tokenPriceService)
+	spB, err := parser.NewSwapParser(b.db, swapContractB.Address(), false, b.consumerFetcher, srB, tokenDataService, tokenPriceService)
 	Nil(b.T(), err)
 
 	// msr is the meta swap ref for getting token data
 	msr, err := fetcher.NewSwapFetcher(metaSwapContract.Address(), b.testBackend, true)
 	Nil(b.T(), err)
-	msp, err := parser.NewSwapParser(b.db, metaSwapContract.Address(), true, b.consumerFetcher, &msr, tokenDataService, tokenPriceService)
+	msp, err := parser.NewSwapParser(b.db, metaSwapContract.Address(), true, b.consumerFetcher, msr, tokenDataService, tokenPriceService)
+	Nil(b.T(), err)
+
+	// msr is the meta swap ref for getting token data
+	cr, err := fetcher.NewCCTPFetcher(cctpRef.Address(), b.testBackend)
+	Nil(b.T(), err)
+	cp, err := parser.NewCCTPParser(b.db, cctpRef.Address(), b.consumerFetcher, cr, tokenDataService, tokenPriceService, false)
 	Nil(b.T(), err)
 
 	spMap := map[common.Address]*parser.SwapParser{}
 	spMap[swapContractA.Address()] = spA
 	spMap[swapContractB.Address()] = spB
 	spMap[metaSwapContract.Address()] = msp
-	f := fetcher.NewFetcher(b.gqlClient)
+	f := fetcher.NewFetcher(b.gqlClient, b.metrics)
 
 	// Set up message bus parser
 	mbp, err := parser.NewMessageBusParser(b.db, messageBusContract.Address(), b.consumerFetcher, tokenPriceService)
 	Nil(b.T(), err)
 
 	// Test the first chain in the config file
-	chainBackfiller := backfill.NewChainBackfiller(b.db, bp, spMap, mbp, *f, chainConfigs[0])
-	chainBackfillerV1 := backfill.NewChainBackfiller(b.db, bpv1, spMap, mbp, *f, chainConfigsV1[0])
+	chainBackfiller := backfill.NewChainBackfiller(b.db, bp, spMap, mbp, cp, f, chainConfigs[0])
+	chainBackfillerV1 := backfill.NewChainBackfiller(b.db, bpv1, spMap, mbp, cp, f, chainConfigsV1[0])
 
 	// Backfill the blocks
 	var count int64
 	err = chainBackfiller.Backfill(b.GetTestContext(), false, 1)
+
 	Nil(b.T(), err)
 	swapEvents := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.SwapEvent{}).Count(&count)
 	Nil(b.T(), swapEvents.Error)
 	Equal(b.T(), int64(11), count)
+
 	bridgeEvents := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.BridgeEvent{}).Count(&count)
 	Nil(b.T(), bridgeEvents.Error)
-	Equal(b.T(), int64(10), count)
+	Equal(b.T(), int64(12), count) // 10 + 2 cctp events
+
 	messageEvents := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.MessageBusEvent{}).Count(&count)
 	Nil(b.T(), messageEvents.Error)
 	Equal(b.T(), int64(3), count)
+
+	cctpEvents := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.CCTPEvent{}).Count(&count)
+	Nil(b.T(), cctpEvents.Error)
+	Equal(b.T(), int64(2), count)
+
+	// Test cctp parity
+	err = b.sendCircleTokenParity(requestSentLog, cp)
+	Nil(b.T(), err)
+	err = b.receiveCircleTokenParity(requestFulfilledLog, cp)
+	Nil(b.T(), err)
 
 	// Test bridge parity
 	err = b.depositParity(depositLog, bp, uint32(testChainID.Uint64()), false)
@@ -435,8 +485,9 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), err)
 
 	bridgeEvents = b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.BridgeEvent{}).Count(&count)
+
 	Nil(b.T(), bridgeEvents.Error)
-	Equal(b.T(), int64(16), count)
+	Equal(b.T(), int64(18), count) // 16 + 2 cctp events
 
 	lastBlockStored, err := b.db.GetLastStoredBlock(b.GetTestContext(), uint32(testChainID.Uint64()), chainConfigsV1[0].Contracts[0].Address)
 
@@ -457,6 +508,93 @@ func (b *BackfillSuite) storeTestLog(tx *types.Transaction, chainID uint32, bloc
 		return nil, fmt.Errorf("error storing swap log: %w", err)
 	}
 	return receipt.Logs[0], nil
+}
+
+//nolint:dupl
+func (b *BackfillSuite) sendCircleTokenParity(log *types.Log, parser *parser.CCTPParser) error {
+	// parse the log
+	parsedLog, err := parser.Filterer.ParseCircleRequestSent(*log)
+	_ = parsedLog
+	if err != nil {
+		return fmt.Errorf("error parsing log: %w", err)
+	}
+	var count int64
+	sender := gosql.NullString{
+		String: parsedLog.Sender.String(),
+		Valid:  true,
+	}
+	nonce := gosql.NullInt64{
+		Int64: int64(parsedLog.Nonce),
+		Valid: true,
+	}
+
+	requestVersion := gosql.NullInt32{
+		Int32: int32(parsedLog.RequestVersion),
+		Valid: true,
+	}
+	formattedRequest := gosql.NullString{
+		String: common.Bytes2Hex(parsedLog.FormattedRequest),
+		Valid:  true,
+	}
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.CCTPEvent{}).
+		Where(&sql.CCTPEvent{
+			ContractAddress:    log.Address.String(),
+			BlockNumber:        log.BlockNumber,
+			TxHash:             log.TxHash.String(),
+			EventType:          cctpTypes.CircleRequestSentEvent.Int(),
+			RequestID:          common.Bytes2Hex(parsedLog.RequestID[:]),
+			DestinationChainID: parsedLog.ChainId,
+			Sender:             sender,
+			Nonce:              nonce,
+			Token:              parsedLog.Token.String(),
+			Amount:             parsedLog.Amount,
+			RequestVersion:     requestVersion,
+			FormattedRequest:   formattedRequest,
+		}).Count(&count)
+	if events.Error != nil {
+		return fmt.Errorf("error querying for event: %w", events.Error)
+	}
+	Equal(b.T(), int64(1), count)
+	return nil
+}
+
+//nolint:dupl
+func (b *BackfillSuite) receiveCircleTokenParity(log *types.Log, parser *parser.CCTPParser) error {
+	// parse the log
+	parsedLog, err := parser.Filterer.ParseCircleRequestFulfilled(*log)
+	_ = parsedLog
+	if err != nil {
+		return fmt.Errorf("error parsing log: %w", err)
+	}
+	var count int64
+	mintToken := gosql.NullString{
+		String: parsedLog.MintToken.String(),
+		Valid:  true,
+	}
+	recipient := gosql.NullString{
+		String: parsedLog.Recipient.String(),
+		Valid:  true,
+	}
+	domainToChain := []int64{1, 43114, 10, 42161}
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.CCTPEvent{}).
+		Where(&sql.CCTPEvent{
+			ContractAddress: log.Address.String(),
+			BlockNumber:     log.BlockNumber,
+			TxHash:          log.TxHash.String(),
+			EventType:       cctpTypes.CircleRequestFulfilledEvent.Int(),
+			RequestID:       common.Bytes2Hex(parsedLog.RequestID[:]),
+			OriginChainID:   big.NewInt(domainToChain[parsedLog.OriginDomain]),
+			MintToken:       mintToken,
+			Amount:          parsedLog.Amount,
+			Recipient:       recipient,
+			Fee:             parsedLog.Fee,
+			Token:           parsedLog.Token.String(),
+		}).Count(&count)
+	if events.Error != nil {
+		return fmt.Errorf("error querying for event: %w", events.Error)
+	}
+	Equal(b.T(), int64(1), count)
+	return nil
 }
 
 //nolint:dupl

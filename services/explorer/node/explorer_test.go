@@ -10,7 +10,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
-	"github.com/synapsecns/sanguine/services/explorer/config"
+	indexerConfig "github.com/synapsecns/sanguine/services/explorer/config/indexer"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/testswap"
@@ -28,7 +28,7 @@ func (c NodeSuite) TestLive() {
 	if os.Getenv("CI") != "" {
 		c.T().Skip("Network / processing test flake")
 	}
-	chainConfigs := []config.ChainConfig{}
+	chainConfigs := []indexerConfig.ChainConfig{}
 	backends := make(map[uint32]bind.ContractBackend)
 	// ethclient.DialContext(ctx, chainConfig.RPCURL)
 	for k := range c.testBackends {
@@ -65,7 +65,7 @@ func (c NodeSuite) TestLive() {
 		swapContractB, swapRefB := testDeployManagerB.GetTestSwapFlashLoan(c.GetTestContext(), c.testBackends[k])
 		transactOpts := c.testBackends[k].GetTxContext(c.GetTestContext(), nil)
 
-		contracts := []config.ContractConfig{
+		contracts := []indexerConfig.ContractConfig{
 			{
 				ContractType: "bridge",
 				Address:      bridgeContract.Address().String(),
@@ -83,7 +83,7 @@ func (c NodeSuite) TestLive() {
 				StartBlock:   0,
 			},
 		}
-		chainConfigs = append(chainConfigs, config.ChainConfig{
+		chainConfigs = append(chainConfigs, indexerConfig.ChainConfig{
 			ChainID:             k,
 			RPCURL:              gofakeit.URL(),
 			FetchBlockIncrement: 100,
@@ -93,22 +93,22 @@ func (c NodeSuite) TestLive() {
 		// go through each contract and save the end height in scribe
 		for i := range contracts {
 			//  the last block store per contract
-			err := c.eventDB.StoreLastIndexed(c.GetTestContext(), common.HexToAddress(contracts[i].Address), k, 12)
+			err := c.eventDB.StoreLastIndexed(c.GetTestContext(), common.HexToAddress(contracts[i].Address), k, 12, false)
 			Nil(c.T(), err)
 		}
 		c.fillBlocks(bridgeRef, swapRefA, swapRefB, transactOpts, k)
 	}
 
 	// This structure is for reference
-	explorerConfig := config.Config{
-		RefreshRate:         2,
+	explorerConfig := indexerConfig.Config{
+		DefaultRefreshRate:  2,
 		ScribeURL:           c.gqlClient.Client.BaseURL,
 		BridgeConfigAddress: deployInfo.Address().String(),
 		BridgeConfigChainID: c.blockConfigChainID,
 		Chains:              chainConfigs,
 	}
 
-	explorerBackfiller, err := node.NewExplorerBackfiller(c.db, explorerConfig, backends)
+	explorerBackfiller, err := node.NewExplorerBackfiller(c.db, explorerConfig, backends, c.explorerMetrics)
 	c.Nil(err)
 	c.NotNil(explorerBackfiller)
 	err = explorerBackfiller.Backfill(c.GetTestContext(), false)

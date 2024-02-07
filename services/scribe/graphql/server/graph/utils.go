@@ -3,15 +3,17 @@ package graph
 import (
 	"context"
 	"fmt"
+	ethCore "github.com/ethereum/go-ethereum/core"
+	"github.com/synapsecns/sanguine/services/scribe/backend"
+	"math/big"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ipfs/go-log"
 	"github.com/jpillora/backoff"
-	"github.com/synapsecns/sanguine/services/scribe/backfill"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/model"
-	"math/big"
-	"time"
 )
 
 var logger = log.Logger("scribe-graph")
@@ -80,8 +82,8 @@ func (r Resolver) ethTxsToModelTransactions(ctx context.Context, ethTxs []db.TxW
 		modelTxs[i] = r.ethTxToModelTransaction(ethTx.Tx, chainID)
 
 		// Return empty sender if that this operation errors (will only occur in tests or invalid txs).
-		msgFrom, _ := ethTx.Tx.AsMessage(types.LatestSignerForChainID(ethTx.Tx.ChainId()), big.NewInt(1))
-		modelTxs[i].Sender = msgFrom.From().String()
+		msgFrom, _ := ethCore.TransactionToMessage(&ethTx.Tx, types.LatestSignerForChainID(ethTx.Tx.ChainId()), big.NewInt(1))
+		modelTxs[i].Sender = msgFrom.From.String()
 
 		timestamp, err := r.DB.RetrieveBlockTime(ctx, chainID, ethTx.BlockNumber)
 		if err != nil || timestamp == 0 {
@@ -129,12 +131,12 @@ func (r Resolver) getBlockTime(ctx context.Context, chainID uint32, blockNumber 
 		Factor: 2,
 		Jitter: true,
 		Min:    30 * time.Millisecond,
-		Max:    3 * time.Second,
+		Max:    5 * time.Second,
 	}
 
 	timeout := time.Duration(0)
-	var backendClient backfill.ScribeBackend
-	backendClient, err := backfill.DialBackend(ctx, fmt.Sprintf("%s/%d", r.OmniRPCURL, chainID), r.Metrics)
+	var backendClient backend.ScribeBackend
+	backendClient, err := backend.DialBackend(ctx, fmt.Sprintf("%s/%d", r.OmniRPCURL, chainID), r.Metrics)
 	if err != nil {
 		return nil, fmt.Errorf("could not create backend client: %w", err)
 	}
@@ -149,6 +151,8 @@ func (r Resolver) getBlockTime(ctx context.Context, chainID uint32, blockNumber 
 
 			if err != nil {
 				timeout = b.Duration()
+				fmt.Println("TESTING--", fmt.Sprintf("%s/%d", r.OmniRPCURL, chainID), err)
+
 				continue
 			}
 			blockTime := block.Time

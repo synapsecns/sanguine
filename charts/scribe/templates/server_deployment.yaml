@@ -54,9 +54,10 @@ spec:
           args:
             {{- toYaml .Values.server.args | nindent 12 }}
           ports:
-            - name: http
-              containerPort: 5080
-              protocol: TCP
+          {{- range .Values.service.ports }}
+            - containerPort: {{ .containerPort }}
+              name: {{ .name }}
+          {{- end }}
           {{- if .Values.server.env }}
           env:
             {{- toYaml .Values.server.env | nindent 12 }}
@@ -75,7 +76,7 @@ spec:
               mountPath: /config
         {{- end }}
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- toYaml .Values.server.resources | nindent 12 }}
         {{- if .Values.server.extraContainers }}
         {{- toYaml .Values.server.extraContainers | nindent 8 }}
         {{- end }}

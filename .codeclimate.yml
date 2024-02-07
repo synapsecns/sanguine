@@ -1,0 +1,13 @@
+version: '2'
+# this is currently timing out for no reason.
+# see: https://codeclimate.com/github/synapsecns/sanguine/builds/5046
+# support ticket has been filed.
+plugins:
+  editorconfig:
+    enabled: false
+  tflint:
+    enabled: true
+  markdownlint:
+    enabled: true
+  stylelint:
+    enabled: true

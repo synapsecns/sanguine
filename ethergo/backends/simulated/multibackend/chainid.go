@@ -21,7 +21,6 @@ func NewConfigWithChainID(chainID *big.Int) *params.ChainConfig {
 		DAOForkBlock:                  util.CopyBigInt(params.AllEthashProtocolChanges.DAOForkBlock),
 		DAOForkSupport:                params.AllEthashProtocolChanges.DAOForkSupport,
 		EIP150Block:                   util.CopyBigInt(params.AllEthashProtocolChanges.EIP150Block),
-		EIP150Hash:                    params.AllEthashProtocolChanges.EIP150Hash,
 		EIP155Block:                   util.CopyBigInt(params.AllEthashProtocolChanges.EIP155Block),
 		EIP158Block:                   util.CopyBigInt(params.AllEthashProtocolChanges.EIP158Block),
 		ByzantiumBlock:                util.CopyBigInt(params.AllEthashProtocolChanges.ByzantiumBlock),
@@ -34,12 +33,13 @@ func NewConfigWithChainID(chainID *big.Int) *params.ChainConfig {
 		ArrowGlacierBlock:             util.CopyBigInt(params.AllEthashProtocolChanges.ArrowGlacierBlock),
 		GrayGlacierBlock:              util.CopyBigInt(params.AllEthashProtocolChanges.GrayGlacierBlock),
 		MergeNetsplitBlock:            util.CopyBigInt(params.AllEthashProtocolChanges.MergeNetsplitBlock),
-		ShanghaiBlock:                 util.CopyBigInt(params.AllEthashProtocolChanges.ShanghaiBlock),
-		CancunBlock:                   util.CopyBigInt(params.AllEthashProtocolChanges.CancunBlock),
-		TerminalTotalDifficulty:       params.AllEthashProtocolChanges.TerminalTotalDifficulty,
+		ShanghaiTime:                  util.CopyPointer(params.AllEthashProtocolChanges.ShanghaiTime),
+		CancunTime:                    util.CopyPointer(params.AllEthashProtocolChanges.CancunTime),
+		PragueTime:                    util.CopyPointer(params.AllEthashProtocolChanges.PragueTime),
+		TerminalTotalDifficulty:       util.CopyBigInt(params.AllEthashProtocolChanges.TerminalTotalDifficulty),
 		TerminalTotalDifficultyPassed: params.AllEthashProtocolChanges.TerminalTotalDifficultyPassed,
-		Ethash:                        params.AllEthashProtocolChanges.Ethash,
-		Clique:                        params.AllEthashProtocolChanges.Clique,
+		Ethash:                        util.CopyPointer(params.AllEthashProtocolChanges.Ethash),
+		Clique:                        util.CopyPointer(params.AllEthashProtocolChanges.Clique),
 	}
 }
 
@@ -49,7 +49,7 @@ func NewSimulatedBackendWithConfig(alloc core.GenesisAlloc, gasLimit uint64, con
 
 	genesis := core.Genesis{Config: config, GasLimit: gasLimit, Alloc: alloc}
 	genesis.MustCommit(database)
-	blockchain, _ := core.NewBlockChain(database, nil, genesis.Config, ethash.NewFaker(), vm.Config{}, nil, nil)
+	blockchain, _ := core.NewBlockChain(database, nil, &genesis, nil, ethash.NewFaker(), vm.Config{}, nil, nil)
 
 	backend := &SimulatedBackend{
 		database:   database,
@@ -61,6 +61,6 @@ func NewSimulatedBackendWithConfig(alloc core.GenesisAlloc, gasLimit uint64, con
 	backend.filterSystem = filters.NewFilterSystem(filterBackend, filters.Config{})
 	backend.events = filters.NewEventSystem(backend.filterSystem, false)
 
-	backend.rollback(blockchain.CurrentBlock())
+	backend.rollback(blockchain.GetBlock(blockchain.CurrentBlock().Hash(), blockchain.CurrentBlock().Number.Uint64()))
 	return backend
 }

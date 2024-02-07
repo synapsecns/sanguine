@@ -3,7 +3,9 @@ package sqlite
 import (
 	"context"
 	"fmt"
-	common_base "github.com/synapsecns/sanguine/core/dbcommon"
+	scribeLogger "github.com/synapsecns/sanguine/services/scribe/logger"
+	gormLogger "gorm.io/gorm/logger"
+
 	"github.com/synapsecns/sanguine/core/metrics"
 	"os"
 
@@ -20,6 +22,7 @@ type Store struct {
 // NewSqliteStore creates a new sqlite data store.
 func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Handler, skipMigrations bool) (_ *Store, err error) {
 	logger.Debugf("creating sqlite store at %s", dbPath)
+	scribeLogger.ReportScribeState(0, 0, nil, scribeLogger.CreatingSQLStore)
 
 	ctx, span := handler.Tracer().Start(parentCtx, "start-sqlite")
 	defer func() {
@@ -36,9 +39,11 @@ func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Ha
 
 	gdb, err := gorm.Open(sqlite.Open(fmt.Sprintf("%s/%s", dbPath, "synapse.db")), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
-		Logger:                                   common_base.GetGormLogger(logger),
-		FullSaveAssociations:                     true,
-		SkipDefaultTransaction:                   true,
+		//Logger:                                   common_base.GetGormLogger(logger),
+		Logger: gormLogger.Default.LogMode(gormLogger.Silent),
+
+		FullSaveAssociations:   true,
+		SkipDefaultTransaction: true,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("could not connect to db %s: %w", dbPath, err)

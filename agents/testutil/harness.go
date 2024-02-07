@@ -4,10 +4,13 @@ import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/basemessageharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/bondingmanagerharness"
 	gasdataharness "github.com/synapsecns/sanguine/agents/contracts/test/gasdata"
 	"github.com/synapsecns/sanguine/agents/contracts/test/lightmanagerharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/receiptharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/requestharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/snapshotharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/stateharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/tipsharness"
@@ -28,6 +31,9 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/deployer"
 )
 
+// SynapseChainID is the chain ID for the synapse chain.
+const SynapseChainID = 10
+
 // MessageHarnessDeployer deploys the message harness for testing.
 type MessageHarnessDeployer struct {
 	*deployer.BaseDeployer
@@ -44,6 +50,63 @@ func (d MessageHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedC
 		return messageharness.DeployMessageHarness(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return messageharness.NewMessageHarnessRef(address, backend)
+	})
+}
+
+// BaseMessageHarnessDeployer deploys the base message harness for testing.
+type BaseMessageHarnessDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewBaseMessageHarnessDeployer creates a base message harness deployer.
+func NewBaseMessageHarnessDeployer(regirstry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return BaseMessageHarnessDeployer{deployer.NewSimpleDeployer(regirstry, backend, BaseMessageHarnessType)}
+}
+
+// Deploy deploys the base message harness deployer.
+func (d BaseMessageHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return d.DeploySimpleContract(ctx, func(transactOpts *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return basemessageharness.DeployBaseMessageHarness(transactOpts, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return basemessageharness.NewBaseMessageHarnessRef(address, backend)
+	})
+}
+
+// ReceiptHarnessDeployer deploys the request harness for testing.
+type ReceiptHarnessDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewReceiptHarnessDeployer creates a request harness deployer.
+func NewReceiptHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return ReceiptHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, ReceiptHarnessType)}
+}
+
+// Deploy deploys the receipt harness deployer.
+func (d ReceiptHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return d.DeploySimpleContract(ctx, func(transactOpts *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return receiptharness.DeployReceiptHarness(transactOpts, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return receiptharness.NewReceiptHarnessRef(address, backend)
+	})
+}
+
+// RequestHarnessDeployer deploys the request harness for testing.
+type RequestHarnessDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewRequestHarnessDeployer creates a request harness deployer.
+func NewRequestHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return RequestHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, RequestHarnessType)}
+}
+
+// Deploy deploys the request harness deployer.
+func (d RequestHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return d.DeploySimpleContract(ctx, func(transactOpts *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return requestharness.DeployRequestHarness(transactOpts, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return requestharness.NewRequestHarnessRef(address, backend)
 	})
 }
 
@@ -65,7 +128,7 @@ func (o LightManagerHarnessDeployer) Deploy(ctx context.Context) (contracts.Depl
 	originAddress := originHarnessContract.Address()
 	destinationAddress := destinationHarnessContract.Address()*/
 	return o.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		address, tx, rawHandle, err := lightmanagerharness.DeployLightManagerHarness(transactOps, backend, uint32(o.Backend().GetChainID()))
+		address, tx, rawHandle, err := lightmanagerharness.DeployLightManagerHarness(transactOps, backend, SynapseChainID)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", o.ContractType().ContractName(), err)
 		}
@@ -107,7 +170,7 @@ func (o BondingManagerHarnessDeployer) Deploy(ctx context.Context) (contracts.De
 	originAddress := originHarnessContract.Address()
 	destinationAddress := destinationHarnessContract.Address()*/
 	return o.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		address, tx, rawHandle, err := bondingmanagerharness.DeployBondingManagerHarness(transactOps, backend, uint32(o.Backend().GetChainID()))
+		address, tx, rawHandle, err := bondingmanagerharness.DeployBondingManagerHarness(transactOps, backend, SynapseChainID)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", o.ContractType().ContractName(), err)
 		}
@@ -162,7 +225,7 @@ func (o OriginHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedCo
 	gasOracleContract := o.Registry().Get(ctx, GasOracleType)
 	gasOracleAddress := gasOracleContract.Address()
 	return o.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		address, tx, rawHandle, err := originharness.DeployOriginHarness(transactOps, backend, uint32(o.Backend().GetChainID()), agentAddress, inboxAddress, gasOracleAddress)
+		address, tx, rawHandle, err := originharness.DeployOriginHarness(transactOps, backend, SynapseChainID, agentAddress, inboxAddress, gasOracleAddress)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", o.ContractType().ContractName(), err)
 		}
@@ -310,7 +373,7 @@ func (d DestinationHarnessDeployer) Deploy(ctx context.Context) (contracts.Deplo
 		inboxAddress = lightInboxContract.Address()
 	}
 	return d.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		address, tx, rawHandle, err := destinationharness.DeployDestinationHarness(transactOps, backend, uint32(d.Backend().GetChainID()), agentManagerAddress, inboxAddress)
+		address, tx, rawHandle, err := destinationharness.DeployDestinationHarness(transactOps, backend, SynapseChainID, agentManagerAddress, inboxAddress)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy %s: %w", d.ContractType().ContractName(), err)
 		}

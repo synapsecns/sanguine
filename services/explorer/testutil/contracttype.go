@@ -6,6 +6,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/bridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
@@ -17,6 +18,9 @@ func init() {
 		AllContractTypes = append(AllContractTypes, contractType)
 		// assert type is correct
 		var _ contracts.ContractType = contractType
+
+		// Checks for discrepancies in contract reference. Will panic if contract is not properly configured.
+		contractType.ContractName()
 	}
 }
 
@@ -51,6 +55,8 @@ const (
 	MessageBusType
 	// MetaSwapType is the metaswap contract type.
 	MetaSwapType
+	// CCTPType is cctp contract type.
+	CCTPType
 )
 
 // ID gets the contract type as an id.
@@ -83,6 +89,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return messagebus.Contracts["/solidity/MessageBusUpgradeableV1_flat.sol:MessageBusUpgradeable"]
 	case MetaSwapType:
 		return metaswap.Contracts["/solidity/MetaSwapV1_flat.sol:MetaSwap"]
+	case CCTPType:
+		return cctp.Contracts["solidity/SynapseCCTPV1_flat.sol:SynapseCCTP"]
 	default:
 		panic("not yet implemented")
 	}

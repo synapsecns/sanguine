@@ -6,6 +6,7 @@ Create popups here, and use them in the IMPAIRED_CHAINS constant below.
 const GENERIC_CHAIN_PAUSED = () => {
   return <>This Chain is Paused</>
 }
+
 const HARMONY_WARNING = () => {
   return (
     <>

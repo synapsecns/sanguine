@@ -1,8 +1,12 @@
 # Ethergo
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/synapsecns/sanguine/ethergo.svg)](https://pkg.go.dev/github.com/synapsecns/sanguine/ethergo)
+[![Go Report Card](https://goreportcard.com/badge/github.com/synapsecns/sanguine/ethergo)](https://goreportcard.com/report/github.com/synapsecns/sanguine/ethergo)
+
+
 ## Overview
 
-Ethergo is a comprehensive embedded test suite for Synapse, built using the Go programming language. It provides the functionality to deploy contracts to various backends, streamlining the testing process for different types of blockchain networks. The module is organized into several subdirectories, each dedicated to specific aspects of the testing process, such as backends, chain interaction, contract management, and signing utilities.
+Ethergo is a comprehensive embedded test suite for [Synapse](https://synapseprotocol.com), built using the Go programming language. It provides the functionality to deploy contracts to various backends, streamlining the testing process for different types of blockchain networks. The module is organized into several subdirectories, each dedicated to specific aspects of the testing process, such as backends, chain interaction, contract management, and signing utilities.
 
 Some key components of Ethergo include:
 
@@ -11,7 +15,7 @@ Some key components of Ethergo include:
  - **Contracts**: This section contains interfaces for working with contracts, including deployer and manager functionalities.
  - **Manager**: The manager is responsible for handling contract deployments.
  -  **Signer**: Ethergo offers signing and transaction submission utilities, with various adapters for signing transactions and handling race conditions with nonces. It also includes a wallet interface capable of importing keys from seed phrases, private keys, and mnemonics.
- -
+
  To see a working example of Ethergo in action, refer to the [`example`](./example) folder, which provides a complete demonstration of how to use the deployer and manager components. Please note that the APIs are subject to change.
 
 

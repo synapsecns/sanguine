@@ -108,6 +108,8 @@ type serverOptions struct {
 // nonAnvilOptions options are options that are not part of the anvil spec, but are used by the anvil backend.
 // it's important that these do not include the anvil annotation.
 type nonAnvilOptions struct {
+	// enableOtterscan specifies wether or not to start a container for otterscan
+	enableOtterscan bool
 	// maxWait is the maximum time to wait for the server to start
 	maxWait time.Duration
 	// expirySeconds is the number of seconds to wait before expiring a request
@@ -131,6 +133,12 @@ type OptionBuilder struct {
 }
 
 // ========= General Options =========
+
+// OtterscanEnabled sets whether or not to enable otterscan.
+// Note: for this to work correctly, the underlying node we fork from must also support the ots namespace.
+func (o *OptionBuilder) OtterscanEnabled(enabled bool) {
+	o.enableOtterscan = enabled
+}
 
 // SetAccounts sets the number of Accounts to create (defaults to 10).
 func (o *OptionBuilder) SetAccounts(accountCount uint8) {
@@ -338,22 +346,22 @@ func (o *OptionBuilder) SetHost(host string) {
 	o.Host = host
 }
 
-// SetMaxWaitTime sets the max wait time for the docker image to start.
+// SetMaxWaitTime sets the max wait time for the docker container(s) to start.
 func (o *OptionBuilder) SetMaxWaitTime(maxWait time.Duration) {
 	o.maxWait = maxWait
 }
 
-// SetExpirySeconds sets the expiry seconds for the docker image to be removed.
+// SetExpirySeconds sets the expiry seconds for the docker containers(s) to be removed.
 func (o *OptionBuilder) SetExpirySeconds(expirySeconds uint) {
 	o.expirySeconds = expirySeconds
 }
 
-// SetProcessLogOptions sets the process log options for the docker container.
+// SetProcessLogOptions sets the process log options for the docker container(s).
 func (o *OptionBuilder) SetProcessLogOptions(customOpts ...processlog.StdStreamLogArgsOption) {
 	o.processOptions = customOpts
 }
 
-// SetRestartPolicy sets the restart policy for the docker container.
+// SetRestartPolicy sets the restart policy for the docker container(s).
 func (o *OptionBuilder) SetRestartPolicy(restartPolicy RestartPolicy) {
 	alwaysRestart := docker.AlwaysRestart()
 	failure := docker.RestartOnFailure(10)

@@ -198,8 +198,8 @@ func (c *Client) EnableTraces(ctx context.Context) error {
 	return c.callAnvilContext(ctx, nil, "enableTraces")
 }
 
-// anvilTransaction represents a transaction that will serialize to the correct JSON.
-type anvilTransaction struct {
+// anvilTransactionLegacy represents a transaction that will serialize to the correct JSON.
+type anvilTransactionLegacy struct {
 	From            string `json:"from"`
 	To              string `json:"to"`
 	GasPrice        string `json:"gasPrice"`
@@ -210,19 +210,48 @@ type anvilTransaction struct {
 	TransactionType string `json:"type"`
 }
 
+// anvilTransactionDynamic represents a transaction that will serialize to the correct JSON.
+type anvilTransactionDynamic struct {
+	From                 string `json:"from"`
+	To                   string `json:"to"`
+	MaxFeePerGas         string `json:"maxFeePerGas"`
+	MaxPriorityFeePerGas string `json:"maxPriorityFeePerGas"`
+	Gas                  string `json:"gas"`
+	Value                string `json:"value,omitempty"`
+	Data                 string `json:"data"`
+	Nonce                string `json:"nonce"`
+	TransactionType      string `json:"type"`
+}
+
 // SendUnsignedTransaction sends a transaction to the anvil node.
 // It is the responsibility of the caller to call impersonateAccount and revertImpersonatedAccount.
 func (c *Client) SendUnsignedTransaction(ctx context.Context, from common.Address, tx *types.Transaction) error {
-	anTx := anvilTransaction{
-		From:            from.Hex(),
-		To:              tx.To().Hex(),
-		GasPrice:        bigIntToString(tx.GasPrice().Int64()),
-		Gas:             bigIntToString(int64(tx.Gas())),
-		Data:            hex.EncodeToString(tx.Data()),
-		Nonce:           bigIntToString(int64(tx.Nonce())),
-		Value:           fmt.Sprintf("%x", tx.Value()),
-		TransactionType: bigIntToString(int64(tx.Type())),
+	var anTx interface{}
+	if tx.Type() == types.LegacyTxType {
+		anTx = anvilTransactionLegacy{
+			From:            from.Hex(),
+			To:              tx.To().Hex(),
+			GasPrice:        bigIntToString(tx.GasPrice().Int64()),
+			Gas:             bigIntToString(int64(tx.Gas())),
+			Data:            hex.EncodeToString(tx.Data()),
+			Nonce:           bigIntToString(int64(tx.Nonce())),
+			Value:           fmt.Sprintf("%x", tx.Value()),
+			TransactionType: bigIntToString(int64(tx.Type())),
+		}
+	} else {
+		anTx = anvilTransactionDynamic{
+			From:                 from.Hex(),
+			To:                   tx.To().Hex(),
+			MaxFeePerGas:         bigIntToString(tx.GasPrice().Int64()),
+			MaxPriorityFeePerGas: bigIntToString(tx.GasPrice().Int64()),
+			Gas:                  bigIntToString(int64(tx.Gas())),
+			Data:                 hex.EncodeToString(tx.Data()),
+			Nonce:                bigIntToString(int64(tx.Nonce())),
+			Value:                fmt.Sprintf("%x", tx.Value()),
+			TransactionType:      bigIntToString(int64(tx.Type())),
+		}
 	}
+
 	// nolint: wrapcheck
 	return c.CallContext(ctx, nil, "eth_sendTransaction", anTx)
 }

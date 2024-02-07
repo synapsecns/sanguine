@@ -14,9 +14,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/jpillora/backoff"
 	"github.com/pkg/errors"
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/synapsecns/sanguine/core/observer"
-	"github.com/synapsecns/sanguine/core/prom"
 	"github.com/synapsecns/sanguine/ethergo/chain/chainwatcher"
 	"github.com/teivah/onecontext"
 )
@@ -272,21 +270,3 @@ func (c *contractWatcherImpl) hasProducer(address common.Address) bool {
 	}
 	return false
 }
-
-// ObservedContractEventsMetricName is the count of observed counts on the events metric.
-const ObservedContractEventsMetricName = "contract_watcher_observed_event_total"
-
-// GetMetrics gets the metrics associated with the contract watcher.
-func (c *contractWatcherImpl) GetMetrics(labels map[string]string) []prometheus.Collector {
-	return []prometheus.Collector{
-		prometheus.NewCounterFunc(prometheus.CounterOpts{
-			Name:        ObservedContractEventsMetricName,
-			Help:        "total number of observed events on the contract",
-			ConstLabels: labels,
-		}, func() float64 {
-			return float64(atomic.LoadUint64(&c.eventCount))
-		}),
-	}
-}
-
-var _ prom.Instrumentable = &contractWatcherImpl{}

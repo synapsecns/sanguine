@@ -1,5 +1,8 @@
 # IAP Tunnel Provider
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/synapsecns/sanguine/contrib/terraform-provider-iap.svg)](https://pkg.go.dev/github.com/synapsecns/sanguine/contrib/terraform-provider-iap)
+[![Go Report Card](https://goreportcard.com/badge/github.com/synapsecns/sanguine/contrib/terraform-provider-iap)](https://goreportcard.com/report/github.com/synapsecns/sanguine/contrib/terraform-provider-iap)
+
 The goal of the iap provider is to allow the use of an identity-aware proxy to connect to a GCP through a bastion host using terraform. This looks like this:
 
 ![Architecture Diagram](./assets/img.png)

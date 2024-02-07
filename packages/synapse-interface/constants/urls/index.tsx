@@ -1,4 +1,4 @@
-import { ETH, SYN } from '@constants/tokens/master'
+import { ETH, SYN } from '@constants/tokens/bridgeable'
 import { Token } from '@types'
 import * as CHAINS from '@constants/chains/master'
 import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
@@ -13,16 +13,18 @@ if (process?.env?.NODE_ENV === 'development') {
 export { SYNAPSE_BASE_URL }
 
 export const BASE_PATH = '/'
-export const ANALYTICS_KAPPA = 'https://explorer.synapseprotocol.com/tx/'
-export const ANALYTICS_PATH = 'https://explorer.synapseprotocol.com/'
+export const EXPLORER_KAPPA = 'https://explorer.synapseprotocol.com/tx/'
+export const EXPLORER_PATH = 'https://explorer.synapseprotocol.com/'
 export const AIRDROP_PATH = '/claim'
 export const SWAP_PATH = '/swap'
 export const STAKE_PATH = '/stake'
 export const POOLS_PATH = '/pools'
 export const POOL_PATH = '/pool'
 export const BRIDGE_PATH = '/'
-export const CONTRACTS_PATH = '/contracts'
-export const PORTFOLIO_PATH = '/portfolio'
+export const CONTRACTS_PATH =
+  'https://docs.synapseprotocol.com/reference/contract-addresses'
+export const INTERCHAIN_LINK = 'https://interchain.synapseprotocol.com/'
+export const SOLANA_LINK = 'https://solana.synapseprotocol.com/'
 export const STATISTICS_PATH = '/statistics'
 export const LANDING_PATH = '/landing'
 export const TERMS_OF_SERVICE_PATH =
@@ -62,20 +64,29 @@ export const getExplorerTxUrl = ({
   return `${baseUrl}/${type}/${hash ?? data}`
 }
 
+export const getExplorerAddressUrl = ({ address, chainId }) => {
+  let explorerUrl = Object.values(CHAINS).filter(
+    (chain) => chain.id === chainId
+  )[0].explorerUrl
+  let baseUrl = explorerUrl ?? CHAINS.ETH.explorerUrl
+
+  return `${baseUrl}/address/${address}`
+}
+
 export const getCompleteUrl = (uriPath: string) => {
   return `${SYNAPSE_BASE_URL}${uriPath}`
 }
 
 export const DOCS_URL = 'https://docs.synapseprotocol.com'
-export const DISCORD_URL = 'https://discord.gg/4rMzuEnKqe'
+export const DISCORD_URL = 'https://discord.gg/synapseprotocol'
 export const TELEGRAM_URL = 'https://t.me/synapseprotocol'
 export const FORUM_URL = 'https://forum.synapseprotocol.com/'
 export const TWITTER_URL = 'https://twitter.com/SynapseProtocol'
 
+export const BUILD_ON_URL =
+  'https://docs.synapseprotocol.com/synapse-interchain-network-sin/build-on-the-synapse-interchain-network'
 export const GITHUB_URL = 'https://github.com/synapsecns'
 export const MEDIUM_URL = 'https://synapseprotocol.medium.com/'
-export const CAREERS_URL =
-  'https://synapseprotocol.notion.site/synapseprotocol/Synapse-Job-Board-3851178379bf45b2b47c6ec8bf9d6753'
 export const MIRROR_URL = 'https://synapse.mirror.xyz/'
 
 export const HOW_TO_BRIDGE_URL =

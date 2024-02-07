@@ -3,7 +3,8 @@ package sql
 import (
 	"context"
 	"fmt"
-
+	"github.com/benbjohnson/immutable"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 )
 
@@ -34,6 +35,17 @@ func (s *Store) GetFloat64(ctx context.Context, query string) (float64, error) {
 	return res, nil
 }
 
+// GetString gets a string from a given query.
+func (s *Store) GetString(ctx context.Context, query string) (string, error) {
+	var res string
+	dbTx := s.db.WithContext(ctx).Raw(query).Find(&res)
+	if dbTx.Error != nil {
+		return "", fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+	}
+
+	return res, nil
+}
+
 // GetStringArray returns a string array for a given query.
 func (s *Store) GetStringArray(ctx context.Context, query string) ([]string, error) {
 	var res []string
@@ -49,6 +61,18 @@ func (s *Store) GetStringArray(ctx context.Context, query string) ([]string, err
 // GetBridgeEvent returns a bridge event.
 func (s *Store) GetBridgeEvent(ctx context.Context, query string) (*BridgeEvent, error) {
 	var res BridgeEvent
+
+	dbTx := s.db.WithContext(ctx).Raw(query).Find(&res)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to read bridge event: %w", dbTx.Error)
+	}
+
+	return &res, nil
+}
+
+// GetMVBridgeEvent gets a bridge event from the materialized view table.
+func (s *Store) GetMVBridgeEvent(ctx context.Context, query string) (*HybridBridgeEvent, error) {
+	var res HybridBridgeEvent
 
 	dbTx := s.db.WithContext(ctx).Raw(query).Find(&res)
 	if dbTx.Error != nil {
@@ -222,4 +246,64 @@ func (s *Store) GetLeaderboard(ctx context.Context, query string) ([]*model.Lead
 	}
 
 	return res, nil
+}
+
+// GetPendingByChain gets the bridge leaderboard by chain.
+// returns chainid, count
+// TODO: test this.
+func (s *Store) GetPendingByChain(ctx context.Context) (res *immutable.Map[int, int], err error) {
+	const query = `SELECT
+		toInt64(destination_chain_id) as destination_chain_id,
+		toInt64(COUNTDistinct(destination_kappa)) AS distinct_count
+	FROM bridge_events
+	WHERE destination_kappa NOT IN (
+		SELECT kappa
+		FROM bridge_events
+		WHERE kappa != ''
+	)
+	GROUP BY destination_chain_id`
+
+	type PendingByChain struct {
+		DestinationChainID *int64 `gorm:"column:destination_chain_id"`
+		DistinctCount      *int64 `gorm:"column:distinct_count"`
+	}
+
+	var pending []*PendingByChain
+
+	dbTx := s.db.WithContext(ctx).Raw(query).Scan(&pending)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to get pending by chain: %w", dbTx.Error)
+	}
+
+	builder := immutable.NewMapBuilder[int, int](nil)
+
+	for _, kvPair := range pending {
+		builder.Set(int(*kvPair.DestinationChainID), int(*kvPair.DistinctCount))
+	}
+
+	return builder.Map(), nil
+}
+
+func (s *Store) GetBlockHeights(ctx context.Context, query string, contractTypeMap map[string]model.ContractType) ([]*model.BlockHeight, error) {
+	var res []*LastBlock
+	dbTx := s.db.WithContext(ctx).Raw(query).Scan(&res)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to get block heights: %w", dbTx.Error)
+	}
+	if len(res) == 0 {
+		return nil, nil
+	}
+
+	var formatted []*model.BlockHeight
+	for _, block := range res {
+		chainID := int(block.ChainID)
+		blockNumber := int(block.BlockNumber)
+		formatted = append(formatted, &model.BlockHeight{
+			ChainID:     &chainID,
+			Type:        core.PtrTo(contractTypeMap[block.ContractAddress]),
+			BlockNumber: &blockNumber,
+		})
+	}
+
+	return formatted, nil
 }

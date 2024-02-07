@@ -1,36 +1,32 @@
-import Head from 'next/head'
-import { useAccount, useNetwork } from 'wagmi'
-import BridgePage from './bridge'
-import { useEffect, useState } from 'react'
-import { DEFAULT_FROM_CHAIN } from '@/constants/bridge'
+import { Banner } from '@/components/Banner'
+import StateManagedBridge from './state-managed-bridge'
+import { Portfolio } from '@/components/Portfolio/Portfolio'
+import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
+import ReactGA from 'react-ga'
+import useSyncQueryParamsWithBridgeState from '@/utils/hooks/useSyncQueryParamsWithBridgeState'
+
+// TODO: someone should add this to the .env, disable if blank, etc.
+// this is being added as a hotfix to assess user load on the synapse explorer api
+// I'd recommend moving this to a sushi-style analytics provider wrapper.
+const TRACKING_ID = 'G-BBC13LQXBD'
+ReactGA.initialize(TRACKING_ID)
 
 const Home = () => {
-  const { address: currentAddress } = useAccount()
-  const { chain } = useNetwork()
-  const [connectedChainId, setConnectedChainId] = useState(0)
-  const [address, setAddress] = useState(undefined)
+  useSyncQueryParamsWithBridgeState()
 
-  useEffect(() => {
-    setConnectedChainId(chain?.id ?? DEFAULT_FROM_CHAIN)
-  }, [chain])
-  useEffect(() => {
-    setAddress(currentAddress)
-  }, [currentAddress])
   return (
-    <>
-      <Head>
-        <title>Synapse</title>
-        <meta
-          name="description"
-          content="Synapse is the most widely used, extensible, secure cross-chain communications network."
-        />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-      {connectedChainId !== 0 ? (
-        <BridgePage address={address} fromChainId={connectedChainId} />
-      ) : null}
-    </>
+    <LandingPageWrapper>
+      <main
+        data-test-id="bridge-page"
+        className="relative z-0 flex-1 h-full overflow-y-auto focus:outline-none"
+      >
+        <Banner />
+        <div className="flex flex-col-reverse justify-center gap-16 px-4 py-20 mx-auto lg:flex-row 2xl:w-3/4 sm:mt-6 sm:px-8 md:px-12">
+          <Portfolio />
+          <StateManagedBridge />
+        </div>
+      </main>
+    </LandingPageWrapper>
   )
 }
 

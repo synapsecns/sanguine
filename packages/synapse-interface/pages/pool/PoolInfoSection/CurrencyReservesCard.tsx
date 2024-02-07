@@ -1,62 +1,56 @@
-import { commifyBnToString } from '@bignumber/format'
-import AugmentWithUnits from '../components/AugmentWithUnits'
-import InfoSectionCard from './InfoSectionCard'
-import { displaySymbol } from '@utils/displaySymbol'
-import { PoolTokenObject, Token } from '@types'
-import LoadingRow from '@/components/loading/LoadingRow'
+import numeral from 'numeral'
+import { useSelector } from 'react-redux'
 
-const CurrencyReservesCard = ({
-  chainId,
-  title,
-  poolData,
-}: {
-  chainId: number
-  title: string
-  poolData: any
-}) => {
+import InfoSectionCard from './InfoSectionCard'
+import { RootState } from '@/store/store'
+
+const TokenLabels = ({ tokens }) => {
   return (
-    <InfoSectionCard title={title}>
-      {poolData ? (
-        poolData.tokens.map((tokenObj, idx) => {
-          return (
-            <div key={idx}>
-              <CurrencyInfoListItem
-                chainId={chainId}
-                key={tokenObj.symbol}
-                balance={tokenObj.balance}
-                token={tokenObj.token}
-                percent={tokenObj.percent}
-              />
+    <div className="mt-2 space-y-2">
+      {tokens
+        ? tokens?.map((token) => (
+            <div
+              className="relative flex items-center justify-between h-10"
+              key={token.token.symbol}
+            >
+              <div className="absolute inset-0 w-full h-full bg-bgDark">
+                <div
+                  className="h-full rounded-sm bg-bgLight"
+                  style={{ width: token.percent }}
+                ></div>
+              </div>
+
+              <div className="relative z-10 flex items-center h-full ml-2 space-x-2">
+                <img
+                  alt={`Icon for ${token.token.symbol}`}
+                  className="w-[24px] h-[24px] rounded-full"
+                  src={token.token.icon.src}
+                />
+                <div className="text-white text-md">
+                  {numeral(token.balanceStr).format('0,0.00a')}
+                </div>
+                <div className="text-sm text-secondaryTextColor">
+                  {token.token.symbol}
+                </div>
+              </div>
+
+              <div className="relative z-10 flex items-center h-full text-white text-md">
+                {numeral(token.percent).format('0,0%')}
+              </div>
             </div>
-          )
-        })
-      ) : (
-        <>
-          <LoadingRow />
-          <LoadingRow />
-        </>
-      )}
-    </InfoSectionCard>
+          ))
+        : null}
+    </div>
   )
 }
 
-function CurrencyInfoListItem({ chainId, percent, balance, token }) {
-  const symbol = displaySymbol(chainId, token)
-  let decimalsToDisplay = token.swapableType === 'USD' ? 0 : 2
+const CurrencyReservesCard = () => {
+  const { poolData } = useSelector((state: RootState) => state.poolData)
+
   return (
-    <div className="flex items-center justify-between my-2 text-sm font-medium text-white">
-      <div className="flex items-center">
-        <img className="relative mr-2 w-7" src={token.icon.src} />
-        <div>{symbol}</div>
-      </div>
-      <div>{percent}</div>
-      {balance && (
-        <AugmentWithUnits
-          content={commifyBnToString(balance, decimalsToDisplay)}
-          label={symbol}
-        />
-      )}
-    </div>
+    <InfoSectionCard title="Currency Reserves">
+      {poolData ? <TokenLabels tokens={poolData.tokens} /> : null}
+    </InfoSectionCard>
   )
 }
 

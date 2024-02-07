@@ -31,8 +31,6 @@ import (
 
 	params "github.com/ethereum/go-ethereum/params"
 
-	prometheus "github.com/prometheus/client_golang/prometheus"
-
 	rpc "github.com/ethereum/go-ethereum/rpc"
 
 	testing "testing"
@@ -116,6 +114,27 @@ func (_m *SimulatedTestBackend) BatchCallContext(ctx context.Context, b []rpc.Ba
 
 // BatchContext provides a mock function with given fields: ctx, calls
 func (_m *SimulatedTestBackend) BatchContext(ctx context.Context, calls ...w3types.Caller) error {
+	_va := make([]interface{}, len(calls))
+	for _i := range calls {
+		_va[_i] = calls[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, ...w3types.Caller) error); ok {
+		r0 = rf(ctx, calls...)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// BatchWithContext provides a mock function with given fields: ctx, calls
+func (_m *SimulatedTestBackend) BatchWithContext(ctx context.Context, calls ...w3types.Caller) error {
 	_va := make([]interface{}, len(calls))
 	for _i := range calls {
 		_va[_i] = calls[_i]
@@ -242,6 +261,22 @@ func (_m *SimulatedTestBackend) CallContract(ctx context.Context, call ethereum.
 	return r0, r1
 }
 
+// ChainConfig provides a mock function with given fields:
+func (_m *SimulatedTestBackend) ChainConfig() *params.ChainConfig {
+	ret := _m.Called()
+
+	var r0 *params.ChainConfig
+	if rf, ok := ret.Get(0).(func() *params.ChainConfig); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*params.ChainConfig)
+		}
+	}
+
+	return r0
+}
+
 // ChainID provides a mock function with given fields: ctx
 func (_m *SimulatedTestBackend) ChainID(ctx context.Context) (*big.Int, error) {
 	ret := _m.Called(ctx)
@@ -330,20 +365,6 @@ func (_m *SimulatedTestBackend) ConcurrencyCount() int32 {
 		r0 = rf()
 	} else {
 		r0 = ret.Get(0).(int32)
-	}
-
-	return r0
-}
-
-// EnableTenderly provides a mock function with given fields:
-func (_m *SimulatedTestBackend) EnableTenderly() bool {
-	ret := _m.Called()
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func() bool); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(bool)
 	}
 
 	return r0
@@ -509,22 +530,6 @@ func (_m *SimulatedTestBackend) GetHeightWatcher() chainwatcher.BlockHeightWatch
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(chainwatcher.BlockHeightWatcher)
-		}
-	}
-
-	return r0
-}
-
-// GetMetrics provides a mock function with given fields: labels
-func (_m *SimulatedTestBackend) GetMetrics(labels map[string]string) []prometheus.Collector {
-	ret := _m.Called(labels)
-
-	var r0 []prometheus.Collector
-	if rf, ok := ret.Get(0).(func(map[string]string) []prometheus.Collector); ok {
-		r0 = rf(labels)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]prometheus.Collector)
 		}
 	}
 
@@ -994,6 +999,11 @@ func (_m *SimulatedTestBackend) StorageAt(ctx context.Context, account common.Ad
 	}
 
 	return r0, r1
+}
+
+// Store provides a mock function with given fields: key
+func (_m *SimulatedTestBackend) Store(key *keystore.Key) {
+	_m.Called(key)
 }
 
 // SubscribeFilterLogs provides a mock function with given fields: ctx, query, ch

@@ -25,13 +25,13 @@ type MessageBusParser struct {
 	// messageAddress is the address of the message
 	messageBusAddress common.Address
 	// consumerFetcher is the Fetcher for sender and timestamp
-	consumerFetcher *fetcher.ScribeFetcher
+	consumerFetcher fetcher.ScribeFetcher
 	// tokenPriceService contains the token price service/cache
 	tokenPriceService tokenprice.Service
 }
 
 // NewMessageBusParser creates a new parser for a given message.
-func NewMessageBusParser(consumerDB db.ConsumerDB, messageBusAddress common.Address, consumerFetcher *fetcher.ScribeFetcher, tokenPriceService tokenprice.Service) (*MessageBusParser, error) {
+func NewMessageBusParser(consumerDB db.ConsumerDB, messageBusAddress common.Address, consumerFetcher fetcher.ScribeFetcher, tokenPriceService tokenprice.Service) (*MessageBusParser, error) {
 	filterer, err := messagebus.NewMessageBusUpgradeableFilterer(messageBusAddress, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create %T: %w", messagebus.MessageBusReceiverUpgradeableFilterer{}, err)
@@ -81,19 +81,9 @@ func eventToMessageEvent(event messageBusTypes.EventLog, chainID uint32) model.M
 	}
 }
 
-// ParseAndStore parses the message logs and returns a model that can be stored
-// Deprecated: use Parse and store separately.
-func (m *MessageBusParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	messageEvent, err := m.Parse(ctx, log, chainID)
-	if err != nil {
-		return fmt.Errorf("could not parse event: %w", err)
-	}
-	err = m.consumerDB.StoreEvent(ctx, &messageEvent)
-
-	if err != nil {
-		return fmt.Errorf("could not store event: %w chain: %d address %s", err, chainID, log.Address.String())
-	}
-	return nil
+// ParserType returns the type of parser.
+func (m *MessageBusParser) ParserType() string {
+	return "messagebus"
 }
 
 // Parse parses the message logs.
@@ -184,7 +174,7 @@ func (m *MessageBusParser) Parse(ctx context.Context, log ethTypes.Log, chainID 
 
 func (m *MessageBusParser) getFeeValue(ctx context.Context, messageEvent model.MessageBusEvent, coinGeckoID string) (*float64, error) {
 	tokenPrice := m.tokenPriceService.GetPriceData(ctx, int(*messageEvent.TimeStamp), coinGeckoID)
-	if (tokenPrice == nil) && coinGeckoID != noTokenID && coinGeckoID != noPrice {
+	if tokenPrice == nil {
 		return nil, fmt.Errorf("MESSAGEBUS could not get token price for coingeckotoken:  %s chain: %d txhash %s %d", coinGeckoID, messageEvent.ChainID, messageEvent.TxHash, messageEvent.TimeStamp)
 	}
 	price := GetAmountUSD(messageEvent.Fee, 18, tokenPrice)

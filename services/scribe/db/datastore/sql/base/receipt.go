@@ -5,9 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/synapsecns/sanguine/core/dbcommon"
-	"math/big"
-
 	"github.com/synapsecns/sanguine/services/scribe/db"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -41,7 +40,7 @@ func (s Store) StoreReceipt(ctx context.Context, chainID uint32, receipt types.R
 		BlockHash:         receipt.BlockHash.String(),
 		BlockNumber:       receipt.BlockNumber.Uint64(),
 		TransactionIndex:  uint64(receipt.TransactionIndex),
-		Confirmed:         false,
+		Confirmed:         true,
 	})
 
 	if dbTx.Error != nil {
@@ -63,22 +62,6 @@ func (s Store) ConfirmReceiptsForBlockHash(ctx context.Context, chainID uint32, 
 
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not confirm receipt: %w", dbTx.Error)
-	}
-
-	return nil
-}
-
-// ConfirmReceiptsInRange confirms receipts in a range.
-func (s Store) ConfirmReceiptsInRange(ctx context.Context, startBlock, endBlock uint64, chainID uint32) error {
-	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
-	dbTx := s.DB().WithContext(ctx).
-		Model(&Receipt{ChainID: chainID}).
-		Order(BlockNumberFieldName+" desc").
-		Where(rangeQuery, startBlock, endBlock).
-		Update(ConfirmedFieldName, true)
-
-	if dbTx.Error != nil {
-		return fmt.Errorf("could not confirm receipts: %w", dbTx.Error)
 	}
 
 	return nil
@@ -140,7 +123,7 @@ func (s Store) RetrieveReceiptsWithFilter(ctx context.Context, receiptFilter db.
 	if err != nil {
 		return []types.Receipt{}, fmt.Errorf("could not build receipts from db receipts: %w", err)
 	}
-	logger.Infof("[RECEIPT QUERY] Retrieved %d receipts with filter %+v", len(parsedReceipts), receiptFilter)
+
 	return parsedReceipts, nil
 }
 
@@ -149,7 +132,7 @@ func (s Store) RetrieveReceiptsInRange(ctx context.Context, receiptFilter db.Rec
 	if page < 1 {
 		page = 1
 	}
-	dbReceipts := []Receipt{}
+	var dbReceipts []Receipt
 	query := receiptFilterToQuery(receiptFilter)
 	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
 	dbTx := s.DB().WithContext(ctx).
@@ -177,18 +160,16 @@ func (s Store) RetrieveReceiptsInRange(ctx context.Context, receiptFilter db.Rec
 }
 
 func (s Store) buildReceiptsFromDBReceipts(ctx context.Context, dbReceipts []Receipt, chainID uint32) ([]types.Receipt, error) {
-	receipts := []types.Receipt{}
+	var receipts []types.Receipt
 	for i := range dbReceipts {
 		dbReceipt := dbReceipts[i]
 		// Retrieve Logs that match the receipt's tx hash in order to add them to the Receipt.
 		logFilter := db.BuildLogFilter(nil, nil, &dbReceipt.TxHash, nil, nil, nil, nil)
 		logFilter.ChainID = chainID
 
-		logs := []*types.Log{}
+		var logs []*types.Log
 		page := 1
 		for {
-			// TODO DELETE
-			logger.Infof("[RECEIPT QUERY] logFilter: %v, page: %d", logFilter, page)
 			logGroup, err := s.RetrieveLogsWithFilter(ctx, logFilter, page)
 			if err != nil {
 				return []types.Receipt{}, fmt.Errorf("could not retrieve logs with tx hash %s and chain id %d: %w", dbReceipt.TxHash, chainID, err)
@@ -199,7 +180,6 @@ func (s Store) buildReceiptsFromDBReceipts(ctx context.Context, dbReceipts []Rec
 			page++
 			logs = append(logs, logGroup...)
 		}
-		logger.Infof("[RECEIPT QUERY] logs collected: %d, %v, page: %d", len(logs), logFilter, page)
 
 		parsedReceipt := types.Receipt{
 			Type:              dbReceipt.Type,
@@ -215,11 +195,9 @@ func (s Store) buildReceiptsFromDBReceipts(ctx context.Context, dbReceipts []Rec
 			BlockNumber:       big.NewInt(int64(dbReceipt.BlockNumber)),
 			TransactionIndex:  uint(dbReceipt.TransactionIndex),
 		}
-		logger.Infof("[RECEIPT QUERY] parsedReceipt:, %v", parsedReceipt)
 
 		receipts = append(receipts, parsedReceipt)
 	}
-	logger.Infof("[RECEIPT QUERY] parsedReceipt: %d", len(receipts))
 
 	return receipts, nil
 }
@@ -237,4 +215,19 @@ func (s Store) RetrieveReceiptCountForChain(ctx context.Context, chainID uint32)
 	}
 
 	return count, nil
+}
+
+// RetrieveReceiptsWithStaleBlockHash gets receipts that are from a reorged/stale block.
+func (s Store) RetrieveReceiptsWithStaleBlockHash(ctx context.Context, chainID uint32, blockHashes []string, startBlock uint64, endBlock uint64) ([]types.Receipt, error) {
+	var dbReceipts []Receipt
+	dbTx := s.DB().WithContext(ctx).Model(&Receipt{}).Where("block_number >= ? ", startBlock).Where("block_number <= ? ", endBlock).Where("block_hash NOT IN (?)", blockHashes).Scan(&dbReceipts)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("could not get receipts: %w", dbTx.Error)
+	}
+	parsedReceipts, err := s.buildReceiptsFromDBReceipts(ctx, dbReceipts, chainID)
+	if err != nil {
+		return []types.Receipt{}, fmt.Errorf("could not build receipts from db receipts: %w", err)
+	}
+
+	return parsedReceipts, nil
 }

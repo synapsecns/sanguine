@@ -1,4 +1,5 @@
-import { useNetwork, erc20ABI, useContract } from 'wagmi'
+import { Address, useNetwork, erc20ABI } from 'wagmi'
+import { getContract } from 'wagmi/actions'
 import { Token } from '../types'
 
 /**
@@ -7,8 +8,8 @@ import { Token } from '../types'
 export function useTokenContract({ token }: { token: Token }) {
   const { chain } = useNetwork()
 
-  const contract = useContract({
-    address: token ? token.addresses[chain.id] : '',
+  const contract = getContract({
+    address: token ? (token.addresses[chain.id] as Address) : `0x`,
     abi: erc20ABI,
   })
 

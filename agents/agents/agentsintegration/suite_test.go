@@ -1,6 +1,7 @@
 package agentsintegration_test
 
 import (
+	"os"
 	"testing"
 	"time"
 
@@ -27,7 +28,10 @@ func (u *AgentsIntegrationSuite) SetupTest() {
 	chainwatcher.PollInterval = time.Second
 
 	u.SimulatedBackendsTestSuite.SetupTest()
-	u.SetTestTimeout(time.Minute * 3)
+
+	if os.Getenv("CI") == "" {
+		u.SetTestTimeout(time.Minute * 3)
+	}
 }
 
 func (u *AgentsIntegrationSuite) SetupSuite() {

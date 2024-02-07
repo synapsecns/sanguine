@@ -1,4 +1,5 @@
 import { SwitchVerticalIcon } from '@heroicons/react/outline'
+import { useState } from 'react'
 
 export default function SwitchButton({
   className,
@@ -9,6 +10,14 @@ export default function SwitchButton({
   innerClassName?: string
   onClick: () => void
 }) {
+  const [isActive, setIsActive] = useState(false)
+
+  const handleClick = () => {
+    onClick()
+    setIsActive(true)
+    setTimeout(() => setIsActive(false), 200)
+  }
+
   return (
     <div
       className={`
@@ -17,13 +26,12 @@ export default function SwitchButton({
       `}
     >
       <div
-        onClick={onClick}
+        onClick={handleClick}
         className={`
           group rounded-full inline-block p-2
           bg-bgLighter
-          transform-gpu transition-all duration-100
-          active:rotate-90
-
+          transform-gpu transition-all duration-200
+          ${isActive ? 'rotate-90' : ''}
           ${className}
           ${innerClassName}
         `}

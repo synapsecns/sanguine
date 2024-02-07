@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: 'Checkout'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: 'recursive'
@@ -23,11 +23,15 @@ jobs:
       - name: Setup NodeJS
         uses: ./.github/actions/setup-nodejs
 
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
       - name: Authenticate with private NPM package
         run: |
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
           echo "always-auth=true" >> ~/.npmrc
-
 
       - name: 'Version and publish' # Interesting step
         env:

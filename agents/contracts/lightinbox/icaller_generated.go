@@ -46,6 +46,14 @@ type ILightInboxCaller interface {
 	//
 	// Solidity: function owner() view returns(address)
 	Owner(opts *bind.CallOpts) (common.Address, error)
+	// PendingOwner is a free data retrieval call binding the contract method 0xe30c3978.
+	//
+	// Solidity: function pendingOwner() view returns(address)
+	PendingOwner(opts *bind.CallOpts) (common.Address, error)
+	// SynapseDomain is a free data retrieval call binding the contract method 0x717b8638.
+	//
+	// Solidity: function synapseDomain() view returns(uint32)
+	SynapseDomain(opts *bind.CallOpts) (uint32, error)
 	// Version is a free data retrieval call binding the contract method 0x54fd4d50.
 	//
 	// Solidity: function version() view returns(string versionString)

@@ -26,7 +26,7 @@ func (s Store) DB() *gorm.DB {
 // see: https://medium.com/@SaifAbid/slice-interfaces-8c78f8b6345d for an explanation of why we can't do this at initialization time
 func GetAllModels() (allModels []interface{}) {
 	allModels = append(allModels,
-		&Log{}, &Receipt{}, &EthTx{}, &LastIndexedInfo{}, &LastConfirmedBlockInfo{}, &BlockTime{}, &LastBlockTime{},
+		&Log{}, &Receipt{}, &EthTx{}, &LastIndexedInfo{}, &LastConfirmedBlockInfo{}, &BlockTime{}, &LastBlockTime{}, &LogAtHead{}, &ReceiptAtHead{}, &EthTxAtHead{}, // InsertTime is the time at which this log receipt inserted
 	)
 	return allModels
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/basemessageharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/bondingmanagerharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/destinationharness"
 	gasdataharness "github.com/synapsecns/sanguine/agents/contracts/test/gasdata"
@@ -19,6 +20,8 @@ import (
 	"github.com/synapsecns/sanguine/agents/contracts/test/messageharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/pingpongclient"
+	"github.com/synapsecns/sanguine/agents/contracts/test/receiptharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/requestharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/snapshotharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/stateharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/summitharness"
@@ -30,7 +33,7 @@ import (
 
 // set all contact types.
 func init() {
-	for i := 0; i < len(_contractTypeImpl_index)-1; i++ {
+	for i := 1; i < len(_contractTypeImpl_index); i++ {
 		contractType := contractTypeImpl(i)
 		AllContractTypes = append(AllContractTypes, contractType)
 		// assert type is correct
@@ -62,9 +65,15 @@ type contractTypeImpl int
 
 const (
 	// OriginType is the type of the origin.
-	OriginType contractTypeImpl = iota // Origin
+	OriginType contractTypeImpl = iota + 1 // Origin
 	// MessageHarnessType is the type of the message harness contract.
 	MessageHarnessType // MessageHarness
+	// BaseMessageHarnessType is the type of the base message harness contract.
+	BaseMessageHarnessType // BaseMessageHarness
+	// ReceiptHarnessType is the type of the receipt harness contract.
+	ReceiptHarnessType // ReceiptHarness
+	// RequestHarnessType is the type of the request harness contract.
+	RequestHarnessType // RequestHarness
 	// OriginHarnessType is the origin harness type.
 	OriginHarnessType // OriginHarness
 	// StateHarnessType is the state harness type.
@@ -133,6 +142,12 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return origin.Contracts["solidity/Origin.sol:Origin"]
 	case MessageHarnessType:
 		return messageharness.Contracts["solidity/MessageHarness.t.sol:MessageHarness"]
+	case BaseMessageHarnessType:
+		return basemessageharness.Contracts["solidity/BaseMessageHarness.t.sol:BaseMessageHarness"]
+	case ReceiptHarnessType:
+		return receiptharness.Contracts["solidity/ReceiptHarness.t.sol:ReceiptHarness"]
+	case RequestHarnessType:
+		return requestharness.Contracts["solidity/RequestHarness.t.sol:RequestHarness"]
 	case OriginHarnessType:
 		return originharness.Contracts["solidity/OriginHarness.t.sol:OriginHarness"]
 	case StateHarnessType:

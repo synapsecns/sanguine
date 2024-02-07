@@ -11,7 +11,7 @@
     "skipLibCheck": true,
     "strict": false,
     "forceConsistentCasingInFileNames": true,
-    "noEmit": true,
+    "noEmit": false,
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "node",
@@ -25,59 +25,53 @@
       "@assets/icons/": [
         "./assets/icons"
       ],
-      "@assets/networks/": [
-        "./assets/networks"
-      ],
       "@assets/*": [
         "./assets/*"
       ],
-      // "@assets/**/*":     ["./public/assets/**/*"],
+      "@constants/": [
+        "./constants"
+      ],
+      "@constants/chains/": [
+        "./constants/chains"
+      ],
+      "@constants/*": [
+        "./constants/*"
+      ],
       "@components": [
         "./components"
       ],
       "@components/*": [
         "./components/*"
       ],
-      // "@components/**/*": ["./components/**/*"],
       "@tw": [
         "./components/tailwind"
       ],
       "@tw/*": [
         "./components/tailwind/*"
       ],
-      // "@tw/**/*":         ["./components/tailwind/**/*"],
       "@layouts": [
         "./components/layouts"
       ],
       "@layouts/*": [
         "./components/layouts/*"
       ],
-      // "@layouts/**/*":    ["./components/layouts/**/*"],
       "@icons": [
         "./components/icons"
       ],
       "@icons/*": [
         "./components/icons/*"
       ],
-      // "@icons/**/*":      ["./components/icons/**/*"],
       "@urls": [
         "./utils/urls"
       ],
       "@urls/*": [
         "./utils/urls/*"
       ],
-      // "@urls/**/*":       ["./urls/**/*"],
       "@utils": [
         "./utils"
       ],
       "@utils/*": [
         "./utils/*"
-      ],
-      "@constants": [
-        "./constants"
-      ],
-      "@constants/*": [
-        "./constants/*"
       ],
       "@graphql": [
         "./graphql"
@@ -85,23 +79,12 @@
       "@graphql/*": [
         "./graphql/*"
       ],
-      // "@constants/**/*":  ["./constants/**/*"],
-      // "@store":           ["./store"],
-      // "@store/*":         ["./store/*"],
       "@styles": [
         "./utils/styles"
       ],
       "@styles/*": [
         "./utils/styles/*"
       ]
-      // "@styles/**/*":     ["./utils/styles/**/*"],
-      // "@pages":           ["./pages"],
-      // "@pages/*":         ["./pages/*"],
-      // "@providers":       ["./providers"],
-      // "@providers/*":     ["./providers/*"],
-      // "@providers/**/*":  ["./providers/**/*"],
-      // "@graphql":         ["./graphql"],
-      // "@graphql/*":       ["./graphql/*"]
     },
     "jsx": "preserve"
   },
@@ -112,7 +95,6 @@
     "**/*.js"
   ],
   "exclude": [
-    "node_modules",
-    "**/node_modules/*"
+    "node_modules"
   ]
 }

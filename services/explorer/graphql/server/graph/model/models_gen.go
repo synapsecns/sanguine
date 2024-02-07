@@ -13,74 +13,95 @@ type MessageType interface {
 }
 
 type AddressChainRanking struct {
-	ChainID   *int     `json:"chainID"`
-	VolumeUsd *float64 `json:"volumeUsd"`
-	Rank      *int     `json:"rank"`
+	ChainID   *int     `json:"chainID,omitempty"`
+	VolumeUsd *float64 `json:"volumeUsd,omitempty"`
+	Rank      *int     `json:"rank,omitempty"`
 }
 
 type AddressDailyCount struct {
-	Date  *string `json:"date"`
-	Count *int    `json:"count"`
+	Date  *string `json:"date,omitempty"`
+	Count *int    `json:"count,omitempty"`
 }
 
 type AddressData struct {
-	BridgeVolume *float64               `json:"bridgeVolume"`
-	BridgeFees   *float64               `json:"bridgeFees"`
-	BridgeTxs    *int                   `json:"bridgeTxs"`
-	SwapVolume   *float64               `json:"swapVolume"`
-	SwapFees     *float64               `json:"swapFees"`
-	SwapTxs      *int                   `json:"swapTxs"`
-	Rank         *int                   `json:"rank"`
-	EarliestTx   *int                   `json:"earliestTx"`
-	ChainRanking []*AddressChainRanking `json:"chainRanking"`
-	DailyData    []*AddressDailyCount   `json:"dailyData"`
+	BridgeVolume *float64               `json:"bridgeVolume,omitempty"`
+	BridgeFees   *float64               `json:"bridgeFees,omitempty"`
+	BridgeTxs    *int                   `json:"bridgeTxs,omitempty"`
+	SwapVolume   *float64               `json:"swapVolume,omitempty"`
+	SwapFees     *float64               `json:"swapFees,omitempty"`
+	SwapTxs      *int                   `json:"swapTxs,omitempty"`
+	Rank         *int                   `json:"rank,omitempty"`
+	EarliestTx   *int                   `json:"earliestTx,omitempty"`
+	ChainRanking []*AddressChainRanking `json:"chainRanking,omitempty"`
+	DailyData    []*AddressDailyCount   `json:"dailyData,omitempty"`
 }
 
 // AddressRanking gives the amount of transactions that occurred for a specific address across all chains.
 type AddressRanking struct {
-	Address *string `json:"address"`
-	Count   *int    `json:"count"`
+	Address *string `json:"address,omitempty"`
+	Count   *int    `json:"count,omitempty"`
+}
+
+type BlockHeight struct {
+	ChainID     *int          `json:"chainID,omitempty"`
+	Type        *ContractType `json:"type,omitempty"`
+	BlockNumber *int          `json:"blockNumber,omitempty"`
 }
 
 // BridgeTransaction represents an entire bridge transaction, including both
 // to and from transactions. If a `from` transaction does not have a corresponding
 // `to` transaction, `pending` will be true.
 type BridgeTransaction struct {
-	FromInfo    *PartialInfo `json:"fromInfo"`
-	ToInfo      *PartialInfo `json:"toInfo"`
-	Kappa       *string      `json:"kappa"`
-	Pending     *bool        `json:"pending"`
-	SwapSuccess *bool        `json:"swapSuccess"`
+	FromInfo    *PartialInfo `json:"fromInfo,omitempty"`
+	ToInfo      *PartialInfo `json:"toInfo,omitempty"`
+	Kappa       *string      `json:"kappa,omitempty"`
+	Pending     *bool        `json:"pending,omitempty"`
+	SwapSuccess *bool        `json:"swapSuccess,omitempty"`
+}
+
+// BridgeWatcherTx represents a single sided bridge transaction specifically for the bridge watcher.
+type BridgeWatcherTx struct {
+	BridgeTx    *PartialInfo  `json:"bridgeTx,omitempty"`
+	Pending     *bool         `json:"pending,omitempty"`
+	Type        *BridgeTxType `json:"type,omitempty"`
+	Kappa       *string       `json:"kappa,omitempty"`
+	KappaStatus *KappaStatus  `json:"kappaStatus,omitempty"`
+}
+
+type ContractQuery struct {
+	ChainID int          `json:"chainID"`
+	Type    ContractType `json:"type"`
 }
 
 // DateResult is a given statistic for a given date.
 type DateResult struct {
-	Date  *string  `json:"date"`
-	Total *float64 `json:"total"`
+	Date  *string  `json:"date,omitempty"`
+	Total *float64 `json:"total,omitempty"`
 }
 
 // DateResult is a given statistic for a given date.
 type DateResultByChain struct {
-	Date      *string  `json:"date"`
-	Ethereum  *float64 `json:"ethereum"`
-	Optimism  *float64 `json:"optimism"`
-	Cronos    *float64 `json:"cronos"`
-	Bsc       *float64 `json:"bsc"`
-	Polygon   *float64 `json:"polygon"`
-	Fantom    *float64 `json:"fantom"`
-	Boba      *float64 `json:"boba"`
-	Metis     *float64 `json:"metis"`
-	Moonbeam  *float64 `json:"moonbeam"`
-	Moonriver *float64 `json:"moonriver"`
-	Klaytn    *float64 `json:"klaytn"`
-	Arbitrum  *float64 `json:"arbitrum"`
-	Avalanche *float64 `json:"avalanche"`
-	Dfk       *float64 `json:"dfk"`
-	Aurora    *float64 `json:"aurora"`
-	Harmony   *float64 `json:"harmony"`
-	Canto     *float64 `json:"canto"`
-	Dogechain *float64 `json:"dogechain"`
-	Total     *float64 `json:"total"`
+	Date      *string  `json:"date,omitempty"`
+	Ethereum  *float64 `json:"ethereum,omitempty"`
+	Optimism  *float64 `json:"optimism,omitempty"`
+	Cronos    *float64 `json:"cronos,omitempty"`
+	Bsc       *float64 `json:"bsc,omitempty"`
+	Polygon   *float64 `json:"polygon,omitempty"`
+	Fantom    *float64 `json:"fantom,omitempty"`
+	Boba      *float64 `json:"boba,omitempty"`
+	Metis     *float64 `json:"metis,omitempty"`
+	Moonbeam  *float64 `json:"moonbeam,omitempty"`
+	Moonriver *float64 `json:"moonriver,omitempty"`
+	Klaytn    *float64 `json:"klaytn,omitempty"`
+	Arbitrum  *float64 `json:"arbitrum,omitempty"`
+	Avalanche *float64 `json:"avalanche,omitempty"`
+	Dfk       *float64 `json:"dfk,omitempty"`
+	Aurora    *float64 `json:"aurora,omitempty"`
+	Harmony   *float64 `json:"harmony,omitempty"`
+	Canto     *float64 `json:"canto,omitempty"`
+	Dogechain *float64 `json:"dogechain,omitempty"`
+	Base      *float64 `json:"base,omitempty"`
+	Total     *float64 `json:"total,omitempty"`
 }
 
 type HeroType struct {
@@ -92,56 +113,58 @@ func (HeroType) IsMessageType() {}
 
 // HistoricalResult is a given statistic for dates.
 type HistoricalResult struct {
-	Total       *float64              `json:"total"`
-	DateResults []*DateResult         `json:"dateResults"`
-	Type        *HistoricalResultType `json:"type"`
+	Total       *float64              `json:"total,omitempty"`
+	DateResults []*DateResult         `json:"dateResults,omitempty"`
+	Type        *HistoricalResultType `json:"type,omitempty"`
 }
 
 type Leaderboard struct {
-	Address      *string  `json:"address"`
-	VolumeUsd    *float64 `json:"volumeUSD"`
-	Fees         *float64 `json:"fees"`
-	Txs          *int     `json:"txs"`
-	Rank         *int     `json:"rank"`
-	AvgVolumeUsd *float64 `json:"avgVolumeUSD"`
+	Address      *string  `json:"address,omitempty"`
+	VolumeUsd    *float64 `json:"volumeUSD,omitempty"`
+	Fees         *float64 `json:"fees,omitempty"`
+	Txs          *int     `json:"txs,omitempty"`
+	Rank         *int     `json:"rank,omitempty"`
+	AvgVolumeUsd *float64 `json:"avgVolumeUSD,omitempty"`
 }
 
 type MessageBusTransaction struct {
-	FromInfo  *PartialMessageBusInfo `json:"fromInfo"`
-	ToInfo    *PartialMessageBusInfo `json:"toInfo"`
-	Pending   *bool                  `json:"pending"`
-	MessageID *string                `json:"messageID"`
+	FromInfo  *PartialMessageBusInfo `json:"fromInfo,omitempty"`
+	ToInfo    *PartialMessageBusInfo `json:"toInfo,omitempty"`
+	Pending   *bool                  `json:"pending,omitempty"`
+	MessageID *string                `json:"messageID,omitempty"`
 }
 
 // PartialInfo is a transaction that occurred on one chain.
 type PartialInfo struct {
-	ChainID            *int     `json:"chainID"`
-	DestinationChainID *int     `json:"destinationChainID"`
-	Address            *string  `json:"address"`
-	TxnHash            *string  `json:"txnHash"`
-	Value              *string  `json:"value"`
-	FormattedValue     *float64 `json:"formattedValue"`
-	USDValue           *float64 `json:"USDValue"`
-	TokenAddress       *string  `json:"tokenAddress"`
-	TokenSymbol        *string  `json:"tokenSymbol"`
-	BlockNumber        *int     `json:"blockNumber"`
-	Time               *int     `json:"time"`
-	FormattedTime      *string  `json:"formattedTime"`
+	ChainID            *int     `json:"chainID,omitempty"`
+	DestinationChainID *int     `json:"destinationChainID,omitempty"`
+	Address            *string  `json:"address,omitempty"`
+	TxnHash            *string  `json:"txnHash,omitempty"`
+	Value              *string  `json:"value,omitempty"`
+	FormattedValue     *float64 `json:"formattedValue,omitempty"`
+	USDValue           *float64 `json:"USDValue,omitempty"`
+	TokenAddress       *string  `json:"tokenAddress,omitempty"`
+	TokenSymbol        *string  `json:"tokenSymbol,omitempty"`
+	BlockNumber        *int     `json:"blockNumber,omitempty"`
+	Time               *int     `json:"time,omitempty"`
+	FormattedTime      *string  `json:"formattedTime,omitempty"`
+	FormattedEventType *string  `json:"formattedEventType,omitempty"`
+	EventType          *int     `json:"eventType,omitempty"`
 }
 
 type PartialMessageBusInfo struct {
-	ChainID              *int        `json:"chainID"`
-	ChainName            *string     `json:"chainName"`
-	DestinationChainID   *int        `json:"destinationChainID"`
-	DestinationChainName *string     `json:"destinationChainName"`
-	ContractAddress      *string     `json:"contractAddress"`
-	TxnHash              *string     `json:"txnHash"`
-	Message              *string     `json:"message"`
-	MessageType          MessageType `json:"messageType"`
-	BlockNumber          *int        `json:"blockNumber"`
-	Time                 *int        `json:"time"`
-	FormattedTime        *string     `json:"formattedTime"`
-	RevertedReason       *string     `json:"revertedReason"`
+	ChainID              *int        `json:"chainID,omitempty"`
+	ChainName            *string     `json:"chainName,omitempty"`
+	DestinationChainID   *int        `json:"destinationChainID,omitempty"`
+	DestinationChainName *string     `json:"destinationChainName,omitempty"`
+	ContractAddress      *string     `json:"contractAddress,omitempty"`
+	TxnHash              *string     `json:"txnHash,omitempty"`
+	Message              *string     `json:"message,omitempty"`
+	MessageType          MessageType `json:"messageType,omitempty"`
+	BlockNumber          *int        `json:"blockNumber,omitempty"`
+	Time                 *int        `json:"time,omitempty"`
+	FormattedTime        *string     `json:"formattedTime,omitempty"`
+	RevertedReason       *string     `json:"revertedReason,omitempty"`
 }
 
 type PetType struct {
@@ -161,15 +184,15 @@ func (TearType) IsMessageType() {}
 
 // TokenCountResult gives the amount of transactions that occurred for a specific token, separated by chain ID.
 type TokenCountResult struct {
-	ChainID      *int    `json:"chainID"`
-	TokenAddress *string `json:"tokenAddress"`
-	Count        *int    `json:"count"`
+	ChainID      *int    `json:"chainID,omitempty"`
+	TokenAddress *string `json:"tokenAddress,omitempty"`
+	Count        *int    `json:"count,omitempty"`
 }
 
 // TransactionCountResult gives the amount of transactions that occurred for a specific chain ID.
 type TransactionCountResult struct {
-	ChainID *int `json:"chainID"`
-	Count   *int `json:"count"`
+	ChainID *int `json:"chainID,omitempty"`
+	Count   *int `json:"count,omitempty"`
 }
 
 type UnknownType struct {
@@ -180,12 +203,135 @@ func (UnknownType) IsMessageType() {}
 
 // ValueResult is a value result of either USD or numeric value.
 type ValueResult struct {
-	Value *string `json:"value"`
+	Value *string `json:"value,omitempty"`
 }
 
 type VolumeByChainID struct {
-	ChainID *int     `json:"chainID"`
-	Total   *float64 `json:"total"`
+	ChainID *int     `json:"chainID,omitempty"`
+	Total   *float64 `json:"total,omitempty"`
+}
+
+type BridgeTxType string
+
+const (
+	BridgeTxTypeOrigin      BridgeTxType = "ORIGIN"
+	BridgeTxTypeDestination BridgeTxType = "DESTINATION"
+)
+
+var AllBridgeTxType = []BridgeTxType{
+	BridgeTxTypeOrigin,
+	BridgeTxTypeDestination,
+}
+
+func (e BridgeTxType) IsValid() bool {
+	switch e {
+	case BridgeTxTypeOrigin, BridgeTxTypeDestination:
+		return true
+	}
+	return false
+}
+
+func (e BridgeTxType) String() string {
+	return string(e)
+}
+
+func (e *BridgeTxType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = BridgeTxType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid BridgeTxType", str)
+	}
+	return nil
+}
+
+func (e BridgeTxType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type BridgeType string
+
+const (
+	BridgeTypeBridge BridgeType = "BRIDGE"
+	BridgeTypeCctp   BridgeType = "CCTP"
+)
+
+var AllBridgeType = []BridgeType{
+	BridgeTypeBridge,
+	BridgeTypeCctp,
+}
+
+func (e BridgeType) IsValid() bool {
+	switch e {
+	case BridgeTypeBridge, BridgeTypeCctp:
+		return true
+	}
+	return false
+}
+
+func (e BridgeType) String() string {
+	return string(e)
+}
+
+func (e *BridgeType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = BridgeType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid BridgeType", str)
+	}
+	return nil
+}
+
+func (e BridgeType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type ContractType string
+
+const (
+	ContractTypeBridge ContractType = "BRIDGE"
+	ContractTypeCctp   ContractType = "CCTP"
+)
+
+var AllContractType = []ContractType{
+	ContractTypeBridge,
+	ContractTypeCctp,
+}
+
+func (e ContractType) IsValid() bool {
+	switch e {
+	case ContractTypeBridge, ContractTypeCctp:
+		return true
+	}
+	return false
+}
+
+func (e ContractType) String() string {
+	return string(e)
+}
+
+func (e *ContractType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ContractType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ContractType", str)
+	}
+	return nil
+}
+
+func (e ContractType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type DailyStatisticType string
@@ -363,6 +509,49 @@ func (e *HistoricalResultType) UnmarshalGQL(v interface{}) error {
 }
 
 func (e HistoricalResultType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type KappaStatus string
+
+const (
+	KappaStatusExists  KappaStatus = "EXISTS"
+	KappaStatusPending KappaStatus = "PENDING"
+	KappaStatusUnknown KappaStatus = "UNKNOWN"
+)
+
+var AllKappaStatus = []KappaStatus{
+	KappaStatusExists,
+	KappaStatusPending,
+	KappaStatusUnknown,
+}
+
+func (e KappaStatus) IsValid() bool {
+	switch e {
+	case KappaStatusExists, KappaStatusPending, KappaStatusUnknown:
+		return true
+	}
+	return false
+}
+
+func (e KappaStatus) String() string {
+	return string(e)
+}
+
+func (e *KappaStatus) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = KappaStatus(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid KappaStatus", str)
+	}
+	return nil
+}
+
+func (e KappaStatus) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

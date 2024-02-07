@@ -2,23 +2,24 @@ package api_test
 
 import (
 	gosql "database/sql"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/synapsecns/sanguine/services/explorer/db/sql"
-	"math/big"
-	"testing"
-
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/services/explorer/api"
 	"github.com/synapsecns/sanguine/services/explorer/api/cache"
+	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 	gqlClient "github.com/synapsecns/sanguine/services/explorer/graphql/client"
+	"testing"
+
+	"math/big"
 )
 
 func TestHandleJSONAmountStat(t *testing.T) {
 	valueString := gofakeit.Word()
+	// nolint
 	valueStruct := gqlClient.GetAmountStatistic{
 		Response: &struct {
-			Value *string "json:\"value\" graphql:\"value\""
+			Value *string `json:"value" graphql:"value"`
 		}{
 			Value: &valueString,
 		},
@@ -30,28 +31,30 @@ func TestHandleJSONAmountStat(t *testing.T) {
 
 func TestHandleJSONDailyStat(t *testing.T) {
 	valueFloat := gofakeit.Float64()
+	// nolint
 	valueStruct := gqlClient.GetDailyStatisticsByChain{
 		Response: []*struct {
-			Date      *string  "json:\"date\" graphql:\"date\""
-			Ethereum  *float64 "json:\"ethereum\" graphql:\"ethereum\""
-			Optimism  *float64 "json:\"optimism\" graphql:\"optimism\""
-			Cronos    *float64 "json:\"cronos\" graphql:\"cronos\""
-			Bsc       *float64 "json:\"bsc\" graphql:\"bsc\""
-			Polygon   *float64 "json:\"polygon\" graphql:\"polygon\""
-			Fantom    *float64 "json:\"fantom\" graphql:\"fantom\""
-			Boba      *float64 "json:\"boba\" graphql:\"boba\""
-			Metis     *float64 "json:\"metis\" graphql:\"metis\""
-			Moonbeam  *float64 "json:\"moonbeam\" graphql:\"moonbeam\""
-			Moonriver *float64 "json:\"moonriver\" graphql:\"moonriver\""
-			Klaytn    *float64 "json:\"klaytn\" graphql:\"klaytn\""
-			Arbitrum  *float64 "json:\"arbitrum\" graphql:\"arbitrum\""
-			Avalanche *float64 "json:\"avalanche\" graphql:\"avalanche\""
-			Dfk       *float64 "json:\"dfk\" graphql:\"dfk\""
-			Aurora    *float64 "json:\"aurora\" graphql:\"aurora\""
-			Harmony   *float64 "json:\"harmony\" graphql:\"harmony\""
-			Canto     *float64 "json:\"canto\" graphql:\"canto\""
-			Dogechain *float64 "json:\"dogechain\" graphql:\"dogechain\""
-			Total     *float64 "json:\"total\" graphql:\"total\""
+			Date      *string  `json:"date" graphql:"date"`
+			Ethereum  *float64 `json:"ethereum" graphql:"ethereum"`
+			Optimism  *float64 `json:"optimism" graphql:"optimism"`
+			Cronos    *float64 `json:"cronos" graphql:"cronos"`
+			Bsc       *float64 `json:"bsc" graphql:"bsc"`
+			Polygon   *float64 `json:"polygon" graphql:"polygon"`
+			Fantom    *float64 `json:"fantom" graphql:"fantom"`
+			Boba      *float64 `json:"boba" graphql:"boba"`
+			Metis     *float64 `json:"metis" graphql:"metis"`
+			Moonbeam  *float64 `json:"moonbeam" graphql:"moonbeam"`
+			Moonriver *float64 `json:"moonriver" graphql:"moonriver"`
+			Klaytn    *float64 `json:"klaytn" graphql:"klaytn"`
+			Arbitrum  *float64 `json:"arbitrum" graphql:"arbitrum"`
+			Avalanche *float64 `json:"avalanche" graphql:"avalanche"`
+			Dfk       *float64 `json:"dfk" graphql:"dfk"`
+			Aurora    *float64 `json:"aurora" graphql:"aurora"`
+			Harmony   *float64 `json:"harmony" graphql:"harmony"`
+			Canto     *float64 `json:"canto" graphql:"canto"`
+			Dogechain *float64 `json:"dogechain" graphql:"dogechain"`
+			Base      *float64 `json:"base" graphql:"base"`
+			Total     *float64 `json:"total" graphql:"total"`
 		}{
 			{
 				Total: &valueFloat,
@@ -157,6 +160,6 @@ func (g APISuite) TestRehydrateCache() {
 		TTimeStamp:          nil,
 	})
 	Nil(g.T(), err)
-	err = api.RehydrateCache(g.GetTestContext(), g.client, responseCache)
+	err = api.RehydrateCache(g.GetTestContext(), g.client, responseCache, g.explorerMetrics)
 	Nil(g.T(), err)
 }

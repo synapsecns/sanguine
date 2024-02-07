@@ -16,7 +16,7 @@ export const DeadlineInput = ({
           hover:border-gradient-br-magenta-melrose-bgLight hover:border-solid
           focus-within:border-gradient-br-magenta-melrose-bgLight focus-within:border-solid
           pl-1
-          py-0.5 rounded-xl
+          py-0.5 rounded-md
         `}
       >
         <input

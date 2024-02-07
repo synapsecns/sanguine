@@ -17,6 +17,12 @@ export const klaytn = {
     etherscan: { name: 'KlaytnScope', url: 'https://scope.klaytn.com/' },
     default: { name: 'KlaytnScope', url: 'https://scope.klaytn.com/' },
   },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 96002415,
+    },
+  },
 } as const satisfies Chain
 
 export const boba = {
@@ -25,8 +31,8 @@ export const boba = {
   network: 'boba',
   nativeCurrency: {
     decimals: 18,
-    name: 'Boba',
-    symbol: 'BOBA',
+    name: 'Ether',
+    symbol: 'ETH',
   },
   rpcUrls: {
     default: { http: ['https://mainnet.boba.network'] },
@@ -96,57 +102,13 @@ export const dfk = {
       url: 'https://subnets.avax.network/defi-kingdoms',
     },
   },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 14790551,
+    },
+  },
 } as const satisfies Chain
-
-// export const moonbeam = {
-//   id: 1284,
-//   name: 'Moonbeam',
-//   network: 'moonbeam',
-//   nativeCurrency: {
-//     decimals: 18,
-//     name: 'Moonbeam',
-//     symbol: 'GLMR',
-//   },
-//   rpcUrls: {
-//     default: { http: ['https://rpc.api.moonbeam.network'] },
-//     public: { http: ['https://rpc.api.moonbeam.network'] },
-//   },
-//   blockExplorers: {
-//     etherscan: { name: 'MoonBeamMoonScan', url: 'https://moonbeam.moonscan.io/' },
-//     default: { name: 'MoonBeamMoonScan', url: 'https://moonbeam.moonscan.io/' },
-//   },
-//   contracts: {
-//     multicall3: {
-//       address: '0xcA11bde05977b3631167028862bE2a173976CA11',
-//       blockCreated: 609002,
-//     },
-//   },
-// } as const satisfies Chain
-
-// export const moonriver = {
-//   id: 1285,
-//   name: 'Moonriver',
-//   network: 'moonriver',
-//   nativeCurrency: {
-//     decimals: 18,
-//     name: 'Moonriver',
-//     symbol: 'MOVR',
-//   },
-//   rpcUrls: {
-//     default: { http: ['https://rpc.api.moonriver.moonbeam.network'] },
-//     public: { http: ['https://rpc.api.moonriver.moonbeam.network'] },
-//   },
-//   blockExplorers: {
-//     etherscan: { name: 'MoonRiverMoonScan', url: 'https://moonriver.moonscan.io/' },
-//     default: { name: 'MoonRiverMoonScan', url: 'https://moonriver.moonscan.io/' },
-//   },
-//   contracts: {
-//     multicall3: {
-//       address: '0xcA11bde05977b3631167028862bE2a173976CA11',
-//       blockCreated: 1597904,
-//     },
-//   },
-// } as const satisfies Chain
 
 export const dogechain = {
   id: 2000,
@@ -169,6 +131,151 @@ export const dogechain = {
     default: {
       name: 'DogeChainExplorer',
       url: 'https://explorer.dogechain.dog',
+    },
+  },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 13882887,
+    },
+  },
+} as const satisfies Chain
+
+export const metis = {
+  id: 1088,
+  name: 'Metis',
+  network: 'andromeda',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Metis',
+    symbol: 'METIS',
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://andromeda.metis.io/?owner=1088'],
+    },
+    public: {
+      http: ['https://andromeda.metis.io/?owner=1088'],
+    },
+  },
+  blockExplorers: {
+    default: {
+      name: 'Andromeda Explorer',
+      url: 'https://andromeda-explorer.metis.io',
+    },
+  },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 2338552,
+    },
+  },
+} as const satisfies Chain
+
+export const canto = {
+  id: 7700,
+  name: 'Canto',
+  network: 'canto',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Canto',
+    symbol: 'CANTO',
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://canto.slingshot.finance'],
+    },
+    public: {
+      http: ['https://canto.slingshot.finance'],
+    },
+  },
+  blockExplorers: {
+    default: {
+      name: 'Canto EVM Explorer (Blockscout)',
+      url: 'https://tuber.build',
+    },
+  },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 4876481, //update this when cantoscan is working
+    },
+  },
+} as const satisfies Chain
+
+export const aurora = {
+  id: 1313161554,
+  name: 'Aurora',
+  network: 'aurora',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Ether',
+    symbol: 'ETH',
+  },
+  rpcUrls: {
+    infura: {
+      http: ['https://aurora-mainnet.infura.io/v3'],
+    },
+    default: {
+      http: ['https://mainnet.aurora.dev'],
+    },
+    public: {
+      http: ['https://mainnet.aurora.dev'],
+    },
+  },
+  blockExplorers: {
+    etherscan: {
+      name: 'Aurorascan',
+      url: 'https://aurorascan.dev',
+    },
+    default: {
+      name: 'Aurorascan',
+      url: 'https://aurorascan.dev',
+    },
+  },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 62907816,
+    },
+  },
+} as const satisfies Chain
+
+export const base = {
+  id: 8453,
+  name: 'Base',
+  network: 'base',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Ether',
+    symbol: 'ETH',
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://developer-access-mainnet.base.org'],
+    },
+    public: {
+      http: ['https://developer-access-mainnet.base.org'],
+    },
+  },
+  blockExplorers: {
+    // blockscout: {
+    //   name: 'Basescout',
+    //   url: 'https://base.blockscout.com',
+    // },
+    default: {
+      name: 'Basescan',
+      url: 'https://basescan.org',
+    },
+    etherscan: {
+      name: 'Basescan',
+      url: 'https://basescan.org',
+    },
+  },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 5022,
     },
   },
 } as const satisfies Chain

@@ -1,8 +1,5 @@
 import React from 'react'
 import Button from '@tw/Button'
-import ButtonLoadingSpinner from '@components/buttons/ButtonLoadingSpinner'
-import { getMenuItemBgForCoin } from '@styles/tokens'
-import { Token } from '@types'
 
 const InteractiveInputRow = ({
   title,
@@ -13,14 +10,7 @@ const InteractiveInputRow = ({
   placeholder,
   onChange,
   disabled,
-  isPending,
-  onClickEnter,
-  buttonLabel,
-  loadingLabel,
   icon,
-  showButton = true,
-  token,
-  buttonWidth = 'w-2/5',
 }: {
   title: string
   isConnected: boolean
@@ -30,45 +20,22 @@ const InteractiveInputRow = ({
   placeholder: string
   onChange: (e) => void
   disabled: boolean
-  isPending: boolean
-  onClickEnter: (e) => void
-  buttonLabel?: string
-  loadingLabel?: string
   icon: string
-  showButton: boolean
-  token?: Token
-  buttonWidth?: string
 }) => {
-  let width = 'w-40'
-
-  if (title && title.length > 6) {
-    width = 'w-48'
-  }
-
   return (
-    <div className="mt-4">
-      <div className="border-none rounded-xl">
+    <div className="flex flex-col rounded-sm bg-bgLight">
+      <div className="border-none rounded-md">
         <div className="flex space-x-2">
-          <div
-            className={`
-              flex flex-grow items-center
-              pl-3 sm:pl-4
-              w-full h-20
-              rounded-lg
-              border border-white border-opacity-20
-              transform-gpu transition-all duration-75
-              hover:border-opacity-30
-            `}
-          >
-            <div className="sm:mt-[-1px] ">
+          <div className="flex items-center flex-grow w-full h-20 pl-3 ">
+            <div className="sm:mt-[-1px]">
               <div
                 className={`
-                group rounded-xl
-                ${getMenuItemBgForCoin(token?.color)}
+                group rounded-sm
+                bg-[#564f58]
               `}
               >
                 <div
-                  className={`flex justify-center md:justify-start items-center rounded-lg py-1.5 px-2 ${width}`}
+                  className={`flex justify-center md:justify-start items-center rounded-md py-1.5 px-2 w-36`}
                 >
                   <div className="self-center flex-shrink-0 hidden mr-2 sm:block">
                     <div
@@ -80,7 +47,7 @@ const InteractiveInputRow = ({
                     </div>
                   </div>
                   <div className="text-left">
-                    <h4 className="text-lg font-medium text-white">
+                    <h4 className="text-lg text-white">
                       <span className="">{title}</span>
                     </h4>
                   </div>
@@ -90,7 +57,7 @@ const InteractiveInputRow = ({
             <div
               className={`
                 flex flex-grow items-center
-                mx-3 w-full h-16
+                mx-3 w-full h-16 -mt-3
                 border-none
                 relative overflow-hidden
               `}
@@ -99,7 +66,11 @@ const InteractiveInputRow = ({
                 autoComplete="off"
                 className={`
                     ${isConnected ? '-mt-2' : '-mt-0'}
-                    focus:outline-none bg-transparent
+                    focus:outline-none
+                    focus:ring-0
+                    focus:border-none
+                    border-none bg-transparent
+                    p-0
                     w-[300px] sm:min-w-[170px] sm:w-full scrollbar-none
                   placeholder:text-[#88818C] text-white
                     text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium
@@ -112,57 +83,42 @@ const InteractiveInputRow = ({
                 }}
                 name="inputRow"
               />
+              <div>
+                {isConnected && (
+                  <div className="hidden md:block">
+                    <Button
+                      className={`
+                        bg-[#564f58]
+                        font-light border border-transparent 
+                        mr-2 
+                        pl-lg pr-lg pt-sm mt-2 pb-sm 
+                        text-md rounded-sm 
+                        ${
+                          disabled
+                            ? 'opacity-60 cursor-default'
+                            : 'hover:border-[#AC8FFF]'
+                        } 
+                      `}
+                      onClick={disabled ? undefined : onClickBalance}
+                    >
+                      Max
+                    </Button>
+                  </div>
+                )}
+              </div>
               {isConnected && (
                 <label
                   htmlFor="inputRow"
-                  className="absolute bottom-0 text-xs text-white transition-all duration-150 hover:text-opacity-70 hover:cursor-pointer transform-gpu"
+                  className="absolute bottom-0 text-sm text-secondaryTextColor hover:text-opacity-70 hover:cursor-pointer"
                   onClick={onClickBalance}
                 >
                   {balanceStr}
-                  <span className="text-opacity-50 text-secondaryTextColor">
-                    {' '}
-                    available
-                  </span>
+                  <span className=" text-secondaryTextColor"> available</span>
                 </label>
               )}
             </div>
           </div>
         </div>
-        {showButton && (
-          <Button
-            className={`
-              ${buttonWidth}
-              rounded-xl my-2 px-4 py-3
-              max-w-content disabled:bg-[#353038]
-              text-white text-opacity-100
-              transform-gpu transition-all duration-200
-              hover:opacity-80 disabled:opacity-100 disabled:text-[#88818C]
-              disabled:from-bgLight disabled:to-bgLight
-              bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF]
-              mt-5
-              ${isPending && 'from-[#622e71] to-[#564071]'}
-            `}
-            disabled={disabled}
-            onClick={(e) => {
-              onClickEnter(e)
-            }}
-          >
-            {isPending ? (
-              <>
-                {loadingLabel ? (
-                  <span className="animate-pulse">
-                    <ButtonLoadingSpinner className="mr-2" />
-                    {loadingLabel}
-                  </span>
-                ) : (
-                  <ButtonLoadingSpinner />
-                )}
-              </>
-            ) : (
-              <span>{buttonLabel ?? title}</span>
-            )}
-          </Button>
-        )}
       </div>
     </div>
   )

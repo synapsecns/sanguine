@@ -6,7 +6,9 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/richardwilkes/toolbox/collection"
 	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/omnirpc/chainmanager"
+	"github.com/synapsecns/sanguine/services/omnirpc/metadata"
 	"github.com/synapsecns/sanguine/services/omnirpc/rpcinfo"
 	"sort"
 	"testing"
@@ -14,7 +16,10 @@ import (
 )
 
 func TestRefreshRPCInfoNil(t *testing.T) {
-	cm := chainmanager.NewChainManager()
+	nullHandler, err := metrics.NewByType(context.Background(), metadata.BuildInfo(), metrics.Null)
+	NoError(t, err)
+
+	cm := chainmanager.NewChainManager(nullHandler)
 
 	// make sure we don't panic if the chain is not nil
 	NotPanics(t, func() {
@@ -60,7 +65,10 @@ func TestSortInfoList(t *testing.T) {
 }
 
 func TestGetChainIDs(t *testing.T) {
-	cm := chainmanager.NewChainManager()
+	nullHandler, err := metrics.NewByType(context.Background(), metadata.BuildInfo(), metrics.Null)
+	NoError(t, err)
+
+	cm := chainmanager.NewChainManager(nullHandler)
 
 	chainIDs := collection.Set[uint32]{}
 

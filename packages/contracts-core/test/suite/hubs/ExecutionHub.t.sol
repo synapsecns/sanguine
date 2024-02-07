@@ -1,12 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
+import {DISPUTE_TIMEOUT_NOTARY} from "../../../contracts/libs/Constants.sol";
 import {
     AlreadyExecuted,
     AlreadyFailed,
+    DisputeTimeoutNotOver,
     GasLimitTooLow,
     GasSuppliedTooLow,
     IncorrectDestinationDomain,
+    IncorrectOriginDomain,
     IncorrectMagicValue,
     IncorrectSnapshotRoot,
     MessageOptimisticPeriod,
@@ -104,6 +107,31 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         bytes memory rcptPayload =
             verify_messageStatus(msgLeaf, snapRoot, sm.rsi.stateIndex, MessageStatus.Success, executor, executor);
         verify_receipt_valid(rcptPayload);
+    }
+
+    function test_execute_base_recipientEOA(Random memory random) public {
+        recipient = random.nextAddress();
+        // Create some simple data
+        (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
+        // Create messages and get origin proof
+        RawMessage memory rm = createBaseMessages(rbm, rh, localDomain());
+        msgPayload = rm.formatMessage();
+        msgLeaf = rm.castToMessage().leaf();
+        bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
+        // Create snapshot proof
+        adjustSnapshot(sm);
+        (bytes32 snapRoot, bytes32[] memory snapProof) = prepareExecution(sm);
+        // Make sure that optimistic period is over
+        uint32 timePassed = random.nextUint32();
+        timePassed = uint32(bound(timePassed, rh.optimisticPeriod, rh.optimisticPeriod + 1 days));
+        skip(timePassed);
+        vm.expectEmit();
+        emit Executed(rh.origin, msgLeaf, false);
+        vm.prank(executor);
+        testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
+        bytes memory rcptPayloadFirst =
+            verify_messageStatus(msgLeaf, snapRoot, sm.rsi.stateIndex, MessageStatus.Failed, executor, address(0));
+        verify_receipt_valid(rcptPayloadFirst);
     }
 
     function test_execute_base_recipientReverted_thenSuccess(Random memory random) public {
@@ -215,6 +243,56 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         verify_messageStatusNone(msgLeaf);
     }
 
+    function test_execute_base_revert_notaryWonDisputeTimeout() public {
+        address notary = domains[DOMAIN_LOCAL].agent;
+        address guard = domains[0].agent;
+        Random memory random = Random("Random Salt 1");
+        // Create some simple data
+        (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
+        // Create messages and get origin proof
+        RawMessage memory rm = createBaseMessages(rbm, rh, localDomain());
+        msgPayload = rm.formatMessage();
+        msgLeaf = rm.castToMessage().leaf();
+        bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
+        // Create snapshot proof
+        adjustSnapshot(sm);
+        (, bytes32[] memory snapProof) = prepareExecution(sm);
+        // initiate dispute
+        openTestDispute({guardIndex: agentIndex[guard], notaryIndex: agentIndex[notary]});
+        // Make sure that optimistic period is over
+        skip(rh.optimisticPeriod);
+        resolveTestDispute({slashedIndex: agentIndex[guard], rivalIndex: agentIndex[notary]});
+        skip(DISPUTE_TIMEOUT_NOTARY - 1);
+        vm.expectRevert(DisputeTimeoutNotOver.selector);
+        vm.prank(executor);
+        testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
+    }
+
+    function test_execute_base_afterNotaryDisputeTimeout() public {
+        address notary = domains[DOMAIN_LOCAL].agent;
+        address guard = domains[0].agent;
+        Random memory random = Random("Random Salt 2");
+        // Create some simple data
+        (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
+        // Create messages and get origin proof
+        RawMessage memory rm = createBaseMessages(rbm, rh, localDomain());
+        msgPayload = rm.formatMessage();
+        msgLeaf = rm.castToMessage().leaf();
+        bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
+        // Create snapshot proof
+        adjustSnapshot(sm);
+        (bytes32 snapRoot, bytes32[] memory snapProof) = prepareExecution(sm);
+        // initiate dispute
+        openTestDispute({guardIndex: agentIndex[guard], notaryIndex: agentIndex[notary]});
+        // Make sure that optimistic period is over
+        skip(rh.optimisticPeriod);
+        resolveTestDispute({slashedIndex: agentIndex[guard], rivalIndex: agentIndex[notary]});
+        skip(DISPUTE_TIMEOUT_NOTARY);
+        vm.prank(executor);
+        testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
+        verify_messageStatus(msgLeaf, snapRoot, sm.rsi.stateIndex, MessageStatus.Success, executor, executor);
+    }
+
     function test_execute_base_revert_snapRootUnknown(Random memory random) public {
         // Create some simple data
         (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
@@ -255,6 +333,27 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
         verify_messageStatusNone(msgLeaf);
+    }
+
+    function test_execute_base_revert_optimisticPeriodMinus1Second() public {
+        Random memory random = Random("random salt");
+        // Create some simple data
+        (RawBaseMessage memory rbm, RawHeader memory rh, SnapshotMock memory sm) = createDataRevertTest(random);
+        // Create messages and get origin proof
+        RawMessage memory rm = createBaseMessages(rbm, rh, localDomain());
+        msgPayload = rm.formatMessage();
+        msgLeaf = rm.castToMessage().leaf();
+        vm.assume(rh.optimisticPeriod != 0);
+        bytes32[] memory originProof = getLatestProof(rh.nonce - 1);
+        // Create snapshot proof
+        adjustSnapshot(sm);
+        (, bytes32[] memory snapProof) = prepareExecution(sm);
+        // Make sure that optimistic period is NOT over
+        uint32 timePassed = rh.optimisticPeriod - 1;
+        skip(timePassed);
+        vm.expectRevert(MessageOptimisticPeriod.selector);
+        vm.prank(executor);
+        testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
     }
 
     function test_execute_base_revert_gasLimitTooLow(Random memory random) public {
@@ -324,6 +423,21 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         vm.prank(executor);
         testedEH().execute(msgPayload, originProof, snapProof, sm.rsi.stateIndex, rbm.request.gasLimit);
         verify_messageStatusNone(msgLeaf);
+    }
+
+    function test_execute_base_revert_originSameDomain() public {
+        RawBaseMessage memory rbm;
+        rbm.sender = rbm.recipient = addressToBytes32(recipient);
+        RawMessage memory rm;
+        rm.header.flag = uint8(MessageFlag.Base);
+        rm.header.origin = localDomain();
+        rm.header.destination = localDomain();
+        rm.header.nonce = 1;
+        rm.header.optimisticPeriod = 1 seconds;
+        rm.body = rbm.formatBaseMessage();
+        msgPayload = rm.formatMessage();
+        vm.expectRevert(IncorrectOriginDomain.selector);
+        testedEH().execute(msgPayload, new bytes32[](0), new bytes32[](0), 0, 0);
     }
 
     function test_execute_base_revert_reentrancy(Random memory random) public {
@@ -460,7 +574,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
     function verify_messageStatus(
         bytes32 messageHash,
         bytes32 snapRoot,
-        uint256 stateIndex,
+        uint8 stateIndex,
         MessageStatus flag,
         address firstExecutor,
         address finalExecutor
@@ -563,7 +677,7 @@ abstract contract ExecutionHubTest is AgentSecuredTest {
         rbm.tips = RawTips(1, 1, 1, 1);
         rh.nonce = 1;
         rh.optimisticPeriod = random.nextUint32();
-        sm = SnapshotMock(random.nextState(), RawStateIndex(random.nextUint256(), random.nextUint256()));
+        sm = SnapshotMock(random.nextState(), RawStateIndex(random.nextUint8(), random.nextUint256()));
         sm.rsi.boundStateIndex();
     }
 

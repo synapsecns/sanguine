@@ -1,7 +1,5 @@
-import { BigNumber } from '@ethersproject/bignumber'
-import { formatBNToString } from '@utils/bignumber/format'
+import { formatBigIntToString } from '@utils/bigint/format'
 import { commify } from '@ethersproject/units'
-import { displaySymbol } from '@utils/displaySymbol'
 import { Token } from '@types'
 
 const TokenBalance = ({
@@ -11,25 +9,27 @@ const TokenBalance = ({
 }: {
   token: Token
   chainId: number
-  tokenBalance: BigNumber
+  tokenBalance: bigint
 }) => {
-  const formattedBalance = commify(
-    formatBNToString(
-      tokenBalance,
-      token?.decimals?.[chainId as keyof Token['decimals']],
-      2
+  const formattedBalance =
+    tokenBalance &&
+    commify(
+      formatBigIntToString(
+        tokenBalance,
+        token?.decimals?.[chainId as keyof Token['decimals']],
+        3
+      )
     )
-  )
   return (
     <div className="ml-auto mr-5 text-lg text-white">
-      {!tokenBalance.eq(0) && (
-        <p>
+      {!(tokenBalance === 0n) && (
+        <div>
           {formattedBalance}
           <span className="text-sm opacity-80">
             {' '}
-            {token ? displaySymbol(chainId, token) : ''}
+            {token ? token.symbol : ''}
           </span>
-        </p>
+        </div>
       )}
     </div>
   )

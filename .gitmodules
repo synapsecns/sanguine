@@ -8,3 +8,18 @@
 [submodule "services/explorer/external/synapse-contracts"]
 	path = services/explorer/external/synapse-contracts
 	url = https://github.com/synapsecns/synapse-contracts.git
+[submodule "services/cctp-relayer/external/synapse-contracts"]
+	path = services/cctp-relayer/external/synapse-contracts
+	url = https://github.com/synapsecns/synapse-contracts
+[submodule "packages/contracts-core/lib/create3-factory"]
+	path = packages/contracts-core/lib/create3-factory
+	url = https://github.com/zeframlou/create3-factory
+[submodule "packages/contracts-rfq/lib/forge-std"]
+	path = packages/contracts-rfq/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "packages/contracts-rfq/lib/openzeppelin-contracts"]
+	path = packages/contracts-rfq/lib/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "services/rfq/external/canonical-weth"]
+	path = services/rfq/external/canonical-weth
+	url = https://github.com/gnosis/canonical-weth

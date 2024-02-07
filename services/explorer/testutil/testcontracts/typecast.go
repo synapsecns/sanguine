@@ -8,6 +8,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp/testcctp"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus/testmessagebus"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap/testmetaswap"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/testswap"
@@ -54,4 +55,11 @@ func (d *DeployManager) GetTestMetaSwap(ctx context.Context, backend backends.Si
 	d.T().Helper()
 
 	return manager.GetContract[*testmetaswap.TestMetaSwapRef](ctx, d.T(), d, backend, TestMetaSwapType)
+}
+
+// GetTestCCTP gets a typecast test cctp contract.
+func (d *DeployManager) GetTestCCTP(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testcctp.TestCCTPRef) {
+	d.T().Helper()
+
+	return manager.GetContract[*testcctp.TestCCTPRef](ctx, d.T(), d, backend, TestCCTPType)
 }

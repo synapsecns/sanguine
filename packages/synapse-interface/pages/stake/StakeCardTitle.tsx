@@ -1,9 +1,12 @@
+import numeral from 'numeral'
+import _ from 'lodash'
 import { useEffect, useState, useMemo } from 'react'
+import { LoaderIcon } from 'react-hot-toast'
 import { Token } from '@/utils/types'
 import { getPoolApyData } from '@/utils/actions/getPoolApyData'
 import ApyTooltip from '@/components/ApyTooltip'
-import LoadingText from '@/components/loading/LoadingText'
-import _ from 'lodash'
+import { hasAllPrices } from '@/utils/hasAllPrices'
+import { useAppSelector } from '@/store/hooks'
 
 const StakingPoolTokens = ({ poolTokens }: { poolTokens: Token[] }) => {
   if (poolTokens)
@@ -21,28 +24,33 @@ const StakingPoolTokens = ({ poolTokens }: { poolTokens: Token[] }) => {
 }
 
 interface StakeCardTitleProps {
-  address: string
-  connectedChainId: number
   token: Token
   poolTokens: Token[]
   poolLabel: string
-  prices: any
+  lpTokenBalance: bigint
 }
 
 const StakeCardTitle = ({
-  address,
-  connectedChainId,
   token,
   poolTokens,
   poolLabel,
-  prices,
+  lpTokenBalance,
 }: StakeCardTitleProps) => {
   const [poolApyData, setPoolApyData] = useState<any>(null)
-  const [baseApyData, setBaseApyData] = useState<any>(null)
+  const { synPrices, ethPrice, avaxPrice, metisPrice } = useAppSelector(
+    (state) => state.priceData
+  )
+
+  const prices = { synPrices, ethPrice, avaxPrice, metisPrice }
 
   useEffect(() => {
-    if (connectedChainId && address && prices) {
-      getPoolApyData(connectedChainId, token, prices)
+    if (hasAllPrices(prices)) {
+      getPoolApyData(token.chainId, token, {
+        synPrices,
+        ethPrice,
+        avaxPrice,
+        metisPrice,
+      })
         .then((res) => {
           setPoolApyData(res)
         })
@@ -50,40 +58,38 @@ const StakeCardTitle = ({
           console.log('Could not get pool data', err)
         })
     }
-  }, [connectedChainId, address, prices])
-
-  useEffect(() => {
-    setPoolApyData(null)
-    setBaseApyData(null)
-  }, [connectedChainId])
+  }, [token, hasAllPrices(prices), lpTokenBalance])
 
   const displayPoolApyData = useMemo(() => {
     if (!poolApyData) return null
 
-    return poolApyData.fullCompoundedAPYStr
-      ? `${String(poolApyData.fullCompoundedAPYStr)}% `
-      : `-% `
-  }, [connectedChainId, prices, poolApyData])
+    return poolApyData.fullCompoundedAPY
+      ? `${numeral(poolApyData.fullCompoundedAPY / 100).format('0.0%')}`
+      : `-%`
+  }, [prices, poolApyData])
 
   return (
-    <div className="px-2 mb-5">
+    <div className="flex items-center justify-between mb-5">
       <div className="inline-flex items-center mt-2">
         <StakingPoolTokens poolTokens={poolTokens} />
         <h3 className="mr-2 text-xl font-medium text-white">{poolLabel}</h3>
       </div>
 
-      <div className="flex flex-row text-lg font-normal text-white text-opacity-70">
-        {displayPoolApyData ? (
-          <span className="mr-1 text-green-400">{displayPoolApyData}</span>
-        ) : (
-          <LoadingText />
-        )}
-        APY
-        <ApyTooltip
-          apyData={poolApyData}
-          // baseApyData={baseApyData ??}
-          className="flex items-center ml-1"
-        />
+      <div className="text-lg font-normal text-white text-opacity-70">
+        <div>
+          {displayPoolApyData ? (
+            <span className="text-white ">{displayPoolApyData}</span>
+          ) : (
+            <LoaderIcon />
+          )}
+        </div>
+        <div className="flex">
+          <div className="text-sm">APY</div>
+          <ApyTooltip
+            apyData={poolApyData}
+            className="flex items-center ml-1"
+          />
+        </div>
       </div>
     </div>
   )

@@ -8,11 +8,11 @@ import (
 func (u ExampleAgentSuite) TestExampleAgentSimulatedTestSuite() {
 	NotNil(u.T(), u.SimulatedBackendsTestSuite)
 
-	notaryStatus, err := u.DestinationContract.AgentStatus(&bind.CallOpts{Context: u.GetTestContext()}, u.NotaryBondedSigner.Address())
+	notaryStatus, err := u.BondingManagerOnSummit.AgentStatus(&bind.CallOpts{Context: u.GetTestContext()}, u.NotaryBondedSigner.Address())
 	Nil(u.T(), err)
 	Equal(u.T(), uint32(u.TestBackendDestination.GetChainID()), notaryStatus.Domain)
 
-	notaryStatusFromEVM, err := u.DestinationDomainClient.LightManager().GetAgentStatus(u.GetTestContext(), u.NotaryBondedSigner)
+	notaryStatusFromEVM, err := u.SummitDomainClient.BondingManager().GetAgentStatus(u.GetTestContext(), u.NotaryBondedSigner.Address())
 	Nil(u.T(), err)
 	Equal(u.T(), notaryStatusFromEVM.Domain(), uint32(u.TestBackendDestination.GetChainID()))
 
@@ -20,7 +20,7 @@ func (u ExampleAgentSuite) TestExampleAgentSimulatedTestSuite() {
 	Nil(u.T(), err)
 	Equal(u.T(), uint32(0), guardStatus.Domain)
 
-	guardStatusFromEVM, err := u.SummitDomainClient.BondingManager().GetAgentStatus(u.GetTestContext(), u.GuardBondedSigner)
+	guardStatusFromEVM, err := u.SummitDomainClient.BondingManager().GetAgentStatus(u.GetTestContext(), u.GuardBondedSigner.Address())
 	Nil(u.T(), err)
 	Equal(u.T(), guardStatusFromEVM.Domain(), uint32(0))
 }

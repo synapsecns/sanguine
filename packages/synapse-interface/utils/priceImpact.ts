@@ -1,38 +1,42 @@
-import { BigNumber } from '@ethersproject/bignumber'
-import { Zero } from '@ethersproject/constants'
-
-/**
- * @param {BigNumber} tokenInputAmount assuing 18d precision
- * @param {BigNumber} tokenOutputAmount assuming 18d precision
- * @param {BigNumber} virtualPrice cause everything is fake anyway
- */
-export const calculatePriceImpact = (
-  tokenInputAmount,
-  tokenOutputAmount,
-  virtualPrice = BigNumber.from(10).pow(18)
-) => {
-  if (tokenInputAmount.gt(0)) {
-    return virtualPrice
-      .mul(tokenOutputAmount)
-      .div(tokenInputAmount)
-      .sub(BigNumber.from(10).pow(18))
-  } else {
-    return Zero
+const powBigInt = (base, exponent) => {
+  let result = 1n
+  for (let i = 0; i < exponent; i++) {
+    result *= base
   }
+  return result
+}
+
+const BI_1E18 = powBigInt(10n, 18)
+
+export const calculatePriceImpact = (
+  tokenInputAmount: bigint, // assumed to be 18d precision
+  tokenOutputAmount: bigint,
+  virtualPrice: bigint = BI_1E18,
+  isWithdraw: boolean = false
+) => {
+  if (tokenInputAmount <= 0n) {
+    return 0n
+  }
+
+  return isWithdraw
+    ? (tokenOutputAmount * powBigInt(10n, 36)) /
+        (tokenInputAmount * virtualPrice) -
+        BI_1E18
+    : (virtualPrice * tokenOutputAmount) / tokenInputAmount - BI_1E18
 }
 
 export const calculatePriceImpactWithdraw = (
   lpTokenInputAmount,
   tokenOutputAmount,
-  virtualPrice = BigNumber.from(10).pow(18)
+  virtualPrice = powBigInt(10n, 18)
 ) => {
-  const baseSquared = BigNumber.from(10).pow(36)
-  if (lpTokenInputAmount.gt(0)) {
-    return tokenOutputAmount
-      .mul(baseSquared)
-      .div(lpTokenInputAmount.mul(virtualPrice))
-      .sub(BigNumber.from(10).pow(18))
+  const baseSquared = powBigInt(10n, 36)
+  if (lpTokenInputAmount > 0n) {
+    return (
+      (tokenOutputAmount * baseSquared) / (lpTokenInputAmount * virtualPrice) -
+      powBigInt(10n, 18)
+    )
   } else {
-    return Zero
+    return 0n
   }
 }

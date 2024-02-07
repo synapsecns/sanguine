@@ -26,7 +26,7 @@ func main() {
 		return
 	}
 
-	fmt.Println("Enter Sending Test Client Contract Address (eg 0x07303feddAd86BF1ac260F1d9886E420D9c7144C): ")
+	fmt.Println("Enter Sending Test Client Contract Address (eg 0x3560BCCea61652c63003Bf1cb8fC7E848902b388): ")
 	var sendingTestClientContract string
 	fmt.Scanln(&sendingTestClientContract)
 
@@ -47,7 +47,7 @@ func main() {
 	}
 	localSigner := localsigner.NewSigner(localWallet.PrivateKey())
 
-	fmt.Println("Enter Receiving Test Client Contract Address (eg 0x07303feddAd86BF1ac260F1d9886E420D9c7144C): ")
+	fmt.Println("Enter Receiving Test Client Contract Address (eg 0x3560BCCea61652c63003Bf1cb8fC7E848902b388): ")
 	var receivingTestClientAddress string
 	fmt.Scanln(&receivingTestClientAddress)
 
@@ -82,7 +82,7 @@ func main() {
 	fmt.Scanln(&message)
 	messageBody := []byte(message)
 
-	gasLimit := uint64(10000000)
+	gasLimit := uint64(1000000)
 	version := uint32(1)
 	err = boundTestClient.SendMessage(ctx, localSigner, destinationID, recipient, optimisticSeconds, gasLimit, version, messageBody)
 	if err != nil {

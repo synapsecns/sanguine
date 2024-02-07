@@ -1,19 +1,19 @@
 import {
-  ANALYTICS_PATH,
+  EXPLORER_PATH,
   SWAP_PATH,
   STAKE_PATH,
   POOLS_PATH,
   LANDING_PATH,
   BRIDGE_PATH,
-  CONTRACTS_PATH,
-  PORTFOLIO_PATH,
+  INTERCHAIN_LINK,
+  SOLANA_LINK,
 } from './urls'
 
-interface RouteObject {
-  [name: string]: {
+export interface RouteObject {
+  [key: string]: {
     path: string
     text: string
-    match: string | null
+    match: string | RegExp | { startsWith: string; endsWith: string }
   }
 }
 
@@ -26,7 +26,10 @@ export const NAVIGATION: RouteObject = {
   Bridge: {
     path: BRIDGE_PATH,
     text: 'Bridge',
-    match: '/?outputChain',
+    match: {
+      startsWith: '/',
+      endsWith: '/',
+    },
   },
   Swap: {
     path: SWAP_PATH,
@@ -44,18 +47,18 @@ export const NAVIGATION: RouteObject = {
     match: '/stake',
   },
   Analytics: {
-    path: ANALYTICS_PATH,
+    path: EXPLORER_PATH,
     text: 'Explorer',
     match: null,
   },
   Contracts: {
-    path: CONTRACTS_PATH,
-    text: 'Contracts',
-    match: '/contracts',
+    path: INTERCHAIN_LINK,
+    text: 'Interchain Network',
+    match: null,
   },
-  Portfolio: {
-    path: PORTFOLIO_PATH,
-    text: 'Portfolio',
-    match: '/portfolio',
+  Solana: {
+    path: SOLANA_LINK,
+    text: 'Solana Bridge',
+    match: null,
   },
 }

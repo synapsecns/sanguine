@@ -1,17 +1,24 @@
 import { readContracts, ReadContractResult, Address } from '@wagmi/core'
-import { Zero } from '@ethersproject/constants'
-import MINICHEF_ABI from '@abis/miniChef.json'
+import { MINICHEF_ABI } from '@abis/miniChef'
+import { Token } from '@types'
 
-import { MINICHEF_ADDRESSES } from '@/constants/minichef'
+type UserInfoResult = {
+  result: [amount: bigint, rewardDebt: bigint]
+  status: string
+}
+
+type PendingSynapseResult = {
+  result: bigint
+  status: string
+}
 
 export const getStakedBalance = async (
   address: Address,
   chainId: number,
-  poolId: number
+  poolId: number,
+  pool: Token
 ) => {
-  const miniChefContractAddress: `0x${string}` = `0x${MINICHEF_ADDRESSES[
-    chainId
-  ].slice(2)}`
+  const miniChefContractAddress: Address = pool.miniChefAddress as Address
   try {
     const data: ReadContractResult = await readContracts({
       contracts: [
@@ -19,20 +26,35 @@ export const getStakedBalance = async (
           address: miniChefContractAddress,
           abi: MINICHEF_ABI,
           functionName: 'userInfo',
-          args: [poolId, address],
+          chainId,
+          args: [BigInt(poolId), address],
         },
         {
           address: miniChefContractAddress,
           abi: MINICHEF_ABI,
           functionName: 'pendingSynapse',
-          args: [poolId, address],
+          chainId,
+          args: [BigInt(poolId), address],
         },
       ],
     })
 
-    return { amount: data[0]?.amount ?? Zero, reward: data[1] ?? Zero }
+    const userInfo: UserInfoResult = data[0]
+    const pendingSynapse: PendingSynapseResult = data[1]
+
+    if (userInfo.status === 'success') {
+      return {
+        amount: userInfo?.result[0] ?? 0n,
+        reward: pendingSynapse?.result ?? 0n,
+      }
+    } else {
+      return {
+        amount: 0n,
+        reward: 0n,
+      }
+    }
   } catch (error) {
-    console.error('Error from useStakedBalance: ', error)
-    return { amount: Zero, reward: Zero }
+    console.error('Error from getStakedBalance: ', error)
+    return { amount: 0n, reward: 0n }
   }
 }

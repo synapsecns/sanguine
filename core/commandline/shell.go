@@ -18,6 +18,7 @@ const shellCommandName = "shell"
 
 // GenerateShellCommand generates the shell command with a list of commands that the shell should take.
 // TODO: this needs a more comprehensive test suite.
+// TODO: support ctrl+c.
 func GenerateShellCommand(shellCommands []*cli.Command) *cli.Command {
 	// explicitly exclude shell if included
 	capturedCommands := pruneShellCommands(shellCommands)
@@ -28,7 +29,7 @@ func GenerateShellCommand(shellCommands []*cli.Command) *cli.Command {
 
 	return &cli.Command{
 		Name:  shellCommandName,
-		Usage: "start an interactive shell. Note: certain commands (reliant on authentication) are only available via the shell",
+		Usage: "start an interactive shell.",
 		Flags: []cli.Flag{
 			&LogLevel,
 		},

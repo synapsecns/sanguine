@@ -1,12 +1,15 @@
 package notary_test
 
 import (
-	"github.com/synapsecns/sanguine/agents/agents/notary"
-	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"math/big"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/synapsecns/sanguine/agents/agents/notary"
+	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
+	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+	"github.com/synapsecns/sanguine/services/scribe/client"
 
 	"github.com/Flaque/filet"
 	awsTime "github.com/aws/smithy-go/time"
@@ -26,10 +29,6 @@ func RemoveNotaryTempFile(t *testing.T, fileName string) {
 
 //nolint:maintidx
 func (u *NotarySuite) TestNotaryE2E() {
-	/*attestationSavedSink := make(chan *summitharness.SummitHarnessAttestationSaved)
-	savedAttestation, err := u.SummitContract.WatchAttestationSaved(&bind.WatchOpts{Context: u.GetTestContext()}, attestationSavedSink)
-	Nil(u.T(), err)*/
-
 	guardTestConfig := config.AgentConfig{
 		Domains: map[string]config.DomainConfig{
 			"origin_client":      u.OriginDomainClient.Config(),
@@ -86,11 +85,15 @@ func (u *NotarySuite) TestNotaryE2E() {
 
 	Equal(u.T(), encodedNotaryTestConfig, decodedAgentConfigBackToEncodedBytes)
 
-	agentStatus, err := u.DestinationContract.AgentStatus(&bind.CallOpts{Context: u.GetTestContext()}, u.NotaryBondedSigner.Address())
-	Nil(u.T(), err)
-	Equal(u.T(), uint32(u.TestBackendDestination.GetChainID()), agentStatus.Domain)
+	omniRPCClient := omniClient.NewOmnirpcClient(u.TestOmniRPC, u.NotaryMetrics, omniClient.WithCaptureReqRes())
 
-	guard, err := guard.NewGuard(u.GetTestContext(), guardTestConfig, u.GuardMetrics)
+	scribeClient := client.NewEmbeddedScribe("sqlite", u.DBPath, u.ScribeMetrics)
+	go func() {
+		scribeErr := scribeClient.Start(u.GetTestContext())
+		Nil(u.T(), scribeErr)
+	}()
+
+	guard, err := guard.NewGuard(u.GetTestContext(), guardTestConfig, omniRPCClient, scribeClient.ScribeClient, u.GuardTestDB, u.GuardMetrics)
 	Nil(u.T(), err)
 
 	tips := types.NewTips(big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)), big.NewInt(int64(0)))
@@ -120,8 +123,7 @@ func (u *NotarySuite) TestNotaryE2E() {
 
 	go func() {
 		// we don't check errors here since this will error on cancellation at the end of the test
-		err = guard.Start(u.GetTestContext())
-		u.Nil(err)
+		_ = guard.Start(u.GetTestContext())
 	}()
 
 	u.Eventually(func() bool {
@@ -159,13 +161,29 @@ func (u *NotarySuite) TestNotaryE2E() {
 		return state.Nonce() >= uint32(1)
 	})
 
-	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig, u.NotaryMetrics)
+	notary, err := notary.NewNotary(u.GetTestContext(), notaryTestConfig, omniRPCClient, u.NotaryTestDB, u.NotaryMetrics)
 	Nil(u.T(), err)
+
+	agentStatus, err := u.DestinationContract.AgentStatus(&bind.CallOpts{Context: u.GetTestContext()}, u.NotaryBondedSigner.Address())
+	Nil(u.T(), err)
+	Equal(u.T(), types.AgentFlagUnknown, types.AgentFlagType(agentStatus.Flag))
 
 	go func() {
 		// we don't check errors here since this will error on cancellation at the end of the test
 		_ = notary.Start(u.GetTestContext())
 	}()
+
+	u.Eventually(func() bool {
+		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)
+
+		agentStatus, err := u.DestinationContract.AgentStatus(&bind.CallOpts{Context: u.GetTestContext()}, u.NotaryBondedSigner.Address())
+		Nil(u.T(), err)
+		return types.AgentFlagActive == types.AgentFlagType(agentStatus.Flag)
+	})
+
+	agentStatus, err = u.DestinationContract.AgentStatus(&bind.CallOpts{Context: u.GetTestContext()}, u.NotaryBondedSigner.Address())
+	Nil(u.T(), err)
+	Equal(u.T(), uint32(u.TestBackendDestination.GetChainID()), agentStatus.Domain)
 
 	u.Eventually(func() bool {
 		_ = awsTime.SleepWithContext(u.GetTestContext(), time.Second*5)

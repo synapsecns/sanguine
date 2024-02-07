@@ -4,8 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
+	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"math/big"
 	"os"
 	"sync"
@@ -16,17 +15,17 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/hashicorp/go-multierror"
 	"github.com/ipfs/go-log"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
-	"github.com/synapsecns/sanguine/ethergo/debug"
-	"github.com/synapsecns/sanguine/ethergo/debug/tenderly"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"github.com/synapsecns/sanguine/ethergo/util"
 	"github.com/teivah/onecontext"
@@ -46,10 +45,8 @@ type Backend struct {
 	ctx context.Context
 	// tb contains the testing object
 	t *testing.T
-	// tenderly is the tenderly backend
-	tenderly *tenderly.Tenderly
-	// provider is the stack trace provider
-	provider *debug.Provider
+	// store stores the accounts
+	store *InMemoryKeyStore
 }
 
 // T returns the testing object.
@@ -63,6 +60,14 @@ func (b *Backend) SetT(t *testing.T) {
 	b.t = t
 }
 
+func (b *Backend) Store(key *keystore.Key) {
+	b.store.Store(key)
+}
+
+func (b *Backend) GetAccount(a common.Address) *keystore.Key {
+	return b.store.GetAccount(a)
+}
+
 // NewBaseBackend creates a new base backend.
 //
 //nolint:staticcheck
@@ -70,35 +75,14 @@ func NewBaseBackend(ctx context.Context, t *testing.T, chn chain.Chain) (*Backen
 	t.Helper()
 
 	b := &Backend{
-		Chain:    chn,
-		ctx:      ctx,
-		t:        t,
-		Manager:  nonce.NewNonceManager(ctx, chn, chn.GetBigChainID()),
-		provider: debug.NewStackTraceProvider(),
+		Chain:   chn,
+		ctx:     ctx,
+		t:       t,
+		Manager: nonce.NewNonceManager(ctx, chn, chn.GetBigChainID()),
+		store:   NewInMemoryKeyStore(),
 	}
 
 	return b, nil
-}
-
-// EnableTenderly turns on tenderly on the full chain.
-// Note: tenderly must be installed and you must be logged in.
-func (b *Backend) EnableTenderly() bool {
-	if b.tenderly != nil {
-		return true
-	}
-	var err error
-	b.tenderly, err = tenderly.NewTenderly(b.ctx)
-	if err != nil {
-		logger.Warnf("could not enable tenderly %v, skipping", err)
-		return false
-	}
-
-	err = b.tenderly.StartListener(b)
-	if err != nil {
-		logger.Warnf("listener returned error: %v", err)
-		return false
-	}
-	return true
 }
 
 // Client fetches an eth client fro the backend.
@@ -150,39 +134,15 @@ func (b *Backend) VerifyContract(contractType contracts.ContractType, contract c
 	go func() {
 		code, err := b.Client().CodeAt(b.ctx, contract.Address(), nil)
 		if !errors.Is(err, context.Canceled) {
-			assert.Nil(b.T(), err)
-			assert.NotEmpty(b.T(), code)
+			require.Nil(b.T(), err)
+			require.NotEmpty(b.T(), code, "contract of type %s (metadata %s) not found", contractType.ContractName(), contract.String())
 		}
 	}()
-	var errMux sync.Mutex
 	var wg sync.WaitGroup
 
-	//nolint: nestif
-	// disable this on CI, as it dramatically slows down builds
-	if EnableLocalDebug {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			_, err := b.provider.AddContract(b.ctx, b.Chain, contractType, contract)
-			if err != nil {
-				errMux.Lock()
-				resError = multierror.Append(resError, err)
-				errMux.Unlock()
-			}
-		}()
-	}
-
-	if b.tenderly != nil {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			err := b.tenderly.VerifyContract(b.ctx, b, contractType, contract)
-			if err != nil {
-				errMux.Lock()
-				resError = multierror.Append(resError, err)
-				errMux.Unlock()
-			}
-		}()
+	// skip items on the blacklist.
+	if IsVerificationBlacklisted(contractType) {
+		return nil
 	}
 
 	wg.Wait()
@@ -220,24 +180,12 @@ func (b *Backend) WaitForConfirmation(parentCtx context.Context, transaction *ty
 		if err != nil {
 			errMessage := fmt.Sprintf("could not call contract: %v on tx: %s", err, transaction.Hash())
 			if b.RPCAddress() != "" {
-				errMessage += fmt.Sprintf("For more info run (before the process stops): cast run --rpc-url %s %s --trace-printer", b.RPCAddress(), transaction.Hash())
+				errMessage += fmt.Sprintf("\nFor more info run (before the process stops): cast run --rpc-url %s %s --trace-printer", b.RPCAddress(), transaction.Hash())
 			}
 			logger.Error(errMessage)
 			return
 		}
 
-		// if we are using something with an address, try to generate a stacktrace
-		if b.RPCAddress() != "" && EnableLocalDebug {
-			stackTrace, err := b.provider.GenerateStackTrace(b, transaction)
-			if err != nil {
-				logOnce.Do(func() {
-					logger.Warnf("could not generate stack trace for tx: %s", transaction.Hash())
-				})
-			} else {
-				fmt.Println(stackTrace)
-				return
-			}
-		}
 		if bytes.Equal(res, errorSig) {
 			vs, err := abi.Arguments{{Type: abiString}}.UnpackValues(res[4:])
 			if err != nil {
@@ -248,7 +196,7 @@ func (b *Backend) WaitForConfirmation(parentCtx context.Context, transaction *ty
 			//nolint: forcetypeassert
 			errMessage := fmt.Sprintf("tx %s reverted: %v", transaction.Hash(), vs[0].(string))
 			if b.RPCAddress() != "" {
-				errMessage += fmt.Sprintf("For more info run (before the process stops): cast run --rpc-url %s %s --trace-printer", b.RPCAddress(), transaction.Hash())
+				errMessage += fmt.Sprintf("\nFor more info run (before the process stops): cast run --rpc-url %s %s --trace-printer", b.RPCAddress(), transaction.Hash())
 			}
 			logger.Error(errMessage)
 		}
@@ -305,3 +253,22 @@ func WaitForConfirmation(ctx context.Context, client ConfirmationClient, transac
 
 //nolint:staticcheck
 var _ chain.Chain = &Backend{}
+
+// WalletToKey converts a wallet into a storable key
+// TODO: test me
+func WalletToKey(tb testing.TB, wall wallet.Wallet) *keystore.Key {
+	tb.Helper()
+
+	kstr := keystore.NewKeyStore(filet.TmpDir(tb, ""), VeryLightScryptN, VeryLightScryptP)
+	password := gofakeit.Password(true, true, true, false, false, 10)
+
+	acct, err := kstr.ImportECDSA(wall.PrivateKey(), password)
+	require.Nil(tb, err)
+
+	data, err := os.ReadFile(acct.URL.Path)
+	require.Nil(tb, err)
+
+	key, err := keystore.DecryptKey(data, password)
+	require.Nil(tb, err)
+	return key
+}

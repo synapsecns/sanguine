@@ -1,14 +1,20 @@
 package types
 
+import (
+	"fmt"
+
+	"github.com/ethereum/go-ethereum/crypto"
+)
+
 const (
-	// BaseMessageSenderOffset is the sender offset.
-	BaseMessageSenderOffset = 0
-	// BaseMessageRecipientOffset is the recipient offset.
-	BaseMessageRecipientOffset = 32
 	// BaseMessageTipsOffset is the tips offset.
-	BaseMessageTipsOffset = BaseMessageRecipientOffset + 32
+	BaseMessageTipsOffset = 0
+	// BaseMessageSenderOffset is the sender offset.
+	BaseMessageSenderOffset = 32
+	// BaseMessageRecipientOffset is the recipient offset.
+	BaseMessageRecipientOffset = 64
 	// BaseMessageRequestOffset is the request offset.
-	BaseMessageRequestOffset = BaseMessageTipsOffset + TipsSize
+	BaseMessageRequestOffset = BaseMessageRecipientOffset + TipsSize
 	// BaseMessageContentOffset is the content offset.
 	BaseMessageContentOffset = BaseMessageRequestOffset + RequestSize
 )
@@ -27,6 +33,11 @@ type BaseMessage interface {
 	Request() Request
 	// Content to be passed to recipient.
 	Content() []byte
+
+	// BodyLeaf gets the message body.
+	BodyLeaf() ([]byte, error)
+	// Leaf gets the message leaf.
+	Leaf() ([32]byte, error)
 }
 
 // baseMessageImpl implements a base message. It is used for testutils. Real base messages are emitted by the contract.
@@ -67,4 +78,29 @@ func (m baseMessageImpl) Request() Request {
 
 func (m baseMessageImpl) Content() []byte {
 	return m.content
+}
+
+func (m baseMessageImpl) BodyLeaf() ([]byte, error) {
+	encodeMessage, err := EncodeBaseMessage(m)
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode message: %w", err)
+	}
+
+	return crypto.Keccak256(encodeMessage[BaseMessageSenderOffset:]), nil
+}
+
+func (m baseMessageImpl) Leaf() ([32]byte, error) {
+	bodyLeaf, err := m.BodyLeaf()
+	if err != nil {
+		return [32]byte{}, fmt.Errorf("failed to get body leaf: %w", err)
+	}
+
+	tipsBytes, err := EncodeTips(m.Tips())
+	if err != nil {
+		return [32]byte{}, fmt.Errorf("failed to encode tips: %w", err)
+	}
+
+	hashedTips := crypto.Keccak256(tipsBytes)
+
+	return crypto.Keccak256Hash(hashedTips, bodyLeaf), nil
 }

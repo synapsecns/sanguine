@@ -1,0 +1,267 @@
+version: '3.4'
+
+# This compose file is expected to be used from make and not independently.
+
+volumes:
+  chain_a_data:
+  chain_b_data:
+  chain_c_data:
+  guard_data:
+  notary43_data:
+  scribe_data:
+  prometheus-data:
+  badger-data:
+  notary44_data:
+  executor_data:
+
+
+services:
+  guard:
+    restart: unless-stopped
+    entrypoint: agents
+    depends_on:
+      - omnirpc
+      - scribe
+    build:
+      context: ../../
+      dockerfile: docker/devnet/agents.Dockerfile
+    volumes:
+      - '${PWD}/config/guard-config.yml:/config/guard-config.yml'
+      - '${PWD}/config/guard-bonded-signer.txt:/config/guard-bonded-signer.txt'
+      - guard_data:/data
+    command:
+      - 'guard-run'
+      - '--config'
+      - '/config/guard-config.yml'
+    environment:
+      METRICS_HANDLER: jaeger
+      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
+      GOLOG_LOG_LEVEL: debug
+
+  notary-43:
+    entrypoint: agents
+    restart: unless-stopped
+    depends_on:
+      - omnirpc
+    build:
+      context: ../../
+      dockerfile: docker/devnet/agents.Dockerfile
+    volumes:
+      - '${PWD}/config/notary43-config.yml:/config/notary-config.yml'
+      - '${PWD}/config/notary43-bonded-signer.txt:/config/notary-bonded-signer.txt'
+      - notary43_data:/config/synapse.db
+    command:
+      - 'notary-run'
+      - '--config'
+      - '/config/notary-config.yml'
+      - '--debug'
+    environment:
+      METRICS_HANDLER: jaeger
+      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
+      GOLOG_LOG_LEVEL: debug
+
+
+  notary-44:
+    entrypoint: agents
+    restart: unless-stopped
+    depends_on:
+      - omnirpc
+    build:
+      context: ../../
+      dockerfile: docker/devnet/agents.Dockerfile
+    volumes:
+      - '${PWD}/config/notary44-config.yml:/config/notary-config.yml'
+      - '${PWD}/config/notary44-bonded-signer.txt:/config/notary-bonded-signer.txt'
+      - notary44_data:/config/synapse.db
+    command:
+      - 'notary-run'
+      - '--config'
+      - '/config/notary-config.yml'
+      - '--debug'
+    environment:
+      METRICS_HANDLER: jaeger
+      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
+      GOLOG_LOG_LEVEL: debug
+
+  executor:
+    entrypoint: agents
+    restart: unless-stopped
+    depends_on:
+      - omnirpc
+    build:
+      context: ../../
+      dockerfile: docker/devnet/agents.Dockerfile
+    volumes:
+      - '${PWD}/config/executor-config.yml:/config/executor-config.yml'
+      - '${PWD}/config/executor-signer.txt:/config/executor-signer.txt'
+      - executor_data:/config/synapse.db
+    command:
+      - 'executor-run'
+      - '--config'
+      - '/config/executor-config.yml'
+      - '--debug'
+    environment:
+      METRICS_HANDLER: jaeger
+      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
+      GOLOG_LOG_LEVEL: debug
+
+
+  scribe-indexer:
+    depends_on:
+    - omnirpc
+    build:
+      context: ../../
+      dockerfile: docker/devnet/scribe.Dockerfile
+    entrypoint: scribe
+    restart: unless-stopped
+    command: >
+        scribe
+        --config=/config/scribe.yaml
+        --db=sqlite
+        --path=/data
+    volumes:
+      - '${PWD}/config/scribe-indexer-config.yaml:/config/scribe.yaml'
+      - scribe_data:/data
+    environment:
+      METRICS_HANDLER: jaeger
+      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
+      GOLOG_LOG_LEVEL: debug
+
+  scribe:
+    restart: unless-stopped
+    depends_on:
+      - scribe-indexer
+    build:
+      context: ../../
+      dockerfile: docker/devnet/scribe.Dockerfile
+    entrypoint: scribe
+    command: >
+      server
+      --port=9002
+      --db=sqlite
+      --path=/data
+      --omnirpc=http://omnirpc:9001
+    volumes:
+      - scribe_data:/data
+    environment:
+      METRICS_HANDLER: jaeger
+      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
+      GOLOG_LOG_LEVEL: debug
+    ports:
+      - '9002:9002'
+
+
+  omnirpc:
+    restart: unless-stopped
+    depends_on:
+      - chain_a
+      - chain_b
+      - chain_c
+      - tracing
+    build:
+      context: ../../
+      dockerfile: docker/devnet/omnirpc.Dockerfile
+    ports:
+      - '9001:9001'
+    command: >
+      omnirpc
+      server
+      --config=/config/omnirpc.yaml
+    volumes:
+      - '${PWD}/config/omnirpc.yaml:/config/omnirpc.yaml'
+    environment:
+      METRICS_HANDLER: jaeger
+      JAEGER_ENDPOINT: 'http://tracing:14268/api/traces'
+# TODO, consider re-enabling.
+#    healthcheck:
+#      test: ['CMD', 'curl', '-f', 'http://localhost:8545/health']
+#      interval: 1s
+#      timeout: 20s
+#      retries: 10
+#      start_period: 5s
+
+  chain_a:
+    restart: unless-stopped
+    image: 'ghcr.io/foundry-rs/foundry:latest'
+    entrypoint: anvil
+    command: >
+      --host=0.0.0.0
+      --chain-id=42
+      --allow-origin='*'
+      --steps-tracing
+      --mnemonic='tag volcano eight thank tide danger coast health above argue embrace heavy'
+      --base-fee=1
+      --gas-limit=100000000
+      --state=/data/
+    ports:
+      - '8042:8545'
+    volumes:
+      - chain_a_data:/data
+
+  chain_b:
+    restart: unless-stopped
+    image: 'ghcr.io/foundry-rs/foundry:latest'
+    entrypoint: anvil
+    command: >
+      --host=0.0.0.0
+      --chain-id=43
+      --allow-origin='*'
+      --steps-tracing
+      --mnemonic='tag volcano eight thank tide danger coast health above argue embrace heavy'
+      --base-fee=1
+      --gas-limit=100000000
+      --state=/data/
+    ports:
+      - '8043:8545'
+    volumes:
+      - chain_b_data:/data
+
+  chain_c:
+    restart: unless-stopped
+    image: 'ghcr.io/foundry-rs/foundry:latest'
+    entrypoint: anvil
+    command: >
+      --host=0.0.0.0
+      --chain-id=44
+      --allow-origin='*'
+      --steps-tracing
+      --mnemonic='tag volcano eight thank tide danger coast health above argue embrace heavy'
+      --base-fee=1
+      --gas-limit=100000000
+      --state=/data/
+    ports:
+      - '8044:8545'
+    volumes:
+      - chain_b_data:/data
+
+  tracing:
+    restart: unless-stopped
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - 6831:6831/udp
+      - 6832:6832/udp
+      - 5778:5778
+      - 16686:16686
+      - 4317:4317
+      - 4318:4318
+      - 14250:14250
+      - 14268:14268
+      - 14269:14269
+      - 9411:9411
+    environment:
+      SPAN_STORAGE_TYPE: 'badger'
+      BADGER_EPHEMERAL: 'false'
+      BADGER_DIRECTORY_VALUE: '/badger/data'
+      BADGER_DIRECTORY_KEY: '/badger/key'
+    volumes:
+      - badger-data:/badger
+
+  prometheus:
+    restart: unless-stopped
+    image: prom/prometheus:v2.46.0
+    ports:
+      - 9000:9090
+    volumes:
+      - '${PWD}/config/prometheus:/etc/prometheus'
+      - prometheus-data:/prometheus
+    command: --web.enable-lifecycle  --config.file=/etc/prometheus/prometheus.yml

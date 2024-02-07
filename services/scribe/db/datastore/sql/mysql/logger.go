@@ -5,4 +5,4 @@ import (
 )
 
 // Logger is the mysql logger.
-var logger = log.Logger("synapse-mysql")
+var logger = log.Logger("scribe-mysql")

@@ -1,35 +1,42 @@
-import { useMemo, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNetwork, useAccount } from 'wagmi'
 import { Token } from '@/utils/types'
-import { Chain } from '@/utils/types'
-import { getNetworkTextColor } from '@/styles/chains'
 import { STAKABLE_TOKENS } from '@/constants/tokens'
-import { CHAINS_BY_ID, ChainsByChainID } from '@/constants/chains'
 import Grid from '@/components/ui/tailwind/Grid'
 import { PageHeader } from '@/components/PageHeader'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import StakeCard from './StakeCard'
-import NoStakeCard from './NoStakeCard'
+import { useRouter } from 'next/router'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import Link from 'next/link'
+import { POOLS_PATH } from '@/constants/urls'
+import { ChevronLeftIcon } from '@heroicons/react/outline'
+import toast from 'react-hot-toast'
 
 const StakePage = () => {
   const { chain: connectedChain } = useNetwork()
   const { address: currentAddress } = useAccount()
-  const [connectedChainId, setConnectedChainId] = useState<number>(undefined)
   const [address, setAddress] = useState(undefined)
   const [isClient, setIsClient] = useState<boolean>(false)
   const [columns, setColumns] = useState<number>(1)
 
-  const connectedChainInfo: Chain | undefined = useMemo(() => {
-    if (connectedChainId) {
-      const chainMapping: ChainsByChainID = CHAINS_BY_ID
-      return chainMapping[connectedChainId]
-    } else {
-      return undefined
-    }
-  }, [connectedChainId])
+  const router = useRouter()
+  const { query, pathname } = router
 
   const availableStakingTokens: Token[] | [] =
-    STAKABLE_TOKENS[connectedChainId] ?? []
+    connectedChain && STAKABLE_TOKENS[connectedChain.id]
+      ? STAKABLE_TOKENS[connectedChain.id]
+      : []
+
+  const routerIndices = availableStakingTokens.map((token) => token.routerIndex)
+  useEffect(() => {
+    segmentAnalyticsEvent(`[Stake page] arrives`, {
+      connectedChainId: connectedChain ? connectedChain.id : null,
+      query,
+      pathname,
+      routerIndices,
+    })
+  }, [])
 
   useEffect(() => {
     setAddress(currentAddress)
@@ -38,15 +45,33 @@ const StakePage = () => {
   useEffect(() => {
     const isSingle = availableStakingTokens.length < 2
     setColumns(isSingle ? 1 : 2)
-  }, [availableStakingTokens])
 
-  useEffect(() => {
-    setConnectedChainId(connectedChain && connectedChain.id)
-  }, [connectedChain])
+    if (availableStakingTokens.length === 0) {
+      router.push('/pools')
+    }
+  }, [availableStakingTokens, router])
 
   useEffect(() => {
     setIsClient(true)
   }, [])
+
+  if (!connectedChain) {
+    toast.error('Please connect to see stakes', {
+      id: 'approve-in-progress-popup',
+      duration: 5000,
+    })
+
+    return <LandingPageWrapper> </LandingPageWrapper>
+  }
+
+  if (connectedChain && availableStakingTokens.length === 0) {
+    toast.error(`No stakes available for ${connectedChain.name} network`, {
+      id: 'approve-in-progress-popup',
+      duration: 5000,
+    })
+
+    return <LandingPageWrapper> </LandingPageWrapper>
+  }
 
   return (
     <LandingPageWrapper>
@@ -59,10 +84,18 @@ const StakePage = () => {
         `}
       >
         <div className="flex flex-col justify-center max-w-[1300px] m-auto">
+          <div>
+            <Link href={POOLS_PATH}>
+              <div className="inline-flex items-center mb-3 text-sm font-light text-white hover:text-opacity-100">
+                <ChevronLeftIcon className="w-4 h-4" />
+                Back to Pools
+              </div>
+            </Link>
+          </div>
           <PageHeader title="Stake" subtitle="Stake your LP Tokens." />
 
           <Grid cols={{ xs: 1, sm: 1, md: columns }} gap={6} className="mt-8">
-            {isClient && availableStakingTokens.length > 0 ? (
+            {isClient &&
               availableStakingTokens.map((token, key) => {
                 if (token.notStake) {
                   return null
@@ -71,14 +104,11 @@ const StakePage = () => {
                   <StakeCard
                     key={key}
                     address={currentAddress}
-                    chainId={connectedChainId}
+                    chainId={connectedChain.id}
                     pool={token}
                   />
                 )
-              })
-            ) : (
-              <NoStakeCard chain={connectedChainInfo} />
-            )}
+              })}
           </Grid>
         </div>
       </main>

@@ -42,7 +42,7 @@ describe('Navbar', () => {
       const routes = fixture.routes
       cy.get('nav[data-test-id="desktop-nav"]')
         .children('a')
-        .should('have.length', 6)
+        .should('have.length', routes.length)
         .each(($a, index) => {
           expect($a.text()).to.equal(routes[index])
         })
@@ -89,7 +89,7 @@ describe('Navbar', () => {
       const routes = fixture.routes
       cy.get('div[data-test-id="mobile-nav"]')
         .children('a')
-        .should('have.length', 6)
+        .should('have.length', routes.length)
         .each(($a, index) => {
           expect($a.text()).to.equal(routes[index])
         })

@@ -1,9 +1,11 @@
 package config_test
 
 import (
-	"github.com/synapsecns/sanguine/ethergo/submitter/config"
 	"math/big"
 	"testing"
+
+	"github.com/synapsecns/sanguine/ethergo/submitter/config"
+	"gopkg.in/yaml.v2"
 
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/stretchr/testify/assert"
@@ -11,7 +13,7 @@ import (
 
 func TestGetters(t *testing.T) {
 	cfg := config.Config{
-		GlobalConfig: config.ChainConfig{
+		ChainConfig: config.ChainConfig{
 			MaxBatchSize: 5,
 			DoNotBatch:   false,
 			MaxGasPrice:  big.NewInt(250 * params.GWei),
@@ -51,4 +53,24 @@ func TestGetters(t *testing.T) {
 		assert.Equal(t, big.NewInt(250*params.GWei), cfg.GetMaxGasPrice(3))
 		assert.Equal(t, big.NewInt(250*params.GWei), cfg.GetMaxGasPrice(4)) // Nonexistent chain, should use global config value
 	})
+}
+
+func TestGlobalConfig(t *testing.T) {
+	cfgStr := `max_gas_price: 250000000000
+bump_interval_seconds: 60
+gas_bump_percentage: 10
+gas_estimate: 1000
+is_l2: true
+dynamic_gas_estimate: true
+supports_eip_1559: true`
+	var cfg config.Config
+	err := yaml.Unmarshal([]byte(cfgStr), &cfg)
+	assert.NoError(t, err)
+	assert.Equal(t, big.NewInt(250000000000), cfg.MaxGasPrice)
+	assert.Equal(t, 60, cfg.BumpIntervalSeconds)
+	assert.Equal(t, 10, cfg.GasBumpPercentage)
+	assert.Equal(t, uint64(1000), cfg.GasEstimate)
+	assert.Equal(t, true, cfg.IsL2(0))
+	assert.Equal(t, true, cfg.DynamicGasEstimate)
+	assert.Equal(t, true, cfg.SupportsEIP1559(0))
 }

@@ -9,8 +9,7 @@ import (
 
 func chainConfigFixture() config.ChainConfig {
 	return config.ChainConfig{
-		ChainID:               gofakeit.Uint32(),
-		RequiredConfirmations: gofakeit.Uint32(),
+		ChainID: gofakeit.Uint32(),
 		Contracts: config.ContractConfigs{
 			config.ContractConfig{
 				Address:    mocks.MockAddress().String(),
@@ -24,7 +23,7 @@ func (c ConfigSuite) TestChainID() {
 	chainConfig := chainConfigFixture()
 	chainConfig.ChainID = 0
 
-	ok, err := chainConfig.IsValid(c.GetTestContext())
+	ok, err := chainConfig.IsValid()
 	False(c.T(), ok)
 	ErrorIs(c.T(), err, config.ErrInvalidChainID)
 }
@@ -40,7 +39,7 @@ func (c ConfigSuite) TestChainConfigsDuplicateChainID() {
 		chainConfigB,
 	}
 
-	ok, err := chainConfigs.IsValid(c.GetTestContext())
+	ok, err := chainConfigs.IsValid()
 	False(c.T(), ok)
 	ErrorIs(c.T(), err, config.ErrDuplicateChainID)
 }

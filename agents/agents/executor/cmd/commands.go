@@ -2,22 +2,24 @@ package cmd
 
 import (
 	"context"
+
 	markdown "github.com/MichaelMure/go-term-markdown"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/jftuga/termsize"
 	"github.com/phayes/freeport"
 	"github.com/synapsecns/sanguine/agents/agents/executor"
 	"github.com/synapsecns/sanguine/agents/agents/executor/api"
-	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/mysql"
-	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
+	"github.com/synapsecns/sanguine/agents/agents/executor/db/sql/mysql"
+	"github.com/synapsecns/sanguine/agents/agents/executor/db/sql/sqlite"
 	"github.com/synapsecns/sanguine/agents/agents/executor/metadata"
+	execConfig "github.com/synapsecns/sanguine/agents/config/executor"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
+	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	scribeAPI "github.com/synapsecns/sanguine/services/scribe/api"
-	"github.com/synapsecns/sanguine/services/scribe/backfill"
+	"github.com/synapsecns/sanguine/services/scribe/backend"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	scribeCmd "github.com/synapsecns/sanguine/services/scribe/cmd"
-	"github.com/synapsecns/sanguine/services/scribe/node"
+	"github.com/synapsecns/sanguine/services/scribe/service"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
@@ -26,11 +28,11 @@ import (
 	// used to embed markdown.
 	_ "embed"
 	"fmt"
-	"github.com/synapsecns/sanguine/agents/agents/executor/config"
+	"os"
+
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/urfave/cli/v2"
-	"os"
 )
 
 //go:embed cmd.md
@@ -53,144 +55,99 @@ var configFlag = &cli.StringFlag{
 	Required:  true,
 }
 
-var dbFlag = &cli.StringFlag{
-	Name:     "db",
-	Usage:    "--db <sqlite> or <mysql>",
-	Value:    "sqlite",
-	Required: true,
-}
-
-var pathFlag = &cli.StringFlag{
-	Name:     "path",
-	Usage:    "--path <path/to/database> or <database url>",
-	Value:    "",
-	Required: true,
-}
-
 var metricsPortFlag = &cli.UintFlag{
 	Name:  "metrics-port",
 	Usage: "--port 5121",
 	Value: 0,
 }
 
-var scribeTypeFlag = &cli.StringFlag{
-	Name:     "scribe-type",
-	Usage:    "--scribe-type <embedded> or <remote>",
-	Required: true,
+var debugFlag = &cli.BoolFlag{
+	Name:  "debug",
+	Usage: "--debug",
 }
 
-var scribeDBFlag = &cli.StringFlag{
-	Name:  "scribe-db",
-	Usage: "--scribe-db <sqlite> or <mysql>",
-}
-
-var scribePathFlag = &cli.StringFlag{
-	Name:  "scribe-path",
-	Usage: "--scribe-path <path/to/database> or <database url>",
-}
-
-var scribePortFlag = &cli.UintFlag{
-	Name:  "scribe-port",
-	Usage: "--scribe-port <port>",
-	Value: 0,
-}
-
-var scribeURL = &cli.StringFlag{
-	Name:  "scribe-url",
-	Usage: "--scribe-url <url>",
-}
-
-// nolint:dupword
-func createExecutorParameters(c *cli.Context, metrics metrics.Handler) (executorConfig config.Config, executorDB db.ExecutorDB, clients map[uint32]executor.Backend, err error) {
-	executorConfig, err = config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
+func createExecutorParameters(ctx context.Context, c *cli.Context, metrics metrics.Handler) (executorConfig execConfig.Config, executorDB db.ExecutorDB, err error) {
+	executorConfig, err = execConfig.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 	if err != nil {
-		return executorConfig, nil, nil, fmt.Errorf("failed to decode config: %w", err)
+		return executorConfig, nil, fmt.Errorf("failed to decode config: %w", err)
 	}
 
-	if executorConfig.DBPrefix == "" && c.String(dbFlag.Name) == "mysql" {
+	if executorConfig.DBPrefix == "" && executorConfig.DBConfig.Type == dbcommon.Mysql.String() {
 		executorConfig.DBPrefix = "executor"
 	}
 
-	if executorConfig.DBPrefix != "" && c.String(dbFlag.Name) == "sqlite" {
+	if executorConfig.DBConfig.Type == dbcommon.Sqlite.String() {
 		executorConfig.DBPrefix = ""
 	}
 
-	executorDB, err = InitExecutorDB(c.Context, c.String(dbFlag.Name), c.String(pathFlag.Name), executorConfig.DBPrefix, metrics)
+	executorDB, err = InitExecutorDB(
+		ctx,
+		executorConfig.DBConfig.Type,
+		executorConfig.DBConfig.Source,
+		executorConfig.DBPrefix,
+		metrics,
+	)
 	if err != nil {
-		return executorConfig, nil, nil, fmt.Errorf("failed to initialize database: %w", err)
+		return executorConfig, nil, fmt.Errorf("failed to initialize database: %w", err)
 	}
 
-	clients = make(map[uint32]executor.Backend)
-	/* for _, execClient := range executorConfig.Chains {
-		rpcDial, err := rpc.DialContext(c.Context, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, 1, execClient.ChainID))
-		if err != nil {
-			return executorConfig, nil, nil, fmt.Errorf("failed to dial rpc: %w", err)
-		}
-
-		ethClient := ethclient.NewClient(rpcDial)
-		clients[execClient.ChainID] = ethClient
-	} */
-	for _, execClient := range executorConfig.Chains {
-		rpcDial, err := rpc.DialContext(c.Context, execClient.TempRPC)
-		if err != nil {
-			return executorConfig, nil, nil, fmt.Errorf("failed to dial rpc: %w", err)
-		}
-
-		ethClient := ethclient.NewClient(rpcDial)
-		clients[execClient.ChainID] = ethClient
-	}
-
-	return executorConfig, executorDB, clients, nil
+	return executorConfig, executorDB, nil
 }
 
 // ExecutorRunCommand runs the executor.
 var ExecutorRunCommand = &cli.Command{
 	Name:        "executor-run",
 	Description: "runs the executor service",
-	Flags: []cli.Flag{configFlag, dbFlag, pathFlag, scribeTypeFlag, metricsPortFlag,
-		// The flags below are used when `scribeTypeFlag` is set to "embedded".
-		scribeDBFlag, scribePathFlag,
-		// The flags below are used when `scribeTypeFlag` is set to "remote".
-		scribePortFlag, scribeURL},
+	Flags:       []cli.Flag{configFlag, metricsPortFlag, debugFlag},
 	Action: func(c *cli.Context) error {
-		metricsProvider := metrics.Get()
 
-		executorConfig, executorDB, clients, err := createExecutorParameters(c, metricsProvider)
+		var scribeClient client.ScribeClient
+
+		g, ctx := errgroup.WithContext(c.Context)
+
+		handler, err := metrics.NewFromEnv(ctx, metadata.BuildInfo())
+		if err != nil {
+			return fmt.Errorf("failed to create metrics handler: %w", err)
+		}
+
+		executorConfig, executorDB, err := createExecutorParameters(ctx, c, handler)
 		if err != nil {
 			return err
 		}
 
-		var scribeClient client.ScribeClient
-
-		g, _ := errgroup.WithContext(c.Context)
-
-		switch c.String(scribeTypeFlag.Name) {
+		switch executorConfig.ScribeConfig.Type {
 		case "embedded":
-			eventDB, err := scribeAPI.InitDB(c.Context, c.String(scribeDBFlag.Name), c.String(scribePathFlag.Name), metricsProvider, false)
+			eventDB, err := scribeAPI.InitDB(
+				ctx,
+				executorConfig.DBConfig.Type,
+				executorConfig.DBConfig.Source,
+				handler,
+				false,
+			)
 			if err != nil {
 				return fmt.Errorf("failed to initialize database: %w", err)
 			}
 
-			scribeClients := make(map[uint32][]backfill.ScribeBackend)
+			scribeClients := make(map[uint32][]backend.ScribeBackend)
 
-			for _, client := range executorConfig.EmbeddedScribeConfig.Chains {
+			for _, client := range executorConfig.ScribeConfig.EmbeddedScribeConfig.Chains {
 				for confNum := 1; confNum <= scribeCmd.MaxConfirmations; confNum++ {
-					backendClient, err := backfill.DialBackend(c.Context, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.BaseOmnirpcURL, confNum, client.ChainID), metricsProvider)
+					backendClient, err := backend.DialBackend(ctx, fmt.Sprintf("%s/%d/rpc/%d", executorConfig.ScribeConfig.EmbeddedScribeConfig.RPCURL, confNum, client.ChainID), handler)
 					if err != nil {
-						return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", executorConfig.BaseOmnirpcURL, client.ChainID))
+						return fmt.Errorf("could not start client for %s", fmt.Sprintf("%s/1/rpc/%d", executorConfig.ScribeConfig.EmbeddedScribeConfig.RPCURL, client.ChainID))
 					}
 
 					scribeClients[client.ChainID] = append(scribeClients[client.ChainID], backendClient)
 				}
 			}
 
-			scribe, err := node.NewScribe(eventDB, scribeClients, executorConfig.EmbeddedScribeConfig, metricsProvider)
+			scribe, err := service.NewScribe(eventDB, scribeClients, executorConfig.ScribeConfig.EmbeddedScribeConfig, handler)
 			if err != nil {
 				return fmt.Errorf("failed to initialize scribe: %w", err)
 			}
 
 			g.Go(func() error {
-				err := scribe.Start(c.Context)
+				err := scribe.Start(ctx)
 				if err != nil {
 					return fmt.Errorf("failed to start scribe: %w", err)
 				}
@@ -198,10 +155,14 @@ var ExecutorRunCommand = &cli.Command{
 				return nil
 			})
 
-			embedded := client.NewEmbeddedScribe(c.String(scribeDBFlag.Name), c.String(scribePathFlag.Name), metricsProvider)
+			embedded := client.NewEmbeddedScribe(
+				executorConfig.ScribeConfig.EmbeddedDBConfig.Type,
+				executorConfig.DBConfig.Source,
+				handler,
+			)
 
 			g.Go(func() error {
-				err := embedded.Start(c.Context)
+				err := embedded.Start(ctx)
 				if err != nil {
 					return fmt.Errorf("failed to start embedded scribe: %w", err)
 				}
@@ -211,23 +172,29 @@ var ExecutorRunCommand = &cli.Command{
 
 			scribeClient = embedded.ScribeClient
 		case "remote":
-			scribeClient = client.NewRemoteScribe(uint16(c.Uint(scribePortFlag.Name)), c.String(scribeURL.Name), metricsProvider).ScribeClient
+			scribeClient = client.NewRemoteScribe(
+				uint16(executorConfig.ScribeConfig.Port),
+				executorConfig.ScribeConfig.URL,
+				handler,
+			).ScribeClient
 		default:
-			return fmt.Errorf("invalid scribe type: %s", c.String(scribeTypeFlag.Name))
+			return fmt.Errorf("invalid scribe type: %s", executorConfig.ScribeConfig.Type)
 		}
 
-		handler, err := metrics.NewFromEnv(c.Context, metadata.BuildInfo())
-		if err != nil {
-			return fmt.Errorf("failed to create metrics handler: %w", err)
+		var baseOmniRPCClient omnirpcClient.RPCClient
+		if debugFlag.IsSet() {
+			baseOmniRPCClient = omnirpcClient.NewOmnirpcClient(executorConfig.BaseOmnirpcURL, handler, omnirpcClient.WithCaptureReqRes())
+		} else {
+			baseOmniRPCClient = omnirpcClient.NewOmnirpcClient(executorConfig.BaseOmnirpcURL, handler)
 		}
 
-		executor, err := executor.NewExecutor(c.Context, executorConfig, executorDB, scribeClient, clients, handler)
+		executor, err := executor.NewExecutor(ctx, executorConfig, executorDB, scribeClient, baseOmniRPCClient, handler)
 		if err != nil {
 			return fmt.Errorf("failed to create executor: %w", err)
 		}
 
 		g.Go(func() error {
-			err := api.Start(c.Context, uint16(c.Uint(metricsPortFlag.Name)))
+			err := api.Start(ctx, uint16(c.Uint(metricsPortFlag.Name)))
 			if err != nil {
 				return fmt.Errorf("failed to start api: %w", err)
 			}
@@ -236,7 +203,7 @@ var ExecutorRunCommand = &cli.Command{
 		})
 
 		g.Go(func() error {
-			err := executor.Run(c.Context)
+			err := executor.Run(ctx)
 			if err != nil {
 				return fmt.Errorf("failed to run executor: %w", err)
 			}
@@ -271,20 +238,20 @@ func InitExecutorDB(parentCtx context.Context, database string, path string, tab
 	}()
 
 	switch {
-	case database == "sqlite":
-		sqliteStore, err := sqlite.NewSqliteStore(ctx, path, handler)
+	case database == dbcommon.Sqlite.String():
+		sqliteStore, err := sqlite.NewSqliteStore(ctx, path, handler, false)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create sqlite store: %w", err)
 		}
 
 		return sqliteStore, nil
 
-	case database == "mysql":
+	case database == dbcommon.Mysql.String():
 		if os.Getenv("OVERRIDE_MYSQL") != "" {
 			dbname := os.Getenv("MYSQL_DATABASE")
 			connString := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", core.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), core.GetEnv("MYSQL_HOST", "127.0.0.1"), core.GetEnvInt("MYSQL_PORT", 3306), dbname)
 
-			mysqlStore, err := mysql.NewMysqlStore(ctx, connString, handler)
+			mysqlStore, err := mysql.NewMysqlStore(ctx, connString, handler, false)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create mysql store: %w", err)
 			}
@@ -292,13 +259,13 @@ func InitExecutorDB(parentCtx context.Context, database string, path string, tab
 			return mysqlStore, nil
 		}
 
-		namingStrategy := schema.NamingStrategy{
-			TablePrefix: fmt.Sprintf("%s_", tablePrefix),
+		if tablePrefix != "" {
+			mysql.NamingStrategy = schema.NamingStrategy{
+				TablePrefix: fmt.Sprintf("%s_", tablePrefix),
+			}
 		}
 
-		mysql.NamingStrategy = namingStrategy
-
-		mysqlStore, err := mysql.NewMysqlStore(ctx, path, handler)
+		mysqlStore, err := mysql.NewMysqlStore(ctx, path, handler, false)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create mysql store: %w", err)
 		}

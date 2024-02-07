@@ -3,16 +3,22 @@ package testutil
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/agents/contracts/test/receiptharness"
+	"sync"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/contracts/bondingmanager"
 	"github.com/synapsecns/sanguine/agents/contracts/inbox"
 	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
 	"github.com/synapsecns/sanguine/agents/contracts/lightmanager"
+	"github.com/synapsecns/sanguine/agents/contracts/test/basemessageharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/bondingmanagerharness"
 	gasdataharness "github.com/synapsecns/sanguine/agents/contracts/test/gasdata"
 	"github.com/synapsecns/sanguine/agents/contracts/test/lightmanagerharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/requestharness"
 	"github.com/synapsecns/sanguine/ethergo/manager"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/synapsecns/sanguine/agents/contracts/test/attestationharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/summitharness"
@@ -51,6 +57,22 @@ func (d *DeployManager) GetMessageHarness(ctx context.Context, backend backends.
 	d.T().Helper()
 
 	return manager.GetContract[*messageharness.MessageHarnessRef](ctx, d.T(), d, backend, MessageHarnessType)
+}
+
+// GetBaseMessageHarness gets the base message harness.
+// nolint:dupl
+func (d *DeployManager) GetBaseMessageHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *basemessageharness.BaseMessageHarnessRef) {
+	d.T().Helper()
+
+	return manager.GetContract[*basemessageharness.BaseMessageHarnessRef](ctx, d.T(), d, backend, BaseMessageHarnessType)
+}
+
+// GetRequestHarness gets the request harness.
+// nolint:dupl
+func (d *DeployManager) GetRequestHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *requestharness.RequestHarnessRef) {
+	d.T().Helper()
+
+	return manager.GetContract[*requestharness.RequestHarnessRef](ctx, d.T(), d, backend, RequestHarnessType)
 }
 
 // GetLightInbox gets the light inbox.
@@ -131,6 +153,14 @@ func (d *DeployManager) GetSnapshotHarness(ctx context.Context, backend backends
 	d.T().Helper()
 
 	return manager.GetContract[*snapshotharness.SnapshotHarnessRef](ctx, d.T(), d, backend, SnapshotHarnessType)
+}
+
+// GetReceiptHarness gets the receipt harness.
+// nolint:dupl
+func (d *DeployManager) GetReceiptHarness(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *receiptharness.ReceiptHarnessRef) {
+	d.T().Helper()
+
+	return manager.GetContract[*receiptharness.ReceiptHarnessRef](ctx, d.T(), d, backend, ReceiptHarnessType)
 }
 
 // GetAttestationHarness gets the attestation harness.
@@ -475,6 +505,7 @@ func (d *DeployManager) InitializeRemoteDeployedHarnessContracts(
 
 // AddAgentsToLightManagerHarnessContract handles adding the agents to the light manager harness contract on the remote chain.
 // nolint:dupl,cyclop
+// codebeat:disable[CYCLO]
 func (d *DeployManager) AddAgentsToLightManagerHarnessContract(
 	ctx context.Context,
 	backend backends.SimulatedTestBackend,
@@ -503,6 +534,12 @@ func (d *DeployManager) AddAgentsToLightManagerHarnessContract(
 			Flag:   bondingManagerAgentStatus.Flag,
 			Domain: bondingManagerAgentStatus.Domain,
 			Index:  bondingManagerAgentStatus.Index,
+		}
+
+		// We want to make the notary do the work of adding the agent and not
+		// have it done automatically by the test harness
+		if lightManagerAgentStatus.Domain != 0 {
+			continue
 		}
 
 		txAddAgent, err := lightManagerHarnessContract.UpdateAgentStatus(
@@ -644,24 +681,36 @@ func (d *DeployManager) LoadHarnessContractsOnChains(
 		return fmt.Errorf("could not add agents to bonding manager harness on syn chain: %w", err)
 	}
 
-	for _, backend := range backends {
-		err := d.InitializeRemoteDeployedHarnessContracts(
-			ctx,
-			backend,
-			bondingManagerHarnessAgentRoot)
-		if err != nil {
-			return fmt.Errorf("could not initialize remote deplyed harness contracts: %w", err)
-		}
+	wg := sync.WaitGroup{}
+	g, ctx := errgroup.WithContext(ctx)
+	for _, b := range backends {
+		backend := b
+		wg.Add(1)
+		g.Go(func() error {
+			defer wg.Done()
+			err := d.InitializeRemoteDeployedHarnessContracts(
+				ctx,
+				backend,
+				bondingManagerHarnessAgentRoot)
+			if err != nil {
+				return fmt.Errorf("could not initialize remote deplyed harness contracts: %w", err)
+			}
 
-		err = d.AddAgentsToLightManagerHarnessContract(
-			ctx,
-			backend,
-			agents,
-			agentProofs,
-			agentStatuses)
-		if err != nil {
-			return fmt.Errorf("could not add agents to remote light manager harness contract: %w", err)
-		}
+			err = d.AddAgentsToLightManagerHarnessContract(
+				ctx,
+				backend,
+				agents,
+				agentProofs,
+				agentStatuses)
+			if err != nil {
+				return fmt.Errorf("could not add agents to remote light manager harness contract: %w", err)
+			}
+			return nil
+		})
+	}
+	err = g.Wait()
+	if err != nil {
+		return fmt.Errorf("could not initialize remote deplyed harness contracts: %w", err)
 	}
 
 	return nil

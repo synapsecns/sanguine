@@ -13,7 +13,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/pkg/errors"
-	"github.com/prometheus/client_golang/prometheus/testutil"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/synapsecns/sanguine/ethergo/chain/chainwatcher"
@@ -201,11 +200,6 @@ func (s *WatcherSuite) TestListeners() {
 	}
 	// attempt to add another producer to the same contract
 	NotNil(s.T(), contractWatcher.AddProducer(ctx, mockContract, producerChan))
-	observedEvents := contractWatcher.GetMetrics(map[string]string{})[0]
-	// TODO: re-enable on ci, this is flaky
-	if false {
-		Equal(s.T(), testutil.ToFloat64(observedEvents), float64(eventCount))
-	}
 
 	wg.Wait()
 }

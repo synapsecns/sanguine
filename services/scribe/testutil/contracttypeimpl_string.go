@@ -11,9 +11,9 @@ func _() {
 	_ = x[TestContractType-0]
 }
 
-const _contractTypeImpl_name = "TestContract"
+const _contractTypeImpl_name = "TestContractType"
 
-var _contractTypeImpl_index = [...]uint8{0, 12}
+var _contractTypeImpl_index = [...]uint8{0, 16}
 
 func (i contractTypeImpl) String() string {
 	if i < 0 || i >= contractTypeImpl(len(_contractTypeImpl_index)-1) {

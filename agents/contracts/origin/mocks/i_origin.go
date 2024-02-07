@@ -22,6 +22,29 @@ type IOrigin struct {
 	mock.Mock
 }
 
+// AcceptOwnership provides a mock function with given fields: opts
+func (_m *IOrigin) AcceptOwnership(opts *bind.TransactOpts) (*types.Transaction, error) {
+	ret := _m.Called(opts)
+
+	var r0 *types.Transaction
+	if rf, ok := ret.Get(0).(func(*bind.TransactOpts) *types.Transaction); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Transaction)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.TransactOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Address provides a mock function with given fields:
 func (_m *IOrigin) Address() common.Address {
 	ret := _m.Called()
@@ -82,29 +105,6 @@ func (_m *IOrigin) AgentStatus(opts *bind.CallOpts, agent common.Address) (origi
 	return r0, r1
 }
 
-// FilterDispatched provides a mock function with given fields: opts, messageHash, nonce, destination
-func (_m *IOrigin) FilterDispatched(opts *bind.FilterOpts, messageHash [][32]byte, nonce []uint32, destination []uint32) (*origin.OriginDispatchedIterator, error) {
-	ret := _m.Called(opts, messageHash, nonce, destination)
-
-	var r0 *origin.OriginDispatchedIterator
-	if rf, ok := ret.Get(0).(func(*bind.FilterOpts, [][32]byte, []uint32, []uint32) *origin.OriginDispatchedIterator); ok {
-		r0 = rf(opts, messageHash, nonce, destination)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*origin.OriginDispatchedIterator)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.FilterOpts, [][32]byte, []uint32, []uint32) error); ok {
-		r1 = rf(opts, messageHash, nonce, destination)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // FilterInitialized provides a mock function with given fields: opts
 func (_m *IOrigin) FilterInitialized(opts *bind.FilterOpts) (*origin.OriginInitializedIterator, error) {
 	ret := _m.Called(opts)
@@ -121,6 +121,29 @@ func (_m *IOrigin) FilterInitialized(opts *bind.FilterOpts) (*origin.OriginIniti
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
 		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FilterOwnershipTransferStarted provides a mock function with given fields: opts, previousOwner, newOwner
+func (_m *IOrigin) FilterOwnershipTransferStarted(opts *bind.FilterOpts, previousOwner []common.Address, newOwner []common.Address) (*origin.OriginOwnershipTransferStartedIterator, error) {
+	ret := _m.Called(opts, previousOwner, newOwner)
+
+	var r0 *origin.OriginOwnershipTransferStartedIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts, []common.Address, []common.Address) *origin.OriginOwnershipTransferStartedIterator); ok {
+		r0 = rf(opts, previousOwner, newOwner)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*origin.OriginOwnershipTransferStartedIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts, []common.Address, []common.Address) error); ok {
+		r1 = rf(opts, previousOwner, newOwner)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -184,6 +207,29 @@ func (_m *IOrigin) FilterStateSaved(opts *bind.FilterOpts) (*origin.OriginStateS
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*origin.OriginStateSavedIterator)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.FilterOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FilterTipWithdrawalCompleted provides a mock function with given fields: opts
+func (_m *IOrigin) FilterTipWithdrawalCompleted(opts *bind.FilterOpts) (*origin.OriginTipWithdrawalCompletedIterator, error) {
+	ret := _m.Called(opts)
+
+	var r0 *origin.OriginTipWithdrawalCompletedIterator
+	if rf, ok := ret.Get(0).(func(*bind.FilterOpts) *origin.OriginTipWithdrawalCompletedIterator); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*origin.OriginTipWithdrawalCompletedIterator)
 		}
 	}
 
@@ -343,6 +389,27 @@ func (_m *IOrigin) IsValidState(opts *bind.CallOpts, statePayload []byte) (bool,
 	return r0, r1
 }
 
+// LatestDisputeStatus provides a mock function with given fields: opts, agentIndex
+func (_m *IOrigin) LatestDisputeStatus(opts *bind.CallOpts, agentIndex uint32) (origin.DisputeStatus, error) {
+	ret := _m.Called(opts, agentIndex)
+
+	var r0 origin.DisputeStatus
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts, uint32) origin.DisputeStatus); ok {
+		r0 = rf(opts, agentIndex)
+	} else {
+		r0 = ret.Get(0).(origin.DisputeStatus)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts, uint32) error); ok {
+		r1 = rf(opts, agentIndex)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // LocalDomain provides a mock function with given fields: opts
 func (_m *IOrigin) LocalDomain(opts *bind.CallOpts) (uint32, error) {
 	ret := _m.Called(opts)
@@ -433,16 +500,16 @@ func (_m *IOrigin) Owner(opts *bind.CallOpts) (common.Address, error) {
 	return r0, r1
 }
 
-// ParseDispatched provides a mock function with given fields: log
-func (_m *IOrigin) ParseDispatched(log types.Log) (*origin.OriginDispatched, error) {
+// ParseInitialized provides a mock function with given fields: log
+func (_m *IOrigin) ParseInitialized(log types.Log) (*origin.OriginInitialized, error) {
 	ret := _m.Called(log)
 
-	var r0 *origin.OriginDispatched
-	if rf, ok := ret.Get(0).(func(types.Log) *origin.OriginDispatched); ok {
+	var r0 *origin.OriginInitialized
+	if rf, ok := ret.Get(0).(func(types.Log) *origin.OriginInitialized); ok {
 		r0 = rf(log)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*origin.OriginDispatched)
+			r0 = ret.Get(0).(*origin.OriginInitialized)
 		}
 	}
 
@@ -456,16 +523,16 @@ func (_m *IOrigin) ParseDispatched(log types.Log) (*origin.OriginDispatched, err
 	return r0, r1
 }
 
-// ParseInitialized provides a mock function with given fields: log
-func (_m *IOrigin) ParseInitialized(log types.Log) (*origin.OriginInitialized, error) {
+// ParseOwnershipTransferStarted provides a mock function with given fields: log
+func (_m *IOrigin) ParseOwnershipTransferStarted(log types.Log) (*origin.OriginOwnershipTransferStarted, error) {
 	ret := _m.Called(log)
 
-	var r0 *origin.OriginInitialized
-	if rf, ok := ret.Get(0).(func(types.Log) *origin.OriginInitialized); ok {
+	var r0 *origin.OriginOwnershipTransferStarted
+	if rf, ok := ret.Get(0).(func(types.Log) *origin.OriginOwnershipTransferStarted); ok {
 		r0 = rf(log)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*origin.OriginInitialized)
+			r0 = ret.Get(0).(*origin.OriginOwnershipTransferStarted)
 		}
 	}
 
@@ -548,6 +615,29 @@ func (_m *IOrigin) ParseStateSaved(log types.Log) (*origin.OriginStateSaved, err
 	return r0, r1
 }
 
+// ParseTipWithdrawalCompleted provides a mock function with given fields: log
+func (_m *IOrigin) ParseTipWithdrawalCompleted(log types.Log) (*origin.OriginTipWithdrawalCompleted, error) {
+	ret := _m.Called(log)
+
+	var r0 *origin.OriginTipWithdrawalCompleted
+	if rf, ok := ret.Get(0).(func(types.Log) *origin.OriginTipWithdrawalCompleted); ok {
+		r0 = rf(log)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*origin.OriginTipWithdrawalCompleted)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(types.Log) error); ok {
+		r1 = rf(log)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Parser provides a mock function with given fields:
 func (_m *IOrigin) Parser() origin.Parser {
 	ret := _m.Called()
@@ -562,6 +652,29 @@ func (_m *IOrigin) Parser() origin.Parser {
 	}
 
 	return r0
+}
+
+// PendingOwner provides a mock function with given fields: opts
+func (_m *IOrigin) PendingOwner(opts *bind.CallOpts) (common.Address, error) {
+	ret := _m.Called(opts)
+
+	var r0 common.Address
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts) common.Address); ok {
+		r0 = rf(opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(common.Address)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // RenounceOwnership provides a mock function with given fields: opts
@@ -587,13 +700,13 @@ func (_m *IOrigin) RenounceOwnership(opts *bind.TransactOpts) (*types.Transactio
 	return r0, r1
 }
 
-// ResolveDispute provides a mock function with given fields: opts, slashedIndex, honestIndex
-func (_m *IOrigin) ResolveDispute(opts *bind.TransactOpts, slashedIndex uint32, honestIndex uint32) (*types.Transaction, error) {
-	ret := _m.Called(opts, slashedIndex, honestIndex)
+// ResolveDispute provides a mock function with given fields: opts, slashedIndex, rivalIndex
+func (_m *IOrigin) ResolveDispute(opts *bind.TransactOpts, slashedIndex uint32, rivalIndex uint32) (*types.Transaction, error) {
+	ret := _m.Called(opts, slashedIndex, rivalIndex)
 
 	var r0 *types.Transaction
 	if rf, ok := ret.Get(0).(func(*bind.TransactOpts, uint32, uint32) *types.Transaction); ok {
-		r0 = rf(opts, slashedIndex, honestIndex)
+		r0 = rf(opts, slashedIndex, rivalIndex)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Transaction)
@@ -602,7 +715,7 @@ func (_m *IOrigin) ResolveDispute(opts *bind.TransactOpts, slashedIndex uint32, 
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.TransactOpts, uint32, uint32) error); ok {
-		r1 = rf(opts, slashedIndex, honestIndex)
+		r1 = rf(opts, slashedIndex, rivalIndex)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -725,6 +838,27 @@ func (_m *IOrigin) SuggestState(opts *bind.CallOpts, nonce uint32) ([]byte, erro
 	return r0, r1
 }
 
+// SynapseDomain provides a mock function with given fields: opts
+func (_m *IOrigin) SynapseDomain(opts *bind.CallOpts) (uint32, error) {
+	ret := _m.Called(opts)
+
+	var r0 uint32
+	if rf, ok := ret.Get(0).(func(*bind.CallOpts) uint32); ok {
+		r0 = rf(opts)
+	} else {
+		r0 = ret.Get(0).(uint32)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.CallOpts) error); ok {
+		r1 = rf(opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // TransferOwnership provides a mock function with given fields: opts, newOwner
 func (_m *IOrigin) TransferOwnership(opts *bind.TransactOpts, newOwner common.Address) (*types.Transaction, error) {
 	ret := _m.Called(opts, newOwner)
@@ -769,29 +903,6 @@ func (_m *IOrigin) Version(opts *bind.CallOpts) (string, error) {
 	return r0, r1
 }
 
-// WatchDispatched provides a mock function with given fields: opts, sink, messageHash, nonce, destination
-func (_m *IOrigin) WatchDispatched(opts *bind.WatchOpts, sink chan<- *origin.OriginDispatched, messageHash [][32]byte, nonce []uint32, destination []uint32) (event.Subscription, error) {
-	ret := _m.Called(opts, sink, messageHash, nonce, destination)
-
-	var r0 event.Subscription
-	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *origin.OriginDispatched, [][32]byte, []uint32, []uint32) event.Subscription); ok {
-		r0 = rf(opts, sink, messageHash, nonce, destination)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(event.Subscription)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *origin.OriginDispatched, [][32]byte, []uint32, []uint32) error); ok {
-		r1 = rf(opts, sink, messageHash, nonce, destination)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // WatchInitialized provides a mock function with given fields: opts, sink
 func (_m *IOrigin) WatchInitialized(opts *bind.WatchOpts, sink chan<- *origin.OriginInitialized) (event.Subscription, error) {
 	ret := _m.Called(opts, sink)
@@ -808,6 +919,29 @@ func (_m *IOrigin) WatchInitialized(opts *bind.WatchOpts, sink chan<- *origin.Or
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *origin.OriginInitialized) error); ok {
 		r1 = rf(opts, sink)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WatchOwnershipTransferStarted provides a mock function with given fields: opts, sink, previousOwner, newOwner
+func (_m *IOrigin) WatchOwnershipTransferStarted(opts *bind.WatchOpts, sink chan<- *origin.OriginOwnershipTransferStarted, previousOwner []common.Address, newOwner []common.Address) (event.Subscription, error) {
+	ret := _m.Called(opts, sink, previousOwner, newOwner)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *origin.OriginOwnershipTransferStarted, []common.Address, []common.Address) event.Subscription); ok {
+		r0 = rf(opts, sink, previousOwner, newOwner)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *origin.OriginOwnershipTransferStarted, []common.Address, []common.Address) error); ok {
+		r1 = rf(opts, sink, previousOwner, newOwner)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -876,6 +1010,29 @@ func (_m *IOrigin) WatchStateSaved(opts *bind.WatchOpts, sink chan<- *origin.Ori
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *origin.OriginStateSaved) error); ok {
+		r1 = rf(opts, sink)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// WatchTipWithdrawalCompleted provides a mock function with given fields: opts, sink
+func (_m *IOrigin) WatchTipWithdrawalCompleted(opts *bind.WatchOpts, sink chan<- *origin.OriginTipWithdrawalCompleted) (event.Subscription, error) {
+	ret := _m.Called(opts, sink)
+
+	var r0 event.Subscription
+	if rf, ok := ret.Get(0).(func(*bind.WatchOpts, chan<- *origin.OriginTipWithdrawalCompleted) event.Subscription); ok {
+		r0 = rf(opts, sink)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(event.Subscription)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*bind.WatchOpts, chan<- *origin.OriginTipWithdrawalCompleted) error); ok {
 		r1 = rf(opts, sink)
 	} else {
 		r1 = ret.Error(1)

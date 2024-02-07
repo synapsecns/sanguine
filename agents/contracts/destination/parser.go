@@ -11,8 +11,6 @@ import (
 type Parser interface {
 	// EventType determines if an event was initiated by the bridge or the user.
 	EventType(log ethTypes.Log) (_ EventType, ok bool)
-	// ParseExecuted parses an Executed event.
-	ParseExecuted(log ethTypes.Log) (origin *uint32, leaf *[32]byte, ok bool)
 }
 
 type parserImpl struct {
@@ -41,16 +39,6 @@ func (p parserImpl) EventType(log ethTypes.Log) (_ EventType, ok bool) {
 	}
 	// return an unknown event to avoid cases where user failed to check the event type
 	return EventType(len(topicMap()) + 2), false
-}
-
-// ParseExecuted parses an Executed event.
-func (p parserImpl) ParseExecuted(log ethTypes.Log) (origin *uint32, leaf *[32]byte, ok bool) {
-	destinationExecuted, err := p.filterer.ParseExecuted(log)
-	if err != nil {
-		return nil, nil, false
-	}
-
-	return &destinationExecuted.RemoteDomain, &destinationExecuted.MessageHash, true
 }
 
 // EventType is the type of the destination event

@@ -1,24 +1,22 @@
-import { TRANSACTIONS_PATH, getBridgeTransactionUrl } from '@urls'
+import { TRANSACTIONS_PATH } from '@urls'
 import { useState, useEffect } from 'react'
-import { TableHeader } from '@components/TransactionTable/TableHeader'
-import { ChainInfo } from '@components/misc/ChainInfo'
 import { OverviewChart } from '@components/ChainChart'
 import TextField from '@mui/material/TextField'
 import { inputStyle } from '@utils/styles/muiStyles'
 import { HorizontalDivider } from '@components/misc/HorizontalDivider'
-import { formatUSD } from '@utils/formatUSD'
-import { formatDate } from '@utils/formatDate'
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
 import { useLazyQuery, useQuery } from '@apollo/client'
 import { SynapseLogoSvg } from '@components/layouts/MainLayout/SynapseLogoSvg'
-import { CHAIN_ID_NAMES_REVERSE } from '@constants/networks'
+import { CHAINS } from 'synapse-constants'
 import {
   GET_BRIDGE_TRANSACTIONS_QUERY,
   DAILY_STATISTICS_BY_CHAIN,
 } from '@graphql/queries'
 import HolisticStats from '@components/misc/HolisticStats'
 import _ from 'lodash'
+
+const CHAIN_ID_NAMES_REVERSE = CHAINS.CHAIN_ID_NAMES_REVERSE
 
 const titles = {
   VOLUME: 'Volume',

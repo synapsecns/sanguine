@@ -3,21 +3,23 @@ package testhelper
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/Flaque/filet"
 	"github.com/ipfs/go-log"
 	"github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/omnirpc/testhelper"
 	scribeAPI "github.com/synapsecns/sanguine/services/scribe/api"
-	"github.com/synapsecns/sanguine/services/scribe/backfill"
+	"github.com/synapsecns/sanguine/services/scribe/backend"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	"github.com/synapsecns/sanguine/services/scribe/config"
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
-	"github.com/synapsecns/sanguine/services/scribe/node"
-	"testing"
+	"github.com/synapsecns/sanguine/services/scribe/service"
 )
 
 var logger = log.Logger("scribe-testhelper")
@@ -32,36 +34,44 @@ func NewTestScribe(ctx context.Context, tb testing.TB, deployedContracts map[uin
 
 	omnirpcURL := testhelper.NewOmnirpcServer(ctx, tb, backends...)
 
-	localmetrics.SetupTestJaeger(ctx, tb)
-	metricsProvider, err := metrics.NewByType(ctx, metadata.BuildInfo(), metrics.Jaeger)
+	// don't use metrics on ci for integration tests
+	isCI := core.GetEnvBool("CI", false)
+	useMetrics := !isCI
+	metricsHandler := metrics.Null
+
+	if useMetrics {
+		localmetrics.SetupTestJaeger(ctx, tb)
+		metricsHandler = metrics.Jaeger
+	}
+
+	metricsProvider, err := metrics.NewByType(ctx, metadata.BuildInfo(), metricsHandler)
 	assert.Nil(tb, err)
 
 	eventDB, err := scribeAPI.InitDB(ctx, "sqlite", dbPath, metricsProvider, false)
 	assert.Nil(tb, err)
 
-	scribeClients := make(map[uint32][]backfill.ScribeBackend)
+	scribeClients := make(map[uint32][]backend.ScribeBackend)
 
 	var chainConfigs []config.ChainConfig
 
-	for _, backend := range backends {
+	for i := range backends {
 		// this backends chain id
-		chainID := uint32(backend.GetChainID())
+		chainID := uint32(backends[i].GetChainID())
 
 		// create the scribe backend client
-		backendClient, err := backfill.DialBackend(ctx, testhelper.GetURL(omnirpcURL, backend), metricsProvider)
+		backendClient, err := backend.DialBackend(ctx, testhelper.GetURL(omnirpcURL, backends[i]), metricsProvider)
 		assert.Nil(tb, err)
 
 		// creat ethe scribe client for this chain
-		scribeClients[chainID] = []backfill.ScribeBackend{backendClient}
+		scribeClients[chainID] = []backend.ScribeBackend{backendClient}
 
 		// loop through all deployed contracts for this chainid adding them to our config
 		contractConfigs := getContractConfig(deployedContracts[chainID])
 
 		// add the chain config to the list
 		chainConfigs = append(chainConfigs, config.ChainConfig{
-			ChainID:               uint32(backend.GetChainID()),
-			RequiredConfirmations: 1,
-			Contracts:             contractConfigs,
+			ChainID:   uint32(backends[i].GetChainID()),
+			Contracts: contractConfigs,
 		})
 	}
 
@@ -70,7 +80,7 @@ func NewTestScribe(ctx context.Context, tb testing.TB, deployedContracts map[uin
 		RPCURL: omnirpcURL,
 	}
 
-	scribe, err := node.NewScribe(eventDB, scribeClients, scribeConfig, metricsProvider)
+	scribe, err := service.NewScribe(eventDB, scribeClients, scribeConfig, metricsProvider)
 	assert.Nil(tb, err)
 
 	go func() {

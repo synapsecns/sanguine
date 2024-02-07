@@ -8,7 +8,7 @@ import { DrawerButton } from '@components/buttons/DrawerButton'
 import { sortTokens } from '@constants/tokens'
 
 import { Token } from '@/utils/types'
-import { DisplayType } from '@/pages/bridge/BridgeCard'
+import { DisplayType } from '@/pages/bridge/DisplayType'
 
 export const TokenSlideOver = ({
   isOrigin,
@@ -36,6 +36,7 @@ export const TokenSlideOver = ({
     tokenList = tokens
   }
   tokenList = sortTokens(tokenList)
+
   const fuse = new Fuse(tokenList, {
     includeScore: true,
     threshold: 0.0,
@@ -107,8 +108,8 @@ export const TokenSlideOver = ({
   }
 
   return (
-    <div className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide rounded-3xl">
-      <div className="absolute z-10 w-full px-6 pt-3 bg-bgLight rounded-t-xl">
+    <div className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide rounded-lg">
+      <div className="absolute z-10 w-full px-6 pt-3 bg-bgLight rounded-t-md">
         <div className="flex items-center float-right mb-2 font-medium sm:float-none">
           <SlideSearchBox
             placeholder="Search by symbol, contract, or name..."
@@ -123,7 +124,7 @@ export const TokenSlideOver = ({
           bg-bgLighter
           space-y-4
           pt-20 pb-8 px-2 md:px-6
-          rounded-3xl
+          rounded-lg
         `}
       >
         {tokenList.map((token, idx) => (
@@ -133,7 +134,7 @@ export const TokenSlideOver = ({
             token={token.token}
             selectedToken={selectedToken}
             active={idx === currentIdx}
-            tokenBalance={token.balance}
+            tokenBalance={token.balance.result}
             onClick={() => {
               onMenuItemClick(token.token)
             }}

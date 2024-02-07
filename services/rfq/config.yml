@@ -1,0 +1,28 @@
+rfq_url: 'http://localhost:8080'
+omnirpc_url: 'https://rpc.interop-staging.com'
+tokens:
+  421614:
+    - '0x858355dAe73bc0FA4AB220e5296cfAa77e99900e'
+  11155111:
+    - '0x858355dAe73bc0FA4AB220e5296cfAa77e99900e'
+bridges:
+  421614:
+    address: '0x58dBd847C0CBFc9a4B9942847124BFC3589c70aA'
+  11155111:
+    address: '0x6EBdE77d635496Dea99364E0DA18ad8A1AFA9F27'
+
+database:
+  type: 'sqlite' # Use 'mysql' for production
+  dsn: '/tmp/relayer'
+
+quotable_tokens:
+  421614-0x858355dAe73bc0FA4AB220e5296cfAa77e99900e:
+    - 11155111-0x858355dAe73bc0FA4AB220e5296cfAa77e99900e
+  11155111-0x858355dAe73bc0FA4AB220e5296cfAa77e99900e:
+    - 421614-0x858355dAe73bc0FA4AB220e5296cfAa77e99900e
+
+signer:
+  type: File
+  file: /tmp/test-signer
+
+

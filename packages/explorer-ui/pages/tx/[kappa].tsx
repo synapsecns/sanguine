@@ -5,7 +5,7 @@ import { Error } from '@components/Error'
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import { useRouter } from 'next/router'
 import { useSearchParams } from 'next/navigation'
-import { CHAIN_EXPLORER_URLS, BRIDGE_CONTRACTS } from '@constants/networks'
+import { CHAINS } from 'synapse-constants'
 import { GET_BRIDGE_TRANSACTIONS_QUERY } from '@graphql/queries'
 import { API_URL } from '@graphql'
 import { HorizontalDivider } from '@components/misc/HorizontalDivider'
@@ -15,6 +15,10 @@ import CopyTitle from '@components/misc/CopyTitle'
 import { IconAndAmount } from '@components/misc/IconAndAmount'
 import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
 
+const CHAINS_BY_ID = CHAINS.CHAINS_BY_ID
+const CCTP_CONTRACTS = CHAINS.CCTP_CONTRACTS
+const BRIDGE_CONTRACTS = CHAINS.BRIDGE_CONTRACTS
+
 const link = new HttpLink({
   uri: API_URL,
   useGETForQueries: true,
@@ -22,7 +26,7 @@ const link = new HttpLink({
 
 const client = new ApolloClient({
   link,
-  cache: new InMemoryCache()
+  cache: new InMemoryCache(),
 })
 
 export default function BridgeTransaction({ queryResult }) {
@@ -38,6 +42,20 @@ export default function BridgeTransaction({ queryResult }) {
     } else {
       return 'Pending'
     }
+  }
+  const generateBridgeAddress = (chainID, eventType) => {
+    if (eventType == 10 || eventType == 11) {
+      return (
+        CHAINS_BY_ID[chainID].explorerUrl +
+        '/address/' +
+        CCTP_CONTRACTS[chainID]
+      )
+    }
+    return (
+      CHAINS_BY_ID[chainID].explorerUrl +
+      '/address/' +
+      BRIDGE_CONTRACTS[chainID]
+    )
   }
   const transaction = queryResult.bridgeTransactions[0]
   const { pending, fromInfo, toInfo } = transaction
@@ -70,6 +88,7 @@ export default function BridgeTransaction({ queryResult }) {
         </div>
         <br />
         <HorizontalDivider />
+
         {/* <UniversalSearch placeholder={`txid: ${kappa}`} /> */}
         <BridgeTransactionTable queryResult={queryResult.bridgeTransactions} />
 
@@ -105,6 +124,7 @@ export default function BridgeTransaction({ queryResult }) {
                 : pendingContent}{' '}
             </p>
           </div>
+
           <br />
 
           <div className="flex gap-y-2 flex-col">
@@ -139,7 +159,7 @@ export default function BridgeTransaction({ queryResult }) {
                     rel="noreferrer"
                     className="text-white break-all text-sm underline"
                     href={
-                      CHAIN_EXPLORER_URLS[fromInfo.chainID] +
+                      CHAINS_BY_ID[fromInfo.chainId]?.explorerUrl +
                       '/tx/' +
                       fromInfo.hash
                     }
@@ -153,11 +173,10 @@ export default function BridgeTransaction({ queryResult }) {
                     target="_blank"
                     rel="noreferrer"
                     className="text-white break-all text-sm underline"
-                    href={
-                      CHAIN_EXPLORER_URLS[fromInfo.chainID] +
-                      '/address/' +
-                      BRIDGE_CONTRACTS[fromInfo.chainID]
-                    }
+                    href={generateBridgeAddress(
+                      fromInfo.chainID,
+                      fromInfo.eventType
+                    )}
                   >
                     Origin Bridge Contract
                   </a>
@@ -216,7 +235,7 @@ export default function BridgeTransaction({ queryResult }) {
                       rel="noreferrer"
                       className="text-white break-all text-sm underline"
                       href={
-                        CHAIN_EXPLORER_URLS[toInfo.chainID] +
+                        CHAINS_BY_ID[toInfo.chainID]?.explorerUrl +
                         '/tx/' +
                         toInfo.hash
                       }
@@ -235,19 +254,12 @@ export default function BridgeTransaction({ queryResult }) {
                     target="_blank"
                     rel="noreferrer"
                     className="text-white break-all text-sm underline"
-                    href={
-                      CHAIN_EXPLORER_URLS[
-                        toInfo?.chainID
-                          ? toInfo.chainID
-                          : fromInfo.destinationChainID
-                      ] +
-                      '/address/' +
-                      BRIDGE_CONTRACTS[
-                        toInfo?.chainID
-                          ? toInfo.chainID
-                          : fromInfo.destinationChainID
-                      ]
-                    }
+                    href={generateBridgeAddress(
+                      toInfo?.chainID
+                        ? toInfo.chainID
+                        : fromInfo.destinationChainID,
+                      fromInfo.eventType
+                    )}
                   >
                     Destination Bridge Contract
                   </a>

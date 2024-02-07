@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/synapsecns/sanguine/ethergo/util"
@@ -11,7 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/jpillora/backoff"
-	"github.com/synapsecns/sanguine/services/explorer/config"
+	indexerconfig "github.com/synapsecns/sanguine/services/explorer/config/indexer"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/parser"
 	"github.com/synapsecns/sanguine/services/explorer/db"
@@ -28,10 +29,12 @@ type ChainBackfiller struct {
 	swapParsers map[common.Address]*parser.SwapParser
 	// messageBusParser is the parser to use to parse message bus events.
 	messageBusParser *parser.MessageBusParser
+	// cctpParser is the parser to use to parse cctp events.
+	cctpParser *parser.CCTPParser
 	// Fetcher is the Fetcher to use to fetch logs.
 	Fetcher fetcher.ScribeFetcher
 	// chainConfig is the chain config for the chain.
-	chainConfig config.ChainConfig
+	chainConfig indexerconfig.ChainConfig
 }
 
 type contextKey string
@@ -41,12 +44,13 @@ const (
 )
 
 // NewChainBackfiller creates a new backfiller for a chain.
-func NewChainBackfiller(consumerDB db.ConsumerDB, bridgeParser *parser.BridgeParser, swapParsers map[common.Address]*parser.SwapParser, messageBusParser *parser.MessageBusParser, fetcher fetcher.ScribeFetcher, chainConfig config.ChainConfig) *ChainBackfiller {
+func NewChainBackfiller(consumerDB db.ConsumerDB, bridgeParser *parser.BridgeParser, swapParsers map[common.Address]*parser.SwapParser, messageBusParser *parser.MessageBusParser, cctpParser *parser.CCTPParser, fetcher fetcher.ScribeFetcher, chainConfig indexerconfig.ChainConfig) *ChainBackfiller {
 	return &ChainBackfiller{
 		consumerDB:       consumerDB,
 		bridgeParser:     bridgeParser,
 		swapParsers:      swapParsers,
 		messageBusParser: messageBusParser,
+		cctpParser:       cctpParser,
 		Fetcher:          fetcher,
 		chainConfig:      chainConfig,
 	}
@@ -103,35 +107,38 @@ func (c *ChainBackfiller) Backfill(ctx context.Context, livefill bool, refreshRa
 		}
 	}
 	if err := contractsGroup.Wait(); err != nil {
-		logger.Errorf("=-=-=-=-==-=-=-==--=-==-=-eeeerrbackfilling chain %d completed %v", c.chainConfig.ChainID, err)
+		logger.Errorf("error backfilling chain %d completed %v", c.chainConfig.ChainID, err)
 
 		return fmt.Errorf("error while backfilling chain %d: %w", c.chainConfig.ChainID, err)
 	}
-	logger.Errorf("=-=-=-=-==-=-=-==--=-==-=-backfilling chain %d completed", c.chainConfig.ChainID)
 	return nil
 }
 
 // makeEventParser returns a parser for a contract using it's config.
 // in the event one is not present, this function will return an error.
-func (c *ChainBackfiller) makeEventParser(contract config.ContractConfig) (eventParser parser.Parser, err error) {
-	switch contract.ContractType {
-	case config.BridgeContractType:
-		eventParser = c.bridgeParser
-	case config.SwapContractType:
-		eventParser = c.swapParsers[common.HexToAddress(contract.Address)]
-	case config.MessageBusContractType:
-		eventParser = c.messageBusParser
-	case config.MetaSwapContractType:
-		eventParser = c.swapParsers[common.HexToAddress(contract.Address)]
-	default:
+func (c *ChainBackfiller) makeEventParser(contract indexerconfig.ContractConfig) (eventParser parser.Parser, err error) {
+	contractType, err := indexerconfig.ContractTypeFromString(contract.ContractType)
+	if err != nil {
 		return nil, fmt.Errorf("could not create event parser for unknown contract type: %s", contract.ContractType)
+	}
+	switch contractType {
+	case indexerconfig.BridgeContractType:
+		eventParser = c.bridgeParser
+	case indexerconfig.SwapContractType:
+		eventParser = c.swapParsers[common.HexToAddress(contract.Address)]
+	case indexerconfig.MessageBusContractType:
+		eventParser = c.messageBusParser
+	case indexerconfig.MetaSwapContractType:
+		eventParser = c.swapParsers[common.HexToAddress(contract.Address)]
+	case indexerconfig.CCTPContractType:
+		eventParser = c.cctpParser
 	}
 	return eventParser, nil
 }
 
 // backfillContractLogs creates a backfiller for a given contract with an independent context
 // nolint:cyclop,gocognit
-func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contract config.ContractConfig) (err error) {
+func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contract indexerconfig.ContractConfig) (err error) {
 	// make the event parser
 	eventParser, err := c.makeEventParser(contract)
 	if err != nil {
@@ -150,6 +157,7 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 	}
 	var endHeight uint64
 	err = c.retryWithBackoff(parentCtx, func(ctx context.Context) error {
+		// TODO change to get last unconfirmed block
 		endHeight, err = c.Fetcher.FetchLastIndexed(parentCtx, c.chainConfig.ChainID, contract.Address)
 		if err != nil {
 			return fmt.Errorf("could not get last indexed height, %w", err)
@@ -179,7 +187,7 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 				b := &backoff.Backoff{
 					Factor: 2,
 					Jitter: true,
-					Min:    30 * time.Millisecond,
+					Min:    1 * time.Second,
 					Max:    3 * time.Second,
 				}
 
@@ -201,12 +209,13 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 							continue
 						}
 
-						parsedLogs, err := c.processLogs(groupCtx, logs, eventParser)
+						parsedLogs, err := ProcessLogs(groupCtx, logs, c.chainConfig.ChainID, eventParser)
 						if err != nil {
 							timeout = b.Duration()
 							logger.Warnf("could not process logs for chain %d: %s", c.chainConfig.ChainID, err)
 							continue
 						}
+
 						if len(parsedLogs) > 0 {
 							g.Go(func() error {
 								return c.storeParsedLogs(groupCtx, parsedLogs)
@@ -222,7 +231,6 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 			return fmt.Errorf("error while backfilling chain %d: %w", c.chainConfig.ChainID, err)
 		}
 		logger.Infof("backfilling contract %s chunk completed, %d to %d", contract.Address, chunkStart, chunkEnd)
-
 		// Store the last block in clickhouse
 		err = c.retryWithBackoff(parentCtx, func(ctx context.Context) error {
 			err = c.consumerDB.StoreLastBlock(parentCtx, c.chainConfig.ChainID, chunkEnd, contract.Address)
@@ -237,18 +245,19 @@ func (c *ChainBackfiller) backfillContractLogs(parentCtx context.Context, contra
 		}
 		currentHeight = chunkEnd + 1
 	}
+
 	return nil
 }
 
-// processLogs processes the logs and stores them in the consumer database.
+// ProcessLogs processes the logs and stores them in the consumer database.
 //
 //nolint:gocognit,cyclop
-func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, eventParser parser.Parser) (parsedLogs []interface{}, _ error) {
+func ProcessLogs(ctx context.Context, logs []ethTypes.Log, chainID uint32, eventParser parser.Parser) (parsedLogs []interface{}, _ error) {
 	b := &backoff.Backoff{
 		Factor: 2,
 		Jitter: true,
-		Min:    30 * time.Millisecond,
-		Max:    3 * time.Second,
+		Min:    1 * time.Second,
+		Max:    10 * time.Second,
 	}
 
 	timeout := time.Duration(0)
@@ -261,15 +270,19 @@ func (c *ChainBackfiller) processLogs(ctx context.Context, logs []ethTypes.Log, 
 			if logIdx >= len(logs) {
 				return parsedLogs, nil
 			}
-			parsedLog, err := eventParser.Parse(ctx, logs[logIdx], c.chainConfig.ChainID)
-			if err != nil && err.Error() != parser.ErrUnknownTopic {
-				logger.Errorf("could not parse and store log %d, %s blocknumber: %d, %s", c.chainConfig.ChainID, logs[logIdx].Address, logs[logIdx].BlockNumber, err)
-				timeout = b.Duration()
-				continue
+			parsedLog, err := eventParser.Parse(ctx, logs[logIdx], chainID)
+			if err != nil || parsedLog == nil {
+				// TODO: this should really, REALLY use errors.IS and wrap the underlying error
+				if strings.Contains(err.Error(), parser.ErrUnknownTopic) {
+					logger.Warnf("could not parse log (ErrUnknownTopic) %d, %s %s blocknumber: %d, %s", chainID, logs[logIdx].TxHash, logs[logIdx].Address, logs[logIdx].BlockNumber, err)
+				} else { // retry
+					logger.Errorf("could not parse log %d, %s blocknumber: %d, %s", chainID, logs[logIdx].Address, logs[logIdx].BlockNumber, err)
+					timeout = b.Duration()
+					continue
+				}
 			}
-			if parsedLog != nil {
-				parsedLogs = append(parsedLogs, parsedLog)
-			}
+
+			parsedLogs = append(parsedLogs, parsedLog)
 
 			logIdx++
 

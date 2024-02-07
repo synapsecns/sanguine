@@ -13,8 +13,8 @@ query GetLogs ($chain_id: Int!, $page: Int!) {
     }
 }
 
-query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!) {
-    response: logsRange (chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page) {
+query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!, $asc: Boolean = false) {
+    response: logsRange (chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page,asc: $asc) {
         contract_address
         chain_id
         topics
@@ -26,6 +26,21 @@ query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page
         index
         removed
     }
+}
+
+query GetLogsAtHeadRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!) {
+  response: logsAtHeadRange (chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page) {
+    contract_address
+    chain_id
+    topics
+    data
+    block_number
+    tx_hash
+    tx_index
+    block_hash
+    index
+    removed
+  }
 }
 
 query GetLogsResolvers ($chain_id: Int!, $page: Int!) {
@@ -90,6 +105,22 @@ query GetReceiptsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $
         block_number
         transaction_index
     }
+}
+
+query GetReceiptsAtHeadRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!) {
+  response: receiptsAtHeadRange (chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page) {
+    chain_id
+    type
+    post_state
+    status
+    cumulative_gas_used
+    bloom
+    tx_hash
+    contract_address
+    gas_used
+    block_number
+    transaction_index
+  }
 }
 
 query GetReceiptsResolvers ($chain_id: Int!, $page: Int!) {
@@ -161,6 +192,24 @@ query GetTransactionsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int
     }
 }
 
+query GetTransactionsAtHeadRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $last_indexed: Int!, $page: Int!) {
+  response: transactionsAtHeadRange (chain_id: $chain_id, start_block: $start_block, end_block: $end_block, last_indexed: $last_indexed, page: $page) {
+    chain_id
+    tx_hash
+    protected
+    type
+    data
+    gas
+    gas_price
+    gas_tip_cap
+    gas_fee_cap
+    value
+    nonce
+    to
+    timestamp
+    sender
+  }
+}
 query GetTransactionsResolvers ($chain_id: Int!, $page: Int!) {
     response: transactions (chain_id: $chain_id, page: $page) {
         receipt {

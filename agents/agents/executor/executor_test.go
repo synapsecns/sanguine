@@ -1,29 +1,39 @@
 package executor_test
 
 import (
-	"github.com/Flaque/filet"
-	"github.com/brianvoe/gofakeit/v6"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/synapsecns/sanguine/agents/agents/executor"
-	executorCfg "github.com/synapsecns/sanguine/agents/agents/executor/config"
-	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/types"
-	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/sanguine/core/merkle"
-	agentsConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
-	"github.com/synapsecns/sanguine/services/scribe/backfill"
-	"github.com/synapsecns/sanguine/services/scribe/client"
-	"github.com/synapsecns/sanguine/services/scribe/config"
-	"github.com/synapsecns/sanguine/services/scribe/node"
+	"fmt"
 	"math/big"
 	"time"
+
+	"github.com/Flaque/filet"
+	"github.com/brianvoe/gofakeit/v6"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/agents/agents/executor"
+	execTypes "github.com/synapsecns/sanguine/agents/agents/executor/db"
+	execConfig "github.com/synapsecns/sanguine/agents/config/executor"
+	"github.com/synapsecns/sanguine/agents/contracts/bondingmanager"
+	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
+	"github.com/synapsecns/sanguine/agents/testutil"
+	"github.com/synapsecns/sanguine/agents/types"
+	"github.com/synapsecns/sanguine/core/merkle"
+	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
+	"github.com/synapsecns/sanguine/ethergo/deployer"
+	agentsConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
+	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+	"github.com/synapsecns/sanguine/services/scribe/backend"
+	"github.com/synapsecns/sanguine/services/scribe/client"
+	"github.com/synapsecns/sanguine/services/scribe/config"
+	"github.com/synapsecns/sanguine/services/scribe/service"
 )
 
 func (e *ExecutorSuite) TestVerifyState() {
 	chainID := uint32(e.TestBackendOrigin.GetChainID())
 	destination := uint32(e.TestBackendDestination.GetChainID())
 
-	excCfg := executorCfg.Config{
-		Chains: []executorCfg.ChainConfig{
+	excCfg := execConfig.Config{
+		Chains: []execConfig.ChainConfig{
 			{
 				ChainID: chainID,
 			},
@@ -44,17 +54,8 @@ func (e *ExecutorSuite) TestVerifyState() {
 		e.Nil(scribeErr)
 	}()
 
-	executorClients := map[uint32]executor.Backend{
-		chainID:     nil,
-		destination: nil,
-	}
-
-	urls := map[uint32]string{
-		chainID:     e.TestBackendOrigin.RPCAddress(),
-		destination: e.TestBackendDestination.RPCAddress(),
-	}
-
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls, e.ExecutorMetrics)
+	omniRPCClient := omniClient.NewOmnirpcClient(e.TestOmniRPC, e.ExecutorMetrics, omniClient.WithCaptureReqRes())
+	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, omniRPCClient, e.ExecutorMetrics)
 	e.Nil(err)
 
 	roots := [][32]byte{
@@ -92,7 +93,7 @@ func (e *ExecutorSuite) TestVerifyState() {
 	e.Nil(err)
 
 	// Insert the states into the database.
-	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot.States(), root, proofs)
+	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot.States(), root, proofs, 5)
 	e.Nil(err)
 
 	inTree0, err := exec.VerifyStateMerkleProof(e.GetTestContext(), state0)
@@ -116,6 +117,7 @@ func (e *ExecutorSuite) TestVerifyState() {
 	e.False(inTreeFail)
 }
 
+//nolint:maintidx
 func (e *ExecutorSuite) TestMerkleInsert() {
 	// TODO (joe and lex): FIX ME
 	// e.T().Skip()
@@ -132,20 +134,23 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		StartBlock: 0,
 	}
 	chainConfig := config.ChainConfig{
-		ChainID:               chainID,
-		RequiredConfirmations: 0,
-		Contracts:             []config.ContractConfig{contractConfig},
+		ChainID:            chainID,
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
+		Confirmations:      0,
+		Contracts:          []config.ContractConfig{contractConfig},
 	}
 	scribeConfig := config.Config{
 		Chains: []config.ChainConfig{chainConfig},
 	}
-	simulatedClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress(), e.ScribeMetrics)
+	simulatedClient, err := backend.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress(), e.ScribeMetrics)
 	e.Nil(err)
-	clients := map[uint32][]backfill.ScribeBackend{
+	clients := map[uint32][]backend.ScribeBackend{
 		chainID: {simulatedClient, simulatedClient},
 	}
 
-	scribe, err := node.NewScribe(e.ScribeTestDB, clients, scribeConfig, e.ScribeMetrics)
+	scribe, err := service.NewScribe(e.ScribeTestDB, clients, scribeConfig, e.ScribeMetrics)
 	e.Nil(err)
 
 	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath, e.ScribeMetrics)
@@ -156,11 +161,14 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 	// Start the Scribe.
 	go func() {
-		_ = scribe.Start(e.GetTestContext())
+		scribeError := scribe.Start(e.GetTestContext())
+		if !testDone {
+			e.Nil(scribeError)
+		}
 	}()
 
-	excCfg := executorCfg.Config{
-		Chains: []executorCfg.ChainConfig{
+	excCfg := execConfig.Config{
+		Chains: []execConfig.ChainConfig{
 			{
 				ChainID:       chainID,
 				OriginAddress: e.OriginContractMetadata.Address().String(),
@@ -176,17 +184,8 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 		},
 	}
 
-	executorClients := map[uint32]executor.Backend{
-		chainID:     e.TestBackendOrigin,
-		destination: nil,
-	}
-
-	urls := map[uint32]string{
-		chainID:     e.TestBackendOrigin.RPCAddress(),
-		destination: e.TestBackendDestination.RPCAddress(),
-	}
-
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls, e.ExecutorMetrics)
+	omniRPCClient := omniClient.NewOmnirpcClient(e.TestOmniRPC, e.ExecutorMetrics, omniClient.WithCaptureReqRes())
+	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, omniRPCClient, e.ExecutorMetrics)
 	e.Nil(err)
 
 	_, err = exec.GetMerkleTree(chainID).Root(1)
@@ -196,34 +195,31 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 	recipients := [][32]byte{{byte(gofakeit.Uint32())}, {byte(gofakeit.Uint32())}}
 	optimisticSeconds := []uint32{gofakeit.Uint32(), gofakeit.Uint32()}
-	notaryTips := []*big.Int{big.NewInt(int64(int(gofakeit.Uint32()))), big.NewInt(int64(int(gofakeit.Uint32())))}
-	broadcasterTips := []*big.Int{big.NewInt(int64(int(gofakeit.Uint32()))), big.NewInt(int64(int(gofakeit.Uint32())))}
-	proverTips := []*big.Int{big.NewInt(int64(int(gofakeit.Uint32()))), big.NewInt(int64(int(gofakeit.Uint32())))}
-	executorTips := []*big.Int{big.NewInt(int64(int(gofakeit.Uint32()))), big.NewInt(int64(int(gofakeit.Uint32())))}
-	tips := []types.Tips{
-		types.NewTips(notaryTips[0], broadcasterTips[0], proverTips[0], executorTips[0]),
-		types.NewTips(notaryTips[1], broadcasterTips[1], proverTips[1], executorTips[1]),
-	}
 
 	messageBytes := []byte{byte(gofakeit.Uint32()), byte(gofakeit.Uint32()), byte(gofakeit.Uint32()), byte(gofakeit.Uint32()), byte(gofakeit.Uint32())}
+	msgTips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
 
 	transactOpts := e.TestBackendOrigin.GetTxContext(e.GetTestContext(), e.OriginContractMetadata.OwnerPtr())
-	transactOpts.Value = types.TotalTips(tips[0])
+	transactOpts.Value = types.TotalTips(msgTips)
 
-	paddedRequest := big.NewInt(0).SetBytes([]byte{byte(6), byte(5), byte(4), byte(3)})
-	tx, err := e.OriginContract.SendBaseMessage(transactOpts.TransactOpts, destination, recipients[0], optimisticSeconds[0], paddedRequest, messageBytes)
+	paddedRequest := big.NewInt(0)
+	tx, err := e.OriginContract.SendBaseMessage(
+		transactOpts.TransactOpts,
+		destination,
+		recipients[0],
+		optimisticSeconds[0],
+		paddedRequest,
+		messageBytes,
+	)
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 
 	header := types.NewHeader(types.MessageFlagBase, chainID, 1, destination, optimisticSeconds[0])
 
-	var msgSender [32]byte
-	copy(msgSender[:], transactOpts.TransactOpts.From.Bytes())
-	msgTips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
-	msgRequest := types.NewRequest(uint32(1), uint64(0), big.NewInt(0))
+	msgSender := common.BytesToHash(transactOpts.TransactOpts.From.Bytes())
+	msgRequest := types.NewRequest(uint32(0), uint64(0), big.NewInt(0))
 	baseMessage := types.NewBaseMessage(msgSender, recipients[0], msgTips, msgRequest, messageBytes)
-
-	message := types.NewMessage(header, baseMessage, []byte{})
+	message, err := types.NewMessageFromBaseMessage(header, baseMessage)
 	e.Nil(err)
 
 	leafA, err := message.ToLeaf()
@@ -246,6 +242,10 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	e.Eventually(func() bool {
 		rootA, err := exec.GetMerkleTree(chainID).Root(1)
 		if err != nil {
+			// This transaction is needed to get the simulated chain's block number to increase by 1, since StreamLogs will
+			// do lastBlockNumber - 1.
+			e.BumpBackend(e.TestBackendOrigin, e.TestContractOnOrigin, transactOpts.TransactOpts)
+
 			return false
 		}
 
@@ -260,22 +260,24 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 			waitChan <- true
 			return true
 		}
+
 		return false
 	})
 
-	transactOpts.Value = types.TotalTips(tips[1])
+	transactOpts.Value = types.TotalTips(msgTips)
 	// paddedRequest = big.NewInt(0)
 	tx, err = e.OriginContract.SendBaseMessage(transactOpts.TransactOpts, destination, recipients[1], optimisticSeconds[1], paddedRequest, messageBytes)
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 
+	// Advance block again.
+	e.BumpBackend(e.TestBackendOrigin, e.TestContractOnOrigin, transactOpts.TransactOpts)
+
 	header = types.NewHeader(types.MessageFlagBase, chainID, 2, destination, optimisticSeconds[1])
 
-	copy(msgSender[:], transactOpts.TransactOpts.From.Bytes())
-	msgTips = types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
-	msgRequest = types.NewRequest(uint32(1), uint64(0), big.NewInt(0))
+	msgRequest = types.NewRequest(uint32(0), uint64(0), big.NewInt(0))
 	baseMessage = types.NewBaseMessage(msgSender, recipients[1], msgTips, msgRequest, messageBytes)
-	message = types.NewMessage(header, baseMessage, []byte{})
+	message, err = types.NewMessageFromBaseMessage(header, baseMessage)
 	e.Nil(err)
 
 	leafB, err := message.ToLeaf()
@@ -287,6 +289,9 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 	e.Eventually(func() bool {
 		rootB, err := exec.GetMerkleTree(chainID).Root(2)
 		if err != nil {
+			// This transaction is needed to get the simulated chain's block number to increase by 1, since StreamLogs will
+			// do lastBlockNumber - 1.
+			e.BumpBackend(e.TestBackendOrigin, e.TestContractOnOrigin, transactOpts.TransactOpts)
 			return false
 		}
 
@@ -301,6 +306,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 			waitChan <- true
 			return true
 		}
+
 		return false
 	})
 
@@ -347,8 +353,8 @@ func (e *ExecutorSuite) TestVerifyMessageMerkleProof() {
 	chainID := uint32(e.TestBackendOrigin.GetChainID())
 	destination := uint32(e.TestBackendDestination.GetChainID())
 
-	excCfg := executorCfg.Config{
-		Chains: []executorCfg.ChainConfig{
+	excCfg := execConfig.Config{
+		Chains: []execConfig.ChainConfig{
 			{
 				ChainID: chainID,
 			},
@@ -369,17 +375,8 @@ func (e *ExecutorSuite) TestVerifyMessageMerkleProof() {
 		e.Nil(scribeErr)
 	}()
 
-	executorClients := map[uint32]executor.Backend{
-		chainID:     nil,
-		destination: nil,
-	}
-
-	urls := map[uint32]string{
-		chainID:     e.TestBackendOrigin.RPCAddress(),
-		destination: e.TestBackendDestination.RPCAddress(),
-	}
-
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls, e.ExecutorMetrics)
+	omniRPCClient := omniClient.NewOmnirpcClient(e.TestOmniRPC, e.ExecutorMetrics, omniClient.WithCaptureReqRes())
+	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, omniRPCClient, e.ExecutorMetrics)
 	e.Nil(err)
 
 	nonces := []uint32{1, 2, 3, 4}
@@ -447,7 +444,6 @@ func (e *ExecutorSuite) TestVerifyMessageMerkleProof() {
 }
 
 func (e *ExecutorSuite) TestExecutor() {
-	// TODO (joe and lex): FIX ME
 	// e.T().Skip()
 	testDone := false
 	defer func() {
@@ -460,11 +456,11 @@ func (e *ExecutorSuite) TestExecutor() {
 
 	testContractDest, _ := e.TestDeployManager.GetAgentsTestContract(e.GetTestContext(), e.TestBackendDestination)
 
-	originClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress(), e.ScribeMetrics)
+	originClient, err := backend.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress(), e.ScribeMetrics)
 	e.Nil(err)
-	destinationClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendDestination.RPCAddress(), e.ScribeMetrics)
+	destinationClient, err := backend.DialBackend(e.GetTestContext(), e.TestBackendDestination.RPCAddress(), e.ScribeMetrics)
 	e.Nil(err)
-	summitClient, err := backfill.DialBackend(e.GetTestContext(), e.TestBackendSummit.RPCAddress(), e.ScribeMetrics)
+	summitClient, err := backend.DialBackend(e.GetTestContext(), e.TestBackendSummit.RPCAddress(), e.ScribeMetrics)
 	e.Nil(err)
 
 	originConfig := config.ContractConfig{
@@ -472,44 +468,49 @@ func (e *ExecutorSuite) TestExecutor() {
 		StartBlock: 0,
 	}
 	originChainConfig := config.ChainConfig{
-		ChainID:               chainID,
-		BlockTimeChunkSize:    1,
-		ContractSubChunkSize:  1,
-		RequiredConfirmations: 0,
-		Contracts:             []config.ContractConfig{originConfig},
+		ChainID:            chainID,
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
+		Confirmations:      0,
+		Contracts:          []config.ContractConfig{originConfig},
 	}
 	destinationConfig := config.ContractConfig{
 		Address:    e.DestinationContract.Address().String(),
 		StartBlock: 0,
 	}
 	destinationChainConfig := config.ChainConfig{
-		ChainID:               destination,
-		BlockTimeChunkSize:    1,
-		ContractSubChunkSize:  1,
-		RequiredConfirmations: 0,
-		Contracts:             []config.ContractConfig{destinationConfig},
+		ChainID:            destination,
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
+		Confirmations:      0,
+
+		Contracts: []config.ContractConfig{destinationConfig},
 	}
 	summitConfig := config.ContractConfig{
 		Address:    e.SummitContract.Address().String(),
 		StartBlock: 0,
 	}
 	summitChainConfig := config.ChainConfig{
-		ChainID:               summit,
-		BlockTimeChunkSize:    1,
-		ContractSubChunkSize:  1,
-		RequiredConfirmations: 0,
-		Contracts:             []config.ContractConfig{summitConfig},
+		ChainID:            summit,
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
+		Confirmations:      0,
+
+		Contracts: []config.ContractConfig{summitConfig},
 	}
 	scribeConfig := config.Config{
 		Chains: []config.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
 	}
-	clients := map[uint32][]backfill.ScribeBackend{
+	clients := map[uint32][]backend.ScribeBackend{
 		chainID:     {originClient, originClient},
 		destination: {destinationClient, destinationClient},
 		summit:      {summitClient, summitClient},
 	}
 
-	scribe, err := node.NewScribe(e.ScribeTestDB, clients, scribeConfig, e.ScribeMetrics)
+	scribe, err := service.NewScribe(e.ScribeTestDB, clients, scribeConfig, e.ScribeMetrics)
 	e.Nil(err)
 
 	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath, e.ScribeMetrics)
@@ -526,10 +527,10 @@ func (e *ExecutorSuite) TestExecutor() {
 		}
 	}()
 
-	excCfg := executorCfg.Config{
+	excCfg := execConfig.Config{
 		SummitChainID: summit,
 		SummitAddress: e.SummitContract.Address().String(),
-		Chains: []executorCfg.ChainConfig{
+		Chains: []execConfig.ChainConfig{
 			{
 				ChainID:       chainID,
 				OriginAddress: e.OriginContract.Address().String(),
@@ -549,19 +550,8 @@ func (e *ExecutorSuite) TestExecutor() {
 		},
 	}
 
-	executorClients := map[uint32]executor.Backend{
-		chainID:     e.TestBackendOrigin,
-		destination: e.TestBackendDestination,
-		summit:      e.TestBackendSummit,
-	}
-
-	urls := map[uint32]string{
-		chainID:     e.TestBackendOrigin.RPCAddress(),
-		destination: e.TestBackendDestination.RPCAddress(),
-		summit:      e.TestBackendSummit.RPCAddress(),
-	}
-
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls, e.ExecutorMetrics)
+	omniRPCClient := omniClient.NewOmnirpcClient(e.TestOmniRPC, e.ExecutorMetrics, omniClient.WithCaptureReqRes())
+	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, omniRPCClient, e.ExecutorMetrics)
 	e.Nil(err)
 
 	go func() {
@@ -594,6 +584,10 @@ func (e *ExecutorSuite) TestExecutor() {
 	e.Nil(err)
 	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
 
+	// This transaction is needed to get the simulated chain's block number to increase by 1, since StreamLogs will
+	// do lastBlockNumber - 1.
+	e.BumpBackend(e.TestBackendOrigin, e.TestContractOnOrigin, txContextOrigin.TransactOpts)
+
 	tree := merkle.NewTree(merkle.MessageTreeHeight)
 
 	header := types.NewHeader(types.MessageFlagBase, uint32(e.TestBackendOrigin.GetChainID()), nonce, uint32(e.TestBackendDestination.GetChainID()), optimisticSeconds)
@@ -618,27 +612,19 @@ func (e *ExecutorSuite) TestExecutor() {
 	gasData := types.NewGasData(uint16(1), uint16(1), uint16(1), uint16(1), uint16(1), uint16(1))
 	originState := types.NewState(rootB32, chainID, nonce, big.NewInt(1), big.NewInt(1), gasData)
 	randomGasData := types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16())
-	randomState := types.NewState(common.BigToHash(big.NewInt(gofakeit.Int64())), chainID+1, gofakeit.Uint32(), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), randomGasData)
+	randomState := types.NewState(common.BigToHash(big.NewInt(int64(gofakeit.Int32()))), chainID+1, gofakeit.Uint32(), big.NewInt(int64(gofakeit.Int32())), big.NewInt(int64(gofakeit.Int32())), randomGasData)
 	originSnapshot := types.NewSnapshot([]types.State{originState, randomState})
 
 	snapshotRoot, proofs, err := originSnapshot.SnapshotRootAndProofs()
 	e.Nil(err)
 
-	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), []types.State{originState, randomState}, snapshotRoot, proofs)
+	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), []types.State{originState, randomState}, snapshotRoot, proofs, 5)
 	e.Nil(err)
 
 	destinationAttestation := types.NewAttestation(snapshotRoot, [32]byte{}, uint32(1), big.NewInt(1), big.NewInt(1))
 
 	err = e.ExecutorTestDB.StoreAttestation(e.GetTestContext(), destinationAttestation, destination, 1, 1)
 	e.Nil(err)
-
-	mask := execTypes.DBMessage{
-		ChainID:     &chainID,
-		Destination: &destination,
-	}
-	executableMessages, err := e.ExecutorTestDB.GetExecutableMessages(e.GetTestContext(), mask, uint64(time.Now().Unix()), 1)
-	e.Nil(err)
-	e.Len(executableMessages, 0)
 
 	// Make sure there is one executable message in the database.
 	e.Eventually(func() bool {
@@ -688,22 +674,22 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 		common.BigToHash(big.NewInt(gofakeit.Int64())),
 		chainID,
 		1,
-		big.NewInt(gofakeit.Int64()),
-		big.NewInt(gofakeit.Int64()),
+		big.NewInt(int64(gofakeit.Int32())),
+		big.NewInt(int64(gofakeit.Int32())),
 		types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16()))
 	state1 := types.NewState(
 		common.BigToHash(big.NewInt(gofakeit.Int64())),
 		chainID,
 		2,
-		big.NewInt(gofakeit.Int64()),
-		big.NewInt(gofakeit.Int64()),
+		big.NewInt(int64(gofakeit.Int32())),
+		big.NewInt(int64(gofakeit.Int32())),
 		types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16()))
 	state2 := types.NewState(
 		common.BigToHash(big.NewInt(gofakeit.Int64())),
 		chainID,
 		5,
-		big.NewInt(gofakeit.Int64()),
-		big.NewInt(gofakeit.Int64()),
+		big.NewInt(int64(gofakeit.Int32())),
+		big.NewInt(int64(gofakeit.Int32())),
 		types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16()))
 
 	snapshot0 := types.NewSnapshot([]types.State{state0})
@@ -717,11 +703,11 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 	snapshotRoot2, proofs2, err := snapshot2.SnapshotRootAndProofs()
 	e.Nil(err)
 
-	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot0.States(), snapshotRoot0, proofs0)
+	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot0.States(), snapshotRoot0, proofs0, 0)
 	e.Nil(err)
-	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot1.States(), snapshotRoot1, proofs1)
+	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot1.States(), snapshotRoot1, proofs1, 1)
 	e.Nil(err)
-	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot2.States(), snapshotRoot2, proofs2)
+	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot2.States(), snapshotRoot2, proofs2, 2)
 	e.Nil(err)
 
 	potentialSnapshotRoots, err := e.ExecutorTestDB.GetPotentialSnapshotRoots(e.GetTestContext(), chainID, 1)
@@ -743,8 +729,8 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 	err = e.ExecutorTestDB.StoreAttestation(e.GetTestContext(), attestation2, destination, 20, 20)
 	e.Nil(err)
 
-	excCfg := executorCfg.Config{
-		Chains: []executorCfg.ChainConfig{
+	excCfg := execConfig.Config{
+		Chains: []execConfig.ChainConfig{
 			{
 				ChainID: chainID,
 			},
@@ -765,17 +751,8 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 		e.Nil(scribeErr)
 	}()
 
-	executorClients := map[uint32]executor.Backend{
-		chainID:     nil,
-		destination: nil,
-	}
-
-	urls := map[uint32]string{
-		chainID:     e.TestBackendOrigin.RPCAddress(),
-		destination: e.TestBackendDestination.RPCAddress(),
-	}
-
-	exec, err := executor.NewExecutorInjectedBackend(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, executorClients, urls, e.ExecutorMetrics)
+	omniRPCClient := omniClient.NewOmnirpcClient(e.TestOmniRPC, e.ExecutorMetrics, omniClient.WithCaptureReqRes())
+	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, omniRPCClient, e.ExecutorMetrics)
 	e.Nil(err)
 
 	go func() {
@@ -808,4 +785,240 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 			e.Equal(*minTime, uint64(20+(i)))
 		}
 	}
+}
+
+//nolint:maintidx
+func (e *ExecutorSuite) TestSendManagerMessage() {
+	// This test requires a call to anvil's evm.IncreaseTime() cheat code, so we should
+	// set up the backends with anvil.
+
+	testDone := false
+	defer func() {
+		testDone = true
+	}()
+	chainID := uint32(e.TestBackendOrigin.GetChainID())
+	destination := uint32(e.TestBackendDestination.GetChainID())
+	summit := uint32(e.TestBackendSummit.GetChainID())
+
+	registry := deployer.NewContractRegistry(e.T(), e.TestBackendOrigin)
+	//nolint:forcetypeassert
+	deployer := testutil.NewOriginHarnessDeployer(registry, e.TestBackendOrigin).(testutil.OriginHarnessDeployer)
+	gasOracleAddr, err := e.OriginContract.GasOracle(&bind.CallOpts{Context: e.GetTestContext()})
+	e.Nil(err)
+	inboxAddr, err := e.OriginContract.Inbox(&bind.CallOpts{Context: e.GetTestContext()})
+	e.Nil(err)
+
+	// Manually deploy an "override" origin contract, so that we can call SendManagerMessage as
+	// onlyAgentManager from our tx context.
+	txContextOrigin := e.TestBackendOrigin.GetTxContext(e.GetTestContext(), e.OriginContractMetadata.OwnerPtr())
+	agentAddress := txContextOrigin.From
+	originHarnessOverride, err := deployer.DeploySimpleContract(e.GetTestContext(), func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *ethTypes.Transaction, interface{}, error) {
+		address, tx, rawHandle, err := originharness.DeployOriginHarness(transactOps, backend, testutil.SynapseChainID, agentAddress, inboxAddr, gasOracleAddr)
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not deploy origin override: %w", err)
+		}
+		e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
+
+		initializeOpts := e.TestBackendOrigin.GetTxContext(e.GetTestContext(), &transactOps.From)
+		initializeTx, err := rawHandle.Initialize(initializeOpts.TransactOpts)
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not initialize origin override on %s: %w", transactOps.From, err)
+		}
+		e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), initializeTx)
+
+		//nolint:wrapcheck
+		return address, tx, rawHandle, err
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		//nolint:wrapcheck
+		return originharness.NewOriginHarnessRef(address, backend)
+	})
+	e.Nil(err)
+
+	originClient, err := backend.DialBackend(e.GetTestContext(), e.TestBackendOrigin.RPCAddress(), e.ScribeMetrics)
+	e.Nil(err)
+	destinationClient, err := backend.DialBackend(e.GetTestContext(), e.TestBackendDestination.RPCAddress(), e.ScribeMetrics)
+	e.Nil(err)
+	summitClient, err := backend.DialBackend(e.GetTestContext(), e.TestBackendSummit.RPCAddress(), e.ScribeMetrics)
+	e.Nil(err)
+
+	originConfig := config.ContractConfig{
+		Address:    originHarnessOverride.Address().String(),
+		StartBlock: 0,
+	}
+	originChainConfig := config.ChainConfig{
+		ChainID:            chainID,
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
+		Confirmations:      1,
+		Contracts:          []config.ContractConfig{originConfig},
+	}
+	destinationConfig := config.ContractConfig{
+		Address:    e.DestinationContract.Address().String(),
+		StartBlock: 0,
+	}
+	destinationChainConfig := config.ChainConfig{
+		ChainID:            destination,
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
+		Confirmations:      1,
+		Contracts:          []config.ContractConfig{destinationConfig},
+	}
+	summitConfig := config.ContractConfig{
+		Address:    e.SummitContract.Address().String(),
+		StartBlock: 0,
+	}
+	inboxConfig := config.ContractConfig{
+		Address:    e.InboxOnSummit.Address().String(),
+		StartBlock: 0,
+	}
+	summitChainConfig := config.ChainConfig{
+		ChainID:            summit,
+		GetLogsBatchAmount: 1,
+		StoreConcurrency:   1,
+		GetLogsRange:       1,
+		Confirmations:      1,
+		Contracts:          []config.ContractConfig{summitConfig, inboxConfig},
+	}
+	scribeConfig := config.Config{
+		Chains: []config.ChainConfig{originChainConfig, destinationChainConfig, summitChainConfig},
+	}
+	clients := map[uint32][]backend.ScribeBackend{
+		chainID:     {originClient, originClient},
+		destination: {destinationClient, destinationClient},
+		summit:      {summitClient, summitClient},
+	}
+
+	scribe, err := service.NewScribe(e.ScribeTestDB, clients, scribeConfig, e.ScribeMetrics)
+	e.Nil(err)
+
+	scribeClient := client.NewEmbeddedScribe("sqlite", e.DBPath, e.ScribeMetrics)
+	go func() {
+		scribeErr := scribeClient.Start(e.GetTestContext())
+		e.Nil(scribeErr)
+	}()
+
+	// Start the Scribe.
+	go func() {
+		scribeError := scribe.Start(e.GetTestContext())
+		if !testDone {
+			e.Nil(scribeError)
+		}
+	}()
+
+	excCfg := execConfig.Config{
+		SummitChainID: summit,
+		SummitAddress: e.SummitContract.Address().String(),
+		InboxAddress:  e.InboxOnSummit.Address().String(),
+		Chains: []execConfig.ChainConfig{
+			{
+				ChainID:       chainID,
+				OriginAddress: originHarnessOverride.Address().String(),
+			},
+			{
+				ChainID:            destination,
+				DestinationAddress: e.DestinationContract.Address().String(),
+			},
+			{
+				ChainID:            summit,
+				DestinationAddress: e.DestinationContractOnSummit.Address().String(),
+			},
+		},
+		BaseOmnirpcURL: e.TestBackendOrigin.RPCAddress(),
+		UnbondedSigner: agentsConfig.SignerConfig{
+			Type: agentsConfig.FileType.String(),
+			File: filet.TmpFile(e.T(), "", e.ExecutorUnbondedWallet.PrivateKeyHex()).Name(),
+		},
+	}
+
+	omniRPCClient := omniClient.NewOmnirpcClient(e.TestOmniRPC, e.ExecutorMetrics, omniClient.WithCaptureReqRes())
+	exec, err := executor.NewExecutor(e.GetTestContext(), excCfg, e.ExecutorTestDB, scribeClient.ScribeClient, omniRPCClient, e.ExecutorMetrics)
+	e.Nil(err)
+
+	go func() {
+		execErr := exec.Run(e.GetTestContext())
+		if !testDone {
+			e.Nil(execErr)
+		}
+	}()
+
+	// Build a manager message. For this message we will do a call to `remoteSlashAgent`.
+	// Note that we remove the first two "security params", as the `execute()` call will
+	// inject these into the calldata.
+	tips := types.NewTips(big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
+	optimisticSeconds := uint32(1)
+	nonce := uint32(1)
+	txContextOrigin.Value = types.TotalTips(tips)
+	abi, err := bondingmanager.BondingManagerMetaData.GetAbi()
+	e.Nil(err)
+	method, ok := abi.Methods["remoteSlashAgent"]
+	e.True(ok)
+	method.Inputs = abi.Methods["remoteSlashAgent"].Inputs[2:]
+	abi.Methods["remoteSlashAgent"] = method
+	body, err := abi.Pack("remoteSlashAgent", uint32(e.TestBackendDestination.GetChainID()), e.NotaryBondedSigner.Address(), e.NotaryBondedSigner.Address())
+	e.Nil(err)
+	mgrHeader := types.NewHeader(types.MessageFlagManager, uint32(e.TestBackendOrigin.GetChainID()), nonce, uint32(e.TestBackendSummit.GetChainID()), optimisticSeconds)
+	managerMessage, err := types.NewMessageFromManagerMessage(mgrHeader, body)
+	e.Nil(err)
+
+	// Send the manager message.
+	originHarnessOverrideRef, err := originharness.NewOriginHarnessRef(originHarnessOverride.Address(), e.TestBackendOrigin)
+	e.Nil(err)
+	tx, err := originHarnessOverrideRef.SendManagerMessage(
+		txContextOrigin.TransactOpts,
+		uint32(e.TestBackendSummit.GetChainID()),
+		optimisticSeconds,
+		body,
+	)
+	e.Nil(err)
+	e.TestBackendOrigin.WaitForConfirmation(e.GetTestContext(), tx)
+	e.BumpBackend(e.TestBackendOrigin, e.TestContractOnOrigin, txContextOrigin.TransactOpts)
+	// Get the origin state so we can submit it on the Summit.
+	originStateRaw, err := originHarnessOverrideRef.SuggestLatestState(&bind.CallOpts{Context: e.GetTestContext()})
+	e.Nil(err)
+	originState, err := types.DecodeState(originStateRaw)
+	e.Nil(err)
+	snapshot := types.NewSnapshot([]types.State{originState})
+
+	// Submit snapshot with Guard.
+	guardSnapshotSignature, encodedSnapshot, _, err := snapshot.SignSnapshot(e.GetTestContext(), e.GuardBondedSigner)
+	e.Nil(err)
+	txContext := e.TestBackendSummit.GetTxContext(e.GetTestContext(), e.SummitMetadata.OwnerPtr())
+	tx, err = e.SummitDomainClient.Inbox().SubmitSnapshot(
+		txContext.TransactOpts,
+		encodedSnapshot,
+		guardSnapshotSignature,
+	)
+	e.Nil(err)
+	e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
+	e.BumpBackend(e.TestBackendSummit, e.TestContractOnSummit, txContext.TransactOpts)
+
+	// Submit snapshot with Notary.
+	notarySnapshotSignature, encodedSnapshot, _, err := snapshot.SignSnapshot(e.GetTestContext(), e.NotaryBondedSigner)
+	e.Nil(err)
+	tx, err = e.SummitDomainClient.Inbox().SubmitSnapshot(
+		txContext.TransactOpts,
+		encodedSnapshot,
+		notarySnapshotSignature,
+	)
+	e.Nil(err)
+	e.TestBackendSummit.WaitForConfirmation(e.GetTestContext(), tx)
+	e.BumpBackend(e.TestBackendSummit, e.TestContractOnSummit, txContext.TransactOpts)
+
+	// Increase EVM time by the hard-coded bonding manager optimistic seconds so that
+	// the manager message can be executed.
+	anvilClient, err := anvil.Dial(e.GetTestContext(), e.TestBackendSummit.RPCAddress())
+	e.Nil(err)
+	bondingManagerOptimisticSecs := 86400
+	err = anvilClient.IncreaseTime(e.GetTestContext(), int64(bondingManagerOptimisticSecs))
+	e.Nil(err)
+	e.BumpBackend(e.TestBackendSummit, e.TestContractOnSummit, txContext.TransactOpts)
+
+	// Check that the message is eventually executed.
+	e.Eventually(func() bool {
+		executed, err := exec.CheckIfExecuted(e.GetTestContext(), managerMessage)
+		e.Nil(err)
+		return executed
+	})
 }

@@ -57,6 +57,24 @@ builds:
       - linux
     goarch:
       - amd64
+
+  - id: resolver-amd64
+    binary: resolver-amd64
+    env:
+      # probably not neccesary for this module
+      - CGO_CFLAGS=-I/usr/local/include
+      - CGO_ENABLED=1
+      - CGO_LDFLAGS=-L/usr/local/lib -lrocksdb -lstdc++ -lm -lz -lsnappy  -lzstd -lbz2
+    # see: https://github.com/cosmos/iavl/pull/465/files
+    ldflags:
+      - -s -w
+    main: revertresolver/main.go
+    flags:
+      - -tags=builtin_static,rocksdb,static # probably not neccesary for this module
+    goos:
+      - linux
+    goarch:
+      - amd64
 # add a source archive at release time
 source:
   enabled: true
@@ -69,12 +87,6 @@ archives:
       - goos: windows
         format: zip
     name_template: '{{.ProjectName}}-{{.Version}}_{{.Os}}_{{.Arch}}'
-    replacements:
-      amd64: x86_64
-      arm64: ARM64
-      darwin: macOS
-      linux: Linux
-      windows: Windows
     files:
       - abigen/README.md
       - modulecopier/README.md
@@ -85,3 +97,18 @@ checksum:
 # Add a changelog
 changelog:
   sort: asc
+
+# track sizes
+report_sizes: true
+
+# modified timestamps
+metadata:
+  # Set the modified timestamp on the metadata files.
+  #
+  # Templates: allowed.
+  mod_timestamp: '{{ .CommitTimestamp }}'
+
+# produce software bill of lading
+sboms:
+  - artifacts: archive
+

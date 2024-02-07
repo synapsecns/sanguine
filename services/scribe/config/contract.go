@@ -1,7 +1,6 @@
 package config
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -14,6 +13,8 @@ type ContractConfig struct {
 	Address string `yaml:"address"`
 	// StartBlock is the block number to start indexing events from.
 	StartBlock uint64 `yaml:"start_block"`
+	// EndBlock is the block number to stop indexing events at. If this is set, it will enforce the start block and ignore the last indexed block.
+	EndBlock uint64 `yaml:"end_block"`
 	// RefreshRate is the rate at which the contract is refreshed.
 	RefreshRate uint64 `yaml:"refresh_rate"`
 }
@@ -23,7 +24,7 @@ type ContractConfigs []ContractConfig
 
 // IsValid validates the contract configs by asserting no two contracts appear twice.
 // It also calls IsValid on each individual ContractConfig.
-func (c ContractConfigs) IsValid(ctx context.Context) (ok bool, err error) {
+func (c ContractConfigs) IsValid() (ok bool, err error) {
 	addressSet := collection.Set[string]{}
 
 	for _, cfg := range c {
@@ -32,7 +33,7 @@ func (c ContractConfigs) IsValid(ctx context.Context) (ok bool, err error) {
 			return false, fmt.Errorf("duplicate contract address %s was found: %w", address, ErrDuplicateAddress)
 		}
 
-		ok, err = cfg.IsValid(ctx)
+		ok, err = cfg.IsValid()
 		if !ok {
 			return false, err
 		}
@@ -44,7 +45,7 @@ func (c ContractConfigs) IsValid(ctx context.Context) (ok bool, err error) {
 }
 
 // IsValid validates the contract config.
-func (c ContractConfig) IsValid(ctx context.Context) (ok bool, err error) {
+func (c ContractConfig) IsValid() (ok bool, err error) {
 	if c.Address == "" {
 		return false, fmt.Errorf("field Address: %w", ErrRequiredField)
 	}

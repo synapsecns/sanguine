@@ -1,37 +1,38 @@
 import { Address } from 'wagmi'
 import toast from 'react-hot-toast'
 
-import { MINICHEF_ADDRESSES } from '@/constants/minichef'
-import MINI_CHEF_ABI from '@/constants/abis/miniChef.json'
-
-import { BigNumber, Contract } from 'ethers'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { txErrorHandler } from '@utils/txErrorHandler'
-import { fetchSigner } from '@wagmi/core'
+import { unstakeLpToken } from '@/actions/unstakeLpToken'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { Token } from '@types'
+
 export const withdrawStake = async (
   address: Address,
   chainId: number,
   poolId: number,
-  inputValue: BigNumber
+  pool: Token,
+  inputValue: bigint
 ) => {
-  const wallet = await fetchSigner({
-    chainId,
-  })
-  const miniChefContract = new Contract(
-    MINICHEF_ADDRESSES[chainId],
-    MINI_CHEF_ABI,
-    wallet
-  )
+  const miniChefAddress = pool.miniChefAddress
   try {
     if (!address) throw new Error('Wallet must be connected')
-    if (!miniChefContract) throw new Error('MMind contract is not loaded')
-    const withdrawTransactionArgs = [poolId, inputValue, address]
-
-    const stakeTransaction = await miniChefContract.withdraw(
-      ...withdrawTransactionArgs
+    segmentAnalyticsEvent(
+      `[Withdraw Stake] Attempt`,
+      {
+        poolId,
+        inputValue,
+      },
+      true
     )
 
-    const tx = await stakeTransaction.wait()
+    const tx = await unstakeLpToken({
+      address,
+      chainId,
+      poolId,
+      amount: inputValue,
+      lpAddress: miniChefAddress as Address,
+    })
 
     const toastContent = (
       <div>
@@ -41,9 +42,18 @@ export const withdrawStake = async (
     )
 
     toast.success(toastContent)
+    segmentAnalyticsEvent(`[Withdraw Stake] Success`, {
+      poolId,
+      inputValue,
+    })
 
     return tx
   } catch (err) {
+    segmentAnalyticsEvent(`[Withdraw Stake] Error`, {
+      poolId,
+      inputValue,
+      errorCode: err.code,
+    })
     txErrorHandler(err)
   }
 }

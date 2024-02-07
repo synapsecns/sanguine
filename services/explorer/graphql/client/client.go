@@ -29,6 +29,9 @@ type Query struct {
 	RankedChainIDsByVolume []*model.VolumeByChainID        "json:\"rankedChainIDsByVolume\" graphql:\"rankedChainIDsByVolume\""
 	AddressData            *model.AddressData              "json:\"addressData\" graphql:\"addressData\""
 	Leaderboard            []*model.Leaderboard            "json:\"leaderboard\" graphql:\"leaderboard\""
+	GetOriginBridgeTx      *model.BridgeWatcherTx          "json:\"getOriginBridgeTx\" graphql:\"getOriginBridgeTx\""
+	GetDestinationBridgeTx *model.BridgeWatcherTx          "json:\"getDestinationBridgeTx\" graphql:\"getDestinationBridgeTx\""
+	GetBlockHeight         []*model.BlockHeight            "json:\"getBlockHeight\" graphql:\"getBlockHeight\""
 }
 type GetBridgeTransactions struct {
 	Response []*struct {
@@ -89,6 +92,13 @@ type GetRankedChainIDsByVolume struct {
 		Total   *float64 "json:\"total\" graphql:\"total\""
 	} "json:\"response\" graphql:\"response\""
 }
+type GetBlockHeight struct {
+	Response []*struct {
+		ChainID     *int                "json:\"chainID\" graphql:\"chainID\""
+		Type        *model.ContractType "json:\"type\" graphql:\"type\""
+		BlockNumber *int                "json:\"blockNumber\" graphql:\"blockNumber\""
+	} "json:\"response\" graphql:\"response\""
+}
 type GetAmountStatistic struct {
 	Response *struct {
 		Value *string "json:\"value\" graphql:\"value\""
@@ -115,6 +125,7 @@ type GetDailyStatisticsByChain struct {
 		Harmony   *float64 "json:\"harmony\" graphql:\"harmony\""
 		Canto     *float64 "json:\"canto\" graphql:\"canto\""
 		Dogechain *float64 "json:\"dogechain\" graphql:\"dogechain\""
+		Base      *float64 "json:\"base\" graphql:\"base\""
 		Total     *float64 "json:\"total\" graphql:\"total\""
 	} "json:\"response\" graphql:\"response\""
 }
@@ -212,6 +223,50 @@ type GetLeaderboard struct {
 		Txs          *int     "json:\"txs\" graphql:\"txs\""
 		Rank         *int     "json:\"rank\" graphql:\"rank\""
 		AvgVolumeUsd *float64 "json:\"avgVolumeUSD\" graphql:\"avgVolumeUSD\""
+	} "json:\"response\" graphql:\"response\""
+}
+type GetOriginBridgeTx struct {
+	Response *struct {
+		BridgeTx *struct {
+			ChainID            *int     "json:\"chainID\" graphql:\"chainID\""
+			DestinationChainID *int     "json:\"destinationChainID\" graphql:\"destinationChainID\""
+			Address            *string  "json:\"address\" graphql:\"address\""
+			TxnHash            *string  "json:\"txnHash\" graphql:\"txnHash\""
+			Value              *string  "json:\"value\" graphql:\"value\""
+			FormattedValue     *float64 "json:\"formattedValue\" graphql:\"formattedValue\""
+			USDValue           *float64 "json:\"USDValue\" graphql:\"USDValue\""
+			TokenAddress       *string  "json:\"tokenAddress\" graphql:\"tokenAddress\""
+			TokenSymbol        *string  "json:\"tokenSymbol\" graphql:\"tokenSymbol\""
+			BlockNumber        *int     "json:\"blockNumber\" graphql:\"blockNumber\""
+			Time               *int     "json:\"time\" graphql:\"time\""
+			FormattedTime      *string  "json:\"formattedTime\" graphql:\"formattedTime\""
+		} "json:\"bridgeTx\" graphql:\"bridgeTx\""
+		Pending     *bool               "json:\"pending\" graphql:\"pending\""
+		Type        *model.BridgeTxType "json:\"type\" graphql:\"type\""
+		Kappa       *string             "json:\"kappa\" graphql:\"kappa\""
+		KappaStatus *model.KappaStatus  "json:\"kappaStatus\" graphql:\"kappaStatus\""
+	} "json:\"response\" graphql:\"response\""
+}
+type GetDestinationBridgeTx struct {
+	Response *struct {
+		BridgeTx *struct {
+			ChainID            *int     "json:\"chainID\" graphql:\"chainID\""
+			DestinationChainID *int     "json:\"destinationChainID\" graphql:\"destinationChainID\""
+			Address            *string  "json:\"address\" graphql:\"address\""
+			TxnHash            *string  "json:\"txnHash\" graphql:\"txnHash\""
+			Value              *string  "json:\"value\" graphql:\"value\""
+			FormattedValue     *float64 "json:\"formattedValue\" graphql:\"formattedValue\""
+			USDValue           *float64 "json:\"USDValue\" graphql:\"USDValue\""
+			TokenAddress       *string  "json:\"tokenAddress\" graphql:\"tokenAddress\""
+			TokenSymbol        *string  "json:\"tokenSymbol\" graphql:\"tokenSymbol\""
+			BlockNumber        *int     "json:\"blockNumber\" graphql:\"blockNumber\""
+			Time               *int     "json:\"time\" graphql:\"time\""
+			FormattedTime      *string  "json:\"formattedTime\" graphql:\"formattedTime\""
+		} "json:\"bridgeTx\" graphql:\"bridgeTx\""
+		Pending     *bool               "json:\"pending\" graphql:\"pending\""
+		Type        *model.BridgeTxType "json:\"type\" graphql:\"type\""
+		Kappa       *string             "json:\"kappa\" graphql:\"kappa\""
+		KappaStatus *model.KappaStatus  "json:\"kappaStatus\" graphql:\"kappaStatus\""
 	} "json:\"response\" graphql:\"response\""
 }
 
@@ -371,6 +426,28 @@ func (c *Client) GetRankedChainIDsByVolume(ctx context.Context, duration *model.
 	return &res, nil
 }
 
+const GetBlockHeightDocument = `query GetBlockHeight ($contracts: [ContractQuery]) {
+	response: getBlockHeight(contracts: $contracts) {
+		chainID
+		type
+		blockNumber
+	}
+}
+`
+
+func (c *Client) GetBlockHeight(ctx context.Context, contracts []*model.ContractQuery, httpRequestOptions ...client.HTTPRequestOption) (*GetBlockHeight, error) {
+	vars := map[string]interface{}{
+		"contracts": contracts,
+	}
+
+	var res GetBlockHeight
+	if err := c.Client.Post(ctx, "GetBlockHeight", GetBlockHeightDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
 const GetAmountStatisticDocument = `query GetAmountStatistic ($type: StatisticType!, $platform: Platform, $duration: Duration, $chainID: Int, $address: String, $tokenAddress: String, $useMv: Boolean) {
 	response: amountStatistic(type: $type, duration: $duration, platform: $platform, chainID: $chainID, address: $address, tokenAddress: $tokenAddress, useMv: $useMv) {
 		value
@@ -418,6 +495,7 @@ const GetDailyStatisticsByChainDocument = `query GetDailyStatisticsByChain ($cha
 		harmony
 		canto
 		dogechain
+		base
 		total
 	}
 }
@@ -586,6 +664,87 @@ func (c *Client) GetLeaderboard(ctx context.Context, duration *model.Duration, c
 
 	var res GetLeaderboard
 	if err := c.Client.Post(ctx, "GetLeaderboard", GetLeaderboardDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetOriginBridgeTxDocument = `query GetOriginBridgeTx ($chainID: Int!, $txnHash: String!, $bridgeType: BridgeType!) {
+	response: getOriginBridgeTx(chainID: $chainID, txnHash: $txnHash, bridgeType: $bridgeType) {
+		bridgeTx {
+			chainID
+			destinationChainID
+			address
+			txnHash
+			value
+			formattedValue
+			USDValue
+			tokenAddress
+			tokenSymbol
+			blockNumber
+			time
+			formattedTime
+		}
+		pending
+		type
+		kappa
+		kappaStatus
+	}
+}
+`
+
+func (c *Client) GetOriginBridgeTx(ctx context.Context, chainID int, txnHash string, bridgeType model.BridgeType, httpRequestOptions ...client.HTTPRequestOption) (*GetOriginBridgeTx, error) {
+	vars := map[string]interface{}{
+		"chainID":    chainID,
+		"txnHash":    txnHash,
+		"bridgeType": bridgeType,
+	}
+
+	var res GetOriginBridgeTx
+	if err := c.Client.Post(ctx, "GetOriginBridgeTx", GetOriginBridgeTxDocument, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const GetDestinationBridgeTxDocument = `query GetDestinationBridgeTx ($chainID: Int!, $kappa: String!, $address: String!, $timestamp: Int!, $bridgeType: BridgeType!, $historical: Boolean) {
+	response: getDestinationBridgeTx(chainID: $chainID, address: $address, kappa: $kappa, timestamp: $timestamp, bridgeType: $bridgeType, historical: $historical) {
+		bridgeTx {
+			chainID
+			destinationChainID
+			address
+			txnHash
+			value
+			formattedValue
+			USDValue
+			tokenAddress
+			tokenSymbol
+			blockNumber
+			time
+			formattedTime
+		}
+		pending
+		type
+		kappa
+		kappaStatus
+	}
+}
+`
+
+func (c *Client) GetDestinationBridgeTx(ctx context.Context, chainID int, kappa string, address string, timestamp int, bridgeType model.BridgeType, historical *bool, httpRequestOptions ...client.HTTPRequestOption) (*GetDestinationBridgeTx, error) {
+	vars := map[string]interface{}{
+		"chainID":    chainID,
+		"kappa":      kappa,
+		"address":    address,
+		"timestamp":  timestamp,
+		"bridgeType": bridgeType,
+		"historical": historical,
+	}
+
+	var res GetDestinationBridgeTx
+	if err := c.Client.Post(ctx, "GetDestinationBridgeTx", GetDestinationBridgeTxDocument, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 

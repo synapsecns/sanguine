@@ -1,15 +1,46 @@
-import { formatBNToString } from '@bignumber/format'
-import { BigNumber } from '@ethersproject/bignumber'
+import { useMemo } from 'react'
+import { formatBigIntToString } from '@/utils/bigint/format'
 
-const PriceImpactDisplay = ({ priceImpact }: { priceImpact: BigNumber }) => {
-  let colorClassName
-  let labelText
-  // TODO: Check this
-  let priceImpactBP = priceImpact
-    ? Number(formatBNToString(priceImpact.mul(BigNumber.from(-100)), 18, 2))
-    : 0
+function removeLeadingZeros(inputValue: number): number {
+  const numberString = inputValue.toString()
+  const integerPart = parseInt(numberString)
+  const decimalPart = parseFloat(
+    numberString.substring(integerPart.toString().length)
+  )
 
-  if (priceImpactBP > 0) {
+  return integerPart + decimalPart
+}
+
+const PriceImpactDisplay = ({ priceImpact }: { priceImpact: bigint }) => {
+  let colorClassName: string
+  let labelText: string
+  let content: any
+
+  const priceImpactValue: number = useMemo(() => {
+    if (!priceImpact) return 0
+
+    let formattedPriceImpact = Number(
+      formatBigIntToString(priceImpact * 100n, 18, 18)
+    )
+
+    if (priceImpact > 0n && formattedPriceImpact === 0) {
+      formattedPriceImpact = removeLeadingZeros(
+        Number(formatBigIntToString(priceImpact * 100n, 18, 10))
+      )
+    }
+
+    return formattedPriceImpact
+  }, [priceImpact])
+
+  const priceImpactDisplayValue: string = useMemo(() => {
+    if (Math.abs(priceImpactValue) < 0.01) {
+      return '<0.01'
+    } else {
+      return priceImpactValue.toFixed(2)
+    }
+  }, [priceImpactValue])
+
+  if (priceImpactValue > 0) {
     colorClassName = 'text-green-500'
     labelText = 'Bonus'
   } else {
@@ -17,8 +48,7 @@ const PriceImpactDisplay = ({ priceImpact }: { priceImpact: BigNumber }) => {
     labelText = 'Price Impact'
   }
 
-  let content
-  if (priceImpactBP == 0) {
+  if (priceImpactValue == 0) {
     content = ''
   } else {
     content = (
@@ -32,7 +62,7 @@ const PriceImpactDisplay = ({ priceImpact }: { priceImpact: BigNumber }) => {
           ${colorClassName}
         `}
         >
-          {priceImpactBP}%
+          {priceImpactDisplayValue}%
         </span>
       </div>
     )

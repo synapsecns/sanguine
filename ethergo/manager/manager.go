@@ -3,13 +3,15 @@ package manager
 
 import (
 	"context"
+	"github.com/stretchr/testify/require"
+	"sync"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/deployer"
-	"sync"
-	"testing"
 )
 
 // IDeployManager is responsible for deploying contracts.
@@ -31,7 +33,7 @@ type IDeployManager interface {
 // DeployerManager is responsible for wrapping contract registry with easy to use getters that correctly cast the handles.
 // since ContractRegistry is meant to be kept pure and go does not support generics, the sole function is to provide
 // handler wrappers around the registry. This will no longer be required when go supports generics: https://blog.golang.org/generics-proposal
-// TODO: go 1.19 supports generics, this can be improved.
+// TODO: go 1.20 supports generics, this can be improved.
 type DeployerManager struct {
 	// t is the testing object
 	t *testing.T
@@ -134,7 +136,7 @@ func GetContract[T any](ctx context.Context, tb testing.TB, deployManager IDeplo
 	tb.Helper()
 	deployedContract := deployManager.Get(ctx, backend, contractType)
 	contractHandle, ok := deployedContract.ContractHandle().(T)
-	assert.True(tb, ok)
+	require.True(tb, ok)
 
 	return deployedContract, contractHandle
 }
@@ -162,7 +164,7 @@ func AssertDependenciesCorrect(ctx context.Context, t *testing.T, deployManagerF
 		assert.Equal(t, dc.ChainID().String(), backend.GetBigChainID().String())
 
 		deployedContracts := contractRegistry.GetDeployedContracts()
-		// make sure dependency count is equal (adding our own contract to there expected amount)
+		// make sure dependency count is equal (adding our own contract to their expected amount)
 		assert.Equal(t, len(deployedContracts), len(contract.Dependencies())+1)
 
 		for _, dep := range contract.Dependencies() {

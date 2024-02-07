@@ -4,6 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"math/big"
+	"os"
+	"sync"
+	"testing"
+	"time"
+
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
@@ -31,11 +37,6 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
-	"math/big"
-	"os"
-	"sync"
-	"testing"
-	"time"
 
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/testsuite"
@@ -91,8 +92,16 @@ func (s *SubmitterSuite) SetupSuite() {
 	go func() {
 		defer wg.Done()
 		var err error
-		localmetrics.SetupTestJaeger(s.GetSuiteContext(), s.T())
-		s.metrics, err = metrics.NewByType(s.GetSuiteContext(), buildInfo, metrics.Jaeger)
+		// don't use metrics on ci for integration tests
+		isCI := core.GetEnvBool("CI", false)
+		useMetrics := !isCI
+		metricsHandler := metrics.Null
+
+		if useMetrics {
+			localmetrics.SetupTestJaeger(s.GetSuiteContext(), s.T())
+			metricsHandler = metrics.Jaeger
+		}
+		s.metrics, err = metrics.NewByType(s.GetSuiteContext(), buildInfo, metricsHandler)
 		s.Require().NoError(err)
 	}()
 
@@ -180,9 +189,17 @@ func TestTXSubmitterDBSuite(t *testing.T) {
 
 func (t *TXSubmitterDBSuite) SetupSuite() {
 	t.TestSuite.SetupSuite()
-	localmetrics.SetupTestJaeger(t.GetSuiteContext(), t.T())
+	// don't use metrics on ci for integration tests
+	isCI := core.GetEnvBool("CI", false)
+	useMetrics := !isCI
+	metricsHandler := metrics.Null
+
+	if useMetrics {
+		localmetrics.SetupTestJaeger(t.GetSuiteContext(), t.T())
+		metricsHandler = metrics.Jaeger
+	}
 	var err error
-	t.metrics, err = metrics.NewByType(t.GetTestContext(), buildInfo, metrics.Jaeger)
+	t.metrics, err = metrics.NewByType(t.GetSuiteContext(), buildInfo, metricsHandler)
 	t.Require().NoError(err)
 }
 
@@ -190,6 +207,7 @@ func (t *TXSubmitterDBSuite) SetupTest() {
 	t.TestSuite.SetupTest()
 
 	t.dbs = []db.Service{}
+	t.testBackends = []backends.SimulatedTestBackend{}
 
 	t.setupMysqlDB()
 
@@ -250,11 +268,11 @@ func (t *TXSubmitterDBSuite) setupMysqlDB() {
 	// skip if mysql test disabled, this really only needs to be run in ci
 
 	// skip if mysql test disabled
-	if os.Getenv("ENABLE_MYSQL_TEST") == "" {
+	if os.Getenv(common_base.EnableMysqlTestVar) == "" {
 		return
 	}
 	// sets up the conn string to the default database
-	connString := t.connString(os.Getenv("MYSQL_DATABASE"))
+	connString := t.connString(os.Getenv(common_base.MysqlDatabaseVar))
 	// sets up the myqsl db
 	testDB, err := sql.Open("mysql", connString)
 	t.Require().NoError(err)
@@ -345,7 +363,7 @@ func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Ha
 		return nil, fmt.Errorf("could not create sqlite store")
 	}
 
-	logger.Warnf("database is at %s/synapse.db", dbPath)
+	logger.Warnf("submitter database is at %s/synapse.db", dbPath)
 
 	namingStrategy := schema.NamingStrategy{
 		TablePrefix: fmt.Sprintf("test%d_%d_", gofakeit.Int64(), time.Now().Unix()),

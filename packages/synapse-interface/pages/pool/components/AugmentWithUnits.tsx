@@ -7,7 +7,8 @@ const AugmentWithUnits = ({
 }) => {
   return (
     <div className="text-right">
-      {content} <span className="text-gray-500">{label}</span>
+      {content}{' '}
+      <span className="font-thin text-sm text-[#B5B2B9]">{label}</span>
     </div>
   )
 }

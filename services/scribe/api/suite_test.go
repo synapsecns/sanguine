@@ -2,6 +2,11 @@ package api_test
 
 import (
 	"fmt"
+	"net/http"
+	"testing"
+	"time"
+
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/services/scribe/api"
@@ -10,9 +15,6 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"net/http"
-	"testing"
-	"time"
 
 	"github.com/Flaque/filet"
 	"github.com/phayes/freeport"
@@ -51,10 +53,18 @@ func NewTestSuite(tb testing.TB) *APISuite {
 func (g *APISuite) SetupSuite() {
 	g.TestSuite.SetupSuite()
 
-	localmetrics.SetupTestJaeger(g.GetSuiteContext(), g.T())
+	// don't use metrics on ci for integration tests
+	isCI := core.GetEnvBool("CI", false)
+	useMetrics := !isCI
+	metricsHandler := metrics.Null
+
+	if useMetrics {
+		localmetrics.SetupTestJaeger(g.GetSuiteContext(), g.T())
+		metricsHandler = metrics.Jaeger
+	}
 
 	var err error
-	g.metrics, err = metrics.NewByType(g.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	g.metrics, err = metrics.NewByType(g.GetSuiteContext(), metadata.BuildInfo(), metricsHandler)
 	g.Require().Nil(err)
 }
 
@@ -66,6 +76,7 @@ func (g *APISuite) TearDownSuite() {
 func (g *APISuite) SetupTest() {
 	g.TestSuite.SetupTest()
 	g.dbPath = filet.TmpDir(g.T(), "")
+	g.SetTestTimeout(time.Minute * 3)
 
 	sqliteStore, err := sqlite.NewSqliteStore(g.GetTestContext(), g.dbPath, g.metrics, false)
 	Nil(g.T(), err)
@@ -78,21 +89,22 @@ func (g *APISuite) SetupTest() {
 
 	go func() {
 		Nil(g.T(), api.Start(g.GetSuiteContext(), api.Config{
-			Port:       uint16(port),
-			Database:   "sqlite",
-			Path:       g.dbPath,
-			OmniRPCURL: "https://rpc.interoperability.institute/confirmations/1/rpc",
+			Port:           uint16(port),
+			Database:       "sqlite",
+			Path:           g.dbPath,
+			OmniRPCURL:     "https://rpc.omnirpc.io/confirmations/1/rpc",
+			SkipMigrations: true,
 		}, g.metrics))
 	}()
 
-	hostName := fmt.Sprintf("127.0.0.1:%d", port)
+	hostName := fmt.Sprintf("localhost:%d", port)
 	baseURL := fmt.Sprintf("http://%s", hostName)
 
 	g.gqlClient = client.NewClient(http.DefaultClient, fmt.Sprintf("%s%s", baseURL, server.GraphqlEndpoint))
 
 	config := rest.NewConfiguration()
 	config.BasePath = baseURL
-	config.Host = baseURL
+	config.Host = hostName
 
 	g.grpcRestClient = rest.NewAPIClient(config)
 	rawGrpcClient, err := grpc.DialContext(g.GetTestContext(), hostName, grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -118,6 +130,7 @@ func (g *APISuite) SetupTest() {
 		res, realRes, err := g.grpcRestClient.ScribeServiceApi.ScribeServiceCheck(g.GetTestContext(), rest.V1HealthCheckRequest{
 			Service: "any",
 		})
+
 		if err == nil {
 			defer func() {
 				_ = realRes.Body.Close()

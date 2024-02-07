@@ -1,11 +1,4 @@
-import { BigNumber } from '@ethersproject/bignumber'
-import { Zero, One, AddressZero } from '@ethersproject/constants'
-import { formatBNToPercentString, formatBNToString } from '@bignumber/format'
-import { PoolTokenObject } from '@types'
-
-export const MAX_BN_POW = BigNumber.from(10).pow(18)
-
-export const getPriceMultiplier = ({ poolType, prices }) => {
+const getPriceMultiplier = ({ poolType, prices }) => {
   switch (poolType) {
     case 'ETH':
       return prices.ethPrice
@@ -16,31 +9,14 @@ export const getPriceMultiplier = ({ poolType, prices }) => {
   }
 }
 
-export const calcBnSum = (arr) => {
-  return arr.reduce((sum, b) => sum.add(b), Zero)
-}
-
-export const calcIfZero = (lpb) => {
-  if (lpb.isZero()) {
-    return One
-  } else {
-    return lpb
-  }
-}
-
-export const getBalanceInfo = async ({ lpTokenContract, account }) => {
-  const arr = Promise.all([
-    lpTokenContract.balanceOf(account || AddressZero),
-    lpTokenContract.totalSupply(),
-  ])
-
-  return arr
-}
-
 export const getTokenBalanceInfo = ({ tokenBalances, poolType, prices }) => {
-  const tokenBalancesSum = calcBnSum(tokenBalances)
+  const tokenBalancesSum = tokenBalances.reduce(
+    (a, b) => Number(a) + Number(b),
+    0
+  )
+
   const priceMultiplier = getPriceMultiplier({ prices, poolType })
-  const tokenBalancesUSD = tokenBalancesSum?.mul(priceMultiplier ?? 0)
+  const tokenBalancesUSD = tokenBalancesSum * (priceMultiplier ?? 0)
 
   return {
     tokenBalancesSum,
@@ -50,27 +26,37 @@ export const getTokenBalanceInfo = ({ tokenBalances, poolType, prices }) => {
 
 export const getPoolTokenInfoArr = ({
   tokenBalances,
-  lpTotalSupply,
   tokenBalancesSum,
 }: {
-  tokenBalances: PoolTokenObject[]
-  chainId: number
-  lpTotalSupply: BigNumber
-  tokenBalancesSum: BigNumber
+  tokenBalances: {
+    rawBalance: bigint
+    balance: string
+    token: any
+    isLP: boolean
+  }[]
+  tokenBalancesSum: number
 }) => {
-  return tokenBalances.map((poolToken) => ({
-    symbol: poolToken.token.symbol,
-    percent: poolToken.balance.isZero()
-      ? '0'
-      : formatBNToPercentString(
-          poolToken.balance
-            .mul(10 ** 5)
-            .div(lpTotalSupply.isZero() ? One : tokenBalancesSum),
-          5
-        ),
-    balance: poolToken.balance,
-    balanceStr: formatBNToString(poolToken.balance, 18, 4),
-    token: poolToken.token,
-    isLp: poolToken.isLP,
-  }))
+  return tokenBalances.map((poolToken) => {
+    const {
+      balance,
+      token,
+      token: { symbol },
+      isLP,
+      rawBalance,
+    } = poolToken
+
+    const rawPercent = Number(balance) / tokenBalancesSum
+    const percent =
+      tokenBalancesSum !== 0 ? `${(100 * rawPercent).toFixed(2)}%` : '-'
+
+    return {
+      symbol,
+      percent,
+      balance,
+      balanceStr: balance,
+      token,
+      isLP,
+      rawBalance,
+    }
+  })
 }

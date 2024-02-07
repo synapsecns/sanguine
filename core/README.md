@@ -1,9 +1,12 @@
 # Core
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/synapsecns/sanguine/core.svg)](https://pkg.go.dev/github.com/synapsecns/sanguine/core)
+[![Go Report Card](https://goreportcard.com/badge/github.com/synapsecns/sanguine/core)](https://goreportcard.com/report/github.com/synapsecns/sanguine/core)
+
 Core contains common libraries used across the synapse Go repositories.
 
-## Directory Structure
 
+## Directory Structure
 
 <pre>
 root
@@ -19,12 +22,10 @@ root
 ├── <a href="./mocktesting">mocktesting</a>: Provides a mocked tester for use with `testing.TB`
 ├── <a href="./observer">observer</a>: Provides an interface for adding/removing listeners.
 ├── <a href="./processlog">processlog</a>: Provides a way to interact with detatched processes as streams.
-├── <a href="./prom">prom</a>: Provides a set of utilities for working with Prometheus. This is deprected and will be removed in a future verison
 ├── <a href="./retry">retry</a>: Retries a function until it succeeds or the timeout is reached. This comes with a set of backoff strategies/options.
 ├── <a href="./server">server</a>: Provides a context-safe server that can be used to start/stop a server.
 ├── <a href="./testsuite">testsuite</a>: Provides a wrapper around testify/suite.
 ├── <a href="./threaditer">threaditer</a>: Provides a thread-safe generic iterator for a slice.
-├── <a href="./toml">toml</a>: Toml marshalling/unmarshalling interfaces.
-├── <a href="./tunnel">tunnel</a>: Reverse tunneling service for debugging services in ci.
 </pre>
+
 

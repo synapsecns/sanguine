@@ -11,18 +11,6 @@ import (
 
 // IOriginFilterer ...
 type IOriginFilterer interface {
-	// FilterDispatched is a free log retrieval operation binding the contract event 0x7627271451db6318f9bd8c5c92729cc075f1f32825474f9b5826e0a7b42434a7.
-	//
-	// Solidity: event Dispatched(bytes32 indexed messageHash, uint32 indexed nonce, uint32 indexed destination, bytes message)
-	FilterDispatched(opts *bind.FilterOpts, messageHash [][32]byte, nonce []uint32, destination []uint32) (*OriginDispatchedIterator, error)
-	// WatchDispatched is a free log subscription operation binding the contract event 0x7627271451db6318f9bd8c5c92729cc075f1f32825474f9b5826e0a7b42434a7.
-	//
-	// Solidity: event Dispatched(bytes32 indexed messageHash, uint32 indexed nonce, uint32 indexed destination, bytes message)
-	WatchDispatched(opts *bind.WatchOpts, sink chan<- *OriginDispatched, messageHash [][32]byte, nonce []uint32, destination []uint32) (event.Subscription, error)
-	// ParseDispatched is a log parse operation binding the contract event 0x7627271451db6318f9bd8c5c92729cc075f1f32825474f9b5826e0a7b42434a7.
-	//
-	// Solidity: event Dispatched(bytes32 indexed messageHash, uint32 indexed nonce, uint32 indexed destination, bytes message)
-	ParseDispatched(log types.Log) (*OriginDispatched, error)
 	// FilterInitialized is a free log retrieval operation binding the contract event 0x7f26b83ff96e1f2b6a682f133852f6798a09c465da95921460cefb3847402498.
 	//
 	// Solidity: event Initialized(uint8 version)
@@ -35,6 +23,18 @@ type IOriginFilterer interface {
 	//
 	// Solidity: event Initialized(uint8 version)
 	ParseInitialized(log types.Log) (*OriginInitialized, error)
+	// FilterOwnershipTransferStarted is a free log retrieval operation binding the contract event 0x38d16b8cac22d99fc7c124b9cd0de2d3fa1faef420bfe791d8c362d765e22700.
+	//
+	// Solidity: event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner)
+	FilterOwnershipTransferStarted(opts *bind.FilterOpts, previousOwner []common.Address, newOwner []common.Address) (*OriginOwnershipTransferStartedIterator, error)
+	// WatchOwnershipTransferStarted is a free log subscription operation binding the contract event 0x38d16b8cac22d99fc7c124b9cd0de2d3fa1faef420bfe791d8c362d765e22700.
+	//
+	// Solidity: event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner)
+	WatchOwnershipTransferStarted(opts *bind.WatchOpts, sink chan<- *OriginOwnershipTransferStarted, previousOwner []common.Address, newOwner []common.Address) (event.Subscription, error)
+	// ParseOwnershipTransferStarted is a log parse operation binding the contract event 0x38d16b8cac22d99fc7c124b9cd0de2d3fa1faef420bfe791d8c362d765e22700.
+	//
+	// Solidity: event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner)
+	ParseOwnershipTransferStarted(log types.Log) (*OriginOwnershipTransferStarted, error)
 	// FilterOwnershipTransferred is a free log retrieval operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
 	//
 	// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
@@ -71,4 +71,16 @@ type IOriginFilterer interface {
 	//
 	// Solidity: event StateSaved(bytes state)
 	ParseStateSaved(log types.Log) (*OriginStateSaved, error)
+	// FilterTipWithdrawalCompleted is a free log retrieval operation binding the contract event 0xdd7931769f40354ba0d22c17b3d6b6a95ef7d06d9d0f4c1a637c4b639fcb8c22.
+	//
+	// Solidity: event TipWithdrawalCompleted(address actor, uint256 tip)
+	FilterTipWithdrawalCompleted(opts *bind.FilterOpts) (*OriginTipWithdrawalCompletedIterator, error)
+	// WatchTipWithdrawalCompleted is a free log subscription operation binding the contract event 0xdd7931769f40354ba0d22c17b3d6b6a95ef7d06d9d0f4c1a637c4b639fcb8c22.
+	//
+	// Solidity: event TipWithdrawalCompleted(address actor, uint256 tip)
+	WatchTipWithdrawalCompleted(opts *bind.WatchOpts, sink chan<- *OriginTipWithdrawalCompleted) (event.Subscription, error)
+	// ParseTipWithdrawalCompleted is a log parse operation binding the contract event 0xdd7931769f40354ba0d22c17b3d6b6a95ef7d06d9d0f4c1a637c4b639fcb8c22.
+	//
+	// Solidity: event TipWithdrawalCompleted(address actor, uint256 tip)
+	ParseTipWithdrawalCompleted(log types.Log) (*OriginTipWithdrawalCompleted, error)
 }

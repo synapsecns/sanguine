@@ -14,6 +14,9 @@ chains:
       - contract_type: swap
         address: '0x1116898DdA4015eD8dDefb84b6e8Bc24528Af2d8'
         start_block: -1
+      - contract_type: cctp
+        address: '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84'
+        start_block: -1
   - chain_id: 42161
     fetch_block_increment: 30000
     max_goroutines: 2
@@ -26,6 +29,9 @@ chains:
         start_block: -1
       - contract_type: swap #nETH Pool
         address: '0xa067668661C84476aFcDc6fA5D758C4c01C34352'
+        start_block: -1
+      - contract_type: cctp
+        address: '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84'
         start_block: -1
   - chain_id: 1313161554
     fetch_block_increment: 10000
@@ -55,6 +61,9 @@ chains:
         start_block: -1
       - contract_type: metaswap
         address: '0xF44938b0125A6662f9536281aD2CD6c499F22004'
+        start_block: -1
+      - contract_type: cctp
+        address: '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84'
         start_block: -1
   - chain_id: 288
     fetch_block_increment: 10000
@@ -201,10 +210,26 @@ chains:
       - contract_type: swap #nUSDNOTEPool
         address: '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c'
         start_block: -1
+      - contract_type: swap #ETH Pool
+        address: '0xF60F88bA0CB381b8D8A662744fF93486273c22F9'
+        start_block: 2823794
   - chain_id: 2000
     fetch_block_increment: 10000
     max_goroutines: 2
     contracts:
       - contract_type: bridge
         address: '0x9508BF380c1e6f751D97604732eF1Bae6673f299'
+        start_block: -1
+  - chain_id: 8453
+    fetch_block_increment: 10000
+    max_goroutines: 1
+    contracts:
+      - contract_type: bridge
+        address: '0xf07d1C752fAb503E47FEF309bf14fbDD3E867089'
+        start_block: -1
+      - contract_type: swap
+        address: '0x6223bD82010E2fB69F329933De20897e7a4C225f'
+        start_block: -1
+      - contract_type: swap #ETH Pool
+        address: '0xa9E90579eb086bcdA910dD94041ffE041Fb4aC89'
         start_block: -1

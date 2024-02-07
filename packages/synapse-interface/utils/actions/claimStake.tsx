@@ -1,29 +1,21 @@
-import { useBlockNumber, useAccount, useNetwork, Address, Chain } from 'wagmi'
+import { Address } from 'wagmi'
 import toast from 'react-hot-toast'
 
-import { MINICHEF_ADDRESSES } from '@/constants/minichef'
-import MINI_CHEF_ABI from '@/constants/abis/miniChef.json'
-import { Contract } from 'ethers'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { txErrorHandler } from '@utils/txErrorHandler'
-import { fetchSigner } from '@wagmi/core'
+import { harvestLpPool } from '@/actions/harvestLpPool'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { Token } from '@types'
 
 export const claimStake = async (
   chainId: number,
-  address: string,
-  poolId: number
+  address: Address,
+  poolId: number,
+  pool: Token
 ) => {
   let pendingPopup: any
   let successPopup: any
-
-  const wallet = await fetchSigner({
-    chainId,
-  })
-  const miniChefContract = new Contract(
-    MINICHEF_ADDRESSES[chainId],
-    MINI_CHEF_ABI,
-    wallet
-  )
+  let miniChefAddress = pool.miniChefAddress
 
   pendingPopup = toast(`Starting your claim...`, {
     id: 'claim-in-progress-popup',
@@ -32,10 +24,19 @@ export const claimStake = async (
 
   try {
     if (!address) throw new Error('Wallet must be connected')
-    if (!miniChefContract) throw new Error('MMind contract is not loaded')
-
-    const stakeTransaction = await miniChefContract.harvest(poolId, address)
-    const tx = await stakeTransaction.wait()
+    segmentAnalyticsEvent(
+      `[Claim Stake] Attempt`,
+      {
+        poolId,
+      },
+      true
+    )
+    const tx = await harvestLpPool({
+      address,
+      chainId,
+      poolId,
+      lpAddress: miniChefAddress as Address,
+    })
 
     toast.dismiss(pendingPopup)
 
@@ -53,9 +54,15 @@ export const claimStake = async (
       id: 'claim-success-popup',
       duration: 10000,
     })
+    segmentAnalyticsEvent(`[Claim Stake] Success`, {
+      poolId,
+    })
 
     return tx
   } catch (err) {
+    segmentAnalyticsEvent(`[Claim Stake] Failure`, {
+      errorCode: err.code,
+    })
     toast.dismiss(pendingPopup)
     txErrorHandler(err)
   }

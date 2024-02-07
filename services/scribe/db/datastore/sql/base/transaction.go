@@ -5,15 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/synapsecns/sanguine/core/dbcommon"
-	"gorm.io/gorm/clause"
-
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
-// StoreEthTx stores a processed text.
+// StoreEthTx stores a processed tx.
 func (s Store) StoreEthTx(ctx context.Context, tx *types.Transaction, chainID uint32, blockHash common.Hash, blockNumber uint64, transactionIndex uint64) error {
 	marshalledTx, err := tx.MarshalBinary()
 	if err != nil {
@@ -39,7 +38,7 @@ func (s Store) StoreEthTx(ctx context.Context, tx *types.Transaction, chainID ui
 		RawTx:            marshalledTx,
 		GasFeeCap:        tx.GasFeeCap().Uint64(),
 		GasTipCap:        tx.GasTipCap().Uint64(),
-		Confirmed:        false,
+		Confirmed:        true,
 		TransactionIndex: transactionIndex,
 	})
 
@@ -62,23 +61,6 @@ func (s Store) ConfirmEthTxsForBlockHash(ctx context.Context, blockHash common.H
 
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not confirm eth tx: %w", dbTx.Error)
-	}
-
-	return nil
-}
-
-// ConfirmEthTxsInRange confirms eth txs in a range.
-func (s Store) ConfirmEthTxsInRange(ctx context.Context, startBlock, endBlock uint64, chainID uint32) error {
-	rangeQuery := fmt.Sprintf("%s BETWEEN ? AND ?", BlockNumberFieldName)
-	dbTx := s.DB().WithContext(ctx).
-		Model(&EthTx{}).
-		Where(&EthTx{ChainID: chainID}).
-		Order(BlockNumberFieldName+" desc").
-		Where(rangeQuery, startBlock, endBlock).
-		Update(ConfirmedFieldName, true)
-
-	if dbTx.Error != nil {
-		return fmt.Errorf("could not confirm eth txs: %w", dbTx.Error)
 	}
 
 	return nil

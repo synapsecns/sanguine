@@ -6,7 +6,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
-	"github.com/synapsecns/sanguine/agents/agents/executor/types"
 	agentstypes "github.com/synapsecns/sanguine/agents/types"
 	"math/big"
 )
@@ -32,7 +31,7 @@ func (t *DBSuite) TestStoreRetrieveState() {
 		snapshotRootA := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		proofA := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
 
-		err := testDB.StoreState(t.GetTestContext(), stateA, snapshotRootA, proofA, 1)
+		err := testDB.StoreState(t.GetTestContext(), stateA, snapshotRootA, proofA, 1, blockNumberA.Uint64())
 		Nil(t.T(), err)
 
 		rootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
@@ -54,12 +53,12 @@ func (t *DBSuite) TestStoreRetrieveState() {
 		snapshotRootB := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		proofB := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
 
-		err = testDB.StoreState(t.GetTestContext(), stateB, snapshotRootB, proofB, 2)
+		err = testDB.StoreState(t.GetTestContext(), stateB, snapshotRootB, proofB, 2, blockNumberB.Uint64())
 		Nil(t.T(), err)
 
 		snapshotRootAString := snapshotRootA.String()
 		rootAString := rootA.String()
-		stateMaskA := types.DBState{
+		stateMaskA := db.DBState{
 			SnapshotRoot: &snapshotRootAString,
 			Root:         &rootAString,
 			ChainID:      &originA,
@@ -76,7 +75,7 @@ func (t *DBSuite) TestStoreRetrieveState() {
 		proofBBytes, err := json.Marshal(proofB)
 		Nil(t.T(), err)
 		proofBJSON := json.RawMessage(proofBBytes)
-		stateMaskB := types.DBState{
+		stateMaskB := db.DBState{
 			OriginBlockNumber: &blockNumberBUint64,
 			OriginTimestamp:   &timestampBUint64,
 			Proof:             &proofBJSON,
@@ -126,12 +125,12 @@ func (t *DBSuite) TestStoreRetrieveState() {
 		snapshotRootCD := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		proofsCD := [][][]byte{proofC, proofD}
 
-		err = testDB.StoreStates(t.GetTestContext(), []agentstypes.State{stateC, stateD}, snapshotRootCD, proofsCD)
+		err = testDB.StoreStates(t.GetTestContext(), []agentstypes.State{stateC, stateD}, snapshotRootCD, proofsCD, blockNumberC.Uint64())
 		Nil(t.T(), err)
 
 		snapshotRootCDString := snapshotRootCD.String()
 		rootCString := rootC.String()
-		stateMaskC := types.DBState{
+		stateMaskC := db.DBState{
 			SnapshotRoot: &snapshotRootCDString,
 			Root:         &rootCString,
 			ChainID:      &originC,
@@ -148,7 +147,7 @@ func (t *DBSuite) TestStoreRetrieveState() {
 		proofDBytes, err := json.Marshal(proofD)
 		Nil(t.T(), err)
 		proofDJSON := json.RawMessage(proofDBytes)
-		stateMaskD := types.DBState{
+		stateMaskD := db.DBState{
 			OriginBlockNumber: &blockNumberDUint64,
 			OriginTimestamp:   &timestampDUint64,
 			Proof:             &proofDJSON,
@@ -183,10 +182,10 @@ func (t *DBSuite) TestGetStateMetadata() {
 		proofA := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
 		indexA := gofakeit.Uint32()
 
-		err := testDB.StoreState(t.GetTestContext(), stateA, snapshotRootA, proofA, indexA)
+		err := testDB.StoreState(t.GetTestContext(), stateA, snapshotRootA, proofA, indexA, blockNumberA.Uint64())
 		Nil(t.T(), err)
 
-		stateMask := types.DBState{
+		stateMask := db.DBState{
 			ChainID: &originA,
 		}
 
@@ -263,11 +262,11 @@ func (t *DBSuite) TestGetPotentialSnapshotRoots() {
 		snapshotRootC := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		proofC := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
 
-		err := testDB.StoreState(t.GetTestContext(), stateA, snapshotRootA, proofA, 1)
+		err := testDB.StoreState(t.GetTestContext(), stateA, snapshotRootA, proofA, 1, 1)
 		Nil(t.T(), err)
-		err = testDB.StoreState(t.GetTestContext(), stateB, snapshotRootB, proofB, 2)
+		err = testDB.StoreState(t.GetTestContext(), stateB, snapshotRootB, proofB, 2, 1)
 		Nil(t.T(), err)
-		err = testDB.StoreState(t.GetTestContext(), stateC, snapshotRootC, proofC, 3)
+		err = testDB.StoreState(t.GetTestContext(), stateC, snapshotRootC, proofC, 3, 1)
 		Nil(t.T(), err)
 
 		potentialSnapshotRoots, err := testDB.GetPotentialSnapshotRoots(t.GetTestContext(), origin, 6)
@@ -356,13 +355,13 @@ func (t *DBSuite) TestGetSnapshotRootsInNonceRange() {
 		snapshotRootD := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		proofD := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
 
-		err := testDB.StoreState(t.GetTestContext(), stateA, snapshotRootA, proofA, 1)
+		err := testDB.StoreState(t.GetTestContext(), stateA, snapshotRootA, proofA, 1, 1)
 		Nil(t.T(), err)
-		err = testDB.StoreState(t.GetTestContext(), stateB, snapshotRootB, proofB, 2)
+		err = testDB.StoreState(t.GetTestContext(), stateB, snapshotRootB, proofB, 2, 1)
 		Nil(t.T(), err)
-		err = testDB.StoreState(t.GetTestContext(), stateC, snapshotRootC, proofC, 3)
+		err = testDB.StoreState(t.GetTestContext(), stateC, snapshotRootC, proofC, 3, 1)
 		Nil(t.T(), err)
-		err = testDB.StoreState(t.GetTestContext(), stateD, snapshotRootD, proofD, 4)
+		err = testDB.StoreState(t.GetTestContext(), stateD, snapshotRootD, proofD, 4, 1)
 		Nil(t.T(), err)
 
 		potentialSnapshotRoots, err := testDB.GetSnapshotRootsInNonceRange(t.GetTestContext(), origin, 6, 15)

@@ -2,14 +2,17 @@ package backfill_test
 
 import (
 	"fmt"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/stretchr/testify/suite"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
+	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/client"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
@@ -20,9 +23,10 @@ import (
 	scribedb "github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
 
-	"go.uber.org/atomic"
 	"math/big"
 	"testing"
+
+	"go.uber.org/atomic"
 )
 
 type BackfillSuite struct {
@@ -36,7 +40,7 @@ type BackfillSuite struct {
 	deployManager        *testutil.DeployManager
 	testDeployManager    *testcontracts.DeployManager
 	bridgeConfigContract *bridgeconfig.BridgeConfigRef
-	consumerFetcher      *fetcher.ScribeFetcher
+	consumerFetcher      fetcher.ScribeFetcher
 	metrics              metrics.Handler
 }
 
@@ -51,10 +55,18 @@ func NewBackfillSuite(tb testing.TB) *BackfillSuite {
 
 func (b *BackfillSuite) SetupSuite() {
 	b.TestSuite.SetupSuite()
-	localmetrics.SetupTestJaeger(b.GetSuiteContext(), b.T())
+	// don't use metrics on ci for integration tests
+	isCI := core.GetEnvBool("CI", false)
+	useMetrics := !isCI
+	metricsHandler := metrics.Null
+
+	if useMetrics {
+		localmetrics.SetupTestJaeger(b.GetSuiteContext(), b.T())
+		metricsHandler = metrics.Jaeger
+	}
 
 	var err error
-	b.metrics, err = metrics.NewByType(b.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	b.metrics, err = metrics.NewByType(b.GetSuiteContext(), metadata.BuildInfo(), metricsHandler)
 	b.Require().Nil(err)
 }
 
@@ -93,10 +105,13 @@ var testTokens = []TestToken{{
 func (b *BackfillSuite) SetupTest() {
 	b.TestSuite.SetupTest()
 
-	b.db, b.eventDB, b.gqlClient, b.logIndex, b.cleanup, b.testBackend, b.deployManager = testutil.NewTestEnvDB(b.GetTestContext(), b.T(), b.metrics)
+	b.db, b.eventDB, b.gqlClient, b.logIndex, b.cleanup, _, b.deployManager = testutil.NewTestEnvDB(b.GetTestContext(), b.T(), b.metrics)
+
+	chainID := big.NewInt(1)
+	b.testBackend = geth.NewEmbeddedBackendForChainID(b.GetTestContext(), b.T(), chainID)
 
 	b.testDeployManager = testcontracts.NewDeployManager(b.T())
-	b.consumerFetcher = fetcher.NewFetcher(b.gqlClient)
+	b.consumerFetcher = fetcher.NewFetcher(b.gqlClient, b.metrics)
 	var deployInfo contracts.DeployedContract
 	deployInfo, b.bridgeConfigContract = b.testDeployManager.GetBridgeConfigV3(b.GetTestContext(), b.testBackend)
 

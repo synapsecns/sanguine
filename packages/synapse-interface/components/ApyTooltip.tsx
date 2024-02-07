@@ -1,7 +1,5 @@
 import { InformationCircleIcon } from '@heroicons/react/outline'
 
-import { fixNumberToPercentageString } from '@/utils/bignumber/format'
-
 import Grid from '@tw/Grid'
 import Tooltip from '@tw/Tooltip'
 
@@ -27,15 +25,15 @@ export default function ApyTooltip({
   baseApyData?: BaseApyData
   className?: string
 }) {
-  const compoundedApy = apyData && apyData.fullCompoundedAPY
-  const weeklyApr = apyData && apyData.weeklyAPR
-  const dailyApr = weeklyApr && weeklyApr / 7
-  const yearlyApr = weeklyApr && weeklyApr * 52
+  const compoundedApy: number = apyData && apyData.fullCompoundedAPY
+  const weeklyApr: number = apyData && apyData.weeklyAPR
+  const dailyApr: number = weeklyApr && weeklyApr / 7
+  const yearlyApr: number = weeklyApr && weeklyApr * 52
 
-  const baseCompoundedApy = baseApyData.yearlyCompoundedApy ?? 0
-  const baseWeeklyApr = (baseApyData.dailyApr ?? 0) * 7
-  const baseDailyApr = baseApyData.dailyApr ?? 0
-  const baseYearlyApr = baseApyData.yearlyApr ?? 0
+  const baseCompoundedApy: number = baseApyData.yearlyCompoundedApy ?? 0
+  const baseWeeklyApr: number = (baseApyData.dailyApr ?? 0) * 7
+  const baseDailyApr: number = baseApyData.dailyApr ?? 0
+  const baseYearlyApr: number = baseApyData.yearlyApr ?? 0
 
   return (
     <Tooltip
@@ -79,20 +77,28 @@ export default function ApyTooltip({
   )
 }
 
-function PercentageRow({ title, rewardApr, baseApr }) {
+const PercentageRow = ({
+  title,
+  rewardApr,
+  baseApr,
+}: {
+  title: string
+  rewardApr: number
+  baseApr: number
+}) => {
   const totalApr = baseApr + rewardApr
+
   return (
     <div>
       <div className="text-sm font-normal text-gray-100 ">
         {title}{' '}
         <span className="inline-block float-right pl-4 font-medium">
-          {fixNumberToPercentageString(totalApr)}
+          {totalApr.toFixed(2)} %
         </span>
       </div>
       {baseApr > 0 && (
         <small className="float-left italic font-normal text-gray-300">
-          {fixNumberToPercentageString(rewardApr)} reward +{' '}
-          {fixNumberToPercentageString(baseApr)} base
+          {rewardApr.toFixed(2)} reward + {baseApr.toFixed(2)} base
         </small>
       )}
     </div>

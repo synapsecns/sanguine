@@ -1,0 +1,32 @@
+type Query {
+  """ Retrieves the current status of a message. Tx hashes at each point in the message life cycle are returned.
+  Resolvers can be used to expand the tx hashes into more information. The purpose of this query is for quick and repeated polling of the status of a message."""
+  getMessageStatus(
+    messageHash: String
+    originChainID: Int
+    originTxHash: String
+  ): MessageStatus
+
+  """ Gets Messages by status (Pending/Completed). """
+  getMessagesByStatus(
+    messageStatus: MessageState!
+    page: Int! = 1
+  ): [MessageStatus]
+
+  """ Gets sent events on origin. Resolvers can be used find correlating events throughout the message lifecycle. """
+  getOriginInfo(
+    messageHash: String
+    txHash: String
+    chainID: Int
+  ): [OriginInfo]
+
+  """ Gets executed events on destination. Resolvers can be used find correlating events throughout the message lifecycle. """
+  getDestinationInfo(
+    messageHash: String
+    txHash: String
+    chainID: Int
+  ): [DestinationInfo]
+
+}
+
+

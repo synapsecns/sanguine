@@ -70,17 +70,19 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 		agentRootC := common.BigToHash(big.NewInt(gofakeit.Int64()))
 		proofC := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
 
-		err := testDB.StoreState(t.GetTestContext(), stateA, snapshotRootA, proofA, 1)
+		// Store a state with a nonce of 5, 10, and 15. (The other fields are not checked in the query we are testing).
+		err := testDB.StoreState(t.GetTestContext(), stateA, snapshotRootA, proofA, 1, 1)
 		Nil(t.T(), err)
-		err = testDB.StoreState(t.GetTestContext(), stateB, snapshotRootB, proofB, 2)
+		err = testDB.StoreState(t.GetTestContext(), stateB, snapshotRootB, proofB, 2, 2)
 		Nil(t.T(), err)
-		err = testDB.StoreState(t.GetTestContext(), stateC, snapshotRootC, proofC, 3)
+		err = testDB.StoreState(t.GetTestContext(), stateC, snapshotRootC, proofC, 3, 3)
 		Nil(t.T(), err)
 
 		attestationA := agentstypes.NewAttestation(snapshotRootA, agentRootA, 1, big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
 		attestationB := agentstypes.NewAttestation(snapshotRootB, agentRootB, 2, big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
 		attestationC := agentstypes.NewAttestation(snapshotRootC, agentRootC, 3, big.NewInt(int64(gofakeit.Uint32())), big.NewInt(int64(gofakeit.Uint32())))
 
+		// Store attestations associated with each state via snapshot root. (stateA to attestationA, etc.)
 		err = testDB.StoreAttestation(t.GetTestContext(), attestationA, origin+1, 2, 2)
 		Nil(t.T(), err)
 		err = testDB.StoreAttestation(t.GetTestContext(), attestationB, origin+1, 1, 3)
@@ -88,17 +90,24 @@ func (t *DBSuite) TestGetTimestampForMessage() {
 		err = testDB.StoreAttestation(t.GetTestContext(), attestationC, origin+1, 3, 1)
 		Nil(t.T(), err)
 
-		timestamp, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceA, "")
+		// We want to get the timestamp of the attestation that has the earliest `destinationBlockNumber` and has a nonce
+		// greater than or equal to nonceA (5). This would be attestationB since it has a nonce of 10 and a
+		// `destinationBlockNumber` of 1. Because of this, we should get attestationB's timestamp of 3.
+		retrievedTimestampA, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceA)
 		Nil(t.T(), err)
-		Equal(t.T(), uint64(3), *timestamp)
+		Equal(t.T(), uint64(3), *retrievedTimestampA)
 
-		timestamp, err = testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceB, "")
+		// We want the timestamp of attestationB again here, since we are checking for nonce 10, and attestation has a
+		// nonce of 10 and a `destinationBlockNumber` of 1. Because of this, we should get attestationB's timestamp of 3.
+		retrievedTimestampB, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceB)
 		Nil(t.T(), err)
-		Equal(t.T(), uint64(3), *timestamp)
+		Equal(t.T(), uint64(3), *retrievedTimestampB)
 
-		timestamp, err = testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceC, "")
+		// We want the timestamp of attestationC because that is the only attestation that has a nonce greater than or
+		// equal to nonceC (15). We expect to get attestationC's `destinationTimestamp` of 1.
+		retrievedTimestampC, err := testDB.GetTimestampForMessage(t.GetTestContext(), origin, origin+1, nonceC)
 		Nil(t.T(), err)
-		Equal(t.T(), uint64(1), *timestamp)
+		Equal(t.T(), uint64(1), *retrievedTimestampC)
 	})
 }
 
@@ -125,7 +134,7 @@ func (t *DBSuite) TestGetEarliestStateInRange() {
 			agentRoots = append(agentRoots, common.BigToHash(big.NewInt(gofakeit.Int64())))
 			proof := [][]byte{[]byte(gofakeit.Word()), []byte(gofakeit.Word())}
 
-			err := testDB.StoreState(t.GetTestContext(), state, snapshotRoots[i-1], proof, 1)
+			err := testDB.StoreState(t.GetTestContext(), state, snapshotRoots[i-1], proof, 1, 1)
 			Nil(t.T(), err)
 		}
 
@@ -145,23 +154,23 @@ func (t *DBSuite) TestGetEarliestStateInRange() {
 		err = testDB.StoreAttestation(t.GetTestContext(), attestation2, origin+1, 3, 3)
 		Nil(t.T(), err)
 
-		earliestState, err := testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 0, 5, "")
+		earliestState, err := testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 0, 5)
 		Nil(t.T(), err)
 		Equal(t.T(), uint32(2), (*earliestState).Nonce())
 
-		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 0, 1, "")
+		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 0, 1)
 		Nil(t.T(), err)
 		Nil(t.T(), earliestState)
 
-		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 3, 5, "")
+		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 3, 5)
 		Nil(t.T(), err)
 		Equal(t.T(), uint32(4), (*earliestState).Nonce())
 
-		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 6, 6, "")
+		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 6, 6)
 		Nil(t.T(), err)
 		Nil(t.T(), earliestState)
 
-		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 5, 5, "")
+		earliestState, err = testDB.GetEarliestStateInRange(t.GetTestContext(), origin, origin+1, 5, 5)
 		Nil(t.T(), err)
 		Equal(t.T(), uint32(5), (*earliestState).Nonce())
 	})

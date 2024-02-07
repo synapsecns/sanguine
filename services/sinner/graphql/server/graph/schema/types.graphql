@@ -1,0 +1,72 @@
+"""
+MessageStatus gives the status of a message.
+"""
+type MessageStatus {
+  messageHash: String
+  lastSeen: MessageStateLastSeen
+  originTxHash: String
+  destinationTxHash: String
+  originInfo: [OriginInfo] @goField(forceResolver: true)
+  destinationInfo: [DestinationInfo] @goField(forceResolver: true)
+}
+
+"""
+MessageState gives the current state of a message.
+"""
+enum MessageState{
+  PENDING
+  COMPLETED
+}
+
+
+
+
+"""
+OriginInfo provides granular information on an origin sent event.
+"""
+type OriginInfo {
+  messageHash: String
+  contractAddress: String
+  blockNumber: Int
+  originTxHash: String
+  sender: String
+  recipient: String
+  originChainID: Int
+  destinationChainID: Int
+  nonce: Int
+  message: String
+  optimisticSeconds: Int
+  messageFlag: Int
+  summitTip: String
+  attestationTip: String
+  executionTip: String
+  deliveryTip: String
+  version: Int
+  gasLimit:Int
+  gasDrop: String
+  messageStatus: MessageStatus @goField(forceResolver: true)
+  destinationInfo: [DestinationInfo] @goField(forceResolver: true)
+
+}
+"""
+DestinationInfo provides granular information on an execution event.
+"""
+type DestinationInfo {
+  contractAddress: String
+  blockNumber: Int
+  txHash: String
+  txIndex: Int
+  messageHash:String
+  chainID: Int
+  remoteDomain: Int
+  success: Boolean
+  messageStatus: MessageStatus @goField(forceResolver: true)
+  originInfo: [OriginInfo] @goField(forceResolver: true)
+}
+
+enum MessageStateLastSeen{
+  ORIGIN
+  DESTINATION
+  UNKNOWN
+}
+

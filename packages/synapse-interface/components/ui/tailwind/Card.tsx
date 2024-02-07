@@ -1,13 +1,7 @@
 import { twMerge } from 'tailwind-merge'
 
-const baseClassname = `
-  bg-bgBase
-  pt-3 px-6 pb-6 rounded-md
-  `
-
-const titleBaseClassname = `
-  font-medium text-lg mb-2 text-white
-`
+const baseClassname = "bg-bgBase p-4 rounded-md"
+const titleBaseClassname = "font-medium text-lg text-white"
 
 export default function Card({
   title,
@@ -41,7 +35,7 @@ export default function Card({
   }
 
   return (
-    <div className={mergedClassName} {...props}>
+    <div {...props} className={mergedClassName}>
       {image && <div className="flex justify-start mb-2">{image}</div>}
       {titleContent}
       {children}

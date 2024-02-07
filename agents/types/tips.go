@@ -8,6 +8,12 @@ import (
 const (
 	// TipsSize is the size of the tips in bytes.
 	TipsSize = 8 * 4
+	// ShiftSummitTip is the shift for the summit tip.
+	ShiftSummitTip = 24 * 8
+	// ShiftAttestationTip is the shift for the attestation tip.
+	ShiftAttestationTip = 16 * 8
+	// ShiftExecutionTip is the shift for the execution tip.
+	ShiftExecutionTip = 8 * 8
 )
 
 // Tips contain tips used for scientizing different agents.

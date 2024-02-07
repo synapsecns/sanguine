@@ -3,18 +3,23 @@ package config
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/ethergo/signer/config"
 	"os"
 	"path/filepath"
 
+	"github.com/synapsecns/sanguine/ethergo/signer/config"
+	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
+
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jftuga/ellipsis"
-	scribeConfig "github.com/synapsecns/sanguine/services/scribe/config"
 	"gopkg.in/yaml.v2"
 )
 
 // AgentConfig is used for configuring the guard.
 type AgentConfig struct {
+	// DBConfig is the database configuration.
+	DBConfig DBConfig `yaml:"db_config"`
+	// ScribeConfig is the scribe configuration.
+	ScribeConfig ScribeConfig `yaml:"scribe_config"`
 	// Domains stores all the domains
 	Domains DomainConfigs `yaml:"domains"`
 	// DomainID is the domain of the chain that this agent is assigned to.
@@ -30,10 +35,16 @@ type AgentConfig struct {
 	BondedSigner config.SignerConfig `yaml:"bonded_signer"`
 	// RefreshIntervalSeconds is the refresh interval in seconds
 	RefreshIntervalSeconds uint32 `yaml:"refresh_interval_seconds,omitempty"`
-	// EmbeddedScribeConfig is the config for the embedded scribe. This only needs to be
-	// included if an embedded Scribe is being used. If a remote Scribe is being used,
-	// this can be left empty.
-	EmbeddedScribeConfig scribeConfig.Config `yaml:"embedded_scribe_config"`
+	// BaseOmnirpcURL is the base url for omnirpc.
+	// The format is "https://omnirpc.url". Notice the lack of "confirmations" on the URL
+	// in comparison to what `Scribe` uses.
+	BaseOmnirpcURL string `yaml:"base_omnirpc_url"`
+	// DBPrefix is the prefix for the tables in the database. This is only to be used with mysql.
+	DBPrefix string `yaml:"db_prefix"`
+	// SubmitterConfig is the config for the submitter.
+	SubmitterConfig submitterConfig.Config `yaml:"submitter_config"`
+	// MaxRetrySeconds is the maximum number of seconds to retry an RPC call (not a transaction).
+	MaxRetrySeconds uint32 `yaml:"max_retry_seconds"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each
@@ -46,6 +57,10 @@ func (a *AgentConfig) IsValid(ctx context.Context) (ok bool, err error) {
 
 	if ok, err = a.Domains.IsValid(ctx); !ok {
 		return false, err
+	}
+
+	if a.BaseOmnirpcURL == "" {
+		return false, fmt.Errorf("rpc url cannot be empty")
 	}
 
 	hasAssignedDomain := (a.DomainID == uint32(0))

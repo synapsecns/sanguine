@@ -17,5 +17,7 @@ func (s SimulatedSuite) TestTypecast() {
 		NotNil(s.T(), messageBusHandle)
 		_, metaSwapHandle := s.deployManager.GetMetaSwap(s.GetTestContext(), s.testBackend)
 		NotNil(s.T(), metaSwapHandle)
+		_, cctpHandle := s.deployManager.GetCCTP(s.GetTestContext(), s.testBackend)
+		NotNil(s.T(), cctpHandle)
 	})
 }

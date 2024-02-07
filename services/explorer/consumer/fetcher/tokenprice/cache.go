@@ -38,6 +38,10 @@ func (t *tokenPriceServiceImpl) GetPriceData(parentCtx context.Context, timestam
 	ctx, cancel := context.WithTimeout(parentCtx, 3*time.Minute)
 	defer cancel()
 	key := fmt.Sprintf("%s_%d", coinGeckoID, timestamp)
+
+	// truncate key to save requests
+	key = key[:len(key)-3]
+
 	if data, ok := t.tokenPriceCache.Get(key); ok {
 		return &data
 	}

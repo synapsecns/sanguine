@@ -35,7 +35,7 @@ type SwapParser struct {
 	// Filterer is the swap Filterer we use to parse events.
 	Filterer *swap.SwapFlashLoanFilterer
 	// consumerFetcher is the ScribeFetcher for sender and timestamp.
-	consumerFetcher *fetcher.ScribeFetcher
+	consumerFetcher fetcher.ScribeFetcher
 	// tokenDataService contains the token data service/cache
 	tokenDataService tokendata.Service
 	// poolTokenDataService get the token address from the token index
@@ -43,7 +43,7 @@ type SwapParser struct {
 	// tokenPriceService get the token price from the coingecko id
 	tokenPriceService tokenprice.Service
 	// swapService is the swap service
-	swapService *fetcher.SwapService
+	swapService fetcher.SwapService
 	// FiltererMetaSwap is the meta swap Filterer we use to parse events.
 	FiltererMetaSwap *metaswap.MetaSwapFilterer
 	// coinGeckoIDs is a mapping from coin token symbol to coin gecko ID
@@ -51,7 +51,7 @@ type SwapParser struct {
 }
 
 // NewSwapParser creates a new parser for a given bridge.
-func NewSwapParser(consumerDB db.ConsumerDB, swapAddress common.Address, metaSwap bool, consumerFetcher *fetcher.ScribeFetcher, swapService *fetcher.SwapService, tokenDataService tokendata.Service, tokenPriceService tokenprice.Service) (*SwapParser, error) {
+func NewSwapParser(consumerDB db.ConsumerDB, swapAddress common.Address, metaSwap bool, consumerFetcher fetcher.ScribeFetcher, swapService fetcher.SwapService, tokenDataService tokendata.Service, tokenPriceService tokenprice.Service) (*SwapParser, error) {
 	var filterer *swap.SwapFlashLoanFilterer
 	var filtererMetaSwap *metaswap.MetaSwapFilterer
 	var err error
@@ -69,7 +69,7 @@ func NewSwapParser(consumerDB db.ConsumerDB, swapAddress common.Address, metaSwa
 		filtererMetaSwap = nil
 	}
 
-	poolTokenDataService, err := tokenpool.NewPoolTokenDataService(*swapService, consumerDB)
+	poolTokenDataService, err := tokenpool.NewPoolTokenDataService(swapService, consumerDB)
 	if err != nil {
 		return nil, fmt.Errorf("could not create token data service: %w", err)
 	}
@@ -179,19 +179,9 @@ func eventToSwapEvent(event swapTypes.EventLog, chainID uint32) model.SwapEvent 
 	}
 }
 
-// ParseAndStore parses the swap logs and returns a model that can be stored
-// Deprecated: use Parse and store separately.
-func (p *SwapParser) ParseAndStore(ctx context.Context, log ethTypes.Log, chainID uint32) error {
-	swapEvent, err := p.Parse(ctx, log, chainID)
-	if err != nil {
-		return fmt.Errorf("could not parse event: %w", err)
-	}
-	err = p.consumerDB.StoreEvent(ctx, &swapEvent)
-
-	if err != nil {
-		return fmt.Errorf("could not store event: %w chain: %d address %s", err, chainID, log.Address.String())
-	}
-	return nil
+// ParserType returns the type of parser.
+func (p *SwapParser) ParserType() string {
+	return "swap"
 }
 
 // Parse parses the swap logs.
@@ -372,7 +362,7 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 					logger.Errorf("token with index %d not in pool: %v, %d, %s, %v %s, %d, %v", tokenIndex, err, chainID, swapEvent.ContractAddress, swapEvent.Amount, swapEvent.TxHash, swapEvent.EventType, p.FiltererMetaSwap)
 					return fmt.Errorf("token with index %d not in pool: %w, %d, %s, %v %s, %d, %v", tokenIndex, err, chainID, swapEvent.ContractAddress, swapEvent.Amount, swapEvent.TxHash, swapEvent.EventType, p.FiltererMetaSwap)
 				}
-				tokenData, err = p.tokenDataService.GetPoolTokenData(groupCtx, chainID, *tokenAddress, *p.swapService)
+				tokenData, err = p.tokenDataService.GetPoolTokenData(groupCtx, chainID, *tokenAddress, p.swapService)
 				if err != nil {
 					logger.Errorf("could not get token data: %v", err)
 					return fmt.Errorf("could not get pool token data: %w", err)
@@ -385,11 +375,7 @@ func (p *SwapParser) Parse(ctx context.Context, log ethTypes.Log, chainID uint32
 				if !(coinGeckoID == "xjewel" && *timeStamp < 1649030400) && !(coinGeckoID == "synapse-2" && *timeStamp < 1630281600) && !(coinGeckoID == "governance-ohm" && *timeStamp < 1638316800) && !(coinGeckoID == "highstreet" && *timeStamp < 1634263200) {
 					tokenPrice := p.tokenPriceService.GetPriceData(groupCtx, int(*swapEvent.TimeStamp), coinGeckoID)
 					if (tokenPrice == nil) && coinGeckoID != noTokenID && coinGeckoID != noPrice {
-						if coinGeckoID != "usd-coin" && coinGeckoID != "tether" && coinGeckoID != "dai" || coinGeckoID == "binance-usd" {
-							return fmt.Errorf("SWAP could not get token price for coingeckotoken:  %s chain: %d txhash %s %d", coinGeckoID, chainID, swapEvent.TxHash, swapEvent.TimeStamp)
-						}
-						one := 1.0
-						tokenPrice = &one
+						return fmt.Errorf("SWAP could not get token price for coingeckotoken:  %s chain: %d txhash %s %d", coinGeckoID, chainID, swapEvent.TxHash, swapEvent.TimeStamp)
 					}
 					tokenPricesArr[tokenIndex] = *tokenPrice
 				}

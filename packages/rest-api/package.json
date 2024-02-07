@@ -1,29 +1,38 @@
 {
   "name": "@synapsecns/rest-api",
-  "version": "1.0.3",
+  "version": "1.0.49",
   "private": "true",
   "engines": {
     "node": ">=16.0.0"
   },
   "scripts": {
     "test": "tsdx test",
-    "start": " node app.js",
+    "start": "node ./dist/app.js",
+    "dev": "yarn add @synapsecns/sdk-router && concurrently \"npx tsc --watch\" \"nodemon -q dist/app.js\"",
     "test:coverage": "echo 'No tests defined.'",
-    "lint:fix": "npm run lint -- --fix",
+    "lint:fix": "eslint src/**.ts --fix",
     "lint:check": "eslint . --max-warnings=0",
     "ci:lint": "npm run lint:check",
     "build:go": " ",
-    "build:slither": " "
+    "build:slither": " ",
+    "build": "echo 'please run build api'",
+    "build:api": "yarn add @synapsecns/sdk-router && tsc",
+    "postinstall": "npm run build"
   },
   "dependencies": {
     "@ethersproject/bignumber": "^5.7.0",
     "@ethersproject/providers": "^5.7.2",
     "@ethersproject/units": "5.7.0",
-    "@synapsecns/sdk-router": "^0.1.23",
+    "@synapsecns/sdk-router": "^0.3.22",
     "bignumber": "^1.1.0",
     "ethers": "5.7.2",
     "express": "^4.18.2",
     "supertest": "^6.3.3"
   },
-  "description": "A node.js project exposing a rest api for synapse sdk quotes"
+  "description": "A node.js project exposing a rest api for synapse sdk quotes",
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "nodemon": "^3.0.1",
+    "typescript": "^4.8.3"
+  }
 }

@@ -53,9 +53,10 @@ spec:
             {{- toYaml .Values.env | nindent 12 }}
           {{- end }}
           ports:
-            - name: http
-              containerPort: 5080
-              protocol: TCP
+          {{- range .Values.service.ports }}
+            - containerPort: {{ .containerPort }}
+              name: {{ .name }}
+          {{- end }}
           livenessProbe:
             httpGet:
               path: /health-check

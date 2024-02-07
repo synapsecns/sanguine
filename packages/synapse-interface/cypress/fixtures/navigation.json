@@ -1,3 +1,12 @@
 {
-  "routes": ["About", "Bridge", "Swap", "Pools", "Stake", "Explorer"]
+  "routes": [
+    "About",
+    "Bridge",
+    "Swap",
+    "Pools",
+    "Stake",
+    "Explorer",
+    "Interchain Network",
+    "Solana Bridge"
+  ]
 }

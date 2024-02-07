@@ -1,0 +1,87 @@
+name: 'Codeql'
+
+# TODO: figure this out
+on:
+  schedule:
+    - cron: '30 1 * * *'
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+# This environment is necessary to avoid the following issue
+# https://github.com/github/codeql/issues/6321
+env:
+  CODEQL_EXTRACTOR_GO_BUILD_TRACING: 'on'
+
+jobs:
+  analyze:
+    name: Analyze ${{ matrix.language }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['go', 'javascript']
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Install Go
+        if: ${{ matrix.language == 'go' }}
+        uses: actions/setup-go@v4
+        with:
+          go-version-file: 'go.work'
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: ${{ matrix.language }}
+
+      - uses: github/codeql-action/autobuild@v2
+        if: ${{ matrix.language != 'go' }}
+
+      - name: Go modules cache
+        if: ${{ matrix.language == 'go' }}
+        uses: actions/cache@v3
+        with:
+          # see https://github.com/mvdan/github-actions-golang
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+            ~/Library/Caches/go-build
+            %LocalAppData%\go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Build (Go)
+        if: ${{ matrix.language == 'go' }}
+        # go build all workspaces
+        run: go build $(go work edit -json | jq -c -r '[.Use[].DiskPath] | map_values(. + "/...")[]')
+        # see: https://www.reddit.com/r/golang/comments/476pae/how_to_speed_up_go_compiler_and_many_other_go/
+        # this cannot use gomemlimit because we are running multiple builds in paralell
+        env:
+          GOGC: 2000
+          GOMEMLIMIT: 6GiB
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          upload: false # disable the upload here - we will upload in a different action
+          output: sarif-results
+
+      - name: filter-sarif
+        uses: advanced-security/filter-sarif@v1
+        with:
+          # filter out all test files unless they contain a sql-injection vulnerability
+          patterns: |
+            -**/*.abigen.go
+            -**/*.metadata.go
+            -**/*.pb.go
+            -**/*_gen.go
+          input: sarif-results/${{ matrix.language }}.sarif
+          output: sarif-results/${{ matrix.language }}.sarif
+
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: sarif-results/${{ matrix.language }}.sarif

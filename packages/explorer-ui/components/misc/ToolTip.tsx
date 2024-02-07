@@ -1,10 +1,12 @@
 /* eslint-disable react/jsx-key */
-import { CHAIN_ID_NAMES_REVERSE, CHAIN_INFO_MAP } from '@constants/networks'
+import { CHAINS } from 'synapse-constants'
 import ReactDOM from 'react-dom'
 import { formatDate } from '@utils/formatDate'
 import { TableHeader } from '@components/TransactionTable/TableHeader'
 import { ChainInfo } from '@components/misc/ChainInfo'
 import { formatUSD } from '@utils/formatUSD'
+
+const CHAIN_ID_NAMES_REVERSE = CHAINS.CHAIN_ID_NAMES_REVERSE
 
 const titles = {
   VOLUME: 'Volume',
@@ -84,7 +86,7 @@ export const CurrencyTooltip = ({
           {names.map((u, index) => {
             const name = names[index]
             const value = values[index]
-            if (value === 0 || name === 'total') {
+            if (name === 'total') {
               return null
             }
             return (

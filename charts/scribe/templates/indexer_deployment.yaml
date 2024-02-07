@@ -56,7 +56,7 @@ spec:
               containerPort: 80
               protocol: TCP
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- toYaml .Values.indexer.resources | nindent 12 }}
           {{- if .Values.indexer.env }}
           env:
             {{- toYaml .Values.indexer.env | nindent 12 }}

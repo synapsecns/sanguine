@@ -59,6 +59,7 @@ interface InterfaceBondingManager {
      * for the OLD agent status.
      * Note: as an extra security check this function returns its own selector, so that
      * Destination could verify that a "remote" function was called when executing a manager message.
+     * Will revert if `msgOrigin` is equal to contract's local domain.
      * @param domain        Domain where the slashed agent was active
      * @param agent         Address of the slashed Agent
      * @param prover        Address that initially provided fraud proof to remote AgentManager
@@ -77,6 +78,19 @@ interface InterfaceBondingManager {
      * @param amount        Tips value to withdraw
      */
     function withdrawTips(address recipient, uint32 origin, uint256 amount) external;
+
+    /**
+     * @notice Allows contract owner to resolve a stuck Dispute.
+     * This could only be called if no fresh data has been submitted by the Notaries to the Inbox,
+     * which is required for the Dispute to be resolved naturally.
+     * > Will revert if any of these is true:
+     * > - Caller is not contract owner.
+     * > - Domain doesn't match the saved agent domain.
+     * > - `slashedAgent` is not in Dispute.
+     * > - Less than `FRESH_DATA_TIMEOUT` has passed since the last Notary submission to the Inbox.
+     * @param slashedAgent  Agent that is being slashed
+     */
+    function resolveDisputeWhenStuck(uint32 domain, address slashedAgent) external;
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 

@@ -1,9 +1,8 @@
 package types
 
 import (
-	"bytes"
-	"encoding/binary"
 	"fmt"
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
 // MessageFlag indicates if the message is normal "Base" message or "Manager" message.
@@ -35,6 +34,9 @@ type Header interface {
 	DestinationDomain() uint32
 	// OptimisticSeconds is the optimistic time period of the message in seconds
 	OptimisticSeconds() uint32
+
+	// Leaf is the leaf of the header.
+	Leaf() ([32]byte, error)
 }
 
 type headerImpl struct {
@@ -56,28 +58,6 @@ func NewHeader(flag MessageFlag, originDomain uint32, nonce uint32, destinationD
 	}
 }
 
-// DecodeHeader decodes a header from a byte slice.
-func DecodeHeader(header []byte) (Header, error) {
-	reader := bytes.NewReader(header)
-
-	var encoded headerEncoder
-
-	err := binary.Read(reader, binary.BigEndian, &encoded)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode header: %w", err)
-	}
-
-	decoded := headerImpl{
-		flag:              encoded.Flag,
-		originDomain:      encoded.OriginDomain,
-		nonce:             encoded.Nonce,
-		destinationDomain: encoded.DestinationDomain,
-		optimisticSeconds: encoded.OptimisticSeconds,
-	}
-
-	return decoded, nil
-}
-
 func (h headerImpl) Flag() MessageFlag {
 	return h.flag
 }
@@ -96,4 +76,28 @@ func (h headerImpl) DestinationDomain() uint32 {
 
 func (h headerImpl) OptimisticSeconds() uint32 {
 	return h.optimisticSeconds
+}
+
+func (h headerImpl) Leaf() ([32]byte, error) {
+	var paddedHeader [32]byte
+	bytesHeader, err := EncodeHeader(h)
+	if err != nil {
+		return [32]byte{}, fmt.Errorf("failed to encode header: %w", err)
+	}
+
+	// Determine where to start copying bytesHeader into paddedHeader
+	startIndex := len(paddedHeader) - len(bytesHeader)
+	copy(paddedHeader[startIndex:], bytesHeader)
+
+	// Pad the beginning bytes with zeros
+	for i := 0; i < startIndex; i++ {
+		paddedHeader[i] = 0
+	}
+
+	headerHash := crypto.Keccak256(paddedHeader[:])
+
+	var headerHash32Byte [32]byte
+	copy(headerHash32Byte[:], headerHash)
+
+	return headerHash32Byte, nil
 }

@@ -3,17 +3,19 @@ package db_test
 import (
 	"database/sql"
 	"fmt"
-	"github.com/synapsecns/sanguine/core"
-	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
-	"github.com/synapsecns/sanguine/core/testsuite"
-	"github.com/synapsecns/sanguine/services/scribe/db"
-	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"os"
 	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/core/dbcommon"
+	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
+	"github.com/synapsecns/sanguine/core/testsuite"
+	"github.com/synapsecns/sanguine/services/scribe/db"
+	"github.com/synapsecns/sanguine/services/scribe/metadata"
 
 	"github.com/Flaque/filet"
 	. "github.com/stretchr/testify/assert"
@@ -41,7 +43,6 @@ func NewEventDBSuite(tb testing.TB) *DBSuite {
 
 func (t *DBSuite) SetupTest() {
 	t.TestSuite.SetupTest()
-
 	t.logIndex.Store(0)
 
 	sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""), t.scribeMetrics, false)
@@ -54,26 +55,29 @@ func (t *DBSuite) SetupTest() {
 func (t *DBSuite) SetupSuite() {
 	t.TestSuite.SetupSuite()
 
-	localmetrics.SetupTestJaeger(t.GetSuiteContext(), t.T())
-	var err error
-	t.scribeMetrics, err = metrics.NewByType(t.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
-	t.Require().Nil(err)
-}
+	// don't use metrics on ci for integration tests
+	isCI := core.GetEnvBool("CI", false)
+	useMetrics := !isCI
+	metricsHandler := metrics.Null
 
-// connString gets the connection string.
-func (t *DBSuite) connString(dbname string) string {
-	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", core.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), core.GetEnv("MYSQL_HOST", "127.0.0.1"), core.GetEnvInt("MYSQL_PORT", 3306), dbname)
+	if useMetrics {
+		localmetrics.SetupTestJaeger(t.GetSuiteContext(), t.T())
+		metricsHandler = metrics.Jaeger
+	}
+
+	var err error
+	t.scribeMetrics, err = metrics.NewByType(t.GetSuiteContext(), metadata.BuildInfo(), metricsHandler)
+	t.Require().Nil(err)
 }
 
 func (t *DBSuite) setupMysqlDB() {
 	// skip if mysql test disabled, this really only needs to be run in ci
-
 	// skip if mysql test disabled
-	if os.Getenv("ENABLE_MYSQL_TEST") == "" {
+	if os.Getenv(dbcommon.EnableMysqlTestVar) == "" {
 		return
 	}
 	// sets up the conn string to the default database
-	connString := t.connString(os.Getenv("MYSQL_DATABASE"))
+	connString := dbcommon.GetTestConnString()
 	// sets up the myqsl db
 	testDB, err := sql.Open("mysql", connString)
 	Nil(t.T(), err)

@@ -2,12 +2,6 @@
 pragma solidity 0.8.17;
 
 import {FRESH_DATA_TIMEOUT} from "../../../contracts/libs/Constants.sol";
-import {
-    DisputeAlreadyResolved,
-    DisputeNotOpened,
-    DisputeNotStuck,
-    IncorrectAgentDomain
-} from "../../../contracts/libs/Errors.sol";
 import {AgentFlag, AgentStatus, DisputeFlag} from "../../../contracts/libs/Structures.sol";
 
 import {InterfaceDestination} from "../../../contracts/interfaces/InterfaceDestination.sol";
@@ -32,75 +26,6 @@ abstract contract AgentManagerTest is MessagingBaseTest {
         assertEq(address(testedAM().destination()), localDestination());
         assertEq(address(testedAM().origin()), localOrigin());
         assertEq(testedAM().agentRoot(), getAgentRoot());
-    }
-
-    // ═══════════════════════════════════════ TESTS: RESOLVE STUCK DISPUTES ═══════════════════════════════════════════
-
-    function test_resolveStuckDispute(Random memory random, uint256 timePassed) public {
-        address guard = randomGuard(random);
-        address notary = randomNotary(random);
-        openDispute(guard, notary);
-        timePassed = FRESH_DATA_TIMEOUT + (timePassed % 1 days);
-        mockSnapRootTime(timePassed);
-        address slashedAgent = random.nextUint256() % 2 == 0 ? guard : notary;
-        address rival = slashedAgent == guard ? notary : guard;
-        expectStatusUpdated(AgentFlag.Fraudulent, agentDomain[slashedAgent], slashedAgent);
-        expectDisputeResolved(1, slashedAgent, rival, address(0));
-        testedAM().resolveStuckDispute(agentDomain[slashedAgent], slashedAgent);
-        checkDisputeStatus(slashedAgent, DisputeFlag.Slashed, rival, address(0), 1);
-        checkDisputeStatus(rival, DisputeFlag.None, address(0), address(0), 0);
-    }
-
-    function test_resolveStuckDispute_revert_callerNotOwner(address caller) public {
-        vm.assume(caller != testedAM().owner());
-        expectRevertNotOwner();
-        vm.prank(caller);
-        testedAM().resolveStuckDispute(0, address(0));
-    }
-
-    function test_resolveStuckDispute_revert_timeoutNotPassed(Random memory random, uint256 timePassed) public {
-        address guard = randomGuard(random);
-        address notary = randomNotary(random);
-        openDispute(guard, notary);
-        timePassed = timePassed % FRESH_DATA_TIMEOUT;
-        mockSnapRootTime(timePassed);
-        address slashedAgent = random.nextUint256() % 2 == 0 ? guard : notary;
-        vm.expectRevert(DisputeNotStuck.selector);
-        testedAM().resolveStuckDispute(agentDomain[slashedAgent], slashedAgent);
-    }
-
-    function test_resolveStuckDispute_revert_agentNotDispute(Random memory random) public {
-        address guard0 = getGuard(0);
-        address notary = randomNotary(random);
-        openDispute(guard0, notary);
-        address guard1 = getGuard(1);
-        mockSnapRootTime(FRESH_DATA_TIMEOUT);
-        vm.expectRevert(DisputeNotOpened.selector);
-        testedAM().resolveStuckDispute(agentDomain[guard1], guard1);
-    }
-
-    function test_resolveStuckDispute_revert_alreadyResolved(Random memory random) public {
-        address guard = randomGuard(random);
-        address notary = randomNotary(random);
-        openDispute(guard, notary);
-        address slashedByInbox = random.nextUint256() % 2 == 0 ? guard : notary;
-        vm.prank(localInbox());
-        testedAM().slashAgent(agentDomain[slashedByInbox], slashedByInbox, address(0));
-        address slashedByOwner = random.nextUint256() % 2 == 0 ? guard : notary;
-        mockSnapRootTime(FRESH_DATA_TIMEOUT);
-        vm.expectRevert(slashedByInbox == slashedByOwner ? DisputeAlreadyResolved.selector : DisputeNotOpened.selector);
-        testedAM().resolveStuckDispute(agentDomain[slashedByOwner], slashedByOwner);
-    }
-
-    function test_resolveStuckDispute_revert_incorrectDomain(Random memory random, uint32 incorrectDomain) public {
-        address guard = randomGuard(random);
-        address notary = randomNotary(random);
-        openDispute(guard, notary);
-        address slashedAgent = random.nextUint256() % 2 == 0 ? guard : notary;
-        vm.assume(incorrectDomain != agentDomain[slashedAgent]);
-        mockSnapRootTime(FRESH_DATA_TIMEOUT);
-        vm.expectRevert(IncorrectAgentDomain.selector);
-        testedAM().resolveStuckDispute(incorrectDomain, slashedAgent);
     }
 
     function mockSnapRootTime(uint256 timePassed) public {

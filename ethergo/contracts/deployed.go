@@ -23,4 +23,6 @@ type DeployedContract interface {
 	ChainID() *big.Int
 	// OwnerPtr is a pointer to the owner
 	OwnerPtr() *common.Address
+	// String returns the string representation of the contract
+	String() string
 }

@@ -1,13 +1,11 @@
 import Button from '@tw/Button'
-import ButtonLoadingSpinner from '@components/buttons/ButtonLoadingSpinner'
+import ButtonLoadingDots from '@/components/buttons/ButtonLoadingDots'
 import { usePendingTxWrapper } from '@hooks/usePendingTxWrapper'
 import { TransactionResponse } from '@ethersproject/providers'
-import ExplorerToastLink from '@components/ExplorerToastLink'
-import toast from 'react-hot-toast'
-import { AddressZero } from '@ethersproject/constants'
+import { CSSProperties } from 'react'
 
 const BASE_PROPERTIES = `
-    w-full rounded-lg my-2 px-4 py-3
+    w-full rounded-md px-4 py-3
     text-white text-opacity-100 transition-all
     hover:opacity-80 disabled:opacity-50 disabled:text-[#88818C]
     disabled:from-bgLight disabled:to-bgLight
@@ -24,6 +22,7 @@ export const TransactionButton = ({
   onSuccess,
   disabled,
   chainId,
+  style,
   ...props
 }: {
   className?: string
@@ -32,6 +31,7 @@ export const TransactionButton = ({
   label: string
   onSuccess?: () => void
   chainId?: number
+  style?: CSSProperties
   disabled?: boolean
 }) => {
   const [isPending, pendingTxWrapFunc] = usePendingTxWrapper()
@@ -39,6 +39,7 @@ export const TransactionButton = ({
   return (
     <Button
       {...props}
+      style={style}
       disabled={disabled}
       className={`
         ${className}
@@ -55,7 +56,7 @@ export const TransactionButton = ({
     >
       {isPending ? (
         <div className="inline-flex items-center justify-center">
-          <ButtonLoadingSpinner className="mr-2" />
+          <ButtonLoadingDots className="mr-8" />
           <span className="opacity-30">{pendingLabel}</span>{' '}
         </div>
       ) : (

@@ -1,0 +1,143 @@
+# Default values for cctp.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/synapsecns/sanguine/cctp-relayer
+  # should be changed to if not present if we're not using the latest tag
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "b5a1dd5288f1a18eb05994e130d626fed45a56fc"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+args: ["server", "--port=5080", "--config=/config/config.yml"]
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+files:
+  # this is an example, this is not required for the test above
+  # files listed here will be copied into /config/ and mounted into the application container
+  config.yml: |-
+    chains:
+      10:
+        rpcs:
+          - https://optimism-rpc.gateway.pokt.network/
+          #- https://mainnet.optimism.io
+          #- https://orbital-wispy-grass.optimism.quiknode.pro/85a1800475f8375485fce52acd883a341ec3ad30/
+          #- https://rpc.ankr.com/optimism
+          #- https://1rpc.io/op
+          # - https://opt-mainnet.g.alchemy.com/v2/e4WhjooOOY851Ue4paghoFEiK_sfG-3Q
+          # - https://optimism-mainnet.infura.io/v3/2e85e14c9de94f33ac80991fb423d891
+        confirmations: 3
+      137:
+        rpcs:
+          - https://polygon-mainnet.g.alchemy.com/v2/Kmd9QLE1B3CFtVH879DJKsAvv92LV0E2
+          #- https://polygon-mainnet.g.alchemy.com/v2/ry1vz4vg8RwWC-dqDXdaFRvKnoSOJk6m
+          #- https://polygon-rpc.com
+          # - https://rpc-mainnet.matic.quiknode.pro
+          #- https://matic-mainnet.chainstacklabs.com
+          # - https://poly-rpc.gateway.pokt.network/
+          # - https://polygonapi.terminet.io/rpc
+        confirmations: 4
+      43114:
+        rpcs:
+          - https://avalancheapi.terminet.io/ext/bc/C/rpc
+          - https://api.avax.network/ext/bc/C/rpc
+          - https://rpc.ankr.com/avalanche
+        confirmations: 2
+
+env:
+  - name: GOLOG_LOG_FMT
+    value: "json"
+
+labels: {}
+
+mysql:
+  # use a constant here to build a connection to the service
+  # uncomment these to speedup builds on arm64 based architectures
+  #  image:
+  #    registry: ghcr.io
+  #    repository: zcube/bitnami-compat/mysql
+  #    tag: 8.0-debian-11-r54
+  enabled: true
+  fullnameOverride: cctp-mysql
+  #  nameOverride: scribe-mysql
+  architecture: standalone
+  networkPolicy:
+    enabled: true
+  metrics:
+    enabled: true
+  auth:
+    database: cctp
+    # Note: this should be used in production instead of auth.password
+    # existingSecret: mysql-password
+    rootPassword: MysqlPassword

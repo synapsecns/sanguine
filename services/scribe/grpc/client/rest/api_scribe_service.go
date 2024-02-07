@@ -71,6 +71,7 @@ func (a *ScribeServiceApiService) ScribeServiceCheck(ctx context.Context, body V
 	}
 
 	localVarHttpResponse, err := a.client.callAPI(r)
+
 	if err != nil || localVarHttpResponse == nil {
 		return localVarReturnValue, localVarHttpResponse, err
 	}

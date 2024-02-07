@@ -10,12 +10,18 @@ on:
 jobs:
   build-jaeger-ui:
     runs-on: ubuntu-latest
+    permissions:
+      # always required
+      packages: write
+      # only required for private repos
+      actions: read
+      contents: read
     steps:
       - name: Git Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Cache Docker images.
-        uses: ScribeMD/docker-cache@0.2.6
+        uses: ScribeMD/docker-cache@0.3.6
         with:
           key: docker-release-jaeger
 
@@ -31,7 +37,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_DOCKER }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       # we do this so we can use it in subsequent steps
       - name: Export latest tag name

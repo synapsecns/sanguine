@@ -11,7 +11,7 @@ inputs:
     default: 'true'
     description: Set to 'false' to skip installing dependencies
   cache-path:
-    default: 'yarn.lock'
+    default: '**/yarn.lock'
     description: Set to a relative path (from WORKING_DIRECTORY) to use a different cache path
 
 description: Setup nodejs using .nvmrc
@@ -22,6 +22,11 @@ runs:
       run: echo "##[set-output name=NVMRC;]$(cat ${{inputs.nvmrc_path}})"
       shell: bash
       id: nvmrc
+
+    - name: Setup Globals
+      shell: bash
+      run: |
+        echo "enableGlobalCache true" >> ~/.yarnrc
 
     - uses: actions/setup-node@v3
       with:

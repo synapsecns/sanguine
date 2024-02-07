@@ -3,21 +3,25 @@ package db_test
 import (
 	"database/sql"
 	"fmt"
-	"github.com/Flaque/filet"
-	. "github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
-	"github.com/synapsecns/sanguine/agents/agents/executor/db"
-	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/mysql"
-	"github.com/synapsecns/sanguine/agents/agents/executor/db/datastore/sql/sqlite"
-	"github.com/synapsecns/sanguine/agents/agents/executor/metadata"
-	"github.com/synapsecns/sanguine/core"
-	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
-	"github.com/synapsecns/sanguine/core/testsuite"
 	"os"
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
+
+	"github.com/Flaque/filet"
+	. "github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
+	"github.com/synapsecns/sanguine/agents/agents/executor/db"
+	"github.com/synapsecns/sanguine/agents/agents/executor/db/sql/mysql"
+	"github.com/synapsecns/sanguine/agents/agents/executor/db/sql/sqlite"
+	"github.com/synapsecns/sanguine/agents/agents/executor/metadata"
+	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/core/dbcommon"
+	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
+	"github.com/synapsecns/sanguine/core/testsuite"
+	"gorm.io/gorm/schema"
 )
 
 type DBSuite struct {
@@ -39,10 +43,18 @@ func NewEventDBSuite(tb testing.TB) *DBSuite {
 func (t *DBSuite) SetupSuite() {
 	t.TestSuite.SetupSuite()
 
-	localmetrics.SetupTestJaeger(t.GetSuiteContext(), t.T())
+	// don't use metrics on ci for integration tests
+	isCI := core.GetEnvBool("CI", false)
+	useMetrics := !isCI
+	metricsHandler := metrics.Null
+
+	if useMetrics {
+		localmetrics.SetupTestJaeger(t.GetSuiteContext(), t.T())
+		metricsHandler = metrics.Jaeger
+	}
 
 	var err error
-	t.metrics, err = metrics.NewByType(t.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	t.metrics, err = metrics.NewByType(t.GetSuiteContext(), metadata.BuildInfo(), metricsHandler)
 	Nil(t.T(), err)
 }
 
@@ -51,39 +63,40 @@ func (t *DBSuite) SetupTest() {
 
 	t.logIndex.Store(0)
 
-	sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""), t.metrics)
+	sqliteStore, err := sqlite.NewSqliteStore(t.GetTestContext(), filet.TmpDir(t.T(), ""), t.metrics, false)
 	Nil(t.T(), err)
 
 	t.dbs = []db.ExecutorDB{sqliteStore}
 	t.setupMysqlDB()
 }
 
-// connString gets the connection string.
-func (t *DBSuite) connString(dbname string) string {
-	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", core.GetEnv("MYSQL_USER", "root"), os.Getenv("MYSQL_PASSWORD"), core.GetEnv("MYSQL_HOST", "127.0.0.1"), core.GetEnvInt("MYSQL_PORT", 3306), dbname)
-}
-
 func (t *DBSuite) setupMysqlDB() {
 	// skip if mysql test disabled, this really only needs to be run in ci
 
 	// skip if mysql test disabled
-	if os.Getenv("ENABLE_MYSQL_TEST") == "" {
+	if os.Getenv(dbcommon.EnableMysqlTestVar) == "" {
 		return
 	}
 	// sets up the conn string to the default database
-	connString := t.connString(os.Getenv("MYSQL_DATABASE"))
-	// sets up the myqsl db
+	connString := dbcommon.GetTestConnString()
+	// sets up the mysql db
 	testDB, err := sql.Open("mysql", connString)
 	Nil(t.T(), err)
-	// close the db once the ocnnection is odne
+	// close the db once the connection is done
 	defer func() {
 		Nil(t.T(), testDB.Close())
 	}()
 
+	// override the naming strategy to prevent tests from messing with each other.
+	// todo this should be solved via a proper teardown process or transactions.
+	mysql.NamingStrategy = schema.NamingStrategy{
+		TablePrefix: fmt.Sprintf("test%d_%d_", t.GetTestID(), time.Now().Unix()),
+	}
+
 	mysql.MaxIdleConns = 10
 
 	// create the sql store
-	mysqlStore, err := mysql.NewMysqlStore(t.GetTestContext(), connString, t.metrics)
+	mysqlStore, err := mysql.NewMysqlStore(t.GetTestContext(), connString, t.metrics, false)
 	Nil(t.T(), err)
 	// add the db
 	t.dbs = append(t.dbs, mysqlStore)

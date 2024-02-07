@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es2020",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -15,12 +15,16 @@
     "incremental": true,
     "paths": {
       "@/*": ["./*"],
+      "@actions": ["./actions"],
+      "@actions/*": ["./actions/*"],
       "@assets/": ["./assets"],
       "@assets/icons/": ["./assets/icons"],
       "@assets/networks/": ["./assets/networks"],
       "@assets/*": ["./assets/*"],
       "@components": ["./components"],
       "@components/*": ["./components/*"],
+      "@contexts": ["./contexts"],
+      "@contexts/*": ["./contexts/*"],
       "@tw": ["./components/ui/tailwind"],
       "@tw/*": ["./components/ui/tailwind/*"],
       "@layouts": ["./components/layouts"],
@@ -45,8 +49,10 @@
       "@hooks/*": ["./utils/hooks/*"],
       "@bignumber": ["./utils/bignumber"],
       "@bignumber/*": ["./utils/bignumber/*"],
-      "@store": ["./utils/store"],
-      "@store/*": ["./utils/store/*"],
+      "@slices": ["./slices"],
+      "@slices/*": ["./slices/*"],
+      "@store": ["./store"],
+      "@store/*": ["./store/*"],
       "@types": ["./utils/types"],
       "@types/*": ["./utils/types/*"]
     },

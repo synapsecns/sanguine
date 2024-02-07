@@ -16,8 +16,7 @@ func TestRequestEncodeDecode(t *testing.T) {
 	ogRequest, err := types.EncodeRequest(types.NewRequest(version, gasLimit, gasDrop))
 	Nil(t, err)
 
-	decodedRequest, err := types.DecodeRequest(ogRequest)
-	Nil(t, err)
+	decodedRequest := types.DecodeRequest(ogRequest)
 
 	Equal(t, decodedRequest.Version(), version)
 	Equal(t, decodedRequest.GasLimit(), gasLimit)

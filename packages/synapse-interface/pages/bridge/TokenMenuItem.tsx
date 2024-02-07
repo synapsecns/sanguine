@@ -1,9 +1,5 @@
-import { useMemo } from 'react'
-import { BigNumber } from '@ethersproject/bignumber'
-import { Zero } from '@ethersproject/constants'
 import { CHAINS_BY_ID } from '@constants/chains'
 import Image from 'next/image'
-import { displaySymbol } from '@utils/displaySymbol'
 import {
   getBorderStyleForCoinHover,
   getMenuItemStyleForCoinCombined,
@@ -23,7 +19,7 @@ const TokenMenuItem = ({
   active: boolean
   chainId: number
   selectedToken: Token
-  tokenBalance: BigNumber | undefined
+  tokenBalance: bigint | undefined
   onClick: () => void
 }) => {
   const isCurrentlySelected = selectedToken?.symbol === token?.symbol
@@ -48,7 +44,7 @@ const TokenMenuItem = ({
       className={`
       flex items-center
       transition-all duration-75
-      w-full rounded-xl
+      w-full rounded-md
       px-2 py-3
       cursor-pointer
       border border-transparent
@@ -60,7 +56,7 @@ const TokenMenuItem = ({
       <ButtonContent
         token={token}
         chainId={chainId}
-        tokenBalance={tokenBalance ? tokenBalance : Zero}
+        tokenBalance={tokenBalance ? tokenBalance : 0n}
       />
     </div>
   )
@@ -74,7 +70,7 @@ const ButtonContent = memo(
   }: {
     token: Token
     chainId: number
-    tokenBalance: BigNumber
+    tokenBalance: bigint
   }) => {
     return (
       <div className="flex items-center w-full">
@@ -100,17 +96,17 @@ const CoinOnChain = ({ token, chainId }: { token: Token; chainId: number }) => {
   return chain ? (
     <div className="flex-col text-left">
       <div className="text-lg font-medium text-white">
-        {token ? displaySymbol(chainId, token) : ''}
+        {token ? token.symbol : ''}
       </div>
       <div className="flex items-center text-sm text-white">
-        <div className="mr-1 opacity-70">{token.name}</div>
+        <div className="mr-1 opacity-70">{token?.name}</div>
         <div className="opacity-60">on</div>
         <Image
-          src={chain.chainImg}
-          alt={chain.name}
+          src={chain?.chainImg}
+          alt={chain?.name}
           className="w-4 h-4 ml-2 mr-2 rounded-full"
         />
-        <div className="hidden md:inline-block opacity-70">{chain.name}</div>
+        <div className="hidden md:inline-block opacity-70">{chain?.name}</div>
       </div>
     </div>
   ) : null

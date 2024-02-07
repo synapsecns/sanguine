@@ -11,6 +11,7 @@ func NewDeployManager(t *testing.T) *DeployManager {
 	t.Helper()
 
 	parentManager := manager.NewDeployerManager(t, NewTestContractDeployer)
+
 	return &DeployManager{parentManager}
 }
 

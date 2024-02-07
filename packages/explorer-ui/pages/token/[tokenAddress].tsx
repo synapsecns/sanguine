@@ -1,23 +1,18 @@
 import { TRANSACTIONS_PATH, getChainUrl } from '@urls'
 import { useState, useEffect } from 'react'
-import { TOKEN_HASH_MAP } from '@constants/tokens/basic'
+import { TOKEN_HASH_MAP } from 'synapse-constants'
 import { AssetImage } from '@components/misc/AssetImage'
 import { useSearchParams } from 'next/navigation'
 import { HorizontalDivider } from '@components/misc/HorizontalDivider'
-import { formatUSD } from '@utils/formatUSD'
 import { ChainInfo } from '@components/misc/ChainInfo'
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
-import { useLazyQuery, useQuery } from '@apollo/client'
+import { useQuery } from '@apollo/client'
 import { SynapseLogoSvg } from '@components/layouts/MainLayout/SynapseLogoSvg'
-import { CHAIN_ID_NAMES_REVERSE } from '@constants/networks'
 import { useRouter } from 'next/router'
 import CopyTitle from '@components/misc/CopyTitle'
 import { checksumAddress } from '@utils/checksum'
-import {
-  GET_BRIDGE_TRANSACTIONS_QUERY,
-  DAILY_STATISTICS_BY_CHAIN,
-} from '@graphql/queries'
+import { GET_BRIDGE_TRANSACTIONS_QUERY } from '@graphql/queries'
 import HolisticStats from '@components/misc/HolisticStats'
 import _ from 'lodash'
 
@@ -39,13 +34,13 @@ const formatCurrency = new Intl.NumberFormat('en-US', {
 
 interface variableTypes {
   page: number
-  addressFrom?: string,
-  useMv?: boolean,
-  addressTo?: string,
-  tokenAddressFrom?: string | string[],
+  addressFrom?: string
+  useMv?: boolean
+  addressTo?: string
+  tokenAddressFrom?: string | string[]
   tokenAddressTo?: string[]
-  chainIDFrom?: any,
-  chainIDTo?: any,
+  chainIDFrom?: any
+  chainIDTo?: any
   chainId?: any
 }
 
@@ -135,7 +130,7 @@ export default function chainId() {
           className={`w-9 h-9 inline mr-3 rounded-lg`}
         />
         <h3 className="text-white text-5xl font-semibold">
-          {TOKEN_HASH_MAP[tokenChainID]?.[address?.toLowerCase()]?.symbol}{' '}
+          {TOKEN_HASH_MAP[tokenChainID]?.[address]?.symbol}{' '}
         </h3>
       </div>
       <CopyTitle title={address} />

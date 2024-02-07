@@ -16,9 +16,15 @@ coverage:
 
 # from go.work file
 flags:
+  # note: go.work flags should be in order of the directory structure
+  # also, if you're using multiple module names, you're doing something wrong
   agents:
     paths:
       - agents/
+    carryforward: true
+  screener-api:
+    paths:
+      - contrib/screener-api/
     carryforward: true
   git-changes-action:
     paths:
@@ -52,6 +58,13 @@ flags:
     paths:
       - ethergo/
     carryforward: true
+  cctp-relayer:
+    paths:
+      - services/cctp-relayer/
+  rfq:
+    paths:
+      - services/rfq/
+    carryforward: true
   explorer:
     paths:
       - services/explorer/
@@ -64,9 +77,21 @@ flags:
     paths:
       - services/scribe/
     carryforward: true
-  solidity:
+  sinner:
+    paths:
+      - services/sinner/
+    carryforward: true
+  stiprelayer:
+    paths:
+      - services/stiprelayer/
+    carryforward: true
+  solidity-core:
     paths:
       - packages/contracts-core/
+    carryforward: true
+  solidity-rfq:
+    paths:
+      - packages/contracts-rfq/
     carryforward: true
   tools:
     paths:
@@ -77,6 +102,7 @@ flags:
       - packages/coverage-aggregator/
       - packages/explorer-ui/
       - packages/sdk-router/
+      - packages/widget/
     carryforward: true
 
 ignore:

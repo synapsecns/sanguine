@@ -16,7 +16,6 @@ func domainConfigFixture() config.DomainConfig {
 		OriginAddress:         mocks.MockAddress().String(),
 		DestinationAddress:    mocks.MockAddress().String(),
 		LightManagerAddress:   mocks.MockAddress().String(),
-		RPCUrl:                gofakeit.URL(),
 	}
 }
 
@@ -41,15 +40,6 @@ func (c ConfigSuite) TestDomainConfigID() {
 func (c ConfigSuite) TestXappConfigAddressBlank() {
 	domainConfig := domainConfigFixture()
 	domainConfig.OriginAddress = ""
-
-	ok, err := domainConfig.IsValid(c.GetTestContext())
-	False(c.T(), ok)
-	ErrorIs(c.T(), err, config.ErrRequiredField)
-}
-
-func (c ConfigSuite) TestXappRPCddressBlank() {
-	domainConfig := domainConfigFixture()
-	domainConfig.RPCUrl = ""
 
 	ok, err := domainConfig.IsValid(c.GetTestContext())
 	False(c.T(), ok)

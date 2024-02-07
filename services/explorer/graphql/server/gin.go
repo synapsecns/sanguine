@@ -7,11 +7,19 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/lru"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/gin-gonic/gin"
+	"github.com/ravilushqa/otelgqlgen"
+	"github.com/synapsecns/sanguine/core/mapmutex"
+	"github.com/synapsecns/sanguine/core/metrics"
+	etherClient "github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/services/explorer/api/cache"
+	serverConfig "github.com/synapsecns/sanguine/services/explorer/config/server"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
 	"github.com/synapsecns/sanguine/services/explorer/db"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph"
+	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/interceptor"
 	resolvers "github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/resolver"
+	"github.com/synapsecns/sanguine/services/explorer/types"
 	"time"
 )
 
@@ -23,16 +31,26 @@ const (
 )
 
 // EnableGraphql enables the scribe graphql service.
-func EnableGraphql(engine *gin.Engine, consumerDB db.ConsumerDB, fetcher fetcher.ScribeFetcher, apiCache cache.Service) {
+func EnableGraphql(engine *gin.Engine, consumerDB db.ConsumerDB, fetcher fetcher.ScribeFetcher, apiCache cache.Service, clients map[uint32]etherClient.EVM, parsers *types.ServerParsers, refs *types.ServerRefs, swapFilters map[string]*swap.SwapFlashLoanFilterer, config serverConfig.Config, handler metrics.Handler) {
 	server := createServer(
 		resolvers.NewExecutableSchema(
 			resolvers.Config{Resolvers: &graph.Resolver{
-				DB:      consumerDB,
-				Fetcher: fetcher,
-				Cache:   apiCache,
+				DB:          consumerDB,
+				Fetcher:     fetcher,
+				Cache:       apiCache,
+				CacheMutex:  mapmutex.NewStringMapMutex(),
+				Clients:     clients,
+				Parsers:     parsers,
+				Refs:        refs,
+				SwapFilters: swapFilters,
+				Config:      config,
 			}},
 		),
 	)
+	// TODO; investigate WithCreateSpanFromFields(predicate)
+	server.Use(otelgqlgen.Middleware(otelgqlgen.WithTracerProvider(handler.GetTracerProvider())))
+	server.Use(interceptor.SqlSanitizerMiddleware())
+
 	engine.GET(GraphqlEndpoint, graphqlHandler(server))
 	engine.POST(GraphqlEndpoint, graphqlHandler(server))
 	engine.GET(GraphiqlEndpoint, graphiqlHandler())

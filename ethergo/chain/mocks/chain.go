@@ -19,8 +19,6 @@ import (
 
 	params "github.com/ethereum/go-ethereum/params"
 
-	prometheus "github.com/prometheus/client_golang/prometheus"
-
 	rpc "github.com/ethereum/go-ethereum/rpc"
 
 	time "time"
@@ -212,6 +210,22 @@ func (_m *Chain) CallContract(ctx context.Context, call ethereum.CallMsg, blockN
 	}
 
 	return r0, r1
+}
+
+// ChainConfig provides a mock function with given fields:
+func (_m *Chain) ChainConfig() *params.ChainConfig {
+	ret := _m.Called()
+
+	var r0 *params.ChainConfig
+	if rf, ok := ret.Get(0).(func() *params.ChainConfig); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*params.ChainConfig)
+		}
+	}
+
+	return r0
 }
 
 // ChainID provides a mock function with given fields: ctx
@@ -441,22 +455,6 @@ func (_m *Chain) GetHeightWatcher() chainwatcher.BlockHeightWatcher {
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(chainwatcher.BlockHeightWatcher)
-		}
-	}
-
-	return r0
-}
-
-// GetMetrics provides a mock function with given fields: labels
-func (_m *Chain) GetMetrics(labels map[string]string) []prometheus.Collector {
-	ret := _m.Called(labels)
-
-	var r0 []prometheus.Collector
-	if rf, ok := ret.Get(0).(func(map[string]string) []prometheus.Collector); ok {
-		r0 = rf(labels)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]prometheus.Collector)
 		}
 	}
 

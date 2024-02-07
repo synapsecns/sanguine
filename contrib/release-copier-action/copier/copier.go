@@ -155,8 +155,13 @@ func (r *ReleaseCopier) copyReleaseAsset(ctx context.Context, asset *github.Rele
 		return fmt.Errorf("could not download asset %s: %w", *asset.Name, err)
 	}
 
+	folderName, err := os.MkdirTemp("", "release-copier")
+	if err != nil {
+		return fmt.Errorf("could not create temp folder: %w", err)
+	}
+
 	// create a temp file, we'll use this to store the contents of the original
-	fileName := fmt.Sprintf("%s/%s", os.TempDir(), *asset.Name)
+	fileName := fmt.Sprintf("%s/%s", folderName, *asset.Name)
 
 	//nolint: gosec
 	tmpFile, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)

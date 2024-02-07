@@ -97,6 +97,17 @@ query GetRankedChainIDsByVolume($duration: Duration) {
   }
 }
 
+query GetBlockHeight($contracts: [ContractQuery]) {
+  response: getBlockHeight(
+    contracts: $contracts
+  ) {
+    chainID
+    type
+    blockNumber
+  }
+}
+
+
 
 
 
@@ -140,6 +151,7 @@ query GetDailyStatisticsByChain($chainID: Int, $type: DailyStatisticType, $durat
     harmony
     canto
     dogechain
+    base
     total
   }
 }
@@ -259,5 +271,62 @@ query GetLeaderboard($duration: Duration, $chainID: Int, $useMv: Boolean, $page:
     txs
     rank
     avgVolumeUSD
+  }
+}
+
+
+query GetOriginBridgeTx($chainID: Int!, $txnHash: String!, $bridgeType: BridgeType!) {
+  response: getOriginBridgeTx(
+    chainID: $chainID
+    txnHash: $txnHash
+    bridgeType: $bridgeType
+  ) {
+    bridgeTx {
+      chainID
+      destinationChainID
+      address
+      txnHash
+      value
+      formattedValue
+      USDValue
+      tokenAddress
+      tokenSymbol
+      blockNumber
+      time
+      formattedTime
+    }
+    pending
+    type
+    kappa
+    kappaStatus
+  }
+}
+query GetDestinationBridgeTx($chainID: Int!, $kappa: String!, $address: String!, $timestamp: Int!, $bridgeType: BridgeType!, $historical: Boolean) {
+  response: getDestinationBridgeTx(
+    chainID: $chainID
+    address: $address
+    kappa: $kappa
+    timestamp: $timestamp
+    bridgeType: $bridgeType
+    historical: $historical
+  ) {
+    bridgeTx {
+      chainID
+      destinationChainID
+      address
+      txnHash
+      value
+      formattedValue
+      USDValue
+      tokenAddress
+      tokenSymbol
+      blockNumber
+      time
+      formattedTime
+    }
+    pending
+    type
+    kappa
+    kappaStatus
   }
 }

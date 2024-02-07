@@ -1,0 +1,20 @@
+{{- if and (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") .Values.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "omnirpc.fullname" . }}
+  labels:
+    {{- include "omnirpc.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "omnirpc.selectorLabels" . | nindent 6 }}
+  endpoints:
+    - port: prometheus
+      path: /metrics
+      scrapeTimeout: 30s
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  jobLabel: app.kubernetes.io/name
+{{- end }}

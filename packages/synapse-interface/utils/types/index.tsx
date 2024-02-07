@@ -8,24 +8,25 @@ export type Chain = {
   name: string
   altName?: string
   codeName: string
-  chainLogo?: any
   chainImg: any
   layer: number
-  rpc: string
-  writeRpc?: string
+  rpcUrls: { primary: string; fallback: string }
   explorerUrl: string
+  explorerName: string
+  explorerImg: any
   blockTime: number
   nativeCurrency: { name: string; symbol: string; decimals: number }
-  visibilityRank?: number
+  priorityRank?: number
   color?: string
 }
 export type PoolToken = {
   symbol: string
   percent: string
-  balance: BigNumber
+  balance: string
   balanceStr: string
   token: Token
-  isLp: boolean
+  isLP: boolean
+  rawBalance: bigint
 }
 export type Query = [string, string, BigNumber, BigNumber, string] & {
   swapAdapter: string
@@ -36,33 +37,43 @@ export type Query = [string, string, BigNumber, BigNumber, string] & {
 }
 export type PoolUserData = {
   name: string
-  share: BigNumber
-  value: BigNumber
   tokens: PoolToken[]
-  lpTokenBalance: BigNumber
-  lpTokenBalanceStr: string
+  lpTokenBalance: bigint
+  nativeTokens?: any
 }
 export type PoolData = {
   name: string
   tokens: PoolToken[]
-  totalLocked: BigNumber
-  totalLockedStr: string
-  totalLockedUSD: BigNumber
-  totalLockedUSDStr: string
-  virtualPrice: BigNumber
-  virtualPriceStr: string
+  totalLocked: number
+  totalLockedUSD: number
+  virtualPrice?: bigint
+  nativeTokens?: any
+  swapFee?: bigint
+}
+
+type QuoteQuery = {
+  deadline: bigint
+  minAmountOut: bigint
+  rawParams: string
+  swapAdapter: string
+  tokenOut: string
 }
 
 export type BridgeQuote = {
-  outputAmount: BigNumber
+  outputAmount: bigint
   outputAmountString: string
   routerAddress: string
-  allowance: BigNumber
-  exchangeRate: BigNumber
-  feeAmount: BigNumber
-  delta: BigNumber
-  quotes: { originQuery: any; destQuery: any }
+  allowance: bigint
+  exchangeRate: bigint
+  feeAmount: bigint
+  delta: bigint
+  originQuery: QuoteQuery
+  destQuery: QuoteQuery
+  estimatedTime: number
+  bridgeModuleName: string
+  gasDropAmount: bigint
 }
+
 interface TokensByChain {
   [cID: string]: Token[]
 }
@@ -80,29 +91,26 @@ export interface IconProps {
   walletId?: string
   className?: string
 }
-export type PoolTokenObj = {
-  [x: string]: { token: Token; balance: BigNumber; rawBalance: BigNumber }
-}
 export type PoolTokenObject = {
   token: Token
-  balance: BigNumber
-  rawBalance: BigNumber
+  balance: string
+  rawBalance: bigint
   isLP: boolean
 }
 
 export type SwapQuote = {
-  outputAmount: BigNumber
+  outputAmount: bigint
   outputAmountString: string
   routerAddress: string
-  allowance: BigNumber
-  exchangeRate: BigNumber
-  delta: BigNumber
+  allowance: bigint
+  exchangeRate: bigint
+  delta: bigint
   quote: any
 }
 
 export type BridgeWatcherTx = {
   isFrom: boolean
-  amount: BigNumber
+  amount: bigint
   timestamp: number
   blockNumber: number
   chainId: number
@@ -113,6 +121,7 @@ export type BridgeWatcherTx = {
   kappa: string
   toChainId: number
   toAddress: string
+  contractEmittedFrom: string
 }
 
 // TODO
@@ -158,6 +167,11 @@ export class Token {
   swapableOn: number[] = [] // list of chains where token is swapable
   display = true // display token
   legacy = false // legacy token
+  priorityRank: number // priority token ordering
+  chainId?: number // chain id of swap pool
+  incentivized?: boolean // pool is incentivized or not
+  customRewardToken?: string // reward token symbol when pool staking rewards are in something other than SYN
+  miniChefAddress: string // mini chef address
   priorityPool?: boolean = false // priority pool
   color?:
     | 'gray'
@@ -173,6 +187,7 @@ export class Token {
     | 'red'
   priceUnits?: string
   notStake?: boolean
+  routeSymbol?: string
   constructor({
     addresses,
     wrapperAddresses,
@@ -204,10 +219,16 @@ export class Token {
     swapableOn,
     display,
     legacy,
+    priorityRank,
+    chainId,
+    incentivized,
+    customRewardToken,
+    miniChefAddress,
     priorityPool,
     color,
     priceUnits,
     notStake,
+    routeSymbol,
   }: {
     addresses: { [x: number]: string }
     wrapperAddresses?: Record<number, string>
@@ -239,6 +260,11 @@ export class Token {
     swapableOn?: number[]
     display?: boolean
     legacy?: boolean
+    priorityRank: number
+    chainId?: number
+    incentivized?: boolean
+    customRewardToken?: string
+    miniChefAddress?: string
     priorityPool?: boolean
     color?:
       | 'gray'
@@ -254,6 +280,7 @@ export class Token {
       | 'red'
     priceUnits?: string
     notStake?: boolean
+    routeSymbol?: string
   }) {
     const isMetaVar = Boolean(swapDepositAddresses || forceMeta)
     this.addresses = validateAddresses(addresses)
@@ -288,10 +315,16 @@ export class Token {
     this.swapableOn = swapableOn ?? []
     this.display = display ?? true
     this.legacy = legacy ?? false
+    this.priorityRank = priorityRank
+    this.chainId = chainId
+    this.incentivized = incentivized
+    this.customRewardToken = customRewardToken
+    this.miniChefAddress = miniChefAddress
     this.priorityPool = priorityPool ?? false
     this.color = color ?? 'gray'
     this.priceUnits = priceUnits ?? 'USD'
     this.notStake = notStake ?? false
+    this.routeSymbol = routeSymbol
   }
 }
 

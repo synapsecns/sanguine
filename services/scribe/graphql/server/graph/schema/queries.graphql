@@ -24,6 +24,7 @@ type Query {
     start_block: Int!
     end_block: Int!
     page: Int!
+    asc: Boolean = False
   ): [Log]
   # returns all receipts that match the given filter
   receipts(
@@ -109,4 +110,45 @@ type Query {
   blockTimeCount(
     chain_id: Int!
   ): Int
+  # returns all logs that match the given filter and range (including from the unconfirmed logs table)
+  logsAtHeadRange(
+    contract_address: String
+    chain_id: Int!
+    block_number: Int
+    tx_hash: String
+    tx_index: Int
+    block_hash: String
+    index: Int
+    confirmed: Boolean
+    start_block: Int!
+    end_block: Int!
+    page: Int!
+  ): [Log]
+  # returns all receipts that match the given filter and range (including from the unconfirmed receipts table)
+  receiptsAtHeadRange(
+    chain_id: Int!
+    tx_hash: String
+    contract_address: String
+    block_hash: String
+    block_number: Int
+    tx_index: Int
+    confirmed: Boolean
+    start_block: Int!
+    end_block: Int!
+    page: Int!
+  ): [Receipt]
+  # returns all transactions that match the given filter and range (including from the unconfirmed transactions table)
+  transactionsAtHeadRange(
+    tx_hash: String
+    chain_id: Int!
+    block_number: Int
+    block_hash: String
+    confirmed: Boolean
+    start_block: Int!
+    end_block: Int!
+    last_indexed: Int!
+    page: Int!
+  ): [Transaction]
+
+
 }

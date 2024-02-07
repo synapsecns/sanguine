@@ -80,17 +80,15 @@ func NewTestEnvDB(ctx context.Context, t *testing.T, handler metrics.Handler) (d
 
 	cleanup, port, err := clickhouse.NewClickhouseStore("explorer")
 	if cleanup == nil {
-		fmt.Println("Clickhouse spin up failure, no open port found.")
-		return
+		panic("Clickhouse spin up failure, no open port found.")
 	}
 	if port == nil || err != nil {
-		fmt.Println("Clickhouse spin up failure, destroying container...")
 		cleanup()
-		return
+		panic("Clickhouse spin up failure, destroying container...")
 	}
 	assert.Equal(t, err, nil)
 	dbURL := "clickhouse://clickhouse_test:clickhouse_test@localhost:" + fmt.Sprintf("%d", *port) + "/clickhouse_test"
-	consumerDB, err := sql.OpenGormClickhouse(ctx, dbURL, false)
+	consumerDB, err := sql.OpenGormClickhouse(ctx, dbURL, false, handler)
 	assert.Nil(t, err)
 	db = consumerDB
 

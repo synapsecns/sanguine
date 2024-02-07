@@ -1,47 +1,51 @@
 import { ALL } from '@constants/withdrawTypes'
-import { useSwapDepositContract } from '@hooks/useSwapDepositContract'
 import ExplorerToastLink from '@components/ExplorerToastLink'
-import { subtractSlippage } from '@utils/slippage'
+import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
 import { txErrorHandler } from '@utils/txErrorHandler'
-import { approveToken } from '@utils/approveToken'
 import { Token } from '@types'
-import { BigNumber } from 'ethers'
-import { Zero } from '@ethersproject/constants'
 import toast from 'react-hot-toast'
+import { approveErc20Token } from '@/actions/approveErc20Token'
+
+import { Address } from 'wagmi'
+import { swapPoolRemoveLiquidity } from '@/actions/swapPoolRemoveLiquidity'
+import { swapPoolRemoveLiquidityOneToken } from '@/actions/swapPoolRemoveLiquidityOneToken'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 export const approve = async (
   pool: Token,
   depositQuote: any,
-  inputValue: BigNumber,
+  inputValue: bigint,
   chainId: number
 ) => {
-  if (inputValue.isZero() || inputValue.lt(depositQuote.allowance)) {
+  if (inputValue === 0n || inputValue < depositQuote.allowance) {
     return
   }
-  await approveToken(
-    pool.swapAddresses[chainId],
+
+  const { poolAddress } = getSwapDepositContractFields(pool, chainId)
+
+  return await approveErc20Token({
     chainId,
-    pool.addresses[chainId],
-    inputValue
-  )
+    tokenAddress: pool.addresses[chainId] as Address,
+    spender: poolAddress,
+    amount: inputValue,
+  })
 }
 
 export const withdraw = async (
   pool: Token,
   slippageSelected: any,
   slippageCustom: any,
-  inputAmount: BigNumber,
+  inputAmount: bigint,
   chainId: number,
   withdrawType: string,
   outputs: Record<
     string,
     {
-      value: BigNumber
+      value: any
       index: number
     }
   >
 ) => {
-  const poolContract = await useSwapDepositContract(pool, chainId)
   let spendTransaction
   let pendingPopup: any
   let successPopup: any
@@ -52,54 +56,69 @@ export const withdraw = async (
   })
 
   try {
-    if (withdrawType === ALL) {
-      const outputMinArr = pool.poolTokens.map(() => Zero)
-      for (let poolToken of pool.poolTokens) {
-        const outputAmount = outputs[poolToken.addresses[chainId]]
-        outputMinArr[outputAmount.index] = subtractSlippage(
-          outputAmount.value,
-          slippageSelected,
-          slippageCustom
-        )
-      }
-      spendTransaction = await poolContract.removeLiquidity(
+    segmentAnalyticsEvent(
+      `[Pool Withdrawal] Attempt`,
+      {
+        poolName: pool?.name,
         inputAmount,
-        outputMinArr,
-        Math.round(new Date().getTime() / 1000 + 60 * 10)
-      )
+      },
+      true
+    )
+    if (withdrawType === ALL) {
+      spendTransaction = await swapPoolRemoveLiquidity({
+        chainId,
+        pool,
+        amount: inputAmount,
+        outputs,
+        slippageSelected,
+        slippageCustom,
+      })
     } else {
       const outputAmount = Object.values(outputs)[0]
       const poolTokenIndex = outputAmount.index
-      spendTransaction = await poolContract.removeLiquidityOneToken(
-        inputAmount,
+
+      spendTransaction = await swapPoolRemoveLiquidityOneToken({
+        chainId,
+        pool,
+        amount: inputAmount,
+        outputAmount,
+        slippageSelected,
+        slippageCustom,
         poolTokenIndex,
-        subtractSlippage(outputAmount.value, slippageSelected, slippageCustom),
-        Math.round(new Date().getTime() / 1000 + 60 * 10)
-      )
+      })
     }
 
-    const tx = await spendTransaction.wait()
+    if (spendTransaction.status === 'success') {
+      toast.dismiss(pendingPopup)
+      segmentAnalyticsEvent(`[Pool Withdrawal] Success`, {
+        poolName: pool?.name,
+        inputAmount,
+      })
 
-    toast.dismiss(pendingPopup)
+      const successToastContent = (
+        <div>
+          <div>Completed Withdrawal: </div>
+          <ExplorerToastLink
+            transactionHash={spendTransaction.transactionHash}
+            chainId={chainId}
+          />
+        </div>
+      )
 
-    const successToastContent = (
-      <div>
-        <div>Completed Withdrawal: </div>
-        <ExplorerToastLink
-          transactionHash={tx?.transactionHash}
-          chainId={chainId}
-        />
-      </div>
-    )
+      successPopup = toast.success(successToastContent, {
+        id: 'withdraw-success-popup',
+        duration: 10000,
+      })
+    }
 
-    successPopup = toast.success(successToastContent, {
-      id: 'withdraw-success-popup',
-      duration: 10000,
-    })
-
-    return tx
+    return spendTransaction
   } catch (error) {
     toast.dismiss(pendingPopup)
+    segmentAnalyticsEvent(`[Pool Withdrawal] Failure`, {
+      poolName: pool?.name,
+      inputAmount,
+      errorCode: error.code,
+    })
     txErrorHandler(error)
     return error
   }

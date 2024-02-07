@@ -3,18 +3,16 @@ package evm
 import (
 	"context"
 	"fmt"
-	"math/big"
-	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/ethergo/chain"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/contracts/destination"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/types"
-	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
-	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
 
 // NewDestinationContract returns a bound destination contract.
@@ -44,58 +42,18 @@ type destinationContract struct {
 	nonceManager nonce.Manager
 }
 
-func (a destinationContract) Execute(ctx context.Context, signer signer.Signer, message types.Message, originProof [32][32]byte, snapshotProof [][32]byte, index *big.Int, gasLimit uint64) error {
-	transactOpts, err := a.transactOptsSetup(ctx, signer)
-	if err != nil {
-		return fmt.Errorf("could not setup transact opts: %w", err)
-	}
-
+func (a destinationContract) Execute(transactor *bind.TransactOpts, message types.Message, originProof [32][32]byte, snapshotProof [][32]byte, index uint8, gasLimit uint64) (tx *ethTypes.Transaction, err error) {
 	encodedMessage, err := types.EncodeMessage(message)
 	if err != nil {
-		return fmt.Errorf("could not encode message: %w", err)
+		return nil, fmt.Errorf("could not encode message: %w", err)
 	}
 
-	_, err = a.contract.Execute(transactOpts, encodedMessage, originProof[:], snapshotProof, index, gasLimit)
+	tx, err = a.contract.Execute(transactor, encodedMessage, originProof[:], snapshotProof, index, gasLimit)
 	if err != nil {
-		return fmt.Errorf("could not execute message: %w", err)
+		return nil, fmt.Errorf("could not execute message: %w", err)
 	}
 
-	return nil
-}
-
-func (a destinationContract) transactOptsSetup(ctx context.Context, signer signer.Signer) (*bind.TransactOpts, error) {
-	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
-	if err != nil {
-		return nil, fmt.Errorf("could not sign tx: %w", err)
-	}
-
-	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
-	if err != nil {
-		return nil, fmt.Errorf("could not create tx: %w", err)
-	}
-
-	transactOpts.Context = ctx
-
-	return transactOpts, nil
-}
-
-func (a destinationContract) SubmittedAt(ctx context.Context, originID uint32, root [32]byte) (*time.Time, error) {
-	// TODO (joeallen): FIX ME
-	/*submittedAtBigInt, err := a.contract.SubmittedAt(&bind.CallOpts{Context: ctx}, originID, root)
-	if err != nil {
-		return nil, fmt.Errorf("could not get submitted at for origin and root: %w", err)
-	}
-
-	if submittedAtBigInt == nil || submittedAtBigInt.Int64() == int64(0) {
-		//nolint:nilnil
-		return nil, nil
-	}
-
-	submittedAtTime := time.Unix(submittedAtBigInt.Int64(), 0)
-
-	return &submittedAtTime, nil*/
-	//nolint:nilnil
-	return nil, nil
+	return tx, nil
 }
 
 func (a destinationContract) AttestationsAmount(ctx context.Context) (uint64, error) {
@@ -118,4 +76,31 @@ func (a destinationContract) GetAttestationNonce(ctx context.Context, snapRoot [
 	}
 
 	return attNonce, nil
+}
+
+func (a destinationContract) MessageStatus(ctx context.Context, message types.Message) (uint8, error) {
+	messageLeaf, err := message.ToLeaf()
+	if err != nil {
+		return 0, fmt.Errorf("could not get message leaf: %w", err)
+	}
+
+	status, err := a.contract.MessageStatus(&bind.CallOpts{Context: ctx}, messageLeaf)
+	if err != nil {
+		return 0, fmt.Errorf("could not get message status: %w", err)
+	}
+
+	return status, nil
+}
+
+//nolint:wrapcheck
+func (a destinationContract) IsValidReceipt(ctx context.Context, rcptPayload []byte) (bool, error) {
+	return a.contract.IsValidReceipt(&bind.CallOpts{Context: ctx}, rcptPayload)
+}
+
+func (a destinationContract) PassAgentRoot(transactor *bind.TransactOpts) (*ethTypes.Transaction, error) {
+	tx, err := a.contract.PassAgentRoot(transactor)
+	if err != nil {
+		return nil, fmt.Errorf("could not pass agent root: %w", err)
+	}
+	return tx, nil
 }

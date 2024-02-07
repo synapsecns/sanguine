@@ -18,6 +18,7 @@ package londinium_test
 
 import (
 	"context"
+	"github.com/ethereum/go-ethereum/trie"
 	"github.com/synapsecns/sanguine/ethergo/chain/gas/londinium"
 	"math"
 	"math/big"
@@ -41,14 +42,14 @@ type testBackend struct {
 
 func (b *testBackend) HeaderByNumber(ctx context.Context, number rpc.BlockNumber) (*types.Header, error) {
 	if number == rpc.LatestBlockNumber {
-		return b.chain.CurrentBlock().Header(), nil
+		return b.chain.CurrentBlock(), nil
 	}
 	return b.chain.GetHeaderByNumber(uint64(number)), nil
 }
 
 func (b *testBackend) BlockByNumber(ctx context.Context, number rpc.BlockNumber) (*types.Block, error) {
 	if number == rpc.LatestBlockNumber {
-		return b.chain.CurrentBlock(), nil
+		return b.chain.GetBlockByHash(b.chain.CurrentBlock().Hash()), nil
 	}
 	return b.chain.GetBlockByNumber(uint64(number)), nil
 }
@@ -71,7 +72,8 @@ func newTestBackend(t *testing.T) *testBackend {
 	)
 	engine := ethash.NewFaker()
 	db := rawdb.NewMemoryDatabase()
-	genesis, _ := gspec.Commit(db)
+	triedb := trie.NewDatabase(db)
+	genesis, _ := gspec.Commit(db, triedb)
 
 	// Generate testing blocks
 	blocks, _ := core.GenerateChain(params.TestChainConfig, genesis, engine, db, 32, func(i int, b *core.BlockGen) {
@@ -84,10 +86,11 @@ func newTestBackend(t *testing.T) *testBackend {
 	})
 	// Construct testing chain
 	diskdb := rawdb.NewMemoryDatabase()
-	_, err := gspec.Commit(diskdb)
+	disktriedb := trie.NewDatabase(diskdb)
+	_, err := gspec.Commit(diskdb, disktriedb)
 	Nil(t, err)
 
-	chain, err := core.NewBlockChain(diskdb, nil, params.TestChainConfig, engine, vm.Config{}, nil, nil)
+	chain, err := core.NewBlockChain(diskdb, nil, gspec, nil, engine, vm.Config{}, nil, nil)
 	if err != nil {
 		t.Fatalf("Failed to create local chain, %v", err)
 	}

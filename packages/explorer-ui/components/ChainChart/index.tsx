@@ -42,16 +42,16 @@ interface OverviewChartProps {
 }
 
 export const OverviewChart: React.FC<OverviewChartProps> = ({
-                                                              chartData,
-                                                              isUSD,
-                                                              loading = false,
-                                                              showAggregated,
-                                                              height = 480,
-                                                              dailyStatisticType,
-                                                              platform,
-                                                              singleChain = false,
-                                                              noTooltipLink = false,
-                                                            }) => {
+  chartData,
+  isUSD,
+  loading = false,
+  showAggregated,
+  height = 480,
+  dailyStatisticType,
+  platform,
+  singleChain = false,
+  noTooltipLink = false,
+}) => {
   if (loading) {
     return (
       <div className="flex justify-center align-center w-full my-[240px]">
@@ -105,11 +105,11 @@ export const OverviewChart: React.FC<OverviewChartProps> = ({
   }, [chartData]);
 
   const getToolTip = ({
-                        active,
-                        payload,
-                        label,
-                        isUSD,
-                      }: {
+    active,
+    payload,
+    label,
+    isUSD,
+  }: {
     active: boolean;
     payload: any[];
     label: string;
@@ -305,6 +305,12 @@ export const OverviewChart: React.FC<OverviewChartProps> = ({
                 dataKey="dogechain"
                 stackId="a"
                 fill={loading ? 'rgba(255, 255, 255, 0.1)' : '#8168f7'}
+              />
+              <Bar
+                isAnimationActive={false}
+                dataKey="base"
+                stackId="a"
+                fill={loading ? 'rgba(255, 255, 255, 0.1)' : '#011082'}
               />
             </>
           )}

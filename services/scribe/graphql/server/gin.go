@@ -3,6 +3,7 @@ package server
 import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/gin-gonic/gin"
+	"github.com/ravilushqa/otelgqlgen"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/graphql/server/graph"
@@ -27,6 +28,8 @@ func EnableGraphql(engine *gin.Engine, eventDB db.EventDB, omniRPCURL string, me
 			}},
 		),
 	)
+	// TODO; investigate WithCreateSpanFromFields(predicate)
+	server.Use(otelgqlgen.Middleware(otelgqlgen.WithTracerProvider(metrics.GetTracerProvider())))
 
 	engine.GET(GraphqlEndpoint, graphqlHandler(server))
 	engine.POST(GraphqlEndpoint, graphqlHandler(server))

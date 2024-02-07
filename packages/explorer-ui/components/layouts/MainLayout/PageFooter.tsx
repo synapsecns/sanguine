@@ -5,17 +5,29 @@ import {
   DOCS_URL,
   PRIVACY_POLICY_PATH,
   GITHUB_URL,
-  MEDIUM_URL,
   POOLS_PATH,
   STAKE_PATH,
   SWAP_PATH,
   TWITTER_URL,
+  BUILD_ON_URL,
+  MIRROR_URL, FORUM_URL, TELEGRAM_URL,
 } from '@urls'
 import Grid from '@components/tailwind/Grid'
 
 import { SynapseTitleLogo } from '.'
 
-const functions = [
+interface FooterDataProps {
+  text: string
+  type: string | null
+  url: string | null
+}
+
+enum FooterType {
+  PATH = 'path',
+  URL = 'url',
+}
+
+const functions: FooterDataProps[] = [
   {
     text: 'Functions',
     type: null,
@@ -23,55 +35,55 @@ const functions = [
   },
   {
     text: 'Swap',
-    type: 'url',
+    type: FooterType.URL,
     url: SWAP_PATH,
   },
   {
     text: 'Bridge',
-    type: 'url',
+    type: FooterType.URL,
     url: BRIDGE_PATH,
   },
   {
     text: 'Pools',
-    type: 'url',
+    type: FooterType.URL,
     url: POOLS_PATH,
   },
   {
     text: 'Stake',
-    type: 'url',
+    type: FooterType.URL,
     url: STAKE_PATH,
   },
 ]
 
-const developers = [
+const developers: FooterDataProps[] = [
   {
     text: 'Developers',
     type: null,
     url: null,
   },
   {
-    text: 'References',
-    type: 'url',
-    url: GITHUB_URL,
+    text: 'Build on Synapse',
+    type: FooterType.URL,
+    url: BUILD_ON_URL,
   },
   {
     text: 'Documentation',
-    type: 'url',
+    type: FooterType.URL,
     url: DOCS_URL,
   },
   {
-    text: 'Tutorials',
-    type: 'url',
-    url: MEDIUM_URL,
+    text: 'GitHub',
+    type: FooterType.URL,
+    url: GITHUB_URL,
   },
   {
-    text: 'GitHub',
-    type: 'url',
-    url: GITHUB_URL,
+    text: 'Blog',
+    type: FooterType.URL,
+    url: MIRROR_URL,
   },
 ]
 
-const support = [
+const support: FooterDataProps[] = [
   {
     text: 'Support',
     type: null,
@@ -79,15 +91,26 @@ const support = [
   },
   {
     text: 'Discord',
-    type: 'url',
+    type: FooterType.URL,
     url: DISCORD_URL,
   },
   {
     text: 'Twitter',
-    type: 'url',
+    type: FooterType.URL,
     url: TWITTER_URL,
   },
+  {
+    text: 'Forum',
+    type: FooterType.URL,
+    url: FORUM_URL,
+  },
+  {
+    text: 'Telegram',
+    type: 'url',
+    url: TELEGRAM_URL,
+  },
 ]
+
 const admin = [
   {
     text: 'Terms of Use',

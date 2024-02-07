@@ -1,23 +1,13 @@
-import { Zero, One } from '@ethersproject/constants'
-import { calculateExchangeRate } from '@utils/calculateExchangeRate'
+import { erc20ABI, multicall } from '@wagmi/core'
+import { Token, PoolData } from '@types'
+import { formatBigIntToString } from '@utils/bigint/format'
+import { getPoolTokenInfoArr, getTokenBalanceInfo } from '@utils/poolDataFuncs'
 import { getEthPrice, getAvaxPrice } from '@utils/actions/getPrices'
-import {
-  commifyBnToString,
-  commifyBnWithDefault,
-  formatBNToString,
-} from '@bignumber/format'
-import {
-  calcBnSum,
-  calcIfZero,
-  getTokenBalanceInfo,
-  getPoolTokenInfoArr,
-  MAX_BN_POW,
-} from '@utils/poolDataFuncs'
-import { fetchBalance, fetchToken } from '@wagmi/core'
-import { PoolTokenObject, Token, PoolUserData, PoolData } from '@types'
-import { BigNumber } from 'ethers'
 
-const getBalanceData = async ({
+import lpTokenABI from '@/constants/abis/lpToken.json'
+import { SWAP_ABI } from '@/constants/abis/swap'
+
+export const getBalanceData = async ({
   pool,
   chainId,
   address,
@@ -28,51 +18,91 @@ const getBalanceData = async ({
   address: string
   lpTokenAddress: string
 }) => {
-  const tokenBalances: PoolTokenObject[] = []
-  let poolTokenSum = Zero
-  let lpTokenBalance = One
-  const lpTotalSupply =
-    (
-      await fetchToken({
-        address: `0x${lpTokenAddress.slice(2)}`,
-        chainId,
-      })
-    )?.totalSupply?.value ?? Zero
+  const tokens: Token[] = [...pool?.poolTokens, pool]
+  const tokenBalances = []
+  let poolTokenSum = 0n
+  let lpTokenBalance = 1n
 
-  const tokens: Token[] = [...pool.poolTokens, pool]
-  for (const token of tokens) {
+  const multicallInputs = []
+
+  const one = {
+    address: lpTokenAddress,
+    abi: lpTokenABI,
+    functionName: 'totalSupply',
+    chainId,
+  }
+
+  multicallInputs.push(one)
+
+  tokens?.forEach((token, index) => {
+    const isLP = token.addresses[chainId] === lpTokenAddress
+    // Use pool's getTokenBalance for pool tokens, if the address is the pool itself
+    // to exclude the unclaimed admin fees
+    if (address === pool.swapAddresses[chainId] && !isLP) {
+      multicallInputs.push({
+        address: pool.swapAddresses[chainId],
+        abi: SWAP_ABI,
+        functionName: 'getTokenBalance',
+        chainId,
+        args: [index],
+      })
+    } else {
+      multicallInputs.push({
+        address: token.addresses[chainId],
+        abi: erc20ABI,
+        functionName: 'balanceOf',
+        chainId,
+        args: [address],
+      })
+    }
+  })
+  const two = {
+    address: pool.swapAddresses[chainId],
+    abi: SWAP_ABI,
+    functionName: 'swapStorage',
+    chainId,
+  }
+
+  const three = {
+    address: pool.swapAddresses[chainId],
+    abi: SWAP_ABI,
+    functionName: 'getVirtualPrice',
+    chainId,
+  }
+
+  multicallInputs.push(two)
+  multicallInputs.push(three)
+
+  const multicallData: any[] = await multicall({
+    contracts: multicallInputs,
+    chainId,
+  }).catch((error) => {
+    console.error('Multicall failed:', error)
+    return []
+  })
+
+  const lpTotalSupply = multicallData[0].result ?? 0n
+
+  tokens.forEach((token, index) => {
     const isLP = token.addresses[chainId] === lpTokenAddress
 
-    const rawBalance = (
-      await fetchBalance({
-        address: `0x${address.slice(2)}`,
-        chainId,
-        token: `0x${token.addresses[chainId].slice(2)}`,
-      })
-    )?.value
-
-    const balance = rawBalance.mul(
-      BigNumber.from(10).pow(18 - token.decimals[chainId])
-    )
-
-    // add to balances
     tokenBalances.push({
-      rawBalance,
-      balance,
+      rawBalance: multicallData[index + 1].result ?? 0n,
+      balance: formatBigIntToString(
+        multicallData[index + 1].result,
+        token.decimals[chainId]
+      ),
       token,
       isLP,
     })
 
-    // set lp variables
     if (isLP) {
-      lpTokenBalance = balance
-      continue
+      lpTokenBalance = multicallData[index + 1].result
     }
-    // running sum of all tokens in the pool
-    if (balance) {
-      poolTokenSum = poolTokenSum.add(balance)
-    }
-  }
+
+    poolTokenSum = poolTokenSum + multicallData[index + 1].result
+  })
+
   return {
     tokenBalances,
     poolTokenSum,
@@ -80,85 +110,52 @@ const getBalanceData = async ({
     lpTotalSupply,
   }
 }
-export const getPoolData = async (
+
+export const getSinglePoolData = async (
   chainId: number,
   pool: Token,
-  address: string,
-  user: boolean,
   prices?: any
-): Promise<PoolData | PoolUserData> => {
+): Promise<PoolData> => {
   const poolAddress = pool?.swapAddresses[chainId]
-  if (!poolAddress || !pool || (!address && user)) {
+
+  if (!pool || !poolAddress) {
     return null
   }
 
-  // TODO: Check if we even need sdk call here since lp token is hardcoded
-  // const lpTokenAddress =
-  //   (await SynapseSDK.getPoolInfo(chainId, poolAddress))?.lpToken ??
-  //   pool?.addresses[chainId]
-
   const lpTokenAddress = pool?.addresses[chainId]
 
-  const { tokenBalances, poolTokenSum, lpTokenBalance, lpTotalSupply } =
-    await getBalanceData({
-      pool,
-      chainId,
-      address: user ? address : poolAddress,
-      lpTokenAddress,
-    })
-
-  const virtualPrice = lpTotalSupply.isZero()
-    ? MAX_BN_POW
-    : calculateExchangeRate(lpTotalSupply, 18, poolTokenSum, 18)
+  const { tokenBalances } = await getBalanceData({
+    pool,
+    chainId,
+    address: poolAddress,
+    lpTokenAddress,
+  })
 
   const ethPrice = prices?.ethPrice ?? (await getEthPrice())
   const avaxPrice = prices?.avaxPrice ?? (await getAvaxPrice())
 
-  const { tokenBalancesSum, tokenBalancesUSD } = getTokenBalanceInfo({
-    tokenBalances: tokenBalances.filter((t) => !t.isLP).map((t) => t.balance),
-    prices: {
-      ethPrice,
-      avaxPrice,
-    },
-    poolType: pool?.poolType,
-  })
+  const {
+    tokenBalancesSum,
+    tokenBalancesUSD,
+  }: { tokenBalancesSum: number; tokenBalancesUSD: number } =
+    getTokenBalanceInfo({
+      tokenBalances: tokenBalances.filter((t) => !t.isLP).map((t) => t.balance),
+      prices: {
+        ethPrice,
+        avaxPrice,
+      },
+      poolType: pool?.poolType,
+    })
+
   const poolTokensMatured = getPoolTokenInfoArr({
     tokenBalances: tokenBalances.filter((t) => !t.isLP),
-    ...{
-      lpTotalSupply,
-      tokenBalancesSum,
-    },
-    chainId,
+    tokenBalancesSum,
   })
-  if (user) {
-    const userShare = lpTokenBalance
-      .mul(MAX_BN_POW)
-      .div(calcIfZero(lpTokenBalance))
-    const userPoolTokenBalances = tokenBalances.map((token) =>
-      userShare.mul(token.balance).div(MAX_BN_POW)
-    )
-    const userPoolTokenBalancesSum = calcBnSum(userPoolTokenBalances)
 
-    return {
-      name: pool.name,
-      share: userShare,
-      value: userPoolTokenBalancesSum,
-      tokens: poolTokensMatured,
-      lpTokenBalance,
-      lpTokenBalanceStr: formatBNToString(lpTokenBalance, 18, 4),
-    }
-  }
-
-  const standardUnits = pool.priceUnits ?? ''
-  const displayDecimals = standardUnits === 'ETH' ? 3 : 0
   return {
     name: pool.name,
     tokens: poolTokensMatured,
     totalLocked: tokenBalancesSum,
-    totalLockedStr: commifyBnWithDefault(tokenBalancesSum, displayDecimals),
     totalLockedUSD: tokenBalancesUSD,
-    totalLockedUSDStr: commifyBnToString(tokenBalancesUSD, 0),
-    virtualPrice,
-    virtualPriceStr: commifyBnToString(virtualPrice, 5),
   }
 }

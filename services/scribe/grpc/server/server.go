@@ -127,11 +127,18 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 			if err != nil {
 				return fmt.Errorf("could not send log: %w", err)
 			}
+
+			span.AddEvent("Sending log.", trace.WithAttributes(
+				attribute.String(metrics.TxHash, log.TxHash.String()),
+			))
 		}
 
 		span.AddEvent("Got logs. Count: " + strconv.Itoa(len(retrievedLogs)))
 
 		if !streamNewBlocks {
+			go func() {
+				span.End()
+			}()
 			return nil
 		}
 
@@ -141,10 +148,12 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 			case <-ctx.Done():
 				return nil
 			default:
+				// TODO: Make wait time configurable (?).
 				time.Sleep(time.Duration(wait) * time.Second)
-				latestScribeBlock, err := s.db.RetrieveLastIndexed(ctx, common.HexToAddress(req.Filter.ContractAddress.GetData()), req.Filter.ChainId)
+				wait = 1
+				latestScribeBlock, err := s.db.RetrieveLastIndexed(ctx, common.HexToAddress(req.Filter.ContractAddress.GetData()), req.Filter.ChainId, false)
 				if err != nil {
-					return fmt.Errorf("could not retrieve last indexed block: %w", err)
+					continue
 				}
 
 				if latestScribeBlock > toBlock {
@@ -160,7 +169,6 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 
 					break STREAM
 				}
-				wait = 1
 			}
 		}
 	}
@@ -170,7 +178,7 @@ func (s *server) Check(context.Context, *pbscribe.HealthCheckRequest) (*pbscribe
 	return &pbscribe.HealthCheckResponse{Status: pbscribe.HealthCheckResponse_SERVING}, nil
 }
 
-func (s *server) Watch(a *pbscribe.HealthCheckRequest, res pbscribe.ScribeService_WatchServer) error {
+func (s *server) Watch(_ *pbscribe.HealthCheckRequest, res pbscribe.ScribeService_WatchServer) error {
 	for {
 		select {
 		case <-res.Context().Done():
@@ -195,7 +203,7 @@ func (s *server) setBlocks(ctx context.Context, req *pbscribe.StreamLogsRequest)
 	for i, block := range blocks {
 		switch block {
 		case "latest":
-			lastIndexed, err := s.db.RetrieveLastIndexed(ctx, common.HexToAddress(req.Filter.ContractAddress.GetData()), req.Filter.ChainId)
+			lastIndexed, err := s.db.RetrieveLastIndexed(ctx, common.HexToAddress(req.Filter.ContractAddress.GetData()), req.Filter.ChainId, false)
 			if err != nil {
 				return 0, 0, fmt.Errorf("could not retrieve last indexed block: %w", err)
 			}
