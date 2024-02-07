@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/synapsecns/sanguine/core"
@@ -51,16 +52,19 @@ func (a *arbitrumSDKImpl) EstimateGas(ctx context.Context, call ethereum.CallMsg
 		return 0, errors.New("call.To cannot be nil")
 	}
 	// TODO: maybe need to copy the logic that sets the gasprice if it's empty?
-
-	a.nodeInterface.GetGasEstimateComponents(&bind.TransactOpts{
+	gasEstimate, gasEstimateForL1, _, _, err := a.nodeInterface.GetGasEstimateComponents(&bind.TransactOpts{
 		From: call.From,
 		// note: this is ignored
-		GasLimit: call.Gas,
-		GasPrice: core.CopyBigInt(call.GasPrice),
+		GasLimit:  call.Gas,
+		GasPrice:  core.CopyBigInt(call.GasPrice),
 		GasFeeCap: core.CopyBigInt(call.GasFeeCap),
 		GasTipCap: core.CopyBigInt(call.GasTipCap),
-		Value: co
+		Value:     core.CopyBigInt(call.Value),
 	}, *call.To, false, call.Data)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get gas estimate components: %w", err)
+	}
+	return gasEstimate + gasEstimateForL1, nil
 }
 
 // this is a type assertion used to make sure the arbitrum sdk matches the standard contracttransactor interface
