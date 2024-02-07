@@ -179,9 +179,8 @@ export const AVALANCHE_POOL_SWAP_TOKEN = new Token({
   logo: synapseLogo,
   poolName: 'Avalanche Stableswap Pool ', // DONT GET RID OF SPACE AFTER POOL
   routerIndex: 'avalanchenusd',
-  // poolId: 3,
   // 420 pool id sets pool to not show in staking page
-  notStake: true,
+  // notStake: true,
   poolId: 3,
   poolType: 'USD',
   swapAddresses: {
