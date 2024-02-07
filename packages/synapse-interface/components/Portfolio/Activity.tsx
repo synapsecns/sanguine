@@ -12,7 +12,7 @@ import { TransactionsState } from '@/slices/transactions/reducer'
 import { PortfolioState } from '@/slices/portfolio/reducer'
 import { Transaction, TransactionType } from './Transaction/Transaction'
 import { UserExplorerLink } from './Transaction/components/TransactionExplorerLink'
-import { NoSearchResultsContent } from './PortfolioContent/PortfolioContent'
+import { NoSearchResultsContent } from './components/NoSearchResultContent'
 import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
 import { AirdropRewards } from '../Activity/AirdropRewards'
 
