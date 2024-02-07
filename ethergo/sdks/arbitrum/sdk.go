@@ -72,7 +72,7 @@ func (a *arbitrumSDKImpl) EstimateGas(ctx context.Context, call ethereum.CallMsg
 // methods for gas without doing the whole things.
 // It will fail to compile if methods are different.
 //
-//nolint:deadcode
+//nolint:deadcode,unused
 type unfiormMethodAssertion interface {
 	bind.ContractTransactor
 	SDK
