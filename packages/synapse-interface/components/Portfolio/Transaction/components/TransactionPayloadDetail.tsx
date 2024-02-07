@@ -21,11 +21,13 @@ export const TransactionPayloadDetail = ({
   token,
   tokenAmount,
   isOrigin,
+  className,
 }: {
   chain?: Chain
   token?: Token
   tokenAmount?: string | number
   isOrigin: boolean
+  className?: string
 }) => {
   const dispatch = useAppDispatch()
 
@@ -55,55 +57,51 @@ export const TransactionPayloadDetail = ({
     return null
   }, [tokenAmount, token, chain])
 
+  const buttonStyle = 'flex gap-1.5 pl-1.5 pr-2.5 py-0.5 -my-0.5 items-center cursor-pointer rounded border border-transparent hover:border-surface hover:bg-tint active:opacity-70 w-fit'
+
   return (
     <div
-      data-test-id="transaction-payload-detail"
-      className="flex flex-col p-1 space-y-1"
+      data-test-id='transaction-payload-detail'
+      className={className}
     >
       {chain && (
         <div
-          data-test-id="transaction-payload-network"
+          data-test-id='transaction-payload-network'
           onClick={handleSelectChainCallback}
-          className={`
-            flex flex-row px-1 items-center cursor-pointer rounded-sm w-fit
-            hover:bg-tint active:opacity-[67%]
-          `}
+          className={buttonStyle}
         >
           <Image
             src={chain.chainImg}
-            className="w-4 h-4 mr-1.5 rounded-full"
+            className='w-4 h-4 pt-0.5 ml-0.5'
             alt={`${chain.name} icon`}
           />
-          <div className="whitespace-nowrap">{chain.name}</div>
+          {chain.name}
         </div>
       )}
 
       {token && tokenAmount && (
         <div
-          data-test-id="transaction-payload-token"
+          data-test-id='transaction-payload-token'
           onClick={handleSelectTokenCallback}
-          className={`
-            flex flex-row px-1 items-center cursor-pointer rounded-sm w-fit
-            hover:bg-tint active:opacity-[67%]
-          `}
+          className={buttonStyle}
         >
           <Image
             src={token?.icon}
-            className="items-center w-4 h-4 mr-1.5 rounded-full"
+            className='items-center w-5 h-5 mt-px'
             alt={`${token?.name} icon`}
           />
           {typeof tokenAmount === 'string' && tokenDecimals ? (
-            <div className="mr-1">
+            <span>
               {trimTrailingZeroesAfterDecimal(
                 formatBigIntToString(BigInt(tokenAmount), tokenDecimals, 4)
               )}
-            </div>
+            </span>
           ) : typeof tokenAmount === 'number' ? (
-            <div className="mr-1">{numeral(tokenAmount).format('0,0.000')}</div>
+            <span>{numeral(tokenAmount).format('0,0.000')}</span>
           ) : (
-            <div className="mr-1">...</div>
+            <span>…</span>
           )}
-          <div className="mt-0.5 text-xs md:text-sm">{token?.symbol}</div>
+          <span className='mt-0.5 text-sm'>{token?.symbol}</span>
         </div>
       )}
     </div>

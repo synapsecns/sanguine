@@ -33,14 +33,15 @@ export const AnimatedProgressBar = memo(
     const maskId = `mask-${id}`
 
     return (
-      <div id="animated-progress-bar" className="absolute right-1 left-1">
+      // <div id="animated-progress-bar">
         <svg
+          id="animated-progress-bar"
           key={Date.now()}
           width="100%"
           height={height}
           xmlns="http://www.w3.org/2000/svg"
           className="rounded-sm"
-          style={{ background: '#444' }}
+          // style={{ background: '#444' }}
         >
           <defs>
             <linearGradient
@@ -94,7 +95,7 @@ export const AnimatedProgressBar = memo(
                 attributeName="fill"
                 values={`${synapsePurple}; ${
                   isComplete
-                    ? `hsl(185deg 100% 40%); hsl(105deg 100% 60%)`
+                    ? `hsl(185deg 100% 40%); rgb(74 222 128)`
                     : `${synapsePurple}; hsl(15deg 100% 65%)`
                 }`}
                 keyTimes={`0; .5; 1`}
@@ -104,7 +105,7 @@ export const AnimatedProgressBar = memo(
             )}
           </rect>
         </svg>
-      </div>
+      // </div>
     )
   }
 )

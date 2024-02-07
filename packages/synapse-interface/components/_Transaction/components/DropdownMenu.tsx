@@ -15,10 +15,11 @@ export const DropdownMenu = ({ children }) => {
         className={`
           flex place-items-center justify-center
           w-5 h-[21px] bg-surface rounded
-          border border-solid border-[--synapse-border]
-          cursor-pointer hover:border-[--synapse-focus]
+          border border-zinc-700
+          cursor-pointer hover:border-zinc-500
         `}
       >
+        Waiting…
         <DownArrow />
       </div>
 
