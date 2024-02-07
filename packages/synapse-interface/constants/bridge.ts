@@ -1,4 +1,4 @@
-import { USDC } from '@constants/tokens/master'
+import { USDC } from '@constants/tokens/bridgeable'
 import { COIN_SLIDE_OVER_PROPS } from '@styles/transitions'
 import * as CHAINS from '@constants/chains/master'
 
@@ -12,7 +12,11 @@ export const EMPTY_BRIDGE_QUOTE = {
   exchangeRate: 0n,
   feeAmount: 0n,
   delta: 0n,
-  quotes: { originQuery: null, destQuery: null },
+  originQuery: null,
+  destQuery: null,
+  estimatedTime: null,
+  bridgeModuleName: null,
+  gasDropAmount: 0n,
 }
 
 export const EMPTY_BRIDGE_QUOTE_ZERO = {
@@ -23,7 +27,11 @@ export const EMPTY_BRIDGE_QUOTE_ZERO = {
   exchangeRate: 0n,
   feeAmount: 0n,
   delta: 0n,
-  quotes: { originQuery: null, destQuery: null },
+  originQuery: null,
+  destQuery: null,
+  estimatedTime: null,
+  bridgeModuleName: null,
+  gasDropAmount: 0n,
 }
 /**
  * ETH Only Bridge Config used to calculate swap fees
@@ -77,7 +85,7 @@ export const TRANSITIONS_PROPS = {
     -ml-0 md:-ml-3
     md:mt-3
     bg-bgBase
-    z-20 rounded-3xl
+    z-20 rounded-lg
   `,
 }
 
@@ -90,7 +98,7 @@ export const SETTINGS_TRANSITIONS_PROPS = {
   -ml-0 md:-ml-3
   md:-mt-3
   bg-bgBase
-  z-20 rounded-3xl
+  z-20 rounded-lg
   `,
 }
 
@@ -120,6 +128,7 @@ export const SYNAPSE_CCTP_CONTRACTS = {
   [CHAINS.ETH.id]: '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84',
   [CHAINS.ARBITRUM.id]: '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84',
   [CHAINS.AVALANCHE.id]: '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84',
+  [CHAINS.BASE.id]: '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84',
 }
 
 export const ROLE_EVENTS = ['RoleGranted', 'RoleRevoked', 'RoleAdminChanged']

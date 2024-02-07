@@ -7,5 +7,5 @@ import {AgentManagerHarness} from "./AgentManagerHarness.t.sol";
 
 // solhint-disable no-empty-blocks
 contract BondingManagerHarness is BondingManager, AgentManagerHarness {
-    constructor(uint32 domain) BondingManager(domain) {}
+    constructor(uint32 synapseDomain) BondingManager(synapseDomain) {}
 }

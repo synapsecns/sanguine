@@ -7,11 +7,9 @@ interface InterfaceDestination {
     /**
      * @notice Attempts to pass a quarantined Agent Merkle Root to a local Light Manager.
      * @dev Will do nothing, if root optimistic period is not over.
-     * Note: both returned values can not be true.
-     * @return rootPassed   Whether the agent merkle root was passed to LightManager
      * @return rootPending  Whether there is a pending agent merkle root left
      */
-    function passAgentRoot() external returns (bool rootPassed, bool rootPending);
+    function passAgentRoot() external returns (bool rootPending);
 
     /**
      * @notice Accepts an attestation, which local `AgentManager` verified to have been signed
@@ -81,4 +79,10 @@ interface InterfaceDestination {
      * Returns Agent Merkle Root to be passed to LightManager once its optimistic period is over.
      */
     function nextAgentRoot() external view returns (bytes32);
+
+    /**
+     * @notice Returns the nonce of the last attestation submitted by a Notary with a given agent index.
+     * @dev Will return zero if the Notary hasn't submitted any attestations yet.
+     */
+    function lastAttestationNonce(uint32 notaryIndex) external view returns (uint32);
 }

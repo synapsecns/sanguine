@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react-jsx",
+    "baseUrl": "src",
+    "rootDir": "src",
+    "paths": {
+      "@/components/*": ["components/*"],
+      "@/constants/*": ["constants/*"],
+      "@/hooks/*": ["hooks/*"],
+      "@/utils/*": ["utils/*"],
+      "@/state/*": ["state/*"],
+      "@/assets/*": ["assets/*"],
+      "@/providers/*": ["providers/*"]
+    }
+  },
+  "exclude": ["node_modules", "examples"]
+}

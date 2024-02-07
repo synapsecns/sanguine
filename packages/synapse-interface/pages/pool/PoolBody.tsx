@@ -1,9 +1,9 @@
+import numeral from 'numeral'
 import Link from 'next/link'
 import { ChevronLeftIcon } from '@heroicons/react/outline'
-import { STAKE_PATH, POOLS_PATH } from '@urls'
+import { POOLS_PATH } from '@urls'
 import Card from '@tw/Card'
 import Grid from '@tw/Grid'
-import Button from '@tw/Button'
 import PoolInfoSection from './PoolInfoSection'
 import PoolManagement from './poolManagement'
 import { zeroAddress } from 'viem'
@@ -14,7 +14,11 @@ import { useAccount, useSwitchNetwork } from 'wagmi'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { PoolActionOptions } from '@/components/Pools/PoolActionOptions'
+import PoolTitle from './components/PoolTitle'
+import { DisplayBalances } from '../pools/PoolCard'
+import { getStakedBalance } from '@/utils/actions/getStakedBalance'
 
 const PoolBody = ({
   address,
@@ -23,6 +27,7 @@ const PoolBody = ({
   address?: Address
   connectedChainId?: number
 }) => {
+  const [isClient, setIsClient] = useState(false)
   const { chains, switchNetwork } = useSwitchNetwork()
   const { openConnectModal } = useConnectModal()
 
@@ -31,52 +36,95 @@ const PoolBody = ({
   const { pool, poolAPYData } = useSelector(
     (state: RootState) => state.poolData
   )
+  const [stakedBalance, setStakedBalance] = useState({
+    amount: 0n,
+    reward: 0n,
+  })
 
   useEffect(() => {
-    if (pool) {
-      segmentAnalyticsEvent(`[Pool] arrives at ${pool.name}`, {
-        poolName: pool.poolName,
+    setIsClient(true)
+  }, [])
+
+  useEffect(() => {
+    if (pool && isClient) {
+      segmentAnalyticsEvent(`[Pool] arrives`, {
+        poolName: pool?.poolName,
       })
     }
-  }, [])
+    if (address && isClient) {
+      getStakedBalance(
+        address as Address,
+        pool.chainId,
+        pool.poolId[pool.chainId],
+        pool
+      )
+        .then((res) => {
+          setStakedBalance(res)
+        })
+        .catch((err) => {
+          console.log('Could not get staked balances: ', err)
+        })
+    } else {
+      setStakedBalance({ amount: 0n, reward: 0n })
+    }
+  }, [isClient, address, pool])
+
+  if (!pool) return null
 
   return (
     <>
-      <div className="px-0 md:px-32">
+      <div className="">
         <Link href={POOLS_PATH}>
-          <div className="flex items-center mb-3 text-sm font-light text-white text-opacity-50 hover:text-opacity-100">
+          <div className="inline-flex items-center mb-3 text-sm font-light text-white hover:text-opacity-100">
             <ChevronLeftIcon className="w-4 h-4" />
             Back to Pools
           </div>
         </Link>
         <div className="flex justify-between">
           <PoolTitle pool={pool} />
-          <div className="flex space-x-4">
-            <div className="text-right">
-              <div className="text-sm text-white text-opacity-60">APY</div>
-              <div className="text-xl font-medium text-green-400">
-                {poolAPYData && Object.keys(poolAPYData).length > 0
-                  ? `${String(poolAPYData.fullCompoundedAPYStr)}%`
-                  : '-'}
+          <div className="flex items-center space-x-4">
+            <div className="hidden lg:flex">
+              <DisplayBalances
+                pool={pool}
+                address={address}
+                stakedBalance={stakedBalance}
+                showIcon={false}
+              />
+            </div>
+            <PoolActionOptions
+              pool={pool}
+              options={['Stake', 'Unstake', 'Claim']}
+            />
+            <div className="flex space-x-4">
+              <div className="text-right">
+                <div className="text-xl font-medium text-white">
+                  {poolAPYData && Object.keys(poolAPYData).length > 0
+                    ? `${numeral(poolAPYData.fullCompoundedAPY / 100).format(
+                        '0.0%'
+                      )}`
+                    : '-'}
+                </div>
+                <div className="text-sm text-white text-opacity-60">APY</div>
               </div>
             </div>
-            <Link href={STAKE_PATH}>
-              <Button
-                onClick={() => null}
-                className="w-16 h-12 bg-bgLight hover:bg-bgLighter active:bg-bgLighter"
-              >
-                Stake
-              </Button>
-            </Link>
           </div>
         </div>
       </div>
-      <div className="px-0 md:px-24">
+      <div className="">
         <Grid cols={{ xs: 1, sm: 1, md: 1, lg: 2 }} gap={8}>
-          <Card className="bg-bgBase rounded-3xl" divider={false}>
+          <Card
+            className="!pt-0 pb-0 pl-0 pr-0 rounded-md bg-bgBase"
+            divider={false}
+          >
             {!isConnected && (
-              <div className="flex flex-col justify-center h-full">
+              <div className="flex flex-col justify-center h-full p-10">
                 <TransactionButton
+                  style={{
+                    background:
+                      'linear-gradient(90deg, rgba(128, 0, 255, 0.2) 0%, rgba(255, 0, 191, 0.2) 100%)',
+                    border: '1px solid #9B6DD7',
+                    borderRadius: '4px',
+                  }}
                   label="Connect wallet"
                   pendingLabel="Connecting"
                   onClick={() =>
@@ -93,8 +141,14 @@ const PoolBody = ({
               </div>
             )}
             {isConnected && connectedChainId !== pool.chainId && (
-              <div className="flex flex-col justify-center h-full">
+              <div className="flex flex-col justify-center h-full p-10">
                 <TransactionButton
+                  style={{
+                    background:
+                      'linear-gradient(90deg, rgba(128, 0, 255, 0.2) 0%, rgba(255, 0, 191, 0.2) 100%)',
+                    border: '1px solid #9B6DD7',
+                    borderRadius: '4px',
+                  }}
                   label={`Switch to ${
                     chains.find((c) => c.id === pool.chainId).name
                   }`}
@@ -120,33 +174,11 @@ const PoolBody = ({
             )}
           </Card>
           <div>
-            <PoolInfoSection chainId={connectedChainId} />
+            <PoolInfoSection />
           </div>
         </Grid>
       </div>
     </>
-  )
-}
-
-const PoolTitle = ({ pool }) => {
-  return (
-    <div className="mb-5">
-      <div className="inline-flex items-center mt-2">
-        <div className="items-center hidden mr-4 md:flex lg:flex">
-          {pool?.poolTokens &&
-            pool.poolTokens.map((token) => (
-              <img
-                key={token.symbol}
-                className="relative inline-block w-8 -mr-2 text-white shadow-solid"
-                src={token.icon.src}
-              />
-            ))}
-        </div>
-        <h3 className="ml-2 mr-2 text-lg font-medium text-white md:ml-0 md:text-2xl">
-          {pool?.name}
-        </h3>
-      </div>
-    </div>
   )
 }
 

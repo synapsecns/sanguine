@@ -17,14 +17,14 @@ jobs:
       contents: write
     steps:
       - name: Git Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0 # needed if using new-from-rev (see: https://golangci-lint.run/usage/configuration/#issues-configuration)
           submodules: true
 
 
       - name: Cache Docker images.
-        uses: ScribeMD/docker-cache@0.2.6
+        uses: ScribeMD/docker-cache@0.3.6
         with:
           key: docker-release-${{ runner.os }}-${{ matrix.package }}
 
@@ -75,14 +75,12 @@ jobs:
           push: true
           file: ./docker/goreleaser/Dockerfile
           # TODO this needs to be versioned
+          # Note: this automatically pushes the latest tag for sanguine-goreleaser even on branched workflows. While unlikely,
+          # this could break local devnets that rely on working versions of this image and as such the latest tag should only be pushed on master
+          # additionally, tags representing a specific version rather than the hash of the file should be considered for future use.
           tags: ghcr.io/synapsecns/sanguine-goreleaser:latest,${{ steps.name-export.outputs.TAG_NAME }}
           cache-from: type=registry,ref=ghcr.io/synapsecns/sanguine-goreleaser:buildcache
           cache-to: type=registry,ref=ghcr.io/synapsecns/sanguine-goreleaser:buildcache,mode=max
-          build-args: |
-            SHA_ARG=6528006a74f6272c0b4239d33ee9b8d4054ac39812b30c23b4115096316beb3e
-            FILE_ARG=goreleaser-pro_Linux_x86_64.tar.gz
-            DOWNLOAD_ARG=https://github.com/goreleaser/goreleaser-pro/releases/download/v1.13.1-pro/goreleaser-pro_Linux_x86_64.tar.gz
-            VERSION_ARG=1.13.1-pro
 
   # TODO: we should find a way for this not to be duplicated with go.yml
   changes:
@@ -92,10 +90,10 @@ jobs:
     if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref || contains(github.event.head_commit.message, '[goreleaser]') }}
     outputs:
       # Expose matched filters as job 'packages' output variable
-      packages: ${{ steps.filter_go.outputs.changed_modules }}
+      packages: ${{ steps.filter_go.outputs.changed_modules_deps }}
       package_count: ${{ steps.length.outputs.FILTER_LENGTH }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: 'recursive'
@@ -103,7 +101,6 @@ jobs:
       - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
         id: filter_go
         with:
-          include_deps: true
           github_token: ${{ secrets.WORKFLOW_PAT }}
 
       - id: length
@@ -111,7 +108,7 @@ jobs:
           export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
           echo "##[set-output name=FILTER_LENGTH;]$(echo $FILTER_LENGTH)"
         env:
-          FILTERED_PATHS: ${{ steps.filter_go.outputs.changed_modules }}
+          FILTERED_PATHS: ${{ steps.filter_go.outputs.changed_modules_deps }}
 
   # TODO: we may want to dry run this on prs
   run-goreleaser:
@@ -134,7 +131,7 @@ jobs:
       volumes: [ /repo ]
     steps:
       - name: Git Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: 'recursive'
@@ -173,7 +170,7 @@ jobs:
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
           go-version: 1.20.x
 
@@ -187,7 +184,7 @@ jobs:
 
       - name: Run GoReleaser (Release)
         if: steps.branch-name.outputs.is_default == 'true'
-        run: goreleaser  --timeout 900m --rm-dist --debug -f ${{matrix.package}}/.goreleaser.yml
+        run: goreleaser  --timeout 900m --clean --debug -f ${{matrix.package}}/.goreleaser.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GONOSUM: '.*'
@@ -209,7 +206,7 @@ jobs:
 
       - name: Run GoReleaser (Snapshot)
         if: steps.branch-name.outputs.is_default != 'true' && steps.image_check.outputs.has_images == 'true'
-        run: goreleaser --timeout 900m --snapshot --rm-dist --debug -f ${{matrix.package}}/.goreleaser.yml
+        run: goreleaser --timeout 900m --snapshot --clean --debug -f ${{matrix.package}}/.goreleaser.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GONOSUM: '.*'
@@ -218,17 +215,55 @@ jobs:
           GOMEMLIMIT: 6GiB
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
 
+      - name: Get Project Name
+        id: project_id
+        run: |
+          project_name=$(yq '.project_name' ${{matrix.package}}/.goreleaser.yml)
+          echo "##[set-output name=project_name;]$(echo $project_name)"
+
       - name: Push Docker Images (Snapshot)
         if: steps.branch-name.outputs.is_default != 'true' && steps.image_check.outputs.has_images == 'true'
         run: |
-          docker_image=$(yq '.dockers | length' dist/config.yaml)
-          image_name=$(yq '.project_name' ${{matrix.package}}/.goreleaser.yml)
-          if [ $docker_image -eq "0" ]; then
+          # Load the number of docker configurations
+          docker_configs=$(yq e '.dockers | length' dist/config.yaml)
+
+          # Check if there are no docker configurations
+          if [ "$docker_configs" -eq "0" ]; then
             echo "No docker images to push"
             exit 0
           fi
-          docker tag ghcr.io/synapsecns/sanguine/$image_name:latest ghcr.io/synapsecns/$image_name:${GITHUB_SHA}
-          docker push ghcr.io/synapsecns/sanguine/$image_name:${GITHUB_SHA}
+
+          # Iterate through each docker configuration
+            i=0
+          while [ "$i" -lt "$docker_configs" ]; do
+            # Extract the first image template
+            image_template=$(yq e ".dockers[$i].image_templates[0]" dist/config.yaml)
+
+            # Extract the base name from the image template
+            image_name=$(echo "$image_template" | sed -E 's|^(.*):[^:]+$|\1|')
+
+            # Tag and push the docker image
+            docker tag "$image_name:latest" "$image_name:${GITHUB_SHA}"
+            docker push "$image_name:${GITHUB_SHA}"
+
+            i=$((i + 1))
+          done
+        env:
+          image_name: ${{ steps.project_id.outputs.project_name }}
+
+      - name: Zip Artifacts (Snapshot)
+        if: steps.branch-name.outputs.is_default != 'true' && steps.image_check.outputs.has_images == 'true'
+        run: |
+            ls
+            zip -rv ${{ steps.project_id.outputs.project_name }}.zip dist
+
+      - name: Push Artifacts (Snapshot)
+        if: steps.branch-name.outputs.is_default != 'true' && steps.image_check.outputs.has_images == 'true'
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{steps.project_id.outputs.project_name}}.zip
+          path: ${{steps.project_id.outputs.project_name}}.zip
+
       - name: Copy Releases
         if: ${{ steps.branch-name.outputs.is_default == 'true' && contains( steps.tag_version.outputs.new_tag, 'terraform-provider-iap') }}
         uses: docker://ghcr.io/synapsecns/sanguine/release-copier-action:latest
@@ -258,3 +293,11 @@ jobs:
           destination_repo: 'trajan0x/terraform-provider-kubeproxy'
           tag_name: ${{ steps.tag_version.outputs.new_tag }}
           strip_prefix: 'contrib/terraform-provider-kubeproxy/'
+
+      - name: Refresh Report Card
+        if: steps.branch-name.outputs.is_default == 'true'
+        working-directory: ${{matrix.package}}/
+        run: |
+          module_name=$(go mod edit -json | jq -r '.Module.Path')
+          curl -X POST -F "repo=$module_name" https://goreportcard.com/checks
+

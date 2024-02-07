@@ -2,6 +2,8 @@ package submitter_test
 
 import (
 	"fmt"
+	"math/big"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -20,7 +22,6 @@ import (
 	dbMocks "github.com/synapsecns/sanguine/ethergo/submitter/db/mocks"
 	submitterMocks "github.com/synapsecns/sanguine/ethergo/submitter/mocks"
 	"github.com/synapsecns/sanguine/ethergo/util"
-	"math/big"
 )
 
 func (s *SubmitterSuite) TestSetGasPrice() {
@@ -43,7 +44,7 @@ func (s *SubmitterSuite) TestSetGasPrice() {
 	maxPrice := new(big.Int).Add(gasPrice, new(big.Int).SetUint64(1))
 	cfg.SetGlobalMaxGasPrice(maxPrice)
 
-	client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Return(gasPrice, nil)
+	client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Twice().Return(gasPrice, nil)
 	err = ts.SetGasPrice(s.GetTestContext(), client, transactor, chainID, nil)
 	s.Require().NoError(err)
 
@@ -60,7 +61,7 @@ func (s *SubmitterSuite) TestSetGasPrice() {
 	// 3. Test with gas price set, but one that exceeds max, should return max (legacy tx)
 	cfg.SetGlobalEIP1559Support(true)
 	tipCap := new(big.Int).SetUint64(uint64(gofakeit.Uint32()))
-	client.On(testsuite.GetFunctionName(client.SuggestGasTipCap), mock.Anything).Return(tipCap, nil)
+	client.On(testsuite.GetFunctionName(client.SuggestGasTipCap), mock.Anything).Once().Return(tipCap, nil)
 
 	err = ts.SetGasPrice(s.GetTestContext(), client, transactor, chainID, nil)
 	s.Require().NoError(err)
@@ -68,8 +69,63 @@ func (s *SubmitterSuite) TestSetGasPrice() {
 	s.Equal(tipCap, transactor.GasTipCap, testsuite.BigIntComparer())
 	s.Equal(maxPrice, transactor.GasFeeCap, testsuite.BigIntComparer())
 
-	// 4. Test with bump (TODO)
-	// 5. Test with bump and max (TODO)
+	// 4. Test with zero gas price, should return base gas price
+	cfg.SetGlobalEIP1559Support(false)
+	baseGasPrice := new(big.Int).SetUint64(uint64(gofakeit.Uint32()))
+	cfg.SetBaseGasPrice(baseGasPrice)
+	gasPrice = big.NewInt(0)
+	client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Return(gasPrice, nil)
+
+	err = ts.SetGasPrice(s.GetTestContext(), client, transactor, chainID, nil)
+	s.Require().NoError(err)
+
+	s.Equal(baseGasPrice, transactor.GasPrice, testsuite.BigIntComparer())
+
+	// 5. Test with zero gas price with EIP1559, should return base gas price
+	cfg.SetGlobalEIP1559Support(true)
+	gasPrice = big.NewInt(0)
+	client.On(testsuite.GetFunctionName(client.SuggestGasTipCap), mock.Anything).Return(gasPrice, nil)
+
+	err = ts.SetGasPrice(s.GetTestContext(), client, transactor, chainID, nil)
+	s.Require().NoError(err)
+
+	s.Equal(baseGasPrice, transactor.GasTipCap, testsuite.BigIntComparer())
+
+	// 6. Test with bump (TODO)
+	// 7. Test with bump and max (TODO)
+}
+
+func (s *SubmitterSuite) TestGetGasBlock() {
+	wall, err := wallet.FromRandom()
+	s.Require().NoError(err)
+
+	signer := localsigner.NewSigner(wall.PrivateKey())
+
+	chainID := s.testBackends[0].GetBigChainID()
+	client := new(clientMocks.EVM)
+
+	cfg := &config.Config{}
+	ts := submitter.NewTestTransactionSubmitter(s.metrics, signer, s, s.store, cfg)
+	currentHeader := &types.Header{Number: big.NewInt(1)}
+
+	// 1. Test with failed HeaderByNumber RPC call; Error is expected.
+	mockErrMsg := "mock error"
+	client.On(testsuite.GetFunctionName(client.HeaderByNumber), mock.Anything, mock.Anything).Times(5).Return(nil, fmt.Errorf(mockErrMsg))
+	gasBlock, err := ts.GetGasBlock(s.GetTestContext(), client, int(chainID.Int64()))
+	s.Nil(gasBlock)
+	s.NotNil(err)
+
+	// 2. Test with successful HeaderByNumber RPC call.
+	client.On(testsuite.GetFunctionName(client.HeaderByNumber), mock.Anything, mock.Anything).Once().Return(currentHeader, nil)
+	gasBlock, err = ts.GetGasBlock(s.GetTestContext(), client, int(chainID.Int64()))
+	s.Require().NoError(err)
+	s.Equal(gasBlock.Number.String(), currentHeader.Number.String())
+
+	// 3. Test with failed HeaderByNumber RPC call; the cached value should be used.
+	client.On(testsuite.GetFunctionName(client.HeaderByNumber), mock.Anything, mock.Anything).Times(5).Return(nil, fmt.Errorf(mockErrMsg))
+	gasBlock, err = ts.GetGasBlock(s.GetTestContext(), client, int(chainID.Int64()))
+	s.Require().NoError(err)
+	s.Equal(gasBlock.Number.String(), currentHeader.Number.String())
 }
 
 func (s *SubmitterSuite) TestGetNonce() {

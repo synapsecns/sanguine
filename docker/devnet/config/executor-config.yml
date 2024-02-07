@@ -1,0 +1,53 @@
+# The `db_config` field specifies the database type and the source (either a path or a connection string).
+db_config:
+  # Must be mysql or sqlite.
+  type: sqlite
+  # Source is either a path (for sqlite) or a connection string (for mysql).
+  source: '/config/synapse.db'
+
+# The base omnirpc url which each chain's collection of RPC's will be proxied through.
+base_omnirpc_url: http://omnirpc:9001
+execute_interval: 5
+summit_chain_id: 42
+summit_address: 0x1EC96ab1Fdb92565A0839b12d42c13c8135f6c11
+inbox_address: 0x2eB68A0C21413aA78055F6F7F262De56979aFBEa
+
+# For each chain (including the Summit chain), specify the origin and destination addresses.
+# For remote chains, also specify the light inbox address.
+chains:
+  - chain_id: 42
+    origin_address: 0xD755a6D98C4557c66ebbD9D76f1BEbC48e84afa0
+    destination_address: 0x7219284B26F44B2A584827034422a33450635f7A
+  - chain_id: 43
+    origin_address: 0xD755a6D98C4557c66ebbD9D76f1BEbC48e84afa0
+    destination_address: 0x7219284B26F44B2A584827034422a33450635f7A
+    light_inbox_address: 0xa6A694d8D2430964DcD11f2E649649Fc9557a56b
+  - chain_id: 44
+    origin_address: 0xD755a6D98C4557c66ebbD9D76f1BEbC48e84afa0
+    destination_address: 0x7219284B26F44B2A584827034422a33450635f7A
+    light_inbox_address: 0xa6A694d8D2430964DcD11f2E649649Fc9557a56b
+
+# The `unbonded_signer` field specifies the path to the file containing the private key of the signer
+unbonded_signer:
+  type: 'File'
+  file: '/config/executor-signer.txt'
+
+submitter_config:
+  chains:
+    42:
+      supports_eip_1559: true
+      gas_estimate: 7500000
+    43:
+      gas_bump_percentage: 40
+      is_l2: true
+      gas_estimate: 7500000
+    44:
+      gas_bump_percentage: 40
+      is_l2: true
+      gas_estimate: 7500000
+
+scribe_config:
+  type: 'remote'
+  port: 9002
+  url: 'scribe'
+

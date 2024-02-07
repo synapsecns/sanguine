@@ -12,7 +12,8 @@ import (
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/explorer/api"
-	"github.com/synapsecns/sanguine/services/explorer/config"
+	indexerconfig "github.com/synapsecns/sanguine/services/explorer/config/indexer"
+	serverconfig "github.com/synapsecns/sanguine/services/explorer/config/server"
 	"github.com/synapsecns/sanguine/services/explorer/node"
 	"github.com/urfave/cli/v2"
 )
@@ -36,18 +37,6 @@ var portFlag = &cli.UintFlag{
 	Value: 0,
 }
 
-var addressFlag = &cli.StringFlag{
-	Name:     "address",
-	Usage:    "--address <address>",
-	Value:    "",
-	Required: true,
-}
-
-var scribeURL = &cli.StringFlag{
-	Name:     "scribe-url",
-	Usage:    "--scribe-url <scribe-url>",
-	Required: true,
-}
 var clickhouseAddressFlag = &cli.StringFlag{
 	Name:     "address",
 	Usage:    "--address pass 'default' to use the default clickhouse address",
@@ -60,18 +49,19 @@ var configFlag = &cli.StringFlag{
 	TakesFile: true,
 	Required:  true,
 }
+
 var serverCommand = &cli.Command{
 	Name:        "server",
 	Description: "starts a graphql server",
-	Flags:       []cli.Flag{portFlag, addressFlag, scribeURL},
+	Flags:       []cli.Flag{configFlag},
 	Action: func(c *cli.Context) error {
 		fmt.Println("port", c.Uint("port"))
-		err := api.Start(c.Context, api.Config{
-			HTTPPort:     uint16(c.Uint(portFlag.Name)),
-			Address:      c.String(addressFlag.Name),
-			ScribeURL:    c.String(scribeURL.Name),
-			HydrateCache: true, // TODO make this a flag
-		}, metrics.Get())
+		decodeConfig, err := serverconfig.DecodeServerConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
+		if err != nil {
+			return fmt.Errorf("could not decode config: %w", err)
+		}
+
+		err = api.Start(c.Context, decodeConfig, metrics.Get())
 		if err != nil {
 			return fmt.Errorf("could not start server: %w", err)
 		}
@@ -86,7 +76,7 @@ var backfillCommand = &cli.Command{
 	Description: "backfills up to a block and then halts",
 	Flags:       []cli.Flag{configFlag, clickhouseAddressFlag},
 	Action: func(c *cli.Context) error {
-		decodeConfig, err := config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
+		decodeConfig, err := indexerconfig.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 		if err != nil {
 			return fmt.Errorf("could not decode config: %w", err)
 
@@ -121,7 +111,7 @@ var livefillCommand = &cli.Command{
 	Description: "livefills explorer",
 	Flags:       []cli.Flag{configFlag, clickhouseAddressFlag},
 	Action: func(c *cli.Context) error {
-		decodeConfig, err := config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
+		decodeConfig, err := indexerconfig.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 		if err != nil {
 			return fmt.Errorf("could not decode config: %w", err)
 

@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from 'react'
 import Slider from 'react-input-slider'
 import { Address } from '@wagmi/core'
 import { useDispatch, useSelector } from 'react-redux'
-import { Transition } from '@headlessui/react'
 import { Token } from '@types'
 import { RootState } from '@/store/store'
 
@@ -266,7 +265,7 @@ const Withdraw = ({ address }: { address: string }) => {
             />
           </div>
         </div>
-        <Grid gap={2} cols={{ xs: 1 }} className="mt-2">
+        <Grid gap={2} cols={{ xs: 1 }} className="mt-2 mb-4">
           <RadioButton
             checked={withdrawType === ALL}
             onChange={() => {
@@ -303,27 +302,15 @@ const Withdraw = ({ address }: { address: string }) => {
         <WithdrawTokenInput
           onChange={(value) => onChangeInputValue(pool, value)}
         />
+        <div className="mb-4" />
         <WithdrawButton
           approveTxn={approveTxn}
           withdrawTxn={withdrawTxn}
           isApproved={isApproved}
         />
 
-        <Transition
-          appear={true}
-          unmount={false}
-          show={stringToBigInt(inputValue, poolDecimals) > 0n}
-          enter="transition duration-100 ease-out"
-          enterFrom="transform-gpu scale-y-0 "
-          enterTo="transform-gpu scale-y-100 opacity-100"
-          leave="transition duration-75 ease-out "
-          leaveFrom="transform-gpu scale-y-100 opacity-100"
-          leaveTo="transform-gpu scale-y-0 "
-          className="-mx-6 origin-top "
-        >
-          <div
-            className={`py-3.5 pr-6 pl-6 mt-2 rounded-b-2xl bg-bgBase transition-all`}
-          >
+        {stringToBigInt(inputValue, poolDecimals) > 0n && (
+          <div className={` mt-2  bg-bgBase `}>
             <Grid cols={{ xs: 2 }}>
               <div>
                 <ReceivedTokenSection
@@ -339,7 +326,7 @@ const Withdraw = ({ address }: { address: string }) => {
               </div>
             </Grid>
           </div>
-        </Transition>
+        )}
       </div>
     )
   )

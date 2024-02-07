@@ -17,14 +17,14 @@ export function TopBarNavLink({
   const isInternal = to[0] === '/' || to[0] === '#'
   const linkContent = (
     <div className={`py-2 px-2 ${className}`}>
-      <span className="transition-all duration-75 transform-gpu">
+      <span className="transition-all duration-75 transform-gpu whitespace-nowrap">
         {labelText}
       </span>
     </div>
   )
 
   const linkClassName = `
-    group items-center px-2 my-2 font-normal tracking-wide
+    px-2 tracking-wide
     transform-gpu transition-all duration-75
     text-white ${
       match &&

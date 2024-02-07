@@ -4,6 +4,7 @@ import (
 	gosql "database/sql"
 	"fmt"
 	"github.com/ethereum/go-ethereum/crypto"
+	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 	"math"
 	"math/big"
@@ -12,7 +13,6 @@ import (
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
-	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/services/explorer/db/sql"
 )
 
@@ -676,7 +676,7 @@ func (g APISuite) TestAmountStatistic() {
 	}
 	count := float64(len(cumulativePrice))
 	mean := total / count
-	median := 0.0
+	var median float64
 	sort.Float64s(cumulativePrice)
 	switch {
 	case count == 0:
@@ -723,4 +723,43 @@ func (g APISuite) TestAmountStatistic() {
 	Nil(g.T(), err)
 	NotNil(g.T(), result)
 	Equal(g.T(), "1.000000", *result.Response.Value)
+}
+
+func (g APISuite) TestGetBlockHeight() {
+	chainID1 := 1
+	chainID2 := 56
+
+	type1 := model.ContractTypeCctp
+	type2 := model.ContractTypeBridge
+
+	contract1 := g.config.Chains[uint32(chainID1)].Contracts.CCTP
+	contract2 := g.config.Chains[uint32(chainID2)].Contracts.Bridge
+
+	block1 := uint64(3)
+	block2 := uint64(4)
+
+	contracts := []*model.ContractQuery{
+		{
+			ChainID: chainID1,
+			Type:    type1,
+		},
+		{
+			ChainID: chainID2,
+			Type:    type2,
+		},
+	}
+
+	// Store blocks in the database.
+	err := g.db.StoreLastBlock(g.GetTestContext(), uint32(chainID1), block1, contract1)
+	Nil(g.T(), err)
+
+	err = g.db.StoreLastBlock(g.GetTestContext(), uint32(chainID2), block2, contract2)
+	Nil(g.T(), err)
+
+	results, err := g.client.GetBlockHeight(g.GetTestContext(), contracts)
+	Nil(g.T(), err)
+	Equal(g.T(), 2, len(results.Response))
+	Equal(g.T(), int(block1), *results.Response[0].BlockNumber)
+	Equal(g.T(), int(block2), *results.Response[1].BlockNumber)
+
 }

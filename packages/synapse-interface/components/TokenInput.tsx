@@ -1,6 +1,5 @@
 import { useCallback, MouseEvent, useMemo } from 'react'
 import InteractiveInputRow from './InteractiveInputRow'
-import { displaySymbol } from '@utils/displaySymbol'
 import { Token } from '@types'
 import { cleanNumberInput } from '@utils/cleanNumberInput'
 import { formatBigIntToString } from '@/utils/bigint/format'
@@ -25,15 +24,13 @@ export const DepositTokenInput = ({
   chainId: number
   address: string
 }) => {
-  const symbol = displaySymbol(chainId, token)
-
   const onClickMax = useCallback(
     (e: MouseEvent<HTMLButtonElement>) => {
       e.preventDefault()
 
       const adjustedValue =
         rawBalance === 0n
-          ? formatBigIntToString(rawBalance, token.decimals[chainId], 4)
+          ? formatBigIntToString(rawBalance, token.decimals[chainId], 5)
           : formatBigIntToString(rawBalance, token.decimals[chainId])
 
       onChange(adjustedValue)
@@ -45,20 +42,15 @@ export const DepositTokenInput = ({
     <div className="items-center">
       <div className="w-full">
         <InteractiveInputRow
-          title={symbol}
+          title={token.symbol}
           isConnected={address !== undefined}
           balanceStr={balanceStr}
           onClickBalance={onClickMax}
           value={inputValueStr}
           placeholder={'0.0000'}
           onChange={(e) => onChange(cleanNumberInput(e.target.value))}
-          // disabled={inputValueStr == ''}
-          disabled={false}
-          showButton={false}
+          disabled={rawBalance === 0n}
           icon={token?.icon?.src}
-          token={token}
-          isPending={false}
-          onClickEnter={() => {}}
         />
       </div>
     </div>
@@ -80,9 +72,9 @@ export const WithdrawTokenInput = ({
       ? formatBigIntToString(
           poolUserData?.lpTokenBalance,
           pool.decimals[pool.chainId],
-          4
+          5
         )
-      : '0.0000'
+      : '0.00000'
   }, [inputValue])
 
   const onClickMax = useCallback(
@@ -109,12 +101,8 @@ export const WithdrawTokenInput = ({
           value={inputValue}
           placeholder={'0.0000'}
           onChange={(e) => onChange(cleanNumberInput(e.target.value))}
-          disabled={false}
-          showButton={false}
+          disabled={poolUserData?.lpTokenBalance === 0n}
           icon={pool?.icon?.src}
-          token={pool}
-          isPending={false}
-          onClickEnter={() => {}}
         />
       </div>
     </div>

@@ -2,9 +2,11 @@ package submitter_test
 
 import (
 	"errors"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
+	"github.com/google/uuid"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/ethergo/mocks"
@@ -12,8 +14,9 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db/txdb"
 
-	"github.com/synapsecns/sanguine/ethergo/util"
 	"math/big"
+
+	"github.com/synapsecns/sanguine/ethergo/util"
 )
 
 func (t *TXSubmitterDBSuite) TestGetNonceForChainID() {
@@ -71,7 +74,7 @@ func (t *TXSubmitterDBSuite) TestGetTransactionsWithLimitPerChainID() {
 
 				// put the transactions in the database
 				for _, tx := range txs {
-					err := testDB.PutTXS(t.GetTestContext(), db.NewTX(tx, db.Pending))
+					err := testDB.PutTXS(t.GetTestContext(), db.NewTX(tx, db.Pending, uuid.New().String()))
 					t.Require().NoError(err)
 
 					// add a copy of the tx w/ a hardcoded gas price we can use to identify the created at time. This should be returned since it's
@@ -81,7 +84,7 @@ func (t *TXSubmitterDBSuite) TestGetTransactionsWithLimitPerChainID() {
 					// sign it
 					copiedTx, err = manager.SignTx(copiedTx, backend.Signer(), mockAccount.PrivateKey, nonce.WithNoBump(true))
 					t.Require().NoError(err)
-					err = testDB.PutTXS(t.GetTestContext(), db.NewTX(copiedTx, db.Pending))
+					err = testDB.PutTXS(t.GetTestContext(), db.NewTX(copiedTx, db.Pending, uuid.New().String()))
 
 					t.Require().NoError(err)
 				}
@@ -96,7 +99,7 @@ func (t *TXSubmitterDBSuite) TestGetTransactionsWithLimitPerChainID() {
 				// check that the result is limited per ChainID and address
 				for _, tx := range result {
 					t.Require().Equal(backend.GetBigChainID(), tx.ChainId(), testsuite.BigIntComparer())
-					msg, err := util.TxToCall(tx)
+					msg, err := util.TxToCall(tx.Transaction)
 					t.Require().NoError(err)
 
 					t.Require().Equal(mockAccount.Address, msg.From)

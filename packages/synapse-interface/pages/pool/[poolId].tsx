@@ -12,8 +12,23 @@ import { fetchPoolData, resetPoolData } from '@/slices/poolDataSlice'
 import { RootState } from '@/store/store'
 import { resetPoolDeposit } from '@/slices/poolDepositSlice'
 import { resetPoolWithdraw } from '@/slices/poolWithdrawSlice'
-import LoadingSpinner from '@/components/ui/tailwind/LoadingSpinner'
-import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
+import LoadingDots from '@/components/ui/tailwind/LoadingDots'
+import { POOL_BY_ROUTER_INDEX } from '@constants/tokens'
+
+export const getStaticPaths = async () => {
+  const paths = Object.keys(POOL_BY_ROUTER_INDEX).map((key) => ({
+    params: { poolId: key },
+  }))
+
+  return {
+    paths,
+    fallback: false, // false or "blocking"
+  }
+}
+
+export const getStaticProps = async (context) => {
+  return { props: {} }
+}
 
 const PoolPage = () => {
   const router = useRouter()
@@ -21,10 +36,15 @@ const PoolPage = () => {
   const { address } = useAccount()
   const { chain } = useNetwork()
   const [connectedChainId, setConnectedChainId] = useState(0)
+  const [isClient, setIsClient] = useState(false)
 
   const { pool, isLoading } = useSelector((state: RootState) => state.poolData)
 
   const dispatch: any = useDispatch()
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   useEffect(() => {
     const handleRouteChange = () => {
@@ -45,11 +65,11 @@ const PoolPage = () => {
   }, [chain])
 
   useEffect(() => {
-    if (poolId) {
+    if (poolId && isClient) {
       dispatch(resetPoolData())
       dispatch(fetchPoolData({ poolName: String(poolId) }))
     }
-  }, [poolId, address])
+  }, [poolId, address, isClient])
 
   return (
     <LandingPageWrapper>
@@ -59,7 +79,7 @@ const PoolPage = () => {
       >
         {!pool || isLoading || !poolId ? (
           <div className="flex items-center justify-center">
-            <LoadingSpinner />
+            <LoadingDots />
           </div>
         ) : pool ? (
           <PoolBody address={address} connectedChainId={connectedChainId} />

@@ -1,11 +1,14 @@
 package client_test
 
 import (
+	"github.com/richardwilkes/toolbox/collection"
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"math/big"
 )
 
 func (s *TestClientSuite) TestClient() {
+	chainIDs := collection.NewSet[int]()
+
 	for _, backend := range s.testBackends {
 		chainID := int(backend.GetChainID())
 		// TODO: make sure chainid is correct
@@ -26,6 +29,16 @@ func (s *TestClientSuite) TestClient() {
 		evmClient, err = s.client.GetConfirmationsClient(s.GetTestContext(), chainID, 2)
 		s.Require().NoError(err)
 		s.testBlockFetch(evmClient, true)
+
+		chainIDs.Add(chainID)
+	}
+
+	res, err := s.client.GetChainIDs(s.GetTestContext())
+	s.Require().NoError(err)
+
+	s.Require().Equal(chainIDs.Len(), len(res))
+	for _, chainID := range res {
+		s.Require().True(chainIDs.Contains(chainID))
 	}
 }
 

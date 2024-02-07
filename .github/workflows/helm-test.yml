@@ -7,6 +7,7 @@ on:
   push:
     paths:
       - 'charts/**'
+      - '.github/workflows/helm-test.yml'
 
 # TODO: it'd be nice to eventually work this into release process on new images
 # definitely not a right now thing
@@ -29,7 +30,7 @@ jobs:
         chart: [ 'agents_embedded', 'agents_remote', 'scribe', 'explorer', 'omnirpc' ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -38,7 +39,7 @@ jobs:
         with:
           version: v3.9.2
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
           python-version: 3.7
 

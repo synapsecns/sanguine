@@ -3,6 +3,12 @@ package db_test
 import (
 	"database/sql"
 	"fmt"
+	"os"
+	"sync"
+	"sync/atomic"
+	"testing"
+	"time"
+
 	"github.com/Flaque/filet"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -10,16 +16,12 @@ import (
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/sql/mysql"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/sql/sqlite"
 	"github.com/synapsecns/sanguine/agents/agents/executor/metadata"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"gorm.io/gorm/schema"
-	"os"
-	"sync"
-	"sync/atomic"
-	"testing"
-	"time"
 )
 
 type DBSuite struct {
@@ -41,10 +43,18 @@ func NewEventDBSuite(tb testing.TB) *DBSuite {
 func (t *DBSuite) SetupSuite() {
 	t.TestSuite.SetupSuite()
 
-	localmetrics.SetupTestJaeger(t.GetSuiteContext(), t.T())
+	// don't use metrics on ci for integration tests
+	isCI := core.GetEnvBool("CI", false)
+	useMetrics := !isCI
+	metricsHandler := metrics.Null
+
+	if useMetrics {
+		localmetrics.SetupTestJaeger(t.GetSuiteContext(), t.T())
+		metricsHandler = metrics.Jaeger
+	}
 
 	var err error
-	t.metrics, err = metrics.NewByType(t.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	t.metrics, err = metrics.NewByType(t.GetSuiteContext(), metadata.BuildInfo(), metricsHandler)
 	Nil(t.T(), err)
 }
 

@@ -12,4 +12,5 @@ type IndexerConfig struct {
 	StartHeight          uint64
 	EndHeight            uint64
 	ConcurrencyThreshold uint64
+	Topics               [][]common.Hash
 }

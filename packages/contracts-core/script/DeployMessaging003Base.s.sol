@@ -40,12 +40,14 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
     address public summit;
 
     uint32 public localDomain;
+    uint256 public synapseDomain;
     string public globalConfig;
 
     constructor() {
         setupPK("MESSAGING_DEPLOYER_PRIVATE_KEY");
         localDomain = uint32(block.chainid);
         deploymentSalt = keccak256("Messaging003");
+        setupDevnetIfEnabled();
     }
 
     /// @dev Function to exclude script from coverage report
@@ -82,8 +84,11 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
     /// @dev Deploys Messaging contracts, transfer ownership and sanity check the new deployments.
     /// Will save the deployments, if script is being broadcasted.
     function _deploy(bool _isBroadcasted) internal {
-        startBroadcast(_isBroadcasted);
         globalConfig = loadGlobalDeployConfig("Messaging003");
+        synapseDomain = globalConfig.readUint(".chainidSummit");
+        startBroadcast(_isBroadcasted);
+        // assert this is the first thing deployed
+        getFactory();
         // Predict deployments
         agentManager = predictFactoryDeployment(agentManagerName());
         statementInbox = predictFactoryDeployment(statementInboxName());
@@ -149,7 +154,7 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
         require(agentManager != address(0), "Agent Manager not set");
         require(statementInbox != address(0), "Statement Inbox not set");
         require(agentManager.code.length > 0, "Agent Manager not deployed");
-        constructorArgs = abi.encode(localDomain, agentManager, statementInbox);
+        constructorArgs = abi.encode(synapseDomain, agentManager, statementInbox);
         deployment = factoryDeploy(DESTINATION, type(Destination).creationCode, constructorArgs);
     }
 
@@ -168,7 +173,7 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
     function _deployGasOracle() internal returns (address deployment, bytes memory constructorArgs) {
         // new GasOracle(domain, destination)
         require(destination != address(0), "Destination not set");
-        constructorArgs = abi.encode(localDomain, destination);
+        constructorArgs = abi.encode(synapseDomain, destination);
         deployment = factoryDeploy(GAS_ORACLE, type(GasOracle).creationCode, constructorArgs);
     }
 
@@ -189,7 +194,7 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
         require(agentManager != address(0), "Agent Manager not set");
         require(statementInbox != address(0), "Statement Inbox not set");
         require(gasOracle != address(0), "Gas Oracle not set");
-        constructorArgs = abi.encode(localDomain, agentManager, statementInbox, gasOracle);
+        constructorArgs = abi.encode(synapseDomain, agentManager, statementInbox, gasOracle);
         deployment = factoryDeploy(ORIGIN, type(Origin).creationCode, constructorArgs);
     }
 
@@ -209,7 +214,7 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
         // new Summit(domain, agentManager, statementInbox)
         require(agentManager != address(0), "Agent Manager not set");
         require(statementInbox != address(0), "Statement Inbox not set");
-        constructorArgs = abi.encode(localDomain, agentManager, statementInbox);
+        constructorArgs = abi.encode(synapseDomain, agentManager, statementInbox);
         deployment = factoryDeploy(SUMMIT, type(Summit).creationCode, constructorArgs);
     }
 

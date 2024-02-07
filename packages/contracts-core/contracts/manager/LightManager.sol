@@ -2,12 +2,21 @@
 pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
-import {AGENT_TREE_HEIGHT, BONDING_OPTIMISTIC_PERIOD, SYNAPSE_DOMAIN} from "../libs/Constants.sol";
 import {
+    AGENT_ROOT_PROPOSAL_TIMEOUT,
+    AGENT_TREE_HEIGHT,
+    BONDING_OPTIMISTIC_PERIOD,
+    FRESH_DATA_TIMEOUT
+} from "../libs/Constants.sol";
+import {
+    AgentRootNotProposed,
+    AgentRootTimeoutNotOver,
     IncorrectAgentIndex,
     IncorrectAgentProof,
+    IncorrectAgentRoot,
     CallerNotDestination,
     MustBeSynapseDomain,
+    NotStuck,
     SynapseDomainForbidden,
     WithdrawTipsOptimisticPeriod
 } from "../libs/Errors.sol";
@@ -18,6 +27,7 @@ import {AgentManager, IAgentManager} from "./AgentManager.sol";
 import {MessagingBase} from "../base/MessagingBase.sol";
 import {IAgentSecured} from "../interfaces/IAgentSecured.sol";
 import {InterfaceBondingManager} from "../interfaces/InterfaceBondingManager.sol";
+import {InterfaceDestination} from "../interfaces/InterfaceDestination.sol";
 import {InterfaceLightManager} from "../interfaces/InterfaceLightManager.sol";
 import {InterfaceOrigin} from "../interfaces/InterfaceOrigin.sol";
 
@@ -33,6 +43,12 @@ contract LightManager is AgentManager, InterfaceLightManager {
     /// @inheritdoc IAgentManager
     bytes32 public agentRoot;
 
+    /// @dev Pending Agent Merkle Root that was proposed by the contract owner.
+    bytes32 internal _proposedAgentRoot;
+
+    /// @dev Timestamp when the Agent Merkle Root was proposed by the contract owner.
+    uint256 internal _agentRootProposedAt;
+
     // (agentRoot => (agent => status))
     mapping(bytes32 => mapping(address => AgentStatus)) private _agentMap;
 
@@ -44,13 +60,47 @@ contract LightManager is AgentManager, InterfaceLightManager {
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
-    constructor(uint32 domain) MessagingBase("0.0.3", domain) {
-        if (domain == SYNAPSE_DOMAIN) revert SynapseDomainForbidden();
+    constructor(uint32 synapseDomain_) MessagingBase("0.0.3", synapseDomain_) {
+        if (localDomain == synapseDomain_) revert SynapseDomainForbidden();
     }
 
     function initialize(address origin_, address destination_, address inbox_) external initializer {
         __AgentManager_init(origin_, destination_, inbox_);
-        __Ownable_init();
+        __Ownable2Step_init();
+    }
+
+    // ════════════════════════════════════════════════ OWNER ONLY ═════════════════════════════════════════════════════
+
+    /// @inheritdoc InterfaceLightManager
+    function proposeAgentRootWhenStuck(bytes32 agentRoot_) external onlyOwner onlyWhenStuck {
+        if (agentRoot_ == 0) revert IncorrectAgentRoot();
+        // Update the proposed agent root, clear the timer if the root is empty
+        _proposedAgentRoot = agentRoot_;
+        _agentRootProposedAt = block.timestamp;
+        emit AgentRootProposed(agentRoot_);
+    }
+
+    /// @inheritdoc InterfaceLightManager
+    function cancelProposedAgentRoot() external onlyOwner {
+        bytes32 cancelledAgentRoot = _proposedAgentRoot;
+        if (cancelledAgentRoot == 0) revert AgentRootNotProposed();
+        _proposedAgentRoot = 0;
+        _agentRootProposedAt = 0;
+        emit ProposedAgentRootCancelled(cancelledAgentRoot);
+    }
+
+    /// @inheritdoc InterfaceLightManager
+    /// @dev Should proceed with the proposed root, even if new Notary data is available.
+    /// This is done to prevent rogue Notaries from going offline and then
+    /// indefinitely blocking the agent root resolution, thus `onlyWhenStuck` modifier is not used here.
+    function resolveProposedAgentRoot() external onlyOwner {
+        bytes32 newAgentRoot = _proposedAgentRoot;
+        if (newAgentRoot == 0) revert AgentRootNotProposed();
+        if (block.timestamp < _agentRootProposedAt + AGENT_ROOT_PROPOSAL_TIMEOUT) revert AgentRootTimeoutNotOver();
+        _setAgentRoot(newAgentRoot);
+        _proposedAgentRoot = 0;
+        _agentRootProposedAt = 0;
+        emit ProposedAgentRootResolved(newAgentRoot);
     }
 
     // ═══════════════════════════════════════════════ AGENTS LOGIC ════════════════════════════════════════════════════
@@ -96,7 +146,7 @@ contract LightManager is AgentManager, InterfaceLightManager {
         // Only destination can pass Manager Messages
         if (msg.sender != destination) revert CallerNotDestination();
         // Only AgentManager on Synapse Chain can give instructions to withdraw tips
-        if (msgOrigin != SYNAPSE_DOMAIN) revert MustBeSynapseDomain();
+        if (msgOrigin != synapseDomain) revert MustBeSynapseDomain();
         // Check that merkle proof is mature enough
         // TODO: separate constant for withdrawing tips optimistic period
         if (proofMaturity < BONDING_OPTIMISTIC_PERIOD) revert WithdrawTipsOptimisticPeriod();
@@ -105,13 +155,20 @@ contract LightManager is AgentManager, InterfaceLightManager {
         return this.remoteWithdrawTips.selector;
     }
 
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
+    /// @inheritdoc InterfaceLightManager
+    function proposedAgentRootData() external view returns (bytes32 agentRoot_, uint256 proposedAt_) {
+        return (_proposedAgentRoot, _agentRootProposedAt);
+    }
+
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
     function _afterAgentSlashed(uint32 domain, address agent, address prover) internal virtual override {
         // Send a manager message to BondingManager on SynChain
         // remoteSlashAgent(msgOrigin, proofMaturity, domain, agent, prover) with the first two security args omitted
         InterfaceOrigin(origin).sendManagerMessage({
-            destination: SYNAPSE_DOMAIN,
+            destination: synapseDomain,
             optimisticPeriod: BONDING_OPTIMISTIC_PERIOD,
             payload: abi.encodeWithSelector(InterfaceBondingManager.remoteSlashAgent.selector, domain, agent, prover)
         });

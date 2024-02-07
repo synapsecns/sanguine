@@ -1,0 +1,33 @@
+refresh_rate: 1
+rpc_url: 'https://rpc.interoperability.institute/confirmations/1/rpc/'
+scribe_url: 'https://scribe.interoperability.institute/graphql'
+bridge_config_address: '0x5217c83ca75559B1f8a8803824E5b7ac233A12a1'
+bridge_config_chain_id: 1
+chains:
+  - chain_id: 1
+    fetch_block_increment: 100
+    max_goroutines: 1
+    contracts:
+  - chain_id: 137
+    fetch_block_increment: 10000
+    max_goroutines: 1
+    contracts:
+      - contract_type: bridge
+        address: '0x8F5BBB2BB8c2Ee94639E55d5F41de9b4839C1280'
+        start_block: 45008834
+      - contract_type: swap
+        address: '0x85fCD7Dd0a1e1A9FCD5FD886ED522dE8221C3EE5'
+        start_block: 45008834
+  - chain_id: 53935
+    fetch_block_increment: 1000
+    max_goroutines: 1
+    contracts:
+      - contract_type: bridge
+        address: '0xE05c976d3f045D0E6E7A6f61083d98A15603cF6A'
+        start_block: 9746191
+      - contract_type: messagebus
+        address: '0x7bc5fD6b80067d6052A4550c69f152877bF7C748'
+        start_block: 9746191
+      - contract_type: bridge
+        address: '0xE05c976d3f045D0E6E7A6f61083d98A15603cF6A'
+        start_block: 16360227

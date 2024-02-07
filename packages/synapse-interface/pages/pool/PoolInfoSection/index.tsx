@@ -1,18 +1,19 @@
+import numeral from 'numeral'
 import AugmentWithUnits from '../components/AugmentWithUnits'
 import InfoSectionCard from './InfoSectionCard'
 import CurrencyReservesCard from './CurrencyReservesCard'
-import LoadingSpinner from '@tw/LoadingSpinner'
+import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 import {
-  commify,
   formatBigIntToPercentString,
   formatBigIntToString,
 } from '@/utils/bigint/format'
-import { stringToBigInt } from '@/utils/bigint/format'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 
-const PoolInfoSection = ({ chainId }: { chainId: number }) => {
+const PoolInfoSection = () => {
   const { pool, poolData } = useSelector((state: RootState) => state.poolData)
+
+  const usdFormat = poolData.totalLockedUSD > 1000000 ? '$0,0.0' : '$0,0'
 
   return (
     <div className="space-y-4">
@@ -22,9 +23,9 @@ const PoolInfoSection = ({ chainId }: { chainId: number }) => {
           labelText="Trading Fee"
           content={
             poolData && poolData.swapFee ? (
-              formatBigIntToPercentString(poolData.swapFee, 8, 2)
+              formatBigIntToPercentString(poolData.swapFee, 8, 2, false)
             ) : (
-              <LoadingSpinner />
+              <LoadingDots />
             )
           }
         />
@@ -33,11 +34,11 @@ const PoolInfoSection = ({ chainId }: { chainId: number }) => {
           content={
             poolData && poolData?.virtualPrice ? (
               <AugmentWithUnits
-                content={formatBigIntToString(poolData.virtualPrice, 18, 6)}
+                content={formatBigIntToString(poolData.virtualPrice, 18, 5)}
                 label={pool.priceUnits}
               />
             ) : (
-              <LoadingSpinner />
+              <LoadingDots />
             )
           }
         />
@@ -46,20 +47,11 @@ const PoolInfoSection = ({ chainId }: { chainId: number }) => {
           content={
             poolData && poolData?.totalLocked ? (
               <AugmentWithUnits
-                content={commify(
-                  formatBigIntToString(
-                    stringToBigInt(
-                      `${poolData.totalLocked}`,
-                      pool.decimals[chainId]
-                    ),
-                    18,
-                    -1
-                  )
-                )}
+                content={numeral(poolData.totalLocked).format('0,0')}
                 label={pool.priceUnits}
               />
             ) : (
-              <LoadingSpinner />
+              <LoadingDots />
             )
           }
         />
@@ -67,18 +59,12 @@ const PoolInfoSection = ({ chainId }: { chainId: number }) => {
           labelText="Total Liquidity USD"
           content={
             poolData && poolData?.totalLockedUSD ? (
-              `$${commify(
-                formatBigIntToString(
-                  stringToBigInt(
-                    `${poolData.totalLockedUSD}`,
-                    pool.decimals[chainId]
-                  ),
-                  18,
-                  -1
-                )
-              )}`
+              <AugmentWithUnits
+                content={numeral(poolData.totalLockedUSD).format(usdFormat)}
+                label="USD"
+              />
             ) : (
-              <LoadingSpinner />
+              <LoadingDots />
             )
           }
         />
@@ -90,16 +76,12 @@ const PoolInfoSection = ({ chainId }: { chainId: number }) => {
 const InfoListItem = ({
   labelText,
   content,
-  className = '',
 }: {
   labelText: string
   content: any
-  className?: string
 }) => {
   return (
-    <li
-      className={`pl-3 pr-4 py-2 text-sm w-full flex border-gray-200 ${className}`}
-    >
+    <li className="flex w-full py-2">
       <div className="text-white">{labelText} </div>
       <div className="self-center ml-auto text-white">{content}</div>
     </li>

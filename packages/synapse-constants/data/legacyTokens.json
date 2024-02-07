@@ -1,0 +1,11 @@
+{
+  "toTokenSymbol": [
+    "synFRAX"
+  ],
+  "fromTokenSymbol": [
+    ""
+  ],
+  "correctDestinationTokens": {
+    "synFRAX": "FRAX"
+  }
+}

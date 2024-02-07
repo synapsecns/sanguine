@@ -56,7 +56,7 @@ func (b *BackendSuite) TestLogsInRange() {
 		blockRange = iterator.NextChunk()
 	}
 
-	res, err := backend.GetLogsInRange(b.GetTestContext(), scribeBackend, testChainHandler.Addresses, chainID.Uint64(), blockRanges)
+	res, err := backend.GetLogsInRange(b.GetTestContext(), scribeBackend, testChainHandler.Addresses, chainID.Uint64(), blockRanges, nil)
 	Nil(b.T(), err)
 
 	// use to make sure we don't double use values
@@ -120,7 +120,7 @@ func (b *BackendSuite) TestLogsInRangeWithMultipleContracts() {
 		blockRanges = append(blockRanges, blockRange)
 		blockRange = iterator.NextChunk()
 	}
-	res, err := backend.GetLogsInRange(b.GetTestContext(), scribeBackend, testChainHandler.Addresses, chainID.Uint64(), blockRanges)
+	res, err := backend.GetLogsInRange(b.GetTestContext(), scribeBackend, testChainHandler.Addresses, chainID.Uint64(), blockRanges, nil)
 	Nil(b.T(), err)
 
 	// use to make sure we don't double use values

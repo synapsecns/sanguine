@@ -96,6 +96,7 @@ library ByteString {
         MemView memView = unwrap(signature);
         r = memView.index({index_: OFFSET_R, bytes_: 32});
         s = memView.index({index_: OFFSET_S, bytes_: 32});
+        // Can be safely casted to uint8, since we index a single byte
         v = uint8(memView.indexUint({index_: OFFSET_V, bytes_: 1}));
     }
 

@@ -5,6 +5,7 @@ import (
 
 	"github.com/Flaque/filet"
 	"github.com/stretchr/testify/suite"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
@@ -41,7 +42,16 @@ func (s *RelayerAPISuite) SetupTest() {
 
 	// create the test metrics handler
 	var err error
-	s.metricsHandler, err = metrics.NewByType(s.GetTestContext(), metadata.BuildInfo(), metrics.Jaeger)
+	// don't use metrics on ci for integration tests
+	isCI := core.GetEnvBool("CI", false)
+	useMetrics := !isCI
+	metricsHandler := metrics.Null
+
+	if useMetrics {
+		localmetrics.SetupTestJaeger(s.GetSuiteContext(), s.T())
+		metricsHandler = metrics.Jaeger
+	}
+	s.metricsHandler, err = metrics.NewByType(s.GetTestContext(), metadata.BuildInfo(), metricsHandler)
 	s.Require().NoError(err)
 
 	// create the test store

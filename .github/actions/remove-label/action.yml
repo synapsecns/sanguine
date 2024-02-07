@@ -1,0 +1,56 @@
+name: Remove Label
+description: Remove a label to the issue or pull request
+inputs:
+  issue_number:
+    description: 'The issue number to associate with. Defaults to the current issue or pull request number used to trigger the action.'
+    required: false
+    default: ''
+  label:
+    description: 'The label to add.'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    # TODO, dedupe w/ add-label
+    - name: Resolve issue number
+      id: resolve_issue_number
+      run: |
+        if [[ -n '${{ inputs.issue_number }}' ]]; then
+          echo 'Using input issue number: ${{ inputs.issue_number }}'
+          echo '::set-output name=issue::${{ inputs.issue_number }}'
+        elif [[ -n '${{ github.event.number }}' ]]; then
+          echo 'Using event number: ${{ github.event.number }}'
+          echo '::set-output name=issue::${{ github.event.number }}'
+        elif [[ -n '${{ github.event.issue.number }}' ]]; then
+          echo 'Using event issue number: ${{ github.event.issue.number }}'
+          echo '::set-output name=issue::${{ github.event.issue.number }}'
+        else
+          echo 'Could not determine issue number'
+          exit 1
+        fi
+      shell: bash
+
+    - name: Remove Label
+      uses: actions/github-script@v6
+      with:
+        script: |
+          async function removeLabel() {
+            try {
+              await github.rest.issues.removeLabel({
+                issue_number: ${{ steps.resolve_issue_number.outputs.issue }},
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: '${{ inputs.label }}'
+              });
+            } catch (error) {
+              // Log the error if it's about the label not being present.
+              if (error.status === 404) {
+                console.log(`The label '${{ inputs.label }}' does not exist on the issue.`);
+              } else {
+                console.error('Unexpected error:', error);
+              }
+            }
+          }
+
+          removeLabel();

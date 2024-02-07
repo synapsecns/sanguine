@@ -42,6 +42,10 @@ type IOriginCaller interface {
 	//
 	// Solidity: function isValidState(bytes statePayload) view returns(bool isValid)
 	IsValidState(opts *bind.CallOpts, statePayload []byte) (bool, error)
+	// LatestDisputeStatus is a free data retrieval call binding the contract method 0xdfadd81a.
+	//
+	// Solidity: function latestDisputeStatus(uint32 agentIndex) view returns((uint8,uint40,uint40))
+	LatestDisputeStatus(opts *bind.CallOpts, agentIndex uint32) (DisputeStatus, error)
 	// LocalDomain is a free data retrieval call binding the contract method 0x8d3638f4.
 	//
 	// Solidity: function localDomain() view returns(uint32)
@@ -50,6 +54,10 @@ type IOriginCaller interface {
 	//
 	// Solidity: function owner() view returns(address)
 	Owner(opts *bind.CallOpts) (common.Address, error)
+	// PendingOwner is a free data retrieval call binding the contract method 0xe30c3978.
+	//
+	// Solidity: function pendingOwner() view returns(address)
+	PendingOwner(opts *bind.CallOpts) (common.Address, error)
 	// StatesAmount is a free data retrieval call binding the contract method 0xf2437942.
 	//
 	// Solidity: function statesAmount() view returns(uint256)
@@ -62,6 +70,10 @@ type IOriginCaller interface {
 	//
 	// Solidity: function suggestState(uint32 nonce) view returns(bytes stateData)
 	SuggestState(opts *bind.CallOpts, nonce uint32) ([]byte, error)
+	// SynapseDomain is a free data retrieval call binding the contract method 0x717b8638.
+	//
+	// Solidity: function synapseDomain() view returns(uint32)
+	SynapseDomain(opts *bind.CallOpts) (uint32, error)
 	// Version is a free data retrieval call binding the contract method 0x54fd4d50.
 	//
 	// Solidity: function version() view returns(string versionString)

@@ -147,17 +147,20 @@ library AttestationLib {
 
     /// @notice Returns nonce of Summit contract at the time, when attestation was created.
     function nonce(Attestation att) internal pure returns (uint32) {
+        // Can be safely casted to uint32, since we index 4 bytes
         return uint32(att.unwrap().indexUint({index_: OFFSET_NONCE, bytes_: 4}));
     }
 
     /// @notice Returns a block number when attestation was created in Summit.
     function blockNumber(Attestation att) internal pure returns (uint40) {
+        // Can be safely casted to uint40, since we index 5 bytes
         return uint40(att.unwrap().indexUint({index_: OFFSET_BLOCK_NUMBER, bytes_: 5}));
     }
 
     /// @notice Returns a block timestamp when attestation was created in Summit.
     /// @dev This is the timestamp according to the Synapse Chain.
     function timestamp(Attestation att) internal pure returns (uint40) {
+        // Can be safely casted to uint40, since we index 5 bytes
         return uint40(att.unwrap().indexUint({index_: OFFSET_TIMESTAMP, bytes_: 5}));
     }
 }

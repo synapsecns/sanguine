@@ -24,6 +24,7 @@ type Query {
     start_block: Int!
     end_block: Int!
     page: Int!
+    asc: Boolean = False
   ): [Log]
   # returns all receipts that match the given filter
   receipts(
@@ -148,4 +149,6 @@ type Query {
     last_indexed: Int!
     page: Int!
   ): [Transaction]
+
+
 }

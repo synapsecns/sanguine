@@ -4,6 +4,10 @@ on:
     branches:
       - master
   pull_request:
+    paths:
+      - 'packages/explorer-ui/**'
+      - 'packages/docs/**'
+      - 'packages/synapse-interface/**'
 jobs:
   changes:
     runs-on: ubuntu-latest
@@ -12,7 +16,7 @@ jobs:
       packages: ${{ steps.filter_ui.outputs.changes }}
       package_count: ${{ steps.length.outputs.FILTER_LENGTH }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           # if any of these packages use submodules in the future, please uncomment this line
@@ -30,9 +34,9 @@ jobs:
         run: |
           export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
           echo "FILTER_LENGTH=$FILTER_LENGTH" >> "$GITHUB_OUTPUT"
-
         env:
           FILTERED_PATHS: ${{ steps.filter_ui.outputs.changes }}
+  # for details on how to use, please see ui-preview.md
   deploy:
     name: Deploy to Vercel
     runs-on: ubuntu-latest
@@ -49,7 +53,7 @@ jobs:
       VERCEL_ORG_ID: '${{ secrets.VERCEL_ORG_ID }}'
       NODE_ENV: 'production'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup NodeJS
         uses: ./.github/actions/setup-nodejs
         with:
@@ -72,7 +76,7 @@ jobs:
           # set the vercel project id`
           echo "VERCEL_PROJECT_ID=$TARGET_ID" >> $GITHUB_ENV
       - name: Install Vercel CLI
-        run: npm install --global vercel@30.1.0
+        run: npm install --global vercel@32.5.3
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
       - name: Build Project Artifacts

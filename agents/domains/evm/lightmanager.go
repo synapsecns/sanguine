@@ -6,14 +6,16 @@ package evm
 import (
 	"context"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/contracts/lightmanager"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
-	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
 
 // NewLightManagerContract returns a bound light manager contract.
@@ -44,30 +46,13 @@ type lightManagerContract struct {
 }
 
 //nolint:dupl
-func (a lightManagerContract) transactOptsSetup(ctx context.Context, signer signer.Signer) (*bind.TransactOpts, error) {
-	transactor, err := signer.GetTransactor(ctx, a.client.GetBigChainID())
-	if err != nil {
-		return nil, fmt.Errorf("could not sign tx: %w", err)
-	}
-
-	transactOpts, err := a.nonceManager.NewKeyedTransactor(transactor)
-	if err != nil {
-		return nil, fmt.Errorf("could not create tx: %w", err)
-	}
-
-	transactOpts.Context = ctx
-
-	return transactOpts, nil
-}
-
-//nolint:dupl
-func (a lightManagerContract) GetAgentStatus(ctx context.Context, bondedAgentSigner signer.Signer) (types.AgentStatus, error) {
-	rawStatus, err := a.contract.AgentStatus(&bind.CallOpts{Context: ctx}, bondedAgentSigner.Address())
+func (a lightManagerContract) GetAgentStatus(ctx context.Context, address common.Address) (types.AgentStatus, error) {
+	rawStatus, err := a.contract.AgentStatus(&bind.CallOpts{Context: ctx}, address)
 	if err != nil {
 		return nil, fmt.Errorf("could not retrieve agent status: %w", err)
 	}
 
-	agentStatus := types.NewAgentStatus(rawStatus.Flag, rawStatus.Domain, rawStatus.Index)
+	agentStatus := types.NewAgentStatus(types.AgentFlagType(rawStatus.Flag), rawStatus.Domain, rawStatus.Index)
 
 	return agentStatus, nil
 }
@@ -83,24 +68,27 @@ func (a lightManagerContract) GetAgentRoot(ctx context.Context) ([32]byte, error
 }
 
 func (a lightManagerContract) UpdateAgentStatus(
-	ctx context.Context,
-	unbondedSigner signer.Signer,
-	bondedSigner signer.Signer,
+	transactor *bind.TransactOpts,
+	agentAddress common.Address,
 	agentStatus types.AgentStatus,
-	agentProof [][32]byte) error {
-	transactOpts, err := a.transactOptsSetup(ctx, unbondedSigner)
-	if err != nil {
-		return fmt.Errorf("could not setup transact opts: %w", err)
-	}
-
+	agentProof [][32]byte) (*ethTypes.Transaction, error) {
 	lightManagerAgentStatus := lightmanager.AgentStatus{
-		Flag:   agentStatus.Flag(),
+		Flag:   uint8(agentStatus.Flag()),
 		Domain: agentStatus.Domain(),
 		Index:  agentStatus.Index(),
 	}
-	_, err = a.contract.UpdateAgentStatus(transactOpts, bondedSigner.Address(), lightManagerAgentStatus, agentProof)
+	tx, err := a.contract.UpdateAgentStatus(transactor, agentAddress, lightManagerAgentStatus, agentProof)
 	if err != nil {
-		return fmt.Errorf("could not submit attestation: %w", err)
+		return nil, fmt.Errorf("could not update agent status: %w", err)
+	}
+
+	return tx, nil
+}
+
+func (a lightManagerContract) GetDispute(ctx context.Context, index *big.Int) (err error) {
+	_, err = a.contract.GetDispute(&bind.CallOpts{Context: ctx}, index)
+	if err != nil {
+		return fmt.Errorf("could not retrieve dispute: %w", err)
 	}
 
 	return nil

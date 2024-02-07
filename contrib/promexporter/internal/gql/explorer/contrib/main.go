@@ -11,6 +11,7 @@ import (
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/core/metrics"
 	baseServer "github.com/synapsecns/sanguine/core/server"
+	serverConfig "github.com/synapsecns/sanguine/services/explorer/config/server"
 	gqlServer "github.com/synapsecns/sanguine/services/explorer/graphql/server"
 	"github.com/synapsecns/sanguine/services/explorer/metadata"
 	"os"
@@ -38,7 +39,7 @@ func main() {
 	if err != nil {
 		panic(fmt.Errorf("error creating null handler, %w", err))
 	}
-	gqlServer.EnableGraphql(router, nil, nil, nil, nullHandler)
+	gqlServer.EnableGraphql(router, nil, nil, nil, nil, nil, nil, nil, serverConfig.Config{}, nullHandler)
 
 	tmpPort, err := freeport.GetFreePort()
 	if err != nil {

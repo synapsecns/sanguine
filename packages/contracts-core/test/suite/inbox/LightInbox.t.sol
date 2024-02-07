@@ -30,11 +30,13 @@ contract LightInboxTest is StatementInboxTest {
     function test_cleanSetup(Random memory random) public override {
         uint32 domain = random.nextUint32();
         vm.assume(domain != DOMAIN_SYNAPSE);
+        vm.chainId(domain);
+
         address caller = random.nextAddress();
         address agentManager = random.nextAddress();
         address origin_ = random.nextAddress();
         address destination_ = random.nextAddress();
-        LightInbox lightInbox_ = new LightInbox(domain);
+        LightInbox lightInbox_ = new LightInbox(DOMAIN_SYNAPSE);
         vm.prank(caller);
         lightInbox_.initialize(agentManager, origin_, destination_);
         assertEq(lightInbox_.owner(), caller);
@@ -50,8 +52,15 @@ contract LightInboxTest is StatementInboxTest {
     }
 
     function test_constructor_revert_onSynapseChain() public {
+        vm.chainId(DOMAIN_SYNAPSE);
         vm.expectRevert(SynapseDomainForbidden.selector);
-        new LightInbox(DOMAIN_SYNAPSE);
+        new LightInbox({synapseDomain_: DOMAIN_SYNAPSE});
+    }
+
+    function test_constructor_revert_chainIdOverflow() public {
+        vm.chainId(2 ** 32);
+        vm.expectRevert("SafeCast: value doesn't fit in 32 bits");
+        new LightInbox({synapseDomain_: 1});
     }
 
     function initializeLocalContract() public override {

@@ -2,9 +2,12 @@ package client_test
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/Flaque/filet"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
@@ -13,7 +16,6 @@ import (
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"testing"
 )
 
 // ClientSuite defines the basic test suite.
@@ -41,10 +43,19 @@ func (g *ClientSuite) SetupTest() {
 
 func (g *ClientSuite) SetupSuite() {
 	g.TestSuite.SetupSuite()
-	localmetrics.SetupTestJaeger(g.GetSuiteContext(), g.T())
+
+	// don't use metrics on ci for integration tests
+	isCI := core.GetEnvBool("CI", false)
+	useMetrics := !isCI
+	metricsHandler := metrics.Null
+
+	if useMetrics {
+		localmetrics.SetupTestJaeger(g.GetSuiteContext(), g.T())
+		metricsHandler = metrics.Jaeger
+	}
 
 	var err error
-	g.metrics, err = metrics.NewByType(g.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	g.metrics, err = metrics.NewByType(g.GetSuiteContext(), metadata.BuildInfo(), metricsHandler)
 	g.Require().Nil(err)
 }
 

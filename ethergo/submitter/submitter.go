@@ -4,6 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
+	"math/big"
+	"reflect"
+	"runtime"
+	"sync"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/puzpuzpuz/xsync/v2"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -21,12 +31,6 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
-	"math"
-	"math/big"
-	"reflect"
-	"runtime"
-	"sync"
-	"time"
 )
 
 var logger = log.Logger("ethergo-submitter")
@@ -63,6 +67,8 @@ type txSubmitterImpl struct {
 	// to prevent memory leaks, this has a buffer of 1.
 	// callers adding to this channel should not block.
 	retryNow chan bool
+	// lastGasBlockCache is used to cache the last gas block for a given chain. A new block should still be fetched, if possible.
+	lastGasBlockCache *xsync.MapOf[int, *types.Header]
 	// config is the config for the transaction submitter.
 	config config.IConfig
 }
@@ -77,14 +83,15 @@ type ClientFetcher interface {
 // NewTransactionSubmitter creates a new transaction submitter.
 func NewTransactionSubmitter(metrics metrics.Handler, signer signer.Signer, fetcher ClientFetcher, db db.Service, config config.IConfig) TransactionSubmitter {
 	return &txSubmitterImpl{
-		db:        db,
-		config:    config,
-		metrics:   metrics,
-		signer:    signer,
-		fetcher:   fetcher,
-		nonceMux:  mapmutex.NewStringerMapMutex(),
-		statusMux: mapmutex.NewStringMapMutex(),
-		retryNow:  make(chan bool, 1),
+		db:                db,
+		config:            config,
+		metrics:           metrics,
+		signer:            signer,
+		fetcher:           fetcher,
+		nonceMux:          mapmutex.NewStringerMapMutex(),
+		statusMux:         mapmutex.NewStringMapMutex(),
+		retryNow:          make(chan bool, 1),
+		lastGasBlockCache: xsync.NewIntegerMapOf[int, *types.Header](),
 	}
 }
 
@@ -162,7 +169,7 @@ func (t *txSubmitterImpl) getNonce(parentCtx context.Context, chainID *big.Int, 
 	}()
 
 	g, ctx := errgroup.WithContext(ctx)
-	// onChainNonce is the latest nonce from eth_transactionCount. DB nonce is latest nonce from db + 1
+	// onChainNonce is the latest nonce from eth_transactionCount. db nonce is latest nonce from db + 1
 	// locks are not built into this method or the insertion level of the db
 	var onChainNonce, dbNonce uint64
 
@@ -206,15 +213,16 @@ func (t *txSubmitterImpl) getNonce(parentCtx context.Context, chainID *big.Int, 
 	return dbNonce, nil
 }
 
-func (t *txSubmitterImpl) storeTX(ctx context.Context, tx *types.Transaction, status db.Status) (err error) {
+func (t *txSubmitterImpl) storeTX(ctx context.Context, tx *types.Transaction, status db.Status, UUID string) (err error) {
 	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.StoreTX", trace.WithAttributes(
-		append(txToAttributes(tx), attribute.String("status", status.String()))...))
+		append(txToAttributes(tx, UUID), attribute.String("status", status.String()))...))
 
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
 
 	err = t.db.PutTXS(ctx, db.TX{
+		UUID:        UUID,
 		Transaction: tx,
 		Status:      status,
 	})
@@ -320,7 +328,7 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	defer locker.Unlock()
 
 	// now that we've stored the tx
-	err = t.storeTX(ctx, tx, db.Stored)
+	err = t.storeTX(ctx, tx, db.Stored, uuid.New().String())
 	if err != nil {
 		return 0, fmt.Errorf("could not store transaction: %w", err)
 	}
@@ -367,13 +375,14 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 			return fmt.Errorf("could not get gas price: %w", err)
 		}
 	}
+	t.applyBaseGasPrice(transactor, chainID)
 
 	//nolint: nestif
 	if prevTx != nil {
-		// TODO: cache
-		gasBlock, err := t.getGasBlock(ctx, client)
+		gasBlock, err := t.getGasBlock(ctx, client, chainID)
 		if err != nil {
 			span.AddEvent("could not get gas block", trace.WithAttributes(attribute.String("error", err.Error())))
+			return err
 		}
 
 		// if the prev tx was greater than this one, we should bump the gas price from that point
@@ -391,8 +400,24 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 	return nil
 }
 
+// applyBaseGasPrice applies the base gas price to the transactor if a gas price value is zero.
+func (t *txSubmitterImpl) applyBaseGasPrice(transactor *bind.TransactOpts, chainID int) {
+	if t.config.SupportsEIP1559(chainID) {
+		if transactor.GasFeeCap == nil || transactor.GasFeeCap.Cmp(big.NewInt(0)) == 0 {
+			transactor.GasFeeCap = t.config.GetBaseGasPrice(chainID)
+		}
+		if transactor.GasTipCap == nil || transactor.GasTipCap.Cmp(big.NewInt(0)) == 0 {
+			transactor.GasTipCap = t.config.GetBaseGasPrice(chainID)
+		}
+	} else {
+		if transactor.GasPrice == nil || transactor.GasPrice.Cmp(big.NewInt(0)) == 0 {
+			transactor.GasPrice = t.config.GetBaseGasPrice(chainID)
+		}
+	}
+}
+
 // getGasBlock gets the gas block for the given chain.
-func (t *txSubmitterImpl) getGasBlock(ctx context.Context, chainClient client.EVM) (gasBlock *types.Header, err error) {
+func (t *txSubmitterImpl) getGasBlock(ctx context.Context, chainClient client.EVM, chainID int) (gasBlock *types.Header, err error) {
 	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.getGasBlock")
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
@@ -407,9 +432,22 @@ func (t *txSubmitterImpl) getGasBlock(ctx context.Context, chainClient client.EV
 		return nil
 	}, retry.WithMin(time.Millisecond*50), retry.WithMax(time.Second*3), retry.WithMaxAttempts(4))
 
+	// if we can't get the current gas block, attempt to load it from the cache
 	if err != nil {
-		return nil, fmt.Errorf("could not get gas block: %w", err)
+		var ok bool
+		gasBlock, ok = t.lastGasBlockCache.Load(chainID)
+		if ok {
+			span.AddEvent("could not get gas block; using cached value", trace.WithAttributes(
+				attribute.String("error", err.Error()),
+				attribute.String("blockNumber", bigPtrToString(gasBlock.Number)),
+			))
+		} else {
+			return nil, fmt.Errorf("could not get gas block: %w", err)
+		}
 	}
+
+	// cache the latest gas block
+	t.lastGasBlockCache.Store(chainID, gasBlock)
 
 	return gasBlock, nil
 }
@@ -431,19 +469,17 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	// if it needs a dynamic gas estimate, we'll get it.
-	if t.config.GetDynamicGasEstimate(chainID) {
-		call, err := util.TxToCall(tx)
-		if err != nil {
-			return 0, fmt.Errorf("could not convert tx to call: %w", err)
-		}
+	// since we checked for dynamic gas estimate above, we can fetch the gas estimate here
+	call, err := util.TxToCall(tx)
+	if err != nil {
+		return 0, fmt.Errorf("could not convert tx to call: %w", err)
+	}
 
-		gasEstimate, err = chainClient.EstimateGas(ctx, *call)
-		if err != nil {
-			span.AddEvent("could not estimate gas", trace.WithAttributes(attribute.String("error", err.Error())))
-			// fallback to default
-			return t.config.GetGasEstimate(chainID), nil
-		}
+	gasEstimate, err = chainClient.EstimateGas(ctx, *call)
+	if err != nil {
+		span.AddEvent("could not estimate gas", trace.WithAttributes(attribute.String("error", err.Error())))
+		// fallback to default
+		return t.config.GetGasEstimate(chainID), nil
 	}
 
 	return gasEstimate, nil

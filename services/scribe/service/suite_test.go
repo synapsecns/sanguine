@@ -1,11 +1,13 @@
 package service_test
 
 import (
+	"testing"
+	"time"
+
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/services/scribe/metadata"
-	"testing"
-	"time"
 
 	"github.com/Flaque/filet"
 	. "github.com/stretchr/testify/assert"
@@ -53,10 +55,19 @@ func (s *ScribeSuite) SetupTest() {
 
 func (s *ScribeSuite) SetupSuite() {
 	s.TestSuite.SetupSuite()
-	localmetrics.SetupTestJaeger(s.GetSuiteContext(), s.T())
+
+	// don't use metrics on ci for integration tests
+	isCI := core.GetEnvBool("CI", false)
+	useMetrics := !isCI
+	metricsHandler := metrics.Null
+
+	if useMetrics {
+		localmetrics.SetupTestJaeger(s.GetSuiteContext(), s.T())
+		metricsHandler = metrics.Jaeger
+	}
 
 	var err error
-	s.metrics, err = metrics.NewByType(s.GetSuiteContext(), metadata.BuildInfo(), metrics.Jaeger)
+	s.metrics, err = metrics.NewByType(s.GetSuiteContext(), metadata.BuildInfo(), metricsHandler)
 	Nil(s.T(), err)
 
 	s.nullMetrics, err = metrics.NewByType(s.GetSuiteContext(), metadata.BuildInfo(), metrics.Null)

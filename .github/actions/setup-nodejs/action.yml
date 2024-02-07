@@ -23,6 +23,11 @@ runs:
       shell: bash
       id: nvmrc
 
+    - name: Setup Globals
+      shell: bash
+      run: |
+        echo "enableGlobalCache true" >> ~/.yarnrc
+
     - uses: actions/setup-node@v3
       with:
         node-version: '${{ steps.nvmrc.outputs.NVMRC }}'

@@ -25,13 +25,9 @@ import type {
   TypedEvent,
   TypedListener,
   OnEvent,
-  PromiseOrValue,
 } from './common'
 
-export type PoolTokenStruct = {
-  isWeth: PromiseOrValue<boolean>
-  token: PromiseOrValue<string>
-}
+export type PoolTokenStruct = { isWeth: boolean; token: string }
 
 export type PoolTokenStructOutput = [boolean, string] & {
   isWeth: boolean
@@ -39,8 +35,8 @@ export type PoolTokenStructOutput = [boolean, string] & {
 }
 
 export type PoolStruct = {
-  pool: PromiseOrValue<string>
-  lpToken: PromiseOrValue<string>
+  pool: string
+  lpToken: string
   tokens: PoolTokenStruct[]
 }
 
@@ -51,11 +47,11 @@ export type PoolStructOutput = [string, string, PoolTokenStructOutput[]] & {
 }
 
 export type SwapQueryStruct = {
-  swapAdapter: PromiseOrValue<string>
-  tokenOut: PromiseOrValue<string>
-  minAmountOut: PromiseOrValue<BigNumberish>
-  deadline: PromiseOrValue<BigNumberish>
-  rawParams: PromiseOrValue<BytesLike>
+  swapAdapter: string
+  tokenOut: string
+  minAmountOut: BigNumberish
+  deadline: BigNumberish
+  rawParams: BytesLike
 }
 
 export type SwapQueryStructOutput = [
@@ -72,20 +68,14 @@ export type SwapQueryStructOutput = [
   rawParams: string
 }
 
-export type BridgeTokenStruct = {
-  symbol: PromiseOrValue<string>
-  token: PromiseOrValue<string>
-}
+export type BridgeTokenStruct = { symbol: string; token: string }
 
 export type BridgeTokenStructOutput = [string, string] & {
   symbol: string
   token: string
 }
 
-export type DestRequestStruct = {
-  symbol: PromiseOrValue<string>
-  amountIn: PromiseOrValue<BigNumberish>
-}
+export type DestRequestStruct = { symbol: string; amountIn: BigNumberish }
 
 export type DestRequestStructOutput = [string, BigNumber] & {
   symbol: string
@@ -94,18 +84,20 @@ export type DestRequestStructOutput = [string, BigNumber] & {
 
 export declare namespace LocalBridgeConfig {
   export type BridgeTokenConfigStruct = {
-    id: PromiseOrValue<string>
-    token: PromiseOrValue<string>
-    tokenType: PromiseOrValue<BigNumberish>
-    bridgeToken: PromiseOrValue<string>
-    bridgeFee: PromiseOrValue<BigNumberish>
-    minFee: PromiseOrValue<BigNumberish>
-    maxFee: PromiseOrValue<BigNumberish>
+    id: string
+    token: string
+    decimals: BigNumberish
+    tokenType: BigNumberish
+    bridgeToken: string
+    bridgeFee: BigNumberish
+    minFee: BigNumberish
+    maxFee: BigNumberish
   }
 
   export type BridgeTokenConfigStructOutput = [
     string,
     string,
+    BigNumber,
     number,
     string,
     BigNumber,
@@ -114,6 +106,7 @@ export declare namespace LocalBridgeConfig {
   ] & {
     id: string
     token: string
+    decimals: BigNumber
     tokenType: number
     bridgeToken: string
     bridgeFee: BigNumber
@@ -122,11 +115,20 @@ export declare namespace LocalBridgeConfig {
   }
 }
 
+export declare namespace MulticallView {
+  export type ResultStruct = { success: boolean; returnData: BytesLike }
+
+  export type ResultStructOutput = [boolean, string] & {
+    success: boolean
+    returnData: string
+  }
+}
+
 export interface SynapseRouterInterface extends utils.Interface {
   functions: {
     'adapterSwap(address,address,uint256,address,bytes)': FunctionFragment
     'addToken(string,address,uint8,address,uint256,uint256,uint256)': FunctionFragment
-    'addTokens((string,address,uint8,address,uint256,uint256,uint256)[])': FunctionFragment
+    'addTokens((string,address,uint256,uint8,address,uint256,uint256,uint256)[])': FunctionFragment
     'allPools()': FunctionFragment
     'bridge(address,uint256,address,uint256,(address,address,uint256,uint256,bytes),(address,address,uint256,uint256,bytes))': FunctionFragment
     'bridgeTokens()': FunctionFragment
@@ -142,6 +144,7 @@ export interface SynapseRouterInterface extends utils.Interface {
     'getConnectedBridgeTokens(address)': FunctionFragment
     'getDestinationAmountOut((string,uint256)[],address)': FunctionFragment
     'getOriginAmountOut(address,string[],uint256)': FunctionFragment
+    'multicallView(bytes[])': FunctionFragment
     'owner()': FunctionFragment
     'poolInfo(address)': FunctionFragment
     'poolTokens(address)': FunctionFragment
@@ -181,6 +184,7 @@ export interface SynapseRouterInterface extends utils.Interface {
       | 'getConnectedBridgeTokens'
       | 'getDestinationAmountOut'
       | 'getOriginAmountOut'
+      | 'multicallView'
       | 'owner'
       | 'poolInfo'
       | 'poolTokens'
@@ -202,24 +206,18 @@ export interface SynapseRouterInterface extends utils.Interface {
 
   encodeFunctionData(
     functionFragment: 'adapterSwap',
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BytesLike>
-    ]
+    values: [string, string, BigNumberish, string, BytesLike]
   ): string
   encodeFunctionData(
     functionFragment: 'addToken',
     values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
+      string,
+      string,
+      BigNumberish,
+      string,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish
     ]
   ): string
   encodeFunctionData(
@@ -230,10 +228,10 @@ export interface SynapseRouterInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: 'bridge',
     values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
+      string,
+      BigNumberish,
+      string,
+      BigNumberish,
       SwapQueryStruct,
       SwapQueryStruct
     ]
@@ -248,85 +246,57 @@ export interface SynapseRouterInterface extends utils.Interface {
   ): string
   encodeFunctionData(
     functionFragment: 'calculateAddLiquidity',
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>[]]
+    values: [string, BigNumberish[]]
   ): string
   encodeFunctionData(
     functionFragment: 'calculateBridgeFee',
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+    values: [string, BigNumberish]
   ): string
   encodeFunctionData(
     functionFragment: 'calculateRemoveLiquidity',
-    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+    values: [string, BigNumberish]
   ): string
   encodeFunctionData(
     functionFragment: 'calculateSwap',
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [string, BigNumberish, BigNumberish, BigNumberish]
   ): string
   encodeFunctionData(
     functionFragment: 'calculateWithdrawOneToken',
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [string, BigNumberish, BigNumberish]
   ): string
-  encodeFunctionData(
-    functionFragment: 'config',
-    values: [PromiseOrValue<string>]
-  ): string
-  encodeFunctionData(
-    functionFragment: 'fee',
-    values: [PromiseOrValue<string>]
-  ): string
+  encodeFunctionData(functionFragment: 'config', values: [string]): string
+  encodeFunctionData(functionFragment: 'fee', values: [string]): string
   encodeFunctionData(
     functionFragment: 'getAmountOut',
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [string, string, BigNumberish]
   ): string
   encodeFunctionData(
     functionFragment: 'getConnectedBridgeTokens',
-    values: [PromiseOrValue<string>]
+    values: [string]
   ): string
   encodeFunctionData(
     functionFragment: 'getDestinationAmountOut',
-    values: [DestRequestStruct[], PromiseOrValue<string>]
+    values: [DestRequestStruct[], string]
   ): string
   encodeFunctionData(
     functionFragment: 'getOriginAmountOut',
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>[],
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [string, string[], BigNumberish]
+  ): string
+  encodeFunctionData(
+    functionFragment: 'multicallView',
+    values: [BytesLike[]]
   ): string
   encodeFunctionData(functionFragment: 'owner', values?: undefined): string
-  encodeFunctionData(
-    functionFragment: 'poolInfo',
-    values: [PromiseOrValue<string>]
-  ): string
-  encodeFunctionData(
-    functionFragment: 'poolTokens',
-    values: [PromiseOrValue<string>]
-  ): string
+  encodeFunctionData(functionFragment: 'poolInfo', values: [string]): string
+  encodeFunctionData(functionFragment: 'poolTokens', values: [string]): string
   encodeFunctionData(
     functionFragment: 'poolsAmount',
     values?: undefined
   ): string
-  encodeFunctionData(
-    functionFragment: 'removeToken',
-    values: [PromiseOrValue<string>]
-  ): string
+  encodeFunctionData(functionFragment: 'removeToken', values: [string]): string
   encodeFunctionData(
     functionFragment: 'removeTokens',
-    values: [PromiseOrValue<string>[]]
+    values: [string[]]
   ): string
   encodeFunctionData(
     functionFragment: 'renounceOwnership',
@@ -334,46 +304,28 @@ export interface SynapseRouterInterface extends utils.Interface {
   ): string
   encodeFunctionData(
     functionFragment: 'setAllowance',
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [string, string, BigNumberish]
   ): string
   encodeFunctionData(
     functionFragment: 'setSwapQuoter',
-    values: [PromiseOrValue<string>]
+    values: [string]
   ): string
   encodeFunctionData(
     functionFragment: 'setTokenConfig',
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<string>
-    ]
+    values: [string, BigNumberish, string]
   ): string
   encodeFunctionData(
     functionFragment: 'setTokenFee',
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [string, BigNumberish, BigNumberish, BigNumberish]
   ): string
   encodeFunctionData(
     functionFragment: 'swap',
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      SwapQueryStruct
-    ]
+    values: [string, string, BigNumberish, SwapQueryStruct]
   ): string
   encodeFunctionData(functionFragment: 'swapQuoter', values?: undefined): string
   encodeFunctionData(
     functionFragment: 'symbolToToken',
-    values: [PromiseOrValue<string>]
+    values: [string]
   ): string
   encodeFunctionData(
     functionFragment: 'synapseBridge',
@@ -381,11 +333,11 @@ export interface SynapseRouterInterface extends utils.Interface {
   ): string
   encodeFunctionData(
     functionFragment: 'tokenToSymbol',
-    values: [PromiseOrValue<string>]
+    values: [string]
   ): string
   encodeFunctionData(
     functionFragment: 'transferOwnership',
-    values: [PromiseOrValue<string>]
+    values: [string]
   ): string
 
   decodeFunctionResult(functionFragment: 'adapterSwap', data: BytesLike): Result
@@ -437,6 +389,10 @@ export interface SynapseRouterInterface extends utils.Interface {
   ): Result
   decodeFunctionResult(
     functionFragment: 'getOriginAmountOut',
+    data: BytesLike
+  ): Result
+  decodeFunctionResult(
+    functionFragment: 'multicallView',
     data: BytesLike
   ): Result
   decodeFunctionResult(functionFragment: 'owner', data: BytesLike): Result
@@ -531,28 +487,28 @@ export interface SynapseRouter extends BaseContract {
 
   functions: {
     adapterSwap(
-      to: PromiseOrValue<string>,
-      tokenIn: PromiseOrValue<string>,
-      amountIn: PromiseOrValue<BigNumberish>,
-      tokenOut: PromiseOrValue<string>,
-      rawParams: PromiseOrValue<BytesLike>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+      to: string,
+      tokenIn: string,
+      amountIn: BigNumberish,
+      tokenOut: string,
+      rawParams: BytesLike,
+      overrides?: PayableOverrides & { from?: string }
     ): Promise<ContractTransaction>
 
     addToken(
-      symbol: PromiseOrValue<string>,
-      token: PromiseOrValue<string>,
-      tokenType: PromiseOrValue<BigNumberish>,
-      bridgeToken: PromiseOrValue<string>,
-      bridgeFee: PromiseOrValue<BigNumberish>,
-      minFee: PromiseOrValue<BigNumberish>,
-      maxFee: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      symbol: string,
+      token: string,
+      tokenType: BigNumberish,
+      bridgeToken: string,
+      bridgeFee: BigNumberish,
+      minFee: BigNumberish,
+      maxFee: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>
 
     addTokens(
       tokens: LocalBridgeConfig.BridgeTokenConfigStruct[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>
 
     allPools(
@@ -560,13 +516,13 @@ export interface SynapseRouter extends BaseContract {
     ): Promise<[PoolStructOutput[]] & { pools: PoolStructOutput[] }>
 
     bridge(
-      to: PromiseOrValue<string>,
-      chainId: PromiseOrValue<BigNumberish>,
-      token: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
+      to: string,
+      chainId: BigNumberish,
+      token: string,
+      amount: BigNumberish,
       originQuery: SwapQueryStruct,
       destQuery: SwapQueryStruct,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: string }
     ): Promise<ContractTransaction>
 
     bridgeTokens(
@@ -578,45 +534,45 @@ export interface SynapseRouter extends BaseContract {
     ): Promise<[BigNumber] & { amount: BigNumber }>
 
     calculateAddLiquidity(
-      pool: PromiseOrValue<string>,
-      amounts: PromiseOrValue<BigNumberish>[],
+      pool: string,
+      amounts: BigNumberish[],
       overrides?: CallOverrides
     ): Promise<[BigNumber]>
 
     calculateBridgeFee(
-      token: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
+      token: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { feeAmount: BigNumber }>
 
     calculateRemoveLiquidity(
-      pool: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
+      pool: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber[]] & { amountsOut: BigNumber[] }>
 
     calculateSwap(
-      pool: PromiseOrValue<string>,
-      tokenIndexFrom: PromiseOrValue<BigNumberish>,
-      tokenIndexTo: PromiseOrValue<BigNumberish>,
-      dx: PromiseOrValue<BigNumberish>,
+      pool: string,
+      tokenIndexFrom: BigNumberish,
+      tokenIndexTo: BigNumberish,
+      dx: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { amountOut: BigNumber }>
 
     calculateWithdrawOneToken(
-      pool: PromiseOrValue<string>,
-      tokenAmount: PromiseOrValue<BigNumberish>,
-      tokenIndex: PromiseOrValue<BigNumberish>,
+      pool: string,
+      tokenAmount: BigNumberish,
+      tokenIndex: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { amountOut: BigNumber }>
 
     config(
-      arg0: PromiseOrValue<string>,
+      arg0: string,
       overrides?: CallOverrides
     ): Promise<[number, string] & { tokenType: number; bridgeToken: string }>
 
     fee(
-      arg0: PromiseOrValue<string>,
+      arg0: string,
       overrides?: CallOverrides
     ): Promise<
       [number, BigNumber, BigNumber] & {
@@ -627,14 +583,14 @@ export interface SynapseRouter extends BaseContract {
     >
 
     getAmountOut(
-      tokenIn: PromiseOrValue<string>,
-      tokenOut: PromiseOrValue<string>,
-      amountIn: PromiseOrValue<BigNumberish>,
+      tokenIn: string,
+      tokenOut: string,
+      amountIn: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[SwapQueryStructOutput]>
 
     getConnectedBridgeTokens(
-      tokenOut: PromiseOrValue<string>,
+      tokenOut: string,
       overrides?: CallOverrides
     ): Promise<
       [BridgeTokenStructOutput[]] & { tokens: BridgeTokenStructOutput[] }
@@ -642,30 +598,39 @@ export interface SynapseRouter extends BaseContract {
 
     getDestinationAmountOut(
       requests: DestRequestStruct[],
-      tokenOut: PromiseOrValue<string>,
+      tokenOut: string,
       overrides?: CallOverrides
     ): Promise<
       [SwapQueryStructOutput[]] & { destQueries: SwapQueryStructOutput[] }
     >
 
     getOriginAmountOut(
-      tokenIn: PromiseOrValue<string>,
-      tokenSymbols: PromiseOrValue<string>[],
-      amountIn: PromiseOrValue<BigNumberish>,
+      tokenIn: string,
+      tokenSymbols: string[],
+      amountIn: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
       [SwapQueryStructOutput[]] & { originQueries: SwapQueryStructOutput[] }
     >
 
+    multicallView(
+      data: BytesLike[],
+      overrides?: CallOverrides
+    ): Promise<
+      [MulticallView.ResultStructOutput[]] & {
+        callResults: MulticallView.ResultStructOutput[]
+      }
+    >
+
     owner(overrides?: CallOverrides): Promise<[string]>
 
     poolInfo(
-      pool: PromiseOrValue<string>,
+      pool: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber, string]>
 
     poolTokens(
-      pool: PromiseOrValue<string>,
+      pool: string,
       overrides?: CallOverrides
     ): Promise<[PoolTokenStructOutput[]] & { tokens: PoolTokenStructOutput[] }>
 
@@ -674,109 +639,103 @@ export interface SynapseRouter extends BaseContract {
     ): Promise<[BigNumber] & { amount: BigNumber }>
 
     removeToken(
-      token: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      token: string,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>
 
     removeTokens(
-      tokens: PromiseOrValue<string>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      tokens: string[],
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>
 
     renounceOwnership(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>
 
     setAllowance(
-      token: PromiseOrValue<string>,
-      spender: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      token: string,
+      spender: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>
 
     setSwapQuoter(
-      _swapQuoter: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      _swapQuoter: string,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>
 
     setTokenConfig(
-      token: PromiseOrValue<string>,
-      tokenType: PromiseOrValue<BigNumberish>,
-      bridgeToken: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      token: string,
+      tokenType: BigNumberish,
+      bridgeToken: string,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>
 
     setTokenFee(
-      token: PromiseOrValue<string>,
-      bridgeFee: PromiseOrValue<BigNumberish>,
-      minFee: PromiseOrValue<BigNumberish>,
-      maxFee: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      token: string,
+      bridgeFee: BigNumberish,
+      minFee: BigNumberish,
+      maxFee: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>
 
     swap(
-      to: PromiseOrValue<string>,
-      token: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
+      to: string,
+      token: string,
+      amount: BigNumberish,
       query: SwapQueryStruct,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: string }
     ): Promise<ContractTransaction>
 
     swapQuoter(overrides?: CallOverrides): Promise<[string]>
 
-    symbolToToken(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[string]>
+    symbolToToken(arg0: string, overrides?: CallOverrides): Promise<[string]>
 
     synapseBridge(overrides?: CallOverrides): Promise<[string]>
 
-    tokenToSymbol(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[string]>
+    tokenToSymbol(arg0: string, overrides?: CallOverrides): Promise<[string]>
 
     transferOwnership(
-      newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      newOwner: string,
+      overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>
   }
 
   adapterSwap(
-    to: PromiseOrValue<string>,
-    tokenIn: PromiseOrValue<string>,
-    amountIn: PromiseOrValue<BigNumberish>,
-    tokenOut: PromiseOrValue<string>,
-    rawParams: PromiseOrValue<BytesLike>,
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    to: string,
+    tokenIn: string,
+    amountIn: BigNumberish,
+    tokenOut: string,
+    rawParams: BytesLike,
+    overrides?: PayableOverrides & { from?: string }
   ): Promise<ContractTransaction>
 
   addToken(
-    symbol: PromiseOrValue<string>,
-    token: PromiseOrValue<string>,
-    tokenType: PromiseOrValue<BigNumberish>,
-    bridgeToken: PromiseOrValue<string>,
-    bridgeFee: PromiseOrValue<BigNumberish>,
-    minFee: PromiseOrValue<BigNumberish>,
-    maxFee: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    symbol: string,
+    token: string,
+    tokenType: BigNumberish,
+    bridgeToken: string,
+    bridgeFee: BigNumberish,
+    minFee: BigNumberish,
+    maxFee: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>
 
   addTokens(
     tokens: LocalBridgeConfig.BridgeTokenConfigStruct[],
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>
 
   allPools(overrides?: CallOverrides): Promise<PoolStructOutput[]>
 
   bridge(
-    to: PromiseOrValue<string>,
-    chainId: PromiseOrValue<BigNumberish>,
-    token: PromiseOrValue<string>,
-    amount: PromiseOrValue<BigNumberish>,
+    to: string,
+    chainId: BigNumberish,
+    token: string,
+    amount: BigNumberish,
     originQuery: SwapQueryStruct,
     destQuery: SwapQueryStruct,
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    overrides?: PayableOverrides & { from?: string }
   ): Promise<ContractTransaction>
 
   bridgeTokens(overrides?: CallOverrides): Promise<string[]>
@@ -784,45 +743,45 @@ export interface SynapseRouter extends BaseContract {
   bridgeTokensAmount(overrides?: CallOverrides): Promise<BigNumber>
 
   calculateAddLiquidity(
-    pool: PromiseOrValue<string>,
-    amounts: PromiseOrValue<BigNumberish>[],
+    pool: string,
+    amounts: BigNumberish[],
     overrides?: CallOverrides
   ): Promise<BigNumber>
 
   calculateBridgeFee(
-    token: PromiseOrValue<string>,
-    amount: PromiseOrValue<BigNumberish>,
+    token: string,
+    amount: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>
 
   calculateRemoveLiquidity(
-    pool: PromiseOrValue<string>,
-    amount: PromiseOrValue<BigNumberish>,
+    pool: string,
+    amount: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber[]>
 
   calculateSwap(
-    pool: PromiseOrValue<string>,
-    tokenIndexFrom: PromiseOrValue<BigNumberish>,
-    tokenIndexTo: PromiseOrValue<BigNumberish>,
-    dx: PromiseOrValue<BigNumberish>,
+    pool: string,
+    tokenIndexFrom: BigNumberish,
+    tokenIndexTo: BigNumberish,
+    dx: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>
 
   calculateWithdrawOneToken(
-    pool: PromiseOrValue<string>,
-    tokenAmount: PromiseOrValue<BigNumberish>,
-    tokenIndex: PromiseOrValue<BigNumberish>,
+    pool: string,
+    tokenAmount: BigNumberish,
+    tokenIndex: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>
 
   config(
-    arg0: PromiseOrValue<string>,
+    arg0: string,
     overrides?: CallOverrides
   ): Promise<[number, string] & { tokenType: number; bridgeToken: string }>
 
   fee(
-    arg0: PromiseOrValue<string>,
+    arg0: string,
     overrides?: CallOverrides
   ): Promise<
     [number, BigNumber, BigNumber] & {
@@ -833,130 +792,129 @@ export interface SynapseRouter extends BaseContract {
   >
 
   getAmountOut(
-    tokenIn: PromiseOrValue<string>,
-    tokenOut: PromiseOrValue<string>,
-    amountIn: PromiseOrValue<BigNumberish>,
+    tokenIn: string,
+    tokenOut: string,
+    amountIn: BigNumberish,
     overrides?: CallOverrides
   ): Promise<SwapQueryStructOutput>
 
   getConnectedBridgeTokens(
-    tokenOut: PromiseOrValue<string>,
+    tokenOut: string,
     overrides?: CallOverrides
   ): Promise<BridgeTokenStructOutput[]>
 
   getDestinationAmountOut(
     requests: DestRequestStruct[],
-    tokenOut: PromiseOrValue<string>,
+    tokenOut: string,
     overrides?: CallOverrides
   ): Promise<SwapQueryStructOutput[]>
 
   getOriginAmountOut(
-    tokenIn: PromiseOrValue<string>,
-    tokenSymbols: PromiseOrValue<string>[],
-    amountIn: PromiseOrValue<BigNumberish>,
+    tokenIn: string,
+    tokenSymbols: string[],
+    amountIn: BigNumberish,
     overrides?: CallOverrides
   ): Promise<SwapQueryStructOutput[]>
+
+  multicallView(
+    data: BytesLike[],
+    overrides?: CallOverrides
+  ): Promise<MulticallView.ResultStructOutput[]>
 
   owner(overrides?: CallOverrides): Promise<string>
 
   poolInfo(
-    pool: PromiseOrValue<string>,
+    pool: string,
     overrides?: CallOverrides
   ): Promise<[BigNumber, string]>
 
   poolTokens(
-    pool: PromiseOrValue<string>,
+    pool: string,
     overrides?: CallOverrides
   ): Promise<PoolTokenStructOutput[]>
 
   poolsAmount(overrides?: CallOverrides): Promise<BigNumber>
 
   removeToken(
-    token: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    token: string,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>
 
   removeTokens(
-    tokens: PromiseOrValue<string>[],
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    tokens: string[],
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>
 
   renounceOwnership(
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>
 
   setAllowance(
-    token: PromiseOrValue<string>,
-    spender: PromiseOrValue<string>,
-    amount: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    token: string,
+    spender: string,
+    amount: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>
 
   setSwapQuoter(
-    _swapQuoter: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    _swapQuoter: string,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>
 
   setTokenConfig(
-    token: PromiseOrValue<string>,
-    tokenType: PromiseOrValue<BigNumberish>,
-    bridgeToken: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    token: string,
+    tokenType: BigNumberish,
+    bridgeToken: string,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>
 
   setTokenFee(
-    token: PromiseOrValue<string>,
-    bridgeFee: PromiseOrValue<BigNumberish>,
-    minFee: PromiseOrValue<BigNumberish>,
-    maxFee: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    token: string,
+    bridgeFee: BigNumberish,
+    minFee: BigNumberish,
+    maxFee: BigNumberish,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>
 
   swap(
-    to: PromiseOrValue<string>,
-    token: PromiseOrValue<string>,
-    amount: PromiseOrValue<BigNumberish>,
+    to: string,
+    token: string,
+    amount: BigNumberish,
     query: SwapQueryStruct,
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    overrides?: PayableOverrides & { from?: string }
   ): Promise<ContractTransaction>
 
   swapQuoter(overrides?: CallOverrides): Promise<string>
 
-  symbolToToken(
-    arg0: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<string>
+  symbolToToken(arg0: string, overrides?: CallOverrides): Promise<string>
 
   synapseBridge(overrides?: CallOverrides): Promise<string>
 
-  tokenToSymbol(
-    arg0: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<string>
+  tokenToSymbol(arg0: string, overrides?: CallOverrides): Promise<string>
 
   transferOwnership(
-    newOwner: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
+    newOwner: string,
+    overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>
 
   callStatic: {
     adapterSwap(
-      to: PromiseOrValue<string>,
-      tokenIn: PromiseOrValue<string>,
-      amountIn: PromiseOrValue<BigNumberish>,
-      tokenOut: PromiseOrValue<string>,
-      rawParams: PromiseOrValue<BytesLike>,
+      to: string,
+      tokenIn: string,
+      amountIn: BigNumberish,
+      tokenOut: string,
+      rawParams: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>
 
     addToken(
-      symbol: PromiseOrValue<string>,
-      token: PromiseOrValue<string>,
-      tokenType: PromiseOrValue<BigNumberish>,
-      bridgeToken: PromiseOrValue<string>,
-      bridgeFee: PromiseOrValue<BigNumberish>,
-      minFee: PromiseOrValue<BigNumberish>,
-      maxFee: PromiseOrValue<BigNumberish>,
+      symbol: string,
+      token: string,
+      tokenType: BigNumberish,
+      bridgeToken: string,
+      bridgeFee: BigNumberish,
+      minFee: BigNumberish,
+      maxFee: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>
 
@@ -968,10 +926,10 @@ export interface SynapseRouter extends BaseContract {
     allPools(overrides?: CallOverrides): Promise<PoolStructOutput[]>
 
     bridge(
-      to: PromiseOrValue<string>,
-      chainId: PromiseOrValue<BigNumberish>,
-      token: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
+      to: string,
+      chainId: BigNumberish,
+      token: string,
+      amount: BigNumberish,
       originQuery: SwapQueryStruct,
       destQuery: SwapQueryStruct,
       overrides?: CallOverrides
@@ -982,45 +940,45 @@ export interface SynapseRouter extends BaseContract {
     bridgeTokensAmount(overrides?: CallOverrides): Promise<BigNumber>
 
     calculateAddLiquidity(
-      pool: PromiseOrValue<string>,
-      amounts: PromiseOrValue<BigNumberish>[],
+      pool: string,
+      amounts: BigNumberish[],
       overrides?: CallOverrides
     ): Promise<BigNumber>
 
     calculateBridgeFee(
-      token: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
+      token: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>
 
     calculateRemoveLiquidity(
-      pool: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
+      pool: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber[]>
 
     calculateSwap(
-      pool: PromiseOrValue<string>,
-      tokenIndexFrom: PromiseOrValue<BigNumberish>,
-      tokenIndexTo: PromiseOrValue<BigNumberish>,
-      dx: PromiseOrValue<BigNumberish>,
+      pool: string,
+      tokenIndexFrom: BigNumberish,
+      tokenIndexTo: BigNumberish,
+      dx: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>
 
     calculateWithdrawOneToken(
-      pool: PromiseOrValue<string>,
-      tokenAmount: PromiseOrValue<BigNumberish>,
-      tokenIndex: PromiseOrValue<BigNumberish>,
+      pool: string,
+      tokenAmount: BigNumberish,
+      tokenIndex: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>
 
     config(
-      arg0: PromiseOrValue<string>,
+      arg0: string,
       overrides?: CallOverrides
     ): Promise<[number, string] & { tokenType: number; bridgeToken: string }>
 
     fee(
-      arg0: PromiseOrValue<string>,
+      arg0: string,
       overrides?: CallOverrides
     ): Promise<
       [number, BigNumber, BigNumber] & {
@@ -1031,158 +989,148 @@ export interface SynapseRouter extends BaseContract {
     >
 
     getAmountOut(
-      tokenIn: PromiseOrValue<string>,
-      tokenOut: PromiseOrValue<string>,
-      amountIn: PromiseOrValue<BigNumberish>,
+      tokenIn: string,
+      tokenOut: string,
+      amountIn: BigNumberish,
       overrides?: CallOverrides
     ): Promise<SwapQueryStructOutput>
 
     getConnectedBridgeTokens(
-      tokenOut: PromiseOrValue<string>,
+      tokenOut: string,
       overrides?: CallOverrides
     ): Promise<BridgeTokenStructOutput[]>
 
     getDestinationAmountOut(
       requests: DestRequestStruct[],
-      tokenOut: PromiseOrValue<string>,
+      tokenOut: string,
       overrides?: CallOverrides
     ): Promise<SwapQueryStructOutput[]>
 
     getOriginAmountOut(
-      tokenIn: PromiseOrValue<string>,
-      tokenSymbols: PromiseOrValue<string>[],
-      amountIn: PromiseOrValue<BigNumberish>,
+      tokenIn: string,
+      tokenSymbols: string[],
+      amountIn: BigNumberish,
       overrides?: CallOverrides
     ): Promise<SwapQueryStructOutput[]>
+
+    multicallView(
+      data: BytesLike[],
+      overrides?: CallOverrides
+    ): Promise<MulticallView.ResultStructOutput[]>
 
     owner(overrides?: CallOverrides): Promise<string>
 
     poolInfo(
-      pool: PromiseOrValue<string>,
+      pool: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber, string]>
 
     poolTokens(
-      pool: PromiseOrValue<string>,
+      pool: string,
       overrides?: CallOverrides
     ): Promise<PoolTokenStructOutput[]>
 
     poolsAmount(overrides?: CallOverrides): Promise<BigNumber>
 
-    removeToken(
-      token: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<boolean>
+    removeToken(token: string, overrides?: CallOverrides): Promise<boolean>
 
-    removeTokens(
-      tokens: PromiseOrValue<string>[],
-      overrides?: CallOverrides
-    ): Promise<void>
+    removeTokens(tokens: string[], overrides?: CallOverrides): Promise<void>
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>
 
     setAllowance(
-      token: PromiseOrValue<string>,
-      spender: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
+      token: string,
+      spender: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>
 
-    setSwapQuoter(
-      _swapQuoter: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>
+    setSwapQuoter(_swapQuoter: string, overrides?: CallOverrides): Promise<void>
 
     setTokenConfig(
-      token: PromiseOrValue<string>,
-      tokenType: PromiseOrValue<BigNumberish>,
-      bridgeToken: PromiseOrValue<string>,
+      token: string,
+      tokenType: BigNumberish,
+      bridgeToken: string,
       overrides?: CallOverrides
     ): Promise<void>
 
     setTokenFee(
-      token: PromiseOrValue<string>,
-      bridgeFee: PromiseOrValue<BigNumberish>,
-      minFee: PromiseOrValue<BigNumberish>,
-      maxFee: PromiseOrValue<BigNumberish>,
+      token: string,
+      bridgeFee: BigNumberish,
+      minFee: BigNumberish,
+      maxFee: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>
 
     swap(
-      to: PromiseOrValue<string>,
-      token: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
+      to: string,
+      token: string,
+      amount: BigNumberish,
       query: SwapQueryStruct,
       overrides?: CallOverrides
     ): Promise<BigNumber>
 
     swapQuoter(overrides?: CallOverrides): Promise<string>
 
-    symbolToToken(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<string>
+    symbolToToken(arg0: string, overrides?: CallOverrides): Promise<string>
 
     synapseBridge(overrides?: CallOverrides): Promise<string>
 
-    tokenToSymbol(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<string>
+    tokenToSymbol(arg0: string, overrides?: CallOverrides): Promise<string>
 
     transferOwnership(
-      newOwner: PromiseOrValue<string>,
+      newOwner: string,
       overrides?: CallOverrides
     ): Promise<void>
   }
 
   filters: {
     'OwnershipTransferred(address,address)'(
-      previousOwner?: PromiseOrValue<string> | null,
-      newOwner?: PromiseOrValue<string> | null
+      previousOwner?: string | null,
+      newOwner?: string | null
     ): OwnershipTransferredEventFilter
     OwnershipTransferred(
-      previousOwner?: PromiseOrValue<string> | null,
-      newOwner?: PromiseOrValue<string> | null
+      previousOwner?: string | null,
+      newOwner?: string | null
     ): OwnershipTransferredEventFilter
   }
 
   estimateGas: {
     adapterSwap(
-      to: PromiseOrValue<string>,
-      tokenIn: PromiseOrValue<string>,
-      amountIn: PromiseOrValue<BigNumberish>,
-      tokenOut: PromiseOrValue<string>,
-      rawParams: PromiseOrValue<BytesLike>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+      to: string,
+      tokenIn: string,
+      amountIn: BigNumberish,
+      tokenOut: string,
+      rawParams: BytesLike,
+      overrides?: PayableOverrides & { from?: string }
     ): Promise<BigNumber>
 
     addToken(
-      symbol: PromiseOrValue<string>,
-      token: PromiseOrValue<string>,
-      tokenType: PromiseOrValue<BigNumberish>,
-      bridgeToken: PromiseOrValue<string>,
-      bridgeFee: PromiseOrValue<BigNumberish>,
-      minFee: PromiseOrValue<BigNumberish>,
-      maxFee: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      symbol: string,
+      token: string,
+      tokenType: BigNumberish,
+      bridgeToken: string,
+      bridgeFee: BigNumberish,
+      minFee: BigNumberish,
+      maxFee: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>
 
     addTokens(
       tokens: LocalBridgeConfig.BridgeTokenConfigStruct[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>
 
     allPools(overrides?: CallOverrides): Promise<BigNumber>
 
     bridge(
-      to: PromiseOrValue<string>,
-      chainId: PromiseOrValue<BigNumberish>,
-      token: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
+      to: string,
+      chainId: BigNumberish,
+      token: string,
+      amount: BigNumberish,
       originQuery: SwapQueryStruct,
       destQuery: SwapQueryStruct,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: string }
     ): Promise<BigNumber>
 
     bridgeTokens(overrides?: CallOverrides): Promise<BigNumber>
@@ -1190,192 +1138,179 @@ export interface SynapseRouter extends BaseContract {
     bridgeTokensAmount(overrides?: CallOverrides): Promise<BigNumber>
 
     calculateAddLiquidity(
-      pool: PromiseOrValue<string>,
-      amounts: PromiseOrValue<BigNumberish>[],
+      pool: string,
+      amounts: BigNumberish[],
       overrides?: CallOverrides
     ): Promise<BigNumber>
 
     calculateBridgeFee(
-      token: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
+      token: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>
 
     calculateRemoveLiquidity(
-      pool: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
+      pool: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>
 
     calculateSwap(
-      pool: PromiseOrValue<string>,
-      tokenIndexFrom: PromiseOrValue<BigNumberish>,
-      tokenIndexTo: PromiseOrValue<BigNumberish>,
-      dx: PromiseOrValue<BigNumberish>,
+      pool: string,
+      tokenIndexFrom: BigNumberish,
+      tokenIndexTo: BigNumberish,
+      dx: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>
 
     calculateWithdrawOneToken(
-      pool: PromiseOrValue<string>,
-      tokenAmount: PromiseOrValue<BigNumberish>,
-      tokenIndex: PromiseOrValue<BigNumberish>,
+      pool: string,
+      tokenAmount: BigNumberish,
+      tokenIndex: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>
 
-    config(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>
+    config(arg0: string, overrides?: CallOverrides): Promise<BigNumber>
 
-    fee(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>
+    fee(arg0: string, overrides?: CallOverrides): Promise<BigNumber>
 
     getAmountOut(
-      tokenIn: PromiseOrValue<string>,
-      tokenOut: PromiseOrValue<string>,
-      amountIn: PromiseOrValue<BigNumberish>,
+      tokenIn: string,
+      tokenOut: string,
+      amountIn: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>
 
     getConnectedBridgeTokens(
-      tokenOut: PromiseOrValue<string>,
+      tokenOut: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>
 
     getDestinationAmountOut(
       requests: DestRequestStruct[],
-      tokenOut: PromiseOrValue<string>,
+      tokenOut: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>
 
     getOriginAmountOut(
-      tokenIn: PromiseOrValue<string>,
-      tokenSymbols: PromiseOrValue<string>[],
-      amountIn: PromiseOrValue<BigNumberish>,
+      tokenIn: string,
+      tokenSymbols: string[],
+      amountIn: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>
+
+    multicallView(
+      data: BytesLike[],
       overrides?: CallOverrides
     ): Promise<BigNumber>
 
     owner(overrides?: CallOverrides): Promise<BigNumber>
 
-    poolInfo(
-      pool: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>
+    poolInfo(pool: string, overrides?: CallOverrides): Promise<BigNumber>
 
-    poolTokens(
-      pool: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>
+    poolTokens(pool: string, overrides?: CallOverrides): Promise<BigNumber>
 
     poolsAmount(overrides?: CallOverrides): Promise<BigNumber>
 
     removeToken(
-      token: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      token: string,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>
 
     removeTokens(
-      tokens: PromiseOrValue<string>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      tokens: string[],
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>
 
     renounceOwnership(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>
 
     setAllowance(
-      token: PromiseOrValue<string>,
-      spender: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      token: string,
+      spender: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>
 
     setSwapQuoter(
-      _swapQuoter: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      _swapQuoter: string,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>
 
     setTokenConfig(
-      token: PromiseOrValue<string>,
-      tokenType: PromiseOrValue<BigNumberish>,
-      bridgeToken: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      token: string,
+      tokenType: BigNumberish,
+      bridgeToken: string,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>
 
     setTokenFee(
-      token: PromiseOrValue<string>,
-      bridgeFee: PromiseOrValue<BigNumberish>,
-      minFee: PromiseOrValue<BigNumberish>,
-      maxFee: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      token: string,
+      bridgeFee: BigNumberish,
+      minFee: BigNumberish,
+      maxFee: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>
 
     swap(
-      to: PromiseOrValue<string>,
-      token: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
+      to: string,
+      token: string,
+      amount: BigNumberish,
       query: SwapQueryStruct,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: string }
     ): Promise<BigNumber>
 
     swapQuoter(overrides?: CallOverrides): Promise<BigNumber>
 
-    symbolToToken(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>
+    symbolToToken(arg0: string, overrides?: CallOverrides): Promise<BigNumber>
 
     synapseBridge(overrides?: CallOverrides): Promise<BigNumber>
 
-    tokenToSymbol(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>
+    tokenToSymbol(arg0: string, overrides?: CallOverrides): Promise<BigNumber>
 
     transferOwnership(
-      newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      newOwner: string,
+      overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>
   }
 
   populateTransaction: {
     adapterSwap(
-      to: PromiseOrValue<string>,
-      tokenIn: PromiseOrValue<string>,
-      amountIn: PromiseOrValue<BigNumberish>,
-      tokenOut: PromiseOrValue<string>,
-      rawParams: PromiseOrValue<BytesLike>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+      to: string,
+      tokenIn: string,
+      amountIn: BigNumberish,
+      tokenOut: string,
+      rawParams: BytesLike,
+      overrides?: PayableOverrides & { from?: string }
     ): Promise<PopulatedTransaction>
 
     addToken(
-      symbol: PromiseOrValue<string>,
-      token: PromiseOrValue<string>,
-      tokenType: PromiseOrValue<BigNumberish>,
-      bridgeToken: PromiseOrValue<string>,
-      bridgeFee: PromiseOrValue<BigNumberish>,
-      minFee: PromiseOrValue<BigNumberish>,
-      maxFee: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      symbol: string,
+      token: string,
+      tokenType: BigNumberish,
+      bridgeToken: string,
+      bridgeFee: BigNumberish,
+      minFee: BigNumberish,
+      maxFee: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>
 
     addTokens(
       tokens: LocalBridgeConfig.BridgeTokenConfigStruct[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>
 
     allPools(overrides?: CallOverrides): Promise<PopulatedTransaction>
 
     bridge(
-      to: PromiseOrValue<string>,
-      chainId: PromiseOrValue<BigNumberish>,
-      token: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
+      to: string,
+      chainId: BigNumberish,
+      token: string,
+      amount: BigNumberish,
       originQuery: SwapQueryStruct,
       destQuery: SwapQueryStruct,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: string }
     ): Promise<PopulatedTransaction>
 
     bridgeTokens(overrides?: CallOverrides): Promise<PopulatedTransaction>
@@ -1383,153 +1318,155 @@ export interface SynapseRouter extends BaseContract {
     bridgeTokensAmount(overrides?: CallOverrides): Promise<PopulatedTransaction>
 
     calculateAddLiquidity(
-      pool: PromiseOrValue<string>,
-      amounts: PromiseOrValue<BigNumberish>[],
+      pool: string,
+      amounts: BigNumberish[],
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>
 
     calculateBridgeFee(
-      token: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
+      token: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>
 
     calculateRemoveLiquidity(
-      pool: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
+      pool: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>
 
     calculateSwap(
-      pool: PromiseOrValue<string>,
-      tokenIndexFrom: PromiseOrValue<BigNumberish>,
-      tokenIndexTo: PromiseOrValue<BigNumberish>,
-      dx: PromiseOrValue<BigNumberish>,
+      pool: string,
+      tokenIndexFrom: BigNumberish,
+      tokenIndexTo: BigNumberish,
+      dx: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>
 
     calculateWithdrawOneToken(
-      pool: PromiseOrValue<string>,
-      tokenAmount: PromiseOrValue<BigNumberish>,
-      tokenIndex: PromiseOrValue<BigNumberish>,
+      pool: string,
+      tokenAmount: BigNumberish,
+      tokenIndex: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>
 
     config(
-      arg0: PromiseOrValue<string>,
+      arg0: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>
 
-    fee(
-      arg0: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>
+    fee(arg0: string, overrides?: CallOverrides): Promise<PopulatedTransaction>
 
     getAmountOut(
-      tokenIn: PromiseOrValue<string>,
-      tokenOut: PromiseOrValue<string>,
-      amountIn: PromiseOrValue<BigNumberish>,
+      tokenIn: string,
+      tokenOut: string,
+      amountIn: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>
 
     getConnectedBridgeTokens(
-      tokenOut: PromiseOrValue<string>,
+      tokenOut: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>
 
     getDestinationAmountOut(
       requests: DestRequestStruct[],
-      tokenOut: PromiseOrValue<string>,
+      tokenOut: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>
 
     getOriginAmountOut(
-      tokenIn: PromiseOrValue<string>,
-      tokenSymbols: PromiseOrValue<string>[],
-      amountIn: PromiseOrValue<BigNumberish>,
+      tokenIn: string,
+      tokenSymbols: string[],
+      amountIn: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>
+
+    multicallView(
+      data: BytesLike[],
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>
 
     poolInfo(
-      pool: PromiseOrValue<string>,
+      pool: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>
 
     poolTokens(
-      pool: PromiseOrValue<string>,
+      pool: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>
 
     poolsAmount(overrides?: CallOverrides): Promise<PopulatedTransaction>
 
     removeToken(
-      token: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      token: string,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>
 
     removeTokens(
-      tokens: PromiseOrValue<string>[],
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      tokens: string[],
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>
 
     renounceOwnership(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>
 
     setAllowance(
-      token: PromiseOrValue<string>,
-      spender: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      token: string,
+      spender: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>
 
     setSwapQuoter(
-      _swapQuoter: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      _swapQuoter: string,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>
 
     setTokenConfig(
-      token: PromiseOrValue<string>,
-      tokenType: PromiseOrValue<BigNumberish>,
-      bridgeToken: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      token: string,
+      tokenType: BigNumberish,
+      bridgeToken: string,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>
 
     setTokenFee(
-      token: PromiseOrValue<string>,
-      bridgeFee: PromiseOrValue<BigNumberish>,
-      minFee: PromiseOrValue<BigNumberish>,
-      maxFee: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      token: string,
+      bridgeFee: BigNumberish,
+      minFee: BigNumberish,
+      maxFee: BigNumberish,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>
 
     swap(
-      to: PromiseOrValue<string>,
-      token: PromiseOrValue<string>,
-      amount: PromiseOrValue<BigNumberish>,
+      to: string,
+      token: string,
+      amount: BigNumberish,
       query: SwapQueryStruct,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+      overrides?: PayableOverrides & { from?: string }
     ): Promise<PopulatedTransaction>
 
     swapQuoter(overrides?: CallOverrides): Promise<PopulatedTransaction>
 
     symbolToToken(
-      arg0: PromiseOrValue<string>,
+      arg0: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>
 
     synapseBridge(overrides?: CallOverrides): Promise<PopulatedTransaction>
 
     tokenToSymbol(
-      arg0: PromiseOrValue<string>,
+      arg0: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>
 
     transferOwnership(
-      newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      newOwner: string,
+      overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>
   }
 }

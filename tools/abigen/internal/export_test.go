@@ -11,8 +11,8 @@ func CreateRunFile(version string) (runFile *os.File, err error) {
 }
 
 // CompileSolidity exports compileSolidity for testingw.
-func CompileSolidity(version string, filePath string, optimizeRuns int) (map[string]*compiler.Contract, error) {
-	return compileSolidity(version, filePath, optimizeRuns)
+func CompileSolidity(version string, filePath string, optimizeRuns int, evmVersion *string) (map[string]*compiler.Contract, error) {
+	return compileSolidity(version, filePath, optimizeRuns, evmVersion)
 }
 
 // FilePathsAreEqual exports filePathsAreEqual for testing.

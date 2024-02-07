@@ -15,14 +15,21 @@ contract GasOracleTest is MessagingBaseTest {
 
     function test_cleanSetup(Random memory random) public override {
         uint32 domain = random.nextUint32();
+        vm.chainId(domain);
         address caller = random.nextAddress();
         address destination_ = random.nextAddress();
-        GasOracle cleanContract = new GasOracle(domain, destination_);
+        GasOracle cleanContract = new GasOracle(DOMAIN_SYNAPSE, destination_);
         vm.prank(caller);
         cleanContract.initialize();
         assertEq(cleanContract.owner(), caller, "!owner");
         assertEq(cleanContract.localDomain(), domain, "!localDomain");
         assertEq(cleanContract.destination(), destination_, "!destination");
+    }
+
+    function test_constructor_revert_chainIdOverflow() public {
+        vm.chainId(2 ** 32);
+        vm.expectRevert("SafeCast: value doesn't fit in 32 bits");
+        new GasOracle({synapseDomain_: 1, destination_: address(2)});
     }
 
     function initializeLocalContract() public override {
