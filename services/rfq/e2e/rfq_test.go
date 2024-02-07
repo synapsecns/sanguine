@@ -199,6 +199,7 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 	})
 }
 
+// nolint: cyclop
 func (i *IntegrationSuite) TestETHtoETH() {
 	if core.GetEnvBool("CI", false) {
 		i.T().Skip("skipping until anvil issues are fixed in CI")
