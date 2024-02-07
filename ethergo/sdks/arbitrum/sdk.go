@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -15,6 +16,7 @@ import (
 // SDK is an interface for interacting with the Arbitrum SDK.
 type SDK interface {
 	EstimateGas(ctx context.Context, call ethereum.CallMsg) (gas uint64, err error)
+	GetGasEstimateComponents(ctx context.Context, call ethereum.CallMsg) (gasEstimate uint64, gasEstimateForL1 uint64, baseFee *big.Int, l1BaseFeeEsimate *big.Int, err error)
 }
 
 type arbitrumSDKImpl struct {
@@ -51,8 +53,19 @@ func (a *arbitrumSDKImpl) EstimateGas(ctx context.Context, call ethereum.CallMsg
 	if call.To == nil {
 		return 0, errors.New("call.To cannot be nil")
 	}
+	gasEstimate, gasEstimateForL1, _, _, err := a.GetGasEstimateComponents(ctx, call)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get gas estimate components: %w", err)
+	}
+	return gasEstimate + gasEstimateForL1, nil
+}
+
+func (a *arbitrumSDKImpl) GetGasEstimateComponents(ctx context.Context, call ethereum.CallMsg) (gasEstimate uint64, gasEstimateForL1 uint64, baseFee *big.Int, l1BaseFeeEsimate *big.Int, err error) {
+	if call.To == nil {
+		return gasEstimate, gasEstimateForL1, baseFee, l1BaseFeeEsimate, errors.New("call.To cannot be nil")
+	}
 	// TODO: maybe need to copy the logic that sets the gasprice if it's empty?
-	gasEstimate, gasEstimateForL1, _, _, err := a.nodeInterface.GetGasEstimateComponents(&bind.TransactOpts{
+	gasEstimate, gasEstimateForL1, baseFee, l1BaseFeeEsimate, err = a.nodeInterface.GetGasEstimateComponents(&bind.TransactOpts{
 		Context: ctx,
 		From:    call.From,
 		// note: this is ignored
@@ -63,9 +76,9 @@ func (a *arbitrumSDKImpl) EstimateGas(ctx context.Context, call ethereum.CallMsg
 		Value:     core.CopyBigInt(call.Value),
 	}, *call.To, false, call.Data)
 	if err != nil {
-		return 0, fmt.Errorf("failed to get gas estimate components: %w", err)
+		return gasEstimate, gasEstimateForL1, baseFee, l1BaseFeeEsimate, fmt.Errorf("failed to get gas estimate components: %w", err)
 	}
-	return gasEstimate + gasEstimateForL1, nil
+	return gasEstimate, gasEstimateForL1, baseFee, l1BaseFeeEsimate, nil
 }
 
 // This is a type assertion used to make sure the arbitrum sdk matches the standard contracttransactor interface
