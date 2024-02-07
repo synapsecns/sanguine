@@ -1,19 +1,130 @@
-name: Solidity Slither
+name: Solidity
 
 on:
   pull_request:
     paths:
       - 'packages/contracts-core/**'
+      - 'packages/contracts-rfq/**'
       - '.github/workflows/solidity.yml'
   push:
     paths:
       - 'packages/contracts-core/**'
+      - 'packages/contracts-rfq/**'
       - '.github/workflows/solidity.yml'
 
 jobs:
+  changes:
+    needs: cancel-outdated
+    runs-on: ubuntu-latest
+    outputs:
+      # Expose matched filters as job 'packages' output variable
+      packages: ${{ steps.filter_solidity.outputs.changes }}
+      package_count: ${{ steps.length.outputs.FILTER_LENGTH }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # if any of these packages use submodules in the future, please uncomment this line
+          # submodules: 'recursive'
+      - uses: dorny/paths-filter@v2
+        id: filter_solidity
+        with:
+          #  make sure to update run-goreleaser when adding a new package here
+          # also add to the get-project-id step
+          filters: |
+            contracts-core: 'packages/contracts-core/**'
+            contracts-rfq: 'packages/contracts-rfq/**'
+      - id: length
+        run: |
+          export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
+          echo "##[set-output name=FILTER_LENGTH;]$(echo $FILTER_LENGTH)"
+        env:
+          FILTERED_PATHS: ${{ steps.filter_solidity.outputs.changes }}
+
+  docs:
+    name: Deploy Docs
+    runs-on: ubuntu-latest
+    needs: changes
+    if: ${{ needs.changes.outputs.package_count > 0 }}
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJson(needs.changes.outputs.packages) }}
+    env:
+      WORKING_DIRECTORY: 'packages/${{matrix.package}}'
+      VERCEL_TOKEN: '${{ secrets.VERCEL_TOKEN }}'
+      VERCEL_ORG_ID: '${{ secrets.VERCEL_ORG_ID }}'
+      NODE_ENV: 'production'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup NodeJS
+        uses: ./.github/actions/setup-nodejs
+        with:
+          cache: 'npm'
+          cache-path: ''
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          # TODO: get back to nightly once `forge doc` is working with it
+          version: nightly-09fe3e041369a816365a020f715ad6f94dbce9f2
+      - name: Install Vercel CLI
+        run: npm install --global vercel@30.1.0
+      - name: Get Project ID
+        id: project_id
+        # see: https://stackoverflow.com/a/75231888 for details
+        run: |
+          PROJECT_IDS=$(cat <<END
+          {
+            "contracts-core": "${{ secrets.VERCEL_CONTRACT_DOCS_PROJECT_ID}}",
+            "contracts-rfq": "${{ secrets.VERCEL_CONTRACT_RFQ_DOCS_PROJECT_ID }}"
+          }
+          END
+          )
+          TARGET_ID=$(echo $PROJECT_IDS | jq -r 'to_entries[] | select(.key=="${{ matrix.package }}") | .value')
+          echo "##[set-output name=VERCEL_PROJECT_ID;]$(echo $TARGET_ID)"
+      - name: Build Docs
+        working-directory: 'packages/${{matrix.package}}'
+        # https://github.com/orgs/vercel/discussions/3322#discussioncomment-6480458
+        # TODO: dedupe vercel.package.json
+        run: |
+          forge doc
+          cp vercel.package.json docs/package.json
+      - name: Deploy (Prod)
+        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref }}
+        run: |
+          vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+          vercel build --token=${{ secrets.VERCEL_TOKEN }} --prod
+          vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} --prod
+        env:
+          VERCEL_PROJECT_ID: ${{ steps.project_id.outputs.VERCEL_PROJECT_ID}}
+      - name: Deploy
+        run: |
+          vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+          vercel build --token=${{ secrets.VERCEL_TOKEN }}
+          vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_PROJECT_ID: ${{ steps.project_id.outputs.VERCEL_PROJECT_ID}}
+
+
+  cancel-outdated:
+    name: Cancel Outdated Jobs
+    runs-on: ubuntu-latest
+    steps:
+      - id: skip_check
+        if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref && !contains(github.event.head_commit.message, '[no_skip]') }}
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          cancel_others: 'true'
   slither:
+    name: Slither
+    if: ${{ needs.changes.outputs.package_count > 0 }}
     # see https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/setting-up-code-scanning-for-a-repository
     runs-on: ubuntu-latest
+    needs: changes
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJson(needs.changes.outputs.packages) }}
     permissions:
       # always required
       security-events: write
@@ -22,7 +133,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 1
           submodules: 'recursive'
@@ -37,10 +148,10 @@ jobs:
 
       # TODO: find a flag for this
       - name: Delete Untested Files
-        working-directory: ./packages/contracts-core
+        working-directory: './packages/${{matrix.package}}'
         run: |
-          rm -rf test/
-          rm -rf script/
+          rm -rf test/ || true
+          rm -rf script/ || true
 
       - name: Build Contracts
         run: |
@@ -52,7 +163,7 @@ jobs:
         id: slither
         with:
           node-version: '${{steps.nvmrc.outputs.NVMRC}}'
-          target: ./packages/contracts-core/
+          target: './packages/${{matrix.package}}'
           ignore-compile: true
           sarif: results.sarif
           solc-version: 0.8.17
@@ -62,3 +173,101 @@ jobs:
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: ./results.sarif
+
+  coverage:
+    name: Foundry Coverage
+    runs-on: ubuntu-latest
+    if: ${{ needs.changes.outputs.package_count > 0 }}
+    needs: changes
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJson(needs.changes.outputs.packages) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Node JS
+        uses: ./.github/actions/setup-nodejs
+
+      - name: Installing dependencies
+        run: yarn install --immutable
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Run Foundry Tests
+        working-directory: './packages/${{matrix.package}}'
+        run: forge coverage -vvv --report lcov --report summary >> $GITHUB_STEP_SUMMARY
+
+      - name: Send Coverage (Codecov)
+        uses: Wandalen/wretry.action@v1.0.36
+        with:
+          action: codecov/codecov-action@v3
+          current_path: './packages/${{matrix.package}}'
+          with: |
+            token: ${{ secrets.CODECOV }}
+            fail_ci_if_error: true # optional (default = false)
+            verbose: true # optional (default = false)
+            flags: solidity
+          attempt_limit: 5
+          attempt_delay: 30000
+
+
+  snapshot:
+    runs-on: ubuntu-latest
+    name: Foundry Gas Snapshot
+    if: ${{ needs.changes.outputs.package_count > 0 }}
+    needs: changes
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJson(needs.changes.outputs.packages) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Node JS
+        uses: ./.github/actions/setup-nodejs
+
+      - name: Installing dependencies
+        run: yarn install --immutable
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+      - name: Run snapshot
+        working-directory: './packages/${{matrix.package}}'
+        run: forge snapshot >> $GITHUB_STEP_SUMMARY
+  size-check:
+    name: Foundry Size Check
+    runs-on: ubuntu-latest
+    if: ${{ needs.changes.outputs.package_count > 0 }}
+    needs: changes
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJson(needs.changes.outputs.packages) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Node JS
+        uses: ./.github/actions/setup-nodejs
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      # This will run https://book.getfoundry.sh/reference/forge/forge-build#build-options
+      - name: Run forge build --sizes
+        run: |
+          forge build --sizes
+        working-directory: './packages/${{matrix.package}}'

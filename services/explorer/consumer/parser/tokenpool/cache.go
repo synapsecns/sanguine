@@ -73,7 +73,7 @@ func (t *tokenPoolDataServiceImpl) GetTokenAddress(parentCtx context.Context, ch
 	//nolint: wrapcheck
 	err = retry.WithBackoff(ctx, func(ctx context.Context) error {
 		return t.storeTokenIndex(ctx, chainID, tokenIndex, tokenAddress, contractAddress)
-	}, retry.WithMaxAttemptsTime(maxAttemptTime), retry.WithMaxAttempts(maxAttempt))
+	}, retry.WithMaxAttemptTime(maxAttemptTime), retry.WithMaxAttempts(maxAttempt))
 	if err != nil {
 		return nil, fmt.Errorf("could not store token index: %w", err)
 	}

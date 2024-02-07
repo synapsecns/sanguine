@@ -90,6 +90,12 @@ func (r *RPCProxy) Run(ctx context.Context) {
 		r.Forward(c, uint32(chainID), &confirmations)
 	})
 
+	// gets a list of chain-ids
+	// TODO: this needs to be added to the collection.json
+	router.GET("/chain-ids", func(c *gin.Context) {
+		c.JSON(http.StatusOK, r.chainManager.GetChainIDs())
+	})
+
 	router.GET("/collection.json", func(c *gin.Context) {
 		res, err := collection.CreateCollection()
 		if err != nil {

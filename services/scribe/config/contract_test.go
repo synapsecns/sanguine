@@ -19,7 +19,7 @@ func (c ConfigSuite) TestAddress() {
 	contractConfig := contractConfigFixture()
 	contractConfig.Address = ""
 
-	ok, err := contractConfig.IsValid(c.GetTestContext())
+	ok, err := contractConfig.IsValid()
 	False(c.T(), ok)
 	ErrorIs(c.T(), err, config.ErrRequiredField)
 }
@@ -28,7 +28,7 @@ func (c ConfigSuite) TestRefreshRate() {
 	contractConfig := contractConfigFixture()
 	contractConfig.Address = ""
 
-	ok, err := contractConfig.IsValid(c.GetTestContext())
+	ok, err := contractConfig.IsValid()
 	False(c.T(), ok)
 	ErrorIs(c.T(), err, config.ErrRequiredField)
 }
@@ -45,7 +45,7 @@ func (c ConfigSuite) TestContractConfigDuplicateAddress() {
 		contractConfigB,
 	}
 
-	ok, err := contractConfigs.IsValid(c.GetTestContext())
+	ok, err := contractConfigs.IsValid()
 	False(c.T(), ok)
 	ErrorIs(c.T(), err, config.ErrDuplicateAddress)
 }

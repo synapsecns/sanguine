@@ -3,7 +3,7 @@ package deployer
 import (
 	"context"
 	"github.com/neverlee/keymutex"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"sync"
@@ -152,7 +152,7 @@ func (c *contractRegistryImpl) Deploy(ctx context.Context, contractType contract
 	c.structMux.RUnlock()
 
 	deployedContract, err := deploymentHandle.Deploy(ctx)
-	assert.Nil(c.tb, err)
+	require.Nil(c.tb, err)
 
 	c.backend.WaitForConfirmation(ctx, deployedContract.DeployTx())
 	err = c.backend.VerifyContract(contractType, deployedContract)

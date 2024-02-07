@@ -8,7 +8,7 @@ import {
 import { TransactionReceipt } from 'viem'
 
 import { MAX_UINT256 } from '@/constants'
-import { USDT } from '@/constants/tokens/master'
+import { USDT } from '@/constants/tokens/bridgeable'
 import { USDT_ABI } from '@/constants/abis/usdtAbi'
 import { ETH as Ethereum } from '@/constants/chains/master'
 
@@ -31,7 +31,7 @@ export const approveErc20Token = async ({
     abi = erc20ABI
   }
 
-  const config = await prepareWriteContract({
+  const { request } = await prepareWriteContract({
     chainId,
     address: tokenAddress,
     abi,
@@ -39,7 +39,8 @@ export const approveErc20Token = async ({
     args: [spender, amount ?? MAX_UINT256],
   })
 
-  const { hash } = await writeContract(config)
+  const { hash } = await writeContract(request)
+
   const txReceipt: TransactionReceipt = await waitForTransaction({ hash })
 
   return txReceipt

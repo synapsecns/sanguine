@@ -327,8 +327,8 @@ func (c *Client) GetLogs(ctx context.Context, chainID int, page int, httpRequest
 	return &res, nil
 }
 
-const GetLogsRangeDocument = `query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!) {
-	response: logsRange(chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page) {
+const GetLogsRangeDocument = `query GetLogsRange ($chain_id: Int!, $start_block: Int!, $end_block: Int!, $page: Int!, $asc: Boolean = false) {
+	response: logsRange(chain_id: $chain_id, start_block: $start_block, end_block: $end_block, page: $page, asc: $asc) {
 		contract_address
 		chain_id
 		topics
@@ -343,12 +343,13 @@ const GetLogsRangeDocument = `query GetLogsRange ($chain_id: Int!, $start_block:
 }
 `
 
-func (c *Client) GetLogsRange(ctx context.Context, chainID int, startBlock int, endBlock int, page int, httpRequestOptions ...client.HTTPRequestOption) (*GetLogsRange, error) {
+func (c *Client) GetLogsRange(ctx context.Context, chainID int, startBlock int, endBlock int, page int, asc *bool, httpRequestOptions ...client.HTTPRequestOption) (*GetLogsRange, error) {
 	vars := map[string]interface{}{
 		"chain_id":    chainID,
 		"start_block": startBlock,
 		"end_block":   endBlock,
 		"page":        page,
+		"asc":         asc,
 	}
 
 	var res GetLogsRange

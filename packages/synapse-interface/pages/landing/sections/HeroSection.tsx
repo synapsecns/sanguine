@@ -6,39 +6,25 @@ import { SectionContainer } from '../../../components/landing/shared'
 export default function HeroSection() {
   return (
     <SectionContainer dataTestId="landing-hero-section">
-      <div
+      <h1
         className={`
-          mt-6 pb-4 text-left text-4xl
+          text-center text-4xl
           font-medium text-white
-          md:text-[46px] md:text-center
+          md:text-[46px]
         `}
       >
-        <p>Secure cross-chain</p>
-        <p>communication</p>
-      </div>
-      <div
-        className={`
-          hidden text-left text-secondaryTextColor
-          md:text-center lg:text-center md:block lg:block
-        `}
-      >
-        <p>Synapse is the most widely used, extensible, secure cross-</p>
-        <p>chain communications network. Build truly cross-chain</p>
-        <p>applications using the Synapse Protocol.</p>
-      </div>
-      <div
-        className={`
-          text-left text-secondaryTextColor md:text-center
-          lg:text-center xs:block sm:block md:hidden lg:hidden
-        `}
-      >
-        <p>
-          Synapse is the most widely used, extensible, secure cross-chain
-          communications network. Build truly cross-chain applications using the
-          Synapse Protocol.
-        </p>
-      </div>
-
+        Secure cross-chain<br />communication
+      </h1>
+      <p className="hidden text-center text-secondaryTextColor sm:block">
+        Synapse is the most widely used, extensible, secure cross-<br />
+        chain communications network. Build truly cross-chain<br />
+        applications using the Synapse Protocol.
+      </p>
+      <p className="text-center text-secondaryTextColor sm:hidden">
+        Synapse is the most widely used, extensible, secure cross-chain
+        communications network. Build truly cross-chain applications using the
+        Synapse Protocol.
+      </p>
       <div className="flex justify-center py-4 space-x-2 ">
         <Link
           href={DOCS_URL}
@@ -46,7 +32,7 @@ export default function HeroSection() {
           className={`
             h-12 mr-2 px-4 py-3 flex items-center
             text-base border border-white hover:opacity-75
-            bg-[#2f2f2f] hover:bg-[#2f2f2f] rounded-lg
+            bg-[#2f2f2f] hover:bg-[#2f2f2f] rounded-md
             text-center transform-gpu transition-all duration-75
           `}
         >
@@ -61,7 +47,7 @@ export default function HeroSection() {
           href={BRIDGE_PATH}
           className={`
             h-12 border-[#AC8FFF] flex items-center border
-            text-base px-4 py-3 hover:opacity-75 rounded-lg
+            text-base px-4 py-3 hover:opacity-75 rounded-md
             text-center transform-gpu transition-all duration-75
           `}
           style={{

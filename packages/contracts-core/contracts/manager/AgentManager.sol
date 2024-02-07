@@ -6,12 +6,11 @@ import {FRESH_DATA_TIMEOUT} from "../libs/Constants.sol";
 import {
     CallerNotInbox,
     DisputeAlreadyResolved,
-    DisputeNotOpened,
-    DisputeNotStuck,
     IncorrectAgentDomain,
     IndexOutOfRange,
     GuardInDispute,
-    NotaryInDispute
+    NotaryInDispute,
+    NotStuck
 } from "../libs/Errors.sol";
 import {AgentFlag, AgentStatus, DisputeFlag} from "../libs/Structures.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
@@ -65,6 +64,13 @@ abstract contract AgentManager is MessagingBase, AgentManagerEvents, IAgentManag
         _;
     }
 
+    modifier onlyWhenStuck() {
+        // Check if there has been no fresh data from the Notaries for a while.
+        (uint40 snapRootTime,,) = InterfaceDestination(destination).destStatus();
+        if (block.timestamp < FRESH_DATA_TIMEOUT + snapRootTime) revert NotStuck();
+        _;
+    }
+
     // ════════════════════════════════════════════════ INITIALIZER ════════════════════════════════════════════════════
 
     // solhint-disable-next-line func-name-mixedcase
@@ -74,33 +80,22 @@ abstract contract AgentManager is MessagingBase, AgentManagerEvents, IAgentManag
         inbox = inbox_;
     }
 
-    // ════════════════════════════════════════════════ ONLY OWNER ═════════════════════════════════════════════════════
-
-    /// @inheritdoc IAgentManager
-    // solhint-disable-next-line ordering
-    function resolveStuckDispute(uint32 domain, address slashedAgent) external onlyOwner {
-        AgentDispute memory slashedDispute = _agentDispute[_getIndex(slashedAgent)];
-        if (slashedDispute.flag == DisputeFlag.None) revert DisputeNotOpened();
-        if (slashedDispute.flag == DisputeFlag.Slashed) revert DisputeAlreadyResolved();
-        // Check if there has been no fresh data from the Notaries for a while.
-        (uint40 snapRootTime,,) = InterfaceDestination(destination).destStatus();
-        if (block.timestamp < FRESH_DATA_TIMEOUT + snapRootTime) revert DisputeNotStuck();
-        // This will revert if domain doesn't match the agent's domain.
-        _slashAgent({domain: domain, agent: slashedAgent, prover: address(0)});
-    }
-
     // ════════════════════════════════════════════════ ONLY INBOX ═════════════════════════════════════════════════════
 
     /// @inheritdoc IAgentManager
+    // solhint-disable-next-line ordering
     function openDispute(uint32 guardIndex, uint32 notaryIndex) external onlyInbox {
         // Check that both agents are not in Dispute yet.
         if (_agentDispute[guardIndex].flag != DisputeFlag.None) revert GuardInDispute();
         if (_agentDispute[notaryIndex].flag != DisputeFlag.None) revert NotaryInDispute();
         _disputes.push(OpenedDispute(guardIndex, notaryIndex, 0));
         // Dispute is stored at length - 1, but we store the index + 1 to distinguish from "not in dispute".
-        uint256 disputePtr = _disputes.length;
-        _agentDispute[guardIndex] = AgentDispute(DisputeFlag.Pending, uint88(disputePtr), address(0));
-        _agentDispute[notaryIndex] = AgentDispute(DisputeFlag.Pending, uint88(disputePtr), address(0));
+        // TODO: check if we really need to use 88 bits for dispute indexes. Every dispute ends up in one of
+        // the agents being slashed, so the number of disputes is limited by the number of agents (currently 2**32).
+        // Thus we can do the unsafe cast to uint88.
+        uint88 disputePtr = uint88(_disputes.length);
+        _agentDispute[guardIndex] = AgentDispute(DisputeFlag.Pending, disputePtr, address(0));
+        _agentDispute[notaryIndex] = AgentDispute(DisputeFlag.Pending, disputePtr, address(0));
         // Dispute index is length - 1. Note: report that initiated the dispute has the same index in `Inbox`.
         emit DisputeOpened({disputeIndex: disputePtr - 1, guardIndex: guardIndex, notaryIndex: notaryIndex});
         _notifyDisputeOpened(guardIndex, notaryIndex);

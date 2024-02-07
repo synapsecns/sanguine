@@ -124,11 +124,13 @@ library ReceiptLib {
 
     /// @notice Returns receipt's origin field
     function origin(Receipt receipt) internal pure returns (uint32) {
+        // Can be safely casted to uint32, since we index 4 bytes
         return uint32(receipt.unwrap().indexUint({index_: OFFSET_ORIGIN, bytes_: 4}));
     }
 
     /// @notice Returns receipt's destination field
     function destination(Receipt receipt) internal pure returns (uint32) {
+        // Can be safely casted to uint32, since we index 4 bytes
         return uint32(receipt.unwrap().indexUint({index_: OFFSET_DESTINATION, bytes_: 4}));
     }
 
@@ -144,6 +146,7 @@ library ReceiptLib {
 
     /// @notice Returns receipt's "state index" field
     function stateIndex(Receipt receipt) internal pure returns (uint8) {
+        // Can be safely casted to uint8, since we index a single byte
         return uint8(receipt.unwrap().indexUint({index_: OFFSET_STATE_INDEX, bytes_: 1}));
     }
 

@@ -3,14 +3,13 @@ package evm
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/ethergo/chain"
-	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/types"
+	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 )
 
@@ -36,7 +35,7 @@ func NewOriginContract(ctx context.Context, client chain.Chain, originAddress co
 // domains.OriginContract.
 type originContract struct {
 	// contract contains the contract handle
-	contract origin.IOrigin
+	contract *origin.OriginRef
 	// client is the client
 	//nolint: staticcheck
 	client chain.Chain
@@ -44,38 +43,17 @@ type originContract struct {
 	nonceManager nonce.Manager
 }
 
-func (o originContract) FetchSortedMessages(ctx context.Context, from uint32, to uint32) (messages []types.Message, err error) {
-	rangeFilter := NewRangeFilter(o.contract.Address(), o.client, big.NewInt(int64(from)), big.NewInt(int64(to)), 100, false)
+func (o originContract) GetContractRef() *origin.OriginRef {
+	return o.contract
+}
 
-	// blocks until done `
-	err = rangeFilter.Start(ctx)
+func (o originContract) IsValidState(ctx context.Context, statePayload []byte) (isValid bool, err error) {
+	isValid, err = o.contract.IsValidState(&bind.CallOpts{Context: ctx}, statePayload)
 	if err != nil {
-		return []types.Message{}, fmt.Errorf("could not filter: %w", err)
+		return false, fmt.Errorf("could not check if state is valid: %w", err)
 	}
 
-	filteredLogs, err := rangeFilter.Drain(ctx)
-	if err != nil {
-		return []types.Message{}, fmt.Errorf("could not drain queue: %w", err)
-	}
-
-	for _, log := range filteredLogs {
-		logType, ok := o.contract.Parser().EventType(log)
-		if !ok {
-			continue
-		}
-
-		if logType == origin.SentEvent {
-			sentEvents, ok := o.contract.Parser().ParseSent(log)
-			// TODO: this should never happen. Maybe we should return an error here?
-			if !ok {
-				continue
-			}
-
-			messages = append(messages, sentEvents)
-		}
-	}
-
-	return messages, nil
+	return isValid, nil
 }
 
 func (o originContract) SuggestLatestState(ctx context.Context) (types.State, error) {

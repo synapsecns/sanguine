@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import {TIPS_GRANULARITY} from "../Constants.sol";
 import {TipsOverflow, TipsValueTooLow} from "../Errors.sol";
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 /// Tips is encoded data with "tips paid for sending a base message".
 /// Note: even though uint256 is also an underlying type for MemView, Tips is stored ON STACK.
@@ -48,6 +49,8 @@ using TipsLib for Tips global;
 /// | (008..000] | deliveryTip    | uint64 | 8     | Tip for successful message delivery on destination chain   |
 
 library TipsLib {
+    using SafeCast for uint256;
+
     /// @dev Amount of bits to shift to summitTip field
     uint256 private constant SHIFT_SUMMIT_TIP = 24 * 8;
     /// @dev Amount of bits to shift to attestationTip field
@@ -67,9 +70,12 @@ library TipsLib {
         pure
         returns (Tips)
     {
+        // forgefmt: disable-next-item
         return Tips.wrap(
-            uint256(summitTip_) << SHIFT_SUMMIT_TIP | uint256(attestationTip_) << SHIFT_ATTESTATION_TIP
-                | uint256(executionTip_) << SHIFT_EXECUTION_TIP | uint256(deliveryTip_)
+            uint256(summitTip_) << SHIFT_SUMMIT_TIP |
+            uint256(attestationTip_) << SHIFT_ATTESTATION_TIP |
+            uint256(executionTip_) << SHIFT_EXECUTION_TIP |
+            uint256(deliveryTip_)
         );
     }
 
@@ -79,11 +85,14 @@ library TipsLib {
         pure
         returns (Tips)
     {
+        // In practice, the tips amounts are not supposed to be higher than 2**96, and with 32 bits of granularity
+        // using uint64 is enough to store the values. However, we still check for overflow just in case.
+        // TODO: consider using Number type to store the tips values.
         return encodeTips({
-            summitTip_: uint64(summitTip_ >> TIPS_GRANULARITY),
-            attestationTip_: uint64(attestationTip_ >> TIPS_GRANULARITY),
-            executionTip_: uint64(executionTip_ >> TIPS_GRANULARITY),
-            deliveryTip_: uint64(deliveryTip_ >> TIPS_GRANULARITY)
+            summitTip_: (summitTip_ >> TIPS_GRANULARITY).toUint64(),
+            attestationTip_: (attestationTip_ >> TIPS_GRANULARITY).toUint64(),
+            executionTip_: (executionTip_ >> TIPS_GRANULARITY).toUint64(),
+            deliveryTip_: (deliveryTip_ >> TIPS_GRANULARITY).toUint64()
         });
     }
 

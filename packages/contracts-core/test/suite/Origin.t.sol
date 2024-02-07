@@ -4,7 +4,12 @@ pragma solidity 0.8.17;
 import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
 import {InterfaceGasOracle} from "../../contracts/interfaces/InterfaceGasOracle.sol";
 import {IStateHub} from "../../contracts/interfaces/IStateHub.sol";
-import {EthTransferFailed, InsufficientEthBalance, TipsValueTooLow} from "../../contracts/libs/Errors.sol";
+import {
+    EthTransferFailed,
+    IncorrectDestinationDomain,
+    InsufficientEthBalance,
+    TipsValueTooLow
+} from "../../contracts/libs/Errors.sol";
 import {SNAPSHOT_MAX_STATES} from "../../contracts/libs/Constants.sol";
 import {TipsLib} from "../../contracts/libs/stack/Tips.sol";
 
@@ -12,6 +17,7 @@ import {InterfaceOrigin} from "../../contracts/Origin.sol";
 import {Versioned} from "../../contracts/base/Version.sol";
 
 import {RevertingApp} from "../harnesses/client/RevertingApp.t.sol";
+import {console, stdJson} from "forge-std/Script.sol";
 
 import {fakeState, fakeSnapshot} from "../utils/libs/FakeIt.t.sol";
 import {Random} from "../utils/libs/Random.t.sol";
@@ -57,13 +63,20 @@ contract OriginTest is AgentSecuredTest {
         assertEq(Versioned(origin).version(), LATEST_VERSION, "!version");
     }
 
+    function test_constructor_revert_chainIdOverflow() public {
+        vm.chainId(2 ** 32);
+        vm.expectRevert("SafeCast: value doesn't fit in 32 bits");
+        new Origin({synapseDomain_: 1, agentManager_: address(2), inbox_: address(3), gasOracle_: address(4)});
+    }
+
     function test_cleanSetup(Random memory random) public override {
-        uint32 domain = random.nextUint32();
+        uint32 domain = uint32(block.chainid);
         address caller = random.nextAddress();
         address agentManager = random.nextAddress();
         address inbox_ = random.nextAddress();
-        address gasOracle_ = address(new GasOracle(localDomain(), random.nextAddress()));
-        Origin cleanContract = new Origin(domain, agentManager, inbox_, gasOracle_);
+        address gasOracle_ = address(new GasOracle(DOMAIN_SYNAPSE, random.nextAddress()));
+
+        Origin cleanContract = new Origin(DOMAIN_SYNAPSE, agentManager, inbox_, gasOracle_);
         vm.prank(caller);
         cleanContract.initialize();
         assertEq(cleanContract.owner(), caller, "!owner");
@@ -76,6 +89,24 @@ contract OriginTest is AgentSecuredTest {
 
     function initializeLocalContract() public override {
         Origin(localContract()).initialize();
+    }
+
+    function test_sendBaseMessage_revert_blockTimestampOverflow() public {
+        vm.warp(2 ** 40);
+        vm.prank(sender);
+        vm.expectRevert("SafeCast: value doesn't fit in 40 bits");
+        InterfaceOrigin(origin).sendBaseMessage(
+            DOMAIN_REMOTE, addressToBytes32(recipient), period, request.encodeRequest(), "test content"
+        );
+    }
+
+    function test_sendBaseMessage_revert_blockNumberOverflow() public {
+        vm.roll(2 ** 40);
+        vm.prank(sender);
+        vm.expectRevert("SafeCast: value doesn't fit in 40 bits");
+        InterfaceOrigin(origin).sendBaseMessage(
+            DOMAIN_REMOTE, addressToBytes32(recipient), period, request.encodeRequest(), "test content"
+        );
     }
 
     function test_sendBaseMessage_revert_tipsTooLow(RawTips memory minTips, uint256 msgValue) public {
@@ -94,6 +125,20 @@ contract OriginTest is AgentSecuredTest {
         InterfaceOrigin(origin).sendBaseMessage{value: msgValue}(
             DOMAIN_REMOTE, addressToBytes32(recipient), period, request.encodeRequest(), "test content"
         );
+    }
+
+    function test_sendBaseMessage_revert_sameDestination() public {
+        vm.expectRevert(IncorrectDestinationDomain.selector);
+        vm.prank(sender);
+        InterfaceOrigin(origin).sendBaseMessage(
+            localDomain(), addressToBytes32(recipient), period, request.encodeRequest(), "test content"
+        );
+    }
+
+    function test_sendManagementMessage_revert_sameDestination() public {
+        vm.expectRevert(IncorrectDestinationDomain.selector);
+        vm.prank(localAgentManager());
+        InterfaceOrigin(origin).sendManagerMessage(localDomain(), period, "test payload");
     }
 
     function test_getMinimumTipsValue(
@@ -171,6 +216,7 @@ contract OriginTest is AgentSecuredTest {
             emit StateSaved(state);
             vm.expectEmit();
             emit Sent(leafs[i], i + 1, DOMAIN_REMOTE, messages[i]);
+            vm.expectCall(gasOracle, abi.encodeCall(InterfaceGasOracle.updateGasData, (DOMAIN_REMOTE)));
             vm.prank(sender);
             (uint32 messageNonce, bytes32 messageHash) = InterfaceOrigin(origin).sendBaseMessage(
                 DOMAIN_REMOTE, addressToBytes32(recipient), period, encodedRequest, content
@@ -406,6 +452,8 @@ contract OriginTest is AgentSecuredTest {
 
     function test_withdrawTips(uint256 amount) public {
         vm.deal(origin, amount);
+        vm.expectEmit(origin);
+        emit TipWithdrawalCompleted(recipient, amount);
         vm.prank(address(lightManager));
         InterfaceOrigin(origin).withdrawTips(recipient, amount);
         assertEq(recipient.balance, amount);

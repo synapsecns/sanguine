@@ -3,6 +3,8 @@ package evm
 import (
 	"context"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
@@ -12,7 +14,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
-	"strings"
 )
 
 // NewInboxContract returns a bound inbox contract.
@@ -33,6 +34,7 @@ func NewInboxContract(ctx context.Context, client chain.Chain, inboxAddress comm
 }
 
 type inboxContract struct {
+	lightInboxContract
 	// contract contains the conract handle
 	contract *inbox.InboxRef
 	// client contains the evm client
@@ -42,7 +44,22 @@ type inboxContract struct {
 	nonceManager nonce.Manager
 }
 
-func (a inboxContract) SubmitSnapshot(transactor *bind.TransactOpts, signer signer.Signer, encodedSnapshot []byte, signature signer.Signature) (tx *ethTypes.Transaction, err error) {
+//nolint:dupl
+func (a inboxContract) SubmitStateReportWithSnapshot(transactor *bind.TransactOpts, stateIndex uint8, signature signer.Signature, snapPayload []byte, snapSignature []byte) (tx *ethTypes.Transaction, err error) {
+	rawSig, err := types.EncodeSignature(signature)
+	if err != nil {
+		return nil, fmt.Errorf("could not encode signature: %w", err)
+	}
+
+	tx, err = a.contract.SubmitStateReportWithSnapshot(transactor, stateIndex, rawSig, snapPayload, snapSignature)
+	if err != nil {
+		return nil, fmt.Errorf("could not submit state report: %w", err)
+	}
+
+	return tx, nil
+}
+
+func (a inboxContract) SubmitSnapshot(transactor *bind.TransactOpts, encodedSnapshot []byte, signature signer.Signature) (tx *ethTypes.Transaction, err error) {
 	rawSig, err := types.EncodeSignature(signature)
 	if err != nil {
 		return nil, fmt.Errorf("could not encode signature: %w", err)
@@ -50,10 +67,62 @@ func (a inboxContract) SubmitSnapshot(transactor *bind.TransactOpts, signer sign
 
 	tx, err = a.contract.SubmitSnapshot(transactor, encodedSnapshot, rawSig)
 	if err != nil {
-		if strings.Contains(err.Error(), "nonce too low") {
-			a.nonceManager.ClearNonce(signer.Address())
-		}
 		return nil, fmt.Errorf("could not submit sanpshot: %w", err)
+	}
+
+	return tx, nil
+}
+
+func (a inboxContract) VerifyAttestation(transactor *bind.TransactOpts, attestation []byte, attSignature []byte) (tx *ethTypes.Transaction, err error) {
+	tx, err = a.contract.VerifyAttestation(transactor, attestation, attSignature)
+	if err != nil {
+		return nil, fmt.Errorf("could not submit attestation: %w", err)
+	}
+
+	return tx, nil
+}
+
+func (a inboxContract) SubmitStateReportWithAttestation(transactor *bind.TransactOpts, stateIndex uint8, signature signer.Signature, snapPayload, attPayload, attSignature []byte) (tx *ethTypes.Transaction, err error) {
+	rawSig, err := types.EncodeSignature(signature)
+	if err != nil {
+		return nil, fmt.Errorf("could not encode signature: %w", err)
+	}
+
+	tx, err = a.contract.SubmitStateReportWithAttestation(transactor, stateIndex, rawSig, snapPayload, attPayload, attSignature)
+	if err != nil {
+		return nil, fmt.Errorf("could not submit state report: %w", err)
+	}
+
+	return tx, nil
+}
+
+func (a inboxContract) SubmitReceipt(transactor *bind.TransactOpts, rcptPayload []byte, rcptSignature signer.Signature, paddedTips *big.Int, headerHash [32]byte, bodyHash [32]byte) (tx *ethTypes.Transaction, err error) {
+	rawSig, err := types.EncodeSignature(rcptSignature)
+	if err != nil {
+		return nil, fmt.Errorf("could not encode signature: %w", err)
+	}
+
+	tx, err = a.contract.SubmitReceipt(transactor, rcptPayload, rawSig, paddedTips, headerHash, bodyHash)
+	if err != nil {
+		return nil, fmt.Errorf("could not submit state report: %w", err)
+	}
+
+	return tx, nil
+}
+
+func (a inboxContract) VerifyReceipt(transactor *bind.TransactOpts, rcptPayload []byte, rcptSignature []byte) (tx *ethTypes.Transaction, err error) {
+	tx, err = a.contract.VerifyReceipt(transactor, rcptPayload, rcptSignature)
+	if err != nil {
+		return nil, fmt.Errorf("could not submit state report: %w", err)
+	}
+
+	return tx, nil
+}
+
+func (a inboxContract) SubmitReceiptReport(transactor *bind.TransactOpts, rcptPayload []byte, rcptSignature []byte, rrSignature []byte) (tx *ethTypes.Transaction, err error) {
+	tx, err = a.contract.SubmitReceiptReport(transactor, rcptPayload, rcptSignature, rrSignature)
+	if err != nil {
+		return nil, fmt.Errorf("could not submit receipt report: %w", err)
 	}
 
 	return tx, nil

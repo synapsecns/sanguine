@@ -1,19 +1,19 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 export interface BridgeState {
-  showFromTokenSlideOver: boolean
-  showToTokenSlideOver: boolean
-  showFromChainSlideOver: boolean
-  showToChainSlideOver: boolean
+  showFromTokenListOverlay: boolean
+  showToTokenListOverlay: boolean
+  showFromChainListOverlay: boolean
+  showToChainListOverlay: boolean
   showSettingsSlideOver: boolean
   showDestinationAddress: boolean
 }
 
 const initialState: BridgeState = {
-  showFromTokenSlideOver: false,
-  showToTokenSlideOver: false,
-  showFromChainSlideOver: false,
-  showToChainSlideOver: false,
+  showFromTokenListOverlay: false,
+  showToTokenListOverlay: false,
+  showFromChainListOverlay: false,
+  showToChainListOverlay: false,
   showSettingsSlideOver: false,
   showDestinationAddress: false,
 }
@@ -22,17 +22,17 @@ export const bridgeDisplaySlice = createSlice({
   name: 'bridgeDisplay',
   initialState,
   reducers: {
-    setShowFromTokenSlideOver: (state, action: PayloadAction<boolean>) => {
-      state.showFromTokenSlideOver = action.payload
+    setShowFromTokenListOverlay: (state, action: PayloadAction<boolean>) => {
+      state.showFromTokenListOverlay = action.payload
     },
-    setShowToTokenSlideOver: (state, action: PayloadAction<boolean>) => {
-      state.showToTokenSlideOver = action.payload
+    setShowToTokenListOverlay: (state, action: PayloadAction<boolean>) => {
+      state.showToTokenListOverlay = action.payload
     },
-    setShowFromChainSlideOver: (state, action: PayloadAction<boolean>) => {
-      state.showFromChainSlideOver = action.payload
+    setShowFromChainListOverlay: (state, action: PayloadAction<boolean>) => {
+      state.showFromChainListOverlay = action.payload
     },
-    setShowToChainSlideOver: (state, action: PayloadAction<boolean>) => {
-      state.showToChainSlideOver = action.payload
+    setShowToChainListOverlay: (state, action: PayloadAction<boolean>) => {
+      state.showToChainListOverlay = action.payload
     },
     setShowSettingsSlideOver: (state, action: PayloadAction<boolean>) => {
       state.showSettingsSlideOver = action.payload
@@ -44,10 +44,10 @@ export const bridgeDisplaySlice = createSlice({
 })
 
 export const {
-  setShowFromChainSlideOver,
-  setShowToChainSlideOver,
-  setShowFromTokenSlideOver,
-  setShowToTokenSlideOver,
+  setShowFromChainListOverlay,
+  setShowToChainListOverlay,
+  setShowFromTokenListOverlay,
+  setShowToTokenListOverlay,
   setShowSettingsSlideOver,
   setShowDestinationAddress,
 } = bridgeDisplaySlice.actions

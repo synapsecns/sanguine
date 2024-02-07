@@ -192,7 +192,7 @@ export const canto = {
   blockExplorers: {
     default: {
       name: 'Canto EVM Explorer (Blockscout)',
-      url: 'https://evm.explorer.canto.io',
+      url: 'https://tuber.build',
     },
   },
   contracts: {
@@ -259,10 +259,10 @@ export const base = {
     },
   },
   blockExplorers: {
-    blockscout: {
-      name: 'Basescout',
-      url: 'https://base.blockscout.com',
-    },
+    // blockscout: {
+    //   name: 'Basescout',
+    //   url: 'https://base.blockscout.com',
+    // },
     default: {
       name: 'Basescan',
       url: 'https://basescan.org',

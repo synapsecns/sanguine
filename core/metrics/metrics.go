@@ -60,10 +60,8 @@ func init() {
 }
 
 const (
-	// DataDog is the datadog driver.
-	DataDog HandlerType = iota + 1 // Datadog
-	// OTLP is the new relic driver.t.
-	OTLP // OTLP
+	// OTLP is the otlp driver.
+	OTLP HandlerType = iota + 1 // OTLP
 	// Jaeger is the jaeger driver.
 	Jaeger // Jaeger
 	// Null is a null data type handler.
@@ -86,8 +84,6 @@ func NewFromEnv(ctx context.Context, buildInfo config.BuildInfo) (handler Handle
 	var ht HandlerType
 	//nolint: gocritic
 	switch metricsHandler {
-	case DataDog.Lower():
-		ht = DataDog
 	case OTLP.Lower():
 		ht = OTLP
 	case Jaeger.Lower():
@@ -105,8 +101,6 @@ func NewFromEnv(ctx context.Context, buildInfo config.BuildInfo) (handler Handle
 func NewByType(ctx context.Context, buildInfo config.BuildInfo, ht HandlerType) (handler Handler, err error) {
 	//nolint: gocritic
 	switch ht {
-	case DataDog:
-		handler = NewDatadogMetricsHandler(buildInfo)
 	case OTLP:
 		handler = NewOTLPMetricsHandler(buildInfo)
 	case Jaeger:

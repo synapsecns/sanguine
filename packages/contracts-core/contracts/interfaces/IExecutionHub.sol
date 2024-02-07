@@ -9,6 +9,8 @@ interface IExecutionHub {
      * previously submitted to this contract in a form of a signed Attestation.
      * Proven message is immediately executed by passing its contents to the specified recipient.
      * @dev Will revert if any of these is true:
+     *  - Message is not meant to be executed on this chain
+     *  - Message was sent from this chain
      *  - Message payload is not properly formatted.
      *  - Snapshot root (reconstructed from message hash and proofs) is unknown
      *  - Snapshot root is known, but was submitted by an inactive Notary
@@ -27,7 +29,7 @@ interface IExecutionHub {
         bytes memory msgPayload,
         bytes32[] calldata originProof,
         bytes32[] calldata snapProof,
-        uint256 stateIndex,
+        uint8 stateIndex,
         uint64 gasLimit
     ) external;
 

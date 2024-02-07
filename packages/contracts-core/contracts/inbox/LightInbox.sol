@@ -3,7 +3,6 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib} from "../libs/memory/Attestation.sol";
-import {SYNAPSE_DOMAIN} from "../libs/Constants.sol";
 import {IncorrectDataHash, SynapseDomainForbidden} from "../libs/Errors.sol";
 import {ChainGas, GasDataLib} from "../libs/stack/GasData.sol";
 import {AgentStatus} from "../libs/Structures.sol";
@@ -23,8 +22,8 @@ contract LightInbox is StatementInbox, InterfaceLightInbox {
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
-    constructor(uint32 domain) MessagingBase("0.0.3", domain) {
-        if (domain == SYNAPSE_DOMAIN) revert SynapseDomainForbidden();
+    constructor(uint32 synapseDomain_) MessagingBase("0.0.3", synapseDomain_) {
+        if (localDomain == synapseDomain) revert SynapseDomainForbidden();
     }
 
     /// @notice Initializes `LightInbox` contract:

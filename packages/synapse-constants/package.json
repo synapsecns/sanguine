@@ -1,0 +1,47 @@
+{
+  "name": "synapse-constants",
+  "version": "1.2.4",
+  "description": "This is an npm package that maintains all synapse constants",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "test:coverage": "echo 'No tests defined.'",
+    "ci:lint": " ",
+    "build:go": " ",
+    "build:slither": " ",
+    "lint": " ",
+    "lint:fix": "npm run lint -- --fix",
+    "lint:check": "eslint . --max-warnings=0",
+    "build": "node scripts/generateMaps.js && node scripts/findMissing.js",
+    "prepublish": "tsc",
+    "compile": "tsc && copyfiles -u 1 \"constants/assets/**/*.*\" dist/constants && webpack"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "copyfiles": "^2.4.1",
+    "ethers": "5.7.2",
+    "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "babel-loader": "^9.1.3",
+    "babel-plugin-transform-export-extensions": "^6.22.0",
+    "file-loader": "^6.2.0",
+    "image-minimizer-webpack-plugin": "^3.8.3",
+    "imagemin": "^8.0.1",
+    "imagemin-jpegtran": "^7.0.0",
+    "imagemin-optipng": "^8.0.0",
+    "imagemin-svgo": "^10.0.1",
+    "svg-inline-loader": "^0.8.2",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.3.3",
+    "url-loader": "^4.1.1",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4"
+  }
+}

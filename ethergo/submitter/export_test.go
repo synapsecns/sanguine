@@ -2,6 +2,8 @@ package submitter
 
 import (
 	"context"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -11,7 +13,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/submitter/config"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"go.opentelemetry.io/otel/attribute"
-	"math/big"
 )
 
 // CopyTransactOpts exports copyTransactOpts for testing.
@@ -33,8 +34,8 @@ func BigPtrToString(num *big.Int) string {
 }
 
 // TxToAttributes exports txToAttributes for testing.
-func TxToAttributes(transaction *types.Transaction) []attribute.KeyValue {
-	return txToAttributes(transaction)
+func TxToAttributes(transaction *types.Transaction, UUID string) []attribute.KeyValue {
+	return txToAttributes(transaction, UUID)
 }
 
 // SortTxes exports sortTxesByChainID for testing.
@@ -85,6 +86,8 @@ type TestTransactionSubmitter interface {
 	// SetGasPrice exports setGasPrice for testing.
 	SetGasPrice(ctx context.Context, client client.EVM,
 		transactor *bind.TransactOpts, bigChainID *big.Int, prevTx *types.Transaction) (err error)
+	// GetGasBlock exports getGasBlock for testing.
+	GetGasBlock(ctx context.Context, client client.EVM, chainID int) (gasBlock *types.Header, err error)
 	// GetNonce exports getNonce for testing.
 	GetNonce(parentCtx context.Context, chainID *big.Int, address common.Address) (_ uint64, err error)
 	// CheckAndSetConfirmation exports checkAndSetConfirmation for testing.
@@ -95,6 +98,11 @@ type TestTransactionSubmitter interface {
 func (t *txSubmitterImpl) SetGasPrice(ctx context.Context, client client.EVM,
 	transactor *bind.TransactOpts, bigChainID *big.Int, prevTx *types.Transaction) (err error) {
 	return t.setGasPrice(ctx, client, transactor, bigChainID, prevTx)
+}
+
+// GetGasBlock exports getGasBlock for testing.
+func (t *txSubmitterImpl) GetGasBlock(ctx context.Context, client client.EVM, chainID int) (gasBlock *types.Header, err error) {
+	return t.getGasBlock(ctx, client, chainID)
 }
 
 // GetNonce exports getNonce for testing.

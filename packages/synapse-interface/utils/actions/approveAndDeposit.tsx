@@ -9,8 +9,8 @@ import ExplorerToastLink from '@components/ExplorerToastLink'
 
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { txErrorHandler } from '@utils/txErrorHandler'
-import { AVWETH, WETHE } from '@constants/tokens/master'
-import { WETH } from '@constants/tokens/swapMaster'
+import { WETHE, WETH } from '@constants/tokens/bridgeable'
+import { AVWETH } from '@/constants/tokens/auxilliary'
 import { approveToken } from '@utils/approveToken'
 import { Token } from '@types'
 import { zeroAddress } from 'viem'
@@ -26,7 +26,7 @@ export const approve = async (
 ) => {
   const currentChainName = CHAINS_BY_ID[chainId].name
 
-  const { poolAddress } = getSwapDepositContractFields(pool, chainId)
+  const { poolAddress, swapType } = getSwapDepositContractFields(pool, chainId)
 
   const requestingApprovalPopup = toast(
     `Requesting approval on ${currentChainName}`,
@@ -42,10 +42,14 @@ export const approve = async (
       (inputValue[tokenAddr] === 0n ||
         inputValue[tokenAddr] <= depositQuote.allowances[tokenAddr])
     ) {
+      toast.dismiss(requestingApprovalPopup)
       return
     }
 
-    if (token.symbol === WETH.symbol) return
+    if (token.addresses[pool.chainId] === zeroAddress) {
+      toast.dismiss(requestingApprovalPopup)
+      return
+    }
 
     const tokenToApprove =
       token.symbol === AVWETH.symbol
@@ -76,12 +80,16 @@ export const approve = async (
       id: 'approve-success-popup',
       duration: 10000,
     })
-    segmentAnalyticsEvent(`[Pool Approval] Successful for ${pool?.name}`, {})
+    segmentAnalyticsEvent(`[Pool Approval] Successful`, {
+      poolName: pool?.name,
+    })
 
     return approveTx
   }
 
-  for (let token of pool.poolTokens) {
+  const tokens = swapType === 'AV_SWAP' ? pool.nativeTokens : pool.poolTokens
+
+  for (let token of tokens) {
     try {
       const value = inputValue[token.addresses[chainId]]
       const hasNonZeroValue = !!value && value !== 0n
@@ -114,7 +122,13 @@ export const deposit = async (
 
   try {
     // get this from quote?
-    segmentAnalyticsEvent(`[Pool Deposit] Attempt for ${pool?.name}`, {})
+    segmentAnalyticsEvent(
+      `[Pool Deposit] Attempt`,
+      {
+        poolName: pool?.name,
+      },
+      true
+    )
 
     let minToMint: any = await swapPoolCalculateTokenAmount({
       chainId,
@@ -169,7 +183,8 @@ export const deposit = async (
       id: 'deposit-success-popup',
       duration: 10000,
     })
-    segmentAnalyticsEvent(`[Pool Deposit] Success for ${pool?.name}`, {
+    segmentAnalyticsEvent(`[Pool Deposit] Success`, {
+      poolName: pool?.name,
       inputAmounts,
     })
 
@@ -177,7 +192,8 @@ export const deposit = async (
   } catch (error) {
     console.log('error from deposit: ', error)
     toast.dismiss(pendingPopup)
-    segmentAnalyticsEvent(`[Pool Deposit] Failure for ${pool?.name}`, {
+    segmentAnalyticsEvent(`[Pool Deposit] Failure`, {
+      poolName: pool?.name,
       inputAmounts,
       errorCode: error.code,
     })
@@ -200,7 +216,13 @@ export const emptyPoolDeposit = async (
   })
 
   try {
-    segmentAnalyticsEvent(`[Empty Pool Deposit] Attempt for ${pool?.name}`, {})
+    segmentAnalyticsEvent(
+      `[Empty Pool Deposit] Attempt`,
+      {
+        poolName: pool?.name,
+      },
+      true
+    )
 
     const result = Array.from(Object.values(inputAmounts), (value) => value)
 
@@ -243,7 +265,8 @@ export const emptyPoolDeposit = async (
       id: 'deposit-success-popup',
       duration: 10000,
     })
-    segmentAnalyticsEvent(`[Empty Pool Deposit] Success for ${pool?.name}`, {
+    segmentAnalyticsEvent(`[Empty Pool Deposit] Success`, {
+      poolName: pool?.name,
       inputAmounts,
     })
 
@@ -251,7 +274,8 @@ export const emptyPoolDeposit = async (
   } catch (error) {
     console.log('error from deposit: ', error)
     toast.dismiss(pendingPopup)
-    segmentAnalyticsEvent(`[Empty Pool Deposit] Failure for ${pool?.name}`, {
+    segmentAnalyticsEvent(`[Empty Pool Deposit] Failure`, {
+      poolName: pool?.name,
       inputAmounts,
       errorCode: error.code,
     })

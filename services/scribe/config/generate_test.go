@@ -11,7 +11,6 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/ethergo/parser/hardhat"
 	"github.com/synapsecns/sanguine/services/scribe/config"
-	"github.com/tenderly/tenderly-cli/providers"
 	"math/big"
 	"path/filepath"
 	"strconv"
@@ -57,14 +56,12 @@ func (c *ConfigSuite) TestGenerateConfig() {
 
 	repoRoot, err := find.Repo()
 	Nil(c.T(), err)
-
-	requiredConfs := gofakeit.Uint32()
 	omnirpcURL := gofakeit.URL()
 	outputPath := filepath.Join(filet.TmpDir(c.T(), ""), "test.yaml")
 
 	deploymentsFolder := filepath.Join(repoRoot.Path, "ethergo", "internal", "test-data", "deployments")
 
-	err = config.GenerateConfig(c.GetTestContext(), omnirpcURL, deploymentsFolder, requiredConfs, outputPath, []int{5, 335, 43113, 1666700000}, testGenerator)
+	err = config.GenerateConfig(c.GetTestContext(), omnirpcURL, deploymentsFolder, outputPath, []int{5, 335, 43113, 1666700000}, testGenerator)
 	Nil(c.T(), err)
 
 	parsedDeployments, err := hardhat.GetDeployments(deploymentsFolder)
@@ -83,7 +80,7 @@ func (c *ConfigSuite) TestGenerateConfig() {
 }
 
 // getDeploymentsTxHash gets the tx receipt from a list of deployments by address and chainid.
-func getDeploymentsTxHash(tb testing.TB, deployments []providers.Contract, chainID uint32, contractAddress common.Address) common.Hash {
+func getDeploymentsTxHash(tb testing.TB, deployments []hardhat.Contract, chainID uint32, contractAddress common.Address) common.Hash {
 	tb.Helper()
 
 	for _, deployment := range deployments {

@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {CallerNotInbox, NotaryInDispute} from "../../contracts/libs/Errors.sol";
+import {CallerNotInbox, DisputeTimeoutNotOver, NotaryInDispute} from "../../contracts/libs/Errors.sol";
 import {IAgentSecured} from "../../contracts/interfaces/IAgentSecured.sol";
 import {InterfaceDestination} from "../../contracts/interfaces/InterfaceDestination.sol";
 import {ISnapshotHub} from "../../contracts/interfaces/ISnapshotHub.sol";
-import {SNAPSHOT_TREE_HEIGHT} from "../../contracts/libs/Constants.sol";
+import {DISPUTE_TIMEOUT_NOTARY, SNAPSHOT_TREE_HEIGHT} from "../../contracts/libs/Constants.sol";
 import {MerkleMath} from "../../contracts/libs/merkle/MerkleMath.sol";
 
 import {InterfaceSummit} from "../../contracts/Summit.sol";
@@ -68,8 +68,15 @@ contract SummitTest is AgentSecuredTest {
         assertEq(snapGas.length, 0, "!snapGas");
     }
 
+    function test_constructor_revert_chainIdOverflow() public {
+        vm.chainId(2 ** 32);
+        vm.expectRevert("SafeCast: value doesn't fit in 32 bits");
+        new Summit({synapseDomain_: 1, agentManager_: address(2), inbox_: address(3)});
+    }
+
     function test_cleanSetup(Random memory random) public override {
         uint32 domain = DOMAIN_SYNAPSE;
+        vm.chainId(domain);
         address agentManager = random.nextAddress();
         address inbox_ = random.nextAddress();
         address caller = random.nextAddress();
@@ -87,7 +94,7 @@ contract SummitTest is AgentSecuredTest {
     }
 
     function test_acceptGuardSnapshot_revert_notInbox(address caller) public {
-        vm.assume(caller != localAgentManager());
+        vm.assume(caller != localInbox());
         vm.expectRevert(CallerNotInbox.selector);
         vm.prank(caller);
         InterfaceSummit(summit).acceptGuardSnapshot(0, 0, "");
@@ -98,6 +105,20 @@ contract SummitTest is AgentSecuredTest {
         vm.expectRevert(CallerNotInbox.selector);
         vm.prank(caller);
         InterfaceSummit(summit).acceptNotarySnapshot(0, 0, 0, "");
+    }
+
+    function test_acceptNotarySnapshot_revert_blockTimestampOverflow() public {
+        address notary = domains[DOMAIN_LOCAL].agent;
+        address guard = domains[0].agent;
+        Random memory random = Random("salt");
+        RawSnapshot memory rawSnap = random.nextSnapshot();
+        // Another Guard signs the snapshot
+        (bytes memory snapPayload, bytes memory guardSignature) = signSnapshot(guard, rawSnap);
+        bytes memory notarySig = signSnapshot(notary, snapPayload);
+        inbox.submitSnapshot(snapPayload, guardSignature);
+        vm.warp(2 ** 40);
+        vm.expectRevert("SafeCast: value doesn't fit in 40 bits");
+        inbox.submitSnapshot(snapPayload, notarySig);
     }
 
     function test_verifyAttestation_existingNonce(Random memory random, uint256 mask) public {
@@ -289,7 +310,7 @@ contract SummitTest is AgentSecuredTest {
             assertEq(keccak256(abi.encodePacked(snapGas)), ra._snapGasHash, "!latestAttestation: gas hash");
 
             // Check proofs for every State in the Notary snapshot
-            for (uint256 j = 0; j < STATES; ++j) {
+            for (uint8 j = 0; j < STATES; ++j) {
                 bytes32[] memory snapProof = ISnapshotHub(summit).getSnapshotProof(ra.nonce, j);
                 // Item to prove is State's "left sub-leaf"
                 (bytes32 item,) = rs.states[j].castToState().subLeafs();
@@ -380,6 +401,50 @@ contract SummitTest is AgentSecuredTest {
         vm.expectEmit();
         emit SnapshotAccepted(0, guard, snapPayload, guardSig);
         inbox.submitSnapshot(snapPayload, guardSig);
+    }
+
+    // ═════════════════════════════════════════ TESTS: NOTARY WON DISPUTE ═════════════════════════════════════════════
+
+    function prepareSubmitSnapshotDisputeTest() internal returns (bytes memory snapPayload, bytes memory notarySig) {
+        address notary = domains[DOMAIN_LOCAL].agent;
+        address reportGuard = domains[0].agent;
+        address snapshotGuard = domains[0].agents[1];
+
+        Random memory random = Random("salt");
+        RawSnapshot memory rawSnap = random.nextSnapshot();
+        // Another Guard signs the snapshot
+        bytes memory guardSignature;
+        (snapPayload, guardSignature) = signSnapshot(snapshotGuard, rawSnap);
+        notarySig = signSnapshot(notary, snapPayload);
+        inbox.submitSnapshot(snapPayload, guardSignature);
+        openTestDispute({guardIndex: agentIndex[reportGuard], notaryIndex: agentIndex[notary]});
+    }
+
+    /// @dev Resolves test dispute above in favor of the Notary.
+    function prepareNotaryWonDisputeTest() internal {
+        address notary = domains[DOMAIN_LOCAL].agent;
+        address guard = domains[0].agent;
+        resolveTestDispute({slashedIndex: agentIndex[guard], rivalIndex: agentIndex[notary]});
+    }
+
+    function test_submitSnapshot_revert_notaryWonDisputeTimeout() public {
+        (bytes memory snapPayload, bytes memory notarySig) = prepareSubmitSnapshotDisputeTest();
+        skip(7 days);
+        prepareNotaryWonDisputeTest();
+        skip(DISPUTE_TIMEOUT_NOTARY - 1);
+        vm.expectRevert(DisputeTimeoutNotOver.selector);
+        inbox.submitSnapshot(snapPayload, notarySig);
+    }
+
+    function test_submitSnapshot_afterNotaryDisputeTimeout() public {
+        address notary = domains[DOMAIN_LOCAL].agent;
+        (bytes memory snapPayload, bytes memory notarySig) = prepareSubmitSnapshotDisputeTest();
+        skip(7 days);
+        prepareNotaryWonDisputeTest();
+        skip(DISPUTE_TIMEOUT_NOTARY);
+        inbox.submitSnapshot(snapPayload, notarySig);
+        (bytes memory snapPayload_,) = ISnapshotHub(summit).getNotarySnapshot(0);
+        assertEq(snapPayload_, snapPayload);
     }
 
     // ═════════════════════════════════════════════════ OVERRIDES ═════════════════════════════════════════════════════

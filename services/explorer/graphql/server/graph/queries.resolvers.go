@@ -17,12 +17,12 @@ import (
 )
 
 // BridgeTransactions is the resolver for the bridgeTransactions2 field.
-func (r *queryResolver) BridgeTransactions(ctx context.Context, chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txnHash *string, kappa *string, pending *bool, useMv *bool, page *int, tokenAddressFrom []*string, tokenAddressTo []*string) ([]*model.BridgeTransaction, error) {
+func (r *queryResolver) BridgeTransactions(ctx context.Context, chainIDFrom []*int, chainIDTo []*int, addressFrom *string, addressTo *string, maxAmount *int, minAmount *int, maxAmountUsd *int, minAmountUsd *int, startTime *int, endTime *int, txnHash *string, kappa *string, pending *bool, useMv *bool, page *int, tokenAddressFrom []*string, tokenAddressTo []*string, onlyCctp *bool) ([]*model.BridgeTransaction, error) {
 	var results []*model.BridgeTransaction
 	if useMv != nil && *useMv {
 		var mvResults []*model.BridgeTransaction
 		var err error
-		mvResults, err = r.GetBridgeTxs(ctx, chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, maxAmountUsd, minAmountUsd, startTime, endTime, txnHash, tokenAddressTo, tokenAddressFrom, kappa, pending, page)
+		mvResults, err = r.GetBridgeTxs(ctx, chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, maxAmountUsd, minAmountUsd, startTime, endTime, txnHash, tokenAddressTo, tokenAddressFrom, kappa, pending, onlyCctp, page)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
 		}
@@ -34,27 +34,24 @@ func (r *queryResolver) BridgeTransactions(ctx context.Context, chainIDFrom []*i
 	var toResults []*model.BridgeTransaction
 
 	var wg sync.WaitGroup
-	var err error
+	var originErr error
+	var destinationErr error
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		fromResults, err = r.GetBridgeTxsFromOrigin(ctx, useMv, chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, maxAmountUsd, minAmountUsd, startTime, endTime, txnHash, tokenAddressTo, tokenAddressFrom, kappa, pending, page, false)
+		fromResults, originErr = r.GetBridgeTxsFromOrigin(ctx, useMv, chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, maxAmountUsd, minAmountUsd, startTime, endTime, txnHash, tokenAddressTo, tokenAddressFrom, kappa, pending, onlyCctp, page, false)
 	}()
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		toResults, err = r.GetBridgeTxsFromDestination(ctx, useMv, chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, minAmountUsd, maxAmountUsd, startTime, endTime, txnHash, kappa, tokenAddressFrom, tokenAddressTo, page, pending)
+		toResults, destinationErr = r.GetBridgeTxsFromDestination(ctx, useMv, chainIDFrom, chainIDTo, addressFrom, addressTo, maxAmount, minAmount, minAmountUsd, maxAmountUsd, startTime, endTime, txnHash, kappa, tokenAddressFrom, tokenAddressTo, onlyCctp, page, pending)
 	}()
 
 	wg.Wait()
-	if err != nil {
-		return nil, err
+	if originErr != nil || destinationErr != nil {
+		return nil, fmt.Errorf("error while getting txs. origin err: %w, destination err: %w", originErr, destinationErr)
 	}
 	results = r.mergeBridgeTransactions(fromResults, toResults)
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to get bridge transaction: %w", err)
-	}
 	sort.Sort(SortBridgeTxType(results))
 	return results, nil
 }
@@ -191,8 +188,13 @@ func (r *queryResolver) AmountStatistic(ctx context.Context, typeArg model.Stati
 
 // DailyStatisticsByChain is the resolver for the dailyStatisticsByChain field.
 func (r *queryResolver) DailyStatisticsByChain(ctx context.Context, chainID *int, typeArg *model.DailyStatisticType, platform *model.Platform, duration *model.Duration, useCache *bool, useMv *bool) ([]*model.DateResultByChain, error) {
+	cacheKey := fmt.Sprintf("dailyStatisticsByChain, %s, %s, %s, %s", keyGenHandleNilInt(chainID), typeArg.String(), duration.String(), platform.String())
+
 	if useCache != nil && *useCache {
-		res, err := r.getDateResultByChainFromCache(fmt.Sprintf("dailyStatisticsByChain, %s, %s, %s, %s", keyGenHandleNilInt(chainID), typeArg.String(), duration.String(), platform.String()))
+		locker := r.CacheMutex.Lock(cacheKey)
+		defer locker.Unlock()
+
+		res, err := r.getDateResultByChainFromCache(cacheKey)
 		if err == nil {
 			return res, nil
 		}
@@ -397,25 +399,61 @@ func (r *queryResolver) Leaderboard(ctx context.Context, duration *model.Duratio
 }
 
 // GetOriginBridgeTx is the resolver for the getOriginBridgeTx field.
-func (r *queryResolver) GetOriginBridgeTx(ctx context.Context, chainID *int, txnHash *string) (*model.BridgeWatcherTx, error) {
-	if chainID == nil || txnHash == nil {
-		return nil, fmt.Errorf("chainID and txnHash must be provided")
+func (r *queryResolver) GetOriginBridgeTx(ctx context.Context, chainID int, txnHash string, bridgeType model.BridgeType) (*model.BridgeWatcherTx, error) {
+	var results *model.BridgeWatcherTx
+	var err error
+	if !r.checkIfChainIDExists(uint32(chainID), bridgeType) {
+		return nil, fmt.Errorf("chainID not supported by server")
 	}
-	results, err := r.GetOriginBridgeTxBW(ctx, *chainID, *txnHash)
+
+	results, err = r.GetOriginBridgeTxBW(ctx, chainID, txnHash, bridgeType)
+
 	if err != nil {
-		return nil, fmt.Errorf("could not get message bus transactions %w", err)
+		return nil, fmt.Errorf("could not get origin tx %w", err)
 	}
 	return results, nil
 }
 
 // GetDestinationBridgeTx is the resolver for the getDestinationBridgeTx field.
-func (r *queryResolver) GetDestinationBridgeTx(ctx context.Context, chainID *int, address *string, kappa *string, timestamp *int) (*model.BridgeWatcherTx, error) {
-	if chainID == nil || address == nil || kappa == nil || timestamp == nil {
-		return nil, fmt.Errorf("chainID, txnHash, kappa, and timestamp must be provided")
+func (r *queryResolver) GetDestinationBridgeTx(ctx context.Context, chainID int, address string, kappa string, timestamp int, bridgeType model.BridgeType, historical *bool) (*model.BridgeWatcherTx, error) {
+	if historical == nil {
+		return nil, fmt.Errorf("historical flag must be set")
 	}
-	results, err := r.GetDestinationBridgeTxBW(ctx, *chainID, *address, *kappa, *timestamp)
+	if !r.checkIfChainIDExists(uint32(chainID), bridgeType) {
+		return nil, fmt.Errorf("chainID not supported by server")
+	}
+	var results *model.BridgeWatcherTx
+	var err error
+	results, err = r.GetDestinationBridgeTxBW(ctx, chainID, address, kappa, timestamp, *historical, bridgeType)
+
 	if err != nil {
-		return nil, fmt.Errorf("could not get message bus transactions %w", err)
+		return nil, fmt.Errorf("could not get destination tx %w", err)
+	}
+	return results, nil
+}
+
+// GetBlockHeight is the resolver for the getBlockHeight field.
+func (r *queryResolver) GetBlockHeight(ctx context.Context, contracts []*model.ContractQuery) ([]*model.BlockHeight, error) {
+	// Generate string for right side of IN clause
+	var contractString string
+	contractTypeMap := make(map[string]model.ContractType)
+	for i, contract := range contracts {
+		contractAddr, err := r.getContractAddressFromType(uint32(contract.ChainID), contract.Type)
+		if err != nil {
+			return nil, fmt.Errorf("could not get contract address from type %s, %w", contract.Type, err)
+		}
+		contractTypeMap[contractAddr] = contract.Type
+		if i == 0 {
+			contractString += fmt.Sprintf("('%s', %d)", contractAddr, contract.ChainID)
+		} else {
+			contractString += fmt.Sprintf(", ('%s', %d)", contractAddr, contract.ChainID)
+		}
+	}
+
+	query := fmt.Sprintf("SELECT contract_address, chain_id, block_number FROM last_blocks WHERE (contract_address, chain_id) IN (%s) ORDER BY block_number", contractString)
+	results, err := r.DB.GetBlockHeights(ctx, query, contractTypeMap)
+	if err != nil {
+		return nil, fmt.Errorf("could not get block heights from database %w", err)
 	}
 	return results, nil
 }

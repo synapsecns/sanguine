@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
+	ethCore "github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/services/scribe/db"
 	"github.com/synapsecns/sanguine/services/scribe/graphql/server/graph/model"
@@ -31,10 +32,17 @@ func (r *queryResolver) Logs(ctx context.Context, contractAddress *string, chain
 }
 
 // LogsRange is the resolver for the logsRange field.
-func (r *queryResolver) LogsRange(ctx context.Context, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, startBlock int, endBlock int, page int) ([]*model.Log, error) {
+func (r *queryResolver) LogsRange(ctx context.Context, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, startBlock int, endBlock int, page int, asc *bool) ([]*model.Log, error) {
 	logsFilter := db.BuildLogFilter(contractAddress, blockNumber, txHash, txIndex, blockHash, index, confirmed)
 	logsFilter.ChainID = uint32(chainID)
-	logs, err := r.DB.RetrieveLogsInRange(ctx, logsFilter, uint64(startBlock), uint64(endBlock), page)
+	var logs []*types.Log
+	var err error
+	// Get logs in ascending order if asc is set to true.
+	if asc != nil && *asc {
+		logs, err = r.DB.RetrieveLogsInRangeAsc(ctx, logsFilter, uint64(startBlock), uint64(endBlock), page)
+	} else {
+		logs, err = r.DB.RetrieveLogsInRange(ctx, logsFilter, uint64(startBlock), uint64(endBlock), page)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving logs: %w", err)
 	}
@@ -167,12 +175,12 @@ func (r *queryResolver) TxSender(ctx context.Context, txHash string, chainID int
 		return nil, fmt.Errorf("error retrieving transaction: %w", err)
 	}
 
-	msgFrom, err := ethTx[0].Tx.AsMessage(types.LatestSignerForChainID(ethTx[0].Tx.ChainId()), big.NewInt(1))
+	msgFrom, err := ethCore.TransactionToMessage(&ethTx[0].Tx, types.LatestSignerForChainID(ethTx[0].Tx.ChainId()), big.NewInt(1))
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving ethtx: %w", err)
 	}
 
-	sender := msgFrom.From().String()
+	sender := msgFrom.From.String()
 
 	return &sender, nil
 }

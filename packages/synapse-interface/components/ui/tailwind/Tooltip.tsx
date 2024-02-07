@@ -40,7 +40,7 @@ const Tooltip = ({
           className={`
             bg-black
             border-0 mt-3 z-50 font-normal leading-normal
-            text-sm max-w-xs text-left no-underline break-words rounded-lg
+            text-sm max-w-xs text-left no-underline break-words rounded-md
             ${tooltipShow ? 'block' : 'hidden'}
           `}
           ref={tooltipRef}

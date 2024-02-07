@@ -212,6 +212,22 @@ func (_m *Chain) CallContract(ctx context.Context, call ethereum.CallMsg, blockN
 	return r0, r1
 }
 
+// ChainConfig provides a mock function with given fields:
+func (_m *Chain) ChainConfig() *params.ChainConfig {
+	ret := _m.Called()
+
+	var r0 *params.ChainConfig
+	if rf, ok := ret.Get(0).(func() *params.ChainConfig); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*params.ChainConfig)
+		}
+	}
+
+	return r0
+}
+
 // ChainID provides a mock function with given fields: ctx
 func (_m *Chain) ChainID(ctx context.Context) (*big.Int, error) {
 	ret := _m.Called(ctx)

@@ -6,15 +6,19 @@ import {IncorrectOriginDomain} from "../libs/Errors.sol";
 import {GasData, GasDataLib} from "../libs/stack/GasData.sol";
 import {HistoricalTree} from "../libs/merkle/MerkleTree.sol";
 import {State, StateLib} from "../libs/memory/State.sol";
+import {ChainContext} from "../libs/ChainContext.sol";
 // ═════════════════════════════ INTERNAL IMPORTS ══════════════════════════════
 import {AgentSecured} from "../base/AgentSecured.sol";
 import {StateHubEvents} from "../events/StateHubEvents.sol";
 import {IStateHub} from "../interfaces/IStateHub.sol";
+// ═════════════════════════════ EXTERNAL IMPORTS ══════════════════════════════
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 /// @notice `StateHub` is a parent contract for `Origin`. It is responsible for the following:
 /// - Keeping track of the historical Origin Merkle Tree containing all the message hashes.
 /// - Keeping track of the historical Origin States, as well as verifying their validity.
 abstract contract StateHub is AgentSecured, StateHubEvents, IStateHub {
+    using SafeCast for uint256;
     using StateLib for bytes;
 
     struct OriginState {
@@ -93,7 +97,8 @@ abstract contract StateHub is AgentSecured, StateHubEvents, IStateHub {
     /// @dev Returns nonce of the next sent message: the amount of saved States so far.
     /// This always equals to "total amount of sent messages" plus 1.
     function _nextNonce() internal view returns (uint32) {
-        return uint32(_originStates.length);
+        // TODO: consider using more than 32 bits for origin nonces
+        return _originStates.length.toUint32();
     }
 
     /// @dev Checks if a state is valid, i.e. if it matches the historical one.
@@ -135,8 +140,8 @@ abstract contract StateHub is AgentSecured, StateHubEvents, IStateHub {
 
     /// @dev Returns a OriginState struct to save in the contract.
     function _toOriginState() internal view returns (OriginState memory originState) {
-        originState.blockNumber = uint40(block.number);
-        originState.timestamp = uint40(block.timestamp);
+        originState.blockNumber = ChainContext.blockNumber();
+        originState.timestamp = ChainContext.blockTimestamp();
         originState.gasData = _fetchGasData();
     }
 

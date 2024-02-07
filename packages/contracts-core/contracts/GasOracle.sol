@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {IncorrectDestinationDomain, LocalGasDataNotSet, RemoteGasDataNotSet} from "./libs/Errors.sol";
+import {MAX_SUMMIT_TIP} from "./libs/Constants.sol";
+import {
+    IncorrectDestinationDomain, LocalGasDataNotSet, RemoteGasDataNotSet, SummitTipTooHigh
+} from "./libs/Errors.sol";
 import {GasData, GasDataLib} from "./libs/stack/GasData.sol";
 import {Number, NumberLib} from "./libs/stack/Number.sol";
 import {Request, RequestLib} from "./libs/stack/Request.sol";
@@ -45,11 +48,11 @@ contract GasOracle is MessagingBase, GasOracleEvents, InterfaceGasOracle {
     mapping(uint32 => GasData) internal _gasData;
 
     // Fixed value for the summit tip, denominated in Ethereum Mainnet Wei.
-    uint256 internal _summitTipWei;
+    uint256 public summitTipWei;
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
-    constructor(uint32 domain, address destination_) MessagingBase("0.0.3", domain) {
+    constructor(uint32 synapseDomain_, address destination_) MessagingBase("0.0.3", synapseDomain_) {
         destination = destination_;
     }
 
@@ -57,7 +60,7 @@ contract GasOracle is MessagingBase, GasOracleEvents, InterfaceGasOracle {
     /// - msg.sender is set as contract owner
     function initialize() external initializer {
         // Initialize Ownable: msg.sender is set as "owner"
-        __Ownable_init();
+        __Ownable2Step_init();
     }
 
     /// @notice MVP function to set the gas data for the given domain.
@@ -84,8 +87,10 @@ contract GasOracle is MessagingBase, GasOracleEvents, InterfaceGasOracle {
     }
 
     /// @notice MVP function to set the summit tip.
-    function setSummitTip(uint256 summitTipWei) external onlyOwner {
-        _summitTipWei = summitTipWei;
+    function setSummitTip(uint256 summitTipWei_) external onlyOwner {
+        if (summitTipWei_ > MAX_SUMMIT_TIP) revert SummitTipTooHigh();
+        summitTipWei = summitTipWei_;
+        emit SummitTipUpdated(summitTipWei_);
     }
 
     /// @inheritdoc InterfaceGasOracle
@@ -140,7 +145,7 @@ contract GasOracle is MessagingBase, GasOracleEvents, InterfaceGasOracle {
         // TODO: figure out unchecked math
         // We store the fixed value of the summit tip in Ethereum Mainnet Wei already.
         // To convert it to local Ether, we need to divide by the local Ether price (using BWAD math).
-        uint256 summitTip = (_summitTipWei << NumberLib.BWAD_SHIFT) / localEtherPrice;
+        uint256 summitTip = (summitTipWei << NumberLib.BWAD_SHIFT) / localEtherPrice;
         // To convert the cost from remote Ether to local Ether, we need to multiply by the ratio of the Ether prices.
         uint256 attestationTip = remoteGasData.amortAttCost().decompress() * remoteEtherPrice / localEtherPrice;
         // Total cost for Executor to execute a message on the remote chain has three components:
@@ -150,7 +155,7 @@ contract GasOracle is MessagingBase, GasOracleEvents, InterfaceGasOracle {
         // Same logic for converting the cost from remote Ether to local Ether applies here.
         // forgefmt: disable-next-item
         uint256 executionTip = (
-            remoteGasData.gasPrice().decompress() * request.gasLimit() + 
+            remoteGasData.gasPrice().decompress() * request.gasLimit() +
             remoteGasData.dataPrice().decompress() * contentLength +
             remoteGasData.execBuffer().decompress()
         ) * remoteEtherPrice / localEtherPrice;

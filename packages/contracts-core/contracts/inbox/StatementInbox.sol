@@ -3,7 +3,6 @@ pragma solidity 0.8.17;
 
 // ══════════════════════════════ LIBRARY IMPORTS ══════════════════════════════
 import {Attestation, AttestationLib} from "../libs/memory/Attestation.sol";
-import {SYNAPSE_DOMAIN} from "../libs/Constants.sol";
 import {
     AgentNotGuard,
     AgentNotNotary,
@@ -72,7 +71,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
         agentManager = agentManager_;
         origin = origin_;
         destination = destination_;
-        __Ownable_init();
+        __Ownable2Step_init();
     }
 
     // ══════════════════════════════════════════ SUBMIT AGENT STATEMENTS ══════════════════════════════════════════════
@@ -80,7 +79,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
     /// @inheritdoc IStatementInbox
     // solhint-disable-next-line ordering
     function submitStateReportWithSnapshot(
-        uint256 stateIndex,
+        uint8 stateIndex,
         bytes memory srSignature,
         bytes memory snapPayload,
         bytes memory snapSignature
@@ -108,7 +107,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
 
     /// @inheritdoc IStatementInbox
     function submitStateReportWithAttestation(
-        uint256 stateIndex,
+        uint8 stateIndex,
         bytes memory srSignature,
         bytes memory snapPayload,
         bytes memory attPayload,
@@ -139,7 +138,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
 
     /// @inheritdoc IStatementInbox
     function submitStateReportWithSnapshotProof(
-        uint256 stateIndex,
+        uint8 stateIndex,
         bytes memory statePayload,
         bytes memory srSignature,
         bytes32[] memory snapProof,
@@ -213,7 +212,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
 
     /// @inheritdoc IStatementInbox
     function verifyStateWithAttestation(
-        uint256 stateIndex,
+        uint8 stateIndex,
         bytes memory snapPayload,
         bytes memory attPayload,
         bytes memory attSignature
@@ -238,7 +237,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
 
     /// @inheritdoc IStatementInbox
     function verifyStateWithSnapshotProof(
-        uint256 stateIndex,
+        uint8 stateIndex,
         bytes memory statePayload,
         bytes32[] memory snapProof,
         bytes memory attPayload,
@@ -267,7 +266,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
     }
 
     /// @inheritdoc IStatementInbox
-    function verifyStateWithSnapshot(uint256 stateIndex, bytes memory snapPayload, bytes memory snapSignature)
+    function verifyStateWithSnapshot(uint8 stateIndex, bytes memory snapPayload, bytes memory snapSignature)
         external
         returns (bool isValidState)
     {
@@ -376,7 +375,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
     function _verifyNotaryDomain(uint32 notaryDomain) internal view {
         // Notary needs to be from the local domain (if contract is not deployed on Synapse Chain).
         // Or Notary could be from any domain (if contract is deployed on Synapse Chain).
-        if (notaryDomain != localDomain && localDomain != SYNAPSE_DOMAIN) revert IncorrectAgentDomain();
+        if (notaryDomain != localDomain && localDomain != synapseDomain) revert IncorrectAgentDomain();
     }
 
     // ════════════════════════════════════════ ATTESTATION RELATED CHECKS ═════════════════════════════════════════════
@@ -521,7 +520,7 @@ abstract contract StatementInbox is MessagingBase, StatementInboxEvents, IStatem
      * @param state             Typed memory view over the provided state payload
      * @param snapProof         Raw payload with snapshot data
      */
-    function _verifySnapshotMerkle(Attestation att, uint256 stateIndex, State state, bytes32[] memory snapProof)
+    function _verifySnapshotMerkle(Attestation att, uint8 stateIndex, State state, bytes32[] memory snapProof)
         internal
         pure
     {

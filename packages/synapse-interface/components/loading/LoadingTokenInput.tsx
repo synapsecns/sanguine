@@ -1,14 +1,14 @@
 const LoadingTokenInput = () => {
   return (
     <div className="mt-4">
-      <div className="border-none rounded-xl">
+      <div className="border-none rounded-md">
         <div className="flex space-x-2">
           <div
             className={`
             flex flex-grow items-center
             px-3 sm:px-4
             w-full h-20
-            rounded-lg
+            rounded-md
             border border-white border-opacity-20
             transform-gpu transition-all duration-75
             animate-pulse hover:border-opacity-30

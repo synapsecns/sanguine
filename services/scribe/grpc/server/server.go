@@ -158,7 +158,7 @@ func (s *server) StreamLogs(req *pbscribe.StreamLogsRequest, res pbscribe.Scribe
 
 				if latestScribeBlock > toBlock {
 					nextFromBlock = toBlock + 1
-					toBlock = latestScribeBlock - 1
+					toBlock = latestScribeBlock
 					wait = 0
 
 					span.AddEvent("New block. From: " + strconv.Itoa(int(nextFromBlock)) + " To: " + strconv.Itoa(int(toBlock)))
@@ -178,7 +178,7 @@ func (s *server) Check(context.Context, *pbscribe.HealthCheckRequest) (*pbscribe
 	return &pbscribe.HealthCheckResponse{Status: pbscribe.HealthCheckResponse_SERVING}, nil
 }
 
-func (s *server) Watch(a *pbscribe.HealthCheckRequest, res pbscribe.ScribeService_WatchServer) error {
+func (s *server) Watch(_ *pbscribe.HealthCheckRequest, res pbscribe.ScribeService_WatchServer) error {
 	for {
 		select {
 		case <-res.Context().Done():

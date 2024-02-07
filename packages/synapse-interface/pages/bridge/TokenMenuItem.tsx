@@ -1,6 +1,5 @@
 import { CHAINS_BY_ID } from '@constants/chains'
 import Image from 'next/image'
-import { displaySymbol } from '@utils/displaySymbol'
 import {
   getBorderStyleForCoinHover,
   getMenuItemStyleForCoinCombined,
@@ -45,7 +44,7 @@ const TokenMenuItem = ({
       className={`
       flex items-center
       transition-all duration-75
-      w-full rounded-xl
+      w-full rounded-md
       px-2 py-3
       cursor-pointer
       border border-transparent
@@ -97,7 +96,7 @@ const CoinOnChain = ({ token, chainId }: { token: Token; chainId: number }) => {
   return chain ? (
     <div className="flex-col text-left">
       <div className="text-lg font-medium text-white">
-        {token ? displaySymbol(chainId, token) : ''}
+        {token ? token.symbol : ''}
       </div>
       <div className="flex items-center text-sm text-white">
         <div className="mr-1 opacity-70">{token?.name}</div>

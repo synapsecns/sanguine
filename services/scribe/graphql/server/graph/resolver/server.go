@@ -80,7 +80,7 @@ type ComplexityRoot struct {
 		LogCount                 func(childComplexity int, contractAddress string, chainID int) int
 		Logs                     func(childComplexity int, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, page int) int
 		LogsAtHeadRange          func(childComplexity int, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, startBlock int, endBlock int, page int) int
-		LogsRange                func(childComplexity int, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, startBlock int, endBlock int, page int) int
+		LogsRange                func(childComplexity int, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, startBlock int, endBlock int, page int, asc *bool) int
 		ReceiptCount             func(childComplexity int, chainID int) int
 		Receipts                 func(childComplexity int, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, confirmed *bool, page int) int
 		ReceiptsAtHeadRange      func(childComplexity int, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, confirmed *bool, startBlock int, endBlock int, page int) int
@@ -138,7 +138,7 @@ type LogResolver interface {
 }
 type QueryResolver interface {
 	Logs(ctx context.Context, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, page int) ([]*model.Log, error)
-	LogsRange(ctx context.Context, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, startBlock int, endBlock int, page int) ([]*model.Log, error)
+	LogsRange(ctx context.Context, contractAddress *string, chainID int, blockNumber *int, txHash *string, txIndex *int, blockHash *string, index *int, confirmed *bool, startBlock int, endBlock int, page int, asc *bool) ([]*model.Log, error)
 	Receipts(ctx context.Context, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, confirmed *bool, page int) ([]*model.Receipt, error)
 	ReceiptsRange(ctx context.Context, chainID int, txHash *string, contractAddress *string, blockHash *string, blockNumber *int, txIndex *int, confirmed *bool, startBlock int, endBlock int, page int) ([]*model.Receipt, error)
 	Transactions(ctx context.Context, txHash *string, chainID int, blockNumber *int, blockHash *string, confirmed *bool, page int) ([]*model.Transaction, error)
@@ -419,7 +419,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.LogsRange(childComplexity, args["contract_address"].(*string), args["chain_id"].(int), args["block_number"].(*int), args["tx_hash"].(*string), args["tx_index"].(*int), args["block_hash"].(*string), args["index"].(*int), args["confirmed"].(*bool), args["start_block"].(int), args["end_block"].(int), args["page"].(int)), true
+		return e.complexity.Query.LogsRange(childComplexity, args["contract_address"].(*string), args["chain_id"].(int), args["block_number"].(*int), args["tx_hash"].(*string), args["tx_index"].(*int), args["block_hash"].(*string), args["index"].(*int), args["confirmed"].(*bool), args["start_block"].(int), args["end_block"].(int), args["page"].(int), args["asc"].(*bool)), true
 
 	case "Query.receiptCount":
 		if e.complexity.Query.ReceiptCount == nil {
@@ -873,6 +873,7 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     start_block: Int!
     end_block: Int!
     page: Int!
+    asc: Boolean = False
   ): [Log]
   # returns all receipts that match the given filter
   receipts(
@@ -997,6 +998,8 @@ directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITI
     last_indexed: Int!
     page: Int!
   ): [Transaction]
+
+
 }
 `, BuiltIn: false},
 	{Name: "../schema/types.graphql", Input: `scalar JSON
@@ -1425,6 +1428,15 @@ func (ec *executionContext) field_Query_logsRange_args(ctx context.Context, rawA
 		}
 	}
 	args["page"] = arg10
+	var arg11 *bool
+	if tmp, ok := rawArgs["asc"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("asc"))
+		arg11, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["asc"] = arg11
 	return args, nil
 }
 
@@ -3001,7 +3013,7 @@ func (ec *executionContext) _Query_logsRange(ctx context.Context, field graphql.
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().LogsRange(rctx, fc.Args["contract_address"].(*string), fc.Args["chain_id"].(int), fc.Args["block_number"].(*int), fc.Args["tx_hash"].(*string), fc.Args["tx_index"].(*int), fc.Args["block_hash"].(*string), fc.Args["index"].(*int), fc.Args["confirmed"].(*bool), fc.Args["start_block"].(int), fc.Args["end_block"].(int), fc.Args["page"].(int))
+		return ec.resolvers.Query().LogsRange(rctx, fc.Args["contract_address"].(*string), fc.Args["chain_id"].(int), fc.Args["block_number"].(*int), fc.Args["tx_hash"].(*string), fc.Args["tx_index"].(*int), fc.Args["block_hash"].(*string), fc.Args["index"].(*int), fc.Args["confirmed"].(*bool), fc.Args["start_block"].(int), fc.Args["end_block"].(int), fc.Args["page"].(int), fc.Args["asc"].(*bool))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

@@ -26,6 +26,8 @@ type PartialInfo {
   blockNumber:    Int
   time:           Int
   formattedTime: String
+  formattedEventType: String
+  eventType: Int
 }
 
 enum BridgeTxType {
@@ -40,6 +42,7 @@ type BridgeWatcherTx {
   pending:      Boolean
   type:  BridgeTxType
   kappa:        String
+  kappaStatus: KappaStatus
 }
 """
 DateResult is a given statistic for a given date.
@@ -173,6 +176,7 @@ type DateResultByChain {
   harmony: Float
   canto: Float
   dogechain: Float
+  base: Float
   total:  Float
 }
 
@@ -210,3 +214,31 @@ type Leaderboard {
   rank: Int
   avgVolumeUSD: Float
 }
+enum BridgeType{
+  BRIDGE
+  CCTP
+}
+
+enum KappaStatus{
+  EXISTS
+  PENDING
+  UNKNOWN
+}
+
+input ContractQuery {
+  chainID: Int!
+  type: ContractType!
+}
+
+enum ContractType{
+  BRIDGE
+  CCTP
+}
+
+type BlockHeight {
+  chainID: Int
+  type: ContractType
+  blockNumber: Int
+}
+
+

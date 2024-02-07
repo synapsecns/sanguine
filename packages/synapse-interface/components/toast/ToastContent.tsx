@@ -29,7 +29,7 @@ export default function ToastContent({ toastData, icon, message }) {
         border ${borderColor}
       `}
     >
-      <div className="flex flex-grow pt-1 ">
+      <div className="flex flex-grow pt-1">
         <div className="self-center flex-shrink align-middle justify-items-center">
           {fancyIcon}
         </div>

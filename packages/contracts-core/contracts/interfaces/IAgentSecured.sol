@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {AgentStatus} from "../libs/Structures.sol";
+import {AgentStatus, DisputeStatus} from "../libs/Structures.sol";
 
 interface IAgentSecured {
     /**
@@ -53,4 +53,13 @@ interface IAgentSecured {
      * @return status   Status for the given agent: (flag, domain, index)
      */
     function getAgent(uint256 index) external view returns (address agent, AgentStatus memory status);
+
+    /**
+     * @notice Returns (flag, openedAt, resolvedAt) that describes the latest status of
+     * the latest dispute for an agent with a given index.
+     * @dev Will return empty values if agent with given index doesn't exist.
+     * @param agentIndex    Agent index in the Agent Merkle Tree
+     * @return              Latest dispute status for the given agent: (flag, openedAt, resolvedAt)
+     */
+    function latestDisputeStatus(uint32 agentIndex) external view returns (DisputeStatus memory);
 }

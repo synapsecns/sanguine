@@ -1,0 +1,68 @@
+
+query GetMessageStatus($messageHash: String, $originChainID: Int, $originTxHash: String) {
+  response: getMessageStatus(
+    messageHash: $messageHash
+    originChainID: $originChainID
+    originTxHash: $originTxHash
+  ) {
+    lastSeen
+    originTxHash
+    destinationTxHash
+    messageHash
+  }
+}
+
+query GetMessagesByStatus ($messageStatus: MessageState!, $page: Int! = 1) {
+  response: getMessagesByStatus (messageStatus: $messageStatus, page: $page) {
+    lastSeen
+    originTxHash
+    destinationTxHash
+    messageHash
+  }
+}
+
+
+query GetOriginInfo($messageHash: String, $chainID: Int, $txHash: String) {
+  response: getOriginInfo(
+    messageHash: $messageHash
+    chainID: $chainID
+    txHash: $txHash
+  ) {
+    messageHash
+    contractAddress
+    blockNumber
+    originTxHash
+    sender
+    recipient
+    originChainID
+    destinationChainID
+    nonce
+    message
+    optimisticSeconds
+    messageFlag
+    summitTip
+    attestationTip
+    executionTip
+    deliveryTip
+    version
+    gasLimit
+    gasDrop
+  }
+}
+
+query GetDestinationInfo($messageHash: String, $chainID: Int, $txHash: String) {
+  response: getDestinationInfo(
+    messageHash: $messageHash
+    chainID: $chainID
+    txHash: $txHash) {
+    contractAddress
+    blockNumber
+    txHash
+    txIndex
+    messageHash
+    chainID
+    remoteDomain
+    success
+  }
+}
+

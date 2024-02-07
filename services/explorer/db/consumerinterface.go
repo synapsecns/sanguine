@@ -9,6 +9,9 @@ import (
 	"gorm.io/gorm"
 )
 
+// TODO simplify these interfaces so that there is one generic read function using an interface to accept a pointer from
+// the caller so that the query's results are scanned into that pointer.
+
 // ConsumerDBWriter is the interface for writing to the ConsumerDB.
 type ConsumerDBWriter interface {
 	// StoreEvent stores an event.
@@ -21,7 +24,7 @@ type ConsumerDBWriter interface {
 	StoreTokenIndex(ctx context.Context, chainID uint32, tokenIndex uint8, tokenAddress string, contractAddress string) error
 	// StoreSwapFee stores the swap fee data.
 	StoreSwapFee(ctx context.Context, chainID uint32, timestamp uint64, contractAddress string, fee uint64, feeType string) error
-	// UNSAFE_DB gets the underlying gorm db. This is not intended for use in production.
+	// UNSAFE_DB gets the underlying gorm db. This is for testing only and not intended for use in production.
 	//
 	//nolint:golint
 	UNSAFE_DB() *gorm.DB
@@ -34,6 +37,8 @@ type ConsumerDBReader interface {
 	GetUint64(ctx context.Context, query string) (uint64, error)
 	// GetFloat64 gets a float64 out of the database
 	GetFloat64(ctx context.Context, query string) (float64, error)
+	// GetString gets a string out of the database
+	GetString(ctx context.Context, query string) (string, error)
 	// GetStringArray gets an array of strings from a given query.
 	GetStringArray(ctx context.Context, query string) ([]string, error)
 	// GetTxCounts gets the counts for each of tx_hash from a given query.
@@ -44,6 +49,8 @@ type ConsumerDBReader interface {
 	GetBridgeEvent(ctx context.Context, query string) (*sql.BridgeEvent, error)
 	// GetBridgeEvents returns a bridge event.
 	GetBridgeEvents(ctx context.Context, query string) ([]sql.BridgeEvent, error)
+	// GetMVBridgeEvent returns a bridge event from the mv Table.
+	GetMVBridgeEvent(ctx context.Context, query string) (*sql.HybridBridgeEvent, error)
 	// GetAllBridgeEvents returns a bridge event.
 	GetAllBridgeEvents(ctx context.Context, query string) ([]sql.HybridBridgeEvent, error)
 	// GetAllMessageBusEvents returns a bridge event.
@@ -68,6 +75,8 @@ type ConsumerDBReader interface {
 	GetLeaderboard(ctx context.Context, query string) ([]*model.Leaderboard, error)
 	// GetPendingByChain gets the pending txs by chain.
 	GetPendingByChain(ctx context.Context) (res *immutable.Map[int, int], err error)
+	// GetBlockHeights gets the block heights for a given chain and contract type.
+	GetBlockHeights(ctx context.Context, query string, contractTypeMap map[string]model.ContractType) ([]*model.BlockHeight, error)
 }
 
 // ConsumerDB is the interface for the ConsumerDB.

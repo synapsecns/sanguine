@@ -1,9 +1,9 @@
-FROM debian:11
+FROM --platform=linux/amd64 debian:11
 
-ARG VERSION_ARG=1.13.1
-ARG SHA_ARG=136fecfb2e2f3a7965274ad5e2571985d8b2fa724b6536874f082e4b0bb9f344
-ARG FILE_ARG=goreleaser_Linux_x86_64.tar.gz
-ARG DOWNLOAD_ARG=https://github.com/goreleaser/goreleaser/releases/download/v${VERSION_ARG}/${FILE_ARG}
+ARG VERSION_ARG=1.20.0-pro
+ARG SHA_ARG=d2d76cf4b212f67cb9995c8539167a1c6d771859aad20ed242bfab640b6d396f
+ARG FILE_ARG=goreleaser-pro_Linux_x86_64.tar.gz
+ARG DOWNLOAD_ARG=https://github.com/goreleaser/goreleaser-pro/releases/download/v${VERSION_ARG}/${FILE_ARG}
 
 # from https://github.com/iotaledger/goreleaser-cgo-cross-compiler
 ENV GORELEASER_VERSION=$VERSION_ARG
@@ -12,8 +12,8 @@ ENV GORELEASER_DOWNLOAD_FILE=$FILE_ARG
 ENV GORELEASER_DOWNLOAD_URL=$DOWNLOAD_ARG
 
 # Golang
-ENV GOLANG_VERSION=1.19
-ENV GOLANG_SHA=464b6b66591f6cf055bc5df90a9750bf5fbc9d038722bb84a9d56a2bea974be6
+ENV GOLANG_VERSION=1.21.3
+ENV GOLANG_SHA=1241381b2843fae5a9707eec1f8fb2ef94d827990582c7c7c32f5bdfbfd420c8
 ENV GOLANG_DOWNLOAD_FILE=go${GOLANG_VERSION}.linux-amd64.tar.gz
 ENV GOLANG_DOWNLOAD_URL=https://dl.google.com/go/${GOLANG_DOWNLOAD_FILE}
 
@@ -22,8 +22,8 @@ ENV SNAP_BINARY=yq_linux_amd64
 
 
 # Docker
-ENV DOCKER_VERSION=20.10.9
-ENV DOCKER_SHA=caf74e54b58c0b38bb4d96c8f87665f29b684371c9a325562a3904b8c389995e
+ENV DOCKER_VERSION=24.0.5
+ENV DOCKER_SHA=0a5f3157ce25532c5c1261a97acf3b25065cfe25940ef491fa01d5bea18ddc86
 ENV DOCKER_DOWNLOAD_FILE=docker-${DOCKER_VERSION}.tgz
 ENV DOCKER_DOWNLOAD_URL=https://download.docker.com/linux/static/stable/x86_64/${DOCKER_DOWNLOAD_FILE}
 
@@ -103,9 +103,19 @@ RUN \
 
 ENV PATH=${PATH}:/etc/musl/x86_64-linux-musl-native/bin:/etc/musl/aarch64-linux-musl-cross/bin:/usr/local/go/bin
 
-# Install node 16
-RUN apt-get install -y curl
+# Install node 20
+RUN apt-get install -y curl ca-certificates gnupg zip jq
 
-RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
+RUN mkdir -p /etc/apt/keyrings
 
-RUN apt-get install -y nodejs
+RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key |  gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+
+ENV NODE_MAJOR=20
+
+RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" |  tee /etc/apt/sources.list.d/nodesource.list
+
+RUN apt-get update && apt-get install -y nodejs
+
+# Install syft
+
+RUN curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin

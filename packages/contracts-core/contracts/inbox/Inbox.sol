@@ -10,7 +10,6 @@ import {
     IncorrectTipsProof,
     MustBeSynapseDomain
 } from "../libs/Errors.sol";
-import {SYNAPSE_DOMAIN} from "../libs/Constants.sol";
 import {ChainGas} from "../libs/stack/GasData.sol";
 import {MerkleMath} from "../libs/merkle/MerkleMath.sol";
 import {Receipt, ReceiptLib} from "../libs/memory/Receipt.sol";
@@ -54,8 +53,8 @@ contract Inbox is StatementInbox, InboxEvents, InterfaceInbox {
 
     // ═════════════════════════════════════════ CONSTRUCTOR & INITIALIZER ═════════════════════════════════════════════
 
-    constructor(uint32 domain) MessagingBase("0.0.3", domain) {
-        if (domain != SYNAPSE_DOMAIN) revert MustBeSynapseDomain();
+    constructor(uint32 synapseDomain_) MessagingBase("0.0.3", synapseDomain_) {
+        if (localDomain != synapseDomain) revert MustBeSynapseDomain();
     }
 
     /// @notice Initializes `Inbox` contract:

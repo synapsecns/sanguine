@@ -3,7 +3,6 @@ package evm
 import (
 	"context"
 	"fmt"
-	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
@@ -43,7 +42,7 @@ type destinationContract struct {
 	nonceManager nonce.Manager
 }
 
-func (a destinationContract) Execute(transactor *bind.TransactOpts, message types.Message, originProof [32][32]byte, snapshotProof [][32]byte, index *big.Int, gasLimit uint64) (tx *ethTypes.Transaction, err error) {
+func (a destinationContract) Execute(transactor *bind.TransactOpts, message types.Message, originProof [32][32]byte, snapshotProof [][32]byte, index uint8, gasLimit uint64) (tx *ethTypes.Transaction, err error) {
 	encodedMessage, err := types.EncodeMessage(message)
 	if err != nil {
 		return nil, fmt.Errorf("could not encode message: %w", err)
@@ -91,4 +90,17 @@ func (a destinationContract) MessageStatus(ctx context.Context, message types.Me
 	}
 
 	return status, nil
+}
+
+//nolint:wrapcheck
+func (a destinationContract) IsValidReceipt(ctx context.Context, rcptPayload []byte) (bool, error) {
+	return a.contract.IsValidReceipt(&bind.CallOpts{Context: ctx}, rcptPayload)
+}
+
+func (a destinationContract) PassAgentRoot(transactor *bind.TransactOpts) (*ethTypes.Transaction, error) {
+	tx, err := a.contract.PassAgentRoot(transactor)
+	if err != nil {
+		return nil, fmt.Errorf("could not pass agent root: %w", err)
+	}
+	return tx, nil
 }

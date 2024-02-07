@@ -2,35 +2,37 @@ const TabItem = ({
   onClick,
   children,
   isActive,
+  className,
 }: {
   onClick: any
   children: any
-  isActive: any
+  isActive: boolean
+  className?: string
 }) => {
   let statusClassname
   if (isActive) {
     statusClassname = `
-      bg-[#111111]
+      bg-bgBase
       text-white
+      ${className}
       `
   } else {
     statusClassname = `
-      bg-bgLight
+      bg-[#111111]
       hover:bg-opacity-70
       text-secondaryTextColor text-opacity-50
+      ${className}
       `
   }
   return (
     <div
       onClick={onClick}
       className={`
-        flex justify-center items-center
-        p-2 w-full cursor-pointer
-        font-medium
-        rounded-xl
-        transition-all duration-75
-        h-14
         ${statusClassname}
+        flex justify-center items-center
+        w-full cursor-pointer
+        font-base
+        h-14
       `}
     >
       {children}

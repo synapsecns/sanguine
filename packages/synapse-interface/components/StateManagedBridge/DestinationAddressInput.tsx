@@ -26,16 +26,19 @@ export const DestinationAddressInput = ({
       <div className="h-16 px-2 pb-4 mt-4 space-x-2 text-left sm:px-5">
         <div
           className={`
-          h-14 flex flex-grow items-center
-          bg-transparent
-          border border-bgLight hover:border-bgLightest focus-within:border-bgLightest
-          pl-3 sm:pl-4
-          py-0.5 rounded-xl
-        `}
+            h-14 flex flex-grow items-center
+            bg-transparent
+            border border-bgLight hover:border-bgLightest focus-within:border-bgLightest
+            pl-3 sm:pl-4
+            py-0.5 rounded-md
+          `}
         >
           <input
             className={`
               focus:outline-none
+              focus:ring-0
+              focus:border-none
+              border-none
               bg-transparent
               w-[300px]
               sm:min-w-[400px]

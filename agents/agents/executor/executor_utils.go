@@ -4,15 +4,15 @@ import (
 	"context"
 	"fmt"
 	"math/big"
-	"time"
 
+	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/agents/contracts/inbox"
 	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
 	"github.com/synapsecns/sanguine/agents/contracts/origin"
 	"github.com/synapsecns/sanguine/agents/contracts/summit"
 	"github.com/synapsecns/sanguine/agents/types"
+	"github.com/synapsecns/sanguine/core/retry"
 )
 
 // logToMessage converts the log to a leaf data.
@@ -41,10 +41,12 @@ func (e Executor) logToAttestation(log ethTypes.Log, chainID uint32, summitAttes
 			return nil, fmt.Errorf("could not parse attestation")
 		}
 	} else {
-		attestation, ok = e.chainExecutors[chainID].lightInboxParser.ParseAttestationAccepted(log)
-		if !ok {
-			return nil, fmt.Errorf("could not parse attestation")
+		attestationMetadata, err := e.chainExecutors[chainID].lightInboxParser.ParseAttestationAccepted(log)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse attestation: %w", err)
 		}
+
+		attestation = attestationMetadata.Attestation
 	}
 
 	if attestation == nil {
@@ -57,17 +59,17 @@ func (e Executor) logToAttestation(log ethTypes.Log, chainID uint32, summitAttes
 
 // logToSnapshot converts the log to a snapshot.
 func (e Executor) logToSnapshot(log ethTypes.Log, chainID uint32) (types.Snapshot, error) {
-	snapshot, domain, ok := e.chainExecutors[chainID].inboxParser.ParseSnapshotAccepted(log)
-	if !ok {
-		return nil, fmt.Errorf("could not parse snapshot")
+	snapshotMetadata, err := e.chainExecutors[chainID].inboxParser.ParseSnapshotAccepted(log)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse snapshot: %w", err)
 	}
 
-	if snapshot == nil || domain == 0 {
+	if snapshotMetadata.Snapshot == nil || snapshotMetadata.AgentDomain() == 0 {
 		//nolint:nilnil
 		return nil, nil
 	}
 
-	return snapshot, nil
+	return snapshotMetadata.Snapshot, nil
 }
 
 func (e Executor) logToInterface(log ethTypes.Log, chainID uint32) (any, error) {
@@ -151,6 +153,36 @@ func (e Executor) processMessage(ctx context.Context, message types.Message, log
 
 // processAttestation processes and stores an attestation.
 func (e Executor) processSnapshot(ctx context.Context, snapshot types.Snapshot, logBlockNumber uint64) error {
+	for _, s := range snapshot.States() {
+		state := s
+		statePayload, err := state.Encode()
+		if err != nil {
+			return fmt.Errorf("could not encode state: %w", err)
+		}
+		// Verify that the state is valid w.r.t. Origin.
+		var valid bool
+		contractCall := func(ctx context.Context) error {
+			valid, err = e.chainExecutors[state.Origin()].boundOrigin.IsValidState(
+				ctx,
+				statePayload,
+			)
+			if err != nil {
+				return fmt.Errorf("could not check validity of state: %w", err)
+			}
+
+			return nil
+		}
+		err = retry.WithBackoff(ctx, contractCall, e.retryConfig...)
+		if err != nil {
+			return fmt.Errorf("could not check validity of state: %w", err)
+		}
+
+		if !valid {
+			stateRoot := state.Root()
+			logger.Infof("snapshot has invalid state. Origin: %d. SnapshotRoot: %s", state.Origin(), common.BytesToHash(stateRoot[:]).String())
+			return nil
+		}
+	}
 	snapshotRoot, proofs, err := snapshot.SnapshotRootAndProofs()
 	if err != nil {
 		return fmt.Errorf("could not get snapshot root and proofs: %w", err)
@@ -177,36 +209,23 @@ func (e Executor) processAttestation(ctx context.Context, attestation types.Atte
 	}
 
 	// If the attestation is on a remote chain, we need to fetch the timestamp via an RPC call.
-	b := &backoff.Backoff{
-		Factor: 2,
-		Jitter: true,
-		Min:    30 * time.Millisecond,
-		Max:    3 * time.Second,
-	}
-
-	timeout := time.Duration(0)
-
 	var logHeader *ethTypes.Header
 	var err error
-
-retryLoop:
-	for {
-		select {
-		case <-ctx.Done():
-			return fmt.Errorf("context canceled: %w", ctx.Err())
-		case <-time.After(timeout):
-			if b.Attempt() >= rpcRetry {
-				return fmt.Errorf("could not get log header: %w", err)
-			}
-			logHeader, err = e.chainExecutors[chainID].rpcClient.HeaderByNumber(ctx, big.NewInt(int64(logBlockNumber)))
-			if err != nil {
-				timeout = b.Duration()
-
-				continue
-			}
-
-			break retryLoop
+	contractCall := func(ctx context.Context) error {
+		logHeader, err = e.chainExecutors[chainID].rpcClient.HeaderByNumber(ctx, big.NewInt(int64(logBlockNumber)))
+		if err != nil {
+			return fmt.Errorf("could not get log header: %w", err)
 		}
+
+		return nil
+	}
+	err = retry.WithBackoff(ctx, contractCall, e.retryConfig...)
+	if err != nil {
+		return fmt.Errorf("could not get log header: %w", err)
+	}
+
+	if logHeader == nil {
+		return fmt.Errorf("could not get log header")
 	}
 
 	err = e.executorDB.StoreAttestation(ctx, attestation, chainID, logBlockNumber, logHeader.Time)

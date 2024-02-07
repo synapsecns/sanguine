@@ -62,6 +62,18 @@ module.exports = {
         '4/5': '80%',
         full: '100%',
       },
+      borderRadius: {
+        xl: '3rem',
+        lg: '1.0rem',
+        md: '0.50rem',
+        sm: '0.25rem',
+      },
+      spacing: {
+        xl: '3rem',
+        lg: '1.0rem',
+        md: '0.5rem',
+        sm: '0.25rem',
+      },
       borderWidth: {
         3: '3px',
       },
@@ -95,16 +107,29 @@ module.exports = {
       },
       fontSize: {
         xxs: ['0.675rem', { lineHeight: '0.75rem' }],
+        xxl: ['1.5rem', { lineHeight: '1.75rem' }],
       },
       colors: {
+        // updated colors
+        strong: '#FCFCFD',
+        primary: '#EEEDEF',
+        secondary: '#C0BCC2',
+        separator: '#565058',
+        surface: '#343036',
+        tint: '#252226',
+        background: '#151315',
+        synapsePurple: '#D747FF',
+        blueText: '#99E6FF',
+        greenText: '#66e595',
+        // previous colors
         bgBase: '#252028',
         bgDarker: '#111111',
         bgLight: '#353038',
         bgLighter: '#443F47',
         bgLightest: '#58535B',
+        primaryTextColor: '#EEEDEF',
         secondaryTextColor: '#cccad3',
         primaryHover: '#ff00ff',
-        background: '#f7faff',
         default: '#0e103c',
         light: '#c7d4ed',
         dark: '#41526A',
@@ -153,6 +178,7 @@ module.exports = {
         mono: ['Monospace', ...defaultTheme.fontFamily.mono],
       },
       boxShadow: {
+        'custom-shadow': 'inset 0 3px 3px 0 rgba(0, 0, 0, 0.25)', // replace 'custom-shadow' with a more appropriate name
         ...makeShadow('cool-gray', '71, 85, 104'),
         ...makeShadow('gray', '75, 85, 98'),
         ...makeShadow('red', '223, 39, 44'),

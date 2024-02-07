@@ -3,6 +3,7 @@ package core_test
 import (
 	"fmt"
 	"github.com/synapsecns/sanguine/core"
+	"reflect"
 	"testing"
 )
 
@@ -26,5 +27,47 @@ func TestRandomItem(t *testing.T) {
 	_, err = core.RandomItem(emptySlice)
 	if err == nil {
 		t.Fatalf("Expected error when getting random item from empty slice, got nil")
+	}
+}
+
+func TestChunkSlice(t *testing.T) {
+	tests := []struct {
+		name      string
+		slice     []int
+		chunkSize int
+		want      [][]int
+	}{
+		{
+			name:      "Empty slice",
+			slice:     []int{},
+			chunkSize: 2,
+			want:      [][]int{},
+		},
+		{
+			name:      "Slice smaller than chunk size",
+			slice:     []int{1, 2},
+			chunkSize: 5,
+			want:      [][]int{{1, 2}},
+		},
+		{
+			name:      "Slice size equal to chunk size",
+			slice:     []int{1, 2, 3},
+			chunkSize: 3,
+			want:      [][]int{{1, 2, 3}},
+		},
+		// Add more test cases here
+	}
+
+	for i := range tests {
+		tt := tests[i]
+		t.Run(tt.name, func(t *testing.T) {
+			if got := core.ChunkSlice(tt.slice, tt.chunkSize); !reflect.DeepEqual(got, tt.want) {
+				//nolint: gocritic
+				if len(got) == len(tt.want) && len(got) == 0 {
+					return
+				}
+				t.Errorf("ChunkSlice() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

@@ -108,8 +108,8 @@ export const TokenSlideOver = ({
   }
 
   return (
-    <div className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide rounded-3xl">
-      <div className="absolute z-10 w-full px-6 pt-3 bg-bgLight rounded-t-xl">
+    <div className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide rounded-lg">
+      <div className="absolute z-10 w-full px-6 pt-3 bg-bgLight rounded-t-md">
         <div className="flex items-center float-right mb-2 font-medium sm:float-none">
           <SlideSearchBox
             placeholder="Search by symbol, contract, or name..."
@@ -124,7 +124,7 @@ export const TokenSlideOver = ({
           bg-bgLighter
           space-y-4
           pt-20 pb-8 px-2 md:px-6
-          rounded-3xl
+          rounded-lg
         `}
       >
         {tokenList.map((token, idx) => (
