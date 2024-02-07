@@ -79,6 +79,13 @@ export const ChainPopoverSelect = ({
           cursor-pointer hover:border-[--synapse-focus]
         `}
       >
+        {selected?.imgUrl && (
+          <img
+            src={selected?.imgUrl}
+            alt={`${selected?.name} chain icon`}
+            className="inline w-4 h-4"
+          />
+        )}
         {selected?.name || 'Network'}
         <DownArrow />
       </div>

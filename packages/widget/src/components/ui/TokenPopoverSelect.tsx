@@ -5,7 +5,8 @@ import { BridgeableToken } from 'types'
 import usePopover from '@/hooks/usePopoverRef'
 import { TokenBalance } from '@/utils/actions/fetchTokenBalances'
 import { DownArrow } from '@/components/icons/DownArrow'
-import { SearchInput } from './SearchInput'
+import { SearchInput } from '@/components/ui/SearchInput'
+import { TokenOption } from '@/components/ui/TokenOption'
 
 type PopoverSelectProps = {
   options: BridgeableToken[]
@@ -82,7 +83,15 @@ export const TokenPopoverSelect = ({
           cursor-pointer hover:border-[--synapse-focus]
         `}
       >
+        {selected?.imgUrl && (
+          <img
+            src={selected?.imgUrl}
+            alt={`${selected.symbol} token icon`}
+            className="inline w-4 h-4"
+          />
+        )}
         {selected?.symbol || 'Token'}
+
         <DownArrow />
       </div>
       {isOpen && (
@@ -148,62 +157,6 @@ export const TokenPopoverSelect = ({
         </div>
       )}
     </div>
-  )
-}
-
-const TokenOption = ({
-  option,
-  onSelect,
-  selected,
-  parsedBalance,
-}: {
-  option: BridgeableToken
-  onSelect: (option: BridgeableToken) => void
-  selected: BridgeableToken
-  parsedBalance: string
-}) => {
-  return (
-    <li
-      data-test-id="token-option"
-      className={`
-        flex gap-4 items-center justify-between
-        cursor-pointer rounded border border-solid
-        hover:border-[--synapse-focus] active:opacity-40 group
-        ${
-          option?.symbol === selected?.symbol
-            ? 'border-[--synapse-focus] hover:opacity-70'
-            : 'border-transparent'
-        }
-      `}
-      onClick={() => onSelect(option)}
-    >
-      <abbr title={option?.name} className="p-2.5 no-underline">
-        {option?.symbol}
-      </abbr>
-      <data
-        value={parsedBalance}
-        className={`
-          text-sm p-2.5
-          ${
-            parsedBalance
-              ? 'text-[--synapse-secondary]'
-              : 'text-[--synapse-focus]'
-          }
-        `}
-      >
-        {parsedBalance ? (
-          parsedBalance === '0.0' ? (
-            '−'
-          ) : (
-            parsedBalance
-          )
-        ) : (
-          <span className="opacity-0 text-sm text-[--synapse-secondary] group-hover:opacity-100">
-            Receive
-          </span>
-        )}
-      </data>
-    </li>
   )
 }
 

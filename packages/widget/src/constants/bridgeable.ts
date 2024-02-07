@@ -41,6 +41,7 @@ export const GOHM = {
   visibilityRank: 40,
   priorityRank: 600,
   routeSymbol: 'gOHM',
+  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/ohm.1b779b45.svg',
 }
 
 export const LINK = {
@@ -58,6 +59,8 @@ export const LINK = {
   color: 'blue',
   priorityRank: 600,
   routeSymbol: 'LINK',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/link.8c8e30af.svg',
 }
 
 export const HIGH = {
@@ -72,6 +75,8 @@ export const HIGH = {
   color: 'cyan',
   priorityRank: 600,
   routeSymbol: 'HIGH',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/highstreet.20cde417.svg',
 }
 
 export const JUMP = {
@@ -91,6 +96,8 @@ export const JUMP = {
   color: 'cyan',
   priorityRank: 600,
   routeSymbol: 'JUMP',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/hyperjump.86548b6a.svg',
 }
 
 export const SFI = {
@@ -108,6 +115,7 @@ export const SFI = {
   color: 'red',
   priorityRank: 600,
   routeSymbol: 'SFI',
+  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/sfi.9dcb70d7.svg',
 }
 
 export const DOG = {
@@ -127,6 +135,7 @@ export const DOG = {
   color: 'yellow',
   priorityRank: 600,
   routeSymbol: 'DOG',
+  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/dog.79987f38.svg',
 }
 
 export const NFD = {
@@ -148,6 +157,7 @@ export const NFD = {
   color: 'yellow',
   priorityRank: 600,
   routeSymbol: 'NFD',
+  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/nfd.3a66d09f.svg',
 }
 
 export const SOLAR = {
@@ -165,6 +175,8 @@ export const SOLAR = {
   color: 'orange',
   priorityRank: 600,
   routeSymbol: 'veSOLAR',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/solar.61253893.svg',
 }
 
 export const GMX = {
@@ -185,6 +197,7 @@ export const GMX = {
   priorityRank: 250,
   color: 'blue',
   routeSymbol: 'GMX',
+  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/gmx.43c7de79.svg',
 }
 
 export const SDT = {
@@ -204,12 +217,11 @@ export const SDT = {
   },
   symbol: 'SDT',
   name: 'Stake DAO',
-  //logo: sdtLogo,
-
   swapableType: 'SDT',
   color: 'gray',
   priorityRank: 600,
   routeSymbol: 'SDT',
+  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/sdt.1a801afc.svg',
 }
 
 export const NEWO = {
@@ -229,6 +241,8 @@ export const NEWO = {
   color: 'yellow',
   priorityRank: 600,
   routeSymbol: 'NEWO',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/newo.ac5a1580.svg',
 }
 
 export const PEPE = {
@@ -246,6 +260,8 @@ export const PEPE = {
   priorityRank: 600,
   routeSymbol: 'PEPE',
   color: 'green',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/pepe.45f7866e.svg',
 }
 
 export const VSTA = {
@@ -263,6 +279,8 @@ export const VSTA = {
   color: 'gray',
   priorityRank: 600,
   routeSymbol: 'VSTA',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/vsta.275764cf.svg',
 }
 
 export const H2O = {
@@ -292,6 +310,7 @@ export const H2O = {
   color: 'cyan',
   priorityRank: 600,
   routeSymbol: 'H2O',
+  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/h2o.05c699c4.svg',
 }
 
 export const L2DAO = {
@@ -309,6 +328,8 @@ export const L2DAO = {
   color: 'cyan',
   priorityRank: 600,
   routeSymbol: 'L2DAO',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/l2dao.690a213c.svg',
 }
 
 export const PLS = {
@@ -326,6 +347,7 @@ export const PLS = {
   color: 'green',
   priorityRank: 600,
   routeSymbol: 'PLS',
+  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/pls.fd3feef0.svg',
 }
 
 export const AGEUR = {
@@ -345,6 +367,8 @@ export const AGEUR = {
   color: 'yellow',
   priorityRank: 600,
   routeSymbol: 'agEUR',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/ageur.e7387136.svg',
 }
 
 export const UNIDX = {
@@ -368,6 +392,8 @@ export const UNIDX = {
   color: 'gray',
   priorityRank: 600,
   routeSymbol: 'UNIDX',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/unidex.7874478f.svg',
 }
 
 export const BUSD = {
@@ -385,6 +411,8 @@ export const BUSD = {
   color: 'yellow',
   priorityRank: 200,
   routeSymbol: 'BUSD',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/busd.1e106d53.svg',
 }
 
 export const USDC = {
@@ -425,6 +453,8 @@ export const USDC = {
   color: 'blue',
   priorityRank: 100,
   routeSymbol: 'USDC',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/usdc.f9b139bb.svg',
 }
 
 export const METISUSDC = {
@@ -441,6 +471,8 @@ export const METISUSDC = {
   color: 'blue',
   priorityRank: 125,
   routeSymbol: 'm.USDC',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/usdc.f9b139bb.svg',
 }
 
 export const USDT = {
@@ -475,6 +507,8 @@ export const USDT = {
   visibilityRank: 100,
   priorityRank: 100,
   routeSymbol: 'USDT',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/usdt.afa46e45.svg',
 }
 
 export const DAI = {
@@ -505,6 +539,7 @@ export const DAI = {
   visibilityRank: 100,
   priorityRank: 100,
   routeSymbol: 'DAI',
+  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/dai.cba261f0.svg',
 }
 
 export const WBTC = {
@@ -524,6 +559,8 @@ export const WBTC = {
   color: 'orange',
   priorityRank: 300,
   routeSymbol: 'WBTC',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/wbtc.3b8846a2.svg',
 }
 
 export const WETHE = {
@@ -539,6 +576,8 @@ export const WETHE = {
   color: 'sky',
   priorityRank: 150,
   routeSymbol: 'WETH.e',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/weth.490fe9a7.svg',
 }
 
 export const ONEETH = {
@@ -554,6 +593,8 @@ export const ONEETH = {
   color: 'sky',
   priorityRank: 600,
   routeSymbol: '1ETH',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/weth.490fe9a7.svg',
 }
 
 export const SYN = {
@@ -602,6 +643,7 @@ export const SYN = {
   visibilityRank: 90,
   priorityRank: 250,
   routeSymbol: 'SYN',
+  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/syn.605ac75e.svg',
 }
 
 export const FRAX = {
@@ -621,6 +663,8 @@ export const FRAX = {
   color: 'gray',
   priorityRank: 200,
   routeSymbol: 'FRAX',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/frax.70b0285e.svg',
 }
 
 export const SYNFRAX = {
@@ -642,6 +686,8 @@ export const SYNFRAX = {
   color: 'gray',
   priorityRank: 400,
   routeSymbol: 'synFRAX',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/frax.70b0285e.svg',
 }
 
 export const NUSD = {
@@ -682,6 +728,8 @@ export const NUSD = {
   visibilityRank: 50,
   priorityRank: 500,
   routeSymbol: 'nUSD',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/nusd.15c5a552.svg',
 }
 
 export const NOTE = {
@@ -698,6 +746,8 @@ export const NOTE = {
   visibilityRank: 90,
   priorityRank: 100,
   routeSymbol: 'NOTE',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/note.ace95530.svg',
 }
 
 export const NETH = {
@@ -730,6 +780,8 @@ export const NETH = {
   visibilityRank: 50,
   priorityRank: 500,
   routeSymbol: 'nETH',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/neth.acb4a217.svg',
 }
 
 export const ETH = {
@@ -759,6 +811,7 @@ export const ETH = {
   visibilityRank: 101,
   priorityRank: 150,
   routeSymbol: 'ETH',
+  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/eth.473b0c81.svg',
 }
 
 export const MOVR = {
@@ -777,6 +830,8 @@ export const MOVR = {
   color: 'purple',
   priorityRank: 300,
   routeSymbol: 'MOVR',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/movr.64e0ee09.svg',
 }
 
 export const AVAX = {
@@ -802,6 +857,8 @@ export const AVAX = {
   visibilityRank: 90,
   priorityRank: 300,
   routeSymbol: 'AVAX',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/avalanche.80034115.svg',
 }
 
 export const WMOVR = {
@@ -817,6 +874,8 @@ export const WMOVR = {
   color: 'purple',
   priorityRank: 350,
   routeSymbol: 'WMOVR',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/movr.64e0ee09.svg',
 }
 
 export const WAVAX = {
@@ -833,6 +892,8 @@ export const WAVAX = {
   visibilityRank: 90,
   priorityRank: 350,
   routeSymbol: 'WAVAX',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/avalanche.80034115.svg',
 }
 
 export const JEWEL = {
@@ -855,6 +916,8 @@ export const JEWEL = {
   swapableType: 'JEWEL',
   priorityRank: 250,
   routeSymbol: 'JEWEL',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/jewel.5cde781b.svg',
 }
 
 export const WJEWEL = {
@@ -870,6 +933,8 @@ export const WJEWEL = {
   color: 'lime',
   priorityRank: 350,
   routeSymbol: 'WJEWEL',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/jewel.5cde781b.svg',
 }
 
 export const SYNJEWEL = {
@@ -885,6 +950,8 @@ export const SYNJEWEL = {
   color: 'lime',
   priorityRank: 400,
   routeSymbol: 'synJEWEL',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/jewel.5cde781b.svg',
 }
 
 export const XJEWEL = {
@@ -902,6 +969,8 @@ export const XJEWEL = {
   color: 'lime',
   priorityRank: 350,
   routeSymbol: 'xJEWEL',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/jewel.5cde781b.svg',
 }
 
 export const USDCe = {
@@ -924,6 +993,8 @@ export const USDCe = {
   visibilityRank: 100,
   priorityRank: 125,
   routeSymbol: 'USDC.e',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/usdc.f9b139bb.svg',
 }
 
 export const USDTe = {
@@ -942,6 +1013,8 @@ export const USDTe = {
   color: 'green',
   priorityRank: 125,
   routeSymbol: 'USDT.e',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/usdt.afa46e45.svg',
 }
 
 export const SUSD = {
@@ -958,6 +1031,8 @@ export const SUSD = {
   visibilityRank: 100,
   priorityRank: 200,
   routeSymbol: 'sUSD',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/susd.8d85059d.svg',
 }
 
 export const WSOHM = {
@@ -978,6 +1053,7 @@ export const WSOHM = {
   visibilityRank: 40,
   priorityRank: 600,
   routeSymbol: 'wsOHM',
+  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/ohm.1b779b45.svg',
 }
 
 export const ONEDAI = {
@@ -994,6 +1070,7 @@ export const ONEDAI = {
   visibilityRank: 100,
   priorityRank: 600,
   routeSymbol: '1DAI',
+  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/dai.cba261f0.svg',
 }
 
 export const ONEUSDC = {
@@ -1010,6 +1087,8 @@ export const ONEUSDC = {
   color: 'blue',
   priorityRank: 600,
   routeSymbol: '1USDC',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/usdc.f9b139bb.svg',
 }
 
 export const ONEUSDT = {
@@ -1026,6 +1105,8 @@ export const ONEUSDT = {
   visibilityRank: 100,
   priorityRank: 600,
   routeSymbol: '1USDT',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/usdt.afa46e45.svg',
 }
 
 export const BTCB = {
@@ -1045,6 +1126,7 @@ export const BTCB = {
   color: 'orange',
   priorityRank: 300,
   routeSymbol: 'BTC.b',
+  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/btc.d0fcf0d2.svg',
 }
 
 export const DAIe = {
@@ -1061,6 +1143,7 @@ export const DAIe = {
   visibilityRank: 100,
   priorityRank: 125,
   routeSymbol: 'DAI.e',
+  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/dai.cba261f0.svg',
 }
 
 export const KLAY = {
@@ -1079,6 +1162,8 @@ export const KLAY = {
   color: 'red',
   priorityRank: 300,
   routeSymbol: 'KLAY',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/klay.c4364dd3.svg',
 }
 
 export const WKLAY = {
@@ -1094,6 +1179,8 @@ export const WKLAY = {
   color: 'red',
   priorityRank: 350,
   routeSymbol: 'WKLAY',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/klay.c4364dd3.svg',
 }
 
 export const MATIC = {
@@ -1113,6 +1200,8 @@ export const MATIC = {
   visibilityRank: 90,
   priorityRank: 300,
   routeSymbol: 'MATIC',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/matic.30579a57.svg',
 }
 
 export const WMATIC = {
@@ -1129,6 +1218,8 @@ export const WMATIC = {
   visibilityRank: 90,
   priorityRank: 350,
   routeSymbol: 'WMATIC',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/matic.30579a57.svg',
 }
 
 export const FTM = {
@@ -1146,6 +1237,7 @@ export const FTM = {
   color: 'blue',
   priorityRank: 300,
   routeSymbol: 'FTM',
+  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/ftm.d3ad16e9.svg',
 }
 
 export const WFTM = {
@@ -1161,6 +1253,7 @@ export const WFTM = {
   color: 'blue',
   priorityRank: 350,
   routeSymbol: 'WFTM',
+  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/ftm.d3ad16e9.svg',
 }
 
 export const WETH = {
@@ -1192,6 +1285,8 @@ export const WETH = {
   color: 'sky',
   priorityRank: 350,
   routeSymbol: 'WETH',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/weth.490fe9a7.svg',
 }
 
 export const CRVUSD = {
@@ -1211,6 +1306,8 @@ export const CRVUSD = {
   color: 'yellow',
   priorityRank: 200,
   routeSymbol: 'crvUSD',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/crvusd.6da73801.svg',
 }
 
 export const LUSD = {
@@ -1224,10 +1321,11 @@ export const LUSD = {
   symbol: 'LUSD',
   name: 'Liquity USD',
   swapableType: 'USD',
-
   color: 'blue',
   priorityRank: 200,
   routeSymbol: 'LUSD',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/lusd.1d09460e.svg',
 }
 
 export const USDBC = {
@@ -1244,4 +1342,6 @@ export const USDBC = {
   color: 'blue',
   priorityRank: 125,
   routeSymbol: 'USDbC',
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/usdc.f9b139bb.svg',
 }
