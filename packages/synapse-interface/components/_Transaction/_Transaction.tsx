@@ -86,13 +86,13 @@ export const _Transaction = ({
   /** Check if store already marked tx as complete, otherwise check hook status */
   const isTxFinalized = isStoredComplete ?? isTxComplete
 
-  // useBridgeTxUpdater(
-  //   connectedAddress,
-  //   destinationChain,
-  //   _kappa,
-  //   originTxHash,
-  //   isTxComplete
-  // )
+  useBridgeTxUpdater(
+    connectedAddress,
+    destinationChain,
+    _kappa,
+    originTxHash,
+    isTxComplete
+  )
 
   const [open, setOpen] = useState<boolean>(false)
 

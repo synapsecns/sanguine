@@ -57,7 +57,7 @@ export const _Transactions = ({
     )
   }
 
-  // return null
+  return null
 
   /*
     Show historic transactions as 'Pending' for testing
