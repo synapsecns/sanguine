@@ -86,10 +86,8 @@ export async function fetchBridgeQuote(
         ),
         feeAmount,
         delta: BigInt(maxAmountOut.toString()),
-        quotes: {
-          originQuery: originQueryWithSlippage,
-          destQuery: destQueryWithSlippage,
-        },
+        originQuery: originQueryWithSlippage,
+        destQuery: destQueryWithSlippage,
         destinationToken: request.destinationToken,
         destinationChainId: destinationChainId,
         estimatedTime: estimatedTime,

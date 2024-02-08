@@ -10,6 +10,8 @@ export const useTransactionListener = () => {
   const dispatch = useAppDispatch()
   const {
     txHash,
+    originAmount,
+    originTokenSymbol,
     originChainId,
     destinationChainId,
     bridgeModuleName,
@@ -25,6 +27,8 @@ export const useTransactionListener = () => {
     if (!transactions[txHash]) {
       dispatch(
         addTransaction({
+          originAmount,
+          originTokenSymbol,
           originTxHash: txHash,
           originChainId,
           destinationChainId,

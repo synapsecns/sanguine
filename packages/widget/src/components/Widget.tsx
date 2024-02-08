@@ -25,6 +25,7 @@ import {
   setTargetTokens,
   setDebouncedInputAmount,
   setTargetChainIds,
+  setProtocolName,
 } from '@/state/slices/bridge/reducer'
 import { useBridgeState } from '@/state/slices/bridge/hooks'
 import {
@@ -66,13 +67,15 @@ interface WidgetProps {
   container?: Boolean
   targetTokens?: BridgeableToken[]
   targetChainIds?: number[]
+  protocolName?: string
 }
 
 export const Widget = ({
   customTheme,
-  container,
+  container = false,
   targetChainIds,
   targetTokens,
+  protocolName,
 }: WidgetProps) => {
   const dispatch = useAppDispatch()
   const currentSDKRequestID = useRef(0)
@@ -129,7 +132,8 @@ export const Widget = ({
     if (targetChainIds && targetChainIds.length > 0) {
       dispatch(setDestinationChainId(targetChainIds[0]))
     }
-  }, [targetTokens, targetChainIds, targetTokens])
+    dispatch(setProtocolName(protocolName))
+  }, [targetTokens, targetChainIds, targetTokens, protocolName])
 
   /** Debounce user input to fetch bridge quote (in ms) */
   /** TODO: Can this be moved to the input component? */
@@ -299,6 +303,8 @@ export const Widget = ({
             debouncedInputAmount,
             originToken?.decimals[originChainId]
           ),
+          parsedOriginAmount: debouncedInputAmount,
+          originTokenSymbol: originToken?.symbol,
           originQuery: bridgeQuote?.quotes.originQuery,
           destinationQuery: bridgeQuote?.quotes.destQuery,
           bridgeModuleName: bridgeQuote?.bridgeModuleName,
@@ -339,7 +345,7 @@ export const Widget = ({
   }
 
   const containerStyle = `
-    ${container === false ? 'p-0' : 'p-2 rounded-lg'}`
+    ${container === false ? 'p-2 rounded-[inherit]' : 'p-2 rounded-lg'}`
 
   const cardStyle = `
     grid grid-cols-[1fr_auto]

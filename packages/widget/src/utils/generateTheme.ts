@@ -64,6 +64,11 @@ export function generateTheme(theme: CustomThemeVariables = {}) {
           '--synapse-button-bg': 'var(--synapse-surface)',
           '--synapse-button-text': 'var(--synapse-text)',
           '--synapse-button-border': 'var(--synapse-border)',
+
+          '--synapse-progress': 'hsl(265deg 100% 75%)',
+          '--synapse-progress-flash': 'hsl(185deg 100% 45%)',
+          '--synapse-progress-success': 'hsl(105deg 100% 60%)',
+          '--synapse-progress-error': 'hsl(15deg 100% 65%)',
         }
       : {
           '--synapse-text': hslString(h, s, l, a, 0.04),
@@ -82,6 +87,11 @@ export function generateTheme(theme: CustomThemeVariables = {}) {
           '--synapse-button-bg': 'var(--synapse-surface)',
           '--synapse-button-text': 'var(--synapse-text)',
           '--synapse-button-border': 'var(--synapse-border)',
+
+          '--synapse-progress': 'hsl(265deg 100% 65%)',
+          '--synapse-progress-flash': 'hsl(215deg 100% 65%)',
+          '--synapse-progress-success': 'hsl(120deg 100% 30%)',
+          '--synapse-progress-error': 'hsl(15deg 100% 65%)',
         }
 
   for (const key in theme) if (/^--/.test(key)) generatedTheme[key] = theme[key]

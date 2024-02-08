@@ -9,6 +9,7 @@ export interface BridgeableToken {
   color: string
   priorityRank: number
   routeSymbol: string
+  imgUrl: string
 }
 
 export interface CustomThemeVariables {
@@ -45,6 +46,9 @@ export interface BridgeProps {
 
   /* Target chain ids of Consumer */
   targetChainIds?: number[]
+
+  /* Custom name prop for consumer protocol */
+  protocolName?: string
 }
 
 export interface Chain {
@@ -57,6 +61,7 @@ export interface Chain {
   explorerUrl: string
   explorerName: string
   blockTime: number
+  imgUrl: string
 }
 
 export declare function Bridge(props: BridgeProps): JSX.Element

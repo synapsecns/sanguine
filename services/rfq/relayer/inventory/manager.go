@@ -213,7 +213,7 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context, submitter s
 
 // HasSufficientGas checks if there is sufficient gas for a given route.
 func (i *inventoryManagerImpl) HasSufficientGas(ctx context.Context, origin, dest int) (sufficient bool, err error) {
-	gasThresh, err := i.cfg.GetMinGasToken()
+	gasThresh, err := i.cfg.GetMinGasToken(dest)
 	if err != nil {
 		return false, fmt.Errorf("error getting min gas token: %w", err)
 	}
@@ -268,8 +268,12 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 
 		// assign metadata for each configured token
 		for tokenName, tokenCfg := range chainCfg.Tokens {
+			nativeToken, err := cfg.GetNativeToken(chainID)
+			if err != nil {
+				return fmt.Errorf("could not get native token: %w", err)
+			}
 			rtoken := &tokenMetadata{
-				isGasToken: tokenName == chainCfg.NativeToken,
+				isGasToken: tokenName == nativeToken,
 			}
 
 			var token common.Address
