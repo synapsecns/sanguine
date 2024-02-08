@@ -1,7 +1,7 @@
 {
   "name": "@synapsecns/widget",
   "description": "Widget library for interacting with the Synapse Protocol",
-  "version": "0.0.45",
+  "version": "0.0.46",
   "license": "MIT",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
