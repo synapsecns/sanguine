@@ -60,7 +60,6 @@ import { useSynapseContext } from '@/providers/SynapseProvider'
 import { getFromTokens } from '@/utils/routeMaker/getFromTokens'
 import { getSymbol } from '@/utils/routeMaker/generateRoutePossibilities'
 import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
-import { switchNetwork } from '@/utils/actions/switchNetwork'
 
 interface WidgetProps {
   customTheme: CustomThemeVariables
@@ -235,7 +234,6 @@ export const Widget = ({
 
   const handleOriginChainSelection = useCallback(
     (newOriginChain: Chain) => {
-      switchNetwork(newOriginChain.id, provider)
       dispatch(setOriginChainId(newOriginChain.id))
     },
     [dispatch, provider]
