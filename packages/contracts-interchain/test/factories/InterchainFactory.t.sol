@@ -2,6 +2,7 @@
 pragma solidity 0.8.23;
 
 import {InterchainFactory} from "../../src/factories/InterchainFactory.sol";
+import {Create2} from "../../src/libs/Create2.sol";
 import {InterchainERC20} from "../../src/tokens/InterchainERC20.sol";
 import {BurningProcessor} from "../../src/processors/BurningProcessor.sol";
 import {LockingProcessor} from "../../src/processors/LockingProcessor.sol";
@@ -56,6 +57,32 @@ contract InterchainFactoryTest is Test {
         assertTrue(InterchainERC20(deployed).hasRole(0, params.initialAdmin));
     }
 
+    function predictInterchainERC20Address(
+        address deployer,
+        TokenMetadata memory metadata
+    )
+        internal
+        view
+        returns (address)
+    {
+        return factory.predictInterchainERC20Address(
+            deployer, metadata.name, metadata.symbol, metadata.decimals, type(InterchainERC20).creationCode
+        );
+    }
+
+    function deployStandalone(
+        address deployer,
+        TokenMetadata memory metadata,
+        InterchainTokenParams memory params
+    )
+        internal
+    {
+        vm.prank(deployer);
+        factory.deployInterchainERC20Standalone(
+            metadata.name, metadata.symbol, metadata.decimals, params.initialAdmin, type(InterchainERC20).creationCode
+        );
+    }
+
     function deployStandaloneAndCheck(
         address deployer,
         TokenMetadata memory metadata,
@@ -64,15 +91,10 @@ contract InterchainFactoryTest is Test {
         internal
     {
         require(params.processor == address(0), "Processor should be zero address in this test");
-        address predicted = factory.predictInterchainERC20Address(
-            deployer, metadata.name, metadata.symbol, metadata.decimals, type(InterchainERC20).creationCode
-        );
+        address predicted = predictInterchainERC20Address(deployer, metadata);
         vm.expectEmit(address(factory));
         emit InterchainTokenDeployed(predicted, address(0));
-        vm.prank(deployer);
-        factory.deployInterchainERC20Standalone(
-            metadata.name, metadata.symbol, metadata.decimals, params.initialAdmin, type(InterchainERC20).creationCode
-        );
+        deployStandalone(deployer, metadata, params);
         checkInterchainERC20Params(predicted, params);
         InterchainERC20 identicalMock = InterchainERC20(
             mockFactory.deployInterchainToken(
@@ -92,5 +114,32 @@ contract InterchainFactoryTest is Test {
         deployStandaloneAndCheck(
             deployerB, TokenMetadata("TokenB", "BBB", 20), InterchainTokenParams(address(2), address(0))
         );
+    }
+
+    function test_deployStandalone_revert_sameMetadata() public {
+        TokenMetadata memory metadata = TokenMetadata("TokenA", "AAA", 10);
+        address predicted = predictInterchainERC20Address(deployerA, metadata);
+        deployStandalone(deployerA, metadata, InterchainTokenParams(address(1), address(0)));
+        vm.expectRevert(abi.encodeWithSelector(Create2.Create2__AlreadyDeployed.selector, predicted));
+        deployStandalone(deployerA, metadata, InterchainTokenParams(address(2), address(0)));
+    }
+
+    function test_deployStandalone_slightlyDifferentMetadata() public {
+        InterchainTokenParams memory params = InterchainTokenParams(address(1), address(0));
+        deployStandalone(deployerA, TokenMetadata("TokenA", "AAA", 10), params);
+        // Should succeed, as the name is different
+        deployStandaloneAndCheck(deployerA, TokenMetadata("TokenB", "AAA", 10), params);
+        // Should succeed, as the symbol is different
+        deployStandaloneAndCheck(deployerA, TokenMetadata("TokenA", "AAB", 10), params);
+        // Should succeed, as the decimals are different
+        deployStandaloneAndCheck(deployerA, TokenMetadata("TokenA", "AAA", 11), params);
+    }
+
+    function test_deployStandalone_sameMetadata_differentDeployers() public {
+        TokenMetadata memory metadata = TokenMetadata("TokenA", "AAA", 10);
+        InterchainTokenParams memory params = InterchainTokenParams(address(1), address(0));
+        deployStandalone(deployerA, metadata, params);
+        // Should succeed, as the deployer is different
+        deployStandaloneAndCheck(deployerB, metadata, params);
     }
 }
