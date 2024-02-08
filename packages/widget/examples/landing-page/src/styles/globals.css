@@ -1,11 +1,11 @@
 :root {
   --strong: hsl(240deg 100% 0%);
-  --primary: hsl(240deg 20% 20%);
+  --primary: hsl(240deg 10% 20%);
   --secondary: hsl(240deg 20% 40%);
   --separator: hsl(240deg 20% 82%);
   --surface: hsl(240deg 20% 82%);
-  --background: hsl(240deg 50% 96%);
-  --tint: hsl(240deg 50% 98%);
+  --background: hsl(240deg 92.5% 97.5%);
+  --tint: hsl(240deg 100% 100%);
   --bg-strong: hsl(240deg 100% 99%);
 
   --info-bg: hsl(210deg 50% 90%);
@@ -19,7 +19,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --strong: hsl(240deg 100% 100%);
-    --primary: hsl(240deg 20% 80%);
+    --primary: hsl(240deg 10% 80%);
     --secondary: hsl(240deg 15% 70%);
     --separator: hsl(240deg 20% 18%);
     --surface: hsl(240deg 20% 18%);
@@ -27,8 +27,8 @@
     --tint: hsl(240deg 50% 4%);
     --bg-strong: hsl(240deg 100% 1%);
 
-    --info-bg: hsl(240deg 100% 10%);
-    --info-border: hsl(240deg 100% 20%);
+    --info-bg: hsl(225deg 80% 7.5%);
+    --info-border: hsl(225deg 100% 20%);
     --info-text: hsl(210deg 100% 78%);
   }
 }
