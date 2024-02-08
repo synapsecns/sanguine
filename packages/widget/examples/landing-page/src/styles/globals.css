@@ -8,7 +8,7 @@
   --tint: hsl(240deg 100% 100%);
   --bg-strong: hsl(240deg 100% 99%);
 
-  --info-bg: hsl(210deg 50% 90%);
+  --info-bg: hsl(210deg 100% 95%);
   --info-border: hsl(210deg 50% 67%);
   --info-text: hsl(210deg 80% 40%);
 
@@ -211,7 +211,11 @@ body {
       background: var(--info-bg);
       border: 1px solid var(--info-border);
       padding: .75rem;
+      margin: 1rem 0;
       border-radius: .5rem;
+
+      & > *:first-child { margin-top: 0 }
+      & > *:last-child { margin-bottom: 0 }
     }
   }
 
