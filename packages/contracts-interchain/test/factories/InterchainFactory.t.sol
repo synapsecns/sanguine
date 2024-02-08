@@ -89,7 +89,7 @@ contract InterchainFactoryTest is Test {
         checkProcessor(deployed, identicalMock);
     }
 
-    function predictInterchainERC20Address(
+    function predictInterchainERC20StandaloneAddress(
         address deployer,
         TokenMetadata memory metadata
     )
@@ -97,7 +97,7 @@ contract InterchainFactoryTest is Test {
         view
         returns (address)
     {
-        return factory.predictInterchainERC20Address(
+        return factory.predictInterchainERC20StandaloneAddress(
             deployer, metadata.name, metadata.symbol, metadata.decimals, type(InterchainERC20).creationCode
         );
     }
@@ -108,13 +108,14 @@ contract InterchainFactoryTest is Test {
 
     function predictProcessorAddress(
         address deployer,
+        address underlyingToken,
         bytes memory processorCreationCode
     )
         internal
         view
         returns (address)
     {
-        return factory.predictProcessorAddress(deployer, processorCreationCode);
+        return factory.predictProcessorAddress(deployer, underlyingToken, processorCreationCode);
     }
 
     function deployStandalone(address deployer, TokenMetadata memory metadata, address initialAdmin) internal {
@@ -146,7 +147,7 @@ contract InterchainFactoryTest is Test {
         internal
     {
         require(params.processor == address(0), "Processor should be zero address in this test");
-        address predicted = predictInterchainERC20Address(deployer, metadata);
+        address predicted = predictInterchainERC20StandaloneAddress(deployer, metadata);
         vm.expectEmit(address(factory));
         emit InterchainTokenDeployed(predicted, address(0));
         deployStandalone(deployer, metadata, params.initialAdmin);
@@ -164,7 +165,7 @@ contract InterchainFactoryTest is Test {
         internal
     {
         address predictedInterchainERC20 = predictInterchainERC20Address(deployer, underlyingToken);
-        address predictedProcessor = predictProcessorAddress(deployer, processorCreationCode);
+        address predictedProcessor = predictProcessorAddress(deployer, underlyingToken, processorCreationCode);
         vm.expectEmit(address(factory));
         emit InterchainTokenDeployed(predictedInterchainERC20, underlyingToken);
         vm.expectEmit(address(factory));
@@ -192,7 +193,7 @@ contract InterchainFactoryTest is Test {
 
     function test_deployStandalone_revert_sameMetadata() public {
         TokenMetadata memory metadata = TokenMetadata("TokenA", "AAA", 10);
-        address predicted = predictInterchainERC20Address(deployerA, metadata);
+        address predicted = predictInterchainERC20StandaloneAddress(deployerA, metadata);
         deployStandalone(deployerA, metadata, address(1));
         vm.expectRevert(abi.encodeWithSelector(Create2.Create2__AlreadyDeployed.selector, predicted));
         deployStandalone(deployerA, metadata, address(2));
@@ -275,7 +276,7 @@ contract InterchainFactoryTest is Test {
         deployWithProcessor(deployerA, underlyingToken, address(2), type(BurningProcessor).creationCode);
     }
 
-    function test_deployWithProcessor_revert_sameUnderlying_differentProcessor() public {
+    function test_deployWithProcessor_revert_sameUnderlying_diffProcessor() public {
         address underlyingToken = address(new MockERC20Decimals("TokenA", "AAA", 10));
         address predictedInterchainERC20 = predictInterchainERC20Address(deployerA, underlyingToken);
         deployWithProcessor(deployerA, underlyingToken, address(1), type(BurningProcessor).creationCode);
@@ -283,7 +284,7 @@ contract InterchainFactoryTest is Test {
         deployWithProcessor(deployerA, underlyingToken, address(2), type(LockingProcessor).creationCode);
     }
 
-    function test_deployWithProcessor_differentUnderlying_sameProcessor_sameDeployer() public {
+    function test_deployWithProcessor_diffUnderlying_sameProcessor_sameDeployer() public {
         MockERC20Decimals underlyingTokenA = new MockERC20Decimals("TokenA", "AAA", 10);
         MockERC20Decimals underlyingTokenB = new MockERC20Decimals("TokenB", "BBB", 20);
         deployWithProcessor(deployerA, address(underlyingTokenA), address(1), type(BurningProcessor).creationCode);
@@ -297,7 +298,21 @@ contract InterchainFactoryTest is Test {
         );
     }
 
-    function test_deployWithProcessor_differentUnderlying_differentProcessor_sameDeployer() public {
+    function test_deployWithProcessor_diffUnderlying_sameProcessor_sameDeployer_sameMetadata() public {
+        MockERC20Decimals underlyingTokenA = new MockERC20Decimals("TokenA", "AAA", 10);
+        MockERC20Decimals underlyingTokenCopy = new MockERC20Decimals("TokenA", "AAA", 10);
+        deployWithProcessor(deployerA, address(underlyingTokenA), address(1), type(BurningProcessor).creationCode);
+        deployWithProcessorAndCheck(
+            deployerA,
+            address(underlyingTokenCopy),
+            TokenMetadata("InterchainTokenA", "icAAA", 10),
+            address(1),
+            type(BurningProcessor).creationCode,
+            mockFactory.deployBurningProcessor
+        );
+    }
+
+    function test_deployWithProcessor_diffUnderlying_diffProcessor_sameDeployer() public {
         MockERC20Decimals underlyingTokenA = new MockERC20Decimals("TokenA", "AAA", 10);
         MockERC20Decimals underlyingTokenB = new MockERC20Decimals("TokenB", "BBB", 20);
         deployWithProcessor(deployerA, address(underlyingTokenA), address(1), type(BurningProcessor).creationCode);
@@ -310,6 +325,21 @@ contract InterchainFactoryTest is Test {
             mockFactory.deployLockingProcessor
         );
     }
+
+    function test_deployWithProcessor_diffUnderlying_diffProcessor_sameDeployer_sameMetadata() public {
+        MockERC20Decimals underlyingTokenA = new MockERC20Decimals("TokenA", "AAA", 10);
+        MockERC20Decimals underlyingTokenCopy = new MockERC20Decimals("TokenA", "AAA", 10);
+        deployWithProcessor(deployerA, address(underlyingTokenA), address(1), type(BurningProcessor).creationCode);
+        deployWithProcessorAndCheck(
+            deployerA,
+            address(underlyingTokenCopy),
+            TokenMetadata("InterchainTokenA", "icAAA", 10),
+            address(1),
+            type(LockingProcessor).creationCode,
+            mockFactory.deployLockingProcessor
+        );
+    }
+
 
     function test_deployWithProcessor_sameUnderlying_sameProcessor_diffDeployer() public {
         MockERC20Decimals underlyingToken = new MockERC20Decimals("TokenA", "AAA", 10);
