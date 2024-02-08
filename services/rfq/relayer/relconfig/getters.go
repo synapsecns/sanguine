@@ -334,6 +334,18 @@ func (c Config) GetFeePricer() FeePricerConfig {
 	return c.FeePricer
 }
 
+const defaultHTTPTimeoutMs = 1000
+
+// GetHTTPTimeout returns the HTTP timeout.
+func (c Config) GetHTTPTimeout() time.Duration {
+	feePricerCfg := c.GetFeePricer()
+	timeoutMs := defaultHTTPTimeoutMs
+	if feePricerCfg.HTTPTimeoutMs > 0 {
+		timeoutMs = feePricerCfg.HTTPTimeoutMs
+	}
+	return time.Duration(timeoutMs) * time.Millisecond
+}
+
 // GetTokenID returns the tokenID for the given chain and address.
 func (c Config) GetTokenID(chain int, addr string) (string, error) {
 	chainConfig, ok := c.Chains[chain]
