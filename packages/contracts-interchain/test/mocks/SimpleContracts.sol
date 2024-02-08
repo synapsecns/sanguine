@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
+// solhint-disable one-contract-per-file
 pragma solidity ^0.8.0;
 
 contract OneArgContract {
@@ -8,6 +9,7 @@ contract OneArgContract {
         value = value_;
     }
 
+    // solhint-disable-next-line no-empty-blocks
     function testSimpleContract() external pure {
         // This function is only used to remove SimpleContract from coverage reports
     }

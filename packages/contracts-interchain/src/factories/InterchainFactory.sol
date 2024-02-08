@@ -48,8 +48,8 @@ contract InterchainFactory is IInterchainFactory {
     /// Will revert if the underlying token has been used by the deployer before.
     /// @param underlyingToken          The address of the underlying token
     /// @param initialAdmin             The address of the initial admin for the token
-    /// @param tokenCode                The creation code for the InterchainERC20 contract, without the constructor arguments
-    /// @param processorCreationCode    The creation code for the Processor contract, without the constructor arguments
+    /// @param tokenCode                The creation code for the InterchainERC20 contract, without the constructor args
+    /// @param processorCreationCode    The creation code for the Processor contract, without the constructor args
     function deployInterchainERC20WithProcessor(
         address underlyingToken,
         address initialAdmin,
@@ -167,11 +167,6 @@ contract InterchainFactory is IInterchainFactory {
         delete _secondArg;
     }
 
-    /// @dev Returns the salt for InterchainERC20 and Processor Crate2 deployments.
-    function _getDeploymentSalt(address deployer, address underlyingToken) internal pure returns (bytes32) {
-        return keccak256(abi.encode(deployer, underlyingToken));
-    }
-
     /// @dev Derives metadata for InterchainERC20 from the underlying token
     /// Note: same amount of decimals will be used, and "Interchain" prefix will be added to the name and symbol
     function _deriveMetadata(address underlyingToken) internal view returns (bytes memory encodedMetadata) {
@@ -179,5 +174,10 @@ contract InterchainFactory is IInterchainFactory {
         string memory symbol = string.concat("ic", IERC20Metadata(underlyingToken).symbol());
         uint8 decimals = IERC20Metadata(underlyingToken).decimals();
         return abi.encode(name, symbol, decimals);
+    }
+
+    /// @dev Returns the salt for InterchainERC20 and Processor Crate2 deployments.
+    function _getDeploymentSalt(address deployer, address underlyingToken) internal pure returns (bytes32) {
+        return keccak256(abi.encode(deployer, underlyingToken));
     }
 }

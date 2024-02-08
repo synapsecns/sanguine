@@ -21,7 +21,7 @@ contract MockERC20Decimals is ERC20 {
     }
 
     // solhint-disable-next-line no-empty-blocks
-    function testMockERC20Decimals() external pure {
+    function testMockERC20Decimals() public pure {
         // This function is only used to remove MockERC20Decimals from coverage reports
     }
 }

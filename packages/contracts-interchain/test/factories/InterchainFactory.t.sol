@@ -156,6 +156,7 @@ contract InterchainFactoryTest is Test {
     )
         internal
     {
+        // solhint-disable-next-line
         require(params.processor == address(0), "Processor should be zero address in this test");
         address predicted = predictInterchainERC20StandaloneAddress(deployer, metadata);
         checkInterchainTokenDeployParameters();
