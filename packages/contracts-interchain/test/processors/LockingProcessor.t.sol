@@ -6,7 +6,7 @@ import {LockingProcessor} from "../../src/processors/LockingProcessor.sol";
 import {MockERC20} from "../mocks/MockERC20.sol";
 import {MockInterchainERC20} from "../mocks/MockInterchainERC20.sol";
 
-import {AbstractProcessorTest} from "./AbstractProcessor.t.sol";
+import {AbstractProcessor, AbstractProcessorTest} from "./AbstractProcessor.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
@@ -21,6 +21,16 @@ contract LockingProcessorTest is AbstractProcessorTest {
         processor = LockingProcessor(deployedProcessor);
         // Mint the underlying token to the processor (backing the user IC token balance)
         token.mintPublic(deployedProcessor, START_BALANCE);
+    }
+
+    function test_constructor_revert_interchainTokenZeroAddress() public {
+        vm.expectRevert(AbstractProcessor.AbstractProcessor__TokenAddressZero.selector);
+        factory.deployLockingProcessor(address(0), address(token));
+    }
+
+    function test_constructor_revert_underlyingTokenZeroAddress() public {
+        vm.expectRevert(AbstractProcessor.AbstractProcessor__TokenAddressZero.selector);
+        factory.deployLockingProcessor(address(icToken), address(0));
     }
 
     // Lock token: token (1) -> icToken (0)

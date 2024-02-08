@@ -26,6 +26,8 @@ contract InterchainERC20 is ERC20, AccessControl, Pausable, ICERC20 {
     /// @dev Rate Limit for Bridge's mint operations
     mapping(address bridge => RateLimit) internal _mintLimits;
 
+    error InterchainERC20__AdminZero();
+
     constructor(string memory name_, string memory symbol_, uint8 decimals_) ERC20(name_, symbol_) {
         (address initialAdmin, address processor) = IInterchainFactory(msg.sender).getInterchainTokenDeployParameters();
         _grantRole(DEFAULT_ADMIN_ROLE, initialAdmin);

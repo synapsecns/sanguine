@@ -63,4 +63,9 @@ contract InterchainERC20Test is Test {
         assertEq(InterchainERC20(factory.deployInterchainToken("A", "B", 6, admin, processor)).decimals(), 6);
         assertEq(InterchainERC20(factory.deployInterchainToken("A", "B", 32, admin, processor)).decimals(), 32);
     }
+
+    function test_revert_adminZero() public {
+        vm.expectRevert(InterchainERC20.InterchainERC20__AdminZero.selector);
+        factory.deployInterchainToken("A", "B", 18, address(0), processor);
+    }
 }

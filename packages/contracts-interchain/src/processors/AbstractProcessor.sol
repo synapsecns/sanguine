@@ -23,6 +23,7 @@ abstract contract AbstractProcessor is IDefaultPool {
 
     error AbstractProcessor__EqualIndices(uint8 index);
     error AbstractProcessor__IndexOutOfBounds(uint8 index);
+    error AbstractProcessor__TokenAddressZero();
 
     constructor() {
         (INTERCHAIN_TOKEN, UNDERLYING_TOKEN) = IInterchainFactory(msg.sender).getProcessorDeployParameters();
