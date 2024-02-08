@@ -4,8 +4,8 @@ name: Go Workflows
 on:
   pull_request:
     branches-ignore:
-        - 'gh-pages'
-        - 'fe-release'
+      - 'gh-pages'
+      - 'fe-release'
   push:
     branches-ignore:
       - 'gh-pages'
@@ -219,6 +219,7 @@ jobs:
           cp coverage.txt profile.cov
           docker ps
         env:
+          CI: true
           PYROSCOPE_PATH: '${{ steps.pyroscope-path.outputs.PYROSCOPE_PATH }}'
           ENABLE_MYSQL_TEST: true
           MYSQL_HOST: 0.0.0.0
