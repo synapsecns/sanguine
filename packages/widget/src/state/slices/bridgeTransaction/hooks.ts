@@ -21,7 +21,7 @@ export const executeBridgeTxn = createAsyncThunk(
     parsedOriginAmount,
     originTokenSymbol,
     originQuery,
-    destinationQuery,
+    destQuery,
     bridgeModuleName,
     estimatedTime,
     signer,
@@ -36,7 +36,7 @@ export const executeBridgeTxn = createAsyncThunk(
     parsedOriginAmount: string
     originTokenSymbol: string
     originQuery: {}
-    destinationQuery: {}
+    destQuery: {}
     estimatedTime: number
     bridgeModuleName: string
     signer: any
@@ -50,7 +50,7 @@ export const executeBridgeTxn = createAsyncThunk(
       tokenAddress,
       amount,
       originQuery,
-      destinationQuery
+      destQuery
     )
 
     const payload =

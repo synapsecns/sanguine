@@ -60,7 +60,6 @@ import { useSynapseContext } from '@/providers/SynapseProvider'
 import { getFromTokens } from '@/utils/routeMaker/getFromTokens'
 import { getSymbol } from '@/utils/routeMaker/generateRoutePossibilities'
 import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
-import { switchNetwork } from '@/utils/actions/switchNetwork'
 
 interface WidgetProps {
   customTheme: CustomThemeVariables
@@ -193,6 +192,8 @@ export const Widget = ({
       currentSDKRequestID.current += 1
       const thisRequestId = currentSDKRequestID.current
 
+      dispatch(resetQuote())
+
       if (thisRequestId === currentSDKRequestID.current) {
         dispatch(
           fetchBridgeQuote({
@@ -233,7 +234,6 @@ export const Widget = ({
 
   const handleOriginChainSelection = useCallback(
     (newOriginChain: Chain) => {
-      switchNetwork(newOriginChain.id, provider)
       dispatch(setOriginChainId(newOriginChain.id))
     },
     [dispatch, provider]
@@ -305,8 +305,8 @@ export const Widget = ({
           ),
           parsedOriginAmount: debouncedInputAmount,
           originTokenSymbol: originToken?.symbol,
-          originQuery: bridgeQuote?.quotes.originQuery,
-          destinationQuery: bridgeQuote?.quotes.destQuery,
+          originQuery: bridgeQuote?.originQuery,
+          destQuery: bridgeQuote?.destQuery,
           bridgeModuleName: bridgeQuote?.bridgeModuleName,
           estimatedTime: bridgeQuote?.estimatedTime,
           synapseSDK,
