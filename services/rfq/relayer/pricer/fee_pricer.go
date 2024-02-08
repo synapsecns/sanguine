@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/ethereum/go-ethereum"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
@@ -320,4 +321,16 @@ func (f *feePricer) getTokenPriceFromConfig(token string) (float64, error) {
 		}
 	}
 	return 0, fmt.Errorf("could not get price for token: %s", token)
+}
+
+func (f *feePricer) getGasEstimateFromClient(ctx context.Context, chainID uint32, call *ethereum.CallMsg) (uint64, error) {
+	client, err := f.clientFetcher.GetClient(ctx, big.NewInt(int64(chainID)))
+	if err != nil {
+		return 0, fmt.Errorf("could not get client: %w", err)
+	}
+	gasEstimate, err := client.EstimateGas(context.Background(), *call)
+	if err != nil {
+		return 0, fmt.Errorf("could not estimate gas: %w", err)
+	}
+	return gasEstimate, nil
 }
