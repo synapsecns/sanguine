@@ -74,10 +74,6 @@ export const Transaction = ({
   const delayedTime = isEstimatedTimeReached ? remainingTime : null
   const delayedTimeInMin = remainingTime ? Math.floor(remainingTime / 60) : null
 
-  const showTransactionSupport = delayedTimeInMin
-    ? delayedTimeInMin <= -5
-    : false
-
   const [isTxComplete, _kappa] = useBridgeTxStatus({
     synapseSDK,
     originChainId,
@@ -91,6 +87,9 @@ export const Transaction = ({
 
   /** Check if store already marked tx as complete, otherwise check hook status */
   const isTxFinalized = isStoredComplete ?? isTxComplete
+
+  const showTransactionSupport =
+    !isTxFinalized && delayedTimeInMin ? delayedTimeInMin <= -5 : false
 
   /** Update tx kappa when available */
   useEffect(() => {
