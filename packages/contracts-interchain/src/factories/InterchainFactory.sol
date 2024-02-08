@@ -78,12 +78,18 @@ contract InterchainFactory is IInterchainFactory {
     function getInterchainTokenDeployParameters() external view returns (address initialAdmin, address processor) {
         initialAdmin = _firstArg;
         processor = _secondArg;
+        if (initialAdmin == address(0) && processor == address(0)) {
+            revert InterchainFactory__NoActiveDeployment();
+        }
     }
 
     /// @inheritdoc IInterchainFactory
     function getProcessorDeployParameters() external view returns (address interchainToken, address underlyingToken) {
         interchainToken = _firstArg;
         underlyingToken = _secondArg;
+        if (interchainToken == address(0) && underlyingToken == address(0)) {
+            revert InterchainFactory__NoActiveDeployment();
+        }
     }
 
     /// @notice Predicts the address of the InterchainERC20 contract that will be deployed.
