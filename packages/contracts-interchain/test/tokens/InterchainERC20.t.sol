@@ -2,12 +2,14 @@
 pragma solidity 0.8.23;
 
 import {InterchainERC20, InterchainERC20Harness} from "../harnesses/InterchainERC20Harness.sol";
+import {MockInterchainFactory} from "../mocks/MockInterchainFactory.sol";
 
 import {Test} from "forge-std/Test.sol";
 
 // solhint-disable func-name-mixedcase
 contract InterchainERC20Test is Test {
     InterchainERC20Harness public token;
+    MockInterchainFactory public factory;
 
     address public admin;
     address public emergencyPauser;
@@ -20,7 +22,10 @@ contract InterchainERC20Test is Test {
         governor = makeAddr("Governor");
         processor = makeAddr("Processor");
 
-        token = new InterchainERC20Harness("Token Name", "Token Symbol", 18, admin, processor);
+        factory = new MockInterchainFactory();
+        address deployedHarness =
+            factory.deployInterchainTokenHarness("Token Name", "Token Symbol", 18, admin, processor);
+        token = InterchainERC20Harness(deployedHarness);
         vm.startPrank(admin);
         token.grantRole(token.EMERGENCY_PAUSER_ROLE(), emergencyPauser);
         token.grantRole(token.GOVERNOR_ROLE(), governor);
@@ -55,7 +60,7 @@ contract InterchainERC20Test is Test {
     }
 
     function test_differentDecimals() public {
-        assertEq(new InterchainERC20("A", "B", 6, admin, processor).decimals(), 6);
-        assertEq(new InterchainERC20("A", "B", 32, admin, processor).decimals(), 32);
+        assertEq(InterchainERC20(factory.deployInterchainToken("A", "B", 6, admin, processor)).decimals(), 6);
+        assertEq(InterchainERC20(factory.deployInterchainToken("A", "B", 32, admin, processor)).decimals(), 32);
     }
 }
