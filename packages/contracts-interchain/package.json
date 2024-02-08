@@ -5,8 +5,10 @@
   "private": true,
   "scripts": {
     "build:contracts": "forge build",
+    "build:go": "",
     "build:slither": "forge build --out=out --build-info --force",
     "test": "forge test",
+    "test:coverage": "echo 'Please use foundry'",
     "lint:contracts:fix": "forge fmt && solhint --fix -c .solhint.json '{src,script,test}/**/*.sol'",
     "lint:fix": "yarn lint:contracts:fix",
     "lint": "forge fmt",
