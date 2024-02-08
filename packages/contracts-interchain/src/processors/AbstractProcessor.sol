@@ -27,6 +27,10 @@ abstract contract AbstractProcessor is IDefaultPool {
 
     constructor() {
         (INTERCHAIN_TOKEN, UNDERLYING_TOKEN) = IInterchainFactory(msg.sender).getProcessorDeployParameters();
+        // Both tokens must be set
+        if (INTERCHAIN_TOKEN == address(0) || UNDERLYING_TOKEN == address(0)) {
+            revert AbstractProcessor__TokenAddressZero();
+        }
     }
 
     /// @inheritdoc IDefaultPool

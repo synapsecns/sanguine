@@ -30,9 +30,14 @@ contract InterchainERC20 is ERC20, AccessControl, Pausable, ICERC20 {
 
     constructor(string memory name_, string memory symbol_, uint8 decimals_) ERC20(name_, symbol_) {
         (address initialAdmin, address processor) = IInterchainFactory(msg.sender).getInterchainTokenDeployParameters();
+        // Admin address can never be zero
+        if (initialAdmin == address(0)) {
+            revert InterchainERC20__AdminZero();
+        }
         _grantRole(DEFAULT_ADMIN_ROLE, initialAdmin);
-        _DECIMALS = decimals_;
+        // Processor address can be zero, if the token is not used as an interchain representation of an existing token
         PROCESSOR = processor;
+        _DECIMALS = decimals_;
     }
 
     // ══════════════════════════════════════════════ ADMIN FUNCTIONS ══════════════════════════════════════════════════
