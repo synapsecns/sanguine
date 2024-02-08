@@ -2,6 +2,7 @@
 pragma solidity 0.8.23;
 
 import {ICERC20} from "../interfaces/ICERC20.sol";
+import {IInterchainFactory} from "../interfaces/IInterchainFactory.sol";
 import {RateLimit} from "../libs/RateLimit.sol";
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -25,18 +26,11 @@ contract InterchainERC20 is ERC20, AccessControl, Pausable, ICERC20 {
     /// @dev Rate Limit for Bridge's mint operations
     mapping(address bridge => RateLimit) internal _mintLimits;
 
-    constructor(
-        string memory name_,
-        string memory symbol_,
-        uint8 decimals_,
-        address initialAdmin_,
-        address processor_
-    )
-        ERC20(name_, symbol_)
-    {
-        _grantRole(DEFAULT_ADMIN_ROLE, initialAdmin_);
+    constructor(string memory name_, string memory symbol_, uint8 decimals_) ERC20(name_, symbol_) {
+        (address initialAdmin, address processor) = IInterchainFactory(msg.sender).getInterchainTokenDeployParameters();
+        _grantRole(DEFAULT_ADMIN_ROLE, initialAdmin);
         _DECIMALS = decimals_;
-        PROCESSOR = processor_;
+        PROCESSOR = processor;
     }
 
     // ══════════════════════════════════════════════ ADMIN FUNCTIONS ══════════════════════════════════════════════════
