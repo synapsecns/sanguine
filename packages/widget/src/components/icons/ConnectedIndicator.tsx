@@ -7,14 +7,14 @@ export const ConnectedIndicator = () => {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <circle cx="8" cy="8" r="4" fill="#008000" />
       <circle
         cx="8"
         cy="8"
-        r="6"
-        stroke="#008000"
+        r="4"
+        fill="var(--synapse-progress-success)"
+        stroke="var(--synapse-progress-success)"
         strokeOpacity="0.125"
-        strokeWidth="4"
+        strokeWidth="8"
       />
     </svg>
   )

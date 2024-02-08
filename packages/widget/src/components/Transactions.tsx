@@ -32,7 +32,10 @@ export const Transactions = ({
   if (hasTransactions) {
     return transactions.map((transaction: TransactionDetails) => (
       <Transaction
+        key={transaction.originTxHash}
         connectedAddress={connectedAddress}
+        originAmount={transaction.originAmount}
+        originTokenSymbol={transaction.originTokenSymbol}
         originChainId={transaction.originChainId}
         destinationChainId={transaction.destinationChainId}
         originTxHash={transaction.originTxHash}

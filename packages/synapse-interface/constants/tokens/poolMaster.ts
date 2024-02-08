@@ -179,9 +179,8 @@ export const AVALANCHE_POOL_SWAP_TOKEN = new Token({
   logo: synapseLogo,
   poolName: 'Avalanche Stableswap Pool ', // DONT GET RID OF SPACE AFTER POOL
   routerIndex: 'avalanchenusd',
-  // poolId: 3,
   // 420 pool id sets pool to not show in staking page
-  notStake: true,
+  // notStake: true,
   poolId: 3,
   poolType: 'USD',
   swapAddresses: {
@@ -191,7 +190,7 @@ export const AVALANCHE_POOL_SWAP_TOKEN = new Token({
   description: "Synapse's 3pool stableswap LP token on Avalanche",
   priorityRank: 6,
   chainId: CHAINS.AVALANCHE.id,
-  incentivized: false,
+  incentivized: true,
   miniChefAddress: MINICHEF_ADDRESSES[CHAINS.AVALANCHE.id],
 })
 
@@ -214,7 +213,7 @@ export const LEGACY_AVALANCHE_POOL_SWAP_TOKEN = new Token({
   description: "Synapse's 4pool stableswap LP token on Avalanche",
   priorityRank: 6,
   chainId: CHAINS.AVALANCHE.id,
-  incentivized: true,
+  incentivized: false,
   miniChefAddress: MINICHEF_ADDRESSES[CHAINS.AVALANCHE.id],
 })
 
@@ -451,7 +450,6 @@ export const METIS_POOL_SWAP_TOKEN = new Token({
   priorityRank: 6,
   chainId: CHAINS.METIS.id,
   incentivized: true,
-  customRewardToken: 'METIS',
   miniChefAddress: MINICHEF_ADDRESSES[CHAINS.METIS.id],
 })
 
@@ -783,7 +781,6 @@ export const METIS_WETH_SWAP_TOKEN = new Token({
   priorityRank: 6,
   chainId: CHAINS.METIS.id,
   incentivized: true,
-  customRewardToken: 'METIS',
   miniChefAddress: MINICHEF_ADDRESSES[CHAINS.METIS.id],
 })
 
@@ -894,7 +891,8 @@ export const METIS_WETH_SWAP_TOKEN_MIGRATED = new Token({
   priorityRank: 6,
   chainId: CHAINS.METIS.id,
   incentivized: false,
-  miniChefAddress: '0xaB0D8Fc46249DaAcd5cB36c5F0bC4f0DAF34EBf5',
+  customRewardToken: 'METIS',
+  miniChefAddress: '0x86AebDd89357217039368831a8AB9273BBF3A48f',
 })
 
 export const METIS_POOL_SWAP_TOKEN_MIGRATED = new Token({
@@ -919,5 +917,6 @@ export const METIS_POOL_SWAP_TOKEN_MIGRATED = new Token({
   priorityRank: 6,
   chainId: CHAINS.METIS.id,
   incentivized: false,
-  miniChefAddress: '0xaB0D8Fc46249DaAcd5cB36c5F0bC4f0DAF34EBf5',
+  customRewardToken: 'METIS',
+  miniChefAddress: '0x86AebDd89357217039368831a8AB9273BBF3A48f',
 })

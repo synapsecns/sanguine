@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import { DownArrow } from '@/components/icons/DownArrow'
 
-export const DropdownMenu = ({ children }) => {
+export const DropdownMenu = ({ menuTitleElement, children }) => {
   const [open, setOpen] = useState<boolean>(false)
 
   const handleClick = () => {
@@ -14,13 +14,12 @@ export const DropdownMenu = ({ children }) => {
       <div
         onClick={handleClick}
         className={`
-          rounded w-5 h-[21px] flex place-items-center justify-center
-          border border-solid border-[--synapse-border]
-          hover:border-[--synapse-focus]
-          cursor-pointer
+          flex place-items-center justify-center
+          px-2 py-1 rounded space-x-2 cursor-pointer
+          hover:border-[--synapse-focus] hover:bg-[--synapse-select-bg]
         `}
-        style={{ background: 'var(--synapse-select-bg' }}
       >
+        {menuTitleElement}
         <DownArrow />
       </div>
 

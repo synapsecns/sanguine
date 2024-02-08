@@ -32,35 +32,49 @@ yarn add @synapsecns/widget
 
 Note: The widget's `peerDependencies` require the consumer app to use `react` and `react-dom` (`>=17.0.1`)
 
-## Installation
+## Get started
 
 To get started, import the `Widget` React component into your App. You will need a `web3Provider` parameter to pass to the widget. The demo landing page app, for example, defines this provider from the `ethers` library. However, the component supports any similar provider:
 
 ```tsx
-import { Bridge } from ‘@synapsecns/widget’
+import { Bridge } from '@synapsecns/widget'
 
 const MyApp = () => {
   const web3Provider = new ethers.BrowserProvider(window.ethereum)
 
-  <Bridge
-    web3Provider={web3Provider}
-  />
+  return <Bridge web3Provider={web3Provider} />
 }
-
 ```
 
 Your site should now display a fully operational bridge widget integrating the routes and tokens supported by the Synapse protocol. By utilizing Synapse's multiple routers, you will be able to find the best quotes to support your bridging use case.
 
-## Recommended Parameters
+## Bridge Widget Props
+
+The widget accepts a number of props to customize its functionality and appearance. Below is a quick summary with more detailed explanations later on.
+
+```
+web3Provider: Web3Provider. Required.
+customRpcs?: Custom JSON-RPC endpoints for your consumer application.
+customTheme?: Custom theme for the widget. If not provided, defaults to light theme.
+container?: HTML element to render the widget in. If not provided, false.
+targetChainIds?: List of chain IDs for the destination side of your consumer app. If not provided, defaults to all Synapse Protocol supported networks.
+targetTokens?: List of tokens to display in the widget. These tokens are imported from the widget package. If not provided, defaults to all Synapse Protocol supported tokens.
+protocolName?: A short name for users of the widget to identify the protocol. If not provided, defaults to 'Target'.
+```
+
+- A list of `targetTokens` can be found [here](https://github.com/synapsecns/sanguine/blob/master/packages/widget/src/constants/bridgeable.ts)
+- A list of Synapse Protocol supported chains can be found [here](https://github.com/synapsecns/sanguine/blob/master/packages/widget/src/constants/chains.ts)
+
+## Enhanced and Reliable Performance
 
 The bridge widget is a React component designed for straightforward integration into any React-based project. Engineered for immediate functionality, and apart from a `web3Provider`, it requires no initial parameters or web3 setup to begin operation. The widget facilitates bridging across all networks where the Synapse Protocol is active.
 
-While the widget is primed for immediate use without configuration as it provides some basic primary and fallback JSON-RPC endpoints, we encourage developers to specify their own for enhancd performance. This can be done by including a `customRpcs` parameter in the format of an object with chain ids as keys and their associated RPC endpoints as values.
+While the widget is primed for immediate use without configuration as it provides some basic primary and fallback JSON-RPC endpoints, we encourage developers to specify their own for enhanced performance. This can be done by including a `customRpcs` parameter in the format of an object with chain ids as keys and their associated RPC endpoints as values.
 
 ```tsx
-import { Bridge, CustomRpcs } from ‘@synapsecns/widget’
+import { Bridge, CustomRpcs } from '@synapsecns/widget'
 
-const customRpcs: CustomRpcs =  {
+const customRpcs: CustomRpcs = {
   1: 'https://ethereum.my-custom-rpc.com',
   10: 'https://optimism.my-custom-rpc.com',
   42161: 'https://arbitrum.my-custom-rpc.com',
@@ -69,10 +83,7 @@ const customRpcs: CustomRpcs =  {
 const MyApp = () => {
   const web3Provider = new ethers.BrowserProvider(window.ethereum)
 
-  <Bridge
-    web3Provider={web3Provider}
-    customRpcs={customRpcs}
-  />
+  return <Bridge web3Provider={web3Provider} customRpcs={customRpcs} />
 }
 ```
 
@@ -81,16 +92,18 @@ const MyApp = () => {
 To further tailor the bridge widget to meet the specific demands of your project, additional optional `targetTokens` and `targetChainIds` parameters are provided. These allow for customizing which chain and tokens your consuming application will support bridging to. This is effectively a way to filter for specific tokens on destination chain your application's users bridge.
 
 ```tsx
-import { Bridge, CustomRpcs, ETH, USDC, USDT } from ‘@synapsecns/widget’
+import { Bridge, CustomRpcs, ETH, USDC, USDT } from '@synapsecns/widget'
 
 const MyApp = () => {
   const web3Provider = new ethers.BrowserProvider(window.ethereum)
 
-  <Bridge
-    web3Provider={web3Provider}
-    targetTokens={[ETH, USDC, USDT]}
-    targetChainIds={[42161, 43114]}
-  />
+  return (
+    <Bridge
+      web3Provider={web3Provider}
+      targetTokens={[ETH, USDC, USDT]}
+      targetChainIds={[42161, 43114]}
+    />
+  )
 }
 ```
 

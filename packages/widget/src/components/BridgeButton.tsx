@@ -41,8 +41,8 @@ export const BridgeButton = ({
     p-2 text-lg font-sans font-medium tracking-wide rounded-md w-full
     border border-solid border-[--synapse-button-border]
     hover:border-[--synapse-focus] disabled:hover:border-[--synapse-button-border]
-    active:opacity-40 disabled:opacity-70
-    text-[--synapse-button-text] disabled:text-[--synapse-secondary]
+    active:opacity-70 disabled:opacity-40
+    text-[--synapse-button-text]
     cursor-pointer disabled:cursor-not-allowed
   `
 
@@ -125,7 +125,7 @@ export const BridgeButton = ({
         >
           <button
             disabled={isApprovalPending}
-            onClick={!isApprovalPending && handleApprove}
+            onClick={!isApprovalPending ? handleApprove : () => null}
             className={buttonClassName}
             style={buttonStyle}
           >

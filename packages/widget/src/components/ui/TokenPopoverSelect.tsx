@@ -5,7 +5,8 @@ import { BridgeableToken } from 'types'
 import usePopover from '@/hooks/usePopoverRef'
 import { TokenBalance } from '@/utils/actions/fetchTokenBalances'
 import { DownArrow } from '@/components/icons/DownArrow'
-import { SearchInput } from './SearchInput'
+import { SearchInput } from '@/components/ui/SearchInput'
+import { TokenOption } from '@/components/ui/TokenOption'
 
 type PopoverSelectProps = {
   options: BridgeableToken[]
@@ -82,7 +83,15 @@ export const TokenPopoverSelect = ({
           cursor-pointer hover:border-[--synapse-focus]
         `}
       >
+        {selected?.imgUrl && (
+          <img
+            src={selected?.imgUrl}
+            alt={`${selected.symbol} token icon`}
+            className="inline w-4 h-4"
+          />
+        )}
         {selected?.symbol || 'Token'}
+
         <DownArrow />
       </div>
       {isOpen && (
@@ -95,12 +104,14 @@ export const TokenPopoverSelect = ({
             animate-slide-down origin-top
           `}
         >
-          <SearchInput
-            inputValue={filterValue}
-            setInputValue={setFilterValue}
-            placeholder="Search Tokens"
-            isActive={isOpen}
-          />
+          <div className="p-1">
+            <SearchInput
+              inputValue={filterValue}
+              setInputValue={setFilterValue}
+              placeholder="Search Tokens"
+              isActive={isOpen}
+            />
+          </div>
           {hasFilteredResults ? (
             <ul className="p-0 m-0">
               {filteredSortedOptionsWithBalances?.map(
@@ -146,52 +157,6 @@ export const TokenPopoverSelect = ({
         </div>
       )}
     </div>
-  )
-}
-
-const TokenOption = ({
-  option,
-  onSelect,
-  selected,
-  parsedBalance,
-}: {
-  option: BridgeableToken
-  onSelect: (option: BridgeableToken) => void
-  selected: BridgeableToken
-  parsedBalance: string
-}) => {
-  return (
-    <li
-      data-test-id="token-option"
-      className={`
-        flex gap-4 items-center justify-between
-        cursor-pointer rounded border border-solid
-        hover:border-[--synapse-focus] active:opacity-40
-        ${
-          option?.symbol === selected?.symbol
-            ? 'border-[--synapse-focus] hover:opacity-70'
-            : 'border-transparent'
-        }
-      `}
-      onClick={() => onSelect(option)}
-    >
-      <abbr title={option?.name} className="p-2.5 no-underline">
-        {option?.symbol}
-      </abbr>
-      <data
-        value={parsedBalance}
-        className={`
-          text-sm p-2.5
-          ${
-            parsedBalance
-              ? 'text-[--synapse-secondary]'
-              : 'text-[--synapse-focus]'
-          }
-        `}
-      >
-        {parsedBalance ?? '−'}
-      </data>
-    </li>
   )
 }
 

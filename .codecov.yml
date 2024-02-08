@@ -85,10 +85,14 @@ flags:
     paths:
       - services/stiprelayer/
     carryforward: true
-  solidity:
+  solidity-core:
     paths:
       - packages/contracts-core/
       - packages/contracts-interchain/
+    carryforward: true
+  solidity-rfq:
+    paths:
+      - packages/contracts-rfq/
     carryforward: true
   tools:
     paths:
@@ -99,6 +103,7 @@ flags:
       - packages/coverage-aggregator/
       - packages/explorer-ui/
       - packages/sdk-router/
+      - packages/widget/
     carryforward: true
 
 ignore:

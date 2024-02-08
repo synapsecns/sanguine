@@ -60,7 +60,6 @@ import { useSynapseContext } from '@/providers/SynapseProvider'
 import { getFromTokens } from '@/utils/routeMaker/getFromTokens'
 import { getSymbol } from '@/utils/routeMaker/generateRoutePossibilities'
 import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
-import { switchNetwork } from '@/utils/actions/switchNetwork'
 
 interface WidgetProps {
   customTheme: CustomThemeVariables
@@ -72,7 +71,7 @@ interface WidgetProps {
 
 export const Widget = ({
   customTheme,
-  container,
+  container = false,
   targetChainIds,
   targetTokens,
   protocolName,
@@ -193,6 +192,8 @@ export const Widget = ({
       currentSDKRequestID.current += 1
       const thisRequestId = currentSDKRequestID.current
 
+      dispatch(resetQuote())
+
       if (thisRequestId === currentSDKRequestID.current) {
         dispatch(
           fetchBridgeQuote({
@@ -233,7 +234,6 @@ export const Widget = ({
 
   const handleOriginChainSelection = useCallback(
     (newOriginChain: Chain) => {
-      switchNetwork(newOriginChain.id, provider)
       dispatch(setOriginChainId(newOriginChain.id))
     },
     [dispatch, provider]
@@ -303,8 +303,10 @@ export const Widget = ({
             debouncedInputAmount,
             originToken?.decimals[originChainId]
           ),
-          originQuery: bridgeQuote?.quotes.originQuery,
-          destinationQuery: bridgeQuote?.quotes.destQuery,
+          parsedOriginAmount: debouncedInputAmount,
+          originTokenSymbol: originToken?.symbol,
+          originQuery: bridgeQuote?.originQuery,
+          destQuery: bridgeQuote?.destQuery,
           bridgeModuleName: bridgeQuote?.bridgeModuleName,
           estimatedTime: bridgeQuote?.estimatedTime,
           synapseSDK,
@@ -343,7 +345,7 @@ export const Widget = ({
   }
 
   const containerStyle = `
-    ${container === false ? 'p-0' : 'p-2 rounded-lg'}`
+    ${container === false ? 'p-2 rounded-[inherit]' : 'p-2 rounded-lg'}`
 
   const cardStyle = `
     grid grid-cols-[1fr_auto]

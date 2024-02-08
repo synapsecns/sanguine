@@ -1,6 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 export interface TransactionDetails {
+  originAmount: string
+  originTokenSymbol: string
   originChainId: number
   destinationChainId: number
   originTxHash: string

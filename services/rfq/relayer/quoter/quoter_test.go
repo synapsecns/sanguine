@@ -2,7 +2,6 @@ package quoter_test
 
 import (
 	"math/big"
-	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/mock"
@@ -45,7 +44,7 @@ func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 	quotes, err := s.manager.GenerateQuotes(s.GetTestContext(), int(s.destinationEth), chain.EthAddress, balance)
 	s.Require().NoError(err)
 
-	minGasToken, err := s.config.GetMinGasToken()
+	minGasToken, err := s.config.GetMinGasToken(int(s.destination))
 	s.NoError(err)
 	expectedQuoteAmount := new(big.Int).Sub(balance, minGasToken)
 
@@ -53,7 +52,7 @@ func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 	expectedQuotes := []model.PutQuoteRequest{
 		{
 			OriginChainID:   int(s.origin),
-			OriginTokenAddr: strings.ToLower(chain.EthAddress.String()),
+			OriginTokenAddr: chain.EthAddress.String(),
 			DestChainID:     int(s.destinationEth),
 			DestTokenAddr:   chain.EthAddress.String(),
 			DestAmount:      expectedQuoteAmount.String(),
@@ -64,13 +63,13 @@ func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 	s.Equal(expectedQuotes, quotes)
 
 	// Set MinGasToken and make sure it is accounted for in the DestAmount.
-	s.config.MinGasToken = "100000000000000000" // 0.1 ETH
+	s.config.BaseChainConfig.MinGasToken = "100000000000000000" // 0.1 ETH
 	s.manager.SetConfig(s.config)
 
 	quotes, err = s.manager.GenerateQuotes(s.GetTestContext(), int(s.destinationEth), chain.EthAddress, balance)
 	s.Require().NoError(err)
 
-	minGasToken, err = s.config.GetMinGasToken()
+	minGasToken, err = s.config.GetMinGasToken(int(s.destination))
 	s.NoError(err)
 	expectedQuoteAmount = new(big.Int).Sub(balance, minGasToken)
 
@@ -78,7 +77,7 @@ func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 	expectedQuotes = []model.PutQuoteRequest{
 		{
 			OriginChainID:   int(s.origin),
-			OriginTokenAddr: strings.ToLower(chain.EthAddress.String()),
+			OriginTokenAddr: chain.EthAddress.String(),
 			DestChainID:     int(s.destinationEth),
 			DestTokenAddr:   chain.EthAddress.String(),
 			DestAmount:      expectedQuoteAmount.String(),
@@ -89,7 +88,7 @@ func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 	s.Equal(expectedQuotes, quotes)
 
 	// Set MinGasToken to balance and make sure no quotes are generated.
-	s.config.MinGasToken = "1000000000000000001" // 0.1 ETH
+	s.config.BaseChainConfig.MinGasToken = "1000000000000000001" // 0.1 ETH
 	s.manager.SetConfig(s.config)
 
 	quotes, err = s.manager.GenerateQuotes(s.GetTestContext(), int(s.destinationEth), chain.EthAddress, balance)
@@ -153,7 +152,7 @@ func (s *QuoterSuite) TestGetQuoteAmount() {
 	balance := big.NewInt(1000_000_000) // 1000 USDC
 
 	setQuoteParams := func(quotePct float64, minQuoteAmount string) {
-		s.config.QuotePct = quotePct
+		s.config.BaseChainConfig.QuotePct = quotePct
 		tokenCfg := s.config.Chains[dest].Tokens["USDC"]
 		tokenCfg.MinQuoteAmount = minQuoteAmount
 		s.config.Chains[dest].Tokens["USDC"] = tokenCfg
@@ -218,31 +217,36 @@ func (s *QuoterSuite) setGasSufficiency(sufficient bool) {
 func (s *QuoterSuite) TestGetDestAmount() {
 	balance := big.NewInt(1000_000_000) // 1000 USDC
 
-	setQuoteParams := func(quoteOffsetBps int) {
-		s.config.QuoteOffsetBps = quoteOffsetBps
+	setQuoteParams := func(quoteOffsetBps float64) {
+		s.config.BaseChainConfig.QuoteOffsetBps = quoteOffsetBps
 		s.manager.SetConfig(s.config)
 	}
 
 	// Set default quote params; should return the balance.
-	destAmount := s.manager.GetDestAmount(s.GetTestContext(), balance)
+	chainID := int(s.destination)
+	destAmount, err := s.manager.GetDestAmount(s.GetTestContext(), balance, chainID)
+	s.NoError(err)
 	expectedAmount := balance
 	s.Equal(expectedAmount, destAmount)
 
 	// Set QuoteOffsetBps to 100, should return 99% of balance.
 	setQuoteParams(100)
-	destAmount = s.manager.GetDestAmount(s.GetTestContext(), balance)
+	destAmount, err = s.manager.GetDestAmount(s.GetTestContext(), balance, chainID)
+	s.NoError(err)
 	expectedAmount = big.NewInt(990_000_000)
 	s.Equal(expectedAmount, destAmount)
 
 	// Set QuoteOffsetBps to 500, should return 95% of balance.
 	setQuoteParams(500)
-	destAmount = s.manager.GetDestAmount(s.GetTestContext(), balance)
+	destAmount, err = s.manager.GetDestAmount(s.GetTestContext(), balance, chainID)
+	s.NoError(err)
 	expectedAmount = big.NewInt(950_000_000)
 	s.Equal(expectedAmount, destAmount)
 
 	// Set QuoteOffsetBps to -100, should default to balance.
 	setQuoteParams(-100)
-	destAmount = s.manager.GetDestAmount(s.GetTestContext(), balance)
+	destAmount, err = s.manager.GetDestAmount(s.GetTestContext(), balance, chainID)
+	s.NoError(err)
 	expectedAmount = balance
 	s.Equal(expectedAmount, destAmount)
 }
