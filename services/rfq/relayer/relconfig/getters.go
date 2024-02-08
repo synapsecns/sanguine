@@ -19,6 +19,7 @@ var DefaultChainConfig = ChainConfig{
 	QuotePct:              100,
 	QuoteOffsetBps:        0,
 	FixedFeeMultiplier:    1,
+	DynamicGasEstimate:    false,
 }
 
 // getChainConfigValue gets the value of a field from ChainConfig.
@@ -277,6 +278,20 @@ func (c Config) GetFixedFeeMultiplier(chainID int) (value float64, err error) {
 	}
 	if value <= 0 {
 		value = DefaultChainConfig.FixedFeeMultiplier
+	}
+	return value, nil
+}
+
+// GetDynamicGasEstimate returns the DynamicGasEstimate for the given chainID.
+func (c Config) GetDynamicGasEstimate(chainID int) (value bool, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "DynamicGasEstimate")
+	if err != nil {
+		return value, err
+	}
+
+	value, ok := rawValue.(bool)
+	if !ok {
+		return value, fmt.Errorf("failed to cast DynamicGasEstimate to bool")
 	}
 	return value, nil
 }
