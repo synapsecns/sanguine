@@ -3,9 +3,12 @@ pragma solidity 0.8.23;
 
 import {BurningProcessor} from "../../src/processors/BurningProcessor.sol";
 import {LockingProcessor} from "../../src/processors/LockingProcessor.sol";
-import {IProcessorFactory} from "../../src/interfaces/IProcessorFactory.sol";
+import {IInterchainFactory} from "../../src/interfaces/IInterchainFactory.sol";
 
-contract MockProcessorFactory is IProcessorFactory {
+contract MockInterchainFactory is IInterchainFactory {
+    address internal _initialAdmin;
+    address internal _processor;
+
     address internal _interchainToken;
     address internal _underlyingToken;
 
@@ -35,6 +38,16 @@ contract MockProcessorFactory is IProcessorFactory {
         deployedProcessor = address(new LockingProcessor());
         delete _interchainToken;
         delete _underlyingToken;
+    }
+
+    function getInterchainTokenDeployParameters()
+        external
+        view
+        override
+        returns (address initialAdmin, address processor)
+    {
+        initialAdmin = _initialAdmin;
+        processor = _processor;
     }
 
     function getProcessorDeployParameters()

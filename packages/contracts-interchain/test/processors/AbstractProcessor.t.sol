@@ -5,7 +5,7 @@ import {AbstractProcessor} from "../../src/processors/AbstractProcessor.sol";
 
 import {MockERC20} from "../mocks/MockERC20.sol";
 import {MockInterchainERC20} from "../mocks/MockInterchainERC20.sol";
-import {MockProcessorFactory} from "../mocks/MockProcessorFactory.sol";
+import {MockInterchainFactory} from "../mocks/MockInterchainFactory.sol";
 
 import {Test} from "forge-std/Test.sol";
 
@@ -15,14 +15,14 @@ abstract contract AbstractProcessorTest is Test {
     AbstractProcessor public processor;
     MockInterchainERC20 public icToken;
     MockERC20 public token;
-    MockProcessorFactory public factory;
+    MockInterchainFactory public factory;
 
     address public user;
     uint256 public constant START_BALANCE = 1000;
 
     function setUp() public {
         user = makeAddr("User");
-        factory = new MockProcessorFactory();
+        factory = new MockInterchainFactory();
         deployTokens();
         deployProcessor();
         // Mint initial balances
