@@ -4,12 +4,13 @@ import (
 	"context"
 	gosql "database/sql"
 	"fmt"
-	serverConfig "github.com/synapsecns/sanguine/services/explorer/config/server"
-	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph"
 	"math/big"
 	"net/http"
 	"testing"
 	"time"
+
+	serverConfig "github.com/synapsecns/sanguine/services/explorer/config/server"
+	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph"
 
 	"github.com/phayes/freeport"
 	. "github.com/stretchr/testify/assert"
@@ -292,8 +293,17 @@ func (g *APISuite) SetupTest() {
 		},
 	}
 	g.config = config
+
+	testDone := false
+	defer func() {
+		testDone = true
+	}()
+
 	go func() {
-		Nil(g.T(), api.Start(g.GetTestContext(), config, g.explorerMetrics))
+		err := api.Start(g.GetTestContext(), config, g.explorerMetrics)
+		if !testDone {
+			Nil(g.T(), err)
+		}
 	}()
 
 	baseURL := fmt.Sprintf("http://127.0.0.1:%d", httpport)
