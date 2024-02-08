@@ -35,9 +35,11 @@ contract InterchainFactory is IInterchainFactory {
     )
         external
     {
+        // Use underlyingToken = address(0) to deploy a standalone InterchainERC20
+        bytes32 salt = _getDeploymentSalt(msg.sender, address(0));
         bytes memory tokenCreationCode = abi.encodePacked(tokenCode, abi.encode(name, symbol, decimals));
         // Use processor = address(0) to deploy a standalone InterchainERC20
-        address interchainToken = _deployContract(tokenCreationCode, initialAdmin, address(0));
+        address interchainToken = _deployContract(tokenCreationCode, salt, initialAdmin, address(0));
         emit InterchainTokenDeployed(interchainToken, address(0));
     }
 
@@ -56,19 +58,18 @@ contract InterchainFactory is IInterchainFactory {
     )
         external
     {
+        bytes32 salt = _getDeploymentSalt(msg.sender, underlyingToken);
         bytes memory tokenCreationCode = abi.encodePacked(tokenCode, _deriveMetadata(underlyingToken));
         // Predict deployment addresses for InterchainERC20 and Processor
-        address interchainToken =
-            Create2.predictDeployment(address(this), _getDeployerSalt(msg.sender), tokenCreationCode);
-        address processor =
-            Create2.predictDeployment(address(this), _getDeployerSalt(msg.sender), processorCreationCode);
+        address interchainToken = Create2.predictDeployment(address(this), salt, tokenCreationCode);
+        address processor = Create2.predictDeployment(address(this), salt, processorCreationCode);
         // Deploy InterchainERC20. We use assert statement as a sanity check for create2 prediction.
-        address deployment = _deployContract(tokenCreationCode, initialAdmin, processor);
+        address deployment = _deployContract(tokenCreationCode, salt, initialAdmin, processor);
         assert(deployment == interchainToken);
         emit InterchainTokenDeployed(interchainToken, underlyingToken);
         // Deploy Processor. We use assert statement as a sanity check for create2 prediction.
         // Note: Processor contract doesn't require any constructor arguments.
-        deployment = _deployContract(processorCreationCode, interchainToken, underlyingToken);
+        deployment = _deployContract(processorCreationCode, salt, interchainToken, underlyingToken);
         assert(deployment == processor);
         emit ProcessorDeployed(processor);
     }
@@ -99,8 +100,9 @@ contract InterchainFactory is IInterchainFactory {
         view
         returns (address)
     {
+        bytes32 salt = _getDeploymentSalt(deployer, underlyingToken);
         bytes memory tokenCreationCode = abi.encodePacked(tokenCode, _deriveMetadata(underlyingToken));
-        return Create2.predictDeployment(address(this), _getDeployerSalt(deployer), tokenCreationCode);
+        return Create2.predictDeployment(address(this), salt, tokenCreationCode);
     }
 
     /// @notice Predicts the address of the InterchainERC20 contract that will be deployed.
@@ -109,7 +111,7 @@ contract InterchainFactory is IInterchainFactory {
     /// @param symbol        The symbol of the token
     /// @param decimals      The number of decimals for the token
     /// @param tokenCode     The creation code for the InterchainERC20 contract, without the constructor arguments
-    function predictInterchainERC20Address(
+    function predictInterchainERC20StandaloneAddress(
         address deployer,
         string memory name,
         string memory symbol,
@@ -120,8 +122,9 @@ contract InterchainFactory is IInterchainFactory {
         view
         returns (address)
     {
+        bytes32 salt = _getDeploymentSalt(deployer, address(0));
         bytes memory tokenCreationCode = abi.encodePacked(tokenCode, abi.encode(name, symbol, decimals));
-        return Create2.predictDeployment(address(this), _getDeployerSalt(deployer), tokenCreationCode);
+        return Create2.predictDeployment(address(this), salt, tokenCreationCode);
     }
 
     /// @notice Predicts the address of the Processor contract that will be deployed.
@@ -129,19 +132,22 @@ contract InterchainFactory is IInterchainFactory {
     /// @param processorCreationCode    The creation code for the Processor contract, without the constructor arguments
     function predictProcessorAddress(
         address deployer,
+        address underlyingToken,
         bytes memory processorCreationCode
     )
         external
         view
         returns (address)
     {
-        return Create2.predictDeployment(address(this), _getDeployerSalt(deployer), processorCreationCode);
+        bytes32 salt = _getDeploymentSalt(deployer, underlyingToken);
+        return Create2.predictDeployment(address(this), salt, processorCreationCode);
     }
 
     /// @dev Deploys a contract with the given creation code. Two extra arguments will be passed in
     /// the following callback to this factory.
     function _deployContract(
         bytes memory creationCode,
+        bytes32 salt,
         address firstArg,
         address secondArg
     )
@@ -150,14 +156,14 @@ contract InterchainFactory is IInterchainFactory {
     {
         _firstArg = firstArg;
         _secondArg = secondArg;
-        deployedAt = Create2.deploy(0, _getDeployerSalt(msg.sender), creationCode);
+        deployedAt = Create2.deploy(0, salt, creationCode);
         delete _firstArg;
         delete _secondArg;
     }
 
-    /// @dev Returns the deployer-dependent salt for the Create2 deployment
-    function _getDeployerSalt(address deployer) internal pure returns (bytes32) {
-        return bytes32(bytes20(deployer));
+    /// @dev Returns the salt for InterchainERC20 and Processor Crate2 deployments.
+    function _getDeploymentSalt(address deployer, address underlyingToken) internal pure returns (bytes32) {
+        return keccak256(abi.encode(deployer, underlyingToken));
     }
 
     /// @dev Derives metadata for InterchainERC20 from the underlying token
