@@ -16,10 +16,10 @@ export const TimeRemaining = ({
   remainingTime: number
   isDelayed: boolean
 }) => {
-  if (isComplete) return
+  if (isComplete) return <span className="text-green-400">Complete</span>
 
   if (isDelayed) {
-    return <div>Waiting...</div>
+    return 'Waiting...'
   }
 
   const estTime = useMemo(() => {
@@ -30,5 +30,5 @@ export const TimeRemaining = ({
     }
   }, [remainingTime])
 
-  return <div>{estTime}</div>
+  return estTime + ' left'
 }

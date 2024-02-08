@@ -11,9 +11,12 @@ import TransactionArrow from '../icons/TransactionArrow'
 import { TimeRemaining } from './components/TimeRemaining'
 import { TransactionStatus } from './components/TransactionStatus'
 import { getEstimatedTimeStatus } from './helpers/getEstimatedTimeStatus'
-import { DropdownMenu } from './components/DropdownMenu'
+// import { DropdownMenu } from './components/DropdownMenu'
 import { MenuItem } from './components/MenuItem'
 import { useBridgeTxUpdater } from './helpers/useBridgeTxUpdater'
+import { AnimatedProgressBar } from './components/AnimatedProgressBar'
+import { useState } from 'react'
+import { DownArrow } from '@/components/icons/DownArrow'
 
 interface _TransactionProps {
   connectedAddress: string
@@ -62,8 +65,13 @@ export const _Transaction = ({
     connectedAddress
   )
 
-  const { isStartCheckingTimeReached, isEstimatedTimeReached, remainingTime } =
-    getEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
+  const {
+    targetTime,
+    elapsedTime,
+    remainingTime,
+    isEstimatedTimeReached,
+    isStartCheckingTimeReached,
+  } = getEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
 
   const [isTxComplete, _kappa] = useBridgeTxStatus({
     originChainId: originChain.id,
@@ -86,59 +94,78 @@ export const _Transaction = ({
     isTxComplete
   )
 
+  const [open, setOpen] = useState<boolean>(false)
+
+  /* TODO: Fix bug where e.stopProgagation() allows multiple dropdowns
+           to be open at the same time
+  */
+  const handleClick = (e) => {
+    setOpen(!open)
+
+    if (!open) {
+      document.addEventListener('click', (e) => {
+        setOpen(false)
+      }, { once: true })
+    }
+
+    e.stopPropagation()
+  }
+
   return (
     <div
       data-test-id="_transaction"
       className={`
-        flex flex-col gap-1 justify-end items-center my-2
-        bg-tint fill-surface text-primary
-        border border-solid border-surface rounded-md
+        my-2
+        bg-tint text-primary
+        border border-surface rounded-md
         text-xs md:text-base
       `}
     >
-      <div className="flex items-center w-full">
-        <div className="flex rounded bg-surface fill-surface">
-          <TransactionPayloadDetail
-            chain={originChain}
-            token={originToken}
-            tokenAmount={originValue}
-            isOrigin={true}
-          />
-          <TransactionArrow className="bg-tint fill-surface" />
-        </div>
-        <div className="flex items-center space-x-4">
-          <TransactionPayloadDetail
-            chain={destinationChain}
-            token={destinationToken}
-            tokenAmount={null}
-            isOrigin={false}
-          />
-          <div className="mt-1 text-xs">
-            {new Date(timestamp * 1000).toLocaleString('en-US', {
-              month: 'short',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-              hour12: true,
-            })}
-            {/* <div>{typeof _kappa === 'string' && _kappa?.substring(0, 15)}</div> */}
-          </div>
-        </div>
-        {/* TODO: Update visual format */}
-        <div className="flex justify-between gap-2 pr-2 ml-auto">
-          {isTxFinalized ? (
-            <TransactionStatus string="Complete" className="text-green-300" />
-          ) : (
-            <TransactionStatus string="Pending" />
-          )}
-          <div className="flex items-center justify-end gap-2 grow">
+      <div className="flex items-center">
+        <TransactionPayloadDetail
+          // chain={originChain}
+          token={originToken}
+          tokenAmount={originValue}
+          isOrigin={true}
+          className='bg-surface px-0.5 py-1.5 rounded-l'
+        />
+        <TransactionArrow className="fill-surface" />
+        <TransactionPayloadDetail
+          chain={destinationChain}
+          token={destinationToken}
+          tokenAmount={null}
+          isOrigin={false}
+          className='p-1.5'
+        />
+        {/* TODO: QA visual format */}
+        <div className="relative grow mr-1 text-sm">
+          <div
+            onClick={handleClick}
+            className="flex items-center gap-1 hover:bg-zinc-700 cursor-pointer relative w-fit ml-auto px-2 py-1 rounded"
+          >
             <TimeRemaining
               isComplete={isTxFinalized as boolean}
               remainingTime={remainingTime}
               isDelayed={isEstimatedTimeReached}
             />
-
-            <DropdownMenu>
+            <DownArrow />
+          </div>
+          {open && (
+            <div className='
+              absolute z-50 mt-1 bg-surface
+              border border-zinc-700 rounded shadow
+              popover right-0
+            '>
+              <div className="text-xs p-2 mt-1 text-zinc-300 cursor-default">
+                Began {new Date(timestamp * 1000).toLocaleString('en-US', {
+                  // month: 'short',
+                  // day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: true,
+                })}
+                {/* <div>{typeof _kappa === 'string' && _kappa?.substring(0, 15)}</div> */}
+              </div>
               {!isNull(originTxExplorerLink) && (
                 <MenuItem
                   text={originExplorerName}
@@ -162,10 +189,19 @@ export const _Transaction = ({
                   onClick={handleClearTransaction}
                 />
               )}
-            </DropdownMenu>
-          </div>
+            </div>
+          )}
         </div>
+      </div>
+      <div className='px-1'>
+        <AnimatedProgressBar
+          id={originTxHash}
+          startTime={timestamp}
+          estDuration={estimatedTime * 2} // 2x buffer
+          isComplete={isTxFinalized}
+        />
       </div>
     </div>
   )
 }
+
