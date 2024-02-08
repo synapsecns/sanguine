@@ -111,7 +111,7 @@ Note: Token naming convention is based on the tokens provided by `@synapsecns/wi
 
 ## Theme Customization
 
-The widget is designed to be easily customized to match your app's theme. The widget accepts an optional `customTheme` configurable `bgColor` parameter for `'dark'` and `'light'` modes:
+The widget is designed to be easily customized to match your app's theme. The widget accepts an optional `customTheme` configurable `bgColor` parameter for `'dark'`, `'light'`, and custom color modes:
 
 ```tsx
 <Bridge web3Provider={web3Provider} customTheme={{ bgColor: 'light' }} />
@@ -121,14 +121,30 @@ Additionally, the widget supports more complex custom themes with the `customThe
 
 ```tsx
 const customTheme = {
+  // Generate from base color, 'dark', or 'light'
+  bgColor: '#08153a',
+
+  // Basic customization
   '--synapse-text': 'white',
   '--synapse-secondary': '#ffffffb3',
   '--synapse-root': '#16182e',
   '--synapse-surface': 'linear-gradient(90deg, #1e223de6, #262b47e6)',
   '--synapse-border': 'transparent',
-  '--synapse-select-bg': 'hsl(231.5deg 32% 19.5%',
-  '--synapse-select-border': 'hsl(233deg 34% 34%)',
-  '--synapse-button-bg': '#2d42fc',
+
+  // Full customization (Uses based colors by default)
+  '--synapse-focus': 'var(--synapse-secondary)',
+  '--synapse-select-bg': 'var(--synapse-root)',
+  '--synapse-select-text': 'var(--synapse-text)',
+  '--synapse-select-border': 'var(--synapse-border)',
+  '--synapse-button-bg': 'var(--synapse-surface)',
+  '--synapse-button-text': 'var(--synapse-text)',
+  '--synapse-button-border': 'var(--synapse-border)',
+
+  // Transaction progress colors (set bgColor to auto-generate)
+  '--synapse-progress': 'hsl(265deg 100% 65%)',
+  '--synapse-progress-flash': 'hsl(215deg 100% 65%)',
+  '--synapse-progress-success': 'hsl(120deg 100% 30%)',
+  '--synapse-progress-error': 'hsl(15deg 100% 65%)',
 }
 
 <Bridge
