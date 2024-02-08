@@ -13,6 +13,8 @@ pragma solidity ^0.8.0;
 /// - Deployer address (if enforced by the factory)
 /// - Interchain Token name, symbol, and decimals (constructor values for the Interchain Token)
 interface IInterchainFactory {
+    error InterchainFactory__NoActiveDeployment();
+
     /// @notice Returns the parameters required for the deployment of the current Interchain Token.
     /// @dev Will revert if no Interchain Token is being deployed.
     function getInterchainTokenDeployParameters() external view returns (address initialAdmin, address processor);

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.23;
 
-import {InterchainFactory} from "../../src/factories/InterchainFactory.sol";
+import {InterchainFactory, IInterchainFactory} from "../../src/factories/InterchainFactory.sol";
 import {Create2} from "../../src/libs/Create2.sol";
 import {InterchainERC20} from "../../src/tokens/InterchainERC20.sol";
 import {AbstractProcessor, BurningProcessor} from "../../src/processors/BurningProcessor.sol";
@@ -43,6 +43,11 @@ contract InterchainFactoryTest is Test {
         deployerB = makeAddr("Deployer B");
     }
 
+    function checkInterchainTokenDeployParameters() internal {
+        vm.expectRevert(IInterchainFactory.InterchainFactory__NoActiveDeployment.selector);
+        factory.getInterchainTokenDeployParameters();
+    }
+
     function checkInterchainERC20Data(address deployed, InterchainERC20 identicalMock) internal {
         assertEq(InterchainERC20(deployed).name(), identicalMock.name());
         assertEq(InterchainERC20(deployed).symbol(), identicalMock.symbol());
@@ -69,6 +74,11 @@ contract InterchainFactoryTest is Test {
         );
         checkInterchainERC20Data(deployed, identicalMock);
         checkInterchainERC20Params(deployed, params);
+    }
+
+    function checkProcessorDeployParameters() internal {
+        vm.expectRevert(IInterchainFactory.InterchainFactory__NoActiveDeployment.selector);
+        factory.getProcessorDeployParameters();
     }
 
     function checkProcessor(address deployed, AbstractProcessor identicalMock) internal {
@@ -148,10 +158,12 @@ contract InterchainFactoryTest is Test {
     {
         require(params.processor == address(0), "Processor should be zero address in this test");
         address predicted = predictInterchainERC20StandaloneAddress(deployer, metadata);
+        checkInterchainTokenDeployParameters();
         vm.expectEmit(address(factory));
         emit InterchainTokenDeployed(predicted, address(0));
         deployStandalone(deployer, metadata, params.initialAdmin);
         checkInterchainERC20AgainstMock(predicted, metadata, params);
+        checkInterchainTokenDeployParameters();
     }
 
     function deployWithProcessorAndCheck(
@@ -166,6 +178,8 @@ contract InterchainFactoryTest is Test {
     {
         address predictedInterchainERC20 = predictInterchainERC20Address(deployer, underlyingToken);
         address predictedProcessor = predictProcessorAddress(deployer, underlyingToken, processorCreationCode);
+        checkInterchainTokenDeployParameters();
+        checkProcessorDeployParameters();
         vm.expectEmit(address(factory));
         emit InterchainTokenDeployed(predictedInterchainERC20, underlyingToken);
         vm.expectEmit(address(factory));
@@ -175,6 +189,8 @@ contract InterchainFactoryTest is Test {
             predictedInterchainERC20, interchainMetadata, InterchainTokenParams(initialAdmin, predictedProcessor)
         );
         checkProcessorAgainstMock(predictedProcessor, predictedInterchainERC20, underlyingToken, deployProcessorMock);
+        checkInterchainTokenDeployParameters();
+        checkProcessorDeployParameters();
     }
 
     // ═══════════════════════════════════════ TESTS: STANDALONE DEPLOYMENT ════════════════════════════════════════════
@@ -339,7 +355,6 @@ contract InterchainFactoryTest is Test {
             mockFactory.deployLockingProcessor
         );
     }
-
 
     function test_deployWithProcessor_sameUnderlying_sameProcessor_diffDeployer() public {
         MockERC20Decimals underlyingToken = new MockERC20Decimals("TokenA", "AAA", 10);
