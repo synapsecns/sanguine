@@ -477,38 +477,31 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 		return 0, fmt.Errorf("could not convert tx to call: %w", err)
 	}
 
-	// fetch the gas estimate
+	// load the gas estimator
+	var gasEstimator config.GasEstimator
 	switch config.GetGasEstimationMethod(t.config, chainID) {
 	case config.ArbitrumGasEstimation:
 		if t.arbitrumSDK == nil {
-			t.arbitrumSDK, err = arbitrum.NewArbitrumSDK(chainClient)
+			t.arbitrumSDK, err = arbitrum.NewArbitrumSDK(chainClient, arbitrum.WithMetrics(t.metrics))
 			if err != nil {
 				span.AddEvent("could not get arbitrum SDK", trace.WithAttributes(attribute.String("error", err.Error())))
 				// fallback to default
 				return t.config.GetGasEstimate(chainID), nil
 			}
 		}
-		// Call GetGasEstimateComponents so that we can trace both the l1 and l2 gas limit components.
-		gasEstimateForL2, gasEstimateForL1, _, _, err := t.arbitrumSDK.GetGasEstimateComponents(ctx, *call)
-		if err != nil {
-			span.AddEvent("could not get gas estimate components", trace.WithAttributes(attribute.String("error", err.Error())))
-			// fallback to default
-			return t.config.GetGasEstimate(chainID), nil
-		}
-		gasEstimate = gasEstimateForL2 + gasEstimateForL1
-		span.SetAttributes(
-			attribute.Int64("l1_gas_estimate", int64(gasEstimateForL1)),
-			attribute.Int64("l2_gas_estimate", int64(gasEstimateForL2)),
-		)
+		gasEstimator = t.arbitrumSDK
 	case config.GethGasEstimation:
-		gasEstimate, err = chainClient.EstimateGas(ctx, *call)
-		if err != nil {
-			span.AddEvent("could not estimate gas", trace.WithAttributes(attribute.String("error", err.Error())))
-			// fallback to default
-			return t.config.GetGasEstimate(chainID), nil
-		}
+		gasEstimator = chainClient
 	default:
 		return 0, fmt.Errorf("unknown gas estimation method")
+	}
+
+	// fetch the gas estimate
+	gasEstimate, err = gasEstimator.EstimateGas(ctx, *call)
+	if err != nil {
+		span.AddEvent("could not estimate gas", trace.WithAttributes(attribute.String("error", err.Error())))
+		// fallback to default
+		return t.config.GetGasEstimate(chainID), nil
 	}
 
 	return gasEstimate, nil
