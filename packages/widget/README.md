@@ -52,15 +52,26 @@ Your site should now display a fully operational bridge widget integrating the r
 
 The widget accepts a number of props to customize its functionality and appearance. Below is a quick summary with more detailed explanations later on.
 
-```
-web3Provider: Web3Provider. Required.
-customRpcs?: Custom JSON-RPC endpoints for your consumer application.
-customTheme?: Custom theme for the widget. If not provided, defaults to light theme.
-container?: HTML element to render the widget in. If not provided, false.
-targetChainIds?: List of chain IDs for the destination side of your consumer app. If not provided, defaults to all Synapse Protocol supported networks.
-targetTokens?: List of tokens to display in the widget. These tokens are imported from the widget package. If not provided, defaults to all Synapse Protocol supported tokens.
-protocolName?: A short name for users of the widget to identify the protocol. If not provided, defaults to 'Target'.
-```
+`web3Provider`
+Web3Provider. Required.
+
+`customRpcs`
+Custom JSON-RPC endpoints for your consumer application. Optional but recommended.
+
+`customTheme`
+Custom theme for the widget. Optional. If not provided, defaults to light theme.
+
+`container`
+HTML element to render the widget in. Optional. If not provided, false.
+
+`targetChainIds`
+List of chain IDs for the destination side of your consumer app. Optional. If not provided, defaults to all Synapse Protocol supported networks.
+
+`targetTokens`
+List of tokens to display in the widget. These tokens are imported from the widget package. Optional. If not provided, defaults to all Synapse Protocol supported tokens.
+
+`protocolName`
+A short name for users of the widget to identify the protocol. Optional. If not provided, defaults to 'Target'.
 
 - A list of `targetTokens` can be found [here](https://github.com/synapsecns/sanguine/blob/master/packages/widget/src/constants/bridgeable.ts)
 - A list of Synapse Protocol supported chains can be found [here](https://github.com/synapsecns/sanguine/blob/master/packages/widget/src/constants/chains.ts)

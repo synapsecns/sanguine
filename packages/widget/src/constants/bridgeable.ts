@@ -1,8 +1,9 @@
 import { ZeroAddress } from 'ethers'
+import { BridgeableToken } from 'types'
 
 import { CHAINS } from '@/constants/chains'
 
-export const GOHM = {
+export const GOHM: BridgeableToken = {
   addresses: {
     [CHAINS.ETHEREUM.id]: '0x0ab87046fBb341D058F17CBC4c1133F25a20a52f',
     [CHAINS.OPTIMISM.id]: '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB',
@@ -38,13 +39,12 @@ export const GOHM = {
   name: 'Olympus DAO',
   swapableType: 'OHM',
   color: 'gray',
-  visibilityRank: 40,
   priorityRank: 600,
   routeSymbol: 'gOHM',
   imgUrl: 'https://www.synapseprotocol.com/_next/static/media/ohm.1b779b45.svg',
 }
 
-export const LINK = {
+export const LINK: BridgeableToken = {
   addresses: {
     [CHAINS.ETHEREUM.id]: '0x514910771af9ca656af840dff83e8264ecf986ca',
     [CHAINS.KLAYTN.id]: '0xfbed1abb3ad0f8c467068de9fde905887e8c9118',
@@ -63,7 +63,7 @@ export const LINK = {
     'https://www.synapseprotocol.com/_next/static/media/link.8c8e30af.svg',
 }
 
-export const HIGH = {
+export const HIGH: BridgeableToken = {
   addresses: {
     [CHAINS.ETHEREUM.id]: '0x71Ab77b7dbB4fa7e017BC15090b2163221420282',
     [CHAINS.BNBCHAIN.id]: '0x5f4bde007dc06b867f86ebfe4802e34a1ffeed63',
@@ -79,7 +79,7 @@ export const HIGH = {
     'https://www.synapseprotocol.com/_next/static/media/highstreet.20cde417.svg',
 }
 
-export const JUMP = {
+export const JUMP: BridgeableToken = {
   addresses: {
     [CHAINS.BNBCHAIN.id]: '0x130025ee738a66e691e6a7a62381cb33c6d9ae83',
     [CHAINS.FANTOM.id]: '0x78DE9326792ce1d6eCA0c978753c6953Cdeedd73',
@@ -100,7 +100,7 @@ export const JUMP = {
     'https://www.synapseprotocol.com/_next/static/media/hyperjump.86548b6a.svg',
 }
 
-export const SFI = {
+export const SFI: BridgeableToken = {
   addresses: {
     [CHAINS.ETHEREUM.id]: '0xb753428af26e81097e7fd17f40c88aaa3e04902c',
     [CHAINS.AVALANCHE.id]: '0xc2Bf0A1f7D8Da50D608bc96CF701110d4A438312',
@@ -118,7 +118,7 @@ export const SFI = {
   imgUrl: 'https://www.synapseprotocol.com/_next/static/media/sfi.9dcb70d7.svg',
 }
 
-export const DOG = {
+export const DOG: BridgeableToken = {
   addresses: {
     [CHAINS.ETHEREUM.id]: '0xBAac2B4491727D78D2b78815144570b9f2Fe8899',
     [CHAINS.BNBCHAIN.id]: '0xaa88c603d142c371ea0eac8756123c5805edee03',
@@ -138,7 +138,7 @@ export const DOG = {
   imgUrl: 'https://www.synapseprotocol.com/_next/static/media/dog.79987f38.svg',
 }
 
-export const NFD = {
+export const NFD: BridgeableToken = {
   addresses: {
     [CHAINS.BNBCHAIN.id]: '0x0fe9778c005a5a6115cbe12b0568a2d50b765a51',
     [CHAINS.AVALANCHE.id]: '0xf1293574ee43950e7a8c9f1005ff097a9a713959',
@@ -160,7 +160,7 @@ export const NFD = {
   imgUrl: 'https://www.synapseprotocol.com/_next/static/media/nfd.3a66d09f.svg',
 }
 
-export const SOLAR = {
+export const SOLAR: BridgeableToken = {
   addresses: {
     [CHAINS.MOONBEAM.id]: '0x0DB6729C03C85B0708166cA92801BcB5CAc781fC',
     [CHAINS.MOONRIVER.id]: '0x76906411D07815491A5E577022757aD941fb5066',
@@ -179,7 +179,7 @@ export const SOLAR = {
     'https://www.synapseprotocol.com/_next/static/media/solar.61253893.svg',
 }
 
-export const GMX = {
+export const GMX: BridgeableToken = {
   addresses: {
     [CHAINS.ARBITRUM.id]: '0xfc5a1a6eb076a2c7ad06ed22c90d7e710e35ad0a',
     [CHAINS.AVALANCHE.id]: '0x62edc0692bd897d2295872a9ffcac5425011c661',
@@ -187,9 +187,6 @@ export const GMX = {
   decimals: {
     [CHAINS.ARBITRUM.id]: 18,
     [CHAINS.AVALANCHE.id]: 18,
-  },
-  wrapperAddresses: {
-    [CHAINS.AVALANCHE.id]: '0x20A9DC684B4d0407EF8C9A302BEAaA18ee15F656',
   },
   symbol: 'GMX',
   name: 'GMX',
@@ -200,7 +197,7 @@ export const GMX = {
   imgUrl: 'https://www.synapseprotocol.com/_next/static/media/gmx.43c7de79.svg',
 }
 
-export const SDT = {
+export const SDT: BridgeableToken = {
   addresses: {
     [CHAINS.ETHEREUM.id]: '0x73968b9a57c6e53d41345fd57a6e6ae27d6cdb2f',
     [CHAINS.AVALANCHE.id]: '0xCCBf7c451F81752F7d2237F2c18C371E6e089E69',
@@ -224,7 +221,7 @@ export const SDT = {
   imgUrl: 'https://www.synapseprotocol.com/_next/static/media/sdt.1a801afc.svg',
 }
 
-export const NEWO = {
+export const NEWO: BridgeableToken = {
   addresses: {
     [CHAINS.ETHEREUM.id]: '0x98585dFc8d9e7D48F0b1aE47ce33332CF4237D96',
     [CHAINS.AVALANCHE.id]: '0x4Bfc90322dD638F81F034517359BD447f8E0235a',
@@ -245,7 +242,7 @@ export const NEWO = {
     'https://www.synapseprotocol.com/_next/static/media/newo.ac5a1580.svg',
 }
 
-export const PEPE = {
+export const PEPE: BridgeableToken = {
   addresses: {
     [CHAINS.ETHEREUM.id]: '0x6982508145454ce325ddbe47a25d4ec3d2311933',
     [CHAINS.ARBITRUM.id]: '0xA54B8e178A49F8e5405A4d44Bb31F496e5564A05',
@@ -264,7 +261,7 @@ export const PEPE = {
     'https://www.synapseprotocol.com/_next/static/media/pepe.45f7866e.svg',
 }
 
-export const VSTA = {
+export const VSTA: BridgeableToken = {
   addresses: {
     [CHAINS.ETHEREUM.id]: '0xA8d7F5e7C78ed0Fa097Cc5Ec66C1DC3104c9bbeb',
     [CHAINS.ARBITRUM.id]: '0xa684cd057951541187f288294a1e1c2646aa2d24',
@@ -283,7 +280,7 @@ export const VSTA = {
     'https://www.synapseprotocol.com/_next/static/media/vsta.275764cf.svg',
 }
 
-export const H2O = {
+export const H2O: BridgeableToken = {
   addresses: {
     [CHAINS.ETHEREUM.id]: '0x0642026e7f0b6ccac5925b4e7fa61384250e1701',
     [CHAINS.ARBITRUM.id]: '0xD1c6f989e9552DB523aBAE2378227fBb059a3976',
@@ -313,7 +310,7 @@ export const H2O = {
   imgUrl: 'https://www.synapseprotocol.com/_next/static/media/h2o.05c699c4.svg',
 }
 
-export const L2DAO = {
+export const L2DAO: BridgeableToken = {
   addresses: {
     [CHAINS.ARBITRUM.id]: '0x2CaB3abfC1670D1a452dF502e216a66883cDf079',
     [CHAINS.OPTIMISM.id]: '0xd52f94DF742a6F4B4C8b033369fE13A41782Bf44',
@@ -332,7 +329,7 @@ export const L2DAO = {
     'https://www.synapseprotocol.com/_next/static/media/l2dao.690a213c.svg',
 }
 
-export const PLS = {
+export const PLS: BridgeableToken = {
   addresses: {
     [CHAINS.ARBITRUM.id]: '0x51318b7d00db7acc4026c88c3952b66278b6a67f',
     [CHAINS.OPTIMISM.id]: '0xD9eAA386cCD65F30b77FF175F6b52115FE454fD6',
@@ -350,7 +347,7 @@ export const PLS = {
   imgUrl: 'https://www.synapseprotocol.com/_next/static/media/pls.fd3feef0.svg',
 }
 
-export const AGEUR = {
+export const AGEUR: BridgeableToken = {
   addresses: {
     [CHAINS.ETHEREUM.id]: '0x1a7e4e63778B4f12a199C062f3eFdD288afCBce8',
     [CHAINS.ARBITRUM.id]: '0x16BFc5fe024980124bEf51d1D792dC539d1B5Bf0',
@@ -371,7 +368,7 @@ export const AGEUR = {
     'https://www.synapseprotocol.com/_next/static/media/ageur.e7387136.svg',
 }
 
-export const UNIDX = {
+export const UNIDX: BridgeableToken = {
   addresses: {
     [CHAINS.ETHEREUM.id]: '0xf0655dcee37e5c0b70fffd70d85f88f8edf0aff6',
     [CHAINS.ARBITRUM.id]: '0x5429706887FCb58a595677B73E9B0441C25d993D',
@@ -396,7 +393,7 @@ export const UNIDX = {
     'https://www.synapseprotocol.com/_next/static/media/unidex.7874478f.svg',
 }
 
-export const BUSD = {
+export const BUSD: BridgeableToken = {
   addresses: {
     [CHAINS.BNBCHAIN.id]: '0xe9e7cea3dedca5984780bafc599bd69add087d56',
     [CHAINS.DOGE.id]: '0x1555C68Be3b22cdcCa934Ae88Cb929Db40aB311d',
@@ -415,8 +412,7 @@ export const BUSD = {
     'https://www.synapseprotocol.com/_next/static/media/busd.1e106d53.svg',
 }
 
-export const USDC = {
-  visibilityRank: 101,
+export const USDC: BridgeableToken = {
   addresses: {
     [CHAINS.ETHEREUM.id]: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
     [CHAINS.OPTIMISM.id]: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
@@ -457,8 +453,7 @@ export const USDC = {
     'https://www.synapseprotocol.com/_next/static/media/usdc.f9b139bb.svg',
 }
 
-export const METISUSDC = {
-  visibilityRank: 101,
+export const METISUSDC: BridgeableToken = {
   addresses: {
     [CHAINS.METIS.id]: '0xEA32A96608495e54156Ae48931A7c20f0dcc1a21',
   },
@@ -475,7 +470,7 @@ export const METISUSDC = {
     'https://www.synapseprotocol.com/_next/static/media/usdc.f9b139bb.svg',
 }
 
-export const USDT = {
+export const USDT: BridgeableToken = {
   addresses: {
     [CHAINS.ETHEREUM.id]: '0xdac17f958d2ee523a2206206994597c13d831ec7',
     [CHAINS.OPTIMISM.id]: '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58',
@@ -504,14 +499,13 @@ export const USDT = {
   name: 'USD Tether',
   color: 'lime',
   swapableType: 'USD',
-  visibilityRank: 100,
   priorityRank: 100,
   routeSymbol: 'USDT',
   imgUrl:
     'https://www.synapseprotocol.com/_next/static/media/usdt.afa46e45.svg',
 }
 
-export const DAI = {
+export const DAI: BridgeableToken = {
   addresses: {
     [CHAINS.ETHEREUM.id]: '0x6b175474e89094c44da98b954eedeac495271d0f',
     [CHAINS.OPTIMISM.id]: '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1',
@@ -536,13 +530,12 @@ export const DAI = {
   name: 'Dai',
   swapableType: 'USD',
   color: 'yellow',
-  visibilityRank: 100,
   priorityRank: 100,
   routeSymbol: 'DAI',
   imgUrl: 'https://www.synapseprotocol.com/_next/static/media/dai.cba261f0.svg',
 }
 
-export const WBTC = {
+export const WBTC: BridgeableToken = {
   addresses: {
     [CHAINS.ETHEREUM.id]: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
     [CHAINS.KLAYTN.id]: '0xDCbacF3f7a069922E677912998c8d57423C37dfA',
@@ -563,7 +556,7 @@ export const WBTC = {
     'https://www.synapseprotocol.com/_next/static/media/wbtc.3b8846a2.svg',
 }
 
-export const WETHE = {
+export const WETHE: BridgeableToken = {
   addresses: {
     [CHAINS.AVALANCHE.id]: '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab',
   },
@@ -580,7 +573,7 @@ export const WETHE = {
     'https://www.synapseprotocol.com/_next/static/media/weth.490fe9a7.svg',
 }
 
-export const ONEETH = {
+export const ONEETH: BridgeableToken = {
   addresses: {
     [CHAINS.HARMONY.id]: '0x6983d1e6def3690c4d616b13597a09e6193ea013',
   },
@@ -597,7 +590,7 @@ export const ONEETH = {
     'https://www.synapseprotocol.com/_next/static/media/weth.490fe9a7.svg',
 }
 
-export const SYN = {
+export const SYN: BridgeableToken = {
   addresses: {
     [CHAINS.ETHEREUM.id]: '0x0f2d719407fdbeff09d87557abb7232601fd9f29',
     [CHAINS.BNBCHAIN.id]: '0xa4080f1778e69467e905b8d6f72f6e441f9e9484',
@@ -640,13 +633,12 @@ export const SYN = {
   name: 'Synapse',
   swapableType: 'SYN',
   color: 'purple',
-  visibilityRank: 90,
   priorityRank: 250,
   routeSymbol: 'SYN',
   imgUrl: 'https://www.synapseprotocol.com/_next/static/media/syn.605ac75e.svg',
 }
 
-export const FRAX = {
+export const FRAX: BridgeableToken = {
   addresses: {
     [CHAINS.ETHEREUM.id]: '0x853d955acef822db058eb8505911ed77f175b99e',
     [CHAINS.ARBITRUM.id]: '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F',
@@ -667,7 +659,7 @@ export const FRAX = {
     'https://www.synapseprotocol.com/_next/static/media/frax.70b0285e.svg',
 }
 
-export const SYNFRAX = {
+export const SYNFRAX: BridgeableToken = {
   addresses: {
     [CHAINS.FANTOM.id]: '0x1852F70512298d56e9c8FDd905e02581E04ddb2a',
     [CHAINS.MOONRIVER.id]: '0xE96AC70907ffF3Efee79f502C985A7A21Bce407d',
@@ -690,7 +682,7 @@ export const SYNFRAX = {
     'https://www.synapseprotocol.com/_next/static/media/frax.70b0285e.svg',
 }
 
-export const NUSD = {
+export const NUSD: BridgeableToken = {
   addresses: {
     [CHAINS.ETHEREUM.id]: '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F',
     [CHAINS.OPTIMISM.id]: '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00',
@@ -725,14 +717,13 @@ export const NUSD = {
   name: 'Synapse nUSD',
   swapableType: 'USD',
   color: 'purple',
-  visibilityRank: 50,
   priorityRank: 500,
   routeSymbol: 'nUSD',
   imgUrl:
     'https://www.synapseprotocol.com/_next/static/media/nusd.15c5a552.svg',
 }
 
-export const NOTE = {
+export const NOTE: BridgeableToken = {
   addresses: {
     [CHAINS.CANTO.id]: '0x4e71a2e537b7f9d9413d3991d37958c0b5e1e503',
   },
@@ -743,14 +734,13 @@ export const NOTE = {
   name: 'Canto Note',
   swapableType: 'USD',
   color: 'green',
-  visibilityRank: 90,
   priorityRank: 100,
   routeSymbol: 'NOTE',
   imgUrl:
     'https://www.synapseprotocol.com/_next/static/media/note.ace95530.svg',
 }
 
-export const NETH = {
+export const NETH: BridgeableToken = {
   addresses: {
     [CHAINS.OPTIMISM.id]: '0x809DC529f07651bD43A172e8dB6f4a7a0d771036',
     [CHAINS.FANTOM.id]: '0x67C10C397dD0Ba417329543c1a40eb48AAa7cd00',
@@ -777,14 +767,13 @@ export const NETH = {
   name: 'Synapse nETH',
   swapableType: 'ETH',
   color: 'purple',
-  visibilityRank: 50,
   priorityRank: 500,
   routeSymbol: 'nETH',
   imgUrl:
     'https://www.synapseprotocol.com/_next/static/media/neth.acb4a217.svg',
 }
 
-export const ETH = {
+export const ETH: BridgeableToken = {
   addresses: {
     [CHAINS.ETHEREUM.id]: ZeroAddress,
     [CHAINS.OPTIMISM.id]: ZeroAddress,
@@ -805,16 +794,14 @@ export const ETH = {
   },
   symbol: 'ETH',
   name: 'Ethereum',
-  isNative: true,
   swapableType: 'ETH',
   color: 'sky',
-  visibilityRank: 101,
   priorityRank: 150,
   routeSymbol: 'ETH',
   imgUrl: 'https://www.synapseprotocol.com/_next/static/media/eth.473b0c81.svg',
 }
 
-export const MOVR = {
+export const MOVR: BridgeableToken = {
   addresses: {
     [CHAINS.MOONBEAM.id]: '0x1d4C2a246311bB9f827F4C768e277FF5787B7D7E',
     [CHAINS.MOONRIVER.id]: ZeroAddress,
@@ -825,7 +812,6 @@ export const MOVR = {
   },
   symbol: 'MOVR',
   name: 'MOVR',
-  isNative: true,
   swapableType: 'MOVR',
   color: 'purple',
   priorityRank: 300,
@@ -834,7 +820,7 @@ export const MOVR = {
     'https://www.synapseprotocol.com/_next/static/media/movr.64e0ee09.svg',
 }
 
-export const AVAX = {
+export const AVAX: BridgeableToken = {
   addresses: {
     [CHAINS.MOONBEAM.id]: '0xA1f8890E39b4d8E33efe296D698fe42Fb5e59cC3',
     [CHAINS.KLAYTN.id]: '0xCd8fE44A29Db9159dB36f96570d7A4d91986f528',
@@ -851,17 +837,15 @@ export const AVAX = {
   },
   symbol: 'AVAX',
   name: 'AVAX',
-  isNative: true,
   swapableType: 'AVAX',
   color: 'red',
-  visibilityRank: 90,
   priorityRank: 300,
   routeSymbol: 'AVAX',
   imgUrl:
     'https://www.synapseprotocol.com/_next/static/media/avalanche.80034115.svg',
 }
 
-export const WMOVR = {
+export const WMOVR: BridgeableToken = {
   addresses: {
     [CHAINS.MOONRIVER.id]: '0x98878b06940ae243284ca214f92bb71a2b032b8a',
   },
@@ -878,7 +862,7 @@ export const WMOVR = {
     'https://www.synapseprotocol.com/_next/static/media/movr.64e0ee09.svg',
 }
 
-export const WAVAX = {
+export const WAVAX: BridgeableToken = {
   addresses: {
     [CHAINS.AVALANCHE.id]: '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7',
   },
@@ -889,14 +873,13 @@ export const WAVAX = {
   name: 'Wrapped AVAX',
   swapableType: 'AVAX',
   color: 'red',
-  visibilityRank: 90,
   priorityRank: 350,
   routeSymbol: 'WAVAX',
   imgUrl:
     'https://www.synapseprotocol.com/_next/static/media/avalanche.80034115.svg',
 }
 
-export const JEWEL = {
+export const JEWEL: BridgeableToken = {
   addresses: {
     [CHAINS.DFK.id]: ZeroAddress,
     [CHAINS.HARMONY.id]: '0x72cb10c6bfa5624dd07ef608027e366bd690048f',
@@ -912,7 +895,6 @@ export const JEWEL = {
   symbol: 'JEWEL',
   name: 'JEWEL',
   color: 'lime',
-  isNative: true,
   swapableType: 'JEWEL',
   priorityRank: 250,
   routeSymbol: 'JEWEL',
@@ -920,7 +902,7 @@ export const JEWEL = {
     'https://www.synapseprotocol.com/_next/static/media/jewel.5cde781b.svg',
 }
 
-export const WJEWEL = {
+export const WJEWEL: BridgeableToken = {
   addresses: {
     [CHAINS.DFK.id]: '0xCCb93dABD71c8Dad03Fc4CE5559dC3D89F67a260',
   },
@@ -937,7 +919,7 @@ export const WJEWEL = {
     'https://www.synapseprotocol.com/_next/static/media/jewel.5cde781b.svg',
 }
 
-export const SYNJEWEL = {
+export const SYNJEWEL: BridgeableToken = {
   addresses: {
     [CHAINS.HARMONY.id]: '0x28b42698Caf46B4B012CF38b6C75867E0762186D',
   },
@@ -954,7 +936,7 @@ export const SYNJEWEL = {
     'https://www.synapseprotocol.com/_next/static/media/jewel.5cde781b.svg',
 }
 
-export const XJEWEL = {
+export const XJEWEL: BridgeableToken = {
   addresses: {
     [CHAINS.DFK.id]: '0x77f2656d04E158f915bC22f07B779D94c1DC47Ff',
     [CHAINS.HARMONY.id]: '0xA9cE83507D872C5e1273E745aBcfDa849DAA654F',
@@ -973,7 +955,7 @@ export const XJEWEL = {
     'https://www.synapseprotocol.com/_next/static/media/jewel.5cde781b.svg',
 }
 
-export const USDCe = {
+export const USDCe: BridgeableToken = {
   addresses: {
     [CHAINS.OPTIMISM.id]: '0x7F5c764cBc14f9669B88837ca1490cCa17c31607',
     [CHAINS.AVALANCHE.id]: '0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664',
@@ -990,14 +972,13 @@ export const USDCe = {
   name: 'Bridged USDC',
   swapableType: 'USD',
   color: 'blue',
-  visibilityRank: 100,
   priorityRank: 125,
   routeSymbol: 'USDC.e',
   imgUrl:
     'https://www.synapseprotocol.com/_next/static/media/usdc.f9b139bb.svg',
 }
 
-export const USDTe = {
+export const USDTe: BridgeableToken = {
   addresses: {
     [CHAINS.AVALANCHE.id]: '0xc7198437980c041c805a1edcba50c1ce5db95118',
     [CHAINS.AURORA.id]: '0x4988a896b1227218e4A686fdE5EabdcAbd91571f',
@@ -1009,7 +990,6 @@ export const USDTe = {
   symbol: 'USDT.e',
   name: 'Bridged USDT',
   swapableType: 'USD',
-  visibilityRank: 100,
   color: 'green',
   priorityRank: 125,
   routeSymbol: 'USDT.e',
@@ -1017,7 +997,7 @@ export const USDTe = {
     'https://www.synapseprotocol.com/_next/static/media/usdt.afa46e45.svg',
 }
 
-export const SUSD = {
+export const SUSD: BridgeableToken = {
   addresses: {
     [CHAINS.OPTIMISM.id]: '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9',
   },
@@ -1028,14 +1008,13 @@ export const SUSD = {
   name: 'Synth sUSD',
   color: 'purple',
   swapableType: 'USD',
-  visibilityRank: 100,
   priorityRank: 200,
   routeSymbol: 'sUSD',
   imgUrl:
     'https://www.synapseprotocol.com/_next/static/media/susd.8d85059d.svg',
 }
 
-export const WSOHM = {
+export const WSOHM: BridgeableToken = {
   addresses: {
     [CHAINS.ETHEREUM.id]: '0xCa76543Cf381ebBB277bE79574059e32108e3E65',
     [CHAINS.ARBITRUM.id]: '0x30bD4e574a15994B35EF9C7a5bc29002F1224821',
@@ -1050,13 +1029,12 @@ export const WSOHM = {
   name: 'Wrapped sOHM',
   color: 'gray',
   swapableType: 'OHM',
-  visibilityRank: 40,
   priorityRank: 600,
   routeSymbol: 'wsOHM',
   imgUrl: 'https://www.synapseprotocol.com/_next/static/media/ohm.1b779b45.svg',
 }
 
-export const ONEDAI = {
+export const ONEDAI: BridgeableToken = {
   addresses: {
     [CHAINS.HARMONY.id]: '0xef977d2f931c1978db5f6747666fa1eacb0d0339',
   },
@@ -1067,14 +1045,12 @@ export const ONEDAI = {
   name: 'Harmony Dai Stablecoin',
   swapableType: 'USD',
   color: 'yellow',
-  visibilityRank: 100,
   priorityRank: 600,
   routeSymbol: '1DAI',
   imgUrl: 'https://www.synapseprotocol.com/_next/static/media/dai.cba261f0.svg',
 }
 
-export const ONEUSDC = {
-  visibilityRank: 101,
+export const ONEUSDC: BridgeableToken = {
   addresses: {
     [CHAINS.HARMONY.id]: '0x985458e523db3d53125813ed68c274899e9dfab4',
   },
@@ -1091,7 +1067,7 @@ export const ONEUSDC = {
     'https://www.synapseprotocol.com/_next/static/media/usdc.f9b139bb.svg',
 }
 
-export const ONEUSDT = {
+export const ONEUSDT: BridgeableToken = {
   addresses: {
     [CHAINS.HARMONY.id]: '0x3c2b8be99c50593081eaa2a724f0b8285f5aba8f',
   },
@@ -1102,14 +1078,13 @@ export const ONEUSDT = {
   name: 'Harmony USD Tether',
   color: 'lime',
   swapableType: 'USD',
-  visibilityRank: 100,
   priorityRank: 600,
   routeSymbol: '1USDT',
   imgUrl:
     'https://www.synapseprotocol.com/_next/static/media/usdt.afa46e45.svg',
 }
 
-export const BTCB = {
+export const BTCB: BridgeableToken = {
   addresses: {
     [CHAINS.KLAYTN.id]: '0xe82f87ba4E97b2796aA0Fa4eFB06e8f0d2EB4FE1',
     [CHAINS.AVALANCHE.id]: '0x152b9d0FdC40C096757F570A51E494bd4b943E50',
@@ -1129,7 +1104,7 @@ export const BTCB = {
   imgUrl: 'https://www.synapseprotocol.com/_next/static/media/btc.d0fcf0d2.svg',
 }
 
-export const DAIe = {
+export const DAIe: BridgeableToken = {
   addresses: {
     [CHAINS.AVALANCHE.id]: '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70',
   },
@@ -1140,13 +1115,12 @@ export const DAIe = {
   name: 'Dai.e Token',
   swapableType: 'USD',
   color: 'yellow',
-  visibilityRank: 100,
   priorityRank: 125,
   routeSymbol: 'DAI.e',
   imgUrl: 'https://www.synapseprotocol.com/_next/static/media/dai.cba261f0.svg',
 }
 
-export const KLAY = {
+export const KLAY: BridgeableToken = {
   addresses: {
     [CHAINS.KLAYTN.id]: ZeroAddress,
     [CHAINS.DFK.id]: '0x97855Ba65aa7ed2F65Ed832a776537268158B78a',
@@ -1157,7 +1131,6 @@ export const KLAY = {
   },
   symbol: 'KLAY',
   name: 'Klaytn',
-  isNative: true,
   swapableType: 'KLAY',
   color: 'red',
   priorityRank: 300,
@@ -1166,7 +1139,7 @@ export const KLAY = {
     'https://www.synapseprotocol.com/_next/static/media/klay.c4364dd3.svg',
 }
 
-export const WKLAY = {
+export const WKLAY: BridgeableToken = {
   addresses: {
     [CHAINS.KLAYTN.id]: '0x5819b6af194A78511c79C85Ea68D2377a7e9335f',
   },
@@ -1183,7 +1156,7 @@ export const WKLAY = {
     'https://www.synapseprotocol.com/_next/static/media/klay.c4364dd3.svg',
 }
 
-export const MATIC = {
+export const MATIC: BridgeableToken = {
   addresses: {
     [CHAINS.POLYGON.id]: ZeroAddress,
     [CHAINS.DFK.id]: '0xD17a41Cd199edF1093A9Be4404EaDe52Ec19698e',
@@ -1194,17 +1167,15 @@ export const MATIC = {
   },
   symbol: 'MATIC',
   name: 'MATIC',
-  isNative: true,
   swapableType: 'MATIC',
   color: 'blue',
-  visibilityRank: 90,
   priorityRank: 300,
   routeSymbol: 'MATIC',
   imgUrl:
     'https://www.synapseprotocol.com/_next/static/media/matic.30579a57.svg',
 }
 
-export const WMATIC = {
+export const WMATIC: BridgeableToken = {
   addresses: {
     [CHAINS.POLYGON.id]: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
   },
@@ -1215,14 +1186,13 @@ export const WMATIC = {
   name: 'WMATIC',
   swapableType: 'MATIC',
   color: 'blue',
-  visibilityRank: 90,
   priorityRank: 350,
   routeSymbol: 'WMATIC',
   imgUrl:
     'https://www.synapseprotocol.com/_next/static/media/matic.30579a57.svg',
 }
 
-export const FTM = {
+export const FTM: BridgeableToken = {
   addresses: {
     [CHAINS.FANTOM.id]: ZeroAddress,
     [CHAINS.DFK.id]: '0x2Df041186C844F8a2e2b63F16145Bc6Ff7d23E25',
@@ -1240,7 +1210,7 @@ export const FTM = {
   imgUrl: 'https://www.synapseprotocol.com/_next/static/media/ftm.d3ad16e9.svg',
 }
 
-export const WFTM = {
+export const WFTM: BridgeableToken = {
   addresses: {
     [CHAINS.FANTOM.id]: '0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83',
   },
@@ -1256,7 +1226,7 @@ export const WFTM = {
   imgUrl: 'https://www.synapseprotocol.com/_next/static/media/ftm.d3ad16e9.svg',
 }
 
-export const WETH = {
+export const WETH: BridgeableToken = {
   addresses: {
     [CHAINS.ETHEREUM.id]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
     [CHAINS.OPTIMISM.id]: '0x121ab82b49B2BC4c7901CA46B8277962b4350204',
@@ -1289,8 +1259,7 @@ export const WETH = {
     'https://www.synapseprotocol.com/_next/static/media/weth.490fe9a7.svg',
 }
 
-export const CRVUSD = {
-  visibilityRank: 101,
+export const CRVUSD: BridgeableToken = {
   addresses: {
     [CHAINS.ETHEREUM.id]: '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E',
     [CHAINS.BASE.id]: '0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93',
@@ -1310,8 +1279,7 @@ export const CRVUSD = {
     'https://www.synapseprotocol.com/_next/static/media/crvusd.6da73801.svg',
 }
 
-export const LUSD = {
-  visibilityRank: 101,
+export const LUSD: BridgeableToken = {
   addresses: {
     [CHAINS.ETHEREUM.id]: '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0',
   },
@@ -1328,8 +1296,7 @@ export const LUSD = {
     'https://www.synapseprotocol.com/_next/static/media/lusd.1d09460e.svg',
 }
 
-export const USDBC = {
-  visibilityRank: 101,
+export const USDBC: BridgeableToken = {
   addresses: {
     [CHAINS.BASE.id]: '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA',
   },
