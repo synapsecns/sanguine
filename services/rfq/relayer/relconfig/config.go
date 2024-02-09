@@ -77,6 +77,8 @@ type ChainConfig struct {
 	QuoteOffsetBps float64 `yaml:"quote_offset_bps"`
 	// FixedFeeMultiplier is the multiplier for the fixed fee.
 	FixedFeeMultiplier float64 `yaml:"fixed_fee_multiplier"`
+	// DynamicGasEstimate is whether to use dynamic gas estimates.
+	DynamicGasEstimate bool `yaml:"dynamic_gas_estimate"`
 }
 
 // TokenConfig represents the configuration for a token.

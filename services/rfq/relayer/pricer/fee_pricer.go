@@ -7,9 +7,12 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/ethereum/go-ethereum"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/ethergo/sdks/arbitrum"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
+	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -43,6 +46,8 @@ type feePricer struct {
 	handler metrics.Handler
 	// priceFetcher is used to fetch prices from coingecko.
 	priceFetcher CoingeckoPriceFetcher
+	// arbitrumSDK is the SDK for interacting with Arbitrum.
+	arbitrumSDK arbitrum.SDK
 }
 
 // NewFeePricer creates a new fee pricer.
@@ -320,4 +325,49 @@ func (f *feePricer) getTokenPriceFromConfig(token string) (float64, error) {
 		}
 	}
 	return 0, fmt.Errorf("could not get price for token: %s", token)
+}
+
+func (f *feePricer) getGasEstimateFromClient(parentCtx context.Context, chainID uint32, call *ethereum.CallMsg) (gasEstimate uint64, err error) {
+	ctx, span := f.handler.Tracer().Start(parentCtx, "getGasEstimateFromClient", trace.WithAttributes(
+		attribute.Int(metrics.ChainID, int(chainID)),
+	))
+
+	defer func() {
+		span.AddEvent("estimated_gas", trace.WithAttributes(attribute.Int64("gas", int64(gasEstimate))))
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	chainClient, err := f.clientFetcher.GetClient(ctx, big.NewInt(int64(chainID)))
+	if err != nil {
+		return 0, fmt.Errorf("could not get client: %w", err)
+	}
+
+	// fetch the gas estimate
+	switch submitterConfig.GetGasEstimationMethod(&f.config.SubmitterConfig, int(chainID)) {
+	case submitterConfig.ArbitrumGasEstimation:
+		if f.arbitrumSDK == nil {
+			f.arbitrumSDK, err = arbitrum.NewArbitrumSDK(chainClient)
+			if err != nil {
+				return 0, fmt.Errorf("could not get arbitrum SDK: %w", err)
+			}
+		}
+		// Call GetGasEstimateComponents so that we can trace both the l1 and l2 gas limit components.
+		gasEstimateForL2, gasEstimateForL1, _, _, err := f.arbitrumSDK.GetGasEstimateComponents(ctx, *call)
+		if err != nil {
+			return 0, fmt.Errorf("could not get gas estimate components: %w", err)
+		}
+		gasEstimate = gasEstimateForL2 + gasEstimateForL1
+		span.SetAttributes(
+			attribute.Int64("l1_gas_estimate", int64(gasEstimateForL1)),
+			attribute.Int64("l2_gas_estimate", int64(gasEstimateForL2)),
+		)
+	case submitterConfig.GethGasEstimation:
+		gasEstimate, err = chainClient.EstimateGas(ctx, *call)
+		if err != nil {
+			return 0, fmt.Errorf("could not estimate gas: %w", err)
+		}
+	default:
+		return 0, fmt.Errorf("unknown gas estimation method")
+	}
+	return gasEstimate, nil
 }
