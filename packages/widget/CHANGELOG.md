@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.0.50](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.0.49...@synapsecns/widget@0.0.50) (2024-02-09)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
 ## [0.0.49](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.0.48...@synapsecns/widget@0.0.49) (2024-02-09)
 
 **Note:** Version bump only for package @synapsecns/widget
