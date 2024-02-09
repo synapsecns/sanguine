@@ -478,9 +478,9 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 	}
 
 	// load the gas estimator
-	var gasEstimator config.GasEstimator
-	switch config.GetGasEstimationMethod(t.config, chainID) {
-	case config.ArbitrumGasEstimation:
+	var gasEstimator GasEstimator
+	switch GetGasEstimationMethod(t.config, chainID) {
+	case ArbitrumGasEstimation:
 		if t.arbitrumSDK == nil {
 			t.arbitrumSDK, err = arbitrum.NewArbitrumSDK(chainClient, arbitrum.WithMetrics(t.metrics))
 			if err != nil {
@@ -490,7 +490,7 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 			}
 		}
 		gasEstimator = t.arbitrumSDK
-	case config.GethGasEstimation:
+	case GethGasEstimation:
 		gasEstimator = chainClient
 	default:
 		return 0, fmt.Errorf("unknown gas estimation method")

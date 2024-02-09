@@ -12,7 +12,6 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/sdks/arbitrum"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
-	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -342,32 +341,27 @@ func (f *feePricer) getGasEstimateFromClient(parentCtx context.Context, chainID 
 		return 0, fmt.Errorf("could not get client: %w", err)
 	}
 
-	// fetch the gas estimate
-	switch submitterConfig.GetGasEstimationMethod(&f.config.SubmitterConfig, int(chainID)) {
-	case submitterConfig.ArbitrumGasEstimation:
+	// load the gas estimator
+	var gasEstimator submitter.GasEstimator
+	switch submitter.GetGasEstimationMethod(&f.config.SubmitterConfig, int(chainID)) {
+	case submitter.ArbitrumGasEstimation:
 		if f.arbitrumSDK == nil {
-			f.arbitrumSDK, err = arbitrum.NewArbitrumSDK(chainClient)
+			f.arbitrumSDK, err = arbitrum.NewArbitrumSDK(chainClient, arbitrum.WithMetrics(f.handler))
 			if err != nil {
 				return 0, fmt.Errorf("could not get arbitrum SDK: %w", err)
 			}
 		}
-		// Call GetGasEstimateComponents so that we can trace both the l1 and l2 gas limit components.
-		gasEstimateForL2, gasEstimateForL1, _, _, err := f.arbitrumSDK.GetGasEstimateComponents(ctx, *call)
-		if err != nil {
-			return 0, fmt.Errorf("could not get gas estimate components: %w", err)
-		}
-		gasEstimate = gasEstimateForL2 + gasEstimateForL1
-		span.SetAttributes(
-			attribute.Int64("l1_gas_estimate", int64(gasEstimateForL1)),
-			attribute.Int64("l2_gas_estimate", int64(gasEstimateForL2)),
-		)
-	case submitterConfig.GethGasEstimation:
-		gasEstimate, err = chainClient.EstimateGas(ctx, *call)
-		if err != nil {
-			return 0, fmt.Errorf("could not estimate gas: %w", err)
-		}
+		gasEstimator = f.arbitrumSDK
+	case submitter.GethGasEstimation:
+		gasEstimator = chainClient
 	default:
 		return 0, fmt.Errorf("unknown gas estimation method")
+	}
+
+	// fetch the gas estimate
+	gasEstimate, err = gasEstimator.EstimateGas(ctx, *call)
+	if err != nil {
+		return 0, fmt.Errorf("could not estimate gas: %w", err)
 	}
 	return gasEstimate, nil
 }

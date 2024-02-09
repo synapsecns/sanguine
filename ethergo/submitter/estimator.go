@@ -1,10 +1,16 @@
-package config
+package submitter
 
 import (
 	"context"
 
 	"github.com/ethereum/go-ethereum"
+	"github.com/synapsecns/sanguine/ethergo/submitter/config"
 )
+
+// GasEstimator is an interface for estimating gas.
+type GasEstimator interface {
+	EstimateGas(ctx context.Context, call ethereum.CallMsg) (gas uint64, err error)
+}
 
 // GasEstimationMethod is the method to use for gas estimation.
 type GasEstimationMethod int
@@ -34,14 +40,9 @@ func isArbitrumChain(chainID int) bool {
 }
 
 // GetGasEstimationMethod returns the gas estimation method to use for the chain.
-func GetGasEstimationMethod(cfg IConfig, chainID int) GasEstimationMethod {
+func GetGasEstimationMethod(cfg config.IConfig, chainID int) GasEstimationMethod {
 	if cfg.NativeGasEstimation(chainID) && isArbitrumChain(chainID) {
 		return ArbitrumGasEstimation
 	}
 	return GethGasEstimation
-}
-
-// GasEstimator is an interface for estimating gas.
-type GasEstimator interface {
-	EstimateGas(ctx context.Context, call ethereum.CallMsg) (gas uint64, err error)
 }
