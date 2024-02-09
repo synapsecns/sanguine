@@ -91,7 +91,7 @@ const consumerExamples = {
       '--synapse-button-text': 'hsl(45deg 100% 92.5%)',
     },
     targetTokens: [ETH, USDC, JEWEL, XJEWEL, WJEWEL],
-    targetChainIds: [53935, 43114],
+    targetChainIds: [53935, 43114, 8217],
     protocolName: 'DFK',
   },
 }
