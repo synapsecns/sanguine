@@ -8,10 +8,13 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/sdks/arbitrum"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
+	"github.com/synapsecns/sanguine/ethergo/util"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -47,6 +50,8 @@ type feePricer struct {
 	priceFetcher CoingeckoPriceFetcher
 	// arbitrumSDK is the SDK for interacting with Arbitrum.
 	arbitrumSDK arbitrum.SDK
+	// bridges is a map of chain ID -> bridge contract (used for gas estimation).
+	bridges map[uint32]*fastbridge.FastBridgeRef
 }
 
 // NewFeePricer creates a new fee pricer.
@@ -59,6 +64,10 @@ func NewFeePricer(config relconfig.Config, clientFetcher submitter.ClientFetcher
 		ttlcache.WithTTL[string, float64](time.Second*time.Duration(config.GetFeePricer().TokenPriceCacheTTLSeconds)),
 		ttlcache.WithDisableTouchOnHit[string, float64](),
 	)
+	bridges := map[uint32]*fastbridge.FastBridgeRef{}
+	for chainID, chainConfig := range config.Chains {
+		bridges[uint32(chainID)], _ = fastbridge.NewFastBridgeRef(common.HexToAddress(chainConfig.Bridge), nil)
+	}
 	return &feePricer{
 		config:          config,
 		gasPriceCache:   gasPriceCache,
@@ -66,6 +75,7 @@ func NewFeePricer(config relconfig.Config, clientFetcher submitter.ClientFetcher
 		clientFetcher:   clientFetcher,
 		handler:         handler,
 		priceFetcher:    priceFetcher,
+		bridges:         bridges,
 	}
 }
 
@@ -340,10 +350,43 @@ func (f *feePricer) getGasEstimate(parentCtx context.Context, chainID uint32, is
 	}
 	if dynamic {
 		calls := []*ethereum.CallMsg{}
+		bridge, ok := f.bridges[chainID]
+		if !ok {
+			return 0, fmt.Errorf("could not get bridge for chain: %d", chainID)
+		}
 		if isOrigin {
-			// load an example claim + prove calls
+			// get an example claim call
+			tx, err := bridge.Claim(nil, []byte{}, common.HexToAddress(""))
+			if err != nil {
+				return 0, fmt.Errorf("could not get claim tx: %w", err)
+			}
+			call, err := util.TxToCall(tx)
+			if err != nil || call == nil {
+				return 0, fmt.Errorf("could not convert tx to call: %w", err)
+			}
+			calls = append(calls, call)
+
+			// get an example prove call
+			tx, err = bridge.Prove(nil, []byte{}, [32]byte{})
+			if err != nil {
+				return 0, fmt.Errorf("could not get claim tx: %w", err)
+			}
+			call, err = util.TxToCall(tx)
+			if err != nil || call == nil {
+				return 0, fmt.Errorf("could not convert tx to call: %w", err)
+			}
+			calls = append(calls, call)
 		} else {
-			// load an example relay call
+			// get an example relay call
+			tx, err := bridge.Relay(nil, []byte{})
+			if err != nil {
+				return 0, fmt.Errorf("could not get claim tx: %w", err)
+			}
+			call, err := util.TxToCall(tx)
+			if err != nil || call == nil {
+				return 0, fmt.Errorf("could not convert tx to call: %w", err)
+			}
+			calls = append(calls, call)
 		}
 		gasEstimate, err = f.getGasEstimateFromClient(ctx, chainID, calls)
 		if err != nil {
