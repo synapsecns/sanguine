@@ -2,6 +2,7 @@ package arbitrum
 
 import (
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/sdks/arbitrum/internal"
 )
 
@@ -12,6 +13,8 @@ type arbitrumOptions struct {
 	// nodeInterfaceAddress is the address of the NodeInterface contract.
 	// it is said to be the same on all arbitrum-like l2 chains.
 	nodeInterfaceAddress common.Address
+	// metrics is the metrics handler.
+	metrics metrics.Handler
 }
 
 func defaultOptions() *arbitrumOptions {
@@ -19,6 +22,7 @@ func defaultOptions() *arbitrumOptions {
 		// see: https://github.com/OffchainLabs/arbitrum-token-bridge/blob/75915c94e58aaf7bf59fb833a0a1b3be1ae461ec/packages/arb-token-bridge-ui/scripts/generateDenylist.ts#L63 and https://github.com/Tenderly/nitro/blob/master/go-ethereum/core/types/arbitrum_signer.go#L12
 		gasInfoAddress:       internal.GetGasInfoAddress(),
 		nodeInterfaceAddress: internal.GetNodeInterfaceAddress(),
+		metrics:              metrics.NewNullHandler(),
 	}
 }
 
@@ -36,5 +40,12 @@ func WithGasInfoAddress(address common.Address) Option {
 func WithNodeInterfaceAddress(address common.Address) Option {
 	return func(o *arbitrumOptions) {
 		o.nodeInterfaceAddress = address
+	}
+}
+
+// WithMetrics sets the node interface address.
+func WithMetrics(metrics metrics.Handler) Option {
+	return func(o *arbitrumOptions) {
+		o.metrics = metrics
 	}
 }

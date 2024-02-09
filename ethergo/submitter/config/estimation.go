@@ -1,5 +1,11 @@
 package config
 
+import (
+	"context"
+
+	"github.com/ethereum/go-ethereum"
+)
+
 // GasEstimationMethod is the method to use for gas estimation.
 type GasEstimationMethod int
 
@@ -33,4 +39,9 @@ func GetGasEstimationMethod(cfg IConfig, chainID int) GasEstimationMethod {
 		return ArbitrumGasEstimation
 	}
 	return GethGasEstimation
+}
+
+// GasEstimator is an interface for estimating gas.
+type GasEstimator interface {
+	EstimateGas(ctx context.Context, call ethereum.CallMsg) (gas uint64, err error)
 }

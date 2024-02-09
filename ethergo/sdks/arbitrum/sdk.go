@@ -4,25 +4,27 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math/big"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/sdks/arbitrum/contracts/arbgasinfo"
 	"github.com/synapsecns/sanguine/ethergo/sdks/arbitrum/contracts/nodeinterface"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // SDK is an interface for interacting with the Arbitrum SDK.
 type SDK interface {
 	EstimateGas(ctx context.Context, call ethereum.CallMsg) (gas uint64, err error)
-	GetGasEstimateComponents(ctx context.Context, call ethereum.CallMsg) (gasEstimate uint64, gasEstimateForL1 uint64, baseFee *big.Int, l1BaseFeeEsimate *big.Int, err error)
 }
 
 type arbitrumSDKImpl struct {
 	client        bind.ContractBackend
 	nodeInterface nodeinterface.INodeInterface
 	gasInfo       arbgasinfo.IArbGasInfo
+	metrics       metrics.Handler
 }
 
 // NewArbitrumSDK creates a new SDK.
@@ -46,26 +48,25 @@ func NewArbitrumSDK(client bind.ContractBackend, options ...Option) (SDK, error)
 		client:        client,
 		nodeInterface: nodeInterface,
 		gasInfo:       gasInfo,
+		metrics:       opts.metrics,
 	}, nil
 }
 
-func (a *arbitrumSDKImpl) EstimateGas(ctx context.Context, call ethereum.CallMsg) (uint64, error) {
-	if call.To == nil {
-		return 0, errors.New("call.To cannot be nil")
-	}
-	gasEstimate, gasEstimateForL1, _, _, err := a.GetGasEstimateComponents(ctx, call)
-	if err != nil {
-		return 0, fmt.Errorf("failed to get gas estimate components: %w", err)
-	}
-	return gasEstimate + gasEstimateForL1, nil
-}
+func (a *arbitrumSDKImpl) EstimateGas(parentCtx context.Context, call ethereum.CallMsg) (gasEstimate uint64, err error) {
+	ctx, span := a.metrics.Tracer().Start(parentCtx, "EstimateGas", trace.WithAttributes(
+		attribute.Stringer("from", call.From),
+	))
+	defer func() {
+		span.SetAttributes(attribute.String("error", err.Error()))
+		metrics.EndSpanWithErr(span, err)
+	}()
 
-func (a *arbitrumSDKImpl) GetGasEstimateComponents(ctx context.Context, call ethereum.CallMsg) (gasEstimate uint64, gasEstimateForL1 uint64, baseFee *big.Int, l1BaseFeeEsimate *big.Int, err error) {
 	if call.To == nil {
-		return gasEstimate, gasEstimateForL1, baseFee, l1BaseFeeEsimate, errors.New("call.To cannot be nil")
+		err = errors.New("call.To cannot be nil")
+		return 0, err
 	}
 	// TODO: maybe need to copy the logic that sets the gasprice if it's empty?
-	gasEstimate, gasEstimateForL1, baseFee, l1BaseFeeEsimate, err = a.nodeInterface.GetGasEstimateComponents(&bind.TransactOpts{
+	gasEstimateForL2, gasEstimateForL1, _, _, err := a.nodeInterface.GetGasEstimateComponents(&bind.TransactOpts{
 		Context: ctx,
 		From:    call.From,
 		// note: this is ignored
@@ -76,9 +77,16 @@ func (a *arbitrumSDKImpl) GetGasEstimateComponents(ctx context.Context, call eth
 		Value:     core.CopyBigInt(call.Value),
 	}, *call.To, false, call.Data)
 	if err != nil {
-		return gasEstimate, gasEstimateForL1, baseFee, l1BaseFeeEsimate, fmt.Errorf("failed to get gas estimate components: %w", err)
+		err = fmt.Errorf("failed to get gas estimate components: %w", err)
+		return 0, err
 	}
-	return gasEstimate, gasEstimateForL1, baseFee, l1BaseFeeEsimate, nil
+	span.SetAttributes(
+		attribute.Int64("gasEstimate", int64(gasEstimate)),
+		attribute.Int64("gasEstimateForL1", int64(gasEstimateForL1)),
+		attribute.Int64("gasEstimateForL2", int64(gasEstimateForL2)),
+	)
+	gasEstimate = gasEstimateForL2 + gasEstimateForL1
+	return gasEstimate, nil
 }
 
 // This is a type assertion used to make sure the arbitrum sdk matches the standard contracttransactor interface
