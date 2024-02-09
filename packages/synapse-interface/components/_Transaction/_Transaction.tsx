@@ -105,7 +105,6 @@ export const _Transaction = ({
     >
       <div className="flex items-center">
         <TransactionPayloadDetail
-          // chain={originChain}
           token={originToken}
           tokenAmount={originValue}
           isOrigin={true}
@@ -119,7 +118,6 @@ export const _Transaction = ({
           isOrigin={false}
           className="p-1.5"
         />
-        {/* TODO: QA visual format */}
         <div className="flex items-center justify-end gap-2 mr-1 grow">
           <DropdownMenu
             menuTitleElement={
@@ -134,8 +132,8 @@ export const _Transaction = ({
             <div className="p-2 mt-1 text-xs cursor-default text-zinc-300">
               Began{' '}
               {new Date(timestamp * 1000).toLocaleString('en-US', {
-                // month: 'short',
-                // day: 'numeric',
+                month: 'short',
+                day: 'numeric',
                 hour: '2-digit',
                 minute: '2-digit',
                 hour12: true,

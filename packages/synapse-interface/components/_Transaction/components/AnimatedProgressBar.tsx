@@ -43,20 +43,11 @@ export const AnimatedProgressBar = memo(
         className="rounded-sm"
       >
         <defs>
-          <linearGradient
-            id={progressId}
-            spreadMethod="reflect"
-            x1="0"
-            x2="1"
-          >
-            <stop stop-color={synapsePurple} />
-            <stop stop-color={synapsePurple} offset=".25" />
-            <stop
-              stop-color={synapsePurple}
-              stop-opacity=".67"
-              offset=".75"
-            />
-            <stop stop-color={synapsePurple} stop-opacity=".67" offset="1" />
+          <linearGradient id={progressId} spreadMethod="reflect" x1="0" x2="1">
+            <stop stopColor={synapsePurple} />
+            <stop stopColor={synapsePurple} offset=".25" />
+            <stop stopColor={synapsePurple} stopOpacity=".67" offset=".75" />
+            <stop stopColor={synapsePurple} stopOpacity=".67" offset="1" />
             <animate
               attributeName="x1"
               values="0%; -6%"
@@ -87,14 +78,12 @@ export const AnimatedProgressBar = memo(
           width="100%"
           height={height}
           fill={`url(#${progressId})`}
-          clip-path={`url(#${maskId})`}
+          clipPath={`url(#${maskId})`}
         >
           {isComplete && (
             <animate
               attributeName="fill"
-              values={
-                `${synapsePurple}; hsl(185deg 100% 40%); ${tailwindGreen400}`
-              }
+              values={`${synapsePurple}; hsl(185deg 100% 40%); ${tailwindGreen400}`}
               keyTimes="0; .5; 1"
               dur={duration}
               fill="freeze"
