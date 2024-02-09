@@ -12,6 +12,7 @@ import (
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/sdks/arbitrum"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
@@ -49,12 +50,15 @@ type feePricer struct {
 	priceFetcher CoingeckoPriceFetcher
 	// arbitrumSDK is the SDK for interacting with Arbitrum.
 	arbitrumSDK arbitrum.SDK
+	// feeSigner is a signer used for gas estimation.
+	feeSigner signer.Signer
 	// bridges is a map of chain ID -> bridge contract (used for gas estimation).
 	bridges map[uint32]*fastbridge.FastBridgeRef
 }
 
 // NewFeePricer creates a new fee pricer.
-func NewFeePricer(config relconfig.Config, clientFetcher submitter.ClientFetcher, priceFetcher CoingeckoPriceFetcher, handler metrics.Handler) FeePricer {
+func NewFeePricer(ctx context.Context, config relconfig.Config, clientFetcher submitter.ClientFetcher, priceFetcher CoingeckoPriceFetcher, feeSigner signer.Signer, handler metrics.Handler) FeePricer {
+	// setup caches
 	gasPriceCache := ttlcache.New[uint32, *big.Int](
 		ttlcache.WithTTL[uint32, *big.Int](time.Second*time.Duration(config.GetFeePricer().GasPriceCacheTTLSeconds)),
 		ttlcache.WithDisableTouchOnHit[uint32, *big.Int](),
@@ -63,10 +67,14 @@ func NewFeePricer(config relconfig.Config, clientFetcher submitter.ClientFetcher
 		ttlcache.WithTTL[string, float64](time.Second*time.Duration(config.GetFeePricer().TokenPriceCacheTTLSeconds)),
 		ttlcache.WithDisableTouchOnHit[string, float64](),
 	)
+
+	// setup contracts for dynamic gas estimates
 	bridges := map[uint32]*fastbridge.FastBridgeRef{}
 	for chainID, chainConfig := range config.Chains {
-		bridges[uint32(chainID)], _ = fastbridge.NewFastBridgeRef(common.HexToAddress(chainConfig.Bridge), nil)
+		client, _ := clientFetcher.GetClient(ctx, big.NewInt(int64(chainID)))
+		bridges[uint32(chainID)], _ = fastbridge.NewFastBridgeRef(common.HexToAddress(chainConfig.Bridge), client)
 	}
+
 	return &feePricer{
 		config:          config,
 		gasPriceCache:   gasPriceCache,
@@ -74,6 +82,7 @@ func NewFeePricer(config relconfig.Config, clientFetcher submitter.ClientFetcher
 		clientFetcher:   clientFetcher,
 		handler:         handler,
 		priceFetcher:    priceFetcher,
+		feeSigner:       feeSigner,
 		bridges:         bridges,
 	}
 }
@@ -81,7 +90,7 @@ func NewFeePricer(config relconfig.Config, clientFetcher submitter.ClientFetcher
 func (f *feePricer) Start(ctx context.Context) {
 	g, _ := errgroup.WithContext(ctx)
 
-	// Start the TTL caches.
+	// start the TTL caches
 	g.Go(func() error {
 		f.gasPriceCache.Start()
 		return nil
@@ -353,24 +362,28 @@ func (f *feePricer) getGasEstimate(parentCtx context.Context, chainID uint32, is
 		if !ok {
 			return 0, fmt.Errorf("could not get bridge for chain: %d", chainID)
 		}
+		transactor, err := f.feeSigner.GetTransactor(ctx, big.NewInt(int64(chainID)))
+		if err != nil {
+			return 0, fmt.Errorf("could not get transactor: %w", err)
+		}
 		var call *ethereum.CallMsg
 		if isOrigin {
 			// get claim call
-			call, err = getCall(bridge, claimCallType)
+			call, err = getCall(transactor, bridge, claimCallType)
 			if err != nil {
 				return 0, fmt.Errorf("could not get claim call: %w", err)
 			}
 			calls = append(calls, call)
 
 			// get prove call
-			call, err = getCall(bridge, proveCallType)
+			call, err = getCall(transactor, bridge, proveCallType)
 			if err != nil {
 				return 0, fmt.Errorf("could not get claim call: %w", err)
 			}
 			calls = append(calls, call)
 		} else {
 			// get relay call
-			call, err = getCall(bridge, proveCallType)
+			call, err = getCall(transactor, bridge, proveCallType)
 			if err != nil {
 				return 0, fmt.Errorf("could not get claim call: %w", err)
 			}

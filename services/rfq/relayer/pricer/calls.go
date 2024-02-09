@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/ethergo/util"
@@ -33,15 +34,15 @@ func (c callType) String() string {
 	return ""
 }
 
-func getCall(bridge *fastbridge.FastBridgeRef, cType callType) (call *ethereum.CallMsg, err error) {
+func getCall(transactor *bind.TransactOpts, bridge *fastbridge.FastBridgeRef, cType callType) (call *ethereum.CallMsg, err error) {
 	var tx *types.Transaction
 	switch cType {
 	case claimCallType:
-		tx, err = bridge.Claim(nil, []byte{}, common.HexToAddress(""))
+		tx, err = bridge.Claim(transactor, []byte{}, common.HexToAddress(""))
 	case proveCallType:
-		tx, err = bridge.Prove(nil, []byte{}, [32]byte{})
+		tx, err = bridge.Prove(transactor, []byte{}, [32]byte{})
 	case relayCallType:
-		tx, err = bridge.Relay(nil, []byte{})
+		tx, err = bridge.Relay(transactor, []byte{})
 	default:
 		return nil, fmt.Errorf("unknown call type: %d", cType)
 	}
