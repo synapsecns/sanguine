@@ -125,7 +125,7 @@ export const BridgeButton = ({
         >
           <button
             disabled={isApprovalPending}
-            onClick={!isApprovalPending && handleApprove}
+            onClick={!isApprovalPending ? handleApprove : () => null}
             className={buttonClassName}
             style={buttonStyle}
           >

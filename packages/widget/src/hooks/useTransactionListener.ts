@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import { useEffect } from 'react'
 
 import { useAppDispatch } from '@/state/hooks'
@@ -18,13 +19,17 @@ export const useTransactionListener = () => {
     estimatedTime,
     timestamp,
   } = useBridgeTransactionState()
-  const transactions = useTransactionsState()
+  const { transactions } = useTransactionsState()
 
   /** Add transaction if not in transactions store */
   useEffect(() => {
     if (isNull(txHash)) return
 
-    if (!transactions[txHash]) {
+    const transaction =
+      _.isArray(transactions) &&
+      transactions?.find((t) => t.originTxHash === txHash)
+
+    if (!transaction) {
       dispatch(
         addTransaction({
           originAmount,
