@@ -52,15 +52,26 @@ Your site should now display a fully operational bridge widget integrating the r
 
 The widget accepts a number of props to customize its functionality and appearance. Below is a quick summary with more detailed explanations later on.
 
-```
-web3Provider: Web3Provider. Required.
-customRpcs?: Custom JSON-RPC endpoints for your consumer application.
-customTheme?: Custom theme for the widget. If not provided, defaults to light theme.
-container?: HTML element to render the widget in. If not provided, false.
-targetChainIds?: List of chain IDs for the destination side of your consumer app. If not provided, defaults to all Synapse Protocol supported networks.
-targetTokens?: List of tokens to display in the widget. These tokens are imported from the widget package. If not provided, defaults to all Synapse Protocol supported tokens.
-protocolName?: A short name for users of the widget to identify the protocol. If not provided, defaults to 'Target'.
-```
+`web3Provider`
+Web3Provider. Required.
+
+`customRpcs`
+Custom JSON-RPC endpoints for your consumer application. Optional but recommended.
+
+`customTheme`
+Custom theme for the widget. Optional. If not provided, defaults to light theme.
+
+`container`
+HTML element to render the widget in. Optional. If not provided, false.
+
+`targetChainIds`
+List of chain IDs for the destination side of your consumer app. Optional. If not provided, defaults to all Synapse Protocol supported networks.
+
+`targetTokens`
+List of tokens to display in the widget. These tokens are imported from the widget package. Optional. If not provided, defaults to all Synapse Protocol supported tokens.
+
+`protocolName`
+A short name for users of the widget to identify the protocol. Optional. If not provided, defaults to 'Target'.
 
 - A list of `targetTokens` can be found [here](https://github.com/synapsecns/sanguine/blob/master/packages/widget/src/constants/bridgeable.ts)
 - A list of Synapse Protocol supported chains can be found [here](https://github.com/synapsecns/sanguine/blob/master/packages/widget/src/constants/chains.ts)
@@ -111,7 +122,7 @@ Note: Token naming convention is based on the tokens provided by `@synapsecns/wi
 
 ## Theme Customization
 
-The widget is designed to be easily customized to match your app's theme. The widget accepts an optional `customTheme` configurable `bgColor` parameter for `'dark'` and `'light'` modes:
+The widget is designed to be easily customized to match your app's theme. The widget accepts an optional `customTheme` configurable `bgColor` parameter for `'dark'`, `'light'`, and custom color modes:
 
 ```tsx
 <Bridge web3Provider={web3Provider} customTheme={{ bgColor: 'light' }} />
@@ -121,14 +132,30 @@ Additionally, the widget supports more complex custom themes with the `customThe
 
 ```tsx
 const customTheme = {
+  // Generate from base color, 'dark', or 'light'
+  bgColor: '#08153a',
+
+  // Basic customization
   '--synapse-text': 'white',
   '--synapse-secondary': '#ffffffb3',
   '--synapse-root': '#16182e',
   '--synapse-surface': 'linear-gradient(90deg, #1e223de6, #262b47e6)',
   '--synapse-border': 'transparent',
-  '--synapse-select-bg': 'hsl(231.5deg 32% 19.5%',
-  '--synapse-select-border': 'hsl(233deg 34% 34%)',
-  '--synapse-button-bg': '#2d42fc',
+
+  // Full customization (Uses based colors by default)
+  '--synapse-focus': 'var(--synapse-secondary)',
+  '--synapse-select-bg': 'var(--synapse-root)',
+  '--synapse-select-text': 'var(--synapse-text)',
+  '--synapse-select-border': 'var(--synapse-border)',
+  '--synapse-button-bg': 'var(--synapse-surface)',
+  '--synapse-button-text': 'var(--synapse-text)',
+  '--synapse-button-border': 'var(--synapse-border)',
+
+  // Transaction progress colors (set bgColor to auto-generate)
+  '--synapse-progress': 'hsl(265deg 100% 65%)',
+  '--synapse-progress-flash': 'hsl(215deg 100% 65%)',
+  '--synapse-progress-success': 'hsl(120deg 100% 30%)',
+  '--synapse-progress-error': 'hsl(15deg 100% 65%)',
 }
 
 <Bridge
