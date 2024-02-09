@@ -13,7 +13,6 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/sdks/arbitrum"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
-	"github.com/synapsecns/sanguine/ethergo/util"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"go.opentelemetry.io/otel/attribute"
@@ -354,37 +353,26 @@ func (f *feePricer) getGasEstimate(parentCtx context.Context, chainID uint32, is
 		if !ok {
 			return 0, fmt.Errorf("could not get bridge for chain: %d", chainID)
 		}
+		var call *ethereum.CallMsg
 		if isOrigin {
-			// get an example claim call
-			tx, err := bridge.Claim(nil, []byte{}, common.HexToAddress(""))
+			// get claim call
+			call, err = getCall(bridge, claimCallType)
 			if err != nil {
-				return 0, fmt.Errorf("could not get claim tx: %w", err)
-			}
-			call, err := util.TxToCall(tx)
-			if err != nil || call == nil {
-				return 0, fmt.Errorf("could not convert tx to call: %w", err)
+				return 0, fmt.Errorf("could not get claim call: %w", err)
 			}
 			calls = append(calls, call)
 
-			// get an example prove call
-			tx, err = bridge.Prove(nil, []byte{}, [32]byte{})
+			// get prove call
+			call, err = getCall(bridge, proveCallType)
 			if err != nil {
-				return 0, fmt.Errorf("could not get claim tx: %w", err)
-			}
-			call, err = util.TxToCall(tx)
-			if err != nil || call == nil {
-				return 0, fmt.Errorf("could not convert tx to call: %w", err)
+				return 0, fmt.Errorf("could not get claim call: %w", err)
 			}
 			calls = append(calls, call)
 		} else {
-			// get an example relay call
-			tx, err := bridge.Relay(nil, []byte{})
+			// get relay call
+			call, err = getCall(bridge, proveCallType)
 			if err != nil {
-				return 0, fmt.Errorf("could not get claim tx: %w", err)
-			}
-			call, err := util.TxToCall(tx)
-			if err != nil || call == nil {
-				return 0, fmt.Errorf("could not convert tx to call: %w", err)
+				return 0, fmt.Errorf("could not get claim call: %w", err)
 			}
 			calls = append(calls, call)
 		}
