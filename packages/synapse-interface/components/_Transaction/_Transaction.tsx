@@ -15,6 +15,7 @@ import { DropdownMenu } from './components/DropdownMenu'
 import { MenuItem } from './components/MenuItem'
 import { useBridgeTxUpdater } from './helpers/useBridgeTxUpdater'
 import { AnimatedProgressBar } from './components/AnimatedProgressBar'
+import { TransactionSupport } from './components/TransactionSupport'
 
 interface _TransactionProps {
   connectedAddress: string
@@ -68,6 +69,7 @@ export const _Transaction = ({
     elapsedTime,
     remainingTime,
     delayedTime,
+    delayedTimeInMin,
     isEstimatedTimeReached,
     isStartCheckingTimeReached,
   } = getEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
@@ -84,6 +86,9 @@ export const _Transaction = ({
 
   /** Check if store already marked tx as complete, otherwise check hook status */
   const isTxFinalized = isStoredComplete ?? isTxComplete
+
+  const showTransactionSupport =
+    !isTxFinalized && delayedTimeInMin ? delayedTimeInMin <= -5 : false
 
   useBridgeTxUpdater(
     connectedAddress,
@@ -163,6 +168,7 @@ export const _Transaction = ({
           </DropdownMenu>
         </div>
       </div>
+      {showTransactionSupport && <TransactionSupport />}
       <div className="px-1">
         <AnimatedProgressBar
           id={originTxHash}

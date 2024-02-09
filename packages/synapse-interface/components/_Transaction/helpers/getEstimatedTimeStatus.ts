@@ -4,7 +4,7 @@
  * @param currentTime in seconds, unix
  * @param initialTime in seconds, unix
  * @param estimatedTime in seconds, unix
- * @returns elapsedTime and remainingTime (in seconds)
+ * @returns elapsedTime, remainingTime, delayedTime (in seconds)
  */
 export const getEstimatedTimeStatus = (
   currentTime: number,
@@ -22,12 +22,14 @@ export const getEstimatedTimeStatus = (
   const isStartCheckingTimeReached = remainingTime < oneMinuteInSeconds
 
   const delayedTime = isEstimatedTimeReached ? remainingTime : null
+  const delayedTimeInMin = remainingTime ? Math.floor(remainingTime / 60) : null
 
   return {
     targetTime,
     elapsedTime: nonNegativeElapsedTime,
     remainingTime,
     delayedTime,
+    delayedTimeInMin,
     isEstimatedTimeReached,
     isStartCheckingTimeReached,
   }
