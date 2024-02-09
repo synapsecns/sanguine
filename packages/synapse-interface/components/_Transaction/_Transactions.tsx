@@ -71,25 +71,25 @@ export const _Transactions = ({
 
   return (
     <TransactionsContainer>
-        {userHistoricalTransactions.slice(0, 5).map((tx: BridgeTransaction) => (
-          <_Transaction
-            key={tx.fromInfo.time}
-            connectedAddress={connectedAddress}
-            originValue={Number(tx.fromInfo.chainID)}
-            originChain={ARBITRUM}
-            originToken={ETH}
-            destinationChain={ARBITRUM}
-            destinationToken={ETH}
-            originTxHash={Math.random().toString()}
-            bridgeModuleName={'Synapse Bridge'}
-            estimatedTime={6000}
-            kappa={tx?.kappa}
-            timestamp={tx.fromInfo.time + 15000}
-            currentTime={currentTime}
-            isStoredComplete={false}
-          />
-        ))}
-      </TransactionsContainer>
+      {userHistoricalTransactions.slice(0, 5).map((tx: BridgeTransaction) => (
+        <_Transaction
+          key={tx.fromInfo.time}
+          connectedAddress={connectedAddress}
+          originValue={Number(tx.fromInfo.chainID)}
+          originChain={ARBITRUM}
+          originToken={ETH}
+          destinationChain={ARBITRUM}
+          destinationToken={ETH}
+          originTxHash={Math.random().toString()}
+          bridgeModuleName={'Synapse Bridge'}
+          estimatedTime={6000}
+          kappa={tx?.kappa}
+          timestamp={tx.fromInfo.time + 15000}
+          currentTime={currentTime}
+          isStoredComplete={false}
+        />
+      ))}
+    </TransactionsContainer>
   )
 }
 

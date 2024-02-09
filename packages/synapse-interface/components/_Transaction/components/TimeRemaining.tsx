@@ -12,7 +12,7 @@ export const TimeRemaining = ({
   delayedTime: number | null
 }) => {
   if (isComplete) {
-    return <span className="text-green-400">Complete!</span>
+    return <div className="text-sm text-green-400">Complete!</div>
   }
 
   if (isDelayed) {
@@ -20,7 +20,7 @@ export const TimeRemaining = ({
     const absoluteDelayedTime = Math.abs(delayedTimeInMin)
     const showDelayedTime = delayedTimeInMin < -1
     return (
-      <div>
+      <div className="text-sm">
         Waiting... {showDelayedTime ? `(${absoluteDelayedTime}m)` : null}
       </div>
     )
@@ -34,5 +34,5 @@ export const TimeRemaining = ({
     }
   }, [remainingTime])
 
-  return <div>{estTime}</div>
+  return <div className="text-sm">{estTime}</div>
 }

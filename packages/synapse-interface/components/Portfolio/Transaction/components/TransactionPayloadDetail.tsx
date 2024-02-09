@@ -57,22 +57,20 @@ export const TransactionPayloadDetail = ({
     return null
   }, [tokenAmount, token, chain])
 
-  const buttonStyle = 'flex gap-1.5 pl-1.5 pr-2.5 py-0.5 -my-0.5 items-center cursor-pointer rounded border border-transparent hover:border-surface hover:bg-tint active:opacity-70 w-fit'
+  const buttonStyle =
+    'flex gap-1.5 pl-1.5 pr-2.5 py-0.5 -my-0.5 items-center cursor-pointer rounded border border-transparent hover:border-surface hover:bg-tint active:opacity-70 w-fit'
 
   return (
-    <div
-      data-test-id='transaction-payload-detail'
-      className={className}
-    >
+    <div data-test-id="transaction-payload-detail" className={className}>
       {chain && (
         <div
-          data-test-id='transaction-payload-network'
+          data-test-id="transaction-payload-network"
           onClick={handleSelectChainCallback}
           className={buttonStyle}
         >
           <Image
             src={chain.chainImg}
-            className='w-4 h-4 pt-0.5 ml-0.5'
+            className="w-4 h-4 pt-0.5 ml-0.5"
             alt={`${chain.name} icon`}
           />
           {chain.name}
@@ -81,13 +79,13 @@ export const TransactionPayloadDetail = ({
 
       {token && tokenAmount && (
         <div
-          data-test-id='transaction-payload-token'
+          data-test-id="transaction-payload-token"
           onClick={handleSelectTokenCallback}
           className={buttonStyle}
         >
           <Image
             src={token?.icon}
-            className='items-center w-5 h-5 mt-px'
+            className="items-center w-5 h-5 mt-px"
             alt={`${token?.name} icon`}
           />
           {typeof tokenAmount === 'string' && tokenDecimals ? (
@@ -101,7 +99,7 @@ export const TransactionPayloadDetail = ({
           ) : (
             <span>…</span>
           )}
-          <span className='mt-0.5 text-sm'>{token?.symbol}</span>
+          <span className="mt-0.5 text-sm">{token?.symbol}</span>
         </div>
       )}
     </div>

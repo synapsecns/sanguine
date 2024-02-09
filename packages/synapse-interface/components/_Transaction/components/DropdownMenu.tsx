@@ -24,7 +24,7 @@ export const DropdownMenu = ({ menuTitleElement, children }) => {
           flex w-fit px-2 py-0.5 space-x-1
           relative place-items-center justify-center
           rounded cursor-pointer
-        hover:bg-zinc-700
+          hover:bg-zinc-700
         `}
       >
         {menuTitleElement}
