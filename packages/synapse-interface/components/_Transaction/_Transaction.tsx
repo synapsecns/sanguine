@@ -15,8 +15,6 @@ import { DropdownMenu } from './components/DropdownMenu'
 import { MenuItem } from './components/MenuItem'
 import { useBridgeTxUpdater } from './helpers/useBridgeTxUpdater'
 import { AnimatedProgressBar } from './components/AnimatedProgressBar'
-import { useState } from 'react'
-import { DownArrow } from '@/components/icons/DownArrow'
 
 interface _TransactionProps {
   connectedAddress: string
@@ -133,42 +131,37 @@ export const _Transaction = ({
               />
             }
           >
-            <div className="absolute right-0 z-50 mt-1 border rounded shadow bg-surface border-zinc-700 popover">
-              <div className="p-2 mt-1 text-xs cursor-default text-zinc-300">
-                Began{' '}
-                {new Date(timestamp * 1000).toLocaleString('en-US', {
-                  // month: 'short',
-                  // day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: true,
-                })}
-                {/* <div>{typeof _kappa === 'string' && _kappa?.substring(0, 15)}</div> */}
-              </div>
-              {!isNull(originTxExplorerLink) && (
-                <MenuItem
-                  text={originExplorerName}
-                  link={originTxExplorerLink}
-                />
-              )}
-              {!isNull(destExplorerAddressLink) && (
-                <MenuItem
-                  text={destExplorerName}
-                  link={destExplorerAddressLink}
-                />
-              )}
-              <MenuItem
-                text="Contact Support"
-                link="https://discord.gg/synapseprotocol"
-              />
-              {isTxFinalized && (
-                <MenuItem
-                  text="Clear Transaction"
-                  link={null}
-                  onClick={handleClearTransaction}
-                />
-              )}
+            <div className="p-2 mt-1 text-xs cursor-default text-zinc-300">
+              Began{' '}
+              {new Date(timestamp * 1000).toLocaleString('en-US', {
+                // month: 'short',
+                // day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true,
+              })}
+              {/* <div>{typeof _kappa === 'string' && _kappa?.substring(0, 15)}</div> */}
             </div>
+            {!isNull(originTxExplorerLink) && (
+              <MenuItem text={originExplorerName} link={originTxExplorerLink} />
+            )}
+            {!isNull(destExplorerAddressLink) && (
+              <MenuItem
+                text={destExplorerName}
+                link={destExplorerAddressLink}
+              />
+            )}
+            <MenuItem
+              text="Contact Support"
+              link="https://discord.gg/synapseprotocol"
+            />
+            {isTxFinalized && (
+              <MenuItem
+                text="Clear Transaction"
+                link={null}
+                onClick={handleClearTransaction}
+              />
+            )}
           </DropdownMenu>
         </div>
       </div>
