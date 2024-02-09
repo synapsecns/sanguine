@@ -11,6 +11,8 @@ import {
   JEWEL,
   XJEWEL,
   CustomRpcs,
+  CustomThemeVariables,
+  BridgeableToken,
 } from '@synapsecns/widget'
 import { useEthereumWallet } from '@/hooks/useEthereumWallet'
 import { useState } from 'react'
@@ -19,7 +21,14 @@ import { Footer } from '@/components/Footer'
 import { Instructions } from '@/components/Instructions'
 import { PackageInstall } from '@/components/PackageInstall'
 
-const initialConfig = {
+interface ConsumerExampleConfig {
+  customTheme: CustomThemeVariables
+  targetTokens?: BridgeableToken[]
+  targetChainIds?: number[]
+  protocolName?: string
+}
+
+const initialConfig: ConsumerExampleConfig = {
   customTheme: {
     bgColor: 'dark',
   },
@@ -73,10 +82,12 @@ const consumerExamples = {
       '--synapse-select-bg': 'hsl(35deg 100% 87%)',
       '--synapse-surface': 'hsl(32deg 69% 78%)',
       '--synapse-root': 'hsl(35deg 100% 87%)',
+
       '--synapse-border': 'hsl(29deg 53% 68%)',
       '--synapse-focus': 'hsl(12deg 85% 25%)',
       '--synapse-accent': 'hsl(12deg 85% 15%)',
-      '--synapse-button-bg': 'linear-gradient(hsl(12deg 62.5% 27.5%), hsl(12deg 85% 22.5%))',
+      '--synapse-button-bg':
+        'linear-gradient(hsl(12deg 62.5% 27.5%), hsl(12deg 85% 22.5%))',
       '--synapse-button-text': 'hsl(45deg 100% 92.5%)',
     },
     targetTokens: [ETH, USDC, JEWEL, XJEWEL, WJEWEL],
@@ -91,7 +102,7 @@ const customRpcs: CustomRpcs = {
 }
 
 export default function Home() {
-  const [config, setConfig] = useState<any>(initialConfig)
+  const [config, setConfig] = useState<ConsumerExampleConfig>(initialConfig)
   const [container, setContainer] = useState(false)
 
   const { web3Provider } = useEthereumWallet()
@@ -111,7 +122,7 @@ export default function Home() {
     const colorPicker = document.getElementById(
       'color-picker'
     ) as HTMLInputElement | null
-    setConfig((prevConfig: any) => ({
+    setConfig((prevConfig: ConsumerExampleConfig) => ({
       ...prevConfig,
       customTheme: { bgColor: colorPicker?.value },
     }))
