@@ -1,6 +1,7 @@
 package quoter_test
 
 import (
+	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -13,6 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	inventoryMocks "github.com/synapsecns/sanguine/services/rfq/relayer/inventory/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
+	priceMocks "github.com/synapsecns/sanguine/services/rfq/relayer/pricer/mocks"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 )
@@ -203,7 +205,9 @@ func (s *QuoterSuite) TestGetQuoteAmount() {
 
 func (s *QuoterSuite) setGasSufficiency(sufficient bool) {
 	clientFetcher := new(fetcherMocks.ClientFetcher)
-	feePricer := pricer.NewFeePricer(s.config, clientFetcher, metrics.NewNullHandler())
+	priceFetcher := new(priceMocks.CoingeckoPriceFetcher)
+	priceFetcher.On(testsuite.GetFunctionName(priceFetcher.GetPrice), mock.Anything, mock.Anything).Return(0., fmt.Errorf("not using mocked price"))
+	feePricer := pricer.NewFeePricer(s.config, clientFetcher, priceFetcher, metrics.NewNullHandler())
 	inventoryManager := new(inventoryMocks.Manager)
 	inventoryManager.On(testsuite.GetFunctionName(inventoryManager.HasSufficientGas), mock.Anything, mock.Anything, mock.Anything).Return(sufficient, nil)
 	mgr, err := quoter.NewQuoterManager(s.config, metrics.NewNullHandler(), inventoryManager, nil, feePricer)

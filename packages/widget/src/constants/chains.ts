@@ -11,6 +11,8 @@ export const ETHEREUM: Chain = {
   explorerUrl: 'https://etherscan.com',
   explorerName: 'Etherscan',
   blockTime: 12000,
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/ethereum.ced7bf7d.svg',
 }
 
 export const ARBITRUM: Chain = {
@@ -23,6 +25,8 @@ export const ARBITRUM: Chain = {
   explorerUrl: 'https://arbiscan.io',
   explorerName: 'Arbiscan',
   blockTime: 300,
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/arbitrum.9337c5cb.svg',
 }
 
 export const BNBCHAIN: Chain = {
@@ -35,6 +39,7 @@ export const BNBCHAIN: Chain = {
   explorerUrl: 'https://bscscan.com',
   explorerName: 'BscScan',
   blockTime: 3000,
+  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/bnb.c7f1e06b.svg',
 }
 
 export const AVALANCHE: Chain = {
@@ -47,6 +52,8 @@ export const AVALANCHE: Chain = {
   explorerUrl: 'https://snowtrace.io/',
   explorerName: 'Snowtrace',
   blockTime: 2000,
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/avalanche.80034115.svg',
 }
 
 export const CANTO: Chain = {
@@ -59,6 +66,8 @@ export const CANTO: Chain = {
   explorerUrl: 'https://tuber.build/',
   explorerName: 'Canto Explorer',
   blockTime: 6000,
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/canto.0da5392e.svg',
 }
 
 export const OPTIMISM: Chain = {
@@ -71,6 +80,8 @@ export const OPTIMISM: Chain = {
   explorerUrl: 'https://optimistic.etherscan.io',
   explorerName: 'Optimism Explorer',
   blockTime: 2000,
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/optimism.22de1334.svg',
 }
 
 export const POLYGON: Chain = {
@@ -83,6 +94,8 @@ export const POLYGON: Chain = {
   explorerUrl: 'https://polygonscan.com',
   explorerName: 'PolygonScan',
   blockTime: 2000,
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/polygon.8d188d92.svg',
 }
 
 export const DFK: Chain = {
@@ -95,6 +108,7 @@ export const DFK: Chain = {
   explorerUrl: 'https://subnets.avax.network/defi-kingdoms',
   explorerName: 'DFK Subnet Explorer',
   blockTime: 2000,
+  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/dfk.1e8f3773.svg',
 }
 
 export const KLAYTN: Chain = {
@@ -107,6 +121,8 @@ export const KLAYTN: Chain = {
   explorerUrl: 'https://scope.klaytn.com',
   explorerName: 'Klaytn Explorer',
   blockTime: 1000,
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/klaytn.0d2394a9.svg',
 }
 
 export const FANTOM: Chain = {
@@ -119,6 +135,8 @@ export const FANTOM: Chain = {
   explorerUrl: 'https://ftmscan.com',
   explorerName: 'FTMScan',
   blockTime: 1000,
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/fantom.72c20b34.svg',
 }
 
 export const CRONOS: Chain = {
@@ -131,6 +149,8 @@ export const CRONOS: Chain = {
   explorerUrl: 'https://cronoscan.com',
   explorerName: 'CronoScan',
   blockTime: 6000,
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/cronos.805a6c46.svg',
 }
 
 export const BOBA: Chain = {
@@ -143,6 +163,8 @@ export const BOBA: Chain = {
   explorerUrl: 'https://bobascan.com',
   explorerName: 'Boba Explorer',
   blockTime: 1000,
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/boba.837d03c1.svg',
 }
 
 export const METIS: Chain = {
@@ -155,6 +177,8 @@ export const METIS: Chain = {
   explorerUrl: 'https://andromeda-explorer.metis.io',
   explorerName: 'Metis Explorer',
   blockTime: 4000,
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/metis.98d36df7.svg',
 }
 
 export const AURORA: Chain = {
@@ -167,6 +191,8 @@ export const AURORA: Chain = {
   explorerUrl: 'https://explorer.mainnet.aurora.dev',
   explorerName: 'Aurora Explorer',
   blockTime: 1000,
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/aurora.46aaee98.svg',
 }
 
 export const HARMONY: Chain = {
@@ -179,6 +205,8 @@ export const HARMONY: Chain = {
   explorerUrl: 'https://explorer.harmony.one',
   explorerName: 'Harmony Explorer',
   blockTime: 2000,
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/harmony.1c4d7731.svg',
 }
 
 export const MOONBEAM: Chain = {
@@ -191,6 +219,8 @@ export const MOONBEAM: Chain = {
   explorerUrl: 'https://moonbeam.moonscan.io',
   explorerName: 'Moonbeam Explorer',
   blockTime: 12000,
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/moonbeam.902e3681.svg',
 }
 
 export const MOONRIVER: Chain = {
@@ -203,6 +233,8 @@ export const MOONRIVER: Chain = {
   explorerUrl: 'https://moonriver.moonscan.io',
   explorerName: 'Moonriver Explorer',
   blockTime: 12000,
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/moonriver.3e23a112.svg',
 }
 
 export const DOGE: Chain = {
@@ -215,6 +247,8 @@ export const DOGE: Chain = {
   explorerUrl: 'https://explorer.dogechain.dog',
   explorerName: 'Dogechain Explorer',
   blockTime: 2000,
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/dogechain.04c2007a.svg',
 }
 
 export const BASE: Chain = {
@@ -227,6 +261,8 @@ export const BASE: Chain = {
   explorerUrl: 'https://basescan.org',
   explorerName: 'BaseScan',
   blockTime: 3000,
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/base.1b390997.svg',
 }
 
 export const CHAINS = {

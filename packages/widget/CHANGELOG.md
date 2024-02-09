@@ -3,6 +3,70 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.0.48](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.0.47...@synapsecns/widget@0.0.48) (2024-02-08)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.0.47](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.0.46...@synapsecns/widget@0.0.47) (2024-02-08)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.0.46](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.0.45...@synapsecns/widget@0.0.46) (2024-02-08)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.0.45](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.0.44...@synapsecns/widget@0.0.45) (2024-02-07)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.0.44](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.0.43...@synapsecns/widget@0.0.44) (2024-02-07)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.0.43](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.0.42...@synapsecns/widget@0.0.43) (2024-02-07)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.0.42](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.0.41...@synapsecns/widget@0.0.42) (2024-02-07)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.0.41](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.0.40...@synapsecns/widget@0.0.41) (2024-02-06)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
 ## [0.0.40](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.0.39...@synapsecns/widget@0.0.40) (2024-02-06)
 
 **Note:** Version bump only for package @synapsecns/widget
