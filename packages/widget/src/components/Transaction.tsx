@@ -18,6 +18,7 @@ import { TimeRemaining } from '@/components/TimeRemaining'
 import { DropdownMenu } from '@/components/ui/DropdownMenu'
 import { MenuItem } from '@/components/ui/MenuItem'
 import { CHAINS_BY_ID } from '@/constants/chains'
+import { TransactionSupport } from './TransactionSupport'
 
 export const Transaction = ({
   connectedAddress,
@@ -87,6 +88,9 @@ export const Transaction = ({
   /** Check if store already marked tx as complete, otherwise check hook status */
   const isTxFinalized = isStoredComplete ?? isTxComplete
 
+  const showTransactionSupport =
+    !isTxFinalized && delayedTimeInMin ? delayedTimeInMin <= -5 : false
+
   /** Update tx kappa when available */
   useEffect(() => {
     if (_kappa && originTxHash) {
@@ -114,46 +118,53 @@ export const Transaction = ({
     <div
       data-test-id="transaction"
       className={`
-        flex flex-wrap-reverse gap-1 justify-end items-center pl-2.5 pr-1.5 py-1
+        flex flex-col
+        gap-1 justify-end items-center pl-2.5 pr-1.5 py-1
         border border-solid border-[--synapse-border] rounded-md
       `}
       style={{ background: 'var(--synapse-surface' }}
     >
-      <TransactionBridgeDetail
-        tokenAmount={originAmount}
-        originTokenSymbol={originTokenSymbol}
-        destinationChain={CHAINS_BY_ID[destinationChainId]}
-      />
-      <div className="flex items-center justify-end gap-2 grow">
-        <DropdownMenu
-          menuTitleElement={
-            <TimeRemaining
-              isComplete={isTxFinalized as boolean}
-              remainingTime={remainingTime}
-              isDelayed={isEstimatedTimeReached}
-              delayedTime={delayedTime}
-            />
-          }
-        >
-          {!isNull(originTxExplorerLink) && (
-            <MenuItem text={originExplorerName} link={originTxExplorerLink} />
-          )}
-          {!isNull(destExplorerAddressLink) && (
-            <MenuItem text={destExplorerName} link={destExplorerAddressLink} />
-          )}
-          <MenuItem
-            text="Contact Support"
-            link="https://discord.gg/synapseprotocol"
-          />
-          {isTxFinalized && (
+      <div className="flex flex-wrap-reverse items-center justify-between w-full">
+        <TransactionBridgeDetail
+          tokenAmount={originAmount}
+          originTokenSymbol={originTokenSymbol}
+          destinationChain={CHAINS_BY_ID[destinationChainId]}
+        />
+        <div className="flex items-center justify-end gap-2 grow">
+          <DropdownMenu
+            menuTitleElement={
+              <TimeRemaining
+                isComplete={isTxFinalized as boolean}
+                remainingTime={remainingTime}
+                isDelayed={isEstimatedTimeReached}
+                delayedTime={delayedTime}
+              />
+            }
+          >
+            {!isNull(originTxExplorerLink) && (
+              <MenuItem text={originExplorerName} link={originTxExplorerLink} />
+            )}
+            {!isNull(destExplorerAddressLink) && (
+              <MenuItem
+                text={destExplorerName}
+                link={destExplorerAddressLink}
+              />
+            )}
             <MenuItem
-              text="Clear Transaction"
-              link={null}
-              onClick={handleClearTransaction}
+              text="Contact Support"
+              link="https://discord.gg/synapseprotocol"
             />
-          )}
-        </DropdownMenu>
+            {isTxFinalized && (
+              <MenuItem
+                text="Clear Transaction"
+                link={null}
+                onClick={handleClearTransaction}
+              />
+            )}
+          </DropdownMenu>
+        </div>
       </div>
+      {showTransactionSupport && <TransactionSupport />}
     </div>
   )
 }
