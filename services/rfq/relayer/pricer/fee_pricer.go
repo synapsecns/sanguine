@@ -107,7 +107,7 @@ func (f *feePricer) GetOriginFee(parentCtx context.Context, origin, destination 
 	}()
 
 	// Calculate the origin fee
-	gasEstimate, err := f.config.GetOriginGasEstimate(int(origin))
+	gasEstimate, err := f.getGasEstimate(ctx, origin, true)
 	if err != nil {
 		return nil, fmt.Errorf("could not get origin gas estimate: %w", err)
 	}
@@ -119,7 +119,7 @@ func (f *feePricer) GetOriginFee(parentCtx context.Context, origin, destination 
 	// If specified, calculate and add the L1 fee
 	l1ChainID, l1GasEstimate, useL1Fee := f.config.GetL1FeeParams(origin, true)
 	if useL1Fee {
-		l1Fee, err := f.getFee(ctx, l1ChainID, destination, l1GasEstimate, denomToken, useMultiplier)
+		l1Fee, err := f.getFee(ctx, l1ChainID, destination, uint64(l1GasEstimate), denomToken, useMultiplier)
 		if err != nil {
 			return nil, err
 		}
@@ -142,7 +142,7 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 	}()
 
 	// Calculate the destination fee
-	gasEstimate, err := f.config.GetDestGasEstimate(int(destination))
+	gasEstimate, err := f.getGasEstimate(ctx, destination, false)
 	if err != nil {
 		return nil, fmt.Errorf("could not get dest gas estimate: %w", err)
 	}
@@ -154,7 +154,7 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 	// If specified, calculate and add the L1 fee
 	l1ChainID, l1GasEstimate, useL1Fee := f.config.GetL1FeeParams(destination, false)
 	if useL1Fee {
-		l1Fee, err := f.getFee(ctx, l1ChainID, destination, l1GasEstimate, denomToken, useMultiplier)
+		l1Fee, err := f.getFee(ctx, l1ChainID, destination, uint64(l1GasEstimate), denomToken, useMultiplier)
 		if err != nil {
 			return nil, err
 		}
@@ -200,11 +200,11 @@ func (f *feePricer) GetTotalFee(parentCtx context.Context, origin, destination u
 	return totalFee, nil
 }
 
-func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint32, gasEstimate int, denomToken string, useMultiplier bool) (_ *big.Int, err error) {
+func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint32, gasEstimate uint64, denomToken string, useMultiplier bool) (_ *big.Int, err error) {
 	ctx, span := f.handler.Tracer().Start(parentCtx, "getFee", trace.WithAttributes(
 		attribute.Int("gas_chain", int(gasChain)),
 		attribute.Int("denom_chain", int(denomChain)),
-		attribute.Int("gas_estimate", gasEstimate),
+		attribute.Int("gas_estimate", int(gasEstimate)),
 		attribute.String("denom_token", denomToken),
 	))
 
