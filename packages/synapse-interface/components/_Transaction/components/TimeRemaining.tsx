@@ -1,5 +1,13 @@
 import { useMemo } from 'react'
 
+/**
+ * @param isComplete: Transaction has been marked complete
+ * @param remainingTime: Time remaining for Transaction, in seconds
+ * @param isDelayed: Elapsed Time is over Estimated Time for Transaction
+ * @param delayedTime: Delayed Time, in seconds
+ * @returns Remaining time in minutes (in seconds if < 1 min) if not delayed.
+ * Otherwise, return text representative of delayed transaction.
+ */
 export const TimeRemaining = ({
   isComplete,
   remainingTime,
