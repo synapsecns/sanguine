@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { DownArrow } from '@/components/icons/DownArrow'
 
-export const DropdownMenu = ({ children }) => {
+export const DropdownMenu = ({ menuTitleElement, children }) => {
   const [open, setOpen] = useState<boolean>(false)
 
   const handleClick = () => {
@@ -13,13 +13,13 @@ export const DropdownMenu = ({ children }) => {
       <div
         onClick={handleClick}
         className={`
-          flex place-items-center justify-center
-          w-5 h-[21px] bg-surface rounded
-          border border-zinc-700
-          cursor-pointer hover:border-zinc-500
+          flex w-fit px-2 py-0.5 space-x-1
+          relative place-items-center justify-center
+          rounded cursor-pointer
+        hover:bg-zinc-700
         `}
       >
-        Waiting…
+        {menuTitleElement}
         <DownArrow />
       </div>
 

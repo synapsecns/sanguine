@@ -11,7 +11,7 @@ import TransactionArrow from '../icons/TransactionArrow'
 import { TimeRemaining } from './components/TimeRemaining'
 import { TransactionStatus } from './components/TransactionStatus'
 import { getEstimatedTimeStatus } from './helpers/getEstimatedTimeStatus'
-// import { DropdownMenu } from './components/DropdownMenu'
+import { DropdownMenu } from './components/DropdownMenu'
 import { MenuItem } from './components/MenuItem'
 import { useBridgeTxUpdater } from './helpers/useBridgeTxUpdater'
 import { AnimatedProgressBar } from './components/AnimatedProgressBar'
@@ -69,6 +69,7 @@ export const _Transaction = ({
     targetTime,
     elapsedTime,
     remainingTime,
+    delayedTime,
     isEstimatedTimeReached,
     isStartCheckingTimeReached,
   } = getEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
@@ -103,9 +104,13 @@ export const _Transaction = ({
     setOpen(!open)
 
     if (!open) {
-      document.addEventListener('click', (e) => {
-        setOpen(false)
-      }, { once: true })
+      document.addEventListener(
+        'click',
+        (e) => {
+          setOpen(false)
+        },
+        { once: true }
+      )
     }
 
     e.stopPropagation()
@@ -127,7 +132,7 @@ export const _Transaction = ({
           token={originToken}
           tokenAmount={originValue}
           isOrigin={true}
-          className='bg-surface px-0.5 py-1.5 rounded-l'
+          className="bg-surface px-0.5 py-1.5 rounded-l"
         />
         <TransactionArrow className="fill-surface" />
         <TransactionPayloadDetail
@@ -135,29 +140,24 @@ export const _Transaction = ({
           token={destinationToken}
           tokenAmount={null}
           isOrigin={false}
-          className='p-1.5'
+          className="p-1.5"
         />
         {/* TODO: QA visual format */}
-        <div className="relative grow mr-1 text-sm">
-          <div
-            onClick={handleClick}
-            className="flex items-center gap-1 hover:bg-zinc-700 cursor-pointer relative w-fit ml-auto px-2 py-1 rounded"
+        <div className="flex items-center justify-end gap-2 mr-1 grow">
+          <DropdownMenu
+            menuTitleElement={
+              <TimeRemaining
+                isComplete={isTxFinalized}
+                remainingTime={remainingTime}
+                isDelayed={isEstimatedTimeReached}
+                delayedTime={delayedTime}
+              />
+            }
           >
-            <TimeRemaining
-              isComplete={isTxFinalized as boolean}
-              remainingTime={remainingTime}
-              isDelayed={isEstimatedTimeReached}
-            />
-            <DownArrow />
-          </div>
-          {open && (
-            <div className='
-              absolute z-50 mt-1 bg-surface
-              border border-zinc-700 rounded shadow
-              popover right-0
-            '>
-              <div className="text-xs p-2 mt-1 text-zinc-300 cursor-default">
-                Began {new Date(timestamp * 1000).toLocaleString('en-US', {
+            <div className="absolute right-0 z-50 mt-1 border rounded shadow bg-surface border-zinc-700 popover">
+              <div className="p-2 mt-1 text-xs cursor-default text-zinc-300">
+                Began{' '}
+                {new Date(timestamp * 1000).toLocaleString('en-US', {
                   // month: 'short',
                   // day: 'numeric',
                   hour: '2-digit',
@@ -190,10 +190,10 @@ export const _Transaction = ({
                 />
               )}
             </div>
-          )}
+          </DropdownMenu>
         </div>
       </div>
-      <div className='px-1'>
+      <div className="px-1">
         <AnimatedProgressBar
           id={originTxHash}
           startTime={timestamp}
@@ -204,4 +204,3 @@ export const _Transaction = ({
     </div>
   )
 }
-

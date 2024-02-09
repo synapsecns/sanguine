@@ -21,10 +21,13 @@ export const getEstimatedTimeStatus = (
   const isEstimatedTimeReached = remainingTime < 0
   const isStartCheckingTimeReached = remainingTime < oneMinuteInSeconds
 
+  const delayedTime = isEstimatedTimeReached ? remainingTime : null
+
   return {
     targetTime,
     elapsedTime: nonNegativeElapsedTime,
     remainingTime,
+    delayedTime,
     isEstimatedTimeReached,
     isStartCheckingTimeReached,
   }
