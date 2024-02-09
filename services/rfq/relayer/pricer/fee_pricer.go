@@ -326,7 +326,47 @@ func (f *feePricer) getTokenPriceFromConfig(token string) (float64, error) {
 	return 0, fmt.Errorf("could not get price for token: %s", token)
 }
 
-func (f *feePricer) getGasEstimateFromClient(parentCtx context.Context, chainID uint32, call *ethereum.CallMsg) (gasEstimate uint64, err error) {
+func (f *feePricer) getGasEstimate(parentCtx context.Context, chainID uint32, isOrigin bool) (gasEstimate uint64, err error) {
+	ctx, span := f.handler.Tracer().Start(parentCtx, "getGasEstimate", trace.WithAttributes(
+		attribute.Int(metrics.ChainID, int(chainID)),
+	))
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	dynamic, err := f.config.GetDynamicGasEstimate(int(chainID))
+	if err != nil {
+		return 0, fmt.Errorf("could not get dynamic gas estimate from config: %w", err)
+	}
+	if dynamic {
+		calls := []*ethereum.CallMsg{}
+		if isOrigin {
+			// load an example claim + prove calls
+		} else {
+			// load an example relay call
+		}
+		gasEstimate, err = f.getGasEstimateFromClient(ctx, chainID, calls)
+		if err != nil {
+			return 0, fmt.Errorf("could not get gas estimate from client: %w", err)
+		}
+	} else {
+		// load the gas estimate from the config
+		var gasEstimateRaw int
+		if isOrigin {
+			gasEstimateRaw, err = f.config.GetOriginGasEstimate(int(chainID))
+		} else {
+			gasEstimateRaw, err = f.config.GetDestGasEstimate(int(chainID))
+		}
+		if err != nil {
+			return 0, fmt.Errorf("could not get gas estimate from config: %w", err)
+		}
+		gasEstimate = uint64(gasEstimateRaw)
+	}
+
+	return gasEstimate, nil
+}
+
+func (f *feePricer) getGasEstimateFromClient(parentCtx context.Context, chainID uint32, calls []*ethereum.CallMsg) (gasEstimate uint64, err error) {
 	ctx, span := f.handler.Tracer().Start(parentCtx, "getGasEstimateFromClient", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(chainID)),
 	))
@@ -358,10 +398,14 @@ func (f *feePricer) getGasEstimateFromClient(parentCtx context.Context, chainID 
 		return 0, fmt.Errorf("unknown gas estimation method")
 	}
 
-	// fetch the gas estimate
-	gasEstimate, err = gasEstimator.EstimateGas(ctx, *call)
-	if err != nil {
-		return 0, fmt.Errorf("could not estimate gas: %w", err)
+	// fetch the gas estimates
+	for _, call := range calls {
+		var estimate uint64
+		estimate, err = gasEstimator.EstimateGas(ctx, *call)
+		if err != nil {
+			return 0, fmt.Errorf("could not estimate gas: %w", err)
+		}
+		gasEstimate += estimate
 	}
 	return gasEstimate, nil
 }
