@@ -1,0 +1,10 @@
+{
+  "name": "@synapsecns/solidity-devops",
+  "version": "0.1.0",
+  "description": "A collection of utils to effortlessly test, deploy and maintain the smart contracts on EVM compatible blockchains",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/synapsecns/sanguine.git"
+  }
+}
