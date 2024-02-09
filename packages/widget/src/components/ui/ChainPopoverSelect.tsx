@@ -8,6 +8,7 @@ import { SearchInput } from './SearchInput'
 import { TabOption, ToggleTabs } from './ToggleTabs'
 import { ChainOption } from './ChainOption'
 import { useChainInputFilter } from '@/hooks/useChainInputFilter'
+import { useBridgeState } from '@/state/slices/bridge/hooks'
 
 type PopoverSelectProps = {
   options: Chain[]
@@ -63,6 +64,10 @@ export const ChainPopoverSelect = ({
     hasFilteredTargets,
   } = useChainInputFilter(options, remaining, targets, isOpen)
 
+  // Highlight originChain if not selected OR destinationChain if not selected
+  const { originChainId } = useBridgeState()
+  const nudge: boolean = !selected && (isOrigin || !!originChainId)
+
   return (
     <div
       data-test-id="chain-popover-select"
@@ -75,15 +80,19 @@ export const ChainPopoverSelect = ({
         className={`
           flex px-2.5 py-1.5 gap-2 items-center rounded
           text-[--synapse-select-text] whitespace-nowrap
-          border border-solid border-[--synapse-select-border]
-          cursor-pointer hover:border-[--synapse-focus]
+          cursor-pointer border border-solid
+          ${
+            nudge
+              ? 'border-[--synapse-progress] hover:shadow-lg'
+              : 'border-[--synapse-select-border] hover:border-[--synapse-focus]'
+          }
         `}
       >
         {selected?.imgUrl && (
           <img
             src={selected?.imgUrl}
             alt={`${selected?.name} chain icon`}
-            className="inline w-4 h-4"
+            className="inline w-4 h-4 -ml-1"
           />
         )}
         {selected?.name || 'Network'}

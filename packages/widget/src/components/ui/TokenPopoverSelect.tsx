@@ -7,6 +7,7 @@ import { TokenBalance } from '@/utils/actions/fetchTokenBalances'
 import { DownArrow } from '@/components/icons/DownArrow'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { TokenOption } from '@/components/ui/TokenOption'
+import { useBridgeState } from '@/state/slices/bridge/hooks'
 
 type PopoverSelectProps = {
   options: BridgeableToken[]
@@ -67,6 +68,18 @@ export const TokenPopoverSelect = ({
     isOpen
   )
 
+  const nudge: boolean = (() => {
+    const { originChainId, destinationChainId, originToken, destinationToken } =
+      useBridgeState()
+
+    return !!(
+      !selected &&
+      originChainId &&
+      destinationChainId &&
+      (balances.length || (!balances.length && originToken))
+    )
+  })()
+
   return (
     <div
       data-test-id="token-popover-select"
@@ -80,18 +93,22 @@ export const TokenPopoverSelect = ({
           flex px-2.5 py-1.5 gap-2 items-center rounded
           text-[--synapse-select-text] whitespace-nowrap
           border border-solid border-[--synapse-select-border]
-          cursor-pointer hover:border-[--synapse-focus]
+          cursor-pointer border border-solid
+          ${
+            nudge
+              ? 'border-[--synapse-progress] hover:shadow-lg'
+              : 'border-[--synapse-select-border] hover:border-[--synapse-focus]'
+          }
         `}
       >
         {selected?.imgUrl && (
           <img
             src={selected?.imgUrl}
             alt={`${selected.symbol} token icon`}
-            className="inline w-4 h-4"
+            className="inline w-4 h-4 -ml-1"
           />
         )}
         {selected?.symbol || 'Token'}
-
         <DownArrow />
       </div>
       {isOpen && (
