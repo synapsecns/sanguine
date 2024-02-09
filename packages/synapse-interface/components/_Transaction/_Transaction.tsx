@@ -95,27 +95,6 @@ export const _Transaction = ({
     isTxComplete
   )
 
-  const [open, setOpen] = useState<boolean>(false)
-
-  /* TODO: Fix bug where e.stopProgagation() allows multiple dropdowns
-           to be open at the same time
-  */
-  const handleClick = (e) => {
-    setOpen(!open)
-
-    if (!open) {
-      document.addEventListener(
-        'click',
-        (e) => {
-          setOpen(false)
-        },
-        { once: true }
-      )
-    }
-
-    e.stopPropagation()
-  }
-
   return (
     <div
       data-test-id="_transaction"
