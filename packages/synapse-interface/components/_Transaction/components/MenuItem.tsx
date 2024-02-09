@@ -20,7 +20,6 @@ export const MenuItem = ({
         <OptionButton
           onClick={onClick}
           text={text}
-          className={``}
         />
 
       ) : (
@@ -33,10 +32,9 @@ export const MenuItem = ({
           `}
         >
           <OptionButton
-              onClick={onClick}
-              text={text}
-
-            />
+            onClick={onClick}
+            text={text}
+          />
         </a>
       )}
     </li>
@@ -48,7 +46,7 @@ export const OptionButton = ({
   text,
   onClick,
 }: {
-  icon: any
+  icon?: any
   text: string
   onClick: () => void
 }) => {

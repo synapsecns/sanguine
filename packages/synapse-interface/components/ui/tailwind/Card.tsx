@@ -19,6 +19,7 @@ export default function Card({
   titleClassName?: string
   divider?: boolean
   image?: string
+  [x: string]: any
 }) {
   const mergedClassName = twMerge(`${baseClassname} ${className}`)
   const mergedTitleClassname = twMerge(
