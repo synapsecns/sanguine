@@ -1,10 +1,9 @@
 import _ from 'lodash'
-import { useState, useEffect, useMemo } from 'react'
 import { use_TransactionsState } from '@/slices/_transactions/hooks'
 import { _TransactionDetails } from '@/slices/_transactions/reducer'
 import { _Transaction } from './_Transaction'
-import { getTimeMinutesFromNow } from '@/utils/time'
 import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
+import { useIntervalTimer } from './helpers/useIntervalTimer'
 
 /** TODO: Update naming once refactoring of previous Activity/Tx flow is done */
 export const _Transactions = ({
@@ -13,29 +12,23 @@ export const _Transactions = ({
   connectedAddress: string
 }) => {
   const { transactions } = use_TransactionsState()
-
   const hasTransactions: boolean = checkTransactionsExist(transactions)
 
-  const [currentTime, setCurrentTime] = useState<number>(
-    getTimeMinutesFromNow(0)
-  )
-
-  /** Update time to trigger transactions to recheck tx status */
-  useEffect(() => {
-    const interval = setInterval(() => {
-      let newCurrentTime = getTimeMinutesFromNow(0)
-      setCurrentTime(newCurrentTime)
-    }, 5000) // 5000 milliseconds = 5 seconds
-
-    return () => {
-      clearInterval(interval) // Clear the interval when the component unmounts
-    }
-  }, [])
+  const currentTime = useIntervalTimer(5000)
 
   if (hasTransactions) {
-    const sortedTransactions = _.orderBy(transactions, ['timestamp'], ['desc'])
+    const address = connectedAddress.toLowerCase()
+    const filteredTransactions = transactions.filter(
+      (txn) => txn.address?.toLowerCase() === address
+    )
+
+    const sortedTransactions = _.orderBy(
+      filteredTransactions,
+      ['timestamp'],
+      ['desc']
+    )
     return (
-      <div className="flex flex-col mt-3">
+      <TransactionsContainer>
         {sortedTransactions.slice(0, 5).map((tx: _TransactionDetails) => (
           <_Transaction
             key={tx.timestamp}
@@ -54,7 +47,17 @@ export const _Transactions = ({
             isStoredComplete={tx.isComplete}
           />
         ))}
-      </div>
+      </TransactionsContainer>
     )
   }
+
+  return null
+}
+
+const TransactionsContainer = ({ children }) => {
+  return (
+    <div id="transaction-container" className="flex flex-col mt-3">
+      {children}
+    </div>
+  )
 }

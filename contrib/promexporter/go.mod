@@ -32,10 +32,10 @@ require (
 	github.com/synapsecns/sanguine/ethergo v0.1.0
 	github.com/synapsecns/sanguine/services/explorer v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/services/omnirpc v0.0.0-00010101000000-000000000000
-	github.com/urfave/cli/v2 v2.25.5
-	go.opentelemetry.io/otel v1.21.0
-	go.opentelemetry.io/otel/metric v1.21.0
-	go.opentelemetry.io/otel/trace v1.21.0
+	github.com/urfave/cli/v2 v2.25.7
+	go.opentelemetry.io/otel v1.22.0
+	go.opentelemetry.io/otel/metric v1.22.0
+	go.opentelemetry.io/otel/trace v1.22.0
 	golang.org/x/sync v0.3.0
 	gopkg.in/yaml.v2 v2.4.0
 )
@@ -49,15 +49,14 @@ require (
 	github.com/ImVexed/fasturl v0.0.0-20230304231329-4e41488060f3 // indirect
 	github.com/LK4d4/trylock v0.0.0-20191027065348-ff7e133a5c54 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
-	github.com/ProtonMail/go-crypto v0.0.0-20230717121422-5aa5874ade95 // indirect
+	github.com/ProtonMail/go-crypto v0.0.0-20230828082145-3c4c8a2d2371 // indirect
 	github.com/VictoriaMetrics/fastcache v1.6.0 // indirect
-	github.com/acomagu/bufpipe v1.0.4 // indirect
 	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/aws/smithy-go v1.13.5 // indirect
 	github.com/benbjohnson/immutable v0.4.3 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/brianvoe/gofakeit/v6 v6.20.1 // indirect
+	github.com/brianvoe/gofakeit/v6 v6.27.0 // indirect
 	github.com/btcsuite/btcd v0.22.1 // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.3.0 // indirect
 	github.com/btcsuite/btcd/chaincfg/chainhash v1.0.1 // indirect
@@ -74,6 +73,7 @@ require (
 	github.com/cockroachdb/pebble v0.0.0-20230209160836-829675f94811 // indirect
 	github.com/cockroachdb/redact v1.1.3 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
+	github.com/cyphar/filepath-securejoin v0.2.4 // indirect
 	github.com/danielkov/gin-helmet v0.0.0-20171108135313-1387e224435e // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/deckarep/golang-set/v2 v2.1.0 // indirect
@@ -95,10 +95,10 @@ require (
 	github.com/go-faster/city v1.0.1 // indirect
 	github.com/go-faster/errors v0.6.1 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
-	github.com/go-git/go-billy/v5 v5.4.1 // indirect
-	github.com/go-git/go-git/v5 v5.8.1 // indirect
+	github.com/go-git/go-billy/v5 v5.5.0 // indirect
+	github.com/go-git/go-git/v5 v5.11.0 // indirect
 	github.com/go-http-utils/headers v0.0.0-20181008091004-fed159eddc2a // indirect
-	github.com/go-logr/logr v1.3.0 // indirect
+	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
@@ -168,7 +168,7 @@ require (
 	github.com/ravilushqa/otelgqlgen v0.13.1 // indirect
 	github.com/richardwilkes/toolbox v1.74.0 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
-	github.com/rogpeppe/go-internal v1.10.0 // indirect
+	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/rs/cors v1.8.2 // indirect
 	github.com/rung/go-safecast v1.0.1 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
@@ -177,7 +177,7 @@ require (
 	github.com/shibukawa/configdir v0.0.0-20170330084843-e180dbdc8da0 // indirect
 	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
-	github.com/skeema/knownhosts v1.2.0 // indirect
+	github.com/skeema/knownhosts v1.2.1 // indirect
 	github.com/spf13/afero v1.9.5 // indirect
 	github.com/status-im/keycard-go v0.2.0 // indirect
 	github.com/synapsecns/sanguine/services/scribe v0.0.0-00010101000000-000000000000 // indirect
@@ -226,7 +226,7 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/driver/clickhouse v0.5.1 // indirect
-	gorm.io/gorm v1.25.2-0.20230530020048-26663ab9bf55 // indirect
+	gorm.io/gorm v1.25.5 // indirect
 	k8s.io/apimachinery v0.25.5 // indirect
 	k8s.io/klog/v2 v2.80.1 // indirect
 	k8s.io/utils v0.0.0-20221128185143-99ec85e7a448 // indirect

@@ -68,6 +68,11 @@ import { FromTokenListOverlay } from '@/components/StateManagedBridge/FromTokenL
 import { ToTokenListOverlay } from '@/components/StateManagedBridge/ToTokenListOverlay'
 
 import { waitForTransaction } from '@wagmi/core'
+import {
+  fetchArbPrice,
+  fetchEthPrice,
+  fetchGmxPrice,
+} from '@/slices/priceDataSlice'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -146,6 +151,10 @@ const StateManagedBridge = () => {
     currentSDKRequestID.current += 1
     const thisRequestId = currentSDKRequestID.current
     // will have to handle deadlineMinutes here at later time, gets passed as optional last arg in .bridgeQuote()
+
+    /* clear stored bridge quote before requesting new bridge quote */
+    dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
+
     try {
       dispatch(setIsLoading(true))
 
@@ -183,15 +192,8 @@ const StateManagedBridge = () => {
         destQuery,
         estimatedTime,
         bridgeModuleName,
+        gasDropAmount,
       } = quote
-
-      // console.log(`[getAndSetQuote] fromChainId`, fromChainId)
-      // console.log(`[getAndSetQuote] toChainId`, toChainId)
-      // console.log(`[getAndSetQuote] fromToken.symbol`, fromToken.symbol)
-      // console.log(`[getAndSetQuote] toToken.symbol`, toToken.symbol)
-      // console.log(`[getAndSetQuote] fromValue`, fromValue)
-      // console.log('feeAmount', feeAmount)
-      // console.log(`[getAndSetQuote] maxAmountOut`, maxAmountOut)
 
       if (!(originQuery && maxAmountOut && destQuery && feeAmount)) {
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
@@ -260,16 +262,19 @@ const StateManagedBridge = () => {
             ),
             feeAmount,
             delta: BigInt(maxAmountOut.toString()),
-            quotes: {
-              originQuery: originQueryWithSlippage,
-              destQuery: destQueryWithSlippage,
-            },
+            originQuery: originQueryWithSlippage,
+            destQuery: destQueryWithSlippage,
             estimatedTime: estimatedTime,
             bridgeModuleName: bridgeModuleName,
+            gasDropAmount: BigInt(gasDropAmount.toString()),
           })
         )
 
         toast.dismiss(quoteToastRef.current.id)
+
+        dispatch(fetchEthPrice())
+        dispatch(fetchArbPrice())
+        dispatch(fetchGmxPrice())
 
         const message = `Route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
@@ -334,6 +339,10 @@ const StateManagedBridge = () => {
         inputAmount: debouncedFromValue,
         expectedReceivedAmount: bridgeQuote.outputAmountString,
         slippage: bridgeQuote.exchangeRate,
+        originToken: fromToken?.routeSymbol,
+        destinationToken: toToken?.routeSymbol,
+        exchangeRate: BigInt(bridgeQuote.exchangeRate.toString()),
+        routerAddress: bridgeQuote.routerAddress,
       },
       true
     )
@@ -369,8 +378,8 @@ const StateManagedBridge = () => {
         toChainId,
         fromToken?.addresses[fromChainId as keyof Token['addresses']],
         stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId]),
-        bridgeQuote.quotes.originQuery,
-        bridgeQuote.quotes.destQuery
+        bridgeQuote.originQuery,
+        bridgeQuote.destQuery
       )
 
       const payload =
@@ -402,6 +411,10 @@ const StateManagedBridge = () => {
         inputAmount: debouncedFromValue,
         expectedReceivedAmount: bridgeQuote.outputAmountString,
         slippage: bridgeQuote.exchangeRate,
+        originToken: fromToken?.routeSymbol,
+        destinationToken: toToken?.routeSymbol,
+        exchangeRate: BigInt(bridgeQuote.exchangeRate.toString()),
+        routerAddress: bridgeQuote.routerAddress,
       })
       dispatch(
         updatePendingBridgeTransaction({
@@ -540,7 +553,7 @@ const StateManagedBridge = () => {
               show={true}
               {...SECTION_TRANSITION_PROPS}
             >
-              <BridgeExchangeRateInfo showGasDrop={true} />
+              <BridgeExchangeRateInfo />
             </Transition>
             {showDestinationAddress && (
               <DestinationAddressInput

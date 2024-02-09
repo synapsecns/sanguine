@@ -4,10 +4,10 @@ package client
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"strconv"
 	"time"
 
-	"github.com/brianvoe/gofakeit/v6"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/core/metrics"
 
@@ -91,7 +91,7 @@ func NewUnauthenticaedClient(metricHandler metrics.Handler, rfqURL string) (Unau
 	client := resty.New().
 		SetBaseURL(rfqURL).
 		OnBeforeRequest(func(client *resty.Client, request *resty.Request) error {
-			request.Header.Add(ginhelper.RequestIDHeader, gofakeit.UUID())
+			request.Header.Add(ginhelper.RequestIDHeader, uuid.New().String())
 			return nil
 		})
 

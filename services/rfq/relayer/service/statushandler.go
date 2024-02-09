@@ -74,7 +74,7 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 	qr.handlers[reldb.CommittedPending] = r.deadlineMiddleware(qr.handleCommitPending)
 	qr.handlers[reldb.CommittedConfirmed] = r.deadlineMiddleware(qr.handleCommitConfirmed)
 	// no more need for deadline middleware now, we already relayed.
-	qr.handlers[reldb.RelayCompleted] = qr.handleRelayCompleted
+	qr.handlers[reldb.RelayCompleted] = r.gasMiddleware(qr.handleRelayCompleted)
 	qr.handlers[reldb.ProvePosted] = qr.handleProofPosted
 	// TODO: we probably want a claim complete state once we've seen that event on chain
 
@@ -87,7 +87,11 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 func (r *Relayer) deadlineMiddleware(next func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error) func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error {
 	return func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error {
 		// apply deadline buffer
-		almostNow := time.Now().Add(-r.cfg.GetDeadlineBuffer(int(req.Transaction.DestChainId)))
+		buffer, err := r.cfg.GetDeadlineBuffer(int(req.Transaction.DestChainId))
+		if err != nil {
+			return fmt.Errorf("could not get deadline buffer: %w", err)
+		}
+		almostNow := time.Now().Add(-buffer)
 
 		// if deadline < now, we don't even have to bother calling the underlying function
 		if req.Transaction.Deadline.Cmp(big.NewInt(almostNow.Unix())) < 0 {
@@ -95,6 +99,21 @@ func (r *Relayer) deadlineMiddleware(next func(ctx context.Context, span trace.S
 			if err != nil {
 				return fmt.Errorf("could not update request status: %w", err)
 			}
+			return nil
+		}
+
+		return next(ctx, span, req)
+	}
+}
+
+// gasMiddleware checks that we have sufficient gas to process a request on origin and destination.
+func (r *Relayer) gasMiddleware(next func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error) func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error {
+	return func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error {
+		sufficientGas, err := r.inventory.HasSufficientGas(ctx, int(req.Transaction.OriginChainId), int(req.Transaction.DestChainId))
+		if err != nil {
+			return fmt.Errorf("could not check gas: %w", err)
+		}
+		if !sufficientGas {
 			return nil
 		}
 

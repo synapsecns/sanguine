@@ -11,6 +11,7 @@
 ![GitHub pull requests](https://img.shields.io/github/issues-pr/synapsecns/sanguine)
 [![Codecov](https://img.shields.io/codecov/c/github/synapsecns/sanguine?style=flat-square&logo=codecov&link=https%3A%2F%2Fapp.codecov.io%2Fgh%2Fsynapsecns%2Fsanguine)](https://app.codecov.io/gh/synapsecns/sanguine)
 [![Code Climate maintainability](https://img.shields.io/codeclimate/maintainability-percentage/synapsecns/sanguine)](https://codeclimate.com/github/synapsecns/sanguine/progress/maintainability)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/b119a0b147be4aeb8e8c8c37db9c83ee)](https://app.codacy.com/gh/synapsecns/sanguine/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
 
 [![Gitbook](https://img.shields.io/badge/docs-grey?logo=gitbook&style=flat-square)](https://docs.synapseprotocol.com/)
@@ -52,6 +53,7 @@ root
 ├── <a href="./contrib">contrib</a>: Devops related tools
 │   ├── <a href="./contrib/git-changes-action">git-changes-action</a>: Github action for identifying changes in dependent modules in a go workspace
 │   ├── <a href="./contrib/promexporter">promexporter</a>: Multi-service prometheus exporter
+│   ├── <a href="./contrib/screener-api">screener-api</a>: Optional address screening api
 │   ├── <a href="./contrib/release-copier-action">release-copier-action</a>: Github action for copying releases from one repo to another
 │   ├── <a href="./contrib/terraform-provider-iap">terraform-provider-iap</a>: Terraform provider used for bastion proxy tunneling
 │   ├── <a href="./contrib/terraform-provider-helmproxy">terraform-provider-helmproxy</a>: Terraform provider that allows helm to be proxied through an iap bastion proxy

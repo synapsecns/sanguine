@@ -1,3 +1,4 @@
+// Package pricer contains pricing logic for RFQ relayer quotes.
 package pricer
 
 import (
@@ -35,25 +36,32 @@ type feePricer struct {
 	// gasPriceCache maps chainID -> gas price
 	gasPriceCache *ttlcache.Cache[uint32, *big.Int]
 	// tokenPriceCache maps token name -> token price
-	tokenPriceCache *ttlcache.Cache[string, *big.Int]
+	tokenPriceCache *ttlcache.Cache[string, float64]
 	// clientFetcher is used to fetch clients.
 	clientFetcher submitter.ClientFetcher
 	// handler is the metrics handler.
 	handler metrics.Handler
+	// priceFetcher is used to fetch prices from coingecko.
+	priceFetcher CoingeckoPriceFetcher
 }
 
 // NewFeePricer creates a new fee pricer.
-func NewFeePricer(config relconfig.Config, clientFetcher submitter.ClientFetcher, handler metrics.Handler) FeePricer {
+func NewFeePricer(config relconfig.Config, clientFetcher submitter.ClientFetcher, priceFetcher CoingeckoPriceFetcher, handler metrics.Handler) FeePricer {
 	gasPriceCache := ttlcache.New[uint32, *big.Int](
 		ttlcache.WithTTL[uint32, *big.Int](time.Second*time.Duration(config.GetFeePricer().GasPriceCacheTTLSeconds)),
 		ttlcache.WithDisableTouchOnHit[uint32, *big.Int](),
 	)
+	tokenPriceCache := ttlcache.New[string, float64](
+		ttlcache.WithTTL[string, float64](time.Second*time.Duration(config.GetFeePricer().TokenPriceCacheTTLSeconds)),
+		ttlcache.WithDisableTouchOnHit[string, float64](),
+	)
 	return &feePricer{
 		config:          config,
 		gasPriceCache:   gasPriceCache,
-		tokenPriceCache: ttlcache.New[string, *big.Int](ttlcache.WithTTL[string, *big.Int](time.Second * time.Duration(config.GetFeePricer().TokenPriceCacheTTLSeconds))),
+		tokenPriceCache: tokenPriceCache,
 		clientFetcher:   clientFetcher,
 		handler:         handler,
+		priceFetcher:    priceFetcher,
 	}
 }
 
@@ -86,7 +94,11 @@ func (f *feePricer) GetOriginFee(parentCtx context.Context, origin, destination 
 	}()
 
 	// Calculate the origin fee
-	fee, err := f.getFee(ctx, origin, destination, f.config.GetOriginGasEstimate(origin), denomToken, useMultiplier)
+	gasEstimate, err := f.config.GetOriginGasEstimate(int(origin))
+	if err != nil {
+		return nil, fmt.Errorf("could not get origin gas estimate: %w", err)
+	}
+	fee, err := f.getFee(ctx, origin, destination, gasEstimate, denomToken, useMultiplier)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +129,11 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 	}()
 
 	// Calculate the destination fee
-	fee, err := f.getFee(ctx, destination, destination, f.config.GetDestGasEstimate(destination), denomToken, useMultiplier)
+	gasEstimate, err := f.config.GetDestGasEstimate(int(destination))
+	if err != nil {
+		return nil, fmt.Errorf("could not get dest gas estimate: %w", err)
+	}
+	fee, err := f.getFee(ctx, destination, destination, gasEstimate, denomToken, useMultiplier)
 	if err != nil {
 		return nil, err
 	}
@@ -187,7 +203,7 @@ func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint3
 	if err != nil {
 		return nil, err
 	}
-	nativeToken, err := f.config.GetNativeToken(gasChain)
+	nativeToken, err := f.config.GetNativeToken(int(gasChain))
 	if err != nil {
 		return nil, err
 	}
@@ -205,32 +221,45 @@ func (f *feePricer) getFee(parentCtx context.Context, gasChain, denomChain uint3
 	}
 	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(denomTokenDecimals)), nil)
 
-	// Compute the fee in ETH terms.
+	// Compute the fee.
+	var feeDenom *big.Float
 	feeWei := new(big.Float).Mul(new(big.Float).SetInt(gasPrice), new(big.Float).SetFloat64(float64(gasEstimate)))
-	feeEth := new(big.Float).Quo(feeWei, new(big.Float).SetInt(nativeDecimalsFactor))
-	feeUSD := new(big.Float).Mul(feeEth, new(big.Float).SetFloat64(nativeTokenPrice))
-	feeUSDC := new(big.Float).Mul(feeUSD, new(big.Float).SetFloat64(denomTokenPrice))
-	// Note that this rounds towards zero- we may need to apply rounding here if
-	// we want to be conservative and lean towards overestimating fees.
-	feeUSDCDecimals := new(big.Float).Mul(feeUSDC, new(big.Float).SetInt(denomDecimalsFactor))
+	if denomToken == nativeToken {
+		// Denomination token is native token, so no need for unit conversion.
+		feeDenom = feeWei
+	} else {
+		// Convert the fee from ETH to denomToken terms.
+		feeEth := new(big.Float).Quo(feeWei, new(big.Float).SetInt(nativeDecimalsFactor))
+		feeUSD := new(big.Float).Mul(feeEth, new(big.Float).SetFloat64(nativeTokenPrice))
+		feeUSDC := new(big.Float).Mul(feeUSD, new(big.Float).SetFloat64(denomTokenPrice))
+		feeDenom = new(big.Float).Mul(feeUSDC, new(big.Float).SetInt(denomDecimalsFactor))
+		span.SetAttributes(
+			attribute.String("fee_wei", feeWei.String()),
+			attribute.String("fee_eth", feeEth.String()),
+			attribute.String("fee_usd", feeUSD.String()),
+			attribute.String("fee_usdc", feeUSDC.String()),
+		)
+	}
 
-	multiplier := f.config.GetFixedFeeMultiplier()
-	if !useMultiplier {
-		multiplier = 1
+	multiplier := 1.
+	if useMultiplier {
+		multiplier, err = f.config.GetFixedFeeMultiplier(int(gasChain))
+		if err != nil {
+			return nil, fmt.Errorf("could not get fixed fee multiplier: %w", err)
+		}
 	}
 
 	// Apply the fixed fee multiplier.
-	feeUSDCDecimalsScaled, _ := new(big.Float).Mul(feeUSDCDecimals, new(big.Float).SetFloat64(multiplier)).Int(nil)
+	// Note that this step rounds towards zero- we may need to apply rounding here if
+	// we want to be conservative and lean towards overestimating fees.
+	feeUSDCDecimalsScaled, _ := new(big.Float).Mul(feeDenom, new(big.Float).SetFloat64(multiplier)).Int(nil)
 	span.SetAttributes(
 		attribute.String("gas_price", gasPrice.String()),
 		attribute.Float64("native_token_price", nativeTokenPrice),
 		attribute.Float64("denom_token_price", denomTokenPrice),
 		attribute.Int("denom_token_decimals", int(denomTokenDecimals)),
 		attribute.String("fee_wei", feeWei.String()),
-		attribute.String("fee_eth", feeEth.String()),
-		attribute.String("fee_usd", feeUSD.String()),
-		attribute.String("fee_usdc", feeUSDC.String()),
-		attribute.String("fee_usdc_decimals", feeUSDCDecimals.String()),
+		attribute.String("fee_denom", feeDenom.String()),
 		attribute.String("fee_usdc_decimals_scaled", feeUSDCDecimalsScaled.String()),
 	)
 	return feeUSDCDecimalsScaled, nil
@@ -260,7 +289,29 @@ func (f *feePricer) GetGasPrice(ctx context.Context, chainID uint32) (*big.Int, 
 }
 
 // getTokenPrice returns the price of a token in USD.
-func (f *feePricer) getTokenPrice(ctx context.Context, token string) (float64, error) {
+func (f *feePricer) getTokenPrice(ctx context.Context, token string) (price float64, err error) {
+	// Attempt to fetch gas price from cache.
+	tokenPriceItem := f.tokenPriceCache.Get(token)
+	//nolint:nestif
+	if tokenPriceItem == nil {
+		// Try to get price from coingecko.
+		price, err = f.priceFetcher.GetPrice(ctx, token)
+		if err == nil {
+			f.tokenPriceCache.Set(token, price, 0)
+		} else {
+			// Fallback to configured token price.
+			price, err = f.getTokenPriceFromConfig(token)
+			if err != nil {
+				return 0, err
+			}
+		}
+	} else {
+		price = tokenPriceItem.Value()
+	}
+	return price, nil
+}
+
+func (f *feePricer) getTokenPriceFromConfig(token string) (float64, error) {
 	for _, chainConfig := range f.config.GetChains() {
 		for tokenName, tokenConfig := range chainConfig.Tokens {
 			if token == tokenName {

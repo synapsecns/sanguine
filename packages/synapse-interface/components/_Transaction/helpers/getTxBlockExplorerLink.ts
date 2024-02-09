@@ -1,15 +1,16 @@
-import { ExplorerLinks, ExplorerNames } from './constants'
+import { Chain } from '@/utils/types'
+import { CHAINS_BY_ID } from '@/constants/chains'
 
 export const getTxBlockExplorerLink = (chainId: number, txHash: string) => {
-  const blockExplorer = ExplorerLinks[chainId]
+  const chain: Chain = CHAINS_BY_ID[chainId]
 
-  if (blockExplorer && txHash) {
-    const explorerUrl = `${blockExplorer}/tx/${txHash}`
-    const explorerName = ExplorerNames[chainId]
+  if (chain && txHash) {
+    const txExplorerUrl = `${chain.explorerUrl}/tx/${txHash}`
+    const explorerName = chain.explorerName
 
-    return [explorerUrl, explorerName]
+    return [txExplorerUrl, explorerName]
   }
 
-  console.error('getTxBlockExplorerLink: ChainID or Transaction Hash missing')
+  console.error('getTxBlockExplorerLink: Chain or Transaction Hash missing')
   return [null, null]
 }
