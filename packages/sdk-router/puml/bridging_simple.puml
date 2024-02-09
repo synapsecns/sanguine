@@ -2,7 +2,7 @@
 skinparam BoxPadding 10
 skinparam ParticipantPadding 25
 skinparam NoteTextAlignment center
-title Bridging Workflow (simlplified with SDK)
+title Bridging Workflow (simplified with SDK)
 
 box "Origin Chain" #White
 actor "User" as OU
