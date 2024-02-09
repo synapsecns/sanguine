@@ -75,7 +75,7 @@ const PoolBody = ({
     <>
       <div className="">
         <Link href={POOLS_PATH}>
-          <div className="inline-flex items-center mb-3 text-sm font-light text-white hover:text-opacity-100">
+          <div className="inline-flex items-center mb-3 text-sm  text-white hover:text-opacity-100">
             <ChevronLeftIcon className="w-4 h-4" />
             Back to Pools
           </div>

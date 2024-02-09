@@ -57,8 +57,8 @@ export const PortfolioTokenAsset = ({
     <div
       id="portfolio-token-asset"
       className={`
-        p-2 flex items-center border-y text-white justify-between last:rounded-b-md
-        ${isTokenSelected ? 'bg-tint border-surface' : 'border-transparent'}
+        p-2 flex items-center border-y text-white justify-between last:rounded-b-lg
+        ${isTokenSelected ? 'bg-bgBase/20 border-white/20' : 'border-transparent'}
       `}
     >
       <div
@@ -66,7 +66,7 @@ export const PortfolioTokenAsset = ({
         className={`
           flex items-center gap-2
           pl-2 pr-4 py-2 cursor-pointer rounded
-          hover:bg-surface active:opacity-70
+          hover:bg-bgBase/20 active:opacity-70
         `}
         title={`${parsedBalanceLong} ${symbol}`}
       >

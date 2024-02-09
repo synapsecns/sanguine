@@ -91,20 +91,23 @@ export const _Transaction = ({
       data-test-id="_transaction"
       className={`
         flex flex-col gap-1 justify-end items-center my-2
-        bg-tint fill-surface text-primary
-        border border-solid border-surface rounded-md
+        bg-bgBase/10 fill-bgBase/20 text-primary
+        border border-solid border-white/20 rounded-md
         text-xs md:text-base
       `}
     >
       <div className="flex items-center w-full">
-        <div className="flex rounded bg-surface fill-surface">
-          <TransactionPayloadDetail
-            chain={originChain}
-            token={originToken}
-            tokenAmount={originValue}
-            isOrigin={true}
-          />
-          <TransactionArrow className="bg-tint fill-surface" />
+        <div className="flex rounded  fill-bgBase/20">
+          <div className='bg-bgBase/20'>
+            <TransactionPayloadDetail
+              chain={originChain}
+              token={originToken}
+              tokenAmount={originValue}
+              isOrigin={true}
+            />
+          </div>
+
+          <TransactionArrow className="stroke-white/20 " />
         </div>
         <div className="flex items-center space-x-4">
           <TransactionPayloadDetail
@@ -121,15 +124,14 @@ export const _Transaction = ({
               minute: '2-digit',
               hour12: true,
             })}
-            {/* <div>{typeof _kappa === 'string' && _kappa?.substring(0, 15)}</div> */}
           </div>
         </div>
         {/* TODO: Update visual format */}
         <div className="flex justify-between gap-2 pr-2 ml-auto">
           {isTxFinalized ? (
-            <TransactionStatus string="Complete" className="text-green-300" />
+            <TransactionStatus string="Complete" className="text-green-300 text-sm" />
           ) : (
-            <TransactionStatus string="Pending" />
+            <TransactionStatus string="Pending" className="text-sm" />
           )}
           <div className="flex items-center justify-end gap-2 grow">
             <TimeRemaining

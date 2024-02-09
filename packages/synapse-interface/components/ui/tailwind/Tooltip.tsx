@@ -38,7 +38,7 @@ const Tooltip = ({
       <div className="overflow-visible">
         <div
           className={`
-            bg-black
+            bg-slate-900/90
             border-0 mt-3 z-50 font-normal leading-normal
             text-sm max-w-xs text-left no-underline break-words rounded-md
             ${tooltipShow ? 'block' : 'hidden'}

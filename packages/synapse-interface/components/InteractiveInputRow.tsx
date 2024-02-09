@@ -1,5 +1,6 @@
 import React from 'react'
 import Button from '@tw/Button'
+import MiniMaxButton from './buttons/MiniMaxButton'
 
 const InteractiveInputRow = ({
   title,
@@ -23,7 +24,7 @@ const InteractiveInputRow = ({
   icon: string
 }) => {
   return (
-    <div className="flex flex-col rounded-sm bg-bgLight">
+    <div className="flex flex-col rounded-sm bg-bgBase/10 ring-1 ring-white/10">
       <div className="border-none rounded-md">
         <div className="flex space-x-2">
           <div className="flex items-center flex-grow w-full h-20 pl-3 ">
@@ -31,7 +32,7 @@ const InteractiveInputRow = ({
               <div
                 className={`
                 group rounded-sm
-                bg-[#564f58]
+                bg-bgBase/10 ring-1 ring-white/10
               `}
               >
                 <div
@@ -86,23 +87,10 @@ const InteractiveInputRow = ({
               <div>
                 {isConnected && (
                   <div className="hidden md:block">
-                    <Button
-                      className={`
-                        bg-[#564f58]
-                        font-light border border-transparent 
-                        mr-2 
-                        pl-lg pr-lg pt-sm mt-2 pb-sm 
-                        text-md rounded-sm 
-                        ${
-                          disabled
-                            ? 'opacity-60 cursor-default'
-                            : 'hover:border-[#AC8FFF]'
-                        } 
-                      `}
-                      onClick={disabled ? undefined : onClickBalance}
-                    >
-                      Max
-                    </Button>
+                    <MiniMaxButton
+                      disabled={disabled}
+                      onClickBalance={disabled ? undefined : onClickBalance}
+                    />
                   </div>
                 )}
               </div>

@@ -72,7 +72,7 @@ const PoolPage = () => {
   }, [poolId, address, isClient])
 
   return (
-    <LandingPageWrapper>
+    <LandingPageWrapper nestedPage={true}>
       <StandardPageContainer
         connectedChainId={connectedChainId}
         address={address}

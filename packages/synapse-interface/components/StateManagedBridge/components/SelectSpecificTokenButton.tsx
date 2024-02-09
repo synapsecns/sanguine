@@ -82,9 +82,10 @@ const SelectSpecificTokenButton = ({
         w-full
         px-2 py-1
         cursor-pointer
-        border-[1px] border-[#423F44]
+        rounded-md
+        border border-slate-400/10
         mb-1
-        ${alternateBackground && 'bg-[#282328]'}
+        ${alternateBackground ? '' : !isCurrentlySelected && 'bg-slate-400/10' }
         ${bgClassName}
         ${classNameForMenuItemStyle}
       `}

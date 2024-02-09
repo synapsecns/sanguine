@@ -8,15 +8,15 @@ export default function MiniMaxButton({
   disabled: boolean
 }) {
   const baseClassName =
-    'pl-lg pr-lg pt-sm pb-sm mr-2 rounded-md text-md font-light bg-bgLighter border border-transparent'
+    'px-2 py-0.5 mr-2 rounded-md text-sm font-light bg-bgBase/10 ring-1 ring-bgBase/10 border border-transparent'
 
-  const className = disabled
-    ? `${baseClassName} opacity-60 cursor-default`
-    : `${baseClassName} hover:border-[#AC8FFF]`
+  const disabledClassName = disabled
+    ? `opacity-60 cursor-default`
+    : `hover:border-[#AC8FFF]`
 
   return (
     <Button
-      className={className}
+      className={`${baseClassName} ${disabledClassName}`}
       onClick={disabled ? undefined : onClickBalance}
     >
       Max

@@ -12,15 +12,15 @@ const TabItem = ({
   let statusClassname
   if (isActive) {
     statusClassname = `
-      bg-bgBase
+
       text-white
       ${className}
       `
   } else {
     statusClassname = `
-      bg-[#111111]
-      hover:bg-opacity-70
-      text-secondaryTextColor text-opacity-50
+      bg-bgBase/20
+      hover:bg-bgBase/40
+      text-secondaryTextColor/50
       ${className}
       `
   }
@@ -31,7 +31,7 @@ const TabItem = ({
         ${statusClassname}
         flex justify-center items-center
         w-full cursor-pointer
-        font-base
+        font-base hover:text-white
         h-14
       `}
     >

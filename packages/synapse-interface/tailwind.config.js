@@ -122,7 +122,7 @@ module.exports = {
         blueText: '#99E6FF',
         greenText: '#66e595',
         // previous colors
-        bgBase: '#252028',
+        bgBase: `${colors.slate[400]}`,
         bgDarker: '#111111',
         bgLight: '#353038',
         bgLighter: '#443F47',

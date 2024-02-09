@@ -15,19 +15,19 @@ export const EstimatedDuration = ({
       className="text-[#C2C2D6] text-sm flex flex-col"
     >
       {timeRemaining >= 0 ? (
-        <React.Fragment>
+        <>
           <div>
             {timeRemaining} - {timeRemaining + 1} min
           </div>
           {transactionStatus !== TransactionStatus.PENDING_WALLET_ACTION && (
             <ProcessingIcon className="fill-[#343036] mt-0.5" />
           )}
-        </React.Fragment>
+        </>
       ) : (
-        <React.Fragment>
+        <>
           <div>Waiting... </div>
           <ProcessingIcon className="fill-[#343036] mt-0.5" />
-        </React.Fragment>
+        </>
       )}
     </div>
   )

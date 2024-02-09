@@ -83,15 +83,15 @@ export const Transaction = React.memo(
         data-test-id="transaction"
         className={`
         flex flex-col mb-2
-        border rounded-lg text-secondary border-surface
-        ${transactionType === TransactionType.HISTORICAL && 'bg-background'}
+        border rounded-lg text-secondary border-white/20
+        ${transactionType === TransactionType.HISTORICAL && 'bg-bgBase/10'}
       `}
       >
         <div className={`flex flex-row`}>
           <div
             className={`
             flex items-center p-2 rounded-tl-lg
-            ${transactionType === TransactionType.PENDING && 'bg-surface'}
+            ${transactionType === TransactionType.PENDING && 'bg-bgBase/20'}
           `}
           >
             <TransactionPayloadDetail
@@ -103,17 +103,17 @@ export const Transaction = React.memo(
           </div>
           <TransactionArrow
             className={`
-          ${
-            transactionType === TransactionType.PENDING
-              ? 'bg-tint fill-surface'
-              : 'stroke-surface fill-transparent'
-          }
+              ${
+                transactionType === TransactionType.PENDING
+                  ? 'bg-bgBase/50 fill-bgBase/20'
+                  : 'stroke-bgBase/20 fill-transparent'
+              }
           `}
           />
           <div
             className={`
             flex flex-row justify-between flex-1 rounded-tr-lg
-            ${transactionType === TransactionType.PENDING && 'bg-tint'}
+            ${transactionType === TransactionType.PENDING && 'bg-bgBase/50'}
           `}
           >
             <div className="flex items-center p-2">

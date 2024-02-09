@@ -11,20 +11,18 @@ export const MenuItem = ({
     <li
       id="menu-item"
       className={`
-        rounded cursor-pointer
+        rounded-md cursor-pointer min-w-[150px]
         border border-solid border-transparent
         hover:border-[--synapse-focus] active:opacity-40
       `}
     >
       {onClick ? (
-        <div
+        <OptionButton
           onClick={onClick}
-          className={`
-            block pl-2 pr-3 py-2 whitespace-nowrap text-[--synapse-text-primary] no-underline after:content-['_↗'] after:text-xs after:text-[--synapse-secondary]
-          `}
-        >
-          {text}
-        </div>
+          text={text}
+          className={``}
+        />
+
       ) : (
         <a
           href={link ?? ''}
@@ -32,12 +30,36 @@ export const MenuItem = ({
           target="_blank"
           rel="noreferrer"
           className={`
-            block pl-2 pr-3 py-2 whitespace-nowrap text-[--synapse-text-primary] no-underline after:content-['_↗'] after:text-xs after:text-[--synapse-secondary]
           `}
         >
-          {text}
+          <OptionButton
+              onClick={onClick}
+              text={text}
+
+            />
         </a>
       )}
     </li>
+  )
+}
+
+export const OptionButton = ({
+  icon,
+  text,
+  onClick,
+}: {
+  icon: any
+  text: string
+  onClick: () => void
+}) => {
+  return (
+    <div
+      data-test-id="option-button"
+      onClick={onClick}
+      className="flex hover:cursor-pointer hover:bg-slate-400/20 rounded-sm p-1 text-white/80 hover:text-white"
+    >
+      <div className="my-auto mr-1">{icon}</div>
+      <div className="text-sm">{text}</div>
+    </div>
   )
 }

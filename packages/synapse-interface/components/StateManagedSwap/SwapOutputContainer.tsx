@@ -16,7 +16,7 @@ export const SwapOutputContainer = ({}) => {
   }, [isConnectedAddress])
 
   return (
-    <div className="mt-[1.125rem] p-md text-left rounded-md bg-bgLight">
+    <div className="mt-[1.125rem] p-md text-left rounded-md bg-bgBase/10">
       <div className="flex h-16 mt-2 mb-2 space-x-2">
         <div
           className={`

@@ -15,7 +15,7 @@ const TokenLabels = ({ tokens }) => {
             >
               <div className="absolute inset-0 w-full h-full bg-bgDark">
                 <div
-                  className="h-full rounded-sm bg-bgLight"
+                  className="h-full rounded-sm bg-bgBase/20 ring-1 ring-white/20"
                   style={{ width: token.percent }}
                 ></div>
               </div>

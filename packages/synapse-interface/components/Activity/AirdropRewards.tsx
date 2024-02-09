@@ -168,7 +168,7 @@ const RewardsDialog = ({
         id="rewards-dialog"
         ref={dialogRef}
         open={open}
-        className="absolute z-50 max-w-md py-5 m-auto border rounded-md cursor-default text-primary bg-background border-separator"
+        className="absolute z-50 max-w-md py-5 m-auto border rounded-md cursor-default text-primary bg-slate-400/20  backdrop-blur-md border-separator"
       >
         <div className="px-4 space-y-4">
           <div className="flex justify-between mb-2">
@@ -265,7 +265,7 @@ const AirdropTransaction = ({
       target="_blank"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="grid grid-cols-3 py-1.5 p-4 text-primary hover:bg-tint cursor-pointer"
+      className="grid grid-cols-3 py-1.5 p-4 text-primary hover:bg-slate-400/10 cursor-pointer rounded"
     >
       <div className="text-greenText">+{tokenValue}</div>
 

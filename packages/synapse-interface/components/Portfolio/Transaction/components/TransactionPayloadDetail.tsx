@@ -61,51 +61,57 @@ export const TransactionPayloadDetail = ({
       className="flex flex-col p-1 space-y-1"
     >
       {chain && (
-        <div
+        <TransactionPayloadDetailButton
           data-test-id="transaction-payload-network"
           onClick={handleSelectChainCallback}
-          className={`
-            flex flex-row px-1 items-center cursor-pointer rounded-sm w-fit
-            hover:bg-tint active:opacity-[67%]
-          `}
         >
           <Image
             src={chain.chainImg}
-            className="w-4 h-4 mr-1.5 rounded-full"
+            className="items-center w-4 h-4 mr-1.5 rounded-full"
             alt={`${chain.name} icon`}
           />
           <div className="whitespace-nowrap">{chain.name}</div>
-        </div>
+        </TransactionPayloadDetailButton>
       )}
 
       {token && tokenAmount && (
-        <div
+        <TransactionPayloadDetailButton
           data-test-id="transaction-payload-token"
           onClick={handleSelectTokenCallback}
-          className={`
-            flex flex-row px-1 items-center cursor-pointer rounded-sm w-fit
-            hover:bg-tint active:opacity-[67%]
-          `}
         >
           <Image
             src={token?.icon}
             className="items-center w-4 h-4 mr-1.5 rounded-full"
             alt={`${token?.name} icon`}
           />
-          {typeof tokenAmount === 'string' && tokenDecimals ? (
-            <div className="mr-1">
-              {trimTrailingZeroesAfterDecimal(
-                formatBigIntToString(BigInt(tokenAmount), tokenDecimals, 4)
-              )}
-            </div>
-          ) : typeof tokenAmount === 'number' ? (
-            <div className="mr-1">{numeral(tokenAmount).format('0,0.000')}</div>
-          ) : (
-            <div className="mr-1">...</div>
-          )}
+          <div className="mr-1">
+            {typeof tokenAmount === 'string' && tokenDecimals
+              ? trimTrailingZeroesAfterDecimal(
+                  formatBigIntToString(BigInt(tokenAmount), tokenDecimals, 4)
+                )
+              : typeof tokenAmount === 'number'
+                ? numeral(tokenAmount).format('0,0.000')
+                : "..."
+            }
+          </div>
           <div className="mt-0.5 text-xs md:text-sm">{token?.symbol}</div>
-        </div>
+        </TransactionPayloadDetailButton>
       )}
+    </div>
+  )
+}
+
+
+function TransactionPayloadDetailButton({ children, ...props}) {
+  return (
+    <div
+      {...props}
+      className={`
+        flex flex-row px-1 items-center cursor-pointer rounded-sm w-fit
+        hover:bg-slate-900/50 active:opacity-[67%]
+      `}
+    >
+      {children}
     </div>
   )
 }

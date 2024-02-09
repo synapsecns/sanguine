@@ -32,9 +32,9 @@ export const InteractiveInputRowButton = ({
               rounded-sm my-2 px-4 py-3
               text-white text-opacity-100
               border border-purple-500
-              disabled:border-[#4A434C]
+              disabled:border-white/10
               hover:opacity-80  disabled:text-[#88818C]
-              bg-gradient-to-r disabled:from-bgBase disabled:to-bgBase
+              bg-gradient-to-r disabled:from-bgBase/20 disabled:to-bgBase/20
               mt-5
               ${isPending && 'from-[#622e71] to-[#564071]'}
             `}

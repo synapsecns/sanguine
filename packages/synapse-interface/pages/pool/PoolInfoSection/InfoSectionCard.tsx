@@ -6,7 +6,7 @@ const InfoSectionCard = ({ title, children }) => {
     <Card
       title={title}
       className="p-3 rounded-md bg-bgBase"
-      titleClassName="font-thin text-secondaryTextColor mb-3"
+      titleClassName="font-medium text-secondaryTextColor mb-3"
       divider={false}
     >
       <InfoSection showDivider={false} showOutline={false}>

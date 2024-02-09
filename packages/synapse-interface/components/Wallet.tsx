@@ -33,6 +33,16 @@ export const WalletIcon = ({
   return SelectedIcon ? <SelectedIcon {...rest} /> : null
 }
 
+const SHARED_BTN_CLASSNAME = `
+  outline-none active:outline-none
+  text-white transition-all duration-100
+  rounded-md
+  py-2 px-2.5 bg-bgBase/10 hover:bg-opacity-70
+  hover:bg-bgBase/20 active:bg-bgBase/20 text-sm
+  border border-bgBase/10 hover:border-bgBase/20
+  whitespace-nowrap
+  `
+
 export const Wallet = () => {
   const { connector: activeConnector, address: connectedAddress } = useAccount()
   const { chain: currentChain } = useNetwork()
@@ -66,51 +76,28 @@ export const Wallet = () => {
               {(() => {
                 if (!connectedAddress) {
                   return (
-                    <button
+                    <WalletButton
                       onClick={openConnectModal}
-                      type="button"
-                      className={`
-                        text-sm text-white outline-none active:outline-none
-                        ring-none transition-all duration-100 transform-gpu
-                        rounded-md py-2 px-2.5
-                        focus:outline-none focus:ring-0 hover:bg-opacity-70
-                        bg-bgLight hover:bg-bgLightest focus:bg-bgLightest
-                        active:bg-bgLightest hover:!border-blue-500
-                        border border-none border-transparent
-                        whitespace-nowrap
-                      `}
                     >
                       Connect Wallet
-                    </button>
+                    </WalletButton>
                   )
                 }
                 if (currentChain?.unsupported || chain?.unsupported) {
                   return (
-                    <button
+                    <WalletButton
                       onClick={openChainModal}
-                      type="button"
-                      className={`
-                        text-white transition-all duration-100th
-                        rounded-md py-2 px-2.5 border border-bgLight
-                        active:bg-bgLightest/10 hover:bg-bgLightest/10
-                        whitespace-nowrap
-                      `}
+                      className="bg-red-500/50"
                     >
                       Wrong Network
-                    </button>
+                    </WalletButton>
                   )
                 }
                 return (
                   <div className="flex gap-3">
-                    <button
+                    <WalletButton
                       onClick={openChainModal}
-                      type="button"
-                      className={`
-                        flex items-center gap-2 text-white transition-all duration-100th
-                        rounded-md py-2 px-2.5 border border-bgLight
-                        active:bg-bgLightest/10 hover:bg-bgLightest/10
-                        whitespace-nowrap
-                        `}
+                      className={`flex items-center gap-2`}
                     >
                       {account?.displayBalance ? (
                         account.displayBalance
@@ -138,20 +125,14 @@ export const Wallet = () => {
                           )}
                         </div>
                       )}
-                    </button>
+                    </WalletButton>
 
-                    <button
+                    <WalletButton
                       onClick={openAccountModal}
-                      type="button"
-                      className={`
-                        text-white transition-all duration-100 rounded-md
-                        py-2 px-2.5 bg-bgLight hover:bg-opacity-70
-                        hover:bg-bgLightest active:bg-bgLightest text-sm
-                        whitespace-nowrap font-bold
-                      `}
+                      className={`font-bold`}
                     >
                       {account ? account.displayName : <Spinner />}
-                    </button>
+                    </WalletButton>
                   </div>
                 )
               })()}
@@ -165,7 +146,20 @@ export const Wallet = () => {
   return mounted && render
 }
 
-function FormattedDisplayName(displayName: string) {
-  const [, hex] = displayName.split('0x')
-  return '0x' + hex
+
+
+
+function WalletButton({className="", children, ...props}) {
+  return (
+    <button
+      type="button"
+      className={`
+        ${SHARED_BTN_CLASSNAME}
+        ${className}
+      `}
+      {...props}
+    >
+      {children}
+    </button>
+  )
 }

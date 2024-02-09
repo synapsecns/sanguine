@@ -15,6 +15,7 @@ import { PoolActionOptions } from '../../components/Pools/PoolActionOptions'
 import { PoolHeader } from '../../components/Pools/PoolHeader'
 import { PoolCardBody } from '../../components/Pools/PoolCardBody'
 import { useAppSelector } from '@/store/hooks'
+import Card from '@/components/ui/tailwind/Card'
 
 const PoolCard = memo(({ pool, address }: { pool: Token; address: string }) => {
   const [isClient, setIsClient] = useState(false)
@@ -86,14 +87,17 @@ const PoolCard = memo(({ pool, address }: { pool: Token; address: string }) => {
   }, [address, isDisconnected, popup])
 
   return (
-    <div
+    <Card
       className={`
-          border
+          group
+          p-0
+          transition-all
           ${
             pool && pool.incentivized
-              ? 'bg-bgBase border-transparent'
-              : 'bg-bgDark border-gray-700'
+              ? 'ring-1 ring-white/10 '
+              : 'from-transparent to-transparent border-transparent'
           }
+          hover:ring-white/30
           rounded-md items-center
           space-y-2
           whitespace-wrap
@@ -128,7 +132,7 @@ const PoolCard = memo(({ pool, address }: { pool: Token; address: string }) => {
           </>
         )}
       </div>
-    </div>
+    </Card>
   )
 })
 
@@ -159,7 +163,7 @@ const ManageLp = ({ pool, stakedBalance, address }) => {
   }
 
   return (
-    <div className="border-t-2 border-[#302C33] pt-2 pb-2 ">
+    <div className="border-t border-slate-400/10 pt-2 pb-2 ">
       <div className="flex items-center justify-between pt-2 pl-3 pr-3">
         <DisplayBalances
           pool={pool}

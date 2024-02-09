@@ -23,6 +23,7 @@ import InfoSectionCard from '../pool/PoolInfoSection/InfoSectionCard'
 import Tabs from '@/components/ui/tailwind/Tabs'
 import TabItem from '@/components/ui/tailwind/TabItem'
 import { InteractiveInputRowButton } from '@/components/InteractiveInputRowButton'
+import Card from '@/components/ui/tailwind/Card'
 
 interface StakeCardProps {
   address: string
@@ -164,8 +165,8 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
              bg-[#564f58]
               w-full my-2 px-4 py-3 tracking-wide
               rounded-sm
-              border border-transparent 
-              hover:border-[#AC8FFF] 
+              border border-transparent
+              hover:border-[#AC8FFF]
               disabled:opacity-100
               disabled:from-bgLight disabled:to-bgLight
             `}
@@ -188,7 +189,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
           </Button>
         )}
       </InfoSectionCard>
-      <div className="p-0 rounded-md bg-bgBase">
+      <Card className="p-0  bg-bgBase/10 ">
         <div className="mb-3">
           <Tabs>
             <TabItem
@@ -196,7 +197,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
               onClick={() => {
                 setShowStake(true)
               }}
-              className="rounded-tl-sm"
+              className="rounded-tl-md"
             >
               Stake
             </TabItem>
@@ -205,7 +206,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
               onClick={() => {
                 setShowStake(false)
               }}
-              className="rounded-tr-sm"
+              className="rounded-tr-md"
             >
               Unstake
             </TabItem>
@@ -338,7 +339,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             />
           )}
         </div>
-      </div>
+      </Card>
     </div>
   )
 }

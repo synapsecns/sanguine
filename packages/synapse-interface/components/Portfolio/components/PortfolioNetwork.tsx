@@ -15,7 +15,7 @@ export const PortfolioNetwork = ({
   return (
     <div
       id="portfolio-network"
-      className="flex flex-row justify-between flex-1 py-4 cursor-pointer"
+      className="flex flex-row justify-between flex-1 py-4 cursor-pointer rounded-lg"
     >
       <div className="flex flex-row items-center px-4">
         {isUnsupportedChain ? (

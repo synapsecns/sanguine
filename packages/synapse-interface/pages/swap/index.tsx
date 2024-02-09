@@ -352,7 +352,7 @@ const StateManagedSwap = () => {
             divider={false}
             className={`
               pb-3 mt-5 overflow-hidden
-              transition-all duration-100 transform rounded-md
+              transition-all duration-100 transform rounded-lg
               bg-bgBase
             `}
           >

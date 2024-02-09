@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react'
 import {
   ChevronDoubleDownIcon,
   ChevronDoubleUpIcon,
+  ChevronUpIcon,
 } from '@heroicons/react/outline'
+import Card from '@/components/ui/tailwind/Card'
 
 type PortfolioAccordionProps = {
   header: React.ReactNode
@@ -40,22 +42,23 @@ export const PortfolioAccordion = ({
   }, [portfolioChainId, selectedFromChainId, hasNoTokenBalance])
 
   return (
-    <div
+    <Card
       id="portfolio-accordion"
       className={
-        isExpanded ? 'shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]' : 'shadow-none'
+        `#{isExpanded ? 'shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]' : 'shadow-none'} !p-0 !from-transparent !to-transparent rounded-lg`
       }
     >
       <div
         id="portfolio-accordion-header"
         className={`
+          group
           flex items-center justify-between border border-transparent pr-2 select-none
-          hover:border-[#3D3D5C] hover:bg-[#272731]
+           hover:bg-bgBase/20
           active:border-[#3D3D5C] active:opacity-[67%]
           ${
             isExpanded
-              ? 'bg-tint rounded-t-md hover:rounded-t-md'
-              : 'bg-transparent rounded-md'
+              ? 'bg-bgBase/10 rounded-t-lg hover:rounded-t-lg'
+              : 'bg-transparent rounded-lg'
           }
         `}
       >
@@ -83,7 +86,7 @@ export const PortfolioAccordion = ({
       <div id="portfolio-accordion-contents" className="flex flex-col">
         {isExpanded && <React.Fragment>{children}</React.Fragment>}
       </div>
-    </div>
+    </Card>
   )
 }
 
@@ -101,16 +104,23 @@ const AccordionIcon = ({
       id="accordion-icon"
       onClick={onClick}
       className={`
-        p-1 mx-2 border border-surface rounded-full
-        cursor-pointer hover:border-transparent active:border-transparent
-        ${isHovered ? 'border-transparent' : 'border-surface'}
+        p-1 mx-2 border border-transparent rounded-full
+        cursor-pointer hover:border-white/60 active:border-white/80 transition-all
+
       `}
+      //         ${isHovered ? 'border-synapsePurple' : 'border-white/30'}
     >
-      {isExpanded ? (
-        <ChevronDoubleUpIcon className="w-4 h-4 stroke-[3] stroke-separator" />
+      <ChevronUpIcon
+          className={`
+            w-4 h-4 stroke-[3] stroke-white/20 group-hover:stroke-white/50 transition-all
+            ${isExpanded ? 'rotate-180' : 'rotate-0'}
+          `}
+      />
+      {/* {isExpanded ? (
+        <ChevronDoubleUpIcon className="w-4 h-4 stroke-[3] stroke-white/20 group-hover:stroke-white/50 transition-all" />
       ) : (
-        <ChevronDoubleDownIcon className="w-4 h-4 stroke-[3] stroke-separator" />
-      )}
+        <ChevronDoubleDownIcon className="w-4 h-4 stroke-[3] stroke-white/20 group-hover:stroke-white/50 transition-all" />
+      )} */}
     </div>
   )
 }

@@ -14,9 +14,9 @@ export const PortfolioAssetActionButton = ({
       <button
         id="portfolio-asset-action-button"
         className={`
-          py-1 px-6 rounded-sm
-          border border-synapsePurple
-          ${!isDisabled && 'cursor-pointer hover:bg-surface active:opacity-70'}
+          py-1 px-6 rounded-md text-sm
+          border border-white/10 ${isSelected && "!border-synapsePurple"}
+          ${!isDisabled && 'cursor-pointer hover:bg-bgBase/20 active:opacity-70'}
         `}
         onClick={selectCallback}
         disabled={isDisabled}

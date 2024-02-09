@@ -73,6 +73,7 @@ import {
   fetchEthPrice,
   fetchGmxPrice,
 } from '@/slices/priceDataSlice'
+import { XIcon } from '@heroicons/react/outline'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -478,7 +479,7 @@ const StateManagedBridge = () => {
   }
 
   const springClass =
-    '-mt-4 fixed z-50 w-full h-full bg-opacity-50 bg-[#343036]'
+    '-mt-4 fixed z-50 w-full h-full bg-opacity-50 bg-slate-400/10'
 
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
@@ -490,22 +491,27 @@ const StateManagedBridge = () => {
           />
           <div>
             <Button
-              className="flex items-center p-3 text-opacity-75 bg-bgLight hover:bg-bgLighter text-secondaryTextColor hover:text-white"
+              className="group flex items-center p-2 text-opacity-75 bg-bgBase/10 hover:bg-bgBase/20 ring-1 ring-white/10 hover:ring-white/30 text-secondaryTextColor hover:text-white"
               onClick={() => {
-                if (showSettingsSlideOver === true) {
-                  dispatch(setShowSettingsSlideOver(false))
-                } else {
-                  dispatch(setShowSettingsSlideOver(true))
-                }
+                dispatch(setShowSettingsSlideOver(showSettingsSlideOver !== true))
+                // if (showSettingsSlideOver === true) {
+                //   dispatch(setShowSettingsSlideOver(false))
+                // } else {
+                //   dispatch(setShowSettingsSlideOver(true))
+                // }
               }}
             >
               {!showSettingsSlideOver ? (
                 <>
-                  <SettingsIcon className="w-5 h-5 mr-2" />
-                  <span>Settings</span>
+                  <SettingsIcon className="w-4 h-4 mr-2 group-hover:animate-spin" />
+                  <span className='text-sm mr-1'>Settings</span>
                 </>
               ) : (
-                <span>Close</span>
+                <>
+                  <XIcon className="w-4 h-4 mr-2"/>
+                  <span className='text-sm mr-1'>Close</span>
+                </>
+
               )}
             </Button>
           </div>
@@ -514,13 +520,13 @@ const StateManagedBridge = () => {
           divider={false}
           className={`
             pb-3 mt-5 overflow-hidden
-            transition-all duration-100 transform rounded-md
-            bg-bgBase
+            transition-all duration-100 transform rounded-lg
+            bg-bgBase/10
           `}
         >
           <div ref={bridgeDisplayRef}>
             <Transition show={showSettingsSlideOver} {...TRANSITION_PROPS}>
-              <animated.div>
+              <animated.div className={springClass}>
                 <SettingsSlideOver key="settings" />
               </animated.div>
             </Transition>

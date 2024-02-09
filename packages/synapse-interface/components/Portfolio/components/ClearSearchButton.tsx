@@ -14,8 +14,8 @@ export const ClearSearchButton = ({
         ${show ? 'visible' : 'invisible'}
         flex w-6 h-6 mr-2
         items-center justify-center
-        border border-separator rounded-full
-        hover:cursor-pointer hover:border-secondary
+        border border-bgBase/20 rounded-full
+        hover:cursor-pointer hover:border-bgBase/50
       `}
       onClick={onClick}
     >

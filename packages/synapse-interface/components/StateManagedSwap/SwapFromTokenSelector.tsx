@@ -44,7 +44,7 @@ export const SwapFromTokenSelector = () => {
       data-test-id="bridge-origin-token"
       className={`
         p-md rounded-sm min-w-[80px]
-        bg-[#565058]
+        bg-slate-400/20
         ${getMenuItemHoverBgForCoin(swapFromToken?.color)}
         border border-transparent
         ${getBorderStyleForCoinHover(swapFromToken?.color)}

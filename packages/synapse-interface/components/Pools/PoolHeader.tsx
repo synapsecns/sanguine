@@ -20,9 +20,9 @@ export const PoolHeader = memo(
       setMounted(true)
     }, [])
     const canDeposit = useMemo(() => {
-      const balancesForChain = _(balances[pool.chainId])
-        .pickBy((value, _key) => value.balance > 0n)
-        .value()
+      const balancesForChain = _.pickBy( balances[pool.chainId],
+        (value, _key) => value.balance > 0n
+      )
 
       if (Object.keys(balancesForChain).length === 0) return false
 
@@ -56,13 +56,13 @@ export const PoolHeader = memo(
         {canDeposit && pool.incentivized ? (
           <Link href={getPoolUrl(pool)}>
             <div className="text-sm text-[#99E6FF] flex items-center space-x-1">
-              <div className="hover:underline">Deposit</div>
-              <RightArrow color="#99E6FF" />
+              <div className="hover:underline pr-1">Deposit</div>
+              <RightArrow className="" />
             </div>
           </Link>
         ) : (
-          <div className="">
-            <RightArrow color="#565058" />
+          <div className="text-bgBase/50">
+            <RightArrow className="stroke-bgBase/50 group-hover:stroke-bgBase" />
           </div>
         )}
       </div>

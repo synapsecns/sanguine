@@ -86,7 +86,7 @@ const StakePage = () => {
         <div className="flex flex-col justify-center max-w-[1300px] m-auto">
           <div>
             <Link href={POOLS_PATH}>
-              <div className="inline-flex items-center mb-3 text-sm font-light text-white hover:text-opacity-100">
+              <div className="inline-flex items-center mb-3 text-sm  text-white/80 hover:text-white/100">
                 <ChevronLeftIcon className="w-4 h-4" />
                 Back to Pools
               </div>

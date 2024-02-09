@@ -38,7 +38,7 @@ const SettingsSlideOver = () => {
   useEffect(escFunc, [escPressed])
 
   return (
-    <div className="max-h-full pb-4 overflow-auto rounded-lg">
+    <div className="max-h-full pb-4 pt-2 overflow-auto rounded-lg">
       <div
         className={`
          px-3 md:px-6 rounded-md text-base focus:outline-none
@@ -54,7 +54,9 @@ const SettingsSlideOver = () => {
             <Switch.Label className="flex items-center mr-4 text-white">
               Show withdrawal address{' '}
               <Tooltip content="Allows bridging to another address.">
-                <InformationCircleIcon className="w-4 h-4 ml-1 cursor-pointer text-[#252027] fill-bgLighter" />
+                <div className="inline-block mt-1">
+                  <InformationCircleIcon className="w-4 h-4 ml-1 cursor-pointer text-white/20 hover:text-white fill-transparent" />
+                </div>
               </Tooltip>
             </Switch.Label>
             <Switch
@@ -94,7 +96,7 @@ const SettingsSlideOver = () => {
 
 const WithdrawalWarning = ({ onClose }: { onClose: any }) => {
   return (
-    <div className="w-full p-4 bg-bgLight rounded-md">
+    <div className="w-full p-4 bg-slate-900/50 rounded-md">
       <div className="flex items-center justify-between space-x-1">
         <div className="w-3/4 text-xs text-white md:text-sm">
           Do not send your funds to a custodial wallet or exchange address!{' '}
@@ -106,7 +108,8 @@ const WithdrawalWarning = ({ onClose }: { onClose: any }) => {
           className={`
             p-4 rounded-md
             text-sm font-medium text-white
-            bg-bgLighter hover:bg-bgLightest active:bg-bgLightest
+            bg-bgBase/10 hover:bg-bgBase/20 active:bg-bgBase/30
+            ring-1 ring-white/20
           `}
           onClick={onClose}
         >

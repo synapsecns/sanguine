@@ -68,9 +68,10 @@ export const SelectSpecificNetworkButton = ({
         w-full h-[62px]
         px-2 py-4
         cursor-pointer
-        border-[1px] border-[#423F44]
+        rounded-md
+        border border-slate-400/10
         mb-1
-        ${alternateBackground && 'bg-[#282328]'}
+        ${alternateBackground ? '' : !isCurrentChain && 'bg-slate-400/10'}
         ${bgClassName}
         ${getNetworkButtonBorderHover(chain.color)}
         ${getNetworkHover(chain.color)}

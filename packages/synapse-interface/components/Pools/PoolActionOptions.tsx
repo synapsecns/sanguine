@@ -53,17 +53,19 @@ export const PoolActionOptions = ({
           >
             <div
               className={`
-                flex items-center 
+                flex items-center
                 text-sm
                 rounded-sm
-                border border-[#565058] 
-                pl-2 pr-2 pt-1 pb-1 space-x-2 
+                border border-white/20 hover:border-white/50
+                pl-2 pr-2 pt-1 pb-1 space-x-2
                 hover:cursor-pointer
-                hover:bg-[#101018] ${open ? 'bg-[#101018]' : ''}`}
+                hover:bg-bgBase/10 ${open ? 'bg-bgBase/10' : ''}
+                text-md text-[#BFBCC2] group-hover:text-white/90
+              `}
             >
-              <div className="text-md text-[#BFBCC2]">Actions</div>
-              <div className="mt-1">
-                <DownArrow />
+              <div className="">Actions</div>
+              <div className="mt-0.5">
+                <DownArrow className={`transition-all  group-hover:fill-white/90  ${open ? 'rotate-180' : 'rotate-0'}`} />
               </div>
             </div>
           </Popover.Button>
@@ -131,8 +133,8 @@ export function TransactionPopoverContainer({
         style={{ boxShadow: '0px 4px 4px 0px rgba(0, 0, 0, 0.25)' }}
         className={`
           absolute z-10 top-[-74px] left-[50px] w-[110px] transform-gpu
-          -translate-x-full border border-separator bg-surface
-          rounded-sm overflow-hidden shadow-md
+          -translate-x-full border border-white/20 bg-bgBase/10 backdrop-blur-lg
+          rounded-md overflow-hidden shadow-md
         `}
       >
         <div className="shadow-xl">
@@ -156,7 +158,7 @@ export const OptionButton = ({
     <div
       data-test-id="option-button"
       onClick={onClick}
-      className="flex hover:cursor-pointer hover:bg-[#0A415C] rounded-sm p-1 text-white"
+      className="flex hover:cursor-pointer hover:bg-slate-400/20 rounded-sm p-1 text-white/80 hover:text-white"
     >
       <div className="my-auto mr-1">{icon}</div>
       <div className="text-sm">{text}</div>

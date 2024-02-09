@@ -25,27 +25,28 @@ import { NAVIGATION } from '@/constants/routes'
 import { MoreButton } from './MoreButton'
 import { PageFooter } from './PageFooter'
 
-export function LandingPageWrapper({ children }: { children: any }) {
+export function LandingPageWrapper({ nestedPage=false, children }) {
   return (
     <div
-      style={{
-        background:
-          'radial-gradient(23.86% 33.62% at 50.97% 47.88%, rgba(255, 0, 255, 0.04) 0%, rgba(172, 143, 255, 0.04) 100%), #111111',
-      }}
+      className="bg-slate-950"
+      // style={{
+      //   background:
+      //     'radial-gradient(23.86% 33.62% at 50.97% 47.88%, rgba(255, 0, 255, 0.04) 0%, rgba(172, 143, 255, 0.04) 100%), #111111',
+      // }}
     >
-      <LandingNav />
-
       <div
-        style={{
-          backgroundImage: `url('landingBg.svg')`,
-          backgroundSize: '800px',
-          backgroundPosition: 'top center',
-          backgroundRepeat: 'no-repeat',
-        }}
+          className="bg-[length:100%_100%] bg-opacity-50 transition-all"
+          style={{
+                backgroundImage: nestedPage ? `url('../landingBg.svg')` : `url('landingBg.svg')`
+          }}
       >
-        {children}
+        <LandingNav />
+        <div>
+          {children}
+        </div>
+        <PageFooter />
       </div>
-      <PageFooter />
+
     </div>
   )
 }
@@ -150,7 +151,7 @@ export function PopoverPanelContainer({
         `}
       >
         <div className="overflow-hidden rounded-md shadow-xl">
-          <div className="relative grid gap-3 bg-bgLight px-2.5 py-3  sm:p-2">
+          <div className="relative grid gap-3 bg-bgBase/10 backdrop-blur-lg px-2.5 py-3  sm:p-2">
             {children}
           </div>
         </div>
@@ -197,7 +198,7 @@ function SocialButtons() {
       <MiniInfoItem
         href={DOCS_URL}
         labelText="Docs"
-        icon={<DocumentTextIcon className="inline w-5 mr-2 -ml-1 " />}
+        icon={<DocumentTextIcon className="inline w-5 mr-2 -ml-1" />}
       />
       <MiniInfoItem
         href={DISCORD_URL}
@@ -207,12 +208,12 @@ function SocialButtons() {
       <MiniInfoItem
         href={TELEGRAM_URL}
         labelText="Telegram"
-        icon={<TelegramIcon className="inline w-5 mr-2 -ml-1 " />}
+        icon={<TelegramIcon className="inline w-5 mr-2 -ml-1" />}
       />
       <MiniInfoItem
         href={TWITTER_URL}
         labelText="Twitter"
-        icon={<TwitterIcon className="inline w-5 mr-2 -ml-1 " />}
+        icon={<TwitterIcon className="inline w-5 mr-2 -ml-1" />}
       />
       <MiniInfoItem
         href={FORUM_URL}

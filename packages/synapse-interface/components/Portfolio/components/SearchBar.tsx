@@ -64,8 +64,8 @@ export const SearchBar = () => {
         ${!isMounted && 'border-opacity-30'}
         ${
           isFocused || isSearchInputActive
-            ? 'border-synapsePurple bg-tint'
-            : 'border-separator bg-transparent'
+            ? 'border-synapsePurple bg-bgBase/10'
+            : 'border-bgBase/10 bg-transparent'
         }
       `}
     >
