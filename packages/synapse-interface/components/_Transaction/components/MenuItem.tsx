@@ -24,8 +24,6 @@ export function MenuItem({
           onClick={onClick}
           target="_blank"
           rel="noreferrer"
-          className={`
-          `}
         >
           <OptionButton
             onClick={onClick}
