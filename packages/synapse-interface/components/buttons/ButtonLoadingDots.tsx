@@ -1,7 +1,7 @@
 import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 
 export default function ButtonLoadingDots({
-  className,
+  className
 }: {
   className?: string
 }) {

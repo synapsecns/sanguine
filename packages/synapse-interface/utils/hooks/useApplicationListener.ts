@@ -42,10 +42,10 @@ export const useApplicationListener = () => {
       }
 
       dispatch(updateLastConnectedAddress(address))
-      dispatch(updateLastConnectedTime(getTimeMinutesBeforeNow(0)))
-    } else {
-      dispatch(updateLastConnectedTime(getTimeMinutesBeforeNow(0)))
+
     }
+
+    dispatch(updateLastConnectedTime(getTimeMinutesBeforeNow(0)))
   }, [address, lastConnectedAddress, lastConnectedTimestamp])
 
   return null

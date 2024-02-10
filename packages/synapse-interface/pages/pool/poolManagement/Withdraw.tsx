@@ -229,9 +229,9 @@ const Withdraw = ({ address }: { address: string }) => {
           <input
             className={`
             px-2 py-1 w-1/5 rounded-md
-            focus:ring-indigo-500 focus:outline-none focus:border-purple-700
-            border border-transparent
-            bg-[#111111]
+            focus:outline-none
+            border-transparent focus:border-transparent
+            bg-slate-900/80 focus:bg-slate-900/100 active:bg-slate-900/100
             text-gray-300
           `}
             placeholder="0"
@@ -310,7 +310,7 @@ const Withdraw = ({ address }: { address: string }) => {
         />
 
         {stringToBigInt(inputValue, poolDecimals) > 0n && (
-          <div className={` mt-2  bg-bgBase `}>
+          <div className={` mt-2 `}>
             <Grid cols={{ xs: 2 }}>
               <div>
                 <ReceivedTokenSection

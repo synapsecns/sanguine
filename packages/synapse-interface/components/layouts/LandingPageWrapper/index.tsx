@@ -45,19 +45,27 @@ export function LandingPageWrapper({ nestedPage=false, children }) {
   )
 }
 
+
+function MobileNavButton({ label, IconComponent }) {
+  return (
+    <Popover.Button
+      data-test-id="mobile-navbar-button"
+      className="group flex items-center p-2 text-opacity-75 bg-bgBase/10 hover:bg-bgBase/20 ring-1 ring-white/10 hover:ring-white/30 text-secondaryTextColor hover:text-white rounded-md"
+    >
+      <span className="sr-only">{label}</span>
+      <IconComponent className="w-6 h-6" aria-hidden="true" />
+    </Popover.Button>
+  )
+}
+
+
 export function LandingNav() {
   return (
     <Popover>
       <div className="flex gap-4 place-content-between p-8 max-w-[1440px] m-auto">
         <SynapseTitleLogo showText={true} />
         <div className="lg:hidden">
-          <Popover.Button
-            data-test-id="mobile-navbar-button"
-            className="p-2 text-gray-400 rounded-md hover:bg-gray-800 focus:outline-none"
-          >
-            <span className="sr-only">Open menu</span>
-            <MenuIcon className="w-8 h-8" aria-hidden="true" />
-          </Popover.Button>
+          <MobileNavButton label="Open menu" IconComponent={MenuIcon} />
         </div>
         <Popover.Group
           as="nav"
@@ -97,17 +105,14 @@ export function LandingNav() {
       >
         <Popover.Panel focus className="absolute top-0 z-10 w-screen">
           <div className="bg-bgBase/10 backdrop-blur-lg">
-            <div className="flex items-center px-4 pt-4 place-content-between">
+            <div className="flex items-center p-8 pb-4 place-content-between">
               <SynapseTitleLogo showText={true} />
-              <Popover.Button className="p-2 text-gray-400 rounded-md hover:bg-gray-900 focus:outline-none">
-                <span className="sr-only">Close menu</span>
-                <XIcon className="w-8 h-8" aria-hidden="true" />
-              </Popover.Button>
+              <MobileNavButton label="Close menu" IconComponent={XIcon} />
             </div>
-            <div className="flex flex-col gap-2 py-4" data-test-id="mobile-nav">
+            <div className="flex flex-col gap-2 py-4 pl-4" data-test-id="mobile-nav">
               <MobileBarButtons />
             </div>
-            <div className="px-2 py-4 bg-white/10">
+            <div className="pr-2 pl-8 py-4 bg-white/10">
               <Wallet />
             </div>
           </div>

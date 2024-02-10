@@ -22,7 +22,7 @@ const InteractiveInputRow = ({
   icon: string
 }) => {
   return (
-    <div className="flex flex-col rounded-sm bg-bgBase/10 ring-1 ring-white/10">
+    <div className="flex flex-col rounded-sm bg-bgBase/10 ring-1 ring-white/10 group focus-within:ring-white/50">
       <div className="border-none rounded-md">
         <div className="flex space-x-2">
           <div className="flex items-center flex-grow w-full h-16 pl-3 ">

@@ -289,7 +289,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
               loadingLabel={isPendingApprove ? 'Approving' : 'Staking'}
               disabled={lpTokenBalance === 0n || deposit.str === ''}
               isPending={isPendingStake || isPendingApprove}
-              onClickEnter={
+              onClick={
                 allowance < deposit.bi
                   ? async (e) => {
                       const tx = await pendingApproveTxWrapFunc(
@@ -322,7 +322,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
               loadingLabel="Unstaking"
               disabled={userStakeData.amount === 0n || withdraw === ''}
               isPending={isPendingUnstake}
-              onClickEnter={async () => {
+              onClick={async () => {
                 const tx = await pendingUnstakeTxWrapFunc(
                   withdrawStake(
                     address as Address,
