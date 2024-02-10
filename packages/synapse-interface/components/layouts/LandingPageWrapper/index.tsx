@@ -194,27 +194,27 @@ function SocialButtons() {
       <MiniInfoItem
         href={DOCS_URL}
         labelText="Docs"
-        icon={<DocumentTextIcon className="inline w-5 mr-2 -ml-1" />}
+        IconComponent={DocumentTextIcon}
       />
       <MiniInfoItem
         href={DISCORD_URL}
         labelText="Discord"
-        icon={<DiscordIcon className="inline w-5 mr-2 -ml-1" />}
+        IconComponent={DiscordIcon}
       />
       <MiniInfoItem
         href={TELEGRAM_URL}
         labelText="Telegram"
-        icon={<TelegramIcon className="inline w-5 mr-2 -ml-1" />}
+        IconComponent={TelegramIcon}
       />
       <MiniInfoItem
         href={TWITTER_URL}
         labelText="Twitter"
-        icon={<TwitterIcon className="inline w-5 mr-2 -ml-1" />}
+        IconComponent={TwitterIcon}
       />
       <MiniInfoItem
         href={FORUM_URL}
         labelText="Forum"
-        icon={<ForumIcon className="inline w-5 mr-2 -ml-1" />}
+        IconComponent={ForumIcon}
       />
     </Grid>
   )
@@ -275,12 +275,12 @@ function MoreInfoItem({
 
 function MiniInfoItem({
   href,
-  icon,
   labelText,
+  IconComponent,
 }: {
   href: string
-  icon: JSX.Element
   labelText: string
+  IconComponent: any
 }) {
   return (
     <a
@@ -291,7 +291,7 @@ function MiniInfoItem({
     >
       <div>
         <p className="text-base text-white text-opacity-40 group-hover:text-white">
-          {icon}
+          <IconComponent className="inline w-5 mr-2 -ml-1" />
           <span className="mt-1">{labelText}</span>
         </p>
       </div>
