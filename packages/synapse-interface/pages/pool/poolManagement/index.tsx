@@ -44,7 +44,7 @@ const PoolManagement = ({
   }
 
   return (
-    <div className="">
+    <div>
       <LiquidityManagementTabs
         cardNav={cardNav}
         setCardNav={(val) => {

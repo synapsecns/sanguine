@@ -57,7 +57,7 @@ export const PoolHeader = memo(
           <Link href={getPoolUrl(pool)}>
             <div className="text-sm text-[#99E6FF] flex items-center space-x-1">
               <div className="hover:underline pr-1">Deposit</div>
-              <RightArrow className="" />
+              <RightArrow />
             </div>
           </Link>
         ) : (

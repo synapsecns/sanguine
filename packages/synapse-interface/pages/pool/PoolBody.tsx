@@ -73,7 +73,7 @@ const PoolBody = ({
 
   return (
     <>
-      <div className="">
+      <div>
         <Link href={POOLS_PATH}>
           <div className="inline-flex items-center mb-3 text-sm  text-white/70 hover:text-white/100 group">
             <ChevronLeftIcon className="w-4 h-4 mr-1 mt-0.25 group-hover:stroke-2" />
@@ -110,7 +110,7 @@ const PoolBody = ({
           </div>
         </div>
       </div>
-      <div className="">
+      <div>
         <Grid cols={{ xs: 1, sm: 1, md: 1, lg: 2 }} gap={8}>
           <Card
             className="!p-0 rounded-md bg-bgBase"

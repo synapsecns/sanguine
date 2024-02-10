@@ -22,7 +22,7 @@ export const ToChainSelector = () => {
   if (toChainId) {
     buttonContent = (
       <div className="flex items-center space-x-3">
-        <div className="">
+        <div>
           <img
             src={toChain?.chainImg?.src}
             alt={toChain?.name}

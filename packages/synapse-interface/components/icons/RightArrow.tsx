@@ -1,4 +1,4 @@
-export const RightArrow = ({ className }) => {
+export function RightArrow({ className="" }) {
   return (
     <svg
       width="7"

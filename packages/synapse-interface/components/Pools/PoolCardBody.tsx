@@ -21,7 +21,7 @@ export const PoolCardBody = memo(
           <PoolTokenIcons pool={pool} />
           <div className="text-white">
             <div className="flex items-center space-x-2 font-medium text-2xl leading-7">
-              <div className="">
+              <div>
                 {poolData && numeral(poolData.totalLockedUSD).format(format)}
               </div>
               <span className="text-base text-[#BFBCC2]">
@@ -31,7 +31,7 @@ export const PoolCardBody = memo(
           </div>
         </div>
 
-        <div className="">
+        <div>
           <ApyDisplay pool={pool} poolApyData={poolApyData} />
         </div>
       </div>

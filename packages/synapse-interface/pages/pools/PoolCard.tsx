@@ -219,7 +219,7 @@ export const DisplayBalances = ({ pool, stakedBalance, showIcon, address }) => {
       {showIcon && (
         <img src={pool.icon.src} className="w-[20px] h-[20px] rounded-full" />
       )}
-      <div className="">
+      <div>
         <div className="flex items-center space-x-1">
           <div className="text-white text-md">
             <Link href={`${STAKE_PATH}/${pool.routerIndex}`}>

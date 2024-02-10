@@ -46,7 +46,7 @@ const Slippage = () => {
       {safeFromAmount !== '0' && !underFee ? (
         <span className={textColor}>{formattedPercentSlippage}</span>
       ) : (
-        <span className="">—</span>
+        <span>—</span>
       )}
     </div>
   )
@@ -233,7 +233,7 @@ const GasDropLabel = () => {
 
   return (
     <div className="flex items-center text-secondary">
-      <span className="">Will also receive {formattedGasDropAmount} </span>
+      <span>Will also receive {formattedGasDropAmount} </span>
       <span className="ml-1 font-medium text-white">
         {symbol}{' '}
         <span className="font-normal ">

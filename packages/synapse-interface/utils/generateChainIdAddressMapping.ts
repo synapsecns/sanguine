@@ -32,9 +32,7 @@ export const getAllSymbols = () => {
 
 export const getAllInternalSymbols = () => {
   return _.sortBy(
-    _.map(BRIDGEABLE, (token) => {
-      return token.routeSymbol
-    })
+    _.map(BRIDGEABLE, (token) => token.routeSymbol)
   )
 }
 

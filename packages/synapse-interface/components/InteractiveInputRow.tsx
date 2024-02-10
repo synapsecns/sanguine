@@ -47,7 +47,7 @@ const InteractiveInputRow = ({
                   </div>
                   <div className="text-left">
                     <h4 className="text-lg text-white">
-                      <span className="">{title}</span>
+                      <span>{title}</span>
                     </h4>
                   </div>
                 </div>

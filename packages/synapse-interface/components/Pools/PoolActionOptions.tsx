@@ -64,7 +64,7 @@ export const PoolActionOptions = ({
                 text-md text-[#BFBCC2] group-hover:text-white/90
               `}
             >
-              <div className="">Actions</div>
+              <div>Actions</div>
               <div className="mt-0.5">
                 <DownArrow className={`transition-all  group-hover:fill-white/90  ${open ? 'rotate-180' : 'rotate-0'}`} />
               </div>

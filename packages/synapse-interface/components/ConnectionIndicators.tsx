@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { useAccount } from 'wagmi'
 import { switchNetwork } from '@wagmi/core'
-import { useConnectModal } from '@rainbow-me/rainbowkit'
+
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 
 import { setFromChainId } from '@/slices/bridge/reducer'
-import { useBridgeState } from '@/slices/bridge/hooks'
+
 import { CHAINS_BY_ID } from '@/constants/chains'
 import {
   getNetworkButtonBgClassNameActive,
@@ -42,39 +42,7 @@ export const ConnectedIndicator = () => {
   )
 }
 
-const DisconnectedIndicator = () => {
-  const { openConnectModal } = useConnectModal()
-  const { fromChainId } = useBridgeState()
-  const chain = CHAINS_BY_ID[fromChainId]
 
-  return (
-    <button
-      data-test-id="disconnected-button"
-      className={`
-        flex items-center justify-center
-        text-base text-white px-3 py-1 rounded-md
-        text-center transform-gpu transition-all duration-75
-        border border-solid border-transparent
-        h-8
-        ${getNetworkHover(chain?.color)}
-        ${getNetworkButtonBgClassNameActive(chain?.color)}
-        ${getNetworkButtonBorderActive(chain?.color)}
-        ${getNetworkButtonBorderHover(chain?.color)}
-      `}
-      onClick={openConnectModal}
-    >
-      <div className="flex flex-row text-sm">
-        <div
-          className={`
-            my-auto ml-auto mr-2 w-2 h-2
-            bg-red-500 rounded-full
-            `}
-        />
-        Disconnected
-      </div>
-    </button>
-  )
-}
 
 export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
   const [isConnecting, setIsConnecting] = useState<boolean>(false)
