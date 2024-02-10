@@ -1,6 +1,6 @@
 import Link from 'next/link'
-import Grid from '@/components/ui/tailwind/Grid'
-import Card from '@/components/ui/tailwind/Card'
+import Grid from '@tw/Grid'
+import Card from '@tw/Card'
 import { SectionContainer } from '../../../components/landing/shared'
 import { ORDERED_CHAINS_BY_ID, ChainId, CHAINS_BY_ID } from '@/constants/chains'
 import { Chain } from '@/utils/types'

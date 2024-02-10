@@ -1,6 +1,6 @@
 import { SectionContainer } from '../../../components/landing/shared'
-import Grid from '@/components/ui/tailwind/Grid'
-import Card from '@/components/ui/tailwind/Card'
+import Grid from '@tw/Grid'
+import Card from '@tw/Card'
 import { CrossChainExchangeIcon } from '@/components/icons/LandingIcons/CrossChainExchangeIcon'
 import { UniversalMoneyMarketsIcon } from '@/components/icons/LandingIcons/UniversalMoneyMarketsIcon'
 import { MultiChainGamingIcon } from '@/components/icons/LandingIcons/MultiChainGamingIcon'

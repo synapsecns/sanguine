@@ -1,29 +1,34 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Address } from '@wagmi/core'
 
-import { usePendingTxWrapper } from '@/utils/hooks/usePendingTxWrapper'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { getStakedBalance } from '@/utils/actions/getStakedBalance'
 import { approve, stake } from '@/utils/actions/approveAndStake'
-import { useTokenBalance } from '@/utils/hooks/useTokenBalance'
 import { withdrawStake } from '@/utils/actions/withdrawStake'
-import { getTokenOnChain } from '@/utils/hooks/useTokenInfo'
-import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import { claimStake } from '@/utils/actions/claimStake'
+import { cleanNumberInput } from '@/utils/cleanNumberInput'
+
+import { usePendingTxWrapper } from '@/utils/hooks/usePendingTxWrapper'
+import { useTokenBalance } from '@/utils/hooks/useTokenBalance'
+import { getTokenOnChain } from '@/utils/hooks/useTokenInfo'
+
 import { Token } from '@/utils/types'
 
 import ButtonLoadingDots from '@/components/buttons/ButtonLoadingDots'
 import InteractiveInputRow from '@/components/InteractiveInputRow'
-import Button from '@/components/ui/tailwind/Button'
+
+import Button from '@tw/Button'
+import Tabs from '@tw/Tabs'
+import TabItem from '@tw/TabItem'
+import Card from '@tw/Card'
 
 import StakeCardTitle from './StakeCardTitle'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { stringToBigInt } from '@/utils/bigint/format'
 import InfoSectionCard from '../pool/PoolInfoSection/InfoSectionCard'
-import Tabs from '@/components/ui/tailwind/Tabs'
-import TabItem from '@/components/ui/tailwind/TabItem'
+
 import { InteractiveInputRowButton } from '@/components/InteractiveInputRowButton'
-import Card from '@/components/ui/tailwind/Card'
+
 
 interface StakeCardProps {
   address: string

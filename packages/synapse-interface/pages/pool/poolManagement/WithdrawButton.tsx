@@ -5,7 +5,7 @@ import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 import { useEffect, useState } from 'react'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { stringToBigInt } from '@/utils/bigint/format'
-import LoadingDots from '@/components/ui/tailwind/LoadingDots'
+import LoadingDots from '@tw/LoadingDots'
 import { DEFAULT_WITHDRAW_QUOTE } from '@/slices/poolWithdrawSlice'
 
 const WithdrawButton = ({ approveTxn, withdrawTxn, isApproved }) => {

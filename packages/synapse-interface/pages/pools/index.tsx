@@ -18,7 +18,7 @@ import { useRouter } from 'next/router'
 
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { PageHeader } from '@/components/PageHeader'
-import Grid from '@/components/ui/tailwind/Grid'
+import Grid from '@tw/Grid'
 import {
   METIS_POOL_SWAP_TOKEN_MIGRATED,
   METIS_WETH_SWAP_TOKEN_MIGRATED,

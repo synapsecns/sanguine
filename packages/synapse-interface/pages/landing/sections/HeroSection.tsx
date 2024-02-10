@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import Button from '@/components/ui/tailwind/Button'
+import Button from '@tw/Button'
 import { DOCS_URL, BRIDGE_PATH } from '@/constants/urls'
 import { SectionContainer } from '../../../components/landing/shared'
 

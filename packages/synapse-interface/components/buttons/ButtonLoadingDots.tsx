@@ -1,4 +1,4 @@
-import LoadingDots from '@/components/ui/tailwind/LoadingDots'
+import LoadingDots from '@tw/LoadingDots'
 
 export default function ButtonLoadingDots({
   className=''

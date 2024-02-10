@@ -1,7 +1,7 @@
 import Link from 'next/link'
-import Grid from '@/components/ui/tailwind/Grid'
-import Button from '@/components/ui/tailwind/Button'
-import Card from '@/components/ui/tailwind/Card'
+import Grid from '@tw/Grid'
+import Button from '@tw/Button'
+import Card from '@tw/Card'
 import { SectionContainer } from '../../../components/landing/shared'
 import { EXPLORER_PATH } from '@/constants/urls'
 import {

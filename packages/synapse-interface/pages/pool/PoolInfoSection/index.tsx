@@ -2,7 +2,7 @@ import numeral from 'numeral'
 import AugmentWithUnits from '../components/AugmentWithUnits'
 import InfoSectionCard from './InfoSectionCard'
 import CurrencyReservesCard from './CurrencyReservesCard'
-import LoadingDots from '@/components/ui/tailwind/LoadingDots'
+import LoadingDots from '@tw/LoadingDots'
 import {
   formatBigIntToPercentString,
   formatBigIntToString,

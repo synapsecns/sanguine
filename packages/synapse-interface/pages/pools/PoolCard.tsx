@@ -15,7 +15,7 @@ import { PoolActionOptions } from '../../components/Pools/PoolActionOptions'
 import { PoolHeader } from '../../components/Pools/PoolHeader'
 import { PoolCardBody } from '../../components/Pools/PoolCardBody'
 import { useAppSelector } from '@/store/hooks'
-import Card from '@/components/ui/tailwind/Card'
+import Card from '@tw/Card'
 
 const PoolCard = memo(({ pool, address }: { pool: Token; address: string }) => {
   const [isClient, setIsClient] = useState(false)

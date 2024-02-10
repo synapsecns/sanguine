@@ -4,7 +4,7 @@ import {
   ChevronDoubleUpIcon,
   ChevronUpIcon,
 } from '@heroicons/react/outline'
-import Card from '@/components/ui/tailwind/Card'
+import Card from '@tw/Card'
 
 type PortfolioAccordionProps = {
   header: React.ReactNode

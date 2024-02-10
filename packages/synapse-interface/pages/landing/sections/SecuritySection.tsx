@@ -1,4 +1,4 @@
-import Grid from '@/components/ui/tailwind/Grid'
+import Grid from '@tw/Grid'
 import {
   SectionContainer,
   SupportCard,

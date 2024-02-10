@@ -1,4 +1,4 @@
-import Card from '@/components/ui/tailwind/Card'
+import Card from '@tw/Card'
 
 export const LandingPageContainer = ({
   children,

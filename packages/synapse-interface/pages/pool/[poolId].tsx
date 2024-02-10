@@ -12,7 +12,7 @@ import { fetchPoolData, resetPoolData } from '@/slices/poolDataSlice'
 import { RootState } from '@/store/store'
 import { resetPoolDeposit } from '@/slices/poolDepositSlice'
 import { resetPoolWithdraw } from '@/slices/poolWithdrawSlice'
-import LoadingDots from '@/components/ui/tailwind/LoadingDots'
+import LoadingDots from '@tw/LoadingDots'
 import { POOL_BY_ROUTER_INDEX } from '@constants/tokens'
 
 export const getStaticPaths = async () => {

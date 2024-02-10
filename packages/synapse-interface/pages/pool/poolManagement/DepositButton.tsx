@@ -4,7 +4,7 @@ import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 import { useEffect, useMemo, useState } from 'react'
 import { RootState } from '@/store/store'
 
-import LoadingDots from '@/components/ui/tailwind/LoadingDots'
+import LoadingDots from '@tw/LoadingDots'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { DEFAULT_DEPOSIT_QUOTE } from './Deposit'
 import { stringToBigInt } from '@/utils/bigint/format'

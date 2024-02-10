@@ -20,7 +20,7 @@ import { txErrorHandler } from '@/utils/txErrorHandler'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { approveToken } from '@/utils/approveToken'
 import { PageHeader } from '@/components/PageHeader'
-import Card from '@/components/ui/tailwind/Card'
+import Card from '@tw/Card'
 import { Transition } from '@headlessui/react'
 import {
   SECTION_TRANSITION_PROPS,

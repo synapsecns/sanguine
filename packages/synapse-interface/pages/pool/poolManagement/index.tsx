@@ -6,7 +6,7 @@ import { RootState } from '@/store/store'
 import LiquidityManagementTabs from '../components/LiquidityManagementTabs'
 import Deposit from './Deposit'
 import Withdraw from './Withdraw'
-import LoadingDots from '@/components/ui/tailwind/LoadingDots'
+import LoadingDots from '@tw/LoadingDots'
 import {
   fetchPoolUserData,
   resetPoolUserData,
