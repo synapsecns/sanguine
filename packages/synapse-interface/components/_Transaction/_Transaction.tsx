@@ -103,28 +103,24 @@ export const _Transaction = ({
     <div
       data-test-id="_transaction"
       className={`
-        my-2
-        bg-tint text-primary
-        border border-surface rounded-md
-        text-xs md:text-base
+        border border-surface rounded-md bg-tint
+        text-primary text-xs md:text-base
       `}
     >
-      <div className="flex items-center">
+      <div className="flex items-center px-1 py-2">
         <TransactionPayloadDetail
           token={originToken}
           tokenAmount={originValue}
           isOrigin={true}
-          className="px-0.5 py-1.5 rounded-l"
         />
-        <RightArrow color="#cccad3" />
+        <RightArrow className="stroke-secondaryTextColor mt-0.5 mx-1" />
         <TransactionPayloadDetail
           chain={destinationChain}
           token={destinationToken}
           tokenAmount={null}
           isOrigin={false}
-          className="p-1.5"
         />
-        <div className="flex items-center justify-end gap-2 mr-1 grow">
+        <div className="flex items-center justify-end gap-2 grow">
           <DropdownMenu
             menuTitleElement={
               <TimeRemaining

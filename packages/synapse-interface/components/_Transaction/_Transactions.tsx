@@ -62,7 +62,7 @@ export const _Transactions = ({
 
 const TransactionsContainer = ({ children }) => {
   return (
-    <div id="transaction-container" className="flex flex-col mt-3">
+    <div id="transaction-container" className="flex flex-col mt-3 space-y-3">
       {children}
     </div>
   )

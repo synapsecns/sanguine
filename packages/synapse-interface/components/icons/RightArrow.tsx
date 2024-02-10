@@ -2,7 +2,7 @@ export const RightArrow = ({
   color,
   className,
 }: {
-  color: string
+  color?: string
   className?: string
 }) => {
   return (
