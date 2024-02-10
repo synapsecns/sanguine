@@ -82,7 +82,7 @@ const InfoListItem = ({
 }) => {
   return (
     <li className="flex w-full py-2">
-      <div className="text-white">{labelText} </div>
+      <div className="text-white/60">{labelText} </div>
       <div className="self-center ml-auto text-white">{content}</div>
     </li>
   )
