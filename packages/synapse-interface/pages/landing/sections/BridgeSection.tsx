@@ -51,7 +51,7 @@ export default function BridgeSection() {
           Access over 16 different EVM and non-EVM blockchains with more
           integrations coming soon
         </SupportCard>
-        <SupportCard header="Developer Friendly" image={<DeveloperIcon />}>
+        <SupportCard header="Dev Friendly" image={<DeveloperIcon />}>
           Easily integrate cross-chain token bridging natively into your
           decentralized application
         </SupportCard>

@@ -53,7 +53,6 @@ export const SupportCard = ({
             {image}
           </div>
         </>
-
       }
       titleClassName="text-3xl py-2"
       className="bg-transparent text-secondaryTextColor  max-w-md"
