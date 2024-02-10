@@ -16,6 +16,7 @@ import { MenuItem } from './components/MenuItem'
 import { useBridgeTxUpdater } from './helpers/useBridgeTxUpdater'
 import { AnimatedProgressBar } from './components/AnimatedProgressBar'
 import { TransactionSupport } from './components/TransactionSupport'
+import { RightArrow } from '@/components/icons/RightArrow'
 
 interface _TransactionProps {
   connectedAddress: string
@@ -113,9 +114,9 @@ export const _Transaction = ({
           token={originToken}
           tokenAmount={originValue}
           isOrigin={true}
-          className="bg-surface px-0.5 py-1.5 rounded-l"
+          className="px-0.5 py-1.5 rounded-l"
         />
-        <TransactionArrow className="fill-surface" />
+        <RightArrow color="#cccad3" />
         <TransactionPayloadDetail
           chain={destinationChain}
           token={destinationToken}
@@ -168,7 +169,7 @@ export const _Transaction = ({
           </DropdownMenu>
         </div>
       </div>
-      {showTransactionSupport && <TransactionSupport />}
+      {/* {showTransactionSupport && <TransactionSupport />} */}
       <div className="px-1">
         <AnimatedProgressBar
           id={originTxHash}
