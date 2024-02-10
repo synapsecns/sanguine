@@ -1,4 +1,3 @@
-import numeral from 'numeral'
 import { useCallback, useMemo } from 'react'
 import Image from 'next/image'
 import { useAppDispatch } from '@/store/hooks'
@@ -97,7 +96,9 @@ export const TransactionPayloadDetail = ({
               )}
             </span>
           ) : typeof tokenAmount === 'number' ? (
-            <span>{numeral(tokenAmount).format('0,0.000')}</span>
+            <span>
+              {trimTrailingZeroesAfterDecimal(tokenAmount.toString())}
+            </span>
           ) : (
             <span>…</span>
           )}
