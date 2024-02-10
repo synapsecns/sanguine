@@ -58,7 +58,6 @@ export const SupportCard = ({
       titleClassName="text-3xl py-2"
       className="bg-transparent text-secondaryTextColor  max-w-md"
       divider={false}
-      // image={image}
     >
       {children}
     </Card>
