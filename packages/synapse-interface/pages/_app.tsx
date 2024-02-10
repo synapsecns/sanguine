@@ -37,6 +37,11 @@ if (
   })
 }
 
+// precompute theme
+let RAINBOW_KIT_THEME = darkTheme({overlayBlur: 'small'})
+RAINBOW_KIT_THEME.colors.modalBackground = '#94a3b825'
+RAINBOW_KIT_THEME.colors.modalBorder = '#FFFFFF51'
+
 const App = ({ Component, pageProps }: AppProps) => {
   return (
     <>
@@ -44,7 +49,10 @@ const App = ({ Component, pageProps }: AppProps) => {
         <title>Synapse Protocol</title>
       </Head>
       <WagmiConfig config={wagmiConfig}>
-        <RainbowKitProvider chains={wagmiChains} theme={darkTheme()}>
+        <RainbowKitProvider
+          chains={wagmiChains}
+          theme={RAINBOW_KIT_THEME}
+        >
           <SynapseProvider chains={wagmiChains}>
             <Provider store={store}>
               <PersistGate loading={null} persistor={persistor}>
