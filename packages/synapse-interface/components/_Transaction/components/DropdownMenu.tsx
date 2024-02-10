@@ -1,14 +1,17 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { DownArrow } from '@/components/icons/DownArrow'
 import { useKeyPress } from '@/utils/hooks/useKeyPress'
+import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 
 export const DropdownMenu = ({ children }) => {
   const [open, setOpen] = useState<boolean>(false)
-
+  const ref = useRef(null)
   const handleClick = () => {
     setOpen(!open)
   }
   const escPressed = useKeyPress('Escape')
+
+  useCloseOnOutsideClick(ref, () => setOpen(false))
 
   function escFunc() {
     if (escPressed) {
@@ -19,7 +22,7 @@ export const DropdownMenu = ({ children }) => {
   useEffect(escFunc, [escPressed])
 
   return (
-    <div id="dropdown-menu" className="relative">
+    <div id="dropdown-menu" className="relative" ref={ref}>
       <div
         onClick={handleClick}
         className={`
@@ -35,7 +38,7 @@ export const DropdownMenu = ({ children }) => {
       {open && (
         <ul
           className={`
-            absolute z-50 mt-1 p-0 -right-1
+            absolute z-50 mt-1 p-1 -right-1
             border border-white/20 bg-bgBase/10 backdrop-blur-lg
             rounded-md overflow-hidden shadow-md
             popover list-none text-left text-sm

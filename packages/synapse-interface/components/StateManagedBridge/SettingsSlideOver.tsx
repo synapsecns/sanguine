@@ -41,7 +41,7 @@ const SettingsSlideOver = () => {
     <div className="max-h-full pb-4 pt-2 overflow-auto rounded-lg">
       <div
         className={`
-         px-3 md:px-6 rounded-md text-base focus:outline-none
+          px-3 md:px-6 rounded-md text-base focus:outline-none
           overflow-hidden z-10 w-full
           space-y-4
         `}

@@ -1,5 +1,5 @@
 import { OptionButton } from "@/components/buttons/OptionButton"
-export const MenuItem = ({
+export function MenuItem({
   text,
   link,
   onClick,
@@ -7,22 +7,17 @@ export const MenuItem = ({
   text: string
   link: string
   onClick?: () => any
-}) => {
+}) {
   return (
     <li
       id="menu-item"
-      className={`
-        rounded-md cursor-pointer min-w-[150px]
-        border border-solid border-transparent
-        hover:border-[--synapse-focus] active:opacity-40
-      `}
+      className={`rounded cursor-pointer min-w-[150px]`}
     >
       {onClick ? (
         <OptionButton
           onClick={onClick}
           text={text}
         />
-
       ) : (
         <a
           href={link ?? ''}
