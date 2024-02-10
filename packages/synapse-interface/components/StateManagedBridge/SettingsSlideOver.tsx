@@ -1,9 +1,10 @@
 import _ from 'lodash'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import { Switch } from '@headlessui/react'
 import { useKeyPress } from '@hooks/useKeyPress'
+import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import Tooltip from '@tw/Tooltip'
 import Button from '@tw/Button'
 
@@ -17,10 +18,14 @@ import {
 } from '@/slices/bridge/reducer'
 import { RootState } from '@/store/store'
 
+
+
+
+
 const SettingsSlideOver = () => {
   const dispatch = useDispatch()
   const escPressed = useKeyPress('Escape')
-
+  const ref = useRef(null)
   const { showDestinationAddress } = useSelector(
     (state: RootState) => state.bridgeDisplay
   )
@@ -34,11 +39,11 @@ const SettingsSlideOver = () => {
       onClose()
     }
   }
-
+  useCloseOnOutsideClick(ref, onClose)
   useEffect(escFunc, [escPressed])
 
   return (
-    <div className="max-h-full pb-4 pt-2 overflow-auto rounded-lg">
+    <div ref={ref} className="max-h-full pb-4 pt-2 overflow-auto rounded-lg">
       <div
         className={`
           px-3 md:px-6 rounded-md text-base focus:outline-none
