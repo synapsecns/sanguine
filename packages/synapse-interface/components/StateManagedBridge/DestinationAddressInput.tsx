@@ -12,7 +12,7 @@ export const DestinationAddressInput = ({
 }) => {
   const dispatch = useDispatch()
   const chain = CHAINS_BY_ID[toChainId]
-  const chainName = chain?.name || 'nulls'
+  const chainName = chain?.name || ''
   const placeholder = `Enter ${chainName} address...`
 
   return (
