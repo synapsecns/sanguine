@@ -22,12 +22,14 @@ export const TransactionPayloadDetail = ({
   tokenAmount,
   isOrigin,
   className,
+  showChain = true,
 }: {
   chain?: Chain
   token?: Token
   tokenAmount?: string | number
   isOrigin: boolean
   className?: string
+  showChain?: boolean
 }) => {
   const dispatch = useAppDispatch()
 
@@ -62,7 +64,7 @@ export const TransactionPayloadDetail = ({
 
   return (
     <div data-test-id="transaction-payload-detail" className={className}>
-      {chain && (
+      {chain && showChain && (
         <div
           data-test-id="transaction-payload-network"
           onClick={handleSelectChainCallback}

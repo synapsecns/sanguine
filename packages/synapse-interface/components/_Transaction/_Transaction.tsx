@@ -109,9 +109,11 @@ export const _Transaction = ({
     >
       <div className="flex items-center px-1 py-2">
         <TransactionPayloadDetail
+          chain={originChain}
           token={originToken}
           tokenAmount={originValue}
           isOrigin={true}
+          showChain={false}
         />
         <RightArrow className="stroke-secondaryTextColor mt-0.5 mx-1" />
         <TransactionPayloadDetail
