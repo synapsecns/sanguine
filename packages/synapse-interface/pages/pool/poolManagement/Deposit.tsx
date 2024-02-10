@@ -1,4 +1,8 @@
 import _ from 'lodash'
+import { useState, useEffect } from 'react'
+import { getAddress } from '@ethersproject/address'
+import { zeroAddress } from 'viem'
+import { useSelector, useDispatch } from 'react-redux'
 
 import { ETH, WETHE, WETH } from '@constants/tokens/bridgeable'
 import { AVWETH } from '@/constants/tokens/auxilliary'
@@ -6,7 +10,7 @@ import { stringToBigInt } from '@/utils/bigint/format'
 import { DepositTokenInput } from '@components/TokenInput'
 import PriceImpactDisplay from '../components/PriceImpactDisplay'
 import { Token } from '@types'
-import { useState, useEffect } from 'react'
+
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import {
   approve,
@@ -20,8 +24,6 @@ import { calculatePriceImpact } from '@/utils/priceImpact'
 import { transformCalculateLiquidityInput } from '@/utils/transformCalculateLiquidityInput'
 import { formatBigIntToString } from '@/utils/bigint/format'
 
-import { getAddress } from '@ethersproject/address'
-import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 
 import {
@@ -32,12 +34,12 @@ import {
   setPool,
 } from '@/slices/poolDepositSlice'
 
-import { useDispatch } from 'react-redux'
+
 import DepositButton from './DepositButton'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
 import { swapPoolCalculateAddLiquidity } from '@/actions/swapPoolCalculateAddLiquidity'
-import { zeroAddress } from 'viem'
+
 
 export const DEFAULT_DEPOSIT_QUOTE = {
   priceImpact: 0n,
@@ -45,13 +47,13 @@ export const DEFAULT_DEPOSIT_QUOTE = {
   routerAddress: '',
 }
 
-const Deposit = ({
+export default function Deposit({
   chainId,
   address,
 }: {
   chainId: number
   address: string
-}) => {
+}) {
   const dispatch: any = useDispatch()
 
   const { pool, poolData } = useSelector((state: RootState) => state.poolData)
@@ -340,4 +342,3 @@ const serializeToken = async (
   }
 }
 
-export default Deposit

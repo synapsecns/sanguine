@@ -1,12 +1,5 @@
 /* eslint-disable */
-const CustomColors = {
-  CUSTOM_YELLOW: '[#ecae0b]',
-  CUSTOM_YELLOW_DARK: '[#3c3c44]',
-  ETH_BASE: '[#5170ad]',
-  ETH_DARK: '[#3f4f8c]',
-  ETH_EXTRA_DARK: '[#314367]',
-  ETH_LIGHT: '[#78a5ff]',
-}
+
 
 const ColorOptions = {
   GRAY: 'gray',
@@ -31,39 +24,6 @@ const ColorOptions = {
 // combine all of this in one function with a switch for the different desired classes.
 
 // Revisit if any of these can be deleted.
-
-// export const getNetworkCurrencyColor = (chain: Chain): string => {
-//   const { color, nativeCurrency } = chain
-//   switch (color) {
-//     case ColorOptions.YELLOW:
-//       return `text-[#ecae0b] dark:text-[#ecae0b]`
-//     case ColorOptions.ETH:
-//       return `text-[#5170ad] dark:text-[#78a5ff]`
-//     case ColorOptions.GRAY:
-//       return `text-gray-500 dark:text-gray-500`
-//     case ColorOptions.GREEN:
-//       return `text-green-500 dark:text-green-500`
-//     case ColorOptions.LIME:
-//       return `text-lime-500 dark:text-lime-500`
-//     case ColorOptions.SKY:
-//       return `text-sky-500 dark:text-sky-500`
-//     case ColorOptions.BLUE:
-//       return `text-blue-500 dark:text-blue-500`
-//     case ColorOptions.ORANGE:
-//       return `text-orange-500 dark:text-orange-500`
-//     case ColorOptions.PURPLE:
-//       return `text-purple-500 dark:text-purple-500`
-//     case ColorOptions.INDIGO:
-//       return `text-indigo-500 dark:text-indigo-500`
-//     case ColorOptions.CYAN:
-//       return `text-cyan-500 dark:text-cyan-500`
-//     case ColorOptions.RED:
-//       return `text-red-500 dark:text-red-500`
-//     default:
-//       return `text-gray-500 dark:text-gray-500`
-//   }
-// }
-
 export const getNetworkButtonBgClassName = (chainColor: string): string => {
   switch (chainColor) {
     case ColorOptions.YELLOW:

@@ -1,14 +1,15 @@
+import { useRouter } from 'next/router'
 import { Fragment } from 'react'
 import { Popover, Transition } from '@headlessui/react'
 import { Token } from '@/utils/types'
-import { useRouter } from 'next/router'
-import { DepositIcon } from '../icons/DepositIcon'
-import { StakeIcon } from '../icons/StakeIcon'
-import { UnstakeIcon } from '../icons/UnstakeIcon'
-import { WithdrawIcon } from '../icons/WithdrawIcon'
-import { ClaimIcon } from '../icons/ClaimIcon'
-import { DownArrow } from '../icons/DownArrow'
+import { DepositIcon } from '@/components/icons/DepositIcon'
+import { StakeIcon } from '@/components/icons/StakeIcon'
+import { UnstakeIcon } from '@/components/icons/UnstakeIcon'
+import { WithdrawIcon } from '@/components/icons/WithdrawIcon'
+import { ClaimIcon } from '@/components/icons/ClaimIcon'
+import { DownArrow } from '@/components/icons/DownArrow'
 import { OptionButton } from "@/components/buttons/OptionButton"
+
 export const PoolActionOptions = ({
   pool,
   options,

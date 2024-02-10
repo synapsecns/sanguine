@@ -1,4 +1,4 @@
-const LoadingTokenInput = () => {
+export default function LoadingTokenInput() {
   return (
     <div className="mt-4">
       <div className="border-none rounded-md">
@@ -22,4 +22,4 @@ const LoadingTokenInput = () => {
     </div>
   )
 }
-export default LoadingTokenInput
+

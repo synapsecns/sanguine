@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import toast from 'react-hot-toast'
 import { CHAINS_BY_ID } from '@constants/chains'
 import { getNetworkTextColor } from '@styles/chains'
-import { Chain } from '@/utils/types/index'
+
 import { AcceptedChainId } from '@constants/chains'
 
 const StandardPageContainer = ({
