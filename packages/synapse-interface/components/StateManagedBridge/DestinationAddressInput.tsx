@@ -44,7 +44,7 @@ export const DestinationAddressInput = ({
               max-w-[calc(100%-88px)]
               sm:w-full
               text-white text-opacity-80
-              placeholder:text-[#88818C]
+              placeholder:text-slate-400
             `}
             placeholder={placeholder}
             onChange={(e) => {
