@@ -107,7 +107,12 @@ export const _Transaction = ({
         text-primary text-xs md:text-base
       `}
     >
-      <div className="flex items-center px-1 py-2">
+      <div
+        className={`
+          flex items-center px-1 pt-2
+          ${showTransactionSupport ? 'pb-0' : 'pb-2'}
+        `}
+      >
         <TransactionPayloadDetail
           chain={originChain}
           token={originToken}
@@ -167,7 +172,7 @@ export const _Transaction = ({
           </DropdownMenu>
         </div>
       </div>
-      {/* {showTransactionSupport && <TransactionSupport />} */}
+      {showTransactionSupport && <TransactionSupport />}
       <div className="px-1">
         <AnimatedProgressBar
           id={originTxHash}
