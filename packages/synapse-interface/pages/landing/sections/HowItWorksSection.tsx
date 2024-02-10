@@ -6,7 +6,7 @@ export default function HowItWorksSection() {
     <div className="hidden lg:block">
       <SectionContainer
         dataTestId="landing-how-it-works-section"
-        styles="bg-[#121114] -mx-4"
+        styles="bg-bgBase/10 -mx-4"
       >
         <div className="flex justify-center">
           <div className="max-w-4xl">

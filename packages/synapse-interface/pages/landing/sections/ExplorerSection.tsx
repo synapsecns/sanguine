@@ -18,7 +18,7 @@ export default function ExplorerSection() {
 
   return (
     <SectionContainer dataTestId="landing-explorer-section" styles="-mx-4">
-      <div className="w-full bg-[#1F1D22] pb-6">
+      <div className="w-full bg-bgBase/10 pb-6">
         <Grid
           cols={{ sm: 1, md: 2 }}
           className="flex items-center p-6 m-auto max-w-4xl"

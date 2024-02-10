@@ -43,13 +43,22 @@ export const SupportCard = ({
   children: React.ReactNode
   image?: any
 }) => {
+
   return (
     <Card
-      title={header}
+      title={
+        <>
+          {header}
+          <div className="inline-block float-right">
+            {image}
+          </div>
+        </>
+
+      }
       titleClassName="text-3xl py-2"
-      className="bg-transparent text-secondaryTextColor p-0 max-w-md"
+      className="bg-transparent text-secondaryTextColor  max-w-md"
       divider={false}
-      image={image}
+      // image={image}
     >
       {children}
     </Card>
