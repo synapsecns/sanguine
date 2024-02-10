@@ -5,12 +5,6 @@ import { _Transaction } from './_Transaction'
 import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
 import { useIntervalTimer } from './helpers/useIntervalTimer'
 
-import { useTransactionsState } from '@/slices/transactions/hooks'
-import { TransactionsState } from '@/slices/transactions/reducer'
-import { BridgeTransaction } from '@/slices/api/generated'
-import { ARBITRUM } from '@/constants/chains/master'
-import { ETH } from '@/constants/tokens/bridgeable'
-
 /** TODO: Update naming once refactoring of previous Activity/Tx flow is done */
 export const _Transactions = ({
   connectedAddress,
