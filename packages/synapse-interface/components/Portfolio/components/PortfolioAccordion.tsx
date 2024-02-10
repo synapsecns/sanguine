@@ -45,7 +45,7 @@ export const PortfolioAccordion = ({
     <Card
       id="portfolio-accordion"
       className={
-        `#{isExpanded ? 'shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]' : 'shadow-none'} !p-0 !from-transparent !to-transparent rounded-lg`
+        `${isExpanded ? 'shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]' : 'shadow-none'} !p-0 !from-transparent !to-transparent rounded-lg`
       }
     >
       <div
