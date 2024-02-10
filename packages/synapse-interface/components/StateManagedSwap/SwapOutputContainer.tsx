@@ -5,7 +5,7 @@ import LoadingDots from '../ui/tailwind/LoadingDots'
 import { SwapToTokenSelector } from './SwapToTokenSelector'
 import { useSwapState } from '@/slices/swap/hooks'
 
-export const SwapOutputContainer = ({}) => {
+export const SwapOutputContainer = () => {
   const { swapQuote, isLoading, swapToToken } = useSwapState()
 
   const { address: isConnectedAddress } = useAccount()

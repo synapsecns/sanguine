@@ -1,3 +1,7 @@
+import { useRouter } from 'next/router'
+import { useEffect } from 'react'
+import { useAccount } from 'wagmi'
+
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import { LandingPageContainer } from '../../components/landing/shared'
 
@@ -10,9 +14,7 @@ import HowItWorksSection from './sections/HowItWorksSection'
 import UseCasesSection from './sections/UseCasesSection'
 import ResourcesSection from './sections/ResourcesSection'
 
-import { useRouter } from 'next/router'
-import { useEffect } from 'react'
-import { useAccount } from 'wagmi'
+
 
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
