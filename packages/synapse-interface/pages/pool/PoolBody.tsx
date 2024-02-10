@@ -75,8 +75,8 @@ const PoolBody = ({
     <>
       <div className="">
         <Link href={POOLS_PATH}>
-          <div className="inline-flex items-center mb-3 text-sm  text-white hover:text-opacity-100">
-            <ChevronLeftIcon className="w-4 h-4" />
+          <div className="inline-flex items-center mb-3 text-sm  text-white/70 hover:text-white/100 group">
+            <ChevronLeftIcon className="w-4 h-4 mr-1 mt-0.25 group-hover:stroke-2" />
             Back to Pools
           </div>
         </Link>
@@ -113,7 +113,7 @@ const PoolBody = ({
       <div className="">
         <Grid cols={{ xs: 1, sm: 1, md: 1, lg: 2 }} gap={8}>
           <Card
-            className="!pt-0 pb-0 pl-0 pr-0 rounded-md bg-bgBase"
+            className="!p-0 rounded-md bg-bgBase"
             divider={false}
           >
             {!isConnected && (

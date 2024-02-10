@@ -25,7 +25,7 @@ const InteractiveInputRow = ({
     <div className="flex flex-col rounded-sm bg-bgBase/10 ring-1 ring-white/10">
       <div className="border-none rounded-md">
         <div className="flex space-x-2">
-          <div className="flex items-center flex-grow w-full h-20 pl-3 ">
+          <div className="flex items-center flex-grow w-full h-16 pl-3 ">
             <div className="sm:mt-[-1px]">
               <div
                 className={`

@@ -201,13 +201,7 @@ export default function Deposit({
         {pool && poolUserData.tokens && poolData ? (
           poolUserData.tokens.map((tokenObj, i) => {
             return (
-              <div
-                className={
-                  i < poolUserData.tokens.length - 1
-                    ? 'border-b border-[#564f58]'
-                    : ''
-                }
-              >
+              <div className='py-0.5'>
                 <SerializedDepositInput
                   key={i}
                   tokenObj={tokenObj}
