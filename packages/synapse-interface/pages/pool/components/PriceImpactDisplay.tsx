@@ -11,7 +11,7 @@ function removeLeadingZeros(inputValue: number): number {
   return integerPart + decimalPart
 }
 
-const PriceImpactDisplay = ({ priceImpact }: { priceImpact: bigint }) => {
+export default function PriceImpactDisplay({ priceImpact }: { priceImpact: bigint }) {
   let colorClassName: string
   let labelText: string
   let content: any
@@ -52,7 +52,7 @@ const PriceImpactDisplay = ({ priceImpact }: { priceImpact: bigint }) => {
     content = ''
   } else {
     content = (
-      <div className="text-center cursor-pointer sm:text-right">
+      <div className="text-center cursor-pointer sm:text-right -mb-1.5 pt-2 sm:-mb-3">
         <p className=" text-sm font-medium opacity-70 pb-0.5 text-gray-300">
           {labelText}
         </p>
@@ -69,4 +69,4 @@ const PriceImpactDisplay = ({ priceImpact }: { priceImpact: bigint }) => {
   }
   return content
 }
-export default PriceImpactDisplay
+
