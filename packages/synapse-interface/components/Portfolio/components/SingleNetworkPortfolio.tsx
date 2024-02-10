@@ -13,7 +13,7 @@ import { PortfolioConnectButton } from './PortfolioConnectButton'
 import { EmptyPortfolioContent } from './EmptyPortfolioContent'
 import { FetchState } from '@/slices/portfolio/actions'
 import { PortfolioTokenAsset } from './PortfolioTokenAsset'
-import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
+
 import { WarningMessage } from '../../Warning'
 import { TWITTER_URL, DISCORD_URL } from '@/constants/urls'
 import { setFromToken, setToToken } from '@/slices/bridge/reducer'

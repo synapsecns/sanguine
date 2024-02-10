@@ -73,7 +73,7 @@ export const SearchBar = () => {
         placeholder={placeholder}
         searchStr={searchInput}
         onSearch={onSearchInput}
-        disabled={isMounted ? false : true}
+        disabled={!isMounted}
       />
       <ClearSearchButton
         show={isSearchInputActive}

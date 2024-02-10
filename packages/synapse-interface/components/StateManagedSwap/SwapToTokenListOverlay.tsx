@@ -10,7 +10,7 @@ import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import SelectSpecificTokenButton from './components/SelectSpecificTokenButton'
 import { getRoutePossibilities } from '@/utils/routeMaker/generateRoutePossibilities'
 
-import { sortByPriorityRank } from './helpers/sortByPriorityRank'
+import { sortByPriorityRank } from '@/utils/helpers/sortByPriorityRank'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import { CloseButton } from './components/CloseButton'

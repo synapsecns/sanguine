@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { DownArrow } from '@/components/icons/DownArrow'
+import { useKeyPress } from '@/utils/hooks/useKeyPress'
 
 export const DropdownMenu = ({ children }) => {
   const [open, setOpen] = useState<boolean>(false)
@@ -7,6 +8,15 @@ export const DropdownMenu = ({ children }) => {
   const handleClick = () => {
     setOpen(!open)
   }
+  const escPressed = useKeyPress('Escape')
+
+  function escFunc() {
+    if (escPressed) {
+      setOpen(false)
+    }
+  }
+
+  useEffect(escFunc, [escPressed])
 
   return (
     <div id="dropdown-menu" className="relative">

@@ -27,11 +27,7 @@ export const OutputContainer = ({}) => {
     <div className="mt-[1.125rem] p-md text-left rounded-md bg-bgBase/10">
       <div className="flex items-center justify-between mb-3">
         <ToChainSelector />
-        {/* {address && (
-          <div className="h-5">
-            <DisplayAddress address={address} />
-          </div>
-        )} */}
+
       </div>
 
       <div className="flex h-16 mb-2 space-x-2">
@@ -80,10 +76,3 @@ export const OutputContainer = ({}) => {
   )
 }
 
-const DisplayAddress = ({ address }) => {
-  return (
-    <div className="border-[0.5px] border-secondaryTextColor rounded-md pt-1 pb-1 pl-3 pr-3 text-secondaryTextColor text-xxs">
-      {shortenAddress(address)}
-    </div>
-  )
-}

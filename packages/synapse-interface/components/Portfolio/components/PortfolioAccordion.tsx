@@ -35,9 +35,7 @@ export const PortfolioAccordion = ({
 
   useEffect(() => {
     if (!hasNoTokenBalance) {
-      portfolioChainId === selectedFromChainId
-        ? setIsExpanded(true)
-        : setIsExpanded(false)
+      setIsExpanded(portfolioChainId === selectedFromChainId)
     }
   }, [portfolioChainId, selectedFromChainId, hasNoTokenBalance])
 
@@ -106,9 +104,7 @@ const AccordionIcon = ({
       className={`
         p-1 mx-2 border border-transparent rounded-full
         cursor-pointer hover:border-white/60 active:border-white/80 transition-all
-
       `}
-      //         ${isHovered ? 'border-synapsePurple' : 'border-white/30'}
     >
       <ChevronUpIcon
           className={`
@@ -116,11 +112,6 @@ const AccordionIcon = ({
             ${isExpanded ? 'rotate-180' : 'rotate-0'}
           `}
       />
-      {/* {isExpanded ? (
-        <ChevronDoubleUpIcon className="w-4 h-4 stroke-[3] stroke-white/20 group-hover:stroke-white/50 transition-all" />
-      ) : (
-        <ChevronDoubleDownIcon className="w-4 h-4 stroke-[3] stroke-white/20 group-hover:stroke-white/50 transition-all" />
-      )} */}
     </div>
   )
 }

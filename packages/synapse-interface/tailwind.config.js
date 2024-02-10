@@ -105,10 +105,6 @@ module.exports = {
           100: 'rgba(0, 0, 0, 1.0)',
         },
       },
-      fontSize: {
-        xxs: ['0.675rem', { lineHeight: '0.75rem' }],
-        xxl: ['1.5rem', { lineHeight: '1.75rem' }],
-      },
       colors: {
         // updated colors
         strong: '#FCFCFD',
@@ -191,16 +187,6 @@ module.exports = {
         ...makeShadow('indigo', '87, 81, 230'),
         ...makeShadow('purple', '125, 59, 236'),
         ...makeShadow('pink', '213, 34, 105'),
-      },
-      animation: {
-        sheenit: 'sheen 0.42s forwards',
-      },
-      keyframes: {
-        sheen: {
-          '100%': {
-            transform: 'rotateZ(60deg) translate(1em, -30em)',
-          },
-        },
       },
       linearBorderGradients: ({ theme }) => ({
         colors: {

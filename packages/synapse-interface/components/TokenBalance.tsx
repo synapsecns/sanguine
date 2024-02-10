@@ -2,6 +2,7 @@ import { formatBigIntToString } from '@utils/bigint/format'
 import { commify } from '@ethersproject/units'
 import { Token } from '@types'
 
+
 const TokenBalance = ({
   token,
   chainId,

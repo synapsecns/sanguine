@@ -12,14 +12,12 @@ import { Wallet } from '@components/Wallet'
 import { SynapseLogoSvg, SynapseLogoWithTitleSvg } from './SynapseLogoSvg'
 import { TopBarNavLink } from './TopBarNavLink'
 import {
-  CONTRACTS_PATH,
   DISCORD_URL,
   DOCS_URL,
   FORUM_URL,
   LANDING_PATH,
   TELEGRAM_URL,
   TWITTER_URL,
-  getBuySynUrl,
 } from '@/constants/urls'
 import { NAVIGATION } from '@/constants/routes'
 import { MoreButton } from './MoreButton'
@@ -28,16 +26,12 @@ import { PageFooter } from './PageFooter'
 export function LandingPageWrapper({ nestedPage=false, children }) {
   return (
     <div
-      className="bg-slate-950"
-      // style={{
-      //   background:
-      //     'radial-gradient(23.86% 33.62% at 50.97% 47.88%, rgba(255, 0, 255, 0.04) 0%, rgba(172, 143, 255, 0.04) 100%), #111111',
-      // }}
+      className="from-black via-slate-950 to-black bg-gradient-to-br"
     >
       <div
-          className="bg-[length:100%_100%] bg-opacity-50 transition-all"
+          className="bg-[length:100vw_100vh] bg-opacity-50 transition-all bg-fixed"
           style={{
-                backgroundImage: nestedPage ? `url('../landingBg.svg')` : `url('landingBg.svg')`
+            backgroundImage: nestedPage ? `url('../landingBg.svg')` : `url('landingBg.svg')`
           }}
       >
         <LandingNav />
@@ -102,10 +96,7 @@ export function LandingNav() {
         leaveTo=" opacity-0"
       >
         <Popover.Panel focus className="absolute top-0 z-10 w-screen">
-          <div
-            className="bg-bgLight"
-            // data-test-id="mobile-nav"
-          >
+          <div className="bg-bgBase/10 backdrop-blur-lg">
             <div className="flex items-center px-4 pt-4 place-content-between">
               <SynapseTitleLogo showText={true} />
               <Popover.Button className="p-2 text-gray-400 rounded-md hover:bg-gray-900 focus:outline-none">

@@ -20,16 +20,6 @@ const StandardPageContainer = ({
   address: string
   connectedChainId: number
 }) => {
-  // useEffect(() => {
-  //   if (!address) return
-
-  //   toast(
-  //     <div>
-  //       <div>Switched account to</div>
-  //       <div className="break-all">{address}</div>
-  //     </div>
-  //   )
-  // }, [address])
 
   useEffect(() => {
     if (!connectedChainId) return

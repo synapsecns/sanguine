@@ -20,7 +20,7 @@ export const PoolCardBody = memo(
         <div className="flex items-center space-x-3">
           <PoolTokenIcons pool={pool} />
           <div className="text-white">
-            <div className="flex items-center space-x-2 font-medium text-xxl">
+            <div className="flex items-center space-x-2 font-medium text-2xl leading-7">
               <div className="">
                 {poolData && numeral(poolData.totalLockedUSD).format(format)}
               </div>
@@ -97,7 +97,7 @@ const ApyDisplay = ({ pool, poolApyData }) => {
 
   return (
     <div>
-      <div className="font-medium text-white text-xxl">
+      <div className="font-medium text-white text-2xl leading-7">
         {numeral(poolApyData.fullCompoundedAPY / 100).format('0.0%')}
       </div>
       <div className=" text-[#BFBCC2] text-right">APY</div>
