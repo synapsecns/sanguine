@@ -29,7 +29,7 @@ jobs:
           metric_frequency: 2
           GITHUB_TOKEN: ''
         env:
-          GITHUB_TOKEN: '' # we don't need this for this step, save the rate limit!
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/checkout@v4
         with:
@@ -74,7 +74,7 @@ jobs:
           metric_frequency: 2
           GITHUB_TOKEN: ''
         env:
-          GITHUB_TOKEN: '' # we don't need this for this step, save the rate limit!
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/checkout@v4
       - name: Setup NodeJS
         uses: ./.github/actions/setup-nodejs
@@ -159,7 +159,7 @@ jobs:
           metric_frequency: 2
           GITHUB_TOKEN: ''
         env:
-          GITHUB_TOKEN: '' # we don't need this for this step, save the rate limit!
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -220,7 +220,7 @@ jobs:
           metric_frequency: 2
           GITHUB_TOKEN: ''
         env:
-          GITHUB_TOKEN: '' # we don't need this for this step, save the rate limit!
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/checkout@v4
         with:
           submodules: recursive
@@ -273,7 +273,7 @@ jobs:
           metric_frequency: 2
           GITHUB_TOKEN: ''
         env:
-          GITHUB_TOKEN: '' # we don't need this for this step, save the rate limit!
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/checkout@v4
         with:
@@ -310,7 +310,7 @@ jobs:
           metric_frequency: 2
           GITHUB_TOKEN: ''
         env:
-          GITHUB_TOKEN: '' # we don't need this for this step, save the rate limit!
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/checkout@v4
         with:

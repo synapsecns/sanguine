@@ -23,7 +23,7 @@ jobs:
           metric_frequency: 2
           GITHUB_TOKEN: ''
         env:
-          GITHUB_TOKEN: '' # we don't need this for this step, save the rate limit!
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - id: skip_check
         if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref && !contains(github.event.head_commit.message, '[no_skip]') }}
         uses: fkirc/skip-duplicate-actions@v5
@@ -55,7 +55,7 @@ jobs:
           metric_frequency: 2
           GITHUB_TOKEN: ''
         env:
-          GITHUB_TOKEN: '' # we don't need this for this step, save the rate limit!
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/checkout@v4
         with:
           # TODO: this can be shorter, maybe 500-1,000? This may be slower (see: https://github.com/CocoaPods/CocoaPods/issues/4989#issuecomment-193772935)
@@ -134,7 +134,7 @@ jobs:
           metric_frequency: 2
           GITHUB_TOKEN: ''
         env:
-          GITHUB_TOKEN: '' # we don't need this for this step, save the rate limit!
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
@@ -318,7 +318,7 @@ jobs:
           metric_frequency: 2
           GITHUB_TOKEN: ''
         env:
-          GITHUB_TOKEN: '' # we don't need this for this step, save the rate limit!
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/checkout@v4
         with:
@@ -372,7 +372,7 @@ jobs:
           metric_frequency: 2
           GITHUB_TOKEN: ''
         env:
-          GITHUB_TOKEN: '' # we don't need this for this step, save the rate limit!
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/setup-go@v4
         with:
@@ -460,7 +460,7 @@ jobs:
           metric_frequency: 2
           GITHUB_TOKEN: ''
         env:
-          GITHUB_TOKEN: '' # we don't need this for this step, save the rate limit!
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/checkout@v4
         with:
@@ -568,7 +568,7 @@ jobs:
           metric_frequency: 2
           GITHUB_TOKEN: ''
         env:
-          GITHUB_TOKEN: '' # we don't need this for this step, save the rate limit!
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # needed for remove label action
       - uses: actions/checkout@v4
@@ -602,7 +602,7 @@ jobs:
           metric_frequency: 2
           GITHUB_TOKEN: ''
         env:
-          GITHUB_TOKEN: '' # we don't need this for this step, save the rate limit!
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/checkout@v4
         with:

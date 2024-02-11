@@ -26,7 +26,7 @@ jobs:
           metric_frequency: 2
           GITHUB_TOKEN: ''
         env:
-          GITHUB_TOKEN: '' # we don't need this for this step, save the rate limit!
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/checkout@v4
         with:

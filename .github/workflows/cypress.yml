@@ -23,7 +23,7 @@ jobs:
           metric_frequency: 2
           GITHUB_TOKEN: ''
         env:
-          GITHUB_TOKEN: '' # we don't need this for this step, save the rate limit!
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - id: skip_check
         if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref && !contains(github.event.head_commit.message, '[no_skip]') }}
         uses: fkirc/skip-duplicate-actions@v5
@@ -42,7 +42,7 @@ jobs:
           metric_frequency: 2
           GITHUB_TOKEN: ''
         env:
-          GITHUB_TOKEN: '' # we don't need this for this step, save the rate limit!
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout code
         uses: actions/checkout@v4
