@@ -27,7 +27,8 @@ jobs:
           comment_on_pr: false
           proc_trace_sys_enable: true
           metric_frequency: 2
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: '' # we don't need this for this step, save the rate limit!
 
       - uses: actions/checkout@v4
         with:
@@ -70,7 +71,8 @@ jobs:
           comment_on_pr: false
           proc_trace_sys_enable: true
           metric_frequency: 2
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: '' # we don't need this for this step, save the rate limit!
       - uses: actions/checkout@v4
       - name: Setup NodeJS
         uses: ./.github/actions/setup-nodejs
@@ -205,7 +207,8 @@ jobs:
           comment_on_pr: false
           proc_trace_sys_enable: true
           metric_frequency: 2
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: '' # we don't need this for this step, save the rate limit!
       - uses: actions/checkout@v4
         with:
           submodules: recursive
