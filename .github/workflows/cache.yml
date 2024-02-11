@@ -4,10 +4,11 @@ on:
   workflow_dispatch:
 
 jobs:
-  my-job:
+  clear-caches:
     name: Delete all caches
     runs-on: ubuntu-latest
-
     steps:
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@v1
       - name: Clear caches
         uses: easimon/wipe-cache@main

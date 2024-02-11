@@ -29,6 +29,9 @@ jobs:
       matrix:
         chart: [ 'agents_embedded', 'agents_remote', 'scribe', 'explorer', 'omnirpc' ]
     steps:
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@v1
+
       - name: Checkout
         uses: actions/checkout@v4
         with:

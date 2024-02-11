@@ -16,6 +16,8 @@ jobs:
       packages: ${{ steps.filter_ui.outputs.changes }}
       package_count: ${{ steps.length.outputs.FILTER_LENGTH }}
     steps:
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@v1
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0

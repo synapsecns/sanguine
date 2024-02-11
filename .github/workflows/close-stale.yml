@@ -23,6 +23,8 @@ jobs:
     name: Remove Stale Branches
     runs-on: ubuntu-latest
     steps:
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@v1
       - uses: fpicalausa/remove-stale-branches@v1
         with:
           operations-per-run: 50

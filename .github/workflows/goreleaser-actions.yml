@@ -93,6 +93,8 @@ jobs:
       packages: ${{ steps.filter_go.outputs.changed_modules_deps }}
       package_count: ${{ steps.length.outputs.FILTER_LENGTH }}
     steps:
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@v1
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -130,6 +132,8 @@ jobs:
       image: ${{ needs.build-goreleaser.outputs.goreleaser-image }}
       volumes: [ /repo ]
     steps:
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@v1
       - name: Git Checkout
         uses: actions/checkout@v4
         with:

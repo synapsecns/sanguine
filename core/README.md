@@ -8,6 +8,7 @@ Core contains common libraries used across the synapse Go repositories.
 
 ## Directory Structure
 
+
 <pre>
 root
 ├── <a href="./bytemap">bytemap</a>: Implements a map using `[]rune` or `[]byte` instead of `string`

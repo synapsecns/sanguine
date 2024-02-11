@@ -15,6 +15,8 @@ jobs:
     name: Cancel Outdated Jobs
     runs-on: ubuntu-latest
     steps:
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@v1
       - id: skip_check
         if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref && !contains(github.event.head_commit.message, '[no_skip]') }}
         uses: fkirc/skip-duplicate-actions@v5
@@ -25,6 +27,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@v1
+
       - name: Checkout code
         uses: actions/checkout@v4
 

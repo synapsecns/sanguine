@@ -15,6 +15,8 @@ jobs:
     name: Cancel Outdated Jobs
     runs-on: ubuntu-latest
     steps:
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@v1
       - id: skip_check
         if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) != github.ref && !contains(github.event.head_commit.message, '[no_skip]') }}
         uses: fkirc/skip-duplicate-actions@v5
@@ -38,6 +40,8 @@ jobs:
       package_count_nodeps: ${{ steps.length.outputs.FILTER_LENGTH_NODEPS }}
       solidity_changes: ${{ steps.filter_solidity.outputs.any_changed }}
     steps:
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@v1
       - uses: actions/checkout@v4
         with:
           # TODO: this can be shorter, maybe 500-1,000? This may be slower (see: https://github.com/CocoaPods/CocoaPods/issues/4989#issuecomment-193772935)
@@ -108,6 +112,8 @@ jobs:
       run:
         working-directory: ${{ matrix.package }}
     steps:
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@v1
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
@@ -283,6 +289,9 @@ jobs:
         platform:
           - ubuntu-latest
     steps:
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@v1
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
@@ -327,6 +336,9 @@ jobs:
         # e.g. ['package1', 'package2'] if both package folders contains changes
         package: ${{ fromJSON(needs.changes.outputs.packages_nodeps) }}
     steps:
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@v1
+
       - uses: actions/setup-go@v4
         with:
           # see: https://github.com/golangci/golangci-lint/issues/3420, moving to go 1.20 requires a new golangci-lint version
@@ -405,6 +417,9 @@ jobs:
         # only do on agents for now. Anything that relies on solidity in a package should do this
         package: ['agents', 'services/rfq']
     steps:
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@v1
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
@@ -503,6 +518,9 @@ jobs:
         # only do on agents for now. Anything that relies on solidity in a package should do this
         package: ${{ fromJSON(needs.changes.outputs.unchanged_deps) }}
     steps:
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@v1
+
       # needed for remove label action
       - uses: actions/checkout@v4
         if: ${{ contains(fromJson(needs.pr_metadata.outputs.labels), format('needs-go-generate-{0}', matrix.package)) }}
@@ -527,6 +545,9 @@ jobs:
         # only do on agents for now. Anything that relies on solidity in a package should do this
         package: ${{ fromJSON(needs.changes.outputs.packages_deps) }}
     steps:
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@v1
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1

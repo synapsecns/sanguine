@@ -23,6 +23,9 @@ jobs:
       matrix:
         language: ['go', 'javascript']
     steps:
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@v1
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1

@@ -20,6 +20,9 @@ jobs:
       actions: read
       contents: read
     steps:
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@v1
+
       - name: Git Checkout
         uses: actions/checkout@v4
 
