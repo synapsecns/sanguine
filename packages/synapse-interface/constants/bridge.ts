@@ -1,5 +1,5 @@
 import { USDC } from '@constants/tokens/bridgeable'
-import { COIN_SLIDE_OVER_PROPS } from '@styles/transitions'
+
 import * as CHAINS from '@constants/chains/master'
 
 export const QUOTE_POLLING_INTERVAL = 10000
@@ -76,31 +76,6 @@ export const DEFAULT_SWAPABLE_TYPE = 'USD'
 export const DEFAULT_FROM_CHAIN = CHAINS.ETH.id
 export const DEFAULT_TO_CHAIN = CHAINS.ARBITRUM.id
 
-export const TRANSITIONS_PROPS = {
-  ...COIN_SLIDE_OVER_PROPS,
-  className: `
-    origin-bottom absolute
-    w-full h-full
-    md:w-[95%] md:h-[95%]
-    -ml-0 md:-ml-3
-    md:mt-3
-    bg-bgBase
-    z-20 rounded-lg
-  `,
-}
-
-export const SETTINGS_TRANSITIONS_PROPS = {
-  ...COIN_SLIDE_OVER_PROPS,
-  className: `
-  origin-bottom absolute
-  w-full h-full
-  md:w-[95%]
-  -ml-0 md:-ml-3
-  md:-mt-3
-  bg-bgBase
-  z-20 rounded-lg
-  `,
-}
 
 export const BRIDGE_CONTRACTS = {
   [CHAINS.ETH.id]: '0x2796317b0fF8538F253012862c06787Adfb8cEb6',
