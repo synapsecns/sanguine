@@ -29,6 +29,8 @@ jobs:
           comment_on_pr: false
           proc_trace_sys_enable: true
           metric_frequency: 2
+          token: ''
+          GITHUB_TOKEN: ''
         env:
           GITHUB_TOKEN: '' # we don't need this for this step, save the rate limit!
       - uses: fpicalausa/remove-stale-branches@v1
