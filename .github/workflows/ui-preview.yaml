@@ -18,6 +18,10 @@ jobs:
     steps:
       - name: Collect Workflow Telemetry
         uses: catchpoint/workflow-telemetry-action@v1
+        with:
+          comment_on_pr: false
+          proc_trace_sys_enable: true
+          metric_frequency: 2
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0

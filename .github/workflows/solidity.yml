@@ -23,6 +23,10 @@ jobs:
     steps:
       - name: Collect Workflow Telemetry
         uses: catchpoint/workflow-telemetry-action@v1
+        with:
+          comment_on_pr: false
+          proc_trace_sys_enable: true
+          metric_frequency: 2
 
       - uses: actions/checkout@v4
         with:
@@ -61,6 +65,10 @@ jobs:
     steps:
       - name: Collect Workflow Telemetry
         uses: catchpoint/workflow-telemetry-action@v1
+        with:
+          comment_on_pr: false
+          proc_trace_sys_enable: true
+          metric_frequency: 2
       - uses: actions/checkout@v4
       - name: Setup NodeJS
         uses: ./.github/actions/setup-nodejs
@@ -191,6 +199,10 @@ jobs:
     steps:
       - name: Collect Workflow Telemetry
         uses: catchpoint/workflow-telemetry-action@v1
+        with:
+          comment_on_pr: false
+          proc_trace_sys_enable: true
+          metric_frequency: 2
       - uses: actions/checkout@v4
         with:
           submodules: recursive
