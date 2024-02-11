@@ -2,7 +2,7 @@ import { JsonRpcApiProvider, BrowserProvider } from 'ethers'
 
 export interface BridgeableToken {
   addresses: {}
-  decimals: number | {}
+  decimals: {}
   symbol: string
   name: string
   swapableType: string
@@ -30,7 +30,7 @@ export type CustomRpcs = {
 
 export interface BridgeProps {
   /** Consumer Web3 Provider */
-  web3Provider?: JsonRpcApiProvider | BrowserProvider
+  web3Provider: JsonRpcApiProvider | BrowserProvider
 
   /** Consumer selected RPCs */
   customRpcs?: CustomRpcs
