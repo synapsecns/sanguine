@@ -13,8 +13,8 @@ import { setToChainId } from '@/slices/bridge/reducer'
 import { setShowToChainListOverlay } from '@/slices/bridgeDisplaySlice'
 import { SelectSpecificNetworkButton } from './components/SelectSpecificNetworkButton'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
-import { CloseButton } from './components/CloseButton'
-import { SearchResults } from './components/SearchResults'
+import { CloseButton } from '@/components/buttons/CloseButton'
+import { SearchResults } from '@/components/SearchResults'
 
 import { PAUSED_TO_CHAIN_IDS } from '@constants/chains'
 

@@ -12,8 +12,8 @@ import { setFromChainId } from '@/slices/bridge/reducer'
 import { setShowFromChainListOverlay } from '@/slices/bridgeDisplaySlice'
 import { SelectSpecificNetworkButton } from './components/SelectSpecificNetworkButton'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
-import { CloseButton } from './components/CloseButton'
-import { SearchResults } from './components/SearchResults'
+import { CloseButton } from '@/components/buttons/CloseButton'
+import { SearchResults } from '@/components/SearchResults'
 import { PAUSED_FROM_CHAIN_IDS } from '@constants/chains'
 
 export const FromChainListOverlay = () => {

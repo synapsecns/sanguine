@@ -19,8 +19,8 @@ import { hasBalance } from '@/utils/helpers/hasBalance'
 import { sortByPriorityRank } from '@/utils/helpers/sortByPriorityRank'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
-import { CloseButton } from './components/CloseButton'
-import { SearchResults } from './components/SearchResults'
+import { CloseButton } from '@/components/buttons/CloseButton'
+import { SearchResults } from '@/components/SearchResults'
 
 export const FromTokenListOverlay = () => {
   const [currentIdx, setCurrentIdx] = useState(-1)
