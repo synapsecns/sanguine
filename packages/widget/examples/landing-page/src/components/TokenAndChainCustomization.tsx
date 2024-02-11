@@ -4,11 +4,13 @@ const tokenAndChainCustomizationCodeBlock = `
   const MyApp = () => {
     const web3Provider = new ethers.BrowserProvider(window.ethereum)
 
-    <Bridge
-      web3Provider={web3Provider}
-      targetTokens={[ETH, USDC, USDT]}
-      targetChainIds={[42161, 43114]}
-    />
+    return (
+      <Bridge
+        web3Provider={web3Provider}
+        targetTokens={[ETH, USDC, USDT]}
+        targetChainIds={[42161, 43114]}
+      />
+    )
   }
   `
 

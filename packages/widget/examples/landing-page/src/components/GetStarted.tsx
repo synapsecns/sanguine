@@ -4,9 +4,11 @@ const getStartedCodeBlock = `
   const MyApp = () => {
     const web3Provider = new ethers.BrowserProvider(window.ethereum)
 
-    <Bridge
-      web3Provider={web3Provider}
-    />
+    return (
+      <Bridge
+        web3Provider={web3Provider}
+      />
+    )
   }
 `
 
