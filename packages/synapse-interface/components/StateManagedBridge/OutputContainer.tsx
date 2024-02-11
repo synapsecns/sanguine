@@ -1,33 +1,20 @@
-import { useEffect, useState } from 'react'
-import { Address, useAccount } from 'wagmi'
+import { useAccount } from 'wagmi'
 
-import LoadingDots from '../ui/tailwind/LoadingDots'
-import { ToChainSelector } from './ToChainSelector'
-import { shortenAddress } from '@/utils/shortenAddress'
-import { ToTokenSelector } from './ToTokenSelector'
-import { useDispatch } from 'react-redux'
-import { setToChainId, setToToken } from '@/slices/bridge/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
 
-export const OutputContainer = ({}) => {
-  const { bridgeQuote, isLoading, toChainId, toToken } = useBridgeState()
+import LoadingDots from '@tw/LoadingDots'
 
-  const { address: isConnectedAddress } = useAccount()
-  const [address, setAddress] = useState<Address>()
+import { ToChainSelector } from './ToChainSelector'
+import { ToTokenSelector } from './ToTokenSelector'
 
-  const dispatch = useDispatch()
 
-  useEffect(() => {
-    setAddress(isConnectedAddress)
-  }, [isConnectedAddress])
-
-  // update address for destination address if we have a destination address
+export const OutputContainer = () => {
+  const { bridgeQuote, isLoading } = useBridgeState()
 
   return (
     <div className="mt-[1.125rem] p-md text-left rounded-md bg-bgBase/10">
       <div className="flex items-center justify-between mb-3">
         <ToChainSelector />
-
       </div>
 
       <div className="flex h-16 mb-2 space-x-2">
