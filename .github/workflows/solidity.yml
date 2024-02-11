@@ -149,6 +149,14 @@ jobs:
       actions: read
       contents: read
     steps:
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@v1
+        with:
+          comment_on_pr: false
+          proc_trace_sys_enable: true
+          metric_frequency: 2
+        env:
+          GITHUB_TOKEN: '' # we don't need this for this step, save the rate limit!
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -242,6 +250,7 @@ jobs:
           attempt_delay: 30000
 
 
+
   snapshot:
     runs-on: ubuntu-latest
     name: Foundry Gas Snapshot
@@ -252,6 +261,15 @@ jobs:
       matrix:
         package: ${{ fromJson(needs.changes.outputs.packages) }}
     steps:
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@v1
+        with:
+          comment_on_pr: false
+          proc_trace_sys_enable: true
+          metric_frequency: 2
+        env:
+          GITHUB_TOKEN: '' # we don't need this for this step, save the rate limit!
+
       - uses: actions/checkout@v4
         with:
           submodules: recursive
@@ -279,6 +297,15 @@ jobs:
       matrix:
         package: ${{ fromJson(needs.changes.outputs.packages) }}
     steps:
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@v1
+        with:
+          comment_on_pr: false
+          proc_trace_sys_enable: true
+          metric_frequency: 2
+        env:
+          GITHUB_TOKEN: '' # we don't need this for this step, save the rate limit!
+
       - uses: actions/checkout@v4
         with:
           submodules: recursive

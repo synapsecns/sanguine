@@ -61,6 +61,14 @@ jobs:
       VERCEL_ORG_ID: '${{ secrets.VERCEL_ORG_ID }}'
       NODE_ENV: 'production'
     steps:
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@v1
+        with:
+          comment_on_pr: false
+          proc_trace_sys_enable: true
+          metric_frequency: 2
+        env:
+          GITHUB_TOKEN: '' # we don't need this for this step, save the rate limit!
       - uses: actions/checkout@v4
       - name: Setup NodeJS
         uses: ./.github/actions/setup-nodejs
