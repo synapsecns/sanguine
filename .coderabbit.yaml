@@ -9,3 +9,5 @@ reviews:
       - 'WIP'
       - 'DO NOT MERGE'
     drafts: true
+chat:
+  auto_reply: true
