@@ -1,19 +1,13 @@
-import { useEffect, useState } from 'react'
-import { Address, useAccount } from 'wagmi'
 
-import LoadingDots from '../ui/tailwind/LoadingDots'
-import { SwapToTokenSelector } from './SwapToTokenSelector'
 import { useSwapState } from '@/slices/swap/hooks'
 
+import LoadingDots from '@tw/LoadingDots'
+import { SwapToTokenSelector } from './SwapToTokenSelector'
+
+
 export const SwapOutputContainer = () => {
-  const { swapQuote, isLoading, swapToToken } = useSwapState()
+  const { swapQuote, isLoading } = useSwapState()
 
-  const { address: isConnectedAddress } = useAccount()
-  const [address, setAddress] = useState<Address>()
-
-  useEffect(() => {
-    setAddress(isConnectedAddress)
-  }, [isConnectedAddress])
 
   return (
     <div className="mt-[1.125rem] p-md text-left rounded-md bg-bgBase/10">

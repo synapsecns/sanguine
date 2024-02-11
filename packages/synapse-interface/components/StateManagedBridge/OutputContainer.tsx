@@ -1,5 +1,3 @@
-import { useAccount } from 'wagmi'
-
 import { useBridgeState } from '@/slices/bridge/hooks'
 
 import LoadingDots from '@tw/LoadingDots'
