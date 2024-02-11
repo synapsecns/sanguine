@@ -26,6 +26,7 @@ jobs:
           comment_on_pr: false
           proc_trace_sys_enable: true
           metric_frequency: 2
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Git Checkout
         uses: actions/checkout@v4

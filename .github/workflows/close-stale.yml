@@ -29,6 +29,7 @@ jobs:
           comment_on_pr: false
           proc_trace_sys_enable: true
           metric_frequency: 2
+          github_token: ${{ secrets.GITHUB_TOKEN }}
       - uses: fpicalausa/remove-stale-branches@v1
         with:
           operations-per-run: 50
