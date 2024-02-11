@@ -1,7 +1,9 @@
 import React, { memo } from 'react'
 
-import PoolCard from './PoolCard'
 import { LoaderIcon } from 'react-hot-toast'
+
+import PoolCard from './PoolCard'
+
 
 const PoolCards = memo(
   ({ pools, address }: { pools: any; address: string }) => {

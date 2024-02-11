@@ -6,7 +6,10 @@ import { getStakedBalance } from '@/utils/actions/getStakedBalance'
 import { approve, stake } from '@/utils/actions/approveAndStake'
 import { withdrawStake } from '@/utils/actions/withdrawStake'
 import { claimStake } from '@/utils/actions/claimStake'
+
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
+import { formatBigIntToString } from '@/utils/bigint/format'
+import { stringToBigInt } from '@/utils/bigint/format'
 
 import { usePendingTxWrapper } from '@/utils/hooks/usePendingTxWrapper'
 import { useTokenBalance } from '@/utils/hooks/useTokenBalance'
@@ -23,8 +26,7 @@ import TabItem from '@tw/TabItem'
 import Card from '@tw/Card'
 
 import StakeCardTitle from './StakeCardTitle'
-import { formatBigIntToString } from '@/utils/bigint/format'
-import { stringToBigInt } from '@/utils/bigint/format'
+
 import InfoSectionCard from '../pool/PoolInfoSection/InfoSectionCard'
 
 import { InteractiveInputRowButton } from '@/components/InteractiveInputRowButton'

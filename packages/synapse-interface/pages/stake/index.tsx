@@ -1,22 +1,26 @@
+import toast from 'react-hot-toast'
 import { useEffect, useState } from 'react'
 import { useNetwork, useAccount } from 'wagmi'
+import { useRouter } from 'next/router'
+import Link from 'next/link'
+import { ChevronLeftIcon } from '@heroicons/react/outline'
 import { Token } from '@/utils/types'
 import { STAKABLE_TOKENS } from '@/constants/tokens'
 import Grid from '@tw/Grid'
 import { PageHeader } from '@/components/PageHeader'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import StakeCard from './StakeCard'
-import { useRouter } from 'next/router'
+
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import Link from 'next/link'
+
 import { POOLS_PATH } from '@/constants/urls'
-import { ChevronLeftIcon } from '@heroicons/react/outline'
-import toast from 'react-hot-toast'
+
+
 
 const StakePage = () => {
   const { chain: connectedChain } = useNetwork()
   const { address: currentAddress } = useAccount()
-  const [address, setAddress] = useState(undefined)
+
   const [isClient, setIsClient] = useState<boolean>(false)
   const [columns, setColumns] = useState<number>(1)
 
@@ -38,9 +42,7 @@ const StakePage = () => {
     })
   }, [])
 
-  useEffect(() => {
-    setAddress(currentAddress)
-  }, [currentAddress])
+
 
   useEffect(() => {
     const isSingle = availableStakingTokens.length < 2
