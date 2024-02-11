@@ -1,4 +1,4 @@
-import { SectionContainer } from '../../../components/landing/shared'
+import { SectionContainer } from '@/components/landing/shared'
 import Grid from '@tw/Grid'
 import Card from '@tw/Card'
 import { CrossChainExchangeIcon } from '@/components/icons/LandingIcons/CrossChainExchangeIcon'

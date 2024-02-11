@@ -2,7 +2,7 @@ import Grid from '@tw/Grid'
 import {
   SectionContainer,
   SupportCard,
-} from '../../../components/landing/shared'
+} from '@/components/landing/shared'
 import {
   BridgeImage,
   BridgeImageSmall,

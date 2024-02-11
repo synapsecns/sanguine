@@ -2,7 +2,7 @@ import Link from 'next/link'
 import Grid from '@tw/Grid'
 import Button from '@tw/Button'
 import Card from '@tw/Card'
-import { SectionContainer } from '../../../components/landing/shared'
+import { SectionContainer } from '@/components/landing/shared'
 import { EXPLORER_PATH } from '@/constants/urls'
 import {
   getTotalBridgeVolume,

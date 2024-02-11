@@ -2,7 +2,7 @@ import Link from 'next/link'
 import Grid from '@tw/Grid'
 import Card from '@tw/Card'
 import Button from '@tw/Button'
-import { SectionContainer } from '../../../components/landing/shared'
+import { SectionContainer } from '@/components/landing/shared'
 import { GITHUB_URL, DOCS_URL, MEDIUM_URL } from '@/constants/urls'
 
 export default function ResourcesSection() {

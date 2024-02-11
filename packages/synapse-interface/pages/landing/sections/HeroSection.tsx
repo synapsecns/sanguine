@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Button from '@tw/Button'
 import { DOCS_URL, BRIDGE_PATH } from '@/constants/urls'
-import { SectionContainer } from '../../../components/landing/shared'
+import { SectionContainer } from '@/components/landing/shared'
 
 export default function HeroSection() {
   return (

@@ -1,4 +1,4 @@
-import { SectionContainer } from '../../../components/landing/shared'
+import { SectionContainer } from '@/components/landing/shared'
 import { HowSynapseWorks } from '@/components/icons/LandingIcons/HowSynapseWorks'
 
 export default function HowItWorksSection() {

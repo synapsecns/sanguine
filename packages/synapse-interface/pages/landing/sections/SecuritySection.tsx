@@ -2,11 +2,8 @@ import Grid from '@tw/Grid'
 import {
   SectionContainer,
   SupportCard,
-} from '../../../components/landing/shared'
-import {
-  SynapseCircuit,
-  SynapseCircuitSmall,
-} from '@/components/icons/LandingIcons/SynapseCircuit'
+} from '@/components/landing/shared'
+import { SynapseCircuit } from '@/components/icons/LandingIcons/SynapseCircuit'
 import { SecureIcon } from '@/components/icons/LandingIcons/SecureIcon'
 import { ExtensibleIcon } from '@/components/icons/LandingIcons/ExtensibleIcon'
 import { GeneralizedIcon } from '@/components/icons/LandingIcons/GeneralizedIcon'
