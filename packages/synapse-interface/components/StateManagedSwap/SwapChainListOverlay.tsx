@@ -7,7 +7,7 @@ import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { CHAINS_BY_ID, sortChains } from '@constants/chains'
 import { useDispatch } from 'react-redux'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import { setShowFromChainListOverlay } from '@/slices/bridgeDisplaySlice'
+
 import { SelectSpecificNetworkButton } from './components/SelectSpecificNetworkButton'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import { CloseButton } from './components/CloseButton'

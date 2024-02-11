@@ -1,22 +1,19 @@
 import { useSelector } from 'react-redux'
-import { useMemo } from 'react'
-import { TransactionButton } from '@/components/buttons/TransactionButton'
-import { EMPTY_BRIDGE_QUOTE, EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
-import { RootState } from '@/store/store'
+import { useMemo, useEffect, useState } from 'react'
 import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
-import { useEffect, useState } from 'react'
-import { isAddress } from '@ethersproject/address'
-import {} from 'wagmi'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 
-import {
-  useConnectModal,
-  useAccountModal,
-  useChainModal,
-} from '@rainbow-me/rainbowkit'
+import { isAddress } from '@ethersproject/address'
+
+import { TransactionButton } from '@/components/buttons/TransactionButton'
+
+import { RootState } from '@/store/store'
+
 import { stringToBigInt } from '@/utils/bigint/format'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { PAUSED_FROM_CHAIN_IDS, PAUSED_TO_CHAIN_IDS } from '@/constants/chains'
+import { EMPTY_BRIDGE_QUOTE, EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
 
 export const BridgeTransactionButton = ({
   approveTxn,
