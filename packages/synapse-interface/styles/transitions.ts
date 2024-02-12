@@ -14,15 +14,23 @@ export interface TransitionClassesProps extends TransitionClasses {
   className?: string
 }
 
+/**
+ * `transform-gpu transform` were used on the *To/*From classes
+ * but it appears it doesnt have support in conjunction with opacity
+ * in firefox 72-102, 109 and other mis versions easiest fix is to
+ * just not use it for now till either tw or firefox fixes it
+ * whoever wrote firefox deserves to get shot, then brought back
+ * to life and then shot again
+ */
 export const COIN_SLIDE_OVER_PROPS: TransitionClassesProps = {
   appear: true,
   unmount: true,
   enter: 'duration-25 transition-opacity ease-out',
-  enterFrom: 'transform-gpu transform opacity-0',
-  enterTo: 'transform-gpu transform opacity-100',
+  enterFrom: ' opacity-0',
+  enterTo: ' opacity-100',
   leave: 'duration-25 transition-opacity ease-out',
-  leaveFrom: 'transform-gpu transform opacity-100',
-  leaveTo: 'transform-gpu transform opacity-0 hidden',
+  leaveFrom: ' opacity-100',
+  leaveTo: ' opacity-0 hidden',
 }
 
 export const SECTION_TRANSITION_PROPS: TransitionClassesProps = {
