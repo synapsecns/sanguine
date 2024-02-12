@@ -129,6 +129,9 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
 
     /// @inheritdoc IFastBridge
     function dispute(bytes32 transactionId) external onlyGuard {
+        // TODO: this should be a two-step process:
+        // 1. dispute() marks transaction as disputed - this stops relayer from claiming
+        // 2. resolve() resolves a disputed transaction - this uses the external source of truth
         if (_timeSince(bridgeProofs[transactionId]) > DISPUTE_PERIOD) revert FastBridge__DisputePeriodPassed();
         // @dev relayer gets slashed effectively if dest relay has gone thru
         _verifyAndUpdateStatus({
