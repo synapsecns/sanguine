@@ -5,13 +5,18 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/kms"
 	"github.com/aws/aws-sdk-go-v2/service/kms/types"
-	. "github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/awssigner/kmsmock"
 	"testing"
 )
 
-// NewSignerFromMockKMS creates a new kms signer from a mock kms.
-func NewSignerFromMockKMS(ctx context.Context, tb testing.TB) *Signer {
+// UNSAFENewSignerFromMockKMS creates a new kms signer from a mock kms.
+//
+// It is exported for testing. It should not be used in production code under any circumstances
+// TODO: consider instead using UnsafeSetKeyID and UnsafeSetPubKeyData
+// instead. This has the advantage of allowing you to create a testutils/ module
+// so we do not have to import or compile kmsmock in production code.
+func UNSAFENewSignerFromMockKMS(ctx context.Context, tb testing.TB) *Signer {
 	tb.Helper()
 
 	kmsMocker := kmsmock.NewMockKMS(ctx, tb)
@@ -25,15 +30,10 @@ func NewSignerFromMockKMS(ctx context.Context, tb testing.TB) *Signer {
 		KeyUsage:              types.KeyUsageTypeSignVerify,
 		MultiRegion:           aws.Bool(false),
 	})
-	Nil(tb, err)
+	require.Nil(tb, err)
 
 	signer.keyID = *testKey.KeyMetadata.KeyId
 	signer.pubKeyData, err = signer.getPublicKey(ctx)
-	Nil(tb, err)
+	require.Nil(tb, err)
 	return signer
-}
-
-// Client gets the client.
-func (signingHandler *Signer) Client() *kms.Client {
-	return signingHandler.client
 }

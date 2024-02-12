@@ -128,3 +128,5 @@ fastcache.tmp*
 # ignore all go built files in local dirs
 main
 .devnet/
+
+committee
