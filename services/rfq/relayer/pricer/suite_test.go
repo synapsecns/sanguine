@@ -5,6 +5,9 @@ import (
 
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/testsuite"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer"
+	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
+	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 )
 
@@ -15,6 +18,7 @@ type PricerSuite struct {
 	origin      uint32
 	destination uint32
 	l1ChainID   uint32
+	signer      signer.Signer
 }
 
 // NewPricerSuite creates a end-to-end test suite.
@@ -31,6 +35,9 @@ func (c *PricerSuite) SetupTest() {
 	c.origin = 42161
 	c.destination = 137
 	c.l1ChainID = 1
+	wall, err := wallet.FromRandom()
+	c.Require().NoError(err)
+	c.signer = localsigner.NewSigner(wall.PrivateKey())
 	c.config = relconfig.Config{
 		BaseChainConfig: relconfig.ChainConfig{
 			OriginGasEstimate: 500000,
@@ -54,7 +61,8 @@ func (c *PricerSuite) SetupTest() {
 						Decimals: 18,
 					},
 				},
-				NativeToken: "ETH",
+				NativeToken:        "ETH",
+				DynamicGasEstimate: true,
 			},
 			int(c.destination): {
 				Tokens: map[string]relconfig.TokenConfig{
