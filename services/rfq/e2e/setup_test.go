@@ -206,7 +206,8 @@ func (i *IntegrationSuite) setupRelayer() {
 						Decimals: 18,
 					},
 				},
-				NativeToken: "ETH",
+				NativeToken:        "ETH",
+				DynamicGasEstimate: true,
 			},
 			destBackendChainID: {
 				Bridge:        i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeType).Address().String(),
