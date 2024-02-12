@@ -17,7 +17,7 @@ export const DropdownMenu = ({ menuTitleElement, children }) => {
   useCloseOnOutsideClick(menuRef, handleClose)
 
   return (
-    <div id="dropdown-menu" className="relative">
+    <div id="dropdown-menu" className="relative" ref={menuRef}>
       <div
         onClick={handleClick}
         className={`
@@ -33,7 +33,6 @@ export const DropdownMenu = ({ menuTitleElement, children }) => {
 
       {open && (
         <ul
-          ref={menuRef}
           className={`
             absolute z-50 mt-1 p-0 -right-1 bg-surface
             border border-solid border-tint rounded shadow
