@@ -87,12 +87,10 @@ export const BridgeTransactionButton = ({
   if (!fromChainId) {
     buttonProperties = {
       label: 'Please select Origin network',
-      onClick: null,
     }
   } else if (!toChainId) {
     buttonProperties = {
       label: 'Please select Destination network',
-      onClick: null,
     }
   } else if (
     PAUSED_FROM_CHAIN_IDS.includes(fromChainId) ||
@@ -100,12 +98,10 @@ export const BridgeTransactionButton = ({
   ) {
     buttonProperties = {
       label: `Bridge unavailable`,
-      onClick: null,
     }
   } else if (!fromToken) {
     buttonProperties = {
       label: `Unsupported Network`,
-      onClick: null,
     }
   } else if (
     !isLoading &&
@@ -114,7 +110,6 @@ export const BridgeTransactionButton = ({
   ) {
     buttonProperties = {
       label: `Amount must be greater than fee`,
-      onClick: null,
     }
   } else if (!isConnected && fromValueBigInt > 0) {
     buttonProperties = {
@@ -124,7 +119,6 @@ export const BridgeTransactionButton = ({
   } else if (isConnected && !sufficientBalance) {
     buttonProperties = {
       label: 'Insufficient balance',
-      onClick: null,
     }
   } else if (showDestinationAddress && !destinationAddress) {
     buttonProperties = {
