@@ -20,7 +20,7 @@ contract UniversalTokenLibraryTest is Test {
     }
 
     function testUniversalTransferToken() public {
-        uint256 amount = 12345;
+        uint256 amount = 12_345;
         token.mint(address(libHarness), amount);
         libHarness.universalTransfer(address(token), recipient, amount);
         assertEq(token.balanceOf(address(libHarness)), 0);
@@ -28,7 +28,7 @@ contract UniversalTokenLibraryTest is Test {
     }
 
     function testUniversalTransferTokenNoopWhenSameRecipient() public {
-        uint256 amount = 12345;
+        uint256 amount = 12_345;
         token.mint(address(libHarness), amount);
         vm.mockCallRevert(
             address(token),
@@ -45,7 +45,7 @@ contract UniversalTokenLibraryTest is Test {
     }
 
     function testUniversalTransferETH() public {
-        uint256 amount = 12345;
+        uint256 amount = 12_345;
         deal(address(libHarness), amount);
         libHarness.universalTransfer(libHarness.ethAddress(), recipient, amount);
         assertEq(address(libHarness).balance, 0);
@@ -53,7 +53,7 @@ contract UniversalTokenLibraryTest is Test {
     }
 
     function testUniversalTransferETHNoopWhenSameRecipient() public {
-        uint256 amount = 12345;
+        uint256 amount = 12_345;
         deal(address(libHarness), amount);
         // Should not revert, as the transfer is a noop due to the same recipient
         libHarness.universalTransfer(libHarness.ethAddress(), address(libHarness), amount);
@@ -65,7 +65,7 @@ contract UniversalTokenLibraryTest is Test {
     }
 
     function testUniversalTransferETHRevertsWhenRecipientDeclined() public {
-        uint256 amount = 12345;
+        uint256 amount = 12_345;
         deal(address(libHarness), amount);
         address eth = libHarness.ethAddress();
         address revertingRecipient = address(new MockRevertingRecipient());
@@ -75,14 +75,14 @@ contract UniversalTokenLibraryTest is Test {
 
     function testUniversalApproveInfinityFromZero() public {
         // Should change allowance from 0 to infinity
-        uint256 amount = 12345;
+        uint256 amount = 12_345;
         libHarness.universalApproveInfinity(address(token), recipient, amount);
         assertEq(token.allowance(address(libHarness), recipient), type(uint256).max);
     }
 
     function testUniversalApproveInfinityFromUnderAmount() public {
         // Should change allowance from <amount to infinity
-        uint256 amount = 12345;
+        uint256 amount = 12_345;
         vm.prank(address(libHarness));
         token.approve(recipient, amount - 1);
         libHarness.universalApproveInfinity(address(token), recipient, amount);
@@ -91,7 +91,7 @@ contract UniversalTokenLibraryTest is Test {
 
     function testUniversalApproveInfinityFromAmount() public {
         // Should not modify the allowance if it is already equal to the amount
-        uint256 amount = 12345;
+        uint256 amount = 12_345;
         vm.prank(address(libHarness));
         token.approve(recipient, amount);
         libHarness.universalApproveInfinity(address(token), recipient, amount);
@@ -100,7 +100,7 @@ contract UniversalTokenLibraryTest is Test {
 
     function testUniversalApproveInfinityFromOverAmount() public {
         // Should not modify the allowance if it is already greater than the amount
-        uint256 amount = 12345;
+        uint256 amount = 12_345;
         vm.prank(address(libHarness));
         token.approve(recipient, amount + 1);
         libHarness.universalApproveInfinity(address(token), recipient, amount);
@@ -109,7 +109,7 @@ contract UniversalTokenLibraryTest is Test {
 
     function testUniversalApproveInfinityFromInfinity() public {
         // Should not modify the allowance if it is already infinity
-        uint256 amount = 12345;
+        uint256 amount = 12_345;
         vm.prank(address(libHarness));
         token.approve(recipient, type(uint256).max);
         libHarness.universalApproveInfinity(address(token), recipient, amount);
@@ -118,7 +118,7 @@ contract UniversalTokenLibraryTest is Test {
 
     function testUniversalApproveInfinityETH() public {
         // Should not revert when supplying ETH_ADDRESS
-        uint256 amount = 12345;
+        uint256 amount = 12_345;
         libHarness.universalApproveInfinity(libHarness.ethAddress(), recipient, amount);
     }
 

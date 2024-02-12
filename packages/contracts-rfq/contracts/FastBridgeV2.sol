@@ -249,7 +249,13 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
 
     /// @dev Changes the status of a bridge transaction, but only if the current status matches the expected value.
     /// Note: this is the only function that can change the status of a bridge transaction.
-    function _verifyAndUpdateStatus(bytes32 transactionId, BridgeStatusV2 expectedOldValue, BridgeStatusV2 newValue) internal {
+    function _verifyAndUpdateStatus(
+        bytes32 transactionId,
+        BridgeStatusV2 expectedOldValue,
+        BridgeStatusV2 newValue
+    )
+        internal
+    {
         if (bridgeStatuses[transactionId] != expectedOldValue) revert FastBridge__StatusIncorrect();
         bridgeStatuses[transactionId] = newValue;
     }

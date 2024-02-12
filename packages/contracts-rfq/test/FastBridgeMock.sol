@@ -94,7 +94,9 @@ contract FastBridgeMock is IFastBridge, Admin {
         uint256 originAmount,
         uint256 destAmount,
         uint256 chainGasAmount
-    ) external {
+    )
+        external
+    {
         emit BridgeRelayed(
             transactionId, relayer, to, originChainId, originToken, destToken, originAmount, destAmount, chainGasAmount
         );
