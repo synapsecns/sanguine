@@ -74,7 +74,7 @@ import SettingsSlideOver from '@/components/StateManagedBridge/SettingsSlideOver
 import BridgeExchangeRateInfo from '@/components/StateManagedBridge/BridgeExchangeRateInfo'
 
 import { XIcon } from '@heroicons/react/outline'
-import { AnimatedOverlay } from '@/components/AnimatedOverlay'
+import { OverlayTransition } from '@/components/OverlayTransition'
 
 
 const StateManagedBridge = () => {
@@ -520,21 +520,21 @@ const StateManagedBridge = () => {
           `}
         >
           <div ref={bridgeDisplayRef}>
-            <AnimatedOverlay show={showSettingsSlideOver}>
+            <OverlayTransition show={showSettingsSlideOver}>
               <SettingsSlideOver key="settings" />
-            </AnimatedOverlay>
-            <AnimatedOverlay show={showFromChainListOverlay}>
+            </OverlayTransition>
+            <OverlayTransition show={showFromChainListOverlay}>
               <FromChainListOverlay />
-            </AnimatedOverlay>
-            <AnimatedOverlay show={showFromTokenListOverlay}>
+            </OverlayTransition>
+            <OverlayTransition show={showFromTokenListOverlay}>
               <FromTokenListOverlay />
-            </AnimatedOverlay>
-            <AnimatedOverlay show={showToChainListOverlay}>
+            </OverlayTransition>
+            <OverlayTransition show={showToChainListOverlay}>
               <ToChainListOverlay />
-            </AnimatedOverlay>
-            <AnimatedOverlay show={showToTokenListOverlay}>
+            </OverlayTransition>
+            <OverlayTransition show={showToTokenListOverlay}>
               <ToTokenListOverlay />
-            </AnimatedOverlay>
+            </OverlayTransition>
             <InputContainer />
             <OutputContainer />
             <Warning />
