@@ -122,20 +122,6 @@ contract SynapseModuleE2ETest is Test {
 
       signatures[i] = signature;
     }
-    // bytes memory data = abi.encode(bytesInterTransaction, proof);
-    // (bytes memory moduleTransaction, bytes memory moduleProof) = abi.decode(
-    //   data,
-    //   (bytes, bytes)
-    // );
-    // assertEq(
-    //   moduleTransaction,
-    //   bytesInterTransaction,
-    //   'Module transaction should be the same'
-    // );
-
-    // assertEq(moduleProof, proof, 'Module proof should be the same');
-
-    // console.logBytes(moduleProof);
 
     moduleL2.receiveModuleMessage(bytesInterTransaction, signatures);
   }
