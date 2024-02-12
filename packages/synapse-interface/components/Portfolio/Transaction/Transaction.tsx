@@ -83,7 +83,7 @@ export const Transaction = React.memo(
         data-test-id="transaction"
         className={`
         flex flex-col mb-2
-        border rounded-lg text-secondary border-white/20
+        border rounded-lg text-secondary border-white/10
         ${transactionType === TransactionType.HISTORICAL && 'bg-bgBase/10'}
       `}
       >
