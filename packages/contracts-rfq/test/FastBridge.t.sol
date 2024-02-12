@@ -1565,7 +1565,7 @@ contract FastBridgeTest is FastBridgeErrors, Test {
         vm.stopPrank();
     }
 
-    function test_failedClaimNoProof() public {
+    function test_failedClaimNoProof() public virtual {
         setUpRoles();
         test_successfulBridge();
 

@@ -11,6 +11,27 @@ contract FastBridgeV2ParityTest is FastBridgeTest {
         fastBridge = FastBridge(fastBridgeV2);
     }
 
+    // ════════════════════════════════════════════ OVERRIDES FOR TESTS ════════════════════════════════════════════════
+
+    /// @dev The same test, but expecting a different error
+    function test_failedClaimNoProof() public virtual override {
+        setUpRoles();
+        test_successfulBridge();
+
+        // get bridge request and tx id
+        (bytes memory request, ) = _getBridgeRequestAndId(block.chainid, 0, 0);
+
+        vm.startPrank(relayer);
+
+        vm.warp(block.timestamp + 31 minutes);
+
+        vm.expectRevert(senderIncorrectSelector());
+        fastBridge.claim(request, relayer);
+
+        // We stop a prank to contain within test
+        vm.stopPrank();
+    }
+
     // ════════════════════════════════════════ OVERRIDES FOR CUSTOM ERRORS ════════════════════════════════════════════
 
     // FastBridgeV2 uses a different naming convention for errors, so we need to override the error selectors

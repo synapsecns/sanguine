@@ -92,10 +92,11 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
 
         // check haven't exceeded deadline for prove to happen
         if (block.timestamp > transaction.deadline + PROVE_PERIOD) revert FastBridge__DeadlineExceeded();
-
-        // update bridge tx status given proof provided
-        if (bridgeStatuses[transactionId] != BridgeStatusV2.REQUESTED) revert FastBridge__StatusIncorrect();
-        bridgeStatuses[transactionId] = BridgeStatusV2.RELAYER_PROVED;
+        _verifyAndUpdateStatus({
+            transactionId: transactionId,
+            expectedOldValue: BridgeStatusV2.REQUESTED,
+            newValue: BridgeStatusV2.RELAYER_PROVED
+        });
         bridgeProofs[transactionId] = BridgeProof({timestamp: uint96(block.timestamp), relayer: msg.sender}); // overflow ok
 
         emit BridgeProofProvided(transactionId, msg.sender, destTxHash);
@@ -104,18 +105,16 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
     /// @inheritdoc IFastBridge
     function claim(bytes memory request, address to) external onlyRelayer {
         bytes32 transactionId = keccak256(request);
-        BridgeTransaction memory transaction = getBridgeTransaction(request);
-
-        // update bridge tx status if able to claim origin collateral
-        if (bridgeStatuses[transactionId] != BridgeStatusV2.RELAYER_PROVED) revert FastBridge__StatusIncorrect();
-
         BridgeProof memory proof = bridgeProofs[transactionId];
         if (proof.relayer != msg.sender) revert FastBridge__SenderIncorrect();
         if (_timeSince(proof) <= DISPUTE_PERIOD) revert FastBridge__DisputePeriodNotPassed();
-
-        bridgeStatuses[transactionId] = BridgeStatusV2.RELAYER_CLAIMED;
-
+        _verifyAndUpdateStatus({
+            transactionId: transactionId,
+            expectedOldValue: BridgeStatusV2.RELAYER_PROVED,
+            newValue: BridgeStatusV2.RELAYER_CLAIMED
+        });
         // update protocol fees if origin fee amount exists
+        BridgeTransaction memory transaction = getBridgeTransaction(request);
         if (transaction.originFeeAmount > 0) protocolFees[transaction.originToken] += transaction.originFeeAmount;
 
         // transfer origin collateral less fee to specified address
@@ -130,11 +129,13 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
 
     /// @inheritdoc IFastBridge
     function dispute(bytes32 transactionId) external onlyGuard {
-        if (bridgeStatuses[transactionId] != BridgeStatusV2.RELAYER_PROVED) revert FastBridge__StatusIncorrect();
         if (_timeSince(bridgeProofs[transactionId]) > DISPUTE_PERIOD) revert FastBridge__DisputePeriodPassed();
-
         // @dev relayer gets slashed effectively if dest relay has gone thru
-        bridgeStatuses[transactionId] = BridgeStatusV2.REQUESTED;
+        _verifyAndUpdateStatus({
+            transactionId: transactionId,
+            expectedOldValue: BridgeStatusV2.RELAYER_PROVED,
+            newValue: BridgeStatusV2.REQUESTED
+        });
         delete bridgeProofs[transactionId];
 
         emit BridgeProofDisputed(transactionId, msg.sender);
@@ -177,8 +178,11 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
             })
         );
         bytes32 transactionId = keccak256(request);
-        bridgeStatuses[transactionId] = BridgeStatusV2.REQUESTED;
-
+        _verifyAndUpdateStatus({
+            transactionId: transactionId,
+            expectedOldValue: BridgeStatusV2.NULL,
+            newValue: BridgeStatusV2.REQUESTED
+        });
         emit BridgeRequested(
             transactionId,
             params.sender,
@@ -199,11 +203,11 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
 
         // check exceeded deadline for prove to happen
         if (block.timestamp <= transaction.deadline + PROVE_PERIOD) revert FastBridge__DeadlineNotExceeded();
-
-        // set status to refunded if still in requested state
-        if (bridgeStatuses[transactionId] != BridgeStatusV2.REQUESTED) revert FastBridge__StatusIncorrect();
-        bridgeStatuses[transactionId] = BridgeStatusV2.REFUNDED;
-
+        _verifyAndUpdateStatus({
+            transactionId: transactionId,
+            expectedOldValue: BridgeStatusV2.REQUESTED,
+            newValue: BridgeStatusV2.REFUNDED
+        });
         // transfer origin collateral back to original sender
         address to = transaction.originSender;
         address token = transaction.originToken;
@@ -239,6 +243,13 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
+
+    /// @dev Changes the status of a bridge transaction, but only if the current status matches the expected value.
+    /// Note: this is the only function that can change the status of a bridge transaction.
+    function _verifyAndUpdateStatus(bytes32 transactionId, BridgeStatusV2 expectedOldValue, BridgeStatusV2 newValue) internal {
+        if (bridgeStatuses[transactionId] != expectedOldValue) revert FastBridge__StatusIncorrect();
+        bridgeStatuses[transactionId] = newValue;
+    }
 
     /// @notice Pulls a requested token from the user to the requested recipient.
     /// @dev Be careful of re-entrancy issues when msg.value > 0 and recipient != address(this)
