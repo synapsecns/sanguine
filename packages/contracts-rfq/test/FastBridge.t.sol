@@ -1,17 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "forge-std/Test.sol";
-import "forge-std/console2.sol";
+import {Test} from "forge-std/Test.sol";
+import {console2} from "forge-std/console2.sol";
 
-import "../contracts/FastBridge.sol";
-import "../contracts/interfaces/IFastBridge.sol";
-import "../contracts/libs/Errors.sol";
-import "../contracts/libs/UniversalToken.sol";
+import {FastBridge, IFastBridge} from "../contracts/FastBridge.sol";
+import {UniversalTokenLib} from "../contracts/libs/UniversalToken.sol";
 
-import "./MockERC20.sol";
+import {MockERC20} from "./MockERC20.sol";
+import {FastBridgeErrors} from "./FastBridgeErrors.sol";
 
-contract FastBridgeTest is Test {
+contract FastBridgeTest is FastBridgeErrors, Test {
     FastBridge public fastBridge;
 
     address owner = address(1);
@@ -25,10 +24,14 @@ contract FastBridgeTest is Test {
 
     function setUp() public {
         vm.chainId(42161);
-        fastBridge = new FastBridge(owner);
+        deployFastBridge();
         arbUSDC = new MockERC20("arbUSDC", 6);
         ethUSDC = new MockERC20("ethUSDC", 6);
         _mintTokensToActors();
+    }
+
+    function deployFastBridge() internal virtual {
+        fastBridge = new FastBridge(owner);
     }
 
     function _mintTokensToActors() internal {
@@ -763,7 +766,7 @@ contract FastBridgeTest is Test {
             sendChainGas: false,
             deadline: block.timestamp + 3600
         });
-        vm.expectRevert(abi.encodeWithSelector(ChainIncorrect.selector));
+        vm.expectRevert(chainIncorrectSelector());
         fastBridge.bridge(params);
 
         // We stop a prank to contain within test
@@ -788,7 +791,7 @@ contract FastBridgeTest is Test {
             sendChainGas: false,
             deadline: block.timestamp + 3600
         });
-        vm.expectRevert(abi.encodeWithSelector(AmountIncorrect.selector));
+        vm.expectRevert(amountIncorrectSelector());
         fastBridge.bridge(params);
 
         // We stop a prank to contain within test
@@ -813,7 +816,7 @@ contract FastBridgeTest is Test {
             sendChainGas: false,
             deadline: block.timestamp + 3600
         });
-        vm.expectRevert(abi.encodeWithSelector(AmountIncorrect.selector));
+        vm.expectRevert(amountIncorrectSelector());
         fastBridge.bridge(params);
 
         // We stop a prank to contain within test
@@ -838,7 +841,7 @@ contract FastBridgeTest is Test {
             sendChainGas: false,
             deadline: block.timestamp + 3600
         });
-        vm.expectRevert(abi.encodeWithSelector(ZeroAddress.selector));
+        vm.expectRevert(zeroAddressSelector());
         fastBridge.bridge(params);
 
         // We stop a prank to contain within test
@@ -863,7 +866,7 @@ contract FastBridgeTest is Test {
             sendChainGas: false,
             deadline: block.timestamp + 3600
         });
-        vm.expectRevert(abi.encodeWithSelector(ZeroAddress.selector));
+        vm.expectRevert(zeroAddressSelector());
         fastBridge.bridge(params);
 
         // We stop a prank to contain within test
@@ -888,7 +891,7 @@ contract FastBridgeTest is Test {
             sendChainGas: false,
             deadline: block.timestamp + 1800 - 1
         });
-        vm.expectRevert(abi.encodeWithSelector(DeadlineTooShort.selector));
+        vm.expectRevert(deadlineTooShortSelector());
         fastBridge.bridge(params);
 
         // We stop a prank to contain within test
@@ -1180,7 +1183,7 @@ contract FastBridgeTest is Test {
         ethUSDC.approve(address(fastBridge), type(uint256).max);
 
         // Relay the destination bridge
-        vm.expectRevert(abi.encodeWithSelector(ChainIncorrect.selector));
+        vm.expectRevert(chainIncorrectSelector());
         vm.chainId(2); // wrong dest chain id
         fastBridge.relay(request);
 
@@ -1208,7 +1211,7 @@ contract FastBridgeTest is Test {
         vm.warp(block.timestamp + 61 minutes);
 
         // Relay the destination bridge
-        vm.expectRevert(abi.encodeWithSelector(DeadlineExceeded.selector));
+        vm.expectRevert(deadlineExceededSelector());
         vm.chainId(1); // set to dest chain
         fastBridge.relay(request);
 
@@ -1231,7 +1234,7 @@ contract FastBridgeTest is Test {
         // We start a prank with the relayer
         vm.startPrank(relayer);
         // We expect a revert because the destination bridge has already been relayed
-        vm.expectRevert(abi.encodeWithSelector(TransactionRelayed.selector));
+        vm.expectRevert(transactionRelayedSelector());
         vm.chainId(1); // set to dest chain
         // We try to relay the destination bridge again
         fastBridge.relay(request);
@@ -1349,7 +1352,7 @@ contract FastBridgeTest is Test {
         vm.warp(block.timestamp + 121 minutes);
 
         // We provide the relay proof
-        vm.expectRevert(abi.encodeWithSelector(DeadlineExceeded.selector));
+        vm.expectRevert(deadlineExceededSelector());
         fastBridge.prove(request, fakeTxnHash);
 
         // We stop a prank to contain within test
@@ -1367,7 +1370,7 @@ contract FastBridgeTest is Test {
         vm.startPrank(relayer);
 
         // We provide the relay proof
-        vm.expectRevert(abi.encodeWithSelector(StatusIncorrect.selector));
+        vm.expectRevert(statusIncorrectSelector());
         fastBridge.prove(request, bytes32("0x01"));
 
         // We stop a prank to contain within test
@@ -1573,7 +1576,7 @@ contract FastBridgeTest is Test {
 
         vm.warp(block.timestamp + 31 minutes);
 
-        vm.expectRevert(abi.encodeWithSelector(StatusIncorrect.selector));
+        vm.expectRevert(statusIncorrectSelector());
         fastBridge.claim(request, relayer);
 
         // We stop a prank to contain within test
@@ -1595,7 +1598,7 @@ contract FastBridgeTest is Test {
         vm.prank(relayer);
         fastBridge.prove(request, bytes32("0x04"));
 
-        vm.expectRevert(abi.encodeWithSelector(SenderIncorrect.selector));
+        vm.expectRevert(senderIncorrectSelector());
         fastBridge.claim(request, relayer);
     }
 
@@ -1609,7 +1612,7 @@ contract FastBridgeTest is Test {
         vm.startPrank(relayer);
         fastBridge.prove(request, bytes32("0x04"));
 
-        vm.expectRevert(abi.encodeWithSelector(DisputePeriodNotPassed.selector));
+        vm.expectRevert(disputePeriodNotPassedSelector());
         fastBridge.claim(request, relayer);
 
         // We stop a prank to contain within test
@@ -1690,7 +1693,7 @@ contract FastBridgeTest is Test {
 
         vm.startPrank(guard);
 
-        vm.expectRevert(abi.encodeWithSelector(StatusIncorrect.selector));
+        vm.expectRevert(statusIncorrectSelector());
         fastBridge.dispute(transactionId);
 
         // We stop a prank to contain within test
@@ -1708,7 +1711,7 @@ contract FastBridgeTest is Test {
 
         vm.warp(block.timestamp + 31 minutes);
 
-        vm.expectRevert(abi.encodeWithSelector(DisputePeriodPassed.selector));
+        vm.expectRevert(disputePeriodPassedSelector());
         fastBridge.dispute(transactionId);
 
         // We stop a prank to contain within test
@@ -1928,7 +1931,7 @@ contract FastBridgeTest is Test {
 
         vm.warp(block.timestamp + 119 minutes);
 
-        vm.expectRevert(abi.encodeWithSelector(DeadlineNotExceeded.selector));
+        vm.expectRevert(deadlineNotExceededSelector());
         fastBridge.refund(request);
 
         // We stop a prank to contain within test
@@ -1946,7 +1949,7 @@ contract FastBridgeTest is Test {
         // user relay deadline is 60 minutes, so add prove period of 60 minutes to that
         vm.warp(block.timestamp + 121 minutes);
 
-        vm.expectRevert(abi.encodeWithSelector(StatusIncorrect.selector));
+        vm.expectRevert(statusIncorrectSelector());
         fastBridge.refund(request);
 
         // We stop a prank to contain within test
