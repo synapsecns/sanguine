@@ -57,7 +57,7 @@ type feePricer struct {
 }
 
 // NewFeePricer creates a new fee pricer.
-func NewFeePricer(ctx context.Context, config relconfig.Config, clientFetcher submitter.ClientFetcher, priceFetcher CoingeckoPriceFetcher, feeSigner signer.Signer, handler metrics.Handler) FeePricer {
+func NewFeePricer(ctx context.Context, config relconfig.Config, clientFetcher submitter.ClientFetcher, priceFetcher CoingeckoPriceFetcher, feeSigner signer.Signer, handler metrics.Handler) (FeePricer, error) {
 	// setup caches
 	gasPriceCache := ttlcache.New[uint32, *big.Int](
 		ttlcache.WithTTL[uint32, *big.Int](time.Second*time.Duration(config.GetFeePricer().GasPriceCacheTTLSeconds)),
@@ -71,8 +71,14 @@ func NewFeePricer(ctx context.Context, config relconfig.Config, clientFetcher su
 	// setup contracts for dynamic gas estimates
 	bridges := map[uint32]*fastbridge.FastBridgeRef{}
 	for chainID, chainConfig := range config.Chains {
-		client, _ := clientFetcher.GetClient(ctx, big.NewInt(int64(chainID)))
-		bridges[uint32(chainID)], _ = fastbridge.NewFastBridgeRef(common.HexToAddress(chainConfig.Bridge), client)
+		client, err := clientFetcher.GetClient(ctx, big.NewInt(int64(chainID)))
+		if err != nil {
+			return nil, fmt.Errorf("could not get client: %w", err)
+		}
+		bridges[uint32(chainID)], err = fastbridge.NewFastBridgeRef(common.HexToAddress(chainConfig.Bridge), client)
+		if err != nil {
+			return nil, fmt.Errorf("could not get bridge contract: %w", err)
+		}
 	}
 
 	return &feePricer{
@@ -84,7 +90,7 @@ func NewFeePricer(ctx context.Context, config relconfig.Config, clientFetcher su
 		priceFetcher:    priceFetcher,
 		feeSigner:       feeSigner,
 		bridges:         bridges,
-	}
+	}, nil
 }
 
 func (f *feePricer) Start(ctx context.Context) {
