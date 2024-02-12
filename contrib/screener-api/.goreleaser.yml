@@ -1,8 +1,14 @@
 project_name: screener-api
 
+
 monorepo:
   tag_prefix: contrib/screener-api/
   dir: contrib/screener-api/
+
+before:
+  hooks:
+    - go mod tidy
+    - go mod vendor
 
 builds:
   # Linux AMD64
@@ -30,6 +36,8 @@ builds:
 # add a source archive at release time
 source:
   enabled: true
+  files:
+    - vendor
 
 # Archives
 archives:
