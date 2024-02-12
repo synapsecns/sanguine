@@ -1,4 +1,4 @@
-import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client'
+import { ApolloClient, HttpLink, InMemoryCache, from } from '@apollo/client'
 import { TRANSACTIONS_PATH, ACCOUNTS_PATH } from '@urls'
 import { ChainInfo } from '@components/misc/ChainInfo'
 import { Error } from '@components/Error'
@@ -154,18 +154,24 @@ export default function BridgeTransaction({ queryResult }) {
 
                 <div className="flex gap-x-[1.8rem] py-1">
                   <p className="text-white text-opacity-60">TX Hash</p>
-                  <a
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-white break-all text-sm underline"
-                    href={
-                      CHAINS_BY_ID[fromInfo.chainId]?.explorerUrl +
-                      '/tx/' +
-                      fromInfo.hash
-                    }
-                  >
-                    {fromInfo.hash}
-                  </a>
+                  {fromInfo ? (
+                    <a
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-white break-all text-sm underline"
+                      href={
+                        CHAINS_BY_ID[fromInfo.chainID]?.explorerUrl +
+                        '/tx/' +
+                        fromInfo.hash
+                      }
+                    >
+                      {fromInfo.hash}
+                    </a>
+                  ) : (
+                    <p className="text-white break-all text-sm ">
+                      {pendingContent}
+                    </p>
+                  )}
                 </div>
                 <div className="flex gap-x-[1.7rem] py-1">
                   <p className="text-white text-opacity-60">Contract</p>
