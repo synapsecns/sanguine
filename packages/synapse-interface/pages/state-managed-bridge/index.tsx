@@ -132,18 +132,16 @@ const StateManagedBridge = () => {
 
   // don't like this, rewrite: could be custom hook
   useEffect(() => {
-    if (fromToken && fromToken?.addresses[fromChainId] === zeroAddress) {
-      setIsApproved(true)
-    } else {
-      if (
-        fromToken &&
-        bridgeQuote?.allowance &&
-        stringToBigInt(debouncedFromValue, fromToken.decimals[fromChainId]) <=
-          bridgeQuote.allowance
-      ) {
+    if (fromToken) {
+      if (fromToken?.addresses[fromChainId] === zeroAddress) {
         setIsApproved(true)
       } else {
-        setIsApproved(false)
+        setIsApproved(
+          bridgeQuote?.allowance &&
+            stringToBigInt(
+              debouncedFromValue, fromToken.decimals[fromChainId]
+            ) <= bridgeQuote.allowance
+        )
       }
     }
   }, [bridgeQuote, fromToken, debouncedFromValue, fromChainId, toChainId])
@@ -372,21 +370,21 @@ const StateManagedBridge = () => {
           ? destinationAddress
           : address
 
+      const fromTokenAddress = fromToken?.addresses[fromChainId as keyof Token['addresses']]
+
       const data = await synapseSDK.bridge(
         toAddress,
         bridgeQuote.routerAddress,
         fromChainId,
         toChainId,
-        fromToken?.addresses[fromChainId as keyof Token['addresses']],
+        fromTokenAddress,
         stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId]),
         bridgeQuote.originQuery,
         bridgeQuote.destQuery
       )
 
       const payload =
-        fromToken?.addresses[fromChainId as keyof Token['addresses']] ===
-          zeroAddress ||
-        fromToken?.addresses[fromChainId as keyof Token['addresses']] === ''
+        [zeroAddress, ''].includes(fromTokenAddress)
           ? {
               data: data.data,
               to: data.to,
