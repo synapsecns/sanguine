@@ -1,48 +1,54 @@
 import { useAccount, useNetwork } from 'wagmi'
+import { getWalletClient } from '@wagmi/core'
 import { useSelector } from 'react-redux'
-import { RootState } from '../../store/store'
 import toast from 'react-hot-toast'
-import { animated } from 'react-spring'
 import { useRouter } from 'next/router'
+import { Address, zeroAddress } from 'viem'
+import { commify } from '@ethersproject/units'
+import { useEffect, useRef, useState } from 'react'
+
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
-import { setIsLoading } from '@/slices/swap/reducer'
+import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
+
+import { SECTION_TRANSITION_PROPS } from '@/styles/transitions'
 
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
-import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
-import { commify } from '@ethersproject/units'
-import { formatBigIntToString } from '@/utils/bigint/format'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
-import { useEffect, useRef, useState } from 'react'
+import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import { Token } from '@/utils/types'
-import { getWalletClient } from '@wagmi/core'
 import { txErrorHandler } from '@/utils/txErrorHandler'
-import { CHAINS_BY_ID } from '@/constants/chains'
 import { approveToken } from '@/utils/approveToken'
-import { PageHeader } from '@/components/PageHeader'
-import Card from '@tw/Card'
+
 import { Transition } from '@headlessui/react'
-import {
-  SECTION_TRANSITION_PROPS,
-  TRANSITION_PROPS,
-} from '@/styles/transitions'
-import ExplorerToastLink from '@/components/ExplorerToastLink'
-import { Address, zeroAddress } from 'viem'
-import { stringToBigInt } from '@/utils/bigint/format'
+
 import { useAppDispatch } from '@/store/hooks'
+import { RootState } from '@/store/store'
+
+import { setIsLoading } from '@/slices/swap/reducer'
 import { useFetchPortfolioBalances } from '@/slices/portfolio/hooks'
-import { SwapTransactionButton } from '@/components/StateManagedSwap/SwapTransactionButton'
-import SwapExchangeRateInfo from '@/components/StateManagedSwap/SwapExchangeRateInfo'
 import { useSwapState } from '@/slices/swap/hooks'
+import { setSwapQuote, updateSwapFromValue } from '@/slices/swap/reducer'
+
+import { EMPTY_SWAP_QUOTE_ZERO } from '@/constants/swap'
+import { CHAINS_BY_ID } from '@/constants/chains'
+
+import useSyncQueryParamsWithSwapState from '@/utils/hooks/useSyncQueryParamsWithSwapState'
+
+import Card from '@tw/Card'
+
+import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
+import { PageHeader } from '@/components/PageHeader'
+import ExplorerToastLink from '@/components/ExplorerToastLink'
+
 import { SwapChainListOverlay } from '@/components/StateManagedSwap/SwapChainListOverlay'
 import { SwapFromTokenListOverlay } from '@/components/StateManagedSwap/SwapFromTokenListOverlay'
 import { SwapInputContainer } from '@/components/StateManagedSwap/SwapInputContainer'
 import { SwapOutputContainer } from '@/components/StateManagedSwap/SwapOutputContainer'
-import { setSwapQuote, updateSwapFromValue } from '@/slices/swap/reducer'
-import { DEFAULT_FROM_CHAIN, EMPTY_SWAP_QUOTE_ZERO } from '@/constants/swap'
 import { SwapToTokenListOverlay } from '@/components/StateManagedSwap/SwapToTokenListOverlay'
-import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
-import useSyncQueryParamsWithSwapState from '@/utils/hooks/useSyncQueryParamsWithSwapState'
+import { SwapTransactionButton } from '@/components/StateManagedSwap/SwapTransactionButton'
+import SwapExchangeRateInfo from '@/components/StateManagedSwap/SwapExchangeRateInfo'
+import { AnimatedOverlay } from '@/components/AnimatedOverlay'
 
 const StateManagedSwap = () => {
   const { address } = useAccount()
@@ -56,8 +62,7 @@ const StateManagedSwap = () => {
 
   useSyncQueryParamsWithSwapState()
 
-  const { balances: portfolioBalances, status: portfolioStatus } =
-    useFetchPortfolioBalances()
+  const { balances: portfolioBalances } = useFetchPortfolioBalances()
 
   const { swapChainId, swapFromToken, swapToToken, swapFromValue, swapQuote } =
     useSwapState()
@@ -103,26 +108,18 @@ const StateManagedSwap = () => {
   ])
 
   useEffect(() => {
-    if (
-      swapFromToken &&
-      swapFromToken?.addresses[swapChainId] === zeroAddress
-    ) {
-      setIsApproved(true)
-    } else {
-      if (
-        swapFromToken &&
-        swapQuote?.allowance &&
-        stringToBigInt(swapFromValue, swapFromToken.decimals[swapChainId]) <=
-          swapQuote.allowance
-      ) {
+    if (swapFromToken) {
+      if (swapFromToken?.addresses[swapChainId] === zeroAddress) {
         setIsApproved(true)
       } else {
-        setIsApproved(false)
+        setIsApproved(
+          swapQuote?.allowance &&
+          stringToBigInt(swapFromValue, swapFromToken.decimals[swapChainId]) <=
+            swapQuote.allowance
+        )
       }
     }
   }, [swapQuote, swapFromToken, swapFromValue, swapChainId])
-
-  let quoteToast
 
   const getAndSetSwapQuote = async () => {
     currentSDKRequestID.current += 1
@@ -339,7 +336,7 @@ const StateManagedSwap = () => {
   }
 
   const springClass =
-    '-mt-4 fixed z-50 w-full h-full bg-opacity-50 bg-[#343036]'
+    '-mt-4 fixed z-50 w-full h-full bg-opacity-50 bg-slate-400/10'
 
   return (
     <LandingPageWrapper>
@@ -357,27 +354,15 @@ const StateManagedSwap = () => {
             `}
           >
             <div ref={swapDisplayRef}>
-              <Transition show={showSwapChainListOverlay} {...TRANSITION_PROPS}>
-                <animated.div className={springClass}>
-                  <SwapChainListOverlay />
-                </animated.div>
-              </Transition>
-              <Transition
-                show={showSwapFromTokenListOverlay}
-                {...TRANSITION_PROPS}
-              >
-                <animated.div className={springClass}>
-                  <SwapFromTokenListOverlay />
-                </animated.div>
-              </Transition>
-              <Transition
-                show={showSwapToTokenListOverlay}
-                {...TRANSITION_PROPS}
-              >
-                <animated.div className={springClass}>
-                  <SwapToTokenListOverlay />
-                </animated.div>
-              </Transition>
+              <AnimatedOverlay show={showSwapChainListOverlay}>
+                <SwapChainListOverlay />
+              </AnimatedOverlay>
+              <AnimatedOverlay show={showSwapFromTokenListOverlay}>
+                <SwapFromTokenListOverlay />
+              </AnimatedOverlay>
+              <AnimatedOverlay show={showSwapToTokenListOverlay}>
+                <SwapToTokenListOverlay />
+              </AnimatedOverlay>
               <SwapInputContainer />
               <SwapOutputContainer />
               <Transition

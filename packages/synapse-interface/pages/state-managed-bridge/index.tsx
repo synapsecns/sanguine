@@ -3,7 +3,6 @@ import { useAccount, useNetwork } from 'wagmi'
 import { useSelector } from 'react-redux'
 import { useEffect, useRef, useState, useMemo } from 'react'
 import toast from 'react-hot-toast'
-import { animated } from 'react-spring'
 import { useRouter } from 'next/router'
 import { Address, zeroAddress } from 'viem'
 import { commify } from '@ethersproject/units'
@@ -51,15 +50,13 @@ import { Token } from '@/utils/types'
 import { getTimeMinutesFromNow } from '@/utils/time'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import { approveToken } from '@/utils/approveToken'
-import {
-  SECTION_TRANSITION_PROPS,
-  TRANSITION_PROPS,
-} from '@/styles/transitions'
+import { SECTION_TRANSITION_PROPS } from '@/styles/transitions'
 
-import { PageHeader } from '@/components/PageHeader'
+
 import Card from '@tw/Card'
 import Button from '@tw/Button'
 import { Transition } from '@headlessui/react'
+import { PageHeader } from '@/components/PageHeader'
 import { SettingsIcon } from '@/components/icons/SettingsIcon'
 
 import ExplorerToastLink from '@/components/ExplorerToastLink'
@@ -77,6 +74,8 @@ import SettingsSlideOver from '@/components/StateManagedBridge/SettingsSlideOver
 import BridgeExchangeRateInfo from '@/components/StateManagedBridge/BridgeExchangeRateInfo'
 
 import { XIcon } from '@heroicons/react/outline'
+import { AnimatedOverlay } from '@/components/AnimatedOverlay'
+
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -495,11 +494,6 @@ const StateManagedBridge = () => {
               className="group flex items-center p-2 text-opacity-75 bg-bgBase/10 hover:bg-bgBase/20 ring-1 ring-white/10 hover:ring-white/30 text-secondaryTextColor hover:text-white"
               onClick={() => {
                 dispatch(setShowSettingsSlideOver(showSettingsSlideOver !== true))
-                // if (showSettingsSlideOver === true) {
-                //   dispatch(setShowSettingsSlideOver(false))
-                // } else {
-                //   dispatch(setShowSettingsSlideOver(true))
-                // }
               }}
             >
               {!showSettingsSlideOver ? (
@@ -526,31 +520,21 @@ const StateManagedBridge = () => {
           `}
         >
           <div ref={bridgeDisplayRef}>
-            <Transition show={showSettingsSlideOver} {...TRANSITION_PROPS}>
-              <animated.div className={springClass}>
-                <SettingsSlideOver key="settings" />
-              </animated.div>
-            </Transition>
-            <Transition show={showFromChainListOverlay} {...TRANSITION_PROPS}>
-              <animated.div className={springClass}>
-                <FromChainListOverlay />
-              </animated.div>
-            </Transition>
-            <Transition show={showFromTokenListOverlay} {...TRANSITION_PROPS}>
-              <animated.div className={springClass}>
-                <FromTokenListOverlay />
-              </animated.div>
-            </Transition>
-            <Transition show={showToChainListOverlay} {...TRANSITION_PROPS}>
-              <animated.div className={springClass}>
-                <ToChainListOverlay />
-              </animated.div>
-            </Transition>
-            <Transition show={showToTokenListOverlay} {...TRANSITION_PROPS}>
-              <animated.div className={springClass}>
-                <ToTokenListOverlay />
-              </animated.div>
-            </Transition>
+            <AnimatedOverlay show={showSettingsSlideOver}>
+              <SettingsSlideOver key="settings" />
+            </AnimatedOverlay>
+            <AnimatedOverlay show={showFromChainListOverlay}>
+              <FromChainListOverlay />
+            </AnimatedOverlay>
+            <AnimatedOverlay show={showFromTokenListOverlay}>
+              <FromTokenListOverlay />
+            </AnimatedOverlay>
+            <AnimatedOverlay show={showToChainListOverlay}>
+              <ToChainListOverlay />
+            </AnimatedOverlay>
+            <AnimatedOverlay show={showToTokenListOverlay}>
+              <ToTokenListOverlay />
+            </AnimatedOverlay>
             <InputContainer />
             <OutputContainer />
             <Warning />
