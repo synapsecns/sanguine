@@ -75,14 +75,14 @@ export const BridgeTransactionButton = ({
     PAUSED_FROM_CHAIN_IDS.includes(fromChainId) ||
     PAUSED_TO_CHAIN_IDS.includes(toChainId)
 
-  let buttonProperties
-
   const fromTokenDecimals: number | undefined =
     fromToken && fromToken?.decimals[fromChainId]
 
   const fromValueBigInt = useMemo(() => {
     return fromTokenDecimals ? stringToBigInt(fromValue, fromTokenDecimals) : 0
   }, [fromValue, fromTokenDecimals])
+
+  let buttonProperties
 
   if (!fromChainId) {
     buttonProperties = {
@@ -155,12 +155,10 @@ export const BridgeTransactionButton = ({
   }
 
   return (
-    buttonProperties && (
-      <TransactionButton
-        {...buttonProperties}
-        disabled={isButtonDisabled}
-        chainId={fromChainId}
-      />
-    )
+    <TransactionButton
+      {...buttonProperties}
+      disabled={isButtonDisabled}
+      chainId={fromChainId}
+    />
   )
 }
