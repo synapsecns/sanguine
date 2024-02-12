@@ -1,0 +1,14 @@
+[profile.default]
+auto_detect_solc = true
+# 2024-01-01
+block_timestamp = 1_704_067_200
+evm_version = "paris"
+# No need for optimizer as nothing from this package is deployed
+optimizer = false
+out = "artifacts"
+src = "src"
+
+[fmt]
+line_length = 120
+multiline_func_header = 'all'
+number_underscore = 'thousands'
