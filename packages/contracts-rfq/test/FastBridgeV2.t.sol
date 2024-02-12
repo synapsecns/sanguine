@@ -6,9 +6,23 @@ import {FastBridgeV2, IFastBridgeV2} from "../contracts/FastBridgeV2.sol";
 import {FastBridge, FastBridgeTest} from "./FastBridge.t.sol";
 
 contract FastBridgeV2ParityTest is FastBridgeTest {
+    FastBridgeV2 fastBridgeV2;
+
     function deployFastBridge() internal override {
-        address fastBridgeV2 = address(new FastBridgeV2(owner));
-        fastBridge = FastBridge(fastBridgeV2);
+        fastBridgeV2 = new FastBridgeV2(owner);
+        fastBridge = FastBridge(address(fastBridgeV2));
+    }
+
+    // ═══════════════════════════════════════════ OVERRIDES FOR CHECKS ════════════════════════════════════════════════
+
+    function checkNotCompletedTx(bytes32 transactionId) internal virtual override {
+        super.checkNotCompletedTx(transactionId);
+        assertEq(fastBridgeV2.getDestinationRelayer(transactionId), address(0));
+    }
+
+    function checkCompletedTx(bytes32 transactionId, address expectedRelayer) internal virtual override {
+        super.checkCompletedTx(transactionId, expectedRelayer);
+        assertEq(fastBridgeV2.getDestinationRelayer(transactionId), expectedRelayer);
     }
 
     // ════════════════════════════════════════════ OVERRIDES FOR TESTS ════════════════════════════════════════════════
@@ -19,7 +33,7 @@ contract FastBridgeV2ParityTest is FastBridgeTest {
         test_successfulBridge();
 
         // get bridge request and tx id
-        (bytes memory request, ) = _getBridgeRequestAndId(block.chainid, 0, 0);
+        (bytes memory request,) = _getBridgeRequestAndId(block.chainid, 0, 0);
 
         vm.startPrank(relayer);
 

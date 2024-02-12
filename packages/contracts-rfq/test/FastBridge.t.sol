@@ -212,6 +212,16 @@ contract FastBridgeTest is FastBridgeErrors, Test {
         vm.stopPrank();
     }
 
+    function checkNotCompletedTx(bytes32 transactionId) internal virtual {
+        assertFalse(fastBridge.bridgeRelays(transactionId));
+    }
+
+    function checkCompletedTx(bytes32 transactionId, address expectedRelayer) internal virtual {
+        assertTrue(fastBridge.bridgeRelays(transactionId));
+        // FastBridgeV1 does not store the destination relayer
+        expectedRelayer;
+    }
+
     /// @notice Test to check if the owner is correctly set
     function test_owner() public {
         assertTrue(fastBridge.hasRole(fastBridge.DEFAULT_ADMIN_ROLE(), owner));
@@ -926,7 +936,7 @@ contract FastBridgeTest is FastBridgeErrors, Test {
         (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(42161, 0, 0);
 
         // Get the initial information of the bridge transaction; make sure not relayed
-        assertEq(fastBridge.bridgeRelays(transactionId), false);
+        checkNotCompletedTx(transactionId);
 
         // Start a prank with the relayer
         vm.startPrank(relayer);
@@ -950,7 +960,7 @@ contract FastBridgeTest is FastBridgeErrors, Test {
         assertEq(ethUSDC.balanceOf(user), 110.97e6);
 
         // Get the returned information of the bridge transaction relays status
-        assertEq(fastBridge.bridgeRelays(transactionId), true);
+        checkCompletedTx(transactionId, relayer);
 
         // We stop a prank to contain within test
         vm.stopPrank();
@@ -974,7 +984,7 @@ contract FastBridgeTest is FastBridgeErrors, Test {
         (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithETH(42161, 0, 0);
 
         // Get the initial information of the bridge transaction; make sure not relayed
-        assertEq(fastBridge.bridgeRelays(transactionId), false);
+        checkNotCompletedTx(transactionId);
 
         // Start a prank with the relayer
         vm.startPrank(relayer);
@@ -1032,7 +1042,7 @@ contract FastBridgeTest is FastBridgeErrors, Test {
         (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithETHAndChainGas(42161, 0, 0);
 
         // Get the initial information of the bridge transaction; make sure not relayed
-        assertEq(fastBridge.bridgeRelays(transactionId), false);
+        checkNotCompletedTx(transactionId);
 
         // Start a prank with the relayer
         vm.startPrank(relayer);
@@ -1090,7 +1100,7 @@ contract FastBridgeTest is FastBridgeErrors, Test {
         (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithChainGas(42161, 0, 0);
 
         // Get the initial information of the bridge transaction; make sure not relayed
-        assertEq(fastBridge.bridgeRelays(transactionId), false);
+        checkNotCompletedTx(transactionId);
 
         // Start a prank with the relayer
         vm.startPrank(relayer);
@@ -1116,7 +1126,7 @@ contract FastBridgeTest is FastBridgeErrors, Test {
         assertEq(user.balance, 0.005e18);
 
         // Get the returned information of the bridge transaction relays status
-        assertEq(fastBridge.bridgeRelays(transactionId), true);
+        checkCompletedTx(transactionId, relayer);
 
         // We stop a prank to contain within test
         vm.stopPrank();
@@ -1134,7 +1144,7 @@ contract FastBridgeTest is FastBridgeErrors, Test {
         (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithChainGas(42161, 0, 0);
 
         // Get the initial information of the bridge transaction; make sure not relayed
-        assertEq(fastBridge.bridgeRelays(transactionId), false);
+        checkNotCompletedTx(transactionId);
 
         // Start a prank with the relayer
         vm.startPrank(relayer);
@@ -1160,7 +1170,7 @@ contract FastBridgeTest is FastBridgeErrors, Test {
         assertEq(user.balance, 0);
 
         // Get the returned information of the bridge transaction relays status
-        assertEq(fastBridge.bridgeRelays(transactionId), true);
+        checkCompletedTx(transactionId, relayer);
 
         // We stop a prank to contain within test
         vm.stopPrank();
@@ -1229,7 +1239,7 @@ contract FastBridgeTest is FastBridgeErrors, Test {
 
         // get bridge request and tx id
         (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(42161, 0, 0);
-        assertEq(fastBridge.bridgeRelays(transactionId), true);
+        checkCompletedTx(transactionId, relayer);
 
         // We start a prank with the relayer
         vm.startPrank(relayer);
