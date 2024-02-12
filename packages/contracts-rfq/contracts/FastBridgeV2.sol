@@ -40,6 +40,92 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
 
     // ═══════════════════════════════════════════════ ONLY RELAYER ════════════════════════════════════════════════════
 
+    /// @inheritdoc IFastBridge
+    function relay(bytes memory request) external payable onlyRelayer {
+        bytes32 transactionId = keccak256(request);
+        BridgeTransaction memory transaction = getBridgeTransaction(request);
+        if (transaction.destChainId != uint32(block.chainid)) revert FastBridge__ChainIncorrect();
+
+        // check haven't exceeded deadline for relay to happen
+        if (block.timestamp > transaction.deadline) revert FastBridge__DeadlineExceeded();
+
+        // mark bridge transaction as relayed
+        if (_destinationRelayer[transactionId] != address(0)) revert FastBridge__TransactionRelayed();
+        _destinationRelayer[transactionId] = msg.sender;
+
+        // transfer tokens to recipient on destination chain and gas rebate if requested
+        address to = transaction.destRecipient;
+        address token = transaction.destToken;
+        uint256 amount = transaction.destAmount;
+
+        uint256 rebate = chainGasAmount;
+        if (!transaction.sendChainGas) {
+            // forward erc20
+            rebate = 0;
+            _pullToken(to, token, amount);
+        } else if (token == UniversalTokenLib.ETH_ADDRESS) {
+            // lump in gas rebate into amount in native gas token
+            _pullToken(to, token, amount + rebate);
+        } else {
+            // forward erc20 then forward gas rebate in native gas token
+            _pullToken(to, token, amount);
+            _pullToken(to, UniversalTokenLib.ETH_ADDRESS, rebate);
+        }
+
+        emit BridgeRelayed(
+            transactionId,
+            msg.sender,
+            to,
+            transaction.originChainId,
+            transaction.originToken,
+            transaction.destToken,
+            transaction.originAmount,
+            transaction.destAmount,
+            rebate
+        );
+    }
+
+    /// @inheritdoc IFastBridge
+    function prove(bytes memory request, bytes32 destTxHash) external onlyRelayer {
+        bytes32 transactionId = keccak256(request);
+        BridgeTransaction memory transaction = getBridgeTransaction(request);
+
+        // check haven't exceeded deadline for prove to happen
+        if (block.timestamp > transaction.deadline + PROVE_PERIOD) revert FastBridge__DeadlineExceeded();
+
+        // update bridge tx status given proof provided
+        if (bridgeStatuses[transactionId] != BridgeStatusV2.REQUESTED) revert FastBridge__StatusIncorrect();
+        bridgeStatuses[transactionId] = BridgeStatusV2.RELAYER_PROVED;
+        bridgeProofs[transactionId] = BridgeProof({timestamp: uint96(block.timestamp), relayer: msg.sender}); // overflow ok
+
+        emit BridgeProofProvided(transactionId, msg.sender, destTxHash);
+    }
+
+    /// @inheritdoc IFastBridge
+    function claim(bytes memory request, address to) external onlyRelayer {
+        bytes32 transactionId = keccak256(request);
+        BridgeTransaction memory transaction = getBridgeTransaction(request);
+
+        // update bridge tx status if able to claim origin collateral
+        if (bridgeStatuses[transactionId] != BridgeStatusV2.RELAYER_PROVED) revert FastBridge__StatusIncorrect();
+
+        BridgeProof memory proof = bridgeProofs[transactionId];
+        if (proof.relayer != msg.sender) revert FastBridge__SenderIncorrect();
+        if (_timeSince(proof) <= DISPUTE_PERIOD) revert FastBridge__DisputePeriodNotPassed();
+
+        bridgeStatuses[transactionId] = BridgeStatusV2.RELAYER_CLAIMED;
+
+        // update protocol fees if origin fee amount exists
+        if (transaction.originFeeAmount > 0) protocolFees[transaction.originToken] += transaction.originFeeAmount;
+
+        // transfer origin collateral less fee to specified address
+        address token = transaction.originToken;
+        uint256 amount = transaction.originAmount;
+        token.universalTransfer(to, amount);
+
+        emit BridgeDepositClaimed(transactionId, msg.sender, to, token, amount);
+    }
+
     // ════════════════════════════════════════════════ ONLY GUARD ═════════════════════════════════════════════════════
 
     // ════════════════════════════════════════════════ USER-FACING ════════════════════════════════════════════════════
@@ -54,6 +140,14 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
     /// @inheritdoc IFastBridgeV2
     function getTransactionRelayer(bytes32 transactionId) external view returns (address) {
         return _destinationRelayer[transactionId];
+    }
+
+    /// @inheritdoc IFastBridge
+    function canClaim(bytes32 transactionId, address relayer) external view returns (bool) {
+        if (bridgeStatuses[transactionId] != BridgeStatusV2.RELAYER_PROVED) revert FastBridge__StatusIncorrect();
+        BridgeProof memory proof = bridgeProofs[transactionId];
+        if (proof.relayer != relayer) revert FastBridge__SenderIncorrect();
+        return _timeSince(proof) > DISPUTE_PERIOD;
     }
 
     /// @inheritdoc IFastBridge
