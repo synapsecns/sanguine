@@ -11,7 +11,7 @@ abstract contract Logger {
 
     string private constant TAB = "    ";
 
-    /// @notice Current indent level for all log messages
+    /// @dev Current indent level for all log messages
     uint256 private currentIndentLevel;
 
     modifier withIndent() {

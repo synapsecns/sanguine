@@ -8,14 +8,14 @@ import {ChainAwareReader} from "../reader/ChainAwareReader.sol";
 
 abstract contract Deployer is ChainAwareReader, Logger {
     string internal constant CREATE2_FACTORY_NAME = "Create2Factory";
-    /// @notice Deployed on lots of chains, could be deployed on more chains using EOA
+    /// @dev Deployed on lots of chains, could be deployed on more chains using EOA
     address private constant DEFAULT_CREATE2_FACTORY = 0xa6190aBC82427800935E0598892f7488a7F73A04;
 
     address private envCreate2Factory;
 
-    /// @notice Salt to be used for the next create2 deployment, will be erased after the deployment
+    /// @dev Salt to be used for the next create2 deployment, will be erased after the deployment
     bytes32 private nextDeploymentSalt;
-    /// @notice Salt to be used for the next create2 deployment, will be kept after the deployment
+    /// @dev Salt to be used for the next create2 deployment, will be kept after the deployment
     bytes32 private permanentDeploymentSalt;
 
     function loadEnvCreate2Factory() internal {
