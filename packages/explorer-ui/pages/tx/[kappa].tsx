@@ -1,4 +1,4 @@
-import { ApolloClient, HttpLink, InMemoryCache, from } from '@apollo/client'
+import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client'
 import { TRANSACTIONS_PATH, ACCOUNTS_PATH } from '@urls'
 import { ChainInfo } from '@components/misc/ChainInfo'
 import { Error } from '@components/Error'
