@@ -69,10 +69,8 @@ export const FromChainListOverlay = () => {
   if (searchStr?.length > 0) {
     const results = fuse.search(searchStr).map((i) => i.item)
 
-    possibleChains = results.filter((item) => item.source === 'possibleChains')
-    remainingChains = results.filter(
-      (item) => item.source === 'remainingChains'
-    )
+    possibleChains = results.filter(item => item.source === 'possibleChains')
+    remainingChains = results.filter(item => item.source === 'remainingChains')
   }
 
   const escPressed = useKeyPress('Escape')

@@ -58,7 +58,7 @@ export const PortfolioTokenAsset = ({
       id="portfolio-token-asset"
       className={`
         p-2 flex items-center border-y text-white justify-between last:rounded-b-lg
-        ${isTokenSelected ? 'bg-bgBase/20 border-white/20' : 'border-transparent'}
+        ${isTokenSelected ? 'bg-bgBase/20 border-white/10' : 'border-transparent'}
       `}
     >
       <div

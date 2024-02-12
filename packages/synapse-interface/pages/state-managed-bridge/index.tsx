@@ -496,17 +496,16 @@ const StateManagedBridge = () => {
                 dispatch(setShowSettingsSlideOver(showSettingsSlideOver !== true))
               }}
             >
-              {!showSettingsSlideOver ? (
-                <>
-                  <SettingsIcon className="w-4 h-4 mr-2 group-hover:animate-spin" />
-                  <span className='text-sm mr-1'>Settings</span>
-                </>
-              ) : (
+              {showSettingsSlideOver ? (
                 <>
                   <XIcon className="w-4 h-4 mr-2"/>
                   <span className='text-sm mr-1'>Close</span>
                 </>
-
+              ) : (
+                <>
+                  <SettingsIcon className="w-4 h-4 mr-2 group-hover:animate-spin" />
+                  <span className='text-sm mr-1'>Settings</span>
+                </>
               )}
             </Button>
           </div>
