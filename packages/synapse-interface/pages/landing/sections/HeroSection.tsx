@@ -31,8 +31,8 @@ export default function HeroSection() {
           target="_blank"
           className={`
             h-12 mr-2 px-4 py-3 flex items-center
-            text-base border border-white hover:opacity-75
-            bg-[#2f2f2f] hover:bg-[#2f2f2f] rounded-md
+            text-base border border-white/10 hover:border-white/20
+            bg-bgBase/10 hover:bg-bgBase/20 rounded-md
             text-center transform-gpu transition-all duration-75
           `}
         >

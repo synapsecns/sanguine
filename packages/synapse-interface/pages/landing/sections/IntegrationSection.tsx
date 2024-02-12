@@ -98,8 +98,8 @@ function NetworkCard({
       <Card
         className={`
           text-center
-          border border-[#2F2F2F]
-          bg-opacity-0 bg-[#2F2F2F]
+          border border-white/10 hover:border-white/20
+          bg-opacity-0 bg-bgBase/10
           px-0
           py-3 md:py-5
           transform-gpu hover:transition-all duration-75
