@@ -1,4 +1,4 @@
-import toast, { Toaster, ToastBar } from 'react-hot-toast'
+import { Toaster, ToastBar } from 'react-hot-toast'
 import ToastContent from './ToastContent'
 
 export default function CustomToaster() {
