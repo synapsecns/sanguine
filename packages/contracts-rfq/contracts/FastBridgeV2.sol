@@ -228,7 +228,7 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
     }
 
     /// @inheritdoc IFastBridgeV2
-    function getTransactionRelayer(bytes32 transactionId) external view returns (address) {
+    function getDestinationRelayer(bytes32 transactionId) external view returns (address) {
         return _destinationRelayer[transactionId];
     }
 

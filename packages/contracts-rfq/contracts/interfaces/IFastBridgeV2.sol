@@ -31,5 +31,5 @@ interface IFastBridgeV2 is IFastBridge {
 
     /// @notice Returns the address of the Relayer who completed the transaction.
     /// Note: returns address(0) if the transaction has not been relayed.
-    function getTransactionRelayer(bytes32 transactionId) external view returns (address);
+    function getDestinationRelayer(bytes32 transactionId) external view returns (address);
 }
