@@ -61,8 +61,7 @@ func (c *PricerSuite) SetupTest() {
 						Decimals: 18,
 					},
 				},
-				NativeToken:        "ETH",
-				DynamicGasEstimate: true,
+				NativeToken: "ETH",
 			},
 			int(c.destination): {
 				Tokens: map[string]relconfig.TokenConfig{
