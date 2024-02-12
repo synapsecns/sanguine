@@ -88,7 +88,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 	}
 
 	priceFetcher := pricer.NewCoingeckoPriceFetcher(cfg.GetHTTPTimeout())
-	fp := pricer.NewFeePricer(cfg, omniClient, priceFetcher, metricHandler)
+	fp := pricer.NewFeePricer(ctx, cfg, omniClient, priceFetcher, sg, metricHandler)
 
 	q, err := quoter.NewQuoterManager(cfg, metricHandler, im, sg, fp)
 	if err != nil {
