@@ -7,8 +7,8 @@ monorepo:
 
 before:
   hooks:
-    - go mod tidy
-    - go mod vendor
+    - pwd
+    - cd contrib/screener-api/ && go mod vendor
 
 builds:
   # Linux AMD64
