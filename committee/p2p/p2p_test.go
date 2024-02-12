@@ -36,6 +36,7 @@ func (s *P2PTestSuite) TestLibP2PManager() {
 		err := manager.Start(s.GetTestContext(), addresses)
 		s.Require().NoError(err)
 	}
+
 }
 
 func (s *P2PTestSuite) makeManager() p2p.LibP2PManager {

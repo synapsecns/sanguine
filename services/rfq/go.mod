@@ -54,7 +54,6 @@ require (
 	github.com/alecthomas/colour v0.1.0 // indirect
 	github.com/alecthomas/repr v0.0.0-20210801044451-80ca428c5142 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
-	github.com/aws/aws-sdk-go v1.42.19 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.18.0 // indirect
 	github.com/aws/aws-sdk-go-v2/config v1.18.21 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.13.20 // indirect
@@ -128,7 +127,6 @@ require (
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/gofrs/flock v0.8.1 // indirect
-	github.com/gofrs/uuid v4.2.0+incompatible // indirect
 	github.com/gogo/protobuf v1.3.3 // indirect
 	github.com/golang-jwt/jwt/v4 v4.4.3 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
@@ -165,7 +163,6 @@ require (
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
-	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/keep-network/keep-common v1.7.1-0.20211012131917-7102d7b9c6a0 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
@@ -190,7 +187,6 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/neverlee/keymutex v0.0.0-20171121013845-f593aa834bf9 // indirect
-	github.com/nsmithuk/local-kms v0.0.0-20220503165244-1bbbfed09b08 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.3-0.20211202183452-c5a74bcca799 // indirect

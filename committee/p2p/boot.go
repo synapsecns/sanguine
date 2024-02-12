@@ -2,7 +2,9 @@ package p2p
 
 import (
 	"context"
+	"fmt"
 	"github.com/libp2p/go-libp2p"
+	_ "github.com/libp2p/go-libp2p-kad-dht"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/peer"
@@ -45,7 +47,7 @@ func createHost(privKeyWrapper crypto.PrivKey) (host.Host, error) {
 	// Create a new libp2p host
 	h, err := libp2p.New(libp2p.Identity(privKeyWrapper), libp2p.ListenAddrStrings("/ip4/0.0.0.0/tcp/0"))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not create libp2p host: %w", err)
 	}
 
 	return h, nil

@@ -13,7 +13,7 @@ import (
 )
 
 // NewKmsSigner creates a kms handler.
-func NewKmsSigner(ctx context.Context, awsRegion, awsAccessKey, awsSecretAccessKey, keyID string) (_ *Signer, err error) {
+func NewKmsSigner(ctx context.Context, awsRegion, awsAccessKey, awsSecretAccessKey, keyID string) (_ signer.Signer, err error) {
 	aws, err := awsConfig.LoadDefaultConfig(ctx, func(options *awsConfig.LoadOptions) error {
 		options.Credentials = newCredentialProvider(awsAccessKey, awsSecretAccessKey)
 		options.Region = awsRegion

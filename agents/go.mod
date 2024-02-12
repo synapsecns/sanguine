@@ -44,8 +44,8 @@ require (
 require (
 	dario.cat/mergo v1.0.0 // indirect
 	github.com/DataDog/zstd v1.5.2 // indirect
-	github.com/alecthomas/assert v1.0.0 // indirect
-	github.com/aws/aws-sdk-go v1.42.19 // indirect
+	github.com/alecthomas/colour v0.1.0 // indirect
+	github.com/alecthomas/repr v0.0.0-20210801044451-80ca428c5142 // indirect
 	github.com/cockroachdb/errors v1.9.1 // indirect
 	github.com/cockroachdb/logtags v0.0.0-20230118201751-21c54148d20b // indirect
 	github.com/cockroachdb/pebble v0.0.0-20230209160836-829675f94811 // indirect
@@ -62,13 +62,11 @@ require (
 	github.com/influxdata/influxdb-client-go/v2 v2.5.1 // indirect
 	github.com/influxdata/influxdb1-client v0.0.0-20220302092344-a9ab5670611c // indirect
 	github.com/influxdata/line-protocol v0.0.0-20210311194329-9aa0e372d097 // indirect
-	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/jpillora/backoff v1.0.0 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/libp2p/go-libp2p v0.32.2 // indirect
 	github.com/minio/sha256-simd v1.0.1 // indirect
-	github.com/nsmithuk/local-kms v0.0.0-20220503165244-1bbbfed09b08 // indirect
 	github.com/peterh/liner v1.2.1 // indirect
 	github.com/puzpuzpuz/xsync/v2 v2.5.1 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
@@ -167,7 +165,6 @@ require (
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
-	github.com/gofrs/uuid v4.2.0+incompatible // indirect
 	github.com/gogo/protobuf v1.3.3 // indirect
 	github.com/golang-jwt/jwt/v4 v4.4.3 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect

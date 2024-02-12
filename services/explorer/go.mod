@@ -65,8 +65,9 @@ require (
 	github.com/ProtonMail/go-crypto v0.0.0-20230828082145-3c4c8a2d2371 // indirect
 	github.com/VictoriaMetrics/fastcache v1.6.0 // indirect
 	github.com/agnivade/levenshtein v1.1.1 // indirect
-	github.com/alecthomas/assert v1.0.0 // indirect
 	github.com/alecthomas/chroma v0.7.1 // indirect
+	github.com/alecthomas/colour v0.1.0 // indirect
+	github.com/alecthomas/repr v0.0.0-20210801044451-80ca428c5142 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/aws/smithy-go v1.13.5 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
