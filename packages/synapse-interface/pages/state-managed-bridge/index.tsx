@@ -1,9 +1,17 @@
+import { getWalletClient, waitForTransaction } from '@wagmi/core'
 import { useAccount, useNetwork } from 'wagmi'
 import { useSelector } from 'react-redux'
-import { RootState } from '../../store/store'
+import { useEffect, useRef, useState, useMemo } from 'react'
 import toast from 'react-hot-toast'
 import { animated } from 'react-spring'
 import { useRouter } from 'next/router'
+import { Address, zeroAddress } from 'viem'
+import { commify } from '@ethersproject/units'
+import { isAddress } from '@ethersproject/address'
+
+import { RootState } from '@/store/store'
+import { useAppDispatch } from '@/store/hooks'
+
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 import { useBridgeState } from '@/slices/bridge/hooks'
@@ -14,65 +22,60 @@ import {
   setIsLoading,
   setDestinationAddress,
 } from '@/slices/bridge/reducer'
-
 import {
   setShowDestinationAddress,
-  setShowFromTokenListOverlay,
   setShowSettingsSlideOver,
 } from '@/slices/bridgeDisplaySlice'
-
-import { EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
-
-import { useSynapseContext } from '@/utils/providers/SynapseProvider'
-import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
-import { commify } from '@ethersproject/units'
-import { formatBigIntToString } from '@/utils/bigint/format'
-import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
-import { useEffect, useRef, useState, useMemo } from 'react'
-import { Token } from '@/utils/types'
-import { getWalletClient } from '@wagmi/core'
-import { txErrorHandler } from '@/utils/txErrorHandler'
-import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
-import { approveToken } from '@/utils/approveToken'
-import { PageHeader } from '@/components/PageHeader'
-import Card from '@tw/Card'
-import BridgeExchangeRateInfo from '@/components/StateManagedBridge/BridgeExchangeRateInfo'
-import { Transition } from '@headlessui/react'
-import {
-  SECTION_TRANSITION_PROPS,
-  TRANSITION_PROPS,
-} from '@/styles/transitions'
-import { InputContainer } from '@/components/StateManagedBridge/InputContainer'
-import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer'
-import SettingsSlideOver from '@/components/StateManagedBridge/SettingsSlideOver'
-import Button from '@tw/Button'
-import { SettingsIcon } from '@/components/icons/SettingsIcon'
-import { DestinationAddressInput } from '@/components/StateManagedBridge/DestinationAddressInput'
-import { isAddress } from '@ethersproject/address'
-import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
-import ExplorerToastLink from '@/components/ExplorerToastLink'
-import { Address, zeroAddress } from 'viem'
-import { stringToBigInt } from '@/utils/bigint/format'
-import { Warning } from '@/components/Warning'
-import { useAppDispatch } from '@/store/hooks'
 import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
 import {
   updatePendingBridgeTransaction,
   addPendingBridgeTransaction,
   removePendingBridgeTransaction,
 } from '@/slices/transactions/actions'
-import { getTimeMinutesFromNow } from '@/utils/time'
-import { FromChainListOverlay } from '@/components/StateManagedBridge/FromChainListOverlay'
-import { ToChainListOverlay } from '@/components/StateManagedBridge/ToChainListOverlay'
-import { FromTokenListOverlay } from '@/components/StateManagedBridge/FromTokenListOverlay'
-import { ToTokenListOverlay } from '@/components/StateManagedBridge/ToTokenListOverlay'
-
-import { waitForTransaction } from '@wagmi/core'
 import {
   fetchArbPrice,
   fetchEthPrice,
   fetchGmxPrice,
 } from '@/slices/priceDataSlice'
+
+import { EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
+import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
+
+import { useSynapseContext } from '@/utils/providers/SynapseProvider'
+import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
+
+import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
+import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
+
+import { Token } from '@/utils/types'
+import { getTimeMinutesFromNow } from '@/utils/time'
+import { txErrorHandler } from '@/utils/txErrorHandler'
+import { approveToken } from '@/utils/approveToken'
+import {
+  SECTION_TRANSITION_PROPS,
+  TRANSITION_PROPS,
+} from '@/styles/transitions'
+
+import { PageHeader } from '@/components/PageHeader'
+import Card from '@tw/Card'
+import Button from '@tw/Button'
+import { Transition } from '@headlessui/react'
+import { SettingsIcon } from '@/components/icons/SettingsIcon'
+
+import ExplorerToastLink from '@/components/ExplorerToastLink'
+import { Warning } from '@/components/Warning'
+
+import { FromChainListOverlay } from '@/components/StateManagedBridge/FromChainListOverlay'
+import { ToChainListOverlay } from '@/components/StateManagedBridge/ToChainListOverlay'
+import { FromTokenListOverlay } from '@/components/StateManagedBridge/FromTokenListOverlay'
+import { ToTokenListOverlay } from '@/components/StateManagedBridge/ToTokenListOverlay'
+import { InputContainer } from '@/components/StateManagedBridge/InputContainer'
+import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer'
+import { DestinationAddressInput } from '@/components/StateManagedBridge/DestinationAddressInput'
+import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
+import SettingsSlideOver from '@/components/StateManagedBridge/SettingsSlideOver'
+import BridgeExchangeRateInfo from '@/components/StateManagedBridge/BridgeExchangeRateInfo'
+
 import { XIcon } from '@heroicons/react/outline'
 
 const StateManagedBridge = () => {
