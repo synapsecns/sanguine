@@ -85,7 +85,6 @@ func getCall(transactor *bind.TransactOpts, bridge *fastbridge.FastBridgeRef, cT
 		return callFunc(transactor.Context)
 	}, retry.WithMaxTotalTime(callTimeoutSeconds*time.Second))
 	if err != nil {
-		fmt.Printf("call err: %v\n", err)
 		return nil, fmt.Errorf("could not get tx with type %s: %w", cType.String(), err)
 	}
 	call, err = util.TxToCall(tx)
