@@ -118,7 +118,7 @@ export type BridgeQuote = {
 > **Note:** `Query` objects contain information about the optional swaps to be performed on behalf of the user on origin and destination chains. The exact composition of the `Query` object, as well as the concept of the optional swaps, is abstracted away from the SDK consumer.
 > A collection of methods to modify the `Query` object is provided in the `SynapseSDK` class, allowing the consumer to be unaware of the underlying object structure.
 
-### Applying slippage
+### Applying slippage (Recommended)
 
 Some of the returned quotes may contain information about the optional swaps on origin and destination chains. As the liquidity composition may change over time, it is recommended to apply slippage to the quotes to account for the possible price changes. If no slippage is applied, the user transaction might be reverted due to insufficient funds. The default value for the slippage is 10 basis points (0.1%).
 
@@ -137,7 +137,7 @@ const { originQuery, destQuery } = await synapseSDK.applyBridgeSlippage(
 
 > **Note**: this method will not modify the original `Query` objects, but will return new ones. This allows to change the applied slippage without having to re-fetch the quotes.
 
-### Modifying deadline
+### Modifying deadline (Optional)
 
 Bridge quotes returned by the `allBridgeQuotes` method come with the deadlines set in `Query` objects. It is possible to further modify the deadlines before initiating the bridge transaction.
 
