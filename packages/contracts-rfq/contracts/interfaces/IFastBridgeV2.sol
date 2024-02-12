@@ -12,6 +12,8 @@ interface IFastBridgeV2 is IFastBridge {
         REFUNDED
     }
 
+    error FastBridge__MsgValueIncorrect();
+
     /// @notice Returns whether transaction has been relayed on the destination chain.
     /// @dev This function is added for backwards compatibility with FastBridgeV1.
     function bridgeRelays(bytes32 transactionId) external view returns (bool);
