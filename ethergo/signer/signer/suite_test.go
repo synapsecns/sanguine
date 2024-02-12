@@ -67,5 +67,4 @@ func (s *SignerSuite) RunOnAllSigners(f func(signer.Signer)) {
 			f(ts.Signer)
 		})
 	}
-
 }

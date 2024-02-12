@@ -81,6 +81,7 @@ require (
 	github.com/Soft/iter v0.1.0 // indirect
 	github.com/VictoriaMetrics/fastcache v1.6.0 // indirect
 	github.com/agnivade/levenshtein v1.1.1 // indirect
+	github.com/alecthomas/assert v1.0.0 // indirect
 	github.com/alecthomas/chroma v0.7.1 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -147,6 +148,7 @@ require (
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/gofrs/flock v0.8.1 // indirect
+	github.com/gofrs/uuid v4.2.0+incompatible // indirect
 	github.com/gogo/protobuf v1.3.3 // indirect
 	github.com/golang-jwt/jwt/v4 v4.4.3 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect

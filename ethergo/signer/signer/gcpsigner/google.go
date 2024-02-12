@@ -78,7 +78,7 @@ func resolveAddr(ctx context.Context, client KeyClient, keyName string) (address
 
 	block, _ := pem.Decode([]byte(resp.Pem))
 	if block == nil {
-		return common.Address{}, []byte{}, fmt.Errorf("google KMS public key %q PEM empty: %.130q", keyName, resp.Pem)
+		return common.Address{}, []byte{}, fmt.Errorf("google KMS public key %q PEM empty: %.130q", keyName, resp.GetPem())
 	}
 
 	var info struct {

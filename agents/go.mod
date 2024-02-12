@@ -44,6 +44,7 @@ require (
 require (
 	dario.cat/mergo v1.0.0 // indirect
 	github.com/DataDog/zstd v1.5.2 // indirect
+	github.com/alecthomas/assert v1.0.0 // indirect
 	github.com/aws/aws-sdk-go v1.42.19 // indirect
 	github.com/cockroachdb/errors v1.9.1 // indirect
 	github.com/cockroachdb/logtags v0.0.0-20230118201751-21c54148d20b // indirect

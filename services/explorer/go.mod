@@ -25,7 +25,7 @@ require (
 	github.com/ethereum/go-ethereum v1.11.6
 	github.com/friendsofgo/graphiql v0.2.2
 	github.com/gin-gonic/gin v1.9.1
-	github.com/hashicorp/golang-lru/v2 v2.0.3
+	github.com/hashicorp/golang-lru/v2 v2.0.5
 	github.com/integralist/go-findroot v0.0.0-20160518114804-ac90681525dc
 	github.com/ipfs/go-log v1.0.5
 	github.com/jftuga/ellipsis v1.0.0
@@ -65,6 +65,7 @@ require (
 	github.com/ProtonMail/go-crypto v0.0.0-20230828082145-3c4c8a2d2371 // indirect
 	github.com/VictoriaMetrics/fastcache v1.6.0 // indirect
 	github.com/agnivade/levenshtein v1.1.1 // indirect
+	github.com/alecthomas/assert v1.0.0 // indirect
 	github.com/alecthomas/chroma v0.7.1 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/aws/smithy-go v1.13.5 // indirect

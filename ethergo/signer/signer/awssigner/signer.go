@@ -50,7 +50,7 @@ type Signer struct {
 	pubKeyData *PubKeyData
 }
 
-// Equals assumes we're using *libp2p.Secp256k1PublicKey type for o
+// Equals assumes we're using *libp2p.Secp256k1PublicKey type for o.
 func (signingHandler *Signer) Equals(o libp2p.Key) bool {
 	return signingHandler.GetPublic().Equals(o)
 }

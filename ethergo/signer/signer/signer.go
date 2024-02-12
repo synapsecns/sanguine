@@ -26,7 +26,7 @@ type Signer interface {
 	Address() ethCommon.Address
 	// PrivKey gets the libp2p priv key.
 	// TODO: we should consider abstracting this otu of ethergo. It's an odd, synapse specific dependency
-	// TODO: this method also needs a cross-implementation test similiar to RunOnAllDBs()
+	// TODO: this method also needs a cross-implementation test similar to RunOnAllDBs()
 	// that does not fit into what etherog is supposed to be.
 	PrivKey() libp2p.PrivKey
 }
