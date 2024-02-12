@@ -142,6 +142,77 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
 
     // ════════════════════════════════════════════════ USER-FACING ════════════════════════════════════════════════════
 
+    /// @inheritdoc IFastBridge
+    function bridge(BridgeParams memory params) external payable {
+        // check bridge params
+        if (params.dstChainId == block.chainid) revert FastBridge__ChainIncorrect();
+        if (params.originAmount == 0 || params.destAmount == 0) revert FastBridge__AmountIncorrect();
+        if (params.originToken == address(0) || params.destToken == address(0)) revert FastBridge__ZeroAddress();
+        if (params.deadline < block.timestamp + MIN_DEADLINE_PERIOD) revert FastBridge__DeadlineTooShort();
+
+        // transfer tokens to bridge contract
+        // @dev use returned originAmount in request in case of transfer fees
+        uint256 originAmount = _pullToken(address(this), params.originToken, params.originAmount);
+
+        // track amount of origin token owed to protocol
+        uint256 originFeeAmount;
+        if (protocolFeeRate > 0) originFeeAmount = (originAmount * protocolFeeRate) / FEE_BPS;
+        originAmount -= originFeeAmount; // remove from amount used in request as not relevant for relayers
+
+        // set status to requested
+        bytes memory request = abi.encode(
+            BridgeTransaction({
+                originChainId: uint32(block.chainid),
+                destChainId: params.dstChainId,
+                originSender: params.sender,
+                destRecipient: params.to,
+                originToken: params.originToken,
+                destToken: params.destToken,
+                originAmount: originAmount,
+                destAmount: params.destAmount,
+                originFeeAmount: originFeeAmount,
+                sendChainGas: params.sendChainGas,
+                deadline: params.deadline,
+                nonce: nonce++ // increment nonce on every bridge
+            })
+        );
+        bytes32 transactionId = keccak256(request);
+        bridgeStatuses[transactionId] = BridgeStatusV2.REQUESTED;
+
+        emit BridgeRequested(
+            transactionId,
+            params.sender,
+            request,
+            params.dstChainId,
+            params.originToken,
+            params.destToken,
+            originAmount,
+            params.destAmount,
+            params.sendChainGas
+        );
+    }
+
+    /// @inheritdoc IFastBridge
+    function refund(bytes memory request) external {
+        bytes32 transactionId = keccak256(request);
+        BridgeTransaction memory transaction = getBridgeTransaction(request);
+
+        // check exceeded deadline for prove to happen
+        if (block.timestamp <= transaction.deadline + PROVE_PERIOD) revert FastBridge__DeadlineNotExceeded();
+
+        // set status to refunded if still in requested state
+        if (bridgeStatuses[transactionId] != BridgeStatusV2.REQUESTED) revert FastBridge__StatusIncorrect();
+        bridgeStatuses[transactionId] = BridgeStatusV2.REFUNDED;
+
+        // transfer origin collateral back to original sender
+        address to = transaction.originSender;
+        address token = transaction.originToken;
+        uint256 amount = transaction.originAmount + transaction.originFeeAmount;
+        token.universalTransfer(to, amount);
+
+        emit BridgeDepositRefunded(transactionId, to, token, amount);
+    }
+
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @inheritdoc IFastBridgeV2

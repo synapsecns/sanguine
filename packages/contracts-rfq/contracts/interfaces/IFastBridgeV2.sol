@@ -12,14 +12,18 @@ interface IFastBridgeV2 is IFastBridge {
         REFUNDED
     }
 
+    error FastBridge__AmountIncorrect();
     error FastBridge__ChainIncorrect();
     error FastBridge__DeadlineExceeded();
+    error FastBridge__DeadlineNotExceeded();
+    error FastBridge__DeadlineTooShort();
     error FastBridge__DisputePeriodNotPassed();
     error FastBridge__DisputePeriodPassed();
     error FastBridge__MsgValueIncorrect();
     error FastBridge__SenderIncorrect();
     error FastBridge__StatusIncorrect();
     error FastBridge__TransactionRelayed();
+    error FastBridge__ZeroAddress();
 
     /// @notice Returns whether transaction has been relayed on the destination chain.
     /// @dev This function is added for backwards compatibility with FastBridgeV1.
