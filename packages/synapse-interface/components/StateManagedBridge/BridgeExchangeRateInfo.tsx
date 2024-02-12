@@ -1,20 +1,24 @@
 import numeral from 'numeral'
 import { useMemo } from 'react'
+import Image from 'next/image'
+
+import { CHAINS_BY_ID } from '@constants/chains'
+import * as CHAINS from '@constants/chains/master'
+import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
+import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
+
 import {
+  formatBigIntToString,
   formatBigIntToPercentString,
   stringToBigInt,
 } from '@/utils/bigint/format'
-import { CHAINS_BY_ID } from '@constants/chains'
-import * as CHAINS from '@constants/chains/master'
-import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
-import Image from 'next/image'
-import { formatBigIntToString } from '@/utils/bigint/format'
+
 import {
   ELIGIBILITY_DEFAULT_TEXT,
   useStipEligibility,
 } from '@/utils/hooks/useStipEligibility'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
+
 import { useAppSelector } from '@/store/hooks'
 
 const BridgeExchangeRateInfo = () => {
