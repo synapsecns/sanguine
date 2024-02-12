@@ -57,6 +57,8 @@ func (c callType) String() string {
 	return ""
 }
 
+const callTimeoutSeconds = 2
+
 func getCall(transactor *bind.TransactOpts, bridge *fastbridge.FastBridgeRef, cType callType) (call *ethereum.CallMsg, err error) {
 	var tx *types.Transaction
 	var callFunc func(context.Context) error
@@ -64,25 +66,16 @@ func getCall(transactor *bind.TransactOpts, bridge *fastbridge.FastBridgeRef, cT
 	case claimCallType:
 		callFunc = func(context.Context) error {
 			tx, err = bridge.Claim(transactor, getCallRequestData(), getCallAddress())
-			if err != nil {
-				fmt.Printf("inner call err: %v\n", err)
-			}
 			return err
 		}
 	case proveCallType:
 		callFunc = func(context.Context) error {
 			tx, err = bridge.Prove(transactor, getCallRequestData(), getCallHash())
-			if err != nil {
-				fmt.Printf("inner call err: %v\n", err)
-			}
 			return err
 		}
 	case relayCallType:
 		callFunc = func(context.Context) error {
 			tx, err = bridge.Relay(transactor, getCallRequestData())
-			if err != nil {
-				fmt.Printf("inner call err: %v\n", err)
-			}
 			return err
 		}
 	default:
@@ -90,7 +83,7 @@ func getCall(transactor *bind.TransactOpts, bridge *fastbridge.FastBridgeRef, cT
 	}
 	err = retry.WithBackoff(transactor.Context, func(ctx context.Context) error {
 		return callFunc(transactor.Context)
-	}, retry.WithMaxTotalTime(5*time.Second))
+	}, retry.WithMaxTotalTime(callTimeoutSeconds*time.Second))
 	if err != nil {
 		fmt.Printf("call err: %v\n", err)
 		return nil, fmt.Errorf("could not get tx with type %s: %w", cType.String(), err)
