@@ -44,7 +44,7 @@ abstract contract Logger {
 
     /// @notice Prints the informational log message with the current indent level.
     function printInfo(string memory logString) internal view {
-        printLog(StringUtils.concat(unicode"💬 ", logString));
+        printLog(getInfoEmoji().concat(" ", logString));
     }
 
     /// @notice Prints the log message with the current indent level plus one.
@@ -54,16 +54,28 @@ abstract contract Logger {
 
     /// @notice Prints the "skipping" message with the current indent level plus one.
     function printSkipWithIndent(string memory reason) internal view {
-        printLogWithIndent(StringUtils.concat(unicode"🟡 Skipping: ", reason));
+        printLogWithIndent(getSkipEmoji().concat(" Skipping: ", reason));
     }
 
     /// @notice Prints the "fail" message with the current indent level plus one.
     function printFailWithIndent(string memory logString) internal view {
-        printLogWithIndent(StringUtils.concat(unicode"❌ ", logString));
+        printLogWithIndent(getFailEmoji().concat(" ", logString));
     }
 
     /// @notice Prints the "success" message with the current indent level plus one.
     function printSuccessWithIndent(string memory logString) internal view {
-        printLogWithIndent(StringUtils.concat(unicode"✅ ", logString));
+        printLogWithIndent(getSuccessEmoji().concat(" ", logString));
     }
+
+    /// @notice Should return "💬"
+    function getInfoEmoji() internal pure virtual returns (string memory);
+
+    /// @notice Should return "🟡"
+    function getSkipEmoji() internal pure virtual returns (string memory);
+
+    /// @notice Should return "❌"
+    function getFailEmoji() internal pure virtual returns (string memory);
+
+    /// @notice Should return "✅"
+    function getSuccessEmoji() internal pure virtual returns (string memory);
 }
