@@ -1,9 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import {
-  ChevronDoubleDownIcon,
-  ChevronDoubleUpIcon,
-  ChevronUpIcon,
-} from '@heroicons/react/outline'
+import { ChevronUpIcon } from '@heroicons/react/outline'
 import Card from '@tw/Card'
 
 type PortfolioAccordionProps = {
