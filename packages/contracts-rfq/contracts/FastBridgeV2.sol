@@ -128,6 +128,18 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
 
     // ════════════════════════════════════════════════ ONLY GUARD ═════════════════════════════════════════════════════
 
+    /// @inheritdoc IFastBridge
+    function dispute(bytes32 transactionId) external onlyGuard {
+        if (bridgeStatuses[transactionId] != BridgeStatusV2.RELAYER_PROVED) revert FastBridge__StatusIncorrect();
+        if (_timeSince(bridgeProofs[transactionId]) > DISPUTE_PERIOD) revert FastBridge__DisputePeriodPassed();
+
+        // @dev relayer gets slashed effectively if dest relay has gone thru
+        bridgeStatuses[transactionId] = BridgeStatusV2.REQUESTED;
+        delete bridgeProofs[transactionId];
+
+        emit BridgeProofDisputed(transactionId, msg.sender);
+    }
+
     // ════════════════════════════════════════════════ USER-FACING ════════════════════════════════════════════════════
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════

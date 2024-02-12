@@ -15,6 +15,7 @@ interface IFastBridgeV2 is IFastBridge {
     error FastBridge__ChainIncorrect();
     error FastBridge__DeadlineExceeded();
     error FastBridge__DisputePeriodNotPassed();
+    error FastBridge__DisputePeriodPassed();
     error FastBridge__MsgValueIncorrect();
     error FastBridge__SenderIncorrect();
     error FastBridge__StatusIncorrect();
