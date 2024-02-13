@@ -106,7 +106,7 @@ export const _Transaction = ({
       data-test-id="_transaction"
       className={`
         bg-bgBase/10 fill-bgBase/20
-        border border-solid border-white/20 rounded-md
+        border border-white/10 rounded-md
         text-primary text-xs md:text-base
       `}
     >
@@ -122,14 +122,14 @@ export const _Transaction = ({
           tokenAmount={originValue}
           isOrigin={true}
           showChain={true}
-          className="py-2 px-2 bg-bgBase/10 rounded-l"
+          className="py-2 px-2 bg-bgBase/10 rounded-l-md"
         />
         <TransactionArrow
           className={`
               mr-2
               ${isTxFinalized
-              ? 'stroke-white/20 fill-bgBase/10 '
-              : 'stroke-white/20 fill-transparent'}
+              ? 'stroke-white/10 fill-bgBase/10 '
+              : 'stroke-white/10 fill-transparent'}
           `}
         />
         <TransactionPayloadDetail
