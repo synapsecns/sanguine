@@ -37,6 +37,10 @@ interface IInterchainDB {
     /// @param srcModules   The source chain addresses of the Interchain Modules to use for verification
     function getInterchainFee(uint256 destChainId, address[] memory srcModules) external view returns (uint256);
 
+    /// @notice Get the nonce of the writer on this chain.
+    /// @param writer       The address of the writer on this chain
+    function getWriterNonce(address writer) external view returns (uint256);
+
     /// @notice Read the data written on specific source chain by a specific writer,
     /// and verify it on the destination chain using the provided Interchain Modules.
     /// @dev The returned array of timestamps has the same length as the `dstModules` array,

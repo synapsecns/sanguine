@@ -20,6 +20,9 @@ contract InterchainDB is IInterchainDB {
     function getInterchainFee(uint256 destChainId, address[] calldata srcModules) external view returns (uint256) {}
 
     /// @inheritdoc IInterchainDB
+    function getWriterNonce(address writer) external view returns (uint256) {}
+
+    /// @inheritdoc IInterchainDB
     function readEntry(
         InterchainEntry memory entry,
         address[] memory dstModules
