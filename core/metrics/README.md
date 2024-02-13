@@ -8,6 +8,8 @@ The metrics package contains standard drivers for opentracing, profiling and met
 | Jaeger                | [Jaeger](https://www.jaegertracing.io/docs/1.46/) Client Clibrary, will soon be deprecated in favor of OTLP exports to jaeger as per [this deprecation notice](https://www.jaegertracing.io/docs/1.46/client-libraries/)                                                                                                                                                                                                             | ✅               | ✅                    | ❌ (but it can through pyroscope, by specifying the `PYROSCOPE_ENDPOINT` enviornment variable) |
 
 
+There's also a `NAME_PREFIX` environment variable that will prefix all the metrics with the value of `NAME_PREFIX`. This is useful for differentiating between different instances of the same service.
+
 ## OTLP
 
 We do our best to support enviornment variables specified in the [Otel Spec](https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/) and have added a few of our own. Key ones to note are:
