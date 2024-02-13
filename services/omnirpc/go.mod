@@ -37,7 +37,6 @@ require (
 	github.com/synapsecns/fasthttp-http2 v1.0.0
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/ethergo v0.0.2
-	github.com/uptrace/opentelemetry-go-extra/otelzap v0.2.3
 	github.com/urfave/cli/v2 v2.25.7
 	github.com/valyala/fasthttp v1.41.0
 	go.opentelemetry.io/otel v1.22.0
@@ -213,6 +212,7 @@ require (
 	github.com/uptrace/opentelemetry-go-extra/otelgorm v0.1.21 // indirect
 	github.com/uptrace/opentelemetry-go-extra/otelsql v0.2.2 // indirect
 	github.com/uptrace/opentelemetry-go-extra/otelutil v0.2.3 // indirect
+	github.com/uptrace/opentelemetry-go-extra/otelzap v0.2.3 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fastrand v1.1.0 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect

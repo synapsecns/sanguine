@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/services/omnirpc/modules/confirmedtofinalized"
 	"os"
 	"time"
 
@@ -163,7 +164,7 @@ var latestRewrite = &cli.Command{
 		portFlag,
 	},
 	Action: func(c *cli.Context) error {
-		simpleProxy := proxy.NewSimpleProxy(c.String(rpcFlag.Name), metrics.Get(), c.Int(portFlag.Name))
+		simpleProxy := confirmedtofinalized.NewProxy(c.String(rpcFlag.Name), metrics.Get(), c.Int(portFlag.Name))
 
 		err := simpleProxy.Run(c.Context)
 		if err != nil {
