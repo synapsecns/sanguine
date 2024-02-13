@@ -24,7 +24,7 @@ type clientImpl struct {
 func NewClient(metricHandler metrics.Handler, screenerURL string) (ScreenerClient, error) {
 	client := resty.New().
 		SetBaseURL(screenerURL).
-		OnBeforeRequest(func(client *resty.Client, request *resty.Request) error {
+		OnBeforeRequest(func(_ *resty.Client, request *resty.Request) error {
 			request.Header.Add(ginhelper.RequestIDHeader, uuid.New().String())
 			return nil
 		})

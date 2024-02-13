@@ -97,6 +97,8 @@ linters:
     - testifylint
     # we use metrics.EndSpan and metrics.EndSpanWithErr so this gets triggered falsely
     - spancheck
+    # simply annoying
+    - perfsprint
   fast: false
 
 issues:
