@@ -124,7 +124,7 @@ export const SwapToTokenListOverlay = () => {
           <CloseButton onClick={onClose} />
         </div>
       </div>
-      {possibleTokens && possibleTokens.length > 0 && (
+      {possibleTokens?.length > 0 && (
         <SearchResultsContainer label="Receive…">
             {possibleTokens.map((token, idx) =>
                 <SelectSpecificTokenButton
@@ -145,7 +145,7 @@ export const SwapToTokenListOverlay = () => {
             )}
         </SearchResultsContainer>
       )}
-      {remainingChainTokens && remainingChainTokens.length > 0 && (
+      {remainingChainTokens?.length > 0 && (
         <SearchResultsContainer
           label={
             swapChainId

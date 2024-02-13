@@ -120,7 +120,7 @@ export const SwapFromTokenListOverlay = () => {
           <CloseButton onClick={onClose} />
         </div>
       </div>
-      {possibleTokens && possibleTokens.length > 0 && (
+      {possibleTokens?.length > 0 && (
         <>
           <div className="px-2 pt-2 pb-4 text-sm text-primaryTextColor ">
             Swap…
@@ -146,7 +146,7 @@ export const SwapFromTokenListOverlay = () => {
           </div>
         </>
       )}
-      {remainingTokens && remainingTokens.length > 0 && (
+      {remainingTokens?.length > 0 && (
         <>
           <div className="px-2 pb-4 text-sm text-primaryTextColor">
             {swapChainId

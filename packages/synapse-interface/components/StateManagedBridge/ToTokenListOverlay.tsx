@@ -208,7 +208,7 @@ export const ToTokenListOverlay = () => {
           <CloseButton onClick={onClose} />
         </div>
       </div>
-      {orderedPossibleTokens && orderedPossibleTokens.length > 0 && (
+      {orderedPossibleTokens?.length > 0 && (
         <SearchResultsContainer label="Receive…">
             {orderedPossibleTokens.map((token: TokenWithRates, idx: number) =>
                 <SelectSpecificTokenButton
@@ -241,7 +241,7 @@ export const ToTokenListOverlay = () => {
             )}
         </SearchResultsContainer>
       )}
-      {remainingChainTokens && remainingChainTokens.length > 0 && (
+      {remainingChainTokens?.length > 0 && (
         <SearchResultsContainer
           label={
             toChainId
@@ -262,7 +262,7 @@ export const ToTokenListOverlay = () => {
             )}
         </SearchResultsContainer>
       )}
-      {allOtherToTokens && allOtherToTokens.length > 0 && (
+      {allOtherToTokens?.length > 0 && (
         <SearchResultsContainer label="All receivable tokens">
             {allOtherToTokens.map((token, idx) =>
                 <SelectSpecificTokenButton
