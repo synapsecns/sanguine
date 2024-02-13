@@ -11,3 +11,9 @@ plugins:
     enabled: true
   stylelint:
     enabled: true
+
+exclude_patterns:
+  - '.*\\.abigen\\.go$'
+  - '.*\\.metadata\\.go$'
+  - '.*\\.pb\\.go$'
+  - '.*_gen.go$'
