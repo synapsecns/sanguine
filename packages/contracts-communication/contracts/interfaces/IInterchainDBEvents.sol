@@ -1,0 +1,8 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+interface IInterchainDBEvents {
+    // TODO: figure out indexing
+    event InterchainEntryWritten(uint256 srcChainId, bytes32 srcWriter, uint256 writerNonce, bytes32 dataHash);
+    event InterchainEntryConfirmed(uint256 srcChainId, bytes32 srcWriter, uint256 writerNonce, bytes32 dataHash);
+}

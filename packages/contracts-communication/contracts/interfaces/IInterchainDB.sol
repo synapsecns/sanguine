@@ -14,10 +14,6 @@ interface IInterchainDB {
         bytes32 dataHash;
     }
 
-    // TODO: figure out indexing
-    event InterchainEntryWritten(uint256 srcChainId, bytes32 srcWriter, uint256 writerNonce, bytes32 dataHash);
-    event InterchainEntryConfirmed(uint256 srcChainId, bytes32 srcWriter, uint256 writerNonce, bytes32 dataHash);
-
     /// @notice Write data to the Interchain DataBase, and verify it on the destination chain
     /// using the provided Interchain Modules.
     /// Note: every module has a separate fee paid in the native gas token of the source chain,

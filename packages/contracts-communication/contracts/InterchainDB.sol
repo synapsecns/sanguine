@@ -2,8 +2,9 @@
 pragma solidity 0.8.20;
 
 import {IInterchainDB} from "./interfaces/IInterchainDB.sol";
+import {IInterchainDBEvents} from "./interfaces/IInterchainDBEvents.sol";
 
-contract InterchainDB is IInterchainDB {
+contract InterchainDB is IInterchainDB, IInterchainDBEvents {
     // ════════════════════════════════════════════════ APP-FACING ═════════════════════════════════════════════════════
 
     /// @inheritdoc IInterchainDB
