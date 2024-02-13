@@ -423,10 +423,24 @@ const StateManagedBridge = () => {
         })
       )
 
-      let request = await prepareSendTransaction(payload)
+      let request = await prepareSendTransaction({
+        ...payload,
+        // gas: 992840n,
+      })
+
       console.log('request: ', request)
 
-      const tx = await wallet.sendTransaction(payload)
+      // request.account = address
+      // request.gas = 652987n
+
+      // console.log('request after:', request)
+
+      const tx = await wallet.sendTransaction({
+        ...payload,
+        gasLimit: 992840n,
+      })
+
+      // const tx = await wallet.sendTransaction(payload)
 
       const originChainName = CHAINS_BY_ID[fromChainId]?.name
       const destinationChainName = CHAINS_BY_ID[toChainId]?.name
