@@ -59,12 +59,6 @@ export const TransactionPayloadDetail = ({
     return null
   }, [tokenAmount, token, chain])
 
-  const buttonStyle = `
-    flex gap-1.5 pl-1.5 pr-2.5 py-0.5 -my-0.5 items-center cursor-pointer rounded
-    border border-transparent hover:bg-bgBase/20 active:bg-bgBase/30
-    active:opacity-60 overflow-hidden
-    w-fit
-  `
 
   return (
     <div data-test-id="transaction-payload-detail" className={className}>
@@ -72,7 +66,6 @@ export const TransactionPayloadDetail = ({
         <TransactionPayloadDetailButton
           data-test-id="transaction-payload-network"
           onClick={handleSelectChainCallback}
-          className={buttonStyle}
         >
           <Image
             src={chain.chainImg}
@@ -87,7 +80,6 @@ export const TransactionPayloadDetail = ({
         <TransactionPayloadDetailButton
           data-test-id="transaction-payload-token"
           onClick={handleSelectTokenCallback}
-          className={buttonStyle}
         >
           <Image
             src={token?.icon}
