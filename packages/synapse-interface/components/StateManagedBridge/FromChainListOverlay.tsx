@@ -101,10 +101,9 @@ export const FromChainListOverlay = () => {
         </div>
       </div>
       <div data-test-id={dataId} className="px-2 pt-2 pb-8 md:px-2">
-        {possibleChains && possibleChains.length > 0 && (
+        {possibleChains?.length > 0 && (
           <SearchResultsContainer label="From…">
-            {possibleChains.map(({ id: mapChainId }, idx) => {
-              return (
+            {possibleChains.map(({ id: mapChainId }, idx) =>
                 <SelectSpecificNetworkButton
                   key={idx}
                   itemChainId={mapChainId}
@@ -120,14 +119,12 @@ export const FromChainListOverlay = () => {
                   }}
                   dataId={dataId}
                 />
-              )
-            })}
+            )}
           </SearchResultsContainer>
         )}
-        {remainingChains && remainingChains.length > 0 && (
+        {remainingChains?.length > 0 && (
           <SearchResultsContainer label="All Chains">
-            {remainingChains.map(({ id: mapChainId }, idx) => {
-              return (
+            {remainingChains.map(({ id: mapChainId }, idx) =>
                 <SelectSpecificNetworkButton
                   key={mapChainId}
                   itemChainId={mapChainId}
@@ -138,8 +135,7 @@ export const FromChainListOverlay = () => {
                   dataId={dataId}
                   alternateBackground={true}
                 />
-              )
-            })}
+            )}
           </SearchResultsContainer>
         )}
         <SearchResults searchStr={searchStr} type="chain" />

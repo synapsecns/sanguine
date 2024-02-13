@@ -126,8 +126,7 @@ export const SwapFromTokenListOverlay = () => {
             Swap…
           </div>
           <div className="px-2 pb-2 md:px-2 ">
-            {possibleTokens.map((token, idx) => {
-              return (
+            {possibleTokens.map((token, idx) =>
                 <SelectSpecificTokenButton
                   isOrigin={true}
                   key={idx}
@@ -143,8 +142,7 @@ export const SwapFromTokenListOverlay = () => {
                     }
                   }}
                 />
-              )
-            })}
+            )}
           </div>
         </>
       )}
@@ -156,8 +154,7 @@ export const SwapFromTokenListOverlay = () => {
               : 'All swappable tokens'}
           </div>
           <div className="px-2 pb-2 md:px-2">
-            {remainingTokens.map((token, idx) => {
-              return (
+            {remainingTokens.map((token, idx) =>
                 <SelectSpecificTokenButton
                   isOrigin={true}
                   key={idx}
@@ -167,8 +164,7 @@ export const SwapFromTokenListOverlay = () => {
                   showAllChains={false}
                   onClick={() => handleSetFromToken(swapFromToken, token)}
                 />
-              )
-            })}
+            )}
           </div>
         </>
       )}

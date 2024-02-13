@@ -210,8 +210,7 @@ export const ToTokenListOverlay = () => {
       </div>
       {orderedPossibleTokens && orderedPossibleTokens.length > 0 && (
         <SearchResultsContainer label="Receive…">
-            {orderedPossibleTokens.map((token: TokenWithRates, idx: number) => {
-              return (
+            {orderedPossibleTokens.map((token: TokenWithRates, idx: number) =>
                 <SelectSpecificTokenButton
                   isOrigin={false}
                   key={idx}
@@ -239,8 +238,7 @@ export const ToTokenListOverlay = () => {
                     }
                   }}
                 />
-              )
-            })}
+            )}
         </SearchResultsContainer>
       )}
       {remainingChainTokens && remainingChainTokens.length > 0 && (
@@ -251,8 +249,7 @@ export const ToTokenListOverlay = () => {
               : 'All receivable tokens'
           }
         >
-            {remainingChainTokens.map((token, idx) => {
-              return (
+            {remainingChainTokens.map((token, idx) =>
                 <SelectSpecificTokenButton
                   isOrigin={false}
                   key={idx}
@@ -262,14 +259,12 @@ export const ToTokenListOverlay = () => {
                   showAllChains={false}
                   onClick={() => handleSetToToken(toToken, token)}
                 />
-              )
-            })}
+            )}
         </SearchResultsContainer>
       )}
       {allOtherToTokens && allOtherToTokens.length > 0 && (
         <SearchResultsContainer label="All receivable tokens">
-            {allOtherToTokens.map((token, idx) => {
-              return (
+            {allOtherToTokens.map((token, idx) =>
                 <SelectSpecificTokenButton
                   isOrigin={false}
                   key={idx}
@@ -285,8 +280,7 @@ export const ToTokenListOverlay = () => {
                   onClick={() => handleSetToToken(toToken, token)}
                   alternateBackground={true}
                 />
-              )
-            })}
+            )}
         </SearchResultsContainer>
       )}
       <SearchResults searchStr={searchStr} type="token" />

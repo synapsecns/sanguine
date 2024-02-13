@@ -77,6 +77,7 @@ export const SelectSpecificNetworkButton = ({
         ${getNetworkHover(chain.color)}
         ${getNetworkButtonBgClassNameActive(chain.color)}
         ${getNetworkButtonBorderActive(chain.color)}
+        ${getMenuItemStyleForChain(chain.color)}
       `}
       onClick={onClick}
       data-test-id={`${dataId}-item`}

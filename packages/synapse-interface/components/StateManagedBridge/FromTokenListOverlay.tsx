@@ -142,10 +142,9 @@ export const FromTokenListOverlay = () => {
           <CloseButton onClick={onClose} />
         </div>
       </div>
-      {possibleTokens && possibleTokens.length > 0 && (
+      {possibleTokens?.length > 0 && (
         <SearchResultsContainer label="Send...">
-            {possibleTokens.map((token, idx) => {
-              return (
+            {possibleTokens.map((token, idx) =>
                 <SelectSpecificTokenButton
                   isOrigin={true}
                   key={idx}
@@ -161,11 +160,10 @@ export const FromTokenListOverlay = () => {
                     }
                   }}
                 />
-              )
-            })}
+            )}
         </SearchResultsContainer>
       )}
-      {remainingTokens && remainingTokens.length > 0 && (
+      {remainingTokens?.length > 0 && (
         <SearchResultsContainer
           label={
             fromChainId
@@ -173,8 +171,7 @@ export const FromTokenListOverlay = () => {
               : 'All sendable tokens'
           }
         >
-            {remainingTokens.map((token, idx) => {
-              return (
+            {remainingTokens.map((token, idx) =>
                 <SelectSpecificTokenButton
                   isOrigin={true}
                   key={idx}
@@ -184,14 +181,12 @@ export const FromTokenListOverlay = () => {
                   showAllChains={false}
                   onClick={() => handleSetFromToken(fromToken, token)}
                 />
-              )
-            })}
+            )}
         </SearchResultsContainer>
       )}
-      {allOtherFromTokens && allOtherFromTokens.length > 0 && (
+      {allOtherFromTokens?.length > 0 && (
         <SearchResultsContainer label="All sendable tokens">
-            {allOtherFromTokens.map((token, idx) => {
-              return (
+            {allOtherFromTokens.map((token, idx) =>
                 <SelectSpecificTokenButton
                   isOrigin={true}
                   key={idx}
@@ -205,8 +200,7 @@ export const FromTokenListOverlay = () => {
                   onClick={() => handleSetFromToken(fromToken, token)}
                   alternateBackground={true}
                 />
-              )
-            })}
+            )}
         </SearchResultsContainer>
       )}
       <SearchResults searchStr={searchStr} type="token" />
