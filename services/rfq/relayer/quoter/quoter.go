@@ -34,6 +34,8 @@ var logger = log.Logger("quoter")
 
 // Quoter submits quotes to the RFQ API.
 type Quoter interface {
+	// Start starts the Quoter.
+	Start(ctx context.Context) (err error)
 	// SubmitAllQuotes submits all quotes to the RFQ API.
 	SubmitAllQuotes(ctx context.Context) (err error)
 	// ShouldProcess determines if a quote should be processed.
@@ -108,6 +110,11 @@ func NewQuoterManager(config relconfig.Config, metricsHandler metrics.Handler, i
 		feePricer:        feePricer,
 		screener:         ss,
 	}, nil
+}
+
+// Start starts the QuoterManager.
+func (m *Manager) Start(ctx context.Context) error {
+	return m.feePricer.Start(ctx)
 }
 
 const screenerRuleset = "rfq"

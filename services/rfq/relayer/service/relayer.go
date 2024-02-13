@@ -198,6 +198,14 @@ func (r *Relayer) Start(ctx context.Context) error {
 		return nil
 	})
 
+	g.Go(func() error {
+		err := r.quoter.Start(ctx)
+		if err != nil {
+			return fmt.Errorf("could not start quoter: %w", err)
+		}
+		return nil
+	})
+
 	err = g.Wait()
 	if err != nil {
 		return fmt.Errorf("could not start: %w", err)

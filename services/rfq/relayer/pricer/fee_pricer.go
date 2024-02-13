@@ -24,7 +24,7 @@ import (
 // FeePricer is the interface for the fee pricer.
 type FeePricer interface {
 	// Start starts the fee pricer.
-	Start(ctx context.Context)
+	Start(ctx context.Context) error
 	// GetOriginFee returns the total fee for a given chainID and gas limit, denominated in a given token.
 	GetOriginFee(ctx context.Context, origin, destination uint32, denomToken string, useMultiplier bool) (*big.Int, error)
 	// GetDestinationFee returns the total fee for a given chainID and gas limit, denominated in a given token.
@@ -107,7 +107,7 @@ func NewFeePricer(ctx context.Context, config relconfig.Config, clientFetcher su
 	}, nil
 }
 
-func (f *feePricer) Start(ctx context.Context) {
+func (f *feePricer) Start(ctx context.Context) error {
 	g, _ := errgroup.WithContext(ctx)
 
 	// start the TTL caches
@@ -133,6 +133,8 @@ func (f *feePricer) Start(ctx context.Context) {
 			return f.pollGasEstimates(ctx, uint32(chainID))
 		})
 	}
+
+	return g.Wait()
 }
 
 // pollGasEstimates polls the gas estimates for a given chain.
