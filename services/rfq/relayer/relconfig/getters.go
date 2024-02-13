@@ -455,3 +455,32 @@ func (c Config) GetMinQuoteAmount(chainID int, addr common.Address) *big.Int {
 	quoteAmountScaled, _ := new(big.Float).Mul(quoteAmountFlt, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
 	return quoteAmountScaled
 }
+
+const defaultTTL = 60
+
+// GetGasPriceCacheTTL returns the gas estimate cache TTL.
+func (c Config) GetGasPriceCacheTTL() time.Duration {
+	ttl := c.FeePricer.GasPriceCacheTTLSeconds
+	if ttl == 0 {
+		ttl = defaultTTL
+	}
+	return time.Duration(ttl) * time.Second
+}
+
+// GetGasEstimateCacheTTL returns the gas estimate cache TTL.
+func (c Config) GetGasEstimateCacheTTL() time.Duration {
+	ttl := c.FeePricer.GasEstimateCacheTTLSeconds
+	if ttl == 0 {
+		ttl = defaultTTL
+	}
+	return time.Duration(ttl) * time.Second
+}
+
+// GetTokenPriceCacheTTL returns the gas estimate cache TTL.
+func (c Config) GetTokenPriceCacheTTL() time.Duration {
+	ttl := c.FeePricer.TokenPriceCacheTTLSeconds
+	if ttl == 0 {
+		ttl = defaultTTL
+	}
+	return time.Duration(ttl) * time.Second
+}

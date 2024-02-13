@@ -64,19 +64,19 @@ type feePricer struct {
 func NewFeePricer(ctx context.Context, config relconfig.Config, clientFetcher submitter.ClientFetcher, priceFetcher CoingeckoPriceFetcher, feeSigner signer.Signer, handler metrics.Handler) (FeePricer, error) {
 	// setup caches
 	gasPriceCache := ttlcache.New[uint32, *big.Int](
-		ttlcache.WithTTL[uint32, *big.Int](time.Second*time.Duration(config.GetFeePricer().GasPriceCacheTTLSeconds)),
+		ttlcache.WithTTL[uint32, *big.Int](config.GetGasPriceCacheTTL()),
 		ttlcache.WithDisableTouchOnHit[uint32, *big.Int](),
 	)
 	tokenPriceCache := ttlcache.New[string, float64](
-		ttlcache.WithTTL[string, float64](time.Second*time.Duration(config.GetFeePricer().TokenPriceCacheTTLSeconds)),
+		ttlcache.WithTTL[string, float64](config.GetTokenPriceCacheTTL()),
 		ttlcache.WithDisableTouchOnHit[string, float64](),
 	)
 	originGasEstimateCache := ttlcache.New[uint32, uint64](
-		ttlcache.WithTTL[uint32, uint64](time.Second*time.Duration(config.GetFeePricer().GasEstimateCacheTTLSeconds)),
+		ttlcache.WithTTL[uint32, uint64](config.GetGasEstimateCacheTTL()),
 		ttlcache.WithDisableTouchOnHit[uint32, uint64](),
 	)
 	destGasEstimateCache := ttlcache.New[uint32, uint64](
-		ttlcache.WithTTL[uint32, uint64](time.Second*time.Duration(config.GetFeePricer().GasEstimateCacheTTLSeconds)),
+		ttlcache.WithTTL[uint32, uint64](config.GetGasEstimateCacheTTL()),
 		ttlcache.WithDisableTouchOnHit[uint32, uint64](),
 	)
 
@@ -127,6 +127,41 @@ func (f *feePricer) Start(ctx context.Context) {
 		f.tokenPriceCache.Start()
 		return nil
 	})
+}
+
+func (f *feePricer) pollGasEstimates(parentCtx context.Context, chainID uint32) error {
+	dynamic, err := f.config.GetDynamicGasEstimate(int(chainID))
+	if err != nil {
+		return fmt.Errorf("could not get dynamic gas estimate from config: %w", err)
+	}
+	if !dynamic {
+		return nil
+	}
+
+	// poll gas estimates
+	for {
+		select {
+		case <-parentCtx.Done():
+			return nil
+		case <-time.After(f.config.GetGasEstimateCacheTTL()):
+			ctx, span := f.handler.Tracer().Start(parentCtx, "pollGasEstimates", trace.WithAttributes(
+				attribute.Int(metrics.ChainID, int(chainID)),
+			))
+			originGasEstimate, err := f.getGasEstimateFromClient(ctx, chainID, true)
+			if err == nil {
+				f.originGasEstimateCache.Set(chainID, originGasEstimate, 0)
+			}
+			destGasEstimate, err := f.getGasEstimateFromClient(ctx, chainID, false)
+			if err == nil {
+				f.destGasEstimateCache.Set(chainID, destGasEstimate, 0)
+			}
+			span.SetAttributes(
+				attribute.Int("origin_gas_estimate", int(originGasEstimate)),
+				attribute.Int("dest_gas_estimate", int(destGasEstimate)),
+				attribute.String("error", err.Error()),
+			)
+		}
+	}
 }
 
 var nativeDecimalsFactor = new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(18)), nil)
