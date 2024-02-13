@@ -25,10 +25,10 @@ export interface TransitionClassesProps extends TransitionClasses {
 export const COIN_SLIDE_OVER_PROPS: TransitionClassesProps = {
   appear: true,
   unmount: true,
-  enter: 'duration-25 transition-opacity ease-out',
+  enter: 'duration-0 transition-opacity ease-out', //duration-25
   enterFrom: ' opacity-0',
   enterTo: ' opacity-100',
-  leave: 'duration-25 transition-opacity ease-out',
+  leave: 'duration-0 transition-opacity ease-out', //duration-25
   leaveFrom: ' opacity-100',
   leaveTo: ' opacity-0 hidden',
 }

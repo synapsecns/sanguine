@@ -15,6 +15,7 @@ import { PAUSED_FROM_CHAIN_IDS } from '@constants/chains'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 import { CHAIN_FUSE_OPTIONS } from '@/constants/fuseOptions'
 import { SearchResultsContainer } from '@/components/SearchResultsContainer'
+import { useMemo } from 'react'
 
 export const FromChainListOverlay = () => {
   const { fromChainIds, fromChainId } = useBridgeState()
