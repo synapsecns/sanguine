@@ -1,4 +1,4 @@
-r# Note: this file is made to be symlinked to various folders where we use go for builds
+# Note: this file is made to be symlinked to various folders where we use go for builds
 # please use libraries if you wish to add folder-specific make functionality
 
 default: help
