@@ -55,7 +55,8 @@ import { DestinationAddressInput } from '@/components/StateManagedBridge/Destina
 import { isAddress } from '@ethersproject/address'
 import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
-import { Address, zeroAddress } from 'viem'
+import { Address, zeroAddress, createPublicClient, http } from 'viem'
+import { polygon } from 'viem/chains'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { Warning } from '@/components/Warning'
 import { useAppDispatch } from '@/store/hooks'
@@ -401,6 +402,13 @@ const StateManagedBridge = () => {
           : data
 
       console.log('payload:', payload)
+
+      const testRpc = ''
+
+      const client = createPublicClient({
+        chain: polygon,
+        transport: http(testRpc),
+      })
 
       const publicClient = getPublicClient()
 
