@@ -88,15 +88,14 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
     /// @inheritdoc IFastBridge
     function prove(bytes memory request, bytes32 destTxHash) external onlyRelayer {
         bytes32 transactionId = keccak256(request);
-        BridgeTransaction memory transaction = getBridgeTransaction(request);
-
-        // check haven't exceeded deadline for prove to happen
-        if (block.timestamp > transaction.deadline + PROVE_PERIOD) revert FastBridge__DeadlineExceeded();
         _verifyAndUpdateStatus({
             transactionId: transactionId,
             expectedOldValue: BridgeStatusV2.REQUESTED,
             newValue: BridgeStatusV2.RELAYER_PROVED
         });
+        // check haven't exceeded deadline for prove to happen
+        BridgeTransaction memory transaction = getBridgeTransaction(request);
+        if (block.timestamp > transaction.deadline + PROVE_PERIOD) revert FastBridge__DeadlineExceeded();
         bridgeProofs[transactionId] = BridgeProof({timestamp: uint96(block.timestamp), relayer: msg.sender}); // overflow ok
 
         emit BridgeProofProvided(transactionId, msg.sender, destTxHash);
@@ -105,14 +104,15 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
     /// @inheritdoc IFastBridge
     function claim(bytes memory request, address to) external onlyRelayer {
         bytes32 transactionId = keccak256(request);
-        BridgeProof memory proof = bridgeProofs[transactionId];
-        if (proof.relayer != msg.sender) revert FastBridge__SenderIncorrect();
-        if (_timeSince(proof) <= DISPUTE_PERIOD) revert FastBridge__DisputePeriodNotPassed();
         _verifyAndUpdateStatus({
             transactionId: transactionId,
             expectedOldValue: BridgeStatusV2.RELAYER_PROVED,
             newValue: BridgeStatusV2.RELAYER_CLAIMED
         });
+        // Check that Relayer is the same as the one that provided the proof and that dispute period has passed
+        BridgeProof memory proof = bridgeProofs[transactionId];
+        if (proof.relayer != msg.sender) revert FastBridge__SenderIncorrect();
+        if (_timeSince(proof) <= DISPUTE_PERIOD) revert FastBridge__DisputePeriodNotPassed();
         // update protocol fees if origin fee amount exists
         BridgeTransaction memory transaction = getBridgeTransaction(request);
         if (transaction.originFeeAmount > 0) protocolFees[transaction.originToken] += transaction.originFeeAmount;
@@ -132,13 +132,13 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
         // TODO: this should be a two-step process:
         // 1. dispute() marks transaction as disputed - this stops relayer from claiming
         // 2. resolve() resolves a disputed transaction - this uses the external source of truth
-        if (_timeSince(bridgeProofs[transactionId]) > DISPUTE_PERIOD) revert FastBridge__DisputePeriodPassed();
-        // @dev relayer gets slashed effectively if dest relay has gone thru
         _verifyAndUpdateStatus({
             transactionId: transactionId,
             expectedOldValue: BridgeStatusV2.RELAYER_PROVED,
             newValue: BridgeStatusV2.REQUESTED
         });
+        if (_timeSince(bridgeProofs[transactionId]) > DISPUTE_PERIOD) revert FastBridge__DisputePeriodPassed();
+        // @dev relayer gets slashed effectively if dest relay has gone thru
         delete bridgeProofs[transactionId];
 
         emit BridgeProofDisputed(transactionId, msg.sender);
@@ -207,15 +207,14 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
     /// @inheritdoc IFastBridge
     function refund(bytes memory request) external {
         bytes32 transactionId = keccak256(request);
-        BridgeTransaction memory transaction = getBridgeTransaction(request);
-
-        // check exceeded deadline for prove to happen
-        if (block.timestamp <= transaction.deadline + PROVE_PERIOD) revert FastBridge__DeadlineNotExceeded();
         _verifyAndUpdateStatus({
             transactionId: transactionId,
             expectedOldValue: BridgeStatusV2.REQUESTED,
             newValue: BridgeStatusV2.REFUNDED
         });
+        // check exceeded deadline for prove to happen
+        BridgeTransaction memory transaction = getBridgeTransaction(request);
+        if (block.timestamp <= transaction.deadline + PROVE_PERIOD) revert FastBridge__DeadlineNotExceeded();
         // transfer origin collateral back to original sender
         address to = transaction.originSender;
         address token = transaction.originToken;
