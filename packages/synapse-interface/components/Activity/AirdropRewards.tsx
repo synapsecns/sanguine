@@ -15,9 +15,9 @@ import { CloseButton } from '@/components/buttons/CloseButton'
 import { ArrowUpRightIcon } from '../icons/ArrowUpRightIcon'
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
 import { HoverContent } from '../Portfolio/components/PortfolioTokenVisualizer'
-import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import TransactionArrow from '../icons/TransactionArrow'
 import arbitrumImg from '@assets/chains/arbitrum.svg'
+import { useCloseOutsideRef } from '@/utils/hooks/useCloseOutsideRef'
 
 /** ARB Token */
 const ARB = {
@@ -133,7 +133,7 @@ const DialogWrapper = ({ open, children }) => {
     <div
       className={`${
         open &&
-        'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80'
+        'fixed inset-0 z-50 flex items-center justify-center bg-slate-900/10 backdrop-blur-lg bg-opacity-80'
       }`}
     >
       {children}
@@ -156,9 +156,7 @@ const RewardsDialog = ({
   rewards: string
   tokenPrice: number
 }) => {
-  const dialogRef = useRef(null)
-
-  useCloseOnOutsideClick(dialogRef, onClose)
+  const dialogRef = useCloseOutsideRef(onClose)
 
   const maxHeight = window.innerHeight > 768 ? 400 : 200
 
@@ -168,11 +166,18 @@ const RewardsDialog = ({
         id="rewards-dialog"
         ref={dialogRef}
         open={open}
-        className="absolute z-50 max-w-md py-5 m-auto border rounded-md cursor-default text-primary bg-slate-400/20  backdrop-blur-md border-separator"
+        className="absolute z-50 max-w-md py-5 m-auto border rounded-md cursor-default text-primary bg-slate-400/20  backdrop-blur-md border-white/20"
       >
         <div className="px-4 space-y-4">
           <div className="flex justify-between mb-2">
-            <div className="text-2xl">ARB Rewards</div>
+
+            <div className="text-2xl">
+              <Image
+              src={ARB.icon}
+              alt="ARB icon"
+              className="w-8 h-8 ml-2 mr-4 rounded-full inline"
+            />
+            ARB Rewards</div>
             <CloseButton onClick={onClose} />
           </div>
 

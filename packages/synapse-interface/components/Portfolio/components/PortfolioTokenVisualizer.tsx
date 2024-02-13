@@ -121,9 +121,9 @@ export const HoverContent = ({
     return (
       <div
         className={`
-          absolute z-50 hover-content p-2 text-white
-          border border-solid border-[#252537]
-          bg-[#101018] rounded-md text-left
+          absolute z-50 hover-content py-2 px-3 text-white
+          border border-white/20 bg-bgBase/10 backdrop-blur-xl
+          rounded-md text-left min-w-[200px]
         `}
       >
         {children}

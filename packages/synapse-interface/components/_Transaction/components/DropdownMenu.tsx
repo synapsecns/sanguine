@@ -1,30 +1,18 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { DownArrow } from '@/components/icons/DownArrow'
-import { useKeyPress } from '@/utils/hooks/useKeyPress'
-import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
+import { useCloseOutsideRef } from '@/utils/hooks/useCloseOutsideRef'
 
 export const DropdownMenu = ({ menuTitleElement, children }) => {
   const [open, setOpen] = useState<boolean>(false)
-  const ref = useRef(null)
+  const ref = useCloseOutsideRef(() => setOpen(false))
+
   const handleClick = () => {
     setOpen(!open)
   }
 
-  const escPressed = useKeyPress('Escape')
 
-  function escFunc() {
-    if (escPressed) {
-      handleClose()
-    }
-  }
 
-  useEffect(escFunc, [escPressed])
 
-  const handleClose = () => {
-    setOpen(false)
-  }
-
-  useCloseOnOutsideClick(ref, handleClose)
 
   return (
     <div id="dropdown-menu" className="relative" ref={ref}>
