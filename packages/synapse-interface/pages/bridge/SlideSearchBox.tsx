@@ -1,5 +1,3 @@
-import { useEffect, useRef } from 'react'
-
 export default function SlideSearchBox({
   searchStr,
   onSearch,
@@ -9,12 +7,10 @@ export default function SlideSearchBox({
   onSearch: (str: string) => void
   placeholder: string
 }) {
-  const inputRef = useRef<any>(null)
-  useEffect(() => inputRef.current?.focus(), [])
 
   return (
     <input
-      ref={inputRef}
+      autoFocus={true}
       className={`
         text-primaryTextColor
         focus:outline-none
