@@ -23,10 +23,7 @@ export const SectionContainer = ({
 }) => {
   return (
     <section
-      className={`
-        py-6 md:my-8 space-y-[1rem]
-        ${styles}
-      `}
+      className={`py-6 md:my-8 space-y-4 ${styles}`}
       data-test-id={dataTestId}
     >
       {children}
