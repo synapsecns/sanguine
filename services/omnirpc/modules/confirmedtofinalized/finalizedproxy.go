@@ -1,4 +1,4 @@
-package proxy
+package confirmedtofinalized
 
 import (
 	"context"
@@ -11,14 +11,15 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/parser/rpc"
 	"github.com/synapsecns/sanguine/services/omnirpc/collection"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
+	_ "github.com/uptrace/opentelemetry-go-extra/otelzap"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"io"
 	"net/http"
 )
 
-// SimpleProxy handles simple rxoy requests to omnirpc
-type SimpleProxy struct {
+// FinalizedProxy handles simple rxoy requests to omnirpc.
+type FinalizedProxy struct {
 	tracer trace.Tracer
 	// port is the port the server is run on
 	port uint16
@@ -30,9 +31,9 @@ type SimpleProxy struct {
 	proxyURL string
 }
 
-// NewSimpleProxy creates a new simply proxy
-func NewSimpleProxy(proxyURL string, handler metrics.Handler, port int) *SimpleProxy {
-	return &SimpleProxy{
+// NewSimpleProxy creates a new simply proxy.
+func NewSimpleProxy(proxyURL string, handler metrics.Handler, port int) *FinalizedProxy {
+	return &FinalizedProxy{
 		proxyURL: proxyURL,
 		handler:  handler,
 		port:     uint16(port),
@@ -41,7 +42,7 @@ func NewSimpleProxy(proxyURL string, handler metrics.Handler, port int) *SimpleP
 	}
 }
 
-func (r *SimpleProxy) Run(ctx context.Context) error {
+func (r *FinalizedProxy) Run(ctx context.Context) error {
 	router := ginhelper.New(logger)
 	router.Use(r.handler.Gin())
 
@@ -72,8 +73,8 @@ func (r *SimpleProxy) Run(ctx context.Context) error {
 
 var batchErr = errors.New("simple proxy batch requests are not supported")
 
-// ProxyRequest proxies a request to the proxyURL
-func (r *SimpleProxy) ProxyRequest(c *gin.Context) (err error) {
+// ProxyRequest proxies a request to the proxyURL.
+func (r *FinalizedProxy) ProxyRequest(c *gin.Context) (err error) {
 	ctx, span := r.tracer.Start(c, "ProxyRequest",
 		trace.WithAttributes(attribute.String("endpoint", r.proxyURL)),
 	)

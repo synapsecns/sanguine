@@ -10,12 +10,12 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/hedzr/cmdr/tool"
 	"github.com/synapsecns/sanguine/ethergo/client"
-	rpc2 "github.com/synapsecns/sanguine/ethergo/parser/rpc"
+	ethergoRPC "github.com/synapsecns/sanguine/ethergo/parser/rpc"
 	"golang.org/x/exp/slices"
 	"math/big"
 )
 
-func isConfirmable(r rpc2.Request) (bool, error) {
+func isConfirmable(r ethergoRPC.Request) (bool, error) {
 	// TODO: should we error on default?
 	// TODO: look at RPCMethod.Comparable for lower, necessary?
 	//nolint: exhaustive
@@ -54,7 +54,7 @@ func init() {
 	}
 }
 
-func rewriteConfirmableRequest(r rpc2.Request) rpc2.Request {
+func rewriteConfirmableRequest(r ethergoRPC.Request) ethergoRPC.Request {
 	switch client.RPCMethod(r.Method) {
 	case client.BlockByNumberMethod:
 		r.Params[0] = bytes.Replace(r.Params[0], latestBlock, finalizedBlock, 1)
@@ -64,7 +64,7 @@ func rewriteConfirmableRequest(r rpc2.Request) rpc2.Request {
 	return r
 }
 
-func areConfirmable(r rpc2.Requests) (_ bool, errs error) {
+func areConfirmable(r ethergoRPC.Requests) (_ bool, errs error) {
 	unconfirmable := false
 
 	for i, request := range r {
@@ -84,14 +84,6 @@ func areConfirmable(r rpc2.Requests) (_ bool, errs error) {
 	}
 
 	return !unconfirmable, nil
-}
-
-func rewriteConfirmableRequests(requests rpc2.Requests) (_ rpc2.Requests) {
-	for i, request := range requests {
-		requests[i] = rewriteConfirmableRequest(request)
-	}
-	return requests
-
 }
 
 func isBlockNumConfirmable(arg json.RawMessage) bool {

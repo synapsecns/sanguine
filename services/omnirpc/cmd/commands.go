@@ -154,7 +154,7 @@ var debugResponse = &cli.Command{
 	},
 }
 
-// latestRewrite rewrites latest block numbers for a single rpc url
+// latestRewrite rewrites latest block numbers for a single rpc url.
 var latestRewrite = &cli.Command{
 	Name:  "latest-rewrite",
 	Usage: "A simple rpc proxy for one-off integration tests. Rewrites block queries that use \"latest\" to \"finalized\"",
