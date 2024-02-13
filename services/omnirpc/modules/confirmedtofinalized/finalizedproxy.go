@@ -43,7 +43,7 @@ func NewSimpleProxy(proxyURL string, handler metrics.Handler, port int) *Finaliz
 }
 
 func (r *FinalizedProxy) Run(ctx context.Context) error {
-	router := ginhelper.New(logger)
+	router := ginhelper.NewWithExperimentalLogger(ctx, r.handler.ExperimentalLogger())
 	router.Use(r.handler.Gin())
 
 	router.POST("/", func(c *gin.Context) {

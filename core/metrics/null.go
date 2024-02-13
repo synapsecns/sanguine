@@ -3,6 +3,7 @@ package metrics
 import (
 	"context"
 	"github.com/gin-gonic/gin"
+	experimentalLogger "github.com/synapsecns/sanguine/core/metrics/logger"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/metric/noop"
@@ -20,8 +21,8 @@ type nullHandler struct {
 	meter      Meter
 }
 
-func (n nullHandler) ExperimentalLogger() ExperimentalLogger {
-	return newNullLogger()
+func (n nullHandler) ExperimentalLogger() experimentalLogger.ExperimentalLogger {
+	return experimentalLogger.NewNullLogger()
 }
 
 func (n nullHandler) Meter(name string, options ...metric.MeterOption) metric.Meter {

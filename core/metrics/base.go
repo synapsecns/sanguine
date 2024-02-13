@@ -9,6 +9,7 @@ import (
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/core/metrics/internal"
+	experimentalLogger "github.com/synapsecns/sanguine/core/metrics/logger"
 	baseServer "github.com/synapsecns/sanguine/core/server"
 	"github.com/uptrace/opentelemetry-go-extra/otelgorm"
 	"github.com/uptrace/opentelemetry-go-extra/otelzap"
@@ -25,7 +26,6 @@ import (
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 	"go.opentelemetry.io/otel/trace"
-	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"net/http"
 )
@@ -45,7 +45,7 @@ type baseHandler struct {
 	// or http-based sampling methods for other providers.
 	handler http.Handler
 	// experimentalLogger is a logger that is used for experimental features.
-	experimentalLogger ExperimentalLogger
+	experimentalLogger experimentalLogger.ExperimentalLogger
 }
 
 func (b *baseHandler) Handler() http.Handler {
@@ -162,7 +162,7 @@ func (b *baseHandler) Metrics() Meter {
 	return NewOtelMeter(b.meter)
 }
 
-func (b *baseHandler) ExperimentalLogger() ExperimentalLogger {
+func (b *baseHandler) ExperimentalLogger() experimentalLogger.ExperimentalLogger {
 	return b.experimentalLogger
 }
 
@@ -205,20 +205,6 @@ func newBaseHandler(buildInfo config.BuildInfo, extraOpts ...tracesdk.TracerProv
 	return newBaseHandlerWithTracerProvider(rsr, buildInfo, tp, propagator)
 }
 
-// this is it's own method so envs/configs are persisted across metrics handlers.
-func makeZapLogger() *zap.Logger {
-	betaLogger, err := zap.NewProduction()
-	if err != nil {
-		// since there are no options, this shouldn't really fail.
-		logger.Fatal("could not create beta logger", "error", err)
-	}
-	defer func() {
-		_ = betaLogger.Sync()
-	}()
-
-	return betaLogger
-}
-
 // newBaseHandlerWithTracerProvider creates a new baseHandler for any opentelemtry tracer.
 func newBaseHandlerWithTracerProvider(rsr *resource.Resource, buildInfo config.BuildInfo, tracerProvider trace.TracerProvider, propagator propagation.TextMapPropagator) *baseHandler {
 	// default tracer for server.
@@ -226,7 +212,7 @@ func newBaseHandlerWithTracerProvider(rsr *resource.Resource, buildInfo config.B
 	tracer := tracerProvider.Tracer(buildInfo.Name())
 	otel.SetTextMapPropagator(propagator)
 
-	betaLogger := makeZapLogger()
+	betaLogger := experimentalLogger.MakeZapLogger()
 	// set the global logger to the beta logger
 	otelLogger := otelzap.New(betaLogger)
 	sugaredLogger := otelLogger.Sugar()
@@ -247,7 +233,7 @@ func newBaseHandlerWithTracerProvider(rsr *resource.Resource, buildInfo config.B
 		name:               buildInfo.Name(),
 		propagator:         propagator,
 		handler:            promhttp.Handler(),
-		experimentalLogger: &wrappedSugarLogger{sugaredLogger},
+		experimentalLogger: experimentalLogger.MakeWrappedSugaredLogger(sugaredLogger),
 	}
 }
 
