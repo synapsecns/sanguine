@@ -91,13 +91,13 @@ export const Transaction = React.memo(
           token={originToken}
           tokenAmount={originValue}
           isOrigin={true}
-          className="p-2"
+          className="p-2 bg-bgBase/10"
         />
         <TransactionArrow
           className={
             transactionType === TransactionType.PENDING
               ? 'bg-bgBase/20 fill-bgBase/10'
-              : 'stroke-bgBase/10 fill-transparent'
+              : 'stroke-white/20 fill-bgBase/10 '
           }
         />
         <TransactionPayloadDetail

@@ -69,18 +69,18 @@ export const TransactionPayloadDetail = ({
   return (
     <div data-test-id="transaction-payload-detail" className={className}>
       {chain && showChain && (
-        <div
+        <TransactionPayloadDetailButton
           data-test-id="transaction-payload-network"
           onClick={handleSelectChainCallback}
           className={buttonStyle}
         >
           <Image
             src={chain.chainImg}
-            className="w-4 h-4 pt-0.5 ml-0.5"
+            className="w-4 h-4 pt-0.5 mr-1.5"
             alt={`${chain.name} icon`}
           />
           {chain.name}
-        </div>
+        </TransactionPayloadDetailButton>
       )}
 
       {token && tokenAmount && (
@@ -91,7 +91,7 @@ export const TransactionPayloadDetail = ({
         >
           <Image
             src={token?.icon}
-            className="items-center w-5 h-5 mt-px"
+            className="w-4 h-4 mt-px mr-1.5"
             alt={`${token?.name} icon`}
           />
           {typeof tokenAmount === 'string' && tokenDecimals ? (
