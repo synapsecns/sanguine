@@ -417,7 +417,7 @@ func (f *feePricer) getTokenPriceFromConfig(token string) (float64, error) {
 }
 
 func (f *feePricer) getGasEstimate(parentCtx context.Context, chainID uint32, isOrigin bool) (gasEstimate uint64, err error) {
-	ctx, span := f.handler.Tracer().Start(parentCtx, "getGasEstimate", trace.WithAttributes(
+	_, span := f.handler.Tracer().Start(parentCtx, "getGasEstimate", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(chainID)),
 	))
 	defer func() {
@@ -437,23 +437,6 @@ func (f *feePricer) getGasEstimate(parentCtx context.Context, chainID uint32, is
 		gasEstimate = gasEstimateItem.Value()
 		span.AddEvent("got gas estimate from cache")
 		return gasEstimate, nil
-	}
-
-	// if dynamic gas estimation is enabled, attempt to get the gas estimate from the client
-	dynamic, err := f.config.GetDynamicGasEstimate(int(chainID))
-	if err != nil {
-		return 0, fmt.Errorf("could not get dynamic gas estimate from config: %w", err)
-	}
-	if dynamic {
-		gasEstimate, err = f.getGasEstimateFromClient(ctx, chainID, isOrigin)
-		if err == nil {
-			// cache the dynamic gas estimate
-			cache.Set(chainID, gasEstimate, 0)
-			return gasEstimate, nil
-		}
-		span.AddEvent("could not get gas estimate from client", trace.WithAttributes(
-			attribute.String("error", err.Error()),
-		))
 	}
 
 	// fall back to gas estimate from the config
