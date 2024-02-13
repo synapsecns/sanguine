@@ -27,11 +27,31 @@ contract SynapseModule is Ownable {
 
   event ModuleMessageSent(uint256 dstChainId, bytes transaction);
 
-  function sendModuleMessage(bytes calldata transaction) public {
+  function estimateFee(uint256 dstChainId) public view returns (uint256) {
+    // Get Latest Posted Destination Gas Price from oracle
+    // Requires: Access to origin USD Gas Price / Destination USD Gas PRice
+    // Get current price of origin chain assets
+    // Get current price of destination chain assets
+    // Calculate the estiamted fee based on preset gas limit
+    // return
+
+    // TODO: Right now, we don't have all of the info needed to provide a real fee estimation - we will provide 1 wei to enable other functionality to be built.
+    return 1;
+  }
+
+  function sendModuleMessage(bytes calldata transaction) public payable {
     Interchain.InterchainTransaction memory decodedTransaction = abi.decode(
       transaction,
       (Interchain.InterchainTransaction)
     );
+
+    // TODO: Require fee is above estimation(?), does this make sense?
+    uint256 currentEstimatedFee = estimateFee(decodedTransaction.dstChainId);
+    require(
+      msg.value >= currentEstimatedFee,
+      'Insufficient fee to send transaction'
+    );
+    // Transfer fee to module executor
 
     emit ModuleMessageSent(decodedTransaction.dstChainId, transaction);
   }

@@ -41,8 +41,14 @@ contract InterchainApp {
     bytes32 receiver,
     uint256 dstChainId,
     bytes calldata message
-  ) external {
-    interchain.interchainSend(receiver, dstChainId, message, sendingModules);
+  ) external payable {
+    // TODO: Currently, we forward all gas to Interchain, this may not be expected behavior, and the real abstract contract shouldn't do this
+    interchain.interchainSend{value: msg.value}(
+      receiver,
+      dstChainId,
+      message,
+      sendingModules
+    );
     emit AppMessageSent();
   }
 

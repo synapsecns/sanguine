@@ -35,13 +35,28 @@ contract Interchain {
     uint requiredModuleResponses;
   }
 
+  function estimateInterchainTransactionFee(
+    uint256 dstChainId,
+    // TODO: Should anyone be able to call this, or should this only be used via IApps?
+    address[] calldata modules
+  ) public view returns (uint256) {
+    uint256 totalFee = 0;
+    for (uint i = 0; i < modules.length; i++) {
+      totalFee =
+        totalFee +
+        IInterchainModule(modules[i]).estimateFee(dstChainId);
+    }
+    return totalFee;
+  }
+
   // TODO: Calculate Gas Pricing per module and charge fees
+  // TODO: Customizable Gas Limit for Execution
   function interchainSend(
     bytes32 receiver,
     uint256 dstChainId,
     bytes calldata message,
     address[] calldata modules // Add modules as a parameter
-  ) public {
+  ) public payable {
     // TODO: Pull modules to send through from app config
     // Right now, we will just use the default module, as if the app config does not specify it.
     // This is a temporary solution until we have a proper app interface.
@@ -60,9 +75,14 @@ contract Interchain {
     );
 
     for (uint i = 0; i < newTransaction.modules.length; i++) {
-      IInterchainModule(newTransaction.modules[i]).sendModuleMessage(
-        abi.encode(newTransaction)
-      );
+      // TODO: How to disperse fees per module?
+      // TODO: This is required per module right now, it will fail without it
+      uint256 estimatedModuleFee = IInterchainModule(newTransaction.modules[i])
+        .estimateFee(newTransaction.dstChainId);
+      // TODO: Right now, this could drain the Interchain.sol contract of any ETH held, since estimateFee is an untrusted function
+      IInterchainModule(newTransaction.modules[i]).sendModuleMessage{
+        value: estimatedModuleFee
+      }(abi.encode(newTransaction));
     }
 
     emit InterchainTransactionSent(

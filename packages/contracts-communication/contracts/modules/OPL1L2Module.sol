@@ -39,7 +39,12 @@ contract OPL1L2Module {
     L2OPModule = _l2OPModule;
   }
 
-  function sendModuleMessage(bytes calldata transaction) public {
+  // TODO: Implemented for tests until we have OP-Specific Fee Estimation
+  function estimateFee(uint256 dstChainId) public view returns (uint256) {
+    return 0;
+  }
+
+  function sendModuleMessage(bytes calldata transaction) external payable {
     IL1CrossDomainMessenger(L1CrossDomainMessenger).sendMessage(
       L2OPModule,
       abi.encodeWithSelector(

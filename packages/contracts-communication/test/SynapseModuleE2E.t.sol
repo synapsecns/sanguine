@@ -22,6 +22,8 @@ contract SynapseModuleE2ETest is Test {
   InterchainApp dstInterchainApp;
   InterchainApp originInterchainApp;
 
+  address[] l1Modules;
+
   function setUp() public {
     moduleL1 = new SynapseModule();
     moduleL2 = new SynapseModule();
@@ -54,7 +56,7 @@ contract SynapseModuleE2ETest is Test {
     moduleL2.setVerifiers(verifierAddresses);
     moduleL1.setRequiredThreshold(3);
     moduleL2.setRequiredThreshold(3);
-    address[] memory l1Modules = new address[](1);
+    l1Modules = new address[](1);
     l1Modules[0] = address(moduleL1);
     address[] memory l2Modules = new address[](1);
     l2Modules[0] = address(moduleL2);
@@ -80,7 +82,16 @@ contract SynapseModuleE2ETest is Test {
     );
     uint64 initialNonce = interchainL1.nonce();
 
-    originInterchainApp.send(receiver, dstChainId, message);
+    uint256 estimatedFee = interchainL1.estimateInterchainTransactionFee(
+      dstChainId,
+      l1Modules
+    );
+
+    originInterchainApp.send{value: estimatedFee}(
+      receiver,
+      dstChainId,
+      message
+    );
 
     Interchain.InterchainTransaction memory interTransaction = Interchain
       .InterchainTransaction(

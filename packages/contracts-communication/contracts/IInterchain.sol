@@ -6,7 +6,7 @@ interface IInterchain {
     uint256 dstChainId,
     bytes calldata message,
     address[] calldata modules
-  ) external;
+  ) external payable;
 
   function interchainReceive(bytes calldata transaction) external;
 }
