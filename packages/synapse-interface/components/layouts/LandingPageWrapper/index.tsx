@@ -53,7 +53,7 @@ export function LandingPageWrapper({ children }: { children: any }) {
 export function LandingNav() {
   return (
     <Popover>
-      <div className="flex gap-4 place-content-between p-8 max-w-[1440px] m-auto">
+      <header className="flex gap-4 place-content-between p-8 max-w-[1440px] m-auto">
         <SynapseTitleLogo showText={true} />
         <div className="lg:hidden">
           <Popover.Button
@@ -89,7 +89,7 @@ export function LandingNav() {
             </Popover>
           </div>
         </div>
-      </div>
+      </header>
 
       <Transition
         as={Fragment}
