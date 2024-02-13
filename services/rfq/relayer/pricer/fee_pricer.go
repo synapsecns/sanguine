@@ -40,6 +40,10 @@ type feePricer struct {
 	config relconfig.Config
 	// gasPriceCache maps chainID -> gas price
 	gasPriceCache *ttlcache.Cache[uint32, *big.Int]
+	// originGasEstimateCache maps chainID -> gas estimate
+	originGasEstimateCache *ttlcache.Cache[uint32, uint64]
+	// destGasEstimateCache maps chainID -> gas estimate
+	destGasEstimateCache *ttlcache.Cache[uint32, uint64]
 	// tokenPriceCache maps token name -> token price
 	tokenPriceCache *ttlcache.Cache[string, float64]
 	// clientFetcher is used to fetch clients.
@@ -67,6 +71,14 @@ func NewFeePricer(ctx context.Context, config relconfig.Config, clientFetcher su
 		ttlcache.WithTTL[string, float64](time.Second*time.Duration(config.GetFeePricer().TokenPriceCacheTTLSeconds)),
 		ttlcache.WithDisableTouchOnHit[string, float64](),
 	)
+	originGasEstimateCache := ttlcache.New[uint32, uint64](
+		ttlcache.WithTTL[uint32, uint64](time.Second*time.Duration(config.GetFeePricer().GasEstimateCacheTTLSeconds)),
+		ttlcache.WithDisableTouchOnHit[uint32, uint64](),
+	)
+	destGasEstimateCache := ttlcache.New[uint32, uint64](
+		ttlcache.WithTTL[uint32, uint64](time.Second*time.Duration(config.GetFeePricer().GasEstimateCacheTTLSeconds)),
+		ttlcache.WithDisableTouchOnHit[uint32, uint64](),
+	)
 
 	// setup contracts for dynamic gas estimates
 	bridges := map[uint32]*fastbridge.FastBridgeRef{}
@@ -82,14 +94,16 @@ func NewFeePricer(ctx context.Context, config relconfig.Config, clientFetcher su
 	}
 
 	return &feePricer{
-		config:          config,
-		gasPriceCache:   gasPriceCache,
-		tokenPriceCache: tokenPriceCache,
-		clientFetcher:   clientFetcher,
-		handler:         handler,
-		priceFetcher:    priceFetcher,
-		feeSigner:       feeSigner,
-		bridges:         bridges,
+		config:                 config,
+		gasPriceCache:          gasPriceCache,
+		originGasEstimateCache: originGasEstimateCache,
+		destGasEstimateCache:   destGasEstimateCache,
+		tokenPriceCache:        tokenPriceCache,
+		clientFetcher:          clientFetcher,
+		handler:                handler,
+		priceFetcher:           priceFetcher,
+		feeSigner:              feeSigner,
+		bridges:                bridges,
 	}, nil
 }
 
@@ -99,6 +113,14 @@ func (f *feePricer) Start(ctx context.Context) {
 	// start the TTL caches
 	g.Go(func() error {
 		f.gasPriceCache.Start()
+		return nil
+	})
+	g.Go(func() error {
+		f.originGasEstimateCache.Start()
+		return nil
+	})
+	g.Go(func() error {
+		f.destGasEstimateCache.Start()
 		return nil
 	})
 	g.Go(func() error {
@@ -358,6 +380,19 @@ func (f *feePricer) getGasEstimate(parentCtx context.Context, chainID uint32, is
 		metrics.EndSpanWithErr(span, err)
 	}()
 
+	// attempt to load the gas estimate from the cache
+	var cache *ttlcache.Cache[uint32, uint64]
+	if isOrigin {
+		cache = f.originGasEstimateCache
+	} else {
+		cache = f.destGasEstimateCache
+	}
+	gasEstimateItem := cache.Get(chainID)
+	if gasEstimateItem != nil {
+		gasEstimate = gasEstimateItem.Value()
+		return gasEstimate, nil
+	}
+
 	// if dynamic gas estimation is enabled, attempt to get the gas estimate from the client
 	dynamic, err := f.config.GetDynamicGasEstimate(int(chainID))
 	if err != nil {
@@ -366,6 +401,8 @@ func (f *feePricer) getGasEstimate(parentCtx context.Context, chainID uint32, is
 	if dynamic {
 		gasEstimate, err = f.getGasEstimateFromClient(ctx, chainID, isOrigin)
 		if err == nil {
+			// cache the dynamic gas estimate
+			cache.Set(chainID, gasEstimate, 0)
 			return gasEstimate, nil
 		}
 		span.AddEvent("could not get gas estimate from client", trace.WithAttributes(

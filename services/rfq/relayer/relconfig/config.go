@@ -103,6 +103,8 @@ type DatabaseConfig struct {
 type FeePricerConfig struct {
 	// GasPriceCacheTTLSeconds is the TTL for the gas price cache.
 	GasPriceCacheTTLSeconds int `yaml:"gas_price_cache_ttl"`
+	// GasEstimateCacheTTLSeconds is the TTL for the gas estimate caches.
+	GasEstimateCacheTTLSeconds int `yaml:"gas_estimate_cache_ttl"`
 	// TokenPriceCacheTTLSeconds is the TTL for the token price cache.
 	TokenPriceCacheTTLSeconds int `yaml:"token_price_cache_ttl"`
 	// HTTPTimeoutMs is the number of milliseconds to timeout on a HTTP request.
