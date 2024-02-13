@@ -127,8 +127,17 @@ func (f *feePricer) Start(ctx context.Context) {
 		f.tokenPriceCache.Start()
 		return nil
 	})
+	for cid := range f.config.Chains {
+		chainID := cid
+		g.Go(func() error {
+			return f.pollGasEstimates(ctx, uint32(chainID))
+		})
+	}
 }
 
+// pollGasEstimates polls the gas estimates for a given chain.
+// We poll in the background to make sure that fee calculations do not take too long, since gas
+// estimate RPC calls can have high latency.
 func (f *feePricer) pollGasEstimates(parentCtx context.Context, chainID uint32) error {
 	dynamic, err := f.config.GetDynamicGasEstimate(int(chainID))
 	if err != nil {
