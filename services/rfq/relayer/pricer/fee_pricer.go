@@ -358,37 +358,37 @@ func (f *feePricer) getGasEstimate(parentCtx context.Context, chainID uint32, is
 		metrics.EndSpanWithErr(span, err)
 	}()
 
+	// if dynamic gas estimation is enabled, attempt to get the gas estimate from the client
 	dynamic, err := f.config.GetDynamicGasEstimate(int(chainID))
 	if err != nil {
 		return 0, fmt.Errorf("could not get dynamic gas estimate from config: %w", err)
 	}
 	if dynamic {
-		calls, err := f.getCalls(ctx, chainID, isOrigin)
-		if err != nil {
-			return 0, fmt.Errorf("could not get calls: %w", err)
+		gasEstimate, err = f.getGasEstimateFromClient(ctx, chainID, isOrigin)
+		if err == nil {
+			return gasEstimate, nil
 		}
-		gasEstimate, err = f.getGasEstimateFromClient(ctx, chainID, calls)
-		if err != nil {
-			return 0, fmt.Errorf("could not get gas estimate from client: %w", err)
-		}
-	} else {
-		// load the gas estimate from the config
-		var gasEstimateRaw int
-		if isOrigin {
-			gasEstimateRaw, err = f.config.GetOriginGasEstimate(int(chainID))
-		} else {
-			gasEstimateRaw, err = f.config.GetDestGasEstimate(int(chainID))
-		}
-		if err != nil {
-			return 0, fmt.Errorf("could not get gas estimate from config: %w", err)
-		}
-		gasEstimate = uint64(gasEstimateRaw)
+		span.AddEvent("could not get gas estimate from client", trace.WithAttributes(
+			attribute.String("error", err.Error()),
+		))
 	}
+
+	// fall back to gas estimate from the config
+	var gasEstimateRaw int
+	if isOrigin {
+		gasEstimateRaw, err = f.config.GetOriginGasEstimate(int(chainID))
+	} else {
+		gasEstimateRaw, err = f.config.GetDestGasEstimate(int(chainID))
+	}
+	if err != nil {
+		return 0, fmt.Errorf("could not get gas estimate from config: %w", err)
+	}
+	gasEstimate = uint64(gasEstimateRaw)
 
 	return gasEstimate, nil
 }
 
-func (f *feePricer) getGasEstimateFromClient(parentCtx context.Context, chainID uint32, calls []*ethereum.CallMsg) (gasEstimate uint64, err error) {
+func (f *feePricer) getGasEstimateFromClient(parentCtx context.Context, chainID uint32, isOrigin bool) (gasEstimate uint64, err error) {
 	ctx, span := f.handler.Tracer().Start(parentCtx, "getGasEstimateFromClient", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(chainID)),
 	))
@@ -401,6 +401,12 @@ func (f *feePricer) getGasEstimateFromClient(parentCtx context.Context, chainID 
 	chainClient, err := f.clientFetcher.GetClient(ctx, big.NewInt(int64(chainID)))
 	if err != nil {
 		return 0, fmt.Errorf("could not get client: %w", err)
+	}
+
+	// build the mock contract calls
+	calls, err := f.getCalls(ctx, chainID, isOrigin)
+	if err != nil {
+		return 0, err
 	}
 
 	// load the gas estimator
