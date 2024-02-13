@@ -10,7 +10,7 @@ export const OutputContainer = () => {
   const { bridgeQuote, isLoading } = useBridgeState()
 
   return (
-    <div className="mt-[1.125rem] p-md text-left rounded-md bg-bgBase/10">
+    <div className="mt-[1.125rem] p-md text-left rounded-md bg-bgBase/10 ring-1 ring-white/10">
       <div className="flex items-center justify-between mb-3">
         <ToChainSelector />
       </div>

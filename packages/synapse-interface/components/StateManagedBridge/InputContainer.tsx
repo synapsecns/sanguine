@@ -93,7 +93,7 @@ export const InputContainer = () => {
   return (
     <div
       data-test-id="input-container"
-      className="text-left rounded-md p-md bg-bgBase/10"
+      className="text-left rounded-md p-md bg-bgBase/10 ring-1 ring-white/10"
     >
       <div className="flex items-center justify-between mb-3">
         <FromChainSelector />
