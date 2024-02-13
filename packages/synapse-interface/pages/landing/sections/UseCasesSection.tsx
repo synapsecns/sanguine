@@ -43,8 +43,8 @@ export default function UseCasesSection() {
 
       <Grid
         cols={{ xs: 1, sm: 1, md: 1, lg: 3 }}
-        gap={4}
-        className="p-4 mx-auto place-items-center max-w-5xl"
+        gap={6}
+        className="py-4 mx-auto place-items-center max-w-sm lg:max-w-[1080px]"
       >
         {useCases.map((useCase: useCaseProp, index: number) => (
           <UseCaseCard
@@ -63,19 +63,19 @@ function UseCaseCard({ image, title, description }) {
   return (
     <Card
       className={`
-        border border-white border-opacity-10
-        bg-opacity-70 bg-[#2F2F2F]
-        w-full md:w-[300px] flex flex-col gap-2 max-w-xs
+        border border-white/10
+        bg-opacity-70 bg-zinc-800
+        w-full flex flex-col gap-2
       `}
       divider={false}
     >
-        <div className="flex -my-4 md:-my-5">{image}</div>
-        <div className="text-lg font-medium text-white mt-2">
-          {title}
-        </div>
-        <div className="text-sm text-secondaryTextColor">
-          {description}
-        </div>
+      {image}
+      <div className="text-lg font-medium text-white mt-2">
+        {title}
+      </div>
+      <div className="text-sm text-secondaryTextColor">
+        {description}
+      </div>
     </Card>
   )
 }

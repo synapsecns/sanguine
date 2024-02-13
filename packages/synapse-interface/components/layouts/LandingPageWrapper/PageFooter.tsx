@@ -117,7 +117,7 @@ const supportList: FooterDataProps[] = [
 export function PageFooter() {
   return (
     <footer>
-      <div className="flex flex-wrap justify-between max-w-4xl gap-8 p-8 m-auto">
+      <div className="flex flex-wrap justify-between max-w-[1080px] gap-8 py-8 m-auto">
         <SynapseTitleLogo showText={true} />
         <div className="flex flex-wrap gap-8">
           <FooterBlock elements={functionsList} />
@@ -125,28 +125,24 @@ export function PageFooter() {
           <FooterBlock elements={supportList} />
         </div>
       </div>
-      <div className="flex justify-center gap-2 pb-12 text-secondaryTextColor">
-        <div className="text-opacity-50 text-secondaryTextColor">
-          <a
-            className="duration-75 hover:text-white transform-gpu hover:transition-all"
-            href={TERMS_OF_SERVICE_PATH}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Terms of Use
-          </a>
-        </div>
-        <p>｜</p>
-        <div className="text-opacity-50 text-secondaryTextColor">
-          <a
-            className="duration-75 hover:text-white transform-gpu hover:transition-all"
-            href={PRIVACY_POLICY_PATH}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Privacy Policy
-          </a>
-        </div>
+      <div className="flex justify-center gap-2 pb-12 text-secondaryTextColor/50">
+        <a
+          className="duration-75 hover:text-white transform-gpu hover:transition-all"
+          href={TERMS_OF_SERVICE_PATH}
+          target="_blank"
+          rel="noreferrer"
+        >
+          Terms of Use
+        </a>
+      <span className="cursor-default">｜</span>
+        <a
+          className="duration-75 hover:text-white transform-gpu hover:transition-all"
+          href={PRIVACY_POLICY_PATH}
+          target="_blank"
+          rel="noreferrer"
+        >
+          Privacy Policy
+        </a>
       </div>
     </footer>
   )

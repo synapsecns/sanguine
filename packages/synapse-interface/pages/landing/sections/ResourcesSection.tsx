@@ -7,7 +7,7 @@ import { GITHUB_URL, DOCS_URL, MEDIUM_URL } from '@/constants/urls'
 
 export default function ResourcesSection() {
   return (
-    <SectionContainer dataTestId="landing-resources-section" styles="max-w-5xl m-auto">
+    <SectionContainer dataTestId="landing-resources-section" styles="max-w-[1080px] m-auto">
       <h2 className="text-4xl font-medium text-center text-white">
         Get started now
       </h2>
@@ -18,7 +18,7 @@ export default function ResourcesSection() {
       <Grid
         cols={{ sm: 1, md: 1, lg: 3 }}
         gap={6}
-        className="p-4"
+        className="py-4"
       >
         <ResourceCard
           title="References"
@@ -49,7 +49,7 @@ function ResourceCard({ title, description, buttonText, linkUrl }) {
       className={`
         text-center rounded-md border
         border-white/10
-        bg-[#2F2F2F] bg-opacity-70 p-4 max-w-xs m-auto
+        bg-[#2F2F2F] bg-opacity-70 p-4 max-w-sm m-auto
       `}
       divider={false}
     >
