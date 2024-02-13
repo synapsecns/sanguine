@@ -1,5 +1,5 @@
-import numeral from 'numeral'
 import { useCallback, useMemo } from 'react'
+import numeral from 'numeral'
 import Image from 'next/image'
 import { useAppDispatch } from '@/store/hooks'
 import {
@@ -21,11 +21,15 @@ export const TransactionPayloadDetail = ({
   token,
   tokenAmount,
   isOrigin,
+  className,
+  showChain = true,
 }: {
   chain?: Chain
   token?: Token
   tokenAmount?: string | number
   isOrigin: boolean
+  className?: string
+  showChain?: boolean
 }) => {
   const dispatch = useAppDispatch()
 
@@ -55,6 +59,9 @@ export const TransactionPayloadDetail = ({
     return null
   }, [tokenAmount, token, chain])
 
+  const buttonStyle =
+    'flex gap-1.5 pl-1.5 pr-2.5 py-0.5 -my-0.5 items-center cursor-pointer rounded border border-transparent hover:border-surface hover:bg-tint active:opacity-70 w-fit'
+
   return (
     <div
       data-test-id="transaction-payload-detail"
@@ -81,7 +88,7 @@ export const TransactionPayloadDetail = ({
         >
           <Image
             src={token?.icon}
-            className="items-center w-4 h-4 mr-1.5 rounded-full"
+            className="items-center w-5 h-5 mt-px"
             alt={`${token?.name} icon`}
           />
           <div className="mr-1">
@@ -90,9 +97,8 @@ export const TransactionPayloadDetail = ({
                   formatBigIntToString(BigInt(tokenAmount), tokenDecimals, 4)
                 )
               : typeof tokenAmount === 'number'
-                ? numeral(tokenAmount).format('0,0.000')
-                : "..."
-            }
+              ? numeral(tokenAmount).format('0,0.000')
+              : '...'}
           </div>
           <div className="mt-0.5 text-xs md:text-sm">{token?.symbol}</div>
         </TransactionPayloadDetailButton>
@@ -101,8 +107,7 @@ export const TransactionPayloadDetail = ({
   )
 }
 
-
-function TransactionPayloadDetailButton({ children, ...props}) {
+function TransactionPayloadDetailButton({ children, ...props }) {
   return (
     <div
       {...props}

@@ -1,4 +1,4 @@
-import { OptionButton } from "@/components/buttons/OptionButton"
+import { OptionButton } from '@/components/buttons/OptionButton'
 export function MenuItem({
   text,
   link,
@@ -9,26 +9,12 @@ export function MenuItem({
   onClick?: () => any
 }) {
   return (
-    <li
-      id="menu-item"
-      className={`rounded cursor-pointer min-w-[150px]`}
-    >
+    <li id="menu-item" className={`rounded cursor-pointer min-w-[150px]`}>
       {onClick ? (
-        <OptionButton
-          onClick={onClick}
-          text={text}
-        />
+        <OptionButton onClick={onClick} text={text} />
       ) : (
-        <a
-          href={link ?? ''}
-          onClick={onClick}
-          target="_blank"
-          rel="noreferrer"
-        >
-          <OptionButton
-            onClick={onClick}
-            text={text}
-          />
+        <a href={link ?? ''} onClick={onClick} target="_blank" rel="noreferrer">
+          <OptionButton onClick={onClick} text={text} />
         </a>
       )}
     </li>

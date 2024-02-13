@@ -3,7 +3,8 @@ import { DownArrow } from '@/components/icons/DownArrow'
 import { useKeyPress } from '@/utils/hooks/useKeyPress'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 
-export const DropdownMenu = ({ children }) => {
+export const DropdownMenu = ({ menuTitleElement, children }) => {
+  const menuRef = useRef(null)
   const [open, setOpen] = useState<boolean>(false)
   const ref = useRef(null)
   const handleClick = () => {
@@ -32,6 +33,7 @@ export const DropdownMenu = ({ children }) => {
           cursor-pointer hover:border-white/80
         `}
       >
+        {menuTitleElement}
         <DownArrow />
       </div>
 

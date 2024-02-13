@@ -14,6 +14,9 @@ import { getEstimatedTimeStatus } from './helpers/getEstimatedTimeStatus'
 import { DropdownMenu } from './components/DropdownMenu'
 import { MenuItem } from './components/MenuItem'
 import { useBridgeTxUpdater } from './helpers/useBridgeTxUpdater'
+import { AnimatedProgressBar } from './components/AnimatedProgressBar'
+import { TransactionSupport } from './components/TransactionSupport'
+import { RightArrow } from '@/components/icons/RightArrow'
 
 interface _TransactionProps {
   connectedAddress: string
@@ -62,8 +65,15 @@ export const _Transaction = ({
     connectedAddress
   )
 
-  const { isStartCheckingTimeReached, isEstimatedTimeReached, remainingTime } =
-    getEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
+  const {
+    targetTime,
+    elapsedTime,
+    remainingTime,
+    delayedTime,
+    delayedTimeInMin,
+    isEstimatedTimeReached,
+    isStartCheckingTimeReached,
+  } = getEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
 
   const [isTxComplete, _kappa] = useBridgeTxStatus({
     originChainId: originChain.id,
@@ -77,6 +87,9 @@ export const _Transaction = ({
 
   /** Check if store already marked tx as complete, otherwise check hook status */
   const isTxFinalized = isStoredComplete ?? isTxComplete
+
+  const showTransactionSupport =
+    !isTxFinalized && delayedTimeInMin ? delayedTimeInMin <= -5 : false
 
   useBridgeTxUpdater(
     connectedAddress,
@@ -98,7 +111,7 @@ export const _Transaction = ({
     >
       <div className="flex items-center w-full">
         <div className="flex rounded  fill-bgBase/20">
-          <div className='bg-bgBase/20'>
+          <div className="bg-bgBase/20">
             <TransactionPayloadDetail
               chain={originChain}
               token={originToken}
@@ -129,7 +142,10 @@ export const _Transaction = ({
         {/* TODO: Update visual format */}
         <div className="flex justify-between gap-2 pr-2 ml-auto">
           {isTxFinalized ? (
-            <TransactionStatus string="Complete" className="text-green-300 text-sm" />
+            <TransactionStatus
+              string="Complete"
+              className="text-green-300 text-sm"
+            />
           ) : (
             <TransactionStatus string="Pending" className="text-sm" />
           )}
