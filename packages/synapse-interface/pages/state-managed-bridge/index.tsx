@@ -30,7 +30,11 @@ import { formatBigIntToString } from '@/utils/bigint/format'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
 import { useEffect, useRef, useState, useMemo } from 'react'
 import { Token } from '@/utils/types'
-import { getWalletClient } from '@wagmi/core'
+import {
+  getWalletClient,
+  getPublicClient,
+  prepareSendTransaction,
+} from '@wagmi/core'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
 import { approveToken } from '@/utils/approveToken'
@@ -395,6 +399,24 @@ const StateManagedBridge = () => {
               ),
             }
           : data
+
+      console.log('payload:', payload)
+
+      const publicClient = getPublicClient()
+
+      console.log(
+        'estimateGas: ',
+        await publicClient.estimateGas({
+          value: payload.value,
+          to: payload.to,
+          account: address,
+          data: payload.data,
+          chainId: fromChainId,
+        })
+      )
+
+      let request = await prepareSendTransaction(payload)
+      console.log('request: ', request)
 
       const tx = await wallet.sendTransaction(payload)
 
