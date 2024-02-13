@@ -4,66 +4,19 @@ export function CrossChainExchangeIcon() {
       viewBox="0 0 335 196"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      style={{borderRadius: '12px'}}
     >
-      <g clipPath="url(#clip0_271_17)">
-        <rect width="335" height="196" rx="14" fill="white" />
-        <rect
-          width="335"
-          height="196"
-          rx="14"
-          fill="url(#paint0_radial_271_17)"
-        />
-        <path
-          opacity="0.76"
-          d="M4 153L104.717 59.7925H237.826L335 -37"
-          stroke="white"
-        />
-        <path
-          opacity="0.76"
-          d="M4 116L104.717 22.7925H237.826L335 -74"
-          stroke="white"
-        />
-        <path
-          opacity="0.76"
-          d="M4 190L104.717 96.7925H237.826L335 0"
-          stroke="white"
-        />
-        <path
-          opacity="0.76"
-          d="M4 227L104.717 133.792H237.826L335 37"
-          stroke="white"
-        />
-        <path
-          opacity="0.76"
-          d="M4 264L104.717 170.792H237.826L335 74"
-          stroke="white"
-        />
-        <path
-          opacity="0.76"
-          d="M4 -34L104.717 59.6981H237.826L335 157"
-          stroke="white"
-        />
-        <path
-          opacity="0.76"
-          d="M4 -71L104.717 22.6981H237.826L335 120"
-          stroke="white"
-        />
-        <path
-          opacity="0.76"
-          d="M4 3L104.717 96.6981H237.826L335 194"
-          stroke="white"
-        />
-        <path
-          opacity="0.76"
-          d="M4 40L104.717 133.698H237.826L335 231"
-          stroke="white"
-        />
-        <path
-          opacity="0.76"
-          d="M4 77L104.717 170.698H237.826L335 268"
-          stroke="white"
-        />
-      </g>
+      <rect
+        width="335"
+        height="196"
+        rx="12"
+        fill="url(#paint0_radial_271_17)"
+      />
+      <path
+        opacity="0.76"
+        stroke="white"
+        d="M4 153L104.717 59.7925H237.826L335 -37 M4 116L104.717 22.7925H237.826L335 -74 M4 190L104.717 96.7925H237.826L335 0 M4 227L104.717 133.792H237.826L335 37 M4 264L104.717 170.792H237.826L335 74 M4 -34L104.717 59.6981H237.826L335 157 M4 -71L104.717 22.6981H237.826L335 120 M4 3L104.717 96.6981H237.826L335 194 M4 40L104.717 133.698H237.826L335 231 M4 77L104.717 170.698H237.826L335 268"
+      />
       <defs>
         <radialGradient
           id="paint0_radial_271_17"
@@ -76,9 +29,6 @@ export function CrossChainExchangeIcon() {
           <stop stopColor="#FF00FF" />
           <stop offset="1" stopColor="#AC8FFF" />
         </radialGradient>
-        <clipPath id="clip0_271_17">
-          <rect width="335" height="196" rx="12" fill="white" />
-        </clipPath>
       </defs>
     </svg>
   )
