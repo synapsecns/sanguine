@@ -7,6 +7,10 @@ import (
 	"go.uber.org/zap"
 )
 
+// TODO: should be replaced with custom methods.
+// this is currently insufficient and will not eep logged errors from gin in line w/ spans.
+// the middleware itself needs to pass the context to the logger so this requires some copy/paste actoin
+// from the gin-contrib for zap.
 type wrappedExperimentalLogger struct {
 	// nolint: containedctx
 	ctx    context.Context

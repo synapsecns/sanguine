@@ -12,7 +12,6 @@ import (
 	experimentalLogger "github.com/synapsecns/sanguine/core/metrics/logger"
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/parser/rpc"
-	ethergoRPC "github.com/synapsecns/sanguine/ethergo/parser/rpc"
 	"github.com/synapsecns/sanguine/services/omnirpc/collection"
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
 	"go.opentelemetry.io/otel/attribute"
@@ -29,7 +28,6 @@ type FinalizedProxy interface {
 
 // finalizedProxyImpl handles simple rxoy requests to omnirpc.
 type finalizedProxyImpl struct {
-	tracer trace.Tracer
 	// port is the port the server is run on
 	port uint16
 	// client contains the http client
@@ -49,7 +47,6 @@ func NewProxy(proxyURL string, handler metrics.Handler, port int) FinalizedProxy
 		handler:  handler,
 		port:     uint16(port),
 		client:   omniHTTP.NewRestyClient(),
-		tracer:   handler.Tracer(),
 		logger:   handler.ExperimentalLogger(),
 	}
 }
@@ -83,11 +80,11 @@ func (r *finalizedProxyImpl) Run(ctx context.Context) error {
 	return nil
 }
 
-var batchErr = errors.New("simple proxy batch requests are not supported")
+var errBatchNotSupported = errors.New("simple proxy batch requests are not supported")
 
 // ProxyRequest proxies a request to the proxyURL.
 func (r *finalizedProxyImpl) ProxyRequest(c *gin.Context) (err error) {
-	ctx, span := r.tracer.Start(c, "ProxyRequest",
+	ctx, span := r.handler.Tracer().Start(c, "ProxyRequest",
 		trace.WithAttributes(attribute.String("endpoint", r.proxyURL)),
 	)
 
@@ -104,7 +101,8 @@ func (r *finalizedProxyImpl) ProxyRequest(c *gin.Context) (err error) {
 
 	// make sure it's not a batch
 	if rpc.IsBatch(rawBody) {
-		err = c.Error(batchErr)
+		err = c.Error(errBatchNotSupported)
+		// nolint: wrapcheck
 		return err
 	}
 
@@ -121,7 +119,7 @@ func (r *finalizedProxyImpl) ProxyRequest(c *gin.Context) (err error) {
 
 	body, err := json.Marshal(rpcRequest)
 	if err != nil {
-		return fmt.Errorf("could not marshal request")
+		return errors.New("could not marshal request")
 	}
 
 	req := r.client.NewRequest()
@@ -142,7 +140,8 @@ func (r *finalizedProxyImpl) ProxyRequest(c *gin.Context) (err error) {
 	return nil
 }
 
-func rewriteConfirmableRequest(r ethergoRPC.Request) ethergoRPC.Request {
+func rewriteConfirmableRequest(r rpc.Request) rpc.Request {
+	//nolint: exhaustive
 	switch client.RPCMethod(r.Method) {
 	case client.BlockByNumberMethod:
 		r.Params[0] = bytes.Replace(r.Params[0], latestBlock, finalizedBlock, 1)

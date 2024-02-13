@@ -93,7 +93,10 @@ linters:
     - contextcheck
     - nosnakecase
     - depguard
+    # we use core/testsuite.Err() etc that don't get caught by this linter and result in false positives.
     - testifylint
+    # we use metrics.EndSpan and metrics.EndSpanWithErr so this gets triggered falsely
+    - spancheck
   fast: false
 
 issues:
