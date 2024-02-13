@@ -5,8 +5,10 @@ import (
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
-var latestBlock []byte
-var finalizedBlock []byte
+var (
+	latestBlock    []byte
+	finalizedBlock []byte
+)
 
 func init() {
 	var err error
