@@ -17,7 +17,7 @@ type ExperimentalLogger interface {
 	Errorw(ctx context.Context, msg string, keysAndValues ...interface{})
 	Errorf(ctx context.Context, template string, args ...interface{})
 	Dpanicf(ctx context.Context, msg string, keysAndValues ...interface{})
-	DpanicwContext(ctx context.Context, template string, args ...interface{})
+	Dpanicw(ctx context.Context, template string, args ...interface{})
 	Fatalf(ctx context.Context, msg string, keysAndValues ...interface{})
-	FatalwContext(ctx context.Context, template string, args ...interface{})
+	Fatalw(ctx context.Context, template string, args ...interface{})
 }

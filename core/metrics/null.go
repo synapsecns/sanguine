@@ -20,6 +20,10 @@ type nullHandler struct {
 	meter      Meter
 }
 
+func (n nullHandler) ExperimentalLogger() ExperimentalLogger {
+	return newNullLogger()
+}
+
 func (n nullHandler) Meter(name string, options ...metric.MeterOption) metric.Meter {
 	return noop.Meter{}
 }

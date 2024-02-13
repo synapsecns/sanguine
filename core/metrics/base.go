@@ -205,13 +205,8 @@ func newBaseHandler(buildInfo config.BuildInfo, extraOpts ...tracesdk.TracerProv
 	return newBaseHandlerWithTracerProvider(rsr, buildInfo, tp, propagator)
 }
 
-// newBaseHandlerWithTracerProvider creates a new baseHandler for any opentelemtry tracer.
-func newBaseHandlerWithTracerProvider(rsr *resource.Resource, buildInfo config.BuildInfo, tracerProvider trace.TracerProvider, propagator propagation.TextMapPropagator) *baseHandler {
-	// default tracer for server.
-	otel.SetTracerProvider(tracerProvider)
-	tracer := tracerProvider.Tracer(buildInfo.Name())
-	otel.SetTextMapPropagator(propagator)
-
+// this is it's own method so envs/configs are persisted across metrics handlers.
+func makeZapLogger() *zap.Logger {
 	betaLogger, err := zap.NewProduction()
 	if err != nil {
 		// since there are no options, this shouldn't really fail.
@@ -221,6 +216,17 @@ func newBaseHandlerWithTracerProvider(rsr *resource.Resource, buildInfo config.B
 		_ = betaLogger.Sync()
 	}()
 
+	return betaLogger
+}
+
+// newBaseHandlerWithTracerProvider creates a new baseHandler for any opentelemtry tracer.
+func newBaseHandlerWithTracerProvider(rsr *resource.Resource, buildInfo config.BuildInfo, tracerProvider trace.TracerProvider, propagator propagation.TextMapPropagator) *baseHandler {
+	// default tracer for server.
+	otel.SetTracerProvider(tracerProvider)
+	tracer := tracerProvider.Tracer(buildInfo.Name())
+	otel.SetTextMapPropagator(propagator)
+
+	betaLogger := makeZapLogger()
 	// set the global logger to the beta logger
 	otelLogger := otelzap.New(betaLogger)
 	sugaredLogger := otelLogger.Sugar()
