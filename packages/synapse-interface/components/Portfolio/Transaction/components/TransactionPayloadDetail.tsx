@@ -62,7 +62,7 @@ export const TransactionPayloadDetail = ({
   const buttonStyle = `
     flex gap-1.5 pl-1.5 pr-2.5 py-0.5 -my-0.5 items-center cursor-pointer rounded
     border border-transparent hover:bg-bgBase/20 active:bg-bgBase/30
-    active:opacity-60
+    active:opacity-60 overflow-hidden
     w-fit
   `
 
@@ -76,10 +76,10 @@ export const TransactionPayloadDetail = ({
         >
           <Image
             src={chain.chainImg}
-            className="w-4 h-4 pt-0.5 mr-1.5"
+            className="w-4 h-4  mr-1.5"
             alt={`${chain.name} icon`}
           />
-          {chain.name}
+          <span className={tokenAmount ? "text-xs py-0.5" : "" }>{chain.name}</span>
         </TransactionPayloadDetailButton>
       )}
 
@@ -112,6 +112,7 @@ export const TransactionPayloadDetail = ({
           <span className="mt-0.5 text-sm">{token?.symbol}</span>
         </TransactionPayloadDetailButton>
       )}
+
     </div>
   )
 }

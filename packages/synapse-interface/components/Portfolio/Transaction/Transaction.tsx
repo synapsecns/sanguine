@@ -91,7 +91,7 @@ export const Transaction = React.memo(
           token={originToken}
           tokenAmount={originValue}
           isOrigin={true}
-          className="p-2 bg-bgBase/10"
+          className="p-2 bg-bgBase/10 rounded-l"
         />
         <TransactionArrow
           className={

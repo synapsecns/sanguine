@@ -17,6 +17,7 @@ import { useBridgeTxUpdater } from './helpers/useBridgeTxUpdater'
 import { AnimatedProgressBar } from './components/AnimatedProgressBar'
 import { TransactionSupport } from './components/TransactionSupport'
 import { RightArrow } from '@/components/icons/RightArrow'
+import TransactionArrow from '../icons/TransactionArrow'
 
 interface _TransactionProps {
   connectedAddress: string
@@ -98,7 +99,8 @@ export const _Transaction = ({
     originTxHash,
     isTxComplete
   )
-
+  console.log(kappa)
+  console.log(isTxFinalized)
   return (
     <div
       data-test-id="_transaction"
@@ -110,8 +112,8 @@ export const _Transaction = ({
     >
       <div
         className={`
-          flex items-center pl-3 pr-2 pt-2
-          ${showTransactionSupport ? 'pb-0' : 'pb-2'}
+          flex items-center pr-2
+          ${showTransactionSupport ? 'pb-0' : ''}
         `}
       >
         <TransactionPayloadDetail
@@ -119,9 +121,17 @@ export const _Transaction = ({
           token={originToken}
           tokenAmount={originValue}
           isOrigin={true}
-          showChain={false}
+          showChain={true}
+          className="py-2 px-2 bg-bgBase/10 rounded-l"
         />
-        <RightArrow className="stroke-secondaryTextColor mt-0.5 mx-1" />
+        <TransactionArrow
+          className={`
+              mr-2
+              ${isTxFinalized
+              ? 'stroke-white/20 fill-bgBase/10 '
+              : 'stroke-white/20 fill-transparent'}
+          `}
+        />
         <TransactionPayloadDetail
           chain={destinationChain}
           token={destinationToken}
@@ -174,7 +184,13 @@ export const _Transaction = ({
         </div>
       </div>
       {showTransactionSupport && <TransactionSupport />}
-      <div className="px-1">
+      <div
+        className={`
+          px-1
+          h-0 overflow-visible
+          ${isTxFinalized ? "" : "-mt-[3px]"}
+        `}
+      >
         <AnimatedProgressBar
           id={originTxHash}
           startTime={timestamp}
