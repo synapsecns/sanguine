@@ -5,7 +5,7 @@ import { getTxBlockExplorerLink } from './helpers/getTxBlockExplorerLink'
 import { getExplorerAddressLink } from './helpers/getExplorerAddressLink'
 import { useBridgeTxStatus } from './helpers/useBridgeTxStatus'
 import { removeTransaction } from '@/slices/_transactions/reducer'
-import { TransactionPayloadDetail } from '../Portfolio/Transaction/components/TransactionPayloadDetail'
+import { TransactionPayloadDetail } from '@/components/Portfolio/Transaction/components/TransactionPayloadDetail'
 import { Chain, Token } from '@/utils/types'
 import TransactionArrow from '../icons/TransactionArrow'
 import { TimeRemaining } from './components/TimeRemaining'
@@ -14,6 +14,9 @@ import { getEstimatedTimeStatus } from './helpers/getEstimatedTimeStatus'
 import { DropdownMenu } from './components/DropdownMenu'
 import { MenuItem } from './components/MenuItem'
 import { useBridgeTxUpdater } from './helpers/useBridgeTxUpdater'
+import { AnimatedProgressBar } from './components/AnimatedProgressBar'
+import { TransactionSupport } from './components/TransactionSupport'
+import { RightArrow } from '@/components/icons/RightArrow'
 
 interface _TransactionProps {
   connectedAddress: string
@@ -62,8 +65,15 @@ export const _Transaction = ({
     connectedAddress
   )
 
-  const { isStartCheckingTimeReached, isEstimatedTimeReached, remainingTime } =
-    getEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
+  const {
+    targetTime,
+    elapsedTime,
+    remainingTime,
+    delayedTime,
+    delayedTimeInMin,
+    isEstimatedTimeReached,
+    isStartCheckingTimeReached,
+  } = getEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
 
   const [isTxComplete, _kappa] = useBridgeTxStatus({
     originChainId: originChain.id,
@@ -78,6 +88,9 @@ export const _Transaction = ({
   /** Check if store already marked tx as complete, otherwise check hook status */
   const isTxFinalized = isStoredComplete ?? isTxComplete
 
+  const showTransactionSupport =
+    !isTxFinalized && delayedTimeInMin ? delayedTimeInMin <= -5 : false
+
   useBridgeTxUpdater(
     connectedAddress,
     destinationChain,
@@ -90,83 +103,84 @@ export const _Transaction = ({
     <div
       data-test-id="_transaction"
       className={`
-        flex flex-col gap-1 justify-end items-center my-2
         bg-bgBase/10 fill-bgBase/20 text-primary
         border border-solid border-white/20 rounded-md
-        text-xs md:text-base
+        text-primary text-xs md:text-base
       `}
     >
-      <div className="flex items-center w-full">
-        <div className="flex rounded  fill-bgBase/20">
-          <div className='bg-bgBase/20'>
-            <TransactionPayloadDetail
-              chain={originChain}
-              token={originToken}
-              tokenAmount={originValue}
-              isOrigin={true}
-            />
-          </div>
-
-          <TransactionArrow className="stroke-white/20 " />
-        </div>
-        <div className="flex items-center space-x-4">
-          <TransactionPayloadDetail
-            chain={destinationChain}
-            token={destinationToken}
-            tokenAmount={null}
-            isOrigin={false}
-          />
-          <div className="mt-1 text-xs">
-            {new Date(timestamp * 1000).toLocaleString('en-US', {
-              month: 'short',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-              hour12: true,
-            })}
-          </div>
-        </div>
-        {/* TODO: Update visual format */}
-        <div className="flex justify-between gap-2 pr-2 ml-auto">
-          {isTxFinalized ? (
-            <TransactionStatus string="Complete" className="text-green-300 text-sm" />
-          ) : (
-            <TransactionStatus string="Pending" className="text-sm" />
-          )}
-          <div className="flex items-center justify-end gap-2 grow">
-            <TimeRemaining
-              isComplete={isTxFinalized as boolean}
-              remainingTime={remainingTime}
-              isDelayed={isEstimatedTimeReached}
-            />
-
-            <DropdownMenu>
-              {!isNull(originTxExplorerLink) && (
-                <MenuItem
-                  text={originExplorerName}
-                  link={originTxExplorerLink}
-                />
-              )}
-              {!isNull(destExplorerAddressLink) && (
-                <MenuItem
-                  text={destExplorerName}
-                  link={destExplorerAddressLink}
-                />
-              )}
-              <MenuItem
-                text="Contact Support"
-                link="https://discord.gg/synapseprotocol"
+      <div
+        className={`
+          flex items-center px-1 pt-2
+          ${showTransactionSupport ? 'pb-0' : 'pb-2'}
+        `}
+      >
+        <TransactionPayloadDetail
+          chain={originChain}
+          token={originToken}
+          tokenAmount={originValue}
+          isOrigin={true}
+          showChain={false}
+        />
+        <RightArrow className="stroke-secondaryTextColor mt-0.5 mx-1" />
+        <TransactionPayloadDetail
+          chain={destinationChain}
+          token={destinationToken}
+          tokenAmount={null}
+          isOrigin={false}
+        />
+        <div className="flex items-center justify-end gap-2 grow">
+          <DropdownMenu
+            menuTitleElement={
+              <TimeRemaining
+                isComplete={isTxFinalized}
+                remainingTime={remainingTime}
+                isDelayed={isEstimatedTimeReached}
+                delayedTime={delayedTime}
               />
-              {isTxFinalized && (
-                <MenuItem
-                  text="Clear Transaction"
-                  link={null}
-                  onClick={handleClearTransaction}
-                />
-              )}
-            </DropdownMenu>
-          </div>
+            }
+          >
+            <div className="p-2 mt-1 text-xs cursor-default text-zinc-300">
+              Began{' '}
+              {new Date(timestamp * 1000).toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true,
+              })}
+              {/* <div>{typeof _kappa === 'string' && _kappa?.substring(0, 15)}</div> */}
+            </div>
+            {!isNull(originTxExplorerLink) && (
+              <MenuItem text={originExplorerName} link={originTxExplorerLink} />
+            )}
+            {!isNull(destExplorerAddressLink) && (
+              <MenuItem
+                text={destExplorerName}
+                link={destExplorerAddressLink}
+              />
+            )}
+            <MenuItem
+              text="Contact Support"
+              link="https://discord.gg/synapseprotocol"
+            />
+            {isTxFinalized && (
+              <MenuItem
+                text="Clear Transaction"
+                link={null}
+                onClick={handleClearTransaction}
+              />
+            )}
+          </DropdownMenu>
         </div>
+      </div>
+      {showTransactionSupport && <TransactionSupport />}
+      <div className="px-1">
+        <AnimatedProgressBar
+          id={originTxHash}
+          startTime={timestamp}
+          estDuration={estimatedTime * 2} // 2x buffer
+          isComplete={isTxFinalized}
+        />
       </div>
     </div>
   )

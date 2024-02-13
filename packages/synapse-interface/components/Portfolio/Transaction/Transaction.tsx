@@ -82,64 +82,47 @@ export const Transaction = React.memo(
       <div
         data-test-id="transaction"
         className={`
-        flex flex-col mb-2
-        border rounded-lg text-secondary border-white/10
-        ${transactionType === TransactionType.HISTORICAL && 'bg-bgBase/10'}
-      `}
+          flex my-2 rounded-md text-secondary border border-surface
+          ${transactionType === TransactionType.HISTORICAL && 'bg-background'}
+        `}
       >
-        <div className={`flex flex-row`}>
-          <div
-            className={`
-            flex items-center p-2 rounded-tl-lg
-            ${transactionType === TransactionType.PENDING && 'bg-bgBase/20'}
-          `}
-          >
-            <TransactionPayloadDetail
-              chain={originChain}
-              token={originToken}
-              tokenAmount={originValue}
-              isOrigin={true}
+        <TransactionPayloadDetail
+          chain={originChain}
+          token={originToken}
+          tokenAmount={originValue}
+          isOrigin={true}
+          className="p-2"
+        />
+        <TransactionArrow
+          className={`
+        ${
+          transactionType === TransactionType.PENDING
+            ? 'bg-tint fill-surface'
+            : 'stroke-surface fill-transparent'
+        }
+        `}
+        />
+        <TransactionPayloadDetail
+          chain={destinationChain}
+          token={destinationToken}
+          tokenAmount={destinationValue}
+          isOrigin={false}
+          className="p-2"
+        />
+        <div className="ml-auto h-full py-2.5 -my-px px-4">
+          {!isCompleted && transactionType === TransactionType.PENDING ? (
+            <EstimatedDuration
+              timeRemaining={timeRemaining}
+              transactionStatus={transactionStatus}
             />
-          </div>
-          <TransactionArrow
-            className={`
-              ${
-                transactionType === TransactionType.PENDING
-                  ? 'bg-bgBase/50 fill-bgBase/20'
-                  : 'stroke-bgBase/20 fill-transparent'
-              }
-          `}
-          />
-          <div
-            className={`
-            flex flex-row justify-between flex-1 rounded-tr-lg
-            ${transactionType === TransactionType.PENDING && 'bg-bgBase/50'}
-          `}
-          >
-            <div className="flex items-center p-2">
-              <TransactionPayloadDetail
-                chain={destinationChain}
-                token={destinationToken}
-                tokenAmount={destinationValue}
-                isOrigin={false}
-              />
-            </div>
-            <div className="p-3">
-              {!isCompleted && transactionType === TransactionType.PENDING ? (
-                <EstimatedDuration
-                  timeRemaining={timeRemaining}
-                  transactionStatus={transactionStatus}
-                />
-              ) : (
-                <Completed
-                  transactionCompletedTime={completedTimestamp}
-                  connectedAddress={connectedAddress}
-                  destinationAddress={destinationAddress}
-                  handleExplorerClick={handleExplorerClick}
-                />
-              )}
-            </div>
-          </div>
+          ) : (
+            <Completed
+              transactionCompletedTime={completedTimestamp}
+              connectedAddress={connectedAddress}
+              destinationAddress={destinationAddress}
+              handleExplorerClick={handleExplorerClick}
+            />
+          )}
         </div>
         {children}
       </div>
