@@ -363,37 +363,9 @@ func (f *feePricer) getGasEstimate(parentCtx context.Context, chainID uint32, is
 		return 0, fmt.Errorf("could not get dynamic gas estimate from config: %w", err)
 	}
 	if dynamic {
-		calls := []*ethereum.CallMsg{}
-		bridge, ok := f.bridges[chainID]
-		if !ok {
-			return 0, fmt.Errorf("could not get bridge for chain: %d", chainID)
-		}
-		transactor, err := f.feeSigner.GetTransactor(ctx, big.NewInt(int64(chainID)))
+		calls, err := f.getCalls(ctx, chainID, isOrigin)
 		if err != nil {
-			return 0, fmt.Errorf("could not get transactor: %w", err)
-		}
-		var call *ethereum.CallMsg
-		if isOrigin {
-			// get claim call
-			call, err = getCall(transactor, bridge, claimCallType)
-			if err != nil {
-				return 0, fmt.Errorf("could not get claim call: %w", err)
-			}
-			calls = append(calls, call)
-
-			// get prove call
-			call, err = getCall(transactor, bridge, proveCallType)
-			if err != nil {
-				return 0, fmt.Errorf("could not get claim call: %w", err)
-			}
-			calls = append(calls, call)
-		} else {
-			// get relay call
-			call, err = getCall(transactor, bridge, proveCallType)
-			if err != nil {
-				return 0, fmt.Errorf("could not get claim call: %w", err)
-			}
-			calls = append(calls, call)
+			return 0, fmt.Errorf("could not get calls: %w", err)
 		}
 		gasEstimate, err = f.getGasEstimateFromClient(ctx, chainID, calls)
 		if err != nil {
@@ -458,4 +430,47 @@ func (f *feePricer) getGasEstimateFromClient(parentCtx context.Context, chainID 
 		gasEstimate += estimate
 	}
 	return gasEstimate, nil
+}
+
+func (f *feePricer) getCalls(parentCtx context.Context, chainID uint32, isOrigin bool) (calls []*ethereum.CallMsg, err error) {
+	ctx, span := f.handler.Tracer().Start(parentCtx, "getCalls")
+	defer func() {
+		span.SetAttributes(attribute.String("error", err.Error()))
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	bridge, ok := f.bridges[chainID]
+	if !ok {
+		return calls, fmt.Errorf("could not get bridge for chain: %d", chainID)
+	}
+	transactor, err := f.feeSigner.GetTransactor(ctx, big.NewInt(int64(chainID)))
+	if err != nil {
+		return calls, fmt.Errorf("could not get transactor: %w", err)
+	}
+
+	calls = []*ethereum.CallMsg{}
+	var call *ethereum.CallMsg
+	if isOrigin {
+		// get claim call
+		call, err = getCall(transactor, bridge, claimCallType)
+		if err != nil {
+			return calls, fmt.Errorf("could not get claim call: %w", err)
+		}
+		calls = append(calls, call)
+
+		// get prove call
+		call, err = getCall(transactor, bridge, proveCallType)
+		if err != nil {
+			return calls, fmt.Errorf("could not get claim call: %w", err)
+		}
+		calls = append(calls, call)
+	} else {
+		// get relay call
+		call, err = getCall(transactor, bridge, proveCallType)
+		if err != nil {
+			return calls, fmt.Errorf("could not get claim call: %w", err)
+		}
+		calls = append(calls, call)
+	}
+	return calls, nil
 }
