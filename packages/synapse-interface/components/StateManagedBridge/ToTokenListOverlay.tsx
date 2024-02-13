@@ -22,6 +22,7 @@ import { formatBigIntToString } from '@/utils/bigint/format'
 import { FetchState } from '@/slices/portfolio/actions'
 import { useAppDispatch } from '@/store/hooks'
 import { useAlternateBridgeQuotes } from '@/utils/hooks/useAlternateBridgeQuotes'
+import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 
 interface TokenWithRates extends Token {
   exchangeRate: bigint
@@ -41,10 +42,8 @@ export const ToTokenListOverlay = () => {
     bridgeQuote,
   }: BridgeState = useBridgeState()
 
-  const [currentIdx, setCurrentIdx] = useState(-1)
-  const [searchStr, setSearchStr] = useState('')
   const dispatch = useAppDispatch()
-  const overlayRef = useRef(null)
+
 
   /** Fetch Alternative Bridge Quotes when component renders */
   /** Temporarily pausing feature */
@@ -95,6 +94,18 @@ export const ToTokenListOverlay = () => {
     ...allOtherToTokensWithSource,
   ]
 
+  function onCloseOverlay() {
+    dispatch(setShowToTokenListOverlay(false))
+  }
+
+  const {
+    overlayRef,
+    onSearch,
+    currentIdx,
+    searchStr,
+    onClose,
+  } = useOverlaySearch(masterList.length, onCloseOverlay)
+
   const fuseOptions = {
     ignoreLocation: true,
     includeScore: true,
@@ -123,45 +134,6 @@ export const ToTokenListOverlay = () => {
     )
   }
 
-  const escPressed = useKeyPress('Escape')
-  const arrowUp = useKeyPress('ArrowUp')
-  const arrowDown = useKeyPress('ArrowDown')
-
-  function onClose() {
-    setCurrentIdx(-1)
-    setSearchStr('')
-    dispatch(setShowToTokenListOverlay(false))
-  }
-
-  function escFunc() {
-    if (escPressed) {
-      onClose()
-    }
-  }
-
-  function arrowDownFunc() {
-    const nextIdx = currentIdx + 1
-    if (arrowDown && nextIdx < masterList.length) {
-      setCurrentIdx(nextIdx)
-    }
-  }
-
-  function arrowUpFunc() {
-    const nextIdx = currentIdx - 1
-    if (arrowUp && -1 < nextIdx) {
-      setCurrentIdx(nextIdx)
-    }
-  }
-
-  function onSearch(str: string) {
-    setSearchStr(str)
-    setCurrentIdx(-1)
-  }
-
-  useEffect(escFunc, [escPressed])
-  useEffect(arrowDownFunc, [arrowDown])
-  useEffect(arrowUpFunc, [arrowUp])
-  useCloseOnOutsideClick(overlayRef, onClose)
 
   const handleSetToToken = (oldToken: Token, newToken: Token) => {
     const eventTitle = `[Bridge User Action] Sets new toToken`

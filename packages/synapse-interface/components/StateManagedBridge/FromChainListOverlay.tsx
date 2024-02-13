@@ -15,14 +15,12 @@ import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import { CloseButton } from '@/components/buttons/CloseButton'
 import { SearchResults } from '@/components/SearchResults'
 import { PAUSED_FROM_CHAIN_IDS } from '@constants/chains'
+import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 
 export const FromChainListOverlay = () => {
   const { fromChainIds, fromChainId } = useBridgeState()
-  const [currentIdx, setCurrentIdx] = useState(-1)
-  const [searchStr, setSearchStr] = useState('')
   const dispatch = useDispatch()
   const dataId = 'bridge-origin-chain-list'
-  const overlayRef = useRef(null)
 
   let possibleChains = _(ALL_CHAINS)
     .pickBy((value) => _.includes(fromChainIds, value.id))
@@ -51,6 +49,18 @@ export const FromChainListOverlay = () => {
 
   const masterList = [...possibleChainsWithSource, ...remainingChainsWithSource]
 
+  function onCloseOverlay() {
+    dispatch(setShowFromChainListOverlay(false))
+  }
+
+  const {
+    overlayRef,
+    onSearch,
+    currentIdx,
+    searchStr,
+    onClose,
+  } = useOverlaySearch(masterList.length, onCloseOverlay)
+
   const fuseOptions = {
     includeScore: true,
     threshold: 0.0,
@@ -73,44 +83,6 @@ export const FromChainListOverlay = () => {
     remainingChains = results.filter(item => item.source === 'remainingChains')
   }
 
-  const escPressed = useKeyPress('Escape')
-  const arrowUp = useKeyPress('ArrowUp')
-  const arrowDown = useKeyPress('ArrowDown')
-
-  const onClose = useCallback(() => {
-    setCurrentIdx(-1)
-    setSearchStr('')
-    dispatch(setShowFromChainListOverlay(false))
-  }, [setShowFromChainListOverlay])
-
-  const escFunc = () => {
-    if (escPressed) {
-      onClose()
-    }
-  }
-  const arrowDownFunc = () => {
-    const nextIdx = currentIdx + 1
-    if (arrowDown && nextIdx < masterList.length) {
-      setCurrentIdx(nextIdx)
-    }
-  }
-
-  const arrowUpFunc = () => {
-    const nextIdx = currentIdx - 1
-    if (arrowUp && -1 < nextIdx) {
-      setCurrentIdx(nextIdx)
-    }
-  }
-
-  const onSearch = (str: string) => {
-    setSearchStr(str)
-    setCurrentIdx(-1)
-  }
-
-  useEffect(arrowDownFunc, [arrowDown])
-  useEffect(escFunc, [escPressed])
-  useEffect(arrowUpFunc, [arrowUp])
-  useCloseOnOutsideClick(overlayRef, onClose)
 
   const handleSetFromChainId = (chainId) => {
     const eventTitle = `[Bridge User Action] Sets new fromChainId`

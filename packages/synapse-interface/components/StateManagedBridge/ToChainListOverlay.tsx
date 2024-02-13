@@ -17,13 +17,13 @@ import { CloseButton } from '@/components/buttons/CloseButton'
 import { SearchResults } from '@/components/SearchResults'
 
 import { PAUSED_TO_CHAIN_IDS } from '@constants/chains'
+import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 
 export const ToChainListOverlay = () => {
   const { toChainIds, toChainId } = useBridgeState()
-  const [currentIdx, setCurrentIdx] = useState(-1)
-  const [searchStr, setSearchStr] = useState('')
+
   const dispatch = useDispatch()
-  const overlayRef = useRef(null)
+
 
   const dataId = 'bridge-destination-chain-list'
 
@@ -54,6 +54,18 @@ export const ToChainListOverlay = () => {
 
   const masterList = [...possibleChainsWithSource, ...remainingChainsWithSource]
 
+  function onCloseOverlay() {
+    dispatch(setShowToChainListOverlay(false))
+  }
+
+  const {
+    overlayRef,
+    onSearch,
+    currentIdx,
+    searchStr,
+    onClose,
+  } = useOverlaySearch(masterList.length, onCloseOverlay)
+
   const fuseOptions = {
     includeScore: true,
     threshold: 0.0,
@@ -78,44 +90,7 @@ export const ToChainListOverlay = () => {
     )
   }
 
-  const escPressed = useKeyPress('Escape')
-  const arrowUp = useKeyPress('ArrowUp')
-  const arrowDown = useKeyPress('ArrowDown')
 
-  const onClose = useCallback(() => {
-    setCurrentIdx(-1)
-    setSearchStr('')
-    dispatch(setShowToChainListOverlay(false))
-  }, [setShowToChainListOverlay])
-
-  const escFunc = () => {
-    if (escPressed) {
-      onClose()
-    }
-  }
-  const arrowDownFunc = () => {
-    const nextIdx = currentIdx + 1
-    if (arrowDown && nextIdx < masterList.length) {
-      setCurrentIdx(nextIdx)
-    }
-  }
-
-  const arrowUpFunc = () => {
-    const nextIdx = currentIdx - 1
-    if (arrowUp && -1 < nextIdx) {
-      setCurrentIdx(nextIdx)
-    }
-  }
-
-  const onSearch = (str: string) => {
-    setSearchStr(str)
-    setCurrentIdx(-1)
-  }
-
-  useEffect(arrowDownFunc, [arrowDown])
-  useEffect(escFunc, [escPressed])
-  useEffect(arrowUpFunc, [arrowUp])
-  useCloseOnOutsideClick(overlayRef, onClose)
 
   const handleSetToChainId = (chainId) => {
     const eventTitle = `[Bridge User Action] Sets new toChainId`
