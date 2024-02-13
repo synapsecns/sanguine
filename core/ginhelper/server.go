@@ -2,6 +2,9 @@ package ginhelper
 
 import (
 	"bytes"
+	"context"
+	"github.com/synapsecns/sanguine/core/metrics/logger"
+
 	// embed is used for importing the robots.txt file.
 	_ "embed"
 	helmet "github.com/danielkov/gin-helmet"
@@ -28,6 +31,59 @@ var robots []byte
 // - health-checks
 // - restrictive robots.txt.
 func New(logger *log.ZapEventLogger) *gin.Engine {
+	server := newBase()
+
+	server.Use(ginzap.RecoveryWithZap(logger.Desugar(), true))
+
+	// add the request id to the logger
+	server.Use(ginzap.GinzapWithConfig(logger.Desugar(), &ginzap.Config{
+		TimeFormat: time.RFC3339,
+		UTC:        true,
+		Context: func(c *gin.Context) (fields []zapcore.Field) {
+			requestID := c.GetHeader(RequestIDHeader)
+			fields = append(fields, zapcore.Field{
+				Key:    "request-id",
+				Type:   zapcore.StringType,
+				String: requestID,
+			})
+
+			return fields
+		},
+	}))
+
+	return server
+}
+
+// NewWithExperimentalLogger creates a new gin server with some sensible defaults.
+// See New for more information.
+func NewWithExperimentalLogger(ctx context.Context, logger logger.ExperimentalLogger) *gin.Engine {
+	server := newBase()
+
+	wrapped := wrappedExperimentalLogger{
+		ctx:    ctx,
+		logger: logger,
+	}
+
+	server.Use(ginzap.RecoveryWithZap(wrapped, true))
+	server.Use(ginzap.GinzapWithConfig(wrapped, &ginzap.Config{
+		TimeFormat: time.RFC3339,
+		UTC:        true,
+		Context: func(c *gin.Context) (fields []zapcore.Field) {
+			requestID := c.GetHeader(RequestIDHeader)
+			fields = append(fields, zapcore.Field{
+				Key:    "request-id",
+				Type:   zapcore.StringType,
+				String: requestID,
+			})
+
+			return fields
+		},
+	}))
+
+	return server
+}
+
+func newBase() *gin.Engine {
 	server := gin.New()
 	// required for opentracing.
 	server.ContextWithFallback = true
@@ -47,22 +103,6 @@ func New(logger *log.ZapEventLogger) *gin.Engine {
 			return uuid.New().String()
 		})))
 
-	// add the request id to the logger
-	server.Use(ginzap.GinzapWithConfig(logger.Desugar(), &ginzap.Config{
-		TimeFormat: time.RFC3339,
-		UTC:        true,
-		Context: func(c *gin.Context) (fields []zapcore.Field) {
-			requestID := c.GetHeader(RequestIDHeader)
-			fields = append(fields, zapcore.Field{
-				Key:    "request-id",
-				Type:   zapcore.StringType,
-				String: requestID,
-			})
-
-			return fields
-		},
-	}))
-
 	// set the request id header if the client didn't
 	server.Use(func(c *gin.Context) {
 		if c.Request.Header.Get(RequestIDHeader) == "" {
@@ -81,8 +121,6 @@ func New(logger *log.ZapEventLogger) *gin.Engine {
 		context.Header(headers.ContentType, gin.MIMEPlain)
 		http.ServeContent(context.Writer, context.Request, "robots.txt", bootTime, reader)
 	})
-
-	server.Use(ginzap.RecoveryWithZap(logger.Desugar(), true))
 
 	return server
 }

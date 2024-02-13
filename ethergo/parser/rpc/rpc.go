@@ -35,9 +35,10 @@ func (r Requests) ByID(id int) *Request {
 
 // Request is a raw rpc request format.
 type Request struct {
-	ID     int               `json:"id"`
-	Method string            `json:"method"`
-	Params []json.RawMessage `json:"params"`
+	ID      int               `json:"id"`
+	Method  string            `json:"method"`
+	JSONRPC string            `json:"jsonrpc,omitempty"`
+	Params  []json.RawMessage `json:"params"`
 }
 
 func init() {
