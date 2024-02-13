@@ -251,7 +251,7 @@ jobs:
         run: tar cvzf ./logs.tgz /tmp/logs
       - name: Upload logs to GitHub
         if: failure()
-        uses: actions/upload-artifact@master
+        uses: actions/upload-artifact@v4
         with:
           name: ${{matrix.package}}-logs.tgz
           path: ./logs.tgz
@@ -346,7 +346,7 @@ jobs:
         with:
           working-directory: ${{matrix.package}}/
           # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
-          version: v1.55.2
+          version: v1.56.1
           # see: https://github.com/golangci/golangci-lint/issues/2654
           args: --timeout=60m
         env:

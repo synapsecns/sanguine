@@ -17,7 +17,7 @@ require (
 	github.com/fatih/structtag v1.2.0
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-contrib/requestid v0.0.6
-	github.com/gin-contrib/zap v0.1.0
+	github.com/gin-contrib/zap v0.2.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-git/go-git/v5 v5.11.0
 	github.com/go-http-utils/headers v0.0.0-20181008091004-fed159eddc2a
@@ -38,6 +38,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/temoto/robotstxt v1.1.2
 	github.com/uptrace/opentelemetry-go-extra/otelgorm v0.1.21
+	github.com/uptrace/opentelemetry-go-extra/otelzap v0.2.3
 	github.com/urfave/cli/v2 v2.27.1
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.42.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.42.0
@@ -68,10 +69,11 @@ require (
 	github.com/ProtonMail/go-crypto v0.0.0-20230828082145-3c4c8a2d2371 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.3.0 // indirect
-	github.com/bytedance/sonic v1.9.1 // indirect
+	github.com/bytedance/sonic v1.10.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
-	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
+	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
+	github.com/chenzhuoyu/iasm v0.9.0 // indirect
 	github.com/cloudflare/circl v1.3.3 // indirect
 	github.com/containerd/continuity v0.3.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
@@ -94,7 +96,7 @@ require (
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.14.0 // indirect
+	github.com/go-playground/validator/v10 v10.15.3 // indirect
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
@@ -129,7 +131,7 @@ require (
 	github.com/opencontainers/image-spec v1.0.3-0.20211202183452-c5a74bcca799 // indirect
 	github.com/opencontainers/runc v1.1.5 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
-	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
+	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
 	github.com/pkg/term v1.2.0-beta.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
@@ -149,6 +151,7 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	github.com/uptrace/opentelemetry-go-extra/otelsql v0.2.2 // indirect
+	github.com/uptrace/opentelemetry-go-extra/otelutil v0.2.3 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
@@ -157,7 +160,7 @@ require (
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	go.opentelemetry.io/proto/otlp v1.0.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/arch v0.3.0 // indirect
+	golang.org/x/arch v0.5.0 // indirect
 	golang.org/x/crypto v0.18.0 // indirect
 	golang.org/x/mod v0.14.0 // indirect
 	golang.org/x/net v0.19.0 // indirect

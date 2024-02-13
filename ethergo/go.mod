@@ -95,11 +95,12 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/btcsuite/btcd/chaincfg/chainhash v1.0.1 // indirect
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce // indirect
-	github.com/bytedance/sonic v1.9.1 // indirect
+	github.com/bytedance/sonic v1.10.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cheekybits/genny v1.0.0 // indirect
-	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
+	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
+	github.com/chenzhuoyu/iasm v0.9.0 // indirect
 	github.com/chzyer/logex v1.2.1 // indirect
 	github.com/cloudflare/circl v1.3.3 // indirect
 	github.com/cockroachdb/errors v1.9.1 // indirect
@@ -130,7 +131,7 @@ require (
 	github.com/gin-contrib/cors v1.4.0 // indirect
 	github.com/gin-contrib/requestid v0.0.6 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
-	github.com/gin-contrib/zap v0.1.0 // indirect
+	github.com/gin-contrib/zap v0.2.0 // indirect
 	github.com/gin-gonic/gin v1.9.1 // indirect
 	github.com/go-errors/errors v1.4.2 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
@@ -142,7 +143,7 @@ require (
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.14.0 // indirect
+	github.com/go-playground/validator/v10 v10.15.3 // indirect
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/gofrs/flock v0.8.1 // indirect
@@ -198,7 +199,7 @@ require (
 	github.com/opencontainers/image-spec v1.0.3-0.20211202183452-c5a74bcca799 // indirect
 	github.com/opencontainers/runc v1.1.5 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
-	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
+	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
 	github.com/peterh/liner v1.2.1 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
@@ -226,6 +227,8 @@ require (
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	github.com/uptrace/opentelemetry-go-extra/otelgorm v0.1.21 // indirect
 	github.com/uptrace/opentelemetry-go-extra/otelsql v0.2.2 // indirect
+	github.com/uptrace/opentelemetry-go-extra/otelutil v0.2.3 // indirect
+	github.com/uptrace/opentelemetry-go-extra/otelzap v0.2.3 // indirect
 	github.com/urfave/cli/v2 v2.27.1 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
@@ -246,7 +249,7 @@ require (
 	go.opentelemetry.io/otel/sdk/metric v0.39.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.0.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/arch v0.3.0 // indirect
+	golang.org/x/arch v0.5.0 // indirect
 	golang.org/x/crypto v0.18.0 // indirect
 	golang.org/x/mod v0.14.0 // indirect
 	golang.org/x/net v0.19.0 // indirect

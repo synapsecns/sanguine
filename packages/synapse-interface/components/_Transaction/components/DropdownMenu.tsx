@@ -1,24 +1,33 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { DownArrow } from '@/components/icons/DownArrow'
+import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 
-export const DropdownMenu = ({ children }) => {
+export const DropdownMenu = ({ menuTitleElement, children }) => {
+  const menuRef = useRef(null)
   const [open, setOpen] = useState<boolean>(false)
 
   const handleClick = () => {
     setOpen(!open)
   }
 
+  const handleClose = () => {
+    setOpen(false)
+  }
+
+  useCloseOnOutsideClick(menuRef, handleClose)
+
   return (
-    <div id="dropdown-menu" className="relative">
+    <div id="dropdown-menu" className="relative" ref={menuRef}>
       <div
         onClick={handleClick}
         className={`
-          flex place-items-center justify-center
-          w-5 h-[21px] bg-surface rounded
-          border border-solid border-[--synapse-border]
-          cursor-pointer hover:border-[--synapse-focus]
+          flex w-fit px-2 py-0.5 space-x-1
+          relative place-items-center justify-center
+          rounded cursor-pointer
+          hover:bg-zinc-700
         `}
       >
+        {menuTitleElement}
         <DownArrow />
       </div>
 
