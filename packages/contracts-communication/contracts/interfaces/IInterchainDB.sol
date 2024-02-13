@@ -33,6 +33,12 @@ interface IInterchainDB {
     /// @param srcModules   The source chain addresses of the Interchain Modules to use for verification
     function getInterchainFee(uint256 destChainId, address[] memory srcModules) external view returns (uint256);
 
+    /// @notice Get the Interchain Entry by the writer and the writer nonce.
+    /// @dev Will revert if the entry with the given nonce does not exist.
+    /// @param writer       The address of the writer on this chain
+    /// @param writerNonce  The nonce of the writer's entry on this chain
+    function getEntry(address writer, uint256 writerNonce) external view returns (InterchainEntry memory);
+
     /// @notice Get the nonce of the writer on this chain.
     /// @param writer       The address of the writer on this chain
     function getWriterNonce(address writer) external view returns (uint256);
