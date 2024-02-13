@@ -66,7 +66,7 @@ export const PoolActionOptions = ({
             >
               <div>Actions</div>
               <div className="mt-0.5">
-                <DownArrow className={`transition-all  group-hover:fill-white/90  ${open ? 'rotate-180' : 'rotate-0'}`} />
+                <DownArrow className={`transition-all group-hover:fill-white/90  ${open ? 'rotate-180' : 'rotate-0'}`} />
               </div>
             </div>
           </Popover.Button>

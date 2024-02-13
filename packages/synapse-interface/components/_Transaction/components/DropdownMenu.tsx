@@ -29,18 +29,28 @@ export const DropdownMenu = ({ menuTitleElement, children }) => {
 
   return (
     <div id="dropdown-menu" className="relative" ref={ref}>
-      <div
-        onClick={handleClick}
-        className={`
-          flex place-items-center justify-center
-          w-5 h-[21px] rounded
-          border border-solid border-white/10
-          cursor-pointer hover:border-white/80
-        `}
-      >
-        {menuTitleElement}
-        <DownArrow />
+      <div className="space-x-2">
+        <div className='inline-block'>
+          {menuTitleElement}
+        </div>
+        <div className='inline-block'>
+          <div
+            onClick={handleClick}
+            className={`
+              flex place-items-center justify-center
+              w-5 h-[21px] rounded
+              border border-solid border-white/10
+              cursor-pointer hover:border-white/50 active:border-white/70
+              group
+            `}
+          >
+
+            <DownArrow className="fill-white/40 group-hover:fill-white/80 group-active:fill-white/100 " />
+          </div>
+        </div>
+
       </div>
+
 
       {open && (
         <ul

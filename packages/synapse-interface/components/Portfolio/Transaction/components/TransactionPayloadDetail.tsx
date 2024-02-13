@@ -119,7 +119,7 @@ function TransactionPayloadDetailButton({ children, ...props}) {
       {...props}
       className={`
         flex flex-row px-1 items-center cursor-pointer rounded-sm w-fit
-        hover:bg-slate-900/50 active:opacity-[67%]
+        hover:bg-slate-900/50 active:opacity-[67%] space-x-1
       `}
     >
       {children}

@@ -110,7 +110,7 @@ export const _Transaction = ({
     >
       <div
         className={`
-          flex items-center px-1 pt-2
+          flex items-center pl-3 pr-2 pt-2
           ${showTransactionSupport ? 'pb-0' : 'pb-2'}
         `}
       >
