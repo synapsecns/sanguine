@@ -1,7 +1,5 @@
 import _ from 'lodash'
-import { useCallback, useEffect, useRef, useState } from 'react'
 import Fuse from 'fuse.js'
-import { useKeyPress } from '@hooks/useKeyPress'
 import * as ALL_CHAINS from '@constants/chains/master'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { CHAINS_BY_ID, sortChains } from '@constants/chains'
@@ -9,20 +7,18 @@ import { useDispatch } from 'react-redux'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 import { SelectSpecificNetworkButton } from './components/SelectSpecificNetworkButton'
-import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import { CloseButton } from '@/components/buttons/CloseButton'
 import { SearchResults } from '@/components/SearchResults'
 import { setShowSwapChainListOverlay } from '@/slices/swapDisplaySlice'
 import { setSwapChainId } from '@/slices/swap/reducer'
 import { useSwapState } from '@/slices/swap/hooks'
+import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 
 export const SwapChainListOverlay = () => {
   const { swapChainId, swapFromChainIds } = useSwapState()
-  const [currentIdx, setCurrentIdx] = useState(-1)
-  const [searchStr, setSearchStr] = useState('')
+
   const dispatch = useDispatch()
   const dataId = 'swap-origin-chain-list'
-  const overlayRef = useRef(null)
 
   let possibleChains = sortChains(
     _(ALL_CHAINS)
@@ -65,6 +61,18 @@ export const SwapChainListOverlay = () => {
     ],
   }
 
+  function onCloseOverlay() {
+    dispatch(setShowSwapChainListOverlay(false))
+  }
+
+  const {
+    overlayRef,
+    onSearch,
+    currentIdx,
+    searchStr,
+    onClose,
+  } = useOverlaySearch(masterList.length, onCloseOverlay)
+
   const fuse = new Fuse(masterList, fuseOptions)
 
   if (searchStr?.length > 0) {
@@ -75,45 +83,6 @@ export const SwapChainListOverlay = () => {
       (item) => item.source === 'remainingChains'
     )
   }
-
-  const escPressed = useKeyPress('Escape')
-  const arrowUp = useKeyPress('ArrowUp')
-  const arrowDown = useKeyPress('ArrowDown')
-
-  const onClose = useCallback(() => {
-    setCurrentIdx(-1)
-    setSearchStr('')
-    dispatch(setShowSwapChainListOverlay(false))
-  }, [dispatch])
-
-  const escFunc = () => {
-    if (escPressed) {
-      onClose()
-    }
-  }
-  const arrowDownFunc = () => {
-    const nextIdx = currentIdx + 1
-    if (arrowDown && nextIdx < masterList.length) {
-      setCurrentIdx(nextIdx)
-    }
-  }
-
-  const arrowUpFunc = () => {
-    const nextIdx = currentIdx - 1
-    if (arrowUp && -1 < nextIdx) {
-      setCurrentIdx(nextIdx)
-    }
-  }
-
-  const onSearch = (str: string) => {
-    setSearchStr(str)
-    setCurrentIdx(-1)
-  }
-
-  useEffect(arrowDownFunc, [arrowDown])
-  useEffect(escFunc, [escPressed])
-  useEffect(arrowUpFunc, [arrowUp])
-  useCloseOnOutsideClick(overlayRef, onClose)
 
   const handleSetSwapChainId = (chainId) => {
     const eventTitle = `[Swap User Action] Sets new fromChainId`

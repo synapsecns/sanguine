@@ -1,32 +1,26 @@
 import _ from 'lodash'
-import { useEffect, useRef, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import Fuse from 'fuse.js'
 
-import { useKeyPress } from '@hooks/useKeyPress'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { Token } from '@/utils/types'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import SelectSpecificTokenButton from './components/SelectSpecificTokenButton'
-import { getRoutePossibilities } from '@/utils/routeMaker/generateRoutePossibilities'
 
 import { sortByPriorityRank } from '@/utils/helpers/sortByPriorityRank'
 import { CHAINS_BY_ID } from '@/constants/chains'
-import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import { CloseButton } from '@/components/buttons/CloseButton'
 import { SearchResults } from '@/components/SearchResults'
 import { setShowSwapToTokenListOverlay } from '@/slices/swapDisplaySlice'
 import { setSwapToToken } from '@/slices/swap/reducer'
 import { useSwapState } from '@/slices/swap/hooks'
 import { getSwapPossibilities } from '@/utils/swapFinder/generateSwapPossibilities'
+import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 
 export const SwapToTokenListOverlay = () => {
   const { swapChainId, swapToTokens, swapToToken } = useSwapState()
 
-  const [currentIdx, setCurrentIdx] = useState(-1)
-  const [searchStr, setSearchStr] = useState('')
   const dispatch = useDispatch()
-  const overlayRef = useRef(null)
 
   let possibleTokens = sortByPriorityRank(swapToTokens)
 
@@ -73,6 +67,18 @@ export const SwapToTokenListOverlay = () => {
     ...allOtherToTokensWithSource,
   ]
 
+  function onCloseOverlay() {
+    dispatch(setShowSwapToTokenListOverlay(false))
+  }
+
+  const {
+    overlayRef,
+    onSearch,
+    currentIdx,
+    searchStr,
+    onClose,
+  } = useOverlaySearch(masterList.length, onCloseOverlay)
+
   const fuseOptions = {
     ignoreLocation: true,
     includeScore: true,
@@ -100,46 +106,6 @@ export const SwapToTokenListOverlay = () => {
       (item) => item.source === 'allOtherToTokens'
     )
   }
-
-  const escPressed = useKeyPress('Escape')
-  const arrowUp = useKeyPress('ArrowUp')
-  const arrowDown = useKeyPress('ArrowDown')
-
-  function onClose() {
-    setCurrentIdx(-1)
-    setSearchStr('')
-    dispatch(setShowSwapToTokenListOverlay(false))
-  }
-
-  function escFunc() {
-    if (escPressed) {
-      onClose()
-    }
-  }
-
-  function arrowDownFunc() {
-    const nextIdx = currentIdx + 1
-    if (arrowDown && nextIdx < masterList.length) {
-      setCurrentIdx(nextIdx)
-    }
-  }
-
-  function arrowUpFunc() {
-    const nextIdx = currentIdx - 1
-    if (arrowUp && -1 < nextIdx) {
-      setCurrentIdx(nextIdx)
-    }
-  }
-
-  function onSearch(str: string) {
-    setSearchStr(str)
-    setCurrentIdx(-1)
-  }
-
-  useEffect(escFunc, [escPressed])
-  useEffect(arrowDownFunc, [arrowDown])
-  useEffect(arrowUpFunc, [arrowUp])
-  useCloseOnOutsideClick(overlayRef, onClose)
 
   const handleSetToToken = (oldToken: Token, newToken: Token) => {
     const eventTitle = `[Swap User Action] Sets new toToken`
