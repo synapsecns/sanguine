@@ -29,7 +29,6 @@ full-reset: check_reset reset-submodules ## Fully reset the repository to it's c
 tidy: ## Runs go mod tidy on all go.mod files in the repo
 	go work sync
 	$(GIT_ROOT)/make/scripts/tidy.sh
-	go work sync
 
 docker-clean: ## stops and removes all containers at once
 	docker ps -aq | xargs docker stop | xargs docker rm
