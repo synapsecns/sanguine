@@ -63,6 +63,7 @@ func (g *GinHelperSuite) SetupTest() {
 
 func (g *GinHelperSuite) runOnAllURLs(f func(url string)) {
 	for _, url := range g.urls {
+		url := url // capture range variable
 		g.T().Run(url.testType, func(t *testing.T) {
 			f(url.url)
 		})
