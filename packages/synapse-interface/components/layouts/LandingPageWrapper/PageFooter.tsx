@@ -117,7 +117,7 @@ const supportList: FooterDataProps[] = [
 export function PageFooter() {
   return (
     <footer>
-      <div className="flex flex-wrap justify-between max-w-[1080px] gap-8 py-8 m-auto">
+      <div className="flex flex-wrap justify-between max-w-[1080px] gap-8 px-8 py-8 xl:px-0 m-auto">
         <SynapseTitleLogo showText={true} />
         <div className="flex flex-wrap gap-8">
           <FooterBlock elements={functionsList} />
@@ -134,7 +134,7 @@ export function PageFooter() {
         >
           Terms of Use
         </a>
-      <span className="cursor-default">｜</span>
+        <span className="cursor-default">｜</span>
         <a
           className="duration-75 hover:text-white transform-gpu hover:transition-all"
           href={PRIVACY_POLICY_PATH}
