@@ -17,3 +17,7 @@ exclude_patterns:
   - '.*\\.metadata\\.go$'
   - '.*\\.pb\\.go$'
   - '.*_gen.go$'
+  - '.*_generated.go$'
+  - '**/grpc/client/rest/*'
+  - '**/bundle/*'
+  - '**/generated/*'
