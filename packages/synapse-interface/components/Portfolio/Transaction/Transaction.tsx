@@ -61,22 +61,12 @@ export const Transaction = React.memo(
     children,
     isCompleted,
   }: TransactionProps) => {
-    const handleExplorerClick: () => void = useCallback(() => {
-      if (kappa && originChain && destinationChain) {
-        const explorerLink: string = getTransactionExplorerLink({
-          kappa,
-          fromChainId: originChain.id,
-          toChainId: destinationChain.id,
-        })
-        window.open(explorerLink, '_blank', 'noopener,noreferrer')
-      }
-    }, [
+
+    const explorerLink: string = getTransactionExplorerLink({
       kappa,
-      originChain,
-      destinationChain,
-      transactionStatus,
-      transactionHash,
-    ])
+      fromChainId: originChain.id,
+      toChainId: destinationChain.id,
+    })
 
     return (
       <div
@@ -118,7 +108,11 @@ export const Transaction = React.memo(
               transactionCompletedTime={completedTimestamp}
               connectedAddress={connectedAddress}
               destinationAddress={destinationAddress}
-              handleExplorerClick={handleExplorerClick}
+              explorerLink={
+                (kappa && originChain && destinationChain)
+                  ? explorerLink
+                  : '#'
+              }
             />
           )}
         </div>

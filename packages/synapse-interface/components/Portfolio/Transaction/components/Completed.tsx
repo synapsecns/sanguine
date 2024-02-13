@@ -8,12 +8,12 @@ export const Completed = ({
   transactionCompletedTime,
   connectedAddress,
   destinationAddress,
-  handleExplorerClick,
+  explorerLink,
 }: {
   transactionCompletedTime: number
   connectedAddress?: Address | string
   destinationAddress: string
-  handleExplorerClick: () => void
+  explorerLink: string
 }) => {
   const formattedTime: string =
     transactionCompletedTime &&
@@ -27,10 +27,11 @@ export const Completed = ({
   const isDestinationValid: boolean = isValidAddress(destinationAddress)
 
   return (
+    <a href={explorerLink} target="_blank" rel="noreferrer">
     <div
       data-test-id="completed"
       className="flex flex-col text-right text-[#C2C2D6] gap-1 text-sm whitespace-nowrap"
-      onClick={handleExplorerClick}
+      // onClick={handleExplorerClick}
     >
       {isDestinationValid && !isDestinationSender && (
         <div>to {shortenAddress(destinationAddress)} </div>
@@ -45,5 +46,6 @@ export const Completed = ({
         </div>
       )}
     </div>
+    </a>
   )
 }

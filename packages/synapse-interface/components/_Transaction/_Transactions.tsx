@@ -28,7 +28,7 @@ export const _Transactions = ({
       ['desc']
     )
     return (
-      <TransactionsContainer>
+      <div id="transaction-container" className="flex flex-col mt-3 space-y-3">
         {sortedTransactions.slice(0, 5).map((tx: _TransactionDetails) => (
           <_Transaction
             key={tx.timestamp}
@@ -47,17 +47,10 @@ export const _Transactions = ({
             isStoredComplete={tx.isComplete}
           />
         ))}
-      </TransactionsContainer>
+      </div>
     )
   }
 
   return null
 }
 
-const TransactionsContainer = ({ children }) => {
-  return (
-    <div id="transaction-container" className="flex flex-col mt-3 space-y-3">
-      {children}
-    </div>
-  )
-}
