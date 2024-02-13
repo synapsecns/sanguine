@@ -377,6 +377,7 @@ func (f *feePricer) getGasEstimate(parentCtx context.Context, chainID uint32, is
 		attribute.Int(metrics.ChainID, int(chainID)),
 	))
 	defer func() {
+		span.SetAttributes(attribute.Int("gas_estimate", int(gasEstimate)))
 		metrics.EndSpanWithErr(span, err)
 	}()
 
@@ -390,6 +391,7 @@ func (f *feePricer) getGasEstimate(parentCtx context.Context, chainID uint32, is
 	gasEstimateItem := cache.Get(chainID)
 	if gasEstimateItem != nil {
 		gasEstimate = gasEstimateItem.Value()
+		span.AddEvent("got gas estimate from cache")
 		return gasEstimate, nil
 	}
 
