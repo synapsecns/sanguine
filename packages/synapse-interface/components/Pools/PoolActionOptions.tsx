@@ -1,6 +1,7 @@
 import { useRouter } from 'next/router'
-import { Fragment } from 'react'
+import { Fragment, useEffect } from 'react'
 import { Popover, Transition } from '@headlessui/react'
+import { useKeyPress } from '@/utils/hooks/useKeyPress'
 import { Token } from '@/utils/types'
 import { DepositIcon } from '@/components/icons/DepositIcon'
 import { StakeIcon } from '@/components/icons/StakeIcon'
@@ -9,6 +10,7 @@ import { WithdrawIcon } from '@/components/icons/WithdrawIcon'
 import { ClaimIcon } from '@/components/icons/ClaimIcon'
 import { DownArrow } from '@/components/icons/DownArrow'
 import { OptionButton } from "@/components/buttons/OptionButton"
+
 
 export const PoolActionOptions = ({
   pool,
@@ -41,35 +43,9 @@ export const PoolActionOptions = ({
 
   return (
     <Popover className="relative inline-block">
-      {({ open }) => (
+      {({ open, close }) => (
         <>
-          <Popover.Button
-            as="div"
-            onMouseEnter={() => {}}
-            className={`
-              group rounded-md inline-flex items-center
-              hover:text-gray-900 focus:outline-none
-              ${open ? 'text-gray-900' : 'text-purple-800'}
-            `}
-          >
-            <div
-              className={`
-                flex items-center
-                text-sm
-                rounded-sm
-                border border-white/20 hover:border-white/50
-                pl-2 pr-2 pt-1 pb-1 space-x-2
-                hover:cursor-pointer
-                hover:bg-bgBase/10 ${open ? 'bg-bgBase/10' : ''}
-                text-md text-[#BFBCC2] group-hover:text-white/90
-              `}
-            >
-              <div>Actions</div>
-              <div className="mt-0.5">
-                <DownArrow className={`transition-all fill-white/20 group-hover:fill-white/90  ${open ? 'rotate-180' : 'rotate-0'}`} />
-              </div>
-            </div>
-          </Popover.Button>
+          <ActionPopoverButton open={open} close={close}/>
           <TransactionPopoverContainer>
             {options.includes('Deposit') && (
               <OptionButton
@@ -112,6 +88,50 @@ export const PoolActionOptions = ({
     </Popover>
   )
 }
+
+
+function ActionPopoverButton({ open, close }) {
+  const escPressed = useKeyPress('Escape')
+
+  useEffect(
+    () => {
+      if (escPressed) {
+        close()
+      }
+    },
+    [escPressed]
+  )
+
+  return (
+    <Popover.Button
+      as="div"
+      onMouseEnter={() => {}}
+      className={`
+        group rounded-md inline-flex items-center
+        hover:text-gray-900 focus:outline-none
+      `}
+    >
+      <div
+        className={`
+          flex items-center
+          text-sm
+          rounded-sm
+          border border-white/20 hover:border-white/50
+          pl-2 pr-2 pt-1 pb-1 space-x-2
+          hover:cursor-pointer
+          hover:bg-bgBase/10 ${open ? 'bg-bgBase/10' : ''}
+          text-md text-[#BFBCC2] group-hover:text-white/90
+        `}
+      >
+        <div>Actions</div>
+        <div className="mt-0.5">
+          <DownArrow className={`transition-all fill-white/20 group-hover:fill-white/90  ${open ? 'rotate-180' : 'rotate-0'}`} />
+        </div>
+      </div>
+    </Popover.Button>
+  )
+}
+
 
 export function TransactionPopoverContainer({
   children,
