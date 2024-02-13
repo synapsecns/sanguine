@@ -10,7 +10,7 @@ import (
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/ginhelper"
-	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/core/metrics/logger"
 	baseServer "github.com/synapsecns/sanguine/core/server"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"testing"
@@ -38,7 +38,7 @@ func (g *GinHelperSuite) SetupTest() {
 
 		var testServer *gin.Engine
 		if useExp {
-			testServer = ginhelper.NewWithExperimentalLogger(g.GetTestContext(), metrics.NewNullLogger())
+			testServer = ginhelper.NewWithExperimentalLogger(g.GetTestContext(), logger.NewNullLogger())
 		} else {
 			testServer = ginhelper.New(g.logger)
 		}
