@@ -16,6 +16,7 @@ import { SearchResults } from '@/components/SearchResults'
 import { PAUSED_TO_CHAIN_IDS } from '@constants/chains'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 import { CHAIN_FUSE_OPTIONS } from '@/constants/fuseOptions'
+import { SearchResultsContainer } from '@/components/SearchResultsContainer'
 
 export const ToChainListOverlay = () => {
   const { toChainIds, toChainId } = useBridgeState()
@@ -107,10 +108,7 @@ export const ToChainListOverlay = () => {
       </div>
       <div data-test-id={dataId} className="px-2 pt-2 pb-8 md:px-2">
         {possibleChains && possibleChains.length > 0 && (
-          <>
-            <div className="mb-4 text-sm font-normal text-primaryTextColor">
-              To…
-            </div>
+          <SearchResultsContainer label="To…">
             {possibleChains.map(({ id: mapChainId }, idx) => {
               return (
                 <SelectSpecificNetworkButton
@@ -130,13 +128,10 @@ export const ToChainListOverlay = () => {
                 />
               )
             })}
-          </>
+          </SearchResultsContainer>
         )}
         {remainingChains && remainingChains.length > 0 && (
-          <>
-            <div className="pt-4 mb-4 text-sm font-normal text-primaryTextColor">
-              All chains
-            </div>
+          <SearchResultsContainer label="All chains">
             {remainingChains.map(({ id: mapChainId }, idx) => {
               return (
                 <SelectSpecificNetworkButton
@@ -151,7 +146,7 @@ export const ToChainListOverlay = () => {
                 />
               )
             })}
-          </>
+          </SearchResultsContainer>
         )}
         <SearchResults searchStr={searchStr} type="chain" />
       </div>

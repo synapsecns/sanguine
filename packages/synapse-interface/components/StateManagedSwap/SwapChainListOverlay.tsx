@@ -14,6 +14,7 @@ import { setSwapChainId } from '@/slices/swap/reducer'
 import { useSwapState } from '@/slices/swap/hooks'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 import { CHAIN_FUSE_OPTIONS } from '@/constants/fuseOptions'
+import { SearchResultsContainer } from '@/components/SearchResultsContainer'
 
 export const SwapChainListOverlay = () => {
   const { swapChainId, swapFromChainIds } = useSwapState()
@@ -102,8 +103,7 @@ export const SwapChainListOverlay = () => {
       </div>
       <div data-test-id={dataId} className="px-2 pt-2 pb-8 md:px-2">
         {possibleChains && possibleChains.length > 0 && (
-          <>
-            <div className="mb-4 text-sm text-primaryTextColor">From…</div>
+          <SearchResultsContainer label="From…">
             {possibleChains.map(({ id: mapChainId }, idx) => {
               return (
                 <SelectSpecificNetworkButton
@@ -122,13 +122,10 @@ export const SwapChainListOverlay = () => {
                 />
               )
             })}
-          </>
+          </SearchResultsContainer>
         )}
         {remainingChains && remainingChains.length > 0 && (
-          <>
-            <div className="mt-4 mb-4 text-sm font-normal text-primaryTextColor">
-              All chains
-            </div>
+          <SearchResultsContainer label="All Chains">
             {remainingChains.map(({ id: mapChainId }, idx) => {
               return (
                 <SelectSpecificNetworkButton
@@ -142,7 +139,7 @@ export const SwapChainListOverlay = () => {
                 />
               )
             })}
-          </>
+          </SearchResultsContainer>
         )}
         <SearchResults searchStr={searchStr} type="chain" />
       </div>

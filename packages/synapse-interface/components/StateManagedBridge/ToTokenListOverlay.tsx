@@ -3,7 +3,6 @@ import { useMemo } from 'react'
 import { Address } from 'viem'
 import Fuse from 'fuse.js'
 
-
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { Token } from '@/utils/types'
 import { BridgeState, setToToken } from '@/slices/bridge/reducer'
@@ -23,6 +22,7 @@ import { useAppDispatch } from '@/store/hooks'
 import { useAlternateBridgeQuotes } from '@/utils/hooks/useAlternateBridgeQuotes'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 import { getTokenFuseOptions } from '@/constants/fuseOptions'
+import { SearchResultsContainer } from '@/components/SearchResultsContainer'
 
 interface TokenWithRates extends Token {
   exchangeRate: bigint
@@ -209,11 +209,7 @@ export const ToTokenListOverlay = () => {
         </div>
       </div>
       {orderedPossibleTokens && orderedPossibleTokens.length > 0 && (
-        <>
-          <div className="px-2 pt-2 pb-2 text-sm text-primaryTextColor ">
-            Receive…
-          </div>
-          <div className="px-2 pb-2 md:px-2">
+        <SearchResultsContainer label="Receive…">
             {orderedPossibleTokens.map((token: TokenWithRates, idx: number) => {
               return (
                 <SelectSpecificTokenButton
@@ -245,17 +241,16 @@ export const ToTokenListOverlay = () => {
                 />
               )
             })}
-          </div>
-        </>
+        </SearchResultsContainer>
       )}
       {remainingChainTokens && remainingChainTokens.length > 0 && (
-        <>
-          <div className="px-2 pt-2 pb-2 text-sm text-primaryTextColor ">
-            {toChainId
+        <SearchResultsContainer
+          label={
+            toChainId
               ? `More on ${CHAINS_BY_ID[toChainId]?.name}`
-              : 'All receivable tokens'}
-          </div>
-          <div className="px-2 pb-2 md:px-2">
+              : 'All receivable tokens'
+          }
+        >
             {remainingChainTokens.map((token, idx) => {
               return (
                 <SelectSpecificTokenButton
@@ -269,15 +264,10 @@ export const ToTokenListOverlay = () => {
                 />
               )
             })}
-          </div>
-        </>
+        </SearchResultsContainer>
       )}
       {allOtherToTokens && allOtherToTokens.length > 0 && (
-        <>
-          <div className="px-2 pt-2 pb-2 text-sm text-primaryTextColor ">
-            All receivable tokens
-          </div>
-          <div className="px-2 pb-2 md:px-2">
+        <SearchResultsContainer label="All receivable tokens">
             {allOtherToTokens.map((token, idx) => {
               return (
                 <SelectSpecificTokenButton
@@ -297,8 +287,7 @@ export const ToTokenListOverlay = () => {
                 />
               )
             })}
-          </div>
-        </>
+        </SearchResultsContainer>
       )}
       <SearchResults searchStr={searchStr} type="token" />
     </div>

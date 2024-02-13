@@ -20,6 +20,7 @@ import { CloseButton } from '@/components/buttons/CloseButton'
 import { SearchResults } from '@/components/SearchResults'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 import { getTokenFuseOptions } from '@/constants/fuseOptions'
+import { SearchResultsContainer } from '@/components/SearchResultsContainer'
 
 export const FromTokenListOverlay = () => {
   const dispatch = useDispatch()
@@ -142,11 +143,7 @@ export const FromTokenListOverlay = () => {
         </div>
       </div>
       {possibleTokens && possibleTokens.length > 0 && (
-        <>
-          <div className="px-2 pt-2 pb-4 text-sm text-primaryTextColor ">
-            Send…
-          </div>
-          <div className="px-2 pb-2 md:px-2 ">
+        <SearchResultsContainer label="Send...">
             {possibleTokens.map((token, idx) => {
               return (
                 <SelectSpecificTokenButton
@@ -166,17 +163,16 @@ export const FromTokenListOverlay = () => {
                 />
               )
             })}
-          </div>
-        </>
+        </SearchResultsContainer>
       )}
       {remainingTokens && remainingTokens.length > 0 && (
-        <>
-          <div className="px-2 pb-4 text-sm text-primaryTextColor">
-            {fromChainId
+        <SearchResultsContainer
+          label={
+            fromChainId
               ? `More on ${CHAINS_BY_ID[fromChainId]?.name}`
-              : 'All sendable tokens'}
-          </div>
-          <div className="px-2 pb-2 md:px-2">
+              : 'All sendable tokens'
+          }
+        >
             {remainingTokens.map((token, idx) => {
               return (
                 <SelectSpecificTokenButton
@@ -190,15 +186,10 @@ export const FromTokenListOverlay = () => {
                 />
               )
             })}
-          </div>
-        </>
+        </SearchResultsContainer>
       )}
       {allOtherFromTokens && allOtherFromTokens.length > 0 && (
-        <>
-          <div className="px-2 pb-4 text-sm text-primaryTextColor ">
-            All sendable tokens
-          </div>
-          <div className="px-2 pb-2 md:px-2">
+        <SearchResultsContainer label="All sendable tokens">
             {allOtherFromTokens.map((token, idx) => {
               return (
                 <SelectSpecificTokenButton
@@ -216,10 +207,11 @@ export const FromTokenListOverlay = () => {
                 />
               )
             })}
-          </div>
-        </>
+        </SearchResultsContainer>
       )}
       <SearchResults searchStr={searchStr} type="token" />
     </div>
   )
 }
+
+

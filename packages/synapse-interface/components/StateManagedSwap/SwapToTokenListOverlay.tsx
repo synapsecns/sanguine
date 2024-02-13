@@ -17,6 +17,8 @@ import { useSwapState } from '@/slices/swap/hooks'
 import { getSwapPossibilities } from '@/utils/swapFinder/generateSwapPossibilities'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 import { getTokenFuseOptions } from '@/constants/fuseOptions'
+import { SearchResultsContainer } from '@/components/SearchResultsContainer'
+
 
 export const SwapToTokenListOverlay = () => {
   const { swapChainId, swapToTokens, swapToToken } = useSwapState()
@@ -123,11 +125,7 @@ export const SwapToTokenListOverlay = () => {
         </div>
       </div>
       {possibleTokens && possibleTokens.length > 0 && (
-        <>
-          <div className="px-2 pt-2 pb-2 text-sm text-primaryTextColor ">
-            Receive…
-          </div>
-          <div className="px-2 pb-2 md:px-2">
+        <SearchResultsContainer label="Receive…">
             {possibleTokens.map((token, idx) => {
               return (
                 <SelectSpecificTokenButton
@@ -147,17 +145,16 @@ export const SwapToTokenListOverlay = () => {
                 />
               )
             })}
-          </div>
-        </>
+        </SearchResultsContainer>
       )}
       {remainingChainTokens && remainingChainTokens.length > 0 && (
-        <>
-          <div className="px-2 pt-2 pb-2 text-sm text-primaryTextColor ">
-            {swapChainId
+        <SearchResultsContainer
+          label={
+            swapChainId
               ? `More on ${CHAINS_BY_ID[swapChainId]?.name}`
-              : 'All swapable tokens'}
-          </div>
-          <div className="px-2 pb-2 md:px-2">
+              : 'All swapable tokens'
+          }
+        >
             {remainingChainTokens.map((token, idx) => {
               return (
                 <SelectSpecificTokenButton
@@ -171,15 +168,10 @@ export const SwapToTokenListOverlay = () => {
                 />
               )
             })}
-          </div>
-        </>
+        </SearchResultsContainer>
       )}
       {allOtherToTokens && allOtherToTokens.length > 0 && (
-        <>
-          <div className="px-2 pt-2 pb-2 text-sm text-primaryTextColor ">
-            All swapable tokens
-          </div>
-          <div className="px-2 pb-2 md:px-2">
+        <SearchResultsContainer label="All swapable tokens">
             {allOtherToTokens.map((token, idx) => {
               return (
                 <SelectSpecificTokenButton
@@ -199,8 +191,7 @@ export const SwapToTokenListOverlay = () => {
                 />
               )
             })}
-          </div>
-        </>
+        </SearchResultsContainer>
       )}
       <SearchResults searchStr={searchStr} type="token" />
     </div>
