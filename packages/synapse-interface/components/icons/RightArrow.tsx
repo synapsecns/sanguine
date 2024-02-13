@@ -7,7 +7,6 @@ export const RightArrow = ({
 }) => {
   return (
     <svg
-      className={className}
       width="7"
       height="9"
       viewBox="0 0 7 12"
