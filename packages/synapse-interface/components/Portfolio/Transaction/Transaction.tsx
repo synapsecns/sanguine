@@ -94,13 +94,11 @@ export const Transaction = React.memo(
           className="p-2"
         />
         <TransactionArrow
-          className={`
-        ${
-          transactionType === TransactionType.PENDING
-            ? 'bg-tint fill-surface'
-            : 'stroke-surface fill-transparent'
-        }
-        `}
+          className={
+            transactionType === TransactionType.PENDING
+              ? 'bg-bgBase/20 fill-bgBase/10'
+              : 'stroke-bgBase/10 fill-transparent'
+          }
         />
         <TransactionPayloadDetail
           chain={destinationChain}
