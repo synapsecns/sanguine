@@ -4,7 +4,6 @@ import { useKeyPress } from '@/utils/hooks/useKeyPress'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 
 export const DropdownMenu = ({ menuTitleElement, children }) => {
-  const menuRef = useRef(null)
   const [open, setOpen] = useState<boolean>(false)
   const ref = useRef(null)
   const handleClick = () => {
@@ -25,7 +24,7 @@ export const DropdownMenu = ({ menuTitleElement, children }) => {
     setOpen(false)
   }
 
-  useCloseOnOutsideClick(menuRef, handleClose)
+  useCloseOnOutsideClick(ref, handleClose)
 
   return (
     <div id="dropdown-menu" className="relative" ref={ref}>

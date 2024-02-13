@@ -59,8 +59,12 @@ export const TransactionPayloadDetail = ({
     return null
   }, [tokenAmount, token, chain])
 
-  const buttonStyle =
-    'flex gap-1.5 pl-1.5 pr-2.5 py-0.5 -my-0.5 items-center cursor-pointer rounded border border-transparent hover:border-surface hover:bg-tint active:opacity-70 w-fit'
+  const buttonStyle = `
+    flex gap-1.5 pl-1.5 pr-2.5 py-0.5 -my-0.5 items-center cursor-pointer rounded
+    border border-transparent hover:bg-bgBase/20 active:bg-bgBase/30
+    active:opacity-60
+    w-fit
+  `
 
   return (
     <div data-test-id="transaction-payload-detail" className={className}>
@@ -119,7 +123,7 @@ function TransactionPayloadDetailButton({ children, ...props}) {
       {...props}
       className={`
         flex flex-row px-1 items-center cursor-pointer rounded-sm w-fit
-        hover:bg-slate-900/50 active:opacity-[67%] space-x-1
+        hover:bg-slate-400/20 active:opacity-60 space-x-1
       `}
     >
       {children}
