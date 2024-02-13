@@ -38,12 +38,12 @@ export const DropdownMenu = ({ menuTitleElement, children }) => {
             className={`
               flex place-items-center justify-center
               w-5 h-[21px] rounded
+               hover:bg-bgBase/20
               border border-solid border-white/10
-              cursor-pointer hover:border-white/50 active:border-white/70
+              cursor-pointer hover:border-white/30 active:border-white/70
               group
             `}
           >
-
             <DownArrow className="fill-white/40 group-hover:fill-white/80 group-active:fill-white/100 " />
           </div>
         </div>

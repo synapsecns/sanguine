@@ -99,12 +99,14 @@ const AccordionIcon = ({
       onClick={onClick}
       className={`
         p-1 mx-2 border border-transparent rounded-full
-        cursor-pointer hover:border-white/60 active:border-white/80 transition-all
+        cursor-pointer
+        hover:bg-bgBase/10
+        hover:border-white/10 active:border-white/80 transition-all
       `}
     >
       <ChevronUpIcon
           className={`
-            w-4 h-4 stroke-[3] stroke-white/20 group-hover:stroke-white/50 transition-all
+            w-4 h-4 stroke-[3] stroke-white/20 group-hover:stroke-white/70 transition-all
             ${isExpanded ? 'rotate-180' : 'rotate-0'}
           `}
       />
