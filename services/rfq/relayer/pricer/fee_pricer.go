@@ -26,7 +26,7 @@ import (
 // FeePricer is the interface for the fee pricer.
 type FeePricer interface {
 	// Start starts the fee pricer.
-	Start(ctx context.Context)
+	Start(ctx context.Context) error
 	// GetOriginFee returns the total fee for a given chainID and gas limit, denominated in a given token.
 	GetOriginFee(ctx context.Context, origin, destination uint32, denomToken string, request *reldb.QuoteRequest, useMultiplier bool) (*big.Int, error)
 	// GetDestinationFee returns the total fee for a given chainID and gas limit, denominated in a given token.
@@ -109,7 +109,7 @@ func NewFeePricer(ctx context.Context, config relconfig.Config, clientFetcher su
 	}, nil
 }
 
-func (f *feePricer) Start(ctx context.Context) {
+func (f *feePricer) Start(ctx context.Context) error {
 	g, _ := errgroup.WithContext(ctx)
 
 	// start the TTL caches
@@ -129,6 +129,7 @@ func (f *feePricer) Start(ctx context.Context) {
 		f.tokenPriceCache.Start()
 		return nil
 	})
+	return g.Wait()
 }
 
 var nativeDecimalsFactor = new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(18)), nil)
