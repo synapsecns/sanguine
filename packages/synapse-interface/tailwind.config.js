@@ -121,6 +121,7 @@ module.exports = {
         synapsePurple: '#D747FF',
         blueText: '#99E6FF',
         greenText: '#66e595',
+        greenProgress: 'hsl(105deg 100% 60%)',
         // previous colors
         bgBase: '#252028',
         bgDarker: '#111111',
