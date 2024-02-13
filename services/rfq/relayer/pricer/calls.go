@@ -1,16 +1,13 @@
 package pricer
 
 import (
-	"context"
 	"fmt"
-	"time"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/synapsecns/sanguine/core/retry"
 	"github.com/synapsecns/sanguine/ethergo/util"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
@@ -61,29 +58,16 @@ const callTimeoutSeconds = 2
 
 func getCall(transactor *bind.TransactOpts, bridge *fastbridge.FastBridgeRef, cType callType) (call *ethereum.CallMsg, err error) {
 	var tx *types.Transaction
-	var callFunc func(context.Context) error
 	switch cType {
 	case claimCallType:
-		callFunc = func(context.Context) error {
-			tx, err = bridge.Claim(transactor, getCallRequestData(), getCallAddress())
-			return err
-		}
+		tx, err = bridge.Claim(transactor, getCallRequestData(), getCallAddress())
 	case proveCallType:
-		callFunc = func(context.Context) error {
-			tx, err = bridge.Prove(transactor, getCallRequestData(), getCallHash())
-			return err
-		}
+		tx, err = bridge.Prove(transactor, getCallRequestData(), getCallHash())
 	case relayCallType:
-		callFunc = func(context.Context) error {
-			tx, err = bridge.Relay(transactor, getCallRequestData())
-			return err
-		}
+		tx, err = bridge.Relay(transactor, getCallRequestData())
 	default:
 		return nil, fmt.Errorf("unknown call type: %d", cType)
 	}
-	err = retry.WithBackoff(transactor.Context, func(ctx context.Context) error {
-		return callFunc(transactor.Context)
-	}, retry.WithMaxTotalTime(callTimeoutSeconds*time.Second))
 	if err != nil {
 		return nil, fmt.Errorf("could not get tx with type %s: %w", cType.String(), err)
 	}
