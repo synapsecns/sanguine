@@ -144,6 +144,11 @@ contract FastBridgeV2 is Admin, IFastBridgeV2 {
         emit BridgeProofDisputed(transactionId, msg.sender);
     }
 
+    /// @inheritdoc IFastBridgeV2
+    function resolve(bytes32 transactionId, address destRelayer) external onlyGuard {
+        // TODO: implement
+    }
+
     // ════════════════════════════════════════════════ USER-FACING ════════════════════════════════════════════════════
 
     /// @inheritdoc IFastBridge
