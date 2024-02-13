@@ -25,7 +25,6 @@ export const PortfolioAccordion = ({
   selectedFromChainId,
   hasNoTokenBalance,
 }: PortfolioAccordionProps) => {
-  const [isHovered, setIsHovered] = useState<boolean>(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const handleToggle = () => setIsExpanded((prevExpanded) => !prevExpanded)
 
@@ -58,8 +57,6 @@ export const PortfolioAccordion = ({
       >
         <div
           onClick={handleToggle}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
           className="flex-1"
         >
           <div
@@ -74,7 +71,6 @@ export const PortfolioAccordion = ({
         <AccordionIcon
           isExpanded={isExpanded}
           onClick={handleToggle}
-          isHovered={isHovered}
         />
       </div>
       <div id="portfolio-accordion-contents" className="flex flex-col">
@@ -87,11 +83,9 @@ export const PortfolioAccordion = ({
 const AccordionIcon = ({
   isExpanded,
   onClick,
-  isHovered,
 }: {
   isExpanded: boolean
   onClick: () => void
-  isHovered: boolean
 }) => {
   return (
     <div
@@ -105,10 +99,10 @@ const AccordionIcon = ({
       `}
     >
       <ChevronUpIcon
-          className={`
-            w-4 h-4 stroke-[3] stroke-white/20 group-hover:stroke-white/70 transition-all
-            ${isExpanded ? 'rotate-180' : 'rotate-0'}
-          `}
+        className={`
+          w-4 h-4 stroke-[3] stroke-white/20 group-hover:stroke-white/70 transition-all
+          ${isExpanded ? 'rotate-180' : 'rotate-0'}
+        `}
       />
     </div>
   )
