@@ -139,7 +139,7 @@ export const _Transaction = ({
               />
             }
           >
-            <div className="p-2 mt-1 text-xs cursor-default text-zinc-300">
+            <div className="p-2 text-xs cursor-default italic text-slate-300/90">
               Began{' '}
               {new Date(timestamp * 1000).toLocaleString('en-US', {
                 month: 'short',
