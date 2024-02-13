@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import { useCallback, useMemo } from 'react'
 import numeral from 'numeral'
 import Image from 'next/image'
@@ -12,9 +13,6 @@ import { Chain, Token } from '@/utils/types'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 
-function isObject(object): boolean {
-  return typeof object === 'object' && object !== null
-}
 
 export const TransactionPayloadDetail = ({
   chain,
@@ -53,7 +51,7 @@ export const TransactionPayloadDetail = ({
 
   const tokenDecimals = useMemo(() => {
     if (token && chain) {
-      const storedAsObject: boolean = isObject(token?.decimals)
+      const storedAsObject: boolean = _.isObject(token?.decimals)
       return storedAsObject ? token.decimals[chain?.id] : token.decimals
     }
     return null

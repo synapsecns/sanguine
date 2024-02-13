@@ -12,7 +12,7 @@ export const EstimatedDuration = ({
   return (
     <div
       data-test-id="estimated-duration"
-      className="text-[#C2C2D6] text-sm flex flex-col"
+      className="text-slate-300 text-sm flex flex-col"
     >
       {timeRemaining >= 0 ? (
         <>
