@@ -1,9 +1,9 @@
 import _ from 'lodash'
-import { useEffect, useRef, useState, useMemo } from 'react'
+import { useMemo } from 'react'
 import { Address } from 'viem'
 import Fuse from 'fuse.js'
 
-import { useKeyPress } from '@hooks/useKeyPress'
+
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { Token } from '@/utils/types'
 import { BridgeState, setToToken } from '@/slices/bridge/reducer'
@@ -15,7 +15,6 @@ import { getRoutePossibilities } from '@/utils/routeMaker/generateRoutePossibili
 
 import { sortByPriorityRank } from '@/utils/helpers/sortByPriorityRank'
 import { CHAINS_BY_ID } from '@/constants/chains'
-import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import { CloseButton } from '@/components/buttons/CloseButton'
 import { SearchResults } from '@/components/SearchResults'
 import { formatBigIntToString } from '@/utils/bigint/format'

@@ -1,10 +1,8 @@
 import _ from 'lodash'
 
-import { useEffect, useRef, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import Fuse from 'fuse.js'
 
-import { useKeyPress } from '@hooks/useKeyPress'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { Token } from '@/utils/types'
 import { setFromToken } from '@/slices/bridge/reducer'
@@ -18,16 +16,12 @@ import { getRoutePossibilities } from '@/utils/routeMaker/generateRoutePossibili
 import { hasBalance } from '@/utils/helpers/hasBalance'
 import { sortByPriorityRank } from '@/utils/helpers/sortByPriorityRank'
 import { CHAINS_BY_ID } from '@/constants/chains'
-import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import { CloseButton } from '@/components/buttons/CloseButton'
 import { SearchResults } from '@/components/SearchResults'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 
 export const FromTokenListOverlay = () => {
-  // const [currentIdx, setCurrentIdx] = useState(-1)
-  // const [searchStr, setSearchStr] = useState('')
   const dispatch = useDispatch()
-  // const overlayRef = useRef(null)
 
   const { fromTokens, fromChainId, fromToken } = useBridgeState()
   const portfolioBalances = usePortfolioBalances()
@@ -133,45 +127,6 @@ export const FromTokenListOverlay = () => {
     )
   }
 
-  // const escPressed = useKeyPress('Escape')
-  // const arrowUp = useKeyPress('ArrowUp')
-  // const arrowDown = useKeyPress('ArrowDown')
-
-  // function onClose() {
-  //   setCurrentIdx(-1)
-  //   setSearchStr('')
-  //   dispatch(setShowFromTokenListOverlay(false))
-  // }
-
-  // function escFunc() {
-  //   if (escPressed) {
-  //     onClose()
-  //   }
-  // }
-
-  // function arrowDownFunc() {
-  //   const nextIdx = currentIdx + 1
-  //   if (arrowDown && nextIdx < masterList.length) {
-  //     setCurrentIdx(nextIdx)
-  //   }
-  // }
-
-  // function arrowUpFunc() {
-  //   const nextIdx = currentIdx - 1
-  //   if (arrowUp && -1 < nextIdx) {
-  //     setCurrentIdx(nextIdx)
-  //   }
-  // }
-
-  // function onSearch(str: string) {
-  //   setSearchStr(str)
-  //   setCurrentIdx(-1)
-  // }
-
-  // useEffect(escFunc, [escPressed])
-  // useEffect(arrowDownFunc, [arrowDown])
-  // useEffect(arrowUpFunc, [arrowUp])
-  // useCloseOnOutsideClick(overlayRef, onClose)
 
   const handleSetFromToken = (oldToken: Token, newToken: Token) => {
     const eventTitle = '[Bridge User Action] Sets new fromToken'

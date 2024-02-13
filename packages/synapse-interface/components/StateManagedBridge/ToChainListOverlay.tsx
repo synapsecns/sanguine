@@ -1,8 +1,6 @@
 import _ from 'lodash'
-import { useCallback, useEffect, useRef, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import Fuse from 'fuse.js'
-import { useKeyPress } from '@hooks/useKeyPress'
 
 import * as ALL_CHAINS from '@constants/chains/master'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
@@ -12,7 +10,6 @@ import { useBridgeState } from '@/slices/bridge/hooks'
 import { setToChainId } from '@/slices/bridge/reducer'
 import { setShowToChainListOverlay } from '@/slices/bridgeDisplaySlice'
 import { SelectSpecificNetworkButton } from './components/SelectSpecificNetworkButton'
-import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import { CloseButton } from '@/components/buttons/CloseButton'
 import { SearchResults } from '@/components/SearchResults'
 
@@ -89,7 +86,6 @@ export const ToChainListOverlay = () => {
       (item) => item.source === 'remainingChains'
     )
   }
-
 
 
   const handleSetToChainId = (chainId) => {
