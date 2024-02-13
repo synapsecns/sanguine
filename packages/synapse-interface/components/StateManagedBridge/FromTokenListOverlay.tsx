@@ -19,6 +19,7 @@ import { CHAINS_BY_ID } from '@/constants/chains'
 import { CloseButton } from '@/components/buttons/CloseButton'
 import { SearchResults } from '@/components/SearchResults'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
+import { getTokenFuseOptions } from '@/constants/fuseOptions'
 
 export const FromTokenListOverlay = () => {
   const dispatch = useDispatch()
@@ -99,22 +100,7 @@ export const FromTokenListOverlay = () => {
     onClose,
   } = useOverlaySearch(masterList.length, onCloseOverlay)
 
-  const fuseOptions = {
-    ignoreLocation: true,
-    includeScore: true,
-    threshold: 0.0,
-    keys: [
-      {
-        name: 'symbol',
-        weight: 2,
-      },
-      'routeSymbol',
-      `addresses.${fromChainId}`,
-      'name',
-    ],
-  }
-
-  const fuse = new Fuse(masterList, fuseOptions)
+  const fuse = new Fuse(masterList, getTokenFuseOptions(fromChainId))
 
   if (searchStr?.length > 0) {
     const results = fuse.search(searchStr).map((i) => i.item)

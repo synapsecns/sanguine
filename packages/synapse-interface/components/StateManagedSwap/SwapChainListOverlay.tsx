@@ -13,6 +13,7 @@ import { setShowSwapChainListOverlay } from '@/slices/swapDisplaySlice'
 import { setSwapChainId } from '@/slices/swap/reducer'
 import { useSwapState } from '@/slices/swap/hooks'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
+import { CHAIN_FUSE_OPTIONS } from '@/constants/fuseOptions'
 
 export const SwapChainListOverlay = () => {
   const { swapChainId, swapFromChainIds } = useSwapState()
@@ -48,19 +49,6 @@ export const SwapChainListOverlay = () => {
 
   const masterList = [...possibleChainsWithSource, ...remainingChainsWithSource]
 
-  const fuseOptions = {
-    includeScore: true,
-    threshold: 0.0,
-    keys: [
-      {
-        name: 'name',
-        weight: 2,
-      },
-      'id',
-      'nativeCurrency.symbol',
-    ],
-  }
-
   function onCloseOverlay() {
     dispatch(setShowSwapChainListOverlay(false))
   }
@@ -73,7 +61,7 @@ export const SwapChainListOverlay = () => {
     onClose,
   } = useOverlaySearch(masterList.length, onCloseOverlay)
 
-  const fuse = new Fuse(masterList, fuseOptions)
+  const fuse = new Fuse(masterList, CHAIN_FUSE_OPTIONS)
 
   if (searchStr?.length > 0) {
     const results = fuse.search(searchStr).map((i) => i.item)

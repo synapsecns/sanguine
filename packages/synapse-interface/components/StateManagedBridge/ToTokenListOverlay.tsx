@@ -22,6 +22,7 @@ import { FetchState } from '@/slices/portfolio/actions'
 import { useAppDispatch } from '@/store/hooks'
 import { useAlternateBridgeQuotes } from '@/utils/hooks/useAlternateBridgeQuotes'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
+import { getTokenFuseOptions } from '@/constants/fuseOptions'
 
 interface TokenWithRates extends Token {
   exchangeRate: bigint
@@ -105,21 +106,8 @@ export const ToTokenListOverlay = () => {
     onClose,
   } = useOverlaySearch(masterList.length, onCloseOverlay)
 
-  const fuseOptions = {
-    ignoreLocation: true,
-    includeScore: true,
-    threshold: 0.0,
-    keys: [
-      {
-        name: 'symbol',
-        weight: 2,
-      },
-      'routeSymbol',
-      `addresses.${toChainId}`,
-      'name',
-    ],
-  }
-  const fuse = new Fuse(masterList, fuseOptions)
+
+  const fuse = new Fuse(masterList, getTokenFuseOptions(toChainId))
 
   if (searchStr?.length > 0) {
     const results = fuse.search(searchStr).map((i) => i.item)

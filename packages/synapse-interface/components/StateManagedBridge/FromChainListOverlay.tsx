@@ -13,6 +13,7 @@ import { CloseButton } from '@/components/buttons/CloseButton'
 import { SearchResults } from '@/components/SearchResults'
 import { PAUSED_FROM_CHAIN_IDS } from '@constants/chains'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
+import { CHAIN_FUSE_OPTIONS } from '@/constants/fuseOptions'
 
 export const FromChainListOverlay = () => {
   const { fromChainIds, fromChainId } = useBridgeState()
@@ -58,20 +59,9 @@ export const FromChainListOverlay = () => {
     onClose,
   } = useOverlaySearch(masterList.length, onCloseOverlay)
 
-  const fuseOptions = {
-    includeScore: true,
-    threshold: 0.0,
-    keys: [
-      {
-        name: 'name',
-        weight: 2,
-      },
-      'id',
-      'nativeCurrency.symbol',
-    ],
-  }
 
-  const fuse = new Fuse(masterList, fuseOptions)
+
+  const fuse = new Fuse(masterList, CHAIN_FUSE_OPTIONS)
 
   if (searchStr?.length > 0) {
     const results = fuse.search(searchStr).map((i) => i.item)

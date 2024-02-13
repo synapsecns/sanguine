@@ -16,6 +16,7 @@ import { setSwapToToken } from '@/slices/swap/reducer'
 import { useSwapState } from '@/slices/swap/hooks'
 import { getSwapPossibilities } from '@/utils/swapFinder/generateSwapPossibilities'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
+import { getTokenFuseOptions } from '@/constants/fuseOptions'
 
 export const SwapToTokenListOverlay = () => {
   const { swapChainId, swapToTokens, swapToToken } = useSwapState()
@@ -79,21 +80,8 @@ export const SwapToTokenListOverlay = () => {
     onClose,
   } = useOverlaySearch(masterList.length, onCloseOverlay)
 
-  const fuseOptions = {
-    ignoreLocation: true,
-    includeScore: true,
-    threshold: 0.0,
-    keys: [
-      {
-        name: 'symbol',
-        weight: 2,
-      },
-      'routeSymbol',
-      `addresses.${swapChainId}`,
-      'name',
-    ],
-  }
-  const fuse = new Fuse(masterList, fuseOptions)
+
+  const fuse = new Fuse(masterList, getTokenFuseOptions(swapChainId))
 
   if (searchStr?.length > 0) {
     const results = fuse.search(searchStr).map((i) => i.item)
