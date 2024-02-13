@@ -103,7 +103,7 @@ export const _Transaction = ({
     <div
       data-test-id="_transaction"
       className={`
-        bg-bgBase/10 fill-bgBase/20 text-primary
+        bg-bgBase/10 fill-bgBase/20
         border border-solid border-white/20 rounded-md
         text-primary text-xs md:text-base
       `}
