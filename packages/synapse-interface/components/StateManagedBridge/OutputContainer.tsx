@@ -2,8 +2,10 @@ import { useDispatch } from 'react-redux'
 
 import { useBridgeState } from '@/slices/bridge/hooks'
 
-import { setShowToChainListOverlay } from '@/slices/bridgeDisplaySlice'
-import { setShowToTokenListOverlay } from '@/slices/bridgeDisplaySlice'
+import {
+  setShowToChainListOverlay,
+  setShowToTokenListOverlay
+ } from '@/slices/bridgeDisplaySlice'
 
 import { GenericOutputContainer } from '@/components/bridgeSwap/GenericOutputContainer'
 import { ChainSelector } from '@/components/bridgeSwap/ChainSelector'
