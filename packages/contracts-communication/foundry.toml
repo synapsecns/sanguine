@@ -1,0 +1,11 @@
+[profile.default]
+src = 'contracts'
+out = 'out'
+libs = ["lib"]
+
+[fmt]
+line_length = 120
+multiline_func_header = 'all'
+number_underscore = 'thousands'
+
+# See more config options https://github.com/foundry-rs/foundry/tree/master/config
