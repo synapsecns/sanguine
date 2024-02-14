@@ -19,6 +19,7 @@ import { DropdownMenu } from '@/components/ui/DropdownMenu'
 import { MenuItem } from '@/components/ui/MenuItem'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { TransactionSupport } from './TransactionSupport'
+import { AnimatedProgressBar } from './AnimatedProgressBar'
 
 export const Transaction = ({
   connectedAddress,
@@ -165,7 +166,7 @@ export const Transaction = ({
         </div>
       </div>
       {showTransactionSupport && <TransactionSupport />}
-      <div className="px-1">
+      <div className="w-full px-1">
         <AnimatedProgressBar
           id={originTxHash}
           startTime={timestamp}
