@@ -119,7 +119,7 @@ export const Transaction = ({
     <div
       data-test-id="transaction"
       className={`
-        flex flex-col
+        flex flex-col relative
         gap-1 justify-end items-center pl-2.5 pr-1.5 py-1
         border border-solid border-[--synapse-border] rounded-md
       `}
@@ -166,7 +166,7 @@ export const Transaction = ({
         </div>
       </div>
       {showTransactionSupport && <TransactionSupport />}
-      <div className="w-full px-1">
+      <div className="absolute bottom-0 w-full px-1 text-[0px]">
         <AnimatedProgressBar
           id={originTxHash}
           startTime={timestamp}
