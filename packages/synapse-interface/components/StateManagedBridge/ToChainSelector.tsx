@@ -9,7 +9,6 @@ export const ToChainSelector = () => {
   const dispatch = useDispatch()
   const { toChainId } = useBridgeState()
 
-
   return (
     <ChainSelector
       chainId={toChainId}
