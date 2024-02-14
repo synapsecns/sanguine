@@ -475,14 +475,12 @@ const StateManagedBridge = () => {
       console.log('Error executing bridge', error)
       toast.dismiss(pendingPopup)
 
-      console.log('error: ', error)
-      console.log(
-        'isTransactionReceiptError: ',
-        isTransactionReceiptError(error)
-      )
-
       /** Fetch balances if await transaction receipt times out */
       if (isTransactionReceiptError(error)) {
+        console.log(
+          'isTransactionReceiptError: ',
+          isTransactionReceiptError(error)
+        )
         dispatch(
           fetchAndStoreSingleNetworkPortfolioBalances({
             address,
