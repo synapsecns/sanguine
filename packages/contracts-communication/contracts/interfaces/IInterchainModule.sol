@@ -6,14 +6,14 @@ import {IInterchainDB} from "./IInterchainDB.sol";
 /// @notice Every Module may opt a different method to confirm the verified entries on destination chain,
 /// therefore this is not a part of a common interface.
 interface IInterchainModule {
-    /// @notice Verify an entry in the Interchain DataBase.
+    /// @notice Request the verification of an entry in the Interchain DataBase by the module.
     /// Note: a fee is paid to the module for verification, and could be retrieved by using `getModuleFee`.
-    /// Note: this will eventually trigger `InterchainDB.confirmEntry(entry)` function on destination chain,
+    /// Note: this will eventually trigger `InterchainDB.verifyEntry(entry)` function on destination chain,
     /// with no guarantee of ordering.
     /// @dev Could be only called by the Interchain DataBase contract.
     /// @param destChainId  The chain id of the destination chain
     /// @param entry        The entry to verify
-    function verifyEntry(uint256 destChainId, IInterchainDB.InterchainEntry memory entry) external payable;
+    function requestVerification(uint256 destChainId, IInterchainDB.InterchainEntry memory entry) external payable;
 
     /// @notice Get the Module fee for verifying an entry on the specified destination chain
     /// @param destChainId  The chain id of the destination chain
