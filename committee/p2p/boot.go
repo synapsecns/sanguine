@@ -12,6 +12,7 @@ import (
 	crdt "github.com/ipfs/go-ds-crdt"
 	"github.com/ipfs/go-log"
 	logging "github.com/ipfs/go-log/v2"
+	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-kad-dht/dual"
 	"github.com/libp2p/go-libp2p-pubsub"
 	"github.com/libp2p/go-libp2p/core/crypto"
@@ -114,6 +115,7 @@ func (l *libP2PManagerImpl) setupHost(ctx context.Context, privKeyWrapper crypto
 	ds := ipfs_datastore.MutexWrap(datastore.NewMapDatastore())
 
 	opts := ipfslite.Libp2pOptionsExtra
+	opts = append(opts, libp2p.EnableRelay(), libp2p.Ping(true))
 	// todo: setup datastore
 	// TODO: add eth connection gater: https://github.com/dTelecom/p2p-realtime-database/blob/main/gater.go
 	l.host, l.dht, err = ipfslite.SetupLibp2p(ctx, privKeyWrapper, nil, []multiaddr.Multiaddr{sourceMultiAddr}, ds, opts...)
@@ -150,7 +152,10 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 		return err
 	}
 
-	ipfs, err := ipfslite.New(ctx, l.globalDS, nil, l.host, l.dht, &ipfslite.Config{})
+	ipfs, err := ipfslite.New(ctx, l.globalDS, nil, l.host, l.dht, &ipfslite.Config{
+		ReprovideInterval: time.Second * 5,
+		//UncachedBlockstore: true,
+	})
 	ipfs.Bootstrap(peers)
 
 	crdtOpts := crdt.DefaultOptions()
