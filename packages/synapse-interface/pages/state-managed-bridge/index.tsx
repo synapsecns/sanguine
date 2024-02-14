@@ -78,7 +78,6 @@ import {
   fetchEthPrice,
   fetchGmxPrice,
 } from '@/slices/priceDataSlice'
-import { getGasEstimate } from '@/utils/actions/getGasEstimate'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
