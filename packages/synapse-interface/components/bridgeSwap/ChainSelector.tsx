@@ -1,5 +1,5 @@
 import { CHAINS_BY_ID } from '@/constants/chains'
-import { DropDownArrowSvg } from '@/components/icons/DropDownArrowSvg'
+
 import { ChevronDownIcon } from '@heroicons/react/outline'
 import {
   getNetworkButtonBgClassNameActive,
