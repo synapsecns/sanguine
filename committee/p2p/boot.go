@@ -2,11 +2,13 @@ package p2p
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"github.com/libp2p/go-libp2p"
 	_ "github.com/libp2p/go-libp2p-kad-dht"
+	dht "github.com/libp2p/go-libp2p-kad-dht"
 	"github.com/libp2p/go-libp2p-pubsub"
-	pubsubrouter "github.com/libp2p/go-libp2p-pubsub-router"
 	record "github.com/libp2p/go-libp2p-record"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/host"
@@ -29,7 +31,7 @@ type LibP2PManager interface {
 type libP2PManagerImpl struct {
 	host              host.Host
 	announcementTopic *pubsub.Topic
-	psRouter          *pubsubrouter.PubsubValueStore
+	dht               *dht.IpfsDHT
 	myI               int
 }
 
@@ -77,24 +79,21 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	// TODO: initialize peer discovery w/ dht
 	// https://github.com/libp2p/go-libp2p/blob/66a20a8f530ed09baae8200c92ddbba161a3b5c0/examples/pubsub/basic-chat-with-rendezvous/main.go#L51
 
-	// create a new PubSub service using the GossipSub router
-	ps, err := pubsub.NewGossipSub(ctx, l.host)
-	if err != nil {
-		return fmt.Errorf("could not create pubsub: %w", err)
-	}
-
 	// todo add:
 	// pubsubrouter.WithDatastore() and use our db.
-	l.psRouter, err = pubsubrouter.NewPubsubValueStore(ctx, l.host, ps, l, pubsubrouter.WithRebroadcastInterval(time.Second))
+	// Create a new DHT instance
+	// TODO: https://pkg.go.dev/github.com/0xProject/sql-datastore
+	var err error
+	l.dht, err = dht.New(ctx, l.host, dht.Mode(dht.ModeServer), dht.NamespacedValidator("pk", record.PublicKeyValidator{}))
 	if err != nil {
-		return fmt.Errorf("could not create pubsub value store: %w", err)
+		return err
 	}
 
 	cpI := i
 
 	go func() {
 		time.Sleep(time.Second)
-		err = l.psRouter.PutValue(ctx, fmt.Sprintf("%d", cpI), []byte("testfag"))
+		err = l.dht.PutValue(ctx, fmt.Sprintf("/pk/%s", HashString(strconv.Itoa(cpI))), []byte("/testfag"))
 		if err != nil {
 
 		}
@@ -105,8 +104,13 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	return nil
 }
 
+func HashString(s string) string {
+	hash := sha256.Sum256([]byte(s))
+	return hex.EncodeToString(hash[:])
+}
+
 func (l *libP2PManagerImpl) DoSomething() {
-	yo, err := l.psRouter.GetValue(context.Background(), "test-0")
+	yo, err := l.dht.GetValue(context.Background(), HashString("0"))
 	if err != nil {
 		panic(err)
 	}
