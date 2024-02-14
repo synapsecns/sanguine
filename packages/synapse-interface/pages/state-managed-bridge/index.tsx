@@ -402,25 +402,6 @@ const StateManagedBridge = () => {
             }
           : data
 
-      // console.log('payload:', payload)
-      // console.log('typeof payload.value:', typeof payload.value)
-
-      // const publicClient = getPublicClient()
-
-      // console.log(
-      //   'estimateGas: ',
-      //   await publicClient.estimateGas({
-      //     value: payload.value,
-      //     to: payload.to,
-      //     account: address,
-      //     data: payload.data,
-      //     chainId: fromChainId,
-      //   })
-      // )
-
-      const request = await prepareSendTransaction(payload)
-      console.log('request:', request)
-
       let gasEstimate
 
       if (fromChainId === polygon.id) {
@@ -442,8 +423,6 @@ const StateManagedBridge = () => {
         ...payload,
         gas: gasEstimate,
       })
-
-      // const tx = await wallet.sendTransaction(payload)
 
       const originChainName = CHAINS_BY_ID[fromChainId]?.name
       const destinationChainName = CHAINS_BY_ID[toChainId]?.name
