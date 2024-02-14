@@ -169,8 +169,8 @@ func (f *feePricer) pollGasEstimates(parentCtx context.Context, chainID uint32) 
 			span.SetAttributes(
 				attribute.Int("origin_gas_estimate", int(originGasEstimate)),
 				attribute.Int("dest_gas_estimate", int(destGasEstimate)),
-				attribute.String("error", err.Error()),
 			)
+			metrics.EndSpanWithErr(span, err)
 		}
 	}
 }
