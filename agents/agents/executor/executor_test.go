@@ -91,28 +91,29 @@ func (e *ExecutorSuite) TestVerifyState() {
 
 	root, proofs, err := snapshot.SnapshotRootAndProofs()
 	e.Nil(err)
+	rootStr := common.BytesToHash(root[:]).String()
 
 	// Insert the states into the database.
 	err = e.ExecutorTestDB.StoreStates(e.GetTestContext(), snapshot.States(), root, proofs, 5)
 	e.Nil(err)
 
-	inTree0, err := exec.VerifyStateMerkleProof(e.GetTestContext(), state0)
+	inTree0, err := exec.VerifyStateMerkleProof(e.GetTestContext(), state0, rootStr)
 	e.Nil(err)
 	e.True(inTree0)
 
-	inTree1, err := exec.VerifyStateMerkleProof(e.GetTestContext(), state1)
+	inTree1, err := exec.VerifyStateMerkleProof(e.GetTestContext(), state1, rootStr)
 	e.Nil(err)
 	e.True(inTree1)
 
-	inTree2, err := exec.VerifyStateMerkleProof(e.GetTestContext(), state2)
+	inTree2, err := exec.VerifyStateMerkleProof(e.GetTestContext(), state2, rootStr)
 	e.Nil(err)
 	e.True(inTree2)
 
-	inTree3, err := exec.VerifyStateMerkleProof(e.GetTestContext(), state3)
+	inTree3, err := exec.VerifyStateMerkleProof(e.GetTestContext(), state3, rootStr)
 	e.Nil(err)
 	e.True(inTree3)
 
-	inTreeFail, err := exec.VerifyStateMerkleProof(e.GetTestContext(), failState)
+	inTreeFail, err := exec.VerifyStateMerkleProof(e.GetTestContext(), failState, rootStr)
 	e.Nil(err)
 	e.False(inTreeFail)
 }
@@ -318,7 +319,7 @@ func (e *ExecutorSuite) TestMerkleInsert() {
 
 	var newRoot []byte
 	e.Eventually(func() bool {
-		dbTree, err := executor.NewTreeFromDB(e.GetTestContext(), chainID, e.ExecutorTestDB)
+		dbTree, err := executor.NewTreeFromDB(e.GetTestContext(), exec, chainID, e.ExecutorTestDB)
 		e.Nil(err)
 
 		exec.OverrideMerkleTree(chainID, dbTree)
@@ -402,14 +403,14 @@ func (e *ExecutorSuite) TestVerifyMessageMerkleProof() {
 	failMessage := types.NewMessage(header1, nil, messageBytes[3])
 
 	// Insert messages into the database.
-	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message0, blockNumbers[0], false, 0)
+	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message0, blockNumbers[0], false, 0, common.Hash{})
 	e.Nil(err)
-	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message1, blockNumbers[1], false, 0)
+	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message1, blockNumbers[1], false, 0, common.Hash{})
 	e.Nil(err)
-	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message2, blockNumbers[2], false, 0)
+	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message2, blockNumbers[2], false, 0, common.Hash{})
 	e.Nil(err)
 
-	dbTree, err := executor.NewTreeFromDB(e.GetTestContext(), chainID, e.ExecutorTestDB)
+	dbTree, err := executor.NewTreeFromDB(e.GetTestContext(), exec, chainID, e.ExecutorTestDB)
 	e.Nil(err)
 
 	exec.OverrideMerkleTree(chainID, dbTree)
@@ -430,10 +431,10 @@ func (e *ExecutorSuite) TestVerifyMessageMerkleProof() {
 	e.Nil(err)
 	e.False(inTreeFail)
 
-	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message3, blockNumbers[3], false, 0)
+	err = e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message3, blockNumbers[3], false, 0, common.Hash{})
 	e.Nil(err)
 
-	dbTree, err = executor.NewTreeFromDB(e.GetTestContext(), chainID, e.ExecutorTestDB)
+	dbTree, err = executor.NewTreeFromDB(e.GetTestContext(), exec, chainID, e.ExecutorTestDB)
 	e.Nil(err)
 
 	exec.OverrideMerkleTree(chainID, dbTree)
@@ -656,7 +657,7 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 
 		message := types.NewMessage(types.NewHeader(types.MessageFlagManager, chainID, nonce, destination, uint32(optimisticSeconds)), nil, body)
 
-		err := e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message, uint64(i), false, 0)
+		err := e.ExecutorTestDB.StoreMessage(e.GetTestContext(), message, uint64(i), false, 0, common.Hash{})
 		e.Nil(err)
 	}
 

@@ -72,28 +72,28 @@ func (s Store) GetTimestampForMessage(ctx context.Context, chainID, destination,
 // GetEarliestStateInRange gets the earliest state with the same snapshot root as an attestation within a nonce range.
 // 1. Get all states that are within a nonce range.
 // 2. Get the state with the earliest attestation associated to it.
-func (s Store) GetEarliestStateInRange(ctx context.Context, chainID, destination, startNonce, endNonce uint32) (*agentsTypes.State, error) {
+func (s Store) GetEarliestStateInRange(ctx context.Context, chainID, destination, startNonce, endNonce uint32) (*agentsTypes.State, *string, error) {
 	statesTableName, err := dbcommon.GetModelName(s.DB(), &State{})
 	if err != nil {
-		return nil, fmt.Errorf("failed to get states table name: %w", err)
+		return nil, nil, fmt.Errorf("failed to get states table name: %w", err)
 	}
 
 	attestationsTableName, err := dbcommon.GetModelName(s.DB(), &Attestation{})
 	if err != nil {
-		return nil, fmt.Errorf("failed to get attestations table name: %w", err)
+		return nil, nil, fmt.Errorf("failed to get attestations table name: %w", err)
 	}
 
 	var state State
 
 	query, err := interpol.WithMap(
 		`SELECT * FROM {stTable} WHERE {chainID} = ? AND {snapshotRoot} = (
-                     SELECT {snapshotRoot} FROM {attTable} WHERE {destination} = ? AND {destBlockNum} = (
-						SELECT MIN({destBlockNum}) FROM (
+                     SELECT {snapshotRoot} FROM {attTable} WHERE {destination} = ? AND ({snapshotRoot}) = (
+						SELECT attestationTable.{snapshotRoot} FROM (
 							(SELECT {snapshotRoot} FROM {stTable} WHERE {nonce} >= ? AND {nonce} <= ? AND {chainID} = ?) AS stateTable
 							INNER JOIN
 							(SELECT {snapshotRoot}, {destBlockNum} FROM {attTable} WHERE {destination} = ?) as attestationTable
 							ON stateTable.{snapshotRoot} = attestationTable.{snapshotRoot}
-						)
+						) ORDER BY {destBlockNum} ASC LIMIT 1
 					) ORDER BY {attNonce} DESC LIMIT 1
 				)`,
 		map[string]string{
@@ -108,19 +108,19 @@ func (s Store) GetEarliestStateInRange(ctx context.Context, chainID, destination
 		},
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to interpolate GetEarliestStateInRange query: %w", err)
+		return nil, nil, fmt.Errorf("failed to interpolate GetEarliestStateInRange query: %w", err)
 	}
 
 	dbTx := s.DB().WithContext(ctx).
 		Raw(query, chainID, destination, startNonce, endNonce, chainID, destination).
 		Scan(&state)
 	if dbTx.Error != nil {
-		return nil, fmt.Errorf("failed to get earliest state in range: %w", dbTx.Error)
+		return nil, nil, fmt.Errorf("failed to get earliest state in range: %w", dbTx.Error)
 	}
 
 	if dbTx.RowsAffected == 0 {
 		//nolint:nilnil
-		return nil, nil
+		return nil, nil, nil
 	}
 
 	gasData := agentsTypes.NewGasData(
@@ -141,5 +141,5 @@ func (s Store) GetEarliestStateInRange(ctx context.Context, chainID, destination
 		gasData,
 	)
 
-	return &receivedState, nil
+	return &receivedState, &state.SnapshotRoot, nil
 }

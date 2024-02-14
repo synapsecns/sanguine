@@ -8,15 +8,29 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/agents/contracts/inbox"
 	"github.com/synapsecns/sanguine/agents/types"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/retry"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // handleSnapshotAccepted checks a snapshot for invalid states.
 // If an invalid state is found, initiate slashing and submit a state report.
 //
 //nolint:cyclop,gocognit
-func (g Guard) handleSnapshotAccepted(ctx context.Context, log ethTypes.Log) error {
+func (g Guard) handleSnapshotAccepted(parentCtx context.Context, log ethTypes.Log) error {
+	ctx, span := g.handler.Tracer().Start(parentCtx, "handleSnapshotAccepted")
+
+	// Sanity check to make sure we are processing a snapshot corresponding to the current messaging deployment.
+	if log.Address != common.HexToAddress(g.domains[g.summitDomainID].Config().InboxAddress) {
+		span.AddEvent("dropping snapshot for wrong inbox address", trace.WithAttributes(
+			attribute.String("inbox_address", g.domains[g.summitDomainID].Config().InboxAddress),
+			attribute.String("log_address", log.Address.String()),
+		))
+	}
+
 	snapshotData, err := g.inboxParser.ParseSnapshotAccepted(log)
 	if err != nil {
 		return fmt.Errorf("could not parse snapshot accepted: %w", err)
@@ -75,7 +89,9 @@ func (g Guard) isStateSlashable(ctx context.Context, state types.State) (bool, e
 
 // handleAttestationAccepted checks whether an attestation is valid.
 // If invalid, initiate slashing and/or submit a fraud report.
-func (g Guard) handleAttestationAccepted(ctx context.Context, log ethTypes.Log) error {
+func (g Guard) handleAttestationAccepted(parentCtx context.Context, log ethTypes.Log) error {
+	ctx, _ := g.handler.Tracer().Start(parentCtx, "handleAttestationAccepted")
+
 	attestationData, err := g.lightInboxParser.ParseAttestationAccepted(log)
 	if err != nil {
 		return fmt.Errorf("could not parse attestation accepted: %w", err)
@@ -106,10 +122,15 @@ func (g Guard) handleAttestationAccepted(ctx context.Context, log ethTypes.Log) 
 // attest to a snapshot that contains an invalid state.
 //
 //nolint:cyclop,gocognit
-func (g Guard) handleValidAttestation(ctx context.Context, attestationData *types.AttestationWithMetadata) error {
+func (g Guard) handleValidAttestation(parentCtx context.Context, attestationData *types.AttestationWithMetadata) (err error) {
+	ctx, span := g.handler.Tracer().Start(parentCtx, "handleValidAttestation", trace.WithAttributes(
+		attribute.String(metrics.Agent, attestationData.Agent().String()),
+		attribute.Int(metrics.AgentDomain, int(attestationData.AgentDomain())),
+	))
+	defer metrics.EndSpanWithErr(span, err)
+
 	// Fetch the attested snapshot.
 	var snapshot types.Snapshot
-	var err error
 	contractCall := func(ctx context.Context) error {
 		snapshot, err = g.domains[g.summitDomainID].Summit().GetNotarySnapshot(ctx, attestationData.AttestationPayload())
 		if err != nil {
@@ -140,13 +161,20 @@ func (g Guard) handleValidAttestation(ctx context.Context, attestationData *type
 
 // handleSnapshot handles a snapshot by validating each state in the snapshot.
 // If an invalid state is found, initiate slashing and submit state reports on eligible chains.
-func (g Guard) handleSnapshot(ctx context.Context, snapshot types.Snapshot, data types.StateValidationData) error {
+func (g Guard) handleSnapshot(parentCtx context.Context, snapshot types.Snapshot, data types.StateValidationData) (err error) {
+	snapRoot, _, _ := snapshot.SnapshotRootAndProofs()
+	ctx, span := g.handler.Tracer().Start(parentCtx, "handleSnapshot", trace.WithAttributes(
+		attribute.String(metrics.SnapRoot, common.BytesToHash(snapRoot[:]).String()),
+	))
+	defer metrics.EndSpanWithErr(span, err)
+
 	// Process each state in the snapshot.
 	for si, s := range snapshot.States() {
 		stateIndex, state := si, s
 		isSlashable, err := g.isStateSlashable(ctx, state)
 		if err != nil {
-			return fmt.Errorf("could not handle state: %w", err)
+			err = fmt.Errorf("could not handle state: %w", err)
+			return err
 		}
 		if !isSlashable {
 			continue
@@ -155,14 +183,23 @@ func (g Guard) handleSnapshot(ctx context.Context, snapshot types.Snapshot, data
 		// Initiate slashing on origin.
 		err = g.verifyState(ctx, state, stateIndex, data)
 		if err != nil {
-			return fmt.Errorf("could not verify state: %w", err)
+			err = fmt.Errorf("could not verify state: %w", err)
+			return err
 		}
 
 		// Evaluate which chains need a state report.
 		stateReportChains, err := g.getStateReportChains(ctx, data.AgentDomain(), data.Agent())
 		if err != nil {
-			return fmt.Errorf("could not get state report chains: %w", err)
+			err = fmt.Errorf("could not get state report chains: %w", err)
+			return err
 		}
+		stateReportChainsInt := make([]int, len(stateReportChains))
+		for i, chainID := range stateReportChains {
+			stateReportChainsInt[i] = int(chainID)
+		}
+		span.AddEvent("got state report chains", trace.WithAttributes(
+			attribute.IntSlice("state_report_chains", stateReportChainsInt),
+		))
 
 		// Submit the state report on each eligible chain.
 		// If a notary has not been reported anywhere,
@@ -170,7 +207,8 @@ func (g Guard) handleSnapshot(ctx context.Context, snapshot types.Snapshot, data
 		for _, chainID := range stateReportChains {
 			err = g.submitStateReport(ctx, chainID, state, stateIndex, data)
 			if err != nil {
-				return fmt.Errorf("could not submit state report: %w", err)
+				err = fmt.Errorf("could not submit state report: %w", err)
+				return err
 			}
 		}
 	}
@@ -179,9 +217,15 @@ func (g Guard) handleSnapshot(ctx context.Context, snapshot types.Snapshot, data
 
 // handleInvalidAttestation handles an invalid attestation by initiating slashing on summit,
 // then submitting an attestation fraud report on the accused agent's Domain.
-func (g Guard) handleInvalidAttestation(ctx context.Context, attestationData *types.AttestationWithMetadata) error {
+func (g Guard) handleInvalidAttestation(parentCtx context.Context, attestationData *types.AttestationWithMetadata) (err error) {
+	ctx, span := g.handler.Tracer().Start(parentCtx, "handleInvalidAttestation", trace.WithAttributes(
+		attribute.String(metrics.Agent, attestationData.Agent().String()),
+		attribute.Int(metrics.AgentDomain, int(attestationData.AgentDomain())),
+	))
+	defer metrics.EndSpanWithErr(span, err)
+
 	// Initiate slashing for invalid attestation.
-	_, err := g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(g.summitDomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+	_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(g.summitDomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 		tx, err = g.domains[g.summitDomainID].Inbox().VerifyAttestation(
 			transactor,
 			attestationData.AttestationPayload(),
@@ -194,7 +238,8 @@ func (g Guard) handleInvalidAttestation(ctx context.Context, attestationData *ty
 		return
 	})
 	if err != nil {
-		return fmt.Errorf("could not submit VerifyAttestation tx: %w", err)
+		err = fmt.Errorf("could not submit VerifyAttestation tx: %w", err)
+		return err
 	}
 
 	// Submit a fraud report by calling `submitAttestationReport()` on the remote chain.
@@ -220,7 +265,8 @@ func (g Guard) handleInvalidAttestation(ctx context.Context, attestationData *ty
 		return
 	})
 	if err != nil {
-		return fmt.Errorf("could not submit SubmitAttestationReport tx: %w", err)
+		err = fmt.Errorf("could not submit SubmitAttestationReport tx: %w", err)
+		return err
 	}
 
 	return nil
@@ -229,21 +275,23 @@ func (g Guard) handleInvalidAttestation(ctx context.Context, attestationData *ty
 // handleReceiptAccepted checks whether a receipt is valid and submits a receipt report if not.
 //
 //nolint:cyclop
-func (g Guard) handleReceiptAccepted(ctx context.Context, log ethTypes.Log) error {
-	fraudReceipt, err := g.inboxParser.ParseReceiptAccepted(log)
+func (g Guard) handleReceiptAccepted(parentCtx context.Context, log ethTypes.Log) error {
+	ctx, _ := g.handler.Tracer().Start(parentCtx, "handleReceiptAccepted")
+
+	event, err := g.inboxParser.ParseReceiptAccepted(log)
 	if err != nil {
 		return fmt.Errorf("could not parse receipt accepted: %w", err)
 	}
 
 	// Validate the receipt.
-	receipt, err := types.DecodeReceipt(fraudReceipt.RcptPayload)
+	receipt, err := types.DecodeReceipt(event.RcptPayload)
 	if err != nil {
 		return fmt.Errorf("could not decode receipt: %w", err)
 	}
 
 	var isValid bool
 	contractCall := func(ctx context.Context) error {
-		isValid, err = g.domains[receipt.Destination()].Destination().IsValidReceipt(ctx, fraudReceipt.RcptPayload)
+		isValid, err = g.domains[receipt.Destination()].Destination().IsValidReceipt(ctx, event.RcptPayload)
 		if err != nil {
 			return fmt.Errorf("could not check validity of attestation: %w", err)
 		}
@@ -258,14 +306,31 @@ func (g Guard) handleReceiptAccepted(ctx context.Context, log ethTypes.Log) erro
 		return nil
 	}
 
+	err = g.handleInvalidReceipt(ctx, receipt, event)
+	if err != nil {
+		return fmt.Errorf("could not handle invalid receipt: %w", err)
+	}
+
+	return nil
+}
+
+func (g Guard) handleInvalidReceipt(parentCtx context.Context, receipt types.Receipt, event *inbox.InboxReceiptAccepted) (err error) {
+	leaf := receipt.MessageHash()
+	ctx, span := g.handler.Tracer().Start(parentCtx, "handleInvalidReceipt", trace.WithAttributes(
+		attribute.String("attestation_notary", receipt.AttestationNotary().String()),
+		attribute.Int(metrics.Destination, int(receipt.Destination())),
+		attribute.String(metrics.MessageLeaf, common.BytesToHash(leaf[:]).String()),
+	))
+	defer metrics.EndSpanWithErr(span, err)
+
 	// Initiate slashing for an invalid receipt, and optionally submit a fraud report.
 	//nolint:nestif
 	if receipt.Destination() == g.summitDomainID {
 		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(receipt.Destination())), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = g.domains[receipt.Destination()].Inbox().VerifyReceipt(
 				transactor,
-				fraudReceipt.RcptPayload,
-				fraudReceipt.RcptSignature,
+				event.RcptPayload,
+				event.RcptSignature,
 			)
 			if err != nil {
 				return nil, fmt.Errorf("could not verify receipt: %w", err)
@@ -280,8 +345,8 @@ func (g Guard) handleReceiptAccepted(ctx context.Context, log ethTypes.Log) erro
 		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(receipt.Destination())), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = g.domains[receipt.Destination()].LightInbox().VerifyReceipt(
 				transactor,
-				fraudReceipt.RcptPayload,
-				fraudReceipt.RcptSignature,
+				event.RcptPayload,
+				event.RcptSignature,
 			)
 			if err != nil {
 				return nil, fmt.Errorf("could not verify receipt: %w", err)
@@ -304,8 +369,8 @@ func (g Guard) handleReceiptAccepted(ctx context.Context, log ethTypes.Log) erro
 		_, err = g.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(g.summitDomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = g.domains[g.summitDomainID].Inbox().SubmitReceiptReport(
 				transactor,
-				fraudReceipt.RcptPayload,
-				fraudReceipt.RcptSignature,
+				event.RcptPayload,
+				event.RcptSignature,
 				rrReceiptBytes,
 			)
 			if err != nil {
@@ -315,17 +380,19 @@ func (g Guard) handleReceiptAccepted(ctx context.Context, log ethTypes.Log) erro
 			return
 		})
 		if err != nil {
-			return fmt.Errorf("could not submit SubmitReceiptReport tx: %w", err)
+			err = fmt.Errorf("could not submit SubmitReceiptReport tx: %w", err)
+			return err
 		}
 	}
-
 	return nil
 }
 
 // handleStatusUpdated stores models related to a StatusUpdated event.
 //
 //nolint:cyclop,gocognit
-func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (g Guard) handleStatusUpdated(parentCtx context.Context, log ethTypes.Log, chainID uint32) error {
+	ctx, _ := g.handler.Tracer().Start(parentCtx, "handleStatusAccepted")
+
 	statusUpdated, err := g.bondingManagerParser.ParseStatusUpdated(log)
 	if err != nil {
 		return fmt.Errorf("could not parse status updated: %w", err)
@@ -450,7 +517,9 @@ func (g Guard) handleStatusUpdated(ctx context.Context, log ethTypes.Log, chainI
 }
 
 // handleRootUpdated stores models related to a RootUpdated event.
-func (g Guard) handleRootUpdated(ctx context.Context, log ethTypes.Log, chainID uint32) error {
+func (g Guard) handleRootUpdated(parentCtx context.Context, log ethTypes.Log, chainID uint32) error {
+	ctx, _ := g.handler.Tracer().Start(parentCtx, "handleRootUpdated")
+
 	if chainID == g.summitDomainID {
 		newRoot, err := g.bondingManagerParser.ParseRootUpdated(log)
 		if err != nil || newRoot == nil {
@@ -489,12 +558,20 @@ func (g Guard) updateAgentStatuses(ctx context.Context) error {
 // and open dispute on remote chain.
 //
 //nolint:cyclop,gocognit
-func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
+func (g Guard) updateAgentStatus(parentCtx context.Context, chainID uint32) (err error) {
+	ctx, span := g.handler.Tracer().Start(parentCtx, "updateAgentStatus", trace.WithAttributes(
+		attribute.Int(metrics.ChainID, int(chainID)),
+	))
+	defer metrics.EndSpanWithErr(span, err)
+
 	eligibleAgentTrees, err := g.guardDB.GetRelayableAgentStatuses(ctx, chainID)
 	if err != nil {
 		return fmt.Errorf("could not get update agent status parameters: %w", err)
 	}
 
+	span.AddEvent("got eligible agent trees", trace.WithAttributes(
+		attribute.Int("numAgentTrees", len(eligibleAgentTrees)),
+	))
 	if len(eligibleAgentTrees) == 0 {
 		return nil
 	}
@@ -513,10 +590,16 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 		return fmt.Errorf("could not get agent root: %w", err)
 	}
 
+	span.AddEvent("got local root", trace.WithAttributes(
+		attribute.String("localRoot", common.BytesToHash(localRoot[:]).String()),
+	))
 	localRootBlockNumber, err := g.guardDB.GetSummitBlockNumberForRoot(ctx, common.BytesToHash(localRoot[:]).String())
 	if err != nil {
 		return fmt.Errorf("could not get block number for local root: %w", err)
 	}
+	span.AddEvent("got local root block number", trace.WithAttributes(
+		attribute.Int("localRootBlockNumber", int(localRootBlockNumber)),
+	))
 
 	// Filter the eligible agent roots by the given block number and call updateAgentStatus().
 	for _, t := range eligibleAgentTrees {
@@ -528,7 +611,12 @@ func (g Guard) updateAgentStatus(ctx context.Context, chainID uint32) error {
 		}
 		//nolint:nestif
 		if localRootBlockNumber >= treeBlockNumber {
+			span.AddEvent("updating agent status", trace.WithAttributes(
+				attribute.Int("chainID", int(chainID)),
+				attribute.String("agentAddress", tree.AgentAddress.String()),
+			))
 			logger.Infof("Relaying agent status for agent %s on chain %d", tree.AgentAddress.String(), chainID)
+
 			// Fetch the agent status to be relayed from Summit.
 			agentStatus, err := g.getAgentStatus(ctx, g.summitDomainID, tree.AgentAddress)
 			if err != nil {

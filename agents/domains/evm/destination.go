@@ -78,6 +78,15 @@ func (a destinationContract) GetAttestationNonce(ctx context.Context, snapRoot [
 	return attNonce, nil
 }
 
+func (a destinationContract) LastAttestationNonce(ctx context.Context, index uint32) (uint32, error) {
+	attNonce, err := a.contract.LastAttestationNonce(&bind.CallOpts{Context: ctx}, index)
+	if err != nil {
+		return uint32(0), fmt.Errorf("could not get last attNonce: %w", err)
+	}
+
+	return attNonce, nil
+}
+
 func (a destinationContract) MessageStatus(ctx context.Context, message types.Message) (uint8, error) {
 	messageLeaf, err := message.ToLeaf()
 	if err != nil {

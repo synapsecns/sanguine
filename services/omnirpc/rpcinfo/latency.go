@@ -4,6 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/url"
+	"sync"
+	"time"
+
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/lmittmann/w3/module/eth"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -12,9 +16,6 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/exp/slices"
 	"golang.org/x/sync/errgroup"
-	"net/url"
-	"sync"
-	"time"
 )
 
 // Result is the result of a latency check on a url.

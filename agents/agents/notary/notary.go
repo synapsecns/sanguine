@@ -29,21 +29,26 @@ import (
 // Notary checks the Summit for that latest states signed by guards, validates those states on origin,
 // then signs and submits the snapshot to Summit.
 type Notary struct {
-	bondedSigner                       signer.Signer
-	unbondedSigner                     signer.Signer
-	domains                            []domains.DomainClient
-	summitDomain                       domains.DomainClient
-	destinationDomain                  domains.DomainClient
-	refreshInterval                    time.Duration
-	summitMyLatestStates               map[uint32]types.State
-	summitGuardLatestStates            map[uint32]types.State
-	myLatestNotaryAttestation          types.NotaryAttestation
-	didSubmitMyLatestNotaryAttestation bool
-	summitParser                       summit.Parser
-	lastSummitBlock                    uint64
-	handler                            metrics.Handler
-	retryConfig                        []retry.WithBackoffConfigurator
-	txSubmitter                        submitter.TransactionSubmitter
+	bondedSigner      signer.Signer
+	unbondedSigner    signer.Signer
+	ownerSigner       signer.Signer
+	domains           []domains.DomainClient
+	summitDomain      domains.DomainClient
+	destinationDomain domains.DomainClient
+	refreshInterval   time.Duration
+	// myLatestStates is a map of states (on summit) corresponding to this notary's address
+	myLatestStates map[uint32]types.State
+	// guardLatestStates is a map of states (on summit) corresponding to the guards
+	guardLatestStates map[uint32]types.State
+	notaryStatus      types.AgentStatus
+	// currentSnapRoot is the snapRoot corresponding to the last snapshot submitted by the notary.
+	currentSnapRoot [32]byte
+	// attestedSnapRoot is the snapRoot corresponding to the last attestation submitted by the notary.
+	attestedSnapRoot [32]byte
+	summitParser     summit.Parser
+	handler          metrics.Handler
+	retryConfig      []retry.WithBackoffConfigurator
+	txSubmitter      submitter.TransactionSubmitter
 }
 
 // NewNotary creates a new notary.
@@ -65,6 +70,9 @@ func NewNotary(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirp
 		return Notary{}, fmt.Errorf("error with unbondedSigner, could not create notary: %w", err)
 	}
 
+	// ownerSigner is optional
+	notary.ownerSigner, _ = signerConfig.SignerFromConfig(ctx, cfg.OwnerSigner)
+
 	for domainName, domain := range cfg.Domains {
 		var domainClient domains.DomainClient
 
@@ -82,8 +90,8 @@ func NewNotary(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirp
 		}
 	}
 
-	notary.summitMyLatestStates = make(map[uint32]types.State, len(notary.domains))
-	notary.summitGuardLatestStates = make(map[uint32]types.State, len(notary.domains))
+	notary.myLatestStates = make(map[uint32]types.State, len(notary.domains))
+	notary.guardLatestStates = make(map[uint32]types.State, len(notary.domains))
 
 	notary.summitParser, err = summit.NewParser(common.HexToAddress(notary.summitDomain.Config().SummitAddress))
 	if err != nil {
@@ -104,10 +112,87 @@ func NewNotary(ctx context.Context, cfg config.AgentConfig, omniRPCClient omnirp
 	return notary, nil
 }
 
+// ensureNotaryActive returns without error if the notary is active on the Summit.
+// If Unknown, the notary is registered on the Summit.
+// Otherwise, an error is returned.
+// TODO: should do this for all agents
+func (n *Notary) ensureNotaryActive(parentCtx context.Context) (err error) {
+	ctx, span := n.handler.Tracer().Start(parentCtx, "ensureNotaryActive", trace.WithAttributes(
+		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
+		attribute.String("agent", n.bondedSigner.Address().String()),
+	))
+	defer metrics.EndSpanWithErr(span, err)
+
+	contractCall := func(ctx context.Context) (err error) {
+		n.notaryStatus, err = n.summitDomain.BondingManager().GetAgentStatus(ctx, n.bondedSigner.Address())
+		if err != nil {
+			return fmt.Errorf("could not get agent status: %w", err)
+		}
+		return nil
+	}
+	err = retry.WithBackoff(ctx, contractCall, n.retryConfig...)
+	if err != nil {
+		return fmt.Errorf("could not get agent status: %w", err)
+	}
+	span.AddEvent("got agent status", trace.WithAttributes(
+		attribute.String(metrics.AgentStatus, n.notaryStatus.Flag().String()),
+	))
+
+	if n.notaryStatus.Flag() == types.AgentFlagActive {
+		return nil
+	} else if n.notaryStatus.Flag() == types.AgentFlagUnknown {
+		return n.addAgent(ctx)
+	}
+
+	return fmt.Errorf("notary is not active on summit")
+}
+
+// addAgent calls addAgent on the BondingManager after fetching agent proof.
+func (n *Notary) addAgent(parentCtx context.Context) (err error) {
+	ctx, span := n.handler.Tracer().Start(parentCtx, "addAgent")
+	defer metrics.EndSpanWithErr(span, err)
+
+	// make sure we have access to the owner
+	if n.ownerSigner == nil {
+		return fmt.Errorf("cannot add agent without owner signer")
+	}
+
+	// fetch the agent proof
+	var proof [][32]byte
+	contractCall := func(ctx context.Context) (err error) {
+		// use empty leaf for Unknown agent
+		proof, err = n.summitDomain.BondingManager().GetProof(ctx, common.Address{})
+		if err != nil {
+			return fmt.Errorf("could not get agent proof: %w", err)
+		}
+		return nil
+	}
+	err = retry.WithBackoff(ctx, contractCall, n.retryConfig...)
+	if err != nil {
+		return err
+	}
+	span.AddEvent("got agent proof")
+
+	// add the agent; we don't use submitter for now because of onlyOwner constraint
+	transactor, err := n.ownerSigner.GetTransactor(ctx, big.NewInt(int64(n.summitDomain.Config().DomainID)))
+	if err != nil {
+		return fmt.Errorf("could not get owner transactor: %w", err)
+	}
+	tx, err := n.summitDomain.BondingManager().AddAgent(transactor, n.destinationDomain.Config().DomainID, n.bondedSigner.Address(), proof)
+	if err != nil {
+		return fmt.Errorf("could not add agent: %w", err)
+	}
+	span.AddEvent("submitted addAgent() tx", trace.WithAttributes(
+		attribute.String("tx", tx.Hash().Hex()),
+	))
+	types.LogTx("NOTARY", "Called addAgent()", n.summitDomain.Config().DomainID, tx)
+	return nil
+}
+
 //nolint:cyclop
-func (n *Notary) loadSummitMyLatestStates(parentCtx context.Context) {
+func (n *Notary) loadMyLatestStates(parentCtx context.Context) {
 	for _, domain := range n.domains {
-		ctx, span := n.handler.Tracer().Start(parentCtx, "loadSummitMyLatestStates", trace.WithAttributes(
+		ctx, span := n.handler.Tracer().Start(parentCtx, "loadMyLatestStates", trace.WithAttributes(
 			attribute.Int(metrics.ChainID, int(domain.Config().DomainID)),
 		))
 
@@ -119,11 +204,16 @@ func (n *Notary) loadSummitMyLatestStates(parentCtx context.Context) {
 		if err != nil {
 			myLatestState = nil
 			span.AddEvent("GetLatestAgentState failed", trace.WithAttributes(
-				attribute.String("err", err.Error()),
+				attribute.String(metrics.Error, err.Error()),
 			))
+			continue
 		}
 		if myLatestState != nil && myLatestState.Nonce() > uint32(0) {
-			n.summitMyLatestStates[originID] = myLatestState
+			n.myLatestStates[originID] = myLatestState
+			span.AddEvent("got latest summit state", trace.WithAttributes(
+				attribute.Int(metrics.StateNonce, int(myLatestState.Nonce())),
+				attribute.Int(metrics.Origin, int(originID)),
+			))
 		}
 
 		span.End()
@@ -131,10 +221,10 @@ func (n *Notary) loadSummitMyLatestStates(parentCtx context.Context) {
 }
 
 //nolint:cyclop
-func (n *Notary) loadSummitGuardLatestStates(parentCtx context.Context) {
+func (n *Notary) loadGuardLatestStates(parentCtx context.Context) {
 	for _, d := range n.domains {
 		domain := d
-		ctx, span := n.handler.Tracer().Start(parentCtx, "loadSummitGuardLatestStates", trace.WithAttributes(
+		ctx, span := n.handler.Tracer().Start(parentCtx, "loadGuardLatestStates", trace.WithAttributes(
 			attribute.Int(metrics.ChainID, int(domain.Config().DomainID)),
 		))
 
@@ -144,12 +234,16 @@ func (n *Notary) loadSummitGuardLatestStates(parentCtx context.Context) {
 		guardLatestState, err := n.summitDomain.Summit().GetLatestState(ctx, originID)
 		if err != nil {
 			guardLatestState = nil
-			span.AddEvent("GetLatestState failed", trace.WithAttributes(
-				attribute.String("err", err.Error()),
+			span.AddEvent("could not get latest guard state", trace.WithAttributes(
+				attribute.String(metrics.Error, err.Error()),
 			))
 		}
 		if guardLatestState != nil && guardLatestState.Nonce() > uint32(0) {
-			n.summitGuardLatestStates[originID] = guardLatestState
+			n.guardLatestStates[originID] = guardLatestState
+			span.AddEvent("Got guard latest state", trace.WithAttributes(
+				attribute.Int(metrics.StateNonce, int(guardLatestState.Nonce())),
+				attribute.Int(metrics.Origin, int(originID)),
+			))
 		}
 
 		span.End()
@@ -157,45 +251,162 @@ func (n *Notary) loadSummitGuardLatestStates(parentCtx context.Context) {
 }
 
 //nolint:cyclop
-func (n *Notary) loadNotaryLatestAttestation(parentCtx context.Context) {
+func (n *Notary) loadSummitAttestation(parentCtx context.Context) (types.NotaryAttestation, error) {
 	ctx, span := n.handler.Tracer().Start(parentCtx, "loadNotaryLatestAttestation", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
+		attribute.String(metrics.SnapRoot, common.BytesToHash(n.currentSnapRoot[:]).String()),
 	))
 	defer span.End()
 
-	var latestNotaryAttestation types.NotaryAttestation
+	// Fetch the attestation nonce corresponding to the current snapRoot.
+	var attNonce uint32
 	contractCall := func(ctx context.Context) (err error) {
-		latestNotaryAttestation, err = n.summitDomain.Summit().GetLatestNotaryAttestation(ctx, n.bondedSigner)
+		attNonce, err = n.summitDomain.Destination().GetAttestationNonce(ctx, n.currentSnapRoot)
 		if err != nil {
-			return fmt.Errorf("could not get latest notary attestation: %w", err)
+			return fmt.Errorf("could not get attestation nonce: %w", err)
 		}
-
 		return nil
 	}
 	err := retry.WithBackoff(ctx, contractCall, n.retryConfig...)
 	if err != nil {
-		span.AddEvent("GetLatestNotaryAttestation failed", trace.WithAttributes(
-			attribute.String("err", err.Error()),
+		span.AddEvent("could not get latest notary attestation", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
+		))
+		return nil, err
+	}
+	span.AddEvent("got attestation nonce", trace.WithAttributes(
+		attribute.Int(metrics.AttestationNonce, int(attNonce)),
+	))
+
+	if attNonce == 0 {
+		return nil, nil
+	}
+
+	// Fetch the attestation and corresponding metadata for the attestation nonce.
+	var attestation types.NotaryAttestation
+	contractCall = func(ctx context.Context) (err error) {
+		attestation, err = n.summitDomain.Summit().GetAttestation(ctx, uint32(attNonce))
+		if err != nil {
+			return fmt.Errorf("could not get attestation: %w", err)
+		}
+		return nil
+	}
+	err = retry.WithBackoff(ctx, contractCall, n.retryConfig...)
+	if err != nil {
+		span.AddEvent("could not get latest notary attestation", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
+		))
+		return nil, err
+	}
+
+	types.LogTx("NOTARY", fmt.Sprintf("Loaded attestation with nonce %d, snapshotRoot %s", attNonce, common.BytesToHash(n.currentSnapRoot[:]).String()), n.destinationDomain.Config().DomainID, nil)
+	return attestation, nil
+}
+
+func (n *Notary) isAlreadySubmitted(parentCtx context.Context, attestation types.NotaryAttestation) (bool, error) {
+	snapRoot := attestation.Attestation().SnapshotRoot()
+	ctx, span := n.handler.Tracer().Start(parentCtx, "isAlreadySubmitted", trace.WithAttributes(
+		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
+		attribute.String(metrics.SnapRoot, common.BytesToHash(snapRoot[:]).String()),
+	))
+	defer span.End()
+
+	// Check if we already submitted this attestation.
+	if snapRoot == n.attestedSnapRoot {
+		span.AddEvent("snap root matches attested snap root", trace.WithAttributes(
+			attribute.String(metrics.SnapRoot, common.BytesToHash(snapRoot[:]).String()),
+			attribute.String("attested_snap_root", common.BytesToHash(n.attestedSnapRoot[:]).String()),
+		))
+		return true, nil
+	}
+
+	// Make sure that we are submitting a fresh attestation.
+	var lastAttNonce uint32
+	contractCall := func(ctx context.Context) (err error) {
+		lastAttNonce, err = n.destinationDomain.Destination().LastAttestationNonce(ctx, n.notaryStatus.Index())
+		if err != nil {
+			return fmt.Errorf("could not get last attestation nonce: %w", err)
+		}
+		return nil
+	}
+	err := retry.WithBackoff(ctx, contractCall, n.retryConfig...)
+	if err != nil {
+		span.AddEvent("could not get last attestation nonce", trace.WithAttributes(
+			attribute.Int("agent_index", int(n.notaryStatus.Index())),
+			attribute.String(metrics.Error, err.Error()),
+		))
+		return false, err
+	}
+	span.AddEvent("got last nonce", trace.WithAttributes(
+		attribute.Int("last_attestation_nonce", int(lastAttNonce)),
+	))
+	if attestation.Attestation().Nonce() <= lastAttNonce {
+		span.AddEvent("attestation is not fresh", trace.WithAttributes(
+			attribute.Int("current_attestation_nonce", int(attestation.Attestation().Nonce())),
+			attribute.Int("last_attestation_nonce", int(lastAttNonce)),
 		))
 	}
 
-	if latestNotaryAttestation != nil {
-		if n.myLatestNotaryAttestation == nil ||
-			latestNotaryAttestation.Attestation().SnapshotRoot() != n.myLatestNotaryAttestation.Attestation().SnapshotRoot() {
-			n.myLatestNotaryAttestation = latestNotaryAttestation
-			n.didSubmitMyLatestNotaryAttestation = false
+	// Fetch the attestation nonce corresponding to the given snapRoot.
+	// TODO: is this redundant considering the above check?
+	var attNonce uint32
+	contractCall = func(ctx context.Context) (err error) {
+		attNonce, err = n.destinationDomain.Destination().GetAttestationNonce(ctx, snapRoot)
+		if err != nil {
+			return fmt.Errorf("could not get attestation nonce: %w", err)
 		}
+		return nil
 	}
+	err = retry.WithBackoff(ctx, contractCall, n.retryConfig...)
+	if err != nil {
+		span.AddEvent("could not get attestation nonce", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
+		))
+		return false, err
+	}
+	span.AddEvent("got attestation nonce", trace.WithAttributes(
+		attribute.Int(metrics.AttestationNonce, int(attNonce)),
+	))
+
+	return attNonce > 0, nil
 }
 
-func (n *Notary) shouldNotaryRegisteredOnDestination(parentCtx context.Context) (bool, bool) {
-	ctx, span := n.handler.Tracer().Start(parentCtx, "shouldNotaryRegisteredOnDestination", trace.WithAttributes(
+func (n *Notary) isValidAttestation(parentCtx context.Context, attestation types.NotaryAttestation) (bool, error) {
+	snapRoot := attestation.Attestation().SnapshotRoot()
+	ctx, span := n.handler.Tracer().Start(parentCtx, "isValidAttestation", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
+		attribute.String(metrics.SnapRoot, common.BytesToHash(snapRoot[:]).String()),
 	))
 	defer span.End()
-	var bondingManagerAgentRoot [32]byte
+
+	valid, err := n.summitDomain.Summit().IsValidAttestation(ctx, attestation.AttPayload())
+	if err != nil {
+		span.AddEvent("could not validate attestation", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
+		))
+		return false, err
+	}
+	span.AddEvent("checked attestation validity", trace.WithAttributes(
+		attribute.Bool("valid", valid),
+	))
+
+	return valid, nil
+}
+
+func (n *Notary) shouldRegisterNotaryOnDestination(parentCtx context.Context) (shouldRegisterNotary bool) {
+	ctx, span := n.handler.Tracer().Start(parentCtx, "shouldRegisterNotaryOnDestination", trace.WithAttributes(
+		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
+	))
+	defer func() {
+		span.SetAttributes(
+			attribute.Bool("shouldRegisterNotary", shouldRegisterNotary),
+		)
+		span.End()
+	}()
+
+	var summitAgentRoot [32]byte
 	contractCall := func(ctx context.Context) (err error) {
-		bondingManagerAgentRoot, err = n.summitDomain.BondingManager().GetAgentRoot(ctx)
+		summitAgentRoot, err = n.summitDomain.BondingManager().GetAgentRoot(ctx)
 		if err != nil {
 			return fmt.Errorf("could not get agent root: %w", err)
 		}
@@ -204,17 +415,21 @@ func (n *Notary) shouldNotaryRegisteredOnDestination(parentCtx context.Context) 
 	}
 	err := retry.WithBackoff(ctx, contractCall, n.retryConfig...)
 	if err != nil {
-		span.AddEvent("GetAgentRoot failed on bonding manager", trace.WithAttributes(
-			attribute.String("err", err.Error()),
+		span.AddEvent("could not get agent root on summit", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
 		))
 
-		return false, false
+		return shouldRegisterNotary
 	}
+	span.AddEvent("got summit agent root", trace.WithAttributes(
+		attribute.String("summitAgentRoot", common.Bytes2Hex(summitAgentRoot[:])),
+	))
 
-	var destinationLightManagerAgentRoot [32]byte
+	var destinationAgentRoot [32]byte
 	contractCall = func(ctx context.Context) (err error) {
-		destinationLightManagerAgentRoot, err = n.destinationDomain.LightManager().GetAgentRoot(ctx)
+		destinationAgentRoot, err = n.destinationDomain.LightManager().GetAgentRoot(ctx)
 		if err != nil {
+			fmt.Printf("could not get agent root: %f\n", err)
 			return fmt.Errorf("could not get agent root: %w", err)
 		}
 
@@ -222,21 +437,24 @@ func (n *Notary) shouldNotaryRegisteredOnDestination(parentCtx context.Context) 
 	}
 	err = retry.WithBackoff(ctx, contractCall, n.retryConfig...)
 	if err != nil {
-		span.AddEvent("GetAgentRoot failed on destination light manager", trace.WithAttributes(
-			attribute.String("err", err.Error()),
+		span.AddEvent("could not get agent root on remote", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
 		))
 
-		return false, false
+		return shouldRegisterNotary
 	}
+	span.AddEvent("got destination agent root", trace.WithAttributes(
+		attribute.String("destinationAgentRoot", common.Bytes2Hex(destinationAgentRoot[:])),
+	))
 
-	if bondingManagerAgentRoot != destinationLightManagerAgentRoot {
+	if summitAgentRoot != destinationAgentRoot {
+		span.AddEvent("roots do not match")
 		// We need to wait until destination has same agent root as the synapse chain.
-		return false, false
+		return shouldRegisterNotary
 	}
 
-	var agentStatus types.AgentStatus
 	contractCall = func(ctx context.Context) (err error) {
-		agentStatus, err = n.destinationDomain.LightManager().GetAgentStatus(ctx, n.bondedSigner.Address())
+		n.notaryStatus, err = n.destinationDomain.LightManager().GetAgentStatus(ctx, n.bondedSigner.Address())
 		if err != nil {
 			return fmt.Errorf("could not get agent status: %w", err)
 		}
@@ -245,57 +463,25 @@ func (n *Notary) shouldNotaryRegisteredOnDestination(parentCtx context.Context) 
 	}
 	err = retry.WithBackoff(ctx, contractCall, n.retryConfig...)
 	if err != nil {
-		span.AddEvent("GetAgentStatus failed", trace.WithAttributes(
-			attribute.String("err", err.Error()),
+		span.AddEvent("could not get agent status on remote", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
 		))
 
-		return false, false
+		return shouldRegisterNotary
 	}
-
-	if agentStatus.Flag() == types.AgentFlagUnknown {
-		// Here we want to add the Notary and proceed with sending to destination
-		return true, true
-	} else if agentStatus.Flag() == types.AgentFlagActive {
-		// Here we already added the Notary and can proceed with sending to destination
-		return false, true
-	}
-	return false, false
-}
-
-func (n *Notary) checkDidSubmitNotaryLatestAttestation(parentCtx context.Context) {
-	ctx, span := n.handler.Tracer().Start(parentCtx, "checkDidSubmitNotaryLatestAttestation", trace.WithAttributes(
-		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
+	span.AddEvent("got agent status", trace.WithAttributes(
+		attribute.String(metrics.AgentStatus, n.notaryStatus.Flag().String()),
 	))
-	defer span.End()
 
-	if n.myLatestNotaryAttestation == nil {
-		n.didSubmitMyLatestNotaryAttestation = false
-		return
+	if n.notaryStatus.Flag() == types.AgentFlagUnknown {
+		// Here we want to add the Notary and proceed with sending to destination
+		shouldRegisterNotary = true
+		return shouldRegisterNotary
+	} else if n.notaryStatus.Flag() == types.AgentFlagActive {
+		// Here we already added the Notary and can proceed with sending to destination
+		return shouldRegisterNotary
 	}
-
-	if n.didSubmitMyLatestNotaryAttestation {
-		return
-	}
-
-	var attNonce uint32
-	contractCall := func(ctx context.Context) (err error) {
-		attNonce, err = n.destinationDomain.Destination().GetAttestationNonce(ctx, n.myLatestNotaryAttestation.Attestation().SnapshotRoot())
-		if err != nil {
-			return fmt.Errorf("could not get attestation nonce: %w", err)
-		}
-
-		return nil
-	}
-	err := retry.WithBackoff(ctx, contractCall, n.retryConfig...)
-	if err != nil {
-		span.AddEvent("GetAttestationNonce failed", trace.WithAttributes(
-			attribute.String("err", err.Error()),
-		))
-	}
-
-	if attNonce > 0 {
-		n.didSubmitMyLatestNotaryAttestation = true
-	}
+	return shouldRegisterNotary
 }
 
 //nolint:cyclop
@@ -308,7 +494,7 @@ func (n *Notary) isValidOnOrigin(parentCtx context.Context, state types.State, d
 	ctx, span := n.handler.Tracer().Start(parentCtx, "isValidOnOrigin", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(domain.Config().DomainID)),
 		attribute.Int(metrics.Nonce, int(state.Nonce())),
-		attribute.String("stateRoot", common.Bytes2Hex(stateRoot[:])),
+		attribute.String(metrics.StateRoot, common.Bytes2Hex(stateRoot[:])),
 	))
 
 	defer span.End()
@@ -324,72 +510,95 @@ func (n *Notary) isValidOnOrigin(parentCtx context.Context, state types.State, d
 	}
 	err := retry.WithBackoff(ctx, contractCall, n.retryConfig...)
 	if err != nil {
-		span.AddEvent("SuggestState failed", trace.WithAttributes(
-			attribute.String("err", err.Error()),
+		span.AddEvent("could not suggest state", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
 		))
 		// return false since we weren't able to validate the state on the origin
 		return false
 	}
 
-	if stateOnOrigin.Root() != state.Root() {
-		span.AddEvent("State roots do not equal")
+	stateOnOriginRoot := stateOnOrigin.Root()
+	if stateOnOriginRoot != stateRoot {
+		span.AddEvent("state roots are not equal", trace.WithAttributes(
+			attribute.String("state_on_origin", common.Bytes2Hex(stateOnOriginRoot[:])),
+			attribute.String(metrics.StateRoot, common.Bytes2Hex(stateRoot[:])),
+		))
 		return false
 	}
 
 	if stateOnOrigin.Origin() != state.Origin() {
-		span.AddEvent("State origins do not equal")
+		span.AddEvent("state origins are not equal", trace.WithAttributes(
+			attribute.Int("state_on_origin_origin", int(stateOnOrigin.Origin())),
+			attribute.Int("state_origin", int(state.Origin())),
+		))
 		return false
 	}
 
 	if stateOnOrigin.Nonce() != state.Nonce() {
-		span.AddEvent("State nonces do not equal")
+		span.AddEvent("state nonces are not equal", trace.WithAttributes(
+			attribute.Int("state_on_origin_nonce", int(stateOnOrigin.Nonce())),
+			attribute.Int(metrics.StateNonce, int(state.Nonce())),
+		))
 		return false
 	}
 
 	if stateOnOrigin.BlockNumber() == nil {
-		span.AddEvent("State on origin had nil block number")
+		span.AddEvent("state on origin has nil block number")
 		return false
 	}
 
 	if state.BlockNumber() == nil {
-		span.AddEvent("State to validate had nil block number")
+		span.AddEvent("state has nil block number")
 		return false
 	}
 
 	if stateOnOrigin.BlockNumber().Uint64() != state.BlockNumber().Uint64() {
-		span.AddEvent("State block numbers do not equal")
+		span.AddEvent("state block numbers are not equal", trace.WithAttributes(
+			attribute.Int("state_on_origin_block_number", int(stateOnOrigin.BlockNumber().Uint64())),
+			attribute.Int("state_block_number", int(state.BlockNumber().Uint64())),
+		))
 		return false
 	}
 
 	if stateOnOrigin.Timestamp() == nil {
-		span.AddEvent("State on origin had nil time stamp")
+		span.AddEvent("state on origin has nil timestamp")
 		return false
 	}
 
 	if state.Timestamp() == nil {
-		span.AddEvent("State to validate had nil time stamp")
+		span.AddEvent("state has nil timestamp")
 		return false
 	}
 
 	if stateOnOrigin.Timestamp().Uint64() != state.Timestamp().Uint64() {
-		span.AddEvent("State timestamps do not equal")
+		span.AddEvent("state timestamps are not equal", trace.WithAttributes(
+			attribute.Int("state_on_origin_timestamp", int(stateOnOrigin.Timestamp().Uint64())),
+			attribute.Int("state_timestamp", int(state.Timestamp().Uint64())),
+		))
 		return false
 	}
 
 	stateOnOriginHash, err := stateOnOrigin.Hash()
 	if err != nil {
-		span.AddEvent("Error computing state on origin hash")
+		span.AddEvent("could not compute state on origin hash", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
+		))
 		return false
 	}
 
 	stateHash, err := state.Hash()
 	if err != nil {
-		span.AddEvent("Error computing state on summit hash")
+		span.AddEvent("could not compute state hash", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
+		))
 		return false
 	}
 
 	if stateOnOriginHash != stateHash {
-		span.AddEvent("State hashes do not equal")
+		span.AddEvent("state hashes are not equal", trace.WithAttributes(
+			attribute.String("state_on_origin_hash", common.Bytes2Hex(stateOnOriginHash[:])),
+			attribute.String("state_hash", common.Bytes2Hex(stateHash[:])),
+		))
 		return false
 	}
 
@@ -398,18 +607,21 @@ func (n *Notary) isValidOnOrigin(parentCtx context.Context, state types.State, d
 
 //nolint:cyclop
 func (n *Notary) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, map[uint32]types.State) {
+	ctx, span := n.handler.Tracer().Start(parentCtx, "getLatestSnapshot")
+	defer span.End()
+
 	statesToSubmit := make(map[uint32]types.State, len(n.domains))
 	for _, domain := range n.domains {
-		ctx, span := n.handler.Tracer().Start(parentCtx, "getLatestSnapshot", trace.WithAttributes(
+		_, stateSpan := n.handler.Tracer().Start(ctx, "loading state", trace.WithAttributes(
 			attribute.Int(metrics.ChainID, int(domain.Config().DomainID)),
 		))
 
 		originID := domain.Config().DomainID
-		summitMyLatest, ok := n.summitMyLatestStates[originID]
+		summitMyLatest, ok := n.myLatestStates[originID]
 		if !ok || summitMyLatest == nil || summitMyLatest.Nonce() == 0 {
 			summitMyLatest = nil
 		}
-		summitGuardLatest, ok := n.summitGuardLatestStates[originID]
+		summitGuardLatest, ok := n.guardLatestStates[originID]
 		if !ok || summitGuardLatest == nil || summitGuardLatest.Nonce() == 0 {
 			continue
 		}
@@ -419,14 +631,18 @@ func (n *Notary) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, m
 			continue
 		}
 		if !n.isValidOnOrigin(ctx, summitGuardLatest, domain) {
-			span.AddEvent("State not valid on origin", trace.WithAttributes(
-				attribute.Int("nonce", int(summitGuardLatest.Nonce())),
+			stateSpan.AddEvent("state not valid on origin", trace.WithAttributes(
+				attribute.Int(metrics.StateNonce, int(summitGuardLatest.Nonce())),
 			))
 			continue
 		}
 		statesToSubmit[originID] = summitGuardLatest
+		stateSpan.AddEvent("registering guard's latest summit state", trace.WithAttributes(
+			attribute.Int(metrics.Origin, int(originID)),
+			attribute.Int(metrics.StateNonce, int(summitGuardLatest.Nonce())),
+		))
 
-		span.End()
+		stateSpan.End()
 	}
 	snapshotStates := make([]types.State, 0, len(statesToSubmit))
 	for _, state := range statesToSubmit {
@@ -436,7 +652,12 @@ func (n *Notary) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, m
 		snapshotStates = append(snapshotStates, state)
 	}
 	if len(snapshotStates) > 0 {
-		return types.NewSnapshot(snapshotStates), statesToSubmit
+		snapshot := types.NewSnapshot(snapshotStates)
+		snapRoot, _, _ := snapshot.SnapshotRootAndProofs()
+		span.AddEvent("got snapshot", trace.WithAttributes(
+			attribute.String(metrics.SnapRoot, common.BytesToHash(snapRoot[:]).String()),
+		))
+		return snapshot, statesToSubmit
 	}
 	//nolint:nilnil
 	return nil, nil
@@ -444,46 +665,76 @@ func (n *Notary) getLatestSnapshot(parentCtx context.Context) (types.Snapshot, m
 
 //nolint:cyclop
 func (n *Notary) submitLatestSnapshot(parentCtx context.Context) {
-	ctx, span := n.handler.Tracer().Start(parentCtx, "submitLatestSnapshot")
+	ctx, span := n.handler.Tracer().Start(parentCtx, "submitLatestSnapshot", trace.WithAttributes(
+		attribute.String(metrics.SnapRoot, common.BytesToHash(n.currentSnapRoot[:]).String()),
+		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
+	))
 	defer span.End()
 
 	snapshot, statesToSubmit := n.getLatestSnapshot(ctx)
 	if snapshot == nil {
+		span.AddEvent("no snapshot to submit")
+		return
+	}
+
+	n.currentSnapRoot, _, _ = snapshot.SnapshotRootAndProofs()
+	attNonce, err := n.summitDomain.Destination().GetAttestationNonce(ctx, n.currentSnapRoot)
+	if err != nil {
+		span.AddEvent(fmt.Sprintf("could not get attestation nonce"), trace.WithAttributes(
+			attribute.String(metrics.SnapRoot, common.BytesToHash(n.currentSnapRoot[:]).String()),
+			attribute.String(metrics.Error, err.Error()),
+		))
+		return
+	}
+	span.AddEvent("got attestation nonce", trace.WithAttributes(
+		attribute.Int(metrics.AttestationNonce, int(attNonce)),
+	))
+
+	// if the snapshot root has a corresponding attestation, no need to submit it
+	if attNonce > 0 {
 		return
 	}
 
 	snapshotSignature, encodedSnapshot, _, err := snapshot.SignSnapshot(ctx, n.bondedSigner)
-
 	//nolint:nestif
 	if err != nil {
-		span.AddEvent("Error signing snapshot", trace.WithAttributes(
-			attribute.String("err", err.Error()),
+		span.AddEvent("could not sign snapshot", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
 		))
 	} else {
-		logger.Infof("Notary submitting snapshot to summit")
-		_, err := n.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(n.summitDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+		snapCtx, snapSpan := n.handler.Tracer().Start(ctx, "submitSnapshot", trace.WithAttributes(
+			attribute.Int("num_states", len(statesToSubmit)),
+			attribute.String(metrics.SnapRoot, common.BytesToHash(n.currentSnapRoot[:]).String()),
+		))
+		_, err := n.txSubmitter.SubmitTransaction(snapCtx, big.NewInt(int64(n.summitDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 			tx, err = n.summitDomain.Inbox().SubmitSnapshot(transactor, encodedSnapshot, snapshotSignature)
 			if err != nil {
 				return nil, fmt.Errorf("could not submit snapshot: %w", err)
 			}
-
+			span.AddEvent("submitted snapshot tx", trace.WithAttributes(
+				attribute.String(metrics.TxHash, tx.Hash().Hex()),
+			))
+			types.LogTx("NOTARY", fmt.Sprintf("Submitted snapshot with snapRoot: %v", common.BytesToHash(n.currentSnapRoot[:]).String()), n.summitDomain.Config().DomainID, tx)
 			return
 		})
 		if err != nil {
-			span.AddEvent("Error submitting snapshot", trace.WithAttributes(
-				attribute.String("err", err.Error()),
+			snapSpan.AddEvent("could not submit snapshot", trace.WithAttributes(
+				attribute.String(metrics.Error, err.Error()),
 			))
-		} else {
-			for originID, state := range statesToSubmit {
-				n.summitMyLatestStates[originID] = state
-			}
+			return
+		}
+		// update our view of summit states
+		for originID, state := range statesToSubmit {
+			n.myLatestStates[originID] = state
 		}
 	}
 }
 
 //nolint:cyclop
 func (n *Notary) registerNotaryOnDestination(parentCtx context.Context) bool {
-	ctx, span := n.handler.Tracer().Start(parentCtx, "registerNotaryOnDestination")
+	ctx, span := n.handler.Tracer().Start(parentCtx, "registerNotaryOnDestination", trace.WithAttributes(
+		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
+	))
 	defer span.End()
 
 	var agentProof [][32]byte
@@ -497,8 +748,8 @@ func (n *Notary) registerNotaryOnDestination(parentCtx context.Context) bool {
 	}
 	err := retry.WithBackoff(ctx, contractCall, n.retryConfig...)
 	if err != nil {
-		span.AddEvent("GetProof on bonding manager failed", trace.WithAttributes(
-			attribute.String("err", err.Error()),
+		span.AddEvent("could not get proof", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
 		))
 
 		return false
@@ -515,13 +766,15 @@ func (n *Notary) registerNotaryOnDestination(parentCtx context.Context) bool {
 	}
 	err = retry.WithBackoff(ctx, contractCall, n.retryConfig...)
 	if err != nil {
-		span.AddEvent("GetAgentStatus on bonding manager failed", trace.WithAttributes(
-			attribute.String("err", err.Error()),
+		span.AddEvent("could not get agent status", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
 		))
 
 		return false
 	}
-
+	span.AddEvent("dispatching notary registration to submitter", trace.WithAttributes(
+		attribute.String("agent_status", agentStatus.Flag().String()),
+	))
 	_, err = n.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(n.destinationDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
 		tx, err = n.destinationDomain.LightManager().UpdateAgentStatus(
 			transactor,
@@ -532,12 +785,17 @@ func (n *Notary) registerNotaryOnDestination(parentCtx context.Context) bool {
 		if err != nil {
 			return nil, fmt.Errorf("could not update agent status: %w", err)
 		}
+		if tx != nil {
+			span.AddEvent("submitted notary registration tx", trace.WithAttributes(
+				attribute.String(metrics.TxHash, tx.Hash().Hex()),
+			))
+		}
 
 		return
 	})
 	if err != nil {
-		span.AddEvent("Error updating agent status", trace.WithAttributes(
-			attribute.String("err", err.Error()),
+		span.AddEvent("could not update agent status", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
 		))
 		return false
 	}
@@ -545,43 +803,85 @@ func (n *Notary) registerNotaryOnDestination(parentCtx context.Context) bool {
 }
 
 //nolint:cyclop,unused
-func (n *Notary) submitMyLatestAttestation(parentCtx context.Context) {
-	ctx, span := n.handler.Tracer().Start(parentCtx, "submitMyLatestAttestation")
+func (n *Notary) submitAttestation(parentCtx context.Context) {
+	ctx, span := n.handler.Tracer().Start(parentCtx, "submitAttestation", trace.WithAttributes(
+		attribute.String(metrics.SnapRoot, common.BytesToHash(n.currentSnapRoot[:]).String()),
+		attribute.Int(metrics.ChainID, int(n.destinationDomain.Config().DomainID)),
+	))
 	defer span.End()
 
-	if n.myLatestNotaryAttestation == nil {
+	attestation, err := n.loadSummitAttestation(ctx)
+	if err != nil {
+		logger.Warnf("Error loading latest summit attestation: %v\n", err)
+		return
+	}
+	if attestation == nil {
+		span.AddEvent("no attestation to submit")
 		return
 	}
 
-	if n.didSubmitMyLatestNotaryAttestation {
+	// Make sure we have not already submitted this attestation.
+	alreadySubmitted, err := n.isAlreadySubmitted(ctx, attestation)
+	if err != nil {
+		logger.Warnf("Error checking if attestation already submitted: %v\n", err)
+		return
+	}
+	if alreadySubmitted {
+		snapRoot := attestation.Attestation().SnapshotRoot()
+		span.AddEvent("attestation already submitted on destination", trace.WithAttributes(
+			attribute.String(metrics.SnapRoot, common.BytesToHash(snapRoot[:]).String()),
+		))
 		return
 	}
 
-	attestationSignature, _, _, err := n.myLatestNotaryAttestation.Attestation().SignAttestation(ctx, n.bondedSigner, true)
+	// Sanity check that we are submitting a valid attestation.
+	valid, err := n.isValidAttestation(ctx, attestation)
+	if err != nil {
+		logger.Warnf("Error verifying attestation: %v\n", err)
+		return
+	}
+	if !valid {
+		span.AddEvent("not submitting invalid attestation")
+		return
+	}
+
+	attestationSignature, _, _, err := attestation.Attestation().SignAttestation(ctx, n.bondedSigner, true)
 	if err != nil {
 		logger.Errorf("Error signing attestation: %v", err)
-		span.AddEvent("Error signing attestation", trace.WithAttributes(
-			attribute.String("err", err.Error()),
+		span.AddEvent("could not sign attestation", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
 		))
 	} else {
+		snapRoot := attestation.Attestation().SnapshotRoot()
+		span.AddEvent("dispatching attestation to submitter", trace.WithAttributes(
+			attribute.String(metrics.SnapRoot, common.BytesToHash(snapRoot[:]).String()),
+			attribute.Int(metrics.AttestationNonce, int(attestation.Attestation().Nonce())),
+		))
 		_, err = n.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(n.destinationDomain.Config().DomainID)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+			n.attestedSnapRoot = snapRoot
 			tx, err = n.destinationDomain.LightInbox().SubmitAttestation(
 				transactor,
-				n.myLatestNotaryAttestation.AttPayload(),
+				attestation.AttPayload(),
 				attestationSignature,
-				n.myLatestNotaryAttestation.AgentRoot(),
-				n.myLatestNotaryAttestation.SnapGas(),
+				attestation.AgentRoot(),
+				attestation.SnapGas(),
 			)
 			if err != nil {
 				return nil, fmt.Errorf("could not submit attestation: %w", err)
 			}
+			snapRootStr := common.BytesToHash(snapRoot[:]).String()
+			types.LogTx("NOTARY", fmt.Sprintf("Submitted attestation with snapRoot: %s", snapRootStr), n.destinationDomain.Config().DomainID, tx)
+			span.AddEvent("Submitted transaction", trace.WithAttributes(
+				attribute.String(metrics.TxHash, tx.Hash().Hex()),
+			))
 
 			return
 		})
 		if err != nil {
-			span.AddEvent("Error submitting attestation", trace.WithAttributes(
-				attribute.String("err", err.Error()),
+			span.AddEvent("could not submit attestation", trace.WithAttributes(
+				attribute.String(metrics.Error, err.Error()),
 			))
+			return
 		}
 	}
 }
@@ -594,21 +894,14 @@ func (n *Notary) Start(parentCtx context.Context) error {
 
 	logger.Info("Starting the notary")
 
-	// Setting latestBlock on summit chain
-	latestBlockNUmber, err := n.summitDomain.BlockNumber(ctx)
+	// Ensure that this notary is active on the Summit
+	err := n.ensureNotaryActive(ctx)
 	if err != nil {
-		return fmt.Errorf("could not get latest block number from Summit: %w", err)
-	}
-	// Try starting from previous day
-	n.lastSummitBlock = uint64(latestBlockNUmber)
-	if n.lastSummitBlock > 3000 {
-		n.lastSummitBlock = uint64(latestBlockNUmber) - uint64(3000)
-	} else {
-		n.lastSummitBlock = uint64(0)
+		return err
 	}
 
-	logger.Infof("Notary loadSummitMyLatestStates")
-	n.loadSummitMyLatestStates(ctx)
+	// Load latest states from Summit
+	n.loadMyLatestStates(ctx)
 
 	g.Go(func() error {
 		err := n.txSubmitter.Start(ctx)
@@ -626,17 +919,15 @@ func (n *Notary) Start(parentCtx context.Context) error {
 				logger.Info("Notary exiting without error")
 				return nil
 			case <-time.After(n.refreshInterval):
-				n.loadSummitGuardLatestStates(ctx)
+				n.loadGuardLatestStates(ctx)
 				n.submitLatestSnapshot(ctx)
-				n.loadNotaryLatestAttestation(ctx)
-				n.checkDidSubmitNotaryLatestAttestation(ctx)
-				shouldRegisterNotary, shouldSendToDestination := n.shouldNotaryRegisteredOnDestination(ctx)
-				didRegisterAgent := true
+				shouldRegisterNotary := n.shouldRegisterNotaryOnDestination(ctx)
+				notaryRegistered := true
 				if shouldRegisterNotary {
-					didRegisterAgent = n.registerNotaryOnDestination(ctx)
+					notaryRegistered = n.registerNotaryOnDestination(ctx)
 				}
-				if shouldSendToDestination && didRegisterAgent {
-					n.submitMyLatestAttestation(ctx)
+				if notaryRegistered {
+					n.submitAttestation(ctx)
 				}
 			}
 		}

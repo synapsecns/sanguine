@@ -37,6 +37,12 @@ type Message interface {
 	OptimisticSeconds() uint32
 }
 
+func MessageToString(msg Message) string {
+	messageLeaf, _ := msg.ToLeaf()
+	messageLeafStr := common.BytesToHash(messageLeaf[:]).String()
+	return fmt.Sprintf("Message{Origin: %d, Nonce: %d, Leaf: %s}", msg.OriginDomain(), msg.Nonce(), messageLeafStr)
+}
+
 // messageImpl implements a message. It is used for testutils. Real messages are emitted by the contract.
 type messageImpl struct {
 	header      Header

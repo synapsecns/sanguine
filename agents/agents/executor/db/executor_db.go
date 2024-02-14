@@ -3,6 +3,8 @@ package db
 import (
 	"context"
 	"encoding/json"
+
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/agents/executor/types"
 	agentsTypes "github.com/synapsecns/sanguine/agents/types"
 	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
@@ -11,7 +13,7 @@ import (
 // ExecutorDBWriter is the interface for writing to the executor database.
 type ExecutorDBWriter interface {
 	// StoreMessage stores a message in the database.
-	StoreMessage(ctx context.Context, message agentsTypes.Message, blockNumber uint64, minimumTimeSet bool, minimumTime uint64) error
+	StoreMessage(ctx context.Context, message agentsTypes.Message, blockNumber uint64, minimumTimeSet bool, minimumTime uint64, originTxHash common.Hash) error
 	// ExecuteMessage marks a message as executed in the database.
 	ExecuteMessage(ctx context.Context, messageMask DBMessage) error
 	// SetMinimumTime sets the minimum time of a message.
@@ -57,7 +59,7 @@ type ExecutorDBReader interface {
 	// GetState gets a state from the database.
 	GetState(ctx context.Context, stateMask DBState) (*agentsTypes.State, error)
 	// GetStateMetadata gets the snapshot root, proof, and tree height of a state from the database.
-	GetStateMetadata(ctx context.Context, stateMask DBState) (snapshotRoot *[32]byte, proof *json.RawMessage, stateIndex *uint32, err error)
+	GetStateMetadata(ctx context.Context, stateMask DBState) (proof *json.RawMessage, stateIndex *uint32, err error)
 	// GetPotentialSnapshotRoots gets all snapshot roots that are greater than or equal to a specified nonce and matches
 	// a specified chain ID.
 	GetPotentialSnapshotRoots(ctx context.Context, chainID uint32, nonce uint32) ([]string, error)
@@ -73,7 +75,7 @@ type ExecutorDBReader interface {
 	// GetEarliestStateInRange gets the earliest state with the same snapshot root as an attestation within a nonce range.
 	// 1. Get all states that are within a nonce range.
 	// 2. Get the state with the earliest attestation associated to it.
-	GetEarliestStateInRange(ctx context.Context, chainID, destination, startNonce, endNonce uint32) (*agentsTypes.State, error)
+	GetEarliestStateInRange(ctx context.Context, chainID, destination, startNonce, endNonce uint32) (*agentsTypes.State, *string, error)
 }
 
 // ExecutorDB is the interface for the executor database.

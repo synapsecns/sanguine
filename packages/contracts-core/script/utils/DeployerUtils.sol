@@ -78,7 +78,7 @@ contract DeployerUtils is Script {
 
             console.log("Create3Factory not deployed on devnet, deploying now");
             CREATE3Factory NewFactory = new CREATE3Factory();
-            saveDeployment("Create3Factory", "Create3Factory", address(NewFactory), "0x");
+            saveDeployment("CREATE3Factory", "CREATE3Factory", address(NewFactory), "0x");
             factoryDeployment = address(NewFactory);
         }
         factory = ICreate3Factory(factoryDeployment);
@@ -132,12 +132,13 @@ contract DeployerUtils is Script {
         internal
         returns (address deployment)
     {
-        require(Address.isContract(address(getFactory())), "Factory not deployed");
+        require(Address.isContract(address(getFactory())), "Factory not deployed [tried to deploy]");
         deployment = getFactory().deploy(
             getDeploymentSalt(contractName), // salt
             abi.encodePacked(creationCode, constructorArgs) // creation code with appended constructor args
         );
         require(deployment != address(0), "Factory deployment failed");
+        require(Address.isContract(address(deployment)), "Factory not a contract");
     }
 
     /// @notice Gets the deployment salt for a given contract.
@@ -199,6 +200,7 @@ contract DeployerUtils is Script {
     /// @notice Returns the deployment for a contract on the current chain, if it exists.
     /// Returns address(0), if it doesn't exist.
     function tryLoadDeployment(string memory contractName) public returns (address deployment) {
+        console.log("TryLoadDeployment: %s", contractName);
         try vm.readFile(deploymentPath(contractName)) returns (string memory json) {
             // We assume that if a deployment file exists, the contract is indeed deployed
             deployment = json.readAddress(".address");

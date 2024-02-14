@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	baseServer "github.com/synapsecns/sanguine/core/server"
@@ -12,10 +13,10 @@ import (
 var logger = log.Logger("guard-api")
 
 // Start starts the api server.
-func Start(ctx context.Context, metricsPort uint16) error {
+func Start(parentCtx context.Context, metricsPort uint16) error {
 	router := ginhelper.New(logger)
 
-	g, ctx := errgroup.WithContext(ctx)
+	g, ctx := errgroup.WithContext(parentCtx)
 
 	g.Go(func() error {
 		connection := baseServer.Server{}
@@ -26,7 +27,8 @@ func Start(ctx context.Context, metricsPort uint16) error {
 		return nil
 	})
 
-	if err := g.Wait(); err != nil {
+	err := g.Wait()
+	if err != nil {
 		return fmt.Errorf("could not start api: %w", err)
 	}
 

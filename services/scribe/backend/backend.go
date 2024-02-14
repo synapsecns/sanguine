@@ -32,7 +32,7 @@ type ScribeBackend interface {
 // DialBackend returns a scribe backend.
 func DialBackend(ctx context.Context, url string, handler metrics.Handler) (ScribeBackend, error) {
 	//nolint:wrapcheck
-	return client.DialBackend(ctx, url, handler)
+	return client.DialBackend(ctx, url, handler, client.Capture(true))
 }
 
 // GetLogsInRange gets all logs in a range with a single batch request

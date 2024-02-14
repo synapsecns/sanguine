@@ -2,6 +2,7 @@ package base
 
 import (
 	"encoding/json"
+
 	"github.com/synapsecns/sanguine/core/dbcommon"
 )
 
@@ -72,6 +73,10 @@ type Message struct {
 	MinimumTimeSet bool `gorm:"column:minimum_time_set"`
 	// MinimumTime is the minimum time that the message can be executed.
 	MinimumTime uint64 `gorm:"column:minimum_time"`
+	// Leaf is the leaf of the message.
+	Leaf string `gorm:"column:leaf"`
+	// OriginTxHash is the origin transaction hash of the message.
+	OriginTxHash string `gorm:"column:origin_tx_hash"`
 }
 
 // Attestation is the information about an attestation parsed by the Executor. This is an event derived from the destination contract.

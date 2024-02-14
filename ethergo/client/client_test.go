@@ -2,6 +2,11 @@ package client_test
 
 import (
 	"context"
+	"io"
+	"math/big"
+	"net/http"
+	"net/http/httptest"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
@@ -16,10 +21,6 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 	_ "go.opentelemetry.io/otel/sdk/trace/tracetest"
-	"io"
-	"math/big"
-	"net/http"
-	"net/http/httptest"
 )
 
 // TestEVM is an EVM that can be used for testing.

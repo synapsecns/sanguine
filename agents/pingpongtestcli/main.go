@@ -8,7 +8,8 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/domains/evm"
-	"github.com/synapsecns/sanguine/ethergo/chain"
+	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 )
@@ -20,7 +21,7 @@ func main() {
 	fmt.Scanln(&sendingChainURL)
 
 	ctx := context.Background()
-	underlyingClient, err := chain.NewFromURL(context.Background(), sendingChainURL)
+	underlyingClient, err := client.DialBackend(ctx, sendingChainURL, metrics.NewNullHandler())
 	if err != nil {
 		fmt.Printf("could not get evm: %s", err)
 		return
@@ -65,7 +66,7 @@ func main() {
 
 	destinationID := uint32(destID64)
 
-	err = boundPingPongClient.DoPing(ctx, localSigner, destinationID, recipient, uint16(1))
+	_, err = boundPingPongClient.DoPing(ctx, localSigner, destinationID, recipient, uint16(1))
 	if err != nil {
 		fmt.Printf("could not send ping: %s", err)
 		return

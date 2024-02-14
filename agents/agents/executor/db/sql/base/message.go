@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	"github.com/synapsecns/sanguine/agents/agents/executor/types"
 	agentsTypes "github.com/synapsecns/sanguine/agents/types"
@@ -13,8 +14,8 @@ import (
 )
 
 // StoreMessage stores a message in the database.
-func (s Store) StoreMessage(ctx context.Context, message agentsTypes.Message, blockNumber uint64, minimumTimeSet bool, minimumTime uint64) error {
-	dbMessage, err := AgentsTypesMessageToMessage(message, blockNumber, minimumTimeSet, minimumTime)
+func (s Store) StoreMessage(ctx context.Context, message agentsTypes.Message, blockNumber uint64, minimumTimeSet bool, minimumTime uint64, originTxHash common.Hash) error {
+	dbMessage, err := AgentsTypesMessageToMessage(message, blockNumber, minimumTimeSet, minimumTime, originTxHash)
 	if err != nil {
 		return fmt.Errorf("failed to convert message: %w", err)
 	}
@@ -153,7 +154,7 @@ func (s Store) GetLastBlockNumber(ctx context.Context, chainID uint32, contractT
 			Where(fmt.Sprintf("%s = ?", ChainIDFieldName), chainID).
 			Select(fmt.Sprintf("MAX(%s)", BlockNumberFieldName)).
 			Find(&lastBlockNumber)
-	case types.LightInboxContract, types.SummitContract:
+	case types.LightInboxContract, types.SummitContract, types.DestinationContract:
 		dbTx = preDBTx.Model(&Attestation{}).
 			Where(fmt.Sprintf("%s = ?", DestinationFieldName), chainID).
 			Select(fmt.Sprintf("MAX(%s)", DestinationBlockNumberFieldName)).
@@ -342,11 +343,16 @@ func MessageToDBMessage(message Message) db.DBMessage {
 }
 
 // AgentsTypesMessageToMessage converts an agentsTypes.Message to a Message.
-func AgentsTypesMessageToMessage(message agentsTypes.Message, blockNumber uint64, minimumTimeSet bool, minimumTime uint64) (Message, error) {
+func AgentsTypesMessageToMessage(message agentsTypes.Message, blockNumber uint64, minimumTimeSet bool, minimumTime uint64, originTxHash common.Hash) (Message, error) {
 	rawMessage, err := agentsTypes.EncodeMessage(message)
 	if err != nil {
 		return Message{}, fmt.Errorf("failed to encode message: %w", err)
 	}
+	leafBytes, err := message.ToLeaf()
+	if err != nil {
+		return Message{}, fmt.Errorf("failed to get message leaf: %w", err)
+	}
+	leaf := common.BytesToHash(leafBytes[:])
 	return Message{
 		ChainID:        message.OriginDomain(),
 		Destination:    message.DestinationDomain(),
@@ -356,5 +362,7 @@ func AgentsTypesMessageToMessage(message agentsTypes.Message, blockNumber uint64
 		Executed:       false,
 		MinimumTimeSet: minimumTimeSet,
 		MinimumTime:    minimumTime,
+		Leaf:           leaf.String(),
+		OriginTxHash:   originTxHash.String(),
 	}, nil
 }

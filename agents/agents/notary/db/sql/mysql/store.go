@@ -3,6 +3,8 @@ package mysql
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/agents/agents/notary/db"
 	"github.com/synapsecns/sanguine/agents/agents/notary/db/sql/base"
@@ -11,7 +13,6 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
-	"time"
 )
 
 // Logger is the mysql logger.
@@ -41,7 +42,7 @@ func NewMysqlStore(ctx context.Context, dbURL string, handler metrics.Handler) (
 	sqlDB.SetMaxIdleConns(MaxIdleConns)
 	sqlDB.SetConnMaxLifetime(time.Hour)
 
-	handler.AddGormCallbacks(gdb)
+	// handler.AddGormCallbacks(gdb)
 
 	err = gdb.WithContext(ctx).AutoMigrate(base.GetAllModels()...)
 	if err != nil {

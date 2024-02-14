@@ -5,6 +5,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math/big"
+	"net"
+	"net/http"
+	"os"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/gin-gonic/gin"
@@ -22,11 +28,6 @@ import (
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
-	"math/big"
-	"net"
-	"net/http"
-	"os"
-	"time"
 )
 
 var logger = log.Logger("proxy-logger")

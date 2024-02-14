@@ -92,6 +92,8 @@ type InboxContract interface {
 
 // BondingManagerContract contains the interface for the bonding manager.
 type BondingManagerContract interface {
+	// AddAgent adds an agent to the bonding manager.
+	AddAgent(transactor *bind.TransactOpts, domain uint32, agent common.Address, proof [][32]byte) (tx *ethTypes.Transaction, err error)
 	// GetAgentStatus returns the current agent status for the given agent.
 	GetAgentStatus(ctx context.Context, address common.Address) (types.AgentStatus, error)
 	// GetAgentRoot gets the current agent root
@@ -117,8 +119,10 @@ type DestinationContract interface {
 	Execute(transactor *bind.TransactOpts, message types.Message, originProof [32][32]byte, snapshotProof [][32]byte, index uint8, gasLimit uint64) (tx *ethTypes.Transaction, err error) // AttestationsAmount retrieves the number of attestations submitted to the destination.
 	// AttestationsAmount retrieves the number of attestations submitted to the destination.
 	AttestationsAmount(ctx context.Context) (uint64, error)
-	// GetAttestationNonce gets the nonce of the attestation by snap root
+	// GetAttestationNonce gets the nonce of the attestation by snap root.
 	GetAttestationNonce(ctx context.Context, snapRoot [32]byte) (uint32, error)
+	// LastAttestationNonce gets the last attestation nonce for a given agent index.
+	LastAttestationNonce(ctx context.Context, index uint32) (uint32, error)
 	// MessageStatus takes a message and returns whether it has been executed or not. 0: None, 1: Failed, 2: Success.
 	MessageStatus(ctx context.Context, message types.Message) (uint8, error)
 	// IsValidReceipt checks if the given receipt is valid on the destination
@@ -177,7 +181,7 @@ type TestClientContract interface {
 // PingPongClientContract contains the interface for the ping pong test client.
 type PingPongClientContract interface {
 	// DoPing sends a ping message through the PingPongClient.
-	DoPing(ctx context.Context, signer signer.Signer, destination uint32, recipient common.Address, pings uint16) error
+	DoPing(ctx context.Context, signer signer.Signer, destination uint32, recipient common.Address, pings uint16) (*ethTypes.Transaction, error)
 	WatchPingSent(ctx context.Context, sink chan<- *pingpongclient.PingPongClientPingSent) (event.Subscription, error)
 	WatchPongReceived(ctx context.Context, sink chan<- *pingpongclient.PingPongClientPongReceived) (event.Subscription, error)
 }

@@ -1,10 +1,14 @@
 package guard
 
 import (
+	"fmt"
+
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/contracts/bondingmanager"
 	"github.com/synapsecns/sanguine/agents/contracts/inbox"
 	"github.com/synapsecns/sanguine/agents/contracts/lightinbox"
+	"github.com/synapsecns/sanguine/agents/types"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 func isSnapshotAcceptedEvent(parser inbox.Parser, log ethTypes.Log) bool {
@@ -33,4 +37,24 @@ func isRootUpdatedEvent(bondingParser bondingmanager.Parser, log ethTypes.Log) b
 		return true
 	}
 	return false
+}
+
+func stateMapToAttribute(name string, stateMap map[uint32]types.State) attribute.KeyValue {
+	stateStrings := []string{}
+	for _, state := range stateMap {
+		stateStrings = append(stateStrings, stateToStr(state))
+	}
+	return attribute.StringSlice(name, stateStrings)
+}
+
+func stateSliceToAttribute(name string, states []types.State) attribute.KeyValue {
+	stateStrings := []string{}
+	for _, state := range states {
+		stateStrings = append(stateStrings, stateToStr(state))
+	}
+	return attribute.StringSlice(name, stateStrings)
+}
+
+func stateToStr(state types.State) string {
+	return fmt.Sprintf("%d:%d", state.Origin(), state.Nonce())
 }

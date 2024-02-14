@@ -3,11 +3,12 @@ package mysql
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/synapsecns/sanguine/agents/agents/executor/db/sql/base"
 	common_base "github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"gorm.io/gorm/schema"
-	"time"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -53,7 +54,7 @@ func NewMysqlStore(parentCtx context.Context, dbURL string, handler metrics.Hand
 	sqlDB.SetMaxIdleConns(MaxIdleConns)
 	sqlDB.SetConnMaxLifetime(time.Hour)
 
-	handler.AddGormCallbacks(gdb)
+	// handler.AddGormCallbacks(gdb)
 
 	if !skipMigrations {
 		// migrate in a transaction since we skip this by default

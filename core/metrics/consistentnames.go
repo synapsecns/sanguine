@@ -5,6 +5,8 @@ const (
 	ChainID = "chain_id"
 	// EOAAddress is the metric name for an eoa address.
 	EOAAddress = "eoa_address"
+	// BlockNumber is the metric name for the block number.
+	BlockNumber = "block_number"
 	// ContractAddress is the metric name for the contract address.
 	ContractAddress = "contract_address"
 	// Origin is the metric name for the origin chain ID.
@@ -21,4 +23,22 @@ const (
 	Contract = "contract"
 	// MessageExecuted is the metric name for the message executed.
 	MessageExecuted = "message_executed"
+	// AgentStatus is the metric name for the agent status.
+	AgentStatus = "agent_status"
+	// SnapRoot is the metric name for the snap root.
+	SnapRoot = "snap_root"
+	// StateRoot is the metric name for the state root.
+	StateRoot = "state_root"
+	// StateNonce is the metric name for the state nonce.
+	StateNonce = "state_nonce"
+	// AttestationNonce is the metric name for the attestation nonce.
+	AttestationNonce = "attestation_nonce"
+	// MessageLeaf is the metric name for the message leaf.
+	MessageLeaf = "message_leaf"
+	// Error is the metric name for the error.
+	Error = "error"
+	// Agent is the metric name for the agent.
+	Agent = "agent"
+	// AgentDomain is the metric name for the agent domain.
+	AgentDomain = "agent_domain"
 )

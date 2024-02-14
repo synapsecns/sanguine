@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/agents/agents/executor/db"
 	agentsTypes "github.com/synapsecns/sanguine/agents/types"
 	"gorm.io/gorm/clause"
-	"math/big"
 )
 
 // StoreState stores a state.
@@ -102,7 +103,7 @@ func (s Store) GetState(ctx context.Context, stateMask db.DBState) (*agentsTypes
 }
 
 // GetStateMetadata gets the snapshot root, proof, and tree height of a state from the database.
-func (s Store) GetStateMetadata(ctx context.Context, stateMask db.DBState) (snapshotRoot *[32]byte, proof *json.RawMessage, stateIndex *uint32, err error) {
+func (s Store) GetStateMetadata(ctx context.Context, stateMask db.DBState) (proof *json.RawMessage, stateIndex *uint32, err error) {
 	var state State
 
 	dbStateMask := DBStateToState(stateMask)
@@ -112,14 +113,12 @@ func (s Store) GetStateMetadata(ctx context.Context, stateMask db.DBState) (snap
 		Limit(1).
 		Scan(&state)
 	if dbTx.Error != nil {
-		return nil, nil, nil, fmt.Errorf("failed to get state snapshot root: %w", dbTx.Error)
+		return nil, nil, fmt.Errorf("failed to get state snapshot root: %w", dbTx.Error)
 	}
 	if dbTx.RowsAffected == 0 {
-		return nil, nil, nil, nil
+		return nil, nil, nil
 	}
 
-	snapshotRootHash := common.HexToHash(state.SnapshotRoot)
-	snapshotRoot = (*[32]byte)(&snapshotRootHash)
 	proof = &state.Proof
 	stateIndex = &state.StateIndex
 

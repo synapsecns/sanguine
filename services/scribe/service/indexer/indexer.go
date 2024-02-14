@@ -4,12 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/synapsecns/sanguine/services/scribe/backend"
 	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
 
-	"github.com/synapsecns/sanguine/services/scribe/logger"
 	"math/big"
 	"time"
+
+	"github.com/synapsecns/sanguine/services/scribe/logger"
 
 	"github.com/lmittmann/w3"
 	"github.com/lmittmann/w3/module/eth"

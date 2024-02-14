@@ -3,6 +3,10 @@ package submitter
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"sync"
+	"time"
+
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/lmittmann/w3"
 	"github.com/lmittmann/w3/module/eth"
@@ -12,9 +16,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
-	"math/big"
-	"sync"
-	"time"
 )
 
 // runSelector runs the selector start loop.
@@ -32,6 +33,11 @@ func (t *txSubmitterImpl) runSelector(parentCtx context.Context, i int) (shouldE
 	case <-t.retryNow:
 		err = t.processQueue(ctx)
 	}
+	if err != nil {
+		span.AddEvent("error processing queue", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
+		))
+	}
 	return false, err
 }
 
@@ -39,7 +45,7 @@ func (t *txSubmitterImpl) runSelector(parentCtx context.Context, i int) (shouldE
 // TODO: add a way to process a confirmation queue.
 func (t *txSubmitterImpl) processQueue(parentCtx context.Context) (err error) {
 	// TODO: this might be too short of a deadline depending on the number of pendingTxes in the queue
-	deadlineCtx, cancel := context.WithTimeout(parentCtx, time.Second*60)
+	deadlineCtx, cancel := context.WithTimeout(parentCtx, 1*time.Minute)
 	defer cancel()
 
 	ctx, span := t.metrics.Tracer().Start(deadlineCtx, "submitter.ProcessQueue")
@@ -56,15 +62,21 @@ func (t *txSubmitterImpl) processQueue(parentCtx context.Context) (err error) {
 		err := t.processConfirmedQueue(ctx)
 		if err != nil {
 			span.AddEvent("processConfirmedQueue error", trace.WithAttributes(
-				attribute.String("error", err.Error())))
+				attribute.String(metrics.Error, err.Error())))
 		}
 	}()
 
 	// get all the pendingTxes in the queue
+	span.AddEvent("fetching pendingTxes from db", trace.WithAttributes(
+		attribute.String("address", t.signer.Address().String()),
+	))
 	pendingTxes, err := t.db.GetTXS(ctx, t.signer.Address(), nil, db.Stored, db.Pending, db.FailedSubmit, db.Submitted)
 	if err != nil {
 		return fmt.Errorf("could not get pendingTxes: %w", err)
 	}
+	span.AddEvent("got pendingTxes", trace.WithAttributes(
+		attribute.Int("numTxes", len(pendingTxes)),
+	))
 
 	// fetch txes into a map by chainid.
 	sortedTXsByChainID := sortTxesByChainID(pendingTxes)
@@ -77,7 +89,8 @@ func (t *txSubmitterImpl) processQueue(parentCtx context.Context) (err error) {
 			err := t.chainPendingQueue(ctx, new(big.Int).SetUint64(chainID), sortedTXsByChainID[chainID])
 			if err != nil {
 				span.AddEvent("chainPendingQueue error", trace.WithAttributes(
-					attribute.String("error", err.Error()), attribute.Int64("chainID", int64(chainID))))
+					attribute.String(metrics.Error, err.Error()), attribute.Int64("chainID", int64(chainID))))
+				span.SetAttributes(attribute.String(fmt.Sprintf("err_%d", chainID), err.Error()))
 			}
 		}(chainID)
 	}
@@ -108,7 +121,7 @@ func (t *txSubmitterImpl) processConfirmedQueue(parentCtx context.Context) (err 
 			err := t.chainConfirmQueue(ctx, new(big.Int).SetUint64(chainID), sortedTXsByChainID[chainID])
 			if err != nil {
 				span.AddEvent("chainPendingQueue error", trace.WithAttributes(
-					attribute.String("error", err.Error()), attribute.Int64("chainID", int64(chainID))))
+					attribute.String(metrics.Error, err.Error()), attribute.Int64("chainID", int64(chainID))))
 			}
 		}(chainID)
 	}
@@ -141,7 +154,15 @@ func (t *txSubmitterImpl) chainConfirmQueue(parentCtx context.Context, chainID *
 
 // checkAndSetConfirmation checks if the tx is confirmed and sets the status accordingly.
 // note: assumes all txes have the same nonce.
-func (t *txSubmitterImpl) checkAndSetConfirmation(ctx context.Context, chainClient client.EVM, txes []db.TX) error {
+func (t *txSubmitterImpl) checkAndSetConfirmation(parentCtx context.Context, chainClient client.EVM, txes []db.TX) (err error) {
+	chainID, _ := chainClient.ChainID(parentCtx)
+	ctx, span := t.metrics.Tracer().Start(parentCtx, "submitter.checkAndSetConfirmation", trace.WithAttributes(
+		attribute.Int64("chainID", chainID.Int64()),
+	))
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	// nothing do to
 	if len(txes) == 0 {
 		return nil
@@ -162,7 +183,11 @@ func (t *txSubmitterImpl) checkAndSetConfirmation(ctx context.Context, chainClie
 		calls[i] = eth.TxReceipt(txes[i].Hash()).Returns(&receipts[i])
 	}
 
-	err := chainClient.BatchWithContext(ctx, calls...)
+	err = chainClient.BatchWithContext(ctx, calls...)
+	span.AddEvent("batched calls", trace.WithAttributes(
+		attribute.Int("numCalls", len(calls)),
+		attribute.String(metrics.Error, fmt.Sprintf("%v", err)),
+	))
 	foundSuccessfulTX := false
 	if err != nil {
 		// there's no way around this type inference

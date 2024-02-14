@@ -3,6 +3,8 @@ package simulated
 import (
 	"context"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
@@ -11,7 +13,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated/multibackend"
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"golang.org/x/sync/errgroup"
-	"math/big"
 )
 
 // Client is a simulated client for a simulated backend.

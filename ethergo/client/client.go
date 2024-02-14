@@ -3,6 +3,8 @@ package client
 import (
 	"context"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -14,7 +16,6 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
-	"math/big"
 )
 
 // EVM is the set of functions that the scribe needs from a client.
@@ -103,7 +104,11 @@ func (c *clientImpl) BatchWithContext(ctx context.Context, calls ...w3types.Call
 		metrics.EndSpanWithErr(span, err)
 	}()
 	//nolint: wrapcheck
-	return c.getW3Client().CallCtx(ctx, calls...)
+	err = c.getW3Client().CallCtx(ctx, calls...)
+	if err != nil {
+		span.SetAttributes(attribute.String("batchError", err.Error()))
+	}
+	return err
 }
 
 // BatchCallContext calls BatchCallContext on the underlying client. Note: this will bypass the rate-limiter.

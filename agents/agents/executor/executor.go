@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
+	"reflect"
 	"strconv"
 	"time"
 
@@ -63,6 +64,8 @@ type chainExecutor struct {
 	merkleTree *merkle.HistoricalTree
 	// rpcClient is an RPC client.
 	rpcClient Backend
+	// boundSummit is a bound summit contract.
+	boundSummit domains.SummitContract
 	// boundDestination is a bound destination contract.
 	boundDestination domains.DestinationContract
 	// boundOrigin is a bound origin contract.
@@ -73,6 +76,8 @@ type chainExecutor struct {
 type Executor struct {
 	// config is the executor agent config.
 	config executor.Config
+	// chainConfigs is a map of chain configs for easy access.
+	chainConfigs map[uint32]executor.ChainConfig
 	// executorDB is the executor agent database.
 	executorDB db.ExecutorDB
 	// grpcClient is the gRPC client.
@@ -89,7 +94,11 @@ type Executor struct {
 	txSubmitter submitter.TransactionSubmitter
 	// retryConfig is the retry configuration for RPC calls.
 	retryConfig []retry.WithBackoffConfigurator
-	// NowFunc returns the current time.
+	// lastExecuteAttempts is a map from message hash -> last execute attempt time, in seconds.
+	lastExecuteAttempts map[string]uint64
+	// numExecuteAttempts is a map from message hash -> number of execute attempts.
+	numExecuteAttempts map[string]int
+	// NowFunc returns the current time. This is exposed for testing.
 	NowFunc func() time.Time
 	// GetChainTimeFunc gets the chain time.
 	GetChainTimeFunc func(ctx context.Context, backend Backend) (uint64, error)
@@ -102,12 +111,15 @@ type logOrderInfo struct {
 }
 
 const (
-	logChanSize          = 1000
-	scribeConnectTimeout = 30 * time.Second
+	logChanSize                 = 1000
+	scribeConnectTimeoutSeconds = 30
+	defaultMaxRetrySeconds      = 30
+	defaultExecuteRetryInterval = 300
+	defaultMaxExecuteAttempts   = 5
 )
 
 func makeScribeClient(parentCtx context.Context, handler metrics.Handler, url string) (*grpc.ClientConn, pbscribe.ScribeServiceClient, error) {
-	ctx, cancel := context.WithTimeout(parentCtx, scribeConnectTimeout)
+	ctx, cancel := context.WithTimeout(parentCtx, scribeConnectTimeoutSeconds*time.Second)
 	defer cancel()
 
 	conn, err := grpc.DialContext(ctx, url,
@@ -152,7 +164,15 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 	txSubmitter := submitter.NewTransactionSubmitter(handler, executorSigner, omniRPCClient, executorDB.SubmitterDB(), &config.SubmitterConfig)
 
 	if config.MaxRetrySeconds == 0 {
-		config.MaxRetrySeconds = 30
+		config.MaxRetrySeconds = defaultMaxRetrySeconds
+	}
+
+	if config.ExecuteRetryInterval == 0 {
+		config.ExecuteRetryInterval = defaultExecuteRetryInterval
+	}
+
+	if config.MaxExecuteAttempts == 0 {
+		config.MaxExecuteAttempts = defaultMaxExecuteAttempts
 	}
 
 	retryConfig := []retry.WithBackoffConfigurator{
@@ -167,93 +187,116 @@ func NewExecutor(ctx context.Context, config executor.Config, executorDB db.Exec
 		config.SetMinimumTimeInterval = 2
 	}
 
+	exec := &Executor{
+		config:              config,
+		chainConfigs:        make(map[uint32]executor.ChainConfig),
+		executorDB:          executorDB,
+		grpcConn:            conn,
+		grpcClient:          grpcClient,
+		signer:              executorSigner,
+		chainExecutors:      chainExecutors,
+		handler:             handler,
+		txSubmitter:         txSubmitter,
+		retryConfig:         retryConfig,
+		lastExecuteAttempts: make(map[string]uint64),
+		numExecuteAttempts:  make(map[string]int),
+		NowFunc:             time.Now,
+		GetChainTimeFunc:    getChainTime,
+	}
+
 	for _, chain := range config.Chains {
-		originParser, err := origin.NewParser(common.HexToAddress(chain.OriginAddress))
+		err = retry.WithBackoff(ctx, func(ctx context.Context) error {
+			return exec.setupChain(ctx, exec, chain, omniRPCClient)
+		}, exec.retryConfig...)
 		if err != nil {
-			return nil, fmt.Errorf("could not create origin parser: %w", err)
-		}
-
-		lightInboxParser, err := lightinbox.NewParser(common.HexToAddress(chain.LightInboxAddress))
-		if err != nil {
-			return nil, fmt.Errorf("could not create destination parser: %w", err)
-		}
-
-		var inboxParser inbox.Parser
-		var summitParser summit.Parser
-
-		if config.SummitChainID == chain.ChainID {
-			inboxParser, err = inbox.NewParser(common.HexToAddress(config.InboxAddress))
-			if err != nil {
-				return nil, fmt.Errorf("could not create inbox parser: %w", err)
-			}
-
-			summitParser, err = summit.NewParser(common.HexToAddress(config.SummitAddress))
-			if err != nil {
-				return nil, fmt.Errorf("could not create summit parser: %w", err)
-			}
-		} else {
-			inboxParser = nil
-			summitParser = nil
-		}
-
-		evmClient, err := omniRPCClient.GetConfirmationsClient(ctx, int(chain.ChainID), 1)
-		if err != nil {
-			return nil, fmt.Errorf("could not get evm client: %w", err)
-		}
-
-		chainClient, err := ethergoChain.NewFromURL(ctx, omniRPCClient.GetEndpoint(int(chain.ChainID), 1))
-		if err != nil {
-			return nil, fmt.Errorf("could not create chain client: %w", err)
-		}
-
-		boundDestination, err := evm.NewDestinationContract(ctx, chainClient, common.HexToAddress(chain.DestinationAddress))
-		if err != nil {
-			return nil, fmt.Errorf("could not bind destination contract: %w", err)
-		}
-
-		boundOrigin, err := evm.NewOriginContract(ctx, chainClient, common.HexToAddress(chain.OriginAddress))
-		if err != nil {
-			return nil, fmt.Errorf("could not bind origin contract: %w", err)
-		}
-
-		tree, err := newTreeFromDB(ctx, chain.ChainID, executorDB)
-		if err != nil {
-			return nil, fmt.Errorf("could not get tree from db: %w", err)
-		}
-
-		chainExecutors[chain.ChainID] = &chainExecutor{
-			chainID: chain.ChainID,
-			lastLog: &logOrderInfo{
-				blockNumber: 0,
-				blockIndex:  0,
-			},
-			closeConnection:  make(chan bool, 1),
-			stopListenChan:   make(chan bool, 1),
-			originParser:     originParser,
-			lightInboxParser: lightInboxParser,
-			inboxParser:      inboxParser,
-			summitParser:     summitParser,
-			logChan:          make(chan *ethTypes.Log, logChanSize),
-			merkleTree:       tree,
-			rpcClient:        evmClient,
-			boundDestination: boundDestination,
-			boundOrigin:      boundOrigin,
+			return nil, err
 		}
 	}
 
-	return &Executor{
-		config:           config,
-		executorDB:       executorDB,
-		grpcConn:         conn,
-		grpcClient:       grpcClient,
-		signer:           executorSigner,
-		chainExecutors:   chainExecutors,
-		handler:          handler,
-		txSubmitter:      txSubmitter,
-		retryConfig:      retryConfig,
-		NowFunc:          time.Now,
-		GetChainTimeFunc: getChainTime,
-	}, nil
+	return exec, nil
+}
+
+func (e Executor) setupChain(ctx context.Context, exec *Executor, chain executor.ChainConfig, omniRPCClient omnirpcClient.RPCClient) error {
+	exec.chainConfigs[chain.ChainID] = chain
+	originParser, err := origin.NewParser(common.HexToAddress(chain.OriginAddress))
+	if err != nil {
+		return fmt.Errorf("could not create origin parser: %w", err)
+	}
+
+	lightInboxParser, err := lightinbox.NewParser(common.HexToAddress(chain.LightInboxAddress))
+	if err != nil {
+		return fmt.Errorf("could not create destination parser: %w", err)
+	}
+
+	var inboxParser inbox.Parser
+	var summitParser summit.Parser
+
+	if exec.config.SummitChainID == chain.ChainID {
+		inboxParser, err = inbox.NewParser(common.HexToAddress(exec.config.InboxAddress))
+		if err != nil {
+			return fmt.Errorf("could not create inbox parser: %w", err)
+		}
+
+		summitParser, err = summit.NewParser(common.HexToAddress(exec.config.SummitAddress))
+		if err != nil {
+			return fmt.Errorf("could not create summit parser: %w", err)
+		}
+	} else {
+		inboxParser = nil
+		summitParser = nil
+	}
+
+	evmClient, err := omniRPCClient.GetConfirmationsClient(ctx, int(chain.ChainID), 1)
+	if err != nil {
+		return fmt.Errorf("could not get evm client: %w", err)
+	}
+
+	chainClient, err := ethergoChain.NewFromURL(ctx, omniRPCClient.GetEndpoint(int(chain.ChainID), 1))
+	if err != nil {
+		return fmt.Errorf("could not create chain client: %w", err)
+	}
+
+	boundSummit, err := evm.NewSummitContract(ctx, chainClient, common.HexToAddress(e.config.InboxAddress))
+	if err != nil {
+		return fmt.Errorf("could not bind summit contract: %w", err)
+	}
+
+	boundDestination, err := evm.NewDestinationContract(ctx, chainClient, common.HexToAddress(chain.DestinationAddress))
+	if err != nil {
+		return fmt.Errorf("could not bind destination contract: %w", err)
+	}
+
+	boundOrigin, err := evm.NewOriginContract(ctx, chainClient, common.HexToAddress(chain.OriginAddress))
+	if err != nil {
+		return fmt.Errorf("could not bind origin contract: %w", err)
+	}
+
+	tree, err := exec.newTreeFromDB(ctx, chain.ChainID)
+	if err != nil {
+		return fmt.Errorf("could not get tree from db: %w", err)
+	}
+
+	exec.chainExecutors[chain.ChainID] = &chainExecutor{
+		chainID: chain.ChainID,
+		lastLog: &logOrderInfo{
+			blockNumber: 0,
+			blockIndex:  0,
+		},
+		closeConnection:  make(chan bool, 1),
+		stopListenChan:   make(chan bool, 1),
+		originParser:     originParser,
+		lightInboxParser: lightInboxParser,
+		inboxParser:      inboxParser,
+		summitParser:     summitParser,
+		logChan:          make(chan *ethTypes.Log, logChanSize),
+		merkleTree:       tree,
+		rpcClient:        evmClient,
+		boundSummit:      boundSummit,
+		boundDestination: boundDestination,
+		boundOrigin:      boundOrigin,
+	}
+
+	return nil
 }
 
 // Run starts the executor agent. It calls `Start` and `Listen`.
@@ -322,12 +365,15 @@ func (e Executor) Stop(chainID uint32) {
 //
 //nolint:cyclop
 func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ bool, err error) {
+	types.LogTx("EXECUTOR", fmt.Sprintf("Executing message: %s", types.MessageToString(message)), message.DestinationDomain(), nil)
 	originDomain := message.OriginDomain()
 	destinationDomain := message.DestinationDomain()
 
+	leaf, _ := message.ToLeaf()
 	ctx, span := e.handler.Tracer().Start(parentCtx, "Execute", trace.WithAttributes(
 		attribute.Int(metrics.Origin, int(originDomain)),
 		attribute.Int(metrics.Destination, int(destinationDomain)),
+		attribute.String(metrics.MessageLeaf, common.BytesToHash(leaf[:]).String()),
 		attribute.Int("message_type", int(message.Header().Flag())),
 	))
 
@@ -341,22 +387,38 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 
 	if nonce == nil {
+		span.AddEvent("nonce is nil")
 		return false, nil
 	}
 
 	maximumNonce := e.chainExecutors[message.OriginDomain()].merkleTree.NumOfItems()
-	state, err := e.executorDB.GetEarliestStateInRange(ctx, originDomain, destinationDomain, *nonce, maximumNonce)
+	span.AddEvent("getting earliest state in range", trace.WithAttributes(
+		attribute.Int(metrics.Nonce, int(*nonce)),
+		attribute.Int("maximum_nonce", int(maximumNonce)),
+	))
+	state, snapshotRoot, err := e.executorDB.GetEarliestStateInRange(ctx, originDomain, destinationDomain, *nonce, maximumNonce)
 	if err != nil {
 		return false, fmt.Errorf("could not get earliest attestation nonce: %w", err)
 	}
 
 	if state == nil {
+		span.AddEvent("state is nil")
 		return false, nil
 	}
 
-	var proof [][]byte
+	if snapshotRoot == nil {
+		span.AddEvent("snapshot root is nil")
+		return false, nil
+	}
+
+	stateRoot := (*state).Root()
+	span.AddEvent("getting proof from origin", trace.WithAttributes(
+		attribute.String(metrics.SnapRoot, *snapshotRoot),
+		attribute.String(metrics.StateRoot, common.BytesToHash(stateRoot[:]).String()),
+	))
+	var originProofRaw [][]byte
 	contractCall := func(ctx context.Context) error {
-		proof, err = e.chainExecutors[message.OriginDomain()].merkleTree.MerkleProof(*nonce-1, (*state).Nonce())
+		originProofRaw, err = e.chainExecutors[message.OriginDomain()].merkleTree.MerkleProof(*nonce-1, (*state).Nonce())
 		if err != nil {
 			return fmt.Errorf("could not get merkle proof: %w", err)
 		}
@@ -365,49 +427,80 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 	err = retry.WithBackoff(ctx, contractCall, e.retryConfig...)
 	if err != nil {
+		span.AddEvent("could not get merkle proof", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
+		))
 		return false, fmt.Errorf("could not get merkle proof: %w", err)
 	}
 
 	verifiedMessageProof, err := e.verifyMessageMerkleProof(message)
 	if err != nil {
+		span.AddEvent("could not verify merkle proof", trace.WithAttributes(attribute.String(metrics.Error, err.Error())))
 		return false, fmt.Errorf("could not verify merkle proof: %w", err)
 	}
 
 	if !verifiedMessageProof {
+		span.AddEvent("message proof not verified")
 		return false, nil
 	}
 
-	verifiedStateProof, err := e.verifyStateMerkleProof(ctx, *state)
+	verifiedStateProof, err := e.verifyStateMerkleProof(ctx, *state, *snapshotRoot)
 	if err != nil {
+		span.AddEvent("could not verify state merkle proof", trace.WithAttributes(attribute.String(metrics.Error, err.Error())))
 		return false, fmt.Errorf("could not verify state merkle proof: %w", err)
 	}
 
 	if !verifiedStateProof {
+		span.AddEvent("state proof not verified")
 		return false, nil
 	}
 
-	root := (*state).Root()
-	stateRootString := common.BytesToHash(root[:]).String()
+	stateRootString := common.BytesToHash(stateRoot[:]).String()
 	origin := (*state).Origin()
 	stateNonce := (*state).Nonce()
 	stateMask := db.DBState{
-		Root:    &stateRootString,
-		ChainID: &origin,
-		Nonce:   &stateNonce,
+		SnapshotRoot: snapshotRoot,
+		Root:         &stateRootString,
+		ChainID:      &origin,
+		Nonce:        &stateNonce,
 	}
+	span.AddEvent("got state data", trace.WithAttributes(
+		attribute.String(metrics.StateRoot, stateRootString),
+		attribute.Int(metrics.StateNonce, int(stateNonce)),
+	))
 
-	_, snapshotProof, stateIndex, err := e.executorDB.GetStateMetadata(ctx, stateMask)
+	snapshotProof, stateIndex, err := e.executorDB.GetStateMetadata(ctx, stateMask)
 	if err != nil {
+		span.AddEvent("could not get state index", trace.WithAttributes(
+			attribute.String(metrics.Error, err.Error()),
+		))
 		return false, fmt.Errorf("could not get state index: %w", err)
 	}
 
-	if snapshotProof == nil || stateIndex == nil {
+	if snapshotProof == nil {
+		span.AddEvent("snapshot proof is nil")
+		return false, nil
+	}
+
+	if stateIndex == nil {
+		span.AddEvent("state index is nil")
 		return false, nil
 	}
 
 	var originProof [32][32]byte
-	for i, p := range proof {
+	for i, p := range originProofRaw {
 		copy(originProof[i][:], p)
+	}
+
+	originProofValid, err := e.verifyOriginMerkleProof(ctx, originProofRaw, leaf, uint32(message.Nonce()-1), stateRoot)
+	if err != nil {
+		span.AddEvent("could not verify origin merkle proof", trace.WithAttributes(attribute.String(metrics.Error, err.Error())))
+		return false, fmt.Errorf("could not verify origin merkle proof: %w", err)
+	}
+
+	if !originProofValid {
+		span.AddEvent("origin proof not valid")
+		return false, nil
 	}
 
 	var snapshotProofBytes [][]byte
@@ -424,6 +517,18 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 	}
 
 	_, err = e.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(destinationDomain)), func(transactor *bind.TransactOpts) (tx *ethTypes.Transaction, err error) {
+		leafBytes, _ := message.ToLeaf()
+		leafHex := common.Bytes2Hex(leafBytes[:])
+		stateHash, _ := (*state).Hash()
+		span.AddEvent("Submitting execute()", trace.WithAttributes(
+			attribute.Int(metrics.Origin, int(message.OriginDomain())),
+			attribute.Int(metrics.Destination, int(destinationDomain)),
+			attribute.String(metrics.MessageLeaf, leafHex),
+			attribute.String(metrics.StateRoot, stateRootString),
+			attribute.Int("stateIndex", int(*stateIndex)),
+			attribute.Int(metrics.StateNonce, int(stateNonce)),
+			attribute.String("stateHash", common.BytesToHash(stateHash[:]).String()),
+		))
 		tx, err = e.chainExecutors[message.DestinationDomain()].boundDestination.Execute(
 			transactor,
 			message,
@@ -435,7 +540,14 @@ func (e Executor) Execute(parentCtx context.Context, message types.Message) (_ b
 		if err != nil {
 			return nil, fmt.Errorf("could not execute message: %w", err)
 		}
-
+		types.LogTx("EXECUTOR", fmt.Sprintf("Submitted execute() with leaf %s", leafHex), message.DestinationDomain(), tx)
+		if tx != nil {
+			span.AddEvent("Submitted execute()", trace.WithAttributes(
+				attribute.String("txHash", tx.Hash().String()),
+			))
+		} else {
+			span.AddEvent("Execute() did not generate a tx")
+		}
 		return
 	})
 	if err != nil {
@@ -487,13 +599,14 @@ func (e Executor) verifyMessageMerkleProof(message types.Message) (bool, error) 
 }
 
 // verifyStateMerkleProof verifies that a state is in the snapshot merkle tree.
-func (e Executor) verifyStateMerkleProof(parentCtx context.Context, state types.State) (_ bool, err error) {
+func (e Executor) verifyStateMerkleProof(parentCtx context.Context, state types.State, snapshotRoot string) (_ bool, err error) {
 	stateRoot := state.Root()
 	root := common.BytesToHash(stateRoot[:]).String()
 	chainID := state.Origin()
 
 	ctx, span := e.handler.Tracer().Start(parentCtx, "verifyStateMerkleProof", trace.WithAttributes(
-		attribute.String("root", root),
+		attribute.String(metrics.StateRoot, root),
+		attribute.String(metrics.SnapRoot, snapshotRoot),
 		attribute.Int(metrics.ChainID, int(chainID)),
 	))
 
@@ -502,16 +615,17 @@ func (e Executor) verifyStateMerkleProof(parentCtx context.Context, state types.
 	}()
 
 	stateMask := db.DBState{
-		Root:    &root,
-		ChainID: &chainID,
+		SnapshotRoot: &snapshotRoot,
+		Root:         &root,
+		ChainID:      &chainID,
 	}
 
-	snapshotRoot, proof, stateIndex, err := e.executorDB.GetStateMetadata(ctx, stateMask)
+	proof, stateIndex, err := e.executorDB.GetStateMetadata(ctx, stateMask)
 	if err != nil {
 		return false, fmt.Errorf("could not get snapshot root: %w", err)
 	}
 
-	if snapshotRoot == nil || proof == nil || stateIndex == nil {
+	if proof == nil || stateIndex == nil {
 		return false, nil
 	}
 
@@ -526,7 +640,25 @@ func (e Executor) verifyStateMerkleProof(parentCtx context.Context, state types.
 		return false, fmt.Errorf("could not unmarshal proof: %w", err)
 	}
 
-	inTree := merkle.VerifyMerkleProof((*snapshotRoot)[:], leaf[:], (*stateIndex)*2, proofBytes, merkle.SnapshotTreeHeight)
+	snapshotRootHash := common.HexToHash(snapshotRoot)
+	inTree := merkle.VerifyMerkleProof(snapshotRootHash[:], leaf[:], (*stateIndex)*2, proofBytes, merkle.SnapshotTreeHeight)
+
+	return inTree, nil
+}
+
+// verifyOriginMerkleProof verifies that a message is in the origin merkle tree.
+func (e Executor) verifyOriginMerkleProof(parentCtx context.Context, originProof [][]byte, messageLeaf [32]byte, index uint32, stateRoot [32]byte) (_ bool, err error) {
+	_, span := e.handler.Tracer().Start(parentCtx, "verifyOriginMerkleProof", trace.WithAttributes(
+		attribute.Int("index", int(index)),
+		attribute.String(metrics.MessageLeaf, common.BytesToHash(messageLeaf[:]).String()),
+		attribute.String(metrics.StateRoot, common.BytesToHash(stateRoot[:]).String()),
+	))
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	inTree := merkle.VerifyMerkleProof(stateRoot[:], messageLeaf[:], index, originProof, merkle.MessageTreeHeight)
 
 	return inTree, nil
 }
@@ -544,7 +676,9 @@ func (e Executor) verifyMessageOptimisticPeriod(parentCtx context.Context, messa
 	))
 
 	defer func() {
-		span.AddEvent("Determine execution status", trace.WithAttributes(attribute.Bool("should_execute", msgNonce != nil)))
+		span.AddEvent("determine execution status", trace.WithAttributes(
+			attribute.Bool("should_execute", msgNonce != nil),
+		))
 		metrics.EndSpanWithErr(span, err)
 	}()
 
@@ -561,6 +695,7 @@ func (e Executor) verifyMessageOptimisticPeriod(parentCtx context.Context, messa
 
 	if messageMinimumTime == nil {
 		//nolint:nilnil
+		span.AddEvent("messageMinimumTime is nil")
 		return nil, nil
 	}
 
@@ -609,7 +744,10 @@ func getChainTime(ctx context.Context, backend Backend) (uint64, error) {
 }
 
 // newTreeFromDB creates a new merkle tree from the database's messages.
-func newTreeFromDB(ctx context.Context, chainID uint32, executorDB db.ExecutorDB) (*merkle.HistoricalTree, error) {
+func (e *Executor) newTreeFromDB(parentCtx context.Context, chainID uint32) (*merkle.HistoricalTree, error) {
+	ctx, span := e.handler.Tracer().Start(parentCtx, "newTreeFromDB", trace.WithAttributes(
+		attribute.Int(metrics.ChainID, int(chainID)),
+	))
 	var allMessages []types.Message
 
 	messageMask := db.DBMessage{
@@ -618,7 +756,7 @@ func newTreeFromDB(ctx context.Context, chainID uint32, executorDB db.ExecutorDB
 	page := 1
 
 	for {
-		messages, err := executorDB.GetMessages(ctx, messageMask, page)
+		messages, err := e.executorDB.GetMessages(ctx, messageMask, page)
 		if err != nil {
 			return nil, fmt.Errorf("could not get messages: %w", err)
 		}
@@ -629,6 +767,10 @@ func newTreeFromDB(ctx context.Context, chainID uint32, executorDB db.ExecutorDB
 		allMessages = append(allMessages, messages...)
 		page++
 	}
+	span.SetAttributes(
+		attribute.Int("num_messages", len(allMessages)),
+		attribute.Int("message_tree_height", int(merkle.MessageTreeHeight)),
+	)
 
 	rawMessages := make([][]byte, len(allMessages))
 
@@ -686,8 +828,8 @@ func (e Executor) checkIfExecuted(parentCtx context.Context, message types.Messa
 // streamLogs uses gRPC to stream logs into a channel.
 //
 //nolint:cyclop
-func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chainID uint32, address string, contractType execTypes.ContractType) error {
-	lastStoredBlock, err := e.executorDB.GetLastBlockNumber(ctx, chainID, contractType)
+func (e Executor) streamLogs(parentCtx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chainID uint32, address string, contractType execTypes.ContractType) error {
+	lastStoredBlock, err := e.executorDB.GetLastBlockNumber(parentCtx, chainID, contractType)
 	if err != nil {
 		return fmt.Errorf("could not get last stored block: %w", err)
 	}
@@ -695,6 +837,14 @@ func (e Executor) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServ
 	fromBlock := strconv.FormatUint(lastStoredBlock, 16)
 
 	toBlock := "latest"
+
+	ctx, _ := e.handler.Tracer().Start(parentCtx, "streamLogs", trace.WithAttributes(
+		attribute.Int(metrics.ChainID, int(chainID)),
+		attribute.String("address", address),
+		attribute.Int("from_block", int(lastStoredBlock)),
+		attribute.String("to_block", toBlock),
+		attribute.String("contract_type", contractType.String()),
+	))
 
 	stream, err := grpcClient.StreamLogs(ctx, &pbscribe.StreamLogsRequest{
 		Filter: &pbscribe.LogFilter{
@@ -768,6 +918,7 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 	ctx, span := e.handler.Tracer().Start(parentCtx, "processLog", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(chainID)),
 		attribute.String(metrics.TxHash, log.TxHash.String()),
+		attribute.String("datatype", reflect.TypeOf(datatypeInterface).String()),
 	))
 
 	defer func() {
@@ -776,11 +927,11 @@ func (e Executor) processLog(parentCtx context.Context, log ethTypes.Log, chainI
 
 	switch datatype := datatypeInterface.(type) {
 	case types.Message:
-		return e.processMessage(ctx, datatype, log.BlockNumber)
+		return e.processMessage(ctx, datatype, log)
 	case types.Snapshot:
-		return e.processSnapshot(ctx, datatype, log.BlockNumber)
-	case types.Attestation:
-		return e.processAttestation(ctx, datatype, chainID, log.BlockNumber)
+		return e.processSnapshot(ctx, datatype, log)
+	case *types.AttestationWithMetadata:
+		return e.processAttestation(ctx, *datatype, chainID, log)
 	default:
 		return fmt.Errorf("type not supported")
 	}
@@ -831,6 +982,10 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 				if err != nil {
 					return fmt.Errorf("could not get executable messages: %w", err)
 				}
+				msgStrs := []string{}
+				for _, msg := range messages {
+					msgStrs = append(msgStrs, types.MessageToString(msg))
+				}
 
 				if len(messages) == 0 {
 					break
@@ -843,6 +998,23 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 				))
 
 				for _, message := range messages {
+					leaf, err := message.ToLeaf()
+					if err != nil {
+						return fmt.Errorf("could not convert message to leaf: %w", err)
+					}
+					leafHex := common.BytesToHash(leaf[:]).String()
+
+					num, ok := e.numExecuteAttempts[leafHex]
+					if num >= e.config.MaxExecuteAttempts {
+						continue
+					}
+					lastExecuteTime, ok := e.lastExecuteAttempts[leafHex]
+					nextExecuteTime := lastExecuteTime + uint64(e.config.ExecuteRetryInterval)
+					now := uint64(e.NowFunc().Unix())
+					if ok && nextExecuteTime > now {
+						continue
+					}
+
 					messageExecuted, err := e.checkIfExecuted(ctx, message)
 					if err != nil {
 						return fmt.Errorf("could not check if message was executed: %w", err)
@@ -855,13 +1027,18 @@ func (e Executor) executeExecutable(parentCtx context.Context, chainID uint32) (
 					))
 
 					if !messageExecuted {
+						e.numExecuteAttempts[leafHex]++
 						executed, err := e.Execute(ctx, message)
 						if err != nil {
 							logger.Errorf("could not execute message, retrying: %s", err)
 							continue
 						}
 
-						if !executed {
+						if executed {
+							delete(e.lastExecuteAttempts, leafHex)
+						} else {
+							now := uint64(e.NowFunc().Unix())
+							e.lastExecuteAttempts[leafHex] = now
 							continue
 						}
 					}
@@ -913,6 +1090,10 @@ func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err
 				if err != nil {
 					return fmt.Errorf("could not get messages without minimum time: %w", err)
 				}
+				msgStrs := []string{}
+				for _, msg := range messages {
+					msgStrs = append(msgStrs, types.MessageToString(msg))
+				}
 
 				if len(messages) == 0 {
 					break
@@ -936,6 +1117,13 @@ func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err
 			for _, message := range unsetMessages {
 				nonce := message.Nonce()
 				destinationDomain := message.DestinationDomain()
+				leaf, _ := message.ToLeaf()
+				_, msgSpan := e.handler.Tracer().Start(ctx, "setMinimumTimeForMessage", trace.WithAttributes(
+					attribute.String(metrics.MessageLeaf, common.BytesToHash(leaf[:]).String()),
+					attribute.Int(metrics.ChainID, int(chainID)),
+					attribute.Int(metrics.Destination, int(destinationDomain)),
+					attribute.Int(metrics.Nonce, int(nonce)),
+				))
 
 				minimumTimestamp, err := e.executorDB.GetTimestampForMessage(ctx, chainID, destinationDomain, nonce)
 				if err != nil {
@@ -943,8 +1131,12 @@ func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err
 				}
 
 				if minimumTimestamp == nil {
+					msgSpan.AddEvent("message timestamp is nil")
 					continue
 				}
+				msgSpan.AddEvent("got timestamp for message", trace.WithAttributes(
+					attribute.Int("timestamp", int(*minimumTimestamp)),
+				))
 
 				setMessageMask := db.DBMessage{
 					ChainID:     &chainID,
@@ -952,7 +1144,12 @@ func (e Executor) setMinimumTime(parentCtx context.Context, chainID uint32) (err
 					Nonce:       &nonce,
 				}
 
-				err = e.executorDB.SetMinimumTime(ctx, setMessageMask, *minimumTimestamp+uint64(message.OptimisticSeconds()))
+				minimumTime := *minimumTimestamp + uint64(message.OptimisticSeconds())
+				span.AddEvent("setting minimum time", trace.WithAttributes(
+					attribute.Int("minimum_time", int(minimumTime)),
+				))
+				err = e.executorDB.SetMinimumTime(ctx, setMessageMask, minimumTime)
+				metrics.EndSpanWithErr(msgSpan, err)
 				if err != nil {
 					return fmt.Errorf("could not set minimum time: %w", err)
 				}
