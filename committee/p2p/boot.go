@@ -95,19 +95,6 @@ func (l *libP2PManagerImpl) DoSomethingElse() bool {
 	}
 
 	return val != nil
-	//
-	//fmt.Println(len(l.host.Network().Peers()))
-	//r, err := l.datastoreDs.Query(context.TODO(), query.Query{KeysOnly: true})
-	//if err != nil {
-	//	fmt.Println(errors.Wrap(err, "crdt list query"))
-	//}
-	//
-	//l.datastoreDs.InternalStats()
-	//
-	//var keys []string
-	//for k := range r.Next() {
-	//	keys = append(keys, k.Key)
-	//}
 }
 
 func (l *libP2PManagerImpl) setupHost(ctx context.Context, privKeyWrapper crypto.PrivKey) (host.Host, error) {
