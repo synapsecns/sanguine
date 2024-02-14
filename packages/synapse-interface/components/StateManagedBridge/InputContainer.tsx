@@ -126,7 +126,7 @@ export const InputContainer = () => {
                     bg-transparent
                     max-w-[190px]
                     p-0
-                    placeholder:text-[#88818C]
+                    placeholder:text-white/40
                     text-white text-opacity-80 text-xl md:text-2xl font-medium
                   `}
                   placeholder="0.0000"

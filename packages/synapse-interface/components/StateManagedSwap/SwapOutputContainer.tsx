@@ -3,6 +3,7 @@ import { useSwapState } from '@/slices/swap/hooks'
 
 import LoadingDots from '@tw/LoadingDots'
 import { SwapToTokenSelector } from './SwapToTokenSelector'
+import { BridgeSwapOutputNumber } from '@/components/BridgeSwapOutputNumber'
 
 
 export const SwapOutputContainer = () => {
@@ -18,7 +19,7 @@ export const SwapOutputContainer = () => {
             pl-md
             w-full h-16
             rounded-md
-            border border-white border-opacity-20
+            border border-transparent
           `}
         >
           <SwapToTokenSelector />
@@ -26,28 +27,8 @@ export const SwapOutputContainer = () => {
             {isLoading ? (
               <LoadingDots className="opacity-50" />
             ) : (
-              <input
-                pattern="[0-9.]+"
-                disabled={true}
-                className={`
-                  focus:outline-none
-                  focus:ring-0
-                  focus:border-none
-                  border-none
-                  p-0
-                  bg-transparent
-                  max-w-[190px]
-                placeholder:text-[#88818C]
-                text-white text-opacity-80 text-xl md:text-2xl font-medium
-                `}
-                placeholder="0.0000"
-                value={
-                  swapQuote.outputAmountString === '0'
-                    ? ''
-                    : swapQuote.outputAmountString
-                }
-                name="inputRow"
-                autoComplete="off"
+              <BridgeSwapOutputNumber
+                quote={swapQuote}
               />
             )}
           </div>
