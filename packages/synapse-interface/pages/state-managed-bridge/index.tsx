@@ -73,7 +73,10 @@ import {
   fetchEthPrice,
   fetchGmxPrice,
 } from '@/slices/priceDataSlice'
-import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
+import {
+  isTransactionReceiptError,
+  _isTransactionReceiptError,
+} from '@/utils/isTransactionReceiptError'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -452,7 +455,7 @@ const StateManagedBridge = () => {
 
       const transactionReceipt = await waitForTransaction({
         hash: tx as Address,
-        timeout: 60_000,
+        timeout: 1_000,
       })
       console.log('Transaction Receipt: ', transactionReceipt)
 
@@ -481,6 +484,11 @@ const StateManagedBridge = () => {
       console.log(
         'isTransactionReceiptError: ',
         isTransactionReceiptError(error?.message)
+      )
+
+      console.log(
+        '_isTransactionReceiptError:',
+        _isTransactionReceiptError(error)
       )
 
       /** Fetch balances if await transaction receipt times out */
