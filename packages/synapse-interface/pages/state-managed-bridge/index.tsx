@@ -452,7 +452,7 @@ const StateManagedBridge = () => {
 
       const transactionReceipt = await waitForTransaction({
         hash: tx as Address,
-        timeout: 1_000,
+        timeout: 60_000,
       })
       console.log('Transaction Receipt: ', transactionReceipt)
 
