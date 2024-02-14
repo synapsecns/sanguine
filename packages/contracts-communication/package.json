@@ -1,0 +1,12 @@
+{
+  "name": "contracts-communication",
+  "version": "1.0.0",
+  "private": true,
+  "files": [
+    "contracts/*.sol"
+  ],
+  "scripts": {
+    "build:contracts": "forge build",
+    "build:go": "./flatten.sh contracts/*.sol contracts/modules/*.sol"
+  }
+}

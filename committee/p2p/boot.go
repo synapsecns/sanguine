@@ -47,7 +47,7 @@ var RebroadcastingInterval = time.Millisecond * 10
 // NewLibP2PManager creates a new libp2p manager.
 // listenHost is the host to listen on.
 //
-// TODO: we need to figure out how this works across multiple nodes
+// TODO: we need to figure out how this works across multiple nodes.
 func NewLibP2PManager(ctx context.Context, auth signer.Signer) (LibP2PManager, error) {
 	l := &libP2PManagerImpl{}
 	_, err := l.setupHost(ctx, auth.PrivKey()) // call createHost function
@@ -66,7 +66,7 @@ func NewLibP2PManager(ctx context.Context, auth signer.Signer) (LibP2PManager, e
 }
 
 // Host returns the host from the manager.
-// TODO: consider not exposing the host directly
+// TODO: consider not exposing the host directly.
 func (l *libP2PManagerImpl) Host() host.Host {
 	return l.host
 }
@@ -182,5 +182,4 @@ func makePeers(peers []string) ([]peer.AddrInfo, error) {
 		p = append(p, *info)
 	}
 	return p, nil
-
 }
