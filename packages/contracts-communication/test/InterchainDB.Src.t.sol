@@ -145,6 +145,10 @@ contract InterchainDBSourceTest is Test, IInterchainDBEvents {
         );
     }
 
+    function expectNoModulesSpecified() internal {
+        vm.expectRevert(IInterchainDB.InterchainDB__NoModulesSpecified.selector);
+    }
+
     // ═══════════════════════════════════════════════ TESTS: SET UP ═══════════════════════════════════════════════════
 
     function test_setup_getWriterNonce() public {
@@ -339,6 +343,11 @@ contract InterchainDBSourceTest is Test, IInterchainDBEvents {
         requestVerification(requestCaller, incorrectFee, writerF, 0, twoModules);
     }
 
+    function test_requestVerification_revert_noModulesSpecified() public {
+        expectNoModulesSpecified();
+        requestVerification(requestCaller, MODULE_A_FEE, writerF, 0, new address[](0));
+    }
+
     // ═════════════════════════════════════ TESTS: WRITE + REQUEST VALIDATION ═════════════════════════════════════════
 
     function test_writeEntryWithVerification_writerF_oneModule_callsModule() public {
@@ -513,7 +522,18 @@ contract InterchainDBSourceTest is Test, IInterchainDBEvents {
         writeEntryWithVerification(incorrectFee, writerF, dataHash, twoModules);
     }
 
+    function test_writeEntryWithVerification_revert_noModulesSpecified() public {
+        bytes32 dataHash = getMockDataHash(writerF, INITIAL_WRITER_F_NONCE);
+        expectNoModulesSpecified();
+        writeEntryWithVerification(0, writerF, dataHash, new address[](0));
+    }
+
     // ═════════════════════════════════════════ TESTS: GET INTERCHAIN FEE ═════════════════════════════════════════════
+
+    function test_getInterchainFee_noModules() public {
+        expectNoModulesSpecified();
+        icDB.getInterchainFee(DST_CHAIN_ID, new address[](0));
+    }
 
     function test_getInterchainFee_oneModule() public {
         // [moduleA]
