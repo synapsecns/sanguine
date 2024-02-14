@@ -97,6 +97,7 @@ const FilterInput = ({
   return (
     <input
       id="filter-input"
+      autoComplete="off"
       ref={inputRef}
       placeholder={placeholder}
       onChange={(e) => onSearch(e.target.value)}
