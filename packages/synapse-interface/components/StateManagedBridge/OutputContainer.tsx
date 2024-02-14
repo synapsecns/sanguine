@@ -1,44 +1,38 @@
+import { useDispatch } from 'react-redux'
+
 import { useBridgeState } from '@/slices/bridge/hooks'
 
-import LoadingDots from '@tw/LoadingDots'
+import { setShowToChainListOverlay } from '@/slices/bridgeDisplaySlice'
+import { setShowToTokenListOverlay } from '@/slices/bridgeDisplaySlice'
 
-import { ToChainSelector } from './ToChainSelector'
-import { ToTokenSelector } from './ToTokenSelector'
-import { OutputNumber } from '@/components/bridgeSwap/OutputNumber'
-
+import { GenericOutputContainer } from '@/components/bridgeSwap/GenericOutputContainer'
+import { ChainSelector } from '@/components/bridgeSwap/ChainSelector'
+import { TokenSelector } from '@/components/bridgeSwap/TokenSelector'
 
 export const OutputContainer = () => {
-  const { bridgeQuote, isLoading } = useBridgeState()
+  const dispatch = useDispatch()
+  const { bridgeQuote, isLoading, toChainId, toToken } = useBridgeState()
 
   return (
-    <div className="mt-[1.125rem] p-md text-left rounded-md bg-bgBase/10 ring-1 ring-white/10">
-      <div className="flex items-center justify-between mb-3">
-        <ToChainSelector />
-      </div>
-
-      <div className="flex h-16 mb-2 space-x-2">
-        <div
-          className={`
-            flex flex-grow items-center
-            pl-md
-            w-full h-16
-            rounded-md
-            border border-transparent
-          `}
-        >
-          <ToTokenSelector />
-          <div className="flex ml-4">
-            {isLoading ? (
-              <LoadingDots className="opacity-50" />
-            ) : (
-              <OutputNumber
-                quote={bridgeQuote}
-              />
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
+    <GenericOutputContainer
+      chainSelector={
+        <ChainSelector
+          chainId={toChainId}
+          label="To"
+          onClick={() => dispatch(setShowToChainListOverlay(true))}
+        />
+      }
+      tokenSelector={
+        <TokenSelector
+          data-test-id="bridge-destination-token"
+          token={toToken}
+          label="Out"
+          onClick={() => dispatch(setShowToTokenListOverlay(true))}
+        />
+      }
+      isLoading={isLoading}
+      quote={bridgeQuote}
+    />
   )
 }
 

@@ -1,5 +1,3 @@
-import { DropDownArrowSvg } from '../icons/DropDownArrowSvg'
-
 import { ChevronDownIcon } from '@heroicons/react/solid'
 
 import {
@@ -8,9 +6,6 @@ import {
 } from '@/styles/tokens'
 
 export const TokenSelector = ({ token, label, onClick, ...props }) => {
-
-
-
   return (
     <button
       {...props}

@@ -11,12 +11,11 @@ export function OutputNumber({ quote }) {
       `}
     >
       {
-      convertNumStrToSized(
-        isQuoteZero
-          ? "0.0000"
-          : quote?.outputAmountString
-      )
-
+        convertNumStrToSized(
+          isQuoteZero
+            ? "0.0000"
+            : quote?.outputAmountString
+        )
       }
     </div>
   )
