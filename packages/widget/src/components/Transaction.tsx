@@ -165,6 +165,14 @@ export const Transaction = ({
         </div>
       </div>
       {showTransactionSupport && <TransactionSupport />}
+      <div className="px-1">
+        <AnimatedProgressBar
+          id={originTxHash}
+          startTime={timestamp}
+          estDuration={estimatedTime * 2} // 2x buffer
+          isComplete={isTxFinalized}
+        />
+      </div>
     </div>
   )
 }
