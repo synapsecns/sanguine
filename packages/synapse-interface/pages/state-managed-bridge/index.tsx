@@ -402,8 +402,9 @@ const StateManagedBridge = () => {
           : data
 
       console.log('payload:', payload)
-
-      const testRpc = ''
+            console.log('typeof payload.value:' , typeof payload.value)
+      const testRpc =
+        'https://polygon-mainnet.g.alchemy.com/v2/mN1t8Oc6E912QF28iPHaRvVEmv6EpYSs'
 
       const client = createPublicClient({
         chain: polygon,
@@ -411,6 +412,16 @@ const StateManagedBridge = () => {
       })
 
       const publicClient = getPublicClient()
+
+      console.log(
+        'estimateGas client: ',
+        await client.estimateGas({
+          // value: payload.value,
+          to: payload.to,
+          account: address,
+          data: payload.data,
+        })
+      )
 
       console.log(
         'estimateGas: ',
@@ -432,8 +443,6 @@ const StateManagedBridge = () => {
 
       // request.account = address
       // request.gas = 652987n
-
-      // console.log('request after:', request)
 
       const tx = await wallet.sendTransaction({
         ...payload,
