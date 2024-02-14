@@ -5,15 +5,37 @@ import {IInterchainDB} from "./interfaces/IInterchainDB.sol";
 import {IInterchainDBEvents} from "./interfaces/IInterchainDBEvents.sol";
 
 contract InterchainDB is IInterchainDB, IInterchainDBEvents {
-    // ════════════════════════════════════════════════ APP-FACING ═════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════ WRITER-FACING ═══════════════════════════════════════════════════
 
     /// @inheritdoc IInterchainDB
-    function writeEntry(bytes32 dataHash, uint256 destChainId, address[] calldata srcModules) external payable {}
+    function writeEntry(bytes32 dataHash) external returns (uint256 writerNonce) {}
+
+    /// @inheritdoc IInterchainDB
+    function requestVerification(
+        uint256 destChainId,
+        address writer,
+        uint256 writerNonce,
+        address[] memory srcModules
+    )
+        external
+        payable
+    {}
+
+    /// @inheritdoc IInterchainDB
+    function writeEntryWithVerification(
+        uint256 destChainId,
+        bytes32 dataHash,
+        address[] calldata srcModules
+    )
+        external
+        payable
+        returns (uint256 writerNonce)
+    {}
 
     // ═══════════════════════════════════════════════ MODULE-FACING ═══════════════════════════════════════════════════
 
     /// @inheritdoc IInterchainDB
-    function confirmEntry(InterchainEntry memory entry) external {}
+    function verifyEntry(InterchainEntry memory entry) external {}
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
@@ -33,6 +55,6 @@ contract InterchainDB is IInterchainDB, IInterchainDBEvents {
     )
         external
         view
-        returns (uint256[] memory moduleConfirmedAt)
+        returns (uint256[] memory moduleVerifiedAt)
     {}
 }
