@@ -4,7 +4,7 @@ import LoadingDots from '@tw/LoadingDots'
 
 import { ToChainSelector } from './ToChainSelector'
 import { ToTokenSelector } from './ToTokenSelector'
-import { BridgeSwapOutputNumber } from '@/components/BridgeSwapOutputNumber'
+import { OutputNumber } from '@/components/bridgeSwap/OutputNumber'
 
 
 export const OutputContainer = () => {
@@ -31,7 +31,7 @@ export const OutputContainer = () => {
             {isLoading ? (
               <LoadingDots className="opacity-50" />
             ) : (
-              <BridgeSwapOutputNumber
+              <OutputNumber
                 quote={bridgeQuote}
               />
             )}

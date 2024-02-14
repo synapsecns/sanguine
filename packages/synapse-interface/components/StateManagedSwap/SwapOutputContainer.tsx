@@ -3,7 +3,7 @@ import { useSwapState } from '@/slices/swap/hooks'
 
 import LoadingDots from '@tw/LoadingDots'
 import { SwapToTokenSelector } from './SwapToTokenSelector'
-import { BridgeSwapOutputNumber } from '@/components/BridgeSwapOutputNumber'
+import { OutputNumber } from '@/components/bridgeSwap/OutputNumber'
 
 
 export const SwapOutputContainer = () => {
@@ -27,9 +27,7 @@ export const SwapOutputContainer = () => {
             {isLoading ? (
               <LoadingDots className="opacity-50" />
             ) : (
-              <BridgeSwapOutputNumber
-                quote={swapQuote}
-              />
+              <OutputNumber quote={swapQuote}/>
             )}
           </div>
         </div>

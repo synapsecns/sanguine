@@ -1,4 +1,4 @@
-export function BridgeSwapOutputNumber({quote}) {
+export function OutputNumber({ quote }) {
   const isQuoteZero = quote && (quote?.outputAmountString === '0')
 
   return (
@@ -8,7 +8,6 @@ export function BridgeSwapOutputNumber({quote}) {
       text-white/90 text-2xl md:text-3xl font-medium
       ${isQuoteZero && "text-white/40"}
       -mt-1
-
       `}
     >
       {
