@@ -2,12 +2,11 @@ package p2p
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 	realtimeDB "github.com/dTelecom/p2p-realtime-database"
 	ipfslite "github.com/hsanjuan/ipfs-lite"
 	"github.com/ipfs/go-datastore"
+	"github.com/ipfs/go-datastore/query"
 	ipfs_datastore "github.com/ipfs/go-datastore/sync"
 	crdt "github.com/ipfs/go-ds-crdt"
 	logging "github.com/ipfs/go-log/v2"
@@ -27,6 +26,8 @@ type LibP2PManager interface {
 	Host() host.Host // Expose host from manager
 	// Start starts the libp2p manager.
 	Start(ctx context.Context, bootstrapPeers []string) error
+	DoSomething()
+	DoSomethingElse()
 }
 
 type libP2PManagerImpl struct {
@@ -37,12 +38,12 @@ type libP2PManagerImpl struct {
 	pubsub            *pubsub.PubSub
 	pubSubBroadcaster *crdt.PubSubBroadcaster
 	globalDS          datastore.Batching
-	datastoreDs       datastore.Batching
+	datastoreDs       *crdt.Datastore
 }
 
 const dbTopic = "crdt_db"
 
-var RebroadcastingInterval = time.Second * 30
+var RebroadcastingInterval = time.Millisecond * 10
 
 // NewLibP2PManager creates a new libp2p manager.
 // listenHost is the host to listen on.
@@ -71,6 +72,42 @@ func (l *libP2PManagerImpl) Host() host.Host {
 	return l.host
 }
 
+func (l *libP2PManagerImpl) DoSomething() {
+	err := l.datastoreDs.Put(context.Background(), datastore.NewKey("test"), []byte("test"))
+	if err != nil {
+		fmt.Println("error: ", err)
+	}
+
+	err = l.datastoreDs.Sync(context.Background(), datastore.NewKey("/"))
+	if err != nil {
+		fmt.Println("error: ", err)
+	}
+}
+
+func (l *libP2PManagerImpl) DoSomethingElse() {
+	l.datastoreDs.Sync(context.Background(), datastore.NewKey("/"))
+
+	val, err := l.datastoreDs.Get(context.Background(), datastore.NewKey("test"))
+	if err != nil {
+		fmt.Println("error: ", err)
+	}
+	_ = val
+
+	fmt.Println(len(l.host.Network().Peers()))
+	r, err := l.datastoreDs.Query(context.TODO(), query.Query{KeysOnly: true})
+	if err != nil {
+		fmt.Println(errors.Wrap(err, "crdt list query"))
+	}
+
+	l.datastoreDs.InternalStats()
+
+	var keys []string
+	for k := range r.Next() {
+		keys = append(keys, k.Key)
+	}
+
+}
+
 func (l *libP2PManagerImpl) setupHost(ctx context.Context, privKeyWrapper crypto.PrivKey) (host.Host, error) {
 	port, _ := freeport.GetFreePort()
 	// Create a new libp2p host
@@ -81,16 +118,23 @@ func (l *libP2PManagerImpl) setupHost(ctx context.Context, privKeyWrapper crypto
 
 	ds := ipfs_datastore.MutexWrap(datastore.NewMapDatastore())
 
+	opts := ipfslite.Libp2pOptionsExtra
 	// todo: setup datastore
 	// TODO: add eth connection gater: https://github.com/dTelecom/p2p-realtime-database/blob/main/gater.go
-	l.host, l.dht, err = ipfslite.SetupLibp2p(ctx, privKeyWrapper, nil, []multiaddr.Multiaddr{sourceMultiAddr}, ds, ipfslite.Libp2pOptionsExtra...)
+	l.host, l.dht, err = ipfslite.SetupLibp2p(ctx, privKeyWrapper, nil, []multiaddr.Multiaddr{sourceMultiAddr}, ds, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not create libp2p host: %w", err)
 	}
 
 	l.connectionManager = realtimeDB.NewConnectionManager(l.host)
 
-	l.pubsub, err = pubsub.NewGossipSub(context.Background(), l.host)
+	traceme, err := pubsub.NewJSONTracer(fmt.Sprintf("/tmp/%d.json", i))
+	if err != nil {
+		return nil, fmt.Errorf("could not create tracer: %w", err)
+	}
+	i++
+
+	l.pubsub, err = pubsub.NewGossipSub(context.Background(), l.host, pubsub.WithEventTracer(traceme))
 	if err != nil {
 		return nil, fmt.Errorf("could not create pubsub: %w", err)
 	}
@@ -110,20 +154,21 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	ipfs, err := ipfslite.New(ctx, l.globalDS, nil, l.host, l.dht, &ipfslite.Config{})
 	ipfs.Bootstrap(peers)
 
-	crtdOpts := crdt.DefaultOptions()
-	crtdOpts.Logger = logging.Logger("p2p_logger")
-	crtdOpts.RebroadcastInterval = RebroadcastingInterval
-	crtdOpts.PutHook = func(k datastore.Key, v []byte) {
+	crdtOpts := crdt.DefaultOptions()
+	crdtOpts.Logger = logging.Logger("p2p_logger")
+
+	crdtOpts.RebroadcastInterval = RebroadcastingInterval
+	crdtOpts.PutHook = func(k datastore.Key, v []byte) {
 		fmt.Printf("[%s] Added: [%s] -> %s\n", time.Now().Format(time.RFC3339), k, string(v))
 		// TODO: some validation goes here
 	}
 	// TODO: this probably never gets called
-	crtdOpts.DeleteHook = func(k datastore.Key) {
+	crdtOpts.DeleteHook = func(k datastore.Key) {
 		fmt.Printf("[%s] Removed: [%s]\n", time.Now().Format(time.RFC3339), k)
 	}
-	crtdOpts.RebroadcastInterval = time.Second
+	crdtOpts.RebroadcastInterval = time.Second
 
-	l.datastoreDs, err = crdt.New(l.globalDS, datastore.NewKey(dbTopic), ipfs, l.pubSubBroadcaster, crtdOpts)
+	l.datastoreDs, err = crdt.New(l.globalDS, datastore.NewKey(dbTopic), ipfs, l.pubSubBroadcaster, crdtOpts)
 	if err != nil {
 		return err
 	}
@@ -131,16 +176,6 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	err = l.datastoreDs.Sync(ctx, datastore.NewKey("/"))
 
 	return nil
-}
-
-func HashString(s string) string {
-	hash := sha256.Sum256([]byte(s))
-	return hex.EncodeToString(hash[:])
-}
-
-func (l *libP2PManagerImpl) Select(key string, values [][]byte) (int, error) {
-	// TODO: implement me
-	return 0, nil
 }
 
 func makePeers(peers []string) ([]peer.AddrInfo, error) {
