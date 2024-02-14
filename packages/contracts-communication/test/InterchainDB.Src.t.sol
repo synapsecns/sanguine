@@ -339,6 +339,180 @@ contract InterchainDBSourceTest is Test, IInterchainDBEvents {
         requestVerification(requestCaller, incorrectFee, writerF, 0, twoModules);
     }
 
+    // ═════════════════════════════════════ TESTS: WRITE + REQUEST VALIDATION ═════════════════════════════════════════
+
+    function test_writeEntryWithVerification_writerF_oneModule_callsModule() public {
+        bytes32 dataHash = getMockDataHash(writerF, INITIAL_WRITER_F_NONCE);
+        IInterchainDB.InterchainEntry memory entry = getMockEntry(writerF, INITIAL_WRITER_F_NONCE);
+        vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(entry));
+        writeEntryWithVerification(MODULE_A_FEE, writerF, dataHash, oneModule);
+    }
+
+    function test_writeEntryWithVerification_writerF_oneModule_emitsEvents() public {
+        bytes32 dataHash = getMockDataHash(writerF, INITIAL_WRITER_F_NONCE);
+        vm.expectEmit(address(icDB));
+        emit InterchainEntryWritten(SRC_CHAIN_ID, addressToBytes32(writerF), INITIAL_WRITER_F_NONCE, dataHash);
+        vm.expectEmit(address(icDB));
+        emit InterchainVerificationRequested(DST_CHAIN_ID, addressToBytes32(writerF), INITIAL_WRITER_F_NONCE, oneModule);
+        writeEntryWithVerification(MODULE_A_FEE, writerF, dataHash, oneModule);
+    }
+
+    function test_writeEntryWithVerification_writerF_oneModule_increasesWriterNonce() public {
+        bytes32 dataHash = getMockDataHash(writerF, INITIAL_WRITER_F_NONCE);
+        writeEntryWithVerification(MODULE_A_FEE, writerF, dataHash, oneModule);
+        assertEq(icDB.getWriterNonce(writerF), INITIAL_WRITER_F_NONCE + 1);
+    }
+
+    function test_writeEntryWithVerification_writerF_oneModule_returnsCorrectNonce() public {
+        bytes32 dataHash = getMockDataHash(writerF, INITIAL_WRITER_F_NONCE);
+        uint256 nonce = writeEntryWithVerification(MODULE_A_FEE, writerF, dataHash, oneModule);
+        assertEq(nonce, INITIAL_WRITER_F_NONCE);
+    }
+
+    function test_writeEntryWithVerification_writerF_oneModule_savesEntry() public {
+        bytes32 dataHash = getMockDataHash(writerF, INITIAL_WRITER_F_NONCE);
+        writeEntryWithVerification(MODULE_A_FEE, writerF, dataHash, oneModule);
+        assertEq(icDB.getEntry(writerF, INITIAL_WRITER_F_NONCE), getMockEntry(writerF, INITIAL_WRITER_F_NONCE));
+    }
+
+    function test_writeEntryWithVerification_writerF_twoModules_callsModules() public {
+        bytes32 dataHash = getMockDataHash(writerF, INITIAL_WRITER_F_NONCE);
+        IInterchainDB.InterchainEntry memory entry = getMockEntry(writerF, INITIAL_WRITER_F_NONCE);
+        vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(entry));
+        vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(entry));
+        writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerF, dataHash, twoModules);
+    }
+
+    function test_writeEntryWithVerification_writerF_twoModules_emitsEvents() public {
+        bytes32 dataHash = getMockDataHash(writerF, INITIAL_WRITER_F_NONCE);
+        vm.expectEmit(address(icDB));
+        emit InterchainEntryWritten(SRC_CHAIN_ID, addressToBytes32(writerF), INITIAL_WRITER_F_NONCE, dataHash);
+        vm.expectEmit(address(icDB));
+        emit InterchainVerificationRequested(
+            DST_CHAIN_ID, addressToBytes32(writerF), INITIAL_WRITER_F_NONCE, twoModules
+        );
+        writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerF, dataHash, twoModules);
+    }
+
+    function test_writeEntryWithVerification_writerF_twoModules_increasesWriterNonce() public {
+        bytes32 dataHash = getMockDataHash(writerF, INITIAL_WRITER_F_NONCE);
+        writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerF, dataHash, twoModules);
+        assertEq(icDB.getWriterNonce(writerF), INITIAL_WRITER_F_NONCE + 1);
+    }
+
+    function test_writeEntryWithVerification_writerF_twoModules_returnsCorrectNonce() public {
+        bytes32 dataHash = getMockDataHash(writerF, INITIAL_WRITER_F_NONCE);
+        uint256 nonce = writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerF, dataHash, twoModules);
+        assertEq(nonce, INITIAL_WRITER_F_NONCE);
+    }
+
+    function test_writeEntryWithVerification_writerF_twoModules_savesEntry() public {
+        bytes32 dataHash = getMockDataHash(writerF, INITIAL_WRITER_F_NONCE);
+        writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerF, dataHash, twoModules);
+        assertEq(icDB.getEntry(writerF, INITIAL_WRITER_F_NONCE), getMockEntry(writerF, INITIAL_WRITER_F_NONCE));
+    }
+
+    function test_writeEntryWithVerification_writerS_oneModule_callsModule() public {
+        bytes32 dataHash = getMockDataHash(writerS, INITIAL_WRITER_S_NONCE);
+        IInterchainDB.InterchainEntry memory entry = getMockEntry(writerS, INITIAL_WRITER_S_NONCE);
+        vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(entry));
+        writeEntryWithVerification(MODULE_A_FEE, writerS, dataHash, oneModule);
+    }
+
+    function test_writeEntryWithVerification_writerS_oneModule_emitsEvents() public {
+        bytes32 dataHash = getMockDataHash(writerS, INITIAL_WRITER_S_NONCE);
+        vm.expectEmit(address(icDB));
+        emit InterchainEntryWritten(SRC_CHAIN_ID, addressToBytes32(writerS), INITIAL_WRITER_S_NONCE, dataHash);
+        vm.expectEmit(address(icDB));
+        emit InterchainVerificationRequested(DST_CHAIN_ID, addressToBytes32(writerS), INITIAL_WRITER_S_NONCE, oneModule);
+        writeEntryWithVerification(MODULE_A_FEE, writerS, dataHash, oneModule);
+    }
+
+    function test_writeEntryWithVerification_writerS_oneModule_increasesWriterNonce() public {
+        bytes32 dataHash = getMockDataHash(writerS, INITIAL_WRITER_S_NONCE);
+        writeEntryWithVerification(MODULE_A_FEE, writerS, dataHash, oneModule);
+        assertEq(icDB.getWriterNonce(writerS), INITIAL_WRITER_S_NONCE + 1);
+    }
+
+    function test_writeEntryWithVerification_writerS_oneModule_returnsCorrectNonce() public {
+        bytes32 dataHash = getMockDataHash(writerS, INITIAL_WRITER_S_NONCE);
+        uint256 nonce = writeEntryWithVerification(MODULE_A_FEE, writerS, dataHash, oneModule);
+        assertEq(nonce, INITIAL_WRITER_S_NONCE);
+    }
+
+    function test_writeEntryWithVerification_writerS_oneModule_savesEntry() public {
+        bytes32 dataHash = getMockDataHash(writerS, INITIAL_WRITER_S_NONCE);
+        writeEntryWithVerification(MODULE_A_FEE, writerS, dataHash, oneModule);
+        assertEq(icDB.getEntry(writerS, INITIAL_WRITER_S_NONCE), getMockEntry(writerS, INITIAL_WRITER_S_NONCE));
+    }
+
+    function test_writeEntryWithVerification_writerS_twoModules_callsModules() public {
+        bytes32 dataHash = getMockDataHash(writerS, INITIAL_WRITER_S_NONCE);
+        IInterchainDB.InterchainEntry memory entry = getMockEntry(writerS, INITIAL_WRITER_S_NONCE);
+        vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(entry));
+        vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(entry));
+        writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerS, dataHash, twoModules);
+    }
+
+    function test_writeEntryWithVerification_writerS_twoModules_emitsEvents() public {
+        bytes32 dataHash = getMockDataHash(writerS, INITIAL_WRITER_S_NONCE);
+        vm.expectEmit(address(icDB));
+        emit InterchainEntryWritten(SRC_CHAIN_ID, addressToBytes32(writerS), INITIAL_WRITER_S_NONCE, dataHash);
+        vm.expectEmit(address(icDB));
+        emit InterchainVerificationRequested(
+            DST_CHAIN_ID, addressToBytes32(writerS), INITIAL_WRITER_S_NONCE, twoModules
+        );
+        writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerS, dataHash, twoModules);
+    }
+
+    function test_writeEntryWithVerification_writerS_twoModules_increasesWriterNonce() public {
+        bytes32 dataHash = getMockDataHash(writerS, INITIAL_WRITER_S_NONCE);
+        writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerS, dataHash, twoModules);
+        assertEq(icDB.getWriterNonce(writerS), INITIAL_WRITER_S_NONCE + 1);
+    }
+
+    function test_writeEntryWithVerification_writerS_twoModules_returnsCorrectNonce() public {
+        bytes32 dataHash = getMockDataHash(writerS, INITIAL_WRITER_S_NONCE);
+        uint256 nonce = writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerS, dataHash, twoModules);
+        assertEq(nonce, INITIAL_WRITER_S_NONCE);
+    }
+
+    function test_writeEntryWithVerification_writerS_twoModules_savesEntry() public {
+        bytes32 dataHash = getMockDataHash(writerS, INITIAL_WRITER_S_NONCE);
+        writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerS, dataHash, twoModules);
+        assertEq(icDB.getEntry(writerS, INITIAL_WRITER_S_NONCE), getMockEntry(writerS, INITIAL_WRITER_S_NONCE));
+    }
+
+    // ════════════════════════════════ TESTS: WRITE + REQUEST VALIDATION (REVERTS) ════════════════════════════════════
+
+    function test_writeEntryWithVerification_revert_incorrectFeeAmount_oneModule_underpaid() public {
+        bytes32 dataHash = getMockDataHash(writerF, INITIAL_WRITER_F_NONCE);
+        uint256 incorrectFee = MODULE_A_FEE - 1;
+        expectIncorrectFeeAmount(incorrectFee, MODULE_A_FEE);
+        writeEntryWithVerification(incorrectFee, writerF, dataHash, oneModule);
+    }
+
+    function test_writeEntryWithVerification_revert_incorrectFeeAmount_oneModule_overpaid() public {
+        bytes32 dataHash = getMockDataHash(writerF, INITIAL_WRITER_F_NONCE);
+        uint256 incorrectFee = MODULE_A_FEE + 1;
+        expectIncorrectFeeAmount(incorrectFee, MODULE_A_FEE);
+        writeEntryWithVerification(incorrectFee, writerF, dataHash, oneModule);
+    }
+
+    function test_writeEntryWithVerification_revert_incorrectFeeAmount_twoModules_underpaid() public {
+        bytes32 dataHash = getMockDataHash(writerF, INITIAL_WRITER_F_NONCE);
+        uint256 incorrectFee = MODULE_A_FEE + MODULE_B_FEE - 1;
+        expectIncorrectFeeAmount(incorrectFee, MODULE_A_FEE + MODULE_B_FEE);
+        writeEntryWithVerification(incorrectFee, writerF, dataHash, twoModules);
+    }
+
+    function test_writeEntryWithVerification_revert_incorrectFeeAmount_twoModules_overpaid() public {
+        bytes32 dataHash = getMockDataHash(writerF, INITIAL_WRITER_F_NONCE);
+        uint256 incorrectFee = MODULE_A_FEE + MODULE_B_FEE + 1;
+        expectIncorrectFeeAmount(incorrectFee, MODULE_A_FEE + MODULE_B_FEE);
+        writeEntryWithVerification(incorrectFee, writerF, dataHash, twoModules);
+    }
+
     // ═════════════════════════════════════════ TESTS: GET INTERCHAIN FEE ═════════════════════════════════════════════
 
     function test_getInterchainFee_oneModule() public {
