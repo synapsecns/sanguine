@@ -5,17 +5,19 @@ import (
 	"context"
 	"fmt"
 	"math/big"
-	"time"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/sdks/arbitrum"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
+	"github.com/synapsecns/sanguine/ethergo/util"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
@@ -26,11 +28,11 @@ type FeePricer interface {
 	// Start starts the fee pricer.
 	Start(ctx context.Context)
 	// GetOriginFee returns the total fee for a given chainID and gas limit, denominated in a given token.
-	GetOriginFee(ctx context.Context, origin, destination uint32, denomToken string, useMultiplier bool) (*big.Int, error)
+	GetOriginFee(ctx context.Context, origin, destination uint32, denomToken string, request *reldb.QuoteRequest, useMultiplier bool) (*big.Int, error)
 	// GetDestinationFee returns the total fee for a given chainID and gas limit, denominated in a given token.
-	GetDestinationFee(ctx context.Context, origin, destination uint32, denomToken string, useMultiplier bool) (*big.Int, error)
+	GetDestinationFee(ctx context.Context, origin, destination uint32, denomToken string, request *reldb.QuoteRequest, useMultiplier bool) (*big.Int, error)
 	// GetTotalFee returns the total fee for a given origin and destination chainID, denominated in a given token.
-	GetTotalFee(ctx context.Context, origin, destination uint32, denomToken string, useMultiplier bool) (*big.Int, error)
+	GetTotalFee(ctx context.Context, origin, destination uint32, denomToken string, request *reldb.QuoteRequest, useMultiplier bool) (*big.Int, error)
 	// GetGasPrice returns the gas price for a given chainID in native units.
 	GetGasPrice(ctx context.Context, chainID uint32) (*big.Int, error)
 }
@@ -129,44 +131,9 @@ func (f *feePricer) Start(ctx context.Context) {
 	})
 }
 
-func (f *feePricer) pollGasEstimates(parentCtx context.Context, chainID uint32) error {
-	dynamic, err := f.config.GetDynamicGasEstimate(int(chainID))
-	if err != nil {
-		return fmt.Errorf("could not get dynamic gas estimate from config: %w", err)
-	}
-	if !dynamic {
-		return nil
-	}
-
-	// poll gas estimates
-	for {
-		select {
-		case <-parentCtx.Done():
-			return nil
-		case <-time.After(f.config.GetGasEstimateCacheTTL()):
-			ctx, span := f.handler.Tracer().Start(parentCtx, "pollGasEstimates", trace.WithAttributes(
-				attribute.Int(metrics.ChainID, int(chainID)),
-			))
-			originGasEstimate, err := f.getGasEstimateFromClient(ctx, chainID, true)
-			if err == nil {
-				f.originGasEstimateCache.Set(chainID, originGasEstimate, 0)
-			}
-			destGasEstimate, err := f.getGasEstimateFromClient(ctx, chainID, false)
-			if err == nil {
-				f.destGasEstimateCache.Set(chainID, destGasEstimate, 0)
-			}
-			span.SetAttributes(
-				attribute.Int("origin_gas_estimate", int(originGasEstimate)),
-				attribute.Int("dest_gas_estimate", int(destGasEstimate)),
-				attribute.String("error", err.Error()),
-			)
-		}
-	}
-}
-
 var nativeDecimalsFactor = new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(18)), nil)
 
-func (f *feePricer) GetOriginFee(parentCtx context.Context, origin, destination uint32, denomToken string, useMultiplier bool) (*big.Int, error) {
+func (f *feePricer) GetOriginFee(parentCtx context.Context, origin, destination uint32, denomToken string, request *reldb.QuoteRequest, useMultiplier bool) (*big.Int, error) {
 	var err error
 	ctx, span := f.handler.Tracer().Start(parentCtx, "getOriginFee", trace.WithAttributes(
 		attribute.Int(metrics.Origin, int(origin)),
@@ -179,7 +146,7 @@ func (f *feePricer) GetOriginFee(parentCtx context.Context, origin, destination 
 	}()
 
 	// Calculate the origin fee
-	gasEstimate, err := f.getGasEstimate(ctx, origin, true)
+	gasEstimate, err := f.getGasEstimate(ctx, origin, request, true)
 	if err != nil {
 		return nil, fmt.Errorf("could not get origin gas estimate: %w", err)
 	}
@@ -202,7 +169,7 @@ func (f *feePricer) GetOriginFee(parentCtx context.Context, origin, destination 
 	return fee, nil
 }
 
-func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination uint32, denomToken string, useMultiplier bool) (*big.Int, error) {
+func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination uint32, denomToken string, request *reldb.QuoteRequest, useMultiplier bool) (*big.Int, error) {
 	var err error
 	ctx, span := f.handler.Tracer().Start(parentCtx, "getDestinationFee", trace.WithAttributes(
 		attribute.Int(metrics.Destination, int(destination)),
@@ -214,7 +181,7 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 	}()
 
 	// Calculate the destination fee
-	gasEstimate, err := f.getGasEstimate(ctx, destination, false)
+	gasEstimate, err := f.getGasEstimate(ctx, destination, request, false)
 	if err != nil {
 		return nil, fmt.Errorf("could not get dest gas estimate: %w", err)
 	}
@@ -237,7 +204,7 @@ func (f *feePricer) GetDestinationFee(parentCtx context.Context, _, destination 
 	return fee, nil
 }
 
-func (f *feePricer) GetTotalFee(parentCtx context.Context, origin, destination uint32, denomToken string, useMultiplier bool) (_ *big.Int, err error) {
+func (f *feePricer) GetTotalFee(parentCtx context.Context, origin, destination uint32, denomToken string, request *reldb.QuoteRequest, useMultiplier bool) (_ *big.Int, err error) {
 	ctx, span := f.handler.Tracer().Start(parentCtx, "getTotalFee", trace.WithAttributes(
 		attribute.Int(metrics.Origin, int(origin)),
 		attribute.Int(metrics.Destination, int(destination)),
@@ -249,14 +216,14 @@ func (f *feePricer) GetTotalFee(parentCtx context.Context, origin, destination u
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	originFee, err := f.GetOriginFee(ctx, origin, destination, denomToken, useMultiplier)
+	originFee, err := f.GetOriginFee(ctx, origin, destination, denomToken, request, useMultiplier)
 	if err != nil {
 		span.AddEvent("could not get origin fee", trace.WithAttributes(
 			attribute.String("error", err.Error()),
 		))
 		return nil, err
 	}
-	destFee, err := f.GetDestinationFee(ctx, origin, destination, denomToken, useMultiplier)
+	destFee, err := f.GetDestinationFee(ctx, origin, destination, denomToken, request, useMultiplier)
 	if err != nil {
 		span.AddEvent("could not get destination fee", trace.WithAttributes(
 			attribute.String("error", err.Error()),
@@ -407,7 +374,7 @@ func (f *feePricer) getTokenPriceFromConfig(token string) (float64, error) {
 	return 0, fmt.Errorf("could not get price for token: %s", token)
 }
 
-func (f *feePricer) getGasEstimate(parentCtx context.Context, chainID uint32, isOrigin bool) (gasEstimate uint64, err error) {
+func (f *feePricer) getGasEstimate(parentCtx context.Context, chainID uint32, request *reldb.QuoteRequest, isOrigin bool) (gasEstimate uint64, err error) {
 	ctx, span := f.handler.Tracer().Start(parentCtx, "getGasEstimate", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(chainID)),
 	))
@@ -435,8 +402,8 @@ func (f *feePricer) getGasEstimate(parentCtx context.Context, chainID uint32, is
 	if err != nil {
 		return 0, fmt.Errorf("could not get dynamic gas estimate from config: %w", err)
 	}
-	if dynamic {
-		gasEstimate, err = f.getGasEstimateFromClient(ctx, chainID, isOrigin)
+	if dynamic && request != nil {
+		gasEstimate, err = f.getGasEstimateFromClient(ctx, chainID, *request, isOrigin)
 		if err == nil {
 			// cache the dynamic gas estimate
 			cache.Set(chainID, gasEstimate, 0)
@@ -462,7 +429,7 @@ func (f *feePricer) getGasEstimate(parentCtx context.Context, chainID uint32, is
 	return gasEstimate, nil
 }
 
-func (f *feePricer) getGasEstimateFromClient(parentCtx context.Context, chainID uint32, isOrigin bool) (gasEstimate uint64, err error) {
+func (f *feePricer) getGasEstimateFromClient(parentCtx context.Context, chainID uint32, request reldb.QuoteRequest, isOrigin bool) (gasEstimate uint64, err error) {
 	ctx, span := f.handler.Tracer().Start(parentCtx, "getGasEstimateFromClient", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(chainID)),
 	))
@@ -478,7 +445,7 @@ func (f *feePricer) getGasEstimateFromClient(parentCtx context.Context, chainID 
 	}
 
 	// build the mock contract calls
-	calls, err := f.getCalls(ctx, chainID, isOrigin)
+	calls, err := f.getCalls(ctx, chainID, request, isOrigin)
 	if err != nil {
 		return 0, err
 	}
@@ -512,7 +479,7 @@ func (f *feePricer) getGasEstimateFromClient(parentCtx context.Context, chainID 
 	return gasEstimate, nil
 }
 
-func (f *feePricer) getCalls(parentCtx context.Context, chainID uint32, isOrigin bool) (calls []*ethereum.CallMsg, err error) {
+func (f *feePricer) getCalls(parentCtx context.Context, chainID uint32, request reldb.QuoteRequest, isOrigin bool) (calls []*ethereum.CallMsg, err error) {
 	ctx, span := f.handler.Tracer().Start(parentCtx, "getCalls")
 	defer func() {
 		span.SetAttributes(attribute.String("error", err.Error()))
@@ -529,26 +496,39 @@ func (f *feePricer) getCalls(parentCtx context.Context, chainID uint32, isOrigin
 	}
 
 	calls = []*ethereum.CallMsg{}
+	var tx *types.Transaction
 	var call *ethereum.CallMsg
 	if isOrigin {
 		// get claim call
-		call, err = getCall(transactor, bridge, claimCallType)
+		tx, err = bridge.Claim(transactor, request.RawRequest, transactor.From)
+		if err != nil {
+			return calls, fmt.Errorf("could not get claim tx: %w", err)
+		}
+		call, err = util.TxToCall(tx)
 		if err != nil {
 			return calls, fmt.Errorf("could not get claim call: %w", err)
 		}
 		calls = append(calls, call)
 
 		// get prove call
-		call, err = getCall(transactor, bridge, proveCallType)
+		tx, err = bridge.Prove(transactor, request.RawRequest, request.DestTxHash)
 		if err != nil {
-			return calls, fmt.Errorf("could not get claim call: %w", err)
+			return calls, fmt.Errorf("could not get prove tx: %w", err)
+		}
+		call, err = util.TxToCall(tx)
+		if err != nil {
+			return calls, fmt.Errorf("could not get prove call: %w", err)
 		}
 		calls = append(calls, call)
 	} else {
 		// get relay call
-		call, err = getCall(transactor, bridge, proveCallType)
+		tx, err = bridge.Relay(transactor, request.RawRequest)
 		if err != nil {
-			return calls, fmt.Errorf("could not get claim call: %w", err)
+			return calls, fmt.Errorf("could not get relay tx: %w", err)
+		}
+		call, err = util.TxToCall(tx)
+		if err != nil {
+			return calls, fmt.Errorf("could not get relay call: %w", err)
 		}
 		calls = append(calls, call)
 	}
