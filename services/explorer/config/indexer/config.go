@@ -127,8 +127,6 @@ func (c ChainConfig) IsValid() error {
 	switch {
 	case c.ChainID == 0:
 		return fmt.Errorf("chain_id, %w", config.ErrRequiredGlobalField)
-	case c.RPCURL == "":
-		return fmt.Errorf("rpc_url, %w", config.ErrRequiredGlobalField)
 	case c.MaxGoroutines == 0:
 		return fmt.Errorf("max_goroutines, %w", config.ErrRequiredGlobalField)
 	}

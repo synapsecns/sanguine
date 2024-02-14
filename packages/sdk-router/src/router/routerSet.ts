@@ -5,14 +5,18 @@ import invariant from 'tiny-invariant'
 import { Router } from './router'
 import { AddressMap, BigintIsh } from '../constants'
 import { DestRequest } from './types'
-import { ONE_WEEK, TEN_MINUTES, calculateDeadline } from '../utils/deadlines'
 import {
-  BridgeQuote,
   BridgeRoute,
+  FeeConfig,
   SynapseModule,
   SynapseModuleSet,
 } from '../module'
-import { hasComplexBridgeAction } from '../module/query'
+import {
+  applySlippageToQuery,
+  Query,
+  hasComplexBridgeAction,
+} from '../module/query'
+import { ONE_WEEK, TEN_MINUTES } from '../utils/deadlines'
 
 export type ChainProvider = {
   chainId: number
@@ -145,40 +149,56 @@ export abstract class RouterSet extends SynapseModuleSet {
   }
 
   /**
-   * @inheritdoc SynapseModuleSet.finalizeBridgeRoute
+   * @inheritdoc SynapseModuleSet.getFeeData
    */
-  public async finalizeBridgeRoute(
-    bridgeRoute: BridgeRoute,
-    deadline?: BigNumber
-  ): Promise<BridgeQuote> {
-    const originRouter = this.routers[bridgeRoute.originChainId]
+  async getFeeData(bridgeRoute: BridgeRoute): Promise<{
+    feeAmount: BigNumber
+    feeConfig: FeeConfig
+  }> {
     const destRouter = this.routers[bridgeRoute.destChainId]
-    invariant(originRouter && destRouter, 'Route not supported')
-    invariant(
-      bridgeRoute.bridgeModuleName === this.bridgeModuleName,
-      'Invalid bridge module name'
-    )
-    const { originQuery, destQuery, bridgeToken } = bridgeRoute
-    // Set origin deadline to 10 mins if not provided
-    originQuery.deadline = deadline ?? calculateDeadline(TEN_MINUTES)
-    // Destination deadline is always 1 week
-    destQuery.deadline = calculateDeadline(ONE_WEEK)
+    invariant(destRouter, 'Router not found')
     // Get fee data: for some Bridge contracts it will depend on the complexity of the bridge action
-    const { feeAmount, feeConfig } = await destRouter.getBridgeFees(
-      bridgeToken.token,
-      originQuery.minAmountOut,
-      hasComplexBridgeAction(destQuery)
+    return destRouter.getBridgeFees(
+      bridgeRoute.bridgeToken.token,
+      bridgeRoute.originQuery.minAmountOut,
+      hasComplexBridgeAction(bridgeRoute.destQuery)
     )
-    const estimatedTime = this.getEstimatedTime(bridgeRoute.originChainId)
+  }
+
+  /**
+   * @inheritdoc SynapseModuleSet.getDefaultPeriods
+   */
+  getDefaultPeriods(): {
+    originPeriod: number
+    destPeriod: number
+  } {
+    // Use the same default periods for SynapseBridge and SynapseCCTP modules
     return {
-      feeAmount,
-      feeConfig,
-      routerAddress: originRouter.address,
-      maxAmountOut: destQuery.minAmountOut,
-      originQuery,
-      destQuery,
-      estimatedTime,
-      bridgeModuleName: bridgeRoute.bridgeModuleName,
+      originPeriod: TEN_MINUTES,
+      destPeriod: ONE_WEEK,
+    }
+  }
+
+  /**
+   * @inheritdoc SynapseModuleSet.applySlippage
+   */
+  public applySlippage(
+    originQueryPrecise: Query,
+    destQueryPrecise: Query,
+    slipNumerator: number,
+    slipDenominator: number
+  ): { originQuery: Query; destQuery: Query } {
+    return {
+      originQuery: applySlippageToQuery(
+        originQueryPrecise,
+        slipNumerator,
+        slipDenominator
+      ),
+      destQuery: applySlippageToQuery(
+        destQueryPrecise,
+        slipNumerator,
+        slipDenominator
+      ),
     }
   }
 }

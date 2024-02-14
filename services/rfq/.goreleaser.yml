@@ -1,0 +1,120 @@
+project_name: rfq
+
+monorepo:
+  tag_prefix: services/rfq/
+  dir: services/rfq/
+
+builds:
+  # Linux AMD64
+  - id: api
+    binary: api
+    ldflags:
+      # We need to build a static binary because we are building in a glibc based system and running in a musl container
+      - -s -w -extldflags '-static'
+    # required workaround for https://github.com/Shopify/sarama/issues/2206
+    # See: https://github.com/golang/go/issues/35067#issuecomment-544805311 because we're statically compiling,
+    # without forcing netgo, we use the cgo resolver which will not work for .local (a canonical tld in kubernetes)
+    # the other way to resolve this would be to modify the nsswitch.conf in the container, but that's a bit less clean.
+    # osusergo was included as a recommendation here: https://github.com/kubernetes/kubernetes/pull/114225#issuecomment-1348920040
+    tags:
+      - netgo
+      - osusergo
+    env:
+      - CC=gcc
+      - CXX=g++
+    main: api/main.go
+    goos:
+      - linux
+    goarch:
+      - amd64
+  # Linux AMD64
+  - id: relayer
+    binary: relayer
+    ldflags:
+      # We need to build a static binary because we are building in a glibc based system and running in a musl container
+      - -s -w -extldflags '-static'
+    # see above about workaround
+    tags:
+      - netgo
+      - osusergo
+    env:
+      - CC=gcc
+      - CXX=g++
+    main: relayer/main.go
+    goos:
+      - linux
+    goarch:
+      - amd64
+  - id: rfqdecoder
+    binary: rfqdecoder
+    ldflags:
+      # We need to build a static binary because we are building in a glibc based system and running in a musl container
+      - -s -w -extldflags '-static'
+    # see above about workaround
+    tags:
+      - netgo
+      - osusergo
+    env:
+      - CC=gcc
+      - CXX=g++
+    main: tools/rfqdecoder/main.go
+    goos:
+      - linux
+    goarch:
+      - amd64
+# add a source archive at release time
+source:
+  enabled: true
+
+# Archives
+archives:
+  - format: tar.gz
+    wrap_in_directory: true
+    format_overrides:
+      - goos: windows
+        format: zip
+    name_template: '{{.ProjectName}}-{{.Version}}_{{.Os}}_{{.Arch}}'
+    files:
+      - README.md
+
+checksum:
+  name_template: checksums.txt
+
+# Add a changelog
+changelog:
+  sort: asc
+
+dockers:
+  # Docker AMD64
+  - goos: linux
+    goarch: amd64
+    image_templates:
+      - 'ghcr.io/synapsecns/sanguine/rfq-relayer:latest'
+      - 'ghcr.io/synapsecns/sanguine/rfq-relayer:{{ .FullCommit }}'
+      - 'ghcr.io/synapsecns/sanguine/rfq-relayer:{{ .Tag }}'
+    build_flag_templates:
+      - '--label=org.opencontainers.image.created={{.Date}}'
+      - '--label=org.opencontainers.image.name={{.ProjectName}}'
+      - '--label=org.opencontainers.image.revision={{.FullCommit}}'
+      - '--label=org.opencontainers.image.version={{.Version}}'
+      - '--label=org.opencontainers.image.source={{.GitURL}}'
+    dockerfile: ../../docker/rfq-relayer.Dockerfile
+    ids:
+      - relayer
+  # Docker AMD64
+  - goos: linux
+    goarch: amd64
+    image_templates:
+      - 'ghcr.io/synapsecns/sanguine/rfq-api:latest'
+      - 'ghcr.io/synapsecns/sanguine/rfq-api:{{ .FullCommit }}'
+      - 'ghcr.io/synapsecns/sanguine/rfq-api:{{ .Tag }}'
+    build_flag_templates:
+      - '--label=org.opencontainers.image.created={{.Date}}'
+      - '--label=org.opencontainers.image.name={{.ProjectName}}'
+      - '--label=org.opencontainers.image.revision={{.FullCommit}}'
+      - '--label=org.opencontainers.image.version={{.Version}}'
+      - '--label=org.opencontainers.image.source={{.GitURL}}'
+    dockerfile: ../../docker/rfq-api.Dockerfile
+    ids:
+      - api
+

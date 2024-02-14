@@ -1,6 +1,7 @@
 import { Provider } from '@ethersproject/abstract-provider'
 import invariant from 'tiny-invariant'
 
+import { FastBridgeRouterSet } from './rfq'
 import {
   SynapseRouterSet,
   SynapseCCTPRouterSet,
@@ -9,11 +10,13 @@ import {
 } from './router'
 import * as operations from './operations'
 import { ETH_NATIVE_TOKEN_ADDRESS } from './utils/handleNativeToken'
-import { Query } from './module'
+import { SynapseModuleSet, Query } from './module'
 
 class SynapseSDK {
+  public allModuleSets: SynapseModuleSet[]
   public synapseRouterSet: SynapseRouterSet
   public synapseCCTPRouterSet: SynapseCCTPRouterSet
+  public fastBridgeRouterSet: FastBridgeRouterSet
   public providers: { [chainId: number]: Provider }
 
   /**
@@ -38,14 +41,21 @@ class SynapseSDK {
     chainProviders.forEach((chainProvider) => {
       this.providers[chainProvider.chainId] = chainProvider.provider
     })
-    // Initialize SynapseRouterSet and SynapseCCTPRouterSet
+    // Initialize the Module Sets
     this.synapseRouterSet = new SynapseRouterSet(chainProviders)
     this.synapseCCTPRouterSet = new SynapseCCTPRouterSet(chainProviders)
+    this.fastBridgeRouterSet = new FastBridgeRouterSet(chainProviders)
+    this.allModuleSets = [
+      this.synapseRouterSet,
+      this.synapseCCTPRouterSet,
+      this.fastBridgeRouterSet,
+    ]
   }
 
   // Define Bridge operations
   public bridge = operations.bridge
   public bridgeQuote = operations.bridgeQuote
+  public allBridgeQuotes = operations.allBridgeQuotes
   public getBridgeModuleName = operations.getBridgeModuleName
   public getEstimatedTime = operations.getEstimatedTime
   public getSynapseTxId = operations.getSynapseTxId
@@ -65,6 +75,12 @@ class SynapseSDK {
   // Define Swap operations
   public swap = operations.swap
   public swapQuote = operations.swapQuote
+
+  // Define Query operations
+  public applyBridgeDeadline = operations.applyBridgeDeadline
+  public applyBridgeSlippage = operations.applyBridgeSlippage
+  public applySwapDeadline = operations.applySwapDeadline
+  public applySwapSlippage = operations.applySwapSlippage
 }
 
 export { SynapseSDK, ETH_NATIVE_TOKEN_ADDRESS, Query, PoolToken }

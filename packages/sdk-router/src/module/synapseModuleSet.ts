@@ -1,8 +1,11 @@
 import { BigNumber } from '@ethersproject/bignumber'
+import invariant from 'tiny-invariant'
 
 import { BigintIsh } from '../constants'
-import { BridgeQuote, BridgeRoute } from './types'
+import { BridgeQuote, BridgeRoute, FeeConfig } from './types'
 import { SynapseModule } from './synapseModule'
+import { applyOptionalDeadline } from '../utils/deadlines'
+import { Query } from './query'
 
 export abstract class SynapseModuleSet {
   abstract readonly bridgeModuleName: string
@@ -107,15 +110,111 @@ export abstract class SynapseModuleSet {
   ): Promise<BridgeRoute[]>
 
   /**
+   * Retrieves the fee data for a given bridge route.
+   *
+   * @param bridgeRoute - The bridge route to get fee data for.
+   * @returns A promise that resolves to the fee data.
+   */
+  abstract getFeeData(bridgeRoute: BridgeRoute): Promise<{
+    feeAmount: BigNumber
+    feeConfig: FeeConfig
+  }>
+
+  /**
+   * Retrieves the gas drop amount for a given bridge route.
+   * User will receive this amount of gas tokens on the destination chain,
+   * when the module transaction is completed.
+   *
+   * @param bridgeRoute - The bridge route to get gas drop amount for.
+   * @returns A promise that resolves to the gas drop amount.
+   */
+  abstract getGasDropAmount(bridgeRoute: BridgeRoute): Promise<BigNumber>
+
+  /**
+   * Returns the default deadline periods for this bridge module.
+   *
+   * @returns The default deadline periods.
+   */
+  abstract getDefaultPeriods(): {
+    originPeriod: number
+    destPeriod: number
+  }
+
+  /**
+   * Returns the deadlines to use for the given module transaction.
+   *
+   * @param originDeadline - The deadline to use on the origin chain (default depends on the module).
+   * @param destDeadline - The deadline to use on the destination chain (default depends on the module).
+   * @returns The deadlines to use.
+   */
+  public getModuleDeadlines(
+    originDeadline?: BigNumber,
+    destDeadline?: BigNumber
+  ): {
+    originModuleDeadline: BigNumber
+    destModuleDeadline: BigNumber
+  } {
+    const { originPeriod, destPeriod } = this.getDefaultPeriods()
+    return {
+      originModuleDeadline: applyOptionalDeadline(originDeadline, originPeriod),
+      destModuleDeadline: applyOptionalDeadline(destDeadline, destPeriod),
+    }
+  }
+
+  /**
+   * Applies the specified slippage to the given queries by modifying the minAmountOut.
+   * Note: the original queries are preserved unchanged.
+   *
+   * @param originQueryPrecise - The query for the origin chain with the precise minAmountOut.
+   * @param destQueryPrecise - The query for the destination chain with the precise minAmountOut.
+   * @param slipNumerator - The numerator of the slippage.
+   * @param slipDenominator - The denominator of the slippage.
+   * @returns The modified queries with the reduced minAmountOut.
+   */
+  abstract applySlippage(
+    originQueryPrecise: Query,
+    destQueryPrecise: Query,
+    slipNumerator: number,
+    slipDenominator: number
+  ): { originQuery: Query; destQuery: Query }
+
+  /**
    * Finalizes the bridge route by getting fee data and setting default deadlines.
    *
    * @param destChainId - The ID of the destination chain.
    * @param bridgeRoute - Bridge route to finalize.
-   * @param deadline - The deadline to use on the origin chain (default 10 mins).
+   * @param originDeadline - The deadline to use on the origin chain (default depends on the module).
+   * @param destDeadline - The deadline to use on the destination chain (default depends on the module).
    * @returns The finalized quote with fee data and deadlines.
    */
-  abstract finalizeBridgeRoute(
+  async finalizeBridgeRoute(
     bridgeRoute: BridgeRoute,
-    deadline?: BigNumber
-  ): Promise<BridgeQuote>
+    originDeadline?: BigNumber,
+    destDeadline?: BigNumber
+  ): Promise<BridgeQuote> {
+    // Check that route is supported on both chains
+    const originModule = this.getExistingModule(bridgeRoute.originChainId)
+    this.getExistingModule(bridgeRoute.destChainId)
+    invariant(
+      bridgeRoute.bridgeModuleName === this.bridgeModuleName,
+      'Invalid bridge module name'
+    )
+    const { originQuery, destQuery } = bridgeRoute
+    const { originModuleDeadline, destModuleDeadline } =
+      this.getModuleDeadlines(originDeadline, destDeadline)
+    originQuery.deadline = originModuleDeadline
+    destQuery.deadline = destModuleDeadline
+    const { feeAmount, feeConfig } = await this.getFeeData(bridgeRoute)
+    return {
+      feeAmount,
+      feeConfig,
+      routerAddress: originModule.address,
+      maxAmountOut: destQuery.minAmountOut,
+      originQuery,
+      destQuery,
+      estimatedTime: this.getEstimatedTime(bridgeRoute.originChainId),
+      bridgeModuleName: bridgeRoute.bridgeModuleName,
+      gasDropAmount: await this.getGasDropAmount(bridgeRoute),
+    }
+  }
 }

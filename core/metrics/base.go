@@ -9,8 +9,10 @@ import (
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/core/metrics/internal"
+	experimentalLogger "github.com/synapsecns/sanguine/core/metrics/logger"
 	baseServer "github.com/synapsecns/sanguine/core/server"
 	"github.com/uptrace/opentelemetry-go-extra/otelgorm"
+	"github.com/uptrace/opentelemetry-go-extra/otelzap"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/contrib/propagators/b3"
@@ -22,7 +24,7 @@ import (
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
 	"net/http"
@@ -42,6 +44,8 @@ type baseHandler struct {
 	// handler is an integrated handler for everything exported over http. This includes prometheus
 	// or http-based sampling methods for other providers.
 	handler http.Handler
+	// experimentalLogger is a logger that is used for experimental features.
+	experimentalLogger experimentalLogger.ExperimentalLogger
 }
 
 func (b *baseHandler) Handler() http.Handler {
@@ -158,6 +162,10 @@ func (b *baseHandler) Metrics() Meter {
 	return NewOtelMeter(b.meter)
 }
 
+func (b *baseHandler) ExperimentalLogger() experimentalLogger.ExperimentalLogger {
+	return b.experimentalLogger
+}
+
 func makeResource(buildInfo config.BuildInfo) (*resource.Resource, error) {
 	rsr, err := resource.Merge(
 		resource.Default(),
@@ -204,14 +212,28 @@ func newBaseHandlerWithTracerProvider(rsr *resource.Resource, buildInfo config.B
 	tracer := tracerProvider.Tracer(buildInfo.Name())
 	otel.SetTextMapPropagator(propagator)
 
+	betaLogger := experimentalLogger.MakeZapLogger()
+	// set the global logger to the beta logger
+	otelLogger := otelzap.New(betaLogger)
+	sugaredLogger := otelLogger.Sugar()
+	// wrapped sugar logger adds another level of depth
+	otelzap.WithCallerDepth(1)
+
+	if core.GetEnvBool("ENABLE_EXPERIMENTAL_ZAP_GLOBALS", false) {
+		// set the global logger to the beta logger
+		undo := otelzap.ReplaceGlobals(otelLogger)
+		defer undo()
+	}
+
 	// note: meter purposely is not registered until startup.
 	return &baseHandler{
-		resource:   rsr,
-		tp:         tracerProvider,
-		tracer:     tracer,
-		name:       buildInfo.Name(),
-		propagator: propagator,
-		handler:    promhttp.Handler(),
+		resource:           rsr,
+		tp:                 tracerProvider,
+		tracer:             tracer,
+		name:               buildInfo.Name(),
+		propagator:         propagator,
+		handler:            promhttp.Handler(),
+		experimentalLogger: experimentalLogger.MakeWrappedSugaredLogger(sugaredLogger),
 	}
 }
 

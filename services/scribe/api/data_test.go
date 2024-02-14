@@ -3,6 +3,7 @@ package api_test
 import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
+	ethCore "github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core"
@@ -174,8 +175,8 @@ func (g APISuite) TestTransactionDataEquality() {
 	tx := g.buildEthTx()
 
 	// Store the empty sender.
-	msgFrom, _ := tx.AsMessage(types.LatestSignerForChainID(tx.ChainId()), big.NewInt(1))
-	sender := msgFrom.From().String()
+	msgFrom, _ := ethCore.TransactionToMessage(tx, types.LatestSignerForChainID(tx.ChainId()), big.NewInt(1))
+	sender := msgFrom.From.String()
 	err := g.db.StoreEthTx(g.GetTestContext(), tx, chainID, common.BigToHash(big.NewInt(gofakeit.Int64())), blockNumber, gofakeit.Uint64())
 	Nil(g.T(), err)
 

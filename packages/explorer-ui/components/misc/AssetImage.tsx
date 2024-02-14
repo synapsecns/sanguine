@@ -1,12 +1,27 @@
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
-import { TOKEN_HASH_MAP } from '@constants/tokens/basic'
+import { TOKEN_HASH_MAP, AVWETH } from 'synapse-constants'
 import { getTokenAddressUrl } from '@urls'
 import Image from 'next/image'
 
 export function AssetImage({ tokenAddress, chainId, className }) {
-  tokenAddress = tokenAddress && tokenAddress.toLowerCase()
+  tokenAddress = tokenAddress
   if (hasRequiredData({ tokenAddress, chainId })) {
-    const t = TOKEN_HASH_MAP[chainId][tokenAddress]
+    const t = chainId && tokenAddress && TOKEN_HASH_MAP[chainId]?.[tokenAddress]
+    return (
+      <a href={getTokenAddressUrl({ tokenAddress, chainId })}>
+        <Image
+          className={`inline w-5 h-5 mr-2 rounded-md ${className}`}
+          src={t?.icon}
+          alt=""
+        />
+      </a>
+    )
+  }
+  if (
+    chainId === 43114 &&
+    tokenAddress === '0x53f7c5869a859F0AeC3D334ee8B4Cf01E3492f21'
+  ) {
+    const t = AVWETH
     return (
       <a href={getTokenAddressUrl({ tokenAddress, chainId })}>
         <Image
@@ -27,5 +42,10 @@ export function AssetImage({ tokenAddress, chainId, className }) {
 }
 
 function hasRequiredData({ tokenAddress, chainId }) {
-  return tokenAddress && chainId && TOKEN_HASH_MAP[chainId][tokenAddress]
+  return (
+    tokenAddress &&
+    chainId &&
+    TOKEN_HASH_MAP[chainId] &&
+    TOKEN_HASH_MAP[chainId][tokenAddress]
+  )
 }

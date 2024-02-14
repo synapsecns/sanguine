@@ -59,10 +59,14 @@ const (
 	SendRawTransactionMethod RPCMethod = "eth_sendRawTransaction"
 	// SubscribeMethod subscribes to an event.
 	SubscribeMethod RPCMethod = "eth_subscribe"
+)
+
+// Harmony Methods:.
+const (
 	// HarmonyGetLogsMethod filters logs on harmony.
 	HarmonyGetLogsMethod RPCMethod = "hmy_getLogs"
 	// HarmonyGetReceiptMethod gets a receipt on harmony
-	// this should always return Hash rather than Ethereum Hash
+	// this should always return Hash rather than Ethereum Hash.
 	HarmonyGetReceiptMethod RPCMethod = "hmy_getTransactionReceipt"
 )
 

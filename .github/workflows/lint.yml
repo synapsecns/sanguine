@@ -33,7 +33,7 @@ jobs:
         id: yaml-lint
         with:
           config_file: .yamllint.yml
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         if: steps.yaml-lint.outcome == 'success'
         with:
           name: yamllint-logfile

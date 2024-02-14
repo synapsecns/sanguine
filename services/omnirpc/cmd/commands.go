@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/services/omnirpc/modules/confirmedtofinalized"
+	"github.com/synapsecns/sanguine/services/omnirpc/modules/harmonyproxy"
 	"os"
 	"time"
 
@@ -154,8 +156,26 @@ var debugResponse = &cli.Command{
 	},
 }
 
-// latestRewrite rewrites latest block numbers for a single rpc url
+// latestRewrite rewrites latest block numbers for a single rpc url.
 var latestRewrite = &cli.Command{
+	Name:  "latest-rewrite",
+	Usage: "A simple rpc proxy for one-off integration tests. Rewrites block queries that use \"latest\" to \"finalized\"",
+	Flags: []cli.Flag{
+		rpcFlag,
+		portFlag,
+	},
+	Action: func(c *cli.Context) error {
+		simpleProxy := confirmedtofinalized.NewProxy(c.String(rpcFlag.Name), metrics.Get(), c.Int(portFlag.Name))
+
+		err := simpleProxy.Run(c.Context)
+		if err != nil {
+			return fmt.Errorf("return err: %w", err)
+		}
+		return nil
+	},
+}
+
+var harmonyProxy = &cli.Command{
 	Name:  "harmony-confirm",
 	Usage: "An experimental harmony confirmation client",
 	Flags: []cli.Flag{
@@ -163,7 +183,7 @@ var latestRewrite = &cli.Command{
 		portFlag,
 	},
 	Action: func(c *cli.Context) error {
-		simpleProxy := proxy.NewSimpleProxy(c.String(rpcFlag.Name), metrics.Get(), c.Int(portFlag.Name))
+		simpleProxy := harmonyproxy.NewHarmonyProxy(c.String(rpcFlag.Name), metrics.Get(), c.Int(portFlag.Name))
 
 		err := simpleProxy.Run(c.Context)
 		if err != nil {

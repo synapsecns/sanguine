@@ -92,6 +92,13 @@ linters:
     - nonamedreturns
     - contextcheck
     - nosnakecase
+    - depguard
+    # we use core/testsuite.Err() etc that don't get caught by this linter and result in false positives.
+    - testifylint
+    # we use metrics.EndSpan and metrics.EndSpanWithErr so this gets triggered falsely
+    - spancheck
+    # simply annoying
+    - perfsprint
   fast: false
 
 issues:
@@ -125,3 +132,4 @@ issues:
         - cyclop
 
   exclude-use-default: false
+  new-from-rev: 5f8d480f4e3f1f2a318243a9924f50ec90ec4945

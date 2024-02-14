@@ -10,7 +10,6 @@ import { setIsLoading } from '@/slices/swap/reducer'
 
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
-import { subtractSlippage } from '@/utils/slippage'
 import { commify } from '@ethersproject/units'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
@@ -18,7 +17,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Token } from '@/utils/types'
 import { getWalletClient } from '@wagmi/core'
 import { txErrorHandler } from '@/utils/txErrorHandler'
-import { AcceptedChainId, CHAINS_ARR, CHAINS_BY_ID } from '@/constants/chains'
+import { CHAINS_BY_ID } from '@/constants/chains'
 import { approveToken } from '@/utils/approveToken'
 import { PageHeader } from '@/components/PageHeader'
 import Card from '@/components/ui/tailwind/Card'
@@ -31,16 +30,7 @@ import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { Address, zeroAddress } from 'viem'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { useAppDispatch } from '@/store/hooks'
-import {
-  fetchAndStoreSingleTokenAllowance,
-  fetchAndStoreSingleTokenBalance,
-} from '@/slices/portfolio/hooks'
-import {
-  usePortfolioBalances,
-  useFetchPortfolioBalances,
-} from '@/slices/portfolio/hooks'
-import { FetchState } from '@/slices/portfolio/actions'
-import { updateSingleTokenAllowance } from '@/slices/portfolio/actions'
+import { useFetchPortfolioBalances } from '@/slices/portfolio/hooks'
 import { SwapTransactionButton } from '@/components/StateManagedSwap/SwapTransactionButton'
 import SwapExchangeRateInfo from '@/components/StateManagedSwap/SwapExchangeRateInfo'
 import { useSwapState } from '@/slices/swap/hooks'
@@ -59,13 +49,14 @@ const StateManagedSwap = () => {
   const { chain } = useNetwork()
   const { synapseSDK } = useSynapseContext()
   const swapDisplayRef = useRef(null)
+  const quoteToastRef = useRef({ id: '' })
   const currentSDKRequestID = useRef(0)
   const router = useRouter()
   const { query, pathname } = router
 
   useSyncQueryParamsWithSwapState()
 
-  const { balancesAndAllowances: portfolioBalances, status: portfolioStatus } =
+  const { balances: portfolioBalances, status: portfolioStatus } =
     useFetchPortfolioBalances()
 
   const { swapChainId, swapFromToken, swapToToken, swapFromValue, swapQuote } =
@@ -76,9 +67,6 @@ const StateManagedSwap = () => {
     showSwapChainListOverlay,
     showSwapToTokenListOverlay,
   } = useSelector((state: RootState) => state.swapDisplay)
-
-  let pendingPopup
-  let successPopup
 
   const [isApproved, setIsApproved] = useState(false)
 
@@ -168,14 +156,7 @@ const StateManagedSwap = () => {
               spender: routerAddress,
             })
 
-      const minWithSlippage = subtractSlippage(
-        query?.minAmountOut ?? 0n,
-        'ONE_TENTH',
-        null
-      )
-
-      let newOriginQuery = { ...query }
-      newOriginQuery.minAmountOut = minWithSlippage
+      const originQueryWithSlippage = synapseSDK.applySwapSlippage(query)
 
       if (thisRequestId === currentSDKRequestID.current) {
         dispatch(
@@ -200,21 +181,23 @@ const StateManagedSwap = () => {
               swapToToken.decimals[swapChainId]
             ),
             delta: toValueBigInt,
-            quote: newOriginQuery,
+            quote: originQueryWithSlippage,
           })
         )
 
-        dispatch(setIsLoading(false))
-        toast.dismiss(quoteToast)
+        toast.dismiss(quoteToastRef.current.id)
+
         const message = `Route found for swapping ${swapFromValue} ${swapFromToken.symbol} on ${CHAINS_BY_ID[swapChainId]?.name} to ${swapToToken.symbol}`
         console.log(message)
-        quoteToast = toast(message, { duration: 3000 })
+
+        quoteToastRef.current.id = toast(message, { duration: 3000 })
       }
     } catch (err) {
       console.log(err)
       if (thisRequestId === currentSDKRequestID.current) {
-        toast.dismiss(quoteToast)
-        let message
+        toast.dismiss(quoteToastRef.current.id)
+
+        let message: string
         if (!swapChainId) {
           message = 'Please select an origin chain'
         } else if (!swapFromToken) {
@@ -225,9 +208,10 @@ const StateManagedSwap = () => {
           message = `No route found for swapping ${swapFromValue} ${swapFromToken.symbol} on ${CHAINS_BY_ID[swapChainId]?.name} to ${swapToToken.symbol}`
         }
         console.log(message)
-        quoteToast = toast(message, { duration: 3000 })
 
+        quoteToastRef.current.id = toast(message, { duration: 3000 })
         dispatch(setSwapQuote(EMPTY_SWAP_QUOTE_ZERO))
+
         return
       }
     } finally {
@@ -242,24 +226,12 @@ const StateManagedSwap = () => {
       const tx = approveToken(
         swapQuote?.routerAddress,
         swapChainId,
-        swapFromToken?.addresses[swapChainId]
-      ).then(() => {
-        dispatch(
-          fetchAndStoreSingleTokenAllowance({
-            routerAddress: swapQuote?.routerAddress as Address,
-            tokenAddress: swapFromToken?.addresses[swapChainId] as Address,
-            address: address,
-            chainId: swapChainId,
-          })
-        )
-      })
-
-      try {
-        await tx
-        setIsApproved(true)
-      } catch (error) {
-        return txErrorHandler(error)
-      }
+        swapFromToken?.addresses[swapChainId],
+        stringToBigInt(swapFromValue, swapFromToken?.decimals[swapChainId])
+      )
+      await tx
+      /** Re-fetch swap quote to re-check approval state */
+      getAndSetSwapQuote()
     } catch (error) {
       return txErrorHandler(error)
     }
@@ -268,19 +240,24 @@ const StateManagedSwap = () => {
   const executeSwap = async () => {
     const currentChainName = CHAINS_BY_ID[swapChainId]?.name
 
+    let pendingPopup: any
     pendingPopup = toast(
       `Initiating swap from ${swapFromToken.symbol} to ${swapToToken.symbol} on ${currentChainName}`,
       { id: 'swap-in-progress-popup', duration: Infinity }
     )
-    segmentAnalyticsEvent(`[Swap] initiates swap`, {
-      address,
-      chainId: swapChainId,
-      swapFromToken: swapFromToken.symbol,
-      swapToToken: swapToToken.symbol,
-      inputAmount: swapFromValue,
-      expectedReceivedAmount: swapQuote.outputAmountString,
-      exchangeRate: swapQuote.exchangeRate,
-    })
+    segmentAnalyticsEvent(
+      `[Swap] initiates swap`,
+      {
+        address,
+        chainId: swapChainId,
+        swapFromToken: swapFromToken.symbol,
+        swapToToken: swapToToken.symbol,
+        inputAmount: swapFromValue,
+        expectedReceivedAmount: swapQuote.outputAmountString,
+        exchangeRate: swapQuote.exchangeRate,
+      },
+      true
+    )
     try {
       const wallet = await getWalletClient({
         chainId: swapChainId,
@@ -342,7 +319,7 @@ const StateManagedSwap = () => {
           </div>
         )
 
-        successPopup = toast.success(successToastContent, {
+        toast.success(successToastContent, {
           id: 'swap-successful-popup',
           duration: 10000,
         })

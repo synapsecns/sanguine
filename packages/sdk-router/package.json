@@ -1,7 +1,7 @@
 {
   "name": "@synapsecns/sdk-router",
   "description": "An SDK for interacting with the Synapse Protocol",
-  "version": "0.3.3",
+  "version": "0.3.24",
   "license": "MIT",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -43,12 +43,18 @@
   },
   "module": "dist/sdk-v2.esm.js",
   "devDependencies": {
+    "@ethersproject/providers": "^5.7.0",
     "@types/big.js": "^4.0.5",
     "@types/jest": "^24.0.25",
+    "dotenv": "^16.3.1",
     "husky": "^8.0.1",
+    "jest-fetch-mock": "^3.0.3",
+    "jest-mock-extended": "^3.0.5",
+    "node-fetch": "^2.0.0",
     "size-limit": "^8.1.0",
     "tsdx": "^0.14.1",
     "tslib": "^2.4.0",
+    "typedoc": "^0.25.7",
     "typescript": "^4.8.3"
   },
   "dependencies": {
@@ -63,7 +69,6 @@
     "babel-jest": "^29.4.1",
     "big.js": "^5.2.2",
     "decimal.js-light": "^2.5.1",
-    "dotenv": "^16.3.1",
     "ethers": "^5.7.2",
     "jsbi": "^4.3.0",
     "tiny-invariant": "^1.2.0",

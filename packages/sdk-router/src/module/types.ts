@@ -63,6 +63,7 @@ export type BridgeQuote = {
   destQuery: Query
   estimatedTime: number
   bridgeModuleName: string
+  gasDropAmount: BigNumber
 }
 
 /**
@@ -75,15 +76,4 @@ export type BridgeRoute = {
   destQuery: Query
   bridgeToken: BridgeToken
   bridgeModuleName: string
-}
-
-/**
- * Finds the best route: the one with the maximum amount out in the destination query.
- */
-export const findBestRoute = (bridgeRoutes: BridgeRoute[]): BridgeRoute => {
-  return bridgeRoutes.reduce((best, current) => {
-    return current.destQuery.minAmountOut.gt(best.destQuery.minAmountOut)
-      ? current
-      : best
-  })
 }

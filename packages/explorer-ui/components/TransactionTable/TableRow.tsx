@@ -1,15 +1,14 @@
-export function TableRow({ items, key }) {
+export function TableRow({ items }) {
   return (
-    <tr key={key} className="transition ease-out">
-      {items.map((item) => (
-        <td className="whitespace-nowrap px-2 py-2 text-sm  text-white">
+    <tr className="transition ease-out">
+      {items.map((item, index) => (
+        <td key={index} className="whitespace-nowrap px-2 py-2 text-sm text-white">
           {item}
         </td>
       ))}
     </tr>
   )
 }
-
 // TODO add animations to updated table
 // import { Transition } from 'react-transition-group'
 // export function TableRow({ items, key }) {

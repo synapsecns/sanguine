@@ -44,4 +44,6 @@ var fileFlag = &cli.StringFlag{
 var rpcFlag = &cli.StringFlag{
 	Name:  "rpc",
 	Usage: "rpc url to rewrite requests from",
+	// --rpc-url is used by cast so we alias it here.
+	Aliases: []string{"rpc-url"},
 }

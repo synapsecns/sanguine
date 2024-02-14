@@ -114,7 +114,19 @@ func (c *CCTPParser) MatureLogs(ctx context.Context, cctpEvent *model.CCTPEvent,
 		return nil, fmt.Errorf("could not get pool token data: %w", err)
 	}
 	decimals := uint8(usdcDecimals)
+	// Hotfix
+	if chainID == 8453 && (cctpEvent.Token == "0x417Ac0e078398C154EdFadD9Ef675d30Be60Af93" || cctpEvent.Token == "0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb") {
+		decimals = 18
+	}
 	cctpEvent.TokenSymbol = tokenData.TokenID()
+	if cctpEvent.Token == "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1" {
+		decimals = 18
+		cctpEvent.TokenSymbol = "DAI"
+	}
+	if chainID == 10 && (cctpEvent.Token == "0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9") {
+		decimals = 18
+		cctpEvent.TokenSymbol = "sUSD"
+	}
 	cctpEvent.TokenDecimal = &decimals
 	c.applyPriceData(ctx, cctpEvent, usdcCoinGeckoID)
 
@@ -156,13 +168,13 @@ func (c *CCTPParser) applyPriceData(ctx context.Context, cctpEvent *model.CCTPEv
 	}
 
 	if cctpEvent.Amount != nil {
-		amountUSD := GetAmountUSD(cctpEvent.Amount, usdcDecimals, tokenPrice)
+		amountUSD := GetAmountUSD(cctpEvent.Amount, *cctpEvent.TokenDecimal, tokenPrice)
 		if amountUSD != nil {
 			cctpEvent.AmountUSD = *amountUSD
 		}
 	}
 	if cctpEvent.Fee != nil {
-		cctpEvent.FeeUSD = GetAmountUSD(cctpEvent.Fee, usdcDecimals, tokenPrice)
+		cctpEvent.FeeUSD = GetAmountUSD(cctpEvent.Fee, *cctpEvent.TokenDecimal, tokenPrice)
 	}
 }
 

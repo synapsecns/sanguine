@@ -42,9 +42,16 @@ export const getStakedBalance = async (
     const userInfo: UserInfoResult = data[0]
     const pendingSynapse: PendingSynapseResult = data[1]
 
-    return {
-      amount: userInfo?.result[0] ?? 0n,
-      reward: pendingSynapse?.result ?? 0n,
+    if (userInfo.status === 'success') {
+      return {
+        amount: userInfo?.result[0] ?? 0n,
+        reward: pendingSynapse?.result ?? 0n,
+      }
+    } else {
+      return {
+        amount: 0n,
+        reward: 0n,
+      }
     }
   } catch (error) {
     console.error('Error from getStakedBalance: ', error)

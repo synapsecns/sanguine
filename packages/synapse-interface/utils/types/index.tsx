@@ -51,6 +51,14 @@ export type PoolData = {
   swapFee?: bigint
 }
 
+type QuoteQuery = {
+  deadline: bigint
+  minAmountOut: bigint
+  rawParams: string
+  swapAdapter: string
+  tokenOut: string
+}
+
 export type BridgeQuote = {
   outputAmount: bigint
   outputAmountString: string
@@ -59,10 +67,13 @@ export type BridgeQuote = {
   exchangeRate: bigint
   feeAmount: bigint
   delta: bigint
-  quotes: { originQuery: any; destQuery: any }
+  originQuery: QuoteQuery
+  destQuery: QuoteQuery
   estimatedTime: number
   bridgeModuleName: string
+  gasDropAmount: bigint
 }
+
 interface TokensByChain {
   [cID: string]: Token[]
 }

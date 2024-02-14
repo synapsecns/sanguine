@@ -1,3 +1,4 @@
+version: '2'
 # this is currently timing out for no reason.
 # see: https://codeclimate.com/github/synapsecns/sanguine/builds/5046
 # support ticket has been filed.
@@ -10,3 +11,13 @@ plugins:
     enabled: true
   stylelint:
     enabled: true
+
+exclude_patterns:
+  - '.*\\.abigen\\.go$'
+  - '.*\\.metadata\\.go$'
+  - '.*\\.pb\\.go$'
+  - '.*_gen.go$'
+  - '.*_generated.go$'
+  - '**/grpc/client/rest/*'
+  - '**/bundle/*'
+  - '**/generated/*'

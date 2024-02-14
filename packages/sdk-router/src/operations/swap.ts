@@ -2,10 +2,15 @@ import { PopulatedTransaction } from '@ethersproject/contracts'
 import { BigNumber } from '@ethersproject/bignumber'
 
 import { BigintIsh } from '../constants'
-import { Query, SwapQuote } from '../module'
+import {
+  Query,
+  SwapQuote,
+  applySlippageToQuery,
+  applyDeadlineToQuery,
+} from '../module'
 import { handleNativeToken } from '../utils/handleNativeToken'
 import { SynapseSDK } from '../sdk'
-import { getOriginDeadline } from '../utils/deadlines'
+import { TEN_MINUTES, applyOptionalDeadline } from '../utils/deadlines'
 
 /**
  * Performs a swap through a Synapse Router.
@@ -61,6 +66,42 @@ export async function swapQuote(
   if (query.minAmountOut.isZero()) {
     throw Error('No queries found for this route')
   }
-  query.deadline = getOriginDeadline(deadline)
-  return { routerAddress, maxAmountOut, query }
+  return {
+    routerAddress,
+    maxAmountOut,
+    query: applySwapDeadline(query, deadline),
+  }
+}
+
+/**
+ * Applies a deadline to the given swap query.
+ *
+ * @param queryInitial - The swap query
+ * @param deadline - The deadline to apply (optional, defaults to 10 minutes from now)
+ * @returns The swap query with deadline applied
+ */
+export const applySwapDeadline = (
+  queryInitial: Query,
+  deadline?: BigNumber
+): Query => {
+  return applyDeadlineToQuery(
+    queryInitial,
+    applyOptionalDeadline(deadline, TEN_MINUTES)
+  )
+}
+/**
+ * Applies slippage to the given swap query.
+ * Note: default slippage is 10 bips (0.1%).
+ *
+ * @param queryInitial - The swap query, coming from `swapQuote()`
+ * @param slipNumerator - The numerator of the slippage percentage, defaults to 10
+ * @param slipDenominator - The denominator of the slippage percentage, defaults to 10000
+ * @returns The swap query with slippage applied
+ */
+export const applySwapSlippage = (
+  queryInitial: Query,
+  slipNumerator: number = 10,
+  slipDenominator: number = 10000
+): Query => {
+  return applySlippageToQuery(queryInitial, slipNumerator, slipDenominator)
 }

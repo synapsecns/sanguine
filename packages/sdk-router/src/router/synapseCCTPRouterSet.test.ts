@@ -1,8 +1,9 @@
 import { Provider } from '@ethersproject/abstract-provider'
-import { providers } from 'ethers'
+import { BigNumber, parseFixed } from '@ethersproject/bignumber'
+import { Zero } from '@ethersproject/constants'
 
+import { getTestProvider } from '../constants/testProviders'
 import {
-  getTestProviderUrl,
   ROUTER_ADDRESS_MAP,
   CCTP_ROUTER_ADDRESS_MAP,
   MEDIAN_TIME_CCTP,
@@ -12,20 +13,66 @@ import {
 import { ChainProvider } from './routerSet'
 import { SynapseCCTPRouterSet } from './synapseCCTPRouterSet'
 import { SynapseCCTPRouter } from './synapseCCTPRouter'
+import { CCTPRouterQuery, Query, SynapseModuleSet } from '../module'
+
+export const createSlippageTests = (
+  moduleSet: SynapseModuleSet,
+  originQuery: Query,
+  destQuery: Query,
+  expectedOriginMinAmountOut: BigNumber,
+  expectedDestMinAmountOut: BigNumber,
+  slipNumerator: number,
+  slipDenominator: number
+) => {
+  // Create a copy of the queries to check that the original query is not modified
+  const originQueryCopy = { ...originQuery }
+  const destQueryCopy = { ...destQuery }
+
+  it('Applies slippage to origin query', () => {
+    const { originQuery: originQueryNew } = moduleSet.applySlippage(
+      originQuery,
+      destQuery,
+      slipNumerator,
+      slipDenominator
+    )
+    expect(originQueryNew).toEqual({
+      ...originQueryCopy,
+      minAmountOut: expectedOriginMinAmountOut,
+    })
+  })
+
+  it('Applies slippage to dest query', () => {
+    const { destQuery: destQueryNew } = moduleSet.applySlippage(
+      originQuery,
+      destQuery,
+      slipNumerator,
+      slipDenominator
+    )
+    expect(destQueryNew).toEqual({
+      ...destQueryCopy,
+      minAmountOut: expectedDestMinAmountOut,
+    })
+  })
+
+  it('Does not modify the original queries', () => {
+    moduleSet.applySlippage(
+      originQuery,
+      destQuery,
+      slipNumerator,
+      slipDenominator
+    )
+    expect(originQuery).toEqual(originQueryCopy)
+    expect(destQuery).toEqual(destQueryCopy)
+  })
+}
 
 describe('SynapseCCTPRouterSet', () => {
-  const ethProvider: Provider = new providers.JsonRpcProvider(
-    getTestProviderUrl(SupportedChainId.ETH)
-  )
+  const ethProvider: Provider = getTestProvider(SupportedChainId.ETH)
 
-  const arbProvider: Provider = new providers.JsonRpcProvider(
-    getTestProviderUrl(SupportedChainId.ARBITRUM)
-  )
+  const arbProvider: Provider = getTestProvider(SupportedChainId.ARBITRUM)
 
   // Chain where CCTP is unlikely to be deployed
-  const moonbeamProvider: Provider = new providers.JsonRpcProvider(
-    getTestProviderUrl(SupportedChainId.MOONBEAM)
-  )
+  const moonbeamProvider: Provider = getTestProvider(SupportedChainId.MOONBEAM)
 
   const testProviders: ChainProvider[] = [
     {
@@ -144,6 +191,93 @@ describe('SynapseCCTPRouterSet', () => {
       expect(() =>
         routerSet.getSynapseCCTPRouter(SupportedChainId.AVALANCHE)
       ).toThrow('No module found for chain 43114')
+    })
+  })
+
+  describe('applySlippage', () => {
+    const originQuery: CCTPRouterQuery = {
+      routerAdapter: '1',
+      tokenOut: '2',
+      minAmountOut: parseFixed('1000', 18),
+      deadline: BigNumber.from(3),
+      rawParams: '4',
+    }
+
+    const destQuery: CCTPRouterQuery = {
+      routerAdapter: '5',
+      tokenOut: '6',
+      minAmountOut: parseFixed('2000', 6),
+      deadline: BigNumber.from(8),
+      rawParams: '9',
+    }
+
+    describe('0% slippage', () => {
+      createSlippageTests(
+        routerSet,
+        originQuery,
+        destQuery,
+        parseFixed('1000', 18),
+        parseFixed('2000', 6),
+        0,
+        10000
+      )
+    })
+
+    describe('1% slippage', () => {
+      createSlippageTests(
+        routerSet,
+        originQuery,
+        destQuery,
+        parseFixed('990', 18),
+        parseFixed('1980', 6),
+        100,
+        10000
+      )
+    })
+
+    describe('10% slippage', () => {
+      createSlippageTests(
+        routerSet,
+        originQuery,
+        destQuery,
+        parseFixed('900', 18),
+        parseFixed('1800', 6),
+        1000,
+        10000
+      )
+    })
+
+    describe('100% slippage', () => {
+      createSlippageTests(
+        routerSet,
+        originQuery,
+        destQuery,
+        Zero,
+        Zero,
+        10000,
+        10000
+      )
+    })
+
+    describe('Rounds down', () => {
+      const originQueryPlusOne: CCTPRouterQuery = {
+        ...originQuery,
+        minAmountOut: originQuery.minAmountOut.add(1),
+      }
+      const destQueryPlusOne: CCTPRouterQuery = {
+        ...destQuery,
+        minAmountOut: destQuery.minAmountOut.add(1),
+      }
+
+      createSlippageTests(
+        routerSet,
+        originQueryPlusOne,
+        destQueryPlusOne,
+        parseFixed('990', 18).add(1),
+        parseFixed('1980', 6).add(1),
+        100,
+        10000
+      )
     })
   })
 

@@ -1,4 +1,6 @@
-import { CHAIN_EXPLORER_URLS } from '@constants/networks'
+import { CHAINS } from 'synapse-constants'
+
+const CHAINS_BY_ID = CHAINS.CHAINS_BY_ID
 
 export const BASE_PATH = '/'
 export const ANALYTICS_PATH = 'https://analytics.synapseprotocol.com/'
@@ -70,38 +72,50 @@ export function getBridgeTransactionUrl({ hash, chainIdFrom, chainIdTo }) {
 
   return url
 }
-export function getAddressesUrl({ address, chainIdFrom, chainIdTo }: { address?: string; chainIdFrom?: string; chainIdTo?: string }): string {
-  let url = ACCOUNTS_PATH;
+export function getAddressesUrl({
+  address,
+  chainIdFrom,
+  chainIdTo,
+}: {
+  address?: string
+  chainIdFrom?: string
+  chainIdTo?: string
+}): string {
+  let url = ACCOUNTS_PATH
 
   if (address) {
-    url += `/${address}`;
+    url += `/${address}`
   }
-  url += '?';
+  url += '?'
 
   if (chainIdFrom) {
-    url += `chainIdFrom=${chainIdFrom}`;
+    url += `chainIdFrom=${chainIdFrom}`
   }
 
   if (chainIdTo) {
     if (url[url.length - 1] !== '?') {
-      url += '&';
+      url += '&'
     }
-    url += `chainIdTo=${chainIdTo}`;
+    url += `chainIdTo=${chainIdTo}`
   }
 
-  return url;
+  return url
 }
 
-
-export function getExplorerTxUrl({ hash, data, chainId, type = 'tx' }: {
-  hash?: string;
-  data?: string;
-  chainId: string;
-  type?: string;
+export function getExplorerTxUrl({
+  hash,
+  data,
+  chainId,
+  type = 'tx',
+}: {
+  hash?: string
+  data?: string
+  chainId: string
+  type?: string
 }): string {
-  const baseUrl = CHAIN_EXPLORER_URLS[chainId];
+  const baseUrl = CHAINS_BY_ID[chainId].explorerUrl
 
-  return `${baseUrl}/${type}/${hash ?? data}`;
+  return `${baseUrl}/${type}/${hash ?? data}`
 }
 
 export function getExplorerAddressUrl({
@@ -110,7 +124,7 @@ export function getExplorerAddressUrl({
   chainId,
   type = 'address',
 }) {
-  const baseUrl = CHAIN_EXPLORER_URLS[chainId]
+  const baseUrl = CHAINS_BY_ID[chainId].explorerUrl
 
   return `${baseUrl}/${type}/${address ?? data}`
 }

@@ -101,3 +101,69 @@ export const hasComplexBridgeAction = (destQuery: Query): boolean => {
     destQuery.tokenOut !== ETH_NATIVE_TOKEN_ADDRESS
   )
 }
+
+/**
+ * Applies the deadline to the query and returns the modified query.
+ * Note: the original query is preserved unchanged.
+ *
+ * @param query - The query to modify.
+ * @param deadline - The new deadline.
+ * @returns The modified query with the new deadline.
+ */
+export const applyDeadlineToQuery = (
+  query: Query,
+  deadline: BigNumber
+): Query => {
+  return {
+    ...query,
+    deadline,
+  }
+}
+
+/**
+ * Applies the slippage to the query's minAmountOut (rounded down), and returns the modified query
+ * with the reduced minAmountOut.
+ * Note: the original query is preserved unchanged.
+ *
+ * @param query - The query to modify.
+ * @param slipNumerator - The numerator of the slippage.
+ * @param slipDenominator - The denominator of the slippage.
+ * @returns The modified query with the reduced minAmountOut.
+ * @throws If the slippage fraction is invalid (<0, >1, or NaN)
+ */
+export const applySlippageToQuery = (
+  query: Query,
+  slipNumerator: number,
+  slipDenominator: number
+): Query => {
+  invariant(slipDenominator > 0, 'Slippage denominator cannot be zero')
+  invariant(slipNumerator >= 0, 'Slippage numerator cannot be negative')
+  invariant(
+    slipNumerator <= slipDenominator,
+    'Slippage cannot be greater than 1'
+  )
+  const slippageAmount = query.minAmountOut
+    .mul(slipNumerator)
+    .div(slipDenominator)
+  return {
+    ...query,
+    minAmountOut: query.minAmountOut.sub(slippageAmount),
+  }
+}
+
+/**
+ * Creates a Query object for a no-swap bridge action.
+ *
+ * @param token - The token to bridge.
+ * @param amount - The amount of token to bridge.
+ * @returns The Query object for a no-swap bridge action.
+ */
+export const createNoSwapQuery = (token: string, amount: BigNumber): Query => {
+  return {
+    routerAdapter: AddressZero,
+    tokenOut: token,
+    minAmountOut: amount,
+    deadline: BigNumber.from(0),
+    rawParams: '0x',
+  }
+}

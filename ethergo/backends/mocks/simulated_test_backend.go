@@ -133,6 +133,27 @@ func (_m *SimulatedTestBackend) BatchContext(ctx context.Context, calls ...w3typ
 	return r0
 }
 
+// BatchWithContext provides a mock function with given fields: ctx, calls
+func (_m *SimulatedTestBackend) BatchWithContext(ctx context.Context, calls ...w3types.Caller) error {
+	_va := make([]interface{}, len(calls))
+	for _i := range calls {
+		_va[_i] = calls[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, ...w3types.Caller) error); ok {
+		r0 = rf(ctx, calls...)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // BlockByHash provides a mock function with given fields: ctx, hash
 func (_m *SimulatedTestBackend) BlockByHash(ctx context.Context, hash common.Hash) (*types.Block, error) {
 	ret := _m.Called(ctx, hash)
@@ -344,20 +365,6 @@ func (_m *SimulatedTestBackend) ConcurrencyCount() int32 {
 		r0 = rf()
 	} else {
 		r0 = ret.Get(0).(int32)
-	}
-
-	return r0
-}
-
-// EnableTenderly provides a mock function with given fields:
-func (_m *SimulatedTestBackend) EnableTenderly() bool {
-	ret := _m.Called()
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func() bool); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(bool)
 	}
 
 	return r0
@@ -992,6 +999,11 @@ func (_m *SimulatedTestBackend) StorageAt(ctx context.Context, account common.Ad
 	}
 
 	return r0, r1
+}
+
+// Store provides a mock function with given fields: key
+func (_m *SimulatedTestBackend) Store(key *keystore.Key) {
+	_m.Called(key)
 }
 
 // SubscribeFilterLogs provides a mock function with given fields: ctx, query, ch

@@ -11,7 +11,7 @@ import (
 	"math/big"
 )
 
-// HarmonyVM is a strict superset of evm w/ custom harmony methods
+// HarmonyVM is a strict superset of evm w/ custom harmony methods.
 type HarmonyVM interface {
 	EVM
 	// FilterHarmonyLogs returns the logs that satisfy the supplied filter query.
@@ -24,7 +24,7 @@ type harmonyClient struct {
 	*clientImpl
 }
 
-// DialHarmonyBackend dials a harmony backend
+// DialHarmonyBackend dials a harmony backend.
 func DialHarmonyBackend(ctx context.Context, url string, handler metrics.Handler, ops ...Options) (HarmonyVM, error) {
 	evm, err := DialBackend(ctx, url, handler, ops...)
 	if err != nil {
