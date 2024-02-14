@@ -46,8 +46,7 @@ func (s *P2PTestSuite) TestLibP2PManager() {
 	//m4.DoSomethingElse()
 	for {
 		m1.DoSomething()
-		m3.DoSomething()
-		if m2.DoSomethingElse() {
+		if m2.DoSomethingElse() || m3.DoSomethingElse() {
 			break
 		}
 	}
