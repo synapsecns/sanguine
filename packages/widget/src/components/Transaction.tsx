@@ -123,7 +123,7 @@ export const Transaction = ({
         gap-1 justify-end items-center pl-2.5 pr-1.5 py-1
         border border-solid border-[--synapse-border] rounded-md
       `}
-      style={{ background: 'var(--synapse-surface' }}
+      style={{ background: 'var(--synapse-surface)' }}
     >
       <div className="flex flex-wrap-reverse items-center justify-between w-full">
         <TransactionBridgeDetail
