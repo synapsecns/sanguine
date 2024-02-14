@@ -28,24 +28,23 @@ export const Completed = ({
 
   return (
     <a href={explorerLink} target="_blank" rel="noreferrer">
-    <div
-      data-test-id="completed"
-      className="flex flex-col text-right text-[#C2C2D6] gap-1 text-sm whitespace-nowrap"
-      // onClick={handleExplorerClick}
-    >
-      {isDestinationValid && !isDestinationSender && (
-        <div>to {shortenAddress(destinationAddress)} </div>
-      )}
-      {isToday ? (
-        <div className="text-[#3BDD77] hover:underline cursor-pointer">
-          Today
-        </div>
-      ) : (
-        <div className="cursor-pointer hover:underline">
-          {formattedTime ? formattedTime : 'Completed'}
-        </div>
-      )}
-    </div>
+      <div
+        data-test-id="completed"
+        className="flex flex-col text-right text-[#C2C2D6] gap-1 text-sm whitespace-nowrap"
+      >
+        {isDestinationValid && !isDestinationSender && (
+          <div>to {shortenAddress(destinationAddress)} </div>
+        )}
+        {isToday ? (
+          <div className="text-[#3BDD77] hover:underline cursor-pointer">
+            Today
+          </div>
+        ) : (
+          <div className="cursor-pointer hover:underline">
+            {formattedTime ? formattedTime : 'Completed'}
+          </div>
+        )}
+      </div>
     </a>
   )
 }

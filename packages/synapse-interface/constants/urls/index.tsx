@@ -56,9 +56,10 @@ export const getExplorerTxUrl = ({
   chainId?: number
   type?: string
 }) => {
-  let explorerUrl = Object.values(CHAINS).filter(
+  let chain = Object.values(CHAINS).filter(
     (chain) => chain.id === chainId
-  )[0].explorerUrl
+  )[0]
+  let explorerUrl = chain.explorerUrl
   let baseUrl = explorerUrl ?? CHAINS.ETH.explorerUrl
 
   return `${baseUrl}/${type}/${hash ?? data}`

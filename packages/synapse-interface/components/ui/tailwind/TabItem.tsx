@@ -12,15 +12,16 @@ const TabItem = ({
   let statusClassname
   if (isActive) {
     statusClassname = `
-
+      border-transparent
       text-white
       ${className}
       `
   } else {
     statusClassname = `
-      bg-bgBase/20
-      hover:bg-bgBase/40
+      bg-slate-900/50
+      hover:bg-bgBase/10
       text-secondaryTextColor/50
+      border-bgBase/10
       ${className}
       `
   }
@@ -28,10 +29,12 @@ const TabItem = ({
     <div
       onClick={onClick}
       className={`
+        border-b border-l border-r
         ${statusClassname}
         flex justify-center items-center
         w-full cursor-pointer
         font-base hover:text-white
+        border-collapse
         h-14
       `}
     >

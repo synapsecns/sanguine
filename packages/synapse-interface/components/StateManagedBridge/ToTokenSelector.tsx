@@ -47,9 +47,9 @@ export const ToTokenSelector = () => {
       data-test-id="bridge-destination-token"
       className={`
         p-md rounded-sm min-w-[80px]
-        bg-slate-400/20
+        bg-slate-400/10 hover:bg-slate-400/20
+        border border-white/10
         ${getMenuItemHoverBgForCoin(toToken?.color)}
-        border border-transparent
         ${getBorderStyleForCoinHover(toToken?.color)}
       `}
       onClick={() => dispatch(setShowToTokenListOverlay(true))}

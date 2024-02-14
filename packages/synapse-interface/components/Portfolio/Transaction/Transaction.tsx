@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React from 'react'
 import { Chain, Token } from '@/utils/types'
 import { Address } from 'viem'
 import { getTransactionExplorerLink } from './components/TransactionExplorerLink'

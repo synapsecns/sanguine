@@ -22,7 +22,7 @@ export const OutputContainer = () => {
             pl-md
             w-full h-16
             rounded-md
-            border border-white border-opacity-20
+            border border-transparent
           `}
         >
           <ToTokenSelector />
@@ -30,6 +30,9 @@ export const OutputContainer = () => {
             {isLoading ? (
               <LoadingDots className="opacity-50" />
             ) : (
+              // <BridgeSwapOutputNumber
+              //   quote={bridgeQuote}
+              // />
               <input
                 pattern="[0-9.]+"
                 disabled={true}
@@ -40,9 +43,10 @@ export const OutputContainer = () => {
                   border-none
                   p-0
                   bg-transparent
-                  max-w-[190px]
+                  max-w-[200px]
                 placeholder:text-[#88818C]
-                text-white text-opacity-80 text-xl md:text-2xl font-medium
+                text-white/90 text-2xl md:text-3xl font-medium
+                -mt-1
                 `}
                 placeholder="0.0000"
                 value={

@@ -196,8 +196,8 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
           </Button>
         )}
       </InfoSectionCard>
-      <Card className="p-0  bg-bgBase/10 ">
-        <div className="mb-3">
+      <Card className="p-0  bg-bgBase/10 border-collapse">
+        <div className="mb-3 border-collapse">
           <Tabs>
             <TabItem
               isActive={showStake}

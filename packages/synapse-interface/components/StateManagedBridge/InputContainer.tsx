@@ -106,7 +106,8 @@ export const InputContainer = () => {
             pl-md
             w-full h-16
             rounded-md
-            border border-white/20 focus-within:border-white/50
+            focus-within:bg-bgBase/10
+            border border-white/10 focus-within:border-white/40
           `}
         >
           <div className="flex items-center">

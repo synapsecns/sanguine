@@ -16,7 +16,7 @@ import { MenuItem } from './components/MenuItem'
 import { useBridgeTxUpdater } from './helpers/useBridgeTxUpdater'
 import { AnimatedProgressBar } from './components/AnimatedProgressBar'
 import { TransactionSupport } from './components/TransactionSupport'
-import { RightArrow } from '@/components/icons/RightArrow'
+
 import TransactionArrow from '../icons/TransactionArrow'
 
 interface _TransactionProps {
