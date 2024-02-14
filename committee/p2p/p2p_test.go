@@ -42,9 +42,15 @@ func (s *P2PTestSuite) TestLibP2PManager() {
 	time.Sleep(time.Second * 2)
 	m1.DoSomething()
 	time.Sleep(time.Second * 1)
-	m1.DoSomething()
-	m3.DoSomething()
-	m2.DoSomethingElse()
+	//m3.DoSomething()
+	//m4.DoSomethingElse()
+	for {
+		m1.DoSomething()
+		m3.DoSomething()
+		if m2.DoSomethingElse() {
+			break
+		}
+	}
 }
 
 func (s *P2PTestSuite) makeManager() p2p.LibP2PManager {

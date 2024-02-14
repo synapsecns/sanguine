@@ -6,7 +6,6 @@ import (
 	realtimeDB "github.com/dTelecom/p2p-realtime-database"
 	ipfslite "github.com/hsanjuan/ipfs-lite"
 	"github.com/ipfs/go-datastore"
-	"github.com/ipfs/go-datastore/query"
 	ipfs_datastore "github.com/ipfs/go-datastore/sync"
 	crdt "github.com/ipfs/go-ds-crdt"
 	logging "github.com/ipfs/go-log/v2"
@@ -27,7 +26,7 @@ type LibP2PManager interface {
 	// Start starts the libp2p manager.
 	Start(ctx context.Context, bootstrapPeers []string) error
 	DoSomething()
-	DoSomethingElse()
+	DoSomethingElse() bool
 }
 
 type libP2PManagerImpl struct {
@@ -84,28 +83,31 @@ func (l *libP2PManagerImpl) DoSomething() {
 	}
 }
 
-func (l *libP2PManagerImpl) DoSomethingElse() {
-	l.datastoreDs.Sync(context.Background(), datastore.NewKey("/"))
+func (l *libP2PManagerImpl) DoSomethingElse() bool {
+	for f := 0; f < 400; f++ {
+		l.datastoreDs.Sync(context.Background(), datastore.NewKey("/"))
+		time.Sleep(time.Millisecond * 10)
+	}
 
 	val, err := l.datastoreDs.Get(context.Background(), datastore.NewKey("test"))
 	if err != nil {
 		fmt.Println("error: ", err)
 	}
-	_ = val
 
-	fmt.Println(len(l.host.Network().Peers()))
-	r, err := l.datastoreDs.Query(context.TODO(), query.Query{KeysOnly: true})
-	if err != nil {
-		fmt.Println(errors.Wrap(err, "crdt list query"))
-	}
-
-	l.datastoreDs.InternalStats()
-
-	var keys []string
-	for k := range r.Next() {
-		keys = append(keys, k.Key)
-	}
-
+	return val != nil
+	//
+	//fmt.Println(len(l.host.Network().Peers()))
+	//r, err := l.datastoreDs.Query(context.TODO(), query.Query{KeysOnly: true})
+	//if err != nil {
+	//	fmt.Println(errors.Wrap(err, "crdt list query"))
+	//}
+	//
+	//l.datastoreDs.InternalStats()
+	//
+	//var keys []string
+	//for k := range r.Next() {
+	//	keys = append(keys, k.Key)
+	//}
 }
 
 func (l *libP2PManagerImpl) setupHost(ctx context.Context, privKeyWrapper crypto.PrivKey) (host.Host, error) {
@@ -158,6 +160,7 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	crdtOpts.Logger = logging.Logger("p2p_logger")
 
 	crdtOpts.RebroadcastInterval = RebroadcastingInterval
+
 	crdtOpts.PutHook = func(k datastore.Key, v []byte) {
 		fmt.Printf("[%s] Added: [%s] -> %s\n", time.Now().Format(time.RFC3339), k, string(v))
 		// TODO: some validation goes here
