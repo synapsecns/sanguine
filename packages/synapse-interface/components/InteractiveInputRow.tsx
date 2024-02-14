@@ -71,7 +71,7 @@ const InteractiveInputRow = ({
                     border-none bg-transparent
                     p-0
                     w-[300px] sm:min-w-[170px] sm:w-full scrollbar-none
-                  placeholder:text-[#88818C] text-white
+                  placeholder:text-white/40 text-white
                     text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium
                     overflow-hidden
                 `}
