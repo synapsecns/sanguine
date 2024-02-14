@@ -6,6 +6,7 @@ import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 import { SynapseIcon } from './SynapseIcon'
 import { generateTx } from './strings'
+import styles from './marquee.module.css'
 
 const LandingPage = () => {
   const { address: currentAddress } = useAccount()
@@ -50,11 +51,11 @@ const LandingPage = () => {
   windowPrefersDark.addEventListener("change", (e) => !prefersColorScheme && setPrefersDark(e.matches))
 
   return (
-    <div className={prefersDark && 'dark'}>
-      <div className="w-screen h-screen bg-white dark:bg-black overflow-scroll text-black dark:text-white tracking-wide leading-normal">
-        {/* Ticker */}
-        <div className="mb-2 bg-zinc-100 dark:bg-zinc-900 text-sm border-y border-zinc-200 dark:border-zinc-800">
-          <div className="absolute bg-inherit px-4 py-1 border-r border-zinc-200 dark:border-zinc-800 flex items-center gap-2 z-10">
+    <div className={`${prefersDark && 'dark'}`}>
+      <div className="w-screen h-screen bg-white dark:bg-gradient-to-b from-black to-zinc-950 overflow-scroll text-black dark:text-white tracking-wide leading-normal">
+        {/* Ticker – Easter egg: define custom <marquee> element */}
+        <div className="absolute w-screen z-10 mb-12 bg-zinc-50 dark:bg-zinc-950 text-sm border-y border-zinc-200 dark:border-zinc-900 overflow-hidden">
+          <button className="absolute bg-inherit px-4 py-1.5 border-r border-zinc-300 dark:border-zinc-800 flex items-center gap-2 z-10">
             <svg width="8" height="8" viewBox="-4 -4 8 8" overflow="visible" className="fill-green-500 stroke-green-500" xmlns="http://www.w3.org/2000/svg">
               <circle r="4">
                 <animate
@@ -71,19 +72,23 @@ const LandingPage = () => {
                 />
               </circle>
             </svg>
-            Live
-          </div>
-          <ul className="flex whitespace-nowrap py-1 list-disc opacity-50">
+            Live – All transactions <span className="text-xxs">▼</span>
+          </button>
+          <ul className={`flex whitespace-nowrap list-disc marker:text-zinc-500 ${styles.marquee}`}>
             {[...Array(20)].map((x, i) => {
-              return <li className="pl-2 ml-7"><a href="#" className="hover:underline">{generateTx()}</a></li>
+              return <li className="pl-2 ml-7"><a href="#" className="text-zinc-500 hover:text-inherit hover:underline py-1.5 inline-block">{generateTx()}</a></li>
             })}
           </ul>
+          <a href="#" className="absolute top-0 right-0 bg-inherit px-4 py-1.5 border-l border-zinc-300 dark:border-zinc-800 flex items-center gap-2 z-10">
+            Explorer {'->'}
+          </a>
         </div>
         {/* Hero */}
-        <header className="m-8 flex items-center max-w-7xl relative mx-auto">
-          <div className="text-3xl font-medium flex gap-2 items-center absolute">
-            <SynapseIcon width={40} height={40} /><span className="-mt-2">Synapse</span>
-          </div>
+        <nav className="mt-12 p-8 flex items-center max-w-7xl relative mx-auto">
+          <a href="#" className="text-3xl font-medium flex gap-2 items-center absolute">
+            <SynapseIcon width={40} height={40} />
+            <span className="-mt-1.5">Synapse</span>
+          </a>
           <ul className="flex text-lg w-full justify-center">
             <li><a className="px-3 py-2" href="#">About</a></li>
             <li><a className="px-3 py-2" href="#">Bridge</a></li>
@@ -98,7 +103,7 @@ const LandingPage = () => {
               <option selected={!prefersColorScheme}>System {windowPrefersDark.matches ? 'dark' : 'light'}</option>
             </select>
           </form>
-        </header>
+        </nav>
         {/* Main */}
         <main className="mx-auto w-full max-w-7xl">
           <header className="p-8 text-center max-w-2xl mx-auto">
@@ -110,7 +115,7 @@ const LandingPage = () => {
               <a className="px-3 py-2 m-2 border border-black dark:border-white rounded" href="#">Bridge</a>
               <a className="px-3 py-2 m-2 border border-black dark:border-white rounded" href="#">Build</a>
             </div>
-            <p className="leading-relaxed">
+            <p className="leading-relaxed text-md">
               Say goodbye to centralized resource pools for cross-chain communication. Synapse lets you customize literally every aspect of your interchain communcations.
             </p>
           </header>
@@ -118,8 +123,54 @@ const LandingPage = () => {
             <li>50 blockchains</li>
             <li>50,000 validators</li>
             <li>10.2B messages</li>
-            <li>1.2B transferred</li>
+            <li>$1.2B transferred</li>
           </ul>
+          <article className="p-8 grid grid-cols-2 place-items-center gap-16">
+            <section className="py-8">
+              <h2 className="text-4xl font-medium my-4">
+                Securely connect every blockchain
+              </h2>
+              <p className="text-lg leading-relaxed">
+                Synapse is comprised of a cross-chain messaging framework and an economically secure method to reach consensus on the validity of cross-chain transactions, enabling developers to build truly native cross-chain apps.
+              </p>
+            </section>
+            <svg width="8" height="8" viewBox="-4 -4 8 8" stroke-width="1.5" fill="none" overflow="visible" className="stroke-fuchsia-500" xmlns="http://www.w3.org/2000/svg">
+              <circle r="72"/>
+            </svg>
+            <svg width="8" height="8" viewBox="-4 -4 8 8" stroke-width="1.5" fill="none" overflow="visible" className="stroke-fuchsia-500" xmlns="http://www.w3.org/2000/svg">
+              <circle r="72"/>
+            </svg>
+            <section className="py-8">
+              <h2 className="text-4xl font-medium my-4">
+                Powering the most popular bridge
+              </h2>
+              <p className="text-lg">
+                Synapse Bridge is built on top of the cross-chain infrastructure  enabling users to seamlessly transfer assets across all blockchains. The Bridge has become the most widely-used method to move assets  cross-chain, offering low cost, fast, and secure bridging.
+              </p>
+            </section>
+            <section className="py-8">
+              <h2 className="text-4xl font-medium my-4">
+                Battle-tested infrastructure
+              </h2>
+              <p className="text-lg">
+                Synapse has processed millions of transactions and tens of billions in bridged assets.
+              </p>
+            </section>
+            <svg width="8" height="8" viewBox="-4 -4 8 8" stroke-width="1.5" fill="none" overflow="visible" className="stroke-fuchsia-500" xmlns="http://www.w3.org/2000/svg">
+              <circle r="72"/>
+            </svg>
+            <svg width="8" height="8" viewBox="-4 -4 8 8" stroke-width="1.5" fill="none" overflow="visible" className="stroke-fuchsia-500" xmlns="http://www.w3.org/2000/svg">
+              <circle r="72"/>
+            </svg>
+            <section className="py-8">
+              <h2 className="text-4xl font-medium my-4">
+                Widely integrated
+              </h2>
+              <p className="text-lg">
+                Synapse is widely integrated across the most-used Layer 1 and Layer 2 networks for a seamless cross-chain experience.
+              </p>
+            </section>
+          </article>
         </main>
         <footer>
           Footer
