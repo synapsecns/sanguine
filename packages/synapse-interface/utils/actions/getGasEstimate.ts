@@ -4,9 +4,9 @@ export const getGasEstimate = async (
   chainId: number,
   account: Address,
   to: Address,
-  data: any,
+  data?: any,
   value?: bigint
-) => {
+): Promise<bigint> => {
   const publicClient = getPublicClient()
 
   const gasEstimate = await publicClient.estimateGas({

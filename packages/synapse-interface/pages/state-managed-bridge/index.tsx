@@ -78,6 +78,7 @@ import {
   fetchEthPrice,
   fetchGmxPrice,
 } from '@/slices/priceDataSlice'
+import { getGasEstimate } from '@/utils/actions/getGasEstimate'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -401,52 +402,45 @@ const StateManagedBridge = () => {
             }
           : data
 
-      console.log('payload:', payload)
-            console.log('typeof payload.value:' , typeof payload.value)
-      const testRpc =
-        'https://polygon-mainnet.g.alchemy.com/v2/mN1t8Oc6E912QF28iPHaRvVEmv6EpYSs'
+      // console.log('payload:', payload)
+      // console.log('typeof payload.value:', typeof payload.value)
 
-      const client = createPublicClient({
-        chain: polygon,
-        transport: http(testRpc),
-      })
+      // const publicClient = getPublicClient()
 
-      const publicClient = getPublicClient()
+      // console.log(
+      //   'estimateGas: ',
+      //   await publicClient.estimateGas({
+      //     value: payload.value,
+      //     to: payload.to,
+      //     account: address,
+      //     data: payload.data,
+      //     chainId: fromChainId,
+      //   })
+      // )
 
-      console.log(
-        'estimateGas client: ',
-        await client.estimateGas({
-          // value: payload.value,
-          to: payload.to,
-          account: address,
-          data: payload.data,
-        })
-      )
+      const request = await prepareSendTransaction(payload)
+      console.log('request:', request)
 
-      console.log(
-        'estimateGas: ',
-        await publicClient.estimateGas({
+      let gasEstimate
+
+      if (fromChainId === polygon.id) {
+        const publicClient = getPublicClient()
+        gasEstimate = await publicClient.estimateGas({
           value: payload.value,
           to: payload.to,
           account: address,
           data: payload.data,
           chainId: fromChainId,
         })
-      )
+        console.log('gasEstimate:', gasEstimate)
 
-      let request = await prepareSendTransaction({
-        ...payload,
-        // gas: 992840n,
-      })
-
-      console.log('request: ', request)
-
-      // request.account = address
-      // request.gas = 652987n
+        gasEstimate = (gasEstimate * 3n) / 2n
+        console.log('bumpedGasLimit: ', gasEstimate)
+      }
 
       const tx = await wallet.sendTransaction({
         ...payload,
-        gasLimit: 992840n,
+        gas: gasEstimate,
       })
 
       // const tx = await wallet.sendTransaction(payload)
