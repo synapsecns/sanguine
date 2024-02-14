@@ -401,6 +401,18 @@ const StateManagedBridge = () => {
             }
           : data
 
+      /** Remove after testing */
+      const publicClient = getPublicClient()
+      const defaultGas = await publicClient.estimateGas({
+        value: payload.value,
+        to: payload.to,
+        account: address,
+        data: payload.data,
+        chainId: fromChainId,
+      })
+      console.log('defaultGas: ', defaultGas)
+      /** Remove after testing */
+
       /** Setting custom gas limit for only Polygon transactions */
       let gasEstimate = undefined
 
