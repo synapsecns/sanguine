@@ -12,10 +12,9 @@ import { getValidAddress } from '@/utils/isValidAddress'
 import { isTransactionHash } from '@/utils/validators'
 import { getTransactionHashExplorerLink } from '../Transaction/components/TransactionExplorerLink'
 import { ClearSearchButton } from './ClearSearchButton'
-import { useIsFocused } from '../helpers/useIsFocused'
 import { useSearchInputState } from '../helpers/useSearchInputStatus'
 
-export const inputRef = React.createRef<HTMLInputElement>()
+
 
 export const SearchBar = () => {
   const dispatch = useAppDispatch()
@@ -23,8 +22,6 @@ export const SearchBar = () => {
   const { activeTab, searchInput, searchedBalances }: PortfolioState =
     usePortfolioState()
   const { isSearchInputActive, isMasqueradeActive } = useSearchInputState()
-
-  const isFocused = useIsFocused(inputRef)
 
   const placeholder = getFilterPlaceholder(activeTab)
 
@@ -53,17 +50,16 @@ export const SearchBar = () => {
     }
   }, [isSearchInputTransactionHash])
 
+
   return (
     <div
       id="portfolio-search-bar"
       className={`
         relative flex items-center ml-auto
         border rounded-xl
-        ${
-          isFocused || isSearchInputActive
-            ? 'border-synapsePurple bg-bgBase/10'
-            : 'border-bgBase/10 bg-transparent'
-        }
+       border-bgBase/10 bg-transparent
+        focus-within:border-synapsePurple focus-within:bg-bgBase/10
+        ${isSearchInputActive && 'border-synapsePurple bg-bgBase/10'}
       `}
     >
       <FilterInput
@@ -94,7 +90,6 @@ const FilterInput = ({
     <input
       id="filter-input"
       autoComplete="off"
-      ref={inputRef}
       placeholder={placeholder}
       onChange={(e) => onSearch(e.target.value)}
       value={searchStr}
