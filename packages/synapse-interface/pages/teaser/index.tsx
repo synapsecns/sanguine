@@ -172,8 +172,46 @@ const LandingPage = () => {
             </section>
           </article>
         </main>
-        <footer>
-          Footer
+        <footer className="p-8 flex items-start max-w-7xl mx-auto justify-between mt-12">
+          <a href="#" className="text-3xl font-medium flex gap-2 items-center">
+            <SynapseIcon width={40} height={40} />
+            <span className="-mt-1.5">Synapse</span>
+          </a>
+          <div className="flex gap-8 text-right">
+            <section>
+              <header className="px-2 py-1">
+                Header
+              </header>
+              <ul>
+                <li><a href="#" className="text-zinc-500 hover:text-inherit hover:bg-zinc-100 hover:dark:bg-zinc-900 px-2 py-1 rounded inline-block">Link</a></li>
+                <li><a href="#" className="text-zinc-500 hover:text-inherit hover:bg-zinc-100 hover:dark:bg-zinc-900 px-2 py-1 rounded inline-block">Link</a></li>
+                <li><a href="#" className="text-zinc-500 hover:text-inherit hover:bg-zinc-100 hover:dark:bg-zinc-900 px-2 py-1 rounded inline-block">Link</a></li>
+                <li><a href="#" className="text-zinc-500 hover:text-inherit hover:bg-zinc-100 hover:dark:bg-zinc-900 px-2 py-1 rounded inline-block">Link</a></li>
+              </ul>
+            </section>
+            <section>
+              <header className="px-2 py-1">
+                Header
+              </header>
+              <ul>
+                <li><a href="#" className="text-zinc-500 hover:text-inherit hover:bg-zinc-100 hover:dark:bg-zinc-900 px-2 py-1 rounded inline-block">Link</a></li>
+                <li><a href="#" className="text-zinc-500 hover:text-inherit hover:bg-zinc-100 hover:dark:bg-zinc-900 px-2 py-1 rounded inline-block">Link</a></li>
+                <li><a href="#" className="text-zinc-500 hover:text-inherit hover:bg-zinc-100 hover:dark:bg-zinc-900 px-2 py-1 rounded inline-block">Link</a></li>
+                <li><a href="#" className="text-zinc-500 hover:text-inherit hover:bg-zinc-100 hover:dark:bg-zinc-900 px-2 py-1 rounded inline-block">Link</a></li>
+              </ul>
+            </section>
+            <section>
+              <header className="px-2 py-1">
+                Header
+              </header>
+              <ul>
+                <li><a href="#" className="text-zinc-500 hover:text-inherit hover:bg-zinc-100 hover:dark:bg-zinc-900 px-2 py-1 rounded inline-block">Link</a></li>
+                <li><a href="#" className="text-zinc-500 hover:text-inherit hover:bg-zinc-100 hover:dark:bg-zinc-900 px-2 py-1 rounded inline-block">Link</a></li>
+                <li><a href="#" className="text-zinc-500 hover:text-inherit hover:bg-zinc-100 hover:dark:bg-zinc-900 px-2 py-1 rounded inline-block">Link</a></li>
+                <li><a href="#" className="text-zinc-500 hover:text-inherit hover:bg-zinc-100 hover:dark:bg-zinc-900 px-2 py-1 rounded inline-block">Link</a></li>
+              </ul>
+            </section>
+          </div>
         </footer>
       </div>
     </div>
