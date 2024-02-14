@@ -8,6 +8,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"testing"
+	"time"
 )
 
 type P2PTestSuite struct {
@@ -36,6 +37,9 @@ func (s *P2PTestSuite) TestLibP2PManager() {
 		err := manager.Start(s.GetTestContext(), addresses)
 		s.Require().NoError(err)
 	}
+
+	time.Sleep(time.Second * 50)
+	m3.DoSomething()
 
 }
 
