@@ -29,6 +29,7 @@ contract InterchainDBSourceTest is Test, IInterchainDBEvents {
     address public requestCaller = makeAddr("Request Caller");
     address public writerF = makeAddr("First Writer");
     address public writerS = makeAddr("Second Writer");
+    address public notWriter = makeAddr("Not a Writer");
 
     function setUp() public {
         vm.chainId(SRC_CHAIN_ID);
@@ -118,6 +119,8 @@ contract InterchainDBSourceTest is Test, IInterchainDBEvents {
         writerNonce = icDB.writeEntryWithVerification{value: msgValue}(DST_CHAIN_ID, dataHash, modules);
     }
 
+    // ═══════════════════════════════════════════════ TEST HELPERS ════════════════════════════════════════════════════
+
     function assertEq(
         IInterchainDB.InterchainEntry memory entry,
         IInterchainDB.InterchainEntry memory expected
@@ -128,6 +131,18 @@ contract InterchainDBSourceTest is Test, IInterchainDBEvents {
         assertEq(entry.srcWriter, expected.srcWriter, "!srcWriter");
         assertEq(entry.writerNonce, expected.writerNonce, "!writerNonce");
         assertEq(entry.dataHash, expected.dataHash, "!dataHash");
+    }
+
+    function expectEntryDoesNotExist(address writer, uint256 writerNonce) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(IInterchainDB.InterchainDB__EntryDoesNotExist.selector, writer, writerNonce)
+        );
+    }
+
+    function expectIncorrectFeeAmount(uint256 actualFee, uint256 expectedFee) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(IInterchainDB.InterchainDB__IncorrectFeeAmount.selector, actualFee, expectedFee)
+        );
     }
 
     // ═══════════════════════════════════════════════ TESTS: SET UP ═══════════════════════════════════════════════════
@@ -260,6 +275,68 @@ contract InterchainDBSourceTest is Test, IInterchainDBEvents {
         vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(entry));
         vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(entry));
         requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, writerS, writerNonce, twoModules);
+    }
+
+    // ══════════════════════════════════ TESTS: REQUESTING VALIDATION (REVERTS) ═══════════════════════════════════════
+
+    function test_requestVerification_revert_entryDoesNotExist_oneModule_nextNonce() public {
+        expectEntryDoesNotExist(writerF, INITIAL_WRITER_F_NONCE);
+        requestVerification(requestCaller, MODULE_A_FEE, writerF, INITIAL_WRITER_F_NONCE, oneModule);
+        expectEntryDoesNotExist(writerS, INITIAL_WRITER_S_NONCE);
+        requestVerification(requestCaller, MODULE_A_FEE, writerS, INITIAL_WRITER_S_NONCE, oneModule);
+        expectEntryDoesNotExist(notWriter, 0);
+        requestVerification(requestCaller, MODULE_A_FEE, notWriter, 0, oneModule);
+    }
+
+    function test_requestVerification_revert_entryDoesNotExist_oneModule_hugeNonce() public {
+        expectEntryDoesNotExist(writerF, 2 ** 32);
+        requestVerification(requestCaller, MODULE_A_FEE, writerF, 2 ** 32, oneModule);
+        expectEntryDoesNotExist(writerS, 2 ** 64);
+        requestVerification(requestCaller, MODULE_A_FEE, writerS, 2 ** 64, oneModule);
+        expectEntryDoesNotExist(notWriter, type(uint256).max);
+        requestVerification(requestCaller, MODULE_A_FEE, notWriter, type(uint256).max, oneModule);
+    }
+
+    function test_requestVerification_revert_entryDoesNotExist_twoModules_nextNonce() public {
+        expectEntryDoesNotExist(writerF, INITIAL_WRITER_F_NONCE);
+        requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, writerF, INITIAL_WRITER_F_NONCE, twoModules);
+        expectEntryDoesNotExist(writerS, INITIAL_WRITER_S_NONCE);
+        requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, writerS, INITIAL_WRITER_S_NONCE, twoModules);
+        expectEntryDoesNotExist(notWriter, 0);
+        requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, notWriter, 0, twoModules);
+    }
+
+    function test_requestVerification_revert_entryDoesNotExist_twoModules_hugeNonce() public {
+        expectEntryDoesNotExist(writerF, 2 ** 32);
+        requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, writerF, 2 ** 32, twoModules);
+        expectEntryDoesNotExist(writerS, 2 ** 64);
+        requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, writerS, 2 ** 64, twoModules);
+        expectEntryDoesNotExist(notWriter, type(uint256).max);
+        requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, notWriter, type(uint256).max, twoModules);
+    }
+
+    function test_requestVerification_revert_incorrectFeeAmount_oneModule_underpaid() public {
+        uint256 incorrectFee = MODULE_A_FEE - 1;
+        expectIncorrectFeeAmount(incorrectFee, MODULE_A_FEE);
+        requestVerification(requestCaller, incorrectFee, writerF, 0, oneModule);
+    }
+
+    function test_requestVerification_revert_incorrectFeeAmount_oneModule_overpaid() public {
+        uint256 incorrectFee = MODULE_A_FEE + 1;
+        expectIncorrectFeeAmount(incorrectFee, MODULE_A_FEE);
+        requestVerification(requestCaller, incorrectFee, writerF, 0, oneModule);
+    }
+
+    function test_requestVerification_revert_incorrectFeeAmount_twoModules_underpaid() public {
+        uint256 incorrectFee = MODULE_A_FEE + MODULE_B_FEE - 1;
+        expectIncorrectFeeAmount(incorrectFee, MODULE_A_FEE + MODULE_B_FEE);
+        requestVerification(requestCaller, incorrectFee, writerF, 0, twoModules);
+    }
+
+    function test_requestVerification_revert_incorrectFeeAmount_twoModules_overpaid() public {
+        uint256 incorrectFee = MODULE_A_FEE + MODULE_B_FEE + 1;
+        expectIncorrectFeeAmount(incorrectFee, MODULE_A_FEE + MODULE_B_FEE);
+        requestVerification(requestCaller, incorrectFee, writerF, 0, twoModules);
     }
 
     // ═════════════════════════════════════════ TESTS: GET INTERCHAIN FEE ═════════════════════════════════════════════
