@@ -57,12 +57,12 @@ contract InterchainDB is IInterchainDB, IInterchainDBEvents {
 
     /// @inheritdoc IInterchainDB
     function readEntry(
-        InterchainEntry memory entry,
-        address[] calldata dstModules
+        address dstModule,
+        InterchainEntry memory entry
     )
         external
         view
-        returns (uint256[] memory moduleVerifiedAt)
+        returns (uint256 moduleVerifiedAt)
     {}
 
     /// @inheritdoc IInterchainDB

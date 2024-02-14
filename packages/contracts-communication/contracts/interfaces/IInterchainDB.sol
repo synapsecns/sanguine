@@ -84,19 +84,17 @@ interface IInterchainDB {
     function getWriterNonce(address writer) external view returns (uint256);
 
     /// @notice Read the data written on specific source chain by a specific writer,
-    /// and verify it on the destination chain using the provided Interchain Modules.
-    /// @dev The returned array of timestamps has the same length as the `dstModules` array,
-    /// and its values are the block timestamps at which the entry was verified by the corresponding module.
-    /// Note: zero value indicates that the module has not verified the entry.
+    /// and verify it on the destination chain using the provided Interchain Module.
+    /// Note: returned zero value indicates that the module has not verified the entry.
     /// @param entry        The Interchain Entry to read
-    /// @param dstModules   The destination chain addresses of the Interchain Modules to use for verification
-    /// @return moduleVerifiedAt   The block timestamp at which the entry was verified by each module,
+    /// @param dstModule    The destination chain addresses of the Interchain Modules to use for verification
+    /// @return moduleVerifiedAt   The block timestamp at which the entry was verified by the module,
     ///                             or zero if the module has not verified the entry.
     function readEntry(
-        InterchainEntry memory entry,
-        address[] memory dstModules
+        address dstModule,
+        InterchainEntry memory entry
     )
         external
         view
-        returns (uint256[] memory moduleVerifiedAt);
+        returns (uint256 moduleVerifiedAt);
 }
