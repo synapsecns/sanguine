@@ -186,7 +186,7 @@ func (m *Manager) isProfitableQuote(parentCtx context.Context, quote reldb.Quote
 	if err != nil {
 		return false, fmt.Errorf("error getting dest token ID: %w", err)
 	}
-	fee, err := m.feePricer.GetTotalFee(ctx, quote.Transaction.OriginChainId, quote.Transaction.DestChainId, destTokenID, false)
+	fee, err := m.feePricer.GetTotalFee(ctx, quote.Transaction.OriginChainId, quote.Transaction.DestChainId, destTokenID, &quote, false)
 	if err != nil {
 		return false, fmt.Errorf("error getting total fee: %w", err)
 	}
@@ -281,7 +281,7 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 				if err != nil {
 					return nil, fmt.Errorf("error getting dest token ID: %w", err)
 				}
-				fee, err := m.feePricer.GetTotalFee(ctx, uint32(origin), uint32(chainID), destToken, true)
+				fee, err := m.feePricer.GetTotalFee(ctx, uint32(origin), uint32(chainID), destToken, nil, true)
 				if err != nil {
 					return nil, fmt.Errorf("error getting total fee: %w", err)
 				}
