@@ -39,7 +39,6 @@ func (s *P2PTestSuite) TestLibP2PManager() {
 	}
 
 	time.Sleep(time.Second * 50)
-	m3.DoSomething()
 
 }
 
@@ -49,7 +48,7 @@ func (s *P2PTestSuite) makeManager() p2p.LibP2PManager {
 
 	signer := localsigner.NewSigner(wall.PrivateKey())
 
-	manager, err := p2p.NewLibP2PManager(signer)
+	manager, err := p2p.NewLibP2PManager(s.GetTestContext(), signer)
 	s.Require().NoError(err)
 
 	return manager
