@@ -13,7 +13,6 @@ import { isTransactionHash } from '@/utils/validators'
 import { getTransactionHashExplorerLink } from '../Transaction/components/TransactionExplorerLink'
 import { ClearSearchButton } from './ClearSearchButton'
 import { useIsFocused } from '../helpers/useIsFocused'
-import { useIsMounted } from '../helpers/useIsMounted'
 import { useSearchInputState } from '../helpers/useSearchInputStatus'
 
 export const inputRef = React.createRef<HTMLInputElement>()
@@ -25,7 +24,6 @@ export const SearchBar = () => {
     usePortfolioState()
   const { isSearchInputActive, isMasqueradeActive } = useSearchInputState()
 
-  const isMounted = useIsMounted()
   const isFocused = useIsFocused(inputRef)
 
   const placeholder = getFilterPlaceholder(activeTab)
@@ -61,7 +59,6 @@ export const SearchBar = () => {
       className={`
         relative flex items-center ml-auto
         border rounded-xl
-        ${!isMounted && 'border-opacity-30'}
         ${
           isFocused || isSearchInputActive
             ? 'border-synapsePurple bg-bgBase/10'
@@ -73,7 +70,6 @@ export const SearchBar = () => {
         placeholder={placeholder}
         searchStr={searchInput}
         onSearch={onSearchInput}
-        disabled={!isMounted}
       />
       <ClearSearchButton
         show={isSearchInputActive}
@@ -92,7 +88,7 @@ const FilterInput = ({
   searchStr: string
   onSearch: (str: string) => void
   placeholder: string
-  disabled: boolean
+  disabled?: boolean
 }) => {
   return (
     <input
