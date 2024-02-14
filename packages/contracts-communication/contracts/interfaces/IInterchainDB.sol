@@ -48,6 +48,7 @@ interface IInterchainDB {
     /// Note: every module has a separate fee paid in the native gas token of the source chain,
     /// and `msg.value` must be equal to the sum of all fees.
     /// Note: additional verification for the same entry could be later done using `requestVerification`.
+    /// @dev Will revert if the empty array of modules is provided.
     /// @param destChainId  The chain id of the destination chain
     /// @param dataHash     The hash of the data to be written to the Interchain DataBase as a new entry
     /// @param srcModules   The source chain addresses of the Interchain Modules to use for verification
@@ -67,6 +68,7 @@ interface IInterchainDB {
 
     /// @notice Get the fee for writing data to the Interchain DataBase, and verifying it on the destination chain
     /// using the provided Interchain Modules.
+    /// @dev Will revert if the empty array of modules is provided.
     /// @param destChainId  The chain id of the destination chain
     /// @param srcModules   The source chain addresses of the Interchain Modules to use for verification
     function getInterchainFee(uint256 destChainId, address[] memory srcModules) external view returns (uint256);
