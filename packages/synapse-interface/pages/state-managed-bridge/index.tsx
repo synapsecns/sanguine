@@ -451,7 +451,7 @@ const StateManagedBridge = () => {
 
       const transactionReceipt = await waitForTransaction({
         hash: tx as Address,
-        timeout: 30_000,
+        timeout: 1_000,
       })
       console.log('Transaction Receipt: ', transactionReceipt)
 
@@ -473,6 +473,21 @@ const StateManagedBridge = () => {
       dispatch(removePendingBridgeTransaction(currentTimestamp))
       console.log('Error executing bridge', error)
       toast.dismiss(pendingPopup)
+
+      function isTransactionReceiptError(str: string) {
+        return str.includes('Timed out while waiting for transaction')
+      }
+
+      console.log('error: ', error)
+
+      console.log('error.message:', error?.message)
+      console.log('error.details:', error?.details)
+
+      console.log(
+        'isTransactionReceiptError: ',
+        isTransactionReceiptError(error?.message)
+      )
+
       return txErrorHandler(error)
     }
   }
