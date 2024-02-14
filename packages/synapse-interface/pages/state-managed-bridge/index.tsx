@@ -401,7 +401,8 @@ const StateManagedBridge = () => {
             }
           : data
 
-      let gasEstimate
+      /** Setting custom gas limit for only Polygon transactions */
+      let gasEstimate = undefined
 
       if (fromChainId === polygon.id) {
         const publicClient = getPublicClient()
