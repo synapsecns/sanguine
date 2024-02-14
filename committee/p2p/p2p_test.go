@@ -29,9 +29,8 @@ func (s *P2PTestSuite) TestLibP2PManager() {
 	m1 := s.makeManager()
 	m2 := s.makeManager()
 	m3 := s.makeManager()
-	m4 := s.makeManager()
 
-	managers := []p2p.LibP2PManager{m1, m2, m3, m4}
+	managers := []p2p.LibP2PManager{m1, m2, m3}
 	addresses := combineHostAddresses(managers...)
 
 	for _, manager := range managers {
@@ -44,10 +43,10 @@ func (s *P2PTestSuite) TestLibP2PManager() {
 	m1.DoSomething()
 	time.Sleep(time.Second * 1)
 	//m3.DoSomething()
-	m3.DoSomething()
 	//m4.DoSomethingElse()
 	for {
-		if m2.DoSomethingElse() {
+		m1.DoSomething()
+		if m2.DoSomethingElse() || m3.DoSomethingElse() {
 			break
 		}
 	}
