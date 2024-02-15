@@ -11,9 +11,6 @@ export const DropdownMenu = ({ menuTitleElement, children }) => {
   }
 
 
-
-
-
   return (
     <div id="dropdown-menu" className="relative" ref={ref}>
       <div className="space-x-2">
@@ -32,7 +29,15 @@ export const DropdownMenu = ({ menuTitleElement, children }) => {
               group
             `}
           >
-            <DownArrow className="fill-white/40 group-hover:fill-white/80 group-active:fill-white/100 " />
+            <DownArrow
+              className={`
+                fill-white/40
+                group-hover:fill-white/80
+                group-active:fill-white/100
+                transition-all
+                ${open ? "rotate-180" : "rotate-0"}
+              `}
+            />
           </div>
         </div>
 
