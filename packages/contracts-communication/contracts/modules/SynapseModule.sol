@@ -39,6 +39,14 @@ contract SynapseModule is Ownable {
     return 1;
   }
 
+  function decodeInterchainTransaction(bytes calldata transaction) public view returns (Interchain.InterchainTransaction memory) {
+    Interchain.InterchainTransaction memory decodedTransaction = abi.decode(
+      transaction,
+      (Interchain.InterchainTransaction)
+    );
+    return decodedTransaction;
+  }
+
   function sendModuleMessage(bytes calldata transaction) public payable {
     Interchain.InterchainTransaction memory decodedTransaction = abi.decode(
       transaction,

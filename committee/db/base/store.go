@@ -1,6 +1,8 @@
 package base
 
 import (
+	"context"
+	"github.com/synapsecns/sanguine/committee/contracts/synapsemodule"
 	"github.com/synapsecns/sanguine/committee/db"
 	"github.com/synapsecns/sanguine/core/metrics"
 	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
@@ -12,12 +14,16 @@ import (
 type Store struct {
 	db             *gorm.DB
 	submitterStore submitterDB.Service
+	rawTxDecoder   RawTransactionDecoder
 }
 
-func NewStore(db *gorm.DB, metrics metrics.Handler) *Store {
+func NewStore(db *gorm.DB, metrics metrics.Handler, rawTxDecoder RawTransactionDecoder) *Store {
 	txDB := txdb.NewTXStore(db, metrics)
+
 	return &Store{db: db, submitterStore: txDB}
 }
+
+type RawTransactionDecoder func(ctx context.Context, data []byte) (synapsemodule.InterchainInterchainTransaction, error)
 
 // DB gets the database object for mutation outside of the lib.
 func (s Store) DB() *gorm.DB {

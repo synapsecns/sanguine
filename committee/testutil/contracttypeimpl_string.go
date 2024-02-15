@@ -9,11 +9,12 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[SynapseModuleType-1]
+	_ = x[NoOpInterchainType-2]
 }
 
-const _contractTypeImpl_name = "SynapseModule"
+const _contractTypeImpl_name = "SynapseModuleNoOpInterchain"
 
-var _contractTypeImpl_index = [...]uint8{0, 13}
+var _contractTypeImpl_index = [...]uint8{0, 13, 27}
 
 func (i contractTypeImpl) String() string {
 	i -= 1

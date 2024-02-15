@@ -2,6 +2,7 @@ package testutil
 
 import (
 	"github.com/ethereum/go-ethereum/common/compiler"
+	"github.com/synapsecns/sanguine/committee/contracts/mocks/noopinterchain"
 	"github.com/synapsecns/sanguine/committee/contracts/synapsemodule"
 	"github.com/synapsecns/sanguine/ethergo/backends/base"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
@@ -44,6 +45,8 @@ type contractTypeImpl int
 const (
 	// SynapseModuleType is the type of the contract being fetched.
 	SynapseModuleType contractTypeImpl = iota + 1 // SynapseModule
+	// NoOpInterchainType is the type of the contract being fetched.
+	NoOpInterchainType // NoOpInterchain
 )
 
 // ID gets the contract type as an id.
@@ -72,6 +75,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	switch c {
 	case SynapseModuleType:
 		return synapsemodule.Contracts["solidity/SynapseModule.sol:SynapseModule"]
+	case NoOpInterchainType:
+		return noopinterchain.Contracts["solidity/NoOpInterchain.sol:NoOpInterchain"]
 	}
 	return nil
 }

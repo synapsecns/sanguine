@@ -7,6 +7,6 @@
   ],
   "scripts": {
     "build:contracts": "forge build",
-    "build:go": "./flatten.sh contracts/*.sol contracts/modules/*.sol"
+    "build:go": "./flatten.sh contracts/*.sol contracts/modules/*.sol contracts/mocks/**.sol"
   }
 }

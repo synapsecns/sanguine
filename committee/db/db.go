@@ -5,6 +5,7 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
+	"github.com/synapsecns/sanguine/committee/contracts/synapsemodule"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
 )
@@ -28,6 +29,7 @@ type Service interface {
 	Writer
 	// SubmitterDB returns the submitter database service.
 	SubmitterDB() submitterDB.Service
+	StoreInterchainTransactionReceived(ctx context.Context, sr synapsemodule.SynapseModuleModuleMessageSent) error
 }
 
 // SynapseRequestStatus is the status of a synapse request.
