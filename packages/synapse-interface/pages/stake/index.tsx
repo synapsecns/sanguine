@@ -14,6 +14,7 @@ import StakeCard from './StakeCard'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 import { POOLS_PATH } from '@/constants/urls'
+import { useHasMounted } from '@/utils/hooks/useHasMounted'
 
 
 
@@ -21,7 +22,7 @@ const StakePage = () => {
   const { chain: connectedChain } = useNetwork()
   const { address: currentAddress } = useAccount()
 
-  const [isClient, setIsClient] = useState<boolean>(false)
+  const isClient = useHasMounted()
   const [columns, setColumns] = useState<number>(1)
 
   const router = useRouter()
@@ -53,9 +54,6 @@ const StakePage = () => {
     }
   }, [availableStakingTokens, router])
 
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
 
   if (!connectedChain) {
     toast.error('Please connect to see stakes', {

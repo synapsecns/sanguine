@@ -108,7 +108,7 @@ export const GenericInputContainer = ({
                     bg-transparent
                     p-0 -mb-2
                     placeholder:text-white/40
-                    text-white text-opacity-80 text-xl md:text-2xl font-medium
+                    text-white/90 text-xl md:text-2xl font-medium
                   `}
                   placeholder="0.0000"
                   onChange={handleFromValueChange}

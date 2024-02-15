@@ -1,14 +1,12 @@
 import { useEffect, useState } from 'react'
+import { useHasMounted } from '@/utils/hooks/useHasMounted'
+
 
 const BANNER_VERSION = '4'
 
 export const Banner = () => {
-  const [hasMounted, setHasMounted] = useState(false)
+  const hasMounted = useHasMounted()
   const [showBanner, setShowBanner] = useState(false)
-
-  useEffect(() => {
-    setHasMounted(true)
-  }, [])
 
   useEffect(() => {
     if (hasMounted) {

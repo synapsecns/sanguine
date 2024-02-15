@@ -1,21 +1,19 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useAccount, useNetwork } from 'wagmi'
 import {
   ConnectToNetworkButton,
   ConnectWalletButton,
   ConnectedIndicator,
 } from '@/components/ConnectionIndicators'
+import { useHasMounted } from '@/utils/hooks/useHasMounted'
 
 
 
 export const ConnectStatusIndicator = ({ targetChainId }) => {
   const { isConnected } = useAccount()
   const { chain } = useNetwork()
-  const [hasMounted, setHasMounted] = useState(false)
+  const hasMounted = useHasMounted()
 
-  useEffect(() => {
-    setHasMounted(true)
-  }, [])
 
   const connectedStatus = useMemo(() => {
     if (hasMounted) {

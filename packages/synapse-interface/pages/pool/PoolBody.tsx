@@ -19,6 +19,7 @@ import PoolTitle from './components/PoolTitle'
 import { DisplayBalances } from '../pools/PoolCard'
 import { getStakedBalance } from '@/utils/actions/getStakedBalance'
 import { usePoolDataState } from '@/slices/pool/hooks'
+import { useHasMounted } from '@/utils/hooks/useHasMounted'
 
 const PoolBody = ({
   address,
@@ -27,7 +28,7 @@ const PoolBody = ({
   address?: Address
   connectedChainId?: number
 }) => {
-  const [isClient, setIsClient] = useState(false)
+  const isClient = useHasMounted()
   const { chains, switchNetwork } = useSwitchNetwork()
   const { openConnectModal } = useConnectModal()
 
@@ -40,9 +41,7 @@ const PoolBody = ({
     reward: 0n,
   })
 
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
+
 
   useEffect(() => {
     if (pool && isClient) {

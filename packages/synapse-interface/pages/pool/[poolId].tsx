@@ -14,6 +14,7 @@ import { resetPoolDeposit } from '@/slices/poolDepositSlice'
 import { resetPoolWithdraw } from '@/slices/poolWithdrawSlice'
 import LoadingDots from '@tw/LoadingDots'
 import { POOL_BY_ROUTER_INDEX } from '@constants/tokens'
+import { useHasMounted } from '@/utils/hooks/useHasMounted'
 
 
 
@@ -38,15 +39,12 @@ const PoolPage = () => {
   const { address } = useAccount()
   const { chain } = useNetwork()
   const [connectedChainId, setConnectedChainId] = useState(0)
-  const [isClient, setIsClient] = useState(false)
+  const isClient = useHasMounted()
 
   const { pool, isLoading } = usePoolDataState()
 
   const dispatch: any = useDispatch()
 
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
 
   useEffect(() => {
     const handleRouteChange = () => {

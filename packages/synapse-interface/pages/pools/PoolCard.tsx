@@ -9,16 +9,21 @@ import { STAKE_PATH, getPoolUrl } from '@urls'
 import { getSinglePoolData } from '@utils/actions/getPoolData'
 import { getPoolApyData } from '@utils/actions/getPoolApyData'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
+
+import { useAppSelector } from '@/store/hooks'
+import { useHasMounted } from '@/utils/hooks/useHasMounted'
+
 import { getStakedBalance } from '@/utils/actions/getStakedBalance'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { PoolActionOptions } from '../../components/Pools/PoolActionOptions'
 import { PoolHeader } from '../../components/Pools/PoolHeader'
 import { PoolCardBody } from '../../components/Pools/PoolCardBody'
-import { useAppSelector } from '@/store/hooks'
+
 import Card from '@tw/Card'
 
+
 const PoolCard = memo(({ pool, address }: { pool: Token; address: string }) => {
-  const [isClient, setIsClient] = useState(false)
+  const isClient = useHasMounted()
   const [poolData, setPoolData] = useState(undefined)
   const [poolApyData, setPoolApyData] = useState(undefined)
   const [stakedBalance, setStakedBalance] = useState({
@@ -33,9 +38,6 @@ const PoolCard = memo(({ pool, address }: { pool: Token; address: string }) => {
   const prices = { synPrices, ethPrice, avaxPrice, metisPrice }
 
   let popup: string
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
 
   useEffect(() => {
     if (pool && isClient) {

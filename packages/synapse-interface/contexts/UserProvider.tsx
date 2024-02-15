@@ -24,13 +24,15 @@ import { isBlacklisted } from '@/utils/isBlacklisted'
 import { screenAddress } from '@/utils/screenAddress'
 import { getCoingeckoPrices } from '@/utils/actions/getPrices'
 import { fetchFeeAndRebate } from '@/slices/feeAndRebateSlice'
+import { useHasMounted } from '../utils/hooks/useHasMounted';
 
 const WalletStatusContext = createContext(undefined)
 
 export const UserProvider = ({ children }) => {
   const dispatch = useAppDispatch()
   const { chain } = useNetwork()
-  const [isClient, setIsClient] = useState(false)
+  const isClient = useHasMounted()
+
   const router = useRouter()
   const { query, pathname } = router
   const { address, connector } = useAccount({
@@ -53,9 +55,6 @@ export const UserProvider = ({ children }) => {
   }, [chain])
   const prevChain = prevChainRef.current
 
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
 
   useEffect(() => {
     if (isClient) {
