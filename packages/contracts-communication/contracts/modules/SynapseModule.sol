@@ -3,10 +3,11 @@ pragma solidity 0.8.20;
 import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
 import {ECDSA} from '@openzeppelin/contracts/utils/cryptography/ECDSA.sol';
 import {Interchain} from '../Interchain.sol';
+import {SynapseGasService} from './SynapseGasService.sol';
 import '../IInterchain.sol';
 import 'forge-std/console.sol';
 
-contract SynapseModule is Ownable {
+contract SynapseModule is Ownable, SynapseGasService {
   address[] public verifiers;
   uint256 requiredThreshold;
   address public interchain;
@@ -27,18 +28,6 @@ contract SynapseModule is Ownable {
 
   event ModuleMessageSent(uint256 dstChainId, bytes transaction);
 
-  function estimateFee(uint256 dstChainId) public view returns (uint256) {
-    // Get Latest Posted Destination Gas Price from oracle
-    // Requires: Access to origin USD Gas Price / Destination USD Gas PRice
-    // Get current price of origin chain assets
-    // Get current price of destination chain assets
-    // Calculate the estiamted fee based on preset gas limit
-    // return
-
-    // TODO: Right now, we don't have all of the info needed to provide a real fee estimation - we will provide 1 wei to enable other functionality to be built.
-    return 1;
-  }
-
   function sendModuleMessage(bytes calldata transaction) public payable {
     Interchain.InterchainTransaction memory decodedTransaction = abi.decode(
       transaction,
@@ -52,6 +41,7 @@ contract SynapseModule is Ownable {
       'Insufficient fee to send transaction'
     );
     // Transfer fee to module executor
+    _payFeesForExecution(msg.value);
 
     emit ModuleMessageSent(decodedTransaction.dstChainId, transaction);
   }

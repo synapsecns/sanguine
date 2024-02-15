@@ -24,6 +24,8 @@ contract SynapseModuleE2ETest is Test {
 
   address[] l1Modules;
 
+  address executor;
+
   function setUp() public {
     moduleL1 = new SynapseModule();
     moduleL2 = new SynapseModule();
@@ -70,6 +72,10 @@ contract SynapseModuleE2ETest is Test {
       l2Modules,
       l1Modules
     );
+    executor = address(0x123);
+
+    moduleL1.setExecutor(executor);
+    moduleL2.setExecutor(executor);
   }
 
   function testSendAndReceiveSynapseModuleMessage() public {
@@ -86,11 +92,17 @@ contract SynapseModuleE2ETest is Test {
       dstChainId,
       l1Modules
     );
-
+    uint256 executorInitialBalance = executor.balance;
     originInterchainApp.send{value: estimatedFee}(
       receiver,
       dstChainId,
       message
+    );
+    uint256 executorAfterBalance = executor.balance;
+    assertEq(
+      executorAfterBalance - executorInitialBalance,
+      1,
+      'Executor should receive fee amount'
     );
 
     Interchain.InterchainTransaction memory interTransaction = Interchain
