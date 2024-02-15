@@ -48,7 +48,7 @@ type libP2PManagerImpl struct {
 
 const dbTopic = "crdt_db"
 
-var RebroadcastingInterval = time.Millisecond * 10
+var RebroadcastingInterval = time.Minute
 
 // NewLibP2PManager creates a new libp2p manager.
 // listenHost is the host to listen on.
@@ -90,15 +90,6 @@ func (l *libP2PManagerImpl) DoSomething() {
 }
 
 func (l *libP2PManagerImpl) DoSomethingElse() bool {
-	for f := 0; f < 400; f++ {
-		l.datastoreDs.Sync(context.Background(), datastore.NewKey("/"))
-		time.Sleep(time.Millisecond * 10)
-	}
-	err := l.datastoreDs.Put(context.Background(), datastore.NewKey("fat"), []byte("test"))
-	if err != nil {
-		fmt.Println("error: ", err)
-	}
-
 	fmt.Println(len(l.pubsub.ListPeers(dbTopic)))
 	val, err := l.datastoreDs.Get(context.Background(), datastore.NewKey("test"))
 	if err != nil {
@@ -141,7 +132,6 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 
 	ipfs, err := ipfslite.New(ctx, l.globalDS, nil, l.host, l.dht, &ipfslite.Config{})
 	go l.Discover(ctx, l.host, l.dht, dbTopic)
-	time.Sleep(time.Second)
 
 	l.pubsub, err = pubsub.NewGossipSub(ctx, l.host)
 
@@ -149,7 +139,6 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	for _, p := range peers {
 		l.host.ConnManager().TagPeer(p.ID, "keep", 100)
 	}
-	time.Sleep(time.Second * 3)
 
 	if err != nil {
 		return fmt.Errorf("could not create pubsub: %w", err)
@@ -163,7 +152,6 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 		}
 	}()
 
-	time.Sleep(time.Second * 4)
 	l.pubSubBroadcaster, err = crdt.NewPubSubBroadcaster(ctx, l.pubsub, dbTopic)
 	if err != nil {
 		return err
@@ -173,7 +161,6 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	crdtOpts.Logger = logging.Logger("p2p_logger")
 
 	crdtOpts.RebroadcastInterval = RebroadcastingInterval
-	crdtOpts.DAGSyncerTimeout = time.Second
 	crdtOpts.MaxBatchDeltaSize = 1
 
 	crdtOpts.PutHook = func(k datastore.Key, v []byte) {
