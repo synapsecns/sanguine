@@ -478,4 +478,12 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
         assertCorrectVerificationTime(emptyEntryS, address(moduleA), icDB.readEntry(address(moduleA), emptyEntryS));
         assertCorrectVerificationTime(emptyEntryS, address(moduleB), icDB.readEntry(address(moduleB), emptyEntryS));
     }
+
+    // ═════════════════════════════════════ TESTS: READING ENTRIES (REVERTS) ══════════════════════════════════════════
+
+    function test_readEntry_revert_sameChainId() public {
+        InterchainEntry memory entry = getMockEntry(DST_CHAIN_ID, writerF, 0);
+        expectSameChainId();
+        icDB.readEntry(address(moduleA), entry);
+    }
 }
