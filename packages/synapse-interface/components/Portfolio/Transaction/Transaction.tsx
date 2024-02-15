@@ -72,7 +72,7 @@ export const Transaction = React.memo(
       <div
         data-test-id="transaction"
         className={`
-          flex my-2 rounded-md text-secondary border border-white/20
+          flex my-2 rounded-md text-secondary ring-1 ring-white/10
           ${transactionType === TransactionType.HISTORICAL && 'bg-bgBase/10'}
         `}
       >
@@ -87,7 +87,7 @@ export const Transaction = React.memo(
           className={
             transactionType === TransactionType.PENDING
               ? 'bg-bgBase/20 fill-bgBase/10'
-              : 'stroke-white/20 fill-bgBase/10 '
+              : 'stroke-white/10 fill-bgBase/10 '
           }
         />
         <TransactionPayloadDetail
