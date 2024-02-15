@@ -14,9 +14,9 @@ export const GenericInputContainer = ({
   inputRef,
   chainId,
   token,
-  value, // fromValue
-  initialStateValue, // initialState.fromValue
-  dispatchUpdateFunc, // (inputValue) => dispatch(updateFromValue(inputValue))
+  value,
+  initialStateValue,
+  dispatchUpdateFunc,
   chainSelector,
   tokenSelector,
 }) => {

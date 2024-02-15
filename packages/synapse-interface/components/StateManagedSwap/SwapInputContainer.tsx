@@ -1,17 +1,15 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react'
+import { useRef } from 'react'
 import { useDispatch } from 'react-redux'
-import { useAccount, useNetwork } from 'wagmi'
 
-import MiniMaxButton from '../buttons/MiniMaxButton'
-import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
-import { cleanNumberInput } from '@/utils/cleanNumberInput'
-
-import { SwapChainSelector } from './SwapChainSelector'
-import { SwapFromTokenSelector } from './SwapFromTokenSelector'
-import { usePortfolioState } from '@/slices/portfolio/hooks'
-import { updateSwapFromValue } from '@/slices/swap/reducer'
 import { useSwapState } from '@/slices/swap/hooks'
-import { ConnectStatusIndicator } from '@/components/bridgeSwap/ConnectStatusIndicator'
+import { updateSwapFromValue } from '@/slices/swap/reducer'
+import {
+  setShowSwapChainListOverlay,
+  setShowSwapFromTokenListOverlay
+} from '@/slices/swapDisplaySlice'
+
+import { ChainSelector } from '@/components/bridgeSwap/ChainSelector'
+import { TokenSelector } from '@/components/bridgeSwap/TokenSelector'
 import { GenericInputContainer } from '@/components/bridgeSwap/GenericInputContainer'
 
 export const SwapInputContainer = () => {
@@ -19,7 +17,6 @@ export const SwapInputContainer = () => {
   const { swapChainId, swapFromToken, swapFromValue } = useSwapState()
 
   const dispatch = useDispatch()
-
 
   return (
     <GenericInputContainer
@@ -29,8 +26,22 @@ export const SwapInputContainer = () => {
       value={swapFromValue}
       initialStateValue={null} // initialState.fromValue
       dispatchUpdateFunc={(val) => dispatch(updateSwapFromValue(val))}
-      chainSelector={<SwapChainSelector />}
-      tokenSelector={<SwapFromTokenSelector />}
+      chainSelector={
+        <ChainSelector
+          data-test-id="swap-chain-list-button"
+          chainId={swapChainId}
+          label="On"
+          onClick={() => dispatch(setShowSwapChainListOverlay(true))}
+        />
+      }
+      tokenSelector={
+        <TokenSelector
+          data-test-id="swap-origin-token"
+          token={swapFromToken}
+          label="In"
+          onClick={() => dispatch(setShowSwapFromTokenListOverlay(true))}
+        />
+      }
     />
   )
 }
