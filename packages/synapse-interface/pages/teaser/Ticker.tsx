@@ -1,4 +1,4 @@
-import styles from './marquee.module.css'
+import styles from './ticker.module.css'
 import { generateTx } from './strings'
 
 export default function Ticker() {
@@ -23,7 +23,7 @@ export default function Ticker() {
         </svg>
         Live – All transactions <span className="text-xxs">▼</span>
       </button>
-      <ul className={`flex whitespace-nowrap list-disc marker:text-zinc-500 ${styles.marquee}`}>
+      <ul className={`flex whitespace-nowrap list-disc marker:text-zinc-500 ${styles.ticker}`}>
         {[...Array(20)].map((x, i) => {
           return <li className="pl-2 ml-7"><a href="#" className="text-zinc-500 hover:text-inherit hover:underline py-1.5 inline-block">{generateTx()}</a></li>
         })}

@@ -1,0 +1,12 @@
+@keyframes header {
+  0% { width: 14rem }
+  100% { width: 15rem }
+}
+.header + dd {
+  display: none;
+}
+.header:hover + dd  {
+  /* animation: header .3s cubic-bezier(0, .5, .2, 1); */
+  display: block;
+
+}
