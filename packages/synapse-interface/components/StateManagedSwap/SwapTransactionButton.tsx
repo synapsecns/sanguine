@@ -73,17 +73,14 @@ export const SwapTransactionButton = ({
   if (!swapChainId) {
     buttonProperties = {
       label: 'Please select Origin network',
-      onClick: null,
     }
   } else if (!SWAP_CHAIN_IDS.includes(swapChainId)) {
     buttonProperties = {
       label: 'Swaps are not available on this network',
-      onClick: null,
     }
   } else if (!swapFromToken) {
     buttonProperties = {
       label: `Please select token`,
-      onClick: null,
     }
   } else if (!isConnected && fromValueBigInt > 0) {
     buttonProperties = {
@@ -93,7 +90,6 @@ export const SwapTransactionButton = ({
   } else if (isConnected && !sufficientBalance) {
     buttonProperties = {
       label: 'Insufficient balance',
-      onClick: null,
     }
   } else if (chain?.id != swapChainId && fromValueBigInt > 0) {
     buttonProperties = {

@@ -166,7 +166,7 @@ export const SwapToTokenListOverlay = () => {
             )}
         </SearchResultsContainer>
       )}
-      {allOtherToTokens && allOtherToTokens.length > 0 && (
+      {allOtherToTokens?.length > 0 && (
         <SearchResultsContainer label="All swapable tokens">
             {allOtherToTokens.map((token, idx) =>
                 <SelectSpecificTokenButton

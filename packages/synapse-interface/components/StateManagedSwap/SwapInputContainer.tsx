@@ -1,20 +1,17 @@
-import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
+import React, { useEffect, useState, useRef, useCallback } from 'react'
 import { useDispatch } from 'react-redux'
 import { useAccount, useNetwork } from 'wagmi'
 
 import MiniMaxButton from '../buttons/MiniMaxButton'
 import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
-import {
-  ConnectToNetworkButton,
-  ConnectWalletButton,
-  ConnectedIndicator,
-} from '@/components/ConnectionIndicators'
+
 import { SwapChainSelector } from './SwapChainSelector'
 import { SwapFromTokenSelector } from './SwapFromTokenSelector'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { updateSwapFromValue } from '@/slices/swap/reducer'
 import { useSwapState } from '@/slices/swap/hooks'
+import { ConnectStatusIndicator } from '@/components/bridgeSwap/ConnectStatusIndicator'
 
 export const SwapInputContainer = () => {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -22,16 +19,9 @@ export const SwapInputContainer = () => {
     useSwapState()
   const [showValue, setShowValue] = useState('')
 
-  const [hasMounted, setHasMounted] = useState(false)
-
   const { balances } = usePortfolioState()
 
-  useEffect(() => {
-    setHasMounted(true)
-  }, [])
-
   const { isConnected } = useAccount()
-  const { chain } = useNetwork()
 
   const dispatch = useDispatch()
 
@@ -80,17 +70,7 @@ export const SwapInputContainer = () => {
     )
   }, [balance, swapChainId, swapFromToken])
 
-  const connectedStatus = useMemo(() => {
-    if (hasMounted && isConnected) {
-      if (swapChainId === chain.id) {
-        return <ConnectedIndicator />
-      } else if (swapChainId !== chain.id) {
-        return <ConnectToNetworkButton chainId={swapChainId} />
-      }
-    } else if (hasMounted && !isConnected) {
-      return <ConnectWalletButton />
-    }
-  }, [chain, swapChainId, isConnected, hasMounted])
+
 
   return (
     <div
@@ -99,7 +79,7 @@ export const SwapInputContainer = () => {
     >
       <div className="flex items-center justify-between mb-3">
         <SwapChainSelector />
-        {connectedStatus}
+        <ConnectStatusIndicator targetChainId={swapChainId} />
       </div>
       <div className="flex h-16 mb-2 space-x-2">
         <div
@@ -141,7 +121,7 @@ export const SwapInputContainer = () => {
                   style={{ display: 'table-cell', width: '100%' }}
                 />
               </div>
-              {hasMounted && isConnected && (
+              {isConnected && (
                 <label
                   htmlFor="inputRow"
                   className="text-xs text-white transition-all duration-150 transform-gpu hover:text-opacity-70 hover:cursor-pointer"
@@ -157,7 +137,7 @@ export const SwapInputContainer = () => {
             </div>
           </div>
           <div>
-            {hasMounted && isConnected && (
+            {isConnected && (
               <div className="m">
                 <MiniMaxButton
                   disabled={!balance || balance === 0n}
