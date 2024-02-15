@@ -1,0 +1,5 @@
+@keyframes ticker {
+  100% { transform: translateX(-1500px) }
+}
+.ticker { animation: ticker 100s linear infinite }
+.ticker:hover { animation-play-state: paused }

@@ -6,6 +6,7 @@ import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 import { SynapseIcon } from './SynapseIcon'
 import Footer from './footer'
+import Header from './Header'
 import Ticker from './ticker'
 
 const LandingPage = () => {
@@ -71,66 +72,7 @@ const LandingPage = () => {
             <SynapseIcon width={40} height={40} />
             <span className="-mt-1.5">Synapse</span>
           </a>
-          <ul className="flex text-lg w-full justify-center">
-            <li className="group">
-              <a
-                className="px-3 py-1 hover:bg-zinc-50 hover:dark:bg-zinc-950 border border-transparent hover:border-fuchsia-500 rounded inline-block"
-                href="#"
-                onTouchStartCapture={touchStartHandler}
-              >
-                About
-              </a>
-              <div className="hidden group-hover:block absolute p-2 animate-slide-down origin-top has-[div]:text-red-500">
-                <div className="bg-zinc-50 dark:bg-zinc-950 rounded text-base -ml-2 border border-zinc-200 dark:border-zinc-800 shadow-sm flex">
-                  <dl className="grid grid-cols-[auto_auto] grid-rows-3">
-                    <dt className="col-start-1 peer vision"><a className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded vision" href="#">Vision</a></dt>
-                    <dd className="w-60 col-start-2 row-span-full px-4 py-3 peer-[.vision]:peer-hover:block hidden border-l border-zinc-200 dark:border-zinc-800">Vision Lorem ispum dolor sit amet</dd>
-                    <dt className="col-start-1 peer philosophy"><a className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded" href="#">Philosophy</a></dt>
-                    <dd className="w-60 col-start-2 row-span-full px-4 py-3 peer-[.philosophy]:peer-hover:block hidden border-l border-zinc-200 dark:border-zinc-800">Philosophy Lorem ispum dolor sit amet</dd>
-                    <dt className="col-start-1 peer roadmap"><a className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded" href="#">Roadmap</a></dt>
-                    <dd className="w-60 col-start-2 row-span-full px-4 py-3 peer-[.roadmap]:peer-hover:block hidden border-l border-zinc-200 dark:border-zinc-800">Roadmap Lorem ispum dolor sit amet</dd>
-                  </dl>
-                  <div className="px-4 py-3 hidden group-active:block">Lorem ipsum dolor sit amet</div>
-                </div>
-              </div>
-            </li>
-            <li className="group">
-              <a className="px-3 py-1 hover:bg-zinc-50 hover:dark:bg-zinc-950 border border-transparent hover:border-fuchsia-500 rounded inline-block" href="#">Bridge</a>
-              <div className="hidden group-hover:block absolute p-2 animate-slide-down origin-top">
-                <ul className="bg-zinc-50 dark:bg-zinc-950 rounded text-base -ml-2 border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                  <li><a className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded" href="#">Synapse Bridge</a></li>
-                  <li><a className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded" href="#">On-chain swap</a></li>
-                  <li><a className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded" href="#">Solana Bridge</a></li>
-                </ul>
-              </div>
-            </li>
-            <li className="group">
-              <a className="px-3 py-1 hover:bg-zinc-50 hover:dark:bg-zinc-950 border border-transparent hover:border-fuchsia-500 rounded inline-block" href="#">Community</a>
-              <div className="hidden group-hover:block absolute p-2 animate-slide-down origin-top">
-                <ul className="bg-zinc-50 dark:bg-zinc-950 rounded text-base -ml-2 border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                  <li><a className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded" href="#">Discord</a></li>
-                  <li><a className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded" href="#">Telegram</a></li>
-                  <li><a className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded" href="#">Twitter</a></li>
-                  <li><a className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded" href="#">Blog</a></li>
-                  <li><a className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded" href="#">Forum</a></li>
-                </ul>
-              </div>
-            </li>
-            <li className="group">
-              <a className="px-3 py-1 hover:bg-zinc-50 hover:dark:bg-zinc-950 border border-transparent hover:border-fuchsia-500 rounded inline-block" href="#">Developers</a>
-              <div className="hidden group-hover:block absolute p-2 animate-slide-down origin-top">
-                <ul className="bg-zinc-50 dark:bg-zinc-950 rounded text-base -ml-2 border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                  <li><a className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded" href="#">Docs</a></li>
-                  <li><a className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded" href="#">Github</a></li>
-                  <li><a className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded" href="#">Synapse CNS</a></li>
-                  <li><a className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded" href="#">Interchain Network</a></li>
-                </ul>
-              </div>
-            </li>
-            <li className="group">
-              <a className="px-3 py-1 hover:bg-zinc-50 hover:dark:bg-zinc-950 border border-transparent hover:border-fuchsia-500 rounded inline-block" href="#">Explorer</a>
-            </li>
-          </ul>
+          <Header />
           <select className="bg-white dark:bg-black text-sm text-inherit cursor-pointer rounded border-zinc-200 dark:border-zinc-800 absolute right-0 block mr-8" onChange={selectPrefersDark}>
             <option selected={prefersColorScheme === 'dark'}>Dark mode</option>
             <option selected={prefersColorScheme === 'light'}>Light mode</option>

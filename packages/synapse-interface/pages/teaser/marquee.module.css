@@ -1,5 +1,0 @@
-@keyframes marquee {
-  100% { transform: translateX(-1500px) }
-}
-.marquee { animation: marquee 100s linear infinite }
-.marquee:hover { animation-play-state: paused }
