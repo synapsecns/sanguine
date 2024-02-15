@@ -39,15 +39,15 @@ func (s *P2PTestSuite) TestLibP2PManager() {
 
 	for _, manager := range managers {
 		manager := manager
-		//go func() {
-		//	defer wg.Done()
+		go func() {
+			defer wg.Done()
 
-		err := manager.Start(s.GetTestContext(), addresses)
-		s.Require().NoError(err)
-		time.Sleep(time.Second)
-		//}()
+			err := manager.Start(s.GetTestContext(), addresses)
+			s.Require().NoError(err)
+			time.Sleep(time.Second)
+		}()
 	}
-	//wg.Wait()
+	wg.Wait()
 
 	time.Sleep(time.Second * 2)
 	m1.DoSomething()
@@ -65,7 +65,7 @@ func (s *P2PTestSuite) makeManager() p2p.LibP2PManager {
 
 	signer := localsigner.NewSigner(wall.PrivateKey())
 
-	manager, err := p2p.RecreatableLibP2PManager(s.GetTestContext(), signer)
+	manager, err := p2p.NewLibP2PManager(s.GetTestContext(), signer)
 	s.Require().NoError(err)
 
 	return manager

@@ -20,7 +20,6 @@ import (
 	"github.com/libp2p/go-libp2p/p2p/discovery/routing"
 	"github.com/libp2p/go-libp2p/p2p/discovery/util"
 	"github.com/multiformats/go-multiaddr"
-	"github.com/nlm/go-multicontext"
 	"github.com/phayes/freeport"
 	"github.com/pkg/errors"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -45,66 +44,18 @@ type libP2PManagerImpl struct {
 	pubSubBroadcaster *crdt.PubSubBroadcaster
 	globalDS          datastore.Batching
 	datastoreDs       *crdt.Datastore
-	bootstrapPeers    []string
-	allContext        context.Context
-	cancel            func()
 }
 
 const dbTopic = "crdt_db"
 
 var RebroadcastingInterval = time.Millisecond * 10
 
-func RecreatableLibP2PManager(ctx context.Context, auth signer.Signer) (*libP2PManagerImpl, error) {
-	l, err := NewLibP2PManager(ctx, auth)
-	if err != nil {
-		return nil, err
-	}
-
-	go func() {
-		bootstrapPeers := l.bootstrapPeers
-		time.Sleep(time.Second * 10)
-		for {
-			time.Sleep(time.Second * 3)
-			cancelFunc := l.cancel
-			if l == nil {
-				fmt.Println(
-					"")
-			}
-			if len(l.pubsub.ListPeers(dbTopic)) == 0 {
-				if gofakeit.Bool() && gofakeit.Bool() {
-					l, err = NewLibP2PManager(ctx, auth)
-					if err != nil {
-						return
-					}
-					cancelFunc()
-
-					err = l.Start(ctx, bootstrapPeers)
-					if err != nil {
-						return
-					}
-
-				}
-
-			}
-
-		}
-	}()
-
-	return l, nil
-}
-
 // NewLibP2PManager creates a new libp2p manager.
 // listenHost is the host to listen on.
 //
 // TODO: we need to figure out how this works across multiple nodes.
-func NewLibP2PManager(ctx context.Context, auth signer.Signer) (*libP2PManagerImpl, error) {
-	allContext, cancel := context.WithCancel(ctx)
-	l := &libP2PManagerImpl{
-		allContext: allContext,
-		cancel:     cancel,
-	}
-	ctx = multicontext.WithContexts(ctx, allContext)
-
+func NewLibP2PManager(ctx context.Context, auth signer.Signer) (LibP2PManager, error) {
+	l := &libP2PManagerImpl{}
 	_, err := l.setupHost(ctx, auth.PrivKey()) // call createHost function
 	if err != nil {
 		return nil, err
@@ -180,11 +131,6 @@ func (l *libP2PManagerImpl) setupHost(ctx context.Context, privKeyWrapper crypto
 var i = 0
 
 func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) error {
-	l.bootstrapPeers = bootstrapPeers
-
-	l.allContext = multicontext.WithContexts(ctx, l.allContext)
-	ctx = l.allContext
-
 	// setup ipfs
 	peers, err := makePeers(bootstrapPeers)
 	if err != nil {
@@ -193,13 +139,20 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 
 	ipfs, err := ipfslite.New(ctx, l.globalDS, nil, l.host, l.dht, &ipfslite.Config{})
 	ipfs.Bootstrap(peers)
+	//for _, peerAddr := range dht.DefaultBootstrapPeers {
+	//	peerinfo, _ := peer.AddrInfoFromP2pAddr(peerAddr)
+	//	go func() {
+	//		if err := l.host.Connect(ctx, *peerinfo); err != nil {
+	//			fmt.Println("Bootstrap warning:", err)
+	//		}
+	//	}()
+	//}
 
 	for _, p := range peers {
 		l.host.ConnManager().TagPeer(p.ID, "keep", 100)
 	}
 
 	go Discover(ctx, l.host, l.dht, "antWorker")
-	go Discover(ctx, l.host, l.dht, dbTopic)
 
 	time.Sleep(time.Second * 3)
 	l.pubsub, err = pubsub.NewGossipSub(ctx, l.host, pubsub.WithFloodPublish(true))
@@ -207,23 +160,19 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 		return fmt.Errorf("could not create pubsub: %w", err)
 	}
 
+	go func() {
+		for {
+			time.Sleep(time.Second * 1)
+			fmt.Println("pubsub peers: ", len(l.pubsub.ListPeers(dbTopic)))
+			fmt.Println("global peers: ", len(l.host.Peerstore().Peers()))
+		}
+	}()
+
 	time.Sleep(time.Second * 4)
 	l.pubSubBroadcaster, err = crdt.NewPubSubBroadcaster(ctx, l.pubsub, dbTopic)
 	if err != nil {
 		return err
 	}
-
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-time.After(time.Second):
-				fmt.Println("pubsub peers: ", len(l.pubsub.ListPeers(dbTopic)))
-				fmt.Println("global peers: ", len(l.host.Peerstore().Peers()))
-			}
-		}
-	}()
 
 	crdtOpts := crdt.DefaultOptions()
 	crdtOpts.Logger = logging.Logger("p2p_logger")
