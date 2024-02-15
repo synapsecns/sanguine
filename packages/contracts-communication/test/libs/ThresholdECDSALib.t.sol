@@ -239,5 +239,36 @@ contract ThresholdECDSALibTest is Test {
 
     // ═════════════════════════════════════════ TESTS: VERIFY SIGNED HASH ═════════════════════════════════════════════
 
-    function test_verifySignedHash_providedUnderThreshold_allValid() public {}
+    // Signers order sorted by their address:
+    // SIGNER_1, SIGNER_0, SIGNER_3, SIGNER_2
+
+    function test_verifySignedHash_providedUnderThreshold_sorted_allSigners() public {
+        libHarness.modifyThreshold(3);
+        expectNotEnoughSignaturesError(3);
+        libHarness.verifySignedHash(HASH_0, toArray(sig_0_0, sig_2_0));
+    }
+
+    function test_verifySignedHash_providedUnderThreshold_sorted_hasNonSigners() public {
+        libHarness.modifyThreshold(3);
+        expectNotEnoughSignaturesError(3);
+        libHarness.verifySignedHash(HASH_0, toArray(sig_0_0, sig_3_0));
+    }
+
+    function test_verifySignedHash_providedUnderThreshold_unsorted_allSigners() public {
+        libHarness.modifyThreshold(3);
+        expectNotEnoughSignaturesError(3);
+        libHarness.verifySignedHash(HASH_0, toArray(sig_2_0, sig_0_0));
+    }
+
+    function test_verifySignedHash_providedUnderThreshold_unsorted_hasNonSigners() public {
+        libHarness.modifyThreshold(3);
+        expectNotEnoughSignaturesError(3);
+        libHarness.verifySignedHash(HASH_0, toArray(sig_3_0, sig_0_0));
+    }
+
+    function test_verifySignedHash_providedUnderThreshold_unsorted_hasDuplicates() public {
+        libHarness.modifyThreshold(3);
+        expectNotEnoughSignaturesError(3);
+        libHarness.verifySignedHash(HASH_0, toArray(sig_0_0, sig_0_0));
+    }
 }
