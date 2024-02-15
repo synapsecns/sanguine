@@ -26,13 +26,11 @@ export const GenericInputContainer = ({
 
   const { isConnected } = useAccount()
 
-  const parsedBalance = balances[chainId]?.find(
+  const tokenData = balances[chainId]?.find(
     (t) => t.tokenAddress === token?.addresses[chainId]
-  )?.parsedBalance
+  )
 
-  const balance = balances[chainId]?.find(
-    (t) => t.tokenAddress === token?.addresses[chainId]
-  )?.balance
+  const { parsedBalance, balance } = tokenData ?? {}
 
   useEffect(() => {
     if (token && token?.decimals[chainId]) {
@@ -48,7 +46,7 @@ export const GenericInputContainer = ({
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const fromValueString: string = cleanNumberInput(event.target.value)
-    console.log(fromValueString)
+
     try {
       dispatchUpdateFunc(fromValueString)
       setShowValue(fromValueString)
@@ -105,7 +103,6 @@ export const GenericInputContainer = ({
                     focus:border-none
                     border-none
                     bg-transparent
-                    max-w-[190px]
                     p-0
                     placeholder:text-white/40
                     text-white text-opacity-80 text-xl md:text-2xl font-medium
