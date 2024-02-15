@@ -2,7 +2,7 @@ import _ from 'lodash'
 import { useState, useEffect } from 'react'
 import { getAddress } from '@ethersproject/address'
 import { zeroAddress } from 'viem'
-import { useSelector, useDispatch } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { ETH, WETHE, WETH } from '@constants/tokens/bridgeable'
 import { AVWETH } from '@/constants/tokens/auxilliary'
@@ -24,8 +24,12 @@ import { calculatePriceImpact } from '@/utils/priceImpact'
 import { transformCalculateLiquidityInput } from '@/utils/transformCalculateLiquidityInput'
 import { formatBigIntToString } from '@/utils/bigint/format'
 
-import { RootState } from '@/store/store'
-
+import {
+  usePoolDataState,
+  usePoolUserDataState,
+  usePoolDepositState,
+} from '@/slices/pool/hooks'
+import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
 import {
   resetPoolDeposit,
   setDepositQuote,
@@ -37,7 +41,7 @@ import {
 
 import DepositButton from './DepositButton'
 import { txErrorHandler } from '@/utils/txErrorHandler'
-import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
+
 import { swapPoolCalculateAddLiquidity } from '@/actions/swapPoolCalculateAddLiquidity'
 
 
@@ -56,10 +60,9 @@ export default function Deposit({
 }) {
   const dispatch: any = useDispatch()
 
-  const { pool, poolData } = useSelector((state: RootState) => state.poolData)
-  const { poolUserData } = useSelector((state: RootState) => state.poolUserData)
-  const { depositQuote, inputValue, inputSum, filteredInputValue } =
-    useSelector((state: RootState) => state.poolDeposit)
+  const { pool, poolData } = usePoolDataState()
+  const { poolUserData } = usePoolUserDataState()
+  const { depositQuote, inputValue, inputSum, filteredInputValue } = usePoolDepositState()
 
   const { poolAddress } = getSwapDepositContractFields(pool, chainId)
 

@@ -1,8 +1,8 @@
 import numeral from 'numeral'
-import { useSelector } from 'react-redux'
 
 import InfoSectionCard from './InfoSectionCard'
-import { RootState } from '@/store/store'
+
+import { usePoolDataState } from '@/slices/pool/hooks'
 
 const TokenLabels = ({ tokens }) => {
   return (
@@ -45,7 +45,7 @@ const TokenLabels = ({ tokens }) => {
 }
 
 const CurrencyReservesCard = () => {
-  const { poolData } = useSelector((state: RootState) => state.poolData)
+  const { poolData } = usePoolDataState()
 
   return (
     <InfoSectionCard title="Currency Reserves">

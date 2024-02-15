@@ -1,6 +1,5 @@
 import { getWalletClient, waitForTransaction } from '@wagmi/core'
 import { useAccount, useNetwork } from 'wagmi'
-import { useSelector } from 'react-redux'
 import { useEffect, useRef, useState, useMemo } from 'react'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/router'
@@ -8,12 +7,12 @@ import { Address, zeroAddress } from 'viem'
 import { commify } from '@ethersproject/units'
 import { isAddress } from '@ethersproject/address'
 
-import { RootState } from '@/store/store'
+
 import { useAppDispatch } from '@/store/hooks'
 
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
-import { useBridgeState } from '@/slices/bridge/hooks'
+import { useBridgeDisplayState, useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeState } from '@/slices/bridge/reducer'
 import {
   updateFromValue,
@@ -103,7 +102,7 @@ const StateManagedBridge = () => {
     showToChainListOverlay,
     showFromTokenListOverlay,
     showToTokenListOverlay,
-  } = useSelector((state: RootState) => state.bridgeDisplay)
+  } = useBridgeDisplayState()
 
   const [isApproved, setIsApproved] = useState(false)
 

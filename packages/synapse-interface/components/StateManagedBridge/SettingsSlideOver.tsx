@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { useEffect, useRef } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import { Switch } from '@headlessui/react'
 import { useKeyPress } from '@hooks/useKeyPress'
@@ -16,7 +16,8 @@ import {
   setDeadlineMinutes,
   setDestinationAddress,
 } from '@/slices/bridge/reducer'
-import { RootState } from '@/store/store'
+
+import { useBridgeDisplayState } from '@/slices/bridge/hooks'
 
 
 
@@ -26,9 +27,7 @@ const SettingsSlideOver = () => {
   const dispatch = useDispatch()
   const escPressed = useKeyPress('Escape')
   const ref = useRef(null)
-  const { showDestinationAddress } = useSelector(
-    (state: RootState) => state.bridgeDisplay
-  )
+  const { showDestinationAddress } = useBridgeDisplayState()
 
   function onClose() {
     dispatch(setShowSettingsSlideOver(false))

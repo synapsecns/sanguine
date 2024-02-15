@@ -1,12 +1,19 @@
-import { useSelector } from 'react-redux'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
-import { RootState } from '@/store/store'
+
 import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 import { useEffect, useState } from 'react'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
+
+import {
+  usePoolDataState,
+  usePoolUserDataState,
+  usePoolWithdrawState
+} from '@/slices/pool/hooks'
+import { DEFAULT_WITHDRAW_QUOTE } from '@/slices/poolWithdrawSlice'
+
 import { stringToBigInt } from '@/utils/bigint/format'
 import LoadingDots from '@tw/LoadingDots'
-import { DEFAULT_WITHDRAW_QUOTE } from '@/slices/poolWithdrawSlice'
+
 
 const WithdrawButton = ({ approveTxn, withdrawTxn, isApproved }) => {
   const [isConnected, setIsConnected] = useState(false) // Initialize to false
@@ -25,14 +32,12 @@ const WithdrawButton = ({ approveTxn, withdrawTxn, isApproved }) => {
     setIsConnected(isConnectedInit)
   }, [isConnectedInit])
 
-  const { pool } = useSelector((state: RootState) => state.poolData)
+  const { pool } = usePoolDataState()
 
   const poolDecimals = pool?.decimals[pool?.chainId]
 
-  const { withdrawQuote, inputValue, isLoading } = useSelector(
-    (state: RootState) => state.poolWithdraw
-  )
-  const { poolUserData } = useSelector((state: RootState) => state.poolUserData)
+  const { withdrawQuote, inputValue, isLoading } = usePoolWithdrawState()
+  const { poolUserData } = usePoolUserDataState()
 
   const needsInput = stringToBigInt(inputValue, poolDecimals) === 0n
 

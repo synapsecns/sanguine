@@ -7,8 +7,7 @@ import Grid from '@tw/Grid'
 import PoolInfoSection from './PoolInfoSection'
 import PoolManagement from './poolManagement'
 import { zeroAddress } from 'viem'
-import { useSelector } from 'react-redux'
-import { RootState } from '@/store/store'
+
 import { Address } from '@wagmi/core'
 import { useAccount, useSwitchNetwork } from 'wagmi'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
@@ -19,6 +18,7 @@ import { PoolActionOptions } from '@/components/Pools/PoolActionOptions'
 import PoolTitle from './components/PoolTitle'
 import { DisplayBalances } from '../pools/PoolCard'
 import { getStakedBalance } from '@/utils/actions/getStakedBalance'
+import { usePoolDataState } from '@/slices/pool/hooks'
 
 const PoolBody = ({
   address,
@@ -33,9 +33,8 @@ const PoolBody = ({
 
   const { isConnected } = useAccount()
 
-  const { pool, poolAPYData } = useSelector(
-    (state: RootState) => state.poolData
-  )
+  const { pool, poolAPYData } = usePoolDataState()
+
   const [stakedBalance, setStakedBalance] = useState({
     amount: 0n,
     reward: 0n,

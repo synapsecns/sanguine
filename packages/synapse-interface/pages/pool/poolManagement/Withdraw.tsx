@@ -2,9 +2,8 @@ import _ from 'lodash'
 import { useEffect, useMemo, useState } from 'react'
 import Slider from 'react-input-slider'
 import { Address } from '@wagmi/core'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { Token } from '@types'
-import { RootState } from '@/store/store'
 
 import Grid from '@tw/Grid'
 import { getCoinTextColorCombined } from '@styles/tokens'
@@ -24,6 +23,12 @@ import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 
 import {
+  usePoolDataState,
+  usePoolUserDataState,
+  usePoolWithdrawState,
+} from '@/slices/pool/hooks'
+
+import {
   setInputValue,
   setWithdrawQuote,
   setWithdrawType,
@@ -34,13 +39,13 @@ import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
 
 import WithdrawButton from './WithdrawButton'
 
+
+
 const Withdraw = ({ address }: { address: string }) => {
   const [percentage, setPercentage] = useState(0)
-  const { pool, poolData } = useSelector((state: RootState) => state.poolData)
-  const { poolUserData } = useSelector((state: RootState) => state.poolUserData)
-  const { withdrawQuote, inputValue, withdrawType } = useSelector(
-    (state: RootState) => state.poolWithdraw
-  )
+  const { pool, poolData } = usePoolDataState()
+  const { poolUserData } = usePoolUserDataState()
+  const { withdrawQuote, inputValue, withdrawType } = usePoolWithdrawState()
   const chainId = pool?.chainId
   const poolDecimals = pool?.decimals[pool?.chainId]
   const { poolAddress } = getSwapDepositContractFields(pool, chainId)

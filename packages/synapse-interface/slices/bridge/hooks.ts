@@ -9,6 +9,11 @@ import {
   BridgeQuoteResponse,
 } from '@/utils/actions/fetchBridgeQuotes'
 
+
+export const useBridgeDisplayState = (): RootState['bridgeDisplay'] => {
+  return useAppSelector((state) => state.bridgeDisplay)
+}
+
 export const useBridgeState = (): RootState['bridge'] => {
   return useAppSelector((state) => state.bridge)
 }

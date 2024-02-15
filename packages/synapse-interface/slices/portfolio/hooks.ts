@@ -13,11 +13,11 @@ import {
 import { initialState } from './reducer'
 
 export const usePortfolioState = (): RootState['portfolio'] => {
-  return useAppSelector((state) => state.portfolio)
+  return useAppSelector((state: RootState) => state.portfolio)
 }
 
 export const usePortfolioBalances = (): NetworkTokenBalances => {
-  return useAppSelector((state) => state.portfolio.balances)
+  return useAppSelector((state: RootState) => state.portfolio.balances)
 }
 
 export const usePortfolioActionHandlers = (): {
@@ -81,9 +81,7 @@ export const useFetchPortfolioBalances = (): {
 } => {
   const dispatch: AppDispatch = useDispatch()
   const { address } = getAccount()
-  const { balances, status, error } = useSelector(
-    (state: RootState) => state.portfolio
-  )
+  const { balances, status, error } = usePortfolioState()
 
   const fetch = () => {
     if (address) {

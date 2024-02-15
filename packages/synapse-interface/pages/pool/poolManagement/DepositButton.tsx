@@ -1,9 +1,13 @@
-import { useSelector } from 'react-redux'
+
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 import { useEffect, useMemo, useState } from 'react'
-import { RootState } from '@/store/store'
-
+import {
+  usePoolDataState,
+  usePoolUserDataState,
+  usePoolDepositState,
+} from '@/slices/pool/hooks'
+import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
 import LoadingDots from '@tw/LoadingDots'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { DEFAULT_DEPOSIT_QUOTE } from './Deposit'
@@ -26,12 +30,10 @@ const DepositButton = ({ approveTxn, depositTxn }) => {
     setIsConnected(isConnectedInit)
   }, [isConnectedInit])
 
-  const { pool, poolData } = useSelector((state: RootState) => state.poolData)
+  const { pool, poolData } = usePoolDataState()
 
-  const { depositQuote, inputValue, isLoading, inputSum } = useSelector(
-    (state: RootState) => state.poolDeposit
-  )
-  const { poolUserData } = useSelector((state: RootState) => state.poolUserData)
+  const { depositQuote, inputValue, isLoading, inputSum } = usePoolDepositState()
+  const { poolUserData } = usePoolUserDataState()
 
   const isBalanceEnough = Object.entries(inputValue.bi).every(
     ([tokenAddr, amount]) =>

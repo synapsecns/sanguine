@@ -1,6 +1,6 @@
 import { useAccount, useNetwork } from 'wagmi'
 import { getWalletClient } from '@wagmi/core'
-import { useSelector } from 'react-redux'
+
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/router'
 import { Address, zeroAddress } from 'viem'
@@ -23,11 +23,10 @@ import { approveToken } from '@/utils/approveToken'
 import { Transition } from '@headlessui/react'
 
 import { useAppDispatch } from '@/store/hooks'
-import { RootState } from '@/store/store'
 
 import { setIsLoading } from '@/slices/swap/reducer'
 import { useFetchPortfolioBalances } from '@/slices/portfolio/hooks'
-import { useSwapState } from '@/slices/swap/hooks'
+import { useSwapDisplayState, useSwapState } from '@/slices/swap/hooks'
 import { setSwapQuote, updateSwapFromValue } from '@/slices/swap/reducer'
 
 import { EMPTY_SWAP_QUOTE_ZERO } from '@/constants/swap'
@@ -71,7 +70,7 @@ const StateManagedSwap = () => {
     showSwapFromTokenListOverlay,
     showSwapChainListOverlay,
     showSwapToTokenListOverlay,
-  } = useSelector((state: RootState) => state.swapDisplay)
+  } = useSwapDisplayState()
 
   const [isApproved, setIsApproved] = useState(false)
 

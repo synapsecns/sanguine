@@ -7,11 +7,10 @@ import {
   formatBigIntToPercentString,
   formatBigIntToString,
 } from '@/utils/bigint/format'
-import { useSelector } from 'react-redux'
-import { RootState } from '@/store/store'
+import { usePoolDataState } from '@/slices/pool/hooks'
 
 const PoolInfoSection = () => {
-  const { pool, poolData } = useSelector((state: RootState) => state.poolData)
+  const { pool, poolData } = usePoolDataState()
 
   const usdFormat = poolData.totalLockedUSD > 1000000 ? '$0,0.0' : '$0,0'
 

@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import { useEffect, useState } from 'react'
 import { useAccount, useNetwork } from 'wagmi'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { useRouter } from 'next/router'
 import StandardPageContainer from '@layouts/StandardPageContainer'
 import { LandingPageWrapper } from '@layouts/LandingPageWrapper'
@@ -9,11 +9,13 @@ import { DEFAULT_FROM_CHAIN } from '@/constants/swap'
 import PoolBody from './PoolBody'
 import NoPoolBody from './NoPoolBody'
 import { fetchPoolData, resetPoolData } from '@/slices/poolDataSlice'
-import { RootState } from '@/store/store'
+import { usePoolDataState } from '@/slices/pool/hooks'
 import { resetPoolDeposit } from '@/slices/poolDepositSlice'
 import { resetPoolWithdraw } from '@/slices/poolWithdrawSlice'
 import LoadingDots from '@tw/LoadingDots'
 import { POOL_BY_ROUTER_INDEX } from '@constants/tokens'
+
+
 
 export const getStaticPaths = async () => {
   const paths = Object.keys(POOL_BY_ROUTER_INDEX).map((key) => ({
@@ -38,7 +40,7 @@ const PoolPage = () => {
   const [connectedChainId, setConnectedChainId] = useState(0)
   const [isClient, setIsClient] = useState(false)
 
-  const { pool, isLoading } = useSelector((state: RootState) => state.poolData)
+  const { pool, isLoading } = usePoolDataState()
 
   const dispatch: any = useDispatch()
 

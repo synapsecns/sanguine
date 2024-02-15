@@ -3,9 +3,12 @@ import InteractiveInputRow from './InteractiveInputRow'
 import { Token } from '@types'
 import { cleanNumberInput } from '@utils/cleanNumberInput'
 import { formatBigIntToString } from '@/utils/bigint/format'
-import { useSelector } from 'react-redux'
-import { RootState } from '@/store/store'
 import { useAccount } from 'wagmi'
+import {
+  usePoolDataState,
+  usePoolUserDataState,
+  usePoolWithdrawState,
+} from '@/slices/pool/hooks'
 
 export const DepositTokenInput = ({
   token,
@@ -62,9 +65,9 @@ export const WithdrawTokenInput = ({
 }: {
   onChange: (v: string) => void
 }) => {
-  const { pool } = useSelector((state: RootState) => state.poolData)
-  const { poolUserData } = useSelector((state: RootState) => state.poolUserData)
-  const { inputValue } = useSelector((state: RootState) => state.poolWithdraw)
+  const { pool } = usePoolDataState()
+  const { poolUserData } = usePoolUserDataState()
+  const { inputValue } = usePoolWithdrawState()
   const { address } = useAccount()
 
   const balanceStr = useMemo(() => {
