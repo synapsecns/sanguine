@@ -4,6 +4,14 @@ pragma solidity ^0.8.0;
 import {InterchainEntry} from "../libs/InterchainEntry.sol";
 
 interface IInterchainDB {
+    /// @notice Struct representing an entry from the remote Interchain DataBase verified by the Interchain Module
+    /// @param verifiedAt   The block timestamp at which the entry was verified by the module
+    /// @param dataHash     The hash of the data written on the source chain
+    struct RemoteEntry {
+        uint256 verifiedAt;
+        bytes32 dataHash;
+    }
+
     error InterchainDB__ConflictingEntries(bytes32 existingDataHash, InterchainEntry newEntry);
     error InterchainDB__EntryDoesNotExist(address writer, uint256 writerNonce);
     error InterchainDB__IncorrectFeeAmount(uint256 actualFee, uint256 expectedFee);

@@ -12,6 +12,14 @@ contract InterchainDB is IInterchainDB, IInterchainDBEvents {
     using TypeCasts for address;
 
     mapping(address writer => bytes32[] dataHashes) internal _entries;
+    mapping(bytes32 entryId => mapping(address module => RemoteEntry entry)) internal _remoteEntries;
+
+    modifier onlyRemoteChainId(uint256 chainId) {
+        if (chainId == block.chainid) {
+            revert InterchainDB__SameChainId();
+        }
+        _;
+    }
 
     // ═══════════════════════════════════════════════ WRITER-FACING ═══════════════════════════════════════════════════
 
@@ -29,6 +37,7 @@ contract InterchainDB is IInterchainDB, IInterchainDBEvents {
     )
         external
         payable
+        onlyRemoteChainId(destChainId)
     {
         InterchainEntry memory entry = getEntry(writer, writerNonce);
         _requestVerification(destChainId, entry, srcModules);
@@ -42,6 +51,7 @@ contract InterchainDB is IInterchainDB, IInterchainDBEvents {
     )
         external
         payable
+        onlyRemoteChainId(destChainId)
         returns (uint256 writerNonce)
     {
         writerNonce = _writeEntry(dataHash);
@@ -52,7 +62,23 @@ contract InterchainDB is IInterchainDB, IInterchainDBEvents {
     // ═══════════════════════════════════════════════ MODULE-FACING ═══════════════════════════════════════════════════
 
     /// @inheritdoc IInterchainDB
-    function verifyEntry(InterchainEntry memory entry) external {}
+    function verifyEntry(InterchainEntry memory entry) external onlyRemoteChainId(entry.srcChainId) {
+        bytes32 entryId = InterchainEntryLib.entryId(entry);
+        RemoteEntry memory existingEntry = _remoteEntries[entryId][msg.sender];
+        // Check if that's the first time module verifies the entry
+        if (existingEntry.verifiedAt == 0) {
+            _remoteEntries[entryId][msg.sender] = RemoteEntry({verifiedAt: block.timestamp, dataHash: entry.dataHash});
+            emit InterchainEntryVerified(
+                msg.sender, entry.srcChainId, entry.srcWriter, entry.writerNonce, entry.dataHash
+            );
+        } else {
+            // If the module has already verified the entry, check that the data hash is the same
+            if (existingEntry.dataHash != entry.dataHash) {
+                revert InterchainDB__ConflictingEntries(existingEntry.dataHash, entry);
+            }
+            // No-op if the data hash is the same
+        }
+    }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
@@ -63,8 +89,13 @@ contract InterchainDB is IInterchainDB, IInterchainDBEvents {
     )
         external
         view
+        onlyRemoteChainId(entry.srcChainId)
         returns (uint256 moduleVerifiedAt)
-    {}
+    {
+        RemoteEntry memory remoteEntry = _remoteEntries[InterchainEntryLib.entryId(entry)][dstModule];
+        // Check data against the one verified by the module
+        return remoteEntry.dataHash == entry.dataHash ? remoteEntry.verifiedAt : 0;
+    }
 
     /// @inheritdoc IInterchainDB
     function getInterchainFee(uint256 destChainId, address[] calldata srcModules) external view returns (uint256 fee) {
@@ -94,7 +125,7 @@ contract InterchainDB is IInterchainDB, IInterchainDBEvents {
     }
 
     /// @dev Request the verification of the entry by the modules, and emit the event.
-    /// Note: the validity of the passed entry is enforced in the calling function.
+    /// Note: the validity of the passed entry and chain id being remote is enforced in the calling function.
     function _requestVerification(
         uint256 destChainId,
         InterchainEntry memory entry,
@@ -102,9 +133,6 @@ contract InterchainDB is IInterchainDB, IInterchainDBEvents {
     )
         internal
     {
-        if (destChainId == block.chainid) {
-            revert InterchainDB__SameChainId();
-        }
         (uint256[] memory fees, uint256 totalFee) = _getModuleFees(destChainId, srcModules);
         if (msg.value != totalFee) {
             revert InterchainDB__IncorrectFeeAmount(msg.value, totalFee);
