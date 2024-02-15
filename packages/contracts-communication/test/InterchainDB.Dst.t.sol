@@ -61,6 +61,38 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
         verifyEntry(moduleB, getFakeEntry(SRC_CHAIN_ID_0, writerF, 10));
     }
 
+    function introduceEmptyEntries() public {
+        // Have module A verify an empty entry for entries that module B has not verified
+        // writerF {0:20}
+        verifyEntry(moduleA, getEmptyEntry(SRC_CHAIN_ID_0, writerF, 20));
+        // writerS {1:5}
+        verifyEntry(moduleA, getEmptyEntry(SRC_CHAIN_ID_1, writerS, 5));
+        // Have module A verify an empty entry for entries that module B has verified
+        // writerF {1:0}
+        verifyEntry(moduleA, getEmptyEntry(SRC_CHAIN_ID_1, writerF, 0));
+        // writerS {0:0}
+        verifyEntry(moduleA, getEmptyEntry(SRC_CHAIN_ID_0, writerS, 0));
+        // Have module B verify an empty entry for entries that module A has not verified
+        // writerF {0:5}
+        verifyEntry(moduleB, getEmptyEntry(SRC_CHAIN_ID_0, writerF, 5));
+        // writerS {1:20}
+        verifyEntry(moduleB, getEmptyEntry(SRC_CHAIN_ID_1, writerS, 20));
+        // Have module B verify an empty entry for entries that module A has verified
+        // writerF {0: 10}
+        verifyEntry(moduleB, getEmptyEntry(SRC_CHAIN_ID_0, writerF, 10));
+        // writerS {1: 10}
+        verifyEntry(moduleB, getEmptyEntry(SRC_CHAIN_ID_1, writerS, 10));
+    }
+
+    function introduceEqualEmptyEntries() public {
+        // writerF {0: 20}
+        verifyEntry(moduleA, getEmptyEntry(SRC_CHAIN_ID_0, writerF, 20));
+        verifyEntry(moduleB, getEmptyEntry(SRC_CHAIN_ID_0, writerF, 20));
+        // writerS {1: 5}
+        verifyEntry(moduleB, getEmptyEntry(SRC_CHAIN_ID_1, writerS, 5));
+        verifyEntry(moduleA, getEmptyEntry(SRC_CHAIN_ID_1, writerS, 5));
+    }
+
     // ══════════════════════════════════════════════ DATA GENERATION ══════════════════════════════════════════════════
 
     function getMockDataHash(address writer, uint256 nonce) internal pure returns (bytes32) {
@@ -102,6 +134,23 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
             srcWriter: addressToBytes32(writer),
             writerNonce: nonce,
             dataHash: getFakeDataHash(writer, nonce)
+        });
+    }
+
+    function getEmptyEntry(
+        uint256 srcChainId,
+        address writer,
+        uint256 nonce
+    )
+        internal
+        pure
+        returns (InterchainEntry memory entry)
+    {
+        return InterchainEntry({
+            srcChainId: srcChainId,
+            srcWriter: addressToBytes32(writer),
+            writerNonce: nonce,
+            dataHash: 0
         });
     }
 
@@ -269,6 +318,18 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
         assertEq(icDB.readEntry(address(moduleB), fakeEntryS), 0);
     }
 
+    function test_readEntry_existingA_emptyB() public {
+        introduceEmptyEntries();
+        // writerF {0: 10} was verified by module A, but an "empty" entry was verified by module B
+        InterchainEntry memory entryF = getMockEntry(SRC_CHAIN_ID_0, writerF, 10);
+        assertCorrectVerificationTime(entryF, address(moduleA), icDB.readEntry(address(moduleA), entryF));
+        assertEq(icDB.readEntry(address(moduleB), entryF), 0);
+        // writerS {1: 10} was verified by module A, but an "empty" entry was verified by module B
+        InterchainEntry memory entryS = getMockEntry(SRC_CHAIN_ID_1, writerS, 10);
+        assertCorrectVerificationTime(entryS, address(moduleA), icDB.readEntry(address(moduleA), entryS));
+        assertEq(icDB.readEntry(address(moduleB), entryS), 0);
+    }
+
     function test_readEntry_unknownA_existingB() public {
         // writerF {1: 0} was verified by module B, but not by module A
         InterchainEntry memory entryF = getMockEntry(SRC_CHAIN_ID_1, writerF, 0);
@@ -302,6 +363,18 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
         InterchainEntry memory fakeEntryS = getFakeEntry(SRC_CHAIN_ID_0, writerS, 10);
         assertEq(icDB.readEntry(address(moduleA), fakeEntryS), 0);
         assertEq(icDB.readEntry(address(moduleB), fakeEntryS), 0);
+    }
+
+    function test_readEntry_unknownA_emptyB() public {
+        introduceEmptyEntries();
+        // writerF {0: 5} was not verified by module A, but an "empty" entry was verified by module B
+        InterchainEntry memory emptyEntryF = getEmptyEntry(SRC_CHAIN_ID_0, writerF, 5);
+        assertEq(icDB.readEntry(address(moduleA), emptyEntryF), 0);
+        assertCorrectVerificationTime(emptyEntryF, address(moduleB), icDB.readEntry(address(moduleB), emptyEntryF));
+        // writerS {1: 20} was not verified by module A, but an "empty" entry was verified by module B
+        InterchainEntry memory emptyEntryS = getEmptyEntry(SRC_CHAIN_ID_1, writerS, 20);
+        assertEq(icDB.readEntry(address(moduleA), emptyEntryS), 0);
+        assertCorrectVerificationTime(emptyEntryS, address(moduleB), icDB.readEntry(address(moduleB), emptyEntryS));
     }
 
     function test_readEntry_differentA_existingB() public {
@@ -342,5 +415,65 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
         InterchainEntry memory fakeEntryS = getFakeEntry(SRC_CHAIN_ID_1, writerS, 0);
         assertEq(icDB.readEntry(address(moduleA), fakeEntryS), 0);
         assertEq(icDB.readEntry(address(moduleB), fakeEntryS), 0);
+    }
+
+    function test_readEntry_differentA_emptyB() public {
+        introduceEmptyEntries();
+        // writerF {0: 10} was verified by module A, but an "empty" entry was verified by module B
+        InterchainEntry memory emptyEntryF = getEmptyEntry(SRC_CHAIN_ID_0, writerF, 10);
+        assertEq(icDB.readEntry(address(moduleA), emptyEntryF), 0);
+        assertCorrectVerificationTime(emptyEntryF, address(moduleB), icDB.readEntry(address(moduleB), emptyEntryF));
+        // writerS {1: 10} was verified by module A, but an "empty" entry was verified by module B
+        InterchainEntry memory emptyEntryS = getEmptyEntry(SRC_CHAIN_ID_1, writerS, 10);
+        assertEq(icDB.readEntry(address(moduleA), emptyEntryS), 0);
+        assertCorrectVerificationTime(emptyEntryS, address(moduleB), icDB.readEntry(address(moduleB), emptyEntryS));
+    }
+
+    function test_readEntry_emptyA_existingB() public {
+        introduceEmptyEntries();
+        // writerF {1: 0} was verified by module B, but an "empty" entry was verified by module A
+        InterchainEntry memory entryF = getMockEntry(SRC_CHAIN_ID_1, writerF, 0);
+        assertEq(icDB.readEntry(address(moduleA), entryF), 0);
+        assertCorrectVerificationTime(entryF, address(moduleB), icDB.readEntry(address(moduleB), entryF));
+        // writerS {0: 0} was verified by module B, but an "empty" entry was verified by module A
+        InterchainEntry memory entryS = getMockEntry(SRC_CHAIN_ID_0, writerS, 0);
+        assertEq(icDB.readEntry(address(moduleA), entryS), 0);
+        assertCorrectVerificationTime(entryS, address(moduleB), icDB.readEntry(address(moduleB), entryS));
+    }
+
+    function test_readEntry_emptyA_unknownB() public {
+        introduceEmptyEntries();
+        // writerF {0: 20} was verified as "empty" by module A, but not by module B
+        InterchainEntry memory emptyEntryF = getEmptyEntry(SRC_CHAIN_ID_0, writerF, 20);
+        assertCorrectVerificationTime(emptyEntryF, address(moduleA), icDB.readEntry(address(moduleA), emptyEntryF));
+        assertEq(icDB.readEntry(address(moduleB), emptyEntryF), 0);
+        // writerS {1: 5} was verified as "empty" by module A, but not by module B
+        InterchainEntry memory emptyEntryS = getEmptyEntry(SRC_CHAIN_ID_1, writerS, 5);
+        assertCorrectVerificationTime(emptyEntryS, address(moduleA), icDB.readEntry(address(moduleA), emptyEntryS));
+        assertEq(icDB.readEntry(address(moduleB), emptyEntryS), 0);
+    }
+
+    function test_readEntry_emptyA_differentB() public {
+        introduceEmptyEntries();
+        // writerF {1: 0} was verified by module B, but an "empty" entry was verified by module A
+        InterchainEntry memory emptyEntryF = getEmptyEntry(SRC_CHAIN_ID_1, writerF, 0);
+        assertCorrectVerificationTime(emptyEntryF, address(moduleA), icDB.readEntry(address(moduleA), emptyEntryF));
+        assertEq(icDB.readEntry(address(moduleB), emptyEntryF), 0);
+        // writerS {0: 0} was verified by module B, but an "empty" entry was verified by module A
+        InterchainEntry memory emptyEntryS = getEmptyEntry(SRC_CHAIN_ID_0, writerS, 0);
+        assertCorrectVerificationTime(emptyEntryS, address(moduleA), icDB.readEntry(address(moduleA), emptyEntryS));
+        assertEq(icDB.readEntry(address(moduleB), emptyEntryS), 0);
+    }
+
+    function test_readEntry_emptyA_emptyB() public {
+        introduceEqualEmptyEntries();
+        // writerF {0: 20} was verified as "empty" by module A and module B
+        InterchainEntry memory emptyEntryF = getEmptyEntry(SRC_CHAIN_ID_0, writerF, 20);
+        assertCorrectVerificationTime(emptyEntryF, address(moduleA), icDB.readEntry(address(moduleA), emptyEntryF));
+        assertCorrectVerificationTime(emptyEntryF, address(moduleB), icDB.readEntry(address(moduleB), emptyEntryF));
+        // writerS {1: 5} was verified as "empty" by module A and module B
+        InterchainEntry memory emptyEntryS = getEmptyEntry(SRC_CHAIN_ID_1, writerS, 5);
+        assertCorrectVerificationTime(emptyEntryS, address(moduleA), icDB.readEntry(address(moduleA), emptyEntryS));
+        assertCorrectVerificationTime(emptyEntryS, address(moduleB), icDB.readEntry(address(moduleB), emptyEntryS));
     }
 }
