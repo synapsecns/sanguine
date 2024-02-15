@@ -7,6 +7,7 @@ import (
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
+	"sync"
 	"testing"
 	"time"
 )
@@ -33,11 +34,20 @@ func (s *P2PTestSuite) TestLibP2PManager() {
 	managers := []p2p.LibP2PManager{m1, m2, m3}
 	addresses := combineHostAddresses(managers...)
 
+	var wg sync.WaitGroup
+	wg.Add(len(managers))
+
 	for _, manager := range managers {
-		err := manager.Start(s.GetTestContext(), addresses)
-		s.Require().NoError(err)
-		time.Sleep(time.Second)
+		manager := manager
+		go func() {
+			defer wg.Done()
+
+			err := manager.Start(s.GetTestContext(), addresses)
+			s.Require().NoError(err)
+			time.Sleep(time.Second)
+		}()
 	}
+	wg.Wait()
 
 	time.Sleep(time.Second * 2)
 	m1.DoSomething()

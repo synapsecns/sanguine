@@ -3,21 +3,27 @@ package p2p
 import (
 	"context"
 	"fmt"
+	"github.com/brianvoe/gofakeit/v6"
 	realtimeDB "github.com/dTelecom/p2p-realtime-database"
 	ipfslite "github.com/hsanjuan/ipfs-lite"
 	"github.com/ipfs/go-datastore"
 	ipfs_datastore "github.com/ipfs/go-datastore/sync"
 	crdt "github.com/ipfs/go-ds-crdt"
 	logging "github.com/ipfs/go-log/v2"
+	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-kad-dht/dual"
 	"github.com/libp2p/go-libp2p-pubsub"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/host"
+	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
+	"github.com/libp2p/go-libp2p/p2p/discovery/routing"
+	"github.com/libp2p/go-libp2p/p2p/discovery/util"
 	"github.com/multiformats/go-multiaddr"
 	"github.com/phayes/freeport"
 	"github.com/pkg/errors"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
+	"log"
 	"time"
 )
 
@@ -55,11 +61,6 @@ func NewLibP2PManager(ctx context.Context, auth signer.Signer) (LibP2PManager, e
 		return nil, err
 	}
 
-	l.pubSubBroadcaster, err = crdt.NewPubSubBroadcaster(ctx, l.pubsub, dbTopic)
-	if err != nil {
-		return nil, err
-	}
-
 	l.globalDS = ipfs_datastore.MutexWrap(datastore.NewMapDatastore())
 
 	return l, nil
@@ -72,7 +73,12 @@ func (l *libP2PManagerImpl) Host() host.Host {
 }
 
 func (l *libP2PManagerImpl) DoSomething() {
-	err := l.datastoreDs.Put(context.Background(), datastore.NewKey("test"), []byte("test"))
+	var err error
+	for i := 500 - 1; i >= 0; i-- {
+		err = l.datastoreDs.Put(context.Background(), datastore.NewKey(gofakeit.Word()), []byte("test"))
+	}
+
+	err = l.datastoreDs.Put(context.Background(), datastore.NewKey("test"), []byte("test"))
 	if err != nil {
 		fmt.Println("error: ", err)
 	}
@@ -89,6 +95,7 @@ func (l *libP2PManagerImpl) DoSomethingElse() bool {
 		time.Sleep(time.Millisecond * 10)
 	}
 
+	fmt.Println(len(l.pubsub.ListPeers(dbTopic)))
 	val, err := l.datastoreDs.Get(context.Background(), datastore.NewKey("test"))
 	if err != nil {
 		fmt.Println("error: ", err)
@@ -108,6 +115,7 @@ func (l *libP2PManagerImpl) setupHost(ctx context.Context, privKeyWrapper crypto
 	ds := ipfs_datastore.MutexWrap(datastore.NewMapDatastore())
 
 	opts := ipfslite.Libp2pOptionsExtra
+	opts = append(opts, libp2p.Ping(true))
 	// todo: setup datastore
 	// TODO: add eth connection gater: https://github.com/dTelecom/p2p-realtime-database/blob/main/gater.go
 	l.host, l.dht, err = ipfslite.SetupLibp2p(ctx, privKeyWrapper, nil, []multiaddr.Multiaddr{sourceMultiAddr}, ds, opts...)
@@ -116,17 +124,6 @@ func (l *libP2PManagerImpl) setupHost(ctx context.Context, privKeyWrapper crypto
 	}
 
 	l.connectionManager = realtimeDB.NewConnectionManager(l.host)
-
-	traceme, err := pubsub.NewJSONTracer(fmt.Sprintf("/tmp/%d.json", i))
-	if err != nil {
-		return nil, fmt.Errorf("could not create tracer: %w", err)
-	}
-	i++
-
-	l.pubsub, err = pubsub.NewGossipSub(context.Background(), l.host, pubsub.WithEventTracer(traceme))
-	if err != nil {
-		return nil, fmt.Errorf("could not create pubsub: %w", err)
-	}
 
 	return l.host, nil
 }
@@ -142,11 +139,47 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 
 	ipfs, err := ipfslite.New(ctx, l.globalDS, nil, l.host, l.dht, &ipfslite.Config{})
 	ipfs.Bootstrap(peers)
+	//for _, peerAddr := range dht.DefaultBootstrapPeers {
+	//	peerinfo, _ := peer.AddrInfoFromP2pAddr(peerAddr)
+	//	go func() {
+	//		if err := l.host.Connect(ctx, *peerinfo); err != nil {
+	//			fmt.Println("Bootstrap warning:", err)
+	//		}
+	//	}()
+	//}
+
+	for _, p := range peers {
+		l.host.ConnManager().TagPeer(p.ID, "keep", 100)
+	}
+
+	go Discover(ctx, l.host, l.dht, "antWorker")
+
+	time.Sleep(time.Second * 3)
+	l.pubsub, err = pubsub.NewFloodSub(ctx, l.host)
+	if err != nil {
+		return fmt.Errorf("could not create pubsub: %w", err)
+	}
+
+	go func() {
+		for {
+			time.Sleep(time.Second * 1)
+			fmt.Println("pubsub peers: ", len(l.pubsub.ListPeers(dbTopic)))
+			fmt.Println("global peers: ", len(l.host.Peerstore().Peers()))
+		}
+	}()
+
+	time.Sleep(time.Second * 4)
+	l.pubSubBroadcaster, err = crdt.NewPubSubBroadcaster(ctx, l.pubsub, dbTopic)
+	if err != nil {
+		return err
+	}
 
 	crdtOpts := crdt.DefaultOptions()
 	crdtOpts.Logger = logging.Logger("p2p_logger")
 
 	crdtOpts.RebroadcastInterval = RebroadcastingInterval
+	crdtOpts.DAGSyncerTimeout = time.Second
+	crdtOpts.MaxBatchDeltaSize = 1
 
 	crdtOpts.PutHook = func(k datastore.Key, v []byte) {
 		fmt.Printf("[%s] Added: [%s] -> %s\n", time.Now().Format(time.RFC3339), k, string(v))
@@ -168,6 +201,40 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	return nil
 }
 
+func Discover(ctx context.Context, h host.Host, dht *dual.DHT, rendezvous string) {
+	var routingDiscovery = routing.NewRoutingDiscovery(dht)
+
+	util.Advertise(ctx, routingDiscovery, rendezvous)
+
+	ticker := time.NewTicker(time.Second * 1)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+
+			peers, err := util.FindPeers(ctx, routingDiscovery, rendezvous)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			for _, p := range peers {
+				if p.ID == h.ID() {
+					continue
+				}
+				if h.Network().Connectedness(p.ID) != network.Connected {
+					_, err = h.Network().DialPeer(ctx, p.ID)
+					fmt.Printf("Connected to peer %s\n", p.ID)
+					if err != nil {
+						continue
+					}
+				}
+			}
+		}
+	}
+}
 func makePeers(peers []string) ([]peer.AddrInfo, error) {
 	var p []peer.AddrInfo
 	for _, addr := range peers {
