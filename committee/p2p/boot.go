@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
-	realtimeDB "github.com/dTelecom/p2p-realtime-database"
 	ipfslite "github.com/hsanjuan/ipfs-lite"
 	"github.com/ipfs/go-datastore"
 	ipfs_datastore "github.com/ipfs/go-datastore/sync"
@@ -14,6 +13,7 @@ import (
 	"github.com/libp2p/go-libp2p-kad-dht/dual"
 	"github.com/libp2p/go-libp2p-pubsub"
 	"github.com/libp2p/go-libp2p/core/crypto"
+	"github.com/libp2p/go-libp2p/core/discovery"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
@@ -39,11 +39,11 @@ type libP2PManagerImpl struct {
 	host              host.Host
 	dht               *dual.DHT
 	announcementTopic *pubsub.Topic
-	connectionManager *realtimeDB.ConnectionManager
 	pubsub            *pubsub.PubSub
-	pubSubBroadcaster *crdt.PubSubBroadcaster
+	pubSubBroadcaster crdt.Broadcaster
 	globalDS          datastore.Batching
 	datastoreDs       *crdt.Datastore
+	discovery         discovery.Discovery
 }
 
 const dbTopic = "crdt_db"
@@ -123,8 +123,6 @@ func (l *libP2PManagerImpl) setupHost(ctx context.Context, privKeyWrapper crypto
 		return nil, fmt.Errorf("could not create libp2p host: %w", err)
 	}
 
-	l.connectionManager = realtimeDB.NewConnectionManager(l.host)
-
 	return l.host, nil
 }
 
@@ -152,10 +150,10 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 		l.host.ConnManager().TagPeer(p.ID, "keep", 100)
 	}
 
-	go Discover(ctx, l.host, l.dht, "antWorker")
+	go l.Discover(ctx, l.host, l.dht, dbTopic)
 
 	time.Sleep(time.Second * 3)
-	l.pubsub, err = pubsub.NewGossipSub(ctx, l.host, pubsub.WithFloodPublish(true))
+	l.pubsub, err = pubsub.NewGossipSub(ctx, l.host, pubsub.WithFloodPublish(true), pubsub.WithDiscovery(l.discovery))
 	if err != nil {
 		return fmt.Errorf("could not create pubsub: %w", err)
 	}
@@ -169,7 +167,7 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	}()
 
 	time.Sleep(time.Second * 4)
-	l.pubSubBroadcaster, err = crdt.NewPubSubBroadcaster(ctx, l.pubsub, dbTopic)
+	l.pubSubBroadcaster, err = l.NewPubSubBroadcaster(ctx, l.pubsub, dbTopic)
 	if err != nil {
 		return err
 	}
@@ -201,8 +199,23 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	return nil
 }
 
-func Discover(ctx context.Context, h host.Host, dht *dual.DHT, rendezvous string) {
-	var routingDiscovery = routing.NewRoutingDiscovery(dht)
+type DiscoveryWrapper struct {
+	f *routing.RoutingDiscovery
+}
+
+func (d DiscoveryWrapper) FindPeers(ctx context.Context, ns string, opts ...discovery.Option) (<-chan peer.AddrInfo, error) {
+	return d.f.FindPeers(ctx, ns, opts...)
+}
+
+func (d DiscoveryWrapper) Advertise(ctx context.Context, ns string, opts ...discovery.Option) (time.Duration, error) {
+	return d.f.Advertise(ctx, ns)
+}
+
+var _ discovery.Discovery = (*DiscoveryWrapper)(nil)
+
+func (l *libP2PManagerImpl) Discover(ctx context.Context, h host.Host, dht *dual.DHT, rendezvous string) {
+	routingDiscovery := routing.NewRoutingDiscovery(dht)
+	l.discovery = DiscoveryWrapper{routingDiscovery}
 
 	util.Advertise(ctx, routingDiscovery, rendezvous)
 
