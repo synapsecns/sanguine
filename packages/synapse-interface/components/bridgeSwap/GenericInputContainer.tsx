@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react'
-import { useDispatch } from 'react-redux'
+
 import { useAccount } from 'wagmi'
 
 import MiniMaxButton from '../buttons/MiniMaxButton'
