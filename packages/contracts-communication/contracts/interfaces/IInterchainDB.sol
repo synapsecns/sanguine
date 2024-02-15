@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import {InterchainEntry} from "../libs/InterchainEntry.sol";
 
 interface IInterchainDB {
-    error InterchainDB__ConflictingEntries(InterchainEntry existingEntry, bytes32 dataHash);
+    error InterchainDB__ConflictingEntries(bytes32 existingDataHash, InterchainEntry newEntry);
     error InterchainDB__EntryDoesNotExist(address writer, uint256 writerNonce);
     error InterchainDB__IncorrectFeeAmount(uint256 actualFee, uint256 expectedFee);
     error InterchainDB__NoModulesSpecified();

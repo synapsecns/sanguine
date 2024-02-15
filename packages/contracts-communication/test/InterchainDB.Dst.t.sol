@@ -170,9 +170,11 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
         assertEq(timestampToCheck, verifiedAt[module][keccak256(abi.encode(entry))]);
     }
 
-    function expectConflictingEntries(InterchainEntry memory existingEntry, bytes32 dataHash) internal {
+    function expectConflictingEntries(InterchainEntry memory existingEntry, InterchainEntry memory newEntry) internal {
         vm.expectRevert(
-            abi.encodeWithSelector(IInterchainDB.InterchainDB__ConflictingEntries.selector, existingEntry, dataHash)
+            abi.encodeWithSelector(
+                IInterchainDB.InterchainDB__ConflictingEntries.selector, existingEntry.dataHash, newEntry
+            )
         );
     }
 
@@ -271,7 +273,7 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
         // writerF {0:0} was already verified by module A
         InterchainEntry memory existingEntry = getMockEntry(SRC_CHAIN_ID_0, writerF, 0);
         InterchainEntry memory conflictingEntry = getFakeEntry(SRC_CHAIN_ID_0, writerF, 0);
-        expectConflictingEntries(existingEntry, conflictingEntry.dataHash);
+        expectConflictingEntries(existingEntry, conflictingEntry);
         verifyEntry(moduleA, conflictingEntry);
     }
 
