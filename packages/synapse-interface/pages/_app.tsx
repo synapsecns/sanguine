@@ -38,7 +38,7 @@ if (
 }
 
 // precompute theme
-let RAINBOW_KIT_THEME = darkTheme({overlayBlur: 'small'})
+let RAINBOW_KIT_THEME = darkTheme({overlayBlur: 'large'})
 RAINBOW_KIT_THEME.colors.modalBackground = '#94a3b825'
 RAINBOW_KIT_THEME.colors.modalBorder = '#FFFFFF51'
 

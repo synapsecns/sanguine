@@ -99,8 +99,8 @@ export const _Transaction = ({
     originTxHash,
     isTxComplete
   )
-  console.log(kappa)
-  console.log(isTxFinalized)
+
+
   return (
     <div
       data-test-id="_transaction"
