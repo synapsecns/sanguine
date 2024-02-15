@@ -114,11 +114,11 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
     function assertCorrectVerificationTime(
         IInterchainDB.InterchainEntry memory entry,
         address module,
-        uint256 moduleVerifiedAt
+        uint256 timestampToCheck
     )
         internal
     {
-        assertEq(verifiedAt[module][keccak256(abi.encode(entry))], moduleVerifiedAt);
+        assertEq(timestampToCheck, verifiedAt[module][keccak256(abi.encode(entry))]);
     }
 
     function expectConflictingEntries(IInterchainDB.InterchainEntry memory existingEntry, bytes32 dataHash) internal {
@@ -231,5 +231,116 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
         IInterchainDB.InterchainEntry memory entry = getMockEntry(DST_CHAIN_ID, writerF, 0);
         expectSameChainId();
         verifyEntry(moduleA, entry);
+    }
+
+    // ══════════════════════════════════════════ TESTS: READING ENTRIES ═══════════════════════════════════════════════
+
+    function test_readEntry_existingA_existingB() public {
+        // writerF {1: 10} was verified by module A and module B
+        IInterchainDB.InterchainEntry memory entryF = getMockEntry(SRC_CHAIN_ID_1, writerF, 10);
+        assertCorrectVerificationTime(entryF, address(moduleA), icDB.readEntry(address(moduleA), entryF));
+        assertCorrectVerificationTime(entryF, address(moduleB), icDB.readEntry(address(moduleB), entryF));
+        // writerS {1: 0} was verified by module A and module B
+        IInterchainDB.InterchainEntry memory entryS = getMockEntry(SRC_CHAIN_ID_1, writerS, 0);
+        assertCorrectVerificationTime(entryS, address(moduleA), icDB.readEntry(address(moduleA), entryS));
+        assertCorrectVerificationTime(entryS, address(moduleB), icDB.readEntry(address(moduleB), entryS));
+    }
+
+    function test_readEntry_existingA_unknownB() public {
+        // writerF {0: 0} was verified by module A, but not by module B
+        IInterchainDB.InterchainEntry memory entryF = getMockEntry(SRC_CHAIN_ID_0, writerF, 10);
+        assertCorrectVerificationTime(entryF, address(moduleA), icDB.readEntry(address(moduleA), entryF));
+        assertEq(icDB.readEntry(address(moduleB), entryF), 0);
+        // writerS {1: 10} was verified by module A, but not by module B
+        IInterchainDB.InterchainEntry memory entryS = getMockEntry(SRC_CHAIN_ID_1, writerS, 10);
+        assertEq(icDB.readEntry(address(moduleA), entryS), 0);
+        assertCorrectVerificationTime(entryS, address(moduleB), icDB.readEntry(address(moduleB), entryS));
+    }
+
+    function test_readEntry_existingA_differentB() public {
+        introduceConflicts();
+        // writerF {0: 10} was verified by module A, but a "fake" entry was verified by module B
+        IInterchainDB.InterchainEntry memory entryF = getMockEntry(SRC_CHAIN_ID_0, writerF, 10);
+        assertCorrectVerificationTime(entryF, address(moduleA), icDB.readEntry(address(moduleA), entryF));
+        assertEq(icDB.readEntry(address(moduleB), entryF), 0);
+        // writerS {0: 10} was verified by module B, but a "fake" entry was verified by module A
+        IInterchainDB.InterchainEntry memory fakeEntryS = getFakeEntry(SRC_CHAIN_ID_0, writerS, 10);
+        assertCorrectVerificationTime(fakeEntryS, address(moduleA), icDB.readEntry(address(moduleA), fakeEntryS));
+        assertEq(icDB.readEntry(address(moduleB), fakeEntryS), 0);
+    }
+
+    function test_readEntry_unknownA_existingB() public {
+        // writerF {1: 0} was verified by module B, but not by module A
+        IInterchainDB.InterchainEntry memory entryF = getMockEntry(SRC_CHAIN_ID_1, writerF, 0);
+        assertEq(icDB.readEntry(address(moduleA), entryF), 0);
+        assertCorrectVerificationTime(entryF, address(moduleB), icDB.readEntry(address(moduleB), entryF));
+        // writerS {0: 0} was verified by module B, but not by module A
+        IInterchainDB.InterchainEntry memory entryS = getMockEntry(SRC_CHAIN_ID_0, writerS, 0);
+        assertEq(icDB.readEntry(address(moduleA), entryS), 0);
+        assertCorrectVerificationTime(entryS, address(moduleB), icDB.readEntry(address(moduleB), entryS));
+    }
+
+    function test_readEntry_unknownA_unknownB() public {
+        // writerF {0: 20} was not verified by any module
+        IInterchainDB.InterchainEntry memory entryF = getMockEntry(SRC_CHAIN_ID_0, writerF, 20);
+        assertEq(icDB.readEntry(address(moduleA), entryF), 0);
+        assertEq(icDB.readEntry(address(moduleB), entryF), 0);
+        // writerS {1: 5} was not verified by any module
+        IInterchainDB.InterchainEntry memory entryS = getMockEntry(SRC_CHAIN_ID_1, writerS, 5);
+        assertEq(icDB.readEntry(address(moduleA), entryS), 0);
+        assertEq(icDB.readEntry(address(moduleB), entryS), 0);
+    }
+
+    function test_readEntry_unknownA_differentB() public {
+        // writerF {1: 0} was verified by module B, but not by module A
+        // Check the fake entry that neither module verified
+        IInterchainDB.InterchainEntry memory fakeEntryF = getFakeEntry(SRC_CHAIN_ID_1, writerF, 0);
+        assertEq(icDB.readEntry(address(moduleA), fakeEntryF), 0);
+        assertEq(icDB.readEntry(address(moduleB), fakeEntryF), 0);
+        // writerS {0: 10} was verified by module B, but not by module A
+        // Check the fake entry that neither module verified
+        IInterchainDB.InterchainEntry memory fakeEntryS = getFakeEntry(SRC_CHAIN_ID_0, writerS, 10);
+        assertEq(icDB.readEntry(address(moduleA), fakeEntryS), 0);
+        assertEq(icDB.readEntry(address(moduleB), fakeEntryS), 0);
+    }
+
+    function test_readEntry_differentA_existingB() public {
+        introduceConflicts();
+        // writerF {0: 10} was verified by module A, but a "fake" entry was verified by module B
+        // Check the fake entry that A never verified
+        IInterchainDB.InterchainEntry memory fakeEntryF = getFakeEntry(SRC_CHAIN_ID_0, writerF, 10);
+        assertEq(icDB.readEntry(address(moduleA), fakeEntryF), 0);
+        assertCorrectVerificationTime(fakeEntryF, address(moduleB), icDB.readEntry(address(moduleB), fakeEntryF));
+        // writerS {0: 10} was verified by module B, but a "fake" entry was verified by module A
+        // Check the real entry that A never verified
+        IInterchainDB.InterchainEntry memory entryS = getMockEntry(SRC_CHAIN_ID_0, writerS, 10);
+        assertEq(icDB.readEntry(address(moduleA), entryS), 0);
+        assertCorrectVerificationTime(entryS, address(moduleB), icDB.readEntry(address(moduleB), entryS));
+    }
+
+    function test_readEntry_differentA_unknownB() public {
+        // writerF {0: 10} was verified by module A, but not by module B
+        // Check the fake entry that neither module verified
+        IInterchainDB.InterchainEntry memory fakeEntryF = getFakeEntry(SRC_CHAIN_ID_0, writerF, 10);
+        assertEq(icDB.readEntry(address(moduleA), fakeEntryF), 0);
+        assertEq(icDB.readEntry(address(moduleB), fakeEntryF), 0);
+        // writerS {1: 10} was verified by module A, but not by module B
+        // Check the fake entry that neither module verified
+        IInterchainDB.InterchainEntry memory fakeEntryS = getFakeEntry(SRC_CHAIN_ID_1, writerS, 10);
+        assertEq(icDB.readEntry(address(moduleA), fakeEntryS), 0);
+        assertEq(icDB.readEntry(address(moduleB), fakeEntryS), 0);
+    }
+
+    function test_readEntry_differentA_differentB() public {
+        // writerF {1: 10} was verified by module A and module B
+        // Check the fake entry that neither module verified
+        IInterchainDB.InterchainEntry memory fakeEntryF = getFakeEntry(SRC_CHAIN_ID_1, writerF, 10);
+        assertEq(icDB.readEntry(address(moduleA), fakeEntryF), 0);
+        assertEq(icDB.readEntry(address(moduleB), fakeEntryF), 0);
+        // writerS {1: 0} was verified by module A and module B
+        // Check the fake entry that neither module verified
+        IInterchainDB.InterchainEntry memory fakeEntryS = getFakeEntry(SRC_CHAIN_ID_1, writerS, 0);
+        assertEq(icDB.readEntry(address(moduleA), fakeEntryS), 0);
+        assertEq(icDB.readEntry(address(moduleB), fakeEntryS), 0);
     }
 }
