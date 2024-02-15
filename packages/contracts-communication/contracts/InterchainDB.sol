@@ -101,6 +101,9 @@ contract InterchainDB is IInterchainDB, IInterchainDBEvents {
     )
         internal
     {
+        if (destChainId == block.chainid) {
+            revert InterchainDB__SameChainId();
+        }
         (uint256[] memory fees, uint256 totalFee) = _getModuleFees(destChainId, srcModules);
         if (msg.value != totalFee) {
             revert InterchainDB__IncorrectFeeAmount(msg.value, totalFee);
