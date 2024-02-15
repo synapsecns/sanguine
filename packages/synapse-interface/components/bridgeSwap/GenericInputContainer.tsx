@@ -87,8 +87,9 @@ export const GenericInputContainer = ({
             pl-md
             w-full h-16
             rounded-md
-            focus-within:bg-bgBase/10
-            border border-white/10 focus-within:border-white/40
+            hover:bg-bgBase/[0.05] hover:border-white/20
+            focus-within:!bg-bgBase/10
+            border border-white/10 focus-within:!border-white/40
           `}
         >
           <div className="flex items-center">
@@ -122,11 +123,11 @@ export const GenericInputContainer = ({
                   {isConnected && (
                     <label
                       htmlFor="inputRow"
-                      className="text-xs text-white transition-all duration-150 transform-gpu hover:text-opacity-70 hover:cursor-pointer"
+                      className="group text-xs text-white/90 transition-all transform-gpu hover:text-white/50 hover:cursor-pointer"
                       onClick={onMaxBalance}
                     >
                       {parsedBalance ?? '0.0'}
-                      <span className="text-opacity-50 text-secondaryTextColor">
+                      <span className="text-white/40 group-hover:text-white/30">
                         {' '}
                         available
                       </span>
