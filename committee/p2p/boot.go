@@ -94,6 +94,10 @@ func (l *libP2PManagerImpl) DoSomethingElse() bool {
 		l.datastoreDs.Sync(context.Background(), datastore.NewKey("/"))
 		time.Sleep(time.Millisecond * 10)
 	}
+	err := l.datastoreDs.Put(context.Background(), datastore.NewKey("fat"), []byte("test"))
+	if err != nil {
+		fmt.Println("error: ", err)
+	}
 
 	fmt.Println(len(l.pubsub.ListPeers(dbTopic)))
 	val, err := l.datastoreDs.Get(context.Background(), datastore.NewKey("test"))
@@ -136,6 +140,13 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	}
 
 	ipfs, err := ipfslite.New(ctx, l.globalDS, nil, l.host, l.dht, &ipfslite.Config{})
+	go l.Discover(ctx, l.host, l.dht, dbTopic)
+	time.Sleep(time.Second)
+
+	l.pubsub, err = pubsub.NewGossipSub(ctx, l.host, pubsub.WithFloodPublish(true), pubsub.WithDiscovery(l.discovery), pubsub.WithPeerFilter(func(pid peer.ID, topic string) bool {
+		return true
+	}))
+
 	ipfs.Bootstrap(peers)
 	//for _, peerAddr := range dht.DefaultBootstrapPeers {
 	//	peerinfo, _ := peer.AddrInfoFromP2pAddr(peerAddr)
@@ -149,11 +160,8 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	for _, p := range peers {
 		l.host.ConnManager().TagPeer(p.ID, "keep", 100)
 	}
-
-	go l.Discover(ctx, l.host, l.dht, dbTopic)
-
 	time.Sleep(time.Second * 3)
-	l.pubsub, err = pubsub.NewGossipSub(ctx, l.host, pubsub.WithFloodPublish(true), pubsub.WithDiscovery(l.discovery))
+
 	if err != nil {
 		return fmt.Errorf("could not create pubsub: %w", err)
 	}
@@ -201,21 +209,31 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 
 type DiscoveryWrapper struct {
 	f *routing.RoutingDiscovery
+	l *libP2PManagerImpl
 }
 
 func (d DiscoveryWrapper) FindPeers(ctx context.Context, ns string, opts ...discovery.Option) (<-chan peer.AddrInfo, error) {
-	return d.f.FindPeers(ctx, ns, opts...)
+	//return d.f.FindPeers(ctx, ns, discovery.TTL(time.Second))
+	myPeer := make(chan peer.AddrInfo)
+	go func() {
+		peers := d.l.host.Peerstore().Peers()
+		for _, p := range peers {
+			myPeer <- d.l.host.Peerstore().PeerInfo(p)
+		}
+	}()
+
+	return myPeer, nil
 }
 
 func (d DiscoveryWrapper) Advertise(ctx context.Context, ns string, opts ...discovery.Option) (time.Duration, error) {
-	return d.f.Advertise(ctx, ns)
+	return d.f.Advertise(ctx, ns, discovery.TTL(time.Second))
 }
 
 var _ discovery.Discovery = (*DiscoveryWrapper)(nil)
 
 func (l *libP2PManagerImpl) Discover(ctx context.Context, h host.Host, dht *dual.DHT, rendezvous string) {
 	routingDiscovery := routing.NewRoutingDiscovery(dht)
-	l.discovery = DiscoveryWrapper{routingDiscovery}
+	l.discovery = DiscoveryWrapper{routingDiscovery, l}
 
 	util.Advertise(ctx, routingDiscovery, rendezvous)
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	crdt "github.com/ipfs/go-ds-crdt"
 	"strings"
+	"time"
 
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 )
@@ -34,6 +35,16 @@ func (l *libP2PManagerImpl) NewPubSubBroadcaster(ctx context.Context, psub *pubs
 	if err != nil {
 		return nil, err
 	}
+
+	go func() {
+		for {
+			yo, err := psubTopic.Subscribe()
+			time.Sleep(time.Second)
+			_ = yo
+			_ = err
+		}
+
+	}()
 
 	go func(ctx context.Context, subs *pubsub.Subscription) {
 		<-ctx.Done()

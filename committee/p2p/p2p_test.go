@@ -44,20 +44,31 @@ func (s *P2PTestSuite) TestLibP2PManager() {
 
 		err := manager.Start(s.GetTestContext(), addresses)
 		s.Require().NoError(err)
-		time.Sleep(time.Second)
+		//time.Sleep(time.Second)
 		//}()
+		wg.Done()
 	}
-	//wg.Wait()
+	wg.Wait()
 
 	time.Sleep(time.Second * 2)
 	m1.DoSomething()
 	time.Sleep(time.Second * 1)
 	for {
-		s.makeManager().Start(s.GetTestContext(), addresses)
+		yo := s.makeManager()
+		yo.Start(s.GetTestContext(), addresses)
 
 		if m2.DoSomethingElse() {
 			break
 		}
+
+		go func() {
+			for {
+				time.Sleep(time.Second)
+				if yo.DoSomethingElse() {
+					fmt.Println("fat")
+				}
+			}
+		}()
 	}
 }
 
