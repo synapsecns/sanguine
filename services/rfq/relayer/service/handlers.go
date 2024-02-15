@@ -115,6 +115,7 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, r
 		return fmt.Errorf("could not determine if profitable: %w", err)
 	}
 	if !isProfitable {
+		// will retry later since profitability is dependent on dynamic gas prices
 		span.AddEvent("quote is not profitable")
 		return nil
 	}
