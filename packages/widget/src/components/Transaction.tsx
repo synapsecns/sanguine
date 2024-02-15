@@ -187,9 +187,11 @@ const TransactionBridgeDetail = ({
   originTokenSymbol: string
   destinationChain: Chain
 }) => {
+  const showAmount = parseFloat(tokenAmount)?.toFixed(6)
+
   return (
     <div className="flex">
-      {tokenAmount} {originTokenSymbol} to {destinationChain.name}
+      {showAmount} {originTokenSymbol} to {destinationChain.name}
     </div>
   )
 }
