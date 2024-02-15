@@ -8,8 +8,7 @@ import * as tokensList from './config/bridgeable'
 import * as chainsData from './config/chains.json'
 import { BRIDGE_MAP } from './config/bridgeMap'
 
-// To run locally you may need to add the "node --experimental-json-modules app.js" flag for the following jsons to be read
-
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface Token {
   addresses: {
     [key: string]: string
@@ -29,6 +28,11 @@ interface Token {
   isNative?: boolean
   docUrl?: string
 }
+// interface Tokens {
+//   [key: string]: Token
+// }
+
+// const tokens: Tokens = tokensList as any
 
 interface Chains {
   id: number
@@ -37,6 +41,7 @@ interface Chains {
 }
 
 const chains: Chains[] = chainsData as any
+// eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 function findTokenInfo(chain: string, tokenSymbol: string) {
   const chainData = BRIDGE_MAP[chain]
   if (!chainData) {
