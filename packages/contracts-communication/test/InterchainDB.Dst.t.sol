@@ -304,8 +304,8 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
         assertEq(icDB.readEntry(address(moduleB), entryF), 0);
         // writerS {1: 10} was verified by module A, but not by module B
         InterchainEntry memory entryS = getMockEntry(SRC_CHAIN_ID_1, writerS, 10);
-        assertEq(icDB.readEntry(address(moduleA), entryS), 0);
-        assertCorrectVerificationTime(entryS, address(moduleB), icDB.readEntry(address(moduleB), entryS));
+        assertCorrectVerificationTime(entryS, address(moduleA), icDB.readEntry(address(moduleA), entryS));
+        assertEq(icDB.readEntry(address(moduleB), entryS), 0);
     }
 
     function test_readEntry_existingA_differentB() public {
