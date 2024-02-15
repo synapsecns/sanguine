@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {InterchainDB, IInterchainDB, IInterchainDBEvents} from "../contracts/InterchainDB.sol";
+import {InterchainDB, InterchainEntry, IInterchainDB, IInterchainDBEvents} from "../contracts/InterchainDB.sol";
 
 import {InterchainModuleMock, IInterchainModule} from "./mocks/InterchainModuleMock.sol";
 
@@ -48,7 +48,7 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
         verifyEntry(moduleB, getMockEntry(SRC_CHAIN_ID_1, writerS, 0));
     }
 
-    function verifyEntry(InterchainModuleMock module, IInterchainDB.InterchainEntry memory entry) internal {
+    function verifyEntry(InterchainModuleMock module, InterchainEntry memory entry) internal {
         skip(1 minutes);
         verifiedAt[address(module)][keccak256(abi.encode(entry))] = block.timestamp;
         module.mockVerifyEntry(address(icDB), entry);
@@ -74,9 +74,9 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
     )
         internal
         pure
-        returns (IInterchainDB.InterchainEntry memory entry)
+        returns (InterchainEntry memory entry)
     {
-        return IInterchainDB.InterchainEntry({
+        return InterchainEntry({
             srcChainId: srcChainId,
             srcWriter: addressToBytes32(writer),
             writerNonce: nonce,
@@ -95,9 +95,9 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
     )
         internal
         pure
-        returns (IInterchainDB.InterchainEntry memory entry)
+        returns (InterchainEntry memory entry)
     {
-        return IInterchainDB.InterchainEntry({
+        return InterchainEntry({
             srcChainId: srcChainId,
             srcWriter: addressToBytes32(writer),
             writerNonce: nonce,
@@ -112,7 +112,7 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
     // ═══════════════════════════════════════════════ TEST HELPERS ════════════════════════════════════════════════════
 
     function assertCorrectVerificationTime(
-        IInterchainDB.InterchainEntry memory entry,
+        InterchainEntry memory entry,
         address module,
         uint256 timestampToCheck
     )
@@ -121,7 +121,7 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
         assertEq(timestampToCheck, verifiedAt[module][keccak256(abi.encode(entry))]);
     }
 
-    function expectConflictingEntries(IInterchainDB.InterchainEntry memory existingEntry, bytes32 dataHash) internal {
+    function expectConflictingEntries(InterchainEntry memory existingEntry, bytes32 dataHash) internal {
         vm.expectRevert(
             abi.encodeWithSelector(IInterchainDB.InterchainDB__ConflictingEntries.selector, existingEntry, dataHash)
         );
@@ -135,7 +135,7 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
 
     function test_verifyEntry_new_emitsEvent() public {
         skip(1 days);
-        IInterchainDB.InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, writerF, 20);
+        InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, writerF, 20);
         vm.expectEmit(address(icDB));
         emit InterchainEntryVerified(
             address(moduleA), entry.srcChainId, entry.srcWriter, entry.writerNonce, entry.dataHash
@@ -144,14 +144,14 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
     }
 
     function test_verifyEntry_new_savesVerificationTime() public {
-        IInterchainDB.InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, writerF, 20);
+        InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, writerF, 20);
         verifyEntry(moduleA, entry);
         assertEq(icDB.readEntry(address(moduleA), entry), block.timestamp);
     }
 
     function test_verifyEntry_existing_diffModule_emitsEvent() public {
         // writerS {0:0} was already verified by module B
-        IInterchainDB.InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, writerS, 0);
+        InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, writerS, 0);
         vm.expectEmit(address(icDB));
         emit InterchainEntryVerified(
             address(moduleA), entry.srcChainId, entry.srcWriter, entry.writerNonce, entry.dataHash
@@ -161,7 +161,7 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
 
     function test_verifyEntry_existing_diffModule_doesNotUpdateExistingVerificationTime() public {
         // writerS {0:0} was already verified by module B
-        IInterchainDB.InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, writerS, 0);
+        InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, writerS, 0);
         uint256 moduleBVerifiedAt = verifiedAt[address(moduleB)][keccak256(abi.encode(entry))];
         verifyEntry(moduleA, entry);
         assertEq(icDB.readEntry(address(moduleB), entry), moduleBVerifiedAt);
@@ -169,14 +169,14 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
 
     function test_verifyEntry_existing_diffModule_savesVerificationTime() public {
         // writerS {0:0} was already verified by module B
-        IInterchainDB.InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, writerS, 0);
+        InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, writerS, 0);
         verifyEntry(moduleA, entry);
         assertEq(icDB.readEntry(address(moduleA), entry), block.timestamp);
     }
 
     function test_verifyEntry_existing_sameModule_doesNotEmitEvent() public {
         // writerF {0:0} was already verified by module A
-        IInterchainDB.InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, writerF, 0);
+        InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, writerF, 0);
         vm.recordLogs();
         verifyEntry(moduleA, entry);
         assertEq(vm.getRecordedLogs().length, 0);
@@ -184,7 +184,7 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
 
     function test_verifyEntry_existing_sameModule_doesNotUpdateExistingVerificationTime() public {
         // writerF {0:0} was already verified by module A
-        IInterchainDB.InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, writerF, 0);
+        InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, writerF, 0);
         uint256 moduleAVerifiedAt = verifiedAt[address(moduleA)][keccak256(abi.encode(entry))];
         verifyEntry(moduleA, entry);
         assertEq(icDB.readEntry(address(moduleA), entry), moduleAVerifiedAt);
@@ -192,7 +192,7 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
 
     function test_verifyEntry_conflict_diffModule_emitsEvent() public {
         // writerS {0:0} was already verified by module B
-        IInterchainDB.InterchainEntry memory entry = getFakeEntry(SRC_CHAIN_ID_0, writerS, 0);
+        InterchainEntry memory entry = getFakeEntry(SRC_CHAIN_ID_0, writerS, 0);
         vm.expectEmit(address(icDB));
         emit InterchainEntryVerified(
             address(moduleA), entry.srcChainId, entry.srcWriter, entry.writerNonce, entry.dataHash
@@ -202,8 +202,8 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
 
     function test_verifyEntry_conflict_diffModule_doesNotUpdateExistingVerificationTime() public {
         // writerS {0:0} was already verified by module B
-        IInterchainDB.InterchainEntry memory entry = getFakeEntry(SRC_CHAIN_ID_0, writerS, 0);
-        IInterchainDB.InterchainEntry memory realEntry = getMockEntry(SRC_CHAIN_ID_0, writerS, 0);
+        InterchainEntry memory entry = getFakeEntry(SRC_CHAIN_ID_0, writerS, 0);
+        InterchainEntry memory realEntry = getMockEntry(SRC_CHAIN_ID_0, writerS, 0);
         uint256 moduleBVerifiedAt = verifiedAt[address(moduleB)][keccak256(abi.encode(realEntry))];
         verifyEntry(moduleA, entry);
         assertEq(icDB.readEntry(address(moduleB), realEntry), moduleBVerifiedAt);
@@ -211,7 +211,7 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
 
     function test_verifyEntry_conflict_diffModule_savesVerificationTime() public {
         // writerS {0:0} was already verified by module B
-        IInterchainDB.InterchainEntry memory entry = getFakeEntry(SRC_CHAIN_ID_0, writerS, 0);
+        InterchainEntry memory entry = getFakeEntry(SRC_CHAIN_ID_0, writerS, 0);
         verifyEntry(moduleA, entry);
         assertEq(icDB.readEntry(address(moduleA), entry), block.timestamp);
     }
@@ -220,15 +220,15 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
 
     function test_verifyEntry_revert_conflict_sameModule() public {
         // writerF {0:0} was already verified by module A
-        IInterchainDB.InterchainEntry memory existingEntry = getMockEntry(SRC_CHAIN_ID_0, writerF, 0);
-        IInterchainDB.InterchainEntry memory conflictingEntry = getFakeEntry(SRC_CHAIN_ID_0, writerF, 0);
+        InterchainEntry memory existingEntry = getMockEntry(SRC_CHAIN_ID_0, writerF, 0);
+        InterchainEntry memory conflictingEntry = getFakeEntry(SRC_CHAIN_ID_0, writerF, 0);
         expectConflictingEntries(existingEntry, conflictingEntry.dataHash);
         verifyEntry(moduleA, conflictingEntry);
     }
 
     function test_verifyEntry_revert_sameChainId() public {
         // Try to verify entry coming from the same chain
-        IInterchainDB.InterchainEntry memory entry = getMockEntry(DST_CHAIN_ID, writerF, 0);
+        InterchainEntry memory entry = getMockEntry(DST_CHAIN_ID, writerF, 0);
         expectSameChainId();
         verifyEntry(moduleA, entry);
     }
@@ -237,22 +237,22 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
 
     function test_readEntry_existingA_existingB() public {
         // writerF {1: 10} was verified by module A and module B
-        IInterchainDB.InterchainEntry memory entryF = getMockEntry(SRC_CHAIN_ID_1, writerF, 10);
+        InterchainEntry memory entryF = getMockEntry(SRC_CHAIN_ID_1, writerF, 10);
         assertCorrectVerificationTime(entryF, address(moduleA), icDB.readEntry(address(moduleA), entryF));
         assertCorrectVerificationTime(entryF, address(moduleB), icDB.readEntry(address(moduleB), entryF));
         // writerS {1: 0} was verified by module A and module B
-        IInterchainDB.InterchainEntry memory entryS = getMockEntry(SRC_CHAIN_ID_1, writerS, 0);
+        InterchainEntry memory entryS = getMockEntry(SRC_CHAIN_ID_1, writerS, 0);
         assertCorrectVerificationTime(entryS, address(moduleA), icDB.readEntry(address(moduleA), entryS));
         assertCorrectVerificationTime(entryS, address(moduleB), icDB.readEntry(address(moduleB), entryS));
     }
 
     function test_readEntry_existingA_unknownB() public {
         // writerF {0: 0} was verified by module A, but not by module B
-        IInterchainDB.InterchainEntry memory entryF = getMockEntry(SRC_CHAIN_ID_0, writerF, 10);
+        InterchainEntry memory entryF = getMockEntry(SRC_CHAIN_ID_0, writerF, 10);
         assertCorrectVerificationTime(entryF, address(moduleA), icDB.readEntry(address(moduleA), entryF));
         assertEq(icDB.readEntry(address(moduleB), entryF), 0);
         // writerS {1: 10} was verified by module A, but not by module B
-        IInterchainDB.InterchainEntry memory entryS = getMockEntry(SRC_CHAIN_ID_1, writerS, 10);
+        InterchainEntry memory entryS = getMockEntry(SRC_CHAIN_ID_1, writerS, 10);
         assertEq(icDB.readEntry(address(moduleA), entryS), 0);
         assertCorrectVerificationTime(entryS, address(moduleB), icDB.readEntry(address(moduleB), entryS));
     }
@@ -260,33 +260,33 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
     function test_readEntry_existingA_differentB() public {
         introduceConflicts();
         // writerF {0: 10} was verified by module A, but a "fake" entry was verified by module B
-        IInterchainDB.InterchainEntry memory entryF = getMockEntry(SRC_CHAIN_ID_0, writerF, 10);
+        InterchainEntry memory entryF = getMockEntry(SRC_CHAIN_ID_0, writerF, 10);
         assertCorrectVerificationTime(entryF, address(moduleA), icDB.readEntry(address(moduleA), entryF));
         assertEq(icDB.readEntry(address(moduleB), entryF), 0);
         // writerS {0: 10} was verified by module B, but a "fake" entry was verified by module A
-        IInterchainDB.InterchainEntry memory fakeEntryS = getFakeEntry(SRC_CHAIN_ID_0, writerS, 10);
+        InterchainEntry memory fakeEntryS = getFakeEntry(SRC_CHAIN_ID_0, writerS, 10);
         assertCorrectVerificationTime(fakeEntryS, address(moduleA), icDB.readEntry(address(moduleA), fakeEntryS));
         assertEq(icDB.readEntry(address(moduleB), fakeEntryS), 0);
     }
 
     function test_readEntry_unknownA_existingB() public {
         // writerF {1: 0} was verified by module B, but not by module A
-        IInterchainDB.InterchainEntry memory entryF = getMockEntry(SRC_CHAIN_ID_1, writerF, 0);
+        InterchainEntry memory entryF = getMockEntry(SRC_CHAIN_ID_1, writerF, 0);
         assertEq(icDB.readEntry(address(moduleA), entryF), 0);
         assertCorrectVerificationTime(entryF, address(moduleB), icDB.readEntry(address(moduleB), entryF));
         // writerS {0: 0} was verified by module B, but not by module A
-        IInterchainDB.InterchainEntry memory entryS = getMockEntry(SRC_CHAIN_ID_0, writerS, 0);
+        InterchainEntry memory entryS = getMockEntry(SRC_CHAIN_ID_0, writerS, 0);
         assertEq(icDB.readEntry(address(moduleA), entryS), 0);
         assertCorrectVerificationTime(entryS, address(moduleB), icDB.readEntry(address(moduleB), entryS));
     }
 
     function test_readEntry_unknownA_unknownB() public {
         // writerF {0: 20} was not verified by any module
-        IInterchainDB.InterchainEntry memory entryF = getMockEntry(SRC_CHAIN_ID_0, writerF, 20);
+        InterchainEntry memory entryF = getMockEntry(SRC_CHAIN_ID_0, writerF, 20);
         assertEq(icDB.readEntry(address(moduleA), entryF), 0);
         assertEq(icDB.readEntry(address(moduleB), entryF), 0);
         // writerS {1: 5} was not verified by any module
-        IInterchainDB.InterchainEntry memory entryS = getMockEntry(SRC_CHAIN_ID_1, writerS, 5);
+        InterchainEntry memory entryS = getMockEntry(SRC_CHAIN_ID_1, writerS, 5);
         assertEq(icDB.readEntry(address(moduleA), entryS), 0);
         assertEq(icDB.readEntry(address(moduleB), entryS), 0);
     }
@@ -294,12 +294,12 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
     function test_readEntry_unknownA_differentB() public {
         // writerF {1: 0} was verified by module B, but not by module A
         // Check the fake entry that neither module verified
-        IInterchainDB.InterchainEntry memory fakeEntryF = getFakeEntry(SRC_CHAIN_ID_1, writerF, 0);
+        InterchainEntry memory fakeEntryF = getFakeEntry(SRC_CHAIN_ID_1, writerF, 0);
         assertEq(icDB.readEntry(address(moduleA), fakeEntryF), 0);
         assertEq(icDB.readEntry(address(moduleB), fakeEntryF), 0);
         // writerS {0: 10} was verified by module B, but not by module A
         // Check the fake entry that neither module verified
-        IInterchainDB.InterchainEntry memory fakeEntryS = getFakeEntry(SRC_CHAIN_ID_0, writerS, 10);
+        InterchainEntry memory fakeEntryS = getFakeEntry(SRC_CHAIN_ID_0, writerS, 10);
         assertEq(icDB.readEntry(address(moduleA), fakeEntryS), 0);
         assertEq(icDB.readEntry(address(moduleB), fakeEntryS), 0);
     }
@@ -308,12 +308,12 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
         introduceConflicts();
         // writerF {0: 10} was verified by module A, but a "fake" entry was verified by module B
         // Check the fake entry that A never verified
-        IInterchainDB.InterchainEntry memory fakeEntryF = getFakeEntry(SRC_CHAIN_ID_0, writerF, 10);
+        InterchainEntry memory fakeEntryF = getFakeEntry(SRC_CHAIN_ID_0, writerF, 10);
         assertEq(icDB.readEntry(address(moduleA), fakeEntryF), 0);
         assertCorrectVerificationTime(fakeEntryF, address(moduleB), icDB.readEntry(address(moduleB), fakeEntryF));
         // writerS {0: 10} was verified by module B, but a "fake" entry was verified by module A
         // Check the real entry that A never verified
-        IInterchainDB.InterchainEntry memory entryS = getMockEntry(SRC_CHAIN_ID_0, writerS, 10);
+        InterchainEntry memory entryS = getMockEntry(SRC_CHAIN_ID_0, writerS, 10);
         assertEq(icDB.readEntry(address(moduleA), entryS), 0);
         assertCorrectVerificationTime(entryS, address(moduleB), icDB.readEntry(address(moduleB), entryS));
     }
@@ -321,12 +321,12 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
     function test_readEntry_differentA_unknownB() public {
         // writerF {0: 10} was verified by module A, but not by module B
         // Check the fake entry that neither module verified
-        IInterchainDB.InterchainEntry memory fakeEntryF = getFakeEntry(SRC_CHAIN_ID_0, writerF, 10);
+        InterchainEntry memory fakeEntryF = getFakeEntry(SRC_CHAIN_ID_0, writerF, 10);
         assertEq(icDB.readEntry(address(moduleA), fakeEntryF), 0);
         assertEq(icDB.readEntry(address(moduleB), fakeEntryF), 0);
         // writerS {1: 10} was verified by module A, but not by module B
         // Check the fake entry that neither module verified
-        IInterchainDB.InterchainEntry memory fakeEntryS = getFakeEntry(SRC_CHAIN_ID_1, writerS, 10);
+        InterchainEntry memory fakeEntryS = getFakeEntry(SRC_CHAIN_ID_1, writerS, 10);
         assertEq(icDB.readEntry(address(moduleA), fakeEntryS), 0);
         assertEq(icDB.readEntry(address(moduleB), fakeEntryS), 0);
     }
@@ -334,12 +334,12 @@ contract InterchainDBDestinationTest is Test, IInterchainDBEvents {
     function test_readEntry_differentA_differentB() public {
         // writerF {1: 10} was verified by module A and module B
         // Check the fake entry that neither module verified
-        IInterchainDB.InterchainEntry memory fakeEntryF = getFakeEntry(SRC_CHAIN_ID_1, writerF, 10);
+        InterchainEntry memory fakeEntryF = getFakeEntry(SRC_CHAIN_ID_1, writerF, 10);
         assertEq(icDB.readEntry(address(moduleA), fakeEntryF), 0);
         assertEq(icDB.readEntry(address(moduleB), fakeEntryF), 0);
         // writerS {1: 0} was verified by module A and module B
         // Check the fake entry that neither module verified
-        IInterchainDB.InterchainEntry memory fakeEntryS = getFakeEntry(SRC_CHAIN_ID_1, writerS, 0);
+        InterchainEntry memory fakeEntryS = getFakeEntry(SRC_CHAIN_ID_1, writerS, 0);
         assertEq(icDB.readEntry(address(moduleA), fakeEntryS), 0);
         assertEq(icDB.readEntry(address(moduleB), fakeEntryS), 0);
     }

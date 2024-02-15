@@ -8,12 +8,8 @@ import {Test} from "forge-std/Test.sol";
 contract InterchainEntryLibTest is Test {
     InterchainEntryLibHarness public libHarness;
 
-    InterchainEntry public mockEntry = InterchainEntry({
-        srcChainId: 1,
-        srcWriter: bytes32(uint256(2)),
-        writerNonce: 3,
-        dataHash: bytes32(uint256(4))
-    });
+    InterchainEntry public mockEntry =
+        InterchainEntry({srcChainId: 1, srcWriter: bytes32(uint256(2)), writerNonce: 3, dataHash: bytes32(uint256(4))});
 
     function setUp() public {
         libHarness = new InterchainEntryLibHarness();

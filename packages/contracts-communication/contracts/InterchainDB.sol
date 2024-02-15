@@ -5,6 +5,7 @@ import {IInterchainDB} from "./interfaces/IInterchainDB.sol";
 import {IInterchainDBEvents} from "./interfaces/IInterchainDBEvents.sol";
 import {IInterchainModule} from "./interfaces/IInterchainModule.sol";
 
+import {InterchainEntry, InterchainEntryLib} from "./libs/InterchainEntry.sol";
 import {TypeCasts} from "./libs/TypeCasts.sol";
 
 contract InterchainDB is IInterchainDB, IInterchainDBEvents {
@@ -44,7 +45,7 @@ contract InterchainDB is IInterchainDB, IInterchainDBEvents {
         returns (uint256 writerNonce)
     {
         writerNonce = _writeEntry(dataHash);
-        InterchainEntry memory entry = _constructEntry(msg.sender, writerNonce, dataHash);
+        InterchainEntry memory entry = InterchainEntryLib.constructLocalEntry(msg.sender, writerNonce, dataHash);
         _requestVerification(destChainId, entry, srcModules);
     }
 
@@ -75,7 +76,7 @@ contract InterchainDB is IInterchainDB, IInterchainDBEvents {
         if (getWriterNonce(writer) <= writerNonce) {
             revert InterchainDB__EntryDoesNotExist(writer, writerNonce);
         }
-        return _constructEntry(writer, writerNonce, _entries[writer][writerNonce]);
+        return InterchainEntryLib.constructLocalEntry(writer, writerNonce, _entries[writer][writerNonce]);
     }
 
     /// @inheritdoc IInterchainDB
@@ -116,24 +117,6 @@ contract InterchainDB is IInterchainDB, IInterchainDBEvents {
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
-
-    /// @dev Construct the entry struct from the given parameters
-    function _constructEntry(
-        address writer,
-        uint256 writerNonce,
-        bytes32 dataHash
-    )
-        internal
-        view
-        returns (InterchainEntry memory)
-    {
-        return InterchainEntry({
-            srcChainId: block.chainid,
-            srcWriter: writer.addressToBytes32(),
-            writerNonce: writerNonce,
-            dataHash: dataHash
-        });
-    }
 
     /// @dev Get the verification fees for the modules
     function _getModuleFees(
