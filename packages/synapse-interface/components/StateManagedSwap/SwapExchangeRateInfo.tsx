@@ -43,12 +43,12 @@ const SwapExchangeRateInfo = ({
 
   return (
     <div className="py-3.5 px-1 space-y-2 text-xs md:text-base lg:text-base md:px-6">
-      <div className="flex justify-between">
-        <div className="flex space-x-2 text-[#88818C]">
+      <div className="flex justify-between text-white/50">
+        <div className="flex space-x-2 ">
           <p>Expected Price on</p>
           {expectedToChain}
         </div>
-        <span className="text-[#88818C]">
+        <span className="">
           {safeFromAmount != 0n ? (
             <>
               {formattedExchangeRate}{' '}
@@ -60,11 +60,11 @@ const SwapExchangeRateInfo = ({
         </span>
       </div>
       <div className="flex justify-between">
-        <p className="text-[#88818C] ">Slippage</p>
+        <p className="text-white/50">Slippage</p>
         {safeFromAmount != 0n && !underFee ? (
           <span className={` ${textColor}`}>{formattedPercentSlippage}</span>
         ) : (
-          <span className="text-[#88818C]">—</span>
+          <span className="text-white/50">—</span>
         )}
       </div>
     </div>

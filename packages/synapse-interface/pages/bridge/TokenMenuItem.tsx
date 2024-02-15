@@ -7,6 +7,8 @@ import {
 import { memo } from 'react'
 import { Token } from '@/utils/types'
 import TokenBalance from '@components/TokenBalance'
+
+
 const TokenMenuItem = ({
   token,
   active,

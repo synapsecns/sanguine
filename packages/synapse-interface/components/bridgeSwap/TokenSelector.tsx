@@ -19,17 +19,18 @@ export const TokenSelector = ({ token, label, onClick, ...props }) => {
       `}
       onClick={onClick}
     >
-      <div className="flex items-center space-x-3">
+      <div className="flex items-center justify-items-end space-x-2">
         { token &&
           <div className="flex-none hidden md:inline-block">
             <img src={token?.icon?.src} alt={token?.symbol} className="w-6 h-6" />
           </div>
         }
-        <div className="text-left">
+        <div className="text-left flex-grow">
           <div className="text-lg text-primaryTextColor">
             {token?.symbol ?? label}
           </div>
         </div>
+        <div className='flex-shrink'>
         <ChevronDownIcon
           className={`
               flex-none
@@ -39,6 +40,8 @@ export const TokenSelector = ({ token, label, onClick, ...props }) => {
               group-active:rotate-180 transition-all
           `}
         />
+        </div>
+
       </div>
     </button>
   )

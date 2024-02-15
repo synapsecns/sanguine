@@ -81,6 +81,7 @@ export const GenericInputContainer = ({
       </div>
       <div className="flex h-16 mb-2 space-x-2">
         <div
+          onClick={() => inputRef.current?.focus()}
           className={`
             flex flex-grow items-center justify-between
             pl-md
@@ -92,8 +93,8 @@ export const GenericInputContainer = ({
         >
           <div className="flex items-center">
             {tokenSelector}
-            <div className="flex flex-col justify-between ml-4">
-              <div style={{ display: 'table' }}>
+            <div className="flex flex-col justify-between">
+              <div className="pl-4 -mt-0.5" >
                 <input
                   ref={inputRef}
                   pattern="^[0-9]*[.,]?[0-9]*$"
@@ -104,7 +105,7 @@ export const GenericInputContainer = ({
                     focus:border-none
                     border-none
                     bg-transparent
-                    p-0
+                    p-0 -mb-2
                     placeholder:text-white/40
                     text-white text-opacity-80 text-xl md:text-2xl font-medium
                   `}
@@ -117,20 +118,23 @@ export const GenericInputContainer = ({
                   maxLength={79}
                   style={{ display: 'table-cell', width: '100%' }}
                 />
+                <div>
+                  {isConnected && (
+                    <label
+                      htmlFor="inputRow"
+                      className="text-xs text-white transition-all duration-150 transform-gpu hover:text-opacity-70 hover:cursor-pointer"
+                      onClick={onMaxBalance}
+                    >
+                      {parsedBalance ?? '0.0'}
+                      <span className="text-opacity-50 text-secondaryTextColor">
+                        {' '}
+                        available
+                      </span>
+                    </label>
+                  )}
+                </div>
               </div>
-              {isConnected && (
-                <label
-                  htmlFor="inputRow"
-                  className="text-xs text-white transition-all duration-150 transform-gpu hover:text-opacity-70 hover:cursor-pointer"
-                  onClick={onMaxBalance}
-                >
-                  {parsedBalance ?? '0.0'}
-                  <span className="text-opacity-50 text-secondaryTextColor">
-                    {' '}
-                    available
-                  </span>
-                </label>
-              )}
+
             </div>
           </div>
           <div>
