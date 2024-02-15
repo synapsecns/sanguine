@@ -1,11 +1,12 @@
 import { useMemo, useState, useEffect } from 'react'
-import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { useAccount, useNetwork } from 'wagmi'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { MetamaskIcon } from '@icons/WalletIcons/Metamask'
 import { CoinbaseWalletIcon } from '@icons/WalletIcons/CoinbaseWalletIcon'
 import { WalletConnectIcon } from '@icons/WalletIcons/WalletConnectIcon'
+import Spinner from '@icons/Spinner'
 import { IconProps, WalletId } from '@utils/types'
-import Spinner from './icons/Spinner'
+
 
 const WALLETS = [
   {

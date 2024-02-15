@@ -118,11 +118,11 @@ const Withdraw = ({ address }: { address: string }) => {
           outputs,
         })
       )
-      dispatch(setIsLoading(false))
     } catch (e) {
-      dispatch(setIsLoading(false))
       console.log(e)
     }
+
+    dispatch(setIsLoading(false))
   }
 
   useEffect(() => {
@@ -239,7 +239,7 @@ const Withdraw = ({ address }: { address: string }) => {
             onFocus={(e) => e.target.select()}
             value={percentage ?? ''}
           />
-          <div className="my-2">
+          <div className="my-2 px-1">
             {/* @ts-ignore */}
             <Slider
               axis="x"
@@ -252,8 +252,8 @@ const Withdraw = ({ address }: { address: string }) => {
               }}
               styles={{
                 track: {
-                  backgroundColor: '#E0E7FF',
-                  width: '95%',
+                  backgroundColor: '#FFFFFF13',
+                  width: '100%',
                 },
                 active: {
                   backgroundColor: '#B286FF',

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react'
 import Fuse from 'fuse.js'
 import { Address, useAccount, useNetwork } from 'wagmi'
 import { useAppDispatch } from '@/store/hooks'
-import { setFromChainId } from '@/slices/bridge/reducer'
+
 import { PortfolioTabManager } from './components/PortfolioTabManager'
 import {
   NetworkTokenBalances,
@@ -21,7 +21,7 @@ import {
 import { resetTransactionsState } from '@/slices/transactions/actions'
 import { PortfolioState } from '@/slices/portfolio/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { BridgeState } from '@/slices/bridge/reducer'
+import { setFromChainId, BridgeState } from '@/slices/bridge/reducer'
 import { resetBridgeInputs } from '@/slices/bridge/actions'
 import { ViewSearchAddressBanner } from './components/ViewSearchAddressBanner'
 import { Activity } from './Activity'
