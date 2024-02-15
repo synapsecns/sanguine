@@ -4,11 +4,20 @@ import { usePendingTxWrapper } from '@hooks/usePendingTxWrapper'
 import { TransactionResponse } from '@ethersproject/providers'
 import { CSSProperties } from 'react'
 
+// const BASE_PROPERTIES = `
+//     w-full rounded-md px-4 py-3
+//     text-white text-opacity-100 transition-all
+//     hover:opacity-80 disabled:opacity-50 disabled:text-[#88818C]
+//     disabled:from-bgLight/90 disabled:to-bgLight/70
+//     bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF]
+//   `
 const BASE_PROPERTIES = `
     w-full rounded-md px-4 py-3
     text-white text-opacity-100 transition-all
-    hover:opacity-80 disabled:opacity-50 disabled:text-[#88818C]
-    disabled:from-bgLight disabled:to-bgLight
+    hover:opacity-80
+    active:opacity-70
+    disabled:opacity-70 disabled:text-white/70
+    disabled:!from-bgBase/10 disabled:!to-bgBase/10
     bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF]
   `
 
@@ -45,7 +54,7 @@ export const TransactionButton = ({
         ${className}
         ${BASE_PROPERTIES}
         ${disabled && disabledClass}
-        ${isPending && 'from-[#622e71] to-[#564071]'}
+        ${isPending && 'from-[#622e71] to-[#564071] hover:opacity-100'}
       `}
       onClick={async () => {
         const tx = await pendingTxWrapFunc(onClick())
