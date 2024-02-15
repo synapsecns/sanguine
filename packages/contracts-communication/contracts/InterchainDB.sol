@@ -9,8 +9,6 @@ import {InterchainEntry, InterchainEntryLib} from "./libs/InterchainEntry.sol";
 import {TypeCasts} from "./libs/TypeCasts.sol";
 
 contract InterchainDB is IInterchainDB, IInterchainDBEvents {
-    using TypeCasts for address;
-
     mapping(address writer => bytes32[] dataHashes) internal _entries;
     mapping(bytes32 entryId => mapping(address module => RemoteEntry entry)) internal _remoteEntries;
 
@@ -121,7 +119,7 @@ contract InterchainDB is IInterchainDB, IInterchainDBEvents {
     function _writeEntry(bytes32 dataHash) internal returns (uint256 writerNonce) {
         writerNonce = _entries[msg.sender].length;
         _entries[msg.sender].push(dataHash);
-        emit InterchainEntryWritten(block.chainid, msg.sender.addressToBytes32(), writerNonce, dataHash);
+        emit InterchainEntryWritten(block.chainid, TypeCasts.addressToBytes32(msg.sender), writerNonce, dataHash);
     }
 
     /// @dev Request the verification of the entry by the modules, and emit the event.
