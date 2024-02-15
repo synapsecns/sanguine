@@ -5,9 +5,8 @@ import { useAccount } from 'wagmi'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 import { SynapseIcon } from './SynapseIcon'
-import { generateTx } from './strings'
-import styles from './marquee.module.css'
 import Footer from './footer'
+import Ticker from './ticker'
 
 const LandingPage = () => {
   const { address: currentAddress } = useAccount()
@@ -65,35 +64,7 @@ const LandingPage = () => {
     <div className={`${prefersDark && 'dark'}`}>
       <div className="w-screen h-screen bg-white bg-gradient-to-b from-white to-slate-100 dark:from-black dark:to-zinc-950 overflow-scroll text-black dark:text-white tracking-wide leading-normal">
         {/* Ticker – Easter egg: define custom <marquee> element */}
-        <div className="absolute w-screen z-10 mb-12 bg-zinc-50 dark:bg-zinc-950 text-sm border-y border-zinc-200 dark:border-zinc-900 overflow-hidden">
-          <button className="absolute bg-inherit px-4 py-1.5 border-r border-zinc-300 dark:border-zinc-800 flex items-center gap-2 z-10">
-            <svg width="8" height="8" viewBox="-4 -4 8 8" overflow="visible" className="fill-green-500 stroke-green-500" xmlns="http://www.w3.org/2000/svg">
-              <circle r="4">
-                <animate
-                  attributeName="stroke-width"
-                  values="0; 16"
-                  dur="1.5s"
-                  repeatCount="indefinite"
-                />
-                <animate
-                  attributeName="stroke-opacity"
-                  values=".5; 0"
-                  dur="1.5s"
-                  repeatCount="indefinite"
-                />
-              </circle>
-            </svg>
-            Live – All transactions <span className="text-xxs">▼</span>
-          </button>
-          <ul className={`flex whitespace-nowrap list-disc marker:text-zinc-500 ${styles.marquee}`}>
-            {[...Array(20)].map((x, i) => {
-              return <li className="pl-2 ml-7"><a href="#" className="text-zinc-500 hover:text-inherit hover:underline py-1.5 inline-block">{generateTx()}</a></li>
-            })}
-          </ul>
-          <a href="#" className="absolute top-0 right-0 bg-inherit px-4 py-1.5 border-l border-zinc-300 dark:border-zinc-800 flex items-center gap-2 z-10">
-            Explorer {'->'}
-          </a>
-        </div>
+        <Ticker />
         {/* Nav */}
         <nav className="mt-12 p-8 flex items-center max-w-7xl relative mx-auto">
           <a href="#" className="text-3xl font-medium flex gap-2 items-center absolute">
@@ -109,17 +80,23 @@ const LandingPage = () => {
               >
                 About
               </a>
-              <div className="hidden group-hover:block absolute p-2">
-                <ul className="bg-zinc-50 dark:bg-zinc-950 rounded text-base -ml-2 border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                  <li><a className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded" href="#">Vision</a></li>
-                  <li><a className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded" href="#">Philosophy</a></li>
-                  <li><a className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded" href="#">Roadmap</a></li>
-                </ul>
+              <div className="hidden group-hover:block absolute p-2 animate-slide-down origin-top has-[div]:text-red-500">
+                <div className="bg-zinc-50 dark:bg-zinc-950 rounded text-base -ml-2 border border-zinc-200 dark:border-zinc-800 shadow-sm flex">
+                  <dl className="grid grid-cols-[auto_auto] grid-rows-3">
+                    <dt className="col-start-1 peer vision"><a className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded vision" href="#">Vision</a></dt>
+                    <dd className="w-60 col-start-2 row-span-full px-4 py-3 peer-[.vision]:peer-hover:block hidden border-l border-zinc-200 dark:border-zinc-800">Vision Lorem ispum dolor sit amet</dd>
+                    <dt className="col-start-1 peer philosophy"><a className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded" href="#">Philosophy</a></dt>
+                    <dd className="w-60 col-start-2 row-span-full px-4 py-3 peer-[.philosophy]:peer-hover:block hidden border-l border-zinc-200 dark:border-zinc-800">Philosophy Lorem ispum dolor sit amet</dd>
+                    <dt className="col-start-1 peer roadmap"><a className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded" href="#">Roadmap</a></dt>
+                    <dd className="w-60 col-start-2 row-span-full px-4 py-3 peer-[.roadmap]:peer-hover:block hidden border-l border-zinc-200 dark:border-zinc-800">Roadmap Lorem ispum dolor sit amet</dd>
+                  </dl>
+                  <div className="px-4 py-3 hidden group-active:block">Lorem ipsum dolor sit amet</div>
+                </div>
               </div>
             </li>
             <li className="group">
               <a className="px-3 py-1 hover:bg-zinc-50 hover:dark:bg-zinc-950 border border-transparent hover:border-fuchsia-500 rounded inline-block" href="#">Bridge</a>
-              <div className="hidden group-hover:block absolute p-2">
+              <div className="hidden group-hover:block absolute p-2 animate-slide-down origin-top">
                 <ul className="bg-zinc-50 dark:bg-zinc-950 rounded text-base -ml-2 border border-zinc-200 dark:border-zinc-800 shadow-sm">
                   <li><a className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded" href="#">Synapse Bridge</a></li>
                   <li><a className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded" href="#">On-chain swap</a></li>
@@ -129,7 +106,7 @@ const LandingPage = () => {
             </li>
             <li className="group">
               <a className="px-3 py-1 hover:bg-zinc-50 hover:dark:bg-zinc-950 border border-transparent hover:border-fuchsia-500 rounded inline-block" href="#">Community</a>
-              <div className="hidden group-hover:block absolute p-2">
+              <div className="hidden group-hover:block absolute p-2 animate-slide-down origin-top">
                 <ul className="bg-zinc-50 dark:bg-zinc-950 rounded text-base -ml-2 border border-zinc-200 dark:border-zinc-800 shadow-sm">
                   <li><a className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded" href="#">Discord</a></li>
                   <li><a className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded" href="#">Telegram</a></li>
@@ -141,7 +118,7 @@ const LandingPage = () => {
             </li>
             <li className="group">
               <a className="px-3 py-1 hover:bg-zinc-50 hover:dark:bg-zinc-950 border border-transparent hover:border-fuchsia-500 rounded inline-block" href="#">Developers</a>
-              <div className="hidden group-hover:block absolute p-2">
+              <div className="hidden group-hover:block absolute p-2 animate-slide-down origin-top">
                 <ul className="bg-zinc-50 dark:bg-zinc-950 rounded text-base -ml-2 border border-zinc-200 dark:border-zinc-800 shadow-sm">
                   <li><a className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded" href="#">Docs</a></li>
                   <li><a className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded" href="#">Github</a></li>
@@ -154,13 +131,11 @@ const LandingPage = () => {
               <a className="px-3 py-1 hover:bg-zinc-50 hover:dark:bg-zinc-950 border border-transparent hover:border-fuchsia-500 rounded inline-block" href="#">Explorer</a>
             </li>
           </ul>
-          <form className="absolute right-0 flex gap-2 p-4 items-center">
-            <select className="bg-white dark:bg-black text-sm text-inherit cursor-pointer rounded border-zinc-200 dark:border-zinc-800" onChange={selectPrefersDark}>
-              <option selected={prefersColorScheme === 'dark'}>Dark mode</option>
-              <option selected={prefersColorScheme === 'light'}>Light mode</option>
-              <option selected={!prefersColorScheme}>System {windowPrefersDark.matches ? 'dark' : 'light'}</option>
-            </select>
-          </form>
+          <select className="bg-white dark:bg-black text-sm text-inherit cursor-pointer rounded border-zinc-200 dark:border-zinc-800 absolute right-0 block mr-8" onChange={selectPrefersDark}>
+            <option selected={prefersColorScheme === 'dark'}>Dark mode</option>
+            <option selected={prefersColorScheme === 'light'}>Light mode</option>
+            <option selected={!prefersColorScheme}>System {windowPrefersDark.matches ? 'dark' : 'light'}</option>
+          </select>
         </nav>
         {/* Hero */}
         <main className="mx-auto w-full max-w-7xl">
