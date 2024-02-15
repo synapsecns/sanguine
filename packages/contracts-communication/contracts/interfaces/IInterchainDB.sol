@@ -17,6 +17,7 @@ interface IInterchainDB {
     error InterchainDB__EntryDoesNotExist(address writer, uint256 writerNonce);
     error InterchainDB__IncorrectFeeAmount(uint256 actualFee, uint256 expectedFee);
     error InterchainDB__NoModulesSpecified();
+    error InterchainDB__SameChainId();
 
     /// @notice Write data to the Interchain DataBase as a new entry.
     /// Note: there are no guarantees that this entry will be available for reading on any of the remote chains.
