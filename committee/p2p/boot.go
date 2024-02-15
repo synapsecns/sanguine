@@ -155,7 +155,7 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	go Discover(ctx, l.host, l.dht, "antWorker")
 
 	time.Sleep(time.Second * 3)
-	l.pubsub, err = pubsub.NewFloodSub(ctx, l.host)
+	l.pubsub, err = pubsub.NewGossipSub(ctx, l.host, pubsub.WithFloodPublish(true))
 	if err != nil {
 		return fmt.Errorf("could not create pubsub: %w", err)
 	}
