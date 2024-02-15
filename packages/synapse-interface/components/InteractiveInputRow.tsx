@@ -1,4 +1,4 @@
-import MiniMaxButton from './buttons/MiniMaxButton'
+import MiniMaxButton from '@/components/buttons/MiniMaxButton'
 
 const InteractiveInputRow = ({
   title,

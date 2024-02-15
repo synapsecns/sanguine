@@ -2,13 +2,14 @@ import React, { useEffect, useState, useCallback } from 'react'
 
 import { useAccount } from 'wagmi'
 
-import MiniMaxButton from '../buttons/MiniMaxButton'
+
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { ConnectStatusIndicator } from '@/components/bridgeSwap/ConnectStatusIndicator'
 
+import MiniMaxButton from '@/components/buttons/MiniMaxButton'
 
 export const GenericInputContainer = ({
   inputRef,
@@ -134,7 +135,7 @@ export const GenericInputContainer = ({
           </div>
           <div>
             {isConnected && (
-              <div className="m">
+              <div className="ml-1.5">
                 <MiniMaxButton
                   disabled={!balance || balance === 0n}
                   onClickBalance={onMaxBalance}
