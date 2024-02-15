@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {ThresholdECDSALibHarness} from "../harnesses/ThresholdECDSALibHarness.sol";
+import {ThresholdECDSALib, ThresholdECDSALibHarness} from "../harnesses/ThresholdECDSALibHarness.sol";
 
 import {Test, console2} from "forge-std/Test.sol";
 
@@ -42,7 +42,7 @@ contract ThresholdECDSALibTest is Test {
         libHarness.modifyThreshold(2);
     }
 
-    function encodeSignature(uint256 pk, bytes32 digest) internal view returns (bytes memory) {
+    function encodeSignature(uint256 pk, bytes32 digest) internal pure returns (bytes memory) {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(pk, digest);
         // 1-byte v is encoded last
         return abi.encodePacked(r, s, v);
@@ -82,6 +82,32 @@ contract ThresholdECDSALibTest is Test {
         arr[2] = c;
         arr[3] = d;
     }
+
+    // ═══════════════════════════════════════════════ TEST HELPERS ════════════════════════════════════════════════════
+
+    function expectAlreadySignerError(address account) internal {
+        vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__AlreadySigner.selector, account));
+    }
+
+    function expectNotEnoughSignaturesError(uint256 threshold) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__NotEnoughSignatures.selector, threshold)
+        );
+    }
+
+    function expectNotSignerError(address account) internal {
+        vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__NotSigner.selector, account));
+    }
+
+    function expectRecoveredSignersNotSortedError() internal {
+        vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__RecoveredSignersNotSorted.selector));
+    }
+
+    function expectZeroThresholdError() internal {
+        vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__ZeroThreshold.selector));
+    }
+
+    // ═══════════════════════════════════════════════════ TESTS ═══════════════════════════════════════════════════════
 
     function test_pks() public {
         assertEq(SIGNER_0, vm.addr(PK_0));
@@ -190,7 +216,28 @@ contract ThresholdECDSALibTest is Test {
         assertEq(libHarness.getThreshold(), 2);
     }
 
+    // ══════════════════════════════════════════════ TESTS: REVERTS ═══════════════════════════════════════════════════
+
+    function test_addSigner_revert_alreadySigner() public {
+        expectAlreadySignerError(SIGNER_0);
+        libHarness.addSigner(SIGNER_0);
+        expectAlreadySignerError(SIGNER_1);
+        libHarness.addSigner(SIGNER_1);
+        expectAlreadySignerError(SIGNER_2);
+        libHarness.addSigner(SIGNER_2);
+    }
+
+    function test_removeSigner_revert_notSigner() public {
+        expectNotSignerError(SIGNER_3);
+        libHarness.removeSigner(SIGNER_3);
+    }
+
+    function test_modifyThreshold_revert_zeroThreshold() public {
+        expectZeroThresholdError();
+        libHarness.modifyThreshold(0);
+    }
+
     // ═════════════════════════════════════════ TESTS: VERIFY SIGNED HASH ═════════════════════════════════════════════
 
-    
+    function test_verifySignedHash_providedUnderThreshold_allValid() public {}
 }
