@@ -14,6 +14,7 @@ interface IInterchainDB {
         bytes32 dataHash;
     }
 
+    error InterchainDB__ConflictingEntries(InterchainEntry existingEntry, bytes32 dataHash);
     error InterchainDB__EntryDoesNotExist(address writer, uint256 writerNonce);
     error InterchainDB__IncorrectFeeAmount(uint256 actualFee, uint256 expectedFee);
     error InterchainDB__NoModulesSpecified();
