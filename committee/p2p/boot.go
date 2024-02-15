@@ -143,20 +143,9 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	go l.Discover(ctx, l.host, l.dht, dbTopic)
 	time.Sleep(time.Second)
 
-	l.pubsub, err = pubsub.NewGossipSub(ctx, l.host, pubsub.WithFloodPublish(true), pubsub.WithDiscovery(l.discovery), pubsub.WithPeerFilter(func(pid peer.ID, topic string) bool {
-		return true
-	}))
+	l.pubsub, err = pubsub.NewGossipSub(ctx, l.host)
 
 	ipfs.Bootstrap(peers)
-	//for _, peerAddr := range dht.DefaultBootstrapPeers {
-	//	peerinfo, _ := peer.AddrInfoFromP2pAddr(peerAddr)
-	//	go func() {
-	//		if err := l.host.Connect(ctx, *peerinfo); err != nil {
-	//			fmt.Println("Bootstrap warning:", err)
-	//		}
-	//	}()
-	//}
-
 	for _, p := range peers {
 		l.host.ConnManager().TagPeer(p.ID, "keep", 100)
 	}
@@ -175,7 +164,7 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	}()
 
 	time.Sleep(time.Second * 4)
-	l.pubSubBroadcaster, err = l.NewPubSubBroadcaster(ctx, l.pubsub, dbTopic)
+	l.pubSubBroadcaster, err = crdt.NewPubSubBroadcaster(ctx, l.pubsub, dbTopic)
 	if err != nil {
 		return err
 	}
@@ -207,34 +196,8 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	return nil
 }
 
-type DiscoveryWrapper struct {
-	f *routing.RoutingDiscovery
-	l *libP2PManagerImpl
-}
-
-func (d DiscoveryWrapper) FindPeers(ctx context.Context, ns string, opts ...discovery.Option) (<-chan peer.AddrInfo, error) {
-	//return d.f.FindPeers(ctx, ns, discovery.TTL(time.Second))
-	myPeer := make(chan peer.AddrInfo)
-	go func() {
-		peers := d.l.host.Peerstore().Peers()
-		for _, p := range peers {
-			myPeer <- d.l.host.Peerstore().PeerInfo(p)
-		}
-	}()
-
-	return myPeer, nil
-}
-
-func (d DiscoveryWrapper) Advertise(ctx context.Context, ns string, opts ...discovery.Option) (time.Duration, error) {
-	return d.f.Advertise(ctx, ns, discovery.TTL(time.Second))
-}
-
-var _ discovery.Discovery = (*DiscoveryWrapper)(nil)
-
 func (l *libP2PManagerImpl) Discover(ctx context.Context, h host.Host, dht *dual.DHT, rendezvous string) {
 	routingDiscovery := routing.NewRoutingDiscovery(dht)
-	l.discovery = DiscoveryWrapper{routingDiscovery, l}
-
 	util.Advertise(ctx, routingDiscovery, rendezvous)
 
 	ticker := time.NewTicker(time.Second * 1)
