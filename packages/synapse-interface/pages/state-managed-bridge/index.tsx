@@ -456,15 +456,6 @@ const StateManagedBridge = () => {
       })
       console.log('Transaction Receipt: ', transactionReceipt)
 
-      /** Update Origin Chain token balances after resolved tx or timeout reached */
-      /** Assume tx has been actually resolved if above times out */
-      dispatch(
-        fetchAndStoreSingleNetworkPortfolioBalances({
-          address,
-          chainId: fromChainId,
-        })
-      )
-
       return tx
     } catch (error) {
       segmentAnalyticsEvent(`[Bridge]  error bridging`, {
@@ -475,21 +466,16 @@ const StateManagedBridge = () => {
       console.log('Error executing bridge', error)
       toast.dismiss(pendingPopup)
 
-      /** Fetch balances if await transaction receipt times out */
-      if (isTransactionReceiptError(error)) {
-        console.log(
-          'isTransactionReceiptError: ',
-          isTransactionReceiptError(error)
-        )
-        dispatch(
-          fetchAndStoreSingleNetworkPortfolioBalances({
-            address,
-            chainId: fromChainId,
-          })
-        )
-      }
-
       return txErrorHandler(error)
+    } finally {
+      /** Update Origin Chain token balances after resolved tx or timeout reached */
+      /** Assume tx has been actually resolved if above times out */
+      dispatch(
+        fetchAndStoreSingleNetworkPortfolioBalances({
+          address,
+          chainId: fromChainId,
+        })
+      )
     }
   }
 
