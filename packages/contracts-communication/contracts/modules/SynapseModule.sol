@@ -11,12 +11,12 @@ import {IInterchainModule} from "../interfaces/IInterchainModule.sol";
 import {ISynapseModule} from "../interfaces/ISynapseModule.sol";
 import {InterchainEntry} from "../libs/InterchainEntry.sol";
 
-import {ISynapseModuleEvents} from "../interfaces/ISynapseModuleEvents.sol";
+import {SynapseModuleEvents} from "../events/SynapseModuleEvents.sol";
 
 /// @title Synapse Module for Interchain Communication
 /// @notice This contract implements the Synapse Module functionality for interchain communication, including setting verifiers, thresholds, and handling verification requests.
-/// @dev Inherits from Ownable, SynapseGasService, and implements ISynapseModuleEvents for event emissions.
-contract SynapseModule is Ownable, SynapseGasService, ISynapseModuleEvents, ISynapseModule {
+/// @dev Inherits from Ownable, SynapseGasService, and SynapseModuleEvents for event emissions.
+contract SynapseModule is Ownable, SynapseGasService, SynapseModuleEvents, ISynapseModule {
     address[] public verifiers;
     uint256 public requiredThreshold;
     address public interchainDB;

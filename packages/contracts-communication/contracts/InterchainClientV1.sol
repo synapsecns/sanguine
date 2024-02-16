@@ -7,7 +7,7 @@ import {IInterchainApp} from "./interfaces/IInterchainApp.sol";
 
 import {InterchainEntry} from "./libs/InterchainEntry.sol";
 
-import { IInterchainClientV1 } from "./interfaces/IInterchainClientV1.sol";
+import {IInterchainClientV1} from "./interfaces/IInterchainClientV1.sol";
 
 /**
  * @title InterchainClientV1
@@ -127,9 +127,7 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         uint256 optimisticTimePeriod = IInterchainApp(receivingApp).getOptimisticTimePeriod();
 
         // 5. Read module entry's based on receiver app dstModule config
-        uint256[] memory moduleResponseTimestamps = new uint256[](
-      approvedDstModules.length
-    );
+        uint256[] memory moduleResponseTimestamps = new uint256[](approvedDstModules.length);
 
         for (uint256 i = 0; i < approvedDstModules.length; i++) {
             moduleResponseTimestamps[i] = IInterchainDB(interchainDB).readEntry(approvedDstModules[i], icEntry);

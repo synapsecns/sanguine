@@ -34,6 +34,7 @@ contract InterchainAppMock is IInterchainApp {
     function getRequiredResponses() public pure override returns (uint256) {
         return 1;
     }
+
     function getOptimisticTimePeriod() public pure override returns (uint64) {
         return 10;
     }
