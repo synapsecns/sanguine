@@ -125,7 +125,7 @@ contract ThresholdECDSAModule is InterchainModule, Ownable, ThresholdECDSAModule
         return IGasOracle(gasOracle).estimateTxCostInLocalUnits({
             remoteChainId: destChainId,
             gasLimit: VERIFY_GAS_LIMIT,
-            calldataSize: 260 + (2 * getThreshold() + 1) * 32
+            calldataSize: 292 + 64 * getThreshold()
         });
     }
 }
