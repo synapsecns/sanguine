@@ -10,6 +10,6 @@ LABEL org.opencontainers.image.description="Committee Docker image"
 USER nonroot:nonroot
 
 WORKDIR /app
-COPY --chown=nonroot:nonroot relayer /app/committee
+COPY --chown=nonroot:nonroot committee /app/committee
 
 ENTRYPOINT ["/app/committee"]
