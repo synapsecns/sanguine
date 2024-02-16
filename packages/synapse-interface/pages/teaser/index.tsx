@@ -21,8 +21,9 @@ const LandingPage = () => {
     })
   }, [])
 
-  // Detect and set 'prefers-color-scheme: dark'
-  // https://stackoverflow.com/questions/61117608/how-do-i-set-system-preference-dark-mode-in-a-react-app-but-also-allow-users-to
+  /*
+  https://stackoverflow.com/questions/61117608/how-do-i-set-system-preference-dark-mode-in-a-react-app-but-also-allow-users-to
+  */
   const prefersColorScheme = localStorage.getItem('prefers-color-scheme')
 
   const windowPrefersDark = window.matchMedia('(prefers-color-scheme: dark)')
@@ -64,16 +65,15 @@ const LandingPage = () => {
   return (
     <div className={`${prefersDark && 'dark'}`}>
       <div className="w-screen h-screen bg-white bg-gradient-to-b from-white to-[hsl(235deg_75%_96%)] dark:from-black dark:to-[hsl(265deg_25%_7.5%)] overflow-scroll text-black dark:text-white tracking-wide leading-normal">
-        {/* Ticker – Easter egg: define custom <marquee> element */}
         <Ticker />
-        {/* Nav */}
-        <nav className="mt-12 p-8 flex items-center max-w-7xl relative mx-auto">
-          <a href="#" className="text-3xl font-medium flex gap-2 items-center absolute">
+        {/* Page Header */}
+        <nav className="mt-12 p-8 grid grid-cols-[1fr_auto_1fr] gap-8 items-center max-w-7xl relative mx-auto">
+          <a href="#" className="text-3xl font-medium flex gap-2 items-center">
             <SynapseIcon width={40} height={40} />
             <span className="-mt-1.5">Synapse</span>
           </a>
           <Header />
-          <select className="bg-white dark:bg-black text-sm text-inherit cursor-pointer rounded border-zinc-200 dark:border-zinc-800 absolute right-0 block mr-8" onChange={selectPrefersDark}>
+          <select className="bg-white dark:bg-black text-sm text-inherit cursor-pointer rounded border-zinc-200 dark:border-zinc-800 justify-self-end w-min hover:border-zinc-300 hover:dark:bg-zinc-950 hover:dark:border-zinc-700 col-end-4" onChange={selectPrefersDark}>
             <option selected={prefersColorScheme === 'dark'}>Dark mode</option>
             <option selected={prefersColorScheme === 'light'}>Light mode</option>
             <option selected={!prefersColorScheme}>System {windowPrefersDark.matches ? 'dark' : 'light'}</option>
