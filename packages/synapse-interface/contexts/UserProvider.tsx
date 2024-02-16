@@ -1,13 +1,13 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react'
+import { createContext, useContext, useEffect, useRef } from 'react'
 import { useAccount, useNetwork } from 'wagmi'
 import { Chain } from 'viem'
-import { segmentAnalyticsEvent } from './SegmentAnalyticsProvider'
 import { useRouter } from 'next/router'
-import { setSwapChainId } from '@/slices/swap/reducer'
 
+import { setSwapChainId } from '@/slices/swap/reducer'
 import { fetchAndStorePortfolioBalances } from '@/slices/portfolio/hooks'
-import { useAppDispatch } from '@/store/hooks'
 import { resetPortfolioState } from '@/slices/portfolio/actions'
+import { useAppDispatch } from '@/store/hooks'
+
 import {
   fetchAllEthStablecoinPrices,
   fetchArbPrice,
@@ -24,7 +24,10 @@ import { isBlacklisted } from '@/utils/isBlacklisted'
 import { screenAddress } from '@/utils/screenAddress'
 import { getCoingeckoPrices } from '@/utils/actions/getPrices'
 import { fetchFeeAndRebate } from '@/slices/feeAndRebateSlice'
-import { useHasMounted } from '../utils/hooks/useHasMounted';
+import { useHasMounted } from '@/utils/hooks/useHasMounted'
+
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+
 
 const WalletStatusContext = createContext(undefined)
 
@@ -75,11 +78,10 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     if (chain) {
       dispatch(setSwapChainId(chain.id))
-    }
-
-    if (!chain) {
+    } else {
       return
     }
+
     if (prevChain && chain !== prevChain) {
       dispatch(setSwapChainId(chain.id))
 
@@ -96,7 +98,7 @@ export const UserProvider = ({ children }) => {
   }, [chain])
 
   useEffect(() => {
-    ;(async () => {
+    (async () => {
       if (isClient && address && chain?.id) {
         try {
           await dispatch(fetchAndStorePortfolioBalances(address))
@@ -128,4 +130,5 @@ export const UserProvider = ({ children }) => {
   )
 }
 
+/* THIS DOES NOT APPEAR TO DO ANYTHING?!?!?!?!? */
 export const useUserStatus = () => useContext(WalletStatusContext)

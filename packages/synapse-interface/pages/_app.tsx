@@ -8,13 +8,14 @@ import { PersistGate } from 'redux-persist/integration/react'
 import LogRocket from 'logrocket'
 import setupLogRocketReact from 'logrocket-react'
 
+import { Provider } from 'react-redux'
 import { WagmiConfig } from 'wagmi'
 import { RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit'
 import { SynapseProvider } from '@/utils/providers/SynapseProvider'
 import CustomToaster from '@/components/toast'
 import { SegmentAnalyticsProvider } from '@/contexts/SegmentAnalyticsProvider'
 
-import { Provider } from 'react-redux'
+
 import { store, persistor } from '@/store/store'
 import { UserProvider } from '@/contexts/UserProvider'
 
