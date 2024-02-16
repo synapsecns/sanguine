@@ -63,7 +63,7 @@ const LandingPage = () => {
 
   return (
     <div className={`${prefersDark && 'dark'}`}>
-      <div className="w-screen h-screen bg-white bg-gradient-to-b from-white to-[hsl(235deg_100%_96%)] dark:from-black dark:to-[hsl(265deg_40%_7.5%)] overflow-scroll text-black dark:text-white tracking-wide leading-normal">
+      <div className="w-screen h-screen bg-white bg-gradient-to-b from-white to-[hsl(235deg_75%_96%)] dark:from-black dark:to-[hsl(265deg_25%_7.5%)] overflow-scroll text-black dark:text-white tracking-wide leading-normal">
         {/* Ticker – Easter egg: define custom <marquee> element */}
         <Ticker />
         {/* Nav */}
