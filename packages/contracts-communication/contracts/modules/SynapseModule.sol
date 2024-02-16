@@ -50,9 +50,19 @@ contract SynapseModule is Ownable, SynapseGasService, ISynapseModuleEvents, ISyn
         emit VerificationRequested(destChainId, entry, signedEntryHash);
     }
 
+    event TestLog(bytes32 message);
+    event IdiotLog(bytes32 message);
+
     /// @inheritdoc ISynapseModule
-    function verifyEntry(InterchainEntry memory entry, bytes[] calldata signatures) external {
-        bytes32 messageHashToCheck = keccak256(abi.encode(entry));
+    function verifyEntry(InterchainEntry memory entry, bytes32 realMessageHash, bytes[] calldata signatures) external {
+        bytes32 theoreticalMessageHash = keccak256(abi.encode(entry));
+        emit TestLog(theoreticalMessageHash);
+
+        if (realMessageHash != theoreticalMessageHash) {
+            emit IdiotLog("Message hash does not match");
+        }
+
+        bytes32 messageHashToCheck = realMessageHash;
 
         require(signatures.length >= requiredThreshold, "Not enough signatures to meet the threshold");
 

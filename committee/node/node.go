@@ -39,6 +39,7 @@ type Node struct {
 	interchainContracts  map[int]*synapsemodule.SynapseModuleRef
 	peerManager          p2p.LibP2PManager
 	interchainValidators map[int][]common.Address
+	ogEntry              synapsemodule.InterchainEntry
 }
 
 var logger = log.Logger("node")
@@ -260,6 +261,8 @@ func (n *Node) runDBSelector(ctx context.Context) error {
 					if err != nil {
 						logger.Errorf("could not sign and broadcast: %v", err)
 					}
+
+					fmt.Printf("original signed entry hash: %s\n", request.SignedEntryHash.String())
 				case db.Signed:
 					err := n.submit(ctx, request)
 					if err != nil {
@@ -294,7 +297,8 @@ func (n *Node) submit(ctx context.Context, request db.SignRequest) error {
 	}
 
 	nonce, err := n.submitter.SubmitTransaction(ctx, request.DestChainId, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-		return contract.VerifyEntry(transactor, request.InterchainEntry, signatures)
+		// should be request.InterchainEntry
+		return contract.VerifyEntry(transactor, n.ogEntry, request.SignedEntryHash, signatures)
 	})
 
 	go func() {
@@ -306,7 +310,10 @@ func (n *Node) submit(ctx context.Context, request db.SignRequest) error {
 				logger.Errorf("could not get submission status: %w", err)
 			}
 
-			fmt.Print(yo.TxHash().String())
+			fmt.Println("fuck")
+			fmt.Printf("tx hash: %s\n", yo.TxHash().String())
+			fmt.Printf("new signed hash: %s \n", request.SignedEntryHash.String())
+			fmt.Println("you")
 		}
 	}()
 
@@ -330,7 +337,9 @@ func (n *Node) signAndBroadcast(ctx context.Context, request db.SignRequest) err
 	}
 
 	// broadcast the transaction.
-	err = n.peerManager.PutSignature(ctx, int(request.InterchainEntry.SrcChainId.Int64()), int(request.InterchainEntry.WriterNonce.Uint64()), signer.Encode(signedTx))
+	tweakedSig := signer.NewSignature(new(big.Int).Add(big.NewInt(27), signedTx.V()), signedTx.R(), signedTx.S())
+
+	err = n.peerManager.PutSignature(ctx, int(request.InterchainEntry.SrcChainId.Int64()), int(request.InterchainEntry.WriterNonce.Uint64()), signer.Encode(tweakedSig))
 	if err != nil {
 		return fmt.Errorf("could not broadcast: %w", err)
 	}
@@ -399,6 +408,8 @@ func (n *Node) runChainIndexer(parentCtx context.Context, chainID int) (err erro
 
 		switch event := parsedEvent.(type) {
 		case *synapsemodule.SynapseModuleVerificationRequested:
+			// for testing
+			n.ogEntry = event.Entry
 			err = n.handleMessageSent(ctx, event)
 		case *synapsemodule.SynapseModuleEntryVerified:
 			err = n.db.UpdateSignRequestStatus(ctx, event.Entry.DataHash, db.Completed)

@@ -24,11 +24,13 @@ func (n *NodeSuite) TestNodeSuite() {
 	n.Require().NoError(err)
 
 	tx, err = n.originModule.RequestVerification(auth.TransactOpts, n.destChain.GetBigChainID(), synapsemodule.InterchainEntry{
-		SrcChainId:  n.originChain.GetBigChainID(),
-		SrcWriter:   [32]byte{},
-		WriterNonce: big.NewInt(0),
-		DataHash: [32]byte{
+		SrcChainId: n.originChain.GetBigChainID(),
+		SrcWriter: [32]byte{
 			0x01,
+		},
+		WriterNonce: big.NewInt(2),
+		DataHash: [32]byte{
+			0x03,
 		},
 	})
 	n.Require().NoError(err)

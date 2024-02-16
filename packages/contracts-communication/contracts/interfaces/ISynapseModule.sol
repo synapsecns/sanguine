@@ -30,5 +30,5 @@ interface ISynapseModule {
     /// It then calls the InterchainDB contract to verify the entry. Requires that the number of valid signatures meets or exceeds the required threshold.
     /// @param entry The interchain entry to be verified.
     /// @param signatures An array of signatures used to verify the entry.
-    function verifyEntry(InterchainEntry memory entry, bytes[] calldata signatures) external;
+    function verifyEntry(InterchainEntry memory entry, bytes32 realMessageHash, bytes[] calldata signatures) external;
 }
