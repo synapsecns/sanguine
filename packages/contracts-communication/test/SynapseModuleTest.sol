@@ -145,8 +145,9 @@ contract SynapseModuleTest is Test, ISynapseModuleEvents {
         uint256 expectedFee = synapseModule.getModuleFee(DST_CHAIN_ID);
         vm.deal(address(icDB), expectedFee);
         vm.prank(address(icDB));
+        InterchainEntry memory mockEntry = getMockEntry(writerF, 1);
         vm.expectEmit();
-        emit VerificationRequested(DST_CHAIN_ID, getMockEntry(writerF, 1));
+        emit VerificationRequested(DST_CHAIN_ID, mockEntry, keccak256(abi.encode(mockEntry)));
         synapseModule.requestVerification{value: expectedFee}(DST_CHAIN_ID, getMockEntry(writerF, 1));
     }
 

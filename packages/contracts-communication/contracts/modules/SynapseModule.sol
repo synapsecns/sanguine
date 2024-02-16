@@ -46,7 +46,8 @@ contract SynapseModule is Ownable, SynapseGasService, ISynapseModuleEvents, ISyn
         require(msg.value >= getModuleFee(destChainId), "Insufficient fee to request verification");
 
         _payFeesForExecution(msg.value);
-        emit VerificationRequested(destChainId, entry);
+        bytes32 dataHash = keccak256(abi.encode(entry));
+        emit VerificationRequested(destChainId, entry, dataHash);
     }
 
     /// @inheritdoc ISynapseModule
