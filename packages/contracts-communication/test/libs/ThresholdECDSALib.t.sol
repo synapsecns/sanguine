@@ -3,7 +3,7 @@ pragma solidity 0.8.20;
 
 import {ThresholdECDSALib, ThresholdECDSALibHarness} from "../harnesses/ThresholdECDSALibHarness.sol";
 
-import {Test, console2} from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 
 contract ThresholdECDSALibTest is Test {
     ThresholdECDSALibHarness public libHarness;
@@ -19,19 +19,11 @@ contract ThresholdECDSALibTest is Test {
     address public constant SIGNER_3 = 0xAD1117CAB797E37CAB0Eee8Ca7C30bD2452Ef2a3;
 
     bytes32 public constant HASH_0 = keccak256("Some data");
-    bytes32 public constant HASH_1 = keccak256("Some other data");
 
     bytes public sig_0_0 = encodeSignature(PK_0, HASH_0);
-    bytes public sig_0_1 = encodeSignature(PK_0, HASH_1);
-
     bytes public sig_1_0 = encodeSignature(PK_1, HASH_0);
-    bytes public sig_1_1 = encodeSignature(PK_1, HASH_1);
-
     bytes public sig_2_0 = encodeSignature(PK_2, HASH_0);
-    bytes public sig_2_1 = encodeSignature(PK_2, HASH_1);
-
     bytes public sig_3_0 = encodeSignature(PK_3, HASH_0);
-    bytes public sig_3_1 = encodeSignature(PK_3, HASH_1);
 
     function setUp() public {
         libHarness = new ThresholdECDSALibHarness();
@@ -64,23 +56,6 @@ contract ThresholdECDSALibTest is Test {
         arr[0] = a;
         arr[1] = b;
         arr[2] = c;
-    }
-
-    function toArray(
-        bytes memory a,
-        bytes memory b,
-        bytes memory c,
-        bytes memory d
-    )
-        internal
-        pure
-        returns (bytes[] memory arr)
-    {
-        arr = new bytes[](4);
-        arr[0] = a;
-        arr[1] = b;
-        arr[2] = c;
-        arr[3] = d;
     }
 
     // ═══════════════════════════════════════════════ TEST HELPERS ════════════════════════════════════════════════════
@@ -279,7 +254,7 @@ contract ThresholdECDSALibTest is Test {
         libHarness.verifySignedHash(HASH_0, toArray(sig_0_0, sig_0_0));
     }
 
-    function test_verifySignedHash_providedExactlyThreshold_sorted_allSigners() public {
+    function test_verifySignedHash_providedExactlyThreshold_sorted_allSigners() public view {
         // Should not revert
         libHarness.verifySignedHash(HASH_0, toArray(sig_1_0, sig_0_0));
     }
@@ -304,12 +279,12 @@ contract ThresholdECDSALibTest is Test {
         libHarness.verifySignedHash(HASH_0, toArray(sig_0_0, sig_0_0));
     }
 
-    function test_verifySignedHash_providedOverThreshold_sorted_allSigners() public {
+    function test_verifySignedHash_providedOverThreshold_sorted_allSigners() public view {
         // Should not revert
         libHarness.verifySignedHash(HASH_0, toArray(sig_1_0, sig_0_0, sig_2_0));
     }
 
-    function test_verifySignedHash_providedOverThreshold_sorted_hasNonSigners_enoughSigners() public {
+    function test_verifySignedHash_providedOverThreshold_sorted_hasNonSigners_enoughSigners() public view {
         // Should not revert
         libHarness.verifySignedHash(HASH_0, toArray(sig_1_0, sig_3_0, sig_2_0));
     }
