@@ -2,7 +2,7 @@ pragma solidity 0.8.20;
 
 import 'forge-std/console.sol';
 
-contract Interchain {
+contract InterchainClientV1 {
   uint64 public nonce;
 
   mapping(bytes32 => InterchainTransaction) public queuedTransactions;
