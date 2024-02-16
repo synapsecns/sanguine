@@ -6,7 +6,7 @@ abstract contract SynapseGasService is Ownable {
     address payable public executor;
     address public gasOracle;
 
-    function getModuleFee(uint256 dstChainId) public view returns (uint256) {
+    function getModuleFee(uint256 dstChainId) public pure returns (uint256) {
         // Get Latest Posted Destination Gas Price from oracle
         // Requires: Access to origin USD Gas Price / Destination USD Gas PRice
         // Get current price of origin chain assets

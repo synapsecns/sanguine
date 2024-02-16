@@ -31,11 +31,10 @@ contract InterchainAppMock is IInterchainApp {
         return receivingModules;
     }
 
-    function getRequiredResponses() public view override returns (uint256) {
+    function getRequiredResponses() public pure override returns (uint256) {
         return 1;
     }
-
-    function getOptimisticTimePeriod() public view override returns (uint64) {
+    function getOptimisticTimePeriod() public pure override returns (uint64) {
         return 10;
     }
 

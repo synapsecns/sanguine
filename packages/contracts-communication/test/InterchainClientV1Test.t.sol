@@ -27,6 +27,7 @@ contract InterchainClientV1Test is Test {
         icClient = new InterchainClientV1();
         icDB = new InterchainDB();
         synapseModule = new SynapseModule();
+        synapseModule.setInterchainDB(address(icDB));
         icClient.setInterchainDB(address(icDB));
 
         icModule = new InterchainModuleMock();

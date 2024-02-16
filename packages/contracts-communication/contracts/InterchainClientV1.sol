@@ -7,7 +7,13 @@ import {IInterchainApp} from "./interfaces/IInterchainApp.sol";
 
 import {InterchainEntry} from "./libs/InterchainEntry.sol";
 
-contract InterchainClientV1 is Ownable {
+import { IInterchainClientV1 } from "./interfaces/IInterchainClientV1.sol";
+
+/**
+ * @title InterchainClientV1
+ * @dev Implements the operations of the Interchain Execution Layer.
+ */
+contract InterchainClientV1 is Ownable, IInterchainClientV1 {
     uint64 public clientNonce;
     address public interchainDB;
 
@@ -15,16 +21,21 @@ contract InterchainClientV1 is Ownable {
     mapping(uint256 => bytes32) linkedClients;
 
     // TODO: Add permissioning
+    // @inheritdoc IInterchainClientV1
     function setLinkedClient(uint256 chainId, bytes32 client) public {
         linkedClients[chainId] = client;
     }
 
-    constructor() public Ownable(msg.sender) {}
+    constructor() Ownable(msg.sender) {}
 
+    // @inheritdoc IInterchainClientV1
     function setInterchainDB(address _interchainDB) public onlyOwner {
         interchainDB = _interchainDB;
     }
 
+    /**
+     * @notice Emitted when an interchain transaction is sent.
+     */
     event InterchainTransactionSent(
         bytes32 srcSender,
         uint256 srcChainId,
@@ -36,6 +47,9 @@ contract InterchainClientV1 is Ownable {
         uint256 dbWriterNonce
     );
 
+    /**
+     * @dev Represents an interchain transaction.
+     */
     struct InterchainTransaction {
         bytes32 srcSender;
         uint256 srcChainId;
@@ -49,11 +63,12 @@ contract InterchainClientV1 is Ownable {
 
     // TODO: Calculate Gas Pricing per module and charge fees
     // TODO: Customizable Gas Limit for Execution
+    // @inheritdoc IInterchainClientV1
     function interchainSend(
         bytes32 receiver,
         uint256 dstChainId,
         bytes calldata message,
-        address[] calldata srcModules // Add modules as a parameter
+        address[] calldata srcModules
     )
         public
         payable
@@ -74,6 +89,7 @@ contract InterchainClientV1 is Ownable {
     }
 
     // TODO: Gas Fee Consideration that is paid to executor
+    // @inheritdoc IInterchainClientV1
     function interchainExecute(bytes32 transactionID, bytes calldata transaction) public {
         // Steps to verify:
         // 1. Call icDB.getEntry(linkedClients.srcChainId, transaction.dbWriterNonce)
@@ -135,18 +151,14 @@ contract InterchainClientV1 is Ownable {
 
     // TODO: Seperate out into utils
     /**
-     * @dev Converts a bytes32 to an address
-     * @param _bytes32 The bytes32 value to be converted.
-     * @return address The address obtained from the bytes32 input.
+     * @inheritdoc IInterchainClientV1
      */
     function convertBytes32ToAddress(bytes32 _bytes32) public pure returns (address) {
         return address(uint160(uint256(_bytes32)));
     }
 
     /**
-     * @dev Converts an address to bytes32
-     * @param _address The address to be converted.
-     * @return bytes32 The bytes32 representation of the input address.
+     * @inheritdoc IInterchainClientV1
      */
     function convertAddressToBytes32(address _address) public pure returns (bytes32) {
         return bytes32(uint256(uint160(_address)));
