@@ -7,6 +7,8 @@ import {IInterchainModule} from "../interfaces/IInterchainModule.sol";
 
 import {InterchainEntry} from "../libs/InterchainEntry.sol";
 
+import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
+
 /// @notice Common logic for all Interchain Modules.
 abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule {
     address public immutable INTERCHAIN_DB;
@@ -29,7 +31,7 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
         }
         bytes memory encodedEntry = abi.encode(entry);
         _requestVerification(destChainId, encodedEntry);
-        emit VerificationRequested(destChainId, encodedEntry);
+        emit VerificationRequested(destChainId, encodedEntry, MessageHashUtils.toEthSignedMessageHash(encodedEntry));
     }
 
     /// @inheritdoc IInterchainModule

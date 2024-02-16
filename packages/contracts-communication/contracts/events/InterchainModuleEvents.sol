@@ -2,5 +2,5 @@
 pragma solidity ^0.8.0;
 
 abstract contract InterchainModuleEvents {
-    event VerificationRequested(uint256 indexed destChainId, bytes entry);
+    event VerificationRequested(uint256 indexed destChainId, bytes entry, bytes32 ethSignedEntryHash);
 }
