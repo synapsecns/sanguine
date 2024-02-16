@@ -69,11 +69,11 @@ import { InputContainer } from '@/components/StateManagedBridge/InputContainer'
 import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer'
 import { DestinationAddressInput } from '@/components/StateManagedBridge/DestinationAddressInput'
 import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
-import SettingsSlideOver from '@/components/StateManagedBridge/SettingsSlideOver'
+import { SettingsSlideOver } from '@/components/StateManagedBridge/SettingsSlideOver'
 import BridgeExchangeRateInfo from '@/components/StateManagedBridge/BridgeExchangeRateInfo'
 
 import { XIcon } from '@heroicons/react/outline'
-import { OverlayTransition } from '@/components/OverlayTransition'
+import { OverlayTransition } from '@/components/bridgeSwap/OverlayTransition'
 
 
 const StateManagedBridge = () => {

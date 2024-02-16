@@ -1,12 +1,8 @@
 import _ from 'lodash'
-import { useEffect, useRef } from 'react'
+
 import { useDispatch } from 'react-redux'
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import { Switch } from '@headlessui/react'
-import { useKeyPress } from '@hooks/useKeyPress'
-import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
-import Tooltip from '@tw/Tooltip'
-import Button from '@tw/Button'
 
 import {
   setShowDestinationAddress,
@@ -16,30 +12,23 @@ import {
   setDeadlineMinutes,
   setDestinationAddress,
 } from '@/slices/bridge/reducer'
-
 import { useBridgeDisplayState } from '@/slices/bridge/hooks'
 
+import { useCloseOutsideRef } from '@/utils/hooks/useCloseOutsideRef'
+
+import Tooltip from '@tw/Tooltip'
+import Button from '@tw/Button'
 
 
-
-
-const SettingsSlideOver = () => {
+export const SettingsSlideOver = () => {
   const dispatch = useDispatch()
-  const escPressed = useKeyPress('Escape')
-  const ref = useRef(null)
-  const { showDestinationAddress } = useBridgeDisplayState()
 
   function onClose() {
     dispatch(setShowSettingsSlideOver(false))
   }
 
-  function escFunc() {
-    if (escPressed) {
-      onClose()
-    }
-  }
-  useCloseOnOutsideClick(ref, onClose)
-  useEffect(escFunc, [escPressed])
+  const ref = useCloseOutsideRef(onClose)
+  const { showDestinationAddress } = useBridgeDisplayState()
 
   return (
     <div ref={ref} className="max-h-full pb-4 pt-2 overflow-auto rounded-lg">
@@ -167,4 +156,3 @@ const DeadlineInput = ({ deadlineMinutes }: { deadlineMinutes: number }) => {
   )
 }
 
-export default SettingsSlideOver

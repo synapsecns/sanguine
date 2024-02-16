@@ -47,7 +47,7 @@ import { SwapOutputContainer } from '@/components/StateManagedSwap/SwapOutputCon
 import { SwapToTokenListOverlay } from '@/components/StateManagedSwap/SwapToTokenListOverlay'
 import { SwapTransactionButton } from '@/components/StateManagedSwap/SwapTransactionButton'
 import SwapExchangeRateInfo from '@/components/StateManagedSwap/SwapExchangeRateInfo'
-import { OverlayTransition } from '@/components/OverlayTransition'
+import { OverlayTransition } from '@/components/bridgeSwap/OverlayTransition'
 
 const StateManagedSwap = () => {
   const { address } = useAccount()
