@@ -94,6 +94,8 @@ export const _Transaction = ({
   const showTransactionSupport =
     !isTxFinalized && delayedTimeInMin ? delayedTimeInMin <= -5 : false
 
+  const [isReverted] = useIsTxReverted(originTxHash as Address, originChain)
+
   useBridgeTxUpdater(
     connectedAddress,
     destinationChain,
@@ -101,8 +103,6 @@ export const _Transaction = ({
     originTxHash,
     isTxComplete
   )
-
-  const [isReverted] = useIsTxReverted(originTxHash as Address, originChain)
 
   return (
     <div

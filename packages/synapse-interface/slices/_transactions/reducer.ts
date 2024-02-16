@@ -16,6 +16,7 @@ export interface _TransactionDetails {
   timestamp: number
   kappa: string
   isComplete: boolean
+  isReverted: boolean
 }
 
 export interface _TransactionsState {
@@ -72,6 +73,19 @@ export const transactionsSlice = createSlice({
         state.transactions[txIndex].isComplete = true
       }
     },
+    revertTransaction: (
+      state,
+      action: PayloadAction<{ originTxHash: string }>
+    ) => {
+      const { originTxHash } = action.payload
+
+      const txIndex = state.transactions.findIndex(
+        (tx) => tx.originTxHash === originTxHash
+      )
+      if (txIndex !== -1) {
+        state.transactions[txIndex].isReverted = true
+      }
+    },
     clearTransactions: (state) => {
       state.transactions = []
     },
@@ -83,6 +97,7 @@ export const {
   removeTransaction,
   updateTransactionKappa,
   completeTransaction,
+  revertTransaction,
   clearTransactions,
 } = transactionsSlice.actions
 
