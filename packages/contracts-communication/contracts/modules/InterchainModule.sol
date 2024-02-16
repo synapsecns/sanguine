@@ -33,8 +33,9 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
             revert InterchainModule__InsufficientFee({actual: msg.value, required: requiredFee});
         }
         bytes memory encodedEntry = abi.encode(entry);
+        bytes32 ethSignedEntryHash = MessageHashUtils.toEthSignedMessageHash(keccak256(encodedEntry));
         _requestVerification(destChainId, encodedEntry);
-        emit VerificationRequested(destChainId, encodedEntry, MessageHashUtils.toEthSignedMessageHash(encodedEntry));
+        emit VerificationRequested(destChainId, encodedEntry, ethSignedEntryHash);
     }
 
     /// @inheritdoc IInterchainModule
