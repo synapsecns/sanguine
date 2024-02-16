@@ -47,7 +47,7 @@ const sections = [
 
 export default function Header() {
   return (
-    <ul className="flex flex-wrap text-lg justify-center row-start-2 col-span-3 md:row-start-1 md:col-start-2 md:col-span-1">
+    <ul className="flex flex-wrap md:text-lg justify-center row-start-2 col-span-3 lg:row-start-1 lg:col-start-2 lg:col-span-1">
       {sections.map(section => (
         <li className="group">
           <a
