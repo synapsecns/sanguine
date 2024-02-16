@@ -166,7 +166,6 @@ function TopBarButtons() {
       to={value.path}
       labelText={value.text}
       match={value.match}
-      className={key === 'Analytics' ? 'hidden mdl:block' : ''}
     />
   ))
 
