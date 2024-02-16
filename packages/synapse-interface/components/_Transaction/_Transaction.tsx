@@ -89,20 +89,14 @@ export const _Transaction = ({
     checkStatus: !isStoredComplete || isStartCheckingTimeReached,
     currentTime: currentTime,
   })
+  const isTxFinalized = isStoredComplete ?? isTxComplete
 
   const isReverted = useIsTxReverted(
     originTxHash as Address,
     originChain,
-    !isStoredReverted
+    isStartCheckingTimeReached && !isTxFinalized && !isStoredReverted
   )
-
   const isTxReverted = isStoredReverted ?? isReverted
-  const isTxFinalized = isStoredComplete ?? isTxComplete
-
-  const showTransactionSupport =
-    !isTxFinalized && !isTxReverted && delayedTimeInMin
-      ? delayedTimeInMin <= -5
-      : false
 
   useBridgeTxUpdater(
     connectedAddress,
@@ -112,6 +106,11 @@ export const _Transaction = ({
     isTxComplete,
     isReverted
   )
+
+  const showTransactionSupport =
+    !isTxFinalized && !isTxReverted && delayedTimeInMin
+      ? delayedTimeInMin <= -5
+      : false
 
   return (
     <div

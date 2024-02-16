@@ -27,6 +27,7 @@ export const useIsTxReverted = (
   const [isReverted, setIsReverted] = useState<boolean>(false)
 
   const getTxRevertStatus = async (txHash: Address, chain: Chain) => {
+    console.log('fetching for revert: ', txHash)
     const receipt = await getTransactionReceipt(txHash, chain)
 
     if (receipt.status === 'reverted') {
