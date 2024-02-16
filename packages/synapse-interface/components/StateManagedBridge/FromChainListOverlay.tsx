@@ -2,7 +2,7 @@ import _ from 'lodash'
 import { useDispatch } from 'react-redux'
 import Fuse from 'fuse.js'
 import * as ALL_CHAINS from '@constants/chains/master'
-import SlideSearchBox from '@pages/bridge/SlideSearchBox'
+import { SlideSearchBox } from '@components/bridgeSwap/SlideSearchBox'
 import { CHAINS_BY_ID, sortChains } from '@constants/chains'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { useBridgeState } from '@/slices/bridge/hooks'
@@ -15,7 +15,7 @@ import { PAUSED_FROM_CHAIN_IDS } from '@constants/chains'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 import { CHAIN_FUSE_OPTIONS } from '@/constants/fuseOptions'
 import { SearchResultsContainer } from '@/components/SearchResultsContainer'
-import { useMemo } from 'react'
+
 
 export const FromChainListOverlay = () => {
   const { fromChainIds, fromChainId } = useBridgeState()

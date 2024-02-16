@@ -3,7 +3,7 @@ import _ from 'lodash'
 import { useDispatch } from 'react-redux'
 import Fuse from 'fuse.js'
 
-import SlideSearchBox from '@pages/bridge/SlideSearchBox'
+import { SlideSearchBox } from '@components/bridgeSwap/SlideSearchBox'
 import { Token } from '@/utils/types'
 import { setFromToken } from '@/slices/bridge/reducer'
 import { setShowFromTokenListOverlay } from '@/slices/bridgeDisplaySlice'

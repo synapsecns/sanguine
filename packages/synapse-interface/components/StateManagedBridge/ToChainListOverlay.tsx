@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux'
 import Fuse from 'fuse.js'
 
 import * as ALL_CHAINS from '@constants/chains/master'
-import SlideSearchBox from '@pages/bridge/SlideSearchBox'
+import { SlideSearchBox } from '@components/bridgeSwap/SlideSearchBox'
 import { CHAINS_BY_ID, sortChains } from '@constants/chains'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { useBridgeState } from '@/slices/bridge/hooks'

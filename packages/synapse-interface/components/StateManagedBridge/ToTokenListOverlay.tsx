@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { Address } from 'viem'
 import Fuse from 'fuse.js'
 
-import SlideSearchBox from '@pages/bridge/SlideSearchBox'
+import { SlideSearchBox } from '@components/bridgeSwap/SlideSearchBox'
 import { Token } from '@/utils/types'
 import { BridgeState, setToToken } from '@/slices/bridge/reducer'
 import { setShowToTokenListOverlay } from '@/slices/bridgeDisplaySlice'
