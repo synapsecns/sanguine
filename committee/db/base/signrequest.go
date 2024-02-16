@@ -44,7 +44,7 @@ func (s *SignRequest) ToServiceSignRequest() db.SignRequest {
 	}
 }
 
-func toSignRequest(sr synapsemodule.SynapseModuleVerfificationRequested) (SignRequest, error) {
+func toSignRequest(sr synapsemodule.SynapseModuleVerificationRequested) (SignRequest, error) {
 	return SignRequest{
 		TXHash:             sr.Raw.TxHash.String(),
 		TransactionID:      common.Bytes2Hex(sr.Entry.DataHash[:]),
@@ -66,7 +66,7 @@ func (s Store) UpdateSignRequestStatus(ctx context.Context, txid common.Hash, st
 
 }
 
-func (s Store) StoreInterchainTransactionReceived(ctx context.Context, sr synapsemodule.SynapseModuleVerfificationRequested) error {
+func (s Store) StoreInterchainTransactionReceived(ctx context.Context, sr synapsemodule.SynapseModuleVerificationRequested) error {
 	signRequest, err := toSignRequest(sr)
 	if err != nil {
 		return fmt.Errorf("could not convert to sign request: %w", err)

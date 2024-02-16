@@ -23,7 +23,7 @@ func init() {
 		panic(err)
 	}
 
-	VerificationRequestedTopic = parsedABI.Events["VerfificationRequested"].ID
+	VerificationRequestedTopic = parsedABI.Events["VerificationRequested"].ID
 	EntryVerificationTopic = parsedABI.Events["EntryVerified"].ID
 
 	_, err = parsedABI.EventByID(VerificationRequestedTopic)

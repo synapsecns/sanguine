@@ -56,13 +56,13 @@ func (p parserImpl) ParseEvent(log ethTypes.Log) (_ EventType, event interface{}
 
 	switch eventType {
 	case VerificationRequestedEvent:
-		event, err := p.filterer.ParseVerfificationRequested(log)
+		event, err := p.filterer.ParseVerificationRequested(log)
 		if err != nil {
 			return noOpEvent, nil, false
 		}
 		return eventType, event, true
 	case EntryVerificationEvent:
-		event, err := p.filterer.ParseVerfificationRequested(log)
+		event, err := p.filterer.ParseEntryVerified(log)
 		if err != nil {
 			return noOpEvent, nil, false
 		}
