@@ -25,7 +25,11 @@ export default function Ticker() {
       </button>
       <ul className={`flex whitespace-nowrap list-disc marker:text-zinc-500 ${styles.ticker}`}>
         {[...Array(20)].map((x, i) => {
-          return <li className="pl-2 ml-7"><a href="#" className="text-zinc-500 hover:text-inherit hover:underline py-1.5 inline-block">{generateTx()}</a></li>
+          return (
+            <li className="relative group pl-2 ml-7">
+              <a href="#" className="text-zinc-500 hover:text-inherit hover:underline py-1.5 inline-block">{generateTx()}</a>
+              {/* <div className="absolute top-0 mt-8 text-blue-500 left-0 hidden group-hover:block">Hello</div> */}
+            </li>)
         })}
       </ul>
       <a href="#" className="absolute top-0 right-0 bg-inherit px-4 py-1.5 border-l border-zinc-300 dark:border-zinc-800 flex items-center gap-2 z-10">

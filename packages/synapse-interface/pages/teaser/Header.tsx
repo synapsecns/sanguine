@@ -52,7 +52,7 @@ export default function Header() {
         <li className="group">
           <a
             href={section.url}
-            className="px-3 py-1 hover:bg-zinc-50 hover:dark:bg-zinc-950 border border-transparent hover:border-fuchsia-500 rounded inline-block"
+            className="px-3 pt-0.5 pb-1 hover:bg-zinc-50 hover:dark:bg-zinc-950 border border-transparent hover:border-fuchsia-500 rounded inline-block"
           >
             {section.label}
           </a>
@@ -63,16 +63,11 @@ export default function Header() {
                   return (
                     <>
                       <dt className={`col-start-1 ${styles.header}`}>
-                        <a
-                          href={link.url}
-                          className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded"
-                        >
+                        <a href={link.url} className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded">
                           {link.label}
                         </a>
                       </dt>
-                      <dd
-                        className={`w-60 col-start-2 row-start-1 row-span-6 px-4 py-3 border-l border-zinc-200 dark:border-zinc-800`}
-                      >
+                      <dd className="w-60 col-start-2 row-start-1 row-span-6 px-4 py-3 border-l border-zinc-200 dark:border-zinc-800">
                         {link.description}
                       </dd>
                     </>
