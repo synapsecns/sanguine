@@ -1,10 +1,14 @@
+import Image from 'next/image'
+
 export const MenuItem = ({
   text,
   link,
+  iconUrl,
   onClick,
 }: {
   text: string
   link: string
+  iconUrl?: string
   onClick?: () => any
 }) => {
   const className =
@@ -32,7 +36,17 @@ export const MenuItem = ({
           rel="noreferrer"
           className={className}
         >
-          {text}
+          <div className="flex space-x-1">
+            {iconUrl && (
+              <Image
+                src={iconUrl}
+                height={16}
+                width={16}
+                alt={`${text} icon`}
+              />
+            )}
+            <div>{text}</div>
+          </div>
           <div className="mb-0.5">↗</div>
         </a>
       )}

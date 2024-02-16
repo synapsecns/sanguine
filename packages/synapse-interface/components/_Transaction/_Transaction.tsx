@@ -164,12 +164,17 @@ export const _Transaction = ({
               })}
             </div>
             {!isNull(originTxExplorerLink) && (
-              <MenuItem text={originExplorerName} link={originTxExplorerLink} />
+              <MenuItem
+                text={originExplorerName}
+                link={originTxExplorerLink}
+                iconUrl={originChain?.explorerImg}
+              />
             )}
             {!isNull(destExplorerAddressLink) && !isTxReverted && (
               <MenuItem
                 text={destExplorerName}
                 link={destExplorerAddressLink}
+                iconUrl={destinationChain?.explorerImg}
               />
             )}
             <MenuItem
