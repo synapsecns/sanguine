@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {IThresholdECDSAModuleEvents} from "../../contracts/interfaces/IThresholdECDSAModuleEvents.sol";
+import {ThresholdECDSAModuleEvents} from "../../contracts/events/ThresholdECDSAModuleEvents.sol";
 import {ThresholdECDSAModule, IThresholdECDSAModule} from "../../contracts/modules/ThresholdECDSAModule.sol";
 import {ThresholdECDSALib} from "../../contracts/libs/ThresholdECDSA.sol";
 
@@ -11,7 +11,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 import {Test} from "forge-std/Test.sol";
 
-contract ThresholdECDSAModuleManagementTest is Test, IThresholdECDSAModuleEvents {
+contract ThresholdECDSAModuleManagementTest is Test, ThresholdECDSAModuleEvents {
     ThresholdECDSAModule public module;
     GasOracleMock public gasOracle;
 

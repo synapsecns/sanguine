@@ -3,15 +3,15 @@ pragma solidity 0.8.20;
 
 import {InterchainModule} from "./InterchainModule.sol";
 
+import {ThresholdECDSAModuleEvents} from "../events/ThresholdECDSAModuleEvents.sol";
 import {IThresholdECDSAModule} from "../interfaces/IThresholdECDSAModule.sol";
-import {IThresholdECDSAModuleEvents} from "../interfaces/IThresholdECDSAModuleEvents.sol";
 
 import {InterchainEntry} from "../libs/InterchainEntry.sol";
 import {ThresholdECDSA} from "../libs/ThresholdECDSA.sol";
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract ThresholdECDSAModule is InterchainModule, Ownable, IThresholdECDSAModule, IThresholdECDSAModuleEvents {
+contract ThresholdECDSAModule is InterchainModule, Ownable, ThresholdECDSAModuleEvents, IThresholdECDSAModule {
     /// @dev Struct to hold the verifiers and the threshold for the module.
     ThresholdECDSA internal _verifiers;
 

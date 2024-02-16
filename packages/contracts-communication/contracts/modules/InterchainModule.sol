@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import {InterchainModuleEvents} from "../events/InterchainModuleEvents.sol";
 import {IInterchainDB} from "../interfaces/IInterchainDB.sol";
 import {IInterchainModule} from "../interfaces/IInterchainModule.sol";
-import {IInterchainModuleEvents} from "../interfaces/IInterchainModuleEvents.sol";
 
 import {InterchainEntry} from "../libs/InterchainEntry.sol";
 
 /// @notice Common logic for all Interchain Modules.
-abstract contract InterchainModule is IInterchainModule, IInterchainModuleEvents {
+abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule {
     address public immutable INTERCHAIN_DB;
 
     error InterchainModule__NotInterchainDB();
