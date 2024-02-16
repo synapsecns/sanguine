@@ -129,17 +129,24 @@ export function ConnectWalletButton() {
                     return (
                       <button
                         className={`
-                          flex items-center text-sm text-white mr-2
+                          flex items-right justify-center
+                          text-base text-white px-3 py-1 rounded-lg
+                          text-center transform-gpu transition-all duration-75
+                          border border-solid border-transparent
+                          hover:border-[#3D3D5C]
                         `}
                         onClick={openConnectModal}
                       >
-                        <div
-                          className={`
-                            my-auto ml-auto mr-2 text-transparent w-2 h-2
-                            border border-indigo-300 border-solid rounded-full
-                          `}
-                        />
-                        Connect Wallet
+                        <div className="flex flex-row text-sm">
+                          <div
+                            className={`
+                              my-auto ml-auto mr-2 text-transparent w-2 h-2
+                              border border-indigo-300 border-solid rounded-full
+                            `}
+                          />
+                          Connect Wallet
+                        </div>
+
                       </button>
                     )
                   }
