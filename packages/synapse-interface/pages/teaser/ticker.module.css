@@ -4,10 +4,10 @@
 .ticker { animation: ticker 60s cubic-bezier(0, 0, 1, 1) infinite }
 .ticker:hover { animation-play-state: paused }
 
-.tx + dd {
+.ticker dt + dd {
   display: none;
 }
-.tx:hover + dd  {
+.ticker dt:hover + dd, .ticker dd:hover  {
   /* animation: header .3s cubic-bezier(0, .5, .2, 1); */
   display: flex;
 }

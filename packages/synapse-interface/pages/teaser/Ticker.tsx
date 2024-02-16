@@ -31,22 +31,18 @@ export default function Ticker() {
           return (
             <>
               <dt
-                className={`relative group px-4 row-start-1 bg-zinc-50 dark:bg-zinc-950 border-y border-zinc-200 dark:border-zinc-900 ${styles.tx}`}
+                className="relative group row-start-1 bg-zinc-50 dark:bg-zinc-950 border-y border-zinc-200 dark:border-zinc-900"
                 style={{ gridColumnStart: i + 1}}
               >
-                <a
-                  href="#"
-                  className="text-zinc-500 hover:text-inherit hover:underline py-1.5 inline-block"
-                >
+                <a href="#" className="text-zinc-500 px-4 hover:text-inherit hover:underline py-1.5 inline-block">
                   {`${tx.origin.formattedAmount} ${tx.origin.payload} to ${tx.destination.chain}`}
                 </a>
               </dt>
               <dd
-                className="row-start-2 animate-slide-down origin-top relative"
+                className="row-start-2 animate-slide-down origin-top relative p-2"
                 style={{ gridColumnStart: i + 1}}
               >
-                <div className="absolute top-2 left-2 px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-900 rounded items-center grid gap-x-4 gap-y-1">
-
+                <a href="#" className="absolute px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-900 rounded items-center grid gap-x-4 gap-y-1 shadow-sm">
                   <ul className="inline">
                     <li>{tx.origin.formattedAmount} {tx.origin.payload}</li>
                     <li>{tx.origin.chain}</li>
@@ -59,7 +55,7 @@ export default function Ticker() {
                     <li>{tx.destination.chain}</li>
                   </ul>
                   <header className="text-zinc-500 row-start-2 col-span-3">{formatTimestamp(tx)}</header>
-                </div>
+                </a>
               </dd>
             </>
           )
