@@ -1,0 +1,94 @@
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.20;
+
+import {InterchainModuleEvents} from "../../contracts/events/InterchainModuleEvents.sol";
+import {ThresholdECDSAModuleEvents} from "../../contracts/events/ThresholdECDSAModuleEvents.sol";
+import {IInterchainModule} from "../../contracts/interfaces/IInterchainModule.sol";
+import {
+    ThresholdECDSAModule,
+    InterchainEntry,
+    IThresholdECDSAModule
+} from "../../contracts/modules/ThresholdECDSAModule.sol";
+
+import {GasOracleMock} from "../mocks/GasOracleMock.sol";
+
+import {Test} from "forge-std/Test.sol";
+
+contract ThresholdECDSAModuleSourceTest is Test, InterchainModuleEvents, ThresholdECDSAModuleEvents {
+    ThresholdECDSAModule public module;
+    GasOracleMock public gasOracle;
+
+    address public interchainDB = makeAddr("InterchainDB");
+    address public feeCollector = makeAddr("FeeCollector");
+    address public owner = makeAddr("Owner");
+
+    uint256 public constant SRC_CHAIN_ID = 1337;
+    uint256 public constant DST_CHAIN_ID = 7331;
+
+    uint256 public constant FEE = 100;
+
+    InterchainEntry public mockEntry = InterchainEntry({
+        srcChainId: SRC_CHAIN_ID,
+        srcWriter: bytes32(uint256(2)),
+        writerNonce: 3,
+        dataHash: bytes32(uint256(4))
+    });
+
+    function setUp() public {
+        vm.chainId(SRC_CHAIN_ID);
+        module = new ThresholdECDSAModule(interchainDB, owner);
+        gasOracle = new GasOracleMock();
+        vm.startPrank(owner);
+        module.setGasOracle(address(gasOracle));
+        module.addVerifier(address(1));
+        module.setThreshold(1);
+        vm.stopPrank();
+        // TODO: set up GasOracle mocking
+    }
+
+    function mockRequestVerification(uint256 msgValue, InterchainEntry memory entry) internal {
+        deal(interchainDB, msgValue);
+        vm.prank(interchainDB);
+        module.requestVerification{value: msgValue}(DST_CHAIN_ID, entry);
+    }
+
+    function test_setup() public {
+        assertEq(module.owner(), owner);
+        assertEq(module.INTERCHAIN_DB(), interchainDB);
+        assertTrue(module.isVerifier(address(1)));
+        assertEq(module.getThreshold(), 1);
+        assertEq(module.gasOracle(), address(gasOracle));
+    }
+
+    function test_requestVerification_emitsEvent() public {
+        bytes memory encodedEntry = abi.encode(mockEntry);
+        bytes32 entryHash = keccak256(encodedEntry);
+        bytes32 ethSignedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", entryHash));
+        vm.expectEmit(address(module));
+        emit VerificationRequested(DST_CHAIN_ID, encodedEntry, ethSignedHash);
+        mockRequestVerification(FEE, mockEntry);
+    }
+
+    function test_requestVerification_transfersFeeToCollector() public {
+        mockRequestVerification(FEE, mockEntry);
+        assertEq(feeCollector.balance, FEE);
+    }
+
+    function test_requestVerification_feeAboveRequired() public {
+        // Should not revert
+        mockRequestVerification(FEE + 1, mockEntry);
+    }
+
+    function test_requestVerification_revert_feeBelowRequired() public {
+        vm.expectRevert(
+            abi.encodeWithSelector(IInterchainModule.InterchainModule__InsufficientFee.selector, FEE - 1, FEE)
+        );
+        mockRequestVerification(FEE - 1, mockEntry);
+    }
+
+    function test_getModuleFee() public {
+        // TODO: fill the calldata
+        vm.expectCall(address(gasOracle), "");
+        assertEq(module.getModuleFee(DST_CHAIN_ID), FEE);
+    }
+}
