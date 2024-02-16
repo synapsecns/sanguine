@@ -19,6 +19,8 @@ const formatTimestamp = (tx) => {
   return `${originDateFormatted} (${durationFormatted})`
 }
 
+/* Ticker – Easter egg: define custom <marquee> element */
+
 export default function Ticker() {
   return (
     <article
