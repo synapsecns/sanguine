@@ -187,7 +187,7 @@ contract SynapseModuleTest is Test, ISynapseModuleEvents {
             signatures[i] = abi.encodePacked(r, s, v);
         }
         vm.expectEmit();
-        emit EntryVerified(entry);
+        emit EntryVerified(entry, keccak256(abi.encode(entry)));
         // set block time to 2 to verify entry at block.timestamp = 2
         vm.warp(2);
         synapseModule.verifyEntry(entry, signatures);
