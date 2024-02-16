@@ -144,8 +144,9 @@ export const _Transaction = ({
             menuTitleElement={
               <TimeRemaining
                 isComplete={isTxFinalized}
-                remainingTime={remainingTime}
                 isDelayed={isEstimatedTimeReached}
+                isReverted={isReverted}
+                remainingTime={remainingTime}
                 delayedTime={delayedTime}
               />
             }
