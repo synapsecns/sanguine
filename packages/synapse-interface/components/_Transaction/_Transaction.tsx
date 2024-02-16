@@ -176,7 +176,7 @@ export const _Transaction = ({
               text="Contact Support"
               link="https://discord.gg/synapseprotocol"
             />
-            {isTxFinalized && (
+            {(isTxFinalized || isTxReverted) && (
               <MenuItem
                 text="Clear Transaction"
                 link={null}
