@@ -5,9 +5,9 @@ import { useAccount } from 'wagmi'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 import { SynapseIcon } from './SynapseIcon'
-import Footer from './footer'
+import Footer from './Footer'
 import Header from './Header'
-import Ticker from './ticker'
+import Ticker from './Ticker'
 
 const LandingPage = () => {
   const { address: currentAddress } = useAccount()
