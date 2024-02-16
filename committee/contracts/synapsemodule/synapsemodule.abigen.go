@@ -191,7 +191,7 @@ func (_Context *ContextTransactorRaw) Transact(opts *bind.TransactOpts, method s
 // ECDSAMetaData contains all meta data concerning the ECDSA contract.
 var ECDSAMetaData = &bind.MetaData{
 	ABI: "[{\"inputs\":[],\"name\":\"ECDSAInvalidSignature\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"length\",\"type\":\"uint256\"}],\"name\":\"ECDSAInvalidSignatureLength\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"ECDSAInvalidSignatureS\",\"type\":\"error\"}]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122061507e68c7a84b1624a8f5731e7af91ee5550210d5078bf662c6ad04a3ec9ab964736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220cc6d282053fd5780b60526847b43f6709e452a852c640db6f6284750fd73cbe764736f6c63430008140033",
 }
 
 // ECDSAABI is the input ABI used to generate the binding from.
@@ -1146,122 +1146,124 @@ func (_IInterchainModule *IInterchainModuleTransactorSession) RequestVerificatio
 	return _IInterchainModule.Contract.RequestVerification(&_IInterchainModule.TransactOpts, destChainId, entry)
 }
 
-// IInterchainModuleV1MetaData contains all meta data concerning the IInterchainModuleV1 contract.
-var IInterchainModuleV1MetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"}],\"name\":\"estimateFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"receiveModuleMessage\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"transaction\",\"type\":\"bytes\"}],\"name\":\"sendModuleMessage\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]",
+// ISynapseModuleMetaData contains all meta data concerning the ISynapseModule contract.
+var ISynapseModuleMetaData = &bind.MetaData{
+	ABI: "[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainEntry\",\"name\":\"entry\",\"type\":\"tuple\"}],\"name\":\"requestVerification\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_interchainDB\",\"type\":\"address\"}],\"name\":\"setInterchainDB\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_threshold\",\"type\":\"uint256\"}],\"name\":\"setRequiredThreshold\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"_verifiers\",\"type\":\"address[]\"}],\"name\":\"setVerifiers\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainEntry\",\"name\":\"entry\",\"type\":\"tuple\"},{\"internalType\":\"bytes[]\",\"name\":\"signatures\",\"type\":\"bytes[]\"}],\"name\":\"verifyEntry\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
-		"127e8e4d": "estimateFee(uint256)",
-		"b2b130ed": "receiveModuleMessage()",
-		"6d66bf3e": "sendModuleMessage(bytes)",
+		"e3777216": "requestVerification(uint256,(uint256,bytes32,uint256,bytes32))",
+		"b7ce2078": "setInterchainDB(address)",
+		"6f206f2c": "setRequiredThreshold(uint256)",
+		"8f2d2e21": "setVerifiers(address[])",
+		"80a131f0": "verifyEntry((uint256,bytes32,uint256,bytes32),bytes[])",
 	},
 }
 
-// IInterchainModuleV1ABI is the input ABI used to generate the binding from.
-// Deprecated: Use IInterchainModuleV1MetaData.ABI instead.
-var IInterchainModuleV1ABI = IInterchainModuleV1MetaData.ABI
+// ISynapseModuleABI is the input ABI used to generate the binding from.
+// Deprecated: Use ISynapseModuleMetaData.ABI instead.
+var ISynapseModuleABI = ISynapseModuleMetaData.ABI
 
-// Deprecated: Use IInterchainModuleV1MetaData.Sigs instead.
-// IInterchainModuleV1FuncSigs maps the 4-byte function signature to its string representation.
-var IInterchainModuleV1FuncSigs = IInterchainModuleV1MetaData.Sigs
+// Deprecated: Use ISynapseModuleMetaData.Sigs instead.
+// ISynapseModuleFuncSigs maps the 4-byte function signature to its string representation.
+var ISynapseModuleFuncSigs = ISynapseModuleMetaData.Sigs
 
-// IInterchainModuleV1 is an auto generated Go binding around an Ethereum contract.
-type IInterchainModuleV1 struct {
-	IInterchainModuleV1Caller     // Read-only binding to the contract
-	IInterchainModuleV1Transactor // Write-only binding to the contract
-	IInterchainModuleV1Filterer   // Log filterer for contract events
+// ISynapseModule is an auto generated Go binding around an Ethereum contract.
+type ISynapseModule struct {
+	ISynapseModuleCaller     // Read-only binding to the contract
+	ISynapseModuleTransactor // Write-only binding to the contract
+	ISynapseModuleFilterer   // Log filterer for contract events
 }
 
-// IInterchainModuleV1Caller is an auto generated read-only Go binding around an Ethereum contract.
-type IInterchainModuleV1Caller struct {
+// ISynapseModuleCaller is an auto generated read-only Go binding around an Ethereum contract.
+type ISynapseModuleCaller struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// IInterchainModuleV1Transactor is an auto generated write-only Go binding around an Ethereum contract.
-type IInterchainModuleV1Transactor struct {
+// ISynapseModuleTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type ISynapseModuleTransactor struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// IInterchainModuleV1Filterer is an auto generated log filtering Go binding around an Ethereum contract events.
-type IInterchainModuleV1Filterer struct {
+// ISynapseModuleFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type ISynapseModuleFilterer struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// IInterchainModuleV1Session is an auto generated Go binding around an Ethereum contract,
+// ISynapseModuleSession is an auto generated Go binding around an Ethereum contract,
 // with pre-set call and transact options.
-type IInterchainModuleV1Session struct {
-	Contract     *IInterchainModuleV1 // Generic contract binding to set the session for
-	CallOpts     bind.CallOpts        // Call options to use throughout this session
-	TransactOpts bind.TransactOpts    // Transaction auth options to use throughout this session
+type ISynapseModuleSession struct {
+	Contract     *ISynapseModule   // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts     // Call options to use throughout this session
+	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
 }
 
-// IInterchainModuleV1CallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// ISynapseModuleCallerSession is an auto generated read-only Go binding around an Ethereum contract,
 // with pre-set call options.
-type IInterchainModuleV1CallerSession struct {
-	Contract *IInterchainModuleV1Caller // Generic contract caller binding to set the session for
-	CallOpts bind.CallOpts              // Call options to use throughout this session
+type ISynapseModuleCallerSession struct {
+	Contract *ISynapseModuleCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts         // Call options to use throughout this session
 }
 
-// IInterchainModuleV1TransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// ISynapseModuleTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
 // with pre-set transact options.
-type IInterchainModuleV1TransactorSession struct {
-	Contract     *IInterchainModuleV1Transactor // Generic contract transactor binding to set the session for
-	TransactOpts bind.TransactOpts              // Transaction auth options to use throughout this session
+type ISynapseModuleTransactorSession struct {
+	Contract     *ISynapseModuleTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts         // Transaction auth options to use throughout this session
 }
 
-// IInterchainModuleV1Raw is an auto generated low-level Go binding around an Ethereum contract.
-type IInterchainModuleV1Raw struct {
-	Contract *IInterchainModuleV1 // Generic contract binding to access the raw methods on
+// ISynapseModuleRaw is an auto generated low-level Go binding around an Ethereum contract.
+type ISynapseModuleRaw struct {
+	Contract *ISynapseModule // Generic contract binding to access the raw methods on
 }
 
-// IInterchainModuleV1CallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
-type IInterchainModuleV1CallerRaw struct {
-	Contract *IInterchainModuleV1Caller // Generic read-only contract binding to access the raw methods on
+// ISynapseModuleCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type ISynapseModuleCallerRaw struct {
+	Contract *ISynapseModuleCaller // Generic read-only contract binding to access the raw methods on
 }
 
-// IInterchainModuleV1TransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
-type IInterchainModuleV1TransactorRaw struct {
-	Contract *IInterchainModuleV1Transactor // Generic write-only contract binding to access the raw methods on
+// ISynapseModuleTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type ISynapseModuleTransactorRaw struct {
+	Contract *ISynapseModuleTransactor // Generic write-only contract binding to access the raw methods on
 }
 
-// NewIInterchainModuleV1 creates a new instance of IInterchainModuleV1, bound to a specific deployed contract.
-func NewIInterchainModuleV1(address common.Address, backend bind.ContractBackend) (*IInterchainModuleV1, error) {
-	contract, err := bindIInterchainModuleV1(address, backend, backend, backend)
+// NewISynapseModule creates a new instance of ISynapseModule, bound to a specific deployed contract.
+func NewISynapseModule(address common.Address, backend bind.ContractBackend) (*ISynapseModule, error) {
+	contract, err := bindISynapseModule(address, backend, backend, backend)
 	if err != nil {
 		return nil, err
 	}
-	return &IInterchainModuleV1{IInterchainModuleV1Caller: IInterchainModuleV1Caller{contract: contract}, IInterchainModuleV1Transactor: IInterchainModuleV1Transactor{contract: contract}, IInterchainModuleV1Filterer: IInterchainModuleV1Filterer{contract: contract}}, nil
+	return &ISynapseModule{ISynapseModuleCaller: ISynapseModuleCaller{contract: contract}, ISynapseModuleTransactor: ISynapseModuleTransactor{contract: contract}, ISynapseModuleFilterer: ISynapseModuleFilterer{contract: contract}}, nil
 }
 
-// NewIInterchainModuleV1Caller creates a new read-only instance of IInterchainModuleV1, bound to a specific deployed contract.
-func NewIInterchainModuleV1Caller(address common.Address, caller bind.ContractCaller) (*IInterchainModuleV1Caller, error) {
-	contract, err := bindIInterchainModuleV1(address, caller, nil, nil)
+// NewISynapseModuleCaller creates a new read-only instance of ISynapseModule, bound to a specific deployed contract.
+func NewISynapseModuleCaller(address common.Address, caller bind.ContractCaller) (*ISynapseModuleCaller, error) {
+	contract, err := bindISynapseModule(address, caller, nil, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &IInterchainModuleV1Caller{contract: contract}, nil
+	return &ISynapseModuleCaller{contract: contract}, nil
 }
 
-// NewIInterchainModuleV1Transactor creates a new write-only instance of IInterchainModuleV1, bound to a specific deployed contract.
-func NewIInterchainModuleV1Transactor(address common.Address, transactor bind.ContractTransactor) (*IInterchainModuleV1Transactor, error) {
-	contract, err := bindIInterchainModuleV1(address, nil, transactor, nil)
+// NewISynapseModuleTransactor creates a new write-only instance of ISynapseModule, bound to a specific deployed contract.
+func NewISynapseModuleTransactor(address common.Address, transactor bind.ContractTransactor) (*ISynapseModuleTransactor, error) {
+	contract, err := bindISynapseModule(address, nil, transactor, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &IInterchainModuleV1Transactor{contract: contract}, nil
+	return &ISynapseModuleTransactor{contract: contract}, nil
 }
 
-// NewIInterchainModuleV1Filterer creates a new log filterer instance of IInterchainModuleV1, bound to a specific deployed contract.
-func NewIInterchainModuleV1Filterer(address common.Address, filterer bind.ContractFilterer) (*IInterchainModuleV1Filterer, error) {
-	contract, err := bindIInterchainModuleV1(address, nil, nil, filterer)
+// NewISynapseModuleFilterer creates a new log filterer instance of ISynapseModule, bound to a specific deployed contract.
+func NewISynapseModuleFilterer(address common.Address, filterer bind.ContractFilterer) (*ISynapseModuleFilterer, error) {
+	contract, err := bindISynapseModule(address, nil, nil, filterer)
 	if err != nil {
 		return nil, err
 	}
-	return &IInterchainModuleV1Filterer{contract: contract}, nil
+	return &ISynapseModuleFilterer{contract: contract}, nil
 }
 
-// bindIInterchainModuleV1 binds a generic wrapper to an already deployed contract.
-func bindIInterchainModuleV1(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := IInterchainModuleV1MetaData.GetAbi()
+// bindISynapseModule binds a generic wrapper to an already deployed contract.
+func bindISynapseModule(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := ISynapseModuleMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
@@ -1272,116 +1274,148 @@ func bindIInterchainModuleV1(address common.Address, caller bind.ContractCaller,
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_IInterchainModuleV1 *IInterchainModuleV1Raw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _IInterchainModuleV1.Contract.IInterchainModuleV1Caller.contract.Call(opts, result, method, params...)
+func (_ISynapseModule *ISynapseModuleRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _ISynapseModule.Contract.ISynapseModuleCaller.contract.Call(opts, result, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
 // its default method if one is available.
-func (_IInterchainModuleV1 *IInterchainModuleV1Raw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _IInterchainModuleV1.Contract.IInterchainModuleV1Transactor.contract.Transfer(opts)
+func (_ISynapseModule *ISynapseModuleRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _ISynapseModule.Contract.ISynapseModuleTransactor.contract.Transfer(opts)
 }
 
 // Transact invokes the (paid) contract method with params as input values.
-func (_IInterchainModuleV1 *IInterchainModuleV1Raw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _IInterchainModuleV1.Contract.IInterchainModuleV1Transactor.contract.Transact(opts, method, params...)
+func (_ISynapseModule *ISynapseModuleRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _ISynapseModule.Contract.ISynapseModuleTransactor.contract.Transact(opts, method, params...)
 }
 
 // Call invokes the (constant) contract method with params as input values and
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_IInterchainModuleV1 *IInterchainModuleV1CallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _IInterchainModuleV1.Contract.contract.Call(opts, result, method, params...)
+func (_ISynapseModule *ISynapseModuleCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _ISynapseModule.Contract.contract.Call(opts, result, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
 // its default method if one is available.
-func (_IInterchainModuleV1 *IInterchainModuleV1TransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _IInterchainModuleV1.Contract.contract.Transfer(opts)
+func (_ISynapseModule *ISynapseModuleTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _ISynapseModule.Contract.contract.Transfer(opts)
 }
 
 // Transact invokes the (paid) contract method with params as input values.
-func (_IInterchainModuleV1 *IInterchainModuleV1TransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _IInterchainModuleV1.Contract.contract.Transact(opts, method, params...)
+func (_ISynapseModule *ISynapseModuleTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _ISynapseModule.Contract.contract.Transact(opts, method, params...)
 }
 
-// EstimateFee is a free data retrieval call binding the contract method 0x127e8e4d.
+// RequestVerification is a paid mutator transaction binding the contract method 0xe3777216.
 //
-// Solidity: function estimateFee(uint256 dstChainId) view returns(uint256)
-func (_IInterchainModuleV1 *IInterchainModuleV1Caller) EstimateFee(opts *bind.CallOpts, dstChainId *big.Int) (*big.Int, error) {
-	var out []interface{}
-	err := _IInterchainModuleV1.contract.Call(opts, &out, "estimateFee", dstChainId)
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
+// Solidity: function requestVerification(uint256 destChainId, (uint256,bytes32,uint256,bytes32) entry) payable returns()
+func (_ISynapseModule *ISynapseModuleTransactor) RequestVerification(opts *bind.TransactOpts, destChainId *big.Int, entry InterchainEntry) (*types.Transaction, error) {
+	return _ISynapseModule.contract.Transact(opts, "requestVerification", destChainId, entry)
 }
 
-// EstimateFee is a free data retrieval call binding the contract method 0x127e8e4d.
+// RequestVerification is a paid mutator transaction binding the contract method 0xe3777216.
 //
-// Solidity: function estimateFee(uint256 dstChainId) view returns(uint256)
-func (_IInterchainModuleV1 *IInterchainModuleV1Session) EstimateFee(dstChainId *big.Int) (*big.Int, error) {
-	return _IInterchainModuleV1.Contract.EstimateFee(&_IInterchainModuleV1.CallOpts, dstChainId)
+// Solidity: function requestVerification(uint256 destChainId, (uint256,bytes32,uint256,bytes32) entry) payable returns()
+func (_ISynapseModule *ISynapseModuleSession) RequestVerification(destChainId *big.Int, entry InterchainEntry) (*types.Transaction, error) {
+	return _ISynapseModule.Contract.RequestVerification(&_ISynapseModule.TransactOpts, destChainId, entry)
 }
 
-// EstimateFee is a free data retrieval call binding the contract method 0x127e8e4d.
+// RequestVerification is a paid mutator transaction binding the contract method 0xe3777216.
 //
-// Solidity: function estimateFee(uint256 dstChainId) view returns(uint256)
-func (_IInterchainModuleV1 *IInterchainModuleV1CallerSession) EstimateFee(dstChainId *big.Int) (*big.Int, error) {
-	return _IInterchainModuleV1.Contract.EstimateFee(&_IInterchainModuleV1.CallOpts, dstChainId)
+// Solidity: function requestVerification(uint256 destChainId, (uint256,bytes32,uint256,bytes32) entry) payable returns()
+func (_ISynapseModule *ISynapseModuleTransactorSession) RequestVerification(destChainId *big.Int, entry InterchainEntry) (*types.Transaction, error) {
+	return _ISynapseModule.Contract.RequestVerification(&_ISynapseModule.TransactOpts, destChainId, entry)
 }
 
-// ReceiveModuleMessage is a paid mutator transaction binding the contract method 0xb2b130ed.
+// SetInterchainDB is a paid mutator transaction binding the contract method 0xb7ce2078.
 //
-// Solidity: function receiveModuleMessage() returns()
-func (_IInterchainModuleV1 *IInterchainModuleV1Transactor) ReceiveModuleMessage(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _IInterchainModuleV1.contract.Transact(opts, "receiveModuleMessage")
+// Solidity: function setInterchainDB(address _interchainDB) returns()
+func (_ISynapseModule *ISynapseModuleTransactor) SetInterchainDB(opts *bind.TransactOpts, _interchainDB common.Address) (*types.Transaction, error) {
+	return _ISynapseModule.contract.Transact(opts, "setInterchainDB", _interchainDB)
 }
 
-// ReceiveModuleMessage is a paid mutator transaction binding the contract method 0xb2b130ed.
+// SetInterchainDB is a paid mutator transaction binding the contract method 0xb7ce2078.
 //
-// Solidity: function receiveModuleMessage() returns()
-func (_IInterchainModuleV1 *IInterchainModuleV1Session) ReceiveModuleMessage() (*types.Transaction, error) {
-	return _IInterchainModuleV1.Contract.ReceiveModuleMessage(&_IInterchainModuleV1.TransactOpts)
+// Solidity: function setInterchainDB(address _interchainDB) returns()
+func (_ISynapseModule *ISynapseModuleSession) SetInterchainDB(_interchainDB common.Address) (*types.Transaction, error) {
+	return _ISynapseModule.Contract.SetInterchainDB(&_ISynapseModule.TransactOpts, _interchainDB)
 }
 
-// ReceiveModuleMessage is a paid mutator transaction binding the contract method 0xb2b130ed.
+// SetInterchainDB is a paid mutator transaction binding the contract method 0xb7ce2078.
 //
-// Solidity: function receiveModuleMessage() returns()
-func (_IInterchainModuleV1 *IInterchainModuleV1TransactorSession) ReceiveModuleMessage() (*types.Transaction, error) {
-	return _IInterchainModuleV1.Contract.ReceiveModuleMessage(&_IInterchainModuleV1.TransactOpts)
+// Solidity: function setInterchainDB(address _interchainDB) returns()
+func (_ISynapseModule *ISynapseModuleTransactorSession) SetInterchainDB(_interchainDB common.Address) (*types.Transaction, error) {
+	return _ISynapseModule.Contract.SetInterchainDB(&_ISynapseModule.TransactOpts, _interchainDB)
 }
 
-// SendModuleMessage is a paid mutator transaction binding the contract method 0x6d66bf3e.
+// SetRequiredThreshold is a paid mutator transaction binding the contract method 0x6f206f2c.
 //
-// Solidity: function sendModuleMessage(bytes transaction) payable returns()
-func (_IInterchainModuleV1 *IInterchainModuleV1Transactor) SendModuleMessage(opts *bind.TransactOpts, transaction []byte) (*types.Transaction, error) {
-	return _IInterchainModuleV1.contract.Transact(opts, "sendModuleMessage", transaction)
+// Solidity: function setRequiredThreshold(uint256 _threshold) returns()
+func (_ISynapseModule *ISynapseModuleTransactor) SetRequiredThreshold(opts *bind.TransactOpts, _threshold *big.Int) (*types.Transaction, error) {
+	return _ISynapseModule.contract.Transact(opts, "setRequiredThreshold", _threshold)
 }
 
-// SendModuleMessage is a paid mutator transaction binding the contract method 0x6d66bf3e.
+// SetRequiredThreshold is a paid mutator transaction binding the contract method 0x6f206f2c.
 //
-// Solidity: function sendModuleMessage(bytes transaction) payable returns()
-func (_IInterchainModuleV1 *IInterchainModuleV1Session) SendModuleMessage(transaction []byte) (*types.Transaction, error) {
-	return _IInterchainModuleV1.Contract.SendModuleMessage(&_IInterchainModuleV1.TransactOpts, transaction)
+// Solidity: function setRequiredThreshold(uint256 _threshold) returns()
+func (_ISynapseModule *ISynapseModuleSession) SetRequiredThreshold(_threshold *big.Int) (*types.Transaction, error) {
+	return _ISynapseModule.Contract.SetRequiredThreshold(&_ISynapseModule.TransactOpts, _threshold)
 }
 
-// SendModuleMessage is a paid mutator transaction binding the contract method 0x6d66bf3e.
+// SetRequiredThreshold is a paid mutator transaction binding the contract method 0x6f206f2c.
 //
-// Solidity: function sendModuleMessage(bytes transaction) payable returns()
-func (_IInterchainModuleV1 *IInterchainModuleV1TransactorSession) SendModuleMessage(transaction []byte) (*types.Transaction, error) {
-	return _IInterchainModuleV1.Contract.SendModuleMessage(&_IInterchainModuleV1.TransactOpts, transaction)
+// Solidity: function setRequiredThreshold(uint256 _threshold) returns()
+func (_ISynapseModule *ISynapseModuleTransactorSession) SetRequiredThreshold(_threshold *big.Int) (*types.Transaction, error) {
+	return _ISynapseModule.Contract.SetRequiredThreshold(&_ISynapseModule.TransactOpts, _threshold)
+}
+
+// SetVerifiers is a paid mutator transaction binding the contract method 0x8f2d2e21.
+//
+// Solidity: function setVerifiers(address[] _verifiers) returns()
+func (_ISynapseModule *ISynapseModuleTransactor) SetVerifiers(opts *bind.TransactOpts, _verifiers []common.Address) (*types.Transaction, error) {
+	return _ISynapseModule.contract.Transact(opts, "setVerifiers", _verifiers)
+}
+
+// SetVerifiers is a paid mutator transaction binding the contract method 0x8f2d2e21.
+//
+// Solidity: function setVerifiers(address[] _verifiers) returns()
+func (_ISynapseModule *ISynapseModuleSession) SetVerifiers(_verifiers []common.Address) (*types.Transaction, error) {
+	return _ISynapseModule.Contract.SetVerifiers(&_ISynapseModule.TransactOpts, _verifiers)
+}
+
+// SetVerifiers is a paid mutator transaction binding the contract method 0x8f2d2e21.
+//
+// Solidity: function setVerifiers(address[] _verifiers) returns()
+func (_ISynapseModule *ISynapseModuleTransactorSession) SetVerifiers(_verifiers []common.Address) (*types.Transaction, error) {
+	return _ISynapseModule.Contract.SetVerifiers(&_ISynapseModule.TransactOpts, _verifiers)
+}
+
+// VerifyEntry is a paid mutator transaction binding the contract method 0x80a131f0.
+//
+// Solidity: function verifyEntry((uint256,bytes32,uint256,bytes32) entry, bytes[] signatures) returns()
+func (_ISynapseModule *ISynapseModuleTransactor) VerifyEntry(opts *bind.TransactOpts, entry InterchainEntry, signatures [][]byte) (*types.Transaction, error) {
+	return _ISynapseModule.contract.Transact(opts, "verifyEntry", entry, signatures)
+}
+
+// VerifyEntry is a paid mutator transaction binding the contract method 0x80a131f0.
+//
+// Solidity: function verifyEntry((uint256,bytes32,uint256,bytes32) entry, bytes[] signatures) returns()
+func (_ISynapseModule *ISynapseModuleSession) VerifyEntry(entry InterchainEntry, signatures [][]byte) (*types.Transaction, error) {
+	return _ISynapseModule.Contract.VerifyEntry(&_ISynapseModule.TransactOpts, entry, signatures)
+}
+
+// VerifyEntry is a paid mutator transaction binding the contract method 0x80a131f0.
+//
+// Solidity: function verifyEntry((uint256,bytes32,uint256,bytes32) entry, bytes[] signatures) returns()
+func (_ISynapseModule *ISynapseModuleTransactorSession) VerifyEntry(entry InterchainEntry, signatures [][]byte) (*types.Transaction, error) {
+	return _ISynapseModule.Contract.VerifyEntry(&_ISynapseModule.TransactOpts, entry, signatures)
 }
 
 // ISynapseModuleEventsMetaData contains all meta data concerning the ISynapseModuleEvents contract.
 var ISynapseModuleEventsMetaData = &bind.MetaData{
-	ABI: "[{\"anonymous\":false,\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"indexed\":false,\"internalType\":\"structInterchainEntry\",\"name\":\"entry\",\"type\":\"tuple\"}],\"name\":\"EntryVerified\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"indexed\":false,\"internalType\":\"structInterchainEntry\",\"name\":\"entry\",\"type\":\"tuple\"}],\"name\":\"VerfificationRequested\",\"type\":\"event\"}]",
+	ABI: "[{\"anonymous\":false,\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"indexed\":false,\"internalType\":\"structInterchainEntry\",\"name\":\"entry\",\"type\":\"tuple\"}],\"name\":\"EntryVerified\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"indexed\":false,\"internalType\":\"structInterchainEntry\",\"name\":\"entry\",\"type\":\"tuple\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"name\":\"VerificationRequested\",\"type\":\"event\"}]",
 }
 
 // ISynapseModuleEventsABI is the input ABI used to generate the binding from.
@@ -1664,9 +1698,9 @@ func (_ISynapseModuleEvents *ISynapseModuleEventsFilterer) ParseEntryVerified(lo
 	return event, nil
 }
 
-// ISynapseModuleEventsVerfificationRequestedIterator is returned from FilterVerfificationRequested and is used to iterate over the raw logs and unpacked data for VerfificationRequested events raised by the ISynapseModuleEvents contract.
-type ISynapseModuleEventsVerfificationRequestedIterator struct {
-	Event *ISynapseModuleEventsVerfificationRequested // Event containing the contract specifics and raw log
+// ISynapseModuleEventsVerificationRequestedIterator is returned from FilterVerificationRequested and is used to iterate over the raw logs and unpacked data for VerificationRequested events raised by the ISynapseModuleEvents contract.
+type ISynapseModuleEventsVerificationRequestedIterator struct {
+	Event *ISynapseModuleEventsVerificationRequested // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -1680,7 +1714,7 @@ type ISynapseModuleEventsVerfificationRequestedIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *ISynapseModuleEventsVerfificationRequestedIterator) Next() bool {
+func (it *ISynapseModuleEventsVerificationRequestedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -1689,7 +1723,7 @@ func (it *ISynapseModuleEventsVerfificationRequestedIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(ISynapseModuleEventsVerfificationRequested)
+			it.Event = new(ISynapseModuleEventsVerificationRequested)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -1704,7 +1738,7 @@ func (it *ISynapseModuleEventsVerfificationRequestedIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(ISynapseModuleEventsVerfificationRequested)
+		it.Event = new(ISynapseModuleEventsVerificationRequested)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -1720,52 +1754,53 @@ func (it *ISynapseModuleEventsVerfificationRequestedIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *ISynapseModuleEventsVerfificationRequestedIterator) Error() error {
+func (it *ISynapseModuleEventsVerificationRequestedIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *ISynapseModuleEventsVerfificationRequestedIterator) Close() error {
+func (it *ISynapseModuleEventsVerificationRequestedIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// ISynapseModuleEventsVerfificationRequested represents a VerfificationRequested event raised by the ISynapseModuleEvents contract.
-type ISynapseModuleEventsVerfificationRequested struct {
+// ISynapseModuleEventsVerificationRequested represents a VerificationRequested event raised by the ISynapseModuleEvents contract.
+type ISynapseModuleEventsVerificationRequested struct {
 	DestChainId *big.Int
 	Entry       InterchainEntry
+	DataHash    [32]byte
 	Raw         types.Log // Blockchain specific contextual infos
 }
 
-// FilterVerfificationRequested is a free log retrieval operation binding the contract event 0xf0e0e0f85bb25f7ff2a62863099db3f92e3583495a1256a029a97037978d5538.
+// FilterVerificationRequested is a free log retrieval operation binding the contract event 0x7c7da7695b83e8f8eda84a76d9261e3032785a36e05911881cca597e0527e764.
 //
-// Solidity: event VerfificationRequested(uint256 indexed destChainId, (uint256,bytes32,uint256,bytes32) entry)
-func (_ISynapseModuleEvents *ISynapseModuleEventsFilterer) FilterVerfificationRequested(opts *bind.FilterOpts, destChainId []*big.Int) (*ISynapseModuleEventsVerfificationRequestedIterator, error) {
+// Solidity: event VerificationRequested(uint256 indexed destChainId, (uint256,bytes32,uint256,bytes32) entry, bytes32 dataHash)
+func (_ISynapseModuleEvents *ISynapseModuleEventsFilterer) FilterVerificationRequested(opts *bind.FilterOpts, destChainId []*big.Int) (*ISynapseModuleEventsVerificationRequestedIterator, error) {
 
 	var destChainIdRule []interface{}
 	for _, destChainIdItem := range destChainId {
 		destChainIdRule = append(destChainIdRule, destChainIdItem)
 	}
 
-	logs, sub, err := _ISynapseModuleEvents.contract.FilterLogs(opts, "VerfificationRequested", destChainIdRule)
+	logs, sub, err := _ISynapseModuleEvents.contract.FilterLogs(opts, "VerificationRequested", destChainIdRule)
 	if err != nil {
 		return nil, err
 	}
-	return &ISynapseModuleEventsVerfificationRequestedIterator{contract: _ISynapseModuleEvents.contract, event: "VerfificationRequested", logs: logs, sub: sub}, nil
+	return &ISynapseModuleEventsVerificationRequestedIterator{contract: _ISynapseModuleEvents.contract, event: "VerificationRequested", logs: logs, sub: sub}, nil
 }
 
-// WatchVerfificationRequested is a free log subscription operation binding the contract event 0xf0e0e0f85bb25f7ff2a62863099db3f92e3583495a1256a029a97037978d5538.
+// WatchVerificationRequested is a free log subscription operation binding the contract event 0x7c7da7695b83e8f8eda84a76d9261e3032785a36e05911881cca597e0527e764.
 //
-// Solidity: event VerfificationRequested(uint256 indexed destChainId, (uint256,bytes32,uint256,bytes32) entry)
-func (_ISynapseModuleEvents *ISynapseModuleEventsFilterer) WatchVerfificationRequested(opts *bind.WatchOpts, sink chan<- *ISynapseModuleEventsVerfificationRequested, destChainId []*big.Int) (event.Subscription, error) {
+// Solidity: event VerificationRequested(uint256 indexed destChainId, (uint256,bytes32,uint256,bytes32) entry, bytes32 dataHash)
+func (_ISynapseModuleEvents *ISynapseModuleEventsFilterer) WatchVerificationRequested(opts *bind.WatchOpts, sink chan<- *ISynapseModuleEventsVerificationRequested, destChainId []*big.Int) (event.Subscription, error) {
 
 	var destChainIdRule []interface{}
 	for _, destChainIdItem := range destChainId {
 		destChainIdRule = append(destChainIdRule, destChainIdItem)
 	}
 
-	logs, sub, err := _ISynapseModuleEvents.contract.WatchLogs(opts, "VerfificationRequested", destChainIdRule)
+	logs, sub, err := _ISynapseModuleEvents.contract.WatchLogs(opts, "VerificationRequested", destChainIdRule)
 	if err != nil {
 		return nil, err
 	}
@@ -1775,8 +1810,8 @@ func (_ISynapseModuleEvents *ISynapseModuleEventsFilterer) WatchVerfificationReq
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(ISynapseModuleEventsVerfificationRequested)
-				if err := _ISynapseModuleEvents.contract.UnpackLog(event, "VerfificationRequested", log); err != nil {
+				event := new(ISynapseModuleEventsVerificationRequested)
+				if err := _ISynapseModuleEvents.contract.UnpackLog(event, "VerificationRequested", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -1797,827 +1832,12 @@ func (_ISynapseModuleEvents *ISynapseModuleEventsFilterer) WatchVerfificationReq
 	}), nil
 }
 
-// ParseVerfificationRequested is a log parse operation binding the contract event 0xf0e0e0f85bb25f7ff2a62863099db3f92e3583495a1256a029a97037978d5538.
+// ParseVerificationRequested is a log parse operation binding the contract event 0x7c7da7695b83e8f8eda84a76d9261e3032785a36e05911881cca597e0527e764.
 //
-// Solidity: event VerfificationRequested(uint256 indexed destChainId, (uint256,bytes32,uint256,bytes32) entry)
-func (_ISynapseModuleEvents *ISynapseModuleEventsFilterer) ParseVerfificationRequested(log types.Log) (*ISynapseModuleEventsVerfificationRequested, error) {
-	event := new(ISynapseModuleEventsVerfificationRequested)
-	if err := _ISynapseModuleEvents.contract.UnpackLog(event, "VerfificationRequested", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
-// InterchainMetaData contains all meta data concerning the Interchain contract.
-var InterchainMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"srcSender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"dstReceiver\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"nonce\",\"type\":\"uint64\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"}],\"name\":\"InterchainTransactionSent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"transaction\",\"type\":\"bytes\"}],\"name\":\"TransactionReceived\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"completedModuleResponses\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"}],\"name\":\"convertAddressToBytes32\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_bytes32\",\"type\":\"bytes32\"}],\"name\":\"convertBytes32ToAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"address[]\",\"name\":\"modules\",\"type\":\"address[]\"}],\"name\":\"estimateInterchainTransactionFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"}],\"name\":\"execute\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"transaction\",\"type\":\"bytes\"}],\"name\":\"interchainReceive\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"receiver\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"},{\"internalType\":\"address[]\",\"name\":\"modules\",\"type\":\"address[]\"}],\"name\":\"interchainSend\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nonce\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"queuedTransactions\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"srcSender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dstReceiver\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"},{\"internalType\":\"uint64\",\"name\":\"nonce\",\"type\":\"uint64\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"requiredModuleResponses\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"verifiedTransactions\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
-	Sigs: map[string]string{
-		"870fe346": "completedModuleResponses(bytes32)",
-		"5893740e": "convertAddressToBytes32(address)",
-		"1efa2220": "convertBytes32ToAddress(bytes32)",
-		"9f6eeb5d": "estimateInterchainTransactionFee(uint256,address[])",
-		"e751f271": "execute(bytes32)",
-		"bbe9ad25": "interchainReceive(bytes)",
-		"8366a109": "interchainSend(bytes32,uint256,bytes,address[])",
-		"affed0e0": "nonce()",
-		"f2b06537": "queuedTransactions(bytes32)",
-		"dfb1dc0a": "verifiedTransactions(bytes32)",
-	},
-	Bin: "0x608060405234801561001057600080fd5b506117a6806100206000396000f3fe6080604052600436106100b15760003560e01c8063affed0e011610069578063dfb1dc0a1161004e578063dfb1dc0a146101fc578063e751f2711461023c578063f2b065371461025c57600080fd5b8063affed0e0146101a2578063bbe9ad25146101dc57600080fd5b80638366a1091161009a5780638366a10914610140578063870fe346146101555780639f6eeb5d1461018257600080fd5b80631efa2220146100b65780635893740e146100fe575b600080fd5b3480156100c257600080fd5b506100d46100d1366004610dd4565b90565b60405173ffffffffffffffffffffffffffffffffffffffff90911681526020015b60405180910390f35b34801561010a57600080fd5b50610132610119366004610e16565b73ffffffffffffffffffffffffffffffffffffffff1690565b6040519081526020016100f5565b61015361014e366004610ec6565b610290565b005b34801561016157600080fd5b50610132610170366004610dd4565b60036020526000908152604090205481565b34801561018e57600080fd5b5061013261019d366004610f49565b6105d0565b3480156101ae57600080fd5b506000546101c39067ffffffffffffffff1681565b60405167ffffffffffffffff90911681526020016100f5565b3480156101e857600080fd5b506101536101f7366004610f95565b6106a6565b34801561020857600080fd5b5061022c610217366004610dd4565b60026020526000908152604090205460ff1681565b60405190151581526020016100f5565b34801561024857600080fd5b50610153610257366004610dd4565b61099c565b34801561026857600080fd5b5061027c610277366004610dd4565b610c43565b6040516100f5989796959493929190611027565b60006040518061012001604052803373ffffffffffffffffffffffffffffffffffffffff16815260200146815260200188815260200187815260200186868080601f01602080910402602001604051908101604052809392919081815260200183838082843760009201829052509385525050905467ffffffffffffffff166020808401919091526040805193019261034e9250017f7472616e73616374696f6e4964000000000000000000000000000000000000008152600d0190565b604051602081830303815290604052805190602001208152602001848480806020026020016040519081016040528093929190818152602001838360200280828437600092018290525093855250505060209091018490529091505b8160e00151518110156105145760008260e0015182815181106103cf576103cf611094565b602002602001015173ffffffffffffffffffffffffffffffffffffffff1663127e8e4d84606001516040518263ffffffff1660e01b815260040161041591815260200190565b602060405180830381865afa158015610432573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061045691906110c3565b90508260e00151828151811061046e5761046e611094565b602002602001015173ffffffffffffffffffffffffffffffffffffffff16636d66bf3e82856040516020016104a3919061112d565b6040516020818303038152906040526040518363ffffffff1660e01b81526004016104ce91906111e5565b6000604051808303818588803b1580156104e757600080fd5b505af11580156104fb573d6000803e3d6000fd5b505050505050808061050c90611227565b9150506103aa565b506000546040517f8800c15c319e73c551c9d8e28192b577cf7a918a1801c0a4a924494ef05b7a129188918a917f3f6844edc687ed75a20f7a12e0bfa62bad317db50750fd57e6e70e1da147be669161057f91339146918d918d9167ffffffffffffffff169061128a565b60405180910390a46000805467ffffffffffffffff1690806105a0836112dc565b91906101000a81548167ffffffffffffffff021916908367ffffffffffffffff1602179055505050505050505050565b600080805b8381101561069d578484828181106105ef576105ef611094565b90506020020160208101906106049190610e16565b73ffffffffffffffffffffffffffffffffffffffff1663127e8e4d876040518263ffffffff1660e01b815260040161063e91815260200190565b602060405180830381865afa15801561065b573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061067f91906110c3565b6106899083611303565b91508061069581611227565b9150506105d5565b50949350505050565b60006106b4828401846114b5565b60c08101516000818152600160205260409020600601549192509061086557600081815260016020818152604092839020855181547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff9091161781559085015191810191909155908301516002820155606083015160038201556080830151839190600482019061075b908261163c565b5060a08201516005820180547fffffffffffffffffffffffffffffffffffffffffffffffff00000000000000001667ffffffffffffffff90921691909117905560c0820151600682015560e082015180516107c0916007840191602090910190610d35565b5061010091909101516008909101556000818152600360205260409081902060019055517f8331c12b58f6424e4e97a433ead8d162d14f15a95f27b377e94933ba444ff3a4906108139086908690611738565b60405180910390a181610100015160010361086057600081815260026020526040902080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff001660011790555b610996565b6000818152600160205260409020600601546108e2576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601a60248201527f5472616e73616374696f6e20646f6573206e6f7420657869737400000000000060448201526064015b60405180910390fd5b6000818152600360205260409020546108fa81611227565b600083815260036020908152604080832084905560019091529020600801549091508110610994576000828152600260205260409081902080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00166001179055517f8331c12b58f6424e4e97a433ead8d162d14f15a95f27b377e94933ba444ff3a49061098b9087908790611738565b60405180910390a15b505b50505050565b60008181526002602052604090205460ff161515600114610a19576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601860248201527f5472616e73616374696f6e206e6f74207665726966696564000000000000000060448201526064016108d9565b6000818152600160208181526040808420815161012081018352815473ffffffffffffffffffffffffffffffffffffffff168152938101549284019290925260028201549083015260038101546060830152600481018054608084019190610a809061159e565b80601f0160208091040260200160405190810160405280929190818152602001828054610aac9061159e565b8015610af95780601f10610ace57610100808354040283529160200191610af9565b820191906000526020600020905b815481529060010190602001808311610adc57829003601f168201915b505050505081526020016005820160009054906101000a900467ffffffffffffffff1667ffffffffffffffff1667ffffffffffffffff1681526020016006820154815260200160078201805480602002602001604051908101604052809291908181526020018280548015610ba457602002820191906000526020600020905b815473ffffffffffffffffffffffffffffffffffffffff168152600190910190602001808311610b79575b5050505050815260200160088201548152505090506000610bc6826040015190565b90508073ffffffffffffffffffffffffffffffffffffffff166000620f4240908460800151604051610bf89190611754565b600060405180830381858888f193505050503d8060008114610c36576040519150601f19603f3d011682016040523d82523d6000602084013e610c3b565b606091505b505050505050565b60016020819052600091825260409091208054918101546002820154600383015460048401805473ffffffffffffffffffffffffffffffffffffffff9096169593949293919291610c939061159e565b80601f0160208091040260200160405190810160405280929190818152602001828054610cbf9061159e565b8015610d0c5780601f10610ce157610100808354040283529160200191610d0c565b820191906000526020600020905b815481529060010190602001808311610cef57829003601f168201915b5050505060058301546006840154600890940154929367ffffffffffffffff9091169290915088565b828054828255906000526020600020908101928215610daf579160200282015b82811115610daf57825182547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff909116178255602090920191600190910190610d55565b50610dbb929150610dbf565b5090565b5b80821115610dbb5760008155600101610dc0565b600060208284031215610de657600080fd5b5035919050565b803573ffffffffffffffffffffffffffffffffffffffff81168114610e1157600080fd5b919050565b600060208284031215610e2857600080fd5b610e3182610ded565b9392505050565b60008083601f840112610e4a57600080fd5b50813567ffffffffffffffff811115610e6257600080fd5b602083019150836020828501011115610e7a57600080fd5b9250929050565b60008083601f840112610e9357600080fd5b50813567ffffffffffffffff811115610eab57600080fd5b6020830191508360208260051b8501011115610e7a57600080fd5b60008060008060008060808789031215610edf57600080fd5b8635955060208701359450604087013567ffffffffffffffff80821115610f0557600080fd5b610f118a838b01610e38565b90965094506060890135915080821115610f2a57600080fd5b50610f3789828a01610e81565b979a9699509497509295939492505050565b600080600060408486031215610f5e57600080fd5b83359250602084013567ffffffffffffffff811115610f7c57600080fd5b610f8886828701610e81565b9497909650939450505050565b60008060208385031215610fa857600080fd5b823567ffffffffffffffff811115610fbf57600080fd5b610fcb85828601610e38565b90969095509350505050565b60005b83811015610ff2578181015183820152602001610fda565b50506000910152565b60008151808452611013816020860160208601610fd7565b601f01601f19169290920160200192915050565b600061010073ffffffffffffffffffffffffffffffffffffffff8b16835289602084015288604084015287606084015280608084015261106981840188610ffb565b67ffffffffffffffff9690961660a0840152505060c081019290925260e09091015295945050505050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b6000602082840312156110d557600080fd5b5051919050565b600081518084526020808501945080840160005b8381101561112257815173ffffffffffffffffffffffffffffffffffffffff16875295820195908201906001016110f0565b509495945050505050565b6020815261115460208201835173ffffffffffffffffffffffffffffffffffffffff169052565b602082015160408201526040820151606082015260608201516080820152600060808301516101208060a0850152611190610140850183610ffb565b915060a08501516111ad60c086018267ffffffffffffffff169052565b5060c085015160e085015260e0850151610100601f1986850301818701526111d584836110dc565b9601519190940152509192915050565b602081526000610e316020830184610ffb565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b60007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8203611258576112586111f8565b5060010190565b818352818160208501375060006020828401015260006020601f19601f840116840101905092915050565b73ffffffffffffffffffffffffffffffffffffffff861681528460208201526080604082015260006112c060808301858761125f565b905067ffffffffffffffff831660608301529695505050505050565b600067ffffffffffffffff8083168181036112f9576112f96111f8565b6001019392505050565b80820180821115611316576113166111f8565b92915050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b604051610120810167ffffffffffffffff8111828210171561136f5761136f61131c565b60405290565b604051601f8201601f1916810167ffffffffffffffff8111828210171561139e5761139e61131c565b604052919050565b600082601f8301126113b757600080fd5b813567ffffffffffffffff8111156113d1576113d161131c565b6113e46020601f19601f84011601611375565b8181528460208386010111156113f957600080fd5b816020850160208301376000918101602001919091529392505050565b803567ffffffffffffffff81168114610e1157600080fd5b600082601f83011261143f57600080fd5b8135602067ffffffffffffffff82111561145b5761145b61131c565b8160051b61146a828201611375565b928352848101820192828101908785111561148457600080fd5b83870192505b848310156114aa5761149b83610ded565b8252918301919083019061148a565b979650505050505050565b6000602082840312156114c757600080fd5b813567ffffffffffffffff808211156114df57600080fd5b9083019061012082860312156114f457600080fd5b6114fc61134b565b61150583610ded565b815260208301356020820152604083013560408201526060830135606082015260808301358281111561153757600080fd5b611543878286016113a6565b60808301525061155560a08401611416565b60a082015260c083013560c082015260e08301358281111561157657600080fd5b6115828782860161142e565b60e0830152506101009283013592810192909252509392505050565b600181811c908216806115b257607f821691505b6020821081036115eb577f4e487b7100000000000000000000000000000000000000000000000000000000600052602260045260246000fd5b50919050565b601f82111561163757600081815260208120601f850160051c810160208610156116185750805b601f850160051c820191505b81811015610c3b57828155600101611624565b505050565b815167ffffffffffffffff8111156116565761165661131c565b61166a81611664845461159e565b846115f1565b602080601f8311600181146116bd57600084156116875750858301515b7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff600386901b1c1916600185901b178555610c3b565b600085815260208120601f198616915b828110156116ec578886015182559484019460019091019084016116cd565b508582101561172857878501517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff600388901b60f8161c191681555b5050505050600190811b01905550565b60208152600061174c60208301848661125f565b949350505050565b60008251611766818460208701610fd7565b919091019291505056fea2646970667358221220c3edf2d2c9b74cf0f2e85a003905d2338e246520c2550f3573a6ea8cd0b7ac0c64736f6c63430008140033",
-}
-
-// InterchainABI is the input ABI used to generate the binding from.
-// Deprecated: Use InterchainMetaData.ABI instead.
-var InterchainABI = InterchainMetaData.ABI
-
-// Deprecated: Use InterchainMetaData.Sigs instead.
-// InterchainFuncSigs maps the 4-byte function signature to its string representation.
-var InterchainFuncSigs = InterchainMetaData.Sigs
-
-// InterchainBin is the compiled bytecode used for deploying new contracts.
-// Deprecated: Use InterchainMetaData.Bin instead.
-var InterchainBin = InterchainMetaData.Bin
-
-// DeployInterchain deploys a new Ethereum contract, binding an instance of Interchain to it.
-func DeployInterchain(auth *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, *Interchain, error) {
-	parsed, err := InterchainMetaData.GetAbi()
-	if err != nil {
-		return common.Address{}, nil, nil, err
-	}
-	if parsed == nil {
-		return common.Address{}, nil, nil, errors.New("GetABI returned nil")
-	}
-
-	address, tx, contract, err := bind.DeployContract(auth, *parsed, common.FromHex(InterchainBin), backend)
-	if err != nil {
-		return common.Address{}, nil, nil, err
-	}
-	return address, tx, &Interchain{InterchainCaller: InterchainCaller{contract: contract}, InterchainTransactor: InterchainTransactor{contract: contract}, InterchainFilterer: InterchainFilterer{contract: contract}}, nil
-}
-
-// Interchain is an auto generated Go binding around an Ethereum contract.
-type Interchain struct {
-	InterchainCaller     // Read-only binding to the contract
-	InterchainTransactor // Write-only binding to the contract
-	InterchainFilterer   // Log filterer for contract events
-}
-
-// InterchainCaller is an auto generated read-only Go binding around an Ethereum contract.
-type InterchainCaller struct {
-	contract *bind.BoundContract // Generic contract wrapper for the low level calls
-}
-
-// InterchainTransactor is an auto generated write-only Go binding around an Ethereum contract.
-type InterchainTransactor struct {
-	contract *bind.BoundContract // Generic contract wrapper for the low level calls
-}
-
-// InterchainFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
-type InterchainFilterer struct {
-	contract *bind.BoundContract // Generic contract wrapper for the low level calls
-}
-
-// InterchainSession is an auto generated Go binding around an Ethereum contract,
-// with pre-set call and transact options.
-type InterchainSession struct {
-	Contract     *Interchain       // Generic contract binding to set the session for
-	CallOpts     bind.CallOpts     // Call options to use throughout this session
-	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
-}
-
-// InterchainCallerSession is an auto generated read-only Go binding around an Ethereum contract,
-// with pre-set call options.
-type InterchainCallerSession struct {
-	Contract *InterchainCaller // Generic contract caller binding to set the session for
-	CallOpts bind.CallOpts     // Call options to use throughout this session
-}
-
-// InterchainTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
-// with pre-set transact options.
-type InterchainTransactorSession struct {
-	Contract     *InterchainTransactor // Generic contract transactor binding to set the session for
-	TransactOpts bind.TransactOpts     // Transaction auth options to use throughout this session
-}
-
-// InterchainRaw is an auto generated low-level Go binding around an Ethereum contract.
-type InterchainRaw struct {
-	Contract *Interchain // Generic contract binding to access the raw methods on
-}
-
-// InterchainCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
-type InterchainCallerRaw struct {
-	Contract *InterchainCaller // Generic read-only contract binding to access the raw methods on
-}
-
-// InterchainTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
-type InterchainTransactorRaw struct {
-	Contract *InterchainTransactor // Generic write-only contract binding to access the raw methods on
-}
-
-// NewInterchain creates a new instance of Interchain, bound to a specific deployed contract.
-func NewInterchain(address common.Address, backend bind.ContractBackend) (*Interchain, error) {
-	contract, err := bindInterchain(address, backend, backend, backend)
-	if err != nil {
-		return nil, err
-	}
-	return &Interchain{InterchainCaller: InterchainCaller{contract: contract}, InterchainTransactor: InterchainTransactor{contract: contract}, InterchainFilterer: InterchainFilterer{contract: contract}}, nil
-}
-
-// NewInterchainCaller creates a new read-only instance of Interchain, bound to a specific deployed contract.
-func NewInterchainCaller(address common.Address, caller bind.ContractCaller) (*InterchainCaller, error) {
-	contract, err := bindInterchain(address, caller, nil, nil)
-	if err != nil {
-		return nil, err
-	}
-	return &InterchainCaller{contract: contract}, nil
-}
-
-// NewInterchainTransactor creates a new write-only instance of Interchain, bound to a specific deployed contract.
-func NewInterchainTransactor(address common.Address, transactor bind.ContractTransactor) (*InterchainTransactor, error) {
-	contract, err := bindInterchain(address, nil, transactor, nil)
-	if err != nil {
-		return nil, err
-	}
-	return &InterchainTransactor{contract: contract}, nil
-}
-
-// NewInterchainFilterer creates a new log filterer instance of Interchain, bound to a specific deployed contract.
-func NewInterchainFilterer(address common.Address, filterer bind.ContractFilterer) (*InterchainFilterer, error) {
-	contract, err := bindInterchain(address, nil, nil, filterer)
-	if err != nil {
-		return nil, err
-	}
-	return &InterchainFilterer{contract: contract}, nil
-}
-
-// bindInterchain binds a generic wrapper to an already deployed contract.
-func bindInterchain(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := InterchainMetaData.GetAbi()
-	if err != nil {
-		return nil, err
-	}
-	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
-}
-
-// Call invokes the (constant) contract method with params as input values and
-// sets the output to result. The result type might be a single field for simple
-// returns, a slice of interfaces for anonymous returns and a struct for named
-// returns.
-func (_Interchain *InterchainRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _Interchain.Contract.InterchainCaller.contract.Call(opts, result, method, params...)
-}
-
-// Transfer initiates a plain transaction to move funds to the contract, calling
-// its default method if one is available.
-func (_Interchain *InterchainRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _Interchain.Contract.InterchainTransactor.contract.Transfer(opts)
-}
-
-// Transact invokes the (paid) contract method with params as input values.
-func (_Interchain *InterchainRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _Interchain.Contract.InterchainTransactor.contract.Transact(opts, method, params...)
-}
-
-// Call invokes the (constant) contract method with params as input values and
-// sets the output to result. The result type might be a single field for simple
-// returns, a slice of interfaces for anonymous returns and a struct for named
-// returns.
-func (_Interchain *InterchainCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _Interchain.Contract.contract.Call(opts, result, method, params...)
-}
-
-// Transfer initiates a plain transaction to move funds to the contract, calling
-// its default method if one is available.
-func (_Interchain *InterchainTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _Interchain.Contract.contract.Transfer(opts)
-}
-
-// Transact invokes the (paid) contract method with params as input values.
-func (_Interchain *InterchainTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _Interchain.Contract.contract.Transact(opts, method, params...)
-}
-
-// CompletedModuleResponses is a free data retrieval call binding the contract method 0x870fe346.
-//
-// Solidity: function completedModuleResponses(bytes32 ) view returns(uint256)
-func (_Interchain *InterchainCaller) CompletedModuleResponses(opts *bind.CallOpts, arg0 [32]byte) (*big.Int, error) {
-	var out []interface{}
-	err := _Interchain.contract.Call(opts, &out, "completedModuleResponses", arg0)
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// CompletedModuleResponses is a free data retrieval call binding the contract method 0x870fe346.
-//
-// Solidity: function completedModuleResponses(bytes32 ) view returns(uint256)
-func (_Interchain *InterchainSession) CompletedModuleResponses(arg0 [32]byte) (*big.Int, error) {
-	return _Interchain.Contract.CompletedModuleResponses(&_Interchain.CallOpts, arg0)
-}
-
-// CompletedModuleResponses is a free data retrieval call binding the contract method 0x870fe346.
-//
-// Solidity: function completedModuleResponses(bytes32 ) view returns(uint256)
-func (_Interchain *InterchainCallerSession) CompletedModuleResponses(arg0 [32]byte) (*big.Int, error) {
-	return _Interchain.Contract.CompletedModuleResponses(&_Interchain.CallOpts, arg0)
-}
-
-// ConvertAddressToBytes32 is a free data retrieval call binding the contract method 0x5893740e.
-//
-// Solidity: function convertAddressToBytes32(address _address) pure returns(bytes32)
-func (_Interchain *InterchainCaller) ConvertAddressToBytes32(opts *bind.CallOpts, _address common.Address) ([32]byte, error) {
-	var out []interface{}
-	err := _Interchain.contract.Call(opts, &out, "convertAddressToBytes32", _address)
-
-	if err != nil {
-		return *new([32]byte), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
-
-	return out0, err
-
-}
-
-// ConvertAddressToBytes32 is a free data retrieval call binding the contract method 0x5893740e.
-//
-// Solidity: function convertAddressToBytes32(address _address) pure returns(bytes32)
-func (_Interchain *InterchainSession) ConvertAddressToBytes32(_address common.Address) ([32]byte, error) {
-	return _Interchain.Contract.ConvertAddressToBytes32(&_Interchain.CallOpts, _address)
-}
-
-// ConvertAddressToBytes32 is a free data retrieval call binding the contract method 0x5893740e.
-//
-// Solidity: function convertAddressToBytes32(address _address) pure returns(bytes32)
-func (_Interchain *InterchainCallerSession) ConvertAddressToBytes32(_address common.Address) ([32]byte, error) {
-	return _Interchain.Contract.ConvertAddressToBytes32(&_Interchain.CallOpts, _address)
-}
-
-// ConvertBytes32ToAddress is a free data retrieval call binding the contract method 0x1efa2220.
-//
-// Solidity: function convertBytes32ToAddress(bytes32 _bytes32) pure returns(address)
-func (_Interchain *InterchainCaller) ConvertBytes32ToAddress(opts *bind.CallOpts, _bytes32 [32]byte) (common.Address, error) {
-	var out []interface{}
-	err := _Interchain.contract.Call(opts, &out, "convertBytes32ToAddress", _bytes32)
-
-	if err != nil {
-		return *new(common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-
-	return out0, err
-
-}
-
-// ConvertBytes32ToAddress is a free data retrieval call binding the contract method 0x1efa2220.
-//
-// Solidity: function convertBytes32ToAddress(bytes32 _bytes32) pure returns(address)
-func (_Interchain *InterchainSession) ConvertBytes32ToAddress(_bytes32 [32]byte) (common.Address, error) {
-	return _Interchain.Contract.ConvertBytes32ToAddress(&_Interchain.CallOpts, _bytes32)
-}
-
-// ConvertBytes32ToAddress is a free data retrieval call binding the contract method 0x1efa2220.
-//
-// Solidity: function convertBytes32ToAddress(bytes32 _bytes32) pure returns(address)
-func (_Interchain *InterchainCallerSession) ConvertBytes32ToAddress(_bytes32 [32]byte) (common.Address, error) {
-	return _Interchain.Contract.ConvertBytes32ToAddress(&_Interchain.CallOpts, _bytes32)
-}
-
-// EstimateInterchainTransactionFee is a free data retrieval call binding the contract method 0x9f6eeb5d.
-//
-// Solidity: function estimateInterchainTransactionFee(uint256 dstChainId, address[] modules) view returns(uint256)
-func (_Interchain *InterchainCaller) EstimateInterchainTransactionFee(opts *bind.CallOpts, dstChainId *big.Int, modules []common.Address) (*big.Int, error) {
-	var out []interface{}
-	err := _Interchain.contract.Call(opts, &out, "estimateInterchainTransactionFee", dstChainId, modules)
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// EstimateInterchainTransactionFee is a free data retrieval call binding the contract method 0x9f6eeb5d.
-//
-// Solidity: function estimateInterchainTransactionFee(uint256 dstChainId, address[] modules) view returns(uint256)
-func (_Interchain *InterchainSession) EstimateInterchainTransactionFee(dstChainId *big.Int, modules []common.Address) (*big.Int, error) {
-	return _Interchain.Contract.EstimateInterchainTransactionFee(&_Interchain.CallOpts, dstChainId, modules)
-}
-
-// EstimateInterchainTransactionFee is a free data retrieval call binding the contract method 0x9f6eeb5d.
-//
-// Solidity: function estimateInterchainTransactionFee(uint256 dstChainId, address[] modules) view returns(uint256)
-func (_Interchain *InterchainCallerSession) EstimateInterchainTransactionFee(dstChainId *big.Int, modules []common.Address) (*big.Int, error) {
-	return _Interchain.Contract.EstimateInterchainTransactionFee(&_Interchain.CallOpts, dstChainId, modules)
-}
-
-// Nonce is a free data retrieval call binding the contract method 0xaffed0e0.
-//
-// Solidity: function nonce() view returns(uint64)
-func (_Interchain *InterchainCaller) Nonce(opts *bind.CallOpts) (uint64, error) {
-	var out []interface{}
-	err := _Interchain.contract.Call(opts, &out, "nonce")
-
-	if err != nil {
-		return *new(uint64), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(uint64)).(*uint64)
-
-	return out0, err
-
-}
-
-// Nonce is a free data retrieval call binding the contract method 0xaffed0e0.
-//
-// Solidity: function nonce() view returns(uint64)
-func (_Interchain *InterchainSession) Nonce() (uint64, error) {
-	return _Interchain.Contract.Nonce(&_Interchain.CallOpts)
-}
-
-// Nonce is a free data retrieval call binding the contract method 0xaffed0e0.
-//
-// Solidity: function nonce() view returns(uint64)
-func (_Interchain *InterchainCallerSession) Nonce() (uint64, error) {
-	return _Interchain.Contract.Nonce(&_Interchain.CallOpts)
-}
-
-// QueuedTransactions is a free data retrieval call binding the contract method 0xf2b06537.
-//
-// Solidity: function queuedTransactions(bytes32 ) view returns(address srcSender, uint256 srcChainId, bytes32 dstReceiver, uint256 dstChainId, bytes message, uint64 nonce, bytes32 transactionId, uint256 requiredModuleResponses)
-func (_Interchain *InterchainCaller) QueuedTransactions(opts *bind.CallOpts, arg0 [32]byte) (struct {
-	SrcSender               common.Address
-	SrcChainId              *big.Int
-	DstReceiver             [32]byte
-	DstChainId              *big.Int
-	Message                 []byte
-	Nonce                   uint64
-	TransactionId           [32]byte
-	RequiredModuleResponses *big.Int
-}, error) {
-	var out []interface{}
-	err := _Interchain.contract.Call(opts, &out, "queuedTransactions", arg0)
-
-	outstruct := new(struct {
-		SrcSender               common.Address
-		SrcChainId              *big.Int
-		DstReceiver             [32]byte
-		DstChainId              *big.Int
-		Message                 []byte
-		Nonce                   uint64
-		TransactionId           [32]byte
-		RequiredModuleResponses *big.Int
-	})
-	if err != nil {
-		return *outstruct, err
-	}
-
-	outstruct.SrcSender = *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-	outstruct.SrcChainId = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
-	outstruct.DstReceiver = *abi.ConvertType(out[2], new([32]byte)).(*[32]byte)
-	outstruct.DstChainId = *abi.ConvertType(out[3], new(*big.Int)).(**big.Int)
-	outstruct.Message = *abi.ConvertType(out[4], new([]byte)).(*[]byte)
-	outstruct.Nonce = *abi.ConvertType(out[5], new(uint64)).(*uint64)
-	outstruct.TransactionId = *abi.ConvertType(out[6], new([32]byte)).(*[32]byte)
-	outstruct.RequiredModuleResponses = *abi.ConvertType(out[7], new(*big.Int)).(**big.Int)
-
-	return *outstruct, err
-
-}
-
-// QueuedTransactions is a free data retrieval call binding the contract method 0xf2b06537.
-//
-// Solidity: function queuedTransactions(bytes32 ) view returns(address srcSender, uint256 srcChainId, bytes32 dstReceiver, uint256 dstChainId, bytes message, uint64 nonce, bytes32 transactionId, uint256 requiredModuleResponses)
-func (_Interchain *InterchainSession) QueuedTransactions(arg0 [32]byte) (struct {
-	SrcSender               common.Address
-	SrcChainId              *big.Int
-	DstReceiver             [32]byte
-	DstChainId              *big.Int
-	Message                 []byte
-	Nonce                   uint64
-	TransactionId           [32]byte
-	RequiredModuleResponses *big.Int
-}, error) {
-	return _Interchain.Contract.QueuedTransactions(&_Interchain.CallOpts, arg0)
-}
-
-// QueuedTransactions is a free data retrieval call binding the contract method 0xf2b06537.
-//
-// Solidity: function queuedTransactions(bytes32 ) view returns(address srcSender, uint256 srcChainId, bytes32 dstReceiver, uint256 dstChainId, bytes message, uint64 nonce, bytes32 transactionId, uint256 requiredModuleResponses)
-func (_Interchain *InterchainCallerSession) QueuedTransactions(arg0 [32]byte) (struct {
-	SrcSender               common.Address
-	SrcChainId              *big.Int
-	DstReceiver             [32]byte
-	DstChainId              *big.Int
-	Message                 []byte
-	Nonce                   uint64
-	TransactionId           [32]byte
-	RequiredModuleResponses *big.Int
-}, error) {
-	return _Interchain.Contract.QueuedTransactions(&_Interchain.CallOpts, arg0)
-}
-
-// VerifiedTransactions is a free data retrieval call binding the contract method 0xdfb1dc0a.
-//
-// Solidity: function verifiedTransactions(bytes32 ) view returns(bool)
-func (_Interchain *InterchainCaller) VerifiedTransactions(opts *bind.CallOpts, arg0 [32]byte) (bool, error) {
-	var out []interface{}
-	err := _Interchain.contract.Call(opts, &out, "verifiedTransactions", arg0)
-
-	if err != nil {
-		return *new(bool), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
-
-	return out0, err
-
-}
-
-// VerifiedTransactions is a free data retrieval call binding the contract method 0xdfb1dc0a.
-//
-// Solidity: function verifiedTransactions(bytes32 ) view returns(bool)
-func (_Interchain *InterchainSession) VerifiedTransactions(arg0 [32]byte) (bool, error) {
-	return _Interchain.Contract.VerifiedTransactions(&_Interchain.CallOpts, arg0)
-}
-
-// VerifiedTransactions is a free data retrieval call binding the contract method 0xdfb1dc0a.
-//
-// Solidity: function verifiedTransactions(bytes32 ) view returns(bool)
-func (_Interchain *InterchainCallerSession) VerifiedTransactions(arg0 [32]byte) (bool, error) {
-	return _Interchain.Contract.VerifiedTransactions(&_Interchain.CallOpts, arg0)
-}
-
-// Execute is a paid mutator transaction binding the contract method 0xe751f271.
-//
-// Solidity: function execute(bytes32 transactionId) returns()
-func (_Interchain *InterchainTransactor) Execute(opts *bind.TransactOpts, transactionId [32]byte) (*types.Transaction, error) {
-	return _Interchain.contract.Transact(opts, "execute", transactionId)
-}
-
-// Execute is a paid mutator transaction binding the contract method 0xe751f271.
-//
-// Solidity: function execute(bytes32 transactionId) returns()
-func (_Interchain *InterchainSession) Execute(transactionId [32]byte) (*types.Transaction, error) {
-	return _Interchain.Contract.Execute(&_Interchain.TransactOpts, transactionId)
-}
-
-// Execute is a paid mutator transaction binding the contract method 0xe751f271.
-//
-// Solidity: function execute(bytes32 transactionId) returns()
-func (_Interchain *InterchainTransactorSession) Execute(transactionId [32]byte) (*types.Transaction, error) {
-	return _Interchain.Contract.Execute(&_Interchain.TransactOpts, transactionId)
-}
-
-// InterchainReceive is a paid mutator transaction binding the contract method 0xbbe9ad25.
-//
-// Solidity: function interchainReceive(bytes transaction) returns()
-func (_Interchain *InterchainTransactor) InterchainReceive(opts *bind.TransactOpts, transaction []byte) (*types.Transaction, error) {
-	return _Interchain.contract.Transact(opts, "interchainReceive", transaction)
-}
-
-// InterchainReceive is a paid mutator transaction binding the contract method 0xbbe9ad25.
-//
-// Solidity: function interchainReceive(bytes transaction) returns()
-func (_Interchain *InterchainSession) InterchainReceive(transaction []byte) (*types.Transaction, error) {
-	return _Interchain.Contract.InterchainReceive(&_Interchain.TransactOpts, transaction)
-}
-
-// InterchainReceive is a paid mutator transaction binding the contract method 0xbbe9ad25.
-//
-// Solidity: function interchainReceive(bytes transaction) returns()
-func (_Interchain *InterchainTransactorSession) InterchainReceive(transaction []byte) (*types.Transaction, error) {
-	return _Interchain.Contract.InterchainReceive(&_Interchain.TransactOpts, transaction)
-}
-
-// InterchainSend is a paid mutator transaction binding the contract method 0x8366a109.
-//
-// Solidity: function interchainSend(bytes32 receiver, uint256 dstChainId, bytes message, address[] modules) payable returns()
-func (_Interchain *InterchainTransactor) InterchainSend(opts *bind.TransactOpts, receiver [32]byte, dstChainId *big.Int, message []byte, modules []common.Address) (*types.Transaction, error) {
-	return _Interchain.contract.Transact(opts, "interchainSend", receiver, dstChainId, message, modules)
-}
-
-// InterchainSend is a paid mutator transaction binding the contract method 0x8366a109.
-//
-// Solidity: function interchainSend(bytes32 receiver, uint256 dstChainId, bytes message, address[] modules) payable returns()
-func (_Interchain *InterchainSession) InterchainSend(receiver [32]byte, dstChainId *big.Int, message []byte, modules []common.Address) (*types.Transaction, error) {
-	return _Interchain.Contract.InterchainSend(&_Interchain.TransactOpts, receiver, dstChainId, message, modules)
-}
-
-// InterchainSend is a paid mutator transaction binding the contract method 0x8366a109.
-//
-// Solidity: function interchainSend(bytes32 receiver, uint256 dstChainId, bytes message, address[] modules) payable returns()
-func (_Interchain *InterchainTransactorSession) InterchainSend(receiver [32]byte, dstChainId *big.Int, message []byte, modules []common.Address) (*types.Transaction, error) {
-	return _Interchain.Contract.InterchainSend(&_Interchain.TransactOpts, receiver, dstChainId, message, modules)
-}
-
-// InterchainInterchainTransactionSentIterator is returned from FilterInterchainTransactionSent and is used to iterate over the raw logs and unpacked data for InterchainTransactionSent events raised by the Interchain contract.
-type InterchainInterchainTransactionSentIterator struct {
-	Event *InterchainInterchainTransactionSent // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *InterchainInterchainTransactionSentIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(InterchainInterchainTransactionSent)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(InterchainInterchainTransactionSent)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *InterchainInterchainTransactionSentIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *InterchainInterchainTransactionSentIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// InterchainInterchainTransactionSent represents a InterchainTransactionSent event raised by the Interchain contract.
-type InterchainInterchainTransactionSent struct {
-	SrcSender     common.Address
-	SrcChainId    *big.Int
-	DstReceiver   [32]byte
-	DstChainId    *big.Int
-	Message       []byte
-	Nonce         uint64
-	TransactionId [32]byte
-	Raw           types.Log // Blockchain specific contextual infos
-}
-
-// FilterInterchainTransactionSent is a free log retrieval operation binding the contract event 0x3f6844edc687ed75a20f7a12e0bfa62bad317db50750fd57e6e70e1da147be66.
-//
-// Solidity: event InterchainTransactionSent(address srcSender, uint256 srcChainId, bytes32 indexed dstReceiver, uint256 indexed dstChainId, bytes message, uint64 nonce, bytes32 indexed transactionId)
-func (_Interchain *InterchainFilterer) FilterInterchainTransactionSent(opts *bind.FilterOpts, dstReceiver [][32]byte, dstChainId []*big.Int, transactionId [][32]byte) (*InterchainInterchainTransactionSentIterator, error) {
-
-	var dstReceiverRule []interface{}
-	for _, dstReceiverItem := range dstReceiver {
-		dstReceiverRule = append(dstReceiverRule, dstReceiverItem)
-	}
-	var dstChainIdRule []interface{}
-	for _, dstChainIdItem := range dstChainId {
-		dstChainIdRule = append(dstChainIdRule, dstChainIdItem)
-	}
-
-	var transactionIdRule []interface{}
-	for _, transactionIdItem := range transactionId {
-		transactionIdRule = append(transactionIdRule, transactionIdItem)
-	}
-
-	logs, sub, err := _Interchain.contract.FilterLogs(opts, "InterchainTransactionSent", dstReceiverRule, dstChainIdRule, transactionIdRule)
-	if err != nil {
-		return nil, err
-	}
-	return &InterchainInterchainTransactionSentIterator{contract: _Interchain.contract, event: "InterchainTransactionSent", logs: logs, sub: sub}, nil
-}
-
-// WatchInterchainTransactionSent is a free log subscription operation binding the contract event 0x3f6844edc687ed75a20f7a12e0bfa62bad317db50750fd57e6e70e1da147be66.
-//
-// Solidity: event InterchainTransactionSent(address srcSender, uint256 srcChainId, bytes32 indexed dstReceiver, uint256 indexed dstChainId, bytes message, uint64 nonce, bytes32 indexed transactionId)
-func (_Interchain *InterchainFilterer) WatchInterchainTransactionSent(opts *bind.WatchOpts, sink chan<- *InterchainInterchainTransactionSent, dstReceiver [][32]byte, dstChainId []*big.Int, transactionId [][32]byte) (event.Subscription, error) {
-
-	var dstReceiverRule []interface{}
-	for _, dstReceiverItem := range dstReceiver {
-		dstReceiverRule = append(dstReceiverRule, dstReceiverItem)
-	}
-	var dstChainIdRule []interface{}
-	for _, dstChainIdItem := range dstChainId {
-		dstChainIdRule = append(dstChainIdRule, dstChainIdItem)
-	}
-
-	var transactionIdRule []interface{}
-	for _, transactionIdItem := range transactionId {
-		transactionIdRule = append(transactionIdRule, transactionIdItem)
-	}
-
-	logs, sub, err := _Interchain.contract.WatchLogs(opts, "InterchainTransactionSent", dstReceiverRule, dstChainIdRule, transactionIdRule)
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(InterchainInterchainTransactionSent)
-				if err := _Interchain.contract.UnpackLog(event, "InterchainTransactionSent", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseInterchainTransactionSent is a log parse operation binding the contract event 0x3f6844edc687ed75a20f7a12e0bfa62bad317db50750fd57e6e70e1da147be66.
-//
-// Solidity: event InterchainTransactionSent(address srcSender, uint256 srcChainId, bytes32 indexed dstReceiver, uint256 indexed dstChainId, bytes message, uint64 nonce, bytes32 indexed transactionId)
-func (_Interchain *InterchainFilterer) ParseInterchainTransactionSent(log types.Log) (*InterchainInterchainTransactionSent, error) {
-	event := new(InterchainInterchainTransactionSent)
-	if err := _Interchain.contract.UnpackLog(event, "InterchainTransactionSent", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
-// InterchainTransactionReceivedIterator is returned from FilterTransactionReceived and is used to iterate over the raw logs and unpacked data for TransactionReceived events raised by the Interchain contract.
-type InterchainTransactionReceivedIterator struct {
-	Event *InterchainTransactionReceived // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *InterchainTransactionReceivedIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(InterchainTransactionReceived)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(InterchainTransactionReceived)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *InterchainTransactionReceivedIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *InterchainTransactionReceivedIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// InterchainTransactionReceived represents a TransactionReceived event raised by the Interchain contract.
-type InterchainTransactionReceived struct {
-	Transaction []byte
-	Raw         types.Log // Blockchain specific contextual infos
-}
-
-// FilterTransactionReceived is a free log retrieval operation binding the contract event 0x8331c12b58f6424e4e97a433ead8d162d14f15a95f27b377e94933ba444ff3a4.
-//
-// Solidity: event TransactionReceived(bytes transaction)
-func (_Interchain *InterchainFilterer) FilterTransactionReceived(opts *bind.FilterOpts) (*InterchainTransactionReceivedIterator, error) {
-
-	logs, sub, err := _Interchain.contract.FilterLogs(opts, "TransactionReceived")
-	if err != nil {
-		return nil, err
-	}
-	return &InterchainTransactionReceivedIterator{contract: _Interchain.contract, event: "TransactionReceived", logs: logs, sub: sub}, nil
-}
-
-// WatchTransactionReceived is a free log subscription operation binding the contract event 0x8331c12b58f6424e4e97a433ead8d162d14f15a95f27b377e94933ba444ff3a4.
-//
-// Solidity: event TransactionReceived(bytes transaction)
-func (_Interchain *InterchainFilterer) WatchTransactionReceived(opts *bind.WatchOpts, sink chan<- *InterchainTransactionReceived) (event.Subscription, error) {
-
-	logs, sub, err := _Interchain.contract.WatchLogs(opts, "TransactionReceived")
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(InterchainTransactionReceived)
-				if err := _Interchain.contract.UnpackLog(event, "TransactionReceived", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseTransactionReceived is a log parse operation binding the contract event 0x8331c12b58f6424e4e97a433ead8d162d14f15a95f27b377e94933ba444ff3a4.
-//
-// Solidity: event TransactionReceived(bytes transaction)
-func (_Interchain *InterchainFilterer) ParseTransactionReceived(log types.Log) (*InterchainTransactionReceived, error) {
-	event := new(InterchainTransactionReceived)
-	if err := _Interchain.contract.UnpackLog(event, "TransactionReceived", log); err != nil {
+// Solidity: event VerificationRequested(uint256 indexed destChainId, (uint256,bytes32,uint256,bytes32) entry, bytes32 dataHash)
+func (_ISynapseModuleEvents *ISynapseModuleEventsFilterer) ParseVerificationRequested(log types.Log) (*ISynapseModuleEventsVerificationRequested, error) {
+	event := new(ISynapseModuleEventsVerificationRequested)
+	if err := _ISynapseModuleEvents.contract.UnpackLog(event, "VerificationRequested", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
@@ -2627,7 +1847,7 @@ func (_Interchain *InterchainFilterer) ParseTransactionReceived(log types.Log) (
 // InterchainEntryLibMetaData contains all meta data concerning the InterchainEntryLib contract.
 var InterchainEntryLibMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220aef9aff8f279c9a0af64e3beffb0e137d3a3e55e7e03dbf650ff8ac1bd850d8d64736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212209baede61f1bd8124a3911206895541b6ae4b99031ca61a49891c97d4a6b0d54c64736f6c63430008140033",
 }
 
 // InterchainEntryLibABI is the input ABI used to generate the binding from.
@@ -3185,7 +2405,7 @@ func (_Ownable *OwnableFilterer) ParseOwnershipTransferred(log types.Log) (*Owna
 
 // SynapseGasServiceMetaData contains all meta data concerning the SynapseGasService contract.
 var SynapseGasServiceMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"executor\",\"outputs\":[{\"internalType\":\"addresspayable\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"gasOracle\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"}],\"name\":\"getModuleFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_executor\",\"type\":\"address\"}],\"name\":\"setExecutor\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"executor\",\"outputs\":[{\"internalType\":\"addresspayable\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"gasOracle\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"}],\"name\":\"getModuleFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_executor\",\"type\":\"address\"}],\"name\":\"setExecutor\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"c34c08e5": "executor()",
 		"5d62a8dd": "gasOracle()",
@@ -3411,7 +2631,7 @@ func (_SynapseGasService *SynapseGasServiceCallerSession) GasOracle() (common.Ad
 
 // GetModuleFee is a free data retrieval call binding the contract method 0xdc8e4f89.
 //
-// Solidity: function getModuleFee(uint256 dstChainId) view returns(uint256)
+// Solidity: function getModuleFee(uint256 dstChainId) pure returns(uint256)
 func (_SynapseGasService *SynapseGasServiceCaller) GetModuleFee(opts *bind.CallOpts, dstChainId *big.Int) (*big.Int, error) {
 	var out []interface{}
 	err := _SynapseGasService.contract.Call(opts, &out, "getModuleFee", dstChainId)
@@ -3428,14 +2648,14 @@ func (_SynapseGasService *SynapseGasServiceCaller) GetModuleFee(opts *bind.CallO
 
 // GetModuleFee is a free data retrieval call binding the contract method 0xdc8e4f89.
 //
-// Solidity: function getModuleFee(uint256 dstChainId) view returns(uint256)
+// Solidity: function getModuleFee(uint256 dstChainId) pure returns(uint256)
 func (_SynapseGasService *SynapseGasServiceSession) GetModuleFee(dstChainId *big.Int) (*big.Int, error) {
 	return _SynapseGasService.Contract.GetModuleFee(&_SynapseGasService.CallOpts, dstChainId)
 }
 
 // GetModuleFee is a free data retrieval call binding the contract method 0xdc8e4f89.
 //
-// Solidity: function getModuleFee(uint256 dstChainId) view returns(uint256)
+// Solidity: function getModuleFee(uint256 dstChainId) pure returns(uint256)
 func (_SynapseGasService *SynapseGasServiceCallerSession) GetModuleFee(dstChainId *big.Int) (*big.Int, error) {
 	return _SynapseGasService.Contract.GetModuleFee(&_SynapseGasService.CallOpts, dstChainId)
 }
@@ -3689,7 +2909,7 @@ func (_SynapseGasService *SynapseGasServiceFilterer) ParseOwnershipTransferred(l
 
 // SynapseModuleMetaData contains all meta data concerning the SynapseModule contract.
 var SynapseModuleMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"ECDSAInvalidSignature\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"length\",\"type\":\"uint256\"}],\"name\":\"ECDSAInvalidSignatureLength\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"ECDSAInvalidSignatureS\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"indexed\":false,\"internalType\":\"structInterchainEntry\",\"name\":\"entry\",\"type\":\"tuple\"}],\"name\":\"EntryVerified\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"indexed\":false,\"internalType\":\"structInterchainEntry\",\"name\":\"entry\",\"type\":\"tuple\"}],\"name\":\"VerfificationRequested\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"executor\",\"outputs\":[{\"internalType\":\"addresspayable\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"gasOracle\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"}],\"name\":\"getModuleFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"interchainDB\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainEntry\",\"name\":\"entry\",\"type\":\"tuple\"}],\"name\":\"requestVerification\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"requiredThreshold\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_executor\",\"type\":\"address\"}],\"name\":\"setExecutor\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_interchainDB\",\"type\":\"address\"}],\"name\":\"setInterchainDB\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_threshold\",\"type\":\"uint256\"}],\"name\":\"setRequiredThreshold\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"_verifiers\",\"type\":\"address[]\"}],\"name\":\"setVerifiers\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"verifiers\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainEntry\",\"name\":\"entry\",\"type\":\"tuple\"},{\"internalType\":\"bytes[]\",\"name\":\"signatures\",\"type\":\"bytes[]\"}],\"name\":\"verifyEntry\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"ECDSAInvalidSignature\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"length\",\"type\":\"uint256\"}],\"name\":\"ECDSAInvalidSignatureLength\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"ECDSAInvalidSignatureS\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"indexed\":false,\"internalType\":\"structInterchainEntry\",\"name\":\"entry\",\"type\":\"tuple\"}],\"name\":\"EntryVerified\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"indexed\":false,\"internalType\":\"structInterchainEntry\",\"name\":\"entry\",\"type\":\"tuple\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"name\":\"VerificationRequested\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"executor\",\"outputs\":[{\"internalType\":\"addresspayable\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"gasOracle\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"}],\"name\":\"getModuleFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"interchainDB\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainEntry\",\"name\":\"entry\",\"type\":\"tuple\"}],\"name\":\"requestVerification\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"requiredThreshold\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_executor\",\"type\":\"address\"}],\"name\":\"setExecutor\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_interchainDB\",\"type\":\"address\"}],\"name\":\"setInterchainDB\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_threshold\",\"type\":\"uint256\"}],\"name\":\"setRequiredThreshold\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"_verifiers\",\"type\":\"address[]\"}],\"name\":\"setVerifiers\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"verifiers\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainEntry\",\"name\":\"entry\",\"type\":\"tuple\"},{\"internalType\":\"bytes[]\",\"name\":\"signatures\",\"type\":\"bytes[]\"}],\"name\":\"verifyEntry\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"c34c08e5": "executor()",
 		"5d62a8dd": "gasOracle()",
@@ -3707,7 +2927,7 @@ var SynapseModuleMetaData = &bind.MetaData{
 		"ac1eff68": "verifiers(uint256)",
 		"80a131f0": "verifyEntry((uint256,bytes32,uint256,bytes32),bytes[])",
 	},
-	Bin: "0x608060405234801561001057600080fd5b50338061003757604051631e4fbdf760e01b81526000600482015260240160405180910390fd5b61004081610046565b50610096565b600080546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b6110fb806100a56000396000f3fe6080604052600436106100e85760003560e01c80638da5cb5b1161008a578063c34c08e511610059578063c34c08e514610297578063dc8e4f89146102c4578063e3777216146102e5578063f2fde38b146102f857600080fd5b80638da5cb5b1461020c5780638f2d2e2114610237578063ac1eff6814610257578063b7ce20781461027757600080fd5b80635d62a8dd116100c65780635d62a8dd1461018a5780636f206f2c146101b7578063715018a6146101d757806380a131f0146101ec57600080fd5b80630e785ce0146100ed5780631c3c0ea8146101445780634af5e37f14610166575b600080fd5b3480156100f957600080fd5b5060055461011a9073ffffffffffffffffffffffffffffffffffffffff1681565b60405173ffffffffffffffffffffffffffffffffffffffff90911681526020015b60405180910390f35b34801561015057600080fd5b5061016461015f366004610db1565b610318565b005b34801561017257600080fd5b5061017c60045481565b60405190815260200161013b565b34801561019657600080fd5b5060025461011a9073ffffffffffffffffffffffffffffffffffffffff1681565b3480156101c357600080fd5b506101646101d2366004610dee565b610367565b3480156101e357600080fd5b50610164610374565b3480156101f857600080fd5b50610164610207366004610ee0565b610388565b34801561021857600080fd5b5060005473ffffffffffffffffffffffffffffffffffffffff1661011a565b34801561024357600080fd5b50610164610252366004610f34565b6106f1565b34801561026357600080fd5b5061011a610272366004610dee565b61070a565b34801561028357600080fd5b50610164610292366004610db1565b610741565b3480156102a357600080fd5b5060015461011a9073ffffffffffffffffffffffffffffffffffffffff1681565b3480156102d057600080fd5b5061017c6102df366004610dee565b50600190565b6101646102f3366004610f76565b610790565b34801561030457600080fd5b50610164610313366004610db1565b610928565b61032061098c565b600180547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff92909216919091179055565b61036f61098c565b600455565b61037c61098c565b61038660006109df565b565b6040805184516020808301919091528501518183015290840151606080830191909152840151608082015260009060a00160405160208183030381529060405280519060200120905060045483839050101561046b576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602b60248201527f4e6f7420656e6f756768207369676e61747572657320746f206d65657420746860448201527f65207468726573686f6c6400000000000000000000000000000000000000000060648201526084015b60405180910390fd5b6000805b6003548110156105645760006104dd8487878581811061049157610491610fa3565b90506020028101906104a39190610fd2565b8080601f016020809104026020016040519081016040528093929190818152602001838380828437600092019190915250610a5492505050565b905060005b60035481101561054f57600381815481106104ff576104ff610fa3565b60009182526020909120015473ffffffffffffffffffffffffffffffffffffffff9081169083160361053d578361053581611037565b94505061054f565b8061054781611037565b9150506104e2565b5050808061055c90611037565b91505061046f565b506004548110156105f7576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152603160248201527f4e6f7420656e6f7567682076616c6964207369676e61747572657320746f206d60448201527f65657420746865207468726573686f6c640000000000000000000000000000006064820152608401610462565b600554604080517f9cbc6dd500000000000000000000000000000000000000000000000000000000815287516004820152602088015160248201529087015160448201526060870151606482015273ffffffffffffffffffffffffffffffffffffffff90911690639cbc6dd590608401600060405180830381600087803b15801561068157600080fd5b505af1158015610695573d6000803e3d6000fd5b505060408051885181526020808a01519082015288820151818301526060808a01519082015290517f5a489a726637bbfb606607407b4849a0ec525d5a84fddb0292c45441a17e31b19350908190036080019150a15050505050565b6106f961098c565b61070560038383610d14565b505050565b6003818154811061071a57600080fd5b60009182526020909120015473ffffffffffffffffffffffffffffffffffffffff16905081565b61074961098c565b600580547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff92909216919091179055565b60055473ffffffffffffffffffffffffffffffffffffffff163314610837576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602a60248201527f4f6e6c7920496e746572636861696e44422063616e207265717565737420766560448201527f72696669636174696f6e000000000000000000000000000000000000000000006064820152608401610462565b60013410156108c8576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602860248201527f496e73756666696369656e742066656520746f2072657175657374207665726960448201527f6669636174696f6e0000000000000000000000000000000000000000000000006064820152608401610462565b6108d134610a7e565b604080518251815260208084015190820152828201518183015260608084015190820152905183917ff0e0e0f85bb25f7ff2a62863099db3f92e3583495a1256a029a97037978d5538919081900360800190a25050565b61093061098c565b73ffffffffffffffffffffffffffffffffffffffff8116610980576040517f1e4fbdf700000000000000000000000000000000000000000000000000000000815260006004820152602401610462565b610989816109df565b50565b60005473ffffffffffffffffffffffffffffffffffffffff163314610386576040517f118cdaa7000000000000000000000000000000000000000000000000000000008152336004820152602401610462565b6000805473ffffffffffffffffffffffffffffffffffffffff8381167fffffffffffffffffffffffff0000000000000000000000000000000000000000831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b600080600080610a648686610ac9565b925092509250610a748282610b16565b5090949350505050565b60015460405173ffffffffffffffffffffffffffffffffffffffff9091169082156108fc029083906000818181858888f19350505050158015610ac5573d6000803e3d6000fd5b5050565b60008060008351604103610b035760208401516040850151606086015160001a610af588828585610c1a565b955095509550505050610b0f565b50508151600091506002905b9250925092565b6000826003811115610b2a57610b2a611096565b03610b33575050565b6001826003811115610b4757610b47611096565b03610b7e576040517ff645eedf00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6002826003811115610b9257610b92611096565b03610bcc576040517ffce698f700000000000000000000000000000000000000000000000000000000815260048101829052602401610462565b6003826003811115610be057610be0611096565b03610ac5576040517fd78bce0c00000000000000000000000000000000000000000000000000000000815260048101829052602401610462565b600080807f7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0841115610c555750600091506003905082610d0a565b604080516000808252602082018084528a905260ff891692820192909252606081018790526080810186905260019060a0016020604051602081039080840390855afa158015610ca9573d6000803e3d6000fd5b50506040517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0015191505073ffffffffffffffffffffffffffffffffffffffff8116610d0057506000925060019150829050610d0a565b9250600091508190505b9450945094915050565b828054828255906000526020600020908101928215610d8c579160200282015b82811115610d8c5781547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff843516178255602090920191600190910190610d34565b50610d98929150610d9c565b5090565b5b80821115610d985760008155600101610d9d565b600060208284031215610dc357600080fd5b813573ffffffffffffffffffffffffffffffffffffffff81168114610de757600080fd5b9392505050565b600060208284031215610e0057600080fd5b5035919050565b600060808284031215610e1957600080fd5b6040516080810181811067ffffffffffffffff82111715610e63577f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b8060405250809150823581526020830135602082015260408301356040820152606083013560608201525092915050565b60008083601f840112610ea657600080fd5b50813567ffffffffffffffff811115610ebe57600080fd5b6020830191508360208260051b8501011115610ed957600080fd5b9250929050565b600080600060a08486031215610ef557600080fd5b610eff8585610e07565b9250608084013567ffffffffffffffff811115610f1b57600080fd5b610f2786828701610e94565b9497909650939450505050565b60008060208385031215610f4757600080fd5b823567ffffffffffffffff811115610f5e57600080fd5b610f6a85828601610e94565b90969095509350505050565b60008060a08385031215610f8957600080fd5b82359150610f9a8460208501610e07565b90509250929050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b60008083357fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe184360301811261100757600080fd5b83018035915067ffffffffffffffff82111561102257600080fd5b602001915036819003821315610ed957600080fd5b60007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff820361108f577f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b5060010190565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052602160045260246000fdfea264697066735822122001c9b9887967dca378a416687f602504665498c53ba5a991468d0c383f6e442b64736f6c63430008140033",
+	Bin: "0x608060405234801561001057600080fd5b50338061003757604051631e4fbdf760e01b81526000600482015260240160405180910390fd5b61004081610046565b50610096565b600080546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b611127806100a56000396000f3fe6080604052600436106100e85760003560e01c80638da5cb5b1161008a578063c34c08e511610059578063c34c08e514610297578063dc8e4f89146102c4578063e3777216146102e5578063f2fde38b146102f857600080fd5b80638da5cb5b1461020c5780638f2d2e2114610237578063ac1eff6814610257578063b7ce20781461027757600080fd5b80635d62a8dd116100c65780635d62a8dd1461018a5780636f206f2c146101b7578063715018a6146101d757806380a131f0146101ec57600080fd5b80630e785ce0146100ed5780631c3c0ea8146101445780634af5e37f14610166575b600080fd5b3480156100f957600080fd5b5060055461011a9073ffffffffffffffffffffffffffffffffffffffff1681565b60405173ffffffffffffffffffffffffffffffffffffffff90911681526020015b60405180910390f35b34801561015057600080fd5b5061016461015f366004610db2565b610318565b005b34801561017257600080fd5b5061017c60045481565b60405190815260200161013b565b34801561019657600080fd5b5060025461011a9073ffffffffffffffffffffffffffffffffffffffff1681565b3480156101c357600080fd5b506101646101d2366004610def565b610367565b3480156101e357600080fd5b50610164610374565b3480156101f857600080fd5b50610164610207366004610ee1565b610388565b34801561021857600080fd5b5060005473ffffffffffffffffffffffffffffffffffffffff1661011a565b34801561024357600080fd5b50610164610252366004610f35565b61069f565b34801561026357600080fd5b5061011a610272366004610def565b6106b8565b34801561028357600080fd5b50610164610292366004610db2565b6106ef565b3480156102a357600080fd5b5060015461011a9073ffffffffffffffffffffffffffffffffffffffff1681565b3480156102d057600080fd5b5061017c6102df366004610def565b50600190565b6101646102f3366004610f77565b61073e565b34801561030457600080fd5b50610164610313366004610db2565b610927565b61032061098b565b600180547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff92909216919091179055565b61036f61098b565b600455565b61037c61098b565b61038660006109de565b565b60008360405160200161039b9190610fa4565b60405160208183030381529060405280519060200120905060045483839050101561044d576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602b60248201527f4e6f7420656e6f756768207369676e61747572657320746f206d65657420746860448201527f65207468726573686f6c6400000000000000000000000000000000000000000060648201526084015b60405180910390fd5b6000805b6003548110156105465760006104bf8487878581811061047357610473610fcf565b90506020028101906104859190610ffe565b8080601f016020809104026020016040519081016040528093929190818152602001838380828437600092019190915250610a5392505050565b905060005b60035481101561053157600381815481106104e1576104e1610fcf565b60009182526020909120015473ffffffffffffffffffffffffffffffffffffffff9081169083160361051f578361051781611063565b945050610531565b8061052981611063565b9150506104c4565b5050808061053e90611063565b915050610451565b506004548110156105d9576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152603160248201527f4e6f7420656e6f7567682076616c6964207369676e61747572657320746f206d60448201527f65657420746865207468726573686f6c640000000000000000000000000000006064820152608401610444565b6005546040517f9cbc6dd500000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff90911690639cbc6dd59061062f908890600401610fa4565b600060405180830381600087803b15801561064957600080fd5b505af115801561065d573d6000803e3d6000fd5b505050507f5a489a726637bbfb606607407b4849a0ec525d5a84fddb0292c45441a17e31b1856040516106909190610fa4565b60405180910390a15050505050565b6106a761098b565b6106b360038383610d15565b505050565b600381815481106106c857600080fd5b60009182526020909120015473ffffffffffffffffffffffffffffffffffffffff16905081565b6106f761098b565b600580547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff92909216919091179055565b60055473ffffffffffffffffffffffffffffffffffffffff1633146107e5576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602a60248201527f4f6e6c7920496e746572636861696e44422063616e207265717565737420766560448201527f72696669636174696f6e000000000000000000000000000000000000000000006064820152608401610444565b6001341015610876576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602860248201527f496e73756666696369656e742066656520746f2072657175657374207665726960448201527f6669636174696f6e0000000000000000000000000000000000000000000000006064820152608401610444565b61087f34610a7f565b6000816040516020016108929190610fa4565b604080518083037fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0018152828252805160209182012085518452858201519184019190915284820151838301526060808601519084015260808301819052905190925084917f7c7da7695b83e8f8eda84a76d9261e3032785a36e05911881cca597e0527e764919081900360a00190a2505050565b61092f61098b565b73ffffffffffffffffffffffffffffffffffffffff811661097f576040517f1e4fbdf700000000000000000000000000000000000000000000000000000000815260006004820152602401610444565b610988816109de565b50565b60005473ffffffffffffffffffffffffffffffffffffffff163314610386576040517f118cdaa7000000000000000000000000000000000000000000000000000000008152336004820152602401610444565b6000805473ffffffffffffffffffffffffffffffffffffffff8381167fffffffffffffffffffffffff0000000000000000000000000000000000000000831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b600080600080610a638686610aca565b925092509250610a738282610b17565b50909150505b92915050565b60015460405173ffffffffffffffffffffffffffffffffffffffff9091169082156108fc029083906000818181858888f19350505050158015610ac6573d6000803e3d6000fd5b5050565b60008060008351604103610b045760208401516040850151606086015160001a610af688828585610c1b565b955095509550505050610b10565b50508151600091506002905b9250925092565b6000826003811115610b2b57610b2b6110c2565b03610b34575050565b6001826003811115610b4857610b486110c2565b03610b7f576040517ff645eedf00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6002826003811115610b9357610b936110c2565b03610bcd576040517ffce698f700000000000000000000000000000000000000000000000000000000815260048101829052602401610444565b6003826003811115610be157610be16110c2565b03610ac6576040517fd78bce0c00000000000000000000000000000000000000000000000000000000815260048101829052602401610444565b600080807f7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0841115610c565750600091506003905082610d0b565b604080516000808252602082018084528a905260ff891692820192909252606081018790526080810186905260019060a0016020604051602081039080840390855afa158015610caa573d6000803e3d6000fd5b50506040517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0015191505073ffffffffffffffffffffffffffffffffffffffff8116610d0157506000925060019150829050610d0b565b9250600091508190505b9450945094915050565b828054828255906000526020600020908101928215610d8d579160200282015b82811115610d8d5781547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff843516178255602090920191600190910190610d35565b50610d99929150610d9d565b5090565b5b80821115610d995760008155600101610d9e565b600060208284031215610dc457600080fd5b813573ffffffffffffffffffffffffffffffffffffffff81168114610de857600080fd5b9392505050565b600060208284031215610e0157600080fd5b5035919050565b600060808284031215610e1a57600080fd5b6040516080810181811067ffffffffffffffff82111715610e64577f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b8060405250809150823581526020830135602082015260408301356040820152606083013560608201525092915050565b60008083601f840112610ea757600080fd5b50813567ffffffffffffffff811115610ebf57600080fd5b6020830191508360208260051b8501011115610eda57600080fd5b9250929050565b600080600060a08486031215610ef657600080fd5b610f008585610e08565b9250608084013567ffffffffffffffff811115610f1c57600080fd5b610f2886828701610e95565b9497909650939450505050565b60008060208385031215610f4857600080fd5b823567ffffffffffffffff811115610f5f57600080fd5b610f6b85828601610e95565b90969095509350505050565b60008060a08385031215610f8a57600080fd5b82359150610f9b8460208501610e08565b90509250929050565b8151815260208083015190820152604080830151908201526060808301519082015260808101610a79565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b60008083357fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe184360301811261103357600080fd5b83018035915067ffffffffffffffff82111561104e57600080fd5b602001915036819003821315610eda57600080fd5b60007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff82036110bb577f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b5060010190565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052602160045260246000fdfea26469706673582212200db2831d8037e9ea6068b746c870e157a5b58aec2228e64d52ed41734d3af8f964736f6c63430008140033",
 }
 
 // SynapseModuleABI is the input ABI used to generate the binding from.
@@ -3945,7 +3165,7 @@ func (_SynapseModule *SynapseModuleCallerSession) GasOracle() (common.Address, e
 
 // GetModuleFee is a free data retrieval call binding the contract method 0xdc8e4f89.
 //
-// Solidity: function getModuleFee(uint256 dstChainId) view returns(uint256)
+// Solidity: function getModuleFee(uint256 dstChainId) pure returns(uint256)
 func (_SynapseModule *SynapseModuleCaller) GetModuleFee(opts *bind.CallOpts, dstChainId *big.Int) (*big.Int, error) {
 	var out []interface{}
 	err := _SynapseModule.contract.Call(opts, &out, "getModuleFee", dstChainId)
@@ -3962,14 +3182,14 @@ func (_SynapseModule *SynapseModuleCaller) GetModuleFee(opts *bind.CallOpts, dst
 
 // GetModuleFee is a free data retrieval call binding the contract method 0xdc8e4f89.
 //
-// Solidity: function getModuleFee(uint256 dstChainId) view returns(uint256)
+// Solidity: function getModuleFee(uint256 dstChainId) pure returns(uint256)
 func (_SynapseModule *SynapseModuleSession) GetModuleFee(dstChainId *big.Int) (*big.Int, error) {
 	return _SynapseModule.Contract.GetModuleFee(&_SynapseModule.CallOpts, dstChainId)
 }
 
 // GetModuleFee is a free data retrieval call binding the contract method 0xdc8e4f89.
 //
-// Solidity: function getModuleFee(uint256 dstChainId) view returns(uint256)
+// Solidity: function getModuleFee(uint256 dstChainId) pure returns(uint256)
 func (_SynapseModule *SynapseModuleCallerSession) GetModuleFee(dstChainId *big.Int) (*big.Int, error) {
 	return _SynapseModule.Contract.GetModuleFee(&_SynapseModule.CallOpts, dstChainId)
 }
@@ -4553,9 +3773,9 @@ func (_SynapseModule *SynapseModuleFilterer) ParseOwnershipTransferred(log types
 	return event, nil
 }
 
-// SynapseModuleVerfificationRequestedIterator is returned from FilterVerfificationRequested and is used to iterate over the raw logs and unpacked data for VerfificationRequested events raised by the SynapseModule contract.
-type SynapseModuleVerfificationRequestedIterator struct {
-	Event *SynapseModuleVerfificationRequested // Event containing the contract specifics and raw log
+// SynapseModuleVerificationRequestedIterator is returned from FilterVerificationRequested and is used to iterate over the raw logs and unpacked data for VerificationRequested events raised by the SynapseModule contract.
+type SynapseModuleVerificationRequestedIterator struct {
+	Event *SynapseModuleVerificationRequested // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -4569,7 +3789,7 @@ type SynapseModuleVerfificationRequestedIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *SynapseModuleVerfificationRequestedIterator) Next() bool {
+func (it *SynapseModuleVerificationRequestedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -4578,7 +3798,7 @@ func (it *SynapseModuleVerfificationRequestedIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(SynapseModuleVerfificationRequested)
+			it.Event = new(SynapseModuleVerificationRequested)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -4593,7 +3813,7 @@ func (it *SynapseModuleVerfificationRequestedIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(SynapseModuleVerfificationRequested)
+		it.Event = new(SynapseModuleVerificationRequested)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -4609,52 +3829,53 @@ func (it *SynapseModuleVerfificationRequestedIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *SynapseModuleVerfificationRequestedIterator) Error() error {
+func (it *SynapseModuleVerificationRequestedIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *SynapseModuleVerfificationRequestedIterator) Close() error {
+func (it *SynapseModuleVerificationRequestedIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// SynapseModuleVerfificationRequested represents a VerfificationRequested event raised by the SynapseModule contract.
-type SynapseModuleVerfificationRequested struct {
+// SynapseModuleVerificationRequested represents a VerificationRequested event raised by the SynapseModule contract.
+type SynapseModuleVerificationRequested struct {
 	DestChainId *big.Int
 	Entry       InterchainEntry
+	DataHash    [32]byte
 	Raw         types.Log // Blockchain specific contextual infos
 }
 
-// FilterVerfificationRequested is a free log retrieval operation binding the contract event 0xf0e0e0f85bb25f7ff2a62863099db3f92e3583495a1256a029a97037978d5538.
+// FilterVerificationRequested is a free log retrieval operation binding the contract event 0x7c7da7695b83e8f8eda84a76d9261e3032785a36e05911881cca597e0527e764.
 //
-// Solidity: event VerfificationRequested(uint256 indexed destChainId, (uint256,bytes32,uint256,bytes32) entry)
-func (_SynapseModule *SynapseModuleFilterer) FilterVerfificationRequested(opts *bind.FilterOpts, destChainId []*big.Int) (*SynapseModuleVerfificationRequestedIterator, error) {
+// Solidity: event VerificationRequested(uint256 indexed destChainId, (uint256,bytes32,uint256,bytes32) entry, bytes32 dataHash)
+func (_SynapseModule *SynapseModuleFilterer) FilterVerificationRequested(opts *bind.FilterOpts, destChainId []*big.Int) (*SynapseModuleVerificationRequestedIterator, error) {
 
 	var destChainIdRule []interface{}
 	for _, destChainIdItem := range destChainId {
 		destChainIdRule = append(destChainIdRule, destChainIdItem)
 	}
 
-	logs, sub, err := _SynapseModule.contract.FilterLogs(opts, "VerfificationRequested", destChainIdRule)
+	logs, sub, err := _SynapseModule.contract.FilterLogs(opts, "VerificationRequested", destChainIdRule)
 	if err != nil {
 		return nil, err
 	}
-	return &SynapseModuleVerfificationRequestedIterator{contract: _SynapseModule.contract, event: "VerfificationRequested", logs: logs, sub: sub}, nil
+	return &SynapseModuleVerificationRequestedIterator{contract: _SynapseModule.contract, event: "VerificationRequested", logs: logs, sub: sub}, nil
 }
 
-// WatchVerfificationRequested is a free log subscription operation binding the contract event 0xf0e0e0f85bb25f7ff2a62863099db3f92e3583495a1256a029a97037978d5538.
+// WatchVerificationRequested is a free log subscription operation binding the contract event 0x7c7da7695b83e8f8eda84a76d9261e3032785a36e05911881cca597e0527e764.
 //
-// Solidity: event VerfificationRequested(uint256 indexed destChainId, (uint256,bytes32,uint256,bytes32) entry)
-func (_SynapseModule *SynapseModuleFilterer) WatchVerfificationRequested(opts *bind.WatchOpts, sink chan<- *SynapseModuleVerfificationRequested, destChainId []*big.Int) (event.Subscription, error) {
+// Solidity: event VerificationRequested(uint256 indexed destChainId, (uint256,bytes32,uint256,bytes32) entry, bytes32 dataHash)
+func (_SynapseModule *SynapseModuleFilterer) WatchVerificationRequested(opts *bind.WatchOpts, sink chan<- *SynapseModuleVerificationRequested, destChainId []*big.Int) (event.Subscription, error) {
 
 	var destChainIdRule []interface{}
 	for _, destChainIdItem := range destChainId {
 		destChainIdRule = append(destChainIdRule, destChainIdItem)
 	}
 
-	logs, sub, err := _SynapseModule.contract.WatchLogs(opts, "VerfificationRequested", destChainIdRule)
+	logs, sub, err := _SynapseModule.contract.WatchLogs(opts, "VerificationRequested", destChainIdRule)
 	if err != nil {
 		return nil, err
 	}
@@ -4664,8 +3885,8 @@ func (_SynapseModule *SynapseModuleFilterer) WatchVerfificationRequested(opts *b
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(SynapseModuleVerfificationRequested)
-				if err := _SynapseModule.contract.UnpackLog(event, "VerfificationRequested", log); err != nil {
+				event := new(SynapseModuleVerificationRequested)
+				if err := _SynapseModule.contract.UnpackLog(event, "VerificationRequested", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -4686,12 +3907,12 @@ func (_SynapseModule *SynapseModuleFilterer) WatchVerfificationRequested(opts *b
 	}), nil
 }
 
-// ParseVerfificationRequested is a log parse operation binding the contract event 0xf0e0e0f85bb25f7ff2a62863099db3f92e3583495a1256a029a97037978d5538.
+// ParseVerificationRequested is a log parse operation binding the contract event 0x7c7da7695b83e8f8eda84a76d9261e3032785a36e05911881cca597e0527e764.
 //
-// Solidity: event VerfificationRequested(uint256 indexed destChainId, (uint256,bytes32,uint256,bytes32) entry)
-func (_SynapseModule *SynapseModuleFilterer) ParseVerfificationRequested(log types.Log) (*SynapseModuleVerfificationRequested, error) {
-	event := new(SynapseModuleVerfificationRequested)
-	if err := _SynapseModule.contract.UnpackLog(event, "VerfificationRequested", log); err != nil {
+// Solidity: event VerificationRequested(uint256 indexed destChainId, (uint256,bytes32,uint256,bytes32) entry, bytes32 dataHash)
+func (_SynapseModule *SynapseModuleFilterer) ParseVerificationRequested(log types.Log) (*SynapseModuleVerificationRequested, error) {
+	event := new(SynapseModuleVerificationRequested)
+	if err := _SynapseModule.contract.UnpackLog(event, "VerificationRequested", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
@@ -4701,7 +3922,7 @@ func (_SynapseModule *SynapseModuleFilterer) ParseVerfificationRequested(log typ
 // TypeCastsMetaData contains all meta data concerning the TypeCasts contract.
 var TypeCastsMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122084cc710c5a8ef050dbec31cb7c2bad53ae4ca54037564d12542b2ab20856c05964736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122059a8e97960317b8a4a78ed121f11c4699338333746bd1a3a79a56fe484563fe964736f6c63430008140033",
 }
 
 // TypeCastsABI is the input ABI used to generate the binding from.
@@ -4874,7 +4095,7 @@ func (_TypeCasts *TypeCastsTransactorRaw) Transact(opts *bind.TransactOpts, meth
 // ConsoleMetaData contains all meta data concerning the Console contract.
 var ConsoleMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220298bec7e727089f7038c40cc250396640520d21fcf2bcc6640329c1f686441b064736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220c261273f2f91210e2ff5e4f366002d81a40593204784873157bd975e4e6b4cd064736f6c63430008140033",
 }
 
 // ConsoleABI is the input ABI used to generate the binding from.
