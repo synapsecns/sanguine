@@ -121,6 +121,7 @@ function ActionPopoverButton({ open, close }) {
           hover:cursor-pointer
           hover:bg-bgBase/10 ${open ? 'bg-bgBase/10' : ''}
           text-md text-[#BFBCC2] group-hover:text-white/90
+          group-active:bg-bgBase/20
         `}
       >
         <div>Actions</div>

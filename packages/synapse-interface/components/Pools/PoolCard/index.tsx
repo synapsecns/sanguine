@@ -159,20 +159,24 @@ const ManageLp = ({ pool, stakedBalance, address }) => {
   }
 
   return (
-    <div className="border-t border-slate-400/10 pt-2 pb-2 ">
-      <div className="flex items-center justify-between pt-2 pl-3 pr-3">
-        <DisplayBalances
+    <div
+      className={`
+        border-t border-slate-400/10
+        flex items-center justify-between
+        py-2 px-3
+      `}
+    >
+      <DisplayBalances
+        pool={pool}
+        address={address}
+        stakedBalance={stakedBalance}
+        showIcon={true}
+      />
+      <div className="flex items-center text-xs">
+        <PoolActionOptions
           pool={pool}
-          address={address}
-          stakedBalance={stakedBalance}
-          showIcon={true}
+          options={['Deposit', 'Withdraw', 'Stake', 'Unstake', 'Claim']}
         />
-        <div className="flex items-center text-xs">
-          <PoolActionOptions
-            pool={pool}
-            options={['Deposit', 'Withdraw', 'Stake', 'Unstake', 'Claim']}
-          />
-        </div>
       </div>
     </div>
   )
