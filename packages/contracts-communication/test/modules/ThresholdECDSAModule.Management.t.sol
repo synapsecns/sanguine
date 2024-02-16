@@ -17,6 +17,7 @@ contract ThresholdECDSAModuleManagementTest is Test, ThresholdECDSAModuleEvents 
 
     address public interchainDB = makeAddr("InterchainDB");
     address public owner = makeAddr("Owner");
+    address public feeCollector = makeAddr("FeeCollector");
 
     address public constant VERIFIER_1 = address(1);
     address public constant VERIFIER_2 = address(2);
@@ -133,6 +134,26 @@ contract ThresholdECDSAModuleManagementTest is Test, ThresholdECDSAModuleEvents 
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, notOwner));
         vm.prank(notOwner);
         module.setThreshold(3);
+    }
+
+    function test_setFeeCollector_setsFeeCollector() public {
+        vm.prank(owner);
+        module.setFeeCollector(feeCollector);
+        assertEq(module.feeCollector(), feeCollector);
+    }
+
+    function test_setFeeCollector_emitsEvent() public {
+        vm.expectEmit(address(module));
+        emit FeeCollectorChanged(feeCollector);
+        vm.prank(owner);
+        module.setFeeCollector(feeCollector);
+    }
+
+    function test_setFeeCollector_revert_notOwner(address notOwner) public {
+        vm.assume(notOwner != owner);
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, notOwner));
+        vm.prank(notOwner);
+        module.setFeeCollector(feeCollector);
     }
 
     function test_setGasOracle_setsGasOracle() public {

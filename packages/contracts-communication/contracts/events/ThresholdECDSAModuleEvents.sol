@@ -5,5 +5,7 @@ abstract contract ThresholdECDSAModuleEvents {
     event VerifierAdded(address verifier);
     event VerifierRemoved(address verifier);
     event ThresholdChanged(uint256 threshold);
+
+    event FeeCollectorChanged(address feeCollector);
     event GasOracleChanged(address gasOracle);
 }

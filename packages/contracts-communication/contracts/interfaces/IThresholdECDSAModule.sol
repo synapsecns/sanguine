@@ -23,6 +23,11 @@ interface IThresholdECDSAModule is IInterchainModule {
     /// @param threshold    The new threshold value
     function setThreshold(uint256 threshold) external;
 
+    /// @notice Sets the address of the fee collector, which will have the verification fees forwarded to it.
+    /// @dev Could be only called by the owner.
+    /// @param feeCollector_   The address of the fee collector
+    function setFeeCollector(address feeCollector_) external;
+
     /// @notice Sets the address of the gas oracle to be used for estimating the verification fees.
     /// @dev Could be only called by the owner. Will revert if the gas oracle is not a contract.
     /// @param gasOracle_   The address of the gas oracle contract
@@ -37,6 +42,9 @@ interface IThresholdECDSAModule is IInterchainModule {
     function verifyEntry(bytes calldata encodedEntry, bytes[] calldata signatures) external;
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
+    /// @notice Returns the address of the fee collector for the module.
+    function feeCollector() external view returns (address);
 
     /// @notice Returns the address of the gas oracle used for estimating the verification fees.
     function gasOracle() external view returns (address);
