@@ -90,19 +90,19 @@ export const _Transaction = ({
     currentTime: currentTime,
   })
 
-  /** Check if store already marked tx as complete, otherwise check hook status */
-  const isTxFinalized = isStoredComplete ?? isTxComplete
-
-  const showTransactionSupport =
-    !isTxFinalized && !isStoredReverted && delayedTimeInMin
-      ? delayedTimeInMin <= -5
-      : false
-
   const isReverted = useIsTxReverted(
     originTxHash as Address,
     originChain,
     !isStoredReverted
   )
+
+  const isTxReverted = isStoredReverted ?? isReverted
+  const isTxFinalized = isStoredComplete ?? isTxComplete
+
+  const showTransactionSupport =
+    !isTxFinalized && !isTxReverted && delayedTimeInMin
+      ? delayedTimeInMin <= -5
+      : false
 
   useBridgeTxUpdater(
     connectedAddress,
@@ -162,12 +162,11 @@ export const _Transaction = ({
                 minute: '2-digit',
                 hour12: true,
               })}
-              {/* <div>{typeof _kappa === 'string' && _kappa?.substring(0, 15)}</div> */}
             </div>
             {!isNull(originTxExplorerLink) && (
               <MenuItem text={originExplorerName} link={originTxExplorerLink} />
             )}
-            {!isNull(destExplorerAddressLink) && (
+            {!isNull(destExplorerAddressLink) && !isTxReverted && (
               <MenuItem
                 text={destExplorerName}
                 link={destExplorerAddressLink}
