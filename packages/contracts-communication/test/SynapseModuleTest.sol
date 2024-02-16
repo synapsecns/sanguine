@@ -2,11 +2,11 @@ pragma solidity 0.8.20;
 
 import {Test} from "forge-std/Test.sol";
 
-import {InterchainDB, InterchainEntry, IInterchainDB, IInterchainDBEvents} from "../contracts/InterchainDB.sol";
+import {InterchainDB, InterchainEntry, IInterchainDB, InterchainDBEvents} from "../contracts/InterchainDB.sol";
 
-import {SynapseModule, ISynapseModuleEvents} from "../contracts/modules/SynapseModule.sol";
+import {SynapseModule, SynapseModuleEvents} from "../contracts/modules/SynapseModule.sol";
 
-contract SynapseModuleTest is Test, ISynapseModuleEvents {
+contract SynapseModuleTest is Test, SynapseModuleEvents {
     IInterchainDB icDB;
     SynapseModule synapseModule;
 
