@@ -23,8 +23,8 @@ interface IThresholdECDSAModule is IInterchainModule {
 
     /// @notice Sets the address of the gas oracle to be used for estimating the verification fees.
     /// @dev Could be only called by the owner. Will revert if the gas oracle is not a contract.
-    /// @param gasOracle    The address of the gas oracle contract
-    function setGasOracle(address gasOracle) external;
+    /// @param gasOracle_   The address of the gas oracle contract
+    function setGasOracle(address gasOracle_) external;
 
     // ══════════════════════════════════════════════ PERMISSIONLESS ═══════════════════════════════════════════════════
 
@@ -36,7 +36,16 @@ interface IThresholdECDSAModule is IInterchainModule {
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
+    /// @notice Returns the address of the gas oracle used for estimating the verification fees.
+    function gasOracle() external view returns (address);
+
+    /// @notice Returns the list of verifiers for the module.
+    function getVerifiers() external view returns (address[] memory);
+
     /// @notice Gets the threshold of the module.
     /// This is the minimum number of signatures required for verification.
     function getThreshold() external view returns (uint256);
+
+    /// @notice Checks if the given account is a verifier for the module.
+    function isVerifier(address account) external view returns (bool);
 }

@@ -11,6 +11,9 @@ import {ThresholdECDSA} from "../libs/ThresholdECDSA.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract ThresholdECDSAModule is InterchainModule, Ownable, IThresholdECDSAModule {
+    /// @inheritdoc IThresholdECDSAModule
+    address public gasOracle;
+
     constructor(address interchainDB, address initialOwner) InterchainModule(interchainDB) Ownable(initialOwner) {}
 
     // ═══════════════════════════════════════════════ PERMISSIONED ════════════════════════════════════════════════════
@@ -25,7 +28,7 @@ contract ThresholdECDSAModule is InterchainModule, Ownable, IThresholdECDSAModul
     function setThreshold(uint256 threshold) external onlyOwner {}
 
     /// @inheritdoc IThresholdECDSAModule
-    function setGasOracle(address gasOracle) external onlyOwner {}
+    function setGasOracle(address gasOracle_) external onlyOwner {}
 
     // ══════════════════════════════════════════════ PERMISSIONLESS ═══════════════════════════════════════════════════
 
@@ -34,7 +37,14 @@ contract ThresholdECDSAModule is InterchainModule, Ownable, IThresholdECDSAModul
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
+    /// @inheritdoc IThresholdECDSAModule
     function getThreshold() external view returns (uint256) {}
+
+    /// @inheritdoc IThresholdECDSAModule
+    function getVerifiers() external view returns (address[] memory) {}
+
+    /// @inheritdoc IThresholdECDSAModule
+    function isVerifier(address account) external view returns (bool) {}
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
