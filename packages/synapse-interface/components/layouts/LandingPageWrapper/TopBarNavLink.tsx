@@ -29,7 +29,9 @@ export function TopBarNavLink({
     text-white ${
       match &&
       (typeof match === 'string'
-        ? router.asPath.includes(match)
+        ? router.asPath === match ||
+          router.asPath === '/' ||
+          router.asPath.startsWith(match + '?')
         : match instanceof RegExp
         ? match.test(router.asPath)
         : router.asPath.startsWith(match.startsWith) &&

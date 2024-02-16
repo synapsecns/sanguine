@@ -26,10 +26,7 @@ export const NAVIGATION: RouteObject = {
   Bridge: {
     path: BRIDGE_PATH,
     text: 'Bridge',
-    match: {
-      startsWith: '/',
-      endsWith: '/',
-    },
+    match: '/',
   },
   Swap: {
     path: SWAP_PATH,
