@@ -1,6 +1,7 @@
 import LoadingDots from '@tw/LoadingDots'
-
+import { LoadingHelix } from '@tw/LoadingHelix'
 import { OutputNumber } from '@/components/bridgeSwap/OutputNumber'
+import { LoadingInfinity } from '../ui/tailwind/LoadingInfinity'
 
 
 export const GenericOutputContainer = ({
@@ -33,8 +34,13 @@ export const GenericOutputContainer = ({
         >
           {tokenSelector}
           <div className="flex ml-4">
+            {/* <LoadingHelix /> */}
             {isLoading ? (
-              <LoadingDots className="opacity-50" />
+              // <div className="animate-pulse">
+              //   <OutputNumber quote={{outputAmountString:"0.0000"}}/>
+              // </div>
+              // <LoadingDots className="opacity-50" />
+              <LoadingHelix />
             ) : (
               <OutputNumber quote={quote}/>
             )}

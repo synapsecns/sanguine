@@ -199,6 +199,15 @@ module.exports = {
           ...colors,
         },
       }),
+      keyframes: {
+        movement: {
+          '0%, 100%': { transform: 'translate3d(0, -25px, 0) scale(1)' },
+          '50%': { transform: 'translate3d(0, 25px, 0) scale(1.5)' },
+        },
+      },
+      animation: {
+        'movement': 'movement 2s ease-in-out infinite',
+      },
     },
   },
   plugins: [

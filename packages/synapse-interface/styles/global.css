@@ -165,54 +165,366 @@ body {
   }
 }
 
-/* CLASSNAMES FOR LANDING PAGE BG */
 
-.absolute-lightened-bg{
+
+
+/* HTML: <div class="infinityloader"></div> */
+
+/** PLAYING AROUNT WITH HELICAL LOADER */
+:root {
+  --dot-count: 26;
+  --dot-size: 10px;
+  --dot-space: 15px;
+  --dot-start: calc((var(--dot-count) / 2 + 1) * (var(--dot-size) + var(--dot-space)) / 2);
+  --animation-time: 2s;
+  --animation-distance: 25px;
+}
+
+.loader {
   position: relative;
 }
-
-.absolute-lightened-bg:before {
-  content:"";
+.loader .dot {
+  -webkit-animation-name: movement;
+          animation-name: movement;
+  -webkit-animation-duration: 2s;
+          animation-duration: 2s;
+  -webkit-animation-iteration-count: infinite;
+          animation-iteration-count: infinite;
+  -webkit-animation-timing-function: ease-in-out;
+          animation-timing-function: ease-in-out;
+  height: 10px;
   position: absolute;
-  background: #1F1D22;
-  width: 4000px;
-  left: -2000px;
-  height: 100%;
-  z-index: -69;
-  overflow: hidden;
+  top: -10px;
+  transform: translate3d(0, -25px, 0) scale(1);
+  width: 10px;
 }
-
-.absolute-darkened-bg{
-  position: relative;
+.loader .dot:nth-of-type(1) {
+  -webkit-animation-delay: -0.1s;
+          animation-delay: -0.1s;
+  left: 150px;
 }
-
-.absolute-darkened-bg:before {
-  content:"";
-  position: absolute;
-  background: #121114;
-  width: 4000px;
-  left: -2000px;
-  height: 100%;
-  z-index: 0;
-  overflow: hidden;
+.loader .dot:nth-of-type(1)::before {
+  -webkit-animation-delay: -0.1s;
+          animation-delay: -0.1s;
 }
-
-.no-mt {
-  margin-top: 0 !important;
+.loader .dot:nth-of-type(2) {
+  -webkit-animation-delay: -1.2s;
+          animation-delay: -1.2s;
+  left: 150px;
 }
-
-
-/* FromTokenSelect */
-.select-hidden {
-  display: none;
+.loader .dot:nth-of-type(2)::before {
+  -webkit-animation-delay: -1.2s;
+          animation-delay: -1.2s;
 }
-
-/* Hide parsedBalance when option is selected */
-.mySelect__single-value .select-hidden {
-  display: none;
+.loader .dot:nth-of-type(3) {
+  -webkit-animation-delay: -0.3s;
+          animation-delay: -0.3s;
+  left: 125px;
 }
-
-/* Show parsedBalance when dropdown is opened */
-.mySelect__option .select-hidden {
+.loader .dot:nth-of-type(3)::before {
+  -webkit-animation-delay: -0.3s;
+          animation-delay: -0.3s;
+}
+.loader .dot:nth-of-type(4) {
+  -webkit-animation-delay: -1.4s;
+          animation-delay: -1.4s;
+  left: 125px;
+}
+.loader .dot:nth-of-type(4)::before {
+  -webkit-animation-delay: -1.4s;
+          animation-delay: -1.4s;
+}
+.loader .dot:nth-of-type(5) {
+  -webkit-animation-delay: -0.5s;
+          animation-delay: -0.5s;
+  left: 100px;
+}
+.loader .dot:nth-of-type(5)::before {
+  -webkit-animation-delay: -0.5s;
+          animation-delay: -0.5s;
+}
+.loader .dot:nth-of-type(6) {
+  -webkit-animation-delay: -1.6s;
+          animation-delay: -1.6s;
+  left: 100px;
+}
+.loader .dot:nth-of-type(6)::before {
+  -webkit-animation-delay: -1.6s;
+          animation-delay: -1.6s;
+}
+.loader .dot:nth-of-type(7) {
+  -webkit-animation-delay: -0.7s;
+          animation-delay: -0.7s;
+  left: 75px;
+}
+.loader .dot:nth-of-type(7)::before {
+  -webkit-animation-delay: -0.7s;
+          animation-delay: -0.7s;
+}
+.loader .dot:nth-of-type(8) {
+  -webkit-animation-delay: -1.8s;
+          animation-delay: -1.8s;
+  left: 75px;
+}
+.loader .dot:nth-of-type(8)::before {
+  -webkit-animation-delay: -1.8s;
+          animation-delay: -1.8s;
+}
+.loader .dot:nth-of-type(9) {
+  -webkit-animation-delay: -0.9s;
+          animation-delay: -0.9s;
+  left: 50px;
+}
+.loader .dot:nth-of-type(9)::before {
+  -webkit-animation-delay: -0.9s;
+          animation-delay: -0.9s;
+}
+.loader .dot:nth-of-type(10) {
+  -webkit-animation-delay: -2s;
+          animation-delay: -2s;
+  left: 50px;
+}
+.loader .dot:nth-of-type(10)::before {
+  -webkit-animation-delay: -2s;
+          animation-delay: -2s;
+}
+.loader .dot:nth-of-type(11) {
+  -webkit-animation-delay: -1.1s;
+          animation-delay: -1.1s;
+  left: 25px;
+}
+.loader .dot:nth-of-type(11)::before {
+  -webkit-animation-delay: -1.1s;
+          animation-delay: -1.1s;
+}
+.loader .dot:nth-of-type(12) {
+  -webkit-animation-delay: -2.2s;
+          animation-delay: -2.2s;
+  left: 25px;
+}
+.loader .dot:nth-of-type(12)::before {
+  -webkit-animation-delay: -2.2s;
+          animation-delay: -2.2s;
+}
+.loader .dot:nth-of-type(13) {
+  -webkit-animation-delay: -1.3s;
+          animation-delay: -1.3s;
+  left: 0px;
+}
+.loader .dot:nth-of-type(13)::before {
+  -webkit-animation-delay: -1.3s;
+          animation-delay: -1.3s;
+}
+.loader .dot:nth-of-type(14) {
+  -webkit-animation-delay: -2.4s;
+          animation-delay: -2.4s;
+  left: 0px;
+}
+.loader .dot:nth-of-type(14)::before {
+  -webkit-animation-delay: -2.4s;
+          animation-delay: -2.4s;
+}
+.loader .dot:nth-of-type(15) {
+  -webkit-animation-delay: -1.5s;
+          animation-delay: -1.5s;
+  left: -25px;
+}
+.loader .dot:nth-of-type(15)::before {
+  -webkit-animation-delay: -1.5s;
+          animation-delay: -1.5s;
+}
+.loader .dot:nth-of-type(16) {
+  -webkit-animation-delay: -2.6s;
+          animation-delay: -2.6s;
+  left: -25px;
+}
+.loader .dot:nth-of-type(16)::before {
+  -webkit-animation-delay: -2.6s;
+          animation-delay: -2.6s;
+}
+.loader .dot:nth-of-type(17) {
+  -webkit-animation-delay: -1.7s;
+          animation-delay: -1.7s;
+  left: -50px;
+}
+.loader .dot:nth-of-type(17)::before {
+  -webkit-animation-delay: -1.7s;
+          animation-delay: -1.7s;
+}
+.loader .dot:nth-of-type(18) {
+  -webkit-animation-delay: -2.8s;
+          animation-delay: -2.8s;
+  left: -50px;
+}
+.loader .dot:nth-of-type(18)::before {
+  -webkit-animation-delay: -2.8s;
+          animation-delay: -2.8s;
+}
+.loader .dot:nth-of-type(19) {
+  -webkit-animation-delay: -1.9s;
+          animation-delay: -1.9s;
+  left: -75px;
+}
+.loader .dot:nth-of-type(19)::before {
+  -webkit-animation-delay: -1.9s;
+          animation-delay: -1.9s;
+}
+.loader .dot:nth-of-type(20) {
+  -webkit-animation-delay: -3s;
+          animation-delay: -3s;
+  left: -75px;
+}
+.loader .dot:nth-of-type(20)::before {
+  -webkit-animation-delay: -3s;
+          animation-delay: -3s;
+}
+.loader .dot:nth-of-type(21) {
+  -webkit-animation-delay: -2.1s;
+          animation-delay: -2.1s;
+  left: -100px;
+}
+.loader .dot:nth-of-type(21)::before {
+  -webkit-animation-delay: -2.1s;
+          animation-delay: -2.1s;
+}
+.loader .dot:nth-of-type(22) {
+  -webkit-animation-delay: -3.2s;
+          animation-delay: -3.2s;
+  left: -100px;
+}
+.loader .dot:nth-of-type(22)::before {
+  -webkit-animation-delay: -3.2s;
+          animation-delay: -3.2s;
+}
+.loader .dot:nth-of-type(23) {
+  -webkit-animation-delay: -2.3s;
+          animation-delay: -2.3s;
+  left: -125px;
+}
+.loader .dot:nth-of-type(23)::before {
+  -webkit-animation-delay: -2.3s;
+          animation-delay: -2.3s;
+}
+.loader .dot:nth-of-type(24) {
+  -webkit-animation-delay: -3.4s;
+          animation-delay: -3.4s;
+  left: -125px;
+}
+.loader .dot:nth-of-type(24)::before {
+  -webkit-animation-delay: -3.4s;
+          animation-delay: -3.4s;
+}
+.loader .dot:nth-of-type(25) {
+  -webkit-animation-delay: -2.5s;
+          animation-delay: -2.5s;
+  left: -150px;
+}
+.loader .dot:nth-of-type(25)::before {
+  -webkit-animation-delay: -2.5s;
+          animation-delay: -2.5s;
+}
+.loader .dot:nth-of-type(26) {
+  -webkit-animation-delay: -3.6s;
+          animation-delay: -3.6s;
+  left: -150px;
+}
+.loader .dot:nth-of-type(26)::before {
+  -webkit-animation-delay: -3.6s;
+          animation-delay: -3.6s;
+}
+.loader .dot::before {
+  -webkit-animation-name: size-opacity;
+          animation-name: size-opacity;
+  -webkit-animation-duration: 2s;
+          animation-duration: 2s;
+  -webkit-animation-iteration-count: infinite;
+          animation-iteration-count: infinite;
+  -webkit-animation-timing-function: ease;
+          animation-timing-function: ease;
+  background: white;
+  border-radius: 50%;
+  content: "";
   display: block;
+  height: 100%;
+  width: 100%;
+}
+.loader .dot:nth-of-type(even)::before {
+  /* background-color: #D747FF33; */
+  background-color: #94A3B869;
+  /* box-shadow: inset 0 0 4px #D747FF55; */
+}
+.loader .dot:nth-of-type(odd)::before {
+  background-color: #FFFFFF19;
+  /* 94A3B8 */
+  /* box-shadow: inset 0 0 4px #D747FF55; */
+}
+
+@-webkit-keyframes movement {
+  0% {
+    transform: translate3d(0, -25px, 0);
+    z-index: 0;
+  }
+  50% {
+    transform: translate3d(0, 25px, 0);
+    z-index: 10;
+  }
+  100% {
+    transform: translate3d(0, -25px, 0);
+    z-index: -5;
+  }
+}
+
+@keyframes movement {
+  0% {
+    transform: translate3d(0, -25px, 0);
+    z-index: 0;
+  }
+  50% {
+    transform: translate3d(0, 25px, 0);
+    z-index: 10;
+  }
+  100% {
+    transform: translate3d(0, -25px, 0);
+    z-index: -5;
+  }
+}
+@-webkit-keyframes size-opacity {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.5);
+  }
+  50% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 0.35;
+    transform: scale(0.5);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes size-opacity {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.5);
+  }
+  50% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 0.35;
+    transform: scale(0.5);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
