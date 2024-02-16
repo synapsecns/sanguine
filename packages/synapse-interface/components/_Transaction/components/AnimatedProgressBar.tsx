@@ -1,6 +1,5 @@
 import { memo } from 'react'
 import { getTimeMinutesBeforeNow } from '@/utils/time'
-import theme from 'tailwindcss/defaultTheme'
 
 /**
  * @param id unique identifier for progress bar instance
