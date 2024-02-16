@@ -24,10 +24,9 @@ const formatTimestamp = (tx) => {
 export default function Ticker() {
   return (
     <article
-      className="absolute w-screen z-10 mb-12 text-sm overflow-x-clip overflow-y-visible"
+      className="absolute w-screen z-10 text-sm overflow-x-clip overflow-y-visible"
       style={{ counterReset: 'txn' }}
     >
-
       <dl className={`grid whitespace-nowrap list-disc marker:text-zinc-500 ${styles.ticker}`}>
         {txs.map((tx, i) => {
           return (
@@ -80,10 +79,10 @@ export default function Ticker() {
             />
           </circle>
         </svg>
-        Live – All transactions <span className="text-xxs">▼</span>
+        <span className="md:after:content-['_–_All_transactions']">Live</span><span className="text-xxs">▼</span>
       </button>
-      <a href="#" className="absolute top-0 right-0 bg-inherit px-4 py-1.5 border-l border-zinc-300 dark:border-zinc-800 flex items-center gap-2 z-10 bg-zinc-50 dark:bg-zinc-950">
-        Explorer {'->'}
+      <a href="#" className="absolute top-0 right-0 bg-inherit px-4 py-1.5 border-l border-zinc-300 dark:border-zinc-800 inline-block items-center gap-2 z-10 bg-zinc-50 dark:bg-zinc-950 md:before:content-['Explorer_']">
+        {'->'}
       </a>
     </article>
   )

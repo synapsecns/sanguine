@@ -1,6 +1,6 @@
 export function SynapseIcon({ width, height }) {
   return (
-    <svg width={width} height={height} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width={width} height={height} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 md:w-10 md:h-10">
       <defs>
         <linearGradient id="linear-gradient">
           <stop stop-color="#e54de5"/>
