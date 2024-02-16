@@ -2,28 +2,27 @@ import _ from 'lodash'
 import { useEffect, useMemo, useState, memo } from 'react'
 import Link from 'next/link'
 import { Address, useAccount } from 'wagmi'
-import { LoaderIcon, toast } from 'react-hot-toast'
+import { toast } from 'react-hot-toast'
 
 import { Token } from '@types'
 import { getPoolUrl } from '@urls'
 import { getSinglePoolData } from '@utils/actions/getPoolData'
 import { getPoolApyData } from '@utils/actions/getPoolApyData'
-import { usePortfolioState } from '@/slices/portfolio/hooks'
-
-import { useAppSelector } from '@/store/hooks'
-import { useHasMounted } from '@/utils/hooks/useHasMounted'
-
 import { getStakedBalance } from '@/utils/actions/getStakedBalance'
 
+import { usePortfolioState } from '@/slices/portfolio/hooks'
+import { useAppSelector } from '@/store/hooks'
+
+import Card from '@tw/Card'
+import { LoadingHelix } from '@tw/LoadingHelix'
+
+import { DisplayBalances } from './DisplayBalances'
 import { PoolActionOptions } from './PoolActionOptions'
 import { PoolHeader } from './PoolHeader'
 import { PoolCardBody } from './PoolCardBody'
 
-import Card from '@tw/Card'
-import { DisplayBalances } from '@/components/Pools/PoolCard/DisplayBalances'
 
 const PoolCard = memo(({ pool, address }: { pool: Token; address: string }) => {
-  const isClient = useHasMounted()
   const [poolData, setPoolData] = useState(undefined)
   const [poolApyData, setPoolApyData] = useState(undefined)
   const [stakedBalance, setStakedBalance] = useState({
@@ -40,7 +39,7 @@ const PoolCard = memo(({ pool, address }: { pool: Token; address: string }) => {
   let popup: string
 
   useEffect(() => {
-    if (pool && isClient) {
+    if (pool) {
       // TODO - separate the apy and tvl so they load async.
       getSinglePoolData(pool.chainId, pool, prices)
         .then((res) => {
@@ -57,10 +56,10 @@ const PoolCard = memo(({ pool, address }: { pool: Token; address: string }) => {
           console.log('Could not get Pool APY Data: ', err)
         })
     }
-  }, [pool, isClient])
+  }, [pool])
 
   useEffect(() => {
-    if (address && isClient) {
+    if (address) {
       getStakedBalance(
         address as Address,
         pool.chainId,
@@ -76,7 +75,7 @@ const PoolCard = memo(({ pool, address }: { pool: Token; address: string }) => {
     } else {
       setStakedBalance({ amount: 0n, reward: 0n })
     }
-  }, [address, isClient])
+  }, [address])
 
   /*
   useEffect triggers: address, isDisconnected, popup
@@ -95,7 +94,7 @@ const PoolCard = memo(({ pool, address }: { pool: Token; address: string }) => {
           p-0
           transition-all
           ${
-            pool && pool.incentivized
+            pool?.incentivized
               ? 'ring-1 ring-white/10 '
               : 'from-transparent to-transparent border-transparent'
           }
@@ -108,30 +107,25 @@ const PoolCard = memo(({ pool, address }: { pool: Token; address: string }) => {
       <div>
         <Link href={getPoolUrl(pool)}>
           {pool && <PoolHeader pool={pool} address={address as Address} />}
-          {pool &&
-          poolData &&
-          poolApyData &&
-          poolData.tokens &&
-          poolData.totalLockedUSD ? (
-            <PoolCardBody
-              pool={pool}
-              poolApyData={poolApyData}
-              poolData={poolData}
-            />
-          ) : (
-            <div className="flex items-center justify-between px-3 pt-1 pb-2 h-[65px]">
-              <LoaderIcon />
-            </div>
-          )}
+          {pool
+            ?
+              <PoolCardBody
+                pool={pool}
+                poolApyData={poolApyData}
+                poolData={poolData}
+              />
+            :
+              <div className="flex items-center justify-between px-3 pt-1 pb-2 h-[65px]">
+                <LoadingHelix />
+              </div>
+          }
         </Link>
         {pool && (
-          <>
             <ManageLp
               pool={pool}
               stakedBalance={stakedBalance}
               address={address}
             />
-          </>
         )}
       </div>
     </Card>

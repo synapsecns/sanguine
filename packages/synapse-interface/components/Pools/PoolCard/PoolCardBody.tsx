@@ -1,3 +1,4 @@
+import { LoadingHelix } from '@/components/ui/tailwind/LoadingHelix'
 import { Token } from '@/utils/types'
 import _ from 'lodash'
 import numeral from 'numeral'
@@ -14,26 +15,31 @@ export const PoolCardBody = memo(
     poolData: any
     poolApyData: any
   }) => {
-    const format = poolData.totalLockedUSD > 1000000 ? '$0,0.0' : '$0,0'
+    const format = (poolData?.totalLockedUSD > 1000000) ? '$0,0' : '$0,0.00'
+
     return (
       <div className="flex items-center justify-between px-3 pt-1 pb-2 h-[65px]">
         <div className="flex items-center space-x-3">
           <PoolTokenIcons pool={pool} />
-          <div className="text-white">
-            <div className="flex items-center space-x-2 font-medium text-2xl leading-7">
-              <div>
-                {poolData && numeral(poolData.totalLockedUSD).format(format)}
-              </div>
-              <span className="text-base text-[#BFBCC2]">
-                {pool.priceUnits}
-              </span>
-            </div>
-          </div>
-        </div>
+          {
+            poolData
+              ?
+                <div className="text-white">
+                  <div className="flex items-center space-x-2 font-medium text-2xl leading-7">
+                    <div>
+                      {numeral(poolData.totalLockedUSD).format(format)}
+                    </div>
+                    <span className="text-base text-[#BFBCC2]">
+                      {pool.priceUnits}
+                    </span>
+                  </div>
+                </div>
+              :
+                <LoadingHelix className="w-20 h-20" />
+          }
 
-        <div>
-          <ApyDisplay pool={pool} poolApyData={poolApyData} />
         </div>
+        <ApyDisplay pool={pool} poolApyData={poolApyData} />
       </div>
     )
   }
@@ -88,17 +94,26 @@ const ApyDisplay = ({ pool, poolApyData }) => {
     return ''
   }
 
-  if (
-    isNaN(Number(poolApyData.fullCompoundedAPYStr)) ||
-    poolApyData.fullCompoundedAPYStr === '0.00'
-  ) {
-    return <LoaderIcon />
-  }
+  // if (
+  //   isNaN(Number(poolApyData.fullCompoundedAPYStr)) ||
+  //   poolApyData.fullCompoundedAPYStr === '0.00'
+  // ) {
+  //   return <LoaderIcon />
+  // }
+  const {fullCompoundedAPY, fullCompoundedAPYStr} = poolApyData ?? {}
 
   return (
     <div>
       <div className="font-medium text-white text-2xl leading-7">
-        {numeral(poolApyData.fullCompoundedAPY / 100).format('0.0%')}
+        {
+          (
+            !fullCompoundedAPYStr ||
+            isNaN(Number(fullCompoundedAPYStr)) ||
+            fullCompoundedAPYStr === '0.00'
+          )
+            ? <LoaderIcon className='mt-2 mb-2 float-right'/>
+            : numeral(fullCompoundedAPY / 100).format('0.0%')
+        }
       </div>
       <div className=" text-[#BFBCC2] text-right">APY</div>
     </div>
