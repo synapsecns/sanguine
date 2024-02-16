@@ -10,7 +10,7 @@ export function TopBarNavLink({
   labelText: string
   to: string
   className?: string
-  match?: string | RegExp | { startsWith: string; endsWith: string }
+  match?: string | RegExp | { startsWith: string }
 }) {
   const router = useRouter()
 
@@ -34,8 +34,7 @@ export function TopBarNavLink({
           router.asPath.startsWith(match + '?')
         : match instanceof RegExp
         ? match.test(router.asPath)
-        : router.asPath.startsWith(match.startsWith) &&
-          router.asPath.endsWith(match.endsWith))
+        : router.asPath.startsWith(match.startsWith))
         ? 'text-opacity-100'
         : 'text-opacity-30'
     }

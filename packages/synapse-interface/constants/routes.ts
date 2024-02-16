@@ -13,7 +13,7 @@ export interface RouteObject {
   [key: string]: {
     path: string
     text: string
-    match: string | RegExp | { startsWith: string; endsWith: string }
+    match: string | RegExp | { startsWith: string }
   }
 }
 
@@ -36,7 +36,9 @@ export const NAVIGATION: RouteObject = {
   Pools: {
     path: POOLS_PATH,
     text: 'Pools',
-    match: '/pool',
+    match: {
+      startsWith: '/pool',
+    },
   },
   Stake: {
     path: STAKE_PATH,
