@@ -37,9 +37,10 @@ interface IThresholdECDSAModule is IInterchainModule {
 
     /// @notice Verifies an entry using a set of verifier signatures.
     /// If the threshold is met, the entry will be marked as verified in the Interchain DataBase.
+    /// @dev List of recovered signers from the signatures must be sorted in the ascending order.
     /// @param encodedEntry The encoded entry to verify
-    /// @param signatures   An array of signatures used to verify the entry
-    function verifyEntry(bytes calldata encodedEntry, bytes[] calldata signatures) external;
+    /// @param signatures   Signatures used to verify the entry, concatenated
+    function verifyEntry(bytes calldata encodedEntry, bytes calldata signatures) external;
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 

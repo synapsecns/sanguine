@@ -62,7 +62,7 @@ contract ThresholdECDSAModule is InterchainModule, Ownable, ThresholdECDSAModule
     // ══════════════════════════════════════════════ PERMISSIONLESS ═══════════════════════════════════════════════════
 
     /// @inheritdoc IThresholdECDSAModule
-    function verifyEntry(bytes calldata encodedEntry, bytes[] calldata signatures) external {}
+    function verifyEntry(bytes calldata encodedEntry, bytes calldata signatures) external {}
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
