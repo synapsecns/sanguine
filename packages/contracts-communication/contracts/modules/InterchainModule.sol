@@ -13,9 +13,6 @@ import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/Messa
 abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule {
     address public immutable INTERCHAIN_DB;
 
-    error InterchainModule__NotInterchainDB();
-    error InterchainModule__InsufficientFee(uint256 actual, uint256 required);
-
     constructor(address interchainDB) {
         INTERCHAIN_DB = interchainDB;
     }
@@ -24,6 +21,12 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
     function requestVerification(uint256 destChainId, InterchainEntry memory entry) external payable {
         if (msg.sender != INTERCHAIN_DB) {
             revert InterchainModule__NotInterchainDB();
+        }
+        if (destChainId == block.chainid) {
+            revert InterchainModule__SameChainId();
+        }
+        if (entry.srcChainId != block.chainid) {
+            revert InterchainModule__IncorrectSourceChainId({chainId: entry.srcChainId});
         }
         uint256 requiredFee = _getModuleFee(destChainId);
         if (msg.value < requiredFee) {
