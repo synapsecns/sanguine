@@ -17,6 +17,8 @@ type SignRequest struct {
 	TXHash string `gorm:"column:tx_hash;index;size:256"`
 	// TransactionID is the id of the transaction
 	TransactionID string `gorm:"column:transaction_id;index;size:256;primaryKey"`
+	// EntryHash is the hash of the entry
+	EntryHash string `gorm:"column:entry_hash;index;size:256"`
 	// CreatedAt is the time the transaction was created
 	CreatedAt time.Time
 	// Nonce is the nonce of the raw evm tx
@@ -39,19 +41,21 @@ func (s *SignRequest) ToServiceSignRequest() db.SignRequest {
 			WriterNonce: big.NewInt(int64(s.Nonce)),
 			DataHash:    common.HexToHash(s.TransactionID),
 		},
-		DestChainId: big.NewInt(int64(s.DestinationChainID)),
-		Status:      s.Status,
+		DestChainId:     big.NewInt(int64(s.DestinationChainID)),
+		Status:          s.Status,
+		SignedEntryHash: common.HexToHash(s.EntryHash),
 	}
 }
 
 func toSignRequest(sr synapsemodule.SynapseModuleVerificationRequested) (SignRequest, error) {
 	return SignRequest{
 		TXHash:             sr.Raw.TxHash.String(),
-		TransactionID:      common.Bytes2Hex(sr.Entry.DataHash[:]),
+		TransactionID:      common.Bytes2Hex(sr.SignedEntryHash[:]),
 		OriginChainID:      int(sr.Entry.SrcChainId.Int64()),
 		DestinationChainID: int(sr.DestChainId.Int64()),
 		Sender:             common.Bytes2Hex(sr.Entry.SrcWriter[:]),
 		Nonce:              sr.Entry.WriterNonce.Uint64(),
+		EntryHash:          common.Bytes2Hex(sr.SignedEntryHash[:]),
 		Status:             db.Seen,
 	}, nil
 }

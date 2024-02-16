@@ -26,7 +26,7 @@ type Reader interface {
 type Writer interface {
 	LatestBlockForChain(ctx context.Context, chainID uint64) (uint64, error)
 	UpdateSignRequestStatus(ctx context.Context, txid common.Hash, status SynapseRequestStatus) error
-	StoreInterchainTransactionReceived(ctx context.Context, sr synapsemodule.SynapseModuleVerfificationRequested) error
+	StoreInterchainTransactionReceived(ctx context.Context, sr synapsemodule.SynapseModuleVerificationRequested) error
 }
 
 // Datstores contain the datastores for the p2p comms.
@@ -95,4 +95,6 @@ type SignRequest struct {
 	DestChainId *big.Int
 	// Status is the status of the transaction
 	Status SynapseRequestStatus
+	// SignedEntryHash is the hash of the signed entry
+	SignedEntryHash common.Hash
 }

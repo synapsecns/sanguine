@@ -314,7 +314,7 @@ func (n *Node) submit(ctx context.Context, request db.SignRequest) error {
 		return fmt.Errorf("could not submit transaction: %w", err)
 	}
 
-	err = n.db.UpdateSignRequestStatus(ctx, request.InterchainEntry.DataHash, db.Broadcast)
+	err = n.db.UpdateSignRequestStatus(ctx, request.SignedEntryHash, db.Broadcast)
 	if err != nil {
 		return fmt.Errorf("could not update status: %w", err)
 	}
@@ -324,7 +324,7 @@ func (n *Node) submit(ctx context.Context, request db.SignRequest) error {
 
 func (n *Node) signAndBroadcast(ctx context.Context, request db.SignRequest) error {
 	// first try to sign
-	signedTx, err := n.signer.SignMessage(ctx, request.InterchainEntry.DataHash[:], false)
+	signedTx, err := n.signer.SignMessage(ctx, request.SignedEntryHash[:], false)
 	if err != nil {
 		return fmt.Errorf("could not sign message: %w", err)
 	}
@@ -336,7 +336,7 @@ func (n *Node) signAndBroadcast(ctx context.Context, request db.SignRequest) err
 	}
 
 	// save the transaction.
-	err = n.db.UpdateSignRequestStatus(ctx, request.InterchainEntry.DataHash, db.Signed)
+	err = n.db.UpdateSignRequestStatus(ctx, request.SignedEntryHash, db.Signed)
 	if err != nil {
 		return fmt.Errorf("could not update status: %w", err)
 	}
@@ -398,7 +398,7 @@ func (n *Node) runChainIndexer(parentCtx context.Context, chainID int) (err erro
 		}()
 
 		switch event := parsedEvent.(type) {
-		case *synapsemodule.SynapseModuleVerfificationRequested:
+		case *synapsemodule.SynapseModuleVerificationRequested:
 			err = n.handleMessageSent(ctx, event)
 		case *synapsemodule.SynapseModuleEntryVerified:
 			err = n.db.UpdateSignRequestStatus(ctx, event.Entry.DataHash, db.Completed)
@@ -417,7 +417,7 @@ func (n *Node) runChainIndexer(parentCtx context.Context, chainID int) (err erro
 	return nil
 }
 
-func (n *Node) handleMessageSent(ctx context.Context, event *synapsemodule.SynapseModuleVerfificationRequested) error {
+func (n *Node) handleMessageSent(ctx context.Context, event *synapsemodule.SynapseModuleVerificationRequested) error {
 	err := n.db.StoreInterchainTransactionReceived(ctx, *event)
 	if err != nil {
 		return fmt.Errorf("could not store interchain transaction: %w", err)
