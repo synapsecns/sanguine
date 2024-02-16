@@ -74,7 +74,7 @@ export const AnimatedProgressBar = memo(
                 values={`${percentElapsed}%; 100%`}
                 dur={duration}
                 fill="freeze"
-                calcMode={isComplete && 'spline'}
+                calcMode={isComplete ? 'spline' : null}
                 keySplines=".8 0 .2 1"
               />
             </rect>
