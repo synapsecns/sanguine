@@ -12,6 +12,7 @@ import {ThresholdECDSA} from "../libs/ThresholdECDSA.sol";
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 contract ThresholdECDSAModule is InterchainModule, Ownable, ThresholdECDSAModuleEvents, IThresholdECDSAModule {
     uint256 public constant VERIFY_GAS_LIMIT = 100_000;
@@ -66,7 +67,11 @@ contract ThresholdECDSAModule is InterchainModule, Ownable, ThresholdECDSAModule
     // ══════════════════════════════════════════════ PERMISSIONLESS ═══════════════════════════════════════════════════
 
     /// @inheritdoc IThresholdECDSAModule
-    function verifyEntry(bytes calldata encodedEntry, bytes calldata signatures) external {}
+    function verifyEntry(bytes calldata encodedEntry, bytes calldata signatures) external {
+        bytes32 ethSignedHash = MessageHashUtils.toEthSignedMessageHash(keccak256(encodedEntry));
+        _verifiers.verifySignedHash(ethSignedHash, signatures);
+        _verifyEntry(encodedEntry);
+    }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 

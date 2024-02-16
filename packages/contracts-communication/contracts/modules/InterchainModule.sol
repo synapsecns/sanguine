@@ -48,6 +48,7 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
     function _verifyEntry(bytes memory encodedEntry) internal {
         InterchainEntry memory entry = abi.decode(encodedEntry, (InterchainEntry));
         IInterchainDB(INTERCHAIN_DB).verifyEntry(entry);
+        emit EntryVerified(entry);
     }
 
     /// @dev Internal logic to request the verification of an entry on the destination chain.
