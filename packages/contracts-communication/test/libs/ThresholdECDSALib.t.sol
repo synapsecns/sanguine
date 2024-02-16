@@ -89,6 +89,10 @@ contract ThresholdECDSALibTest is Test {
         vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__AlreadySigner.selector, account));
     }
 
+    function expectInvalidSignatureError(bytes memory signature) internal {
+        vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__InvalidSignature.selector, signature));
+    }
+
     function expectNotEnoughSignaturesError(uint256 threshold) internal {
         vm.expectRevert(
             abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__NotEnoughSignatures.selector, threshold)
@@ -291,7 +295,7 @@ contract ThresholdECDSALibTest is Test {
     }
 
     function test_verifySignedHash_providedExactlyThreshold_revert_unsorted_hasNonSigners() public {
-        expectNotEnoughSignaturesError(2);
+        expectRecoveredSignersNotSortedError();
         libHarness.verifySignedHash(HASH_0, toArray(sig_3_0, sig_1_0));
     }
 
@@ -342,5 +346,39 @@ contract ThresholdECDSALibTest is Test {
         libHarness.verifySignedHash(HASH_0, toArray(sig_1_0, sig_0_0, sig_0_0));
         expectRecoveredSignersNotSortedError();
         libHarness.verifySignedHash(HASH_0, toArray(sig_1_0, sig_1_0, sig_0_0));
+    }
+
+    function test_verifySignedHash_revert_zeroThreshold_signerSignature() public {
+        // Set up a new harness without setting up the threshold
+        libHarness = new ThresholdECDSALibHarness();
+        libHarness.addSigner(SIGNER_0);
+        expectZeroThresholdError();
+        libHarness.verifySignedHash(HASH_0, toArray(sig_0_0));
+    }
+
+    function test_verifySignedHash_revert_zeroThreshold_notSignerSignature() public {
+        // Set up a new harness without setting up the threshold
+        libHarness = new ThresholdECDSALibHarness();
+        libHarness.addSigner(SIGNER_0);
+        expectZeroThresholdError();
+        libHarness.verifySignedHash(HASH_0, toArray(sig_1_0));
+    }
+
+    function test_verifySignedHash_revert_incorrectSignatureLength(uint8 length) public {
+        vm.assume(length != 65);
+        uint256 min = length < 65 ? length : 65;
+        bytes memory corruptSig0 = new bytes(length);
+        for (uint256 i = 0; i < min; i++) {
+            corruptSig0[i] = sig_0_0[i];
+        }
+        expectInvalidSignatureError(corruptSig0);
+        libHarness.verifySignedHash(HASH_0, toArray(sig_1_0, corruptSig0));
+    }
+
+    function test_verifySignedHash_revert_invalidSignature() public {
+        bytes memory corruptSig0 = sig_0_0;
+        corruptSig0[64] = 0xFF;
+        expectInvalidSignatureError(corruptSig0);
+        libHarness.verifySignedHash(HASH_0, toArray(sig_1_0, corruptSig0));
     }
 }
