@@ -7,7 +7,7 @@ import {SynapseGasService} from './SynapseGasService.sol';
 import '../IInterchain.sol';
 import 'forge-std/console.sol';
 import {IInterchainDB} from '../interfaces/IInterchainDB.sol';
-import {IInterchainModule} from '../interfaces/IInterchainModule.sol';
+import {IInterchainModuleV1} from '../interfaces/IInterchainModule.sol';
 import {InterchainEntry} from '../libs/InterchainEntry.sol';
 
 import {ISynapseModuleEvents} from '../interfaces/ISynapseModuleEvents.sol';

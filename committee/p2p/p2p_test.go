@@ -1,22 +1,16 @@
 package p2p_test
 
 import (
-	"context"
 	"fmt"
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/suite"
-	"github.com/synapsecns/sanguine/committee/contracts/synapsemodule"
-	"github.com/synapsecns/sanguine/committee/db/base"
 	"github.com/synapsecns/sanguine/committee/db/connect"
 	"github.com/synapsecns/sanguine/committee/p2p"
-	"github.com/synapsecns/sanguine/committee/testutil"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
-	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"sync"
@@ -27,7 +21,6 @@ import (
 type P2PTestSuite struct {
 	*testsuite.TestSuite
 	handler metrics.Handler
-	decoder base.RawTransactionDecoder
 }
 
 func NewP2PSuite(t *testing.T) *P2PTestSuite {
@@ -43,14 +36,6 @@ func TestP2PSuite(t *testing.T) {
 func (s *P2PTestSuite) SetupSuite() {
 	s.TestSuite.SetupSuite()
 	s.handler = metrics.NewNullHandler()
-
-	simulatedBackend := simulated.NewSimulatedBackend(s.GetSuiteContext(), s.T())
-	deployManager := testutil.NewDeployManager(s.T())
-
-	_, synapseModule := deployManager.GetSynapseModule(s.GetSuiteContext(), simulatedBackend)
-	s.decoder = func(ctx context.Context, data []byte) (synapsemodule.InterchainInterchainTransaction, error) {
-		return synapseModule.DecodeInterchainTransaction(&bind.CallOpts{Context: ctx}, data)
-	}
 }
 
 func (s *P2PTestSuite) TestLibP2PManager() {
@@ -110,7 +95,7 @@ func (s *P2PTestSuite) makeManager() p2p.LibP2PManager {
 
 	tmpDir := filet.TmpDir(s.T(), "")
 
-	db, err := connect.Connect(s.GetTestContext(), dbcommon.Sqlite, tmpDir, s.handler, s.decoder)
+	db, err := connect.Connect(s.GetTestContext(), dbcommon.Sqlite, tmpDir, s.handler)
 	s.Require().NoError(err)
 
 	manager, err := p2p.NewLibP2PManager(s.GetTestContext(), signer, db)

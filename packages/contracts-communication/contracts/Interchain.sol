@@ -44,7 +44,7 @@ contract Interchain {
     for (uint i = 0; i < modules.length; i++) {
       totalFee =
         totalFee +
-        IInterchainModule(modules[i]).estimateFee(dstChainId);
+        IInterchainModuleV1(modules[i]).estimateFee(dstChainId);
     }
     return totalFee;
   }
@@ -77,10 +77,10 @@ contract Interchain {
     for (uint i = 0; i < newTransaction.modules.length; i++) {
       // TODO: How to disperse fees per module?
       // TODO: This is required per module right now, it will fail without it
-      uint256 estimatedModuleFee = IInterchainModule(newTransaction.modules[i])
+      uint256 estimatedModuleFee = IInterchainModuleV1(newTransaction.modules[i])
         .estimateFee(newTransaction.dstChainId);
       // TODO: Right now, this could drain the Interchain.sol contract of any ETH held, since estimateFee is an untrusted function
-      IInterchainModule(newTransaction.modules[i]).sendModuleMessage{
+      IInterchainModuleV1(newTransaction.modules[i]).sendModuleMessage{
         value: estimatedModuleFee
       }(abi.encode(newTransaction));
     }

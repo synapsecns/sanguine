@@ -10,6 +10,7 @@ import (
 	"github.com/synapsecns/sanguine/committee/contracts/synapsemodule"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
+	"math/big"
 )
 
 // ErrNoLatestBlockForChainID is returned when no block exists for the chain.
@@ -24,6 +25,8 @@ type Reader interface {
 // Writer is the interface for writing to the database.
 type Writer interface {
 	LatestBlockForChain(ctx context.Context, chainID uint64) (uint64, error)
+	UpdateSignRequestStatus(ctx context.Context, txid common.Hash, status SynapseRequestStatus) error
+	StoreInterchainTransactionReceived(ctx context.Context, sr synapsemodule.SynapseModuleVerfificationRequested) error
 }
 
 // Datstores contain the datastores for the p2p comms.
@@ -39,7 +42,6 @@ type Service interface {
 	Datstores
 	// SubmitterDB returns the submitter database service.
 	SubmitterDB() submitterDB.Service
-	StoreInterchainTransactionReceived(ctx context.Context, sr synapsemodule.SynapseModuleModuleMessageSent) error
 }
 
 // SynapseRequestStatus is the status of a synapse request.
@@ -50,6 +52,12 @@ type SynapseRequestStatus uint8
 const (
 	// Seen is the status of a synapse request that has been seen.
 	Seen SynapseRequestStatus = iota + 1
+	// Signed is the status of a synapse request that has been signed.
+	Signed
+	// Broadcast is the status of a synapse request that has been broadcast.
+	Broadcast
+	// Completed is the status of a synapse request that has been completed.
+	Completed // Completed is the status of a synapse request that has been completed.
 )
 
 // Int returns the integer value of the synapse request status.
@@ -82,26 +90,9 @@ func (s SynapseRequestStatus) Value() (driver.Value, error) {
 var _ dbcommon.Enum = (*SynapseRequestStatus)(nil)
 
 type SignRequest struct {
-	// TXHash is the hash of the transaction
-	TXHash common.Hash
-	// TransactionID is the ID of the transaction
-	TransactionID common.Hash
-	// Transaction is the transaction
-	Transaction []byte
-	// Nonce is the nonce of the raw evm tx
-	Nonce uint64
+	synapsemodule.InterchainEntry
+	// DestChainId is the chain id the transaction hash will be sent on
+	DestChainId *big.Int
 	// Status is the status of the transaction
 	Status SynapseRequestStatus
-	// Sender is the sender of the transaction
-	Sender common.Address
-	// Receiver is the receiver of the transaction
-	Receiver common.Address
-	// OriginChainID is the chain id the transaction hash was sent on
-	OriginChainID int
-	// DestinationChainID is the chain id the transaction hash will be sent on
-	DestinationChainID int
-	// ModuleRequiredResponses is the number of responses required for the module
-	ModuleRequiredResponses int
-	// Signature is the signature of the transaction
-	Signature map[common.Address][]byte
 }

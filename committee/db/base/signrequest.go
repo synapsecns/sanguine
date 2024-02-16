@@ -7,6 +7,7 @@ import (
 	"github.com/synapsecns/sanguine/committee/contracts/synapsemodule"
 	"github.com/synapsecns/sanguine/committee/db"
 	"gorm.io/gorm/clause"
+	"math/big"
 	"time"
 )
 
@@ -15,9 +16,7 @@ type SignRequest struct {
 	// TXHash is the hash of the transaction
 	TXHash string `gorm:"column:tx_hash;index;size:256"`
 	// TransactionID is the id of the transaction
-	TransactionID string `gorm:"column:transaction_id;index;size:256"`
-	// TXHash is the hash of the transaction
-	Transaction string `gorm:"column:transaction"`
+	TransactionID string `gorm:"column:transaction_id;index;size:256;primaryKey"`
 	// CreatedAt is the time the transaction was created
 	CreatedAt time.Time
 	// Nonce is the nonce of the raw evm tx
@@ -26,72 +25,49 @@ type SignRequest struct {
 	Status db.SynapseRequestStatus `gorm:"column:status;index"`
 	// Sender is the sender of the transaction
 	Sender string `gorm:"column:sender;index;size:256"`
-	// Receiver is the receiver of the transaction
-	Receiver string `gorm:"column:receiver;index;size:256"`
 	// OriginChainID is the chain id the transaction hash was sent on
 	OriginChainID int `gorm:"column:origin_chain_id;index"`
 	// DestinationChainID is the chain id the transaction hash will be sent on
 	DestinationChainID int `gorm:"column:destination_chain_id;index"`
-	// ModuleRequiredResponses is the number of responses required for the module
-	ModuleRequiredResponses int `gorm:"column:module_required_responses"`
-	// Signature is the signature of the transaction
-	Signature []*Signature `gorm:"foreignKey:transaction_id;references:transaction_id"`
 }
 
 func (s *SignRequest) ToServiceSignRequest() db.SignRequest {
-	signatureMap := make(map[common.Address][]byte)
-	for _, signature := range s.Signature {
-		signatureMap[common.HexToAddress(signature.SenderAddress)] = signature.Signature
-	}
 	return db.SignRequest{
-		TXHash:                  common.HexToHash(s.TXHash),
-		TransactionID:           common.HexToHash(s.TransactionID),
-		Transaction:             common.FromHex(s.Transaction),
-		Nonce:                   s.Nonce,
-		Status:                  s.Status,
-		Sender:                  common.HexToAddress(s.Sender),
-		Receiver:                common.HexToAddress(s.Receiver),
-		OriginChainID:           s.OriginChainID,
-		DestinationChainID:      s.DestinationChainID,
-		ModuleRequiredResponses: s.ModuleRequiredResponses,
-		Signature:               signatureMap,
+		InterchainEntry: synapsemodule.InterchainEntry{
+			SrcChainId:  big.NewInt(int64(s.OriginChainID)),
+			SrcWriter:   common.HexToHash(s.Sender),
+			WriterNonce: big.NewInt(int64(s.Nonce)),
+			DataHash:    common.HexToHash(s.TransactionID),
+		},
+		DestChainId: big.NewInt(int64(s.DestinationChainID)),
+		Status:      s.Status,
 	}
 }
 
-func (s Store) toSignRequest(ctx context.Context, sr synapsemodule.SynapseModuleModuleMessageSent) (SignRequest, error) {
-	decodedTx, err := s.rawTxDecoder(ctx, sr.Transaction)
-	if err != nil {
-		return SignRequest{}, fmt.Errorf("could not decode transaction: %w", err)
-	}
-
+func toSignRequest(sr synapsemodule.SynapseModuleVerfificationRequested) (SignRequest, error) {
 	return SignRequest{
-		TXHash:                  sr.Raw.TxHash.String(),
-		TransactionID:           common.Bytes2Hex(decodedTx.TransactionId[:]),
-		Transaction:             common.Bytes2Hex(sr.Transaction),
-		OriginChainID:           int(decodedTx.SrcChainId.Int64()),
-		DestinationChainID:      int(decodedTx.DstChainId.Int64()),
-		Sender:                  decodedTx.SrcSender.String(),
-		Receiver:                common.Bytes2Hex(decodedTx.DstReceiver[:]),
-		Nonce:                   decodedTx.Nonce,
-		Status:                  db.Seen,
-		ModuleRequiredResponses: int(decodedTx.RequiredModuleResponses.Int64()),
+		TXHash:             sr.Raw.TxHash.String(),
+		TransactionID:      common.Bytes2Hex(sr.Entry.DataHash[:]),
+		OriginChainID:      int(sr.Entry.SrcChainId.Int64()),
+		DestinationChainID: int(sr.DestChainId.Int64()),
+		Sender:             common.Bytes2Hex(sr.Entry.SrcWriter[:]),
+		Nonce:              sr.Entry.WriterNonce.Uint64(),
+		Status:             db.Seen,
 	}, nil
 }
 
-// Signature is a signature of a transaction.
-type Signature struct {
-	// Signature is the actual signature
-	Signature []byte `gorm:"column:signature"`
-	// SenderAddress is the address of the sender
-	SenderAddress string `gorm:"column:sender_address;index;size:256;primaryKey"`
-	// Transaction is the actual transaction
-	TransactionID string `gorm:"column:transaction_id;primaryKey;size:256"`
-	// SignRequest is a reference to the SignRequest
-	SignRequest *SignRequest `gorm:"foreignKey:transaction_id;references:transaction_id"`
+// UpdateSignRequestStatus updates a sign request status.
+func (s Store) UpdateSignRequestStatus(ctx context.Context, txid common.Hash, status db.SynapseRequestStatus) error {
+	tx := s.DB().WithContext(ctx).Model(&SignRequest{}).Where(fmt.Sprintf("%s = ?", transactionIDFieldName), common.Bytes2Hex(txid[:])).Update(statusFieldName, status)
+	if tx.Error != nil {
+		return fmt.Errorf("could not update sign request status: %w", tx.Error)
+	}
+	return nil
+
 }
 
-func (s Store) StoreInterchainTransactionReceived(ctx context.Context, sr synapsemodule.SynapseModuleModuleMessageSent) error {
-	signRequest, err := s.toSignRequest(ctx, sr)
+func (s Store) StoreInterchainTransactionReceived(ctx context.Context, sr synapsemodule.SynapseModuleVerfificationRequested) error {
+	signRequest, err := toSignRequest(sr)
 	if err != nil {
 		return fmt.Errorf("could not convert to sign request: %w", err)
 	}

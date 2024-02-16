@@ -20,7 +20,7 @@ type Store struct {
 var logger = log.Logger("committee-sqlite")
 
 // NewSqliteStore creates a new sqlite data store.
-func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Handler, rawTXDecoder base.RawTransactionDecoder) (_ *Store, err error) {
+func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Handler) (_ *Store, err error) {
 	logger.Debugf("creating sqlite store at %s", dbPath)
 
 	ctx, span := handler.Tracer().Start(parentCtx, "start-sqlite")
@@ -52,5 +52,5 @@ func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Ha
 		return nil, fmt.Errorf("could not migrate models: %w", err)
 	}
 
-	return &Store{base.NewStore(gdb, handler, rawTXDecoder)}, nil
+	return &Store{base.NewStore(gdb, handler)}, nil
 }

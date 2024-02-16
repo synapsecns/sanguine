@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/synapsecns/sanguine/committee/db"
-	"github.com/synapsecns/sanguine/committee/db/base"
 	"github.com/synapsecns/sanguine/committee/db/mysql"
 	"github.com/synapsecns/sanguine/committee/db/sqlite"
 	"github.com/synapsecns/sanguine/core/dbcommon"
@@ -15,17 +14,17 @@ import (
 )
 
 // Connect connects to the database.
-func Connect(ctx context.Context, dbType dbcommon.DBType, path string, metrics metrics.Handler, rawTXDecoder base.RawTransactionDecoder) (db.Service, error) {
+func Connect(ctx context.Context, dbType dbcommon.DBType, path string, metrics metrics.Handler) (db.Service, error) {
 	switch dbType {
 	case dbcommon.Mysql:
-		store, err := mysql.NewMysqlStore(ctx, path, metrics, rawTXDecoder)
+		store, err := mysql.NewMysqlStore(ctx, path, metrics)
 		if err != nil {
 			return nil, fmt.Errorf("could not create mysql store: %w", err)
 		}
 
 		return store, nil
 	case dbcommon.Sqlite:
-		store, err := sqlite.NewSqliteStore(ctx, path, metrics, rawTXDecoder)
+		store, err := sqlite.NewSqliteStore(ctx, path, metrics)
 		if err != nil {
 			return nil, fmt.Errorf("could not create sqlite store: %w", err)
 		}

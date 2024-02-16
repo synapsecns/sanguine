@@ -9,11 +9,14 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[Seen-1]
+	_ = x[Signed-2]
+	_ = x[Broadcast-3]
+	_ = x[Completed-4]
 }
 
-const _SynapseRequestStatus_name = "Seen"
+const _SynapseRequestStatus_name = "SeenSignedBroadcastCompleted"
 
-var _SynapseRequestStatus_index = [...]uint8{0, 4}
+var _SynapseRequestStatus_index = [...]uint8{0, 4, 10, 19, 28}
 
 func (i SynapseRequestStatus) String() string {
 	i -= 1

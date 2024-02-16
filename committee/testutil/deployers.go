@@ -58,7 +58,7 @@ func (s SynapseModuleDeployer) Deploy(ctx context.Context) (contracts.DeployedCo
 		}
 
 		auth := s.Backend().GetTxContext(ctx, &transactOps.From)
-		tx, err := contractRef.SetInterchain(auth.TransactOpts, interchainContract.Address())
+		tx, err := contractRef.SetInterchainDB(auth.TransactOpts, interchainContract.Address())
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not set interchain contract: %w", err)
 		}

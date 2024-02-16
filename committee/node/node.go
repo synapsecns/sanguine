@@ -19,25 +19,26 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
 	"math/big"
+	"strings"
 	"sync"
 	"time"
 )
 
 type Node struct {
-	client              omnirpcClient.RPCClient
-	metrics             metrics.Handler
-	db                  db.Service
-	submitter           submitter.TransactionSubmitter
-	signer              signer.Signer
-	cfg                 config.Config
-	chainListeners      map[int]listener.ContractListener
-	interchainContracts map[int]*synapsemodule.SynapseModuleRef
-	peerManager         p2p.LibP2PManager
+	client               omnirpcClient.RPCClient
+	metrics              metrics.Handler
+	db                   db.Service
+	submitter            submitter.TransactionSubmitter
+	signer               signer.Signer
+	cfg                  config.Config
+	chainListeners       map[int]listener.ContractListener
+	interchainContracts  map[int]*synapsemodule.SynapseModuleRef
+	peerManager          p2p.LibP2PManager
+	interchainValidators map[int][]common.Address
 }
 
 var logger = log.Logger("node")
@@ -56,12 +57,7 @@ func NewNode(ctx context.Context, handler metrics.Handler, cfg config.Config) (*
 		return nil, fmt.Errorf("could not get db type: %w", err)
 	}
 
-	var decoderContract *synapsemodule.SynapseModuleRef
-
-	// Note: since decoder is a pointer, this will ony deref if chain length is empty & this is called.
-	node.db, err = connect.Connect(ctx, dbType, cfg.Database.DSN, handler, func(ctx context.Context, data []byte) (synapsemodule.InterchainInterchainTransaction, error) {
-		return decoderContract.DecodeInterchainTransaction(&bind.CallOpts{Context: ctx}, data)
-	})
+	node.db, err = connect.Connect(ctx, dbType, cfg.Database.DSN, handler)
 	if err != nil {
 		return nil, fmt.Errorf("could not make db: %w", err)
 	}
@@ -86,9 +82,6 @@ func NewNode(ctx context.Context, handler metrics.Handler, cfg config.Config) (*
 		if err != nil {
 			return nil, fmt.Errorf("could not get synapse module ref: %w", err)
 		}
-
-		// just use the last chain as the decoder contract
-		decoderContract = node.interchainContracts[chainID]
 	}
 
 	node.signer, err = signerConfig.SignerFromConfig(ctx, cfg.Signer)
@@ -97,17 +90,39 @@ func NewNode(ctx context.Context, handler metrics.Handler, cfg config.Config) (*
 	}
 
 	node.submitter = submitter.NewTransactionSubmitter(handler, node.signer, node.client, node.db.SubmitterDB(), &cfg.SubmitterConfig)
-	//node.peerManager, err = p2p.NewLibP2PManager(ctx, node.signer)
-	//if err != nil {
-	//	return nil, fmt.Errorf("could not get peer manager: %w", err)
-	//}
+
+	// this can't be done in the constructor because we need to wait for the peer manager to be created.
+	err = node.createPeerManager(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("could not create peer manager: %w", err)
+	}
 
 	return node, nil
 }
 
+func (n *Node) IPFSAddress() (addresses []string) {
+	for _, addr := range n.peerManager.Host().Addrs() {
+		addresses = append(addresses, fmt.Sprintf("%s/p2p/%s", addr, n.peerManager.Host().ID()))
+	}
+	return addresses
+}
+
+func (n *Node) Address() common.Address {
+	return n.signer.Address()
+}
+
 const defaultDBInterval = 3
 
-func (n *Node) createPeerManager(parentCtx context.Context) (err error) {
+func (n *Node) createPeerManager(ctx context.Context) (err error) {
+	n.peerManager, err = p2p.NewLibP2PManager(ctx, n.signer, n.db)
+	if err != nil {
+		return fmt.Errorf("could not get peer manager: %w", err)
+	}
+
+	return nil
+}
+
+func (n *Node) setValidators(parentCtx context.Context) (err error) {
 	ctx, span := n.metrics.Tracer().Start(parentCtx, "createPeerManager")
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
@@ -128,6 +143,9 @@ func (n *Node) createPeerManager(parentCtx context.Context) (err error) {
 			for {
 				// query all validators
 				validator, err := contract.Verifiers(&bind.CallOpts{Context: gCtx}, big.NewInt(int64(i)))
+				if err != nil && strings.Contains(err.Error(), "execution reverted") {
+					break
+				}
 				if err != nil {
 					return fmt.Errorf("could not get validator: %w", err)
 				}
@@ -149,16 +167,22 @@ func (n *Node) createPeerManager(parentCtx context.Context) (err error) {
 		return fmt.Errorf("could not get validators: %w", err)
 	}
 
-	n.peerManager, err = p2p.NewLibP2PManager(ctx, n.signer, n.db)
-	if err != nil {
-		return fmt.Errorf("could not get peer manager: %w", err)
-	}
-
+	n.interchainValidators = interchainValidators
 	return nil
 }
 
 func (n *Node) Start(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
+
+	err := n.setValidators(ctx)
+	if err != nil {
+		return fmt.Errorf("could not set validators: %w", err)
+	}
+
+	err = n.startP2P(ctx)
+	if err != nil {
+		return fmt.Errorf("could not start p2p: %w", err)
+	}
 
 	g.Go(func() error {
 		return n.submitter.Start(ctx)
@@ -185,51 +209,137 @@ func (n *Node) Start(ctx context.Context) error {
 	return nil
 }
 
+func (n *Node) startP2P(ctx context.Context) error {
+	err := n.peerManager.Start(ctx, n.cfg.BootstarpPeers)
+	if err != nil {
+		return fmt.Errorf("could not start peer manager: %w", err)
+	}
+
+	uniqueValidators := map[common.Address]struct{}{}
+	for _, validators := range n.interchainValidators {
+		for _, validator := range validators {
+			uniqueValidators[validator] = struct{}{}
+		}
+	}
+
+	var allValidators []common.Address
+	for validator, _ := range uniqueValidators {
+		allValidators = append(allValidators, validator)
+	}
+
+	err = n.peerManager.AddValidators(ctx, allValidators...)
+	if err != nil {
+		return fmt.Errorf("could not add validators: %w", err)
+
+	}
+
+	return nil
+
+}
+
 func (n *Node) runDBSelector(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
 		case <-time.After(defaultDBInterval * time.Second):
-			dbItems, err := n.db.GetQuoteResultsByStatus(ctx, db.Seen)
+			statusQueries := []db.SynapseRequestStatus{db.Seen}
+			if n.cfg.ShouldRelay {
+				statusQueries = append(statusQueries, db.Signed)
+			}
+
+			dbItems, err := n.db.GetQuoteResultsByStatus(ctx, statusQueries...)
 			if err != nil {
 				return fmt.Errorf("could not cleanup: %w", err)
 			}
 
-			// I should sign and broadcast now.
 			for _, request := range dbItems {
 				switch request.Status {
 				case db.Seen:
 					err := n.signAndBroadcast(ctx, request)
 					if err != nil {
-						logger.Errorf("could not sign and broadcast: %w", err)
+						logger.Errorf("could not sign and broadcast: %v", err)
 					}
-
+				case db.Signed:
+					err := n.submit(ctx, request)
+					if err != nil {
+						logger.Errorf("could not submit: %w", err)
+					}
+				default:
+					panic("unhandled default case")
 				}
 			}
-
-			_ = dbItems
 		}
 	}
 }
 
+func (n *Node) submit(ctx context.Context, request db.SignRequest) error {
+	contract := n.interchainContracts[int(request.DestChainId.Int64())]
+	threshold, err := contract.RequiredThreshold(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return fmt.Errorf("could not get threshold: %w", err)
+	}
+
+	var signatures [][]byte
+	for _, validator := range n.interchainValidators[int(request.DestChainId.Int64())] {
+		signature, err := n.peerManager.GetSignature(ctx, validator, int(request.InterchainEntry.SrcChainId.Int64()), int(request.InterchainEntry.WriterNonce.Uint64()))
+		if err != nil {
+			logger.Errorf("could not get signature for peer %s message: %w", validator, err)
+		}
+		signatures = append(signatures, signature)
+	}
+
+	if len(signatures) < int(threshold.Uint64()) {
+		return fmt.Errorf("not enough signatures")
+	}
+
+	nonce, err := n.submitter.SubmitTransaction(ctx, request.DestChainId, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+		return contract.VerifyEntry(transactor, request.InterchainEntry, signatures)
+	})
+
+	go func() {
+		for {
+			time.Sleep(time.Second * 5)
+
+			yo, err := n.submitter.GetSubmissionStatus(ctx, request.DestChainId, nonce)
+			if err != nil {
+				logger.Errorf("could not get submission status: %w", err)
+			}
+
+			fmt.Println(yo.TxHash().String())
+		}
+	}()
+
+	if err != nil {
+		return fmt.Errorf("could not submit transaction: %w", err)
+	}
+
+	err = n.db.UpdateSignRequestStatus(ctx, request.InterchainEntry.DataHash, db.Broadcast)
+	if err != nil {
+		return fmt.Errorf("could not update status: %w", err)
+	}
+
+	return nil
+}
+
 func (n *Node) signAndBroadcast(ctx context.Context, request db.SignRequest) error {
 	// first try to sign
-	signedTx, err := n.signer.SignMessage(ctx, request.TransactionID[:], false)
+	signedTx, err := n.signer.SignMessage(ctx, request.InterchainEntry.DataHash[:], false)
 	if err != nil {
 		return fmt.Errorf("could not sign message: %w", err)
 	}
 
-	// we'll add this to the struct now, but we're not going to save until it's broadcasted.
-	request.Signature[n.signer.Address()] = signer.Encode(signedTx)
-
 	// broadcast the transaction.
-	err = n.peerManager.PutSignature(ctx, request.OriginChainID, int(request.Nonce), request.Signature[n.signer.Address()])
+	err = n.peerManager.PutSignature(ctx, int(request.InterchainEntry.SrcChainId.Int64()), int(request.InterchainEntry.WriterNonce.Uint64()), signer.Encode(signedTx))
 	if err != nil {
 		return fmt.Errorf("could not broadcast: %w", err)
 	}
 
 	// save the transaction.
+	err = n.db.UpdateSignRequestStatus(ctx, request.InterchainEntry.DataHash, db.Signed)
+	if err != nil {
+		return fmt.Errorf("could not update status: %w", err)
+	}
 
 	return nil
 }
@@ -260,7 +370,7 @@ func (n *Node) startChainIndexers(ctx context.Context) error {
 func (n *Node) runChainIndexer(parentCtx context.Context, chainID int) (err error) {
 	chainListener := n.chainListeners[chainID]
 
-	parser, err := fastbridge.NewParser(chainListener.Address())
+	parser, err := synapsemodule.NewParser(chainListener.Address())
 	if err != nil {
 		return fmt.Errorf("could not parse: %w", err)
 	}
@@ -288,8 +398,14 @@ func (n *Node) runChainIndexer(parentCtx context.Context, chainID int) (err erro
 		}()
 
 		switch event := parsedEvent.(type) {
-		case *synapsemodule.SynapseModuleModuleMessageSent:
+		case *synapsemodule.SynapseModuleVerfificationRequested:
 			err = n.handleMessageSent(ctx, event)
+		case *synapsemodule.SynapseModuleEntryVerified:
+			err = n.db.UpdateSignRequestStatus(ctx, event.Entry.DataHash, db.Completed)
+		}
+		// stop the world.
+		if err != nil {
+			return fmt.Errorf("could not handle event: %w", err)
 		}
 
 		return nil
@@ -301,7 +417,7 @@ func (n *Node) runChainIndexer(parentCtx context.Context, chainID int) (err erro
 	return nil
 }
 
-func (n *Node) handleMessageSent(ctx context.Context, event *synapsemodule.SynapseModuleModuleMessageSent) error {
+func (n *Node) handleMessageSent(ctx context.Context, event *synapsemodule.SynapseModuleVerfificationRequested) error {
 	err := n.db.StoreInterchainTransactionReceived(ctx, *event)
 	if err != nil {
 		return fmt.Errorf("could not store interchain transaction: %w", err)

@@ -17,6 +17,10 @@ type Config struct {
 	Signer config.SignerConfig `yaml:"signer"`
 	// Submitter is the submitter config.
 	SubmitterConfig submitterConfig.Config `yaml:"submitter_config"`
+	// ShouldRelay is whether the node should relay.
+	ShouldRelay bool `yaml:"should_relay"`
+	// BootstrapPeers is the list of bootstrap peers.
+	BootstarpPeers []string `yaml:"bootstrap_peers"`
 }
 
 // ChainConfig is the config for a chain.
