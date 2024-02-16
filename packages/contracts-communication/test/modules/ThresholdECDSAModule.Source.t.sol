@@ -25,6 +25,9 @@ contract ThresholdECDSAModuleSourceTest is Test, InterchainModuleEvents, Thresho
     uint256 public constant SRC_CHAIN_ID = 1337;
     uint256 public constant DST_CHAIN_ID = 7331;
 
+    // TODO: this should be configurable
+    uint256 public constant EXPECTED_GAS_LIMIT = 100_000;
+
     uint256 public constant FEE = 100;
 
     InterchainEntry public mockEntry = InterchainEntry({
@@ -40,10 +43,17 @@ contract ThresholdECDSAModuleSourceTest is Test, InterchainModuleEvents, Thresho
         gasOracle = new GasOracleMock();
         vm.startPrank(owner);
         module.setGasOracle(address(gasOracle));
+        module.setFeeCollector(feeCollector);
         module.addVerifier(address(1));
-        module.setThreshold(1);
+        module.addVerifier(address(2));
+        module.setThreshold(2);
         vm.stopPrank();
-        // TODO: set up GasOracle mocking
+        // Mock: gasOracle.estimateTxCostInLocalUnits(DST_CHAIN_ID, *, *) to return FEE
+        vm.mockCall(
+            address(gasOracle),
+            abi.encodeWithSelector(GasOracleMock.estimateTxCostInLocalUnits.selector, DST_CHAIN_ID),
+            abi.encode(FEE)
+        );
     }
 
     function mockRequestVerification(uint256 msgValue, InterchainEntry memory entry) internal {
@@ -52,18 +62,25 @@ contract ThresholdECDSAModuleSourceTest is Test, InterchainModuleEvents, Thresho
         module.requestVerification{value: msgValue}(DST_CHAIN_ID, entry);
     }
 
+    function encodeAndHashEntry(InterchainEntry memory entry)
+        internal
+        pure
+        returns (bytes memory encodedEntry, bytes32 ethSignedHash)
+    {
+        encodedEntry = abi.encode(entry);
+        ethSignedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(encodedEntry)));
+    }
+
     function test_setup() public {
         assertEq(module.owner(), owner);
         assertEq(module.INTERCHAIN_DB(), interchainDB);
         assertTrue(module.isVerifier(address(1)));
-        assertEq(module.getThreshold(), 1);
+        assertEq(module.getThreshold(), 2);
         assertEq(module.gasOracle(), address(gasOracle));
     }
 
     function test_requestVerification_emitsEvent() public {
-        bytes memory encodedEntry = abi.encode(mockEntry);
-        bytes32 entryHash = keccak256(encodedEntry);
-        bytes32 ethSignedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", entryHash));
+        (bytes memory encodedEntry, bytes32 ethSignedHash) = encodeAndHashEntry(mockEntry);
         vm.expectEmit(address(module));
         emit VerificationRequested(DST_CHAIN_ID, encodedEntry, ethSignedHash);
         mockRequestVerification(FEE, mockEntry);
@@ -74,9 +91,16 @@ contract ThresholdECDSAModuleSourceTest is Test, InterchainModuleEvents, Thresho
         assertEq(feeCollector.balance, FEE);
     }
 
-    function test_requestVerification_feeAboveRequired() public {
-        // Should not revert
+    function test_requestVerification_feeAboveRequired_emitsEvent() public {
+        (bytes memory encodedEntry, bytes32 ethSignedHash) = encodeAndHashEntry(mockEntry);
+        vm.expectEmit(address(module));
+        emit VerificationRequested(DST_CHAIN_ID, encodedEntry, ethSignedHash);
         mockRequestVerification(FEE + 1, mockEntry);
+    }
+
+    function test_requestVerification_feeAboveRequired_transfersFeeToCollector() public {
+        mockRequestVerification(FEE + 1, mockEntry);
+        assertEq(feeCollector.balance, FEE + 1);
     }
 
     function test_requestVerification_revert_feeBelowRequired() public {
@@ -86,9 +110,29 @@ contract ThresholdECDSAModuleSourceTest is Test, InterchainModuleEvents, Thresho
         mockRequestVerification(FEE - 1, mockEntry);
     }
 
-    function test_getModuleFee() public {
-        // TODO: fill the calldata
-        vm.expectCall(address(gasOracle), "");
+    function test_getModuleFee_thresholdTwo() public {
         assertEq(module.getModuleFee(DST_CHAIN_ID), FEE);
+    }
+
+    function test_getModuleFee_callsGasOracle_twoSigners() public {
+        bytes memory mockedSignatures = new bytes(2 * 65);
+        bytes memory remoteCalldata = abi.encodeCall(module.verifyEntry, (abi.encode(mockEntry), mockedSignatures));
+        bytes memory expectedCalldata = abi.encodeCall(
+            gasOracle.estimateTxCostInLocalUnits, (DST_CHAIN_ID, EXPECTED_GAS_LIMIT, remoteCalldata.length)
+        );
+        vm.expectCall(address(gasOracle), expectedCalldata);
+        module.getModuleFee(DST_CHAIN_ID);
+    }
+
+    function test_getModuleFee_callsGasOracle_threeSigners() public {
+        vm.prank(owner);
+        module.setThreshold(3);
+        bytes memory mockedSignatures = new bytes(3 * 65);
+        bytes memory remoteCalldata = abi.encodeCall(module.verifyEntry, (abi.encode(mockEntry), mockedSignatures));
+        bytes memory expectedCalldata = abi.encodeCall(
+            gasOracle.estimateTxCostInLocalUnits, (DST_CHAIN_ID, EXPECTED_GAS_LIMIT, remoteCalldata.length)
+        );
+        vm.expectCall(address(gasOracle), expectedCalldata);
+        module.getModuleFee(DST_CHAIN_ID);
     }
 }
