@@ -49,7 +49,7 @@ const LinkContent = ({ labelText }: { labelText: string }) => {
   )
 }
 
-const checkIsRouteMatched = (
+export const checkIsRouteMatched = (
   router: NextRouter,
   match?: string | RegExp | { startsWith: string }
 ) => {
