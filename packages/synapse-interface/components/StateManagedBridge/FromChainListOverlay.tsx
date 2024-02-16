@@ -10,11 +10,11 @@ import { setFromChainId } from '@/slices/bridge/reducer'
 import { setShowFromChainListOverlay } from '@/slices/bridgeDisplaySlice'
 import { SelectSpecificNetworkButton } from './components/SelectSpecificNetworkButton'
 import { CloseButton } from '@/components/buttons/CloseButton'
-import { SearchResults } from '@/components/SearchResults'
+import { SearchResults } from '@/components/bridgeSwap/SearchResults'
 import { PAUSED_FROM_CHAIN_IDS } from '@constants/chains'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 import { CHAIN_FUSE_OPTIONS } from '@/constants/fuseOptions'
-import { SearchResultsContainer } from '@/components/SearchResultsContainer'
+import { SearchResultsContainer } from '@/components/bridgeSwap/SearchResultsContainer'
 
 
 export const FromChainListOverlay = () => {

@@ -10,17 +10,17 @@ import { setShowFromTokenListOverlay } from '@/slices/bridgeDisplaySlice'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import SelectSpecificTokenButton from './components/SelectSpecificTokenButton'
+import { SelectSpecificTokenButton } from './components/SelectSpecificTokenButton'
 import { getRoutePossibilities } from '@/utils/routeMaker/generateRoutePossibilities'
 
 import { hasBalance } from '@/utils/helpers/hasBalance'
 import { sortByPriorityRank } from '@/utils/helpers/sortByPriorityRank'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { CloseButton } from '@/components/buttons/CloseButton'
-import { SearchResults } from '@/components/SearchResults'
+import { SearchResults } from '@/components/bridgeSwap/SearchResults'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 import { getTokenFuseOptions } from '@/constants/fuseOptions'
-import { SearchResultsContainer } from '@/components/SearchResultsContainer'
+import { SearchResultsContainer } from '@/components/bridgeSwap/SearchResultsContainer'
 
 export const FromTokenListOverlay = () => {
   const dispatch = useDispatch()

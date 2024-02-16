@@ -3,26 +3,31 @@ import { useMemo } from 'react'
 import { Address } from 'viem'
 import Fuse from 'fuse.js'
 
-import { SlideSearchBox } from '@components/bridgeSwap/SlideSearchBox'
-import { Token } from '@/utils/types'
+import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeState, setToToken } from '@/slices/bridge/reducer'
 import { setShowToTokenListOverlay } from '@/slices/bridgeDisplaySlice'
-import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import { useBridgeState } from '@/slices/bridge/hooks'
-import SelectSpecificTokenButton from './components/SelectSpecificTokenButton'
-import { getRoutePossibilities } from '@/utils/routeMaker/generateRoutePossibilities'
-
-import { sortByPriorityRank } from '@/utils/helpers/sortByPriorityRank'
-import { CHAINS_BY_ID } from '@/constants/chains'
-import { CloseButton } from '@/components/buttons/CloseButton'
-import { SearchResults } from '@/components/SearchResults'
-import { formatBigIntToString } from '@/utils/bigint/format'
 import { FetchState } from '@/slices/portfolio/actions'
+
 import { useAppDispatch } from '@/store/hooks'
+
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+
+import { SelectSpecificTokenButton } from './components/SelectSpecificTokenButton'
+
+import { Token } from '@/utils/types'
 import { useAlternateBridgeQuotes } from '@/utils/hooks/useAlternateBridgeQuotes'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
+import { getRoutePossibilities } from '@/utils/routeMaker/generateRoutePossibilities'
+import { sortByPriorityRank } from '@/utils/helpers/sortByPriorityRank'
+import { formatBigIntToString } from '@/utils/bigint/format'
+
+import { CHAINS_BY_ID } from '@/constants/chains'
 import { getTokenFuseOptions } from '@/constants/fuseOptions'
-import { SearchResultsContainer } from '@/components/SearchResultsContainer'
+
+import { CloseButton } from '@/components/buttons/CloseButton'
+import { SearchResultsContainer } from '@/components/bridgeSwap/SearchResultsContainer'
+import { SearchResults } from '@/components/bridgeSwap/SearchResults'
+import { SlideSearchBox } from '@/components/bridgeSwap/SlideSearchBox'
 
 interface TokenWithRates extends Token {
   exchangeRate: bigint

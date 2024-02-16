@@ -1,7 +1,6 @@
 import LoadingDots from '@tw/LoadingDots'
 import { LoadingHelix } from '@tw/LoadingHelix'
 import { OutputNumber } from '@/components/bridgeSwap/OutputNumber'
-import { LoadingInfinity } from '../ui/tailwind/LoadingInfinity'
 
 
 export const GenericOutputContainer = ({

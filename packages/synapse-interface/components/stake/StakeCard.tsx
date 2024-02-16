@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { Address } from '@wagmi/core'
 
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
@@ -8,8 +8,7 @@ import { withdrawStake } from '@/utils/actions/withdrawStake'
 import { claimStake } from '@/utils/actions/claimStake'
 
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
-import { formatBigIntToString } from '@/utils/bigint/format'
-import { stringToBigInt } from '@/utils/bigint/format'
+import { stringToBigInt, formatBigIntToString } from '@/utils/bigint/format'
 
 import { usePendingTxWrapper } from '@/utils/hooks/usePendingTxWrapper'
 import { useTokenBalance } from '@/utils/hooks/useTokenBalance'

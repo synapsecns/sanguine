@@ -38,6 +38,7 @@ import ReceivedTokenSection from '../components/ReceivedTokenSection'
 import PriceImpactDisplay from '../components/PriceImpactDisplay'
 import WithdrawButton from './WithdrawButton'
 
+
 const Withdraw = ({ address }: { address: string }) => {
   const [percentage, setPercentage] = useState(0)
   const { pool, poolData } = usePoolDataState()

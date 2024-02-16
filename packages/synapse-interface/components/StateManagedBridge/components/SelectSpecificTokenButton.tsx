@@ -21,7 +21,7 @@ import {
 import { getUnderlyingBridgeTokens } from '@/utils/getUnderlyingBridgeTokens'
 import { ARBITRUM, AVALANCHE, ETH } from '@/constants/chains/master'
 
-const SelectSpecificTokenButton = ({
+export const SelectSpecificTokenButton = ({
   showAllChains,
   isOrigin,
   token,
@@ -352,4 +352,4 @@ const AvailableChains = ({ token }: { token: Token }) => {
   )
 }
 
-export default SelectSpecificTokenButton
+

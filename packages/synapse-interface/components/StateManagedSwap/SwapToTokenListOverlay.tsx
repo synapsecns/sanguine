@@ -5,19 +5,19 @@ import Fuse from 'fuse.js'
 import { SlideSearchBox } from '@components/bridgeSwap/SlideSearchBox'
 import { Token } from '@/utils/types'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import SelectSpecificTokenButton from './components/SelectSpecificTokenButton'
+import { SelectSpecificTokenButton } from './components/SelectSpecificTokenButton'
 
 import { sortByPriorityRank } from '@/utils/helpers/sortByPriorityRank'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { CloseButton } from '@/components/buttons/CloseButton'
-import { SearchResults } from '@/components/SearchResults'
+import { SearchResults } from '@/components/bridgeSwap/SearchResults'
 import { setShowSwapToTokenListOverlay } from '@/slices/swapDisplaySlice'
 import { setSwapToToken } from '@/slices/swap/reducer'
 import { useSwapState } from '@/slices/swap/hooks'
 import { getSwapPossibilities } from '@/utils/swapFinder/generateSwapPossibilities'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 import { getTokenFuseOptions } from '@/constants/fuseOptions'
-import { SearchResultsContainer } from '@/components/SearchResultsContainer'
+import { SearchResultsContainer } from '@/components/bridgeSwap/SearchResultsContainer'
 
 
 export const SwapToTokenListOverlay = () => {

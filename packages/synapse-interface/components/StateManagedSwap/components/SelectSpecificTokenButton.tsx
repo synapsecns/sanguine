@@ -10,7 +10,7 @@ import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { useSwapState } from '@/slices/swap/hooks'
 
-const SelectSpecificTokenButton = ({
+export const SelectSpecificTokenButton = ({
   showAllChains,
   isOrigin,
   token,
@@ -204,5 +204,3 @@ const AvailableChains = ({ token }: { token: Token }) => {
     </div>
   )
 }
-
-export default SelectSpecificTokenButton

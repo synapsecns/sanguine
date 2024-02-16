@@ -8,13 +8,13 @@ import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 import { SelectSpecificNetworkButton } from './components/SelectSpecificNetworkButton'
 import { CloseButton } from '@/components/buttons/CloseButton'
-import { SearchResults } from '@/components/SearchResults'
+import { SearchResults } from '@/components/bridgeSwap/SearchResults'
 import { setShowSwapChainListOverlay } from '@/slices/swapDisplaySlice'
 import { setSwapChainId } from '@/slices/swap/reducer'
 import { useSwapState } from '@/slices/swap/hooks'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 import { CHAIN_FUSE_OPTIONS } from '@/constants/fuseOptions'
-import { SearchResultsContainer } from '@/components/SearchResultsContainer'
+import { SearchResultsContainer } from '@/components/bridgeSwap/SearchResultsContainer'
 
 export const SwapChainListOverlay = () => {
   const { swapChainId, swapFromChainIds } = useSwapState()
