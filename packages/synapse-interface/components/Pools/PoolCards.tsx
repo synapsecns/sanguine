@@ -11,9 +11,9 @@ const PoolCards = memo(
 
     return (
       <>
-        {pools ? (
-          poolChainIds.map((chainId) => {
-            return (
+        {pools
+          ?
+            poolChainIds.map((chainId) =>
               <React.Fragment key={chainId}>
                 {pools[chainId]?.map((pool) =>
                   <PoolCard
@@ -24,12 +24,11 @@ const PoolCards = memo(
                 )}
               </React.Fragment>
             )
-          })
-        ) : (
-          <div className="flex justify-center">
-            <LoaderIcon />
-          </div>
-        )}
+          :
+            <div className="flex justify-center">
+              <LoaderIcon />
+            </div>
+        }
       </>
     )
   }
