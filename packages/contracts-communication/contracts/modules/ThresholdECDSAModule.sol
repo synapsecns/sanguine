@@ -16,6 +16,9 @@ contract ThresholdECDSAModule is InterchainModule, Ownable, ThresholdECDSAModule
     ThresholdECDSA internal _verifiers;
 
     /// @inheritdoc IThresholdECDSAModule
+    address public feeCollector;
+
+    /// @inheritdoc IThresholdECDSAModule
     address public gasOracle;
 
     constructor(address interchainDB, address initialOwner) InterchainModule(interchainDB) Ownable(initialOwner) {
@@ -40,6 +43,11 @@ contract ThresholdECDSAModule is InterchainModule, Ownable, ThresholdECDSAModule
     /// @inheritdoc IThresholdECDSAModule
     function setThreshold(uint256 threshold) external onlyOwner {
         _setThreshold(threshold);
+    }
+
+    /// @inheritdoc IThresholdECDSAModule
+    function setFeeCollector(address feeCollector_) external onlyOwner {
+        _setFeeCollector(feeCollector_);
     }
 
     /// @inheritdoc IThresholdECDSAModule
@@ -79,6 +87,13 @@ contract ThresholdECDSAModule is InterchainModule, Ownable, ThresholdECDSAModule
     function _setThreshold(uint256 threshold) internal {
         _verifiers.modifyThreshold(threshold);
         emit ThresholdChanged(threshold);
+    }
+
+    /// @dev Internal logic to set the address of the fee collector.
+    /// Permissions should be checked in the calling function.
+    function _setFeeCollector(address feeCollector_) internal {
+        feeCollector = feeCollector_;
+        emit FeeCollectorChanged(feeCollector_);
     }
 
     /// @dev Internal logic to request the verification of an entry on the destination chain.
