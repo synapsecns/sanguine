@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/Flaque/filet"
+	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/committee/contracts/synapsemodule"
 	"github.com/synapsecns/sanguine/committee/db/base"
@@ -57,46 +59,46 @@ func (s *P2PTestSuite) TestLibP2PManager() {
 	m3 := s.makeManager()
 
 	managers := []p2p.LibP2PManager{m1, m2, m3}
-	addresses := combineHostAddresses(managers...)
+	peers := combineHostAddresses(managers...)
+	addresses := managersToValidators(managers...)
 
 	var wg sync.WaitGroup
 	wg.Add(len(managers))
 
 	for _, manager := range managers {
 		manager := manager
-		// go func() {
-		//	defer wg.Done()
+		go func() {
+			defer wg.Done()
 
-		err := manager.Start(s.GetTestContext(), addresses)
-		s.Require().NoError(err)
-		// time.Sleep(time.Second)
-		//}()
-		wg.Done()
+			err := manager.Start(s.GetTestContext(), peers)
+			s.Require().NoError(err)
+			time.Sleep(time.Second)
 
-		err = manager.AddValidator(s.GetTestContext(), m1.Address())
-		s.Require().NoError(err)
+			err = manager.AddValidators(s.GetTestContext(), addresses...)
+			s.Require().NoError(err)
+		}()
 	}
 	wg.Wait()
 
 	time.Sleep(time.Second * 2)
-	m1.DoSomething()
+	const (
+		chainID = 1
+		nonce   = 2
+	)
+
+	signature := []byte(gofakeit.Word())
+
+	//m1.DoSomething()
+	err := m1.PutSignature(s.GetTestContext(), chainID, nonce, signature)
+	s.Require().NoError(err)
+
 	time.Sleep(time.Second * 1)
 	for {
-		yo := s.makeManager()
-		yo.Start(s.GetTestContext(), addresses)
-
-		if m2.DoSomethingElse() {
+		time.Sleep(time.Second)
+		if realSig, err := m2.GetSignature(s.GetTestContext(), m1.Address(), chainID, nonce); err == nil {
+			s.Require().Equal(signature, realSig)
 			break
 		}
-
-		go func() {
-			for {
-				time.Sleep(time.Second)
-				if yo.DoSomethingElse() {
-					fmt.Println("fat")
-				}
-			}
-		}()
 	}
 }
 
@@ -125,4 +127,13 @@ func combineHostAddresses(hostLikes ...p2p.LibP2PManager) []string {
 		}
 	}
 	return addresses
+}
+
+func managersToValidators(managers ...p2p.LibP2PManager) []common.Address {
+	var validators []common.Address
+	for _, manager := range managers {
+		validators = append(validators, manager.Address())
+	}
+	return validators
+
 }

@@ -36,8 +36,10 @@ type LibP2PManager interface {
 	Start(ctx context.Context, bootstrapPeers []string) error
 	DoSomething()
 	DoSomethingElse() bool
-	AddValidator(ctx context.Context, addr common.Address) error
+	AddValidators(ctx context.Context, addr ...common.Address) error
 	Address() common.Address
+	GetSignature(ctx context.Context, address common.Address, chainID, nonce int) ([]byte, error)
+	PutSignature(ctx context.Context, chainID, nonce int, signature []byte) error
 }
 
 type libP2PManagerImpl struct {
@@ -213,7 +215,48 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	return nil
 }
 
-func (l *libP2PManagerImpl) AddValidator(ctx context.Context, addr common.Address) error {
+func (l *libP2PManagerImpl) GetSignature(ctx context.Context, address common.Address, chainID, nonce int) ([]byte, error) {
+	theirStore, ok := l.datastores[address]
+	if !ok {
+		return nil, fmt.Errorf("could not find datastore for address: %s", l.address.String())
+	}
+
+	// get from my store
+	return theirStore.Get(ctx, datastore.NewKey(fmt.Sprintf("sig_%d_%d", chainID, nonce)))
+}
+
+// PutSignature puts a signature into the datastore.
+func (l *libP2PManagerImpl) PutSignature(ctx context.Context, chainID, nonce int, signature []byte) error {
+	myStore, ok := l.datastores[l.address]
+	if !ok {
+		return fmt.Errorf("could not find datastore for address: %s", l.address.String())
+	}
+
+	// add to my store
+	err := myStore.Put(ctx, datastore.NewKey(fmt.Sprintf("sig_%d_%d", chainID, nonce)), signature)
+	if err != nil {
+		return fmt.Errorf("could not put signature: %w", err)
+	}
+
+	err = myStore.Sync(ctx, datastore.NewKey("/"))
+	if err != nil {
+		return fmt.Errorf("could not sync: %w", err)
+	}
+	return nil
+}
+
+func (l *libP2PManagerImpl) AddValidators(ctx context.Context, addr ...common.Address) error {
+	// no point parallelizing this, it's all muxed.
+	for _, a := range addr {
+		err := l.addValidator(ctx, a)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (l *libP2PManagerImpl) addValidator(ctx context.Context, addr common.Address) error {
 	l.datastoreMux.Lock()
 	defer l.datastoreMux.Unlock()
 
@@ -262,7 +305,7 @@ func (l *libP2PManagerImpl) AddValidator(ctx context.Context, addr common.Addres
 	}
 	crdtOpts.RebroadcastInterval = time.Second
 
-	l.datastores[addr], err = crdt.New(ds, datastore.NewKey(dbTopic), l.ipfs, pubSubBroadcaster, crdtOpts)
+	l.datastores[addr], err = crdt.New(ds, datastore.NewKey(topic), l.ipfs, pubSubBroadcaster, crdtOpts)
 	if err != nil {
 		return err
 	}
