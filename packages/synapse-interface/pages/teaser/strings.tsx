@@ -33,7 +33,7 @@ export const generateTx = () => {
     payload: origin.payload,
     chain: Chains[Math.round(Math.random() * (Chains.length - 1))],
     formattedAmount: amountStr,
-    timestamp: Date.now()
+    timestamp: origin.timestamp + Math.round(Math.random() * 600000)
   }
 
   const description = `${origin.formattedAmount} ${origin.payload} to ${destination.chain}`
