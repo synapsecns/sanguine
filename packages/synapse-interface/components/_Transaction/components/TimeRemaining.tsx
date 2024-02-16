@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { ExclamationCircleIcon } from '@heroicons/react/outline'
+import ExclamationIcon from '@components/icons/ExclamationIcon'
 
 /**
  * @param isComplete: Transaction has been marked complete
@@ -29,8 +29,8 @@ export const TimeRemaining = ({
 
   if (isReverted) {
     return (
-      <span className="flex items-center text-sm">
-        <ExclamationCircleIcon fill="yellow" className="w-4 h-4"/> <span>Reverted</span>
+      <span className="flex items-center space-x-1 text-sm">
+        <ExclamationIcon className="w-4 h-4"/> <span>Reverted</span>
       </span>
     )
   }
