@@ -1,3 +1,4 @@
+// Package config provides the configuration for the Synapse module.
 package config
 
 import (

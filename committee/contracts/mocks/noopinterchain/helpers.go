@@ -7,6 +7,7 @@ import (
 )
 
 // NoOpInterchainRef is a reference to a NoOpInterchain.
+// nolint: golint
 type NoOpInterchainRef struct {
 	*NoOpInterchain
 	address common.Address
