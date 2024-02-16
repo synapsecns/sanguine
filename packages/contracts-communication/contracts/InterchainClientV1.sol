@@ -1,7 +1,6 @@
 pragma solidity 0.8.20;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import "forge-std/console.sol";
 import {IInterchainDB} from "./interfaces/IInterchainDB.sol";
 
 import {IInterchainApp} from "./interfaces/IInterchainApp.sol";
@@ -87,8 +86,6 @@ contract InterchainClientV1 is Ownable {
         // 8. Execute the transaction, is optimistic period is met.
 
         InterchainTransaction memory icTx = abi.decode(transaction, (InterchainTransaction));
-
-        console.logBytes32(icTx.transactionId);
 
         // 1. Call icDB.getEntry(linkedClients.srcChainId, transaction.dbWriterNonce)
         InterchainEntry memory icEntry = InterchainEntry({
