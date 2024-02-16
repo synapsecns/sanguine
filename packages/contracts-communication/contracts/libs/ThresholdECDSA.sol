@@ -22,6 +22,8 @@ library ThresholdECDSALib {
     error ThresholdECDSA__RecoveredSignersNotSorted();
     error ThresholdECDSA__ZeroThreshold();
 
+    uint256 private constant SIGNATURE_LENGTH = 65;
+
     /// @notice Adds a new signer to the list of signers.
     /// @dev Will revert if the account is already a signer.
     function addSigner(ThresholdECDSA storage self, address account) internal {
@@ -70,21 +72,28 @@ library ThresholdECDSALib {
     /// - Any of the payloads is not a valid signature payload.
     /// - The number of signatures is less than the threshold.
     /// - The recovered list of signers is not sorted in the ascending order.
-    function verifySignedHash(ThresholdECDSA storage self, bytes32 hash, bytes[] memory signatures) internal view {
+    function verifySignedHash(ThresholdECDSA storage self, bytes32 hash, bytes calldata signatures) internal view {
+        // Figure out the signaturesAmount of signatures provided
+        uint256 signaturesAmount = signatures.length / SIGNATURE_LENGTH;
+        if (signaturesAmount == 0 || signaturesAmount * SIGNATURE_LENGTH != signatures.length) {
+            revert ThresholdECDSA__IncorrectSignaturesLength(signatures.length);
+        }
         // First, check that threshold is configured and enough signatures are provided
         uint256 threshold = self._threshold;
         if (threshold == 0) {
             revert ThresholdECDSA__ZeroThreshold();
         }
-        if (signatures.length < threshold) {
+        if (signaturesAmount < threshold) {
             revert ThresholdECDSA__NotEnoughSignatures(threshold);
         }
+        uint256 offset = 0;
         uint256 validSignatures = 0;
         address lastSigner = address(0);
-        for (uint256 i = 0; i < signatures.length; ++i) {
-            (address recovered, ECDSA.RecoverError error,) = ECDSA.tryRecover(hash, signatures[i]);
+        for (uint256 i = 0; i < signaturesAmount; ++i) {
+            bytes memory signature = signatures[offset:offset + SIGNATURE_LENGTH];
+            (address recovered, ECDSA.RecoverError error,) = ECDSA.tryRecover(hash, signature);
             if (error != ECDSA.RecoverError.NoError) {
-                revert ThresholdECDSA__InvalidSignature(signatures[i]);
+                revert ThresholdECDSA__InvalidSignature(signature);
             }
             // Check that the recovered addresses list is strictly increasing
             if (recovered <= lastSigner) {
@@ -95,6 +104,7 @@ library ThresholdECDSALib {
             if (isSigner(self, recovered)) {
                 validSignatures += 1;
             }
+            offset += SIGNATURE_LENGTH;
         }
         if (validSignatures < threshold) {
             revert ThresholdECDSA__NotEnoughSignatures(threshold);
