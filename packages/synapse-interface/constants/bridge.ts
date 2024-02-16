@@ -1,5 +1,4 @@
 import { USDC } from '@constants/tokens/bridgeable'
-
 import * as CHAINS from '@constants/chains/master'
 
 export const QUOTE_POLLING_INTERVAL = 10000
