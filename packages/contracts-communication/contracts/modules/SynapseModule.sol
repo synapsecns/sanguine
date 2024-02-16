@@ -6,16 +6,21 @@ import {Interchain} from '../Interchain.sol';
 import {SynapseGasService} from './SynapseGasService.sol';
 import '../IInterchain.sol';
 import 'forge-std/console.sol';
+import {IInterchainDB} from '../interfaces/IInterchainDB.sol';
+import {IInterchainModule} from '../interfaces/IInterchainModule.sol';
+import {InterchainEntry} from '../libs/InterchainEntry.sol';
 
-contract SynapseModule is Ownable, SynapseGasService {
+import {ISynapseModuleEvents} from '../interfaces/ISynapseModuleEvents.sol';
+
+contract SynapseModule is Ownable, SynapseGasService, ISynapseModuleEvents {
   address[] public verifiers;
-  uint256 requiredThreshold;
-  address public interchain;
+  uint256 public requiredThreshold;
+  address public interchainDB;
 
   constructor() public Ownable(msg.sender) {}
 
-  function setInterchain(address _interchain) public onlyOwner {
-    interchain = _interchain;
+  function setInterchainDB(address _interchainDB) public onlyOwner {
+    interchainDB = _interchainDB;
   }
 
   function setRequiredThreshold(uint256 _threshold) public onlyOwner {
@@ -26,35 +31,33 @@ contract SynapseModule is Ownable, SynapseGasService {
     verifiers = _verifiers;
   }
 
-  event ModuleMessageSent(uint256 dstChainId, bytes transaction);
-
-  function sendModuleMessage(bytes calldata transaction) public payable {
-    Interchain.InterchainTransaction memory decodedTransaction = abi.decode(
-      transaction,
-      (Interchain.InterchainTransaction)
-    );
-
-    // TODO: Require fee is above estimation(?), does this make sense?
-    uint256 currentEstimatedFee = estimateFee(decodedTransaction.dstChainId);
+  function requestVerification(
+    uint256 destChainId,
+    InterchainEntry memory entry
+  ) external payable {
     require(
-      msg.value >= currentEstimatedFee,
-      'Insufficient fee to send transaction'
+      msg.sender == interchainDB,
+      'Only InterchainDB can request verification'
     );
-    // Transfer fee to module executor
-    _payFeesForExecution(msg.value);
 
-    emit ModuleMessageSent(decodedTransaction.dstChainId, transaction);
+    require(
+      msg.value >= getModuleFee(destChainId),
+      'Insufficient fee to request verification'
+    );
+
+    _payFeesForExecution(msg.value);
+    emit VerfificationRequested(destChainId, entry);
   }
 
-  function receiveModuleMessage(
-    bytes calldata transaction,
+  function verifyEntry(
+    InterchainEntry memory entry,
     bytes[] calldata signatures
-  ) public {
-    bytes32 messageHashToCheck = keccak256(transaction);
+  ) external {
+    bytes32 messageHashToCheck = keccak256(abi.encode(entry));
 
     require(
-      verifiers.length >= requiredThreshold,
-      'Not enough verifiers to meet the threshold'
+      signatures.length >= requiredThreshold,
+      'Not enough signatures to meet the threshold'
     );
 
     uint256 validSignatures;
@@ -68,12 +71,14 @@ contract SynapseModule is Ownable, SynapseGasService {
         }
       }
     }
-    bytes32 hash = keccak256(transaction);
 
     require(
       validSignatures >= requiredThreshold,
       'Not enough valid signatures to meet the threshold'
     );
-    IInterchain(interchain).interchainReceive(transaction);
+
+    IInterchainDB(interchainDB).verifyEntry(entry);
+
+    emit EntryVerified(entry);
   }
 }
