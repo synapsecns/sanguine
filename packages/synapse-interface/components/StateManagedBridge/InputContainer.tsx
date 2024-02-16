@@ -15,11 +15,14 @@ import { FromChainSelector } from './FromChainSelector'
 import { FromTokenSelector } from './FromTokenSelector'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
+import { useBridgeStatus } from '@/utils/hooks/useBridgeStatus'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
 export const InputContainer = () => {
   const { fromChainId, fromToken, fromValue } = useBridgeState()
+  const { hasInputAmount, hasEnoughBalance } = useBridgeStatus()
+
   const [showValue, setShowValue] = useState('')
 
   const [hasMounted, setHasMounted] = useState(false)
@@ -141,14 +144,19 @@ export const InputContainer = () => {
               {hasMounted && isConnected && (
                 <label
                   htmlFor="inputRow"
-                  className="text-xs text-white transition-all duration-150 transform-gpu hover:text-opacity-70 hover:cursor-pointer"
+                  className={`
+                    text-xs
+                    transition-all duration-150 transform-gpu
+                    hover:text-opacity-70 hover:cursor-pointer
+                    ${
+                      hasInputAmount && !hasEnoughBalance
+                        ? 'text-amber-200'
+                        : 'text-secondaryTextColor'
+                    }
+                  `}
                   onClick={onMaxBalance}
                 >
-                  {parsedBalance ?? '0.0'}
-                  <span className="text-opacity-50 text-secondaryTextColor">
-                    {' '}
-                    available
-                  </span>
+                  {parsedBalance ?? '0.0'} available
                 </label>
               )}
             </div>
