@@ -4,6 +4,21 @@ import { generateTx } from './strings'
 const txs = new Array()
 for (let i = 0; i < 20; i++) txs.push(generateTx())
 
+const formatTimestamp = (tx) => {
+  const { origin, destination } = tx
+  const originDate = new Date(origin.timestamp)
+  const originHour = originDate.getHours()
+  const originMinute = originDate.getMinutes()
+  const seconds = Math.round((destination.timestamp - origin.timestamp) / 1000)
+  const minutes = Math.round(seconds / 60)
+  const secondsModulo = Math.round(seconds / 15) * 15 % 60
+
+  const originDateFormatted = `${originHour}:${originMinute}${originHour < 12 ? 'am' : 'pm'}`
+  const durationFormatted = minutes + 'm' + (secondsModulo ? ` ${secondsModulo}` : '')
+
+  return `${originDateFormatted} (${durationFormatted})`
+}
+
 export default function Ticker() {
   return (
     <article
@@ -30,11 +45,11 @@ export default function Ticker() {
                 className="row-start-2 animate-slide-down origin-top relative"
                 style={{ gridColumnStart: i + 1}}
               >
-                <div className="absolute top-2 left-2 px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-900 rounded items-center  flex gap-4">
+                <div className="absolute top-2 left-2 px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-900 rounded items-center grid gap-x-4 gap-y-1">
+
                   <ul className="inline">
                     <li>{tx.origin.formattedAmount} {tx.origin.payload}</li>
                     <li>{tx.origin.chain}</li>
-                    <li>{tx.origin.timestamp}</li>
                   </ul>
                   <svg width="6" height="12" viewBox="0 0 6 12" fill="none" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" overflow="visible" className="stroke-zinc-500" xmlns="http://www.w3.org/2000/svg">
                     <path d="M0,0 6,6 0,12" />
@@ -42,8 +57,8 @@ export default function Ticker() {
                   <ul className="inline">
                     <li>{tx.destination.formattedAmount} {tx.destination.payload}</li>
                     <li>{tx.destination.chain}</li>
-                    <li>{tx.destination.timestamp}</li>
                   </ul>
+                  <header className="text-zinc-500 row-start-2 col-span-3">{formatTimestamp(tx)}</header>
                 </div>
               </dd>
             </>
