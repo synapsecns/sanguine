@@ -3,7 +3,6 @@ package p2p
 import (
 	"context"
 	"fmt"
-	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
 	ipfslite "github.com/hsanjuan/ipfs-lite"
 	"github.com/ipfs/go-datastore"
@@ -34,8 +33,6 @@ type LibP2PManager interface {
 	Host() host.Host // Expose host from manager
 	// Start starts the libp2p manager.
 	Start(ctx context.Context, bootstrapPeers []string) error
-	DoSomething()
-	DoSomethingElse() bool
 	AddValidators(ctx context.Context, addr ...common.Address) error
 	Address() common.Address
 	GetSignature(ctx context.Context, address common.Address, chainID, nonce int) ([]byte, error)
@@ -51,9 +48,6 @@ type libP2PManagerImpl struct {
 	globalDS          datastore.Batching
 	// ipfs is the ipfs lite peer
 	ipfs *ipfslite.Peer
-	// datastoreDs is the datastore for the crdt
-	// TODO: remove or something, not sure.
-	datastoreDs *crdt.Datastore
 	// discovery is used to discover peers
 	discovery discovery.Discovery
 	// datastoreMux is used to lock the datastores map
@@ -101,33 +95,6 @@ func (l *libP2PManagerImpl) Host() host.Host {
 
 func (l *libP2PManagerImpl) Address() common.Address {
 	return l.address
-}
-
-func (l *libP2PManagerImpl) DoSomething() {
-	var err error
-	for i := 500 - 1; i >= 0; i-- {
-		err = l.datastoreDs.Put(context.Background(), datastore.NewKey(gofakeit.Word()), []byte("test"))
-	}
-
-	err = l.datastoreDs.Put(context.Background(), datastore.NewKey("test"), []byte("test"))
-	if err != nil {
-		fmt.Println("error: ", err)
-	}
-
-	err = l.datastoreDs.Sync(context.Background(), datastore.NewKey("/"))
-	if err != nil {
-		fmt.Println("error: ", err)
-	}
-}
-
-func (l *libP2PManagerImpl) DoSomethingElse() bool {
-	fmt.Println(len(l.pubsub.ListPeers(dbTopic)))
-	val, err := l.datastoreDs.Get(context.Background(), datastore.NewKey("test"))
-	if err != nil {
-		fmt.Println("error: ", err)
-	}
-
-	return val != nil
 }
 
 func (l *libP2PManagerImpl) setupHost(ctx context.Context, privKeyWrapper crypto.PrivKey) (host.Host, error) {
@@ -182,32 +149,6 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	}()
 
 	l.pubSubBroadcaster, err = crdt.NewPubSubBroadcaster(ctx, l.pubsub, dbTopic)
-	if err != nil {
-		return err
-	}
-
-	crdtOpts := crdt.DefaultOptions()
-	crdtOpts.Logger = logging.Logger("p2p_logger")
-
-	crdtOpts.RebroadcastInterval = RebroadcastingInterval
-	crdtOpts.MaxBatchDeltaSize = 1
-
-	crdtOpts.PutHook = func(k datastore.Key, v []byte) {
-		fmt.Printf("[%s] Added: [%s] -> %s\n", time.Now().Format(time.RFC3339), k, string(v))
-		// TODO: some validation goes here
-	}
-	// TODO: this probably never gets called
-	crdtOpts.DeleteHook = func(k datastore.Key) {
-		fmt.Printf("[%s] Removed: [%s]\n", time.Now().Format(time.RFC3339), k)
-	}
-	crdtOpts.RebroadcastInterval = time.Second
-
-	l.datastoreDs, err = crdt.New(l.globalDS, datastore.NewKey(dbTopic), l.ipfs, l.pubSubBroadcaster, crdtOpts)
-	if err != nil {
-		return err
-	}
-
-	err = l.datastoreDs.Sync(ctx, datastore.NewKey("/"))
 	if err != nil {
 		return err
 	}
