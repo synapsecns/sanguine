@@ -15,6 +15,7 @@ library ThresholdECDSALib {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     error ThresholdECDSA__AlreadySigner(address account);
+    error ThresholdECDSA__IncorrectSignaturesLength(uint256 length);
     error ThresholdECDSA__InvalidSignature(bytes signature);
     error ThresholdECDSA__NotEnoughSignatures(uint256 threshold);
     error ThresholdECDSA__NotSigner(address account);
