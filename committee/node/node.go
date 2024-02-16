@@ -149,7 +149,7 @@ func (n *Node) createPeerManager(parentCtx context.Context) (err error) {
 		return fmt.Errorf("could not get validators: %w", err)
 	}
 
-	n.peerManager, err = p2p.NewLibP2PManager(ctx, n.signer)
+	n.peerManager, err = p2p.NewLibP2PManager(ctx, n.signer, n.db)
 	if err != nil {
 		return fmt.Errorf("could not get peer manager: %w", err)
 	}
@@ -224,8 +224,13 @@ func (n *Node) signAndBroadcast(ctx context.Context, request db.SignRequest) err
 	request.Signature[n.signer.Address()] = signer.Encode(signedTx)
 
 	// broadcast the transaction.
+	err = n.peerManager.PutSignature(ctx, request.OriginChainID, int(request.Nonce), request.Signature[n.signer.Address()])
+	if err != nil {
+		return fmt.Errorf("could not broadcast: %w", err)
+	}
 
 	// save the transaction.
+
 	return nil
 }
 
