@@ -126,7 +126,13 @@ function ActionPopoverButton({ open, close }) {
       >
         <div>Actions</div>
         <div className="mt-0.5">
-          <DownArrow className={`transition-all fill-white/20 group-hover:fill-white/90  ${open ? 'rotate-180' : 'rotate-0'}`} />
+          <DownArrow
+            className={`
+              transition-all
+              fill-white/20 group-hover:fill-white/90
+              ${open ? 'rotate-180' : 'rotate-0'}
+            `}
+          />
         </div>
       </div>
     </Popover.Button>
