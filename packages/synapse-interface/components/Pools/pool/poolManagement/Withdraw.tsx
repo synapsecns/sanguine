@@ -5,20 +5,14 @@ import { Address } from '@wagmi/core'
 import { useDispatch } from 'react-redux'
 import { Token } from '@types'
 
-import Grid from '@tw/Grid'
 import { getCoinTextColorCombined } from '@styles/tokens'
 import { ALL } from '@constants/withdrawTypes'
-import { WithdrawTokenInput } from '@components/TokenInput'
-import RadioButton from '@components/buttons/RadioButton'
-import ReceivedTokenSection from '../components/ReceivedTokenSection'
-import PriceImpactDisplay from '../components/PriceImpactDisplay'
 
 import { approve, withdraw } from '@/utils/actions/approveAndWithdraw'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
 import { calculatePriceImpact } from '@/utils/priceImpact'
-import { formatBigIntToString } from '@/utils/bigint/format'
-import { stringToBigInt } from '@/utils/bigint/format'
+import { stringToBigInt, formatBigIntToString } from '@/utils/bigint/format'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 
@@ -37,9 +31,12 @@ import {
 } from '@/slices/poolWithdrawSlice'
 import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
 
+import Grid from '@tw/Grid'
+import { WithdrawTokenInput } from '@components/TokenInput'
+import RadioButton from '@components/buttons/RadioButton'
+import ReceivedTokenSection from '../components/ReceivedTokenSection'
+import PriceImpactDisplay from '../components/PriceImpactDisplay'
 import WithdrawButton from './WithdrawButton'
-
-
 
 const Withdraw = ({ address }: { address: string }) => {
   const [percentage, setPercentage] = useState(0)

@@ -1,28 +1,9 @@
 import _ from 'lodash'
 import { useState, useEffect } from 'react'
-import { getAddress } from '@ethersproject/address'
-import { zeroAddress } from 'viem'
 import { useDispatch } from 'react-redux'
-
-import { ETH, WETHE, WETH } from '@constants/tokens/bridgeable'
-import { AVWETH } from '@/constants/tokens/auxilliary'
-import { stringToBigInt } from '@/utils/bigint/format'
-import { DepositTokenInput } from '@components/TokenInput'
-import PriceImpactDisplay from '../components/PriceImpactDisplay'
-import { Token } from '@types'
-
-import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
-import {
-  approve,
-  deposit,
-  emptyPoolDeposit,
-} from '@/utils/actions/approveAndDeposit'
-import LoadingTokenInput from '@components/loading/LoadingTokenInput'
+import { getAddress } from '@ethersproject/address'
 import { Address, fetchBalance } from '@wagmi/core'
-import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
-import { calculatePriceImpact } from '@/utils/priceImpact'
-import { transformCalculateLiquidityInput } from '@/utils/transformCalculateLiquidityInput'
-import { formatBigIntToString } from '@/utils/bigint/format'
+import { zeroAddress } from 'viem'
 
 import {
   usePoolDataState,
@@ -38,11 +19,31 @@ import {
   setPool,
 } from '@/slices/poolDepositSlice'
 
+import { swapPoolCalculateAddLiquidity } from '@/actions/swapPoolCalculateAddLiquidity'
+
+import { ETH, WETHE, WETH } from '@/constants/tokens/bridgeable'
+import { AVWETH } from '@/constants/tokens/auxilliary'
+import { Token } from '@types'
+
+import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
+import {
+  approve,
+  deposit,
+  emptyPoolDeposit,
+} from '@/utils/actions/approveAndDeposit'
+
+import { stringToBigInt, formatBigIntToString } from '@/utils/bigint/format'
+import { txErrorHandler } from '@/utils/txErrorHandler'
+import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
+import { calculatePriceImpact } from '@/utils/priceImpact'
+import { transformCalculateLiquidityInput } from '@/utils/transformCalculateLiquidityInput'
+
+
+import LoadingTokenInput from '@/components/loading/LoadingTokenInput'
+import { DepositTokenInput } from '@/components/TokenInput'
+import PriceImpactDisplay from '../components/PriceImpactDisplay'
 
 import DepositButton from './DepositButton'
-import { txErrorHandler } from '@/utils/txErrorHandler'
-
-import { swapPoolCalculateAddLiquidity } from '@/actions/swapPoolCalculateAddLiquidity'
 
 
 export const DEFAULT_DEPOSIT_QUOTE = {
