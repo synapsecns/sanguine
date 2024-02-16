@@ -46,7 +46,7 @@ contract SynapseModule is Ownable, SynapseGasService, ISynapseModuleEvents {
     );
 
     _payFeesForExecution(msg.value);
-    emit VerfificationRequested(destChainId, entry);
+    emit VerificationRequested(destChainId, entry);
   }
 
   function verifyEntry(

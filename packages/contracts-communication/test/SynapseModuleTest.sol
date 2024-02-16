@@ -169,7 +169,7 @@ contract SynapseModuleTest is Test, ISynapseModuleEvents {
     vm.deal(address(icDB), expectedFee);
     vm.prank(address(icDB));
     vm.expectEmit();
-    emit VerfificationRequested(DST_CHAIN_ID, getMockEntry(writerF, 1));
+    emit VerificationRequested(DST_CHAIN_ID, getMockEntry(writerF, 1));
     synapseModule.requestVerification{value: expectedFee}(
       DST_CHAIN_ID,
       getMockEntry(writerF, 1)
