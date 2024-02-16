@@ -27,7 +27,9 @@ func (n *NodeSuite) TestNodeSuite() {
 		SrcChainId:  n.originChain.GetBigChainID(),
 		SrcWriter:   [32]byte{},
 		WriterNonce: big.NewInt(0),
-		DataHash:    [32]byte{},
+		DataHash: [32]byte{
+			0x01,
+		},
 	})
 	n.Require().NoError(err)
 

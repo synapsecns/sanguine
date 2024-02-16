@@ -306,7 +306,7 @@ func (n *Node) submit(ctx context.Context, request db.SignRequest) error {
 				logger.Errorf("could not get submission status: %w", err)
 			}
 
-			fmt.Println(yo.TxHash().String())
+			fmt.Print(yo.TxHash().String())
 		}
 	}()
 
