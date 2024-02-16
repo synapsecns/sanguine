@@ -105,6 +105,10 @@ module.exports = {
           100: 'rgba(0, 0, 0, 1.0)',
         },
       },
+      backgroundImage: () => ({
+        'custom-gradient':
+          'linear-gradient(90deg, rgba(128, 0, 255, 0.2) 0%, rgba(255, 0, 191, 0.2) 100%)',
+      }),
       fontSize: {
         xxs: ['0.675rem', { lineHeight: '0.75rem' }],
         xxl: ['1.5rem', { lineHeight: '1.75rem' }],

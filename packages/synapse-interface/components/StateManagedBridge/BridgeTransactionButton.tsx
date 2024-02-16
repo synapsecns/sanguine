@@ -1,48 +1,23 @@
 import { useSelector } from 'react-redux'
-import { useMemo } from 'react'
-import { TransactionButton } from '@/components/buttons/TransactionButton'
-import { EMPTY_BRIDGE_QUOTE, EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
-import { RootState } from '@/store/store'
-import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
-import { useEffect, useState } from 'react'
+import { useAccount } from 'wagmi'
 import { isAddress } from '@ethersproject/address'
-import {} from 'wagmi'
 
-import {
-  useConnectModal,
-  useAccountModal,
-  useChainModal,
-} from '@rainbow-me/rainbowkit'
-import { stringToBigInt } from '@/utils/bigint/format'
+import { TransactionButton } from '@/components/buttons/TransactionButton'
+import { RootState } from '@/store/store'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { PAUSED_FROM_CHAIN_IDS, PAUSED_TO_CHAIN_IDS } from '@/constants/chains'
+import { useBridgeStatus } from '@/utils/hooks/useBridgeStatus'
 
 export const BridgeTransactionButton = ({
   approveTxn,
   executeBridge,
   isApproved,
 }) => {
-  const [isConnected, setIsConnected] = useState(false)
-  const { openConnectModal } = useConnectModal()
-
-  const { chain } = useNetwork()
-  const { chains, error, pendingChainId, switchNetwork } = useSwitchNetwork()
-
-  const { address, isConnected: isConnectedInit } = useAccount({
-    onDisconnect() {
-      setIsConnected(false)
-    },
-  })
-
-  useEffect(() => {
-    setIsConnected(isConnectedInit)
-  }, [isConnectedInit])
+  const { isConnected } = useAccount()
 
   const {
     destinationAddress,
     fromToken,
-    fromValue,
     toToken,
     fromChainId,
     toChainId,
@@ -50,107 +25,107 @@ export const BridgeTransactionButton = ({
     bridgeQuote,
   } = useBridgeState()
 
+  const { hasEnoughBalance, hasInputAmount, onSelectedChain, hasValidRoute } =
+    useBridgeStatus()
+
   const { showDestinationAddress } = useSelector(
     (state: RootState) => state.bridgeDisplay
   )
 
-  const balances = usePortfolioBalances()
-  const balancesForChain = balances[fromChainId]
-  const balanceForToken = balancesForChain?.find(
-    (t) => t.tokenAddress === fromToken?.addresses[fromChainId]
-  )?.balance
-
-  const sufficientBalance = useMemo(() => {
-    if (!fromChainId || !fromToken || !toChainId || !toToken) return false
-    return (
-      stringToBigInt(fromValue, fromToken?.decimals[fromChainId]) <=
-      balanceForToken
-    )
-  }, [balanceForToken, fromValue, fromChainId, toChainId, toToken])
-
   const isButtonDisabled =
     isLoading ||
-    bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
-    bridgeQuote === EMPTY_BRIDGE_QUOTE ||
+    !onSelectedChain ||
+    !hasValidRoute ||
     (destinationAddress && !isAddress(destinationAddress)) ||
     (showDestinationAddress && !destinationAddress) ||
-    (isConnected && !sufficientBalance) ||
+    (isConnected && !hasEnoughBalance) ||
     PAUSED_FROM_CHAIN_IDS.includes(fromChainId) ||
     PAUSED_TO_CHAIN_IDS.includes(toChainId)
 
-  let buttonProperties
+  let buttonProperties: {
+    label: string
+    pendingLabel?: string
+    onClick: any
+    toolTipLabel?: string
+  } = {
+    label: `Bridge ${fromToken?.symbol ?? ''}`,
+    pendingLabel: 'Bridging',
+    onClick: null,
+  }
 
-  const fromTokenDecimals: number | undefined =
-    fromToken && fromToken?.decimals[fromChainId]
-
-  const fromValueBigInt = useMemo(() => {
-    return fromTokenDecimals ? stringToBigInt(fromValue, fromTokenDecimals) : 0
-  }, [fromValue, fromTokenDecimals])
-
-  if (!fromChainId) {
+  if (!isConnected) {
     buttonProperties = {
-      label: 'Please select Origin network',
-      onClick: null,
+      ...buttonProperties,
+      toolTipLabel: 'Connect Wallet',
     }
-  } else if (!toChainId) {
+  } else if (!onSelectedChain && hasInputAmount) {
     buttonProperties = {
-      label: 'Please select Destination network',
-      onClick: null,
+      ...buttonProperties,
+      toolTipLabel: 'Please switch chains',
     }
-  } else if (
-    PAUSED_FROM_CHAIN_IDS.includes(fromChainId) ||
-    PAUSED_TO_CHAIN_IDS.includes(toChainId)
-  ) {
+  } else if (!fromChainId) {
     buttonProperties = {
-      label: `Bridge unavailable`,
-      onClick: null,
+      ...buttonProperties,
+      toolTipLabel: 'Please select Origin network',
     }
   } else if (!fromToken) {
     buttonProperties = {
-      label: `Unsupported Network`,
-      onClick: null,
+      ...buttonProperties,
+      toolTipLabel: 'Please select Origin token',
+    }
+  } else if (!toChainId) {
+    buttonProperties = {
+      ...buttonProperties,
+      toolTipLabel: 'Please select Destination network',
+    }
+  } else if (!toToken) {
+    buttonProperties = {
+      ...buttonProperties,
+      toolTipLabel: 'Please select Destination token',
     }
   } else if (
-    !isLoading &&
-    bridgeQuote?.feeAmount === 0n &&
-    fromValueBigInt > 0
+    PAUSED_FROM_CHAIN_IDS.includes(fromChainId) ||
+    PAUSED_TO_CHAIN_IDS.includes(toChainId)
   ) {
     buttonProperties = {
-      label: `Amount must be greater than fee`,
-      onClick: null,
+      ...buttonProperties,
+      label: `Bridge unavailable`,
     }
-  } else if (!isConnected && fromValueBigInt > 0) {
+  } else if (!hasInputAmount) {
     buttonProperties = {
-      label: `Connect Wallet to Bridge`,
-      onClick: openConnectModal,
+      ...buttonProperties,
+      toolTipLabel: 'Please enter an amount',
     }
-  } else if (isConnected && !sufficientBalance) {
+  } else if (!isLoading && bridgeQuote?.feeAmount === 0n && hasInputAmount) {
     buttonProperties = {
-      label: 'Insufficient balance',
-      onClick: null,
+      ...buttonProperties,
+      toolTipLabel: 'Amount must be greater than fee',
+    }
+  } else if (isConnected && !hasEnoughBalance) {
+    buttonProperties = {
+      ...buttonProperties,
+      toolTipLabel: 'Insufficient balance',
     }
   } else if (showDestinationAddress && !destinationAddress) {
     buttonProperties = {
+      ...buttonProperties,
       label: 'Please add valid destination address',
     }
   } else if (destinationAddress && !isAddress(destinationAddress)) {
     buttonProperties = {
+      ...buttonProperties,
       label: 'Invalid destination address',
-    }
-  } else if (chain?.id != fromChainId && fromValueBigInt > 0) {
-    buttonProperties = {
-      label: `Switch to ${chains.find((c) => c.id === fromChainId)?.name}`,
-      onClick: () => switchNetwork(fromChainId),
-      pendingLabel: 'Switching chains',
     }
   } else if (!isApproved) {
     buttonProperties = {
+      ...buttonProperties,
       onClick: approveTxn,
       label: `Approve ${fromToken?.symbol}`,
       pendingLabel: 'Approving',
     }
   } else {
     buttonProperties = {
+      ...buttonProperties,
       onClick: executeBridge,
       label: `Bridge ${fromToken?.symbol}`,
       pendingLabel: 'Bridging',

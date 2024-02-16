@@ -23,45 +23,54 @@ export const TransactionButton = ({
   disabled,
   chainId,
   style,
+  toolTipLabel,
   ...props
 }: {
   className?: string
   onClick: () => Promise<TransactionResponse | any>
-  pendingLabel: string
+  pendingLabel?: string
   label: string
   onSuccess?: () => void
   chainId?: number
   style?: CSSProperties
+  toolTipLabel?: string
   disabled?: boolean
 }) => {
   const [isPending, pendingTxWrapFunc] = usePendingTxWrapper()
 
   return (
-    <Button
-      {...props}
-      style={style}
-      disabled={disabled}
-      className={`
+    <div className="relative flex items-center justify-center group">
+      {toolTipLabel && (
+        <div className="absolute z-10 px-2 py-1 text-sm text-white transition-opacity duration-150 ease-in-out bg-black border border-black rounded opacity-0 cursor-default -top-6 group-hover:opacity-100">
+          {toolTipLabel}
+        </div>
+      )}
+      <Button
+        {...props}
+        style={style}
+        disabled={disabled}
+        className={`
         ${className}
         ${BASE_PROPERTIES}
         ${disabled && disabledClass}
         ${isPending && 'from-[#622e71] to-[#564071]'}
       `}
-      onClick={async () => {
-        const tx = await pendingTxWrapFunc(onClick())
-        if (tx?.hash || tx?.transactionHash || tx?.status === 1) {
-          onSuccess?.()
-        }
-      }}
-    >
-      {isPending ? (
-        <div className="inline-flex items-center justify-center">
-          <ButtonLoadingDots className="mr-8" />
-          <span className="opacity-30">{pendingLabel}</span>{' '}
-        </div>
-      ) : (
-        <span>{label}</span>
-      )}
-    </Button>
+        onClick={async () => {
+          const tx = await pendingTxWrapFunc(onClick())
+          if (tx?.hash || tx?.transactionHash || tx?.status === 1) {
+            onSuccess?.()
+          }
+        }}
+      >
+        {isPending ? (
+          <div className="inline-flex items-center justify-center">
+            <ButtonLoadingDots className="mr-8" />
+            <span className="opacity-30">{pendingLabel}</span>{' '}
+          </div>
+        ) : (
+          <span>{label}</span>
+        )}
+      </Button>
+    </div>
   )
 }

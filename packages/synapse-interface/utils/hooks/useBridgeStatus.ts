@@ -5,71 +5,55 @@ import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeState, initialState } from '@/slices/bridge/reducer'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { stringToBigInt } from '@/utils/bigint/format'
-import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'
 
 export const useBridgeStatus = (): {
-  hasValidSelections: boolean
   hasValidRoute: boolean
   hasEnoughBalance: boolean
   hasInputAmount: boolean
-  hasEnoughApproved: boolean
   onSelectedChain: boolean
 } => {
   const { chain } = useNetwork()
   const {
     debouncedFromValue,
-    fromValue,
     fromChainId,
-    toChainId,
     fromToken,
-    toToken,
     isLoading,
     bridgeQuote,
   }: BridgeState = useBridgeState()
   const balances = usePortfolioBalances()
 
-  const hasValidSelections: boolean = useMemo(() => {
-    return Boolean(fromChainId && toChainId && fromToken && toToken)
-  }, [fromChainId, toChainId, fromToken, toToken])
-
   const hasValidRoute: boolean = useMemo(() => {
-    const hasInput: boolean =
-      debouncedFromValue !== initialState.debouncedFromValue
-    const hasQuote: boolean = bridgeQuote !== initialState.bridgeQuote
-
-    return Boolean(!isLoading && hasInput && hasQuote)
-  }, [isLoading, bridgeQuote, debouncedFromValue])
+    return !isLoading && bridgeQuote.outputAmount > 0n
+  }, [isLoading, bridgeQuote])
 
   const hasEnoughBalance: boolean = useMemo(() => {
     const currentBalance: bigint = balances[fromChainId]?.find(
       (token) => token.token === fromToken
     )?.balance
-    const preciseFromValue: bigint = stringToBigInt(
-      fromValue,
+    const precisedebouncedFromValue: bigint = stringToBigInt(
+      debouncedFromValue,
       fromToken?.decimals[fromChainId]
     )
 
-    return currentBalance >= preciseFromValue
-  }, [balances, fromValue, fromToken, fromChainId])
+    return currentBalance >= precisedebouncedFromValue
+  }, [balances, debouncedFromValue, fromToken, fromChainId])
 
   const hasInputAmount: boolean = useMemo(() => {
-    const isEmpty: boolean = fromValue === initialState.fromValue
+    const isEmpty: boolean =
+      debouncedFromValue === initialState.debouncedFromValue
+    const isZero: boolean = parseFloat(debouncedFromValue) === 0
 
-    return Boolean(!hasOnlyZeroes(fromValue) && !isEmpty)
-  }, [fromValue])
-
-  const hasEnoughApproved = false
+    return Boolean(!isEmpty && !isZero)
+  }, [debouncedFromValue])
 
   const onSelectedChain: boolean = useMemo(() => {
     return chain?.id === fromChainId
   }, [fromChainId, chain])
 
   return {
-    hasValidSelections,
     hasValidRoute,
     hasEnoughBalance,
     hasInputAmount,
-    hasEnoughApproved,
     onSelectedChain,
   }
 }

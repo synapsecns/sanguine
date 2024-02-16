@@ -2,19 +2,12 @@ import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { useAccount } from 'wagmi'
 import { switchNetwork } from '@wagmi/core'
-import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 
 import { setFromChainId } from '@/slices/bridge/reducer'
-import { useBridgeState } from '@/slices/bridge/hooks'
 import { CHAINS_BY_ID } from '@/constants/chains'
-import {
-  getNetworkButtonBgClassNameActive,
-  getNetworkButtonBorderActive,
-  getNetworkButtonBorderHover,
-  getNetworkHover,
-} from '@/styles/chains'
 import { LoaderIcon } from 'react-hot-toast'
+import { useBridgeStatus } from '@/utils/hooks/useBridgeStatus'
 
 export const ConnectedIndicator = () => {
   return (
@@ -42,44 +35,10 @@ export const ConnectedIndicator = () => {
   )
 }
 
-const DisconnectedIndicator = () => {
-  const { openConnectModal } = useConnectModal()
-  const { fromChainId } = useBridgeState()
-  const chain = CHAINS_BY_ID[fromChainId]
-
-  return (
-    <button
-      data-test-id="disconnected-button"
-      className={`
-        flex items-center justify-center
-        text-base text-white px-3 py-1 rounded-md
-        text-center transform-gpu transition-all duration-75
-        border border-solid border-transparent
-        h-8
-        ${getNetworkHover(chain?.color)}
-        ${getNetworkButtonBgClassNameActive(chain?.color)}
-        ${getNetworkButtonBorderActive(chain?.color)}
-        ${getNetworkButtonBorderHover(chain?.color)}
-      `}
-      onClick={openConnectModal}
-    >
-      <div className="flex flex-row text-sm">
-        <div
-          className={`
-            my-auto ml-auto mr-2 w-2 h-2
-            bg-red-500 rounded-full
-            `}
-        />
-        Disconnected
-      </div>
-    </button>
-  )
-}
-
 export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
   const [isConnecting, setIsConnecting] = useState<boolean>(false)
   const dispatch = useDispatch()
-  const chain = CHAINS_BY_ID[chainId]
+  const { hasInputAmount, onSelectedChain } = useBridgeStatus()
 
   function scrollToTop(): void {
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -102,14 +61,15 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
       data-test-id="connect-button"
       className={`
         flex items-center justify-center
-        text-base text-white px-3 py-1 rounded-lg
+        text-base text-white px-3 py-1 rounded-sm
         text-center transform-gpu transition-all duration-75
-        border border-solid border-transparent
+        border border-solid 
         h-8
-        ${getNetworkHover(chain?.color)}
-        ${getNetworkButtonBgClassNameActive(chain?.color)}
-        ${getNetworkButtonBorderActive(chain?.color)}
-        ${getNetworkButtonBorderHover(chain?.color)}
+        ${
+          !onSelectedChain && hasInputAmount
+            ? 'border-fuchsia-500 bg-custom-gradient'
+            : 'border-gray-500 text-opacity-50 hover:border-gray-400 hover:text-opacity-60'
+        }
       `}
       onClick={handleConnectNetwork}
     >
@@ -127,15 +87,7 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
           </div>
         </div>
       ) : (
-        <div className="flex flex-row text-sm">
-          <div
-            className={`
-              my-auto ml-auto mr-2 text-transparent w-2 h-2
-              border border-indigo-300 border-solid rounded-full
-            `}
-          />
-          Switch Network
-        </div>
+        <div className="flex text-sm">Switch chain</div>
       )}
     </button>
   )
@@ -153,7 +105,7 @@ export function ConnectWalletButton() {
     <div data-test-id="">
       {clientReady && (
         <ConnectButton.Custom>
-          {({ account, chain, openConnectModal, mounted, openChainModal }) => {
+          {({ account, chain, openConnectModal, mounted }) => {
             return (
               <>
                 {(() => {
@@ -161,7 +113,12 @@ export function ConnectWalletButton() {
                     return (
                       <button
                         className={`
-                          flex items-center text-sm text-white mr-2
+                          flex items-center justify-center
+                          text-sm text-white px-3 py-1 rounded-sm
+                          text-center transform-gpu transition-all duration-75
+                          border border-solid border-fuchsia-600
+                          bg-custom-gradient
+                          h-8
                         `}
                         onClick={openConnectModal}
                       >
