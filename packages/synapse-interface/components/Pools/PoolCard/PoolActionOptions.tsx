@@ -132,8 +132,8 @@ function ActionPopoverButton({ open, close }) {
   )
 }
 
-
-export function TransactionPopoverContainer({
+/** need to fix naming  */
+function TransactionPopoverContainer({
   children,
   className,
 }: {

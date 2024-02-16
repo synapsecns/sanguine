@@ -5,16 +5,14 @@ import { useAccount } from 'wagmi'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import { LandingPageContainer } from '@/components/landing/shared'
 
-import HeroSection from './sections/HeroSection'
-import SecuritySection from './sections/SecuritySection'
-import BridgeSection from './sections/BridgeSection'
-import ExplorerSection from './sections/ExplorerSection'
-import IntegrationSection from './sections/IntegrationSection'
-import HowItWorksSection from './sections/HowItWorksSection'
-import UseCasesSection from './sections/UseCasesSection'
-import ResourcesSection from './sections/ResourcesSection'
-
-
+import HeroSection from '@/components/landing/sections/HeroSection'
+import SecuritySection from '@/components/landing/sections/SecuritySection'
+import BridgeSection from '@/components/landing/sections/BridgeSection'
+import ExplorerSection from '@/components/landing/sections/ExplorerSection'
+import IntegrationSection from '@/components/landing/sections/IntegrationSection'
+import HowItWorksSection from '@/components/landing/sections/HowItWorksSection'
+import UseCasesSection from '@/components/landing/sections/UseCasesSection'
+import ResourcesSection from '@/components/landing/sections/ResourcesSection'
 
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 

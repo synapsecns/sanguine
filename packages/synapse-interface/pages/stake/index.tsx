@@ -9,7 +9,7 @@ import { STAKABLE_TOKENS } from '@/constants/tokens'
 import Grid from '@tw/Grid'
 import { PageHeader } from '@/components/PageHeader'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
-import StakeCard from './StakeCard'
+import StakeCard from '@/components/stake/StakeCard'
 
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 

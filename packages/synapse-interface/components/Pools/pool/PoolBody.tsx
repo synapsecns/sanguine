@@ -1,25 +1,34 @@
 import numeral from 'numeral'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { ChevronLeftIcon } from '@heroicons/react/outline'
+
 import { POOLS_PATH } from '@urls'
 import Card from '@tw/Card'
 import Grid from '@tw/Grid'
-import PoolInfoSection from './PoolInfoSection'
-import PoolManagement from './poolManagement'
+
 import { zeroAddress } from 'viem'
 
 import { Address } from '@wagmi/core'
 import { useAccount, useSwitchNetwork } from 'wagmi'
-import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
+
+import { ChevronLeftIcon } from '@heroicons/react/outline'
+
+
+
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import { useEffect, useState } from 'react'
-import { PoolActionOptions } from '@/components/Pools/PoolActionOptions'
-import PoolTitle from './components/PoolTitle'
-import { DisplayBalances } from '../pools/PoolCard'
-import { getStakedBalance } from '@/utils/actions/getStakedBalance'
+
 import { usePoolDataState } from '@/slices/pool/hooks'
+import { getStakedBalance } from '@/utils/actions/getStakedBalance'
 import { useHasMounted } from '@/utils/hooks/useHasMounted'
+
+import { TransactionButton } from '@/components/buttons/TransactionButton'
+
+import PoolInfoSection from '@/components/Pools/pool/PoolInfoSection'
+import PoolManagement from '@/components/Pools/pool/poolManagement'
+import PoolTitle from '@/components/Pools/pool/components/PoolTitle'
+import { PoolActionOptions } from '@/components/Pools/PoolCard/PoolActionOptions'
+import { DisplayBalances } from '@/components/Pools/PoolCard/DisplayBalances'
 
 const PoolBody = ({
   address,

@@ -1,28 +1,26 @@
 import _ from 'lodash'
 import { useEffect, useMemo, useState } from 'react'
 import { useAccount, useNetwork } from 'wagmi'
-
-import {
-  DISPLAY_POOLS_BY_CHAIN,
-  USD_POOLS_BY_CHAIN,
-  ETH_POOLS_BY_CHAIN,
-  LEGACY_POOLS_BY_CHAIN,
-} from '@constants/tokens'
-
-import StandardPageContainer from '@layouts/StandardPageContainer'
-import { LandingPageWrapper } from '@layouts/LandingPageWrapper'
-import { DEFAULT_FROM_CHAIN } from '@/constants/swap'
-
-import PoolCards from './PoolCards'
 import { useRouter } from 'next/router'
 
-import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import { PageHeader } from '@/components/PageHeader'
-import Grid from '@tw/Grid'
+
+import { DISPLAY_POOLS_BY_CHAIN } from '@/constants/tokens'
+import { DEFAULT_FROM_CHAIN } from '@/constants/swap'
 import {
   METIS_POOL_SWAP_TOKEN_MIGRATED,
   METIS_WETH_SWAP_TOKEN_MIGRATED,
 } from '@/constants/tokens/poolMaster'
+
+
+import StandardPageContainer from '@layouts/StandardPageContainer'
+import { LandingPageWrapper } from '@layouts/LandingPageWrapper'
+
+
+
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { PageHeader } from '@/components/PageHeader'
+import Grid from '@tw/Grid'
+import PoolCards from '@/components/Pools/PoolCards'
 
 const PoolsPage = () => {
   const { address: currentAddress } = useAccount()

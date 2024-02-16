@@ -27,7 +27,7 @@ import Card from '@tw/Card'
 
 import StakeCardTitle from './StakeCardTitle'
 
-import InfoSectionCard from '../pool/PoolInfoSection/InfoSectionCard'
+import InfoSectionCard from '@/components/Pools/pool/PoolInfoSection/InfoSectionCard'
 
 import { InteractiveInputRowButton } from '@/components/InteractiveInputRowButton'
 
