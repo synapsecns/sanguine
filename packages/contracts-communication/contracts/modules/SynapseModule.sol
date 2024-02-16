@@ -2,7 +2,6 @@ pragma solidity 0.8.20;
 
 import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
 import {ECDSA} from '@openzeppelin/contracts/utils/cryptography/ECDSA.sol';
-import {Interchain} from '../Interchain.sol';
 import {SynapseGasService} from './SynapseGasService.sol';
 import '../IInterchain.sol';
 import 'forge-std/console.sol';

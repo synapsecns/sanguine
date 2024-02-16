@@ -1,27 +1,34 @@
 pragma solidity 0.8.20;
 
+import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
 import 'forge-std/console.sol';
+import {IInterchainDB} from './interfaces/IInterchainDB.sol';
 
-contract InterchainClientV1 {
-  uint64 public nonce;
+contract InterchainClientV1 is Ownable {
+  uint64 public clientNonce;
+  address public interchainDB;
 
   mapping(bytes32 => InterchainTransaction) public queuedTransactions;
-  mapping(bytes32 => bool) public verifiedTransactions;
 
-  constructor() {}
+  constructor() public Ownable(msg.sender) {}
+
+  function setInterchainDB(address _interchainDB) public onlyOwner {
+    interchainDB = _interchainDB;
+  }
 
   event InterchainTransactionSent(
-    address srcSender,
+    bytes32 srcSender,
     uint256 srcChainId,
     bytes32 indexed dstReceiver,
     uint256 indexed dstChainId,
     bytes message,
     uint64 nonce,
-    bytes32 indexed transactionId
+    bytes32 indexed transactionId,
+    uint256 dbWriterNonce
   );
 
   struct InterchainTransaction {
-    address srcSender;
+    bytes32 srcSender;
     uint256 srcChainId;
     bytes32 dstReceiver;
     uint256 dstChainId;
@@ -36,42 +43,44 @@ contract InterchainClientV1 {
     bytes32 receiver,
     uint256 dstChainId,
     bytes calldata message,
-    address[] calldata modules // Add modules as a parameter
+    address[] calldata srcModules // Add modules as a parameter
   ) public payable {
-    // InterchainTransaction memory newTransaction = InterchainTransaction(
-    //   msg.sender,
-    //   block.chainid,
-    //   receiver,
-    //   dstChainId,
-    //   message,
-    //   nonce,
-    //   keccak256(abi.encodePacked('transactionId')), // TODO: dynamic ID generation
-    // );
-    // emit InterchainTransactionSent(
-    //   msg.sender,
-    //   block.chainid,
-    //   receiver,
-    //   dstChainId,
-    //   message,
-    //   nonce,
-    //   bytes32(keccak256('transactionId'))
-    // );
-    // nonce++;
+    uint256 totalModuleFees = msg.value;
+    bytes32 sender = convertAddressToBytes32(msg.sender);
+    bytes32 transactionID = keccak256(
+      abi.encode(
+        sender,
+        block.chainid,
+        receiver,
+        dstChainId,
+        message,
+        clientNonce
+      )
+    );
+
+    uint256 dbWriterNonce = IInterchainDB(interchainDB)
+      .writeEntryWithVerification{value: totalModuleFees}(
+      dstChainId,
+      transactionID,
+      srcModules
+    );
+
+    emit InterchainTransactionSent(
+      sender,
+      block.chainid,
+      receiver,
+      dstChainId,
+      message,
+      clientNonce,
+      transactionID,
+      dbWriterNonce
+    );
+    // Increment nonce for next message
+    clientNonce++;
   }
 
   // TODO: Gas Fee Consideration that is paid to executor
-  function execute(bytes32 transactionId) public {
-    require(
-      verifiedTransactions[transactionId] == true,
-      'Transaction not verified'
-    );
-    InterchainTransaction memory interTransaction = queuedTransactions[
-      transactionId
-    ];
-    address dstReceiver = convertBytes32ToAddress(interTransaction.dstReceiver);
-    // TODO: Modifidable gas & values
-    dstReceiver.call{value: 0, gas: 1_000_000}(interTransaction.message);
-  }
+  function execute() public {}
 
   // TODO: Seperate out into utils
   /**
