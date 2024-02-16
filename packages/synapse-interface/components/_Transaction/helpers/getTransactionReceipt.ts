@@ -19,20 +19,26 @@ export const getTransactionReceipt = async (txHash: Address, chain: Chain) => {
   return receipt
 }
 
-export const useIsTxReverted = (txHash: Address, chain: Chain) => {
+export const useIsTxReverted = (
+  txHash: Address,
+  chain: Chain,
+  checkForRevert: boolean
+) => {
   const [isReverted, setIsReverted] = useState<boolean>(false)
 
-  useEffect(() => {
-    const fetchTransactionReceipt = async (txHash: Address, chain: Chain) => {
-      const receipt = await getTransactionReceipt(txHash, chain)
-      console.log('receipt:', receipt)
-      if (receipt.status === 'reverted') {
-        console.log('reverted')
-        setIsReverted(true)
-      }
-    }
-    fetchTransactionReceipt(txHash, chain)
-  }, [])
+  const getTxRevertStatus = async (txHash: Address, chain: Chain) => {
+    const receipt = await getTransactionReceipt(txHash, chain)
 
-  return [isReverted]
+    if (receipt.status === 'reverted') {
+      setIsReverted(true)
+    }
+  }
+
+  useEffect(() => {
+    if (checkForRevert) {
+      getTxRevertStatus(txHash, chain)
+    }
+  }, [checkForRevert, txHash, chain])
+
+  return isReverted
 }

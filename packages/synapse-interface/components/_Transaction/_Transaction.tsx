@@ -35,6 +35,7 @@ interface _TransactionProps {
   currentTime: number
   kappa?: string
   isStoredComplete: boolean
+  isStoredReverted: boolean
 }
 
 /** TODO: Update naming after refactoring existing Activity / Transaction flow */
@@ -52,6 +53,7 @@ export const _Transaction = ({
   currentTime,
   kappa,
   isStoredComplete,
+  isStoredReverted,
 }: _TransactionProps) => {
   const dispatch = useAppDispatch()
 
@@ -94,7 +96,11 @@ export const _Transaction = ({
   const showTransactionSupport =
     !isTxFinalized && delayedTimeInMin ? delayedTimeInMin <= -5 : false
 
-  const [isReverted] = useIsTxReverted(originTxHash as Address, originChain)
+  const isReverted = useIsTxReverted(
+    originTxHash as Address,
+    originChain,
+    !isStoredReverted
+  )
 
   useBridgeTxUpdater(
     connectedAddress,
