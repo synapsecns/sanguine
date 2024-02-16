@@ -80,13 +80,16 @@ export const _Transaction = ({
     isStartCheckingTimeReached,
   } = getEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
 
+  const checkForTxStatus =
+    isStartCheckingTimeReached && !isStoredComplete && !isStoredReverted
+
   const [isTxComplete, _kappa] = useBridgeTxStatus({
     originChainId: originChain.id,
     destinationChainId: destinationChain.id,
     originTxHash,
     bridgeModuleName,
     kappa: kappa,
-    checkStatus: !isStoredComplete || isStartCheckingTimeReached,
+    checkStatus: checkForTxStatus,
     currentTime: currentTime,
   })
   const isTxFinalized = isStoredComplete ?? isTxComplete
@@ -94,7 +97,7 @@ export const _Transaction = ({
   const isReverted = useIsTxReverted(
     originTxHash as Address,
     originChain,
-    isStartCheckingTimeReached && !isTxFinalized && !isStoredReverted
+    checkForTxStatus
   )
   const isTxReverted = isStoredReverted ?? isReverted
 

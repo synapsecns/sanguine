@@ -36,13 +36,14 @@ export const MenuItem = ({
           rel="noreferrer"
           className={className}
         >
-          <div className="flex space-x-1">
+          <div className="flex space-x-1.5 items-center">
             {iconUrl && (
               <Image
                 src={iconUrl}
-                height={16}
-                width={16}
+                height={14}
+                width={14}
                 alt={`${text} icon`}
+                className="mt-px"
               />
             )}
             <div>{text}</div>
