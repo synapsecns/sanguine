@@ -1,8 +1,8 @@
 project_name: committee
 
 monorepo:
-  tag_prefix: services/committee/
-  dir: services/committee/
+  tag_prefix: committee/
+  dir: committee/
 
 builds:
   # Linux AMD64
