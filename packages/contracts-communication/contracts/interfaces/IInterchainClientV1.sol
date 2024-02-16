@@ -30,7 +30,9 @@ interface IInterchainClientV1 {
         uint256 dstChainId,
         bytes calldata message,
         address[] calldata srcModules
-    ) external payable;
+    )
+        external
+        payable;
 
     /**
      * @notice Executes a transaction that has been sent via the Interchain.
