@@ -19,7 +19,7 @@ import { TransactionSupport } from './components/TransactionSupport'
 import { RightArrow } from '@/components/icons/RightArrow'
 import { getTransactionReceipt } from './helpers/getTransactionReceipt'
 import { Address } from 'viem'
-import { useIsTxReverted } from './helpers/getTransactionReceipt'
+import { useIsTxReverted } from './helpers/useIsTxReverted'
 
 interface _TransactionProps {
   connectedAddress: string

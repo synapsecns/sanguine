@@ -1,5 +1,4 @@
 import { createPublicClient, http, Address, Chain as ViemChain } from 'viem'
-import { useEffect, useState } from 'react'
 
 import { rawChains } from '@/wagmiConfig'
 import { Chain } from '@/utils/types'
@@ -12,34 +11,13 @@ export const getTransactionReceipt = async (txHash: Address, chain: Chain) => {
     transport: http(),
   })
 
-  const receipt = await publicClient.getTransactionReceipt({
-    hash: txHash,
-  })
-
-  return receipt
-}
-
-export const useIsTxReverted = (
-  txHash: Address,
-  chain: Chain,
-  checkForRevert: boolean
-) => {
-  const [isReverted, setIsReverted] = useState<boolean>(false)
-
-  const getTxRevertStatus = async (txHash: Address, chain: Chain) => {
-    console.log('fetching for revert: ', txHash)
-    const receipt = await getTransactionReceipt(txHash, chain)
-
-    if (receipt.status === 'reverted') {
-      setIsReverted(true)
-    }
+  try {
+    const receipt = await publicClient.getTransactionReceipt({
+      hash: txHash,
+    })
+    return receipt
+  } catch (error) {
+    console.error('Error in getTransactionReceipt: ', error)
+    return null
   }
-
-  useEffect(() => {
-    if (checkForRevert) {
-      getTxRevertStatus(txHash, chain)
-    }
-  }, [checkForRevert, txHash, chain])
-
-  return isReverted
 }
