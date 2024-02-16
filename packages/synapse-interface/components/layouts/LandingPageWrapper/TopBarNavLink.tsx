@@ -55,7 +55,9 @@ export const checkIsRouteMatched = (
 ) => {
   if (!match) return false
 
-  if (typeof match === 'string') {
+  if (router.asPath === '/') {
+    return match === '/'
+  } else if (typeof match === 'string') {
     return (
       router.asPath === match ||
       router.asPath === '/' ||
