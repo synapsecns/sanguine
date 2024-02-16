@@ -53,13 +53,13 @@ func (s *SignRequest) ToServiceSignRequest() db.SignRequest {
 func toSignRequest(sr synapsemodule.SynapseModuleVerificationRequested) (SignRequest, error) {
 	return SignRequest{
 		TXHash:             sr.Raw.TxHash.String(),
-		TransactionID:      common.Bytes2Hex(sr.SignedEntryHash[:]),
+		TransactionID:      common.Bytes2Hex(sr.SignableEntryHash[:]),
 		OriginChainID:      int(sr.Entry.SrcChainId.Int64()),
 		DestinationChainID: int(sr.DestChainId.Int64()),
 		Sender:             common.Bytes2Hex(sr.Entry.SrcWriter[:]),
 		Nonce:              sr.Entry.WriterNonce.Uint64(),
 		DataHash:           common.Bytes2Hex(sr.Entry.DataHash[:]),
-		EntryHash:          common.Bytes2Hex(sr.SignedEntryHash[:]),
+		EntryHash:          common.Bytes2Hex(sr.SignableEntryHash[:]),
 		Status:             db.Seen,
 	}, nil
 }
@@ -71,7 +71,6 @@ func (s Store) UpdateSignRequestStatus(ctx context.Context, txid common.Hash, st
 		return fmt.Errorf("could not update sign request status: %w", tx.Error)
 	}
 	return nil
-
 }
 
 func (s Store) StoreInterchainTransactionReceived(ctx context.Context, sr synapsemodule.SynapseModuleVerificationRequested) error {

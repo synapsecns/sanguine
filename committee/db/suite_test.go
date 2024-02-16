@@ -35,7 +35,7 @@ func NewDBSuite(tb testing.TB) *DBSuite {
 
 func (d *DBSuite) TestDB() {
 	d.RunOnAllDBs(func(testDB db.Service) {
-		//testDB.StoreInterchainTransactionReceived(d.GetTestContext(),
+		// testDB.StoreInterchainTransactionReceived(d.GetTestContext(),
 	})
 }
 

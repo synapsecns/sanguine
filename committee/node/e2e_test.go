@@ -3,8 +3,8 @@ package node_test
 import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/synapsecns/sanguine/committee/contracts/synapsemodule"
+	"github.com/synapsecns/sanguine/committee/db"
 	"math/big"
-	"time"
 )
 
 func (n *NodeSuite) TestNodeSuite() {
@@ -37,5 +37,11 @@ func (n *NodeSuite) TestNodeSuite() {
 
 	// wait for the transaction to be mined
 	n.originChain.WaitForConfirmation(n.GetTestContext(), tx)
-	time.Sleep(time.Minute * 10)
+
+	n.Eventually(func() bool {
+		resStatus, err := n.nodes[0].DB().GetQuoteResultsByStatus(n.GetTestContext(), db.Completed)
+		n.Require().NoError(err)
+
+		return len(resStatus) > 0
+	})
 }

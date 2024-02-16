@@ -224,18 +224,16 @@ func (n *Node) startP2P(ctx context.Context) error {
 	}
 
 	var allValidators []common.Address
-	for validator, _ := range uniqueValidators {
+	for validator := range uniqueValidators {
 		allValidators = append(allValidators, validator)
 	}
 
 	err = n.peerManager.AddValidators(ctx, allValidators...)
 	if err != nil {
 		return fmt.Errorf("could not add validators: %w", err)
-
 	}
 
 	return nil
-
 }
 
 func (n *Node) runDBSelector(ctx context.Context) error {
@@ -412,7 +410,7 @@ func (n *Node) runChainIndexer(parentCtx context.Context, chainID int) (err erro
 			n.ogEntry = event.Entry
 			err = n.handleMessageSent(ctx, event)
 		case *synapsemodule.SynapseModuleEntryVerified:
-			err = n.db.UpdateSignRequestStatus(ctx, event.Entry.DataHash, db.Completed)
+			err = n.db.UpdateSignRequestStatus(ctx, event.SignableEntryHash, db.Completed)
 		}
 		// stop the world.
 		if err != nil {

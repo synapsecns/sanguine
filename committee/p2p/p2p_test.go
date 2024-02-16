@@ -73,7 +73,7 @@ func (s *P2PTestSuite) TestLibP2PManager() {
 
 	signature := []byte(gofakeit.Word())
 
-	//m1.DoSomething()
+	// m1.DoSomething()
 	err := m1.PutSignature(s.GetTestContext(), chainID, nonce, signature)
 	s.Require().NoError(err)
 
@@ -120,5 +120,4 @@ func managersToValidators(managers ...p2p.LibP2PManager) []common.Address {
 		validators = append(validators, manager.Address())
 	}
 	return validators
-
 }

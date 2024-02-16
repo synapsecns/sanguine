@@ -224,7 +224,7 @@ func (l *libP2PManagerImpl) addValidator(ctx context.Context, addr common.Addres
 		return fmt.Errorf("could not register topic validator: %w", err)
 	}
 
-	// TODO: there's an edge case where if we error after this line is succesful, newpubsubbroadcaster will not be able ot be created again
+	// TODO: there's an edge case where if we error after this line is successful, newpubsubbroadcaster will not be able ot be created again
 	// this should be saved in the same manner as datastores
 	pubSubBroadcaster, err := crdt.NewPubSubBroadcaster(ctx, l.pubsub, topic)
 	if err != nil {
