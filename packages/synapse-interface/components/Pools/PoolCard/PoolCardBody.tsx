@@ -1,9 +1,11 @@
-import { LoadingHelix } from '@/components/ui/tailwind/LoadingHelix'
-import { Token } from '@/utils/types'
+
 import _ from 'lodash'
 import numeral from 'numeral'
 import { memo } from 'react'
 import { LoaderIcon } from 'react-hot-toast'
+
+import { Token } from '@/utils/types'
+import { LoadingHelix } from '@tw/LoadingHelix'
 
 export const PoolCardBody = memo(
   ({
