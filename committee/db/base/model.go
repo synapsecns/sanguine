@@ -7,6 +7,7 @@ func init() {
 	chainIDFieldName = namer.GetConsistentName("ChainID")
 	blockNumberFieldName = namer.GetConsistentName("BlockNumber")
 	transactionIDFieldName = namer.GetConsistentName("TransactionID")
+	statusFieldName = namer.GetConsistentName("Status")
 }
 
 var (
@@ -14,6 +15,8 @@ var (
 	chainIDFieldName string
 	// blockNumberFieldName is the name of the block number field.
 	blockNumberFieldName string
-	// transactionFieldNamme is the name of the transaction field.
+	// transactionIDFieldName is the name of the transaction field.
 	transactionIDFieldName string
+	// statusIDFieldName is the name of the status field.
+	statusFieldName string
 )

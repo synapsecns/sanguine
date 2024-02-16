@@ -12,6 +12,7 @@ replace (
 	github.com/synapsecns/sanguine/services/omnirpc => ../services/omnirpc
 	github.com/synapsecns/sanguine/services/scribe => ../services/scribe
 	github.com/synapsecns/sanguine/tools => ../tools
+	github.com/cockroachdb/pebble => github.com/cockroachdb/pebble v0.0.0-20230209160836-829675f94811
 )
 
 require (
@@ -21,6 +22,7 @@ require (
 	github.com/hsanjuan/ipfs-lite v1.8.2
 	github.com/ipfs/go-datastore v0.6.0
 	github.com/ipfs/go-ds-crdt v0.5.2
+	github.com/ipfs/go-ds-sql v0.3.0
 	github.com/ipfs/go-log v1.0.5
 	github.com/ipfs/go-log/v2 v2.5.1
 	github.com/jpillora/backoff v1.0.0

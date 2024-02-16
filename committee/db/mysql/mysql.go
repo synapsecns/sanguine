@@ -58,5 +58,6 @@ func NewMysqlStore(ctx context.Context, dbURL string, handler metrics.Handler, r
 		return nil, fmt.Errorf("could not migrate on mysql: %w", err)
 	}
 
+	// TODO: Implement the datastore
 	return &Store{base.NewStore(gdb, handler, rawTXDecoder)}, nil
 }

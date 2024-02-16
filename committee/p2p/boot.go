@@ -22,6 +22,7 @@ import (
 	"github.com/multiformats/go-multiaddr"
 	"github.com/phayes/freeport"
 	"github.com/pkg/errors"
+	"github.com/synapsecns/sanguine/committee/db"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"log"
 	"time"
@@ -54,14 +55,17 @@ var RebroadcastingInterval = time.Minute
 // listenHost is the host to listen on.
 //
 // TODO: we need to figure out how this works across multiple nodes.
-func NewLibP2PManager(ctx context.Context, auth signer.Signer) (LibP2PManager, error) {
+func NewLibP2PManager(ctx context.Context, auth signer.Signer, store db.Datstores) (LibP2PManager, error) {
 	l := &libP2PManagerImpl{}
 	_, err := l.setupHost(ctx, auth.PrivKey()) // call createHost function
 	if err != nil {
 		return nil, err
 	}
 
-	l.globalDS = ipfs_datastore.MutexWrap(datastore.NewMapDatastore())
+	l.globalDS, err = store.GlobalDatastore()
+	if err != nil {
+		return nil, err
+	}
 
 	return l, nil
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/synapsecns/sanguine/committee/db"
 	"github.com/synapsecns/sanguine/committee/db/connect"
 	"github.com/synapsecns/sanguine/committee/listener"
+	"github.com/synapsecns/sanguine/committee/p2p"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
@@ -22,23 +23,33 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
+	"math/big"
+	"sync"
+	"time"
 )
 
 type Node struct {
-	client         omnirpcClient.RPCClient
-	metrics        metrics.Handler
-	db             db.Service
-	submitter      submitter.TransactionSubmitter
-	signer         signer.Signer
-	cfg            config.Config
-	chainListeners map[int]listener.ContractListener
+	client              omnirpcClient.RPCClient
+	metrics             metrics.Handler
+	db                  db.Service
+	submitter           submitter.TransactionSubmitter
+	signer              signer.Signer
+	cfg                 config.Config
+	chainListeners      map[int]listener.ContractListener
+	interchainContracts map[int]*synapsemodule.SynapseModuleRef
+	peerManager         p2p.LibP2PManager
 }
 
 var logger = log.Logger("node")
 
 // NewNode creates a new node.
 func NewNode(ctx context.Context, handler metrics.Handler, cfg config.Config) (*Node, error) {
-	omniClient := omnirpcClient.NewOmnirpcClient(cfg.OmnirpcURL, handler, omnirpcClient.WithCaptureReqRes())
+	node := &Node{
+		metrics: handler,
+		cfg:     cfg,
+	}
+
+	node.client = omnirpcClient.NewOmnirpcClient(cfg.OmnirpcURL, handler, omnirpcClient.WithCaptureReqRes())
 
 	dbType, err := dbcommon.DBTypeFromString(cfg.Database.Type)
 	if err != nil {
@@ -48,53 +59,108 @@ func NewNode(ctx context.Context, handler metrics.Handler, cfg config.Config) (*
 	var decoderContract *synapsemodule.SynapseModuleRef
 
 	// Note: since decoder is a pointer, this will ony deref if chain length is empty & this is called.
-	store, err := connect.Connect(ctx, dbType, cfg.Database.DSN, handler, func(ctx context.Context, data []byte) (synapsemodule.InterchainInterchainTransaction, error) {
+	node.db, err = connect.Connect(ctx, dbType, cfg.Database.DSN, handler, func(ctx context.Context, data []byte) (synapsemodule.InterchainInterchainTransaction, error) {
 		return decoderContract.DecodeInterchainTransaction(&bind.CallOpts{Context: ctx}, data)
 	})
 	if err != nil {
 		return nil, fmt.Errorf("could not make db: %w", err)
 	}
 
-	chainListeners := make(map[int]listener.ContractListener)
+	node.chainListeners = make(map[int]listener.ContractListener)
+	node.interchainContracts = make(map[int]*synapsemodule.SynapseModuleRef)
 
 	for chainID, chainCFG := range cfg.Chains {
 		synapseModule := common.HexToAddress(chainCFG.SynapseModuleAddress)
-		chainClient, err := omniClient.GetChainClient(ctx, chainID)
+		chainClient, err := node.client.GetChainClient(ctx, chainID)
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain client: %w", err)
 		}
 
-		chainListener, err := listener.NewChainListener(chainClient, store, synapseModule, handler)
+		chainListener, err := listener.NewChainListener(chainClient, node.db, synapseModule, handler)
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain listener: %w", err)
 		}
-		chainListeners[chainID] = chainListener
+		node.chainListeners[chainID] = chainListener
 
-		decoderContract, err = synapsemodule.NewSynapseModuleRef(synapseModule, chainClient)
+		node.interchainContracts[chainID], err = synapsemodule.NewSynapseModuleRef(synapseModule, chainClient)
 		if err != nil {
 			return nil, fmt.Errorf("could not get synapse module ref: %w", err)
 		}
+
+		// just use the last chain as the decoder contract
+		decoderContract = node.interchainContracts[chainID]
 	}
 
-	sg, err := signerConfig.SignerFromConfig(ctx, cfg.Signer)
+	node.signer, err = signerConfig.SignerFromConfig(ctx, cfg.Signer)
 	if err != nil {
 		return nil, fmt.Errorf("could not get signer: %w", err)
 	}
 
-	sm := submitter.NewTransactionSubmitter(handler, sg, omniClient, store.SubmitterDB(), &cfg.SubmitterConfig)
+	node.submitter = submitter.NewTransactionSubmitter(handler, node.signer, node.client, node.db.SubmitterDB(), &cfg.SubmitterConfig)
+	//node.peerManager, err = p2p.NewLibP2PManager(ctx, node.signer)
+	//if err != nil {
+	//	return nil, fmt.Errorf("could not get peer manager: %w", err)
+	//}
 
-	return &Node{
-		client:    omniClient,
-		metrics:   handler,
-		cfg:       cfg,
-		db:        store,
-		submitter: sm,
-		signer:    sg,
-	}, nil
+	return node, nil
+}
+
+const defaultDBInterval = 3
+
+func (n *Node) createPeerManager(parentCtx context.Context) (err error) {
+	ctx, span := n.metrics.Tracer().Start(parentCtx, "createPeerManager")
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	var mux sync.Mutex
+	interchainValidators := make(map[int][]common.Address)
+
+	g, gCtx := errgroup.WithContext(ctx)
+	// fo reach chain
+	for chainID, contract := range n.interchainContracts {
+		chainID := chainID
+		contract := contract
+		g.Go(func() error {
+			var verifiers []common.Address
+
+			i := 0
+			for {
+				// query all validators
+				validator, err := contract.Verifiers(&bind.CallOpts{Context: gCtx}, big.NewInt(int64(i)))
+				if err != nil {
+					return fmt.Errorf("could not get validator: %w", err)
+				}
+				// until we hit one that doesn't exist and then we're done
+				if validator.String() == (common.Address{}).String() {
+					break
+				}
+				i++
+				verifiers = append(verifiers, validator)
+			}
+			mux.Lock()
+			defer mux.Unlock()
+			interchainValidators[chainID] = verifiers
+			return nil
+		})
+	}
+	err = g.Wait()
+	if err != nil {
+		return fmt.Errorf("could not get validators: %w", err)
+
+	}
+
+	n.peerManager, err = p2p.NewLibP2PManager(ctx, n.signer)
+	if err != nil {
+		return fmt.Errorf("could not get peer manager: %w", err)
+	}
+
+	return nil
 }
 
 func (n *Node) Start(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
+
 	g.Go(func() error {
 		return n.submitter.Start(ctx)
 	})
@@ -103,8 +169,65 @@ func (n *Node) Start(ctx context.Context) error {
 		return n.startChainIndexers(ctx)
 	})
 
-	return nil
+	g.Go(func() error {
+		for {
+			select {
+			case <-ctx.Done():
+				return nil
+			case <-time.After(defaultDBInterval * time.Second):
+				err := n.runDBSelector(ctx)
+				if err != nil {
+					logger.Errorf("could not cleanup: %w", err)
+				}
+			}
+		}
+	})
 
+	return nil
+}
+
+func (n *Node) runDBSelector(ctx context.Context) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case <-time.After(defaultDBInterval * time.Second):
+			dbItems, err := n.db.GetQuoteResultsByStatus(ctx, db.Seen)
+			if err != nil {
+				return fmt.Errorf("could not cleanup: %w", err)
+			}
+
+			// I should sign and broadcast now.
+			for _, request := range dbItems {
+				switch request.Status {
+				case db.Seen:
+					err := n.signAndBroadcast(ctx, request)
+					if err != nil {
+						logger.Errorf("could not sign and broadcast: %w", err)
+					}
+
+				}
+			}
+
+			_ = dbItems
+		}
+	}
+}
+
+func (n *Node) signAndBroadcast(ctx context.Context, request db.SignRequest) error {
+	// first try to sign
+	signedTx, err := n.signer.SignMessage(ctx, request.TransactionID[:], false)
+	if err != nil {
+		return fmt.Errorf("could not sign message: %w", err)
+	}
+
+	// we'll add this to the struct now, but we're not going to save until it's broadcasted.
+	request.Signature[n.signer.Address()] = signer.Encode(signedTx)
+
+	// broadcast the transaction.
+
+	// save the transaction.
+	return nil
 }
 
 // startChainIndexers starts the chain indexers for each bridge.
