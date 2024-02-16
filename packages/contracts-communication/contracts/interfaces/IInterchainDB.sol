@@ -1,22 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import {InterchainEntry} from "../libs/InterchainEntry.sol";
+
 interface IInterchainDB {
-    /// @notice Struct representing an entry in the Interchain DataBase
-    /// @param srcChainId   The chain id of the source chain
-    /// @param srcWriter    The address of the writer on the source chain
-    /// @param writerNonce  The nonce of the writer on the source chain
+    /// @notice Struct representing an entry from the remote Interchain DataBase verified by the Interchain Module
+    /// @param verifiedAt   The block timestamp at which the entry was verified by the module
     /// @param dataHash     The hash of the data written on the source chain
-    struct InterchainEntry {
-        uint256 srcChainId;
-        bytes32 srcWriter;
-        uint256 writerNonce;
+    struct RemoteEntry {
+        uint256 verifiedAt;
         bytes32 dataHash;
     }
 
+    error InterchainDB__ConflictingEntries(bytes32 existingDataHash, InterchainEntry newEntry);
     error InterchainDB__EntryDoesNotExist(address writer, uint256 writerNonce);
     error InterchainDB__IncorrectFeeAmount(uint256 actualFee, uint256 expectedFee);
     error InterchainDB__NoModulesSpecified();
+    error InterchainDB__SameChainId();
 
     /// @notice Write data to the Interchain DataBase as a new entry.
     /// Note: there are no guarantees that this entry will be available for reading on any of the remote chains.
@@ -84,19 +84,17 @@ interface IInterchainDB {
     function getWriterNonce(address writer) external view returns (uint256);
 
     /// @notice Read the data written on specific source chain by a specific writer,
-    /// and verify it on the destination chain using the provided Interchain Modules.
-    /// @dev The returned array of timestamps has the same length as the `dstModules` array,
-    /// and its values are the block timestamps at which the entry was verified by the corresponding module.
-    /// Note: zero value indicates that the module has not verified the entry.
+    /// and verify it on the destination chain using the provided Interchain Module.
+    /// Note: returned zero value indicates that the module has not verified the entry.
     /// @param entry        The Interchain Entry to read
-    /// @param dstModules   The destination chain addresses of the Interchain Modules to use for verification
-    /// @return moduleVerifiedAt   The block timestamp at which the entry was verified by each module,
+    /// @param dstModule    The destination chain addresses of the Interchain Modules to use for verification
+    /// @return moduleVerifiedAt   The block timestamp at which the entry was verified by the module,
     ///                             or zero if the module has not verified the entry.
     function readEntry(
-        InterchainEntry memory entry,
-        address[] memory dstModules
+        address dstModule,
+        InterchainEntry memory entry
     )
         external
         view
-        returns (uint256[] memory moduleVerifiedAt);
+        returns (uint256 moduleVerifiedAt);
 }

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {InterchainDB, IInterchainDB, IInterchainDBEvents} from "../contracts/InterchainDB.sol";
+import {InterchainDB, InterchainEntry, IInterchainDB, IInterchainDBEvents} from "../contracts/InterchainDB.sol";
 
 import {InterchainModuleMock, IInterchainModule} from "./mocks/InterchainModuleMock.sol";
 
@@ -55,15 +55,8 @@ contract InterchainDBSourceTest is Test, IInterchainDBEvents {
         return keccak256(abi.encode(writer, nonce));
     }
 
-    function getMockEntry(
-        address writer,
-        uint256 nonce
-    )
-        internal
-        pure
-        returns (IInterchainDB.InterchainEntry memory entry)
-    {
-        return IInterchainDB.InterchainEntry({
+    function getMockEntry(address writer, uint256 nonce) internal pure returns (InterchainEntry memory entry) {
+        return InterchainEntry({
             srcChainId: SRC_CHAIN_ID,
             srcWriter: addressToBytes32(writer),
             writerNonce: nonce,
@@ -71,7 +64,7 @@ contract InterchainDBSourceTest is Test, IInterchainDBEvents {
         });
     }
 
-    function getModuleCalldata(IInterchainDB.InterchainEntry memory entry) internal pure returns (bytes memory) {
+    function getModuleCalldata(InterchainEntry memory entry) internal pure returns (bytes memory) {
         return abi.encodeCall(IInterchainModule.requestVerification, (DST_CHAIN_ID, entry));
     }
 
@@ -121,12 +114,7 @@ contract InterchainDBSourceTest is Test, IInterchainDBEvents {
 
     // ═══════════════════════════════════════════════ TEST HELPERS ════════════════════════════════════════════════════
 
-    function assertEq(
-        IInterchainDB.InterchainEntry memory entry,
-        IInterchainDB.InterchainEntry memory expected
-    )
-        internal
-    {
+    function assertEq(InterchainEntry memory entry, InterchainEntry memory expected) internal {
         assertEq(entry.srcChainId, expected.srcChainId, "!srcChainId");
         assertEq(entry.srcWriter, expected.srcWriter, "!srcWriter");
         assertEq(entry.writerNonce, expected.writerNonce, "!writerNonce");
@@ -147,6 +135,10 @@ contract InterchainDBSourceTest is Test, IInterchainDBEvents {
 
     function expectNoModulesSpecified() internal {
         vm.expectRevert(IInterchainDB.InterchainDB__NoModulesSpecified.selector);
+    }
+
+    function expectSameChainId() internal {
+        vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__SameChainId.selector));
     }
 
     // ═══════════════════════════════════════════════ TESTS: SET UP ═══════════════════════════════════════════════════
@@ -228,7 +220,7 @@ contract InterchainDBSourceTest is Test, IInterchainDBEvents {
 
     function test_requestVerification_writerF_oneModule_callsModule() public {
         uint256 writerNonce = 0;
-        IInterchainDB.InterchainEntry memory entry = getMockEntry(writerF, writerNonce);
+        InterchainEntry memory entry = getMockEntry(writerF, writerNonce);
         // expectCall(address callee, uint256 msgValue, bytes calldata data)
         vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(entry));
         requestVerification(requestCaller, MODULE_A_FEE, writerF, writerNonce, oneModule);
@@ -243,7 +235,7 @@ contract InterchainDBSourceTest is Test, IInterchainDBEvents {
 
     function test_requestVerification_writerF_twoModules_callsModules() public {
         uint256 writerNonce = 0;
-        IInterchainDB.InterchainEntry memory entry = getMockEntry(writerF, writerNonce);
+        InterchainEntry memory entry = getMockEntry(writerF, writerNonce);
         // expectCall(address callee, uint256 msgValue, bytes calldata data)
         vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(entry));
         vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(entry));
@@ -259,7 +251,7 @@ contract InterchainDBSourceTest is Test, IInterchainDBEvents {
 
     function test_requestVerification_writerS_oneModule_callsModule() public {
         uint256 writerNonce = 1;
-        IInterchainDB.InterchainEntry memory entry = getMockEntry(writerS, writerNonce);
+        InterchainEntry memory entry = getMockEntry(writerS, writerNonce);
         // expectCall(address callee, uint256 msgValue, bytes calldata data)
         vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(entry));
         requestVerification(requestCaller, MODULE_A_FEE, writerS, writerNonce, oneModule);
@@ -274,7 +266,7 @@ contract InterchainDBSourceTest is Test, IInterchainDBEvents {
 
     function test_requestVerification_writerS_twoModules_callsModules() public {
         uint256 writerNonce = 1;
-        IInterchainDB.InterchainEntry memory entry = getMockEntry(writerS, writerNonce);
+        InterchainEntry memory entry = getMockEntry(writerS, writerNonce);
         // expectCall(address callee, uint256 msgValue, bytes calldata data)
         vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(entry));
         vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(entry));
@@ -348,11 +340,17 @@ contract InterchainDBSourceTest is Test, IInterchainDBEvents {
         requestVerification(requestCaller, MODULE_A_FEE, writerF, 0, new address[](0));
     }
 
+    function test_requestVerification_revert_sameChainId() public {
+        expectSameChainId();
+        vm.prank(requestCaller);
+        icDB.requestVerification(SRC_CHAIN_ID, writerF, 0, oneModule);
+    }
+
     // ═════════════════════════════════════ TESTS: WRITE + REQUEST VALIDATION ═════════════════════════════════════════
 
     function test_writeEntryWithVerification_writerF_oneModule_callsModule() public {
         bytes32 dataHash = getMockDataHash(writerF, INITIAL_WRITER_F_NONCE);
-        IInterchainDB.InterchainEntry memory entry = getMockEntry(writerF, INITIAL_WRITER_F_NONCE);
+        InterchainEntry memory entry = getMockEntry(writerF, INITIAL_WRITER_F_NONCE);
         vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(entry));
         writeEntryWithVerification(MODULE_A_FEE, writerF, dataHash, oneModule);
     }
@@ -386,7 +384,7 @@ contract InterchainDBSourceTest is Test, IInterchainDBEvents {
 
     function test_writeEntryWithVerification_writerF_twoModules_callsModules() public {
         bytes32 dataHash = getMockDataHash(writerF, INITIAL_WRITER_F_NONCE);
-        IInterchainDB.InterchainEntry memory entry = getMockEntry(writerF, INITIAL_WRITER_F_NONCE);
+        InterchainEntry memory entry = getMockEntry(writerF, INITIAL_WRITER_F_NONCE);
         vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(entry));
         vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(entry));
         writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerF, dataHash, twoModules);
@@ -423,7 +421,7 @@ contract InterchainDBSourceTest is Test, IInterchainDBEvents {
 
     function test_writeEntryWithVerification_writerS_oneModule_callsModule() public {
         bytes32 dataHash = getMockDataHash(writerS, INITIAL_WRITER_S_NONCE);
-        IInterchainDB.InterchainEntry memory entry = getMockEntry(writerS, INITIAL_WRITER_S_NONCE);
+        InterchainEntry memory entry = getMockEntry(writerS, INITIAL_WRITER_S_NONCE);
         vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(entry));
         writeEntryWithVerification(MODULE_A_FEE, writerS, dataHash, oneModule);
     }
@@ -457,7 +455,7 @@ contract InterchainDBSourceTest is Test, IInterchainDBEvents {
 
     function test_writeEntryWithVerification_writerS_twoModules_callsModules() public {
         bytes32 dataHash = getMockDataHash(writerS, INITIAL_WRITER_S_NONCE);
-        IInterchainDB.InterchainEntry memory entry = getMockEntry(writerS, INITIAL_WRITER_S_NONCE);
+        InterchainEntry memory entry = getMockEntry(writerS, INITIAL_WRITER_S_NONCE);
         vm.expectCall(address(moduleA), MODULE_A_FEE, getModuleCalldata(entry));
         vm.expectCall(address(moduleB), MODULE_B_FEE, getModuleCalldata(entry));
         writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerS, dataHash, twoModules);
@@ -526,6 +524,13 @@ contract InterchainDBSourceTest is Test, IInterchainDBEvents {
         bytes32 dataHash = getMockDataHash(writerF, INITIAL_WRITER_F_NONCE);
         expectNoModulesSpecified();
         writeEntryWithVerification(0, writerF, dataHash, new address[](0));
+    }
+
+    function test_writeEntryWithVerification_revert_sameChainId() public {
+        bytes32 dataHash = getMockDataHash(writerF, INITIAL_WRITER_F_NONCE);
+        expectSameChainId();
+        vm.prank(writerF);
+        icDB.writeEntryWithVerification(SRC_CHAIN_ID, dataHash, oneModule);
     }
 
     // ═════════════════════════════════════════ TESTS: GET INTERCHAIN FEE ═════════════════════════════════════════════

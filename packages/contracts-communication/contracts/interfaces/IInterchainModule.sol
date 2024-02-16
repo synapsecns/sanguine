@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {IInterchainDB} from "./IInterchainDB.sol";
+import {InterchainEntry} from "../libs/InterchainEntry.sol";
 
 /// @notice Every Module may opt a different method to confirm the verified entries on destination chain,
 /// therefore this is not a part of a common interface.
@@ -13,7 +14,7 @@ interface IInterchainModule {
     /// @dev Could be only called by the Interchain DataBase contract.
     /// @param destChainId  The chain id of the destination chain
     /// @param entry        The entry to verify
-    function requestVerification(uint256 destChainId, IInterchainDB.InterchainEntry memory entry) external payable;
+    function requestVerification(uint256 destChainId, InterchainEntry memory entry) external payable;
 
     /// @notice Get the Module fee for verifying an entry on the specified destination chain
     /// @param destChainId  The chain id of the destination chain
