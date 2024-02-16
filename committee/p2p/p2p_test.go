@@ -72,6 +72,9 @@ func (s *P2PTestSuite) TestLibP2PManager() {
 		// time.Sleep(time.Second)
 		//}()
 		wg.Done()
+
+		err = manager.AddValidator(s.GetTestContext(), m1.Address())
+		s.Require().NoError(err)
 	}
 	wg.Wait()
 

@@ -147,7 +147,6 @@ func (n *Node) createPeerManager(parentCtx context.Context) (err error) {
 	err = g.Wait()
 	if err != nil {
 		return fmt.Errorf("could not get validators: %w", err)
-
 	}
 
 	n.peerManager, err = p2p.NewLibP2PManager(ctx, n.signer)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/ethereum/go-ethereum/common"
 	ipfslite "github.com/hsanjuan/ipfs-lite"
 	"github.com/ipfs/go-datastore"
 	ipfs_datastore "github.com/ipfs/go-datastore/sync"
@@ -25,6 +26,7 @@ import (
 	"github.com/synapsecns/sanguine/committee/db"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"log"
+	"sync"
 	"time"
 )
 
@@ -34,6 +36,8 @@ type LibP2PManager interface {
 	Start(ctx context.Context, bootstrapPeers []string) error
 	DoSomething()
 	DoSomethingElse() bool
+	AddValidator(ctx context.Context, addr common.Address) error
+	Address() common.Address
 }
 
 type libP2PManagerImpl struct {
@@ -43,8 +47,21 @@ type libP2PManagerImpl struct {
 	pubsub            *pubsub.PubSub
 	pubSubBroadcaster crdt.Broadcaster
 	globalDS          datastore.Batching
-	datastoreDs       *crdt.Datastore
-	discovery         discovery.Discovery
+	// ipfs is the ipfs lite peer
+	ipfs *ipfslite.Peer
+	// datastoreDs is the datastore for the crdt
+	// TODO: remove or something, not sure.
+	datastoreDs *crdt.Datastore
+	// discovery is used to discover peers
+	discovery discovery.Discovery
+	// datastoreMux is used to lock the datastores map
+	datastoreMux sync.RWMutex
+	// datastores stores the underlying datastore for each peer
+	datastores map[common.Address]datastore.Batching
+	// datastoreFactory is used to create new datastores
+	datastoreFactory db.Datstores
+	// address is the address of the node
+	address common.Address
 }
 
 const dbTopic = "crdt_db"
@@ -54,7 +71,8 @@ var RebroadcastingInterval = time.Minute
 // NewLibP2PManager creates a new libp2p manager.
 // listenHost is the host to listen on.
 //
-// TODO: we need to figure out how this works across multiple nodes.
+// validators should be a list of addresses that are allowed to connect to the host. This should include the address of the
+// node itself.
 func NewLibP2PManager(ctx context.Context, auth signer.Signer, store db.Datstores) (LibP2PManager, error) {
 	l := &libP2PManagerImpl{}
 	_, err := l.setupHost(ctx, auth.PrivKey()) // call createHost function
@@ -66,6 +84,9 @@ func NewLibP2PManager(ctx context.Context, auth signer.Signer, store db.Datstore
 	if err != nil {
 		return nil, err
 	}
+	l.address = auth.Address()
+	l.datastoreFactory = store
+	l.datastores = make(map[common.Address]datastore.Batching)
 
 	return l, nil
 }
@@ -74,6 +95,10 @@ func NewLibP2PManager(ctx context.Context, auth signer.Signer, store db.Datstore
 // TODO: consider not exposing the host directly.
 func (l *libP2PManagerImpl) Host() host.Host {
 	return l.host
+}
+
+func (l *libP2PManagerImpl) Address() common.Address {
+	return l.address
 }
 
 func (l *libP2PManagerImpl) DoSomething() {
@@ -132,18 +157,12 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 		return err
 	}
 
-	ipfs, err := ipfslite.New(ctx, l.globalDS, nil, l.host, l.dht, &ipfslite.Config{})
+	l.ipfs, err = ipfslite.New(ctx, l.globalDS, nil, l.host, l.dht, &ipfslite.Config{})
 	go l.Discover(ctx, l.host, l.dht, dbTopic)
 
 	l.pubsub, err = pubsub.NewGossipSub(ctx, l.host)
-	err = l.pubsub.RegisterTopicValidator(dbTopic, func(ctx context.Context, from peer.ID, msg *pubsub.Message) bool {
-		return true
-	})
-	if err != nil {
-		return fmt.Errorf("could not register topic validator: %w", err)
-	}
 
-	ipfs.Bootstrap(peers)
+	l.ipfs.Bootstrap(peers)
 	for _, p := range peers {
 		l.host.ConnManager().TagPeer(p.ID, "keep", 100)
 	}
@@ -181,12 +200,77 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	}
 	crdtOpts.RebroadcastInterval = time.Second
 
-	l.datastoreDs, err = crdt.New(l.globalDS, datastore.NewKey(dbTopic), ipfs, l.pubSubBroadcaster, crdtOpts)
+	l.datastoreDs, err = crdt.New(l.globalDS, datastore.NewKey(dbTopic), l.ipfs, l.pubSubBroadcaster, crdtOpts)
 	if err != nil {
 		return err
 	}
 
 	err = l.datastoreDs.Sync(ctx, datastore.NewKey("/"))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (l *libP2PManagerImpl) AddValidator(ctx context.Context, addr common.Address) error {
+	l.datastoreMux.Lock()
+	defer l.datastoreMux.Unlock()
+
+	if l.datastores[addr] != nil {
+		// validator already exists
+		return nil
+	}
+
+	// create new datastore for validator
+	ds, err := l.datastoreFactory.DatastoreForSigner(addr)
+	if err != nil {
+		return err
+	}
+
+	topic := fmt.Sprintf("crdt_db_%s", addr.String())
+
+	err = l.pubsub.RegisterTopicValidator(topic, func(ctx context.Context, from peer.ID, msg *pubsub.Message) bool {
+		// TODO: see p2p-realtime-database, convert the from peer id to an address
+		// and then make sure it matches the validator
+
+		return true
+	})
+	if err != nil {
+		return fmt.Errorf("could not register topic validator: %w", err)
+	}
+
+	// TODO: there's an edge case where if we error after this line is succesful, newpubsubbroadcaster will not be able ot be created again
+	// this should be saved in the same manner as datastores
+	pubSubBroadcaster, err := crdt.NewPubSubBroadcaster(ctx, l.pubsub, topic)
+	if err != nil {
+		return fmt.Errorf("could not create pubsub broadcaster: %w", err)
+	}
+
+	crdtOpts := crdt.DefaultOptions()
+	crdtOpts.Logger = logging.Logger(fmt.Sprintf("%s_logger", addr.String()))
+	crdtOpts.RebroadcastInterval = RebroadcastingInterval
+	crdtOpts.MaxBatchDeltaSize = 1
+
+	crdtOpts.PutHook = func(k datastore.Key, v []byte) {
+		fmt.Printf("[%s] Added: [%s] -> %s\n", time.Now().Format(time.RFC3339), k, string(v))
+		// TODO: some validation goes here
+	}
+	// TODO: this probably never gets called
+	crdtOpts.DeleteHook = func(k datastore.Key) {
+		fmt.Printf("[%s] Removed: [%s]\n", time.Now().Format(time.RFC3339), k)
+	}
+	crdtOpts.RebroadcastInterval = time.Second
+
+	l.datastores[addr], err = crdt.New(ds, datastore.NewKey(dbTopic), l.ipfs, pubSubBroadcaster, crdtOpts)
+	if err != nil {
+		return err
+	}
+
+	err = l.datastores[addr].Sync(ctx, datastore.NewKey("/"))
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
