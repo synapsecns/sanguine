@@ -88,7 +88,6 @@ func (c *chainListener) Listen(ctx context.Context, handler HandleLog) (err erro
 			if err != nil {
 				logger.Warn(err)
 			}
-
 		}
 	}
 }

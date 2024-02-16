@@ -121,8 +121,6 @@ func (l *libP2PManagerImpl) setupHost(ctx context.Context, privKeyWrapper crypto
 	return l.host, nil
 }
 
-var i = 0
-
 func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) error {
 	// setup ipfs
 	peers, err := makePeers(bootstrapPeers)
@@ -134,6 +132,12 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	go l.Discover(ctx, l.host, l.dht, dbTopic)
 
 	l.pubsub, err = pubsub.NewGossipSub(ctx, l.host)
+	err = l.pubsub.RegisterTopicValidator(dbTopic, func(ctx context.Context, from peer.ID, msg *pubsub.Message) bool {
+		return true
+	})
+	if err != nil {
+		return fmt.Errorf("could not register topic validator: %w", err)
+	}
 
 	ipfs.Bootstrap(peers)
 	for _, p := range peers {

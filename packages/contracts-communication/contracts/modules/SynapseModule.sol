@@ -15,16 +15,20 @@ contract SynapseModule is Ownable {
 
   function setInterchain(address _interchain) public onlyOwner {
     interchain = _interchain;
+    emit ConfigUpdated();
   }
 
   function setRequiredThreshold(uint256 _threshold) public onlyOwner {
     requiredThreshold = _threshold;
+    emit ConfigUpdated();
   }
 
   function setVerifiers(address[] calldata _verifiers) public onlyOwner {
     verifiers = _verifiers;
+    emit ConfigUpdated();
   }
 
+  event ConfigUpdated();
   event ModuleMessageSent(uint256 dstChainId, bytes transaction);
 
   function estimateFee(uint256 dstChainId) public view returns (uint256) {

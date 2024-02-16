@@ -47,7 +47,7 @@ func (s Store) toSignRequest(ctx context.Context, sr synapsemodule.SynapseModule
 	return SignRequest{
 		TXHash:                  sr.Raw.TxHash.String(),
 		TransactionID:           common.Bytes2Hex(decodedTx.TransactionId[:]),
-		Transaction:             common.Bytes2Hex(sr.Transaction[:]),
+		Transaction:             common.Bytes2Hex(sr.Transaction),
 		OriginChainID:           int(decodedTx.SrcChainId.Int64()),
 		DestinationChainID:      int(decodedTx.DstChainId.Int64()),
 		Sender:                  decodedTx.SrcSender.String(),

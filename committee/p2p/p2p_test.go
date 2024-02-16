@@ -39,12 +39,12 @@ func (s *P2PTestSuite) TestLibP2PManager() {
 
 	for _, manager := range managers {
 		manager := manager
-		//go func() {
+		// go func() {
 		//	defer wg.Done()
 
 		err := manager.Start(s.GetTestContext(), addresses)
 		s.Require().NoError(err)
-		//time.Sleep(time.Second)
+		// time.Sleep(time.Second)
 		//}()
 		wg.Done()
 	}
