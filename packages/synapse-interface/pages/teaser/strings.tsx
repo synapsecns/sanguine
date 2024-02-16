@@ -22,5 +22,21 @@ export const generateTx = () => {
   const token = Tokens[Math.round(Math.random() * (Tokens.length - 1))]
   const chain = Chains[Math.round(Math.random() * (Chains.length - 1))]
 
-  return `${amountStr} ${token} to ${chain}`
+
+  const origin = {
+    payload: Tokens[Math.round(Math.random() * (Tokens.length - 1))],
+    chain: Chains[Math.round(Math.random() * (Chains.length - 1))],
+    formattedAmount: amountStr,
+    timestamp: Date.now()
+  }
+  const destination = {
+    payload: origin.payload,
+    chain: Chains[Math.round(Math.random() * (Chains.length - 1))],
+    formattedAmount: amountStr,
+    timestamp: Date.now()
+  }
+
+  const description = `${origin.formattedAmount} ${origin.payload} to ${destination.chain}`
+
+  return { origin, destination }
 }

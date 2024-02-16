@@ -8,5 +8,4 @@
 .header:hover + dd  {
   /* animation: header .3s cubic-bezier(0, .5, .2, 1); */
   display: block;
-
 }
