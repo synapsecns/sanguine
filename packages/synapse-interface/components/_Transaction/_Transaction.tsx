@@ -101,7 +101,8 @@ export const _Transaction = ({
     destinationChain,
     _kappa,
     originTxHash,
-    isTxComplete
+    isTxComplete,
+    isReverted
   )
 
   return (
