@@ -298,7 +298,7 @@ func (n *Node) submit(ctx context.Context, request db.SignRequest) error {
 
 	nonce, err := n.submitter.SubmitTransaction(ctx, request.DestChainId, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		// should be request.InterchainEntry
-		return contract.VerifyEntry(transactor, n.ogEntry, request.SignedEntryHash, signatures)
+		return contract.VerifyEntry(transactor, request.InterchainEntry, signatures)
 	})
 
 	go func() {
