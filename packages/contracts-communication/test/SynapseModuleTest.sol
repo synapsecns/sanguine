@@ -2,11 +2,11 @@ pragma solidity 0.8.20;
 
 import {Test} from "forge-std/Test.sol";
 
-import {InterchainDB, InterchainEntry, IInterchainDB, IInterchainDBEvents} from "../contracts/InterchainDB.sol";
+import {InterchainDB, InterchainEntry, IInterchainDB, InterchainDBEvents} from "../contracts/InterchainDB.sol";
 
-import {SynapseModule, ISynapseModuleEvents} from "../contracts/modules/SynapseModule.sol";
+import {SynapseModule, SynapseModuleEvents} from "../contracts/modules/SynapseModule.sol";
 
-contract SynapseModuleTest is Test, ISynapseModuleEvents {
+contract SynapseModuleTest is Test, SynapseModuleEvents {
     IInterchainDB icDB;
     SynapseModule synapseModule;
 
@@ -187,7 +187,7 @@ contract SynapseModuleTest is Test, ISynapseModuleEvents {
             signatures[i] = abi.encodePacked(r, s, v);
         }
         vm.expectEmit();
-        emit EntryVerified(entry);
+        emit EntryVerified(entry, keccak256(abi.encode(entry)));
         // set block time to 2 to verify entry at block.timestamp = 2
         vm.warp(2);
         synapseModule.verifyEntry(entry, signatures);

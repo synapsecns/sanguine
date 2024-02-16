@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
+import {InterchainDBEvents} from "./events/InterchainDBEvents.sol";
 import {IInterchainDB} from "./interfaces/IInterchainDB.sol";
-import {IInterchainDBEvents} from "./interfaces/IInterchainDBEvents.sol";
 import {IInterchainModule} from "./interfaces/IInterchainModule.sol";
 
 import {InterchainEntry, InterchainEntryLib} from "./libs/InterchainEntry.sol";
 import {TypeCasts} from "./libs/TypeCasts.sol";
 
-contract InterchainDB is IInterchainDB, IInterchainDBEvents {
+contract InterchainDB is InterchainDBEvents, IInterchainDB {
     mapping(address writer => bytes32[] dataHashes) internal _entries;
     mapping(bytes32 entryId => mapping(address module => RemoteEntry entry)) internal _remoteEntries;
 

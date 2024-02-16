@@ -11,12 +11,12 @@ import {IInterchainModule} from "../interfaces/IInterchainModule.sol";
 import {ISynapseModule} from "../interfaces/ISynapseModule.sol";
 import {InterchainEntry} from "../libs/InterchainEntry.sol";
 
-import {ISynapseModuleEvents} from "../interfaces/ISynapseModuleEvents.sol";
+import {SynapseModuleEvents} from "../events/SynapseModuleEvents.sol";
 
 /// @title Synapse Module for Interchain Communication
 /// @notice This contract implements the Synapse Module functionality for interchain communication, including setting verifiers, thresholds, and handling verification requests.
-/// @dev Inherits from Ownable, SynapseGasService, and implements ISynapseModuleEvents for event emissions.
-contract SynapseModule is Ownable, SynapseGasService, ISynapseModuleEvents, ISynapseModule {
+/// @dev Inherits from Ownable, SynapseGasService, and SynapseModuleEvents for event emissions.
+contract SynapseModule is Ownable, SynapseGasService, SynapseModuleEvents, ISynapseModule {
     address[] public verifiers;
     uint256 public requiredThreshold;
     address public interchainDB;
@@ -52,14 +52,14 @@ contract SynapseModule is Ownable, SynapseGasService, ISynapseModuleEvents, ISyn
 
     /// @inheritdoc ISynapseModule
     function verifyEntry(InterchainEntry memory entry, bytes[] calldata signatures) external {
-        bytes32 messageHashToCheck = keccak256(abi.encode(entry));
+        bytes32 signableMessageHash = keccak256(abi.encode(entry));
 
         require(signatures.length >= requiredThreshold, "Not enough signatures to meet the threshold");
 
         uint256 validSignatures;
         for (uint256 i = 0; i < verifiers.length; i++) {
             // TODO: Use TryRecover for explicit error handling
-            address signer = ECDSA.recover(messageHashToCheck, signatures[i]);
+            address signer = ECDSA.recover(signableMessageHash, signatures[i]);
             for (uint256 j = 0; j < verifiers.length; j++) {
                 if (signer == verifiers[j]) {
                     validSignatures++;
@@ -72,6 +72,6 @@ contract SynapseModule is Ownable, SynapseGasService, ISynapseModuleEvents, ISyn
 
         IInterchainDB(interchainDB).verifyEntry(entry);
 
-        emit EntryVerified(entry);
+        emit EntryVerified(entry, signableMessageHash);
     }
 }

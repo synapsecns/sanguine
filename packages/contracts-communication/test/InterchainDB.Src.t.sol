@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {InterchainDB, InterchainEntry, IInterchainDB, IInterchainDBEvents} from "../contracts/InterchainDB.sol";
+import {InterchainDB, InterchainEntry, IInterchainDB, InterchainDBEvents} from "../contracts/InterchainDB.sol";
 
 import {InterchainModuleMock, IInterchainModule} from "./mocks/InterchainModuleMock.sol";
 
@@ -9,7 +9,7 @@ import {Test} from "forge-std/Test.sol";
 
 /// @notice Unit tests for InterchainDB interactions on the source chain
 /// Note: we inherit from interface with the events to avoid their copy-pasting.
-contract InterchainDBSourceTest is Test, IInterchainDBEvents {
+contract InterchainDBSourceTest is Test, InterchainDBEvents {
     uint256 public constant SRC_CHAIN_ID = 1337;
     uint256 public constant DST_CHAIN_ID = 7331;
 
