@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 struct ThresholdECDSA {
     uint256 _threshold;
@@ -64,10 +65,38 @@ library ThresholdECDSALib {
     /// @notice Verifies that the number of signatures is greater than or equal to the threshold.
     /// Note: the list of signers recovered from the signatures is required to be sorted in ascending order.
     /// @dev Will revert if either of the conditions is met:
+    /// - Threshold is not configured.
     /// - Any of the payloads is not a valid signature payload.
     /// - The number of signatures is less than the threshold.
     /// - The recovered list of signers is not sorted in the ascending order.
     function verifySignedHash(ThresholdECDSA storage self, bytes32 hash, bytes[] memory signatures) internal view {
-        // TODO: Implement
+        // First, check that threshold is configured and enough signatures are provided
+        uint256 threshold = self._threshold;
+        if (threshold == 0) {
+            revert ThresholdECDSA__ZeroThreshold();
+        }
+        if (signatures.length < threshold) {
+            revert ThresholdECDSA__NotEnoughSignatures(threshold);
+        }
+        uint256 validSignatures = 0;
+        address lastSigner = address(0);
+        for (uint256 i = 0; i < signatures.length; ++i) {
+            (address recovered, ECDSA.RecoverError error,) = ECDSA.tryRecover(hash, signatures[i]);
+            if (error != ECDSA.RecoverError.NoError) {
+                revert ThresholdECDSA__InvalidSignature(signatures[i]);
+            }
+            // Check that the recovered addresses list is strictly increasing
+            if (recovered <= lastSigner) {
+                revert ThresholdECDSA__RecoveredSignersNotSorted();
+            }
+            lastSigner = recovered;
+            // Since the signers list is sorted, every time we find a valid signer it's not a duplicate
+            if (isSigner(self, recovered)) {
+                validSignatures += 1;
+            }
+        }
+        if (validSignatures < threshold) {
+            revert ThresholdECDSA__NotEnoughSignatures(threshold);
+        }
     }
 }
