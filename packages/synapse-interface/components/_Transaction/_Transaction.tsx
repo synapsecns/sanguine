@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useAppDispatch } from '@/store/hooks'
 import { getTxBlockExplorerLink } from './helpers/getTxBlockExplorerLink'
 import { getExplorerAddressLink } from './helpers/getExplorerAddressLink'
@@ -17,6 +17,9 @@ import { useBridgeTxUpdater } from './helpers/useBridgeTxUpdater'
 import { AnimatedProgressBar } from './components/AnimatedProgressBar'
 import { TransactionSupport } from './components/TransactionSupport'
 import { RightArrow } from '@/components/icons/RightArrow'
+import { getTransactionReceipt } from './helpers/getTransactionReceipt'
+import { Address } from 'viem'
+import { useIsTxReverted } from './helpers/getTransactionReceipt'
 
 interface _TransactionProps {
   connectedAddress: string
@@ -98,6 +101,8 @@ export const _Transaction = ({
     originTxHash,
     isTxComplete
   )
+
+  const [isReverted] = useIsTxReverted(originTxHash as Address, originChain)
 
   return (
     <div
