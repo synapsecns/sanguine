@@ -94,7 +94,9 @@ export const _Transaction = ({
   const isTxFinalized = isStoredComplete ?? isTxComplete
 
   const showTransactionSupport =
-    !isTxFinalized && delayedTimeInMin ? delayedTimeInMin <= -5 : false
+    !isTxFinalized && !isStoredReverted && delayedTimeInMin
+      ? delayedTimeInMin <= -5
+      : false
 
   const isReverted = useIsTxReverted(
     originTxHash as Address,
@@ -145,7 +147,7 @@ export const _Transaction = ({
               <TimeRemaining
                 isComplete={isTxFinalized}
                 isDelayed={isEstimatedTimeReached}
-                isReverted={isReverted}
+                isReverted={isStoredReverted}
                 remainingTime={remainingTime}
                 delayedTime={delayedTime}
               />
@@ -192,6 +194,7 @@ export const _Transaction = ({
           startTime={timestamp}
           estDuration={estimatedTime * 2} // 2x buffer
           isComplete={isTxFinalized}
+          isError={isStoredReverted}
         />
       </div>
     </div>

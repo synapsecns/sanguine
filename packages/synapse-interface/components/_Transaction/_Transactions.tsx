@@ -45,6 +45,7 @@ export const _Transactions = ({
             timestamp={tx.timestamp}
             currentTime={currentTime}
             isStoredComplete={tx.isComplete}
+            isStoredReverted={tx.isReverted}
           />
         ))}
       </TransactionsContainer>

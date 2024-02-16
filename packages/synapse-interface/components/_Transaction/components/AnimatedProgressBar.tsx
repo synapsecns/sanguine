@@ -1,11 +1,13 @@
 import { memo } from 'react'
 import { getTimeMinutesBeforeNow } from '@/utils/time'
+import theme from 'tailwindcss/defaultTheme'
 
 /**
  * @param id unique identifier for progress bar instance
  * @param startTime timestamp in seconds
  * @param estDuration total duration in seconds
  * @param isComplete completion status
+ * @param isError error status
  */
 export const AnimatedProgressBar = memo(
   ({
@@ -13,11 +15,13 @@ export const AnimatedProgressBar = memo(
     startTime,
     estDuration,
     isComplete,
+    isError,
   }: {
     id: string
     startTime: number
     estDuration: number
     isComplete: boolean
+    isError: boolean
   }) => {
     const currentTime = getTimeMinutesBeforeNow(0)
     const elapsedTime = currentTime - startTime
@@ -28,6 +32,8 @@ export const AnimatedProgressBar = memo(
 
     const synapsePurple = 'hsl(265deg 100% 75%)'
     const tailwindGreen400 = 'rgb(74 222 128)'
+    const yellowText = '#FFE14D'
+
     const height = 3
 
     const progressId = `progress-${id}`
@@ -80,6 +86,15 @@ export const AnimatedProgressBar = memo(
           fill={`url(#${progressId})`}
           clipPath={`url(#${maskId})`}
         >
+          {isError && (
+            <animate
+              attributeName="fill"
+              values={`${yellowText}; hsl(185deg 100% 40%); ${tailwindGreen400}`}
+              keyTimes="0; .5; 1"
+              dur={duration}
+              fill="freeze"
+            />
+          )}
           {isComplete && (
             <animate
               attributeName="fill"
