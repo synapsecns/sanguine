@@ -88,6 +88,16 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         clientNonce++;
     }
 
+    function _getAppConfig(address receiverApp)
+        internal
+        view
+        returns (uint256 requiredResponses, uint256 optimisticTimePeriod, address[] memory approvedDstModules)
+    {
+        requiredResponses = IInterchainApp(receiverApp).getRequiredResponses();
+        optimisticTimePeriod = IInterchainApp(receiverApp).getOptimisticTimePeriod();
+        approvedDstModules = IInterchainApp(receiverApp).getReceivingModules();
+    }
+
     function isExecutable(bytes calldata transaction) public view returns (bool) {
         InterchainTransaction memory icTx = abi.decode(transaction, (InterchainTransaction));
 
@@ -106,47 +116,51 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
             return false;
         }
 
-        address receivingApp = convertBytes32ToAddress(icTx.dstReceiver);
+        (uint256 requiredResponses, uint256 optimisticTimePeriod, address[] memory approvedDstModules) =
+            _getAppConfig(convertBytes32ToAddress(icTx.dstReceiver));
 
-        address[] memory approvedDstModules = IInterchainApp(receivingApp).getReceivingModules();
+        uint256[] memory approvedResponses = _getApprovedResponses(approvedDstModules, icEntry);
 
-        uint256 appRequiredResponses = IInterchainApp(receivingApp).getRequiredResponses();
-
-        uint256 optimisticTimePeriod = IInterchainApp(receivingApp).getOptimisticTimePeriod();
-
-    uint256[] memory moduleResponseTimestamps = new uint256[](
-        approvedDstModules.length
-        );
-
-        for (uint256 i = 0; i < approvedDstModules.length; i++) {
-            moduleResponseTimestamps[i] = IInterchainDB(interchainDB).readEntry(approvedDstModules[i], icEntry);
-        }
-        // 6. Confirm module threshold is met
-        uint256 validResponses = 0;
-
-        for (uint256 i = 0; i < moduleResponseTimestamps.length; i++) {
-            if (moduleResponseTimestamps[i] + optimisticTimePeriod >= block.timestamp) {
-                validResponses++;
-            }
-        }
-
-        if (validResponses >= appRequiredResponses) {
+        uint256 finalizedResponses = _getFinalizedResponsesCount(approvedResponses, optimisticTimePeriod);
+        if (finalizedResponses >= requiredResponses) {
             return true;
         } else {
             return false;
         }
     }
 
-    // function _getValidResponses(address[] memory approvedModules, InterchainEntry memory icEntry) internal view returns (uint256) {
-    //     uint256 validResponses = 0;
-    //     for (uint256 i = 0; i < approvedModules.length; i++) {
-    //         uint256 moduleResponseTimestamp = IInterchainDB(interchainDB).readEntry(approvedModules[i], icEntry);
-    //         if (moduleResponseTimestamp + optimisticTimePeriod >= block.timestamp) {
-    //             validResponses++;
-    //         }
-    //     }
-    //     return validResponses;
-    // }
+    function _getFinalizedResponsesCount(
+        uint256[] memory approvedResponses,
+        uint256 optimisticTimePeriod
+    )
+        internal
+        view
+        returns (uint256)
+    {
+        uint256 finalizedResponses = 0;
+        for (uint256 i = 0; i < approvedResponses.length; i++) {
+            if (approvedResponses[i] + optimisticTimePeriod >= block.timestamp) {
+                finalizedResponses++;
+            }
+        }
+        return finalizedResponses;
+    }
+
+    function _getApprovedResponses(
+        address[] memory approvedModules,
+        InterchainEntry memory icEntry
+    )
+        internal
+        view
+        returns (uint256[] memory)
+    {
+        uint256[] memory approvedResponses = new uint256[](approvedModules.length);
+        uint256 validResponses = 0;
+        for (uint256 i = 0; i < approvedModules.length; i++) {
+            approvedResponses[i] = IInterchainDB(interchainDB).readEntry(approvedModules[i], icEntry);
+        }
+        return approvedResponses;
+    }
 
     // TODO: Gas Fee Consideration that is paid to executor
     // @inheritdoc IInterchainClientV1
