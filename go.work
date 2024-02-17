@@ -14,6 +14,7 @@ use (
 	./contrib/tfcore
 	./core
 	./ethergo
+	./sin-executor
 	./services/cctp-relayer
 	./services/explorer
 	./services/omnirpc

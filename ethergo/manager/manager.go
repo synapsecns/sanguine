@@ -42,14 +42,15 @@ type DeployerManager struct {
 	// structMux prevents race conditions
 	structMux sync.RWMutex
 	// deployers adds a list of default deployers
-	deployers []DeployerFunc
+	deployers []deployer.DeployerFunc
 }
 
 // DeployerFunc defines a deployer we can use.
-type DeployerFunc func(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer
+// Deprecated: use deployer.DeployerFunc instead.
+type DeployerFunc = deployer.DeployerFunc
 
 // NewDeployerManager creates a new deployment helper.
-func NewDeployerManager(t *testing.T, deployers ...DeployerFunc) (d *DeployerManager) {
+func NewDeployerManager(t *testing.T, deployers ...deployer.DeployerFunc) (d *DeployerManager) {
 	t.Helper()
 	d = &DeployerManager{
 		t:          t,
