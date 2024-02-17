@@ -10,6 +10,8 @@ import "../contracts/modules/SynapseModule.sol";
 
 import {InterchainEntry} from "../contracts/libs/InterchainEntry.sol";
 
+import {TypeCasts} from "../contracts/libs/TypeCasts.sol";
+
 contract InterchainClientV1Test is Test {
     InterchainClientV1 icClient;
     InterchainDB icDB;
@@ -37,7 +39,7 @@ contract InterchainClientV1Test is Test {
     }
 
     function test_interchainSend() public {
-        bytes32 receiver = icClient.convertAddressToBytes32(makeAddr("Receiver"));
+        bytes32 receiver = TypeCasts.addressToBytes32(makeAddr("Receiver"));
         bytes memory message = "Hello World";
         address[] memory srcModules = new address[](1);
         srcModules[0] = address(synapseModule);
@@ -45,7 +47,7 @@ contract InterchainClientV1Test is Test {
         uint64 nonce = 1;
         bytes32 transactionID = keccak256(
             abi.encode(
-                icClient.convertAddressToBytes32(msg.sender), block.chainid, receiver, DST_CHAIN_ID, message, nonce
+                TypeCasts.addressToBytes32(msg.sender), block.chainid, receiver, DST_CHAIN_ID, message, nonce
             )
         );
         bytes memory options = "";
@@ -53,10 +55,10 @@ contract InterchainClientV1Test is Test {
     }
 
     function test_interchainReceive() public {
-        bytes32 dstReceiver = icClient.convertAddressToBytes32(address(icApp));
+        bytes32 dstReceiver = TypeCasts.addressToBytes32(address(icApp));
         bytes memory message = "Hello World";
         bytes memory options = "";
-        bytes32 srcSender = icClient.convertAddressToBytes32(makeAddr("Sender"));
+        bytes32 srcSender = TypeCasts.addressToBytes32(makeAddr("Sender"));
         icClient.setLinkedClient(SRC_CHAIN_ID, srcSender);
         uint64 nonce = 1;
         bytes32 transactionID =

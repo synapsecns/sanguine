@@ -44,22 +44,6 @@ interface IInterchainClientV1 {
     function interchainExecute(bytes32 transactionID, bytes calldata transaction) external;
 
     /**
-     * @notice Converts a bytes32 value to an address.
-     * @dev Useful for converting blockchain-specific identifiers to Ethereum addresses.
-     * @param _bytes32 The bytes32 value to convert.
-     * @return address The address obtained from the bytes32 value.
-     */
-    function convertBytes32ToAddress(bytes32 _bytes32) external pure returns (address);
-
-    /**
-     * @notice Converts an address to a bytes32 value.
-     * @dev Useful for converting Ethereum addresses to blockchain-specific identifiers.
-     * @param _address The address to convert.
-     * @return bytes32 The bytes32 representation of the address.
-     */
-    function convertAddressToBytes32(address _address) external pure returns (bytes32);
-
-    /**
      * @notice Checks if a transaction is executable.
      * @dev Determines if a transaction meets the criteria to be executed based on:
      * - If approved modules have written to the InterchainDB

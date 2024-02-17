@@ -9,6 +9,8 @@ import {InterchainEntry} from "./libs/InterchainEntry.sol";
 
 import {IInterchainClientV1} from "./interfaces/IInterchainClientV1.sol";
 
+import {TypeCasts} from "./libs/TypeCasts.sol";
+
 /**
  * @title InterchainClientV1
  * @dev Implements the operations of the Interchain Execution Layer.
@@ -110,7 +112,7 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         uint256 totalModuleFees = msg.value;
 
         InterchainTransaction memory icTx = InterchainTransaction({
-            srcSender: convertAddressToBytes32(msg.sender),
+            srcSender: TypeCasts.addressToBytes32(msg.sender),
             srcChainId: block.chainid,
             dstReceiver: receiver,
             dstChainId: dstChainId,
@@ -172,7 +174,7 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         require(icTx.transactionId == reconstructedID, "Invalid transaction ID");
 
         (uint256 requiredResponses, uint256 optimisticTimePeriod, address[] memory approvedDstModules) =
-            _getAppConfig(convertBytes32ToAddress(icTx.dstReceiver));
+            _getAppConfig(TypeCasts.bytes32ToAddress(icTx.dstReceiver));
 
         uint256[] memory approvedResponses = _getApprovedResponses(approvedDstModules, icEntry);
 
@@ -235,7 +237,7 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         require(isExecutable(transaction), "Transaction is not executable");
         InterchainTransaction memory icTx = abi.decode(transaction, (InterchainTransaction));
         executedTransactions[icTx.transactionId] = true;
-        IInterchainApp(convertBytes32ToAddress(icTx.dstReceiver)).appReceive();
+        IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).appReceive();
         emit InterchainTransactionExecuted(
             icTx.srcSender,
             icTx.srcChainId,
@@ -249,18 +251,4 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         );
     }
 
-    // TODO: Seperate out into utils
-    /**
-     * @inheritdoc IInterchainClientV1
-     */
-    function convertBytes32ToAddress(bytes32 _bytes32) public pure returns (address) {
-        return address(uint160(uint256(_bytes32)));
-    }
-
-    /**
-     * @inheritdoc IInterchainClientV1
-     */
-    function convertAddressToBytes32(address _address) public pure returns (bytes32) {
-        return bytes32(uint256(uint160(_address)));
-    }
 }
