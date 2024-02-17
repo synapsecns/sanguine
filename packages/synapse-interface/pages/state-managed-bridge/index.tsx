@@ -510,27 +510,29 @@ const StateManagedBridge = () => {
         <Card
           divider={false}
           className={`
-            pb-3 mt-5 overflow-hidden
+             mt-5 overflow-hidden
             transition-all duration-100 transform rounded-lg
             bg-bgBase/10
           `}
         >
           <div ref={bridgeDisplayRef}>
-            <OverlayTransition show={showSettingsSlideOver}>
-              <SettingsSlideOver key="settings" />
-            </OverlayTransition>
-            <OverlayTransition show={showFromChainListOverlay}>
-              <FromChainListOverlay />
-            </OverlayTransition>
-            <OverlayTransition show={showFromTokenListOverlay}>
-              <FromTokenListOverlay />
-            </OverlayTransition>
-            <OverlayTransition show={showToChainListOverlay}>
-              <ToChainListOverlay />
-            </OverlayTransition>
-            <OverlayTransition show={showToTokenListOverlay}>
-              <ToTokenListOverlay />
-            </OverlayTransition>
+            <div className="-mt-4 pb-4"> {/** hackfix for making sure origin point is top of the card */}
+              <OverlayTransition show={showSettingsSlideOver}>
+                <SettingsSlideOver />
+              </OverlayTransition>
+              <OverlayTransition show={showFromChainListOverlay}>
+                <FromChainListOverlay />
+              </OverlayTransition>
+              <OverlayTransition show={showFromTokenListOverlay}>
+                <FromTokenListOverlay />
+              </OverlayTransition>
+              <OverlayTransition show={showToChainListOverlay}>
+                <ToChainListOverlay />
+              </OverlayTransition>
+              <OverlayTransition show={showToTokenListOverlay}>
+                <ToTokenListOverlay />
+              </OverlayTransition>
+            </div>
             <InputContainer />
             <OutputContainer />
             <Warning />
@@ -548,7 +550,7 @@ const StateManagedBridge = () => {
                 destinationAddress={destinationAddress}
               />
             )}
-            <div className="md:my-3">
+            <div className=" md:mt-3">
               <BridgeTransactionButton
                 isApproved={isApproved}
                 approveTxn={approveTxn}

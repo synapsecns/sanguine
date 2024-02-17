@@ -31,15 +31,17 @@ export const SettingsSlideOver = () => {
   const { showDestinationAddress } = useBridgeDisplayState()
 
   return (
-    <div ref={ref} className="max-h-full pb-4 pt-2 overflow-auto rounded-lg">
+    <div
+      ref={ref}
+      className="max-h-full pb-4 mt-2 overflow-auto scrollbar-hide"
+    >
       <div
         className={`
           px-3 md:px-6 rounded-md text-base focus:outline-none
           overflow-hidden z-10 w-full
-          space-y-4
+          space-y-4 pt-3
         `}
       >
-        <div className="pt-2"></div>
         <div className="text-sm font-light text-white">Options</div>
         {/* @ts-ignore */}
         <Switch.Group>

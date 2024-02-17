@@ -351,15 +351,17 @@ const StateManagedSwap = () => {
             `}
           >
             <div ref={swapDisplayRef}>
-              <OverlayTransition show={showSwapChainListOverlay}>
-                <SwapChainListOverlay />
-              </OverlayTransition>
-              <OverlayTransition show={showSwapFromTokenListOverlay}>
-                <SwapFromTokenListOverlay />
-              </OverlayTransition>
-              <OverlayTransition show={showSwapToTokenListOverlay}>
-                <SwapToTokenListOverlay />
-              </OverlayTransition>
+              <div className="-mt-4 pb-4"> {/** hackfix for making sure origin point is top of the card */}
+                <OverlayTransition show={showSwapChainListOverlay}>
+                  <SwapChainListOverlay />
+                </OverlayTransition>
+                <OverlayTransition show={showSwapFromTokenListOverlay}>
+                  <SwapFromTokenListOverlay />
+                </OverlayTransition>
+                <OverlayTransition show={showSwapToTokenListOverlay}>
+                  <SwapToTokenListOverlay />
+                </OverlayTransition>
+              </div>
               <SwapInputContainer />
               <SwapOutputContainer />
               <Transition
