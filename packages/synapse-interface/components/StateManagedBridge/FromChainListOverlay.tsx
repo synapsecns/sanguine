@@ -89,10 +89,10 @@ export const FromChainListOverlay = () => {
     <div
       ref={overlayRef}
       data-test-id="fromChain-list-overlay"
-      className="max-h-full pb-4 mt-2 overflow-auto scrollbar-hide"
+      className="max-h-full pb-4 overflow-auto scrollbar-hide"
     >
       <div className="z-10 w-full px-2 ">
-        <div className="relative flex items-center mb-2 font-medium">
+        <div className="relative flex items-center my-2 font-medium">
           <SlideSearchBox
             placeholder="Filter by chain name, id, or native currency"
             searchStr={searchStr}
