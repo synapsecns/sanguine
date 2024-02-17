@@ -23,12 +23,14 @@ interface IInterchainClientV1 {
      * @param receiver The address of the receiver on the destination chain.
      * @param dstChainId The chain ID of the destination chain.
      * @param message The message being sent.
+     * @param options Execution options for the message sent, encoded as bytes, currently primarily gas limit + native gas drop.
      * @param srcModules The source modules involved in the message sending.
      */
     function interchainSend(
         bytes32 receiver,
         uint256 dstChainId,
         bytes calldata message,
+        bytes calldata options,
         address[] calldata srcModules
     )
         external
@@ -37,26 +39,9 @@ interface IInterchainClientV1 {
     /**
      * @notice Executes a transaction that has been sent via the Interchain.
      * @dev The transaction must have been previously sent and recorded.
-     * @param transactionID The ID of the transaction being executed.
      * @param transaction The transaction data.
      */
-    function interchainExecute(bytes32 transactionID, bytes calldata transaction) external;
-
-    /**
-     * @notice Converts a bytes32 value to an address.
-     * @dev Useful for converting blockchain-specific identifiers to Ethereum addresses.
-     * @param _bytes32 The bytes32 value to convert.
-     * @return address The address obtained from the bytes32 value.
-     */
-    function convertBytes32ToAddress(bytes32 _bytes32) external pure returns (address);
-
-    /**
-     * @notice Converts an address to a bytes32 value.
-     * @dev Useful for converting Ethereum addresses to blockchain-specific identifiers.
-     * @param _address The address to convert.
-     * @return bytes32 The bytes32 representation of the address.
-     */
-    function convertAddressToBytes32(address _address) external pure returns (bytes32);
+    function interchainExecute(bytes calldata transaction) external;
 
     /**
      * @notice Checks if a transaction is executable.

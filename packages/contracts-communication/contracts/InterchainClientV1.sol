@@ -9,11 +9,17 @@ import {InterchainEntry} from "./libs/InterchainEntry.sol";
 
 import {IInterchainClientV1} from "./interfaces/IInterchainClientV1.sol";
 
+import {TypeCasts} from "./libs/TypeCasts.sol";
+
+import { OptionsLib } from "./libs/Options.sol";
+
 /**
  * @title InterchainClientV1
  * @dev Implements the operations of the Interchain Execution Layer.
  */
 contract InterchainClientV1 is Ownable, IInterchainClientV1 {
+    using OptionsLib for bytes;
+
     uint64 public clientNonce;
     address public interchainDB;
     mapping(bytes32 => bool) public executedTransactions;
@@ -23,7 +29,7 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
 
     // TODO: Add permissioning
     // @inheritdoc IInterchainClientV1
-    function setLinkedClient(uint256 chainId, bytes32 client) public {
+    function setLinkedClient(uint256 chainId, bytes32 client) public onlyOwner {
         linkedClients[chainId] = client;
     }
 
@@ -44,6 +50,7 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         uint256 indexed dstChainId,
         bytes message,
         uint64 nonce,
+        bytes options,
         bytes32 indexed transactionId,
         uint256 dbWriterNonce
     );
@@ -57,6 +64,7 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         uint256 dstChainId,
         bytes message,
         uint64 nonce,
+        bytes options,
         bytes32 indexed transactionId,
         uint256 dbWriterNonce
     );
@@ -71,32 +79,63 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         uint256 dstChainId;
         bytes message;
         uint64 nonce;
+        bytes options;
         bytes32 transactionId;
         uint256 dbWriterNonce;
     }
 
+    function _generateTransactionId(
+        bytes32 srcSender,
+        uint256 srcChainId,
+        bytes32 dstReceiver,
+        uint256 dstChainId,
+        bytes memory message,
+        uint64 nonce,
+        bytes memory options
+    )
+        internal
+        pure
+        returns (bytes32)
+    {
+        return keccak256(abi.encode(srcSender, srcChainId, dstReceiver, dstChainId, message, nonce, options));
+    }
+
     // TODO: Calculate Gas Pricing per module and charge fees
-    // TODO: Customizable Gas Limit for Execution
     // @inheritdoc IInterchainClientV1
     function interchainSend(
         bytes32 receiver,
         uint256 dstChainId,
         bytes calldata message,
+        bytes calldata options,
         address[] calldata srcModules
     )
         public
         payable
     {
         uint256 totalModuleFees = msg.value;
-        bytes32 sender = convertAddressToBytes32(msg.sender);
-        bytes32 transactionID = keccak256(abi.encode(sender, block.chainid, receiver, dstChainId, message, clientNonce));
+
+        InterchainTransaction memory icTx = InterchainTransaction({
+            srcSender: TypeCasts.addressToBytes32(msg.sender),
+            srcChainId: block.chainid,
+            dstReceiver: receiver,
+            dstChainId: dstChainId,
+            message: message,
+            nonce: clientNonce,
+            options: options,
+            transactionId: 0,
+            dbWriterNonce: 0
+        });
+
+        bytes32 transactionId = _generateTransactionId(icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce, icTx.options);
+        icTx.transactionId = transactionId;
 
         uint256 dbWriterNonce = IInterchainDB(interchainDB).writeEntryWithVerification{value: totalModuleFees}(
-            dstChainId, transactionID, srcModules
+            icTx.dstChainId, icTx.transactionId, srcModules
         );
+        icTx.dbWriterNonce = dbWriterNonce;
 
         emit InterchainTransactionSent(
-            sender, block.chainid, receiver, dstChainId, message, clientNonce, transactionID, dbWriterNonce
+            icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce, icTx.options, icTx.transactionId, icTx.dbWriterNonce
         );
         // Increment nonce for next message
         clientNonce++;
@@ -133,14 +172,12 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
             dataHash: icTx.transactionId
         });
 
-        bytes32 reconstructedID = keccak256(
-            abi.encode(icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce)
-        );
+        bytes32 reconstructedID = _generateTransactionId(icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce, icTx.options);
 
         require(icTx.transactionId == reconstructedID, "Invalid transaction ID");
 
         (uint256 requiredResponses, uint256 optimisticTimePeriod, address[] memory approvedDstModules) =
-            _getAppConfig(convertBytes32ToAddress(icTx.dstReceiver));
+            _getAppConfig(TypeCasts.bytes32ToAddress(icTx.dstReceiver));
 
         uint256[] memory approvedResponses = _getApprovedResponses(approvedDstModules, icEntry);
 
@@ -199,11 +236,14 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
 
     // TODO: Gas Fee Consideration that is paid to executor
     // @inheritdoc IInterchainClientV1
-    function interchainExecute(bytes32 transactionID, bytes calldata transaction) public {
+    function interchainExecute(bytes calldata transaction) public {
         require(isExecutable(transaction), "Transaction is not executable");
         InterchainTransaction memory icTx = abi.decode(transaction, (InterchainTransaction));
         executedTransactions[icTx.transactionId] = true;
-        IInterchainApp(convertBytes32ToAddress(icTx.dstReceiver)).appReceive();
+
+        OptionsLib.Options memory decodedOptions = icTx.options.decodeOptions();
+
+        IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).appReceive{gas: decodedOptions.gasLimit}();
         emit InterchainTransactionExecuted(
             icTx.srcSender,
             icTx.srcChainId,
@@ -211,23 +251,10 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
             icTx.dstChainId,
             icTx.message,
             icTx.nonce,
+            icTx.options,
             icTx.transactionId,
             icTx.dbWriterNonce
         );
     }
 
-    // TODO: Seperate out into utils
-    /**
-     * @inheritdoc IInterchainClientV1
-     */
-    function convertBytes32ToAddress(bytes32 _bytes32) public pure returns (address) {
-        return address(uint160(uint256(_bytes32)));
-    }
-
-    /**
-     * @inheritdoc IInterchainClientV1
-     */
-    function convertAddressToBytes32(address _address) public pure returns (bytes32) {
-        return bytes32(uint256(uint160(_address)));
-    }
 }
