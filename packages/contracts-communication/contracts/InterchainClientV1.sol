@@ -233,7 +233,7 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
 
     // TODO: Gas Fee Consideration that is paid to executor
     // @inheritdoc IInterchainClientV1
-    function interchainExecute(bytes32 transactionID, bytes calldata transaction) public {
+    function interchainExecute(bytes calldata transaction) public {
         require(isExecutable(transaction), "Transaction is not executable");
         InterchainTransaction memory icTx = abi.decode(transaction, (InterchainTransaction));
         executedTransactions[icTx.transactionId] = true;

@@ -38,10 +38,9 @@ interface IInterchainClientV1 {
     /**
      * @notice Executes a transaction that has been sent via the Interchain.
      * @dev The transaction must have been previously sent and recorded.
-     * @param transactionID The ID of the transaction being executed.
      * @param transaction The transaction data.
      */
-    function interchainExecute(bytes32 transactionID, bytes calldata transaction) external;
+    function interchainExecute(bytes calldata transaction) external;
 
     /**
      * @notice Checks if a transaction is executable.

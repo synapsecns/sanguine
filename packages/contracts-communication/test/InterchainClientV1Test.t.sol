@@ -82,6 +82,6 @@ contract InterchainClientV1Test is Test {
             dbWriterNonce: 0
         });
 
-        icClient.interchainExecute(transactionID, abi.encode(transaction));
+        icClient.interchainExecute(abi.encode(transaction));
     }
 }
