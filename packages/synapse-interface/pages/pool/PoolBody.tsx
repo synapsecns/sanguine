@@ -119,12 +119,6 @@ const PoolBody = ({
             {!isConnected && (
               <div className="flex flex-col justify-center h-full p-10">
                 <TransactionButton
-                  style={{
-                    background:
-                      'linear-gradient(90deg, rgba(128, 0, 255, 0.2) 0%, rgba(255, 0, 191, 0.2) 100%)',
-                    border: '1px solid #9B6DD7',
-                    borderRadius: '4px',
-                  }}
                   label="Connect wallet"
                   pendingLabel="Connecting"
                   onClick={() =>
@@ -143,12 +137,6 @@ const PoolBody = ({
             {isConnected && connectedChainId !== pool.chainId && (
               <div className="flex flex-col justify-center h-full p-10">
                 <TransactionButton
-                  style={{
-                    background:
-                      'linear-gradient(90deg, rgba(128, 0, 255, 0.2) 0%, rgba(255, 0, 191, 0.2) 100%)',
-                    border: '1px solid #9B6DD7',
-                    borderRadius: '4px',
-                  }}
                   label={`Switch to ${
                     chains.find((c) => c.id === pool.chainId)?.name
                   }`}

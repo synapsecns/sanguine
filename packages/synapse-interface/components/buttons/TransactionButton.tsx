@@ -5,14 +5,12 @@ import { TransactionResponse } from '@ethersproject/providers'
 import { CSSProperties } from 'react'
 
 const BASE_PROPERTIES = `
-    w-full rounded-md px-4 py-3
+    w-full rounded-sm px-4 py-3
     text-white text-opacity-100 transition-all
     hover:opacity-80 disabled:opacity-50 disabled:text-[#88818C]
-    disabled:from-bgLight disabled:to-bgLight
-    bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF]
+    border border-fuchsia-600
+    disabled:border-zinc-600 disabled:bg-zinc-800 disabled:cursor-default
   `
-
-const disabledClass = `opacity-30 cursor-default`
 
 export const TransactionButton = ({
   className,
@@ -50,11 +48,10 @@ export const TransactionButton = ({
         style={style}
         disabled={disabled}
         className={`
-        ${className}
-        ${BASE_PROPERTIES}
-        ${disabled && disabledClass}
-        ${isPending && 'from-[#622e71] to-[#564071]'}
-      `}
+          ${className}
+          ${BASE_PROPERTIES}
+          ${!disabled && 'bg-custom-gradient'}
+        `}
         onClick={async () => {
           const tx = await pendingTxWrapFunc(onClick())
           if (tx?.hash || tx?.transactionHash || tx?.status === 1) {
