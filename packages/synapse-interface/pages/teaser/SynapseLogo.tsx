@@ -22,3 +22,12 @@ export function SynapseIcon({ width, height }) {
       />
     </svg>)
 }
+
+export function SynapseAnchor() {
+  return (
+    <a href="#" className="text-2xl md:text-3xl font-medium flex gap-2 items-center">
+      <SynapseIcon width={40} height={40} />
+      <span className="-mt-1.5">Synapse</span>
+    </a>
+  )
+}
