@@ -57,4 +57,15 @@ interface IInterchainClientV1 {
      * @return bytes32 The bytes32 representation of the address.
      */
     function convertAddressToBytes32(address _address) external pure returns (bytes32);
+
+    /**
+     * @notice Checks if a transaction is executable.
+     * @dev Determines if a transaction meets the criteria to be executed based on:
+     * - If approved modules have written to the InterchainDB
+     * - If the threshold of approved modules have been met
+     * - If the optimistic window has passed for all modules
+     * @param transaction The InterchainTransaction struct to be checked.
+     * @return bool Returns true if the transaction is executable, false otherwise.
+     */
+    function isExecutable(bytes calldata transaction) external view returns (bool);
 }

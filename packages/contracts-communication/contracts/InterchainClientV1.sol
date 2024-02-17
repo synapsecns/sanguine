@@ -16,9 +16,10 @@ import {IInterchainClientV1} from "./interfaces/IInterchainClientV1.sol";
 contract InterchainClientV1 is Ownable, IInterchainClientV1 {
     uint64 public clientNonce;
     address public interchainDB;
+    mapping(bytes32 => bool) public executedTransactions;
 
     // Chain ID => Bytes32 Address of src clients
-    mapping(uint256 => bytes32) linkedClients;
+    mapping(uint256 => bytes32) public linkedClients;
 
     // TODO: Add permissioning
     // @inheritdoc IInterchainClientV1
@@ -41,6 +42,19 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         uint256 srcChainId,
         bytes32 indexed dstReceiver,
         uint256 indexed dstChainId,
+        bytes message,
+        uint64 nonce,
+        bytes32 indexed transactionId,
+        uint256 dbWriterNonce
+    );
+
+    // @notice Emitted when an interchain transaction is executed.
+    // TODO: Indexing
+    event InterchainTransactionExecuted(
+        bytes32 indexed srcSender,
+        uint256 indexed srcChainId,
+        bytes32 dstReceiver,
+        uint256 dstChainId,
         bytes message,
         uint64 nonce,
         bytes32 indexed transactionId,
@@ -88,22 +102,30 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         clientNonce++;
     }
 
-    // TODO: Gas Fee Consideration that is paid to executor
+    // TODO: App Config Versioning
+    // TODO: What if receiver is not a contract / doesn't conform to interface?
+    /**
+     * @dev Retrieves the application configuration for a given receiver application.
+     * @param receiverApp The address of the receiver application.
+     * @return requiredResponses The number of required responses from the receiving modules.
+     * @return optimisticTimePeriod The time period within which responses are considered valid.
+     * @return approvedDstModules An array of addresses of the approved destination modules.
+     */
+    function _getAppConfig(address receiverApp)
+        internal
+        view
+        returns (uint256 requiredResponses, uint256 optimisticTimePeriod, address[] memory approvedDstModules)
+    {
+        requiredResponses = IInterchainApp(receiverApp).getRequiredResponses();
+        optimisticTimePeriod = IInterchainApp(receiverApp).getOptimisticTimePeriod();
+        approvedDstModules = IInterchainApp(receiverApp).getReceivingModules();
+    }
+
     // @inheritdoc IInterchainClientV1
-    function interchainExecute(bytes32 transactionID, bytes calldata transaction) public {
-        // Steps to verify:
-        // 1. Call icDB.getEntry(linkedClients.srcChainId, transaction.dbWriterNonce)
-        // 2. Verify the entry hash vs bytes calldata provided
-        // 3. Check receiver's app dstModule configuration
-        // 4. Check receiver app's optimistic time period
-        // 5. Read module entry's based on receiver app dstModule config
-        // 6. Confirm module threshold is met
-        // 7. Check optimistic threshold set on app config
-        // 8. Execute the transaction, is optimistic period is met.
-
+    function isExecutable(bytes calldata transaction) public view returns (bool) {
         InterchainTransaction memory icTx = abi.decode(transaction, (InterchainTransaction));
-
-        // 1. Call icDB.getEntry(linkedClients.srcChainId, transaction.dbWriterNonce)
+        require(executedTransactions[icTx.transactionId] == false, "Transaction already executed");
+        // Construct expected entry based on icTransaction data
         InterchainEntry memory icEntry = InterchainEntry({
             srcChainId: icTx.srcChainId,
             srcWriter: linkedClients[icTx.srcChainId],
@@ -111,40 +133,87 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
             dataHash: icTx.transactionId
         });
 
-        bytes memory reconstructedID =
-            abi.encode(icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce);
+        bytes32 reconstructedID = keccak256(
+            abi.encode(icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce)
+        );
 
-        // 2. Verify the entry hash vs bytes calldata provided
-        require(icEntry.dataHash == keccak256(reconstructedID), "Invalid transaction ID");
+        require(icTx.transactionId == reconstructedID, "Invalid transaction ID");
 
-        address receivingApp = convertBytes32ToAddress(icTx.dstReceiver);
-        // 3. Check receiver's app dstModule configuration
-        address[] memory approvedDstModules = IInterchainApp(receivingApp).getReceivingModules();
+        (uint256 requiredResponses, uint256 optimisticTimePeriod, address[] memory approvedDstModules) =
+            _getAppConfig(convertBytes32ToAddress(icTx.dstReceiver));
 
-        uint256 appRequiredResponses = IInterchainApp(receivingApp).getRequiredResponses();
+        uint256[] memory approvedResponses = _getApprovedResponses(approvedDstModules, icEntry);
 
-        // 4. Check receiver app's optimistic time period
-        uint256 optimisticTimePeriod = IInterchainApp(receivingApp).getOptimisticTimePeriod();
+        uint256 finalizedResponses = _getFinalizedResponsesCount(approvedResponses, optimisticTimePeriod);
+        require(finalizedResponses >= requiredResponses, "Not enough valid responses to meet the threshold");
+        return true;
+    }
+    /**
+     * @dev Calculates the number of responses that are considered finalized within the optimistic time period.
+     * @param approvedResponses An array of timestamps when each approved response was recorded.
+     * @param optimisticTimePeriod The time period in seconds within which a response is considered valid.
+     * @return finalizedResponses The count of responses that are finalized within the optimistic time period.
+     */
 
-        // 5. Read module entry's based on receiver app dstModule config
-        uint256[] memory moduleResponseTimestamps = new uint256[](approvedDstModules.length);
-
-        for (uint256 i = 0; i < approvedDstModules.length; i++) {
-            moduleResponseTimestamps[i] = IInterchainDB(interchainDB).readEntry(approvedDstModules[i], icEntry);
-        }
-        // 6. Confirm module threshold is met
-        uint256 validResponses = 0;
-
-        for (uint256 i = 0; i < moduleResponseTimestamps.length; i++) {
-            if (moduleResponseTimestamps[i] + optimisticTimePeriod >= block.timestamp) {
-                validResponses++;
+    function _getFinalizedResponsesCount(
+        uint256[] memory approvedResponses,
+        uint256 optimisticTimePeriod
+    )
+        internal
+        view
+        returns (uint256)
+    {
+        uint256 finalizedResponses = 0;
+        for (uint256 i = 0; i < approvedResponses.length; i++) {
+            if (approvedResponses[i] + optimisticTimePeriod >= block.timestamp) {
+                finalizedResponses++;
             }
         }
+        return finalizedResponses;
+    }
+    /**
+     * @dev Retrieves the responses from approved modules for a given InterchainEntry.
+     * This function iterates over all approved modules, querying the InterchainDB for each module's response
+     * to the provided InterchainEntry. It compiles these responses into an array of uint256, where each
+     * element represents the timestamp of a module's response.
+     *
+     * @param approvedModules An array of addresses representing the approved modules that can write responses.
+     * @param icEntry The InterchainEntry for which responses are being retrieved.
+     * @return approvedResponses An array of uint256 representing the timestamps of responses from approved modules.
+     */
 
-        require(validResponses >= appRequiredResponses, "Not enough valid responses to meet the threshold");
+    function _getApprovedResponses(
+        address[] memory approvedModules,
+        InterchainEntry memory icEntry
+    )
+        internal
+        view
+        returns (uint256[] memory)
+    {
+        uint256[] memory approvedResponses = new uint256[](approvedModules.length);
+        for (uint256 i = 0; i < approvedModules.length; i++) {
+            approvedResponses[i] = IInterchainDB(interchainDB).readEntry(approvedModules[i], icEntry);
+        }
+        return approvedResponses;
+    }
 
-        // 8. Execute the transaction, is optimistic period & valid responses is met.
-        IInterchainApp(receivingApp).appReceive();
+    // TODO: Gas Fee Consideration that is paid to executor
+    // @inheritdoc IInterchainClientV1
+    function interchainExecute(bytes32 transactionID, bytes calldata transaction) public {
+        require(isExecutable(transaction), "Transaction is not executable");
+        InterchainTransaction memory icTx = abi.decode(transaction, (InterchainTransaction));
+        executedTransactions[icTx.transactionId] = true;
+        IInterchainApp(convertBytes32ToAddress(icTx.dstReceiver)).appReceive();
+        emit InterchainTransactionExecuted(
+            icTx.srcSender,
+            icTx.srcChainId,
+            icTx.dstReceiver,
+            icTx.dstChainId,
+            icTx.message,
+            icTx.nonce,
+            icTx.transactionId,
+            icTx.dbWriterNonce
+        );
     }
 
     // TODO: Seperate out into utils
