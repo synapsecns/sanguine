@@ -13,17 +13,21 @@ type InterchainTransaction struct {
 	// TransactionID is the transaction id.
 	TransactionID string `gorm:"primaryKey"`
 	// SrcSender is the sender of the transaction.
-	SrcSender string `gorm:"index"`
+	SrcSender string `gorm:"column:src_sender;index"`
 	// DstReceiver is the receiver of the transaction.
-	DstReceiver string `gorm:"index"`
+	DstReceiver string `gorm:"column:dst_receiver;index"`
+	// SrcChainID is the source chain id.
+	SrcChainID uint64 `gorm:"column:src_chain_id;index"`
+	// DstChainID is the destination chain id.
+	DstChainID uint64 `gorm:"column:dst_chain_id;index"`
 	// Message is the message of the transaction.
-	Message string
+	Message string `gorm:"column:message"`
 	// Status is the status of the transaction.
 	Status db.ExecutableStatus `gorm:"column:status;index"`
 	// Nonce is the nonce of the transaction.
-	Nonce uint64 `gorm:"index"`
+	Nonce uint64 `gorm:"column:nonce;index"`
 	// DBWriterNonce is the nonce of the transaction in the database.
-	DBWriterNonce uint64 `gorm:"index"`
+	DBWriterNonce uint64 `gorm:"column:db_writer_nonce;index"`
 }
 
 func (s InterchainTransaction) ToTransactionSent() db.TransactionSent {
@@ -33,8 +37,10 @@ func (s InterchainTransaction) ToTransactionSent() db.TransactionSent {
 			TransactionId: common.HexToHash(s.TransactionID),
 			SrcSender:     common.HexToHash(s.SrcSender),
 			DstReceiver:   common.HexToHash(s.DstReceiver[:]),
+			SrcChainId:    big.NewInt(int64(s.SrcChainID)),
 			Message:       common.Hex2Bytes(s.Message),
 			Nonce:         s.Nonce,
+			DstChainId:    big.NewInt(int64(s.DstChainID)),
 			DbWriterNonce: big.NewInt(int64(s.DBWriterNonce)),
 		},
 	}
@@ -45,6 +51,8 @@ func fromInterchainTX(interchainTx interchainclient.InterchainClientV1Interchain
 		TransactionID: common.Bytes2Hex(interchainTx.TransactionId[:]),
 		SrcSender:     common.Bytes2Hex(interchainTx.SrcSender[:]),
 		DstReceiver:   common.Bytes2Hex(interchainTx.DstReceiver[:]),
+		SrcChainID:    interchainTx.SrcChainId.Uint64(),
+		DstChainID:    interchainTx.DstChainId.Uint64(),
 		Message:       common.Bytes2Hex(interchainTx.Message[:]),
 		Status:        db.Seen,
 		Nonce:         interchainTx.Nonce,
