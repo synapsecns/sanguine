@@ -9,11 +9,13 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[Seen-1]
+	_ = x[Ready-2]
+	_ = x[Executed-3]
 }
 
-const _ExecutableStatus_name = "Seen"
+const _ExecutableStatus_name = "SeenReadyExecuted"
 
-var _ExecutableStatus_index = [...]uint8{0, 4}
+var _ExecutableStatus_index = [...]uint8{0, 4, 9, 17}
 
 func (i ExecutableStatus) String() string {
 	i -= 1

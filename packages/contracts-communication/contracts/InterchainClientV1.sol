@@ -88,6 +88,10 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         clientNonce++;
     }
 
+    function encodeTransaction(InterchainTransaction memory icTx) public view returns (bytes memory) {
+        return abi.encode(icTx);
+    }
+
     function isExecutable(bytes calldata transaction) public view returns (bool) {
         InterchainTransaction memory icTx = abi.decode(transaction, (InterchainTransaction));
 

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
+	"github.com/synapsecns/sanguine/sin-executor/contracts/interchainclient"
 )
 
 // ErrNoLatestBlockForChainID is returned when no block exists for the chain.
@@ -14,12 +15,15 @@ var ErrNoLatestBlockForChainID = errors.New("no latest block for chainId")
 
 // Reader is the interface for reading from the database.
 type Reader interface {
-	PutLatestBlock(ctx context.Context, chainID, height uint64) error
+	LatestBlockForChain(ctx context.Context, chainID uint64) (uint64, error)
+	GetInterchainTXsByStatus(ctx context.Context, statuses ...ExecutableStatus) ([]TransactionSent, error)
 }
 
 // Writer is the interface for writing to the database.
 type Writer interface {
-	LatestBlockForChain(ctx context.Context, chainID uint64) (uint64, error)
+	PutLatestBlock(ctx context.Context, chainID, height uint64) error
+	StoreInterchainTransaction(ctx context.Context, interchainTx interchainclient.InterchainClientV1InterchainTransactionSent) error
+	UpdateInterchainTransactionStatus(ctx context.Context, transactionid [32]byte, statuses ExecutableStatus) error
 }
 
 // Service is the interface for the database service.
@@ -38,6 +42,10 @@ type ExecutableStatus uint8
 const (
 	// Seen is the status of a synapse request that has been seen.
 	Seen ExecutableStatus = iota + 1
+	// Ready is the status of a synapse request that is ready to be executed.
+	Ready
+	// Executed is the status of a synapse request that has been executed.
+	Executed
 )
 
 // Int returns the integer value of the synapse request status.

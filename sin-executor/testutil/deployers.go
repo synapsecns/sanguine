@@ -11,6 +11,8 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/manager"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/interchainclient"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/interchaindb"
+	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainappmock"
+	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainmodulemock"
 	"testing"
 )
 
@@ -23,7 +25,7 @@ type DeployManager struct {
 func NewDeployManager(t *testing.T) *DeployManager {
 	t.Helper()
 
-	return &DeployManager{manager.NewDeployerManager(t, interchainClientDeployer, interchainDBDeployer)}
+	return &DeployManager{manager.NewDeployerManager(t, interchainClientDeployer, interchainDBDeployer, interchainModuleMockDeployer, interchainAppMockDeployer)}
 }
 
 var (
@@ -65,4 +67,16 @@ var (
 		}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 			return interchaindb.NewInterchainDBRef(address, backend)
 		}, []contracts.ContractType{})
+
+	interchainModuleMockDeployer = deployer.NewFunctionalDeployer(InterchainModuleMock, func(ctx context.Context, helpers deployer.IFunctionalDeployer, transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return interchainmodulemock.DeployInterchainModuleMock(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return interchainmodulemock.NewInterchainModuleMockRef(address, backend)
+	}, []contracts.ContractType{})
+
+	interchainAppMockDeployer = deployer.NewFunctionalDeployer(InterchainAppMock, func(ctx context.Context, helpers deployer.IFunctionalDeployer, transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return interchainappmock.DeployInterchainAppMock(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return interchainappmock.NewInterchainAppMockRef(address, backend)
+	}, []contracts.ContractType{})
 )

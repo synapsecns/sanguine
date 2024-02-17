@@ -5,6 +5,9 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends/base"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/interchainclient"
+	"github.com/synapsecns/sanguine/sin-executor/contracts/interchaindb"
+	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainappmock"
+	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainmodulemock"
 )
 
 // set all contact types.
@@ -46,6 +49,10 @@ const (
 	InterchainClient contractTypeImpl = iota + 1 // SynapseModule
 	// InterchainDB is the interchain database
 	InterchainDB // SynapseModule
+	// InterchainModuleMock is the interchain module mock
+	InterchainModuleMock // InterchainModuleMock
+	// InterchainAppMock is the interchain app mock
+	InterchainAppMock // InterchainAppMock
 )
 
 // ID gets the contract type as an id.
@@ -75,7 +82,11 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	case InterchainClient:
 		return interchainclient.Contracts["solidity/InterchainClientV1.sol:InterchainClientV1"]
 	case InterchainDB:
-		return interchainclient.Contracts["solidity/InterchainDB.sol:InterchainDB"]
+		return interchaindb.Contracts["solidity/InterchainDB.sol:InterchainDB"]
+	case InterchainModuleMock:
+		return interchainmodulemock.Contracts["solidity/InterchainModuleMock.sol:InterchainModuleMock"]
+	case InterchainAppMock:
+		return interchainappmock.Contracts["solidity/InterchainAppMock.sol:InterchainAppMock"]
 	}
 	return nil
 }

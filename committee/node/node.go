@@ -39,7 +39,6 @@ type Node struct {
 	interchainContracts  map[int]*synapsemodule.SynapseModuleRef
 	peerManager          p2p.LibP2PManager
 	interchainValidators map[int][]common.Address
-	ogEntry              synapsemodule.InterchainEntry
 }
 
 var logger = log.Logger("node")
@@ -172,8 +171,8 @@ func (n *Node) setValidators(parentCtx context.Context) (err error) {
 	return nil
 }
 
-func (n *Node) Start(ctx context.Context) error {
-	g, ctx := errgroup.WithContext(ctx)
+func (n *Node) Start(parentContext context.Context) error {
+	g, ctx := errgroup.WithContext(parentContext)
 
 	err := n.setValidators(ctx)
 	if err != nil {
@@ -186,10 +185,12 @@ func (n *Node) Start(ctx context.Context) error {
 	}
 
 	g.Go(func() error {
+		// nolint: errcheck
 		return n.submitter.Start(ctx)
 	})
 
 	g.Go(func() error {
+		// nolint: errcheck
 		return n.startChainIndexers(ctx)
 	})
 
@@ -206,6 +207,8 @@ func (n *Node) Start(ctx context.Context) error {
 			}
 		}
 	})
+
+	// TODO: call g.wait, return error on error
 
 	return nil
 }
@@ -406,8 +409,6 @@ func (n *Node) runChainIndexer(parentCtx context.Context, chainID int) (err erro
 
 		switch event := parsedEvent.(type) {
 		case *synapsemodule.SynapseModuleVerificationRequested:
-			// for testing
-			n.ogEntry = event.Entry
 			err = n.handleMessageSent(ctx, event)
 		case *synapsemodule.SynapseModuleEntryVerified:
 			err = n.db.UpdateSignRequestStatus(ctx, event.SignableEntryHash, db.Completed)
