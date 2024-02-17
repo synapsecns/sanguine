@@ -7,7 +7,6 @@ import { Address, zeroAddress } from 'viem'
 import { commify } from '@ethersproject/units'
 import { isAddress } from '@ethersproject/address'
 
-
 import { useAppDispatch } from '@/store/hooks'
 
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
@@ -52,12 +51,13 @@ import { approveToken } from '@/utils/approveToken'
 import { SECTION_TRANSITION_PROPS } from '@/styles/transitions'
 
 
+import { Transition } from '@headlessui/react'
+import { XIcon, CogIcon } from '@heroicons/react/outline'
+
 import Card from '@tw/Card'
 import Button from '@tw/Button'
-import { Transition } from '@headlessui/react'
-import { PageHeader } from '@/components/PageHeader'
-import { SettingsIcon } from '@/components/icons/SettingsIcon'
 
+import { PageHeader } from '@/components/PageHeader'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { Warning } from '@/components/Warning'
 
@@ -72,7 +72,7 @@ import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeT
 import { SettingsSlideOver } from '@/components/StateManagedBridge/SettingsSlideOver'
 import BridgeExchangeRateInfo from '@/components/StateManagedBridge/BridgeExchangeRateInfo'
 
-import { XIcon } from '@heroicons/react/outline'
+
 import { OverlayTransition } from '@/components/bridgeSwap/OverlayTransition'
 
 
@@ -500,7 +500,7 @@ const StateManagedBridge = () => {
                 </>
               ) : (
                 <>
-                  <SettingsIcon className="w-4 h-4 mr-2 group-hover:animate-spin" />
+                  <CogIcon className="w-4 h-4 mr-2 group-hover:animate-spin" />
                   <span className='text-sm mr-1'>Settings</span>
                 </>
               )}
