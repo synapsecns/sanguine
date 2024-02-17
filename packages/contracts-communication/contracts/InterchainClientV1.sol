@@ -16,6 +16,7 @@ import {IInterchainClientV1} from "./interfaces/IInterchainClientV1.sol";
 contract InterchainClientV1 is Ownable, IInterchainClientV1 {
     uint64 public clientNonce;
     address public interchainDB;
+    mapping (bytes32 => bool) executedTransactions;
 
     // Chain ID => Bytes32 Address of src clients
     mapping(uint256 => bytes32) linkedClients;
@@ -100,7 +101,7 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
 
     function isExecutable(bytes calldata transaction) public view returns (bool) {
         InterchainTransaction memory icTx = abi.decode(transaction, (InterchainTransaction));
-
+        require(executedTransactions[icTx.transactionId] == false, "Transaction already executed");
         // Construct expected entry based on icTransaction data
         InterchainEntry memory icEntry = InterchainEntry({
             srcChainId: icTx.srcChainId,
@@ -162,61 +163,8 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
     // @inheritdoc IInterchainClientV1
     function interchainExecute(bytes32 transactionID, bytes calldata transaction) public {
         require(isExecutable(transaction), "Transaction is not executable");
-        //     // Steps to verify:
-        //     // 1. Call icDB.getEntry(linkedClients.srcChainId, transaction.dbWriterNonce)
-        //     // 2. Verify the entry hash vs bytes calldata provided
-        //     // 3. Check receiver's app dstModule configuration
-        //     // 4. Check receiver app's optimistic time period
-        //     // 5. Read module entry's based on receiver app dstModule config
-        //     // 6. Confirm module threshold is met
-        //     // 7. Check optimistic threshold set on app config
-        //     // 8. Execute the transaction, is optimistic period is met.
-
         InterchainTransaction memory icTx = abi.decode(transaction, (InterchainTransaction));
-
-        //     // 1. Construct expected entry based on icTransaction data
-        //     InterchainEntry memory icEntry = InterchainEntry({
-        //         srcChainId: icTx.srcChainId,
-        //         srcWriter: linkedClients[icTx.srcChainId],
-        //         writerNonce: icTx.dbWriterNonce,
-        //         dataHash: icTx.transactionId
-        //     });
-
-        //     bytes memory reconstructedID =
-        //         keccak256(abi.encode(icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce));
-
-        //     // 2. Verify the provided TX ID == constructed TX data
-        //     require(icTx.transactionId == reconstructedID, "Invalid transaction ID");
-
-        //     address receivingApp = convertBytes32ToAddress(icTx.dstReceiver);
-        //     // 3. Check receiver's app dstModule configuration
-        //     address[] memory approvedDstModules = IInterchainApp(receivingApp).getReceivingModules();
-
-        //     uint256 appRequiredResponses = IInterchainApp(receivingApp).getRequiredResponses();
-
-        //     // 4. Check receiver app's optimistic time period
-        //     uint256 optimisticTimePeriod = IInterchainApp(receivingApp).getOptimisticTimePeriod();
-
-        //     // 5. Read module entry's based on receiver app dstModule config
-        //     uint256[] memory moduleResponseTimestamps = new uint256[](
-        //   approvedDstModules.length
-        // );
-
-        //     for (uint256 i = 0; i < approvedDstModules.length; i++) {
-        //         moduleResponseTimestamps[i] = IInterchainDB(interchainDB).readEntry(approvedDstModules[i], icEntry);
-        //     }
-        //     // 6. Confirm module threshold is met
-        //     uint256 validResponses = 0;
-
-        //     for (uint256 i = 0; i < moduleResponseTimestamps.length; i++) {
-        //         if (moduleResponseTimestamps[i] + optimisticTimePeriod >= block.timestamp) {
-        //             validResponses++;
-        //         }
-        //     }
-
-        //     require(validResponses >= appRequiredResponses, "Not enough valid responses to meet the threshold");
-
-        // 8. Execute the transaction, is optimistic period & valid responses is met.
+        executedTransactions[icTx.transactionId] = true;
         IInterchainApp(convertBytes32ToAddress(icTx.dstReceiver)).appReceive();
     }
 
