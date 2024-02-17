@@ -8,6 +8,7 @@ import (
 	"github.com/synapsecns/sanguine/sin-executor/contracts/interchaindb"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainappmock"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainmodulemock"
+	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/optionslibexport"
 )
 
 // set all contact types.
@@ -53,6 +54,8 @@ const (
 	InterchainModuleMock // InterchainModuleMock
 	// InterchainAppMock is the interchain app mock
 	InterchainAppMock // InterchainAppMock
+	// OptionsLib is the options library
+	OptionsLib // OptionsLib
 )
 
 // ID gets the contract type as an id.
@@ -87,6 +90,9 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return interchainmodulemock.Contracts["solidity/InterchainModuleMock.sol:InterchainModuleMock"]
 	case InterchainAppMock:
 		return interchainappmock.Contracts["solidity/InterchainAppMock.sol:InterchainAppMock"]
+	case OptionsLib:
+		return optionslibexport.Contracts["solidity/OptionsLibExport.sol:OptionsLibMocks"]
+
 	}
 	return nil
 }

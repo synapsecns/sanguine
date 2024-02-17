@@ -10,3 +10,4 @@ contract InterchainModule {
 
     function receiveModuleMessage() public {}
 }
+

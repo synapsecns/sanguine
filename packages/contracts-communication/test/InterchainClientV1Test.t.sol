@@ -10,12 +10,19 @@ import "../contracts/modules/SynapseModule.sol";
 
 import {InterchainEntry} from "../contracts/libs/InterchainEntry.sol";
 
+import {TypeCasts} from "../contracts/libs/TypeCasts.sol";
+
+import {OptionsLib} from "../contracts/libs/Options.sol";
+
 contract InterchainClientV1Test is Test {
     InterchainClientV1 icClient;
     InterchainDB icDB;
     SynapseModule synapseModule;
     InterchainAppMock icApp;
     InterchainModuleMock icModule;
+
+    // Use default options of V1, 200k gas limit, 0 gas airdrop
+    bytes options = OptionsLib.encodeOptions(OptionsLib.Options(1, 200000, 0));
 
     uint256 public constant SRC_CHAIN_ID = 1337;
     uint256 public constant DST_CHAIN_ID = 7331;
@@ -37,7 +44,7 @@ contract InterchainClientV1Test is Test {
     }
 
     function test_interchainSend() public {
-        bytes32 receiver = icClient.convertAddressToBytes32(makeAddr("Receiver"));
+        bytes32 receiver = TypeCasts.addressToBytes32(makeAddr("Receiver"));
         bytes memory message = "Hello World";
         address[] memory srcModules = new address[](1);
         srcModules[0] = address(synapseModule);
@@ -45,20 +52,21 @@ contract InterchainClientV1Test is Test {
         uint64 nonce = 1;
         bytes32 transactionID = keccak256(
             abi.encode(
-                icClient.convertAddressToBytes32(msg.sender), block.chainid, receiver, DST_CHAIN_ID, message, nonce
+                TypeCasts.addressToBytes32(msg.sender), block.chainid, receiver, DST_CHAIN_ID, message, nonce
             )
         );
-        icClient.interchainSend{value: 1}(receiver, DST_CHAIN_ID, message, srcModules);
+        icClient.interchainSend{value: 1}(receiver, DST_CHAIN_ID, message, options, srcModules);
     }
 
     function test_interchainReceive() public {
-        bytes32 dstReceiver = icClient.convertAddressToBytes32(address(icApp));
+        bytes32 dstReceiver = TypeCasts.addressToBytes32(address(icApp));
         bytes memory message = "Hello World";
-        bytes32 srcSender = icClient.convertAddressToBytes32(makeAddr("Sender"));
+        bytes32 srcSender = TypeCasts.addressToBytes32(makeAddr("Sender"));
+        vm.prank(contractOwner);
         icClient.setLinkedClient(SRC_CHAIN_ID, srcSender);
         uint64 nonce = 1;
         bytes32 transactionID =
-            keccak256(abi.encode(srcSender, SRC_CHAIN_ID, dstReceiver, DST_CHAIN_ID, message, nonce));
+            keccak256(abi.encode(srcSender, SRC_CHAIN_ID, dstReceiver, DST_CHAIN_ID, message, nonce, options));
 
         InterchainEntry memory entry =
             InterchainEntry({srcChainId: SRC_CHAIN_ID, srcWriter: srcSender, writerNonce: 0, dataHash: transactionID});
@@ -72,10 +80,11 @@ contract InterchainClientV1Test is Test {
             dstChainId: DST_CHAIN_ID,
             message: message,
             nonce: nonce,
+            options: options,
             transactionId: transactionID,
             dbWriterNonce: 0
         });
 
-        icClient.interchainExecute(transactionID, abi.encode(transaction));
+        icClient.interchainExecute(abi.encode(transaction));
     }
 }

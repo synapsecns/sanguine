@@ -22,7 +22,7 @@ type Reader interface {
 // Writer is the interface for writing to the database.
 type Writer interface {
 	PutLatestBlock(ctx context.Context, chainID, height uint64) error
-	StoreInterchainTransaction(ctx context.Context, interchainTx interchainclient.InterchainClientV1InterchainTransactionSent) error
+	StoreInterchainTransaction(ctx context.Context, interchainTx interchainclient.InterchainClientV1InterchainTransactionSent, encodedTX []byte) error
 	UpdateInterchainTransactionStatus(ctx context.Context, transactionid [32]byte, statuses ExecutableStatus) error
 }
 

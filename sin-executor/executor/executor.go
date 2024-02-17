@@ -128,7 +128,7 @@ func (e *Executor) runDBSelector(ctx context.Context) error {
 		case <-ctx.Done():
 			return nil
 		case <-time.After(defaultDBInterval * time.Second):
-			dbItems, err := e.db.GetInterchainTXsByStatus(ctx, db.Seen)
+			dbItems, err := e.db.GetInterchainTXsByStatus(ctx, db.Seen, db.Ready)
 			if err != nil {
 				return fmt.Errorf("could not cleanup: %w", err)
 			}
@@ -157,22 +157,31 @@ func (e *Executor) runDBSelector(ctx context.Context) error {
 }
 
 func (e *Executor) executeTransaction(ctx context.Context, request db.TransactionSent) error {
-	contract, ok := e.clientContracts[int(request.SrcChainId.Int64())]
+	contract, ok := e.clientContracts[int(request.DstChainId.Int64())]
 	if !ok {
 		return fmt.Errorf("could not get contract for chain %d", request.SrcChainId.Int64())
 	}
 
-	encodedTX, err := e.encodeTX(ctx, contract, request)
-	if err != nil {
-		return fmt.Errorf("could not encode transaction: %w", err)
-	}
-
-	_, err = e.submitter.SubmitTransaction(ctx, request.DstChainId, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-		return contract.InterchainExecute(transactor, request.TransactionId, encodedTX)
+	nonce, err := e.submitter.SubmitTransaction(ctx, request.DstChainId, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+		return contract.InterchainExecute(transactor, request.EncodedTX)
 	})
 	if err != nil {
 		return fmt.Errorf("could not submit transaction: %w", err)
 	}
+
+	go func() {
+		for {
+			time.Sleep(time.Second * 5)
+			status, _ := e.submitter.GetSubmissionStatus(ctx, request.DstChainId, nonce)
+
+			if status.TxHash().String() != (common.Hash{}).String() {
+				fmt.Println("STATUS")
+				fmt.Println(status)
+				fmt.Println("hash")
+				fmt.Println(status.TxHash().String())
+			}
+		}
+	}()
 
 	err = e.db.UpdateInterchainTransactionStatus(ctx, request.TransactionId, db.Executed)
 	if err != nil {
@@ -183,17 +192,16 @@ func (e *Executor) executeTransaction(ctx context.Context, request db.Transactio
 }
 
 func (e *Executor) checkReady(ctx context.Context, request db.TransactionSent) error {
-	contract, ok := e.clientContracts[int(request.SrcChainId.Int64())]
+	contract, ok := e.clientContracts[int(request.DstChainId.Int64())]
 	if !ok {
-		return fmt.Errorf("could not get contract for chain %d", request.SrcChainId.Int64())
+		return fmt.Errorf("could not get contract for chain %d", request.DstChainId.Int64())
 	}
 
-	encodedTX, err := e.encodeTX(ctx, contract, request)
-	if err != nil {
-		return fmt.Errorf("could not encode transaction: %w", err)
-	}
+	// TODO REMOVE ME
+	//e.db.UpdateInterchainTransactionStatus(ctx, request.TransactionId, db.Ready)
+	// TODO REMOVE ME
 
-	isExecutable, err := contract.IsExecutable(&bind.CallOpts{Context: ctx}, encodedTX)
+	isExecutable, err := contract.IsExecutable(&bind.CallOpts{Context: ctx}, request.EncodedTX)
 	if err != nil {
 		return fmt.Errorf("could not check if executable: %w", err)
 	}
@@ -207,11 +215,12 @@ func (e *Executor) checkReady(ctx context.Context, request db.TransactionSent) e
 	return nil
 }
 
-func (e *Executor) encodeTX(ctx context.Context, contract *interchainclient.InterchainClientRef, request db.TransactionSent) ([]byte, error) {
+func (e *Executor) encodeTX(ctx context.Context, contract *interchainclient.InterchainClientRef, request *interchainclient.InterchainClientV1InterchainTransactionSent) ([]byte, error) {
 	encodedTX, err := contract.EncodeTransaction(&bind.CallOpts{Context: ctx}, interchainclient.InterchainClientV1InterchainTransaction{
 		TransactionId: request.TransactionId,
 		SrcSender:     request.SrcSender,
 		SrcChainId:    request.SrcChainId,
+		Options:       request.Options,
 		DstReceiver:   request.DstReceiver,
 		DstChainId:    request.DstChainId,
 		Message:       request.Message,
@@ -281,7 +290,12 @@ func (e *Executor) runChainIndexer(parentCtx context.Context, chainID int) (err 
 
 		switch event := parsedEvent.(type) {
 		case *interchainclient.InterchainClientV1InterchainTransactionSent:
-			err = e.db.StoreInterchainTransaction(ctx, *event)
+			encodedTX, err := e.encodeTX(ctx, e.clientContracts[chainID], event)
+			if err != nil {
+				return fmt.Errorf("could not encode transaction: %w", err)
+			}
+
+			err = e.db.StoreInterchainTransaction(ctx, *event, encodedTX)
 			if err != nil {
 				return fmt.Errorf("could not store interchain transaction: %w", err)
 			}

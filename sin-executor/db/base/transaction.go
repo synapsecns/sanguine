@@ -11,7 +11,7 @@ import (
 
 type InterchainTransaction struct {
 	// TransactionID is the transaction id.
-	TransactionID string `gorm:"primaryKey"`
+	TransactionID string `gorm:"column:transaction_id;primaryKey"`
 	// SrcSender is the sender of the transaction.
 	SrcSender string `gorm:"column:src_sender;index"`
 	// DstReceiver is the receiver of the transaction.
@@ -26,13 +26,17 @@ type InterchainTransaction struct {
 	Status db.ExecutableStatus `gorm:"column:status;index"`
 	// Nonce is the nonce of the transaction.
 	Nonce uint64 `gorm:"column:nonce;index"`
+	// Options is the options of the transaction.
+	Options string `gorm:"column:options"`
 	// DBWriterNonce is the nonce of the transaction in the database.
 	DBWriterNonce uint64 `gorm:"column:db_writer_nonce;index"`
+	EncodedTx     string `gorm:"column:encoded_tx"`
 }
 
 func (s InterchainTransaction) ToTransactionSent() db.TransactionSent {
 	return db.TransactionSent{
-		Status: s.Status,
+		Status:    s.Status,
+		EncodedTX: common.Hex2Bytes(s.EncodedTx[:]),
 		InterchainClientV1InterchainTransactionSent: interchainclient.InterchainClientV1InterchainTransactionSent{
 			TransactionId: common.HexToHash(s.TransactionID),
 			SrcSender:     common.HexToHash(s.SrcSender),
@@ -40,18 +44,21 @@ func (s InterchainTransaction) ToTransactionSent() db.TransactionSent {
 			SrcChainId:    big.NewInt(int64(s.SrcChainID)),
 			Message:       common.Hex2Bytes(s.Message),
 			Nonce:         s.Nonce,
+			Options:       common.Hex2Bytes(s.Options[:]),
 			DstChainId:    big.NewInt(int64(s.DstChainID)),
 			DbWriterNonce: big.NewInt(int64(s.DBWriterNonce)),
 		},
 	}
 }
 
-func fromInterchainTX(interchainTx interchainclient.InterchainClientV1InterchainTransactionSent) InterchainTransaction {
+func fromInterchainTX(interchainTx interchainclient.InterchainClientV1InterchainTransactionSent, encodedTX []byte) InterchainTransaction {
 	return InterchainTransaction{
+		EncodedTx:     common.Bytes2Hex(encodedTX),
 		TransactionID: common.Bytes2Hex(interchainTx.TransactionId[:]),
 		SrcSender:     common.Bytes2Hex(interchainTx.SrcSender[:]),
 		DstReceiver:   common.Bytes2Hex(interchainTx.DstReceiver[:]),
 		SrcChainID:    interchainTx.SrcChainId.Uint64(),
+		Options:       common.Bytes2Hex(interchainTx.Options[:]),
 		DstChainID:    interchainTx.DstChainId.Uint64(),
 		Message:       common.Bytes2Hex(interchainTx.Message[:]),
 		Status:        db.Seen,
@@ -60,8 +67,8 @@ func fromInterchainTX(interchainTx interchainclient.InterchainClientV1Interchain
 	}
 }
 
-func (s Store) StoreInterchainTransaction(ctx context.Context, interchainTx interchainclient.InterchainClientV1InterchainTransactionSent) error {
-	dbTx := s.db.WithContext(ctx).Model(&InterchainTransaction{}).Create(fromInterchainTX(interchainTx))
+func (s Store) StoreInterchainTransaction(ctx context.Context, interchainTx interchainclient.InterchainClientV1InterchainTransactionSent, encodedTx []byte) error {
+	dbTx := s.db.WithContext(ctx).Model(&InterchainTransaction{}).Create(fromInterchainTX(interchainTx, encodedTx))
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not store interchain transaction: %w", dbTx.Error)
 	}

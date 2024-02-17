@@ -13,6 +13,7 @@ import (
 	"github.com/synapsecns/sanguine/sin-executor/contracts/interchaindb"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainappmock"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainmodulemock"
+	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/optionslibexport"
 	"testing"
 )
 
@@ -25,7 +26,7 @@ type DeployManager struct {
 func NewDeployManager(t *testing.T) *DeployManager {
 	t.Helper()
 
-	return &DeployManager{manager.NewDeployerManager(t, interchainClientDeployer, interchainDBDeployer, interchainModuleMockDeployer, interchainAppMockDeployer)}
+	return &DeployManager{manager.NewDeployerManager(t, interchainClientDeployer, interchainDBDeployer, interchainModuleMockDeployer, interchainAppMockDeployer, optionsLibMock)}
 }
 
 var (
@@ -75,8 +76,27 @@ var (
 	}, []contracts.ContractType{})
 
 	interchainAppMockDeployer = deployer.NewFunctionalDeployer(InterchainAppMock, func(ctx context.Context, helpers deployer.IFunctionalDeployer, transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return interchainappmock.DeployInterchainAppMock(transactOps, backend)
+		appAddress, appTx, appMock, err := interchainappmock.DeployInterchainAppMock(transactOps, backend)
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not deploy interchain app mock: %w", err)
+		}
+		helpers.Backend().WaitForConfirmation(ctx, appTx)
+
+		txOpts := helpers.Backend().GetTxContext(ctx, &transactOps.From)
+		setTx, err := appMock.SetReceivingModule(txOpts.TransactOpts, helpers.Registry().Get(ctx, InterchainModuleMock).Address())
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not set receiving module: %w", err)
+		}
+		helpers.Backend().WaitForConfirmation(ctx, setTx)
+
+		return appAddress, appTx, appMock, nil
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return interchainappmock.NewInterchainAppMockRef(address, backend)
+	}, []contracts.ContractType{InterchainModuleMock})
+
+	optionsLibMock = deployer.NewFunctionalDeployer(OptionsLib, func(ctx context.Context, helpers deployer.IFunctionalDeployer, transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return optionslibexport.DeployOptionsLibMocks(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return optionslibexport.NewOptionsLibExportRef(address, backend)
 	}, []contracts.ContractType{})
 )
