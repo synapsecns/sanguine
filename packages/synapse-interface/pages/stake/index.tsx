@@ -55,63 +55,63 @@ const StakePage = () => {
   }, [availableStakingTokens, router])
 
 
-  if (!connectedChain) {
-    toast.error('Please connect to see stakes', {
+  useEffect(() => {
+    const toastOptions =  {
       id: 'approve-in-progress-popup',
       duration: 5000,
-    })
+    }
+    if (connectedChain) {
+      if (availableStakingTokens.length === 0) {
+        toast.error(`No stakes available for ${connectedChain.name} network`, toastOptions)
+      }
+    } else {
+      toast.error('Please connect to see stakes', toastOptions)
+    }
+  }, [connectedChain, availableStakingTokens])
 
-    return <LandingPageWrapper> </LandingPageWrapper>
-  }
-
-  if (connectedChain && availableStakingTokens.length === 0) {
-    toast.error(`No stakes available for ${connectedChain.name} network`, {
-      id: 'approve-in-progress-popup',
-      duration: 5000,
-    })
-
-    return <LandingPageWrapper> </LandingPageWrapper>
-  }
 
   return (
     <LandingPageWrapper>
-      <main
-        data-test-id="stake-page"
-        className={`
-          flex flex-col justify-between
-          px-4 py-16
-          md:px-20 md:py-3 md:m-14
-        `}
-      >
-        <div className="flex flex-col justify-center max-w-[1300px] m-auto">
-          <div>
-            <Link href={POOLS_PATH}>
-              <div className="inline-flex items-center mb-3 text-sm  text-white/80 hover:text-white/100">
-                <ChevronLeftIcon className="w-4 h-4" />
-                Back to Pools
-              </div>
-            </Link>
-          </div>
-          <PageHeader title="Stake" subtitle="Stake your LP Tokens." />
+      {(availableStakingTokens?.length > 0) &&
+        <main
+          data-test-id="stake-page"
+          className={`
+            flex flex-col justify-between
+            px-4 py-16
+            md:px-20 md:py-3 md:m-14
+          `}
+        >
+          <div className="flex flex-col justify-center max-w-[1300px] m-auto">
+            <div>
+              <Link href={POOLS_PATH}>
+                <div className="inline-flex items-center mb-3 text-sm  text-white/80 hover:text-white/100">
+                  <ChevronLeftIcon className="w-4 h-4" />
+                  Back to Pools
+                </div>
+              </Link>
+            </div>
+            <PageHeader title="Stake" subtitle="Stake your LP Tokens." />
 
-          <Grid cols={{ xs: 1, sm: 1, md: columns }} gap={6} className="mt-8">
-            {isClient &&
-              availableStakingTokens.map((token, key) => {
-                if (token.notStake) {
-                  return null
-                }
-                return (
-                  <StakeCard
-                    key={key}
-                    address={currentAddress}
-                    chainId={connectedChain.id}
-                    pool={token}
-                  />
-                )
-              })}
-          </Grid>
-        </div>
-      </main>
+            <Grid cols={{ xs: 1, sm: 1, md: columns }} gap={6} className="mt-8">
+              {isClient &&
+                availableStakingTokens.map((token, key) => {
+                  if (token.notStake) {
+                    return null
+                  }
+                  return (
+                    <StakeCard
+                      key={key}
+                      address={currentAddress}
+                      chainId={connectedChain.id}
+                      pool={token}
+                    />
+                  )
+                })}
+            </Grid>
+          </div>
+        </main>
+      }
+
     </LandingPageWrapper>
   )
 }

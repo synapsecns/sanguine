@@ -1,4 +1,3 @@
-import LoadingDots from '@tw/LoadingDots'
 import { LoadingHelix } from '@tw/LoadingHelix'
 import { OutputNumber } from '@/components/bridgeSwap/OutputNumber'
 
