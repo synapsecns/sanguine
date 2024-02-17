@@ -1,20 +1,22 @@
 import Image from 'next/image'
 import { TokenAndBalance } from '@/utils/actions/fetchPortfolioBalances'
-
+import { HoverContent } from './HoverContent'
 
 export function HoverTokenAndBalance({
   isHovered,
   tokens,
+  className,
   hoverClassName,
   startFrom=0
 }: {
   isHovered: boolean
   tokens: TokenAndBalance[]
+  className?: string
   hoverClassName?: string
   startFrom?: number
 }) {
   return (
-    <div className="relative">
+    <div className={`relative ${className}`}>
       <HoverContent isHovered={isHovered} className={hoverClassName}>
         {tokens?.map((token: TokenAndBalance, key: number) => {
           if (key >= startFrom) {
@@ -30,37 +32,6 @@ export function HoverTokenAndBalance({
     </div>
   )
 }
-export const HoverContent = ({
-  isHovered,
-  children,
-  className
-}: {
-  isHovered: boolean
-  children: React.ReactNode
-  className?: string
-}) => {
-  if (isHovered) {
-    return (
-     <div className="absolute !overflow-visible ">
-        <div
-            className={`
-            absolute z-[100] hover-content py-2 px-3 text-white
-            border border-white/20 bg-bgBase/10 backdrop-blur-xl
-            rounded-md text-left -translate-x-[69%]
-            ${className}
-            `}
-        >
-        <div className="pr-6">
-            {children}
-        </div>
-
-      </div>
-     </div>
-
-    )
-  }
-}
-
 
 function TokenImageAndBalance({
   tokenAndBalance

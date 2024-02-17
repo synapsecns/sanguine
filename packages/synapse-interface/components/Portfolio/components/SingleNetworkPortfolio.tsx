@@ -17,8 +17,8 @@ import { PortfolioTokenAsset } from './PortfolioTokenAsset'
 import { WarningMessage } from '../../Warning'
 import { TWITTER_URL, DISCORD_URL } from '@/constants/urls'
 import { setFromToken, setToToken } from '@/slices/bridge/reducer'
-import { PortfolioTokenVisualizer } from './PortfolioTokenVisualizer'
 import { PortfolioNetwork } from './PortfolioNetwork'
+import { ChainTokens } from './ChainTokens'
 
 type SingleNetworkPortfolioProps = {
   connectedAddress: Address
@@ -82,7 +82,7 @@ export const SingleNetworkPortfolio = ({
           />
         }
         collapsedProps={
-          <PortfolioTokenVisualizer portfolioTokens={sortedTokens} />
+          <ChainTokens balanceTokens={sortedTokens} />
         }
       >
         {isUnsupportedChain && (
