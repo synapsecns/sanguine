@@ -1,4 +1,4 @@
-import styles from './header.module.css'
+import styles from './navmenu.module.css'
 
 const sections = [
   {
@@ -14,7 +14,7 @@ const sections = [
     label: 'Bridge',
     url: '#',
     links: [
-      { label: 'Synapse Bridge', url: '#', description: 'Synapse lorem ipsum dolor sit amet consecteteur adipisicing elit.'},
+      { label: 'Synapse Bridge', url: '#', description: 'Smart routes & real-time competitive quotes on 20 supported chains.'},
       { label: 'On-chain swap', url: '#', description: 'Swap lorem ipsum dolor sit amet consecteteur adipisicing elit.'},
       { label: 'Solana bridge', url: '#', description: 'Solana lorem ipsum dolor sit amet consecteteur adipisicing elit.'},
     ]
@@ -62,13 +62,14 @@ export default function Header() {
                 {section.links.map((link, i) => {
                   return (
                     <>
-                      <dt className={`col-start-1 ${styles.header}`}>
+                      <dt className={`col-start-1 ${styles.dt}`}>
                         <a href={link.url} className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded">
                           {link.label}
                         </a>
                       </dt>
-                      <dd className="w-60 col-start-2 row-start-1 row-span-6 px-4 py-3 border-l border-zinc-200 dark:border-zinc-800">
-                        {link.description}
+                      <dd className="w-60 col-start-2 row-start-1 row-span-6 px-4 py-3 border-l border-zinc-200 dark:border-zinc-800 cursor-pointer">
+                        <header>{link.label}</header>
+                        <p className="mt-1 font-light tracking-wider">{link.description}</p>
                       </dd>
                     </>
                   )})}
