@@ -1,4 +1,4 @@
-import { SynapseIcon } from "./SynapseIcon"
+import { SynapseAnchor } from "./SynapseLogo"
 
 const sections = [
   {
@@ -31,10 +31,7 @@ const sections = [
 
 export default function Footer() { return (
   <footer className="p-4 sm:p-8 flex flex-wrap gap-8 items-start max-w-7xl mx-auto justify-end sm:justify-between cursor-default">
-    <a href="#" className="text-3xl font-medium flex gap-2 items-center">
-      <SynapseIcon width={40} height={40} />
-      <span className="-mt-1.5">Synapse</span>
-    </a>
+    <SynapseAnchor />
     <div className="flex flex-wrap gap-4 xs:gap-8 text-right justify-end">
       {sections.map(section => (
         <section>
