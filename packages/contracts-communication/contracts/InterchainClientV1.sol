@@ -16,10 +16,10 @@ import {IInterchainClientV1} from "./interfaces/IInterchainClientV1.sol";
 contract InterchainClientV1 is Ownable, IInterchainClientV1 {
     uint64 public clientNonce;
     address public interchainDB;
-    mapping (bytes32 => bool) executedTransactions;
+    mapping(bytes32 => bool) public executedTransactions;
 
     // Chain ID => Bytes32 Address of src clients
-    mapping(uint256 => bytes32) linkedClients;
+    mapping(uint256 => bytes32) public linkedClients;
 
     // TODO: Add permissioning
     // @inheritdoc IInterchainClientV1
@@ -102,6 +102,15 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         clientNonce++;
     }
 
+    // TODO: App Config Versioning
+    // TODO: What if receiver is not a contract / doesn't conform to interface?
+    /**
+     * @dev Retrieves the application configuration for a given receiver application.
+     * @param receiverApp The address of the receiver application.
+     * @return requiredResponses The number of required responses from the receiving modules.
+     * @return optimisticTimePeriod The time period within which responses are considered valid.
+     * @return approvedDstModules An array of addresses of the approved destination modules.
+     */
     function _getAppConfig(address receiverApp)
         internal
         view
@@ -112,6 +121,7 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         approvedDstModules = IInterchainApp(receiverApp).getReceivingModules();
     }
 
+    // @inheritdoc IInterchainClientV1
     function isExecutable(bytes calldata transaction) public view returns (bool) {
         InterchainTransaction memory icTx = abi.decode(transaction, (InterchainTransaction));
         require(executedTransactions[icTx.transactionId] == false, "Transaction already executed");
@@ -138,6 +148,12 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         require(finalizedResponses >= requiredResponses, "Not enough valid responses to meet the threshold");
         return true;
     }
+    /**
+     * @dev Calculates the number of responses that are considered finalized within the optimistic time period.
+     * @param approvedResponses An array of timestamps when each approved response was recorded.
+     * @param optimisticTimePeriod The time period in seconds within which a response is considered valid.
+     * @return finalizedResponses The count of responses that are finalized within the optimistic time period.
+     */
 
     function _getFinalizedResponsesCount(
         uint256[] memory approvedResponses,
@@ -155,6 +171,16 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         }
         return finalizedResponses;
     }
+    /**
+     * @dev Retrieves the responses from approved modules for a given InterchainEntry.
+     * This function iterates over all approved modules, querying the InterchainDB for each module's response
+     * to the provided InterchainEntry. It compiles these responses into an array of uint256, where each
+     * element represents the timestamp of a module's response.
+     *
+     * @param approvedModules An array of addresses representing the approved modules that can write responses.
+     * @param icEntry The InterchainEntry for which responses are being retrieved.
+     * @return approvedResponses An array of uint256 representing the timestamps of responses from approved modules.
+     */
 
     function _getApprovedResponses(
         address[] memory approvedModules,
@@ -165,7 +191,6 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         returns (uint256[] memory)
     {
         uint256[] memory approvedResponses = new uint256[](approvedModules.length);
-        uint256 validResponses = 0;
         for (uint256 i = 0; i < approvedModules.length; i++) {
             approvedResponses[i] = IInterchainDB(interchainDB).readEntry(approvedModules[i], icEntry);
         }
@@ -179,7 +204,16 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         InterchainTransaction memory icTx = abi.decode(transaction, (InterchainTransaction));
         executedTransactions[icTx.transactionId] = true;
         IInterchainApp(convertBytes32ToAddress(icTx.dstReceiver)).appReceive();
-        emit InterchainTransactionExecuted(icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce, icTx.transactionId, icTx.dbWriterNonce);
+        emit InterchainTransactionExecuted(
+            icTx.srcSender,
+            icTx.srcChainId,
+            icTx.dstReceiver,
+            icTx.dstChainId,
+            icTx.message,
+            icTx.nonce,
+            icTx.transactionId,
+            icTx.dbWriterNonce
+        );
     }
 
     // TODO: Seperate out into utils
