@@ -234,15 +234,22 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         return approvedResponses;
     }
 
+    function _icNativeDrop(OptionsLib.NativeDrop[] memory nativeDrops) internal {
+        for (uint256 i = 0; i < nativeDrops.length; i++) {
+            payable(nativeDrops[i].recipient).transfer(nativeDrops[i].amount);
+        }
+    }
+
     // TODO: Gas Fee Consideration that is paid to executor
     // @inheritdoc IInterchainClientV1
     function interchainExecute(bytes calldata transaction) public payable {
         InterchainTransaction memory icTx = abi.decode(transaction, (InterchainTransaction));
         OptionsLib.Options memory decodedOptions = icTx.options.decodeOptions();
         require(decodedOptions.gasLimit != 0, "Gas limit must be greater than 0");
-        // if (decodedOptions.gasAirdrop > 0) {
-        //     require(msg.value == decodedOptions.gasAirdrop, "Gas airdrop value must match the sent value");
-        // }
+        if (decodedOptions.nativeDrops.length > 0) {
+            require(OptionsLib.nativeDropsAmount(decodedOptions.nativeDrops) == msg.value, "Native drops amount must match the sent value");
+            _icNativeDrop(decodedOptions.nativeDrops);
+        }
 
         require(isExecutable(transaction), "Transaction is not executable");
 

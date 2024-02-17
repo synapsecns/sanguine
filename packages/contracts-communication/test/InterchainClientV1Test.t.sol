@@ -22,7 +22,7 @@ contract InterchainClientV1Test is Test {
     InterchainModuleMock icModule;
 
     // Use default options of V1, 200k gas limit, 0 gas airdrop
-    OptionsLib.NativeDrop[] nativeDrops;
+    // OptionsLib.NativeDrop[] nativeDrops;
     bytes options;
 
     uint256 public constant SRC_CHAIN_ID = 1337;
@@ -31,7 +31,10 @@ contract InterchainClientV1Test is Test {
     address public contractOwner = makeAddr("Contract Owner");
 
     function setUp() public {
+        // OptionsLib.NativeDrop[] memory nativeDrops = new OptionsLib.NativeDrop[](1);
+        // nativeDrops[0] = OptionsLib.NativeDrop({recipient: address(0x1), amount: 1000});
         options = OptionsLib.encodeOptions(OptionsLib.Options(1, 200000, new OptionsLib.NativeDrop[](0)));
+        // options = OptionsLib.encodeOptions(OptionsLib.Options(1, 200000, nativeDrops));
         vm.startPrank(contractOwner);
         icClient = new InterchainClientV1();
         icDB = new InterchainDB();
