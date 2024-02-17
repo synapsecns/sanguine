@@ -9,13 +9,6 @@ library OptionsLib {
         uint256 amount;
     }
 
-    struct OptionsV1 {
-        uint8 version;
-        uint256 gasLimit;
-        uint256 msgValue;
-        NativeDrop[] nativeDrops;
-    }
-
     /// @dev Struct to hold V1 of options data.
     /// @param version The version of the options.
     /// @param gasLimit The gas limit for the transaction.
@@ -41,6 +34,14 @@ library OptionsLib {
     function decodeOptions(bytes memory data) internal pure returns (Options memory) {
         (uint8 version, uint256 gasLimit, NativeDrop[] memory nativeDrops) = abi.decode(data, (uint8, uint256, NativeDrop[]));
         return Options(version, gasLimit, nativeDrops);
+    }
+
+    function nativeDropsAmount(NativeDrop[] memory nativeDrops) internal pure returns (uint256) {
+        uint256 total = 0;
+        for (uint256 i = 0; i < nativeDrops.length; i++) {
+            total += nativeDrops[i].amount;
+        }
+        return total;
     }
 }
 
