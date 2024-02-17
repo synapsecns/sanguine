@@ -11,11 +11,15 @@ import {IInterchainClientV1} from "./interfaces/IInterchainClientV1.sol";
 
 import {TypeCasts} from "./libs/TypeCasts.sol";
 
+import { OptionsLib } from "./libs/Options.sol";
+
 /**
  * @title InterchainClientV1
  * @dev Implements the operations of the Interchain Execution Layer.
  */
 contract InterchainClientV1 is Ownable, IInterchainClientV1 {
+    using OptionsLib for bytes;
+
     uint64 public clientNonce;
     address public interchainDB;
     mapping(bytes32 => bool) public executedTransactions;
@@ -237,7 +241,10 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         require(isExecutable(transaction), "Transaction is not executable");
         InterchainTransaction memory icTx = abi.decode(transaction, (InterchainTransaction));
         executedTransactions[icTx.transactionId] = true;
-        IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).appReceive();
+
+        OptionsLib.Options memory decodedOptions = icTx.options.decodeOptions();
+
+        IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).appReceive{gas: decodedOptions.gasLimit}();
         emit InterchainTransactionExecuted(
             icTx.srcSender,
             icTx.srcChainId,

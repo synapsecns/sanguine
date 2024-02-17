@@ -12,12 +12,17 @@ import {InterchainEntry} from "../contracts/libs/InterchainEntry.sol";
 
 import {TypeCasts} from "../contracts/libs/TypeCasts.sol";
 
+import {OptionsLib} from "../contracts/libs/Options.sol";
+
 contract InterchainClientV1Test is Test {
     InterchainClientV1 icClient;
     InterchainDB icDB;
     SynapseModule synapseModule;
     InterchainAppMock icApp;
     InterchainModuleMock icModule;
+
+    // Use default options of V1, 200k gas limit, 0 gas airdrop
+    bytes options = OptionsLib.encodeOptions(OptionsLib.Options(1, 200000, 0));
 
     uint256 public constant SRC_CHAIN_ID = 1337;
     uint256 public constant DST_CHAIN_ID = 7331;
@@ -50,14 +55,12 @@ contract InterchainClientV1Test is Test {
                 TypeCasts.addressToBytes32(msg.sender), block.chainid, receiver, DST_CHAIN_ID, message, nonce
             )
         );
-        bytes memory options = "";
         icClient.interchainSend{value: 1}(receiver, DST_CHAIN_ID, message, options, srcModules);
     }
 
     function test_interchainReceive() public {
         bytes32 dstReceiver = TypeCasts.addressToBytes32(address(icApp));
         bytes memory message = "Hello World";
-        bytes memory options = "";
         bytes32 srcSender = TypeCasts.addressToBytes32(makeAddr("Sender"));
         vm.prank(contractOwner);
         icClient.setLinkedClient(SRC_CHAIN_ID, srcSender);
