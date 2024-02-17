@@ -202,7 +202,7 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
     {
         uint256 finalizedResponses = 0;
         for (uint256 i = 0; i < approvedResponses.length; i++) {
-            if (approvedResponses[i] + optimisticTimePeriod >= block.timestamp) {
+            if (approvedResponses[i] + optimisticTimePeriod<= block.timestamp) {
                 finalizedResponses++;
             }
         }

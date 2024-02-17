@@ -14,8 +14,10 @@ import {TypeCasts} from "../contracts/libs/TypeCasts.sol";
 
 import {OptionsLib} from "../contracts/libs/Options.sol";
 
+import { InterchainClientV1Harness } from "./harnesses/InterchainClientV1Harness.sol";
+
 contract InterchainClientV1Test is Test {
-    InterchainClientV1 icClient;
+    InterchainClientV1Harness icClient;
     InterchainDB icDB;
     SynapseModule synapseModule;
     InterchainAppMock icApp;
@@ -31,7 +33,7 @@ contract InterchainClientV1Test is Test {
 
     function setUp() public {
         vm.startPrank(contractOwner);
-        icClient = new InterchainClientV1();
+        icClient = new InterchainClientV1Harness();
         icDB = new InterchainDB();
         synapseModule = new SynapseModule();
         synapseModule.setInterchainDB(address(icDB));
@@ -41,6 +43,48 @@ contract InterchainClientV1Test is Test {
         icApp = new InterchainAppMock();
         icApp.setReceivingModule(address(icModule));
         vm.stopPrank();
+    }
+    // ══════════════════════════════════════════════ INTERNAL TESTS ══════════════════════════════════════════════════
+
+    function test_generateTxId(bytes32 srcSender,
+        uint256 srcChainId,
+        bytes32 dstReceiver,
+        uint256 dstChainId,
+        bytes memory message,
+        uint64 nonce,
+        bytes memory fuzzOptions) public {
+        bytes32 txId = icClient.generateTransactionIdHarness(srcSender, srcChainId, dstReceiver, dstChainId, message, nonce, fuzzOptions);
+        assertEq(txId, keccak256(abi.encode(srcSender, srcChainId, dstReceiver, dstChainId, message, nonce, fuzzOptions)));
+    }
+
+    function test_getFinalizedResponsesCount() public {
+        vm.warp(10 days);
+        uint256[] memory approvedResponses = new uint256[](3);
+        approvedResponses[0] = block.timestamp + 1 days; // This should not be counted as finalized because it's in the future
+        approvedResponses[1] = block.timestamp - 20 minutes; // This should be counted as finalized because it's outside the optimistic time period
+        approvedResponses[2] = block.timestamp - 1 minutes; // This should not be counted as finalized
+
+        uint256 optimisticTimePeriod = 15 minutes; // Setting the optimistic time period to 15 minutes
+
+        uint256 finalizedResponses = icClient.getFinalizedResponsesCountHarness(approvedResponses, optimisticTimePeriod);
+
+        assertEq(finalizedResponses, 1, "Only 1 response should be finalized within the optimistic time period");
+
+        // Test with all responses outside the optimistic time period
+        approvedResponses[0] = block.timestamp + 30 minutes;
+        approvedResponses[1] = block.timestamp + 40 minutes;
+        approvedResponses[2] = block.timestamp + 50 minutes;
+
+        finalizedResponses = icClient.getFinalizedResponsesCountHarness(approvedResponses, optimisticTimePeriod);
+
+        assertEq(finalizedResponses, 0, "There should be 0 finalized responses outside the optimistic time period");
+
+        // Test with empty responses array
+        approvedResponses = new uint256[](0);
+
+        finalizedResponses = icClient.getFinalizedResponsesCountHarness(approvedResponses, optimisticTimePeriod);
+
+        assertEq(finalizedResponses, 0, "There should be 0 finalized responses with an empty responses array");
     }
 
     function test_interchainSend() public {
@@ -84,7 +128,8 @@ contract InterchainClientV1Test is Test {
             transactionId: transactionID,
             dbWriterNonce: 0
         });
-
+        // Skip ahead of optimistic period
+        vm.warp(icApp.getOptimisticTimePeriod() + 1 minutes);
         icClient.interchainExecute(abi.encode(transaction));
     }
 }
