@@ -88,6 +88,49 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         clientNonce++;
     }
 
+    function isExecutable(bytes calldata transaction) public view returns (bool) {
+        InterchainTransaction memory icTx = abi.decode(transaction, (InterchainTransaction));
+
+        // Construct expected entry based on icTransaction data
+        InterchainEntry memory icEntry = InterchainEntry({
+            srcChainId: icTx.srcChainId,
+            srcWriter: linkedClients[icTx.srcChainId],
+            writerNonce: icTx.dbWriterNonce,
+            dataHash: icTx.transactionId
+        });
+
+        bytes memory reconstructedID =
+            abi.encode(icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce);
+
+        if (icEntry.dataHash == keccak256(reconstructedID)) {
+            return false;
+        }
+
+        address[] memory approvedDstModules = IInterchainApp(receivingApp).getReceivingModules();
+
+        uint256 appRequiredResponses = IInterchainApp(receivingApp).getRequiredResponses();
+
+        uint256 optimisticTimePeriod = IInterchainApp(receivingApp).getOptimisticTimePeriod();
+
+        for (uint256 i = 0; i < approvedDstModules.length; i++) {
+            moduleResponseTimestamps[i] = IInterchainDB(interchainDB).readEntry(approvedDstModules[i], icEntry);
+        }
+        // 6. Confirm module threshold is met
+        uint256 validResponses = 0;
+
+        for (uint256 i = 0; i < moduleResponseTimestamps.length; i++) {
+            if (moduleResponseTimestamps[i] + optimisticTimePeriod >= block.timestamp) {
+                validResponses++;
+            }
+        }
+
+        if (validResponses >= appRequiredResponses) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     // TODO: Gas Fee Consideration that is paid to executor
     // @inheritdoc IInterchainClientV1
     function interchainExecute(bytes32 transactionID, bytes calldata transaction) public {
@@ -127,7 +170,9 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         uint256 optimisticTimePeriod = IInterchainApp(receivingApp).getOptimisticTimePeriod();
 
         // 5. Read module entry's based on receiver app dstModule config
-        uint256[] memory moduleResponseTimestamps = new uint256[](approvedDstModules.length);
+        uint256[] memory moduleResponseTimestamps = new uint256[](
+      approvedDstModules.length
+    );
 
         for (uint256 i = 0; i < approvedDstModules.length; i++) {
             moduleResponseTimestamps[i] = IInterchainDB(interchainDB).readEntry(approvedDstModules[i], icEntry);
