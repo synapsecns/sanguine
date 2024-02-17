@@ -7,19 +7,20 @@ contract OptionsLibHarness {
     function encodeOptions(
         uint8 version,
         uint256 gasLimit,
-        // uint256 msgValue,
-        uint256 gasAirdrop
+        //msgValue
+        // uint256 gasAirdrop,
+        OptionsLib.NativeDrop[] memory nativeDrops
     )
         external
         pure
         returns (bytes memory)
     {
-        OptionsLib.Options memory options = OptionsLib.Options(version, gasLimit, gasAirdrop);
+        OptionsLib.Options memory options = OptionsLib.Options(version, gasLimit, nativeDrops);
         return OptionsLib.encodeOptions(options);
     }
 
-    function decodeOptions(bytes calldata data) external pure returns (uint8, uint256, uint256) {
+    function decodeOptions(bytes calldata data) external pure returns (uint8, uint256, OptionsLib.NativeDrop[] memory) {
         OptionsLib.Options memory options = OptionsLib.decodeOptions(data);
-        return (options.version, options.gasLimit, options.gasAirdrop);
+        return (options.version, options.gasLimit, options.nativeDrops);
     }
 }

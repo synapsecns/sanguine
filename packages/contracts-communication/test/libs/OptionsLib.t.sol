@@ -17,8 +17,10 @@ contract OptionsLibTest is Test {
         uint256 gasLimit = 200000;
         // 100k wei
         uint256 gasAirdrop = 100000;
-        bytes memory expected = abi.encode(version, gasLimit, gasAirdrop);
-        bytes memory actual = libHarness.encodeOptions(version, gasLimit, gasAirdrop);
+        OptionsLib.NativeDrop[] memory nativeDrops = new OptionsLib.NativeDrop[](1);
+        nativeDrops[0] = OptionsLib.NativeDrop({recipient: address(0x1), amount: 1000});
+        bytes memory expected = abi.encode(version, gasLimit, nativeDrops);
+        bytes memory actual = libHarness.encodeOptions(version, gasLimit, nativeDrops);
         assertEq(actual, expected);
     }
 
@@ -28,10 +30,15 @@ contract OptionsLibTest is Test {
         uint256 gasLimit = 200000;
         // 100k wei
         uint256 gasAirdrop = 100000;
-        bytes memory data = abi.encode(version, gasLimit, gasAirdrop);
-        (uint8 actualVersion, uint256 actualGasLimit, uint256 actualGasAirdrop) = libHarness.decodeOptions(data);
+        OptionsLib.NativeDrop[] memory nativeDrops = new OptionsLib.NativeDrop[](1);
+        nativeDrops[0] = OptionsLib.NativeDrop({recipient: address(0x1), amount: gasAirdrop});
+        bytes memory data = abi.encode(version, gasLimit, nativeDrops);
+        (uint8 actualVersion, uint256 actualGasLimit, OptionsLib.NativeDrop[] memory actualNativeDrops) = libHarness.decodeOptions(data);
+
         assertEq(actualVersion, version);
         assertEq(actualGasLimit, gasLimit);
-        assertEq(actualGasAirdrop, gasAirdrop);
+        assertEq(actualNativeDrops.length, nativeDrops.length);
+        assertEq(actualNativeDrops[0].recipient, nativeDrops[0].recipient);
+        assertEq(actualNativeDrops[0].amount, nativeDrops[0].amount);
     }
 }

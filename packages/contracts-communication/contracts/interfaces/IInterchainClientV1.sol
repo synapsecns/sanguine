@@ -41,7 +41,7 @@ interface IInterchainClientV1 {
      * @dev The transaction must have been previously sent and recorded.
      * @param transaction The transaction data.
      */
-    function interchainExecute(bytes calldata transaction) external;
+    function interchainExecute(bytes calldata transaction) external payable;
 
     /**
      * @notice Checks if a transaction is executable.

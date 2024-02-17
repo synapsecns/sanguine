@@ -236,12 +236,17 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
 
     // TODO: Gas Fee Consideration that is paid to executor
     // @inheritdoc IInterchainClientV1
-    function interchainExecute(bytes calldata transaction) public {
-        require(isExecutable(transaction), "Transaction is not executable");
+    function interchainExecute(bytes calldata transaction) public payable {
         InterchainTransaction memory icTx = abi.decode(transaction, (InterchainTransaction));
-        executedTransactions[icTx.transactionId] = true;
-
         OptionsLib.Options memory decodedOptions = icTx.options.decodeOptions();
+        require(decodedOptions.gasLimit != 0, "Gas limit must be greater than 0");
+        // if (decodedOptions.gasAirdrop > 0) {
+        //     require(msg.value == decodedOptions.gasAirdrop, "Gas airdrop value must match the sent value");
+        // }
+
+        require(isExecutable(transaction), "Transaction is not executable");
+
+        executedTransactions[icTx.transactionId] = true;
 
         IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).appReceive{gas: decodedOptions.gasLimit}();
         emit InterchainTransactionExecuted(
