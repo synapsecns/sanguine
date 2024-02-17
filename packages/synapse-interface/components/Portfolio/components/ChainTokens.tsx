@@ -15,69 +15,43 @@ export const ChainTokens = ({
   const [isT2Hovered, setIsT2Hovered] = useState<boolean>(false)
   const [isT3Hovered, setIsT3Hovered] = useState<boolean>(false)
 
-  const hasNoTokens: boolean =
-    !balanceTokens || (balanceTokens?.length === 0)
-  const hasOneToken: boolean = balanceTokens?.length > 0
-  const hasTwoTokens: boolean = balanceTokens?.length > 1
-  const numOverTwoTokens: number =
-    balanceTokens?.length - 2 > 0 ? balanceTokens.length - 2 : 0
-  const hasOnlyOneToken: boolean = balanceTokens?.length === 1
+  const len = balanceTokens?.length
+  const hasNoTokens: boolean = !balanceTokens || (len === 0)
+  const hasOneToken: boolean = len > 0
+  const hasTwoTokens: boolean = len > 1
+  const numOverTwoTokens: number = (len > 2) ? (len - 2) : 0
+  const hasOnlyOneToken: boolean = len === 1
 
 
-  if (hasNoTokens) {
-    return (
-      <div
-        data-test-id="portfolio-token-visualizer"
-        className="flex flex-row items-center mr-4 cursor-pointer hover-trigger text-secondary"
-      >
-        -
-      </div>
-    )
-  }
   return (
     <div
       data-test-id="portfolio-token-visualizer"
       className="flex flex-row items-center space-x-2 cursor-pointer hover-trigger"
     >
-      {hasOneToken && (
-        <div>
-          <Image
-            loading="lazy"
-            className="w-6 h-6 rounded-md"
-            alt={`${balanceTokens[0].token.symbol} img`}
-            src={balanceTokens[0].token.icon}
-            onMouseEnter={() => setIsT1Hovered(true)}
-            onMouseLeave={() => setIsT1Hovered(false)}
-          />
-          <HoverTokenAndBalance
-            isHovered={isT1Hovered}
-            tokens={[balanceTokens[0]]}
-            hoverClassName={hoverClassName}
-          />
-        </div>
-      )}
+      {hasNoTokens &&
+        <span className="text-white/50"> - </span>
+      }
+      {hasOneToken &&
+        <ChainIconAndHover
+          tokenAndBalance={balanceTokens[0]}
+          isHovered={isT1Hovered}
+          setHovered={setIsT1Hovered}
+          hoverClassName={hoverClassName}
+        />
+      }
       {hasOnlyOneToken && (
         <div className="text-white whitespace-nowrap">
           {balanceTokens[0].parsedBalance} {balanceTokens[0].token.symbol}
         </div>
       )}
-      {hasTwoTokens && (
-        <div>
-          <Image
-            loading="lazy"
-            className="w-6 h-6 rounded-md"
-            alt={`${balanceTokens[1].token.symbol} img`}
-            src={balanceTokens[1].token.icon}
-            onMouseEnter={() => setIsT2Hovered(true)}
-            onMouseLeave={() => setIsT2Hovered(false)}
-          />
-          <HoverTokenAndBalance
-            isHovered={isT2Hovered}
-            tokens={[balanceTokens[1]]}
-            hoverClassName={hoverClassName}
-          />
-        </div>
-      )}
+      {hasTwoTokens &&
+        <ChainIconAndHover
+          tokenAndBalance={balanceTokens[1]}
+          isHovered={isT2Hovered}
+          setHovered={setIsT2Hovered}
+          hoverClassName={hoverClassName}
+        />
+      }
       {numOverTwoTokens > 0 && (
         <div
           className="text-white"
@@ -92,6 +66,36 @@ export const ChainTokens = ({
         tokens={balanceTokens}
         startFrom={2}
         hoverClassName={`${hoverClassName} mt-3`}
+      />
+    </div>
+  )
+}
+
+function ChainIconAndHover({
+  tokenAndBalance,
+  isHovered,
+  setHovered,
+  hoverClassName
+} : {
+  tokenAndBalance: TokenAndBalance
+  isHovered: boolean
+  setHovered: (hovered: boolean) => void
+  hoverClassName: string
+}) {
+  return (
+    <div>
+      <Image
+        loading="lazy"
+        className="w-6 h-6 rounded-md"
+        alt={`${tokenAndBalance.token.symbol} img`}
+        src={tokenAndBalance.token.icon}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      />
+      <HoverTokenAndBalance
+        isHovered={isHovered}
+        tokens={[tokenAndBalance]}
+        hoverClassName={hoverClassName}
       />
     </div>
   )
