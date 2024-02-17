@@ -6,7 +6,7 @@ import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 import { SynapseAnchor } from './SynapseLogo'
 import Footer from './Footer'
-import Header from './Header'
+import Header from './NavMenu'
 import Hero from './Hero'
 import Ticker from './Ticker'
 import ValueProps from './ValueProps'

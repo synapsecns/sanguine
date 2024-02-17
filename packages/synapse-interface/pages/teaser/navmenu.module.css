@@ -2,10 +2,14 @@
   0% { width: 14rem }
   100% { width: 15rem }
 }
-.header + dd {
+.dt + dd {
   display: none;
 }
-.header:hover + dd  {
+.dt:hover + dd, .dt + dd:hover {
   /* animation: header .3s cubic-bezier(0, .5, .2, 1); */
   display: block;
+}
+
+.dt + dd:hover header {
+  text-decoration: underline;
 }
