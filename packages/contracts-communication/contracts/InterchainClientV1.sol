@@ -25,7 +25,7 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
 
     // TODO: Add permissioning
     // @inheritdoc IInterchainClientV1
-    function setLinkedClient(uint256 chainId, bytes32 client) public {
+    function setLinkedClient(uint256 chainId, bytes32 client) public onlyOwner {
         linkedClients[chainId] = client;
     }
 

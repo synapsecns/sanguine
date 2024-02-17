@@ -59,6 +59,7 @@ contract InterchainClientV1Test is Test {
         bytes memory message = "Hello World";
         bytes memory options = "";
         bytes32 srcSender = TypeCasts.addressToBytes32(makeAddr("Sender"));
+        vm.prank(contractOwner);
         icClient.setLinkedClient(SRC_CHAIN_ID, srcSender);
         uint64 nonce = 1;
         bytes32 transactionID =
