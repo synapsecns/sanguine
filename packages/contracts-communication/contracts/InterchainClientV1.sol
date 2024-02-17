@@ -102,15 +102,21 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         bytes memory reconstructedID =
             abi.encode(icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce);
 
-        if (icEntry.dataHash == keccak256(reconstructedID)) {
+        if (icTx.transactionId == keccak256(reconstructedID)) {
             return false;
         }
+
+        address receivingApp = convertBytes32ToAddress(icTx.dstReceiver);
 
         address[] memory approvedDstModules = IInterchainApp(receivingApp).getReceivingModules();
 
         uint256 appRequiredResponses = IInterchainApp(receivingApp).getRequiredResponses();
 
         uint256 optimisticTimePeriod = IInterchainApp(receivingApp).getOptimisticTimePeriod();
+
+    uint256[] memory moduleResponseTimestamps = new uint256[](
+        approvedDstModules.length
+        );
 
         for (uint256 i = 0; i < approvedDstModules.length; i++) {
             moduleResponseTimestamps[i] = IInterchainDB(interchainDB).readEntry(approvedDstModules[i], icEntry);
@@ -130,6 +136,17 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
             return false;
         }
     }
+
+    // function _getValidResponses(address[] memory approvedModules, InterchainEntry memory icEntry) internal view returns (uint256) {
+    //     uint256 validResponses = 0;
+    //     for (uint256 i = 0; i < approvedModules.length; i++) {
+    //         uint256 moduleResponseTimestamp = IInterchainDB(interchainDB).readEntry(approvedModules[i], icEntry);
+    //         if (moduleResponseTimestamp + optimisticTimePeriod >= block.timestamp) {
+    //             validResponses++;
+    //         }
+    //     }
+    //     return validResponses;
+    // }
 
     // TODO: Gas Fee Consideration that is paid to executor
     // @inheritdoc IInterchainClientV1
@@ -157,8 +174,8 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         bytes memory reconstructedID =
             abi.encode(icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce);
 
-        // 2. Verify the entry hash vs bytes calldata provided
-        require(icEntry.dataHash == keccak256(reconstructedID), "Invalid transaction ID");
+        // 2. Verify the provided TX ID == constructed TX data
+        require(icTx.transactionId == keccak256(reconstructedID), "Invalid transaction ID");
 
         address receivingApp = convertBytes32ToAddress(icTx.dstReceiver);
         // 3. Check receiver's app dstModule configuration
