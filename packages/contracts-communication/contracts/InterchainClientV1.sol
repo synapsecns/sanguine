@@ -48,6 +48,19 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         uint256 dbWriterNonce
     );
 
+    // @notice Emitted when an interchain transaction is executed.
+    // TODO: Indexing
+    event InterchainTransactionExecuted(
+        bytes32 indexed srcSender,
+        uint256 indexed srcChainId,
+        bytes32 dstReceiver,
+        uint256 dstChainId,
+        bytes message,
+        uint64 nonce,
+        bytes32 indexed transactionId,
+        uint256 dbWriterNonce
+    );
+
     /**
      * @dev Represents an interchain transaction.
      */
@@ -166,6 +179,7 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         InterchainTransaction memory icTx = abi.decode(transaction, (InterchainTransaction));
         executedTransactions[icTx.transactionId] = true;
         IInterchainApp(convertBytes32ToAddress(icTx.dstReceiver)).appReceive();
+        emit InterchainTransactionExecuted(icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce, icTx.transactionId, icTx.dbWriterNonce);
     }
 
     // TODO: Seperate out into utils
