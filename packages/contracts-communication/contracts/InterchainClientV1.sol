@@ -44,6 +44,7 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         uint256 indexed dstChainId,
         bytes message,
         uint64 nonce,
+        bytes options,
         bytes32 indexed transactionId,
         uint256 dbWriterNonce
     );
@@ -57,6 +58,7 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         uint256 dstChainId,
         bytes message,
         uint64 nonce,
+        bytes options,
         bytes32 indexed transactionId,
         uint256 dbWriterNonce
     );
@@ -71,8 +73,25 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         uint256 dstChainId;
         bytes message;
         uint64 nonce;
+        bytes options;
         bytes32 transactionId;
         uint256 dbWriterNonce;
+    }
+
+    function _generateTransactionId(
+        bytes32 srcSender,
+        uint256 srcChainId,
+        bytes32 dstReceiver,
+        uint256 dstChainId,
+        bytes memory message,
+        uint64 nonce,
+        bytes memory options
+    )
+        internal
+        pure
+        returns (bytes32)
+    {
+        return keccak256(abi.encode(srcSender, srcChainId, dstReceiver, dstChainId, message, nonce, options));
     }
 
     // TODO: Calculate Gas Pricing per module and charge fees
@@ -82,21 +101,36 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         bytes32 receiver,
         uint256 dstChainId,
         bytes calldata message,
+        bytes calldata options,
         address[] calldata srcModules
     )
         public
         payable
     {
         uint256 totalModuleFees = msg.value;
-        bytes32 sender = convertAddressToBytes32(msg.sender);
-        bytes32 transactionID = keccak256(abi.encode(sender, block.chainid, receiver, dstChainId, message, clientNonce));
+
+        InterchainTransaction memory icTx = InterchainTransaction({
+            srcSender: convertAddressToBytes32(msg.sender),
+            srcChainId: block.chainid,
+            dstReceiver: receiver,
+            dstChainId: dstChainId,
+            message: message,
+            nonce: clientNonce,
+            options: options,
+            transactionId: 0,
+            dbWriterNonce: 0
+        });
+
+        bytes32 transactionId = _generateTransactionId(icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce, icTx.options);
+        icTx.transactionId = transactionId;
 
         uint256 dbWriterNonce = IInterchainDB(interchainDB).writeEntryWithVerification{value: totalModuleFees}(
-            dstChainId, transactionID, srcModules
+            icTx.dstChainId, icTx.transactionId, srcModules
         );
+        icTx.dbWriterNonce = dbWriterNonce;
 
         emit InterchainTransactionSent(
-            sender, block.chainid, receiver, dstChainId, message, clientNonce, transactionID, dbWriterNonce
+            icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce, icTx.options, icTx.transactionId, icTx.dbWriterNonce
         );
         // Increment nonce for next message
         clientNonce++;
@@ -133,9 +167,7 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
             dataHash: icTx.transactionId
         });
 
-        bytes32 reconstructedID = keccak256(
-            abi.encode(icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce)
-        );
+        bytes32 reconstructedID = _generateTransactionId(icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce, icTx.options);
 
         require(icTx.transactionId == reconstructedID, "Invalid transaction ID");
 
@@ -211,6 +243,7 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
             icTx.dstChainId,
             icTx.message,
             icTx.nonce,
+            icTx.options,
             icTx.transactionId,
             icTx.dbWriterNonce
         );

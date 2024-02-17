@@ -48,17 +48,19 @@ contract InterchainClientV1Test is Test {
                 icClient.convertAddressToBytes32(msg.sender), block.chainid, receiver, DST_CHAIN_ID, message, nonce
             )
         );
-        icClient.interchainSend{value: 1}(receiver, DST_CHAIN_ID, message, srcModules);
+        bytes memory options = "";
+        icClient.interchainSend{value: 1}(receiver, DST_CHAIN_ID, message, options, srcModules);
     }
 
     function test_interchainReceive() public {
         bytes32 dstReceiver = icClient.convertAddressToBytes32(address(icApp));
         bytes memory message = "Hello World";
+        bytes memory options = "";
         bytes32 srcSender = icClient.convertAddressToBytes32(makeAddr("Sender"));
         icClient.setLinkedClient(SRC_CHAIN_ID, srcSender);
         uint64 nonce = 1;
         bytes32 transactionID =
-            keccak256(abi.encode(srcSender, SRC_CHAIN_ID, dstReceiver, DST_CHAIN_ID, message, nonce));
+            keccak256(abi.encode(srcSender, SRC_CHAIN_ID, dstReceiver, DST_CHAIN_ID, message, nonce, options));
 
         InterchainEntry memory entry =
             InterchainEntry({srcChainId: SRC_CHAIN_ID, srcWriter: srcSender, writerNonce: 0, dataHash: transactionID});
@@ -72,6 +74,7 @@ contract InterchainClientV1Test is Test {
             dstChainId: DST_CHAIN_ID,
             message: message,
             nonce: nonce,
+            options: options,
             transactionId: transactionID,
             dbWriterNonce: 0
         });

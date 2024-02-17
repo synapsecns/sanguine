@@ -29,6 +29,7 @@ interface IInterchainClientV1 {
         bytes32 receiver,
         uint256 dstChainId,
         bytes calldata message,
+        bytes calldata options,
         address[] calldata srcModules
     )
         external
