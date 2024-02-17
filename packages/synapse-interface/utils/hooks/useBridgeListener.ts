@@ -21,7 +21,7 @@ export const useBridgeListener = () => {
    * Delay loading animation when user input updates
    */
   useEffect(() => {
-    const DEBOUNCE_DELAY = 300
+    const DEBOUNCE_DELAY = 200
     const ANIMATION_DELAY = 200
 
     const animationTimer = setTimeout(() => {
