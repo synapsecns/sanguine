@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { TokenAndBalance } from '@/utils/actions/fetchPortfolioBalances'
+import { HoverTokenAndBalance } from './HoverTokenAndBalance'
 
 export const PortfolioTokenVisualizer = ({
   portfolioTokens,
@@ -47,14 +48,10 @@ export const PortfolioTokenVisualizer = ({
             onMouseEnter={() => setIsT1Hovered(true)}
             onMouseLeave={() => setIsT1Hovered(false)}
           />
-          <div className="relative">
-            <HoverContent isHovered={isT1Hovered}>
-              <div className="whitespace-nowrap">
-                {portfolioTokens[0]?.parsedBalance}{' '}
-                {portfolioTokens[0]?.token.symbol}
-              </div>
-            </HoverContent>
-          </div>
+          <HoverTokenAndBalance
+            isHovered={isT1Hovered}
+            tokens={[portfolioTokens[0]]}
+          />
         </div>
       )}
       {hasOnlyOneToken && (
@@ -72,14 +69,10 @@ export const PortfolioTokenVisualizer = ({
             onMouseEnter={() => setIsT2Hovered(true)}
             onMouseLeave={() => setIsT2Hovered(false)}
           />
-          <div className="relative">
-            <HoverContent isHovered={isT2Hovered}>
-              <div className="whitespace-nowrap">
-                {portfolioTokens[1]?.parsedBalance}{' '}
-                {portfolioTokens[1]?.token.symbol}
-              </div>
-            </HoverContent>
-          </div>
+          <HoverTokenAndBalance
+            isHovered={isT2Hovered}
+            tokens={[portfolioTokens[1]]}
+          />
         </div>
       )}
       {numOverTwoTokens > 0 && (
@@ -91,43 +84,12 @@ export const PortfolioTokenVisualizer = ({
           + {numOverTwoTokens}
         </div>
       )}
-      <div className="relative inline-block">
-        <HoverContent isHovered={isT3Hovered}>
-          {portfolioTokens?.map((token: TokenAndBalance, key: number) => {
-            if (key > 1) {
-              const tokenSymbol = token.token.symbol
-              const balance = token.parsedBalance
-              return (
-                <div className="whitespace-nowrap" key={key}>
-                  {balance} {tokenSymbol}
-                </div>
-              )
-            }
-          })}
-        </HoverContent>
-      </div>
+      <HoverTokenAndBalance
+        isHovered={isT3Hovered}
+        tokens={portfolioTokens}
+        startFrom={2}
+      />
     </div>
   )
 }
 
-export const HoverContent = ({
-  isHovered,
-  children,
-}: {
-  isHovered: boolean
-  children: React.ReactNode
-}) => {
-  if (isHovered) {
-    return (
-      <div
-        className={`
-          absolute z-50 hover-content py-2 px-3 text-white
-          border border-white/20 bg-bgBase/10 backdrop-blur-xl
-          rounded-md text-left min-w-[200px]
-        `}
-      >
-        {children}
-      </div>
-    )
-  }
-}

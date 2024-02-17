@@ -21,6 +21,7 @@ import {
   useStipEligibility,
 } from '@/utils/hooks/useStipEligibility'
 import { useBridgeState } from '@/slices/bridge/hooks'
+import { HoverTokenAndBalance } from '@/components/Portfolio/components/HoverTokenAndBalance'
 
 export const SelectSpecificNetworkButton = ({
   itemChainId,
@@ -174,14 +175,11 @@ const ChainTokens = ({
             onMouseEnter={() => setIsT1Hovered(true)}
             onMouseLeave={() => setIsT1Hovered(false)}
           />
-          <div className="relative">
-            <HoverContent isHovered={isT1Hovered}>
-              <div className="whitespace-nowrap">
-                {balanceTokens[0]?.parsedBalance}{' '}
-                {balanceTokens[0]?.token.symbol}
-              </div>
-            </HoverContent>
-          </div>
+          <HoverTokenAndBalance
+            isHovered={isT1Hovered}
+            tokens={[balanceTokens[0]]}
+            hoverClassName="bg-slate-900/70"
+          />
         </div>
       )}
       {hasOnlyOneToken && (
@@ -199,14 +197,11 @@ const ChainTokens = ({
             onMouseEnter={() => setIsT2Hovered(true)}
             onMouseLeave={() => setIsT2Hovered(false)}
           />
-          <div className="relative">
-            <HoverContent isHovered={isT2Hovered}>
-              <div className="whitespace-nowrap">
-                {balanceTokens[1]?.parsedBalance}{' '}
-                {balanceTokens[1]?.token.symbol}
-              </div>
-            </HoverContent>
-          </div>
+          <HoverTokenAndBalance
+            isHovered={isT2Hovered}
+            tokens={[balanceTokens[1]]}
+            hoverClassName="bg-slate-900/70"
+          />
         </div>
       )}
       {numOverTwoTokens > 0 && (
@@ -218,43 +213,12 @@ const ChainTokens = ({
           + {numOverTwoTokens}
         </div>
       )}
-      <div className="relative inline-block">
-        <HoverContent isHovered={isT3Hovered}>
-          {balanceTokens?.map((token: TokenAndBalance, key: number) => {
-            if (key > 1) {
-              const tokenSymbol = token.token.symbol
-              const balance = token.parsedBalance
-              return (
-                <div className="whitespace-nowrap" key={key}>
-                  {balance} {tokenSymbol}
-                </div>
-              )
-            }
-          })}
-        </HoverContent>
-      </div>
+      <HoverTokenAndBalance
+        isHovered={isT3Hovered}
+        tokens={balanceTokens}
+        startFrom={2}
+        hoverClassName="bg-slate-900/70"
+      />
     </div>
   )
-}
-
-export const HoverContent = ({
-  isHovered,
-  children,
-}: {
-  isHovered: boolean
-  children: React.ReactNode
-}) => {
-  if (isHovered) {
-    return (
-      <div
-        className={`
-          absolute -ml-28 z-50 hover-content p-2 text-white
-          border border-solid border-[#252537]
-          bg-[#101018] rounded-md text-left
-        `}
-      >
-        {children}
-      </div>
-    )
-  }
 }
