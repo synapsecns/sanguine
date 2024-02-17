@@ -43,7 +43,7 @@ export const useBridgeListener = () => {
 
   // Debounce alternative destination token bridge quotes
   useEffect(() => {
-    const ALTERNATE_OPTIONS_DEBOUNCE_DELAY = 1000
+    const ALTERNATE_OPTIONS_DEBOUNCE_DELAY = 500
 
     const alternativeOptionsDebounceTimer = setTimeout(() => {
       dispatch(updateDebouncedToTokensFromValue(debouncedFromValue))
