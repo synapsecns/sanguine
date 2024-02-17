@@ -38,7 +38,7 @@ export default function Footer() { return (
           <header className="px-2 py-1">{section.header}</header>
           <ul>
             {section.links.map(link => <li>
-              <a href={link.url} className="text-zinc-500 hover:text-inherit hover:bg-zinc-200 hover:dark:bg-zinc-900 px-2 py-1 rounded inline-block">
+              <a href={link.url} className="text-zinc-500 hover:text-inherit hover:bg-slate-200 hover:dark:bg-zinc-900 px-2 py-1 rounded inline-block">
                 {link.label}
               </a>
             </li>)}
