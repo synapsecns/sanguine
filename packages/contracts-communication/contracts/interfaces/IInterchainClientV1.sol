@@ -23,6 +23,7 @@ interface IInterchainClientV1 {
      * @param receiver The address of the receiver on the destination chain.
      * @param dstChainId The chain ID of the destination chain.
      * @param message The message being sent.
+     * @param options Execution options for the message sent, encoded as bytes, currently primarily gas limit + native gas drop.
      * @param srcModules The source modules involved in the message sending.
      */
     function interchainSend(
