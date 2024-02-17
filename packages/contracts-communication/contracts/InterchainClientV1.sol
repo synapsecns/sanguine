@@ -101,7 +101,6 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
     }
 
     // TODO: Calculate Gas Pricing per module and charge fees
-    // TODO: Customizable Gas Limit for Execution
     // @inheritdoc IInterchainClientV1
     function interchainSend(
         bytes32 receiver,
