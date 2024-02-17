@@ -477,8 +477,6 @@ const StateManagedBridge = () => {
     }
   }
 
-  const springClass =
-    '-mt-4 fixed z-50 w-full h-full bg-opacity-50 bg-slate-400/10'
 
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
