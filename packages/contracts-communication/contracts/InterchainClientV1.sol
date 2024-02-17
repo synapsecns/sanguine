@@ -109,12 +109,11 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
             dataHash: icTx.transactionId
         });
 
-        bytes memory reconstructedID =
-            abi.encode(icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce);
+        bytes32 reconstructedID = keccak256(
+            abi.encode(icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce)
+        );
 
-        if (icTx.transactionId == keccak256(reconstructedID)) {
-            return false;
-        }
+        require(icTx.transactionId == reconstructedID, "Invalid transaction ID");
 
         (uint256 requiredResponses, uint256 optimisticTimePeriod, address[] memory approvedDstModules) =
             _getAppConfig(convertBytes32ToAddress(icTx.dstReceiver));
@@ -122,11 +121,8 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         uint256[] memory approvedResponses = _getApprovedResponses(approvedDstModules, icEntry);
 
         uint256 finalizedResponses = _getFinalizedResponsesCount(approvedResponses, optimisticTimePeriod);
-        if (finalizedResponses >= requiredResponses) {
-            return true;
-        } else {
-            return false;
-        }
+        require(finalizedResponses >= requiredResponses, "Not enough valid responses to meet the threshold");
+        return true;
     }
 
     function _getFinalizedResponsesCount(
@@ -165,62 +161,63 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
     // TODO: Gas Fee Consideration that is paid to executor
     // @inheritdoc IInterchainClientV1
     function interchainExecute(bytes32 transactionID, bytes calldata transaction) public {
-        // Steps to verify:
-        // 1. Call icDB.getEntry(linkedClients.srcChainId, transaction.dbWriterNonce)
-        // 2. Verify the entry hash vs bytes calldata provided
-        // 3. Check receiver's app dstModule configuration
-        // 4. Check receiver app's optimistic time period
-        // 5. Read module entry's based on receiver app dstModule config
-        // 6. Confirm module threshold is met
-        // 7. Check optimistic threshold set on app config
-        // 8. Execute the transaction, is optimistic period is met.
+        require(isExecutable(transaction), "Transaction is not executable");
+        //     // Steps to verify:
+        //     // 1. Call icDB.getEntry(linkedClients.srcChainId, transaction.dbWriterNonce)
+        //     // 2. Verify the entry hash vs bytes calldata provided
+        //     // 3. Check receiver's app dstModule configuration
+        //     // 4. Check receiver app's optimistic time period
+        //     // 5. Read module entry's based on receiver app dstModule config
+        //     // 6. Confirm module threshold is met
+        //     // 7. Check optimistic threshold set on app config
+        //     // 8. Execute the transaction, is optimistic period is met.
 
         InterchainTransaction memory icTx = abi.decode(transaction, (InterchainTransaction));
 
-        // 1. Call icDB.getEntry(linkedClients.srcChainId, transaction.dbWriterNonce)
-        InterchainEntry memory icEntry = InterchainEntry({
-            srcChainId: icTx.srcChainId,
-            srcWriter: linkedClients[icTx.srcChainId],
-            writerNonce: icTx.dbWriterNonce,
-            dataHash: icTx.transactionId
-        });
+        //     // 1. Construct expected entry based on icTransaction data
+        //     InterchainEntry memory icEntry = InterchainEntry({
+        //         srcChainId: icTx.srcChainId,
+        //         srcWriter: linkedClients[icTx.srcChainId],
+        //         writerNonce: icTx.dbWriterNonce,
+        //         dataHash: icTx.transactionId
+        //     });
 
-        bytes memory reconstructedID =
-            abi.encode(icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce);
+        //     bytes memory reconstructedID =
+        //         keccak256(abi.encode(icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce));
 
-        // 2. Verify the provided TX ID == constructed TX data
-        require(icTx.transactionId == keccak256(reconstructedID), "Invalid transaction ID");
+        //     // 2. Verify the provided TX ID == constructed TX data
+        //     require(icTx.transactionId == reconstructedID, "Invalid transaction ID");
 
-        address receivingApp = convertBytes32ToAddress(icTx.dstReceiver);
-        // 3. Check receiver's app dstModule configuration
-        address[] memory approvedDstModules = IInterchainApp(receivingApp).getReceivingModules();
+        //     address receivingApp = convertBytes32ToAddress(icTx.dstReceiver);
+        //     // 3. Check receiver's app dstModule configuration
+        //     address[] memory approvedDstModules = IInterchainApp(receivingApp).getReceivingModules();
 
-        uint256 appRequiredResponses = IInterchainApp(receivingApp).getRequiredResponses();
+        //     uint256 appRequiredResponses = IInterchainApp(receivingApp).getRequiredResponses();
 
-        // 4. Check receiver app's optimistic time period
-        uint256 optimisticTimePeriod = IInterchainApp(receivingApp).getOptimisticTimePeriod();
+        //     // 4. Check receiver app's optimistic time period
+        //     uint256 optimisticTimePeriod = IInterchainApp(receivingApp).getOptimisticTimePeriod();
 
-        // 5. Read module entry's based on receiver app dstModule config
-        uint256[] memory moduleResponseTimestamps = new uint256[](
-      approvedDstModules.length
-    );
+        //     // 5. Read module entry's based on receiver app dstModule config
+        //     uint256[] memory moduleResponseTimestamps = new uint256[](
+        //   approvedDstModules.length
+        // );
 
-        for (uint256 i = 0; i < approvedDstModules.length; i++) {
-            moduleResponseTimestamps[i] = IInterchainDB(interchainDB).readEntry(approvedDstModules[i], icEntry);
-        }
-        // 6. Confirm module threshold is met
-        uint256 validResponses = 0;
+        //     for (uint256 i = 0; i < approvedDstModules.length; i++) {
+        //         moduleResponseTimestamps[i] = IInterchainDB(interchainDB).readEntry(approvedDstModules[i], icEntry);
+        //     }
+        //     // 6. Confirm module threshold is met
+        //     uint256 validResponses = 0;
 
-        for (uint256 i = 0; i < moduleResponseTimestamps.length; i++) {
-            if (moduleResponseTimestamps[i] + optimisticTimePeriod >= block.timestamp) {
-                validResponses++;
-            }
-        }
+        //     for (uint256 i = 0; i < moduleResponseTimestamps.length; i++) {
+        //         if (moduleResponseTimestamps[i] + optimisticTimePeriod >= block.timestamp) {
+        //             validResponses++;
+        //         }
+        //     }
 
-        require(validResponses >= appRequiredResponses, "Not enough valid responses to meet the threshold");
+        //     require(validResponses >= appRequiredResponses, "Not enough valid responses to meet the threshold");
 
         // 8. Execute the transaction, is optimistic period & valid responses is met.
-        IInterchainApp(receivingApp).appReceive();
+        IInterchainApp(convertBytes32ToAddress(icTx.dstReceiver)).appReceive();
     }
 
     // TODO: Seperate out into utils
