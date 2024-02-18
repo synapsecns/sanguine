@@ -79,7 +79,7 @@ export const AirdropRewards = () => {
         id="airdrop-rewards"
         className={`
           flex items-center mb-2 border rounded-md cursor-pointer
-          text-primary border-greenText bg-[#0A381B] hover:bg-[#17492D]
+          text-primary border-greenText/80 bg-[#0A381B]/90 hover:bg-[#17492D]
         `}
         onClick={handleToggle}
       >
