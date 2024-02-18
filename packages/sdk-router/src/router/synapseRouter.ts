@@ -140,13 +140,11 @@ export class SynapseRouter extends Router {
     token: string,
     amount: BigNumber
   ): Promise<{ feeAmount: BigNumber; feeConfig: FeeConfig }> {
-    const feeAmount = await this.routerContract.calculateBridgeFee(
-      token,
-      amount
-    )
-    const feeConfig = await this.routerContract
-      .fee(token)
-      .then(reduceToFeeConfig)
+    console.log("qed bitches router")
+    const [feeAmount, feeConfig] = await Promise.all([
+      this.routerContract.calculateBridgeFee(token, amount),
+      this.routerContract.fee(token).then(reduceToFeeConfig),
+    ])
     return { feeAmount, feeConfig }
   }
 

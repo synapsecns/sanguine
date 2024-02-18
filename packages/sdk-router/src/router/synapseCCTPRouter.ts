@@ -89,21 +89,16 @@ export class SynapseCCTPRouter extends Router {
     amount: BigNumber,
     isSwap: boolean
   ): Promise<{ feeAmount: BigNumber; feeConfig: FeeConfig }> {
-    const feeAmount = await this.routerContract.calculateFeeAmount(
-      token,
-      amount,
-      isSwap
-    )
-    // Get fee structure, then assign minBaseFee/minSwapFee value to minFee based on isSwap flag
-    const feeConfig = await this.routerContract
-      .feeStructures(token)
-      .then((feeStructure) => {
-        return {
-          bridgeFee: feeStructure.relayerFee,
-          minFee: isSwap ? feeStructure.minSwapFee : feeStructure.minBaseFee,
-          maxFee: feeStructure.maxFee,
-        }
-      })
+    console.log("qed bitches 2")
+    const [feeAmount, feeConfig] = await Promise.all([
+      this.routerContract.calculateFeeAmount(token, amount, isSwap),
+      this.routerContract.feeStructures(token).then((feeStructure) => ({
+        bridgeFee: feeStructure.relayerFee,
+        minFee: isSwap ? feeStructure.minSwapFee : feeStructure.minBaseFee,
+        maxFee: feeStructure.maxFee,
+      })),
+    ])
+
     return { feeAmount, feeConfig }
   }
 
