@@ -89,7 +89,6 @@ export class SynapseCCTPRouter extends Router {
     amount: BigNumber,
     isSwap: boolean
   ): Promise<{ feeAmount: BigNumber; feeConfig: FeeConfig }> {
-    console.log("qed bitches 2")
     const [feeAmount, feeConfig] = await Promise.all([
       this.routerContract.calculateFeeAmount(token, amount, isSwap),
       this.routerContract.feeStructures(token).then((feeStructure) => ({
