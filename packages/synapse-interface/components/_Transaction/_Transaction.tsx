@@ -4,20 +4,18 @@ import { useAppDispatch } from '@/store/hooks'
 import { getTxBlockExplorerLink } from './helpers/getTxBlockExplorerLink'
 import { getExplorerAddressLink } from './helpers/getExplorerAddressLink'
 import { useBridgeTxStatus } from './helpers/useBridgeTxStatus'
-import { removeTransaction } from '@/slices/_transactions/reducer'
-import { TransactionPayloadDetail } from '@/components/Portfolio/Transaction/components/TransactionPayloadDetail'
-import { Chain, Token } from '@/utils/types'
-
-import { TimeRemaining } from './components/TimeRemaining'
-
 import { getEstimatedTimeStatus } from './helpers/getEstimatedTimeStatus'
+import { removeTransaction } from '@/slices/_transactions/reducer'
+import { Chain, Token } from '@/utils/types'
+import { TransactionPayloadDetail } from '@/components/Portfolio/Transaction/components/TransactionPayloadDetail'
+import { TransactionArrow } from '@/components/icons/TransactionArrow'
+import { TimeRemaining } from './components/TimeRemaining'
 import { DropdownMenu } from './components/DropdownMenu'
 import { MenuItem } from './components/MenuItem'
 import { useBridgeTxUpdater } from './helpers/useBridgeTxUpdater'
 import { AnimatedProgressBar } from './components/AnimatedProgressBar'
 import { TransactionSupport } from './components/TransactionSupport'
 
-import TransactionArrow from '../icons/TransactionArrow'
 
 interface _TransactionProps {
   connectedAddress: string

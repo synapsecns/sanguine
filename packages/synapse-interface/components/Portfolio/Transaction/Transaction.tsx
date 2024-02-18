@@ -2,7 +2,7 @@ import React from 'react'
 import { Chain, Token } from '@/utils/types'
 import { Address } from 'viem'
 
-import TransactionArrow from '@/components/icons/TransactionArrow'
+import { TransactionArrow } from '@/components/icons/TransactionArrow'
 import { getTransactionExplorerLink } from './components/TransactionExplorerLink'
 import { Completed } from './components/Completed'
 import { TransactionPayloadDetail } from './components/TransactionPayloadDetail'

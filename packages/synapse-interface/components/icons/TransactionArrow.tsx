@@ -1,4 +1,4 @@
-export default function TransactionArrow(props) {
+export function TransactionArrow(props) {
   return (
     <svg
       width="16px"

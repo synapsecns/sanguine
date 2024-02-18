@@ -2,23 +2,23 @@ import _ from 'lodash'
 import Image from 'next/image'
 import Link from 'next/link'
 import numeral from 'numeral'
+import { useState, useEffect } from 'react'
 import { Address, useAccount } from 'wagmi'
 import { arbitrum } from 'viem/chains'
+import arbitrumImg from '@assets/chains/arbitrum.svg'
 import { useAppSelector } from '@/store/hooks'
-import { useState, useEffect } from 'react'
+import { useCloseOutsideRef } from '@/utils/hooks/useCloseOutsideRef'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 import { getErc20TokenTransfers } from '@/utils/actions/getErc20TokenTransfers'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { shortenAddress } from '@/utils/shortenAddress'
 import { ARBITRUM } from '@/constants/chains/master'
 import { CloseButton } from '@/components/buttons/CloseButton'
-import { ArrowUpRightIcon } from '../icons/ArrowUpRightIcon'
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
 import { HoverContent } from '@/components/Portfolio/components/HoverContent'
+import { ArrowUpRightIcon } from '@/components/icons/ArrowUpRightIcon'
+import { TransactionArrow } from '@/components/icons/TransactionArrow'
 
-import TransactionArrow from '../icons/TransactionArrow'
-import arbitrumImg from '@assets/chains/arbitrum.svg'
-import { useCloseOutsideRef } from '@/utils/hooks/useCloseOutsideRef'
 
 /** ARB Token */
 const ARB = {
@@ -77,7 +77,10 @@ export const AirdropRewards = () => {
     <>
       <div
         id="airdrop-rewards"
-        className="flex items-center mb-2 border rounded-md cursor-pointer text-primary border-greenText bg-[#0A381B] hover:bg-[#17492D]"
+        className={`
+          flex items-center mb-2 border rounded-md cursor-pointer
+          text-primary border-greenText bg-[#0A381B] hover:bg-[#17492D]
+        `}
         onClick={handleToggle}
       >
         <RewardsTitle icon={ARB.icon} />
@@ -263,6 +266,7 @@ const AirdropTransaction = ({
   explorerUrl: string
 }) => {
   const [isHovered, setIsHovered] = useState<boolean>(false)
+
   return (
     <Link
       id="airdrop-transaction"
@@ -348,7 +352,12 @@ export const HoverContentIcon = ({ children }) => {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       />
-      <HoverContent isHovered={isHovered}>{children}</HoverContent>
+      <HoverContent isHovered={isHovered}>
+        <div className='min-w-48'>
+          {children}
+        </div>
+
+      </HoverContent>
     </div>
   )
 }
