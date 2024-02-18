@@ -21,7 +21,7 @@ import { adjustValueIfNative } from '../utils/handleNativeToken'
 import { getMatchingTxLog } from '../utils/logs'
 import { BigintIsh } from '../constants'
 import { DestRequest } from './types'
-
+import { MS_TIMES, SimpleCache } from '../utils/SimpleCache'
 /**
  * Wrapper class for interacting with a SynapseCCTPRouter contract.
  * Abstracts away the contract interaction: the Router users don't need to know about the contract,
@@ -74,6 +74,7 @@ export class SynapseCCTPRouter extends Router {
       })
   }
 
+  @SimpleCache(MS_TIMES.TEN_MINUTES)
   public async getConnectedBridgeTokens(
     tokenOut: string
   ): Promise<BridgeToken[]> {
@@ -84,6 +85,7 @@ export class SynapseCCTPRouter extends Router {
       })
   }
 
+  @SimpleCache(MS_TIMES.TEN_MINUTES)
   public async getBridgeFees(
     token: string,
     amount: BigNumber,
@@ -150,6 +152,7 @@ export class SynapseCCTPRouter extends Router {
     return cctpContract.isRequestFulfilled(synapseTxId)
   }
 
+  @SimpleCache(MS_TIMES.TEN_MINUTES)
   public async chainGasAmount(): Promise<BigNumber> {
     const cctpContract = await this.getCctpContract()
     return cctpContract.chainGasAmount()
