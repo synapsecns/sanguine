@@ -15,6 +15,7 @@ import {
   getNetworkHover,
 } from '@/styles/chains'
 import { LoaderIcon } from 'react-hot-toast'
+import { useHasMounted } from '@/utils/hooks/useHasMounted'
 
 export const ConnectedIndicator = () => {
   return (
@@ -110,12 +111,8 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
 }
 
 export function ConnectWalletButton() {
-  const [clientReady, setClientReady] = useState<boolean>(false)
+  const clientReady = useHasMounted()
   const { address } = useAccount()
-
-  useEffect(() => {
-    setClientReady(true)
-  }, [])
 
   return (
     <div data-test-id="">

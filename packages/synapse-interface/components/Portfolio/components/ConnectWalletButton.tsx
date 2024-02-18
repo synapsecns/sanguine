@@ -1,14 +1,13 @@
-import { useState, useEffect } from 'react'
+
 import { useAccount } from 'wagmi'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
+import { useHasMounted } from '@/utils/hooks/useHasMounted'
 
 export function ConnectWalletButton() {
-  const [clientReady, setClientReady] = useState<boolean>(false)
+  const clientReady = useHasMounted()
+
   const { address } = useAccount()
 
-  useEffect(() => {
-    setClientReady(true)
-  }, [])
 
   const buttonClassName = `
     h-10 border-[#CA5CFF] border-[1.5px] flex items-center border

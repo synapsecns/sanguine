@@ -6,19 +6,18 @@ import { Address, useNetwork } from 'wagmi'
 import { getPoolUrl } from '@urls'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
-import { RightArrow } from '@/components/icons/RightArrow'
+import { useHasMounted } from '@/utils/hooks/useHasMounted'
 import { Token } from '@/utils/types'
+import { RightArrow } from '@/components/icons/RightArrow'
 
 export const PoolHeader = memo(
   ({ pool, address }: { pool: Token; address: Address }) => {
-    const [mounted, setMounted] = useState(false)
+    const hasMounted = useHasMounted()
     const { chain: connectedChain } = useNetwork()
     const chain = CHAINS_BY_ID[pool.chainId]
     const { balances } = usePortfolioState()
 
-    useEffect(() => {
-      setMounted(true)
-    }, [])
+
     const canDeposit = useMemo(() => {
       const balancesForChain = _.pickBy( balances[pool.chainId],
         (value, _key) => value.balance > 0n
@@ -48,7 +47,7 @@ export const PoolHeader = memo(
           />
           <div className="mr-2 text-white text-md">{chain.name}</div>
           <div className="text-sm text-[#BFBCC2] mr-4">{pool.symbol}</div>
-          {mounted && connectedChain && connectedChain.id === pool.chainId && (
+          {hasMounted && connectedChain && connectedChain.id === pool.chainId && (
             <ConnectedIndicator />
           )}
         </div>

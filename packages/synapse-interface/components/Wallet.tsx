@@ -6,6 +6,7 @@ import { CoinbaseWalletIcon } from '@icons/WalletIcons/CoinbaseWalletIcon'
 import { WalletConnectIcon } from '@icons/WalletIcons/WalletConnectIcon'
 import Spinner from '@icons/Spinner'
 import { IconProps, WalletId } from '@utils/types'
+import { useHasMounted } from '@/utils/hooks/useHasMounted'
 
 
 const WALLETS = [
@@ -49,11 +50,7 @@ export const Wallet = () => {
   const { chain: currentChain } = useNetwork()
   const walletId = activeConnector?.id
 
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  const hasMounted = useHasMounted()
 
   const render = useMemo(() => {
     return (
@@ -144,7 +141,7 @@ export const Wallet = () => {
     )
   }, [connectedAddress, currentChain, walletId])
 
-  return mounted && render
+  return hasMounted && render
 }
 
 
