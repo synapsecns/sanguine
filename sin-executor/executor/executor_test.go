@@ -1,14 +1,15 @@
 package executor_test
 
 import (
+	"math/big"
+	"time"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/interchaindb"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainmodulemock"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/optionslibexport"
 	"github.com/synapsecns/sanguine/sin-executor/testutil"
-	"math/big"
-	"time"
 )
 
 func (i *InterchainSuite) TestE2E() {
@@ -20,8 +21,7 @@ func (i *InterchainSuite) TestE2E() {
 
 	_, optionsLib := i.deployManager.GetOptionsLib(i.GetTestContext(), i.originChain)
 
-	encodedOptions, err := optionsLib.EncodeOptions(&bind.CallOpts{Context: i.GetTestContext()}, optionslibexport.OptionsLibOptions{
-		Version:    0,
+	encodedOptions, err := optionsLib.EncodeOptions(&bind.CallOpts{Context: i.GetTestContext()}, optionslibexport.OptionsV1{
 		GasLimit:   big.NewInt(100000),
 		GasAirdrop: big.NewInt(0),
 	})
