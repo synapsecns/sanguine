@@ -85,13 +85,6 @@ func (i *InterchainSuite) setClientID(backend backends.SimulatedTestBackend, con
 }
 
 func (i *InterchainSuite) addressToBytes32(addie common.Address) [32]byte {
-	//// cast address to 32 bytes
-	//senderBytes32 := [32]byte{}
-	//raw := addie.Bytes()[:20]
-	//copy(senderBytes32[:], raw)
-
-	//return senderBytes32
-
 	_, lib := i.deployManager.GetOptionsLib(i.GetTestContext(), i.originChain)
 	res, err := lib.AddressToBytes32(&bind.CallOpts{Context: i.GetTestContext()}, addie)
 	i.Require().NoError(err)

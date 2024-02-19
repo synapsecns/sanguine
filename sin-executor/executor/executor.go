@@ -250,6 +250,11 @@ func (e *Executor) startChainIndexers(ctx context.Context) error {
 			return nil
 		})
 	}
+
+	err := g.Wait()
+	if err != nil {
+		return fmt.Errorf("error starting chain indexers: %w", err)
+	}
 	return nil
 }
 

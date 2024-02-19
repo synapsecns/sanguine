@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/interchainclient"
 	"github.com/synapsecns/sanguine/sin-executor/db"
+	"gorm.io/gorm/clause"
 	"math/big"
 )
 
@@ -68,7 +69,7 @@ func fromInterchainTX(interchainTx interchainclient.InterchainClientV1Interchain
 }
 
 func (s Store) StoreInterchainTransaction(ctx context.Context, interchainTx interchainclient.InterchainClientV1InterchainTransactionSent, encodedTx []byte) error {
-	dbTx := s.db.WithContext(ctx).Model(&InterchainTransaction{}).Create(fromInterchainTX(interchainTx, encodedTx))
+	dbTx := s.db.WithContext(ctx).Model(&InterchainTransaction{}).Clauses(clause.OnConflict{DoNothing: true}).Create(fromInterchainTX(interchainTx, encodedTx))
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not store interchain transaction: %w", dbTx.Error)
 	}
