@@ -44,3 +44,31 @@ var screenerCommand = &cli.Command{
 		return nil
 	},
 }
+
+var inFileFlag = &cli.StringFlag{
+	Name:  "in-file",
+	Usage: "--in-file /path/to/in.csv",
+}
+
+var outDirFlag = &cli.StringFlag{
+	Name:  "out-dir",
+	Usage: "--out-dir /path/to/[folder]",
+}
+
+var splitterCommand = &cli.Command{
+	Name:        "splitter",
+	Usage:       "splitter",
+	Flags:       []cli.Flag{inFileFlag, outDirFlag},
+	Description: "takes a csv and splits it into many out csvs",
+	Action: func(context *cli.Context) error {
+		inFile := context.String(inFileFlag.Name)
+		outFile := context.String(outDirFlag.Name)
+
+		_, err := screener.SplitAndWriteCSV(inFile, outFile)
+		if err != nil {
+			return fmt.Errorf("failed to split csv: %w", err)
+		}
+
+		return nil
+	},
+}
