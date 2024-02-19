@@ -107,10 +107,14 @@ export class SynapseRouter extends Router {
   }
 
   private async hydrateCache() {
-    await Promise.all([
-      this.getBridgeContract(),
-      this.chainGasAmount(),
-    ])
+    try {
+      await Promise.all([
+        this.getBridgeContract(),
+        this.chainGasAmount(),
+      ])
+    } catch (e) {
+      console.error('Failed to hydrate router cache', e)
+    }
   }
 
   public async getOriginAmountOut(

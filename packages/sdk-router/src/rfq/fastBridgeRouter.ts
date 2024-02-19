@@ -59,11 +59,15 @@ export class FastBridgeRouter implements SynapseModule {
   }
 
   private async hydrateCache() {
-    await Promise.all([
-      this.getFastBridgeContract(),
-      this.getProtocolFeeRate(),
-      this.chainGasAmount(),
-    ])
+    try {
+      await Promise.all([
+        this.getFastBridgeContract(),
+        this.getProtocolFeeRate(),
+        this.chainGasAmount(),
+      ])
+    } catch (e) {
+      console.error('Failed to hydrate rfqrouter cache', e)
+    }
   }
 
   /**

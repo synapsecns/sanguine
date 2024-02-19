@@ -80,7 +80,8 @@ export function SimpleCache(maxAge: number) {
       const result = originalMethod.apply(this, args)
       cache[key] = {
         value: result,
-        timestamp: Date.now() }
+        timestamp: Date.now()
+      }
       return result
     }
   }
