@@ -53,6 +53,17 @@ export class FastBridgeRouter implements SynapseModule {
       FastBridgeRouter.fastBridgeRouterInterface,
       provider
     ) as FastBridgeRouterContract
+    this.hydrateCache().then(() => {
+      console.log('rfq router cache hydrated')
+    })
+  }
+
+  private async hydrateCache() {
+    await Promise.all([
+      this.getFastBridgeContract(),
+      this.getProtocolFeeRate(),
+      this.chainGasAmount(),
+    ])
   }
 
   /**
@@ -107,6 +118,7 @@ export class FastBridgeRouter implements SynapseModule {
     return fastBridgeContract.bridgeRelays(synapseTxId)
   }
 
+  @SimpleCache(MS_TIMES.TEN_MINUTES)
   public async chainGasAmount(): Promise<BigNumber> {
     const fastBridgeContract = await this.getFastBridgeContract()
     return fastBridgeContract.chainGasAmount()
