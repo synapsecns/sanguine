@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import { useState, useEffect } from 'react'
 
 import { useTransactionsState } from '@/state/slices/transactions/hooks'
@@ -30,7 +31,9 @@ export const Transactions = ({
   }, [])
 
   if (hasTransactions) {
-    return transactions.map((transaction: TransactionDetails) => (
+    const sortedTransactions = _.orderBy(transactions, ['timestamp'], ['desc'])
+
+    return sortedTransactions.map((transaction: TransactionDetails) => (
       <Transaction
         key={transaction.originTxHash}
         connectedAddress={connectedAddress}

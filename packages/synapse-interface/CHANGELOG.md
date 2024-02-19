@@ -3,6 +3,46 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.281](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.280...@synapsecns/synapse-interface@0.1.281) (2024-02-19)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.280](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.279...@synapsecns/synapse-interface@0.1.280) (2024-02-13)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.279](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.278...@synapsecns/synapse-interface@0.1.279) (2024-02-13)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.278](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.277...@synapsecns/synapse-interface@0.1.278) (2024-02-13)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+## [0.1.277](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.276...@synapsecns/synapse-interface@0.1.277) (2024-02-12)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
 ## [0.1.276](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.275...@synapsecns/synapse-interface@0.1.276) (2024-02-09)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
