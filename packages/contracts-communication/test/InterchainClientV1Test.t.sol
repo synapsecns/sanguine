@@ -10,12 +10,21 @@ import "../contracts/modules/SynapseModule.sol";
 
 import {InterchainEntry} from "../contracts/libs/InterchainEntry.sol";
 
+import {TypeCasts} from "../contracts/libs/TypeCasts.sol";
+
+import {OptionsLib} from "../contracts/libs/Options.sol";
+
+import { InterchainClientV1Harness } from "./harnesses/InterchainClientV1Harness.sol";
+
 contract InterchainClientV1Test is Test {
-    InterchainClientV1 icClient;
+    InterchainClientV1Harness icClient;
     InterchainDB icDB;
     SynapseModule synapseModule;
     InterchainAppMock icApp;
     InterchainModuleMock icModule;
+
+    // Use default options of V1, 200k gas limit, 0 gas airdrop
+    bytes options = OptionsLib.encodeOptions(OptionsLib.Options(1, 200000, 0));
 
     uint256 public constant SRC_CHAIN_ID = 1337;
     uint256 public constant DST_CHAIN_ID = 7331;
@@ -24,7 +33,7 @@ contract InterchainClientV1Test is Test {
 
     function setUp() public {
         vm.startPrank(contractOwner);
-        icClient = new InterchainClientV1();
+        icClient = new InterchainClientV1Harness();
         icDB = new InterchainDB();
         synapseModule = new SynapseModule();
         synapseModule.setInterchainDB(address(icDB));
@@ -35,9 +44,51 @@ contract InterchainClientV1Test is Test {
         icApp.setReceivingModule(address(icModule));
         vm.stopPrank();
     }
+    // ══════════════════════════════════════════════ INTERNAL TESTS ══════════════════════════════════════════════════
+
+    function test_generateTxId(bytes32 srcSender,
+        uint256 srcChainId,
+        bytes32 dstReceiver,
+        uint256 dstChainId,
+        bytes memory message,
+        uint64 nonce,
+        bytes memory fuzzOptions) public {
+        bytes32 txId = icClient.generateTransactionIdHarness(srcSender, srcChainId, dstReceiver, dstChainId, message, nonce, fuzzOptions);
+        assertEq(txId, keccak256(abi.encode(srcSender, srcChainId, dstReceiver, dstChainId, message, nonce, fuzzOptions)));
+    }
+
+    function test_getFinalizedResponsesCount() public {
+        vm.warp(10 days);
+        uint256[] memory approvedResponses = new uint256[](3);
+        approvedResponses[0] = block.timestamp + 1 days; // This should not be counted as finalized because it's in the future
+        approvedResponses[1] = block.timestamp - 20 minutes; // This should be counted as finalized because it's outside the optimistic time period
+        approvedResponses[2] = block.timestamp - 1 minutes; // This should not be counted as finalized
+
+        uint256 optimisticTimePeriod = 15 minutes; // Setting the optimistic time period to 15 minutes
+
+        uint256 finalizedResponses = icClient.getFinalizedResponsesCountHarness(approvedResponses, optimisticTimePeriod);
+
+        assertEq(finalizedResponses, 1, "Only 1 response should be finalized within the optimistic time period");
+
+        // Test with all responses outside the optimistic time period
+        approvedResponses[0] = block.timestamp + 30 minutes;
+        approvedResponses[1] = block.timestamp + 40 minutes;
+        approvedResponses[2] = block.timestamp + 50 minutes;
+
+        finalizedResponses = icClient.getFinalizedResponsesCountHarness(approvedResponses, optimisticTimePeriod);
+
+        assertEq(finalizedResponses, 0, "There should be 0 finalized responses outside the optimistic time period");
+
+        // Test with empty responses array
+        approvedResponses = new uint256[](0);
+
+        finalizedResponses = icClient.getFinalizedResponsesCountHarness(approvedResponses, optimisticTimePeriod);
+
+        assertEq(finalizedResponses, 0, "There should be 0 finalized responses with an empty responses array");
+    }
 
     function test_interchainSend() public {
-        bytes32 receiver = icClient.convertAddressToBytes32(makeAddr("Receiver"));
+        bytes32 receiver = TypeCasts.addressToBytes32(makeAddr("Receiver"));
         bytes memory message = "Hello World";
         address[] memory srcModules = new address[](1);
         srcModules[0] = address(synapseModule);
@@ -45,20 +96,21 @@ contract InterchainClientV1Test is Test {
         uint64 nonce = 1;
         bytes32 transactionID = keccak256(
             abi.encode(
-                icClient.convertAddressToBytes32(msg.sender), block.chainid, receiver, DST_CHAIN_ID, message, nonce
+                TypeCasts.addressToBytes32(msg.sender), block.chainid, receiver, DST_CHAIN_ID, message, nonce
             )
         );
-        icClient.interchainSend{value: 1}(receiver, DST_CHAIN_ID, message, srcModules);
+        icClient.interchainSend{value: 1}(receiver, DST_CHAIN_ID, message, options, srcModules);
     }
 
     function test_interchainReceive() public {
-        bytes32 dstReceiver = icClient.convertAddressToBytes32(address(icApp));
+        bytes32 dstReceiver = TypeCasts.addressToBytes32(address(icApp));
         bytes memory message = "Hello World";
-        bytes32 srcSender = icClient.convertAddressToBytes32(makeAddr("Sender"));
+        bytes32 srcSender = TypeCasts.addressToBytes32(makeAddr("Sender"));
+        vm.prank(contractOwner);
         icClient.setLinkedClient(SRC_CHAIN_ID, srcSender);
         uint64 nonce = 1;
         bytes32 transactionID =
-            keccak256(abi.encode(srcSender, SRC_CHAIN_ID, dstReceiver, DST_CHAIN_ID, message, nonce));
+            keccak256(abi.encode(srcSender, SRC_CHAIN_ID, dstReceiver, DST_CHAIN_ID, message, nonce, options));
 
         InterchainEntry memory entry =
             InterchainEntry({srcChainId: SRC_CHAIN_ID, srcWriter: srcSender, writerNonce: 0, dataHash: transactionID});
@@ -72,10 +124,12 @@ contract InterchainClientV1Test is Test {
             dstChainId: DST_CHAIN_ID,
             message: message,
             nonce: nonce,
+            options: options,
             transactionId: transactionID,
             dbWriterNonce: 0
         });
-
-        icClient.interchainExecute(transactionID, abi.encode(transaction));
+        // Skip ahead of optimistic period
+        vm.warp(icApp.getOptimisticTimePeriod() + 1 minutes);
+        icClient.interchainExecute(abi.encode(transaction));
     }
 }
