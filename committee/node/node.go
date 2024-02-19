@@ -65,8 +65,8 @@ func NewNode(ctx context.Context, handler metrics.Handler, cfg config.Config) (*
 	node.chainListeners = make(map[int]listener.ContractListener)
 	node.interchainContracts = make(map[int]*synapsemodule.SynapseModuleRef)
 
-	for chainID, chainCFG := range cfg.Chains {
-		synapseModule := common.HexToAddress(chainCFG.SynapseModuleAddress)
+	for chainID, address := range cfg.Chains {
+		synapseModule := common.HexToAddress(address)
 		chainClient, err := node.client.GetChainClient(ctx, chainID)
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain client: %w", err)
@@ -114,7 +114,7 @@ func (n *Node) Address() common.Address {
 const defaultDBInterval = 3
 
 func (n *Node) createPeerManager(ctx context.Context) (err error) {
-	n.peerManager, err = p2p.NewLibP2PManager(ctx, n.signer, n.db)
+	n.peerManager, err = p2p.NewLibP2PManager(ctx, n.signer, n.db, n.cfg.P2PPort)
 	if err != nil {
 		return fmt.Errorf("could not get peer manager: %w", err)
 	}
@@ -214,7 +214,7 @@ func (n *Node) Start(parentContext context.Context) error {
 }
 
 func (n *Node) startP2P(ctx context.Context) error {
-	err := n.peerManager.Start(ctx, n.cfg.BootstarpPeers)
+	err := n.peerManager.Start(ctx, n.cfg.BootstrapPeers)
 	if err != nil {
 		return fmt.Errorf("could not start peer manager: %w", err)
 	}

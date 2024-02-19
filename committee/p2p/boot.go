@@ -20,7 +20,6 @@ import (
 	"github.com/libp2p/go-libp2p/p2p/discovery/routing"
 	"github.com/libp2p/go-libp2p/p2p/discovery/util"
 	"github.com/multiformats/go-multiaddr"
-	"github.com/phayes/freeport"
 	"github.com/pkg/errors"
 	"github.com/synapsecns/sanguine/committee/db"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -58,6 +57,7 @@ type libP2PManagerImpl struct {
 	datastoreFactory db.Datstores
 	// address is the address of the node
 	address common.Address
+	port    int
 }
 
 const dbTopic = "crdt_db"
@@ -69,7 +69,7 @@ var RebroadcastingInterval = time.Minute
 //
 // validators should be a list of addresses that are allowed to connect to the host. This should include the address of the
 // node itself.
-func NewLibP2PManager(ctx context.Context, auth signer.Signer, store db.Datstores) (LibP2PManager, error) {
+func NewLibP2PManager(ctx context.Context, auth signer.Signer, store db.Datstores, port int) (LibP2PManager, error) {
 	l := &libP2PManagerImpl{}
 	_, err := l.setupHost(ctx, auth.PrivKey()) // call createHost function
 	if err != nil {
@@ -83,6 +83,7 @@ func NewLibP2PManager(ctx context.Context, auth signer.Signer, store db.Datstore
 	l.address = auth.Address()
 	l.datastoreFactory = store
 	l.datastores = make(map[common.Address]datastore.Batching)
+	l.port = port
 
 	return l, nil
 }
@@ -98,9 +99,8 @@ func (l *libP2PManagerImpl) Address() common.Address {
 }
 
 func (l *libP2PManagerImpl) setupHost(ctx context.Context, privKeyWrapper crypto.PrivKey) (host.Host, error) {
-	port, _ := freeport.GetFreePort()
 	// Create a new libp2p host
-	sourceMultiAddr, err := multiaddr.NewMultiaddr(fmt.Sprintf("/ip4/0.0.0.0/tcp/%d", port))
+	sourceMultiAddr, err := multiaddr.NewMultiaddr(fmt.Sprintf("/ip4/0.0.0.0/tcp/%d", l.port))
 	if err != nil {
 		return nil, errors.Wrap(err, "create multi addr")
 	}

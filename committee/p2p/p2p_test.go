@@ -5,6 +5,7 @@ import (
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/phayes/freeport"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/committee/db/connect"
 	"github.com/synapsecns/sanguine/committee/p2p"
@@ -98,7 +99,7 @@ func (s *P2PTestSuite) makeManager() p2p.LibP2PManager {
 	db, err := connect.Connect(s.GetTestContext(), dbcommon.Sqlite, tmpDir, s.handler)
 	s.Require().NoError(err)
 
-	manager, err := p2p.NewLibP2PManager(s.GetTestContext(), signer, db)
+	manager, err := p2p.NewLibP2PManager(s.GetTestContext(), signer, db, freeport.GetPort())
 	s.Require().NoError(err)
 
 	return manager

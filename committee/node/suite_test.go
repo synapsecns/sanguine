@@ -4,6 +4,7 @@ import (
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
+	"github.com/phayes/freeport"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/committee/config"
 	"github.com/synapsecns/sanguine/committee/contracts/synapsemodule"
@@ -109,13 +110,9 @@ func (n *NodeSuite) makeNode() {
 	}
 
 	cfg := config.Config{
-		Chains: map[int]config.ChainConfig{
-			1: {
-				SynapseModuleAddress: n.originModule.Address().String(),
-			},
-			2: {
-				SynapseModuleAddress: n.destModule.Address().String(),
-			},
+		Chains: map[int]string{
+			1: n.originModule.Address().String(),
+			2: n.destModule.Address().String(),
 		},
 		OmnirpcURL: n.omnirpcURL,
 		Database: config.DatabaseConfig{
@@ -128,7 +125,8 @@ func (n *NodeSuite) makeNode() {
 		},
 		SubmitterConfig: submitterConfig.Config{},
 		ShouldRelay:     shouldRelay,
-		BootstarpPeers:  bootstrapPeers,
+		BootstrapPeers:  bootstrapPeers,
+		P2PPort:         freeport.GetPort(),
 	}
 
 	myNode, err := node.NewNode(n.GetTestContext(), n.metrics, cfg)

@@ -9,7 +9,7 @@ import (
 // Config is the config for the Synapse module.
 type Config struct {
 	// Chains is a map of chain IDs to chain configs.
-	Chains map[int]ChainConfig `yaml:"chains"`
+	Chains map[int]string `yaml:"chains"`
 	// OmnirpcURL is the URL of the Omni RPC.
 	OmnirpcURL string
 	// Database is the database config.
@@ -21,7 +21,9 @@ type Config struct {
 	// ShouldRelay is whether the node should relay.
 	ShouldRelay bool `yaml:"should_relay"`
 	// BootstrapPeers is the list of bootstrap peers.
-	BootstarpPeers []string `yaml:"bootstrap_peers"`
+	BootstrapPeers []string `yaml:"bootstrap_peers"`
+	// P2PPort is the port for the p2p server.
+	P2PPort int `yaml:"p2p_port"`
 }
 
 // ChainConfig is the config for a chain.
