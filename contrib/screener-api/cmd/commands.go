@@ -47,12 +47,12 @@ var screenerCommand = &cli.Command{
 
 var inFileFlag = &cli.StringFlag{
 	Name:  "in-file",
-	Usage: "--in-file /path/to/in.csv",
+	Usage: "Specify the path to the input CSV file. Example: --in-file /path/to/in.csv",
 }
 
 var outDirFlag = &cli.StringFlag{
 	Name:  "out-dir",
-	Usage: "--out-dir /path/to/[folder]",
+	Usage: "Specify the path to the output directory where split CSV files will be saved. Example: --out-dir /path/to/output",
 }
 
 var splitterCommand = &cli.Command{
