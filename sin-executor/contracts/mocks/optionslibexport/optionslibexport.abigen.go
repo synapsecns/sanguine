@@ -29,17 +29,16 @@ var (
 	_ = abi.ConvertType
 )
 
-// OptionsLibOptions is an auto generated low-level Go binding around an user-defined struct.
-type OptionsLibOptions struct {
-	Version    uint8
+// OptionsV1 is an auto generated low-level Go binding around an user-defined struct.
+type OptionsV1 struct {
 	GasLimit   *big.Int
 	GasAirdrop *big.Int
 }
 
 // OptionsLibMetaData contains all meta data concerning the OptionsLib contract.
 var OptionsLibMetaData = &bind.MetaData{
-	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220e6943f05b73c8f27239df323e38bba9c6e3444b4454525632bf204bc75a2320364736f6c63430008140033",
+	ABI: "[{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"}],\"name\":\"OptionsLib__IncorrectVersion\",\"type\":\"error\"}]",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220526c857e31e6859218d312fcb81c9589311054343b78abeaf3360d1d8aa2e6b064736f6c63430008140033",
 }
 
 // OptionsLibABI is the input ABI used to generate the binding from.
@@ -211,13 +210,13 @@ func (_OptionsLib *OptionsLibTransactorRaw) Transact(opts *bind.TransactOpts, me
 
 // OptionsLibMocksMetaData contains all meta data concerning the OptionsLibMocks contract.
 var OptionsLibMocksMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"convertable\",\"type\":\"address\"}],\"name\":\"addressToBytes32\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"decodeOptions\",\"outputs\":[{\"components\":[{\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"gasAirdrop\",\"type\":\"uint256\"}],\"internalType\":\"structOptionsLib.Options\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"gasAirdrop\",\"type\":\"uint256\"}],\"internalType\":\"structOptionsLib.Options\",\"name\":\"options\",\"type\":\"tuple\"}],\"name\":\"encodeOptions\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"}],\"name\":\"OptionsLib__IncorrectVersion\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"convertable\",\"type\":\"address\"}],\"name\":\"addressToBytes32\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"decodeOptions\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"gasAirdrop\",\"type\":\"uint256\"}],\"internalType\":\"structOptionsV1\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"gasAirdrop\",\"type\":\"uint256\"}],\"internalType\":\"structOptionsV1\",\"name\":\"options\",\"type\":\"tuple\"}],\"name\":\"encodeOptions\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"82c947b7": "addressToBytes32(address)",
 		"d5e788a0": "decodeOptions(bytes)",
-		"002baf7e": "encodeOptions((uint8,uint256,uint256))",
+		"c551274c": "encodeOptions((uint256,uint256))",
 	},
-	Bin: "0x608060405234801561001057600080fd5b50610442806100206000396000f3fe608060405234801561001057600080fd5b50600436106100405760003560e01c80622baf7e1461004557806382c947b71461006e578063d5e788a01461008f575b600080fd5b6100586100533660046101fb565b6100c7565b604051610065919061025d565b60405180910390f35b61008161007c3660046102c9565b61010b565b604051908152602001610065565b6100a261009d366004610306565b610129565b60408051825160ff168152602080840151908201529181015190820152606001610065565b8051602080830151604080850151815160ff909516938501939093528381019190915260608381019290925280518084038301815260809093019052905b92915050565b600073ffffffffffffffffffffffffffffffffffffffff8216610105565b6101506040518060600160405280600060ff16815260200160008152602001600081525090565b6101058261017b6040518060600160405280600060ff16815260200160008152602001600081525090565b60008060008480602001905181019061019491906103d5565b6040805160608101825260ff909416845260208401929092529082015295945050505050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b60ff811681146101f857600080fd5b50565b60006060828403121561020d57600080fd5b6040516060810181811067ffffffffffffffff82111715610230576102306101ba565b604052823561023e816101e9565b8152602083810135908201526040928301359281019290925250919050565b600060208083528351808285015260005b8181101561028a5785810183015185820160400152820161026e565b5060006040828601015260407fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f8301168501019250505092915050565b6000602082840312156102db57600080fd5b813573ffffffffffffffffffffffffffffffffffffffff811681146102ff57600080fd5b9392505050565b60006020828403121561031857600080fd5b813567ffffffffffffffff8082111561033057600080fd5b818401915084601f83011261034457600080fd5b813581811115610356576103566101ba565b604051601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f0116810190838211818310171561039c5761039c6101ba565b816040528281528760208487010111156103b557600080fd5b826020860160208301376000928101602001929092525095945050505050565b6000806000606084860312156103ea57600080fd5b83516103f5816101e9565b60208501516040909501519096949550939250505056fea26469706673582212207ee0fe8bc4fae08f7e5efdb9b1d785a034c7d7f6292a5c9c97f4a7ce4111132664736f6c63430008140033",
+	Bin: "0x608060405234801561001057600080fd5b5061058a806100206000396000f3fe608060405234801561001057600080fd5b50600436106100415760003560e01c806382c947b714610046578063c551274c1461006c578063d5e788a01461008c575b600080fd5b610059610054366004610216565b6100ba565b6040519081526020015b60405180910390f35b61007f61007a3660046102fa565b6100da565b604051610063919061039a565b61009f61009a3660046103f3565b6100e5565b60408051825181526020928301519281019290925201610063565b600073ffffffffffffffffffffffffffffffffffffffff82165b92915050565b60606100d482610102565b60408051808201909152600080825260208201526100d482610140565b60606100d460018360405160200161012c9190815181526020918201519181019190915260400190565b6040516020818303038152906040526101c8565b6040805180820190915260008082526020820152600080610160846101f4565b9092509050600160ff831610156101ac576040517fbd91a21500000000000000000000000000000000000000000000000000000000815260ff8316600482015260240160405180910390fd5b808060200190518101906101c09190610473565b949350505050565b606082826040516020016101dd9291906104a5565b604051602081830303815290604052905092915050565b600060608280602001905181019061020c91906104c1565b9094909350915050565b60006020828403121561022857600080fd5b813573ffffffffffffffffffffffffffffffffffffffff8116811461024c57600080fd5b9392505050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b6040805190810167ffffffffffffffff811182821017156102a5576102a5610253565b60405290565b604051601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe016810167ffffffffffffffff811182821017156102f2576102f2610253565b604052919050565b60006040828403121561030c57600080fd5b610314610282565b82358152602083013560208201528091505092915050565b60005b8381101561034757818101518382015260200161032f565b50506000910152565b6000815180845261036881602086016020860161032c565b601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0169290920160200192915050565b60208152600061024c6020830184610350565b600067ffffffffffffffff8211156103c7576103c7610253565b50601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe01660200190565b60006020828403121561040557600080fd5b813567ffffffffffffffff81111561041c57600080fd5b8201601f8101841361042d57600080fd5b803561044061043b826103ad565b6102ab565b81815285602083850101111561045557600080fd5b81602084016020830137600091810160200191909152949350505050565b60006040828403121561048557600080fd5b61048d610282565b82518152602083015160208201528091505092915050565b60ff831681526040602082015260006101c06040830184610350565b600080604083850312156104d457600080fd5b825160ff811681146104e557600080fd5b602084015190925067ffffffffffffffff81111561050257600080fd5b8301601f8101851361051357600080fd5b805161052161043b826103ad565b81815286602083850101111561053657600080fd5b61054782602083016020860161032c565b809350505050925092905056fea26469706673582212208f2473b930601937bd8607cd20cb625226cceeac8cfa96a844720af837e59e9c64736f6c63430008140033",
 }
 
 // OptionsLibMocksABI is the input ABI used to generate the binding from.
@@ -424,16 +423,16 @@ func (_OptionsLibMocks *OptionsLibMocksCallerSession) AddressToBytes32(convertab
 
 // DecodeOptions is a free data retrieval call binding the contract method 0xd5e788a0.
 //
-// Solidity: function decodeOptions(bytes data) view returns((uint8,uint256,uint256))
-func (_OptionsLibMocks *OptionsLibMocksCaller) DecodeOptions(opts *bind.CallOpts, data []byte) (OptionsLibOptions, error) {
+// Solidity: function decodeOptions(bytes data) view returns((uint256,uint256))
+func (_OptionsLibMocks *OptionsLibMocksCaller) DecodeOptions(opts *bind.CallOpts, data []byte) (OptionsV1, error) {
 	var out []interface{}
 	err := _OptionsLibMocks.contract.Call(opts, &out, "decodeOptions", data)
 
 	if err != nil {
-		return *new(OptionsLibOptions), err
+		return *new(OptionsV1), err
 	}
 
-	out0 := *abi.ConvertType(out[0], new(OptionsLibOptions)).(*OptionsLibOptions)
+	out0 := *abi.ConvertType(out[0], new(OptionsV1)).(*OptionsV1)
 
 	return out0, err
 
@@ -441,22 +440,22 @@ func (_OptionsLibMocks *OptionsLibMocksCaller) DecodeOptions(opts *bind.CallOpts
 
 // DecodeOptions is a free data retrieval call binding the contract method 0xd5e788a0.
 //
-// Solidity: function decodeOptions(bytes data) view returns((uint8,uint256,uint256))
-func (_OptionsLibMocks *OptionsLibMocksSession) DecodeOptions(data []byte) (OptionsLibOptions, error) {
+// Solidity: function decodeOptions(bytes data) view returns((uint256,uint256))
+func (_OptionsLibMocks *OptionsLibMocksSession) DecodeOptions(data []byte) (OptionsV1, error) {
 	return _OptionsLibMocks.Contract.DecodeOptions(&_OptionsLibMocks.CallOpts, data)
 }
 
 // DecodeOptions is a free data retrieval call binding the contract method 0xd5e788a0.
 //
-// Solidity: function decodeOptions(bytes data) view returns((uint8,uint256,uint256))
-func (_OptionsLibMocks *OptionsLibMocksCallerSession) DecodeOptions(data []byte) (OptionsLibOptions, error) {
+// Solidity: function decodeOptions(bytes data) view returns((uint256,uint256))
+func (_OptionsLibMocks *OptionsLibMocksCallerSession) DecodeOptions(data []byte) (OptionsV1, error) {
 	return _OptionsLibMocks.Contract.DecodeOptions(&_OptionsLibMocks.CallOpts, data)
 }
 
-// EncodeOptions is a free data retrieval call binding the contract method 0x002baf7e.
+// EncodeOptions is a free data retrieval call binding the contract method 0xc551274c.
 //
-// Solidity: function encodeOptions((uint8,uint256,uint256) options) view returns(bytes)
-func (_OptionsLibMocks *OptionsLibMocksCaller) EncodeOptions(opts *bind.CallOpts, options OptionsLibOptions) ([]byte, error) {
+// Solidity: function encodeOptions((uint256,uint256) options) view returns(bytes)
+func (_OptionsLibMocks *OptionsLibMocksCaller) EncodeOptions(opts *bind.CallOpts, options OptionsV1) ([]byte, error) {
 	var out []interface{}
 	err := _OptionsLibMocks.contract.Call(opts, &out, "encodeOptions", options)
 
@@ -470,24 +469,24 @@ func (_OptionsLibMocks *OptionsLibMocksCaller) EncodeOptions(opts *bind.CallOpts
 
 }
 
-// EncodeOptions is a free data retrieval call binding the contract method 0x002baf7e.
+// EncodeOptions is a free data retrieval call binding the contract method 0xc551274c.
 //
-// Solidity: function encodeOptions((uint8,uint256,uint256) options) view returns(bytes)
-func (_OptionsLibMocks *OptionsLibMocksSession) EncodeOptions(options OptionsLibOptions) ([]byte, error) {
+// Solidity: function encodeOptions((uint256,uint256) options) view returns(bytes)
+func (_OptionsLibMocks *OptionsLibMocksSession) EncodeOptions(options OptionsV1) ([]byte, error) {
 	return _OptionsLibMocks.Contract.EncodeOptions(&_OptionsLibMocks.CallOpts, options)
 }
 
-// EncodeOptions is a free data retrieval call binding the contract method 0x002baf7e.
+// EncodeOptions is a free data retrieval call binding the contract method 0xc551274c.
 //
-// Solidity: function encodeOptions((uint8,uint256,uint256) options) view returns(bytes)
-func (_OptionsLibMocks *OptionsLibMocksCallerSession) EncodeOptions(options OptionsLibOptions) ([]byte, error) {
+// Solidity: function encodeOptions((uint256,uint256) options) view returns(bytes)
+func (_OptionsLibMocks *OptionsLibMocksCallerSession) EncodeOptions(options OptionsV1) ([]byte, error) {
 	return _OptionsLibMocks.Contract.EncodeOptions(&_OptionsLibMocks.CallOpts, options)
 }
 
 // TypeCastsMetaData contains all meta data concerning the TypeCasts contract.
 var TypeCastsMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220649cac46061c386adbb185ba88ea5bfb50373e11c48753f96247be5c4fe58cb764736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212205b93c0f2a69ed88a413f14e9d776b0580326fe18011c7fd8a60ab1bb778d0b7864736f6c63430008140033",
 }
 
 // TypeCastsABI is the input ABI used to generate the binding from.

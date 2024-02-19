@@ -1,6 +1,6 @@
 pragma solidity 0.8.20;
 
-import {IInterchainDB} from "../interfaces/IInterchainDB.sol";
+import {IInterchainDB, InterchainEntry} from "../interfaces/IInterchainDB.sol";
 
 contract NoOpInterchain is IInterchainDB {
 

@@ -1,15 +1,15 @@
 pragma solidity 0.8.20;
 
-import {OptionsLib} from "../libs/Options.sol";
+import {OptionsLib, OptionsV1} from "../libs/Options.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 
 contract OptionsLibMocks {
-    function encodeOptions(OptionsLib.Options memory options) public view returns (bytes memory) {
-        return OptionsLib.encodeOptions(options);
+    function encodeOptions(OptionsV1 memory options) public view returns (bytes memory) {
+        return OptionsLib.encodeOptionsV1(options);
     }
 
-    function decodeOptions(bytes memory data) public view returns (OptionsLib.Options memory) {
-        return OptionsLib.decodeOptions(data);
+    function decodeOptions(bytes memory data) public view returns (OptionsV1 memory) {
+        return OptionsLib.decodeOptionsV1(data);
     }
 
     function addressToBytes32(address convertable) public view returns (bytes32) {
