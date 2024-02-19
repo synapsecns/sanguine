@@ -22,6 +22,14 @@ flags:
     paths:
       - agents/
     carryforward: true
+  committee:
+    paths:
+      - committee/
+    carryforward: true
+  sin-executor:
+    paths:
+      - sin-executor/
+    carryforward: true
   screener-api:
     paths:
       - contrib/screener-api/

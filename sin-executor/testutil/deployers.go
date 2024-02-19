@@ -30,7 +30,7 @@ func NewDeployManager(t *testing.T) *DeployManager {
 }
 
 var (
-	// TODO: this looks horrible, rip out the functional deployer
+	// TODO: this looks horrible, rip out the functional deployer.
 	interchainClientDeployer = deployer.NewFunctionalDeployer(InterchainClient,
 		func(ctx context.Context, helpers deployer.IFunctionalDeployer,
 			transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {

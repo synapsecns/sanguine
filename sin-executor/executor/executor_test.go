@@ -13,7 +13,6 @@ import (
 )
 
 func (i *InterchainSuite) TestE2E() {
-
 	auth := i.originChain.GetTxContext(i.GetTestContext(), nil)
 
 	// TODO: should be mock app
