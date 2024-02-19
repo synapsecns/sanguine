@@ -70,7 +70,9 @@ export const AnimatedProgressBar = memo(
             <rect height="100%">
               <animate
                 attributeName="width"
-                values={`${percentElapsed}%; 100%`}
+                values={`${
+                  isComplete || isError ? 100 : percentElapsed
+                }%; 100%`}
                 dur={duration}
                 fill="freeze"
                 calcMode={isComplete ? 'spline' : null}
