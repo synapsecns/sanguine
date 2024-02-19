@@ -1,6 +1,5 @@
 import { Fragment } from 'react'
 import { useRouter } from 'next/router'
-import classNames from 'classnames'
 import { Popover, Transition } from '@headlessui/react'
 import { MenuIcon, XIcon } from '@heroicons/react/outline'
 import Grid from '@tw/Grid'
@@ -257,11 +256,10 @@ function MobileBarItem({
       key={labelText}
       href={to}
       target={isInternal ? undefined : '_blank'}
-      className={classNames('px-4 py-2 text-2xl font-medium text-white', {
-        'text-opacity-100': isRouteMatched,
-        'text-opacity-30': !isRouteMatched,
-        'hover:text-opacity-100': true,
-      })}
+      className={`
+        px-4 py-2 text-2xl font-medium text-white
+        ${isRouteMatched ? 'text-opacity-100' : 'text-opacity-30'}
+      `}
     >
       {labelText}
     </a>

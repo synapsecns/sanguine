@@ -1,6 +1,5 @@
 import { NextRouter, useRouter } from 'next/router'
 import Link from 'next/link'
-import classNames from 'classnames'
 
 export function TopBarNavLink({
   labelText,
@@ -22,14 +21,10 @@ export function TopBarNavLink({
   return (
     <LinkComponent
       href={to}
-      className={classNames(
-        'px-2 tracking-wide transform-gpu transition-all duration-75 text-white',
-        {
-          'text-opacity-100': isRouteMatched,
-          'text-opacity-30': !isRouteMatched,
-          'hover:text-opacity-100': true,
-        }
-      )}
+      className={`
+        px-2 tracking-wide transform-gpu transition-all duration-75 text-white hover:text-opacity-100
+        ${isRouteMatched ? 'text-opacity-100' : 'text-opacity-30'}
+      `}
       target={!isInternal ? '_blank' : undefined}
       rel={!isInternal ? 'noopener noreferrer' : undefined}
       data-test-id="nav-link"
