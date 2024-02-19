@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {ThresholdECDSAModuleEvents} from "../../contracts/events/ThresholdECDSAModuleEvents.sol";
-import {ThresholdECDSAModule, IThresholdECDSAModule} from "../../contracts/modules/ThresholdECDSAModule.sol";
+import {SynapseModuleEvents} from "../../contracts/events/SynapseModuleEvents.sol";
+import {SynapseModule, ISynapseModule} from "../../contracts/modules/SynapseModule.sol";
 import {ThresholdECDSALib} from "../../contracts/libs/ThresholdECDSA.sol";
 
 import {GasOracleMock} from "../mocks/GasOracleMock.sol";
@@ -11,8 +11,8 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 import {Test} from "forge-std/Test.sol";
 
-contract ThresholdECDSAModuleManagementTest is Test, ThresholdECDSAModuleEvents {
-    ThresholdECDSAModule public module;
+contract SynapseModuleManagementTest is Test, SynapseModuleEvents {
+    SynapseModule public module;
     GasOracleMock public gasOracle;
 
     address public interchainDB = makeAddr("InterchainDB");
@@ -24,7 +24,7 @@ contract ThresholdECDSAModuleManagementTest is Test, ThresholdECDSAModuleEvents 
     address public constant VERIFIER_3 = address(3);
 
     function setUp() public {
-        module = new ThresholdECDSAModule(interchainDB, owner);
+        module = new SynapseModule(interchainDB, owner);
         gasOracle = new GasOracleMock();
     }
 
@@ -181,9 +181,7 @@ contract ThresholdECDSAModuleManagementTest is Test, ThresholdECDSAModuleEvents 
         // Sanity check
         require(notContract.code.length == 0);
         vm.expectRevert(
-            abi.encodeWithSelector(
-                IThresholdECDSAModule.ThresholdECDSAModule__GasOracleNotContract.selector, notContract
-            )
+            abi.encodeWithSelector(ISynapseModule.SynapseModule__GasOracleNotContract.selector, notContract)
         );
         vm.prank(owner);
         module.setGasOracle(notContract);

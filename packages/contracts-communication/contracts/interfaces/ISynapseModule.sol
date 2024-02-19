@@ -3,8 +3,8 @@ pragma solidity ^0.8.0;
 
 import {IInterchainModule} from "./IInterchainModule.sol";
 
-interface IThresholdECDSAModule is IInterchainModule {
-    error ThresholdECDSAModule__GasOracleNotContract(address gasOracle);
+interface ISynapseModule is IInterchainModule {
+    error SynapseModule__GasOracleNotContract(address gasOracle);
 
     // ═══════════════════════════════════════════════ PERMISSIONED ════════════════════════════════════════════════════
 

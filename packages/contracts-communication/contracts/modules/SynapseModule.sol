@@ -3,9 +3,9 @@ pragma solidity 0.8.20;
 
 import {InterchainModule} from "./InterchainModule.sol";
 
-import {ThresholdECDSAModuleEvents} from "../events/ThresholdECDSAModuleEvents.sol";
+import {SynapseModuleEvents} from "../events/SynapseModuleEvents.sol";
 import {IGasOracle} from "../interfaces/IGasOracle.sol";
-import {IThresholdECDSAModule} from "../interfaces/IThresholdECDSAModule.sol";
+import {ISynapseModule} from "../interfaces/ISynapseModule.sol";
 
 import {InterchainEntry} from "../libs/InterchainEntry.sol";
 import {ThresholdECDSA} from "../libs/ThresholdECDSA.sol";
@@ -14,16 +14,16 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
-contract ThresholdECDSAModule is InterchainModule, Ownable, ThresholdECDSAModuleEvents, IThresholdECDSAModule {
+contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynapseModule {
     uint256 public constant VERIFY_GAS_LIMIT = 100_000;
 
     /// @dev Struct to hold the verifiers and the threshold for the module.
     ThresholdECDSA internal _verifiers;
 
-    /// @inheritdoc IThresholdECDSAModule
+    /// @inheritdoc ISynapseModule
     address public feeCollector;
 
-    /// @inheritdoc IThresholdECDSAModule
+    /// @inheritdoc ISynapseModule
     address public gasOracle;
 
     constructor(address interchainDB, address initialOwner) InterchainModule(interchainDB) Ownable(initialOwner) {
@@ -32,32 +32,32 @@ contract ThresholdECDSAModule is InterchainModule, Ownable, ThresholdECDSAModule
 
     // ═══════════════════════════════════════════════ PERMISSIONED ════════════════════════════════════════════════════
 
-    /// @inheritdoc IThresholdECDSAModule
+    /// @inheritdoc ISynapseModule
     function addVerifier(address verifier) external onlyOwner {
         _verifiers.addSigner(verifier);
         emit VerifierAdded(verifier);
     }
 
-    /// @inheritdoc IThresholdECDSAModule
+    /// @inheritdoc ISynapseModule
     function removeVerifier(address verifier) external onlyOwner {
         _verifiers.removeSigner(verifier);
         emit VerifierRemoved(verifier);
     }
 
-    /// @inheritdoc IThresholdECDSAModule
+    /// @inheritdoc ISynapseModule
     function setThreshold(uint256 threshold) external onlyOwner {
         _setThreshold(threshold);
     }
 
-    /// @inheritdoc IThresholdECDSAModule
+    /// @inheritdoc ISynapseModule
     function setFeeCollector(address feeCollector_) external onlyOwner {
         _setFeeCollector(feeCollector_);
     }
 
-    /// @inheritdoc IThresholdECDSAModule
+    /// @inheritdoc ISynapseModule
     function setGasOracle(address gasOracle_) external onlyOwner {
         if (gasOracle_.code.length == 0) {
-            revert ThresholdECDSAModule__GasOracleNotContract(gasOracle_);
+            revert SynapseModule__GasOracleNotContract(gasOracle_);
         }
         gasOracle = gasOracle_;
         emit GasOracleChanged(gasOracle_);
@@ -65,7 +65,7 @@ contract ThresholdECDSAModule is InterchainModule, Ownable, ThresholdECDSAModule
 
     // ══════════════════════════════════════════════ PERMISSIONLESS ═══════════════════════════════════════════════════
 
-    /// @inheritdoc IThresholdECDSAModule
+    /// @inheritdoc ISynapseModule
     function verifyEntry(bytes calldata encodedEntry, bytes calldata signatures) external {
         bytes32 ethSignedHash = MessageHashUtils.toEthSignedMessageHash(keccak256(encodedEntry));
         _verifiers.verifySignedHash(ethSignedHash, signatures);
@@ -74,17 +74,17 @@ contract ThresholdECDSAModule is InterchainModule, Ownable, ThresholdECDSAModule
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
-    /// @inheritdoc IThresholdECDSAModule
+    /// @inheritdoc ISynapseModule
     function getVerifiers() external view returns (address[] memory) {
         return _verifiers.getSigners();
     }
 
-    /// @inheritdoc IThresholdECDSAModule
+    /// @inheritdoc ISynapseModule
     function isVerifier(address account) external view returns (bool) {
         return _verifiers.isSigner(account);
     }
 
-    /// @inheritdoc IThresholdECDSAModule
+    /// @inheritdoc ISynapseModule
     function getThreshold() public view returns (uint256) {
         return _verifiers.getThreshold();
     }

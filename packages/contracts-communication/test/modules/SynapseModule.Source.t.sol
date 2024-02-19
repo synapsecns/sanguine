@@ -2,20 +2,16 @@
 pragma solidity 0.8.20;
 
 import {InterchainModuleEvents} from "../../contracts/events/InterchainModuleEvents.sol";
-import {ThresholdECDSAModuleEvents} from "../../contracts/events/ThresholdECDSAModuleEvents.sol";
+import {SynapseModuleEvents} from "../../contracts/events/SynapseModuleEvents.sol";
 import {IInterchainModule} from "../../contracts/interfaces/IInterchainModule.sol";
-import {
-    ThresholdECDSAModule,
-    InterchainEntry,
-    IThresholdECDSAModule
-} from "../../contracts/modules/ThresholdECDSAModule.sol";
+import {SynapseModule, InterchainEntry, ISynapseModule} from "../../contracts/modules/SynapseModule.sol";
 
 import {GasOracleMock} from "../mocks/GasOracleMock.sol";
 
 import {Test} from "forge-std/Test.sol";
 
-contract ThresholdECDSAModuleSourceTest is Test, InterchainModuleEvents, ThresholdECDSAModuleEvents {
-    ThresholdECDSAModule public module;
+contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleEvents {
+    SynapseModule public module;
     GasOracleMock public gasOracle;
 
     address public interchainDB = makeAddr("InterchainDB");
@@ -39,7 +35,7 @@ contract ThresholdECDSAModuleSourceTest is Test, InterchainModuleEvents, Thresho
 
     function setUp() public {
         vm.chainId(SRC_CHAIN_ID);
-        module = new ThresholdECDSAModule(interchainDB, owner);
+        module = new SynapseModule(interchainDB, owner);
         gasOracle = new GasOracleMock();
         vm.startPrank(owner);
         module.setGasOracle(address(gasOracle));

@@ -2,22 +2,18 @@
 pragma solidity 0.8.20;
 
 import {InterchainModuleEvents} from "../../contracts/events/InterchainModuleEvents.sol";
-import {ThresholdECDSAModuleEvents} from "../../contracts/events/ThresholdECDSAModuleEvents.sol";
+import {SynapseModuleEvents} from "../../contracts/events/SynapseModuleEvents.sol";
 import {IInterchainModule} from "../../contracts/interfaces/IInterchainModule.sol";
 import {ThresholdECDSALib} from "../../contracts/libs/ThresholdECDSA.sol";
-import {
-    ThresholdECDSAModule,
-    InterchainEntry,
-    IThresholdECDSAModule
-} from "../../contracts/modules/ThresholdECDSAModule.sol";
+import {SynapseModule, InterchainEntry, ISynapseModule} from "../../contracts/modules/SynapseModule.sol";
 
 import {GasOracleMock} from "../mocks/GasOracleMock.sol";
 import {InterchainDBMock, IInterchainDB} from "../mocks/InterchainDBMock.sol";
 
 import {Test} from "forge-std/Test.sol";
 
-contract ThresholdECDSAModuleDestinationTest is Test, InterchainModuleEvents, ThresholdECDSAModuleEvents {
-    ThresholdECDSAModule public module;
+contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseModuleEvents {
+    SynapseModule public module;
     GasOracleMock public gasOracle;
     InterchainDBMock public interchainDB;
 
@@ -49,7 +45,7 @@ contract ThresholdECDSAModuleDestinationTest is Test, InterchainModuleEvents, Th
     function setUp() public {
         vm.chainId(DST_CHAIN_ID);
         interchainDB = new InterchainDBMock();
-        module = new ThresholdECDSAModule(address(interchainDB), owner);
+        module = new SynapseModule(address(interchainDB), owner);
         gasOracle = new GasOracleMock();
         vm.startPrank(owner);
         module.setGasOracle(address(gasOracle));
@@ -296,7 +292,7 @@ contract ThresholdECDSAModuleDestinationTest is Test, InterchainModuleEvents, Th
 
     function test_verifyEntry_revertZeroThreshold() public {
         // Deploy a module without setting up the threshold
-        module = new ThresholdECDSAModule(address(interchainDB), owner);
+        module = new SynapseModule(address(interchainDB), owner);
         vm.startPrank(owner);
         module.addVerifier(SIGNER_0);
         module.addVerifier(SIGNER_1);
