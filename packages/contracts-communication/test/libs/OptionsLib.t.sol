@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
+
 import {Test} from "forge-std/Test.sol";
 
-import { OptionsLib, OptionsLibHarness } from "../harnesses/OptionsLibHarness.sol";
+import {OptionsLib, OptionsLibHarness} from "../harnesses/OptionsLibHarness.sol";
 
 contract OptionsLibTest is Test {
     OptionsLibHarness public libHarness;
@@ -14,9 +15,9 @@ contract OptionsLibTest is Test {
     function test_encodeOptions() public {
         uint8 version = 1;
         // 200k gas limit
-        uint256 gasLimit = 200000;
+        uint256 gasLimit = 200_000;
         // 100k wei
-        uint256 gasAirdrop = 100000;
+        uint256 gasAirdrop = 100_000;
         bytes memory expected = abi.encode(version, gasLimit, gasAirdrop);
         bytes memory actual = libHarness.encodeOptions(version, gasLimit, gasAirdrop);
         assertEq(actual, expected);
@@ -25,13 +26,20 @@ contract OptionsLibTest is Test {
     function test_decodeOptions() public {
         uint8 version = 1;
         // 200k gas limit
-        uint256 gasLimit = 200000;
+        uint256 gasLimit = 200_000;
         // 100k wei
-        uint256 gasAirdrop = 100000;
+        uint256 gasAirdrop = 100_000;
         bytes memory data = abi.encode(version, gasLimit, gasAirdrop);
         (uint8 actualVersion, uint256 actualGasLimit, uint256 actualGasAirdrop) = libHarness.decodeOptions(data);
         assertEq(actualVersion, version);
         assertEq(actualGasLimit, gasLimit);
         assertEq(actualGasAirdrop, gasAirdrop);
+    }
+
+    function test_encodeVersionedOptionsRoundtrip(uint8 version, bytes memory options) public {
+        bytes memory encoded = libHarness.encodeVersionedOptions(version, options);
+        (uint8 newVersion, bytes memory newOptions) = libHarness.decodeVersionedOptions(encoded);
+        assertEq(newVersion, version);
+        assertEq(newOptions, options);
     }
 }

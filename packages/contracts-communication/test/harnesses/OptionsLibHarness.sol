@@ -4,6 +4,15 @@ pragma solidity 0.8.20;
 import {OptionsLib} from "../../contracts/libs/Options.sol";
 
 contract OptionsLibHarness {
+    function encodeVersionedOptions(uint8 version, bytes calldata options) external pure returns (bytes memory) {
+        return OptionsLib.encodeVersionedOptions(version, options);
+    }
+
+    function decodeVersionedOptions(bytes calldata data) external pure returns (uint8, bytes memory) {
+        (uint8 version, bytes memory options) = OptionsLib.decodeVersionedOptions(data);
+        return (version, options);
+    }
+
     function encodeOptions(
         uint8 version,
         uint256 gasLimit,

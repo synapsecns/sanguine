@@ -15,6 +15,21 @@ library OptionsLib {
         uint256 gasAirdrop;
     }
 
+    /// @notice Encodes versioned options into a bytes format.
+    /// @param version      The version of the options.
+    /// @param options      The options to encode.
+    function encodeVersionedOptions(uint8 version, bytes memory options) internal pure returns (bytes memory) {
+        return abi.encode(version, options);
+    }
+
+    /// @notice Decodes versioned options from a bytes format back into a version and options.
+    /// @param data         The versioned options data in bytes format.
+    /// @return version     The version of the options.
+    /// @return options     The options as bytes.
+    function decodeVersionedOptions(bytes memory data) internal pure returns (uint8 version, bytes memory options) {
+        (version, options) = abi.decode(data, (uint8, bytes));
+    }
+
     /// @notice Encodes options into a bytes format.
     /// @param options The Options to encode.
     /// @return The encoded options as bytes.
@@ -30,4 +45,3 @@ library OptionsLib {
         return Options(version, gasLimit, gasAirdrop);
     }
 }
-
