@@ -13,7 +13,7 @@ export interface RouteObject {
   [key: string]: {
     path: string
     text: string
-    match: string | RegExp | { startsWith: string }
+    match: string | { startsWith: string }
   }
 }
 

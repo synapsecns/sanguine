@@ -244,7 +244,7 @@ function MobileBarItem({
 }: {
   to: string
   labelText: string
-  match?: string | RegExp | { startsWith: string }
+  match?: string | { startsWith: string }
 }) {
   const router = useRouter()
 

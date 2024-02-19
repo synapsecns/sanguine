@@ -9,7 +9,7 @@ export function TopBarNavLink({
 }: {
   labelText: string
   to: string
-  match?: string | RegExp | { startsWith: string }
+  match?: string | { startsWith: string }
 }) {
   const router = useRouter()
 
@@ -51,7 +51,7 @@ const LinkContent = ({ labelText }: { labelText: string }) => {
 
 export const checkIsRouteMatched = (
   router: NextRouter,
-  match?: string | RegExp | { startsWith: string }
+  match?: string | { startsWith: string }
 ) => {
   if (!match) return false
 
@@ -63,8 +63,6 @@ export const checkIsRouteMatched = (
       router.asPath === '/' ||
       router.asPath.startsWith(match + '?')
     )
-  } else if (match instanceof RegExp) {
-    return match.test(router.asPath)
   } else if (match.startsWith && typeof match.startsWith === 'string') {
     return router.asPath.startsWith(match.startsWith)
   }
