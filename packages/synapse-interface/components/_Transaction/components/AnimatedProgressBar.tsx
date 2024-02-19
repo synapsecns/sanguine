@@ -75,7 +75,7 @@ export const AnimatedProgressBar = memo(
                 }%; 100%`}
                 dur={duration}
                 fill="freeze"
-                calcMode={isComplete ? 'spline' : null}
+                calcMode={isComplete || isError ? 'spline' : null}
                 keySplines=".8 0 .2 1"
               />
             </rect>
@@ -90,7 +90,7 @@ export const AnimatedProgressBar = memo(
           {isError && (
             <animate
               attributeName="fill"
-              values={`${yellowText}; hsl(185deg 100% 40%); ${yellowText}`}
+              values={`${yellowText}; ${yellowText}; ${yellowText}`}
               keyTimes="0; .5; 1"
               dur={duration}
               fill="freeze"
