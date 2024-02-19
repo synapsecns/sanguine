@@ -7,7 +7,8 @@ import { getTransactionReceipt } from './getTransactionReceipt'
 export const useIsTxReverted = (
   txHash: Address,
   chain: Chain,
-  checkForRevert: boolean
+  checkForRevert: boolean,
+  checkTime: number
 ) => {
   const [isReverted, setIsReverted] = useState<boolean>(false)
 
@@ -18,7 +19,7 @@ export const useIsTxReverted = (
 
     const receipt = await getTransactionReceipt(txHash, chain)
 
-    if (receipt.status === 'reverted') {
+    if (receipt?.status === 'reverted') {
       setIsReverted(true)
     }
   }
@@ -27,7 +28,7 @@ export const useIsTxReverted = (
     if (checkForRevert) {
       getTxRevertStatus(txHash, chain)
     }
-  }, [checkForRevert, txHash, chain])
+  }, [checkForRevert, txHash, chain, checkTime])
 
   return isReverted
 }

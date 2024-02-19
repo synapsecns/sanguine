@@ -92,10 +92,9 @@ export const _Transaction = ({
   const isReverted = useIsTxReverted(
     originTxHash as Address,
     originChain,
-    currentTime &&
-      // isEstimatedTimeReached &&
-      !isStoredComplete &&
-      !isStoredReverted
+    // isEstimatedTimeReached &&
+    !isStoredComplete && !isStoredReverted,
+    currentTime
   )
   const isTxReverted = isStoredReverted ?? isReverted
 

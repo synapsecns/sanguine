@@ -90,7 +90,7 @@ export const AnimatedProgressBar = memo(
           {isError && (
             <animate
               attributeName="fill"
-              values={`${yellowText}; hsl(185deg 100% 40%); ${tailwindGreen400}`}
+              values={`${yellowText}; hsl(185deg 100% 40%); ${yellowText}`}
               keyTimes="0; .5; 1"
               dur={duration}
               fill="freeze"
