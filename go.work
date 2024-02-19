@@ -14,7 +14,6 @@ use (
 	./contrib/tfcore
 	./core
 	./ethergo
-	./sin-executor
 	./services/cctp-relayer
 	./services/explorer
 	./services/omnirpc
@@ -22,5 +21,6 @@ use (
 	./services/scribe
 	./services/sinner
 	./services/stiprelayer
+	./sin-executor
 	./tools
 )
