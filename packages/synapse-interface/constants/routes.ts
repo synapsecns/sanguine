@@ -43,7 +43,9 @@ export const NAVIGATION: RouteObject = {
   Stake: {
     path: STAKE_PATH,
     text: 'Stake',
-    match: '/stake',
+    match: {
+      startsWith: '/stake',
+    },
   },
   Analytics: {
     path: EXPLORER_PATH,
