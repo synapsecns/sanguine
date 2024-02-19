@@ -7,7 +7,7 @@ interface IExecutor {
     /// event with the same transactionId, then execute the transaction on the remote chain:
     /// `dstInterchainClient.executeTransaction(transactionPayload)`
     /// Once the execution is confirmed on the source chain, the off-chain actor will be able
-    /// to claim `executionFee`.
+    /// to claim `executionFee` in the ExecutionFees contract.
     /// @dev Could only be called by `InterchainClient` contracts.
     /// Will revert if the execution fee is not big enough.
     /// @param dstChainId           The chain id of the destination chain.
