@@ -1,7 +1,7 @@
 type CacheContent = {
-  value: any;
-  timestamp: number;
-};
+  value: any
+  timestamp: number
+}
 
 export const MS_TIMES = {
   ONE_SECOND: 1000,
@@ -72,11 +72,11 @@ export function SimpleCache(maxAge: number) {
       const now = Date.now()
 
       if (cache[key] && now - cache[key].timestamp < maxAge) {
-        console.log(`Returning cached result for ${propertyKey}`);
+        console.log(`Returning cached result for ${propertyKey}`)
         return cache[key].value
       }
 
-      console.log(`Calculating result for ${propertyKey}`);
+      console.log(`Calculating result for ${propertyKey}`)
       const result = originalMethod.apply(this, args)
       cache[key] = {
         value: result,
