@@ -1,28 +1,28 @@
+// SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import "forge-std/Test.sol";
 import {InterchainClientV1} from "../contracts/InterchainClientV1.sol";
-import "../contracts/InterchainDB.sol";
-import {InterchainAppMock} from "./mocks/InterchainAppMock.sol";
-
-import {InterchainModuleMock} from "./mocks/InterchainModuleMock.sol";
-import "../contracts/modules/SynapseModule.sol";
+import {InterchainDB} from "../contracts/InterchainDB.sol";
 
 import {InterchainEntry} from "../contracts/libs/InterchainEntry.sol";
-
+import {OptionsV1} from "../contracts/libs/Options.sol";
 import {TypeCasts} from "../contracts/libs/TypeCasts.sol";
 
-import {OptionsLib} from "../contracts/libs/Options.sol";
+import {InterchainClientV1Harness} from "./harnesses/InterchainClientV1Harness.sol";
+
+import {InterchainAppMock} from "./mocks/InterchainAppMock.sol";
+import {InterchainModuleMock} from "./mocks/InterchainModuleMock.sol";
+
+import {Test} from "forge-std/Test.sol";
 
 contract InterchainClientV1Test is Test {
-    InterchainClientV1 icClient;
+    InterchainClientV1Harness icClient;
     InterchainDB icDB;
-    SynapseModule synapseModule;
     InterchainAppMock icApp;
     InterchainModuleMock icModule;
 
     // Use default options of V1, 200k gas limit, 0 gas airdrop
-    bytes options = OptionsLib.encodeOptions(OptionsLib.Options(1, 200000, 0));
+    bytes options = OptionsV1(200_000, 0).encodeOptionsV1();
 
     uint256 public constant SRC_CHAIN_ID = 1337;
     uint256 public constant DST_CHAIN_ID = 7331;
@@ -31,31 +31,88 @@ contract InterchainClientV1Test is Test {
 
     function setUp() public {
         vm.startPrank(contractOwner);
-        icClient = new InterchainClientV1();
+        icClient = new InterchainClientV1Harness();
         icDB = new InterchainDB();
-        synapseModule = new SynapseModule();
-        synapseModule.setInterchainDB(address(icDB));
         icClient.setInterchainDB(address(icDB));
 
         icModule = new InterchainModuleMock();
         icApp = new InterchainAppMock();
         icApp.setReceivingModule(address(icModule));
         vm.stopPrank();
+        mockModuleFee(icModule, 1);
+    }
+
+    /// @dev Mocks a return value of module.getModuleFee(DST_CHAIN_ID)
+    function mockModuleFee(InterchainModuleMock module, uint256 feeValue) internal {
+        bytes memory callData = abi.encodeCall(module.getModuleFee, (DST_CHAIN_ID));
+        bytes memory returnData = abi.encode(feeValue);
+        vm.mockCall(address(module), callData, returnData);
+    }
+
+    // ══════════════════════════════════════════════ INTERNAL TESTS ══════════════════════════════════════════════════
+
+    function test_generateTxId(
+        bytes32 srcSender,
+        uint256 srcChainId,
+        bytes32 dstReceiver,
+        uint256 dstChainId,
+        bytes memory message,
+        uint64 nonce,
+        bytes memory fuzzOptions
+    )
+        public
+    {
+        bytes32 txId = icClient.generateTransactionIdHarness(
+            srcSender, srcChainId, dstReceiver, dstChainId, message, nonce, fuzzOptions
+        );
+        assertEq(
+            txId, keccak256(abi.encode(srcSender, srcChainId, dstReceiver, dstChainId, message, nonce, fuzzOptions))
+        );
+    }
+
+    function test_getFinalizedResponsesCount() public {
+        vm.warp(10 days);
+        uint256[] memory approvedResponses = new uint256[](3);
+        approvedResponses[0] = block.timestamp + 1 days; // This should not be counted as finalized because it's in the future
+        approvedResponses[1] = block.timestamp - 20 minutes; // This should be counted as finalized because it's outside the optimistic time period
+        approvedResponses[2] = block.timestamp - 1 minutes; // This should not be counted as finalized
+
+        uint256 optimisticTimePeriod = 15 minutes; // Setting the optimistic time period to 15 minutes
+
+        uint256 finalizedResponses = icClient.getFinalizedResponsesCountHarness(approvedResponses, optimisticTimePeriod);
+
+        assertEq(finalizedResponses, 1, "Only 1 response should be finalized within the optimistic time period");
+
+        // Test with all responses outside the optimistic time period
+        approvedResponses[0] = block.timestamp + 30 minutes;
+        approvedResponses[1] = block.timestamp + 40 minutes;
+        approvedResponses[2] = block.timestamp + 50 minutes;
+
+        finalizedResponses = icClient.getFinalizedResponsesCountHarness(approvedResponses, optimisticTimePeriod);
+
+        assertEq(finalizedResponses, 0, "There should be 0 finalized responses outside the optimistic time period");
+
+        // Test with empty responses array
+        approvedResponses = new uint256[](0);
+
+        finalizedResponses = icClient.getFinalizedResponsesCountHarness(approvedResponses, optimisticTimePeriod);
+
+        assertEq(finalizedResponses, 0, "There should be 0 finalized responses with an empty responses array");
     }
 
     function test_interchainSend() public {
         bytes32 receiver = TypeCasts.addressToBytes32(makeAddr("Receiver"));
         bytes memory message = "Hello World";
         address[] memory srcModules = new address[](1);
-        srcModules[0] = address(synapseModule);
+        srcModules[0] = address(icModule);
         uint256 totalModuleFees = 1;
         uint64 nonce = 1;
         bytes32 transactionID = keccak256(
-            abi.encode(
-                TypeCasts.addressToBytes32(msg.sender), block.chainid, receiver, DST_CHAIN_ID, message, nonce
-            )
+            abi.encode(TypeCasts.addressToBytes32(msg.sender), block.chainid, receiver, DST_CHAIN_ID, message, nonce)
         );
-        icClient.interchainSend{value: 1}(receiver, DST_CHAIN_ID, message, options, srcModules);
+        icClient.interchainSend{value: totalModuleFees}(receiver, DST_CHAIN_ID, message, options, srcModules);
+        // TODO: should check the transaction ID?
+        transactionID;
     }
 
     function test_interchainReceive() public {
@@ -84,7 +141,8 @@ contract InterchainClientV1Test is Test {
             transactionId: transactionID,
             dbWriterNonce: 0
         });
-
+        // Skip ahead of optimistic period
+        vm.warp(icApp.getOptimisticTimePeriod() + 1 minutes);
         icClient.interchainExecute(abi.encode(transaction));
     }
 }
