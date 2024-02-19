@@ -7,12 +7,14 @@ import {InterchainEntry} from "../contracts/libs/InterchainEntry.sol";
 
 import {InterchainAppMock} from "./mocks/InterchainAppMock.sol";
 import {InterchainModuleMock} from "./mocks/InterchainModuleMock.sol";
+import "../contracts/modules/SynapseModule.sol";
 
 import {Test} from "forge-std/Test.sol";
 
 contract InterchainClientV1Test is Test {
     InterchainClientV1 icClient;
     InterchainDB icDB;
+    SynapseModule synapseModule;
     InterchainAppMock icApp;
     InterchainModuleMock icModule;
 
@@ -25,28 +27,21 @@ contract InterchainClientV1Test is Test {
         vm.startPrank(contractOwner);
         icClient = new InterchainClientV1();
         icDB = new InterchainDB();
+        synapseModule = new SynapseModule();
+        synapseModule.setInterchainDB(address(icDB));
         icClient.setInterchainDB(address(icDB));
 
         icModule = new InterchainModuleMock();
         icApp = new InterchainAppMock();
         icApp.setReceivingModule(address(icModule));
         vm.stopPrank();
-        // icModule should return 1 for the module fee
-        mockModuleFee(icModule, 1);
-    }
-
-    /// @dev Mocks a return value of module.getModuleFee(DST_CHAIN_ID)
-    function mockModuleFee(InterchainModuleMock module, uint256 feeValue) internal {
-        bytes memory callData = abi.encodeCall(module.getModuleFee, (DST_CHAIN_ID));
-        bytes memory returnData = abi.encode(feeValue);
-        vm.mockCall(address(module), callData, returnData);
     }
 
     function test_interchainSend() public {
         bytes32 receiver = icClient.convertAddressToBytes32(makeAddr("Receiver"));
         bytes memory message = "Hello World";
         address[] memory srcModules = new address[](1);
-        srcModules[0] = address(icModule);
+        srcModules[0] = address(synapseModule);
         uint256 totalModuleFees = 1;
         uint64 nonce = 1;
         bytes32 transactionID = keccak256(
