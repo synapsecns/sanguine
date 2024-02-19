@@ -30,7 +30,7 @@ contract ThresholdECDSALibHarness {
         return ThresholdECDSALib.getThreshold(thresholdECDSA);
     }
 
-    function verifySignedHash(bytes32 hash, bytes[] memory signatures) external view {
+    function verifySignedHash(bytes32 hash, bytes calldata signatures) external view {
         ThresholdECDSALib.verifySignedHash(thresholdECDSA, hash, signatures);
     }
 }
