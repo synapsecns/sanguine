@@ -7,9 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
-
 	"github.com/cenkalti/backoff"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -153,13 +150,9 @@ func (s *STIPRelayer) Run(ctx context.Context) error {
 		return nil
 	})
 
-	err := s.ProcessExecutionResults(ctx, "bridge")
+	err := s.ProcessExecutionResults(ctx)
 	if err != nil {
-		return fmt.Errorf("error processing execution results for bridge: %w", err)
-	}
-	err = s.ProcessExecutionResults(ctx, "rfq")
-	if err != nil {
-		return fmt.Errorf("error processing execution results for rfq: %w", err)
+		return fmt.Errorf("error processing execution results: %w", err)
 	}
 
 	// Start the ticker goroutine for requesting and storing execution results
@@ -203,15 +196,10 @@ func (s *STIPRelayer) RequestAndStoreResults(ctx context.Context) error {
 			//nolint: wrapcheck
 			return ctx.Err() // exit if context is canceled
 		case <-ticker.C:
-			if err := s.ProcessExecutionResults(ctx, "bridge"); err != nil {
+			err := s.ProcessExecutionResults(ctx)
+			if err != nil {
 				// Log the error and decide whether to continue based on the error
-				fmt.Printf("Error processing execution results for bridge: %v", err)
-				// Optionally, you can return the error to stop the goroutine
-				// return err
-			}
-			if err := s.ProcessExecutionResults(ctx, "rfq"); err != nil {
-				// Log the error and decide whether to continue based on the error
-				fmt.Printf("Error processing execution results for rfq: %v", err)
+				fmt.Printf("Error processing execution results: %v", err)
 				// Optionally, you can return the error to stop the goroutine
 				// return err
 			}
@@ -220,15 +208,15 @@ func (s *STIPRelayer) RequestAndStoreResults(ctx context.Context) error {
 }
 
 // ProcessExecutionResults encapsulates the logic for requesting and storing execution results.
-func (s *STIPRelayer) ProcessExecutionResults(parentCtx context.Context, queryType string) (err error) {
+func (s *STIPRelayer) ProcessExecutionResults(parentCtx context.Context) (err error) {
 	fmt.Println("Starting execution logic")
 
-	ctx, span := s.handler.Tracer().Start(parentCtx, "ProcessExecutionResults", trace.WithAttributes(attribute.String("queryType", queryType)))
+	ctx, span := s.handler.Tracer().Start(parentCtx, "ProcessExecutionResults")
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	executionID, err := s.ExecuteDuneQuery(ctx, queryType)
+	executionID, err := s.ExecuteDuneQuery(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to execute Dune query: %w", err)
 	}

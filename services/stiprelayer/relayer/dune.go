@@ -5,19 +5,22 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/synapsecns/sanguine/core/metrics"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
 	"io"
 	"net/http"
 	"os"
+
+	"github.com/synapsecns/sanguine/core/metrics"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // DuneAPIKey is the API key for Dune, fetched from the environment variables.
 var DuneAPIKey = os.Getenv("DUNE_API_KEY")
 
+const stipQueryID = 3403369
+
 // ExecuteDuneQuery executes a predefined query on the Dune API and returns the http response.
-func (s *STIPRelayer) ExecuteDuneQuery(parentCtx context.Context, queryType string) (executionID string, err error) {
+func (s *STIPRelayer) ExecuteDuneQuery(parentCtx context.Context) (executionID string, err error) {
 	ctx, span := s.handler.Tracer().Start(parentCtx, "ExecuteDuneQuery", trace.WithAttributes(attribute.String("queryType", queryType)))
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
@@ -25,13 +28,8 @@ func (s *STIPRelayer) ExecuteDuneQuery(parentCtx context.Context, queryType stri
 
 	client := &http.Client{}
 	var queryID string
-	if queryType == "bridge" {
-		queryID = "3345214"
-	} else if queryType == "rfq" {
-		queryID = "3348161"
-	}
 	s.handler.ConfigureHTTPClient(client)
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("https://api.dune.com/api/v1/query/%s/execute", queryID), bytes.NewBufferString(`{"performance": "large"}`))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("https://api.dune.com/api/v1/query/%d/execute", queryID), bytes.NewBufferString(`{"performance": "large"}`))
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %w", err)
 	}
