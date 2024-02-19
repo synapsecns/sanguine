@@ -73,6 +73,7 @@ import {
   fetchEthPrice,
   fetchGmxPrice,
 } from '@/slices/priceDataSlice'
+import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -451,7 +452,7 @@ const StateManagedBridge = () => {
 
       const transactionReceipt = await waitForTransaction({
         hash: tx as Address,
-        timeout: 30_000,
+        timeout: 60_000,
       })
       console.log('Transaction Receipt: ', transactionReceipt)
 
@@ -473,6 +474,21 @@ const StateManagedBridge = () => {
       dispatch(removePendingBridgeTransaction(currentTimestamp))
       console.log('Error executing bridge', error)
       toast.dismiss(pendingPopup)
+
+      /** Fetch balances if await transaction receipt times out */
+      if (isTransactionReceiptError(error)) {
+        console.log(
+          'isTransactionReceiptError: ',
+          isTransactionReceiptError(error)
+        )
+        dispatch(
+          fetchAndStoreSingleNetworkPortfolioBalances({
+            address,
+            chainId: fromChainId,
+          })
+        )
+      }
+
       return txErrorHandler(error)
     }
   }
