@@ -19,7 +19,8 @@ export const getEstimatedTimeStatus = (
   const oneMinuteInSeconds = 60
 
   const isEstimatedTimeReached = remainingTime < 0
-  const isStartCheckingTimeReached = remainingTime < oneMinuteInSeconds
+  const isCheckTxStatus = remainingTime < oneMinuteInSeconds
+  const isCheckTxForRevert = elapsedTime > 30
 
   const delayedTime = isEstimatedTimeReached ? remainingTime : null
   const delayedTimeInMin = remainingTime ? Math.floor(remainingTime / 60) : null
@@ -31,6 +32,7 @@ export const getEstimatedTimeStatus = (
     delayedTime,
     delayedTimeInMin,
     isEstimatedTimeReached,
-    isStartCheckingTimeReached,
+    isCheckTxStatus,
+    isCheckTxForRevert,
   }
 }

@@ -74,7 +74,8 @@ export const _Transaction = ({
     delayedTime,
     delayedTimeInMin,
     isEstimatedTimeReached,
-    isStartCheckingTimeReached,
+    isCheckTxStatus,
+    isCheckTxForRevert,
   } = getEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
 
   const [isTxComplete, _kappa] = useBridgeTxStatus({
@@ -83,8 +84,7 @@ export const _Transaction = ({
     originTxHash,
     bridgeModuleName,
     kappa: kappa,
-    checkStatus:
-      isStartCheckingTimeReached && !isStoredComplete && !isStoredReverted,
+    checkStatus: isCheckTxStatus && !isStoredComplete && !isStoredReverted,
     currentTime: currentTime,
   })
   const isTxFinalized = isStoredComplete ?? isTxComplete
@@ -92,7 +92,7 @@ export const _Transaction = ({
   const isReverted = useIsTxReverted(
     originTxHash as Address,
     originChain,
-    !isStoredComplete && !isStoredReverted,
+    isCheckTxForRevert && !isStoredComplete && !isStoredReverted,
     currentTime
   )
   const isTxReverted = isStoredReverted ?? isReverted
