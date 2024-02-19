@@ -1,18 +1,19 @@
+// SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import "forge-std/Test.sol";
 import {InterchainClientV1} from "../contracts/InterchainClientV1.sol";
-import "../contracts/InterchainDB.sol";
-import {InterchainAppMock} from "./mocks/InterchainAppMock.sol";
+import {InterchainDB} from "../contracts/InterchainDB.sol";
 
-import {InterchainModuleMock} from "./mocks/InterchainModuleMock.sol";
 import {InterchainEntry} from "../contracts/libs/InterchainEntry.sol";
-
+import {OptionsLib} from "../contracts/libs/Options.sol";
 import {TypeCasts} from "../contracts/libs/TypeCasts.sol";
 
-import {OptionsLib} from "../contracts/libs/Options.sol";
-
 import {InterchainClientV1Harness} from "./harnesses/InterchainClientV1Harness.sol";
+
+import {InterchainAppMock} from "./mocks/InterchainAppMock.sol";
+import {InterchainModuleMock} from "./mocks/InterchainModuleMock.sol";
+
+import {Test} from "forge-std/Test.sol";
 
 contract InterchainClientV1Test is Test {
     InterchainClientV1Harness icClient;
@@ -109,7 +110,9 @@ contract InterchainClientV1Test is Test {
         bytes32 transactionID = keccak256(
             abi.encode(TypeCasts.addressToBytes32(msg.sender), block.chainid, receiver, DST_CHAIN_ID, message, nonce)
         );
-        icClient.interchainSend{value: 1}(receiver, DST_CHAIN_ID, message, options, srcModules);
+        icClient.interchainSend{value: totalModuleFees}(receiver, DST_CHAIN_ID, message, options, srcModules);
+        // TODO: should check the transaction ID?
+        transactionID;
     }
 
     function test_interchainReceive() public {
