@@ -1,3 +1,4 @@
+/* @ts-ignore */
 type CacheContent = {
   value: any
   timestamp: number
