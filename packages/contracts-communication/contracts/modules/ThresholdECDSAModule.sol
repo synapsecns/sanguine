@@ -27,8 +27,7 @@ contract ThresholdECDSAModule is InterchainModule, Ownable, ThresholdECDSAModule
     address public gasOracle;
 
     constructor(address interchainDB, address initialOwner) InterchainModule(interchainDB) Ownable(initialOwner) {
-        // Explicitly disable the module functionality until the threshold is set.
-        _setThreshold(type(uint256).max);
+        // ThresholdECDSA throws an explicit error if threshold is not set, so default value is not needed
     }
 
     // ═══════════════════════════════════════════════ PERMISSIONED ════════════════════════════════════════════════════

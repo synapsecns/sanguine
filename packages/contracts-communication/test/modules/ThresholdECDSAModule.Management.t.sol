@@ -39,7 +39,7 @@ contract ThresholdECDSAModuleManagementTest is Test, ThresholdECDSAModuleEvents 
     function test_setup() public {
         assertEq(module.owner(), owner);
         assertEq(module.INTERCHAIN_DB(), interchainDB);
-        assertEq(module.getThreshold(), type(uint256).max);
+        assertEq(module.getThreshold(), 0);
         assertEq(module.gasOracle(), address(0));
     }
 
