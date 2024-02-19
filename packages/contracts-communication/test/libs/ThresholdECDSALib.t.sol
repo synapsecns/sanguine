@@ -40,28 +40,16 @@ contract ThresholdECDSALibTest is Test {
         return abi.encodePacked(r, s, v);
     }
 
-    function toArray(bytes memory a) internal pure returns (bytes[] memory arr) {
-        arr = new bytes[](1);
-        arr[0] = a;
-    }
-
-    function toArray(bytes memory a, bytes memory b) internal pure returns (bytes[] memory arr) {
-        arr = new bytes[](2);
-        arr[0] = a;
-        arr[1] = b;
-    }
-
-    function toArray(bytes memory a, bytes memory b, bytes memory c) internal pure returns (bytes[] memory arr) {
-        arr = new bytes[](3);
-        arr[0] = a;
-        arr[1] = b;
-        arr[2] = c;
-    }
-
     // ═══════════════════════════════════════════════ TEST HELPERS ════════════════════════════════════════════════════
 
     function expectAlreadySignerError(address account) internal {
         vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__AlreadySigner.selector, account));
+    }
+
+    function expectIncorrectSignaturesLengthError(uint256 length) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__IncorrectSignaturesLength.selector, length)
+        );
     }
 
     function expectInvalidSignatureError(bytes memory signature) internal {
@@ -227,100 +215,100 @@ contract ThresholdECDSALibTest is Test {
     function test_verifySignedHash_providedUnderThreshold_revert_sorted_allSigners() public {
         libHarness.modifyThreshold(3);
         expectNotEnoughSignaturesError(3);
-        libHarness.verifySignedHash(HASH_0, toArray(sig_0_0, sig_2_0));
+        libHarness.verifySignedHash(HASH_0, bytes.concat(sig_0_0, sig_2_0));
     }
 
     function test_verifySignedHash_providedUnderThreshold_revert_sorted_hasNonSigners() public {
         libHarness.modifyThreshold(3);
         expectNotEnoughSignaturesError(3);
-        libHarness.verifySignedHash(HASH_0, toArray(sig_0_0, sig_3_0));
+        libHarness.verifySignedHash(HASH_0, bytes.concat(sig_0_0, sig_3_0));
     }
 
     function test_verifySignedHash_providedUnderThreshold_revert_unsorted_allSigners() public {
         libHarness.modifyThreshold(3);
         expectNotEnoughSignaturesError(3);
-        libHarness.verifySignedHash(HASH_0, toArray(sig_2_0, sig_0_0));
+        libHarness.verifySignedHash(HASH_0, bytes.concat(sig_2_0, sig_0_0));
     }
 
     function test_verifySignedHash_providedUnderThreshold_revert_unsorted_hasNonSigners() public {
         libHarness.modifyThreshold(3);
         expectNotEnoughSignaturesError(3);
-        libHarness.verifySignedHash(HASH_0, toArray(sig_3_0, sig_0_0));
+        libHarness.verifySignedHash(HASH_0, bytes.concat(sig_3_0, sig_0_0));
     }
 
     function test_verifySignedHash_providedUnderThreshold_revert_unsorted_hasDuplicates() public {
         libHarness.modifyThreshold(3);
         expectNotEnoughSignaturesError(3);
-        libHarness.verifySignedHash(HASH_0, toArray(sig_0_0, sig_0_0));
+        libHarness.verifySignedHash(HASH_0, bytes.concat(sig_0_0, sig_0_0));
     }
 
     function test_verifySignedHash_providedExactlyThreshold_sorted_allSigners() public view {
         // Should not revert
-        libHarness.verifySignedHash(HASH_0, toArray(sig_1_0, sig_0_0));
+        libHarness.verifySignedHash(HASH_0, bytes.concat(sig_1_0, sig_0_0));
     }
 
     function test_verifySignedHash_providedExactlyThreshold_revert_sorted_hasNonSigners() public {
         expectNotEnoughSignaturesError(2);
-        libHarness.verifySignedHash(HASH_0, toArray(sig_1_0, sig_3_0));
+        libHarness.verifySignedHash(HASH_0, bytes.concat(sig_1_0, sig_3_0));
     }
 
     function test_verifySignedHash_providedExactlyThreshold_revert_unsorted_allSigners() public {
         expectRecoveredSignersNotSortedError();
-        libHarness.verifySignedHash(HASH_0, toArray(sig_0_0, sig_1_0));
+        libHarness.verifySignedHash(HASH_0, bytes.concat(sig_0_0, sig_1_0));
     }
 
     function test_verifySignedHash_providedExactlyThreshold_revert_unsorted_hasNonSigners() public {
         expectRecoveredSignersNotSortedError();
-        libHarness.verifySignedHash(HASH_0, toArray(sig_3_0, sig_1_0));
+        libHarness.verifySignedHash(HASH_0, bytes.concat(sig_3_0, sig_1_0));
     }
 
     function test_verifySignedHash_providedExactlyThreshold_revert_unsorted_hasDuplicates() public {
         expectRecoveredSignersNotSortedError();
-        libHarness.verifySignedHash(HASH_0, toArray(sig_0_0, sig_0_0));
+        libHarness.verifySignedHash(HASH_0, bytes.concat(sig_0_0, sig_0_0));
     }
 
     function test_verifySignedHash_providedOverThreshold_sorted_allSigners() public view {
         // Should not revert
-        libHarness.verifySignedHash(HASH_0, toArray(sig_1_0, sig_0_0, sig_2_0));
+        libHarness.verifySignedHash(HASH_0, bytes.concat(sig_1_0, sig_0_0, sig_2_0));
     }
 
     function test_verifySignedHash_providedOverThreshold_sorted_hasNonSigners_enoughSigners() public view {
         // Should not revert
-        libHarness.verifySignedHash(HASH_0, toArray(sig_1_0, sig_3_0, sig_2_0));
+        libHarness.verifySignedHash(HASH_0, bytes.concat(sig_1_0, sig_3_0, sig_2_0));
     }
 
     function test_verifySignedHash_providedOverThreshold_revert_sorted_hasNonSigners_notEnoughSigners() public {
         libHarness.removeSigner(SIGNER_2);
         expectNotEnoughSignaturesError(2);
-        libHarness.verifySignedHash(HASH_0, toArray(sig_1_0, sig_3_0, sig_2_0));
+        libHarness.verifySignedHash(HASH_0, bytes.concat(sig_1_0, sig_3_0, sig_2_0));
     }
 
     function test_verifySignedHash_providedOverThreshold_revert_sorted_hasDuplicates() public {
         expectRecoveredSignersNotSortedError();
-        libHarness.verifySignedHash(HASH_0, toArray(sig_1_0, sig_0_0, sig_0_0));
+        libHarness.verifySignedHash(HASH_0, bytes.concat(sig_1_0, sig_0_0, sig_0_0));
     }
 
     function test_verifySignedHash_providedOverThreshold_revert_unsorted_allSigners() public {
         expectRecoveredSignersNotSortedError();
-        libHarness.verifySignedHash(HASH_0, toArray(sig_1_0, sig_2_0, sig_0_0));
+        libHarness.verifySignedHash(HASH_0, bytes.concat(sig_1_0, sig_2_0, sig_0_0));
     }
 
     function test_verifySignedHash_providedOverThreshold_revert_unsorted_hasNonSigners_enoughSigners() public {
         expectRecoveredSignersNotSortedError();
-        libHarness.verifySignedHash(HASH_0, toArray(sig_0_0, sig_3_0, sig_1_0));
+        libHarness.verifySignedHash(HASH_0, bytes.concat(sig_0_0, sig_3_0, sig_1_0));
     }
 
     function test_verifySignedHash_providedOverThreshold_revert_unsorted_hasNonSigners_notEnoughSigners() public {
         libHarness.removeSigner(SIGNER_2);
         expectRecoveredSignersNotSortedError();
-        libHarness.verifySignedHash(HASH_0, toArray(sig_2_0, sig_3_0, sig_1_0));
+        libHarness.verifySignedHash(HASH_0, bytes.concat(sig_2_0, sig_3_0, sig_1_0));
     }
 
     function test_verifySignedHash_providedOverThreshold_revert_unsorted_hasDuplicates() public {
         expectRecoveredSignersNotSortedError();
-        libHarness.verifySignedHash(HASH_0, toArray(sig_1_0, sig_0_0, sig_0_0));
+        libHarness.verifySignedHash(HASH_0, bytes.concat(sig_1_0, sig_0_0, sig_0_0));
         expectRecoveredSignersNotSortedError();
-        libHarness.verifySignedHash(HASH_0, toArray(sig_1_0, sig_1_0, sig_0_0));
+        libHarness.verifySignedHash(HASH_0, bytes.concat(sig_1_0, sig_1_0, sig_0_0));
     }
 
     function test_verifySignedHash_revert_zeroThreshold_signerSignature() public {
@@ -328,7 +316,7 @@ contract ThresholdECDSALibTest is Test {
         libHarness = new ThresholdECDSALibHarness();
         libHarness.addSigner(SIGNER_0);
         expectZeroThresholdError();
-        libHarness.verifySignedHash(HASH_0, toArray(sig_0_0));
+        libHarness.verifySignedHash(HASH_0, bytes.concat(sig_0_0));
     }
 
     function test_verifySignedHash_revert_zeroThreshold_notSignerSignature() public {
@@ -336,24 +324,25 @@ contract ThresholdECDSALibTest is Test {
         libHarness = new ThresholdECDSALibHarness();
         libHarness.addSigner(SIGNER_0);
         expectZeroThresholdError();
-        libHarness.verifySignedHash(HASH_0, toArray(sig_1_0));
+        libHarness.verifySignedHash(HASH_0, bytes.concat(sig_1_0));
     }
 
-    function test_verifySignedHash_revert_incorrectSignatureLength(uint8 length) public {
-        vm.assume(length != 65);
-        uint256 min = length < 65 ? length : 65;
-        bytes memory corruptSig0 = new bytes(length);
-        for (uint256 i = 0; i < min; i++) {
-            corruptSig0[i] = sig_0_0[i];
-        }
-        expectInvalidSignatureError(corruptSig0);
-        libHarness.verifySignedHash(HASH_0, toArray(sig_1_0, corruptSig0));
+    function test_verifySignedHash_revert_emptySignatures() public {
+        expectIncorrectSignaturesLengthError(0);
+        libHarness.verifySignedHash(HASH_0, new bytes(0));
+    }
+
+    function test_verifySignedHash_revert_incorrectSignaturesLength(uint256 length) public {
+        length = bound(length, 0, 1000);
+        vm.assume(length % 65 != 0);
+        expectIncorrectSignaturesLengthError(length);
+        libHarness.verifySignedHash(HASH_0, new bytes(length));
     }
 
     function test_verifySignedHash_revert_invalidSignature() public {
         bytes memory corruptSig0 = sig_0_0;
         corruptSig0[64] = 0xFF;
         expectInvalidSignatureError(corruptSig0);
-        libHarness.verifySignedHash(HASH_0, toArray(sig_1_0, corruptSig0));
+        libHarness.verifySignedHash(HASH_0, bytes.concat(sig_1_0, corruptSig0));
     }
 }

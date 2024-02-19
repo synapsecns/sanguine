@@ -1,34 +1,62 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {InterchainEntry} from "../libs/InterchainEntry.sol";
+import {IInterchainModule} from "./IInterchainModule.sol";
 
-interface ISynapseModule {
-    /// @notice Sets the address of the InterchainDB contract to be used for verifying entries.
-    /// @dev This function can only be called by the contract owner.
-    /// @param _interchainDB The address of the InterchainDB contract.
-    function setInterchainDB(address _interchainDB) external;
+interface ISynapseModule is IInterchainModule {
+    error SynapseModule__GasOracleNotContract(address gasOracle);
 
-    /// @notice Sets the required threshold for verification.
-    /// @dev This function updates the threshold value that determines the minimum number of verifications required for an entry to be considered valid. Can only be called by the contract owner.
-    /// @param _threshold The new threshold value.
-    function setRequiredThreshold(uint256 _threshold) external;
+    // ═══════════════════════════════════════════════ PERMISSIONED ════════════════════════════════════════════════════
 
-    /// @notice Updates the list of verifier addresses.
-    /// @dev This function sets the addresses that are allowed to act as verifiers for entries. Can only be called by the contract owner.
-    /// @param _verifiers An array of addresses to be set as verifiers.
-    function setVerifiers(address[] calldata _verifiers) external;
+    /// @notice Adds a new verifier to the module.
+    /// @dev Could be only called by the owner. Will revert if the verifier is already added.
+    /// @param verifier     The address of the verifier to add
+    function addVerifier(address verifier) external;
 
-    /// @notice Requests off-chain verification of an interchain entry for a specified destination chain. This function requires a fee.
-    /// @dev This function can only be called by the InterchainDB contract. It checks if the sent value covers the module fee for the requested destination chain, then proceeds to pay the fee for execution. Emits a VerificationRequested event upon success.
-    /// @param destChainId The ID of the destination chain where the entry needs to be verified.
-    /// @param entry The interchain entry to be verified.
-    function requestVerification(uint256 destChainId, InterchainEntry memory entry) external payable;
+    /// @notice Removes a verifier from the module.
+    /// @dev Could be only called by the owner. Will revert if the verifier is not added.
+    /// @param verifier     The address of the verifier to remove
+    function removeVerifier(address verifier) external;
 
-    /// @notice Verifies an interchain entry using a set of verifier signatures.
-    /// @dev This function checks if the provided signatures meet the required threshold for verification.
-    /// It then calls the InterchainDB contract to verify the entry. Requires that the number of valid signatures meets or exceeds the required threshold.
-    /// @param entry The interchain entry to be verified.
-    /// @param signatures An array of signatures used to verify the entry.
-    function verifyEntry(InterchainEntry memory entry, bytes[] calldata signatures) external;
+    /// @notice Sets the threshold of the module.
+    /// @dev Could be only called by the owner. Will revert if the threshold is zero.
+    /// @param threshold    The new threshold value
+    function setThreshold(uint256 threshold) external;
+
+    /// @notice Sets the address of the fee collector, which will have the verification fees forwarded to it.
+    /// @dev Could be only called by the owner.
+    /// @param feeCollector_   The address of the fee collector
+    function setFeeCollector(address feeCollector_) external;
+
+    /// @notice Sets the address of the gas oracle to be used for estimating the verification fees.
+    /// @dev Could be only called by the owner. Will revert if the gas oracle is not a contract.
+    /// @param gasOracle_   The address of the gas oracle contract
+    function setGasOracle(address gasOracle_) external;
+
+    // ══════════════════════════════════════════════ PERMISSIONLESS ═══════════════════════════════════════════════════
+
+    /// @notice Verifies an entry using a set of verifier signatures.
+    /// If the threshold is met, the entry will be marked as verified in the Interchain DataBase.
+    /// @dev List of recovered signers from the signatures must be sorted in the ascending order.
+    /// @param encodedEntry The encoded entry to verify
+    /// @param signatures   Signatures used to verify the entry, concatenated
+    function verifyEntry(bytes calldata encodedEntry, bytes calldata signatures) external;
+
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
+    /// @notice Returns the address of the fee collector for the module.
+    function feeCollector() external view returns (address);
+
+    /// @notice Returns the address of the gas oracle used for estimating the verification fees.
+    function gasOracle() external view returns (address);
+
+    /// @notice Returns the list of verifiers for the module.
+    function getVerifiers() external view returns (address[] memory);
+
+    /// @notice Gets the threshold of the module.
+    /// This is the minimum number of signatures required for verification.
+    function getThreshold() external view returns (uint256);
+
+    /// @notice Checks if the given account is a verifier for the module.
+    function isVerifier(address account) external view returns (bool);
 }
