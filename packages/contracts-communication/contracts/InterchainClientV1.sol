@@ -11,7 +11,7 @@ import {IInterchainClientV1} from "./interfaces/IInterchainClientV1.sol";
 
 import {TypeCasts} from "./libs/TypeCasts.sol";
 
-import { OptionsLib } from "./libs/Options.sol";
+import {OptionsLib, OptionsV1} from "./libs/Options.sol";
 
 /**
  * @title InterchainClientV1
@@ -126,7 +126,9 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
             dbWriterNonce: 0
         });
 
-        bytes32 transactionId = _generateTransactionId(icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce, icTx.options);
+        bytes32 transactionId = _generateTransactionId(
+            icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce, icTx.options
+        );
         icTx.transactionId = transactionId;
 
         uint256 dbWriterNonce = IInterchainDB(interchainDB).writeEntryWithVerification{value: totalModuleFees}(
@@ -135,7 +137,15 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         icTx.dbWriterNonce = dbWriterNonce;
 
         emit InterchainTransactionSent(
-            icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce, icTx.options, icTx.transactionId, icTx.dbWriterNonce
+            icTx.srcSender,
+            icTx.srcChainId,
+            icTx.dstReceiver,
+            icTx.dstChainId,
+            icTx.message,
+            icTx.nonce,
+            icTx.options,
+            icTx.transactionId,
+            icTx.dbWriterNonce
         );
         // Increment nonce for next message
         clientNonce++;
@@ -172,7 +182,9 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
             dataHash: icTx.transactionId
         });
 
-        bytes32 reconstructedID = _generateTransactionId(icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce, icTx.options);
+        bytes32 reconstructedID = _generateTransactionId(
+            icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce, icTx.options
+        );
 
         require(icTx.transactionId == reconstructedID, "Invalid transaction ID");
 
@@ -202,7 +214,7 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
     {
         uint256 finalizedResponses = 0;
         for (uint256 i = 0; i < approvedResponses.length; i++) {
-            if (approvedResponses[i] + optimisticTimePeriod<= block.timestamp) {
+            if (approvedResponses[i] + optimisticTimePeriod <= block.timestamp) {
                 finalizedResponses++;
             }
         }
@@ -241,7 +253,7 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         InterchainTransaction memory icTx = abi.decode(transaction, (InterchainTransaction));
         executedTransactions[icTx.transactionId] = true;
 
-        OptionsLib.Options memory decodedOptions = icTx.options.decodeOptions();
+        OptionsV1 memory decodedOptions = icTx.options.decodeOptionsV1();
 
         IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).appReceive{gas: decodedOptions.gasLimit}();
         emit InterchainTransactionExecuted(
@@ -256,5 +268,4 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
             icTx.dbWriterNonce
         );
     }
-
 }

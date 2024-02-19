@@ -1,25 +1,23 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {OptionsLib} from "../../contracts/libs/Options.sol";
+import {OptionsV1, OptionsLib} from "../../contracts/libs/Options.sol";
 
 contract OptionsLibHarness {
-    function encodeOptions(
-        uint8 version,
-        uint256 gasLimit,
-        // uint256 msgValue,
-        uint256 gasAirdrop
-    )
-        external
-        pure
-        returns (bytes memory)
-    {
-        OptionsLib.Options memory options = OptionsLib.Options(version, gasLimit, gasAirdrop);
-        return OptionsLib.encodeOptions(options);
+    function encodeVersionedOptions(uint8 version, bytes calldata options) external pure returns (bytes memory) {
+        return OptionsLib.encodeVersionedOptions(version, options);
     }
 
-    function decodeOptions(bytes calldata data) external pure returns (uint8, uint256, uint256) {
-        OptionsLib.Options memory options = OptionsLib.decodeOptions(data);
-        return (options.version, options.gasLimit, options.gasAirdrop);
+    function decodeVersionedOptions(bytes calldata data) external pure returns (uint8, bytes memory) {
+        (uint8 version, bytes memory options) = OptionsLib.decodeVersionedOptions(data);
+        return (version, options);
+    }
+
+    function encodeOptionsV1(OptionsV1 memory options) external pure returns (bytes memory) {
+        return OptionsLib.encodeOptionsV1(options);
+    }
+
+    function decodeOptionsV1(bytes calldata data) external pure returns (OptionsV1 memory) {
+        return OptionsLib.decodeOptionsV1(data);
     }
 }
