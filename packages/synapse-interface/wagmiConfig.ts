@@ -30,7 +30,7 @@ import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
 import { publicProvider } from 'wagmi/providers/public'
 import * as CHAINS from '@constants/chains/master'
 
-const rawChains = [
+export const rawChains = [
   mainnet,
   arbitrum,
   aurora,

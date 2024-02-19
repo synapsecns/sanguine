@@ -227,8 +227,9 @@ const RewardsDialog = ({
             className="px-1 overflow-y-scroll"
             style={{ maxHeight: maxHeight }}
           >
-            {transactions.map((transaction) => (
+            {transactions.map((transaction, key) => (
               <AirdropTransaction
+                key={key}
                 transactionHash={transaction.transactionHash}
                 tokenValue={parseTokenValue(
                   transaction.transferValue,

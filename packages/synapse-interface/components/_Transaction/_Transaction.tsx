@@ -7,9 +7,7 @@ import { isNull } from 'lodash'
 import { removeTransaction } from '@/slices/_transactions/reducer'
 import { TransactionPayloadDetail } from '../Portfolio/Transaction/components/TransactionPayloadDetail'
 import { Chain, Token } from '@/utils/types'
-import TransactionArrow from '../icons/TransactionArrow'
 import { TimeRemaining } from './components/TimeRemaining'
-import { TransactionStatus } from './components/TransactionStatus'
 import { getEstimatedTimeStatus } from './helpers/getEstimatedTimeStatus'
 import { DropdownMenu } from './components/DropdownMenu'
 import { MenuItem } from './components/MenuItem'
@@ -17,6 +15,8 @@ import { useBridgeTxUpdater } from './helpers/useBridgeTxUpdater'
 import { AnimatedProgressBar } from './components/AnimatedProgressBar'
 import { TransactionSupport } from './components/TransactionSupport'
 import { RightArrow } from '@/components/icons/RightArrow'
+import { Address } from 'viem'
+import { useIsTxReverted } from './helpers/useIsTxReverted'
 
 interface _TransactionProps {
   connectedAddress: string
@@ -32,6 +32,7 @@ interface _TransactionProps {
   currentTime: number
   kappa?: string
   isStoredComplete: boolean
+  isStoredReverted: boolean
 }
 
 /** TODO: Update naming after refactoring existing Activity / Transaction flow */
@@ -49,6 +50,7 @@ export const _Transaction = ({
   currentTime,
   kappa,
   isStoredComplete,
+  isStoredReverted,
 }: _TransactionProps) => {
   const dispatch = useAppDispatch()
 
@@ -81,23 +83,32 @@ export const _Transaction = ({
     originTxHash,
     bridgeModuleName,
     kappa: kappa,
-    checkStatus: !isStoredComplete || isStartCheckingTimeReached,
+    checkStatus:
+      isStartCheckingTimeReached && !isStoredComplete && !isStoredReverted,
     currentTime: currentTime,
   })
-
-  /** Check if store already marked tx as complete, otherwise check hook status */
   const isTxFinalized = isStoredComplete ?? isTxComplete
 
-  const showTransactionSupport =
-    !isTxFinalized && delayedTimeInMin ? delayedTimeInMin <= -5 : false
+  const isReverted = useIsTxReverted(
+    originTxHash as Address,
+    originChain,
+    isEstimatedTimeReached && !isStoredComplete && !isStoredReverted
+  )
+  const isTxReverted = isStoredReverted ?? isReverted
 
   useBridgeTxUpdater(
     connectedAddress,
     destinationChain,
     _kappa,
     originTxHash,
-    isTxComplete
+    isTxComplete,
+    isReverted
   )
+
+  const showTransactionSupport =
+    !isTxFinalized && !isTxReverted && delayedTimeInMin
+      ? delayedTimeInMin <= -5
+      : false
 
   return (
     <div
@@ -132,8 +143,9 @@ export const _Transaction = ({
             menuTitleElement={
               <TimeRemaining
                 isComplete={isTxFinalized}
-                remainingTime={remainingTime}
                 isDelayed={isEstimatedTimeReached}
+                isReverted={isStoredReverted}
+                remainingTime={remainingTime}
                 delayedTime={delayedTime}
               />
             }
@@ -147,22 +159,26 @@ export const _Transaction = ({
                 minute: '2-digit',
                 hour12: true,
               })}
-              {/* <div>{typeof _kappa === 'string' && _kappa?.substring(0, 15)}</div> */}
             </div>
             {!isNull(originTxExplorerLink) && (
-              <MenuItem text={originExplorerName} link={originTxExplorerLink} />
+              <MenuItem
+                text={originExplorerName}
+                link={originTxExplorerLink}
+                iconUrl={originChain?.explorerImg}
+              />
             )}
-            {!isNull(destExplorerAddressLink) && (
+            {!isNull(destExplorerAddressLink) && !isTxReverted && (
               <MenuItem
                 text={destExplorerName}
                 link={destExplorerAddressLink}
+                iconUrl={destinationChain?.explorerImg}
               />
             )}
             <MenuItem
               text="Contact Support"
               link="https://discord.gg/synapseprotocol"
             />
-            {isTxFinalized && (
+            {(isTxFinalized || isTxReverted) && (
               <MenuItem
                 text="Clear Transaction"
                 link={null}
@@ -179,6 +195,7 @@ export const _Transaction = ({
           startTime={timestamp}
           estDuration={estimatedTime * 2} // 2x buffer
           isComplete={isTxFinalized}
+          isError={isStoredReverted}
         />
       </div>
     </div>
