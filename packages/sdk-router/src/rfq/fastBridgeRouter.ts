@@ -20,6 +20,7 @@ import {
 import { BigintIsh } from '../constants'
 import { getMatchingTxLog } from '../utils/logs'
 import { adjustValueIfNative } from '../utils/handleNativeToken'
+import { MS_TIMES, SimpleCache } from '../utils/SimpleCache'
 
 // Define type alias
 export type BridgeParams = IFastBridge.BridgeParamsStruct
@@ -52,6 +53,21 @@ export class FastBridgeRouter implements SynapseModule {
       FastBridgeRouter.fastBridgeRouterInterface,
       provider
     ) as FastBridgeRouterContract
+    this.hydrateCache().then(() => {
+      console.log('rfq router cache hydrated')
+    })
+  }
+
+  private async hydrateCache() {
+    try {
+      await Promise.all([
+        this.getFastBridgeContract(),
+        this.getProtocolFeeRate(),
+        this.chainGasAmount(),
+      ])
+    } catch (e) {
+      console.error('Failed to hydrate rfqrouter cache', e)
+    }
   }
 
   /**
@@ -106,6 +122,7 @@ export class FastBridgeRouter implements SynapseModule {
     return fastBridgeContract.bridgeRelays(synapseTxId)
   }
 
+  @SimpleCache(MS_TIMES.TEN_MINUTES)
   public async chainGasAmount(): Promise<BigNumber> {
     const fastBridgeContract = await this.getFastBridgeContract()
     return fastBridgeContract.chainGasAmount()
@@ -142,6 +159,7 @@ export class FastBridgeRouter implements SynapseModule {
   /**
    * @returns The protocol fee rate, multiplied by 1_000_000 (e.g. 1 basis point = 100).
    */
+  @SimpleCache(MS_TIMES.TEN_MINUTES)
   public async getProtocolFeeRate(): Promise<BigNumber> {
     const fastBridgeContract = await this.getFastBridgeContract()
     return fastBridgeContract.protocolFeeRate()
