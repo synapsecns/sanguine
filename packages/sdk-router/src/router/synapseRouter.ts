@@ -228,7 +228,7 @@ export class SynapseRouter extends Router {
     return this.bridgeContractCache
   }
 
-  @SimpleCache(MS_TIMES.ONE_MINUTE)
+  @SimpleCache(MS_TIMES.TEN_MINUTES)
   public async chainGasAmount(): Promise<BigNumber> {
     const bridgeContract = await this.getBridgeContract()
     return bridgeContract.chainGasAmount()
