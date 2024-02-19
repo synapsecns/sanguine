@@ -12,7 +12,7 @@ import {InterchainEntry} from "../contracts/libs/InterchainEntry.sol";
 
 import {TypeCasts} from "../contracts/libs/TypeCasts.sol";
 
-import {OptionsLib} from "../contracts/libs/Options.sol";
+import {OptionsV1} from "../contracts/libs/Options.sol";
 
 import { InterchainClientV1Harness } from "./harnesses/InterchainClientV1Harness.sol";
 
@@ -24,7 +24,7 @@ contract InterchainClientV1Test is Test {
     InterchainModuleMock icModule;
 
     // Use default options of V1, 200k gas limit, 0 gas airdrop
-    bytes options = OptionsLib.encodeOptions(OptionsLib.Options(1, 200000, 0));
+    bytes options = OptionsV1(200000, 0).encodeOptionsV1();
 
     uint256 public constant SRC_CHAIN_ID = 1337;
     uint256 public constant DST_CHAIN_ID = 7331;
