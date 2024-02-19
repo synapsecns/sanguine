@@ -1,17 +1,17 @@
 type CacheContent = {
-    value: any;
-    timestamp: number;
+  value: any;
+  timestamp: number;
 };
 
 export const MS_TIMES = {
-    ONE_SECOND: 1000,
-    THIRTY_SECONDS: 30 * 1000,
-    ONE_MINUTE: 60 * 1000,
-    FIVE_MINUTES: 5 * 60 * 1000,
-    TEN_MINUTES: 10 * 60 * 1000,
-    ONE_HOUR: 60 * 60 * 1000,
-    ONE_DAY: 24 * 60 * 60 * 1000,
-    ONE_WEEK: 7 * 24 * 60 * 60 * 1000,
+  ONE_SECOND: 1000,
+  THIRTY_SECONDS: 30 * 1000,
+  ONE_MINUTE: 60 * 1000,
+  FIVE_MINUTES: 5 * 60 * 1000,
+  TEN_MINUTES: 10 * 60 * 1000,
+  ONE_HOUR: 60 * 60 * 1000,
+  ONE_DAY: 24 * 60 * 60 * 1000,
+  ONE_WEEK: 7 * 24 * 60 * 60 * 1000,
 }
 /**
  * A decorator function that caches the result of a method call for a specified duration (`maxAge`).
@@ -20,10 +20,10 @@ export const MS_TIMES = {
  *
  * @param {number} maxAge - The duration in milliseconds for which the cache is valid.
  * @returns {Function} - A decorator function that takes three parameters:
- *                       - `target`: The class that the method belongs to.
- *                       - `propertyKey`: The name of the method being decorated.
- *                       - `descriptor`: The property descriptor for the method.
- *                       This function modifies the `descriptor.value` to include caching logic.
+ *             - `target`: The class that the method belongs to.
+ *             - `propertyKey`: The name of the method being decorated.
+ *             - `descriptor`: The property descriptor for the method.
+ *             This function modifies the `descriptor.value` to include caching logic.
  *
  * Usage:
  * - To use, apply `@SimpleCache(maxAge)` above a class method.
@@ -34,7 +34,7 @@ export const MS_TIMES = {
  * class MonkeService {
  *   @SimpleCache(30000) // Cache for 30 seconds
  *   fetchBananas(params) {
- *     // Fetch data logic...
+ *   // Fetch data logic...
  *   }
  * }
  * ```
@@ -58,48 +58,54 @@ export const MS_TIMES = {
  *   computed.
  */
 export function SimpleCache(maxAge: number) {
-    /* @ts-ignore */
-    return function(target: Object, propertyKey: string, descriptor: PropertyDescriptor) {
-        const originalMethod = descriptor.value;
-        const cache: Record<string, CacheContent> = {};
+  /* @ts-ignore */
+  return function(
+    _: Object, // target
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) {
+    const originalMethod = descriptor.value
+    const cache: Record<string, CacheContent> = {}
 
-        descriptor.value = function(...args: any[]) {
-            const key = JSON.stringify(args);
-            const now = Date.now();
+    descriptor.value = function(...args: any[]) {
+      const key = JSON.stringify(args)
+      const now = Date.now()
 
-            if (cache[key] && now - cache[key].timestamp < maxAge) {
-                console.log(`Returning cached result for ${propertyKey}`);
-                return cache[key].value;
-            }
+      if (cache[key] && now - cache[key].timestamp < maxAge) {
+        console.log(`Returning cached result for ${propertyKey}`);
+        return cache[key].value
+      }
 
-            console.log(`Calculating result for ${propertyKey}`);
-            const result = originalMethod.apply(this, args);
-            cache[key] = { value: result, timestamp: Date.now() };
-            return result;
-        }
+      console.log(`Calculating result for ${propertyKey}`);
+      const result = originalMethod.apply(this, args)
+      cache[key] = {
+        value: result,
+        timestamp: Date.now() }
+      return result
     }
+  }
 }
 
 // export function SimpleAsyncCache(maxAge: number) {
-//     console.log("SimpleAsyncCache")
-//     return function(target: Object, propertyKey: string, descriptor: PropertyDescriptor) {
-//         console.log(target)
-//         const originalMethod = descriptor.value;
-//         const cache: Record<string, CacheContent> = {};
+//   console.log("SimpleAsyncCache")
+//   return function(target: Object, propertyKey: string, descriptor: PropertyDescriptor) {
+//     console.log(target)
+//     const originalMethod = descriptor.value;
+//     const cache: Record<string, CacheContent> = {};
 
-//         descriptor.value = async function(...args: any[]) {
-//             const key = JSON.stringify(args);
-//             const now = Date.now();
+//     descriptor.value = async function(...args: any[]) {
+//       const key = JSON.stringify(args);
+//       const now = Date.now();
 
-//             if (cache[key] && now - cache[key].timestamp < maxAge) {
-//                 console.log(`Returning cached result for ${propertyKey}`);
-//                 return Promise.resolve(cache[key].value);
-//             }
+//       if (cache[key] && now - cache[key].timestamp < maxAge) {
+//         console.log(`Returning cached result for ${propertyKey}`);
+//         return Promise.resolve(cache[key].value);
+//       }
 
-//             console.log(`Calculating result for ${propertyKey}`);
-//             const result = await originalMethod.apply(this, args);
-//             cache[key] = { value: result, timestamp: Date.now() };
-//             return result;
-//         }
+//       console.log(`Calculating result for ${propertyKey}`);
+//       const result = await originalMethod.apply(this, args);
+//       cache[key] = { value: result, timestamp: Date.now() };
+//       return result;
 //     }
+//   }
 // }
