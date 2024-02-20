@@ -360,6 +360,26 @@ func (c Config) GetHTTPTimeout() time.Duration {
 	return time.Duration(timeoutMs) * time.Millisecond
 }
 
+// GetRebalanceMethod returns the rebalance method for the given chain and token.
+func (c Config) GetRebalanceMethod(chainID int, token string) (method RebalanceMethod, err error) {
+	chainConfig, ok := c.Chains[chainID]
+	if !ok {
+		return method, fmt.Errorf("no chain config for chain %d", chainID)
+	}
+	tokenConfig, ok := chainConfig.Tokens[token]
+	if !ok {
+		return method, fmt.Errorf("no token config for chain %d and token %s", chainID, token)
+	}
+	switch tokenConfig.RebalanceMethod {
+	case "cctp":
+		return CCTPRebalance, nil
+	case "native":
+		return NativeBridgeRebalance, nil
+	}
+	return method, fmt.Errorf("invalid rebalance method for chain %d and token %s: %s", chainID, token, tokenConfig.RebalanceMethod)
+
+}
+
 // GetTokenID returns the tokenID for the given chain and address.
 func (c Config) GetTokenID(chain int, addr string) (string, error) {
 	chainConfig, ok := c.Chains[chain]

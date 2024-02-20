@@ -91,6 +91,8 @@ type TokenConfig struct {
 	PriceUSD float64 `yaml:"price_usd"`
 	// MinQuoteAmount is the minimum amount to quote for this token in human-readable units.
 	MinQuoteAmount string `yaml:"min_quote_amount"`
+	// RebalanceMethod is the method to use for rebalancing.
+	RebalanceMethod string `yaml:"rebalance_method"`
 }
 
 // DatabaseConfig represents the configuration for the database.
