@@ -38,8 +38,8 @@ type QuoteRequestHandler struct {
 	handlers map[reldb.QuoteRequestStatus]Handler
 	// claimCache is the cache of claims used for figuring out when we should retry the claim method.
 	claimCache *ttlcache.Cache[common.Hash, bool]
-	// RelayerAdress is the relayer RelayerAdress
-	RelayerAdress common.Address
+	// RelayerAddress is the relayer RelayerAddress
+	RelayerAddress common.Address
 	// metrics is the metrics handler.
 	metrics metrics.Handler
 }
@@ -59,15 +59,15 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 	}
 
 	qr := &QuoteRequestHandler{
-		Origin:        *origin,
-		Dest:          *dest,
-		db:            r.db,
-		Inventory:     r.inventory,
-		Quoter:        r.quoter,
-		handlers:      make(map[reldb.QuoteRequestStatus]Handler),
-		metrics:       r.metrics,
-		RelayerAdress: r.signer.Address(),
-		claimCache:    r.claimCache,
+		Origin:         *origin,
+		Dest:           *dest,
+		db:             r.db,
+		Inventory:      r.inventory,
+		Quoter:         r.quoter,
+		handlers:       make(map[reldb.QuoteRequestStatus]Handler),
+		metrics:        r.metrics,
+		RelayerAddress: r.signer.Address(),
+		claimCache:     r.claimCache,
 	}
 
 	qr.handlers[reldb.Seen] = r.deadlineMiddleware(qr.handleSeen)

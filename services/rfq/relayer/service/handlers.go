@@ -285,7 +285,7 @@ func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, _ trace.Spa
 		return nil
 	}
 
-	canClaim, err := q.Origin.Bridge.CanClaim(&bind.CallOpts{Context: ctx}, request.TransactionID, q.RelayerAdress)
+	canClaim, err := q.Origin.Bridge.CanClaim(&bind.CallOpts{Context: ctx}, request.TransactionID, q.RelayerAddress)
 	if err != nil {
 		return fmt.Errorf("could not check if can claim: %w", err)
 	}
@@ -331,7 +331,7 @@ func (q *QuoteRequestHandler) handleClaimCompleted(ctx context.Context, _ trace.
 	return nil
 }
 
-// Error Handlers Only from this point belo
+// Error Handlers Only from this point below.
 //
 // handleNotEnoughInventory handles the not enough inventory status.
 func (q *QuoteRequestHandler) handleNotEnoughInventory(ctx context.Context, _ trace.Span, request reldb.QuoteRequest) (err error) {
