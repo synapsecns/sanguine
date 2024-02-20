@@ -82,6 +82,9 @@ func NewLibP2PManager(ctx context.Context, handler metrics.Handler, auth signer.
 	l := &libP2PManagerImpl{}
 	l.life = new(lifecycle.Manager)
 
+	l.port = port
+	l.hostName = hostname
+
 	var err error
 	l.relays, err = p2p.NewRelays(ctx, []string{"https://0.relay.obol.tech/"}, auth.Address().String())
 	if err != nil {
@@ -104,9 +107,6 @@ func NewLibP2PManager(ctx context.Context, handler metrics.Handler, auth signer.
 	l.datastoreFactory = store
 	l.datastores = make(map[common.Address]datastore.Batching)
 	l.handler = handler
-	l.port = port
-	l.hostName = hostname
-
 	return l, nil
 }
 
