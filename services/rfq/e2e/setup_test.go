@@ -197,7 +197,7 @@ func (i *IntegrationSuite) setupRelayer() {
 		// generated ex-post facto
 		Chains: map[int]relconfig.ChainConfig{
 			originBackendChainID: {
-				Bridge:        i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeType).Address().String(),
+				RFQAddress:    i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeType).Address().String(),
 				Confirmations: 0,
 				Tokens: map[string]relconfig.TokenConfig{
 					"ETH": {
@@ -209,7 +209,7 @@ func (i *IntegrationSuite) setupRelayer() {
 				NativeToken: "ETH",
 			},
 			destBackendChainID: {
-				Bridge:        i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeType).Address().String(),
+				RFQAddress:    i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeType).Address().String(),
 				Confirmations: 0,
 				Tokens: map[string]relconfig.TokenConfig{
 					"ETH": {

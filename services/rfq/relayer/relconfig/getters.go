@@ -87,16 +87,30 @@ func isNonZero(value interface{}) bool {
 	return reflect.ValueOf(value).Interface() != reflect.Zero(reflect.TypeOf(value)).Interface()
 }
 
-// GetBridge returns the Bridge for the given chainID.
-func (c Config) GetBridge(chainID int) (value string, err error) {
-	rawValue, err := c.getChainConfigValue(chainID, "Bridge")
+// GetRFQAddress returns the RFQ address for the given chainID.
+func (c Config) GetRFQAddress(chainID int) (value string, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "RFQAddress")
 	if err != nil {
 		return value, err
 	}
 
 	value, ok := rawValue.(string)
 	if !ok {
-		return value, fmt.Errorf("failed to cast Bridge to string")
+		return value, fmt.Errorf("failed to cast RFQAddress to string")
+	}
+	return value, nil
+}
+
+// GetCCTPAddress returns the RFQ address for the given chainID.
+func (c Config) GetCCTPAddress(chainID int) (value string, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "CCTPAddress")
+	if err != nil {
+		return value, err
+	}
+
+	value, ok := rawValue.(string)
+	if !ok {
+		return value, fmt.Errorf("failed to cast CCTPAddress to string")
 	}
 	return value, nil
 }

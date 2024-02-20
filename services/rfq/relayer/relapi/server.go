@@ -59,11 +59,11 @@ func NewRelayerAPI(
 		if err != nil {
 			return nil, fmt.Errorf("could not create omnirpc client: %w", err)
 		}
-		chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(chainCfg.Bridge), handler)
+		chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(chainCfg.RFQAddress), handler)
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain listener: %w", err)
 		}
-		chains[uint32(chainID)], err = chain.NewChain(ctx, chainClient, common.HexToAddress(chainCfg.Bridge), chainListener, submitter)
+		chains[uint32(chainID)], err = chain.NewChain(ctx, chainClient, common.HexToAddress(chainCfg.RFQAddress), chainListener, submitter)
 		if err != nil {
 			return nil, fmt.Errorf("could not create chain: %w", err)
 		}

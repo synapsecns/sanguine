@@ -62,15 +62,17 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 	chainListeners := make(map[int]listener.ContractListener)
 
 	// setup chain listeners
-	for chainID, chainCFG := range cfg.GetChains() {
-		// TODO: consider getter for this convert step
-		bridge := common.HexToAddress(chainCFG.Bridge)
+	for chainID := range cfg.GetChains() {
+		rfqAddr, err := cfg.GetRFQAddress(chainID)
+		if err != nil {
+			return nil, fmt.Errorf("could not get rfq address: %w", err)
+		}
 		chainClient, err := omniClient.GetChainClient(ctx, chainID)
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain client: %w", err)
 		}
 
-		chainListener, err := listener.NewChainListener(chainClient, store, bridge, metricHandler)
+		chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(rfqAddr), metricHandler)
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain listener: %w", err)
 		}

@@ -14,7 +14,8 @@ func TestGetters(t *testing.T) {
 	cfgWithBase := relconfig.Config{
 		Chains: map[int]relconfig.ChainConfig{
 			chainID: {
-				Bridge:                 "0x123",
+				RFQAddress:             "0x123",
+				CCTPAddress:            "0x456",
 				Confirmations:          1,
 				NativeToken:            "MATIC",
 				DeadlineBufferSeconds:  10,
@@ -30,7 +31,8 @@ func TestGetters(t *testing.T) {
 			},
 		},
 		BaseChainConfig: relconfig.ChainConfig{
-			Bridge:                 "0x1234",
+			RFQAddress:             "0x1234",
+			CCTPAddress:            "0x456",
 			Confirmations:          2,
 			NativeToken:            "ARB",
 			DeadlineBufferSeconds:  11,
@@ -48,7 +50,8 @@ func TestGetters(t *testing.T) {
 	cfg := relconfig.Config{
 		Chains: map[int]relconfig.ChainConfig{
 			chainID: {
-				Bridge:                 "0x123",
+				RFQAddress:             "0x123",
+				CCTPAddress:            "0x456",
 				Confirmations:          1,
 				NativeToken:            "MATIC",
 				DeadlineBufferSeconds:  10,
@@ -65,18 +68,32 @@ func TestGetters(t *testing.T) {
 		},
 	}
 
-	t.Run("GetBridge", func(t *testing.T) {
-		defaultVal, err := cfg.GetBridge(badChainID)
+	t.Run("GetRFQAddress", func(t *testing.T) {
+		defaultVal, err := cfg.GetRFQAddress(badChainID)
 		assert.NoError(t, err)
-		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.Bridge)
+		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.RFQAddress)
 
-		baseVal, err := cfgWithBase.GetBridge(badChainID)
+		baseVal, err := cfgWithBase.GetRFQAddress(badChainID)
 		assert.NoError(t, err)
-		assert.Equal(t, baseVal, cfgWithBase.BaseChainConfig.Bridge)
+		assert.Equal(t, baseVal, cfgWithBase.BaseChainConfig.RFQAddress)
 
-		chainVal, err := cfgWithBase.GetBridge(chainID)
+		chainVal, err := cfgWithBase.GetRFQAddress(chainID)
 		assert.NoError(t, err)
-		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].Bridge)
+		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].RFQAddress)
+	})
+
+	t.Run("GetCCTPAddress", func(t *testing.T) {
+		defaultVal, err := cfg.GetCCTPAddress(badChainID)
+		assert.NoError(t, err)
+		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.CCTPAddress)
+
+		baseVal, err := cfgWithBase.GetCCTPAddress(badChainID)
+		assert.NoError(t, err)
+		assert.Equal(t, baseVal, cfgWithBase.BaseChainConfig.CCTPAddress)
+
+		chainVal, err := cfgWithBase.GetCCTPAddress(chainID)
+		assert.NoError(t, err)
+		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].CCTPAddress)
 	})
 
 	t.Run("GetConfirmations", func(t *testing.T) {

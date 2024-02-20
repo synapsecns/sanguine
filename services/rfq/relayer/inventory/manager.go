@@ -195,7 +195,11 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context, submitter s
 						return nil, fmt.Errorf("could not get erc20: %w", err)
 					}
 
-					approveAmount, err := erc20.Approve(transactor, common.HexToAddress(i.cfg.Chains[chainID].Bridge), abi.MaxInt256)
+					rfqAddr, err := i.cfg.GetRFQAddress(chainID)
+					if err != nil {
+						return nil, fmt.Errorf("could not get rfq address: %w", err)
+					}
+					approveAmount, err := erc20.Approve(transactor, common.HexToAddress(rfqAddr), abi.MaxInt256)
 					if err != nil {
 						return nil, fmt.Errorf("could not approve: %w", err)
 					}
@@ -294,11 +298,15 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 				rtoken.balance = i.gasBalances[chainID]
 				// TODO: start allowance?
 			} else {
+				rfqAddr, err := cfg.GetRFQAddress(chainID)
+				if err != nil {
+					return fmt.Errorf("could not get rfq address: %w", err)
+				}
 				deferredCalls[chainID] = append(deferredCalls[chainID],
 					eth.CallFunc(funcBalanceOf, token, i.relayerAddress).Returns(rtoken.balance),
 					eth.CallFunc(funcDecimals, token).Returns(&rtoken.decimals),
 					eth.CallFunc(funcName, token).Returns(&rtoken.name),
-					eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(i.cfg.Chains[chainID].Bridge)).Returns(rtoken.startAllowance),
+					eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(rfqAddr)).Returns(rtoken.startAllowance),
 				)
 			}
 

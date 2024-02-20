@@ -49,8 +49,10 @@ type Config struct {
 
 // ChainConfig represents the configuration for a chain.
 type ChainConfig struct {
-	// Bridge is the bridge confirmation count.
-	Bridge string `yaml:"address"`
+	// Bridge is the rfq bridge contract address.
+	RFQAddress string `yaml:"rfq_address"`
+	// CCTPAddress is the cctp contract address.
+	CCTPAddress string `yaml:"cctp_address"`
 	// Confirmations is the number of required confirmations
 	Confirmations uint64 `yaml:"confirmations"`
 	// Tokens is a map of token ID -> token config.

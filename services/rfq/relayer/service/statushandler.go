@@ -130,7 +130,11 @@ func (r *Relayer) chainIDToChain(ctx context.Context, chainID uint32) (*chain.Ch
 	}
 
 	//nolint: wrapcheck
-	return chain.NewChain(ctx, chainClient, common.HexToAddress(r.cfg.GetChains()[id].Bridge), r.chainListeners[id], r.submitter)
+	rfqAddr, err := r.cfg.GetRFQAddress(id)
+	if err != nil {
+		return nil, fmt.Errorf("could not get rfq address: %w", err)
+	}
+	return chain.NewChain(ctx, chainClient, common.HexToAddress(rfqAddr), r.chainListeners[id], r.submitter)
 }
 
 // shouldCheckClaim checks if we should check the claim method.
