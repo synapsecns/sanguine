@@ -42,6 +42,9 @@ type Manager interface {
 	ApproveAllTokens(ctx context.Context, submitter submitter.TransactionSubmitter) error
 	// HasSufficientGas checks if there is sufficient gas for a given route.
 	HasSufficientGas(ctx context.Context, origin, dest int) (bool, error)
+	// Rebalance checks whether a given token should be rebalanced, and
+	// executes the rebalance if necessary.
+	Rebalance(ctx context.Context, token common.Address) error
 }
 
 type inventoryManagerImpl struct {

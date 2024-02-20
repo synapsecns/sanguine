@@ -76,7 +76,7 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 	// no more need for deadline middleware now, we already relayed.
 	qr.handlers[reldb.RelayCompleted] = r.gasMiddleware(qr.handleRelayCompleted)
 	qr.handlers[reldb.ProvePosted] = qr.handleProofPosted
-	// TODO: we probably want a claim complete state once we've seen that event on chain
+	qr.handlers[reldb.ClaimCompleted] = qr.handleClaimCompleted
 
 	// error handlers only
 	qr.handlers[reldb.NotEnoughInventory] = r.deadlineMiddleware(qr.handleNotEnoughInventory)

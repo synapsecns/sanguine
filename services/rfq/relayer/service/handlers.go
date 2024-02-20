@@ -290,7 +290,7 @@ func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, _ trace.Spa
 		return fmt.Errorf("could not check if can claim: %w", err)
 	}
 
-	// can't cliam yet. we'll check again later
+	// can't claim yet. we'll check again later
 	if !canClaim {
 		return nil
 	}
@@ -304,6 +304,24 @@ func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, _ trace.Spa
 	})
 	if err != nil {
 		return fmt.Errorf("could not submit transaction: %w", err)
+	}
+
+	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.ClaimPending)
+	if err != nil {
+		return fmt.Errorf("could not update request status: %w", err)
+	}
+	return nil
+}
+
+// handleClaimCompleted handles the claim completed status and marks the claim as completed.
+// Step 9: ClaimCompleted
+//
+// Since this marks the completion of a RFQ bridge sequence, we check if a rebalance for the given token
+// is needed, and trigger it on the inventory manager if so.
+func (q *QuoteRequestHandler) handleClaimCompleted(ctx context.Context, _ trace.Span, request reldb.QuoteRequest) (err error) {
+	err = q.Inventory.Rebalance(ctx, request.Transaction.DestToken)
+	if err != nil {
+		return fmt.Errorf("could not rebalance: %w", err)
 	}
 
 	err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.ClaimPending)
