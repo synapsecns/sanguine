@@ -1,6 +1,7 @@
 pragma solidity 0.8.20;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {IExecutionService} from "./interfaces/IExecutionService.sol";
 import {IInterchainDB} from "./interfaces/IInterchainDB.sol";
 
 import {IInterchainApp} from "./interfaces/IInterchainApp.sol";
@@ -103,8 +104,9 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
     // TODO: Calculate Gas Pricing per module and charge fees
     // @inheritdoc IInterchainClientV1
     function interchainSend(
-        bytes32 receiver,
         uint256 dstChainId,
+        bytes32 receiver,
+        address srcExecutionService,
         bytes calldata message,
         bytes calldata options,
         address[] calldata srcModules
@@ -112,7 +114,9 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         public
         payable
     {
-        uint256 totalModuleFees = msg.value;
+        uint256 verificationFees = IInterchainDB(interchainDB).getInterchainFee(dstChainId, srcModules);
+        // TODO: should check msg.value >= totalModuleFees
+        uint256 executionFee = msg.value - verificationFees;
 
         InterchainTransaction memory icTx = InterchainTransaction({
             srcSender: TypeCasts.addressToBytes32(msg.sender),
@@ -131,11 +135,19 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         );
         icTx.transactionId = transactionId;
 
-        uint256 dbWriterNonce = IInterchainDB(interchainDB).writeEntryWithVerification{value: totalModuleFees}(
+        uint256 dbWriterNonce = IInterchainDB(interchainDB).writeEntryWithVerification{value: verificationFees}(
             icTx.dstChainId, icTx.transactionId, srcModules
         );
         icTx.dbWriterNonce = dbWriterNonce;
-
+        IExecutionService(srcExecutionService).requestExecution({
+            dstChainId: dstChainId,
+            // TODO: this should be encodedTx.length
+            txPayloadSize: message.length,
+            transactionId: transactionId,
+            executionFee: executionFee,
+            options: options
+        });
+        // TODO: transfer the execution fee to ExecutionFees contract
         emit InterchainTransactionSent(
             icTx.srcSender,
             icTx.srcChainId,
