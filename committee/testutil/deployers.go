@@ -3,6 +3,7 @@ package testutil
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/committee/contracts/mocks/gasoraclemock"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -25,7 +26,7 @@ type DeployManager struct {
 func NewDeployManager(t *testing.T) *DeployManager {
 	t.Helper()
 
-	return &DeployManager{manager.NewDeployerManager(t, NewSynapseModuleDeployer, NewNoOpInterchainDeployer)}
+	return &DeployManager{manager.NewDeployerManager(t, NewSynapseModuleDeployer, NewNoOpInterchainDeployer, NewGasOracleDeployer)}
 }
 
 // SynapseModuleDeployer wraps SynapseModuleDeployer and allows typed contract handles to be returned.
@@ -44,15 +45,20 @@ func NewSynapseModuleDeployer(registry deployer.GetOnlyContractRegistry, backend
 func (s SynapseModuleDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return s.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		interchainContract := s.Registry().Get(ctx, NoOpInterchainType)
-		// if err != nil {
-		// 	return common.Address{}, nil, nil, fmt.Errorf("could not get NoOpInterchain contract: %w", err)
-		// }
 
 		// Deployed with NoOpInterchainDB as INTERCHAIN_DB and deployer address as owner
 		smAddress, smTx, smI, err := synapsemodule.DeploySynapseModule(transactOps, backend, interchainContract.Address(), transactOps.From)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy SynapseModule: %w", err)
 		}
+
+		auth := s.Backend().GetTxContext(ctx, &transactOps.From)
+		gasOracle := s.Registry().Get(ctx, GasOracleMockType)
+		setTx, err := smI.SetGasOracle(auth.TransactOpts, gasOracle.Address())
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not set gas oracle: %w", err)
+		}
+		s.Backend().WaitForConfirmation(ctx, setTx)
 
 		return smAddress, smTx, smI, nil
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
@@ -62,7 +68,7 @@ func (s SynapseModuleDeployer) Deploy(ctx context.Context) (contracts.DeployedCo
 
 // Dependencies returns the dependencies of the SynapseModuleDeployer.
 func (s SynapseModuleDeployer) Dependencies() []contracts.ContractType {
-	return s.RecursiveDependencies([]contracts.ContractType{NoOpInterchainType})
+	return s.RecursiveDependencies([]contracts.ContractType{NoOpInterchainType, GasOracleMockType})
 }
 
 // NoOpInterchainDeployer wraps NoOpInterchainDeployer and allows typed contract handles to be returned.
@@ -81,5 +87,24 @@ func (i NoOpInterchainDeployer) Deploy(ctx context.Context) (contracts.DeployedC
 		return noopinterchain.DeployNoOpInterchain(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return noopinterchain.NewNoOpInterchainRef(address, backend)
+	})
+}
+
+// GasOracleDeployer wraps GasOracleDeployer and allows typed contract handles to be returned.
+type GasOracleDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewGasOracleDeployer deploys a GasOracle contract.
+func NewGasOracleDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return &GasOracleDeployer{deployer.NewSimpleDeployer(registry, backend, GasOracleMockType)}
+}
+
+// Deploy deploys a GasOracle contract.
+func (i GasOracleDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return i.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return gasoraclemock.DeployGasOracleMock(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return gasoraclemock.NewGasOracleMockRef(address, backend)
 	})
 }

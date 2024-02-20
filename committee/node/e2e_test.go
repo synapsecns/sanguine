@@ -11,15 +11,6 @@ import (
 func (n *NodeSuite) TestNodeSuite() {
 	// get the user we're going to test as
 	auth := n.originChain.GetTxContext(n.GetTestContext(), nil)
-
-	// now, authenticate as the owner so our user can spoof itself as the interchain contract
-	// originInfo, _ := n.deployManager.GetSynapseModule(n.GetTestContext(), n.originChain)
-	// ownerAuth := n.originChain.GetTxContext(n.GetTestContext(), originInfo.OwnerPtr())
-
-	// tx, err := n.originModule.SetInterchainDB(ownerAuth.TransactOpts, auth.From)
-	// n.Require().NoError(err)
-	// n.originChain.WaitForConfirmation(n.GetTestContext(), tx)
-
 	// set value of tx to module fee
 	var err error
 	auth.TransactOpts.Value, err = n.originModule.GetModuleFee(&bind.CallOpts{Context: n.GetSuiteContext()}, n.destChain.GetBigChainID())

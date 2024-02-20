@@ -26,7 +26,7 @@ type Reader interface {
 type Writer interface {
 	LatestBlockForChain(ctx context.Context, chainID uint64) (uint64, error)
 	UpdateSignRequestStatus(ctx context.Context, txid common.Hash, status SynapseRequestStatus) error
-	StoreInterchainTransactionReceived(ctx context.Context, sr synapsemodule.SynapseModuleVerificationRequested) error
+	StoreInterchainTransactionReceived(ctx context.Context, originChainID int, sr synapsemodule.SynapseModuleVerificationRequested) error
 }
 
 // Datstores contain the datastores for the p2p comms.
@@ -91,11 +91,16 @@ var _ dbcommon.Enum = (*SynapseRequestStatus)(nil)
 
 // SignRequest is the request to sign a transaction.
 type SignRequest struct {
-	synapsemodule.InterchainEntry
+	// TXHash is the hash of the transaction that emitted the event
+	TXHash common.Hash
+	// OriginChainID is the chain id the transaction hash was sent on
+	OriginChainID *big.Int
 	// DestChainID is the chain id the transaction hash will be sent on
 	DestChainID *big.Int
 	// Status is the status of the transaction
 	Status SynapseRequestStatus
 	// SignedEntryHash is the hash of the signed entry
 	SignedEntryHash common.Hash
+	// Entry is the raw entry.
+	Entry []byte
 }
