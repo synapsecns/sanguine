@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"sort"
 	"sync"
 	"time"
 
@@ -271,6 +272,18 @@ func (n *Node) runDBSelector(ctx context.Context) error {
 	}
 }
 
+func (n *Node) getSortedValidators(request db.SignRequest) (validators []common.Address) {
+	for _, validator := range n.interchainValidators[int(request.DestChainID.Int64())] {
+		validators = append(validators, validator)
+	}
+
+	sort.Slice(validators, func(i, j int) bool {
+		return validators[i].Big().Cmp(validators[j].Big()) < 0
+	})
+
+	return validators
+}
+
 func (n *Node) submit(ctx context.Context, request db.SignRequest) error {
 	contract := n.interchainContracts[int(request.DestChainID.Int64())]
 	threshold, err := contract.GetThreshold(&bind.CallOpts{Context: ctx})
@@ -279,7 +292,7 @@ func (n *Node) submit(ctx context.Context, request db.SignRequest) error {
 	}
 
 	var signatures []byte
-	for _, validator := range n.interchainValidators[int(request.DestChainID.Int64())] {
+	for _, validator := range n.getSortedValidators(request) {
 		signature, err := n.peerManager.GetSignature(ctx, validator, int(request.OriginChainID.Int64()), request.SignedEntryHash)
 		if err != nil {
 			logger.Errorf("could not get signature for peer %s message: %w", validator, err)

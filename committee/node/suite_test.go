@@ -97,6 +97,14 @@ func (n *NodeSuite) setValidators(validators []common.Address, backend backends.
 		n.NoError(err)
 		backend.WaitForConfirmation(n.GetTestContext(), tx)
 	}
+
+	tx, err := contract.SetThreshold(transactOpts.TransactOpts, big.NewInt(int64(len(validators))))
+	n.NoError(err)
+	backend.WaitForConfirmation(n.GetTestContext(), tx)
+
+	tx, err = contract.SetFeeCollector(transactOpts.TransactOpts, transactOpts.From)
+	n.NoError(err)
+	backend.WaitForConfirmation(n.GetTestContext(), tx)
 }
 
 func (n *NodeSuite) makeNode() {

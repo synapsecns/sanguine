@@ -14,6 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
+	"math/big"
 	"sync"
 	"testing"
 	"time"
@@ -69,9 +70,9 @@ func (s *P2PTestSuite) TestLibP2PManager() {
 	time.Sleep(time.Second * 2)
 	const (
 		chainID = 1
-		nonce   = 2
 	)
 
+	nonce := common.BigToHash(big.NewInt(2))
 	signature := []byte(gofakeit.Word())
 
 	// m1.DoSomething()

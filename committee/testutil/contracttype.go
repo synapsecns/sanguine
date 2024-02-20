@@ -2,9 +2,9 @@ package testutil
 
 import (
 	"github.com/ethereum/go-ethereum/common/compiler"
+	"github.com/synapsecns/sanguine/committee/contracts/interchaindb"
 	"github.com/synapsecns/sanguine/committee/contracts/mocks/executionservicemock"
 	"github.com/synapsecns/sanguine/committee/contracts/mocks/gasoraclemock"
-	"github.com/synapsecns/sanguine/committee/contracts/mocks/noopinterchain"
 	"github.com/synapsecns/sanguine/committee/contracts/synapsemodule"
 	"github.com/synapsecns/sanguine/ethergo/backends/base"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
@@ -47,8 +47,8 @@ type contractTypeImpl int
 const (
 	// SynapseModuleType is the type of the contract being fetched.
 	SynapseModuleType contractTypeImpl = iota + 1 // SynapseModule
-	// NoOpInterchainType is the type of the contract being fetched.
-	NoOpInterchainType // NoOpInterchain
+	// InterchainDB is the type of the contract being fetched.
+	InterchainDB // InterchainDB
 	// GasOracleMockType is the type of the contract being fetched.
 	GasOracleMockType // GasOracleMock
 	// ExecutionServiceMockType is the type of the contract being fetched.
@@ -81,13 +81,12 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	switch c {
 	case SynapseModuleType:
 		return synapsemodule.Contracts["solidity/SynapseModule.sol:SynapseModule"]
-	case NoOpInterchainType:
-		return noopinterchain.Contracts["solidity/NoOpInterchain.sol:NoOpInterchain"]
+	case InterchainDB:
+		return interchaindb.Contracts["solidity/InterchainDB.sol:InterchainDB"]
 	case GasOracleMockType:
 		return gasoraclemock.Contracts["solidity/GasOracleMock.sol:GasOracleMock"]
 	case ExecutionServiceMockType:
 		return executionservicemock.Contracts["solidity/ExecutionServiceMock.sol:ExecutionServiceMock"]
-
 	}
 	return nil
 }

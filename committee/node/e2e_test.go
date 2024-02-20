@@ -1,30 +1,23 @@
 package node_test
 
 import (
-	"math/big"
-
+	"crypto/sha256"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/synapsecns/sanguine/committee/contracts/synapsemodule"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/committee/db"
+	"github.com/synapsecns/sanguine/core"
 )
 
 func (n *NodeSuite) TestNodeSuite() {
 	// get the user we're going to test as
 	auth := n.originChain.GetTxContext(n.GetTestContext(), nil)
-	// set value of tx to module fee
-	var err error
-	auth.TransactOpts.Value, err = n.originModule.GetModuleFee(&bind.CallOpts{Context: n.GetSuiteContext()}, n.destChain.GetBigChainID())
+	_, originDB := n.deployManager.GetInterchainDB(n.GetTestContext(), n.originChain)
+
+	fee, err := originDB.GetInterchainFee(&bind.CallOpts{Context: n.GetSuiteContext()}, n.destChain.GetBigChainID(), []common.Address{n.originModule.Address()})
 	n.Require().NoError(err)
-	tx, err := n.originModule.RequestVerification(auth.TransactOpts, n.destChain.GetBigChainID(), synapsemodule.InterchainEntry{
-		SrcChainId: n.originChain.GetBigChainID(),
-		SrcWriter: [32]byte{
-			0x01,
-		},
-		DbNonce: big.NewInt(2),
-		DataHash: [32]byte{
-			0x03,
-		},
-	})
+	auth.TransactOpts.Value = core.CopyBigInt(fee)
+
+	tx, err := originDB.WriteEntryWithVerification(auth.TransactOpts, n.destChain.GetBigChainID(), sha256.Sum256([]byte("fat")), []common.Address{n.originModule.Address()})
 	n.Require().NoError(err)
 
 	// wait for the transaction to be mined
