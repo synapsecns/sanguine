@@ -1,6 +1,7 @@
 package db_test
 
 import (
+	"errors"
 	"github.com/ipfs/go-datastore"
 	"github.com/ipfs/go-datastore/query"
 	"github.com/synapsecns/sanguine/committee/db"
@@ -88,6 +89,194 @@ func (d *DBSuite) TestQuery() {
 	})
 }
 
+func (d *DBSuite) TestHas() {
+	d.RunOnAllDatastores(func(ds datastore.Batching) {
+		d.addTestCases(ds)
+
+		has, err := ds.Has(d.GetTestContext(), datastore.NewKey("/a/b/c"))
+		if err != nil {
+			d.T().Error(err)
+		}
+
+		if !has {
+			d.T().Error("Key should be found")
+		}
+
+		has, err = ds.Has(d.GetTestContext(), datastore.NewKey("/a/b/c/d"))
+		if err != nil {
+			d.T().Error(err)
+		}
+
+		if has {
+			d.T().Error("Key should not be found")
+		}
+	})
+}
+
+func (d *DBSuite) TestGetSize() {
+	d.RunOnAllDatastores(func(testStore datastore.Batching) {
+		d.addTestCases(testStore)
+
+		size, err := testStore.GetSize(d.GetTestContext(), datastore.NewKey("/a/b/c"))
+		if err != nil {
+			d.T().Error(err)
+		}
+
+		if size != len(testcases["/a/b/c"]) {
+			d.T().Error("")
+		}
+
+		_, err = testStore.GetSize(d.GetTestContext(), datastore.NewKey("/a/b/c/d"))
+		if !errors.Is(err, datastore.ErrNotFound) {
+			d.T().Error(err)
+		}
+	})
+}
+
+func (d *DBSuite) TestNotExistsGet() {
+	d.RunOnAllDatastores(func(testStore datastore.Batching) {
+		d.addTestCases(testStore)
+
+		has, err := testStore.Has(d.GetTestContext(), datastore.NewKey("/a/b/c/d"))
+		if err != nil {
+			d.T().Error(err)
+		}
+
+		if has {
+			d.T().Error("Key should not be found")
+		}
+
+		val, err := testStore.Get(d.GetTestContext(), datastore.NewKey("/a/b/c/d"))
+		if val != nil {
+			d.T().Error("Key should not be found")
+		}
+
+		if !errors.Is(err, datastore.ErrNotFound) {
+			d.T().Error("Error was not set to ds.ErrNotFound")
+			if err != nil {
+				d.T().Error(err)
+			}
+		}
+	})
+}
+
+func (d *DBSuite) TestDelete() {
+	d.RunOnAllDatastores(func(testStore datastore.Batching) {
+		d.addTestCases(testStore)
+
+		has, err := testStore.Has(d.GetTestContext(), datastore.NewKey("/a/b/c"))
+		if err != nil {
+			d.T().Error(err)
+		}
+		if !has {
+			d.T().Error("Key should be found")
+		}
+
+		err = testStore.Delete(d.GetTestContext(), datastore.NewKey("/a/b/c"))
+		if err != nil {
+			d.T().Error(err)
+		}
+
+		has, err = testStore.Has(d.GetTestContext(), datastore.NewKey("/a/b/c"))
+		if err != nil {
+			d.T().Error(err)
+		}
+		if has {
+			d.T().Error("Key should not be found")
+		}
+
+	})
+}
+
+func (d *DBSuite) TestGetEmpty() {
+	d.RunOnAllDatastores(func(testStore datastore.Batching) {
+		err := testStore.Put(d.GetTestContext(), datastore.NewKey("/a"), []byte{})
+		if err != nil {
+			d.T().Error(err)
+		}
+
+		v, err := testStore.Get(d.GetTestContext(), datastore.NewKey("/a"))
+		if err != nil {
+			d.T().Error(err)
+		}
+
+		if len(v) != 0 {
+			d.T().Error("expected 0 len []byte form get")
+		}
+	})
+}
+
+func (d *DBSuite) TestBatching() {
+	d.RunOnAllDatastores(func(testStore datastore.Batching) {
+		b, err := testStore.Batch(d.GetTestContext())
+		if err != nil {
+			d.T().Fatal(err)
+		}
+
+		for k, v := range testcases {
+			err := b.Put(d.GetTestContext(), datastore.NewKey(k), []byte(v))
+			if err != nil {
+				d.T().Fatal(err)
+			}
+		}
+
+		err = b.Commit(d.GetTestContext())
+		if err != nil {
+			d.T().Fatal(err)
+		}
+
+		for k, v := range testcases {
+			val, err := testStore.Get(d.GetTestContext(), datastore.NewKey(k))
+			if err != nil {
+				d.T().Fatal(err)
+			}
+
+			if v != string(val) {
+				d.T().Fatal("got wrong data!")
+			}
+		}
+
+		//Test delete
+
+		b, err = testStore.Batch(d.GetTestContext())
+		if err != nil {
+			d.T().Fatal(err)
+		}
+
+		err = b.Delete(d.GetTestContext(), datastore.NewKey("/a/b"))
+		if err != nil {
+			d.T().Fatal(err)
+		}
+
+		err = b.Delete(d.GetTestContext(), datastore.NewKey("/a/b/c"))
+		if err != nil {
+			d.T().Fatal(err)
+		}
+
+		err = b.Commit(d.GetTestContext())
+		if err != nil {
+			d.T().Fatal(err)
+		}
+
+		rs, err := testStore.Query(d.GetTestContext(), query.Query{Prefix: "/"})
+		if err != nil {
+			d.T().Fatal(err)
+		}
+
+		d.expectMatches([]string{
+			"/a",
+			"/a/b/d",
+			"/a/c",
+			"/a/d",
+			"/e",
+			"/f",
+			"/g",
+		}, rs)
+
+		// TODO: test cancel
+	})
+}
+
 func (d *DBSuite) TestDBAdapters() {
 	d.RunOnAllDBs(func(testDB db.Service) {
 		ds, err := testDB.GlobalDatastore()
@@ -116,3 +305,5 @@ func (d *DBSuite) TestDBAdapters() {
 		d.False(has)
 	})
 }
+
+// TODO: more tests

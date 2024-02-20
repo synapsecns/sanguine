@@ -212,6 +212,10 @@ func (n *Node) Start(parentContext context.Context) error {
 	})
 
 	// TODO: call g.wait, return error on error
+	err = g.Wait()
+	if err != nil {
+		return fmt.Errorf("could not wait: %w", err)
+	}
 
 	return nil
 }
