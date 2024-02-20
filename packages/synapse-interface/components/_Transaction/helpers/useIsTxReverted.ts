@@ -11,7 +11,7 @@ export const useIsTxReverted = (
   checkForRevert: boolean
 ) => {
   const [isReverted, setIsReverted] = useState<boolean>(false)
-  const currentTime = useIntervalTimer(30000)
+  const currentTime = useIntervalTimer(60000)
 
   const getTxRevertStatus = async (txHash: Address, chain: Chain) => {
     /** Remove after testing */
