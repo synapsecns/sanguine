@@ -100,15 +100,14 @@ export const SelectSpecificTokenButton = ({
         <LoadingDots className="mr-8 opacity-50" />
       ) : (
         <>
-          {exchangeRate && isBestExchangeRate && (
-            <OptionTag type={BestOptionType.RATE} />
-          )}
-
           {exchangeRate && (
-            <OptionDetails
-              exchangeRate={exchangeRate}
-              estimatedDurationInSeconds={estimatedDurationInSeconds}
-            />
+            isBestExchangeRate
+              ? <OptionTag type={BestOptionType.RATE} />
+              :
+                <OptionDetails
+                  exchangeRate={exchangeRate}
+                  estimatedDurationInSeconds={estimatedDurationInSeconds}
+                />
           )}
         </>
       )}

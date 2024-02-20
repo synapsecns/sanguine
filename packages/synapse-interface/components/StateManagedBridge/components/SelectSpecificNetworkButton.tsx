@@ -108,7 +108,7 @@ function ButtonContent({
 
   const isEligible = isChainEligible(fromChainId, chain.id, fromToken)
 
-  return chain ? (
+  return chain && (
     <>
       <div className="flex items-center space-x-2">
         <Image
@@ -125,12 +125,12 @@ function ButtonContent({
           )}
         </div>
       </div>
-      {isOrigin && balanceTokens && balanceTokens.length > 0 ? (
+      {isOrigin && balanceTokens && balanceTokens.length > 0 && (
         <ChainTokens
           balanceTokens={balanceTokens}
           hoverClassName="bg-slate-900/70"
         />
-      ) : null}
+      )}
     </>
-  ) : null
+  )
 }
