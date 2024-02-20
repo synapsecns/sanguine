@@ -21,7 +21,8 @@ import (
 
 type DBSuite struct {
 	*testsuite.TestSuite
-	dbs     []db.Service
+	dbs     map[dbcommon.DBType]db.Service
+	dss     map[dbcommon.DBType]datastore.Batching
 	metrics metrics.Handler
 }
 
@@ -30,38 +31,9 @@ func NewDBSuite(tb testing.TB) *DBSuite {
 	tb.Helper()
 	return &DBSuite{
 		TestSuite: testsuite.NewTestSuite(tb),
-		dbs:       []db.Service{},
+		dbs:       make(map[dbcommon.DBType]db.Service),
+		dss:       make(map[dbcommon.DBType]datastore.Batching),
 	}
-}
-
-func (d *DBSuite) TestDB() {
-	d.RunOnAllDBs(func(testDB db.Service) {
-		ds, err := testDB.GlobalDatastore()
-		d.NoError(err)
-
-		err = ds.Put(d.GetTestContext(), datastore.NewKey("key"), []byte("value"))
-		d.NoError(err)
-
-		value, err := ds.Get(d.GetTestContext(), datastore.NewKey("key"))
-		d.NoError(err)
-		d.Equal([]byte("value"), value)
-
-		var has bool
-		has, err = ds.Has(d.GetTestContext(), datastore.NewKey("key"))
-		d.NoError(err)
-		d.True(has)
-
-		_, err = ds.GetSize(d.GetTestContext(), datastore.NewKey("key"))
-		d.NoError(err)
-
-		err = ds.Delete(d.GetTestContext(), datastore.NewKey("key"))
-		d.NoError(err)
-
-		has, err = ds.Has(d.GetTestContext(), datastore.NewKey("key"))
-		d.NoError(err)
-		d.False(has)
-
-	})
 }
 
 func (d *DBSuite) SetupSuite() {
@@ -78,8 +50,16 @@ func (d *DBSuite) SetupTest() {
 	sqliteStore, err := connect.Connect(d.GetTestContext(), dbcommon.Sqlite, filet.TmpDir(d.T(), ""), d.metrics)
 	d.NoError(err)
 
-	d.dbs = []db.Service{sqliteStore}
+	d.dbs[dbcommon.Sqlite] = sqliteStore
 	d.setupMysqlDB()
+
+	// make datastores
+	for name, testDB := range d.dbs {
+		ds, err := testDB.GlobalDatastore()
+		d.NoError(err)
+
+		d.dss[name] = ds
+	}
 }
 
 func (d *DBSuite) setupMysqlDB() {
@@ -104,20 +84,31 @@ func (d *DBSuite) setupMysqlDB() {
 	mysqlStore, err := mysql.NewMysqlStore(d.GetTestContext(), connString, d.metrics)
 	d.Require().NoError(err)
 
-	d.dbs = append(d.dbs, mysqlStore)
+	d.dbs[dbcommon.Mysql] = mysqlStore
 }
 
 func (d *DBSuite) RunOnAllDBs(testFunc func(testDB db.Service)) {
+	runOnAll[db.Service](d, d.dbs, testFunc)
+}
+
+func (d *DBSuite) RunOnAllDatastores(testFunc func(testStore datastore.Batching)) {
+	runOnAll[datastore.Batching](d, d.dss, testFunc)
+}
+
+func runOnAll[T any](d *DBSuite, testMap map[dbcommon.DBType]T, testFunc func(testStore T)) {
 	d.T().Helper()
+	// note: d.T().Parallel() can't be called here, see: https://github.com/stretchr/testify/issues/187
 
 	wg := sync.WaitGroup{}
-	for _, testDB := range d.dbs {
+	for name, testDB := range testMap {
 		wg.Add(1)
 		// capture the value
-		go func(testDB db.Service) {
+		go func(dbType dbcommon.DBType, testDB T) {
 			defer wg.Done()
-			testFunc(testDB)
-		}(testDB)
+			d.T().Run(dbType.String(), func(t *testing.T) {
+				testFunc(testDB)
+			})
+		}(name, testDB)
 	}
 	wg.Wait()
 }

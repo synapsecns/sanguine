@@ -39,7 +39,7 @@ func NewQueries(tbl string) Queries {
 		getQuery:     fmt.Sprintf("SELECT data FROM %s WHERE `key` = ?", tbl),
 		putQuery:     fmt.Sprintf("REPLACE INTO %s(`key`, `data`) VALUES(?, ?)", tbl),
 		queryQuery:   fmt.Sprintf("SELECT `key`, `data` FROM %s", tbl),
-		prefixQuery:  ` WHERE ` + "`" + `key` + "`" + `LIKE '%s%' ORDER BY ` + "`" + `key` + "`",
+		prefixQuery:  " WHERE BINARY `key` LIKE '%s%%' ORDER BY `key`",
 		limitQuery:   ` LIMIT %d`,
 		offsetQuery:  ` OFFSET %d`,
 		getSizeQuery: fmt.Sprintf("SELECT length(`data`) FROM %s WHERE `key` = ?", tbl),
