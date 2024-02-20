@@ -107,9 +107,7 @@ export const _Transaction = ({
 
   // Show transaction support if the transaction is delayed by more than 5 minutes and not finalized or reverted
   const showTransactionSupport =
-    !isTxFinalized && !isTxReverted && delayedTimeInMin
-      ? delayedTimeInMin <= -5
-      : false
+    !isTxFinalized && delayedTimeInMin ? delayedTimeInMin <= -5 : false
 
   return (
     <div
@@ -189,7 +187,9 @@ export const _Transaction = ({
           </DropdownMenu>
         </div>
       </div>
-      {showTransactionSupport && <TransactionSupport />}
+      {showTransactionSupport && (
+        <TransactionSupport isReverted={isTxReverted} />
+      )}
       <div className="px-1">
         <AnimatedProgressBar
           id={originTxHash}
