@@ -464,6 +464,13 @@ func (s *STIPRelayer) CalculateTransferAmount(ctx context.Context, transaction *
 	if transferAmount.Cmp(limit) > 0 {
 		return nil, fmt.Errorf("transfer amount exceeds the limit of %d ARB", s.cfg.ARBMaxTransfer)
 	}
+	// Check if transferAmount is lower than configured min ARB (MinAmount * 10^18 wei)
+	minAmountFloat := new(big.Float).SetFloat64(s.cfg.ARBMinTransfer)
+	minAmountFloatWei := new(big.Float).Mul(minAmountFloat, big.NewFloat(1e18))
+	minAmount, _ := minAmountFloatWei.Int(nil) // Truncate fractional part
+	if transferAmount.Cmp(minAmount) < 0 {
+		return nil, fmt.Errorf("transfer amount is lower than the minimum of %f ARB", s.cfg.ARBMinTransfer)
+	}
 	// If you need to round to the nearest integer instead of truncating, use the following:
 	// transferAmount := new(big.Int)
 	// transferAmountFloat.Int(transferAmount) // Round to the nearest integer
