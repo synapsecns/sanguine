@@ -55,28 +55,35 @@ const formatAmount = (amount) => {
   let [, left, right] =
     amount.toFixed(MAX_DECIMALS).match(/(\d+)\.?(\d*)/) ?? new Array(3).fill('')
 
-  for (let i = 3; i < left.length; i += 4)
-    left = `${left.slice(0, left.length - i)},${left.slice(-i)}`
+  if (left === '0') {
+    left = ''
+  } else {
+    for (let i = 3; i < left.length; i += 4)
+      left = `${left.slice(0, left.length - i)},${left.slice(-i)}`
+  }
 
-  return left + left.length < MAX_DECIMALS
-    ? '.' + right.slice(0, MAX_DECIMALS - left.length + +(left === '0'))
-    : ''
+  return left.length < MAX_DECIMALS
+    ? `${left}.${right.slice(0, MAX_DECIMALS - left.length)}`
+    : left
 }
 
 const randHex = () => {
-  const x = () => Math.round(Math.random() * 16).toString(16)
-  return `#${x() + x()}…${x() + x() + x() + x()}`
+  const hex = (chars) =>
+    Math.round(Math.random() * Math.pow(16, chars)).toString(16)
+  return `#${hex(3)}…${hex(4)}`
 }
 
 export const generateTx = () => {
   let originAmount =
-    Math.random() < 0.5 ? Math.round(Math.random() * 10000) : Math.random()
+    Math.random() < 0.5
+      ? Math.round(Math.random() * 10000)
+      : Math.random() * 0.99 + 0.01
   let destinationAmount = (originAmount * (100 - Math.random() * 5)) / 100
 
   const origin = {
     payload: Tokens[Math.round(Math.random() * (Tokens.length - 1))],
     chain: Chains[Math.round(Math.random() * (Chains.length - 1))],
-    originAmount,
+    amount: originAmount,
     formattedAmount: formatAmount(originAmount),
     timestamp: Date.now(),
     hash: randHex(),
@@ -84,7 +91,7 @@ export const generateTx = () => {
   const destination = {
     payload: origin.payload,
     chain: Chains[Math.round(Math.random() * (Chains.length - 1))],
-    destinationAmount,
+    amount: destinationAmount,
     formattedAmount: formatAmount(destinationAmount),
     timestamp: origin.timestamp + Math.round(Math.random() * 600000),
     hash: randHex(),
