@@ -128,6 +128,8 @@ type tokenMetadata struct {
 	decimals       uint8
 	startAllowance *big.Int
 	isGasToken     bool
+	chainID        int
+	addr           common.Address
 }
 
 var (
@@ -400,6 +402,7 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 			}
 			rtoken := &tokenMetadata{
 				isGasToken: tokenName == nativeToken,
+				chainID:    chainID,
 			}
 
 			var token common.Address
@@ -409,6 +412,7 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 				token = common.HexToAddress(tokenCfg.Address)
 			}
 			i.tokens[chainID][token] = rtoken
+			rtoken.addr = token
 
 			// requires non-nil pointer
 			rtoken.balance = new(big.Int)
