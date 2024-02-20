@@ -5,18 +5,22 @@ import {InterchainEntry, InterchainEntryLib} from "../../contracts/libs/Intercha
 
 contract InterchainEntryLibHarness {
     function constructLocalEntry(
+        uint256 dbNonce,
         address srcWriter,
-        uint256 writerNonce,
         bytes32 dataHash
     )
         external
         view
         returns (InterchainEntry memory)
     {
-        return InterchainEntryLib.constructLocalEntry(srcWriter, writerNonce, dataHash);
+        return InterchainEntryLib.constructLocalEntry(dbNonce, srcWriter, dataHash);
     }
 
-    function entryId(InterchainEntry memory entry) external pure returns (bytes32) {
-        return InterchainEntryLib.entryId(entry);
+    function entryKey(InterchainEntry memory entry) external pure returns (bytes32) {
+        return InterchainEntryLib.entryKey(entry);
+    }
+
+    function entryValue(InterchainEntry memory entry) external pure returns (bytes32) {
+        return InterchainEntryLib.entryValue(entry);
     }
 }

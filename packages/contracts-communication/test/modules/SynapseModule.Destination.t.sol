@@ -25,8 +25,8 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
 
     InterchainEntry public mockEntry = InterchainEntry({
         srcChainId: SRC_CHAIN_ID,
-        srcWriter: bytes32(uint256(2)),
-        writerNonce: 3,
+        dbNonce: 2,
+        srcWriter: bytes32(uint256(3)),
         dataHash: bytes32(uint256(4))
     });
 

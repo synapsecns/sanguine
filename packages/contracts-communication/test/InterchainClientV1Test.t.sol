@@ -136,7 +136,7 @@ contract InterchainClientV1Test is Test {
             keccak256(abi.encode(srcSender, SRC_CHAIN_ID, dstReceiver, DST_CHAIN_ID, message, nonce, options));
 
         InterchainEntry memory entry =
-            InterchainEntry({srcChainId: SRC_CHAIN_ID, srcWriter: srcSender, writerNonce: 0, dataHash: transactionID});
+            InterchainEntry({srcChainId: SRC_CHAIN_ID, srcWriter: srcSender, dbNonce: 0, dataHash: transactionID});
 
         icModule.mockVerifyEntry(address(icDB), entry);
 
@@ -149,7 +149,7 @@ contract InterchainClientV1Test is Test {
             nonce: nonce,
             options: options,
             transactionId: transactionID,
-            dbWriterNonce: 0
+            dbNonce: 0
         });
         // Skip ahead of optimistic period
         vm.warp(icApp.getOptimisticTimePeriod() + 1 minutes);
