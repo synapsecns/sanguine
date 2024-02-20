@@ -121,6 +121,11 @@ func (l *libP2PManagerImpl) setupHost(ctx context.Context, privKeyWrapper crypto
 		return nil, fmt.Errorf("could not create libp2p host: %w", err)
 	}
 
+	l.pubsub, err = pubsub.NewGossipSub(ctx, l.host)
+	if err != nil {
+		return nil, fmt.Errorf("could not create pubsub: %w", err)
+	}
+
 	return l.host, nil
 }
 
@@ -135,7 +140,6 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	if err != nil {
 		return fmt.Errorf("error starting IPFS with bootstrap peers: %w", err)
 	}
-	l.pubsub, err = pubsub.NewGossipSub(ctx, l.host)
 
 	go l.Discover(ctx, l.host, l.dht, dbTopic)
 
