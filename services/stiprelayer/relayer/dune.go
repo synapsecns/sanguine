@@ -21,15 +21,14 @@ const stipQueryID = 3403369
 
 // ExecuteDuneQuery executes a predefined query on the Dune API and returns the http response.
 func (s *STIPRelayer) ExecuteDuneQuery(parentCtx context.Context) (executionID string, err error) {
-	ctx, span := s.handler.Tracer().Start(parentCtx, "ExecuteDuneQuery", trace.WithAttributes(attribute.String("queryType", queryType)))
+	ctx, span := s.handler.Tracer().Start(parentCtx, "ExecuteDuneQuery")
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
 
 	client := &http.Client{}
-	var queryID string
 	s.handler.ConfigureHTTPClient(client)
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("https://api.dune.com/api/v1/query/%d/execute", queryID), bytes.NewBufferString(`{"performance": "large"}`))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("https://api.dune.com/api/v1/query/%d/execute", stipQueryID), bytes.NewBufferString(`{"performance": "large"}`))
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %w", err)
 	}
