@@ -50,16 +50,16 @@ const Tokens = [
 ]
 
 const formatAmount = (amount) => {
-  let [, left, right] = amount.toString().match(/(\d+)\.?(\d*)/) ?? ['', '', '']
+  const MAX_DECIMALS = 4
+
+  let [, left, right] = amount.toFixed(MAX_DECIMALS).match(/(\d+)\.?(\d*)/) ?? ['', '', '']
 
   for (let i = 3; i < left.length; i += 4)
     left = `${left.slice(0, left.length - i)},${left.slice(-i)}`
 
-  right += '0000'
-
-  return left.length < 4
-    ? left + '.' + right.slice(0, left === '0' ? 4 : 4 - left.length)
-    : left
+  return left + left.length < MAX_DECIMALS
+    ? '.' + right.slice(0, MAX_DECIMALS - left.length + +(left === '0'))
+    : ''
 }
 
 const randHex = () => {
@@ -90,9 +90,4 @@ export const generateTx = () => {
   }
 
   return { origin, destination }
-}
-
-// TODO: Should be removed and entire file moved to non-pages directory since this is helper functions
-export default function Strings() {
-  return <div>Strings</div>
 }
