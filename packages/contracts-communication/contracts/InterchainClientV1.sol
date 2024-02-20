@@ -141,10 +141,9 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         );
         icTx.transactionId = transactionId;
 
-        uint256 dbWriterNonce = IInterchainDB(interchainDB).writeEntryWithVerification{value: verificationFees}(
+        icTx.dbWriterNonce = IInterchainDB(interchainDB).writeEntryWithVerification{value: verificationFees}(
             icTx.dstChainId, icTx.transactionId, srcModules
         );
-        icTx.dbWriterNonce = dbWriterNonce;
         IExecutionService(srcExecutionService).requestExecution({
             dstChainId: dstChainId,
             // TODO: this should be encodedTx.length
