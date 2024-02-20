@@ -4,6 +4,7 @@ import (
 	dbSQL "database/sql"
 	"fmt"
 	"github.com/Flaque/filet"
+	"github.com/ipfs/go-datastore"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/committee/db"
 	"github.com/synapsecns/sanguine/committee/db/connect"
@@ -35,7 +36,31 @@ func NewDBSuite(tb testing.TB) *DBSuite {
 
 func (d *DBSuite) TestDB() {
 	d.RunOnAllDBs(func(testDB db.Service) {
-		// testDB.StoreInterchainTransactionReceived(d.GetTestContext(),
+		ds, err := testDB.GlobalDatastore()
+		d.NoError(err)
+
+		err = ds.Put(d.GetTestContext(), datastore.NewKey("key"), []byte("value"))
+		d.NoError(err)
+
+		value, err := ds.Get(d.GetTestContext(), datastore.NewKey("key"))
+		d.NoError(err)
+		d.Equal([]byte("value"), value)
+
+		var has bool
+		has, err = ds.Has(d.GetTestContext(), datastore.NewKey("key"))
+		d.NoError(err)
+		d.True(has)
+
+		_, err = ds.GetSize(d.GetTestContext(), datastore.NewKey("key"))
+		d.NoError(err)
+
+		err = ds.Delete(d.GetTestContext(), datastore.NewKey("key"))
+		d.NoError(err)
+
+		has, err = ds.Has(d.GetTestContext(), datastore.NewKey("key"))
+		d.NoError(err)
+		d.False(has)
+
 	})
 }
 
@@ -62,9 +87,9 @@ func (d *DBSuite) setupMysqlDB() {
 		return
 	}
 
-	mysql.NamingStrategy = schema.NamingStrategy{
+	mysql.SetNamingStrategy(schema.NamingStrategy{
 		TablePrefix: fmt.Sprintf("committee_%d", d.GetTestID()),
-	}
+	})
 
 	// sets up the conn string to the default database
 	connString := dbcommon.GetTestConnString()

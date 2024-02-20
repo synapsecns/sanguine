@@ -7,6 +7,7 @@ import (
 	sqlds "github.com/ipfs/go-ds-sql"
 	"github.com/ipfs/go-ds-sql/sqlite"
 	"github.com/synapsecns/sanguine/committee/db"
+	"github.com/synapsecns/sanguine/committee/db/mysql/util"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
@@ -68,6 +69,19 @@ func (s Store) makeDatastore(name string) (datastore.Batching, error) {
 		}
 
 		return sqlds.NewDatastore(underlyingDB, sqlite.NewQueries(name)), nil
+	case dbcommon.Mysql.String():
+		name = util.NamingStrategy.TableName(name)
+
+		if _, err := underlyingDB.Exec(fmt.Sprintf(`
+			CREATE TABLE IF NOT EXISTS %s (
+				%s VARCHAR(500) PRIMARY KEY,
+				data BLOB
+			);
+		`, name, "`key`")); err != nil {
+			return nil, fmt.Errorf("could not ensure table exists: %w", err)
+		}
+
+		return sqlds.NewDatastore(underlyingDB, util.NewQueries(name)), nil
 	default:
 		panic("unsupported database")
 	}

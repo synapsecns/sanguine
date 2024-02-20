@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/committee/db/base"
+	"github.com/synapsecns/sanguine/committee/db/mysql/util"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"gorm.io/driver/mysql"
@@ -21,11 +22,13 @@ type Store struct {
 	*base.Store
 }
 
+// SetNamingStrategy sets the naming strategy for the gorm db.
+func SetNamingStrategy(ns schema.NamingStrategy) {
+	util.NamingStrategy = ns
+}
+
 // MaxIdleConns is exported here for testing. Tests execute too slowly with a reconnect each time.
 var MaxIdleConns = 0
-
-// NamingStrategy is used to exported here for testing.
-var NamingStrategy = schema.NamingStrategy{}
 
 // NewMysqlStore creates a new mysql store for a given data store.
 func NewMysqlStore(ctx context.Context, dbURL string, handler metrics.Handler) (*Store, error) {
@@ -34,7 +37,7 @@ func NewMysqlStore(ctx context.Context, dbURL string, handler metrics.Handler) (
 	gdb, err := gorm.Open(mysql.Open(dbURL), &gorm.Config{
 		Logger:               dbcommon.GetGormLogger(logger),
 		FullSaveAssociations: true,
-		NamingStrategy:       NamingStrategy,
+		NamingStrategy:       util.NamingStrategy,
 		NowFunc:              time.Now,
 	})
 
