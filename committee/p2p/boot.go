@@ -128,7 +128,19 @@ func (l *libP2PManagerImpl) setupHost(ctx context.Context, privKeyWrapper crypto
 	ds := ipfs_datastore.MutexWrap(datastore.NewMapDatastore())
 
 	opts := ipfslite.Libp2pOptionsExtra
-	opts = append(opts, libp2p.Ping(true), libp2p.EnableHolePunching())
+	opts = append(opts, libp2p.Ping(true), libp2p.EnableHolePunching(), libp2p.EnableAutoRelayWithPeerSource(func(ctx context.Context, num int) <-chan peer.AddrInfo {
+		relayChan := make(chan peer.AddrInfo)
+		go func() {
+			for _, relay := range l.relays {
+				mp, ok := relay.Peer()
+				if !ok {
+					continue
+				}
+				relayChan <- mp.AddrInfo()
+			}
+		}()
+		return relayChan
+	}))
 	// todo: setup datastore
 	// TODO: add eth connection gater: https://github.com/dTelecom/p2p-realtime-database/blob/main/gater.go
 	l.host, l.dht, err = ipfslite.SetupLibp2p(ctx, privKeyWrapper, nil, []multiaddr.Multiaddr{sourceMultiAddr}, ds, opts...)
