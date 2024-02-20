@@ -44,7 +44,7 @@ type Manager interface {
 	HasSufficientGas(ctx context.Context, origin, dest int) (bool, error)
 	// Rebalance checks whether a given token should be rebalanced, and
 	// executes the rebalance if necessary.
-	Rebalance(ctx context.Context, token common.Address) error
+	Rebalance(ctx context.Context, chainID int, token common.Address) error
 }
 
 type inventoryManagerImpl struct {
@@ -243,8 +243,116 @@ func (i *inventoryManagerImpl) HasSufficientGas(ctx context.Context, origin, des
 }
 
 // Rebalance checks whether a given token should be rebalanced, and executes the rebalance if necessary.
-func (i *inventoryManagerImpl) Rebalance(ctx context.Context, token common.Address) error {
-	// TODO: implement
+// Note that if there are multiple tokens whose balance is below the maintenance balance, only the lowest balance
+// will be rebalanced.
+func (i *inventoryManagerImpl) Rebalance(ctx context.Context, chainID int, token common.Address) error {
+	method, err := i.cfg.GetRebalanceMethod(chainID, token.Hex())
+	if err != nil {
+		return fmt.Errorf("could not get rebalance method: %w", err)
+	}
+	if method == relconfig.RebalanceMethodNone {
+		return nil
+	}
+
+	err = i.refreshBalances(ctx)
+	if err != nil {
+		return fmt.Errorf("could not refresh balances: %w", err)
+	}
+
+	rebalance, err := i.getRebalance(ctx, chainID, token)
+	if err != nil {
+		return fmt.Errorf("could not get rebalance: %w", err)
+	}
+	if rebalance == nil {
+		return nil
+	}
+
+	switch method {
+	case relconfig.RebalanceMethodCCTP:
+		return i.rebalanceCCTP(ctx, rebalance)
+	default:
+		return fmt.Errorf("unknown rebalance method: %s", method)
+	}
+}
+
+// rebalanceData contains metadata for a rebalance action.
+type rebalanceData struct {
+	origin         int
+	dest           int
+	originMetadata *tokenMetadata
+	destMetadata   *tokenMetadata
+	amount         *big.Int
+}
+
+func (i *inventoryManagerImpl) getRebalance(ctx context.Context, chainID int, token common.Address) (rebalance *rebalanceData, err error) {
+	maintenancePct, err := i.cfg.GetMaintenanceBalancePct(chainID, token.Hex())
+	if err != nil {
+		return nil, fmt.Errorf("could not get maintenance pct: %w", err)
+	}
+
+	// get token metadata
+	var rebalanceTokenData *tokenMetadata
+	for address, tokenData := range i.tokens[chainID] {
+		if address == token {
+			rebalanceTokenData = tokenData
+			break
+		}
+	}
+
+	// get total balance for given token across all chains
+	totalBalance := big.NewInt(0)
+	for _, tokenMap := range i.tokens {
+		for _, tokenData := range tokenMap {
+			if tokenData.name == rebalanceTokenData.name {
+				totalBalance.Add(totalBalance, tokenData.balance)
+			}
+		}
+	}
+
+	// check if any balances are below maintenance threshold
+	var minTokenData, maxTokenData *tokenMetadata
+	var rebalanceOrigin, rebalanceDest int
+	var rebalanceOriginTokenAddr common.Address
+	for tokenChainID, tokenMap := range i.tokens {
+		for tokenAddr, tokenData := range tokenMap {
+			if tokenData.name == rebalanceTokenData.name {
+				if minTokenData == nil || minTokenData.balance.Cmp(minTokenData.balance) < 0 {
+					minTokenData = tokenData
+					rebalanceDest = tokenChainID
+				}
+				if maxTokenData == nil || maxTokenData.balance.Cmp(maxTokenData.balance) > 0 {
+					maxTokenData = tokenData
+					rebalanceOrigin = tokenChainID
+					rebalanceOriginTokenAddr = tokenAddr
+				}
+			}
+		}
+	}
+
+	// get the initialPct for the origin chain
+	initialPct, err := i.cfg.GetInitialBalancePct(rebalanceDest, rebalanceOriginTokenAddr.Hex())
+	if err != nil {
+		return nil, fmt.Errorf("could not get initial pct: %w", err)
+	}
+
+	// check if the minimum balance is below the threshold and trigger rebalance
+	maintenanceThresh, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(maintenancePct)).Int(nil)
+	if minTokenData.balance.Cmp(maintenanceThresh) < 0 {
+		initialThresh, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(initialPct)).Int(nil)
+		amount := new(big.Int).Sub(maxTokenData.balance, initialThresh)
+		rebalance = &rebalanceData{
+			origin:         rebalanceOrigin,
+			dest:           rebalanceDest,
+			originMetadata: maxTokenData,
+			destMetadata:   minTokenData,
+			amount:         amount,
+		}
+	}
+	return rebalance, nil
+}
+
+func (i *inventoryManagerImpl) rebalanceCCTP(ctx context.Context, rebalance *rebalanceData) (err error) {
+	// TODO: impl
 	return nil
 }
 
