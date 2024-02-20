@@ -93,6 +93,10 @@ type TokenConfig struct {
 	MinQuoteAmount string `yaml:"min_quote_amount"`
 	// RebalanceMethod is the method to use for rebalancing.
 	RebalanceMethod string `yaml:"rebalance_method"`
+	// MaintenanceBalancePct is the percentage of the total balance under which a rebalance will be triggered.
+	MaintenanceBalancePct float64 `yaml:"maintenance_balance_pct"`
+	// InitialBalancePct is the percentage of the total balance to retain when triggering a rebalance.
+	InitialBalancePct float64 `yaml:"initial_balance_pct"`
 }
 
 // DatabaseConfig represents the configuration for the database.
