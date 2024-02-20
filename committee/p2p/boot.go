@@ -135,6 +135,10 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 
 	l.pubsub, err = pubsub.NewGossipSub(ctx, l.host)
 
+	fmt.Println(l.host.Addrs())
+	fmt.Println("eth address:")
+	fmt.Println(l.address)
+
 	l.ipfs.Bootstrap(peers)
 	for _, p := range peers {
 		l.host.ConnManager().TagPeer(p.ID, "keep", 100)
