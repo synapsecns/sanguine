@@ -3,11 +3,12 @@ package base
 import (
 	"context"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/interchainclient"
 	"github.com/synapsecns/sanguine/sin-executor/db"
 	"gorm.io/gorm/clause"
-	"math/big"
 )
 
 type InterchainTransaction struct {
@@ -47,7 +48,7 @@ func (s InterchainTransaction) ToTransactionSent() db.TransactionSent {
 			Nonce:         s.Nonce,
 			Options:       common.Hex2Bytes(s.Options),
 			DstChainId:    big.NewInt(int64(s.DstChainID)),
-			DbWriterNonce: big.NewInt(int64(s.DBWriterNonce)),
+			DbNonce:       big.NewInt(int64(s.DBWriterNonce)),
 		},
 	}
 }
@@ -64,7 +65,8 @@ func fromInterchainTX(interchainTx interchainclient.InterchainClientV1Interchain
 		Message:       common.Bytes2Hex(interchainTx.Message),
 		Status:        db.Seen,
 		Nonce:         interchainTx.Nonce,
-		DBWriterNonce: interchainTx.DbWriterNonce.Uint64(),
+		// TODO: This table type needs to be adjusted with current InterchainTransaction Solidity type
+		DBWriterNonce: interchainTx.DbNonce.Uint64(),
 	}
 }
 
