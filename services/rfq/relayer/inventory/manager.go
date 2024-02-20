@@ -198,26 +198,43 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 			if address != chain.EthAddress && token.startAllowance.Cmp(big.NewInt(0)) == 0 {
 				chainID := chainID // capture func literal
 				address := address // capture func literal
-				// init an approval in submitter. Note: in the case where submitter hasn't finished from last boot, this will double submit approvals unfortanutely
-				_, err = i.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(chainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-					erc20, err := ierc20.NewIERC20(address, backendClient)
-					if err != nil {
-						return nil, fmt.Errorf("could not get erc20: %w", err)
-					}
 
+				erc20, err := ierc20.NewIERC20(address, backendClient)
+				if err != nil {
+					return fmt.Errorf("could not get erc20: %w", err)
+				}
+
+				// init an approval for RFQ bridge in submitter. Note: in the case where submitter hasn't finished from last boot, this will double submit approvals unfortanutely
+				_, err = i.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(chainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 					rfqAddr, err := i.cfg.GetRFQAddress(chainID)
 					if err != nil {
 						return nil, fmt.Errorf("could not get rfq address: %w", err)
 					}
-					approveAmount, err := erc20.Approve(transactor, common.HexToAddress(rfqAddr), abi.MaxInt256)
+					tx, err = erc20.Approve(transactor, common.HexToAddress(rfqAddr), abi.MaxInt256)
 					if err != nil {
-						return nil, fmt.Errorf("could not approve: %w", err)
+						return nil, fmt.Errorf("could not approve rfq: %w", err)
 					}
-
-					return approveAmount, nil
+					return tx, nil
 				})
 				if err != nil {
-					return fmt.Errorf("could not submit approval: %w", err)
+					return fmt.Errorf("could not submit RFQ approval: %w", err)
+				}
+
+				// approve CCTP bridge, if configured
+				_, err = i.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(chainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+					cctpAddr, err := i.cfg.GetCCTPAddress(chainID)
+					if err != nil {
+						return nil, fmt.Errorf("could not get cctp address: %w", err)
+					}
+					tx, err = erc20.Approve(transactor, common.HexToAddress(cctpAddr), abi.MaxInt256)
+					if err != nil {
+						return nil, fmt.Errorf("could not approve cctp: %w", err)
+					}
+
+					return tx, nil
+				})
+				if err != nil {
+					return fmt.Errorf("could not submit CCTP approval: %w", err)
 				}
 			}
 		}
