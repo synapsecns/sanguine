@@ -311,12 +311,12 @@ type discoveryNotifee struct {
 	PeerChan chan peer.AddrInfo
 }
 
-// interface to be called when new  peer is found
+// interface to be called when new  peer is found.
 func (n *discoveryNotifee) HandlePeerFound(pi peer.AddrInfo) {
 	n.PeerChan <- pi
 }
 
-// Initialize the MDNS service
+// Initialize the MDNS service.
 func (l *libP2PManagerImpl) initMDNS(ctx context.Context, peerhost host.Host, rendezvous string) chan peer.AddrInfo {
 	// register with service so that we get notified about peer discovery
 	n := &discoveryNotifee{}

@@ -80,7 +80,11 @@ func (n *NodeSuite) SetupTest() {
 	n.setValidators(interchainValidators, n.destChain, destInfo, n.destModule)
 
 	for _, on := range n.nodes {
-		n.NoError(on.Start(n.GetTestContext()))
+		on := on
+		go func() {
+			err := on.Start(n.GetTestContext())
+			n.NoError(err)
+		}()
 	}
 }
 

@@ -285,14 +285,14 @@ func (n *Node) runDBSelector(ctx context.Context) error {
 }
 
 func (n *Node) submit(ctx context.Context, request db.SignRequest) error {
-	contract := n.interchainContracts[int(request.DestChainId.Int64())]
+	contract := n.interchainContracts[int(request.DestChainID.Int64())]
 	threshold, err := contract.RequiredThreshold(&bind.CallOpts{Context: ctx})
 	if err != nil {
 		return fmt.Errorf("could not get threshold: %w", err)
 	}
 
 	var signatures [][]byte
-	for _, validator := range n.interchainValidators[int(request.DestChainId.Int64())] {
+	for _, validator := range n.interchainValidators[int(request.DestChainID.Int64())] {
 		signature, err := n.peerManager.GetSignature(ctx, validator, int(request.InterchainEntry.SrcChainId.Int64()), int(request.InterchainEntry.WriterNonce.Uint64()))
 		if err != nil {
 			logger.Errorf("could not get signature for peer %s message: %w", validator, err)
@@ -304,7 +304,7 @@ func (n *Node) submit(ctx context.Context, request db.SignRequest) error {
 		return fmt.Errorf("not enough signatures")
 	}
 
-	nonce, err := n.submitter.SubmitTransaction(ctx, request.DestChainId, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+	nonce, err := n.submitter.SubmitTransaction(ctx, request.DestChainID, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		// should be request.InterchainEntry
 		return contract.VerifyEntry(transactor, request.InterchainEntry, signatures)
 	})
@@ -313,7 +313,7 @@ func (n *Node) submit(ctx context.Context, request db.SignRequest) error {
 		for {
 			time.Sleep(time.Second * 5)
 
-			yo, err := n.submitter.GetSubmissionStatus(ctx, request.DestChainId, nonce)
+			yo, err := n.submitter.GetSubmissionStatus(ctx, request.DestChainID, nonce)
 			if err != nil {
 				logger.Errorf("could not get submission status: %w", err)
 			}

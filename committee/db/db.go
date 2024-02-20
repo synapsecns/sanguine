@@ -89,10 +89,11 @@ func (s SynapseRequestStatus) Value() (driver.Value, error) {
 
 var _ dbcommon.Enum = (*SynapseRequestStatus)(nil)
 
+// SignRequest is the request to sign a transaction.
 type SignRequest struct {
 	synapsemodule.InterchainEntry
-	// DestChainId is the chain id the transaction hash will be sent on
-	DestChainId *big.Int
+	// DestChainID is the chain id the transaction hash will be sent on
+	DestChainID *big.Int
 	// Status is the status of the transaction
 	Status SynapseRequestStatus
 	// SignedEntryHash is the hash of the signed entry

@@ -44,7 +44,7 @@ func (s *SignRequest) ToServiceSignRequest() db.SignRequest {
 			// TODO: store data hash.
 			DataHash: common.HexToHash(s.DataHash),
 		},
-		DestChainId:     big.NewInt(int64(s.DestinationChainID)),
+		DestChainID:     big.NewInt(int64(s.DestinationChainID)),
 		Status:          s.Status,
 		SignedEntryHash: common.HexToHash(s.EntryHash),
 	}

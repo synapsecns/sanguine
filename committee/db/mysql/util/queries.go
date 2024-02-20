@@ -2,7 +2,7 @@ package util
 
 import (
 	"fmt"
-	// we don't import a specific driver to let the user choose
+	// we don't import a specific driver to let the user choose.
 )
 
 // Options are the sqlite datastore options, reexported here for convenience.
@@ -31,7 +31,7 @@ type Queries struct {
 	getSizeQuery string
 }
 
-// NewQueries creates a new sqlite set of queries for the passed table
+// NewQueries creates a new sqlite set of queries for the passed table.
 func NewQueries(tbl string) Queries {
 	return Queries{
 		deleteQuery:  fmt.Sprintf("DELETE FROM %s WHERE `key` = ?", tbl),

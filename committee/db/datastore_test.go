@@ -184,7 +184,6 @@ func (d *DBSuite) TestDelete() {
 		if has {
 			d.T().Error("Key should not be found")
 		}
-
 	})
 }
 
@@ -236,7 +235,7 @@ func (d *DBSuite) TestBatching() {
 			}
 		}
 
-		//Test delete
+		// Test delete
 
 		b, err = testStore.Batch(d.GetTestContext())
 		if err != nil {

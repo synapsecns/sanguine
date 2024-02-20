@@ -8,6 +8,8 @@ import (
 )
 
 // SynapseModuleRef is a reference to a SynapseModule.
+//
+// nolint: golint
 type SynapseModuleRef struct {
 	*SynapseModule
 	address common.Address
