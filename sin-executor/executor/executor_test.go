@@ -27,16 +27,9 @@ func (i *InterchainSuite) TestE2E() {
 	i.Require().NoError(err)
 
 	originModule := i.deployManager.Get(i.GetTestContext(), i.originChain, testutil.InterchainModuleMock)
-	// TODO: Need to add ExecutionServiceMock.sol to deploy manager, and pass it in here
-	// function interchainSend(
-	//     uint256 dstChainId,
-	//     bytes32 receiver,
-	//     address srcExecutionService,
-	//     bytes calldata message,
-	//     bytes calldata options,
-	//     address[] calldata srcModules
-	// )
-	tx, err := i.originModule.InterchainSend(auth.TransactOpts, receiver, i.destChain.GetBigChainID(), []byte("hello"), encodedOptions, []common.Address{originModule.Address()})
+	executionMock := i.deployManager.Get(i.GetTestContext(), i.originChain, testutil.ExecutionServiceMock)
+
+	tx, err := i.originModule.InterchainSend(auth.TransactOpts, i.destChain.GetBigChainID(), receiver, executionMock.Address(), []byte("hello"), encodedOptions, []common.Address{originModule.Address()})
 	i.Require().NoError(err)
 	i.originChain.WaitForConfirmation(i.GetTestContext(), tx)
 
@@ -57,10 +50,10 @@ func (i *InterchainSuite) TestE2E() {
 			continue
 		}
 
-		_, originDB := i.deployManager.GetInterchainDB(i.GetTestContext(), i.originChain)
+		_, destDB := i.deployManager.GetInterchainDB(i.GetTestContext(), i.destChain)
 
 		destContext := i.destChain.GetTxContext(i.GetTestContext(), nil)
-		mockTX, err := destModule.MockVerifyEntry(destContext.TransactOpts, originDB.Address(), interchainmodulemock.InterchainEntry{
+		mockTX, err := destModule.MockVerifyEntry(destContext.TransactOpts, destDB.Address(), interchainmodulemock.InterchainEntry{
 			SrcChainId: written.SrcChainId,
 			DbNonce:    written.DbNonce,
 			SrcWriter:  written.SrcWriter,

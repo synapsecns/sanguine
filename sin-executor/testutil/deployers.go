@@ -11,6 +11,8 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/manager"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/interchainclient"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/interchaindb"
+	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/executionfeesmock"
+	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/executionservicemock"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainappmock"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainmodulemock"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/optionslibexport"
@@ -26,7 +28,7 @@ type DeployManager struct {
 func NewDeployManager(t *testing.T) *DeployManager {
 	t.Helper()
 
-	return &DeployManager{manager.NewDeployerManager(t, interchainClientDeployer, interchainDBDeployer, interchainModuleMockDeployer, interchainAppMockDeployer, optionsLibMock)}
+	return &DeployManager{manager.NewDeployerManager(t, interchainClientDeployer, interchainDBDeployer, interchainModuleMockDeployer, interchainAppMockDeployer, optionsLibMock, executionServiceMock, executionFeesMock)}
 }
 
 var (
@@ -51,10 +53,18 @@ var (
 			}
 			helpers.Backend().WaitForConfirmation(ctx, idbSet)
 
+			// set the execution service
+			em := helpers.Registry().Get(ctx, ExecutionFeesMock)
+			emSet, err := deployIface.SetExecutionFees(transactor.TransactOpts, em.Address())
+			if err != nil {
+				return common.Address{}, nil, nil, fmt.Errorf("could not set execution fees: %w", err)
+			}
+			helpers.Backend().WaitForConfirmation(ctx, emSet)
+
 			return deployAddress, deployTx, deployIface, nil
 		}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 			return interchainclient.NewInterchainClientRef(address, backend)
-		}, []contracts.ContractType{InterchainDB})
+		}, []contracts.ContractType{InterchainDB, ExecutionFeesMock})
 
 	interchainDBDeployer = deployer.NewFunctionalDeployer(InterchainDB,
 		func(ctx context.Context, helpers deployer.IFunctionalDeployer, transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
@@ -98,5 +108,17 @@ var (
 		return optionslibexport.DeployOptionsLibMocks(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return optionslibexport.NewOptionsLibExportRef(address, backend)
+	}, []contracts.ContractType{})
+
+	executionServiceMock = deployer.NewFunctionalDeployer(ExecutionServiceMock, func(ctx context.Context, helpers deployer.IFunctionalDeployer, transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return executionservicemock.DeployExecutionServiceMock(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return executionservicemock.NewExecutionserviceMockRef(address, backend)
+	}, []contracts.ContractType{})
+
+	executionFeesMock = deployer.NewFunctionalDeployer(ExecutionFeesMock, func(ctx context.Context, helpers deployer.IFunctionalDeployer, transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return executionfeesmock.DeployExecutionFeesMock(transactOps, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return executionfeesmock.NewExecutionfeesMockRef(address, backend)
 	}, []contracts.ContractType{})
 )

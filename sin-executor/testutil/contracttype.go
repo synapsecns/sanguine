@@ -6,6 +6,8 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/interchainclient"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/interchaindb"
+	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/executionfeesmock"
+	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/executionservicemock"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainappmock"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainmodulemock"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/optionslibexport"
@@ -56,6 +58,10 @@ const (
 	InterchainAppMock // InterchainAppMock
 	// OptionsLib is the options library.
 	OptionsLib // OptionsLib
+	// ExecutionServiceMock is the execution service mock.
+	ExecutionServiceMock // ExecutionServiceMock
+	// ExecutionFeesMock is the execution fees mock.
+	ExecutionFeesMock // ExecutionFeesMock
 )
 
 // ID gets the contract type as an id.
@@ -92,6 +98,10 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return interchainappmock.Contracts["solidity/InterchainAppMock.sol:InterchainAppMock"]
 	case OptionsLib:
 		return optionslibexport.Contracts["solidity/OptionsLibExport.sol:OptionsLibMocks"]
+	case ExecutionServiceMock:
+		return executionservicemock.Contracts["solidity/ExecutionServiceMock.sol:ExecutionServiceMock"]
+	case ExecutionFeesMock:
+		return executionfeesmock.Contracts["solidity/ExecutionfeesMock.sol:ExecutionFeesMock"]
 	}
 	return nil
 }
