@@ -100,34 +100,10 @@ func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 }
 
 func (s *QuoterSuite) TestShouldProcess() {
-	// Set fee to breakeven; i.e. destAmount = originAmount - fee.
+	// Set different numbers of decimals for origin / dest tokens; should never process this.
 	balance := big.NewInt(1000_000_000) // 1000 USDC
 	fee := big.NewInt(100_050_000)      // 100.05 USDC
 	quote := reldb.QuoteRequest{
-		BlockNumber:         1,
-		OriginTokenDecimals: 6,
-		DestTokenDecimals:   6,
-		Transaction: fastbridge.IFastBridgeBridgeTransaction{
-			OriginChainId: s.origin,
-			DestChainId:   s.destination,
-			OriginToken:   common.HexToAddress("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"),
-			DestToken:     common.HexToAddress("0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"),
-			OriginAmount:  balance,
-			DestAmount:    new(big.Int).Sub(balance, fee),
-		},
-	}
-	s.True(s.manager.ShouldProcess(s.GetTestContext(), quote))
-
-	// Set fee to greater than breakeven; i.e. destAmount > originAmount - fee.
-	quote.Transaction.DestAmount = new(big.Int).Sub(balance, new(big.Int).Mul(fee, big.NewInt(2)))
-	s.True(s.manager.ShouldProcess(s.GetTestContext(), quote))
-
-	// Set fee to less than breakeven; i.e. destAmount < originAmount - fee.
-	quote.Transaction.DestAmount = balance
-	s.False(s.manager.ShouldProcess(s.GetTestContext(), quote))
-
-	// Set different numbers of decimals for origin / dest tokens; should never process this.
-	quote = reldb.QuoteRequest{
 		BlockNumber:         1,
 		OriginTokenDecimals: 6,
 		DestTokenDecimals:   18,
@@ -145,6 +121,34 @@ func (s *QuoterSuite) TestShouldProcess() {
 	// Toggle insufficient gas; should not process.
 	s.setGasSufficiency(false)
 	s.False(s.manager.ShouldProcess(s.GetTestContext(), quote))
+}
+
+func (s *QuoterSuite) TestIsProfitable() {
+	// Set fee to breakeven; i.e. destAmount = originAmount - fee.
+	balance := big.NewInt(1000_000_000) // 1000 USDC
+	fee := big.NewInt(100_050_000)      // 100.05 USDC
+	quote := reldb.QuoteRequest{
+		BlockNumber:         1,
+		OriginTokenDecimals: 6,
+		DestTokenDecimals:   6,
+		Transaction: fastbridge.IFastBridgeBridgeTransaction{
+			OriginChainId: s.origin,
+			DestChainId:   s.destination,
+			OriginToken:   common.HexToAddress("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"),
+			DestToken:     common.HexToAddress("0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"),
+			OriginAmount:  balance,
+			DestAmount:    new(big.Int).Sub(balance, fee),
+		},
+	}
+	s.True(s.manager.IsProfitable(s.GetTestContext(), quote))
+
+	// Set fee to greater than breakeven; i.e. destAmount > originAmount - fee.
+	quote.Transaction.DestAmount = new(big.Int).Sub(balance, new(big.Int).Mul(fee, big.NewInt(2)))
+	s.True(s.manager.IsProfitable(s.GetTestContext(), quote))
+
+	// Set fee to less than breakeven; i.e. destAmount < originAmount - fee.
+	quote.Transaction.DestAmount = balance
+	s.False(s.manager.IsProfitable(s.GetTestContext(), quote))
 }
 
 func (s *QuoterSuite) TestGetQuoteAmount() {

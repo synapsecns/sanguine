@@ -53,6 +53,7 @@ type Config struct {
 	StipAPIPort      string                 `yaml:"stip_api_port"`
 	ARBMaxTransfer   int64                  `yaml:"ARB_max_transfer"`
 	ArbCapPerAddress int64                  `yaml:"arb_cap_per_address"`
+	ARBMinTransfer   float64                `yaml:"ARB_min_transfer"`
 }
 
 const defaultArbCapPerAddress = 2000

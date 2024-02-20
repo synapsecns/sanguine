@@ -7,7 +7,7 @@ import { useBridgeState } from '@/slices/bridge/hooks'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { getUnderlyingBridgeTokens } from '@/utils/getUnderlyingBridgeTokens'
 import { useAppSelector } from '@/store/hooks'
-import { findTokenByAddressAndChain } from '../findTokenByAddressAndChainId'
+import { findTokenByAddressAndChain } from '@/utils/findTokenByAddressAndChainId'
 
 export enum BridgeModules {
   SYNAPSE_RFQ = 'SynapseRFQ',
@@ -17,61 +17,7 @@ export enum BridgeModules {
 
 export const ELIGIBILITY_DEFAULT_TEXT = 'Fee rebate until March 29th'
 
-// const TO_FROM_FEES_AND_REBATE_BPS = {
-//   42161: {
-//     anyFromChain: {
-//       SynapseBridge: {
-//         nETH: { fee: 4, rebate: 6 },
-//         WETH: { fee: 4, rebate: 6 },
-//         nUSD: { fee: 4, rebate: 6 },
-//         GMX: { fee: 5, rebate: 6 },
-//       },
-//       SynapseCCTP: {
-//         USDC: { fee: 4, rebate: 5 },
-//       },
-//       SynapseRFQ: {
-//         USDC: { fee: 4, rebate: 5 },
-//       },
-//     },
-//   },
-//   1: {
-//     42161: {
-//       SynapseBridge: {
-//         nETH: { fee: 10, rebate: 12 },
-//         WETH: { fee: 4, rebate: 6 },
-//         nUSD: { fee: 12, rebate: 14 },
-//       },
-//       SynapseCCTP: {
-//         USDC: { fee: 4, rebate: 5 },
-//       },
-//       SynapseRFQ: {
-//         USDC: { fee: 4, rebate: 5 },
-//       },
-//     },
-//   },
-//   43114: {
-//     42161: {
-//       SynapseBridge: {
-//         GMX: { fee: 5, rebate: 6 },
-//       },
-//       SynapseCCTP: {},
-//       SynapseRFQ: {},
-//     },
-//   },
-// }
-
-/*
-const ARB = {
-  name: 'Arbitrum',
-  addresses: {
-    [ARBITRUM.id]: '0x912CE59144191C1204E64559FE8253a0e49E6548',
-  },
-  decimals: {
-    [ARBITRUM.id]: 6,
-  },
-  routeSymbol: 'ARB',
-}
-*/
+const MINIMUM_ARB_REBATE = 0.1
 
 export const useStipEligibility = () => {
   const { toFromFeeAndRebateBps } = useAppSelector(
@@ -268,6 +214,10 @@ const calculateRebate = (
   const totalValueInDollars = normalizedTokenAmount * tokenPriceInDollars
 
   const rebate = (totalValueInDollars * (rebateBps / 10000)) / arbPrice
+
+  if (rebate < MINIMUM_ARB_REBATE) {
+    return null
+  }
 
   return rebate
 }

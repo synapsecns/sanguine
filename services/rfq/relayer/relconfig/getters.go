@@ -440,3 +440,14 @@ func (c Config) GetMinQuoteAmount(chainID int, addr common.Address) *big.Int {
 	quoteAmountScaled, _ := new(big.Float).Mul(quoteAmountFlt, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
 	return quoteAmountScaled
 }
+
+const defaultDBSelectorIntervalSeconds = 1
+
+// GetDBSelectorInterval returns the interval for the DB selector.
+func (c Config) GetDBSelectorInterval() time.Duration {
+	interval := c.DBSelectorIntervalSeconds
+	if interval <= 0 {
+		return defaultDBSelectorIntervalSeconds
+	}
+	return time.Duration(interval) * time.Second
+}

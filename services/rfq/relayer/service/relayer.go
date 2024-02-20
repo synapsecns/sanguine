@@ -203,15 +203,13 @@ func (r *Relayer) Start(ctx context.Context) error {
 	return nil
 }
 
-// TODO: make this configurable.
-const dbSelectorInterval = 1
-
 func (r *Relayer) runDBSelector(ctx context.Context) error {
+	interval := r.cfg.GetDBSelectorInterval()
 	for {
 		select {
 		case <-ctx.Done():
 			return fmt.Errorf("could not run db selector: %w", ctx.Err())
-		case <-time.After(dbSelectorInterval * time.Second):
+		case <-time.After(interval):
 			// TODO: add context w/ timeout
 			// TODO: add trigger
 			// TODO: should not fail on error

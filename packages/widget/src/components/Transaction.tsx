@@ -19,6 +19,7 @@ import { DropdownMenu } from '@/components/ui/DropdownMenu'
 import { MenuItem } from '@/components/ui/MenuItem'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { TransactionSupport } from './TransactionSupport'
+import { AnimatedProgressBar } from './AnimatedProgressBar'
 
 export const Transaction = ({
   connectedAddress,
@@ -118,11 +119,11 @@ export const Transaction = ({
     <div
       data-test-id="transaction"
       className={`
-        flex flex-col
+        flex flex-col relative
         gap-1 justify-end items-center pl-2.5 pr-1.5 py-1
         border border-solid border-[--synapse-border] rounded-md
       `}
-      style={{ background: 'var(--synapse-surface' }}
+      style={{ background: 'var(--synapse-surface)' }}
     >
       <div className="flex flex-wrap-reverse items-center justify-between w-full">
         <TransactionBridgeDetail
@@ -165,6 +166,14 @@ export const Transaction = ({
         </div>
       </div>
       {showTransactionSupport && <TransactionSupport />}
+      <div className="absolute bottom-0 w-full px-1 text-[0px]">
+        <AnimatedProgressBar
+          id={originTxHash}
+          startTime={timestamp}
+          estDuration={estimatedTime * 2} // 2x buffer
+          isComplete={isTxFinalized}
+        />
+      </div>
     </div>
   )
 }
@@ -178,9 +187,11 @@ const TransactionBridgeDetail = ({
   originTokenSymbol: string
   destinationChain: Chain
 }) => {
+  const showAmount = parseFloat(tokenAmount)?.toFixed(6)
+
   return (
     <div className="flex">
-      {tokenAmount} {originTokenSymbol} to {destinationChain.name}
+      {showAmount} {originTokenSymbol} to {destinationChain.name}
     </div>
   )
 }

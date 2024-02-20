@@ -382,7 +382,7 @@ export const Widget = ({
     >
       <div
         className={`grid gap-2 text-[--synapse-text] w-full ${containerStyle}`}
-        style={{ background: 'var(--synapse-root' }}
+        style={{ background: 'var(--synapse-root)' }}
       >
         <Transactions connectedAddress={connectedAddress} />
         <section

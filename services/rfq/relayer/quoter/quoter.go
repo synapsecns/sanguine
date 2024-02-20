@@ -41,6 +41,8 @@ type Quoter interface {
 	// The first comparison is does bridge transaction OriginChainID+TokenAddr match with a quote + DestChainID+DestTokenAddr, then we look to see if we have enough amount to relay it + if the price fits our bounds (based on that the Relayer is relaying the destination token for the origin)
 	// validateQuote(BridgeEvent)
 	ShouldProcess(ctx context.Context, quote reldb.QuoteRequest) (bool, error)
+	// IsProfitable determines if a quote is profitable, i.e. we will not lose money on it, net of fees.
+	IsProfitable(ctx context.Context, quote reldb.QuoteRequest) (bool, error)
 }
 
 // Manager submits quotes to the RFQ API.
@@ -159,23 +161,13 @@ func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequ
 		return false, nil
 	}
 
-	// then check if we'll make money on it
-	isProfitable, err := m.isProfitableQuote(ctx, quote)
-	if err != nil {
-		span.RecordError(fmt.Errorf("error checking if quote is profitable: %w", err))
-		return false, err
-	}
-	if !isProfitable {
-		return false, nil
-	}
-
 	// all checks have passed
 	return true, nil
 }
 
-// isProfitableQuote determines if a quote is profitable, i.e. we will not lose money on it, net of fees.
-func (m *Manager) isProfitableQuote(parentCtx context.Context, quote reldb.QuoteRequest) (isProfitable bool, err error) {
-	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "isProfitableQuote")
+// IsProfitable determines if a quote is profitable, i.e. we will not lose money on it, net of fees.
+func (m *Manager) IsProfitable(parentCtx context.Context, quote reldb.QuoteRequest) (isProfitable bool, err error) {
+	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "IsProfitable")
 
 	defer func() {
 		span.AddEvent("result", trace.WithAttributes(attribute.Bool("result", isProfitable)))
