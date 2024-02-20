@@ -10,12 +10,17 @@ import {TypeCasts} from "../contracts/libs/TypeCasts.sol";
 
 import {InterchainClientV1Harness} from "./harnesses/InterchainClientV1Harness.sol";
 
+import {ExecutionFeesMock} from "./mocks/ExecutionFeesMock.sol";
+import {ExecutionServiceMock} from "./mocks/ExecutionServiceMock.sol";
 import {InterchainAppMock} from "./mocks/InterchainAppMock.sol";
 import {InterchainModuleMock} from "./mocks/InterchainModuleMock.sol";
 
 import {Test} from "forge-std/Test.sol";
 
 contract InterchainClientV1Test is Test {
+    ExecutionFeesMock executionFees;
+    ExecutionServiceMock executionService;
+
     InterchainClientV1Harness icClient;
     InterchainDB icDB;
     InterchainAppMock icApp;
@@ -31,9 +36,12 @@ contract InterchainClientV1Test is Test {
 
     function setUp() public {
         vm.startPrank(contractOwner);
+        executionFees = new ExecutionFeesMock();
+        executionService = new ExecutionServiceMock();
         icClient = new InterchainClientV1Harness();
         icDB = new InterchainDB();
         icClient.setInterchainDB(address(icDB));
+        icClient.setExecutionFees(address(executionFees));
 
         icModule = new InterchainModuleMock();
         icApp = new InterchainAppMock();
@@ -110,7 +118,9 @@ contract InterchainClientV1Test is Test {
         bytes32 transactionID = keccak256(
             abi.encode(TypeCasts.addressToBytes32(msg.sender), block.chainid, receiver, DST_CHAIN_ID, message, nonce)
         );
-        icClient.interchainSend{value: totalModuleFees}(receiver, DST_CHAIN_ID, message, options, srcModules);
+        icClient.interchainSend{value: totalModuleFees}(
+            DST_CHAIN_ID, receiver, address(executionService), message, options, srcModules
+        );
         // TODO: should check the transaction ID?
         transactionID;
     }
