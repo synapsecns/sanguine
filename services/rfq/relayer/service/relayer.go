@@ -84,7 +84,9 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		return nil, fmt.Errorf("could not get signer: %w", err)
 	}
 
-	im, err := inventory.NewInventoryManager(ctx, omniClient, metricHandler, cfg, sg.Address(), store)
+	sm := submitter.NewTransactionSubmitter(metricHandler, sg, omniClient, store.SubmitterDB(), &cfg.SubmitterConfig)
+
+	im, err := inventory.NewInventoryManager(ctx, omniClient, metricHandler, cfg, sg.Address(), sm, store)
 	if err != nil {
 		return nil, fmt.Errorf("could not add imanager: %w", err)
 	}
@@ -96,8 +98,6 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 	if err != nil {
 		return nil, fmt.Errorf("could not get quoter")
 	}
-
-	sm := submitter.NewTransactionSubmitter(metricHandler, sg, omniClient, store.SubmitterDB(), &cfg.SubmitterConfig)
 
 	apiServer, err := relapi.NewRelayerAPI(ctx, cfg, metricHandler, omniClient, store, sm)
 	if err != nil {
@@ -133,7 +133,7 @@ const defaultPostInterval = 1
 // 4. Start the submitter: This will submit any transactions that need to be submitted.
 // nolint: cyclop
 func (r *Relayer) Start(ctx context.Context) error {
-	err := r.inventory.ApproveAllTokens(ctx, r.submitter)
+	err := r.inventory.ApproveAllTokens(ctx)
 	if err != nil {
 		return fmt.Errorf("could not approve all tokens: %w", err)
 	}

@@ -39,7 +39,7 @@ type Manager interface {
 	// GetCommittableBalances gets the total balances committable for all tracked tokens.
 	GetCommittableBalances(ctx context.Context, options ...BalanceFetchArgOption) (map[int]map[common.Address]*big.Int, error)
 	// ApproveAllTokens approves all tokens for the relayer address.
-	ApproveAllTokens(ctx context.Context, submitter submitter.TransactionSubmitter) error
+	ApproveAllTokens(ctx context.Context) error
 	// HasSufficientGas checks if there is sufficient gas for a given route.
 	HasSufficientGas(ctx context.Context, origin, dest int) (bool, error)
 	// Rebalance checks whether a given token should be rebalanced, and
@@ -62,7 +62,10 @@ type inventoryManagerImpl struct {
 	relayerAddress common.Address
 	// chainClient is an omnirpc client
 	chainClient submitter.ClientFetcher
-	db          reldb.Service
+	// txSubmitter is the transaction submitter
+	txSubmitter submitter.TransactionSubmitter
+	// db is the database
+	db reldb.Service
 }
 
 // GetCommittableBalance gets the committable balances.
@@ -138,12 +141,14 @@ var (
 const defaultPollPeriod = 5
 
 // NewInventoryManager creates a list of tokens we should use.
-func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetcher, handler metrics.Handler, cfg relconfig.Config, relayer common.Address, db reldb.Service) (Manager, error) {
+// TODO: too many args here
+func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetcher, handler metrics.Handler, cfg relconfig.Config, relayer common.Address, txSubmitter submitter.TransactionSubmitter, db reldb.Service) (Manager, error) {
 	i := inventoryManagerImpl{
 		relayerAddress: relayer,
 		handler:        handler,
 		cfg:            cfg,
 		chainClient:    clientFetcher,
+		txSubmitter:    txSubmitter,
 		db:             db,
 	}
 
@@ -176,7 +181,7 @@ func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetc
 const maxBatchSize = 10
 
 // ApproveAllTokens approves all checks if allowance is set and if not approves.
-func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context, submitter submitter.TransactionSubmitter) error {
+func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 	i.mux.RLock()
 	defer i.mux.RUnlock()
 
@@ -192,7 +197,7 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context, submitter s
 				chainID := chainID // capture func literal
 				address := address // capture func literal
 				// init an approval in submitter. Note: in the case where submitter hasn't finished from last boot, this will double submit approvals unfortanutely
-				_, err = submitter.SubmitTransaction(ctx, big.NewInt(int64(chainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+				_, err = i.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(chainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 					erc20, err := ierc20.NewIERC20(address, backendClient)
 					if err != nil {
 						return nil, fmt.Errorf("could not get erc20: %w", err)
@@ -235,6 +240,12 @@ func (i *inventoryManagerImpl) HasSufficientGas(ctx context.Context, origin, des
 
 	sufficient = gasOrigin.Cmp(gasThresh) >= 0 && gasDest.Cmp(gasThresh) >= 0
 	return sufficient, nil
+}
+
+// Rebalance checks whether a given token should be rebalanced, and executes the rebalance if necessary.
+func (i *inventoryManagerImpl) Rebalance(ctx context.Context, token common.Address) error {
+	// TODO: implement
+	return nil
 }
 
 // initializes tokens converts the configuration into a data structure we can use to determine inventory
