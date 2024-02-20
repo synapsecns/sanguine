@@ -64,6 +64,7 @@ type libP2PManagerImpl struct {
 	address common.Address
 	port    int
 	life    *lifecycle.Manager
+	relays  []*p2p.MutablePeer
 }
 
 const dbTopic = "crdt_db"
@@ -80,17 +81,17 @@ func NewLibP2PManager(ctx context.Context, handler metrics.Handler, auth signer.
 	l := &libP2PManagerImpl{}
 	l.life = new(lifecycle.Manager)
 
-	relays, err := p2p.NewRelays(ctx, []string{"https://0.relay.obol.tech/"}, auth.Address().String())
+	var err error
+	l.relays, err = p2p.NewRelays(ctx, []string{"https://0.relay.obol.tech/"}, auth.Address().String())
 	if err != nil {
 		return nil, fmt.Errorf("could not create relays: %w", err)
 	}
-	_ = relays
 	_, err = l.setupHost(ctx, auth.PrivKey()) // call createHost function
 	if err != nil {
 		return nil, err
 	}
 
-	for _, relay := range relays {
+	for _, relay := range l.relays {
 		l.life.RegisterStart(lifecycle.AsyncAppCtx, lifecycle.StartRelay, p2p.NewRelayReserver(l.host, relay))
 	}
 
@@ -143,6 +144,15 @@ func (l *libP2PManagerImpl) setupHost(ctx context.Context, privKeyWrapper crypto
 	return l.host, nil
 }
 
+func peersToPeerIds(peers []peer.AddrInfo) []peer.ID {
+	var ids []peer.ID
+	for _, p := range peers {
+		ids = append(ids, p.ID)
+	}
+	return ids
+
+}
+
 func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) error {
 	go func() {
 		err := l.life.Run(ctx)
@@ -155,6 +165,8 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	if err != nil {
 		return err
 	}
+
+	l.life.RegisterStart(lifecycle.AsyncAppCtx, lifecycle.StartP2PRouters, p2p.NewRelayRouter(l.host, peersToPeerIds(peers), l.relays))
 
 	l.ipfs, err = ipfslite.New(ctx, l.globalDS, nil, l.host, l.dht, &ipfslite.Config{})
 	if err != nil {
