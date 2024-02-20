@@ -140,7 +140,7 @@ func (l *libP2PManagerImpl) setupHost(ctx context.Context, privKeyWrapper crypto
 			}
 		}()
 		return relayChan
-	}))
+	}), libp2p.ForceReachabilityPrivate())
 	// todo: setup datastore
 	// TODO: add eth connection gater: https://github.com/dTelecom/p2p-realtime-database/blob/main/gater.go
 	l.host, l.dht, err = ipfslite.SetupLibp2p(ctx, privKeyWrapper, nil, []multiaddr.Multiaddr{sourceMultiAddr}, ds, opts...)
@@ -166,12 +166,6 @@ func peersToPeerIds(peers []peer.AddrInfo) []peer.ID {
 }
 
 func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) error {
-	go func() {
-		err := l.life.Run(ctx)
-		if err != nil {
-			fmt.Println("error: ", err)
-		}
-	}()
 	// setup ipfs
 	peers, err := makePeers(bootstrapPeers)
 	if err != nil {
@@ -179,6 +173,12 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	}
 
 	l.life.RegisterStart(lifecycle.AsyncAppCtx, lifecycle.StartP2PRouters, p2p.NewRelayRouter(l.host, peersToPeerIds(peers), l.relays))
+	go func() {
+		err := l.life.Run(ctx)
+		if err != nil {
+			fmt.Println("error: ", err)
+		}
+	}()
 
 	l.ipfs, err = ipfslite.New(ctx, l.globalDS, nil, l.host, l.dht, &ipfslite.Config{})
 	if err != nil {
@@ -203,11 +203,17 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 
 	go func() {
 		for {
+
+			var addresses []string
+			for _, addr := range l.Host().Addrs() {
+				addresses = append(addresses, fmt.Sprintf("%s/p2p/%s", addr, l.Host().ID()))
+			}
+
 			time.Sleep(time.Second * 4)
 			fmt.Println("pubsub peers: ", len(l.pubsub.ListPeers(dbTopic)))
 			fmt.Println("global peers: ", len(l.host.Peerstore().Peers()))
 			fmt.Println("who am I?")
-			fmt.Println(l.host.Addrs())
+			fmt.Println(addresses)
 			fmt.Println("eth address:")
 			fmt.Println(l.address)
 		}
