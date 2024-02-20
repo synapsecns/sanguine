@@ -3,6 +3,8 @@ package executor
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -20,7 +22,6 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
-	"time"
 )
 
 type Executor struct {
@@ -225,7 +226,7 @@ func (e *Executor) encodeTX(ctx context.Context, contract *interchainclient.Inte
 		DstChainId:    request.DstChainId,
 		Message:       request.Message,
 		Nonce:         request.Nonce,
-		DbWriterNonce: request.DbWriterNonce,
+		DbNonce:       request.DbNonce,
 	})
 	if err != nil {
 		return []byte{}, fmt.Errorf("could not encode transaction: %w", err)

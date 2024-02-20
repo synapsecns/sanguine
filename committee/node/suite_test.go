@@ -1,6 +1,10 @@
 package node_test
 
 import (
+	"math/big"
+	"sync"
+	"testing"
+
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
@@ -20,9 +24,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 	"github.com/synapsecns/sanguine/services/omnirpc/testhelper"
-	"math/big"
-	"sync"
-	"testing"
 )
 
 type NodeSuite struct {
@@ -90,10 +91,12 @@ func (n *NodeSuite) SetupTest() {
 
 func (n *NodeSuite) setValidators(validators []common.Address, backend backends.SimulatedTestBackend, info contracts.DeployedContract, contract *synapsemodule.SynapseModuleRef) {
 	transactOpts := backend.GetTxContext(n.GetTestContext(), info.OwnerPtr())
-	tx, err := contract.SetVerifiers(transactOpts.TransactOpts, validators)
-	n.NoError(err)
 
-	backend.WaitForConfirmation(n.GetTestContext(), tx)
+	for _, validator := range validators {
+		tx, err := contract.AddVerifier(transactOpts.TransactOpts, validator)
+		n.NoError(err)
+		backend.WaitForConfirmation(n.GetTestContext(), tx)
+	}
 }
 
 func (n *NodeSuite) makeNode() {

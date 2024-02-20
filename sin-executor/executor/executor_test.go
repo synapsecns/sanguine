@@ -52,10 +52,10 @@ func (i *InterchainSuite) TestE2E() {
 
 		destContext := i.destChain.GetTxContext(i.GetTestContext(), nil)
 		mockTX, err := destModule.MockVerifyEntry(destContext.TransactOpts, originDB.Address(), interchainmodulemock.InterchainEntry{
-			SrcChainId:  written.SrcChainId,
-			SrcWriter:   written.SrcWriter,
-			WriterNonce: written.WriterNonce,
-			DataHash:    written.DataHash,
+			SrcChainId: written.SrcChainId,
+			DbNonce:    written.DbNonce,
+			SrcWriter:  written.SrcWriter,
+			DataHash:   written.DataHash,
 		})
 		i.Require().NoError(err)
 		didMock = true

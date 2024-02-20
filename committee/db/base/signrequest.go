@@ -3,12 +3,13 @@ package base
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/committee/contracts/synapsemodule"
 	"github.com/synapsecns/sanguine/committee/db"
 	"gorm.io/gorm/clause"
-	"math/big"
-	"time"
 )
 
 // SignRequest is a request to sign a message.
@@ -39,10 +40,10 @@ type SignRequest struct {
 func (s *SignRequest) ToServiceSignRequest() db.SignRequest {
 	return db.SignRequest{
 		InterchainEntry: synapsemodule.InterchainEntry{
-			SrcChainId:  big.NewInt(int64(s.OriginChainID)),
-			SrcWriter:   common.HexToHash(s.Sender),
-			WriterNonce: big.NewInt(int64(s.Nonce)),
-			DataHash:    common.HexToHash(s.DataHash),
+			SrcChainId: big.NewInt(int64(s.OriginChainID)),
+			SrcWriter:  common.HexToHash(s.Sender),
+			DbNonce:    big.NewInt(int64(s.Nonce)),
+			DataHash:   common.HexToHash(s.DataHash),
 		},
 		DestChainID:     big.NewInt(int64(s.DestinationChainID)),
 		Status:          s.Status,
@@ -53,7 +54,7 @@ func (s *SignRequest) ToServiceSignRequest() db.SignRequest {
 func toSignRequest(sr synapsemodule.SynapseModuleVerificationRequested) (SignRequest, error) {
 	return SignRequest{
 		TXHash:             sr.Raw.TxHash.String(),
-		TransactionID:      common.Bytes2Hex(sr.SignableEntryHash[:]),
+		TransactionID:      common.Bytes2Hex(sr.EthSignedEntryHash[:]),
 		OriginChainID:      int(sr.Entry.SrcChainId.Int64()),
 		DestinationChainID: int(sr.DestChainId.Int64()),
 		Sender:             common.Bytes2Hex(sr.Entry.SrcWriter[:]),

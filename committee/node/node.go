@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"math/big"
-	"strings"
 	"sync"
 	"time"
 
@@ -141,25 +140,11 @@ func (n *Node) setValidators(parentCtx context.Context) (err error) {
 		chainID := chainID
 		contract := contract
 		g.Go(func() error {
-			var verifiers []common.Address
-
-			i := 0
-			for {
-				// query all validators
-				validator, err := contract.Verifiers(&bind.CallOpts{Context: gCtx}, big.NewInt(int64(i)))
-				if err != nil && strings.Contains(err.Error(), "execution reverted") {
-					break
-				}
-				if err != nil {
-					return fmt.Errorf("could not get validator: %w", err)
-				}
-				// until we hit one that doesn't exist and then we're done
-				if validator.String() == (common.Address{}).String() {
-					break
-				}
-				i++
-				verifiers = append(verifiers, validator)
+			verifiers, err := contract.GetVerifiers(&bind.CallOpts{Context: gCtx})
+			if err != nil {
+				return fmt.Errorf("could not get verifiers: %w", err)
 			}
+
 			mux.Lock()
 			defer mux.Unlock()
 			interchainValidators[chainID] = verifiers
@@ -288,7 +273,7 @@ func (n *Node) runDBSelector(ctx context.Context) error {
 
 func (n *Node) submit(ctx context.Context, request db.SignRequest) error {
 	contract := n.interchainContracts[int(request.DestChainID.Int64())]
-	threshold, err := contract.RequiredThreshold(&bind.CallOpts{Context: ctx})
+	threshold, err := contract.GetThreshold(&bind.CallOpts{Context: ctx})
 	if err != nil {
 		return fmt.Errorf("could not get threshold: %w", err)
 	}
@@ -420,7 +405,7 @@ func (n *Node) runChainIndexer(parentCtx context.Context, chainID int) (err erro
 		case *synapsemodule.SynapseModuleVerificationRequested:
 			err = n.handleMessageSent(ctx, event)
 		case *synapsemodule.SynapseModuleEntryVerified:
-			err = n.db.UpdateSignRequestStatus(ctx, event.SignableEntryHash, db.Completed)
+			err = n.db.UpdateSignRequestStatus(ctx, event.EthSignableEntryHash, db.Completed)
 		}
 		// stop the world.
 		if err != nil {
