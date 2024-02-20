@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/libp2p/go-libp2p/p2p/discovery/mdns"
+	"github.com/obolnetwork/charon/app/lifecycle"
+	"github.com/obolnetwork/charon/p2p"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"sync"
 	"time"
@@ -61,6 +63,7 @@ type libP2PManagerImpl struct {
 	// address is the address of the node
 	address common.Address
 	port    int
+	life    *lifecycle.Manager
 }
 
 const dbTopic = "crdt_db"
@@ -75,9 +78,20 @@ var RebroadcastingInterval = time.Minute
 // node itself.
 func NewLibP2PManager(ctx context.Context, handler metrics.Handler, auth signer.Signer, store db.Datstores, port int) (LibP2PManager, error) {
 	l := &libP2PManagerImpl{}
-	_, err := l.setupHost(ctx, auth.PrivKey()) // call createHost function
+	l.life = new(lifecycle.Manager)
+
+	relays, err := p2p.NewRelays(ctx, []string{"https://0.relay.obol.tech/"}, auth.Address().String())
+	if err != nil {
+		return nil, fmt.Errorf("could not create relays: %w", err)
+	}
+	_ = relays
+	_, err = l.setupHost(ctx, auth.PrivKey()) // call createHost function
 	if err != nil {
 		return nil, err
+	}
+
+	for _, relay := range relays {
+		l.life.RegisterStart(lifecycle.AsyncAppCtx, lifecycle.StartRelay, p2p.NewRelayReserver(l.host, relay))
 	}
 
 	l.globalDS, err = store.GlobalDatastore()
@@ -130,6 +144,12 @@ func (l *libP2PManagerImpl) setupHost(ctx context.Context, privKeyWrapper crypto
 }
 
 func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) error {
+	go func() {
+		err := l.life.Run(ctx)
+		if err != nil {
+			fmt.Println("error: ", err)
+		}
+	}()
 	// setup ipfs
 	peers, err := makePeers(bootstrapPeers)
 	if err != nil {
