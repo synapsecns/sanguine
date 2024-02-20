@@ -6,15 +6,7 @@ import {IInterchainDB, InterchainEntry} from "../../contracts/interfaces/IInterc
 contract InterchainDBMock is IInterchainDB {
     function writeEntry(bytes32 dataHash) external returns (uint256 writerNonce) {}
 
-    function requestVerification(
-        uint256 destChainId,
-        address writer,
-        uint256 writerNonce,
-        address[] memory srcModules
-    )
-        external
-        payable
-    {}
+    function requestVerification(uint256 destChainId, uint256 dbNonce, address[] memory srcModules) external payable {}
 
     function writeEntryWithVerification(
         uint256 destChainId,
@@ -30,9 +22,9 @@ contract InterchainDBMock is IInterchainDB {
 
     function getInterchainFee(uint256 destChainId, address[] memory srcModules) external view returns (uint256) {}
 
-    function getEntry(address writer, uint256 writerNonce) external view returns (InterchainEntry memory) {}
+    function getEntry(uint256 dbNonce) external view returns (InterchainEntry memory) {}
 
-    function getWriterNonce(address writer) external view returns (uint256) {}
+    function getDBNonce() external view returns (uint256) {}
 
     function readEntry(
         address dstModule,

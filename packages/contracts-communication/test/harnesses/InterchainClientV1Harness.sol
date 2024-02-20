@@ -3,7 +3,8 @@
 pragma solidity 0.8.20;
 
 import {InterchainClientV1} from "../../contracts/InterchainClientV1.sol";
-import { InterchainEntry } from "../../contracts/libs/InterchainEntry.sol";
+import {InterchainEntry} from "../../contracts/libs/InterchainEntry.sol";
+
 contract InterchainClientV1Harness is InterchainClientV1 {
     constructor() InterchainClientV1() {}
 
@@ -64,5 +65,4 @@ contract InterchainClientV1Harness is InterchainClientV1 {
     {
         return _getFinalizedResponsesCount(approvedResponses, optimisticTimePeriod);
     }
-
 }
