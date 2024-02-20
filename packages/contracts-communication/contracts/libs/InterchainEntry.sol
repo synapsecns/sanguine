@@ -21,12 +21,12 @@ struct InterchainEntry {
 library InterchainEntryLib {
     /// @notice Constructs an InterchainEntry struct to be written on the local chain
     /// @param dbNonce      The database nonce of the entry on the source chain
-    /// @param srcWriter    The address of the writer on the local chain
+    /// @param writer       The address of the writer on the local chain
     /// @param dataHash     The hash of the data written on the local chain
     /// @return entry       The constructed InterchainEntry struct
     function constructLocalEntry(
         uint256 dbNonce,
-        address srcWriter,
+        address writer,
         bytes32 dataHash
     )
         internal
@@ -36,7 +36,7 @@ library InterchainEntryLib {
         return InterchainEntry({
             srcChainId: block.chainid,
             dbNonce: dbNonce,
-            srcWriter: TypeCasts.addressToBytes32(srcWriter),
+            srcWriter: TypeCasts.addressToBytes32(writer),
             dataHash: dataHash
         });
     }

@@ -9,7 +9,7 @@ import {InterchainEntry, InterchainEntryLib} from "./libs/InterchainEntry.sol";
 import {TypeCasts} from "./libs/TypeCasts.sol";
 
 contract InterchainDB is InterchainDBEvents, IInterchainDB {
-    mapping(address writer => bytes32[] dataHashes) internal _entries;
+    LocalEntry[] internal _entries;
     mapping(bytes32 entryId => mapping(address module => RemoteEntry entry)) internal _remoteEntries;
 
     modifier onlyRemoteChainId(uint256 chainId) {
@@ -22,22 +22,21 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     // ═══════════════════════════════════════════════ WRITER-FACING ═══════════════════════════════════════════════════
 
     /// @inheritdoc IInterchainDB
-    function writeEntry(bytes32 dataHash) external returns (uint256 writerNonce) {
+    function writeEntry(bytes32 dataHash) external returns (uint256 dbNonce) {
         return _writeEntry(dataHash);
     }
 
     /// @inheritdoc IInterchainDB
     function requestVerification(
         uint256 destChainId,
-        address writer,
-        uint256 writerNonce,
+        uint256 dbNonce,
         address[] calldata srcModules
     )
         external
         payable
         onlyRemoteChainId(destChainId)
     {
-        InterchainEntry memory entry = getEntry(writer, writerNonce);
+        InterchainEntry memory entry = getEntry(dbNonce);
         _requestVerification(destChainId, entry, srcModules);
     }
 
@@ -50,10 +49,10 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         external
         payable
         onlyRemoteChainId(destChainId)
-        returns (uint256 writerNonce)
+        returns (uint256 dbNonce)
     {
-        writerNonce = _writeEntry(dataHash);
-        InterchainEntry memory entry = InterchainEntryLib.constructLocalEntry(msg.sender, writerNonce, dataHash);
+        dbNonce = _writeEntry(dataHash);
+        InterchainEntry memory entry = InterchainEntryLib.constructLocalEntry(dbNonce, msg.sender, dataHash);
         _requestVerification(destChainId, entry, srcModules);
     }
 
@@ -101,25 +100,25 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     }
 
     /// @inheritdoc IInterchainDB
-    function getEntry(address writer, uint256 writerNonce) public view returns (InterchainEntry memory) {
-        if (getWriterNonce(writer) <= writerNonce) {
-            revert InterchainDB__EntryDoesNotExist(writer, writerNonce);
+    function getEntry(uint256 dbNonce) public view returns (InterchainEntry memory) {
+        if (getDBNonce() <= dbNonce) {
+            revert InterchainDB__EntryDoesNotExist(dbNonce);
         }
-        return InterchainEntryLib.constructLocalEntry(writer, writerNonce, _entries[writer][writerNonce]);
+        return InterchainEntryLib.constructLocalEntry(dbNonce, _entries[dbNonce].writer, _entries[dbNonce].dataHash);
     }
 
     /// @inheritdoc IInterchainDB
-    function getWriterNonce(address writer) public view returns (uint256) {
-        return _entries[writer].length;
+    function getDBNonce() public view returns (uint256) {
+        return _entries.length;
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
     /// @dev Write the entry to the database and emit the event.
-    function _writeEntry(bytes32 dataHash) internal returns (uint256 writerNonce) {
-        writerNonce = _entries[msg.sender].length;
-        _entries[msg.sender].push(dataHash);
-        emit InterchainEntryWritten(block.chainid, TypeCasts.addressToBytes32(msg.sender), writerNonce, dataHash);
+    function _writeEntry(bytes32 dataHash) internal returns (uint256 dbNonce) {
+        dbNonce = _entries.length;
+        _entries.push(LocalEntry(msg.sender, dataHash));
+        emit InterchainEntryWritten(block.chainid, dbNonce, TypeCasts.addressToBytes32(msg.sender), dataHash);
     }
 
     /// @dev Request the verification of the entry by the modules, and emit the event.
@@ -139,7 +138,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         for (uint256 i = 0; i < len; ++i) {
             IInterchainModule(srcModules[i]).requestVerification{value: fees[i]}(destChainId, entry);
         }
-        emit InterchainVerificationRequested(destChainId, entry.srcWriter, entry.writerNonce, srcModules);
+        emit InterchainVerificationRequested(destChainId, entry.dbNonce, srcModules);
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
