@@ -95,7 +95,7 @@ func resolveAddr(ctx context.Context, client KeyClient, keyName string) (address
 		return common.Address{}, []byte{}, fmt.Errorf("google KMS public key %q ASN.1 algorithm %s intead of %s", keyName, gotAlg, wantAlg)
 	}
 
-	return pubKeyAddr(info.Key.Bytes), []byte{}, nil
+	return pubKeyAddr(info.Key.Bytes), info.Key.Bytes, nil
 }
 
 // NewEthereumTransactor returns a KMS-backed instance. Ctx applies to the

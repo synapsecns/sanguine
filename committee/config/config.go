@@ -26,12 +26,6 @@ type Config struct {
 	P2PPort int `yaml:"p2p_port"`
 }
 
-// ChainConfig is the config for a chain.
-type ChainConfig struct {
-	// SynapseModuleAddress is the address of the Synapse module.
-	SynapseModuleAddress string `yaml:"synapse_module"`
-}
-
 // DatabaseConfig represents the configuration for the database.
 type DatabaseConfig struct {
 	Type string `yaml:"type"`
