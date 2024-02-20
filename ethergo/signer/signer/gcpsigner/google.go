@@ -221,7 +221,7 @@ func (mk *managedKey) Type() pb.KeyType {
 
 func (mk *managedKey) Sign(bytes []byte) ([]byte, error) {
 	// TODO: we should figure out a way to respect context here. One possible solution
-	sigBytes, err := mk.SignMessage(context.Background(), bytes, false)
+	sigBytes, err := mk.SignMessage(context.Background(), bytes, true)
 	if err != nil {
 		return nil, fmt.Errorf("could not derive ethereum signature: %w", err)
 	}
