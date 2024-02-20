@@ -1,15 +1,15 @@
 /* @ts-ignore */
 import NodeCache from "node-cache"
 
-export const MS_TIMES = {
-  ONE_SECOND: 1000,
-  THIRTY_SECONDS: 30 * 1000,
-  ONE_MINUTE: 60 * 1000,
-  FIVE_MINUTES: 5 * 60 * 1000,
-  TEN_MINUTES: 10 * 60 * 1000,
-  ONE_HOUR: 60 * 60 * 1000,
-  ONE_DAY: 24 * 60 * 60 * 1000,
-  ONE_WEEK: 7 * 24 * 60 * 60 * 1000,
+export const CACHE_TIMES = {
+  ONE_SECOND: 1,
+  THIRTY_SECONDS: 30,
+  ONE_MINUTE: 60,
+  FIVE_MINUTES: 5 * 60,
+  TEN_MINUTES: 10 * 60,
+  ONE_HOUR: 60 * 60,
+  ONE_DAY: 24 * 60 * 60,
+  ONE_WEEK: 7 * 24 * 60 * 60,
 }
 export function SimpleCache(maxAge: number) {
   /* @ts-ignore */
@@ -20,8 +20,8 @@ export function SimpleCache(maxAge: number) {
   ) {
     const originalMethod = descriptor.value
     const cache = new NodeCache({
-      stdTTL: maxAge / 1000,
-      checkperiod: maxAge / 1000,
+      stdTTL: maxAge,
+      checkperiod: maxAge,
       useClones: false // this is to handle promises + performance
     })
 

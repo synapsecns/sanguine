@@ -33,7 +33,7 @@ import {
 } from './types'
 import { adjustValueIfNative } from '../utils/handleNativeToken'
 import { getMatchingTxLog } from '../utils/logs'
-import { MS_TIMES, SimpleCache } from '../utils/SimpleCache'
+import { CACHE_TIMES, SimpleCache } from '../utils/SimpleCache'
 
 /**
  * Wraps [tokens, lpToken] returned by the SynapseRouter contract into a PoolInfo object.
@@ -141,7 +141,7 @@ export class SynapseRouter extends Router {
       })
   }
 
-  @SimpleCache(MS_TIMES.TEN_MINUTES)
+  @SimpleCache(CACHE_TIMES.TEN_MINUTES)
   public async getConnectedBridgeTokens(
     tokenOut: string
   ): Promise<BridgeToken[]> {
@@ -152,7 +152,7 @@ export class SynapseRouter extends Router {
       })
   }
 
-  @SimpleCache(MS_TIMES.TEN_MINUTES)
+  @SimpleCache(CACHE_TIMES.TEN_MINUTES)
   public async getBridgeFees(
     token: string,
     amount: BigNumber
@@ -229,13 +229,13 @@ export class SynapseRouter extends Router {
     return this.bridgeContractCache
   }
 
-  @SimpleCache(MS_TIMES.TEN_MINUTES)
+  @SimpleCache(CACHE_TIMES.TEN_MINUTES)
   public async chainGasAmount(): Promise<BigNumber> {
     const bridgeContract = await this.getBridgeContract()
     return bridgeContract.chainGasAmount()
   }
 
-  @SimpleCache(MS_TIMES.TEN_MINUTES)
+  @SimpleCache(CACHE_TIMES.TEN_MINUTES)
   public async getBridgeTokenType(token: string): Promise<BridgeTokenType> {
     const tokenConfig = await this.routerContract.config(token)
     // Check if token is supported
