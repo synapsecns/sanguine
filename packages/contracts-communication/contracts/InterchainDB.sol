@@ -10,7 +10,7 @@ import {TypeCasts} from "./libs/TypeCasts.sol";
 
 contract InterchainDB is InterchainDBEvents, IInterchainDB {
     LocalEntry[] internal _entries;
-    mapping(bytes32 entryId => mapping(address module => RemoteEntry entry)) internal _remoteEntries;
+    mapping(address module => mapping(bytes32 entryKey => RemoteEntry entry)) internal _remoteEntries;
 
     modifier onlyRemoteChainId(uint256 chainId) {
         if (chainId == block.chainid) {
@@ -60,20 +60,19 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
 
     /// @inheritdoc IInterchainDB
     function verifyEntry(InterchainEntry memory entry) external onlyRemoteChainId(entry.srcChainId) {
-        bytes32 entryId = InterchainEntryLib.entryId(entry);
-        RemoteEntry memory existingEntry = _remoteEntries[entryId][msg.sender];
+        bytes32 entryKey = InterchainEntryLib.entryKey(entry);
+        bytes32 entryValue = InterchainEntryLib.entryValue(entry);
+        RemoteEntry memory existingEntry = _remoteEntries[msg.sender][entryKey];
         // Check if that's the first time module verifies the entry
         if (existingEntry.verifiedAt == 0) {
-            _remoteEntries[entryId][msg.sender] = RemoteEntry({verifiedAt: block.timestamp, dataHash: entry.dataHash});
-            emit InterchainEntryVerified(
-                msg.sender, entry.srcChainId, entry.srcWriter, entry.writerNonce, entry.dataHash
-            );
+            _remoteEntries[msg.sender][entryKey] = RemoteEntry({verifiedAt: block.timestamp, entryValue: entryValue});
+            emit InterchainEntryVerified(msg.sender, entry.srcChainId, entry.dbNonce, entry.srcWriter, entry.dataHash);
         } else {
-            // If the module has already verified the entry, check that the data hash is the same
-            if (existingEntry.dataHash != entry.dataHash) {
-                revert InterchainDB__ConflictingEntries(existingEntry.dataHash, entry);
+            // If the module has already verified the entry, check that the entry value is the same
+            if (existingEntry.entryValue != entryValue) {
+                revert InterchainDB__ConflictingEntries(existingEntry.entryValue, entry);
             }
-            // No-op if the data hash is the same
+            // No-op if the entry value is the same
         }
     }
 
@@ -89,9 +88,10 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         onlyRemoteChainId(entry.srcChainId)
         returns (uint256 moduleVerifiedAt)
     {
-        RemoteEntry memory remoteEntry = _remoteEntries[InterchainEntryLib.entryId(entry)][dstModule];
-        // Check data against the one verified by the module
-        return remoteEntry.dataHash == entry.dataHash ? remoteEntry.verifiedAt : 0;
+        RemoteEntry memory remoteEntry = _remoteEntries[dstModule][InterchainEntryLib.entryKey(entry)];
+        bytes32 entryValue = InterchainEntryLib.entryValue(entry);
+        // Check entry value against the one verified by the module
+        return remoteEntry.entryValue == entryValue ? remoteEntry.verifiedAt : 0;
     }
 
     /// @inheritdoc IInterchainDB

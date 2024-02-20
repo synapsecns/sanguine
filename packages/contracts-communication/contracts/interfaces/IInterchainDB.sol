@@ -14,13 +14,13 @@ interface IInterchainDB {
 
     /// @notice Struct representing an entry from the remote Interchain DataBase verified by the Interchain Module
     /// @param verifiedAt   The block timestamp at which the entry was verified by the module
-    /// @param dataHash     The hash of the data written on the source chain
+    /// @param entryValue   The value of the entry: writer + dataHash hashed together
     struct RemoteEntry {
         uint256 verifiedAt;
-        bytes32 dataHash;
+        bytes32 entryValue;
     }
 
-    error InterchainDB__ConflictingEntries(bytes32 existingDataHash, InterchainEntry newEntry);
+    error InterchainDB__ConflictingEntries(bytes32 existingEntryValue, InterchainEntry newEntry);
     error InterchainDB__EntryDoesNotExist(uint256 dbNonce);
     error InterchainDB__IncorrectFeeAmount(uint256 actualFee, uint256 expectedFee);
     error InterchainDB__NoModulesSpecified();
