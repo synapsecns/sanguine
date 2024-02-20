@@ -179,7 +179,7 @@ export const _Transaction = ({
             />
             {(isTxFinalized || isTxReverted) && (
               <MenuItem
-                text="Clear Transaction"
+                text={isTxReverted ? 'Clear notification' : 'Clear transaction'}
                 link={null}
                 onClick={handleClearTransaction}
               />
