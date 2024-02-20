@@ -280,6 +280,7 @@ func (n *Node) submit(ctx context.Context, request db.SignRequest) error {
 
 	var signatures [][]byte
 	for _, validator := range n.interchainValidators[int(request.DestChainID.Int64())] {
+		// TODO: writer nonce does not exist, DB Nonce is now global
 		signature, err := n.peerManager.GetSignature(ctx, validator, int(request.InterchainEntry.SrcChainId.Int64()), int(request.InterchainEntry.WriterNonce.Uint64()))
 		if err != nil {
 			logger.Errorf("could not get signature for peer %s message: %w", validator, err)
@@ -293,6 +294,7 @@ func (n *Node) submit(ctx context.Context, request db.SignRequest) error {
 
 	nonce, err := n.submitter.SubmitTransaction(ctx, request.DestChainID, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		// should be request.InterchainEntry
+		// Verify entry now takes in bytes entry (in place of struct InterchainEntry, and bytes signtaures, in place of bytes[] signatures)
 		return contract.VerifyEntry(transactor, request.InterchainEntry, signatures)
 	})
 
@@ -334,6 +336,7 @@ func (n *Node) signAndBroadcast(ctx context.Context, request db.SignRequest) err
 	// broadcast the transaction.
 	tweakedSig := signer.NewSignature(new(big.Int).Add(big.NewInt(27), signedTx.V()), signedTx.R(), signedTx.S())
 
+	// TODO: WriterNonce deprecated in favor of DBNonce Global
 	err = n.peerManager.PutSignature(ctx, int(request.InterchainEntry.SrcChainId.Int64()), int(request.InterchainEntry.WriterNonce.Uint64()), signer.Encode(tweakedSig))
 	if err != nil {
 		return fmt.Errorf("could not broadcast: %w", err)
@@ -405,7 +408,8 @@ func (n *Node) runChainIndexer(parentCtx context.Context, chainID int) (err erro
 		case *synapsemodule.SynapseModuleVerificationRequested:
 			err = n.handleMessageSent(ctx, event)
 		case *synapsemodule.SynapseModuleEntryVerified:
-			err = n.db.UpdateSignRequestStatus(ctx, event.EthSignableEntryHash, db.Completed)
+			// TODO: This event has changed recently, confirm validity
+			err = n.db.UpdateSignRequestStatus(ctx, event.EthSignedEntryHash, db.Completed)
 		}
 		// stop the world.
 		if err != nil {

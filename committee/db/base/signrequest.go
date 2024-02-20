@@ -53,14 +53,18 @@ func (s *SignRequest) ToServiceSignRequest() db.SignRequest {
 
 func toSignRequest(sr synapsemodule.SynapseModuleVerificationRequested) (SignRequest, error) {
 	return SignRequest{
-		TXHash:             sr.Raw.TxHash.String(),
-		TransactionID:      common.Bytes2Hex(sr.EthSignedEntryHash[:]),
+		TXHash:        sr.Raw.TxHash.String(),
+		TransactionID: common.Bytes2Hex(sr.EthSignedEntryHash[:]),
+		// TODO: Entry is no longer InterchainEntry struct, and now is bytes
+		// First, determine if we actually need to decode InterchainEntry at all
+		// If not, then we can just use the bytes directly
+		// If we do, then use Encode / Decode function to handle
 		OriginChainID:      int(sr.Entry.SrcChainId.Int64()),
 		DestinationChainID: int(sr.DestChainId.Int64()),
 		Sender:             common.Bytes2Hex(sr.Entry.SrcWriter[:]),
 		Nonce:              sr.Entry.WriterNonce.Uint64(),
 		DataHash:           common.Bytes2Hex(sr.Entry.DataHash[:]),
-		EntryHash:          common.Bytes2Hex(sr.SignableEntryHash[:]),
+		EntryHash:          common.Bytes2Hex(sr.EthSignedEntryHash[:]),
 		Status:             db.Seen,
 	}, nil
 }
