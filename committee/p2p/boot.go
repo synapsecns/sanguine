@@ -168,6 +168,7 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 			fmt.Println(l.address)
 		}
 	}()
+	time.Sleep(time.Second * 10)
 
 	l.pubSubBroadcaster, err = crdt.NewPubSubBroadcaster(ctx, l.pubsub, dbTopic)
 	if err != nil {

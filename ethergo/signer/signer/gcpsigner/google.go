@@ -10,6 +10,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"github.com/decred/dcrd/dcrec/secp256k1/v4"
+	"github.com/decred/dcrd/dcrec/secp256k1/v4/ecdsa"
 	libp2p "github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/crypto/pb"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -226,7 +227,15 @@ func (mk *managedKey) Sign(bytes []byte) ([]byte, error) {
 		return nil, fmt.Errorf("could not derive ethereum signature: %w", err)
 	}
 
-	return signer.Encode(sigBytes), nil
+	r := new(secp256k1.ModNScalar)
+	s := new(secp256k1.ModNScalar)
+
+	r.SetByteSlice(sigBytes.R().Bytes())
+	s.SetByteSlice(sigBytes.S().Bytes())
+
+	newSig := ecdsa.NewSignature(r, s)
+
+	return newSig.Serialize(), nil
 }
 
 func (mk *managedKey) GetPublic() libp2p.PubKey {
