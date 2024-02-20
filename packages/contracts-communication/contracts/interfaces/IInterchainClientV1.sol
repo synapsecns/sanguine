@@ -3,6 +3,13 @@ pragma solidity ^0.8.0;
 
 interface IInterchainClientV1 {
     /**
+     * @notice Sets the address of the ExecutionFees contract.
+     * @dev Only callable by the contract owner or an authorized account.
+     * @param executionFees_ The address of the ExecutionFees contract.
+     */
+    function setExecutionFees(address executionFees_) external;
+
+    /**
      * @notice Sets the linked client for a specific chain ID.
      * @dev Stores the address of the linked client in a mapping with the chain ID as the key.
      * @param chainId The chain ID for which the client is being set.

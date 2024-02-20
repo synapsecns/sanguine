@@ -1,6 +1,7 @@
 pragma solidity 0.8.20;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {IExecutionFees} from "./interfaces/IExecutionFees.sol";
 import {IExecutionService} from "./interfaces/IExecutionService.sol";
 import {IInterchainDB} from "./interfaces/IInterchainDB.sol";
 
@@ -23,22 +24,27 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
 
     uint64 public clientNonce;
     address public interchainDB;
+    address public executionFees;
     mapping(bytes32 => bool) public executedTransactions;
 
     // Chain ID => Bytes32 Address of src clients
     mapping(uint256 => bytes32) public linkedClients;
 
-    // TODO: Add permissioning
-    // @inheritdoc IInterchainClientV1
-    function setLinkedClient(uint256 chainId, bytes32 client) public onlyOwner {
-        linkedClients[chainId] = client;
-    }
-
     constructor() Ownable(msg.sender) {}
+
+    // @inheritdoc IInterchainClientV1
+    function setExecutionFees(address executionFees_) public onlyOwner {
+        executionFees = executionFees_;
+    }
 
     // @inheritdoc IInterchainClientV1
     function setInterchainDB(address _interchainDB) public onlyOwner {
         interchainDB = _interchainDB;
+    }
+
+    // @inheritdoc IInterchainClientV1
+    function setLinkedClient(uint256 chainId, bytes32 client) public onlyOwner {
+        linkedClients[chainId] = client;
     }
 
     /**
@@ -147,7 +153,7 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
             executionFee: executionFee,
             options: options
         });
-        // TODO: transfer the execution fee to ExecutionFees contract
+        IExecutionFees(executionFees).addExecutionFee{value: executionFee}(dstChainId, transactionId);
         emit InterchainTransactionSent(
             icTx.srcSender,
             icTx.srcChainId,
