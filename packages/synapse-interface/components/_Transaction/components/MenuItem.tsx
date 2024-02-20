@@ -12,7 +12,7 @@ export const MenuItem = ({
   onClick?: () => any
 }) => {
   const className =
-    'flex gap-4 items-center justify-between pl-2 pr-3 py-2 space-x-1.5 whitespace-nowrap text-[--synapse-text-primary] no-underline'
+    'flex gap-4 items-center justify-between pl-2 pr-3 py-2 space-x-4 whitespace-nowrap text-[--synapse-text-primary] no-underline'
 
   return (
     <li

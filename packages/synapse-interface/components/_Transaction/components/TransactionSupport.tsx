@@ -28,7 +28,6 @@ export const TransactionSupport = ({ isReverted }: { isReverted: boolean }) => {
           className={`
             px-2 py-1 underline text-[--synapse-text]
             hover:rounded hover:bg-zinc-700 hover:no-underline
-            min-[360px]:after:content-['_(Discord)']
           `}
         >
           Support

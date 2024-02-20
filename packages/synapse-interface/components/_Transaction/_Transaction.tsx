@@ -174,7 +174,7 @@ export const _Transaction = ({
               />
             )}
             <MenuItem
-              text="Contact Support"
+              text="Contact Support (Discord)"
               link="https://discord.gg/synapseprotocol"
             />
             {(isTxFinalized || isTxReverted) && (
