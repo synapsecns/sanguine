@@ -19,16 +19,22 @@ interface IInterchainClientV1 {
 
     /**
      * @notice Sends a message to another chain via the Interchain Communication Protocol.
-     * @dev Charges a fee for the message, which is payable upon calling this function.
-     * @param receiver The address of the receiver on the destination chain.
+     * @dev Charges a fee for the message, which is payable upon calling this function:
+     * - Verification fees: paid to every module that verifies the message.
+     * - Execution fee: paid to the executor that executes the message.
+     * Note: while a specific execution service is specified to request the execution of the message,
+     * any executor is able to execute the message on destination chain, earning the execution fee.
      * @param dstChainId The chain ID of the destination chain.
+     * @param receiver The address of the receiver on the destination chain.
+     * @param srcExecutionService The address of the execution service to use for the message.
      * @param message The message being sent.
      * @param options Execution options for the message sent, encoded as bytes, currently primarily gas limit + native gas drop.
      * @param srcModules The source modules involved in the message sending.
      */
     function interchainSend(
-        bytes32 receiver,
         uint256 dstChainId,
+        bytes32 receiver,
+        address srcExecutionService,
         bytes calldata message,
         bytes calldata options,
         address[] calldata srcModules

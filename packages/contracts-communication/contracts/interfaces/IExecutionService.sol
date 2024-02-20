@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-interface IExecutor {
+interface IExecutionService {
     /// @notice Request the execution of an Interchain Transaction on a remote chain.
     /// Note: the off-chain actor needs to fetch the transaction payload from the InterchainClient
     /// event with the same transactionId, then execute the transaction on the remote chain:
