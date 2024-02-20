@@ -61,10 +61,11 @@ type libP2PManagerImpl struct {
 	// datastoreFactory is used to create new datastores
 	datastoreFactory db.Datstores
 	// address is the address of the node
-	address common.Address
-	port    int
-	life    *lifecycle.Manager
-	relays  []*p2p.MutablePeer
+	address  common.Address
+	port     int
+	life     *lifecycle.Manager
+	relays   []*p2p.MutablePeer
+	hostName string
 }
 
 const dbTopic = "crdt_db"
@@ -77,7 +78,7 @@ var RebroadcastingInterval = time.Minute
 //
 // validators should be a list of addresses that are allowed to connect to the host. This should include the address of the
 // node itself.
-func NewLibP2PManager(ctx context.Context, handler metrics.Handler, auth signer.Signer, store db.Datstores, port int) (LibP2PManager, error) {
+func NewLibP2PManager(ctx context.Context, handler metrics.Handler, auth signer.Signer, store db.Datstores, port int, hostname string) (LibP2PManager, error) {
 	l := &libP2PManagerImpl{}
 	l.life = new(lifecycle.Manager)
 
@@ -104,6 +105,7 @@ func NewLibP2PManager(ctx context.Context, handler metrics.Handler, auth signer.
 	l.datastores = make(map[common.Address]datastore.Batching)
 	l.handler = handler
 	l.port = port
+	l.hostName = hostname
 
 	return l, nil
 }
@@ -120,15 +122,16 @@ func (l *libP2PManagerImpl) Address() common.Address {
 
 func (l *libP2PManagerImpl) setupHost(ctx context.Context, privKeyWrapper crypto.PrivKey) (host.Host, error) {
 	// Create a new libp2p host
-	sourceMultiAddr, err := multiaddr.NewMultiaddr(fmt.Sprintf("/ip4/0.0.0.0/tcp/%d", l.port))
+	sourceMultiAddr, err := multiaddr.NewMultiaddr(fmt.Sprintf("/ip4/%s/tcp/%d", l.hostName, l.port))
 	if err != nil {
 		return nil, errors.Wrap(err, "create multi addr")
 	}
 
 	ds := ipfs_datastore.MutexWrap(datastore.NewMapDatastore())
 
-	opts := ipfslite.Libp2pOptionsExtra
-	opts = append(opts, libp2p.Ping(true), libp2p.EnableHolePunching(), libp2p.EnableAutoRelayWithPeerSource(func(ctx context.Context, num int) <-chan peer.AddrInfo {
+	// skip nat port map
+	opts := ipfslite.Libp2pOptionsExtra[1:1]
+	opts = append(opts, libp2p.Ping(true), libp2p.EnableAutoRelayWithPeerSource(func(ctx context.Context, num int) <-chan peer.AddrInfo {
 		relayChan := make(chan peer.AddrInfo)
 		go func() {
 			for _, relay := range l.relays {
@@ -140,7 +143,7 @@ func (l *libP2PManagerImpl) setupHost(ctx context.Context, privKeyWrapper crypto
 			}
 		}()
 		return relayChan
-	}), libp2p.ForceReachabilityPrivate())
+	}), libp2p.ForceReachabilityPrivate(), libp2p.ListenAddrs(sourceMultiAddr))
 	// todo: setup datastore
 	// TODO: add eth connection gater: https://github.com/dTelecom/p2p-realtime-database/blob/main/gater.go
 	l.host, l.dht, err = ipfslite.SetupLibp2p(ctx, privKeyWrapper, nil, []multiaddr.Multiaddr{sourceMultiAddr}, ds, opts...)

@@ -23,7 +23,8 @@ type Config struct {
 	// BootstrapPeers is the list of bootstrap peers.
 	BootstrapPeers []string `yaml:"bootstrap_peers"`
 	// P2PPort is the port for the p2p server.
-	P2PPort int `yaml:"p2p_port"`
+	P2PPort int    `yaml:"p2p_port"`
+	P2PHost string `yaml:"p2p_host"`
 }
 
 // DatabaseConfig represents the configuration for the database.
