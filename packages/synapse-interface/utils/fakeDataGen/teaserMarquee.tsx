@@ -52,7 +52,8 @@ const Tokens = [
 const formatAmount = (amount) => {
   const MAX_DECIMALS = 4
 
-  let [, left, right] = amount.toFixed(MAX_DECIMALS).match(/(\d+)\.?(\d*)/) ?? ['', '', '']
+  let [, left, right] =
+    amount.toFixed(MAX_DECIMALS).match(/(\d+)\.?(\d*)/) ?? new Array(3).fill('')
 
   for (let i = 3; i < left.length; i += 4)
     left = `${left.slice(0, left.length - i)},${left.slice(-i)}`
