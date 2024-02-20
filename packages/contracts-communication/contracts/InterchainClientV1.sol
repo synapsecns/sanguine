@@ -1,17 +1,17 @@
+// SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {IExecutionFees} from "./interfaces/IExecutionFees.sol";
+import {IExecutionService} from "./interfaces/IExecutionService.sol";
+import {IInterchainApp} from "./interfaces/IInterchainApp.sol";
+import {IInterchainClientV1} from "./interfaces/IInterchainClientV1.sol";
 import {IInterchainDB} from "./interfaces/IInterchainDB.sol";
 
-import {IInterchainApp} from "./interfaces/IInterchainApp.sol";
-
 import {InterchainEntry} from "./libs/InterchainEntry.sol";
-
-import {IInterchainClientV1} from "./interfaces/IInterchainClientV1.sol";
-
+import {OptionsLib, OptionsV1} from "./libs/Options.sol";
 import {TypeCasts} from "./libs/TypeCasts.sol";
 
-import {OptionsLib, OptionsV1} from "./libs/Options.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  * @title InterchainClientV1
@@ -22,22 +22,27 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
 
     uint64 public clientNonce;
     address public interchainDB;
+    address public executionFees;
     mapping(bytes32 => bool) public executedTransactions;
 
     // Chain ID => Bytes32 Address of src clients
     mapping(uint256 => bytes32) public linkedClients;
 
-    // TODO: Add permissioning
-    // @inheritdoc IInterchainClientV1
-    function setLinkedClient(uint256 chainId, bytes32 client) public onlyOwner {
-        linkedClients[chainId] = client;
-    }
-
     constructor() Ownable(msg.sender) {}
+
+    // @inheritdoc IInterchainClientV1
+    function setExecutionFees(address executionFees_) public onlyOwner {
+        executionFees = executionFees_;
+    }
 
     // @inheritdoc IInterchainClientV1
     function setInterchainDB(address _interchainDB) public onlyOwner {
         interchainDB = _interchainDB;
+    }
+
+    // @inheritdoc IInterchainClientV1
+    function setLinkedClient(uint256 chainId, bytes32 client) public onlyOwner {
+        linkedClients[chainId] = client;
     }
 
     /**
@@ -103,8 +108,9 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
     // TODO: Calculate Gas Pricing per module and charge fees
     // @inheritdoc IInterchainClientV1
     function interchainSend(
-        bytes32 receiver,
         uint256 dstChainId,
+        bytes32 receiver,
+        address srcExecutionService,
         bytes calldata message,
         bytes calldata options,
         address[] calldata srcModules
@@ -112,7 +118,9 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
     public
     payable
     {
-        uint256 totalModuleFees = msg.value;
+        uint256 verificationFees = IInterchainDB(interchainDB).getInterchainFee(dstChainId, srcModules);
+        // TODO: should check msg.value >= totalModuleFees
+        uint256 executionFee = msg.value - verificationFees;
 
         InterchainTransaction memory icTx = InterchainTransaction({
             srcSender: TypeCasts.addressToBytes32(msg.sender),
@@ -131,11 +139,18 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         );
         icTx.transactionId = transactionId;
 
-        uint256 dbWriterNonce = IInterchainDB(interchainDB).writeEntryWithVerification{value: totalModuleFees}(
+        icTx.dbWriterNonce = IInterchainDB(interchainDB).writeEntryWithVerification{value: verificationFees}(
             icTx.dstChainId, icTx.transactionId, srcModules
         );
-        icTx.dbWriterNonce = dbWriterNonce;
-
+        IExecutionService(srcExecutionService).requestExecution({
+            dstChainId: dstChainId,
+            // TODO: this should be encodedTx.length
+            txPayloadSize: message.length,
+            transactionId: transactionId,
+            executionFee: executionFee,
+            options: options
+        });
+        IExecutionFees(executionFees).addExecutionFee{value: executionFee}(dstChainId, transactionId);
         emit InterchainTransactionSent(
             icTx.srcSender,
             icTx.srcChainId,
