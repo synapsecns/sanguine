@@ -23,3 +23,9 @@
 [submodule "services/rfq/external/canonical-weth"]
 	path = services/rfq/external/canonical-weth
 	url = https://github.com/gnosis/canonical-weth
+[submodule "packages/contracts-communication/lib/forge-std"]
+	path = packages/contracts-communication/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "packages/contracts-communication/lib/openzeppelin-contracts"]
+	path = packages/contracts-communication/lib/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
