@@ -19,6 +19,11 @@ var DuneAPIKey = os.Getenv("DUNE_API_KEY")
 
 const stipQueryID = 3403369
 
+type duneQueryParams struct {
+	Performance string `json:"performance"`
+	LastHours   int    `json:"last_hours"`
+}
+
 // ExecuteDuneQuery executes a predefined query on the Dune API and returns the http response.
 func (s *STIPRelayer) ExecuteDuneQuery(parentCtx context.Context) (executionID string, err error) {
 	ctx, span := s.handler.Tracer().Start(parentCtx, "ExecuteDuneQuery")
@@ -28,7 +33,15 @@ func (s *STIPRelayer) ExecuteDuneQuery(parentCtx context.Context) (executionID s
 
 	client := &http.Client{}
 	s.handler.ConfigureHTTPClient(client)
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("https://api.dune.com/api/v1/query/%d/execute", stipQueryID), bytes.NewBufferString(`{"performance": "large"}`))
+	params := duneQueryParams{
+		Performance: "large",
+		LastHours:   24,
+	}
+	reqBody, err := json.Marshal(params)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal request body: %w", err)
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("https://api.dune.com/api/v1/query/%d/execute", stipQueryID), bytes.NewBuffer(reqBody))
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %w", err)
 	}
