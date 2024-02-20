@@ -83,6 +83,15 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         arr[2] = c;
     }
 
+    function encodeAndHashEntry(InterchainEntry memory entry)
+        internal
+        pure
+        returns (bytes memory encodedEntry, bytes32 ethSignedHash)
+    {
+        encodedEntry = abi.encode(entry);
+        ethSignedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(encodedEntry)));
+    }
+
     function signEntry(
         InterchainEntry memory entry,
         uint256[] memory pks
@@ -91,8 +100,7 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         pure
         returns (bytes memory signatures)
     {
-        bytes32 digest = keccak256(abi.encode(entry));
-        bytes32 ethSignedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", digest));
+        (, bytes32 ethSignedHash) = encodeAndHashEntry(entry);
         signatures = "";
         for (uint256 i = 0; i < pks.length; ++i) {
             (uint8 v, bytes32 r, bytes32 s) = vm.sign(pks[i], ethSignedHash);
@@ -113,8 +121,9 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
     }
 
     function expectEntryVerifiedEvent(InterchainEntry memory entry) internal {
+        (bytes memory encodedEntry, bytes32 ethSignedHash) = encodeAndHashEntry(entry);
         vm.expectEmit(address(module));
-        emit EntryVerified(entry);
+        emit EntryVerified(entry.srcChainId, encodedEntry, ethSignedHash);
     }
 
     function expectIncorrectSignaturesLengthRevert(uint256 length) internal {
