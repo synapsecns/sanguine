@@ -3,6 +3,7 @@ package p2p
 import (
 	"context"
 	"fmt"
+	"github.com/libp2p/go-libp2p/p2p/discovery/mdns"
 	"log"
 	"sync"
 	"time"
@@ -139,6 +140,7 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	fmt.Println("eth address:")
 	fmt.Println(l.address)
 
+	l.initMDNS(ctx, l.host, dbTopic)
 	l.ipfs.Bootstrap(peers)
 	for _, p := range peers {
 		l.host.ConnManager().TagPeer(p.ID, "keep", 100)
@@ -304,6 +306,42 @@ func (l *libP2PManagerImpl) Discover(ctx context.Context, h host.Host, dht *dual
 		}
 	}
 }
+
+type discoveryNotifee struct {
+	PeerChan chan peer.AddrInfo
+}
+
+// interface to be called when new  peer is found
+func (n *discoveryNotifee) HandlePeerFound(pi peer.AddrInfo) {
+	n.PeerChan <- pi
+}
+
+// Initialize the MDNS service
+func (l *libP2PManagerImpl) initMDNS(ctx context.Context, peerhost host.Host, rendezvous string) chan peer.AddrInfo {
+	// register with service so that we get notified about peer discovery
+	n := &discoveryNotifee{}
+	n.PeerChan = make(chan peer.AddrInfo)
+
+	// An hour might be a long long period in practical applications. But this is fine for us
+	ser := mdns.NewMdnsService(peerhost, rendezvous, n)
+	if err := ser.Start(); err != nil {
+		panic(err)
+	}
+
+	go func() {
+		select {
+		case <-ctx.Done():
+			return
+		case mp := <-n.PeerChan:
+			err := l.host.Connect(ctx, mp)
+			if err != nil {
+				fmt.Println("could not connect to peer: ", err)
+			}
+		}
+	}()
+	return n.PeerChan
+}
+
 func makePeers(peers []string) ([]peer.AddrInfo, error) {
 	var p []peer.AddrInfo
 	for _, addr := range peers {
