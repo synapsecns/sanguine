@@ -5,6 +5,7 @@ package gcpsigner
 
 import (
 	"context"
+	"crypto/sha256"
 	"crypto/x509/pkix"
 	"encoding/asn1"
 	"encoding/pem"
@@ -222,7 +223,8 @@ func (mk *managedKey) Type() pb.KeyType {
 
 func (mk *managedKey) Sign(bytes []byte) ([]byte, error) {
 	// TODO: we should figure out a way to respect context here. One possible solution
-	sigBytes, err := mk.SignMessage(context.Background(), bytes, true)
+	hashed := sha256.Sum256(bytes)
+	sigBytes, err := mk.SignMessage(context.Background(), hashed[:], false)
 	if err != nil {
 		return nil, fmt.Errorf("could not derive ethereum signature: %w", err)
 	}
