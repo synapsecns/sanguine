@@ -372,12 +372,11 @@ func (c Config) GetRebalanceMethod(chainID int, token string) (method RebalanceM
 	}
 	switch tokenConfig.RebalanceMethod {
 	case "cctp":
-		return CCTPRebalance, nil
+		return RebalanceMethodCCTP, nil
 	case "native":
-		return NativeBridgeRebalance, nil
+		return RebalanceMethodNative, nil
 	}
-	return method, fmt.Errorf("invalid rebalance method for chain %d and token %s: %s", chainID, token, tokenConfig.RebalanceMethod)
-
+	return RebalanceMethodNone, nil
 }
 
 // GetMaintenanceBalancePct returns the maintenance balance percentage for the given chain and token.

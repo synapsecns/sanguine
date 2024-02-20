@@ -6,13 +6,10 @@ package relconfig
 type RebalanceMethod uint8
 
 const (
-	// CCTPRebalance is the rebalance method for CCTP.
-	CCTPRebalance RebalanceMethod = iota + 1
-	// NativeBridgeRebalance is the rebalance method for native bridge.
-	NativeBridgeRebalance
+	// RebalanceMethodNone is the default rebalance method.
+	RebalanceMethodNone RebalanceMethod = iota
+	// RebalanceMethodCCTP is the rebalance method for CCTP.
+	RebalanceMethodCCTP
+	// RebalanceMethodNative is the rebalance method for native bridge.
+	RebalanceMethodNative
 )
-
-var stringToRebalanceMethod = map[string]RebalanceMethod{
-	"cctp":   CCTPRebalance,
-	"native": NativeBridgeRebalance,
-}
