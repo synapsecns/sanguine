@@ -3,14 +3,15 @@ import { useEffect, useState } from 'react'
 
 import { Chain } from '@/utils/types'
 import { getTransactionReceipt } from './getTransactionReceipt'
+import { useIntervalTimer } from './useIntervalTimer'
 
 export const useIsTxReverted = (
   txHash: Address,
   chain: Chain,
-  checkForRevert: boolean,
-  checkTime: number
+  checkForRevert: boolean
 ) => {
   const [isReverted, setIsReverted] = useState<boolean>(false)
+  const currentTime = useIntervalTimer(30000)
 
   const getTxRevertStatus = async (txHash: Address, chain: Chain) => {
     /** Remove after testing */
@@ -28,7 +29,7 @@ export const useIsTxReverted = (
     if (checkForRevert) {
       getTxRevertStatus(txHash, chain)
     }
-  }, [checkForRevert, txHash, chain, checkTime])
+  }, [checkForRevert, txHash, chain, currentTime])
 
   return isReverted
 }
