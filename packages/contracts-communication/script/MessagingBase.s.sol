@@ -10,6 +10,8 @@ import { InterchainClientV1 } from "../contracts/InterchainClientV1.sol";
 
 import { SynapseModule } from "../contracts/modules/SynapseModule.sol";
 
+import { InterchainApp } from "../contracts/InterchainApp.sol";
+
 import { GasOracleMock } from "../test/mocks/GasOracleMock.sol";
 
 
@@ -19,6 +21,7 @@ contract MessagingBase is Script {
     InterchainClientV1 public icClient;
     SynapseModule public synapseModule;
     GasOracleMock public gasOracleMock;
+    InterchainApp public icApp;
 
     function run() external {
         vm.startBroadcast();
@@ -31,6 +34,9 @@ contract MessagingBase is Script {
         synapseModule = new SynapseModule(address(icDB), msg.sender);
         gasOracleMock = new GasOracleMock();
         synapseModule.setGasOracle(address(gasOracleMock));
+        icApp = new InterchainApp(address(icClient), new address[](0), new address[](0));
+
+
 
         vm.stopBroadcast();
     }
