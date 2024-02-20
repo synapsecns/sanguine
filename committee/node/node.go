@@ -3,6 +3,11 @@ package node
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -22,10 +27,6 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
-	"math/big"
-	"strings"
-	"sync"
-	"time"
 )
 
 type Node struct {
@@ -96,6 +97,8 @@ func NewNode(ctx context.Context, handler metrics.Handler, cfg config.Config) (*
 	if err != nil {
 		return nil, fmt.Errorf("could not create peer manager: %w", err)
 	}
+
+	fmt.Println(node.IPFSAddress())
 
 	return node, nil
 }
