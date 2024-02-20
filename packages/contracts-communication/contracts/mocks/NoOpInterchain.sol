@@ -8,8 +8,8 @@ contract NoOpInterchain is IInterchainDB {
     /// Note: there are no guarantees that this entry will be available for reading on any of the remote chains.
     /// Use `verifyEntry` to ensure that the entry is available for reading on the destination chain.
     /// @param dataHash     The hash of the data to be written to the Interchain DataBase as a new entry
-    /// @return writerNonce The writer-specific nonce of the written entry
-    function writeEntry(bytes32 dataHash) external returns (uint256 writerNonce) {
+    /// @return dbNonce The writer-specific nonce of the written entry
+    function writeEntry(bytes32 dataHash) external returns (uint256 dbNonce) {
         return 0;
     }
 
@@ -19,17 +19,10 @@ contract NoOpInterchain is IInterchainDB {
     /// Note: this method is permissionless, and anyone can request verification for any entry.
     /// @dev Will revert if the entry with the given nonce does not exist.
     /// @param destChainId   The chain id of the destination chain
-    /// @param writer        The address of the writer on the source chain
-    /// @param writerNonce   The nonce of the writer on the source chain
+    /// @param dbNonce       The database nonce of the written entry on this chain
     /// @param srcModules    The source chain addresses of the Interchain Modules to use for verification
-    function requestVerification(
-        uint256 destChainId,
-        address writer,
-        uint256 writerNonce,
-        address[] memory srcModules
-    )
-    external
-    payable {
+    function requestVerification(uint256 destChainId, uint256 dbNonce, address[] memory srcModules) external payable {
+
 
     }
 
@@ -42,7 +35,7 @@ contract NoOpInterchain is IInterchainDB {
     /// @param destChainId  The chain id of the destination chain
     /// @param dataHash     The hash of the data to be written to the Interchain DataBase as a new entry
     /// @param srcModules   The source chain addresses of the Interchain Modules to use for verification
-    /// @return writerNonce The writer-specific nonce of the written entry
+    /// @return dbNonce The writer-specific nonce of the written entry
     function writeEntryWithVerification(
         uint256 destChainId,
         bytes32 dataHash,
@@ -50,7 +43,7 @@ contract NoOpInterchain is IInterchainDB {
     )
     external
     payable
-    returns (uint256 writerNonce) {
+    returns (uint256 dbNonce) {
         return 0;
     }
 
@@ -69,19 +62,19 @@ contract NoOpInterchain is IInterchainDB {
         return 0;
     }
 
+
     /// @notice Get the Interchain Entry by the writer and the writer nonce.
     /// @dev Will revert if the entry with the given nonce does not exist.
-    /// @param writer       The address of the writer on this chain
-    /// @param writerNonce  The nonce of the writer's entry on this chain
-    function getEntry(address writer, uint256 writerNonce) external view returns (InterchainEntry memory) {
+    /// @param dbNonce      The database nonce of the written entry on this chain
+    function getEntry(uint256 dbNonce) external view returns (InterchainEntry memory) {
         return InterchainEntry(0, 0, 0, 0);
     }
 
-    /// @notice Get the nonce of the writer on this chain.
-    /// @param writer       The address of the writer on this chain
-    function getWriterNonce(address writer) external view returns (uint256) {
+    /// @notice Get the nonce of the database.
+    function getDBNonce() external view returns (uint256)  {
         return 0;
     }
+
 
     /// @notice Read the data written on specific source chain by a specific writer,
     /// and verify it on the destination chain using the provided Interchain Module.
@@ -99,4 +92,5 @@ contract NoOpInterchain is IInterchainDB {
     returns (uint256 moduleVerifiedAt) {
         return 0;
     }
+
 }
