@@ -3,6 +3,10 @@ package p2p
 import (
 	"context"
 	"fmt"
+	"log"
+	"sync"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	ipfslite "github.com/hsanjuan/ipfs-lite"
 	"github.com/ipfs/go-datastore"
@@ -11,7 +15,7 @@ import (
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-kad-dht/dual"
-	"github.com/libp2p/go-libp2p-pubsub"
+	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/discovery"
 	"github.com/libp2p/go-libp2p/core/host"
@@ -23,9 +27,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/synapsecns/sanguine/committee/db"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
-	"log"
-	"sync"
-	"time"
 )
 
 type LibP2PManager interface {
@@ -127,6 +128,9 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	}
 
 	l.ipfs, err = ipfslite.New(ctx, l.globalDS, nil, l.host, l.dht, &ipfslite.Config{})
+	if err != nil {
+		return fmt.Errorf("error starting IPFS with bootstrap peers: %w", err)
+	}
 	go l.Discover(ctx, l.host, l.dht, dbTopic)
 
 	l.pubsub, err = pubsub.NewGossipSub(ctx, l.host)
@@ -142,9 +146,13 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 
 	go func() {
 		for {
-			time.Sleep(time.Second * 1)
+			time.Sleep(time.Second * 4)
 			fmt.Println("pubsub peers: ", len(l.pubsub.ListPeers(dbTopic)))
 			fmt.Println("global peers: ", len(l.host.Peerstore().Peers()))
+			fmt.Println("who am I?")
+			fmt.Println(l.host.Addrs())
+			fmt.Println("eth address:")
+			fmt.Println(l.address)
 		}
 	}()
 
