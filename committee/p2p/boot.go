@@ -75,6 +75,7 @@ var RebroadcastingInterval = time.Minute
 // node itself.
 func NewLibP2PManager(ctx context.Context, handler metrics.Handler, auth signer.Signer, store db.Datstores, port int) (LibP2PManager, error) {
 	l := &libP2PManagerImpl{}
+	l.port = port
 	_, err := l.setupHost(ctx, auth.PrivKey()) // call createHost function
 	if err != nil {
 		return nil, err
@@ -88,7 +89,6 @@ func NewLibP2PManager(ctx context.Context, handler metrics.Handler, auth signer.
 	l.datastoreFactory = store
 	l.datastores = make(map[common.Address]datastore.Batching)
 	l.handler = handler
-	l.port = port
 
 	return l, nil
 }
