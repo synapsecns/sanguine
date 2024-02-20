@@ -51,7 +51,9 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
             revert InterchainModule__SameChainId();
         }
         IInterchainDB(INTERCHAIN_DB).verifyEntry(entry);
-        emit EntryVerified(entry);
+        emit EntryVerified(
+            entry.srcChainId, encodedEntry, MessageHashUtils.toEthSignedMessageHash(keccak256(encodedEntry))
+        );
     }
 
     /// @dev Internal logic to request the verification of an entry on the destination chain.
