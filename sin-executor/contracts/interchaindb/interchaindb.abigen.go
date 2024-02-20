@@ -31,22 +31,22 @@ var (
 
 // InterchainEntry is an auto generated low-level Go binding around an user-defined struct.
 type InterchainEntry struct {
-	SrcChainId  *big.Int
-	SrcWriter   [32]byte
-	WriterNonce *big.Int
-	DataHash    [32]byte
+	SrcChainId *big.Int
+	DbNonce    *big.Int
+	SrcWriter  [32]byte
+	DataHash   [32]byte
 }
 
 // IInterchainDBMetaData contains all meta data concerning the IInterchainDB contract.
 var IInterchainDBMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"existingDataHash\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainEntry\",\"name\":\"newEntry\",\"type\":\"tuple\"}],\"name\":\"InterchainDB__ConflictingEntries\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"writer\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"}],\"name\":\"InterchainDB__EntryDoesNotExist\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actualFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expectedFee\",\"type\":\"uint256\"}],\"name\":\"InterchainDB__IncorrectFeeAmount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainDB__NoModulesSpecified\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainDB__SameChainId\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"writer\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"}],\"name\":\"getEntry\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainEntry\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"internalType\":\"address[]\",\"name\":\"srcModules\",\"type\":\"address[]\"}],\"name\":\"getInterchainFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"writer\",\"type\":\"address\"}],\"name\":\"getWriterNonce\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"dstModule\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainEntry\",\"name\":\"entry\",\"type\":\"tuple\"}],\"name\":\"readEntry\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"moduleVerifiedAt\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"writer\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"internalType\":\"address[]\",\"name\":\"srcModules\",\"type\":\"address[]\"}],\"name\":\"requestVerification\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainEntry\",\"name\":\"entry\",\"type\":\"tuple\"}],\"name\":\"verifyEntry\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"name\":\"writeEntry\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"},{\"internalType\":\"address[]\",\"name\":\"srcModules\",\"type\":\"address[]\"}],\"name\":\"writeEntryWithVerification\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"}],\"stateMutability\":\"payable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"existingEntryValue\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainEntry\",\"name\":\"newEntry\",\"type\":\"tuple\"}],\"name\":\"InterchainDB__ConflictingEntries\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"}],\"name\":\"InterchainDB__EntryDoesNotExist\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actualFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expectedFee\",\"type\":\"uint256\"}],\"name\":\"InterchainDB__IncorrectFeeAmount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainDB__NoModulesSpecified\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainDB__SameChainId\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"getDBNonce\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"}],\"name\":\"getEntry\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainEntry\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"internalType\":\"address[]\",\"name\":\"srcModules\",\"type\":\"address[]\"}],\"name\":\"getInterchainFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"dstModule\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainEntry\",\"name\":\"entry\",\"type\":\"tuple\"}],\"name\":\"readEntry\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"moduleVerifiedAt\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"},{\"internalType\":\"address[]\",\"name\":\"srcModules\",\"type\":\"address[]\"}],\"name\":\"requestVerification\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainEntry\",\"name\":\"entry\",\"type\":\"tuple\"}],\"name\":\"verifyEntry\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"name\":\"writeEntry\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"},{\"internalType\":\"address[]\",\"name\":\"srcModules\",\"type\":\"address[]\"}],\"name\":\"writeEntryWithVerification\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"}],\"stateMutability\":\"payable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
-		"b8a740e0": "getEntry(address,uint256)",
+		"f338140e": "getDBNonce()",
+		"bae78d7b": "getEntry(uint256)",
 		"fc7686ec": "getInterchainFee(uint256,address[])",
-		"4a30a686": "getWriterNonce(address)",
-		"d48588e0": "readEntry(address,(uint256,bytes32,uint256,bytes32))",
-		"b4f16bae": "requestVerification(uint256,address,uint256,address[])",
-		"9cbc6dd5": "verifyEntry((uint256,bytes32,uint256,bytes32))",
+		"a9c9cff1": "readEntry(address,(uint256,uint256,bytes32,bytes32))",
+		"81ab5b5a": "requestVerification(uint256,uint256,address[])",
+		"54941dfa": "verifyEntry((uint256,uint256,bytes32,bytes32))",
 		"2ad8c706": "writeEntry(bytes32)",
 		"67c769af": "writeEntryWithVerification(uint256,bytes32,address[])",
 	},
@@ -202,12 +202,43 @@ func (_IInterchainDB *IInterchainDBTransactorRaw) Transact(opts *bind.TransactOp
 	return _IInterchainDB.Contract.contract.Transact(opts, method, params...)
 }
 
-// GetEntry is a free data retrieval call binding the contract method 0xb8a740e0.
+// GetDBNonce is a free data retrieval call binding the contract method 0xf338140e.
 //
-// Solidity: function getEntry(address writer, uint256 writerNonce) view returns((uint256,bytes32,uint256,bytes32))
-func (_IInterchainDB *IInterchainDBCaller) GetEntry(opts *bind.CallOpts, writer common.Address, writerNonce *big.Int) (InterchainEntry, error) {
+// Solidity: function getDBNonce() view returns(uint256)
+func (_IInterchainDB *IInterchainDBCaller) GetDBNonce(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
-	err := _IInterchainDB.contract.Call(opts, &out, "getEntry", writer, writerNonce)
+	err := _IInterchainDB.contract.Call(opts, &out, "getDBNonce")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetDBNonce is a free data retrieval call binding the contract method 0xf338140e.
+//
+// Solidity: function getDBNonce() view returns(uint256)
+func (_IInterchainDB *IInterchainDBSession) GetDBNonce() (*big.Int, error) {
+	return _IInterchainDB.Contract.GetDBNonce(&_IInterchainDB.CallOpts)
+}
+
+// GetDBNonce is a free data retrieval call binding the contract method 0xf338140e.
+//
+// Solidity: function getDBNonce() view returns(uint256)
+func (_IInterchainDB *IInterchainDBCallerSession) GetDBNonce() (*big.Int, error) {
+	return _IInterchainDB.Contract.GetDBNonce(&_IInterchainDB.CallOpts)
+}
+
+// GetEntry is a free data retrieval call binding the contract method 0xbae78d7b.
+//
+// Solidity: function getEntry(uint256 dbNonce) view returns((uint256,uint256,bytes32,bytes32))
+func (_IInterchainDB *IInterchainDBCaller) GetEntry(opts *bind.CallOpts, dbNonce *big.Int) (InterchainEntry, error) {
+	var out []interface{}
+	err := _IInterchainDB.contract.Call(opts, &out, "getEntry", dbNonce)
 
 	if err != nil {
 		return *new(InterchainEntry), err
@@ -219,18 +250,18 @@ func (_IInterchainDB *IInterchainDBCaller) GetEntry(opts *bind.CallOpts, writer 
 
 }
 
-// GetEntry is a free data retrieval call binding the contract method 0xb8a740e0.
+// GetEntry is a free data retrieval call binding the contract method 0xbae78d7b.
 //
-// Solidity: function getEntry(address writer, uint256 writerNonce) view returns((uint256,bytes32,uint256,bytes32))
-func (_IInterchainDB *IInterchainDBSession) GetEntry(writer common.Address, writerNonce *big.Int) (InterchainEntry, error) {
-	return _IInterchainDB.Contract.GetEntry(&_IInterchainDB.CallOpts, writer, writerNonce)
+// Solidity: function getEntry(uint256 dbNonce) view returns((uint256,uint256,bytes32,bytes32))
+func (_IInterchainDB *IInterchainDBSession) GetEntry(dbNonce *big.Int) (InterchainEntry, error) {
+	return _IInterchainDB.Contract.GetEntry(&_IInterchainDB.CallOpts, dbNonce)
 }
 
-// GetEntry is a free data retrieval call binding the contract method 0xb8a740e0.
+// GetEntry is a free data retrieval call binding the contract method 0xbae78d7b.
 //
-// Solidity: function getEntry(address writer, uint256 writerNonce) view returns((uint256,bytes32,uint256,bytes32))
-func (_IInterchainDB *IInterchainDBCallerSession) GetEntry(writer common.Address, writerNonce *big.Int) (InterchainEntry, error) {
-	return _IInterchainDB.Contract.GetEntry(&_IInterchainDB.CallOpts, writer, writerNonce)
+// Solidity: function getEntry(uint256 dbNonce) view returns((uint256,uint256,bytes32,bytes32))
+func (_IInterchainDB *IInterchainDBCallerSession) GetEntry(dbNonce *big.Int) (InterchainEntry, error) {
+	return _IInterchainDB.Contract.GetEntry(&_IInterchainDB.CallOpts, dbNonce)
 }
 
 // GetInterchainFee is a free data retrieval call binding the contract method 0xfc7686ec.
@@ -264,40 +295,9 @@ func (_IInterchainDB *IInterchainDBCallerSession) GetInterchainFee(destChainId *
 	return _IInterchainDB.Contract.GetInterchainFee(&_IInterchainDB.CallOpts, destChainId, srcModules)
 }
 
-// GetWriterNonce is a free data retrieval call binding the contract method 0x4a30a686.
+// ReadEntry is a free data retrieval call binding the contract method 0xa9c9cff1.
 //
-// Solidity: function getWriterNonce(address writer) view returns(uint256)
-func (_IInterchainDB *IInterchainDBCaller) GetWriterNonce(opts *bind.CallOpts, writer common.Address) (*big.Int, error) {
-	var out []interface{}
-	err := _IInterchainDB.contract.Call(opts, &out, "getWriterNonce", writer)
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// GetWriterNonce is a free data retrieval call binding the contract method 0x4a30a686.
-//
-// Solidity: function getWriterNonce(address writer) view returns(uint256)
-func (_IInterchainDB *IInterchainDBSession) GetWriterNonce(writer common.Address) (*big.Int, error) {
-	return _IInterchainDB.Contract.GetWriterNonce(&_IInterchainDB.CallOpts, writer)
-}
-
-// GetWriterNonce is a free data retrieval call binding the contract method 0x4a30a686.
-//
-// Solidity: function getWriterNonce(address writer) view returns(uint256)
-func (_IInterchainDB *IInterchainDBCallerSession) GetWriterNonce(writer common.Address) (*big.Int, error) {
-	return _IInterchainDB.Contract.GetWriterNonce(&_IInterchainDB.CallOpts, writer)
-}
-
-// ReadEntry is a free data retrieval call binding the contract method 0xd48588e0.
-//
-// Solidity: function readEntry(address dstModule, (uint256,bytes32,uint256,bytes32) entry) view returns(uint256 moduleVerifiedAt)
+// Solidity: function readEntry(address dstModule, (uint256,uint256,bytes32,bytes32) entry) view returns(uint256 moduleVerifiedAt)
 func (_IInterchainDB *IInterchainDBCaller) ReadEntry(opts *bind.CallOpts, dstModule common.Address, entry InterchainEntry) (*big.Int, error) {
 	var out []interface{}
 	err := _IInterchainDB.contract.Call(opts, &out, "readEntry", dstModule, entry)
@@ -312,110 +312,110 @@ func (_IInterchainDB *IInterchainDBCaller) ReadEntry(opts *bind.CallOpts, dstMod
 
 }
 
-// ReadEntry is a free data retrieval call binding the contract method 0xd48588e0.
+// ReadEntry is a free data retrieval call binding the contract method 0xa9c9cff1.
 //
-// Solidity: function readEntry(address dstModule, (uint256,bytes32,uint256,bytes32) entry) view returns(uint256 moduleVerifiedAt)
+// Solidity: function readEntry(address dstModule, (uint256,uint256,bytes32,bytes32) entry) view returns(uint256 moduleVerifiedAt)
 func (_IInterchainDB *IInterchainDBSession) ReadEntry(dstModule common.Address, entry InterchainEntry) (*big.Int, error) {
 	return _IInterchainDB.Contract.ReadEntry(&_IInterchainDB.CallOpts, dstModule, entry)
 }
 
-// ReadEntry is a free data retrieval call binding the contract method 0xd48588e0.
+// ReadEntry is a free data retrieval call binding the contract method 0xa9c9cff1.
 //
-// Solidity: function readEntry(address dstModule, (uint256,bytes32,uint256,bytes32) entry) view returns(uint256 moduleVerifiedAt)
+// Solidity: function readEntry(address dstModule, (uint256,uint256,bytes32,bytes32) entry) view returns(uint256 moduleVerifiedAt)
 func (_IInterchainDB *IInterchainDBCallerSession) ReadEntry(dstModule common.Address, entry InterchainEntry) (*big.Int, error) {
 	return _IInterchainDB.Contract.ReadEntry(&_IInterchainDB.CallOpts, dstModule, entry)
 }
 
-// RequestVerification is a paid mutator transaction binding the contract method 0xb4f16bae.
+// RequestVerification is a paid mutator transaction binding the contract method 0x81ab5b5a.
 //
-// Solidity: function requestVerification(uint256 destChainId, address writer, uint256 writerNonce, address[] srcModules) payable returns()
-func (_IInterchainDB *IInterchainDBTransactor) RequestVerification(opts *bind.TransactOpts, destChainId *big.Int, writer common.Address, writerNonce *big.Int, srcModules []common.Address) (*types.Transaction, error) {
-	return _IInterchainDB.contract.Transact(opts, "requestVerification", destChainId, writer, writerNonce, srcModules)
+// Solidity: function requestVerification(uint256 destChainId, uint256 dbNonce, address[] srcModules) payable returns()
+func (_IInterchainDB *IInterchainDBTransactor) RequestVerification(opts *bind.TransactOpts, destChainId *big.Int, dbNonce *big.Int, srcModules []common.Address) (*types.Transaction, error) {
+	return _IInterchainDB.contract.Transact(opts, "requestVerification", destChainId, dbNonce, srcModules)
 }
 
-// RequestVerification is a paid mutator transaction binding the contract method 0xb4f16bae.
+// RequestVerification is a paid mutator transaction binding the contract method 0x81ab5b5a.
 //
-// Solidity: function requestVerification(uint256 destChainId, address writer, uint256 writerNonce, address[] srcModules) payable returns()
-func (_IInterchainDB *IInterchainDBSession) RequestVerification(destChainId *big.Int, writer common.Address, writerNonce *big.Int, srcModules []common.Address) (*types.Transaction, error) {
-	return _IInterchainDB.Contract.RequestVerification(&_IInterchainDB.TransactOpts, destChainId, writer, writerNonce, srcModules)
+// Solidity: function requestVerification(uint256 destChainId, uint256 dbNonce, address[] srcModules) payable returns()
+func (_IInterchainDB *IInterchainDBSession) RequestVerification(destChainId *big.Int, dbNonce *big.Int, srcModules []common.Address) (*types.Transaction, error) {
+	return _IInterchainDB.Contract.RequestVerification(&_IInterchainDB.TransactOpts, destChainId, dbNonce, srcModules)
 }
 
-// RequestVerification is a paid mutator transaction binding the contract method 0xb4f16bae.
+// RequestVerification is a paid mutator transaction binding the contract method 0x81ab5b5a.
 //
-// Solidity: function requestVerification(uint256 destChainId, address writer, uint256 writerNonce, address[] srcModules) payable returns()
-func (_IInterchainDB *IInterchainDBTransactorSession) RequestVerification(destChainId *big.Int, writer common.Address, writerNonce *big.Int, srcModules []common.Address) (*types.Transaction, error) {
-	return _IInterchainDB.Contract.RequestVerification(&_IInterchainDB.TransactOpts, destChainId, writer, writerNonce, srcModules)
+// Solidity: function requestVerification(uint256 destChainId, uint256 dbNonce, address[] srcModules) payable returns()
+func (_IInterchainDB *IInterchainDBTransactorSession) RequestVerification(destChainId *big.Int, dbNonce *big.Int, srcModules []common.Address) (*types.Transaction, error) {
+	return _IInterchainDB.Contract.RequestVerification(&_IInterchainDB.TransactOpts, destChainId, dbNonce, srcModules)
 }
 
-// VerifyEntry is a paid mutator transaction binding the contract method 0x9cbc6dd5.
+// VerifyEntry is a paid mutator transaction binding the contract method 0x54941dfa.
 //
-// Solidity: function verifyEntry((uint256,bytes32,uint256,bytes32) entry) returns()
+// Solidity: function verifyEntry((uint256,uint256,bytes32,bytes32) entry) returns()
 func (_IInterchainDB *IInterchainDBTransactor) VerifyEntry(opts *bind.TransactOpts, entry InterchainEntry) (*types.Transaction, error) {
 	return _IInterchainDB.contract.Transact(opts, "verifyEntry", entry)
 }
 
-// VerifyEntry is a paid mutator transaction binding the contract method 0x9cbc6dd5.
+// VerifyEntry is a paid mutator transaction binding the contract method 0x54941dfa.
 //
-// Solidity: function verifyEntry((uint256,bytes32,uint256,bytes32) entry) returns()
+// Solidity: function verifyEntry((uint256,uint256,bytes32,bytes32) entry) returns()
 func (_IInterchainDB *IInterchainDBSession) VerifyEntry(entry InterchainEntry) (*types.Transaction, error) {
 	return _IInterchainDB.Contract.VerifyEntry(&_IInterchainDB.TransactOpts, entry)
 }
 
-// VerifyEntry is a paid mutator transaction binding the contract method 0x9cbc6dd5.
+// VerifyEntry is a paid mutator transaction binding the contract method 0x54941dfa.
 //
-// Solidity: function verifyEntry((uint256,bytes32,uint256,bytes32) entry) returns()
+// Solidity: function verifyEntry((uint256,uint256,bytes32,bytes32) entry) returns()
 func (_IInterchainDB *IInterchainDBTransactorSession) VerifyEntry(entry InterchainEntry) (*types.Transaction, error) {
 	return _IInterchainDB.Contract.VerifyEntry(&_IInterchainDB.TransactOpts, entry)
 }
 
 // WriteEntry is a paid mutator transaction binding the contract method 0x2ad8c706.
 //
-// Solidity: function writeEntry(bytes32 dataHash) returns(uint256 writerNonce)
+// Solidity: function writeEntry(bytes32 dataHash) returns(uint256 dbNonce)
 func (_IInterchainDB *IInterchainDBTransactor) WriteEntry(opts *bind.TransactOpts, dataHash [32]byte) (*types.Transaction, error) {
 	return _IInterchainDB.contract.Transact(opts, "writeEntry", dataHash)
 }
 
 // WriteEntry is a paid mutator transaction binding the contract method 0x2ad8c706.
 //
-// Solidity: function writeEntry(bytes32 dataHash) returns(uint256 writerNonce)
+// Solidity: function writeEntry(bytes32 dataHash) returns(uint256 dbNonce)
 func (_IInterchainDB *IInterchainDBSession) WriteEntry(dataHash [32]byte) (*types.Transaction, error) {
 	return _IInterchainDB.Contract.WriteEntry(&_IInterchainDB.TransactOpts, dataHash)
 }
 
 // WriteEntry is a paid mutator transaction binding the contract method 0x2ad8c706.
 //
-// Solidity: function writeEntry(bytes32 dataHash) returns(uint256 writerNonce)
+// Solidity: function writeEntry(bytes32 dataHash) returns(uint256 dbNonce)
 func (_IInterchainDB *IInterchainDBTransactorSession) WriteEntry(dataHash [32]byte) (*types.Transaction, error) {
 	return _IInterchainDB.Contract.WriteEntry(&_IInterchainDB.TransactOpts, dataHash)
 }
 
 // WriteEntryWithVerification is a paid mutator transaction binding the contract method 0x67c769af.
 //
-// Solidity: function writeEntryWithVerification(uint256 destChainId, bytes32 dataHash, address[] srcModules) payable returns(uint256 writerNonce)
+// Solidity: function writeEntryWithVerification(uint256 destChainId, bytes32 dataHash, address[] srcModules) payable returns(uint256 dbNonce)
 func (_IInterchainDB *IInterchainDBTransactor) WriteEntryWithVerification(opts *bind.TransactOpts, destChainId *big.Int, dataHash [32]byte, srcModules []common.Address) (*types.Transaction, error) {
 	return _IInterchainDB.contract.Transact(opts, "writeEntryWithVerification", destChainId, dataHash, srcModules)
 }
 
 // WriteEntryWithVerification is a paid mutator transaction binding the contract method 0x67c769af.
 //
-// Solidity: function writeEntryWithVerification(uint256 destChainId, bytes32 dataHash, address[] srcModules) payable returns(uint256 writerNonce)
+// Solidity: function writeEntryWithVerification(uint256 destChainId, bytes32 dataHash, address[] srcModules) payable returns(uint256 dbNonce)
 func (_IInterchainDB *IInterchainDBSession) WriteEntryWithVerification(destChainId *big.Int, dataHash [32]byte, srcModules []common.Address) (*types.Transaction, error) {
 	return _IInterchainDB.Contract.WriteEntryWithVerification(&_IInterchainDB.TransactOpts, destChainId, dataHash, srcModules)
 }
 
 // WriteEntryWithVerification is a paid mutator transaction binding the contract method 0x67c769af.
 //
-// Solidity: function writeEntryWithVerification(uint256 destChainId, bytes32 dataHash, address[] srcModules) payable returns(uint256 writerNonce)
+// Solidity: function writeEntryWithVerification(uint256 destChainId, bytes32 dataHash, address[] srcModules) payable returns(uint256 dbNonce)
 func (_IInterchainDB *IInterchainDBTransactorSession) WriteEntryWithVerification(destChainId *big.Int, dataHash [32]byte, srcModules []common.Address) (*types.Transaction, error) {
 	return _IInterchainDB.Contract.WriteEntryWithVerification(&_IInterchainDB.TransactOpts, destChainId, dataHash, srcModules)
 }
 
 // IInterchainModuleMetaData contains all meta data concerning the IInterchainModule contract.
 var IInterchainModuleMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"}],\"name\":\"InterchainModule__IncorrectSourceChainId\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"InterchainModule__InsufficientFee\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainModule__NotInterchainDB\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainModule__SameChainId\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"}],\"name\":\"getModuleFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainEntry\",\"name\":\"entry\",\"type\":\"tuple\"}],\"name\":\"requestVerification\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"}],\"name\":\"InterchainModule__IncorrectSourceChainId\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"InterchainModule__InsufficientFee\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainModule__NotInterchainDB\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainModule__SameChainId\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"}],\"name\":\"getModuleFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainEntry\",\"name\":\"entry\",\"type\":\"tuple\"}],\"name\":\"requestVerification\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"dc8e4f89": "getModuleFee(uint256)",
-		"e3777216": "requestVerification(uint256,(uint256,bytes32,uint256,bytes32))",
+		"f6bc485f": "requestVerification(uint256,(uint256,uint256,bytes32,bytes32))",
 	},
 }
 
@@ -600,41 +600,41 @@ func (_IInterchainModule *IInterchainModuleCallerSession) GetModuleFee(destChain
 	return _IInterchainModule.Contract.GetModuleFee(&_IInterchainModule.CallOpts, destChainId)
 }
 
-// RequestVerification is a paid mutator transaction binding the contract method 0xe3777216.
+// RequestVerification is a paid mutator transaction binding the contract method 0xf6bc485f.
 //
-// Solidity: function requestVerification(uint256 destChainId, (uint256,bytes32,uint256,bytes32) entry) payable returns()
+// Solidity: function requestVerification(uint256 destChainId, (uint256,uint256,bytes32,bytes32) entry) payable returns()
 func (_IInterchainModule *IInterchainModuleTransactor) RequestVerification(opts *bind.TransactOpts, destChainId *big.Int, entry InterchainEntry) (*types.Transaction, error) {
 	return _IInterchainModule.contract.Transact(opts, "requestVerification", destChainId, entry)
 }
 
-// RequestVerification is a paid mutator transaction binding the contract method 0xe3777216.
+// RequestVerification is a paid mutator transaction binding the contract method 0xf6bc485f.
 //
-// Solidity: function requestVerification(uint256 destChainId, (uint256,bytes32,uint256,bytes32) entry) payable returns()
+// Solidity: function requestVerification(uint256 destChainId, (uint256,uint256,bytes32,bytes32) entry) payable returns()
 func (_IInterchainModule *IInterchainModuleSession) RequestVerification(destChainId *big.Int, entry InterchainEntry) (*types.Transaction, error) {
 	return _IInterchainModule.Contract.RequestVerification(&_IInterchainModule.TransactOpts, destChainId, entry)
 }
 
-// RequestVerification is a paid mutator transaction binding the contract method 0xe3777216.
+// RequestVerification is a paid mutator transaction binding the contract method 0xf6bc485f.
 //
-// Solidity: function requestVerification(uint256 destChainId, (uint256,bytes32,uint256,bytes32) entry) payable returns()
+// Solidity: function requestVerification(uint256 destChainId, (uint256,uint256,bytes32,bytes32) entry) payable returns()
 func (_IInterchainModule *IInterchainModuleTransactorSession) RequestVerification(destChainId *big.Int, entry InterchainEntry) (*types.Transaction, error) {
 	return _IInterchainModule.Contract.RequestVerification(&_IInterchainModule.TransactOpts, destChainId, entry)
 }
 
 // InterchainDBMetaData contains all meta data concerning the InterchainDB contract.
 var InterchainDBMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"existingDataHash\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainEntry\",\"name\":\"newEntry\",\"type\":\"tuple\"}],\"name\":\"InterchainDB__ConflictingEntries\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"writer\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"}],\"name\":\"InterchainDB__EntryDoesNotExist\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actualFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expectedFee\",\"type\":\"uint256\"}],\"name\":\"InterchainDB__IncorrectFeeAmount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainDB__NoModulesSpecified\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainDB__SameChainId\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"name\":\"InterchainEntryVerified\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"name\":\"InterchainEntryWritten\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address[]\",\"name\":\"srcModules\",\"type\":\"address[]\"}],\"name\":\"InterchainVerificationRequested\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"writer\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"}],\"name\":\"getEntry\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainEntry\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"internalType\":\"address[]\",\"name\":\"srcModules\",\"type\":\"address[]\"}],\"name\":\"getInterchainFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"writer\",\"type\":\"address\"}],\"name\":\"getWriterNonce\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"dstModule\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainEntry\",\"name\":\"entry\",\"type\":\"tuple\"}],\"name\":\"readEntry\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"moduleVerifiedAt\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"writer\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"internalType\":\"address[]\",\"name\":\"srcModules\",\"type\":\"address[]\"}],\"name\":\"requestVerification\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainEntry\",\"name\":\"entry\",\"type\":\"tuple\"}],\"name\":\"verifyEntry\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"name\":\"writeEntry\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"},{\"internalType\":\"address[]\",\"name\":\"srcModules\",\"type\":\"address[]\"}],\"name\":\"writeEntryWithVerification\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"}],\"stateMutability\":\"payable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"existingEntryValue\",\"type\":\"bytes32\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainEntry\",\"name\":\"newEntry\",\"type\":\"tuple\"}],\"name\":\"InterchainDB__ConflictingEntries\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"}],\"name\":\"InterchainDB__EntryDoesNotExist\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actualFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expectedFee\",\"type\":\"uint256\"}],\"name\":\"InterchainDB__IncorrectFeeAmount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainDB__NoModulesSpecified\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainDB__SameChainId\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"name\":\"InterchainEntryVerified\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"name\":\"InterchainEntryWritten\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address[]\",\"name\":\"srcModules\",\"type\":\"address[]\"}],\"name\":\"InterchainVerificationRequested\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"getDBNonce\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"}],\"name\":\"getEntry\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainEntry\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"internalType\":\"address[]\",\"name\":\"srcModules\",\"type\":\"address[]\"}],\"name\":\"getInterchainFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"dstModule\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainEntry\",\"name\":\"entry\",\"type\":\"tuple\"}],\"name\":\"readEntry\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"moduleVerifiedAt\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"},{\"internalType\":\"address[]\",\"name\":\"srcModules\",\"type\":\"address[]\"}],\"name\":\"requestVerification\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"internalType\":\"structInterchainEntry\",\"name\":\"entry\",\"type\":\"tuple\"}],\"name\":\"verifyEntry\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"name\":\"writeEntry\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"},{\"internalType\":\"address[]\",\"name\":\"srcModules\",\"type\":\"address[]\"}],\"name\":\"writeEntryWithVerification\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"}],\"stateMutability\":\"payable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
-		"b8a740e0": "getEntry(address,uint256)",
+		"f338140e": "getDBNonce()",
+		"bae78d7b": "getEntry(uint256)",
 		"fc7686ec": "getInterchainFee(uint256,address[])",
-		"4a30a686": "getWriterNonce(address)",
-		"d48588e0": "readEntry(address,(uint256,bytes32,uint256,bytes32))",
-		"b4f16bae": "requestVerification(uint256,address,uint256,address[])",
-		"9cbc6dd5": "verifyEntry((uint256,bytes32,uint256,bytes32))",
+		"a9c9cff1": "readEntry(address,(uint256,uint256,bytes32,bytes32))",
+		"81ab5b5a": "requestVerification(uint256,uint256,address[])",
+		"54941dfa": "verifyEntry((uint256,uint256,bytes32,bytes32))",
 		"2ad8c706": "writeEntry(bytes32)",
 		"67c769af": "writeEntryWithVerification(uint256,bytes32,address[])",
 	},
-	Bin: "0x608060405234801561001057600080fd5b50610ecc806100206000396000f3fe60806040526004361061007b5760003560e01c8063b4f16bae1161004e578063b4f16bae1461012b578063b8a740e01461013e578063d48588e01461016b578063fc7686ec1461018b57600080fd5b80632ad8c706146100805780634a30a686146100b357806367c769af146100f65780639cbc6dd514610109575b600080fd5b34801561008c57600080fd5b506100a061009b366004610a1a565b6101ab565b6040519081526020015b60405180910390f35b3480156100bf57600080fd5b506100a06100ce366004610a5c565b73ffffffffffffffffffffffffffffffffffffffff1660009081526020819052604090205490565b6100a0610104366004610ac3565b6101bc565b34801561011557600080fd5b50610129610124366004610bd2565b610228565b005b610129610139366004610bee565b6103da565b34801561014a57600080fd5b5061015e610159366004610c56565b610437565b6040516100aa9190610c80565b34801561017757600080fd5b506100a0610186366004610cab565b61053e565b34801561019757600080fd5b506100a06101a6366004610cdf565b610634565b60006101b682610641565b92915050565b6000844681036101f8576040517f0e4de95d00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b61020185610641565b915060006102103384886106b2565b905061021e8782878761071c565b5050949350505050565b8051468103610263576040517f0e4de95d00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b60006102ae8380516020808301516040808501518151938401949094528201526060810191909152600090608001604051602081830303815290604052805190602001209050919050565b60008181526001602081815260408084203385528252808420815180830190925280548083529301549181019190915292935090036103825760408051808201825242815260608681018051602080850191825260008881526001808352878220338084529084529188902096518755925195909201949094558851848a01518a8701519351875193845295830191909152948101949094529083015260808201527f65fdc92d5fec4c98c387c9fda2326f1d593ce9e39eaafa681d655266d0ff227e9060a00160405180910390a16103d4565b83606001518160200151146103d4578060200151846040517f4ef4ee070000000000000000000000000000000000000000000000000000000081526004016103cb929190610d2b565b60405180910390fd5b50505050565b84468103610414576040517f0e4de95d00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b60006104208686610437565b905061042e8782868661071c565b50505050505050565b60408051608081018252600080825260208083018290528284018290526060830182905273ffffffffffffffffffffffffffffffffffffffff86168252819052919091205482106104d3576040517f944ac2e600000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff84166004820152602481018390526044016103cb565b61053783836000808773ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020858154811061052757610527610d60565b90600052602060002001546106b2565b9392505050565b805160009046810361057c576040517f0e4de95d00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6000600160006105cb8680516020808301516040808501518151938401949094528201526060810191909152600090608001604051602081830303815290604052805190602001209050919050565b81526020808201929092526040908101600090812073ffffffffffffffffffffffffffffffffffffffff8916825283528190208151808301909252805482526001015491810182905260608601519092501461062857600061062b565b80515b95945050505050565b600061062b84848461088b565b336000818152602081815260408220805460018101825590835291208101839055907f1c43e42d6323bd8b0f93b619bccf2a29b1559555f11483b8d56122c9b7a0189790469060408051928352602083019190915281018390526060810184905260800160405180910390a1919050565b60408051608081018252600080825260208201819052918101829052606081019190915260405180608001604052804681526020016107048673ffffffffffffffffffffffffffffffffffffffff1690565b81526020018481526020018381525090509392505050565b60008061072a86858561088b565b91509150803414610770576040517ffb7d6610000000000000000000000000000000000000000000000000000000008152346004820152602481018290526044016103cb565b8260005b8181101561083a5785858281811061078e5761078e610d60565b90506020020160208101906107a39190610a5c565b73ffffffffffffffffffffffffffffffffffffffff1663e37772168583815181106107d0576107d0610d60565b60200260200101518a8a6040518463ffffffff1660e01b81526004016107f7929190610d2b565b6000604051808303818588803b15801561081057600080fd5b505af1158015610824573d6000803e3d6000fd5b50505050508061083390610dbe565b9050610774565b507fd43d4445bcb9e1760e0925bb22762396dca6401144dbfbf7a52db914864480978787602001518860400151888860405161087a959493929190610df6565b60405180910390a150505050505050565b60606000828082036108c9576040517f98ca492a00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b8067ffffffffffffffff8111156108e2576108e2610b16565b60405190808252806020026020018201604052801561090b578160200160208202803683370190505b50925060005b81811015610a105785858281811061092b5761092b610d60565b90506020020160208101906109409190610a5c565b73ffffffffffffffffffffffffffffffffffffffff1663dc8e4f89886040518263ffffffff1660e01b815260040161097a91815260200190565b602060405180830381865afa158015610997573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906109bb9190610e6a565b8482815181106109cd576109cd610d60565b6020026020010181815250508381815181106109eb576109eb610d60565b6020026020010151836109fe9190610e83565b9250610a0981610dbe565b9050610911565b5050935093915050565b600060208284031215610a2c57600080fd5b5035919050565b803573ffffffffffffffffffffffffffffffffffffffff81168114610a5757600080fd5b919050565b600060208284031215610a6e57600080fd5b61053782610a33565b60008083601f840112610a8957600080fd5b50813567ffffffffffffffff811115610aa157600080fd5b6020830191508360208260051b8501011115610abc57600080fd5b9250929050565b60008060008060608587031215610ad957600080fd5b8435935060208501359250604085013567ffffffffffffffff811115610afe57600080fd5b610b0a87828801610a77565b95989497509550505050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b600060808284031215610b5757600080fd5b6040516080810181811067ffffffffffffffff82111715610ba1577f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b8060405250809150823581526020830135602082015260408301356040820152606083013560608201525092915050565b600060808284031215610be457600080fd5b6105378383610b45565b600080600080600060808688031215610c0657600080fd5b85359450610c1660208701610a33565b935060408601359250606086013567ffffffffffffffff811115610c3957600080fd5b610c4588828901610a77565b969995985093965092949392505050565b60008060408385031215610c6957600080fd5b610c7283610a33565b946020939093013593505050565b81518152602080830151908201526040808301519082015260608083015190820152608081016101b6565b60008060a08385031215610cbe57600080fd5b610cc783610a33565b9150610cd68460208501610b45565b90509250929050565b600080600060408486031215610cf457600080fd5b83359250602084013567ffffffffffffffff811115610d1257600080fd5b610d1e86828701610a77565b9497909650939450505050565b82815260a081016105376020830184805182526020810151602083015260408101516040830152606081015160608301525050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b60007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8203610def57610def610d8f565b5060010190565b60006080820187835260208781850152866040850152608060608501528185835260a08501905086925060005b86811015610e5c5773ffffffffffffffffffffffffffffffffffffffff610e4985610a33565b1682529282019290820190600101610e23565b509998505050505050505050565b600060208284031215610e7c57600080fd5b5051919050565b808201808211156101b6576101b6610d8f56fea264697066735822122070242cf7d6f273a673e1c1e69358239a6f58a0eee98d8b9651aea6922e923e7064736f6c63430008140033",
+	Bin: "0x608060405234801561001057600080fd5b50610e5c806100206000396000f3fe60806040526004361061007b5760003560e01c8063a9c9cff11161004e578063a9c9cff1146100fb578063bae78d7b1461011b578063f338140e14610148578063fc7686ec1461015d57600080fd5b80632ad8c7061461008057806354941dfa146100b357806367c769af146100d557806381ab5b5a146100e8575b600080fd5b34801561008c57600080fd5b506100a061009b366004610a46565b61017d565b6040519081526020015b60405180910390f35b3480156100bf57600080fd5b506100d36100ce366004610b1b565b61018e565b005b6100a06100e3366004610b83565b610306565b6100d36100f6366004610b83565b610372565b34801561010757600080fd5b506100a0610116366004610bff565b6103cd565b34801561012757600080fd5b5061013b610136366004610a46565b610495565b6040516100aa9190610c33565b34801561015457600080fd5b506000546100a0565b34801561016957600080fd5b506100a0610178366004610c5e565b61055f565b600061018882610575565b92915050565b80514681036101c9576040517f0e4de95d00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b60006101d48361067b565b905060006101e1846106be565b3360009081526001602081815260408084208785528252808420815180830190925280548083529301549181019190915292935090036102b157604080518082018252428152602080820185815233600081815260018085528682208a83528552908690209451855591519390910192909255875188820151898501516060808c01518751968752948601939093528486019190915290830152608082015290517f4f9d94cde48123382edd2a9ec240776059a572966248417c46beda48e29430699181900360a00190a16102ff565b818160200151146102ff578060200151856040517fa02862df0000000000000000000000000000000000000000000000000000000081526004016102f6929190610caa565b60405180910390fd5b5050505050565b600084468103610342576040517f0e4de95d00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b61034b85610575565b9150600061035a8333886106e4565b90506103688782878761074e565b5050949350505050565b834681036103ac576040517f0e4de95d00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b60006103b785610495565b90506103c58682868661074e565b505050505050565b805160009046810361040b576040517f0e4de95d00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b73ffffffffffffffffffffffffffffffffffffffff841660009081526001602052604081208161043a8661067b565b81526020019081526020016000206040518060400160405290816000820154815260200160018201548152505090506000610474856106be565b90508082602001511461048857600061048b565b81515b9695505050505050565b6040805160808101825260008082526020820181905291810182905260608101829052905482106104f5576040517f4efb6ab4000000000000000000000000000000000000000000000000000000008152600481018390526024016102f6565b610188826000848154811061050c5761050c610cdf565b60009182526020822060029091020154815473ffffffffffffffffffffffffffffffffffffffff90911691908690811061054857610548610cdf565b9060005260206000209060020201600101546106e4565b600061056c8484846108b7565b95945050505050565b600080546040805180820182523380825260208083018781526001860187559580529151600285027f290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e5638101805473ffffffffffffffffffffffffffffffffffffffff9093167fffffffffffffffffffffffff00000000000000000000000000000000000000009093169290921790915594517f290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e56490950194909455815146815290810183905280820193909352606083018490525190917f8adbf0953083a65c138963c649cd1eabd31fa900ecd1cd5d6b5b530fbfa41771919081900360800190a1919050565b6000816000015182602001516040516020016106a1929190918252602082015260400190565b604051602081830303815290604052805190602001209050919050565b6000816040015182606001516040516020016106a1929190918252602082015260400190565b604080516080810182526000808252602082018190529181018290526060810191909152604051806080016040528046815260200185815260200161073c8573ffffffffffffffffffffffffffffffffffffffff1690565b815260200183905290505b9392505050565b60008061075c8685856108b7565b915091508034146107a2576040517ffb7d6610000000000000000000000000000000000000000000000000000000008152346004820152602481018290526044016102f6565b8260005b8181101561086c578585828181106107c0576107c0610cdf565b90506020020160208101906107d59190610d0e565b73ffffffffffffffffffffffffffffffffffffffff1663f6bc485f85838151811061080257610802610cdf565b60200260200101518a8a6040518463ffffffff1660e01b8152600401610829929190610caa565b6000604051808303818588803b15801561084257600080fd5b505af1158015610856573d6000803e3d6000fd5b50505050508061086590610d58565b90506107a6565b507ff7a707ad4de78d7f649f2084d1f8bfbb2147be1a4b408c98bbb298fc3391242c87876020015187876040516108a69493929190610d90565b60405180910390a150505050505050565b60606000828082036108f5576040517f98ca492a00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b8067ffffffffffffffff81111561090e5761090e610a5f565b604051908082528060200260200182016040528015610937578160200160208202803683370190505b50925060005b81811015610a3c5785858281811061095757610957610cdf565b905060200201602081019061096c9190610d0e565b73ffffffffffffffffffffffffffffffffffffffff1663dc8e4f89886040518263ffffffff1660e01b81526004016109a691815260200190565b602060405180830381865afa1580156109c3573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906109e79190610dfa565b8482815181106109f9576109f9610cdf565b602002602001018181525050838181518110610a1757610a17610cdf565b602002602001015183610a2a9190610e13565b9250610a3581610d58565b905061093d565b5050935093915050565b600060208284031215610a5857600080fd5b5035919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b600060808284031215610aa057600080fd5b6040516080810181811067ffffffffffffffff82111715610aea577f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b8060405250809150823581526020830135602082015260408301356040820152606083013560608201525092915050565b600060808284031215610b2d57600080fd5b6107478383610a8e565b60008083601f840112610b4957600080fd5b50813567ffffffffffffffff811115610b6157600080fd5b6020830191508360208260051b8501011115610b7c57600080fd5b9250929050565b60008060008060608587031215610b9957600080fd5b8435935060208501359250604085013567ffffffffffffffff811115610bbe57600080fd5b610bca87828801610b37565b95989497509550505050565b803573ffffffffffffffffffffffffffffffffffffffff81168114610bfa57600080fd5b919050565b60008060a08385031215610c1257600080fd5b610c1b83610bd6565b9150610c2a8460208501610a8e565b90509250929050565b8151815260208083015190820152604080830151908201526060808301519082015260808101610188565b600080600060408486031215610c7357600080fd5b83359250602084013567ffffffffffffffff811115610c9157600080fd5b610c9d86828701610b37565b9497909650939450505050565b82815260a081016107476020830184805182526020810151602083015260408101516040830152606081015160608301525050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b600060208284031215610d2057600080fd5b61074782610bd6565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b60007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8203610d8957610d89610d29565b5060010190565b84815260208082018590526060604083018190528201839052600090849060808401835b86811015610ded5773ffffffffffffffffffffffffffffffffffffffff610dda85610bd6565b1682529282019290820190600101610db4565b5098975050505050505050565b600060208284031215610e0c57600080fd5b5051919050565b8082018082111561018857610188610d2956fea26469706673582212207738d0b1cc1cd4b939f73fa6896ec7d362ebbca7e3340714e31204d76f5d03f064736f6c63430008140033",
 }
 
 // InterchainDBABI is the input ABI used to generate the binding from.
@@ -808,12 +808,43 @@ func (_InterchainDB *InterchainDBTransactorRaw) Transact(opts *bind.TransactOpts
 	return _InterchainDB.Contract.contract.Transact(opts, method, params...)
 }
 
-// GetEntry is a free data retrieval call binding the contract method 0xb8a740e0.
+// GetDBNonce is a free data retrieval call binding the contract method 0xf338140e.
 //
-// Solidity: function getEntry(address writer, uint256 writerNonce) view returns((uint256,bytes32,uint256,bytes32))
-func (_InterchainDB *InterchainDBCaller) GetEntry(opts *bind.CallOpts, writer common.Address, writerNonce *big.Int) (InterchainEntry, error) {
+// Solidity: function getDBNonce() view returns(uint256)
+func (_InterchainDB *InterchainDBCaller) GetDBNonce(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
-	err := _InterchainDB.contract.Call(opts, &out, "getEntry", writer, writerNonce)
+	err := _InterchainDB.contract.Call(opts, &out, "getDBNonce")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetDBNonce is a free data retrieval call binding the contract method 0xf338140e.
+//
+// Solidity: function getDBNonce() view returns(uint256)
+func (_InterchainDB *InterchainDBSession) GetDBNonce() (*big.Int, error) {
+	return _InterchainDB.Contract.GetDBNonce(&_InterchainDB.CallOpts)
+}
+
+// GetDBNonce is a free data retrieval call binding the contract method 0xf338140e.
+//
+// Solidity: function getDBNonce() view returns(uint256)
+func (_InterchainDB *InterchainDBCallerSession) GetDBNonce() (*big.Int, error) {
+	return _InterchainDB.Contract.GetDBNonce(&_InterchainDB.CallOpts)
+}
+
+// GetEntry is a free data retrieval call binding the contract method 0xbae78d7b.
+//
+// Solidity: function getEntry(uint256 dbNonce) view returns((uint256,uint256,bytes32,bytes32))
+func (_InterchainDB *InterchainDBCaller) GetEntry(opts *bind.CallOpts, dbNonce *big.Int) (InterchainEntry, error) {
+	var out []interface{}
+	err := _InterchainDB.contract.Call(opts, &out, "getEntry", dbNonce)
 
 	if err != nil {
 		return *new(InterchainEntry), err
@@ -825,18 +856,18 @@ func (_InterchainDB *InterchainDBCaller) GetEntry(opts *bind.CallOpts, writer co
 
 }
 
-// GetEntry is a free data retrieval call binding the contract method 0xb8a740e0.
+// GetEntry is a free data retrieval call binding the contract method 0xbae78d7b.
 //
-// Solidity: function getEntry(address writer, uint256 writerNonce) view returns((uint256,bytes32,uint256,bytes32))
-func (_InterchainDB *InterchainDBSession) GetEntry(writer common.Address, writerNonce *big.Int) (InterchainEntry, error) {
-	return _InterchainDB.Contract.GetEntry(&_InterchainDB.CallOpts, writer, writerNonce)
+// Solidity: function getEntry(uint256 dbNonce) view returns((uint256,uint256,bytes32,bytes32))
+func (_InterchainDB *InterchainDBSession) GetEntry(dbNonce *big.Int) (InterchainEntry, error) {
+	return _InterchainDB.Contract.GetEntry(&_InterchainDB.CallOpts, dbNonce)
 }
 
-// GetEntry is a free data retrieval call binding the contract method 0xb8a740e0.
+// GetEntry is a free data retrieval call binding the contract method 0xbae78d7b.
 //
-// Solidity: function getEntry(address writer, uint256 writerNonce) view returns((uint256,bytes32,uint256,bytes32))
-func (_InterchainDB *InterchainDBCallerSession) GetEntry(writer common.Address, writerNonce *big.Int) (InterchainEntry, error) {
-	return _InterchainDB.Contract.GetEntry(&_InterchainDB.CallOpts, writer, writerNonce)
+// Solidity: function getEntry(uint256 dbNonce) view returns((uint256,uint256,bytes32,bytes32))
+func (_InterchainDB *InterchainDBCallerSession) GetEntry(dbNonce *big.Int) (InterchainEntry, error) {
+	return _InterchainDB.Contract.GetEntry(&_InterchainDB.CallOpts, dbNonce)
 }
 
 // GetInterchainFee is a free data retrieval call binding the contract method 0xfc7686ec.
@@ -870,40 +901,9 @@ func (_InterchainDB *InterchainDBCallerSession) GetInterchainFee(destChainId *bi
 	return _InterchainDB.Contract.GetInterchainFee(&_InterchainDB.CallOpts, destChainId, srcModules)
 }
 
-// GetWriterNonce is a free data retrieval call binding the contract method 0x4a30a686.
+// ReadEntry is a free data retrieval call binding the contract method 0xa9c9cff1.
 //
-// Solidity: function getWriterNonce(address writer) view returns(uint256)
-func (_InterchainDB *InterchainDBCaller) GetWriterNonce(opts *bind.CallOpts, writer common.Address) (*big.Int, error) {
-	var out []interface{}
-	err := _InterchainDB.contract.Call(opts, &out, "getWriterNonce", writer)
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// GetWriterNonce is a free data retrieval call binding the contract method 0x4a30a686.
-//
-// Solidity: function getWriterNonce(address writer) view returns(uint256)
-func (_InterchainDB *InterchainDBSession) GetWriterNonce(writer common.Address) (*big.Int, error) {
-	return _InterchainDB.Contract.GetWriterNonce(&_InterchainDB.CallOpts, writer)
-}
-
-// GetWriterNonce is a free data retrieval call binding the contract method 0x4a30a686.
-//
-// Solidity: function getWriterNonce(address writer) view returns(uint256)
-func (_InterchainDB *InterchainDBCallerSession) GetWriterNonce(writer common.Address) (*big.Int, error) {
-	return _InterchainDB.Contract.GetWriterNonce(&_InterchainDB.CallOpts, writer)
-}
-
-// ReadEntry is a free data retrieval call binding the contract method 0xd48588e0.
-//
-// Solidity: function readEntry(address dstModule, (uint256,bytes32,uint256,bytes32) entry) view returns(uint256 moduleVerifiedAt)
+// Solidity: function readEntry(address dstModule, (uint256,uint256,bytes32,bytes32) entry) view returns(uint256 moduleVerifiedAt)
 func (_InterchainDB *InterchainDBCaller) ReadEntry(opts *bind.CallOpts, dstModule common.Address, entry InterchainEntry) (*big.Int, error) {
 	var out []interface{}
 	err := _InterchainDB.contract.Call(opts, &out, "readEntry", dstModule, entry)
@@ -918,100 +918,100 @@ func (_InterchainDB *InterchainDBCaller) ReadEntry(opts *bind.CallOpts, dstModul
 
 }
 
-// ReadEntry is a free data retrieval call binding the contract method 0xd48588e0.
+// ReadEntry is a free data retrieval call binding the contract method 0xa9c9cff1.
 //
-// Solidity: function readEntry(address dstModule, (uint256,bytes32,uint256,bytes32) entry) view returns(uint256 moduleVerifiedAt)
+// Solidity: function readEntry(address dstModule, (uint256,uint256,bytes32,bytes32) entry) view returns(uint256 moduleVerifiedAt)
 func (_InterchainDB *InterchainDBSession) ReadEntry(dstModule common.Address, entry InterchainEntry) (*big.Int, error) {
 	return _InterchainDB.Contract.ReadEntry(&_InterchainDB.CallOpts, dstModule, entry)
 }
 
-// ReadEntry is a free data retrieval call binding the contract method 0xd48588e0.
+// ReadEntry is a free data retrieval call binding the contract method 0xa9c9cff1.
 //
-// Solidity: function readEntry(address dstModule, (uint256,bytes32,uint256,bytes32) entry) view returns(uint256 moduleVerifiedAt)
+// Solidity: function readEntry(address dstModule, (uint256,uint256,bytes32,bytes32) entry) view returns(uint256 moduleVerifiedAt)
 func (_InterchainDB *InterchainDBCallerSession) ReadEntry(dstModule common.Address, entry InterchainEntry) (*big.Int, error) {
 	return _InterchainDB.Contract.ReadEntry(&_InterchainDB.CallOpts, dstModule, entry)
 }
 
-// RequestVerification is a paid mutator transaction binding the contract method 0xb4f16bae.
+// RequestVerification is a paid mutator transaction binding the contract method 0x81ab5b5a.
 //
-// Solidity: function requestVerification(uint256 destChainId, address writer, uint256 writerNonce, address[] srcModules) payable returns()
-func (_InterchainDB *InterchainDBTransactor) RequestVerification(opts *bind.TransactOpts, destChainId *big.Int, writer common.Address, writerNonce *big.Int, srcModules []common.Address) (*types.Transaction, error) {
-	return _InterchainDB.contract.Transact(opts, "requestVerification", destChainId, writer, writerNonce, srcModules)
+// Solidity: function requestVerification(uint256 destChainId, uint256 dbNonce, address[] srcModules) payable returns()
+func (_InterchainDB *InterchainDBTransactor) RequestVerification(opts *bind.TransactOpts, destChainId *big.Int, dbNonce *big.Int, srcModules []common.Address) (*types.Transaction, error) {
+	return _InterchainDB.contract.Transact(opts, "requestVerification", destChainId, dbNonce, srcModules)
 }
 
-// RequestVerification is a paid mutator transaction binding the contract method 0xb4f16bae.
+// RequestVerification is a paid mutator transaction binding the contract method 0x81ab5b5a.
 //
-// Solidity: function requestVerification(uint256 destChainId, address writer, uint256 writerNonce, address[] srcModules) payable returns()
-func (_InterchainDB *InterchainDBSession) RequestVerification(destChainId *big.Int, writer common.Address, writerNonce *big.Int, srcModules []common.Address) (*types.Transaction, error) {
-	return _InterchainDB.Contract.RequestVerification(&_InterchainDB.TransactOpts, destChainId, writer, writerNonce, srcModules)
+// Solidity: function requestVerification(uint256 destChainId, uint256 dbNonce, address[] srcModules) payable returns()
+func (_InterchainDB *InterchainDBSession) RequestVerification(destChainId *big.Int, dbNonce *big.Int, srcModules []common.Address) (*types.Transaction, error) {
+	return _InterchainDB.Contract.RequestVerification(&_InterchainDB.TransactOpts, destChainId, dbNonce, srcModules)
 }
 
-// RequestVerification is a paid mutator transaction binding the contract method 0xb4f16bae.
+// RequestVerification is a paid mutator transaction binding the contract method 0x81ab5b5a.
 //
-// Solidity: function requestVerification(uint256 destChainId, address writer, uint256 writerNonce, address[] srcModules) payable returns()
-func (_InterchainDB *InterchainDBTransactorSession) RequestVerification(destChainId *big.Int, writer common.Address, writerNonce *big.Int, srcModules []common.Address) (*types.Transaction, error) {
-	return _InterchainDB.Contract.RequestVerification(&_InterchainDB.TransactOpts, destChainId, writer, writerNonce, srcModules)
+// Solidity: function requestVerification(uint256 destChainId, uint256 dbNonce, address[] srcModules) payable returns()
+func (_InterchainDB *InterchainDBTransactorSession) RequestVerification(destChainId *big.Int, dbNonce *big.Int, srcModules []common.Address) (*types.Transaction, error) {
+	return _InterchainDB.Contract.RequestVerification(&_InterchainDB.TransactOpts, destChainId, dbNonce, srcModules)
 }
 
-// VerifyEntry is a paid mutator transaction binding the contract method 0x9cbc6dd5.
+// VerifyEntry is a paid mutator transaction binding the contract method 0x54941dfa.
 //
-// Solidity: function verifyEntry((uint256,bytes32,uint256,bytes32) entry) returns()
+// Solidity: function verifyEntry((uint256,uint256,bytes32,bytes32) entry) returns()
 func (_InterchainDB *InterchainDBTransactor) VerifyEntry(opts *bind.TransactOpts, entry InterchainEntry) (*types.Transaction, error) {
 	return _InterchainDB.contract.Transact(opts, "verifyEntry", entry)
 }
 
-// VerifyEntry is a paid mutator transaction binding the contract method 0x9cbc6dd5.
+// VerifyEntry is a paid mutator transaction binding the contract method 0x54941dfa.
 //
-// Solidity: function verifyEntry((uint256,bytes32,uint256,bytes32) entry) returns()
+// Solidity: function verifyEntry((uint256,uint256,bytes32,bytes32) entry) returns()
 func (_InterchainDB *InterchainDBSession) VerifyEntry(entry InterchainEntry) (*types.Transaction, error) {
 	return _InterchainDB.Contract.VerifyEntry(&_InterchainDB.TransactOpts, entry)
 }
 
-// VerifyEntry is a paid mutator transaction binding the contract method 0x9cbc6dd5.
+// VerifyEntry is a paid mutator transaction binding the contract method 0x54941dfa.
 //
-// Solidity: function verifyEntry((uint256,bytes32,uint256,bytes32) entry) returns()
+// Solidity: function verifyEntry((uint256,uint256,bytes32,bytes32) entry) returns()
 func (_InterchainDB *InterchainDBTransactorSession) VerifyEntry(entry InterchainEntry) (*types.Transaction, error) {
 	return _InterchainDB.Contract.VerifyEntry(&_InterchainDB.TransactOpts, entry)
 }
 
 // WriteEntry is a paid mutator transaction binding the contract method 0x2ad8c706.
 //
-// Solidity: function writeEntry(bytes32 dataHash) returns(uint256 writerNonce)
+// Solidity: function writeEntry(bytes32 dataHash) returns(uint256 dbNonce)
 func (_InterchainDB *InterchainDBTransactor) WriteEntry(opts *bind.TransactOpts, dataHash [32]byte) (*types.Transaction, error) {
 	return _InterchainDB.contract.Transact(opts, "writeEntry", dataHash)
 }
 
 // WriteEntry is a paid mutator transaction binding the contract method 0x2ad8c706.
 //
-// Solidity: function writeEntry(bytes32 dataHash) returns(uint256 writerNonce)
+// Solidity: function writeEntry(bytes32 dataHash) returns(uint256 dbNonce)
 func (_InterchainDB *InterchainDBSession) WriteEntry(dataHash [32]byte) (*types.Transaction, error) {
 	return _InterchainDB.Contract.WriteEntry(&_InterchainDB.TransactOpts, dataHash)
 }
 
 // WriteEntry is a paid mutator transaction binding the contract method 0x2ad8c706.
 //
-// Solidity: function writeEntry(bytes32 dataHash) returns(uint256 writerNonce)
+// Solidity: function writeEntry(bytes32 dataHash) returns(uint256 dbNonce)
 func (_InterchainDB *InterchainDBTransactorSession) WriteEntry(dataHash [32]byte) (*types.Transaction, error) {
 	return _InterchainDB.Contract.WriteEntry(&_InterchainDB.TransactOpts, dataHash)
 }
 
 // WriteEntryWithVerification is a paid mutator transaction binding the contract method 0x67c769af.
 //
-// Solidity: function writeEntryWithVerification(uint256 destChainId, bytes32 dataHash, address[] srcModules) payable returns(uint256 writerNonce)
+// Solidity: function writeEntryWithVerification(uint256 destChainId, bytes32 dataHash, address[] srcModules) payable returns(uint256 dbNonce)
 func (_InterchainDB *InterchainDBTransactor) WriteEntryWithVerification(opts *bind.TransactOpts, destChainId *big.Int, dataHash [32]byte, srcModules []common.Address) (*types.Transaction, error) {
 	return _InterchainDB.contract.Transact(opts, "writeEntryWithVerification", destChainId, dataHash, srcModules)
 }
 
 // WriteEntryWithVerification is a paid mutator transaction binding the contract method 0x67c769af.
 //
-// Solidity: function writeEntryWithVerification(uint256 destChainId, bytes32 dataHash, address[] srcModules) payable returns(uint256 writerNonce)
+// Solidity: function writeEntryWithVerification(uint256 destChainId, bytes32 dataHash, address[] srcModules) payable returns(uint256 dbNonce)
 func (_InterchainDB *InterchainDBSession) WriteEntryWithVerification(destChainId *big.Int, dataHash [32]byte, srcModules []common.Address) (*types.Transaction, error) {
 	return _InterchainDB.Contract.WriteEntryWithVerification(&_InterchainDB.TransactOpts, destChainId, dataHash, srcModules)
 }
 
 // WriteEntryWithVerification is a paid mutator transaction binding the contract method 0x67c769af.
 //
-// Solidity: function writeEntryWithVerification(uint256 destChainId, bytes32 dataHash, address[] srcModules) payable returns(uint256 writerNonce)
+// Solidity: function writeEntryWithVerification(uint256 destChainId, bytes32 dataHash, address[] srcModules) payable returns(uint256 dbNonce)
 func (_InterchainDB *InterchainDBTransactorSession) WriteEntryWithVerification(destChainId *big.Int, dataHash [32]byte, srcModules []common.Address) (*types.Transaction, error) {
 	return _InterchainDB.Contract.WriteEntryWithVerification(&_InterchainDB.TransactOpts, destChainId, dataHash, srcModules)
 }
@@ -1085,17 +1085,17 @@ func (it *InterchainDBInterchainEntryVerifiedIterator) Close() error {
 
 // InterchainDBInterchainEntryVerified represents a InterchainEntryVerified event raised by the InterchainDB contract.
 type InterchainDBInterchainEntryVerified struct {
-	Module      common.Address
-	SrcChainId  *big.Int
-	SrcWriter   [32]byte
-	WriterNonce *big.Int
-	DataHash    [32]byte
-	Raw         types.Log // Blockchain specific contextual infos
+	Module     common.Address
+	SrcChainId *big.Int
+	DbNonce    *big.Int
+	SrcWriter  [32]byte
+	DataHash   [32]byte
+	Raw        types.Log // Blockchain specific contextual infos
 }
 
-// FilterInterchainEntryVerified is a free log retrieval operation binding the contract event 0x65fdc92d5fec4c98c387c9fda2326f1d593ce9e39eaafa681d655266d0ff227e.
+// FilterInterchainEntryVerified is a free log retrieval operation binding the contract event 0x4f9d94cde48123382edd2a9ec240776059a572966248417c46beda48e2943069.
 //
-// Solidity: event InterchainEntryVerified(address module, uint256 srcChainId, bytes32 srcWriter, uint256 writerNonce, bytes32 dataHash)
+// Solidity: event InterchainEntryVerified(address module, uint256 srcChainId, uint256 dbNonce, bytes32 srcWriter, bytes32 dataHash)
 func (_InterchainDB *InterchainDBFilterer) FilterInterchainEntryVerified(opts *bind.FilterOpts) (*InterchainDBInterchainEntryVerifiedIterator, error) {
 
 	logs, sub, err := _InterchainDB.contract.FilterLogs(opts, "InterchainEntryVerified")
@@ -1105,9 +1105,9 @@ func (_InterchainDB *InterchainDBFilterer) FilterInterchainEntryVerified(opts *b
 	return &InterchainDBInterchainEntryVerifiedIterator{contract: _InterchainDB.contract, event: "InterchainEntryVerified", logs: logs, sub: sub}, nil
 }
 
-// WatchInterchainEntryVerified is a free log subscription operation binding the contract event 0x65fdc92d5fec4c98c387c9fda2326f1d593ce9e39eaafa681d655266d0ff227e.
+// WatchInterchainEntryVerified is a free log subscription operation binding the contract event 0x4f9d94cde48123382edd2a9ec240776059a572966248417c46beda48e2943069.
 //
-// Solidity: event InterchainEntryVerified(address module, uint256 srcChainId, bytes32 srcWriter, uint256 writerNonce, bytes32 dataHash)
+// Solidity: event InterchainEntryVerified(address module, uint256 srcChainId, uint256 dbNonce, bytes32 srcWriter, bytes32 dataHash)
 func (_InterchainDB *InterchainDBFilterer) WatchInterchainEntryVerified(opts *bind.WatchOpts, sink chan<- *InterchainDBInterchainEntryVerified) (event.Subscription, error) {
 
 	logs, sub, err := _InterchainDB.contract.WatchLogs(opts, "InterchainEntryVerified")
@@ -1142,9 +1142,9 @@ func (_InterchainDB *InterchainDBFilterer) WatchInterchainEntryVerified(opts *bi
 	}), nil
 }
 
-// ParseInterchainEntryVerified is a log parse operation binding the contract event 0x65fdc92d5fec4c98c387c9fda2326f1d593ce9e39eaafa681d655266d0ff227e.
+// ParseInterchainEntryVerified is a log parse operation binding the contract event 0x4f9d94cde48123382edd2a9ec240776059a572966248417c46beda48e2943069.
 //
-// Solidity: event InterchainEntryVerified(address module, uint256 srcChainId, bytes32 srcWriter, uint256 writerNonce, bytes32 dataHash)
+// Solidity: event InterchainEntryVerified(address module, uint256 srcChainId, uint256 dbNonce, bytes32 srcWriter, bytes32 dataHash)
 func (_InterchainDB *InterchainDBFilterer) ParseInterchainEntryVerified(log types.Log) (*InterchainDBInterchainEntryVerified, error) {
 	event := new(InterchainDBInterchainEntryVerified)
 	if err := _InterchainDB.contract.UnpackLog(event, "InterchainEntryVerified", log); err != nil {
@@ -1223,16 +1223,16 @@ func (it *InterchainDBInterchainEntryWrittenIterator) Close() error {
 
 // InterchainDBInterchainEntryWritten represents a InterchainEntryWritten event raised by the InterchainDB contract.
 type InterchainDBInterchainEntryWritten struct {
-	SrcChainId  *big.Int
-	SrcWriter   [32]byte
-	WriterNonce *big.Int
-	DataHash    [32]byte
-	Raw         types.Log // Blockchain specific contextual infos
+	SrcChainId *big.Int
+	DbNonce    *big.Int
+	SrcWriter  [32]byte
+	DataHash   [32]byte
+	Raw        types.Log // Blockchain specific contextual infos
 }
 
-// FilterInterchainEntryWritten is a free log retrieval operation binding the contract event 0x1c43e42d6323bd8b0f93b619bccf2a29b1559555f11483b8d56122c9b7a01897.
+// FilterInterchainEntryWritten is a free log retrieval operation binding the contract event 0x8adbf0953083a65c138963c649cd1eabd31fa900ecd1cd5d6b5b530fbfa41771.
 //
-// Solidity: event InterchainEntryWritten(uint256 srcChainId, bytes32 srcWriter, uint256 writerNonce, bytes32 dataHash)
+// Solidity: event InterchainEntryWritten(uint256 srcChainId, uint256 dbNonce, bytes32 srcWriter, bytes32 dataHash)
 func (_InterchainDB *InterchainDBFilterer) FilterInterchainEntryWritten(opts *bind.FilterOpts) (*InterchainDBInterchainEntryWrittenIterator, error) {
 
 	logs, sub, err := _InterchainDB.contract.FilterLogs(opts, "InterchainEntryWritten")
@@ -1242,9 +1242,9 @@ func (_InterchainDB *InterchainDBFilterer) FilterInterchainEntryWritten(opts *bi
 	return &InterchainDBInterchainEntryWrittenIterator{contract: _InterchainDB.contract, event: "InterchainEntryWritten", logs: logs, sub: sub}, nil
 }
 
-// WatchInterchainEntryWritten is a free log subscription operation binding the contract event 0x1c43e42d6323bd8b0f93b619bccf2a29b1559555f11483b8d56122c9b7a01897.
+// WatchInterchainEntryWritten is a free log subscription operation binding the contract event 0x8adbf0953083a65c138963c649cd1eabd31fa900ecd1cd5d6b5b530fbfa41771.
 //
-// Solidity: event InterchainEntryWritten(uint256 srcChainId, bytes32 srcWriter, uint256 writerNonce, bytes32 dataHash)
+// Solidity: event InterchainEntryWritten(uint256 srcChainId, uint256 dbNonce, bytes32 srcWriter, bytes32 dataHash)
 func (_InterchainDB *InterchainDBFilterer) WatchInterchainEntryWritten(opts *bind.WatchOpts, sink chan<- *InterchainDBInterchainEntryWritten) (event.Subscription, error) {
 
 	logs, sub, err := _InterchainDB.contract.WatchLogs(opts, "InterchainEntryWritten")
@@ -1279,9 +1279,9 @@ func (_InterchainDB *InterchainDBFilterer) WatchInterchainEntryWritten(opts *bin
 	}), nil
 }
 
-// ParseInterchainEntryWritten is a log parse operation binding the contract event 0x1c43e42d6323bd8b0f93b619bccf2a29b1559555f11483b8d56122c9b7a01897.
+// ParseInterchainEntryWritten is a log parse operation binding the contract event 0x8adbf0953083a65c138963c649cd1eabd31fa900ecd1cd5d6b5b530fbfa41771.
 //
-// Solidity: event InterchainEntryWritten(uint256 srcChainId, bytes32 srcWriter, uint256 writerNonce, bytes32 dataHash)
+// Solidity: event InterchainEntryWritten(uint256 srcChainId, uint256 dbNonce, bytes32 srcWriter, bytes32 dataHash)
 func (_InterchainDB *InterchainDBFilterer) ParseInterchainEntryWritten(log types.Log) (*InterchainDBInterchainEntryWritten, error) {
 	event := new(InterchainDBInterchainEntryWritten)
 	if err := _InterchainDB.contract.UnpackLog(event, "InterchainEntryWritten", log); err != nil {
@@ -1361,15 +1361,14 @@ func (it *InterchainDBInterchainVerificationRequestedIterator) Close() error {
 // InterchainDBInterchainVerificationRequested represents a InterchainVerificationRequested event raised by the InterchainDB contract.
 type InterchainDBInterchainVerificationRequested struct {
 	DestChainId *big.Int
-	SrcWriter   [32]byte
-	WriterNonce *big.Int
+	DbNonce     *big.Int
 	SrcModules  []common.Address
 	Raw         types.Log // Blockchain specific contextual infos
 }
 
-// FilterInterchainVerificationRequested is a free log retrieval operation binding the contract event 0xd43d4445bcb9e1760e0925bb22762396dca6401144dbfbf7a52db91486448097.
+// FilterInterchainVerificationRequested is a free log retrieval operation binding the contract event 0xf7a707ad4de78d7f649f2084d1f8bfbb2147be1a4b408c98bbb298fc3391242c.
 //
-// Solidity: event InterchainVerificationRequested(uint256 destChainId, bytes32 srcWriter, uint256 writerNonce, address[] srcModules)
+// Solidity: event InterchainVerificationRequested(uint256 destChainId, uint256 dbNonce, address[] srcModules)
 func (_InterchainDB *InterchainDBFilterer) FilterInterchainVerificationRequested(opts *bind.FilterOpts) (*InterchainDBInterchainVerificationRequestedIterator, error) {
 
 	logs, sub, err := _InterchainDB.contract.FilterLogs(opts, "InterchainVerificationRequested")
@@ -1379,9 +1378,9 @@ func (_InterchainDB *InterchainDBFilterer) FilterInterchainVerificationRequested
 	return &InterchainDBInterchainVerificationRequestedIterator{contract: _InterchainDB.contract, event: "InterchainVerificationRequested", logs: logs, sub: sub}, nil
 }
 
-// WatchInterchainVerificationRequested is a free log subscription operation binding the contract event 0xd43d4445bcb9e1760e0925bb22762396dca6401144dbfbf7a52db91486448097.
+// WatchInterchainVerificationRequested is a free log subscription operation binding the contract event 0xf7a707ad4de78d7f649f2084d1f8bfbb2147be1a4b408c98bbb298fc3391242c.
 //
-// Solidity: event InterchainVerificationRequested(uint256 destChainId, bytes32 srcWriter, uint256 writerNonce, address[] srcModules)
+// Solidity: event InterchainVerificationRequested(uint256 destChainId, uint256 dbNonce, address[] srcModules)
 func (_InterchainDB *InterchainDBFilterer) WatchInterchainVerificationRequested(opts *bind.WatchOpts, sink chan<- *InterchainDBInterchainVerificationRequested) (event.Subscription, error) {
 
 	logs, sub, err := _InterchainDB.contract.WatchLogs(opts, "InterchainVerificationRequested")
@@ -1416,9 +1415,9 @@ func (_InterchainDB *InterchainDBFilterer) WatchInterchainVerificationRequested(
 	}), nil
 }
 
-// ParseInterchainVerificationRequested is a log parse operation binding the contract event 0xd43d4445bcb9e1760e0925bb22762396dca6401144dbfbf7a52db91486448097.
+// ParseInterchainVerificationRequested is a log parse operation binding the contract event 0xf7a707ad4de78d7f649f2084d1f8bfbb2147be1a4b408c98bbb298fc3391242c.
 //
-// Solidity: event InterchainVerificationRequested(uint256 destChainId, bytes32 srcWriter, uint256 writerNonce, address[] srcModules)
+// Solidity: event InterchainVerificationRequested(uint256 destChainId, uint256 dbNonce, address[] srcModules)
 func (_InterchainDB *InterchainDBFilterer) ParseInterchainVerificationRequested(log types.Log) (*InterchainDBInterchainVerificationRequested, error) {
 	event := new(InterchainDBInterchainVerificationRequested)
 	if err := _InterchainDB.contract.UnpackLog(event, "InterchainVerificationRequested", log); err != nil {
@@ -1430,7 +1429,7 @@ func (_InterchainDB *InterchainDBFilterer) ParseInterchainVerificationRequested(
 
 // InterchainDBEventsMetaData contains all meta data concerning the InterchainDBEvents contract.
 var InterchainDBEventsMetaData = &bind.MetaData{
-	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"name\":\"InterchainEntryVerified\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"name\":\"InterchainEntryWritten\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"writerNonce\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address[]\",\"name\":\"srcModules\",\"type\":\"address[]\"}],\"name\":\"InterchainVerificationRequested\",\"type\":\"event\"}]",
+	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"name\":\"InterchainEntryVerified\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"srcWriter\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"dataHash\",\"type\":\"bytes32\"}],\"name\":\"InterchainEntryWritten\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"destChainId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address[]\",\"name\":\"srcModules\",\"type\":\"address[]\"}],\"name\":\"InterchainVerificationRequested\",\"type\":\"event\"}]",
 }
 
 // InterchainDBEventsABI is the input ABI used to generate the binding from.
@@ -1648,17 +1647,17 @@ func (it *InterchainDBEventsInterchainEntryVerifiedIterator) Close() error {
 
 // InterchainDBEventsInterchainEntryVerified represents a InterchainEntryVerified event raised by the InterchainDBEvents contract.
 type InterchainDBEventsInterchainEntryVerified struct {
-	Module      common.Address
-	SrcChainId  *big.Int
-	SrcWriter   [32]byte
-	WriterNonce *big.Int
-	DataHash    [32]byte
-	Raw         types.Log // Blockchain specific contextual infos
+	Module     common.Address
+	SrcChainId *big.Int
+	DbNonce    *big.Int
+	SrcWriter  [32]byte
+	DataHash   [32]byte
+	Raw        types.Log // Blockchain specific contextual infos
 }
 
-// FilterInterchainEntryVerified is a free log retrieval operation binding the contract event 0x65fdc92d5fec4c98c387c9fda2326f1d593ce9e39eaafa681d655266d0ff227e.
+// FilterInterchainEntryVerified is a free log retrieval operation binding the contract event 0x4f9d94cde48123382edd2a9ec240776059a572966248417c46beda48e2943069.
 //
-// Solidity: event InterchainEntryVerified(address module, uint256 srcChainId, bytes32 srcWriter, uint256 writerNonce, bytes32 dataHash)
+// Solidity: event InterchainEntryVerified(address module, uint256 srcChainId, uint256 dbNonce, bytes32 srcWriter, bytes32 dataHash)
 func (_InterchainDBEvents *InterchainDBEventsFilterer) FilterInterchainEntryVerified(opts *bind.FilterOpts) (*InterchainDBEventsInterchainEntryVerifiedIterator, error) {
 
 	logs, sub, err := _InterchainDBEvents.contract.FilterLogs(opts, "InterchainEntryVerified")
@@ -1668,9 +1667,9 @@ func (_InterchainDBEvents *InterchainDBEventsFilterer) FilterInterchainEntryVeri
 	return &InterchainDBEventsInterchainEntryVerifiedIterator{contract: _InterchainDBEvents.contract, event: "InterchainEntryVerified", logs: logs, sub: sub}, nil
 }
 
-// WatchInterchainEntryVerified is a free log subscription operation binding the contract event 0x65fdc92d5fec4c98c387c9fda2326f1d593ce9e39eaafa681d655266d0ff227e.
+// WatchInterchainEntryVerified is a free log subscription operation binding the contract event 0x4f9d94cde48123382edd2a9ec240776059a572966248417c46beda48e2943069.
 //
-// Solidity: event InterchainEntryVerified(address module, uint256 srcChainId, bytes32 srcWriter, uint256 writerNonce, bytes32 dataHash)
+// Solidity: event InterchainEntryVerified(address module, uint256 srcChainId, uint256 dbNonce, bytes32 srcWriter, bytes32 dataHash)
 func (_InterchainDBEvents *InterchainDBEventsFilterer) WatchInterchainEntryVerified(opts *bind.WatchOpts, sink chan<- *InterchainDBEventsInterchainEntryVerified) (event.Subscription, error) {
 
 	logs, sub, err := _InterchainDBEvents.contract.WatchLogs(opts, "InterchainEntryVerified")
@@ -1705,9 +1704,9 @@ func (_InterchainDBEvents *InterchainDBEventsFilterer) WatchInterchainEntryVerif
 	}), nil
 }
 
-// ParseInterchainEntryVerified is a log parse operation binding the contract event 0x65fdc92d5fec4c98c387c9fda2326f1d593ce9e39eaafa681d655266d0ff227e.
+// ParseInterchainEntryVerified is a log parse operation binding the contract event 0x4f9d94cde48123382edd2a9ec240776059a572966248417c46beda48e2943069.
 //
-// Solidity: event InterchainEntryVerified(address module, uint256 srcChainId, bytes32 srcWriter, uint256 writerNonce, bytes32 dataHash)
+// Solidity: event InterchainEntryVerified(address module, uint256 srcChainId, uint256 dbNonce, bytes32 srcWriter, bytes32 dataHash)
 func (_InterchainDBEvents *InterchainDBEventsFilterer) ParseInterchainEntryVerified(log types.Log) (*InterchainDBEventsInterchainEntryVerified, error) {
 	event := new(InterchainDBEventsInterchainEntryVerified)
 	if err := _InterchainDBEvents.contract.UnpackLog(event, "InterchainEntryVerified", log); err != nil {
@@ -1786,16 +1785,16 @@ func (it *InterchainDBEventsInterchainEntryWrittenIterator) Close() error {
 
 // InterchainDBEventsInterchainEntryWritten represents a InterchainEntryWritten event raised by the InterchainDBEvents contract.
 type InterchainDBEventsInterchainEntryWritten struct {
-	SrcChainId  *big.Int
-	SrcWriter   [32]byte
-	WriterNonce *big.Int
-	DataHash    [32]byte
-	Raw         types.Log // Blockchain specific contextual infos
+	SrcChainId *big.Int
+	DbNonce    *big.Int
+	SrcWriter  [32]byte
+	DataHash   [32]byte
+	Raw        types.Log // Blockchain specific contextual infos
 }
 
-// FilterInterchainEntryWritten is a free log retrieval operation binding the contract event 0x1c43e42d6323bd8b0f93b619bccf2a29b1559555f11483b8d56122c9b7a01897.
+// FilterInterchainEntryWritten is a free log retrieval operation binding the contract event 0x8adbf0953083a65c138963c649cd1eabd31fa900ecd1cd5d6b5b530fbfa41771.
 //
-// Solidity: event InterchainEntryWritten(uint256 srcChainId, bytes32 srcWriter, uint256 writerNonce, bytes32 dataHash)
+// Solidity: event InterchainEntryWritten(uint256 srcChainId, uint256 dbNonce, bytes32 srcWriter, bytes32 dataHash)
 func (_InterchainDBEvents *InterchainDBEventsFilterer) FilterInterchainEntryWritten(opts *bind.FilterOpts) (*InterchainDBEventsInterchainEntryWrittenIterator, error) {
 
 	logs, sub, err := _InterchainDBEvents.contract.FilterLogs(opts, "InterchainEntryWritten")
@@ -1805,9 +1804,9 @@ func (_InterchainDBEvents *InterchainDBEventsFilterer) FilterInterchainEntryWrit
 	return &InterchainDBEventsInterchainEntryWrittenIterator{contract: _InterchainDBEvents.contract, event: "InterchainEntryWritten", logs: logs, sub: sub}, nil
 }
 
-// WatchInterchainEntryWritten is a free log subscription operation binding the contract event 0x1c43e42d6323bd8b0f93b619bccf2a29b1559555f11483b8d56122c9b7a01897.
+// WatchInterchainEntryWritten is a free log subscription operation binding the contract event 0x8adbf0953083a65c138963c649cd1eabd31fa900ecd1cd5d6b5b530fbfa41771.
 //
-// Solidity: event InterchainEntryWritten(uint256 srcChainId, bytes32 srcWriter, uint256 writerNonce, bytes32 dataHash)
+// Solidity: event InterchainEntryWritten(uint256 srcChainId, uint256 dbNonce, bytes32 srcWriter, bytes32 dataHash)
 func (_InterchainDBEvents *InterchainDBEventsFilterer) WatchInterchainEntryWritten(opts *bind.WatchOpts, sink chan<- *InterchainDBEventsInterchainEntryWritten) (event.Subscription, error) {
 
 	logs, sub, err := _InterchainDBEvents.contract.WatchLogs(opts, "InterchainEntryWritten")
@@ -1842,9 +1841,9 @@ func (_InterchainDBEvents *InterchainDBEventsFilterer) WatchInterchainEntryWritt
 	}), nil
 }
 
-// ParseInterchainEntryWritten is a log parse operation binding the contract event 0x1c43e42d6323bd8b0f93b619bccf2a29b1559555f11483b8d56122c9b7a01897.
+// ParseInterchainEntryWritten is a log parse operation binding the contract event 0x8adbf0953083a65c138963c649cd1eabd31fa900ecd1cd5d6b5b530fbfa41771.
 //
-// Solidity: event InterchainEntryWritten(uint256 srcChainId, bytes32 srcWriter, uint256 writerNonce, bytes32 dataHash)
+// Solidity: event InterchainEntryWritten(uint256 srcChainId, uint256 dbNonce, bytes32 srcWriter, bytes32 dataHash)
 func (_InterchainDBEvents *InterchainDBEventsFilterer) ParseInterchainEntryWritten(log types.Log) (*InterchainDBEventsInterchainEntryWritten, error) {
 	event := new(InterchainDBEventsInterchainEntryWritten)
 	if err := _InterchainDBEvents.contract.UnpackLog(event, "InterchainEntryWritten", log); err != nil {
@@ -1924,15 +1923,14 @@ func (it *InterchainDBEventsInterchainVerificationRequestedIterator) Close() err
 // InterchainDBEventsInterchainVerificationRequested represents a InterchainVerificationRequested event raised by the InterchainDBEvents contract.
 type InterchainDBEventsInterchainVerificationRequested struct {
 	DestChainId *big.Int
-	SrcWriter   [32]byte
-	WriterNonce *big.Int
+	DbNonce     *big.Int
 	SrcModules  []common.Address
 	Raw         types.Log // Blockchain specific contextual infos
 }
 
-// FilterInterchainVerificationRequested is a free log retrieval operation binding the contract event 0xd43d4445bcb9e1760e0925bb22762396dca6401144dbfbf7a52db91486448097.
+// FilterInterchainVerificationRequested is a free log retrieval operation binding the contract event 0xf7a707ad4de78d7f649f2084d1f8bfbb2147be1a4b408c98bbb298fc3391242c.
 //
-// Solidity: event InterchainVerificationRequested(uint256 destChainId, bytes32 srcWriter, uint256 writerNonce, address[] srcModules)
+// Solidity: event InterchainVerificationRequested(uint256 destChainId, uint256 dbNonce, address[] srcModules)
 func (_InterchainDBEvents *InterchainDBEventsFilterer) FilterInterchainVerificationRequested(opts *bind.FilterOpts) (*InterchainDBEventsInterchainVerificationRequestedIterator, error) {
 
 	logs, sub, err := _InterchainDBEvents.contract.FilterLogs(opts, "InterchainVerificationRequested")
@@ -1942,9 +1940,9 @@ func (_InterchainDBEvents *InterchainDBEventsFilterer) FilterInterchainVerificat
 	return &InterchainDBEventsInterchainVerificationRequestedIterator{contract: _InterchainDBEvents.contract, event: "InterchainVerificationRequested", logs: logs, sub: sub}, nil
 }
 
-// WatchInterchainVerificationRequested is a free log subscription operation binding the contract event 0xd43d4445bcb9e1760e0925bb22762396dca6401144dbfbf7a52db91486448097.
+// WatchInterchainVerificationRequested is a free log subscription operation binding the contract event 0xf7a707ad4de78d7f649f2084d1f8bfbb2147be1a4b408c98bbb298fc3391242c.
 //
-// Solidity: event InterchainVerificationRequested(uint256 destChainId, bytes32 srcWriter, uint256 writerNonce, address[] srcModules)
+// Solidity: event InterchainVerificationRequested(uint256 destChainId, uint256 dbNonce, address[] srcModules)
 func (_InterchainDBEvents *InterchainDBEventsFilterer) WatchInterchainVerificationRequested(opts *bind.WatchOpts, sink chan<- *InterchainDBEventsInterchainVerificationRequested) (event.Subscription, error) {
 
 	logs, sub, err := _InterchainDBEvents.contract.WatchLogs(opts, "InterchainVerificationRequested")
@@ -1979,9 +1977,9 @@ func (_InterchainDBEvents *InterchainDBEventsFilterer) WatchInterchainVerificati
 	}), nil
 }
 
-// ParseInterchainVerificationRequested is a log parse operation binding the contract event 0xd43d4445bcb9e1760e0925bb22762396dca6401144dbfbf7a52db91486448097.
+// ParseInterchainVerificationRequested is a log parse operation binding the contract event 0xf7a707ad4de78d7f649f2084d1f8bfbb2147be1a4b408c98bbb298fc3391242c.
 //
-// Solidity: event InterchainVerificationRequested(uint256 destChainId, bytes32 srcWriter, uint256 writerNonce, address[] srcModules)
+// Solidity: event InterchainVerificationRequested(uint256 destChainId, uint256 dbNonce, address[] srcModules)
 func (_InterchainDBEvents *InterchainDBEventsFilterer) ParseInterchainVerificationRequested(log types.Log) (*InterchainDBEventsInterchainVerificationRequested, error) {
 	event := new(InterchainDBEventsInterchainVerificationRequested)
 	if err := _InterchainDBEvents.contract.UnpackLog(event, "InterchainVerificationRequested", log); err != nil {
@@ -1994,7 +1992,7 @@ func (_InterchainDBEvents *InterchainDBEventsFilterer) ParseInterchainVerificati
 // InterchainEntryLibMetaData contains all meta data concerning the InterchainEntryLib contract.
 var InterchainEntryLibMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220357d0c6b731a30219fb47fa17feb57cf0583236662b519e2582eec44a62931b964736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220f0b230e1b3a8d99f63366a8c59c1c895937043ce099945860d57954880e7432964736f6c63430008140033",
 }
 
 // InterchainEntryLibABI is the input ABI used to generate the binding from.
@@ -2167,7 +2165,7 @@ func (_InterchainEntryLib *InterchainEntryLibTransactorRaw) Transact(opts *bind.
 // TypeCastsMetaData contains all meta data concerning the TypeCasts contract.
 var TypeCastsMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220ff9bf8869e3b490d9dcf641a2e78972a71592c7cec330e44220a49593cac568c64736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122084346e0dfceb8321f7319fd52a7666adcf9f5945049e2fd23054af4e3ca9c52864736f6c63430008140033",
 }
 
 // TypeCastsABI is the input ABI used to generate the binding from.
