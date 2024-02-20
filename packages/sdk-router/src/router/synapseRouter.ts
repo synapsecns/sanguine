@@ -34,6 +34,7 @@ import {
 import { adjustValueIfNative } from '../utils/handleNativeToken'
 import { getMatchingTxLog } from '../utils/logs'
 import { MS_TIMES, SimpleCache } from '../utils/SimpleCache'
+
 /**
  * Wraps [tokens, lpToken] returned by the SynapseRouter contract into a PoolInfo object.
  */
@@ -101,21 +102,21 @@ export class SynapseRouter extends Router {
       provider
     ) as SynapseRouterContract
     this.address = address
-    this.hydrateCache().then(() => {
-      console.log('router cache hydrated')
-    })
+    // this.hydrateCache().then(() => {
+    //   console.log('router cache hydrated')
+    // })
   }
 
-  private async hydrateCache() {
-    try {
-      await Promise.all([
-        this.getBridgeContract(),
-        this.chainGasAmount(),
-      ])
-    } catch (e) {
-      console.error('Failed to hydrate router cache', e)
-    }
-  }
+  // private async hydrateCache() {
+  //   try {
+  //     await Promise.all([
+  //       this.getBridgeContract(),
+  //       this.chainGasAmount()
+  //     ])
+  //   } catch (e) {
+  //     console.error('Failed to hydrate router cache', e)
+  //   }
+  // }
 
   public async getOriginAmountOut(
     tokenIn: string,
@@ -228,7 +229,7 @@ export class SynapseRouter extends Router {
     return this.bridgeContractCache
   }
 
-  @SimpleCache(MS_TIMES.ONE_MINUTE)
+  @SimpleCache(MS_TIMES.TEN_MINUTES)
   public async chainGasAmount(): Promise<BigNumber> {
     const bridgeContract = await this.getBridgeContract()
     return bridgeContract.chainGasAmount()
