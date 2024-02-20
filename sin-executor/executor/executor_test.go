@@ -27,6 +27,15 @@ func (i *InterchainSuite) TestE2E() {
 	i.Require().NoError(err)
 
 	originModule := i.deployManager.Get(i.GetTestContext(), i.originChain, testutil.InterchainModuleMock)
+	// TODO: Need to add ExecutionServiceMock.sol to deploy manager, and pass it in here
+	// function interchainSend(
+	//     uint256 dstChainId,
+	//     bytes32 receiver,
+	//     address srcExecutionService,
+	//     bytes calldata message,
+	//     bytes calldata options,
+	//     address[] calldata srcModules
+	// )
 	tx, err := i.originModule.InterchainSend(auth.TransactOpts, receiver, i.destChain.GetBigChainID(), []byte("hello"), encodedOptions, []common.Address{originModule.Address()})
 	i.Require().NoError(err)
 	i.originChain.WaitForConfirmation(i.GetTestContext(), tx)
