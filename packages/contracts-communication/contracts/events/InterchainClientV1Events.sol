@@ -9,11 +9,9 @@ abstract contract InterchainClientV1Events {
         uint256 indexed dbNonce,
         uint256 dstChainId,
         bytes32 srcSender,
-        bytes32 dstReceiver
-    );
-
-    event InterchainExecutionRequested(
-        bytes32 indexed transactionId, uint256 dstChainId, uint256 executionFee, bytes encodedTransaction
+        bytes32 dstReceiver,
+        uint256 executionFee,
+        bytes encodedTransaction
     );
 
     event InterchainOptionsV1(bytes32 indexed transactionId, uint256 gasLimit, uint256 gasAirdrop);
