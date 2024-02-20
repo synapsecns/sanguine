@@ -57,7 +57,7 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         uint64 nonce,
         bytes options,
         bytes32 indexed transactionId,
-        uint256 dbWriterNonce
+        uint256 dbNonce
     );
 
     // @notice Emitted when an interchain transaction is executed.
@@ -71,7 +71,7 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         uint64 nonce,
         bytes options,
         bytes32 indexed transactionId,
-        uint256 dbWriterNonce
+        uint256 dbNonce
     );
 
     /**
@@ -86,7 +86,7 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         uint64 nonce;
         bytes options;
         bytes32 transactionId;
-        uint256 dbWriterNonce;
+        uint256 dbNonce;
     }
 
     function _generateTransactionId(
@@ -131,7 +131,7 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
             nonce: clientNonce,
             options: options,
             transactionId: 0,
-            dbWriterNonce: 0
+            dbNonce: 0
         });
 
         bytes32 transactionId = _generateTransactionId(
@@ -139,7 +139,7 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         );
         icTx.transactionId = transactionId;
 
-        icTx.dbWriterNonce = IInterchainDB(interchainDB).writeEntryWithVerification{value: verificationFees}(
+        icTx.dbNonce = IInterchainDB(interchainDB).writeEntryWithVerification{value: verificationFees}(
             icTx.dstChainId, icTx.transactionId, srcModules
         );
         IExecutionService(srcExecutionService).requestExecution({
@@ -160,7 +160,7 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
             icTx.nonce,
             icTx.options,
             icTx.transactionId,
-            icTx.dbWriterNonce
+            icTx.dbNonce
         );
         // Increment nonce for next message
         clientNonce++;
@@ -192,8 +192,8 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         // Construct expected entry based on icTransaction data
         InterchainEntry memory icEntry = InterchainEntry({
             srcChainId: icTx.srcChainId,
+            dbNonce: icTx.dbNonce,
             srcWriter: linkedClients[icTx.srcChainId],
-            writerNonce: icTx.dbWriterNonce,
             dataHash: icTx.transactionId
         });
 
@@ -280,7 +280,7 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
             icTx.nonce,
             icTx.options,
             icTx.transactionId,
-            icTx.dbWriterNonce
+            icTx.dbNonce
         );
     }
 }
