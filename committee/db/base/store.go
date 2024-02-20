@@ -22,6 +22,7 @@ type Store struct {
 	datastore      datastore.Datastore
 }
 
+// NewStore creates a new store.
 func NewStore(db *gorm.DB, metrics metrics.Handler) *Store {
 	txDB := txdb.NewTXStore(db, metrics)
 
@@ -41,6 +42,7 @@ func (s Store) SubmitterDB() submitterDB.Service {
 	return s.submitterStore
 }
 
+// DatastoreForSigner gets the datastore for a given signer.
 func (s Store) DatastoreForSigner(address common.Address) (datastore.Batching, error) {
 	return s.makeDatastore(fmt.Sprintf("kvs_%s", address.String()))
 }

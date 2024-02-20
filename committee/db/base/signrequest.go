@@ -35,14 +35,14 @@ type SignRequest struct {
 	DestinationChainID int `gorm:"column:destination_chain_id;index"`
 }
 
+// ToServiceSignRequest converts a SignRequest to a db.SignRequest.
 func (s *SignRequest) ToServiceSignRequest() db.SignRequest {
 	return db.SignRequest{
 		InterchainEntry: synapsemodule.InterchainEntry{
 			SrcChainId:  big.NewInt(int64(s.OriginChainID)),
 			SrcWriter:   common.HexToHash(s.Sender),
 			WriterNonce: big.NewInt(int64(s.Nonce)),
-			// TODO: store data hash.
-			DataHash: common.HexToHash(s.DataHash),
+			DataHash:    common.HexToHash(s.DataHash),
 		},
 		DestChainID:     big.NewInt(int64(s.DestinationChainID)),
 		Status:          s.Status,
@@ -73,6 +73,7 @@ func (s Store) UpdateSignRequestStatus(ctx context.Context, txid common.Hash, st
 	return nil
 }
 
+// StoreInterchainTransactionReceived stores an interchain transaction received.
 func (s Store) StoreInterchainTransactionReceived(ctx context.Context, sr synapsemodule.SynapseModuleVerificationRequested) error {
 	signRequest, err := toSignRequest(sr)
 	if err != nil {

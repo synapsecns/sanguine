@@ -70,6 +70,8 @@ func (s SynapseModuleDeployer) Deploy(ctx context.Context) (contracts.DeployedCo
 		return synapsemodule.NewSynapseModuleRef(address, backend)
 	})
 }
+
+// Dependencies returns the dependencies of the SynapseModuleDeployer.
 func (s SynapseModuleDeployer) Dependencies() []contracts.ContractType {
 	return s.RecursiveDependencies([]contracts.ContractType{NoOpInterchainType})
 }

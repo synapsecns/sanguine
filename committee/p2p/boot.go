@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/libp2p/go-libp2p/p2p/discovery/mdns"
-	"log"
+	"github.com/synapsecns/sanguine/core/metrics"
 	"sync"
 	"time"
 
@@ -42,6 +42,7 @@ type LibP2PManager interface {
 
 type libP2PManagerImpl struct {
 	host              host.Host
+	handler           metrics.Handler
 	dht               *dual.DHT
 	announcementTopic *pubsub.Topic
 	pubsub            *pubsub.PubSub
@@ -64,6 +65,7 @@ type libP2PManagerImpl struct {
 
 const dbTopic = "crdt_db"
 
+// RebroadcastingInterval is the interval at which the crdt will rebroadcast its data.
 var RebroadcastingInterval = time.Minute
 
 // NewLibP2PManager creates a new libp2p manager.
@@ -71,7 +73,7 @@ var RebroadcastingInterval = time.Minute
 //
 // validators should be a list of addresses that are allowed to connect to the host. This should include the address of the
 // node itself.
-func NewLibP2PManager(ctx context.Context, auth signer.Signer, store db.Datstores, port int) (LibP2PManager, error) {
+func NewLibP2PManager(ctx context.Context, handler metrics.Handler, auth signer.Signer, store db.Datstores, port int) (LibP2PManager, error) {
 	l := &libP2PManagerImpl{}
 	_, err := l.setupHost(ctx, auth.PrivKey()) // call createHost function
 	if err != nil {
@@ -85,6 +87,7 @@ func NewLibP2PManager(ctx context.Context, auth signer.Signer, store db.Datstore
 	l.address = auth.Address()
 	l.datastoreFactory = store
 	l.datastores = make(map[common.Address]datastore.Batching)
+	l.handler = handler
 	l.port = port
 
 	return l, nil
@@ -132,9 +135,9 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	if err != nil {
 		return fmt.Errorf("error starting IPFS with bootstrap peers: %w", err)
 	}
-	go l.Discover(ctx, l.host, l.dht, dbTopic)
-
 	l.pubsub, err = pubsub.NewGossipSub(ctx, l.host)
+
+	go l.Discover(ctx, l.host, l.dht, dbTopic)
 
 	fmt.Println(l.host.Addrs())
 	fmt.Println("eth address:")
@@ -285,10 +288,10 @@ func (l *libP2PManagerImpl) Discover(ctx context.Context, h host.Host, dht *dual
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-
 			peers, err := util.FindPeers(ctx, routingDiscovery, rendezvous)
 			if err != nil {
-				log.Fatal(err)
+				l.handler.ExperimentalLogger().Warnf(ctx, "could not find peers: %w", err)
+				continue
 			}
 
 			for _, p := range peers {

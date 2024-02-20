@@ -29,6 +29,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+// Node is the main node.
 type Node struct {
 	client               omnirpcClient.RPCClient
 	metrics              metrics.Handler
@@ -117,7 +118,7 @@ func (n *Node) Address() common.Address {
 const defaultDBInterval = 3
 
 func (n *Node) createPeerManager(ctx context.Context) (err error) {
-	n.peerManager, err = p2p.NewLibP2PManager(ctx, n.signer, n.db, n.cfg.P2PPort)
+	n.peerManager, err = p2p.NewLibP2PManager(ctx, n.metrics, n.signer, n.db, n.cfg.P2PPort)
 	if err != nil {
 		return fmt.Errorf("could not get peer manager: %w", err)
 	}
@@ -174,6 +175,7 @@ func (n *Node) setValidators(parentCtx context.Context) (err error) {
 	return nil
 }
 
+// Start starts the node and all it's auxiliary services.
 func (n *Node) Start(parentContext context.Context) error {
 	g, ctx := errgroup.WithContext(parentContext)
 
@@ -188,12 +190,12 @@ func (n *Node) Start(parentContext context.Context) error {
 	}
 
 	g.Go(func() error {
-		// nolint: errcheck
+		// nolint: errcheck, wrapcheck
 		return n.submitter.Start(ctx)
 	})
 
 	g.Go(func() error {
-		// nolint: errcheck
+		// nolint: errcheck, wrapcheck
 		return n.startChainIndexers(ctx)
 	})
 
