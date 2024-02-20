@@ -313,26 +313,21 @@ func (i *inventoryManagerImpl) getRebalance(ctx context.Context, chainID int, to
 
 	// check if any balances are below maintenance threshold
 	var minTokenData, maxTokenData *tokenMetadata
-	var rebalanceOrigin, rebalanceDest int
-	var rebalanceOriginTokenAddr common.Address
-	for tokenChainID, tokenMap := range i.tokens {
-		for tokenAddr, tokenData := range tokenMap {
+	for _, tokenMap := range i.tokens {
+		for _, tokenData := range tokenMap {
 			if tokenData.name == rebalanceTokenData.name {
 				if minTokenData == nil || minTokenData.balance.Cmp(minTokenData.balance) < 0 {
 					minTokenData = tokenData
-					rebalanceDest = tokenChainID
 				}
 				if maxTokenData == nil || maxTokenData.balance.Cmp(maxTokenData.balance) > 0 {
 					maxTokenData = tokenData
-					rebalanceOrigin = tokenChainID
-					rebalanceOriginTokenAddr = tokenAddr
 				}
 			}
 		}
 	}
 
 	// get the initialPct for the origin chain
-	initialPct, err := i.cfg.GetInitialBalancePct(rebalanceDest, rebalanceOriginTokenAddr.Hex())
+	initialPct, err := i.cfg.GetInitialBalancePct(maxTokenData.chainID, maxTokenData.addr.Hex())
 	if err != nil {
 		return nil, fmt.Errorf("could not get initial pct: %w", err)
 	}
@@ -343,8 +338,8 @@ func (i *inventoryManagerImpl) getRebalance(ctx context.Context, chainID int, to
 		initialThresh, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(initialPct)).Int(nil)
 		amount := new(big.Int).Sub(maxTokenData.balance, initialThresh)
 		rebalance = &rebalanceData{
-			origin:         rebalanceOrigin,
-			dest:           rebalanceDest,
+			origin:         maxTokenData.chainID,
+			dest:           minTokenData.chainID,
 			originMetadata: maxTokenData,
 			destMetadata:   minTokenData,
 			amount:         amount,
