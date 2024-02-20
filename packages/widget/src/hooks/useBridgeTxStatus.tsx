@@ -20,7 +20,7 @@ export const useBridgeTxStatus = ({
   kappa,
   checkStatus = false,
   currentTime,
-}: UseBridgeTxStatusProps) => {
+}: UseBridgeTxStatusProps): [boolean, string | null] => {
   const [isComplete, setIsComplete] = useState<boolean>(false)
   const [fetchedKappa, setFetchedKappa] = useState<string>(kappa ?? null)
 

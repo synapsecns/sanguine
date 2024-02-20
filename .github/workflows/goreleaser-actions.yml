@@ -259,7 +259,7 @@ jobs:
 
       - name: Push Artifacts (Snapshot)
         if: steps.branch-name.outputs.is_default != 'true' && steps.image_check.outputs.has_images == 'true'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{steps.project_id.outputs.project_name}}.zip
           path: ${{steps.project_id.outputs.project_name}}.zip

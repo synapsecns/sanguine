@@ -17,13 +17,13 @@ export const ToggleTabs: React.FC<ToggleTabsProps> = ({
   const activeTabClass = `${baseTabClass} cursor-pointer hover:opacity-70`
   const activeStyle = {
     background: 'var(--synapse-button-bg)',
-    color: 'var(--synapse-button-text',
+    color: 'var(--synapse-button-text)',
   }
 
   return (
     <div
       className="flex text-sm text-center cursor-default rounded border border-solid border-[--synapse-border]"
-      style={{ background: 'var(--synapse-root' }}
+      style={{ background: 'var(--synapse-root)' }}
       role="group"
     >
       <div
