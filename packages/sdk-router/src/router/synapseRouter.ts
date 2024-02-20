@@ -110,14 +110,8 @@ export class SynapseRouter extends Router {
   // private async hydrateCache() {
   //   try {
   //     await Promise.all([
-  //       this.getBridgeContract().then((bridgeContract) => {
-  //           console.log({bridgeContract})
-  //           return bridgeContract
-  //         }),
-  //       this.chainGasAmount().then((chainGasAmount) => {
-  //           console.log({chainGasAmount})
-  //           return chainGasAmount
-  //         }),
+  //       this.getBridgeContract(),
+  //       this.chainGasAmount()
   //     ])
   //   } catch (e) {
   //     console.error('Failed to hydrate router cache', e)

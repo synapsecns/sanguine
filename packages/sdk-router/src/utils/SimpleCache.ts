@@ -34,7 +34,10 @@ export function SimpleCache(maxAge: number) {
       } else {
         console.log(`Calculating result for ${propertyKey}`)
         const result = originalMethod.apply(this, args)
-        cache.set(key, result)
+        result.then((res: any) => {
+          cache.set(key, res)
+          return res
+        })
         return result
       }
     }
