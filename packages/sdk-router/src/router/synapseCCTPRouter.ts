@@ -49,9 +49,9 @@ export class SynapseCCTPRouter extends Router {
       provider
     ) as SynapseCCTPRouterContract
     this.address = address
-    this.hydrateCache().then(() => {
-      console.log('cctprouter cache hydrated')
-    })
+    // this.hydrateCache().then(() => {
+    //   console.log('cctprouter cache hydrated')
+    // })
   }
 
   /** fully optional but improves perf on first request */
@@ -59,7 +59,7 @@ export class SynapseCCTPRouter extends Router {
     try {
       await Promise.all([
         this.getCctpContract(),
-        this.chainGasAmount(),
+        // this.chainGasAmount(),
       ])
     } catch(e) {
       console.error('Failed to hydrate CCTP router cache', e)

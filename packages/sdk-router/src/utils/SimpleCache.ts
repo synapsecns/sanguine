@@ -73,7 +73,7 @@ export function SimpleCache(maxAge: number) {
       const now = Date.now()
 
       if (cache[key] && now - cache[key].timestamp < maxAge) {
-        console.log(`Returning cached result for ${propertyKey}`)
+        console.log(`Returning cached result for ${propertyKey}: ${key}`)
         return cache[key].value
       }
 

@@ -101,9 +101,9 @@ export class SynapseRouter extends Router {
       provider
     ) as SynapseRouterContract
     this.address = address
-    this.hydrateCache().then(() => {
-      console.log('router cache hydrated')
-    })
+    // this.hydrateCache().then(() => {
+    //   console.log('router cache hydrated')
+    // })
   }
 
   private async hydrateCache() {
