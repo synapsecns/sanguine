@@ -30,3 +30,7 @@ func NewTestScreener(ctx context.Context, cfg config.Config, metricHandler metri
 func (s *screenerImpl) SetClient(client trmlabs.Client) {
 	s.client = client
 }
+
+func SplitCSV(file string) (map[string][]Set, error) {
+	return splitCSV(file)
+}
