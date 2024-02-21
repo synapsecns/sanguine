@@ -20,7 +20,7 @@ import {
 import { BigintIsh } from '../constants'
 import { getMatchingTxLog } from '../utils/logs'
 import { adjustValueIfNative } from '../utils/handleNativeToken'
-import { MS_TIMES, SimpleCache } from '../utils/SimpleCache'
+import { CACHE_TIMES, RouterCache } from '../utils/RouterCache'
 
 // Define type alias
 export type BridgeParams = IFastBridge.BridgeParamsStruct
@@ -121,7 +121,7 @@ export class FastBridgeRouter implements SynapseModule {
     return fastBridgeContract.bridgeRelays(synapseTxId)
   }
 
-  @SimpleCache(MS_TIMES.TEN_MINUTES)
+  @RouterCache(CACHE_TIMES.TEN_MINUTES)
   public async chainGasAmount(): Promise<BigNumber> {
     const fastBridgeContract = await this.getFastBridgeContract()
     return fastBridgeContract.chainGasAmount()
@@ -158,7 +158,7 @@ export class FastBridgeRouter implements SynapseModule {
   /**
    * @returns The protocol fee rate, multiplied by 1_000_000 (e.g. 1 basis point = 100).
    */
-  @SimpleCache(MS_TIMES.TEN_MINUTES)
+  @RouterCache(CACHE_TIMES.TEN_MINUTES)
   public async getProtocolFeeRate(): Promise<BigNumber> {
     const fastBridgeContract = await this.getFastBridgeContract()
     return fastBridgeContract.protocolFeeRate()
