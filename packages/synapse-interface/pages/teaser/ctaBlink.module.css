@@ -1,0 +1,39 @@
+@keyframes underscoreBlink {
+  0% { opacity: 0 }
+  49% { opacity: 0 }
+  50% { opacity: 1 }
+  100% { opacity: 1 }
+}
+
+@keyframes arrowPulse {
+  0% {
+    color: hsl(275deg 100% 60%);
+  }
+  100% {
+    color: hsl(290deg 100% 70%);
+  }
+}
+
+@keyframes arrowMove {
+  0% {
+    margin-left: 0;
+  }
+  50% {
+    margin-left: .5rem;
+  }
+  100% {
+    margin-left: 0;
+  }
+}
+
+.underscore {
+  animation:
+    underscoreBlink 1.6s infinite,
+    test 1.6s infinite;
+}
+
+.arrow {
+  animation:
+    arrowPulse 1s infinite alternate ease-in-out,
+    arrowMove .5s alternate cubic-bezier(0, 0, 0, 1);
+}

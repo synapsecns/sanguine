@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import styles from './ctaBlink.module.css'
 
 export default function Hero() {
   const [h1, setH1] = useState('default')
@@ -7,52 +8,60 @@ export default function Hero() {
   const parentRef = useRef(null)
 
   useEffect(() => {
-    console.log('render', h1)
-
     if (h1 !== 'bridge' && bridgeRef.current)
-      bridgeRef.current.addEventListener('mouseover', mouseEnterBridgeButton, {
+      bridgeRef.current.addEventListener('mouseover', setBridge, {
         once: true,
       })
 
     if (h1 !== 'build' && buildRef.current)
-      buildRef.current.addEventListener('mouseover', mouseEnterBuildButton, {
+      buildRef.current.addEventListener('mouseover', setBuild, {
         once: true,
       })
 
     if (h1 !== 'default' && parentRef.current)
-      parentRef.current.addEventListener('mouseleave', mouseLeaveButton)
+      parentRef.current.addEventListener('mouseleave', Reset, { once: true })
   })
+
+  function setBridge() {
+    newH1('bridge', 'Any asset to any chain')
+  }
+  function setBuild() {
+    newH1('build', 'Custom everything')
+  }
+  function Reset() {
+    newH1('default', 'Synapse 2.0: The Modular Interchain Network')
+  }
 
   const h1Fragment = (() => {
     switch (h1) {
       case 'bridge':
-        return <a href="#">Any asset to any chain_</a>
+        return (
+          <a href="#">
+            Any asset to any chain<span className={styles.underscore}>_</span>
+          </a>
+        )
       case 'build':
-        return <a href="#">Custom everything_</a>
+        return (
+          <a href="#">
+            Custom everything<span className={styles.underscore}>_</span>
+          </a>
+        )
       default:
-        return 'Synapse 2.0: The Modular Interchain Network'
+        return (
+          <>
+            Synapse 2.0: The Modular Interchain Network
+            <span className={styles.underscore}>_</span>
+          </>
+        )
     }
   })()
-
-  function mouseEnterBridgeButton() {
-    newH1('bridge', 'Any asset to any chain')
-  }
-  function mouseEnterBuildButton() {
-    newH1('build', 'Custom everything')
-  }
-  function mouseLeaveButton() {
-    newH1('default', 'Synapse 2.0: The Modular Interchain Network')
-  }
 
   function newH1(newState, newText) {
     console.log('begin animation')
 
-    let h1 = document.querySelector('h1')
+    let node = document.querySelector('h1')
 
-    if (h1.innerText.slice(0, 15) === newText.slice(0, 15)) return
-
-    // h1.outerHTML = h1.outerHTML
-    // h1 = document.querySelector('h1')
+    if (node.innerText.slice(0, 15) === newText.slice(0, 15)) return
 
     let start, previousTimeStamp
     let done = false
@@ -66,20 +75,28 @@ export default function Hero() {
       const elapsed = timeStamp - start
 
       if (previousTimeStamp !== timeStamp) {
-        const count = Math.min((elapsed * elapsed) / 3000, max)
-        h1.innerText = newText.slice(0, Math.round(count))
-        if (h1.innerText.length < newText.length - 1)
-          h1.innerHTML += `<span style="color: hsla(285deg 100% 50% / .5);">${randAZ()}</span>`
-        if (h1.innerText.length < newText.length)
-          h1.innerHTML += `<span style="color: hsla(280deg 100% 50% / .5);">_</span>`
+        const count = Math.max(1, Math.min((elapsed * elapsed) / 3000, max))
+        node.innerText = newText.slice(0, Math.round(count))
+
+        if (node.innerText.length < newText.length - 1)
+          node.innerHTML += `<span style="color: hsla(285deg 100% 50% / 1.5);">${randAZ()}</span>`
+
+        if (node.innerText.length < newText.length)
+          node.innerHTML += `<span style="color: hsla(280deg 100% 50% / 1.5);">_</span>`
+
         if (count === max) done = true
       }
 
       previousTimeStamp = timeStamp
 
-      console.log('end animation')
-
-      done ? setH1(newState) : window.requestAnimationFrame(step)
+      if (done) {
+        console.log('end animation', h1)
+        if (newState !== 'default')
+          node.innerHTML += `<span class=${styles.arrow}> -></span>`
+        setH1(newState)
+      } else {
+        window.requestAnimationFrame(step)
+      }
     }
 
     window.requestAnimationFrame(step)
