@@ -10,7 +10,7 @@ export default function Hero() {
 
   const [cta, index] = h1
 
-  const { tag, url } = {
+  const ctas = {
     default: {
       tag: 'Synapse 2.0: The Modular Interchain Network',
     },
@@ -22,11 +22,15 @@ export default function Hero() {
       tag: 'Custom everything',
       url: '#',
     },
-  }[cta]
+  }
+
+  const { tag, url } = ctas[cta]
+
+  const sleep = (time) => new Promise((resolve) => setTimeout(resolve, time))
 
   useEffect(() => {
     if (index < tag.length) {
-      sleep((index / tag.length) * 4 + 4).then(() => setH1([cta, +index + 1]))
+      sleep((index / tag.length) * 5 + 5).then(() => setH1([cta, +index + 1]))
     } else {
       bridgeRef?.current?.addEventListener(
         'mousemove',
@@ -48,25 +52,19 @@ export default function Hero() {
     }
   })
 
-  // sleep time expects milliseconds
-  function sleep(time) {
-    return new Promise((resolve) => setTimeout(resolve, time))
-  }
-
   const Tagline = () => {
     return (
       <>
         {tag.slice(0, index)}
         {index < tag.length - 1 && (
-          <span className="text-fuchsia-500/50">{randAZ()}</span>
+          <span className="text-fuchsia-500/60">
+            {String.fromCharCode(Math.random() * 61 + 65)}
+          </span>
         )}
-        {index < tag.length && <span className="text-purple-500/50">_</span>}
+        {index < tag.length && <span className="text-purple-500/60">_</span>}
       </>
     )
   }
-
-  const az = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-  let randAZ = () => az[Math.round(Math.random() * (az.length - 1))]
 
   return (
     <header className="my-2 md:my-8 lg:my-16 text-center max-w-3xl grid place-items-center">
@@ -75,31 +73,29 @@ export default function Hero() {
       </div>
       <div ref={cta !== 'default' ? parentRef : null}>
         <h1 className="relative my-4 max-w-xl text-3xl md:text-2xl font-medium overflow-hidden">
-          <div>
-            {url ? (
-              <a href={url}>
-                <Tagline />
-                {index === tag.length && (
-                  <span className={styles.arrow}>{' ->'}</span>
-                )}
-              </a>
-            ) : (
+          {url ? (
+            <a href={url}>
               <Tagline />
-            )}
-          </div>
+              {index === tag.length && (
+                <span className={styles.arrow}>{' ->'}</span>
+              )}
+            </a>
+          ) : (
+            <Tagline />
+          )}
         </h1>
         <div className="m-2">
           <a
             ref={cta !== 'bridge' ? bridgeRef : null}
             className="px-5 pt-1.5 pb-2 text-lg m-2 border border-zinc-500 hover:border-black hover:dark:border-white rounded inline-block bg-white hover:bg-zinc-100 dark:bg-zinc-950 hover:dark:bg-zinc-900"
-            href="#"
+            href={ctas.bridge.url}
           >
             Bridge
           </a>
           <a
             ref={cta !== 'build' ? buildRef : null}
             className="px-5 pt-1.5 pb-2 text-lg m-2 border border-fuchsia-500 hover:bg-fuchsia-100 hover:dark:bg-fuchsia-950 rounded inline-block"
-            href="#"
+            href={ctas.build.url}
           >
             Build
           </a>
