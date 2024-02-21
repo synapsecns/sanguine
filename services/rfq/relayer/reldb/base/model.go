@@ -25,6 +25,7 @@ func init() {
 	transactionIDFieldName = namer.GetConsistentName("TransactionID")
 	originTxHashFieldName = namer.GetConsistentName("OriginTxHash")
 	destTxHashFieldName = namer.GetConsistentName("DestTxHash")
+	rebalanceIDFieldName = namer.GetConsistentName("RebalanceID")
 }
 
 var (
@@ -40,6 +41,8 @@ var (
 	originTxHashFieldName string
 	// destTxHashFieldName is the dest tx hash field name.
 	destTxHashFieldName string
+	// rebalanceIDFieldName is the rebalances id field name.
+	rebalanceIDFieldName string
 )
 
 // LastIndexed is used to make sure we haven't missed any events while offline.
@@ -112,6 +115,17 @@ type RequestForQuote struct {
 	SendChainGas bool
 }
 
+// Rebalance is the event model for a rebalance action.
+type Rebalance struct {
+	RebalanceID  sql.NullString
+	Origin       uint64
+	Destination  uint64
+	OriginAmount string
+	Status       reldb.RebalanceStatus
+	OriginTxHash sql.NullString
+	DestTxHash   sql.NullString
+}
+
 // FromQuoteRequest converts a quote request to an object that can be stored in the db.
 // TODO: add validation for deadline > uint64
 // TODO: roundtripper test.
@@ -138,6 +152,25 @@ func FromQuoteRequest(request reldb.QuoteRequest) RequestForQuote {
 		OriginNonce:          int(request.Transaction.Nonce.Uint64()),
 		Status:               request.Status,
 		BlockNumber:          request.BlockNumber,
+	}
+}
+
+// FromRebalance converts a rebalance to a db object.
+func FromRebalance(rebalance reldb.Rebalance) Rebalance {
+	var id sql.NullString
+	if rebalance.RebalanceID == nil {
+		id = sql.NullString{Valid: false}
+	} else {
+		id = sql.NullString{String: hexutil.Encode(rebalance.RebalanceID[:]), Valid: true}
+	}
+	return Rebalance{
+		RebalanceID:  id,
+		Origin:       rebalance.Origin,
+		Destination:  rebalance.Destination,
+		OriginAmount: rebalance.OriginAmount.String(),
+		Status:       rebalance.Status,
+		OriginTxHash: stringToNullString(rebalance.OriginTxHash.String()),
+		DestTxHash:   stringToNullString(rebalance.DestTxHash.String()),
 	}
 }
 

@@ -5,6 +5,7 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/dbcommon"
@@ -16,11 +17,16 @@ import (
 type Writer interface {
 	// PutLatestBlock upsers the latest block on a given chain id to be new height.
 	PutLatestBlock(ctx context.Context, chainID, height uint64) error
-	// StoreQuoteRequest stores a quote reuquest. If one already exists, only  the status will be updated
+	// StoreQuoteRequest stores a quote request. If one already exists, only  the status will be updated
 	// TODO: find a better way to describe this in the name
 	StoreQuoteRequest(ctx context.Context, request QuoteRequest) error
+	// StoreRebalance stores a rebalance.
+	StoreRebalance(ctx context.Context, rebalance Rebalance) error
 	// UpdateQuoteRequestStatus updates the status of a quote request
 	UpdateQuoteRequestStatus(ctx context.Context, id [32]byte, status QuoteRequestStatus) error
+	// UpdateRebalanceStatus updates the status of a rebalance action.
+	// If the originTxHash is supplied, it will be used to update the ID for the corresponding rebalance model.
+	UpdateRebalanceStatus(ctx context.Context, id [32]byte, originTxHash *common.Hash, status RebalanceStatus) error
 	// UpdateDestTxHash updates the dest tx hash of a quote request
 	UpdateDestTxHash(ctx context.Context, id [32]byte, destTxHash common.Hash) error
 }
@@ -35,6 +41,8 @@ type Reader interface {
 	GetQuoteRequestByOriginTxHash(ctx context.Context, txHash common.Hash) (*QuoteRequest, error)
 	// GetQuoteResultsByStatus gets quote results by status
 	GetQuoteResultsByStatus(ctx context.Context, matchStatuses ...QuoteRequestStatus) (res []QuoteRequest, _ error)
+	// HasPendingRebalance checks if there is a pending rebalance for the given chain ids
+	HasPendingRebalance(ctx context.Context, chainIDs ...uint64) (bool, error)
 }
 
 // Service is the interface for the database service.
@@ -149,3 +157,57 @@ func (q QuoteRequestStatus) Value() (driver.Value, error) {
 }
 
 var _ dbcommon.Enum = (*QuoteRequestStatus)(nil)
+
+// Rebalance represents a rebalance action.
+type Rebalance struct {
+	RebalanceID  *[32]byte
+	Origin       uint64
+	Destination  uint64
+	OriginAmount *big.Int
+	Status       RebalanceStatus
+	OriginTxHash common.Hash
+	DestTxHash   common.Hash
+}
+
+// RebalanceStatus is the status of a rebalance action in the db.
+//
+//go:generate go run golang.org/x/tools/cmd/stringer -type=RebalanceStatus
+type RebalanceStatus uint8
+
+const (
+	// RebalanceInitiated means the rebalance transaction has been initiated.
+	RebalanceInitiated RebalanceStatus = iota
+	// RebalancePending means the rebalance transaction has been confirmed on the origin.
+	RebalancePending
+	// RebalanceCompleted means the rebalance transaction has been confirmed on the destination.
+	RebalanceCompleted
+)
+
+// Int returns the int value of the quote request status.
+func (r RebalanceStatus) Int() uint8 {
+	return uint8(r)
+}
+
+// GormDataType implements the gorm common interface for enums.
+func (r RebalanceStatus) GormDataType() string {
+	return dbcommon.EnumDataType
+}
+
+// Scan implements the gorm common interface for enums.
+func (r *RebalanceStatus) Scan(src any) error {
+	res, err := dbcommon.EnumScan(src)
+	if err != nil {
+		return fmt.Errorf("could not scan %w", err)
+	}
+	newStatus := RebalanceStatus(res)
+	*r = newStatus
+	return nil
+}
+
+// Value implements the gorm common interface for enums.
+func (r RebalanceStatus) Value() (driver.Value, error) {
+	// nolint: wrapcheck
+	return dbcommon.EnumValue(r)
+}
+
+var _ dbcommon.Enum = (*RebalanceStatus)(nil)

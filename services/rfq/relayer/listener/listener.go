@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math/big"
+	"time"
+
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -17,8 +20,6 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
-	"math/big"
-	"time"
 )
 
 // ContractListener listens for chain events and calls HandleLog.
@@ -91,7 +92,6 @@ func (c *chainListener) Listen(ctx context.Context, handler HandleLog) (err erro
 			if err != nil {
 				logger.Warn(err)
 			}
-
 		}
 	}
 }
