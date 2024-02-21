@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
+import {InterchainClientV1Events} from "./events/InterchainClientV1Events.sol";
+
 import {IExecutionFees} from "./interfaces/IExecutionFees.sol";
 import {IExecutionService} from "./interfaces/IExecutionService.sol";
 import {IInterchainApp} from "./interfaces/IInterchainApp.sol";
@@ -17,7 +19,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
  * @title InterchainClientV1
  * @dev Implements the operations of the Interchain Execution Layer.
  */
-contract InterchainClientV1 is Ownable, IInterchainClientV1 {
+contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainClientV1 {
     using OptionsLib for bytes;
 
     uint64 public clientNonce;
@@ -44,35 +46,6 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
     function setLinkedClient(uint256 chainId, bytes32 client) public onlyOwner {
         linkedClients[chainId] = client;
     }
-
-    /**
-     * @notice Emitted when an interchain transaction is sent.
-     */
-    event InterchainTransactionSent(
-        bytes32 srcSender,
-        uint256 srcChainId,
-        bytes32 indexed dstReceiver,
-        uint256 indexed dstChainId,
-        bytes message,
-        uint64 nonce,
-        bytes options,
-        bytes32 indexed transactionId,
-        uint256 dbNonce
-    );
-
-    // @notice Emitted when an interchain transaction is executed.
-    // TODO: Indexing
-    event InterchainTransactionExecuted(
-        bytes32 indexed srcSender,
-        uint256 indexed srcChainId,
-        bytes32 dstReceiver,
-        uint256 dstChainId,
-        bytes message,
-        uint64 nonce,
-        bytes options,
-        bytes32 indexed transactionId,
-        uint256 dbNonce
-    );
 
     /**
      * @dev Represents an interchain transaction.
@@ -133,20 +106,19 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
             transactionId: 0,
             dbNonce: 0
         });
-
+        // TODO: dbNonce should be a part of the transactionId calculation
         bytes32 transactionId = _generateTransactionId(
             icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce, icTx.options
         );
         icTx.transactionId = transactionId;
-
         icTx.dbNonce = IInterchainDB(interchainDB).writeEntryWithVerification{value: verificationFees}(
             icTx.dstChainId, icTx.transactionId, srcModules
         );
+        bytes memory encodedTx = abi.encode(icTx);
         if (srcExecutionService != address(0)) {
             IExecutionService(srcExecutionService).requestExecution({
                 dstChainId: dstChainId,
-                // TODO: this should be encodedTx.length
-                txPayloadSize: message.length,
+                txPayloadSize: encodedTx.length,
                 transactionId: transactionId,
                 executionFee: executionFee,
                 options: options
@@ -154,18 +126,17 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         }
         IExecutionFees(executionFees).addExecutionFee{value: executionFee}(dstChainId, transactionId);
         emit InterchainTransactionSent(
-            icTx.srcSender,
-            icTx.srcChainId,
-            icTx.dstReceiver,
-            icTx.dstChainId,
-            icTx.message,
-            icTx.nonce,
-            icTx.options,
-            icTx.transactionId,
-            icTx.dbNonce
+            transactionId, icTx.dbNonce, icTx.dstChainId, icTx.srcSender, icTx.dstReceiver, executionFee, encodedTx
         );
+        _emitOptions(transactionId, options);
         // Increment nonce for next message
         clientNonce++;
+    }
+
+    /// @dev Decodes the options and emits the corresponding event. ClientV1 only supports OptionsV1.
+    function _emitOptions(bytes32 transactionId, bytes memory options) internal {
+        OptionsV1 memory decodedOptions = options.decodeOptionsV1();
+        emit InterchainOptionsV1(transactionId, decodedOptions.gasLimit, decodedOptions.gasAirdrop);
     }
 
     // TODO: App Config Versioning
