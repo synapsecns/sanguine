@@ -49,8 +49,8 @@ type Manager interface {
 }
 
 type inventoryManagerImpl struct {
-	// map chainID->address->tokenMetadata
-	tokens map[int]map[common.Address]*tokenMetadata
+	// map chainID->address->TokenMetadata
+	tokens map[int]map[common.Address]*TokenMetadata
 	// map chainID->balance
 	gasBalances map[int]*big.Int
 	// mux contains the mutex
@@ -108,7 +108,7 @@ func (i *inventoryManagerImpl) GetCommittableBalances(ctx context.Context, optio
 	for chainID, tokenMap := range i.tokens {
 		res[chainID] = map[common.Address]*big.Int{}
 		for address, tokenData := range tokenMap {
-			res[chainID][address] = core.CopyBigInt(tokenData.balance)
+			res[chainID][address] = core.CopyBigInt(tokenData.Balance)
 			// now subtract by in flight quotes.
 			// Yeah, this is an algorithmically atrocious for
 			// TODO: fix, but we're really talking about 4 tokens
@@ -125,14 +125,15 @@ func (i *inventoryManagerImpl) GetCommittableBalances(ctx context.Context, optio
 	return res, nil
 }
 
-type tokenMetadata struct {
-	name           string
-	balance        *big.Int
-	decimals       uint8
-	startAllowance *big.Int
-	isGasToken     bool
-	chainID        int
-	addr           common.Address
+// TokenMetadata contains metadata for a token.
+type TokenMetadata struct {
+	Name           string
+	Balance        *big.Int
+	Decimals       uint8
+	StartAllowance *big.Int
+	IsGasToken     bool
+	ChainID        int
+	Addr           common.Address
 }
 
 var (
@@ -200,7 +201,7 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 
 		for address, token := range tokenMap {
 			// if startAllowance is 0
-			if address != chain.EthAddress && token.startAllowance.Cmp(big.NewInt(0)) == 0 {
+			if address != chain.EthAddress && token.StartAllowance.Cmp(big.NewInt(0)) == 0 {
 				chainID := chainID // capture func literal
 				address := address // capture func literal
 
@@ -283,7 +284,7 @@ func (i *inventoryManagerImpl) Rebalance(ctx context.Context, chainID int, token
 		return fmt.Errorf("could not refresh balances: %w", err)
 	}
 
-	rebalance, err := i.getRebalance(chainID, token)
+	rebalance, err := getRebalance(i.cfg, i.tokens, chainID, token)
 	if err != nil {
 		return fmt.Errorf("could not get rebalance: %w", err)
 	}
@@ -302,24 +303,24 @@ func (i *inventoryManagerImpl) Rebalance(ctx context.Context, chainID int, token
 	}
 }
 
-// rebalanceData contains metadata for a rebalance action.
-type rebalanceData struct {
+// RebalanceData contains metadata for a rebalance action.
+type RebalanceData struct {
 	origin         int
 	dest           int
-	originMetadata *tokenMetadata
-	destMetadata   *tokenMetadata
+	originMetadata *TokenMetadata
+	destMetadata   *TokenMetadata
 	amount         *big.Int
 }
 
-func (i *inventoryManagerImpl) getRebalance(chainID int, token common.Address) (rebalance *rebalanceData, err error) {
-	maintenancePct, err := i.cfg.GetMaintenanceBalancePct(chainID, token.Hex())
+func getRebalance(cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, chainID int, token common.Address) (rebalance *RebalanceData, err error) {
+	maintenancePct, err := cfg.GetMaintenanceBalancePct(chainID, token.Hex())
 	if err != nil {
 		return nil, fmt.Errorf("could not get maintenance pct: %w", err)
 	}
 
 	// get token metadata
-	var rebalanceTokenData *tokenMetadata
-	for address, tokenData := range i.tokens[chainID] {
+	var rebalanceTokenData *TokenMetadata
+	for address, tokenData := range tokens[chainID] {
 		if address == token {
 			rebalanceTokenData = tokenData
 			break
@@ -328,23 +329,23 @@ func (i *inventoryManagerImpl) getRebalance(chainID int, token common.Address) (
 
 	// get total balance for given token across all chains
 	totalBalance := big.NewInt(0)
-	for _, tokenMap := range i.tokens {
+	for _, tokenMap := range tokens {
 		for _, tokenData := range tokenMap {
-			if tokenData.name == rebalanceTokenData.name {
-				totalBalance.Add(totalBalance, tokenData.balance)
+			if tokenData.Name == rebalanceTokenData.Name {
+				totalBalance.Add(totalBalance, tokenData.Balance)
 			}
 		}
 	}
 
 	// check if any balances are below maintenance threshold
-	var minTokenData, maxTokenData *tokenMetadata
-	for _, tokenMap := range i.tokens {
+	var minTokenData, maxTokenData *TokenMetadata
+	for _, tokenMap := range tokens {
 		for _, tokenData := range tokenMap {
-			if tokenData.name == rebalanceTokenData.name {
-				if minTokenData == nil || tokenData.balance.Cmp(minTokenData.balance) < 0 {
+			if tokenData.Name == rebalanceTokenData.Name {
+				if minTokenData == nil || tokenData.Balance.Cmp(minTokenData.Balance) < 0 {
 					minTokenData = tokenData
 				}
-				if maxTokenData == nil || tokenData.balance.Cmp(maxTokenData.balance) > 0 {
+				if maxTokenData == nil || tokenData.Balance.Cmp(maxTokenData.Balance) > 0 {
 					maxTokenData = tokenData
 				}
 			}
@@ -352,19 +353,19 @@ func (i *inventoryManagerImpl) getRebalance(chainID int, token common.Address) (
 	}
 
 	// get the initialPct for the origin chain
-	initialPct, err := i.cfg.GetInitialBalancePct(maxTokenData.chainID, maxTokenData.addr.Hex())
+	initialPct, err := cfg.GetInitialBalancePct(maxTokenData.ChainID, maxTokenData.Addr.Hex())
 	if err != nil {
 		return nil, fmt.Errorf("could not get initial pct: %w", err)
 	}
 
 	// check if the minimum balance is below the threshold and trigger rebalance
 	maintenanceThresh, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(maintenancePct)).Int(nil)
-	if minTokenData.balance.Cmp(maintenanceThresh) < 0 {
+	if minTokenData.Balance.Cmp(maintenanceThresh) < 0 {
 		initialThresh, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(initialPct)).Int(nil)
-		amount := new(big.Int).Sub(maxTokenData.balance, initialThresh)
-		rebalance = &rebalanceData{
-			origin:         maxTokenData.chainID,
-			dest:           minTokenData.chainID,
+		amount := new(big.Int).Sub(maxTokenData.Balance, initialThresh)
+		rebalance = &RebalanceData{
+			origin:         maxTokenData.ChainID,
+			dest:           minTokenData.ChainID,
 			originMetadata: maxTokenData,
 			destMetadata:   minTokenData,
 			amount:         amount,
@@ -373,7 +374,7 @@ func (i *inventoryManagerImpl) getRebalance(chainID int, token common.Address) (
 	return rebalance, nil
 }
 
-func (i *inventoryManagerImpl) rebalanceCCTP(ctx context.Context, rebalance *rebalanceData) (err error) {
+func (i *inventoryManagerImpl) rebalanceCCTP(ctx context.Context, rebalance *RebalanceData) (err error) {
 	// fetch the corresponding CCTP contract
 	contract, ok := i.cctpContracts[rebalance.dest]
 	if !ok {
@@ -393,12 +394,12 @@ func (i *inventoryManagerImpl) rebalanceCCTP(ctx context.Context, rebalance *reb
 	}
 
 	// perform rebalance by calling sendCircleToken()
-	_, err = i.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(rebalance.originMetadata.chainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+	_, err = i.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(rebalance.originMetadata.ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		tx, err = contract.SendCircleToken(
 			transactor,
 			i.relayerAddress,
-			big.NewInt(int64(rebalance.destMetadata.chainID)),
-			rebalance.originMetadata.addr,
+			big.NewInt(int64(rebalance.destMetadata.ChainID)),
+			rebalance.originMetadata.Addr,
 			rebalance.amount,
 			0,        // TODO: inspect
 			[]byte{}, // TODO: inspect
@@ -431,7 +432,7 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 	meter := i.handler.Meter("github.com/synapsecns/sanguine/services/rfq/relayer/inventory")
 
 	// TODO: this needs to be a struct bound variable otherwise will be stuck.
-	i.tokens = make(map[int]map[common.Address]*tokenMetadata)
+	i.tokens = make(map[int]map[common.Address]*TokenMetadata)
 	i.gasBalances = make(map[int]*big.Int)
 
 	type registerCall func() error
@@ -442,7 +443,7 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 
 	// iterate through all tokens to get the metadata
 	for chainID, chainCfg := range cfg.GetChains() {
-		i.tokens[chainID] = map[common.Address]*tokenMetadata{}
+		i.tokens[chainID] = map[common.Address]*TokenMetadata{}
 
 		// set up balance fetching for this chain's gas token
 		i.gasBalances[chainID] = new(big.Int)
@@ -456,28 +457,28 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 			if err != nil {
 				return fmt.Errorf("could not get native token: %w", err)
 			}
-			rtoken := &tokenMetadata{
-				isGasToken: tokenName == nativeToken,
-				chainID:    chainID,
+			rtoken := &TokenMetadata{
+				IsGasToken: tokenName == nativeToken,
+				ChainID:    chainID,
 			}
 
 			var token common.Address
-			if rtoken.isGasToken {
+			if rtoken.IsGasToken {
 				token = chain.EthAddress
 			} else {
 				token = common.HexToAddress(tokenCfg.Address)
 			}
 			i.tokens[chainID][token] = rtoken
-			rtoken.addr = token
+			rtoken.Addr = token
 
 			// requires non-nil pointer
-			rtoken.balance = new(big.Int)
-			rtoken.startAllowance = new(big.Int)
+			rtoken.Balance = new(big.Int)
+			rtoken.StartAllowance = new(big.Int)
 
-			if rtoken.isGasToken {
-				rtoken.decimals = 18
-				rtoken.name = tokenName
-				rtoken.balance = i.gasBalances[chainID]
+			if rtoken.IsGasToken {
+				rtoken.Decimals = 18
+				rtoken.Name = tokenName
+				rtoken.Balance = i.gasBalances[chainID]
 				// TODO: start allowance?
 			} else {
 				rfqAddr, err := cfg.GetRFQAddress(chainID)
@@ -485,10 +486,10 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 					return fmt.Errorf("could not get rfq address: %w", err)
 				}
 				deferredCalls[chainID] = append(deferredCalls[chainID],
-					eth.CallFunc(funcBalanceOf, token, i.relayerAddress).Returns(rtoken.balance),
-					eth.CallFunc(funcDecimals, token).Returns(&rtoken.decimals),
-					eth.CallFunc(funcName, token).Returns(&rtoken.name),
-					eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(rfqAddr)).Returns(rtoken.startAllowance),
+					eth.CallFunc(funcBalanceOf, token, i.relayerAddress).Returns(rtoken.Balance),
+					eth.CallFunc(funcDecimals, token).Returns(&rtoken.Decimals),
+					eth.CallFunc(funcName, token).Returns(&rtoken.Name),
+					eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(rfqAddr)).Returns(rtoken.StartAllowance),
 				)
 			}
 
@@ -563,8 +564,8 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 		// queue token balance fetches
 		for tokenAddress, token := range tokenMap {
 			// TODO: make sure Returns does nothing on error
-			if !token.isGasToken {
-				deferredCalls = append(deferredCalls, eth.CallFunc(funcBalanceOf, tokenAddress, i.relayerAddress).Returns(token.balance))
+			if !token.IsGasToken {
+				deferredCalls = append(deferredCalls, eth.CallFunc(funcBalanceOf, tokenAddress, i.relayerAddress).Returns(token.Balance))
 			}
 		}
 
@@ -598,10 +599,10 @@ func (i *inventoryManagerImpl) registerMetric(meter metric.Meter, chainID int, t
 		}
 
 		attributes := attribute.NewSet(attribute.Int(metrics.ChainID, chainID), attribute.String("relayer_address", i.relayerAddress.String()),
-			attribute.String("token_name", tokenData.name), attribute.Int("decimals", int(tokenData.decimals)),
+			attribute.String("token_name", tokenData.Name), attribute.Int("decimals", int(tokenData.Decimals)),
 			attribute.String("token_address", token.String()))
 
-		observer.ObserveFloat64(balanceGauge, core.BigToDecimals(tokenData.balance, tokenData.decimals), metric.WithAttributeSet(attributes))
+		observer.ObserveFloat64(balanceGauge, core.BigToDecimals(tokenData.Balance, tokenData.Decimals), metric.WithAttributeSet(attributes))
 
 		return nil
 	}, balanceGauge); err != nil {
