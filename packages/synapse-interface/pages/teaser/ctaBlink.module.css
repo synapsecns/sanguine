@@ -1,10 +1,3 @@
-@keyframes underscoreBlink {
-  0% { opacity: 0 }
-  49% { opacity: 0 }
-  50% { opacity: 1 }
-  100% { opacity: 1 }
-}
-
 @keyframes arrowPulse {
   0% {
     color: hsl(275deg 100% 60%);
@@ -26,14 +19,22 @@
   }
 }
 
-.underscore {
-  animation:
-    underscoreBlink 1.6s infinite,
-    test 1.6s infinite;
-}
-
 .arrow {
+  padding-left: .25rem;
   animation:
     arrowPulse 1s infinite alternate ease-in-out,
     arrowMove .5s alternate cubic-bezier(0, 0, 0, 1);
 }
+
+/* @keyframes underscoreBlink {
+  0% { opacity: 0 }
+  49% { opacity: 0 }
+  50% { opacity: 1 }
+  100% { opacity: 1 }
+}
+
+.underscore {
+  animation:
+    underscoreBlink 1.6s infinite,
+    test 1.6s infinite;
+} */

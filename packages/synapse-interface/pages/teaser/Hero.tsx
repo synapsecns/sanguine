@@ -2,125 +2,102 @@ import { useEffect, useRef, useState } from 'react'
 import styles from './ctaBlink.module.css'
 
 export default function Hero() {
-  const [h1, setH1] = useState('default')
+  const [h1, setH1] = useState<[string] | [string, index: number]>(['default'])
+
   const bridgeRef = useRef(null)
   const buildRef = useRef(null)
   const parentRef = useRef(null)
 
+  const [cta, index] = h1
+
+  const { tag, url } = {
+    default: {
+      tag: 'Synapse 2.0: The Modular Interchain Network',
+    },
+    bridge: {
+      tag: 'Any asset to any chain',
+      url: '#',
+    },
+    build: {
+      tag: 'Custom everything',
+      url: '#',
+    },
+  }[cta]
+
   useEffect(() => {
-    if (h1 !== 'bridge' && bridgeRef.current)
-      bridgeRef.current.addEventListener('mouseover', setBridge, {
-        once: true,
-      })
+    if (index < tag.length) {
+      sleep((index / tag.length) * 4 + 4).then(() => setH1([cta, +index + 1]))
+    } else {
+      bridgeRef?.current?.addEventListener(
+        'mousemove',
+        () => setH1(['bridge', 0]),
+        { once: true }
+      )
 
-    if (h1 !== 'build' && buildRef.current)
-      buildRef.current.addEventListener('mouseover', setBuild, {
-        once: true,
-      })
+      buildRef?.current?.addEventListener(
+        'mousemove',
+        () => setH1(['build', 0]),
+        { once: true }
+      )
 
-    if (h1 !== 'default' && parentRef.current)
-      parentRef.current.addEventListener('mouseleave', Reset, { once: true })
+      parentRef?.current?.addEventListener(
+        'mouseleave',
+        () => setH1(['default', 0]),
+        { once: true }
+      )
+    }
   })
 
-  function setBridge() {
-    newH1('bridge', 'Any asset to any chain')
-  }
-  function setBuild() {
-    newH1('build', 'Custom everything')
-  }
-  function Reset() {
-    newH1('default', 'Synapse 2.0: The Modular Interchain Network')
+  // sleep time expects milliseconds
+  function sleep(time) {
+    return new Promise((resolve) => setTimeout(resolve, time))
   }
 
-  const h1Fragment = (() => {
-    switch (h1) {
-      case 'bridge':
-        return (
-          <a href="#">
-            Any asset to any chain<span className={styles.underscore}>_</span>
-          </a>
-        )
-      case 'build':
-        return (
-          <a href="#">
-            Custom everything<span className={styles.underscore}>_</span>
-          </a>
-        )
-      default:
-        return (
-          <>
-            Synapse 2.0: The Modular Interchain Network
-            <span className={styles.underscore}>_</span>
-          </>
-        )
-    }
-  })()
-
-  function newH1(newState, newText) {
-    console.log('begin animation')
-
-    let node = document.querySelector('h1')
-
-    if (node.innerText.slice(0, 15) === newText.slice(0, 15)) return
-
-    let start, previousTimeStamp
-    let done = false
-    let max = newText.length
-    const az = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    let randAZ = () => az[Math.round(Math.random() * (az.length - 1))]
-
-    function step(timeStamp) {
-      if (start === undefined) start = timeStamp
-
-      const elapsed = timeStamp - start
-
-      if (previousTimeStamp !== timeStamp) {
-        const count = Math.max(1, Math.min((elapsed * elapsed) / 3000, max))
-        node.innerText = newText.slice(0, Math.round(count))
-
-        if (node.innerText.length < newText.length - 1)
-          node.innerHTML += `<span style="color: hsla(285deg 100% 50% / 1.5);">${randAZ()}</span>`
-
-        if (node.innerText.length < newText.length)
-          node.innerHTML += `<span style="color: hsla(280deg 100% 50% / 1.5);">_</span>`
-
-        if (count === max) done = true
-      }
-
-      previousTimeStamp = timeStamp
-
-      if (done) {
-        console.log('end animation', h1)
-        if (newState !== 'default')
-          node.innerHTML += `<span class=${styles.arrow}> -></span>`
-        setH1(newState)
-      } else {
-        window.requestAnimationFrame(step)
-      }
-    }
-
-    window.requestAnimationFrame(step)
+  const Tagline = () => {
+    return (
+      <>
+        {tag.slice(0, index)}
+        {index < tag.length - 1 && (
+          <span className="text-fuchsia-500/50">{randAZ()}</span>
+        )}
+        {index < tag.length && <span className="text-purple-500/50">_</span>}
+      </>
+    )
   }
+
+  const az = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  let randAZ = () => az[Math.round(Math.random() * (az.length - 1))]
 
   return (
     <header className="my-2 md:my-8 lg:my-16 text-center max-w-3xl grid place-items-center">
       <div className="hidden md:block text-3xl md:text-6xl font-semibold my-4">
         Modular Interchain Messages
       </div>
-      <div ref={parentRef}>
+      <div ref={cta !== 'default' ? parentRef : null}>
         <h1 className="relative my-4 max-w-xl text-3xl md:text-2xl font-medium overflow-hidden">
-          <div>{h1Fragment}</div>
+          <div>
+            {url ? (
+              <a href={url}>
+                <Tagline />
+                {index === tag.length && (
+                  <span className={styles.arrow}>{' ->'}</span>
+                )}
+              </a>
+            ) : (
+              <Tagline />
+            )}
+          </div>
         </h1>
         <div className="m-2">
           <a
-            ref={bridgeRef}
+            ref={cta !== 'bridge' ? bridgeRef : null}
             className="px-5 pt-1.5 pb-2 text-lg m-2 border border-zinc-500 hover:border-black hover:dark:border-white rounded inline-block bg-white hover:bg-zinc-100 dark:bg-zinc-950 hover:dark:bg-zinc-900"
             href="#"
           >
             Bridge
           </a>
           <a
-            ref={buildRef}
+            ref={cta !== 'build' ? buildRef : null}
             className="px-5 pt-1.5 pb-2 text-lg m-2 border border-fuchsia-500 hover:bg-fuchsia-100 hover:dark:bg-fuchsia-950 rounded inline-block"
             href="#"
           >
