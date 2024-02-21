@@ -1,3 +1,4 @@
+import _ from "lodash"
 import { Address } from 'viem'
 import { BridgeQuote, Token } from '@/utils/types'
 import { formatBigIntToString } from '../bigint/format'
@@ -106,18 +107,19 @@ export async function fetchBridgeQuote(
 export async function fetchBridgeQuotes(
   requests: BridgeQuoteRequest[],
   synapseSDK: any,
-  maxConcurrentRequests: number = 2, // Set the maximum number of concurrent requests
-  requestDelay: number = 1000 // Set the delay between requests in milliseconds (adjust as needed)
+  maxConcurrentRequests: number = 5, // Set the maximum number of concurrent requests
+  requestDelay: number = 500 // Set the delay between requests in milliseconds (adjust as needed)
 ): Promise<BridgeQuoteResponse[]> {
   try {
     const bridgeQuotes: BridgeQuoteResponse[] = []
+    const chunkedRequests = _.chunk(requests, maxConcurrentRequests)
 
-    for (let i = 0; i < requests.length; i += maxConcurrentRequests) {
-      const batchRequests = requests.slice(i, i + maxConcurrentRequests)
-      const bridgeQuotesPromises: Promise<BridgeQuoteResponse>[] =
+    for (let i = 0; i < chunkedRequests.length; i++) {
+      const batchRequests = chunkedRequests[i]
+      const batchBridgeQuotes: BridgeQuoteResponse[] = await Promise.all(
         batchRequests.map(async (request: BridgeQuoteRequest) => {
           try {
-            const results: BridgeQuoteResponse = await fetchBridgeQuote(
+            const results: Promise<BridgeQuoteResponse> = fetchBridgeQuote(
               request,
               synapseSDK
             )
@@ -127,14 +129,13 @@ export async function fetchBridgeQuotes(
             return null
           }
         })
+      )
+      const filteredBatchBridgeQuotes = batchBridgeQuotes.filter(
+        (quote) => quote !== null
+      )
 
-      const batchBridgeQuotes = (
-        await Promise.all(bridgeQuotesPromises)
-      ).filter((quote) => quote !== null)
-      bridgeQuotes.push(...batchBridgeQuotes)
-
-      // Add a delay between batches of requests to avoid overloading the server
-      if (i + maxConcurrentRequests < requests.length) {
+      bridgeQuotes.push(...filteredBatchBridgeQuotes)
+      if (i !== chunkedRequests.length - 1) {
         await new Promise((resolve) => setTimeout(resolve, requestDelay))
       }
     }
