@@ -98,9 +98,9 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         uint64 nonce,
         bytes memory options
     )
-        internal
-        pure
-        returns (bytes32)
+    internal
+    pure
+    returns (bytes32)
     {
         return keccak256(abi.encode(srcSender, srcChainId, dstReceiver, dstChainId, message, nonce, options));
     }
@@ -115,8 +115,8 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         bytes calldata options,
         address[] calldata srcModules
     )
-        public
-        payable
+    public
+    payable
     {
         uint256 verificationFees = IInterchainDB(interchainDB).getInterchainFee(dstChainId, srcModules);
         // TODO: should check msg.value >= totalModuleFees
@@ -178,9 +178,9 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
      * @return approvedDstModules An array of addresses of the approved destination modules.
      */
     function _getAppConfig(address receiverApp)
-        internal
-        view
-        returns (uint256 requiredResponses, uint256 optimisticTimePeriod, address[] memory approvedDstModules)
+    internal
+    view
+    returns (uint256 requiredResponses, uint256 optimisticTimePeriod, address[] memory approvedDstModules)
     {
         requiredResponses = IInterchainApp(receiverApp).getRequiredResponses();
         optimisticTimePeriod = IInterchainApp(receiverApp).getOptimisticTimePeriod();
@@ -206,7 +206,7 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         require(icTx.transactionId == reconstructedID, "Invalid transaction ID");
 
         (uint256 requiredResponses, uint256 optimisticTimePeriod, address[] memory approvedDstModules) =
-            _getAppConfig(TypeCasts.bytes32ToAddress(icTx.dstReceiver));
+                        _getAppConfig(TypeCasts.bytes32ToAddress(icTx.dstReceiver));
 
         uint256[] memory approvedResponses = _getApprovedResponses(approvedDstModules, icEntry);
 
@@ -225,9 +225,9 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         uint256[] memory approvedResponses,
         uint256 optimisticTimePeriod
     )
-        internal
-        view
-        returns (uint256)
+    internal
+    view
+    returns (uint256)
     {
         uint256 finalizedResponses = 0;
         for (uint256 i = 0; i < approvedResponses.length; i++) {
@@ -252,15 +252,19 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         address[] memory approvedModules,
         InterchainEntry memory icEntry
     )
-        internal
-        view
-        returns (uint256[] memory)
+    internal
+    view
+    returns (uint256[] memory)
     {
         uint256[] memory approvedResponses = new uint256[](approvedModules.length);
         for (uint256 i = 0; i < approvedModules.length; i++) {
             approvedResponses[i] = IInterchainDB(interchainDB).readEntry(approvedModules[i], icEntry);
         }
         return approvedResponses;
+    }
+
+    function encodeTransaction(InterchainTransaction memory icTx) public view returns (bytes memory) {
+        return abi.encode(icTx);
     }
 
     // TODO: Gas Fee Consideration that is paid to executor

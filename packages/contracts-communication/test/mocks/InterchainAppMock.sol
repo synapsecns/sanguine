@@ -36,7 +36,7 @@ contract InterchainAppMock is IInterchainApp {
     }
 
     function getOptimisticTimePeriod() public pure override returns (uint64) {
-        return 10;
+        return 0;
     }
 
     function send(bytes32 receiver, uint256 dstChainId, bytes calldata message) external payable virtual override {}

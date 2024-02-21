@@ -32,7 +32,7 @@ var (
 	chainIDFieldName string
 	// blockNumberFieldName is the name of the block number field.
 	blockNumberFieldName string
-
+	// statusFieldName is the status field name.
 	statusFieldName string
 	// transactionIDFieldName is the transactions id field name.
 	transactionIDFieldName string
