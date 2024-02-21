@@ -305,8 +305,6 @@ func (i *inventoryManagerImpl) Rebalance(ctx context.Context, chainID int, token
 
 // RebalanceData contains metadata for a rebalance action.
 type RebalanceData struct {
-	Origin         int
-	Dest           int
 	OriginMetadata *TokenMetadata
 	DestMetadata   *TokenMetadata
 	Amount         *big.Int
@@ -364,8 +362,6 @@ func getRebalance(cfg relconfig.Config, tokens map[int]map[common.Address]*Token
 		initialThresh, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(initialPct/100)).Int(nil)
 		amount := new(big.Int).Sub(maxTokenData.Balance, initialThresh)
 		rebalance = &RebalanceData{
-			Origin:         maxTokenData.ChainID,
-			Dest:           minTokenData.ChainID,
 			OriginMetadata: maxTokenData,
 			DestMetadata:   minTokenData,
 			Amount:         amount,
@@ -376,13 +372,13 @@ func getRebalance(cfg relconfig.Config, tokens map[int]map[common.Address]*Token
 
 func (i *inventoryManagerImpl) rebalanceCCTP(ctx context.Context, rebalance *RebalanceData) (err error) {
 	// fetch the corresponding CCTP contract
-	contract, ok := i.cctpContracts[rebalance.Dest]
+	contract, ok := i.cctpContracts[rebalance.DestMetadata.ChainID]
 	if !ok {
-		contractAddr, err := i.cfg.GetCCTPAddress(rebalance.Origin)
+		contractAddr, err := i.cfg.GetCCTPAddress(rebalance.OriginMetadata.ChainID)
 		if err != nil {
 			return fmt.Errorf("could not get cctp address: %w", err)
 		}
-		chainClient, err := i.chainClient.GetClient(ctx, big.NewInt(int64(rebalance.Origin)))
+		chainClient, err := i.chainClient.GetClient(ctx, big.NewInt(int64(rebalance.OriginMetadata.ChainID)))
 		if err != nil {
 			return fmt.Errorf("could not get chain client: %w", err)
 		}
@@ -390,7 +386,7 @@ func (i *inventoryManagerImpl) rebalanceCCTP(ctx context.Context, rebalance *Reb
 		if err != nil {
 			return fmt.Errorf("could not get cctp: %w", err)
 		}
-		i.cctpContracts[rebalance.Dest] = contract
+		i.cctpContracts[rebalance.DestMetadata.ChainID] = contract
 	}
 
 	// perform rebalance by calling sendCircleToken()

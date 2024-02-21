@@ -117,8 +117,6 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 	rebalance, err = inventory.GetRebalance(cfg, tokens, origin, usdcDataOrigin.Addr)
 	i.NoError(err)
 	expected := &inventory.RebalanceData{
-		Origin:         origin,
-		Dest:           dest,
 		OriginMetadata: &usdcDataOrigin,
 		DestMetadata:   &usdcDataDest,
 		Amount:         big.NewInt(4e6),
