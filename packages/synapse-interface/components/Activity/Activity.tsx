@@ -10,11 +10,14 @@ import { Chain, Token } from '@/utils/types'
 import { tokenAddressToToken } from '@/constants/tokens'
 import { TransactionsState } from '@/slices/transactions/reducer'
 import { PortfolioState } from '@/slices/portfolio/reducer'
-import { Transaction, TransactionType } from './Transaction/Transaction'
-import { UserExplorerLink } from './Transaction/components/TransactionExplorerLink'
-import { NoSearchResultsContent } from './components/NoSearchResultContent'
+import {
+  Transaction,
+  TransactionType,
+} from '../Portfolio/Transaction/Transaction'
+import { UserExplorerLink } from '../Portfolio/Transaction/components/TransactionExplorerLink'
+import { NoSearchResultsContent } from '../Portfolio/components/NoSearchResultContent'
 import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
-import { AirdropRewards } from '../Activity/AirdropRewards'
+import { AirdropRewards } from './AirdropRewards'
 
 export const Activity = ({ visibility }: { visibility: boolean }) => {
   const { address } = useAccount()
