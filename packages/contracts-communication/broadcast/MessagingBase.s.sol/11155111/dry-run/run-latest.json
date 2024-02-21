@@ -44,9 +44,7 @@
       "contractName": "InterchainClientV1",
       "contractAddress": "0x90193C961A926261B756D1E5bb255e67ff9498A1",
       "function": "setInterchainDB(address)",
-      "arguments": [
-        "0x34A1D3fff3958843C43aD80F30b94c510645C316"
-      ],
+      "arguments": ["0x34A1D3fff3958843C43aD80F30b94c510645C316"],
       "transaction": {
         "type": "0x02",
         "from": "0x1804c8ab1f12e6bbf3894d4083f33e07309d1f38",
@@ -104,9 +102,7 @@
       "contractName": "SynapseModule",
       "contractAddress": "0xBb2180ebd78ce97360503434eD37fcf4a1Df61c3",
       "function": "setGasOracle(address)",
-      "arguments": [
-        "0xDB8cFf278adCCF9E9b5da745B44E754fC4EE3C76"
-      ],
+      "arguments": ["0xDB8cFf278adCCF9E9b5da745B44E754fC4EE3C76"],
       "transaction": {
         "type": "0x02",
         "from": "0x1804c8ab1f12e6bbf3894d4083f33e07309d1f38",

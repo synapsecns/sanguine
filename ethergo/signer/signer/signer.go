@@ -9,6 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	libp2p "github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/synapsecns/sanguine/core"
 )
 
@@ -23,6 +24,11 @@ type Signer interface {
 	GetTransactor(ctx context.Context, chainID *big.Int) (*bind.TransactOpts, error)
 	// Address gets the address of the address of the signer
 	Address() ethCommon.Address
+	// PrivKey gets the libp2p priv key.
+	// TODO: we should consider abstracting this otu of ethergo. It's an odd, synapse specific dependency
+	// TODO: this method also needs a cross-implementation test similar to RunOnAllDBs()
+	// that does not fit into what etherog is supposed to be.
+	PrivKey() libp2p.PrivKey
 }
 
 // Signature is an ecdsa signature interface.
