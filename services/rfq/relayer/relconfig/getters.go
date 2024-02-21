@@ -396,6 +396,23 @@ func (c Config) GetRebalanceMethod(chainID int, tokenAddr string) (method Rebala
 	return RebalanceMethodNone, nil
 }
 
+// GetRebalanceMethods returns all rebalance methods present in the config.
+func (c Config) GetRebalanceMethods() (methods map[RebalanceMethod]bool, err error) {
+	methods = make(map[RebalanceMethod]bool)
+	for chainID, chainCfg := range c.Chains {
+		for _, tokenCfg := range chainCfg.Tokens {
+			method, err := c.GetRebalanceMethod(chainID, tokenCfg.Address)
+			if err != nil {
+				return nil, err
+			}
+			if method != RebalanceMethodNone {
+				methods[method] = true
+			}
+		}
+	}
+	return methods, nil
+}
+
 // GetMaintenanceBalancePct returns the maintenance balance percentage for the given chain and token address.
 func (c Config) GetMaintenanceBalancePct(chainID int, tokenAddr string) (float64, error) {
 	tokenConfig, _, err := c.getTokenConfigByAddr(chainID, tokenAddr)

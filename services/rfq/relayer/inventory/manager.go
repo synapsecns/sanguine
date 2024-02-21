@@ -18,7 +18,6 @@ import (
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
-	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/cctp"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
@@ -65,8 +64,8 @@ type inventoryManagerImpl struct {
 	chainClient submitter.ClientFetcher
 	// txSubmitter is the transaction submitter
 	txSubmitter submitter.TransactionSubmitter
-	// cctpContracts is the map of cctp contracts (used for rebalancing)
-	cctpContracts map[int]*cctp.SynapseCCTP
+	// rebalanceManagers is the map of rebalance managers
+	rebalanceManagers map[relconfig.RebalanceMethod]RebalanceManager
 	// db is the database
 	db reldb.Service
 }
@@ -149,17 +148,31 @@ const defaultPollPeriod = 5
 // NewInventoryManager creates a list of tokens we should use.
 // TODO: too many args here.
 func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetcher, handler metrics.Handler, cfg relconfig.Config, relayer common.Address, txSubmitter submitter.TransactionSubmitter, db reldb.Service) (Manager, error) {
-	i := inventoryManagerImpl{
-		relayerAddress: relayer,
-		handler:        handler,
-		cfg:            cfg,
-		chainClient:    clientFetcher,
-		txSubmitter:    txSubmitter,
-		cctpContracts:  make(map[int]*cctp.SynapseCCTP),
-		db:             db,
+	rebalanceMethods, err := cfg.GetRebalanceMethods()
+	if err != nil {
+		return nil, fmt.Errorf("could not get rebalance methods: %w", err)
+	}
+	rebalanceManagers := make(map[relconfig.RebalanceMethod]RebalanceManager)
+	for method := range rebalanceMethods {
+		switch method {
+		case relconfig.RebalanceMethodCCTP:
+			rebalanceManagers[method] = newRebalanceManagerCCTP(cfg, handler, clientFetcher, txSubmitter, relayer, db)
+		default:
+			return nil, fmt.Errorf("unsupported rebalance method: %s", method)
+		}
 	}
 
-	err := i.initializeTokens(ctx, cfg)
+	i := inventoryManagerImpl{
+		relayerAddress:    relayer,
+		handler:           handler,
+		cfg:               cfg,
+		chainClient:       clientFetcher,
+		txSubmitter:       txSubmitter,
+		rebalanceManagers: rebalanceManagers,
+		db:                db,
+	}
+
+	err = i.initializeTokens(ctx, cfg)
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize tokens: %w", err)
 	}
@@ -303,13 +316,6 @@ func (i *inventoryManagerImpl) Rebalance(ctx context.Context, chainID int, token
 	}
 }
 
-// RebalanceData contains metadata for a rebalance action.
-type RebalanceData struct {
-	OriginMetadata *TokenMetadata
-	DestMetadata   *TokenMetadata
-	Amount         *big.Int
-}
-
 func getRebalance(cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, chainID int, token common.Address) (rebalance *RebalanceData, err error) {
 	maintenancePct, err := cfg.GetMaintenanceBalancePct(chainID, token.Hex())
 	if err != nil {
@@ -372,47 +378,6 @@ func getRebalance(cfg relconfig.Config, tokens map[int]map[common.Address]*Token
 		}
 	}
 	return rebalance, nil
-}
-
-func (i *inventoryManagerImpl) rebalanceCCTP(ctx context.Context, rebalance *RebalanceData) (err error) {
-	// fetch the corresponding CCTP contract
-	contract, ok := i.cctpContracts[rebalance.DestMetadata.ChainID]
-	if !ok {
-		contractAddr, err := i.cfg.GetCCTPAddress(rebalance.OriginMetadata.ChainID)
-		if err != nil {
-			return fmt.Errorf("could not get cctp address: %w", err)
-		}
-		chainClient, err := i.chainClient.GetClient(ctx, big.NewInt(int64(rebalance.OriginMetadata.ChainID)))
-		if err != nil {
-			return fmt.Errorf("could not get chain client: %w", err)
-		}
-		contract, err = cctp.NewSynapseCCTP(common.HexToAddress(contractAddr), chainClient)
-		if err != nil {
-			return fmt.Errorf("could not get cctp: %w", err)
-		}
-		i.cctpContracts[rebalance.DestMetadata.ChainID] = contract
-	}
-
-	// perform rebalance by calling sendCircleToken()
-	_, err = i.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(rebalance.OriginMetadata.ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-		tx, err = contract.SendCircleToken(
-			transactor,
-			i.relayerAddress,
-			big.NewInt(int64(rebalance.DestMetadata.ChainID)),
-			rebalance.OriginMetadata.Addr,
-			rebalance.Amount,
-			0,        // TODO: inspect
-			[]byte{}, // TODO: inspect
-		)
-		if err != nil {
-			return nil, fmt.Errorf("could not send circle token: %w", err)
-		}
-		return tx, nil
-	})
-	if err != nil {
-		return fmt.Errorf("could not submit CCTP rebalance: %w", err)
-	}
-	return nil
 }
 
 // initializes tokens converts the configuration into a data structure we can use to determine inventory
