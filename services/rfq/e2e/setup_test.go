@@ -262,9 +262,12 @@ func (i *IntegrationSuite) setupRelayer() {
 
 			// first the simple part, add the token to the token map
 			cfg.Chains[int(backend.GetChainID())].Tokens[tokenType.Name()] = relconfig.TokenConfig{
-				Address:  tokenAddress,
-				Decimals: decimals,
-				PriceUSD: 1, // TODO: this will break on non-stables
+				Address:               tokenAddress,
+				Decimals:              decimals,
+				PriceUSD:              1, // TODO: this will break on non-stables
+				RebalanceMethod:       "cctp",
+				MaintenanceBalancePct: 20,
+				InitialBalancePct:     50,
 			}
 
 			compatibleTokens := []contracts.ContractType{tokenType}
