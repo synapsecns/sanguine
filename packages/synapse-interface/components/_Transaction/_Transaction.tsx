@@ -107,7 +107,8 @@ export const _Transaction = ({
 
   // Show transaction support if the transaction is delayed by more than 5 minutes and not finalized or reverted
   const showTransactionSupport =
-    !isTxFinalized && delayedTimeInMin ? delayedTimeInMin <= -5 : false
+    isTxReverted ||
+    (!isTxFinalized && delayedTimeInMin && delayedTimeInMin <= -5)
 
   return (
     <div
