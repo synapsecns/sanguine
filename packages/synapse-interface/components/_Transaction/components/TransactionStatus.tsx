@@ -6,8 +6,8 @@ export const TransactionStatus = ({
   className?: string
 }) => {
   return (
-    <div id="transaction-status" className={className}>
+    <span id="transaction-status" className={className}>
       {string}
-    </div>
+    </span>
   )
 }
