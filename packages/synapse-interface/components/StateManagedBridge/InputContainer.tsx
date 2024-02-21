@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { zeroAddress } from 'viem'
 import { useDispatch } from 'react-redux'
 import { useAccount, useNetwork } from 'wagmi'
 
@@ -17,7 +16,6 @@ import { FromTokenSelector } from './FromTokenSelector'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { useBridgeStatus } from '@/utils/hooks/useBridgeStatus'
-import { useAppDispatch } from '@/store/hooks'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -138,7 +136,9 @@ export const InputContainer = () => {
                   style={{ display: 'table-cell', width: '100%' }}
                 />
               </div>
-              {hasMounted && isConnected && <ShowLabel />}
+              {hasMounted && isConnected && (
+                <ShowLabel onClick={onMaxBalance} />
+              )}
             </div>
           </div>
           <div>
@@ -157,11 +157,9 @@ export const InputContainer = () => {
   )
 }
 
-const ShowLabel = () => {
-  const dispatch = useAppDispatch()
-  const { fromChainId, fromToken, bridgeQuote, isLoading } = useBridgeState()
-  const { hasEnoughBalance, hasInputAmount, hasEnoughApproved } =
-    useBridgeStatus()
+const ShowLabel = ({ onClick }) => {
+  const { fromChainId, fromToken } = useBridgeState()
+  const { hasEnoughBalance, hasInputAmount } = useBridgeStatus()
 
   const { balances } = usePortfolioState()
 
@@ -169,43 +167,12 @@ const ShowLabel = () => {
     (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
   )?.parsedBalance
 
-  const balance = balances[fromChainId]?.find(
-    (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
-  )?.balance
-
-  const allowance = bridgeQuote.allowance
-
-  const onMaxBalance = () => {
-    dispatch(
-      updateFromValue(
-        formatBigIntToString(balance, fromToken?.decimals[fromChainId])
-      )
-    )
-  }
-
-  const onMaxApproved = () => {
-    dispatch(
-      updateFromValue(
-        formatBigIntToString(allowance, fromToken?.decimals[fromChainId])
-      )
-    )
-  }
-
-  if (isLoading) {
-    return <label htmlFor="inputRow" />
-  }
-
-  if (
-    (hasInputAmount && !hasEnoughBalance) ||
-    fromToken?.addresses[fromChainId] === zeroAddress
-  ) {
-    return (
-      <label
-        htmlFor="inputRow"
-        onClick={onMaxBalance}
+  return (
+    <label className="text-xs" htmlFor="inputRow">
+      <span
+        onClick={onClick}
+        role="button"
         className={`
-          text-xs
-          transition-all duration-150 transform-gpu
           hover:text-opacity-70 hover:cursor-pointer
           ${
             hasInputAmount && !hasEnoughBalance
@@ -215,44 +182,7 @@ const ShowLabel = () => {
         `}
       >
         {parsedBalance ?? '0.0'} available
-      </label>
-    )
-  }
-
-  if (!hasEnoughApproved) {
-    return (
-      <label
-        htmlFor="inputRow"
-        onClick={onMaxApproved}
-        className={`
-          text-sm 
-          hover:text-opacity-70 hover:cursor-pointer
-          text-secondary
-        `}
-      >
-        {formatBigIntToString(allowance, fromToken?.decimals[fromChainId], 5) ??
-          '0.0'}
-        <span> approved</span>
-      </label>
-    )
-  }
-
-  return (
-    <label
-      htmlFor="inputRow"
-      onClick={onMaxBalance}
-      className={`
-          text-xs
-          transition-all duration-150 transform-gpu
-          hover:text-opacity-70 hover:cursor-pointer
-          ${
-            hasInputAmount && !hasEnoughBalance
-              ? 'text-amber-200'
-              : 'text-secondaryTextColor'
-          }
-        `}
-    >
-      {parsedBalance ?? '0.0'} available
+      </span>
     </label>
   )
 }
