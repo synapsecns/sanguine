@@ -32,6 +32,8 @@ import (
 //
 //go:generate go run github.com/vektra/mockery/v2 --name Manager --output ./mocks --case=underscore
 type Manager interface {
+	// Start starts the inventory manager.
+	Start(ctx context.Context) (err error)
 	// GetCommittableBalance gets the total balance available for quotes
 	// this does not include on-chain balances committed in previous quotes that may be
 	// refunded in the event of a revert.
@@ -145,7 +147,7 @@ var (
 // TODO: replace w/ config.
 const defaultPollPeriod = 5
 
-// NewInventoryManager creates a list of tokens we should use.
+// NewInventoryManager creates a new inventory manager.
 // TODO: too many args here.
 func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetcher, handler metrics.Handler, cfg relconfig.Config, relayer common.Address, txSubmitter submitter.TransactionSubmitter, db reldb.Service) (Manager, error) {
 	rebalanceMethods, err := cfg.GetRebalanceMethods()
@@ -177,25 +179,36 @@ func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetc
 		return nil, fmt.Errorf("could not initialize tokens: %w", err)
 	}
 
-	// TODO: move
-	go func() {
+	return &i, nil
+}
+
+func (i *inventoryManagerImpl) Start(ctx context.Context) error {
+	var g errgroup.Group
+	for _, rebalanceManager := range i.rebalanceManagers {
+		rebalanceManager := rebalanceManager
+		g.Go(func() error {
+			return rebalanceManager.Start(ctx)
+		})
+	}
+
+	g.Go(func() error {
 		for {
 			select {
 			case <-ctx.Done():
-				return
+				return fmt.Errorf("context canceled: %w", ctx.Err())
 			case <-time.After(defaultPollPeriod * time.Second):
 				// this returning an error isn't really possible unless a config error happens
 				// TODO: need better error handling.
-				err = i.refreshBalances(ctx)
+				err := i.refreshBalances(ctx)
 				if err != nil {
 					logger.Errorf("could not refresh balances")
-					return
+					return nil
 				}
 			}
 		}
-	}()
+	})
 
-	return &i, nil
+	return g.Wait()
 }
 
 const maxBatchSize = 10
@@ -305,15 +318,11 @@ func (i *inventoryManagerImpl) Rebalance(ctx context.Context, chainID int, token
 		return nil
 	}
 
-	//nolint:exhaustive
-	switch method {
-	case relconfig.RebalanceMethodCCTP:
-		return i.rebalanceCCTP(ctx, rebalance)
-	case relconfig.RebalanceMethodNative:
-		return fmt.Errorf("native rebalance method not implemented")
-	default:
-		return fmt.Errorf("unknown rebalance method: %s", method)
+	manager, ok := i.rebalanceManagers[method]
+	if !ok {
+		return fmt.Errorf("no rebalance manager for method: %s", method)
 	}
+	return manager.Execute(ctx, rebalance)
 }
 
 func getRebalance(cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, chainID int, token common.Address) (rebalance *RebalanceData, err error) {
