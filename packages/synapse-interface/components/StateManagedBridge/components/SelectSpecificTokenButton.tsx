@@ -253,13 +253,15 @@ const isTokenEligible = (token: Token) => {
     return false
   }
 
+  const includesUSDC = underlyingBridgeTokens.includes('USDC')
+
   return (
-    (underlyingBridgeTokens.includes('USDC') && toChainId === ARBITRUM.id) ||
-    (underlyingBridgeTokens.includes('USDC') &&
+    (includesUSDC && toChainId === ARBITRUM.id) ||
+    (includesUSDC &&
       fromChainId === ARBITRUM.id &&
       toChainId === ETH.id) ||
-    (underlyingBridgeTokens.includes('USDC') && toChainId === ARBITRUM.id) ||
-    (underlyingBridgeTokens.includes('USDC') &&
+    (includesUSDC && toChainId === ARBITRUM.id) ||
+    (includesUSDC &&
       fromChainId === ARBITRUM.id &&
       toChainId === ETH.id) ||
     (_.some(['nETH', 'nUSD', 'GMX'], (value) =>
