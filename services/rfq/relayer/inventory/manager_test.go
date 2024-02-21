@@ -87,8 +87,8 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 				Tokens: map[string]relconfig.TokenConfig{
 					"USDC": {
 						Address:               usdcDataOrigin.Addr.Hex(),
-						MaintenanceBalancePct: 10,
-						InitialBalancePct:     30,
+						MaintenanceBalancePct: 20,
+						InitialBalancePct:     50,
 					},
 				},
 			},
@@ -96,8 +96,8 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 				Tokens: map[string]relconfig.TokenConfig{
 					"USDC": {
 						Address:               usdcDataDest.Addr.Hex(),
-						MaintenanceBalancePct: 10,
-						InitialBalancePct:     30,
+						MaintenanceBalancePct: 20,
+						InitialBalancePct:     50,
 					},
 				},
 			},
@@ -110,4 +110,18 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 	rebalance, err := inventory.GetRebalance(cfg, tokens, origin, usdcDataOrigin.Addr)
 	i.NoError(err)
 	i.Nil(rebalance)
+
+	// Set origin balance below maintenance threshold; need rebalance
+	usdcDataOrigin.Balance = big.NewInt(9e6)
+	usdcDataDest.Balance = big.NewInt(1e6)
+	rebalance, err = inventory.GetRebalance(cfg, tokens, origin, usdcDataOrigin.Addr)
+	i.NoError(err)
+	expected := &inventory.RebalanceData{
+		Origin:         origin,
+		Dest:           dest,
+		OriginMetadata: &usdcDataOrigin,
+		DestMetadata:   &usdcDataDest,
+		Amount:         big.NewInt(4e6),
+	}
+	i.Equal(expected, rebalance)
 }

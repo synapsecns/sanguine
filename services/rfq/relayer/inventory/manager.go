@@ -305,11 +305,11 @@ func (i *inventoryManagerImpl) Rebalance(ctx context.Context, chainID int, token
 
 // RebalanceData contains metadata for a rebalance action.
 type RebalanceData struct {
-	origin         int
-	dest           int
-	originMetadata *TokenMetadata
-	destMetadata   *TokenMetadata
-	amount         *big.Int
+	Origin         int
+	Dest           int
+	OriginMetadata *TokenMetadata
+	DestMetadata   *TokenMetadata
+	Amount         *big.Int
 }
 
 func getRebalance(cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, chainID int, token common.Address) (rebalance *RebalanceData, err error) {
@@ -364,11 +364,11 @@ func getRebalance(cfg relconfig.Config, tokens map[int]map[common.Address]*Token
 		initialThresh, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(initialPct/100)).Int(nil)
 		amount := new(big.Int).Sub(maxTokenData.Balance, initialThresh)
 		rebalance = &RebalanceData{
-			origin:         maxTokenData.ChainID,
-			dest:           minTokenData.ChainID,
-			originMetadata: maxTokenData,
-			destMetadata:   minTokenData,
-			amount:         amount,
+			Origin:         maxTokenData.ChainID,
+			Dest:           minTokenData.ChainID,
+			OriginMetadata: maxTokenData,
+			DestMetadata:   minTokenData,
+			Amount:         amount,
 		}
 	}
 	return rebalance, nil
@@ -376,13 +376,13 @@ func getRebalance(cfg relconfig.Config, tokens map[int]map[common.Address]*Token
 
 func (i *inventoryManagerImpl) rebalanceCCTP(ctx context.Context, rebalance *RebalanceData) (err error) {
 	// fetch the corresponding CCTP contract
-	contract, ok := i.cctpContracts[rebalance.dest]
+	contract, ok := i.cctpContracts[rebalance.Dest]
 	if !ok {
-		contractAddr, err := i.cfg.GetCCTPAddress(rebalance.origin)
+		contractAddr, err := i.cfg.GetCCTPAddress(rebalance.Origin)
 		if err != nil {
 			return fmt.Errorf("could not get cctp address: %w", err)
 		}
-		chainClient, err := i.chainClient.GetClient(ctx, big.NewInt(int64(rebalance.origin)))
+		chainClient, err := i.chainClient.GetClient(ctx, big.NewInt(int64(rebalance.Origin)))
 		if err != nil {
 			return fmt.Errorf("could not get chain client: %w", err)
 		}
@@ -390,17 +390,17 @@ func (i *inventoryManagerImpl) rebalanceCCTP(ctx context.Context, rebalance *Reb
 		if err != nil {
 			return fmt.Errorf("could not get cctp: %w", err)
 		}
-		i.cctpContracts[rebalance.dest] = contract
+		i.cctpContracts[rebalance.Dest] = contract
 	}
 
 	// perform rebalance by calling sendCircleToken()
-	_, err = i.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(rebalance.originMetadata.ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+	_, err = i.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(rebalance.OriginMetadata.ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		tx, err = contract.SendCircleToken(
 			transactor,
 			i.relayerAddress,
-			big.NewInt(int64(rebalance.destMetadata.ChainID)),
-			rebalance.originMetadata.Addr,
-			rebalance.amount,
+			big.NewInt(int64(rebalance.DestMetadata.ChainID)),
+			rebalance.OriginMetadata.Addr,
+			rebalance.Amount,
 			0,        // TODO: inspect
 			[]byte{}, // TODO: inspect
 		)
