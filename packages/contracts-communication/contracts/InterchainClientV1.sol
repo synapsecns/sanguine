@@ -151,8 +151,8 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
                 executionFee: executionFee,
                 options: options
             });
-            IExecutionFees(executionFees).addExecutionFee{value: executionFee}(dstChainId, transactionId);
         }
+        IExecutionFees(executionFees).addExecutionFee{value: executionFee}(dstChainId, transactionId);
         emit InterchainTransactionSent(
             icTx.srcSender,
             icTx.srcChainId,
