@@ -28,7 +28,6 @@ import { CACHE_TIMES, RouterCache } from '../utils/RouterCache'
  * or the data structures used to interact with it.
  */
 export class SynapseCCTPRouter extends Router {
-  public cache?: any
   static routerInterface = new Interface(cctpRouterAbi)
 
   public readonly address: string

@@ -74,7 +74,6 @@ export enum BridgeTokenType {
  * or the data structures used to interact with it.
  */
 export class SynapseRouter extends Router {
-  public cache?: any
   static routerInterface = new Interface(routerAbi)
 
   public readonly address: string

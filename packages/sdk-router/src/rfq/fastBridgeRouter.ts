@@ -26,7 +26,6 @@ import { CACHE_TIMES, RouterCache } from '../utils/RouterCache'
 export type BridgeParams = IFastBridge.BridgeParamsStruct
 
 export class FastBridgeRouter implements SynapseModule {
-  public cache?: any
   static fastBridgeInterface = new Interface(fastBridgeAbi)
   static fastBridgeRouterInterface = new Interface(fastBridgeRouterAbi)
 
