@@ -361,6 +361,10 @@ func getRebalance(cfg relconfig.Config, tokens map[int]map[common.Address]*Token
 	if minTokenData.Balance.Cmp(maintenanceThresh) < 0 {
 		initialThresh, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(initialPct/100)).Int(nil)
 		amount := new(big.Int).Sub(maxTokenData.Balance, initialThresh)
+		if amount.Cmp(big.NewInt(0)) < 0 {
+			// do not rebalance since it would take us below initial threshold
+			return nil, nil
+		}
 		rebalance = &RebalanceData{
 			OriginMetadata: maxTokenData,
 			DestMetadata:   minTokenData,

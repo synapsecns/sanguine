@@ -61,6 +61,7 @@ func (i *InventoryTestSuite) TestInventoryBootAndRefresh() {
 func (i *InventoryTestSuite) TestGetRebalance() {
 	origin := 1
 	dest := 2
+	extra := 3
 	usdcDataOrigin := inventory.TokenMetadata{
 		Name:     "USDC",
 		Decimals: 6,
@@ -72,6 +73,12 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 		Decimals: 6,
 		ChainID:  dest,
 		Addr:     common.HexToAddress("0x0000000000000000000000000000000000000456"),
+	}
+	usdcDataExtra := inventory.TokenMetadata{
+		Name:     "USDC",
+		Decimals: 6,
+		ChainID:  extra,
+		Addr:     common.HexToAddress("0x0000000000000000000000000000000000000789"),
 	}
 	tokens := map[int]map[common.Address]*inventory.TokenMetadata{
 		origin: {
@@ -101,6 +108,15 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 					},
 				},
 			},
+			extra: {
+				Tokens: map[string]relconfig.TokenConfig{
+					"USDC": {
+						Address:               usdcDataExtra.Addr.Hex(),
+						MaintenanceBalancePct: 0,
+						InitialBalancePct:     0,
+					},
+				},
+			},
 		},
 	}
 
@@ -122,4 +138,12 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 		Amount:         big.NewInt(4e6),
 	}
 	i.Equal(expected, rebalance)
+
+	// Increase initial threshold so that no rebalance can occur from origin
+	usdcDataOrigin.Balance = big.NewInt(2e6)
+	usdcDataDest.Balance = big.NewInt(1e6)
+	usdcDataExtra.Balance = big.NewInt(7e6)
+	rebalance, err = inventory.GetRebalance(cfg, tokens, origin, usdcDataOrigin.Addr)
+	i.NoError(err)
+	i.Nil(rebalance)
 }
