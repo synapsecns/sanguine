@@ -142,15 +142,17 @@ contract InterchainClientV1 is Ownable, IInterchainClientV1 {
         icTx.dbNonce = IInterchainDB(interchainDB).writeEntryWithVerification{value: verificationFees}(
             icTx.dstChainId, icTx.transactionId, srcModules
         );
-        IExecutionService(srcExecutionService).requestExecution({
-            dstChainId: dstChainId,
-            // TODO: this should be encodedTx.length
-            txPayloadSize: message.length,
-            transactionId: transactionId,
-            executionFee: executionFee,
-            options: options
-        });
-        IExecutionFees(executionFees).addExecutionFee{value: executionFee}(dstChainId, transactionId);
+        if (srcExecutionService != address(0)) {
+            IExecutionService(srcExecutionService).requestExecution({
+                dstChainId: dstChainId,
+                // TODO: this should be encodedTx.length
+                txPayloadSize: message.length,
+                transactionId: transactionId,
+                executionFee: executionFee,
+                options: options
+            });
+            IExecutionFees(executionFees).addExecutionFee{value: executionFee}(dstChainId, transactionId);
+        }
         emit InterchainTransactionSent(
             icTx.srcSender,
             icTx.srcChainId,

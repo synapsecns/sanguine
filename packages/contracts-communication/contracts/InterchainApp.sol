@@ -1,12 +1,14 @@
 pragma solidity 0.8.20;
 
-import "./IInterchain.sol";
+import "./interfaces/IInterchainClientV1.sol";
+
+import {OptionsLib, OptionsV1} from "./libs/Options.sol";
 
 contract InterchainApp {
     // What properties should Interchain be pulling from InterchainApp?
     // 1. Which modules to use, and how many are required?
 
-    IInterchain public interchain;
+    IInterchainClientV1 public interchain;
 
     address[] private sendingModules;
     address[] private receivingModules;
@@ -81,7 +83,7 @@ contract InterchainApp {
     }
 
     constructor(address _interchain, address[] memory _sendingModules, address[] memory _receivingModules) {
-        interchain = IInterchain(_interchain);
+        interchain = IInterchainClientV1(_interchain);
         appConfig.sendingModules = _sendingModules;
         appConfig.receivingModules = _receivingModules;
     }
@@ -90,8 +92,9 @@ contract InterchainApp {
     event AppMessageSent();
 
     function send(bytes32 receiver, uint256 dstChainId, bytes calldata message) external payable {
+        bytes memory options = OptionsLib.encodeOptionsV1(OptionsV1(200_000, 0));
         // TODO: Currently, we forward all gas to Interchain, this may not be expected behavior, and the real abstract contract shouldn't do this
-        interchain.interchainSend{value: msg.value}(receiver, dstChainId, message, appConfig.sendingModules);
+        interchain.interchainSend{value: msg.value}(dstChainId, receiver, address(0), message, options, appConfig.sendingModules);
         emit AppMessageSent();
     }
 
