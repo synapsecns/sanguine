@@ -134,7 +134,11 @@ func (r *Relayer) chainIDToChain(ctx context.Context, chainID uint32) (*chain.Ch
 	if err != nil {
 		return nil, fmt.Errorf("could not get rfq address: %w", err)
 	}
-	return chain.NewChain(ctx, chainClient, common.HexToAddress(rfqAddr), r.chainListeners[id], r.submitter)
+	chain, err := chain.NewChain(ctx, chainClient, common.HexToAddress(rfqAddr), r.chainListeners[id], r.submitter)
+	if err != nil {
+		return nil, fmt.Errorf("could not create chain: %w", err)
+	}
+	return chain, nil
 }
 
 // shouldCheckClaim checks if we should check the claim method.

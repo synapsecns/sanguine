@@ -146,7 +146,7 @@ var (
 const defaultPollPeriod = 5
 
 // NewInventoryManager creates a list of tokens we should use.
-// TODO: too many args here
+// TODO: too many args here.
 func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetcher, handler metrics.Handler, cfg relconfig.Config, relayer common.Address, txSubmitter submitter.TransactionSubmitter, db reldb.Service) (Manager, error) {
 	i := inventoryManagerImpl{
 		relayerAddress: relayer,
@@ -187,6 +187,7 @@ func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetc
 const maxBatchSize = 10
 
 // ApproveAllTokens approves all checks if allowance is set and if not approves.
+// nolint:gocognit,nestif
 func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 	i.mux.RLock()
 	defer i.mux.RUnlock()
@@ -282,7 +283,7 @@ func (i *inventoryManagerImpl) Rebalance(ctx context.Context, chainID int, token
 		return fmt.Errorf("could not refresh balances: %w", err)
 	}
 
-	rebalance, err := i.getRebalance(ctx, chainID, token)
+	rebalance, err := i.getRebalance(chainID, token)
 	if err != nil {
 		return fmt.Errorf("could not get rebalance: %w", err)
 	}
@@ -290,9 +291,12 @@ func (i *inventoryManagerImpl) Rebalance(ctx context.Context, chainID int, token
 		return nil
 	}
 
+	//nolint:exhaustive
 	switch method {
 	case relconfig.RebalanceMethodCCTP:
 		return i.rebalanceCCTP(ctx, rebalance)
+	case relconfig.RebalanceMethodNative:
+		return fmt.Errorf("native rebalance method not implemented")
 	default:
 		return fmt.Errorf("unknown rebalance method: %s", method)
 	}
@@ -307,7 +311,7 @@ type rebalanceData struct {
 	amount         *big.Int
 }
 
-func (i *inventoryManagerImpl) getRebalance(ctx context.Context, chainID int, token common.Address) (rebalance *rebalanceData, err error) {
+func (i *inventoryManagerImpl) getRebalance(chainID int, token common.Address) (rebalance *rebalanceData, err error) {
 	maintenancePct, err := i.cfg.GetMaintenanceBalancePct(chainID, token.Hex())
 	if err != nil {
 		return nil, fmt.Errorf("could not get maintenance pct: %w", err)
@@ -337,10 +341,10 @@ func (i *inventoryManagerImpl) getRebalance(ctx context.Context, chainID int, to
 	for _, tokenMap := range i.tokens {
 		for _, tokenData := range tokenMap {
 			if tokenData.name == rebalanceTokenData.name {
-				if minTokenData == nil || minTokenData.balance.Cmp(minTokenData.balance) < 0 {
+				if minTokenData == nil || tokenData.balance.Cmp(minTokenData.balance) < 0 {
 					minTokenData = tokenData
 				}
-				if maxTokenData == nil || maxTokenData.balance.Cmp(maxTokenData.balance) > 0 {
+				if maxTokenData == nil || tokenData.balance.Cmp(maxTokenData.balance) > 0 {
 					maxTokenData = tokenData
 				}
 			}

@@ -8,6 +8,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 )
 
+//nolint:maintidx
 func TestGetters(t *testing.T) {
 	chainID := 1
 	badChainID := 2
