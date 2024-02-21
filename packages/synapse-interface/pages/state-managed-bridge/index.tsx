@@ -477,10 +477,6 @@ const StateManagedBridge = () => {
 
       /** Fetch balances if await transaction receipt times out */
       if (isTransactionReceiptError(error)) {
-        console.log(
-          'isTransactionReceiptError: ',
-          isTransactionReceiptError(error)
-        )
         dispatch(
           fetchAndStoreSingleNetworkPortfolioBalances({
             address,
