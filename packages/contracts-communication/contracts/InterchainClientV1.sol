@@ -124,7 +124,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
                 options: options
             });
         }
-        IExecutionFees(executionFees).addExecutionFee{value: executionFee}(dstChainId, transactionId);
+        IExecutionFees(executionFees).addExecutionFee{value: executionFee}(icTx.dstChainId, transactionId);
         emit InterchainTransactionSent(
             transactionId, icTx.dbNonce, icTx.dstChainId, icTx.srcSender, icTx.dstReceiver, executionFee, encodedTx
         );
