@@ -3,7 +3,7 @@ import PulseDot from './PulseDot'
 export default function ValueProps() {
   return (
     <article className="grid gap-24 px-4">
-      <section className="flex even:flex-col odd:flex-col-reverse md:grid grid-cols-2 gap-12 items-center">
+      <section className="flex even:flex-col odd:flex-col-reverse md:grid grid-cols-2 gap-x-12 gap-y-4 items-center">
         <div className="grid place-items-center">
           <svg
             width="100%"
@@ -13,7 +13,7 @@ export default function ValueProps() {
             stroke-width=".25"
             overflow="visible"
             // preserveAspectRatio="none"
-            className="stroke-fuchsia-800/75 dark:stroke-purple-200/75 fill-fuchsia-200/50 dark:fill-fuchsia-300/5 drop-shadow-xl"
+            className="stroke-fuchsia-800/75 dark:stroke-purple-200/75 fill-fuchsia-200/50 dark:fill-fuchsia-300/5 drop-shadow-xl h-64 max-w-sm"
             xmlns="http://www.w3.org/2000/svg"
           >
             <rect
@@ -45,6 +45,31 @@ export default function ValueProps() {
           </p>
         </div>
       </section>
+      <section>
+        <ul className="flex flex-wrap gap-12 bg-white dark:bg-zinc-950 px-8 py-6 border border-zinc-300 dark:border-zinc-800 rounded-lg shadow-lg">
+          <li className="basis-56 grow">
+            <h2 className="text-4xl font-medium mb-4">Extensible</h2>
+            <p className="text-lg mb-2">
+              Synapse’s cross-chain messaging contracts can be deployed across
+              any blockchain
+            </p>
+          </li>
+          <li className="basis-56 grow">
+            <h2 className="text-4xl font-medium mb-4">Secure</h2>
+            <p className="text-lg mb-2">
+              Synapse employs an Optimistic security model to ensure integrity
+              of cross-chain messages
+            </p>
+          </li>
+          <li className="basis-56 grow">
+            <h2 className="text-4xl font-medium mb-4">Generalized</h2>
+            <p className="text-lg mb-2">
+              Any arbitrary data can be sent across chains including contract
+              calls, NFTs, snapshots, and more
+            </p>
+          </li>
+        </ul>
+      </section>
       <section className="flex even:flex-col odd:flex-col-reverse md:grid grid-cols-2 gap-12 items-center">
         <div>
           <h2 className="text-4xl font-medium mb-4">
@@ -60,6 +85,30 @@ export default function ValueProps() {
         <div className="grid justify-center">
           <FauxBridge />
         </div>
+      </section>
+      <section>
+        <ul className="flex flex-wrap gap-12 bg-white dark:bg-zinc-950 px-8 py-6 border border-zinc-300 dark:border-zinc-800 rounded-lg shadow-lg">
+          <li className="basis-56 grow">
+            <h2 className="text-4xl font-medium mb-4">Deep Liquidity</h2>
+            <p className="text-lg mb-2">
+              Swap native assets using our cross-chain AMM liquidity pools
+            </p>
+          </li>
+          <li className="basis-56 grow">
+            <h2 className="text-4xl font-medium mb-4">Wide Support</h2>
+            <p className="text-lg mb-2">
+              Access over 16 different EVM and non-EVM blockchains with more
+              integrations coming soon
+            </p>
+          </li>
+          <li className="basis-56 grow">
+            <h2 className="text-4xl font-medium mb-4">Developer Friendly</h2>
+            <p className="text-lg mb-2">
+              Easily integrate cross-chain token bridging natively into your
+              decentralized application
+            </p>
+          </li>
+        </ul>
       </section>
       <section className="grid md:grid-cols-2 gap-x-12">
         <div>
