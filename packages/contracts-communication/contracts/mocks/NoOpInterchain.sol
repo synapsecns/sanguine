@@ -3,7 +3,6 @@ pragma solidity 0.8.20;
 import {IInterchainDB, InterchainEntry} from "../interfaces/IInterchainDB.sol";
 
 contract NoOpInterchain is IInterchainDB {
-
     /// @notice Write data to the Interchain DataBase as a new entry.
     /// Note: there are no guarantees that this entry will be available for reading on any of the remote chains.
     /// Use `verifyEntry` to ensure that the entry is available for reading on the destination chain.
@@ -21,10 +20,7 @@ contract NoOpInterchain is IInterchainDB {
     /// @param destChainId   The chain id of the destination chain
     /// @param dbNonce       The database nonce of the written entry on this chain
     /// @param srcModules    The source chain addresses of the Interchain Modules to use for verification
-    function requestVerification(uint256 destChainId, uint256 dbNonce, address[] memory srcModules) external payable {
-
-
-    }
+    function requestVerification(uint256 destChainId, uint256 dbNonce, address[] memory srcModules) external payable {}
 
     /// @notice Write data to the Interchain DataBase,
     /// and request the given Interchain Modules to verify it on the destination chain.
@@ -41,17 +37,16 @@ contract NoOpInterchain is IInterchainDB {
         bytes32 dataHash,
         address[] memory srcModules
     )
-    external
-    payable
-    returns (uint256 dbNonce) {
+        external
+        payable
+        returns (uint256 dbNonce)
+    {
         return 0;
     }
 
     /// @notice Allows the Interchain Module to verify the entry coming from a remote source chain.
     /// @param entry        The Interchain Entry to confirm
-    function verifyEntry(InterchainEntry memory entry) external {
-
-    }
+    function verifyEntry(InterchainEntry memory entry) external {}
 
     /// @notice Get the fee for writing data to the Interchain DataBase, and verifying it on the destination chain
     /// using the provided Interchain Modules.
@@ -62,7 +57,6 @@ contract NoOpInterchain is IInterchainDB {
         return 0;
     }
 
-
     /// @notice Get the Interchain Entry by the writer and the writer nonce.
     /// @dev Will revert if the entry with the given nonce does not exist.
     /// @param dbNonce      The database nonce of the written entry on this chain
@@ -71,10 +65,9 @@ contract NoOpInterchain is IInterchainDB {
     }
 
     /// @notice Get the nonce of the database.
-    function getDBNonce() external view returns (uint256)  {
+    function getDBNonce() external view returns (uint256) {
         return 0;
     }
-
 
     /// @notice Read the data written on specific source chain by a specific writer,
     /// and verify it on the destination chain using the provided Interchain Module.
@@ -87,10 +80,10 @@ contract NoOpInterchain is IInterchainDB {
         address dstModule,
         InterchainEntry memory entry
     )
-    external
-    view
-    returns (uint256 moduleVerifiedAt) {
+        external
+        view
+        returns (uint256 moduleVerifiedAt)
+    {
         return 0;
     }
-
 }
