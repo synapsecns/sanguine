@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import styles from './ctaBlink.module.css'
 
 export default function Hero() {
-  const [h1, setH1] = useState<[string] | [string, index: number]>(['default'])
+  const [h1, setH1] = useState<[cta: string] | [cta: string, index: number]>([
+    'default',
+  ])
 
   const bridgeRef = useRef(null)
   const buildRef = useRef(null)
@@ -43,13 +45,12 @@ export default function Hero() {
         () => setH1(['build', 0]),
         { once: true }
       )
-
-      parentRef?.current?.addEventListener(
-        'mouseleave',
-        () => setH1(['default', 0]),
-        { once: true }
-      )
     }
+    parentRef?.current?.addEventListener(
+      'mouseleave',
+      () => setH1(['default', 0]),
+      { once: true }
+    )
   })
 
   const Tagline = () => {
