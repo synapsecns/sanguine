@@ -19,7 +19,7 @@ import {
 import cctpAbi from '../abi/SynapseCCTP.json'
 import { adjustValueIfNative } from '../utils/handleNativeToken'
 import { getMatchingTxLog } from '../utils/logs'
-import { BigintIsh } from '../constants'
+import { BigintIsh, HYDRATION_SUPPORTED_CHAIN_IDS } from '../constants'
 import { DestRequest } from './types'
 import { CACHE_TIMES, RouterCache } from '../utils/RouterCache'
 /**
@@ -49,23 +49,19 @@ export class SynapseCCTPRouter extends Router {
       provider
     ) as SynapseCCTPRouterContract
     this.address = address
-    // this.hydrateCache().then(() => {
-    //   console.log('cctprouter cache hydrated')
-    // })
+    this.hydrateCache()
   }
 
   /** fully optional but improves perf on first request */
-  // private async hydrateCache() {
-  //   try {
-  //     await Promise.all([
-  //       this.getCctpContract(),
-  //       // this.chainGasAmount(),
-  //     ])
-  //   } catch(e) {
-  //     console.error('Failed to hydrate CCTP router cache', e)
-  //   }
-
-  // }
+  private async hydrateCache() {
+    if (HYDRATION_SUPPORTED_CHAIN_IDS.includes(this.chainId)) {
+      try {
+        await Promise.all([
+          this.chainGasAmount(),
+        ])
+      } catch(e) {}
+    }
+  }
 
   public async getOriginAmountOut(
     tokenIn: string,

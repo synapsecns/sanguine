@@ -17,7 +17,7 @@ import {
   narrowToCCTPRouterQuery,
   reduceToQuery,
 } from '../module'
-import { BigintIsh } from '../constants'
+import { BigintIsh, HYDRATION_SUPPORTED_CHAIN_IDS } from '../constants'
 import { getMatchingTxLog } from '../utils/logs'
 import { adjustValueIfNative } from '../utils/handleNativeToken'
 import { CACHE_TIMES, RouterCache } from '../utils/RouterCache'
@@ -53,21 +53,18 @@ export class FastBridgeRouter implements SynapseModule {
       FastBridgeRouter.fastBridgeRouterInterface,
       provider
     ) as FastBridgeRouterContract
-    // this.hydrateCache().then(() => {
-    //   console.log('rfq router cache hydrated')
-    // })
+    this.hydrateCache()
   }
 
-  // private async hydrateCache() {
-  //   try {
-  //     await Promise.all([
-  //       this.getFastBridgeContract(),
-  //       this.getProtocolFeeRate(),
-  //     ])
-  //   } catch (e) {
-  //     console.error('Failed to hydrate rfqrouter cache', e)
-  //   }
-  // }
+  private async hydrateCache() {
+    if (HYDRATION_SUPPORTED_CHAIN_IDS.includes(this.chainId)) {
+      try {
+        await Promise.all([
+          this.getProtocolFeeRate(),
+        ])
+      } catch (e) {}
+    }
+  }
 
   /**
    * @inheritdoc SynapseModule.bridge

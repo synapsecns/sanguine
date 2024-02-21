@@ -2,6 +2,12 @@
 /* @ts-ignore */
 import NodeCache from "node-cache"
 
+// export const CACHE_HYDRATION_DELAY = {
+//   RFQ: 0,
+//   CCTP: 0,
+//   SYNAPSE: 0
+// }
+
 export const CACHE_TIMES = {
   ONE_SECOND: 1,
   THIRTY_SECONDS: 30,
@@ -36,17 +42,19 @@ export function RouterCache(maxAge: number) {
         address: this.address,
         chainId: this.chainId
       })
-      const debugDetails = `${propertyKey}(${args}) on ${this.chainId} (${this.address})`
+      // const debugDetails = `
+      //   ${propertyKey}(${args})\n on ${this.chainId} (${this.address})
+      //   `
       if (cache.has(key)) {
-        console.log(`Returning cached result for ${debugDetails})`)
+        // console.debug(`Returning cached result for ${debugDetails})`)
         return cache.get(key)
       } else {
-        console.log(`Calculating result for ${propertyKey}`)
+        // console.debug(`Calculating result for ${debugDetails}`)
         const result = originalMethod.apply(this, args)
         result.then((res: any) => {
           cache.set(key, res)
           return res
-        })
+        }).catch(e => console.log(this.chainId))
         return result
       }
     }
