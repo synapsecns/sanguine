@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* @ts-ignore */
 import NodeCache from "node-cache"
 
@@ -10,11 +11,13 @@ export const CACHE_TIMES = {
   ONE_HOUR: 60 * 60,
   ONE_DAY: 24 * 60 * 60,
   ONE_WEEK: 7 * 24 * 60 * 60,
+  INFINITE: 0
 }
-export function SimpleCache(maxAge: number) {
+
+export function RouterCache(maxAge: number) {
   /* @ts-ignore */
   return function(
-    _: Object, // target
+    target: Object, // target
     propertyKey: string,
     descriptor: PropertyDescriptor
   ) {
@@ -26,10 +29,16 @@ export function SimpleCache(maxAge: number) {
     })
 
     descriptor.value = function(...args: any[]) {
-      const key = JSON.stringify(args)
-
+      const key = JSON.stringify({
+        args,
+        propertyKey,
+        name:target.constructor.name,
+        address: this.address,
+        chainId: this.chainId
+      })
+      const debugDetails = `${propertyKey}(${args}) on ${this.chainId} (${this.address})`
       if (cache.has(key)) {
-        console.log(`Returning cached result for ${propertyKey}`)
+        console.log(`Returning cached result for ${debugDetails})`)
         return cache.get(key)
       } else {
         console.log(`Calculating result for ${propertyKey}`)
