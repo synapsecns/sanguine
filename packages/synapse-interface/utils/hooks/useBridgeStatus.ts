@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { useNetwork } from 'wagmi'
 
 import { useBridgeState } from '@/slices/bridge/hooks'
@@ -11,6 +10,7 @@ export const useBridgeStatus = (): {
   hasEnoughBalance: boolean
   hasInputAmount: boolean
   onSelectedChain: boolean
+  hasEnoughApproved: boolean
 } => {
   const { chain } = useNetwork()
   const {
@@ -22,38 +22,29 @@ export const useBridgeStatus = (): {
   }: BridgeState = useBridgeState()
   const balances = usePortfolioBalances()
 
-  const hasValidRoute: boolean = useMemo(() => {
-    return !isLoading && bridgeQuote.outputAmount > 0n
-  }, [isLoading, bridgeQuote])
+  const currentBalance = balances[fromChainId]?.find(
+    (token) => token.token === fromToken
+  )?.balance
 
-  const hasEnoughBalance: boolean = useMemo(() => {
-    const currentBalance: bigint = balances[fromChainId]?.find(
-      (token) => token.token === fromToken
-    )?.balance
-    const precisedebouncedFromValue: bigint = stringToBigInt(
-      debouncedFromValue,
-      fromToken?.decimals[fromChainId]
-    )
+  const preciseDebouncedFromValue = stringToBigInt(
+    debouncedFromValue,
+    fromToken?.decimals[fromChainId]
+  )
 
-    return currentBalance >= precisedebouncedFromValue
-  }, [balances, debouncedFromValue, fromToken, fromChainId])
+  const isEmpty = debouncedFromValue === initialState.debouncedFromValue
+  const isZero = parseFloat(debouncedFromValue) === 0
 
-  const hasInputAmount: boolean = useMemo(() => {
-    const isEmpty: boolean =
-      debouncedFromValue === initialState.debouncedFromValue
-    const isZero: boolean = parseFloat(debouncedFromValue) === 0
-
-    return Boolean(!isEmpty && !isZero)
-  }, [debouncedFromValue])
-
-  const onSelectedChain: boolean = useMemo(() => {
-    return chain?.id === fromChainId
-  }, [fromChainId, chain])
+  const hasValidRoute = !isLoading && bridgeQuote.outputAmount > 0n
+  const hasEnoughBalance = currentBalance >= preciseDebouncedFromValue
+  const hasInputAmount = !isEmpty && !isZero
+  const onSelectedChain = chain?.id === fromChainId
+  const hasEnoughApproved = bridgeQuote.allowance >= preciseDebouncedFromValue
 
   return {
     hasValidRoute,
     hasEnoughBalance,
     hasInputAmount,
     onSelectedChain,
+    hasEnoughApproved,
   }
 }

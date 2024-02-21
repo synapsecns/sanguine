@@ -38,7 +38,7 @@ export const ConnectedIndicator = () => {
 export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
   const [isConnecting, setIsConnecting] = useState<boolean>(false)
   const dispatch = useDispatch()
-  const { hasInputAmount, onSelectedChain } = useBridgeStatus()
+  const { hasInputAmount, hasValidRoute, onSelectedChain } = useBridgeStatus()
 
   function scrollToTop(): void {
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -66,7 +66,7 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
         border border-solid 
         h-8
         ${
-          !onSelectedChain && hasInputAmount
+          !onSelectedChain && hasValidRoute
             ? 'border-fuchsia-500 bg-custom-gradient'
             : 'border-gray-500 text-opacity-50 hover:border-gray-400 hover:text-opacity-60'
         }
