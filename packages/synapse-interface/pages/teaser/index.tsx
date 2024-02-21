@@ -6,7 +6,7 @@ import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 import { SynapseAnchor } from './SynapseLogo'
 import Footer from './LandingFooter'
-import Header from './NavMenu'
+import NavMenu from './NavMenu'
 import Hero from './Hero'
 import Ticker from './Ticker'
 import ValueProps from './ValueProps'
@@ -76,7 +76,7 @@ const LandingPage = () => {
         <Ticker />
         <nav className="mt-12 md:mt-16 px-2 sm:px-4 md:px-8 grid gap-y-4 md:gap-y-6 items-center max-w-7xl m-auto">
           <SynapseAnchor />
-          <Header />
+          <NavMenu />
           <select
             className="bg-white dark:bg-black text-sm text-inherit cursor-pointer rounded border-zinc-200 dark:border-zinc-800 justify-self-end w-min hover:border-zinc-300 hover:dark:bg-zinc-950 hover:dark:border-zinc-700 col-end-4"
             onChange={selectPrefersDark}
