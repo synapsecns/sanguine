@@ -121,7 +121,6 @@ func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (er
 	}
 
 	// Check if latest block is the same as start block (for chains with slow block times)
-
 	if c.latestBlock == c.startBlock {
 		return nil
 	}
@@ -182,7 +181,12 @@ func (c chainListener) getMetadata(parentCtx context.Context) (startBlock, chain
 
 	lastIndexed, err = c.store.LatestBlockForChain(ctx, chainID)
 	if errors.Is(err, db.ErrNoLatestBlockForChainID) {
-		return startBlock, chainID, nil
+		currentBlock, err := c.client.BlockNumber(ctx)
+		if err != nil {
+			return 0, 0, fmt.Errorf("could not get block number: %w", err)
+		}
+
+		return currentBlock, chainID, nil
 	}
 
 	if err != nil {
