@@ -8,18 +8,18 @@ func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
-	_ = x[CCTPRebalance-1]
-	_ = x[NativeBridgeRebalance-2]
+	_ = x[RebalanceMethodNone-0]
+	_ = x[RebalanceMethodCCTP-1]
+	_ = x[RebalanceMethodNative-2]
 }
 
-const _RebalanceMethod_name = "CCTPRebalanceNativeBridgeRebalance"
+const _RebalanceMethod_name = "RebalanceMethodNoneRebalanceMethodCCTPRebalanceMethodNative"
 
-var _RebalanceMethod_index = [...]uint8{0, 13, 34}
+var _RebalanceMethod_index = [...]uint8{0, 19, 38, 59}
 
 func (i RebalanceMethod) String() string {
-	i -= 1
 	if i >= RebalanceMethod(len(_RebalanceMethod_index)-1) {
-		return "RebalanceMethod(" + strconv.FormatInt(int64(i+1), 10) + ")"
+		return "RebalanceMethod(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
 	return _RebalanceMethod_name[_RebalanceMethod_index[i]:_RebalanceMethod_index[i+1]]
 }
