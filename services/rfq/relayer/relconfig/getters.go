@@ -379,15 +379,24 @@ func (c Config) GetRebalanceMethod(chainID int, token string) (method RebalanceM
 	return RebalanceMethodNone, nil
 }
 
-// GetMaintenanceBalancePct returns the maintenance balance percentage for the given chain and token.
-func (c Config) GetMaintenanceBalancePct(chainID int, token string) (float64, error) {
+func (c Config) getTokenConfigByAddr(chainID int, tokenAddr string) (cfg TokenConfig, err error) {
 	chainConfig, ok := c.Chains[chainID]
 	if !ok {
-		return 0, fmt.Errorf("no chain config for chain %d", chainID)
+		return cfg, fmt.Errorf("no chain config for chain %d", chainID)
 	}
-	tokenConfig, ok := chainConfig.Tokens[token]
-	if !ok {
-		return 0, fmt.Errorf("no token config for chain %d and token %s", chainID, token)
+	for _, tokenConfig := range chainConfig.Tokens {
+		if common.HexToAddress(tokenConfig.Address).Hex() == common.HexToAddress(tokenAddr).Hex() {
+			return tokenConfig, nil
+		}
+	}
+	return cfg, fmt.Errorf("no token config for chain %d and address %s", chainID, tokenAddr)
+}
+
+// GetMaintenanceBalancePct returns the maintenance balance percentage for the given chain and token address.
+func (c Config) GetMaintenanceBalancePct(chainID int, tokenAddr string) (float64, error) {
+	tokenConfig, err := c.getTokenConfigByAddr(chainID, tokenAddr)
+	if err != nil {
+		return 0, err
 	}
 	if tokenConfig.MaintenanceBalancePct <= 0 {
 		return 0, fmt.Errorf("maintenance balance pct must be positive: %f", tokenConfig.MaintenanceBalancePct)
@@ -395,15 +404,11 @@ func (c Config) GetMaintenanceBalancePct(chainID int, token string) (float64, er
 	return tokenConfig.MaintenanceBalancePct, nil
 }
 
-// GetInitialBalancePct returns the initial balance percentage for the given chain and token.
-func (c Config) GetInitialBalancePct(chainID int, token string) (float64, error) {
-	chainConfig, ok := c.Chains[chainID]
-	if !ok {
-		return 0, fmt.Errorf("no chain config for chain %d", chainID)
-	}
-	tokenConfig, ok := chainConfig.Tokens[token]
-	if !ok {
-		return 0, fmt.Errorf("no token config for chain %d and token %s", chainID, token)
+// GetInitialBalancePct returns the initial balance percentage for the given chain and token address.
+func (c Config) GetInitialBalancePct(chainID int, tokenAddr string) (float64, error) {
+	tokenConfig, err := c.getTokenConfigByAddr(chainID, tokenAddr)
+	if err != nil {
+		return 0, err
 	}
 	if tokenConfig.InitialBalancePct <= 0 {
 		return 0, fmt.Errorf("initial balance pct must be positive: %f", tokenConfig.InitialBalancePct)

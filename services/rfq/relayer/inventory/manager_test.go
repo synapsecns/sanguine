@@ -52,8 +52,62 @@ func (i *InventoryTestSuite) TestInventoryBootAndRefresh() {
 		}
 	}
 
-	im, err := inventory.NewInventoryManager(i.GetTestContext(), omnirpcClient.NewOmnirpcClient(i.omnirpcURL, metrics.Get()), metrics.Get(), cfg, i.relayer.Address(), i.db)
+	im, err := inventory.NewInventoryManager(i.GetTestContext(), omnirpcClient.NewOmnirpcClient(i.omnirpcURL, metrics.Get()), metrics.Get(), cfg, i.relayer.Address(), nil, i.db)
 	i.Require().NoError(err)
 
 	_ = im
+}
+
+func (i *InventoryTestSuite) TestGetRebalance() {
+	origin := 1
+	dest := 2
+	usdcDataOrigin := inventory.TokenMetadata{
+		Name:     "USDC",
+		Decimals: 6,
+		ChainID:  origin,
+		Addr:     common.HexToAddress("0x0000000000000000000000000000000000000123"),
+	}
+	usdcDataDest := inventory.TokenMetadata{
+		Name:     "USDC",
+		Decimals: 6,
+		ChainID:  dest,
+		Addr:     common.HexToAddress("0x0000000000000000000000000000000000000456"),
+	}
+	tokens := map[int]map[common.Address]*inventory.TokenMetadata{
+		origin: {
+			usdcDataOrigin.Addr: &usdcDataOrigin,
+		},
+		dest: {
+			usdcDataDest.Addr: &usdcDataDest,
+		},
+	}
+	cfg := relconfig.Config{
+		Chains: map[int]relconfig.ChainConfig{
+			origin: {
+				Tokens: map[string]relconfig.TokenConfig{
+					"USDC": {
+						Address:               usdcDataOrigin.Addr.Hex(),
+						MaintenanceBalancePct: 10,
+						InitialBalancePct:     30,
+					},
+				},
+			},
+			dest: {
+				Tokens: map[string]relconfig.TokenConfig{
+					"USDC": {
+						Address:               usdcDataDest.Addr.Hex(),
+						MaintenanceBalancePct: 10,
+						InitialBalancePct:     30,
+					},
+				},
+			},
+		},
+	}
+
+	// 10 USDC on both chains; no rebalance needed
+	usdcDataOrigin.Balance = big.NewInt(1e7)
+	usdcDataDest.Balance = big.NewInt(1e7)
+	rebalance, err := inventory.GetRebalance(cfg, tokens, origin, usdcDataOrigin.Addr)
+	i.NoError(err)
+	i.Nil(rebalance)
 }
