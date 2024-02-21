@@ -91,9 +91,9 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         public
         payable
     {
-        uint256 verificationFees = IInterchainDB(interchainDB).getInterchainFee(dstChainId, srcModules);
-        // TODO: should check msg.value >= totalModuleFees
-        uint256 executionFee = msg.value - verificationFees;
+        uint256 verificationFee = IInterchainDB(interchainDB).getInterchainFee(dstChainId, srcModules);
+        // TODO: should check msg.value >= verificationFee
+        uint256 executionFee = msg.value - verificationFee;
 
         InterchainTransaction memory icTx = InterchainTransaction({
             srcSender: TypeCasts.addressToBytes32(msg.sender),
@@ -111,7 +111,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce, icTx.options
         );
         icTx.transactionId = transactionId;
-        icTx.dbNonce = IInterchainDB(interchainDB).writeEntryWithVerification{value: verificationFees}(
+        icTx.dbNonce = IInterchainDB(interchainDB).writeEntryWithVerification{value: verificationFee}(
             icTx.dstChainId, icTx.transactionId, srcModules
         );
         bytes memory encodedTx = abi.encode(icTx);
@@ -126,7 +126,14 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         }
         IExecutionFees(executionFees).addExecutionFee{value: executionFee}(icTx.dstChainId, transactionId);
         emit InterchainTransactionSent(
-            transactionId, icTx.dbNonce, icTx.dstChainId, icTx.srcSender, icTx.dstReceiver, executionFee, encodedTx
+            transactionId,
+            icTx.dbNonce,
+            icTx.dstChainId,
+            icTx.srcSender,
+            icTx.dstReceiver,
+            verificationFee,
+            executionFee,
+            encodedTx
         );
         _emitOptions(transactionId, options);
         // Increment nonce for next message

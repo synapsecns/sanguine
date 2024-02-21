@@ -10,6 +10,7 @@ abstract contract InterchainClientV1Events {
         uint256 dstChainId,
         bytes32 srcSender,
         bytes32 dstReceiver,
+        uint256 verificationFee,
         uint256 executionFee,
         bytes encodedTransaction
     );
