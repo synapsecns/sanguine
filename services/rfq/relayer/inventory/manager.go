@@ -183,7 +183,7 @@ func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetc
 }
 
 func (i *inventoryManagerImpl) Start(ctx context.Context) error {
-	var g errgroup.Group
+	g, _ := errgroup.WithContext(ctx)
 	for _, rebalanceManager := range i.rebalanceManagers {
 		rebalanceManager := rebalanceManager
 		g.Go(func() error {

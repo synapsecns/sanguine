@@ -11,8 +11,10 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/cctp"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/listener"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"golang.org/x/sync/errgroup"
 )
 
 // RebalanceData contains metadata for a rebalance action.
@@ -43,6 +45,8 @@ type rebalanceManagerCCTP struct {
 	cctpContracts map[int]*cctp.SynapseCCTP
 	// relayerAddress contains the relayer address
 	relayerAddress common.Address
+	// chainListeners is the map of chain listeners for CCTP events
+	chainListeners map[int]listener.ContractListener
 	// db is the database
 	db reldb.Service
 }
@@ -55,11 +59,13 @@ func newRebalanceManagerCCTP(cfg relconfig.Config, handler metrics.Handler, chai
 		txSubmitter:    txSubmitter,
 		cctpContracts:  make(map[int]*cctp.SynapseCCTP),
 		relayerAddress: relayerAddress,
+		chainListeners: make(map[int]listener.ContractListener),
 		db:             db,
 	}
 }
 
 func (c *rebalanceManagerCCTP) Start(ctx context.Context) error {
+	// initialize contracts
 	for chainID := range c.cfg.Chains {
 		contractAddr, err := c.cfg.GetCCTPAddress(chainID)
 		if err != nil {
@@ -76,15 +82,34 @@ func (c *rebalanceManagerCCTP) Start(ctx context.Context) error {
 		c.cctpContracts[chainID] = contract
 	}
 
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			}
+	// initialize chain listeners
+	for chainID := range c.cfg.GetChains() {
+		cctpAddr, err := c.cfg.GetCCTPAddress(chainID)
+		if err != nil {
+			return fmt.Errorf("could not get cctp address: %w", err)
 		}
-	}()
-	return nil
+		chainClient, err := c.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
+		if err != nil {
+			return fmt.Errorf("could not get chain client: %w", err)
+		}
+
+		chainListener, err := listener.NewChainListener(chainClient, c.db, common.HexToAddress(cctpAddr), c.handler)
+		if err != nil {
+			return fmt.Errorf("could not get chain listener: %w", err)
+		}
+		c.chainListeners[chainID] = chainListener
+	}
+
+	g, _ := errgroup.WithContext(ctx)
+	for cid := range c.cfg.Chains {
+		// capture func literal
+		chainID := cid
+		g.Go(func() error {
+			return c.listen(ctx, chainID)
+		})
+	}
+
+	return g.Wait()
 }
 
 func (c *rebalanceManagerCCTP) Execute(ctx context.Context, rebalance *RebalanceData) (err error) {
@@ -92,7 +117,9 @@ func (c *rebalanceManagerCCTP) Execute(ctx context.Context, rebalance *Rebalance
 	if !ok {
 		return fmt.Errorf("could not find cctp contract for chain %d", rebalance.DestMetadata.ChainID)
 	}
+
 	// perform rebalance by calling sendCircleToken()
+	var tx *types.Transaction
 	_, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(rebalance.OriginMetadata.ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		tx, err = contract.SendCircleToken(
 			transactor,
@@ -111,5 +138,63 @@ func (c *rebalanceManagerCCTP) Execute(ctx context.Context, rebalance *Rebalance
 	if err != nil {
 		return fmt.Errorf("could not submit CCTP rebalance: %w", err)
 	}
+	if tx == nil {
+		return fmt.Errorf("could not submit CCTP rebalance: tx is nil")
+	}
+
+	// store the rebalance in the db
+	model := reldb.Rebalance{
+		Origin:       uint64(rebalance.OriginMetadata.ChainID),
+		Destination:  uint64(rebalance.DestMetadata.ChainID),
+		OriginAmount: rebalance.Amount,
+		Status:       reldb.RebalanceInitiated,
+		OriginTxHash: tx.Hash(),
+	}
+	err = c.db.StoreRebalance(ctx, model)
+	if err != nil {
+		return fmt.Errorf("could not store rebalance: %w", err)
+	}
 	return nil
+}
+
+func (c *rebalanceManagerCCTP) listen(ctx context.Context, chainID int) (err error) {
+	listener, ok := c.chainListeners[chainID]
+	if !ok {
+		return fmt.Errorf("could not find listener for chain %d", chainID)
+	}
+	ethClient, err := c.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
+	if err != nil {
+		return fmt.Errorf("could not get chain client: %w", err)
+	}
+	cctpAddr := common.HexToAddress(c.cfg.Chains[chainID].CCTPAddress)
+	parser, err := cctp.NewSynapseCCTPEvents(cctpAddr, ethClient)
+	if err != nil {
+		return fmt.Errorf("could not get cctp events: %w", err)
+	}
+
+	return listener.Listen(ctx, func(parentCtx context.Context, log types.Log) (err error) {
+		switch log.Topics[0] {
+		case cctp.CircleRequestSentTopic:
+			parsedEvent, err := parser.ParseCircleRequestSent(log)
+			if err != nil {
+				return fmt.Errorf("could not parse circle request sent: %w", err)
+			}
+			err = c.db.UpdateRebalanceStatus(ctx, parsedEvent.RequestID, &log.TxHash, reldb.RebalancePending)
+			if err != nil {
+				return fmt.Errorf("could not update rebalance status: %w", err)
+			}
+		case cctp.CircleRequestFulfilledTopic:
+			parsedEvent, err := parser.ParseCircleRequestFulfilled(log)
+			if err != nil {
+				return fmt.Errorf("could not parse circle request fulfilled: %w", err)
+			}
+			err = c.db.UpdateRebalanceStatus(ctx, parsedEvent.RequestID, nil, reldb.RebalanceCompleted)
+			if err != nil {
+				return fmt.Errorf("could not update rebalance status: %w", err)
+			}
+		default:
+			logger.Warnf("unknown event %s", log.Topics[0])
+		}
+		return nil
+	})
 }
