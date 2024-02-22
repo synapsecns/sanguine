@@ -66,24 +66,23 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         // TODO: should check msg.value >= verificationFee
         uint256 executionFee = msg.value - verificationFee;
 
-        InterchainTransaction memory icTx = InterchainTransaction({
-            srcSender: TypeCasts.addressToBytes32(msg.sender),
-            srcChainId: block.chainid,
+        InterchainTransaction memory icTx = InterchainTransactionLib.constructLocalTransaction({
+            srcSender: msg.sender,
             dstReceiver: receiver,
             dstChainId: dstChainId,
-            message: message,
             nonce: clientNonce,
+            dbNonce: IInterchainDB(interchainDB).getDBNonce(),
             options: options,
-            transactionId: 0,
-            dbNonce: 0
+            message: message
         });
-        // TODO: dbNonce should be a part of the transactionId calculation
-        bytes32 transactionId = _generateTransactionId(
-            icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce, icTx.options
-        );
-        icTx.transactionId = transactionId;
-        icTx.dbNonce = IInterchainDB(interchainDB).writeEntryWithVerification{value: verificationFee}(
-            icTx.dstChainId, icTx.transactionId, srcModules
+
+        bytes32 transactionId = icTx.transactionId();
+        // Sanity check: nonce returned from DB should match the nonce used to construct the transaction
+        assert(
+            icTx.dbNonce
+                == IInterchainDB(interchainDB).writeEntryWithVerification{value: verificationFee}(
+                    icTx.dstChainId, transactionId, srcModules
+                )
         );
         if (srcExecutionService != address(0)) {
             IExecutionService(srcExecutionService).requestExecution({
