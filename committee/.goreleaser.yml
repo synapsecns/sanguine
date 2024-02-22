@@ -1,0 +1,64 @@
+project_name: committee
+
+monorepo:
+  tag_prefix: committee/
+  dir: committee/
+
+builds:
+  # Linux AMD64
+  - id: committee
+    binary: committee
+    ldflags:
+      # We need to build a static binary because we are building in a glibc based system and running in a musl container
+      - -s -w -extldflags '-static'
+    # see above about workaround
+    tags:
+      - netgo
+      - osusergo
+    env:
+      - CC=gcc
+      - CXX=g++
+    main: main.go
+    goos:
+      - linux
+    goarch:
+      - amd64
+# add a source archive at release time
+source:
+  enabled: true
+
+# Archives
+archives:
+  - format: tar.gz
+    wrap_in_directory: true
+    format_overrides:
+      - goos: windows
+        format: zip
+    name_template: '{{.ProjectName}}-{{.Version}}_{{.Os}}_{{.Arch}}'
+    files:
+      - README.md
+
+checksum:
+  name_template: checksums.txt
+
+# Add a changelog
+changelog:
+  sort: asc
+
+dockers:
+  # Docker AMD64
+  - goos: linux
+    goarch: amd64
+    image_templates:
+      - 'ghcr.io/synapsecns/sanguine/committee:latest'
+      - 'ghcr.io/synapsecns/sanguine/committee:{{ .FullCommit }}'
+      - 'ghcr.io/synapsecns/sanguine/committee:{{ .Tag }}'
+    build_flag_templates:
+      - '--label=org.opencontainers.image.created={{.Date}}'
+      - '--label=org.opencontainers.image.name={{.ProjectName}}'
+      - '--label=org.opencontainers.image.revision={{.FullCommit}}'
+      - '--label=org.opencontainers.image.version={{.Version}}'
+      - '--label=org.opencontainers.image.source={{.GitURL}}'
+    dockerfile: ../docker/committee.Dockerfile
+    ids:
+      - committee

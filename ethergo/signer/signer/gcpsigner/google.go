@@ -5,10 +5,15 @@ package gcpsigner
 
 import (
 	"context"
+	"crypto/sha256"
 	"crypto/x509/pkix"
 	"encoding/asn1"
 	"encoding/pem"
 	"fmt"
+	"github.com/decred/dcrd/dcrec/secp256k1/v4"
+	"github.com/decred/dcrd/dcrec/secp256k1/v4/ecdsa"
+	libp2p "github.com/libp2p/go-libp2p/core/crypto"
+	"github.com/libp2p/go-libp2p/core/crypto/pb"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"math/big"
 
@@ -24,8 +29,9 @@ import (
 
 // managedKey uses the Key Management Service (KMS) for blockchain operation.
 type managedKey struct {
-	KeyName string         // identifier within Google cloud project
-	Addr    common.Address // public key identifier on blockchain
+	KeyName    string         // identifier within Google cloud project
+	Addr       common.Address // public key identifier on blockchain
+	pubKeyData []byte         // uncompressed public key
 
 	// AsymmetricSign method from a Google kms.KeyManagementClient.
 	asymmetricSignFunc func(context.Context, *kmspb.AsymmetricSignRequest, ...gax.CallOption) (*kmspb.AsymmetricSignResponse, error)
@@ -34,7 +40,7 @@ type managedKey struct {
 // NewManagedKey executes a fail-fast initialization.
 // Key names from the Google cloud are slash-separated paths.
 func NewManagedKey(ctx context.Context, client KeyClient, keyName string) (signer.Signer, error) {
-	addr, err := resolveAddr(ctx, client, keyName)
+	addr, pubKey, err := resolveAddr(ctx, client, keyName)
 	if err != nil {
 		return nil, err
 	}
@@ -42,6 +48,7 @@ func NewManagedKey(ctx context.Context, client KeyClient, keyName string) (signe
 	return &managedKey{
 		KeyName:            keyName,
 		Addr:               addr,
+		pubKeyData:         pubKey,
 		asymmetricSignFunc: client.AsymmetricSign,
 	}, nil
 }
@@ -59,17 +66,21 @@ func (mk *managedKey) Address() common.Address {
 	return mk.Addr
 }
 
+func (mk *managedKey) PrivKey() libp2p.PrivKey {
+	return mk
+}
+
 var _ signer.Signer = &managedKey{}
 
-func resolveAddr(ctx context.Context, client KeyClient, keyName string) (common.Address, error) {
+func resolveAddr(ctx context.Context, client KeyClient, keyName string) (address common.Address, pubKeyBytes []byte, _ error) {
 	resp, err := client.GetPublicKey(ctx, &kmspb.GetPublicKeyRequest{Name: keyName})
 	if err != nil {
-		return common.Address{}, fmt.Errorf("google KMS public key %q lookup: %w", keyName, err)
+		return common.Address{}, []byte{}, fmt.Errorf("google KMS public key %q lookup: %w", keyName, err)
 	}
 
 	block, _ := pem.Decode([]byte(resp.Pem))
 	if block == nil {
-		return common.Address{}, fmt.Errorf("google KMS public key %q PEM empty: %.130q", keyName, resp.Pem)
+		return common.Address{}, []byte{}, fmt.Errorf("google KMS public key %q PEM empty: %.130q", keyName, resp.GetPem())
 	}
 
 	var info struct {
@@ -78,15 +89,15 @@ func resolveAddr(ctx context.Context, client KeyClient, keyName string) (common.
 	}
 	_, err = asn1.Unmarshal(block.Bytes, &info)
 	if err != nil {
-		return common.Address{}, fmt.Errorf("google KMS public key %q PEM block %q: %w", keyName, block.Type, err)
+		return common.Address{}, []byte{}, fmt.Errorf("google KMS public key %q PEM block %q: %w", keyName, block.Type, err)
 	}
 
 	wantAlg := asn1.ObjectIdentifier{1, 2, 840, 10045, 2, 1}
 	if gotAlg := info.AlgID.Algorithm; !gotAlg.Equal(wantAlg) {
-		return common.Address{}, fmt.Errorf("google KMS public key %q ASN.1 algorithm %s intead of %s", keyName, gotAlg, wantAlg)
+		return common.Address{}, []byte{}, fmt.Errorf("google KMS public key %q ASN.1 algorithm %s intead of %s", keyName, gotAlg, wantAlg)
 	}
 
-	return pubKeyAddr(info.Key.Bytes), nil
+	return pubKeyAddr(info.Key.Bytes), info.Key.Bytes, nil
 }
 
 // NewEthereumTransactor returns a KMS-backed instance. Ctx applies to the
@@ -196,6 +207,46 @@ func (mk *managedKey) newEthereumSigner(ctx context.Context, txIdentification ty
 		// nolint: wrapcheck
 		return tx.WithSignature(txIdentification, etcSig)
 	}
+}
+
+func (mk *managedKey) Equals(key libp2p.Key) bool {
+	return mk.GetPublic().Equals(key)
+}
+
+func (mk *managedKey) Raw() ([]byte, error) {
+	return mk.GetPublic().Raw()
+}
+
+func (mk *managedKey) Type() pb.KeyType {
+	return mk.GetPublic().Type()
+}
+
+func (mk *managedKey) Sign(bytes []byte) ([]byte, error) {
+	// TODO: we should figure out a way to respect context here. One possible solution
+	hashed := sha256.Sum256(bytes)
+	sigBytes, err := mk.SignMessage(context.Background(), hashed[:], false)
+	if err != nil {
+		return nil, fmt.Errorf("could not derive ethereum signature: %w", err)
+	}
+
+	r := new(secp256k1.ModNScalar)
+	s := new(secp256k1.ModNScalar)
+
+	r.SetByteSlice(sigBytes.R().Bytes())
+	s.SetByteSlice(sigBytes.S().Bytes())
+
+	newSig := ecdsa.NewSignature(r, s)
+
+	return newSig.Serialize(), nil
+}
+
+func (mk *managedKey) GetPublic() libp2p.PubKey {
+	pubkey, err := secp256k1.ParsePubKey(mk.pubKeyData)
+	if err != nil {
+		panic(fmt.Errorf("could not parse public key: %w", err))
+	}
+
+	return (*libp2p.Secp256k1PublicKey)(pubkey)
 }
 
 // PubKeyAddr returns the Ethereum address for the (uncompressed) key bytes.
