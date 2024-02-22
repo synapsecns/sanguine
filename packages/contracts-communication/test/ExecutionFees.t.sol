@@ -41,7 +41,7 @@ contract ExecutionFeesTest is Test {
 
         uint256 beforeBalance = executor.balance;
         vm.prank(executor);
-        executionFees.claimExecutionFees();
+        executionFees.claimExecutionFees(executor);
         uint256 afterBalance = executor.balance;
 
         assertEq(afterBalance - beforeBalance, executionFee);
@@ -81,6 +81,6 @@ contract ExecutionFeesTest is Test {
     function test_ClaimExecutionFees_NoUnclaimedRewards() public {
         vm.prank(executor);
         vm.expectRevert("ExecutionFees: No unclaimed rewards");
-        executionFees.claimExecutionFees();
+        executionFees.claimExecutionFees(executor);
     }
 }

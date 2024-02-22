@@ -8,7 +8,7 @@ contract ExecutionFeesMock is IExecutionFees {
 
     function recordExecutor(uint256 dstChainId, bytes32 transactionId, address executor) external {}
 
-    function claimExecutionFees() external {}
+    function claimExecutionFees(address executor) external {}
 
     function getAccumulatedRewards(address executor) external view returns (uint256 accumulated) {}
 

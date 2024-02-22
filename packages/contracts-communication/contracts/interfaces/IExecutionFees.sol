@@ -22,7 +22,7 @@ interface IExecutionFees {
 
     /// @notice Allows the executor to claim their unclaimed rewards.
     /// @dev Will revert if the executor has no unclaimed rewards.
-    function claimExecutionFees() external;
+    function claimExecutionFees(address executor) external;
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
