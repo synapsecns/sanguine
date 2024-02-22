@@ -59,10 +59,11 @@ export class FastBridgeRouter implements SynapseModule {
   private async hydrateCache() {
     if (HYDRATION_SUPPORTED_CHAIN_IDS.includes(this.chainId)) {
       try {
-        await Promise.all([
-          this.getProtocolFeeRate(),
-        ])
-      } catch (e) {}
+        await Promise.all([this.getProtocolFeeRate()])
+      } catch (e) {
+        console.error('fastBridgeRouter: Error hydrating cache', e)
+        throw e
+      }
     }
   }
 

@@ -56,10 +56,11 @@ export class SynapseCCTPRouter extends Router {
   private async hydrateCache() {
     if (HYDRATION_SUPPORTED_CHAIN_IDS.includes(this.chainId)) {
       try {
-        await Promise.all([
-          this.chainGasAmount(),
-        ])
-      } catch(e) {}
+        await Promise.all([this.chainGasAmount()])
+      } catch (e) {
+        console.error('synapseCCTPRouter: Error hydrating cache', e)
+        throw e
+      }
     }
   }
 
