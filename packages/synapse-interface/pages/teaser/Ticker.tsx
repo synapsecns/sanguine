@@ -7,20 +7,39 @@ for (let i = 0; i < 20; i++) txs.push(generateTx())
 
 const formatTimestamp = (tx) => {
   const { origin, destination } = tx
+
   const originDate = new Date(origin.timestamp)
   const originHour = originDate.getHours()
-  const originMinute = originDate.getMinutes()
+  const originMinute =
+    (originDate.getMinutes() < 10 ? '0' : '') + originDate.getMinutes()
+
+  const destinationDate = new Date(destination.timestamp)
+  const destinationHour = destinationDate.getHours()
+  const destinationMinute =
+    (destinationDate.getMinutes() < 10 ? '0' : '') +
+    destinationDate.getMinutes()
+
   const seconds = Math.round((destination.timestamp - origin.timestamp) / 1000)
   const minutes = Math.round(seconds / 60)
   const secondsModulo = (Math.round(seconds / 15) * 15) % 60
 
-  const originDateFormatted = `${originHour}:${originMinute}${
-    originHour < 12 ? 'am' : 'pm'
-  }`
-  const durationFormatted =
-    minutes + 'm' + (secondsModulo ? ` ${secondsModulo}` : '')
+  const originDateFormatted = `${originHour % 12}:${originMinute}`
 
-  return `${originDateFormatted} (${durationFormatted})`
+  const destinationDateFormatted = `${
+    destinationHour % 12
+  }:${destinationMinute}${destinationHour < 12 ? 'am' : 'pm'}`
+
+  const durationFormatted =
+    minutes === 0
+      ? (secondsModulo === 0 ? seconds : secondsModulo) + 's'
+      : minutes + 'm' + (secondsModulo ? ` ${secondsModulo}` : '')
+
+  const timeRange =
+    originHour === destinationHour && originMinute === destinationMinute
+      ? destinationDateFormatted
+      : `${originDateFormatted}–${destinationDateFormatted}`
+
+  return `${timeRange} (${durationFormatted})`
 }
 
 /* Ticker – Easter egg: define custom <marquee> element */
