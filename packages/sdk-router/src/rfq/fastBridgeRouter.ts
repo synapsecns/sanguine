@@ -62,7 +62,6 @@ export class FastBridgeRouter implements SynapseModule {
         await Promise.all([this.getProtocolFeeRate()])
       } catch (e) {
         console.error('fastBridgeRouter: Error hydrating cache', e)
-        throw e
       }
     }
   }
