@@ -1,6 +1,6 @@
-import styles from './ticker.module.css'
+import styles from './css-modules/ticker.module.css'
 import { generateTx } from '../../utils/fakeDataGen/teaserMarquee'
-import PulseDot from './PulseDot'
+import PulseDot from './icons/PulseDot'
 
 const txs = new Array()
 for (let i = 0; i < 20; i++) txs.push(generateTx())

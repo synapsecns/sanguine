@@ -1,54 +1,130 @@
-import styles from './navmenu.module.css'
+import styles from './css-modules/navmenu.module.css'
 
 const sections = [
   {
     label: 'About',
     url: '#',
     links: [
-      { label: 'Vision', url: '#', description: 'Vision lorem ipsum dolor sit amet consecteteur adipisicing elit.'},
-      { label: 'Philosophy', url: '#', description: 'Philosophy lorem ipsum dolor sit amet consecteteur adipisicing elit.'},
-      { label: 'Roadmap', url: '#', description: 'Roadmap lorem ipsum dolor sit amet consecteteur adipisicing elit.'},
-    ]
+      {
+        label: 'Vision',
+        url: '#',
+        description:
+          'Vision lorem ipsum dolor sit amet consecteteur adipisicing elit.',
+      },
+      {
+        label: 'Philosophy',
+        url: '#',
+        description:
+          'Philosophy lorem ipsum dolor sit amet consecteteur adipisicing elit.',
+      },
+      {
+        label: 'Roadmap',
+        url: '#',
+        description:
+          'Roadmap lorem ipsum dolor sit amet consecteteur adipisicing elit.',
+      },
+    ],
   },
   {
     label: 'Bridge',
     url: '#',
     links: [
-      { label: 'Synapse Bridge', url: '#', description: 'Smart routes & real-time competitive quotes on 20 supported chains.'},
-      { label: 'On-chain swap', url: '#', description: 'Swap lorem ipsum dolor sit amet consecteteur adipisicing elit.'},
-      { label: 'Solana bridge', url: '#', description: 'Solana lorem ipsum dolor sit amet consecteteur adipisicing elit.'},
-    ]
+      {
+        label: 'Synapse Bridge',
+        url: '#',
+        description:
+          'Smart routes & real-time competitive quotes on 20 supported chains.',
+      },
+      {
+        label: 'On-chain swap',
+        url: '#',
+        description:
+          'Swap lorem ipsum dolor sit amet consecteteur adipisicing elit.',
+      },
+      {
+        label: 'Solana bridge',
+        url: '#',
+        description:
+          'Solana lorem ipsum dolor sit amet consecteteur adipisicing elit.',
+      },
+    ],
   },
   {
     label: 'Community',
     url: '#',
     links: [
-      { label: 'Discord', url: '#', description: 'Discord lorem ipsum dolor sit amet consecteteur adipisicing elit.'},
-      { label: 'Telegram', url: '#', description: 'Telegram lorem ipsum dolor sit amet consecteteur adipisicing elit.'},
-      { label: 'Twitter', url: '#', description: 'Twitter lorem ipsum dolor sit amet consecteteur adipisicing elit.'},
-      { label: 'Blog', url: '#', description: 'Blog lorem ipsum dolor sit amet consecteteur adipisicing elit.'},
-      { label: 'Forum', url: '#', description: 'Forum lorem ipsum dolor sit amet consecteteur adipisicing elit.'},
-    ]
+      {
+        label: 'Discord',
+        url: '#',
+        description:
+          'Discord lorem ipsum dolor sit amet consecteteur adipisicing elit.',
+      },
+      {
+        label: 'Telegram',
+        url: '#',
+        description:
+          'Telegram lorem ipsum dolor sit amet consecteteur adipisicing elit.',
+      },
+      {
+        label: 'Twitter',
+        url: '#',
+        description:
+          'Twitter lorem ipsum dolor sit amet consecteteur adipisicing elit.',
+      },
+      {
+        label: 'Blog',
+        url: '#',
+        description:
+          'Blog lorem ipsum dolor sit amet consecteteur adipisicing elit.',
+      },
+      {
+        label: 'Forum',
+        url: '#',
+        description:
+          'Forum lorem ipsum dolor sit amet consecteteur adipisicing elit.',
+      },
+    ],
   },
   {
     label: 'Developers',
     url: '#',
     links: [
-      { label: 'Docs', url: '#', description: 'Docs lorem ipsum dolor sit amet consecteteur adipisicing elit.'},
-      { label: 'GitHub', url: '#', description: 'GitHub lorem ipsum dolor sit amet consecteteur adipisicing elit.'},
-      { label: 'Synapse CNS', url: '#', description: 'Synapse CNS lorem ipsum dolor sit amet consecteteur adipisicing elit.'},
-      { label: 'Interchain Network', url: '#', description: 'Interchain Network lorem ipsum dolor sit amet consecteteur adipisicing elit.'},
-    ]
+      {
+        label: 'Docs',
+        url: '#',
+        description:
+          'Docs lorem ipsum dolor sit amet consecteteur adipisicing elit.',
+      },
+      {
+        label: 'GitHub',
+        url: '#',
+        description:
+          'GitHub lorem ipsum dolor sit amet consecteteur adipisicing elit.',
+      },
+      {
+        label: 'Synapse CNS',
+        url: '#',
+        description:
+          'Synapse CNS lorem ipsum dolor sit amet consecteteur adipisicing elit.',
+      },
+      {
+        label: 'Interchain Network',
+        url: '#',
+        description:
+          'Interchain Network lorem ipsum dolor sit amet consecteteur adipisicing elit.',
+      },
+    ],
   },
   {
     label: 'Explorer',
     url: '#',
-  }]
+  },
+]
 
 export default function Header() {
   return (
     <ul className="flex flex-wrap md:text-lg justify-center row-start-2 col-span-3 lg:row-start-1 lg:col-start-2 lg:col-span-1">
-      {sections.map(section => (
+      {sections.map((section) => (
         <li className="group">
           <a
             href={section.url}
@@ -63,16 +139,22 @@ export default function Header() {
                   return (
                     <>
                       <dt className={`col-start-1 ${styles.dt}`}>
-                        <a href={link.url} className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded">
+                        <a
+                          href={link.url}
+                          className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded"
+                        >
                           {link.label}
                         </a>
                       </dt>
                       <dd className="w-60 col-start-2 row-start-1 row-span-6 px-4 py-3 border-l border-zinc-200 dark:border-zinc-800 cursor-pointer">
                         <header>{link.label}</header>
-                        <p className="mt-1 font-light tracking-wider">{link.description}</p>
+                        <p className="mt-1 font-light tracking-wider">
+                          {link.description}
+                        </p>
                       </dd>
                     </>
-                  )})}
+                  )
+                })}
               </dl>
             </div>
           )}
