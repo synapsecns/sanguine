@@ -4,7 +4,11 @@ pragma solidity 0.8.20;
 import { IExecutionFees } from "./interfaces/IExecutionFees.sol";
 import { ExecutionFeesEvents } from "./events/ExecutionFeesEvents.sol";
 
+import { Address } from "@openzeppelin/contracts/utils/Address.sol";
+
 contract ExecutionFees is ExecutionFeesEvents, IExecutionFees {
+    using Address for address payable;
+
     // Interchain Transaction IDs => Total Execution Fees
     mapping(bytes32 => uint256) private _executionFees;
     // Executor Addresses => Total Accumulated Fees
@@ -49,8 +53,8 @@ contract ExecutionFees is ExecutionFeesEvents, IExecutionFees {
         uint256 amount = _unclaimedRewards[executor];
         require(amount > 0, "ExecutionFees: No unclaimed rewards");
         _unclaimedRewards[executor] = 0;
-        payable(executor).transfer(amount);
-        emit ExecutionFeesClaimed(executor, amount);
+        payable(executor).sendValue(amount);
+        emit ExecutionFeesClaimed(msg.sender, amount);
     }
 
     // @inheritdoc IExecutionFees
