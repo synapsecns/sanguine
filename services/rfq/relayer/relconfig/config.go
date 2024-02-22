@@ -44,10 +44,10 @@ type Config struct {
 	FeePricer FeePricerConfig `yaml:"fee_pricer"`
 	// ScreenerAPIUrl is the TRM API key.
 	ScreenerAPIUrl string `yaml:"screener_api_url"`
-	// DBSelectorIntervalSeconds is the interval for the db selector.
-	DBSelectorIntervalSeconds int           `yaml:"db_selector_interval_seconds"`
+	// DBSelectorInterval is the interval for the db selector.
+	DBSelectorInterval time.Duration `yaml:"db_selector_interval"`
 	// RebalanceInterval is the interval for rebalancing.
-	RebalanceInterval         time.Duration `yaml:"rebalance_interval"`
+	RebalanceInterval time.Duration `yaml:"rebalance_interval"`
 }
 
 // ChainConfig represents the configuration for a chain.

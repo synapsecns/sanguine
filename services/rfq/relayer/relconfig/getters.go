@@ -536,11 +536,11 @@ const defaultDBSelectorIntervalSeconds = 1
 
 // GetDBSelectorInterval returns the interval for the DB selector.
 func (c Config) GetDBSelectorInterval() time.Duration {
-	interval := c.DBSelectorIntervalSeconds
+	interval := c.DBSelectorInterval
 	if interval <= 0 {
-		return defaultDBSelectorIntervalSeconds
+		interval = time.Duration(defaultDBSelectorIntervalSeconds) * time.Second
 	}
-	return time.Duration(interval) * time.Second
+	return interval
 }
 
 const defaultRebalanceIntervalSeconds = 30
@@ -549,7 +549,7 @@ const defaultRebalanceIntervalSeconds = 30
 func (c Config) GetRebalanceInterval() time.Duration {
 	interval := c.RebalanceInterval
 	if interval == 0 {
-		interval = defaultRebalanceIntervalSeconds
+		interval = time.Duration(defaultRebalanceIntervalSeconds) * time.Second
 	}
 	return interval
 }
