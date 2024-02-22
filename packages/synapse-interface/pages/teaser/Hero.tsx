@@ -50,10 +50,10 @@ export default function Hero() {
         once: true,
       })
 
-      if (index === tag.length)
-        ctaAnchorRef.current.addEventListener('mouseenter', () =>
-          ctaAnchorRef.current.querySelector('animate').beginElement()
-        )
+      // if (index === tag.length)
+      //   ctaAnchorRef.current.addEventListener('mouseenter', () =>
+      //     ctaAnchorRef.current.querySelector('animate').beginElement()
+      //   )
     }
   })
 
@@ -84,6 +84,9 @@ export default function Hero() {
             <a
               ref={ctaAnchorRef}
               href={url}
+              onMouseEnter={(e) =>
+                e.target.querySelector('animate')?.beginElement()
+              }
               className="p-4 hover:text-black hover:dark:text-white"
             >
               <Tagline />
