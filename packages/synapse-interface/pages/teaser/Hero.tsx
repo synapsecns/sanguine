@@ -1,6 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import RightArrow from './icons/RightArrow'
-import styles from './css-modules/ctaBlink.module.css'
 
 export default function Hero() {
   const [h1, setH1] = useState<[cta: string] | [cta: string, index: number]>([
@@ -9,6 +7,7 @@ export default function Hero() {
 
   const bridgeRef = useRef(null)
   const buildRef = useRef(null)
+  const ctaAnchorRef = useRef(null)
 
   const [cta, index] = h1
 
@@ -46,10 +45,16 @@ export default function Hero() {
         { once: true }
       )
     }
-    if (cta !== 'default')
+    if (cta !== 'default') {
       document.addEventListener('mousemove', () => setH1(['default', 0]), {
         once: true,
       })
+
+      if (index === tag.length)
+        ctaAnchorRef.current.addEventListener('mouseenter', () =>
+          ctaAnchorRef.current.querySelector('animate').beginElement()
+        )
+    }
   })
 
   const Tagline = () => {
@@ -76,7 +81,11 @@ export default function Hero() {
       <div className="py-4 grid gap-4" onMouseMove={(e) => e.stopPropagation()}>
         <h1 className="max-w-xl text-3xl md:text-2xl font-medium">
           {url ? (
-            <a href={url} className="p-4">
+            <a
+              ref={ctaAnchorRef}
+              href={url}
+              className="p-4 hover:text-black hover:dark:text-white"
+            >
               <Tagline />
               {index === tag.length && <ArrowBounce />}
             </a>
