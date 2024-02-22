@@ -25,6 +25,8 @@ The Synapse SDK allows you to interact with [Synapse Protocol](https://synapsepr
 npm install @synapsecns/sdk-router
 ```
 
+test
+
 ## SDK Initialization
 
 To use the SDK, first instantiate it with chain IDs and Ethereum providers:
