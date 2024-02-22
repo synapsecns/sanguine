@@ -1,5 +1,3 @@
-import styles from './css-modules/navmenu.module.css'
-
 const sections = [
   {
     label: 'About',
@@ -123,18 +121,18 @@ const sections = [
 
 export default function Header() {
   return (
-    <ul className="flex flex-wrap md:text-lg justify-center">
+    <ul className="flex flex-wrap text-base xs:text-lg justify-center row-start-2 col-span-3 min-[960px]:row-start-1 min-[960px]:col-start-2 min-[960px]:col-span-1">
       {sections.map((section) => (
-        <li className="group relative">
+        <li className="group relative first:hidden sm:first:inline-block">
           <a
             href={section.url}
-            className="px-3 pt-0.5 pb-1 hover:bg-zinc-50 hover:dark:bg-zinc-950 border border-transparent hover:border-fuchsia-500 rounded inline-block"
+            className="px-1 xs:px-3 pt-0.5 pb-1 hover:bg-zinc-50 hover:dark:bg-zinc-950 border border-transparent hover:border-fuchsia-500 rounded inline-block"
           >
             {section.label}
           </a>
           {section.links && (
             <div
-              className="hidden group-hover:block absolute p-2 animate-slide-down origin-top w-max"
+              className="hidden group-hover:block absolute p-2 animate-slide-down origin-top w-max z-10"
               style={{ lineHeight: '100%' }}
             >
               <dl className="bg-zinc-50 dark:bg-zinc-950 rounded text-base -ml-2 border border-zinc-200 dark:border-zinc-800 shadow-sm grid grid-cols-[auto_auto]">
