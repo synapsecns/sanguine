@@ -5,7 +5,7 @@ export default function ValueProps() {
   return (
     <article className="grid gap-16 md:gap-24 p-4">
       <section>
-        <ul className="w-fit md:w-max grid grid-cols-2 md:flex text-base sm:text-lg text-center items-center place-center bg-gradient-to-b from-white to-slate-100 dark:from-zinc-900 dark:to-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md px-6 py-2 gap-x-8 gap-y-4 shadow-sm mx-auto">
+        <ul className="w-fit md:w-max grid grid-cols-2 md:flex text-base sm:text-lg text-center items-center place-center bg-gradient-to-b from-white to-slate-100 dark:from-zinc-900 dark:to-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md px-6 py-2 gap-x-8 gap-y-4 shadow-sm mx-auto cursor-default">
           <li className="-mt-1 p-1">50 blockchains</li>
           <li className="-mt-1 p-1">50,000 validators</li>
           <li className="-mt-1 p-1">10.2B messages</li>
