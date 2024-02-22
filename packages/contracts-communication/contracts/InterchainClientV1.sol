@@ -245,6 +245,10 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         return abi.encode(icTx);
     }
 
+    function encodeOptionsV1(OptionsV1 memory options) public view returns (bytes memory) {
+        return options.encodeOptionsV1();
+    }
+
     // TODO: Gas Fee Consideration that is paid to executor
     // @inheritdoc IInterchainClientV1
     function interchainExecute(bytes calldata transaction) public {
