@@ -76,7 +76,10 @@ export default function Hero() {
       <div className="hidden sm:block text-3xl sm:text-6xl font-semibold my-4 cursor-default">
         Modular Interchain Messages
       </div>
-      <div className="py-4 grid gap-4" onMouseMove={(e) => e.stopPropagation()}>
+      <div
+        className="pt-4 pb-12 grid gap-4"
+        onMouseMove={(e) => e.stopPropagation()}
+      >
         <h1 className="max-w-xl text-3xl md:text-2xl font-medium cursor-default">
           {url ? (
             <a
@@ -111,7 +114,7 @@ export default function Hero() {
           </a>
         </div>
       </div>
-      <p className="leading-relaxed max-w-xl text-lg dark:font-light tracking-wider">
+      <p className="leading-relaxed max-w-xl text-lg dark:font-light tracking-wider -mt-8">
         Say goodbye to centralized resource pools for cross-chain communication.
         Synapse lets you customize literally every aspect of your interchain
         communications.
