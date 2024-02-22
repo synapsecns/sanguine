@@ -55,6 +55,7 @@ type Config struct {
 	ArbCapPerAddress  int64                  `yaml:"arb_cap_per_address"`
 	ARBMinTransfer    float64                `yaml:"ARB_min_transfer"`
 	DuneLookbackHours int                    `yaml:"dune_lookback_hours"`
+	StipQueryID       int                    `yaml:"stip_query_id"`
 }
 
 const defaultArbCapPerAddress = 2000

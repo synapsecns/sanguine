@@ -17,7 +17,6 @@ import (
 // DuneAPIKey is the API key for Dune, fetched from the environment variables.
 var DuneAPIKey = os.Getenv("DUNE_API_KEY")
 
-const stipQueryID = 3403369
 const dunePerformance = "large"
 
 type duneQueryParams struct {
@@ -42,7 +41,7 @@ func (s *STIPRelayer) ExecuteDuneQuery(parentCtx context.Context) (executionID s
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal request body: %w", err)
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("https://api.dune.com/api/v1/query/%d/execute", stipQueryID), bytes.NewBuffer(reqBody))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("https://api.dune.com/api/v1/query/%d/execute", s.cfg.StipQueryID), bytes.NewBuffer(reqBody))
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %w", err)
 	}
