@@ -191,6 +191,7 @@ func (i *inventoryManagerImpl) Start(ctx context.Context) error {
 		})
 	}
 
+	// continuously refresh balances
 	g.Go(func() error {
 		for {
 			select {
@@ -207,6 +208,28 @@ func (i *inventoryManagerImpl) Start(ctx context.Context) error {
 			}
 		}
 	})
+
+	// continuously check for rebalances
+	rebalanceInterval := i.cfg.GetRebalanceInterval()
+	if rebalanceInterval > 0 {
+		g.Go(func() error {
+			for {
+				select {
+				case <-ctx.Done():
+					return fmt.Errorf("context canceled: %w", ctx.Err())
+				case <-time.After(rebalanceInterval):
+					for chainID, chainConfig := range i.cfg.Chains {
+						for tokenName, tokenConfig := range chainConfig.Tokens {
+							err := i.Rebalance(ctx, chainID, common.HexToAddress(tokenConfig.Address))
+							if err != nil {
+								logger.Errorf("could not rebalance %s on chain %d: %v", tokenName, chainID, err)
+							}
+						}
+					}
+				}
+			}
+		})
+	}
 
 	return g.Wait()
 }

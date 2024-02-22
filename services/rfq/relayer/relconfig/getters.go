@@ -542,3 +542,14 @@ func (c Config) GetDBSelectorInterval() time.Duration {
 	}
 	return time.Duration(interval) * time.Second
 }
+
+const defaultRebalanceIntervalSeconds = 30
+
+// GetRebalanceInterval returns the interval for rebalancing.
+func (c Config) GetRebalanceInterval() time.Duration {
+	interval := c.RebalanceInterval
+	if interval == 0 {
+		interval = defaultRebalanceIntervalSeconds
+	}
+	return interval
+}
