@@ -20,6 +20,7 @@ import (
 	"github.com/synapsecns/sanguine/services/stiprelayer/db"
 	"github.com/synapsecns/sanguine/services/stiprelayer/stipapi"
 	"github.com/synapsecns/sanguine/services/stiprelayer/stipconfig"
+	"go.opentelemetry.io/otel/attribute"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/time/rate"
 )
@@ -220,6 +221,7 @@ func (s *STIPRelayer) ProcessExecutionResults(parentCtx context.Context) (err er
 	if err != nil {
 		return fmt.Errorf("failed to execute Dune query: %w", err)
 	}
+	span.SetAttributes(attribute.String("execution_id", executionID))
 
 	// TODO: remove if exponentialBackoff.InitialInterval waits 30 seconds?
 	// time.Sleep(30 * time.Second) // Consider replacing this with a more robust solution
@@ -250,12 +252,20 @@ func (s *STIPRelayer) ProcessExecutionResults(parentCtx context.Context) (err er
 	}
 
 	var rowsAfterStartDate []Row
+	var firstResultTime time.Time
 	for _, row := range getResultsJSONResult.Result.Rows {
 		// TODO: Will this panic if StartDate not set?
 		if row.BlockTime.After(s.cfg.StartDate) {
 			rowsAfterStartDate = append(rowsAfterStartDate, row)
 		}
+		if firstResultTime.IsZero() || row.BlockTime.Before(firstResultTime) {
+			firstResultTime = row.BlockTime.Time
+		}
 	}
+	span.SetAttributes(
+		attribute.Int("number_of_rows", len(rowsAfterStartDate)),
+		attribute.String("first_result_time", firstResultTime.String()),
+	)
 	fmt.Println("Number of rows after start date:", len(rowsAfterStartDate))
 
 	// Convert each Row to a STIPTransactions and store them in the database

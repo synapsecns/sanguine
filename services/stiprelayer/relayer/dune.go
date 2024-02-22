@@ -84,6 +84,7 @@ func (s *STIPRelayer) ExecuteDuneQuery(parentCtx context.Context) (executionID s
 	if !ok {
 		return "", fmt.Errorf("no execution_id found in response")
 	}
+	span.SetAttributes(attribute.String("execution_id", executionID))
 
 	return executionID, nil
 }
