@@ -31,8 +31,8 @@ interface _TransactionProps {
   timestamp: number
   currentTime: number
   kappa?: string
-  isStoredComplete: boolean
-  isStoredReverted: boolean
+  // isStoredComplete: boolean
+  // isStoredReverted: boolean
   status: 'pending' | 'complete' | 'reverted'
 }
 
@@ -50,8 +50,8 @@ export const _Transaction = ({
   timestamp,
   currentTime,
   kappa,
-  isStoredComplete,
-  isStoredReverted,
+  // isStoredComplete,
+  // isStoredReverted,
   status,
 }: _TransactionProps) => {
   const dispatch = useAppDispatch()
@@ -146,7 +146,7 @@ export const _Transaction = ({
               <TimeRemaining
                 isComplete={isTxFinalized}
                 isDelayed={isEstimatedTimeReached}
-                isReverted={isStoredReverted}
+                isReverted={isTxReverted}
                 remainingTime={remainingTime}
                 delayedTime={delayedTime}
               />
@@ -180,7 +180,7 @@ export const _Transaction = ({
               text="Contact Support (Discord)"
               link="https://discord.gg/synapseprotocol"
             />
-            {(isTxFinalized || isTxReverted) && (
+            {status !== 'pending' && (
               <MenuItem
                 text={isTxReverted ? 'Clear notification' : 'Clear transaction'}
                 link={null}
@@ -199,7 +199,7 @@ export const _Transaction = ({
           startTime={timestamp}
           estDuration={estimatedTime * 2} // 2x buffer
           isComplete={isTxFinalized}
-          isError={isStoredReverted}
+          isError={isTxReverted}
         />
       </div>
     </div>
