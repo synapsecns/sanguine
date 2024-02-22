@@ -91,6 +91,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         public
         payable
     {
+        // TODO: should check options for being correctly formatted
         uint256 verificationFee = IInterchainDB(interchainDB).getInterchainFee(dstChainId, srcModules);
         // TODO: should check msg.value >= verificationFee
         uint256 executionFee = msg.value - verificationFee;
@@ -114,11 +115,11 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         icTx.dbNonce = IInterchainDB(interchainDB).writeEntryWithVerification{value: verificationFee}(
             icTx.dstChainId, icTx.transactionId, srcModules
         );
-        bytes memory encodedTx = abi.encode(icTx);
         if (srcExecutionService != address(0)) {
             IExecutionService(srcExecutionService).requestExecution({
                 dstChainId: dstChainId,
-                txPayloadSize: encodedTx.length,
+                // TODO: there should be a way to calculate the payload size without encoding the transaction
+                txPayloadSize: abi.encode(icTx).length,
                 transactionId: transactionId,
                 executionFee: executionFee,
                 options: options
@@ -133,17 +134,11 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             icTx.dstReceiver,
             verificationFee,
             executionFee,
-            encodedTx
+            options,
+            message
         );
-        _emitOptions(transactionId, options);
         // Increment nonce for next message
         clientNonce++;
-    }
-
-    /// @dev Decodes the options and emits the corresponding event. ClientV1 only supports OptionsV1.
-    function _emitOptions(bytes32 transactionId, bytes memory options) internal {
-        OptionsV1 memory decodedOptions = options.decodeOptionsV1();
-        emit InterchainOptionsV1(transactionId, decodedOptions.gasLimit, decodedOptions.gasAirdrop);
     }
 
     // TODO: App Config Versioning

@@ -12,10 +12,9 @@ abstract contract InterchainClientV1Events {
         bytes32 dstReceiver,
         uint256 verificationFee,
         uint256 executionFee,
-        bytes encodedTransaction
+        bytes options,
+        bytes message
     );
-
-    event InterchainOptionsV1(bytes32 indexed transactionId, uint256 gasLimit, uint256 gasAirdrop);
 
     event InterchainTransactionReceived(
         bytes32 indexed transactionId,
