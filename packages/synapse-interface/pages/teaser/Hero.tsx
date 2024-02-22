@@ -7,7 +7,6 @@ export default function Hero() {
 
   const bridgeRef = useRef(null)
   const buildRef = useRef(null)
-  const ctaAnchorRef = useRef(null)
 
   const [cta, index] = h1
 
@@ -45,15 +44,11 @@ export default function Hero() {
         { once: true }
       )
     }
+
     if (cta !== 'default') {
       document.addEventListener('mousemove', () => setH1(['default', 0]), {
         once: true,
       })
-
-      // if (index === tag.length)
-      //   ctaAnchorRef.current.addEventListener('mouseenter', () =>
-      //     ctaAnchorRef.current.querySelector('animate').beginElement()
-      //   )
     }
   })
 
@@ -82,11 +77,11 @@ export default function Hero() {
         <h1 className="max-w-xl text-3xl md:text-2xl font-medium">
           {url ? (
             <a
-              ref={ctaAnchorRef}
               href={url}
-              onMouseEnter={(e) =>
-                e.target.querySelector('animate')?.beginElement()
-              }
+              onMouseEnter={(e) => {
+                const target = e.target as HTMLAnchorElement
+                target.querySelector('animate')?.beginElement()
+              }}
               className="p-4 hover:text-black hover:dark:text-white"
             >
               <Tagline />
