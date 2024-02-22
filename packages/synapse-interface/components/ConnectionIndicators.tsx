@@ -7,7 +7,7 @@ import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { setFromChainId } from '@/slices/bridge/reducer'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { LoaderIcon } from 'react-hot-toast'
-import { useBridgeStatus } from '@/utils/hooks/useBridgeStatus'
+import { useBridgeValidations } from '@/utils/hooks/useBridgeValidations'
 
 export const ConnectedIndicator = () => {
   return (
@@ -38,7 +38,8 @@ export const ConnectedIndicator = () => {
 export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
   const [isConnecting, setIsConnecting] = useState<boolean>(false)
   const dispatch = useDispatch()
-  const { hasInputAmount, hasValidRoute, onSelectedChain } = useBridgeStatus()
+  const { hasInputAmount, hasValidRoute, onSelectedChain } =
+    useBridgeValidations()
 
   function scrollToTop(): void {
     window.scrollTo({ top: 0, behavior: 'smooth' })

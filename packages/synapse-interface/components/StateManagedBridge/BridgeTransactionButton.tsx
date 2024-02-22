@@ -6,7 +6,7 @@ import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { RootState } from '@/store/store'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { PAUSED_FROM_CHAIN_IDS, PAUSED_TO_CHAIN_IDS } from '@/constants/chains'
-import { useBridgeStatus } from '@/utils/hooks/useBridgeStatus'
+import { useBridgeValidations } from '@/utils/hooks/useBridgeValidations'
 
 export const BridgeTransactionButton = ({
   approveTxn,
@@ -26,7 +26,7 @@ export const BridgeTransactionButton = ({
   } = useBridgeState()
 
   const { hasEnoughBalance, hasInputAmount, onSelectedChain, hasValidRoute } =
-    useBridgeStatus()
+    useBridgeValidations()
 
   const { showDestinationAddress } = useSelector(
     (state: RootState) => state.bridgeDisplay

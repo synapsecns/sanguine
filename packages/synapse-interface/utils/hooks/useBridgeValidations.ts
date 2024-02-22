@@ -5,7 +5,7 @@ import { BridgeState, initialState } from '@/slices/bridge/reducer'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { stringToBigInt } from '@/utils/bigint/format'
 
-export const useBridgeStatus = (): {
+export const useBridgeValidations = (): {
   hasValidRoute: boolean
   hasEnoughBalance: boolean
   hasInputAmount: boolean
