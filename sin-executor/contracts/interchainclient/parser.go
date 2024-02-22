@@ -14,6 +14,8 @@ type EventType uint
 const (
 	// InterchainTransactionSentEvent is an EventType that represents an interchain transaction sent event.
 	InterchainTransactionSentEvent EventType = iota + 1
+	// InterchainOptionsV1Event is an EventType that represents an interchain options v1 event.
+	InterchainOptionsV1Event
 )
 
 // Parser parses events from the module contract.
@@ -55,6 +57,12 @@ func (p parserImpl) ParseEvent(log ethTypes.Log) (_ EventType, event interface{}
 	switch eventType {
 	case InterchainTransactionSentEvent:
 		event, err := p.filterer.ParseInterchainTransactionSent(log)
+		if err != nil {
+			return noOpEvent, nil, false
+		}
+		return eventType, event, true
+	case InterchainOptionsV1Event:
+		event, err := p.filterer.ParseInterchainOptionsV1(log)
 		if err != nil {
 			return noOpEvent, nil, false
 		}

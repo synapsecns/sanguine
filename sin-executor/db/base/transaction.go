@@ -14,64 +14,58 @@ import (
 type InterchainTransaction struct {
 	// TransactionID is the transaction id.
 	TransactionID string `gorm:"column:transaction_id;primaryKey"`
-	// SrcSender is the sender of the transaction.
-	SrcSender string `gorm:"column:src_sender;index"`
-	// DstReceiver is the receiver of the transaction.
-	DstReceiver string `gorm:"column:dst_receiver;index"`
 	// SrcChainID is the source chain id.
 	SrcChainID uint64 `gorm:"column:src_chain_id;index"`
 	// DstChainID is the destination chain id.
 	DstChainID uint64 `gorm:"column:dst_chain_id;index"`
-	// Message is the message of the transaction.
-	Message string `gorm:"column:message"`
 	// Status is the status of the transaction.
 	Status db.ExecutableStatus `gorm:"column:status;index"`
 	// Nonce is the nonce of the transaction.
-	Nonce uint64 `gorm:"column:nonce;index"`
+	GasAirdrop string `gorm:"column:gas_airdrop;index"`
 	// Options is the options of the transaction.
-	Options string `gorm:"column:options"`
-	// DBWriterNonce is the nonce of the transaction in the database.
-	DBWriterNonce uint64 `gorm:"column:db_writer_nonce;index"`
-	EncodedTx     string `gorm:"column:encoded_tx"`
+	GasLimit string `gorm:"column:gas_limit;index"`
+	// EncodedTx is the encoded transaction.
+	EncodedTx string `gorm:"column:encoded_tx"`
 }
 
-func (s InterchainTransaction) ToTransactionSent() db.TransactionSent {
+func (s InterchainTransaction) ToTransactionSent() (db.TransactionSent, error) {
+	airdrop, ok := new(big.Int).SetString(s.GasAirdrop, 10)
+	if !ok {
+		return db.TransactionSent{}, fmt.Errorf("could not convert gas airdrop to big.Int")
+	}
+
+	gasLimit, ok := new(big.Int).SetString(s.GasLimit, 10)
+	if !ok {
+		return db.TransactionSent{}, fmt.Errorf("could not convert gas limit to big.Int")
+	}
+
 	return db.TransactionSent{
-		Status:    s.Status,
-		EncodedTX: common.Hex2Bytes(s.EncodedTx),
-		InterchainClientV1InterchainTransactionSent: interchainclient.InterchainClientV1InterchainTransactionSent{
-			TransactionId: common.HexToHash(s.TransactionID),
-			SrcSender:     common.HexToHash(s.SrcSender),
-			DstReceiver:   common.HexToHash(s.DstReceiver),
-			SrcChainId:    big.NewInt(int64(s.SrcChainID)),
-			Message:       common.Hex2Bytes(s.Message),
-			Nonce:         s.Nonce,
-			Options:       common.Hex2Bytes(s.Options),
-			DstChainId:    big.NewInt(int64(s.DstChainID)),
-			DbNonce:       big.NewInt(int64(s.DBWriterNonce)),
+		Status:        s.Status,
+		EncodedTX:     common.Hex2Bytes(s.EncodedTx),
+		SrcChainID:    big.NewInt(int64(s.SrcChainID)),
+		DstChainID:    big.NewInt(int64(s.DstChainID)),
+		TransactionID: common.HexToHash(s.TransactionID),
+		Options: interchainclient.OptionsV1{
+			GasAirdrop: airdrop,
+			GasLimit:   gasLimit,
 		},
-	}
+	}, nil
 }
 
-func fromInterchainTX(interchainTx interchainclient.InterchainClientV1InterchainTransactionSent, encodedTX []byte) InterchainTransaction {
+func fromInterchainTX(chainID *big.Int, interchainTx *interchainclient.InterchainClientV1InterchainTransactionSent, options *interchainclient.InterchainClientV1InterchainOptionsV1) InterchainTransaction {
 	return InterchainTransaction{
-		EncodedTx:     common.Bytes2Hex(encodedTX),
+		EncodedTx:     common.Bytes2Hex(interchainTx.EncodedTransaction),
 		TransactionID: common.Bytes2Hex(interchainTx.TransactionId[:]),
-		SrcSender:     common.Bytes2Hex(interchainTx.SrcSender[:]),
-		DstReceiver:   common.Bytes2Hex(interchainTx.DstReceiver[:]),
-		SrcChainID:    interchainTx.SrcChainId.Uint64(),
-		Options:       common.Bytes2Hex(interchainTx.Options),
+		GasAirdrop:    options.GasAirdrop.String(),
+		GasLimit:      options.GasLimit.String(),
+		SrcChainID:    chainID.Uint64(),
 		DstChainID:    interchainTx.DstChainId.Uint64(),
-		Message:       common.Bytes2Hex(interchainTx.Message),
 		Status:        db.Seen,
-		Nonce:         interchainTx.Nonce,
-		// TODO: This table type needs to be adjusted with current InterchainTransaction Solidity type
-		DBWriterNonce: interchainTx.DbNonce.Uint64(),
 	}
 }
 
-func (s Store) StoreInterchainTransaction(ctx context.Context, interchainTx interchainclient.InterchainClientV1InterchainTransactionSent, encodedTx []byte) error {
-	dbTx := s.db.WithContext(ctx).Model(&InterchainTransaction{}).Clauses(clause.OnConflict{DoNothing: true}).Create(fromInterchainTX(interchainTx, encodedTx))
+func (s Store) StoreInterchainTransaction(ctx context.Context, originChainID *big.Int, interchainTx *interchainclient.InterchainClientV1InterchainTransactionSent, options *interchainclient.InterchainClientV1InterchainOptionsV1) error {
+	dbTx := s.db.WithContext(ctx).Model(&InterchainTransaction{}).Clauses(clause.OnConflict{DoNothing: true}).Create(fromInterchainTX(originChainID, interchainTx, options))
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not store interchain transaction: %w", dbTx.Error)
 	}
@@ -94,7 +88,10 @@ func (s Store) GetInterchainTXsByStatus(ctx context.Context, matchStatuses ...db
 	}
 
 	for _, result := range interchainTransactions {
-		marshaled := result.ToTransactionSent()
+		marshaled, err := result.ToTransactionSent()
+		if err != nil {
+			return []db.TransactionSent{}, fmt.Errorf("could not marshal db result: %w", err)
+		}
 		res = append(res, marshaled)
 	}
 	return res, nil

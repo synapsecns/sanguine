@@ -10,6 +10,8 @@ import (
 var (
 	// InterchainTransactionSentTopic is the event topic for a sent transaction.
 	InterchainTransactionSentTopic common.Hash
+	// InterchainOptionsV1Topic is the event topic for options v1.
+	InterchainOptionsV1Topic common.Hash
 )
 
 // static checks to make sure topics actually exist.
@@ -23,6 +25,8 @@ func init() {
 
 	InterchainTransactionSentTopic = parsedABI.Events["InterchainTransactionSent"].ID
 
+	InterchainOptionsV1Topic = parsedABI.Events["InterchainOptionsV1"].ID
+
 	_, err = parsedABI.EventByID(InterchainTransactionSentTopic)
 	if err != nil {
 		panic(err)
@@ -34,6 +38,7 @@ func init() {
 func topicMap() map[EventType]common.Hash {
 	return map[EventType]common.Hash{
 		InterchainTransactionSentEvent: InterchainTransactionSentTopic,
+		InterchainOptionsV1Event:       InterchainOptionsV1Topic,
 	}
 }
 
