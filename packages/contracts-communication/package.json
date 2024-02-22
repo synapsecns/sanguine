@@ -9,6 +9,10 @@
     "build:contracts": "forge build",
     "build:go": "./flatten.sh contracts/*.sol contracts/modules/*.sol contracts/mocks/**.sol test/mocks/**.sol",
     "build:slither": "forge build --out=out --build-info --force",
+    "ci:lint": "yarn lint:check",
+    "lint:contracts:fix": "forge fmt && solhint --fix -c .solhint.json '{contracts,script,test}/**/*.sol'",
+    "lint": "yarn lint:contracts:fix",
+    "lint:check": "forge fmt --check && solhint -c .solhint.json '{contracts,script,test}/**/*.sol'",
     "test": "forge test",
     "test:coverage": "echo 'Please use foundry'"
   },
