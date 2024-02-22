@@ -80,23 +80,27 @@ export const _Transaction = ({
     isCheckTxForRevert,
   } = getEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
 
+  const isTxPending = status === 'pending'
+  const isTxCompleted = status === 'complete'
+  const isTxReverted = status === 'reverted'
+
   const [isTxComplete, _kappa] = useBridgeTxStatus({
     originChainId: originChain.id,
     destinationChainId: destinationChain.id,
     originTxHash,
     bridgeModuleName,
     kappa: kappa,
-    checkStatus: isCheckTxStatus && status === 'pending',
+    checkStatus: isCheckTxStatus && isTxPending,
     currentTime: currentTime,
   })
-  const isTxFinalized = status === 'complete' || isTxComplete
+  // const isTxFinalized = status === 'complete' || isTxComplete
 
   const isReverted = useIsTxReverted(
     originTxHash as Address,
     originChain,
-    isCheckTxForRevert && status === 'pending'
+    isCheckTxForRevert && isTxPending
   )
-  const isTxReverted = status === 'reverted' || isReverted
+  // const isTxReverted = status === 'reverted' || isReverted
 
   useBridgeTxUpdater(
     connectedAddress,
@@ -109,8 +113,7 @@ export const _Transaction = ({
 
   // Show transaction support if the transaction is delayed by more than 5 minutes and not finalized or reverted
   const showTransactionSupport =
-    isTxReverted ||
-    (!isTxFinalized && delayedTimeInMin && delayedTimeInMin <= -5)
+    isTxPending && delayedTimeInMin && delayedTimeInMin <= -5
 
   return (
     <div
@@ -144,7 +147,7 @@ export const _Transaction = ({
           <DropdownMenu
             menuTitleElement={
               <TimeRemaining
-                isComplete={isTxFinalized}
+                isComplete={isTxCompleted}
                 isDelayed={isEstimatedTimeReached}
                 isReverted={isTxReverted}
                 remainingTime={remainingTime}
@@ -190,15 +193,15 @@ export const _Transaction = ({
           </DropdownMenu>
         </div>
       </div>
-      {showTransactionSupport && (
+      {showTransactionSupport ? (
         <TransactionSupport isReverted={isTxReverted} />
-      )}
+      ) : null}
       <div className="px-1">
         <AnimatedProgressBar
           id={originTxHash}
           startTime={timestamp}
           estDuration={estimatedTime * 2} // 2x buffer
-          isComplete={isTxFinalized}
+          isComplete={isTxCompleted}
           isError={isTxReverted}
         />
       </div>
