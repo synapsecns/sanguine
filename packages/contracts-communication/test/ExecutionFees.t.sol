@@ -1,5 +1,5 @@
-import "forge-std/Test.sol";
-import "../contracts/ExecutionFees.sol";
+import { Test } from "forge-std/Test.sol";
+import { ExecutionFees } from "../contracts/ExecutionFees.sol";
 
 contract ExecutionFeesTest is Test {
     ExecutionFees executionFees;
