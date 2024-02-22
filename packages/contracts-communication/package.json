@@ -7,6 +7,9 @@
   ],
   "scripts": {
     "build:contracts": "forge build",
-    "build:go": "./flatten.sh contracts/*.sol contracts/modules/*.sol contracts/mocks/**.sol test/mocks/**.sol"
+    "build:go": "./flatten.sh contracts/*.sol contracts/modules/*.sol contracts/mocks/**.sol test/mocks/**.sol",
+    "build:slither": "forge build --out=out --build-info --force",
+    "test": "forge test",
+    "test:coverage": "echo 'Please use foundry'"
   }
 }
