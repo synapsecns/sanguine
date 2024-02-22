@@ -68,13 +68,16 @@ export default function Hero() {
     )
   }
 
+  const ctaButtonBaseStyle =
+    'px-5 pt-1.5 pb-2 text-lg m-2 border rounded inline-block'
+
   return (
     <header className="my-2 md:my-8 lg:my-12 text-center max-w-3xl grid place-items-center">
-      <div className="hidden md:block text-3xl md:text-6xl font-semibold my-4">
+      <div className="hidden md:block text-3xl md:text-6xl font-semibold my-4 cursor-default">
         Modular Interchain Messages
       </div>
       <div className="py-4 grid gap-4" onMouseMove={(e) => e.stopPropagation()}>
-        <h1 className="max-w-xl text-3xl md:text-2xl font-medium">
+        <h1 className="max-w-xl text-3xl md:text-2xl font-medium cursor-default">
           {url ? (
             <a
               href={url}
@@ -94,14 +97,14 @@ export default function Hero() {
         <div>
           <a
             ref={cta !== 'bridge' ? bridgeRef : null}
-            className="px-5 pt-1.5 pb-2 text-lg m-2 border border-zinc-500 hover:border-black hover:dark:border-white rounded inline-block bg-white hover:bg-zinc-100 dark:bg-zinc-950 hover:dark:bg-zinc-900"
+            className={`${ctaButtonBaseStyle} border-zinc-500 hover:border-black hover:dark:border-white bg-white hover:bg-zinc-100 dark:bg-zinc-950 hover:dark:bg-zinc-900`}
             href={ctas.bridge.url}
           >
             Bridge
           </a>
           <a
             ref={cta !== 'build' ? buildRef : null}
-            className="px-5 pt-1.5 pb-2 text-lg m-2 border border-fuchsia-500 hover:bg-fuchsia-100 hover:dark:bg-fuchsia-950 rounded inline-block"
+            className={`${ctaButtonBaseStyle} border-fuchsia-500 hover:bg-fuchsia-100 hover:dark:bg-fuchsia-950`}
             href={ctas.build.url}
           >
             Build
