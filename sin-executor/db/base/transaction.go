@@ -43,7 +43,6 @@ func (s InterchainTransaction) ToTransactionSent() db.TransactionSent {
 			TransactionId: common.HexToHash(s.TransactionID),
 			SrcSender:     common.HexToHash(s.SrcSender),
 			DstReceiver:   common.HexToHash(s.DstReceiver),
-			SrcChainId:    big.NewInt(int64(s.SrcChainID)),
 			Message:       common.Hex2Bytes(s.Message),
 			Nonce:         s.Nonce,
 			Options:       common.Hex2Bytes(s.Options),
