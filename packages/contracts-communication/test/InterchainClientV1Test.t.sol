@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {InterchainClientV1} from "../contracts/InterchainClientV1.sol";
+import {InterchainClientV1, AppConfigV1} from "../contracts/InterchainClientV1.sol";
 import {InterchainDB} from "../contracts/InterchainDB.sol";
 
 import {InterchainEntry} from "../contracts/libs/InterchainEntry.sol";
@@ -26,6 +26,8 @@ contract InterchainClientV1Test is Test {
     InterchainAppMock icApp;
     InterchainModuleMock icModule;
 
+    address[] public mockApprovedModules;
+
     // Use default options of V1, 200k gas limit, 0 gas airdrop
     bytes options = OptionsV1(200_000, 0).encodeOptionsV1();
 
@@ -48,6 +50,7 @@ contract InterchainClientV1Test is Test {
         icApp.setReceivingModule(address(icModule));
         vm.stopPrank();
         mockModuleFee(icModule, 1);
+        mockApprovedModules.push(address(icModule));
     }
 
     /// @dev Mocks a return value of module.getModuleFee(DST_CHAIN_ID)
@@ -135,6 +138,13 @@ contract InterchainClientV1Test is Test {
         bytes32 transactionID =
             keccak256(abi.encode(srcSender, SRC_CHAIN_ID, dstReceiver, DST_CHAIN_ID, message, nonce, options));
 
+        AppConfigV1 memory mockAppConfig = AppConfigV1({requiredResponses: 1, optimisticPeriod: 1 hours});
+        vm.mockCall(
+            address(icApp),
+            abi.encodeCall(icApp.getReceivingConfig, ()),
+            abi.encode(mockAppConfig.encodeAppConfigV1(), mockApprovedModules)
+        );
+
         InterchainEntry memory entry =
             InterchainEntry({srcChainId: SRC_CHAIN_ID, srcWriter: srcSender, dbNonce: 0, dataHash: transactionID});
 
@@ -152,7 +162,7 @@ contract InterchainClientV1Test is Test {
             dbNonce: 0
         });
         // Skip ahead of optimistic period
-        vm.warp(icApp.getOptimisticTimePeriod() + 1 minutes);
+        skip(mockAppConfig.optimisticPeriod + 1);
         icClient.interchainExecute(abi.encode(transaction));
     }
 }

@@ -16,11 +16,7 @@ interface IInterchainApp {
 
     function getSendingModules() external view returns (address[] memory);
 
-    function getReceivingModules() external view returns (address[] memory);
-
-    function getRequiredResponses() external view returns (uint256);
-
-    function getOptimisticTimePeriod() external view returns (uint64);
+    function getReceivingConfig() external view returns (bytes memory appConfig, address[] memory modules);
 
     function send(bytes32 receiver, uint256 dstChainId, bytes calldata message) external payable;
 
