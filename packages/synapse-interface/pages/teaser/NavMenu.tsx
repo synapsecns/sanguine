@@ -123,7 +123,7 @@ const sections = [
 
 export default function Header() {
   return (
-    <ul className="flex flex-wrap md:text-lg justify-center row-start-2 col-span-3 lg:row-start-1 lg:col-start-2 lg:col-span-1">
+    <ul className="flex flex-wrap md:text-lg justify-center">
       {sections.map((section) => (
         <li className="group">
           <a
@@ -133,12 +133,15 @@ export default function Header() {
             {section.label}
           </a>
           {section.links && (
-            <div className="hidden group-hover:block absolute p-2 animate-slide-down origin-top">
+            <div
+              className="hidden group-hover:block absolute p-2 animate-slide-down origin-top"
+              style={{ lineHeight: '100%' }}
+            >
               <dl className="bg-zinc-50 dark:bg-zinc-950 rounded text-base -ml-2 border border-zinc-200 dark:border-zinc-800 shadow-sm grid grid-cols-[auto_auto]">
                 {section.links.map((link, i) => {
                   return (
                     <>
-                      <dt className={`col-start-1 ${styles.dt}`}>
+                      <dt className="col-start-1">
                         <a
                           href={link.url}
                           className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded"
@@ -146,7 +149,7 @@ export default function Header() {
                           {link.label}
                         </a>
                       </dt>
-                      <dd className="w-60 col-start-2 row-start-1 row-span-6 px-4 py-3 border-l border-zinc-200 dark:border-zinc-800 cursor-pointer">
+                      <dd className="w-60 col-start-2 row-start-1 row-span-6 px-4 py-3 border-l border-zinc-200 dark:border-zinc-800 cursor-pointer hidden [:hover_+_&]:block hover:block">
                         <header>{link.label}</header>
                         <p className="mt-1 font-light tracking-wider">
                           {link.description}
