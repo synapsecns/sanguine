@@ -21,11 +21,11 @@ const dunePerformance = "large"
 
 type duneQueryBody struct {
 	QueryParameters stipQueryParams `json:"query_parameters"`
+	Performance     string          `json:"performance"`
 }
 
 type stipQueryParams struct {
-	Performance string `json:"performance"`
-	LastHours   int    `json:"last_hours"`
+	LastHours int `json:"last_hours"`
 }
 
 // ExecuteDuneQuery executes a predefined query on the Dune API and returns the http response.
@@ -39,9 +39,9 @@ func (s *STIPRelayer) ExecuteDuneQuery(parentCtx context.Context) (executionID s
 	s.handler.ConfigureHTTPClient(client)
 	params := duneQueryBody{
 		QueryParameters: stipQueryParams{
-			Performance: dunePerformance,
-			LastHours:   s.cfg.GetDuneLookbackHours(),
+			LastHours: s.cfg.GetDuneLookbackHours(),
 		},
+		Performance: dunePerformance,
 	}
 	reqBody, err := json.Marshal(params)
 	if err != nil {
