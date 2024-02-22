@@ -57,6 +57,7 @@ const LandingPage = () => {
     (e) => !prefersColorScheme && setPrefersDark(e.matches)
   )
 
+  /* TODO: Mobile Support */
   function touchStartHandler(e) {
     const style = e.target.nextSibling.style
     console.log('touch', style.display === 'block')

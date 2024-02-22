@@ -72,8 +72,8 @@ export default function Hero() {
     'px-5 pt-1.5 pb-2 text-lg m-2 border rounded inline-block'
 
   return (
-    <header className="my-2 md:my-8 lg:my-12 text-center max-w-3xl grid place-items-center">
-      <div className="hidden md:block text-3xl md:text-6xl font-semibold my-4 cursor-default">
+    <header className="my-0 xs:my-4 md:my-8 lg:my-12 text-center max-w-3xl grid place-items-center">
+      <div className="hidden sm:block text-3xl sm:text-6xl font-semibold my-4 cursor-default">
         Modular Interchain Messages
       </div>
       <div className="py-4 grid gap-4" onMouseMove={(e) => e.stopPropagation()}>
