@@ -84,9 +84,9 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         uint256 dstChainId,
         bytes32 receiver,
         address srcExecutionService,
-        bytes calldata message,
+        address[] calldata srcModules,
         bytes calldata options,
-        address[] calldata srcModules
+        bytes calldata message
     )
         public
         payable
