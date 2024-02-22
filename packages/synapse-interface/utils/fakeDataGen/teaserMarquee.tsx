@@ -18,6 +18,8 @@ const Chains = [
   'Moonriver',
 ]
 
+export const ChainList = () => Chains
+
 const Tokens = [
   'USDC',
   'USDT',

@@ -1,4 +1,5 @@
 import PulseDot from './PulseDot'
+import { ChainList } from '@/utils/fakeDataGen/teaserMarquee'
 
 export default function ValueProps() {
   return (
@@ -35,9 +36,7 @@ export default function ValueProps() {
           </svg>
         </div>
         <div>
-          <h2 className="text-4xl font-medium mb-4">
-            Securely connect every blockchain
-          </h2>
+          <h2 className="text-4xl font-medium mb-4">Reach every user</h2>
           <p className="text-lg leading-relaxed mb-3">
             Synapse enables developers to build truly native cross-chain
             applications with an economically secure method to reach consensus
@@ -45,7 +44,7 @@ export default function ValueProps() {
           </p>
         </div>
       </section>
-      <section>
+      {/* <section>
         <ul className="flex flex-wrap gap-12 bg-white dark:bg-zinc-950 px-8 py-6 border border-zinc-300 dark:border-zinc-800 rounded-lg shadow-lg">
           <li className="basis-56 grow">
             <h2 className="text-4xl font-medium mb-4">Extensible</h2>
@@ -69,12 +68,10 @@ export default function ValueProps() {
             </p>
           </li>
         </ul>
-      </section>
+      </section> */}
       <section className="flex even:flex-col odd:flex-col-reverse md:grid grid-cols-2 gap-12 items-center">
         <div>
-          <h2 className="text-4xl font-medium mb-4">
-            Powering the most popular bridge
-          </h2>
+          <h2 className="text-4xl font-medium mb-4">Build powerful apps</h2>
           <p className="text-lg leading-relaxed mb-4">
             Synapse Bridge is built on top of the cross-chain infrastructure
             enabling users to seamlessly transfer assets across all blockchains.
@@ -86,7 +83,7 @@ export default function ValueProps() {
           <FauxBridge />
         </div>
       </section>
-      <section>
+      {/* <section>
         <ul className="flex flex-wrap gap-12 bg-white dark:bg-zinc-950 px-8 py-6 border border-zinc-300 dark:border-zinc-800 rounded-lg shadow-lg">
           <li className="basis-56 grow">
             <h2 className="text-4xl font-medium mb-4">Deep Liquidity</h2>
@@ -109,17 +106,26 @@ export default function ValueProps() {
             </p>
           </li>
         </ul>
-      </section>
-      <section className="grid md:grid-cols-2 gap-x-12">
-        <div>
-          <h2 className="text-4xl font-medium my-4">
-            Battle-tested infrastructure
-          </h2>
-          <p className="text-lg leading-relaxed">
-            Synapse has processed millions of transactions and tens of billions
-            in bridged assets.
+      </section> */}
+      {/* <section className="w-full">
+        <header className="p-4">
+          <h2 className="text-4xl font-medium mb-4">Widely Integrated</h2>
+          <p className="text-lg mb-2">
+            Synapse is widely integrated across the most-used Layer 1 & 2
+            networks for a seamless cross-chain experience.
           </p>
-        </div>
+        </header>
+        <ul className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 text-center gap-4 bg-white dark:bg-zinc-950 p-4 border border-zinc-300 dark:border-zinc-800 rounded-lg shadow-lg">
+          {ChainList().map((a) => {
+            return (
+              <li className="border border-zinc-300 dark:border-zinc-700 rounded pb-4 pt-16">
+                {a}
+              </li>
+            )
+          })}
+        </ul>
+      </section> */}
+      <section className="grid md:grid-cols-2 gap-x-12">
         <div className="w-full h-full grid items-center justify-center">
           <svg
             width="100%"
@@ -135,29 +141,14 @@ export default function ValueProps() {
             <circle r="4" />
           </svg>
         </div>
-      </section>
-      <section className="grid md:grid-cols-2 gap-x-12">
         <div>
-          <h2 className="text-4xl font-medium my-4">Widely integrated</h2>
+          <h2 className="text-4xl font-medium my-4">
+            Secure your infrastructure
+          </h2>
           <p className="text-lg leading-relaxed">
-            Synapse is widely integrated across the most-used Layer 1 and Layer
-            2 networks for a seamless cross-chain experience.
+            Synapse has processed millions of transactions and tens of billions
+            in bridged assets.
           </p>
-        </div>
-        <div className="w-full h-full grid items-center justify-center md:row-start-1 col-start-1 row-start-2">
-          <svg
-            width="100%"
-            height="50%"
-            viewBox="-4 -4 8 8"
-            stroke-width=".1"
-            vector-effect="non-scaling-size"
-            fill="none"
-            overflow="visible"
-            className="stroke-fuchsia-500"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <circle r="4" />
-          </svg>
         </div>
       </section>
     </article>
