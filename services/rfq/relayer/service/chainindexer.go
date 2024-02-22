@@ -200,7 +200,11 @@ type decimalsRes struct {
 }
 
 func (r *Relayer) handleDepositClaimed(ctx context.Context, event *fastbridge.FastBridgeBridgeDepositClaimed, chainID int) error {
-	err := r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.ClaimCompleted)
+	err := r.inventory.Rebalance(ctx, chainID, event.Token)
+	if err != nil {
+		return fmt.Errorf("could not rebalance: %w", err)
+	}
+	err = r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.ClaimCompleted)
 	if err != nil {
 		return fmt.Errorf("could not update request status: %w", err)
 	}
