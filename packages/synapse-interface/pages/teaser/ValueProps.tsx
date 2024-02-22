@@ -3,8 +3,16 @@ import { ChainList } from '@/utils/fakeDataGen/teaserMarquee'
 
 export default function ValueProps() {
   return (
-    <article className="grid gap-24 px-4">
-      <section className="flex even:flex-col odd:flex-col-reverse md:grid grid-cols-2 gap-x-12 gap-y-4 items-center">
+    <article className="grid gap-16 md:gap-24 p-4">
+      <section>
+        <ul className="w-fit md:w-max grid grid-cols-2 md:flex text-base sm:text-lg text-center items-center place-center bg-gradient-to-b from-white to-slate-100 dark:from-zinc-900 dark:to-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md px-6 py-2 gap-x-8 gap-y-4 shadow-sm mx-auto">
+          <li className="-mt-1 p-1">50 blockchains</li>
+          <li className="-mt-1 p-1">50,000 validators</li>
+          <li className="-mt-1 p-1">10.2B messages</li>
+          <li className="-mt-1 p-1">$1.2B transferred</li>
+        </ul>
+      </section>
+      <section className="flex odd:flex-col even:flex-col-reverse md:grid grid-cols-2 gap-x-12 gap-y-4 items-center">
         <div className="grid place-items-center">
           <svg
             width="100%"
@@ -69,7 +77,7 @@ export default function ValueProps() {
           </li>
         </ul>
       </section> */}
-      <section className="flex even:flex-col odd:flex-col-reverse md:grid grid-cols-2 gap-12 items-center">
+      <section className="flex odd:flex-col even:flex-col-reverse md:grid grid-cols-2 gap-12 items-center">
         <div>
           <h2 className="text-4xl font-medium mb-4">Build powerful apps</h2>
           <p className="text-lg leading-relaxed mb-4">
@@ -125,7 +133,7 @@ export default function ValueProps() {
           })}
         </ul>
       </section> */}
-      <section className="grid md:grid-cols-2 gap-x-12">
+      <section className="flex odd:flex-col even:flex-col-reverse md:grid grid-cols-2 gap-12 items-center">
         <div className="w-full h-full grid items-center justify-center">
           <svg
             width="100%"
@@ -208,9 +216,22 @@ const FauxBridge = () => {
       </section>
       <a
         href="#"
-        className="border border-fuchsia-500 p-2.5 rounded text-lg tracking-wider text-center hover:bg-purple-50 hover:dark:bg-fuchsia-950"
+        className="border border-fuchsia-500 py-2.5 pl-2 rounded text-lg tracking-wider text-center hover:bg-purple-50 hover:dark:bg-fuchsia-950"
       >
-        &nbsp;Bridge {'->'}
+        Bridge
+        <svg
+          width="12"
+          height="13"
+          viewBox="0 -8 16 16"
+          overflow="visible"
+          stroke-width="4"
+          fill="none"
+          preserveAspectRatio="xMaxYMid"
+          className="inline ml-2 mb-1 stroke-zinc-800 dark:stroke-zinc-200"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="m16,0 -16,0 m8,-8 8,8 -8,8" />
+        </svg>
       </a>
     </div>
   )

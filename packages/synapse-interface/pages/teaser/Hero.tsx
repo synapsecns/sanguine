@@ -9,7 +9,6 @@ export default function Hero() {
 
   const bridgeRef = useRef(null)
   const buildRef = useRef(null)
-  const parentRef = useRef(null)
 
   const [cta, index] = h1
 
@@ -19,7 +18,7 @@ export default function Hero() {
     },
     bridge: {
       tag: 'Any asset to any chain',
-      url: 'https://www.google.com',
+      url: '#',
     },
     build: {
       tag: 'Custom everything',
@@ -47,11 +46,10 @@ export default function Hero() {
         { once: true }
       )
     }
-    // parentRef?.current?.addEventListener(
-    //   'mouseleave',
-    //   () => setH1(['default', 0]),
-    //   { once: true }
-    // )
+    if (cta !== 'default')
+      document.addEventListener('mousemove', () => setH1(['default', 0]), {
+        once: true,
+      })
   })
 
   const Tagline = () => {
@@ -71,14 +69,14 @@ export default function Hero() {
   }
 
   return (
-    <header className="my-2 md:my-8 lg:my-16 text-center max-w-3xl grid place-items-center">
+    <header className="my-2 md:my-8 lg:my-12 text-center max-w-3xl grid place-items-center">
       <div className="hidden md:block text-3xl md:text-6xl font-semibold my-4">
         Modular Interchain Messages
       </div>
-      <div ref={cta !== 'default' ? parentRef : null}>
+      <div onMouseMove={(e) => e.stopPropagation()}>
         <h1 className="relative my-4 max-w-xl text-3xl md:text-2xl font-medium">
           {url ? (
-            <a href={url} className={`cursor-pointer`}>
+            <a href={url} className="p-4">
               <Tagline />
               {index === tag.length && <ArrowBounce />}
             </a>
@@ -102,18 +100,12 @@ export default function Hero() {
             Build
           </a>
         </div>
+        <p className="leading-relaxed max-w-xl m-2 text-lg dark:font-light tracking-wider">
+          Say goodbye to centralized resource pools for cross-chain
+          communication. Synapse lets you customize literally every aspect of
+          your interchain communications.
+        </p>
       </div>
-      <p className="leading-relaxed max-w-xl m-2 text-lg dark:font-light tracking-wider">
-        Say goodbye to centralized resource pools for cross-chain communication.
-        Synapse lets you customize literally every aspect of your interchain
-        communications.
-      </p>
-      <ul className="w-fit md:w-max grid grid-cols-2 md:flex text-base sm:text-lg text-center items-center place-center bg-gradient-to-b from-white to-slate-100 dark:from-zinc-900 dark:to-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md px-6 py-2 gap-x-8 gap-y-4 shadow-sm my-4">
-        <li className="-mt-1 p-1">50 blockchains</li>
-        <li className="-mt-1 p-1">50,000 validators</li>
-        <li className="-mt-1 p-1">10.2B messages</li>
-        <li className="-mt-1 p-1">$1.2B transferred</li>
-      </ul>
     </header>
   )
 }
