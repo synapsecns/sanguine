@@ -11,10 +11,10 @@ export default function ValueProps() {
             height="100%"
             viewBox="-9 -9 170 118"
             vector-effect="non-scaling-stroke"
-            stroke-width=".25"
+            stroke-width=".5"
             overflow="visible"
             // preserveAspectRatio="none"
-            className="stroke-fuchsia-800/75 dark:stroke-purple-200/75 fill-fuchsia-200/50 dark:fill-fuchsia-300/5 drop-shadow-xl h-64 max-w-sm"
+            className="stroke-fuchsia-800/50 dark:stroke-purple-200/50 fill-fuchsia-200/50 dark:fill-fuchsia-300/5 drop-shadow-xl h-64 max-w-sm"
             xmlns="http://www.w3.org/2000/svg"
           >
             <rect
@@ -23,7 +23,7 @@ export default function ValueProps() {
               x="-8"
               y="-8"
               rx="4"
-              className="stroke-purple-400/80 fill-[hsl(275deg_100%_96%)] dark:fill-[hsl(300deg_40%_10%)]"
+              className="stroke-purple-400 fill-[hsl(275deg_100%_96%)] dark:fill-[hsl(300deg_40%_10%)]"
             />
             <path d="m48,11 4,0 m22,0 4,0 m50,11 0,4 m0,22 0,4 m-24,24 -4,0 m-48,0 -4,0 m0,-39 4,0 m11,11 0,4 m0,-30 0,4" />
             <rect width="48" height="48" rx="2" />
