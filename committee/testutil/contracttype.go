@@ -3,7 +3,6 @@ package testutil
 import (
 	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/synapsecns/sanguine/committee/contracts/interchaindb"
-	"github.com/synapsecns/sanguine/committee/contracts/mocks/executionservicemock"
 	"github.com/synapsecns/sanguine/committee/contracts/mocks/gasoraclemock"
 	"github.com/synapsecns/sanguine/committee/contracts/synapsemodule"
 	"github.com/synapsecns/sanguine/ethergo/backends/base"
@@ -51,8 +50,6 @@ const (
 	InterchainDB // InterchainDB
 	// GasOracleMockType is the type of the contract being fetched.
 	GasOracleMockType // GasOracleMock
-	// ExecutionServiceMockType is the type of the contract being fetched.
-	ExecutionServiceMockType // ExecutionServiceMock
 )
 
 // ID gets the contract type as an id.
@@ -85,8 +82,6 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return interchaindb.Contracts["solidity/InterchainDB.sol:InterchainDB"]
 	case GasOracleMockType:
 		return gasoraclemock.Contracts["solidity/GasOracleMock.sol:GasOracleMock"]
-	case ExecutionServiceMockType:
-		return executionservicemock.Contracts["solidity/ExecutionServiceMock.sol:ExecutionServiceMock"]
 	}
 	return nil
 }
