@@ -1,3 +1,4 @@
+// Package sqlite provides the sqlite implementation for the base store.
 package sqlite
 
 import (

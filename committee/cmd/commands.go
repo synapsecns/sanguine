@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/synapsecns/sanguine/committee/config"
 	"github.com/synapsecns/sanguine/committee/node"
 	"github.com/synapsecns/sanguine/core/commandline"
@@ -29,25 +30,26 @@ var runCommand = &cli.Command{
 
 		input, err := os.ReadFile(filepath.Clean(c.String(configFlag.Name)))
 		if err != nil {
-			return err
+			return fmt.Errorf("could not read config file: %w", err)
 		}
 
 		metricsProvider := metrics.Get()
 
 		var cfg config.Config
+		// TODO: consider moving this for marshal/unmarshall tests
 		err = yaml.Unmarshal(input, &cfg)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not unmarshal config: %w", err)
 		}
 
 		createdNode, err := node.NewNode(c.Context, metricsProvider, cfg)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not create node: %w", err)
 		}
 
 		err = createdNode.Start(c.Context)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not start node: %w", err)
 		}
 		return nil
 	},

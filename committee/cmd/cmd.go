@@ -1,3 +1,4 @@
+// Package cmd provides the command line interface for the committee node.
 package cmd
 
 import (
@@ -8,10 +9,11 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+// Start starts the committee node.
 func Start(args []string, buildInfo config.BuildInfo) {
 	app := cli.NewApp()
 	app.Name = buildInfo.Name()
-	app.Description = buildInfo.VersionString() + "cctp relayer for synapse"
+	app.Description = buildInfo.VersionString() + "committee provider for synapse"
 	app.Usage = fmt.Sprintf("%s --help", buildInfo.Name())
 	app.EnableBashCompletion = true
 
