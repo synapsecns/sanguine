@@ -125,7 +125,7 @@ export default function Header() {
   return (
     <ul className="flex flex-wrap md:text-lg justify-center">
       {sections.map((section) => (
-        <li className="group">
+        <li className="group relative">
           <a
             href={section.url}
             className="px-3 pt-0.5 pb-1 hover:bg-zinc-50 hover:dark:bg-zinc-950 border border-transparent hover:border-fuchsia-500 rounded inline-block"
@@ -134,7 +134,7 @@ export default function Header() {
           </a>
           {section.links && (
             <div
-              className="hidden group-hover:block absolute p-2 animate-slide-down origin-top"
+              className="hidden group-hover:block absolute p-2 animate-slide-down origin-top w-max"
               style={{ lineHeight: '100%' }}
             >
               <dl className="bg-zinc-50 dark:bg-zinc-950 rounded text-base -ml-2 border border-zinc-200 dark:border-zinc-800 shadow-sm grid grid-cols-[auto_auto]">
