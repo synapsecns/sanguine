@@ -166,7 +166,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
      * @param optimisticTimePeriod The time period in seconds within which a response is considered valid.
      * @return finalizedResponses The count of responses that are finalized within the optimistic time period.
      */
-
     function _getFinalizedResponsesCount(
         uint256[] memory approvedResponses,
         uint256 optimisticTimePeriod
