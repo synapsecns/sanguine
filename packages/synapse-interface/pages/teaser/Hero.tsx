@@ -73,8 +73,8 @@ export default function Hero() {
       <div className="hidden md:block text-3xl md:text-6xl font-semibold my-4">
         Modular Interchain Messages
       </div>
-      <div onMouseMove={(e) => e.stopPropagation()}>
-        <h1 className="relative my-4 max-w-xl text-3xl md:text-2xl font-medium">
+      <div className="py-4 grid gap-4" onMouseMove={(e) => e.stopPropagation()}>
+        <h1 className="max-w-xl text-3xl md:text-2xl font-medium">
           {url ? (
             <a href={url} className="p-4">
               <Tagline />
@@ -84,7 +84,7 @@ export default function Hero() {
             <Tagline />
           )}
         </h1>
-        <div className="m-2">
+        <div>
           <a
             ref={cta !== 'bridge' ? bridgeRef : null}
             className="px-5 pt-1.5 pb-2 text-lg m-2 border border-zinc-500 hover:border-black hover:dark:border-white rounded inline-block bg-white hover:bg-zinc-100 dark:bg-zinc-950 hover:dark:bg-zinc-900"
@@ -100,12 +100,12 @@ export default function Hero() {
             Build
           </a>
         </div>
-        <p className="leading-relaxed max-w-xl m-2 text-lg dark:font-light tracking-wider">
-          Say goodbye to centralized resource pools for cross-chain
-          communication. Synapse lets you customize literally every aspect of
-          your interchain communications.
-        </p>
       </div>
+      <p className="leading-relaxed max-w-xl text-lg dark:font-light tracking-wider">
+        Say goodbye to centralized resource pools for cross-chain communication.
+        Synapse lets you customize literally every aspect of your interchain
+        communications.
+      </p>
     </header>
   )
 }
