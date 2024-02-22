@@ -217,6 +217,10 @@ const FauxBridge = () => {
       <a
         href="#"
         className="border border-fuchsia-500 py-2.5 pl-2 rounded text-lg tracking-wider text-center hover:bg-purple-50 hover:dark:bg-fuchsia-950"
+        onMouseEnter={(e) => {
+          const target = e.target as HTMLAnchorElement
+          target.querySelector('animate')?.beginElement()
+        }}
       >
         Bridge
         <svg
@@ -230,6 +234,13 @@ const FauxBridge = () => {
           className="inline ml-2 mb-1 stroke-zinc-800 dark:stroke-zinc-200"
           xmlns="http://www.w3.org/2000/svg"
         >
+          <animate
+            attributeName="width"
+            values="12; 18; 12"
+            dur=".5s"
+            calcMode="spline"
+            keySplines="0 0 0 1; .5 0 0 1"
+          />
           <path d="m16,0 -16,0 m8,-8 8,8 -8,8" />
         </svg>
       </a>
