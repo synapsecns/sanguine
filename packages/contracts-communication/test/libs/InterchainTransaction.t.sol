@@ -53,18 +53,7 @@ contract InterchainTransactionLibTest is Test {
     }
 
     function test_transactionId(InterchainTransaction memory icTx) public {
-        bytes32 expected = keccak256(
-            abi.encode(
-                icTx.srcChainId,
-                icTx.srcSender,
-                icTx.dstChainId,
-                icTx.dstReceiver,
-                icTx.nonce,
-                icTx.dbNonce,
-                keccak256(icTx.options),
-                keccak256(icTx.message)
-            )
-        );
+        bytes32 expected = keccak256(abi.encode(icTx));
         assertEq(libHarness.transactionId(icTx), expected);
     }
 }

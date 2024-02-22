@@ -51,18 +51,6 @@ library InterchainTransactionLib {
     }
 
     function transactionId(InterchainTransaction memory transaction) internal pure returns (bytes32) {
-        // TODO: decide if we want to use keccak256(abi.encode(transaction))
-        return keccak256(
-            abi.encode(
-                transaction.srcChainId,
-                transaction.srcSender,
-                transaction.dstChainId,
-                transaction.dstReceiver,
-                transaction.nonce,
-                transaction.dbNonce,
-                keccak256(transaction.options),
-                keccak256(transaction.message)
-            )
-        );
+        return keccak256(abi.encode(transaction));
     }
 }
