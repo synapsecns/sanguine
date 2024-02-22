@@ -9,6 +9,7 @@ import {IInterchainApp} from "./interfaces/IInterchainApp.sol";
 import {IInterchainClientV1} from "./interfaces/IInterchainClientV1.sol";
 import {IInterchainDB} from "./interfaces/IInterchainDB.sol";
 
+import {AppConfigV1, AppConfigLib} from "./libs/AppConfig.sol";
 import {InterchainEntry} from "./libs/InterchainEntry.sol";
 import {OptionsLib, OptionsV1} from "./libs/Options.sol";
 import {TypeCasts} from "./libs/TypeCasts.sol";
@@ -20,6 +21,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
  * @dev Implements the operations of the Interchain Execution Layer.
  */
 contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainClientV1 {
+    using AppConfigLib for bytes;
     using OptionsLib for bytes;
 
     uint64 public clientNonce;
@@ -155,9 +157,11 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         view
         returns (uint256 requiredResponses, uint256 optimisticTimePeriod, address[] memory approvedDstModules)
     {
-        requiredResponses = IInterchainApp(receiverApp).getRequiredResponses();
-        optimisticTimePeriod = IInterchainApp(receiverApp).getOptimisticTimePeriod();
-        approvedDstModules = IInterchainApp(receiverApp).getReceivingModules();
+        bytes memory appConfig;
+        (appConfig, approvedDstModules) = IInterchainApp(receiverApp).getReceivingConfig();
+        AppConfigV1 memory decodedAppConfig = appConfig.decodeAppConfigV1();
+        requiredResponses = decodedAppConfig.requiredResponses;
+        optimisticTimePeriod = decodedAppConfig.optimisticPeriod;
     }
 
     // @inheritdoc IInterchainClientV1
