@@ -149,6 +149,8 @@ const defaultPollPeriod = 5
 
 // NewInventoryManager creates a new inventory manager.
 // TODO: too many args here.
+//
+//nolint:gocognit
 func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetcher, handler metrics.Handler, cfg relconfig.Config, relayer common.Address, txSubmitter submitter.TransactionSubmitter, db reldb.Service) (Manager, error) {
 	rebalanceMethods, err := cfg.GetRebalanceMethods()
 	if err != nil {
@@ -156,6 +158,7 @@ func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetc
 	}
 	rebalanceManagers := make(map[relconfig.RebalanceMethod]RebalanceManager)
 	for method := range rebalanceMethods {
+		//nolint:exhaustive
 		switch method {
 		case relconfig.RebalanceMethodCCTP:
 			rebalanceManagers[method] = newRebalanceManagerCCTP(cfg, handler, clientFetcher, txSubmitter, relayer, db)
@@ -187,7 +190,11 @@ func (i *inventoryManagerImpl) Start(ctx context.Context) error {
 	for _, rebalanceManager := range i.rebalanceManagers {
 		rebalanceManager := rebalanceManager
 		g.Go(func() error {
-			return rebalanceManager.Start(ctx)
+			err := rebalanceManager.Start(ctx)
+			if err != nil {
+				return fmt.Errorf("could not start rebalance manager: %w", err)
+			}
+			return nil
 		})
 	}
 
@@ -203,6 +210,7 @@ func (i *inventoryManagerImpl) Start(ctx context.Context) error {
 				err := i.refreshBalances(ctx)
 				if err != nil {
 					logger.Errorf("could not refresh balances")
+					//nolint:nilerr
 					return nil
 				}
 			}
@@ -235,13 +243,17 @@ func (i *inventoryManagerImpl) Start(ctx context.Context) error {
 		})
 	}
 
-	return g.Wait()
+	err := g.Wait()
+	if err != nil {
+		return fmt.Errorf("error starting inventory manager: %w", err)
+	}
+	return nil
 }
 
 const maxBatchSize = 10
 
 // ApproveAllTokens approves all checks if allowance is set and if not approves.
-// nolint:gocognit,nestif
+// nolint:gocognit,nestif,cyclop
 func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 	i.mux.RLock()
 	defer i.mux.RUnlock()
@@ -359,6 +371,7 @@ func (i *inventoryManagerImpl) Rebalance(ctx context.Context, chainID int, token
 	return manager.Execute(ctx, rebalance)
 }
 
+//nolint:cyclop
 func getRebalance(cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, chainID int, token common.Address) (rebalance *RebalanceData, err error) {
 	maintenancePct, err := cfg.GetMaintenanceBalancePct(chainID, token.Hex())
 	if err != nil {
@@ -412,6 +425,7 @@ func getRebalance(cfg relconfig.Config, tokens map[int]map[common.Address]*Token
 		amount := new(big.Int).Sub(maxTokenData.Balance, initialThresh)
 		if amount.Cmp(big.NewInt(0)) < 0 {
 			// do not rebalance since it would take us below initial threshold
+			//nolint:nilnil
 			return nil, nil
 		}
 		rebalance = &RebalanceData{
@@ -503,7 +517,7 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 
 			chainID := chainID // capture func literal
 			deferredRegisters = append(deferredRegisters, func() error {
-				//nolint: wrapcheck
+				//nolint:wrapcheck
 				return i.registerMetric(meter, chainID, token)
 			})
 		}

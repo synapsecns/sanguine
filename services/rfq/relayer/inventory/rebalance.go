@@ -157,6 +157,7 @@ func (c *rebalanceManagerCCTP) Execute(ctx context.Context, rebalance *Rebalance
 	return nil
 }
 
+// nolint:cyclop
 func (c *rebalanceManagerCCTP) listen(ctx context.Context, chainID int) (err error) {
 	listener, ok := c.chainListeners[chainID]
 	if !ok {
@@ -179,7 +180,7 @@ func (c *rebalanceManagerCCTP) listen(ctx context.Context, chainID int) (err err
 			if err != nil {
 				return fmt.Errorf("could not parse circle request sent: %w", err)
 			}
-			err = c.db.UpdateRebalanceStatus(ctx, parsedEvent.RequestID, &log.TxHash, reldb.RebalancePending)
+			err = c.db.UpdateRebalanceStatus(parentCtx, parsedEvent.RequestID, &log.TxHash, reldb.RebalancePending)
 			if err != nil {
 				return fmt.Errorf("could not update rebalance status: %w", err)
 			}
@@ -188,7 +189,7 @@ func (c *rebalanceManagerCCTP) listen(ctx context.Context, chainID int) (err err
 			if err != nil {
 				return fmt.Errorf("could not parse circle request fulfilled: %w", err)
 			}
-			err = c.db.UpdateRebalanceStatus(ctx, parsedEvent.RequestID, nil, reldb.RebalanceCompleted)
+			err = c.db.UpdateRebalanceStatus(parentCtx, parsedEvent.RequestID, nil, reldb.RebalanceCompleted)
 			if err != nil {
 				return fmt.Errorf("could not update rebalance status: %w", err)
 			}

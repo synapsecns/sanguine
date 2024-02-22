@@ -41,7 +41,7 @@ type Reader interface {
 	GetQuoteRequestByOriginTxHash(ctx context.Context, txHash common.Hash) (*QuoteRequest, error)
 	// GetQuoteResultsByStatus gets quote results by status
 	GetQuoteResultsByStatus(ctx context.Context, matchStatuses ...QuoteRequestStatus) (res []QuoteRequest, _ error)
-	// HasPendingRebalance checks if there is a pending rebalance for the given chain ids
+	// HasPendingRebalance checks if there is a pending rebalance for the given chain ids.
 	HasPendingRebalance(ctx context.Context, chainIDs ...uint64) (bool, error)
 }
 
