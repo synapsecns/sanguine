@@ -19,7 +19,11 @@ var DuneAPIKey = os.Getenv("DUNE_API_KEY")
 
 const dunePerformance = "large"
 
-type duneQueryParams struct {
+type duneQueryBody struct {
+	QueryParameters stipQueryParams `json:"query_parameters"`
+}
+
+type stipQueryParams struct {
 	Performance string `json:"performance"`
 	LastHours   int    `json:"last_hours"`
 }
@@ -33,9 +37,11 @@ func (s *STIPRelayer) ExecuteDuneQuery(parentCtx context.Context) (executionID s
 
 	client := &http.Client{}
 	s.handler.ConfigureHTTPClient(client)
-	params := duneQueryParams{
-		Performance: dunePerformance,
-		LastHours:   s.cfg.GetDuneLookbackHours(),
+	params := duneQueryBody{
+		QueryParameters: stipQueryParams{
+			Performance: dunePerformance,
+			LastHours:   s.cfg.GetDuneLookbackHours(),
+		},
 	}
 	reqBody, err := json.Marshal(params)
 	if err != nil {
