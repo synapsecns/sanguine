@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {InterchainClientV1} from "../contracts/InterchainClientV1.sol";
+import {InterchainClientV1, InterchainTransaction} from "../contracts/InterchainClientV1.sol";
 import {InterchainDB} from "../contracts/InterchainDB.sol";
 
 import {InterchainEntry} from "../contracts/libs/InterchainEntry.sol";
@@ -59,25 +59,6 @@ contract InterchainClientV1Test is Test {
 
     // ══════════════════════════════════════════════ INTERNAL TESTS ══════════════════════════════════════════════════
 
-    function test_generateTxId(
-        bytes32 srcSender,
-        uint256 srcChainId,
-        bytes32 dstReceiver,
-        uint256 dstChainId,
-        bytes memory message,
-        uint64 nonce,
-        bytes memory fuzzOptions
-    )
-        public
-    {
-        bytes32 txId = icClient.generateTransactionIdHarness(
-            srcSender, srcChainId, dstReceiver, dstChainId, message, nonce, fuzzOptions
-        );
-        assertEq(
-            txId, keccak256(abi.encode(srcSender, srcChainId, dstReceiver, dstChainId, message, nonce, fuzzOptions))
-        );
-    }
-
     function test_getFinalizedResponsesCount() public {
         vm.warp(10 days);
         uint256[] memory approvedResponses = new uint256[](3);
@@ -132,24 +113,24 @@ contract InterchainClientV1Test is Test {
         vm.prank(contractOwner);
         icClient.setLinkedClient(SRC_CHAIN_ID, srcSender);
         uint64 nonce = 1;
+        uint256 dbNonce = 2;
         bytes32 transactionID =
             keccak256(abi.encode(srcSender, SRC_CHAIN_ID, dstReceiver, DST_CHAIN_ID, message, nonce, options));
 
         InterchainEntry memory entry =
-            InterchainEntry({srcChainId: SRC_CHAIN_ID, srcWriter: srcSender, dbNonce: 0, dataHash: transactionID});
+            InterchainEntry({srcChainId: SRC_CHAIN_ID, srcWriter: srcSender, dbNonce: dbNonce, dataHash: transactionID});
 
         icModule.mockVerifyEntry(address(icDB), entry);
 
-        InterchainClientV1.InterchainTransaction memory transaction = InterchainClientV1.InterchainTransaction({
+        InterchainTransaction memory transaction = InterchainTransaction({
             srcSender: srcSender,
             srcChainId: SRC_CHAIN_ID,
             dstReceiver: dstReceiver,
             dstChainId: DST_CHAIN_ID,
-            message: message,
             nonce: nonce,
+            dbNonce: dbNonce,
             options: options,
-            transactionId: transactionID,
-            dbNonce: 0
+            message: message
         });
         // Skip ahead of optimistic period
         vm.warp(icApp.getOptimisticTimePeriod() + 1 minutes);
