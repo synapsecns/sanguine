@@ -11,6 +11,7 @@ import {IInterchainDB} from "./interfaces/IInterchainDB.sol";
 
 import {AppConfigV1, AppConfigLib} from "./libs/AppConfig.sol";
 import {InterchainEntry} from "./libs/InterchainEntry.sol";
+import {InterchainTransaction, InterchainTransactionLib} from "./libs/InterchainTransaction.sol";
 import {OptionsLib, OptionsV1} from "./libs/Options.sol";
 import {TypeCasts} from "./libs/TypeCasts.sol";
 
@@ -49,37 +50,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         linkedClients[chainId] = client;
     }
 
-    /**
-     * @dev Represents an interchain transaction.
-     */
-    struct InterchainTransaction {
-        bytes32 srcSender;
-        uint256 srcChainId;
-        bytes32 dstReceiver;
-        uint256 dstChainId;
-        bytes message;
-        uint64 nonce;
-        bytes options;
-        bytes32 transactionId;
-        uint256 dbNonce;
-    }
-
-    function _generateTransactionId(
-        bytes32 srcSender,
-        uint256 srcChainId,
-        bytes32 dstReceiver,
-        uint256 dstChainId,
-        bytes memory message,
-        uint64 nonce,
-        bytes memory options
-    )
-        internal
-        pure
-        returns (bytes32)
-    {
-        return keccak256(abi.encode(srcSender, srcChainId, dstReceiver, dstChainId, message, nonce, options));
-    }
-
     // TODO: Calculate Gas Pricing per module and charge fees
     // @inheritdoc IInterchainClientV1
     function interchainSend(
@@ -98,24 +68,23 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         // TODO: should check msg.value >= verificationFee
         uint256 executionFee = msg.value - verificationFee;
 
-        InterchainTransaction memory icTx = InterchainTransaction({
-            srcSender: TypeCasts.addressToBytes32(msg.sender),
-            srcChainId: block.chainid,
+        InterchainTransaction memory icTx = InterchainTransactionLib.constructLocalTransaction({
+            srcSender: msg.sender,
             dstReceiver: receiver,
             dstChainId: dstChainId,
-            message: message,
             nonce: clientNonce,
+            dbNonce: IInterchainDB(interchainDB).getDBNonce(),
             options: options,
-            transactionId: 0,
-            dbNonce: 0
+            message: message
         });
-        // TODO: dbNonce should be a part of the transactionId calculation
-        bytes32 transactionId = _generateTransactionId(
-            icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce, icTx.options
-        );
-        icTx.transactionId = transactionId;
-        icTx.dbNonce = IInterchainDB(interchainDB).writeEntryWithVerification{value: verificationFee}(
-            icTx.dstChainId, icTx.transactionId, srcModules
+
+        bytes32 transactionId = icTx.transactionId();
+        // Sanity check: nonce returned from DB should match the nonce used to construct the transaction
+        assert(
+            icTx.dbNonce
+                == IInterchainDB(interchainDB).writeEntryWithVerification{value: verificationFee}(
+                    icTx.dstChainId, transactionId, srcModules
+                )
         );
         if (srcExecutionService != address(0)) {
             IExecutionService(srcExecutionService).requestExecution({
@@ -165,22 +134,21 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     }
 
     // @inheritdoc IInterchainClientV1
-    function isExecutable(bytes calldata transaction) public view returns (bool) {
-        InterchainTransaction memory icTx = abi.decode(transaction, (InterchainTransaction));
-        require(executedTransactions[icTx.transactionId] == false, "Transaction already executed");
+    function isExecutable(bytes calldata encodedTx) public view returns (bool) {
+        InterchainTransaction memory icTx = InterchainTransactionLib.decodeTransaction(encodedTx);
+        bytes32 transactionId = icTx.transactionId();
+        return _isExecutable(transactionId, icTx);
+    }
+
+    function _isExecutable(bytes32 transactionId, InterchainTransaction memory icTx) internal view returns (bool) {
+        require(executedTransactions[transactionId] == false, "Transaction already executed");
         // Construct expected entry based on icTransaction data
         InterchainEntry memory icEntry = InterchainEntry({
             srcChainId: icTx.srcChainId,
             dbNonce: icTx.dbNonce,
             srcWriter: linkedClients[icTx.srcChainId],
-            dataHash: icTx.transactionId
+            dataHash: transactionId
         });
-
-        bytes32 reconstructedID = _generateTransactionId(
-            icTx.srcSender, icTx.srcChainId, icTx.dstReceiver, icTx.dstChainId, icTx.message, icTx.nonce, icTx.options
-        );
-
-        require(icTx.transactionId == reconstructedID, "Invalid transaction ID");
 
         (uint256 requiredResponses, uint256 optimisticTimePeriod, address[] memory approvedDstModules) =
             _getAppConfig(TypeCasts.bytes32ToAddress(icTx.dstReceiver));
@@ -191,13 +159,13 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         require(finalizedResponses >= requiredResponses, "Not enough valid responses to meet the threshold");
         return true;
     }
+
     /**
      * @dev Calculates the number of responses that are considered finalized within the optimistic time period.
      * @param approvedResponses An array of timestamps when each approved response was recorded.
      * @param optimisticTimePeriod The time period in seconds within which a response is considered valid.
      * @return finalizedResponses The count of responses that are finalized within the optimistic time period.
      */
-
     function _getFinalizedResponsesCount(
         uint256[] memory approvedResponses,
         uint256 optimisticTimePeriod
@@ -251,15 +219,16 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     // TODO: Gas Fee Consideration that is paid to executor
     // @inheritdoc IInterchainClientV1
     function interchainExecute(bytes calldata transaction) public {
-        require(isExecutable(transaction), "Transaction is not executable");
-        InterchainTransaction memory icTx = abi.decode(transaction, (InterchainTransaction));
-        executedTransactions[icTx.transactionId] = true;
+        InterchainTransaction memory icTx = InterchainTransactionLib.decodeTransaction(transaction);
+        bytes32 transactionId = icTx.transactionId();
+        require(_isExecutable(transactionId, icTx), "Transaction is not executable");
+        executedTransactions[transactionId] = true;
 
         OptionsV1 memory decodedOptions = icTx.options.decodeOptionsV1();
 
         IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).appReceive{gas: decodedOptions.gasLimit}();
         emit InterchainTransactionReceived(
-            icTx.transactionId, icTx.dbNonce, icTx.srcChainId, icTx.srcSender, icTx.dstReceiver
+            transactionId, icTx.dbNonce, icTx.srcChainId, icTx.srcSender, icTx.dstReceiver
         );
     }
 }
