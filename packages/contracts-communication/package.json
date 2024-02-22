@@ -11,5 +11,8 @@
     "build:slither": "forge build --out=out --build-info --force",
     "test": "forge test",
     "test:coverage": "echo 'Please use foundry'"
+  },
+  "devDependencies": {
+    "solhint": "^4.1.1"
   }
 }
