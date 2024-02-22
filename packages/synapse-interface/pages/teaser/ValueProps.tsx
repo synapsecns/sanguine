@@ -1,4 +1,4 @@
-import PulseDot from './PulseDot'
+import PulseDot from './icons/PulseDot'
 import { ChainList } from '@/utils/fakeDataGen/teaserMarquee'
 
 export default function ValueProps() {

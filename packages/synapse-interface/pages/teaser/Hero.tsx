@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import styles from './ctaBlink.module.css'
+import RightArrow from './icons/RightArrow'
+import styles from './css-modules/ctaBlink.module.css'
 
 export default function Hero() {
   const [h1, setH1] = useState<[cta: string] | [cta: string, index: number]>([
@@ -18,7 +19,7 @@ export default function Hero() {
     },
     bridge: {
       tag: 'Any asset to any chain',
-      url: '#',
+      url: 'https://www.google.com',
     },
     build: {
       tag: 'Custom everything',
@@ -46,23 +47,25 @@ export default function Hero() {
         { once: true }
       )
     }
-    parentRef?.current?.addEventListener(
-      'mouseleave',
-      () => setH1(['default', 0]),
-      { once: true }
-    )
+    // parentRef?.current?.addEventListener(
+    //   'mouseleave',
+    //   () => setH1(['default', 0]),
+    //   { once: true }
+    // )
   })
 
   const Tagline = () => {
     return (
       <>
         {tag.slice(0, index)}
-        {index < tag.length - 1 && (
+        {index < tag.length - 4 && (
           <span className="text-fuchsia-500/60">
             {String.fromCharCode(Math.random() * 61 + 65)}
           </span>
         )}
-        {index < tag.length && <span className="text-purple-500/60">_</span>}
+        {index < tag.length - 5 && (
+          <span className="text-purple-500/60">_</span>
+        )}
       </>
     )
   }
@@ -73,13 +76,11 @@ export default function Hero() {
         Modular Interchain Messages
       </div>
       <div ref={cta !== 'default' ? parentRef : null}>
-        <h1 className="relative my-4 max-w-xl text-3xl md:text-2xl font-medium overflow-hidden">
+        <h1 className="relative my-4 max-w-xl text-3xl md:text-2xl font-medium">
           {url ? (
-            <a href={url}>
+            <a href={url} className={`cursor-pointer`}>
               <Tagline />
-              {index === tag.length && (
-                <span className={styles.arrow}>{' ->'}</span>
-              )}
+              {index === tag.length && <ArrowBounce />}
             </a>
           ) : (
             <Tagline />
@@ -116,3 +117,32 @@ export default function Hero() {
     </header>
   )
 }
+
+const ArrowBounce = () => (
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 -8 16 16"
+    overflow="visible"
+    stroke-width="4"
+    fill="none"
+    preserveAspectRatio="xMaxYMid"
+    className="inline ml-2 mb-1"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <animate
+      attributeName="width"
+      values="14; 22; 14"
+      dur=".5s"
+      calcMode="spline"
+      keySplines="0 0 0 1; .5 0 0 1"
+    />
+    <animate
+      attributeName="stroke"
+      values="hsl(275deg 100% 60%); hsl(290deg 100% 70%); hsl(275deg 100% 60%)"
+      dur="2s"
+      repeatCount="indefinite"
+    />
+    <path d="m16,0 -16,0 m8,-8 8,8 -8,8" />
+  </svg>
+)
