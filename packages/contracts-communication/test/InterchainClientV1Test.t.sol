@@ -119,7 +119,7 @@ contract InterchainClientV1Test is Test {
             abi.encode(TypeCasts.addressToBytes32(msg.sender), block.chainid, receiver, DST_CHAIN_ID, message, nonce)
         );
         icClient.interchainSend{value: totalModuleFees}(
-            DST_CHAIN_ID, receiver, address(executionService), message, options, srcModules
+            DST_CHAIN_ID, receiver, address(executionService), srcModules, options, message
         );
         // TODO: should check the transaction ID?
         transactionID;

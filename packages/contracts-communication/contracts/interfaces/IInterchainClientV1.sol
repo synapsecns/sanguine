@@ -34,17 +34,17 @@ interface IInterchainClientV1 {
      * @param dstChainId The chain ID of the destination chain.
      * @param receiver The address of the receiver on the destination chain.
      * @param srcExecutionService The address of the execution service to use for the message.
-     * @param message The message being sent.
-     * @param options Execution options for the message sent, encoded as bytes, currently primarily gas limit + native gas drop.
      * @param srcModules The source modules involved in the message sending.
+     * @param options Execution options for the message sent, encoded as bytes, currently primarily gas limit + native gas drop.
+     * @param message The message being sent.
      */
     function interchainSend(
         uint256 dstChainId,
         bytes32 receiver,
         address srcExecutionService,
-        bytes calldata message,
+        address[] calldata srcModules,
         bytes calldata options,
-        address[] calldata srcModules
+        bytes calldata message
     )
         external
         payable;
