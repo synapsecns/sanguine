@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/rest-api",
-  "version": "1.0.51",
+  "version": "1.0.52",
   "private": "true",
   "engines": {
     "node": ">=16.0.0"
