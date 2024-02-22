@@ -218,9 +218,13 @@ func (i *inventoryManagerImpl) Start(ctx context.Context) error {
 				case <-ctx.Done():
 					return fmt.Errorf("context canceled: %w", ctx.Err())
 				case <-time.After(rebalanceInterval):
+					err := i.refreshBalances(ctx)
+					if err != nil {
+						return fmt.Errorf("could not refresh balances: %w", err)
+					}
 					for chainID, chainConfig := range i.cfg.Chains {
 						for tokenName, tokenConfig := range chainConfig.Tokens {
-							err := i.Rebalance(ctx, chainID, common.HexToAddress(tokenConfig.Address))
+							err = i.Rebalance(ctx, chainID, common.HexToAddress(tokenConfig.Address))
 							if err != nil {
 								logger.Errorf("could not rebalance %s on chain %d: %v", tokenName, chainID, err)
 							}
@@ -320,6 +324,7 @@ func (i *inventoryManagerImpl) HasSufficientGas(ctx context.Context, origin, des
 // Note that if there are multiple tokens whose balance is below the maintenance balance, only the lowest balance
 // will be rebalanced.
 func (i *inventoryManagerImpl) Rebalance(ctx context.Context, chainID int, token common.Address) error {
+	// evaluate the rebalance method
 	method, err := i.cfg.GetRebalanceMethod(chainID, token.Hex())
 	if err != nil {
 		return fmt.Errorf("could not get rebalance method: %w", err)
@@ -328,11 +333,7 @@ func (i *inventoryManagerImpl) Rebalance(ctx context.Context, chainID int, token
 		return nil
 	}
 
-	err = i.refreshBalances(ctx)
-	if err != nil {
-		return fmt.Errorf("could not refresh balances: %w", err)
-	}
-
+	// build the rebalance action
 	rebalance, err := getRebalance(i.cfg, i.tokens, chainID, token)
 	if err != nil {
 		return fmt.Errorf("could not get rebalance: %w", err)
@@ -341,6 +342,16 @@ func (i *inventoryManagerImpl) Rebalance(ctx context.Context, chainID int, token
 		return nil
 	}
 
+	// make sure there are no pending rebalances that touch the given path
+	pending, err := i.db.HasPendingRebalance(ctx, uint64(rebalance.OriginMetadata.ChainID), uint64(rebalance.DestMetadata.ChainID))
+	if err != nil {
+		return fmt.Errorf("could not check pending rebalance: %w", err)
+	}
+	if pending {
+		return nil
+	}
+
+	// execute the rebalance
 	manager, ok := i.rebalanceManagers[method]
 	if !ok {
 		return fmt.Errorf("no rebalance manager for method: %s", method)
