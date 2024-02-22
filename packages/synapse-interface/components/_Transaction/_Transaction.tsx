@@ -33,6 +33,7 @@ interface _TransactionProps {
   kappa?: string
   isStoredComplete: boolean
   isStoredReverted: boolean
+  status: 'pending' | 'complete' | 'reverted'
 }
 
 /** TODO: Update naming after refactoring existing Activity / Transaction flow */
@@ -51,6 +52,7 @@ export const _Transaction = ({
   kappa,
   isStoredComplete,
   isStoredReverted,
+  status,
 }: _TransactionProps) => {
   const dispatch = useAppDispatch()
 
@@ -84,17 +86,17 @@ export const _Transaction = ({
     originTxHash,
     bridgeModuleName,
     kappa: kappa,
-    checkStatus: isCheckTxStatus && !isStoredComplete && !isStoredReverted,
+    checkStatus: isCheckTxStatus && status === 'pending',
     currentTime: currentTime,
   })
-  const isTxFinalized = isStoredComplete ?? isTxComplete
+  const isTxFinalized = status === 'complete' || isTxComplete
 
   const isReverted = useIsTxReverted(
     originTxHash as Address,
     originChain,
-    isCheckTxForRevert && !isStoredComplete && !isStoredReverted
+    isCheckTxForRevert && status === 'pending'
   )
-  const isTxReverted = isStoredReverted ?? isReverted
+  const isTxReverted = status === 'reverted' || isReverted
 
   useBridgeTxUpdater(
     connectedAddress,

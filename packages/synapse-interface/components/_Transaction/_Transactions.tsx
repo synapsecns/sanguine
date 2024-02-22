@@ -46,6 +46,7 @@ export const _Transactions = ({
             currentTime={currentTime}
             isStoredComplete={tx.isComplete}
             isStoredReverted={tx.isReverted}
+            status={getTransactionStatus(tx.isComplete, tx.isReverted)}
           />
         ))}
       </TransactionsContainer>
@@ -53,6 +54,19 @@ export const _Transactions = ({
   }
 
   return null
+}
+
+const getTransactionStatus = (
+  isComplete: boolean,
+  isReverted: boolean
+): 'pending' | 'complete' | 'reverted' => {
+  if (isComplete) {
+    return 'complete'
+  } else if (isReverted) {
+    return 'reverted'
+  } else {
+    return 'pending'
+  }
 }
 
 const TransactionsContainer = ({ children }) => {
