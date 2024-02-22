@@ -20,7 +20,8 @@ import {
 } from '@/utils/hooks/useStipEligibility'
 import { getUnderlyingBridgeTokens } from '@/utils/getUnderlyingBridgeTokens'
 import { ARBITRUM, AVALANCHE, ETH } from '@/constants/chains/master'
-
+import { AvailableChains } from '@/components/bridgeSwap/TokenButton/AvailableChains'
+import { TokenBalance } from '@/components/bridgeSwap/TokenButton/TokenBalance'
 export const SelectSpecificTokenButton = ({
   showAllChains,
   isOrigin,
@@ -220,7 +221,12 @@ const Coin = ({
         ) : (
           <div>{token?.name}</div>
         )}
-        {showAllChains && <AvailableChains token={token} />}
+        {showAllChains &&
+          <AvailableChains
+            token={token}
+            excludedChainIds={findChainIdsWithPausedToken(token.routeSymbol)}
+          />
+        }
       </div>
     </div>
   )
@@ -278,79 +284,4 @@ const isTokenEligible = (token: Token) => {
       toChainId === AVALANCHE.id)
   )
 }
-
-const TokenBalance = ({
-  token,
-  parsedBalance,
-}: {
-  token: Token
-  parsedBalance?: string
-}) => {
-  return (
-    <div className="ml-auto mr-5 text-md text-primaryTextColor">
-      {parsedBalance && parsedBalance !== '0.0' && (
-        <div>
-          {parsedBalance}
-          <span className="text-md text-secondaryTextColor">
-            {' '}
-            {token ? token.symbol : ''}
-          </span>
-        </div>
-      )}
-    </div>
-  )
-}
-
-const AvailableChains = ({ token }: { token: Token }) => {
-  const [isHovered, setIsHovered] = useState(false)
-  const pausedChainIds = findChainIdsWithPausedToken(token.routeSymbol)
-  const chainIds = _.difference(Object.keys(token.addresses), pausedChainIds)
-  const hasOneChain = chainIds.length > 0
-  const hasMultipleChains = chainIds.length > 1
-  const numOverTwoChains = chainIds.length - 2 > 0 ? chainIds.length - 2 : 0
-
-  return (
-    <div
-      data-test-id="available-chains"
-      className="flex flex-row items-center space-x-1 hover-trigger"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {hasOneChain && (
-        <img
-          className="w-3 h-3 rounded-md"
-          alt={`${CHAINS_BY_ID[chainIds[0]].name} img`}
-          src={`${CHAINS_BY_ID[chainIds[0]].chainImg.src}`}
-        />
-      )}
-      {hasMultipleChains && (
-        <img
-          className="w-3 h-3 rounded-md"
-          alt={`${CHAINS_BY_ID[chainIds[1]].name} img`}
-          src={`${CHAINS_BY_ID[chainIds[1]].chainImg.src}`}
-        />
-      )}
-      {numOverTwoChains > 0 && (
-        <div className="ml-1 text-white">+ {numOverTwoChains}</div>
-      )}
-      <div className="relative inline-block">
-        {isHovered && (
-          <div
-            className={`
-              absolute z-50 hover-content p-2 text-white
-              border border-solid border-[#252537]
-              bg-[#101018] rounded-md
-            `}
-          >
-            {chainIds.map((chainId) => {
-              const chainName = CHAINS_BY_ID[chainId].name
-              return <div className="whitespace-nowrap">{chainName}</div>
-            })}
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
 
