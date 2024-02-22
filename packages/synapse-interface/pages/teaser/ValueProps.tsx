@@ -161,7 +161,7 @@ const FauxBridge = () => {
   const sectionStyle =
     'bg-zinc-50 dark:bg-zinc-800 rounded-md px-2.5 py-3 grid gap-3 grid-cols-2 border border-zinc-300 dark:border-transparent'
   const selectStyle =
-    'rounded bg-inherit dark:bg-zinc-700 border-zinc-300 dark:border-zinc-700 w-fit cursor-pointer'
+    'rounded bg-inherit dark:bg-zinc-700 border-zinc-300 dark:border-zinc-700 w-fit cursor-pointer hover:border-zinc-400 dark:hover:border-zinc-500'
   const inputWrapperStyle =
     'flex bg-white dark:bg-inherit border border-zinc-200 dark:border-zinc-700 rounded-md gap-0 p-1.5 col-span-2 gap-1.5 items-center'
   const inputStyle =
@@ -184,7 +184,7 @@ const FauxBridge = () => {
           <input type="text" value="1000" className={inputStyle} />
           <button
             disabled
-            className="px-4 py-1 bg-zinc-100 dark:bg-zinc-700 border border-zinc-200 dark:border-transparent h-fit rounded mr-1 cursor-pointer hover:bg-zinc-200 hover:dark:bg-zinc-600"
+            className="px-4 py-1 bg-zinc-100 dark:bg-zinc-700 border border-zinc-200 dark:border-transparent h-fit rounded mr-1 cursor-pointer hover:border-zinc-400 hover:dark:border-zinc-500"
           >
             Max
           </button>
