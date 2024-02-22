@@ -2,7 +2,7 @@
 pragma solidity >=0.7.0;
 pragma experimental ABIEncoderV2;
 
-import {SynapseBaseScript} from "./SynapseBaseScript.sol";
+import {SynapseBaseScript} from "./base/SynapseBaseScript.sol";
 
 // Imports for external consumption
 import {StringUtils} from "./libs/StringUtils.sol";

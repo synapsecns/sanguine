@@ -2,9 +2,9 @@
 pragma solidity >=0.6.12;
 pragma experimental ABIEncoderV2;
 
-import {Deployer} from "./deploy/Deployer.sol";
-import {DeploymentSaver} from "./deploy/DeploymentSaver.sol";
-import {StringUtils} from "./libs/StringUtils.sol";
+import {Deployer} from "../deploy/Deployer.sol";
+import {DeploymentSaver} from "../deploy/DeploymentSaver.sol";
+import {StringUtils} from "../libs/StringUtils.sol";
 
 import {Script} from "forge-std/Script.sol";
 
