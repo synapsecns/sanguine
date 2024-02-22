@@ -331,7 +331,7 @@ app.get('/swapTxInfo', async (req, res) => {
         `
         <h1>Invalid Params</h1>
         <hr/>
-        <b>Ensure that your request matches the following format: /bridge?fromChain=1&toChain=42161&fromToken=USDC&toToken=USDC&amount=1000000
+        <b>Ensure that your request matches the following format: /swapTxInfo?chain=1&fromToken=USDC&toToken=DAI&amount=100
         </b>
         <h2>Available Tokens (symbols to use)</h2>
         ${tokenHtml}`
@@ -427,7 +427,7 @@ app.get('/bridgeTxInfo', async (req, res) => {
         `
         <h1>Invalid Params</h1>
         <hr/>
-        <b>Ensure that your request matches the following format: /bridge?fromChain=1&toChain=42161&fromToken=USDC&toToken=USDC&amount=1000000
+        <b>Ensure that your request matches the following format: /bridgeTxInfo?fromChain=1&toChain=42161&fromToken=USDC&toToken=USDC&amount=1000000&destAddress=0xcc78d2f004c9de9694ff6a9bbdee4793d30f3842
         </b>
         <h2>Available Tokens (symbols to use)</h2>
         ${tokenHtml}`
