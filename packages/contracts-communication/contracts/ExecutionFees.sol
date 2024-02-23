@@ -5,9 +5,12 @@ import {IExecutionFees} from "./interfaces/IExecutionFees.sol";
 import {ExecutionFeesEvents} from "./events/ExecutionFeesEvents.sol";
 
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 
-contract ExecutionFees is ExecutionFeesEvents, IExecutionFees {
+contract ExecutionFees is AccessControl, ExecutionFeesEvents, IExecutionFees {
     using Address for address payable;
+
+    bytes32 public constant RECORDER_ROLE = keccak256("RECORDER_ROLE");
 
     // Interchain Transaction IDs => Total Execution Fees
     mapping(bytes32 => uint256) private _executionFees;
@@ -18,16 +21,8 @@ contract ExecutionFees is ExecutionFeesEvents, IExecutionFees {
     // Interchain Transaction IDs => Executor Addresses
     mapping(bytes32 => address) private _transactionsByExecutor;
 
-    address public icClient;
-
-    constructor(address _icClient) {
-        icClient = _icClient;
-    }
-
-    modifier onlyRecorder() {
-        // This is currently set to InterchainClientV1, but will be moved to batched recording later on
-        require(msg.sender == icClient, "ExecutionFees: Caller is not the recorder");
-        _;
+    constructor(address initialAdmin) {
+        _grantRole(DEFAULT_ADMIN_ROLE, initialAdmin);
     }
 
     // @inheritdoc IExecutionFees
@@ -46,7 +41,7 @@ contract ExecutionFees is ExecutionFeesEvents, IExecutionFees {
     )
         external
         override
-        onlyRecorder
+        onlyRole(RECORDER_ROLE)
     {
         require(_transactionsByExecutor[transactionId] == address(0), "ExecutionFees: Executor already recorded");
         require(_executionFees[transactionId] > 0, "ExecutionFees: No execution fee found");

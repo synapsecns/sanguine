@@ -5,12 +5,16 @@ contract ExecutionFeesTest is Test {
     ExecutionFees executionFees;
     address icClient = address(0x123);
     address executor = address(0x456);
+    address public admin = makeAddr("Admin");
     bytes32 transactionId = keccak256("transaction");
     uint256 dstChainId = 1;
     uint256 executionFee = 1 ether;
 
     function setUp() public {
-        executionFees = new ExecutionFees(icClient);
+        executionFees = new ExecutionFees(admin);
+        bytes32 recorderRole = executionFees.RECORDER_ROLE();
+        vm.prank(admin);
+        executionFees.grantRole(recorderRole, icClient);
     }
 
     function test_AddExecutionFee() public {
