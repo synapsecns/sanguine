@@ -16,6 +16,7 @@ import {OptionsLib, OptionsV1} from "./libs/Options.sol";
 import {TypeCasts} from "./libs/TypeCasts.sol";
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {OptionsLib} from "../flattened/InterchainApp.sol";
 
 /**
  * @title InterchainClientV1
@@ -213,8 +214,8 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         return abi.encode(icTx);
     }
 
-    function encodeOptionsV1(OptionsV1 memory options) public view returns (bytes memory) {
-        return options.encodeOptionsV1();
+    function decodeOptions(bytes memory encodedOptions) public view returns (OptionsV1 memory) {
+        return encodedOptions.decodeOptionsV1();
     }
 
     // TODO: Gas Fee Consideration that is paid to executor

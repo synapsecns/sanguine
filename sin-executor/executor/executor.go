@@ -283,15 +283,25 @@ func (e *Executor) runChainIndexer(parentCtx context.Context, chainID int) (err 
 
 		switch event := parsedEvent.(type) {
 		case *interchainclient.InterchainClientV1InterchainTransactionSent:
-			e.clientContracts[chainID].EncodeTransaction(&bind.CallOpts{Context: ctx}, interchainclient.InterchainTransaction{
+			encodedTX, err := e.clientContracts[chainID].EncodeTransaction(&bind.CallOpts{Context: ctx}, interchainclient.InterchainTransaction{
 				SrcChainId:  big.NewInt(int64(chainID)),
 				SrcSender:   event.SrcSender,
 				DstChainId:  core.CopyBigInt(event.DstChainId),
 				DstReceiver: event.DstReceiver,
-				Nonce:       event.,
+				Nonce:       event.ClientNonce.Uint64(),
 				DbNonce:     event.DbNonce,
-				Options:     nil,
-				Message:     nil,
+				Options:     event.Options,
+				Message:     event.Message,
+			})
+
+			decodedOptions, err := e.clientContracts[chainID].EncodeOptionsV1()
+
+			if err != nil {
+				return fmt.Errorf("could not encode transaction: %w", err)
+			}
+
+			err = e.db.StoreInterchainTransaction(ctx, &db.TransactionSent{
+				TransactionID: event.TransactionId,
 			})
 
 		}
