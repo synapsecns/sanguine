@@ -98,7 +98,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         }
         IExecutionFees(executionFees).addExecutionFee{value: executionFee}(icTx.dstChainId, transactionId);
         emit InterchainTransactionSent(
-            icTx.transactionId,
+            transactionId,
             icTx.dbNonce,
             icTx.nonce,
             icTx.dstChainId,
