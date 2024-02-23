@@ -12,8 +12,6 @@ import type { Token } from '@/utils/types'
 import { getSwapPossibilities } from '@/utils/swapFinder/generateSwapPossibilities'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 import { sortByPriorityRankAndBalance } from '@/utils/helpers/sortByPriorityRankAndBalance'
-import { hasBalance } from '@/utils/helpers/hasBalance'
-import { sortByPriorityRank } from '@/utils/helpers/sortByPriorityRank'
 
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useSwapState } from '@/slices/swap/hooks'
