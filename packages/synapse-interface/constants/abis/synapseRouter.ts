@@ -1070,4 +1070,4 @@ export const SYNAPSE_ROUTER_ABI = [
     stateMutability: 'payable',
     type: 'receive',
   },
-] as const
+]

@@ -387,4 +387,4 @@ export const USDT_ABI = [
   },
   { anonymous: false, inputs: [], name: 'Pause', type: 'event' },
   { anonymous: false, inputs: [], name: 'Unpause', type: 'event' },
-] as const
+]
