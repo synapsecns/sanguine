@@ -22,7 +22,6 @@ import {
 } from '@/slices/priceDataSlice'
 import { isBlacklisted } from '@/utils/isBlacklisted'
 import { screenAddress } from '@/utils/screenAddress'
-import { getCoingeckoPrices } from '@/utils/actions/getPrices'
 import { fetchFeeAndRebate } from '@/slices/feeAndRebateSlice'
 
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
