@@ -6,7 +6,6 @@ import {AppConfigV1} from "../../contracts/libs/AppConfig.sol";
 
 contract InterchainAppMock is IInterchainApp {
     address[] public receivingModules;
-    AppConfigV1 public appConfig;
 
     function setReceivingModule(address _receivingModule) public {
         receivingModules.push(_receivingModule);
@@ -15,35 +14,21 @@ contract InterchainAppMock is IInterchainApp {
     function setAppConfig(
         uint64[] memory chainIDs,
         address[] memory linkedIApps,
-        address[] memory _sendingModules,
+        address[] memory sendingModules,
         address[] memory _receivingModules,
-        uint256 _requiredResponses,
-        uint64 _optimisticTimePeriod
+        uint256 requiredResponses,
+        uint64 optimisticTimePeriod
     )
         external
         virtual
         override
-    {
-        // TODO: Add access control or ownership checks
-        require(chainIDs.length == linkedIApps.length, "ChainIDs and IApps length mismatch");
-
-        for (uint256 i = 0; i < chainIDs.length; i++) {
-            appConfig.linkedIApps[chainIDs[i]] = linkedIApps[i];
-        }
-
-        appConfig.sendingModules = _sendingModules;
-        appConfig.receivingModules = _receivingModules;
-        appConfig.requiredResponses = _requiredResponses;
-        appConfig.optimisticTimePeriod = _optimisticTimePeriod;
-    }
+    {}
 
     function getLinkedIApp(uint64 chainID) external view virtual override returns (address) {}
 
     function getSendingModules() external view virtual override returns (address[] memory) {}
 
-    function getReceivingConfig() external override view returns (bytes memory retConfig, address[] memory modules) {
-        return (abi.encode(appConfig), receivingModules);
-    }
+    function getReceivingConfig() external view returns (bytes memory appConfig, address[] memory modules) {}
 
     function send(bytes32 receiver, uint256 dstChainId, bytes calldata message) external payable virtual override {}
 
