@@ -1,9 +1,10 @@
-import styles from './css-modules/ticker.module.css'
 import { generateTx } from '../../utils/fakeDataGen/teaserMarquee'
 import PulseDot from './icons/PulseDot'
+import { useRef, useEffect } from 'react'
 
 const txs = new Array()
-for (let i = 0; i < 20; i++) txs.push(generateTx())
+for (let i = 0; i < 10; i++) txs.push(generateTx())
+console.log(txs)
 
 const formatTimestamp = (tx) => {
   const { origin, destination } = tx
@@ -45,21 +46,66 @@ const formatTimestamp = (tx) => {
 /* Ticker – Easter egg: define custom <marquee> element */
 
 export default function Ticker() {
+  const tickerRef = useRef(null)
+
+  const sleep = (time) => new Promise((resolve) => setTimeout(resolve, time))
+
+  let start, previousTimeStamp
+  let done = false
+  let offset = 0
+
+  function step(timeStamp) {
+    if (start === undefined) {
+      start = timeStamp
+    }
+    const elapsed = timeStamp - start
+
+    if (previousTimeStamp !== timeStamp) {
+      const { left, width } = tickerRef.current.getBoundingClientRect()
+      // Math.min() is used here to make sure the element stops at exactly 200px
+      const count = -elapsed * 0.03 + offset // 1px per frame @ 30fps
+      tickerRef.current.style.left = `${count}px`
+      if (left + width < window.outerWidth) done = true
+      // if (count === 2000) done = true
+    }
+
+    if (done === true) {
+      offset += tickerRef.current.firstChild.offsetWidth
+      console.log(
+        tickerRef.current.firstChild.offsetWidth,
+        tickerRef.current.firstChild
+      )
+      tickerRef.current.appendChild(tickerRef.current.firstChild) // <dt>
+      tickerRef.current.appendChild(tickerRef.current.firstChild) // <dd>
+      done = false
+    }
+
+    if (true || elapsed < 2000) {
+      // Stop the animation after 2 seconds
+      // previousTimeStamp = timeStamp
+      if (!done) {
+        window.requestAnimationFrame(step)
+      }
+    }
+  }
+
+  useEffect(() => {
+    window.requestAnimationFrame(step)
+  })
+
   return (
     <article
       className="absolute w-screen z-10 text-sm overflow-x-clip overflow-y-visible"
       style={{ counterReset: 'txn' }}
     >
       <dl
-        className={`grid whitespace-nowrap list-disc marker:text-zinc-500 ${styles.ticker}`}
+        ref={tickerRef}
+        className="grid grid-flow-col whitespace-nowrap list-disc marker:text-zinc-500 absolute"
       >
         {txs.map((tx, i) => {
           return (
             <>
-              <dt
-                className="relative group row-start-1 bg-zinc-50 dark:bg-zinc-950 border-y border-zinc-200 dark:border-zinc-900"
-                style={{ gridColumnStart: i + 1 }}
-              >
+              <dt className="relative group row-start-1 bg-zinc-50 dark:bg-zinc-950 border-y border-zinc-200 dark:border-zinc-900">
                 <a
                   href="#"
                   className="text-zinc-500 px-4 hover:text-inherit hover:underline py-1.5 inline-block"
@@ -67,10 +113,7 @@ export default function Ticker() {
                   {`${tx.origin.formattedAmount} ${tx.origin.payload} to ${tx.destination.chain}`}
                 </a>
               </dt>
-              <dd
-                className="row-start-2 animate-slide-down origin-top relative p-2"
-                style={{ gridColumnStart: i + 1 }}
-              >
+              <dd className="row-start-2 animate-slide-down origin-top relative p-2 hidden [:hover_+_&]:block hover:block">
                 <a
                   href="#"
                   className="absolute px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-900 rounded items-center grid gap-x-4 gap-y-1 shadow-sm"
