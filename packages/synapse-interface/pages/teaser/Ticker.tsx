@@ -1,6 +1,6 @@
 import { generateTx } from '../../utils/fakeDataGen/teaserMarquee'
 import PulseDot from './icons/PulseDot'
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 
 const txs = new Array()
 for (let i = 0; i < 6; i++) txs.push(generateTx())
@@ -45,39 +45,46 @@ const formatTimestamp = (tx) => {
 export default function Ticker() {
   const tickerRef = useRef(null)
 
-  var start
-  var offset = 0
-  var pause = false
-  const PX_PER_FRAME = -30
-  const PX_PER_SECOND = PX_PER_FRAME / 1000
+  let start
+  let pauseStart
+  let requestId
+  const PX_PER_SECOND = -30 / 1000
 
-  function step(timeStamp) {
+  function step(timestamp) {
+    if (start === undefined) {
+      start = timestamp
+    }
+
+    if (pauseStart) {
+      start += timestamp - pauseStart
+      pauseStart = undefined
+    }
+
     const dl = tickerRef.current
     if (dl === null) return
     const { left, width } = dl.firstElementChild.getBoundingClientRect()
 
     if (left < -width) {
-      offset += width
+      start -= width / PX_PER_SECOND
       dl.appendChild(dl.firstElementChild) // <dt>
       dl.appendChild(dl.firstElementChild) // <dd>
     }
 
-    if (start === undefined) start = timeStamp
-    dl.style.transform = `translateX(${
-      PX_PER_SECOND * (timeStamp - start) + offset
-    }px)` // -30px/second
+    dl.style.transform = `translateX(${PX_PER_SECOND * (timestamp - start)}px)`
 
-    if (!pause) window.requestAnimationFrame(step)
+    requestId = window.requestAnimationFrame(step)
   }
 
   useEffect(() => {
-    window.requestAnimationFrame(step)
-    tickerRef.current.addEventListener('mouseenter', () => (pause = true))
-    tickerRef.current.addEventListener('mouseleave', () => {
-      pause = false
-      window.requestAnimationFrame(step)
-    })
+    startTicker()
+    return () => window.cancelAnimationFrame(requestId)
   }, [])
+
+  const startTicker = () => (requestId = window.requestAnimationFrame(step))
+  const pauseTicker = () => {
+    pauseStart = performance.now()
+    window.cancelAnimationFrame(requestId)
+  }
 
   /* Ticker – Easter egg: define custom <marquee> element */
 
@@ -90,7 +97,9 @@ export default function Ticker() {
       </button>
       <dl
         ref={tickerRef}
-        className="grid grid-flow-col grid-rows-[1fr_0] w-0 grow cursor-pointer whitespace-nowrap"
+        onMouseEnter={pauseTicker}
+        onMouseLeave={startTicker}
+        className="grid grid-flow-col grid-rows-[1fr_0] w-0 grow cursor-pointer whitespace-nowrap border border-red-500/50"
       >
         {txs.map((tx, i) => {
           return (
