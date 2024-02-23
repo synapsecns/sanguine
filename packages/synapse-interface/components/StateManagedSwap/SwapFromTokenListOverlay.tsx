@@ -11,6 +11,7 @@ import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import type { Token } from '@/utils/types'
 import { getSwapPossibilities } from '@/utils/swapFinder/generateSwapPossibilities'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
+import { sortByPriorityRankAndBalance } from '@/utils/helpers/sortByPriorityRankAndBalance'
 import { hasBalance } from '@/utils/helpers/hasBalance'
 import { sortByPriorityRank } from '@/utils/helpers/sortByPriorityRank'
 
@@ -29,16 +30,16 @@ export const SwapFromTokenListOverlay = () => {
   const { swapFromTokens, swapChainId, swapFromToken } = useSwapState()
   const portfolioBalances = usePortfolioBalances()
 
-  let possibleTokens = sortByPriorityRank(swapFromTokens)
+  const common = {
+    chainId: swapChainId,
+    portfolioBalances: portfolioBalances
+  }
+  let possibleTokens = sortByPriorityRankAndBalance({
+    tokens: swapFromTokens,
+    source: 'possibleTokens',
+    ...common
+  })
 
-  possibleTokens = [
-    ...possibleTokens.filter((t) =>
-      hasBalance(t, swapChainId, portfolioBalances)
-    ),
-    ...possibleTokens.filter(
-      (t) => !hasBalance(t, swapChainId, portfolioBalances)
-    ),
-  ]
 
   const { fromTokens: allSwapChainTokens } = getSwapPossibilities({
     fromChainId: swapChainId,
@@ -47,29 +48,13 @@ export const SwapFromTokenListOverlay = () => {
     toToken: null,
   })
 
-  let remainingTokens = sortByPriorityRank(
-    _.difference(allSwapChainTokens, swapFromTokens)
-  )
-
-  remainingTokens = [
-    ...remainingTokens.filter((t) =>
-      hasBalance(t, swapChainId, portfolioBalances)
-    ),
-    ...remainingTokens.filter(
-      (t) => !hasBalance(t, swapChainId, portfolioBalances)
-    ),
-  ]
-
-  const possibleTokensWithSource = possibleTokens.map((token) => ({
-    ...token,
-    source: 'possibleTokens',
-  }))
-  const remainingTokensWithSource = remainingTokens.map((token) => ({
-    ...token,
+  let remainingTokens = sortByPriorityRankAndBalance({
+    tokens: _.difference(allSwapChainTokens, swapFromTokens),
     source: 'remainingTokens',
-  }))
+    ...common
+  })
 
-  const masterList = [...possibleTokensWithSource, ...remainingTokensWithSource]
+  const masterList = [...possibleTokens, ...remainingTokens]
 
   function onCloseOverlay() {
     dispatch(setShowSwapFromTokenListOverlay(false))
@@ -88,9 +73,7 @@ export const SwapFromTokenListOverlay = () => {
   if (searchStr?.length > 0) {
     const results = fuse.search(searchStr).map((i) => i.item)
     possibleTokens = results.filter((item) => item.source === 'possibleTokens')
-    remainingTokens = results.filter(
-      (item) => item.source === 'remainingTokens'
-    )
+    remainingTokens = results.filter((item) => item.source === 'remainingTokens')
   }
 
   const handleSetFromToken = (oldToken: Token, newToken: Token) => {

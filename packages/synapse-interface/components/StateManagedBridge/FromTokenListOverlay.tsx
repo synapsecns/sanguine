@@ -4,10 +4,10 @@ import { useDispatch } from 'react-redux'
 import Fuse from 'fuse.js'
 
 import type { Token } from '@/utils/types'
-import { hasBalance } from '@/utils/helpers/hasBalance'
-import { sortByPriorityRank } from '@/utils/helpers/sortByPriorityRank'
+import { sortByPriorityRankAndBalance } from '@/utils/helpers/sortByPriorityRankAndBalance'
 import { getRoutePossibilities } from '@/utils/routeMaker/generateRoutePossibilities'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
+
 import { setFromToken } from '@/slices/bridge/reducer'
 import { setShowFromTokenListOverlay } from '@/slices/bridgeDisplaySlice'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
@@ -20,22 +20,23 @@ import { SearchResultsContainer } from '@/components/bridgeSwap/SearchResultsCon
 import { SearchOverlayContent } from '@/components/bridgeSwap/SearchOverlayContent'
 import { SelectSpecificTokenButton } from './components/SelectSpecificTokenButton'
 
+
 export const FromTokenListOverlay = () => {
   const dispatch = useDispatch()
 
   const { fromTokens, fromChainId, fromToken } = useBridgeState()
   const portfolioBalances = usePortfolioBalances()
 
-  let possibleTokens = sortByPriorityRank(fromTokens)
+  const common = {
+    chainId: fromChainId,
+    portfolioBalances: portfolioBalances
+  }
 
-  possibleTokens = [
-    ...possibleTokens.filter((t) =>
-      hasBalance(t, fromChainId, portfolioBalances)
-    ),
-    ...possibleTokens.filter(
-      (t) => !hasBalance(t, fromChainId, portfolioBalances)
-    ),
-  ]
+  let possibleTokens = sortByPriorityRankAndBalance({
+    tokens: fromTokens,
+    source: 'possibleTokens',
+    ...common
+  })
 
   const { fromTokens: allFromChainTokens } = getRoutePossibilities({
     fromChainId,
@@ -44,18 +45,12 @@ export const FromTokenListOverlay = () => {
     toToken: null,
   })
 
-  let remainingTokens = sortByPriorityRank(
-    _.difference(allFromChainTokens, fromTokens)
-  )
+  let remainingTokens = sortByPriorityRankAndBalance({
+    tokens: _.difference(allFromChainTokens, fromTokens),
+    source: 'remainingTokens',
+    ...common
+  })
 
-  remainingTokens = [
-    ...remainingTokens.filter((t) =>
-      hasBalance(t, fromChainId, portfolioBalances)
-    ),
-    ...remainingTokens.filter(
-      (t) => !hasBalance(t, fromChainId, portfolioBalances)
-    ),
-  ]
 
   const { fromTokens: allTokens } = getRoutePossibilities({
     fromChainId: null,
@@ -64,27 +59,16 @@ export const FromTokenListOverlay = () => {
     toToken: null,
   })
 
-  let allOtherFromTokens = sortByPriorityRank(
-    _.difference(allTokens, allFromChainTokens)
-  )
-
-  const possibleTokensWithSource = possibleTokens.map((token) => ({
-    ...token,
-    source: 'possibleTokens',
-  }))
-  const remainingTokensWithSource = remainingTokens.map((token) => ({
-    ...token,
-    source: 'remainingTokens',
-  }))
-  const allOtherFromTokensWithSource = allOtherFromTokens.map((token) => ({
-    ...token,
+  let allOtherFromTokens = sortByPriorityRankAndBalance({
+    tokens: _.difference(allTokens, allFromChainTokens),
     source: 'allOtherFromTokens',
-  }))
+    ...common
+  })
 
   const masterList = [
-    ...possibleTokensWithSource,
-    ...remainingTokensWithSource,
-    ...allOtherFromTokensWithSource,
+    ...possibleTokens,
+    ...remainingTokens,
+    ...allOtherFromTokens,
   ]
 
   function onCloseOverlay() {
@@ -104,12 +88,8 @@ export const FromTokenListOverlay = () => {
   if (searchStr?.length > 0) {
     const results = fuse.search(searchStr).map((i) => i.item)
     possibleTokens = results.filter((item) => item.source === 'possibleTokens')
-    remainingTokens = results.filter(
-      (item) => item.source === 'remainingTokens'
-    )
-    allOtherFromTokens = results.filter(
-      (item) => item.source === 'allOtherFromTokens'
-    )
+    remainingTokens = results.filter((item) => item.source === 'remainingTokens')
+    allOtherFromTokens = results.filter((item) => item.source === 'allOtherFromTokens')
   }
 
 
@@ -134,23 +114,23 @@ export const FromTokenListOverlay = () => {
     >
       {possibleTokens?.length > 0 && (
         <SearchResultsContainer label="Send...">
-            {possibleTokens.map((token, idx) =>
-                <SelectSpecificTokenButton
-                  isOrigin={true}
-                  key={idx}
-                  token={token}
-                  selectedToken={fromToken}
-                  active={idx === currentIdx}
-                  showAllChains={false}
-                  onClick={() => {
-                    if (token === fromToken) {
-                      onClose()
-                    } else {
-                      handleSetFromToken(fromToken, token)
-                    }
-                  }}
-                />
-            )}
+          {possibleTokens.map((token, idx) =>
+            <SelectSpecificTokenButton
+              isOrigin={true}
+              key={idx}
+              token={token}
+              selectedToken={fromToken}
+              active={idx === currentIdx}
+              showAllChains={false}
+              onClick={() => {
+                if (token === fromToken) {
+                  onClose()
+                } else {
+                  handleSetFromToken(fromToken, token)
+                }
+              }}
+            />
+          )}
         </SearchResultsContainer>
       )}
       {remainingTokens?.length > 0 && (
@@ -161,36 +141,36 @@ export const FromTokenListOverlay = () => {
               : 'All sendable tokens'
           }
         >
-            {remainingTokens.map((token, idx) =>
-                <SelectSpecificTokenButton
-                  isOrigin={true}
-                  key={idx}
-                  token={token}
-                  selectedToken={fromToken}
-                  active={idx + possibleTokens.length === currentIdx}
-                  showAllChains={false}
-                  onClick={() => handleSetFromToken(fromToken, token)}
-                />
-            )}
+          {remainingTokens.map((token, idx) =>
+            <SelectSpecificTokenButton
+              isOrigin={true}
+              key={idx}
+              token={token}
+              selectedToken={fromToken}
+              active={idx + possibleTokens.length === currentIdx}
+              showAllChains={false}
+              onClick={() => handleSetFromToken(fromToken, token)}
+            />
+          )}
         </SearchResultsContainer>
       )}
       {allOtherFromTokens?.length > 0 && (
         <SearchResultsContainer label="All sendable tokens">
-            {allOtherFromTokens.map((token, idx) =>
-                <SelectSpecificTokenButton
-                  isOrigin={true}
-                  key={idx}
-                  token={token}
-                  selectedToken={fromToken}
-                  active={
-                    idx + possibleTokens.length + remainingTokens.length ===
-                    currentIdx
-                  }
-                  showAllChains={true}
-                  onClick={() => handleSetFromToken(fromToken, token)}
-                  alternateBackground={true}
-                />
-            )}
+          {allOtherFromTokens.map((token, idx) =>
+            <SelectSpecificTokenButton
+              isOrigin={true}
+              key={idx}
+              token={token}
+              selectedToken={fromToken}
+              active={
+                idx + possibleTokens.length + remainingTokens.length ===
+                currentIdx
+              }
+              showAllChains={true}
+              onClick={() => handleSetFromToken(fromToken, token)}
+              alternateBackground={true}
+            />
+          )}
         </SearchResultsContainer>
       )}
     </SearchOverlayContent>
