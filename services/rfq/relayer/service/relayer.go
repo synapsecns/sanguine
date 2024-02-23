@@ -197,6 +197,14 @@ func (r *Relayer) Start(ctx context.Context) error {
 		return nil
 	})
 
+	g.Go(func() error {
+		err := r.inventory.Start(ctx)
+		if err != nil {
+			return fmt.Errorf("could not start inventory manager: %w", err)
+		}
+		return nil
+	})
+
 	err = g.Wait()
 	if err != nil {
 		return fmt.Errorf("could not start: %w", err)
