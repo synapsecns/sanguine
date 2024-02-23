@@ -6,15 +6,12 @@ import { POOLS_PATH } from '@urls'
 import Card from '@tw/Card'
 import Grid from '@tw/Grid'
 
-import { zeroAddress } from 'viem'
+import { zeroAddress, Address } from 'viem'
 
-import { Address } from '@wagmi/core'
 import { useAccount, useSwitchNetwork } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 
 import { ChevronLeftIcon } from '@heroicons/react/outline'
-
-
 
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 

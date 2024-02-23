@@ -1,6 +1,6 @@
 import _ from 'lodash'
 
-import { Token } from '@/utils/types'
+import type { Token } from '@/utils/types'
 import { NetworkTokenBalances } from '@/utils/actions/fetchPortfolioBalances'
 
 export const hasBalance = (

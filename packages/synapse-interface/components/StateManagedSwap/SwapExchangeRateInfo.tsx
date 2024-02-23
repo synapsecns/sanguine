@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { CHAINS_BY_ID } from '@constants/chains'
 import Image from 'next/image'
 
-import { Token } from '@/utils/types'
+import type { Token } from '@/utils/types'
 import {
   formatBigIntToPercentString,
   formatBigIntToString,

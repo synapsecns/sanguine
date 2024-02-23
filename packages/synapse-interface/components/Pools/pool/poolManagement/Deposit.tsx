@@ -23,7 +23,7 @@ import { swapPoolCalculateAddLiquidity } from '@/actions/swapPoolCalculateAddLiq
 
 import { ETH, WETHE, WETH } from '@/constants/tokens/bridgeable'
 import { AVWETH } from '@/constants/tokens/auxilliary'
-import { Token } from '@types'
+import type { Token } from '@types'
 
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import {

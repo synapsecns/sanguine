@@ -38,7 +38,7 @@ import moonriverExplorerImg from '@assets/explorer/moonriver.svg'
 import dogeExplorerImg from '@assets/explorer/dogecoin.svg'
 import baseExplorerImg from '@assets/explorer/basescan.svg'
 
-import { Chain } from '@types'
+import type { Chain } from '@types'
 
 export const ETH: Chain = {
   priorityRank: 100,

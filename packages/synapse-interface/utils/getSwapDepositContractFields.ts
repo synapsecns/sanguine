@@ -1,4 +1,4 @@
-import { Token } from '@types'
+import type { Token } from '@types'
 import { SWAP_ABI } from '@abis/swap'
 import { SWAP_ETH_WRAPPER_ABI } from '@abis/swapEthWrapper'
 

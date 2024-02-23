@@ -2,7 +2,7 @@ import { multicall, Address, erc20ABI } from '@wagmi/core'
 import { zeroAddress } from 'viem'
 
 import multicallABI from '@/constants/abis/multicall.json'
-import { Token } from '@/utils/types'
+import type { Token } from '@/utils/types'
 import { formatBigIntToString } from './bigint/format'
 import { TokenAndBalance } from './actions/fetchPortfolioBalances'
 import { CHAINS_BY_ID } from '@/constants/chains'

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Address } from 'viem'
+import type { Address } from 'viem'
 import { useDispatch } from 'react-redux'
 import _ from 'lodash'
 import { CHAINS_BY_ID } from '@/constants/chains'
@@ -7,7 +7,7 @@ import {
   TokenAndBalance,
   sortTokensByBalanceDescending,
 } from '@/utils/actions/fetchPortfolioBalances'
-import { Chain } from '@/utils/types'
+import type { Chain } from '@/utils/types'
 import { PortfolioAccordion } from './PortfolioAccordion'
 import { PortfolioConnectButton } from './PortfolioConnectButton'
 import { EmptyPortfolioContent } from './EmptyPortfolioContent'

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Address } from 'viem'
+import type { Address } from 'viem'
 import { useAppDispatch } from '@/store/hooks'
 import {
   usePortfolioActionHandlers,

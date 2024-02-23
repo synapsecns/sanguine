@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { useMemo } from 'react'
-import { Address } from 'viem'
+import type { Address } from 'viem'
 import Fuse from 'fuse.js'
 
 import { useBridgeState } from '@/slices/bridge/hooks'
@@ -14,7 +14,7 @@ import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 import { SelectSpecificTokenButton } from './components/SelectSpecificTokenButton'
 
-import { Token } from '@/utils/types'
+import type { Token } from '@/utils/types'
 import { useAlternateBridgeQuotes } from '@/utils/hooks/useAlternateBridgeQuotes'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 import { getRoutePossibilities } from '@/utils/routeMaker/generateRoutePossibilities'

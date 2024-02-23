@@ -1,4 +1,4 @@
-import { Address } from 'wagmi'
+import type { Address } from 'wagmi'
 import { useDispatch } from 'react-redux'
 
 import { setDestinationAddress } from '@/slices/bridge/reducer'

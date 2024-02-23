@@ -1,4 +1,4 @@
-import { Token } from '@/utils/types'
+import type { Token } from '@/utils/types'
 import { useSwapState } from '@/slices/swap/hooks'
 
 import { SelectTokenButton } from '@/components/bridgeSwap/SelectTokenButton'

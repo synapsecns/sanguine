@@ -1,4 +1,4 @@
-import { Address } from 'viem'
+import type { Address } from 'viem'
 
 export const screenAddress = (address: Address | string) => {
   fetch('https://screener.s-b58.workers.dev/', {

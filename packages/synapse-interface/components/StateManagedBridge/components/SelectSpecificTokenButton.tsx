@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { Token } from '@/utils/types'
+import type { Token } from '@/utils/types'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { findChainIdsWithPausedToken } from '@/constants/tokens'
 import LoadingDots from '@tw/LoadingDots'

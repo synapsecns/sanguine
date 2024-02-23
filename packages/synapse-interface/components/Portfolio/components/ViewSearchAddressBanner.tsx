@@ -1,4 +1,4 @@
-import { Address } from 'viem'
+import type { Address } from 'viem'
 import { usePortfolioActionHandlers } from '@/slices/portfolio/hooks'
 import { shortenAddress } from '@/utils/shortenAddress'
 import { ClearSearchButton } from './ClearSearchButton'

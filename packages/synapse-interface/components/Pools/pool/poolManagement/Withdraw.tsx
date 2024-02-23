@@ -1,9 +1,9 @@
 import _ from 'lodash'
 import { useEffect, useMemo, useState } from 'react'
 import Slider from 'react-input-slider'
-import { Address } from '@wagmi/core'
+import type { Address } from '@wagmi/core'
 import { useDispatch } from 'react-redux'
-import { Token } from '@types'
+import type { Token } from '@types'
 
 import { getCoinTextColorCombined } from '@styles/tokens'
 import { ALL } from '@constants/withdrawTypes'

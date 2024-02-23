@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { formatBigIntToString } from '@utils/bigint/format'
-import { Token } from '@types'
+import type { Token } from '@types'
 
 const ReceivedTokenSection = ({
   withdrawQuote,

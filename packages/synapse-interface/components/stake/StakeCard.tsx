@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Address } from '@wagmi/core'
+import type { Address } from '@wagmi/core'
 
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { getStakedBalance } from '@/utils/actions/getStakedBalance'
@@ -14,7 +14,7 @@ import { usePendingTxWrapper } from '@/utils/hooks/usePendingTxWrapper'
 import { useTokenBalance } from '@/utils/hooks/useTokenBalance'
 import { getTokenOnChain } from '@/utils/hooks/useTokenInfo'
 
-import { Token } from '@/utils/types'
+import type { Token } from '@/utils/types'
 
 import ButtonLoadingDots from '@/components/buttons/ButtonLoadingDots'
 import InteractiveInputRow from '@/components/InteractiveInputRow'

@@ -7,7 +7,7 @@ import {
   getMenuItemBgForCoin,
   getMenuItemStyleForCoin,
 } from '@styles/tokens'
-import { Token } from '@/utils/types'
+import type { Token } from '@/utils/types'
 
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { TokenBalance } from '@/components/bridgeSwap/SelectTokenButton/TokenBalance'

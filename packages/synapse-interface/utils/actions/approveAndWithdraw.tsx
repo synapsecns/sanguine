@@ -1,15 +1,18 @@
+import type { Token } from '@types'
+import type { Address } from 'wagmi'
+
+import toast from 'react-hot-toast'
+
 import { ALL } from '@constants/withdrawTypes'
-import ExplorerToastLink from '@components/ExplorerToastLink'
 import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
 import { txErrorHandler } from '@utils/txErrorHandler'
-import { Token } from '@types'
-import toast from 'react-hot-toast'
-import { approveErc20Token } from '@/actions/approveErc20Token'
 
-import { Address } from 'wagmi'
+import { approveErc20Token } from '@/actions/approveErc20Token'
 import { swapPoolRemoveLiquidity } from '@/actions/swapPoolRemoveLiquidity'
 import { swapPoolRemoveLiquidityOneToken } from '@/actions/swapPoolRemoveLiquidityOneToken'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+
+import ExplorerToastLink from '@components/ExplorerToastLink'
 
 export const approve = async (
   pool: Token,

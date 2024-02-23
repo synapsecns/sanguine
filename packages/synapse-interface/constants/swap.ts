@@ -1,6 +1,6 @@
 import { USDC, DAI } from '@constants/tokens/bridgeable'
 import * as CHAINS from '@constants/chains/master'
-import { SwapQuote } from '@types'
+import type { SwapQuote } from '@types'
 export const QUOTE_POLLING_INTERVAL = 10000
 export const EMPTY_SWAP_QUOTE: SwapQuote = {
   outputAmount: 0n,

@@ -1,6 +1,6 @@
 import { readContract } from '@wagmi/core'
 
-import { Token } from '@/utils/types'
+import type { Token } from '@/utils/types'
 import { SYNAPSE_ROUTER_ABI } from '@/constants/abis/synapseRouter'
 
 const ROUTER_ADDRESS = '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a'

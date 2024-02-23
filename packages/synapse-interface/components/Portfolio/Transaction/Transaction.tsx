@@ -1,6 +1,7 @@
 import React from 'react'
-import { Chain, Token } from '@/utils/types'
-import { Address } from 'viem'
+import type { Address } from 'viem'
+import type { Chain, Token } from '@/utils/types'
+
 
 import { TransactionArrow } from '@/components/icons/TransactionArrow'
 import { getTransactionExplorerLink } from './components/TransactionExplorerLink'

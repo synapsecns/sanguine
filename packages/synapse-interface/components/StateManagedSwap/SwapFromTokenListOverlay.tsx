@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux'
 import Fuse from 'fuse.js'
 
 import { SlideSearchBox } from '@components/bridgeSwap/SlideSearchBox'
-import { Token } from '@/utils/types'
+import type { Token } from '@/utils/types'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { SelectSpecificTokenButton } from './components/SelectSpecificTokenButton'

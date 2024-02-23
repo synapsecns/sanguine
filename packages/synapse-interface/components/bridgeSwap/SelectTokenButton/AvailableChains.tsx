@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import { useState } from 'react'
 
-import { Token } from '@/utils/types'
+import type { Token } from '@/utils/types'
 import { CHAINS_BY_ID } from '@/constants/chains'
 
 export const AvailableChains = ({

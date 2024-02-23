@@ -1,4 +1,4 @@
-import { Token } from '@/utils/types'
+import type { Token } from '@/utils/types'
 
 export const getTokenOnChain = (chainId: number, token: Token) => {
   return {

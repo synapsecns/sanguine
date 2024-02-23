@@ -7,7 +7,7 @@ import { getPoolUrl } from '@urls'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { useHasMounted } from '@/utils/hooks/useHasMounted'
-import { Token } from '@/utils/types'
+import type { Token } from '@/utils/types'
 import { RightArrow } from '@/components/icons/RightArrow'
 
 export const PoolHeader = memo(

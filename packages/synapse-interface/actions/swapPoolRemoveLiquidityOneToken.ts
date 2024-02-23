@@ -7,7 +7,7 @@ import { TransactionReceipt } from 'viem'
 
 import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
 import { subtractSlippageBigInt } from '@/utils/slippage'
-import { Token } from '@/utils/types'
+import type { Token } from '@/utils/types'
 
 export const swapPoolRemoveLiquidityOneToken = async ({
   chainId,

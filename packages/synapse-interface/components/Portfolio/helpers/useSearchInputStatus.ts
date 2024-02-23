@@ -1,4 +1,4 @@
-import { Address } from 'viem'
+import type { Address } from 'viem'
 
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { isValidAddress } from '@/utils/isValidAddress'

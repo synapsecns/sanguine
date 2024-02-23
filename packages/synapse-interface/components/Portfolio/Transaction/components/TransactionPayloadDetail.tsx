@@ -9,7 +9,7 @@ import {
   setFromToken,
   setToToken,
 } from '@/slices/bridge/reducer'
-import { Chain, Token } from '@/utils/types'
+import type { Chain, Token } from '@/utils/types'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 

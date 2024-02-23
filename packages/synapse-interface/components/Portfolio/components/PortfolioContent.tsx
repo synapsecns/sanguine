@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { Address } from 'wagmi'
+import type { Address } from 'wagmi'
 import {
   NetworkTokenBalances,
   TokenAndBalance,

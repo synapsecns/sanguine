@@ -1,6 +1,6 @@
 import { formatUnits } from '@ethersproject/units'
 import { readContracts, Address, erc20ABI } from '@wagmi/core'
-import { Token } from '@types'
+import type { Token } from '@types'
 import { MINICHEF_ABI } from '@abis/miniChef'
 
 import { getSynPrices } from '@/utils/actions/getPrices'

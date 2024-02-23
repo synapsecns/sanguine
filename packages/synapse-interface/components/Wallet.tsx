@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import { useAccount, useNetwork } from 'wagmi'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { MetamaskIcon } from '@icons/WalletIcons/Metamask'

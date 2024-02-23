@@ -1,6 +1,6 @@
 import _ from "lodash"
-import { Address } from 'viem'
-import { BridgeQuote, Token } from '@/utils/types'
+import type { Address } from 'viem'
+import type { BridgeQuote, Token } from '@/utils/types'
 import { formatBigIntToString } from '../bigint/format'
 import { commify } from '@ethersproject/units'
 import { calculateExchangeRate } from '../calculateExchangeRate'

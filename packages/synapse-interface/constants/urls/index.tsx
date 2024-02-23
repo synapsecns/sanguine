@@ -1,5 +1,5 @@
 import { ETH, SYN } from '@constants/tokens/bridgeable'
-import { Token } from '@types'
+import type { Token } from '@types'
 import * as CHAINS from '@constants/chains/master'
 import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
 // Hardcoding this shit for now until actual plan around routing

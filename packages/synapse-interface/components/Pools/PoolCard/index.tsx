@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { Address, useAccount } from 'wagmi'
 import { toast } from 'react-hot-toast'
 
-import { Token } from '@types'
+import type { Token } from '@types'
 import { getPoolUrl } from '@urls'
 import { getSinglePoolData } from '@utils/actions/getPoolData'
 import { getPoolApyData } from '@utils/actions/getPoolApyData'

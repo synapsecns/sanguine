@@ -1,4 +1,4 @@
-import { Address } from '@wagmi/core'
+import type { Address } from '@wagmi/core'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { txErrorHandler } from './txErrorHandler'
 import toast from 'react-hot-toast'

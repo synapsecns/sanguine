@@ -1,4 +1,4 @@
-import { Address } from 'viem'
+import type { Address } from 'viem'
 import { shortenAddress } from '@/utils/shortenAddress'
 import { convertUnixTimestampToMonthAndDate } from '@/utils/time'
 import { isTimestampToday } from '@/utils/time'

@@ -16,7 +16,7 @@ import { SECTION_TRANSITION_PROPS } from '@/styles/transitions'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
 import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
-import { Token } from '@/utils/types'
+import type { Token } from '@/utils/types'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import { approveToken } from '@/utils/approveToken'
 

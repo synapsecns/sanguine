@@ -1,6 +1,6 @@
-import { PoolUserData, Token } from '@types'
+import type { PoolUserData, Token } from '@types'
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import { Address } from '@wagmi/core'
+import type { Address } from '@wagmi/core'
 
 import { getBalanceData } from '@/utils/actions/getPoolData'
 

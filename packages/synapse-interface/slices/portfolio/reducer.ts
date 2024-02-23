@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { Address } from 'viem'
+import type { Address } from 'viem'
 
 import {
   PortfolioTabs,

@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux'
 import Fuse from 'fuse.js'
 
 import { SlideSearchBox } from '@components/bridgeSwap/SlideSearchBox'
-import { Token } from '@/utils/types'
+import type { Token } from '@/utils/types'
 import { setFromToken } from '@/slices/bridge/reducer'
 import { setShowFromTokenListOverlay } from '@/slices/bridgeDisplaySlice'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'

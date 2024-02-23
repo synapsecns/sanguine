@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { useDispatch } from 'react-redux'
-import { Token } from '@types'
+import type { Token } from '@types'
 import * as BRIDGEABLE from '@constants/tokens/bridgeable'
 
 import { useBridgeState } from '@/slices/bridge/hooks'

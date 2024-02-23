@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { Token } from '@/utils/types'
+import type { Token } from '@/utils/types'
 import { formatBigIntToString } from '@/utils/bigint/format'
 
 type DepositQuote = {

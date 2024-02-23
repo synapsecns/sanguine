@@ -7,7 +7,7 @@ import {
 } from '@/slices/_transactions/reducer'
 import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
 import { use_TransactionsState } from '@/slices/_transactions/hooks'
-import { Chain } from '@/utils/types'
+import type { Chain } from '@/utils/types'
 
 /**
  * Hook to update Tx store state based on returned SDK method calls

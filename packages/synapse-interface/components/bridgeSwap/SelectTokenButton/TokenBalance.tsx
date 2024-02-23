@@ -1,4 +1,4 @@
-import { Token } from '@/utils/types'
+import type { Token } from '@/utils/types'
 export const TokenBalance = ({
   token,
   parsedBalance,

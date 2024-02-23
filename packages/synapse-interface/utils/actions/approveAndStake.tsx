@@ -1,4 +1,4 @@
-import { Address } from 'wagmi'
+import type { Address } from 'wagmi'
 import toast from 'react-hot-toast'
 
 import { txErrorHandler } from '@utils/txErrorHandler'

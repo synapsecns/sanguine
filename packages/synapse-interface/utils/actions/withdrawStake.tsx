@@ -1,11 +1,12 @@
-import { Address } from 'wagmi'
 import toast from 'react-hot-toast'
 
-import ExplorerToastLink from '@/components/ExplorerToastLink'
+import type { Address } from 'wagmi'
+import type { Token } from '@types'
+
 import { txErrorHandler } from '@utils/txErrorHandler'
 import { unstakeLpToken } from '@/actions/unstakeLpToken'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import { Token } from '@types'
+import ExplorerToastLink from '@/components/ExplorerToastLink'
 
 export const withdrawStake = async (
   address: Address,

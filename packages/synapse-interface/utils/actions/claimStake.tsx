@@ -1,11 +1,12 @@
-import { Address } from 'wagmi'
+import type { Token } from '@types'
+import type { Address } from 'wagmi'
 import toast from 'react-hot-toast'
 
 import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { txErrorHandler } from '@utils/txErrorHandler'
 import { harvestLpPool } from '@/actions/harvestLpPool'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import { Token } from '@types'
+
 
 export const claimStake = async (
   chainId: number,

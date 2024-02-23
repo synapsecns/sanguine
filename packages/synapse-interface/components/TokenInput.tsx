@@ -1,6 +1,6 @@
 import { useCallback, MouseEvent, useMemo } from 'react'
 import InteractiveInputRow from './InteractiveInputRow'
-import { Token } from '@types'
+import type { Token } from '@types'
 import { cleanNumberInput } from '@utils/cleanNumberInput'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { useAccount } from 'wagmi'

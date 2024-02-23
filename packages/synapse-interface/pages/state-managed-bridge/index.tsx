@@ -44,7 +44,7 @@ import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
 import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
 
-import { Token } from '@/utils/types'
+import type { Token } from '@/utils/types'
 import { getTimeMinutesFromNow } from '@/utils/time'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import { approveToken } from '@/utils/approveToken'
