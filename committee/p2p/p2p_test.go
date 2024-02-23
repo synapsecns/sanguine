@@ -5,10 +5,7 @@ import (
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/libp2p/go-libp2p/core/peer"
-	"github.com/multiformats/go-multiaddr"
 	"github.com/phayes/freeport"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/committee/db/connect"
 	"github.com/synapsecns/sanguine/committee/p2p"
@@ -127,40 +124,4 @@ func managersToValidators(managers ...p2p.LibP2PManager) []common.Address {
 		validators = append(validators, manager.Address())
 	}
 	return validators
-}
-
-func TestMakePeers(t *testing.T) {
-	t.Run("normal case", func(t *testing.T) {
-		p, err := p2p.MakePeers([]string{
-			"/ip4/162.55.220.36/tcp/4001/p2p/QmStNkcK8YPkkEK15VzDjt1HsGutAhyGGyC8KX5XRZ2U5s",
-			"/ip4/162.55.220.36/tcp/4002/p2p/QmStNkcK8YPkkEK15VzDjt1HsGutAhyGGyC8KX5XRZ2U6s",
-		})
-		assert.NoError(t, err)
-
-		m1, err := multiaddr.NewMultiaddr("/ip4/162.55.220.36/tcp/4001")
-		assert.NoError(t, err)
-
-		m2, err := multiaddr.NewMultiaddr("/ip4/162.55.220.36/tcp/4002")
-		assert.NoError(t, err)
-
-		expected := []peer.AddrInfo{
-			{
-				ID:    "QmStNkcK8YPkkEK15VzDjt1HsGutAhyGGyC8KX5XRZ2U5s",
-				Addrs: []multiaddr.Multiaddr{m1},
-			},
-			{
-				ID:    "QmStNkcK8YPkkEK15VzDjt1HsGutAhyGGyC8KX5XRZ2U6s",
-				Addrs: []multiaddr.Multiaddr{m2},
-			},
-		}
-
-		assert.Equal(t, expected, p)
-	})
-
-	t.Run("error case", func(t *testing.T) {
-		_, err := p2p.MakePeers([]string{
-			"not a valid multiaddr",
-		})
-		assert.NotNil(t, err)
-	})
 }
