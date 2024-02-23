@@ -14,7 +14,7 @@ import { setSwapChainId } from '@/slices/swap/reducer'
 import { useSwapState } from '@/slices/swap/hooks'
 import { SearchResultsContainer } from '@/components/bridgeSwap/SearchResultsContainer'
 import { SearchOverlayContent } from '@/components/bridgeSwap/SearchOverlayContent'
-import { SelectSpecificNetworkButton } from './components/SelectSpecificNetworkButton'
+import { SelectNetworkButton } from '@/components/bridgeSwap/SelectNetworkButton'
 
 export const SwapChainListOverlay = () => {
   const { swapChainId, swapFromChainIds } = useSwapState()
@@ -96,8 +96,9 @@ export const SwapChainListOverlay = () => {
       {possibleChains?.length > 0 && (
         <SearchResultsContainer label="From…">
           {possibleChains.map(({ id: mapChainId }, idx) =>
-            <SelectSpecificNetworkButton
+            <SelectNetworkButton
               key={idx}
+              isOrigin={true}
               itemChainId={mapChainId}
               isCurrentChain={swapChainId === mapChainId}
               active={idx === currentIdx}
@@ -108,7 +109,6 @@ export const SwapChainListOverlay = () => {
                   handleSetSwapChainId(mapChainId)
                 }
               }}
-              dataId={dataId}
             />
           )}
         </SearchResultsContainer>
@@ -116,13 +116,13 @@ export const SwapChainListOverlay = () => {
       {remainingChains?.length > 0 && (
         <SearchResultsContainer label="All Chains">
           {remainingChains.map(({ id: mapChainId }, idx) =>
-            <SelectSpecificNetworkButton
+            <SelectNetworkButton
               key={mapChainId}
+              isOrigin={true}
               itemChainId={mapChainId}
               isCurrentChain={swapChainId === mapChainId}
               active={idx + possibleChains.length === currentIdx}
               onClick={() => handleSetSwapChainId(mapChainId)}
-              dataId={dataId}
               alternateBackground={true}
             />
           )}

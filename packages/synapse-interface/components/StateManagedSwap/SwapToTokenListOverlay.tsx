@@ -18,8 +18,7 @@ import { useSwapState } from '@/slices/swap/hooks'
 
 import { SearchResultsContainer } from '@/components/bridgeSwap/SearchResultsContainer'
 import { SearchOverlayContent } from '@/components/bridgeSwap/SearchOverlayContent'
-import { SelectSpecificTokenButton } from './components/SelectSpecificTokenButton'
-
+import { SelectTokenButton } from '@/components/bridgeSwap/SelectTokenButton'
 
 export const SwapToTokenListOverlay = () => {
   const { swapChainId, swapToTokens, swapToToken } = useSwapState()
@@ -120,10 +119,11 @@ export const SwapToTokenListOverlay = () => {
       {possibleTokens?.length > 0 && (
         <SearchResultsContainer label="Receive…">
           {possibleTokens.map((token, idx) =>
-            <SelectSpecificTokenButton
+            <SelectTokenButton
               isOrigin={false}
               key={idx}
               token={token}
+              chainId={swapChainId}
               selectedToken={swapToToken}
               active={idx === currentIdx}
               showAllChains={false}
@@ -147,10 +147,11 @@ export const SwapToTokenListOverlay = () => {
           }
         >
           {remainingChainTokens.map((token, idx) =>
-            <SelectSpecificTokenButton
+            <SelectTokenButton
               isOrigin={false}
               key={idx}
               token={token}
+              chainId={swapChainId}
               selectedToken={swapToToken}
               active={idx + possibleTokens.length === currentIdx}
               showAllChains={false}
@@ -162,10 +163,11 @@ export const SwapToTokenListOverlay = () => {
       {allOtherToTokens?.length > 0 && (
         <SearchResultsContainer label="All swapable tokens">
           {allOtherToTokens.map((token, idx) =>
-            <SelectSpecificTokenButton
+            <SelectTokenButton
               isOrigin={false}
               key={idx}
               token={token}
+              chainId={swapChainId}
               selectedToken={swapToToken}
               active={
                 idx +

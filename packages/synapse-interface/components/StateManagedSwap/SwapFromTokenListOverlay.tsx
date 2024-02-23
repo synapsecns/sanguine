@@ -21,8 +21,7 @@ import { setSwapFromToken } from '@/slices/swap/reducer'
 
 import { SearchResultsContainer } from '@/components/bridgeSwap/SearchResultsContainer'
 import { SearchOverlayContent } from '@/components/bridgeSwap/SearchOverlayContent'
-import { SelectSpecificTokenButton } from './components/SelectSpecificTokenButton'
-
+import { SelectTokenButton } from '@/components/bridgeSwap/SelectTokenButton'
 
 export const SwapFromTokenListOverlay = () => {
   const dispatch = useDispatch()
@@ -116,10 +115,11 @@ export const SwapFromTokenListOverlay = () => {
       {possibleTokens?.length > 0 && (
         <SearchResultsContainer label="Swap…">
           {possibleTokens.map((token, idx) =>
-            <SelectSpecificTokenButton
+            <SelectTokenButton
               isOrigin={true}
               key={idx}
               token={token}
+              chainId={swapChainId}
               selectedToken={swapFromToken}
               active={idx === currentIdx}
               showAllChains={false}
@@ -143,10 +143,11 @@ export const SwapFromTokenListOverlay = () => {
           }
         >
           {remainingTokens.map((token, idx) =>
-            <SelectSpecificTokenButton
+            <SelectTokenButton
               isOrigin={true}
               key={idx}
               token={token}
+              chainId={swapChainId}
               selectedToken={swapFromToken}
               active={idx + possibleTokens.length === currentIdx}
               showAllChains={false}
