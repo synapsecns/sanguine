@@ -11,7 +11,7 @@ import { setToChainId } from '@/slices/bridge/reducer'
 import { setShowToChainListOverlay } from '@/slices/bridgeDisplaySlice'
 import { SelectSpecificNetworkButton } from './components/SelectSpecificNetworkButton'
 import { CloseButton } from '@/components/buttons/CloseButton'
-import { SearchResults } from '@/components/bridgeSwap/SearchResults'
+import { NoSearchResultsFound } from '@/components/bridgeSwap/NoSearchResultsFound'
 
 import { PAUSED_TO_CHAIN_IDS } from '@constants/chains'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
@@ -144,7 +144,7 @@ export const ToChainListOverlay = () => {
             )}
           </SearchResultsContainer>
         )}
-        <SearchResults searchStr={searchStr} type="chain" />
+        <NoSearchResultsFound searchStr={searchStr} type="chain" />
       </div>
     </div>
   )

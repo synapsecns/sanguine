@@ -17,7 +17,7 @@ import { hasBalance } from '@/utils/helpers/hasBalance'
 import { sortByPriorityRank } from '@/utils/helpers/sortByPriorityRank'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { CloseButton } from '@/components/buttons/CloseButton'
-import { SearchResults } from '@/components/bridgeSwap/SearchResults'
+import { NoSearchResultsFound } from '@/components/bridgeSwap/NoSearchResultsFound'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 import { getTokenFuseOptions } from '@/constants/fuseOptions'
 import { SearchResultsContainer } from '@/components/bridgeSwap/SearchResultsContainer'
@@ -203,7 +203,7 @@ export const FromTokenListOverlay = () => {
             )}
         </SearchResultsContainer>
       )}
-      <SearchResults searchStr={searchStr} type="token" />
+      <NoSearchResultsFound searchStr={searchStr} type="token" />
     </div>
   )
 }

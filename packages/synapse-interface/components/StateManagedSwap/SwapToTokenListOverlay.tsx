@@ -10,7 +10,7 @@ import { SelectSpecificTokenButton } from './components/SelectSpecificTokenButto
 import { sortByPriorityRank } from '@/utils/helpers/sortByPriorityRank'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { CloseButton } from '@/components/buttons/CloseButton'
-import { SearchResults } from '@/components/bridgeSwap/SearchResults'
+import { NoSearchResultsFound } from '@/components/bridgeSwap/NoSearchResultsFound'
 import { setShowSwapToTokenListOverlay } from '@/slices/swapDisplaySlice'
 import { setSwapToToken } from '@/slices/swap/reducer'
 import { useSwapState } from '@/slices/swap/hooks'
@@ -187,7 +187,7 @@ export const SwapToTokenListOverlay = () => {
             )}
         </SearchResultsContainer>
       )}
-      <SearchResults searchStr={searchStr} type="token" />
+      <NoSearchResultsFound searchStr={searchStr} type="token" />
     </div>
   )
 }

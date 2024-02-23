@@ -26,7 +26,7 @@ import { getTokenFuseOptions } from '@/constants/fuseOptions'
 
 import { CloseButton } from '@/components/buttons/CloseButton'
 import { SearchResultsContainer } from '@/components/bridgeSwap/SearchResultsContainer'
-import { SearchResults } from '@/components/bridgeSwap/SearchResults'
+import { NoSearchResultsFound } from '@/components/bridgeSwap/NoSearchResultsFound'
 import { SlideSearchBox } from '@/components/bridgeSwap/SlideSearchBox'
 
 interface TokenWithRates extends Token {
@@ -288,7 +288,7 @@ export const ToTokenListOverlay = () => {
             )}
         </SearchResultsContainer>
       )}
-      <SearchResults searchStr={searchStr} type="token" />
+      <NoSearchResultsFound searchStr={searchStr} type="token" />
     </div>
   )
 }

@@ -1,4 +1,4 @@
-export const SearchResults = ({
+export const NoSearchResultsFound = ({
   searchStr,
   type,
 }: {
@@ -7,7 +7,7 @@ export const SearchResults = ({
 }) => {
   return (
     <div>
-      {searchStr ? (
+      {searchStr && (
         <div className="px-12 py-4 text-center text-primaryTextColor text-md">
           No other results found for{' '}
           <i className="text-primaryTextColor text-opacity-60">{searchStr}</i>.
@@ -15,7 +15,7 @@ export const SearchResults = ({
             Want to see a {type} supported on Synapse? Let us know!
           </div>
         </div>
-      ) : null}
+      )}
     </div>
   )
 }
