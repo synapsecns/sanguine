@@ -4,7 +4,6 @@ import { useRef, useEffect } from 'react'
 
 const txs = new Array()
 for (let i = 0; i < 6; i++) txs.push(generateTx())
-console.log(txs)
 
 const formatTimestamp = (tx) => {
   const { origin, destination } = tx
@@ -43,72 +42,68 @@ const formatTimestamp = (tx) => {
   return `${timeRange} (${durationFormatted})`
 }
 
-/* Ticker – Easter egg: define custom <marquee> element */
-
 export default function Ticker() {
   const tickerRef = useRef(null)
 
-  const sleep = (time) => new Promise((resolve) => setTimeout(resolve, time))
-
-  let start, previousTimeStamp
-  let done = false
-  let offset = 0
+  var start
+  var offset = 0
+  var pause = false
+  const PX_PER_FRAME = -30
+  const PX_PER_SECOND = PX_PER_FRAME / 1000
 
   function step(timeStamp) {
-    if (start === undefined) {
-      start = timeStamp
-    }
-    const elapsed = timeStamp - start
+    const dl = tickerRef.current
+    if (dl === null) return
+    const { left, width } = dl.firstElementChild.getBoundingClientRect()
 
-    if (previousTimeStamp !== timeStamp) {
-      const { left, width } = tickerRef.current.getBoundingClientRect()
-      // Math.min() is used here to make sure the element stops at exactly 200px
-      const count = -(elapsed * 0.03) + offset // 1px/frame @ 30fps
-      console.log(Math.round(tickerRef.current.firstChild.offsetWidth))
-      if (count + width < window.outerWidth) {
-        offset += tickerRef.current.firstChild.offsetWidth
-        console.log(tickerRef.current.firstChild.firstChild.innerText)
-        var x = tickerRef.current.appendChild(tickerRef.current.firstChild) // <dt>
-        var x = tickerRef.current.appendChild(tickerRef.current.firstChild) // <dd>
-        // done = false
-      }
-      tickerRef.current.style.left = `${count}px`
+    if (left < -width) {
+      offset += width
+      dl.appendChild(dl.firstElementChild) // <dt>
+      dl.appendChild(dl.firstElementChild) // <dd>
     }
 
-    if (true || elapsed < 2000) {
-      // Stop the animation after 2 seconds
-      // previousTimeStamp = timeStamp
-      if (!done) {
-        window.requestAnimationFrame(step)
-      }
-    }
+    if (start === undefined) start = timeStamp
+    dl.style.transform = `translateX(${
+      PX_PER_SECOND * (timeStamp - start) + offset
+    }px)` // -30px/second
+
+    if (!pause) window.requestAnimationFrame(step)
   }
 
   useEffect(() => {
     window.requestAnimationFrame(step)
-  })
+    tickerRef.current.addEventListener('mouseenter', () => (pause = true))
+    tickerRef.current.addEventListener('mouseleave', () => {
+      pause = false
+      window.requestAnimationFrame(step)
+    })
+  }, [])
+
+  /* Ticker – Easter egg: define custom <marquee> element */
 
   return (
-    <article
-      className="absolute w-screen z-10 text-sm overflow-x-clip overflow-y-visible"
-      style={{ counterReset: 'txn' }}
-    >
+    <article className="flex w-full z-10 text-sm bg-zinc-50 dark:bg-zinc-950 absolute border-b border-zinc-300 dark:border-zinc-900 overflow-x-clip">
+      <button className="bg-zinc-50 dark:bg-zinc-950 px-4 py-1.5 border-r border-zinc-300 dark:border-zinc-800 flex items-center gap-2 z-10 bg-zinc-50">
+        <PulseDot />
+        <span className="md:after:content-['_–_All_transactions']">Live</span>
+        <span className="text-xxs">▼</span>
+      </button>
       <dl
         ref={tickerRef}
-        className="grid grid-flow-col whitespace-nowrap list-disc marker:text-zinc-500 absolute"
+        className="grid grid-flow-col grid-rows-[1fr_0] w-0 grow cursor-pointer whitespace-nowrap"
       >
         {txs.map((tx, i) => {
           return (
             <>
-              <dt className="relative group row-start-1 bg-zinc-50 dark:bg-zinc-950 border-y border-zinc-200 dark:border-zinc-900">
+              <dt className="row-start-1">
                 <a
                   href="#"
-                  className="text-zinc-500 px-4 hover:text-inherit hover:underline py-1.5 inline-block"
+                  className="text-zinc-500 px-4 hover:text-inherit hover:underline py-1.5 block"
                 >
                   {`${tx.origin.formattedAmount} ${tx.origin.payload} to ${tx.destination.chain}`}
                 </a>
               </dt>
-              <dd className="row-start-2 animate-slide-down origin-top relative p-2 hidden [:hover_+_&]:block hover:block">
+              <dd className="row-start-2 animate-slide-down origin-top p-2 hidden [:hover_+_&]:block hover:block">
                 <a
                   href="#"
                   className="absolute px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-900 rounded items-center grid gap-x-4 gap-y-1 shadow-sm"
@@ -148,14 +143,9 @@ export default function Ticker() {
           )
         })}
       </dl>
-      <button className="top-0 left-0 absolute bg-inherit px-4 py-1.5 border-r border-zinc-300 dark:border-zinc-800 flex items-center gap-2 z-10 bg-zinc-50 dark:bg-zinc-950">
-        <PulseDot />
-        <span className="md:after:content-['_–_All_transactions']">Live</span>
-        <span className="text-xxs">▼</span>
-      </button>
       <a
         href="#"
-        className="absolute top-0 right-0 bg-inherit px-4 py-1.5 border-l border-zinc-300 dark:border-zinc-800 inline-block items-center gap-2 z-10 bg-zinc-50 dark:bg-zinc-950 md:before:content-['Explorer_']"
+        className="bg-inherit px-4 py-1.5 border-l border-zinc-300 dark:border-zinc-800 inline-block items-center gap-2 z-10 md:before:content-['Explorer_']"
       >
         {'->'}
       </a>
