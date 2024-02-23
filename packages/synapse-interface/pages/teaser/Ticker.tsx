@@ -48,14 +48,16 @@ export default function Ticker() {
   const tickerRef = useRef(null)
 
   let start
-  let pauseStart
   let requestId
+  let pauseStart
+  let accelStart
+  let decelStart
+  const ACCEL_TIME_MS = 400
+  const DECEL_TIME_MS = 400
   const PX_PER_SECOND = -30 / 1000
 
-  function step(timestamp) {
-    if (start === undefined) {
-      start = timestamp
-    }
+  const step = (timestamp) => {
+    if (start === undefined) start = timestamp
 
     if (pauseStart) {
       start += timestamp - pauseStart
@@ -63,7 +65,6 @@ export default function Ticker() {
     }
 
     const dl = tickerRef.current
-    if (dl === null) return
     const { left, width } = dl.firstElementChild.getBoundingClientRect()
 
     if (left < -width) {
@@ -72,32 +73,65 @@ export default function Ticker() {
       dl.appendChild(dl.firstElementChild) // <dd>
     }
 
-    dl.style.transform = `translateX(${PX_PER_SECOND * (timestamp - start)}px)`
+    dl.style.left = `${PX_PER_SECOND * (timestamp - start)}px`
 
     requestId = window.requestAnimationFrame(step)
+  }
+
+  const decelerate = (timestamp) => {
+    if (decelStart === undefined) {
+      tickerRef.current.style.transform = `translateX(${0}rem)`
+      decelStart = timestamp
+    }
+
+    const elapsed = timestamp - decelStart
+
+    const dist = -0.375 * Math.log10(9 * (elapsed / DECEL_TIME_MS) + 1)
+
+    tickerRef.current.style.transform = `translateX(${dist}rem)`
+
+    elapsed < DECEL_TIME_MS
+      ? window.requestAnimationFrame(decelerate)
+      : (decelStart = undefined)
+  }
+
+  const accelerate = (timestamp) => {
+    if (accelStart === undefined) {
+      tickerRef.current.style.transform = `translateX(${-0.375}rem)`
+      accelStart = timestamp
+    }
+    const elapsed = timestamp - accelStart
+
+    const dist = -0.375 + 0.375 * Math.log10(9 * (elapsed / ACCEL_TIME_MS) + 1)
+
+    tickerRef.current.style.transform = `translateX(${Math.min(dist, 0)}rem)`
+
+    elapsed < ACCEL_TIME_MS
+      ? window.requestAnimationFrame(accelerate)
+      : (accelStart = undefined)
+  }
+
+  const startTicker = () => {
+    requestId = window.requestAnimationFrame(step)
+    window.requestAnimationFrame(accelerate)
+  }
+  const stopTicker = () => {
+    pauseStart = performance.now()
+    window.cancelAnimationFrame(requestId)
+    window.requestAnimationFrame(decelerate)
   }
 
   useEffect(() => {
     tickerRef.current.addEventListener('mouseenter', stopTicker)
     tickerRef.current.addEventListener('mouseleave', startTicker)
-
-    startTicker()
+    requestId = window.requestAnimationFrame(step)
 
     return () => {
       tickerRef.current.removeEventListener('mouseenter', stopTicker)
       tickerRef.current.removeEventListener('mouseleave', startTicker)
-
-      stopTicker()
+      window.cancelAnimationFrame(requestId)
     }
   }, [])
-
-  function startTicker() {
-    requestId = window.requestAnimationFrame(step)
-  }
-  function stopTicker() {
-    pauseStart = performance.now()
-    window.cancelAnimationFrame(requestId)
-  }
 
   /* Ticker – Easter egg: define custom <marquee> element */
 
@@ -110,7 +144,7 @@ export default function Ticker() {
       </button>
       <dl
         ref={tickerRef}
-        className="grid grid-flow-col grid-rows-[1fr_0] w-0 grow cursor-pointer whitespace-nowrap border border-red-500/50"
+        className="relative grid grid-flow-col grid-rows-[1fr_0] w-0 grow cursor-pointer whitespace-nowrap"
       >
         {txs.map((tx, i) => {
           return (
