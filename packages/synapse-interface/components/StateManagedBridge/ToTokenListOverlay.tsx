@@ -115,12 +115,8 @@ export const ToTokenListOverlay = () => {
     const results = fuse.search(searchStr).map((i) => i.item)
 
     possibleTokens = results.filter((item) => item.source === 'possibleTokens')
-    remainingChainTokens = results.filter(
-      (item) => item.source === 'remainingChainTokens'
-    )
-    allOtherToTokens = results.filter(
-      (item) => item.source === 'allOtherToTokens'
-    )
+    remainingChainTokens = results.filter((item) => item.source === 'remainingChainTokens')
+    allOtherToTokens = results.filter((item) => item.source === 'allOtherToTokens')
   }
 
 

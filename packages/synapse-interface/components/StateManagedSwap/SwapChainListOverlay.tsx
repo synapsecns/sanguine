@@ -68,9 +68,7 @@ export const SwapChainListOverlay = () => {
     const results = fuse.search(searchStr).map((i) => i.item)
 
     possibleChains = results.filter((item) => item.source === 'possibleChains')
-    remainingChains = results.filter(
-      (item) => item.source === 'remainingChains'
-    )
+    remainingChains = results.filter((item) => item.source === 'remainingChains')
   }
 
   const handleSetSwapChainId = (chainId) => {

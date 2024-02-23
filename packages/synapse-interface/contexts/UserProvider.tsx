@@ -24,7 +24,6 @@ import { isBlacklisted } from '@/utils/isBlacklisted'
 import { screenAddress } from '@/utils/screenAddress'
 import { getCoingeckoPrices } from '@/utils/actions/getPrices'
 import { fetchFeeAndRebate } from '@/slices/feeAndRebateSlice'
-import { useHasMounted } from '@/utils/hooks/useHasMounted'
 
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
@@ -34,7 +33,6 @@ const WalletStatusContext = createContext(undefined)
 export const UserProvider = ({ children }) => {
   const dispatch = useAppDispatch()
   const { chain } = useNetwork()
-  const isClient = useHasMounted()
 
   const router = useRouter()
   const { query, pathname } = router
@@ -60,20 +58,18 @@ export const UserProvider = ({ children }) => {
 
 
   useEffect(() => {
-    if (isClient) {
-      dispatch(fetchSynPrices())
-      dispatch(fetchEthPrice())
-      dispatch(fetchAvaxPrice())
-      dispatch(fetchMetisPrice())
-      dispatch(fetchArbPrice())
-      dispatch(fetchGmxPrice())
-      dispatch(fetchAllEthStablecoinPrices())
-      dispatch(fetchCoingeckoPrices())
-      dispatch(fetchMusdcPrice())
-      dispatch(fetchDaiePrice())
-      dispatch(fetchFeeAndRebate())
-    }
-  }, [isClient])
+    dispatch(fetchSynPrices())
+    dispatch(fetchEthPrice())
+    dispatch(fetchAvaxPrice())
+    dispatch(fetchMetisPrice())
+    dispatch(fetchArbPrice())
+    dispatch(fetchGmxPrice())
+    dispatch(fetchAllEthStablecoinPrices())
+    dispatch(fetchCoingeckoPrices())
+    dispatch(fetchMusdcPrice())
+    dispatch(fetchDaiePrice())
+    dispatch(fetchFeeAndRebate())
+  }, [])
 
   useEffect(() => {
     if (chain) {
@@ -99,7 +95,7 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     (async () => {
-      if (isClient && address && chain?.id) {
+      if (address && chain?.id) {
         try {
           await dispatch(fetchAndStorePortfolioBalances(address))
         } catch (error) {
@@ -111,7 +107,7 @@ export const UserProvider = ({ children }) => {
         dispatch(resetPortfolioState())
       }
     })()
-  }, [chain, address, isClient])
+  }, [chain, address])
 
   useEffect(() => {
     if (address) {
