@@ -1,18 +1,18 @@
 import _ from 'lodash'
-import { memo, useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 
 import { Token } from '@/utils/types'
 import { CHAINS_BY_ID } from '@/constants/chains'
 
 export const AvailableChains = ({
     token,
-    excludedChainIds=[]
+    pausedChainIds=[]
 }: {
   token: Token
-  excludedChainIds?: string[]
+  pausedChainIds?: string[]
 }) => {
   const [isHovered, setIsHovered] = useState(false)
-  const chainIds = _.difference(Object.keys(token.addresses), excludedChainIds)
+  const chainIds = _.difference(Object.keys(token.addresses), pausedChainIds)
   const hasOneChain = chainIds.length > 0
   const hasMultipleChains = chainIds.length > 1
   const numOverTwoChains = chainIds.length - 2 > 0 ? chainIds.length - 2 : 0

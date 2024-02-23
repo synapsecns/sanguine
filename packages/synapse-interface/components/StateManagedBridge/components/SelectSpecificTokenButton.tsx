@@ -20,8 +20,9 @@ import {
 } from '@/utils/hooks/useStipEligibility'
 import { getUnderlyingBridgeTokens } from '@/utils/getUnderlyingBridgeTokens'
 import { ARBITRUM, AVALANCHE, ETH } from '@/constants/chains/master'
-import { AvailableChains } from '@/components/bridgeSwap/TokenButton/AvailableChains'
-import { TokenBalance } from '@/components/bridgeSwap/TokenButton/TokenBalance'
+
+import { SelectTokenButton } from '@/components/bridgeSwap/SelectTokenButton'
+
 export const SelectSpecificTokenButton = ({
   showAllChains,
   isOrigin,
@@ -47,56 +48,23 @@ export const SelectSpecificTokenButton = ({
   isBestExchangeRate?: boolean
   estimatedDurationInSeconds?: number
 }) => {
-  const ref = useRef<any>(null)
-  const isCurrentlySelected = selectedToken?.routeSymbol === token?.routeSymbol
-  const { fromChainId, toChainId, fromToken, toToken } = useBridgeState()
-
-  useEffect(() => {
-    if (active) {
-      ref?.current?.focus()
-    }
-  }, [active])
+  const { fromChainId, toChainId } = useBridgeState()
 
   const chainId = isOrigin ? fromChainId : toChainId
 
-  let bgClassName
-
-  const classNameForMenuItemStyle = getMenuItemStyleForCoin(token?.color)
-
-  if (isCurrentlySelected) {
-    bgClassName = `${getMenuItemBgForCoin(
-      token?.color
-    )} ${getBorderStyleForCoin(token?.color)}`
-  } else {
-    bgClassName = getBorderStyleForCoinHover(token?.color)
-  }
-
   return (
-    <button
-      data-test-id="select-specific-token-button"
-      ref={ref}
-      tabIndex={active ? 1 : 0}
+    <SelectTokenButton
+      showAllChains={showAllChains}
+      token={token}
+      active={active}
+      selectedToken={selectedToken}
+      chainId={chainId}
+      isOrigin={isOrigin}
       onClick={onClick}
-      className={`
-        flex items-center
-        transition-all duration-75
-        w-full
-        px-2 py-1
-        cursor-pointer
-        rounded-md
-        border border-slate-400/10
-        mb-1
-        ${alternateBackground ? '' : !isCurrentlySelected && 'bg-slate-400/10' }
-        ${bgClassName}
-        ${classNameForMenuItemStyle}
-      `}
+      isEligible={isTokenEligible(token)}
+      pausedChainIds={findChainIdsWithPausedToken(token.routeSymbol)}
+      alternateBackground={alternateBackground}
     >
-      <ButtonContent
-        token={token}
-        chainId={chainId}
-        isOrigin={isOrigin}
-        showAllChains={showAllChains}
-      />
       {isLoadingExchangeRate ? (
         <LoadingDots className="mr-8 opacity-50" />
       ) : (
@@ -112,7 +80,7 @@ export const SelectSpecificTokenButton = ({
           )}
         </>
       )}
-    </button>
+    </SelectTokenButton>
   )
 }
 
@@ -167,70 +135,8 @@ export const OptionDetails = ({
   )
 }
 
-const ButtonContent = memo(
-  ({
-    token,
-    chainId,
-    isOrigin,
-    showAllChains,
-  }: {
-    token: Token
-    chainId: number
-    isOrigin: boolean
-    showAllChains: boolean
-  }) => {
-    const portfolioBalances = usePortfolioBalances()
 
-    const parsedBalance = portfolioBalances[chainId]?.find(
-      (tb) => tb.token.addresses[chainId] === token.addresses[chainId]
-    )?.parsedBalance
 
-    return (
-      <div data-test-id="button-content" className="flex items-center w-full">
-        <img
-          alt="token image"
-          className="w-8 h-8 ml-2 mr-4 rounded-full"
-          src={token?.icon?.src}
-        />
-        <Coin token={token} showAllChains={showAllChains} isOrigin={isOrigin} />
-        {isOrigin && (
-          <TokenBalance token={token} parsedBalance={parsedBalance} />
-        )}
-      </div>
-    )
-  }
-)
-
-const Coin = ({
-  token,
-  showAllChains,
-  isOrigin,
-}: {
-  token
-  showAllChains: boolean
-  isOrigin: boolean
-}) => {
-  const isEligible = isTokenEligible(token)
-
-  return (
-    <div className="flex-col text-left">
-      <div className="text-lg text-primaryTextColor">{token?.symbol}</div>
-      <div className="flex items-center space-x-2 text-xs text-secondaryTextColor">
-        {isOrigin && isEligible ? (
-          <div className="text-greenText">{ELIGIBILITY_DEFAULT_TEXT}</div>
-        ) : (
-          <div>{token?.name}</div>
-        )}
-        {showAllChains &&
-          <AvailableChains
-            token={token}
-            excludedChainIds={findChainIdsWithPausedToken(token.routeSymbol)}
-          />
-        }
-      </div>
-    </div>
-  )
-}
 
 /*
 Synapse:Bridge
