@@ -205,6 +205,7 @@ func (d *DBSuite) TestGetEmpty() {
 	})
 }
 
+// nolint: cyclop
 func (d *DBSuite) TestBatching() {
 	d.RunOnAllDatastores(func(testStore datastore.Batching) {
 		b, err := testStore.Batch(d.GetTestContext())

@@ -26,6 +26,8 @@ type P2PTestSuite struct {
 }
 
 func NewP2PSuite(t *testing.T) *P2PTestSuite {
+	t.Helper()
+
 	return &P2PTestSuite{
 		TestSuite: testsuite.NewTestSuite(t),
 	}
