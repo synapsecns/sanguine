@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import { IExecutionFees } from "./interfaces/IExecutionFees.sol";
-import { ExecutionFeesEvents } from "./events/ExecutionFeesEvents.sol";
+import {IExecutionFees} from "./interfaces/IExecutionFees.sol";
+import {ExecutionFeesEvents} from "./events/ExecutionFeesEvents.sol";
 
-import { Address } from "@openzeppelin/contracts/utils/Address.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 contract ExecutionFees is ExecutionFeesEvents, IExecutionFees {
     using Address for address payable;
@@ -20,7 +20,7 @@ contract ExecutionFees is ExecutionFeesEvents, IExecutionFees {
 
     address public icClient;
 
-    constructor (address _icClient) {
+    constructor(address _icClient) {
         icClient = _icClient;
     }
 
@@ -39,7 +39,15 @@ contract ExecutionFees is ExecutionFeesEvents, IExecutionFees {
     }
 
     // @inheritdoc IExecutionFees
-    function recordExecutor(uint256 dstChainId, bytes32 transactionId, address executor) external override onlyRecorder {
+    function recordExecutor(
+        uint256 dstChainId,
+        bytes32 transactionId,
+        address executor
+    )
+        external
+        override
+        onlyRecorder
+    {
         require(_transactionsByExecutor[transactionId] == address(0), "ExecutionFees: Executor already recorded");
         require(_executionFees[transactionId] > 0, "ExecutionFees: No execution fee found");
         _transactionsByExecutor[transactionId] = executor;
