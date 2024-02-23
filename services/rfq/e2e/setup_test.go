@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/ethereum/go-ethereum/common"
+	cctpTest "github.com/synapsecns/sanguine/services/cctp-relayer/testutil"
 
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -113,6 +114,8 @@ func (i *IntegrationSuite) setupBackends() {
 
 	i.omniServer = testhelper.NewOmnirpcServer(i.GetTestContext(), i.T(), i.originBackend, i.destBackend)
 	i.omniClient = omnirpcClient.NewOmnirpcClient(i.omniServer, i.metrics, omnirpcClient.WithCaptureReqRes())
+
+	i.setupCCTP()
 }
 
 // setupBe sets up one backend
@@ -148,6 +151,45 @@ func (i *IntegrationSuite) setupBE(backend backends.SimulatedTestBackend) {
 		}(user)
 	}
 
+}
+
+func (i *IntegrationSuite) setupCCTP() {
+	for _, backend := range core.ToSlice(i.originBackend, i.destBackend) {
+		cctpContract, cctpHandle := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), backend)
+		_, tokenMessengeHandle := i.cctpDeployManager.GetMockTokenMessengerType(i.GetTestContext(), backend)
+
+		// on the above contract, set the remote for each backend
+		for _, backendToSetFrom := range core.ToSlice(i.originBackend, i.destBackend) {
+			// we don't need to set the backends own remote!
+			if backendToSetFrom.GetChainID() == backend.GetChainID() {
+				continue
+			}
+
+			remoteCCTP, _ := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), backendToSetFrom)
+			remoteMessenger, _ := i.cctpDeployManager.GetMockTokenMessengerType(i.GetTestContext(), backendToSetFrom)
+
+			txOpts := backend.GetTxContext(i.GetTestContext(), cctpContract.OwnerPtr())
+			// set the remote cctp contract on this cctp contract
+			// TODO: verify chainID / domain are correct
+			remoteDomain := cctpTest.ChainIDDomainMap[uint32(remoteCCTP.ChainID().Int64())]
+
+			tx, err := cctpHandle.SetRemoteDomainConfig(txOpts.TransactOpts,
+				big.NewInt(remoteCCTP.ChainID().Int64()), remoteDomain, remoteCCTP.Address())
+			i.Require().NoError(err)
+			backend.WaitForConfirmation(i.GetTestContext(), tx)
+
+			// register the remote token messenger on the tokenMessenger contract
+			_, err = tokenMessengeHandle.SetRemoteTokenMessenger(txOpts.TransactOpts, uint32(backendToSetFrom.GetChainID()), addressToBytes32(remoteMessenger.Address()))
+			i.Nil(err)
+		}
+	}
+}
+
+// addressToBytes32 converts an address to a bytes32.
+func addressToBytes32(addr common.Address) [32]byte {
+	var buf [32]byte
+	copy(buf[:], addr[:])
+	return buf
 }
 
 // Approve checks if the token is approved and approves it if not.
@@ -193,11 +235,14 @@ func (i *IntegrationSuite) setupRelayer() {
 	relayerAPIPort, err := freeport.GetFreePort()
 	i.NoError(err)
 	dsn := filet.TmpDir(i.T(), "")
+	cctpContractOrigin, _ := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), i.originBackend)
+	cctpContractDest, _ := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), i.destBackend)
 	cfg := relconfig.Config{
 		// generated ex-post facto
 		Chains: map[int]relconfig.ChainConfig{
 			originBackendChainID: {
 				RFQAddress:    i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeType).Address().String(),
+				CCTPAddress:   cctpContractOrigin.Address().Hex(),
 				Confirmations: 0,
 				Tokens: map[string]relconfig.TokenConfig{
 					"ETH": {
@@ -210,6 +255,7 @@ func (i *IntegrationSuite) setupRelayer() {
 			},
 			destBackendChainID: {
 				RFQAddress:    i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeType).Address().String(),
+				CCTPAddress:   cctpContractDest.Address().Hex(),
 				Confirmations: 0,
 				Tokens: map[string]relconfig.TokenConfig{
 					"ETH": {
@@ -283,6 +329,13 @@ func (i *IntegrationSuite) setupRelayer() {
 
 				cfg.QuotableTokens[quotableTokenID] = append(cfg.QuotableTokens[quotableTokenID], fmt.Sprintf("%d-%s", otherBackend.GetChainID(), otherToken))
 			}
+
+			// register the token with cctp contract
+			cctpContract, cctpHandle := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), backend)
+			txOpts := backend.GetTxContext(i.GetTestContext(), cctpContract.OwnerPtr())
+			tx, err := cctpHandle.AddToken(txOpts.TransactOpts, "CCTP.USDC", tokenCaller.Address(), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
+			i.Require().NoError(err)
+			backend.WaitForConfirmation(i.GetTestContext(), tx)
 		}
 	}
 

@@ -14,6 +14,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer/localsigner"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
+	cctpTest "github.com/synapsecns/sanguine/services/cctp-relayer/testutil"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
@@ -24,9 +25,10 @@ import (
 
 type IntegrationSuite struct {
 	*testsuite.TestSuite
-	manager       *testutil.DeployManager
-	originBackend backends.SimulatedTestBackend
-	destBackend   backends.SimulatedTestBackend
+	manager           *testutil.DeployManager
+	cctpDeployManager *cctpTest.DeployManager
+	originBackend     backends.SimulatedTestBackend
+	destBackend       backends.SimulatedTestBackend
 	//omniserver is the omnirpc server address
 	omniServer    string
 	omniClient    omnirpcClient.RPCClient
@@ -68,6 +70,7 @@ func (i *IntegrationSuite) SetupTest() {
 	}
 
 	i.manager = testutil.NewDeployManager(i.T())
+	i.cctpDeployManager = cctpTest.NewDeployManager(i.T())
 	// TODO: consider jaeger
 	i.metrics = metrics.NewNullHandler()
 	// setup backends for ethereum & omnirpc
