@@ -28,9 +28,13 @@ contract ExecutionFees is AccessControl, ExecutionFeesEvents, IExecutionFees {
     // @inheritdoc IExecutionFees
     function addExecutionFee(uint256 dstChainId, bytes32 transactionId) external payable override {
         if (msg.value == 0) revert ExecutionFees__ZeroAmount();
-        if (_transactionsByExecutor[transactionId] != address(0)) revert ExecutionFees__AlreadyRecorded();
         _executionFees[transactionId] += msg.value;
         emit ExecutionFeeAdded(dstChainId, transactionId, _executionFees[transactionId]);
+        address executor = _transactionsByExecutor[transactionId];
+        // If the executor is recorded, the previous fee has been awarded already. Award the new fee.
+        if (executor != address(0)) {
+            _awardFee(executor, msg.value);
+        }
     }
 
     // @inheritdoc IExecutionFees
@@ -46,12 +50,9 @@ contract ExecutionFees is AccessControl, ExecutionFeesEvents, IExecutionFees {
         if (executor == address(0)) revert ExecutionFees__ZeroAddress();
         if (_transactionsByExecutor[transactionId] != address(0)) revert ExecutionFees__AlreadyRecorded();
         uint256 fee = _executionFees[transactionId];
-        if (fee == 0) revert ExecutionFees__ZeroAmount();
         _transactionsByExecutor[transactionId] = executor;
         emit ExecutorRecorded(dstChainId, transactionId, executor);
-        _accumulatedRewards[executor] += fee;
-        _unclaimedRewards[executor] += fee;
-        emit ExecutionFeesAwarded(executor, fee);
+        _awardFee(executor, fee);
     }
 
     // @inheritdoc IExecutionFees
@@ -71,5 +72,12 @@ contract ExecutionFees is AccessControl, ExecutionFeesEvents, IExecutionFees {
     // @inheritdoc IExecutionFees
     function getUnclaimedRewards(address executor) external view override returns (uint256 unclaimed) {
         return _unclaimedRewards[executor];
+    }
+
+    /// @dev Award the executor with the fee for completing the transaction.
+    function _awardFee(address executor, uint256 fee) internal {
+        _accumulatedRewards[executor] += fee;
+        _unclaimedRewards[executor] += fee;
+        emit ExecutionFeesAwarded(executor, fee);
     }
 }
