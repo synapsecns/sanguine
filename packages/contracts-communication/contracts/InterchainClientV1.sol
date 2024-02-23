@@ -225,10 +225,14 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         executedTransactions[transactionId] = true;
 
         OptionsV1 memory decodedOptions = icTx.options.decodeOptionsV1();
+        if (msg.value != decodedOptions.gasAirdrop) {
+            revert InterchainClientV1__IncorrectMsgValue(msg.value, decodedOptions.gasAirdrop);
+        }
         // We should always use at least as much as the requested gas limit.
         // The executor can specify a higher gas limit if they wanted.
         if (decodedOptions.gasLimit > gasLimit) gasLimit = decodedOptions.gasLimit;
-        IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).appReceive{gas: gasLimit}({
+        // Pass the full msg.value to the app: we have already checked that it matches the requested gas airdrop.
+        IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).appReceive{gas: gasLimit, value: msg.value}({
             srcChainId: icTx.srcChainId,
             sender: icTx.srcSender,
             nonce: icTx.nonce,
