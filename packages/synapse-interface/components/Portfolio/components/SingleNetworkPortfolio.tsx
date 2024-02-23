@@ -1,22 +1,24 @@
-import React, { useState, useEffect } from 'react'
-import type { Address } from 'viem'
+import React, { useEffect } from 'react'
+
 import { useDispatch } from 'react-redux'
 import _ from 'lodash'
+import type { Address } from 'viem'
+import type { Chain } from '@/utils/types'
 import { CHAINS_BY_ID } from '@/constants/chains'
+import { TWITTER_URL, DISCORD_URL } from '@/constants/urls'
 import {
   TokenAndBalance,
   sortTokensByBalanceDescending,
 } from '@/utils/actions/fetchPortfolioBalances'
-import type { Chain } from '@/utils/types'
+
+import { FetchState } from '@/slices/portfolio/actions'
+import { setFromToken, setToToken } from '@/slices/bridge/reducer'
+
+import { WarningMessage } from '@/components/Warning'
 import { PortfolioAccordion } from './PortfolioAccordion'
 import { PortfolioConnectButton } from './PortfolioConnectButton'
 import { EmptyPortfolioContent } from './EmptyPortfolioContent'
-import { FetchState } from '@/slices/portfolio/actions'
 import { PortfolioTokenAsset } from './PortfolioTokenAsset'
-
-import { WarningMessage } from '../../Warning'
-import { TWITTER_URL, DISCORD_URL } from '@/constants/urls'
-import { setFromToken, setToToken } from '@/slices/bridge/reducer'
 import { PortfolioNetwork } from './PortfolioNetwork'
 import { ChainTokens } from './ChainTokens'
 

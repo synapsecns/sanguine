@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import { TokenAndBalance } from '@/utils/actions/fetchPortfolioBalances'
+import type { TokenAndBalance } from '@/utils/actions/fetchPortfolioBalances'
 import { HoverContent } from './HoverContent'
 
 export function HoverTokenAndBalance({

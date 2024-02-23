@@ -1,17 +1,20 @@
-import { useCallback } from 'react'
 import _ from 'lodash'
+
+import { useCallback } from 'react'
+import Image from 'next/image'
+
+import type { Token } from '@/utils/types'
+import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'
+import { formatBigIntToString } from '@/utils/bigint/format'
 import { useAppDispatch } from '@/store/hooks'
+import { useBridgeState } from '@/slices/bridge/hooks'
 import {
   setFromChainId,
   setFromToken,
   updateFromValue,
 } from '@/slices/bridge/reducer'
-import type { Token } from '@/utils/types'
-import { formatBigIntToString } from '@/utils/bigint/format'
-import { inputRef } from '../../StateManagedBridge/InputContainer'
-import Image from 'next/image'
-import { useBridgeState } from '@/slices/bridge/hooks'
-import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'
+import { inputRef } from '@/components/StateManagedBridge/InputContainer'
+
 import { PortfolioAssetActionButton } from './PortfolioAssetActionButton'
 
 const handleFocusOnBridgeInput = () => {

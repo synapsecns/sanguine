@@ -1,7 +1,7 @@
 import { useState } from "react"
 import Image from "next/image"
 
-import { TokenAndBalance } from "@/utils/actions/fetchPortfolioBalances"
+import type { TokenAndBalance } from "@/utils/actions/fetchPortfolioBalances"
 import { HoverTokenAndBalance } from "./HoverTokenAndBalance"
 
 export const ChainTokens = ({

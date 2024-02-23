@@ -14,8 +14,6 @@ import { getTransactionHashExplorerLink } from '../Transaction/components/Transa
 import { ClearSearchButton } from './ClearSearchButton'
 import { useSearchInputState } from '../helpers/useSearchInputStatus'
 
-
-
 export const SearchBar = () => {
   const dispatch = useAppDispatch()
   const { onSearchInput, clearSearchInput } = usePortfolioActionHandlers()

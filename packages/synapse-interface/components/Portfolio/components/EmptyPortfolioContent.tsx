@@ -1,5 +1,5 @@
-import type { Address } from 'viem'
 import Link from 'next/link'
+import type { Address } from 'viem'
 import type { Chain } from '@/utils/types'
 import { shortenAddress } from '@/utils/shortenAddress'
 import { DISCORD_URL, TWITTER_URL } from '@/constants/urls'

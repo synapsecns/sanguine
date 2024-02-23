@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import type { Address } from 'wagmi'
-import {
+import type {
   NetworkTokenBalances,
   TokenAndBalance,
 } from '@/utils/actions/fetchPortfolioBalances'

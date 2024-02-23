@@ -2,7 +2,7 @@ import _ from 'lodash'
 import { zeroAddress } from 'viem'
 
 import { WETH } from '@/constants/tokens/bridgeable'
-import { Token } from './types'
+import type { Token } from '@/utils/types'
 
 const replaceKey = (
   obj: Record<string, bigint>,

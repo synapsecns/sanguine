@@ -2,10 +2,11 @@ import { multicall, Address, erc20ABI } from '@wagmi/core'
 import { zeroAddress } from 'viem'
 
 import multicallABI from '@/constants/abis/multicall.json'
-import type { Token } from '@/utils/types'
-import { formatBigIntToString } from './bigint/format'
-import { TokenAndBalance } from './actions/fetchPortfolioBalances'
 import { CHAINS_BY_ID } from '@/constants/chains'
+import type { Token } from '@/utils/types'
+import type { TokenAndBalance } from '@/utils/actions/fetchPortfolioBalances'
+import { formatBigIntToString } from '@/utils/bigint/format'
+
 
 export const sortByVisibilityRank = (tokens: Token[]) => {
   if (tokens === undefined) {
