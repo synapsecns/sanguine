@@ -1,15 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {IExecutionFees} from "./interfaces/IExecutionFees.sol";
 import {ExecutionFeesEvents} from "./events/ExecutionFeesEvents.sol";
+import {IExecutionFees} from "./interfaces/IExecutionFees.sol";
 
-import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 contract ExecutionFees is AccessControl, ExecutionFeesEvents, IExecutionFees {
-    using Address for address payable;
-
     bytes32 public constant RECORDER_ROLE = keccak256("RECORDER_ROLE");
 
     mapping(uint256 chainId => mapping(bytes32 transactionId => uint256 fee)) internal _executionFees;
@@ -22,9 +20,10 @@ contract ExecutionFees is AccessControl, ExecutionFeesEvents, IExecutionFees {
     }
 
     // @inheritdoc IExecutionFees
-    function addExecutionFee(uint256 dstChainId, bytes32 transactionId) external payable override {
+    function addExecutionFee(uint256 dstChainId, bytes32 transactionId) external payable {
         if (msg.value == 0) revert ExecutionFees__ZeroAmount();
         _executionFees[dstChainId][transactionId] += msg.value;
+        // Use the new total fee as the event parameter.
         emit ExecutionFeeAdded(dstChainId, transactionId, _executionFees[dstChainId][transactionId]);
         address executor = _recordedExecutor[dstChainId][transactionId];
         // If the executor is recorded, the previous fee has been awarded already. Award the new fee.
@@ -40,7 +39,6 @@ contract ExecutionFees is AccessControl, ExecutionFeesEvents, IExecutionFees {
         address executor
     )
         external
-        override
         onlyRole(RECORDER_ROLE)
     {
         if (executor == address(0)) revert ExecutionFees__ZeroAddress();
@@ -52,39 +50,31 @@ contract ExecutionFees is AccessControl, ExecutionFeesEvents, IExecutionFees {
     }
 
     // @inheritdoc IExecutionFees
-    function claimExecutionFees(address executor) external override {
+    function claimExecutionFees(address executor) external {
         uint256 amount = _unclaimedRewards[executor];
         if (amount == 0) revert ExecutionFees__ZeroAmount();
         _unclaimedRewards[executor] = 0;
-        payable(executor).sendValue(amount);
+        Address.sendValue(payable(executor), amount);
         emit ExecutionFeesClaimed(executor, amount);
     }
 
     // @inheritdoc IExecutionFees
-    function getAccumulatedRewards(address executor) external view override returns (uint256 accumulated) {
+    function getAccumulatedRewards(address executor) external view returns (uint256 accumulated) {
         return _accumulatedRewards[executor];
     }
 
     // @inheritdoc IExecutionFees
-    function getUnclaimedRewards(address executor) external view override returns (uint256 unclaimed) {
+    function getUnclaimedRewards(address executor) external view returns (uint256 unclaimed) {
         return _unclaimedRewards[executor];
     }
 
     // @inheritdoc IExecutionFees
-    function getExecutionFee(uint256 dstChainId, bytes32 transactionId) external view override returns (uint256 fee) {
+    function getExecutionFee(uint256 dstChainId, bytes32 transactionId) external view returns (uint256 fee) {
         return _executionFees[dstChainId][transactionId];
     }
 
     // @inheritdoc IExecutionFees
-    function getRecordedExecutor(
-        uint256 dstChainId,
-        bytes32 transactionId
-    )
-        external
-        view
-        override
-        returns (address executor)
-    {
+    function getRecordedExecutor(uint256 dstChainId, bytes32 transactionId) external view returns (address executor) {
         return _recordedExecutor[dstChainId][transactionId];
     }
 
