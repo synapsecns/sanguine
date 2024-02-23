@@ -169,7 +169,7 @@ func (e *Executor) executeTransaction(ctx context.Context, request db.Transactio
 		transactor.GasLimit = request.Options.GasLimit.Uint64()
 		transactor.Value = request.Options.GasAirdrop
 
-		return contract.InterchainExecute(transactor, request.EncodedTX)
+		return contract.InterchainExecute(transactor, request.Options.GasLimit, request.EncodedTX)
 	})
 	if err != nil {
 		return fmt.Errorf("could not submit transaction: %w", err)
@@ -294,16 +294,15 @@ func (e *Executor) runChainIndexer(parentCtx context.Context, chainID int) (err 
 				Message:     event.Message,
 			})
 
-			decodedOptions, err := e.clientContracts[chainID].EncodeOptionsV1()
-
+			decodedOptions, err := e.clientContracts[chainID].DecodeOptions(&bind.CallOpts{Context: ctx}, event.Options)
 			if err != nil {
-				return fmt.Errorf("could not encode transaction: %w", err)
+				return fmt.Errorf("could not decode options: %w", err)
 			}
 
-			err = e.db.StoreInterchainTransaction(ctx, &db.TransactionSent{
-				TransactionID: event.TransactionId,
-			})
-
+			err = e.db.StoreInterchainTransaction(ctx, big.NewInt(int64(chainID)), event, &decodedOptions, encodedTX)
+			if err != nil {
+				return fmt.Errorf("could not store interchain transaction: %w", err)
+			}
 		}
 
 		// stop the world.

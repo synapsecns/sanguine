@@ -16,7 +16,6 @@ import {OptionsLib, OptionsV1} from "./libs/Options.sol";
 import {TypeCasts} from "./libs/TypeCasts.sol";
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {OptionsLib} from "../flattened/InterchainApp.sol";
 
 /**
  * @title InterchainClientV1

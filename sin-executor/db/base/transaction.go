@@ -52,7 +52,7 @@ func (s InterchainTransaction) ToTransactionSent() (db.TransactionSent, error) {
 	}, nil
 }
 
-func fromInterchainTX(chainID *big.Int, interchainTx *interchainclient.InterchainClientV1InterchainTransactionSent, encodedTX []byte) InterchainTransaction {
+func fromInterchainTX(chainID *big.Int, interchainTx *interchainclient.InterchainClientV1InterchainTransactionSent, options *interchainclient.OptionsV1, encodedTX []byte) InterchainTransaction {
 	return InterchainTransaction{
 		EncodedTx:     common.Bytes2Hex(encodedTX),
 		TransactionID: common.Bytes2Hex(interchainTx.TransactionId[:]),
@@ -64,8 +64,8 @@ func fromInterchainTX(chainID *big.Int, interchainTx *interchainclient.Interchai
 	}
 }
 
-func (s Store) StoreInterchainTransaction(ctx context.Context, originChainID *big.Int, interchainTx *interchainclient.InterchainClientV1InterchainTransactionSent, encodedTX []byte) error {
-	dbTx := s.db.WithContext(ctx).Model(&InterchainTransaction{}).Clauses(clause.OnConflict{DoNothing: true}).Create(fromInterchainTX(originChainID, interchainTx, encodedTX))
+func (s Store) StoreInterchainTransaction(ctx context.Context, originChainID *big.Int, interchainTx *interchainclient.InterchainClientV1InterchainTransactionSent, options *interchainclient.OptionsV1, encodedTX []byte) error {
+	dbTx := s.db.WithContext(ctx).Model(&InterchainTransaction{}).Clauses(clause.OnConflict{DoNothing: true}).Create(fromInterchainTX(originChainID, interchainTx, options, encodedTX))
 	if dbTx.Error != nil {
 		return fmt.Errorf("could not store interchain transaction: %w", dbTx.Error)
 	}

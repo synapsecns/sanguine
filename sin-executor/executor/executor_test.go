@@ -29,7 +29,7 @@ func (i *InterchainSuite) TestE2E() {
 	originModule := i.deployManager.Get(i.GetTestContext(), i.originChain, testutil.InterchainModuleMock)
 	executionMock := i.deployManager.Get(i.GetTestContext(), i.originChain, testutil.ExecutionServiceMock)
 
-	tx, err := i.originModule.InterchainSend(auth.TransactOpts, i.destChain.GetBigChainID(), receiver, executionMock.Address(), []byte("hello"), encodedOptions, []common.Address{originModule.Address()})
+	tx, err := i.originModule.InterchainSend(auth.TransactOpts, i.destChain.GetBigChainID(), receiver, executionMock.Address(), []common.Address{originModule.Address()}, encodedOptions, []byte("hello"))
 	i.Require().NoError(err)
 	i.originChain.WaitForConfirmation(i.GetTestContext(), tx)
 
@@ -70,7 +70,7 @@ func (i *InterchainSuite) TestE2E() {
 	go func() {
 		for {
 			time.Sleep(time.Second * 3)
-			// do some txes to up block.tmie
+			// do some txes to up block.time
 			i.originChain.GetFundedAccount(i.GetTestContext(), big.NewInt(1))
 			i.destChain.GetFundedAccount(i.GetTestContext(), big.NewInt(1))
 		}
