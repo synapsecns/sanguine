@@ -23,10 +23,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
 
-
-
-
-
 ## [0.1.285](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.1.284...@synapsecns/synapse-interface@0.1.285) (2024-02-21)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
