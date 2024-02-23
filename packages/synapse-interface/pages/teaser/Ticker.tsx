@@ -44,45 +44,63 @@ const formatTimestamp = (tx) => {
 
 export default function Ticker() {
   const tickerRef = useRef(null)
+  let left = 0
 
   let start
   let pauseStart
   let requestId
   const PX_PER_SECOND = -30 / 1000
 
+  // function step(timestamp) {
+  //   if (start === undefined) {
+  //     start = timestamp
+  //   }
+
+  //   if (pauseStart) {
+  //     start += timestamp - pauseStart
+  //     pauseStart = undefined
+  //   }
+
+  //   const dl = tickerRef.current
+  //   if (dl === null) return
+  //   const { left, width } = dl.firstElementChild.getBoundingClientRect()
+
+  //   if (left < -width) {
+  //     start -= width / PX_PER_SECOND
+  //     dl.appendChild(dl.firstElementChild) // <dt>
+  //     dl.appendChild(dl.firstElementChild) // <dd>
+  //   }
+
+  //   dl.style.transform = `translateX(${PX_PER_SECOND * (timestamp - start)}px)`
+
+  //   requestId = window.requestAnimationFrame(step)
+  // }
+
+  // test 2
+
   function step(timestamp) {
-    if (start === undefined) {
-      start = timestamp
-    }
-
-    if (pauseStart) {
-      start += timestamp - pauseStart
-      pauseStart = undefined
-    }
-
-    const dl = tickerRef.current
-    if (dl === null) return
-    const { left, width } = dl.firstElementChild.getBoundingClientRect()
-
-    if (left < -width) {
-      start -= width / PX_PER_SECOND
-      dl.appendChild(dl.firstElementChild) // <dt>
-      dl.appendChild(dl.firstElementChild) // <dd>
-    }
-
-    dl.style.transform = `translateX(${PX_PER_SECOND * (timestamp - start)}px)`
-
     requestId = window.requestAnimationFrame(step)
+    left -= 1
+    tickerRef.current.style.transform = `translateX(${left}px)`
   }
 
   useEffect(() => {
     startTicker()
-    return () => window.cancelAnimationFrame(requestId)
+    return () => pauseTicker()
   }, [])
 
-  const startTicker = () => (requestId = window.requestAnimationFrame(step))
+  const startTicker = () => {
+    requestId = window.requestAnimationFrame(step)
+    console.log('start', requestId)
+  }
   const pauseTicker = () => {
-    pauseStart = performance.now()
+    // pauseStart = performance.now()
+    window.cancelAnimationFrame(requestId)
+    console.log('pause', requestId)
+  }
+
+  const pauseTicker2 = () => {
+    console.log('hi')
     window.cancelAnimationFrame(requestId)
   }
 
