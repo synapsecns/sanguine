@@ -61,12 +61,6 @@ func (p parserImpl) ParseEvent(log ethTypes.Log) (_ EventType, event interface{}
 			return noOpEvent, nil, false
 		}
 		return eventType, event, true
-	case InterchainOptionsV1Event:
-		event, err := p.filterer.ParseInterchainOptionsV1(log)
-		if err != nil {
-			return noOpEvent, nil, false
-		}
-		return eventType, event, true
 	}
 	return eventType, nil, false
 }
