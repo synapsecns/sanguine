@@ -225,8 +225,12 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         executedTransactions[transactionId] = true;
 
         OptionsV1 memory decodedOptions = icTx.options.decodeOptionsV1();
-
-        IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).appReceive{gas: decodedOptions.gasLimit}();
+        IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).appReceive{gas: decodedOptions.gasLimit}({
+            srcChainId: icTx.srcChainId,
+            sender: icTx.srcSender,
+            nonce: icTx.nonce,
+            message: icTx.message
+        });
         emit InterchainTransactionReceived(
             transactionId, icTx.dbNonce, icTx.srcChainId, icTx.srcSender, icTx.dstReceiver
         );

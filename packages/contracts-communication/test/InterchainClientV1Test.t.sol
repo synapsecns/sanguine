@@ -119,6 +119,7 @@ contract InterchainClientV1Test is Test {
         uint256 dbNonce = 2;
         bytes32 transactionID =
             keccak256(abi.encode(srcSender, SRC_CHAIN_ID, dstReceiver, DST_CHAIN_ID, message, nonce, options));
+        bytes memory expectedAppCalldata = abi.encodeCall(icApp.appReceive, (SRC_CHAIN_ID, srcSender, nonce, message));
 
         AppConfigV1 memory mockAppConfig = AppConfigV1({requiredResponses: 1, optimisticPeriod: 1 hours});
         vm.mockCall(
@@ -144,6 +145,8 @@ contract InterchainClientV1Test is Test {
         });
         // Skip ahead of optimistic period
         skip(mockAppConfig.optimisticPeriod + 1);
+        // Expect App to be called with the message
+        vm.expectCall({callee: address(icApp), msgValue: 0, gas: 200_000, data: expectedAppCalldata, count: 1});
         icClient.interchainExecute(abi.encode(transaction));
     }
 }
