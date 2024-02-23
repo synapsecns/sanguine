@@ -1,5 +1,5 @@
 import { Address, readContracts } from '@wagmi/core'
-import { SWAP_ABI } from '@abis/swap'
+import { SWAP_ABI } from '@/constants/abis/swap'
 
 type PoolFeeResponse = {
   result: [

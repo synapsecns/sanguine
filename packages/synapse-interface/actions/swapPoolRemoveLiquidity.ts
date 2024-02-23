@@ -4,7 +4,7 @@ import {
   waitForTransaction,
   writeContract,
 } from '@wagmi/core'
-import { TransactionReceipt } from 'viem'
+import type { TransactionReceipt } from 'viem'
 
 import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
 import { subtractSlippageBigInt } from '@/utils/slippage'

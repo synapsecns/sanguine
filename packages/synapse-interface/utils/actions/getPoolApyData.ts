@@ -1,11 +1,11 @@
 import { formatUnits } from '@ethersproject/units'
 import { readContracts, Address, erc20ABI } from '@wagmi/core'
-import type { Token } from '@types'
-import { MINICHEF_ABI } from '@abis/miniChef'
-
-import { getSynPrices } from '@/utils/actions/getPrices'
-import { SYN_ETH_SUSHI_TOKEN } from '@/constants/tokens/sushiMaster'
+import type { Token } from '@/utils/types'
+import { MINICHEF_ABI } from '@/constants/abis/miniChef'
 import { MINICHEF_ADDRESSES } from '@/constants/minichef'
+import { SYN_ETH_SUSHI_TOKEN } from '@/constants/tokens/sushiMaster'
+import { getSynPrices } from '@/utils/actions/getPrices'
+
 
 type PoolInfoResult = readonly [
   accSynapsePerShare: bigint,

@@ -320,4 +320,4 @@ export const AV_SWAP_WRAPPER_ABI = [
     stateMutability: 'nonpayable',
     type: 'function',
   },
-]
+] as const

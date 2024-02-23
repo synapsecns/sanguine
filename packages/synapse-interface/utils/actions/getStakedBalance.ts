@@ -1,5 +1,5 @@
 import { readContracts, ReadContractResult, Address } from '@wagmi/core'
-import { MINICHEF_ABI } from '@abis/miniChef'
+import { MINICHEF_ABI } from '@/constants/abis/miniChef'
 import type { Token } from '@types'
 
 type UserInfoResult = {

@@ -5,7 +5,8 @@ import {
   waitForTransaction,
   writeContract,
 } from '@wagmi/core'
-import { TransactionReceipt } from 'viem'
+import type { TransactionReceipt } from 'viem'
+
 
 import { MAX_UINT256 } from '@/constants'
 import { USDT } from '@/constants/tokens/bridgeable'

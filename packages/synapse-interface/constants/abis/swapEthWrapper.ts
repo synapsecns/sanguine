@@ -342,4 +342,4 @@ export const SWAP_ETH_WRAPPER_ABI = [
     stateMutability: 'payable',
     type: 'receive',
   },
-]
+] as const

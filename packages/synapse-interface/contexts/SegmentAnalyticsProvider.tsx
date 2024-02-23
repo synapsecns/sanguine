@@ -1,6 +1,6 @@
+import { createContext, useContext } from 'react'
 import { AnalyticsBrowser } from '@segment/analytics-next'
 import { getAccount } from '@wagmi/core'
-import { createContext, useContext } from 'react'
 
 import { isBlacklisted } from '@/utils/isBlacklisted'
 import { screenAddress } from '@/utils/screenAddress'

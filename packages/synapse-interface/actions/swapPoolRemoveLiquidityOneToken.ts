@@ -3,11 +3,11 @@ import {
   waitForTransaction,
   writeContract,
 } from '@wagmi/core'
-import { TransactionReceipt } from 'viem'
-
+import type { TransactionReceipt } from 'viem'
+import type { Token } from '@/utils/types'
 import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
 import { subtractSlippageBigInt } from '@/utils/slippage'
-import type { Token } from '@/utils/types'
+
 
 export const swapPoolRemoveLiquidityOneToken = async ({
   chainId,

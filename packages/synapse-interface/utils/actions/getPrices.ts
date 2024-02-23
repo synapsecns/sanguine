@@ -1,6 +1,6 @@
 import { readContract, fetchBalance, Address, multicall } from '@wagmi/core'
-import { SYN, WETH } from '@constants/tokens/bridgeable'
-import * as ALL_CHAINS from '@constants/chains/master'
+import { SYN, WETH } from '@/constants/tokens/bridgeable'
+import * as ALL_CHAINS from '@/constants/chains/master'
 import {
   CHAINLINK_ETH_PRICE_ADDRESSES,
   CHAINLINK_AVAX_PRICE_ADDRESSES,
@@ -12,9 +12,9 @@ import {
   CHAINLINK_USDC_PRICE_ADDRESSES,
   CHAINLINK_CRVUSD_PRICE_ADDRESSES,
   CHAINLINK_DAI_PRICE_ADDRESSES,
-} from '@constants/chainlink'
-import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
-import CHAINLINK_AGGREGATOR_ABI from '@abis/chainlinkAggregator.json'
+} from '@/constants/chainlink'
+import { SYN_ETH_SUSHI_TOKEN } from '@/constants/tokens/sushiMaster'
+import CHAINLINK_AGGREGATOR_ABI from '@/constants/abis/chainlinkAggregator.json'
 
 export const getEthPrice = async (): Promise<number> => {
   // the price result returned by latestAnswer is 8 decimals
