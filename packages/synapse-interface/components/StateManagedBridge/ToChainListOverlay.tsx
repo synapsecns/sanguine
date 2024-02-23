@@ -3,7 +3,6 @@ import { useDispatch } from 'react-redux'
 import Fuse from 'fuse.js'
 
 import * as ALL_CHAINS from '@constants/chains/master'
-import { SlideSearchBox } from '@components/bridgeSwap/SlideSearchBox'
 import { CHAINS_BY_ID, sortChains } from '@constants/chains'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { useBridgeState } from '@/slices/bridge/hooks'
@@ -13,10 +12,13 @@ import { SelectSpecificNetworkButton } from './components/SelectSpecificNetworkB
 import { CloseButton } from '@/components/buttons/CloseButton'
 import { NoSearchResultsFound } from '@/components/bridgeSwap/NoSearchResultsFound'
 
+import { SlideSearchBox } from '@components/bridgeSwap/SlideSearchBox'
+
 import { PAUSED_TO_CHAIN_IDS } from '@constants/chains'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 import { CHAIN_FUSE_OPTIONS } from '@/constants/fuseOptions'
 import { SearchResultsContainer } from '@/components/bridgeSwap/SearchResultsContainer'
+import { SearchOverlayContent } from '@/components/bridgeSwap/SearchOverlayContent'
 
 export const ToChainListOverlay = () => {
   const { toChainIds, toChainId } = useBridgeState()
@@ -91,22 +93,13 @@ export const ToChainListOverlay = () => {
   }
 
   return (
-    <div
-      ref={overlayRef}
-      data-test-id="toChain-list-overlay"
-      className="max-h-full pb-4 overflow-auto scrollbar-hide"
+    <SearchOverlayContent
+      overlayRef={overlayRef}
+      searchStr={searchStr}
+      onSearch={onSearch}
+      onClose={onClose}
+      type="chain"
     >
-      <div className="z-10 w-full px-2 ">
-        <div className="relative flex items-center my-2 font-medium">
-          <SlideSearchBox
-            placeholder="Filter by chain name, id, or native currency"
-            searchStr={searchStr}
-            onSearch={onSearch}
-          />
-          <CloseButton onClick={onClose} />
-        </div>
-      </div>
-      <div data-test-id={dataId} className="px-2 pt-2 pb-8 md:px-2">
         {possibleChains?.length > 0 && (
           <SearchResultsContainer label="To…">
             {possibleChains.map(({ id: mapChainId }, idx) =>
@@ -144,8 +137,6 @@ export const ToChainListOverlay = () => {
             )}
           </SearchResultsContainer>
         )}
-        <NoSearchResultsFound searchStr={searchStr} type="chain" />
-      </div>
-    </div>
+    </SearchOverlayContent>
   )
 }

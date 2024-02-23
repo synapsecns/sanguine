@@ -28,6 +28,7 @@ import { CloseButton } from '@/components/buttons/CloseButton'
 import { SearchResultsContainer } from '@/components/bridgeSwap/SearchResultsContainer'
 import { NoSearchResultsFound } from '@/components/bridgeSwap/NoSearchResultsFound'
 import { SlideSearchBox } from '@/components/bridgeSwap/SlideSearchBox'
+import { SearchOverlayContent } from '@/components/bridgeSwap/SearchOverlayContent'
 
 interface TokenWithRates extends Token {
   exchangeRate: bigint
@@ -198,52 +199,44 @@ export const ToTokenListOverlay = () => {
   }, [orderedPossibleTokens])
 
   return (
-    <div
-      ref={overlayRef}
-      data-test-id="to-token-list-overlay"
-      className="max-h-full pb-4 mt-2 overflow-auto scrollbar-hide"
+    <SearchOverlayContent
+      overlayRef={overlayRef}
+      searchStr={searchStr}
+      onSearch={onSearch}
+      onClose={onClose}
+      type="token"
     >
-      <div className="z-10 w-full px-2 ">
-        <div className="relative flex items-center mb-2 font-medium">
-          <SlideSearchBox
-            placeholder="Filter by symbol, contract, or name..."
-            searchStr={searchStr}
-            onSearch={onSearch}
-          />
-          <CloseButton onClick={onClose} />
-        </div>
-      </div>
       {orderedPossibleTokens?.length > 0 && (
         <SearchResultsContainer label="Receive…">
-            {orderedPossibleTokens.map((token: TokenWithRates, idx: number) =>
-                <SelectSpecificTokenButton
-                  isOrigin={false}
-                  key={idx}
-                  token={token}
-                  selectedToken={toToken}
-                  active={idx === currentIdx}
-                  showAllChains={false}
-                  isLoadingExchangeRate={isLoadingExchangeRate}
-                  isBestExchangeRate={totalPossibleTokens > 1 && idx === 0}
-                  exchangeRate={formatBigIntToString(
-                    token?.exchangeRate,
-                    18,
-                    4
-                  )}
-                  estimatedDurationInSeconds={
-                    toTokensBridgeQuotesStatus === FetchState.VALID &&
-                    bridgeQuotesMatchDestination &&
-                    token.estimatedTime
-                  }
-                  onClick={() => {
-                    if (token === toToken) {
-                      onClose()
-                    } else {
-                      handleSetToToken(toToken, token)
-                    }
-                  }}
-                />
-            )}
+          {orderedPossibleTokens.map((token: TokenWithRates, idx: number) =>
+            <SelectSpecificTokenButton
+              isOrigin={false}
+              key={idx}
+              token={token}
+              selectedToken={toToken}
+              active={idx === currentIdx}
+              showAllChains={false}
+              isLoadingExchangeRate={isLoadingExchangeRate}
+              isBestExchangeRate={totalPossibleTokens > 1 && idx === 0}
+              exchangeRate={formatBigIntToString(
+                token?.exchangeRate,
+                18,
+                4
+              )}
+              estimatedDurationInSeconds={
+                toTokensBridgeQuotesStatus === FetchState.VALID &&
+                bridgeQuotesMatchDestination &&
+                token.estimatedTime
+              }
+              onClick={() => {
+                if (token === toToken) {
+                  onClose()
+                } else {
+                  handleSetToToken(toToken, token)
+                }
+              }}
+            />
+          )}
         </SearchResultsContainer>
       )}
       {remainingChainTokens?.length > 0 && (
@@ -254,41 +247,40 @@ export const ToTokenListOverlay = () => {
               : 'All receivable tokens'
           }
         >
-            {remainingChainTokens.map((token, idx) =>
-                <SelectSpecificTokenButton
-                  isOrigin={false}
-                  key={idx}
-                  token={token}
-                  selectedToken={toToken}
-                  active={idx + possibleTokens.length === currentIdx}
-                  showAllChains={false}
-                  onClick={() => handleSetToToken(toToken, token)}
-                />
-            )}
+          {remainingChainTokens.map((token, idx) =>
+            <SelectSpecificTokenButton
+              isOrigin={false}
+              key={idx}
+              token={token}
+              selectedToken={toToken}
+              active={idx + possibleTokens.length === currentIdx}
+              showAllChains={false}
+              onClick={() => handleSetToToken(toToken, token)}
+            />
+          )}
         </SearchResultsContainer>
       )}
       {allOtherToTokens?.length > 0 && (
         <SearchResultsContainer label="All receivable tokens">
-            {allOtherToTokens.map((token, idx) =>
-                <SelectSpecificTokenButton
-                  isOrigin={false}
-                  key={idx}
-                  token={token}
-                  selectedToken={toToken}
-                  active={
-                    idx +
-                      possibleTokens.length +
-                      remainingChainTokens.length ===
-                    currentIdx
-                  }
-                  showAllChains={true}
-                  onClick={() => handleSetToToken(toToken, token)}
-                  alternateBackground={true}
-                />
-            )}
+          {allOtherToTokens.map((token, idx) =>
+            <SelectSpecificTokenButton
+              isOrigin={false}
+              key={idx}
+              token={token}
+              selectedToken={toToken}
+              active={
+                idx +
+                  possibleTokens.length +
+                  remainingChainTokens.length ===
+                currentIdx
+              }
+              showAllChains={true}
+              onClick={() => handleSetToToken(toToken, token)}
+              alternateBackground={true}
+            />
+          )}
         </SearchResultsContainer>
       )}
-      <NoSearchResultsFound searchStr={searchStr} type="token" />
-    </div>
+    </SearchOverlayContent>
   )
 }

@@ -20,6 +20,8 @@ import { getSwapPossibilities } from '@/utils/swapFinder/generateSwapPossibiliti
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 import { getTokenFuseOptions } from '@/constants/fuseOptions'
+import { SearchResultsContainer } from '@/components/bridgeSwap/SearchResultsContainer'
+import { SearchOverlayContent } from '@/components/bridgeSwap/SearchOverlayContent'
 
 export const SwapFromTokenListOverlay = () => {
   const dispatch = useDispatch()
@@ -81,8 +83,6 @@ export const SwapFromTokenListOverlay = () => {
     onClose,
   } = useOverlaySearch(masterList.length, onCloseOverlay)
 
-
-
   const fuse = new Fuse(masterList, getTokenFuseOptions(swapChainId))
 
   if (searchStr?.length > 0) {
@@ -105,27 +105,15 @@ export const SwapFromTokenListOverlay = () => {
   }
 
   return (
-    <div
-      ref={overlayRef}
-      data-test-id="token-slide-over"
-      className="max-h-full pb-4 overflow-auto scrollbar-hide"
+    <SearchOverlayContent
+      overlayRef={overlayRef}
+      searchStr={searchStr}
+      onSearch={onSearch}
+      onClose={onClose}
+      type="token"
     >
-      <div className="z-10 w-full px-2 ">
-        <div className="relative flex items-center mt-2 mb-2 font-medium">
-          <SlideSearchBox
-            placeholder="Filter by symbol, contract, or name..."
-            searchStr={searchStr}
-            onSearch={onSearch}
-          />
-          <CloseButton onClick={onClose} />
-        </div>
-      </div>
       {possibleTokens?.length > 0 && (
-        <>
-          <div className="px-2 pt-2 pb-4 text-sm text-primaryTextColor ">
-            Swap…
-          </div>
-          <div className="px-2 pb-2 md:px-2 ">
+        <SearchResultsContainer label="Swap…">
             {possibleTokens.map((token, idx) =>
                 <SelectSpecificTokenButton
                   isOrigin={true}
@@ -143,17 +131,16 @@ export const SwapFromTokenListOverlay = () => {
                   }}
                 />
             )}
-          </div>
-        </>
+        </SearchResultsContainer>
       )}
       {remainingTokens?.length > 0 && (
-        <>
-          <div className="px-2 pb-4 text-sm text-primaryTextColor">
-            {swapChainId
+        <SearchResultsContainer
+          label={
+            swapChainId
               ? `More on ${CHAINS_BY_ID[swapChainId]?.name}`
-              : 'All swappable tokens'}
-          </div>
-          <div className="px-2 pb-2 md:px-2">
+              : 'All swappable tokens'
+          }
+        >
             {remainingTokens.map((token, idx) =>
                 <SelectSpecificTokenButton
                   isOrigin={true}
@@ -165,10 +152,9 @@ export const SwapFromTokenListOverlay = () => {
                   onClick={() => handleSetFromToken(swapFromToken, token)}
                 />
             )}
-          </div>
-        </>
+        </SearchResultsContainer>
       )}
-      <NoSearchResultsFound searchStr={searchStr} type="token" />
-    </div>
+    </SearchOverlayContent>
+
   )
 }

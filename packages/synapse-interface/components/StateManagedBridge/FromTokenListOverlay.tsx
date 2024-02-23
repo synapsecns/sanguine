@@ -21,6 +21,7 @@ import { NoSearchResultsFound } from '@/components/bridgeSwap/NoSearchResultsFou
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 import { getTokenFuseOptions } from '@/constants/fuseOptions'
 import { SearchResultsContainer } from '@/components/bridgeSwap/SearchResultsContainer'
+import { SearchOverlayContent } from '@/components/bridgeSwap/SearchOverlayContent'
 
 export const FromTokenListOverlay = () => {
   const dispatch = useDispatch()
@@ -127,21 +128,13 @@ export const FromTokenListOverlay = () => {
   }
 
   return (
-    <div
-      ref={overlayRef}
-      data-test-id="token-slide-over"
-      className="max-h-full pb-4 overflow-auto scrollbar-hide"
+    <SearchOverlayContent
+      overlayRef={overlayRef}
+      searchStr={searchStr}
+      onSearch={onSearch}
+      onClose={onClose}
+      type="token"
     >
-      <div className="z-10 w-full px-2 ">
-        <div className="relative flex items-center mt-2 mb-2 font-medium">
-          <SlideSearchBox
-            placeholder="Filter by symbol, contract, or name..."
-            searchStr={searchStr}
-            onSearch={onSearch}
-          />
-          <CloseButton onClick={onClose} />
-        </div>
-      </div>
       {possibleTokens?.length > 0 && (
         <SearchResultsContainer label="Send...">
             {possibleTokens.map((token, idx) =>
@@ -203,8 +196,7 @@ export const FromTokenListOverlay = () => {
             )}
         </SearchResultsContainer>
       )}
-      <NoSearchResultsFound searchStr={searchStr} type="token" />
-    </div>
+    </SearchOverlayContent>
   )
 }
 
