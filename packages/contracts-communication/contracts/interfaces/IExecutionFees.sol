@@ -2,6 +2,10 @@
 pragma solidity ^0.8.0;
 
 interface IExecutionFees {
+    error ExecutionFees__AlreadyRecorded();
+    error ExecutionFees__ZeroAddress();
+    error ExecutionFees__ZeroAmount();
+
     /// @notice Add the execution fee for a transaction. The attached value will be added to the
     /// rewards for the executor completing the transaction.
     /// Note: this could be used to store the execution fee for a new transaction, or to add more
@@ -28,9 +32,20 @@ interface IExecutionFees {
 
     /// @notice Get the accumulated rewards for an executor.
     /// @param executor             The address of the executor to get the rewards for.
-    function getAccumulatedRewards(address executor) external view returns (uint256 accumulated);
+    function accumulatedRewards(address executor) external view returns (uint256 accumulated);
 
     /// @notice Get the unclaimed rewards for an executor.
     /// @param executor             The address of the executor to get the rewards for.
-    function getUnclaimedRewards(address executor) external view returns (uint256 unclaimed);
+    function unclaimedRewards(address executor) external view returns (uint256 unclaimed);
+
+    /// @notice Get the total execution fee for a transaction.
+    /// @param dstChainId           The chain id of the destination chain.
+    /// @param transactionId        The id of the transaction to get the execution fee for.
+    function executionFee(uint256 dstChainId, bytes32 transactionId) external view returns (uint256 fee);
+
+    /// @notice Get the address of the recorded executor for a transaction.
+    /// @dev Will return address(0) if the executor is not recorded.
+    /// @param dstChainId           The chain id of the destination chain.
+    /// @param transactionId        The id of the transaction to get the recorded executor for.
+    function recordedExecutor(uint256 dstChainId, bytes32 transactionId) external view returns (address executor);
 }

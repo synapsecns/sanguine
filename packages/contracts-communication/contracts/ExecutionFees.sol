@@ -1,69 +1,71 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import { IExecutionFees } from "./interfaces/IExecutionFees.sol";
-import { ExecutionFeesEvents } from "./events/ExecutionFeesEvents.sol";
+import {ExecutionFeesEvents} from "./events/ExecutionFeesEvents.sol";
+import {IExecutionFees} from "./interfaces/IExecutionFees.sol";
 
-import { Address } from "@openzeppelin/contracts/utils/Address.sol";
+import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
-contract ExecutionFees is ExecutionFeesEvents, IExecutionFees {
-    using Address for address payable;
+contract ExecutionFees is AccessControl, ExecutionFeesEvents, IExecutionFees {
+    bytes32 public constant RECORDER_ROLE = keccak256("RECORDER_ROLE");
 
-    // Interchain Transaction IDs => Total Execution Fees
-    mapping(bytes32 => uint256) private _executionFees;
-    // Executor Addresses => Total Accumulated Fees
-    mapping(address => uint256) private _accumulatedRewards;
-    // Executor Addresses => Currently unclaimed fees
-    mapping(address => uint256) private _unclaimedRewards;
-    // Interchain Transaction IDs => Executor Addresses
-    mapping(bytes32 => address) private _transactionsByExecutor;
+    /// @inheritdoc IExecutionFees
+    mapping(uint256 chainId => mapping(bytes32 transactionId => uint256 fee)) public executionFee;
+    /// @inheritdoc IExecutionFees
+    mapping(address executor => uint256 totalAccumulated) public accumulatedRewards;
+    /// @inheritdoc IExecutionFees
+    mapping(address executor => uint256 totalClaimed) public unclaimedRewards;
+    /// @inheritdoc IExecutionFees
+    mapping(uint256 chainId => mapping(bytes32 transactionId => address executor)) public recordedExecutor;
 
-    address public icClient;
-
-    constructor (address _icClient) {
-        icClient = _icClient;
-    }
-
-    modifier onlyRecorder() {
-        // This is currently set to InterchainClientV1, but will be moved to batched recording later on
-        require(msg.sender == icClient, "ExecutionFees: Caller is not the recorder");
-        _;
+    constructor(address initialAdmin) {
+        _grantRole(DEFAULT_ADMIN_ROLE, initialAdmin);
     }
 
     // @inheritdoc IExecutionFees
-    function addExecutionFee(uint256 dstChainId, bytes32 transactionId) external payable override {
-        require(msg.value > 0, "ExecutionFees: Fee must be greater than 0");
-        require(_transactionsByExecutor[transactionId] == address(0), "ExecutionFees: Executor already recorded");
-        _executionFees[transactionId] += msg.value;
-        emit ExecutionFeeAdded(dstChainId, transactionId, msg.value);
+    function addExecutionFee(uint256 dstChainId, bytes32 transactionId) external payable {
+        if (msg.value == 0) revert ExecutionFees__ZeroAmount();
+        executionFee[dstChainId][transactionId] += msg.value;
+        // Use the new total fee as the event parameter.
+        emit ExecutionFeeAdded(dstChainId, transactionId, executionFee[dstChainId][transactionId]);
+        address executor = recordedExecutor[dstChainId][transactionId];
+        // If the executor is recorded, the previous fee has been awarded already. Award the new fee.
+        if (executor != address(0)) {
+            _awardFee(executor, msg.value);
+        }
     }
 
     // @inheritdoc IExecutionFees
-    function recordExecutor(uint256 dstChainId, bytes32 transactionId, address executor) external override onlyRecorder {
-        require(_transactionsByExecutor[transactionId] == address(0), "ExecutionFees: Executor already recorded");
-        require(_executionFees[transactionId] > 0, "ExecutionFees: No execution fee found");
-        _transactionsByExecutor[transactionId] = executor;
-        _accumulatedRewards[executor] += _executionFees[transactionId];
-        _unclaimedRewards[executor] += _executionFees[transactionId];
+    function recordExecutor(
+        uint256 dstChainId,
+        bytes32 transactionId,
+        address executor
+    )
+        external
+        onlyRole(RECORDER_ROLE)
+    {
+        if (executor == address(0)) revert ExecutionFees__ZeroAddress();
+        if (recordedExecutor[dstChainId][transactionId] != address(0)) revert ExecutionFees__AlreadyRecorded();
+        uint256 fee = executionFee[dstChainId][transactionId];
+        recordedExecutor[dstChainId][transactionId] = executor;
         emit ExecutorRecorded(dstChainId, transactionId, executor);
+        _awardFee(executor, fee);
     }
 
     // @inheritdoc IExecutionFees
-    function claimExecutionFees(address executor) external override {
-        uint256 amount = _unclaimedRewards[executor];
-        require(amount > 0, "ExecutionFees: No unclaimed rewards");
-        _unclaimedRewards[executor] = 0;
-        payable(executor).sendValue(amount);
-        emit ExecutionFeesClaimed(msg.sender, amount);
+    function claimExecutionFees(address executor) external {
+        uint256 amount = unclaimedRewards[executor];
+        if (amount == 0) revert ExecutionFees__ZeroAmount();
+        unclaimedRewards[executor] = 0;
+        Address.sendValue(payable(executor), amount);
+        emit ExecutionFeesClaimed(executor, amount);
     }
 
-    // @inheritdoc IExecutionFees
-    function getAccumulatedRewards(address executor) external view override returns (uint256 accumulated) {
-        return _accumulatedRewards[executor];
-    }
-
-    // @inheritdoc IExecutionFees
-    function getUnclaimedRewards(address executor) external view override returns (uint256 unclaimed) {
-        return _unclaimedRewards[executor];
+    /// @dev Award the executor with the fee for completing the transaction.
+    function _awardFee(address executor, uint256 fee) internal {
+        accumulatedRewards[executor] += fee;
+        unclaimedRewards[executor] += fee;
+        emit ExecutionFeesAwarded(executor, fee);
     }
 }
