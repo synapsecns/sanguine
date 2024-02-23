@@ -12,14 +12,10 @@ contract ExecutionFees is AccessControl, ExecutionFeesEvents, IExecutionFees {
 
     bytes32 public constant RECORDER_ROLE = keccak256("RECORDER_ROLE");
 
-    // Interchain Transaction IDs => Total Execution Fees
-    mapping(bytes32 => uint256) private _executionFees;
-    // Executor Addresses => Total Accumulated Fees
-    mapping(address => uint256) private _accumulatedRewards;
-    // Executor Addresses => Currently unclaimed fees
-    mapping(address => uint256) private _unclaimedRewards;
-    // Interchain Transaction IDs => Executor Addresses
-    mapping(bytes32 => address) private _transactionsByExecutor;
+    mapping(uint256 chainId => mapping(bytes32 transactionId => uint256 fee)) internal _executionFees;
+    mapping(address executor => uint256 totalAccumulated) internal _accumulatedRewards;
+    mapping(address executor => uint256 totalClaimed) internal _unclaimedRewards;
+    mapping(uint256 chainId => mapping(bytes32 transactionId => address executor)) internal _recordedExecutor;
 
     constructor(address initialAdmin) {
         _grantRole(DEFAULT_ADMIN_ROLE, initialAdmin);
@@ -28,9 +24,9 @@ contract ExecutionFees is AccessControl, ExecutionFeesEvents, IExecutionFees {
     // @inheritdoc IExecutionFees
     function addExecutionFee(uint256 dstChainId, bytes32 transactionId) external payable override {
         if (msg.value == 0) revert ExecutionFees__ZeroAmount();
-        _executionFees[transactionId] += msg.value;
-        emit ExecutionFeeAdded(dstChainId, transactionId, _executionFees[transactionId]);
-        address executor = _transactionsByExecutor[transactionId];
+        _executionFees[dstChainId][transactionId] += msg.value;
+        emit ExecutionFeeAdded(dstChainId, transactionId, _executionFees[dstChainId][transactionId]);
+        address executor = _recordedExecutor[dstChainId][transactionId];
         // If the executor is recorded, the previous fee has been awarded already. Award the new fee.
         if (executor != address(0)) {
             _awardFee(executor, msg.value);
@@ -48,9 +44,9 @@ contract ExecutionFees is AccessControl, ExecutionFeesEvents, IExecutionFees {
         onlyRole(RECORDER_ROLE)
     {
         if (executor == address(0)) revert ExecutionFees__ZeroAddress();
-        if (_transactionsByExecutor[transactionId] != address(0)) revert ExecutionFees__AlreadyRecorded();
-        uint256 fee = _executionFees[transactionId];
-        _transactionsByExecutor[transactionId] = executor;
+        if (_recordedExecutor[dstChainId][transactionId] != address(0)) revert ExecutionFees__AlreadyRecorded();
+        uint256 fee = _executionFees[dstChainId][transactionId];
+        _recordedExecutor[dstChainId][transactionId] = executor;
         emit ExecutorRecorded(dstChainId, transactionId, executor);
         _awardFee(executor, fee);
     }
@@ -76,7 +72,7 @@ contract ExecutionFees is AccessControl, ExecutionFeesEvents, IExecutionFees {
 
     // @inheritdoc IExecutionFees
     function getExecutionFee(uint256 dstChainId, bytes32 transactionId) external view override returns (uint256 fee) {
-        return _executionFees[transactionId];
+        return _executionFees[dstChainId][transactionId];
     }
 
     // @inheritdoc IExecutionFees
@@ -89,7 +85,7 @@ contract ExecutionFees is AccessControl, ExecutionFeesEvents, IExecutionFees {
         override
         returns (address executor)
     {
-        return _transactionsByExecutor[transactionId];
+        return _recordedExecutor[dstChainId][transactionId];
     }
 
     /// @dev Award the executor with the fee for completing the transaction.
