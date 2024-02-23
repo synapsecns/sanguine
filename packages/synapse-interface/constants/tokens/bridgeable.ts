@@ -55,7 +55,7 @@ import * as CHAINS from '@/constants/chains/master'
 // 250: SYN, biggest partner tokens (GMX, JEWEL, etc)
 // 300: chain's native asset (AVAX, FTM, MATIC, KLAY, etc)
 // 350: wrapped versions of native asset (WAVAX, WFTM, etc)
-// 400: synAssets
+// 400: synAssets (why is this not 420)
 // 500: nAssets
 // 600: everything else
 
