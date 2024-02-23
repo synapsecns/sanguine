@@ -52,9 +52,14 @@ interface IInterchainClientV1 {
     /**
      * @notice Executes a transaction that has been sent via the Interchain.
      * @dev The transaction must have been previously sent and recorded.
-     * @param transaction The transaction data.
+     * Transaction data includes the requested gas limit, but the executors could specify a different gas limit.
+     * If the specified gas limit is lower than requested, the requested gas limit will be used.
+     * Otherwise, the specified gas limit will be used.
+     * This allows to execute the transactions with requested gas limit set too low.
+     * @param gasLimit          The gas limit to use for the execution.
+     * @param transaction       The transaction data.
      */
-    function interchainExecute(bytes calldata transaction) external;
+    function interchainExecute(uint256 gasLimit, bytes calldata transaction) external;
 
     /**
      * @notice Checks if a transaction is executable.

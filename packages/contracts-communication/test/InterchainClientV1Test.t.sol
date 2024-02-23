@@ -109,6 +109,7 @@ contract InterchainClientV1Test is Test {
         transactionID;
     }
 
+    // TODO: more tests
     function test_interchainReceive() public {
         bytes32 dstReceiver = TypeCasts.addressToBytes32(address(icApp));
         bytes memory message = "Hello World";
@@ -147,6 +148,6 @@ contract InterchainClientV1Test is Test {
         skip(mockAppConfig.optimisticPeriod + 1);
         // Expect App to be called with the message
         vm.expectCall({callee: address(icApp), msgValue: 0, gas: 200_000, data: expectedAppCalldata, count: 1});
-        icClient.interchainExecute(abi.encode(transaction));
+        icClient.interchainExecute({gasLimit: 0, transaction: abi.encode(transaction)});
     }
 }
