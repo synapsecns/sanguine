@@ -2,21 +2,16 @@ import _ from 'lodash'
 import { useDispatch } from 'react-redux'
 import Fuse from 'fuse.js'
 import * as ALL_CHAINS from '@constants/chains/master'
-import { SlideSearchBox } from '@components/bridgeSwap/SlideSearchBox'
-import { CHAINS_BY_ID, sortChains } from '@constants/chains'
+import { CHAINS_BY_ID, PAUSED_FROM_CHAIN_IDS, sortChains } from '@constants/chains'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { setFromChainId } from '@/slices/bridge/reducer'
 import { setShowFromChainListOverlay } from '@/slices/bridgeDisplaySlice'
-import { SelectSpecificNetworkButton } from './components/SelectSpecificNetworkButton'
-import { CloseButton } from '@/components/buttons/CloseButton'
-import { NoSearchResultsFound } from '@/components/bridgeSwap/NoSearchResultsFound'
-import { PAUSED_FROM_CHAIN_IDS } from '@constants/chains'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 import { CHAIN_FUSE_OPTIONS } from '@/constants/fuseOptions'
 import { SearchResultsContainer } from '@/components/bridgeSwap/SearchResultsContainer'
 import { SearchOverlayContent } from '@/components/bridgeSwap/SearchOverlayContent'
-
+import { SelectSpecificNetworkButton } from './components/SelectSpecificNetworkButton'
 
 export const FromChainListOverlay = () => {
   const { fromChainIds, fromChainId } = useBridgeState()

@@ -30,7 +30,7 @@ export const SelectNetworkButton = ({
   isCurrentChain: boolean
   active: boolean
   onClick: () => void
-  dataId: string
+  dataId?: string
   isOrigin: boolean
   isEligible?: boolean
   alternateBackground?: boolean

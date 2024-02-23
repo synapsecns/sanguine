@@ -3,25 +3,22 @@ import _ from 'lodash'
 import { useDispatch } from 'react-redux'
 import Fuse from 'fuse.js'
 
-import { SlideSearchBox } from '@components/bridgeSwap/SlideSearchBox'
 import type { Token } from '@/utils/types'
+import { hasBalance } from '@/utils/helpers/hasBalance'
+import { sortByPriorityRank } from '@/utils/helpers/sortByPriorityRank'
+import { getRoutePossibilities } from '@/utils/routeMaker/generateRoutePossibilities'
+import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 import { setFromToken } from '@/slices/bridge/reducer'
 import { setShowFromTokenListOverlay } from '@/slices/bridgeDisplaySlice'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { SelectSpecificTokenButton } from './components/SelectSpecificTokenButton'
-import { getRoutePossibilities } from '@/utils/routeMaker/generateRoutePossibilities'
-
-import { hasBalance } from '@/utils/helpers/hasBalance'
-import { sortByPriorityRank } from '@/utils/helpers/sortByPriorityRank'
 import { CHAINS_BY_ID } from '@/constants/chains'
-import { CloseButton } from '@/components/buttons/CloseButton'
-import { NoSearchResultsFound } from '@/components/bridgeSwap/NoSearchResultsFound'
-import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 import { getTokenFuseOptions } from '@/constants/fuseOptions'
+
 import { SearchResultsContainer } from '@/components/bridgeSwap/SearchResultsContainer'
 import { SearchOverlayContent } from '@/components/bridgeSwap/SearchOverlayContent'
+import { SelectSpecificTokenButton } from './components/SelectSpecificTokenButton'
 
 export const FromTokenListOverlay = () => {
   const dispatch = useDispatch()

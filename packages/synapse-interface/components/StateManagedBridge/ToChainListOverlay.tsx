@@ -3,22 +3,19 @@ import { useDispatch } from 'react-redux'
 import Fuse from 'fuse.js'
 
 import * as ALL_CHAINS from '@constants/chains/master'
-import { CHAINS_BY_ID, sortChains } from '@constants/chains'
+import { CHAINS_BY_ID, PAUSED_TO_CHAIN_IDS, sortChains } from '@constants/chains'
+import { CHAIN_FUSE_OPTIONS } from '@/constants/fuseOptions'
+
+import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
+
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { setToChainId } from '@/slices/bridge/reducer'
 import { setShowToChainListOverlay } from '@/slices/bridgeDisplaySlice'
-import { SelectSpecificNetworkButton } from './components/SelectSpecificNetworkButton'
-import { CloseButton } from '@/components/buttons/CloseButton'
-import { NoSearchResultsFound } from '@/components/bridgeSwap/NoSearchResultsFound'
 
-import { SlideSearchBox } from '@components/bridgeSwap/SlideSearchBox'
-
-import { PAUSED_TO_CHAIN_IDS } from '@constants/chains'
-import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
-import { CHAIN_FUSE_OPTIONS } from '@/constants/fuseOptions'
 import { SearchResultsContainer } from '@/components/bridgeSwap/SearchResultsContainer'
 import { SearchOverlayContent } from '@/components/bridgeSwap/SearchOverlayContent'
+import { SelectSpecificNetworkButton } from './components/SelectSpecificNetworkButton'
 
 export const ToChainListOverlay = () => {
   const { toChainIds, toChainId } = useBridgeState()
@@ -100,43 +97,43 @@ export const ToChainListOverlay = () => {
       onClose={onClose}
       type="chain"
     >
-        {possibleChains?.length > 0 && (
-          <SearchResultsContainer label="To…">
-            {possibleChains.map(({ id: mapChainId }, idx) =>
-                <SelectSpecificNetworkButton
-                  key={idx}
-                  itemChainId={mapChainId}
-                  isCurrentChain={toChainId === mapChainId}
-                  isOrigin={false}
-                  active={idx === currentIdx}
-                  onClick={() => {
-                    if (toChainId === mapChainId) {
-                      onClose()
-                    } else {
-                      handleSetToChainId(mapChainId)
-                    }
-                  }}
-                  dataId={dataId}
-                />
-            )}
-          </SearchResultsContainer>
-        )}
-        {remainingChains?.length > 0 && (
-          <SearchResultsContainer label="All chains">
-            {remainingChains.map(({ id: mapChainId }, idx) =>
-                <SelectSpecificNetworkButton
-                  key={idx}
-                  itemChainId={mapChainId}
-                  isCurrentChain={toChainId === mapChainId}
-                  isOrigin={false}
-                  active={idx + possibleChains.length === currentIdx}
-                  onClick={() => handleSetToChainId(mapChainId)}
-                  dataId={dataId}
-                  alternateBackground={true}
-                />
-            )}
-          </SearchResultsContainer>
-        )}
+      {possibleChains?.length > 0 && (
+        <SearchResultsContainer label="To…">
+          {possibleChains.map(({ id: mapChainId }, idx) =>
+            <SelectSpecificNetworkButton
+              key={idx}
+              itemChainId={mapChainId}
+              isCurrentChain={toChainId === mapChainId}
+              isOrigin={false}
+              active={idx === currentIdx}
+              onClick={() => {
+                if (toChainId === mapChainId) {
+                  onClose()
+                } else {
+                  handleSetToChainId(mapChainId)
+                }
+              }}
+              dataId={dataId}
+            />
+          )}
+        </SearchResultsContainer>
+      )}
+      {remainingChains?.length > 0 && (
+        <SearchResultsContainer label="All chains">
+          {remainingChains.map(({ id: mapChainId }, idx) =>
+            <SelectSpecificNetworkButton
+              key={idx}
+              itemChainId={mapChainId}
+              isCurrentChain={toChainId === mapChainId}
+              isOrigin={false}
+              active={idx + possibleChains.length === currentIdx}
+              onClick={() => handleSetToChainId(mapChainId)}
+              dataId={dataId}
+              alternateBackground={true}
+            />
+          )}
+        </SearchResultsContainer>
+      )}
     </SearchOverlayContent>
   )
 }

@@ -1,21 +1,20 @@
 import _ from 'lodash'
 import Fuse from 'fuse.js'
-import * as ALL_CHAINS from '@constants/chains/master'
-import { SlideSearchBox } from '@components/bridgeSwap/SlideSearchBox'
-import { CHAINS_BY_ID, sortChains } from '@constants/chains'
 import { useDispatch } from 'react-redux'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
-import { SelectSpecificNetworkButton } from './components/SelectSpecificNetworkButton'
-import { CloseButton } from '@/components/buttons/CloseButton'
-import { NoSearchResultsFound } from '@/components/bridgeSwap/NoSearchResultsFound'
+import * as ALL_CHAINS from '@constants/chains/master'
+import { CHAINS_BY_ID, sortChains } from '@constants/chains'
+import { CHAIN_FUSE_OPTIONS } from '@/constants/fuseOptions'
+
+import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
+
 import { setShowSwapChainListOverlay } from '@/slices/swapDisplaySlice'
 import { setSwapChainId } from '@/slices/swap/reducer'
 import { useSwapState } from '@/slices/swap/hooks'
-import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
-import { CHAIN_FUSE_OPTIONS } from '@/constants/fuseOptions'
 import { SearchResultsContainer } from '@/components/bridgeSwap/SearchResultsContainer'
 import { SearchOverlayContent } from '@/components/bridgeSwap/SearchOverlayContent'
+import { SelectSpecificNetworkButton } from './components/SelectSpecificNetworkButton'
 
 export const SwapChainListOverlay = () => {
   const { swapChainId, swapFromChainIds } = useSwapState()
@@ -94,41 +93,41 @@ export const SwapChainListOverlay = () => {
       onClose={onClose}
       type="chain"
     >
-        {possibleChains?.length > 0 && (
-          <SearchResultsContainer label="From…">
-            {possibleChains.map(({ id: mapChainId }, idx) =>
-                <SelectSpecificNetworkButton
-                  key={idx}
-                  itemChainId={mapChainId}
-                  isCurrentChain={swapChainId === mapChainId}
-                  active={idx === currentIdx}
-                  onClick={() => {
-                    if (swapChainId === mapChainId) {
-                      onClose()
-                    } else {
-                      handleSetSwapChainId(mapChainId)
-                    }
-                  }}
-                  dataId={dataId}
-                />
-            )}
-          </SearchResultsContainer>
-        )}
-        {remainingChains?.length > 0 && (
-          <SearchResultsContainer label="All Chains">
-            {remainingChains.map(({ id: mapChainId }, idx) =>
-                <SelectSpecificNetworkButton
-                  key={mapChainId}
-                  itemChainId={mapChainId}
-                  isCurrentChain={swapChainId === mapChainId}
-                  active={idx + possibleChains.length === currentIdx}
-                  onClick={() => handleSetSwapChainId(mapChainId)}
-                  dataId={dataId}
-                  alternateBackground={true}
-                />
-            )}
-          </SearchResultsContainer>
-        )}
+      {possibleChains?.length > 0 && (
+        <SearchResultsContainer label="From…">
+          {possibleChains.map(({ id: mapChainId }, idx) =>
+            <SelectSpecificNetworkButton
+              key={idx}
+              itemChainId={mapChainId}
+              isCurrentChain={swapChainId === mapChainId}
+              active={idx === currentIdx}
+              onClick={() => {
+                if (swapChainId === mapChainId) {
+                  onClose()
+                } else {
+                  handleSetSwapChainId(mapChainId)
+                }
+              }}
+              dataId={dataId}
+            />
+          )}
+        </SearchResultsContainer>
+      )}
+      {remainingChains?.length > 0 && (
+        <SearchResultsContainer label="All Chains">
+          {remainingChains.map(({ id: mapChainId }, idx) =>
+            <SelectSpecificNetworkButton
+              key={mapChainId}
+              itemChainId={mapChainId}
+              isCurrentChain={swapChainId === mapChainId}
+              active={idx + possibleChains.length === currentIdx}
+              onClick={() => handleSetSwapChainId(mapChainId)}
+              dataId={dataId}
+              alternateBackground={true}
+            />
+          )}
+        </SearchResultsContainer>
+      )}
     </SearchOverlayContent>
   )
 }

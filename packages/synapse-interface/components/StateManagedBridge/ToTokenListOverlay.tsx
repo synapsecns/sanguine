@@ -1,6 +1,5 @@
 import _ from 'lodash'
 import { useMemo } from 'react'
-import type { Address } from 'viem'
 import Fuse from 'fuse.js'
 
 import { useBridgeState } from '@/slices/bridge/hooks'
@@ -12,8 +11,6 @@ import { useAppDispatch } from '@/store/hooks'
 
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
-import { SelectSpecificTokenButton } from './components/SelectSpecificTokenButton'
-
 import type { Token } from '@/utils/types'
 import { useAlternateBridgeQuotes } from '@/utils/hooks/useAlternateBridgeQuotes'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
@@ -24,11 +21,10 @@ import { formatBigIntToString } from '@/utils/bigint/format'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { getTokenFuseOptions } from '@/constants/fuseOptions'
 
-import { CloseButton } from '@/components/buttons/CloseButton'
 import { SearchResultsContainer } from '@/components/bridgeSwap/SearchResultsContainer'
-import { NoSearchResultsFound } from '@/components/bridgeSwap/NoSearchResultsFound'
-import { SlideSearchBox } from '@/components/bridgeSwap/SlideSearchBox'
 import { SearchOverlayContent } from '@/components/bridgeSwap/SearchOverlayContent'
+import { SelectSpecificTokenButton } from './components/SelectSpecificTokenButton'
+
 
 interface TokenWithRates extends Token {
   exchangeRate: bigint

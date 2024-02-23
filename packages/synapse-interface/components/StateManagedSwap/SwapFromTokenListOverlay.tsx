@@ -3,25 +3,26 @@ import _ from 'lodash'
 import { useDispatch } from 'react-redux'
 import Fuse from 'fuse.js'
 
-import { SlideSearchBox } from '@components/bridgeSwap/SlideSearchBox'
-import type { Token } from '@/utils/types'
-import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import { usePortfolioBalances } from '@/slices/portfolio/hooks'
-import { SelectSpecificTokenButton } from './components/SelectSpecificTokenButton'
+import { getTokenFuseOptions } from '@/constants/fuseOptions'
+import { CHAINS_BY_ID } from '@/constants/chains'
 
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+
+import type { Token } from '@/utils/types'
+import { getSwapPossibilities } from '@/utils/swapFinder/generateSwapPossibilities'
+import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 import { hasBalance } from '@/utils/helpers/hasBalance'
 import { sortByPriorityRank } from '@/utils/helpers/sortByPriorityRank'
-import { CloseButton } from '@/components/buttons/CloseButton'
-import { NoSearchResultsFound } from '@/components/bridgeSwap/NoSearchResultsFound'
+
+import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useSwapState } from '@/slices/swap/hooks'
 import { setShowSwapFromTokenListOverlay } from '@/slices/swapDisplaySlice'
 import { setSwapFromToken } from '@/slices/swap/reducer'
-import { getSwapPossibilities } from '@/utils/swapFinder/generateSwapPossibilities'
-import { CHAINS_BY_ID } from '@/constants/chains'
-import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
-import { getTokenFuseOptions } from '@/constants/fuseOptions'
+
 import { SearchResultsContainer } from '@/components/bridgeSwap/SearchResultsContainer'
 import { SearchOverlayContent } from '@/components/bridgeSwap/SearchOverlayContent'
+import { SelectSpecificTokenButton } from './components/SelectSpecificTokenButton'
+
 
 export const SwapFromTokenListOverlay = () => {
   const dispatch = useDispatch()
@@ -114,23 +115,23 @@ export const SwapFromTokenListOverlay = () => {
     >
       {possibleTokens?.length > 0 && (
         <SearchResultsContainer label="Swap…">
-            {possibleTokens.map((token, idx) =>
-                <SelectSpecificTokenButton
-                  isOrigin={true}
-                  key={idx}
-                  token={token}
-                  selectedToken={swapFromToken}
-                  active={idx === currentIdx}
-                  showAllChains={false}
-                  onClick={() => {
-                    if (token === swapFromToken) {
-                      onClose()
-                    } else {
-                      handleSetFromToken(swapFromToken, token)
-                    }
-                  }}
-                />
-            )}
+          {possibleTokens.map((token, idx) =>
+            <SelectSpecificTokenButton
+              isOrigin={true}
+              key={idx}
+              token={token}
+              selectedToken={swapFromToken}
+              active={idx === currentIdx}
+              showAllChains={false}
+              onClick={() => {
+                if (token === swapFromToken) {
+                  onClose()
+                } else {
+                  handleSetFromToken(swapFromToken, token)
+                }
+              }}
+            />
+          )}
         </SearchResultsContainer>
       )}
       {remainingTokens?.length > 0 && (
@@ -141,17 +142,17 @@ export const SwapFromTokenListOverlay = () => {
               : 'All swappable tokens'
           }
         >
-            {remainingTokens.map((token, idx) =>
-                <SelectSpecificTokenButton
-                  isOrigin={true}
-                  key={idx}
-                  token={token}
-                  selectedToken={swapFromToken}
-                  active={idx + possibleTokens.length === currentIdx}
-                  showAllChains={false}
-                  onClick={() => handleSetFromToken(swapFromToken, token)}
-                />
-            )}
+          {remainingTokens.map((token, idx) =>
+            <SelectSpecificTokenButton
+              isOrigin={true}
+              key={idx}
+              token={token}
+              selectedToken={swapFromToken}
+              active={idx + possibleTokens.length === currentIdx}
+              showAllChains={false}
+              onClick={() => handleSetFromToken(swapFromToken, token)}
+            />
+          )}
         </SearchResultsContainer>
       )}
     </SearchOverlayContent>
