@@ -19,7 +19,6 @@ use (
 	./services/omnirpc
 	./services/rfq
 	./services/scribe
-	./services/sinner
 	./services/stiprelayer
 	./sin-executor
 	./tools

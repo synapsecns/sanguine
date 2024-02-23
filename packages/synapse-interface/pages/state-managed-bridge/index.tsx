@@ -30,7 +30,11 @@ import { formatBigIntToString } from '@/utils/bigint/format'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
 import { useEffect, useRef, useState, useMemo } from 'react'
 import { Token } from '@/utils/types'
-import { getWalletClient } from '@wagmi/core'
+import {
+  getWalletClient,
+  getPublicClient,
+  prepareSendTransaction,
+} from '@wagmi/core'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
 import { approveToken } from '@/utils/approveToken'
@@ -51,7 +55,8 @@ import { DestinationAddressInput } from '@/components/StateManagedBridge/Destina
 import { isAddress } from '@ethersproject/address'
 import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
-import { Address, zeroAddress } from 'viem'
+import { Address, zeroAddress, createPublicClient, http } from 'viem'
+import { polygon } from 'viem/chains'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { Warning } from '@/components/Warning'
 import { useAppDispatch } from '@/store/hooks'
@@ -396,7 +401,25 @@ const StateManagedBridge = () => {
             }
           : data
 
-      const tx = await wallet.sendTransaction(payload)
+      /** Setting custom gas limit for only Polygon transactions */
+      let gasEstimate = undefined
+
+      if (fromChainId === polygon.id) {
+        const publicClient = getPublicClient()
+        gasEstimate = await publicClient.estimateGas({
+          value: payload.value,
+          to: payload.to,
+          account: address,
+          data: payload.data,
+          chainId: fromChainId,
+        })
+        gasEstimate = (gasEstimate * 3n) / 2n
+      }
+
+      const tx = await wallet.sendTransaction({
+        ...payload,
+        gas: gasEstimate,
+      })
 
       const originChainName = CHAINS_BY_ID[fromChainId]?.name
       const destinationChainName = CHAINS_BY_ID[toChainId]?.name
