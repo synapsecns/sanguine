@@ -9,7 +9,10 @@ import {
 } from '@styles/tokens'
 import { Token } from '@/utils/types'
 
-import { ButtonContent } from '@/components/bridgeSwap/SelectTokenButton/ButtonContent'
+import { usePortfolioBalances } from '@/slices/portfolio/hooks'
+import { TokenBalance } from '@/components/bridgeSwap/SelectTokenButton/TokenBalance'
+import { Coin } from '@/components/bridgeSwap/SelectTokenButton/Coin'
+
 
 export const SelectTokenButton = ({
   chainId,
@@ -58,6 +61,12 @@ export const SelectTokenButton = ({
     bgClassName = getBorderStyleForCoinHover(token?.color)
   }
 
+  const portfolioBalances = usePortfolioBalances()
+
+  const parsedBalance = portfolioBalances[chainId]?.find(
+    (tb) => tb.token.addresses[chainId] === token.addresses[chainId]
+  )?.parsedBalance
+
   return (
     <button
       data-test-id="select-specific-token-button"
@@ -78,14 +87,23 @@ export const SelectTokenButton = ({
         ${classNameForMenuItemStyle}
       `}
     >
-      <ButtonContent
-        token={token}
-        chainId={chainId}
-        isOrigin={isOrigin}
-        showAllChains={showAllChains}
-        isEligible={isEligible}
-        pausedChainIds={pausedChainIds}
-      />
+      <div data-test-id="button-content" className="flex items-center w-full">
+        <img
+          alt="token image"
+          className="w-8 h-8 ml-2 mr-4 rounded-full"
+          src={token?.icon?.src}
+        />
+        <Coin
+          token={token}
+          showAllChains={showAllChains}
+          isOrigin={isOrigin}
+          isEligible={isEligible}
+          pausedChainIds={pausedChainIds}
+        />
+        {isOrigin && (
+          <TokenBalance token={token} parsedBalance={parsedBalance} />
+        )}
+      </div>
       {children}
     </button>
   )
