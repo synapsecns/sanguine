@@ -23,10 +23,12 @@ const formatTimestamp = (tx) => {
   const minutes = Math.round(seconds / 60)
   const secondsModulo = (Math.round(seconds / 15) * 15) % 60
 
-  const originDateFormatted = `${originHour % 12}:${originMinute}`
+  const originDateFormatted = `${
+    originHour === 12 ? 12 : originHour % 12
+  }:${originMinute}`
 
   const destinationDateFormatted = `${
-    destinationHour % 12
+    destinationHour === 12 ? 12 : destinationHour % 12
   }:${destinationMinute}${destinationHour < 12 ? 'am' : 'pm'}`
 
   const durationFormatted =
@@ -76,12 +78,23 @@ export default function Ticker() {
   }
 
   useEffect(() => {
+    tickerRef.current.addEventListener('mouseenter', stopTicker)
+    tickerRef.current.addEventListener('mouseleave', startTicker)
+
     startTicker()
-    return () => window.cancelAnimationFrame(requestId)
+
+    return () => {
+      tickerRef.current.removeEventListener('mouseenter', stopTicker)
+      tickerRef.current.removeEventListener('mouseleave', startTicker)
+
+      stopTicker()
+    }
   }, [])
 
-  const startTicker = () => (requestId = window.requestAnimationFrame(step))
-  const pauseTicker = () => {
+  function startTicker() {
+    requestId = window.requestAnimationFrame(step)
+  }
+  function stopTicker() {
     pauseStart = performance.now()
     window.cancelAnimationFrame(requestId)
   }
@@ -97,8 +110,6 @@ export default function Ticker() {
       </button>
       <dl
         ref={tickerRef}
-        onMouseEnter={pauseTicker}
-        onMouseLeave={startTicker}
         className="grid grid-flow-col grid-rows-[1fr_0] w-0 grow cursor-pointer whitespace-nowrap border border-red-500/50"
       >
         {txs.map((tx, i) => {
