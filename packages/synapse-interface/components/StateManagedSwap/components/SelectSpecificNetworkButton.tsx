@@ -10,6 +10,7 @@ import {
   getNetworkButtonBorderActive,
   getMenuItemStyleForChain,
 } from '@/styles/chains'
+import { SelectNetworkButton } from '@/components/bridgeSwap/SelectNetworkButton'
 
 export const SelectSpecificNetworkButton = ({
   itemChainId,
@@ -46,46 +47,16 @@ export const SelectSpecificNetworkButton = ({
   }
 
   return (
-    <button
-      ref={ref}
-      tabIndex={active ? 1 : 0}
-      className={`
-        flex items-center
-        transition-all duration-75
-        w-full
-        px-2 py-4
-        cursor-pointer
-        rounded-md
-        border border-slate-400/10
-        mb-1
-        ${alternateBackground ? '' : !isCurrentChain && 'bg-slate-400/10'}
-        ${bgClassName}
-        ${getNetworkButtonBorderHover(chain.color)}
-        ${getNetworkHover(chain.color)}
-        ${getNetworkButtonBgClassNameActive(chain.color)}
-        ${getNetworkButtonBorderActive(chain.color)}
-      `}
+    <SelectNetworkButton
+      itemChainId={itemChainId}
+      isCurrentChain={isCurrentChain}
+      active={active}
       onClick={onClick}
-      data-test-id={`${dataId}-item`}
-    >
-      <ButtonContent chainId={itemChainId} />
-    </button>
+      dataId={dataId}
+      isOrigin={true}
+      isEligible={false}
+      alternateBackground={alternateBackground}
+    />
   )
 }
 
-function ButtonContent({ chainId }: { chainId: number }) {
-  const chain = CHAINS_BY_ID[chainId]
-
-  return chain ? (
-    <>
-      <Image
-        src={chain.chainImg}
-        alt="Switch Network"
-        className="ml-2 mr-4 rounded-full w-7 h-7"
-      />
-      <div className="flex-col text-left">
-        <div className="text-lg font-normal text-white">{chain.name}</div>
-      </div>
-    </>
-  ) : null
-}

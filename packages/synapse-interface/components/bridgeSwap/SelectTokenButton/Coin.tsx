@@ -1,7 +1,5 @@
 import _ from 'lodash'
 
-
-
 import { ELIGIBILITY_DEFAULT_TEXT } from '@/utils/hooks/useStipEligibility'
 import { AvailableChains } from '@/components/bridgeSwap/SelectTokenButton/AvailableChains'
 
@@ -13,7 +11,7 @@ export const Coin = ({
   isEligible=false,
 
 }: {
-  token
+  token,
   showAllChains: boolean
   isOrigin: boolean
   pausedChainIds?: any
