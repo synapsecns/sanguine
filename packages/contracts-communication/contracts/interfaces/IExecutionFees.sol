@@ -2,6 +2,10 @@
 pragma solidity ^0.8.0;
 
 interface IExecutionFees {
+    error ExecutionFees__AlreadyRecorded();
+    error ExecutionFees__ZeroAddress();
+    error ExecutionFees__ZeroAmount();
+
     /// @notice Add the execution fee for a transaction. The attached value will be added to the
     /// rewards for the executor completing the transaction.
     /// Note: this could be used to store the execution fee for a new transaction, or to add more
