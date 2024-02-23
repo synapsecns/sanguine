@@ -4,15 +4,13 @@ import { useConnectModal } from '@rainbow-me/rainbowkit'
 
 import { isAddress } from '@ethersproject/address'
 
-import { TransactionButton } from '@/components/buttons/TransactionButton'
-
-
-
 import { stringToBigInt } from '@/utils/bigint/format'
 import { useBridgeDisplayState, useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { PAUSED_FROM_CHAIN_IDS, PAUSED_TO_CHAIN_IDS } from '@/constants/chains'
 import { EMPTY_BRIDGE_QUOTE, EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
+
+import { TransactionButton } from '@/components/buttons/TransactionButton'
 
 export const BridgeTransactionButton = ({
   approveTxn,

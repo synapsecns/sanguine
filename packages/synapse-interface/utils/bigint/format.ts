@@ -1,4 +1,4 @@
-import { txErrorHandler } from '../txErrorHandler'
+import { txErrorHandler } from '@/utils/txErrorHandler'
 
 export const formatBigIntToString = (
   bi: bigint,

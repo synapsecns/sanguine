@@ -8,12 +8,12 @@ import { approve, stake } from '@/utils/actions/approveAndStake'
 import { withdrawStake } from '@/utils/actions/withdrawStake'
 import { claimStake } from '@/utils/actions/claimStake'
 
+import { getTokenOnChain } from '@/utils/getTokenOnChain'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import { stringToBigInt, formatBigIntToString } from '@/utils/bigint/format'
 
 import { usePendingTxWrapper } from '@/utils/hooks/usePendingTxWrapper'
 import { useTokenBalance } from '@/utils/hooks/useTokenBalance'
-import { getTokenOnChain } from '@/utils/hooks/useTokenInfo'
 
 import ButtonLoadingDots from '@/components/buttons/ButtonLoadingDots'
 import InteractiveInputRow from '@/components/InteractiveInputRow'

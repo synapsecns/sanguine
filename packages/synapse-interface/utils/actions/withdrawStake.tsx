@@ -3,7 +3,7 @@ import toast from 'react-hot-toast'
 import type { Address } from 'wagmi'
 import type { Token } from '@types'
 
-import { txErrorHandler } from '@utils/txErrorHandler'
+import { txErrorHandler } from '@/utils/txErrorHandler'
 import { unstakeLpToken } from '@/actions/unstakeLpToken'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
