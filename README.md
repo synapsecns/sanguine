@@ -76,7 +76,6 @@ root
 │   ├── <a href="./services/rfq">rfq</a>: RFQ contracts
 │   ├── <a href="./services/scribe">scribe</a>: Generalized ethereum event logger
 │   ├── <a href="./services/omnirpc">omnirpc</a>: Latency aware RPC Client used across multiple-chains at once
-│   ├── <a href="./services/sinner">sinner</a>: [Synapse Interchain Network](https://interchain.synapseprotocol.com/) indexer & query interface
 ├── <a href="./tools">tools</a>
 │   ├── <a href="./tools/abigen">abigen</a>: Used to generate abigen bindings for go
 │   ├── <a href="./tools/bundle">bundle</a>: Modified version of <a href="https://pkg.go.dev/golang.org/x/tools@v0.5.0/cmd/bundle"> go bundler </a> with improved shadowing support
