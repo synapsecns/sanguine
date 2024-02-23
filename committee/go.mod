@@ -18,6 +18,7 @@ replace (
 require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/brianvoe/gofakeit/v6 v6.27.0
+	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0
 	github.com/ethereum/go-ethereum v1.11.6
 	github.com/hsanjuan/ipfs-lite v1.8.2
 	github.com/ipfs/go-datastore v0.6.0
@@ -39,6 +40,7 @@ require (
 	github.com/urfave/cli/v2 v2.27.1
 	go.opentelemetry.io/otel v1.23.1
 	go.opentelemetry.io/otel/trace v1.23.1
+	golang.org/x/exp v0.0.0-20240103183307-be819d1f06fc
 	golang.org/x/sync v0.6.0
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/mysql v1.5.4
@@ -108,7 +110,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/davidlazar/go-crypto v0.0.0-20200604182044-b73af7476f6c // indirect
 	github.com/deckarep/golang-set/v2 v2.1.0 // indirect
-	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0 // indirect
 	github.com/deepmap/oapi-codegen v1.8.2 // indirect
 	github.com/dgrr/http2 v0.3.5 // indirect
 	github.com/docker/cli v20.10.17+incompatible // indirect
@@ -345,7 +346,6 @@ require (
 	go.uber.org/zap v1.26.0 // indirect
 	golang.org/x/arch v0.5.0 // indirect
 	golang.org/x/crypto v0.18.0 // indirect
-	golang.org/x/exp v0.0.0-20240103183307-be819d1f06fc // indirect
 	golang.org/x/mod v0.14.0 // indirect
 	golang.org/x/net v0.20.0 // indirect
 	golang.org/x/oauth2 v0.16.0 // indirect

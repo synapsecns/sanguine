@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/libp2p/go-libp2p/p2p/discovery/mdns"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"golang.org/x/exp/slices"
 	"sync"
 	"time"
 
@@ -75,6 +76,7 @@ var RebroadcastingInterval = time.Minute
 //
 // validators should be a list of addresses that are allowed to connect to the host. This should include the address of the
 // node itself.
+// whitelist is the list of addresses that are allowed to write to the datastore.
 func NewLibP2PManager(ctx context.Context, handler metrics.Handler, auth signer.Signer, store db.Datstores, port int) (LibP2PManager, error) {
 	l := &libP2PManagerImpl{}
 	l.port = port
@@ -223,6 +225,17 @@ func (l *libP2PManagerImpl) AddValidators(ctx context.Context, addr ...common.Ad
 	return nil
 }
 
+func (l *libP2PManagerImpl) allValidators() []common.Address {
+	l.datastoreMux.RLock()
+	defer l.datastoreMux.RUnlock()
+
+	var validators []common.Address
+	for k := range l.datastores {
+		validators = append(validators, k)
+	}
+	return validators
+}
+
 func (l *libP2PManagerImpl) addValidator(ctx context.Context, addr common.Address) error {
 	l.datastoreMux.Lock()
 	defer l.datastoreMux.Unlock()
@@ -240,9 +253,19 @@ func (l *libP2PManagerImpl) addValidator(ctx context.Context, addr common.Addres
 
 	topic := fmt.Sprintf("crdt_db_%s", addr.String())
 
-	err = l.pubsub.RegisterTopicValidator(topic, func(_ context.Context, _ peer.ID, _ *pubsub.Message) bool {
-		// TODO: see p2p-realtime-database, convert the from peer id to an address
-		// and then make sure it matches the validator
+	err = l.pubsub.RegisterTopicValidator(topic, func(ctx context.Context, p peer.ID, _ *pubsub.Message) bool {
+		address, err := ethAddrFromPeer(p)
+		if err != nil {
+			l.handler.ExperimentalLogger().Warnw(ctx, "could not extract peer address", "peer", p, "error", err)
+			return false
+		}
+
+		allValidators := l.allValidators()
+
+		if !slices.Contains(allValidators, address) {
+			l.handler.ExperimentalLogger().Warnw(ctx, "peer address does not match expected address", "peer", p, "expected", allValidators, "actual", address)
+			return false
+		}
 
 		return true
 	})
