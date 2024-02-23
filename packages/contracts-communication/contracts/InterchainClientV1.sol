@@ -218,15 +218,26 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
 
     // TODO: Gas Fee Consideration that is paid to executor
     // @inheritdoc IInterchainClientV1
-    function interchainExecute(bytes calldata transaction) public {
+    function interchainExecute(uint256 gasLimit, bytes calldata transaction) external payable {
         InterchainTransaction memory icTx = InterchainTransactionLib.decodeTransaction(transaction);
         bytes32 transactionId = icTx.transactionId();
         require(_isExecutable(transactionId, icTx), "Transaction is not executable");
         executedTransactions[transactionId] = true;
 
         OptionsV1 memory decodedOptions = icTx.options.decodeOptionsV1();
-
-        IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).appReceive{gas: decodedOptions.gasLimit}();
+        if (msg.value != decodedOptions.gasAirdrop) {
+            revert InterchainClientV1__IncorrectMsgValue(msg.value, decodedOptions.gasAirdrop);
+        }
+        // We should always use at least as much as the requested gas limit.
+        // The executor can specify a higher gas limit if they wanted.
+        if (decodedOptions.gasLimit > gasLimit) gasLimit = decodedOptions.gasLimit;
+        // Pass the full msg.value to the app: we have already checked that it matches the requested gas airdrop.
+        IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).appReceive{gas: gasLimit, value: msg.value}({
+            srcChainId: icTx.srcChainId,
+            sender: icTx.srcSender,
+            nonce: icTx.nonce,
+            message: icTx.message
+        });
         emit InterchainTransactionReceived(
             transactionId, icTx.dbNonce, icTx.srcChainId, icTx.srcSender, icTx.dstReceiver
         );

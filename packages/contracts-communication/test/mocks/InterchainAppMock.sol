@@ -32,5 +32,5 @@ contract InterchainAppMock is IInterchainApp {
 
     function send(bytes32 receiver, uint256 dstChainId, bytes calldata message) external payable virtual override {}
 
-    function appReceive() external virtual override {}
+    function appReceive(uint256 srcChainId, bytes32 sender, uint64 nonce, bytes calldata message) external payable {}
 }
