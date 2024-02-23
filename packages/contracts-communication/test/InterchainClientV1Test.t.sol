@@ -28,8 +28,9 @@ contract InterchainClientV1Test is Test {
 
     address[] public mockApprovedModules;
 
-    // Use default options of V1, 200k gas limit, 0 gas airdrop
-    bytes options = OptionsV1(200_000, 0).encodeOptionsV1();
+    uint256 public constant GAS_AIRDROP = 0.5 ether;
+    // Use default options of V1, 200k gas limit, 0.5 ETH gas airdrop
+    bytes options = OptionsV1(200_000, GAS_AIRDROP).encodeOptionsV1();
 
     uint256 public constant SRC_CHAIN_ID = 1337;
     uint256 public constant DST_CHAIN_ID = 7331;
@@ -109,6 +110,7 @@ contract InterchainClientV1Test is Test {
         transactionID;
     }
 
+    // TODO: more tests
     function test_interchainReceive() public {
         bytes32 dstReceiver = TypeCasts.addressToBytes32(address(icApp));
         bytes memory message = "Hello World";
@@ -119,6 +121,7 @@ contract InterchainClientV1Test is Test {
         uint256 dbNonce = 2;
         bytes32 transactionID =
             keccak256(abi.encode(srcSender, SRC_CHAIN_ID, dstReceiver, DST_CHAIN_ID, message, nonce, options));
+        bytes memory expectedAppCalldata = abi.encodeCall(icApp.appReceive, (SRC_CHAIN_ID, srcSender, nonce, message));
 
         AppConfigV1 memory mockAppConfig = AppConfigV1({requiredResponses: 1, optimisticPeriod: 1 hours});
         vm.mockCall(
@@ -142,8 +145,11 @@ contract InterchainClientV1Test is Test {
             options: options,
             message: message
         });
+        deal(address(this), GAS_AIRDROP);
         // Skip ahead of optimistic period
         skip(mockAppConfig.optimisticPeriod + 1);
-        icClient.interchainExecute(abi.encode(transaction));
+        // Expect App to be called with the message
+        vm.expectCall({callee: address(icApp), msgValue: GAS_AIRDROP, gas: 200_000, data: expectedAppCalldata, count: 1});
+        icClient.interchainExecute{value: GAS_AIRDROP}({gasLimit: 0, transaction: abi.encode(transaction)});
     }
 }
