@@ -14,7 +14,6 @@ import StakeCard from '@/components/stake/StakeCard'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 import { POOLS_PATH } from '@/constants/urls'
-import { useHasMounted } from '@/utils/hooks/useHasMounted'
 
 
 
@@ -22,7 +21,6 @@ const StakePage = () => {
   const { chain: connectedChain } = useNetwork()
   const { address: currentAddress } = useAccount()
 
-  const isClient = useHasMounted()
   const [columns, setColumns] = useState<number>(1)
 
   const router = useRouter()
@@ -93,12 +91,9 @@ const StakePage = () => {
             <PageHeader title="Stake" subtitle="Stake your LP Tokens." />
 
             <Grid cols={{ xs: 1, sm: 1, md: columns }} gap={6} className="mt-8">
-              {isClient &&
-                availableStakingTokens.map((token, key) => {
-                  if (token.notStake) {
-                    return null
-                  }
-                  return (
+              {
+                availableStakingTokens?.map((token, key) => {
+                  return !token.notStake && (
                     <StakeCard
                       key={key}
                       address={currentAddress}
@@ -106,7 +101,8 @@ const StakePage = () => {
                       pool={token}
                     />
                   )
-                })}
+                })
+              }
             </Grid>
           </div>
         </main>

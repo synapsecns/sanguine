@@ -14,7 +14,6 @@ import { resetPoolDeposit } from '@/slices/poolDepositSlice'
 import { resetPoolWithdraw } from '@/slices/poolWithdrawSlice'
 import LoadingDots from '@tw/LoadingDots'
 import { POOL_BY_ROUTER_INDEX } from '@constants/tokens'
-import { useHasMounted } from '@/utils/hooks/useHasMounted'
 
 
 
@@ -39,7 +38,6 @@ const PoolPage = () => {
   const { address } = useAccount()
   const { chain } = useNetwork()
   const [connectedChainId, setConnectedChainId] = useState(0)
-  const isClient = useHasMounted()
 
   const { pool, isLoading } = usePoolDataState()
 
@@ -65,11 +63,11 @@ const PoolPage = () => {
   }, [chain])
 
   useEffect(() => {
-    if (poolId && isClient) {
+    if (poolId) {
       dispatch(resetPoolData())
       dispatch(fetchPoolData({ poolName: String(poolId) }))
     }
-  }, [poolId, address, isClient])
+  }, [poolId, address])
 
   return (
     <LandingPageWrapper nestedPage={true}>

@@ -17,7 +17,6 @@ import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 import { usePoolDataState } from '@/slices/pool/hooks'
 import { getStakedBalance } from '@/utils/actions/getStakedBalance'
-import { useHasMounted } from '@/utils/hooks/useHasMounted'
 
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 
@@ -34,7 +33,7 @@ const PoolBody = ({
   address?: Address
   connectedChainId?: number
 }) => {
-  const isClient = useHasMounted()
+
   const { chains, switchNetwork } = useSwitchNetwork()
   const { openConnectModal } = useConnectModal()
 
@@ -50,12 +49,12 @@ const PoolBody = ({
 
 
   useEffect(() => {
-    if (pool && isClient) {
+    if (pool) {
       segmentAnalyticsEvent(`[Pool] arrives`, {
         poolName: pool?.poolName,
       })
     }
-    if (address && isClient) {
+    if (address) {
       getStakedBalance(
         address as Address,
         pool.chainId,
@@ -71,7 +70,7 @@ const PoolBody = ({
     } else {
       setStakedBalance({ amount: 0n, reward: 0n })
     }
-  }, [isClient, address, pool])
+  }, [ address, pool])
 
   if (!pool) return null
 
