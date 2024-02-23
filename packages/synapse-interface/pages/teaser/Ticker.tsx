@@ -3,7 +3,7 @@ import PulseDot from './icons/PulseDot'
 import { useRef, useEffect } from 'react'
 
 const txs = new Array()
-for (let i = 0; i < 10; i++) txs.push(generateTx())
+for (let i = 0; i < 6; i++) txs.push(generateTx())
 console.log(txs)
 
 const formatTimestamp = (tx) => {
@@ -63,21 +63,16 @@ export default function Ticker() {
     if (previousTimeStamp !== timeStamp) {
       const { left, width } = tickerRef.current.getBoundingClientRect()
       // Math.min() is used here to make sure the element stops at exactly 200px
-      const count = -elapsed * 0.03 + offset // 1px per frame @ 30fps
+      const count = -(elapsed * 0.03) + offset // 1px/frame @ 30fps
+      console.log(Math.round(tickerRef.current.firstChild.offsetWidth))
+      if (count + width < window.outerWidth) {
+        offset += tickerRef.current.firstChild.offsetWidth
+        console.log(tickerRef.current.firstChild.firstChild.innerText)
+        var x = tickerRef.current.appendChild(tickerRef.current.firstChild) // <dt>
+        var x = tickerRef.current.appendChild(tickerRef.current.firstChild) // <dd>
+        // done = false
+      }
       tickerRef.current.style.left = `${count}px`
-      if (left + width < window.outerWidth) done = true
-      // if (count === 2000) done = true
-    }
-
-    if (done === true) {
-      offset += tickerRef.current.firstChild.offsetWidth
-      console.log(
-        tickerRef.current.firstChild.offsetWidth,
-        tickerRef.current.firstChild
-      )
-      tickerRef.current.appendChild(tickerRef.current.firstChild) // <dt>
-      tickerRef.current.appendChild(tickerRef.current.firstChild) // <dd>
-      done = false
     }
 
     if (true || elapsed < 2000) {
