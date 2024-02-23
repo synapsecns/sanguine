@@ -218,7 +218,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
 
     // TODO: Gas Fee Consideration that is paid to executor
     // @inheritdoc IInterchainClientV1
-    function interchainExecute(uint256 gasLimit, bytes calldata transaction) public {
+    function interchainExecute(uint256 gasLimit, bytes calldata transaction) external payable {
         InterchainTransaction memory icTx = InterchainTransactionLib.decodeTransaction(transaction);
         bytes32 transactionId = icTx.transactionId();
         require(_isExecutable(transactionId, icTx), "Transaction is not executable");

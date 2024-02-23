@@ -20,5 +20,5 @@ interface IInterchainApp {
 
     function send(bytes32 receiver, uint256 dstChainId, bytes calldata message) external payable;
 
-    function appReceive(uint256 srcChainId, bytes32 sender, uint64 nonce, bytes calldata message) external;
+    function appReceive(uint256 srcChainId, bytes32 sender, uint64 nonce, bytes calldata message) external payable;
 }

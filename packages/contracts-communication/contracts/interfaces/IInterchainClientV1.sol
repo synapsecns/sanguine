@@ -2,6 +2,8 @@
 pragma solidity ^0.8.0;
 
 interface IInterchainClientV1 {
+    error InterchainClientV1__IncorrectMsgValue(uint256 actual, uint256 expected);
+
     /**
      * @notice Sets the address of the ExecutionFees contract.
      * @dev Only callable by the contract owner or an authorized account.
@@ -59,7 +61,7 @@ interface IInterchainClientV1 {
      * @param gasLimit          The gas limit to use for the execution.
      * @param transaction       The transaction data.
      */
-    function interchainExecute(uint256 gasLimit, bytes calldata transaction) external;
+    function interchainExecute(uint256 gasLimit, bytes calldata transaction) external payable;
 
     /**
      * @notice Checks if a transaction is executable.
