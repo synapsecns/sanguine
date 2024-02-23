@@ -1,23 +1,9 @@
 import _ from 'lodash'
-import { memo, useEffect, useRef, useState } from 'react'
-
-import {
-  getBorderStyleForCoin,
-  getBorderStyleForCoinHover,
-  getMenuItemBgForCoin,
-  getMenuItemStyleForCoin,
-} from '@styles/tokens'
 import { Token } from '@/utils/types'
-import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { CHAINS_BY_ID } from '@/constants/chains'
 import { findChainIdsWithPausedToken } from '@/constants/tokens'
 import LoadingDots from '@tw/LoadingDots'
-import {
-  BridgeModules,
-  ELIGIBILITY_DEFAULT_TEXT,
-  useStipEligibility,
-} from '@/utils/hooks/useStipEligibility'
+
 import { getUnderlyingBridgeTokens } from '@/utils/getUnderlyingBridgeTokens'
 import { ARBITRUM, AVALANCHE, ETH } from '@/constants/chains/master'
 
@@ -50,15 +36,13 @@ export const SelectSpecificTokenButton = ({
 }) => {
   const { fromChainId, toChainId } = useBridgeState()
 
-  const chainId = isOrigin ? fromChainId : toChainId
-
   return (
     <SelectTokenButton
       showAllChains={showAllChains}
       token={token}
       active={active}
       selectedToken={selectedToken}
-      chainId={chainId}
+      chainId={isOrigin ? fromChainId : toChainId}
       isOrigin={isOrigin}
       onClick={onClick}
       isEligible={isTokenEligible(token)}
