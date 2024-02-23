@@ -27,10 +27,10 @@ contract ExecutionFees is AccessControl, ExecutionFeesEvents, IExecutionFees {
 
     // @inheritdoc IExecutionFees
     function addExecutionFee(uint256 dstChainId, bytes32 transactionId) external payable override {
-        require(msg.value > 0, "ExecutionFees: Fee must be greater than 0");
-        require(_transactionsByExecutor[transactionId] == address(0), "ExecutionFees: Executor already recorded");
+        if (msg.value == 0) revert ExecutionFees__ZeroAmount();
+        if (_transactionsByExecutor[transactionId] != address(0)) revert ExecutionFees__AlreadyRecorded();
         _executionFees[transactionId] += msg.value;
-        emit ExecutionFeeAdded(dstChainId, transactionId, msg.value);
+        emit ExecutionFeeAdded(dstChainId, transactionId, _executionFees[transactionId]);
     }
 
     // @inheritdoc IExecutionFees
@@ -43,21 +43,24 @@ contract ExecutionFees is AccessControl, ExecutionFeesEvents, IExecutionFees {
         override
         onlyRole(RECORDER_ROLE)
     {
-        require(_transactionsByExecutor[transactionId] == address(0), "ExecutionFees: Executor already recorded");
-        require(_executionFees[transactionId] > 0, "ExecutionFees: No execution fee found");
+        if (executor == address(0)) revert ExecutionFees__ZeroAddress();
+        if (_transactionsByExecutor[transactionId] != address(0)) revert ExecutionFees__AlreadyRecorded();
+        uint256 fee = _executionFees[transactionId];
+        if (fee == 0) revert ExecutionFees__ZeroAmount();
         _transactionsByExecutor[transactionId] = executor;
-        _accumulatedRewards[executor] += _executionFees[transactionId];
-        _unclaimedRewards[executor] += _executionFees[transactionId];
         emit ExecutorRecorded(dstChainId, transactionId, executor);
+        _accumulatedRewards[executor] += fee;
+        _unclaimedRewards[executor] += fee;
+        emit ExecutionFeesAwarded(executor, fee);
     }
 
     // @inheritdoc IExecutionFees
     function claimExecutionFees(address executor) external override {
         uint256 amount = _unclaimedRewards[executor];
-        require(amount > 0, "ExecutionFees: No unclaimed rewards");
+        if (amount == 0) revert ExecutionFees__ZeroAmount();
         _unclaimedRewards[executor] = 0;
         payable(executor).sendValue(amount);
-        emit ExecutionFeesClaimed(msg.sender, amount);
+        emit ExecutionFeesClaimed(executor, amount);
     }
 
     // @inheritdoc IExecutionFees
