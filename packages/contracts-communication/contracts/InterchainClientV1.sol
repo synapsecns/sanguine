@@ -98,15 +98,16 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         }
         IExecutionFees(executionFees).addExecutionFee{value: executionFee}(icTx.dstChainId, transactionId);
         emit InterchainTransactionSent(
-            transactionId,
+            icTx.transactionId,
             icTx.dbNonce,
+            icTx.nonce,
             icTx.dstChainId,
             icTx.srcSender,
             icTx.dstReceiver,
             verificationFee,
             executionFee,
-            options,
-            message
+            icTx.options,
+            icTx.message
         );
         // Increment nonce for next message
         clientNonce++;
