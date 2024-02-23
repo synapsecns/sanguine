@@ -59,6 +59,60 @@ contract ExecutionFeesTest is ExecutionFeesEvents, Test {
         addExecutionFee(executionFeeA, dstChainId, transactionIdA);
     }
 
+    function test_addExecutionFee_alreadyRecordedNoFee_emitsEvents() public {
+        recordExecutor(dstChainId, transactionId, executor);
+        vm.expectEmit(address(executionFees));
+        emit ExecutionFeeAdded(dstChainId, transactionId, executionFee);
+        vm.expectEmit(address(executionFees));
+        emit ExecutionFeesAwarded(executor, executionFee);
+        addExecutionFee(executionFee, dstChainId, transactionId);
+    }
+
+    function test_addExecutionFee_alreadyRecordedNoFee_recordsFees() public {
+        recordExecutor(dstChainId, transactionId, executor);
+        addExecutionFee(executionFee, dstChainId, transactionId);
+        assertEq(executionFees.getAccumulatedRewards(executor), executionFee);
+        assertEq(executionFees.getUnclaimedRewards(executor), executionFee);
+    }
+
+    function test_addExecutionFee_alreadyRecordedWithFee_emitsEvents() public {
+        addExecutionFee(executionFee, dstChainId, transactionId);
+        recordExecutor(dstChainId, transactionId, executor);
+        vm.expectEmit(address(executionFees));
+        emit ExecutionFeeAdded(dstChainId, transactionId, executionFee + executionFeeA);
+        vm.expectEmit(address(executionFees));
+        emit ExecutionFeesAwarded(executor, executionFeeA);
+        addExecutionFee(executionFeeA, dstChainId, transactionId);
+    }
+
+    function test_addExecutionFee_alreadyRecordedWithFee_recordsFees() public {
+        addExecutionFee(executionFee, dstChainId, transactionId);
+        recordExecutor(dstChainId, transactionId, executor);
+        addExecutionFee(executionFeeA, dstChainId, transactionId);
+        assertEq(executionFees.getAccumulatedRewards(executor), executionFee + executionFeeA);
+        assertEq(executionFees.getUnclaimedRewards(executor), executionFee + executionFeeA);
+    }
+
+    function test_addExecutionFee_alreadyClaimed_emitsEvents() public {
+        addExecutionFee(executionFee, dstChainId, transactionId);
+        recordExecutor(dstChainId, transactionId, executor);
+        executionFees.claimExecutionFees(executor);
+        vm.expectEmit(address(executionFees));
+        emit ExecutionFeeAdded(dstChainId, transactionId, executionFee + executionFeeA);
+        vm.expectEmit(address(executionFees));
+        emit ExecutionFeesAwarded(executor, executionFeeA);
+        addExecutionFee(executionFeeA, dstChainId, transactionId);
+    }
+
+    function test_addExecutionFee_alreadyClaimed_recordsFees() public {
+        addExecutionFee(executionFee, dstChainId, transactionId);
+        recordExecutor(dstChainId, transactionId, executor);
+        executionFees.claimExecutionFees(executor);
+        addExecutionFee(executionFeeA, dstChainId, transactionId);
+        assertEq(executionFees.getAccumulatedRewards(executor), executionFee + executionFeeA);
+        assertEq(executionFees.getUnclaimedRewards(executor), executionFeeA);
+    }
+
     function test_recordExecutor_emitsEvents() public {
         addExecutionFee(executionFee, dstChainId, transactionId);
         vm.expectEmit(address(executionFees));
@@ -73,6 +127,20 @@ contract ExecutionFeesTest is ExecutionFeesEvents, Test {
         recordExecutor(dstChainId, transactionId, executor);
         assertEq(executionFees.getAccumulatedRewards(executor), executionFee);
         assertEq(executionFees.getUnclaimedRewards(executor), executionFee);
+    }
+
+    function test_recordExecutor_feeNotAdded_emitsEvents() public {
+        vm.expectEmit(address(executionFees));
+        emit ExecutorRecorded(dstChainId, transactionId, executor);
+        vm.expectEmit(address(executionFees));
+        emit ExecutionFeesAwarded(executor, 0);
+        recordExecutor(dstChainId, transactionId, executor);
+    }
+
+    function test_recordExecutor_feeNotAdded_doesNotRecordFees() public {
+        recordExecutor(dstChainId, transactionId, executor);
+        assertEq(executionFees.getAccumulatedRewards(executor), 0);
+        assertEq(executionFees.getUnclaimedRewards(executor), 0);
     }
 
     function test_recordExecutor_addedTwice_sameTx_emitsEvents() public {
@@ -240,13 +308,6 @@ contract ExecutionFeesTest is ExecutionFeesEvents, Test {
         assertEq(executionFees.getUnclaimedRewards(executor), 0);
     }
 
-    function test_addExecutionFee_revertExecutorAlreadyRecorded() public {
-        addExecutionFee(executionFee, dstChainId, transactionId);
-        recordExecutor(dstChainId, transactionId, executor);
-        vm.expectRevert(IExecutionFees.ExecutionFees__AlreadyRecorded.selector);
-        addExecutionFee(2 * executionFee, dstChainId, transactionId);
-    }
-
     function test_addExecutionFee_revertZeroFee() public {
         vm.expectRevert(IExecutionFees.ExecutionFees__ZeroAmount.selector);
         executionFees.addExecutionFee(dstChainId, transactionId);
@@ -270,12 +331,6 @@ contract ExecutionFeesTest is ExecutionFeesEvents, Test {
         addExecutionFee(executionFee, dstChainId, transactionId);
         vm.expectRevert(IExecutionFees.ExecutionFees__ZeroAddress.selector);
         recordExecutor(dstChainId, transactionId, address(0));
-    }
-
-    function test_recordExecutor_revertNoExecutionFeeFound() public {
-        vm.startPrank(address(icClient));
-        vm.expectRevert(IExecutionFees.ExecutionFees__ZeroAmount.selector);
-        executionFees.recordExecutor(dstChainId, transactionId, executor);
     }
 
     function test_claimExecutionFees_revertNoUnclaimedRewards() public {
