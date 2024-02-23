@@ -39,10 +39,15 @@ contract ExecutionFeesTest is ExecutionFeesEvents, Test {
         addExecutionFee(executionFee, dstChainId, transactionId);
     }
 
-    function test_addExecutionFee_doesNotRecordFees() public {
+    function test_addExecutionFee_doesNotAwardFees() public {
         addExecutionFee(executionFee, dstChainId, transactionId);
         assertEq(executionFees.getAccumulatedRewards(executor), 0);
         assertEq(executionFees.getUnclaimedRewards(executor), 0);
+    }
+
+    function test_addExecutionFee_recordsTxFee() public {
+        addExecutionFee(executionFee, dstChainId, transactionId);
+        assertEq(executionFees.getExecutionFee(dstChainId, transactionId), executionFee);
     }
 
     function test_addExecutionFee_addedTwice_sameTx_emitsEvent() public {
@@ -52,11 +57,24 @@ contract ExecutionFeesTest is ExecutionFeesEvents, Test {
         addExecutionFee(executionFeeA, dstChainId, transactionId);
     }
 
+    function test_addExecutionFee_addedTwice_sameTx_recordsTxFee() public {
+        addExecutionFee(executionFee, dstChainId, transactionId);
+        addExecutionFee(executionFeeA, dstChainId, transactionId);
+        assertEq(executionFees.getExecutionFee(dstChainId, transactionId), executionFee + executionFeeA);
+    }
+
     function test_addExecutionFee_addedTwice_diffTx_emitsEvent() public {
         addExecutionFee(executionFee, dstChainId, transactionId);
         vm.expectEmit(address(executionFees));
         emit ExecutionFeeAdded(dstChainId, transactionIdA, executionFeeA);
         addExecutionFee(executionFeeA, dstChainId, transactionIdA);
+    }
+
+    function test_addExecutionFee_addedTwice_diffTx_recordsTxFee() public {
+        addExecutionFee(executionFee, dstChainId, transactionId);
+        addExecutionFee(executionFeeA, dstChainId, transactionIdA);
+        assertEq(executionFees.getExecutionFee(dstChainId, transactionId), executionFee);
+        assertEq(executionFees.getExecutionFee(dstChainId, transactionIdA), executionFeeA);
     }
 
     function test_addExecutionFee_alreadyRecordedNoFee_emitsEvents() public {
@@ -68,11 +86,17 @@ contract ExecutionFeesTest is ExecutionFeesEvents, Test {
         addExecutionFee(executionFee, dstChainId, transactionId);
     }
 
-    function test_addExecutionFee_alreadyRecordedNoFee_recordsFees() public {
+    function test_addExecutionFee_alreadyRecordedNoFee_awardsFees() public {
         recordExecutor(dstChainId, transactionId, executor);
         addExecutionFee(executionFee, dstChainId, transactionId);
         assertEq(executionFees.getAccumulatedRewards(executor), executionFee);
         assertEq(executionFees.getUnclaimedRewards(executor), executionFee);
+    }
+
+    function test_addExecutionFee_alreadyRecordedNoFee_recordsTxFee() public {
+        recordExecutor(dstChainId, transactionId, executor);
+        addExecutionFee(executionFee, dstChainId, transactionId);
+        assertEq(executionFees.getExecutionFee(dstChainId, transactionId), executionFee);
     }
 
     function test_addExecutionFee_alreadyRecordedWithFee_emitsEvents() public {
@@ -85,12 +109,19 @@ contract ExecutionFeesTest is ExecutionFeesEvents, Test {
         addExecutionFee(executionFeeA, dstChainId, transactionId);
     }
 
-    function test_addExecutionFee_alreadyRecordedWithFee_recordsFees() public {
+    function test_addExecutionFee_alreadyRecordedWithFee_awardsFees() public {
         addExecutionFee(executionFee, dstChainId, transactionId);
         recordExecutor(dstChainId, transactionId, executor);
         addExecutionFee(executionFeeA, dstChainId, transactionId);
         assertEq(executionFees.getAccumulatedRewards(executor), executionFee + executionFeeA);
         assertEq(executionFees.getUnclaimedRewards(executor), executionFee + executionFeeA);
+    }
+
+    function test_addExecutionFee_alreadyRecordedWithFee_recordsTxFee() public {
+        addExecutionFee(executionFee, dstChainId, transactionId);
+        recordExecutor(dstChainId, transactionId, executor);
+        addExecutionFee(executionFeeA, dstChainId, transactionId);
+        assertEq(executionFees.getExecutionFee(dstChainId, transactionId), executionFee + executionFeeA);
     }
 
     function test_addExecutionFee_alreadyClaimed_emitsEvents() public {
@@ -104,13 +135,21 @@ contract ExecutionFeesTest is ExecutionFeesEvents, Test {
         addExecutionFee(executionFeeA, dstChainId, transactionId);
     }
 
-    function test_addExecutionFee_alreadyClaimed_recordsFees() public {
+    function test_addExecutionFee_alreadyClaimed_awardsFees() public {
         addExecutionFee(executionFee, dstChainId, transactionId);
         recordExecutor(dstChainId, transactionId, executor);
         executionFees.claimExecutionFees(executor);
         addExecutionFee(executionFeeA, dstChainId, transactionId);
         assertEq(executionFees.getAccumulatedRewards(executor), executionFee + executionFeeA);
         assertEq(executionFees.getUnclaimedRewards(executor), executionFeeA);
+    }
+
+    function test_addExecutionFee_alreadyClaimed_recordsTxFee() public {
+        addExecutionFee(executionFee, dstChainId, transactionId);
+        recordExecutor(dstChainId, transactionId, executor);
+        executionFees.claimExecutionFees(executor);
+        addExecutionFee(executionFeeA, dstChainId, transactionId);
+        assertEq(executionFees.getExecutionFee(dstChainId, transactionId), executionFee + executionFeeA);
     }
 
     function test_recordExecutor_emitsEvents() public {
@@ -122,11 +161,17 @@ contract ExecutionFeesTest is ExecutionFeesEvents, Test {
         recordExecutor(dstChainId, transactionId, executor);
     }
 
-    function test_recordExecutor_recordsFees() public {
+    function test_recordExecutor_awardsFees() public {
         addExecutionFee(executionFee, dstChainId, transactionId);
         recordExecutor(dstChainId, transactionId, executor);
         assertEq(executionFees.getAccumulatedRewards(executor), executionFee);
         assertEq(executionFees.getUnclaimedRewards(executor), executionFee);
+    }
+
+    function test_recordExecutor_recordsExecutor() public {
+        addExecutionFee(executionFee, dstChainId, transactionId);
+        recordExecutor(dstChainId, transactionId, executor);
+        assertEq(executionFees.getRecordedExecutor(dstChainId, transactionId), executor);
     }
 
     function test_recordExecutor_feeNotAdded_emitsEvents() public {
@@ -137,10 +182,15 @@ contract ExecutionFeesTest is ExecutionFeesEvents, Test {
         recordExecutor(dstChainId, transactionId, executor);
     }
 
-    function test_recordExecutor_feeNotAdded_doesNotRecordFees() public {
+    function test_recordExecutor_feeNotAdded_doesNotAwardFees() public {
         recordExecutor(dstChainId, transactionId, executor);
         assertEq(executionFees.getAccumulatedRewards(executor), 0);
         assertEq(executionFees.getUnclaimedRewards(executor), 0);
+    }
+
+    function test_recordExecutor_feeNotAdded_recordsExecutor() public {
+        recordExecutor(dstChainId, transactionId, executor);
+        assertEq(executionFees.getRecordedExecutor(dstChainId, transactionId), executor);
     }
 
     function test_recordExecutor_addedTwice_sameTx_emitsEvents() public {
@@ -153,12 +203,19 @@ contract ExecutionFeesTest is ExecutionFeesEvents, Test {
         recordExecutor(dstChainId, transactionId, executor);
     }
 
-    function test_recordExecutor_addedTwice_sameTx_recordsFees() public {
+    function test_recordExecutor_addedTwice_sameTx_awardsFees() public {
         addExecutionFee(executionFee, dstChainId, transactionId);
         addExecutionFee(executionFeeA, dstChainId, transactionId);
         recordExecutor(dstChainId, transactionId, executor);
         assertEq(executionFees.getAccumulatedRewards(executor), executionFee + executionFeeA);
         assertEq(executionFees.getUnclaimedRewards(executor), executionFee + executionFeeA);
+    }
+
+    function test_recordExecutor_addedTwice_sameTx_recordsExecutor() public {
+        addExecutionFee(executionFee, dstChainId, transactionId);
+        addExecutionFee(executionFeeA, dstChainId, transactionId);
+        recordExecutor(dstChainId, transactionId, executor);
+        assertEq(executionFees.getRecordedExecutor(dstChainId, transactionId), executor);
     }
 
     function test_recordExecutor_addedTwice_diffTx_emitsEvents() public {
@@ -171,12 +228,19 @@ contract ExecutionFeesTest is ExecutionFeesEvents, Test {
         recordExecutor(dstChainId, transactionIdA, executor);
     }
 
-    function test_recordExecutor_addedTwice_diffTx_recordsFees() public {
+    function test_recordExecutor_addedTwice_diffTx_awardsFees() public {
         addExecutionFee(executionFee, dstChainId, transactionId);
         addExecutionFee(executionFeeA, dstChainId, transactionIdA);
         recordExecutor(dstChainId, transactionId, executor);
         assertEq(executionFees.getAccumulatedRewards(executor), executionFee);
         assertEq(executionFees.getUnclaimedRewards(executor), executionFee);
+    }
+
+    function test_recordExecutor_addedTwice_diffTx_recordsExecutor() public {
+        addExecutionFee(executionFee, dstChainId, transactionId);
+        addExecutionFee(executionFeeA, dstChainId, transactionIdA);
+        recordExecutor(dstChainId, transactionId, executor);
+        assertEq(executionFees.getRecordedExecutor(dstChainId, transactionId), executor);
     }
 
     function setupAddedTwiceClaimedOnce() internal {
@@ -195,11 +259,17 @@ contract ExecutionFeesTest is ExecutionFeesEvents, Test {
         recordExecutor(dstChainId, transactionIdA, executor);
     }
 
-    function test_recordExecutor_addedTwice_diffTxClaimed_recordsFees() public {
+    function test_recordExecutor_addedTwice_diffTxClaimed_awardsFees() public {
         setupAddedTwiceClaimedOnce();
         recordExecutor(dstChainId, transactionIdA, executor);
         assertEq(executionFees.getAccumulatedRewards(executor), executionFee + executionFeeA);
         assertEq(executionFees.getUnclaimedRewards(executor), executionFeeA);
+    }
+
+    function test_recordExecutor_addedTwice_diffTxClaimed_recordsExecutor() public {
+        setupAddedTwiceClaimedOnce();
+        recordExecutor(dstChainId, transactionIdA, executor);
+        assertEq(executionFees.getRecordedExecutor(dstChainId, transactionIdA), executor);
     }
 
     function test_claimExecutionFees_emitsEvent() public {
@@ -306,6 +376,28 @@ contract ExecutionFeesTest is ExecutionFeesEvents, Test {
         executionFees.claimExecutionFees(executor);
         assertEq(executionFees.getAccumulatedRewards(executor), executionFee + executionFeeA);
         assertEq(executionFees.getUnclaimedRewards(executor), 0);
+    }
+
+    function test_getExecutionFee_wrongChainId() public {
+        addExecutionFee(executionFee, dstChainId, transactionId);
+        assertEq(executionFees.getExecutionFee(dstChainId + 1, transactionId), 0);
+    }
+
+    function test_getExecutionFee_wrongTxId() public {
+        addExecutionFee(executionFee, dstChainId, transactionId);
+        assertEq(executionFees.getExecutionFee(dstChainId, transactionIdA), 0);
+    }
+
+    function test_getExecutor_wrongChainId() public {
+        addExecutionFee(executionFee, dstChainId, transactionId);
+        recordExecutor(dstChainId, transactionId, executor);
+        assertEq(executionFees.getRecordedExecutor(dstChainId + 1, transactionId), address(0));
+    }
+
+    function test_getExecutor_wrongTxId() public {
+        addExecutionFee(executionFee, dstChainId, transactionId);
+        recordExecutor(dstChainId, transactionId, executor);
+        assertEq(executionFees.getRecordedExecutor(dstChainId, transactionIdA), address(0));
     }
 
     function test_addExecutionFee_revertZeroFee() public {

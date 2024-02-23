@@ -13,4 +13,8 @@ contract ExecutionFeesMock is IExecutionFees {
     function getAccumulatedRewards(address executor) external view returns (uint256 accumulated) {}
 
     function getUnclaimedRewards(address executor) external view returns (uint256 unclaimed) {}
+
+    function getExecutionFee(uint256 dstChainId, bytes32 transactionId) external view returns (uint256 fee) {}
+
+    function getRecordedExecutor(uint256 dstChainId, bytes32 transactionId) external view returns (address executor) {}
 }
