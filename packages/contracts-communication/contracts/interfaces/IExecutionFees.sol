@@ -37,4 +37,15 @@ interface IExecutionFees {
     /// @notice Get the unclaimed rewards for an executor.
     /// @param executor             The address of the executor to get the rewards for.
     function getUnclaimedRewards(address executor) external view returns (uint256 unclaimed);
+
+    /// @notice Get the total execution fee for a transaction.
+    /// @param dstChainId           The chain id of the destination chain.
+    /// @param transactionId        The id of the transaction to get the execution fee for.
+    function getExecutionFee(uint256 dstChainId, bytes32 transactionId) external view returns (uint256 fee);
+
+    /// @notice Get the address of the recorded executor for a transaction.
+    /// @dev Will return address(0) if the executor is not recorded.
+    /// @param dstChainId           The chain id of the destination chain.
+    /// @param transactionId        The id of the transaction to get the recorded executor for.
+    function getRecordedExecutor(uint256 dstChainId, bytes32 transactionId) external view returns (address executor);
 }

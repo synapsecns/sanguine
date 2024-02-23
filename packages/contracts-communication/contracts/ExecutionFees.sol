@@ -74,6 +74,24 @@ contract ExecutionFees is AccessControl, ExecutionFeesEvents, IExecutionFees {
         return _unclaimedRewards[executor];
     }
 
+    // @inheritdoc IExecutionFees
+    function getExecutionFee(uint256 dstChainId, bytes32 transactionId) external view override returns (uint256 fee) {
+        return _executionFees[transactionId];
+    }
+
+    // @inheritdoc IExecutionFees
+    function getRecordedExecutor(
+        uint256 dstChainId,
+        bytes32 transactionId
+    )
+        external
+        view
+        override
+        returns (address executor)
+    {
+        return _transactionsByExecutor[transactionId];
+    }
+
     /// @dev Award the executor with the fee for completing the transaction.
     function _awardFee(address executor, uint256 fee) internal {
         _accumulatedRewards[executor] += fee;
