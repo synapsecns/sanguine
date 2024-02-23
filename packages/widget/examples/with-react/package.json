@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@synapsecns/widget": "0.0.26",
+    "@synapsecns/widget": "0.0.57",
     "@types/node": "^16.18.65",
     "@types/react": "^18.2.39",
     "@types/react-dom": "^18.2.17",

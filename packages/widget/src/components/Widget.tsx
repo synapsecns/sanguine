@@ -60,7 +60,6 @@ import { useSynapseContext } from '@/providers/SynapseProvider'
 import { getFromTokens } from '@/utils/routeMaker/getFromTokens'
 import { getSymbol } from '@/utils/routeMaker/generateRoutePossibilities'
 import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
-import { switchNetwork } from '@/utils/actions/switchNetwork'
 
 interface WidgetProps {
   customTheme: CustomThemeVariables
@@ -136,7 +135,6 @@ export const Widget = ({
   }, [targetTokens, targetChainIds, targetTokens, protocolName])
 
   /** Debounce user input to fetch bridge quote (in ms) */
-  /** TODO: Can this be moved to the input component? */
   useEffect(() => {
     const DEBOUNCE_DELAY = 300
     const debounceTimer = setTimeout(() => {
@@ -149,7 +147,6 @@ export const Widget = ({
   }, [dispatch, inputAmount])
 
   /** Fetch token balances when signer/address connected */
-  /** TODO: Can this be moved into a level above? */
   useEffect(() => {
     if (!signer && !originChainProvider) return
     if (originChainId && allTokens && connectedAddress) {
@@ -193,6 +190,8 @@ export const Widget = ({
       currentSDKRequestID.current += 1
       const thisRequestId = currentSDKRequestID.current
 
+      dispatch(resetQuote())
+
       if (thisRequestId === currentSDKRequestID.current) {
         dispatch(
           fetchBridgeQuote({
@@ -233,7 +232,6 @@ export const Widget = ({
 
   const handleOriginChainSelection = useCallback(
     (newOriginChain: Chain) => {
-      switchNetwork(newOriginChain.id, provider)
       dispatch(setOriginChainId(newOriginChain.id))
     },
     [dispatch, provider]
@@ -305,8 +303,8 @@ export const Widget = ({
           ),
           parsedOriginAmount: debouncedInputAmount,
           originTokenSymbol: originToken?.symbol,
-          originQuery: bridgeQuote?.quotes.originQuery,
-          destinationQuery: bridgeQuote?.quotes.destQuery,
+          originQuery: bridgeQuote?.originQuery,
+          destQuery: bridgeQuote?.destQuery,
           bridgeModuleName: bridgeQuote?.bridgeModuleName,
           estimatedTime: bridgeQuote?.estimatedTime,
           synapseSDK,
@@ -384,7 +382,7 @@ export const Widget = ({
     >
       <div
         className={`grid gap-2 text-[--synapse-text] w-full ${containerStyle}`}
-        style={{ background: 'var(--synapse-root' }}
+        style={{ background: 'var(--synapse-root)' }}
       >
         <Transactions connectedAddress={connectedAddress} />
         <section

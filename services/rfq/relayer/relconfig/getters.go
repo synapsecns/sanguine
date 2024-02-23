@@ -334,6 +334,18 @@ func (c Config) GetFeePricer() FeePricerConfig {
 	return c.FeePricer
 }
 
+const defaultHTTPTimeoutMs = 1000
+
+// GetHTTPTimeout returns the HTTP timeout.
+func (c Config) GetHTTPTimeout() time.Duration {
+	feePricerCfg := c.GetFeePricer()
+	timeoutMs := defaultHTTPTimeoutMs
+	if feePricerCfg.HTTPTimeoutMs > 0 {
+		timeoutMs = feePricerCfg.HTTPTimeoutMs
+	}
+	return time.Duration(timeoutMs) * time.Millisecond
+}
+
 // GetTokenID returns the tokenID for the given chain and address.
 func (c Config) GetTokenID(chain int, addr string) (string, error) {
 	chainConfig, ok := c.Chains[chain]
@@ -427,4 +439,15 @@ func (c Config) GetMinQuoteAmount(chainID int, addr common.Address) *big.Int {
 	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenCfg.Decimals)), nil)
 	quoteAmountScaled, _ := new(big.Float).Mul(quoteAmountFlt, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
 	return quoteAmountScaled
+}
+
+const defaultDBSelectorIntervalSeconds = 1
+
+// GetDBSelectorInterval returns the interval for the DB selector.
+func (c Config) GetDBSelectorInterval() time.Duration {
+	interval := c.DBSelectorIntervalSeconds
+	if interval <= 0 {
+		return defaultDBSelectorIntervalSeconds
+	}
+	return time.Duration(interval) * time.Second
 }

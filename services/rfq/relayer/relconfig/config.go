@@ -43,8 +43,8 @@ type Config struct {
 	FeePricer FeePricerConfig `yaml:"fee_pricer"`
 	// ScreenerAPIUrl is the TRM API key.
 	ScreenerAPIUrl string `yaml:"screener_api_url"`
-	// BaseDeadlineBufferSeconds is the deadline buffer for relaying a transaction.
-	BaseDeadlineBufferSeconds int `yaml:"base_deadline_buffer_seconds"`
+	// DBSelectorIntervalSeconds is the interval for the db selector.
+	DBSelectorIntervalSeconds int `yaml:"db_selector_interval_seconds"`
 }
 
 // ChainConfig represents the configuration for a chain.
@@ -103,6 +103,8 @@ type FeePricerConfig struct {
 	GasPriceCacheTTLSeconds int `yaml:"gas_price_cache_ttl"`
 	// TokenPriceCacheTTLSeconds is the TTL for the token price cache.
 	TokenPriceCacheTTLSeconds int `yaml:"token_price_cache_ttl"`
+	// HTTPTimeoutMs is the number of milliseconds to timeout on a HTTP request.
+	HTTPTimeoutMs int `yaml:"http_timeout_ms"`
 }
 
 const tokenIDDelimiter = "-"

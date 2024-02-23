@@ -10,43 +10,49 @@ import (
 )
 
 func (g *GinHelperSuite) TestRobots() {
-	getRequest, err := http.NewRequestWithContext(g.GetTestContext(), http.MethodGet, g.url+"/robots.txt", nil)
-	Nil(g.T(), err)
+	g.runOnAllURLs(func(url string) {
+		getRequest, err := http.NewRequestWithContext(g.GetTestContext(), http.MethodGet, url+ginhelper.RobotsTxt, nil)
+		Nil(g.T(), err)
 
-	resp, err := http.DefaultClient.Do(getRequest)
-	Nil(g.T(), err)
-	defer func() {
-		_ = resp.Body.Close()
-	}()
-	_, err = robotstxt.FromResponse(resp)
-	Nil(g.T(), err)
+		resp, err := http.DefaultClient.Do(getRequest)
+		Nil(g.T(), err)
+		defer func() {
+			_ = resp.Body.Close()
+		}()
+		_, err = robotstxt.FromResponse(resp)
+		Nil(g.T(), err)
+	})
 }
 
 func (g *GinHelperSuite) TestHealth() {
-	getRequest, err := http.NewRequestWithContext(g.GetTestContext(), http.MethodGet, g.url+ginhelper.HealthCheck, nil)
-	Nil(g.T(), err)
+	g.runOnAllURLs(func(url string) {
+		getRequest, err := http.NewRequestWithContext(g.GetTestContext(), http.MethodGet, url+ginhelper.HealthCheck, nil)
+		Nil(g.T(), err)
 
-	resp, err := http.DefaultClient.Do(getRequest)
-	defer func() {
-		_ = resp.Body.Close()
-	}()
-	Nil(g.T(), err)
-	Equal(g.T(), http.StatusOK, resp.StatusCode)
+		resp, err := http.DefaultClient.Do(getRequest)
+		defer func() {
+			_ = resp.Body.Close()
+		}()
+		Nil(g.T(), err)
+		Equal(g.T(), http.StatusOK, resp.StatusCode)
+	})
 }
 
 func (g *GinHelperSuite) TestRequestID() {
-	getRequest, err := http.NewRequestWithContext(g.GetTestContext(), http.MethodGet, g.url, nil)
-	Nil(g.T(), err)
+	g.runOnAllURLs(func(url string) {
+		getRequest, err := http.NewRequestWithContext(g.GetTestContext(), http.MethodGet, url, nil)
+		Nil(g.T(), err)
 
-	resp, err := http.DefaultClient.Do(getRequest)
-	defer func() {
-		_ = resp.Body.Close()
-	}()
-	Nil(g.T(), err)
+		resp, err := http.DefaultClient.Do(getRequest)
+		defer func() {
+			_ = resp.Body.Close()
+		}()
+		Nil(g.T(), err)
 
-	res := resp.Header.Get(ginhelper.RequestIDHeader)
-	_, err = uuid.Parse(res)
-	Nil(g.T(), err)
+		res := resp.Header.Get(ginhelper.RequestIDHeader)
+		_, err = uuid.Parse(res)
+		Nil(g.T(), err)
+	})
 }
 
 // AssertContextWithFallback asserts that the context is set with the fallback value.

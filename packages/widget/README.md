@@ -32,21 +32,18 @@ yarn add @synapsecns/widget
 
 Note: The widget's `peerDependencies` require the consumer app to use `react` and `react-dom` (`>=17.0.1`)
 
-## Installation
+## Get started
 
 To get started, import the `Widget` React component into your App. You will need a `web3Provider` parameter to pass to the widget. The demo landing page app, for example, defines this provider from the `ethers` library. However, the component supports any similar provider:
 
 ```tsx
-import { Bridge } from ‘@synapsecns/widget’
+import { Bridge } from '@synapsecns/widget'
 
 const MyApp = () => {
   const web3Provider = new ethers.BrowserProvider(window.ethereum)
 
-  <Bridge
-    web3Provider={web3Provider}
-  />
+  return <Bridge web3Provider={web3Provider} />
 }
-
 ```
 
 Your site should now display a fully operational bridge widget integrating the routes and tokens supported by the Synapse protocol. By utilizing Synapse's multiple routers, you will be able to find the best quotes to support your bridging use case.
@@ -55,15 +52,29 @@ Your site should now display a fully operational bridge widget integrating the r
 
 The widget accepts a number of props to customize its functionality and appearance. Below is a quick summary with more detailed explanations later on.
 
-```
-web3Provider: Web3Provider. Required.
-customRpcs?: Custom JSON-RPC endpoints for your consumer application.
-customTheme?: Custom theme for the widget. If not provided, defaults to light theme.
-container?: HTML element to render the widget in. If not provided, false.
-targetChainIds?: List of chain IDs for the destination side of your consumer app. If not provided, defaults to all Synapse Protocol supported networks.
-targetTokens?: List of tokens to display in the widget. If not provided, defaults to all Synapse Protocol supported tokens.
-protocolName?: A short name for users of the widget to identify the protocol. If not provided, defaults to 'Target'.
-```
+`web3Provider`
+Web3Provider. Required.
+
+`customRpcs`
+Custom JSON-RPC endpoints for your consumer application. Optional but recommended.
+
+`customTheme`
+Custom theme for the widget. Optional. If not provided, defaults to light theme.
+
+`container`
+HTML element to render the widget in. Optional. If not provided, false.
+
+`targetChainIds`
+List of chain IDs for the destination side of your consumer app. Optional. If not provided, defaults to all Synapse Protocol supported networks.
+
+`targetTokens`
+List of tokens to display in the widget. These tokens are imported from the widget package. Optional. If not provided, defaults to all Synapse Protocol supported tokens.
+
+`protocolName`
+A short name for users of the widget to identify the protocol. Optional. If not provided, defaults to 'Target'.
+
+- A list of `targetTokens` can be found [here](https://github.com/synapsecns/sanguine/blob/master/packages/widget/src/constants/bridgeable.ts)
+- A list of Synapse Protocol supported chains can be found [here](https://github.com/synapsecns/sanguine/blob/master/packages/widget/src/constants/chains.ts)
 
 ## Enhanced and Reliable Performance
 
@@ -72,9 +83,9 @@ The bridge widget is a React component designed for straightforward integration 
 While the widget is primed for immediate use without configuration as it provides some basic primary and fallback JSON-RPC endpoints, we encourage developers to specify their own for enhanced performance. This can be done by including a `customRpcs` parameter in the format of an object with chain ids as keys and their associated RPC endpoints as values.
 
 ```tsx
-import { Bridge, CustomRpcs } from ‘@synapsecns/widget’
+import { Bridge, CustomRpcs } from '@synapsecns/widget'
 
-const customRpcs: CustomRpcs =  {
+const customRpcs: CustomRpcs = {
   1: 'https://ethereum.my-custom-rpc.com',
   10: 'https://optimism.my-custom-rpc.com',
   42161: 'https://arbitrum.my-custom-rpc.com',
@@ -83,10 +94,7 @@ const customRpcs: CustomRpcs =  {
 const MyApp = () => {
   const web3Provider = new ethers.BrowserProvider(window.ethereum)
 
-  <Bridge
-    web3Provider={web3Provider}
-    customRpcs={customRpcs}
-  />
+  return <Bridge web3Provider={web3Provider} customRpcs={customRpcs} />
 }
 ```
 
@@ -95,16 +103,18 @@ const MyApp = () => {
 To further tailor the bridge widget to meet the specific demands of your project, additional optional `targetTokens` and `targetChainIds` parameters are provided. These allow for customizing which chain and tokens your consuming application will support bridging to. This is effectively a way to filter for specific tokens on destination chain your application's users bridge.
 
 ```tsx
-import { Bridge, CustomRpcs, ETH, USDC, USDT } from ‘@synapsecns/widget’
+import { Bridge, CustomRpcs, ETH, USDC, USDT } from '@synapsecns/widget'
 
 const MyApp = () => {
   const web3Provider = new ethers.BrowserProvider(window.ethereum)
 
-  <Bridge
-    web3Provider={web3Provider}
-    targetTokens={[ETH, USDC, USDT]}
-    targetChainIds={[42161, 43114]}
-  />
+  return (
+    <Bridge
+      web3Provider={web3Provider}
+      targetTokens={[ETH, USDC, USDT]}
+      targetChainIds={[42161, 43114]}
+    />
+  )
 }
 ```
 
@@ -112,7 +122,7 @@ Note: Token naming convention is based on the tokens provided by `@synapsecns/wi
 
 ## Theme Customization
 
-The widget is designed to be easily customized to match your app's theme. The widget accepts an optional `customTheme` configurable `bgColor` parameter for `'dark'` and `'light'` modes:
+The widget is designed to be easily customized to match your app's theme. The widget accepts an optional `customTheme` configurable `bgColor` parameter for `'dark'`, `'light'`, and custom color modes:
 
 ```tsx
 <Bridge web3Provider={web3Provider} customTheme={{ bgColor: 'light' }} />
@@ -122,14 +132,30 @@ Additionally, the widget supports more complex custom themes with the `customThe
 
 ```tsx
 const customTheme = {
+  // Generate from base color, 'dark', or 'light'
+  bgColor: '#08153a',
+
+  // Basic customization
   '--synapse-text': 'white',
   '--synapse-secondary': '#ffffffb3',
   '--synapse-root': '#16182e',
   '--synapse-surface': 'linear-gradient(90deg, #1e223de6, #262b47e6)',
   '--synapse-border': 'transparent',
-  '--synapse-select-bg': 'hsl(231.5deg 32% 19.5%',
-  '--synapse-select-border': 'hsl(233deg 34% 34%)',
-  '--synapse-button-bg': '#2d42fc',
+
+  // Full customization (Uses based colors by default)
+  '--synapse-focus': 'var(--synapse-secondary)',
+  '--synapse-select-bg': 'var(--synapse-root)',
+  '--synapse-select-text': 'var(--synapse-text)',
+  '--synapse-select-border': 'var(--synapse-border)',
+  '--synapse-button-bg': 'var(--synapse-surface)',
+  '--synapse-button-text': 'var(--synapse-text)',
+  '--synapse-button-border': 'var(--synapse-border)',
+
+  // Transaction progress colors (set bgColor to auto-generate)
+  '--synapse-progress': 'hsl(265deg 100% 65%)',
+  '--synapse-progress-flash': 'hsl(215deg 100% 65%)',
+  '--synapse-progress-success': 'hsl(120deg 100% 30%)',
+  '--synapse-progress-error': 'hsl(15deg 100% 65%)',
 }
 
 <Bridge

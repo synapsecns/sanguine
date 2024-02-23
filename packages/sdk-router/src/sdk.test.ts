@@ -17,6 +17,7 @@ import {
   ARB_WETH,
   AVAX_GMX,
   AVAX_GOHM,
+  AVAX_USDC,
   AVAX_USDC_E,
   BSC_GOHM,
   BSC_USDC,
@@ -621,14 +622,14 @@ describe('SynapseSDK', () => {
       [avaxProvider, bscProvider]
     )
 
-    describe('BSC USDC -> AVAX USDC.e', () => {
+    describe('BSC USDC -> AVAX USDC', () => {
       // USDC has 18 decimals on BSC. Don't ask me why.
       const amount = BigNumber.from(10).pow(21)
       const resultPromise: Promise<BridgeQuote> = synapse.bridgeQuote(
         SupportedChainId.BSC,
         SupportedChainId.AVALANCHE,
         BSC_USDC,
-        AVAX_USDC_E,
+        AVAX_USDC,
         amount
       )
 
@@ -636,7 +637,7 @@ describe('SynapseSDK', () => {
         synapse,
         SupportedChainId.BSC,
         SupportedChainId.AVALANCHE,
-        AVAX_USDC_E,
+        AVAX_USDC,
         amount,
         resultPromise
       )

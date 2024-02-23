@@ -45,6 +45,23 @@ builds:
       - linux
     goarch:
       - amd64
+  - id: rfqdecoder
+    binary: rfqdecoder
+    ldflags:
+      # We need to build a static binary because we are building in a glibc based system and running in a musl container
+      - -s -w -extldflags '-static'
+    # see above about workaround
+    tags:
+      - netgo
+      - osusergo
+    env:
+      - CC=gcc
+      - CXX=g++
+    main: tools/rfqdecoder/main.go
+    goos:
+      - linux
+    goarch:
+      - amd64
 # add a source archive at release time
 source:
   enabled: true
