@@ -46,7 +46,7 @@ import { SwapInputContainer } from '@/components/StateManagedSwap/SwapInputConta
 import { SwapOutputContainer } from '@/components/StateManagedSwap/SwapOutputContainer'
 import { SwapToTokenListOverlay } from '@/components/StateManagedSwap/SwapToTokenListOverlay'
 import { SwapTransactionButton } from '@/components/StateManagedSwap/SwapTransactionButton'
-import SwapExchangeRateInfo from '@/components/StateManagedSwap/SwapExchangeRateInfo'
+import { SwapExchangeRateInfo } from '@/components/StateManagedSwap/SwapExchangeRateInfo'
 import { OverlayTransition } from '@/components/bridgeSwap/OverlayTransition'
 
 const StateManagedSwap = () => {

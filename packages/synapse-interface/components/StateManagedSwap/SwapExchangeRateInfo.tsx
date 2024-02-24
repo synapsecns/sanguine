@@ -8,7 +8,7 @@ import {
   formatBigIntToString,
 } from '@/utils/bigint/format'
 
-const SwapExchangeRateInfo = ({
+export const SwapExchangeRateInfo = ({
   fromAmount,
   toToken,
   exchangeRate,
@@ -27,26 +27,22 @@ const SwapExchangeRateInfo = ({
   const formattedPercentSlippage = formatBigIntToPercentString(slippage, 18)
   const underFee = safeExchangeRate === 0n && safeFromAmount != 0n
 
-  const textColor: string = useMemo(() => {
-    if (numExchangeRate >= 1) {
-      return 'text-green-500'
-    } else if (numExchangeRate > 0.975) {
-      return 'text-amber-500'
-    } else {
-      return 'text-red-500'
-    }
-  }, [numExchangeRate])
 
-  const expectedToChain = useMemo(() => {
-    return toChainId && <ChainInfoLabel chainId={toChainId} />
-  }, [toChainId])
+  let textColor: string
+  if (numExchangeRate >= 1) {
+    textColor = 'text-green-500'
+  } else if (numExchangeRate > 0.975) {
+    textColor = 'text-amber-500'
+  } else {
+    textColor = 'text-red-500'
+  }
 
   return (
     <div className="py-3.5 px-1 space-y-2 text-xs md:text-base lg:text-base md:px-6">
       <div className="flex justify-between text-white/50">
         <div className="flex space-x-2 ">
           <p>Expected Price on</p>
-          {expectedToChain}
+          {toChainId && <ChainInfoLabel chainId={toChainId} />}
         </div>
         <span className="">
           {safeFromAmount != 0n ? (
@@ -62,7 +58,7 @@ const SwapExchangeRateInfo = ({
       <div className="flex justify-between">
         <p className="text-white/50">Slippage</p>
         {safeFromAmount != 0n && !underFee ? (
-          <span className={` ${textColor}`}>{formattedPercentSlippage}</span>
+          <span className={textColor}>{formattedPercentSlippage}</span>
         ) : (
           <span className="text-white/50">—</span>
         )}
@@ -87,4 +83,4 @@ const ChainInfoLabel = ({ chainId }: { chainId: number }) => {
   ) : null
 }
 
-export default SwapExchangeRateInfo
+
