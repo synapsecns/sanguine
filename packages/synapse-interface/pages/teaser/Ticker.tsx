@@ -46,7 +46,6 @@ const formatTimestamp = (tx) => {
 
 export default function Ticker() {
   const tickerRef = useRef(null)
-  let left = 0
 
   let start
   let requestId
@@ -75,6 +74,8 @@ export default function Ticker() {
     }
 
     dl.style.left = `${PX_PER_SECOND * (timestamp - start)}px`
+
+    requestId = window.requestAnimationFrame(step)
   }
 
   const decelerate = (timestamp) => {
