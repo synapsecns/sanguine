@@ -86,6 +86,8 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
                     icTx.dstChainId, transactionId, srcModules
                 )
         );
+        IExecutionFees(executionFees).addExecutionFee{value: executionFee}(icTx.dstChainId, transactionId);
+        // TODO: Should this be moved into a seperate configurable contract, for easier upgradeability later?
         if (srcExecutionService != address(0)) {
             IExecutionService(srcExecutionService).requestExecution({
                 dstChainId: dstChainId,
@@ -95,8 +97,9 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
                 executionFee: executionFee,
                 options: options
             });
+            address srcExecutorEOA = IExecutionService(srcExecutionService).executorEOA();
+            IExecutionFees(executionFees).recordExecutor(dstChainId, transactionId, srcExecutorEOA);
         }
-        IExecutionFees(executionFees).addExecutionFee{value: executionFee}(icTx.dstChainId, transactionId);
         emit InterchainTransactionSent(
             transactionId,
             icTx.dbNonce,
