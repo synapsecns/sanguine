@@ -116,27 +116,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         clientNonce++;
     }
 
-    // TODO: App Config Versioning
-    // TODO: What if receiver is not a contract / doesn't conform to interface?
-    /**
-     * @dev Retrieves the application configuration for a given receiver application.
-     * @param receiverApp The address of the receiver application.
-     * @return requiredResponses The number of required responses from the receiving modules.
-     * @return optimisticTimePeriod The time period within which responses are considered valid.
-     * @return approvedDstModules An array of addresses of the approved destination modules.
-     */
-    function _getAppConfig(address receiverApp)
-        internal
-        view
-        returns (uint256 requiredResponses, uint256 optimisticTimePeriod, address[] memory approvedDstModules)
-    {
-        bytes memory appConfig;
-        (appConfig, approvedDstModules) = IInterchainApp(receiverApp).getReceivingConfig();
-        AppConfigV1 memory decodedAppConfig = appConfig.decodeAppConfigV1();
-        requiredResponses = decodedAppConfig.requiredResponses;
-        optimisticTimePeriod = decodedAppConfig.optimisticPeriod;
-    }
-
     // @inheritdoc IInterchainClientV1
     function isExecutable(bytes calldata encodedTx) public view returns (bool) {
         InterchainTransaction memory icTx = InterchainTransactionLib.decodeTransaction(encodedTx);
@@ -154,13 +133,14 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             dataHash: transactionId
         });
 
-        (uint256 requiredResponses, uint256 optimisticTimePeriod, address[] memory approvedDstModules) =
-            _getAppConfig(TypeCasts.bytes32ToAddress(icTx.dstReceiver));
+        (bytes memory encodedAppConfig, address[] memory approvedDstModules) =
+            IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).getReceivingConfig();
+        AppConfigV1 memory appConfig = encodedAppConfig.decodeAppConfigV1();
 
         uint256[] memory approvedResponses = _getApprovedResponses(approvedDstModules, icEntry);
 
-        uint256 finalizedResponses = _getFinalizedResponsesCount(approvedResponses, optimisticTimePeriod);
-        require(finalizedResponses >= requiredResponses, "Not enough valid responses to meet the threshold");
+        uint256 finalizedResponses = _getFinalizedResponsesCount(approvedResponses, appConfig.optimisticPeriod);
+        require(finalizedResponses >= appConfig.requiredResponses, "Not enough valid responses to meet the threshold");
         return true;
     }
 
