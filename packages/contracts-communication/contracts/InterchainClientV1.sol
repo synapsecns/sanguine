@@ -136,60 +136,34 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         (bytes memory encodedAppConfig, address[] memory approvedDstModules) =
             IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).getReceivingConfig();
         AppConfigV1 memory appConfig = encodedAppConfig.decodeAppConfigV1();
-
-        uint256[] memory approvedResponses = _getApprovedResponses(approvedDstModules, icEntry);
-
-        uint256 finalizedResponses = _getFinalizedResponsesCount(approvedResponses, appConfig.optimisticPeriod);
-        require(finalizedResponses >= appConfig.requiredResponses, "Not enough valid responses to meet the threshold");
+        uint256 responses = _getFinalizedResponsesCount(approvedDstModules, icEntry, appConfig.optimisticPeriod);
+        require(responses >= appConfig.requiredResponses, "Not enough valid responses to meet the threshold");
         return true;
     }
 
     /**
      * @dev Calculates the number of responses that are considered finalized within the optimistic time period.
-     * @param approvedResponses An array of timestamps when each approved response was recorded.
-     * @param optimisticTimePeriod The time period in seconds within which a response is considered valid.
-     * @return finalizedResponses The count of responses that are finalized within the optimistic time period.
+     * @param approvedModules       Approved modules that could have confirmed the entry.
+     * @param icEntry               The InterchainEntry to confirm.
+     * @param optimisticPeriod      The time period in seconds within which a response is considered valid.
+     * @return finalizedResponses   The count of responses that are finalized within the optimistic time period.
      */
     function _getFinalizedResponsesCount(
-        uint256[] memory approvedResponses,
-        uint256 optimisticTimePeriod
+        address[] memory approvedModules,
+        InterchainEntry memory icEntry,
+        uint256 optimisticPeriod
     )
         internal
         view
-        returns (uint256)
+        returns (uint256 finalizedResponses)
     {
-        uint256 finalizedResponses = 0;
-        for (uint256 i = 0; i < approvedResponses.length; i++) {
-            if (approvedResponses[i] + optimisticTimePeriod <= block.timestamp) {
-                finalizedResponses++;
+        for (uint256 i = 0; i < approvedModules.length; ++i) {
+            uint256 confirmedAt = IInterchainDB(interchainDB).readEntry(approvedModules[i], icEntry);
+            // readEntry() returns 0 if entry hasn't been confirmed by the module, so we check for that as well
+            if (confirmedAt != 0 && confirmedAt + optimisticPeriod <= block.timestamp) {
+                ++finalizedResponses;
             }
         }
-        return finalizedResponses;
-    }
-    /**
-     * @dev Retrieves the responses from approved modules for a given InterchainEntry.
-     * This function iterates over all approved modules, querying the InterchainDB for each module's response
-     * to the provided InterchainEntry. It compiles these responses into an array of uint256, where each
-     * element represents the timestamp of a module's response.
-     *
-     * @param approvedModules An array of addresses representing the approved modules that can write responses.
-     * @param icEntry The InterchainEntry for which responses are being retrieved.
-     * @return approvedResponses An array of uint256 representing the timestamps of responses from approved modules.
-     */
-
-    function _getApprovedResponses(
-        address[] memory approvedModules,
-        InterchainEntry memory icEntry
-    )
-        internal
-        view
-        returns (uint256[] memory)
-    {
-        uint256[] memory approvedResponses = new uint256[](approvedModules.length);
-        for (uint256 i = 0; i < approvedModules.length; i++) {
-            approvedResponses[i] = IInterchainDB(interchainDB).readEntry(approvedModules[i], icEntry);
-        }
-        return approvedResponses;
     }
 
     function encodeTransaction(InterchainTransaction memory icTx) public view returns (bytes memory) {
