@@ -11,8 +11,6 @@ export const ChainTokens = ({
   balanceTokens?: TokenAndBalance[]
   hoverClassName?: string
 }) => {
-  const [isT3Hovered, setIsT3Hovered] = useState<boolean>(false)
-
   const len = balanceTokens?.length
   const hasNoTokens: boolean = !balanceTokens || (len === 0)
   const hasOneToken: boolean = len > 0
@@ -47,19 +45,40 @@ export const ChainTokens = ({
         />
       }
       {numOverTwoTokens > 0 && (
-        <div
-          className="text-white"
-          onMouseEnter={() => setIsT3Hovered(true)}
-          onMouseLeave={() => setIsT3Hovered(false)}
-        >
-          + {numOverTwoTokens}
-        </div>
+        <NumOverAndHover
+          balanceTokens={balanceTokens}
+          numOverTwoTokens={numOverTwoTokens}
+          hoverClassName={hoverClassName}
+        />
       )}
+    </div>
+  )
+}
+
+function NumOverAndHover({
+  balanceTokens,
+  numOverTwoTokens,
+  hoverClassName
+}: {
+  balanceTokens: TokenAndBalance[]
+  numOverTwoTokens: number
+  hoverClassName: string
+}) {
+  const [isHovered, setHovered] = useState<boolean>(false)
+
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <div className="text-white">
+        + {numOverTwoTokens}
+      </div>
       <HoverTokenAndBalance
-        isHovered={isT3Hovered}
+        isHovered={isHovered}
         tokens={balanceTokens}
         startFrom={2}
-        hoverClassName={`${hoverClassName} mt-3`}
+        hoverClassName={hoverClassName}
       />
     </div>
   )
@@ -75,14 +94,15 @@ function ChainIconAndHover({
   const [isHovered, setHovered] = useState<boolean>(false)
 
   return (
-    <div>
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
       <Image
         loading="lazy"
         className="w-6 h-6 rounded-md"
         alt={`${tokenAndBalance.token.symbol} img`}
         src={tokenAndBalance.token.icon}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
       />
       <HoverTokenAndBalance
         isHovered={isHovered}
