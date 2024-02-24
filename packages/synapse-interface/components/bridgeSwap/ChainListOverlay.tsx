@@ -1,15 +1,13 @@
 import _ from 'lodash'
 import { useDispatch } from 'react-redux'
 import Fuse from 'fuse.js'
-import * as ALL_CHAINS from '@constants/chains/master'
-import { CHAINS_BY_ID, PAUSED_FROM_CHAIN_IDS, sortChains } from '@constants/chains'
+import { CHAINS_ARR, PAUSED_FROM_CHAIN_IDS, sortChains } from '@constants/chains'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 import { CHAIN_FUSE_OPTIONS } from '@/constants/fuseOptions'
 import { SearchResultsContainer } from '@/components/bridgeSwap/SearchResultsContainer'
 import { SearchOverlayContent } from '@/components/bridgeSwap/SearchOverlayContent'
 import { SelectNetworkButton } from './SelectNetworkButton'
-
 
 
 export const ChainListOverlay = ({
@@ -35,23 +33,13 @@ export const ChainListOverlay = ({
   const dataId = 'chain-list'
 
   let possibleChains = sortAndFilterPausedWithSource({
-    chains: (
-      _(ALL_CHAINS)
-        .pickBy((value) => _.includes(chainIds, value.id))
-        .values()
-        .value()
-    ),
+    chains: CHAINS_ARR.filter((chain) => chainIds.includes(chain.id)),
     filterPausedChains,
     source: 'possibleChains'
   })
 
   let remainingChains = sortAndFilterPausedWithSource({
-    chains: (
-      _.difference(
-        Object.keys(CHAINS_BY_ID).map((id) => CHAINS_BY_ID[id]),
-        chainIds.map((id) => CHAINS_BY_ID[id])
-      )
-    ),
+    chains: CHAINS_ARR.filter((chain) => !chainIds.includes(chain.id)),
     filterPausedChains,
     source: 'remainingChains'
   })

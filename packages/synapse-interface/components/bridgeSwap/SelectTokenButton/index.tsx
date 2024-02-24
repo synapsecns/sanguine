@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { memo, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 
 import {
   getBorderStyleForCoin,
