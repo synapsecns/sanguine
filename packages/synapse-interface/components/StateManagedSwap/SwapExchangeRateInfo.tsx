@@ -19,8 +19,8 @@ export const SwapExchangeRateInfo = ({
   exchangeRate: bigint
   toChainId: number
 }) => {
-  const safeExchangeRate = useMemo(() => exchangeRate ?? 0n, [exchangeRate]) // todo clean
-  const safeFromAmount = useMemo(() => fromAmount ?? 0n, [fromAmount]) // todo clean
+  const safeExchangeRate = exchangeRate ?? 0n
+  const safeFromAmount = fromAmount ?? 0n
   const formattedExchangeRate = formatBigIntToString(safeExchangeRate, 18, 5)
   const numExchangeRate = Number(formattedExchangeRate)
   const slippage = safeExchangeRate - 1000000000000000000n
