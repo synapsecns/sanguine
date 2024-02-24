@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import type { Address } from 'viem'
 import { useAppDispatch } from '@/store/hooks'
 import {
@@ -55,9 +55,13 @@ export const SearchBar = () => {
       className={`
         relative flex items-center ml-auto
         border rounded-xl
-       border-bgBase/10 bg-transparent
-        focus-within:border-synapsePurple focus-within:bg-bgBase/10
-        ${isSearchInputActive && 'border-synapsePurple bg-bgBase/10'}
+       border-bgBase/10 bg-transparent transition-all
+        focus-within:!border-synapsePurple focus-within:bg-bgBase/10
+        hover:border-white/10 hover:bg-bgBase/10
+        ${isSearchInputActive && `
+          border-synapsePurple/80 bg-bgBase/10
+          hover:border-synapsePurple/100
+        `}
       `}
     >
       <FilterInput
