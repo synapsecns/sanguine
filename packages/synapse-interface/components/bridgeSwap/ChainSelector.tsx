@@ -49,10 +49,10 @@ export const ChainSelector = ({ chainId, label, onClick, ...props }) => {
           </div>
           <ChevronDownIcon
             className={`
-                rotate-0
-                text-white/30 group-hover:text-white/80 w-4 h-4
-                active:text-white/80
-                group-active:rotate-180 transition-all
+              rotate-0
+              text-white/30 group-hover:text-white/80 w-4 h-4
+              active:text-white/80
+              group-active:rotate-180 transition-all
             `}
           />
         </div>
