@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { CHAINS_BY_ID } from '@constants/chains'
 import Image from 'next/image'
 
