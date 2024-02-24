@@ -21,7 +21,7 @@ import { useBridgeState } from '@/slices/bridge/hooks'
 
 import { useAppSelector } from '@/store/hooks'
 
-const BridgeExchangeRateInfo = () => {
+export const BridgeExchangeRateInfo = () => {
   return (
     <div className="py-3.5 px-1 space-y-3 text-sm md:px-6 tracking-wide">
       <RouteEligibility />
@@ -294,5 +294,3 @@ const getAirdropInDollars = (
     return undefined
   }
 }
-
-export default BridgeExchangeRateInfo

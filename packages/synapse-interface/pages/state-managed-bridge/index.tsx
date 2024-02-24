@@ -50,12 +50,9 @@ import { txErrorHandler } from '@/utils/txErrorHandler'
 import { approveToken } from '@/utils/approveToken'
 import { SECTION_TRANSITION_PROPS } from '@/styles/transitions'
 
-
 import { Transition } from '@headlessui/react'
-import { XIcon, CogIcon } from '@heroicons/react/outline'
 
 import Card from '@tw/Card'
-import Button from '@tw/Button'
 
 import { PageHeader } from '@/components/PageHeader'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
@@ -70,7 +67,8 @@ import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer
 import { DestinationAddressInput } from '@/components/StateManagedBridge/DestinationAddressInput'
 import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
 import { SettingsSlideOver } from '@/components/StateManagedBridge/SettingsSlideOver'
-import BridgeExchangeRateInfo from '@/components/StateManagedBridge/BridgeExchangeRateInfo'
+import { BridgeExchangeRateInfo } from '@/components/StateManagedBridge/BridgeExchangeRateInfo'
+import { SettingsButton } from '@/components/StateManagedBridge/SettingsButton'
 
 
 import { OverlayTransition } from '@/components/bridgeSwap/OverlayTransition'
@@ -487,37 +485,12 @@ const StateManagedBridge = () => {
             subtitle="Send your assets across chains."
           />
           <div>
-            <Button
-              className={`
-                group flex items-center p-2 text-opacity-75 bg-bgBase/10 hover:bg-bgBase/20
-                ring-1 ring-white/10 hover:ring-white/30 text-secondaryTextColor hover:text-white
-               active:ring-white/60
-                transition-all duration-100
-                overflow-hidden
-                ${showSettingsSlideOver ? "w-[36px]" : "w-[96.27px]"}
-              `}
+            <SettingsButton
+              show={showSettingsSlideOver}
               onClick={() => {
                 dispatch(setShowSettingsSlideOver(!showSettingsSlideOver))
               }}
-            >
-              {showSettingsSlideOver ? (
-                // the size-[36px] -m-2 p-[9px] is a hackfix for issue in click propagation bug in react/react-redux
-                <XIcon
-                  key="settingsIconMorph"
-                  className="size-[36px] -m-2 p-[9px]"
-                />
-              ) : (
-                <>
-                  <CogIcon
-                    key="settingsIconMorph"
-                    className="w-4 h-4 mr-2 group-hover:animate-spin"
-                  />
-                  <span className="text-sm mr-1">
-                    Settings
-                  </span>
-                </>
-              )}
-            </Button>
+            />
           </div>
         </div>
         <Card
