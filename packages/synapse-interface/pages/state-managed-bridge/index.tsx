@@ -1,6 +1,6 @@
 import { getWalletClient, waitForTransaction } from '@wagmi/core'
 import { useAccount, useNetwork } from 'wagmi'
-import { useEffect, useRef, useState, useMemo } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/router'
 import { Address, zeroAddress } from 'viem'
@@ -489,7 +489,9 @@ const StateManagedBridge = () => {
           <div>
             <Button
               className={`
-                group flex items-center p-2 text-opacity-75 bg-bgBase/10 hover:bg-bgBase/20 ring-1 ring-white/10 hover:ring-white/30 text-secondaryTextColor hover:text-white
+                group flex items-center p-2 text-opacity-75 bg-bgBase/10 hover:bg-bgBase/20
+                ring-1 ring-white/10 hover:ring-white/30 text-secondaryTextColor hover:text-white
+               active:ring-white/60
                 transition-all duration-100
                 overflow-hidden
                 ${showSettingsSlideOver ? "w-[36px]" : "w-[96.27px]"}
@@ -499,7 +501,7 @@ const StateManagedBridge = () => {
               }}
             >
               {showSettingsSlideOver ? (
-                // the w-8 h-8 -m-2 p-2 is a hackfix for issue in click propagation bug in react/react-redux
+                // the size-[36px] -m-2 p-[9px] is a hackfix for issue in click propagation bug in react/react-redux
                 <XIcon
                   key="settingsIconMorph"
                   className="size-[36px] -m-2 p-[9px]"
@@ -510,12 +512,7 @@ const StateManagedBridge = () => {
                     key="settingsIconMorph"
                     className="w-4 h-4 mr-2 group-hover:animate-spin"
                   />
-                  <span
-                    className={`
-                      text-sm mr-1
-                      transition-all transform-gpu duration-200
-                    `}
-                  >
+                  <span className="text-sm mr-1">
                     Settings
                   </span>
                 </>
