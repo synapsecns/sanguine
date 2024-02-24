@@ -53,9 +53,6 @@ func (i *InterchainSuite) TestE2E() {
 		i.destChain.WaitForConfirmation(i.GetTestContext(), mockTX)
 		fmt.Print(mockTX.Hash())
 	}
-	fmt.Println("fuck you")
-	fmt.Println(recp.TxHash)
-	time.Sleep(time.Hour)
 	i.Require().True(didMock)
 
 	go func() {
@@ -67,5 +64,5 @@ func (i *InterchainSuite) TestE2E() {
 		}
 	}()
 
-	time.Sleep(time.Minute * 9)
+	time.Sleep(time.Minute * 1)
 }
