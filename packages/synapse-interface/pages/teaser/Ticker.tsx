@@ -1,9 +1,37 @@
-import { generateTx } from '../../utils/fakeDataGen/teaserMarquee'
+import {
+  formatAmount,
+  generateTx,
+  formatExplorerTxs,
+} from '../../utils/fakeDataGen/teaserMarquee'
 import PulseDot from './icons/PulseDot'
 import { useRef, useEffect, useState } from 'react'
 
-const txs = new Array()
+const testUrl =
+  'https://explorer.omnirpc.io/graphql?query=%7B%0A%20%20bridgeTransactions(useMv%3Atrue%2C%20pending%3A%20false%2C%20startTime%3A1688815939%2C%20page%3A%201)%20%7B%0A%20%20%20%20fromInfo%20%7B%0A%20%20%20%20%20%20chainID%0A%20%20%20%20%20%20destinationChainID%0A%20%20%20%20%20%20address%0A%20%20%20%20%20%20txnHash%0A%20%20%20%20%20%20value%0A%20%20%20%20%20%20formattedValue%0A%20%20%20%20%20%20USDValue%0A%20%20%20%20%20%20tokenAddress%0A%20%20%20%20%20%20tokenSymbol%0A%20%20%20%20%20%20blockNumber%0A%20%20%20%20%20%20time%0A%20%20%20%20%20%20formattedTime%0A%20%20%20%20%20%20formattedEventType%0A%20%20%20%20%20%20eventType%0A%20%20%20%20%7D%0A%20%20%20%20toInfo%20%7B%0A%20%20%20%20%20%20chainID%0A%20%20%20%20%20%20destinationChainID%0A%20%20%20%20%20%20address%0A%20%20%20%20%20%20txnHash%0A%20%20%20%20%20%20value%0A%20%20%20%20%20%20formattedValue%0A%20%20%20%20%20%20USDValue%0A%20%20%20%20%20%20tokenAddress%0A%20%20%20%20%20%20tokenSymbol%0A%20%20%20%20%20%20blockNumber%0A%20%20%20%20%20%20time%0A%20%20%20%20%20%20formattedTime%0A%20%20%20%20%20%20formattedEventType%0A%20%20%20%20%20%20eventType%0A%20%20%20%20%7D%0A%20%20%20%20kappa%0A%20%20%7D%0A%7D%0A'
+
+let explorerTxs
+
+function fetchExplorerTxs(setState) {
+  fetch(testUrl)
+    .then((response) => {
+      // console.log(response)
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`)
+      }
+      return response.blob()
+    })
+    .then(async (response) =>
+      setState(
+        formatExplorerTxs(
+          JSON.parse(await response.text()).data.bridgeTransactions
+        )
+      )
+    )
+}
+
+let txs = new Array()
 for (let i = 0; i < 6; i++) txs.push(generateTx())
+txs = []
 
 const formatTimestamp = (tx) => {
   const { origin, destination } = tx
@@ -46,6 +74,7 @@ const formatTimestamp = (tx) => {
 
 export default function Ticker() {
   const tickerRef = useRef(null)
+  const [txData, setTxData] = useState(txs)
 
   let start
   let requestId
@@ -126,6 +155,8 @@ export default function Ticker() {
     tickerRef.current.addEventListener('mouseleave', startTicker)
     requestId = window.requestAnimationFrame(step)
 
+    fetchExplorerTxs(setTxData)
+
     return () => {
       tickerRef.current.removeEventListener('mouseenter', stopTicker)
       tickerRef.current.removeEventListener('mouseleave', startTicker)
@@ -146,8 +177,8 @@ export default function Ticker() {
         ref={tickerRef}
         className="relative grid grid-flow-col grid-rows-[1fr_0] w-0 grow cursor-pointer whitespace-nowrap"
       >
-        {txs.map((tx, i) => {
-          return (
+        {txData.length ? (
+          txData.map((tx, i) => (
             <>
               <dt className="row-start-1">
                 <a
@@ -168,20 +199,7 @@ export default function Ticker() {
                     </li>
                     <li>{tx.origin.chain}</li>
                   </ul>
-                  <svg
-                    width="6"
-                    height="12"
-                    viewBox="0 0 6 12"
-                    fill="none"
-                    stroke-width="2"
-                    stroke-linejoin="round"
-                    stroke-linecap="round"
-                    overflow="visible"
-                    className="stroke-zinc-500"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M0,0 6,6 0,12" />
-                  </svg>
+                  {arrowSvg()}
                   <ul className="inline">
                     <li>
                       {tx.destination.formattedAmount} {tx.destination.payload}
@@ -194,8 +212,13 @@ export default function Ticker() {
                 </a>
               </dd>
             </>
-          )
-        })}
+          ))
+        ) : (
+          <>
+            <dt></dt>
+            <dd></dd>
+          </>
+        )}
       </dl>
       <a
         href="#"
@@ -204,5 +227,24 @@ export default function Ticker() {
         {'->'}
       </a>
     </article>
+  )
+}
+
+const arrowSvg = () => {
+  return (
+    <svg
+      width="6"
+      height="12"
+      viewBox="0 0 6 12"
+      fill="none"
+      stroke-width="2"
+      stroke-linejoin="round"
+      stroke-linecap="round"
+      overflow="visible"
+      className="stroke-zinc-500"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d="M0,0 6,6 0,12" />
+    </svg>
   )
 }
