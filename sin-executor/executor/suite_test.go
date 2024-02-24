@@ -70,25 +70,33 @@ func (i *InterchainSuite) SetupTest() {
 
 	i.omnirpcURL = testhelper.NewOmnirpcServer(i.GetTestContext(), i.T(), i.originChain, i.destChain)
 
-	i.setClientID(i.originChain, i.originModule, originInfo, destInfo)
-	i.setClientID(i.destChain, i.destModule, destInfo, originInfo)
+	i.setClientConfigs(i.originChain, i.originModule, originInfo, destInfo, i.destChain)
+	i.setClientConfigs(i.destChain, i.destModule, destInfo, originInfo, i.originChain)
 	i.makeExecutor()
 }
 
-func (i *InterchainSuite) setClientID(backend backends.SimulatedTestBackend, contract *interchainclient.InterchainClientRef, myContract, otherContract contracts.DeployedContract) {
+func (i *InterchainSuite) setClientConfigs(backend backends.SimulatedTestBackend, contract *interchainclient.InterchainClientRef, myContract, otherContract contracts.DeployedContract, otherBackend backends.SimulatedTestBackend) {
 	auth := backend.GetTxContext(i.GetTestContext(), myContract.OwnerPtr())
 
 	tx, err := contract.SetLinkedClient(auth.TransactOpts, otherContract.ChainID(), i.addressToBytes32(otherContract.Address()))
 	i.Require().NoError(err)
-
-	// set the receiving module on the app
-	_, moduleMock := i.deployManager.GetInterchainModuleMock(i.GetTestContext(), backend)
-
-	_, appMock := i.deployManager.GetInterchainAppMock(i.GetTestContext(), backend)
-	tx, err = appMock.SetReceivingModule(auth.TransactOpts, moduleMock.Address())
-	i.Require().NoError(err)
 	backend.WaitForConfirmation(i.GetTestContext(), tx)
 
+	// set the receiving module on the app
+	_, appMock := i.deployManager.GetInterchainAppMock(i.GetTestContext(), backend)
+
+	chainIDS := []uint64{backend.GetBigChainID().Uint64(), otherBackend.GetBigChainID().Uint64()}
+	linkedApps := []common.Address{i.deployManager.Get(i.GetTestContext(), backend, testutil.InterchainApp).Address(), i.deployManager.Get(i.GetTestContext(), otherBackend, testutil.InterchainApp).Address()}
+
+	sendingModules, err := appMock.GetSendingModules0(&bind.CallOpts{Context: i.GetTestContext()})
+	i.Require().NoError(err)
+
+	receivingModules, err := appMock.GetReceivingModules(&bind.CallOpts{Context: i.GetTestContext()})
+	i.Require().NoError(err)
+	// same thing
+
+	tx, err = appMock.SetAppConfig(auth.TransactOpts, chainIDS, linkedApps, sendingModules, receivingModules, big.NewInt(1), 0)
+	i.Require().NoError(err)
 	backend.WaitForConfirmation(i.GetTestContext(), tx)
 }
 

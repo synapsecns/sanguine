@@ -7,7 +7,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/manager"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/interchainclient"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/interchaindb"
-	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainappmock"
+	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainapp"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainmodulemock"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/optionslibexport"
 )
@@ -41,8 +41,8 @@ func (d *DeployManager) GetInterchainModuleMock(ctx context.Context, backend bac
 }
 
 // GetInterchainAppMock gets the interchain app mock.
-func (d *DeployManager) GetInterchainAppMock(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *interchainappmock.InterchainAppMockRef) {
+func (d *DeployManager) GetInterchainAppMock(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *interchainapp.InterchainAppMockRef) {
 	d.T().Helper()
 
-	return manager.GetContract[*interchainappmock.InterchainAppMockRef](ctx, d.T(), d, backend, InterchainAppMock)
+	return manager.GetContract[*interchainapp.InterchainAppMockRef](ctx, d.T(), d, backend, InterchainApp)
 }

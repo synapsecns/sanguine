@@ -1,35 +1,23 @@
 package executor_test
 
 import (
+	"fmt"
 	"math/big"
 	"time"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/interchaindb"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainmodulemock"
-	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/optionslibexport"
 	"github.com/synapsecns/sanguine/sin-executor/testutil"
 )
 
 func (i *InterchainSuite) TestE2E() {
 	auth := i.originChain.GetTxContext(i.GetTestContext(), nil)
 
-	// TODO: should be mock app
-	receiver := i.addressToBytes32(i.deployManager.Get(i.GetTestContext(), i.destChain, testutil.InterchainAppMock).Address())
+	receiver := i.addressToBytes32(i.deployManager.Get(i.GetTestContext(), i.destChain, testutil.InterchainApp).Address())
 
-	_, optionsLib := i.deployManager.GetOptionsLib(i.GetTestContext(), i.originChain)
-
-	encodedOptions, err := optionsLib.EncodeOptions(&bind.CallOpts{Context: i.GetTestContext()}, optionslibexport.OptionsV1{
-		GasLimit:   big.NewInt(100000),
-		GasAirdrop: big.NewInt(0),
-	})
+	_, appMock := i.deployManager.GetInterchainAppMock(i.GetTestContext(), i.originChain)
+	tx, err := appMock.Send(auth.TransactOpts, receiver, i.destChain.GetBigChainID(), []byte("hello"))
 	i.Require().NoError(err)
-
-	originModule := i.deployManager.Get(i.GetTestContext(), i.originChain, testutil.InterchainModuleMock)
-	executionMock := i.deployManager.Get(i.GetTestContext(), i.originChain, testutil.ExecutionServiceMock)
-
-	tx, err := i.originModule.InterchainSend(auth.TransactOpts, i.destChain.GetBigChainID(), receiver, executionMock.Address(), []common.Address{originModule.Address()}, encodedOptions, []byte("hello"))
 	i.Require().NoError(err)
 	i.originChain.WaitForConfirmation(i.GetTestContext(), tx)
 
@@ -63,8 +51,11 @@ func (i *InterchainSuite) TestE2E() {
 		didMock = true
 
 		i.destChain.WaitForConfirmation(i.GetTestContext(), mockTX)
+		fmt.Print(mockTX.Hash())
 	}
-
+	fmt.Println("fuck you")
+	fmt.Println(recp.TxHash)
+	time.Sleep(time.Hour)
 	i.Require().True(didMock)
 
 	go func() {

@@ -1,4 +1,4 @@
-package interchainappmock
+package interchainapp
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 
 // InterchainAppMockRef is a reference to an interchain db.
 type InterchainAppMockRef struct {
-	*InterchainAppMock
+	*InterchainApp
 	// address of the interchain client
 	address common.Address
 }
@@ -19,15 +19,15 @@ func (i *InterchainAppMockRef) Address() common.Address {
 	return i.address
 }
 
-// NewInterchainAppMockRef creates a new interchain client with a contract ref.
-func NewInterchainAppMockRef(address common.Address, backend bind.ContractBackend) (*InterchainAppMockRef, error) {
-	instance, err := NewInterchainAppMock(address, backend)
+// NewInterchainAppRef creates a new interchain client with a contract ref.
+func NewInterchainAppRef(address common.Address, backend bind.ContractBackend) (*InterchainAppMockRef, error) {
+	instance, err := NewInterchainApp(address, backend)
 	if err != nil {
 		return nil, fmt.Errorf("could not create instance of InterchainClient: %w", err)
 	}
 	return &InterchainAppMockRef{
-		InterchainAppMock: instance,
-		address:           address,
+		InterchainApp: instance,
+		address:       address,
 	}, nil
 }
 
