@@ -14,7 +14,8 @@ import { LandingPageWrapper } from '@layouts/LandingPageWrapper'
 import PoolBody from '@/components/Pools/pool/PoolBody'
 import NoPoolBody from '@/components/Pools/pool/NoPoolBody'
 
-import LoadingDots from '@tw/LoadingDots'
+// import LoadingDots from '@tw/LoadingDots'
+import { LoadingHelix } from '@/components/ui/tailwind/LoadingHelix'
 
 
 
@@ -78,7 +79,7 @@ const PoolPage = () => {
       >
         {!pool || isLoading || !poolId ? (
           <div className="flex items-center justify-center">
-            <LoadingDots />
+            <LoadingHelix />
           </div>
         ) : pool ? (
           <PoolBody address={address} connectedChainId={connectedChainId} />

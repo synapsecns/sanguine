@@ -11,8 +11,6 @@ export const ChainTokens = ({
   balanceTokens?: TokenAndBalance[]
   hoverClassName?: string
 }) => {
-  const [isT1Hovered, setIsT1Hovered] = useState<boolean>(false)
-  const [isT2Hovered, setIsT2Hovered] = useState<boolean>(false)
   const [isT3Hovered, setIsT3Hovered] = useState<boolean>(false)
 
   const len = balanceTokens?.length
@@ -34,8 +32,6 @@ export const ChainTokens = ({
       {hasOneToken &&
         <ChainIconAndHover
           tokenAndBalance={balanceTokens[0]}
-          isHovered={isT1Hovered}
-          setHovered={setIsT1Hovered}
           hoverClassName={hoverClassName}
         />
       }
@@ -47,8 +43,6 @@ export const ChainTokens = ({
       {hasTwoTokens &&
         <ChainIconAndHover
           tokenAndBalance={balanceTokens[1]}
-          isHovered={isT2Hovered}
-          setHovered={setIsT2Hovered}
           hoverClassName={hoverClassName}
         />
       }
@@ -73,15 +67,13 @@ export const ChainTokens = ({
 
 function ChainIconAndHover({
   tokenAndBalance,
-  isHovered,
-  setHovered,
   hoverClassName
 } : {
   tokenAndBalance: TokenAndBalance
-  isHovered: boolean
-  setHovered: (hovered: boolean) => void
   hoverClassName: string
 }) {
+  const [isHovered, setHovered] = useState<boolean>(false)
+
   return (
     <div>
       <Image
