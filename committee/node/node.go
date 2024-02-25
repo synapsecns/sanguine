@@ -295,7 +295,11 @@ func (n *Node) submit(ctx context.Context, request db.SignRequest) error {
 	}
 
 	var signatures []byte
-	for _, validator := range n.getSortedValidators(request) {
+	for i, validator := range n.getSortedValidators(request) {
+		if uint64(i) >= threshold.Uint64() {
+			break
+		}
+
 		signature, err := n.peerManager.GetSignature(ctx, validator, int(request.OriginChainID.Int64()), request.SignedEntryHash)
 		if err != nil {
 			logger.Errorf("could not get signature for peer %s message: %w", validator, err)
