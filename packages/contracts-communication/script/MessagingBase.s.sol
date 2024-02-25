@@ -2,6 +2,8 @@
 pragma solidity ^0.8.20;
 
 import {Script} from "forge-std/Script.sol";
+import "forge-std/Test.sol";
+import {TypeCasts} from "../contracts/libs/TypeCasts.sol";
 
 import {InterchainDB} from "../contracts/InterchainDB.sol";
 
@@ -21,7 +23,10 @@ contract MessagingBase is Script {
     InterchainApp public icApp;
 
     function run() external {
-        vm.startBroadcast();
+
+        console.logBytes32(TypeCasts.addressToBytes32(0x74d6142681c5c78e621E92b9285D02CFA1743238));
+
+//        vm.startBroadcast();
         icDB = new InterchainDB();
         // icClient deployment & config
         icClient = new InterchainClientV1();
