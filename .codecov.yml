@@ -85,10 +85,6 @@ flags:
     paths:
       - services/scribe/
     carryforward: true
-  sinner:
-    paths:
-      - services/sinner/
-    carryforward: true
   stiprelayer:
     paths:
       - services/stiprelayer/

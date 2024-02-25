@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/libp2p/go-libp2p/p2p/discovery/mdns"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"golang.org/x/exp/slices"
 	"sync"
 	"time"
 
@@ -18,7 +19,6 @@ import (
 	"github.com/libp2p/go-libp2p-kad-dht/dual"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/libp2p/go-libp2p/core/crypto"
-	"github.com/libp2p/go-libp2p/core/discovery"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
@@ -30,13 +30,19 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
 
+// LibP2PManager is the interface for the libp2p manager.
 type LibP2PManager interface {
+	// Host returns the host from the manager.
 	Host() host.Host // Expose host from manager
 	// Start starts the libp2p manager.
 	Start(ctx context.Context, bootstrapPeers []string) error
+	// AddValidators adds validators to the manager.
 	AddValidators(ctx context.Context, addr ...common.Address) error
+	// Address returns the address of the node.
 	Address() common.Address
+	// GetSignature gets a signature from the datastore.
 	GetSignature(ctx context.Context, address common.Address, chainID int, entryID common.Hash) ([]byte, error)
+	// PutSignature puts a signature into the datastore.
 	PutSignature(ctx context.Context, chainID int, entryID common.Hash, signature []byte) error
 }
 
@@ -44,14 +50,11 @@ type libP2PManagerImpl struct {
 	host              host.Host
 	handler           metrics.Handler
 	dht               *dual.DHT
-	announcementTopic *pubsub.Topic
 	pubsub            *pubsub.PubSub
 	pubSubBroadcaster crdt.Broadcaster
 	globalDS          datastore.Batching
 	// ipfs is the ipfs lite peer
 	ipfs *ipfslite.Peer
-	// discovery is used to discover peers
-	discovery discovery.Discovery
 	// datastoreMux is used to lock the datastores map
 	datastoreMux sync.RWMutex
 	// datastores stores the underlying datastore for each peer
@@ -73,6 +76,7 @@ var RebroadcastingInterval = time.Minute
 //
 // validators should be a list of addresses that are allowed to connect to the host. This should include the address of the
 // node itself.
+// whitelist is the list of addresses that are allowed to write to the datastore.
 func NewLibP2PManager(ctx context.Context, handler metrics.Handler, auth signer.Signer, store db.Datstores, port int) (LibP2PManager, error) {
 	l := &libP2PManagerImpl{}
 	l.port = port
@@ -83,7 +87,7 @@ func NewLibP2PManager(ctx context.Context, handler metrics.Handler, auth signer.
 
 	l.globalDS, err = store.GlobalDatastore()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not get global datastore: %w", err)
 	}
 	l.address = auth.Address()
 	l.datastoreFactory = store
@@ -99,6 +103,7 @@ func (l *libP2PManagerImpl) Host() host.Host {
 	return l.host
 }
 
+// Address returns the address of the node.
 func (l *libP2PManagerImpl) Address() common.Address {
 	return l.address
 }
@@ -172,7 +177,7 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 
 	l.pubSubBroadcaster, err = crdt.NewPubSubBroadcaster(ctx, l.pubsub, dbTopic)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not create pubsub broadcaster: %w", err)
 	}
 
 	return nil
@@ -185,6 +190,7 @@ func (l *libP2PManagerImpl) GetSignature(ctx context.Context, address common.Add
 	}
 
 	// get from my store
+	// nolint: wrapcheck
 	return theirStore.Get(ctx, datastore.NewKey(fmt.Sprintf("sig_%d_%s", chainID, entryID.String())))
 }
 
@@ -219,6 +225,17 @@ func (l *libP2PManagerImpl) AddValidators(ctx context.Context, addr ...common.Ad
 	return nil
 }
 
+func (l *libP2PManagerImpl) allValidators() []common.Address {
+	l.datastoreMux.RLock()
+	defer l.datastoreMux.RUnlock()
+
+	var validators []common.Address
+	for k := range l.datastores {
+		validators = append(validators, k)
+	}
+	return validators
+}
+
 func (l *libP2PManagerImpl) addValidator(ctx context.Context, addr common.Address) error {
 	l.datastoreMux.Lock()
 	defer l.datastoreMux.Unlock()
@@ -231,14 +248,24 @@ func (l *libP2PManagerImpl) addValidator(ctx context.Context, addr common.Addres
 	// create new datastore for validator
 	ds, err := l.datastoreFactory.DatastoreForSigner(addr)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not create datastore for validator: %w", err)
 	}
 
 	topic := fmt.Sprintf("crdt_db_%s", addr.String())
 
-	err = l.pubsub.RegisterTopicValidator(topic, func(ctx context.Context, from peer.ID, msg *pubsub.Message) bool {
-		// TODO: see p2p-realtime-database, convert the from peer id to an address
-		// and then make sure it matches the validator
+	err = l.pubsub.RegisterTopicValidator(topic, func(ctx context.Context, p peer.ID, _ *pubsub.Message) bool {
+		address, err := ethAddrFromPeer(p)
+		if err != nil {
+			l.handler.ExperimentalLogger().Warnw(ctx, "could not extract peer address", "peer", p, "error", err)
+			return false
+		}
+
+		allValidators := l.allValidators()
+
+		if !slices.Contains(allValidators, address) {
+			l.handler.ExperimentalLogger().Warnw(ctx, "peer address does not match expected address", "peer", p, "expected", allValidators, "actual", address)
+			return false
+		}
 
 		return true
 	})
@@ -270,12 +297,12 @@ func (l *libP2PManagerImpl) addValidator(ctx context.Context, addr common.Addres
 
 	l.datastores[addr], err = crdt.New(ds, datastore.NewKey(topic), l.ipfs, pubSubBroadcaster, crdtOpts)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not create crdt: %w", err)
 	}
 
 	err = l.datastores[addr].Sync(ctx, datastore.NewKey("/"))
 	if err != nil {
-		return err
+		return fmt.Errorf("could not sync: %w", err)
 	}
 
 	return nil
@@ -330,7 +357,6 @@ func (l *libP2PManagerImpl) initMDNS(ctx context.Context, peerhost host.Host, re
 	n := &discoveryNotifee{}
 	n.PeerChan = make(chan peer.AddrInfo)
 
-	// An hour might be a long long period in practical applications. But this is fine for us
 	ser := mdns.NewMdnsService(peerhost, rendezvous, n)
 	if err := ser.Start(); err != nil {
 		panic(err)

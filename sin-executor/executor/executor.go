@@ -3,6 +3,7 @@ package executor
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/core"
 	"math/big"
 	"time"
 
@@ -58,8 +59,8 @@ func NewExecutor(ctx context.Context, handler metrics.Handler, cfg config.Config
 	executor.chainListeners = make(map[int]listener.ContractListener)
 	executor.clientContracts = make(map[int]*interchainclient.InterchainClientRef)
 
-	for chainID, chainCFG := range cfg.Chains {
-		synapseModule := common.HexToAddress(chainCFG.SynapseClientAddress)
+	for chainID, address := range cfg.Chains {
+		synapseModule := common.HexToAddress(address)
 		chainClient, err := executor.client.GetChainClient(ctx, chainID)
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain client: %w", err)
@@ -168,7 +169,7 @@ func (e *Executor) executeTransaction(ctx context.Context, request db.Transactio
 		transactor.GasLimit = request.Options.GasLimit.Uint64()
 		transactor.Value = request.Options.GasAirdrop
 
-		return contract.InterchainExecute(transactor, request.EncodedTX)
+		return contract.InterchainExecute(transactor, request.Options.GasLimit, request.EncodedTX)
 	})
 	if err != nil {
 		return fmt.Errorf("could not submit transaction: %w", err)
@@ -203,7 +204,7 @@ func (e *Executor) checkReady(ctx context.Context, request db.TransactionSent) e
 	}
 
 	// TODO REMOVE ME
-	// e.db.UpdateInterchainTransactionStatus(ctx, request.TransactionId, db.Ready)
+	e.db.UpdateInterchainTransactionStatus(ctx, request.TransactionID, db.Ready)
 	// TODO REMOVE ME
 
 	isExecutable, err := contract.IsExecutable(&bind.CallOpts{Context: ctx}, request.EncodedTX)
@@ -258,10 +259,6 @@ func (e *Executor) runChainIndexer(parentCtx context.Context, chainID int) (err 
 		return fmt.Errorf("could not parse: %w", err)
 	}
 
-	// because transactions and emits come separately, we need to store them in a map until we have both.
-	pendingTransactionSends := make(map[common.Hash]*interchainclient.InterchainClientV1InterchainTransactionSent)
-	pendingEmitOptions := make(map[common.Hash]*interchainclient.InterchainClientV1InterchainOptionsV1)
-
 	err = chainListener.Listen(parentCtx, func(parentCtx context.Context, log types.Log) (err error) {
 		et, parsedEvent, ok := parser.ParseEvent(log)
 		// handle unknown event
@@ -284,29 +281,27 @@ func (e *Executor) runChainIndexer(parentCtx context.Context, chainID int) (err 
 			metrics.EndSpanWithErr(span, err)
 		}()
 
-		var transactionID common.Hash
 		switch event := parsedEvent.(type) {
 		case *interchainclient.InterchainClientV1InterchainTransactionSent:
-			pendingTransactionSends[event.TransactionId] = event
-			transactionID = event.TransactionId
-		case *interchainclient.InterchainClientV1InterchainOptionsV1:
-			pendingEmitOptions[event.TransactionId] = event
-			transactionID = event.TransactionId
-		}
+			encodedTX, err := e.clientContracts[chainID].EncodeTransaction(&bind.CallOpts{Context: ctx}, interchainclient.InterchainTransaction{
+				SrcChainId:  big.NewInt(int64(chainID)),
+				SrcSender:   event.SrcSender,
+				DstChainId:  core.CopyBigInt(event.DstChainId),
+				DstReceiver: event.DstReceiver,
+				Nonce:       event.ClientNonce.Uint64(),
+				DbNonce:     event.DbNonce,
+				Options:     event.Options,
+				Message:     event.Message,
+			})
 
-		if transactionID.String() != (common.Hash{}).String() {
-			transactionSend, hasPending := pendingTransactionSends[transactionID]
-			optionsEmit, hasSend := pendingEmitOptions[transactionID]
+			decodedOptions, err := e.clientContracts[chainID].DecodeOptions(&bind.CallOpts{Context: ctx}, event.Options)
+			if err != nil {
+				return fmt.Errorf("could not decode options: %w", err)
+			}
 
-			if hasPending && hasSend {
-				// if we have both the transaction and the emit, we can now handle the event.
-				err = e.db.StoreInterchainTransaction(ctx, big.NewInt(int64(chainID)), transactionSend, optionsEmit)
-				if err != nil {
-					return fmt.Errorf("could not store interchain transaction: %w", err)
-				}
-
-				delete(pendingTransactionSends, transactionID)
-				delete(pendingEmitOptions, transactionID)
+			err = e.db.StoreInterchainTransaction(ctx, big.NewInt(int64(chainID)), event, &decodedOptions, encodedTX)
+			if err != nil {
+				return fmt.Errorf("could not store interchain transaction: %w", err)
 			}
 		}
 

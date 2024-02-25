@@ -13,12 +13,15 @@ import {InterchainApp} from "../contracts/InterchainApp.sol";
 
 import {GasOracleMock} from "../test/mocks/GasOracleMock.sol";
 
+import { ExecutionFeesMock } from "../test/mocks/ExecutionFeesMock.sol";
+
 contract MessagingBase is Script {
     InterchainDB public icDB;
     InterchainClientV1 public icClient;
     SynapseModule public synapseModule;
     GasOracleMock public gasOracleMock;
     InterchainApp public icApp;
+    ExecutionFeesMock public executionFees;
 
     function run() external {
         vm.startBroadcast();
@@ -29,9 +32,12 @@ contract MessagingBase is Script {
 
         synapseModule = new SynapseModule(address(icDB), msg.sender);
         gasOracleMock = new GasOracleMock();
+        executionFees = new ExecutionFeesMock();
         synapseModule.setGasOracle(address(gasOracleMock));
+        icClient.setEXecutionFees(address(executionFees));
         icApp = new InterchainApp(address(icClient), new address[](0), new address[](0));
 
         vm.stopBroadcast();
     }
+
 }

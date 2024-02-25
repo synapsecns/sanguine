@@ -11,12 +11,11 @@ func _() {
 	_ = x[SynapseModuleType-1]
 	_ = x[InterchainDB-2]
 	_ = x[GasOracleMockType-3]
-	_ = x[ExecutionServiceMockType-4]
 }
 
-const _contractTypeImpl_name = "SynapseModuleInterchainDBGasOracleMockExecutionServiceMock"
+const _contractTypeImpl_name = "SynapseModuleInterchainDBGasOracleMock"
 
-var _contractTypeImpl_index = [...]uint8{0, 13, 25, 38, 58}
+var _contractTypeImpl_index = [...]uint8{0, 13, 25, 38}
 
 func (i contractTypeImpl) String() string {
 	i -= 1

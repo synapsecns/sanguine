@@ -1,3 +1,4 @@
+// Package executionfeesmock provides a mock for the ExecutionFees contract.
 package executionfeesmock
 
 import (
@@ -6,28 +7,28 @@ import (
 	"github.com/ethereum/go-ethereum/core/vm"
 )
 
-// ExecutionfeesmockRef is a reference to a Executionfeesmock.
+// ExecutionFeesMockRef is a reference to a Executionfeesmock.
 // nolint: golint
-type ExecutionFeesmockRef struct {
+type ExecutionFeesMockRef struct {
 	*ExecutionFeesMock
 	address common.Address
 }
 
 // Address is the contract address.
-func (s *ExecutionFeesmockRef) Address() common.Address {
+func (s *ExecutionFeesMockRef) Address() common.Address {
 	return s.address
 }
 
 // NewExecutionfeesMockRef creates a new Executionfeesmock with a contract ref.
-func NewExecutionfeesMockRef(address common.Address, backend bind.ContractBackend) (*ExecutionFeesmockRef, error) {
+func NewExecutionfeesMockRef(address common.Address, backend bind.ContractBackend) (*ExecutionFeesMockRef, error) {
 	instance, err := NewExecutionFeesMock(address, backend)
 	if err != nil {
 		return nil, err
 	}
-	return &ExecutionFeesmockRef{
+	return &ExecutionFeesMockRef{
 		ExecutionFeesMock: instance,
 		address:           address,
 	}, nil
 }
 
-var _ vm.ContractRef = &ExecutionFeesmockRef{}
+var _ vm.ContractRef = &ExecutionFeesMockRef{}

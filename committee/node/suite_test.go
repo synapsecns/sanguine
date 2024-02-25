@@ -4,6 +4,7 @@ import (
 	"math/big"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/common"
@@ -87,6 +88,8 @@ func (n *NodeSuite) SetupTest() {
 			n.NoError(err)
 		}()
 	}
+	// async start process. TODO: replace for tests.
+	time.Sleep(time.Second * 10)
 }
 
 func (n *NodeSuite) setValidators(validators []common.Address, backend backends.SimulatedTestBackend, info contracts.DeployedContract, contract *synapsemodule.SynapseModuleRef) {

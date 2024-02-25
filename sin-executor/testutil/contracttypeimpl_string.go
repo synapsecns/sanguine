@@ -11,7 +11,7 @@ func _() {
 	_ = x[InterchainClient-1]
 	_ = x[InterchainDB-2]
 	_ = x[InterchainModuleMock-3]
-	_ = x[InterchainAppMock-4]
+	_ = x[InterchainApp-4]
 	_ = x[OptionsLib-5]
 	_ = x[ExecutionServiceMock-6]
 	_ = x[ExecutionFeesMock-7]

@@ -1,3 +1,4 @@
+// Package interchainclient provides the interchainclient interface.
 package interchainclient
 
 import (

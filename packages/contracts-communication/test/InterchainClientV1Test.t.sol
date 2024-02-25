@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {InterchainClientV1} from "../contracts/InterchainClientV1.sol";
+import {InterchainClientV1, AppConfigV1, InterchainTransaction} from "../contracts/InterchainClientV1.sol";
 import {InterchainDB} from "../contracts/InterchainDB.sol";
 
 import {InterchainEntry} from "../contracts/libs/InterchainEntry.sol";
@@ -26,8 +26,11 @@ contract InterchainClientV1Test is Test {
     InterchainAppMock icApp;
     InterchainModuleMock icModule;
 
-    // Use default options of V1, 200k gas limit, 0 gas airdrop
-    bytes options = OptionsV1(200_000, 0).encodeOptionsV1();
+    address[] public mockApprovedModules;
+
+    uint256 public constant GAS_AIRDROP = 0.5 ether;
+    // Use default options of V1, 200k gas limit, 0.5 ETH gas airdrop
+    bytes options = OptionsV1(200_000, GAS_AIRDROP).encodeOptionsV1();
 
     uint256 public constant SRC_CHAIN_ID = 1337;
     uint256 public constant DST_CHAIN_ID = 7331;
@@ -48,6 +51,7 @@ contract InterchainClientV1Test is Test {
         icApp.setReceivingModule(address(icModule));
         vm.stopPrank();
         mockModuleFee(icModule, 1);
+        mockApprovedModules.push(address(icModule));
     }
 
     /// @dev Mocks a return value of module.getModuleFee(DST_CHAIN_ID)
@@ -58,25 +62,6 @@ contract InterchainClientV1Test is Test {
     }
 
     // ══════════════════════════════════════════════ INTERNAL TESTS ══════════════════════════════════════════════════
-
-    function test_generateTxId(
-        bytes32 srcSender,
-        uint256 srcChainId,
-        bytes32 dstReceiver,
-        uint256 dstChainId,
-        bytes memory message,
-        uint64 nonce,
-        bytes memory fuzzOptions
-    )
-        public
-    {
-        bytes32 txId = icClient.generateTransactionIdHarness(
-            srcSender, srcChainId, dstReceiver, dstChainId, message, nonce, fuzzOptions
-        );
-        assertEq(
-            txId, keccak256(abi.encode(srcSender, srcChainId, dstReceiver, dstChainId, message, nonce, fuzzOptions))
-        );
-    }
 
     function test_getFinalizedResponsesCount() public {
         vm.warp(10 days);
@@ -125,6 +110,7 @@ contract InterchainClientV1Test is Test {
         transactionID;
     }
 
+    // TODO: more tests
     function test_interchainReceive() public {
         bytes32 dstReceiver = TypeCasts.addressToBytes32(address(icApp));
         bytes memory message = "Hello World";
@@ -132,27 +118,38 @@ contract InterchainClientV1Test is Test {
         vm.prank(contractOwner);
         icClient.setLinkedClient(SRC_CHAIN_ID, srcSender);
         uint64 nonce = 1;
+        uint256 dbNonce = 2;
         bytes32 transactionID =
             keccak256(abi.encode(srcSender, SRC_CHAIN_ID, dstReceiver, DST_CHAIN_ID, message, nonce, options));
+        bytes memory expectedAppCalldata = abi.encodeCall(icApp.appReceive, (SRC_CHAIN_ID, srcSender, nonce, message));
+
+        AppConfigV1 memory mockAppConfig = AppConfigV1({requiredResponses: 1, optimisticPeriod: 1 hours});
+        vm.mockCall(
+            address(icApp),
+            abi.encodeCall(icApp.getReceivingConfig, ()),
+            abi.encode(mockAppConfig.encodeAppConfigV1(), mockApprovedModules)
+        );
 
         InterchainEntry memory entry =
-            InterchainEntry({srcChainId: SRC_CHAIN_ID, srcWriter: srcSender, dbNonce: 0, dataHash: transactionID});
+            InterchainEntry({srcChainId: SRC_CHAIN_ID, srcWriter: srcSender, dbNonce: dbNonce, dataHash: transactionID});
 
         icModule.mockVerifyEntry(address(icDB), entry);
 
-        InterchainClientV1.InterchainTransaction memory transaction = InterchainClientV1.InterchainTransaction({
+        InterchainTransaction memory transaction = InterchainTransaction({
             srcSender: srcSender,
             srcChainId: SRC_CHAIN_ID,
             dstReceiver: dstReceiver,
             dstChainId: DST_CHAIN_ID,
-            message: message,
             nonce: nonce,
+            dbNonce: dbNonce,
             options: options,
-            transactionId: transactionID,
-            dbNonce: 0
+            message: message
         });
+        deal(address(this), GAS_AIRDROP);
         // Skip ahead of optimistic period
-        vm.warp(icApp.getOptimisticTimePeriod() + 1 minutes);
-        icClient.interchainExecute(abi.encode(transaction));
+        skip(mockAppConfig.optimisticPeriod + 1);
+        // Expect App to be called with the message
+        vm.expectCall({callee: address(icApp), msgValue: GAS_AIRDROP, gas: 200_000, data: expectedAppCalldata, count: 1});
+        icClient.interchainExecute{value: GAS_AIRDROP}({gasLimit: 0, transaction: abi.encode(transaction)});
     }
 }

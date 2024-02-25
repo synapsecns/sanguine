@@ -8,7 +8,7 @@ import (
 	"github.com/synapsecns/sanguine/sin-executor/contracts/interchaindb"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/executionfeesmock"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/executionservicemock"
-	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainappmock"
+	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainapp"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainmodulemock"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/optionslibexport"
 )
@@ -54,8 +54,8 @@ const (
 	InterchainDB // SynapseModule
 	// InterchainModuleMock is the interchain module mock.
 	InterchainModuleMock // InterchainModuleMock
-	// InterchainAppMock is the interchain app mock.
-	InterchainAppMock // InterchainAppMock
+	// InterchainApp is the interchain app mock.
+	InterchainApp // InterchainApp
 	// OptionsLib is the options library.
 	OptionsLib // OptionsLib
 	// ExecutionServiceMock is the execution service mock.
@@ -94,8 +94,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return interchaindb.Contracts["solidity/InterchainDB.sol:InterchainDB"]
 	case InterchainModuleMock:
 		return interchainmodulemock.Contracts["solidity/InterchainModuleMock.sol:InterchainModuleMock"]
-	case InterchainAppMock:
-		return interchainappmock.Contracts["solidity/InterchainAppMock.sol:InterchainAppMock"]
+	case InterchainApp:
+		return interchainapp.Contracts["solidity/InterchainApp.sol:InterchainApp"]
 	case OptionsLib:
 		return optionslibexport.Contracts["solidity/OptionsLibExport.sol:OptionsLibMocks"]
 	case ExecutionServiceMock:

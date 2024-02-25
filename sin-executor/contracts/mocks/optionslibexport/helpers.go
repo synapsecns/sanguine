@@ -1,3 +1,4 @@
+// Package optionslibexport provides a mock for the OptionsLibMocks contract.
 package optionslibexport
 
 import (

@@ -9,25 +9,6 @@ contract InterchainClientV1Harness is InterchainClientV1 {
     constructor() InterchainClientV1() {}
 
     /**
-     * @dev Harness for testing _generateTransactionId function
-     */
-    function generateTransactionIdHarness(
-        bytes32 srcSender,
-        uint256 srcChainId,
-        bytes32 dstReceiver,
-        uint256 dstChainId,
-        bytes memory message,
-        uint64 nonce,
-        bytes memory options
-    )
-        public
-        pure
-        returns (bytes32)
-    {
-        return _generateTransactionId(srcSender, srcChainId, dstReceiver, dstChainId, message, nonce, options);
-    }
-
-    /**
      * @dev Harness for testing _getApprovedResponses function
      */
     function getApprovedResponsesHarness(

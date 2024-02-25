@@ -2,6 +2,7 @@
 pragma solidity 0.8.20;
 
 import {IInterchainApp} from "../../contracts/interfaces/IInterchainApp.sol";
+import {AppConfigV1} from "../../contracts/libs/AppConfig.sol";
 
 contract InterchainAppMock is IInterchainApp {
     address[] public receivingModules;
@@ -27,19 +28,9 @@ contract InterchainAppMock is IInterchainApp {
 
     function getSendingModules() external view virtual override returns (address[] memory) {}
 
-    function getReceivingModules() public view override returns (address[] memory) {
-        return receivingModules;
-    }
-
-    function getRequiredResponses() public pure override returns (uint256) {
-        return 1;
-    }
-
-    function getOptimisticTimePeriod() public pure override returns (uint64) {
-        return 0;
-    }
+    function getReceivingConfig() external view returns (bytes memory appConfig, address[] memory modules) {}
 
     function send(bytes32 receiver, uint256 dstChainId, bytes calldata message) external payable virtual override {}
 
-    function appReceive() external virtual override {}
+    function appReceive(uint256 srcChainId, bytes32 sender, uint64 nonce, bytes calldata message) external payable {}
 }

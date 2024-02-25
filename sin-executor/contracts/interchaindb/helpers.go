@@ -1,3 +1,4 @@
+// Package interchaindb provides a mock for the InterchainDB contract.
 package interchaindb
 
 import (

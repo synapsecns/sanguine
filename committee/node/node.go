@@ -1,3 +1,4 @@
+// Package node contains a committee node.
 package node
 
 import (
@@ -104,6 +105,7 @@ func NewNode(ctx context.Context, handler metrics.Handler, cfg config.Config) (*
 	return node, nil
 }
 
+// IPFSAddress gets the IPFS address of the node.
 func (n *Node) IPFSAddress() (addresses []string) {
 	for _, addr := range n.peerManager.Host().Addrs() {
 		addresses = append(addresses, fmt.Sprintf("%s/p2p/%s", addr, n.peerManager.Host().ID()))
@@ -111,6 +113,7 @@ func (n *Node) IPFSAddress() (addresses []string) {
 	return addresses
 }
 
+// Address gets the address of the node. This is used for testing.
 func (n *Node) Address() common.Address {
 	return n.signer.Address()
 }
@@ -234,6 +237,7 @@ func (n *Node) startP2P(ctx context.Context) error {
 	return nil
 }
 
+// nolint: cyclop
 func (n *Node) runDBSelector(ctx context.Context) error {
 	for {
 		select {
@@ -251,6 +255,7 @@ func (n *Node) runDBSelector(ctx context.Context) error {
 			}
 
 			for _, request := range dbItems {
+				// nolint: exhaustive
 				switch request.Status {
 				case db.Seen:
 					err := n.signAndBroadcast(ctx, request)
@@ -273,9 +278,7 @@ func (n *Node) runDBSelector(ctx context.Context) error {
 }
 
 func (n *Node) getSortedValidators(request db.SignRequest) (validators []common.Address) {
-	for _, validator := range n.interchainValidators[int(request.DestChainID.Int64())] {
-		validators = append(validators, validator)
-	}
+	validators = append(validators, n.interchainValidators[int(request.DestChainID.Int64())]...)
 
 	sort.Slice(validators, func(i, j int) bool {
 		return validators[i].Big().Cmp(validators[j].Big()) < 0
@@ -305,8 +308,7 @@ func (n *Node) submit(ctx context.Context, request db.SignRequest) error {
 	}
 
 	nonce, err := n.submitter.SubmitTransaction(ctx, request.DestChainID, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-		// should be request.InterchainEntry
-		// Verify entry now takes in bytes entry (in place of struct InterchainEntry, and bytes signtaures, in place of bytes[] signatures)
+		//nolint: wrapcheck
 		return contract.VerifyEntry(transactor, request.Entry, signatures)
 	})
 

@@ -1,3 +1,4 @@
+// Package executionservicemock provides a mock for the ExecutionService contract.
 package executionservicemock
 
 import (

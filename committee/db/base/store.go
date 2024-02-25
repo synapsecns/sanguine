@@ -19,7 +19,6 @@ import (
 type Store struct {
 	db             *gorm.DB
 	submitterStore submitterDB.Service
-	datastore      datastore.Datastore
 }
 
 // NewStore creates a new store.

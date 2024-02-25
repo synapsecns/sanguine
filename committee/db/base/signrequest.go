@@ -42,7 +42,7 @@ func (s *VerificationRequest) ToServiceSignRequest() db.SignRequest {
 	}
 }
 
-func toSignRequest(originChainID int, sr synapsemodule.SynapseModuleVerificationRequested) (VerificationRequest, error) {
+func toSignRequest(originChainID int, sr synapsemodule.SynapseModuleVerificationRequested) VerificationRequest {
 	return VerificationRequest{
 		OriginChainID:      originChainID,
 		TXHash:             sr.Raw.TxHash.String(),
@@ -50,7 +50,7 @@ func toSignRequest(originChainID int, sr synapsemodule.SynapseModuleVerification
 		Entry:              common.Bytes2Hex(sr.Entry),
 		DestinationChainID: int(sr.DestChainId.Int64()),
 		Status:             db.Seen,
-	}, nil
+	}
 }
 
 // UpdateSignRequestStatus updates a sign request status.
@@ -64,10 +64,7 @@ func (s Store) UpdateSignRequestStatus(ctx context.Context, txid common.Hash, st
 
 // StoreInterchainTransactionReceived stores an interchain transaction received.
 func (s Store) StoreInterchainTransactionReceived(ctx context.Context, originChainID int, sr synapsemodule.SynapseModuleVerificationRequested) error {
-	signRequest, err := toSignRequest(originChainID, sr)
-	if err != nil {
-		return fmt.Errorf("could not convert to sign request: %w", err)
-	}
+	signRequest := toSignRequest(originChainID, sr)
 
 	tx := s.DB().WithContext(ctx).
 		Model(&VerificationRequest{}).

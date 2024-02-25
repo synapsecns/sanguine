@@ -9,11 +9,12 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[InterchainTransactionSentEvent-1]
+	_ = x[InterchainOptionsV1Event-2]
 }
 
-const _EventType_name = "InterchainTransactionSentEvent"
+const _EventType_name = "InterchainTransactionSentEventInterchainOptionsV1Event"
 
-var _EventType_index = [...]uint8{0, 30}
+var _EventType_index = [...]uint8{0, 30, 54}
 
 func (i EventType) String() string {
 	i -= 1
