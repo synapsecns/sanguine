@@ -1,3 +1,4 @@
+// Package config provides the configuration for the Synapse module.
 package config
 
 import (
@@ -10,7 +11,7 @@ type Config struct {
 	// Chains is a map of chain IDs to chain configs.
 	Chains map[int]string `yaml:"chains"`
 	// OmnirpcURL is the URL of the Omni RPC.
-	OmnirpcURL string
+	OmnirpcURL string `yaml:"omnirpc_url"`
 	// Database is the database config.
 	Database DatabaseConfig `yaml:"database"`
 	// Signer is the signer config.
