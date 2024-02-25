@@ -13,7 +13,7 @@ body {
 
 @font-face {
   font-family: "Matter";
-  src: url("./font/Matter-Light.otf") format("opentype");
+  src: url("./font/Matter-Light.woff2") format("woff2");
   font-weight: 300;
   font-style: normal;
   font-display: loading;
@@ -21,7 +21,7 @@ body {
 
 @font-face {
   font-family: "Matter";
-  src: url("./font/Matter-LightItalic.otf") format("opentype");
+  src: url("./font/Matter-LightItalic.woff2") format("woff2");
   font-weight: 300;
   font-style: italic;
   font-display: loading;
@@ -29,7 +29,7 @@ body {
 
 @font-face {
   font-family: "Matter";
-  src: url("./font/Matter-Regular.otf") format("opentype");
+  src: url("./font/Matter-Regular.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: loading;
@@ -37,7 +37,7 @@ body {
 
 @font-face {
   font-family: "Matter";
-  src: url("./font/Matter-RegularItalic.otf") format("opentype");
+  src: url("./font/Matter-RegularItalic.woff2") format("woff2");
   font-weight: 400;
   font-style: italic;
   font-display: loading;
@@ -46,7 +46,7 @@ body {
 
 @font-face {
   font-family: "Matter";
-  src: url("./font/Matter-Medium.otf") format("opentype");
+  src: url("./font/Matter-Medium.woff2") format("woff2");
   font-weight: 500;
   font-style: normal;
   font-display: loading;
@@ -54,7 +54,7 @@ body {
 
 @font-face {
   font-family: "Matter";
-  src: url("./font/Matter-MediumItalic.otf") format("opentype");
+  src: url("./font/Matter-MediumItalic.woff2") format("woff2");
   font-weight: 500;
   font-style: italic;
   font-display: loading;
@@ -62,7 +62,7 @@ body {
 
 @font-face {
   font-family: "Matter";
-  src: url("./font/Matter-SemiBold.otf") format("opentype");
+  src: url("./font/Matter-SemiBold.woff2") format("woff2");
   font-weight: 600;
   font-style: normal;
   font-display: loading;
@@ -70,7 +70,7 @@ body {
 
 @font-face {
   font-family: "Matter";
-  src: url("./font/Matter-SemiBoldItalic.otf") format("opentype");
+  src: url("./font/Matter-SemiBoldItalic.woff2") format("woff2");
   font-weight: 600;
   font-style: italic;
   font-display: loading;
@@ -78,7 +78,7 @@ body {
 
 @font-face {
   font-family: "Matter";
-  src: url("./font/Matter-Bold.otf") format("opentype");
+  src: url("./font/Matter-Bold.woff2") format("woff2");
   font-weight: 700;
   font-style: normal;
   font-display: loading;
@@ -86,7 +86,7 @@ body {
 
 @font-face {
   font-family: "Matter";
-  src: url("./font/Matter-BoldItalic.otf") format("opentype");
+  src: url("./font/Matter-BoldItalic.woff2") format("woff2");
   font-weight: 700;
   font-style: italic;
   font-display: loading;
@@ -94,7 +94,7 @@ body {
 
 @font-face {
   font-family: "Matter";
-  src: url("./font/Matter-Heavy.otf") format("opentype");
+  src: url("./font/Matter-Heavy.woff2") format("woff2");
   font-weight: 900;
   font-style: normal;
   font-display: loading;
@@ -102,7 +102,7 @@ body {
 
 @font-face {
   font-family: "Matter";
-  src: url("./font/Matter-HeavyItalic.otf") format("opentype");
+  src: url("./font/Matter-HeavyItalic.woff2") format("woff2");
   font-weight: 900;
   font-style: italic;
   font-display: loading;
