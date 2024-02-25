@@ -88,43 +88,43 @@ export const ChainListOverlay = ({
       onClose={onClose}
       type="chain"
     >
-        {possibleChains?.length > 0 && (
-          <SearchResultsContainer label={`${primaryLabel}…`}>
-            {possibleChains.map(({ id: mapChainId }, idx) =>
-              <SelectNetworkButtonComponent
-                key={idx}
-                itemChainId={mapChainId}
-                isCurrentChain={chainId === mapChainId}
-                isOrigin={isOrigin}
-                active={idx === currentIdx}
-                onClick={() => {
-                  if (chainId === mapChainId) {
-                    onClose()
-                  } else {
-                    handleSetChainId(mapChainId)
-                  }
-                }}
-                dataId={dataId}
-              />
-            )}
-          </SearchResultsContainer>
-        )}
-        {remainingChains?.length > 0 && (
-          <SearchResultsContainer label="All Chains">
-            {remainingChains.map(({ id: mapChainId }, idx) =>
-              <SelectNetworkButtonComponent
-                key={mapChainId}
-                itemChainId={mapChainId}
-                isCurrentChain={chainId === mapChainId}
-                isOrigin={isOrigin}
-                active={idx + possibleChains.length === currentIdx}
-                onClick={() => handleSetChainId(mapChainId)}
-                dataId={dataId}
-                alternateBackground={true}
-              />
-            )}
-          </SearchResultsContainer>
-        )}
+      {possibleChains?.length > 0 && (
+        <SearchResultsContainer label={`${primaryLabel}…`}>
+          {possibleChains.map(({ id: mapChainId }, idx) =>
+            <SelectNetworkButtonComponent
+              key={idx}
+              itemChainId={mapChainId}
+              isCurrentChain={chainId === mapChainId}
+              isOrigin={isOrigin}
+              active={idx === currentIdx}
+              onClick={() => {
+                if (chainId === mapChainId) {
+                  onClose()
+                } else {
+                  handleSetChainId(mapChainId)
+                }
+              }}
+              dataId={dataId}
+            />
+          )}
+        </SearchResultsContainer>
+      )}
+      {remainingChains?.length > 0 && (
+        <SearchResultsContainer label="All Chains">
+          {remainingChains.map(({ id: mapChainId }, idx) =>
+            <SelectNetworkButtonComponent
+              key={mapChainId}
+              itemChainId={mapChainId}
+              isCurrentChain={chainId === mapChainId}
+              isOrigin={isOrigin}
+              active={idx + possibleChains.length === currentIdx}
+              onClick={() => handleSetChainId(mapChainId)}
+              dataId={dataId}
+              alternateBackground={true}
+            />
+          )}
+        </SearchResultsContainer>
+      )}
     </SearchOverlayContent>
   )
 }
