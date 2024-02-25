@@ -13,7 +13,7 @@ import {InterchainApp} from "../contracts/InterchainApp.sol";
 
 import {GasOracleMock} from "../test/mocks/GasOracleMock.sol";
 
-import { ExecutionFeesMock } from "../test/mocks/ExecutionFeesMock.sol";
+import {ExecutionFeesMock} from "../test/mocks/ExecutionFeesMock.sol";
 
 contract MessagingBase is Script {
     InterchainDB public icDB;
@@ -39,5 +39,4 @@ contract MessagingBase is Script {
 
         vm.stopBroadcast();
     }
-
 }

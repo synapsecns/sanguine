@@ -10,4 +10,6 @@ abstract contract ExecutionServiceEvents {
         bytes options
     );
     event ExecutorEOAUpdated(address indexed executorEOA);
+    event GasOracleUpdated(address indexed gasOracle);
+    event InterchainClientUpdated(address indexed interchainClient);
 }
