@@ -59,8 +59,8 @@ func NewExecutor(ctx context.Context, handler metrics.Handler, cfg config.Config
 	executor.chainListeners = make(map[int]listener.ContractListener)
 	executor.clientContracts = make(map[int]*interchainclient.InterchainClientRef)
 
-	for chainID, chainCFG := range cfg.Chains {
-		synapseModule := common.HexToAddress(chainCFG.SynapseClientAddress)
+	for chainID, address := range cfg.Chains {
+		synapseModule := common.HexToAddress(address)
 		chainClient, err := executor.client.GetChainClient(ctx, chainID)
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain client: %w", err)
