@@ -438,33 +438,33 @@ export const getNetworkBgClassNameLightDark = (chainColor: string): string => {
 export const getNetworkShadow = (chainColor: string): string => {
   switch (chainColor) {
     case ColorOptions.ETH:
-      return `shadow-blue-xl hover:shadow-blue-2xl`
+      return `shadow-blue-500/30 hover:shadow-blue-500/40`
     case ColorOptions.YELLOW:
-      return `shadow-[#ecae0b] hover:shadow-[#ecae0b]`
+      return `shadow-[#ecae0b]/30 hover:shadow-[#ecae0b]/40`
     case ColorOptions.GRAY:
-      return `shadow-gray-xl hover:shadow-gray-2xl`
+      return `shadow-gray-500/30 hover:shadow-gray-500/40`
     case ColorOptions.GREEN:
-      return `shadow-green-xl hover:shadow-green-2xl`
+      return `shadow-green-500/30 hover:shadow-green-500/40`
     case ColorOptions.LIME:
-      return `shadow-lime-xl hover:shadow-lime-2xl`
+      return `shadow-lime-500/30 hover:shadow-lime-500/40`
     case ColorOptions.SKY:
-      return `shadow-sky-xl hover:shadow-sky-2xl`
+      return `shadow-sky-500/30 hover:shadow-sky-500/40`
     case ColorOptions.BLUE:
-      return `shadow-blue-xl hover:shadow-blue-2xl`
+      return `shadow-blue-500/30 hover:shadow-blue-500/40`
     case ColorOptions.ORANGE:
-      return `shadow-orange-xl hover:shadow-orange-2xl`
+      return `shadow-orange-500/30 hover:shadow-orange-500/40`
     case ColorOptions.PURPLE:
-      return `shadow-purple-xl hover:shadow-purple-2xl`
+      return `shadow-purple-500/30 hover:shadow-purple-500/40`
     case ColorOptions.INDIGO:
-      return `shadow-indigo-xl hover:shadow-indigo-2xl`
+      return `shadow-indigo-500/30 hover:shadow-indigo-500/40`
     case ColorOptions.CYAN:
-      return `shadow-cyan-xl hover:shadow-cyan-2xl`
+      return `shadow-cyan-500/30 hover:shadow-cyan-500/40`
     case ColorOptions.RED:
-      return `shadow-red-xl hover:shadow-red-2xl`
+      return `shadow-red-500/30 hover:shadow-red-500/40`
     case ColorOptions.TEAL:
-      return `shadow-teal-xl hover:shadow-teal-2xl`
+      return `shadow-teal-500/30 hover:shadow-teal-500/40`
     default:
-      return `shadow-gray-xl hover:shadow-gray-2xl`
+      return `shadow-gray-500/30 hover:shadow-gray-500/40`
   }
 }
 

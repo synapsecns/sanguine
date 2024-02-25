@@ -38,16 +38,16 @@ import {
 import { EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
 import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
 
-import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
-
-import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
-import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
 
 import type { Token } from '@/utils/types'
 import { getTimeMinutesFromNow } from '@/utils/time'
 import { txErrorHandler } from '@/utils/txErrorHandler'
+import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
 import { approveToken } from '@/utils/approveToken'
+import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
+import { useSynapseContext } from '@/utils/providers/SynapseProvider'
+
 import { SECTION_TRANSITION_PROPS } from '@/styles/transitions'
 
 import { Transition } from '@headlessui/react'
@@ -69,7 +69,6 @@ import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeT
 import { SettingsSlideOver } from '@/components/StateManagedBridge/SettingsSlideOver'
 import { BridgeExchangeRateInfo } from '@/components/StateManagedBridge/BridgeExchangeRateInfo'
 import { SettingsButton } from '@/components/StateManagedBridge/SettingsButton'
-
 
 import { OverlayTransition } from '@/components/bridgeSwap/OverlayTransition'
 

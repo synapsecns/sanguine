@@ -4,8 +4,8 @@ import { useNetwork, useAccount } from 'wagmi'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { ChevronLeftIcon } from '@heroicons/react/outline'
-import type { Token } from '@/utils/types'
 import { STAKABLE_TOKENS } from '@/constants/tokens'
+import type { Token } from '@/utils/types'
 import Grid from '@tw/Grid'
 import { PageHeader } from '@/components/PageHeader'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
@@ -40,7 +40,6 @@ const StakePage = () => {
       routerIndices,
     })
   }, [])
-
 
 
   useEffect(() => {

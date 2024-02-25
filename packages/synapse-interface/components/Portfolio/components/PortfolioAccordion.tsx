@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { ChevronUpIcon } from '@heroicons/react/outline'
 import Card from '@tw/Card'
-
+import { getNetworkShadow } from '@/styles/chains'
+import { CHAINS_BY_ID } from '@/constants/chains'
 type PortfolioAccordionProps = {
   header: React.ReactNode
   expandedProps: React.ReactNode
@@ -37,17 +38,24 @@ export const PortfolioAccordion = ({
   return (
     <Card
       id="portfolio-accordion"
-      className={
-        `${isExpanded ? 'shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]' : 'shadow-none'} !p-0 !from-transparent !to-transparent rounded-lg`
-      }
+      className={`
+        transition-all duration-75
+        ${getNetworkShadow(CHAINS_BY_ID[portfolioChainId].color)}
+        ${isExpanded
+            ?
+              portfolioChainId === selectedFromChainId
+                ? "shadow-md hover:shadow-md hover:!shadow-opacity-80"
+                : "shadow-sm hover:shadow-md"
+            : 'shadow-none hover:shadow-sm'}
+        !p-0 !from-transparent !to-transparent rounded-lg
+      `}
     >
       <div
         id="portfolio-accordion-header"
         className={`
           group
           flex items-center justify-between border border-transparent pr-2 select-none
-           hover:bg-bgBase/20
-          active:border-[#3D3D5C] active:opacity-[67%]
+           hover:bg-bgBase/20 active:opacity-[67%]
           ${
             isExpanded
               ? 'bg-bgBase/10 rounded-t-lg hover:rounded-t-lg'
@@ -74,7 +82,7 @@ export const PortfolioAccordion = ({
         />
       </div>
       <div id="portfolio-accordion-contents" className="flex flex-col">
-        {isExpanded && <React.Fragment>{children}</React.Fragment>}
+        {isExpanded && <>{children}</>}
       </div>
     </Card>
   )
