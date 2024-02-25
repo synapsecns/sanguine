@@ -56,3 +56,17 @@ export const TRANSITION_PROPS: TransitionClassesProps = {
     left-0
   `,
 }
+
+export const PORTFOLIO_ACCORDIAN_TRANSITION_PROPS: TransitionClassesProps = {
+  appear: true,
+  unmount: true,
+  enter: 'transition duration-75 ease-out',
+  enterFrom: 'transform-gpu scale-y-0 max-h-0',
+  enterTo: 'transform-gpu scale-y-100 opacity-100 max-h-[1420px]',
+  leave: 'transition  duration-75 scale-y-100 ease-out ',
+  leaveFrom: 'transform-gpu scale-y-100 opacity-100 max-h-[1420px]',
+  leaveTo: 'transform-gpu scale-y-0 max-h-0',
+  className: 'origin-top transition-all',
+}
+
+// max-h-[1420px] is a workaround to make the height smoothly transition

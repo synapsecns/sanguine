@@ -3,6 +3,8 @@ import { ChevronUpIcon } from '@heroicons/react/outline'
 import Card from '@tw/Card'
 import { getNetworkShadow } from '@/styles/chains'
 import { CHAINS_BY_ID } from '@/constants/chains'
+import { Transition } from '@headlessui/react'
+import { PORTFOLIO_ACCORDIAN_TRANSITION_PROPS } from '@/styles/transitions'
 type PortfolioAccordionProps = {
   header: React.ReactNode
   expandedProps: React.ReactNode
@@ -56,6 +58,7 @@ export const PortfolioAccordion = ({
           group
           flex items-center justify-between border border-transparent pr-2 select-none
            hover:bg-bgBase/20 active:opacity-[67%]
+           transition-all
           ${
             isExpanded
               ? 'bg-bgBase/10 rounded-t-lg hover:rounded-t-lg'
@@ -81,9 +84,18 @@ export const PortfolioAccordion = ({
           onClick={handleToggle}
         />
       </div>
-      <div id="portfolio-accordion-contents" className="flex flex-col">
-        {isExpanded && <>{children}</>}
-      </div>
+      <Transition
+        {...PORTFOLIO_ACCORDIAN_TRANSITION_PROPS}
+        show={isExpanded}
+      >
+        <div
+          id="portfolio-accordion-contents"
+          key={portfolioChainId}
+          className="flex flex-col"
+        >
+          {children}
+        </div>
+      </Transition>
     </Card>
   )
 }
