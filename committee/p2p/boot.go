@@ -3,9 +3,11 @@ package p2p
 import (
 	"context"
 	"fmt"
+	"github.com/ipfs/go-datastore/query"
 	"github.com/libp2p/go-libp2p/p2p/discovery/mdns"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"golang.org/x/exp/slices"
+	"strings"
 	"sync"
 	"time"
 
@@ -171,9 +173,27 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 			fmt.Println(l.host.Addrs())
 			fmt.Println("eth address:")
 			fmt.Println(l.address)
+			fmt.Println("all reported peers:")
+			memberRes, err := l.globalDS.Query(ctx, query.Query{Prefix: "/members"})
+			if err != nil {
+				fmt.Println("could not query members: ", err)
+			}
+
+			var members []string
+			for r := range memberRes.Next() {
+				members = append(members, common.BytesToAddress(r.Value).String())
+			}
+
+			fmt.Printf("members: %s \n", strings.Join(members, ", "))
 		}
 	}()
 	time.Sleep(time.Second * 10)
+
+	// peers self report here
+	err = l.globalDS.Put(ctx, datastore.NewKey("/members/"+l.address.String()), l.address.Bytes())
+	if err != nil {
+		return fmt.Errorf("could not put datastore: %w", err)
+	}
 
 	l.pubSubBroadcaster, err = crdt.NewPubSubBroadcaster(ctx, l.pubsub, dbTopic)
 	if err != nil {
