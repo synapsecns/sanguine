@@ -63,6 +63,8 @@ type libP2PManagerImpl struct {
 	datastores map[common.Address]datastore.Batching
 	// datastoreFactory is used to create new datastores
 	datastoreFactory db.Datstores
+	// peerstore is the peerstore of the node
+	peerstore datastore.Batching
 	// address is the address of the node
 	address common.Address
 	port    int
@@ -164,6 +166,11 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 		return fmt.Errorf("could not create pubsub: %w", err)
 	}
 
+	err = l.setupPeerTable(ctx)
+	if err != nil {
+		return fmt.Errorf("could not setup peer table: %w", err)
+	}
+
 	go func() {
 		for {
 			time.Sleep(time.Second * 4)
@@ -174,7 +181,7 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 			fmt.Println("eth address:")
 			fmt.Println(l.address)
 			fmt.Println("all reported peers:")
-			memberRes, err := l.globalDS.Query(ctx, query.Query{Prefix: "/members/", Limit: 100})
+			memberRes, err := l.peerstore.Query(ctx, query.Query{Prefix: "/members/", Limit: 100})
 			if err != nil {
 				fmt.Println("could not query members: ", err)
 			}
@@ -190,7 +197,7 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	time.Sleep(time.Second * 10)
 
 	// peers self report here
-	err = l.globalDS.Put(ctx, datastore.NewKey("/members/"+l.address.String()), l.address.Bytes())
+	err = l.peerstore.Put(ctx, datastore.NewKey("/members/"+l.address.String()), l.address.Bytes())
 	if err != nil {
 		return fmt.Errorf("could not put datastore: %w", err)
 	}
@@ -200,6 +207,41 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 		return fmt.Errorf("could not create pubsub broadcaster: %w", err)
 	}
 
+	return nil
+}
+
+const peerTableTopic = "peer_table"
+
+func (l *libP2PManagerImpl) setupPeerTable(ctx context.Context) error {
+	pubSubBroadcaster, err := crdt.NewPubSubBroadcaster(ctx, l.pubsub, peerTableTopic)
+	if err != nil {
+		return fmt.Errorf("could not create pubsub broadcaster: %w", err)
+	}
+
+	crdtOpts := crdt.DefaultOptions()
+	crdtOpts.Logger = logging.Logger(fmt.Sprintf("%s_logger", peerTableTopic))
+	crdtOpts.RebroadcastInterval = RebroadcastingInterval
+	crdtOpts.MaxBatchDeltaSize = 1
+
+	crdtOpts.PutHook = func(k datastore.Key, v []byte) {
+		fmt.Printf("[%s] Added: [%s] -> %s\n", time.Now().Format(time.RFC3339), k, string(v))
+		// TODO: some validation goes here
+	}
+	// TODO: this probably never gets called
+	crdtOpts.DeleteHook = func(k datastore.Key) {
+		fmt.Printf("[%s] Removed: [%s]\n", time.Now().Format(time.RFC3339), k)
+	}
+	crdtOpts.RebroadcastInterval = time.Second
+
+	l.peerstore, err = crdt.New(l.globalDS, datastore.NewKey(peerTableTopic), l.ipfs, pubSubBroadcaster, crdtOpts)
+	if err != nil {
+		return fmt.Errorf("could not create crdt: %w", err)
+	}
+
+	err = l.peerstore.Sync(ctx, datastore.NewKey("/"))
+	if err != nil {
+		return fmt.Errorf("could not sync: %w", err)
+	}
 	return nil
 }
 
