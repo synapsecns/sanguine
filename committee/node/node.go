@@ -179,8 +179,11 @@ func (n *Node) Start(parentContext context.Context) error {
 	}
 
 	g.Go(func() error {
-		// nolint: errcheck, wrapcheck
-		return n.submitter.Start(ctx)
+		if n.cfg.ShouldRelay {
+			// nolint: errcheck, wrapcheck
+			return n.submitter.Start(ctx)
+		}
+		return nil
 	})
 
 	g.Go(func() error {
