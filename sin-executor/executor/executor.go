@@ -203,10 +203,6 @@ func (e *Executor) checkReady(ctx context.Context, request db.TransactionSent) e
 		return fmt.Errorf("could not get contract for chain %d", request.DstChainID.Int64())
 	}
 
-	// TODO REMOVE ME
-	e.db.UpdateInterchainTransactionStatus(ctx, request.TransactionID, db.Ready)
-	// TODO REMOVE ME
-
 	isExecutable, err := contract.IsExecutable(&bind.CallOpts{Context: ctx}, request.EncodedTX)
 	if err != nil {
 		return fmt.Errorf("could not check if executable: %w", err)
