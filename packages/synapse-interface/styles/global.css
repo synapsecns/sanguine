@@ -183,20 +183,20 @@ body {
 .loader {
   position: relative;
   .dot {
-      -webkit-animation-name: movement;
-      animation-name: movement;
-      -webkit-animation-duration: 2s;
-      animation-duration: 2s;
-      -webkit-animation-iteration-count: infinite;
-      animation-iteration-count: infinite;
-      -webkit-animation-timing-function: ease-in-out;
-      animation-timing-function: ease-in-out;
-      height: 10px;
-      position: absolute;
-      top: -10px;
-      transform: translate3d(0, -25px, 0) scale(1);
-      width: 10px;
-    }
+    -webkit-animation-name: movement;
+    animation-name: movement;
+    -webkit-animation-duration: 2s;
+    animation-duration: 2s;
+    -webkit-animation-iteration-count: infinite;
+    animation-iteration-count: infinite;
+    -webkit-animation-timing-function: ease-in-out;
+    animation-timing-function: ease-in-out;
+    height: 10px;
+    position: absolute;
+    top: -10px;
+    transform: translate3d(0, -25px, 0) scale(1);
+    width: 10px;
+  }
 }
 
 .loader .dot:nth-of-type(1) {
