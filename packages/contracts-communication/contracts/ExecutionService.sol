@@ -59,7 +59,7 @@ contract ExecutionService is ExecutionServiceEvents, Ownable, IExecutionService 
         uint256 txPayloadSize,
         bytes memory options
     )
-        external
+        public
         view
         override
         returns (uint256)
