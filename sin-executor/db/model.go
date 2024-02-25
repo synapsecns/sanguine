@@ -6,6 +6,7 @@ import (
 	"math/big"
 )
 
+// TransactionSent is the transaction sent model. It tracks the data about current status of the transaction/execution.
 type TransactionSent struct {
 	TransactionID common.Hash
 	// EncodedTX is the encoded transaction.

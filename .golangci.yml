@@ -99,6 +99,8 @@ linters:
     - spancheck
     # simply annoying
     - perfsprint
+    # malfunctions on embedded structs
+    - typecheck
   fast: false
 
 issues:

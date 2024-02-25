@@ -7,7 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/vm"
 )
 
-// ExecutionfeesmockRef is a reference to a Executionfeesmock.
+// ExecutionFeesMockRef is a reference to a Executionfeesmock.
 // nolint: golint
 type ExecutionFeesMockRef struct {
 	*ExecutionFeesMock
