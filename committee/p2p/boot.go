@@ -174,7 +174,7 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 			fmt.Println("eth address:")
 			fmt.Println(l.address)
 			fmt.Println("all reported peers:")
-			memberRes, err := l.globalDS.Query(ctx, query.Query{Prefix: "/members"})
+			memberRes, err := l.globalDS.Query(ctx, query.Query{Prefix: "/members/", Limit: 100})
 			if err != nil {
 				fmt.Println("could not query members: ", err)
 			}
