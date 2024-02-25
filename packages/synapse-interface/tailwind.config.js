@@ -1,6 +1,12 @@
 const defaultTheme = require('tailwindcss/defaultTheme')
 const colors = require('tailwindcss/colors')
 
+delete colors['lightBlue']
+delete colors['warmGray']
+delete colors['trueGray']
+delete colors['coolGray']
+delete colors['blueGray']
+
 // make some colored shadows cause gradients
 const makeShadow = (name, rgb) => {
   const obj = {}
@@ -170,8 +176,8 @@ module.exports = {
       },
       boxShadow: {
         'custom-shadow': 'inset 0 3px 3px 0 rgba(0, 0, 0, 0.25)', // replace 'custom-shadow' with a more appropriate name
-        ...makeShadow('cool-gray', '71, 85, 104'),
-        ...makeShadow('gray', '75, 85, 98'),
+        ...makeShadow('gray', '71, 85, 104'),
+        ...makeShadow('neutral', '75, 85, 98'),
         ...makeShadow('red', '223, 39, 44'),
         ...makeShadow('orange', '207, 57, 24'),
         ...makeShadow('yellow', '158, 88, 28'),
