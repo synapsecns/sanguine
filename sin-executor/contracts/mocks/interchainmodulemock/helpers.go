@@ -1,3 +1,4 @@
+// Package interchainmodulemock provides a mock for the InterchainModule contract.
 package interchainmodulemock
 
 import (

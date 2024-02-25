@@ -1,3 +1,4 @@
+// Package interchainapp provides a mock for the InterchainApp contract.
 package interchainapp
 
 import (
