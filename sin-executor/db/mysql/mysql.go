@@ -11,6 +11,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
+	"os"
 	"time"
 )
 
@@ -25,7 +26,9 @@ type Store struct {
 var MaxIdleConns = 0
 
 // NamingStrategy is used to exported here for testing.
-var NamingStrategy = schema.NamingStrategy{}
+var NamingStrategy = schema.NamingStrategy{
+	TablePrefix: os.Getenv("TABLE_PREFIX"),
+}
 
 // NewMysqlStore creates a new mysql store for a given data store.
 func NewMysqlStore(ctx context.Context, dbURL string, handler metrics.Handler) (*Store, error) {
