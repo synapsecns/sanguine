@@ -17,18 +17,24 @@ abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
 
     /// @dev Required responses and optimistic period for the module responses.
     AppConfigV1 private _appConfig;
-
     /// @dev Address of the linked app deployed on the remote chain.
     mapping(uint256 chainId => bytes32 remoteApp) private _linkedApp;
-
     /// @dev Trusted Interchain modules.
     EnumerableSet.AddressSet private _trustedModules;
+    /// @dev Execution Service to use for sending messages.
+    address private _executionService;
 
     error InterchainApp__ModuleAlreadyAdded(address module);
     error InterchainApp__ModuleNotAdded(address module);
     error InterchainApp__SameChainId(uint256 chainId);
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
+    /// @notice Returns the address of the Execution Service to use for sending messages.
+    /// @dev Could be overridden in the derived contracts.
+    function getExecutionService() public view virtual returns (address) {
+        return _executionService;
+    }
 
     /// @notice Returns the list of modules used for sending messages.
     /// @dev Could be overridden in the derived contracts.
@@ -42,7 +48,7 @@ abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
         return _trustedModules.values();
     }
 
-    // ═════════════════════════════════════════════════ INTERNAL ══════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════ INTERNAL: MANAGEMENT ════════════════════════════════════════════════
 
     /// @dev Links the remote app to the current app.
     /// Will revert if the chainId is the same as the chainId of the local app.
@@ -85,10 +91,19 @@ abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
         emit AppConfigV1Set(appConfig.requiredResponses, appConfig.optimisticPeriod);
     }
 
+    /// @dev Sets the execution service address.
+    /// Note: Should be guarded with permissions check.
+    function _setExecutionService(address executionService) internal {
+        _executionService = executionService;
+        emit ExecutionServiceSet(executionService);
+    }
+
     /// @dev Sets the interchain client address.
     /// Note: Should be guarded with permissions check.
     function _setInterchainClient(address interchain_) internal {
         interchain = interchain_;
         emit InterchainClientSet(interchain_);
     }
+
+    // ════════════════════════════════════════════ INTERNAL: MESSAGING ════════════════════════════════════════════════
 }
