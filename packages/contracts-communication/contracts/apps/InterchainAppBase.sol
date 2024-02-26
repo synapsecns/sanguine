@@ -31,8 +31,24 @@ abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
     error InterchainApp__ModuleNotAdded(address module);
     error InterchainApp__ReceiverNotSet(uint256 chainId);
     error InterchainApp__SameChainId(uint256 chainId);
+    error InterchainApp__SenderNotAllowed(uint256 srcChainId, bytes32 sender);
+
+    /// @inheritdoc IInterchainApp
+    function appReceive(uint256 srcChainId, bytes32 sender, uint64 nonce, bytes calldata message) external payable {
+        if (srcChainId == block.chainid) revert InterchainApp__SameChainId(srcChainId);
+        if (!isAllowedSender(srcChainId, sender)) revert InterchainApp__SenderNotAllowed(srcChainId, sender);
+        _receiveMessage(srcChainId, sender, nonce, message);
+        // Note: application may elect to emit an event in `_receiveMessage`, so we don't emit a generic event here.
+    }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
+    /// @inheritdoc IInterchainApp
+    function getReceivingConfig() external view returns (bytes memory appConfig, address[] memory modules) {
+        // Note: the getters for app config and modules could be overridden in the derived contracts.
+        appConfig = getAppConfig().encodeAppConfigV1();
+        modules = getReceivingModules();
+    }
 
     /// @notice Returns the app config for receiving messages.
     /// @dev Could be overridden in the derived contracts.
@@ -62,6 +78,12 @@ abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
     /// @dev Could be overridden in the derived contracts.
     function getReceivingModules() public view virtual returns (address[] memory) {
         return _trustedModules.values();
+    }
+
+    /// @notice Checks whether the sender is allowed to send messages to the current app.
+    /// @dev Could be overridden in the derived contracts.
+    function isAllowedSender(uint256 srcChainId, bytes32 sender) public view virtual returns (bool) {
+        return _linkedApp[srcChainId] == sender;
     }
 
     // ═══════════════════════════════════════════ INTERNAL: MANAGEMENT ════════════════════════════════════════════════
@@ -165,4 +187,14 @@ abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
             dstChainId, receiver, getExecutionService(), getSendingModules(), options.encodeOptionsV1(), message
         );
     }
+
+    /// @dev Internal logic for receiving messages. At this point the validity of the message is already checked.
+    function _receiveMessage(
+        uint256 srcChainId,
+        bytes32 sender,
+        uint64 nonce,
+        bytes calldata message
+    )
+        internal
+        virtual;
 }
