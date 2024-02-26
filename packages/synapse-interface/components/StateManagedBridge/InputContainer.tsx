@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { useAccount, useNetwork } from 'wagmi'
 import { zeroAddress } from 'viem'
@@ -160,19 +160,18 @@ export const InputContainer = () => {
 const ShowLabel = () => {
   const dispatch = useAppDispatch()
   const { fromChainId, fromToken, bridgeQuote, isLoading } = useBridgeState()
-  const { hasEnoughBalance, hasInputAmount, hasEnoughApproved } =
+  const { hasEnoughBalance, hasInputAmount, hasEnoughApproved, hasValidRoute } =
     useBridgeValidations()
 
   const { balances } = usePortfolioState()
 
-  const parsedBalance = balances[fromChainId]?.find(
-    (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
-  )?.parsedBalance
+  const labelContentRef = useRef('')
 
-  const balance = balances[fromChainId]?.find(
+  const token = balances[fromChainId]?.find(
     (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
-  )?.balance
-
+  )
+  const parsedBalance = token?.parsedBalance
+  const balance = token?.balance
   const allowance = bridgeQuote.allowance
 
   const onMaxBalance = () => {
@@ -191,70 +190,61 @@ const ShowLabel = () => {
     )
   }
 
-  // if (isLoading) {
-  //   return (
-  //     <label htmlFor="inputRow" className="text-xs text-white">
-  //       ...
-  //     </label>
-  //   )
-  // }
+  let labelContent
+  let onClick
+  let hasError = false
 
-  if (
+  if (hasInputAmount && !hasValidRoute) {
+    labelContent = `${parsedBalance ?? '0'} available`
+    onClick = onMaxBalance
+    hasError = true
+  } else if (hasEnoughBalance && !hasEnoughApproved) {
+    if (allowance === 0n) {
+      labelContent = `0 approved`
+      onClick = onMaxBalance
+      hasError = true
+    } else {
+      labelContent = `${
+        formatBigIntToString(allowance, fromToken?.decimals[fromChainId], 5) ??
+        '0'
+      } approved`
+      onClick = onMaxApproved
+      hasError = true
+    }
+  } else if (
     (hasInputAmount && !hasEnoughBalance) ||
     fromToken?.addresses[fromChainId] === zeroAddress
   ) {
-    return (
-      <label
-        htmlFor="inputRow"
-        onClick={onMaxBalance}
-        className={`
-          text-xs
-          hover:text-opacity-70 hover:cursor-pointer
-          ${
-            hasInputAmount && !hasEnoughBalance
-              ? 'text-amber-200'
-              : 'text-secondaryTextColor'
-          }
-        `}
-      >
-        {parsedBalance ?? '0.0'} available
-      </label>
-    )
+    labelContent = `${parsedBalance ?? '0'} available`
+    onClick = onMaxBalance
+    hasError = true
+  } else {
+    labelContent = `${parsedBalance ?? '0'} available`
+    onClick = onMaxBalance
+    hasError = false
   }
 
-  if (!hasEnoughApproved) {
+  useEffect(() => {
+    if (!isLoading) {
+      labelContentRef.current = labelContent
+    }
+  }, [isLoading, labelContent])
+
+  const labelClassName = `text-xs hover:text-opacity-70 hover:cursor-pointer ${
+    hasError ? 'text-amber-200' : 'text-secondaryTextColor'
+  }`
+
+  if (isLoading) {
     return (
-      <label
-        htmlFor="inputRow"
-        onClick={onMaxApproved}
-        className={`
-          text-xs
-          hover:text-opacity-70 hover:cursor-pointer
-          text-amber-200
-        `}
-      >
-        {formatBigIntToString(allowance, fromToken?.decimals[fromChainId], 5) ??
-          '0.0'}
-        <span> approved</span>
+      <label htmlFor="inputRow" className={labelClassName}>
+        {labelContentRef.current}
       </label>
     )
   }
 
   return (
-    <label
-      htmlFor="inputRow"
-      onClick={onMaxBalance}
-      className={`
-          text-xs
-          hover:text-opacity-70 hover:cursor-pointer
-          ${
-            hasInputAmount && !hasEnoughBalance
-              ? 'text-amber-200'
-              : 'text-secondaryTextColor'
-          }
-        `}
-    >
-      {parsedBalance ?? '0.0'} available
+    <label htmlFor="inputRow" onClick={onClick} className={labelClassName}>
+      {labelContent}
     </label>
   )
 }

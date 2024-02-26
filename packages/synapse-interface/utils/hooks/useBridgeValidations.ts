@@ -1,4 +1,5 @@
 import { useNetwork } from 'wagmi'
+import { zeroAddress } from 'viem'
 
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeState, initialState } from '@/slices/bridge/reducer'
@@ -38,7 +39,9 @@ export const useBridgeValidations = (): {
   const hasEnoughBalance = currentBalance >= preciseDebouncedFromValue
   const hasInputAmount = !isEmpty && !isZero
   const onSelectedChain = chain?.id === fromChainId
-  const hasEnoughApproved = bridgeQuote.allowance >= preciseDebouncedFromValue
+  const hasEnoughApproved =
+    bridgeQuote.allowance >= preciseDebouncedFromValue ||
+    fromToken?.addresses[fromChainId] === zeroAddress
 
   return {
     hasValidRoute,
