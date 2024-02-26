@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 import type { Address } from 'wagmi'
 import type {
   NetworkTokenBalances,
@@ -136,11 +136,9 @@ function getCurrentNetworkPortfolio(
 
 const LoadingPortfolioContent = () => {
   return (
-    <>
-      <p id="loading-portfolio-content" className="text-[#CCCAD3BF]">
-        Loading assets...
-      </p>
-    </>
+    <p id="loading-portfolio-content" className="text-[#CCCAD3BF]">
+      Loading assets...
+    </p>
   )
 }
 
