@@ -229,13 +229,20 @@ func WaitForConfirmation(ctx context.Context, client ConfirmationClient, transac
 	// if tx is nil , we should panic here so we can see the call context
 	_ = transaction.Hash()
 
+	start := time.Now()
+	logIfShould := func(locker *sync.Once, template string, args ...interface{}) {
+		if time.Since(start) > time.Second*5 {
+			locker.Do(func() {
+				logger.Debugf(template, args...)
+			})
+		}
+	}
+
 	txConfirmedCtx, cancel := context.WithCancel(ctx)
 	var logWaitOnce, logFetchErrOnce, logErrOnce sync.Once
 	wait.UntilWithContext(txConfirmedCtx, func(ctx context.Context) {
 		tx, isPending, err := client.TransactionByHash(txConfirmedCtx, transaction.Hash())
-		logWaitOnce.Do(func() {
-			logger.Debugf("waiting for tx %s", transaction.Hash())
-		})
+		logIfShould(&logWaitOnce, "waiting for tx %s", transaction.Hash())
 
 		// it's possible that this transaction is impersonated. If thats the case, eth_getTransactionByHash will return an error
 		// since the signature is not valid. In this case, we need to use the transaction hash to get the receipt instead, as this will
@@ -255,9 +262,7 @@ func WaitForConfirmation(ctx context.Context, client ConfirmationClient, transac
 
 		// there's still an error, even with the receipt. We'll log the fetch error
 		if err != nil {
-			logFetchErrOnce.Do(func() {
-				logger.Errorf("could not fetch transaction: %v", err)
-			})
+			logIfShould(&logFetchErrOnce, "could not fetch transaction: %v", err)
 		}
 
 		if !isPending && tx != nil {
@@ -273,22 +278,20 @@ func WaitForConfirmation(ctx context.Context, client ConfirmationClient, transac
 		} else if !isPending {
 			err := client.SendTransaction(ctx, transaction)
 			if err != nil {
-				logErrOnce.Do(func() {
-					ogErr := err
-					call, err := util.TxToCall(transaction)
-					if err != nil {
-						logger.Errorf("could not convert tx to call: %v", err)
-						return
-					}
+				ogErr := err
+				call, err := util.TxToCall(transaction)
+				if err != nil {
+					logger.Errorf("could not convert tx to call: %v", err)
+					return
+				}
 
-					realNonce, err := client.NonceAt(ctx, call.From, nil)
-					if err != nil {
-						logger.Errorf("could not get nonce: %v", err)
-						return
-					}
+				realNonce, err := client.NonceAt(ctx, call.From, nil)
+				if err != nil {
+					logger.Errorf("could not get nonce: %v", err)
+					return
+				}
 
-					logger.Errorf("could not send transaction (from %s, account nonce %d, tx nonce: %d, tx hash: %s): %v", call.From, realNonce, transaction.Nonce(), transaction.Hash(), ogErr)
-				})
+				logIfShould(&logErrOnce, "could not send transaction (from %s, account nonce %d, tx nonce: %d, tx hash: %s): %v", call.From, realNonce, transaction.Nonce(), transaction.Hash(), ogErr)
 			}
 		}
 	}, timeout)
