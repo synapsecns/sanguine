@@ -110,6 +110,17 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         );
     }
 
+    /// @inheritdoc IInterchainClientV1
+    function writeExecutionProof(bytes32 transactionId) external returns (uint256 dbNonce) {
+        address executor = _txExecutor[transactionId];
+        if (executor == address(0)) {
+            revert InterchainClientV1__TxNotExecuted(transactionId);
+        }
+        bytes memory proof = abi.encode(transactionId, executor);
+        dbNonce = IInterchainDB(INTERCHAIN_DB).writeEntry(keccak256(proof));
+        emit ExecutionProofWritten(transactionId, dbNonce, executor);
+    }
+
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     // @inheritdoc IInterchainClientV1
@@ -257,7 +268,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         }
         transactionId = icTx.transactionId();
         if (_txExecutor[transactionId] != address(0)) {
-            revert InterchainClientV1__AlreadyExecuted(transactionId);
+            revert InterchainClientV1__TxAlreadyExecuted(transactionId);
         }
         // Construct expected entry based on icTransaction data
         InterchainEntry memory icEntry = InterchainEntry({

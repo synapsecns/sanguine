@@ -2,12 +2,13 @@
 pragma solidity ^0.8.0;
 
 interface IInterchainClientV1 {
-    error InterchainClientV1__AlreadyExecuted(bytes32 transactionId);
     error InterchainClientV1__FeeAmountTooLow(uint256 actual, uint256 required);
     error InterchainClientV1__IncorrectDstChainId(uint256 chainId);
     error InterchainClientV1__IncorrectMsgValue(uint256 actual, uint256 required);
     error InterchainClientV1__IncorrectSrcChainId(uint256 chainId);
     error InterchainClientV1__NotEnoughResponses(uint256 actual, uint256 required);
+    error InterchainClientV1__TxAlreadyExecuted(bytes32 transactionId);
+    error InterchainClientV1__TxNotExecuted(bytes32 transactionId);
 
     /**
      * @notice Sets the address of the ExecutionFees contract.
@@ -71,6 +72,12 @@ interface IInterchainClientV1 {
      * @param transaction       The transaction data.
      */
     function interchainExecute(uint256 gasLimit, bytes calldata transaction) external payable;
+
+    /// @notice Writes the proof of execution for a transaction into the InterchainDB.
+    /// @dev Will revert if the transaction has not been executed.
+    /// @param transactionId    The ID of the transaction to write the proof for.
+    /// @return dbNonce         The database nonce of the written entry for the proof.
+    function writeExecutionProof(bytes32 transactionId) external returns (uint256 dbNonce);
 
     /**
      * @notice Checks if a transaction is executable.
