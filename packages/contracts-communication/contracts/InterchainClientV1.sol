@@ -64,6 +64,9 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         external
         payable
     {
+        if (dstChainId == block.chainid) {
+            revert InterchainClientV1__IncorrectDstChainId(dstChainId);
+        }
         // TODO: should check options for being correctly formatted
         uint256 verificationFee = IInterchainDB(interchainDB).getInterchainFee(dstChainId, srcModules);
         if (msg.value < verificationFee) {
@@ -177,6 +180,12 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
 
     /// @dev Asserts that the transaction is executable. Returns the transactionId for chaining purposes.
     function _assertExecutable(InterchainTransaction memory icTx) internal view returns (bytes32 transactionId) {
+        if (icTx.srcChainId == block.chainid) {
+            revert InterchainClientV1__IncorrectSrcChainId(icTx.srcChainId);
+        }
+        if (icTx.dstChainId != block.chainid) {
+            revert InterchainClientV1__IncorrectDstChainId(icTx.dstChainId);
+        }
         transactionId = icTx.transactionId();
         if (_txExecutor[transactionId] != address(0)) {
             revert InterchainClientV1__AlreadyExecuted(transactionId);
