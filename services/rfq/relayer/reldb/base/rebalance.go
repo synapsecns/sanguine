@@ -21,9 +21,15 @@ func (s Store) StoreRebalance(ctx context.Context, rebalance reldb.Rebalance) er
 
 // UpdateRebalanceStatus updates the rebalance status.
 func (s Store) UpdateRebalanceStatus(ctx context.Context, id [32]byte, origin *uint64, status reldb.RebalanceStatus) error {
-	var tx *gorm.DB
+	tx := s.DB().WithContext(ctx).Begin()
+	if tx.Error != nil {
+		return fmt.Errorf("could not start transaction: %w", tx.Error)
+	}
+
+	// prepare the update transaction
+	var result *gorm.DB
 	if origin != nil {
-		tx = s.DB().WithContext(ctx).Model(&Rebalance{}).
+		result = tx.Model(&Rebalance{}).
 			Where(fmt.Sprintf("%s = ?", "origin"), *origin).
 			Where(fmt.Sprintf("%s = ?", statusFieldName), reldb.RebalanceInitiated.Int()).
 			Updates(map[string]interface{}{
@@ -31,13 +37,22 @@ func (s Store) UpdateRebalanceStatus(ctx context.Context, id [32]byte, origin *u
 				statusFieldName:      status,
 			})
 	} else {
-		tx = s.DB().WithContext(ctx).Model(&Rebalance{}).
+		result = tx.Model(&Rebalance{}).
 			Where(fmt.Sprintf("%s = ?", rebalanceIDFieldName), hexutil.Encode(id[:])).
 			Update(statusFieldName, status)
 	}
 
-	if tx.Error != nil {
-		return fmt.Errorf("could not update rebalance status: %w", tx.Error)
+	// commit the transaction if only one row is affected
+	if result.Error != nil {
+		tx.Rollback()
+		return fmt.Errorf("could not update rebalance status: %w", result.Error)
+	}
+	if result.RowsAffected != 1 {
+		tx.Rollback()
+	}
+	err := tx.Commit().Error
+	if err != nil {
+		return fmt.Errorf("could not commit transaction: %w", err)
 	}
 	return nil
 }
