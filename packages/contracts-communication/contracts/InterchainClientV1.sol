@@ -25,8 +25,9 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     using AppConfigLib for bytes;
     using OptionsLib for bytes;
 
+    address public immutable INTERCHAIN_DB;
+
     uint64 public clientNonce;
-    address public interchainDB;
     address public executionFees;
 
     // Chain ID => Bytes32 Address of src clients
@@ -34,16 +35,13 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
 
     mapping(bytes32 transactionId => address executor) internal _txExecutor;
 
-    constructor() Ownable(msg.sender) {}
+    constructor(address interchainDB) Ownable(msg.sender) {
+        INTERCHAIN_DB = interchainDB;
+    }
 
     // @inheritdoc IInterchainClientV1
     function setExecutionFees(address executionFees_) external onlyOwner {
         executionFees = executionFees_;
-    }
-
-    // @inheritdoc IInterchainClientV1
-    function setInterchainDB(address _interchainDB) external onlyOwner {
-        interchainDB = _interchainDB;
     }
 
     // @inheritdoc IInterchainClientV1
@@ -153,7 +151,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             revert InterchainClientV1__IncorrectDstChainId(dstChainId);
         }
         // TODO: should check options for being correctly formatted
-        uint256 verificationFee = IInterchainDB(interchainDB).getInterchainFee(dstChainId, srcModules);
+        uint256 verificationFee = IInterchainDB(INTERCHAIN_DB).getInterchainFee(dstChainId, srcModules);
         if (msg.value < verificationFee) {
             revert InterchainClientV1__FeeAmountTooLow(msg.value, verificationFee);
         }
@@ -166,7 +164,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             dstReceiver: receiver,
             dstChainId: dstChainId,
             nonce: clientNonce,
-            dbNonce: IInterchainDB(interchainDB).getDBNonce(),
+            dbNonce: IInterchainDB(INTERCHAIN_DB).getDBNonce(),
             options: options,
             message: message
         });
@@ -175,7 +173,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         // Sanity check: nonce returned from DB should match the nonce used to construct the transaction
         assert(
             icTx.dbNonce
-                == IInterchainDB(interchainDB).writeEntryWithVerification{value: verificationFee}(
+                == IInterchainDB(INTERCHAIN_DB).writeEntryWithVerification{value: verificationFee}(
                     icTx.dstChainId, transactionId, srcModules
                 )
         );
@@ -256,7 +254,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         returns (uint256 finalizedResponses)
     {
         for (uint256 i = 0; i < approvedModules.length; ++i) {
-            uint256 confirmedAt = IInterchainDB(interchainDB).readEntry(approvedModules[i], icEntry);
+            uint256 confirmedAt = IInterchainDB(INTERCHAIN_DB).readEntry(approvedModules[i], icEntry);
             // readEntry() returns 0 if entry hasn't been confirmed by the module, so we check for that as well
             if (confirmedAt != 0 && confirmedAt + optimisticPeriod <= block.timestamp) {
                 ++finalizedResponses;

@@ -25,13 +25,6 @@ interface IInterchainClientV1 {
     function setLinkedClient(uint256 chainId, bytes32 client) external;
 
     /**
-     * @notice Sets the address of the InterchainDB contract.
-     * @dev Only callable by the contract owner or an authorized account.
-     * @param _interchainDB The address of the InterchainDB contract.
-     */
-    function setInterchainDB(address _interchainDB) external;
-
-    /**
      * @notice Sends a message to another chain via the Interchain Communication Protocol.
      * @dev Charges a fee for the message, which is payable upon calling this function:
      * - Verification fees: paid to every module that verifies the message.
