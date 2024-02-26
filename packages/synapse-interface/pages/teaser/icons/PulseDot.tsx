@@ -1,11 +1,11 @@
-const PulseDot = () => {
+const PulseDot = ({ className }) => {
   return (
     <svg
       width="8"
       height="8"
       viewBox="-4 -4 8 8"
       overflow="visible"
-      className="fill-green-500 stroke-green-500"
+      className={className}
       xmlns="http://www.w3.org/2000/svg"
     >
       <circle r="4">
