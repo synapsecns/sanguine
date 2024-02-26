@@ -119,6 +119,7 @@ contract InterchainClientV1Test is Test {
 
     // TODO: more tests
     function test_interchainReceive() public {
+        vm.chainId(DST_CHAIN_ID);
         bytes32 dstReceiver = TypeCasts.addressToBytes32(address(icApp));
         bytes memory message = "Hello World";
         bytes32 srcSender = TypeCasts.addressToBytes32(makeAddr("Sender"));
