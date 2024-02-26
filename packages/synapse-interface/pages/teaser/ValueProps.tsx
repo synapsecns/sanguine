@@ -1,4 +1,7 @@
 import PulseDot from '../../components/icons/PulseDot'
+import { CHAINS_BY_ID } from '@/constants/chains'
+
+console.log(CHAINS_BY_ID)
 
 export default function ValueProps() {
   return (
