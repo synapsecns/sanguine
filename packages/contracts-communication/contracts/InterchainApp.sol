@@ -45,10 +45,8 @@ contract InterchainApp is IInterchainApp {
             localAppConfig.linkedIApps[chainIDs[i]] = linkedIApps[i];
         }
 
-        localAppConfig.bytesAppConfig = AppConfigV1({
-            requiredResponses: _requiredResponses,
-            optimisticPeriod: _optimisticTimePeriod
-        });
+        localAppConfig.bytesAppConfig =
+            AppConfigV1({requiredResponses: _requiredResponses, optimisticPeriod: _optimisticTimePeriod});
 
         localAppConfig.sendingModules = _sendingModules;
         localAppConfig.receivingModules = _receivingModules;

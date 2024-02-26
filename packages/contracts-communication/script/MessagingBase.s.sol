@@ -13,7 +13,7 @@ import {InterchainApp} from "../contracts/InterchainApp.sol";
 
 import {GasOracleMock} from "../test/mocks/GasOracleMock.sol";
 
-import { ExecutionFeesMock } from "../test/mocks/ExecutionFeesMock.sol";
+import {ExecutionFeesMock} from "../test/mocks/ExecutionFeesMock.sol";
 
 contract MessagingBase is Script {
     InterchainDB public icDB;
@@ -56,7 +56,7 @@ contract MessagingBase is Script {
         vm.startBroadcast();
         icApp = InterchainApp(0x4a1f8D1378b614a59D0BB62EeeD811aaC1d22EC0);
         uint64[] memory chainIDs = new uint64[](1);
-        chainIDs[0] = 11155111;
+        chainIDs[0] = 11_155_111;
         address[] memory linkedIApps = new address[](1);
         linkedIApps[0] = 0x4a1f8D1378b614a59D0BB62EeeD811aaC1d22EC0;
         address[] memory _sendingModules = new address[](1);
@@ -65,7 +65,9 @@ contract MessagingBase is Script {
         _receivingModules[0] = 0x48ADb7308f59d98657e779681aE6037902901918;
         uint256 _requiredResponses = 1;
         uint64 _optimisticTimePeriod = 1;
-        icApp.setAppConfig(chainIDs, linkedIApps, _sendingModules, _receivingModules, _requiredResponses, _optimisticTimePeriod);
+        icApp.setAppConfig(
+            chainIDs, linkedIApps, _sendingModules, _receivingModules, _requiredResponses, _optimisticTimePeriod
+        );
         vm.stopBroadcast();
     }
 
@@ -73,7 +75,7 @@ contract MessagingBase is Script {
         vm.startBroadcast();
         icApp = InterchainApp(0x4a1f8D1378b614a59D0BB62EeeD811aaC1d22EC0);
         uint64[] memory chainIDs = new uint64[](1);
-        chainIDs[0] = 11155111;
+        chainIDs[0] = 11_155_111;
         address[] memory linkedIApps = new address[](1);
         linkedIApps[0] = 0x4a1f8D1378b614a59D0BB62EeeD811aaC1d22EC0;
         address[] memory _sendingModules = new address[](1);
@@ -82,9 +84,9 @@ contract MessagingBase is Script {
         _receivingModules[0] = 0x135189D37b0a734e4A339F0e9fd3219521729e7A;
         uint256 _requiredResponses = 1;
         uint64 _optimisticTimePeriod = 1;
-        icApp.setAppConfig(chainIDs, linkedIApps, _sendingModules, _receivingModules, _requiredResponses, _optimisticTimePeriod);
+        icApp.setAppConfig(
+            chainIDs, linkedIApps, _sendingModules, _receivingModules, _requiredResponses, _optimisticTimePeriod
+        );
         vm.stopBroadcast();
-
     }
-
 }
