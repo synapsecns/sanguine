@@ -28,6 +28,20 @@ abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
     error InterchainApp__ModuleNotAdded(address module);
     error InterchainApp__SameChainId(uint256 chainId);
 
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
+    /// @notice Returns the list of modules used for sending messages.
+    /// @dev Could be overridden in the derived contracts.
+    function getSendingModules() public view virtual returns (address[] memory) {
+        return _trustedModules.values();
+    }
+
+    /// @notice Returns the list of modules used for receiving messages.
+    /// @dev Could be overridden in the derived contracts.
+    function getReceivingModules() public view virtual returns (address[] memory) {
+        return _trustedModules.values();
+    }
+
     // ═════════════════════════════════════════════════ INTERNAL ══════════════════════════════════════════════════════
 
     /// @dev Links the remote app to the current app.
