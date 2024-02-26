@@ -7,7 +7,11 @@ import {IInterchainApp} from "../interfaces/IInterchainApp.sol";
 import {AppConfigV1} from "../libs/AppConfig.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 
+import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+
 abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
+    using EnumerableSet for EnumerableSet.AddressSet;
+
     // TODO: naming, visibility
     address public interchain;
 
@@ -17,7 +21,14 @@ abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
     /// @dev Address of the linked app deployed on the remote chain.
     mapping(uint256 chainId => bytes32 remoteApp) private _linkedApp;
 
+    /// @dev Trusted Interchain modules.
+    EnumerableSet.AddressSet private _trustedModules;
+
+    error InterchainApp__ModuleAlreadyAdded(address module);
+    error InterchainApp__ModuleNotAdded(address module);
     error InterchainApp__SameChainId(uint256 chainId);
+
+    // ═════════════════════════════════════════════════ INTERNAL ══════════════════════════════════════════════════════
 
     /// @dev Links the remote app to the current app.
     /// Will revert if the chainId is the same as the chainId of the local app.
@@ -31,6 +42,24 @@ abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
     /// @dev Thin wrapper around _linkRemoteApp to accept EVM address as a parameter.
     function _linkRemoteAppEVM(uint256 chainId, address remoteApp) internal {
         _linkRemoteApp(chainId, TypeCasts.addressToBytes32(remoteApp));
+    }
+
+    /// @dev Adds the module to the trusted modules set.
+    /// Will revert if the module is already added.
+    /// Note: Should be guarded with permissions check.
+    function _addTrustedModule(address module) internal {
+        bool added = _trustedModules.add(module);
+        if (!added) revert InterchainApp__ModuleAlreadyAdded(module);
+        emit TrustedModuleAdded(module);
+    }
+
+    /// @dev Removes the module from the trusted modules set.
+    /// Will revert if the module is not added.
+    /// Note: Should be guarded with permissions check.
+    function _removeTrustedModule(address module) internal {
+        bool removed = _trustedModules.remove(module);
+        if (!removed) revert InterchainApp__ModuleNotAdded(module);
+        emit TrustedModuleRemoved(module);
     }
 
     /// @dev Sets the app config:

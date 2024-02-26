@@ -5,4 +5,6 @@ abstract contract InterchainAppBaseEvents {
     event AppConfigV1Set(uint256 requiredResponses, uint256 optimisticPeriod);
     event AppLinked(uint256 indexed chainId, bytes32 indexed remoteApp);
     event InterchainClientSet(address interchainClient);
+    event TrustedModuleAdded(address module);
+    event TrustedModuleRemoved(address module);
 }
