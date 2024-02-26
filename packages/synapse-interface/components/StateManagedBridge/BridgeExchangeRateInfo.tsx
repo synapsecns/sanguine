@@ -25,7 +25,7 @@ export const BridgeExchangeRateInfo = () => {
   return (
     <div className="py-3.5 px-1 space-y-3 text-sm md:px-6 tracking-wide">
       <RouteEligibility />
-      <section className="p-2 space-y-1 text-sm rounded-sm ring-1 ring-slate-400/10 text-secondary font-light">
+      <section className="p-2 space-y-1 text-sm rounded-sm ring-1 ring-slate-400/[0.069] text-secondary font-light">
         <GasDropLabel />
         <Router />
         <Fee />
