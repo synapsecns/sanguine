@@ -25,14 +25,17 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     using AppConfigLib for bytes;
     using OptionsLib for bytes;
 
+    /// @notice Address of the InterchainDB contract, set at the time of deployment.
     address public immutable INTERCHAIN_DB;
 
+    /// @notice Nonce of the next message to be sent by the client
     uint64 public clientNonce;
+    /// @notice Address of the contract that handles execution fees. Can be updated by the owner.
     address public executionFees;
 
-    // Chain ID => Bytes32 Address of src clients
-    mapping(uint256 => bytes32) public linkedClients;
-
+    /// @notice Address of the InterchainClient contract on the remote chain
+    mapping(uint256 chainId => bytes32 remoteClient) public linkedClients;
+    /// @dev Executor address that completed the transaction. Address(0) if not executed yet.
     mapping(bytes32 transactionId => address executor) internal _txExecutor;
 
     constructor(address interchainDB) Ownable(msg.sender) {
@@ -127,16 +130,19 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         return _txExecutor[transactionId];
     }
 
+    /// @notice Encodes the transaction data into a bytes format.
     function encodeTransaction(InterchainTransaction memory icTx) external pure returns (bytes memory) {
         return icTx.encodeTransaction();
     }
 
+    /// @notice Decodes the encoded options data into a OptionsV1 struct.
     function decodeOptions(bytes memory encodedOptions) external pure returns (OptionsV1 memory) {
         return encodedOptions.decodeOptionsV1();
     }
 
     // ═════════════════════════════════════════════════ INTERNAL ══════════════════════════════════════════════════════
 
+    /// @dev Internal logic for sending a message to another chain.
     function _interchainSend(
         uint256 dstChainId,
         bytes32 receiver,
@@ -203,7 +209,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             icTx.options,
             icTx.message
         );
-        // Increment nonce for next message
+        // TODO: consider using an app-specific nonces, or remove the nonce entirely
         clientNonce++;
     }
 
