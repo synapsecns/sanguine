@@ -44,9 +44,8 @@ contract InterchainClientV1Test is Test {
         vm.startPrank(contractOwner);
         executionFees = new ExecutionFeesMock();
         executionService = new ExecutionServiceMock();
-        icClient = new InterchainClientV1Harness();
         icDB = new InterchainDB();
-        icClient.setInterchainDB(address(icDB));
+        icClient = new InterchainClientV1Harness(address(icDB));
         icClient.setExecutionFees(address(executionFees));
 
         icModule = new InterchainModuleMock();
