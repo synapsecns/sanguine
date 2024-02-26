@@ -1,0 +1,36 @@
+{
+  "transactions": [
+    {
+      "hash": "0xf3245064835c508c7ccf3246869ee55b981998315a4450e13c08db0c4f2b94ea",
+      "transactionType": "CALL",
+      "contractName": "SynapseModule",
+      "contractAddress": "0x48ADb7308f59d98657e779681aE6037902901918",
+      "function": "setThreshold(uint256)",
+      "arguments": [
+        "6"
+      ],
+      "transaction": {
+        "type": "0x02",
+        "from": "0xe7353bedc72d29f99d6ca5cde69f807cce5d57e4",
+        "to": "0x48adb7308f59d98657e779681ae6037902901918",
+        "gas": "0xaa6f",
+        "value": "0x0",
+        "data": "0x960bfe040000000000000000000000000000000000000000000000000000000000000006",
+        "nonce": "0x30",
+        "accessList": []
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    }
+  ],
+  "receipts": [],
+  "libraries": [],
+  "pending": [
+    "0xf3245064835c508c7ccf3246869ee55b981998315a4450e13c08db0c4f2b94ea"
+  ],
+  "returns": {},
+  "timestamp": 1708902285,
+  "chain": 11155420,
+  "multi": false,
+  "commit": "5a42ebee1"
+}
