@@ -120,8 +120,17 @@ contract InterchainClientV1Test is Test {
         icClient.setLinkedClient(SRC_CHAIN_ID, srcSender);
         uint64 nonce = 1;
         uint256 dbNonce = 2;
-        bytes32 transactionID =
-            keccak256(abi.encode(srcSender, SRC_CHAIN_ID, dstReceiver, DST_CHAIN_ID, message, nonce, options));
+        InterchainTransaction memory transaction = InterchainTransaction({
+            srcSender: srcSender,
+            srcChainId: SRC_CHAIN_ID,
+            dstReceiver: dstReceiver,
+            dstChainId: DST_CHAIN_ID,
+            nonce: nonce,
+            dbNonce: dbNonce,
+            options: options,
+            message: message
+        });
+        bytes32 transactionID = keccak256(abi.encode(transaction));
         bytes memory expectedAppCalldata = abi.encodeCall(icApp.appReceive, (SRC_CHAIN_ID, srcSender, nonce, message));
 
         AppConfigV1 memory mockAppConfig = AppConfigV1({requiredResponses: 1, optimisticPeriod: 1 hours});
@@ -136,16 +145,6 @@ contract InterchainClientV1Test is Test {
 
         icModule.mockVerifyEntry(address(icDB), entry);
 
-        InterchainTransaction memory transaction = InterchainTransaction({
-            srcSender: srcSender,
-            srcChainId: SRC_CHAIN_ID,
-            dstReceiver: dstReceiver,
-            dstChainId: DST_CHAIN_ID,
-            nonce: nonce,
-            dbNonce: dbNonce,
-            options: options,
-            message: message
-        });
         deal(address(this), GAS_AIRDROP);
         // Skip ahead of optimistic period
         skip(mockAppConfig.optimisticPeriod + 1);
