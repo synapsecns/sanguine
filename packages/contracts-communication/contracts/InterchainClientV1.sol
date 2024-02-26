@@ -63,6 +63,92 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         external
         payable
     {
+        _interchainSend(dstChainId, receiver, srcExecutionService, srcModules, options, message);
+    }
+
+    // @inheritdoc IInterchainClientV1
+    function interchainSendEVM(
+        uint256 dstChainId,
+        address receiver,
+        address srcExecutionService,
+        address[] calldata srcModules,
+        bytes calldata options,
+        bytes calldata message
+    )
+        external
+        payable
+    {
+        bytes32 receiverBytes32 = TypeCasts.addressToBytes32(receiver);
+        _interchainSend(dstChainId, receiverBytes32, srcExecutionService, srcModules, options, message);
+    }
+
+    // TODO: Handle the case where receiver does not implement the IInterchainApp interface (or does not exist at all)
+    // TODO: Save the executor address outside of the contract to pass the data back to the source chain
+    // @inheritdoc IInterchainClientV1
+    function interchainExecute(uint256 gasLimit, bytes calldata transaction) external payable {
+        InterchainTransaction memory icTx = InterchainTransactionLib.decodeTransaction(transaction);
+        bytes32 transactionId = _assertExecutable(icTx);
+        _txExecutor[transactionId] = msg.sender;
+
+        OptionsV1 memory decodedOptions = icTx.options.decodeOptionsV1();
+        if (msg.value != decodedOptions.gasAirdrop) {
+            revert InterchainClientV1__IncorrectMsgValue(msg.value, decodedOptions.gasAirdrop);
+        }
+        // We should always use at least as much as the requested gas limit.
+        // The executor can specify a higher gas limit if they wanted.
+        if (decodedOptions.gasLimit > gasLimit) gasLimit = decodedOptions.gasLimit;
+        // Pass the full msg.value to the app: we have already checked that it matches the requested gas airdrop.
+        IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).appReceive{gas: gasLimit, value: msg.value}({
+            srcChainId: icTx.srcChainId,
+            sender: icTx.srcSender,
+            nonce: icTx.nonce,
+            message: icTx.message
+        });
+        emit InterchainTransactionReceived(
+            transactionId, icTx.dbNonce, icTx.srcChainId, icTx.srcSender, icTx.dstReceiver
+        );
+    }
+
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
+    // @inheritdoc IInterchainClientV1
+    function isExecutable(bytes calldata encodedTx) external view returns (bool) {
+        InterchainTransaction memory icTx = InterchainTransactionLib.decodeTransaction(encodedTx);
+        _assertExecutable(icTx);
+        return true;
+    }
+
+    // @inheritdoc IInterchainClientV1
+    function getExecutor(bytes calldata encodedTx) external view returns (address) {
+        InterchainTransaction memory icTx = InterchainTransactionLib.decodeTransaction(encodedTx);
+        return _txExecutor[icTx.transactionId()];
+    }
+
+    // @inheritdoc IInterchainClientV1
+    function getExecutorById(bytes32 transactionId) external view returns (address) {
+        return _txExecutor[transactionId];
+    }
+
+    function encodeTransaction(InterchainTransaction memory icTx) external pure returns (bytes memory) {
+        return icTx.encodeTransaction();
+    }
+
+    function decodeOptions(bytes memory encodedOptions) external pure returns (OptionsV1 memory) {
+        return encodedOptions.decodeOptionsV1();
+    }
+
+    // ═════════════════════════════════════════════════ INTERNAL ══════════════════════════════════════════════════════
+
+    function _interchainSend(
+        uint256 dstChainId,
+        bytes32 receiver,
+        address srcExecutionService,
+        address[] calldata srcModules,
+        bytes calldata options,
+        bytes calldata message
+    )
+        internal
+    {
         if (dstChainId == block.chainid) {
             revert InterchainClientV1__IncorrectDstChainId(dstChainId);
         }
@@ -123,60 +209,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         clientNonce++;
     }
 
-    // TODO: Handle the case where receiver does not implement the IInterchainApp interface (or does not exist at all)
-    // TODO: Save the executor address outside of the contract to pass the data back to the source chain
-    // @inheritdoc IInterchainClientV1
-    function interchainExecute(uint256 gasLimit, bytes calldata transaction) external payable {
-        InterchainTransaction memory icTx = InterchainTransactionLib.decodeTransaction(transaction);
-        bytes32 transactionId = _assertExecutable(icTx);
-        _txExecutor[transactionId] = msg.sender;
-
-        OptionsV1 memory decodedOptions = icTx.options.decodeOptionsV1();
-        if (msg.value != decodedOptions.gasAirdrop) {
-            revert InterchainClientV1__IncorrectMsgValue(msg.value, decodedOptions.gasAirdrop);
-        }
-        // We should always use at least as much as the requested gas limit.
-        // The executor can specify a higher gas limit if they wanted.
-        if (decodedOptions.gasLimit > gasLimit) gasLimit = decodedOptions.gasLimit;
-        // Pass the full msg.value to the app: we have already checked that it matches the requested gas airdrop.
-        IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).appReceive{gas: gasLimit, value: msg.value}({
-            srcChainId: icTx.srcChainId,
-            sender: icTx.srcSender,
-            nonce: icTx.nonce,
-            message: icTx.message
-        });
-        emit InterchainTransactionReceived(
-            transactionId, icTx.dbNonce, icTx.srcChainId, icTx.srcSender, icTx.dstReceiver
-        );
-    }
-
-    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
-
-    // @inheritdoc IInterchainClientV1
-    function isExecutable(bytes calldata encodedTx) external view returns (bool) {
-        InterchainTransaction memory icTx = InterchainTransactionLib.decodeTransaction(encodedTx);
-        _assertExecutable(icTx);
-        return true;
-    }
-
-    // @inheritdoc IInterchainClientV1
-    function getExecutor(bytes calldata encodedTx) external view returns (address) {
-        InterchainTransaction memory icTx = InterchainTransactionLib.decodeTransaction(encodedTx);
-        return _txExecutor[icTx.transactionId()];
-    }
-
-    // @inheritdoc IInterchainClientV1
-    function getExecutorById(bytes32 transactionId) external view returns (address) {
-        return _txExecutor[transactionId];
-    }
-
-    function encodeTransaction(InterchainTransaction memory icTx) external pure returns (bytes memory) {
-        return icTx.encodeTransaction();
-    }
-
-    function decodeOptions(bytes memory encodedOptions) external pure returns (OptionsV1 memory) {
-        return encodedOptions.decodeOptionsV1();
-    }
+    // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
     /// @dev Asserts that the transaction is executable. Returns the transactionId for chaining purposes.
     function _assertExecutable(InterchainTransaction memory icTx) internal view returns (bytes32 transactionId) {

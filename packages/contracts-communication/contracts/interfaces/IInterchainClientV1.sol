@@ -56,6 +56,17 @@ interface IInterchainClientV1 {
         external
         payable;
 
+    function interchainSendEVM(
+        uint256 dstChainId,
+        address receiver,
+        address srcExecutionService,
+        address[] calldata srcModules,
+        bytes calldata options,
+        bytes calldata message
+    )
+        external
+        payable;
+
     /**
      * @notice Executes a transaction that has been sent via the Interchain.
      * @dev The transaction must have been previously sent and recorded.
