@@ -10,8 +10,8 @@ export default function SynapseIcon({ width, height }) {
     >
       <defs>
         <linearGradient id="linear-gradient">
-          <stop stop-color="#e54de5" />
-          <stop offset="1" stop-color="#b580ff" />
+          <stop stopColor="#e54de5" />
+          <stop offset="1" stopColor="#b580ff" />
         </linearGradient>
         <marker id="marker" viewBox="-1 -1 2 2">
           <circle r=".8" fill="url(#linear-gradient)" />
@@ -20,12 +20,12 @@ export default function SynapseIcon({ width, height }) {
       <path
         d="M24,42 42,24 6,24 24,6"
         stroke="url(#linear-gradient)"
-        stroke-width="5"
-        stroke-linejoin="bevel"
-        stroke-opacity=".5"
-        marker-start="url(#marker)"
-        marker-mid="url(#marker)"
-        marker-end="url(#marker)"
+        strokeWidth="5"
+        strokeLinejoin="bevel"
+        strokeOpacity=".5"
+        markerStart="url(#marker)"
+        markerMid="url(#marker)"
+        markerEnd="url(#marker)"
       />
     </svg>
   )
