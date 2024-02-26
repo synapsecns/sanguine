@@ -1,5 +1,4 @@
-import PulseDot from './icons/PulseDot'
-import { ChainList } from '@/utils/fakeDataGen/teaserMarquee'
+import PulseDot from '../../components/icons/PulseDot'
 
 export default function ValueProps() {
   return (
@@ -18,8 +17,8 @@ export default function ValueProps() {
             width="100%"
             height="100%"
             viewBox="-9 -9 170 118"
-            vector-effect="non-scaling-stroke"
-            stroke-width=".5"
+            vectorEffect="non-scaling-stroke"
+            strokeWidth=".5"
             overflow="visible"
             // preserveAspectRatio="none"
             className="stroke-fuchsia-800/50 dark:stroke-fuchsia-300/50 fill-fuchsia-200/50 dark:fill-fuchsia-300/5 drop-shadow-xl h-64 max-w-sm"
@@ -139,8 +138,8 @@ export default function ValueProps() {
             width="100%"
             height="50%"
             viewBox="-4 -4 8 8"
-            stroke-width=".1"
-            vector-effect="non-scaling-size"
+            strokeWidth=".1"
+            vectorEffect="non-scaling-size"
             fill="none"
             overflow="visible"
             className="stroke-fuchsia-500"
@@ -228,7 +227,7 @@ const FauxBridge = () => {
           height="13"
           viewBox="0 -8 16 16"
           overflow="visible"
-          stroke-width="4"
+          strokeWidth="4"
           fill="none"
           preserveAspectRatio="xMaxYMid"
           className="inline ml-2 mb-1 stroke-zinc-800 dark:stroke-zinc-200"

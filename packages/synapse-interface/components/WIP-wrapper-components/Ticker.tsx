@@ -1,6 +1,6 @@
 import { Fragment, useRef, useEffect, useState } from 'react'
 import { CHAINS_BY_ID } from '@/constants/chains'
-import PulseDot from './icons/PulseDot'
+import PulseDot from '../icons/PulseDot'
 
 const testUrl =
   'https://explorer.omnirpc.io/graphql?query=%7B%0A%20%20bridgeTransactions(useMv%3Atrue%2C%20pending%3A%20false%2C%20startTime%3A1688815939%2C%20page%3A%201)%20%7B%0A%20%20%20%20fromInfo%20%7B%0A%20%20%20%20%20%20chainID%0A%20%20%20%20%20%20destinationChainID%0A%20%20%20%20%20%20address%0A%20%20%20%20%20%20txnHash%0A%20%20%20%20%20%20value%0A%20%20%20%20%20%20formattedValue%0A%20%20%20%20%20%20USDValue%0A%20%20%20%20%20%20tokenAddress%0A%20%20%20%20%20%20tokenSymbol%0A%20%20%20%20%20%20blockNumber%0A%20%20%20%20%20%20time%0A%20%20%20%20%20%20formattedTime%0A%20%20%20%20%20%20formattedEventType%0A%20%20%20%20%20%20eventType%0A%20%20%20%20%7D%0A%20%20%20%20toInfo%20%7B%0A%20%20%20%20%20%20chainID%0A%20%20%20%20%20%20destinationChainID%0A%20%20%20%20%20%20address%0A%20%20%20%20%20%20txnHash%0A%20%20%20%20%20%20value%0A%20%20%20%20%20%20formattedValue%0A%20%20%20%20%20%20USDValue%0A%20%20%20%20%20%20tokenAddress%0A%20%20%20%20%20%20tokenSymbol%0A%20%20%20%20%20%20blockNumber%0A%20%20%20%20%20%20time%0A%20%20%20%20%20%20formattedTime%0A%20%20%20%20%20%20formattedEventType%0A%20%20%20%20%20%20eventType%0A%20%20%20%20%7D%0A%20%20%20%20kappa%0A%20%20%7D%0A%7D%0A'
@@ -8,6 +8,8 @@ const testUrl =
 export default function Ticker() {
   const tickerRef = useRef(null)
   const [txData, setTxData] = useState([])
+
+  const isLoading = !txData.length
 
   let start
   let requestId
@@ -104,33 +106,32 @@ export default function Ticker() {
   return (
     <article
       className={`flex w-full z-10 text-sm bg-zinc-50 dark:bg-zinc-950 absolute border-b border-zinc-300 dark:border-zinc-900 overflow-x-clip justify-between cursor-default ${
-        !txData.length ? 'opacity-70' : 'opacity-100'
+        isLoading ? 'opacity-70' : 'opacity-100'
       }`}
     >
       <div className="bg-zinc-50 dark:bg-zinc-950 px-4 py-1.5 border-r border-zinc-300 dark:border-zinc-800 flex items-center gap-2 z-10 bg-zinc-50">
         <PulseDot
           className={
-            txData.length
-              ? 'fill-green-500 stroke-green-500'
-              : 'fill-zinc-500 stroke-none'
+            isLoading
+              ? 'fill-zinc-500 stroke-none'
+              : 'fill-green-500 stroke-green-500'
           }
         />
-
-        {txData.length ? (
+        {isLoading ? (
+          <>Loading…</>
+        ) : (
           <>
             {/* <span className="md:after:content-['_–_All_transactions']"> */}
             Live
             {/* </span> */}
             {/* <span className="text-xxs">▼</span> */}
           </>
-        ) : (
-          <>Loading…</>
         )}
       </div>
       <dl
         ref={tickerRef}
         className={`relative grid grid-flow-col grid-rows-[1fr_0] w-0 grow cursor-pointer whitespace-nowrap ${
-          !txData.length ? 'opacity-0' : 'opacity-100'
+          isLoading ? 'opacity-0' : 'opacity-100'
         } transition-opacity`}
       >
         {txData
@@ -140,7 +141,7 @@ export default function Ticker() {
               <dt className="row-start-1">
                 <a
                   href="#"
-                  className="text-zinc-500 px-4 hover:text-inherit hover:underline py-1.5 block"
+                  className="text-zinc-500 px-4 pt-2 hover:text-inherit hover:underline block"
                 >
                   {`${formatAmount(tx.fromInfo.formattedValue)} ${
                     tx.fromInfo.tokenSymbol
@@ -193,8 +194,8 @@ const RightCaret = ({ height }) => {
       height={height}
       viewBox={`0 0 ${width} ${height}`}
       fill="none"
-      stroke-width={height / 6}
-      stroke-linejoin="round"
+      strokeWidth={height / 6}
+      strokeLinejoin="round"
       strokeLinecap="round"
       overflow="visible"
       className="stroke-zinc-500"
