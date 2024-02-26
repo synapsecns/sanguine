@@ -124,20 +124,18 @@ contract InterchainClientV1Test is Test {
         bytes32 srcSender = TypeCasts.addressToBytes32(makeAddr("Sender"));
         vm.prank(contractOwner);
         icClient.setLinkedClient(SRC_CHAIN_ID, srcSender);
-        uint64 nonce = 1;
         uint256 dbNonce = 2;
         InterchainTransaction memory transaction = InterchainTransaction({
             srcSender: srcSender,
             srcChainId: SRC_CHAIN_ID,
             dstReceiver: dstReceiver,
             dstChainId: DST_CHAIN_ID,
-            nonce: nonce,
             dbNonce: dbNonce,
             options: options,
             message: message
         });
         bytes32 transactionID = keccak256(abi.encode(transaction));
-        bytes memory expectedAppCalldata = abi.encodeCall(icApp.appReceive, (SRC_CHAIN_ID, srcSender, nonce, message));
+        bytes memory expectedAppCalldata = abi.encodeCall(icApp.appReceive, (SRC_CHAIN_ID, srcSender, dbNonce, message));
 
         AppConfigV1 memory mockAppConfig = AppConfigV1({requiredResponses: 1, optimisticPeriod: 1 hours});
         vm.mockCall(
