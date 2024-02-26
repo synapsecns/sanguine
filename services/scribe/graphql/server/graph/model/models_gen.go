@@ -29,9 +29,6 @@ type Log struct {
 	JSON            types.JSON   `json:"json"`
 }
 
-type Query struct {
-}
-
 type Receipt struct {
 	ChainID           int          `json:"chain_id"`
 	Type              int          `json:"type"`
