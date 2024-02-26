@@ -72,7 +72,7 @@ export const PoolHeader = memo(
 const ConnectedIndicator = () => {
   return (
     <div className="flex flex-row space-x-1 text-sm">
-      <div className="w-2 h-2 my-auto ml-auto bg-green-500 rounded-full " />
+      <div className="size-2 my-auto ml-auto bg-green-500 rounded-full " />
       <div className="text-xs text-secondaryTextColor">Connected</div>
     </div>
   )

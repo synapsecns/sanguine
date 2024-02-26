@@ -42,7 +42,7 @@ const ConnectedButton = () => {
       <div className="flex flex-row text-sm">
         <div
           className={`
-            my-auto ml-auto mr-2 w-2 h-2
+            my-auto ml-auto mr-2 size-2
             bg-green-500 rounded-full
           `}
         />
@@ -88,7 +88,7 @@ const ConnectButton = ({ chainId }: { chainId: number }) => {
         <div className="flex flex-row text-sm">
           <div
             className={`
-              my-auto ml-auto mr-2 text-transparent w-2 h-2
+              my-auto ml-auto mr-2 text-transparent size-2
               border border-green-300 border-solid rounded-full
             `}
           />
@@ -98,7 +98,7 @@ const ConnectButton = ({ chainId }: { chainId: number }) => {
         <div className="flex flex-row text-sm">
           <div
             className={`
-              my-auto ml-auto mr-2 text-transparent w-2 h-2
+              my-auto ml-auto mr-2 text-transparent size-2
               border border-indigo-300 border-solid rounded-full
             `}
           />
