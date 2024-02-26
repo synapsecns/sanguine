@@ -116,11 +116,47 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         clientNonce++;
     }
 
+    // TODO: Gas Fee Consideration that is paid to executor
+    // @inheritdoc IInterchainClientV1
+    function interchainExecute(uint256 gasLimit, bytes calldata transaction) external payable {
+        InterchainTransaction memory icTx = InterchainTransactionLib.decodeTransaction(transaction);
+        bytes32 transactionId = _assertExecutable(icTx);
+        executedTransactions[transactionId] = true;
+
+        OptionsV1 memory decodedOptions = icTx.options.decodeOptionsV1();
+        if (msg.value != decodedOptions.gasAirdrop) {
+            revert InterchainClientV1__IncorrectMsgValue(msg.value, decodedOptions.gasAirdrop);
+        }
+        // We should always use at least as much as the requested gas limit.
+        // The executor can specify a higher gas limit if they wanted.
+        if (decodedOptions.gasLimit > gasLimit) gasLimit = decodedOptions.gasLimit;
+        // Pass the full msg.value to the app: we have already checked that it matches the requested gas airdrop.
+        IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).appReceive{gas: gasLimit, value: msg.value}({
+            srcChainId: icTx.srcChainId,
+            sender: icTx.srcSender,
+            nonce: icTx.nonce,
+            message: icTx.message
+        });
+        emit InterchainTransactionReceived(
+            transactionId, icTx.dbNonce, icTx.srcChainId, icTx.srcSender, icTx.dstReceiver
+        );
+    }
+
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
     // @inheritdoc IInterchainClientV1
     function isExecutable(bytes calldata encodedTx) external view returns (bool) {
         InterchainTransaction memory icTx = InterchainTransactionLib.decodeTransaction(encodedTx);
         _assertExecutable(icTx);
         return true;
+    }
+
+    function encodeTransaction(InterchainTransaction memory icTx) external pure returns (bytes memory) {
+        return abi.encode(icTx);
+    }
+
+    function decodeOptions(bytes memory encodedOptions) external pure returns (OptionsV1 memory) {
+        return encodedOptions.decodeOptionsV1();
     }
 
     /// @dev Asserts that the transaction is executable. Returns the transactionId for chaining purposes.
@@ -168,39 +204,5 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
                 ++finalizedResponses;
             }
         }
-    }
-
-    function encodeTransaction(InterchainTransaction memory icTx) external view returns (bytes memory) {
-        return abi.encode(icTx);
-    }
-
-    function decodeOptions(bytes memory encodedOptions) external view returns (OptionsV1 memory) {
-        return encodedOptions.decodeOptionsV1();
-    }
-
-    // TODO: Gas Fee Consideration that is paid to executor
-    // @inheritdoc IInterchainClientV1
-    function interchainExecute(uint256 gasLimit, bytes calldata transaction) external payable {
-        InterchainTransaction memory icTx = InterchainTransactionLib.decodeTransaction(transaction);
-        bytes32 transactionId = _assertExecutable(icTx);
-        executedTransactions[transactionId] = true;
-
-        OptionsV1 memory decodedOptions = icTx.options.decodeOptionsV1();
-        if (msg.value != decodedOptions.gasAirdrop) {
-            revert InterchainClientV1__IncorrectMsgValue(msg.value, decodedOptions.gasAirdrop);
-        }
-        // We should always use at least as much as the requested gas limit.
-        // The executor can specify a higher gas limit if they wanted.
-        if (decodedOptions.gasLimit > gasLimit) gasLimit = decodedOptions.gasLimit;
-        // Pass the full msg.value to the app: we have already checked that it matches the requested gas airdrop.
-        IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).appReceive{gas: gasLimit, value: msg.value}({
-            srcChainId: icTx.srcChainId,
-            sender: icTx.srcSender,
-            nonce: icTx.nonce,
-            message: icTx.message
-        });
-        emit InterchainTransactionReceived(
-            transactionId, icTx.dbNonce, icTx.srcChainId, icTx.srcSender, icTx.dstReceiver
-        );
     }
 }
