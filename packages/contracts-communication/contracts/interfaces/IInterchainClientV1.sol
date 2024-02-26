@@ -83,6 +83,23 @@ interface IInterchainClientV1 {
      */
     function isExecutable(bytes calldata transaction) external view returns (bool);
 
+    /// @notice Returns the fee for sending an Interchain message.
+    /// @param dstChainId           The chain ID of the destination chain.
+    /// @param srcExecutionService  The address of the execution service to use for the message.
+    /// @param srcModules           The source modules involved in the message sending.
+    /// @param options              Execution options for the message sent, currently gas limit + native gas drop.
+    /// @param message              The message being sent.
+    function getInterchainFee(
+        uint256 dstChainId,
+        address srcExecutionService,
+        address[] calldata srcModules,
+        bytes calldata options,
+        bytes calldata message
+    )
+        external
+        view
+        returns (uint256);
+
     /// @notice Returns the address of the executor for a transaction that has been sent to the local chain.
     function getExecutor(bytes calldata transaction) external view returns (address);
 

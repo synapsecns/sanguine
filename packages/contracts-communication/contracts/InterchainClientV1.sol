@@ -130,6 +130,38 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         return _txExecutor[transactionId];
     }
 
+    // @inheritdoc IInterchainClientV1
+    // TODO: tests
+    function getInterchainFee(
+        uint256 dstChainId,
+        address srcExecutionService,
+        address[] calldata srcModules,
+        bytes calldata options,
+        bytes calldata message
+    )
+        external
+        view
+        returns (uint256 fee)
+    {
+        // Verification fee from InterchainDB
+        fee = IInterchainDB(INTERCHAIN_DB).getInterchainFee(dstChainId, srcModules);
+        // Add execution fee, if ExecutionService is provided
+        if (srcExecutionService != address(0)) {
+            // Construct a mock InterchainTransaction to calculate the execution fee.
+            // We don't care about values for static fields, as we are only interested in the payload size.
+            InterchainTransaction memory icTx = InterchainTransactionLib.constructLocalTransaction({
+                srcSender: address(0),
+                dstReceiver: 0,
+                dstChainId: dstChainId,
+                nonce: 0,
+                dbNonce: 0,
+                options: options,
+                message: message
+            });
+            fee += IExecutionService(srcExecutionService).getExecutionFee(dstChainId, abi.encode(icTx).length, options);
+        }
+    }
+
     /// @notice Encodes the transaction data into a bytes format.
     function encodeTransaction(InterchainTransaction memory icTx) external pure returns (bytes memory) {
         return icTx.encodeTransaction();
