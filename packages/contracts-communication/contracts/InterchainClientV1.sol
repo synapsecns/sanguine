@@ -65,9 +65,13 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     {
         // TODO: should check options for being correctly formatted
         uint256 verificationFee = IInterchainDB(interchainDB).getInterchainFee(dstChainId, srcModules);
-        // TODO: should check msg.value >= verificationFee
-        uint256 executionFee = msg.value - verificationFee;
-
+        if (msg.value < verificationFee) {
+            revert InterchainClientV1__FeeAmountTooLow(msg.value, verificationFee);
+        }
+        uint256 executionFee;
+        unchecked {
+            executionFee = msg.value - verificationFee;
+        }
         InterchainTransaction memory icTx = InterchainTransactionLib.constructLocalTransaction({
             srcSender: msg.sender,
             dstReceiver: receiver,

@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 interface IInterchainClientV1 {
     error InterchainClientV1__AlreadyExecuted(bytes32 transactionId);
+    error InterchainClientV1__FeeAmountTooLow(uint256 actual, uint256 required);
     error InterchainClientV1__IncorrectMsgValue(uint256 actual, uint256 required);
     error InterchainClientV1__NotEnoughResponses(uint256 actual, uint256 required);
 
@@ -39,7 +40,7 @@ interface IInterchainClientV1 {
      * @param receiver The address of the receiver on the destination chain.
      * @param srcExecutionService The address of the execution service to use for the message.
      * @param srcModules The source modules involved in the message sending.
-     * @param options Execution options for the message sent, encoded as bytes, currently primarily gas limit + native gas drop.
+     * @param options Execution options for the message sent, encoded as bytes, currently gas limit + native gas drop.
      * @param message The message being sent.
      */
     function interchainSend(
