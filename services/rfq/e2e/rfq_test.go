@@ -1,6 +1,7 @@
 package e2e_test
 
 import (
+	"fmt"
 	"math/big"
 	"testing"
 	"time"
@@ -96,6 +97,8 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 	if core.GetEnvBool("CI", false) {
 		i.T().Skip("skipping until anvil issues are fixed in CI")
 	}
+
+	fmt.Printf("[cctp] omni: %v\n", i.omniClient.GetDefaultEndpoint(int(i.originBackend.GetChainID())))
 	// Before we do anything, we're going to mint ourselves some USDC on the destination chain.
 	// 100k should do.
 	i.manager.MintToAddress(i.GetTestContext(), i.destBackend, testutil.USDCType, i.relayerWallet.Address(), big.NewInt(100000))
@@ -200,6 +203,7 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 		}
 		return false
 	})
+	time.Sleep(10 * time.Minute)
 }
 
 // nolint: cyclop
@@ -260,26 +264,28 @@ func (i *IntegrationSuite) TestETHtoETH() {
 	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
 
 	// TODO: this, but cleaner
-	anvilClient, err := anvil.Dial(i.GetTestContext(), i.originBackend.RPCAddress())
-	i.NoError(err)
+	for _, rpcAddr := range []string{i.originBackend.RPCAddress(), i.destBackend.RPCAddress()} {
+		anvilClient, err := anvil.Dial(i.GetTestContext(), rpcAddr)
+		i.NoError(err)
 
-	go func() {
-		for {
-			select {
-			case <-i.GetTestContext().Done():
-				return
-			case <-time.After(time.Second * 4):
-				// increase time by 30 mintutes every second, should be enough to get us a fastish e2e test
-				// we don't need to worry about deadline since we're only doing this on origin
-				err = anvilClient.IncreaseTime(i.GetTestContext(), 60*30)
-				i.NoError(err)
+		go func() {
+			for {
+				select {
+				case <-i.GetTestContext().Done():
+					return
+				case <-time.After(time.Second * 4):
+					// increase time by 30 mintutes every second, should be enough to get us a fastish e2e test
+					// we don't need to worry about deadline since we're only doing this on origin
+					err = anvilClient.IncreaseTime(i.GetTestContext(), 60*30)
+					i.NoError(err)
 
-				// because can claim works on last block timestamp, we need to do something
-				err = anvilClient.Mine(i.GetTestContext(), 1)
-				i.NoError(err)
+					// because can claim works on last block timestamp, we need to do something
+					err = anvilClient.Mine(i.GetTestContext(), 1)
+					i.NoError(err)
+				}
 			}
-		}
-	}()
+		}()
+	}
 
 	// since relayer started w/ 0 ETH, once they're offering the inventory up on origin chain we know the workflow completed
 	i.Eventually(func() bool {

@@ -301,6 +301,7 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 					if err != nil {
 						return nil, fmt.Errorf("could not approve cctp: %w", err)
 					}
+					fmt.Printf("[cctp] approve cctp tx on chain %d, token %v: %s\n", chainID, address, tx.Hash().Hex())
 
 					return tx, nil
 				})

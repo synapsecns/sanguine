@@ -290,6 +290,8 @@ func (i *IntegrationSuite) setupRelayer() {
 			TokenPriceCacheTTLSeconds: 60,
 		},
 	}
+	fmt.Printf("config cctp origin addr: %v\n", cfg.Chains[originBackendChainID].CCTPAddress)
+	fmt.Printf("config cctp dest addr: %v\n", cfg.Chains[destBackendChainID].CCTPAddress)
 
 	// in the first backend, we want to deploy a bunch of different tokens
 	// TODO: functionalize me.
@@ -333,9 +335,11 @@ func (i *IntegrationSuite) setupRelayer() {
 			// register the token with cctp contract
 			cctpContract, cctpHandle := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), backend)
 			txOpts := backend.GetTxContext(i.GetTestContext(), cctpContract.OwnerPtr())
-			tx, err := cctpHandle.AddToken(txOpts.TransactOpts, "CCTP.USDC", tokenCaller.Address(), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
+			tokenName := fmt.Sprintf("CCTP.%s", tokenType.Name())
+			tx, err := cctpHandle.AddToken(txOpts.TransactOpts, tokenName, tokenCaller.Address(), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
 			i.Require().NoError(err)
 			backend.WaitForConfirmation(i.GetTestContext(), tx)
+			fmt.Printf("[cctp] added token %s on chain %d: %v, hash %v\n", tokenName, backend.GetChainID(), tokenCaller.Address().String(), tx.Hash())
 		}
 	}
 
