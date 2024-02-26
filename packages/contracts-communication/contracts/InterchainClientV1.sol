@@ -36,17 +36,17 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     constructor() Ownable(msg.sender) {}
 
     // @inheritdoc IInterchainClientV1
-    function setExecutionFees(address executionFees_) public onlyOwner {
+    function setExecutionFees(address executionFees_) external onlyOwner {
         executionFees = executionFees_;
     }
 
     // @inheritdoc IInterchainClientV1
-    function setInterchainDB(address _interchainDB) public onlyOwner {
+    function setInterchainDB(address _interchainDB) external onlyOwner {
         interchainDB = _interchainDB;
     }
 
     // @inheritdoc IInterchainClientV1
-    function setLinkedClient(uint256 chainId, bytes32 client) public onlyOwner {
+    function setLinkedClient(uint256 chainId, bytes32 client) external onlyOwner {
         linkedClients[chainId] = client;
     }
 
@@ -60,7 +60,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         bytes calldata options,
         bytes calldata message
     )
-        public
+        external
         payable
     {
         // TODO: should check options for being correctly formatted
@@ -117,7 +117,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     }
 
     // @inheritdoc IInterchainClientV1
-    function isExecutable(bytes calldata encodedTx) public view returns (bool) {
+    function isExecutable(bytes calldata encodedTx) external view returns (bool) {
         InterchainTransaction memory icTx = InterchainTransactionLib.decodeTransaction(encodedTx);
         _assertExecutable(icTx);
         return true;
@@ -170,11 +170,11 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         }
     }
 
-    function encodeTransaction(InterchainTransaction memory icTx) public view returns (bytes memory) {
+    function encodeTransaction(InterchainTransaction memory icTx) external view returns (bytes memory) {
         return abi.encode(icTx);
     }
 
-    function decodeOptions(bytes memory encodedOptions) public view returns (OptionsV1 memory) {
+    function decodeOptions(bytes memory encodedOptions) external view returns (OptionsV1 memory) {
         return encodedOptions.decodeOptionsV1();
     }
 
