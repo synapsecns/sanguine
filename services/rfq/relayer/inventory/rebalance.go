@@ -119,7 +119,6 @@ func (c *rebalanceManagerCCTP) Execute(ctx context.Context, rebalance *Rebalance
 	}
 
 	// perform rebalance by calling sendCircleToken()
-	var tx *types.Transaction
 	_, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(rebalance.OriginMetadata.ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		tx, err = contract.SendCircleToken(
 			transactor,
@@ -138,9 +137,6 @@ func (c *rebalanceManagerCCTP) Execute(ctx context.Context, rebalance *Rebalance
 	if err != nil {
 		return fmt.Errorf("could not submit CCTP rebalance: %w", err)
 	}
-	if tx == nil {
-		return fmt.Errorf("could not submit CCTP rebalance: tx is nil")
-	}
 
 	// store the rebalance in the db
 	model := reldb.Rebalance{
@@ -148,7 +144,6 @@ func (c *rebalanceManagerCCTP) Execute(ctx context.Context, rebalance *Rebalance
 		Destination:  uint64(rebalance.DestMetadata.ChainID),
 		OriginAmount: rebalance.Amount,
 		Status:       reldb.RebalanceInitiated,
-		OriginTxHash: tx.Hash(),
 	}
 	err = c.db.StoreRebalance(ctx, model)
 	if err != nil {
