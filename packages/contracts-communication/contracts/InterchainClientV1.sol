@@ -51,7 +51,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         linkedClients[chainId] = client;
     }
 
-    // TODO: Calculate Gas Pricing per module and charge fees
     // @inheritdoc IInterchainClientV1
     function interchainSend(
         uint256 dstChainId,
@@ -95,7 +94,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
                 )
         );
         IExecutionFees(executionFees).addExecutionFee{value: executionFee}(icTx.dstChainId, transactionId);
-        // TODO: Should this be moved into a seperate configurable contract, for easier upgradeability later?
+        // TODO: consider disallowing the use of empty srcExecutionService
         if (srcExecutionService != address(0)) {
             IExecutionService(srcExecutionService).requestExecution({
                 dstChainId: dstChainId,
@@ -124,7 +123,8 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         clientNonce++;
     }
 
-    // TODO: Gas Fee Consideration that is paid to executor
+    // TODO: Handle the case where receiver does not implement the IInterchainApp interface (or does not exist at all)
+    // TODO: Save the executor address outside of the contract to pass the data back to the source chain
     // @inheritdoc IInterchainClientV1
     function interchainExecute(uint256 gasLimit, bytes calldata transaction) external payable {
         InterchainTransaction memory icTx = InterchainTransactionLib.decodeTransaction(transaction);
