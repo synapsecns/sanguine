@@ -9,41 +9,17 @@ contract InterchainClientV1Harness is InterchainClientV1 {
     constructor() InterchainClientV1() {}
 
     /**
-     * @dev Harness for testing _getApprovedResponses function
-     */
-    function getApprovedResponsesHarness(
-        address[] memory approvedModules,
-        InterchainEntry memory icEntry
-    )
-        public
-        view
-        returns (uint256[] memory)
-    {
-        return _getApprovedResponses(approvedModules, icEntry);
-    }
-
-    /**
-     * @dev Harness for testing _getAppConfig function
-     */
-    function getAppConfigHarness(address receiverApp)
-        public
-        view
-        returns (uint256 requiredResponses, uint256 optimisticTimePeriod, address[] memory approvedDstModules)
-    {
-        return _getAppConfig(receiverApp);
-    }
-
-    /**
      * @dev Harness for testing _getFinalizedResponsesCount function
      */
     function getFinalizedResponsesCountHarness(
-        uint256[] memory approvedResponses,
-        uint256 optimisticTimePeriod
+        address[] memory approvedModules,
+        InterchainEntry memory icEntry,
+        uint256 optimisticPeriod
     )
         public
         view
         returns (uint256)
     {
-        return _getFinalizedResponsesCount(approvedResponses, optimisticTimePeriod);
+        return _getFinalizedResponsesCount(approvedModules, icEntry, optimisticPeriod);
     }
 }
