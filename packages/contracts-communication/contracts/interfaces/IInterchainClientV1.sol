@@ -76,4 +76,10 @@ interface IInterchainClientV1 {
      * @return bool Returns true if the transaction is executable, false otherwise.
      */
     function isExecutable(bytes calldata transaction) external view returns (bool);
+
+    /// @notice Returns the address of the executor for a transaction that has been sent to the local chain.
+    function getExecutor(bytes calldata transaction) external view returns (address);
+
+    /// @notice Returns the address of the executor for a transaction that has been sent to the local chain.
+    function getExecutorById(bytes32 transactionId) external view returns (address);
 }

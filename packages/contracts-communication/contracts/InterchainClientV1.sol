@@ -156,6 +156,17 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         return true;
     }
 
+    // @inheritdoc IInterchainClientV1
+    function getExecutor(bytes calldata encodedTx) external view returns (address) {
+        InterchainTransaction memory icTx = InterchainTransactionLib.decodeTransaction(encodedTx);
+        return _txExecutor[icTx.transactionId()];
+    }
+
+    // @inheritdoc IInterchainClientV1
+    function getExecutorById(bytes32 transactionId) external view returns (address) {
+        return _txExecutor[transactionId];
+    }
+
     function encodeTransaction(InterchainTransaction memory icTx) external pure returns (bytes memory) {
         return abi.encode(icTx);
     }
