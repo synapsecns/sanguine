@@ -5,6 +5,7 @@ import {InterchainAppBaseEvents} from "../events/InterchainAppBaseEvents.sol";
 import {IInterchainApp} from "../interfaces/IInterchainApp.sol";
 
 import {AppConfigV1} from "../libs/AppConfig.sol";
+import {TypeCasts} from "../libs/TypeCasts.sol";
 
 abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
     // TODO: naming, visibility
@@ -25,6 +26,11 @@ abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
         if (chainId == block.chainid) revert InterchainApp__SameChainId(chainId);
         _linkedApp[chainId] = remoteApp;
         emit AppLinked(chainId, remoteApp);
+    }
+
+    /// @dev Thin wrapper around _linkRemoteApp to accept EVM address as a parameter.
+    function _linkRemoteAppEVM(uint256 chainId, address remoteApp) internal {
+        _linkRemoteApp(chainId, TypeCasts.addressToBytes32(remoteApp));
     }
 
     /// @dev Sets the app config:
