@@ -8,7 +8,6 @@ struct InterchainTransaction {
     bytes32 srcSender;
     uint256 dstChainId;
     bytes32 dstReceiver;
-    uint64 nonce;
     uint256 dbNonce;
     bytes options;
     bytes message;
@@ -21,7 +20,6 @@ library InterchainTransactionLib {
         address srcSender,
         uint256 dstChainId,
         bytes32 dstReceiver,
-        uint64 nonce,
         uint256 dbNonce,
         bytes memory options,
         bytes memory message
@@ -35,7 +33,6 @@ library InterchainTransactionLib {
             srcSender: TypeCasts.addressToBytes32(srcSender),
             dstChainId: dstChainId,
             dstReceiver: dstReceiver,
-            nonce: nonce,
             dbNonce: dbNonce,
             options: options,
             message: message

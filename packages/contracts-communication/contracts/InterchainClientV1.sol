@@ -28,8 +28,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     /// @notice Address of the InterchainDB contract, set at the time of deployment.
     address public immutable INTERCHAIN_DB;
 
-    /// @notice Nonce of the next message to be sent by the client
-    uint64 public clientNonce;
     /// @notice Address of the contract that handles execution fees. Can be updated by the owner.
     address public executionFees;
 
@@ -63,8 +61,9 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     )
         external
         payable
+        returns (bytes32 transactionId, uint256 dbNonce)
     {
-        _interchainSend(dstChainId, receiver, srcExecutionService, srcModules, options, message);
+        return _interchainSend(dstChainId, receiver, srcExecutionService, srcModules, options, message);
     }
 
     // @inheritdoc IInterchainClientV1
@@ -78,9 +77,10 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     )
         external
         payable
+        returns (bytes32 transactionId, uint256 dbNonce)
     {
         bytes32 receiverBytes32 = TypeCasts.addressToBytes32(receiver);
-        _interchainSend(dstChainId, receiverBytes32, srcExecutionService, srcModules, options, message);
+        return _interchainSend(dstChainId, receiverBytes32, srcExecutionService, srcModules, options, message);
     }
 
     // TODO: Handle the case where receiver does not implement the IInterchainApp interface (or does not exist at all)
@@ -102,7 +102,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).appReceive{gas: gasLimit, value: msg.value}({
             srcChainId: icTx.srcChainId,
             sender: icTx.srcSender,
-            nonce: icTx.nonce,
+            dbNonce: icTx.dbNonce,
             message: icTx.message
         });
         emit InterchainTransactionReceived(
@@ -164,7 +164,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
                 srcSender: address(0),
                 dstReceiver: 0,
                 dstChainId: dstChainId,
-                nonce: 0,
                 dbNonce: 0,
                 options: options,
                 message: message
@@ -195,6 +194,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         bytes calldata message
     )
         internal
+        returns (bytes32 transactionId, uint256 dbNonce)
     {
         if (dstChainId == block.chainid) {
             revert InterchainClientV1__IncorrectDstChainId(dstChainId);
@@ -208,20 +208,19 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         unchecked {
             executionFee = msg.value - verificationFee;
         }
+        dbNonce = IInterchainDB(INTERCHAIN_DB).getDBNonce();
         InterchainTransaction memory icTx = InterchainTransactionLib.constructLocalTransaction({
             srcSender: msg.sender,
             dstReceiver: receiver,
             dstChainId: dstChainId,
-            nonce: clientNonce,
-            dbNonce: IInterchainDB(INTERCHAIN_DB).getDBNonce(),
+            dbNonce: dbNonce,
             options: options,
             message: message
         });
-
-        bytes32 transactionId = icTx.transactionId();
+        transactionId = icTx.transactionId();
         // Sanity check: nonce returned from DB should match the nonce used to construct the transaction
         assert(
-            icTx.dbNonce
+            dbNonce
                 == IInterchainDB(INTERCHAIN_DB).writeEntryWithVerification{value: verificationFee}(
                     icTx.dstChainId, transactionId, srcModules
                 )
@@ -238,12 +237,11 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
                 options: options
             });
             address srcExecutorEOA = IExecutionService(srcExecutionService).executorEOA();
-            IExecutionFees(executionFees).recordExecutor(dstChainId, transactionId, srcExecutorEOA);
+            IExecutionFees(executionFees).recordExecutor(icTx.dstChainId, transactionId, srcExecutorEOA);
         }
         emit InterchainTransactionSent(
             transactionId,
             icTx.dbNonce,
-            icTx.nonce,
             icTx.dstChainId,
             icTx.srcSender,
             icTx.dstReceiver,
@@ -252,8 +250,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             icTx.options,
             icTx.message
         );
-        // TODO: consider using an app-specific nonces, or remove the nonce entirely
-        clientNonce++;
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
