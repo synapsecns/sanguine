@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/brianvoe/gofakeit/v6 v6.27.0
-	github.com/ethereum/go-ethereum v1.13.11
+	github.com/ethereum/go-ethereum v1.11.6
 	github.com/gen2brain/beeep v0.0.0-20240112042604-c7bb2cd88fea
 	github.com/gofrs/flock v0.8.1
 	github.com/ipfs/go-log v1.0.5

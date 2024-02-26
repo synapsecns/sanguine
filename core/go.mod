@@ -2,7 +2,9 @@ module github.com/synapsecns/sanguine/core
 
 go 1.21
 
-replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
+replace (
+	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
+)
 
 require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
@@ -13,7 +15,7 @@ require (
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/cheekybits/genny v1.0.0
 	github.com/danielkov/gin-helmet v0.0.0-20171108135313-1387e224435e
-	github.com/ethereum/go-ethereum v1.13.11
+	github.com/ethereum/go-ethereum v1.11.6
 	github.com/fatih/structtag v1.2.0
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-contrib/requestid v0.0.6
