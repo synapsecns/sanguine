@@ -3,8 +3,10 @@ pragma solidity ^0.8.0;
 
 import {InterchainAppBaseEvents} from "../events/InterchainAppBaseEvents.sol";
 import {IInterchainApp} from "../interfaces/IInterchainApp.sol";
+import {IInterchainClientV1} from "../interfaces/IInterchainClientV1.sol";
 
 import {AppConfigV1} from "../libs/AppConfig.sol";
+import {OptionsV1} from "../libs/Options.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
@@ -24,8 +26,10 @@ abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
     /// @dev Execution Service to use for sending messages.
     address private _executionService;
 
+    error InterchainApp__BalanceTooLow(uint256 actual, uint256 expected);
     error InterchainApp__ModuleAlreadyAdded(address module);
     error InterchainApp__ModuleNotAdded(address module);
+    error InterchainApp__ReceiverNotSet(uint256 chainId);
     error InterchainApp__SameChainId(uint256 chainId);
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
@@ -34,6 +38,12 @@ abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
     /// @dev Could be overridden in the derived contracts.
     function getExecutionService() public view virtual returns (address) {
         return _executionService;
+    }
+
+    /// @notice Returns the linked app address (as bytes32) for the given chain ID.
+    /// @dev Could be overridden in the derived contracts.
+    function getLinkedApp(uint256 chainId) public view virtual returns (bytes32) {
+        return _linkedApp[chainId];
     }
 
     /// @notice Returns the list of modules used for sending messages.
@@ -106,4 +116,47 @@ abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
     }
 
     // ════════════════════════════════════════════ INTERNAL: MESSAGING ════════════════════════════════════════════════
+
+    /// @dev Thin wrapper around _sendInterchainMessage to send the message to the linked app.
+    function _sendInterchainMessage(
+        uint256 dstChainId,
+        uint256 messageFee,
+        OptionsV1 memory options,
+        bytes memory message
+    )
+        internal
+    {
+        _sendInterchainMessage(dstChainId, getLinkedApp(dstChainId), messageFee, options, message);
+    }
+
+    /// @dev Thin wrapper around _sendInterchainMessage to accept EVM address as a parameter.
+    function _sendInterchainMessageEVM(
+        uint256 dstChainId,
+        address receiver,
+        uint256 messageFee,
+        OptionsV1 memory options,
+        bytes memory message
+    )
+        internal
+    {
+        _sendInterchainMessage(dstChainId, TypeCasts.addressToBytes32(receiver), messageFee, options, message);
+    }
+
+    /// @dev Performs necessary checks and sends an interchain message.
+    function _sendInterchainMessage(
+        uint256 dstChainId,
+        bytes32 receiver,
+        uint256 messageFee,
+        OptionsV1 memory options,
+        bytes memory message
+    )
+        internal
+    {
+        if (dstChainId == block.chainid) revert InterchainApp__SameChainId(dstChainId);
+        if (receiver == 0) revert InterchainApp__ReceiverNotSet(dstChainId);
+        if (address(this).balance < messageFee) revert InterchainApp__BalanceTooLow(address(this).balance, messageFee);
+        IInterchainClientV1(interchain).interchainSend{value: messageFee}(
+            dstChainId, receiver, getExecutionService(), getSendingModules(), options.encodeOptionsV1(), message
+        );
+    }
 }
