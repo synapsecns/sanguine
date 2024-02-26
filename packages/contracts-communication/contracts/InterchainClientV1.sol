@@ -119,11 +119,13 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     // @inheritdoc IInterchainClientV1
     function isExecutable(bytes calldata encodedTx) public view returns (bool) {
         InterchainTransaction memory icTx = InterchainTransactionLib.decodeTransaction(encodedTx);
-        bytes32 transactionId = icTx.transactionId();
-        return _isExecutable(transactionId, icTx);
+        _assertExecutable(icTx);
+        return true;
     }
 
-    function _isExecutable(bytes32 transactionId, InterchainTransaction memory icTx) internal view returns (bool) {
+    /// @dev Asserts that the transaction is executable. Returns the transactionId for chaining purposes.
+    function _assertExecutable(InterchainTransaction memory icTx) internal view returns (bytes32 transactionId) {
+        transactionId = icTx.transactionId();
         require(executedTransactions[transactionId] == false, "Transaction already executed");
         // Construct expected entry based on icTransaction data
         InterchainEntry memory icEntry = InterchainEntry({
@@ -132,13 +134,11 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             srcWriter: linkedClients[icTx.srcChainId],
             dataHash: transactionId
         });
-
         (bytes memory encodedAppConfig, address[] memory approvedDstModules) =
             IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).getReceivingConfig();
         AppConfigV1 memory appConfig = encodedAppConfig.decodeAppConfigV1();
         uint256 responses = _getFinalizedResponsesCount(approvedDstModules, icEntry, appConfig.optimisticPeriod);
         require(responses >= appConfig.requiredResponses, "Not enough valid responses to meet the threshold");
-        return true;
     }
 
     /**
@@ -178,8 +178,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     // @inheritdoc IInterchainClientV1
     function interchainExecute(uint256 gasLimit, bytes calldata transaction) external payable {
         InterchainTransaction memory icTx = InterchainTransactionLib.decodeTransaction(transaction);
-        bytes32 transactionId = icTx.transactionId();
-        require(_isExecutable(transactionId, icTx), "Transaction is not executable");
+        bytes32 transactionId = _assertExecutable(icTx);
         executedTransactions[transactionId] = true;
 
         OptionsV1 memory decodedOptions = icTx.options.decodeOptionsV1();
