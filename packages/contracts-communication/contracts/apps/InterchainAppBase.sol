@@ -13,6 +13,20 @@ abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
     /// @dev Required responses and optimistic period for the module responses.
     AppConfigV1 private _appConfig;
 
+    /// @dev Address of the linked app deployed on the remote chain.
+    mapping(uint256 chainId => bytes32 remoteApp) private _linkedApp;
+
+    error InterchainApp__SameChainId(uint256 chainId);
+
+    /// @dev Links the remote app to the current app.
+    /// Will revert if the chainId is the same as the chainId of the local app.
+    /// Note: Should be guarded with permissions check.
+    function _linkRemoteApp(uint256 chainId, bytes32 remoteApp) internal {
+        if (chainId == block.chainid) revert InterchainApp__SameChainId(chainId);
+        _linkedApp[chainId] = remoteApp;
+        emit AppLinked(chainId, remoteApp);
+    }
+
     /// @dev Sets the app config:
     /// - requiredResponses: the number of module responses required for accepting the message
     /// - optimisticPeriod: the minimum time after which the module responses are considered final
