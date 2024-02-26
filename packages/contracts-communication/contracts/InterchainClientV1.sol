@@ -28,10 +28,11 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     uint64 public clientNonce;
     address public interchainDB;
     address public executionFees;
-    mapping(bytes32 => bool) public executedTransactions;
 
     // Chain ID => Bytes32 Address of src clients
     mapping(uint256 => bytes32) public linkedClients;
+
+    mapping(bytes32 transactionId => address executor) internal _txExecutor;
 
     constructor() Ownable(msg.sender) {}
 
@@ -125,7 +126,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     function interchainExecute(uint256 gasLimit, bytes calldata transaction) external payable {
         InterchainTransaction memory icTx = InterchainTransactionLib.decodeTransaction(transaction);
         bytes32 transactionId = _assertExecutable(icTx);
-        executedTransactions[transactionId] = true;
+        _txExecutor[transactionId] = msg.sender;
 
         OptionsV1 memory decodedOptions = icTx.options.decodeOptionsV1();
         if (msg.value != decodedOptions.gasAirdrop) {
@@ -166,7 +167,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     /// @dev Asserts that the transaction is executable. Returns the transactionId for chaining purposes.
     function _assertExecutable(InterchainTransaction memory icTx) internal view returns (bytes32 transactionId) {
         transactionId = icTx.transactionId();
-        if (executedTransactions[transactionId]) {
+        if (_txExecutor[transactionId] != address(0)) {
             revert InterchainClientV1__AlreadyExecuted(transactionId);
         }
         // Construct expected entry based on icTransaction data
