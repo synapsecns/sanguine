@@ -126,7 +126,9 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     /// @dev Asserts that the transaction is executable. Returns the transactionId for chaining purposes.
     function _assertExecutable(InterchainTransaction memory icTx) internal view returns (bytes32 transactionId) {
         transactionId = icTx.transactionId();
-        require(executedTransactions[transactionId] == false, "Transaction already executed");
+        if (executedTransactions[transactionId]) {
+            revert InterchainClientV1__AlreadyExecuted(transactionId);
+        }
         // Construct expected entry based on icTransaction data
         InterchainEntry memory icEntry = InterchainEntry({
             srcChainId: icTx.srcChainId,
@@ -138,7 +140,9 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).getReceivingConfig();
         AppConfigV1 memory appConfig = encodedAppConfig.decodeAppConfigV1();
         uint256 responses = _getFinalizedResponsesCount(approvedDstModules, icEntry, appConfig.optimisticPeriod);
-        require(responses >= appConfig.requiredResponses, "Not enough valid responses to meet the threshold");
+        if (responses < appConfig.requiredResponses) {
+            revert InterchainClientV1__NotEnoughResponses(responses, appConfig.requiredResponses);
+        }
     }
 
     /**

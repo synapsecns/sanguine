@@ -2,7 +2,9 @@
 pragma solidity ^0.8.0;
 
 interface IInterchainClientV1 {
-    error InterchainClientV1__IncorrectMsgValue(uint256 actual, uint256 expected);
+    error InterchainClientV1__AlreadyExecuted(bytes32 transactionId);
+    error InterchainClientV1__IncorrectMsgValue(uint256 actual, uint256 required);
+    error InterchainClientV1__NotEnoughResponses(uint256 actual, uint256 required);
 
     /**
      * @notice Sets the address of the ExecutionFees contract.
