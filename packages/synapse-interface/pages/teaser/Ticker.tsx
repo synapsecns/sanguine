@@ -9,15 +9,12 @@ import { useRef, useEffect, useState } from 'react'
 const testUrl =
   'https://explorer.omnirpc.io/graphql?query=%7B%0A%20%20bridgeTransactions(useMv%3Atrue%2C%20pending%3A%20false%2C%20startTime%3A1688815939%2C%20page%3A%201)%20%7B%0A%20%20%20%20fromInfo%20%7B%0A%20%20%20%20%20%20chainID%0A%20%20%20%20%20%20destinationChainID%0A%20%20%20%20%20%20address%0A%20%20%20%20%20%20txnHash%0A%20%20%20%20%20%20value%0A%20%20%20%20%20%20formattedValue%0A%20%20%20%20%20%20USDValue%0A%20%20%20%20%20%20tokenAddress%0A%20%20%20%20%20%20tokenSymbol%0A%20%20%20%20%20%20blockNumber%0A%20%20%20%20%20%20time%0A%20%20%20%20%20%20formattedTime%0A%20%20%20%20%20%20formattedEventType%0A%20%20%20%20%20%20eventType%0A%20%20%20%20%7D%0A%20%20%20%20toInfo%20%7B%0A%20%20%20%20%20%20chainID%0A%20%20%20%20%20%20destinationChainID%0A%20%20%20%20%20%20address%0A%20%20%20%20%20%20txnHash%0A%20%20%20%20%20%20value%0A%20%20%20%20%20%20formattedValue%0A%20%20%20%20%20%20USDValue%0A%20%20%20%20%20%20tokenAddress%0A%20%20%20%20%20%20tokenSymbol%0A%20%20%20%20%20%20blockNumber%0A%20%20%20%20%20%20time%0A%20%20%20%20%20%20formattedTime%0A%20%20%20%20%20%20formattedEventType%0A%20%20%20%20%20%20eventType%0A%20%20%20%20%7D%0A%20%20%20%20kappa%0A%20%20%7D%0A%7D%0A'
 
-let explorerTxs
-
 function fetchExplorerTxs(setState) {
   fetch(testUrl)
     .then((response) => {
-      // console.log(response)
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(`HTTP error! Status: ${response.status}`)
-      }
+
       return response.blob()
     })
     .then(async (response) =>
@@ -29,48 +26,10 @@ function fetchExplorerTxs(setState) {
     )
 }
 
+/* Previous fake tx generator */
 let txs = new Array()
 for (let i = 0; i < 6; i++) txs.push(generateTx())
 txs = []
-
-const formatTimestamp = (tx) => {
-  const { origin, destination } = tx
-
-  const originDate = new Date(origin.timestamp)
-  const originHour = originDate.getHours()
-  const originMinute =
-    (originDate.getMinutes() < 10 ? '0' : '') + originDate.getMinutes()
-
-  const destinationDate = new Date(destination.timestamp)
-  const destinationHour = destinationDate.getHours()
-  const destinationMinute =
-    (destinationDate.getMinutes() < 10 ? '0' : '') +
-    destinationDate.getMinutes()
-
-  const seconds = Math.round((destination.timestamp - origin.timestamp) / 1000)
-  const minutes = Math.round(seconds / 60)
-  const secondsModulo = (Math.round(seconds / 15) * 15) % 60
-
-  const originDateFormatted = `${
-    originHour === 12 ? 12 : originHour % 12
-  }:${originMinute}`
-
-  const destinationDateFormatted = `${
-    destinationHour === 12 ? 12 : destinationHour % 12
-  }:${destinationMinute}${destinationHour < 12 ? 'am' : 'pm'}`
-
-  const durationFormatted =
-    minutes === 0
-      ? (secondsModulo === 0 ? seconds : secondsModulo) + 's'
-      : minutes + 'm' + (secondsModulo ? ` ${secondsModulo}` : '')
-
-  const timeRange =
-    originHour === destinationHour && originMinute === destinationMinute
-      ? destinationDateFormatted
-      : `${originDateFormatted}–${destinationDateFormatted}`
-
-  return `${timeRange} (${durationFormatted})`
-}
 
 export default function Ticker() {
   const tickerRef = useRef(null)
@@ -247,4 +206,43 @@ const arrowSvg = () => {
       <path d="M0,0 6,6 0,12" />
     </svg>
   )
+}
+
+const formatTimestamp = (tx) => {
+  const { origin, destination } = tx
+
+  const originDate = new Date(origin.timestamp)
+  const originHour = originDate.getHours()
+  const originMinute =
+    (originDate.getMinutes() < 10 ? '0' : '') + originDate.getMinutes()
+
+  const destinationDate = new Date(destination.timestamp)
+  const destinationHour = destinationDate.getHours()
+  const destinationMinute =
+    (destinationDate.getMinutes() < 10 ? '0' : '') +
+    destinationDate.getMinutes()
+
+  const seconds = Math.round((destination.timestamp - origin.timestamp) / 1000)
+  const minutes = Math.round(seconds / 60)
+  const secondsModulo = (Math.round(seconds / 15) * 15) % 60
+
+  const originDateFormatted = `${
+    originHour === 12 ? 12 : originHour % 12
+  }:${originMinute}`
+
+  const destinationDateFormatted = `${
+    destinationHour === 12 ? 12 : destinationHour % 12
+  }:${destinationMinute}${destinationHour < 12 ? 'am' : 'pm'}`
+
+  const durationFormatted =
+    minutes === 0
+      ? (secondsModulo === 0 ? seconds : secondsModulo) + 's'
+      : minutes + 'm' + (secondsModulo ? ` ${secondsModulo}` : '')
+
+  const timeRange =
+    originHour === destinationHour && originMinute === destinationMinute
+      ? destinationDateFormatted
+      : `${originDateFormatted}–${destinationDateFormatted}`
+
+  return `${timeRange} (${durationFormatted})`
 }
