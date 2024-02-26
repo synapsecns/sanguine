@@ -9,7 +9,6 @@ import arbitrumImg from '@assets/chains/arbitrum.svg'
 import { useAppSelector } from '@/store/hooks'
 import { useCloseOutsideRef } from '@/utils/hooks/useCloseOutsideRef'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
-import { getErc20TokenTransfers } from '@/utils/actions/getErc20TokenTransfers'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { shortenAddress } from '@/utils/shortenAddress'
 import { ARBITRUM } from '@/constants/chains/master'
@@ -21,7 +20,7 @@ import { TransactionArrow } from '@/components/icons/TransactionArrow'
 
 
 /** ARB Token */
-const ARB = {
+export const ARB = {
   name: 'Arbitrum',
   symbol: 'ARB',
   decimals: 18,
@@ -31,42 +30,16 @@ const ARB = {
   explorerUrl: ARBITRUM.explorerUrl,
 }
 
-/** ARB STIP Rewarder */
-const Rewarder = {
-  address: '0x48fa1ebda1af925898c826c566f5bb015e125ead' as Address,
-  startBlock: 174234366n, // Start of STIP Rewards on Arbitrum
-}
-
 const formatValueWithCommas = (value: string | number) => {
   const format = '0,0.00'
   return numeral(value).format(format)
 }
 
 export const AirdropRewards = () => {
-  const [rewards, setRewards] = useState<string>('0')
-  const [transactions, setTransactions] = useState<any[]>([])
-  const { address: connectedAddress } = useAccount()
   const { arbPrice } = useAppSelector((state) => state.priceData)
 
-  const fetchStipAirdropRewards = async (address: Address) => {
-    const { transactions, cumulativeRewards } = await getArbStipRewards(address)
-
-    const parsedCumulativeRewards = parseTokenValue(
-      cumulativeRewards,
-      ARB.decimals
-    )
-
-    setTransactions(transactions)
-    setRewards(parsedCumulativeRewards)
-  }
-
-  useEffect(() => {
-    if (connectedAddress) {
-      fetchStipAirdropRewards(connectedAddress)
-    } else {
-      setRewards(undefined)
-    }
-  }, [connectedAddress])
+  const { cumulativeRewards, parsedCumulativeRewards, transactions } =
+    useAppSelector((state) => state.feeAndRebate)
 
   /** Dialog state */
   const [open, setOpen] = useState<boolean>(false)
@@ -88,9 +61,9 @@ export const AirdropRewards = () => {
         <div className="flex justify-between flex-1 p-3">
           <RewardsAmountDisplay
             symbol={ARB.symbol}
-            tokenAmount={formatValueWithCommas(rewards)}
+            tokenAmount={formatValueWithCommas(parsedCumulativeRewards)}
             dollarAmount={formatValueWithCommas(
-              convertTokensToDollarValue(rewards, arbPrice)
+              convertTokensToDollarValue(parsedCumulativeRewards, arbPrice)
             )}
           />
 
@@ -113,7 +86,7 @@ export const AirdropRewards = () => {
         setOpen={setOpen}
         onClose={handleClose}
         transactions={transactions}
-        rewards={rewards}
+        rewards={parsedCumulativeRewards}
         tokenPrice={arbPrice}
       />
     </>
@@ -201,6 +174,7 @@ const RewardsDialog = ({
             </Link>{' '}
             for full route and rebate information.
           </p>
+          <p>Note that each address is capped at 2,000 ARB.</p>
 
           <div className="flex flex-wrap-reverse">
             <div className="mr-4 min-w-1/2">
@@ -359,36 +333,7 @@ export const HoverContentIcon = ({ children }) => {
   )
 }
 
-/** Helper Functions */
-const getArbStipRewards = async (connectedAddress: Address) => {
-  const { logs, data } = await getErc20TokenTransfers(
-    ARB.tokenAddress,
-    Rewarder.address,
-    connectedAddress,
-    ARB.network,
-    Rewarder.startBlock
-  )
-
-  const cumulativeRewards = calculateTotalTransferValue(data)
-
-  return {
-    logs: logs ?? [],
-    transactions: data,
-    cumulativeRewards,
-  }
-}
-
-const calculateTotalTransferValue = (data: any[]): bigint => {
-  let total: bigint = 0n
-  for (const item of data) {
-    if (item.transferValue) {
-      total += item.transferValue
-    }
-  }
-  return total
-}
-
-const parseTokenValue = (rawValue: bigint, tokenDecimals: number) => {
+export const parseTokenValue = (rawValue: bigint, tokenDecimals: number) => {
   return trimTrailingZeroesAfterDecimal(
     formatBigIntToString(rawValue, tokenDecimals, 3)
   )

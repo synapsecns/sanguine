@@ -22,7 +22,10 @@ import {
 } from '@/slices/priceDataSlice'
 import { isBlacklisted } from '@/utils/isBlacklisted'
 import { screenAddress } from '@/utils/screenAddress'
-import { fetchFeeAndRebate } from '@/slices/feeAndRebateSlice'
+import {
+  fetchArbStipRewards,
+  fetchFeeAndRebate,
+} from '@/slices/feeAndRebateSlice'
 
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
@@ -100,6 +103,10 @@ export const UserProvider = ({ children }) => {
         } catch (error) {
           console.error('Failed to fetch and store portfolio balances:', error)
         }
+      }
+
+      if (address) {
+        dispatch(fetchArbStipRewards(address))
       }
 
       if (!address) {

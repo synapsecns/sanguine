@@ -21,7 +21,7 @@ func Start(args []string, buildInfo config.BuildInfo) {
 		// nolint:wrapcheck
 		return metrics.Setup(c.Context, buildInfo)
 	}
-	app.Commands = cli.Commands{screenerCommand}
+	app.Commands = cli.Commands{screenerCommand, splitterCommand}
 	shellCommand := commandline.GenerateShellCommand(app.Commands)
 	app.Commands = append(app.Commands, shellCommand)
 	app.Action = shellCommand.Action

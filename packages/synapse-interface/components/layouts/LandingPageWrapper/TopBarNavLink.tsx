@@ -1,60 +1,66 @@
-import { useRouter } from 'next/router'
+import { NextRouter, useRouter } from 'next/router'
 import Link from 'next/link'
 
 export function TopBarNavLink({
   labelText,
   to,
-  className,
   match,
 }: {
   labelText: string
   to: string
-  className?: string
-  match?: string | RegExp | { startsWith: string; endsWith: string }
+  match?: string | { startsWith: string }
 }) {
   const router = useRouter()
 
   const isInternal = to[0] === '/' || to[0] === '#'
-  const linkContent = (
-    <div className={`py-2 px-2 ${className}`}>
+
+  const LinkComponent = isInternal ? Link : 'a'
+
+  const isRouteMatched = checkIsRouteMatched(router, match)
+
+  return (
+    <LinkComponent
+      href={to}
+      className={`
+        px-2 tracking-wide transform-gpu transition-all duration-75 text-white hover:text-opacity-100
+        ${isRouteMatched ? 'text-opacity-100' : 'text-opacity-30'}
+      `}
+      target={!isInternal ? '_blank' : undefined}
+      rel={!isInternal ? 'noopener noreferrer' : undefined}
+      data-test-id="nav-link"
+    >
+      <LinkContent labelText={labelText} />
+    </LinkComponent>
+  )
+}
+
+const LinkContent = ({ labelText }: { labelText: string }) => {
+  return (
+    <div className={`py-2 px-2`}>
       <span className="transition-all duration-75 transform-gpu whitespace-nowrap">
         {labelText}
       </span>
     </div>
   )
+}
 
-  const linkClassName = `
-    px-2 tracking-wide
-    transform-gpu transition-all duration-75
-    text-white ${
-      match &&
-      (typeof match === 'string'
-        ? router.asPath.includes(match)
-        : match instanceof RegExp
-        ? match.test(router.asPath)
-        : router.asPath.startsWith(match.startsWith) &&
-          router.asPath.endsWith(match.endsWith))
-        ? 'text-opacity-100'
-        : 'text-opacity-30'
-    }
-    hover:text-opacity-100
-  `
+export const checkIsRouteMatched = (
+  router: NextRouter,
+  match?: string | { startsWith: string }
+) => {
+  if (!match) return false
 
-  if (isInternal) {
+  if (router.asPath === '/') {
+    return match === '/'
+  } else if (typeof match === 'string') {
     return (
-      <Link
-        href={to}
-        className={linkClassName}
-        data-test-id="nav-link"
-      >
-        {linkContent}
-      </Link>
+      router.asPath === match ||
+      router.asPath === '/' ||
+      router.asPath.startsWith(match + '?')
     )
-  } else {
-    return (
-      <a href={to} target="_blank" className={linkClassName}>
-        {linkContent}
-      </a>
-    )
+  } else if (match.startsWith && typeof match.startsWith === 'string') {
+    return router.asPath.startsWith(match.startsWith)
   }
+
+  return false
 }

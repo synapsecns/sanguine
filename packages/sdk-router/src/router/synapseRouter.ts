@@ -108,12 +108,20 @@ export class SynapseRouter extends Router {
   private async hydrateCache() {
     if (HYDRATION_SUPPORTED_CHAIN_IDS.includes(this.chainId)) {
       try {
+<<<<<<< HEAD
         await Promise.all([
           this.chainGasAmount()
         ])
       } catch (e) {}
     }
 
+=======
+        await Promise.all([this.chainGasAmount()])
+      } catch (e) {
+        console.error('synapseRouter: Error hydrating cache', e)
+      }
+    }
+>>>>>>> master
   }
 
   public async getOriginAmountOut(

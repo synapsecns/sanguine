@@ -24,7 +24,7 @@ import { useBridgeState } from '@/slices/bridge/hooks'
 import { setFromChainId, BridgeState } from '@/slices/bridge/reducer'
 import { resetBridgeInputs } from '@/slices/bridge/actions'
 import { ViewSearchAddressBanner } from './components/ViewSearchAddressBanner'
-import { Activity } from './Activity'
+import { Activity } from '../Activity/Activity'
 import { useSearchInputState } from './helpers/useSearchInputStatus'
 
 export const Portfolio = () => {

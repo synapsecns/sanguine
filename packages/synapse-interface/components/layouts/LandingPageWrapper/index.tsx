@@ -1,4 +1,5 @@
 import { Fragment } from 'react'
+import { useRouter } from 'next/router'
 import { Popover, Transition } from '@headlessui/react'
 import { MenuIcon, XIcon } from '@heroicons/react/outline'
 import Grid from '@tw/Grid'
@@ -10,7 +11,7 @@ import DocumentTextIcon from '@icons/DocsIcon'
 import { Wallet } from '@components/Wallet'
 
 import { SynapseLogoSvg, SynapseLogoWithTitleSvg } from './SynapseLogoSvg'
-import { TopBarNavLink } from './TopBarNavLink'
+import { TopBarNavLink, checkIsRouteMatched } from './TopBarNavLink'
 import {
   DISCORD_URL,
   DOCS_URL,
@@ -163,7 +164,6 @@ function TopBarButtons() {
       to={value.path}
       labelText={value.text}
       match={value.match}
-      className={key === 'Analytics' ? 'hidden mdl:block' : ''}
     />
   ))
 
@@ -222,15 +222,30 @@ function SocialButtons() {
 
 function MobileBarButtons() {
   const mobileBarItems = Object.entries(NAVIGATION).map(([key, value]) => (
-    <MobileBarItem key={key} to={value.path} labelText={value.text} />
+    <MobileBarItem
+      key={key}
+      to={value.path}
+      labelText={value.text}
+      match={value.match}
+    />
   ))
 
   return <>{mobileBarItems}</>
 }
 
-function MobileBarItem({ to, labelText }: { to: string; labelText: string }) {
-  const match =
-    location.pathname.split('/')[1] === to.split('/')[1] && to !== '#'
+function MobileBarItem({
+  to,
+  labelText,
+  match,
+}: {
+  to: string
+  labelText: string
+  match?: string | { startsWith: string }
+}) {
+  const router = useRouter()
+
+  const isRouteMatched = checkIsRouteMatched(router, match)
+
   const isInternal = to[0] === '/' || to[0] === '#'
 
   return (
@@ -240,7 +255,8 @@ function MobileBarItem({ to, labelText }: { to: string; labelText: string }) {
       target={isInternal ? undefined : '_blank'}
       className={`
         px-4 py-2 text-2xl font-medium text-white
-        ${!(isInternal && match) && 'opacity-30 hover:opacity-100'}`}
+        ${isRouteMatched ? 'text-opacity-100' : 'text-opacity-30'}
+      `}
     >
       {labelText}
     </a>
