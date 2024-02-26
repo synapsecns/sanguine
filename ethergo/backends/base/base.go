@@ -162,6 +162,7 @@ func (b *Backend) WaitForConfirmation(parentCtx context.Context, transaction *ty
 
 	//nolint: contextcheck
 	WaitForConfirmation(ctx, b.Client(), transaction, time.Millisecond*500)
+
 	// check or an error, if there is one log it
 	go func() {
 		txReceipt, err := b.TransactionReceipt(b.ctx, transaction.Hash())
@@ -219,6 +220,7 @@ func (b *Backend) ImpersonateAccount(_ context.Context, _ common.Address, _ func
 type ConfirmationClient interface {
 	ethereum.TransactionReader
 	ethereum.TransactionSender
+	ethereum.ChainStateReader
 }
 
 // WaitForConfirmation is a helper that can be called by various inheriting funcs.
@@ -228,13 +230,44 @@ func WaitForConfirmation(ctx context.Context, client ConfirmationClient, transac
 	// if tx is nil , we should panic here so we can see the call context
 	_ = transaction.Hash()
 
+	const debugTimeout = time.Second * 5
+
+	start := time.Now()
+	logIfShould := func(locker *sync.Once, template string, args ...interface{}) {
+		if time.Since(start) > debugTimeout {
+			locker.Do(func() {
+				logger.Debugf(template, args...)
+			})
+		}
+	}
+
 	txConfirmedCtx, cancel := context.WithCancel(ctx)
-	var logOnce sync.Once
+	var logWaitOnce, logFetchErrOnce, logErrOnce sync.Once
 	wait.UntilWithContext(txConfirmedCtx, func(ctx context.Context) {
-		tx, isPending, _ := client.TransactionByHash(txConfirmedCtx, transaction.Hash())
-		logOnce.Do(func() {
-			logger.Debugf("waiting for tx %s", transaction.Hash())
-		})
+		tx, isPending, err := client.TransactionByHash(txConfirmedCtx, transaction.Hash())
+		logIfShould(&logWaitOnce, "waiting for tx %s", transaction.Hash())
+
+		// it's possible that this transaction is impersonated. If thats the case, eth_getTransactionByHash will return an error
+		// since the signature is not valid. In this case, we need to use the transaction hash to get the receipt instead, as this will
+		// return the sender from the rpc rather than tryng to derive it ourselves.
+		if err != nil && !errors.Is(err, ethereum.NotFound) {
+			receipt, _ := client.TransactionReceipt(ctx, transaction.Hash())
+
+			if receipt != nil {
+				if receipt.Status == types.ReceiptStatusFailed {
+					rawJSON, _ := transaction.MarshalJSON()
+					logger.Errorf("transaction %s with body %s reverted", transaction, string(rawJSON))
+				}
+				cancel()
+				return
+			}
+		}
+
+		// there's still an error, even with the receipt. We'll log the fetch error
+		if err != nil {
+			logIfShould(&logFetchErrOnce, "could not fetch transaction: %v", err)
+		}
+
 		if !isPending && tx != nil {
 			receipt, err := client.TransactionReceipt(ctx, tx.Hash())
 			if err != nil {
@@ -245,8 +278,24 @@ func WaitForConfirmation(ctx context.Context, client ConfirmationClient, transac
 			}
 
 			cancel()
-		} else if !isPending {
-			_ = client.SendTransaction(ctx, transaction)
+		} else if !isPending || time.Since(start) > debugTimeout {
+			err := client.SendTransaction(ctx, transaction)
+			if err != nil {
+				ogErr := err
+				call, err := util.TxToCall(transaction)
+				if err != nil {
+					logger.Errorf("could not convert tx to call: %v", err)
+					return
+				}
+
+				realNonce, err := client.NonceAt(ctx, call.From, nil)
+				if err != nil {
+					logger.Errorf("could not get nonce: %v", err)
+					return
+				}
+
+				logIfShould(&logErrOnce, "could not send transaction (from %s, account nonce %d, tx nonce: %d, tx hash: %s): %v", call.From, realNonce, transaction.Nonce(), transaction.Hash(), ogErr)
+			}
 		}
 	}, timeout)
 }
