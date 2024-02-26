@@ -34,6 +34,12 @@ abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
+    /// @notice Returns the app config for receiving messages.
+    /// @dev Could be overridden in the derived contracts.
+    function getAppConfig() public view virtual returns (AppConfigV1 memory) {
+        return _appConfig;
+    }
+
     /// @notice Returns the address of the Execution Service to use for sending messages.
     /// @dev Could be overridden in the derived contracts.
     function getExecutionService() public view virtual returns (address) {
