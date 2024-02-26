@@ -79,7 +79,7 @@ const StateManagedBridge = () => {
   const { synapseSDK } = useSynapseContext()
   const bridgeDisplayRef = useRef(null)
   const currentSDKRequestID = useRef(0)
-  const quoteToastRef = useRef({ id: '' })
+  const quoteToastRef = useRef('')
   const router = useRouter()
   const { query, pathname } = router
 
@@ -267,7 +267,7 @@ const StateManagedBridge = () => {
           })
         )
 
-        toast.dismiss(quoteToastRef.current.id)
+        toast.dismiss(quoteToastRef.current)
 
         dispatch(fetchEthPrice())
         dispatch(fetchArbPrice())
@@ -276,12 +276,12 @@ const StateManagedBridge = () => {
         const message = `Route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
 
-        quoteToastRef.current.id = toast(message, { duration: 3000 })
+        quoteToastRef.current = toast(message, { duration: 3000 })
       }
     } catch (err) {
       console.log(err)
       if (thisRequestId === currentSDKRequestID.current) {
-        toast.dismiss(quoteToastRef.current.id)
+        toast.dismiss(quoteToastRef.current)
 
         let message: string
         if (!fromChainId) {
@@ -297,7 +297,7 @@ const StateManagedBridge = () => {
         }
         console.log(message)
 
-        quoteToastRef.current.id = toast(message, { duration: 3000 })
+        quoteToastRef.current = toast(message, { duration: 3000 })
         dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
 
         return

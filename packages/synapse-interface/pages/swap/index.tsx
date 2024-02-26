@@ -54,7 +54,7 @@ const StateManagedSwap = () => {
   const { chain } = useNetwork()
   const { synapseSDK } = useSynapseContext()
   const swapDisplayRef = useRef(null)
-  const quoteToastRef = useRef({ id: '' })
+  const quoteToastRef = useRef('')
   const currentSDKRequestID = useRef(0)
   const router = useRouter()
   const { query, pathname } = router
@@ -181,17 +181,17 @@ const StateManagedSwap = () => {
           })
         )
 
-        toast.dismiss(quoteToastRef.current.id)
+        toast.dismiss(quoteToastRef.current)
 
         const message = `Route found for swapping ${swapFromValue} ${swapFromToken.symbol} on ${CHAINS_BY_ID[swapChainId]?.name} to ${swapToToken.symbol}`
         console.log(message)
 
-        quoteToastRef.current.id = toast(message, { duration: 3000 })
+        quoteToastRef.current = toast(message, { duration: 3000 })
       }
     } catch (err) {
       console.log(err)
       if (thisRequestId === currentSDKRequestID.current) {
-        toast.dismiss(quoteToastRef.current.id)
+        toast.dismiss(quoteToastRef.current)
 
         let message: string
         if (!swapChainId) {
@@ -205,7 +205,7 @@ const StateManagedSwap = () => {
         }
         console.log(message)
 
-        quoteToastRef.current.id = toast(message, { duration: 3000 })
+        quoteToastRef.current = toast(message, { duration: 3000 })
         dispatch(setSwapQuote(EMPTY_SWAP_QUOTE_ZERO))
 
         return
