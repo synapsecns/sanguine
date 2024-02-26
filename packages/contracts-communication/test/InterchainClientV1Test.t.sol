@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {InterchainClientV1, AppConfigV1, InterchainTransaction} from "../contracts/InterchainClientV1.sol";
+import {AppConfigV1, InterchainTransaction} from "../contracts/InterchainClientV1.sol";
 import {InterchainDB} from "../contracts/InterchainDB.sol";
 
 import {InterchainEntry} from "../contracts/libs/InterchainEntry.sol";
@@ -17,20 +17,23 @@ import {InterchainModuleMock} from "./mocks/InterchainModuleMock.sol";
 
 import {Test} from "forge-std/Test.sol";
 
+// solhint-disable func-name-mixedcase
+// solhint-disable max-line-length
+// solhint-disable ordering
 contract InterchainClientV1Test is Test {
-    ExecutionFeesMock executionFees;
-    ExecutionServiceMock executionService;
+    ExecutionFeesMock public executionFees;
+    ExecutionServiceMock public executionService;
 
-    InterchainClientV1Harness icClient;
-    InterchainDB icDB;
-    InterchainAppMock icApp;
-    InterchainModuleMock icModule;
+    InterchainClientV1Harness public icClient;
+    InterchainDB public icDB;
+    InterchainAppMock public icApp;
+    InterchainModuleMock public icModule;
 
     address[] public mockApprovedModules;
 
     uint256 public constant GAS_AIRDROP = 0.5 ether;
     // Use default options of V1, 200k gas limit, 0.5 ETH gas airdrop
-    bytes options = OptionsV1(200_000, GAS_AIRDROP).encodeOptionsV1();
+    bytes public options = OptionsV1(200_000, GAS_AIRDROP).encodeOptionsV1();
 
     uint256 public constant SRC_CHAIN_ID = 1337;
     uint256 public constant DST_CHAIN_ID = 7331;
@@ -64,36 +67,39 @@ contract InterchainClientV1Test is Test {
     // ══════════════════════════════════════════════ INTERNAL TESTS ══════════════════════════════════════════════════
 
     // TODO: split into multiple single-purpose tests
+    /*
     function test_getFinalizedResponsesCount() public {
-        // vm.warp(10 days);
-        // uint256[] memory approvedResponses = new uint256[](3);
-        // approvedResponses[0] = block.timestamp + 1 days; // This should not be counted as finalized because it's in the future
-        // approvedResponses[1] = block.timestamp - 20 minutes; // This should be counted as finalized because it's outside the optimistic time period
-        // approvedResponses[2] = block.timestamp - 1 minutes; // This should not be counted as finalized
+        vm.warp(10 days);
+        uint256[] memory approvedResponses = new uint256[](3);
+        approvedResponses[0] = block.timestamp + 1 days;
+        // This should be counted as finalized because it's outside the optimistic time period
+        approvedResponses[1] = block.timestamp - 20 minutes;
+        // This should not be counted as finalized
+        approvedResponses[2] = block.timestamp - 1 minutes;
 
-        // uint256 optimisticTimePeriod = 15 minutes; // Setting the optimistic time period to 15 minutes
+        uint256 optimisticTimePeriod = 15 minutes; // Setting the optimistic time period to 15 minutes
 
-        // uint256 finalizedResponses = icClient.getFinalizedResponsesCountHarness(approvedResponses, optimisticTimePeriod);
+        uint256 responses = icClient.getFinalizedResponsesCountHarness(approvedResponses, optimisticTimePeriod);
 
-        // assertEq(finalizedResponses, 1, "Only 1 response should be finalized within the optimistic time period");
+        assertEq(responses, 1, "Only 1 response should be finalized within the optimistic time period");
 
-        // // Test with all responses outside the optimistic time period
-        // approvedResponses[0] = block.timestamp + 30 minutes;
-        // approvedResponses[1] = block.timestamp + 40 minutes;
-        // approvedResponses[2] = block.timestamp + 50 minutes;
+        // Test with all responses outside the optimistic time period
+        approvedResponses[0] = block.timestamp + 30 minutes;
+        approvedResponses[1] = block.timestamp + 40 minutes;
+        approvedResponses[2] = block.timestamp + 50 minutes;
 
-        // finalizedResponses = icClient.getFinalizedResponsesCountHarness(approvedResponses, optimisticTimePeriod);
+        responses = icClient.getFinalizedResponsesCountHarness(approvedResponses, optimisticTimePeriod);
 
-        // assertEq(finalizedResponses, 0, "There should be 0 finalized responses outside the optimistic time period");
+        assertEq(responses, 0, "There should be 0 finalized responses outside the optimistic time period");
 
-        // // Test with empty responses array
-        // approvedResponses = new uint256[](0);
+        // Test with empty responses array
+        approvedResponses = new uint256[](0);
 
-        // finalizedResponses = icClient.getFinalizedResponsesCountHarness(approvedResponses, optimisticTimePeriod);
+        responses = icClient.getFinalizedResponsesCountHarness(approvedResponses, optimisticTimePeriod);
 
-        // assertEq(finalizedResponses, 0, "There should be 0 finalized responses with an empty responses array");
+        assertEq(responses, 0, "There should be 0 finalized responses with an empty responses array");
     }
-
+    */
     function test_interchainSend() public {
         bytes32 receiver = TypeCasts.addressToBytes32(makeAddr("Receiver"));
         bytes memory message = "Hello World";
