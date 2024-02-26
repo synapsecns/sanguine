@@ -8,7 +8,6 @@ contract InterchainTransactionLibHarness {
         address srcSender,
         uint256 dstChainId,
         bytes32 dstReceiver,
-        uint64 nonce,
         uint256 dbNonce,
         bytes memory options,
         bytes memory message
@@ -18,7 +17,7 @@ contract InterchainTransactionLibHarness {
         returns (InterchainTransaction memory transaction)
     {
         return InterchainTransactionLib.constructLocalTransaction(
-            srcSender, dstChainId, dstReceiver, nonce, dbNonce, options, message
+            srcSender, dstChainId, dstReceiver, dbNonce, options, message
         );
     }
 
