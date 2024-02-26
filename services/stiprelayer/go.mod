@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/cenkalti/backoff v2.2.1+incompatible
-	github.com/ethereum/go-ethereum v1.11.6
+	github.com/ethereum/go-ethereum v1.13.11
 	github.com/gin-gonic/gin v1.9.1
 	github.com/ipfs/go-log v1.0.5
 	github.com/jftuga/ellipsis v1.0.0

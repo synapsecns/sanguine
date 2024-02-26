@@ -20,7 +20,7 @@ require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/Yamashou/gqlgenc v0.10.0
 	github.com/creasty/defaults v1.7.0
-	github.com/ethereum/go-ethereum v1.11.6
+	github.com/ethereum/go-ethereum v1.13.11
 	github.com/gin-gonic/gin v1.9.1
 	github.com/integralist/go-findroot v0.0.0-20160518114804-ac90681525dc
 	github.com/ipfs/go-log v1.0.5

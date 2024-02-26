@@ -7,7 +7,7 @@ require (
 	github.com/alecthomas/assert v1.0.0
 	github.com/brianvoe/gofakeit/v6 v6.27.0
 	github.com/dubonzi/otelresty v1.2.0
-	github.com/ethereum/go-ethereum v1.11.6
+	github.com/ethereum/go-ethereum v1.13.11
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-resty/resty/v2 v2.11.0
 	github.com/google/uuid v1.6.0
