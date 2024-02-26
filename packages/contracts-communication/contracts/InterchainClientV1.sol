@@ -100,6 +100,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).appReceive{gas: gasLimit, value: msg.value}({
             srcChainId: icTx.srcChainId,
             sender: icTx.srcSender,
+            dbNonce: icTx.dbNonce,
             message: icTx.message
         });
         emit InterchainTransactionReceived(

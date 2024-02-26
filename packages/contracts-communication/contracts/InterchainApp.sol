@@ -101,7 +101,7 @@ contract InterchainApp is IInterchainApp {
     }
 
     // TODO: Auth checks based on incoming message
-    function appReceive(uint256 srcChainId, bytes32 sender, uint64 nonce, bytes calldata message) external payable {
+    function appReceive(uint256 srcChainId, bytes32 sender, uint256 dbNonce, bytes calldata message) external payable {
         emit AppMessageRecieve();
     }
 }
