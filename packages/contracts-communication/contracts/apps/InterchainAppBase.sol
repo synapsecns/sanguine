@@ -36,11 +36,11 @@ abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
     error InterchainApp__SenderNotAllowed(uint256 srcChainId, bytes32 sender);
 
     /// @inheritdoc IInterchainApp
-    function appReceive(uint256 srcChainId, bytes32 sender, uint64 nonce, bytes calldata message) external payable {
+    function appReceive(uint256 srcChainId, bytes32 sender, uint256 dbNonce, bytes calldata message) external payable {
         if (msg.sender != interchain) revert InterchainApp__CallerNotInterchainClient(msg.sender);
         if (srcChainId == block.chainid) revert InterchainApp__SameChainId(srcChainId);
         if (!isAllowedSender(srcChainId, sender)) revert InterchainApp__SenderNotAllowed(srcChainId, sender);
-        _receiveMessage(srcChainId, sender, nonce, message);
+        _receiveMessage(srcChainId, sender, dbNonce, message);
         // Note: application may elect to emit an event in `_receiveMessage`, so we don't emit a generic event here.
     }
 
@@ -156,8 +156,9 @@ abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
         bytes memory message
     )
         internal
+        returns (bytes32 transactionId, uint256 dbNonce)
     {
-        _sendInterchainMessage(dstChainId, getLinkedApp(dstChainId), messageFee, options, message);
+        return _sendInterchainMessage(dstChainId, getLinkedApp(dstChainId), messageFee, options, message);
     }
 
     /// @dev Thin wrapper around _sendInterchainMessage to accept EVM address as a parameter.
@@ -169,8 +170,9 @@ abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
         bytes memory message
     )
         internal
+        returns (bytes32 transactionId, uint256 dbNonce)
     {
-        _sendInterchainMessage(dstChainId, TypeCasts.addressToBytes32(receiver), messageFee, options, message);
+        return _sendInterchainMessage(dstChainId, TypeCasts.addressToBytes32(receiver), messageFee, options, message);
     }
 
     /// @dev Performs necessary checks and sends an interchain message.
@@ -182,13 +184,14 @@ abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
         bytes memory message
     )
         internal
+        returns (bytes32 transactionId, uint256 dbNonce)
     {
         address cachedInterchain = interchain;
         if (cachedInterchain == address(0)) revert InterchainApp__InterchainClientNotSet();
         if (dstChainId == block.chainid) revert InterchainApp__SameChainId(dstChainId);
         if (receiver == 0) revert InterchainApp__ReceiverNotSet(dstChainId);
         if (address(this).balance < messageFee) revert InterchainApp__BalanceTooLow(address(this).balance, messageFee);
-        IInterchainClientV1(cachedInterchain).interchainSend{value: messageFee}(
+        return IInterchainClientV1(cachedInterchain).interchainSend{value: messageFee}(
             dstChainId, receiver, getExecutionService(), getSendingModules(), options.encodeOptionsV1(), message
         );
     }
@@ -197,7 +200,7 @@ abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
     function _receiveMessage(
         uint256 srcChainId,
         bytes32 sender,
-        uint64 nonce,
+        uint256 dbNonce,
         bytes calldata message
     )
         internal
