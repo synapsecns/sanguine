@@ -1,3 +1,10 @@
+/* TODO
+ * Add play/pause state
+ * Toggle play/paused from 'Live' <button>
+ * Start in paused state if user prefers-reduced-motion
+ * Calculate ticker motion cumulatively, and continuously adjust speed towards MAX or '0' based on play/pause state
+ */
+
 import { Fragment, useRef, useEffect, useState } from 'react'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import PulseDot from '../icons/PulseDot'

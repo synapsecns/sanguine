@@ -7,9 +7,7 @@ import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { SynapseAnchor } from './SynapseLogo'
 import Footer from './Footer'
 import NavMenu from './NavMenu'
-import Hero from '../../pages/teaser/Hero'
 import Ticker from './Ticker'
-import ValueProps from '../../pages/teaser/ValueProps'
 
 const Wrapper = ({ children }) => {
   const { address: currentAddress } = useAccount()
