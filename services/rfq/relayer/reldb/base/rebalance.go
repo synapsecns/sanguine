@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"gorm.io/gorm"
@@ -21,11 +20,12 @@ func (s Store) StoreRebalance(ctx context.Context, rebalance reldb.Rebalance) er
 }
 
 // UpdateRebalanceStatus updates the rebalance status.
-func (s Store) UpdateRebalanceStatus(ctx context.Context, id [32]byte, originTxHash *common.Hash, status reldb.RebalanceStatus) error {
+func (s Store) UpdateRebalanceStatus(ctx context.Context, id [32]byte, origin *uint64, status reldb.RebalanceStatus) error {
 	var tx *gorm.DB
-	if originTxHash != nil {
+	if origin != nil {
 		tx = s.DB().WithContext(ctx).Model(&Rebalance{}).
-			Where(fmt.Sprintf("%s = ?", originTxHashFieldName), originTxHash.String()).
+			Where(fmt.Sprintf("%s = ?", "origin"), *origin).
+			Where(fmt.Sprintf("%s = ?", statusFieldName), reldb.RebalanceInitiated.Int()).
 			Updates(map[string]interface{}{
 				rebalanceIDFieldName: hexutil.Encode(id[:]),
 				statusFieldName:      status,

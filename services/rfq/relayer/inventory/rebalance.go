@@ -180,7 +180,8 @@ func (c *rebalanceManagerCCTP) listen(ctx context.Context, chainID int) (err err
 			if err != nil {
 				return fmt.Errorf("could not parse circle request sent: %w", err)
 			}
-			err = c.db.UpdateRebalanceStatus(parentCtx, parsedEvent.RequestID, &log.TxHash, reldb.RebalancePending)
+			origin := uint64(parsedEvent.ChainId.Int64())
+			err = c.db.UpdateRebalanceStatus(parentCtx, parsedEvent.RequestID, &origin, reldb.RebalancePending)
 			if err != nil {
 				return fmt.Errorf("could not update rebalance status: %w", err)
 			}

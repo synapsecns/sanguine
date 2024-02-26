@@ -25,8 +25,8 @@ type Writer interface {
 	// UpdateQuoteRequestStatus updates the status of a quote request
 	UpdateQuoteRequestStatus(ctx context.Context, id [32]byte, status QuoteRequestStatus) error
 	// UpdateRebalanceStatus updates the status of a rebalance action.
-	// If the originTxHash is supplied, it will be used to update the ID for the corresponding rebalance model.
-	UpdateRebalanceStatus(ctx context.Context, id [32]byte, originTxHash *common.Hash, status RebalanceStatus) error
+	// If the origin is supplied, it will be used to update the ID for the corresponding rebalance model.
+	UpdateRebalanceStatus(ctx context.Context, id [32]byte, origin *uint64, status RebalanceStatus) error
 	// UpdateDestTxHash updates the dest tx hash of a quote request
 	UpdateDestTxHash(ctx context.Context, id [32]byte, destTxHash common.Hash) error
 }

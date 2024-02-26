@@ -117,6 +117,8 @@ type RequestForQuote struct {
 
 // Rebalance is the event model for a rebalance action.
 type Rebalance struct {
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
 	RebalanceID  sql.NullString
 	Origin       uint64
 	Destination  uint64
