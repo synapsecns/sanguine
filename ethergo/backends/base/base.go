@@ -162,6 +162,7 @@ func (b *Backend) WaitForConfirmation(parentCtx context.Context, transaction *ty
 
 	//nolint: contextcheck
 	WaitForConfirmation(ctx, b.Client(), transaction, time.Millisecond*500)
+
 	// check or an error, if there is one log it
 	go func() {
 		txReceipt, err := b.TransactionReceipt(b.ctx, transaction.Hash())
@@ -229,9 +230,11 @@ func WaitForConfirmation(ctx context.Context, client ConfirmationClient, transac
 	// if tx is nil , we should panic here so we can see the call context
 	_ = transaction.Hash()
 
+	const debugTimeout = time.Second * 5
+
 	start := time.Now()
 	logIfShould := func(locker *sync.Once, template string, args ...interface{}) {
-		if time.Since(start) > time.Second*5 {
+		if time.Since(start) > debugTimeout {
 			locker.Do(func() {
 				logger.Debugf(template, args...)
 			})
@@ -247,7 +250,7 @@ func WaitForConfirmation(ctx context.Context, client ConfirmationClient, transac
 		// it's possible that this transaction is impersonated. If thats the case, eth_getTransactionByHash will return an error
 		// since the signature is not valid. In this case, we need to use the transaction hash to get the receipt instead, as this will
 		// return the sender from the rpc rather than tryng to derive it ourselves.
-		if !errors.Is(err, ethereum.NotFound) {
+		if err != nil && !errors.Is(err, ethereum.NotFound) {
 			receipt, _ := client.TransactionReceipt(ctx, transaction.Hash())
 
 			if receipt != nil {
@@ -275,7 +278,7 @@ func WaitForConfirmation(ctx context.Context, client ConfirmationClient, transac
 			}
 
 			cancel()
-		} else if !isPending {
+		} else if !isPending || time.Since(start) > debugTimeout {
 			err := client.SendTransaction(ctx, transaction)
 			if err != nil {
 				ogErr := err
