@@ -7,6 +7,7 @@ import {
   FallbackProviderConfig,
 } from '@ethersproject/providers'
 
+
 export const SynapseContext = createContext(null)
 
 export const SynapseProvider = memo(
