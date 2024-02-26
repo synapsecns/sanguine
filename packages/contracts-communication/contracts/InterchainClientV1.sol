@@ -100,7 +100,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             IExecutionService(srcExecutionService).requestExecution({
                 dstChainId: dstChainId,
                 // TODO: there should be a way to calculate the payload size without encoding the transaction
-                txPayloadSize: abi.encode(icTx).length,
+                txPayloadSize: icTx.encodeTransaction().length,
                 transactionId: transactionId,
                 executionFee: executionFee,
                 options: options
@@ -171,7 +171,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     }
 
     function encodeTransaction(InterchainTransaction memory icTx) external pure returns (bytes memory) {
-        return abi.encode(icTx);
+        return icTx.encodeTransaction();
     }
 
     function decodeOptions(bytes memory encodedOptions) external pure returns (OptionsV1 memory) {
