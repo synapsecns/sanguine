@@ -497,7 +497,6 @@ const StateManagedBridge = () => {
           className={`
              mt-5 overflow-hidden
             transition-all duration-100 transform rounded-lg
-            bg-bgBase/10
           `}
         >
           <div ref={bridgeDisplayRef}>
