@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/hashicorp/go-multierror"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"math/big"
 	"os"
@@ -251,7 +252,10 @@ func WaitForConfirmation(ctx context.Context, client ConfirmationClient, transac
 		// since the signature is not valid. In this case, we need to use the transaction hash to get the receipt instead, as this will
 		// return the sender from the rpc rather than tryng to derive it ourselves.
 		if err != nil && !errors.Is(err, ethereum.NotFound) {
-			receipt, _ := client.TransactionReceipt(ctx, transaction.Hash())
+			receipt, receiptErr := client.TransactionReceipt(ctx, transaction.Hash())
+			if err != nil {
+				err = multierror.Append(err, receiptErr)
+			}
 
 			if receipt != nil {
 				if receipt.Status == types.ReceiptStatusFailed {
