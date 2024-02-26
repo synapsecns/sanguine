@@ -1,3 +1,5 @@
+import { CHAINS_BY_ID } from '@/constants/chains'
+
 const Chains = [
   'Ethereum',
   'Arbitrum',
@@ -102,25 +104,27 @@ export const generateTx = () => {
   return { origin, destination }
 }
 
-export const formatExplorerTxs = (txs) => {
-  return txs.map((tx) => {
-    return {
-      origin: {
-        payload: tx.fromInfo.tokenSymbol,
-        chain: tx.fromInfo.chainID,
-        amount: tx.fromInfo.formattedValue,
-        formattedAmount: formatAmount(tx.fromInfo.formattedValue),
-        timestamp: Date.parse(tx.fromInfo.formattedTime),
-        hash: tx.fromInfo.txnHash,
-      },
-      destination: {
-        payload: tx.toInfo.tokenSymbol,
-        chain: tx.toInfo.chainID,
-        amount: tx.toInfo.formattedValue,
-        formattedAmount: formatAmount(tx.toInfo.formattedValue),
-        timestamp: Date.parse(tx.toInfo.formattedTime),
-        hash: tx.toInfo.txnHash,
-      },
-    }
-  })
-}
+export const formatExplorerTxs = (txs) =>
+  txs
+    .filter((tx) => tx.toInfo.time > tx.fromInfo.time)
+    .map(
+      (tx) =>
+        new Object({
+          origin: {
+            payload: tx.fromInfo.tokenSymbol,
+            chain: CHAINS_BY_ID[tx.fromInfo.chainID].name,
+            amount: tx.fromInfo.formattedValue,
+            formattedAmount: formatAmount(tx.fromInfo.formattedValue),
+            timestamp: Date.parse(tx.fromInfo.formattedTime),
+            hash: tx.fromInfo.txnHash,
+          },
+          destination: {
+            payload: tx.toInfo.tokenSymbol,
+            chain: CHAINS_BY_ID[tx.toInfo.chainID].name,
+            amount: tx.toInfo.formattedValue,
+            formattedAmount: formatAmount(tx.toInfo.formattedValue),
+            timestamp: Date.parse(tx.toInfo.formattedTime),
+            hash: tx.toInfo.txnHash,
+          },
+        })
+    )

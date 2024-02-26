@@ -182,7 +182,7 @@ const FauxBridge = () => {
           <option>Chain</option>
         </select>
         <div className="flex gap-2.5 items-center justify-self-end text-sm text-zinc-700 dark:text-zinc-300 mr-1 cursor-default">
-          <PulseDot />
+          <PulseDot className="fill-green-500 stroke-green-500" />
           <span className="mb-px">Connected</span>
         </div>
         <div className={inputWrapperStyle}>
