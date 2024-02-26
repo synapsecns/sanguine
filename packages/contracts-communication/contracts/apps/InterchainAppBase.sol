@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 import {InterchainAppBaseEvents} from "../events/InterchainAppBaseEvents.sol";
 import {IInterchainApp} from "../interfaces/IInterchainApp.sol";
@@ -27,6 +27,8 @@ abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
     address private _executionService;
 
     error InterchainApp__BalanceTooLow(uint256 actual, uint256 expected);
+    error InterchainApp__CallerNotInterchainClient(address caller);
+    error InterchainApp__InterchainClientNotSet();
     error InterchainApp__ModuleAlreadyAdded(address module);
     error InterchainApp__ModuleNotAdded(address module);
     error InterchainApp__ReceiverNotSet(uint256 chainId);
@@ -35,6 +37,7 @@ abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
 
     /// @inheritdoc IInterchainApp
     function appReceive(uint256 srcChainId, bytes32 sender, uint64 nonce, bytes calldata message) external payable {
+        if (msg.sender != interchain) revert InterchainApp__CallerNotInterchainClient(msg.sender);
         if (srcChainId == block.chainid) revert InterchainApp__SameChainId(srcChainId);
         if (!isAllowedSender(srcChainId, sender)) revert InterchainApp__SenderNotAllowed(srcChainId, sender);
         _receiveMessage(srcChainId, sender, nonce, message);
@@ -180,10 +183,12 @@ abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
     )
         internal
     {
+        address cachedInterchain = interchain;
+        if (cachedInterchain == address(0)) revert InterchainApp__InterchainClientNotSet();
         if (dstChainId == block.chainid) revert InterchainApp__SameChainId(dstChainId);
         if (receiver == 0) revert InterchainApp__ReceiverNotSet(dstChainId);
         if (address(this).balance < messageFee) revert InterchainApp__BalanceTooLow(address(this).balance, messageFee);
-        IInterchainClientV1(interchain).interchainSend{value: messageFee}(
+        IInterchainClientV1(cachedInterchain).interchainSend{value: messageFee}(
             dstChainId, receiver, getExecutionService(), getSendingModules(), options.encodeOptionsV1(), message
         );
     }
