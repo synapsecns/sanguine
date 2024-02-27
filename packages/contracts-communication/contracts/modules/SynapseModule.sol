@@ -34,14 +34,28 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
 
     /// @inheritdoc ISynapseModule
     function addVerifier(address verifier) external onlyOwner {
-        _verifiers.addSigner(verifier);
-        emit VerifierAdded(verifier);
+        _addVerifier(verifier);
+    }
+
+    /// @inheritdoc ISynapseModule
+    function addVerifiers(address[] calldata verifiers) external onlyOwner {
+        uint256 length = verifiers.length;
+        for (uint256 i = 0; i < length; ++i) {
+            _addVerifier(verifiers[i]);
+        }
     }
 
     /// @inheritdoc ISynapseModule
     function removeVerifier(address verifier) external onlyOwner {
-        _verifiers.removeSigner(verifier);
-        emit VerifierRemoved(verifier);
+        _removeVerifier(verifier);
+    }
+
+    /// @inheritdoc ISynapseModule
+    function removeVerifiers(address[] calldata verifiers) external onlyOwner {
+        uint256 length = verifiers.length;
+        for (uint256 i = 0; i < length; ++i) {
+            _removeVerifier(verifiers[i]);
+        }
     }
 
     /// @inheritdoc ISynapseModule
@@ -90,6 +104,18 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
+
+    /// @dev Adds a verifier to the module. Permissions should be checked in the calling function.
+    function _addVerifier(address verifier) internal {
+        _verifiers.addSigner(verifier);
+        emit VerifierAdded(verifier);
+    }
+
+    /// @dev Removes a verifier from the module. Permissions should be checked in the calling function.
+    function _removeVerifier(address verifier) internal {
+        _verifiers.removeSigner(verifier);
+        emit VerifierRemoved(verifier);
+    }
 
     /// @dev Sets the threshold for the module. Permissions should be checked in the calling function.
     function _setThreshold(uint256 threshold) internal {

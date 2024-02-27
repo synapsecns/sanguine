@@ -13,10 +13,20 @@ interface ISynapseModule is IInterchainModule {
     /// @param verifier     The address of the verifier to add
     function addVerifier(address verifier) external;
 
+    /// @notice Adds a list of new verifiers to the module.
+    /// @dev Could be only called by the owner. Will revert if any of the verifiers is already added.
+    /// @param verifiers    The list of addresses of the verifiers to add
+    function addVerifiers(address[] calldata verifiers) external;
+
     /// @notice Removes a verifier from the module.
     /// @dev Could be only called by the owner. Will revert if the verifier is not added.
     /// @param verifier     The address of the verifier to remove
     function removeVerifier(address verifier) external;
+
+    /// @notice Removes a list of verifiers from the module.
+    /// @dev Could be only called by the owner. Will revert if any of the verifiers is not added.
+    /// @param verifiers    The list of addresses of the verifiers to remove
+    function removeVerifiers(address[] calldata verifiers) external;
 
     /// @notice Sets the threshold of the module.
     /// @dev Could be only called by the owner. Will revert if the threshold is zero.
