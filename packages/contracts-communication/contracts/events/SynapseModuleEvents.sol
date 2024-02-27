@@ -8,4 +8,7 @@ abstract contract SynapseModuleEvents {
 
     event FeeCollectorChanged(address feeCollector);
     event GasOracleChanged(address gasOracle);
+
+    event ClaimFeeFractionChanged(uint256 claimFeeFraction);
+    event FeesClaimed(address feeCollector, uint256 collectedFees, address claimer, uint256 claimerFee);
 }

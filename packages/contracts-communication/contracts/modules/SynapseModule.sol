@@ -68,6 +68,11 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     }
 
     /// @inheritdoc ISynapseModule
+    function setClaimFeeFraction(uint256 claimFeeFraction) external onlyOwner {
+        // TODO: implement
+    }
+
+    /// @inheritdoc ISynapseModule
     function setGasOracle(address gasOracle_) external onlyOwner {
         if (gasOracle_.code.length == 0) {
             revert SynapseModule__GasOracleNotContract(gasOracle_);
@@ -79,6 +84,11 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     // ══════════════════════════════════════════════ PERMISSIONLESS ═══════════════════════════════════════════════════
 
     /// @inheritdoc ISynapseModule
+    function claimFees() external {
+        // TODO: implement
+    }
+
+    /// @inheritdoc ISynapseModule
     function verifyEntry(bytes calldata encodedEntry, bytes calldata signatures) external {
         bytes32 ethSignedHash = MessageHashUtils.toEthSignedMessageHash(keccak256(encodedEntry));
         _verifiers.verifySignedHash(ethSignedHash, signatures);
@@ -86,6 +96,16 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
+    /// @inheritdoc ISynapseModule
+    function getClaimFeeAmount() external view returns (uint256) {
+        // TODO: implement
+    }
+
+    /// @inheritdoc ISynapseModule
+    function getClaimFeeFraction() external view returns (uint256) {
+        // TODO: implement
+    }
 
     /// @inheritdoc ISynapseModule
     function getVerifiers() external view returns (address[] memory) {
