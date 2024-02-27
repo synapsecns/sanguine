@@ -1,7 +1,4 @@
-import PulseDot from '../../components/icons/PulseDot'
-import { CHAINS_BY_ID } from '@/constants/chains'
-
-console.log(CHAINS_BY_ID)
+import FauxBridge from './FauxBridge'
 
 export default function ValueProps() {
   return (
@@ -162,91 +159,6 @@ export default function ValueProps() {
         </div>
       </section>
     </article>
-  )
-}
-
-const FauxBridge = () => {
-  const cardStyle =
-    'text-black dark:text-white bg-zinc-100 dark:bg-zinc-900 p-3 rounded-md border border-zinc-200 dark:border-zinc-800 shadow-xl grid gap-4 max-w-sm'
-  const sectionStyle =
-    'bg-zinc-50 dark:bg-zinc-800 rounded-md px-2.5 py-3 grid gap-3 grid-cols-2 border border-zinc-300 dark:border-transparent'
-  const selectStyle =
-    'rounded bg-inherit dark:bg-zinc-700 border-zinc-300 dark:border-zinc-700 w-fit cursor-pointer hover:border-zinc-400 dark:hover:border-zinc-500'
-  const inputWrapperStyle =
-    'flex bg-white dark:bg-inherit border border-zinc-200 dark:border-zinc-700 rounded-md gap-0 p-1.5 col-span-2 gap-1.5 items-center'
-  const inputStyle =
-    'bg-inherit border-none w-full p-1.5 text-xxl font-normal dark:font-light tracking-wide rounded'
-
-  return (
-    <div className={cardStyle}>
-      <section className={sectionStyle}>
-        <select className={`ml-0.5 ${selectStyle}`}>
-          <option>Chain</option>
-        </select>
-        <div className="flex gap-2.5 items-center justify-self-end text-sm text-zinc-700 dark:text-zinc-300 mr-1 cursor-default">
-          <PulseDot className="fill-green-500 stroke-green-500" />
-          <span className="mb-px">Connected</span>
-        </div>
-        <div className={inputWrapperStyle}>
-          <select className={selectStyle}>
-            <option>Token</option>
-          </select>
-          <input type="text" value="1000" className={inputStyle} />
-          <button
-            disabled
-            className="px-4 py-1 bg-zinc-100 dark:bg-zinc-700 border border-zinc-200 dark:border-transparent h-fit rounded mr-1 cursor-pointer hover:border-zinc-400 hover:dark:border-zinc-500"
-          >
-            Max
-          </button>
-        </div>
-      </section>
-      <section className={sectionStyle}>
-        <select className={`ml-0.5 ${selectStyle}`}>
-          <option>Chain</option>
-        </select>
-        <div className={inputWrapperStyle}>
-          <select className={selectStyle}>
-            <option>Token</option>
-          </select>
-          <input
-            disabled
-            type="text"
-            value="1,000"
-            className={inputStyle}
-          ></input>
-        </div>
-      </section>
-      <a
-        href="#"
-        className="border border-fuchsia-500 py-2.5 pl-2 rounded text-lg tracking-wider text-center hover:bg-purple-50 hover:dark:bg-fuchsia-950"
-        onMouseEnter={(e) => {
-          const target = e.target as HTMLAnchorElement
-          target.querySelector('animate')?.beginElement()
-        }}
-      >
-        Bridge
-        <svg
-          width="12"
-          height="13"
-          viewBox="0 -8 16 16"
-          overflow="visible"
-          strokeWidth="4"
-          fill="none"
-          preserveAspectRatio="xMaxYMid"
-          className="inline ml-2 mb-1 stroke-zinc-800 dark:stroke-zinc-200"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <animate
-            attributeName="width"
-            values="12; 18; 12"
-            dur=".5s"
-            calcMode="spline"
-            keySplines="0 0 0 1; .5 0 0 1"
-          />
-          <path d="m16,0 -16,0 m8,-8 8,8 -8,8" />
-        </svg>
-      </a>
-    </div>
   )
 }
 

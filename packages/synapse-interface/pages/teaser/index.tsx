@@ -7,7 +7,7 @@ import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import Hero from './Hero'
 import ValueProps from './ValueProps'
 
-import Wrapper from '@/components/WIP-wrapper-components/Wrapper'
+import Wrapper from '@/components/WipWrapperComponents/Wrapper'
 
 const LandingPage = () => {
   const { address: currentAddress } = useAccount()
