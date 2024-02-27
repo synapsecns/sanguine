@@ -62,34 +62,34 @@ contract SynapseModuleManagementTest is Test, SynapseModuleEvents {
         assertEq(verifiers[2], VERIFIER_3);
     }
 
-    function test_addSigner_addsSinger() public {
+    function test_addVerifier_addsVerifier() public {
         vm.prank(owner);
         module.addVerifier(VERIFIER_1);
         assertTrue(module.isVerifier(VERIFIER_1));
     }
 
-    function test_addSigner_emitsEvent() public {
+    function test_addVerifier_emitsEvent() public {
         vm.expectEmit(address(module));
         emit VerifierAdded(VERIFIER_1);
         vm.prank(owner);
         module.addVerifier(VERIFIER_1);
     }
 
-    function test_addSigner_revert_alreadyAdded() public {
+    function test_addVerifier_revert_alreadyAdded() public {
         basicSetup();
         vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__AlreadySigner.selector, VERIFIER_1));
         vm.prank(owner);
         module.addVerifier(VERIFIER_1);
     }
 
-    function test_addSigner_revert_notOwner(address notOwner) public {
+    function test_addVerifier_revert_notOwner(address notOwner) public {
         vm.assume(notOwner != owner);
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, notOwner));
         vm.prank(notOwner);
         module.addVerifier(VERIFIER_1);
     }
 
-    function test_addSigners_addsSigners() public {
+    function test_addVerifiers_addsVerifiers() public {
         vm.prank(owner);
         module.addVerifiers(allVerifiers);
         assertTrue(module.isVerifier(VERIFIER_1));
@@ -97,7 +97,7 @@ contract SynapseModuleManagementTest is Test, SynapseModuleEvents {
         assertTrue(module.isVerifier(VERIFIER_3));
     }
 
-    function test_addSigners_emitsEvents() public {
+    function test_addVerifiers_emitsEvents() public {
         vm.expectEmit(address(module));
         emit VerifierAdded(VERIFIER_1);
         vm.expectEmit(address(module));
@@ -108,7 +108,7 @@ contract SynapseModuleManagementTest is Test, SynapseModuleEvents {
         module.addVerifiers(allVerifiers);
     }
 
-    function test_addSigners_revert_alreadyAdded() public {
+    function test_addVerifiers_revert_alreadyAdded() public {
         vm.prank(owner);
         module.addVerifier(VERIFIER_2);
         vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__AlreadySigner.selector, VERIFIER_2));
@@ -116,21 +116,21 @@ contract SynapseModuleManagementTest is Test, SynapseModuleEvents {
         module.addVerifiers(allVerifiers);
     }
 
-    function test_addSigners_revert_notOwner(address notOwner) public {
+    function test_addVerifiers_revert_notOwner(address notOwner) public {
         vm.assume(notOwner != owner);
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, notOwner));
         vm.prank(notOwner);
         module.addVerifiers(allVerifiers);
     }
 
-    function test_removeSigner_removesSigner() public {
+    function test_removeVerifier_removesVerifier() public {
         basicSetup();
         vm.prank(owner);
         module.removeVerifier(VERIFIER_1);
         assertFalse(module.isVerifier(VERIFIER_1));
     }
 
-    function test_removeSigner_emitsEvent() public {
+    function test_removeVerifier_emitsEvent() public {
         basicSetup();
         vm.expectEmit(address(module));
         emit VerifierRemoved(VERIFIER_1);
@@ -138,20 +138,20 @@ contract SynapseModuleManagementTest is Test, SynapseModuleEvents {
         module.removeVerifier(VERIFIER_1);
     }
 
-    function test_removeSigner_revert_notAdded() public {
+    function test_removeVerifier_revert_notAdded() public {
         vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__NotSigner.selector, VERIFIER_1));
         vm.prank(owner);
         module.removeVerifier(VERIFIER_1);
     }
 
-    function test_removeSigner_revert_notOwner(address notOwner) public {
+    function test_removeVerifier_revert_notOwner(address notOwner) public {
         vm.assume(notOwner != owner);
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, notOwner));
         vm.prank(notOwner);
         module.removeVerifier(VERIFIER_1);
     }
 
-    function test_removeSigners_removesSigners() public {
+    function test_removeVerifiers_removesVerifiers() public {
         basicSetup();
         vm.prank(owner);
         module.removeVerifiers(allVerifiers);
@@ -160,7 +160,7 @@ contract SynapseModuleManagementTest is Test, SynapseModuleEvents {
         assertFalse(module.isVerifier(VERIFIER_3));
     }
 
-    function test_removeSigners_emitsEvents() public {
+    function test_removeVerifiers_emitsEvents() public {
         basicSetup();
         vm.expectEmit(address(module));
         emit VerifierRemoved(VERIFIER_1);
@@ -172,7 +172,7 @@ contract SynapseModuleManagementTest is Test, SynapseModuleEvents {
         module.removeVerifiers(allVerifiers);
     }
 
-    function test_removeSigners_revert_notAdded() public {
+    function test_removeVerifiers_revert_notAdded() public {
         vm.prank(owner);
         module.addVerifier(VERIFIER_2);
         vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__NotSigner.selector, VERIFIER_1));
@@ -180,7 +180,7 @@ contract SynapseModuleManagementTest is Test, SynapseModuleEvents {
         module.removeVerifiers(allVerifiers);
     }
 
-    function test_removeSigners_revert_notOwner(address notOwner) public {
+    function test_removeVerifiers_revert_notOwner(address notOwner) public {
         vm.assume(notOwner != owner);
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, notOwner));
         vm.prank(notOwner);
