@@ -31,15 +31,17 @@ var (
 
 // ExecutionFeesMockMetaData contains all meta data concerning the ExecutionFeesMock contract.
 var ExecutionFeesMockMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"}],\"name\":\"addExecutionFee\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"claimExecutionFees\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executor\",\"type\":\"address\"}],\"name\":\"getAccumulatedRewards\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"accumulated\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executor\",\"type\":\"address\"}],\"name\":\"getUnclaimedRewards\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"unclaimed\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"executor\",\"type\":\"address\"}],\"name\":\"recordExecutor\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"name\":\"ExecutionFees__AlreadyRecorded\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ExecutionFees__ZeroAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ExecutionFees__ZeroAmount\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executor\",\"type\":\"address\"}],\"name\":\"accumulatedRewards\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"accumulated\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"}],\"name\":\"addExecutionFee\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executor\",\"type\":\"address\"}],\"name\":\"claimExecutionFees\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"}],\"name\":\"executionFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"executor\",\"type\":\"address\"}],\"name\":\"recordExecutor\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"}],\"name\":\"recordedExecutor\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"executor\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executor\",\"type\":\"address\"}],\"name\":\"unclaimedRewards\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"unclaimed\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
+		"73f273fc": "accumulatedRewards(address)",
 		"ffecec7e": "addExecutionFee(uint256,bytes32)",
-		"10886ac4": "claimExecutionFees()",
-		"5ee09669": "getAccumulatedRewards(address)",
-		"69a69e29": "getUnclaimedRewards(address)",
+		"4e497dac": "claimExecutionFees(address)",
+		"936fd4db": "executionFee(uint256,bytes32)",
 		"0676b706": "recordExecutor(uint256,bytes32,address)",
+		"d01e09a6": "recordedExecutor(uint256,bytes32)",
+		"949813b8": "unclaimedRewards(address)",
 	},
-	Bin: "0x608060405234801561001057600080fd5b506101aa806100206000396000f3fe60806040526004361061005a5760003560e01c80635ee09669116100435780635ee096691461008d57806369a69e291461008d578063ffecec7e146100c057600080fd5b80630676b7061461005f57806310886ac414610081575b600080fd5b34801561006b57600080fd5b5061007f61007a3660046100fb565b505050565b005b34801561007f57600080fd5b34801561009957600080fd5b506100ae6100a8366004610130565b50600090565b60405190815260200160405180910390f35b61007f6100ce366004610152565b5050565b803573ffffffffffffffffffffffffffffffffffffffff811681146100f657600080fd5b919050565b60008060006060848603121561011057600080fd5b8335925060208401359150610127604085016100d2565b90509250925092565b60006020828403121561014257600080fd5b61014b826100d2565b9392505050565b6000806040838503121561016557600080fd5b5050803592602090910135915056fea2646970667358221220a86f7bc8f1b15dbf063f62b92f027b8f75b3126747b9f94226d39da3394ec07d64736f6c63430008140033",
+	Bin: "0x608060405234801561001057600080fd5b50610236806100206000396000f3fe6080604052600436106100705760003560e01c8063936fd4db1161004e578063936fd4db146100e9578063949813b8146100b5578063d01e09a61461010c578063ffecec7e1461014c57600080fd5b80630676b706146100755780634e497dac1461009757806373f273fc146100b5575b600080fd5b34801561008157600080fd5b50610095610090366004610187565b505050565b005b3480156100a357600080fd5b506100956100b23660046101bc565b50565b3480156100c157600080fd5b506100d66100d03660046101bc565b50600090565b6040519081526020015b60405180910390f35b3480156100f557600080fd5b506100d66101043660046101de565b600092915050565b34801561011857600080fd5b506101276101043660046101de565b60405173ffffffffffffffffffffffffffffffffffffffff90911681526020016100e0565b61009561015a3660046101de565b5050565b803573ffffffffffffffffffffffffffffffffffffffff8116811461018257600080fd5b919050565b60008060006060848603121561019c57600080fd5b83359250602084013591506101b36040850161015e565b90509250925092565b6000602082840312156101ce57600080fd5b6101d78261015e565b9392505050565b600080604083850312156101f157600080fd5b5050803592602090910135915056fea2646970667358221220466b4affbefba416855fca9956518a4ea80d9d7125c7c93b7d66b7e3bbe2718e64736f6c63430008140033",
 }
 
 // ExecutionFeesMockABI is the input ABI used to generate the binding from.
@@ -213,12 +215,12 @@ func (_ExecutionFeesMock *ExecutionFeesMockTransactorRaw) Transact(opts *bind.Tr
 	return _ExecutionFeesMock.Contract.contract.Transact(opts, method, params...)
 }
 
-// GetAccumulatedRewards is a free data retrieval call binding the contract method 0x5ee09669.
+// AccumulatedRewards is a free data retrieval call binding the contract method 0x73f273fc.
 //
-// Solidity: function getAccumulatedRewards(address executor) view returns(uint256 accumulated)
-func (_ExecutionFeesMock *ExecutionFeesMockCaller) GetAccumulatedRewards(opts *bind.CallOpts, executor common.Address) (*big.Int, error) {
+// Solidity: function accumulatedRewards(address executor) view returns(uint256 accumulated)
+func (_ExecutionFeesMock *ExecutionFeesMockCaller) AccumulatedRewards(opts *bind.CallOpts, executor common.Address) (*big.Int, error) {
 	var out []interface{}
-	err := _ExecutionFeesMock.contract.Call(opts, &out, "getAccumulatedRewards", executor)
+	err := _ExecutionFeesMock.contract.Call(opts, &out, "accumulatedRewards", executor)
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -230,26 +232,26 @@ func (_ExecutionFeesMock *ExecutionFeesMockCaller) GetAccumulatedRewards(opts *b
 
 }
 
-// GetAccumulatedRewards is a free data retrieval call binding the contract method 0x5ee09669.
+// AccumulatedRewards is a free data retrieval call binding the contract method 0x73f273fc.
 //
-// Solidity: function getAccumulatedRewards(address executor) view returns(uint256 accumulated)
-func (_ExecutionFeesMock *ExecutionFeesMockSession) GetAccumulatedRewards(executor common.Address) (*big.Int, error) {
-	return _ExecutionFeesMock.Contract.GetAccumulatedRewards(&_ExecutionFeesMock.CallOpts, executor)
+// Solidity: function accumulatedRewards(address executor) view returns(uint256 accumulated)
+func (_ExecutionFeesMock *ExecutionFeesMockSession) AccumulatedRewards(executor common.Address) (*big.Int, error) {
+	return _ExecutionFeesMock.Contract.AccumulatedRewards(&_ExecutionFeesMock.CallOpts, executor)
 }
 
-// GetAccumulatedRewards is a free data retrieval call binding the contract method 0x5ee09669.
+// AccumulatedRewards is a free data retrieval call binding the contract method 0x73f273fc.
 //
-// Solidity: function getAccumulatedRewards(address executor) view returns(uint256 accumulated)
-func (_ExecutionFeesMock *ExecutionFeesMockCallerSession) GetAccumulatedRewards(executor common.Address) (*big.Int, error) {
-	return _ExecutionFeesMock.Contract.GetAccumulatedRewards(&_ExecutionFeesMock.CallOpts, executor)
+// Solidity: function accumulatedRewards(address executor) view returns(uint256 accumulated)
+func (_ExecutionFeesMock *ExecutionFeesMockCallerSession) AccumulatedRewards(executor common.Address) (*big.Int, error) {
+	return _ExecutionFeesMock.Contract.AccumulatedRewards(&_ExecutionFeesMock.CallOpts, executor)
 }
 
-// GetUnclaimedRewards is a free data retrieval call binding the contract method 0x69a69e29.
+// ExecutionFee is a free data retrieval call binding the contract method 0x936fd4db.
 //
-// Solidity: function getUnclaimedRewards(address executor) view returns(uint256 unclaimed)
-func (_ExecutionFeesMock *ExecutionFeesMockCaller) GetUnclaimedRewards(opts *bind.CallOpts, executor common.Address) (*big.Int, error) {
+// Solidity: function executionFee(uint256 dstChainId, bytes32 transactionId) view returns(uint256 fee)
+func (_ExecutionFeesMock *ExecutionFeesMockCaller) ExecutionFee(opts *bind.CallOpts, dstChainId *big.Int, transactionId [32]byte) (*big.Int, error) {
 	var out []interface{}
-	err := _ExecutionFeesMock.contract.Call(opts, &out, "getUnclaimedRewards", executor)
+	err := _ExecutionFeesMock.contract.Call(opts, &out, "executionFee", dstChainId, transactionId)
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -261,18 +263,80 @@ func (_ExecutionFeesMock *ExecutionFeesMockCaller) GetUnclaimedRewards(opts *bin
 
 }
 
-// GetUnclaimedRewards is a free data retrieval call binding the contract method 0x69a69e29.
+// ExecutionFee is a free data retrieval call binding the contract method 0x936fd4db.
 //
-// Solidity: function getUnclaimedRewards(address executor) view returns(uint256 unclaimed)
-func (_ExecutionFeesMock *ExecutionFeesMockSession) GetUnclaimedRewards(executor common.Address) (*big.Int, error) {
-	return _ExecutionFeesMock.Contract.GetUnclaimedRewards(&_ExecutionFeesMock.CallOpts, executor)
+// Solidity: function executionFee(uint256 dstChainId, bytes32 transactionId) view returns(uint256 fee)
+func (_ExecutionFeesMock *ExecutionFeesMockSession) ExecutionFee(dstChainId *big.Int, transactionId [32]byte) (*big.Int, error) {
+	return _ExecutionFeesMock.Contract.ExecutionFee(&_ExecutionFeesMock.CallOpts, dstChainId, transactionId)
 }
 
-// GetUnclaimedRewards is a free data retrieval call binding the contract method 0x69a69e29.
+// ExecutionFee is a free data retrieval call binding the contract method 0x936fd4db.
 //
-// Solidity: function getUnclaimedRewards(address executor) view returns(uint256 unclaimed)
-func (_ExecutionFeesMock *ExecutionFeesMockCallerSession) GetUnclaimedRewards(executor common.Address) (*big.Int, error) {
-	return _ExecutionFeesMock.Contract.GetUnclaimedRewards(&_ExecutionFeesMock.CallOpts, executor)
+// Solidity: function executionFee(uint256 dstChainId, bytes32 transactionId) view returns(uint256 fee)
+func (_ExecutionFeesMock *ExecutionFeesMockCallerSession) ExecutionFee(dstChainId *big.Int, transactionId [32]byte) (*big.Int, error) {
+	return _ExecutionFeesMock.Contract.ExecutionFee(&_ExecutionFeesMock.CallOpts, dstChainId, transactionId)
+}
+
+// RecordedExecutor is a free data retrieval call binding the contract method 0xd01e09a6.
+//
+// Solidity: function recordedExecutor(uint256 dstChainId, bytes32 transactionId) view returns(address executor)
+func (_ExecutionFeesMock *ExecutionFeesMockCaller) RecordedExecutor(opts *bind.CallOpts, dstChainId *big.Int, transactionId [32]byte) (common.Address, error) {
+	var out []interface{}
+	err := _ExecutionFeesMock.contract.Call(opts, &out, "recordedExecutor", dstChainId, transactionId)
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// RecordedExecutor is a free data retrieval call binding the contract method 0xd01e09a6.
+//
+// Solidity: function recordedExecutor(uint256 dstChainId, bytes32 transactionId) view returns(address executor)
+func (_ExecutionFeesMock *ExecutionFeesMockSession) RecordedExecutor(dstChainId *big.Int, transactionId [32]byte) (common.Address, error) {
+	return _ExecutionFeesMock.Contract.RecordedExecutor(&_ExecutionFeesMock.CallOpts, dstChainId, transactionId)
+}
+
+// RecordedExecutor is a free data retrieval call binding the contract method 0xd01e09a6.
+//
+// Solidity: function recordedExecutor(uint256 dstChainId, bytes32 transactionId) view returns(address executor)
+func (_ExecutionFeesMock *ExecutionFeesMockCallerSession) RecordedExecutor(dstChainId *big.Int, transactionId [32]byte) (common.Address, error) {
+	return _ExecutionFeesMock.Contract.RecordedExecutor(&_ExecutionFeesMock.CallOpts, dstChainId, transactionId)
+}
+
+// UnclaimedRewards is a free data retrieval call binding the contract method 0x949813b8.
+//
+// Solidity: function unclaimedRewards(address executor) view returns(uint256 unclaimed)
+func (_ExecutionFeesMock *ExecutionFeesMockCaller) UnclaimedRewards(opts *bind.CallOpts, executor common.Address) (*big.Int, error) {
+	var out []interface{}
+	err := _ExecutionFeesMock.contract.Call(opts, &out, "unclaimedRewards", executor)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// UnclaimedRewards is a free data retrieval call binding the contract method 0x949813b8.
+//
+// Solidity: function unclaimedRewards(address executor) view returns(uint256 unclaimed)
+func (_ExecutionFeesMock *ExecutionFeesMockSession) UnclaimedRewards(executor common.Address) (*big.Int, error) {
+	return _ExecutionFeesMock.Contract.UnclaimedRewards(&_ExecutionFeesMock.CallOpts, executor)
+}
+
+// UnclaimedRewards is a free data retrieval call binding the contract method 0x949813b8.
+//
+// Solidity: function unclaimedRewards(address executor) view returns(uint256 unclaimed)
+func (_ExecutionFeesMock *ExecutionFeesMockCallerSession) UnclaimedRewards(executor common.Address) (*big.Int, error) {
+	return _ExecutionFeesMock.Contract.UnclaimedRewards(&_ExecutionFeesMock.CallOpts, executor)
 }
 
 // AddExecutionFee is a paid mutator transaction binding the contract method 0xffecec7e.
@@ -296,25 +360,25 @@ func (_ExecutionFeesMock *ExecutionFeesMockTransactorSession) AddExecutionFee(ds
 	return _ExecutionFeesMock.Contract.AddExecutionFee(&_ExecutionFeesMock.TransactOpts, dstChainId, transactionId)
 }
 
-// ClaimExecutionFees is a paid mutator transaction binding the contract method 0x10886ac4.
+// ClaimExecutionFees is a paid mutator transaction binding the contract method 0x4e497dac.
 //
-// Solidity: function claimExecutionFees() returns()
-func (_ExecutionFeesMock *ExecutionFeesMockTransactor) ClaimExecutionFees(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _ExecutionFeesMock.contract.Transact(opts, "claimExecutionFees")
+// Solidity: function claimExecutionFees(address executor) returns()
+func (_ExecutionFeesMock *ExecutionFeesMockTransactor) ClaimExecutionFees(opts *bind.TransactOpts, executor common.Address) (*types.Transaction, error) {
+	return _ExecutionFeesMock.contract.Transact(opts, "claimExecutionFees", executor)
 }
 
-// ClaimExecutionFees is a paid mutator transaction binding the contract method 0x10886ac4.
+// ClaimExecutionFees is a paid mutator transaction binding the contract method 0x4e497dac.
 //
-// Solidity: function claimExecutionFees() returns()
-func (_ExecutionFeesMock *ExecutionFeesMockSession) ClaimExecutionFees() (*types.Transaction, error) {
-	return _ExecutionFeesMock.Contract.ClaimExecutionFees(&_ExecutionFeesMock.TransactOpts)
+// Solidity: function claimExecutionFees(address executor) returns()
+func (_ExecutionFeesMock *ExecutionFeesMockSession) ClaimExecutionFees(executor common.Address) (*types.Transaction, error) {
+	return _ExecutionFeesMock.Contract.ClaimExecutionFees(&_ExecutionFeesMock.TransactOpts, executor)
 }
 
-// ClaimExecutionFees is a paid mutator transaction binding the contract method 0x10886ac4.
+// ClaimExecutionFees is a paid mutator transaction binding the contract method 0x4e497dac.
 //
-// Solidity: function claimExecutionFees() returns()
-func (_ExecutionFeesMock *ExecutionFeesMockTransactorSession) ClaimExecutionFees() (*types.Transaction, error) {
-	return _ExecutionFeesMock.Contract.ClaimExecutionFees(&_ExecutionFeesMock.TransactOpts)
+// Solidity: function claimExecutionFees(address executor) returns()
+func (_ExecutionFeesMock *ExecutionFeesMockTransactorSession) ClaimExecutionFees(executor common.Address) (*types.Transaction, error) {
+	return _ExecutionFeesMock.Contract.ClaimExecutionFees(&_ExecutionFeesMock.TransactOpts, executor)
 }
 
 // RecordExecutor is a paid mutator transaction binding the contract method 0x0676b706.
@@ -340,13 +404,15 @@ func (_ExecutionFeesMock *ExecutionFeesMockTransactorSession) RecordExecutor(dst
 
 // IExecutionFeesMetaData contains all meta data concerning the IExecutionFees contract.
 var IExecutionFeesMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"}],\"name\":\"addExecutionFee\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"claimExecutionFees\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executor\",\"type\":\"address\"}],\"name\":\"getAccumulatedRewards\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"accumulated\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executor\",\"type\":\"address\"}],\"name\":\"getUnclaimedRewards\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"unclaimed\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"executor\",\"type\":\"address\"}],\"name\":\"recordExecutor\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"name\":\"ExecutionFees__AlreadyRecorded\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ExecutionFees__ZeroAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ExecutionFees__ZeroAmount\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executor\",\"type\":\"address\"}],\"name\":\"accumulatedRewards\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"accumulated\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"}],\"name\":\"addExecutionFee\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executor\",\"type\":\"address\"}],\"name\":\"claimExecutionFees\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"}],\"name\":\"executionFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"executor\",\"type\":\"address\"}],\"name\":\"recordExecutor\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"}],\"name\":\"recordedExecutor\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"executor\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executor\",\"type\":\"address\"}],\"name\":\"unclaimedRewards\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"unclaimed\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
+		"73f273fc": "accumulatedRewards(address)",
 		"ffecec7e": "addExecutionFee(uint256,bytes32)",
-		"10886ac4": "claimExecutionFees()",
-		"5ee09669": "getAccumulatedRewards(address)",
-		"69a69e29": "getUnclaimedRewards(address)",
+		"4e497dac": "claimExecutionFees(address)",
+		"936fd4db": "executionFee(uint256,bytes32)",
 		"0676b706": "recordExecutor(uint256,bytes32,address)",
+		"d01e09a6": "recordedExecutor(uint256,bytes32)",
+		"949813b8": "unclaimedRewards(address)",
 	},
 }
 
@@ -500,12 +566,12 @@ func (_IExecutionFees *IExecutionFeesTransactorRaw) Transact(opts *bind.Transact
 	return _IExecutionFees.Contract.contract.Transact(opts, method, params...)
 }
 
-// GetAccumulatedRewards is a free data retrieval call binding the contract method 0x5ee09669.
+// AccumulatedRewards is a free data retrieval call binding the contract method 0x73f273fc.
 //
-// Solidity: function getAccumulatedRewards(address executor) view returns(uint256 accumulated)
-func (_IExecutionFees *IExecutionFeesCaller) GetAccumulatedRewards(opts *bind.CallOpts, executor common.Address) (*big.Int, error) {
+// Solidity: function accumulatedRewards(address executor) view returns(uint256 accumulated)
+func (_IExecutionFees *IExecutionFeesCaller) AccumulatedRewards(opts *bind.CallOpts, executor common.Address) (*big.Int, error) {
 	var out []interface{}
-	err := _IExecutionFees.contract.Call(opts, &out, "getAccumulatedRewards", executor)
+	err := _IExecutionFees.contract.Call(opts, &out, "accumulatedRewards", executor)
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -517,26 +583,26 @@ func (_IExecutionFees *IExecutionFeesCaller) GetAccumulatedRewards(opts *bind.Ca
 
 }
 
-// GetAccumulatedRewards is a free data retrieval call binding the contract method 0x5ee09669.
+// AccumulatedRewards is a free data retrieval call binding the contract method 0x73f273fc.
 //
-// Solidity: function getAccumulatedRewards(address executor) view returns(uint256 accumulated)
-func (_IExecutionFees *IExecutionFeesSession) GetAccumulatedRewards(executor common.Address) (*big.Int, error) {
-	return _IExecutionFees.Contract.GetAccumulatedRewards(&_IExecutionFees.CallOpts, executor)
+// Solidity: function accumulatedRewards(address executor) view returns(uint256 accumulated)
+func (_IExecutionFees *IExecutionFeesSession) AccumulatedRewards(executor common.Address) (*big.Int, error) {
+	return _IExecutionFees.Contract.AccumulatedRewards(&_IExecutionFees.CallOpts, executor)
 }
 
-// GetAccumulatedRewards is a free data retrieval call binding the contract method 0x5ee09669.
+// AccumulatedRewards is a free data retrieval call binding the contract method 0x73f273fc.
 //
-// Solidity: function getAccumulatedRewards(address executor) view returns(uint256 accumulated)
-func (_IExecutionFees *IExecutionFeesCallerSession) GetAccumulatedRewards(executor common.Address) (*big.Int, error) {
-	return _IExecutionFees.Contract.GetAccumulatedRewards(&_IExecutionFees.CallOpts, executor)
+// Solidity: function accumulatedRewards(address executor) view returns(uint256 accumulated)
+func (_IExecutionFees *IExecutionFeesCallerSession) AccumulatedRewards(executor common.Address) (*big.Int, error) {
+	return _IExecutionFees.Contract.AccumulatedRewards(&_IExecutionFees.CallOpts, executor)
 }
 
-// GetUnclaimedRewards is a free data retrieval call binding the contract method 0x69a69e29.
+// ExecutionFee is a free data retrieval call binding the contract method 0x936fd4db.
 //
-// Solidity: function getUnclaimedRewards(address executor) view returns(uint256 unclaimed)
-func (_IExecutionFees *IExecutionFeesCaller) GetUnclaimedRewards(opts *bind.CallOpts, executor common.Address) (*big.Int, error) {
+// Solidity: function executionFee(uint256 dstChainId, bytes32 transactionId) view returns(uint256 fee)
+func (_IExecutionFees *IExecutionFeesCaller) ExecutionFee(opts *bind.CallOpts, dstChainId *big.Int, transactionId [32]byte) (*big.Int, error) {
 	var out []interface{}
-	err := _IExecutionFees.contract.Call(opts, &out, "getUnclaimedRewards", executor)
+	err := _IExecutionFees.contract.Call(opts, &out, "executionFee", dstChainId, transactionId)
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -548,18 +614,80 @@ func (_IExecutionFees *IExecutionFeesCaller) GetUnclaimedRewards(opts *bind.Call
 
 }
 
-// GetUnclaimedRewards is a free data retrieval call binding the contract method 0x69a69e29.
+// ExecutionFee is a free data retrieval call binding the contract method 0x936fd4db.
 //
-// Solidity: function getUnclaimedRewards(address executor) view returns(uint256 unclaimed)
-func (_IExecutionFees *IExecutionFeesSession) GetUnclaimedRewards(executor common.Address) (*big.Int, error) {
-	return _IExecutionFees.Contract.GetUnclaimedRewards(&_IExecutionFees.CallOpts, executor)
+// Solidity: function executionFee(uint256 dstChainId, bytes32 transactionId) view returns(uint256 fee)
+func (_IExecutionFees *IExecutionFeesSession) ExecutionFee(dstChainId *big.Int, transactionId [32]byte) (*big.Int, error) {
+	return _IExecutionFees.Contract.ExecutionFee(&_IExecutionFees.CallOpts, dstChainId, transactionId)
 }
 
-// GetUnclaimedRewards is a free data retrieval call binding the contract method 0x69a69e29.
+// ExecutionFee is a free data retrieval call binding the contract method 0x936fd4db.
 //
-// Solidity: function getUnclaimedRewards(address executor) view returns(uint256 unclaimed)
-func (_IExecutionFees *IExecutionFeesCallerSession) GetUnclaimedRewards(executor common.Address) (*big.Int, error) {
-	return _IExecutionFees.Contract.GetUnclaimedRewards(&_IExecutionFees.CallOpts, executor)
+// Solidity: function executionFee(uint256 dstChainId, bytes32 transactionId) view returns(uint256 fee)
+func (_IExecutionFees *IExecutionFeesCallerSession) ExecutionFee(dstChainId *big.Int, transactionId [32]byte) (*big.Int, error) {
+	return _IExecutionFees.Contract.ExecutionFee(&_IExecutionFees.CallOpts, dstChainId, transactionId)
+}
+
+// RecordedExecutor is a free data retrieval call binding the contract method 0xd01e09a6.
+//
+// Solidity: function recordedExecutor(uint256 dstChainId, bytes32 transactionId) view returns(address executor)
+func (_IExecutionFees *IExecutionFeesCaller) RecordedExecutor(opts *bind.CallOpts, dstChainId *big.Int, transactionId [32]byte) (common.Address, error) {
+	var out []interface{}
+	err := _IExecutionFees.contract.Call(opts, &out, "recordedExecutor", dstChainId, transactionId)
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// RecordedExecutor is a free data retrieval call binding the contract method 0xd01e09a6.
+//
+// Solidity: function recordedExecutor(uint256 dstChainId, bytes32 transactionId) view returns(address executor)
+func (_IExecutionFees *IExecutionFeesSession) RecordedExecutor(dstChainId *big.Int, transactionId [32]byte) (common.Address, error) {
+	return _IExecutionFees.Contract.RecordedExecutor(&_IExecutionFees.CallOpts, dstChainId, transactionId)
+}
+
+// RecordedExecutor is a free data retrieval call binding the contract method 0xd01e09a6.
+//
+// Solidity: function recordedExecutor(uint256 dstChainId, bytes32 transactionId) view returns(address executor)
+func (_IExecutionFees *IExecutionFeesCallerSession) RecordedExecutor(dstChainId *big.Int, transactionId [32]byte) (common.Address, error) {
+	return _IExecutionFees.Contract.RecordedExecutor(&_IExecutionFees.CallOpts, dstChainId, transactionId)
+}
+
+// UnclaimedRewards is a free data retrieval call binding the contract method 0x949813b8.
+//
+// Solidity: function unclaimedRewards(address executor) view returns(uint256 unclaimed)
+func (_IExecutionFees *IExecutionFeesCaller) UnclaimedRewards(opts *bind.CallOpts, executor common.Address) (*big.Int, error) {
+	var out []interface{}
+	err := _IExecutionFees.contract.Call(opts, &out, "unclaimedRewards", executor)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// UnclaimedRewards is a free data retrieval call binding the contract method 0x949813b8.
+//
+// Solidity: function unclaimedRewards(address executor) view returns(uint256 unclaimed)
+func (_IExecutionFees *IExecutionFeesSession) UnclaimedRewards(executor common.Address) (*big.Int, error) {
+	return _IExecutionFees.Contract.UnclaimedRewards(&_IExecutionFees.CallOpts, executor)
+}
+
+// UnclaimedRewards is a free data retrieval call binding the contract method 0x949813b8.
+//
+// Solidity: function unclaimedRewards(address executor) view returns(uint256 unclaimed)
+func (_IExecutionFees *IExecutionFeesCallerSession) UnclaimedRewards(executor common.Address) (*big.Int, error) {
+	return _IExecutionFees.Contract.UnclaimedRewards(&_IExecutionFees.CallOpts, executor)
 }
 
 // AddExecutionFee is a paid mutator transaction binding the contract method 0xffecec7e.
@@ -583,25 +711,25 @@ func (_IExecutionFees *IExecutionFeesTransactorSession) AddExecutionFee(dstChain
 	return _IExecutionFees.Contract.AddExecutionFee(&_IExecutionFees.TransactOpts, dstChainId, transactionId)
 }
 
-// ClaimExecutionFees is a paid mutator transaction binding the contract method 0x10886ac4.
+// ClaimExecutionFees is a paid mutator transaction binding the contract method 0x4e497dac.
 //
-// Solidity: function claimExecutionFees() returns()
-func (_IExecutionFees *IExecutionFeesTransactor) ClaimExecutionFees(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _IExecutionFees.contract.Transact(opts, "claimExecutionFees")
+// Solidity: function claimExecutionFees(address executor) returns()
+func (_IExecutionFees *IExecutionFeesTransactor) ClaimExecutionFees(opts *bind.TransactOpts, executor common.Address) (*types.Transaction, error) {
+	return _IExecutionFees.contract.Transact(opts, "claimExecutionFees", executor)
 }
 
-// ClaimExecutionFees is a paid mutator transaction binding the contract method 0x10886ac4.
+// ClaimExecutionFees is a paid mutator transaction binding the contract method 0x4e497dac.
 //
-// Solidity: function claimExecutionFees() returns()
-func (_IExecutionFees *IExecutionFeesSession) ClaimExecutionFees() (*types.Transaction, error) {
-	return _IExecutionFees.Contract.ClaimExecutionFees(&_IExecutionFees.TransactOpts)
+// Solidity: function claimExecutionFees(address executor) returns()
+func (_IExecutionFees *IExecutionFeesSession) ClaimExecutionFees(executor common.Address) (*types.Transaction, error) {
+	return _IExecutionFees.Contract.ClaimExecutionFees(&_IExecutionFees.TransactOpts, executor)
 }
 
-// ClaimExecutionFees is a paid mutator transaction binding the contract method 0x10886ac4.
+// ClaimExecutionFees is a paid mutator transaction binding the contract method 0x4e497dac.
 //
-// Solidity: function claimExecutionFees() returns()
-func (_IExecutionFees *IExecutionFeesTransactorSession) ClaimExecutionFees() (*types.Transaction, error) {
-	return _IExecutionFees.Contract.ClaimExecutionFees(&_IExecutionFees.TransactOpts)
+// Solidity: function claimExecutionFees(address executor) returns()
+func (_IExecutionFees *IExecutionFeesTransactorSession) ClaimExecutionFees(executor common.Address) (*types.Transaction, error) {
+	return _IExecutionFees.Contract.ClaimExecutionFees(&_IExecutionFees.TransactOpts, executor)
 }
 
 // RecordExecutor is a paid mutator transaction binding the contract method 0x0676b706.
