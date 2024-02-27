@@ -175,26 +175,30 @@ func (c *rebalanceManagerCCTP) listen(ctx context.Context, chainID int) (err err
 	}
 
 	return listener.Listen(ctx, func(parentCtx context.Context, log types.Log) (err error) {
-		fmt.Printf("[cctp] got log: %v\n", log.Topics[0])
+		fmt.Printf("[cctp] got log: %v with hash %v, blocknumber %v\n", log.Topics[0], log.TxHash, log.BlockNumber)
 		switch log.Topics[0] {
 		case cctp.CircleRequestSentTopic:
 			parsedEvent, err := parser.ParseCircleRequestSent(log)
 			if err != nil {
-				return fmt.Errorf("could not parse circle request sent: %w", err)
+				logger.Warnf("could not parse circle request sent: %w", err)
+				return nil
 			}
-			origin := uint64(parsedEvent.ChainId.Int64())
+			origin := uint64(chainID)
 			err = c.db.UpdateRebalanceStatus(parentCtx, parsedEvent.RequestID, &origin, reldb.RebalancePending)
 			if err != nil {
-				return fmt.Errorf("could not update rebalance status: %w", err)
+				logger.Warnf("could not update rebalance status: %w", err)
+				return nil
 			}
 		case cctp.CircleRequestFulfilledTopic:
 			parsedEvent, err := parser.ParseCircleRequestFulfilled(log)
 			if err != nil {
-				return fmt.Errorf("could not parse circle request fulfilled: %w", err)
+				logger.Warnf("could not parse circle request fulfilled: %w", err)
+				return nil
 			}
 			err = c.db.UpdateRebalanceStatus(parentCtx, parsedEvent.RequestID, nil, reldb.RebalanceCompleted)
 			if err != nil {
-				return fmt.Errorf("could not update rebalance status: %w", err)
+				logger.Warnf("could not update rebalance status: %w", err)
+				return nil
 			}
 		default:
 			logger.Warnf("unknown event %s", log.Topics[0])
