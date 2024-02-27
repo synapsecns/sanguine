@@ -1,6 +1,7 @@
 import PulseDot from '@/components/icons/PulseDot'
 import { CHAINS_ARR } from '@/constants/chains'
 import * as BRIDGEABLE from '@constants/tokens/bridgeable'
+import * as WALLET_ICONS from '@components/WalletIcons'
 
 const cardStyle =
   'text-black dark:text-white bg-zinc-100 dark:bg-zinc-900 p-3 rounded-md border border-zinc-200 dark:border-zinc-800 shadow-xl grid gap-4 max-w-sm'
@@ -22,27 +23,18 @@ const FauxBridge = () => {
     <div className={cardStyle}>
       <section className={sectionStyle}>
         <ChainList type="Chain" data="volume" />
-        <div className="flex gap-2.5 items-center justify-self-end text-sm text-zinc-700 dark:text-zinc-300 mr-1 cursor-default">
-          <PulseDot className="fill-green-500 stroke-green-500" /> Connected
-        </div>
+        <SupportedWallets />
         <div className={inputWrapperStyle}>
           <ChainList type="Token" data="volume" />
-          <input type="text" value="1000" className={inputStyle} />
-          <button disabled className={buttonStyle}>
-            Max
-          </button>
+          <input type="text" placeholder="1000" className={inputStyle} />
+          <HistoricMax />
         </div>
       </section>
       <section className={sectionStyle}>
         <ChainList type="Chain" data="count" />
         <div className={inputWrapperStyle}>
           <ChainList type="Token" data="count" />
-          <input
-            disabled
-            type="text"
-            value="1,000"
-            className={inputStyle}
-          ></input>
+          <input disabled readOnly type="text" className={inputStyle}></input>
         </div>
       </section>
       <a
@@ -98,8 +90,17 @@ const ChainList = ({
       button = `Volume by ${type}`
       header = '$ vol.'
       value = 1000000000 + Math.random() * 100000000
-      reduce = () => (value *= 0.75)
-      format = () => '$' + (value / 1000000).toFixed(1) + 'M'
+      reduce = () => (value *= 0.85)
+      format = () => {
+        if (value >= 1000000) return '$' + (value / 1000000).toFixed(1) + 'M'
+        let str = value.toFixed(0)
+        if (value >= 1000) {
+          for (let i = 3; i < str.length; i += 4)
+            str = `${str.slice(0, str.length - i)},${str.slice(-i)}`
+          return '$' + str
+        }
+        return '$' + value.toFixed(2)
+      }
       break
     case 'count':
       button = `Txns by ${type}`
@@ -129,7 +130,7 @@ const ChainList = ({
       break
     case 'Token':
       arr = Object.values(BRIDGEABLE)
-      key = 'symbol'
+      key = 'name'
       img = 'icon'
       name = 'symbol'
       break
@@ -153,11 +154,11 @@ const ChainList = ({
             </tr>
           </thead>
           <tbody>
-            {arr.map((item) => {
+            {arr.map((item, i) => {
               reduce()
               return (
                 <tr
-                  key={item[key]}
+                  key={item[key] === 'Wrapped ETH' ? item.symbol : item[key]}
                   className="hover:bg-zinc-50 hover:dark:bg-zinc-800 cursor-pointer"
                 >
                   <td className="px-4 py-2.5 text-left flex items-center gap-2">
@@ -173,5 +174,67 @@ const ChainList = ({
         </table>
       </div>
     </div>
+  )
+}
+
+const SupportedWallets = () => (
+  <div className="group relative w-fit h-fit self-center justify-self-end">
+    <button className="flex gap-2.5 items-center justify-self-end text-sm text-zinc-700 dark:text-zinc-300 mr-1 cursor-default">
+      <PulseDot className="fill-green-500 stroke-green-500" /> Connected
+    </button>
+    <div className="absolute bottom-8 -right-1.5 px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded items-center hidden group-hover:grid gap-2 shadow whitespace-nowrap">
+      {/* <header className="text-sm text-zinc-500">Supported wallets:</header> */}
+      <ul className="flex gap-4">
+        {Object.values(WALLET_ICONS).map((icon) => (
+          <li>{icon({ width: 24, height: 24 })}</li>
+        ))}
+      </ul>
+    </div>
+  </div>
+)
+
+const HistoricMax = () => (
+  <div className="group relative">
+    <button disabled className={buttonStyle}>
+      Max
+    </button>
+    <a
+      href="https://ftmscan.com/tx/0x18199d88fe9fc8baa0f0f02d216c0e7998e1e59aaef6e0ea7a7a35d8dd6bc90b"
+      target="_blank"
+      className="absolute bottom-12 right-0 px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded items-center hidden group-hover:grid gap-x-4 gap-y-1 shadow whitespace-nowrap text-sm"
+    >
+      <ul>
+        <li>40,668 ETH</li>
+        <li>Fantom</li>
+      </ul>
+      <RightCaret height="12" />
+      <ul>
+        <li>40,668 ETH</li>
+        <li>Ethereum</li>
+      </ul>
+      <header className="text-zinc-500 row-start-2 col-span-3">
+        Jan 29, 2022
+      </header>
+    </a>
+  </div>
+)
+
+const RightCaret = ({ height }) => {
+  const width = height / 2
+  return (
+    <svg
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      fill="none"
+      strokeWidth={height / 6}
+      strokeLinejoin="round"
+      strokeLinecap="round"
+      overflow="visible"
+      className="stroke-zinc-500"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d={`M0,0 ${width},${width} 0,${height}`} />
+    </svg>
   )
 }
