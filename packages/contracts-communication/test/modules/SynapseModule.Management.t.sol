@@ -233,6 +233,44 @@ contract SynapseModuleManagementTest is Test, SynapseModuleEvents {
         module.setFeeCollector(feeCollector);
     }
 
+    function test_setFeeFraction_setsFeeFraction() public {
+        vm.prank(owner);
+        module.setClaimFeeFraction(0.001e18);
+        assertEq(module.getClaimFeeFraction(), 0.001e18);
+    }
+
+    function test_setFeeFraction_emitsEvent() public {
+        vm.expectEmit(address(module));
+        emit ClaimFeeFractionChanged(0.001e18);
+        vm.prank(owner);
+        module.setClaimFeeFraction(0.001e18);
+    }
+
+    function test_setFeeFraction_exactlyMax() public {
+        uint256 maxFeeFraction = 0.01e18;
+        vm.expectEmit(address(module));
+        emit ClaimFeeFractionChanged(maxFeeFraction);
+        vm.prank(owner);
+        module.setClaimFeeFraction(maxFeeFraction);
+        assertEq(module.getClaimFeeFraction(), maxFeeFraction);
+    }
+
+    function test_setFeeFraction_revert_exceedsMax() public {
+        uint256 fractionTooBig = 0.01e18 + 1;
+        vm.expectRevert(
+            abi.encodeWithSelector(ISynapseModule.SynapseModule__ClaimFeeFractionExceedsMax.selector, fractionTooBig)
+        );
+        vm.prank(owner);
+        module.setClaimFeeFraction(fractionTooBig);
+    }
+
+    function test_setFeeFraction_revert_notOwner(address notOwner) public {
+        vm.assume(notOwner != owner);
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, notOwner));
+        vm.prank(notOwner);
+        module.setClaimFeeFraction(0.001e18);
+    }
+
     function test_setGasOracle_setsGasOracle() public {
         vm.prank(owner);
         module.setGasOracle(address(gasOracle));

@@ -5,7 +5,7 @@ import {InterchainModuleEvents} from "../../contracts/events/InterchainModuleEve
 import {SynapseModuleEvents} from "../../contracts/events/SynapseModuleEvents.sol";
 import {IInterchainModule} from "../../contracts/interfaces/IInterchainModule.sol";
 import {InterchainEntry} from "../../contracts/libs/InterchainEntry.sol";
-import {SynapseModule} from "../../contracts/modules/SynapseModule.sol";
+import {SynapseModule, ISynapseModule} from "../../contracts/modules/SynapseModule.sol";
 
 import {GasOracleMock} from "../mocks/GasOracleMock.sol";
 
@@ -20,6 +20,7 @@ contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleE
     address public interchainDB = makeAddr("InterchainDB");
     address public feeCollector = makeAddr("FeeCollector");
     address public owner = makeAddr("Owner");
+    address public claimer = makeAddr("Claimer");
 
     uint256 public constant SRC_CHAIN_ID = 1337;
     uint256 public constant DST_CHAIN_ID = 7331;
@@ -85,9 +86,10 @@ contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleE
         mockRequestVerification(FEE, mockEntry);
     }
 
-    function test_requestVerification_transfersFeeToCollector() public {
+    function test_requestVerification_accumulatesFee() public {
+        deal(address(module), 5 ether);
         mockRequestVerification(FEE, mockEntry);
-        assertEq(feeCollector.balance, FEE);
+        assertEq(address(module).balance, 5 ether + FEE);
     }
 
     function test_requestVerification_feeAboveRequired_emitsEvent() public {
@@ -97,9 +99,10 @@ contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleE
         mockRequestVerification(FEE + 1, mockEntry);
     }
 
-    function test_requestVerification_feeAboveRequired_transfersFeeToCollector() public {
+    function test_requestVerification_feeAboveRequired_accumulatesFee() public {
+        deal(address(module), 5 ether);
         mockRequestVerification(FEE + 1, mockEntry);
-        assertEq(feeCollector.balance, FEE + 1);
+        assertEq(address(module).balance, 5 ether + FEE + 1);
     }
 
     function test_requestVerification_revert_feeBelowRequired() public {
@@ -107,6 +110,103 @@ contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleE
             abi.encodeWithSelector(IInterchainModule.InterchainModule__InsufficientFee.selector, FEE - 1, FEE)
         );
         mockRequestVerification(FEE - 1, mockEntry);
+    }
+
+    function test_claimFees_zeroClaimFee_emitsEvent() public {
+        deal(address(module), 5 ether);
+        vm.expectEmit(address(module));
+        emit FeesClaimed(feeCollector, 5 ether, claimer, 0);
+        vm.prank(claimer);
+        module.claimFees();
+    }
+
+    function test_claimFees_zeroClaimFee_distributesFees() public {
+        deal(address(module), 5 ether);
+        vm.prank(claimer);
+        module.claimFees();
+        assertEq(feeCollector.balance, 5 ether);
+        assertEq(claimer.balance, 0);
+    }
+
+    function test_claimFees_zeroClaimFee_revert_feeCollectorNotSet() public {
+        vm.prank(owner);
+        module.setFeeCollector(address(0));
+        vm.expectRevert(abi.encodeWithSelector(ISynapseModule.SynapseModule__FeeCollectorNotSet.selector));
+        vm.prank(claimer);
+        module.claimFees();
+    }
+
+    function test_claimFees_zeroClaimFee_revert_noFeesToClaim() public {
+        vm.expectRevert(abi.encodeWithSelector(ISynapseModule.SynapseModule__NoFeesToClaim.selector));
+        vm.prank(claimer);
+        module.claimFees();
+    }
+
+    function test_claimFees_nonZeroClaimFee_emitsEvent() public {
+        // Set claim fee to 0.1%
+        vm.prank(owner);
+        module.setClaimFeeFraction(0.001e18);
+        deal(address(module), 5 ether);
+        vm.expectEmit(address(module));
+        emit FeesClaimed(feeCollector, 4.995 ether, claimer, 0.005 ether);
+        vm.prank(claimer);
+        module.claimFees();
+    }
+
+    function test_claimFees_nonZeroClaimFee_distributesFees() public {
+        // Set claim fee to 0.1%
+        vm.prank(owner);
+        module.setClaimFeeFraction(0.001e18);
+        deal(address(module), 5 ether);
+        vm.prank(claimer);
+        module.claimFees();
+        assertEq(feeCollector.balance, 4.995 ether);
+        assertEq(claimer.balance, 0.005 ether);
+    }
+
+    function test_claimFees_nonZeroClaimFee_revert_feeCollectorNotSet() public {
+        // Set claim fee to 0.1%
+        vm.startPrank(owner);
+        module.setFeeCollector(address(0));
+        module.setClaimFeeFraction(0.001e18);
+        vm.stopPrank();
+        deal(address(module), 5 ether);
+        vm.expectRevert(abi.encodeWithSelector(ISynapseModule.SynapseModule__FeeCollectorNotSet.selector));
+        vm.prank(claimer);
+        module.claimFees();
+    }
+
+    function test_claimFees_nonZeroClaimFee_revert_noFeesToClaim() public {
+        // Set claim fee to 0.1%
+        vm.prank(owner);
+        module.setClaimFeeFraction(0.001e18);
+        vm.expectRevert(abi.encodeWithSelector(ISynapseModule.SynapseModule__NoFeesToClaim.selector));
+        vm.prank(claimer);
+        module.claimFees();
+    }
+
+    function test_getClaimFeeAmount_zeroFees_zeroClaimFee() public {
+        assertEq(module.getClaimFeeAmount(), 0);
+    }
+
+    function test_getClaimFeeAmount_zeroFees_nonZeroClaimFee() public {
+        // Set claim fee to 0.1%
+        vm.prank(owner);
+        module.setClaimFeeFraction(0.001e18);
+        assertEq(module.getClaimFeeAmount(), 0);
+    }
+
+    function test_getClaimFeeAmount_zeroClaimFee() public {
+        deal(address(module), 5 ether);
+        assertEq(module.getClaimFeeAmount(), 0);
+    }
+
+    function test_getClaimFeeAmount_nonZeroClaimFee() public {
+        // Set claim fee to 0.1%
+        vm.prank(owner);
+        module.setClaimFeeFraction(0.001e18);
+        deal(address(module), 5 ether);
+        assertEq(module.getClaimFeeAmount(), 0.005 ether);
     }
 
     function test_getModuleFee_thresholdTwo() public {
