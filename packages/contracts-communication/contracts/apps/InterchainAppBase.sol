@@ -18,7 +18,7 @@ abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
     address public interchain;
 
     /// @dev Required responses and optimistic period for the module responses.
-    AppConfigV1 private _appConfig;
+    AppConfigV1 private _appConfigV1;
     /// @dev Address of the linked app deployed on the remote chain.
     mapping(uint256 chainId => bytes32 remoteApp) private _linkedApp;
     /// @dev Trusted Interchain modules.
@@ -49,14 +49,14 @@ abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
     /// @inheritdoc IInterchainApp
     function getReceivingConfig() external view returns (bytes memory appConfig, address[] memory modules) {
         // Note: the getters for app config and modules could be overridden in the derived contracts.
-        appConfig = getAppConfig().encodeAppConfigV1();
+        appConfig = getAppConfigV1().encodeAppConfigV1();
         modules = getReceivingModules();
     }
 
     /// @notice Returns the app config for receiving messages.
     /// @dev Could be overridden in the derived contracts.
-    function getAppConfig() public view virtual returns (AppConfigV1 memory) {
-        return _appConfig;
+    function getAppConfigV1() public view virtual returns (AppConfigV1 memory) {
+        return _appConfigV1;
     }
 
     /// @notice Returns the address of the Execution Service to use for sending messages.
@@ -87,6 +87,12 @@ abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
     /// @dev Could be overridden in the derived contracts.
     function isAllowedSender(uint256 srcChainId, bytes32 sender) public view virtual returns (bool) {
         return _linkedApp[srcChainId] == sender;
+    }
+
+    /// @notice Returns the current app version.
+    /// @dev Could be overridden in the derived contracts.
+    function getAppVersion() public pure virtual returns (uint256) {
+        return 1;
     }
 
     // ═══════════════════════════════════════════ INTERNAL: MANAGEMENT ════════════════════════════════════════════════
@@ -128,7 +134,7 @@ abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
     /// - optimisticPeriod: the minimum time after which the module responses are considered final
     /// Note: Should be guarded with permissions check.
     function _setAppConfigV1(AppConfigV1 memory appConfig) internal {
-        _appConfig = appConfig;
+        _appConfigV1 = appConfig;
         emit AppConfigV1Set(appConfig.requiredResponses, appConfig.optimisticPeriod);
     }
 
