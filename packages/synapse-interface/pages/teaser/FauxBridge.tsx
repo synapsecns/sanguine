@@ -1,11 +1,11 @@
 import PulseDot from '@/components/icons/PulseDot'
 import { CHAINS_ARR } from '@/constants/chains'
 import * as BRIDGEABLE from '@constants/tokens/bridgeable'
+import { TOKENS_SORTED_BY_SWAPABLETYPE } from '@/constants/tokens'
 import * as WALLET_ICONS from '@components/WalletIcons'
-import { MouseEventHandler } from 'react'
 
 const cardStyle =
-  'text-black dark:text-white bg-zinc-100 dark:bg-zinc-900 p-3 rounded-md border border-zinc-200 dark:border-zinc-800 shadow-xl grid gap-4 max-w-sm'
+  'text-black dark:text-white bg-zinc-100 dark:bg-zinc-900/95 p-3 rounded-md border border-zinc-200 dark:border-zinc-800 shadow-xl grid gap-4 max-w-sm'
 const sectionStyle =
   'relative bg-zinc-50 dark:bg-zinc-800 rounded-md px-2.5 py-3 grid gap-3 grid-cols-2 border border-zinc-300 dark:border-transparent'
 const buttonStyle =
@@ -112,13 +112,13 @@ const Select = ({
         {type} <span className="text-xxs">▼</span>
       </button>
       <div className="absolute pt-1.5 hidden hover:block peer-hover:block peer-focus:block animate-slide-down origin-top-left z-10 whitespace-nowrap">
-        <table className="rounded border-separate border-spacing-0 shadow bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 block max-h-[372px] overflow-y-scroll">
+        <table className="rounded border-separate border-spacing-0 shadow bg-white dark:bg-zinc-900/95 backdrop-blur-sm border border-zinc-200 dark:border-zinc-700 block max-h-[372px] overflow-y-scroll">
           <thead className="text-sm cursor-default">
             <tr>
-              <th className="font-normal px-4 pt-3 pb-2 sticky top-0 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm border-b border-zinc-300 dark:border-zinc-800 text-zinc-500 text-left ">
+              <th className="font-normal px-4 pt-3 pb-2 sticky top-0 bg-white/90 dark:bg-zinc-900/95 backdrop-blur-sm border-b border-zinc-300 dark:border-zinc-800 text-zinc-500 text-left ">
                 {type}
               </th>
-              <th className="font-normal px-4 pt-3 pb-2 sticky top-0 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm border-b border-zinc-300 dark:border-zinc-800 text-zinc-500 text-right ">
+              <th className="font-normal px-4 pt-3 pb-2 sticky top-0 bg-white/90 dark:bg-zinc-900/95 backdrop-blur-sm border-b border-zinc-300 dark:border-zinc-800 text-zinc-500 text-right ">
                 {header}
               </th>
             </tr>
@@ -149,7 +149,7 @@ const Select = ({
 
 const SupportedWallets = () => (
   <div className="group relative self-center justify-self-end">
-    <div className="absolute mb-2 bottom-full right-0 px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded items-center hidden group-hover:grid gap-2 shadow whitespace-nowrap animate-slide-up origin-bottom-right">
+    <div className="absolute mb-2 bottom-full right-0 px-3 py-2 bg-white dark:bg-zinc-900/50 backdrop-blur-sm border border-zinc-200 dark:border-zinc-800 rounded items-center hidden group-hover:grid gap-2 shadow whitespace-nowrap animate-slide-up origin-bottom-right">
       <header className="text-sm text-zinc-500">Supported wallets</header>
       <ul className="flex gap-4">
         {Object.values(WALLET_ICONS).map((icon) => (
@@ -169,7 +169,7 @@ const HistoricMax = () => (
       <a
         href="https://ftmscan.com/tx/0x18199d88fe9fc8baa0f0f02d216c0e7998e1e59aaef6e0ea7a7a35d8dd6bc90b"
         target="_blank"
-        className="px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded items-center grid gap-x-4 gap-y-1 shadow whitespace-nowrap text-sm"
+        className="px-3 py-2 bg-white dark:bg-zinc-900/95 backdrop-blur-sm border border-zinc-200 dark:border-zinc-800 rounded items-center grid gap-x-4 gap-y-1 shadow whitespace-nowrap text-sm"
       >
         <ul>
           <li>40,668 ETH</li>
@@ -210,7 +210,7 @@ const RightAngle = ({ height }) => {
 const BridgeButton = () => (
   <div className="group relative">
     <div className="absolute mb-1 w-full bottom-full hidden group-hover:block animate-slide-up origin-bottom">
-      <div className="text-sm text-zinc-500 w-fit m-auto px-3 py-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded shadow">
+      <div className="text-sm text-zinc-500 w-fit m-auto px-3 py-1 bg-white dark:bg-zinc-900/95 border border-zinc-200 dark:border-zinc-800 rounded shadow">
         Visit Bridge
       </div>
     </div>
