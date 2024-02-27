@@ -63,7 +63,7 @@ func NewSTIPRelayer(ctx context.Context,
 		return nil, fmt.Errorf("could not get api server: %w", err)
 	}
 
-	screener, _ := client.NewNoOpClient()
+	var screener client.ScreenerClient
 
 	if cfg.ScreenerAPIUrl != "" {
 		screener, err = client.NewClient(handler, cfg.ScreenerAPIUrl)
