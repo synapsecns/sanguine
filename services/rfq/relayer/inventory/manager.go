@@ -17,6 +17,7 @@ import (
 	"github.com/lmittmann/w3/w3types"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
@@ -146,7 +147,7 @@ var (
 )
 
 // TODO: replace w/ config.
-const defaultPollPeriod = 0
+const defaultPollPeriod = 5
 
 // NewInventoryManager creates a new inventory manager.
 // TODO: too many args here.
@@ -186,6 +187,7 @@ func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetc
 	return &i, nil
 }
 
+//nolint:gocognit
 func (i *inventoryManagerImpl) Start(ctx context.Context) error {
 	g, _ := errgroup.WithContext(ctx)
 	for _, rebalanceManager := range i.rebalanceManagers {
@@ -266,60 +268,58 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 		}
 
 		for address, token := range tokenMap {
-			// if startAllowance is 0
+			// approve RFQ contract.
+			// Note: in the case where submitter hasn't finished from last boot,
+			// this will double submit approvals unfortunately.
 			if address != chain.EthAddress && token.StartAllowanceRFQ.Cmp(big.NewInt(0)) == 0 {
-				chainID := chainID // capture func literal
-				address := address // capture func literal
-
-				erc20, err := ierc20.NewIERC20(address, backendClient)
+				tokenAddr := address // capture func literal
+				contractAddr, err := i.cfg.GetRFQAddress(chainID)
 				if err != nil {
-					return fmt.Errorf("could not get erc20: %w", err)
+					return fmt.Errorf("could not get RFQ address: %w", err)
 				}
-
-				// init an approval for RFQ bridge in submitter. Note: in the case where submitter hasn't finished from last boot, this will double submit approvals unfortanutely
-				_, err = i.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(chainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-					rfqAddr, err := i.cfg.GetRFQAddress(chainID)
-					if err != nil {
-						return nil, fmt.Errorf("could not get rfq address: %w", err)
-					}
-					tx, err = erc20.Approve(transactor, common.HexToAddress(rfqAddr), abi.MaxInt256)
-					if err != nil {
-						return nil, fmt.Errorf("could not approve rfq: %w", err)
-					}
-					return tx, nil
-				})
+				err = i.approve(ctx, tokenAddr, common.HexToAddress(contractAddr), backendClient)
 				if err != nil {
-					return fmt.Errorf("could not submit RFQ approval: %w", err)
+					return fmt.Errorf("could not approve RFQ contract: %w", err)
 				}
 			}
 
+			// approve CCTP contract
 			if address != chain.EthAddress && token.StartAllowanceCCTP.Cmp(big.NewInt(0)) == 0 {
-				chainID := chainID // capture func literal
-				address := address // capture func literal
-
-				erc20, err := ierc20.NewIERC20(address, backendClient)
+				tokenAddr := address // capture func literal
+				contractAddr, err := i.cfg.GetCCTPAddress(chainID)
 				if err != nil {
-					return fmt.Errorf("could not get erc20: %w", err)
+					return fmt.Errorf("could not get CCTP address: %w", err)
 				}
-
-				// approve CCTP bridge, if configured
-				_, err = i.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(chainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-					cctpAddr, err := i.cfg.GetCCTPAddress(chainID)
-					if err != nil {
-						return nil, fmt.Errorf("could not get cctp address: %w", err)
-					}
-					tx, err = erc20.Approve(transactor, common.HexToAddress(cctpAddr), abi.MaxInt256)
-					if err != nil {
-						return nil, fmt.Errorf("could not approve cctp: %w", err)
-					}
-
-					return tx, nil
-				})
+				err = i.approve(ctx, tokenAddr, common.HexToAddress(contractAddr), backendClient)
 				if err != nil {
-					return fmt.Errorf("could not submit CCTP approval: %w", err)
+					return fmt.Errorf("could not approve CCTP contract: %w", err)
 				}
 			}
 		}
+	}
+	return nil
+}
+
+// approve submits an ERC20 approval for a given token and contract address.
+func (i *inventoryManagerImpl) approve(ctx context.Context, tokenAddr, contractAddr common.Address, backendClient client.EVM) (err error) {
+	erc20, err := ierc20.NewIERC20(tokenAddr, backendClient)
+	if err != nil {
+		return fmt.Errorf("could not get erc20: %w", err)
+	}
+	chainID, err := backendClient.ChainID(ctx)
+	if err != nil {
+		return fmt.Errorf("could not get chain id: %w", err)
+	}
+
+	_, err = i.txSubmitter.SubmitTransaction(ctx, chainID, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+		tx, err = erc20.Approve(transactor, contractAddr, abi.MaxInt256)
+		if err != nil {
+			return nil, fmt.Errorf("could not approve: %w", err)
+		}
+		return tx, nil
+	})
+	if err != nil {
+		return fmt.Errorf("could not submit approval: %w", err)
 	}
 	return nil
 }
