@@ -1,6 +1,10 @@
 const fs = require('fs')
 
-const { getChainId } = require('./cast.js')
+const {
+  getChainIdRPC,
+  getAccountBalanceRPC,
+  getAccountNonceRPC,
+} = require('./cast.js')
 const { readConfigValue, tryReadConfigValue } = require('./config.js')
 const { readEnv } = require('./env.js')
 const { createDir } = require('./utils.js')
@@ -27,6 +31,18 @@ const readChainSpecificOptions = (chainName) => {
   return options || ''
 }
 
+const getChainId = (chainName) => {
+  return getChainIdRPC(readChainRPC(chainName))
+}
+
+const getAccountBalance = (chainName, address) => {
+  return getAccountBalanceRPC(readChainRPC(chainName), address)
+}
+
+const getAccountNonce = (chainName, address) => {
+  return getAccountNonceRPC(readChainRPC(chainName), address)
+}
+
 /**
  * Creates and initializes the deployment directories for the chain, if they don't exist.
  *
@@ -46,8 +62,7 @@ const createChainIdFile = (deployments, chainName) => {
   if (fs.existsSync(chainIdFile)) {
     return
   }
-  const chainRpc = readChainRPC(chainName)
-  const chainId = getChainId(chainRpc)
+  const chainId = getChainId(chainName)
   fs.writeFileSync(chainIdFile, chainId)
 }
 
@@ -55,4 +70,7 @@ module.exports = {
   readChainRPC,
   readChainSpecificOptions,
   createDeploymentDirs,
+  getChainId,
+  getAccountBalance,
+  getAccountNonce,
 }

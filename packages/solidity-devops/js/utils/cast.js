@@ -1,7 +1,19 @@
 const { runCommand } = require('./utils.js')
 
-const getChainId = (rpcUrl) => {
+const getChainIdRPC = (rpcUrl) => {
   return runCommand(`cast chain-id --rpc-url ${rpcUrl}`)
 }
 
-module.exports = { getChainId }
+const getAccountBalanceRPC = (rpcUrl, address) => {
+  return runCommand(`cast balance --ether --rpc-url ${rpcUrl} ${address}`)
+}
+
+const getAccountNonceRPC = (rpcUrl, address) => {
+  return runCommand(`cast nonce --rpc-url ${rpcUrl} ${address}`)
+}
+
+module.exports = {
+  getChainIdRPC,
+  getAccountBalanceRPC,
+  getAccountNonceRPC,
+}
