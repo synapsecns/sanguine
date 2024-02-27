@@ -379,7 +379,11 @@ func (i *inventoryManagerImpl) Rebalance(ctx context.Context, chainID int, token
 	if !ok {
 		return fmt.Errorf("no rebalance manager for method: %s", method)
 	}
-	return manager.Execute(ctx, rebalance)
+	err = manager.Execute(ctx, rebalance)
+	if err != nil {
+		return fmt.Errorf("could not execute rebalance: %w", err)
+	}
+	return nil
 }
 
 //nolint:cyclop

@@ -34,6 +34,8 @@ type RelayerAPIServer struct {
 
 // NewRelayerAPI holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
 // It is used to initialize and run the API server.
+//
+//nolint:cyclop
 func NewRelayerAPI(
 	ctx context.Context,
 	cfg relconfig.Config,

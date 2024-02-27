@@ -58,7 +58,7 @@ func (s Store) UpdateRebalanceStatus(ctx context.Context, id [32]byte, origin *u
 	return nil
 }
 
-// HasPendingRebalance checks if there is a pending rebalance for the given chain ids
+// HasPendingRebalance checks if there is a pending rebalance for the given chain ids.
 func (s Store) HasPendingRebalance(ctx context.Context, chainIDs ...uint64) (bool, error) {
 	var rebalances []Rebalance
 

@@ -110,7 +110,11 @@ func (c *rebalanceManagerCCTP) Start(ctx context.Context) error {
 		})
 	}
 
-	return g.Wait()
+	err := g.Wait()
+	if err != nil {
+		return fmt.Errorf("error listening to contract: %w", err)
+	}
+	return nil
 }
 
 func (c *rebalanceManagerCCTP) Execute(ctx context.Context, rebalance *RebalanceData) (err error) {
@@ -169,7 +173,7 @@ func (c *rebalanceManagerCCTP) listen(ctx context.Context, chainID int) (err err
 		return fmt.Errorf("could not get cctp events: %w", err)
 	}
 
-	return listener.Listen(ctx, func(parentCtx context.Context, log types.Log) (err error) {
+	err = listener.Listen(ctx, func(parentCtx context.Context, log types.Log) (err error) {
 		switch log.Topics[0] {
 		case cctp.CircleRequestSentTopic:
 			parsedEvent, err := parser.ParseCircleRequestSent(log)
@@ -199,4 +203,8 @@ func (c *rebalanceManagerCCTP) listen(ctx context.Context, chainID int) (err err
 		}
 		return nil
 	})
+	if err != nil {
+		return fmt.Errorf("could not listen to contract: %w", err)
+	}
+	return nil
 }
