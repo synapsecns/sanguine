@@ -1,6 +1,6 @@
 import PulseDot from '@/components/icons/PulseDot'
 import { CHAINS_ARR } from '@/constants/chains'
-import { useState } from 'react'
+import * as BRIDGEABLE from '@constants/tokens/bridgeable'
 
 const cardStyle =
   'text-black dark:text-white bg-zinc-100 dark:bg-zinc-900 p-3 rounded-md border border-zinc-200 dark:border-zinc-800 shadow-xl grid gap-4 max-w-sm'
@@ -21,14 +21,12 @@ const FauxBridge = () => {
   return (
     <div className={cardStyle}>
       <section className={sectionStyle}>
-        <ChainList data="volume" />
+        <ChainList type="Chain" data="volume" />
         <div className="flex gap-2.5 items-center justify-self-end text-sm text-zinc-700 dark:text-zinc-300 mr-1 cursor-default">
           <PulseDot className="fill-green-500 stroke-green-500" /> Connected
         </div>
         <div className={inputWrapperStyle}>
-          <select className={selectStyle}>
-            <option>Token</option>
-          </select>
+          <ChainList type="Token" data="volume" />
           <input type="text" value="1000" className={inputStyle} />
           <button disabled className={buttonStyle}>
             Max
@@ -36,11 +34,9 @@ const FauxBridge = () => {
         </div>
       </section>
       <section className={sectionStyle}>
-        <ChainList data="count" />
+        <ChainList type="Chain" data="count" />
         <div className={inputWrapperStyle}>
-          <select className={selectStyle}>
-            <option>Token</option>
-          </select>
+          <ChainList type="Token" data="count" />
           <input
             disabled
             type="text"
@@ -85,7 +81,13 @@ const FauxBridge = () => {
 
 export default FauxBridge
 
-const ChainList = ({ data }: { data: 'volume' | 'count' }) => {
+const ChainList = ({
+  type,
+  data,
+}: {
+  type: 'Chain' | 'Token'
+  data: 'volume' | 'count'
+}) => {
   let button: string
   let header: string
   let value: number
@@ -93,14 +95,14 @@ const ChainList = ({ data }: { data: 'volume' | 'count' }) => {
   let format: Function
   switch (data) {
     case 'volume':
-      button = 'Chain vol.'
+      button = `Volume by ${type}`
       header = '$ vol.'
       value = 1000000000 + Math.random() * 100000000
       reduce = () => (value *= 0.75)
       format = () => '$' + (value / 1000000).toFixed(1) + 'M'
       break
     case 'count':
-      button = 'Txn count'
+      button = `Txns by ${type}`
       header = 'Txns'
       value = 10000 + Math.random() * 1000
       reduce = () => (value *= 0.9)
@@ -113,17 +115,37 @@ const ChainList = ({ data }: { data: 'volume' | 'count' }) => {
       break
   }
 
+  let arr
+  let key: string
+  let img: string
+  let name: string
+
+  switch (type) {
+    case 'Chain':
+      arr = CHAINS_ARR
+      key = 'id'
+      img = 'chainImg'
+      name = 'name'
+      break
+    case 'Token':
+      arr = Object.values(BRIDGEABLE)
+      key = 'symbol'
+      img = 'icon'
+      name = 'symbol'
+      break
+  }
+
   return (
     <div className="group relative">
-      <button className={`ml-0.5 w-fit ${buttonSelectStyle}`}>
-        {button} <span className="text-xxs">▼</span>
+      <button className={`ml-0.5 w-fit whitespace-nowrap ${buttonSelectStyle}`}>
+        {type} <span className="text-xxs">▼</span>
       </button>
       <div className="pt-2 hidden group-hover:block absolute animate-slide-down origin-top w-max z-10 group-active:hidden">
         <table className="relative bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 whitespace-nowrap rounded border-separate border-spacing-0 max-h-[372px] overflow-y-scroll block shadow">
           <thead className="text-sm cursor-default">
             <tr>
               <th className="font-normal px-4 pt-3 pb-2 text-left sticky top-0 bg-white dark:bg-zinc-900/90 backdrop-blur-sm shadow border-b border-zinc-800 text-zinc-500">
-                Chain
+                {type}
               </th>
               <th className="font-normal px-4 pt-3 pb-2 text-right sticky top-0 bg-white dark:bg-zinc-900/90 backdrop-blur-sm shadow border-b border-zinc-800 text-zinc-500">
                 {header}
@@ -131,16 +153,16 @@ const ChainList = ({ data }: { data: 'volume' | 'count' }) => {
             </tr>
           </thead>
           <tbody>
-            {CHAINS_ARR.map((chain) => {
+            {arr.map((item) => {
               reduce()
               return (
                 <tr
-                  key={chain.id}
+                  key={item[key]}
                   className="hover:bg-zinc-50 hover:dark:bg-zinc-800 cursor-pointer"
                 >
                   <td className="px-4 py-2.5 text-left flex items-center gap-2">
-                    <img width="16" height="16" src={chain.chainImg.src} />
-                    {chain.name}
+                    <img width="16" height="16" src={item[img].src} />
+                    {item[name]}
                   </td>
                   <td className="px-4 py-2 text-right">{format()}</td>
                 </tr>
