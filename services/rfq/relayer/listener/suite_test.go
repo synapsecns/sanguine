@@ -1,9 +1,11 @@
 package listener_test
 
 import (
+	"math/big"
+	"testing"
+
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
@@ -15,8 +17,6 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/sqlite"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
-	"math/big"
-	"testing"
 )
 
 const chainID = 10
@@ -55,31 +55,30 @@ func (l *ListenerTestSuite) SetupTest() {
 }
 
 func (l *ListenerTestSuite) TestGetMetadataNoStore() {
+	deployBlock, err := l.fastBridge.DeployBlock(&bind.CallOpts{Context: l.GetTestContext()})
+	l.NoError(err)
+
 	// nothing stored, should use start block
 	cl := listener.NewTestChainListener(listener.TestChainListenerArgs{
-		Address:  common.Address{},
-		Client:   l.backend,
-		Contract: l.fastBridge,
-		Store:    l.store,
-		Handler:  l.metrics,
+		Address:      l.fastBridge.Address(),
+		InitialBlock: deployBlock.Uint64(),
+		Client:       l.backend,
+		Store:        l.store,
+		Handler:      l.metrics,
 	})
 
 	startBlock, myChainID, err := cl.GetMetadata(l.GetTestContext())
 	l.NoError(err)
 	l.Equal(myChainID, uint64(chainID))
-
-	deployBlock, err := l.fastBridge.DeployBlock(&bind.CallOpts{Context: l.GetTestContext()})
-	l.NoError(err)
 	l.Equal(startBlock, deployBlock.Uint64())
 }
 
 func (l *ListenerTestSuite) TestStartBlock() {
 	cl := listener.NewTestChainListener(listener.TestChainListenerArgs{
-		Address:  common.Address{},
-		Client:   l.backend,
-		Contract: l.fastBridge,
-		Store:    l.store,
-		Handler:  l.metrics,
+		Address: l.fastBridge.Address(),
+		Client:  l.backend,
+		Store:   l.store,
+		Handler: l.metrics,
 	})
 
 	deployBlock, err := l.fastBridge.DeployBlock(&bind.CallOpts{Context: l.GetTestContext()})

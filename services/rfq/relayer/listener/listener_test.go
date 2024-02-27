@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -72,7 +73,10 @@ func (l *ListenerTestSuite) TestListenForEvents() {
 
 	wg.Wait()
 
-	cl, err := listener.NewChainListener(l.backend, l.store, handle.Address(), l.metrics)
+	startBlock, err := handle.DeployBlock(&bind.CallOpts{Context: l.GetTestContext()})
+	l.NoError(err)
+
+	cl, err := listener.NewChainListener(l.backend, l.store, handle.Address(), uint64(startBlock.Int64()), l.metrics)
 	l.NoError(err)
 
 	eventCount := 0
