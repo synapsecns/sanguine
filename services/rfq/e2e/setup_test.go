@@ -183,13 +183,10 @@ func (i *IntegrationSuite) setupCCTP() {
 				big.NewInt(remoteCCTP.ChainID().Int64()), remoteDomain, remoteCCTP.Address())
 			i.Require().NoError(err)
 			backend.WaitForConfirmation(i.GetTestContext(), tx)
-			fmt.Printf("[cctp] backend: %d, backend to set from: %d, remote domain: %d\n", backend.GetChainID(), backendToSetFrom.GetChainID(), remoteDomain)
-			fmt.Printf("[cctp] remote domain config setup tx on chain %d: %v\n", backendToSetFrom.GetChainID(), tx.Hash())
 
 			// register the remote token messenger on the tokenMessenger contract
 			_, err = tokenMessengeHandle.SetRemoteTokenMessenger(txOpts.TransactOpts, uint32(backendToSetFrom.GetChainID()), addressToBytes32(remoteMessenger.Address()))
 			i.Nil(err)
-			fmt.Printf("[cctp] remote token messenger on chain %d: %v\n", backendToSetFrom.GetChainID(), tx.Hash())
 		}
 	}
 }
@@ -300,8 +297,6 @@ func (i *IntegrationSuite) setupRelayer() {
 		},
 		RebalanceInterval: 0,
 	}
-	fmt.Printf("config cctp origin addr: %v\n", cfg.Chains[originBackendChainID].CCTPAddress)
-	fmt.Printf("config cctp dest addr: %v\n", cfg.Chains[destBackendChainID].CCTPAddress)
 
 	// in the first backend, we want to deploy a bunch of different tokens
 	// TODO: functionalize me.
@@ -365,7 +360,6 @@ func (i *IntegrationSuite) setupRelayer() {
 			tx, err := cctpHandle.AddToken(txOpts.TransactOpts, tokenName, tokenCaller.Address(), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
 			i.Require().NoError(err)
 			backend.WaitForConfirmation(i.GetTestContext(), tx)
-			fmt.Printf("[cctp] added token %s on chain %d: %v, hash %v\n", tokenName, backend.GetChainID(), tokenCaller.Address().String(), tx.Hash())
 		}
 	}
 

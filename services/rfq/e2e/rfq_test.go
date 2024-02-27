@@ -1,7 +1,6 @@
 package e2e_test
 
 import (
-	"fmt"
 	"math/big"
 	"testing"
 	"time"
@@ -101,66 +100,35 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 		i.T().Skip("skipping until anvil issues are fixed in CI")
 	}
 
-	fmt.Printf("[cctp] omni: %v\n", i.omniClient.GetDefaultEndpoint(int(i.originBackend.GetChainID())))
-	// Before we do anything, we're going to mint ourselves some USDC on the destination chain.
-	// 100k should do.
-	// i.manager.MintToAddress(i.GetTestContext(), i.destBackend, cctpTest.MockMintBurnTokenType, i.relayerWallet.Address(), big.NewInt(100000))
-	// destUSDC := i.manager.Get(i.GetTestContext(), i.destBackend, cctpTest.MockMintBurnTokenType)
-	// i.Approve(i.destBackend, destUSDC, i.relayerWallet)
-
+	// load token contracts
 	const startAmount = 1000
 	const rfqAmount = 900
-
 	opts := i.destBackend.GetTxContext(i.GetTestContext(), nil)
 	destUSDC, destUSDCHandle := i.cctpDeployManager.GetMockMintBurnTokenType(i.GetTestContext(), i.destBackend)
 	realStartAmount, err := testutil.AdjustAmount(i.GetTestContext(), big.NewInt(startAmount), destUSDC.ContractHandle())
 	i.NoError(err)
 	realRFQAmount, err := testutil.AdjustAmount(i.GetTestContext(), big.NewInt(rfqAmount), destUSDC.ContractHandle())
 	i.NoError(err)
-	fmt.Printf("[cctp] destUSDC addr: %v, relayer addr: %v\n", destUSDC.Address(), i.relayerWallet.Address())
+
+	// add initial usdc to relayer on destination
 	tx, err := destUSDCHandle.MintPublic(opts.TransactOpts, i.relayerWallet.Address(), realStartAmount)
 	i.Nil(err)
 	i.destBackend.WaitForConfirmation(i.GetTestContext(), tx)
-	fmt.Printf("[cctp] mint dest tx: %v\n", tx.Hash())
-
-	// approve token
 	i.Approve(i.destBackend, destUSDC, i.relayerWallet)
-	// tx, err = destUSDCHandle.Approve(opts.TransactOpts, i.relayerWallet.Address(), core.CopyBigInt(abi.MaxUint256))
-	// i.Nil(err)
-	// i.destBackend.WaitForConfirmation(i.GetTestContext(), tx)
-
-	// let's give the user some money as well, $500 should do.
-	// i.manager.MintToAddress(i.GetTestContext(), i.originBackend, cctpTest.MockMintBurnTokenType, i.userWallet.Address(), big.NewInt(userWantAmount))
-	// originUSDC := i.manager.Get(i.GetTestContext(), i.originBackend, cctpTest.MockMintBurnTokenType)
-	// i.Approve(i.originBackend, originUSDC, i.userWallet)
 
 	// add initial USDC to relayer on origin
 	optsOrigin := i.originBackend.GetTxContext(i.GetTestContext(), nil)
 	originUSDC, originUSDCHandle := i.cctpDeployManager.GetMockMintBurnTokenType(i.GetTestContext(), i.originBackend)
-	fmt.Printf("[cctp] originUSDC addr: %v, relayer addr: %v\n", originUSDC.Address(), i.relayerWallet.Address())
 	tx, err = originUSDCHandle.MintPublic(optsOrigin.TransactOpts, i.relayerWallet.Address(), realStartAmount)
 	i.Nil(err)
 	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
-	fmt.Printf("[cctp] mint origin tx: %v\n", tx.Hash())
-
-	// approve token
 	i.Approve(i.originBackend, originUSDC, i.relayerWallet)
-	// tx, err = originUSDCHandle.Approve(optsOrigin.TransactOpts, i.relayerWallet.Address(), core.CopyBigInt(abi.MaxUint256))
-	// i.Nil(err)
-	// i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
 
 	// add initial USDC to user on origin
 	tx, err = originUSDCHandle.MintPublic(optsOrigin.TransactOpts, i.userWallet.Address(), realRFQAmount)
 	i.Nil(err)
 	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
-	fmt.Printf("[cctp] mint origin tx: %v\n", tx.Hash())
-
-	// approve token
 	i.Approve(i.originBackend, originUSDC, i.userWallet)
-	// tx, err = originUSDCHandle.Approve(optsOrigin.TransactOpts, i.userWallet.Address(), core.CopyBigInt(abi.MaxUint256))
-	// i.Nil(err)
-	// i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
-	// fmt.Printf("[cctp] user approve tx: %v for address %v\n", tx.Hash(), i.userWallet.Address())
 
 	// non decimal adjusted user want amount
 	// now our friendly user is going to check the quote and send us some USDC on the origin chain.
@@ -168,13 +136,6 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 		// first he's gonna check the quotes.
 		userAPIClient, err := client.NewAuthenticatedClient(metrics.Get(), i.apiServer, localsigner.NewSigner(i.userWallet.PrivateKey()))
 		i.NoError(err)
-
-		balanceDest, err := destUSDCHandle.BalanceOf(&bind.CallOpts{}, i.relayerWallet.Address())
-		i.Nil(err)
-		fmt.Printf("[cctp] dest balance: %v\n", balanceDest)
-		balanceOrigin, err := originUSDCHandle.BalanceOf(&bind.CallOpts{}, i.relayerWallet.Address())
-		i.Nil(err)
-		fmt.Printf("[cctp] origin balance: %v\n", balanceOrigin)
 
 		allQuotes, err := userAPIClient.GetAllQuotes()
 		i.NoError(err)
@@ -209,7 +170,6 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 	})
 	i.NoError(err)
 	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
-	fmt.Printf("[cctp] fastBridge tx: %v\n", tx.Hash())
 
 	// TODO: this, but cleaner
 	anvilClient, err := anvil.Dial(i.GetTestContext(), i.originBackend.RPCAddress())
@@ -264,7 +224,6 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 		// check to see if the USDC balance has decreased on destination due to rebalance
 		balance, err := originUSDCHandle.BalanceOf(&bind.CallOpts{Context: i.GetTestContext()}, i.relayerWallet.Address())
 		i.NoError(err)
-		fmt.Printf("got relayer origin balance: %v\n", balance)
 		balanceThresh, _ := new(big.Float).Mul(big.NewFloat(1.5), new(big.Float).SetInt(realStartAmount)).Int(nil)
 		if balance.Cmp(balanceThresh) > 0 {
 			return false

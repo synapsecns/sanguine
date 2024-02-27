@@ -312,7 +312,6 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 					if err != nil {
 						return nil, fmt.Errorf("could not approve cctp: %w", err)
 					}
-					// fmt.Printf("[cctp] approve cctp tx on chain %d, token %v: %s\n", chainID, address, tx.Hash().Hex())
 
 					return tx, nil
 				})
@@ -585,7 +584,6 @@ var logger = log.Logger("inventory")
 
 // refreshBalances refreshes all the token balances.
 func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
-	// fmt.Printf("[cctp] refreshBalances on addr %v\n", i.relayerAddress.String())
 	i.mux.Lock()
 	defer i.mux.Unlock()
 	var wg sync.WaitGroup
@@ -606,17 +604,6 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 		for tokenAddress, token := range tokenMap {
 			// TODO: make sure Returns does nothing on error
 			if !token.IsGasToken {
-				// fmt.Printf("[cctp] creating deferred call for token %v on chain %d, addr %v\n", tokenAddress.String(), chainID, i.relayerAddress.String())
-				// erc20, err := ierc20.NewIERC20(tokenAddress, chainClient)
-				// if err != nil {
-				// 	// fmt.Printf("[cctp] could not get erc20: %v\n", err)
-				// } else {
-				// 	// balance, err := erc20.BalanceOf(&bind.CallOpts{Context: ctx}, i.relayerAddress)
-				// 	// if err != nil {
-				// 	// 	// fmt.Printf("[cctp] error getting balance: %v\n", err)
-				// 	// }
-				// 	// fmt.Printf("[cctp] got balance for token %v on chain %v: %v\n", tokenAddress.String(), chainID, balance)
-				// }
 				deferredCalls = append(deferredCalls, eth.CallFunc(funcBalanceOf, tokenAddress, i.relayerAddress).Returns(token.Balance))
 			}
 		}

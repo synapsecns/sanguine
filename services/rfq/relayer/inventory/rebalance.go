@@ -75,7 +75,6 @@ func (c *rebalanceManagerCCTP) Start(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("could not get chain client: %w", err)
 		}
-		fmt.Printf("CCTP contract addr for chain %d: %v\n", chainID, contractAddr)
 		contract, err := cctp.NewSynapseCCTP(common.HexToAddress(contractAddr), chainClient)
 		if err != nil {
 			return fmt.Errorf("could not get cctp: %w", err)
@@ -121,7 +120,6 @@ func (c *rebalanceManagerCCTP) Execute(ctx context.Context, rebalance *Rebalance
 	}
 
 	// perform rebalance by calling sendCircleToken()
-	fmt.Printf("[cctp] execute rebalance on chain %d and token %v\n", rebalance.OriginMetadata.ChainID, rebalance.OriginMetadata.Addr)
 	_, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(rebalance.OriginMetadata.ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		tx, err = contract.SendCircleToken(
 			transactor,
@@ -135,7 +133,6 @@ func (c *rebalanceManagerCCTP) Execute(ctx context.Context, rebalance *Rebalance
 		if err != nil {
 			return nil, fmt.Errorf("could not send circle token: %w", err)
 		}
-		fmt.Printf("[cctp] rebalance tx: %s\n", tx.Hash().Hex())
 		return tx, nil
 	})
 	if err != nil {
@@ -158,7 +155,6 @@ func (c *rebalanceManagerCCTP) Execute(ctx context.Context, rebalance *Rebalance
 
 // nolint:cyclop
 func (c *rebalanceManagerCCTP) listen(ctx context.Context, chainID int) (err error) {
-	fmt.Printf("[cctp] listen on chain %d\n", chainID)
 	listener, ok := c.chainListeners[chainID]
 	if !ok {
 		return fmt.Errorf("could not find listener for chain %d", chainID)
@@ -168,14 +164,12 @@ func (c *rebalanceManagerCCTP) listen(ctx context.Context, chainID int) (err err
 		return fmt.Errorf("could not get chain client: %w", err)
 	}
 	cctpAddr := common.HexToAddress(c.cfg.Chains[chainID].CCTPAddress)
-	fmt.Printf("[cctp] CCTP listen on chain %d: %s\n", chainID, cctpAddr.String())
 	parser, err := cctp.NewSynapseCCTPEvents(cctpAddr, ethClient)
 	if err != nil {
 		return fmt.Errorf("could not get cctp events: %w", err)
 	}
 
 	return listener.Listen(ctx, func(parentCtx context.Context, log types.Log) (err error) {
-		fmt.Printf("[cctp] got log: %v with hash %v, blocknumber %v\n", log.Topics[0], log.TxHash, log.BlockNumber)
 		switch log.Topics[0] {
 		case cctp.CircleRequestSentTopic:
 			parsedEvent, err := parser.ParseCircleRequestSent(log)
