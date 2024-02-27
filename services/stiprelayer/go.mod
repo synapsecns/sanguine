@@ -281,4 +281,5 @@ replace (
 	github.com/synapsecns/sanguine/services/omnirpc => ../omnirpc
 	github.com/synapsecns/sanguine/services/scribe => ../scribe
 	github.com/synapsecns/sanguine/tools => ../../tools
+	github.com/synapsecns/sanguine/contrib/screener-api => ../../contrib/screener-api
 )

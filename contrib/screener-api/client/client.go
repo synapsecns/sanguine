@@ -13,7 +13,7 @@ import (
 
 // ScreenerClient is an interface for the Screener API.
 type ScreenerClient interface {
-	ScreenAddress(ctx context.Context, ruleset, address string) (bool, error)
+	ScreenAddress(ctx context.Context, ruleset, address string) (blocked bool, err error)
 }
 
 type clientImpl struct {
@@ -53,3 +53,17 @@ func (c clientImpl) ScreenAddress(ctx context.Context, ruleset, address string) 
 
 	return blockedRes.Blocked, nil
 }
+
+// NewNoOpClient creates a new no-op client for the Screener API.
+// it returns false for every address
+func NewNoOpClient() (ScreenerClient, error) {
+	return &noOpClient{}, nil
+}
+
+type noOpClient struct{}
+
+func (n noOpClient) ScreenAddress(_ context.Context, _, _ string) (bool, error) {
+	return false, nil
+}
+
+var _ ScreenerClient = noOpClient{}

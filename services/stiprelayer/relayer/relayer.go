@@ -3,6 +3,7 @@ package relayer
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/contrib/screener-api/client"
 	"math/big"
 	"strings"
 	"time"
@@ -40,6 +41,8 @@ type STIPRelayer struct {
 	submittter    submitter.TransactionSubmitter
 	signer        signer.Signer
 	apiServer     *stipapi.Server
+	// screener is used to screen addresses using the screener-api client stub.
+	screener client.ScreenerClient
 }
 
 // NewSTIPRelayer creates a new STIPRelayer with the provided context and configuration.
@@ -60,6 +63,15 @@ func NewSTIPRelayer(ctx context.Context,
 		return nil, fmt.Errorf("could not get api server: %w", err)
 	}
 
+	screener, _ := client.NewNoOpClient()
+
+	if cfg.ScreenerAPIUrl != "" {
+		screener, err = client.NewClient(handler, cfg.ScreenerAPIUrl)
+		if err != nil {
+			return nil, fmt.Errorf("could not create screener client: %w", err)
+		}
+	}
+
 	return &STIPRelayer{
 		cfg:           cfg,
 		db:            store,
@@ -68,6 +80,7 @@ func NewSTIPRelayer(ctx context.Context,
 		submittter:    sm,
 		signer:        sg,
 		apiServer:     apiServer,
+		screener:      screener,
 	}, nil
 }
 
@@ -364,8 +377,24 @@ func (s *STIPRelayer) RelayAndRebateTransactions(ctx context.Context) error {
 	return nil
 }
 
+const stipRuleset = "stip"
+
 // SubmitAndRebateTransaction handles the relaying and rebating of a single transaction.
 func (s *STIPRelayer) SubmitAndRebateTransaction(ctx context.Context, transaction *db.STIPTransactions) error {
+	// Check if the address is blocked
+	blocked, err := s.screener.ScreenAddress(ctx, stipRuleset, transaction.Address)
+	if err != nil {
+		return fmt.Errorf("could not screen address: %w", err)
+	}
+
+	if blocked {
+		err = s.db.UpdateSTIPTransactionDoNotProcess(ctx, transaction.Hash)
+		if err != nil {
+			return fmt.Errorf("could not update STIP transaction as do not process: %w", err)
+		}
+		return fmt.Errorf("address is blocked: %s", transaction.Address)
+	}
+
 	// Calculate the transfer amount based on transaction details
 	// This function encapsulates the logic for determining the transfer amount
 	// You can define it elsewhere and call it here
