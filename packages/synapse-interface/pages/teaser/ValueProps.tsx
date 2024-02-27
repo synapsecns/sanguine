@@ -78,7 +78,9 @@ export default function ValueProps() {
       </section> */}
       <section className="flex odd:flex-col even:flex-col-reverse md:grid grid-cols-2 gap-12 items-center">
         <div>
-          <h2 className="text-4xl font-medium mb-4">Build powerful apps</h2>
+          <h2 className="text-4xl font-medium mb-4">
+            Build powerful decentralized apps
+          </h2>
           <p className="text-lg leading-relaxed mb-4">
             Synapse Bridge is built on top of the cross-chain infrastructure
             enabling users to seamlessly transfer assets across all blockchains.
@@ -149,9 +151,7 @@ export default function ValueProps() {
           </svg>
         </div>
         <div>
-          <h2 className="text-4xl font-medium my-4">
-            Secure your infrastructure
-          </h2>
+          <h2 className="text-4xl font-medium my-4">Secure your routes</h2>
           <p className="text-lg leading-relaxed">
             Synapse has processed millions of transactions and tens of billions
             in bridged assets.
