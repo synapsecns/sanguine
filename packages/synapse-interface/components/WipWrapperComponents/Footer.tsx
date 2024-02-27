@@ -36,11 +36,11 @@ export default function Footer() {
       <SynapseAnchor />
       <div className="flex flex-wrap gap-4 xs:gap-8 text-right justify-end">
         {sections.map((section) => (
-          <section>
+          <section key={section.header}>
             <header className="px-2 py-1">{section.header}</header>
             <ul>
               {section.links.map((link) => (
-                <li>
+                <li key={link.label}>
                   <a
                     href={link.url}
                     className="text-zinc-500 hover:text-inherit hover:bg-slate-200 hover:dark:bg-zinc-900 px-2 py-1 rounded inline-block"

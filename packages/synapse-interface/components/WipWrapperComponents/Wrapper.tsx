@@ -80,11 +80,17 @@ const Wrapper = ({ children }) => {
             className="bg-white dark:bg-black text-sm text-inherit cursor-pointer rounded border-zinc-200 dark:border-zinc-800 justify-self-end w-min hover:border-zinc-300 hover:dark:bg-zinc-950 hover:dark:border-zinc-700 col-end-4"
             onChange={selectPrefersDark}
           >
-            <option selected={prefersColorScheme === 'dark'}>Dark mode</option>
-            <option selected={prefersColorScheme === 'light'}>
+            <option
+              defaultValue={prefersColorScheme === 'dark' ? 'true' : 'false'}
+            >
+              Dark mode
+            </option>
+            <option
+              defaultValue={prefersColorScheme === 'light' ? 'true' : 'false'}
+            >
               Light mode
             </option>
-            <option selected={!prefersColorScheme}>
+            <option defaultValue={!prefersColorScheme ? 'true' : 'false'}>
               System {windowPrefersDark.matches ? 'dark' : 'light'}
             </option>
           </select>
