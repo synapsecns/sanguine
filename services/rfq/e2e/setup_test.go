@@ -34,6 +34,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/connect"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
 )
@@ -382,4 +383,9 @@ func (i *IntegrationSuite) setupRelayer() {
 	go func() {
 		err = i.relayer.Start(i.GetTestContext())
 	}()
+
+	dbType, err := dbcommon.DBTypeFromString(cfg.Database.Type)
+	i.NoError(err)
+	i.store, err = connect.Connect(i.GetTestContext(), dbType, cfg.Database.DSN, i.metrics)
+	i.NoError(err)
 }

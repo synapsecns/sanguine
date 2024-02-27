@@ -21,6 +21,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/api/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
 )
@@ -35,6 +36,7 @@ type IntegrationSuite struct {
 	omniServer    string
 	omniClient    omnirpcClient.RPCClient
 	metrics       metrics.Handler
+	store         reldb.Service
 	apiServer     string
 	relayer       *service.Relayer
 	relayerWallet wallet.Wallet
@@ -191,6 +193,15 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 		return false
 	})
 
+	go func() {
+		for {
+			balance, err := originUSDCHandle.BalanceOf(&bind.CallOpts{Context: i.GetTestContext()}, i.relayerWallet.Address())
+			i.NoError(err)
+			fmt.Printf("origin usdc balance: %v\n", balance.String())
+			time.Sleep(1 * time.Second)
+		}
+	}()
+
 	// now we can send the money
 	_, originFastBridge := i.manager.GetFastBridge(i.GetTestContext(), i.originBackend)
 	auth := i.originBackend.GetTxContext(i.GetTestContext(), i.userWallet.AddressPtr())
@@ -257,7 +268,31 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 		}
 		return false
 	})
-	time.Sleep(10 * time.Minute)
+
+	i.Eventually(func() bool {
+		// check to see if the USDC balance has decreased on destination due to rebalance
+		balance, err := originUSDCHandle.BalanceOf(&bind.CallOpts{Context: i.GetTestContext()}, i.relayerWallet.Address())
+		i.NoError(err)
+		fmt.Printf("got relayer origin balance: %v\n", balance)
+		balanceThresh, _ := new(big.Float).Mul(big.NewFloat(1.5), new(big.Float).SetInt(realStartAmount)).Int(nil)
+		if balance.Cmp(balanceThresh) > 0 {
+			return false
+		}
+
+		// check to see if there is a pending rebalance from the destination back to origin
+		// TODO: validate more of the rebalance- expose in db interface just for testing?
+		destPending, err := i.store.HasPendingRebalance(i.GetTestContext(), uint64(i.destBackend.GetChainID()))
+		i.NoError(err)
+		if !destPending {
+			return false
+		}
+		originPending, err := i.store.HasPendingRebalance(i.GetTestContext(), uint64(i.originBackend.GetChainID()))
+		i.NoError(err)
+		if !originPending {
+			return false
+		}
+		return true
+	})
 }
 
 // nolint: cyclop
