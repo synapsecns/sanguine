@@ -52,6 +52,12 @@ interface ISynapseModule is IInterchainModule {
     /// @param gasOracle_   The address of the gas oracle contract
     function setGasOracle(address gasOracle_) external;
 
+    /// @notice Sets the estimated gas limit for verifying an entry on the given chain.
+    /// @dev Could be only called by the owner.
+    /// @param chainId      The chain ID for which to set the gas limit
+    /// @param gasLimit     The new gas limit
+    function setVerifyGasLimit(uint256 chainId, uint256 gasLimit) external;
+
     // ══════════════════════════════════════════════ PERMISSIONLESS ═══════════════════════════════════════════════════
 
     /// @notice Transfers the accumulated fees to the fee collector.
@@ -92,4 +98,8 @@ interface ISynapseModule is IInterchainModule {
 
     /// @notice Checks if the given account is a verifier for the module.
     function isVerifier(address account) external view returns (bool);
+
+    /// @notice Returns the estimated gas limit for verifying an entry on the given chain.
+    /// Note: this defaults to DEFAULT_VERIFY_GAS_LIMIT if not set.
+    function getVerifyGasLimit(uint256 chainId) external view returns (uint256);
 }

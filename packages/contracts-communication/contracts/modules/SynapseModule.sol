@@ -14,6 +14,8 @@ import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynapseModule {
+    // TODO: make sure this is a good enough default value
+    uint256 public constant DEFAULT_VERIFY_GAS_LIMIT = 100_000;
     uint256 public constant VERIFY_GAS_LIMIT = 100_000;
     uint256 internal constant MAX_CLAIM_FEE_FRACTION = 0.01e18; // 1%
     uint256 internal constant FEE_PRECISION = 1e18;
@@ -92,6 +94,11 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
         emit GasOracleChanged(gasOracle_);
     }
 
+    /// @inheritdoc ISynapseModule
+    function setVerifyGasLimit(uint256 chainId, uint256 gasLimit) external onlyOwner {
+        // TODO: implement
+    }
+
     // ══════════════════════════════════════════════ PERMISSIONLESS ═══════════════════════════════════════════════════
 
     /// @inheritdoc ISynapseModule
@@ -141,6 +148,11 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     /// @inheritdoc ISynapseModule
     function getThreshold() public view returns (uint256) {
         return _verifiers.getThreshold();
+    }
+
+    /// @inheritdoc ISynapseModule
+    function getVerifyGasLimit(uint256 chainId) public view override returns (uint256) {
+        // TODO: implement
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
