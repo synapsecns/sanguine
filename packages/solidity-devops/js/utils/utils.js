@@ -1,3 +1,6 @@
+const fs = require('fs')
+const { execSync } = require('child_process')
+
 /**
  * Asserts that a condition is true. If not, logs an error message and exits the process.
  *
@@ -47,4 +50,41 @@ const parseCommandLineArgs = () => {
   return { positionalArgs, options }
 }
 
-module.exports = { assertCondition, exitWithError, parseCommandLineArgs }
+/**
+ * Creates a directory recursively if it doesn't exist.
+ * No-op if the directory already exists.
+ *
+ * @param {string[]} dirNames - The names of the directories to create
+ * @returns {string} The path of the directory (whether it was created or not)
+ */
+const createDir = (...dirNames) => {
+  const dirPath = dirNames.join('/')
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true })
+  }
+  return dirPath
+}
+
+/**
+ * Runs a command and returns its output.
+ * If the command fails, exits the process.
+ *
+ * @param {string} command - The command to run
+ * @returns {string} The output of the command
+ */
+const runCommand = (command) => {
+  try {
+    const output = execSync(command)
+    return output.toString().trim()
+  } catch (error) {
+    process.exit(1)
+  }
+}
+
+module.exports = {
+  assertCondition,
+  createDir,
+  exitWithError,
+  parseCommandLineArgs,
+  runCommand,
+}
