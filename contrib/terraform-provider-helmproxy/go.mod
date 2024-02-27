@@ -11,7 +11,7 @@ replace (
 
 require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.24.1
-	github.com/hashicorp/terraform-provider-helm v1.3.3-0.20230117165241-19fa52fdcd9a
+	github.com/hashicorp/terraform-provider-helm ead1acf38904
 	github.com/synapsecns/sanguine/contrib/tfcore v0.0.0-00010101000000-000000000000
 )
 
