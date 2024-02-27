@@ -306,9 +306,6 @@ func (c Config) GetCCTPStartBlock(chainID int) (value uint64, err error) {
 	if !ok {
 		return value, fmt.Errorf("failed to cast CCTPStartBlock to int")
 	}
-	if value < 0 {
-		return 0, fmt.Errorf("invalid CCTPStartBlock: %d", value)
-	}
 	return value, nil
 }
 

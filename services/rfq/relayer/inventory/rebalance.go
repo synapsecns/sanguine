@@ -64,8 +64,34 @@ func newRebalanceManagerCCTP(cfg relconfig.Config, handler metrics.Handler, chai
 	}
 }
 
-func (c *rebalanceManagerCCTP) Start(ctx context.Context) error {
-	// initialize contracts
+func (c *rebalanceManagerCCTP) Start(ctx context.Context) (err error) {
+	err = c.initContracts(ctx)
+	if err != nil {
+		return fmt.Errorf("could not initialize contracts: %w", err)
+	}
+
+	err = c.initListeners(ctx)
+	if err != nil {
+		return fmt.Errorf("could not initialize listeners: %w", err)
+	}
+
+	g, _ := errgroup.WithContext(ctx)
+	for cid := range c.cfg.Chains {
+		// capture func literal
+		chainID := cid
+		g.Go(func() error {
+			return c.listen(ctx, chainID)
+		})
+	}
+
+	err = g.Wait()
+	if err != nil {
+		return fmt.Errorf("error listening to contract: %w", err)
+	}
+	return nil
+}
+
+func (c *rebalanceManagerCCTP) initContracts(ctx context.Context) (err error) {
 	for chainID := range c.cfg.Chains {
 		contractAddr, err := c.cfg.GetCCTPAddress(chainID)
 		if err != nil {
@@ -81,8 +107,10 @@ func (c *rebalanceManagerCCTP) Start(ctx context.Context) error {
 		}
 		c.cctpContracts[chainID] = contract
 	}
+	return nil
+}
 
-	// initialize chain listeners
+func (c *rebalanceManagerCCTP) initListeners(ctx context.Context) (err error) {
 	for chainID := range c.cfg.GetChains() {
 		cctpAddr, err := c.cfg.GetCCTPAddress(chainID)
 		if err != nil {
@@ -101,20 +129,6 @@ func (c *rebalanceManagerCCTP) Start(ctx context.Context) error {
 			return fmt.Errorf("could not get chain listener: %w", err)
 		}
 		c.chainListeners[chainID] = chainListener
-	}
-
-	g, _ := errgroup.WithContext(ctx)
-	for cid := range c.cfg.Chains {
-		// capture func literal
-		chainID := cid
-		g.Go(func() error {
-			return c.listen(ctx, chainID)
-		})
-	}
-
-	err := g.Wait()
-	if err != nil {
-		return fmt.Errorf("error listening to contract: %w", err)
 	}
 	return nil
 }
