@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {InterchainAppBaseEvents} from "../events/InterchainAppBaseEvents.sol";
+import {InterchainAppV1Events} from "../events/InterchainAppV1Events.sol";
 import {IInterchainApp} from "../interfaces/IInterchainApp.sol";
 import {IInterchainClientV1} from "../interfaces/IInterchainClientV1.sol";
 
@@ -11,7 +11,7 @@ import {TypeCasts} from "../libs/TypeCasts.sol";
 
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
-abstract contract InterchainAppBase is InterchainAppBaseEvents, IInterchainApp {
+abstract contract InterchainAppV1 is InterchainAppV1Events, IInterchainApp {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     // TODO: naming, visibility

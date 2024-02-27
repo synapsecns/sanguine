@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {InterchainAppBase, AppConfigV1, OptionsV1} from "./InterchainAppBase.sol";
+import {InterchainAppV1, AppConfigV1, OptionsV1} from "./InterchainAppV1.sol";
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract InterchainAppExample is InterchainAppBase, Ownable {
+contract InterchainAppExample is InterchainAppV1, Ownable {
     event MessageReceived(uint256 srcChainId, bytes32 sender, uint256 dbNonce, bytes message);
     event MessageSent(uint256 dstChainId, uint256 dbNonce, bytes32 transactionId);
 
