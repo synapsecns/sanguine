@@ -380,6 +380,7 @@ func (s *STIPRelayer) RelayAndRebateTransactions(ctx context.Context) error {
 const stipRuleset = "stip"
 
 // SubmitAndRebateTransaction handles the relaying and rebating of a single transaction.
+// nolint: cyclop
 func (s *STIPRelayer) SubmitAndRebateTransaction(ctx context.Context, transaction *db.STIPTransactions) error {
 	// Check if the address is blocked
 	blocked, err := s.screener.ScreenAddress(ctx, stipRuleset, transaction.Address)

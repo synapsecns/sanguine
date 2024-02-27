@@ -55,7 +55,7 @@ func (c clientImpl) ScreenAddress(ctx context.Context, ruleset, address string) 
 }
 
 // NewNoOpClient creates a new no-op client for the Screener API.
-// it returns false for every address
+// it returns false for every address.
 func NewNoOpClient() (ScreenerClient, error) {
 	return &noOpClient{}, nil
 }

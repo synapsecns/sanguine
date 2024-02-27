@@ -10,6 +10,7 @@ require (
 	github.com/ipfs/go-log v1.0.5
 	github.com/jftuga/ellipsis v1.0.0
 	github.com/stretchr/testify v1.8.4
+	github.com/synapsecns/sanguine/contrib/screener-api v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/ethergo v0.0.2
 	github.com/synapsecns/sanguine/services/omnirpc v0.0.0-00010101000000-000000000000
@@ -87,6 +88,7 @@ require (
 	github.com/docker/docker v20.10.23+incompatible // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
+	github.com/dubonzi/otelresty v1.2.0 // indirect
 	github.com/edsrzf/mmap-go v1.0.0 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/fatih/structtag v1.2.0 // indirect
@@ -281,5 +283,4 @@ replace (
 	github.com/synapsecns/sanguine/services/omnirpc => ../omnirpc
 	github.com/synapsecns/sanguine/services/scribe => ../scribe
 	github.com/synapsecns/sanguine/tools => ../../tools
-	github.com/synapsecns/sanguine/contrib/screener-api => ../../contrib/screener-api
 )
