@@ -7,6 +7,7 @@ evm_version = "paris"
 optimizer = false
 out = "artifacts"
 src = "src"
+fs_permissions = [{ access = "read", path = "./" }]
 
 [fmt]
 line_length = 120
@@ -15,13 +16,12 @@ number_underscore = 'thousands'
 
 # Use this structure in foundry.toml of the package that is using solidity-devops
 [rpc_endpoints]
-arbitrum = "${ARBITRUM_API}"
-aurora = "${AURORA_API}"
-dfk = "${DFK_API}"
+arbitrum = "${ARBITRUM_RPC}"
+aurora = "${AURORA_RPC}"
+dfk = "${DFK_RPC}"
 
 # And the list goes on
 [etherscan]
 arbitrum = { key = "${ARBITRUM_VERIFIER_KEY}", url = "${ARBITRUM_VERIFIER_URL}" }
 aurora = { key = "${AURORA_VERIFIER_KEY}", url = "${AURORA_VERIFIER_URL}" }
 # DFK is using Sourcify for verification
-dfk = {  }

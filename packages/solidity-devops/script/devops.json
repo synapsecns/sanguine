@@ -2,6 +2,8 @@
   "chains": {
     "aurora": "--slow"
   },
-  "freshDeployments": ".deployments",
-  "deployments": "deployments"
+  "deployConfigs": "configs",
+  "deployments": "deployments",
+  "forgeArtifacts": "artifacts",
+  "freshDeployments": ".deployments"
 }
