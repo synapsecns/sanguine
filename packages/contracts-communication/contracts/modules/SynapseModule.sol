@@ -7,7 +7,6 @@ import {SynapseModuleEvents} from "../events/SynapseModuleEvents.sol";
 import {IGasOracle} from "../interfaces/IGasOracle.sol";
 import {ISynapseModule} from "../interfaces/ISynapseModule.sol";
 
-import {InterchainEntry} from "../libs/InterchainEntry.sol";
 import {ThresholdECDSA} from "../libs/ThresholdECDSA.sol";
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
