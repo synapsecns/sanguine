@@ -1,0 +1,7 @@
+{
+  "chains": {
+    "aurora": "--slow"
+  },
+  "freshDeployments": ".deployments",
+  "deployments": "deployments"
+}
