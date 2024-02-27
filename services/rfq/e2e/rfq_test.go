@@ -107,11 +107,17 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 	// destUSDC := i.manager.Get(i.GetTestContext(), i.destBackend, cctpTest.MockMintBurnTokenType)
 	// i.Approve(i.destBackend, destUSDC, i.relayerWallet)
 
+	const startAmount = 1000
+	const rfqAmount = 900
+
 	opts := i.destBackend.GetTxContext(i.GetTestContext(), nil)
-	amount := big.NewInt(1e12)
 	destUSDC, destUSDCHandle := i.cctpDeployManager.GetMockMintBurnTokenType(i.GetTestContext(), i.destBackend)
+	realStartAmount, err := testutil.AdjustAmount(i.GetTestContext(), big.NewInt(startAmount), destUSDC.ContractHandle())
+	i.NoError(err)
+	realRFQAmount, err := testutil.AdjustAmount(i.GetTestContext(), big.NewInt(rfqAmount), destUSDC.ContractHandle())
+	i.NoError(err)
 	fmt.Printf("[cctp] destUSDC addr: %v, relayer addr: %v\n", destUSDC.Address(), i.relayerWallet.Address())
-	tx, err := destUSDCHandle.MintPublic(opts.TransactOpts, i.relayerWallet.Address(), amount)
+	tx, err := destUSDCHandle.MintPublic(opts.TransactOpts, i.relayerWallet.Address(), realStartAmount)
 	i.Nil(err)
 	i.destBackend.WaitForConfirmation(i.GetTestContext(), tx)
 	fmt.Printf("[cctp] mint dest tx: %v\n", tx.Hash())
@@ -122,7 +128,6 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 	i.destBackend.WaitForConfirmation(i.GetTestContext(), tx)
 
 	// let's give the user some money as well, $500 should do.
-	const userWantAmount = 500
 	// i.manager.MintToAddress(i.GetTestContext(), i.originBackend, cctpTest.MockMintBurnTokenType, i.userWallet.Address(), big.NewInt(userWantAmount))
 	// originUSDC := i.manager.Get(i.GetTestContext(), i.originBackend, cctpTest.MockMintBurnTokenType)
 	// i.Approve(i.originBackend, originUSDC, i.userWallet)
@@ -130,7 +135,7 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 	optsOrigin := i.originBackend.GetTxContext(i.GetTestContext(), nil)
 	originUSDC, originUSDCHandle := i.cctpDeployManager.GetMockMintBurnTokenType(i.GetTestContext(), i.originBackend)
 	fmt.Printf("[cctp] originUSDC addr: %v, relayer addr: %v\n", originUSDC.Address(), i.relayerWallet.Address())
-	tx, err = originUSDCHandle.MintPublic(optsOrigin.TransactOpts, i.relayerWallet.Address(), amount)
+	tx, err = originUSDCHandle.MintPublic(optsOrigin.TransactOpts, i.relayerWallet.Address(), realStartAmount)
 	i.Nil(err)
 	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
 	fmt.Printf("[cctp] mint origin tx: %v\n", tx.Hash())
@@ -141,9 +146,6 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
 
 	// non decimal adjusted user want amount
-	realWantAmount, err := testutil.AdjustAmount(i.GetTestContext(), big.NewInt(userWantAmount), destUSDC.ContractHandle())
-	i.NoError(err)
-
 	// now our friendly user is going to check the quote and send us some USDC on the origin chain.
 	i.Eventually(func() bool {
 		// first he's gonna check the quotes.
@@ -164,7 +166,7 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 		for _, quote := range allQuotes {
 			if common.HexToAddress(quote.DestTokenAddr) == destUSDC.Address() {
 				destAmountBigInt, _ := new(big.Int).SetString(quote.DestAmount, 10)
-				if destAmountBigInt.Cmp(realWantAmount) > 0 {
+				if destAmountBigInt.Cmp(realRFQAmount) > 0 {
 					// we found our quote!
 					// now we can move on
 					return true
@@ -184,8 +186,8 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 		OriginToken:  originUSDC.Address(),
 		SendChainGas: true,
 		DestToken:    destUSDC.Address(),
-		OriginAmount: realWantAmount,
-		DestAmount:   new(big.Int).Sub(realWantAmount, big.NewInt(10_000_000)),
+		OriginAmount: realRFQAmount,
+		DestAmount:   new(big.Int).Sub(realRFQAmount, big.NewInt(10_000_000)),
 		Deadline:     new(big.Int).SetInt64(time.Now().Add(time.Hour * 24).Unix()),
 	})
 	i.NoError(err)
