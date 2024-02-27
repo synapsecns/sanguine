@@ -56,6 +56,8 @@ type Config struct {
 	ARBMinTransfer    float64                `yaml:"ARB_min_transfer"`
 	DuneLookbackHours int                    `yaml:"dune_lookback_hours"`
 	StipQueryID       int                    `yaml:"stip_query_id"`
+	// ScreenerAPIUrl is the TRM API url.
+	ScreenerAPIUrl string `yaml:"screener_api_url"`
 }
 
 const defaultArbCapPerAddress = 2000
