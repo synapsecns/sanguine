@@ -64,12 +64,14 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
 
     /// @inheritdoc ISynapseModule
     function setThreshold(uint256 threshold) external onlyOwner {
-        _setThreshold(threshold);
+        _verifiers.modifyThreshold(threshold);
+        emit ThresholdChanged(threshold);
     }
 
     /// @inheritdoc ISynapseModule
     function setFeeCollector(address feeCollector_) external onlyOwner {
-        _setFeeCollector(feeCollector_);
+        feeCollector = feeCollector_;
+        emit FeeCollectorChanged(feeCollector_);
     }
 
     /// @inheritdoc ISynapseModule
@@ -153,19 +155,6 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     function _removeVerifier(address verifier) internal {
         _verifiers.removeSigner(verifier);
         emit VerifierRemoved(verifier);
-    }
-
-    /// @dev Sets the threshold for the module. Permissions should be checked in the calling function.
-    function _setThreshold(uint256 threshold) internal {
-        _verifiers.modifyThreshold(threshold);
-        emit ThresholdChanged(threshold);
-    }
-
-    /// @dev Internal logic to set the address of the fee collector.
-    /// Permissions should be checked in the calling function.
-    function _setFeeCollector(address feeCollector_) internal {
-        feeCollector = feeCollector_;
-        emit FeeCollectorChanged(feeCollector_);
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
