@@ -15,7 +15,7 @@ const SvgIconWrapper = ({ width, height, children }): ReactNode => (
 
 export const CoinbaseWallet = ({ width, height }): ReactNode => (
   <SvgIconWrapper width={width} height={height}>
-    <g clip-path="url(#clip0_1101_3533)">
+    <g clipPath="url(#clip0_1101_3533)">
       <rect width="48" height="48" fill="url(#paint0_linear_1101_3533)" />
       <circle cx="24" cy="24" r="24" fill="url(#paint1_linear_1101_3533)" />
       <path
@@ -164,7 +164,7 @@ export const RabbyWallet = ({ width, height }): ReactNode => (
         gradientUnits="userSpaceOnUse"
       >
         <stop stopColor="#8697FF" />
-        <stop offset="1" stopColor="#8697FF" stop-opacity="0" />
+        <stop offset="1" stopColor="#8697FF" stopOpacity="0" />
       </linearGradient>
       <linearGradient
         id="paint2_linear_1560_2236"
@@ -175,7 +175,7 @@ export const RabbyWallet = ({ width, height }): ReactNode => (
         gradientUnits="userSpaceOnUse"
       >
         <stop stopColor="#8697FF" />
-        <stop offset="1" stopColor="#8697FF" stop-opacity="0" />
+        <stop offset="1" stopColor="#8697FF" stopOpacity="0" />
       </linearGradient>
       <linearGradient
         id="paint3_linear_1560_2236"

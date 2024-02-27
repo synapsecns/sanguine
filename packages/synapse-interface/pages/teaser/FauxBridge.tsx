@@ -152,8 +152,8 @@ const SupportedWallets = () => (
     <div className="absolute mb-2 bottom-full right-0 px-3 py-2 bg-white dark:bg-zinc-900/50 backdrop-blur-sm border border-zinc-200 dark:border-zinc-800 rounded items-center hidden group-hover:grid gap-2 shadow whitespace-nowrap animate-slide-up origin-bottom-right">
       <header className="text-sm text-zinc-500">Supported wallets</header>
       <ul className="flex gap-4">
-        {Object.values(WALLET_ICONS).map((icon) => (
-          <li>{icon({ width: 24, height: 24 })}</li>
+        {Object.values(WALLET_ICONS).map((icon, i) => (
+          <li key={i}>{icon({ width: 24, height: 24 })}</li>
         ))}
       </ul>
     </div>

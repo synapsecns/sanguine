@@ -129,7 +129,7 @@ const ArrowBounce = () => (
     height="14"
     viewBox="0 -8 16 16"
     overflow="visible"
-    stroke-width="4"
+    strokeWidth="4"
     fill="none"
     preserveAspectRatio="xMaxYMid"
     className="inline ml-2 mb-1"
