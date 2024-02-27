@@ -7,7 +7,7 @@ monorepo:
 
 before:
   hooks:
-    - go mod vendor
+    - GOWORK=off go mod vendor
 
 builds:
   # Linux AMD64
