@@ -92,9 +92,11 @@ func (c *rebalanceManagerCCTP) Start(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("could not get chain client: %w", err)
 		}
-
-		//TODO: configure start block?
-		chainListener, err := listener.NewChainListener(chainClient, c.db, common.HexToAddress(cctpAddr), 0, c.handler)
+		initialBlock, err := c.cfg.GetCCTPStartBlock(chainID)
+		if err != nil {
+			return fmt.Errorf("could not get cctp start block: %w", err)
+		}
+		chainListener, err := listener.NewChainListener(chainClient, c.db, common.HexToAddress(cctpAddr), initialBlock, c.handler)
 		if err != nil {
 			return fmt.Errorf("could not get chain listener: %w", err)
 		}

@@ -82,6 +82,8 @@ type ChainConfig struct {
 	QuoteOffsetBps float64 `yaml:"quote_offset_bps"`
 	// FixedFeeMultiplier is the multiplier for the fixed fee.
 	FixedFeeMultiplier float64 `yaml:"fixed_fee_multiplier"`
+	// CCTP start block is the block at which the chain listener will listen for CCTP events.
+	CCTPStartBlock uint64 `yaml:"cctp_start_block"`
 }
 
 // TokenConfig represents the configuration for a token.

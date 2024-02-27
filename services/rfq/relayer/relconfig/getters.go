@@ -295,6 +295,23 @@ func (c Config) GetFixedFeeMultiplier(chainID int) (value float64, err error) {
 	return value, nil
 }
 
+// GetCCTPStartBlock returns the CCTPStartBlock for the given chainID.
+func (c Config) GetCCTPStartBlock(chainID int) (value uint64, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "CCTPStartBlock")
+	if err != nil {
+		return value, err
+	}
+
+	value, ok := rawValue.(uint64)
+	if !ok {
+		return value, fmt.Errorf("failed to cast CCTPStartBlock to int")
+	}
+	if value < 0 {
+		return 0, fmt.Errorf("invalid CCTPStartBlock: %d", value)
+	}
+	return value, nil
+}
+
 // GetL1FeeParams returns the L1 fee params for the given chain.
 func (c Config) GetL1FeeParams(chainID uint32, origin bool) (uint32, int, bool) {
 	var gasEstimate int
