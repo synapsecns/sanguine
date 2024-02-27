@@ -8,9 +8,9 @@ func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
-	_ = x[RebalanceInitiated-0]
-	_ = x[RebalancePending-1]
-	_ = x[RebalanceCompleted-2]
+	_ = x[RebalanceInitiated-1]
+	_ = x[RebalancePending-2]
+	_ = x[RebalanceCompleted-3]
 }
 
 const _RebalanceStatus_name = "RebalanceInitiatedRebalancePendingRebalanceCompleted"
@@ -18,8 +18,9 @@ const _RebalanceStatus_name = "RebalanceInitiatedRebalancePendingRebalanceComple
 var _RebalanceStatus_index = [...]uint8{0, 18, 34, 52}
 
 func (i RebalanceStatus) String() string {
+	i -= 1
 	if i >= RebalanceStatus(len(_RebalanceStatus_index)-1) {
-		return "RebalanceStatus(" + strconv.FormatInt(int64(i), 10) + ")"
+		return "RebalanceStatus(" + strconv.FormatInt(int64(i+1), 10) + ")"
 	}
 	return _RebalanceStatus_name[_RebalanceStatus_index[i]:_RebalanceStatus_index[i+1]]
 }

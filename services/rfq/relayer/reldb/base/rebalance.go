@@ -49,6 +49,7 @@ func (s Store) UpdateRebalanceStatus(ctx context.Context, id [32]byte, origin *u
 	}
 	if result.RowsAffected != 1 {
 		tx.Rollback()
+		return fmt.Errorf("expected 1 row to be affected, got %d", result.RowsAffected)
 	}
 	err := tx.Commit().Error
 	if err != nil {

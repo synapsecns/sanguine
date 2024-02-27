@@ -176,7 +176,7 @@ type RebalanceStatus uint8
 
 const (
 	// RebalanceInitiated means the rebalance transaction has been initiated.
-	RebalanceInitiated RebalanceStatus = iota
+	RebalanceInitiated RebalanceStatus = iota + 1
 	// RebalancePending means the rebalance transaction has been confirmed on the origin.
 	RebalancePending
 	// RebalanceCompleted means the rebalance transaction has been confirmed on the destination.
