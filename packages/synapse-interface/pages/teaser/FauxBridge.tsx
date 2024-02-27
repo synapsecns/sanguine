@@ -210,7 +210,7 @@ const RightAngle = ({ height }) => {
 const BridgeButton = () => (
   <div className="group relative">
     <div className="absolute mb-1 w-full bottom-full hidden group-hover:block animate-slide-up origin-bottom">
-      <div className="text-sm text-zinc-500 w-fit m-auto px-3 py-1 bg-white dark:bg-zinc-900/95 border border-zinc-200 dark:border-zinc-800 rounded shadow">
+      <div className="text-sm text-zinc-500 dark:text-zinc-400 w-fit m-auto px-3 py-1 bg-white dark:bg-zinc-900/95 border border-zinc-200 dark:border-zinc-800 rounded shadow">
         Visit Bridge
       </div>
     </div>

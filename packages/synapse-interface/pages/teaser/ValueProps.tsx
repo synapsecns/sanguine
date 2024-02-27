@@ -4,12 +4,54 @@ export default function ValueProps() {
   return (
     <article className="grid gap-16 md:gap-24 p-4">
       <section>
-        <ul className="w-fit md:w-max grid grid-cols-2 md:flex text-base sm:text-lg text-center items-center place-center bg-gradient-to-b from-white to-slate-100 dark:from-zinc-900 dark:to-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md px-6 py-2 gap-x-8 gap-y-4 shadow-sm mx-auto cursor-default">
+        {/* <dl className="w-fit md:w-max grid grid-rows-2 grid-flow-col-dense text-center items-center bg-gradient-to-b from-white to-slate-100 dark:from-zinc-900 dark:to-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md px-8 pt-3 pb-2.5 gap-x-12 shadow-sm mt-6 mx-auto cursor-default">
+          <dt className="row-start-2 text-lg text-zinc-500 dark:text-zinc-300/80 tracking-wide">
+            Bridge volume
+          </dt>
+          <dd className="text-3xl font-medium tracking-wide">
+            $
+            <data value="45302800827" className="mx-0.5">
+              45.3
+            </data>
+            B
+          </dd>
+          <dt className="row-start-2 text-lg text-zinc-500 dark:text-zinc-300/80 tracking-wide">
+            Transactions
+          </dt>
+          <dd className="text-3xl font-medium tracking-wide">
+            <data value="10619219" className="mx-0.5">
+              10.6
+            </data>
+            M
+          </dd>
+          <dt className="row-start-2 text-lg text-zinc-500 dark:text-zinc-300/80 tracking-wide">
+            Total value locked
+          </dt>
+          <dd className="text-3xl font-medium tracking-wide">
+            $
+            <data value="116783994" className="mx-0.5">
+              116.7
+            </data>
+            M
+          </dd>
+        </dl> */}
+        <ul className="w-fit md:w-max grid md:flex text-xl md:text-lg text-center items-center place-center bg-gradient-to-b from-white to-slate-100 dark:from-zinc-900 dark:to-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md px-6 gap-x-8 mt-6 shadow-sm mx-auto cursor-default">
+          <li className="-mt-1 p-3">
+            $<data className="mx-0.5">45.3B</data> Bridge volume
+          </li>
+          <li className="-mt-1 p-3">
+            <data className="mx-0.5">10.6M</data> transactions
+          </li>
+          <li className="-mt-1 p-3">
+            $<data className="mx-0.5">116.7M</data> Total value locked
+          </li>
+        </ul>
+        {/* <ul className="w-fit md:w-max grid grid-cols-1 sm:flex text-lg text-center items-center place-center bg-gradient-to-b from-white to-slate-100 dark:from-zinc-900 dark:to-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md px-6 py-2 gap-x-8 gap-y-4 shadow-sm mx-auto cursor-default">
           <li className="-mt-1 p-1">50 blockchains</li>
           <li className="-mt-1 p-1">50,000 validators</li>
           <li className="-mt-1 p-1">10.2B messages</li>
           <li className="-mt-1 p-1">$1.2B transferred</li>
-        </ul>
+        </ul> */}
       </section>
       <section className="flex odd:flex-col even:flex-col-reverse md:grid grid-cols-2 gap-x-12 gap-y-4 items-center">
         <div className="grid place-items-center">
