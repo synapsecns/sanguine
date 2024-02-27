@@ -7,9 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
-
 	"github.com/cenkalti/backoff"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -23,6 +20,7 @@ import (
 	"github.com/synapsecns/sanguine/services/stiprelayer/db"
 	"github.com/synapsecns/sanguine/services/stiprelayer/stipapi"
 	"github.com/synapsecns/sanguine/services/stiprelayer/stipconfig"
+	"go.opentelemetry.io/otel/attribute"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/time/rate"
 )
@@ -153,13 +151,9 @@ func (s *STIPRelayer) Run(ctx context.Context) error {
 		return nil
 	})
 
-	err := s.ProcessExecutionResults(ctx, "bridge")
+	err := s.ProcessExecutionResults(ctx)
 	if err != nil {
-		return fmt.Errorf("error processing execution results for bridge: %w", err)
-	}
-	err = s.ProcessExecutionResults(ctx, "rfq")
-	if err != nil {
-		return fmt.Errorf("error processing execution results for rfq: %w", err)
+		return fmt.Errorf("error processing execution results: %w", err)
 	}
 
 	// Start the ticker goroutine for requesting and storing execution results
@@ -203,15 +197,10 @@ func (s *STIPRelayer) RequestAndStoreResults(ctx context.Context) error {
 			//nolint: wrapcheck
 			return ctx.Err() // exit if context is canceled
 		case <-ticker.C:
-			if err := s.ProcessExecutionResults(ctx, "bridge"); err != nil {
+			err := s.ProcessExecutionResults(ctx)
+			if err != nil {
 				// Log the error and decide whether to continue based on the error
-				fmt.Printf("Error processing execution results for bridge: %v", err)
-				// Optionally, you can return the error to stop the goroutine
-				// return err
-			}
-			if err := s.ProcessExecutionResults(ctx, "rfq"); err != nil {
-				// Log the error and decide whether to continue based on the error
-				fmt.Printf("Error processing execution results for rfq: %v", err)
+				fmt.Printf("Error processing execution results: %v", err)
 				// Optionally, you can return the error to stop the goroutine
 				// return err
 			}
@@ -220,18 +209,19 @@ func (s *STIPRelayer) RequestAndStoreResults(ctx context.Context) error {
 }
 
 // ProcessExecutionResults encapsulates the logic for requesting and storing execution results.
-func (s *STIPRelayer) ProcessExecutionResults(parentCtx context.Context, queryType string) (err error) {
+func (s *STIPRelayer) ProcessExecutionResults(parentCtx context.Context) (err error) {
 	fmt.Println("Starting execution logic")
 
-	ctx, span := s.handler.Tracer().Start(parentCtx, "ProcessExecutionResults", trace.WithAttributes(attribute.String("queryType", queryType)))
+	ctx, span := s.handler.Tracer().Start(parentCtx, "ProcessExecutionResults")
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	executionID, err := s.ExecuteDuneQuery(ctx, queryType)
+	executionID, err := s.ExecuteDuneQuery(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to execute Dune query: %w", err)
 	}
+	span.SetAttributes(attribute.String("execution_id", executionID))
 
 	// TODO: remove if exponentialBackoff.InitialInterval waits 30 seconds?
 	// time.Sleep(30 * time.Second) // Consider replacing this with a more robust solution
@@ -262,12 +252,20 @@ func (s *STIPRelayer) ProcessExecutionResults(parentCtx context.Context, queryTy
 	}
 
 	var rowsAfterStartDate []Row
+	var firstResultTime time.Time
 	for _, row := range getResultsJSONResult.Result.Rows {
 		// TODO: Will this panic if StartDate not set?
 		if row.BlockTime.After(s.cfg.StartDate) {
 			rowsAfterStartDate = append(rowsAfterStartDate, row)
 		}
+		if firstResultTime.IsZero() || row.BlockTime.Before(firstResultTime) {
+			firstResultTime = row.BlockTime.Time
+		}
 	}
+	span.SetAttributes(
+		attribute.Int("number_of_rows", len(rowsAfterStartDate)),
+		attribute.String("first_result_time", firstResultTime.String()),
+	)
 	fmt.Println("Number of rows after start date:", len(rowsAfterStartDate))
 
 	// Convert each Row to a STIPTransactions and store them in the database
@@ -463,6 +461,13 @@ func (s *STIPRelayer) CalculateTransferAmount(ctx context.Context, transaction *
 	limit = limit.Mul(limit, big.NewInt(1e18)) // Convert to wei
 	if transferAmount.Cmp(limit) > 0 {
 		return nil, fmt.Errorf("transfer amount exceeds the limit of %d ARB", s.cfg.ARBMaxTransfer)
+	}
+	// Check if transferAmount is lower than configured min ARB (MinAmount * 10^18 wei)
+	minAmountFloat := new(big.Float).SetFloat64(s.cfg.ARBMinTransfer)
+	minAmountFloatWei := new(big.Float).Mul(minAmountFloat, big.NewFloat(1e18))
+	minAmount, _ := minAmountFloatWei.Int(nil) // Truncate fractional part
+	if transferAmount.Cmp(minAmount) < 0 {
+		return nil, fmt.Errorf("transfer amount is lower than the minimum of %f ARB", s.cfg.ARBMinTransfer)
 	}
 	// If you need to round to the nearest integer instead of truncating, use the following:
 	// transferAmount := new(big.Int)
