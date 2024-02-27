@@ -9,7 +9,6 @@ import (
 	"sync"
 
 	"github.com/ethereum/go-ethereum/common"
-	cctpTest "github.com/synapsecns/sanguine/services/cctp-relayer/testutil"
 
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -26,6 +25,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
+	cctpTest "github.com/synapsecns/sanguine/services/cctp-relayer/testutil"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/omnirpc/testhelper"
 	apiConfig "github.com/synapsecns/sanguine/services/rfq/api/config"
@@ -123,7 +123,7 @@ func (i *IntegrationSuite) setupBE(backend backends.SimulatedTestBackend) {
 	// prdeploys are contracts we want to deploy before running the test to speed it up. Obviously, these can be deployed when we need them as well,
 	// but this way we can do something while we're waiting for the other backend to startup.
 	// no need to wait for these to deploy since they can happen in background as soon as the backend is up.
-	predeployTokens := []contracts.ContractType{testutil.DAIType, testutil.USDTType, testutil.USDCType, testutil.WETH9Type}
+	predeployTokens := []contracts.ContractType{testutil.DAIType, testutil.USDTType, testutil.WETH9Type}
 	predeploys := append(predeployTokens, testutil.FastBridgeType)
 	slices.Reverse(predeploys) // return fast bridge first
 
@@ -154,7 +154,12 @@ func (i *IntegrationSuite) setupBE(backend backends.SimulatedTestBackend) {
 }
 
 func (i *IntegrationSuite) setupCCTP() {
-	for _, backend := range core.ToSlice(i.originBackend, i.destBackend) {
+	// deploy the contract to all backends
+	testBackends := core.ToSlice(i.originBackend, i.destBackend)
+	i.cctpDeployManager.BulkDeploy(i.GetTestContext(), testBackends, cctpTest.SynapseCCTPType, cctpTest.MockMintBurnTokenType)
+
+	// register remote deployments and tokens
+	for _, backend := range testBackends {
 		cctpContract, cctpHandle := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), backend)
 		_, tokenMessengeHandle := i.cctpDeployManager.GetMockTokenMessengerType(i.GetTestContext(), backend)
 
@@ -177,10 +182,13 @@ func (i *IntegrationSuite) setupCCTP() {
 				big.NewInt(remoteCCTP.ChainID().Int64()), remoteDomain, remoteCCTP.Address())
 			i.Require().NoError(err)
 			backend.WaitForConfirmation(i.GetTestContext(), tx)
+			fmt.Printf("[cctp] backend: %d, backend to set from: %d, remote domain: %d\n", backend.GetChainID(), backendToSetFrom.GetChainID(), remoteDomain)
+			fmt.Printf("[cctp] remote domain config setup tx on chain %d: %v\n", backendToSetFrom.GetChainID(), tx.Hash())
 
 			// register the remote token messenger on the tokenMessenger contract
 			_, err = tokenMessengeHandle.SetRemoteTokenMessenger(txOpts.TransactOpts, uint32(backendToSetFrom.GetChainID()), addressToBytes32(remoteMessenger.Address()))
 			i.Nil(err)
+			fmt.Printf("[cctp] remote token messenger on chain %d: %v\n", backendToSetFrom.GetChainID(), tx.Hash())
 		}
 	}
 }
@@ -296,10 +304,16 @@ func (i *IntegrationSuite) setupRelayer() {
 	// in the first backend, we want to deploy a bunch of different tokens
 	// TODO: functionalize me.
 	for _, backend := range core.ToSlice(i.originBackend, i.destBackend) {
-		tokenTypes := []contracts.ContractType{testutil.DAIType, testutil.USDTType, testutil.USDCType, testutil.WETH9Type}
+		tokenTypes := []contracts.ContractType{testutil.DAIType, testutil.USDTType, testutil.WETH9Type, cctpTest.MockMintBurnTokenType}
 
 		for _, tokenType := range tokenTypes {
-			tokenAddress := i.manager.Get(i.GetTestContext(), backend, tokenType).Address().String()
+			useCCTP := tokenType == cctpTest.MockMintBurnTokenType
+			var tokenAddress string
+			if useCCTP {
+				tokenAddress = i.cctpDeployManager.Get(i.GetTestContext(), backend, cctpTest.MockMintBurnTokenType).Address().String()
+			} else {
+				tokenAddress = i.manager.Get(i.GetTestContext(), backend, tokenType).Address().String()
+			}
 			quotableTokenID := fmt.Sprintf("%d-%s", backend.GetChainID(), tokenAddress)
 
 			tokenCaller, err := ierc20.NewIerc20Ref(common.HexToAddress(tokenAddress), backend)
@@ -308,26 +322,36 @@ func (i *IntegrationSuite) setupRelayer() {
 			decimals, err := tokenCaller.Decimals(&bind.CallOpts{Context: i.GetTestContext()})
 			i.NoError(err)
 
+			rebalanceMethod := ""
+			if useCCTP {
+				rebalanceMethod = "cctp"
+			}
+
 			// first the simple part, add the token to the token map
 			cfg.Chains[int(backend.GetChainID())].Tokens[tokenType.Name()] = relconfig.TokenConfig{
 				Address:               tokenAddress,
 				Decimals:              decimals,
 				PriceUSD:              1, // TODO: this will break on non-stables
-				RebalanceMethod:       "cctp",
+				RebalanceMethod:       rebalanceMethod,
 				MaintenanceBalancePct: 20,
 				InitialBalancePct:     50,
 			}
 
 			compatibleTokens := []contracts.ContractType{tokenType}
-			// DAI/USDT are fungible
-			if tokenType == testutil.DAIType || tokenType == testutil.USDCType {
-				compatibleTokens = []contracts.ContractType{testutil.DAIType, testutil.USDCType}
+			// DAI/USDC are fungible
+			if tokenType == testutil.DAIType || tokenType == cctpTest.MockMintBurnTokenType {
+				compatibleTokens = []contracts.ContractType{testutil.DAIType, cctpTest.MockMintBurnTokenType}
 			}
 
 			// now we need to add the token to the quotable tokens map
 			for _, token := range compatibleTokens {
 				otherBackend := i.getOtherBackend(backend)
-				otherToken := i.manager.Get(i.GetTestContext(), otherBackend, token).Address().String()
+				var otherToken string
+				if token == cctpTest.MockMintBurnTokenType {
+					otherToken = i.cctpDeployManager.Get(i.GetTestContext(), otherBackend, cctpTest.MockMintBurnTokenType).Address().String()
+				} else {
+					otherToken = i.manager.Get(i.GetTestContext(), otherBackend, token).Address().String()
+				}
 
 				cfg.QuotableTokens[quotableTokenID] = append(cfg.QuotableTokens[quotableTokenID], fmt.Sprintf("%d-%s", otherBackend.GetChainID(), otherToken))
 			}

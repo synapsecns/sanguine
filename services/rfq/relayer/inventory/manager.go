@@ -128,13 +128,14 @@ func (i *inventoryManagerImpl) GetCommittableBalances(ctx context.Context, optio
 
 // TokenMetadata contains metadata for a token.
 type TokenMetadata struct {
-	Name           string
-	Balance        *big.Int
-	Decimals       uint8
-	StartAllowance *big.Int
-	IsGasToken     bool
-	ChainID        int
-	Addr           common.Address
+	Name               string
+	Balance            *big.Int
+	Decimals           uint8
+	StartAllowanceRFQ  *big.Int
+	StartAllowanceCCTP *big.Int
+	IsGasToken         bool
+	ChainID            int
+	Addr               common.Address
 }
 
 var (
@@ -145,7 +146,7 @@ var (
 )
 
 // TODO: replace w/ config.
-const defaultPollPeriod = 5
+const defaultPollPeriod = 0
 
 // NewInventoryManager creates a new inventory manager.
 // TODO: too many args here.
@@ -204,7 +205,7 @@ func (i *inventoryManagerImpl) Start(ctx context.Context) error {
 			select {
 			case <-ctx.Done():
 				return fmt.Errorf("context canceled: %w", ctx.Err())
-			case <-time.After(defaultPollPeriod * time.Second):
+			case <-time.After(250 * time.Millisecond):
 				// this returning an error isn't really possible unless a config error happens
 				// TODO: need better error handling.
 				err := i.refreshBalances(ctx)
@@ -266,7 +267,7 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 
 		for address, token := range tokenMap {
 			// if startAllowance is 0
-			if address != chain.EthAddress && token.StartAllowance.Cmp(big.NewInt(0)) == 0 {
+			if address != chain.EthAddress && token.StartAllowanceRFQ.Cmp(big.NewInt(0)) == 0 {
 				chainID := chainID // capture func literal
 				address := address // capture func literal
 
@@ -289,6 +290,16 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 				})
 				if err != nil {
 					return fmt.Errorf("could not submit RFQ approval: %w", err)
+				}
+			}
+
+			if address != chain.EthAddress && token.StartAllowanceCCTP.Cmp(big.NewInt(0)) == 0 {
+				chainID := chainID // capture func literal
+				address := address // capture func literal
+
+				erc20, err := ierc20.NewIERC20(address, backendClient)
+				if err != nil {
+					return fmt.Errorf("could not get erc20: %w", err)
 				}
 
 				// approve CCTP bridge, if configured
@@ -496,7 +507,8 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 
 			// requires non-nil pointer
 			rtoken.Balance = new(big.Int)
-			rtoken.StartAllowance = new(big.Int)
+			rtoken.StartAllowanceRFQ = new(big.Int)
+			rtoken.StartAllowanceCCTP = new(big.Int)
 
 			if rtoken.IsGasToken {
 				rtoken.Decimals = 18
@@ -508,11 +520,16 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 				if err != nil {
 					return fmt.Errorf("could not get rfq address: %w", err)
 				}
+				cctpAddr, err := cfg.GetCCTPAddress(chainID)
+				if err != nil {
+					return fmt.Errorf("could not get cctp address: %w", err)
+				}
 				deferredCalls[chainID] = append(deferredCalls[chainID],
 					eth.CallFunc(funcBalanceOf, token, i.relayerAddress).Returns(rtoken.Balance),
 					eth.CallFunc(funcDecimals, token).Returns(&rtoken.Decimals),
 					eth.CallFunc(funcName, token).Returns(&rtoken.Name),
-					eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(rfqAddr)).Returns(rtoken.StartAllowance),
+					eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(rfqAddr)).Returns(rtoken.StartAllowanceRFQ),
+					eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(cctpAddr)).Returns(rtoken.StartAllowanceCCTP),
 				)
 			}
 
@@ -568,6 +585,7 @@ var logger = log.Logger("inventory")
 
 // refreshBalances refreshes all the token balances.
 func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
+	fmt.Printf("[cctp] refreshBalances on addr %v\n", i.relayerAddress.String())
 	i.mux.Lock()
 	defer i.mux.Unlock()
 	var wg sync.WaitGroup
@@ -588,6 +606,17 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 		for tokenAddress, token := range tokenMap {
 			// TODO: make sure Returns does nothing on error
 			if !token.IsGasToken {
+				fmt.Printf("[cctp] creating deferred call for token %v on chain %d, addr %v\n", tokenAddress.String(), chainID, i.relayerAddress.String())
+				erc20, err := ierc20.NewIERC20(tokenAddress, chainClient)
+				if err != nil {
+					fmt.Printf("[cctp] could not get erc20: %v\n", err)
+				} else {
+					balance, err := erc20.BalanceOf(&bind.CallOpts{Context: ctx}, i.relayerAddress)
+					if err != nil {
+						fmt.Printf("[cctp] error getting balance: %v\n", err)
+					}
+					fmt.Printf("[cctp] got balance for token %v on chain %v: %v\n", tokenAddress.String(), chainID, balance)
+				}
 				deferredCalls = append(deferredCalls, eth.CallFunc(funcBalanceOf, tokenAddress, i.relayerAddress).Returns(token.Balance))
 			}
 		}

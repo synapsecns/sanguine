@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core"
@@ -53,7 +55,7 @@ func TestIntegrationSuite(t *testing.T) {
 
 const (
 	originBackendChainID = 1
-	destBackendChainID   = 2
+	destBackendChainID   = 43114
 )
 
 // SetupTest sets up each test in the integration suite. We need to do a few things here:
@@ -101,15 +103,42 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 	fmt.Printf("[cctp] omni: %v\n", i.omniClient.GetDefaultEndpoint(int(i.originBackend.GetChainID())))
 	// Before we do anything, we're going to mint ourselves some USDC on the destination chain.
 	// 100k should do.
-	i.manager.MintToAddress(i.GetTestContext(), i.destBackend, testutil.USDCType, i.relayerWallet.Address(), big.NewInt(100000))
-	destUSDC := i.manager.Get(i.GetTestContext(), i.destBackend, testutil.USDCType)
-	i.Approve(i.destBackend, destUSDC, i.relayerWallet)
+	// i.manager.MintToAddress(i.GetTestContext(), i.destBackend, cctpTest.MockMintBurnTokenType, i.relayerWallet.Address(), big.NewInt(100000))
+	// destUSDC := i.manager.Get(i.GetTestContext(), i.destBackend, cctpTest.MockMintBurnTokenType)
+	// i.Approve(i.destBackend, destUSDC, i.relayerWallet)
+
+	opts := i.destBackend.GetTxContext(i.GetTestContext(), nil)
+	amount := big.NewInt(1e12)
+	destUSDC, destUSDCHandle := i.cctpDeployManager.GetMockMintBurnTokenType(i.GetTestContext(), i.destBackend)
+	fmt.Printf("[cctp] destUSDC addr: %v, relayer addr: %v\n", destUSDC.Address(), i.relayerWallet.Address())
+	tx, err := destUSDCHandle.MintPublic(opts.TransactOpts, i.relayerWallet.Address(), amount)
+	i.Nil(err)
+	i.destBackend.WaitForConfirmation(i.GetTestContext(), tx)
+	fmt.Printf("[cctp] mint dest tx: %v\n", tx.Hash())
+
+	// approve token
+	tx, err = destUSDCHandle.Approve(opts.TransactOpts, i.relayerWallet.Address(), core.CopyBigInt(abi.MaxUint256))
+	i.Nil(err)
+	i.destBackend.WaitForConfirmation(i.GetTestContext(), tx)
 
 	// let's give the user some money as well, $500 should do.
 	const userWantAmount = 500
-	i.manager.MintToAddress(i.GetTestContext(), i.originBackend, testutil.USDCType, i.userWallet.Address(), big.NewInt(userWantAmount))
-	originUSDC := i.manager.Get(i.GetTestContext(), i.originBackend, testutil.USDCType)
-	i.Approve(i.originBackend, originUSDC, i.userWallet)
+	// i.manager.MintToAddress(i.GetTestContext(), i.originBackend, cctpTest.MockMintBurnTokenType, i.userWallet.Address(), big.NewInt(userWantAmount))
+	// originUSDC := i.manager.Get(i.GetTestContext(), i.originBackend, cctpTest.MockMintBurnTokenType)
+	// i.Approve(i.originBackend, originUSDC, i.userWallet)
+
+	optsOrigin := i.originBackend.GetTxContext(i.GetTestContext(), nil)
+	originUSDC, originUSDCHandle := i.cctpDeployManager.GetMockMintBurnTokenType(i.GetTestContext(), i.originBackend)
+	fmt.Printf("[cctp] originUSDC addr: %v, relayer addr: %v\n", originUSDC.Address(), i.relayerWallet.Address())
+	tx, err = originUSDCHandle.MintPublic(optsOrigin.TransactOpts, i.relayerWallet.Address(), amount)
+	i.Nil(err)
+	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
+	fmt.Printf("[cctp] mint origin tx: %v\n", tx.Hash())
+
+	// approve token
+	tx, err = originUSDCHandle.Approve(optsOrigin.TransactOpts, i.relayerWallet.Address(), core.CopyBigInt(abi.MaxUint256))
+	i.Nil(err)
+	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
 
 	// non decimal adjusted user want amount
 	realWantAmount, err := testutil.AdjustAmount(i.GetTestContext(), big.NewInt(userWantAmount), destUSDC.ContractHandle())
@@ -120,6 +149,13 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 		// first he's gonna check the quotes.
 		userAPIClient, err := client.NewAuthenticatedClient(metrics.Get(), i.apiServer, localsigner.NewSigner(i.userWallet.PrivateKey()))
 		i.NoError(err)
+
+		balanceDest, err := destUSDCHandle.BalanceOf(&bind.CallOpts{}, i.relayerWallet.Address())
+		i.Nil(err)
+		fmt.Printf("[cctp] dest balance: %v\n", balanceDest)
+		balanceOrigin, err := originUSDCHandle.BalanceOf(&bind.CallOpts{}, i.relayerWallet.Address())
+		i.Nil(err)
+		fmt.Printf("[cctp] origin balance: %v\n", balanceOrigin)
 
 		allQuotes, err := userAPIClient.GetAllQuotes()
 		i.NoError(err)
@@ -142,7 +178,7 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 	_, originFastBridge := i.manager.GetFastBridge(i.GetTestContext(), i.originBackend)
 	auth := i.originBackend.GetTxContext(i.GetTestContext(), i.userWallet.AddressPtr())
 	// we want 499 usdc for 500 requested within a day
-	tx, err := originFastBridge.Bridge(auth.TransactOpts, fastbridge.IFastBridgeBridgeParams{
+	tx, err = originFastBridge.Bridge(auth.TransactOpts, fastbridge.IFastBridgeBridgeParams{
 		DstChainId:   uint32(i.destBackend.GetChainID()),
 		To:           i.userWallet.Address(),
 		OriginToken:  originUSDC.Address(),
@@ -203,7 +239,7 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 		}
 		return false
 	})
-	time.Sleep(10 * time.Minute)
+	// time.Sleep(10 * time.Minute)
 }
 
 // nolint: cyclop
