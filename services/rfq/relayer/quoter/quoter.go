@@ -215,7 +215,7 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 	// First, generate all quotes
 	for chainID, balances := range inv {
 		for address, balance := range balances {
-			fmt.Printf("[cctp] generating quotes for token %v on chain %v: %v\n", address.Hex(), chainID, balance.String())
+			// fmt.Printf("[cctp] generating quotes for token %v on chain %v: %v\n", address.Hex(), chainID, balance.String())
 			quotes, err := m.generateQuotes(ctx, chainID, address, balance)
 			if err != nil {
 				return err
@@ -245,14 +245,14 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 	}
 
 	destTokenID := fmt.Sprintf("%d-%s", chainID, address.Hex())
-	fmt.Printf("[cctp] destTokenID: %v\n", destTokenID)
+	// fmt.Printf("[cctp] destTokenID: %v\n", destTokenID)
 
 	var quotes []model.PutQuoteRequest
 	for keyTokenID, itemTokenIDs := range m.quotableTokens {
 		for _, tokenID := range itemTokenIDs {
 			//nolint:nestif
 			if tokenID == destTokenID {
-				fmt.Printf("[cctp] destTokenID found: %v\n", destTokenID)
+				// fmt.Printf("[cctp] destTokenID found: %v\n", destTokenID)
 				// Parse token info
 				originStr := strings.Split(keyTokenID, "-")[0]
 				origin, err := strconv.Atoi(originStr)
@@ -301,7 +301,7 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 					DestFastBridgeAddress:   destRFQAddr,
 				}
 				quotes = append(quotes, quote)
-				fmt.Printf("[cctp], sumbitting quote with amount %v, balance %v from chain %d to chain %d, tokens %v, %v\n", quote.DestAmount, balance.String(), quote.OriginChainID, quote.DestChainID, quote.OriginTokenAddr, quote.DestTokenAddr)
+				// fmt.Printf("[cctp], sumbitting quote with amount %v, balance %v from chain %d to chain %d, tokens %v, %v\n", quote.DestAmount, balance.String(), quote.OriginChainID, quote.DestChainID, quote.OriginTokenAddr, quote.DestTokenAddr)
 			}
 		}
 	}

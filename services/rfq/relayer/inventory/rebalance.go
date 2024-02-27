@@ -157,7 +157,7 @@ func (c *rebalanceManagerCCTP) Execute(ctx context.Context, rebalance *Rebalance
 
 // nolint:cyclop
 func (c *rebalanceManagerCCTP) listen(ctx context.Context, chainID int) (err error) {
-	fmt.Printf("listen on chain %d\n", chainID)
+	fmt.Printf("[cctp] listen on chain %d\n", chainID)
 	listener, ok := c.chainListeners[chainID]
 	if !ok {
 		return fmt.Errorf("could not find listener for chain %d", chainID)
@@ -167,13 +167,14 @@ func (c *rebalanceManagerCCTP) listen(ctx context.Context, chainID int) (err err
 		return fmt.Errorf("could not get chain client: %w", err)
 	}
 	cctpAddr := common.HexToAddress(c.cfg.Chains[chainID].CCTPAddress)
-	fmt.Printf("CCTP listen on chain %d: %s\n", chainID, cctpAddr.String())
+	fmt.Printf("[cctp] CCTP listen on chain %d: %s\n", chainID, cctpAddr.String())
 	parser, err := cctp.NewSynapseCCTPEvents(cctpAddr, ethClient)
 	if err != nil {
 		return fmt.Errorf("could not get cctp events: %w", err)
 	}
 
 	return listener.Listen(ctx, func(parentCtx context.Context, log types.Log) (err error) {
+		fmt.Printf("[cctp] got log: %v\n", log.Topics[0])
 		switch log.Topics[0] {
 		case cctp.CircleRequestSentTopic:
 			parsedEvent, err := parser.ParseCircleRequestSent(log)

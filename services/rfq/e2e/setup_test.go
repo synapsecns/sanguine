@@ -297,6 +297,7 @@ func (i *IntegrationSuite) setupRelayer() {
 			GasPriceCacheTTLSeconds:   60,
 			TokenPriceCacheTTLSeconds: 60,
 		},
+		RebalanceInterval: 0,
 	}
 	fmt.Printf("config cctp origin addr: %v\n", cfg.Chains[originBackendChainID].CCTPAddress)
 	fmt.Printf("config cctp dest addr: %v\n", cfg.Chains[destBackendChainID].CCTPAddress)

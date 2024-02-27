@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/suite"
@@ -123,15 +122,17 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 	fmt.Printf("[cctp] mint dest tx: %v\n", tx.Hash())
 
 	// approve token
-	tx, err = destUSDCHandle.Approve(opts.TransactOpts, i.relayerWallet.Address(), core.CopyBigInt(abi.MaxUint256))
-	i.Nil(err)
-	i.destBackend.WaitForConfirmation(i.GetTestContext(), tx)
+	i.Approve(i.destBackend, destUSDC, i.relayerWallet)
+	// tx, err = destUSDCHandle.Approve(opts.TransactOpts, i.relayerWallet.Address(), core.CopyBigInt(abi.MaxUint256))
+	// i.Nil(err)
+	// i.destBackend.WaitForConfirmation(i.GetTestContext(), tx)
 
 	// let's give the user some money as well, $500 should do.
 	// i.manager.MintToAddress(i.GetTestContext(), i.originBackend, cctpTest.MockMintBurnTokenType, i.userWallet.Address(), big.NewInt(userWantAmount))
 	// originUSDC := i.manager.Get(i.GetTestContext(), i.originBackend, cctpTest.MockMintBurnTokenType)
 	// i.Approve(i.originBackend, originUSDC, i.userWallet)
 
+	// add initial USDC to relayer on origin
 	optsOrigin := i.originBackend.GetTxContext(i.GetTestContext(), nil)
 	originUSDC, originUSDCHandle := i.cctpDeployManager.GetMockMintBurnTokenType(i.GetTestContext(), i.originBackend)
 	fmt.Printf("[cctp] originUSDC addr: %v, relayer addr: %v\n", originUSDC.Address(), i.relayerWallet.Address())
@@ -141,9 +142,23 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 	fmt.Printf("[cctp] mint origin tx: %v\n", tx.Hash())
 
 	// approve token
-	tx, err = originUSDCHandle.Approve(optsOrigin.TransactOpts, i.relayerWallet.Address(), core.CopyBigInt(abi.MaxUint256))
+	i.Approve(i.originBackend, originUSDC, i.relayerWallet)
+	// tx, err = originUSDCHandle.Approve(optsOrigin.TransactOpts, i.relayerWallet.Address(), core.CopyBigInt(abi.MaxUint256))
+	// i.Nil(err)
+	// i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
+
+	// add initial USDC to user on origin
+	tx, err = originUSDCHandle.MintPublic(optsOrigin.TransactOpts, i.userWallet.Address(), realRFQAmount)
 	i.Nil(err)
 	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
+	fmt.Printf("[cctp] mint origin tx: %v\n", tx.Hash())
+
+	// approve token
+	i.Approve(i.originBackend, originUSDC, i.userWallet)
+	// tx, err = originUSDCHandle.Approve(optsOrigin.TransactOpts, i.userWallet.Address(), core.CopyBigInt(abi.MaxUint256))
+	// i.Nil(err)
+	// i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
+	// fmt.Printf("[cctp] user approve tx: %v for address %v\n", tx.Hash(), i.userWallet.Address())
 
 	// non decimal adjusted user want amount
 	// now our friendly user is going to check the quote and send us some USDC on the origin chain.
@@ -192,6 +207,7 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 	})
 	i.NoError(err)
 	i.originBackend.WaitForConfirmation(i.GetTestContext(), tx)
+	fmt.Printf("[cctp] fastBridge tx: %v\n", tx.Hash())
 
 	// TODO: this, but cleaner
 	anvilClient, err := anvil.Dial(i.GetTestContext(), i.originBackend.RPCAddress())
@@ -232,7 +248,7 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 				// we should now have some usdc on the origin chain since we claimed
 				// this should be offered up as inventory
 				destAmountBigInt, _ := new(big.Int).SetString(quote.DestAmount, 10)
-				if destAmountBigInt.Cmp(big.NewInt(0)) > 0 {
+				if destAmountBigInt.Cmp(realStartAmount) > 0 {
 					// we found our quote!
 					// now we can move on
 					return true
@@ -241,7 +257,7 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 		}
 		return false
 	})
-	// time.Sleep(10 * time.Minute)
+	time.Sleep(10 * time.Minute)
 }
 
 // nolint: cyclop
