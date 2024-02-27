@@ -38,10 +38,6 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
         emit VerificationRequested(destChainId, encodedEntry, ethSignedEntryHash);
     }
 
-    function decodeEntry(bytes memory entry) external pure returns (InterchainEntry memory) {
-        return abi.decode(entry, (InterchainEntry));
-    }
-
     /// @inheritdoc IInterchainModule
     function getModuleFee(uint256 destChainId) external view returns (uint256) {
         return _getModuleFee(destChainId);
