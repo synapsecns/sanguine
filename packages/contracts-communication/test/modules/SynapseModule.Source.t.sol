@@ -25,8 +25,7 @@ contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleE
     uint256 public constant SRC_CHAIN_ID = 1337;
     uint256 public constant DST_CHAIN_ID = 7331;
 
-    // TODO: this should be configurable
-    uint256 public constant EXPECTED_GAS_LIMIT = 100_000;
+    uint256 public constant DEFAULT_GAS_LIMIT = 100_000;
 
     uint256 public constant FEE = 100;
 
@@ -213,25 +212,53 @@ contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleE
         assertEq(module.getModuleFee(DST_CHAIN_ID), FEE);
     }
 
-    function test_getModuleFee_callsGasOracle_twoSigners() public {
+    function test_getModuleFee_callsGasOracle_gasLimitDefault_twoSigners() public {
         bytes memory mockedSignatures = new bytes(2 * 65);
         bytes memory remoteCalldata = abi.encodeCall(module.verifyEntry, (abi.encode(mockEntry), mockedSignatures));
         bytes memory expectedCalldata = abi.encodeCall(
-            gasOracle.estimateTxCostInLocalUnits, (DST_CHAIN_ID, EXPECTED_GAS_LIMIT, remoteCalldata.length)
+            gasOracle.estimateTxCostInLocalUnits, (DST_CHAIN_ID, DEFAULT_GAS_LIMIT, remoteCalldata.length)
         );
         vm.expectCall(address(gasOracle), expectedCalldata);
         module.getModuleFee(DST_CHAIN_ID);
     }
 
-    function test_getModuleFee_callsGasOracle_threeSigners() public {
+    function test_getModuleFee_callsGasOracle_gasLimitDefault_threeSigners() public {
         vm.prank(owner);
         module.setThreshold(3);
         bytes memory mockedSignatures = new bytes(3 * 65);
         bytes memory remoteCalldata = abi.encodeCall(module.verifyEntry, (abi.encode(mockEntry), mockedSignatures));
         bytes memory expectedCalldata = abi.encodeCall(
-            gasOracle.estimateTxCostInLocalUnits, (DST_CHAIN_ID, EXPECTED_GAS_LIMIT, remoteCalldata.length)
+            gasOracle.estimateTxCostInLocalUnits, (DST_CHAIN_ID, DEFAULT_GAS_LIMIT, remoteCalldata.length)
         );
         vm.expectCall(address(gasOracle), expectedCalldata);
         module.getModuleFee(DST_CHAIN_ID);
+    }
+
+    function test_getModuleFee_callsGasOracle_gasLimitSet_twoSigners() public {
+        vm.prank(owner);
+        module.setVerifyGasLimit(DST_CHAIN_ID, 200_000);
+        bytes memory mockedSignatures = new bytes(2 * 65);
+        bytes memory remoteCalldata = abi.encodeCall(module.verifyEntry, (abi.encode(mockEntry), mockedSignatures));
+        bytes memory expectedCalldata =
+            abi.encodeCall(gasOracle.estimateTxCostInLocalUnits, (DST_CHAIN_ID, 200_000, remoteCalldata.length));
+        vm.expectCall(address(gasOracle), expectedCalldata);
+        module.getModuleFee(DST_CHAIN_ID);
+    }
+
+    function test_getModuleFee_callsGasOracle_gasLimitSet_threeSigners() public {
+        vm.prank(owner);
+        module.setThreshold(3);
+        vm.prank(owner);
+        module.setVerifyGasLimit(DST_CHAIN_ID, 200_000);
+        bytes memory mockedSignatures = new bytes(3 * 65);
+        bytes memory remoteCalldata = abi.encodeCall(module.verifyEntry, (abi.encode(mockEntry), mockedSignatures));
+        bytes memory expectedCalldata =
+            abi.encodeCall(gasOracle.estimateTxCostInLocalUnits, (DST_CHAIN_ID, 200_000, remoteCalldata.length));
+        vm.expectCall(address(gasOracle), expectedCalldata);
+        module.getModuleFee(DST_CHAIN_ID);
+    }
+
+    function test_getVerifyGasLimit_default() public {
+        assertEq(module.getVerifyGasLimit(DST_CHAIN_ID), DEFAULT_GAS_LIMIT);
     }
 }

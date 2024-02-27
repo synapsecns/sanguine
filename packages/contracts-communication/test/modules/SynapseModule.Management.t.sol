@@ -301,4 +301,24 @@ contract SynapseModuleManagementTest is Test, SynapseModuleEvents {
         vm.prank(owner);
         module.setGasOracle(notContract);
     }
+
+    function test_setVerifyGasLimit_setsVerifyGasLimit() public {
+        vm.prank(owner);
+        module.setVerifyGasLimit(1, 1000);
+        assertEq(module.getVerifyGasLimit(1), 1000);
+    }
+
+    function test_setVerifyGasLimit_emitsEvent() public {
+        vm.expectEmit(address(module));
+        emit VerifyGasLimitChanged(1, 1000);
+        vm.prank(owner);
+        module.setVerifyGasLimit(1, 1000);
+    }
+
+    function test_setVerifyGasLimit_revert_notOwner(address notOwner) public {
+        vm.assume(notOwner != owner);
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, notOwner));
+        vm.prank(notOwner);
+        module.setVerifyGasLimit(1, 1000);
+    }
 }
