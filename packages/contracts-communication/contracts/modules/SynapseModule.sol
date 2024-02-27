@@ -16,19 +16,19 @@ import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/Messa
 contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynapseModule {
     // TODO: make sure this is a good enough default value
     uint256 public constant DEFAULT_VERIFY_GAS_LIMIT = 100_000;
-    uint256 public constant VERIFY_GAS_LIMIT = 100_000;
+
     uint256 internal constant MAX_CLAIM_FEE_FRACTION = 0.01e18; // 1%
     uint256 internal constant FEE_PRECISION = 1e18;
 
     /// @dev Struct to hold the verifiers and the threshold for the module.
     ThresholdECDSA internal _verifiers;
-
     /// @dev Claim fee fraction, 100% = 1e18
     uint256 internal _claimFeeFraction;
+    /// @dev Gas limit for the verifyEntry function on the remote chain.
+    mapping(uint256 chainId => uint256 gasLimit) internal _verifyGasLimit;
 
     /// @inheritdoc ISynapseModule
     address public feeCollector;
-
     /// @inheritdoc ISynapseModule
     address public gasOracle;
 
@@ -96,7 +96,8 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
 
     /// @inheritdoc ISynapseModule
     function setVerifyGasLimit(uint256 chainId, uint256 gasLimit) external onlyOwner {
-        // TODO: implement
+        _verifyGasLimit[chainId] = gasLimit;
+        emit VerifyGasLimitChanged(chainId, gasLimit);
     }
 
     // ══════════════════════════════════════════════ PERMISSIONLESS ═══════════════════════════════════════════════════
@@ -151,8 +152,11 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     }
 
     /// @inheritdoc ISynapseModule
-    function getVerifyGasLimit(uint256 chainId) public view override returns (uint256) {
-        // TODO: implement
+    function getVerifyGasLimit(uint256 chainId) public view override returns (uint256 gasLimit) {
+        gasLimit = _verifyGasLimit[chainId];
+        if (gasLimit == 0) {
+            gasLimit = DEFAULT_VERIFY_GAS_LIMIT;
+        }
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
@@ -181,7 +185,7 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
         // Total formula is: 4 + 32 (entry offset) + 32 (signatures offset) + 160 + 32
         return IGasOracle(gasOracle).estimateTxCostInLocalUnits({
             remoteChainId: destChainId,
-            gasLimit: VERIFY_GAS_LIMIT,
+            gasLimit: getVerifyGasLimit(destChainId),
             calldataSize: 292 + 64 * getThreshold()
         });
     }
