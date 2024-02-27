@@ -193,15 +193,6 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 		return false
 	})
 
-	go func() {
-		for {
-			balance, err := originUSDCHandle.BalanceOf(&bind.CallOpts{Context: i.GetTestContext()}, i.relayerWallet.Address())
-			i.NoError(err)
-			fmt.Printf("origin usdc balance: %v\n", balance.String())
-			time.Sleep(1 * time.Second)
-		}
-	}()
-
 	// now we can send the money
 	_, originFastBridge := i.manager.GetFastBridge(i.GetTestContext(), i.originBackend)
 	auth := i.originBackend.GetTxContext(i.GetTestContext(), i.userWallet.AddressPtr())
