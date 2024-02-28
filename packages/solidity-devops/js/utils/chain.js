@@ -6,6 +6,8 @@ const {
 } = require('./cast.js')
 const { tryReadConfigValue } = require('./config.js')
 const { readEnv } = require('./env.js')
+const { logInfo } = require('./logger.js')
+const { readWalletAddress, readWalletType } = require('./wallet.js')
 
 /**
  * Reads the URL of the chain's RPC from the environment variables.
@@ -45,6 +47,16 @@ const hasCode = (chainName, address) => {
   return hasCodeRPC(readChainRPC(chainName), address)
 }
 
+const logWallet = (chainName, walletName) => {
+  const walletAddr = readWalletAddress(walletName)
+  const walletType = readWalletType(walletName)
+  logInfo(`Wallet: ${walletAddr} [${walletName}, ${walletType}]`)
+  const balance = getAccountBalance(chainName, walletAddr)
+  const nonce = getAccountNonce(chainName, walletAddr)
+  logInfo(`  Balance: ${balance}`)
+  logInfo(`  Nonce: ${nonce}`)
+}
+
 module.exports = {
   readChainRPC,
   readChainSpecificOptions,
@@ -52,4 +64,5 @@ module.exports = {
   getAccountBalance,
   getAccountNonce,
   hasCode,
+  logWallet,
 }

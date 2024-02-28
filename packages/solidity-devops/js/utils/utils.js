@@ -1,6 +1,8 @@
 const fs = require('fs')
 const { execSync } = require('child_process')
 
+const { logCommand } = require('./logger.js')
+
 /**
  * Asserts that a condition is true. If not, logs an error message and exits the process.
  *
@@ -59,8 +61,9 @@ const getCommandOutput = (command) => {
  *
  * @param {string} command - The command to run
  */
-const runCommand = (command) => {
+const runCommand = (command, ig) => {
   try {
+    logCommand(`${command}`)
     execSync(command, { stdio: 'inherit' })
   } catch (error) {
     process.exit(1)
