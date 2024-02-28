@@ -7,7 +7,11 @@ evm_version = "paris"
 optimizer = false
 out = "artifacts"
 src = "src"
-fs_permissions = [{ access = "read", path = "./" }]
+ffi = true
+fs_permissions = [
+    { access = "read", path = "./" },
+    { access = "read-write", path = "./.deployments" }
+]
 
 [fmt]
 line_length = 120
