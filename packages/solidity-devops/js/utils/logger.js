@@ -1,14 +1,32 @@
+const chalk = require('chalk')
+
 const { getAccountBalance, getAccountNonce } = require('./chain.js')
 const { readWalletAddress, readWalletType } = require('./wallet.js')
 
 const logWallet = (chainName, walletName) => {
   const walletAddr = readWalletAddress(walletName)
   const walletType = readWalletType(walletName)
-  console.log(`Wallet ${walletAddr} [${walletName}, ${walletType}]`)
+  logInfo(`Wallet: ${walletAddr} [${walletName}, ${walletType}]`)
   const balance = getAccountBalance(chainName, walletAddr)
   const nonce = getAccountNonce(chainName, walletAddr)
-  console.log(`  Balance: ${balance}`)
-  console.log(`  Nonce: ${nonce}`)
+  logInfo(`  Balance: ${balance}`)
+  logInfo(`  Nonce: ${nonce}`)
 }
 
-module.exports = { logWallet }
+const logSuccess = (msg) => {
+  console.log(chalk.green.bold(msg))
+}
+
+const logWarning = (msg) => {
+  console.log(chalk.yellow.bold(msg))
+}
+
+const logError = (msg) => {
+  console.log(chalk.red.bold(msg))
+}
+
+const logInfo = (msg) => {
+  console.log(chalk.cyanBright(msg))
+}
+
+module.exports = { logWallet, logSuccess, logWarning, logError, logInfo }

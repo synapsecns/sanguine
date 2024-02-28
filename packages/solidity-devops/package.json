@@ -8,6 +8,7 @@
     "url": "git+https://github.com/synapsecns/sanguine.git"
   },
   "dependencies": {
+    "chalk": "^4.1.2",
     "dotenv": "^16.4.5",
     "ds-test": "github:dapphub/ds-test#e282159",
     "forge-std": "github:foundry-rs/forge-std#v1.7.6"

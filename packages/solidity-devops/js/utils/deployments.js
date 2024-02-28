@@ -2,6 +2,7 @@ const fs = require('fs')
 
 const { getChainId, hasCode } = require('./chain.js')
 const { readConfigValue } = require('./config.js')
+const { logSuccess, logError, logWarning } = require('./logger.js')
 const { createDir } = require('./utils.js')
 const { assertCondition } = require('./utils.js')
 
@@ -34,7 +35,7 @@ const saveDeployment = (chainName, contractAlias) => {
   const freshDeploymentFN = `${freshDeployments}/${chainName}/${contractAlias}.json`
   // Silent exit if the fresh deployment file does not exist
   if (!fs.existsSync(freshDeploymentFN)) {
-    console.log(`No fresh deployment file found for ${contractAlias}`)
+    logError(`No fresh deployment file found for ${contractAlias}`)
     return
   }
   const artifact = JSON.parse(fs.readFileSync(freshDeploymentFN))
@@ -45,12 +46,10 @@ const saveDeployment = (chainName, contractAlias) => {
   const address = artifact.address
   // Silent exit if the contract is not deployed
   if (!hasCode(chainName, address)) {
-    console.log(
-      `${contractAlias} is NOT deployed at ${address} on ${chainName}`
-    )
+    logWarning(`${contractAlias} is NOT deployed at ${address} on ${chainName}`)
     return
   }
-  console.log(`${contractAlias} is deployed at ${address} on ${chainName}`)
+  logSuccess(`${contractAlias} is deployed at ${address} on ${chainName}`)
   // Move the file to the deployments directory
   const deploymentFN = `${deployments}/${chainName}/${contractAlias}.json`
   fs.renameSync(freshDeploymentFN, deploymentFN)
