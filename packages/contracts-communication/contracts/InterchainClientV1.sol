@@ -168,7 +168,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
                 options: options,
                 message: message
             });
-//            fee += IExecutionService(srcExecutionService).getExecutionFee(dstChainId, abi.encode(icTx).length, options);
+            fee += IExecutionService(srcExecutionService).getExecutionFee(dstChainId, abi.encode(icTx).length, options);
         }
     }
 
