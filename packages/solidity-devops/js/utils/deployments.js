@@ -56,7 +56,22 @@ const saveDeployment = (chainName, contractAlias) => {
   fs.renameSync(freshDeploymentFN, deploymentFN)
 }
 
+const getNewDeployments = (chainName, timestamp) => {
+  const freshDeployments = readConfigValue('freshDeployments')
+  const chainDir = `${freshDeployments}/${chainName}`
+  // Looks for files created after the given timestamp
+  // Then remove the extension and return the list of file names
+  const files = fs.readdirSync(chainDir)
+  return files
+    .filter((file) => {
+      const stats = fs.statSync(`${chainDir}/${file}`)
+      return file.endsWith('.json') && stats.mtimeMs > timestamp
+    })
+    .map((file) => file.slice(0, -5))
+}
+
 module.exports = {
   createDeploymentDirs,
   saveDeployment,
+  getNewDeployments,
 }

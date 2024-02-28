@@ -2,7 +2,11 @@
 const fs = require('fs')
 
 const { readChainSpecificOptions } = require('./utils/chain.js')
-const { createDeploymentDirs } = require('./utils/deployments.js')
+const {
+  createDeploymentDirs,
+  getNewDeployments,
+  saveDeployment,
+} = require('./utils/deployments.js')
 const { loadEnv } = require('./utils/env.js')
 const { forgeScript } = require('./utils/forge.js')
 const { logWallet } = require('./utils/logger.js')
@@ -43,5 +47,8 @@ forgeOptions = addOptions(
 )
 forgeOptions = addOptions(forgeOptions, readChainSpecificOptions(chainName))
 
+const currentTimestamp = Date.now()
 forgeScript(scriptFN, forgeOptions)
-// TODO: handle saved fresh deployments
+getNewDeployments(chainName, currentTimestamp).forEach((contractAlias) => {
+  saveDeployment(chainName, contractAlias)
+})
