@@ -28,7 +28,7 @@ func (l *ListenerTestSuite) TestListenForEvents() {
 			testAddress := common.BigToAddress(big.NewInt(int64(i)))
 			auth := l.backend.GetTxContext(l.GetTestContext(), nil)
 
-			//nolint: typecheck
+			//nolint:typecheck
 			txID := [32]byte(crypto.Keccak256(testAddress.Bytes()))
 			bridgeRequestTX, err := handle.MockBridgeRequest(auth.TransactOpts, txID, testAddress, fastbridgemock.IFastBridgeBridgeParams{
 				DstChainId:   gofakeit.Uint32(),

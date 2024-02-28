@@ -120,9 +120,8 @@ func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (er
 	}
 
 	// Check if latest block is the same as start block (for chains with slow block times)
-
 	if c.latestBlock == c.startBlock {
-		return
+		return nil
 	}
 
 	// Handle if the listener is more than one get logs range behind the head
