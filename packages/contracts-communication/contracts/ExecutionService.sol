@@ -50,10 +50,9 @@ contract ExecutionService is ExecutionServiceEvents, Ownable, IExecutionService 
         override
         onlyInterchainClient
     {
-        uint256 realExecutionFee = getExecutionFee(dstChainId, txPayloadSize, options);
         require(
-            executionFee > realExecutionFee,
-            string.concat("ExecutionService: execution fee is not high enough ", string(abi.encode(realExecutionFee)))
+            executionFee >= getExecutionFee(dstChainId, txPayloadSize, options),
+            "ExecutionService: execution fee is not high enough"
         );
         emit ExecutionRequested(transactionId);
     }
