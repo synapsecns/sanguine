@@ -20,9 +20,9 @@ type InterchainTransaction struct {
 	DstChainID uint64 `gorm:"column:dst_chain_id;index"`
 	// Status is the status of the transaction.
 	Status db.ExecutableStatus `gorm:"column:status;index"`
-	// Nonce is the nonce of the transaction.
+	// GasAirdrop is the gas airdrop of the transaction.
 	GasAirdrop string `gorm:"column:gas_airdrop;index"`
-	// Options is the options of the transaction.
+	// Options is the gas limit of the transaction.
 	GasLimit string `gorm:"column:gas_limit;index"`
 	// EncodedTx is the encoded transaction.
 	EncodedTx string `gorm:"column:encoded_tx"`

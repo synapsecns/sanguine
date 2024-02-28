@@ -203,10 +203,6 @@ func (e *Executor) checkReady(ctx context.Context, request db.TransactionSent) e
 		return fmt.Errorf("could not get contract for chain %d", request.DstChainID.Int64())
 	}
 
-	// TODO REMOVE ME
-	e.db.UpdateInterchainTransactionStatus(ctx, request.TransactionID, db.Ready)
-	// TODO REMOVE ME
-
 	isExecutable, err := contract.IsExecutable(&bind.CallOpts{Context: ctx}, request.EncodedTX)
 	if err != nil {
 		return fmt.Errorf("could not check if executable: %w", err)
@@ -288,7 +284,6 @@ func (e *Executor) runChainIndexer(parentCtx context.Context, chainID int) (err 
 				SrcSender:   event.SrcSender,
 				DstChainId:  core.CopyBigInt(event.DstChainId),
 				DstReceiver: event.DstReceiver,
-				Nonce:       event.ClientNonce.Uint64(),
 				DbNonce:     event.DbNonce,
 				Options:     event.Options,
 				Message:     event.Message,

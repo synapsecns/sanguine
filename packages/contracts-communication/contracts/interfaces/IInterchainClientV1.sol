@@ -2,7 +2,13 @@
 pragma solidity ^0.8.0;
 
 interface IInterchainClientV1 {
-    error InterchainClientV1__IncorrectMsgValue(uint256 actual, uint256 expected);
+    error InterchainClientV1__FeeAmountTooLow(uint256 actual, uint256 required);
+    error InterchainClientV1__IncorrectDstChainId(uint256 chainId);
+    error InterchainClientV1__IncorrectMsgValue(uint256 actual, uint256 required);
+    error InterchainClientV1__IncorrectSrcChainId(uint256 chainId);
+    error InterchainClientV1__NotEnoughResponses(uint256 actual, uint256 required);
+    error InterchainClientV1__TxAlreadyExecuted(bytes32 transactionId);
+    error InterchainClientV1__TxNotExecuted(bytes32 transactionId);
 
     /**
      * @notice Sets the address of the ExecutionFees contract.
@@ -20,13 +26,6 @@ interface IInterchainClientV1 {
     function setLinkedClient(uint256 chainId, bytes32 client) external;
 
     /**
-     * @notice Sets the address of the InterchainDB contract.
-     * @dev Only callable by the contract owner or an authorized account.
-     * @param _interchainDB The address of the InterchainDB contract.
-     */
-    function setInterchainDB(address _interchainDB) external;
-
-    /**
      * @notice Sends a message to another chain via the Interchain Communication Protocol.
      * @dev Charges a fee for the message, which is payable upon calling this function:
      * - Verification fees: paid to every module that verifies the message.
@@ -37,8 +36,10 @@ interface IInterchainClientV1 {
      * @param receiver The address of the receiver on the destination chain.
      * @param srcExecutionService The address of the execution service to use for the message.
      * @param srcModules The source modules involved in the message sending.
-     * @param options Execution options for the message sent, encoded as bytes, currently primarily gas limit + native gas drop.
+     * @param options Execution options for the message sent, encoded as bytes, currently gas limit + native gas drop.
      * @param message The message being sent.
+     * @return transactionId The ID of the transaction that was sent.
+     * @return dbNonce The database nonce of the written entry for the transaction.
      */
     function interchainSend(
         uint256 dstChainId,
@@ -49,7 +50,20 @@ interface IInterchainClientV1 {
         bytes calldata message
     )
         external
-        payable;
+        payable
+        returns (bytes32 transactionId, uint256 dbNonce);
+
+    function interchainSendEVM(
+        uint256 dstChainId,
+        address receiver,
+        address srcExecutionService,
+        address[] calldata srcModules,
+        bytes calldata options,
+        bytes calldata message
+    )
+        external
+        payable
+        returns (bytes32 transactionId, uint256 dbNonce);
 
     /**
      * @notice Executes a transaction that has been sent via the Interchain.
@@ -63,6 +77,12 @@ interface IInterchainClientV1 {
      */
     function interchainExecute(uint256 gasLimit, bytes calldata transaction) external payable;
 
+    /// @notice Writes the proof of execution for a transaction into the InterchainDB.
+    /// @dev Will revert if the transaction has not been executed.
+    /// @param transactionId    The ID of the transaction to write the proof for.
+    /// @return dbNonce         The database nonce of the written entry for the proof.
+    function writeExecutionProof(bytes32 transactionId) external returns (uint256 dbNonce);
+
     /**
      * @notice Checks if a transaction is executable.
      * @dev Determines if a transaction meets the criteria to be executed based on:
@@ -73,4 +93,27 @@ interface IInterchainClientV1 {
      * @return bool Returns true if the transaction is executable, false otherwise.
      */
     function isExecutable(bytes calldata transaction) external view returns (bool);
+
+    /// @notice Returns the fee for sending an Interchain message.
+    /// @param dstChainId           The chain ID of the destination chain.
+    /// @param srcExecutionService  The address of the execution service to use for the message.
+    /// @param srcModules           The source modules involved in the message sending.
+    /// @param options              Execution options for the message sent, currently gas limit + native gas drop.
+    /// @param message              The message being sent.
+    function getInterchainFee(
+        uint256 dstChainId,
+        address srcExecutionService,
+        address[] calldata srcModules,
+        bytes calldata options,
+        bytes calldata message
+    )
+        external
+        view
+        returns (uint256);
+
+    /// @notice Returns the address of the executor for a transaction that has been sent to the local chain.
+    function getExecutor(bytes calldata transaction) external view returns (address);
+
+    /// @notice Returns the address of the executor for a transaction that has been sent to the local chain.
+    function getExecutorById(bytes32 transactionId) external view returns (address);
 }

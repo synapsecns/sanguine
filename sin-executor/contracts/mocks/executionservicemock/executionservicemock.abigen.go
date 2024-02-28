@@ -31,12 +31,13 @@ var (
 
 // ExecutionServiceMockMetaData contains all meta data concerning the ExecutionServiceMock contract.
 var ExecutionServiceMockMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"getExecutionFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"requestExecution\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"name\":\"executorEOA\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"getExecutionFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"requestExecution\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
+		"62014bad": "executorEOA()",
 		"c473e7e8": "getExecutionFee(uint256,uint256,bytes)",
 		"e4e06522": "requestExecution(uint256,uint256,bytes32,uint256,bytes)",
 	},
-	Bin: "0x608060405234801561001057600080fd5b5061023f806100206000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c8063c473e7e81461003b578063e4e0652214610064575b600080fd5b610052610049366004610155565b60009392505050565b60405190815260200160405180910390f35b6100796100723660046101a5565b5050505050565b005b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b600082601f8301126100bb57600080fd5b813567ffffffffffffffff808211156100d6576100d661007b565b604051601f83017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f0116810190828211818310171561011c5761011c61007b565b8160405283815286602085880101111561013557600080fd5b836020870160208301376000602085830101528094505050505092915050565b60008060006060848603121561016a57600080fd5b8335925060208401359150604084013567ffffffffffffffff81111561018f57600080fd5b61019b868287016100aa565b9150509250925092565b600080600080600060a086880312156101bd57600080fd5b85359450602086013593506040860135925060608601359150608086013567ffffffffffffffff8111156101f057600080fd5b6101fc888289016100aa565b915050929550929590935056fea264697066735822122094600867b3f743577ac3e920ca4bb459c73a77fd5b40ee9ae698d578bc6ce21164736f6c63430008140033",
+	Bin: "0x608060405234801561001057600080fd5b50610290806100206000396000f3fe608060405234801561001057600080fd5b50600436106100415760003560e01c806362014bad14610046578063c473e7e814610090578063e4e06522146100b5575b600080fd5b6000546100669073ffffffffffffffffffffffffffffffffffffffff1681565b60405173ffffffffffffffffffffffffffffffffffffffff90911681526020015b60405180910390f35b6100a761009e3660046101a6565b60009392505050565b604051908152602001610087565b6100ca6100c33660046101f6565b5050505050565b005b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b600082601f83011261010c57600080fd5b813567ffffffffffffffff80821115610127576101276100cc565b604051601f83017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f0116810190828211818310171561016d5761016d6100cc565b8160405283815286602085880101111561018657600080fd5b836020870160208301376000602085830101528094505050505092915050565b6000806000606084860312156101bb57600080fd5b8335925060208401359150604084013567ffffffffffffffff8111156101e057600080fd5b6101ec868287016100fb565b9150509250925092565b600080600080600060a0868803121561020e57600080fd5b85359450602086013593506040860135925060608601359150608086013567ffffffffffffffff81111561024157600080fd5b61024d888289016100fb565b915050929550929590935056fea2646970667358221220c15c20205132b64aecd1865fd1e7602a4f626d5e1e0fd8064e46f96b970b8ecf64736f6c63430008140033",
 }
 
 // ExecutionServiceMockABI is the input ABI used to generate the binding from.
@@ -210,6 +211,37 @@ func (_ExecutionServiceMock *ExecutionServiceMockTransactorRaw) Transact(opts *b
 	return _ExecutionServiceMock.Contract.contract.Transact(opts, method, params...)
 }
 
+// ExecutorEOA is a free data retrieval call binding the contract method 0x62014bad.
+//
+// Solidity: function executorEOA() view returns(address)
+func (_ExecutionServiceMock *ExecutionServiceMockCaller) ExecutorEOA(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _ExecutionServiceMock.contract.Call(opts, &out, "executorEOA")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// ExecutorEOA is a free data retrieval call binding the contract method 0x62014bad.
+//
+// Solidity: function executorEOA() view returns(address)
+func (_ExecutionServiceMock *ExecutionServiceMockSession) ExecutorEOA() (common.Address, error) {
+	return _ExecutionServiceMock.Contract.ExecutorEOA(&_ExecutionServiceMock.CallOpts)
+}
+
+// ExecutorEOA is a free data retrieval call binding the contract method 0x62014bad.
+//
+// Solidity: function executorEOA() view returns(address)
+func (_ExecutionServiceMock *ExecutionServiceMockCallerSession) ExecutorEOA() (common.Address, error) {
+	return _ExecutionServiceMock.Contract.ExecutorEOA(&_ExecutionServiceMock.CallOpts)
+}
+
 // GetExecutionFee is a free data retrieval call binding the contract method 0xc473e7e8.
 //
 // Solidity: function getExecutionFee(uint256 dstChainId, uint256 txPayloadSize, bytes options) view returns(uint256)
@@ -264,8 +296,9 @@ func (_ExecutionServiceMock *ExecutionServiceMockTransactorSession) RequestExecu
 
 // IExecutionServiceMetaData contains all meta data concerning the IExecutionService contract.
 var IExecutionServiceMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"getExecutionFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"requestExecution\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"name\":\"executorEOA\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"getExecutionFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"requestExecution\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
+		"62014bad": "executorEOA()",
 		"c473e7e8": "getExecutionFee(uint256,uint256,bytes)",
 		"e4e06522": "requestExecution(uint256,uint256,bytes32,uint256,bytes)",
 	},
@@ -419,6 +452,37 @@ func (_IExecutionService *IExecutionServiceTransactorRaw) Transfer(opts *bind.Tr
 // Transact invokes the (paid) contract method with params as input values.
 func (_IExecutionService *IExecutionServiceTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
 	return _IExecutionService.Contract.contract.Transact(opts, method, params...)
+}
+
+// ExecutorEOA is a free data retrieval call binding the contract method 0x62014bad.
+//
+// Solidity: function executorEOA() view returns(address)
+func (_IExecutionService *IExecutionServiceCaller) ExecutorEOA(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _IExecutionService.contract.Call(opts, &out, "executorEOA")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// ExecutorEOA is a free data retrieval call binding the contract method 0x62014bad.
+//
+// Solidity: function executorEOA() view returns(address)
+func (_IExecutionService *IExecutionServiceSession) ExecutorEOA() (common.Address, error) {
+	return _IExecutionService.Contract.ExecutorEOA(&_IExecutionService.CallOpts)
+}
+
+// ExecutorEOA is a free data retrieval call binding the contract method 0x62014bad.
+//
+// Solidity: function executorEOA() view returns(address)
+func (_IExecutionService *IExecutionServiceCallerSession) ExecutorEOA() (common.Address, error) {
+	return _IExecutionService.Contract.ExecutorEOA(&_IExecutionService.CallOpts)
 }
 
 // GetExecutionFee is a free data retrieval call binding the contract method 0xc473e7e8.

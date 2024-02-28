@@ -1,10 +1,12 @@
 pragma solidity 0.8.20;
 
 import "./interfaces/IInterchainClientV1.sol";
-
+import "./interfaces/IInterchainApp.sol";
 import {OptionsLib, OptionsV1} from "./libs/Options.sol";
+import {AppConfigLib, AppConfigV1} from "./libs/AppConfig.sol";
 
-contract InterchainApp {
+contract InterchainApp is IInterchainApp {
+    using AppConfigLib for bytes;
     // What properties should Interchain be pulling from InterchainApp?
     // 1. Which modules to use, and how many are required?
 
@@ -20,13 +22,10 @@ contract InterchainApp {
         address[] sendingModules;
         // Accepts messages from these destination chain modules
         address[] receivingModules;
-        // Threshold for execution
-        uint256 requiredResponses;
-        // Time period for optimistic execution
-        uint64 optimisticTimePeriod; // in seconds
+        AppConfigV1 bytesAppConfig;
     }
 
-    AppConfig private appConfig;
+    AppConfig private localAppConfig;
 
     // Set the application configuration
     function setAppConfig(
@@ -43,49 +42,50 @@ contract InterchainApp {
         require(chainIDs.length == linkedIApps.length, "ChainIDs and IApps length mismatch");
 
         for (uint256 i = 0; i < chainIDs.length; i++) {
-            appConfig.linkedIApps[chainIDs[i]] = linkedIApps[i];
+            localAppConfig.linkedIApps[chainIDs[i]] = linkedIApps[i];
         }
 
-        appConfig.sendingModules = _sendingModules;
-        appConfig.receivingModules = _receivingModules;
-        appConfig.requiredResponses = _requiredResponses;
-        appConfig.optimisticTimePeriod = _optimisticTimePeriod;
+        localAppConfig.bytesAppConfig =
+            AppConfigV1({requiredResponses: _requiredResponses, optimisticPeriod: _optimisticTimePeriod});
+
+        localAppConfig.sendingModules = _sendingModules;
+        localAppConfig.receivingModules = _receivingModules;
     }
 
     // Getters for the application configuration
     function getLinkedIApp(uint64 chainID) external view returns (address) {
-        return appConfig.linkedIApps[chainID];
+        return localAppConfig.linkedIApps[chainID];
     }
 
     // TODO: Is a receiving module the same as a sending module?
     function getSendingModules() external view returns (address[] memory) {
-        return appConfig.sendingModules;
+        return localAppConfig.sendingModules;
     }
 
     function getReceivingModules() external view returns (address[] memory) {
-        return appConfig.receivingModules;
+        return localAppConfig.receivingModules;
     }
 
     function getRequiredResponses() external view returns (uint256) {
-        return appConfig.requiredResponses;
+        return localAppConfig.bytesAppConfig.requiredResponses;
     }
 
-    function getOptimisticTimePeriod() external view returns (uint64) {
-        return appConfig.optimisticTimePeriod;
+    function getOptimisticTimePeriod() external view returns (uint256) {
+        return localAppConfig.bytesAppConfig.optimisticPeriod;
     }
 
     function getSendingModules(bytes32 receiver, uint256 dstChainId) external view returns (address[] memory) {
         return sendingModules;
     }
 
-    function getReceivingModules(bytes32 transactionId) external view returns (address[] memory) {
-        return receivingModules;
+    function getReceivingConfig() external view returns (bytes memory, address[] memory) {
+        return (AppConfigLib.encodeAppConfigV1(localAppConfig.bytesAppConfig), localAppConfig.receivingModules);
     }
 
     constructor(address _interchain, address[] memory _sendingModules, address[] memory _receivingModules) {
         interchain = IInterchainClientV1(_interchain);
-        appConfig.sendingModules = _sendingModules;
-        appConfig.receivingModules = _receivingModules;
+        localAppConfig.sendingModules = _sendingModules;
+        localAppConfig.receivingModules = _receivingModules;
     }
 
     event AppMessageRecieve();
@@ -95,13 +95,13 @@ contract InterchainApp {
         bytes memory options = OptionsV1(200_000, 0).encodeOptionsV1();
         // TODO: Currently, we forward all gas to Interchain, this may not be expected behavior, and the real abstract contract shouldn't do this
         interchain.interchainSend{value: msg.value}(
-            dstChainId, receiver, address(0), appConfig.sendingModules, options, message
+            dstChainId, receiver, address(0), localAppConfig.sendingModules, options, message
         );
         emit AppMessageSent();
     }
 
     // TODO: Auth checks based on incoming message
-    function appReceive() external {
+    function appReceive(uint256 srcChainId, bytes32 sender, uint256 dbNonce, bytes calldata message) external payable {
         emit AppMessageRecieve();
     }
 }

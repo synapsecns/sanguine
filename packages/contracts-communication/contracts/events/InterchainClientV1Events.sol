@@ -7,7 +7,6 @@ abstract contract InterchainClientV1Events {
     event InterchainTransactionSent(
         bytes32 indexed transactionId,
         uint256 indexed dbNonce,
-        uint256 clientNonce,
         uint256 dstChainId,
         bytes32 srcSender,
         bytes32 dstReceiver,
@@ -24,4 +23,6 @@ abstract contract InterchainClientV1Events {
         bytes32 srcSender,
         bytes32 dstReceiver
     );
+
+    event ExecutionProofWritten(bytes32 indexed transactionId, uint256 indexed dbNonce, address executor);
 }
