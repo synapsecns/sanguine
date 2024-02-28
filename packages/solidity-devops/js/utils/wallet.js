@@ -11,10 +11,13 @@ const TYPE_TREZOR = 'trezor'
  * @param {string} walletName - The name of the wallet
  * @returns The command line options for the wallet, could be used with `forge` commands
  */
-const readWalletOptions = (walletName) => {
+const readWalletOptions = (walletName, isBroadcast) => {
+  // Include the main wallet options only if broadcasted
+  // This allows to run the scripts in simulation mode without unlocking the wallet
+  const broadcastWalletOptions = isBroadcast ? `${readWallet(walletName)} ` : ''
   const walletAddr = readWalletAddress(walletName)
-  const walletOptions = readWallet(walletName)
-  return `${walletOptions} --sender ${walletAddr}`
+  const mandatoryWalletOptions = `--sender ${walletAddr}`
+  return `${broadcastWalletOptions}${mandatoryWalletOptions}`
 }
 
 /**

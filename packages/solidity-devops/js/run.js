@@ -37,7 +37,10 @@ if (isBroadcast) {
 
 createDeploymentDirs(chainName)
 logWallet(chainName, walletName)
-forgeOptions = addOptions(forgeOptions, readWalletOptions(walletName))
+forgeOptions = addOptions(
+  forgeOptions,
+  readWalletOptions(walletName, isBroadcast)
+)
 forgeOptions = addOptions(forgeOptions, readChainSpecificOptions(chainName))
 
 forgeScript(scriptFN, forgeOptions)
