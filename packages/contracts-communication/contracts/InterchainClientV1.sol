@@ -277,6 +277,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).getReceivingConfig();
         AppConfigV1 memory appConfig = encodedAppConfig.decodeAppConfigV1();
         uint256 responses = _getFinalizedResponsesCount(approvedDstModules, icEntry, appConfig.optimisticPeriod);
+        revert(string(abi.encode(responses)));
 //        if (responses < appConfig.requiredResponses) {
 //            revert InterchainClientV1__NotEnoughResponses(responses, appConfig.requiredResponses);
 //        }
