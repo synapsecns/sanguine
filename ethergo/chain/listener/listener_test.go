@@ -11,8 +11,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/synapsecns/sanguine/ethergo/chain/listener"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/testcontracts/fastbridgemock"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/listener"
 )
 
 func (l *ListenerTestSuite) TestListenForEvents() {
