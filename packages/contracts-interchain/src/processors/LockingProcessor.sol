@@ -16,6 +16,33 @@ import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
 contract LockingProcessor is AbstractProcessor {
     using SafeERC20 for IERC20;
 
+    /// @inheritdoc AbstractProcessor
+    function calculateSwap(
+        uint8 tokenIndexFrom,
+        uint8 tokenIndexTo,
+        uint256 dx
+    )
+        external
+        view
+        override
+        returns (uint256 amountOut)
+    {
+        // InterchainToken (0) -> UnderlyingToken (1)
+        if (tokenIndexFrom == 0 && tokenIndexTo == 1) {
+            // Check that amount does not exceed the processor balance of the UnderlyingToken
+            if (dx > IERC20(UNDERLYING_TOKEN).balanceOf(address(this))) {
+                return 0;
+            }
+            return dx;
+        }
+        // UnderlyingToken (1) -> InterchainToken (0)
+        if (tokenIndexFrom == 1 && tokenIndexTo == 0) {
+            return dx;
+        }
+        // Return 0 for unsupported operations
+        return 0;
+    }
+
     /// @dev Burns the ICERC20 token taken from `msg.sender`, then
     /// unlocks the same amount of the underlying token to `msg.sender`.
     function _burnInterchainToken(uint256 amount) internal override {

@@ -68,7 +68,8 @@ abstract contract AbstractProcessor is IDefaultPool {
         uint256 dx
     )
         external
-        pure
+        view
+        virtual
         returns (uint256 amountOut)
     {
         // InterchainToken (0) -> UnderlyingToken (1)
