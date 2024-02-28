@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const fs = require('fs')
 
-const { readChainSpecificOptions } = require('./utils/chain.js')
+const { readChainSpecificOptions, logWallet } = require('./utils/chain.js')
 const {
   createDeploymentDirs,
   getNewDeployments,
@@ -9,7 +9,6 @@ const {
 } = require('./utils/deployments.js')
 const { loadEnv } = require('./utils/env.js')
 const { forgeScript } = require('./utils/forge.js')
-const { logWallet } = require('./utils/logger.js')
 const {
   parseCommandLineArgs,
   isBroadcasted,
@@ -21,31 +20,29 @@ const { readWalletOptions } = require('./utils/wallet.js')
 
 loadEnv()
 
-const { positionalArgs, options } = parseCommandLineArgs()
-assertCondition(
-  positionalArgs.length === 3,
-  'Usage: "yarn sol:run <path-to-script> <chain-name> <wallet-name> [-- <options>]"'
-)
-
+const { positionalArgs, options } = parseCommandLineArgs({
+  requiredArgsCount: 3,
+  usage:
+    'Usage: "yarn sol:run <path-to-script> <chain-name> <wallet-name> [-- <options>]"',
+})
 const [scriptFN, chainName, walletName] = positionalArgs
 assertCondition(
   fs.existsSync(scriptFN),
   `Script file ${scriptFN} does not exist`
 )
-let forgeOptions = addOptions(`-f ${chainName}`, options)
-// Check if this script is broadcasted
-const isBroadcast = isBroadcasted(forgeOptions)
-if (isBroadcast) {
-  forgeOptions = addVerifyOptions(forgeOptions)
-}
-
+// Check if this script is being broadcasted
+const isBroadcast = isBroadcasted(options)
 createDeploymentDirs(chainName)
 logWallet(chainName, walletName)
-forgeOptions = addOptions(
-  forgeOptions,
+let forgeOptions = addOptions(
+  `-f ${chainName}`,
   readWalletOptions(walletName, isBroadcast)
 )
 forgeOptions = addOptions(forgeOptions, readChainSpecificOptions(chainName))
+forgeOptions = addOptions(forgeOptions, options)
+if (isBroadcast) {
+  forgeOptions = addVerifyOptions(forgeOptions)
+}
 
 const currentTimestamp = Date.now()
 forgeScript(scriptFN, forgeOptions)
