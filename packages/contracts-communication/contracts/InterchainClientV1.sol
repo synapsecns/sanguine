@@ -273,8 +273,8 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             srcWriter: linkedClients[icTx.srcChainId],
             dataHash: transactionId
         });
-//        (bytes memory encodedAppConfig, address[] memory approvedDstModules) =
-//            IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).getReceivingConfig();
+        (bytes memory encodedAppConfig, address[] memory approvedDstModules) =
+            IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).getReceivingConfig();
 //        AppConfigV1 memory appConfig = encodedAppConfig.decodeAppConfigV1();
 //        uint256 responses = _getFinalizedResponsesCount(approvedDstModules, icEntry, appConfig.optimisticPeriod);
 //        if (responses < appConfig.requiredResponses) {
