@@ -47,9 +47,13 @@ contract ExecutionService is ExecutionServiceEvents, Ownable, IExecutionService 
         bytes memory options
     )
         external
-        override onlyInterchainClient
+        override
+        onlyInterchainClient
     {
-        require(executionFee > getExecutionFee(dstChainId, txPayloadSize, options), "ExecutionService: execution fee is not high enough");
+        require(
+            executionFee > getExecutionFee(dstChainId, txPayloadSize, options),
+            "ExecutionService: execution fee is not high enough"
+        );
         emit ExecutionRequested(transactionId);
     }
 
