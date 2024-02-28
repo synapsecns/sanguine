@@ -2,6 +2,9 @@ package executor_test
 
 import (
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/optionslibexport"
 	"math/big"
 	"time"
 
@@ -14,9 +17,24 @@ func (i *InterchainSuite) TestE2E() {
 	auth := i.originChain.GetTxContext(i.GetTestContext(), nil)
 
 	receiver := i.addressToBytes32(i.deployManager.Get(i.GetTestContext(), i.destChain, testutil.InterchainApp).Address())
+	message := []byte("hello")
+
+	_, optionsLib := i.deployManager.GetOptionsLib(i.GetTestContext(), i.originChain)
+	// must match values in the contract
+	encodedOptions, err := optionsLib.EncodeOptions(&bind.CallOpts{Context: i.GetTestContext()}, optionslibexport.OptionsV1{
+		GasLimit:   big.NewInt(200000),
+		GasAirdrop: big.NewInt(0),
+	})
+	i.Require().NoError(err)
+
+	_, originClient := i.deployManager.GetInterchainClient(i.GetTestContext(), i.originChain)
+	interchainFee, err := originClient.GetInterchainFee(&bind.CallOpts{Context: i.GetTestContext()},
+		i.destChain.GetBigChainID(), i.deployManager.Get(i.GetTestContext(), i.originChain, testutil.ExecutionService).Address(), []common.Address{i.deployManager.Get(i.GetTestContext(), i.originChain, testutil.InterchainModuleMock).Address()}, encodedOptions, message)
+	i.Require().NoError(err)
 
 	_, appMock := i.deployManager.GetInterchainAppMock(i.GetTestContext(), i.originChain)
-	tx, err := appMock.Send(auth.TransactOpts, receiver, i.destChain.GetBigChainID(), []byte("hello"))
+	auth.TransactOpts.Value = interchainFee
+	tx, err := appMock.Send(auth.TransactOpts, receiver, i.destChain.GetBigChainID(), message)
 	i.Require().NoError(err)
 	i.Require().NoError(err)
 	i.originChain.WaitForConfirmation(i.GetTestContext(), tx)
@@ -37,7 +55,6 @@ func (i *InterchainSuite) TestE2E() {
 		if err != nil {
 			continue
 		}
-
 		_, destDB := i.deployManager.GetInterchainDB(i.GetTestContext(), i.destChain)
 
 		destContext := i.destChain.GetTxContext(i.GetTestContext(), nil)
@@ -63,6 +80,5 @@ func (i *InterchainSuite) TestE2E() {
 			i.destChain.GetFundedAccount(i.GetTestContext(), big.NewInt(1))
 		}
 	}()
-
 	time.Sleep(time.Minute * 1)
 }

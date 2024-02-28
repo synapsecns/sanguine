@@ -51,7 +51,7 @@ contract ExecutionService is ExecutionServiceEvents, Ownable, IExecutionService 
         onlyInterchainClient
     {
         require(
-            executionFee > getExecutionFee(dstChainId, txPayloadSize, options),
+            executionFee >= getExecutionFee(dstChainId, txPayloadSize, options),
             "ExecutionService: execution fee is not high enough"
         );
         emit ExecutionRequested(transactionId);
@@ -70,7 +70,7 @@ contract ExecutionService is ExecutionServiceEvents, Ownable, IExecutionService 
     {
         (uint8 version, bytes memory data) = options.decodeVersionedOptions();
         if (version == OptionsLib.OPTIONS_V1) {
-            OptionsV1 memory optionsV1 = data.decodeOptionsV1();
+            OptionsV1 memory optionsV1 = options.decodeOptionsV1();
             uint256 baseCost = gasOracle.estimateTxCostInLocalUnits(dstChainId, optionsV1.gasLimit, txPayloadSize);
             if (optionsV1.gasAirdrop > 0) {
                 baseCost += gasOracle.convertRemoteValueToLocalUnits(dstChainId, optionsV1.gasAirdrop);

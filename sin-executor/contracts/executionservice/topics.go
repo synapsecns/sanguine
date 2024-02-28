@@ -1,4 +1,4 @@
-package interchainclient
+package executionservice
 
 import (
 	"bytes"
@@ -8,22 +8,22 @@ import (
 )
 
 var (
-	// InterchainTransactionSentTopic is the event topic for a sent transaction.
-	InterchainTransactionSentTopic common.Hash
+	// ExecutionRequestedTopic is the event topic for a sent transaction.
+	ExecutionRequestedTopic common.Hash
 )
 
 // static checks to make sure topics actually exist.
 func init() {
 	var err error
 
-	parsedABI, err := abi.JSON(strings.NewReader(InterchainClientV1MetaData.ABI))
+	parsedABI, err := abi.JSON(strings.NewReader(ExecutionServiceMetaData.ABI))
 	if err != nil {
 		panic(err)
 	}
 
-	InterchainTransactionSentTopic = parsedABI.Events["InterchainTransactionSent"].ID
+	ExecutionRequestedTopic = parsedABI.Events["ExecutionRequested"].ID
 
-	_, err = parsedABI.EventByID(InterchainTransactionSentTopic)
+	_, err = parsedABI.EventByID(ExecutionRequestedTopic)
 	if err != nil {
 		panic(err)
 	}
@@ -33,7 +33,7 @@ func init() {
 // this is returned as a function to assert immutability.
 func topicMap() map[EventType]common.Hash {
 	return map[EventType]common.Hash{
-		InterchainTransactionSentEvent: InterchainTransactionSentTopic,
+		ExecutionRequestedEvent: ExecutionRequestedTopic,
 	}
 }
 
