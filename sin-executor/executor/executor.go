@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/sin-executor/contracts/executionservice"
 	"math/big"
 	"time"
 
@@ -59,20 +60,21 @@ func NewExecutor(ctx context.Context, handler metrics.Handler, cfg config.Config
 	executor.chainListeners = make(map[int]listener.ContractListener)
 	executor.clientContracts = make(map[int]*interchainclient.InterchainClientRef)
 
-	for chainID, address := range cfg.Chains {
-		synapseModule := common.HexToAddress(address)
+	for chainID, chainCfg := range cfg.Chains {
+		executionService := common.HexToAddress(chainCfg.ExecutionService)
+		interchainClient := common.HexToAddress(chainCfg.Client)
 		chainClient, err := executor.client.GetChainClient(ctx, chainID)
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain client: %w", err)
 		}
 
-		chainListener, err := listener.NewChainListener(chainClient, executor.db, synapseModule, handler)
+		chainListener, err := listener.NewChainListener(chainClient, executor.db, executionService, handler)
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain listener: %w", err)
 		}
 		executor.chainListeners[chainID] = chainListener
 
-		executor.clientContracts[chainID], err = interchainclient.NewInterchainClientRef(synapseModule, chainClient)
+		executor.clientContracts[chainID], err = interchainclient.NewInterchainClientRef(interchainClient, chainClient)
 		if err != nil {
 			return nil, fmt.Errorf("could not get synapse module ref: %w", err)
 		}
@@ -181,10 +183,7 @@ func (e *Executor) executeTransaction(ctx context.Context, request db.Transactio
 			status, _ := e.submitter.GetSubmissionStatus(ctx, request.DstChainID, nonce)
 
 			if status.TxHash().String() != (common.Hash{}).String() {
-				fmt.Println("STATUS")
-				fmt.Println(status)
-				fmt.Println("hash")
-				fmt.Println(status.TxHash().String())
+				fmt.Printf("cast run %s --rpc-url %s/rpc/2\n", status.TxHash().String(), e.cfg.OmnirpcURL)
 			}
 		}
 	}()
@@ -202,6 +201,10 @@ func (e *Executor) checkReady(ctx context.Context, request db.TransactionSent) e
 	if !ok {
 		return fmt.Errorf("could not get contract for chain %d", request.DstChainID.Int64())
 	}
+
+	// TODO: REMOVE ME
+	// err := e.db.UpdateInterchainTransactionStatus(ctx, request.TransactionID, db.Ready)
+	// TODO: REMOVE ME
 
 	isExecutable, err := contract.IsExecutable(&bind.CallOpts{Context: ctx}, request.EncodedTX)
 	if err != nil {
@@ -224,7 +227,7 @@ func (e *Executor) startChainIndexers(ctx context.Context) error {
 
 	// TODO: good chance we wanna prepare these chain listeners up front and then listen later.
 	for chainID := range e.cfg.Chains {
-		chainID := chainID // capture func literal
+		chainID := chainID // capture func litera
 
 		g.Go(func() error {
 			err := e.runChainIndexer(ctx, chainID)
@@ -250,14 +253,23 @@ const defaultDBInterval = 3
 func (e *Executor) runChainIndexer(parentCtx context.Context, chainID int) (err error) {
 	chainListener := e.chainListeners[chainID]
 
-	parser, err := interchainclient.NewParser(chainListener.Address())
+	clientParser, err := interchainclient.NewParser(chainListener.Address())
 	if err != nil {
 		return fmt.Errorf("could not parse: %w", err)
 	}
 
+	executionServiceParser, err := executionservice.NewParser(chainListener.Address())
+	if err != nil {
+		return fmt.Errorf("could not parse: %w", err)
+	}
+
+	chainClient, err := e.client.GetChainClient(parentCtx, chainID)
+	if err != nil {
+		return fmt.Errorf("could not get chain client: %w", err)
+	}
+
 	err = chainListener.Listen(parentCtx, func(parentCtx context.Context, log types.Log) (err error) {
-		et, parsedEvent, ok := parser.ParseEvent(log)
-		// handle unknown event
+		oget, _, ok := executionServiceParser.ParseEvent(log)
 		if !ok {
 			if len(log.Topics) != 0 {
 				e.metrics.ExperimentalLogger().Warnf(parentCtx, "unknown event %s", log.Topics[0])
@@ -265,7 +277,7 @@ func (e *Executor) runChainIndexer(parentCtx context.Context, chainID int) (err 
 			return nil
 		}
 
-		ctx, span := e.metrics.Tracer().Start(parentCtx, fmt.Sprintf("handleLog-%s", et), trace.WithAttributes(
+		ctx, span := e.metrics.Tracer().Start(parentCtx, fmt.Sprintf("handleLog-%s", oget), trace.WithAttributes(
 			attribute.String(metrics.TxHash, log.TxHash.String()),
 			attribute.Int(metrics.Origin, chainID),
 			attribute.String(metrics.Contract, log.Address.String()),
@@ -277,34 +289,51 @@ func (e *Executor) runChainIndexer(parentCtx context.Context, chainID int) (err 
 			metrics.EndSpanWithErr(span, err)
 		}()
 
-		switch event := parsedEvent.(type) {
-		case *interchainclient.InterchainClientV1InterchainTransactionSent:
-			encodedTX, err := e.clientContracts[chainID].EncodeTransaction(&bind.CallOpts{Context: ctx}, interchainclient.InterchainTransaction{
-				SrcChainId:  big.NewInt(int64(chainID)),
-				SrcSender:   event.SrcSender,
-				DstChainId:  core.CopyBigInt(event.DstChainId),
-				DstReceiver: event.DstReceiver,
-				DbNonce:     event.DbNonce,
-				Options:     event.Options,
-				Message:     event.Message,
-			})
-
-			decodedOptions, err := e.clientContracts[chainID].DecodeOptions(&bind.CallOpts{Context: ctx}, event.Options)
-			if err != nil {
-				return fmt.Errorf("could not decode options: %w", err)
-			}
-
-			err = e.db.StoreInterchainTransaction(ctx, big.NewInt(int64(chainID)), event, &decodedOptions, encodedTX)
-			if err != nil {
-				return fmt.Errorf("could not store interchain transaction: %w", err)
-			}
-		}
-
-		// stop the world.
+		receipt, err := chainClient.TransactionReceipt(ctx, log.TxHash)
 		if err != nil {
-			return fmt.Errorf("could not handle event: %w", err)
+			return fmt.Errorf("could not get transaction receipt: %w", err)
 		}
 
+		for _, receiptLog := range receipt.Logs {
+			_, parsedEvent, ok := clientParser.ParseEvent(*receiptLog)
+			// handle unknown event
+			if !ok {
+				continue
+			}
+
+			switch event := parsedEvent.(type) {
+			case *interchainclient.InterchainClientV1InterchainTransactionSent:
+				encodedTX, err := e.clientContracts[chainID].EncodeTransaction(&bind.CallOpts{Context: ctx}, interchainclient.InterchainTransaction{
+					SrcChainId:  big.NewInt(int64(chainID)),
+					SrcSender:   event.SrcSender,
+					DstChainId:  core.CopyBigInt(event.DstChainId),
+					DstReceiver: event.DstReceiver,
+					DbNonce:     event.DbNonce,
+					Options:     event.Options,
+					Message:     event.Message,
+				})
+				if err != nil {
+					return fmt.Errorf("could not encode transaction: %w", err)
+				}
+
+				decodedOptions, err := e.clientContracts[chainID].DecodeOptions(&bind.CallOpts{Context: ctx}, event.Options)
+				if err != nil {
+					return fmt.Errorf("could not decode options: %w", err)
+				}
+
+				err = e.db.StoreInterchainTransaction(ctx, big.NewInt(int64(chainID)), event, &decodedOptions, encodedTX)
+				if err != nil {
+					return fmt.Errorf("could not store interchain transaction: %w", err)
+				}
+			}
+
+			// stop the world.
+			if err != nil {
+				return fmt.Errorf("could not handle event: %w", err)
+			}
+
+			return nil
+		}
 		return nil
 	})
 

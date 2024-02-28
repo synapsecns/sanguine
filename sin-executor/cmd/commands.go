@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/synapsecns/sanguine/core/commandline"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/sin-executor/config"
@@ -29,7 +30,7 @@ var runCommand = &cli.Command{
 
 		input, err := os.ReadFile(filepath.Clean(c.String(configFlag.Name)))
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to read config file: %w", err)
 		}
 
 		metricsProvider := metrics.Get()
@@ -37,17 +38,17 @@ var runCommand = &cli.Command{
 		var cfg config.Config
 		err = yaml.Unmarshal(input, &cfg)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to unmarshal config: %w", err)
 		}
 
 		exec, err := executor.NewExecutor(c.Context, metricsProvider, cfg)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to create executor: %w", err)
 		}
 
 		err = exec.Start(c.Context)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to start executor: %w", err)
 		}
 
 		return nil
