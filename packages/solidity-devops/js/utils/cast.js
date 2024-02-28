@@ -12,8 +12,15 @@ const getAccountNonceRPC = (rpcUrl, address) => {
   return getCommandOutput(`cast nonce --rpc-url ${rpcUrl} ${address}`)
 }
 
+const hasCodeRPC = (rpcUrl, address) => {
+  const code = getCommandOutput(`cast code --rpc-url ${rpcUrl} ${address}`)
+  // 0x is returned for an address without code
+  return code.length > 2
+}
+
 module.exports = {
   getChainIdRPC,
   getAccountBalanceRPC,
   getAccountNonceRPC,
+  hasCodeRPC,
 }

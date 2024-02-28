@@ -1,10 +1,8 @@
 #!/usr/bin/env node
 const fs = require('fs')
 
-const {
-  readChainSpecificOptions,
-  createDeploymentDirs,
-} = require('./utils/chain.js')
+const { readChainSpecificOptions } = require('./utils/chain.js')
+const { createDeploymentDirs } = require('./utils/deployments.js')
 const { loadEnv } = require('./utils/env.js')
 const { forgeScript } = require('./utils/forge.js')
 const { logWallet } = require('./utils/logger.js')
