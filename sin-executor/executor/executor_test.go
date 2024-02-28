@@ -43,7 +43,7 @@ func (i *InterchainSuite) TestE2E() {
 	recp, err := i.originChain.TransactionReceipt(i.GetTestContext(), tx.Hash())
 	i.Require().NoError(err)
 
-	idb, _ := i.deployManager.GetInterchainDB(i.GetTestContext(), &i.originChain)
+	idb, _ := i.deployManager.GetInterchainDB(i.GetTestContext(), i.originChain)
 	parser, err := interchaindb.NewInterchainDBFilterer(idb.Address(), i.originChain)
 	i.Require().NoError(err)
 
