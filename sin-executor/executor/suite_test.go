@@ -135,9 +135,15 @@ func (i *InterchainSuite) makeExecutor() {
 	destOwner, execServiceDest := i.deployManager.GetExecutionService(i.GetTestContext(), i.destChain)
 
 	cfg := config.Config{
-		Chains: map[int]string{
-			1: execServiceOrigin.Address().String(),
-			2: execServiceDest.Address().String(),
+		Chains: map[int]config.ChainConfig{
+			1: {
+				ExecutionService: execServiceOrigin.Address().String(),
+				Client:           i.originModule.Address().String(),
+			},
+			2: {
+				ExecutionService: execServiceDest.Address().String(),
+				Client:           i.destModule.Address().String(),
+			},
 		},
 		OmnirpcURL: i.omnirpcURL,
 		Database: config.DatabaseConfig{

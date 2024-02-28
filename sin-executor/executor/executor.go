@@ -60,20 +60,21 @@ func NewExecutor(ctx context.Context, handler metrics.Handler, cfg config.Config
 	executor.chainListeners = make(map[int]listener.ContractListener)
 	executor.clientContracts = make(map[int]*interchainclient.InterchainClientRef)
 
-	for chainID, address := range cfg.Chains {
-		synapseModule := common.HexToAddress(address)
+	for chainID, chainCfg := range cfg.Chains {
+		executionService := common.HexToAddress(chainCfg.ExecutionService)
+		interchainClient := common.HexToAddress(chainCfg.Client)
 		chainClient, err := executor.client.GetChainClient(ctx, chainID)
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain client: %w", err)
 		}
 
-		chainListener, err := listener.NewChainListener(chainClient, executor.db, synapseModule, handler)
+		chainListener, err := listener.NewChainListener(chainClient, executor.db, executionService, handler)
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain listener: %w", err)
 		}
 		executor.chainListeners[chainID] = chainListener
 
-		executor.clientContracts[chainID], err = interchainclient.NewInterchainClientRef(synapseModule, chainClient)
+		executor.clientContracts[chainID], err = interchainclient.NewInterchainClientRef(interchainClient, chainClient)
 		if err != nil {
 			return nil, fmt.Errorf("could not get synapse module ref: %w", err)
 		}
@@ -182,10 +183,7 @@ func (e *Executor) executeTransaction(ctx context.Context, request db.Transactio
 			status, _ := e.submitter.GetSubmissionStatus(ctx, request.DstChainID, nonce)
 
 			if status.TxHash().String() != (common.Hash{}).String() {
-				fmt.Println("STATUS")
-				fmt.Println(status)
-				fmt.Println("hash")
-				fmt.Println(status.TxHash().String())
+				fmt.Printf("cast run %s --rpc-url %s/rpc/2\n", status.TxHash().String(), e.cfg.OmnirpcURL)
 			}
 		}
 	}()
@@ -203,6 +201,10 @@ func (e *Executor) checkReady(ctx context.Context, request db.TransactionSent) e
 	if !ok {
 		return fmt.Errorf("could not get contract for chain %d", request.DstChainID.Int64())
 	}
+
+	// TODO: REMOVE ME
+	err := e.db.UpdateInterchainTransactionStatus(ctx, request.TransactionID, db.Ready)
+	// TODO: REMOVE ME
 
 	isExecutable, err := contract.IsExecutable(&bind.CallOpts{Context: ctx}, request.EncodedTX)
 	if err != nil {
@@ -310,6 +312,9 @@ func (e *Executor) runChainIndexer(parentCtx context.Context, chainID int) (err 
 					Options:     event.Options,
 					Message:     event.Message,
 				})
+				if err != nil {
+					return fmt.Errorf("could not encode transaction: %w", err)
+				}
 
 				decodedOptions, err := e.clientContracts[chainID].DecodeOptions(&bind.CallOpts{Context: ctx}, event.Options)
 				if err != nil {
