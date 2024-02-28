@@ -328,7 +328,6 @@ func (n *Node) submit(ctx context.Context, request db.SignRequest) error {
 				logger.Errorf("could not get submission status: %w", err)
 			}
 
-			fmt.Println("fuck")
 			fmt.Printf("tx hash: %s\n", yo.TxHash().String())
 			fmt.Printf("new signed hash: %s \n", request.SignedEntryHash.String())
 			fmt.Println("you")

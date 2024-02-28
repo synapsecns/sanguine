@@ -68,10 +68,24 @@ func (i *InterchainSuite) SetupTest() {
 	}()
 	wg.Wait()
 
-	i.omnirpcURL = testhelper.NewOmnirpcServer(i.GetTestContext(), i.T(), i.originChain, i.destChain)
+	wg = sync.WaitGroup{}
+	wg.Add(3)
+	go func() {
+		i.omnirpcURL = testhelper.NewOmnirpcServer(i.GetTestContext(), i.T(), i.originChain, i.destChain)
+		wg.Done()
+	}()
 
-	i.setClientConfigs(i.originChain, i.originModule, originInfo, destInfo, i.destChain)
-	i.setClientConfigs(i.destChain, i.destModule, destInfo, originInfo, i.originChain)
+	go func() {
+		i.setClientConfigs(i.originChain, i.originModule, originInfo, destInfo, i.destChain)
+		wg.Done()
+	}()
+
+	go func() {
+		i.setClientConfigs(i.destChain, i.destModule, destInfo, originInfo, i.originChain)
+		wg.Done()
+	}()
+	wg.Wait()
+
 	i.makeExecutor()
 }
 
@@ -93,9 +107,11 @@ func (i *InterchainSuite) setClientConfigs(backend backends.SimulatedTestBackend
 
 	receivingModules, err := appMock.GetReceivingModules(&bind.CallOpts{Context: i.GetTestContext()})
 	i.Require().NoError(err)
+
+	_, executionService := i.deployManager.GetExecutionService(i.GetTestContext(), backend)
 	// same thing
 
-	tx, err = appMock.SetAppConfig(auth.TransactOpts, chainIDS, linkedApps, sendingModules, receivingModules, big.NewInt(1), 0)
+	tx, err = appMock.SetAppConfig(auth.TransactOpts, chainIDS, linkedApps, sendingModules, receivingModules, executionService.Address(), big.NewInt(1), 0)
 	i.Require().NoError(err)
 	backend.WaitForConfirmation(i.GetTestContext(), tx)
 }
@@ -115,10 +131,19 @@ func (i *InterchainSuite) makeExecutor() {
 	i.originChain.FundAccount(i.GetTestContext(), testWallet.Address(), *new(big.Int).SetUint64(params.Ether))
 	i.destChain.FundAccount(i.GetTestContext(), testWallet.Address(), *new(big.Int).SetUint64(params.Ether))
 
+	originOwner, execServiceOrigin := i.deployManager.GetExecutionService(i.GetTestContext(), i.originChain)
+	destOwner, execServiceDest := i.deployManager.GetExecutionService(i.GetTestContext(), i.destChain)
+
 	cfg := config.Config{
-		Chains: map[int]string{
-			1: i.originModule.Address().String(),
-			2: i.destModule.Address().String(),
+		Chains: map[int]config.ChainConfig{
+			1: {
+				ExecutionService: execServiceOrigin.Address().String(),
+				Client:           i.originModule.Address().String(),
+			},
+			2: {
+				ExecutionService: execServiceDest.Address().String(),
+				Client:           i.destModule.Address().String(),
+			},
 		},
 		OmnirpcURL: i.omnirpcURL,
 		Database: config.DatabaseConfig{
@@ -133,6 +158,17 @@ func (i *InterchainSuite) makeExecutor() {
 	}
 	i.executor, err = executor.NewExecutor(i.GetTestContext(), i.metrics, cfg)
 	i.Require().NoError(err)
+
+	originOpts := i.originChain.GetTxContext(i.GetTestContext(), originOwner.OwnerPtr())
+	destOpts := i.destChain.GetTxContext(i.GetTestContext(), destOwner.OwnerPtr())
+
+	tx, err := execServiceOrigin.SetExecutorEOA(originOpts.TransactOpts, testWallet.Address())
+	i.Require().NoError(err)
+	i.originChain.WaitForConfirmation(i.GetTestContext(), tx)
+
+	tx, err = execServiceDest.SetExecutorEOA(destOpts.TransactOpts, testWallet.Address())
+	i.Require().NoError(err)
+	i.destChain.WaitForConfirmation(i.GetTestContext(), tx)
 
 	go func() {
 		err = i.executor.Start(i.GetTestContext())

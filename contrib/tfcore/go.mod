@@ -10,7 +10,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/gammazero/workerpool v0.0.0-20181230203049-86a96b5d5d92
 	github.com/gartnera/gcloud v0.0.15
-	github.com/gorilla/websocket v1.5.0
+	github.com/gorilla/websocket v1.5.1
 	github.com/hashicorp/errwrap v1.1.0
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/hashicorp/go-version v1.6.0
@@ -21,11 +21,11 @@ require (
 	github.com/mitchellh/hashstructure v1.1.0
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
 	github.com/stretchr/testify v1.8.4
-	golang.org/x/mod v0.14.0
-	golang.org/x/net v0.20.0
+	golang.org/x/mod v0.15.0
+	golang.org/x/net v0.21.0
 	golang.org/x/oauth2 v0.16.0
 	golang.org/x/sync v0.6.0
-	golang.org/x/tools v0.16.1
+	golang.org/x/tools v0.18.0
 	google.golang.org/api v0.149.0
 	google.golang.org/grpc v1.60.1
 )
@@ -101,8 +101,8 @@ require (
 	go.opentelemetry.io/otel/metric v1.23.1 // indirect
 	go.opentelemetry.io/otel/sdk v1.21.0 // indirect
 	go.opentelemetry.io/otel/trace v1.23.1 // indirect
-	golang.org/x/crypto v0.18.0 // indirect
-	golang.org/x/sys v0.16.0 // indirect
+	golang.org/x/crypto v0.19.0 // indirect
+	golang.org/x/sys v0.17.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	google.golang.org/appengine v1.6.8 // indirect

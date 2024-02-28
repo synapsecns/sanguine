@@ -5,6 +5,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/manager"
+	"github.com/synapsecns/sanguine/sin-executor/contracts/executionservice"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/interchainclient"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/interchaindb"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainapp"
@@ -45,4 +46,10 @@ func (d *DeployManager) GetInterchainAppMock(ctx context.Context, backend backen
 	d.T().Helper()
 
 	return manager.GetContract[*interchainapp.InterchainAppMockRef](ctx, d.T(), d, backend, InterchainApp)
+}
+
+func (d *DeployManager) GetExecutionService(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *executionservice.ExecutionServiceRef) {
+	d.T().Helper()
+
+	return manager.GetContract[*executionservice.ExecutionServiceRef](ctx, d.T(), d, backend, ExecutionService)
 }

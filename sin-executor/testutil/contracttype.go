@@ -4,10 +4,11 @@ import (
 	"github.com/ethereum/go-ethereum/common/compiler"
 	"github.com/synapsecns/sanguine/ethergo/backends/base"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
+	"github.com/synapsecns/sanguine/sin-executor/contracts/executionservice"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/interchainclient"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/interchaindb"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/executionfeesmock"
-	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/executionservicemock"
+	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/gasoraclemock"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainapp"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainmodulemock"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/optionslibexport"
@@ -58,10 +59,12 @@ const (
 	InterchainApp // InterchainApp
 	// OptionsLib is the options library.
 	OptionsLib // OptionsLib
-	// ExecutionServiceMock is the execution service mock.
-	ExecutionServiceMock // ExecutionServiceMock
+	// ExecutionService is the execution service mock.
+	ExecutionService // ExecutionService
 	// ExecutionFeesMock is the execution fees mock.
 	ExecutionFeesMock // ExecutionFeesMock
+	// GasOracleMock is the gas oracle mock.
+	GasOracleMock // GasOracleMock
 )
 
 // ID gets the contract type as an id.
@@ -98,10 +101,12 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return interchainapp.Contracts["solidity/InterchainApp.sol:InterchainApp"]
 	case OptionsLib:
 		return optionslibexport.Contracts["solidity/OptionsLibExport.sol:OptionsLibMocks"]
-	case ExecutionServiceMock:
-		return executionservicemock.Contracts["solidity/ExecutionServiceMock.sol:ExecutionServiceMock"]
+	case ExecutionService:
+		return executionservice.Contracts["solidity/ExecutionService.sol:ExecutionService"]
 	case ExecutionFeesMock:
 		return executionfeesmock.Contracts["solidity/ExecutionfeesMock.sol:ExecutionFeesMock"]
+	case GasOracleMock:
+		return gasoraclemock.Contracts["solidity/GasOracleMock.sol:GasOracleMock"]
 	}
 	return nil
 }
