@@ -1,4 +1,4 @@
-package interchainclient
+package executionservice
 
 import (
 	"fmt"
@@ -12,8 +12,8 @@ import (
 type EventType uint
 
 const (
-	// InterchainTransactionSentEvent is an EventType that represents an interchain transaction sent event.
-	InterchainTransactionSentEvent EventType = iota + 1
+	// ExecutionRequestedEvent is an EventType that represents an execution requested event.
+	ExecutionRequestedEvent EventType = iota + 1
 )
 
 // Parser parses events from the module contract.
@@ -23,14 +23,14 @@ type Parser interface {
 }
 
 type parserImpl struct {
-	filterer *InterchainClientV1Filterer
+	filterer *ExecutionServiceFilterer
 }
 
 // NewParser creates a new parser for the fastbridge contract.
 func NewParser(synapseModuleAddress common.Address) (Parser, error) {
-	parser, err := NewInterchainClientV1Filterer(synapseModuleAddress, nil)
+	parser, err := NewExecutionServiceFilterer(synapseModuleAddress, nil)
 	if err != nil {
-		return nil, fmt.Errorf("could not create %T: %w", InterchainClientV1Filterer{}, err)
+		return nil, fmt.Errorf("could not create %T: %w", ExecutionServiceFilterer{}, err)
 	}
 
 	return &parserImpl{filterer: parser}, nil
@@ -53,8 +53,8 @@ func (p parserImpl) ParseEvent(log ethTypes.Log) (_ EventType, event interface{}
 	eventType := *nillableEventType
 
 	switch eventType {
-	case InterchainTransactionSentEvent:
-		event, err := p.filterer.ParseInterchainTransactionSent(log)
+	case ExecutionRequestedEvent:
+		event, err := p.filterer.ParseExecutionRequested(log)
 		if err != nil {
 			return noOpEvent, nil, false
 		}

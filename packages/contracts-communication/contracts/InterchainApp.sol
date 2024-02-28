@@ -14,6 +14,7 @@ contract InterchainApp is IInterchainApp {
 
     address[] private sendingModules;
     address[] private receivingModules;
+    address private executionService;
 
     struct AppConfig {
         // ChainID -> Linked IApps
@@ -33,6 +34,7 @@ contract InterchainApp is IInterchainApp {
         address[] memory linkedIApps,
         address[] memory _sendingModules,
         address[] memory _receivingModules,
+        address _executionService,
         uint256 _requiredResponses,
         uint64 _optimisticTimePeriod
     )
@@ -50,6 +52,7 @@ contract InterchainApp is IInterchainApp {
 
         localAppConfig.sendingModules = _sendingModules;
         localAppConfig.receivingModules = _receivingModules;
+        executionService = _executionService;
     }
 
     // Getters for the application configuration
@@ -95,7 +98,7 @@ contract InterchainApp is IInterchainApp {
         bytes memory options = OptionsV1(200_000, 0).encodeOptionsV1();
         // TODO: Currently, we forward all gas to Interchain, this may not be expected behavior, and the real abstract contract shouldn't do this
         interchain.interchainSend{value: msg.value}(
-            dstChainId, receiver, address(0), localAppConfig.sendingModules, options, message
+            dstChainId, receiver, executionService, localAppConfig.sendingModules, options, message
         );
         emit AppMessageSent();
     }
