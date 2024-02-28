@@ -33,6 +33,18 @@ contract LockingProcessorTest is AbstractProcessorTest {
         factory.deployLockingProcessor(address(icToken), address(0));
     }
 
+    function test_calculateSwap_exactlyProcessorBalance() public {
+        assertEq(processor.calculateSwap(0, 1, START_BALANCE), START_BALANCE);
+        assertEq(processor.calculateSwap(1, 0, START_BALANCE), START_BALANCE);
+    }
+
+    function test_calculateSwap_overProcessorBalance() public {
+        // Should not be possible to unlock more than the processor balance
+        assertEq(processor.calculateSwap(0, 1, START_BALANCE + 1), 0);
+        // Could lock any amount of tokens
+        assertEq(processor.calculateSwap(1, 0, START_BALANCE + 1), START_BALANCE + 1);
+    }
+
     // Lock token: token (1) -> icToken (0)
     function test_swap_lockUnderlyingToken() public {
         uint256 amount = 100;
