@@ -157,19 +157,19 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         // Verification fee from InterchainDB
         fee = IInterchainDB(INTERCHAIN_DB).getInterchainFee(dstChainId, srcModules);
         // Add execution fee, if ExecutionService is provided
-        if (srcExecutionService != address(0)) {
-            // Construct a mock InterchainTransaction to calculate the execution fee.
-            // We don't care about values for static fields, as we are only interested in the payload size.
-            InterchainTransaction memory icTx = InterchainTransactionLib.constructLocalTransaction({
-                srcSender: address(0),
-                dstReceiver: 0,
-                dstChainId: dstChainId,
-                dbNonce: 0,
-                options: options,
-                message: message
-            });
-            fee += IExecutionService(srcExecutionService).getExecutionFee(dstChainId, abi.encode(icTx).length, options);
-        }
+//        if (srcExecutionService != address(0)) {
+//            // Construct a mock InterchainTransaction to calculate the execution fee.
+//            // We don't care about values for static fields, as we are only interested in the payload size.
+//            InterchainTransaction memory icTx = InterchainTransactionLib.constructLocalTransaction({
+//                srcSender: address(0),
+//                dstReceiver: 0,
+//                dstChainId: dstChainId,
+//                dbNonce: 0,
+//                options: options,
+//                message: message
+//            });
+//            fee += IExecutionService(srcExecutionService).getExecutionFee(dstChainId, abi.encode(icTx).length, options);
+//        }
     }
 
     /// @notice Encodes the transaction data into a bytes format.
