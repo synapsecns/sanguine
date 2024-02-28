@@ -68,10 +68,24 @@ func (i *InterchainSuite) SetupTest() {
 	}()
 	wg.Wait()
 
-	i.omnirpcURL = testhelper.NewOmnirpcServer(i.GetTestContext(), i.T(), i.originChain, i.destChain)
+	wg = sync.WaitGroup{}
+	wg.Add(3)
+	go func() {
+		i.omnirpcURL = testhelper.NewOmnirpcServer(i.GetTestContext(), i.T(), i.originChain, i.destChain)
+		wg.Done()
+	}()
 
-	i.setClientConfigs(i.originChain, i.originModule, originInfo, destInfo, i.destChain)
-	i.setClientConfigs(i.destChain, i.destModule, destInfo, originInfo, i.originChain)
+	go func() {
+		i.setClientConfigs(i.originChain, i.originModule, originInfo, destInfo, i.destChain)
+		wg.Done()
+	}()
+
+	go func() {
+		i.setClientConfigs(i.destChain, i.destModule, destInfo, originInfo, i.originChain)
+		wg.Done()
+	}()
+	wg.Wait()
+
 	i.makeExecutor()
 }
 

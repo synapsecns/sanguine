@@ -49,7 +49,10 @@ func (i *InterchainSuite) TestE2E() {
 
 	_, destModule := i.deployManager.GetInterchainModuleMock(i.GetTestContext(), i.destChain)
 
+	fmt.Println("fuck " + i.omnirpcURL)
+	fmt.Println(recp.TxHash.String())
 	didMock := false
+	time.Sleep(time.Hour)
 	for _, log := range recp.Logs {
 		written, err := parser.ParseInterchainEntryWritten(*log)
 		if err != nil {
