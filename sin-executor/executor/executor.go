@@ -203,7 +203,7 @@ func (e *Executor) checkReady(ctx context.Context, request db.TransactionSent) e
 	}
 
 	// TODO: REMOVE ME
-	//err := e.db.UpdateInterchainTransactionStatus(ctx, request.TransactionID, db.Ready)
+	// err := e.db.UpdateInterchainTransactionStatus(ctx, request.TransactionID, db.Ready)
 	// TODO: REMOVE ME
 
 	isExecutable, err := contract.IsExecutable(&bind.CallOpts{Context: ctx}, request.EncodedTX)
