@@ -227,7 +227,7 @@ func (e *Executor) startChainIndexers(ctx context.Context) error {
 
 	// TODO: good chance we wanna prepare these chain listeners up front and then listen later.
 	for chainID := range e.cfg.Chains {
-		chainID := chainID // capture func literal
+		chainID := chainID // capture func litera
 
 		g.Go(func() error {
 			err := e.runChainIndexer(ctx, chainID)
