@@ -2,7 +2,7 @@ const fs = require('fs')
 
 const { assertCondition } = require('./utils.js')
 
-const DEVOPS_CONFIG_PATH = 'script/devops.json'
+const DEVOPS_CONFIG_PATH = './devops.json'
 
 let cachedConfig = null
 

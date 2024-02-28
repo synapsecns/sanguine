@@ -10,7 +10,7 @@ abstract contract PathFinder is CommonBase {
     using StringUtils for string;
     using stdJson for string;
 
-    string private constant DEFAULT_DEVOPS_CONFIG = "script/devops.json";
+    string private constant DEFAULT_DEVOPS_CONFIG = "./devops.json";
 
     string private devopsConfig;
 
