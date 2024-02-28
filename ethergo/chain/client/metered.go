@@ -3,7 +3,6 @@ package client
 import (
 	"context"
 	"fmt"
-	keepRate "github.com/keep-network/keep-common/pkg/rate"
 	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/sync/semaphore"
 	"golang.org/x/time/rate"
@@ -67,14 +66,14 @@ const requestTimeout = time.Minute
 // NewMeteredClient wraps an evm client in a keepRate limiter and creates
 // a metric handler with some standard metrics. It also implements a ChainConfig()
 // method to get the chainconfig for a given chain by id. This will return nil if no chain config is found.
-func NewMeteredClient(client EVMClient, chainID *big.Int, clientID string, config *keepRate.LimiterConfig) MeteredEVMClient {
+func NewMeteredClient(client EVMClient, chainID *big.Int, clientID string, config *LimiterConfig) MeteredEVMClient {
 	meteredClient := getMeteredClientStub(chainID, clientID, config)
 	meteredClient.LifecycleClient = NewLifecycleClient(client, chainID, meteredClient, requestTimeout)
 	return &meteredClient
 }
 
 // getMeteredClientStub stub gets the metered client without setting the lifecylce using the config.
-func getMeteredClientStub(chainID *big.Int, clientID string, config *keepRate.LimiterConfig) meteredEVMClientImpl {
+func getMeteredClientStub(chainID *big.Int, clientID string, config *LimiterConfig) meteredEVMClientImpl {
 	meteredClient := meteredEVMClientImpl{
 		// counter is an atomicically incrementing int used to instrument eth client
 		counter:  0,
@@ -83,7 +82,7 @@ func getMeteredClientStub(chainID *big.Int, clientID string, config *keepRate.Li
 	}
 
 	if config == nil {
-		config = &keepRate.LimiterConfig{}
+		config = &LimiterConfig{}
 	}
 
 	// setup the rate limiter
@@ -184,3 +183,20 @@ func (m meteredEVMClientImpl) GetMetrics(labels map[string]string) []prometheus.
 }
 
 var _ MeteredEVMClient = &meteredEVMClientImpl{}
+
+// LimiterConfig represents the configuration of the rate limiter.
+// copied from https://github.com/keep-network/keep-common/blob/v1.7.0/pkg/rate/limiter.go#L19
+type LimiterConfig struct {
+	// RequestsPerSecondLimit sets the maximum average number of requests
+	// per second. It's important to note that in short periods of time
+	// the actual average may exceed this limit slightly.
+	RequestsPerSecondLimit int
+
+	// ConcurrencyLimit sets the maximum number of concurrent requests which
+	// can be executed against the target at the same time.
+	ConcurrencyLimit int
+
+	// AcquirePermitTimeout determines how long a request can wait trying
+	// to acquire a permit from the rate limiter.
+	AcquirePermitTimeout time.Duration
+}
