@@ -20,6 +20,7 @@ func (b *BaseSuite) TestWaitForConfirmation() {
 	timer := time.NewTimer(minConfirmTime)
 
 	mockClient.On("TransactionByHash", mock.Anything, mock.Anything).Once().Return(nil, true, nil)
+	mockClient.On("TransactionReceipt", mock.Anything, mock.Anything).Return(nil, nil)
 	mockClient.On("TransactionByHash", mock.Anything, mock.Anything).WaitUntil(timer.C).Return(mockTx, false, nil)
 	mockClient.On("TransactionReceipt", mock.Anything, mock.Anything).Return(&types.Receipt{Status: types.ReceiptStatusSuccessful}, nil)
 

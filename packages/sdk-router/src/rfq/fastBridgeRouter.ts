@@ -17,9 +17,10 @@ import {
   narrowToCCTPRouterQuery,
   reduceToQuery,
 } from '../module'
-import { BigintIsh } from '../constants'
+import { BigintIsh, HYDRATION_SUPPORTED_CHAIN_IDS } from '../constants'
 import { getMatchingTxLog } from '../utils/logs'
 import { adjustValueIfNative } from '../utils/handleNativeToken'
+import { CACHE_TIMES, RouterCache } from '../utils/RouterCache'
 
 // Define type alias
 export type BridgeParams = IFastBridge.BridgeParamsStruct
@@ -52,6 +53,17 @@ export class FastBridgeRouter implements SynapseModule {
       FastBridgeRouter.fastBridgeRouterInterface,
       provider
     ) as FastBridgeRouterContract
+    this.hydrateCache()
+  }
+
+  private async hydrateCache() {
+    if (HYDRATION_SUPPORTED_CHAIN_IDS.includes(this.chainId)) {
+      try {
+        await Promise.all([this.getProtocolFeeRate()])
+      } catch (e) {
+        console.error('fastBridgeRouter: Error hydrating cache', e)
+      }
+    }
   }
 
   /**
@@ -106,6 +118,7 @@ export class FastBridgeRouter implements SynapseModule {
     return fastBridgeContract.bridgeRelays(synapseTxId)
   }
 
+  @RouterCache(CACHE_TIMES.TEN_MINUTES)
   public async chainGasAmount(): Promise<BigNumber> {
     const fastBridgeContract = await this.getFastBridgeContract()
     return fastBridgeContract.chainGasAmount()
@@ -142,6 +155,7 @@ export class FastBridgeRouter implements SynapseModule {
   /**
    * @returns The protocol fee rate, multiplied by 1_000_000 (e.g. 1 basis point = 100).
    */
+  @RouterCache(CACHE_TIMES.TEN_MINUTES)
   public async getProtocolFeeRate(): Promise<BigNumber> {
     const fastBridgeContract = await this.getFastBridgeContract()
     return fastBridgeContract.protocolFeeRate()

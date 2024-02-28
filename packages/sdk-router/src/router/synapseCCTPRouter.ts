@@ -19,9 +19,9 @@ import {
 import cctpAbi from '../abi/SynapseCCTP.json'
 import { adjustValueIfNative } from '../utils/handleNativeToken'
 import { getMatchingTxLog } from '../utils/logs'
-import { BigintIsh } from '../constants'
+import { BigintIsh, HYDRATION_SUPPORTED_CHAIN_IDS } from '../constants'
 import { DestRequest } from './types'
-
+import { CACHE_TIMES, RouterCache } from '../utils/RouterCache'
 /**
  * Wrapper class for interacting with a SynapseCCTPRouter contract.
  * Abstracts away the contract interaction: the Router users don't need to know about the contract,
@@ -49,6 +49,18 @@ export class SynapseCCTPRouter extends Router {
       provider
     ) as SynapseCCTPRouterContract
     this.address = address
+    this.hydrateCache()
+  }
+
+  /** fully optional but improves perf on first request */
+  private async hydrateCache() {
+    if (HYDRATION_SUPPORTED_CHAIN_IDS.includes(this.chainId)) {
+      try {
+        await Promise.all([this.chainGasAmount()])
+      } catch (e) {
+        console.error('synapseCCTPRouter: Error hydrating cache', e)
+      }
+    }
   }
 
   public async getOriginAmountOut(
@@ -74,6 +86,7 @@ export class SynapseCCTPRouter extends Router {
       })
   }
 
+  @RouterCache(CACHE_TIMES.TEN_MINUTES)
   public async getConnectedBridgeTokens(
     tokenOut: string
   ): Promise<BridgeToken[]> {
@@ -84,26 +97,21 @@ export class SynapseCCTPRouter extends Router {
       })
   }
 
+  @RouterCache(CACHE_TIMES.TEN_MINUTES)
   public async getBridgeFees(
     token: string,
     amount: BigNumber,
     isSwap: boolean
   ): Promise<{ feeAmount: BigNumber; feeConfig: FeeConfig }> {
-    const feeAmount = await this.routerContract.calculateFeeAmount(
-      token,
-      amount,
-      isSwap
-    )
-    // Get fee structure, then assign minBaseFee/minSwapFee value to minFee based on isSwap flag
-    const feeConfig = await this.routerContract
-      .feeStructures(token)
-      .then((feeStructure) => {
-        return {
-          bridgeFee: feeStructure.relayerFee,
-          minFee: isSwap ? feeStructure.minSwapFee : feeStructure.minBaseFee,
-          maxFee: feeStructure.maxFee,
-        }
-      })
+    const [feeAmount, feeConfig] = await Promise.all([
+      this.routerContract.calculateFeeAmount(token, amount, isSwap),
+      this.routerContract.feeStructures(token).then((feeStructure) => ({
+        bridgeFee: feeStructure.relayerFee,
+        minFee: isSwap ? feeStructure.minSwapFee : feeStructure.minBaseFee,
+        maxFee: feeStructure.maxFee,
+      })),
+    ])
+
     return { feeAmount, feeConfig }
   }
 
@@ -156,6 +164,7 @@ export class SynapseCCTPRouter extends Router {
     return cctpContract.isRequestFulfilled(synapseTxId)
   }
 
+  @RouterCache(CACHE_TIMES.TEN_MINUTES)
   public async chainGasAmount(): Promise<BigNumber> {
     const cctpContract = await this.getCctpContract()
     return cctpContract.chainGasAmount()

@@ -1,13 +1,39 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import { Address } from 'viem'
+
+import { ARB, parseTokenValue } from '@/components/Activity/AirdropRewards'
+import { getErc20TokenTransfers } from '@/utils/actions/getErc20TokenTransfers'
+
+/** ARB STIP Rewarder */
+export const Rewarder = {
+  address: '0x48fa1ebda1af925898c826c566f5bb015e125ead' as Address,
+  startBlock: 174234366n, // Start of STIP Rewards on Arbitrum
+}
 
 export interface FeeAndRebateState {
   toFromFeeAndRebateBps: {}
   isLoading: boolean
+  transactions: any[]
+  cumulativeRewards: any
+  parsedCumulativeRewards: any
 }
 
 const initialState: FeeAndRebateState = {
   toFromFeeAndRebateBps: {},
   isLoading: false,
+  transactions: [],
+  cumulativeRewards: null,
+  parsedCumulativeRewards: null,
+}
+
+const calculateTotalTransferValue = (data: any[]): bigint => {
+  let total: bigint = 0n
+  for (const item of data) {
+    if (item.transferValue) {
+      total += item.transferValue
+    }
+  }
+  return total
 }
 
 export const fetchFeeAndRebate = createAsyncThunk(
@@ -55,6 +81,34 @@ export const fetchFeeAndRebate = createAsyncThunk(
   }
 )
 
+export const fetchArbStipRewards = createAsyncThunk(
+  'feeAndRebate/fetchArbStipRewards',
+  async (connectedAddress: string, { rejectWithValue }) => {
+    try {
+      const { logs, data } = await getErc20TokenTransfers(
+        ARB.tokenAddress,
+        Rewarder.address,
+        connectedAddress as Address,
+        ARB.network,
+        Rewarder.startBlock
+      )
+
+      const cumulativeRewards = calculateTotalTransferValue(data)
+
+      return {
+        logs: logs ?? [],
+        transactions: data,
+        cumulativeRewards,
+      }
+    } catch (error) {
+      console.error('Error fetching ARB Stip Rewards:', error)
+      return rejectWithValue(
+        error.message || 'Failed to fetch ARB Stip Rewards'
+      )
+    }
+  }
+)
+
 export const feeAndRebateSlice = createSlice({
   name: 'feeAndRebate',
   initialState,
@@ -70,6 +124,25 @@ export const feeAndRebateSlice = createSlice({
       })
       .addCase(fetchFeeAndRebate.rejected, (state) => {
         state.isLoading = false
+      })
+      .addCase(fetchArbStipRewards.pending, (state) => {
+        state.isLoading = true
+      })
+      .addCase(fetchArbStipRewards.fulfilled, (state, action) => {
+        state.isLoading = false
+        state.transactions = action.payload.transactions
+
+        state.cumulativeRewards = action.payload.cumulativeRewards
+        state.parsedCumulativeRewards = parseTokenValue(
+          action.payload.cumulativeRewards,
+          ARB.decimals
+        )
+      })
+      .addCase(fetchArbStipRewards.rejected, (state) => {
+        state.isLoading = false
+        state.transactions = []
+        state.cumulativeRewards = null
+        state.parsedCumulativeRewards = null
       })
   },
 })

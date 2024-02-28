@@ -3,15 +3,14 @@ package chain
 import (
 	"context"
 	"fmt"
-	"math/big"
-	"sync"
-
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/pkg/errors"
 	"github.com/synapsecns/sanguine/ethergo/chain/chainwatcher"
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/chain/gas"
 	"github.com/synapsecns/sanguine/ethergo/chain/watcher"
+	"math/big"
+	"sync"
 )
 
 var _ Chain = &baseChain{}

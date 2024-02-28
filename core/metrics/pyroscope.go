@@ -2,7 +2,7 @@ package metrics
 
 import (
 	otelpyroscope "github.com/grafana/otel-profiling-go"
-	"github.com/pyroscope-io/client/pyroscope"
+	"github.com/grafana/pyroscope-go"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/synapsecns/sanguine/core/metrics/internal"
