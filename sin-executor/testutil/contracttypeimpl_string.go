@@ -17,9 +17,9 @@ func _() {
 	_ = x[ExecutionFeesMock-7]
 }
 
-const _contractTypeImpl_name = "SynapseModuleSynapseModuleInterchainModuleMockInterchainAppMockOptionsLibExecutionServiceMockExecutionFeesMock"
+const _contractTypeImpl_name = "SynapseModuleSynapseModuleInterchainModuleMockInterchainAppOptionsLibExecutionServiceMockExecutionFeesMock"
 
-var _contractTypeImpl_index = [...]uint8{0, 13, 26, 46, 63, 73, 93, 110}
+var _contractTypeImpl_index = [...]uint8{0, 13, 26, 46, 59, 69, 89, 106}
 
 func (i contractTypeImpl) String() string {
 	i -= 1
