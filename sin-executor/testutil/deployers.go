@@ -36,8 +36,9 @@ var (
 	interchainClientDeployer = deployer.NewFunctionalDeployer(InterchainClient,
 		func(ctx context.Context, helpers deployer.IFunctionalDeployer,
 			transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+			idb := helpers.Registry().Get(ctx, InterchainDB)
 
-			deployAddress, deployTx, deployIface, err := interchainclient.DeployInterchainClientV1(transactOps, backend)
+			deployAddress, deployTx, deployIface, err := interchainclient.DeployInterchainClientV1(transactOps, backend, idb.Address())
 			if err != nil {
 				return common.Address{}, nil, nil, fmt.Errorf("could not deploy interchain client: %w", err)
 			}
@@ -45,13 +46,7 @@ var (
 			helpers.Backend().WaitForConfirmation(ctx, deployTx)
 
 			// set the interchain db
-			idb := helpers.Registry().Get(ctx, InterchainDB)
 			transactor := helpers.Backend().GetTxContext(ctx, &transactOps.From)
-			idbSet, err := deployIface.SetInterchainDB(transactor.TransactOpts, idb.Address())
-			if err != nil {
-				return common.Address{}, nil, nil, fmt.Errorf("could not set interchain db: %w", err)
-			}
-			helpers.Backend().WaitForConfirmation(ctx, idbSet)
 
 			// set the execution service
 			em := helpers.Registry().Get(ctx, ExecutionFeesMock)

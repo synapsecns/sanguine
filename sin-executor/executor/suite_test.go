@@ -116,13 +116,9 @@ func (i *InterchainSuite) makeExecutor() {
 	i.destChain.FundAccount(i.GetTestContext(), testWallet.Address(), *new(big.Int).SetUint64(params.Ether))
 
 	cfg := config.Config{
-		Chains: map[int]config.ChainConfig{
-			1: {
-				SynapseClientAddress: i.originModule.Address().String(),
-			},
-			2: {
-				SynapseClientAddress: i.destModule.Address().String(),
-			},
+		Chains: map[int]string{
+			1: i.originModule.Address().String(),
+			2: i.destModule.Address().String(),
 		},
 		OmnirpcURL: i.omnirpcURL,
 		Database: config.DatabaseConfig{

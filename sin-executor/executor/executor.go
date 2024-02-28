@@ -284,7 +284,6 @@ func (e *Executor) runChainIndexer(parentCtx context.Context, chainID int) (err 
 				SrcSender:   event.SrcSender,
 				DstChainId:  core.CopyBigInt(event.DstChainId),
 				DstReceiver: event.DstReceiver,
-				Nonce:       event.ClientNonce.Uint64(),
 				DbNonce:     event.DbNonce,
 				Options:     event.Options,
 				Message:     event.Message,
