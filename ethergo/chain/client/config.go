@@ -3,7 +3,6 @@ package client
 import (
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
-	"github.com/keep-network/keep-common/pkg/rate"
 	"math/big"
 )
 
@@ -30,7 +29,7 @@ type Config struct {
 	// where in the start height is always returned as 0. This can be removed after version 6 of the contracts
 	StartHeight uint64 `toml:"StartHeight"`
 
-	*rate.LimiterConfig
+	*LimiterConfig
 }
 
 // SetEthBridgeAddress mutates the config to set a bridge address.

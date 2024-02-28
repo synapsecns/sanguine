@@ -1,17 +1,20 @@
 {
-    "editor.formatOnSave": true,
-    "[typescript]": {
-      "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-    },
-    "eslint.workingDirectories": [
-      {"directory": "packages/contracts", "changeProcessCWD": true }
-    ],
-    "eslint.nodePath": "./node_modules/eslint/bin/",
-    "eslint.format.enable": true,
-    "editorconfig.generateAuto": false,
-    "files.trimTrailingWhitespace": true,
-    "solidity.packageDefaultDependenciesContractsDirectory": "contracts",
-    "solidity.packageDefaultDependenciesDirectory": "lib",
-    "solidity.compileUsingRemoteVersion": "v0.8.17",
-    "solidity.formatter": "prettier"
-  }
+  "editor.formatOnSave": true,
+  "[typescript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "[typescriptreact]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "eslint.workingDirectories": [
+    { "directory": "packages/contracts", "changeProcessCWD": true }
+  ],
+  "eslint.nodePath": "./node_modules/eslint/bin/",
+  "eslint.format.enable": true,
+  "editorconfig.generateAuto": false,
+  "files.trimTrailingWhitespace": true,
+  "solidity.packageDefaultDependenciesContractsDirectory": "contracts",
+  "solidity.packageDefaultDependenciesDirectory": "lib",
+  "solidity.compileUsingRemoteVersion": "v0.8.17",
+  "solidity.formatter": "prettier"
+}

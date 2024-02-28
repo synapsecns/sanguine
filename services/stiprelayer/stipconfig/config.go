@@ -41,18 +41,23 @@ type FeesAndRebates map[int]ModuleFeeRebate
 type Config struct {
 	Signer config.SignerConfig `yaml:"signer"`
 	// Submitter is the submitter config.
-	SubmitterConfig  submitterConfig.Config `yaml:"submitter_config"`
-	ArbAddress       string                 `yaml:"arb_address"`
-	ArbChainID       uint64                 `yaml:"arb_chain_id"`
-	StartDate        time.Time              `yaml:"start_date"`
-	Database         DatabaseConfig         `yaml:"database"`
-	OmniRPCURL       string                 `yaml:"omnirpc_url"`
-	FeesAndRebates   FeesAndRebates         `yaml:"fees_and_rebates"`
-	DuneInterval     time.Duration          `yaml:"dune_interval"`
-	RebateInterval   time.Duration          `yaml:"rebate_interval"`
-	StipAPIPort      string                 `yaml:"stip_api_port"`
-	ARBMaxTransfer   int64                  `yaml:"ARB_max_transfer"`
-	ArbCapPerAddress int64                  `yaml:"arb_cap_per_address"`
+	SubmitterConfig   submitterConfig.Config `yaml:"submitter_config"`
+	ArbAddress        string                 `yaml:"arb_address"`
+	ArbChainID        uint64                 `yaml:"arb_chain_id"`
+	StartDate         time.Time              `yaml:"start_date"`
+	Database          DatabaseConfig         `yaml:"database"`
+	OmniRPCURL        string                 `yaml:"omnirpc_url"`
+	FeesAndRebates    FeesAndRebates         `yaml:"fees_and_rebates"`
+	DuneInterval      time.Duration          `yaml:"dune_interval"`
+	RebateInterval    time.Duration          `yaml:"rebate_interval"`
+	StipAPIPort       string                 `yaml:"stip_api_port"`
+	ARBMaxTransfer    int64                  `yaml:"ARB_max_transfer"`
+	ArbCapPerAddress  int64                  `yaml:"arb_cap_per_address"`
+	ARBMinTransfer    float64                `yaml:"ARB_min_transfer"`
+	DuneLookbackHours int                    `yaml:"dune_lookback_hours"`
+	StipQueryID       int                    `yaml:"stip_query_id"`
+	// ScreenerAPIUrl is the TRM API url.
+	ScreenerAPIUrl string `yaml:"screener_api_url"`
 }
 
 const defaultArbCapPerAddress = 2000
@@ -63,6 +68,16 @@ func (c Config) GetArbCapPerAddress() int64 {
 		return defaultArbCapPerAddress
 	}
 	return c.ArbCapPerAddress
+}
+
+const defaultDuneLookbackHours = 24
+
+// GetDuneLookbackHours returns the configured dune lookback hours.
+func (c Config) GetDuneLookbackHours() int {
+	if c.DuneLookbackHours == 0 {
+		return defaultDuneLookbackHours
+	}
+	return c.DuneLookbackHours
 }
 
 // LoadConfig loads the config from the given path.
