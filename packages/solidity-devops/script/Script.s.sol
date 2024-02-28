@@ -10,6 +10,11 @@ contract Script is SynapseScript {
         deployAndSave("BasicContract", cbDeployBasicContract);
     }
 
+    function run(string memory arg) external broadcastWithHooks {
+        printLog(arg);
+        payable(msg.sender).transfer(0);
+    }
+
     function cbDeployBasicContract() internal returns (address deployedAt, bytes memory constructorArgs) {
         constructorArgs = abi.encode(42);
         deployedAt = address(new BasicContract(42));

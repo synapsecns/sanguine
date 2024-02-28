@@ -23,7 +23,7 @@ loadEnv()
 const { positionalArgs, options } = parseCommandLineArgs({
   requiredArgsCount: 3,
   usage:
-    'Usage: "yarn sol:run <path-to-script> <chain-name> <wallet-name> [-- <options>]"',
+    'Usage: "yarn sol-run <path-to-script> <chain-name> <wallet-name> [-- <options>]"',
 })
 const [scriptFN, chainName, walletName] = positionalArgs
 assertCondition(
