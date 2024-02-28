@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/synapsecns/sanguine/ethergo/chain/listener/db"
 	"math/big"
 	"time"
 
@@ -14,7 +15,6 @@ import (
 	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/client"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
@@ -39,7 +39,7 @@ type chainListener struct {
 	client       client.EVM
 	address      common.Address
 	initialBlock uint64
-	store        reldb.Service
+	store        db.ChainListenerDB
 	handler      metrics.Handler
 	backoff      *backoff.Backoff
 	// IMPORTANT! These fields cannot be used until they has been set. They are NOT
@@ -49,10 +49,14 @@ type chainListener struct {
 	// latestBlock         uint64
 }
 
-var logger = log.Logger("chainlistener-logger")
+var (
+	logger = log.Logger("chainlistener-logger")
+	// ErrNoLatestBlockForChainID is returned when no block exists for the chain.
+	ErrNoLatestBlockForChainID = db.ErrNoLatestBlockForChainID
+)
 
 // NewChainListener creates a new chain listener.
-func NewChainListener(omnirpcClient client.EVM, store reldb.Service, address common.Address, initialBlock uint64, handler metrics.Handler) (ContractListener, error) {
+func NewChainListener(omnirpcClient client.EVM, store db.ChainListenerDB, address common.Address, initialBlock uint64, handler metrics.Handler) (ContractListener, error) {
 	return &chainListener{
 		handler:      handler,
 		address:      address,
@@ -181,7 +185,7 @@ func (c chainListener) getMetadata(parentCtx context.Context) (startBlock, chain
 		chainID = rpcChainID.Uint64()
 
 		lastIndexed, err = c.store.LatestBlockForChain(ctx, chainID)
-		if errors.Is(err, reldb.ErrNoLatestBlockForChainID) {
+		if errors.Is(err, ErrNoLatestBlockForChainID) {
 			// TODO: consider making this negative 1, requires type change
 			lastIndexed = 0
 			return nil
