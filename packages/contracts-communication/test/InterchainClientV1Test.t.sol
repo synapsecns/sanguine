@@ -39,6 +39,8 @@ contract InterchainClientV1Test is Test {
     uint256 public constant SRC_CHAIN_ID = 1337;
     uint256 public constant DST_CHAIN_ID = 7331;
 
+    bytes32 public remoteClient = keccak256("Remote Client");
+
     address public contractOwner = makeAddr("Contract Owner");
 
     function setUp() public {
@@ -101,6 +103,9 @@ contract InterchainClientV1Test is Test {
     }
     */
     function test_interchainSend() public {
+        vm.chainId(SRC_CHAIN_ID);
+        vm.prank(contractOwner);
+        icClient.setLinkedClient(DST_CHAIN_ID, remoteClient);
         bytes32 receiver = TypeCasts.addressToBytes32(makeAddr("Receiver"));
         bytes memory message = "Hello World";
         address[] memory srcModules = new address[](1);
@@ -124,7 +129,7 @@ contract InterchainClientV1Test is Test {
         bytes memory message = "Hello World";
         bytes32 srcSender = TypeCasts.addressToBytes32(makeAddr("Sender"));
         vm.prank(contractOwner);
-        icClient.setLinkedClient(SRC_CHAIN_ID, srcSender);
+        icClient.setLinkedClient(SRC_CHAIN_ID, remoteClient);
         uint256 dbNonce = 2;
         InterchainTransaction memory transaction = InterchainTransaction({
             srcSender: srcSender,
@@ -145,8 +150,12 @@ contract InterchainClientV1Test is Test {
             abi.encode(mockAppConfig.encodeAppConfigV1(), mockApprovedModules)
         );
 
-        InterchainEntry memory entry =
-            InterchainEntry({srcChainId: SRC_CHAIN_ID, srcWriter: srcSender, dbNonce: dbNonce, dataHash: transactionID});
+        InterchainEntry memory entry = InterchainEntry({
+            srcChainId: SRC_CHAIN_ID,
+            srcWriter: remoteClient,
+            dbNonce: dbNonce,
+            dataHash: transactionID
+        });
 
         icModule.mockVerifyEntry(address(icDB), entry);
 
