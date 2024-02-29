@@ -25,7 +25,7 @@ export const LANDING_PATH = '/landing'
 export const EXPLORER_KAPPA = 'https://explorer.synapseprotocol.com/tx/'
 export const EXPLORER_PATH = 'https://explorer.synapseprotocol.com/'
 export const INTERCHAIN_LINK = 'https://interchain.synapseprotocol.com/'
-export const SOLANA_LINK = 'https://solana.synapseprotocol.com/'
+export const SOLANA_BRIDGE_LINK = 'https://solana.synapseprotocol.com/'
 export const TERMS_OF_SERVICE_PATH =
   'https://explorer.synapseprotocol.com/terms'
 export const PRIVACY_POLICY_PATH =
