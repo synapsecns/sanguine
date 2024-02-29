@@ -1,0 +1,772 @@
+{
+  "address": "0x522339aBe2910ee854FA1ffe7654bBF337a592Be",
+  "constructorArgs": "0x0000000000000000000000007e4089b247a05f6ee61ebc5f5abc0907ac1a0f43000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
+  "receipt": {
+    "hash": "0x20b275b02af54e702d0a270cbab5b174907ab3c919a2c1f297d3302fbc7fbabc",
+    "blockNumber": 8718150
+  },
+  "abi": [
+    {
+      "type": "constructor",
+      "inputs": [
+        {
+          "name": "interchainDB",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "owner_",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "INTERCHAIN_DB",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "decodeOptions",
+      "inputs": [
+        {
+          "name": "encodedOptions",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "tuple",
+          "internalType": "struct OptionsV1",
+          "components": [
+            {
+              "name": "gasLimit",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "gasAirdrop",
+              "type": "uint256",
+              "internalType": "uint256"
+            }
+          ]
+        }
+      ],
+      "stateMutability": "pure"
+    },
+    {
+      "type": "function",
+      "name": "encodeTransaction",
+      "inputs": [
+        {
+          "name": "icTx",
+          "type": "tuple",
+          "internalType": "struct InterchainTransaction",
+          "components": [
+            {
+              "name": "srcChainId",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "srcSender",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            },
+            {
+              "name": "dstChainId",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "dstReceiver",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            },
+            {
+              "name": "dbNonce",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "options",
+              "type": "bytes",
+              "internalType": "bytes"
+            },
+            {
+              "name": "message",
+              "type": "bytes",
+              "internalType": "bytes"
+            }
+          ]
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "stateMutability": "pure"
+    },
+    {
+      "type": "function",
+      "name": "executionFees",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getExecutor",
+      "inputs": [
+        {
+          "name": "encodedTx",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getExecutorById",
+      "inputs": [
+        {
+          "name": "transactionId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getInterchainFee",
+      "inputs": [
+        {
+          "name": "dstChainId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "srcExecutionService",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "srcModules",
+          "type": "address[]",
+          "internalType": "address[]"
+        },
+        {
+          "name": "options",
+          "type": "bytes",
+          "internalType": "bytes"
+        },
+        {
+          "name": "message",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "fee",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getLinkedClient",
+      "inputs": [
+        {
+          "name": "chainId",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getLinkedClientEVM",
+      "inputs": [
+        {
+          "name": "chainId",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "linkedClientEVM",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "interchainExecute",
+      "inputs": [
+        {
+          "name": "gasLimit",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "transaction",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "interchainSend",
+      "inputs": [
+        {
+          "name": "dstChainId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "receiver",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "srcExecutionService",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "srcModules",
+          "type": "address[]",
+          "internalType": "address[]"
+        },
+        {
+          "name": "options",
+          "type": "bytes",
+          "internalType": "bytes"
+        },
+        {
+          "name": "message",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "transactionId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "interchainSendEVM",
+      "inputs": [
+        {
+          "name": "dstChainId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "receiver",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "srcExecutionService",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "srcModules",
+          "type": "address[]",
+          "internalType": "address[]"
+        },
+        {
+          "name": "options",
+          "type": "bytes",
+          "internalType": "bytes"
+        },
+        {
+          "name": "message",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "transactionId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "isExecutable",
+      "inputs": [
+        {
+          "name": "encodedTx",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "owner",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "renounceOwnership",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setExecutionFees",
+      "inputs": [
+        {
+          "name": "executionFees_",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setLinkedClient",
+      "inputs": [
+        {
+          "name": "chainId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "client",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "transferOwnership",
+      "inputs": [
+        {
+          "name": "newOwner",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "writeExecutionProof",
+      "inputs": [
+        {
+          "name": "transactionId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "event",
+      "name": "ExecutionProofWritten",
+      "inputs": [
+        {
+          "name": "transactionId",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "indexed": true,
+          "internalType": "uint256"
+        },
+        {
+          "name": "executor",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "InterchainTransactionReceived",
+      "inputs": [
+        {
+          "name": "transactionId",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "indexed": true,
+          "internalType": "uint256"
+        },
+        {
+          "name": "srcChainId",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "srcSender",
+          "type": "bytes32",
+          "indexed": false,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "dstReceiver",
+          "type": "bytes32",
+          "indexed": false,
+          "internalType": "bytes32"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "InterchainTransactionSent",
+      "inputs": [
+        {
+          "name": "transactionId",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "indexed": true,
+          "internalType": "uint256"
+        },
+        {
+          "name": "dstChainId",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "srcSender",
+          "type": "bytes32",
+          "indexed": false,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "dstReceiver",
+          "type": "bytes32",
+          "indexed": false,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "verificationFee",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "executionFee",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "options",
+          "type": "bytes",
+          "indexed": false,
+          "internalType": "bytes"
+        },
+        {
+          "name": "message",
+          "type": "bytes",
+          "indexed": false,
+          "internalType": "bytes"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "OwnershipTransferred",
+      "inputs": [
+        {
+          "name": "previousOwner",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "newOwner",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "error",
+      "name": "AppConfigLib__IncorrectVersion",
+      "inputs": [
+        {
+          "name": "version",
+          "type": "uint8",
+          "internalType": "uint8"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainClientV1__FeeAmountTooLow",
+      "inputs": [
+        {
+          "name": "actual",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "required",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainClientV1__IncorrectDstChainId",
+      "inputs": [
+        {
+          "name": "chainId",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainClientV1__IncorrectMsgValue",
+      "inputs": [
+        {
+          "name": "actual",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "required",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainClientV1__NoLinkedClient",
+      "inputs": [
+        {
+          "name": "chainId",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainClientV1__NotEVMClient",
+      "inputs": [
+        {
+          "name": "client",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainClientV1__NotEnoughResponses",
+      "inputs": [
+        {
+          "name": "actual",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "required",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainClientV1__NotRemoteChainId",
+      "inputs": [
+        {
+          "name": "chainId",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainClientV1__TxAlreadyExecuted",
+      "inputs": [
+        {
+          "name": "transactionId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainClientV1__TxNotExecuted",
+      "inputs": [
+        {
+          "name": "transactionId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "OptionsLib__IncorrectVersion",
+      "inputs": [
+        {
+          "name": "version",
+          "type": "uint8",
+          "internalType": "uint8"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "OwnableInvalidOwner",
+      "inputs": [
+        {
+          "name": "owner",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "OwnableUnauthorizedAccount",
+      "inputs": [
+        {
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
+    }
+  ]
+}
