@@ -2,6 +2,7 @@ import { ETH, SYN } from '@constants/tokens/bridgeable'
 import { Token } from '@types'
 import * as CHAINS from '@constants/chains/master'
 import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
+
 // Hardcoding this shit for now until actual plan around routing
 let SYNAPSE_BASE_URL = ''
 if (process?.env?.NODE_ENV === 'development') {
@@ -94,6 +95,8 @@ export const HOW_TO_BRIDGE_URL =
 export const HOW_TO_SWAP_URL = 'https://docs.synapseprotocol.com/how-to/swap'
 export const HOW_TO_STAKE_URL =
   'https://docs.synapseprotocol.com/how-to/provide-liquidity'
+export const TRANSACTION_SUPPORT_URL =
+  'https://docs.synapseprotocol.com/synapse-bridge/synapse-bridge/transaction-support-faq'
 // Patching this as docs for now need to swap w/ git link
 
 export const SYNAPSE_DOCS_URL = 'https://docs.synapseprotocol.com'
