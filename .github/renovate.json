@@ -17,6 +17,7 @@
   "draftPR": true,
   "cloneSubmodules": true,
   "forkProcessing": "enabled",
+  "prHourlyLimit": 7,
   "repositories": ["synapsecns/sanguine"],
   "packageRules": [
     {
