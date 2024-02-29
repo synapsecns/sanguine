@@ -10,7 +10,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/example/counter"
 	"github.com/synapsecns/sanguine/ethergo/listener"
 	db2 "github.com/synapsecns/sanguine/ethergo/listener/db"
-	"github.com/synapsecns/sanguine/ethergo/submitter/db/txdb"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 	"math/big"
@@ -149,7 +148,8 @@ func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Ha
 
 	handler.AddGormCallbacks(gdb)
 
-	err = gdb.WithContext(ctx).AutoMigrate(txdb.GetAllModels()...)
+	err = gdb.WithContext(ctx).AutoMigrate(db2.GetAllModels()...)
+
 	if err != nil {
 		return nil, fmt.Errorf("could not migrate models: %w", err)
 	}
