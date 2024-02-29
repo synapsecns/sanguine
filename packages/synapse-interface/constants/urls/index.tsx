@@ -13,27 +13,52 @@ if (process?.env?.NODE_ENV === 'development') {
 
 export { SYNAPSE_BASE_URL }
 
+/** Internal Route Paths */
 export const BASE_PATH = '/'
-export const EXPLORER_KAPPA = 'https://explorer.synapseprotocol.com/tx/'
-export const EXPLORER_PATH = 'https://explorer.synapseprotocol.com/'
+export const BRIDGE_PATH = '/'
 export const AIRDROP_PATH = '/claim'
 export const SWAP_PATH = '/swap'
 export const STAKE_PATH = '/stake'
 export const POOLS_PATH = '/pools'
 export const POOL_PATH = '/pool'
-export const BRIDGE_PATH = '/'
+export const STATISTICS_PATH = '/statistics'
+export const LANDING_PATH = '/landing'
+
+/** External Route Paths */
+export const EXPLORER_KAPPA = 'https://explorer.synapseprotocol.com/tx/'
+export const EXPLORER_PATH = 'https://explorer.synapseprotocol.com/'
 export const CONTRACTS_PATH =
   'https://docs.synapseprotocol.com/reference/contract-addresses'
 export const INTERCHAIN_LINK = 'https://interchain.synapseprotocol.com/'
 export const SOLANA_LINK = 'https://solana.synapseprotocol.com/'
-export const STATISTICS_PATH = '/statistics'
-export const LANDING_PATH = '/landing'
 export const TERMS_OF_SERVICE_PATH =
   'https://explorer.synapseprotocol.com/terms'
 export const PRIVACY_POLICY_PATH =
   'https://explorer.synapseprotocol.com/privacy'
 export const SYNAPSE_PFP_PATH = '/returntomonke'
 
+/** Synapse Social Links */
+export const DISCORD_URL = 'https://discord.gg/synapseprotocol'
+export const TELEGRAM_URL = 'https://t.me/synapseprotocol'
+export const FORUM_URL = 'https://forum.synapseprotocol.com/'
+export const TWITTER_URL = 'https://twitter.com/SynapseProtocol'
+export const GITHUB_URL = 'https://github.com/synapsecns'
+export const MEDIUM_URL = 'https://synapseprotocol.medium.com/'
+export const MIRROR_URL = 'https://synapse.mirror.xyz/'
+
+/** Synapse Docs Guides */
+export const SYNAPSE_DOCS_URL = 'https://docs.synapseprotocol.com'
+export const HOW_TO_BRIDGE_URL =
+  'https://docs.synapseprotocol.com/how-to/bridge'
+export const HOW_TO_SWAP_URL = 'https://docs.synapseprotocol.com/how-to/swap'
+export const HOW_TO_STAKE_URL =
+  'https://docs.synapseprotocol.com/how-to/provide-liquidity'
+export const BUILD_ON_URL =
+  'https://docs.synapseprotocol.com/synapse-interchain-network-sin/build-on-the-synapse-interchain-network'
+export const TRANSACTION_SUPPORT_URL =
+  'https://docs.synapseprotocol.com/synapse-bridge/synapse-bridge/transaction-support-faq'
+
+/** Construct URL Helper Functions */
 export const getPoolUrl = (token: Token) => {
   if (token?.symbol && token.symbol === SYN_ETH_SUSHI_TOKEN.symbol) {
     return getSushiSwapUrl({
@@ -77,27 +102,6 @@ export const getExplorerAddressUrl = ({ address, chainId }) => {
 export const getCompleteUrl = (uriPath: string) => {
   return `${SYNAPSE_BASE_URL}${uriPath}`
 }
-
-export const DISCORD_URL = 'https://discord.gg/synapseprotocol'
-export const TELEGRAM_URL = 'https://t.me/synapseprotocol'
-export const FORUM_URL = 'https://forum.synapseprotocol.com/'
-export const TWITTER_URL = 'https://twitter.com/SynapseProtocol'
-
-export const GITHUB_URL = 'https://github.com/synapsecns'
-export const MEDIUM_URL = 'https://synapseprotocol.medium.com/'
-export const MIRROR_URL = 'https://synapse.mirror.xyz/'
-
-/** Synapse Docs Guides */
-export const SYNAPSE_DOCS_URL = 'https://docs.synapseprotocol.com'
-export const HOW_TO_BRIDGE_URL =
-  'https://docs.synapseprotocol.com/how-to/bridge'
-export const HOW_TO_SWAP_URL = 'https://docs.synapseprotocol.com/how-to/swap'
-export const HOW_TO_STAKE_URL =
-  'https://docs.synapseprotocol.com/how-to/provide-liquidity'
-export const BUILD_ON_URL =
-  'https://docs.synapseprotocol.com/synapse-interchain-network-sin/build-on-the-synapse-interchain-network'
-export const TRANSACTION_SUPPORT_URL =
-  'https://docs.synapseprotocol.com/synapse-bridge/synapse-bridge/transaction-support-faq'
 
 const SUSHISWAP_BASE_URL = 'https://app.sushi.com'
 // Need to switch this with fei url
