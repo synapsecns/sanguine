@@ -869,7 +869,7 @@ export const BASE_ETH_SWAP_TOKEN = new Token({
 
 export const BLAST_ETH_SWAP_TOKEN = new Token({
   addresses: {
-    [CHAINS.BLAST.id]: '0x_NEED_ADDRESS',
+    [CHAINS.BLAST.id]: '0x1600084daCcd3b58ACeFcdb0F3D7c9649359116b',
   },
   decimals: 18,
   symbol: 'nETH-LP',
@@ -880,10 +880,10 @@ export const BLAST_ETH_SWAP_TOKEN = new Token({
   poolId: 0,
   poolType: 'ETH',
   swapAddresses: {
-    [CHAINS.BASE.id]: '0x_NEED_ADDRESS',
+    [CHAINS.BLAST.id]: '0x999fcd13C54B26E02a6Ccd185f71550b3a4641c0',
   },
   swapEthAddresses: {
-    [CHAINS.BASE.id]: '0x_NEED_ADDRESS',
+    [CHAINS.BLAST.id]: '0x43b961AEc392Cfa347225528e5beFa987578841c',
   },
   poolTokens: [NETH, WETH],
   nativeTokens: [NETH, ETH],
@@ -900,7 +900,7 @@ export const BLAST_ETH_SWAP_TOKEN = new Token({
 
 export const BLAST_2POOL_SWAP_TOKEN = new Token({
   addresses: {
-    [CHAINS.BLAST.id]: '0x_NEED_ADDRESS',
+    [CHAINS.BLAST.id]: '0xb758FF41E0A811b9eB0Ff973D373c354588524b6',
   },
   decimals: 18,
   symbol: 'nUSDLP',
@@ -911,12 +911,13 @@ export const BLAST_2POOL_SWAP_TOKEN = new Token({
   poolId: 1,
   poolType: 'USD',
   swapAddresses: {
-    [CHAINS.ARBITRUM.id]: '0x9Dd329F5411466d9e0C488fF72519CA9fEf0cb40',
+    [CHAINS.BLAST.id]: '0xa4bd1AAD7cF04567c10f38FC4355E91bba32aC9c',
   },
   poolTokens: [NUSD, USDB],
   description: "Synapse's 2pool stableswap LP token on Blast",
   display: true,
   priorityPool: true,
+  color: 'yellow',
   priceUnits: 'USD',
   priorityRank: 6,
   chainId: CHAINS.BLAST.id,
