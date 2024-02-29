@@ -3,7 +3,7 @@ module github.com/synapsecns/sanguine/contrib/terraform-provider-kubeproxy
 go 1.21
 
 require (
-	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320
+	github.com/hashicorp/go-cty v1.4.1-0.20200723130312-85980079f637
 	github.com/hashicorp/go-hclog v1.4.0
 	github.com/hashicorp/go-plugin v1.4.8
 	github.com/hashicorp/hcl/v2 v2.15.0
