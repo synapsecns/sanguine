@@ -31,8 +31,8 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     /// @notice Address of the contract that handles execution fees. Can be updated by the owner.
     address public executionFees;
 
-    /// @notice Address of the InterchainClient contract on the remote chain
-    mapping(uint256 chainId => bytes32 remoteClient) public linkedClients;
+    /// @dev Address of the InterchainClient contract on the remote chain
+    mapping(uint256 chainId => bytes32 remoteClient) internal _linkedClient;
     /// @dev Executor address that completed the transaction. Address(0) if not executed yet.
     mapping(bytes32 transactionId => address executor) internal _txExecutor;
 
@@ -47,7 +47,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
 
     // @inheritdoc IInterchainClientV1
     function setLinkedClient(uint256 chainId, bytes32 client) external onlyOwner {
-        linkedClients[chainId] = client;
+        _linkedClient[chainId] = client;
     }
 
     // @inheritdoc IInterchainClientV1
@@ -172,6 +172,21 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         }
     }
 
+    /// @inheritdoc IInterchainClientV1
+    function getLinkedClient(uint256 chainId) external view returns (bytes32) {
+        return _linkedClient[chainId];
+    }
+
+    /// @inheritdoc IInterchainClientV1
+    function getLinkedClientEVM(uint256 chainId) external view returns (address linkedClientEVM) {
+        bytes32 linkedClient = _linkedClient[chainId];
+        linkedClientEVM = TypeCasts.bytes32ToAddress(linkedClient);
+        // Check that the linked client address fits into the EVM address space
+        if (TypeCasts.addressToBytes32(linkedClientEVM) != linkedClient) {
+            revert InterchainClientV1__NotEVMClient(linkedClient);
+        }
+    }
+
     /// @notice Encodes the transaction data into a bytes format.
     function encodeTransaction(InterchainTransaction memory icTx) external pure returns (bytes memory) {
         return icTx.encodeTransaction();
@@ -270,7 +285,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         InterchainEntry memory icEntry = InterchainEntry({
             srcChainId: icTx.srcChainId,
             dbNonce: icTx.dbNonce,
-            srcWriter: linkedClients[icTx.srcChainId],
+            srcWriter: _linkedClient[icTx.srcChainId],
             dataHash: transactionId
         });
         (bytes memory encodedAppConfig, address[] memory approvedDstModules) =

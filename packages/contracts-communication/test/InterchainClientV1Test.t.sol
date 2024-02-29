@@ -4,6 +4,7 @@ pragma solidity 0.8.20;
 import {AppConfigV1, InterchainTransaction} from "../contracts/InterchainClientV1.sol";
 import {InterchainDB} from "../contracts/InterchainDB.sol";
 
+import {IInterchainClientV1} from "../contracts/interfaces/IInterchainClientV1.sol";
 import {InterchainEntry} from "../contracts/libs/InterchainEntry.sol";
 import {OptionsV1} from "../contracts/libs/Options.sol";
 import {TypeCasts} from "../contracts/libs/TypeCasts.sol";
@@ -155,5 +156,25 @@ contract InterchainClientV1Test is Test {
         // Expect App to be called with the message
         vm.expectCall({callee: address(icApp), msgValue: GAS_AIRDROP, gas: 200_000, data: expectedAppCalldata, count: 1});
         icClient.interchainExecute{value: GAS_AIRDROP}({gasLimit: 0, transaction: abi.encode(transaction)});
+    }
+
+    function test_getLinkedClient_EVM() public {
+        address linkedClientEVM = makeAddr("Linked Client EVM");
+        bytes32 linkedClient = TypeCasts.addressToBytes32(linkedClientEVM);
+        vm.prank(contractOwner);
+        icClient.setLinkedClient(SRC_CHAIN_ID, linkedClient);
+        assertEq(icClient.getLinkedClient(SRC_CHAIN_ID), linkedClient);
+        assertEq(icClient.getLinkedClientEVM(SRC_CHAIN_ID), linkedClientEVM);
+    }
+
+    function test_getLinkedClient_nonEVM() public {
+        bytes32 linkedClient = keccak256("Linked Client");
+        vm.prank(contractOwner);
+        icClient.setLinkedClient(SRC_CHAIN_ID, linkedClient);
+        assertEq(icClient.getLinkedClient(SRC_CHAIN_ID), linkedClient);
+        vm.expectRevert(
+            abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__NotEVMClient.selector, linkedClient)
+        );
+        icClient.getLinkedClientEVM(SRC_CHAIN_ID);
     }
 }

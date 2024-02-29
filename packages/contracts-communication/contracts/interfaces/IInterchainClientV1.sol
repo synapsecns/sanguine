@@ -7,6 +7,7 @@ interface IInterchainClientV1 {
     error InterchainClientV1__IncorrectMsgValue(uint256 actual, uint256 required);
     error InterchainClientV1__IncorrectSrcChainId(uint256 chainId);
     error InterchainClientV1__NotEnoughResponses(uint256 actual, uint256 required);
+    error InterchainClientV1__NotEVMClient(bytes32 client);
     error InterchainClientV1__TxAlreadyExecuted(bytes32 transactionId);
     error InterchainClientV1__TxNotExecuted(bytes32 transactionId);
 
@@ -116,4 +117,13 @@ interface IInterchainClientV1 {
 
     /// @notice Returns the address of the executor for a transaction that has been sent to the local chain.
     function getExecutorById(bytes32 transactionId) external view returns (address);
+
+    /// @notice Returns the address of the linked client (as bytes32) for a specific chain ID.
+    /// @dev Will return 0x0 if no client is linked for the chain ID.
+    function getLinkedClient(uint256 chainId) external view returns (bytes32);
+
+    /// @notice Returns the EVM address of the linked client for a specific chain ID.
+    /// @dev Will return 0x0 if no client is linked for the chain ID.
+    /// Will revert if the client is not an EVM client.
+    function getLinkedClientEVM(uint256 chainId) external view returns (address);
 }
