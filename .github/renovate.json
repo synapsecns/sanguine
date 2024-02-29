@@ -18,7 +18,7 @@
   "draftPR": true,
   "cloneSubmodules": true,
   "forkProcessing": "enabled",
-  "prHourlyLimit": 20,
+  "prHourlyLimit": 28,
   "repositories": ["synapsecns/sanguine"],
   "packageRules": [
     {
@@ -48,8 +48,7 @@
       "matchPackagePrefixes": [
         "@openzeppelin/"
       ],
-      "prPriority": 1,
-      "stabilityDays": 0
+      "enabled": false
     }
   ],
   "updateInternalDeps": true,
@@ -57,7 +56,7 @@
   "branchConcurrentLimit": 20,
   "prConcurrentLimit": 20,
   "git-submodules": {
-    "enabled": true
+    "enabled": false
   },
   "postUpgradeTasks": {
     "commands": [
