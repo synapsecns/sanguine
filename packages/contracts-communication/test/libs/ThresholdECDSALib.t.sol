@@ -5,6 +5,9 @@ import {ThresholdECDSALib, ThresholdECDSALibHarness} from "../harnesses/Threshol
 
 import {Test} from "forge-std/Test.sol";
 
+// solhint-disable func-name-mixedcase
+// solhint-disable ordering
+// solhint-disable var-name-mixedcase
 contract ThresholdECDSALibTest is Test {
     ThresholdECDSALibHarness public libHarness;
 
