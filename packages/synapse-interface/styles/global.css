@@ -2,10 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  background: hsl(256deg 7.5% 9.25%);
+}
+
 body {
   text-rendering: optimizeLegibility;
   overscroll-behavior-y: none;
-  overscroll-behavior-x: none;
 }
 
 @font-face {

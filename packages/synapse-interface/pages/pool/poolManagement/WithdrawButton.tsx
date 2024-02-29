@@ -5,7 +5,7 @@ import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 import { useEffect, useState } from 'react'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { stringToBigInt } from '@/utils/bigint/format'
-import LoadingSpinner from '@/components/ui/tailwind/LoadingSpinner'
+import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 import { DEFAULT_WITHDRAW_QUOTE } from '@/slices/poolWithdrawSlice'
 
 const WithdrawButton = ({ approveTxn, withdrawTxn, isApproved }) => {
@@ -59,7 +59,7 @@ const WithdrawButton = ({ approveTxn, withdrawTxn, isApproved }) => {
     buttonProperties = {
       label: (
         <div className="flex items-center justify-center h-[24px]">
-          <LoadingSpinner />
+          <LoadingDots />
         </div>
       ),
       onClick: null,
@@ -93,6 +93,19 @@ const WithdrawButton = ({ approveTxn, withdrawTxn, isApproved }) => {
     pool &&
     buttonProperties && (
       <TransactionButton
+        style={
+          isButtonDisabled
+            ? {
+                border: '1px solid #453F47',
+                borderRadius: '4px',
+              }
+            : {
+                background:
+                  'linear-gradient(90deg, rgba(128, 0, 255, 0.2) 0%, rgba(255, 0, 191, 0.2) 100%)',
+                border: '1px solid #9B6DD7',
+                borderRadius: '4px',
+              }
+        }
         {...buttonProperties}
         disabled={isButtonDisabled}
         chainId={pool.chainId}

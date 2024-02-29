@@ -6,14 +6,16 @@ package evm
 import (
 	"context"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/agents/contracts/bondingmanager"
 	"github.com/synapsecns/sanguine/agents/domains"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/chain"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
-	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
 
 // NewBondingManagerContract returns a bound bonding manager contract.
@@ -44,13 +46,13 @@ type bondingManagerContract struct {
 }
 
 //nolint:dupl
-func (a bondingManagerContract) GetAgentStatus(ctx context.Context, bondedAgentSigner signer.Signer) (types.AgentStatus, error) {
-	rawStatus, err := a.contract.AgentStatus(&bind.CallOpts{Context: ctx}, bondedAgentSigner.Address())
+func (a bondingManagerContract) GetAgentStatus(ctx context.Context, address common.Address) (types.AgentStatus, error) {
+	rawStatus, err := a.contract.AgentStatus(&bind.CallOpts{Context: ctx}, address)
 	if err != nil {
 		return nil, fmt.Errorf("could not retrieve agent status: %w", err)
 	}
 
-	agentStatus := types.NewAgentStatus(rawStatus.Flag, rawStatus.Domain, rawStatus.Index)
+	agentStatus := types.NewAgentStatus(types.AgentFlagType(rawStatus.Flag), rawStatus.Domain, rawStatus.Index)
 
 	return agentStatus, nil
 }
@@ -66,11 +68,64 @@ func (a bondingManagerContract) GetAgentRoot(ctx context.Context) ([32]byte, err
 }
 
 //nolint:dupl
-func (a bondingManagerContract) GetProof(ctx context.Context, bondedAgentSigner signer.Signer) ([][32]byte, error) {
-	proof, err := a.contract.GetProof(&bind.CallOpts{Context: ctx}, bondedAgentSigner.Address())
+func (a bondingManagerContract) GetProof(ctx context.Context, address common.Address) ([][32]byte, error) {
+	proof, err := a.contract.GetProof(&bind.CallOpts{Context: ctx}, address)
 	if err != nil {
 		return nil, fmt.Errorf("could not retrieve agent proof: %w", err)
 	}
 
 	return proof, nil
+}
+
+func (a bondingManagerContract) DisputeStatus(ctx context.Context, address common.Address) (disputeStatus domains.DisputeStatus, err error) {
+	rawDispute, err := a.contract.DisputeStatus(&bind.CallOpts{Context: ctx}, address)
+	if err != nil {
+		return domains.DisputeStatus{}, fmt.Errorf("could not retrieve dispute status: %w", err)
+	}
+
+	return domains.DisputeStatus{
+		DisputeFlag: rawDispute.Flag,
+		Rival:       rawDispute.Rival,
+		FraudProver: rawDispute.FraudProver,
+		DisputePtr:  rawDispute.DisputePtr,
+	}, nil
+}
+
+func (a bondingManagerContract) GetDispute(ctx context.Context, index *big.Int) (err error) {
+	_, err = a.contract.GetDispute(&bind.CallOpts{Context: ctx}, index)
+	if err != nil {
+		return fmt.Errorf("could not retrieve dispute: %w", err)
+	}
+
+	return nil
+}
+
+func (a bondingManagerContract) CompleteSlashing(transactor *bind.TransactOpts, domain uint32, agent common.Address, proof [][32]byte) (tx *ethTypes.Transaction, err error) {
+	tx, err = a.contract.CompleteSlashing(transactor, domain, agent, proof)
+	if err != nil {
+		return nil, fmt.Errorf("could not submit state report: %w", err)
+	}
+
+	return tx, nil
+}
+
+func (a bondingManagerContract) GetDisputeStatus(ctx context.Context, agent common.Address) (disputeStatus types.DisputeStatus, err error) {
+	rawStatus, err := a.contract.DisputeStatus(&bind.CallOpts{Context: ctx}, agent)
+	if err != nil {
+		return nil, fmt.Errorf("could not retrieve dispute status: %w", err)
+	}
+
+	disputeStatus = types.NewDisputeStatus(types.DisputeFlagType(rawStatus.Flag), rawStatus.Rival, rawStatus.FraudProver, rawStatus.DisputePtr)
+	return disputeStatus, nil
+}
+
+func (a bondingManagerContract) GetAgent(ctx context.Context, index *big.Int) (types.AgentStatus, common.Address, error) {
+	rawStatus, err := a.contract.GetAgent(&bind.CallOpts{Context: ctx}, index)
+	if err != nil {
+		return nil, common.Address{}, fmt.Errorf("could not retrieve agent status: %w", err)
+	}
+
+	agentStatus := types.NewAgentStatus(types.AgentFlagType(rawStatus.Status.Flag), rawStatus.Status.Domain, rawStatus.Status.Index)
+
+	return agentStatus, rawStatus.Agent, nil
 }

@@ -172,14 +172,15 @@ func (x *Indexer) Index(parentCtx context.Context, startHeight uint64, endHeight
 	x.indexerConfig.EndHeight = endHeight
 
 	// Start fetching logs
-	logFetcher := NewLogFetcher(x.client[0], big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), &x.indexerConfig)
-	logsChan := logFetcher.GetFetchedLogsChan()
+	logFetcher := NewLogFetcher(x.client[0], big.NewInt(int64(startHeight)), big.NewInt(int64(endHeight)), &x.indexerConfig, true)
+	logsChan := *logFetcher.GetFetchedLogsChan()
 	g.Go(func() error {
 		return logFetcher.Start(groupCtx)
 	})
 	// Reads from the local logsChan and stores the logs and associated receipts / txs.
 	g.Go(func() error {
 		concurrentCalls := 0
+		lastBlockSeen := uint64(0)
 		gS, storeCtx := errgroup.WithContext(ctx)
 		// could change this to for - range
 		for {
@@ -187,7 +188,7 @@ func (x *Indexer) Index(parentCtx context.Context, startHeight uint64, endHeight
 			case <-groupCtx.Done():
 				logger.ReportIndexerError(groupCtx.Err(), x.indexerConfig, logger.ContextCancelled)
 				return fmt.Errorf("context canceled while storing and retrieving logs: %w", groupCtx.Err())
-			case log, ok := <-*logsChan: // empty log passed when ok is false.
+			case log, ok := <-logsChan: // empty log passed when ok is false.
 				if !ok {
 					return nil
 				}
@@ -228,10 +229,15 @@ func (x *Indexer) Index(parentCtx context.Context, startHeight uint64, endHeight
 					gS, storeCtx = errgroup.WithContext(ctx)
 					concurrentCalls = 0
 
-					err = x.saveLastIndexed(storeCtx, log.BlockNumber)
-					if err != nil {
-						logger.ReportIndexerError(err, x.indexerConfig, logger.StoreError)
-						return fmt.Errorf("could not store last indexed: %w", err)
+					// Only update last indexed if all logs from the last block have been processed to prevent premature
+					// updates of last indexed. Prevents having to lag a block behind on downstream dependencies (agents).
+					if lastBlockSeen < log.BlockNumber {
+						err = x.saveLastIndexed(storeCtx, lastBlockSeen)
+						if err != nil {
+							logger.ReportIndexerError(err, x.indexerConfig, logger.StoreError)
+							return fmt.Errorf("could not store last indexed: %w", err)
+						}
+						lastBlockSeen = log.BlockNumber
 					}
 
 					x.blockMeter.Record(ctx, int64(log.BlockNumber), otelMetrics.WithAttributeSet(

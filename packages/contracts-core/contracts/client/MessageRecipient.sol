@@ -76,6 +76,7 @@ abstract contract MessageRecipient is IMessageRecipient {
      * @param destination_          Domain of the destination chain
      * @param recipient             Address of the recipient on destination chain
      * @param optimisticPeriod      Optimistic period for the message
+     * @param tipsValue             Tips to be paid for sending the message
      * @param request               Message execution request on destination chain
      * @param content               The message content
      */
@@ -83,11 +84,12 @@ abstract contract MessageRecipient is IMessageRecipient {
         uint32 destination_,
         bytes32 recipient,
         uint32 optimisticPeriod,
+        uint256 tipsValue,
         MessageRequest memory request,
         bytes memory content
     ) internal returns (uint32 messageNonce, bytes32 messageHash) {
         if (recipient == 0) revert IncorrectRecipient();
-        return InterfaceOrigin(origin).sendBaseMessage{value: msg.value}(
+        return InterfaceOrigin(origin).sendBaseMessage{value: tipsValue}(
             destination_, recipient, optimisticPeriod, _encodeRequest(request), content
         );
     }

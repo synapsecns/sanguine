@@ -1,2 +1,2 @@
-// Package config handles config data decoded from config.yaml for the explorer service.
+// Package config holds the config for both the server and indexer.
 package config

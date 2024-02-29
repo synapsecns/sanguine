@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
       - name: Fail on needs-go-generate
         run: echo Failed, needs go generate. && exit 1
   check-generate-yarn:
@@ -18,6 +17,5 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
       - name: Fail on needs-go-yarn
         run: echo Failed, needs yarn install. && exit 1

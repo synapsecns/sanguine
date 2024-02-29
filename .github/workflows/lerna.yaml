@@ -23,6 +23,11 @@ jobs:
       - name: Setup NodeJS
         uses: ./.github/actions/setup-nodejs
 
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
       - name: Authenticate with private NPM package
         run: |
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc

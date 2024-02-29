@@ -2,15 +2,15 @@ import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { useDispatch } from 'react-redux'
 import { useAccount, useNetwork } from 'wagmi'
 
-import { updateFromValue } from '@/slices/bridge/reducer'
+import { initialState, updateFromValue } from '@/slices/bridge/reducer'
 import MiniMaxButton from '../buttons/MiniMaxButton'
-import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
+import { formatBigIntToString } from '@/utils/bigint/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import {
   ConnectToNetworkButton,
   ConnectWalletButton,
   ConnectedIndicator,
-} from './ConnectionIndicators'
+} from '@/components/ConnectionIndicators'
 import { FromChainSelector } from './FromChainSelector'
 import { FromTokenSelector } from './FromTokenSelector'
 import { useBridgeState } from '@/slices/bridge/hooks'
@@ -19,57 +19,37 @@ import { usePortfolioState } from '@/slices/portfolio/hooks'
 export const inputRef = React.createRef<HTMLInputElement>()
 
 export const InputContainer = () => {
-  const {
-    fromChainId,
-    fromToken,
-    fromValue,
-    bridgeTxHashes,
-    toChainId,
-    toToken,
-  } = useBridgeState()
+  const { fromChainId, fromToken, fromValue } = useBridgeState()
   const [showValue, setShowValue] = useState('')
 
   const [hasMounted, setHasMounted] = useState(false)
-  const previousBridgeTxHashesRef = useRef<string[]>([])
 
-  const { balancesAndAllowances } = usePortfolioState()
+  const { balances } = usePortfolioState()
 
   useEffect(() => {
     setHasMounted(true)
   }, [])
-
-  useEffect(() => {
-    const previousBridgeTxHashes = previousBridgeTxHashesRef.current
-
-    if (bridgeTxHashes.length !== previousBridgeTxHashes.length) {
-      setShowValue('')
-    }
-
-    previousBridgeTxHashesRef.current = bridgeTxHashes
-  }, [bridgeTxHashes])
 
   const { isConnected } = useAccount()
   const { chain } = useNetwork()
 
   const dispatch = useDispatch()
 
-  const parsedBalance = balancesAndAllowances[fromChainId]?.find(
+  const parsedBalance = balances[fromChainId]?.find(
     (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
   )?.parsedBalance
 
-  const balance = balancesAndAllowances[fromChainId]?.find(
+  const balance = balances[fromChainId]?.find(
     (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
   )?.balance
 
   useEffect(() => {
-    if (
-      fromToken &&
-      fromToken.decimals[fromChainId] &&
-      stringToBigInt(fromValue, fromToken.decimals[fromChainId]) !== 0n
-      // stringToBigInt(fromValue, fromToken.decimals[fromChainId]) ===
-      //   fromTokenBalance
-    ) {
+    if (fromToken && fromToken?.decimals[fromChainId]) {
       setShowValue(fromValue)
+    }
+
+    if (fromValue === initialState.fromValue) {
+      setShowValue(initialState.fromValue)
     }
   }, [fromValue, inputRef, fromChainId, fromToken])
 
@@ -95,7 +75,7 @@ export const InputContainer = () => {
   const onMaxBalance = useCallback(() => {
     dispatch(
       updateFromValue(
-        formatBigIntToString(balance, fromToken.decimals[fromChainId])
+        formatBigIntToString(balance, fromToken?.decimals[fromChainId])
       )
     )
   }, [balance, fromChainId, fromToken])

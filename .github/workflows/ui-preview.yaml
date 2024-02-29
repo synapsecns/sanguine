@@ -4,6 +4,10 @@ on:
     branches:
       - master
   pull_request:
+    paths:
+      - 'packages/explorer-ui/**'
+      - 'packages/docs/**'
+      - 'packages/synapse-interface/**'
 jobs:
   changes:
     runs-on: ubuntu-latest
@@ -30,7 +34,6 @@ jobs:
         run: |
           export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
           echo "FILTER_LENGTH=$FILTER_LENGTH" >> "$GITHUB_OUTPUT"
-
         env:
           FILTERED_PATHS: ${{ steps.filter_ui.outputs.changes }}
   # for details on how to use, please see ui-preview.md
@@ -73,7 +76,7 @@ jobs:
           # set the vercel project id`
           echo "VERCEL_PROJECT_ID=$TARGET_ID" >> $GITHUB_ENV
       - name: Install Vercel CLI
-        run: npm install --global vercel@30.1.0
+        run: npm install --global vercel@32.5.3
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
       - name: Build Project Artifacts

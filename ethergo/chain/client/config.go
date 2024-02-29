@@ -3,7 +3,6 @@ package client
 import (
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
-	"github.com/keep-network/keep-common/pkg/rate"
 	"math/big"
 )
 
@@ -30,7 +29,7 @@ type Config struct {
 	// where in the start height is always returned as 0. This can be removed after version 6 of the contracts
 	StartHeight uint64 `toml:"StartHeight"`
 
-	*rate.LimiterConfig
+	*LimiterConfig
 }
 
 // SetEthBridgeAddress mutates the config to set a bridge address.
@@ -133,7 +132,6 @@ var (
 		DAOForkBlock:        big.NewInt(0),
 		DAOForkSupport:      true,
 		EIP150Block:         big.NewInt(0),
-		EIP150Hash:          ethCommon.HexToHash("0x2086799aeebeae135c246c65021c82b4e15a2c451340993aacfd2751886514f0"),
 		EIP155Block:         big.NewInt(0),
 		EIP158Block:         big.NewInt(0),
 		ByzantiumBlock:      big.NewInt(0),
@@ -151,7 +149,6 @@ var (
 		DAOForkBlock:        big.NewInt(0),
 		DAOForkSupport:      true,
 		EIP150Block:         big.NewInt(0),
-		EIP150Hash:          ethCommon.HexToHash("0x2086799aeebeae135c246c65021c82b4e15a2c451340993aacfd2751886514f0"),
 		EIP155Block:         big.NewInt(0),
 		EIP158Block:         big.NewInt(0),
 		ByzantiumBlock:      big.NewInt(0),
@@ -336,7 +333,7 @@ var (
 
 // chainConfigs is a list of chain configs.
 var chainConfigs = []*params.ChainConfig{
-	params.MainnetChainConfig, params.RopstenChainConfig,
+	params.MainnetChainConfig, params.SepoliaChainConfig,
 	params.RinkebyChainConfig, params.RinkebyChainConfig, params.GoerliChainConfig,
 	params.AllEthashProtocolChanges, BSCChainConfig, ChapelChainConfig, RialtoChainConfig,
 	SimulatedConfig, MaticMumbaiConfig, MaticMainnetConfig, AvalancheMainnetChainConfig, AvalancheLocalChainConfig,

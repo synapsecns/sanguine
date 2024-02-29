@@ -39,6 +39,8 @@ type Chain interface {
 	Estimator() gas.PriceEstimator
 	// GasSetter gets the gas setter
 	GasSetter() gas.Setter
+	// ChainConfig gets the chain config.
+	ChainConfig() *params.ChainConfig
 	// SetChainConfig sets the config for a chain
 	SetChainConfig(config *params.ChainConfig)
 	// HeaderByTime gets the closest block to the given time.

@@ -40,7 +40,7 @@ func (x *IndexerSuite) TestFilterLogsMaxAttempts() {
 		Addresses:          []common.Address{contractAddress},
 	}
 
-	rangeFilter := indexer.NewLogFetcher(simulatedClient, big.NewInt(1), big.NewInt(10), config)
+	rangeFilter := indexer.NewLogFetcher(simulatedClient, big.NewInt(1), big.NewInt(10), config, true)
 
 	// Use the range filterer created above to create a mock log filter.
 	mockFilterer.
@@ -73,7 +73,7 @@ func (x *IndexerSuite) TestGetChunkArr() {
 	startBlock := int64(1)
 	endBlock := int64(10)
 
-	rangeFilter := indexer.NewLogFetcher(simulatedClient, big.NewInt(startBlock), big.NewInt(endBlock), config)
+	rangeFilter := indexer.NewLogFetcher(simulatedClient, big.NewInt(startBlock), big.NewInt(endBlock), config, true)
 
 	numberOfRequests := int64(0)
 	for i := int64(0); i < endBlock; i++ {
@@ -88,7 +88,7 @@ func (x *IndexerSuite) TestGetChunkArr() {
 
 	// Test with a larger batch size
 	config.GetLogsBatchAmount = 4
-	rangeFilter = indexer.NewLogFetcher(simulatedClient, big.NewInt(1), big.NewInt(10), config)
+	rangeFilter = indexer.NewLogFetcher(simulatedClient, big.NewInt(1), big.NewInt(10), config, true)
 	numberOfRequests = int64(0)
 	loopCount := endBlock/int64(config.GetLogsBatchAmount) + 1
 	for i := int64(0); i < loopCount; i++ {
@@ -107,7 +107,7 @@ func (x *IndexerSuite) TestGetChunkArr() {
 
 	// Test with a larger range size
 	config.GetLogsRange = 2
-	rangeFilter = indexer.NewLogFetcher(simulatedClient, big.NewInt(1), big.NewInt(10), config)
+	rangeFilter = indexer.NewLogFetcher(simulatedClient, big.NewInt(1), big.NewInt(10), config, true)
 	numberOfRequests = int64(0)
 	loopCount = endBlock/int64(config.GetLogsBatchAmount*config.GetLogsRange) + 1
 	for i := int64(0); i < loopCount; i++ {
@@ -184,7 +184,7 @@ func (x *IndexerSuite) TestFetchLogs() {
 		GetLogsRange:         2,
 		Addresses:            testChainHandler.Addresses,
 	}
-	rangeFilter := indexer.NewLogFetcher(scribeBackend, big.NewInt(1), big.NewInt(desiredBlockHeight), config)
+	rangeFilter := indexer.NewLogFetcher(scribeBackend, big.NewInt(1), big.NewInt(desiredBlockHeight), config, true)
 	logs, err := rangeFilter.FetchLogs(x.GetTestContext(), chunks)
 	Nil(x.T(), err)
 	Equal(x.T(), 2, len(logs))
@@ -217,7 +217,7 @@ func (x *IndexerSuite) TestFetchLogsHighVolume() {
 		StoreConcurrency:     6,
 		Addresses:            []common.Address{common.BigToAddress(big.NewInt(1))},
 	}
-	logFetcher := indexer.NewLogFetcher(scribeBackend, big.NewInt(1), big.NewInt(1000), config)
+	logFetcher := indexer.NewLogFetcher(scribeBackend, big.NewInt(1), big.NewInt(1000), config, true)
 
 	logsChan := logFetcher.GetFetchedLogsChan()
 

@@ -3,14 +3,15 @@ package executor
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jftuga/ellipsis"
 	"github.com/synapsecns/sanguine/agents/config"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
 	"gopkg.in/yaml.v2"
-	"os"
-	"path/filepath"
 )
 
 // Config is used to configure an Executor agent.
@@ -18,7 +19,7 @@ type Config struct {
 	// DBConfig is the database configuration.
 	DBConfig config.DBConfig `yaml:"db_config"`
 	// ScribeConfig is the scribe configuration.
-	ScribeConfig ScribeConfig `yaml:"scribe_config"`
+	ScribeConfig config.ScribeConfig `yaml:"scribe_config"`
 	// Chains stores all chain information
 	Chains ChainConfigs `yaml:"chains"`
 	// SummitChainID is the chain ID of the chain that the summit contract is deployed on.
@@ -44,6 +45,8 @@ type Config struct {
 	DBPrefix string `yaml:"db_prefix"`
 	// SubmitterConfig is the config for the submitter.
 	SubmitterConfig submitterConfig.Config `yaml:"submitter_config"`
+	// MaxRetrySeconds is the maximum number of seconds to retry an RPC call (not a transaction).
+	MaxRetrySeconds uint32 `yaml:"max_retry_seconds"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each

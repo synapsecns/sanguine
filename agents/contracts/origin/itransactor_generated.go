@@ -12,6 +12,10 @@ import (
 
 // IOriginTransactor ...
 type IOriginTransactor interface {
+	// AcceptOwnership is a paid mutator transaction binding the contract method 0x79ba5097.
+	//
+	// Solidity: function acceptOwnership() returns()
+	AcceptOwnership(opts *bind.TransactOpts) (*types.Transaction, error)
 	// Initialize is a paid mutator transaction binding the contract method 0x8129fc1c.
 	//
 	// Solidity: function initialize() returns()
@@ -30,8 +34,8 @@ type IOriginTransactor interface {
 	RenounceOwnership(opts *bind.TransactOpts) (*types.Transaction, error)
 	// ResolveDispute is a paid mutator transaction binding the contract method 0x61169218.
 	//
-	// Solidity: function resolveDispute(uint32 slashedIndex, uint32 honestIndex) returns()
-	ResolveDispute(opts *bind.TransactOpts, slashedIndex uint32, honestIndex uint32) (*types.Transaction, error)
+	// Solidity: function resolveDispute(uint32 slashedIndex, uint32 rivalIndex) returns()
+	ResolveDispute(opts *bind.TransactOpts, slashedIndex uint32, rivalIndex uint32) (*types.Transaction, error)
 	// SendBaseMessage is a paid mutator transaction binding the contract method 0x873661bd.
 	//
 	// Solidity: function sendBaseMessage(uint32 destination, bytes32 recipient, uint32 optimisticPeriod, uint256 paddedRequest, bytes content) payable returns(uint32 messageNonce, bytes32 messageHash)

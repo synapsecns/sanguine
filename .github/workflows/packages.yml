@@ -42,6 +42,9 @@ jobs:
         run: npx lerna exec npm run ci:lint --parallel
   test:
       runs-on: ubuntu-latest
+      env:
+        SDK_RPC_URL: ${{ secrets.SDK_RPC_URL }}
+
       steps:
         - name: 'Checkout'
           uses: actions/checkout@v4
@@ -60,21 +63,21 @@ jobs:
               yarn.lock
 
         - name: Add Label
-          if: steps.verify-yarn-lock.outputs.files_changed == 'true'
-          uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
+          if: ${{ steps.verify-yarn-lock.outputs.files_changed == 'true' && github.event_name != 'push' }}
+          uses: ./.github/actions/add-label
           with:
-            add-labels: 'needs-yarn-install'
-            repo-token: ${{ secrets.GITHUB_TOKEN }}
-            issue-number: ${{ needs.issue_number.outputs.issue_number }}
+            label: 'needs-yarn-install'
 
         - name: Remove Label
-          if: steps.verify-yarn-lock.outputs.files_changed != 'true'
-          uses: andymckay/labeler@3a4296e9dcdf9576b0456050db78cfd34853f260
+          if: ${{ steps.verify-yarn-lock.outputs.files_changed != 'true' && github.event_name != 'push' }}
+          uses: ./.github/actions/remove-label
           with:
-            remove-labels: 'needs-yarn-install'
-            repo-token: ${{ secrets.GITHUB_TOKEN }}
-            issue-number: ${{ needs.issue_number.outputs.issue_number }}
+            label: 'needs-yarn-install'
 
+        - name: List all changed files tracked and untracked files
+          if: steps.verify-changed-files.outputs.files_changed == 'true'
+          run: |
+            echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
 
         - name: Run tests # Run tests of all packages
           run: yarn test:coverage

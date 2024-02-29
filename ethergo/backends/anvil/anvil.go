@@ -4,8 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/Flaque/filet"
-	"github.com/brianvoe/gofakeit/v6"
+	"github.com/ipfs/go-log"
+	"github.com/lmittmann/w3/w3types"
+	"github.com/ory/dockertest/v3"
+	"math"
+	"math/big"
+	"strings"
+	"sync"
+	"testing"
+
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
@@ -14,8 +21,6 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/google/uuid"
-	"github.com/ipfs/go-log"
-	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/stretchr/testify/require"
 	"github.com/synapsecns/sanguine/core"
@@ -28,12 +33,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
 	"github.com/teivah/onecontext"
-	"math"
-	"math/big"
-	"os"
-	"strings"
-	"sync"
-	"testing"
 )
 
 const gasLimit = 10000000
@@ -44,19 +43,21 @@ type Backend struct {
 	// fundingMux is used to lock the wallets while funding
 	// since FundAccount is expected to add to existing balance
 	fundingMux mapmutex.StringerMapMutex
-	// store stores the accounts
-	store *base.InMemoryKeyStore
 	// chainConfig is the chain config
 	chainConfig *params.ChainConfig
 	// impersonationMux is used to lock the impersonation
 	impersonationMux sync.Mutex
+	// pool is the docker pool
+	pool *dockertest.Pool
+	// resource is the docker resource
+	resource *dockertest.Resource
 }
 
 // BackendName is the name of the anvil backend.
 const BackendName = "anvil"
 
 // BackendName returns the name of the backend.
-func (f *Backend) BackendName() string {
+func (b *Backend) BackendName() string {
 	return BackendName
 }
 
@@ -121,7 +122,7 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	// to prevent old containers from piling up, we set a timeout to remove the container.
 	require.Nil(t, resource.Expire(args.expirySeconds))
 
-	address := fmt.Sprintf("%s:%s", "http://localhost", resource.GetPort("8545/tcp"))
+	address := fmt.Sprintf("%s:%s", "http://localhost", dockerutil.GetPort(resource, "8545/tcp"))
 
 	var chainID *big.Int
 	if err := pool.Retry(func() error {
@@ -167,8 +168,9 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	backend := Backend{
 		Backend:     baseBackend,
 		fundingMux:  mapmutex.NewStringerMapMutex(),
-		store:       base.NewInMemoryKeyStore(),
 		chainConfig: chainConfig,
+		pool:        pool,
+		resource:    resource,
 	}
 
 	err = backend.storeWallets(args)
@@ -177,13 +179,25 @@ func NewAnvilBackend(ctx context.Context, t *testing.T, args *OptionBuilder) *Ba
 	t.Cleanup(func() {
 		select {
 		case <-ctx.Done():
-			_ = pool.Purge(resource)
+			backend.TearDown()
 		default:
 			// do nothing, we don't want to purge the container if this is just a subtest
 		}
 	})
 
 	return &backend
+}
+
+// TearDown purges docker resources associated with the backend.
+func (b *Backend) TearDown() {
+	err := b.pool.Purge(b.resource)
+	if err != nil {
+		logger.Errorf("error purging anvil container: %w", err)
+	}
+}
+
+func (b *Backend) BatchWithContext(ctx context.Context, calls ...w3types.Caller) error {
+	return b.BatchContext(ctx, calls...)
 }
 
 func setupOtterscan(ctx context.Context, tb testing.TB, pool *dockertest.Pool, anvilResource *dockertest.Resource, args *OptionBuilder) string {
@@ -193,7 +207,7 @@ func setupOtterscan(ctx context.Context, tb testing.TB, pool *dockertest.Pool, a
 		Repository: "otterscan/otterscan",
 		Tag:        "latest",
 		Env: []string{
-			fmt.Sprintf("ERIGON_URL=http://localhost:%s", anvilResource.GetPort("8545/tcp")),
+			fmt.Sprintf("ERIGON_URL=http://localhost:%s", dockerutil.GetPort(anvilResource, "8545/tcp")),
 		},
 		Labels: map[string]string{
 			"test-id": uuid.New().String(),
@@ -240,7 +254,7 @@ func setupOtterscan(ctx context.Context, tb testing.TB, pool *dockertest.Pool, a
 	case logInfo := <-logInfoChan:
 		// debug level stuff
 		logger.Debugf("started otterscan for anvil instance %s as container %s. Logs will be stored at %s", anvilResource.Container.Name, strings.TrimPrefix(resource.Container.Name, "/"), logInfo.LogDir())
-		return fmt.Sprintf("http://localhost:%s", resource.GetPort("80/tcp"))
+		return fmt.Sprintf("http://localhost:%s", dockerutil.GetPort(resource, "80/tcp"))
 	}
 	return ""
 }
@@ -260,27 +274,9 @@ func (f *Backend) storeWallets(args *OptionBuilder) error {
 			return fmt.Errorf("could not get seed phrase: %w", err)
 		}
 
-		f.store.Store(walletToKey(f.Backend.T(), wall))
+		f.Store(base.WalletToKey(f.Backend.T(), wall))
 	}
 	return nil
-}
-
-// TODO(trajan0x): add a test for this.
-func walletToKey(tb testing.TB, wall wallet.Wallet) *keystore.Key {
-	tb.Helper()
-
-	kstr := keystore.NewKeyStore(filet.TmpDir(tb, ""), base.VeryLightScryptN, base.VeryLightScryptP)
-	password := gofakeit.Password(true, true, true, false, false, 10)
-
-	acct, err := kstr.ImportECDSA(wall.PrivateKey(), password)
-	require.Nil(tb, err)
-
-	data, err := os.ReadFile(acct.URL.Path)
-	require.Nil(tb, err)
-
-	key, err := keystore.DecryptKey(data, password)
-	require.Nil(tb, err)
-	return key
 }
 
 // ChainConfig gets the chain config.
@@ -350,8 +346,7 @@ func isZero(val *big.Int) bool {
 func (f *Backend) GetFundedAccount(ctx context.Context, requestBalance *big.Int) *keystore.Key {
 	key := f.MockAccount()
 
-	f.store.Store(key)
-
+	f.Store(key)
 	f.FundAccount(ctx, key.Address, *requestBalance)
 
 	return key
@@ -366,14 +361,14 @@ func (f *Backend) GetTxContext(ctx context.Context, address *common.Address) (re
 	var acct *keystore.Key
 	// TODO handle storing accounts to conform to get tx context
 	if address != nil {
-		acct = f.store.GetAccount(*address)
+		acct = f.GetAccount(*address)
 		if acct == nil {
 			f.T().Errorf("could not get account %s", address.String())
 			return res
 		}
 	} else {
 		acct = f.GetFundedAccount(ctx, new(big.Int).SetUint64(math.MaxUint64))
-		f.store.Store(acct)
+		f.Store(acct)
 	}
 
 	auth, err := f.NewKeyedTransactorFromKey(acct.PrivateKey)

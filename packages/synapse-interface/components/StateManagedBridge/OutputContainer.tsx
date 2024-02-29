@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Address, useAccount } from 'wagmi'
 
-import LoadingSpinner from '../ui/tailwind/LoadingSpinner'
+import LoadingDots from '../ui/tailwind/LoadingDots'
 import { ToChainSelector } from './ToChainSelector'
 import { shortenAddress } from '@/utils/shortenAddress'
 import { ToTokenSelector } from './ToTokenSelector'
@@ -47,7 +47,7 @@ export const OutputContainer = ({}) => {
           <ToTokenSelector />
           <div className="flex ml-4">
             {isLoading ? (
-              <LoadingSpinner className="opacity-50" />
+              <LoadingDots className="opacity-50" />
             ) : (
               <input
                 pattern="[0-9.]+"
@@ -65,9 +65,9 @@ export const OutputContainer = ({}) => {
                 `}
                 placeholder="0.0000"
                 value={
-                  bridgeQuote.outputAmountString === '0'
+                  bridgeQuote?.outputAmountString === '0'
                     ? ''
-                    : bridgeQuote.outputAmountString
+                    : bridgeQuote?.outputAmountString
                 }
                 name="inputRow"
                 autoComplete="off"
@@ -83,7 +83,7 @@ export const OutputContainer = ({}) => {
 const DisplayAddress = ({ address }) => {
   return (
     <div className="border-[0.5px] border-secondaryTextColor rounded-md pt-1 pb-1 pl-3 pr-3 text-secondaryTextColor text-xxs">
-      {shortenAddress(address, 3)}
+      {shortenAddress(address)}
     </div>
   )
 }

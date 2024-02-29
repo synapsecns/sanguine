@@ -261,7 +261,13 @@ func (s Store) PutTXS(ctx context.Context, txs ...db.TX) error {
 			return fmt.Errorf("could not marshall tx to json: %w", err)
 		}
 
-		msg, err := util.TxToCall(tx)
+		newTX := new(types.Transaction)
+		err = newTX.UnmarshalBinary(marshalledTX)
+		if err != nil {
+			return fmt.Errorf("could not unmarshal tx: %w", err)
+		}
+
+		msg, err := util.TxToCall(newTX)
 		if err != nil {
 			return fmt.Errorf("could not recover signer from tx: %w", err)
 		}

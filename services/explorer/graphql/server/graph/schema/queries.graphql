@@ -21,6 +21,7 @@ type Query {
     page:           Int = 1
     tokenAddressFrom:   [String]
     tokenAddressTo:   [String]
+    onlyCCTP:           Boolean = false
   ): [BridgeTransaction]
 
   """
@@ -37,6 +38,7 @@ type Query {
     reverted:       Boolean = false
     page:           Int = 1
   ): [MessageBusTransaction]
+
 
   """
   Returns the COUNT of bridged transactions for a given chain. If direction of bridge transactions
@@ -125,8 +127,9 @@ Ranked chainIDs by volume
   GetOriginBridgeTx is the bridge watcher endpoint for getting an origin bridge tx (BETA).
   """
   getOriginBridgeTx(
-    chainID:      Int
-    txnHash:       String
+    chainID:      Int!
+    txnHash:       String!
+    bridgeType:   BridgeType!
   ): BridgeWatcherTx
 
 
@@ -134,12 +137,21 @@ Ranked chainIDs by volume
   GetDestinationBridgeTx is the bridge watcher endpoint for getting an destination bridge tx (BETA).
   """
   getDestinationBridgeTx(
-    chainID:      Int
-    address:     String
-    kappa:      String
-    timestamp:   Int
+    chainID:      Int!
+    address:     String!
+    kappa:      String!
+    timestamp:   Int!
+    bridgeType:   BridgeType!
+    historical:  Boolean = false
   ): BridgeWatcherTx
 
+
+  """
+  GetBlockHeight gets block heights from the current bridge. Returns results in an array of increased block heights.
+  """
+  getBlockHeight(
+    contracts: [ContractQuery]
+  ): [BlockHeight]
 }
 
 

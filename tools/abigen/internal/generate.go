@@ -32,7 +32,7 @@ func GenerateABIFromEtherscan(ctx context.Context, chainID uint32, url string, c
 		return fmt.Errorf("could not get contract source for address %s: %w", contractAddress, err)
 	}
 
-	solFile, err := os.CreateTemp("", fmt.Sprintf("%s.sol", path.Base(fileName)))
+	solFile, err := os.Create(fmt.Sprintf("%s/%s.sol", os.TempDir(), path.Base(fileName)))
 	if err != nil {
 		return fmt.Errorf("could not determine wd: %w", err)
 	}
@@ -51,13 +51,13 @@ func GenerateABIFromEtherscan(ctx context.Context, chainID uint32, url string, c
 		optimizerRuns = contract.Runs
 	}
 
-	return BuildTemplates(solVersion, solFile.Name(), pkgName, fileName, optimizerRuns)
+	return BuildTemplates(solVersion, solFile.Name(), pkgName, fileName, optimizerRuns, nil)
 }
 
 // BuildTemplates builds the templates. version is the solidity version to use and sol is the solidity file to use.
-func BuildTemplates(version, file, pkg, filename string, optimizerRuns int) error {
+func BuildTemplates(version, file, pkg, filename string, optimizerRuns int, evmVersion *string) error {
 	// TODO ast
-	contracts, err := compileSolidity(version, file, optimizerRuns)
+	contracts, err := compileSolidity(version, file, optimizerRuns, evmVersion)
 	if err != nil {
 		return err
 	}
@@ -123,7 +123,7 @@ func BuildTemplates(version, file, pkg, filename string, optimizerRuns int) erro
 
 // compileSolidity uses docker to compile solidity.
 // nolint: cyclop
-func compileSolidity(version string, filePath string, optimizeRuns int) (map[string]*compiler.Contract, error) {
+func compileSolidity(version string, filePath string, optimizeRuns int, evmVersion *string) (map[string]*compiler.Contract, error) {
 	runFile, err := createRunFile(version)
 	if err != nil {
 		return nil, err
@@ -183,6 +183,11 @@ func compileSolidity(version string, filePath string, optimizeRuns int) (map[str
 	// compile the solidity
 	var stderr, stdout bytes.Buffer
 	args := []string{"--combined-json", "bin,bin-runtime,srcmap,srcmap-runtime,abi,userdoc,devdoc,metadata,hashes", "--optimize", "--optimize-runs", strconv.Itoa(optimizeRuns), "--allow-paths", "., ./, ../"}
+
+	if evmVersion != nil {
+		args = append(args, fmt.Sprintf("--evm-version=%s", *evmVersion))
+	}
+
 	//nolint: gosec
 	cmd := exec.Command(runFile.Name(), append(args, "--", fmt.Sprintf("/solidity/%s", filepath.Base(solFile.Name())))...)
 	cmd.Stderr = &stderr

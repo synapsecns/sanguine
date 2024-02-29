@@ -12,6 +12,8 @@ export type Chain = {
   layer: number
   rpcUrls: { primary: string; fallback: string }
   explorerUrl: string
+  explorerName: string
+  explorerImg: any
   blockTime: number
   nativeCurrency: { name: string; symbol: string; decimals: number }
   priorityRank?: number
@@ -44,9 +46,17 @@ export type PoolData = {
   tokens: PoolToken[]
   totalLocked: number
   totalLockedUSD: number
-  virtualPrice: bigint
+  virtualPrice?: bigint
   nativeTokens?: any
-  swapFee: bigint
+  swapFee?: bigint
+}
+
+type QuoteQuery = {
+  deadline: bigint
+  minAmountOut: bigint
+  rawParams: string
+  swapAdapter: string
+  tokenOut: string
 }
 
 export type BridgeQuote = {
@@ -57,8 +67,13 @@ export type BridgeQuote = {
   exchangeRate: bigint
   feeAmount: bigint
   delta: bigint
-  quotes: { originQuery: any; destQuery: any }
+  originQuery: QuoteQuery
+  destQuery: QuoteQuery
+  estimatedTime: number
+  bridgeModuleName: string
+  gasDropAmount: bigint
 }
+
 interface TokensByChain {
   [cID: string]: Token[]
 }
@@ -154,6 +169,9 @@ export class Token {
   legacy = false // legacy token
   priorityRank: number // priority token ordering
   chainId?: number // chain id of swap pool
+  incentivized?: boolean // pool is incentivized or not
+  customRewardToken?: string // reward token symbol when pool staking rewards are in something other than SYN
+  miniChefAddress: string // mini chef address
   priorityPool?: boolean = false // priority pool
   color?:
     | 'gray'
@@ -203,6 +221,9 @@ export class Token {
     legacy,
     priorityRank,
     chainId,
+    incentivized,
+    customRewardToken,
+    miniChefAddress,
     priorityPool,
     color,
     priceUnits,
@@ -241,6 +262,9 @@ export class Token {
     legacy?: boolean
     priorityRank: number
     chainId?: number
+    incentivized?: boolean
+    customRewardToken?: string
+    miniChefAddress?: string
     priorityPool?: boolean
     color?:
       | 'gray'
@@ -293,6 +317,9 @@ export class Token {
     this.legacy = legacy ?? false
     this.priorityRank = priorityRank
     this.chainId = chainId
+    this.incentivized = incentivized
+    this.customRewardToken = customRewardToken
+    this.miniChefAddress = miniChefAddress
     this.priorityPool = priorityPool ?? false
     this.color = color ?? 'gray'
     this.priceUnits = priceUnits ?? 'USD'

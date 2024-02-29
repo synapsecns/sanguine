@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Cache Docker images.
-        uses: ScribeMD/docker-cache@0.2.6
+        uses: ScribeMD/docker-cache@0.3.6
         with:
           key: docker-release-jaeger
 

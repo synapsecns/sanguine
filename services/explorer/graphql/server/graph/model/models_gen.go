@@ -42,6 +42,12 @@ type AddressRanking struct {
 	Count   *int    `json:"count,omitempty"`
 }
 
+type BlockHeight struct {
+	ChainID     *int          `json:"chainID,omitempty"`
+	Type        *ContractType `json:"type,omitempty"`
+	BlockNumber *int          `json:"blockNumber,omitempty"`
+}
+
 // BridgeTransaction represents an entire bridge transaction, including both
 // to and from transactions. If a `from` transaction does not have a corresponding
 // `to` transaction, `pending` will be true.
@@ -55,10 +61,16 @@ type BridgeTransaction struct {
 
 // BridgeWatcherTx represents a single sided bridge transaction specifically for the bridge watcher.
 type BridgeWatcherTx struct {
-	BridgeTx *PartialInfo  `json:"bridgeTx,omitempty"`
-	Pending  *bool         `json:"pending,omitempty"`
-	Type     *BridgeTxType `json:"type,omitempty"`
-	Kappa    *string       `json:"kappa,omitempty"`
+	BridgeTx    *PartialInfo  `json:"bridgeTx,omitempty"`
+	Pending     *bool         `json:"pending,omitempty"`
+	Type        *BridgeTxType `json:"type,omitempty"`
+	Kappa       *string       `json:"kappa,omitempty"`
+	KappaStatus *KappaStatus  `json:"kappaStatus,omitempty"`
+}
+
+type ContractQuery struct {
+	ChainID int          `json:"chainID"`
+	Type    ContractType `json:"type"`
 }
 
 // DateResult is a given statistic for a given date.
@@ -88,6 +100,7 @@ type DateResultByChain struct {
 	Harmony   *float64 `json:"harmony,omitempty"`
 	Canto     *float64 `json:"canto,omitempty"`
 	Dogechain *float64 `json:"dogechain,omitempty"`
+	Base      *float64 `json:"base,omitempty"`
 	Total     *float64 `json:"total,omitempty"`
 }
 
@@ -135,6 +148,8 @@ type PartialInfo struct {
 	BlockNumber        *int     `json:"blockNumber,omitempty"`
 	Time               *int     `json:"time,omitempty"`
 	FormattedTime      *string  `json:"formattedTime,omitempty"`
+	FormattedEventType *string  `json:"formattedEventType,omitempty"`
+	EventType          *int     `json:"eventType,omitempty"`
 }
 
 type PartialMessageBusInfo struct {
@@ -234,6 +249,88 @@ func (e *BridgeTxType) UnmarshalGQL(v interface{}) error {
 }
 
 func (e BridgeTxType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type BridgeType string
+
+const (
+	BridgeTypeBridge BridgeType = "BRIDGE"
+	BridgeTypeCctp   BridgeType = "CCTP"
+)
+
+var AllBridgeType = []BridgeType{
+	BridgeTypeBridge,
+	BridgeTypeCctp,
+}
+
+func (e BridgeType) IsValid() bool {
+	switch e {
+	case BridgeTypeBridge, BridgeTypeCctp:
+		return true
+	}
+	return false
+}
+
+func (e BridgeType) String() string {
+	return string(e)
+}
+
+func (e *BridgeType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = BridgeType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid BridgeType", str)
+	}
+	return nil
+}
+
+func (e BridgeType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type ContractType string
+
+const (
+	ContractTypeBridge ContractType = "BRIDGE"
+	ContractTypeCctp   ContractType = "CCTP"
+)
+
+var AllContractType = []ContractType{
+	ContractTypeBridge,
+	ContractTypeCctp,
+}
+
+func (e ContractType) IsValid() bool {
+	switch e {
+	case ContractTypeBridge, ContractTypeCctp:
+		return true
+	}
+	return false
+}
+
+func (e ContractType) String() string {
+	return string(e)
+}
+
+func (e *ContractType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ContractType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ContractType", str)
+	}
+	return nil
+}
+
+func (e ContractType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
@@ -412,6 +509,49 @@ func (e *HistoricalResultType) UnmarshalGQL(v interface{}) error {
 }
 
 func (e HistoricalResultType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type KappaStatus string
+
+const (
+	KappaStatusExists  KappaStatus = "EXISTS"
+	KappaStatusPending KappaStatus = "PENDING"
+	KappaStatusUnknown KappaStatus = "UNKNOWN"
+)
+
+var AllKappaStatus = []KappaStatus{
+	KappaStatusExists,
+	KappaStatusPending,
+	KappaStatusUnknown,
+}
+
+func (e KappaStatus) IsValid() bool {
+	switch e {
+	case KappaStatusExists, KappaStatusPending, KappaStatusUnknown:
+		return true
+	}
+	return false
+}
+
+func (e KappaStatus) String() string {
+	return string(e)
+}
+
+func (e *KappaStatus) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = KappaStatus(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid KappaStatus", str)
+	}
+	return nil
+}
+
+func (e KappaStatus) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

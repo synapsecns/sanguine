@@ -37,6 +37,7 @@ import DepositButton from './DepositButton'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
 import { swapPoolCalculateAddLiquidity } from '@/actions/swapPoolCalculateAddLiquidity'
+import { zeroAddress } from 'viem'
 
 export const DEFAULT_DEPOSIT_QUOTE = {
   priceImpact: 0n,
@@ -194,18 +195,27 @@ const Deposit = ({
 
   return (
     <div className="flex-col">
-      <div className="px-2 pt-1 pb-4 mb-4 rounded-md bg-bgLight">
+      <div className="mb-4">
         {pool && poolUserData.tokens && poolData ? (
           poolUserData.tokens.map((tokenObj, i) => {
             return (
-              <SerializedDepositInput
-                key={i}
-                tokenObj={tokenObj}
-                address={address}
-                chainId={chainId}
-                inputValue={inputValue}
-                onChangeInputValue={onChangeInputValue}
-              />
+              <div
+                className={
+                  i < poolUserData.tokens.length - 1
+                    ? 'border-b border-[#564f58]'
+                    : ''
+                }
+              >
+                <SerializedDepositInput
+                  key={i}
+                  tokenObj={tokenObj}
+                  pool={pool}
+                  address={address}
+                  chainId={chainId}
+                  inputValue={inputValue}
+                  onChangeInputValue={onChangeInputValue}
+                />
+              </div>
             )
           })
         ) : (
@@ -226,6 +236,7 @@ const Deposit = ({
 }
 
 const SerializedDepositInput = ({
+  pool,
   tokenObj,
   address,
   chainId,
@@ -233,7 +244,7 @@ const SerializedDepositInput = ({
   onChangeInputValue,
 }) => {
   const [serializedToken, setSerializedToken] = useState(undefined)
-  const balanceToken = correctToken(tokenObj.token)
+  const balanceToken = getBalanceToken(tokenObj.token, pool)
 
   useEffect(() => {
     const fetchSerializedData = async () => {
@@ -262,7 +273,7 @@ const SerializedDepositInput = ({
         balanceStr={formatBigIntToString(
           serializedToken.rawBalance,
           serializedToken.decimals[chainId],
-          4
+          5
         )}
         inputValueStr={inputValue.str[serializedToken.addresses[chainId]]}
         onChange={(value) => onChangeInputValue(serializedToken, value)}
@@ -273,12 +284,11 @@ const SerializedDepositInput = ({
   )
 }
 
-const correctToken = (token: Token) => {
+const getBalanceToken = (token: Token, pool: Token) => {
   let balanceToken: Token | undefined
-  if (token.symbol == WETH.symbol) {
+  if (token.symbol == WETH.symbol && !pool.nativeTokens.includes(WETH)) {
     balanceToken = ETH
   } else if (token.symbol == AVWETH.symbol) {
-    // token = WETHE
     balanceToken = WETHE
   } else {
     balanceToken = token
@@ -294,13 +304,11 @@ const serializeToken = async (
 ) => {
   let fetchedBalance
 
-  if (balanceToken === ETH) {
+  if (balanceToken.addresses[chainId] === zeroAddress) {
     fetchedBalance = await fetchBalance({
       address: address as Address,
       chainId,
     })
-
-    console.log(`fetchedBalance`, fetchedBalance)
 
     return {
       ...balanceToken,
@@ -308,7 +316,7 @@ const serializeToken = async (
       balanceStr: formatBigIntToString(
         fetchedBalance.value,
         balanceToken.decimals[chainId],
-        4
+        5
       ),
     }
   } else if (balanceToken === WETHE) {

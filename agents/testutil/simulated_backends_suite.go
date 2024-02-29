@@ -4,6 +4,7 @@ import (
 	"math/big"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/brianvoe/gofakeit"
 	"github.com/synapsecns/sanguine/core"
@@ -41,6 +42,7 @@ import (
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/backends/anvil"
+	"github.com/synapsecns/sanguine/ethergo/backends/preset"
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -104,14 +106,18 @@ type SimulatedBackendsTestSuite struct {
 	TestBackendSummit                   backends.SimulatedTestBackend
 	NotaryBondedWallet                  wallet.Wallet
 	NotaryOnOriginBondedWallet          wallet.Wallet
+	NotaryOnDestinationBondedWallet     wallet.Wallet
 	GuardBondedWallet                   wallet.Wallet
 	NotaryBondedSigner                  signer.Signer
 	NotaryOnOriginBondedSigner          signer.Signer
+	NotaryOnDestinationBondedSigner     signer.Signer
 	GuardBondedSigner                   signer.Signer
 	NotaryUnbondedWallet                wallet.Wallet
 	NotaryUnbondedSigner                signer.Signer
 	NotaryOnOriginUnbondedWallet        wallet.Wallet
 	NotaryOnOriginUnbondedSigner        signer.Signer
+	NotaryOnDestinationUnbondedWallet   wallet.Wallet
+	NotaryOnDestinationUnbondedSigner   signer.Signer
 	GuardUnbondedWallet                 wallet.Wallet
 	GuardUnbondedSigner                 signer.Signer
 	ExecutorUnbondedWallet              wallet.Wallet
@@ -148,7 +154,8 @@ func (a *SimulatedBackendsTestSuite) SetupSuite() {
 	a.TestSuite.LogDir = filet.TmpDir(a.T(), "")
 
 	// don't use metrics on ci for integration tests
-	useMetrics := core.GetEnvBool("CI", true)
+	isCI := core.GetEnvBool("CI", false)
+	useMetrics := !isCI
 	metricsHandler := metrics.Null
 
 	if useMetrics {
@@ -201,6 +208,7 @@ func (a *SimulatedBackendsTestSuite) SetupOrigin(deployManager *DeployManager) {
 
 	a.TestBackendOrigin.FundAccount(a.GetTestContext(), a.NotaryUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendOrigin.FundAccount(a.GetTestContext(), a.NotaryOnOriginUnbondedSigner.Address(), *big.NewInt(params.Ether))
+	a.TestBackendOrigin.FundAccount(a.GetTestContext(), a.NotaryOnDestinationUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendOrigin.FundAccount(a.GetTestContext(), a.GuardUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendOrigin.FundAccount(a.GetTestContext(), a.ExecutorUnbondedSigner.Address(), *big.NewInt(params.Ether))
 }
@@ -241,6 +249,7 @@ func (a *SimulatedBackendsTestSuite) SetupDestination(deployManager *DeployManag
 
 	a.TestBackendDestination.FundAccount(a.GetTestContext(), a.NotaryUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendDestination.FundAccount(a.GetTestContext(), a.NotaryOnOriginUnbondedSigner.Address(), *big.NewInt(params.Ether))
+	a.TestBackendDestination.FundAccount(a.GetTestContext(), a.NotaryOnDestinationUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendDestination.FundAccount(a.GetTestContext(), a.GuardUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendDestination.FundAccount(a.GetTestContext(), a.ExecutorUnbondedSigner.Address(), *big.NewInt(params.Ether))
 }
@@ -268,6 +277,7 @@ func (a *SimulatedBackendsTestSuite) SetupSummit(deployManager *DeployManager) {
 
 	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.NotaryUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.NotaryOnOriginUnbondedSigner.Address(), *big.NewInt(params.Ether))
+	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.NotaryOnDestinationUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.GuardUnbondedSigner.Address(), *big.NewInt(params.Ether))
 	a.TestBackendSummit.FundAccount(a.GetTestContext(), a.ExecutorUnbondedSigner.Address(), *big.NewInt(params.Ether))
 }
@@ -320,6 +330,22 @@ func (a *SimulatedBackendsTestSuite) SetupNotaryOnOrigin() {
 	a.NotaryOnOriginUnbondedSigner = localsigner.NewSigner(a.NotaryOnOriginUnbondedWallet.PrivateKey())
 }
 
+// SetupNotaryOnDestination sets up the Notary agent on the origin chain.
+func (a *SimulatedBackendsTestSuite) SetupNotaryOnDestination() {
+	var err error
+	a.NotaryOnDestinationBondedWallet, err = wallet.FromRandom()
+	if err != nil {
+		a.T().Fatal(err)
+	}
+	a.NotaryOnDestinationBondedSigner = localsigner.NewSigner(a.NotaryOnDestinationBondedWallet.PrivateKey())
+
+	a.NotaryOnDestinationUnbondedWallet, err = wallet.FromRandom()
+	if err != nil {
+		a.T().Fatal(err)
+	}
+	a.NotaryOnDestinationUnbondedSigner = localsigner.NewSigner(a.NotaryOnDestinationUnbondedWallet.PrivateKey())
+}
+
 // SetupExecutor sets up the Executor agent.
 func (a *SimulatedBackendsTestSuite) SetupExecutor() {
 	var err error
@@ -330,87 +356,32 @@ func (a *SimulatedBackendsTestSuite) SetupExecutor() {
 	a.ExecutorUnbondedSigner = localsigner.NewSigner(a.ExecutorUnbondedWallet.PrivateKey())
 }
 
+// Tests included here will use an anvil backend (instead of ethergo).
+var anvilTests = []string{
+	"TestGuardSuite/TestUpdateAgentStatusOnRemote",
+	"TestExecutorSuite/TestSendManagerMessage",
+}
+
+func (a *SimulatedBackendsTestSuite) shouldUseAnvil() bool {
+	for _, test := range anvilTests {
+		if a.T().Name() == test {
+			return true
+		}
+	}
+	return false
+}
+
 // SetupTest sets up the test.
 func (a *SimulatedBackendsTestSuite) SetupTest() {
 	a.TestSuite.SetupTest()
-	a.TestSuite.DeferAfterSuite(a.cleanAfterTestSuite)
+	a.TestSuite.DeferAfterTest(a.cleanAfterTestSuite)
 
 	a.SetupGuard()
 	a.SetupNotary()
 	a.SetupNotaryOnOrigin()
+	a.SetupNotaryOnDestination()
 	a.SetupExecutor()
-
-	a.TestDeployManager = NewDeployManager(a.T())
-
-	var wg sync.WaitGroup
-	wg.Add(3)
-	go func() {
-		defer wg.Done()
-		anvilOpts := anvil.NewAnvilOptionBuilder()
-		anvilOpts.SetChainID(uint64(params.RinkebyChainConfig.ChainID.Int64()))
-		a.TestBackendOrigin = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOpts)
-	}()
-	go func() {
-		defer wg.Done()
-		anvilOpts := anvil.NewAnvilOptionBuilder()
-		anvilOpts.SetChainID(uint64(client.ChapelChainConfig.ChainID.Int64()))
-		a.TestBackendDestination = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOpts)
-	}()
-	go func() {
-		defer wg.Done()
-		anvilOpts := anvil.NewAnvilOptionBuilder()
-		anvilOpts.SetChainID(uint64(10))
-		a.TestBackendSummit = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOpts)
-	}()
-	wg.Wait()
-
-	testBackends := []backends.SimulatedTestBackend{
-		a.TestBackendOrigin,
-		a.TestBackendDestination,
-		a.TestBackendSummit,
-	}
-
-	/*
-		a.TestDeployManager.BulkDeploy(a.GetTestContext(), testBackends,
-			InboxType,
-			BondingManagerHarnessType,
-			SummitHarnessType,
-			AgentsTestContractType,
-			DestinationHarnessType,
-			OriginHarnessType,
-			TestClientType,
-			PingPongClientType,
-			LightInboxType,
-			LightManagerHarnessType,
-		)
-	*/
-
-	wg.Add(3)
-	go func() {
-		defer wg.Done()
-		a.SetupSummit(a.TestDeployManager)
-	}()
-	go func() {
-		defer wg.Done()
-		a.SetupDestination(a.TestDeployManager)
-	}()
-	go func() {
-		defer wg.Done()
-		a.SetupOrigin(a.TestDeployManager)
-	}()
-	wg.Wait()
-
-	a.TestOmniRPC = omnirpcHelper.NewOmnirpcServer(a.GetTestContext(), a.T(), testBackends...)
-
-	err := a.TestDeployManager.LoadHarnessContractsOnChains(
-		a.GetTestContext(),
-		a.TestBackendSummit,
-		[]backends.SimulatedTestBackend{a.TestBackendOrigin, a.TestBackendDestination},
-		[]common.Address{a.GuardBondedSigner.Address(), a.NotaryBondedSigner.Address(), a.NotaryOnOriginBondedSigner.Address()},
-		[]uint32{uint32(0), uint32(a.TestBackendDestination.GetChainID()), uint32(a.TestBackendOrigin.GetChainID())})
-	if err != nil {
-		a.T().Fatal(err)
-	}
+	a.SetupBackends()
 
 	a.DBPath = filet.TmpDir(a.T(), "")
 	scribeSqliteStore, err := scribesqlite.NewSqliteStore(a.GetTestContext(), a.DBPath, a.ScribeMetrics, false)
@@ -435,9 +406,92 @@ func (a *SimulatedBackendsTestSuite) SetupTest() {
 	a.GuardTestDB = guardSqliteStore
 }
 
+// SetupBackends sets up the simulated backends.
+func (a *SimulatedBackendsTestSuite) SetupBackends() {
+	useAnvil := a.shouldUseAnvil()
+	a.TestDeployManager = NewDeployManager(a.T())
+
+	var wg sync.WaitGroup
+	wg.Add(3)
+	go func() {
+		defer wg.Done()
+		if useAnvil {
+			anvilOptsOrigin := anvil.NewAnvilOptionBuilder()
+			anvilOptsOrigin.SetChainID(uint64(params.RinkebyChainConfig.ChainID.Int64()))
+			anvilOptsOrigin.SetBlockTime(1 * time.Second)
+			a.TestBackendOrigin = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOptsOrigin)
+			a.TestSuite.DeferAfterTest(a.TestBackendOrigin.(*anvil.Backend).TearDown)
+		} else {
+			a.TestBackendOrigin = preset.GetRinkeby().Geth(a.GetTestContext(), a.T())
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		if useAnvil {
+			anvilOptsDestination := anvil.NewAnvilOptionBuilder()
+			anvilOptsDestination.SetChainID(uint64(client.ChapelChainConfig.ChainID.Int64()))
+			anvilOptsDestination.SetBlockTime(1 * time.Second)
+			a.TestBackendDestination = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOptsDestination)
+			a.TestSuite.DeferAfterTest(a.TestBackendDestination.(*anvil.Backend).TearDown)
+		} else {
+			a.TestBackendDestination = preset.GetBSCTestnet().Geth(a.GetTestContext(), a.T())
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		if useAnvil {
+			anvilOptsSummit := anvil.NewAnvilOptionBuilder()
+			anvilOptsSummit.SetChainID(uint64(10))
+			anvilOptsSummit.SetBlockTime(1 * time.Second)
+			a.TestBackendSummit = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOptsSummit)
+			a.TestSuite.DeferAfterTest(a.TestBackendSummit.(*anvil.Backend).TearDown)
+		} else {
+			a.TestBackendSummit = preset.GetMaticMumbaiFakeSynDomain().Geth(a.GetTestContext(), a.T())
+		}
+	}()
+	wg.Wait()
+
+	testBackends := []backends.SimulatedTestBackend{
+		a.TestBackendOrigin,
+		a.TestBackendDestination,
+		a.TestBackendSummit,
+	}
+
+	wg.Add(3)
+	go func() {
+		defer wg.Done()
+		a.SetupSummit(a.TestDeployManager)
+	}()
+	go func() {
+		defer wg.Done()
+		a.SetupDestination(a.TestDeployManager)
+	}()
+	go func() {
+		defer wg.Done()
+		a.SetupOrigin(a.TestDeployManager)
+	}()
+	wg.Wait()
+
+	a.TestOmniRPC = omnirpcHelper.NewOmnirpcServer(a.GetTestContext(), a.T(), testBackends...)
+
+	err := a.TestDeployManager.LoadHarnessContractsOnChains(
+		a.GetTestContext(),
+		a.TestBackendSummit,
+		[]backends.SimulatedTestBackend{a.TestBackendOrigin, a.TestBackendDestination},
+		[]common.Address{a.GuardBondedSigner.Address(), a.NotaryBondedSigner.Address(), a.NotaryOnOriginBondedSigner.Address(), a.NotaryOnDestinationBondedSigner.Address()},
+		[]uint32{uint32(0), uint32(a.TestBackendDestination.GetChainID()), uint32(a.TestBackendOrigin.GetChainID()), uint32(a.TestBackendDestination.GetChainID())})
+	if err != nil {
+		a.T().Fatal(err)
+	}
+}
+
 // cleanAfterTestSuite does cleanup after test suite is finished.
 func (a *SimulatedBackendsTestSuite) cleanAfterTestSuite() {
 	filet.CleanUp(a.T())
+	// This shouldn't be necessary, but is added for a recurring flake
+	a.TestBackendSummit = nil
+	a.TestBackendOrigin = nil
+	a.TestBackendDestination = nil
 }
 
 // BumpBackend is a helper to get the test backend to emit expected events.

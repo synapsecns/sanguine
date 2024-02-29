@@ -2,6 +2,10 @@ package types_test
 
 import (
 	"context"
+	"math/big"
+	"testing"
+	"time"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -9,9 +13,6 @@ import (
 	"github.com/synapsecns/sanguine/agents/testutil"
 	"github.com/synapsecns/sanguine/agents/types"
 	"github.com/synapsecns/sanguine/ethergo/backends/simulated"
-	"math/big"
-	"testing"
-	"time"
 )
 
 func TestSnapshotRootAndProofs(t *testing.T) {
@@ -60,7 +61,7 @@ func TestSnapshotRootAndProofs(t *testing.T) {
 	snapshotRoot, _, err := snapshot.SnapshotRootAndProofs()
 	Nil(t, err)
 
-	encodedSnapshot, err := types.EncodeSnapshot(snapshot)
+	encodedSnapshot, err := snapshot.Encode()
 	Nil(t, err)
 
 	snapshotContractStatesAmount, err := snapshotContract.StatesAmount(&bind.CallOpts{Context: ctx}, encodedSnapshot)
@@ -68,18 +69,18 @@ func TestSnapshotRootAndProofs(t *testing.T) {
 
 	Equal(t, big.NewInt(2), snapshotContractStatesAmount)
 
-	snapshotContractStateA, err := snapshotContract.State(&bind.CallOpts{Context: ctx}, encodedSnapshot, big.NewInt(0))
+	snapshotContractStateA, err := snapshotContract.State(&bind.CallOpts{Context: ctx}, encodedSnapshot, 0)
 	Nil(t, err)
 
-	stateABytes, err := types.EncodeState(stateA)
+	stateABytes, err := stateA.Encode()
 	Nil(t, err)
 
 	Equal(t, stateABytes, snapshotContractStateA)
 
-	snapshotContractStateB, err := snapshotContract.State(&bind.CallOpts{Context: ctx}, encodedSnapshot, big.NewInt(1))
+	snapshotContractStateB, err := snapshotContract.State(&bind.CallOpts{Context: ctx}, encodedSnapshot, 1)
 	Nil(t, err)
 
-	stateBBytes, err := types.EncodeState(stateB)
+	stateBBytes, err := stateB.Encode()
 	Nil(t, err)
 
 	Equal(t, stateBBytes, snapshotContractStateB)

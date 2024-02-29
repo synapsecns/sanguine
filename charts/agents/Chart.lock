@@ -4,12 +4,12 @@ dependencies:
   version: 9.3.2
 - name: omnirpc
   repository: file://../omnirpc/
-  version: 0.2.7
+  version: 0.2.92
 - name: scribe
   repository: file://../scribe/
-  version: 0.2.12
+  version: 0.2.16
 - name: jaeger
   repository: https://jaegertracing.github.io/helm-charts
   version: 0.69.1
-digest: sha256:a8a1765796d6723e457bda17b02aecf0c5bcaac34cd60d0e851febd186217e77
-generated: "2023-08-02T03:07:07.884124+03:00"
+digest: sha256:9f69403329ddaea21c35c9e75b4e555237c1e1ced342b82a517db142713af709
+generated: "2023-11-14T22:07:00.422311-06:00"

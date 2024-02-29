@@ -612,7 +612,7 @@ func (e *ExecutorSuite) TestExecutor() {
 	gasData := types.NewGasData(uint16(1), uint16(1), uint16(1), uint16(1), uint16(1), uint16(1))
 	originState := types.NewState(rootB32, chainID, nonce, big.NewInt(1), big.NewInt(1), gasData)
 	randomGasData := types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16())
-	randomState := types.NewState(common.BigToHash(big.NewInt(gofakeit.Int64())), chainID+1, gofakeit.Uint32(), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), randomGasData)
+	randomState := types.NewState(common.BigToHash(big.NewInt(int64(gofakeit.Int32()))), chainID+1, gofakeit.Uint32(), big.NewInt(int64(gofakeit.Int32())), big.NewInt(int64(gofakeit.Int32())), randomGasData)
 	originSnapshot := types.NewSnapshot([]types.State{originState, randomState})
 
 	snapshotRoot, proofs, err := originSnapshot.SnapshotRootAndProofs()
@@ -625,14 +625,6 @@ func (e *ExecutorSuite) TestExecutor() {
 
 	err = e.ExecutorTestDB.StoreAttestation(e.GetTestContext(), destinationAttestation, destination, 1, 1)
 	e.Nil(err)
-
-	mask := execTypes.DBMessage{
-		ChainID:     &chainID,
-		Destination: &destination,
-	}
-	executableMessages, err := e.ExecutorTestDB.GetExecutableMessages(e.GetTestContext(), mask, uint64(time.Now().Unix()), 1)
-	e.Nil(err)
-	e.Len(executableMessages, 0)
 
 	// Make sure there is one executable message in the database.
 	e.Eventually(func() bool {
@@ -682,22 +674,22 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 		common.BigToHash(big.NewInt(gofakeit.Int64())),
 		chainID,
 		1,
-		big.NewInt(gofakeit.Int64()),
-		big.NewInt(gofakeit.Int64()),
+		big.NewInt(int64(gofakeit.Int32())),
+		big.NewInt(int64(gofakeit.Int32())),
 		types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16()))
 	state1 := types.NewState(
 		common.BigToHash(big.NewInt(gofakeit.Int64())),
 		chainID,
 		2,
-		big.NewInt(gofakeit.Int64()),
-		big.NewInt(gofakeit.Int64()),
+		big.NewInt(int64(gofakeit.Int32())),
+		big.NewInt(int64(gofakeit.Int32())),
 		types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16()))
 	state2 := types.NewState(
 		common.BigToHash(big.NewInt(gofakeit.Int64())),
 		chainID,
 		5,
-		big.NewInt(gofakeit.Int64()),
-		big.NewInt(gofakeit.Int64()),
+		big.NewInt(int64(gofakeit.Int32())),
+		big.NewInt(int64(gofakeit.Int32())),
 		types.NewGasData(gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16(), gofakeit.Uint16()))
 
 	snapshot0 := types.NewSnapshot([]types.State{state0})
@@ -797,6 +789,9 @@ func (e *ExecutorSuite) TestSetMinimumTime() {
 
 //nolint:maintidx
 func (e *ExecutorSuite) TestSendManagerMessage() {
+	// This test requires a call to anvil's evm.IncreaseTime() cheat code, so we should
+	// set up the backends with anvil.
+
 	testDone := false
 	defer func() {
 		testDone = true
@@ -992,7 +987,6 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	txContext := e.TestBackendSummit.GetTxContext(e.GetTestContext(), e.SummitMetadata.OwnerPtr())
 	tx, err = e.SummitDomainClient.Inbox().SubmitSnapshot(
 		txContext.TransactOpts,
-		e.GuardUnbondedSigner,
 		encodedSnapshot,
 		guardSnapshotSignature,
 	)
@@ -1005,7 +999,6 @@ func (e *ExecutorSuite) TestSendManagerMessage() {
 	e.Nil(err)
 	tx, err = e.SummitDomainClient.Inbox().SubmitSnapshot(
 		txContext.TransactOpts,
-		e.NotaryUnbondedSigner,
 		encodedSnapshot,
 		notarySnapshotSignature,
 	)

@@ -1,4 +1,5 @@
-import { useEffect, useState, useMemo } from 'react'
+import _ from 'lodash'
+import { useEffect, useMemo, useState } from 'react'
 import { useAccount, useNetwork } from 'wagmi'
 
 import {
@@ -16,6 +17,12 @@ import PoolCards from './PoolCards'
 import { useRouter } from 'next/router'
 
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { PageHeader } from '@/components/PageHeader'
+import Grid from '@/components/ui/tailwind/Grid'
+import {
+  METIS_POOL_SWAP_TOKEN_MIGRATED,
+  METIS_WETH_SWAP_TOKEN_MIGRATED,
+} from '@/constants/tokens/poolMaster'
 
 const PoolsPage = () => {
   const { address: currentAddress } = useAccount()
@@ -24,6 +31,24 @@ const PoolsPage = () => {
   const [address, setAddress] = useState(undefined)
 
   const router = useRouter()
+
+  const migratedPools = {
+    1088: [METIS_POOL_SWAP_TOKEN_MIGRATED, METIS_WETH_SWAP_TOKEN_MIGRATED],
+  }
+
+  const incentivizedPools = useMemo(
+    () => filterPoolsByIncentivization(true),
+    [DISPLAY_POOLS_BY_CHAIN]
+  )
+  let unIncentivizedPools = useMemo(
+    () => filterPoolsByIncentivization(false),
+    [DISPLAY_POOLS_BY_CHAIN]
+  )
+  unIncentivizedPools[1088] = unIncentivizedPools[1088].filter(
+    (pool) =>
+      pool !== METIS_POOL_SWAP_TOKEN_MIGRATED &&
+      pool !== METIS_WETH_SWAP_TOKEN_MIGRATED
+  )
 
   useEffect(() => {
     segmentAnalyticsEvent(`[Pools page] arrives`, {
@@ -46,36 +71,44 @@ const PoolsPage = () => {
         connectedChainId={connectedChainId}
         address={address}
       >
-        {/* <HarmonyCheck fromChainId={chainId} toChainId={chainId} /> */}
-        <PoolCards
-          address={address}
-          arr={[
-            {
-              index: 0,
-              label: 'All',
-              poolsByChain: DISPLAY_POOLS_BY_CHAIN,
-            },
-            {
-              index: 1,
-              label: 'USD',
-              poolsByChain: USD_POOLS_BY_CHAIN,
-            },
-            {
-              index: 2,
-              label: 'ETH',
-              poolsByChain: ETH_POOLS_BY_CHAIN,
-            },
-            {
-              index: 3,
-              label: 'Legacy',
-              poolsByChain: LEGACY_POOLS_BY_CHAIN,
-            },
-          ]}
-          connectedChainId={connectedChainId}
-        />
+        <div className="flex-wrap justify-between mb-4 md:flex">
+          <PageHeader
+            title="Incentivized Pools"
+            subtitle="Contributors are rewarded for balancing asset pools."
+          />
+        </div>
+        <Grid cols={{ xs: 1, sm: 1, md: 2 }} gap={4} className="mb-5">
+          <PoolCards address={address} pools={incentivizedPools} />
+        </Grid>
+        <div className="flex-wrap justify-between mt-8 mb-4 md:flex">
+          <PageHeader
+            title="Unincentivized Pools"
+            subtitle="Pools without contributor rewards."
+          />
+        </div>
+        <Grid cols={{ xs: 1, sm: 1, md: 2 }} gap={4} className="mb-5">
+          <PoolCards address={address} pools={unIncentivizedPools} />
+        </Grid>
+        <div className="flex-wrap justify-between mt-8 mb-4 md:flex">
+          <PageHeader
+            title="Migrated Pools"
+            subtitle="Pools migrated to new reward contracts."
+          />
+        </div>
+        <Grid cols={{ xs: 1, sm: 1, md: 2 }} gap={4} className="mb-5">
+          <PoolCards address={address} pools={migratedPools} />
+        </Grid>
       </StandardPageContainer>
     </LandingPageWrapper>
   )
 }
+
+const filterPoolsByIncentivization = (incentivized) =>
+  _.pickBy(
+    _.mapValues(DISPLAY_POOLS_BY_CHAIN, (tokens) =>
+      tokens.filter((token) => token.incentivized === incentivized)
+    ),
+    (tokens) => tokens.length > 0
+  )
 
 export default PoolsPage

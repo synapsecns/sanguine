@@ -88,6 +88,7 @@ func createScribeParameters(c *cli.Context) (eventDB db.EventDB, clients map[uin
 }
 
 var scribeCommand = &cli.Command{
+	// TODO: rename this command to indexer
 	Name:        "scribe",
 	Description: "scribe runs the scribe, livefilling across all specified chains",
 	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag},
@@ -183,7 +184,7 @@ var generateCommand = &cli.Command{
 	Action: func(c *cli.Context) error {
 		//nolint: wrapcheck
 		return config.GenerateConfig(c.Context, c.String(omniRPCFlag.Name), core.ExpandOrReturnPath(c.String(deploymentsPath.Name)),
-			uint32(c.Uint(confirmationsFlag.Name)), core.ExpandOrReturnPath(c.String(outputPathFlag.Name)), c.IntSlice(skippedChainIdsFlag.Name), config.DefaultClientGenerator)
+			core.ExpandOrReturnPath(c.String(outputPathFlag.Name)), c.IntSlice(skippedChainIdsFlag.Name), config.DefaultClientGenerator)
 	},
 }
 

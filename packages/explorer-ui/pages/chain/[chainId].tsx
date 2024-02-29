@@ -1,16 +1,13 @@
 import { TRANSACTIONS_PATH } from '@urls'
 import { useState, useEffect } from 'react'
-import { TableHeader } from '@components/TransactionTable/TableHeader'
 import { ChainInfo } from '@components/misc/ChainInfo'
 import { OverviewChart } from '@components/ChainChart'
 import { HorizontalDivider } from '@components/misc/HorizontalDivider'
-import { formatUSD } from '@utils/formatUSD'
-import { formatDate } from '@utils/formatDate'
 import { StandardPageContainer } from '@components/layouts/StandardPageContainer'
 import { BridgeTransactionTable } from '@components/BridgeTransaction/BridgeTransactionTable'
 import { useLazyQuery, useQuery } from '@apollo/client'
 import { SynapseLogoSvg } from '@components/layouts/MainLayout/SynapseLogoSvg'
-import { CHAIN_ID_NAMES_REVERSE } from '@constants/networks'
+import { CHAINS } from 'synapse-constants'
 import { useRouter } from 'next/router'
 import {
   GET_BRIDGE_TRANSACTIONS_QUERY,
@@ -19,6 +16,7 @@ import {
 import HolisticStats from '@components/misc/HolisticStats'
 import _ from 'lodash'
 
+const CHAIN_ID_NAMES_REVERSE = CHAINS.CHAIN_ID_NAMES_REVERSE
 const titles = {
   VOLUME: 'Volume',
   FEE: 'Fees',
@@ -36,9 +34,9 @@ const formatCurrency = new Intl.NumberFormat('en-US', {
 })
 
 interface variablesType {
-  chainIDFrom?: any,
-  chainIDTo?: any,
-  useMv?: boolean,
+  chainIDFrom?: any
+  chainIDTo?: any
+  useMv?: boolean
 }
 
 export default function chainId() {
@@ -152,7 +150,6 @@ export default function chainId() {
       stopPolling()
     }
   }, [stopPolling, startPolling, completed])
-
 
   return (
     <StandardPageContainer title={''}>

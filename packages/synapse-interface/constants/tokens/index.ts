@@ -16,19 +16,7 @@ interface TokensByChain {
 interface TokenByKey {
   [cID: string]: Token
 }
-interface BridgeChainsByType {
-  [swapableType: string]: string[]
-}
 
-interface BridgeTypeByChain {
-  [cID: string]: string[]
-}
-
-interface SwapableTokensByType {
-  [cID: string]: {
-    [swapableType: string]: Token[]
-  }
-}
 export const sortTokens = (tokens: Token[]) =>
   Object.values(tokens).sort((a, b) => b.visibilityRank - a.visibilityRank)
 
@@ -81,83 +69,6 @@ const getBridgeableTokens = (): TokensByChain => {
   return bridgeableTokens
 }
 
-const getBridgeChainsByType = (): BridgeChainsByType => {
-  const bridgeChainsByType: BridgeChainsByType = {}
-  Object.entries(all).map(([key, token]) => {
-    const swapableType = String(token?.swapableType)
-    const keys = Object.keys(token.addresses).filter((cID) => {
-      // Skip if the token is paused on the current chain
-      if (PAUSED_TOKENS_BY_CHAIN[cID]?.includes(key)) return false
-
-      return !bridgeChainsByType[swapableType]?.includes(cID)
-    })
-
-    if (bridgeChainsByType[swapableType]) {
-      bridgeChainsByType[swapableType] = [
-        ...bridgeChainsByType[swapableType],
-        ...keys,
-      ]
-    } else {
-      bridgeChainsByType[swapableType] = keys
-    }
-  })
-  return bridgeChainsByType
-}
-
-const getBridgeTypeByChain = (): BridgeTypeByChain => {
-  const bridgeChainByType = getBridgeChainsByType()
-  const bridgeTypeByChain: BridgeTypeByChain = {}
-  Object.keys(bridgeChainByType).forEach((key) => {
-    bridgeChainByType[key].forEach((value) => {
-      if (bridgeTypeByChain[value]) {
-        bridgeTypeByChain[value].push(key)
-      } else {
-        bridgeTypeByChain[value] = [key]
-      }
-    })
-  })
-  return bridgeTypeByChain
-}
-
-const convertArrayToObject = (array: any) => {
-  return array.reduce((obj: any, value: any) => {
-    obj[value] = []
-    return obj
-  }, {})
-}
-
-const getBridgeableTokensByType = (): SwapableTokensByType => {
-  const bridgeTypeByChain = getBridgeTypeByChain()
-  const bridgeSwapableTokensByType = Object.fromEntries(
-    Object.entries(bridgeTypeByChain).map(([k, v]) => [
-      k,
-      convertArrayToObject(v),
-    ])
-  )
-
-  Object.entries(all).map(([key, token]) => {
-    const swapableType = String(token?.swapableType)
-
-    for (const cID of Object.keys(token.addresses)) {
-      // Skip if the token is paused on the current chain
-      if (PAUSED_TOKENS_BY_CHAIN[cID]?.includes(key)) continue
-
-      if (bridgeSwapableTokensByType[cID][swapableType].length === 0) {
-        bridgeSwapableTokensByType[cID][swapableType] = [token]
-      } else if (
-        !bridgeSwapableTokensByType[cID][swapableType]?.includes(token)
-      ) {
-        bridgeSwapableTokensByType[cID][swapableType] = [
-          ...bridgeSwapableTokensByType[cID][swapableType],
-          token,
-        ]
-      }
-    }
-  })
-
-  return bridgeSwapableTokensByType
-}
-
 const getTokenHashMap = () => {
   const tokenHashMap = {}
 
@@ -182,9 +93,7 @@ export const TOKENS_SORTED_BY_SYMBOL = Array.from(
   new Set(sortedTokens.map((token) => token.symbol))
 )
 export const BRIDGABLE_TOKENS = getBridgeableTokens()
-export const BRIDGE_CHAINS_BY_TYPE = getBridgeChainsByType()
-export const BRIDGE_TYPES_BY_CHAIN = getBridgeTypeByChain()
-export const BRIDGE_SWAPABLE_TOKENS_BY_TYPE = getBridgeableTokensByType()
+
 export const tokenSymbolToToken = (chainId: number, symbol: string) => {
   if (chainId) {
     const token = BRIDGABLE_TOKENS[chainId].find((token) => {
@@ -193,44 +102,27 @@ export const tokenSymbolToToken = (chainId: number, symbol: string) => {
     return token
   }
 }
+export const tokenAddressToToken = (
+  chainId: number,
+  tokenAddress: string
+): Token => {
+  if (chainId) {
+    if (tokenAddress === WETH.addresses[chainId]) {
+      return WETH
+    } else {
+      const token = BRIDGABLE_TOKENS[chainId].find((token: Token) => {
+        return token.addresses[chainId] === tokenAddress
+      })
+      return token
+    }
+  }
+}
+
 export const TOKEN_HASH_MAP = getTokenHashMap()
 
 // SWAPS
 const allTokensWithSwap = [...Object.values(all), ...Object.values(allSwap)]
-const getSwapableTokens = (): TokensByChain => {
-  const swapTokens: TokensByChain = {}
-  allTokensWithSwap.map((token) => {
-    if (!(token?.swapableOn?.length > 0)) return
-    for (const cID of token.swapableOn) {
-      if (!swapTokens[cID]) {
-        swapTokens[cID] = [token]
-      } else if (!swapTokens[cID]?.includes(token)) {
-        swapTokens[cID] = [...swapTokens[cID], token]
-      }
-    }
-  })
-  return swapTokens
-}
 
-const getSwapableTokensByType = (): SwapableTokensByType => {
-  const swapTokens: SwapableTokensByType = {}
-  allTokensWithSwap.map((token) => {
-    if (!(token?.swapableOn?.length > 0)) return
-    for (const cID of token.swapableOn) {
-      if (!swapTokens[cID]) {
-        swapTokens[cID] = { [token.swapableType]: [token] }
-      } else if (!swapTokens[cID][token.swapableType]) {
-        swapTokens[cID][token.swapableType] = [token]
-      } else if (!swapTokens[cID][token.swapableType].includes(token)) {
-        swapTokens[cID][token.swapableType] = [
-          ...swapTokens[cID][token.swapableType],
-          token,
-        ]
-      }
-    }
-  })
-  return swapTokens
-}
 const getSwapPriorityRanking = () => {
   const swapPriorityRanking = {}
   allTokensWithSwap.map((token) => {
@@ -246,8 +138,6 @@ const getSwapPriorityRanking = () => {
   })
   return swapPriorityRanking
 }
-export const SWAPABLE_TOKENS = getSwapableTokens()
-export const SWAPABLE_TOKENS_BY_TYPE = getSwapableTokensByType()
 export const POOL_PRIORITY_RANKING = getSwapPriorityRanking()
 
 // POOLS

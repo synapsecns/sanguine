@@ -39,7 +39,7 @@ contract SnapshotHarness {
         return payload.castToSnapshot().hashValid();
     }
 
-    function state(bytes memory payload, uint256 stateIndex) public view returns (bytes memory) {
+    function state(bytes memory payload, uint8 stateIndex) public view returns (bytes memory) {
         return payload.castToSnapshot().state(stateIndex).unwrap().clone();
     }
 

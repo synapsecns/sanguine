@@ -11,7 +11,9 @@
       "**/typechain",
       "**/@typechain/*",
       "**/@openzeppelin/contracts-upgradeable",
-      "**/@openzeppelin/contracts"
+      "**/@openzeppelin/contracts",
+      "**/ds-test",
+      "**/forge-std"
     ]
   },
   "repository": {
@@ -24,6 +26,7 @@
   },
   "homepage": "https://github.com/synapsecns/sanguine#readme",
   "scripts": {
+    "build:fe": "yarn --cwd packages/synapse-interface cf:build",
     "update:yarn": "GITHUB_TOKEN='' yarn set version 1.x",
     "clean": "yarn lerna run clean --parallel",
     "test:coverage": "yarn cover-all && yarn collect &&  nyc report --reporter lcov --report-dir=lcov",

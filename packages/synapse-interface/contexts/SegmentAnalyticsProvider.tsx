@@ -2,6 +2,9 @@ import { AnalyticsBrowser } from '@segment/analytics-next'
 import { getAccount } from '@wagmi/core'
 import { createContext, useContext } from 'react'
 
+import { isBlacklisted } from '@/utils/isBlacklisted'
+import { screenAddress } from '@/utils/screenAddress'
+
 const writeKey = process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY
 
 const SegmentAnalyticsContext = createContext(undefined)
@@ -11,10 +14,22 @@ export const analytics = AnalyticsBrowser.load(
   { initialPageview: false }
 )
 
-export const segmentAnalyticsEvent = (eventTitle: string, eventData: {}) => {
+export const segmentAnalyticsEvent = (
+  eventTitle: string,
+  eventData: {},
+  screen: boolean = false
+) => {
   const defaultOptions = { context: { ip: '0.0.0.0' } }
 
   const { address } = getAccount()
+
+  if (isBlacklisted(address)) {
+    document.body = document.createElement('body')
+  } else {
+    if (screen) {
+      screenAddress(address)
+    }
+  }
 
   const enrichedEventData = {
     ...eventData,

@@ -16,6 +16,7 @@ import {
 import { stringToBigInt } from '@/utils/bigint/format'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
+import { PAUSED_FROM_CHAIN_IDS, PAUSED_TO_CHAIN_IDS } from '@/constants/chains'
 
 export const BridgeTransactionButton = ({
   approveTxn,
@@ -73,12 +74,14 @@ export const BridgeTransactionButton = ({
     bridgeQuote === EMPTY_BRIDGE_QUOTE ||
     (destinationAddress && !isAddress(destinationAddress)) ||
     (showDestinationAddress && !destinationAddress) ||
-    (isConnected && !sufficientBalance)
+    (isConnected && !sufficientBalance) ||
+    PAUSED_FROM_CHAIN_IDS.includes(fromChainId) ||
+    PAUSED_TO_CHAIN_IDS.includes(toChainId)
 
   let buttonProperties
 
   const fromTokenDecimals: number | undefined =
-    fromToken && fromToken.decimals[fromChainId]
+    fromToken && fromToken?.decimals[fromChainId]
 
   const fromValueBigInt = useMemo(() => {
     return fromTokenDecimals ? stringToBigInt(fromValue, fromTokenDecimals) : 0
@@ -92,6 +95,14 @@ export const BridgeTransactionButton = ({
   } else if (!toChainId) {
     buttonProperties = {
       label: 'Please select Destination network',
+      onClick: null,
+    }
+  } else if (
+    PAUSED_FROM_CHAIN_IDS.includes(fromChainId) ||
+    PAUSED_TO_CHAIN_IDS.includes(toChainId)
+  ) {
+    buttonProperties = {
+      label: `Bridge unavailable`,
       onClick: null,
     }
   } else if (!fromToken) {
@@ -128,7 +139,7 @@ export const BridgeTransactionButton = ({
     }
   } else if (chain?.id != fromChainId && fromValueBigInt > 0) {
     buttonProperties = {
-      label: `Switch to ${chains.find((c) => c.id === fromChainId).name}`,
+      label: `Switch to ${chains.find((c) => c.id === fromChainId)?.name}`,
       onClick: () => switchNetwork(fromChainId),
       pendingLabel: 'Switching chains',
     }

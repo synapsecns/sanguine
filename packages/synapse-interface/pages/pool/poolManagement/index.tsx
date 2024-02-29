@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Address } from 'wagmi'
-import { RootState } from '@/store/store'
 
+import { RootState } from '@/store/store'
 import LiquidityManagementTabs from '../components/LiquidityManagementTabs'
 import Deposit from './Deposit'
 import Withdraw from './Withdraw'
-import LoadingSpinner from '@/components/ui/tailwind/LoadingSpinner'
+import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 import {
   fetchPoolUserData,
   resetPoolUserData,
@@ -38,21 +38,21 @@ const PoolManagement = ({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <LoadingSpinner />
+        <LoadingDots />
       </div>
     )
   }
 
   return (
-    <div>
-      <div className="rounded-md text-default">
-        <LiquidityManagementTabs
-          cardNav={cardNav}
-          setCardNav={(val) => {
-            setCardNav(val)
-          }}
-        />
-        <div className="mt-4">
+    <div className="">
+      <LiquidityManagementTabs
+        cardNav={cardNav}
+        setCardNav={(val) => {
+          setCardNav(val)
+        }}
+      />
+      <div className="pb-3 pl-4 pr-4">
+        <div className="mt-8">
           {cardNav === 'addLiquidity' && poolUserData.tokens && (
             <Deposit address={address} chainId={chainId} />
           )}

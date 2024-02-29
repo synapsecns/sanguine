@@ -1,4 +1,4 @@
-go 1.20
+go 1.21
 
 // note: new paths should be added as flags to the .codecov.yaml
 use (
@@ -6,6 +6,7 @@ use (
 	./contrib/git-changes-action
 	./contrib/promexporter
 	./contrib/release-copier-action
+	./contrib/screener-api
 	./contrib/terraform-provider-helmproxy
 	./contrib/terraform-provider-iap
 	./contrib/terraform-provider-kubeproxy
@@ -15,6 +16,8 @@ use (
 	./services/cctp-relayer
 	./services/explorer
 	./services/omnirpc
+	./services/rfq
 	./services/scribe
+	./services/stiprelayer
 	./tools
 )

@@ -33,3 +33,27 @@ func randInt(max int) (int, error) {
 	// Limit the range to [0, max).
 	return n % max, nil
 }
+
+// ChunkSlice takes a slice of any ordered type (like int, float64, string, etc.)
+// and divides it into chunks of a specified size.
+func ChunkSlice[T any](slice []T, chunkSize int) [][]T {
+	var chunks [][]T
+	for i := 0; i < len(slice); i += chunkSize {
+		end := i + chunkSize
+
+		// necessary check to avoid slicing beyond
+		// slice capacity
+		if end > len(slice) {
+			end = len(slice)
+		}
+
+		chunks = append(chunks, slice[i:end])
+	}
+
+	return chunks
+}
+
+// ToSlice converts any number of items of any type to a slice containing those items.
+func ToSlice[T any](items ...T) []T {
+	return items
+}

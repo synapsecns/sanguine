@@ -4,6 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"math/big"
+	"os"
+	"sync"
+	"testing"
+	"time"
+
 	"github.com/Flaque/filet"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
@@ -31,11 +37,6 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
-	"math/big"
-	"os"
-	"sync"
-	"testing"
-	"time"
 
 	"github.com/stretchr/testify/suite"
 	"github.com/synapsecns/sanguine/core/testsuite"
@@ -91,8 +92,16 @@ func (s *SubmitterSuite) SetupSuite() {
 	go func() {
 		defer wg.Done()
 		var err error
-		localmetrics.SetupTestJaeger(s.GetSuiteContext(), s.T())
-		s.metrics, err = metrics.NewByType(s.GetSuiteContext(), buildInfo, metrics.Jaeger)
+		// don't use metrics on ci for integration tests
+		isCI := core.GetEnvBool("CI", false)
+		useMetrics := !isCI
+		metricsHandler := metrics.Null
+
+		if useMetrics {
+			localmetrics.SetupTestJaeger(s.GetSuiteContext(), s.T())
+			metricsHandler = metrics.Jaeger
+		}
+		s.metrics, err = metrics.NewByType(s.GetSuiteContext(), buildInfo, metricsHandler)
 		s.Require().NoError(err)
 	}()
 
@@ -180,9 +189,17 @@ func TestTXSubmitterDBSuite(t *testing.T) {
 
 func (t *TXSubmitterDBSuite) SetupSuite() {
 	t.TestSuite.SetupSuite()
-	localmetrics.SetupTestJaeger(t.GetSuiteContext(), t.T())
+	// don't use metrics on ci for integration tests
+	isCI := core.GetEnvBool("CI", false)
+	useMetrics := !isCI
+	metricsHandler := metrics.Null
+
+	if useMetrics {
+		localmetrics.SetupTestJaeger(t.GetSuiteContext(), t.T())
+		metricsHandler = metrics.Jaeger
+	}
 	var err error
-	t.metrics, err = metrics.NewByType(t.GetSuiteContext(), buildInfo, metrics.Jaeger)
+	t.metrics, err = metrics.NewByType(t.GetSuiteContext(), buildInfo, metricsHandler)
 	t.Require().NoError(err)
 }
 

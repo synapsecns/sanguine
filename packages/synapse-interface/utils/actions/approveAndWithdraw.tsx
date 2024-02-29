@@ -56,9 +56,14 @@ export const withdraw = async (
   })
 
   try {
-    segmentAnalyticsEvent(`[Pool Withdrawal] Attempt for ${pool?.name}`, {
-      inputAmount,
-    })
+    segmentAnalyticsEvent(
+      `[Pool Withdrawal] Attempt`,
+      {
+        poolName: pool?.name,
+        inputAmount,
+      },
+      true
+    )
     if (withdrawType === ALL) {
       spendTransaction = await swapPoolRemoveLiquidity({
         chainId,
@@ -85,9 +90,10 @@ export const withdraw = async (
 
     if (spendTransaction.status === 'success') {
       toast.dismiss(pendingPopup)
-    segmentAnalyticsEvent(`[Pool Withdrawal] Success for ${pool?.name}`, {
-      inputAmount,
-    })
+      segmentAnalyticsEvent(`[Pool Withdrawal] Success`, {
+        poolName: pool?.name,
+        inputAmount,
+      })
 
       const successToastContent = (
         <div>
@@ -108,7 +114,8 @@ export const withdraw = async (
     return spendTransaction
   } catch (error) {
     toast.dismiss(pendingPopup)
-    segmentAnalyticsEvent(`[Pool Withdrawal] Failure for ${pool?.name}`, {
+    segmentAnalyticsEvent(`[Pool Withdrawal] Failure`, {
+      poolName: pool?.name,
       inputAmount,
       errorCode: error.code,
     })

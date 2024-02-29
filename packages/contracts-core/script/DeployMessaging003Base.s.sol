@@ -47,6 +47,7 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
         setupPK("MESSAGING_DEPLOYER_PRIVATE_KEY");
         localDomain = uint32(block.chainid);
         deploymentSalt = keccak256("Messaging003");
+        setupDevnetIfEnabled();
     }
 
     /// @dev Function to exclude script from coverage report
@@ -86,6 +87,8 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
         globalConfig = loadGlobalDeployConfig("Messaging003");
         synapseDomain = globalConfig.readUint(".chainidSummit");
         startBroadcast(_isBroadcasted);
+        // assert this is the first thing deployed
+        getFactory();
         // Predict deployments
         agentManager = predictFactoryDeployment(agentManagerName());
         statementInbox = predictFactoryDeployment(statementInboxName());
@@ -151,7 +154,7 @@ abstract contract DeployMessaging003BaseScript is DeployerUtils {
         require(agentManager != address(0), "Agent Manager not set");
         require(statementInbox != address(0), "Statement Inbox not set");
         require(agentManager.code.length > 0, "Agent Manager not deployed");
-        constructorArgs = abi.encode(localDomain, agentManager, statementInbox);
+        constructorArgs = abi.encode(synapseDomain, agentManager, statementInbox);
         deployment = factoryDeploy(DESTINATION, type(Destination).creationCode, constructorArgs);
     }
 

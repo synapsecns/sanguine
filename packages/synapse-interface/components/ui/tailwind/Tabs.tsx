@@ -10,7 +10,7 @@ export default function Tabs({
   props?: any
 }) {
   return (
-    <Grid gap={2} aria-label="Tabs" cols={{ xs: 2, sm: numTabs }} {...props}>
+    <Grid gap={0} aria-label="Tabs" cols={{ xs: 2, sm: numTabs }} {...props}>
       {children}
     </Grid>
   )

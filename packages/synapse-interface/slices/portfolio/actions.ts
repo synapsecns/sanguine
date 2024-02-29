@@ -1,11 +1,8 @@
-import { Address } from 'viem'
 import { createAction } from '@reduxjs/toolkit'
 
-import { Token } from '@/utils/types'
-
 export enum PortfolioTabs {
-  HOME = 'home',
   PORTFOLIO = 'portfolio',
+  ACTIVITY = 'activity',
 }
 
 export enum FetchState {
@@ -18,12 +15,10 @@ export enum FetchState {
 export const setActiveTab = createAction<PortfolioTabs>(
   'portfolio/setActiveTab'
 )
-export const updateSingleTokenAllowance = createAction<{
-  chainId: number
-  allowance: bigint
-  spender: Address
-  token: Token
-}>('portfolio/updateSingleTokenAllowance')
+export const typeSearchInput = createAction<{ searchInput: string }>(
+  'portfolio/typeSearchInput'
+)
 export const resetPortfolioState = createAction<void>(
   'portfolio/resetPortfolioState'
 )
+export const resetSearchState = createAction<void>('portfolio/resetSearchState')

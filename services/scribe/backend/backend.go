@@ -37,7 +37,7 @@ func DialBackend(ctx context.Context, url string, handler metrics.Handler) (Scri
 
 // GetLogsInRange gets all logs in a range with a single batch request
 // in successful cases an immutable list is returned, otherwise an error is returned.
-func GetLogsInRange(ctx context.Context, backend ScribeBackend, contractAddresses []common.Address, expectedChainID uint64, chunks []*util.Chunk) (*immutable.List[*[]types.Log], error) {
+func GetLogsInRange(ctx context.Context, backend ScribeBackend, contractAddresses []common.Address, expectedChainID uint64, chunks []*util.Chunk, topics [][]common.Hash) (*immutable.List[*[]types.Log], error) {
 	calls := make([]w3types.Caller, len(chunks)+2)
 	results := make([][]types.Log, len(chunks))
 	chainID := new(uint64)
@@ -45,11 +45,21 @@ func GetLogsInRange(ctx context.Context, backend ScribeBackend, contractAddresse
 
 	maxHeight := new(big.Int)
 	calls[1] = eth.BlockNumber().Returns(maxHeight)
+
 	for i := 0; i < len(chunks); i++ {
+		startBlock := chunks[i].StartBlock
+		endBlock := chunks[i].EndBlock
+
+		// handle desc iterator
+		if startBlock.Uint64() > endBlock.Uint64() {
+			startBlock = chunks[i].EndBlock
+			endBlock = chunks[i].StartBlock
+		}
 		filter := ethereum.FilterQuery{
-			FromBlock: chunks[i].StartBlock,
-			ToBlock:   chunks[i].EndBlock,
+			FromBlock: startBlock,
+			ToBlock:   endBlock,
 			Addresses: contractAddresses,
+			Topics:    topics,
 		}
 		calls[i+2] = eth.Logs(filter).Returns(&results[i])
 	}

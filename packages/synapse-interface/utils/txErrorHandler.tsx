@@ -7,12 +7,21 @@ function checkStringForRejection(str: string) {
   )
 }
 
+function checkStringForNotEnoughGas(str: string) {
+  return str.includes('insufficient funds for gas')
+}
+
 export const txErrorHandler = (err: any) => {
   console.log('err from txErrorHandler: ', err)
 
   if (err?.details && checkStringForRejection(err?.details)) {
     return toast.error('User denied transaction', {
       id: 'toast-error-user-reject',
+      duration: 5000,
+    })
+  } else if (err?.details && checkStringForNotEnoughGas(err?.details)) {
+    return toast.error('Transaction reverted: not enough gas', {
+      id: 'toast-error-not-enough-gas',
       duration: 5000,
     })
   } else if (

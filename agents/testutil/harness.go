@@ -9,6 +9,7 @@ import (
 	gasdataharness "github.com/synapsecns/sanguine/agents/contracts/test/gasdata"
 	"github.com/synapsecns/sanguine/agents/contracts/test/lightmanagerharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/originharness"
+	"github.com/synapsecns/sanguine/agents/contracts/test/receiptharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/requestharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/snapshotharness"
 	"github.com/synapsecns/sanguine/agents/contracts/test/stateharness"
@@ -68,6 +69,25 @@ func (d BaseMessageHarnessDeployer) Deploy(ctx context.Context) (contracts.Deplo
 		return basemessageharness.DeployBaseMessageHarness(transactOpts, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return basemessageharness.NewBaseMessageHarnessRef(address, backend)
+	})
+}
+
+// ReceiptHarnessDeployer deploys the request harness for testing.
+type ReceiptHarnessDeployer struct {
+	*deployer.BaseDeployer
+}
+
+// NewReceiptHarnessDeployer creates a request harness deployer.
+func NewReceiptHarnessDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return ReceiptHarnessDeployer{deployer.NewSimpleDeployer(registry, backend, ReceiptHarnessType)}
+}
+
+// Deploy deploys the receipt harness deployer.
+func (d ReceiptHarnessDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return d.DeploySimpleContract(ctx, func(transactOpts *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return receiptharness.DeployReceiptHarness(transactOpts, backend)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return receiptharness.NewReceiptHarnessRef(address, backend)
 	})
 }
 

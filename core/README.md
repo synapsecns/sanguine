@@ -3,11 +3,10 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/synapsecns/sanguine/core.svg)](https://pkg.go.dev/github.com/synapsecns/sanguine/core)
 [![Go Report Card](https://goreportcard.com/badge/github.com/synapsecns/sanguine/core)](https://goreportcard.com/report/github.com/synapsecns/sanguine/core)
 
-
 Core contains common libraries used across the synapse Go repositories.
 
-## Directory Structure
 
+## Directory Structure
 
 <pre>
 root
@@ -27,7 +26,6 @@ root
 ├── <a href="./server">server</a>: Provides a context-safe server that can be used to start/stop a server.
 ├── <a href="./testsuite">testsuite</a>: Provides a wrapper around testify/suite.
 ├── <a href="./threaditer">threaditer</a>: Provides a thread-safe generic iterator for a slice.
-├── <a href="./tunnel">tunnel</a>: Reverse tunneling service for debugging services in ci.
 </pre>
 
 

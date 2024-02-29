@@ -100,7 +100,7 @@ cache
 
 .env
 .env*
-!env.example
+!.env.example
 *.log
 
 .devnet
@@ -123,6 +123,8 @@ codecov/
 # fasthttp
 fastcache.tmp*
 
+#vercel
+
 # ignore all go built files in local dirs
 main
-**/.vercel
+.devnet/

@@ -4,13 +4,17 @@ import (
 	"context"
 	gosql "database/sql"
 	"fmt"
+	serverConfig "github.com/synapsecns/sanguine/services/explorer/config/server"
+	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph"
 	"math/big"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/phayes/freeport"
 	. "github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/retry"
@@ -172,6 +176,7 @@ type APISuite struct {
 	chainIDs        []uint32
 	scribeMetrics   metrics.Handler
 	explorerMetrics metrics.Handler
+	config          serverConfig.Config
 }
 
 // NewTestSuite creates a new test suite and performs some basic checks afterward.
@@ -186,10 +191,18 @@ func NewTestSuite(tb testing.TB) *APISuite {
 
 func (g *APISuite) SetupSuite() {
 	g.TestSuite.SetupSuite()
-	localmetrics.SetupTestJaeger(g.GetSuiteContext(), g.T())
+	// don't use metrics on ci for integration tests
+	isCI := core.GetEnvBool("CI", false)
+	useMetrics := !isCI
+	metricsHandler := metrics.Null
+
+	if useMetrics {
+		localmetrics.SetupTestJaeger(g.GetSuiteContext(), g.T())
+		metricsHandler = metrics.Jaeger
+	}
 
 	var err error
-	g.scribeMetrics, err = metrics.NewByType(g.GetSuiteContext(), scribeMetadata.BuildInfo(), metrics.Jaeger)
+	g.scribeMetrics, err = metrics.NewByType(g.GetSuiteContext(), scribeMetadata.BuildInfo(), metricsHandler)
 	g.Require().Nil(err)
 	// TODO: there may be an issue w/ syncer for local test nevs, investigate, but this probably comes from heavy load ending every span of every field synchronously
 	g.explorerMetrics, err = metrics.NewByType(g.GetSuiteContext(), metadata.BuildInfo(), metrics.Null)
@@ -198,6 +211,12 @@ func (g *APISuite) SetupSuite() {
 
 func (g *APISuite) SetupTest() {
 	g.TestSuite.SetupTest()
+
+	initialFallback := graph.GetFallbackTime()
+	graph.UnsafeSetFallbackTime(time.Second * 20)
+	g.TestSuite.DeferAfterTest(func() {
+		graph.UnsafeSetFallbackTime(initialFallback)
+	})
 
 	g.db, g.eventDB, g.gqlClient, g.logIndex, g.cleanup, g.testBackend, g.deployManager = testutil.NewTestEnvDB(g.GetTestContext(), g.T(), g.scribeMetrics)
 
@@ -219,12 +238,62 @@ func (g *APISuite) SetupTest() {
 	g.chainIDs = []uint32{1, 10, 25, 56, 137}
 	httpport := freeport.GetPort()
 
+	config := serverConfig.Config{
+		HTTPPort:            uint16(httpport),
+		DBAddress:           address,
+		ScribeURL:           "https://scribe.interoperability.institute/graphql",
+		HydrateCache:        false,
+		RPCURL:              "https://rpc.omnirpc.io/confirmations/1/rpc/",
+		BridgeConfigAddress: "0x5217c83ca75559B1f8a8803824E5b7ac233A12a1",
+		BridgeConfigChainID: 1,
+		SwapTopicHash:       "0xc6c1e0630dbe9130cc068028486c0d118ddcea348550819defd5cb8c257f8a38",
+		Chains: map[uint32]serverConfig.ChainConfig{
+			1: {
+				ChainID:            1,
+				GetLogsRange:       256,
+				GetLogsBatchAmount: 1,
+				BlockTime:          12,
+				Swaps:              []string{"0x1116898DdA4015eD8dDefb84b6e8Bc24528Af2d8"},
+				Contracts: serverConfig.ContractsConfig{
+					CCTP:   "0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84",
+					Bridge: "0x2796317b0fF8538F253012862c06787Adfb8cEb6",
+				},
+			},
+			56: {
+				ChainID:            56,
+				GetLogsRange:       1000,
+				GetLogsBatchAmount: 1,
+				BlockTime:          3,
+				Swaps:              []string{"0x28ec0B36F0819ecB5005cAB836F4ED5a2eCa4D13"},
+				Contracts: serverConfig.ContractsConfig{
+					Bridge: "0xd123f70AE324d34A9E76b67a27bf77593bA8749f",
+				},
+			},
+			42161: {
+				ChainID:            42161,
+				GetLogsRange:       1000,
+				GetLogsBatchAmount: 1,
+				BlockTime:          3,
+				Swaps:              []string{"0x9Dd329F5411466d9e0C488fF72519CA9fEf0cb40", "0xa067668661C84476aFcDc6fA5D758C4c01C34352"},
+				Contracts: serverConfig.ContractsConfig{
+					Bridge: "0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9",
+				},
+			},
+			10: {
+				ChainID:            10,
+				GetLogsRange:       1000,
+				GetLogsBatchAmount: 1,
+				BlockTime:          2,
+				Swaps:              []string{"0xF44938b0125A6662f9536281aD2CD6c499F22004", "0xE27BFf97CE92C3e1Ff7AA9f86781FDd6D48F5eE9"},
+				Contracts: serverConfig.ContractsConfig{
+					Bridge: "0xAf41a65F786339e7911F4acDAD6BD49426F2Dc6b",
+				},
+			},
+		},
+	}
+	g.config = config
 	go func() {
-		Nil(g.T(), api.Start(g.GetTestContext(), api.Config{
-			HTTPPort:  uint16(httpport),
-			Address:   address,
-			ScribeURL: g.gqlClient.Client.BaseURL,
-		}, g.explorerMetrics))
+		Nil(g.T(), api.Start(g.GetTestContext(), config, g.explorerMetrics))
 	}()
 
 	baseURL := fmt.Sprintf("http://127.0.0.1:%d", httpport)

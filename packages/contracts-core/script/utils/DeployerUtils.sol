@@ -5,6 +5,7 @@ import {console, Script, stdJson} from "forge-std/Script.sol";
 
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {CREATE3Factory} from "create3/CREATE3Factory.sol";
 
 interface ICreate3Factory {
     function deploy(bytes32 salt, bytes memory creationCode) external payable returns (address deployed);
@@ -21,10 +22,14 @@ contract DeployerUtils is Script {
     /// @dev Path to artifacts, deployments and configs directories
     string private constant ARTIFACTS = "artifacts/";
     string private constant DEPLOYMENTS = "deployments/";
-    string private constant DEPLOY_CONFIGS = "script/configs/";
+    string private deployConfigs = "script/configs/";
 
-    // TODO: this is only deployed on 7 chains, deploy our own factory for prod deployments
-    ICreate3Factory internal constant FACTORY = ICreate3Factory(0x9fBB3DF7C40Da2e5A0dE984fFE2CCB7C47cd0ABf);
+    // @dev wether or not devnet is enabled
+    bool private devnetEnabled = false;
+    // @dev env var for wether or not devnet is in use
+    string private constant DEVNET_ENABLED_VAR = "DEVNET";
+    // @dev artifacted path to use if devnet is enabled;
+    string private constant DEPLOY_CONFIGS_DEVNET = "script/configs/devnet/";
 
     /// @dev Whether the script will be broadcasted or not
     bool internal isBroadcasted = false;
@@ -34,6 +39,8 @@ contract DeployerUtils is Script {
     /// @dev Private key and address for deploying contracts
     uint256 internal broadcasterPK;
     address internal broadcasterAddress;
+
+    ICreate3Factory private factory = ICreate3Factory(0x9fBB3DF7C40Da2e5A0dE984fFE2CCB7C47cd0ABf);
 
     bytes32 internal deploymentSalt;
 
@@ -52,6 +59,48 @@ contract DeployerUtils is Script {
         if (isBroadcasted_) createDir(string.concat(DEPLOYMENTS, chainAlias));
         vm.startBroadcast(broadcasterPK);
         isBroadcasted = isBroadcasted_;
+    }
+
+    // @dev this is called just in time so we can make sure that startBroadcast() is called before this.
+    // it's only overriden and deployed just-in-time in the case of devnet
+    // TODO: this pattern sucks. It introduces potential unexpected behavior if the dev calls factory. directly.
+    // It's also slow.
+    function getFactory() internal returns (ICreate3Factory) {
+        if (!devnetEnabled) {
+            return factory;
+        }
+
+        address factoryDeployment = tryLoadDeployment("CREATE3Factory");
+        if (factoryDeployment == address(0)) {
+            if (broadcasterPK == 0) {
+                console.log("please setup a private key before calling this function");
+            }
+
+            console.log("Create3Factory not deployed on devnet, deploying now");
+            CREATE3Factory NewFactory = new CREATE3Factory();
+            saveDeployment("Create3Factory", "Create3Factory", address(NewFactory), "0x");
+            factoryDeployment = address(NewFactory);
+        }
+        factory = ICreate3Factory(factoryDeployment);
+        return factory;
+    }
+
+    // @dev must be called after setupPK()
+    function setupDevnetIfEnabled() internal {
+        devnetEnabled = vm.envOr(DEVNET_ENABLED_VAR, false);
+
+        if (devnetEnabled) {
+            devnetEnabled = true;
+            // setup the chains
+            setChain("chain_a", Chain("chain_a", 42, "chain_a", "http://localhost:9001/rpc/42"));
+            setChain("chain_b", Chain("chain_b", 43, "chain_b", "http://localhost:9001/rpc/43"));
+            setChain("chain_c", Chain("chain_c", 44, "chain_c", "http://localhost:9001/rpc/44"));
+
+            // override the configs path
+            deployConfigs = DEPLOY_CONFIGS_DEVNET;
+
+            chainAlias = getChainAlias();
+        }
     }
 
     function setupDeployerPK() public {
@@ -83,8 +132,8 @@ contract DeployerUtils is Script {
         internal
         returns (address deployment)
     {
-        require(Address.isContract(address(FACTORY)), "Factory not deployed");
-        deployment = FACTORY.deploy(
+        require(Address.isContract(address(getFactory())), "Factory not deployed");
+        deployment = getFactory().deploy(
             getDeploymentSalt(contractName), // salt
             abi.encodePacked(creationCode, constructorArgs) // creation code with appended constructor args
         );
@@ -97,9 +146,10 @@ contract DeployerUtils is Script {
     }
 
     /// @notice Predicts the deployment address for a contract.
-    function predictFactoryDeployment(string memory contractName) internal view returns (address) {
-        require(Address.isContract(address(FACTORY)), "Factory not deployed");
-        return FACTORY.getDeployed(broadcasterAddress, getDeploymentSalt(contractName));
+    function predictFactoryDeployment(string memory contractName) internal returns (address) {
+        ICreate3Factory _factory = getFactory();
+        require(Address.isContract(address(_factory)), "Factory not deployed");
+        return _factory.getDeployed(broadcasterAddress, getDeploymentSalt(contractName));
     }
 
     /// @notice Deploys the contract and saves the deployment artifact
@@ -203,7 +253,7 @@ contract DeployerUtils is Script {
 
     /// @notice Loads deploy config for a given contract on the current chain.
     /// Will revert if config doesn't exist.
-    function loadDeployConfig(string memory contractName) public view returns (string memory json) {
+    function loadDeployConfig(string memory contractName) public returns (string memory json) {
         return vm.readFile(deployConfigPath(contractName));
     }
 
@@ -218,7 +268,7 @@ contract DeployerUtils is Script {
 
     /// @notice Loads deploy config for a given contract on the current chain.
     /// Will revert if config doesn't exist.
-    function loadGlobalDeployConfig(string memory contractName) public view returns (string memory json) {
+    function loadGlobalDeployConfig(string memory contractName) public returns (string memory json) {
         return vm.readFile(globalDeployConfigPath(contractName));
     }
 
@@ -246,14 +296,14 @@ contract DeployerUtils is Script {
     }
 
     /// @notice Returns path to the contract deploy config JSON on the current chain.
-    function deployConfigPath(string memory contractName) public view returns (string memory path) {
+    function deployConfigPath(string memory contractName) internal returns (string memory path) {
         require(bytes(chainAlias).length != 0, "Chain not set");
-        return string.concat(DEPLOY_CONFIGS, chainAlias, "/", deployConfigFn(contractName));
+        return string.concat(deployConfigs, chainAlias, "/", deployConfigFn(contractName));
     }
 
     /// @notice Returns path to the global contract deploy config JSON.
-    function globalDeployConfigPath(string memory contractName) public pure returns (string memory path) {
-        return string.concat(DEPLOY_CONFIGS, deployConfigFn(contractName));
+    function globalDeployConfigPath(string memory contractName) public returns (string memory path) {
+        return string.concat(deployConfigs, deployConfigFn(contractName));
     }
 
     /// @notice Create directory if it not exists already

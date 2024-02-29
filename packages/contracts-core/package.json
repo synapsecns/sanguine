@@ -1,20 +1,27 @@
 {
   "name": "@synapsecns/contracts-core",
-  "version": "1.0.9",
+  "version": "1.0.27",
   "description": "",
-  "private": "true",
   "scripts": {
     "build": "yarn build:contracts && yarn build:typescript && yarn build:go",
     "build:go": "script/sh/flatten.sh contracts/*.sol contracts/manager/*.sol contracts/inbox/*.sol test/harnesses/*.sol test/harnesses/manager/*.sol test/harnesses/libs/**/*.sol contracts/client/*.sol",
     "build:contracts": "forge build",
     "build:slither": "forge build --out=out --build-info --force",
     "test:coverage": "echo 'Please use foundry'",
-    "build:typescript": "typechain --target ethers-v5 'artifacts/**/*json'",
+    "build:typescript": "forge build && typechain --target ethers-v5 'artifacts/**/*json'",
+    "prepublishOnly": "yarn build:typescript",
     "test": "forge test",
     "lint:contracts:fix": "forge fmt && solhint --fix -c .solhint.json '{contracts,script,test}/**/*.sol'",
     "lint:fix": "yarn lint:contracts:fix",
     "lint": "forge fmt",
     "ci:lint": "forge fmt --check && solhint -c .solhint.json '{contracts,script,test}/**/*.sol'"
+  },
+  "files": [
+    "contracts/**/*.sol",
+    "types/"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "license": "MIT",
   "devDependencies": {
@@ -28,10 +35,14 @@
     "typechain": "8.0.0",
     "typescript": "4.7.3"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/synapsecns/sanguine.git"
+  },
   "dependencies": {
     "@nodelib/fs.walk": "1.2.8",
-    "@openzeppelin/contracts": "4.7.3",
-    "@openzeppelin/contracts-upgradeable": "4.6.0",
+    "@openzeppelin/contracts": "4.9.3",
+    "@openzeppelin/contracts-upgradeable": "4.9.3",
     "dotenv": "16.0.1",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-prettier": "3.4.1",

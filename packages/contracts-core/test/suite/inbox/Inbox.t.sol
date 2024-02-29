@@ -67,6 +67,12 @@ contract InboxTest is StatementInboxTest {
         new Inbox(DOMAIN_SYNAPSE);
     }
 
+    function test_constructor_revert_chainIdOverflow() public {
+        vm.chainId(2 ** 32);
+        vm.expectRevert("SafeCast: value doesn't fit in 32 bits");
+        new Inbox({synapseDomain_: DOMAIN_SYNAPSE});
+    }
+
     function initializeLocalContract() public override {
         Inbox(localContract()).initialize(address(0), address(0), address(0), address(0));
     }

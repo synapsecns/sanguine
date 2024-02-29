@@ -3,8 +3,12 @@ package testhelper
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"testing"
+
 	"github.com/phayes/freeport"
 	"github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
@@ -14,8 +18,6 @@ import (
 	omniHTTP "github.com/synapsecns/sanguine/services/omnirpc/http"
 	"github.com/synapsecns/sanguine/services/omnirpc/metadata"
 	"github.com/synapsecns/sanguine/services/omnirpc/proxy"
-	"net/http"
-	"testing"
 )
 
 func makeConfig(backends []backends.SimulatedTestBackend, clientType omniHTTP.ClientType) config.Config {
@@ -44,9 +46,18 @@ func makeConfig(backends []backends.SimulatedTestBackend, clientType omniHTTP.Cl
 func NewOmnirpcServer(ctx context.Context, tb testing.TB, backends ...backends.SimulatedTestBackend) string {
 	tb.Helper()
 
-	localmetrics.SetupTestJaeger(ctx, tb)
+	// don't use metrics on ci for integration tests
+	isCI := core.GetEnvBool("CI", false)
+	useMetrics := !isCI
+	metricsHandler := metrics.Null
 
-	handler, err := metrics.NewByType(ctx, metadata.BuildInfo(), metrics.Jaeger)
+	// TODO: make this optional everywhere before merging
+	if useMetrics && false {
+		localmetrics.SetupTestJaeger(ctx, tb)
+		metricsHandler = metrics.Jaeger
+	}
+
+	handler, err := metrics.NewByType(ctx, metadata.BuildInfo(), metricsHandler)
 	assert.Nil(tb, err)
 
 	server := proxy.NewProxy(makeConfig(backends, omniHTTP.FastHTTP), handler)

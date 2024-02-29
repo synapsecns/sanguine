@@ -31,6 +31,7 @@ export const ToChainListOverlay = () => {
     .pickBy((value) => _.includes(toChainIds, value.id))
     .values()
     .value()
+    .filter((chain) => !PAUSED_TO_CHAIN_IDS.includes(chain.id))
 
   possibleChains = sortChains(possibleChains)
 
@@ -156,6 +157,7 @@ export const ToChainListOverlay = () => {
                   key={idx}
                   itemChainId={mapChainId}
                   isCurrentChain={toChainId === mapChainId}
+                  isOrigin={false}
                   active={idx === currentIdx}
                   onClick={() => {
                     if (toChainId === mapChainId) {
@@ -181,6 +183,7 @@ export const ToChainListOverlay = () => {
                   key={idx}
                   itemChainId={mapChainId}
                   isCurrentChain={toChainId === mapChainId}
+                  isOrigin={false}
                   active={idx + possibleChains.length === currentIdx}
                   onClick={() => handleSetToChainId(mapChainId)}
                   dataId={dataId}

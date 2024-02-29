@@ -2,8 +2,18 @@ import { Banner } from '@/components/Banner'
 import StateManagedBridge from './state-managed-bridge'
 import { Portfolio } from '@/components/Portfolio/Portfolio'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
+import ReactGA from 'react-ga'
+import useSyncQueryParamsWithBridgeState from '@/utils/hooks/useSyncQueryParamsWithBridgeState'
+
+// TODO: someone should add this to the .env, disable if blank, etc.
+// this is being added as a hotfix to assess user load on the synapse explorer api
+// I'd recommend moving this to a sushi-style analytics provider wrapper.
+const TRACKING_ID = 'G-BBC13LQXBD'
+ReactGA.initialize(TRACKING_ID)
 
 const Home = () => {
+  useSyncQueryParamsWithBridgeState()
+
   return (
     <LandingPageWrapper>
       <main
