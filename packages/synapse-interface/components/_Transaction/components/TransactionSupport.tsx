@@ -7,8 +7,8 @@ export const TransactionSupport = () => {
     >
       <div>What's taking so long?</div>
       <div className="flex items-center">
-        {/* <a
-          href=""
+        <a
+          href="https://docs.synapseprotocol.com/synapse-bridge/synapse-bridge/transaction-support-faq"
           target="_blank"
           className={`
             px-2 py-1 underline text-[--synapse-text]
@@ -17,7 +17,7 @@ export const TransactionSupport = () => {
         >
           F.A.Q
         </a>
-        <div>/</div> */}
+        <div>/</div>
         <a
           href="https://discord.gg/synapseprotocol"
           target="_blank"
