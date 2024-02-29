@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	db2 "github.com/synapsecns/sanguine/ethergo/listener/db"
 	"math/big"
 	"time"
 
@@ -14,9 +15,9 @@ import (
 	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/client"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
+	"golang.org/x/sync/errgroup"
 )
 
 // ContractListener listens for chain events and calls HandleLog.
@@ -38,7 +39,7 @@ type chainListener struct {
 	client       client.EVM
 	address      common.Address
 	initialBlock uint64
-	store        reldb.Service
+	store        db2.ChainListenerDB
 	handler      metrics.Handler
 	backoff      *backoff.Backoff
 	// IMPORTANT! These fields cannot be used until they has been set. They are NOT
@@ -48,10 +49,14 @@ type chainListener struct {
 	// latestBlock         uint64
 }
 
-var logger = log.Logger("chainlistener-logger")
+var (
+	logger = log.Logger("chainlistener-logger")
+	// ErrNoLatestBlockForChainID is returned when no block exists for the chain.
+	ErrNoLatestBlockForChainID = db2.ErrNoLatestBlockForChainID
+)
 
 // NewChainListener creates a new chain listener.
-func NewChainListener(omnirpcClient client.EVM, store reldb.Service, address common.Address, initialBlock uint64, handler metrics.Handler) (ContractListener, error) {
+func NewChainListener(omnirpcClient client.EVM, store db2.ChainListenerDB, address common.Address, initialBlock uint64, handler metrics.Handler) (ContractListener, error) {
 	return &chainListener{
 		handler:      handler,
 		address:      address,
@@ -166,23 +171,34 @@ func (c chainListener) getMetadata(parentCtx context.Context) (startBlock, chain
 
 	// TODO: consider some kind of backoff here in case rpcs are down at boot.
 	// this becomes more of an issue as we add more chains
-	// TODO: one thing I've been going back and forth on is whether or not this method should be chain aware
-	// passing in the chain ID would allow us to pull everything directly from the config, but be less testable
-	// for now, this is probably the best solution for testability, but it's certainly a bit annoying we need to do
-	// an rpc call in order to get the chain id
-	//
-	rpcChainID, err := c.client.ChainID(ctx)
-	if err != nil {
-		return 0, 0, fmt.Errorf("could not get chain ID: %w", err)
-	}
-	chainID = rpcChainID.Uint64()
+	g, ctx := errgroup.WithContext(ctx)
+	g.Go(func() error {
+		// TODO: one thing I've been going back and forth on is whether or not this method should be chain aware
+		// passing in the chain ID would allow us to pull everything directly from the config, but be less testable
+		// for now, this is probably the best solution for testability, but it's certainly a bit annoying we need to do
+		// an rpc call in order to get the chain id
+		//
+		rpcChainID, err := c.client.ChainID(ctx)
+		if err != nil {
+			return fmt.Errorf("could not get chain ID: %w", err)
+		}
+		chainID = rpcChainID.Uint64()
 
-	lastIndexed, err = c.store.LatestBlockForChain(ctx, chainID)
-	if errors.Is(err, reldb.ErrNoLatestBlockForChainID) {
-		// TODO: consider making this negative 1, requires type change
-		lastIndexed = 0
-	} else if err != nil {
-		return 0, 0, fmt.Errorf("could not get the latest block for chainID: %w", err)
+		lastIndexed, err = c.store.LatestBlockForChain(ctx, chainID)
+		if errors.Is(err, ErrNoLatestBlockForChainID) {
+			// TODO: consider making this negative 1, requires type change
+			lastIndexed = 0
+			return nil
+		}
+		if err != nil {
+			return fmt.Errorf("could not get the latest block for chainID: %w", err)
+		}
+		return nil
+	})
+
+	err = g.Wait()
+	if err != nil {
+		return 0, 0, fmt.Errorf("could not get metadata: %w", err)
 	}
 
 	if lastIndexed > c.startBlock {

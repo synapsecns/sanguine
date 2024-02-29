@@ -2,11 +2,10 @@ package listener
 
 import (
 	"context"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/client"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/ethergo/listener/db"
 )
 
 // TestChainListener wraps chain listener for testing.
@@ -24,7 +23,7 @@ type TestChainListenerArgs struct {
 	Address      common.Address
 	InitialBlock uint64
 	Client       client.EVM
-	Store        reldb.Service
+	Store        db.ChainListenerDB
 	Handler      metrics.Handler
 }
 
