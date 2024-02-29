@@ -15,6 +15,11 @@
     "foundry.toml",
     "remappings.txt"
   ],
+  "scripts": {
+    "lint": "forge fmt && eslint . --fix --ext js",
+    "lint:check": "forge fmt --check && eslint . --max-warnings=0 --ext js",
+    "test:coverage": "echo 'TODO: Add test coverage'"
+  },
   "dependencies": {
     "chalk": "^4.1.2",
     "dotenv": "^16.4.5",
