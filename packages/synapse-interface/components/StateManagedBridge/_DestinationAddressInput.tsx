@@ -19,8 +19,13 @@ export const _DestinationAddressInput = ({
     setShowWarning(true)
   }
 
-  const handleEnableInput = () => {
+  const onEnableInput = () => {
     setEnableInput(true)
+  }
+
+  const onReset = () => {
+    setShowWarning(false)
+    setEnableInput(false)
   }
 
   const isInputValidAddress = isValidAddress(inputValue)
@@ -32,7 +37,25 @@ export const _DestinationAddressInput = ({
         value={inputValue}
         onChange={handleInput}
       />
+      {showWarning && (
+        <DestinationInputWarning
+          onEnableInput={onEnableInput}
+          onReset={onReset}
+        />
+      )}
       <div>{isInputValidAddress ? 'Valid Address' : 'Invalid Address'}</div>
+    </div>
+  )
+}
+
+const DestinationInputWarning = ({ onEnableInput, onReset }) => {
+  return (
+    <div>
+      Warning!
+      <div className="flex">
+        <button onClick={onEnableInput}>Accept</button>
+        <button onClick={onReset}>Cancel</button>
+      </div>
     </div>
   )
 }
