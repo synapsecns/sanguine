@@ -141,6 +141,11 @@ func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Ha
 		return nil, fmt.Errorf("could not connect to db %s: %w", dbPath, err)
 	}
 
+	err = gdb.AutoMigrate(&db.LastIndexed{})
+	if err != nil {
+		return nil, fmt.Errorf("could not migrate models: %w", err)
+	}
+
 	handler.AddGormCallbacks(gdb)
 
 	err = gdb.WithContext(ctx).AutoMigrate(txdb.GetAllModels()...)
