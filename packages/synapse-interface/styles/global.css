@@ -7,7 +7,9 @@
 }
 
 body {
-  text-rendering: optimizeLegibility;
+  font-smooth: always;
+  --webkit-font-smoothing: auto;
+  text-rendering: geometricPrecision;
   overscroll-behavior-y: none;
 }
 
@@ -19,7 +21,6 @@ body {
   font-display: swap;
 }
 
-
 @font-face {
   font-family: "Matter";
   src: url("./font/Matter-Regular.woff2") format("woff2");
@@ -27,7 +28,6 @@ body {
   font-style: normal;
   font-display: swap;
 }
-
 
 @font-face {
   font-family: "Matter";
@@ -37,8 +37,6 @@ body {
   font-display: swap;
 }
 
-
-
 @font-face {
   font-family: "Matter";
   src: url("./font/Matter-SemiBold.woff2") format("woff2");
@@ -47,19 +45,10 @@ body {
   font-display: swap;
 }
 
-
 @font-face {
   font-family: "Matter";
   src: url("./font/Matter-Bold.woff2") format("woff2");
   font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Matter";
-  src: url("./font/Matter-Heavy.woff2") format("woff2");
-  font-weight: 900;
   font-style: normal;
   font-display: swap;
 }
@@ -104,17 +93,8 @@ body {
   font-display: swap;
 }
 
-@font-face {
-  font-family: "Matter";
-  src: url("./font/Matter-HeavyItalic.woff2") format("woff2");
-  font-weight: 900;
-  font-style: italic;
-  font-display: swap;
-}
-
 
 /* ANIMATION FOR LOADER */
-
 .dot-flashing {
   position: relative;
   top: 1px;
