@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/contracts-core",
-  "version": "1.0.27",
+  "version": "1.1.0",
   "description": "",
   "scripts": {
     "build": "yarn build:contracts && yarn build:typescript && yarn build:go",
@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@nodelib/fs.walk": "1.2.8",
-    "@openzeppelin/contracts": "4.9.3",
+    "@openzeppelin/contracts": "5.0.2",
     "@openzeppelin/contracts-upgradeable": "4.9.3",
     "dotenv": "16.0.1",
     "eslint-config-prettier": "8.5.0",
