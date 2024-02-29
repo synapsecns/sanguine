@@ -18,6 +18,7 @@ export enum SupportedChainId {
   DFK = 53935,
   AURORA = 1313161554,
   HARMONY = 1666600000,
+  BLAST = 81457,
 }
 
 /**
