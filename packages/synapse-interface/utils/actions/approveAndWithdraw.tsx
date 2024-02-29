@@ -10,7 +10,7 @@ import { txErrorHandler } from '@utils/txErrorHandler'
 import { approveErc20Token } from '@/actions/approveErc20Token'
 import { swapPoolRemoveLiquidity } from '@/actions/swapPoolRemoveLiquidity'
 import { swapPoolRemoveLiquidityOneToken } from '@/actions/swapPoolRemoveLiquidityOneToken'
-import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { segmentAnalyticsEvent } from '@/contexts/segmentAnalyticsEvent'
 
 import ExplorerToastLink from '@components/ExplorerToastLink'
 

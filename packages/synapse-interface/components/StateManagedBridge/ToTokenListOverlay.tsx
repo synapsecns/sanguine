@@ -9,7 +9,7 @@ import { FetchState } from '@/slices/portfolio/actions'
 
 import { useAppDispatch } from '@/store/hooks'
 
-import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { segmentAnalyticsEvent } from '@/contexts/segmentAnalyticsEvent'
 
 import type { Token } from '@/utils/types'
 import { useAlternateBridgeQuotes } from '@/utils/hooks/useAlternateBridgeQuotes'

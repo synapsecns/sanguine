@@ -2,7 +2,7 @@ import _ from 'lodash'
 import { useDispatch } from 'react-redux'
 import Fuse from 'fuse.js'
 
-import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { segmentAnalyticsEvent } from '@/contexts/segmentAnalyticsEvent'
 
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { getTokenFuseOptions } from '@/constants/fuseOptions'

@@ -5,7 +5,7 @@ import toast from 'react-hot-toast'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { txErrorHandler } from '@utils/txErrorHandler'
 import { harvestLpPool } from '@/actions/harvestLpPool'
-import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { segmentAnalyticsEvent } from '@/contexts/segmentAnalyticsEvent'
 
 
 export const claimStake = async (

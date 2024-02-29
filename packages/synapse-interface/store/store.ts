@@ -3,7 +3,7 @@ import { configureStore } from '@reduxjs/toolkit'
 import { persistStore } from 'redux-persist'
 
 import { api } from '@/slices/api/slice'
-import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { segmentAnalyticsEvent } from '@/contexts/segmentAnalyticsEvent'
 import { storageKey, persistConfig, persistedReducer } from './reducer'
 import { resetReduxCache } from '@/slices/application/actions'
 

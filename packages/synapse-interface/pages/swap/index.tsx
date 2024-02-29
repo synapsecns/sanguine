@@ -7,7 +7,7 @@ import { Address, zeroAddress } from 'viem'
 import { commify } from '@ethersproject/units'
 import { useEffect, useRef, useState } from 'react'
 
-import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { segmentAnalyticsEvent } from '@/contexts/segmentAnalyticsEvent'
 
 import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
 

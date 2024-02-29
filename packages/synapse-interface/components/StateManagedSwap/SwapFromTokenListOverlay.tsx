@@ -6,7 +6,7 @@ import Fuse from 'fuse.js'
 import { getTokenFuseOptions } from '@/constants/fuseOptions'
 import { CHAINS_BY_ID } from '@/constants/chains'
 
-import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { segmentAnalyticsEvent } from '@/contexts/segmentAnalyticsEvent'
 
 import type { Token } from '@/utils/types'
 import { getSwapPossibilities } from '@/utils/swapFinder/generateSwapPossibilities'

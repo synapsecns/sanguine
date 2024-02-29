@@ -18,7 +18,7 @@ import { AVWETH } from '@/constants/tokens/auxilliary'
 
 import { swapPoolCalculateTokenAmount } from '@/actions/swapPoolCalculateTokenAmount'
 import { swapPoolAddLiquidity } from '@/actions/swapPoolAddLiquidity'
-import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { segmentAnalyticsEvent } from '@/contexts/segmentAnalyticsEvent'
 
 import ExplorerToastLink from '@components/ExplorerToastLink'
 

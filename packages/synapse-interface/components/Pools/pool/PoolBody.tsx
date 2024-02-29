@@ -13,7 +13,7 @@ import { useConnectModal } from '@rainbow-me/rainbowkit'
 
 import { ChevronLeftIcon } from '@heroicons/react/outline'
 
-import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { segmentAnalyticsEvent } from '@/contexts/segmentAnalyticsEvent'
 
 import { usePoolDataState } from '@/slices/pool/hooks'
 import { getStakedBalance } from '@/utils/actions/getStakedBalance'

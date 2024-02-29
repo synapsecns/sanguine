@@ -11,7 +11,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import StakeCard from '@/components/stake/StakeCard'
 
-import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { segmentAnalyticsEvent } from '@/contexts/segmentAnalyticsEvent'
 
 import { POOLS_PATH } from '@/constants/urls'
 

@@ -5,7 +5,7 @@ import type { Token } from '@types'
 
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import { unstakeLpToken } from '@/actions/unstakeLpToken'
-import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { segmentAnalyticsEvent } from '@/contexts/segmentAnalyticsEvent'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
 
 export const withdrawStake = async (

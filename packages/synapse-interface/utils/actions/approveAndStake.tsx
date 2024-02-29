@@ -8,7 +8,7 @@ import { Token } from '../types'
 import { TransactionReceipt, zeroAddress } from 'viem'
 import { approveErc20Token } from '@/actions/approveErc20Token'
 import { stakeLpToken } from '@/actions/stakeLpToken'
-import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { segmentAnalyticsEvent } from '@/contexts/segmentAnalyticsEvent'
 
 export const approve = async (
   pool: Token,

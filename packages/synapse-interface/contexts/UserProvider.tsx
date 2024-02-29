@@ -27,7 +27,7 @@ import {
   fetchFeeAndRebate,
 } from '@/slices/feeAndRebateSlice'
 
-import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { segmentAnalyticsEvent } from '@/contexts/segmentAnalyticsEvent'
 
 
 const WalletStatusContext = createContext(undefined)

@@ -13,7 +13,6 @@ import { WagmiConfig } from 'wagmi'
 import { RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit'
 import { SynapseProvider } from '@/utils/providers/SynapseProvider'
 import CustomToaster from '@/components/toast'
-import { SegmentAnalyticsProvider } from '@/contexts/SegmentAnalyticsProvider'
 
 
 import { store, persistor } from '@/store/store'
@@ -57,15 +56,13 @@ const App = ({ Component, pageProps }: AppProps) => {
           <SynapseProvider chains={wagmiChains}>
             <Provider store={store}>
               <PersistGate loading={null} persistor={persistor}>
-                <SegmentAnalyticsProvider>
-                  <UserProvider>
-                    <BackgroundListenerProvider>
-                      <Component {...pageProps} />
-                    </BackgroundListenerProvider>
-                    <Analytics />
-                    <CustomToaster />
-                  </UserProvider>
-                </SegmentAnalyticsProvider>
+                <UserProvider>
+                  <BackgroundListenerProvider>
+                    <Component {...pageProps} />
+                  </BackgroundListenerProvider>
+                  <Analytics />
+                  <CustomToaster />
+                </UserProvider>
               </PersistGate>
             </Provider>
           </SynapseProvider>

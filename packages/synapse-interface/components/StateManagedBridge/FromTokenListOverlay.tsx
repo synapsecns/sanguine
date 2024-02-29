@@ -10,7 +10,7 @@ import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 
 import { setFromToken } from '@/slices/bridge/reducer'
 import { setShowFromTokenListOverlay } from '@/slices/bridgeDisplaySlice'
-import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { segmentAnalyticsEvent } from '@/contexts/segmentAnalyticsEvent'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { CHAINS_BY_ID } from '@/constants/chains'

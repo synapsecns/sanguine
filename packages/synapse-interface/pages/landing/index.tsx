@@ -14,7 +14,7 @@ import HowItWorksSection from '@/components/landing/sections/HowItWorksSection'
 import UseCasesSection from '@/components/landing/sections/UseCasesSection'
 import ResourcesSection from '@/components/landing/sections/ResourcesSection'
 
-import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { segmentAnalyticsEvent } from '@/contexts/segmentAnalyticsEvent'
 
 const LandingPage = () => {
   const { address: currentAddress } = useAccount()

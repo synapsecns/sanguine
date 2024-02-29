@@ -9,7 +9,7 @@ import { isAddress } from '@ethersproject/address'
 
 import { useAppDispatch } from '@/store/hooks'
 
-import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { segmentAnalyticsEvent } from '@/contexts/segmentAnalyticsEvent'
 
 import { useBridgeDisplayState, useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeState } from '@/slices/bridge/reducer'
