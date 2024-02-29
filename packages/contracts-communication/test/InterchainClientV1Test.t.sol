@@ -4,6 +4,7 @@ pragma solidity 0.8.20;
 import {AppConfigV1, InterchainTransaction} from "../contracts/InterchainClientV1.sol";
 import {InterchainDB} from "../contracts/InterchainDB.sol";
 
+import {IInterchainClientV1} from "../contracts/interfaces/IInterchainClientV1.sol";
 import {InterchainEntry} from "../contracts/libs/InterchainEntry.sol";
 import {OptionsV1} from "../contracts/libs/Options.sol";
 import {TypeCasts} from "../contracts/libs/TypeCasts.sol";
@@ -37,6 +38,8 @@ contract InterchainClientV1Test is Test {
 
     uint256 public constant SRC_CHAIN_ID = 1337;
     uint256 public constant DST_CHAIN_ID = 7331;
+
+    bytes32 public remoteClient = keccak256("Remote Client");
 
     address public contractOwner = makeAddr("Contract Owner");
 
@@ -100,6 +103,9 @@ contract InterchainClientV1Test is Test {
     }
     */
     function test_interchainSend() public {
+        vm.chainId(SRC_CHAIN_ID);
+        vm.prank(contractOwner);
+        icClient.setLinkedClient(DST_CHAIN_ID, remoteClient);
         bytes32 receiver = TypeCasts.addressToBytes32(makeAddr("Receiver"));
         bytes memory message = "Hello World";
         address[] memory srcModules = new address[](1);
@@ -123,7 +129,7 @@ contract InterchainClientV1Test is Test {
         bytes memory message = "Hello World";
         bytes32 srcSender = TypeCasts.addressToBytes32(makeAddr("Sender"));
         vm.prank(contractOwner);
-        icClient.setLinkedClient(SRC_CHAIN_ID, srcSender);
+        icClient.setLinkedClient(SRC_CHAIN_ID, remoteClient);
         uint256 dbNonce = 2;
         InterchainTransaction memory transaction = InterchainTransaction({
             srcSender: srcSender,
@@ -144,8 +150,12 @@ contract InterchainClientV1Test is Test {
             abi.encode(mockAppConfig.encodeAppConfigV1(), mockApprovedModules)
         );
 
-        InterchainEntry memory entry =
-            InterchainEntry({srcChainId: SRC_CHAIN_ID, srcWriter: srcSender, dbNonce: dbNonce, dataHash: transactionID});
+        InterchainEntry memory entry = InterchainEntry({
+            srcChainId: SRC_CHAIN_ID,
+            srcWriter: remoteClient,
+            dbNonce: dbNonce,
+            dataHash: transactionID
+        });
 
         icModule.mockVerifyEntry(address(icDB), entry);
 
@@ -155,5 +165,25 @@ contract InterchainClientV1Test is Test {
         // Expect App to be called with the message
         vm.expectCall({callee: address(icApp), msgValue: GAS_AIRDROP, gas: 200_000, data: expectedAppCalldata, count: 1});
         icClient.interchainExecute{value: GAS_AIRDROP}({gasLimit: 0, transaction: abi.encode(transaction)});
+    }
+
+    function test_getLinkedClient_EVM() public {
+        address linkedClientEVM = makeAddr("Linked Client EVM");
+        bytes32 linkedClient = TypeCasts.addressToBytes32(linkedClientEVM);
+        vm.prank(contractOwner);
+        icClient.setLinkedClient(SRC_CHAIN_ID, linkedClient);
+        assertEq(icClient.getLinkedClient(SRC_CHAIN_ID), linkedClient);
+        assertEq(icClient.getLinkedClientEVM(SRC_CHAIN_ID), linkedClientEVM);
+    }
+
+    function test_getLinkedClient_nonEVM() public {
+        bytes32 linkedClient = keccak256("Linked Client");
+        vm.prank(contractOwner);
+        icClient.setLinkedClient(SRC_CHAIN_ID, linkedClient);
+        assertEq(icClient.getLinkedClient(SRC_CHAIN_ID), linkedClient);
+        vm.expectRevert(
+            abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__NotEVMClient.selector, linkedClient)
+        );
+        icClient.getLinkedClientEVM(SRC_CHAIN_ID);
     }
 }

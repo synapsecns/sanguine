@@ -31,8 +31,8 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     /// @notice Address of the contract that handles execution fees. Can be updated by the owner.
     address public executionFees;
 
-    /// @notice Address of the InterchainClient contract on the remote chain
-    mapping(uint256 chainId => bytes32 remoteClient) public linkedClients;
+    /// @dev Address of the InterchainClient contract on the remote chain
+    mapping(uint256 chainId => bytes32 remoteClient) internal _linkedClient;
     /// @dev Executor address that completed the transaction. Address(0) if not executed yet.
     mapping(bytes32 transactionId => address executor) internal _txExecutor;
 
@@ -47,7 +47,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
 
     // @inheritdoc IInterchainClientV1
     function setLinkedClient(uint256 chainId, bytes32 client) external onlyOwner {
-        linkedClients[chainId] = client;
+        _linkedClient[chainId] = client;
     }
 
     // @inheritdoc IInterchainClientV1
@@ -172,6 +172,21 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         }
     }
 
+    /// @inheritdoc IInterchainClientV1
+    function getLinkedClient(uint256 chainId) external view returns (bytes32) {
+        return _linkedClient[chainId];
+    }
+
+    /// @inheritdoc IInterchainClientV1
+    function getLinkedClientEVM(uint256 chainId) external view returns (address linkedClientEVM) {
+        bytes32 linkedClient = _linkedClient[chainId];
+        linkedClientEVM = TypeCasts.bytes32ToAddress(linkedClient);
+        // Check that the linked client address fits into the EVM address space
+        if (TypeCasts.addressToBytes32(linkedClientEVM) != linkedClient) {
+            revert InterchainClientV1__NotEVMClient(linkedClient);
+        }
+    }
+
     /// @notice Encodes the transaction data into a bytes format.
     function encodeTransaction(InterchainTransaction memory icTx) external pure returns (bytes memory) {
         return icTx.encodeTransaction();
@@ -196,9 +211,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         internal
         returns (bytes32 transactionId, uint256 dbNonce)
     {
-        if (dstChainId == block.chainid) {
-            revert InterchainClientV1__IncorrectDstChainId(dstChainId);
-        }
+        _assertLinkedClient(dstChainId);
         // TODO: should check options for being correctly formatted
         uint256 verificationFee = IInterchainDB(INTERCHAIN_DB).getInterchainFee(dstChainId, srcModules);
         if (msg.value < verificationFee) {
@@ -256,9 +269,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
 
     /// @dev Asserts that the transaction is executable. Returns the transactionId for chaining purposes.
     function _assertExecutable(InterchainTransaction memory icTx) internal view returns (bytes32 transactionId) {
-        if (icTx.srcChainId == block.chainid) {
-            revert InterchainClientV1__IncorrectSrcChainId(icTx.srcChainId);
-        }
+        bytes32 linkedClient = _assertLinkedClient(icTx.srcChainId);
         if (icTx.dstChainId != block.chainid) {
             revert InterchainClientV1__IncorrectDstChainId(icTx.dstChainId);
         }
@@ -270,7 +281,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         InterchainEntry memory icEntry = InterchainEntry({
             srcChainId: icTx.srcChainId,
             dbNonce: icTx.dbNonce,
-            srcWriter: linkedClients[icTx.srcChainId],
+            srcWriter: linkedClient,
             dataHash: transactionId
         });
         (bytes memory encodedAppConfig, address[] memory approvedDstModules) =
@@ -279,6 +290,17 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         uint256 responses = _getFinalizedResponsesCount(approvedDstModules, icEntry, appConfig.optimisticPeriod);
         if (responses < appConfig.requiredResponses) {
             revert InterchainClientV1__NotEnoughResponses(responses, appConfig.requiredResponses);
+        }
+    }
+
+    /// @dev Asserts that the chain is linked and returns the linked client address.
+    function _assertLinkedClient(uint256 chainId) internal view returns (bytes32 linkedClient) {
+        if (chainId == block.chainid) {
+            revert InterchainClientV1__NotRemoteChainId(chainId);
+        }
+        linkedClient = _linkedClient[chainId];
+        if (linkedClient == 0) {
+            revert InterchainClientV1__NoLinkedClient(chainId);
         }
     }
 

@@ -54,7 +54,7 @@ contract ExecutionService is ExecutionServiceEvents, Ownable, IExecutionService 
             executionFee >= getExecutionFee(dstChainId, txPayloadSize, options),
             "ExecutionService: execution fee is not high enough"
         );
-        emit ExecutionRequested(transactionId);
+        emit ExecutionRequested(transactionId, msg.sender);
     }
 
     // @inheritdoc
