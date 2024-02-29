@@ -72,6 +72,7 @@ export const transactionsSlice = createSlice({
       )
       if (txIndex !== -1) {
         state.transactions[txIndex].isComplete = true
+        state.transactions[txIndex].status = 'completed'
       }
     },
     revertTransaction: (
@@ -85,6 +86,7 @@ export const transactionsSlice = createSlice({
       )
       if (txIndex !== -1) {
         state.transactions[txIndex].isReverted = true
+        state.transactions[txIndex].status = 'reverted'
       }
     },
     clearTransactions: (state) => {

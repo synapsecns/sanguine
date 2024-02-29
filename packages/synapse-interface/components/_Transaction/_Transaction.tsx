@@ -33,6 +33,7 @@ interface _TransactionProps {
   kappa?: string
   isStoredComplete: boolean
   isStoredReverted: boolean
+  status: 'pending' | 'completed' | 'reverted'
 }
 
 /** TODO: Update naming after refactoring existing Activity / Transaction flow */
