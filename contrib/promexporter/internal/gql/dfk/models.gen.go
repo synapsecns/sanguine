@@ -2844,6 +2844,7 @@ type Weapon struct {
 	PScalarMax1            *int64         `json:"pScalarMax1,omitempty"`
 	PScalarMax2            *int64         `json:"pScalarMax2,omitempty"`
 	PScalarMax3            *int64         `json:"pScalarMax3,omitempty"`
+	SpeedModifier          *int64         `json:"speedModifier,omitempty"`
 }
 
 type WeaponAuction struct {
@@ -3331,6 +3332,14 @@ type WeaponFilter struct {
 	PScalarMax3Lte                     *int64    `json:"pScalarMax3_lte,omitempty"`
 	PScalarMax3In                      []*int64  `json:"pScalarMax3_in,omitempty"`
 	PScalarMax3NotIn                   []*int64  `json:"pScalarMax3_not_in,omitempty"`
+	SpeedModifier                      *int64    `json:"speedModifier,omitempty"`
+	SpeedModifierNot                   *int64    `json:"speedModifier_not,omitempty"`
+	SpeedModifierGt                    *int64    `json:"speedModifier_gt,omitempty"`
+	SpeedModifierLt                    *int64    `json:"speedModifier_lt,omitempty"`
+	SpeedModifierGte                   *int64    `json:"speedModifier_gte,omitempty"`
+	SpeedModifierLte                   *int64    `json:"speedModifier_lte,omitempty"`
+	SpeedModifierIn                    []*int64  `json:"speedModifier_in,omitempty"`
+	SpeedModifierNotIn                 []*int64  `json:"speedModifier_not_in,omitempty"`
 }
 
 type AccessoryOrderBy string
@@ -4263,6 +4272,7 @@ const (
 	WeaponOrderByPScalarMax1            WeaponOrderBy = "pScalarMax1"
 	WeaponOrderByPScalarMax2            WeaponOrderBy = "pScalarMax2"
 	WeaponOrderByPScalarMax3            WeaponOrderBy = "pScalarMax3"
+	WeaponOrderBySpeedModifier          WeaponOrderBy = "speedModifier"
 )
 
 var AllWeaponOrderBy = []WeaponOrderBy{
@@ -4326,11 +4336,12 @@ var AllWeaponOrderBy = []WeaponOrderBy{
 	WeaponOrderByPScalarMax1,
 	WeaponOrderByPScalarMax2,
 	WeaponOrderByPScalarMax3,
+	WeaponOrderBySpeedModifier,
 }
 
 func (e WeaponOrderBy) IsValid() bool {
 	switch e {
-	case WeaponOrderByID, WeaponOrderByNormalizedID, WeaponOrderByOwner, WeaponOrderByEquippableAt, WeaponOrderByEquippedTo, WeaponOrderByCurrentRealm, WeaponOrderByOriginRealm, WeaponOrderByCreatedAt, WeaponOrderByCraftedBy, WeaponOrderBySalePrice, WeaponOrderByPrivateAuctionProfile, WeaponOrderByDisplayID, WeaponOrderByRarity, WeaponOrderByDye1, WeaponOrderByDye2, WeaponOrderByMaxDurability, WeaponOrderByDurability, WeaponOrderByMaxRepairs, WeaponOrderByRemainingRepairs, WeaponOrderByBonus1, WeaponOrderByBonus2, WeaponOrderByBonus3, WeaponOrderByBonus4, WeaponOrderByBonusScalar1, WeaponOrderByBonusScalar2, WeaponOrderByBonusScalar3, WeaponOrderByBonusScalar4, WeaponOrderByEnchantmentScalar1, WeaponOrderByEnchantmentScalar2, WeaponOrderByEnchantmentScalar3, WeaponOrderByEnchantmentType1, WeaponOrderByEnchantmentType2, WeaponOrderByEnchantmentType3, WeaponOrderByEquipRequirement, WeaponOrderByWeaponType, WeaponOrderByBasePotency, WeaponOrderByFocusRequirement, WeaponOrderByMAccuracyAtRequirement, WeaponOrderByMScalarStat1, WeaponOrderByMScalarStat2, WeaponOrderByMScalarStat3, WeaponOrderByMScalarValue1, WeaponOrderByMScalarValue2, WeaponOrderByMScalarValue3, WeaponOrderByMScalarMax1, WeaponOrderByMScalarMax2, WeaponOrderByMScalarMax3, WeaponOrderByMisc, WeaponOrderByBaseDamage, WeaponOrderByAccuracyRequirement, WeaponOrderByPAccuracyAtRequirement, WeaponOrderByPScalarStat1, WeaponOrderByPScalarStat2, WeaponOrderByPScalarStat3, WeaponOrderByPScalarValue1, WeaponOrderByPScalarValue2, WeaponOrderByPScalarValue3, WeaponOrderByPScalarMax1, WeaponOrderByPScalarMax2, WeaponOrderByPScalarMax3:
+	case WeaponOrderByID, WeaponOrderByNormalizedID, WeaponOrderByOwner, WeaponOrderByEquippableAt, WeaponOrderByEquippedTo, WeaponOrderByCurrentRealm, WeaponOrderByOriginRealm, WeaponOrderByCreatedAt, WeaponOrderByCraftedBy, WeaponOrderBySalePrice, WeaponOrderByPrivateAuctionProfile, WeaponOrderByDisplayID, WeaponOrderByRarity, WeaponOrderByDye1, WeaponOrderByDye2, WeaponOrderByMaxDurability, WeaponOrderByDurability, WeaponOrderByMaxRepairs, WeaponOrderByRemainingRepairs, WeaponOrderByBonus1, WeaponOrderByBonus2, WeaponOrderByBonus3, WeaponOrderByBonus4, WeaponOrderByBonusScalar1, WeaponOrderByBonusScalar2, WeaponOrderByBonusScalar3, WeaponOrderByBonusScalar4, WeaponOrderByEnchantmentScalar1, WeaponOrderByEnchantmentScalar2, WeaponOrderByEnchantmentScalar3, WeaponOrderByEnchantmentType1, WeaponOrderByEnchantmentType2, WeaponOrderByEnchantmentType3, WeaponOrderByEquipRequirement, WeaponOrderByWeaponType, WeaponOrderByBasePotency, WeaponOrderByFocusRequirement, WeaponOrderByMAccuracyAtRequirement, WeaponOrderByMScalarStat1, WeaponOrderByMScalarStat2, WeaponOrderByMScalarStat3, WeaponOrderByMScalarValue1, WeaponOrderByMScalarValue2, WeaponOrderByMScalarValue3, WeaponOrderByMScalarMax1, WeaponOrderByMScalarMax2, WeaponOrderByMScalarMax3, WeaponOrderByMisc, WeaponOrderByBaseDamage, WeaponOrderByAccuracyRequirement, WeaponOrderByPAccuracyAtRequirement, WeaponOrderByPScalarStat1, WeaponOrderByPScalarStat2, WeaponOrderByPScalarStat3, WeaponOrderByPScalarValue1, WeaponOrderByPScalarValue2, WeaponOrderByPScalarValue3, WeaponOrderByPScalarMax1, WeaponOrderByPScalarMax2, WeaponOrderByPScalarMax3, WeaponOrderBySpeedModifier:
 		return true
 	}
 	return false
