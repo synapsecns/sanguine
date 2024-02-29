@@ -126,9 +126,11 @@ export const ToTokenListOverlay = () => {
       previousToToken: oldToken?.symbol,
       newToToken: newToken?.symbol,
     }
-    segmentAnalyticsEvent(eventTitle, eventData)
+
     dispatch(setToToken(newToken))
     onClose()
+
+    segmentAnalyticsEvent(eventTitle, eventData)
   }
 
   const isLoadingExchangeRate = useMemo(() => {

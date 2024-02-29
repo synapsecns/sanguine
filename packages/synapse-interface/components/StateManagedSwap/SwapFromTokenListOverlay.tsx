@@ -80,9 +80,10 @@ export const SwapFromTokenListOverlay = () => {
       previousFromToken: oldToken?.symbol,
       newFromToken: newToken?.symbol,
     }
-    segmentAnalyticsEvent(eventTitle, eventData)
+
     dispatch(setSwapFromToken(newToken))
     onClose()
+    segmentAnalyticsEvent(eventTitle, eventData)
   }
 
   return (

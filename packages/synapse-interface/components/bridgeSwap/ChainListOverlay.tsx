@@ -75,9 +75,10 @@ export const ChainListOverlay = ({
       newFromChainId: newChainId,
     }
 
-    segmentAnalyticsEvent(eventTitle, eventData)
     dispatch(setChainId(newChainId))
     onClose()
+
+    segmentAnalyticsEvent(eventTitle, eventData)
   }
 
   return (
