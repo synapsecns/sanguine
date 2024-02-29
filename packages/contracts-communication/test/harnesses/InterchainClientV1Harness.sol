@@ -6,7 +6,7 @@ import {InterchainClientV1} from "../../contracts/InterchainClientV1.sol";
 import {InterchainEntry} from "../../contracts/libs/InterchainEntry.sol";
 
 contract InterchainClientV1Harness is InterchainClientV1 {
-    constructor(address interchainDB) InterchainClientV1(interchainDB) {}
+    constructor(address interchainDB, address owner_) InterchainClientV1(interchainDB, owner_) {}
 
     /**
      * @dev Harness for testing _getFinalizedResponsesCount function

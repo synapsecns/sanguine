@@ -16,7 +16,7 @@ contract ExecutionService is ExecutionServiceEvents, Ownable, IExecutionService 
     address public executorEOA;
     IGasOracle public gasOracle;
 
-    constructor() Ownable(msg.sender) {}
+    constructor(address owner_) Ownable(owner_) {}
 
     function setInterchainClient(address _interchainClient) external onlyOwner {
         interchainClient = _interchainClient;

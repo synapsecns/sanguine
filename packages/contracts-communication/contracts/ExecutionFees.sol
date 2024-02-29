@@ -19,8 +19,8 @@ contract ExecutionFees is AccessControl, ExecutionFeesEvents, IExecutionFees {
     /// @inheritdoc IExecutionFees
     mapping(uint256 chainId => mapping(bytes32 transactionId => address executor)) public recordedExecutor;
 
-    constructor(address initialAdmin) {
-        _grantRole(DEFAULT_ADMIN_ROLE, initialAdmin);
+    constructor(address admin) {
+        _grantRole(DEFAULT_ADMIN_ROLE, admin);
     }
 
     // @inheritdoc IExecutionFees
