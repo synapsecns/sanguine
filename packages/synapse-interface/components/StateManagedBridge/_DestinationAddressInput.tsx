@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { isValidAddress } from '@/utils/isValidAddress'
 
 export const _DestinationAddressInput = ({
   connectedAddress,
@@ -12,6 +13,8 @@ export const _DestinationAddressInput = ({
     setInputValue(value)
   }
 
+  const isInputValidAddress = isValidAddress(inputValue)
+
   return (
     <div id="destination-address-input">
       <input
@@ -19,6 +22,7 @@ export const _DestinationAddressInput = ({
         value={inputValue}
         onChange={handleInput}
       />
+      <div>{isInputValidAddress ? 'Valid Address' : 'Invalid Address'}</div>
     </div>
   )
 }
