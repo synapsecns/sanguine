@@ -5,6 +5,7 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
+	"github.com/synapsecns/sanguine/ethergo/listener/db"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -15,8 +16,6 @@ import (
 
 // Writer is the interface for writing to the database.
 type Writer interface {
-	// PutLatestBlock upsers the latest block on a given chain id to be new height.
-	PutLatestBlock(ctx context.Context, chainID, height uint64) error
 	// StoreQuoteRequest stores a quote request. If one already exists, only  the status will be updated
 	// TODO: find a better way to describe this in the name
 	StoreQuoteRequest(ctx context.Context, request QuoteRequest) error
@@ -33,8 +32,6 @@ type Writer interface {
 
 // Reader is the interface for reading from the database.
 type Reader interface {
-	// LatestBlockForChain gets the latest block for a given chain id.
-	LatestBlockForChain(ctx context.Context, chainID uint64) (uint64, error)
 	// GetQuoteRequestByID gets a quote request by id. Should return ErrNoQuoteForID if not found
 	GetQuoteRequestByID(ctx context.Context, id [32]byte) (*QuoteRequest, error)
 	// GetQuoteRequestByOriginTxHash gets a quote request by origin tx hash. Should return ErrNoQuoteForTxHash if not found
@@ -51,11 +48,10 @@ type Service interface {
 	// SubmitterDB returns the submitter database service.
 	SubmitterDB() submitterDB.Service
 	Writer
+	db.ChainListenerDB
 }
 
 var (
-	// ErrNoLatestBlockForChainID is returned when no block exists for the chain.
-	ErrNoLatestBlockForChainID = errors.New("no latest block for chainId")
 	// ErrNoQuoteForID means the quote was not found.
 	ErrNoQuoteForID = errors.New("no quote found for tx id")
 	// ErrNoQuoteForTxHash means the quote was not found.

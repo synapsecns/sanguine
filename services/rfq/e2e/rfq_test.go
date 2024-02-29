@@ -238,10 +238,7 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 		}
 		originPending, err := i.store.HasPendingRebalance(i.GetTestContext(), uint64(i.originBackend.GetChainID()))
 		i.NoError(err)
-		if !originPending {
-			return false
-		}
-		return true
+		return originPending
 	})
 }
 
