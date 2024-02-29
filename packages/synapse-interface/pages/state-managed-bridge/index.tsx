@@ -7,7 +7,13 @@ import { useRouter } from 'next/router'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { BridgeState } from '@/slices/bridge/reducer'
+import {
+  BridgeState,
+  setFromChainId,
+  setFromToken,
+  setToChainId,
+  setToToken,
+} from '@/slices/bridge/reducer'
 import {
   updateFromValue,
   setBridgeQuote,
@@ -78,6 +84,7 @@ import {
   fetchEthPrice,
   fetchGmxPrice,
 } from '@/slices/priceDataSlice'
+import { SwitchButton } from '@/components/buttons/SwitchButton'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -568,6 +575,14 @@ const StateManagedBridge = () => {
               </animated.div>
             </Transition>
             <InputContainer />
+            <SwitchButton
+              onClick={() => {
+                dispatch(setFromChainId(toChainId))
+                dispatch(setFromToken(toToken))
+                dispatch(setToChainId(fromChainId))
+                dispatch(setToToken(fromToken))
+              }}
+            />
             <OutputContainer />
             <Warning />
             <Transition
