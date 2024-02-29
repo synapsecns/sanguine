@@ -27,7 +27,6 @@ type DeployManager struct {
 func NewDeployManager(t *testing.T) *DeployManager {
 	t.Helper()
 
-	// TODO: add contracts here
 	parentManager := manager.NewDeployerManager(t, NewFastBridgeDeployer, NewMockERC20Deployer, NewMockFastBridgeDeployer, NewWETH9Deployer, NewUSDTDeployer, NewUSDCDeployer, NewDAIDeployer)
 	return &DeployManager{parentManager}
 }

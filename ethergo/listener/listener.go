@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/synapsecns/sanguine/ethergo/chain/listener/db"
+	db2 "github.com/synapsecns/sanguine/ethergo/listener/db"
 	"math/big"
 	"time"
 
@@ -39,7 +39,7 @@ type chainListener struct {
 	client       client.EVM
 	address      common.Address
 	initialBlock uint64
-	store        db.ChainListenerDB
+	store        db2.ChainListenerDB
 	handler      metrics.Handler
 	backoff      *backoff.Backoff
 	// IMPORTANT! These fields cannot be used until they has been set. They are NOT
@@ -52,11 +52,11 @@ type chainListener struct {
 var (
 	logger = log.Logger("chainlistener-logger")
 	// ErrNoLatestBlockForChainID is returned when no block exists for the chain.
-	ErrNoLatestBlockForChainID = db.ErrNoLatestBlockForChainID
+	ErrNoLatestBlockForChainID = db2.ErrNoLatestBlockForChainID
 )
 
 // NewChainListener creates a new chain listener.
-func NewChainListener(omnirpcClient client.EVM, store db.ChainListenerDB, address common.Address, initialBlock uint64, handler metrics.Handler) (ContractListener, error) {
+func NewChainListener(omnirpcClient client.EVM, store db2.ChainListenerDB, address common.Address, initialBlock uint64, handler metrics.Handler) (ContractListener, error) {
 	return &chainListener{
 		handler:      handler,
 		address:      address,

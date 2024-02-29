@@ -2,7 +2,7 @@ package base
 
 import (
 	"github.com/synapsecns/sanguine/core/metrics"
-	listenerDB "github.com/synapsecns/sanguine/ethergo/chain/listener/db"
+	listenerDB "github.com/synapsecns/sanguine/ethergo/listener/db"
 	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db/txdb"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"

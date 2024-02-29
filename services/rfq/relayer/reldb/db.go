@@ -5,7 +5,7 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
-	"github.com/synapsecns/sanguine/ethergo/chain/listener/db"
+	"github.com/synapsecns/sanguine/ethergo/listener/db"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"

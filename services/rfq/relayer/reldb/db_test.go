@@ -2,7 +2,7 @@ package reldb_test
 
 import (
 	"errors"
-	"github.com/synapsecns/sanguine/ethergo/chain/listener"
+	"github.com/synapsecns/sanguine/ethergo/listener"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 )
 

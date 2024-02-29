@@ -4,8 +4,8 @@ import (
 	"context"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/metrics"
-	"github.com/synapsecns/sanguine/ethergo/chain/listener/db"
 	"github.com/synapsecns/sanguine/ethergo/client"
+	"github.com/synapsecns/sanguine/ethergo/listener/db"
 )
 
 // TestChainListener wraps chain listener for testing.
