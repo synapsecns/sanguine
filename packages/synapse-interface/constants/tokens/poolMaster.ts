@@ -21,6 +21,7 @@ import {
   ONEUSDC,
   ONEUSDT,
   WETH,
+  USDB,
 } from '@constants/tokens/bridgeable'
 import {
   AVWETH,
@@ -864,6 +865,63 @@ export const BASE_ETH_SWAP_TOKEN = new Token({
   chainId: CHAINS.BASE.id,
   incentivized: true,
   miniChefAddress: MINICHEF_ADDRESSES[CHAINS.BASE.id],
+})
+
+export const BLAST_ETH_SWAP_TOKEN = new Token({
+  addresses: {
+    [CHAINS.BLAST.id]: '0x_NEED_ADDRESS',
+  },
+  decimals: 18,
+  symbol: 'nETH-LP',
+  name: 'Synapse Eth LP Token Blast',
+  logo: synapseLogo,
+  poolName: 'Blast ETH Pool',
+  routerIndex: 'blastethpool',
+  poolId: 0,
+  poolType: 'ETH',
+  swapAddresses: {
+    [CHAINS.BASE.id]: '0x_NEED_ADDRESS',
+  },
+  swapEthAddresses: {
+    [CHAINS.BASE.id]: '0x_NEED_ADDRESS',
+  },
+  poolTokens: [NETH, WETH],
+  nativeTokens: [NETH, ETH],
+  description: "Synapse's ETH swap LP token on Blast",
+  display: true,
+  priorityPool: true,
+  color: 'yellow',
+  priceUnits: 'ETH',
+  priorityRank: 6,
+  chainId: CHAINS.BLAST.id,
+  incentivized: true,
+  miniChefAddress: MINICHEF_ADDRESSES[CHAINS.BLAST.id],
+})
+
+export const BLAST_2POOL_SWAP_TOKEN = new Token({
+  addresses: {
+    [CHAINS.BLAST.id]: '0x_NEED_ADDRESS',
+  },
+  decimals: 18,
+  symbol: 'nUSDLP',
+  name: 'Synapse nUSD LP Token Blast',
+  logo: synapseLogo,
+  poolName: 'Blast 2Pool',
+  routerIndex: 'blast2pool',
+  poolId: 1,
+  poolType: 'USD',
+  swapAddresses: {
+    [CHAINS.ARBITRUM.id]: '0x9Dd329F5411466d9e0C488fF72519CA9fEf0cb40',
+  },
+  poolTokens: [NUSD, USDB],
+  description: "Synapse's 2pool stableswap LP token on Blast",
+  display: true,
+  priorityPool: true,
+  priceUnits: 'USD',
+  priorityRank: 6,
+  chainId: CHAINS.BLAST.id,
+  incentivized: true,
+  miniChefAddress: MINICHEF_ADDRESSES[CHAINS.BLAST.id],
 })
 
 // MIGRATED POOLS
