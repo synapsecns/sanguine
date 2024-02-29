@@ -5,8 +5,6 @@ import Head from 'next/head'
 import '@/patch'
 import { Analytics } from '@vercel/analytics/react'
 import { PersistGate } from 'redux-persist/integration/react'
-import LogRocket from 'logrocket'
-import setupLogRocketReact from 'logrocket-react'
 
 import { Provider } from 'react-redux'
 import { WagmiConfig } from 'wagmi'
@@ -26,6 +24,8 @@ if (
   typeof window !== 'undefined' &&
   !location.hostname.match('synapseprotocol.com')
 ) {
+  const LogRocket = (await import('logrocket')).default
+  const setupLogRocketReact = (await import('logrocket-react')).default
   LogRocket.init('npdhrc/synapse-staging', {
     mergeIframes: true,
   })
