@@ -115,8 +115,8 @@ github.com/armon/go-radix v0.0.0-20180808171621-7fddfc383310/go.mod h1:ufUuZ+zHj
 github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5/go.mod h1:wHh0iHkYZB8zMSxRWpUBQtwG5a7fFgvEO+odwuTv2gs=
 github.com/ashanbrown/forbidigo v1.1.0/go.mod h1:vVW7PEdqEFqapJe95xHkTfB1+XvZXBFg8t0sG2FIxmI=
 github.com/ashanbrown/makezero v0.0.0-20210308000810-4155955488a0/go.mod h1:oG9Dnez7/ESBqc4EdrdNlryeo7d0KcW1ftXHm7nU/UU=
-github.com/augustoroman/hexdump v0.0.0-20190827031536-6506f4163e93 h1:z6k1vb5L2wqLK4SIk3fpUiXnhNWSZ6Oyy8AaLqr0B+A=
-github.com/augustoroman/hexdump v0.0.0-20190827031536-6506f4163e93/go.mod h1:ps2Vk8wMZarkeIPtUqW/FUvwVVdeRDbewMYz+EmuEgk=
+github.com/augustoroman/hexdump v0.0.0-20231204223853-3694912baadb h1:ALfR3gpvX9qg+wKDPHnNdC37HQHUALgj2ABpnvj1hNw=
+github.com/augustoroman/hexdump v0.0.0-20231204223853-3694912baadb/go.mod h1:K8239CdeF8bhd+2T50O4FMgTbY5/0qCkuzrJBXRewO0=
 github.com/aws/aws-sdk-go v1.15.78/go.mod h1:E3/ieXAlvM0XWO57iftYVDLLvQ824smPP3ATZkfNZeM=
 github.com/aws/aws-sdk-go v1.23.20/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
 github.com/aws/aws-sdk-go v1.25.3/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=

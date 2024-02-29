@@ -1,12 +1,14 @@
 module github.com/synapsecns/sanguine/contrib/tfcore
 
-go 1.21
+go 1.21.4
+
+toolchain go1.22.0
 
 require (
 	cloud.google.com/go/bigtable v1.10.1
 	github.com/GoogleCloudPlatform/declarative-resource-client-library v0.0.0-20211027225138-ef28ca390518
 	github.com/apparentlymart/go-cidr v1.1.0
-	github.com/augustoroman/hexdump v0.0.0-20190827031536-6506f4163e93
+	github.com/augustoroman/hexdump v0.0.0-20231204223853-3694912baadb
 	github.com/davecgh/go-spew v1.1.1
 	github.com/gammazero/workerpool v0.0.0-20181230203049-86a96b5d5d92
 	github.com/gartnera/gcloud v0.0.15
