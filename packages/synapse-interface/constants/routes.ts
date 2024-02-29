@@ -3,6 +3,7 @@ import {
   SWAP_PATH,
   STAKE_PATH,
   POOLS_PATH,
+  POOL_PATH,
   LANDING_PATH,
   BRIDGE_PATH,
   INTERCHAIN_LINK,
@@ -21,30 +22,30 @@ export const NAVIGATION: RouteObject = {
   About: {
     path: LANDING_PATH,
     text: 'About',
-    match: '/landing',
+    match: LANDING_PATH,
   },
   Bridge: {
     path: BRIDGE_PATH,
     text: 'Bridge',
-    match: '/',
+    match: BRIDGE_PATH,
   },
   Swap: {
     path: SWAP_PATH,
     text: 'Swap',
-    match: '/swap',
+    match: SWAP_PATH,
   },
   Pools: {
     path: POOLS_PATH,
     text: 'Pools',
     match: {
-      startsWith: '/pool',
+      startsWith: POOL_PATH,
     },
   },
   Stake: {
     path: STAKE_PATH,
     text: 'Stake',
     match: {
-      startsWith: '/stake',
+      startsWith: STAKE_PATH,
     },
   },
   Analytics: {
