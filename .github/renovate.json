@@ -53,8 +53,8 @@
   ],
   "updateInternalDeps": true,
   "transitiveRemediation": true,
-  "branchConcurrentLimit": 7,
-  "prConcurrentLimit": 7,
+  "branchConcurrentLimit": 9,
+  "prConcurrentLimit": 9,
   "git-submodules": {
     "enabled": true
   },
