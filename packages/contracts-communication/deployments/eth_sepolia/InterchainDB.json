@@ -1,0 +1,408 @@
+{
+  "address": "0xD1020FaF46D8D92107200c2bcD85818844d99099",
+  "constructorArgs": "0x",
+  "receipt": {
+    "hash": "0x0f9b28ee4b25774c641966aa35e1dcdac385ca83431540523d9bbb630142ea38",
+    "blockNumber": 5389191
+  },
+  "abi": [
+    {
+      "type": "function",
+      "name": "getDBNonce",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getEntry",
+      "inputs": [
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "tuple",
+          "internalType": "struct InterchainEntry",
+          "components": [
+            {
+              "name": "srcChainId",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "dbNonce",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "srcWriter",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            },
+            {
+              "name": "dataHash",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            }
+          ]
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getInterchainFee",
+      "inputs": [
+        {
+          "name": "destChainId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "srcModules",
+          "type": "address[]",
+          "internalType": "address[]"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "fee",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "readEntry",
+      "inputs": [
+        {
+          "name": "dstModule",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "entry",
+          "type": "tuple",
+          "internalType": "struct InterchainEntry",
+          "components": [
+            {
+              "name": "srcChainId",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "dbNonce",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "srcWriter",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            },
+            {
+              "name": "dataHash",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            }
+          ]
+        }
+      ],
+      "outputs": [
+        {
+          "name": "moduleVerifiedAt",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "requestVerification",
+      "inputs": [
+        {
+          "name": "destChainId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "srcModules",
+          "type": "address[]",
+          "internalType": "address[]"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "verifyEntry",
+      "inputs": [
+        {
+          "name": "entry",
+          "type": "tuple",
+          "internalType": "struct InterchainEntry",
+          "components": [
+            {
+              "name": "srcChainId",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "dbNonce",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "srcWriter",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            },
+            {
+              "name": "dataHash",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            }
+          ]
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "writeEntry",
+      "inputs": [
+        {
+          "name": "dataHash",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "writeEntryWithVerification",
+      "inputs": [
+        {
+          "name": "destChainId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "dataHash",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "srcModules",
+          "type": "address[]",
+          "internalType": "address[]"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "event",
+      "name": "InterchainEntryVerified",
+      "inputs": [
+        {
+          "name": "module",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        },
+        {
+          "name": "srcChainId",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "srcWriter",
+          "type": "bytes32",
+          "indexed": false,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "dataHash",
+          "type": "bytes32",
+          "indexed": false,
+          "internalType": "bytes32"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "InterchainEntryWritten",
+      "inputs": [
+        {
+          "name": "srcChainId",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "srcWriter",
+          "type": "bytes32",
+          "indexed": false,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "dataHash",
+          "type": "bytes32",
+          "indexed": false,
+          "internalType": "bytes32"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "InterchainVerificationRequested",
+      "inputs": [
+        {
+          "name": "destChainId",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "srcModules",
+          "type": "address[]",
+          "indexed": false,
+          "internalType": "address[]"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "error",
+      "name": "InterchainDB__ConflictingEntries",
+      "inputs": [
+        {
+          "name": "existingEntryValue",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "newEntry",
+          "type": "tuple",
+          "internalType": "struct InterchainEntry",
+          "components": [
+            {
+              "name": "srcChainId",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "dbNonce",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "srcWriter",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            },
+            {
+              "name": "dataHash",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainDB__EntryDoesNotExist",
+      "inputs": [
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainDB__IncorrectFeeAmount",
+      "inputs": [
+        {
+          "name": "actualFee",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "expectedFee",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainDB__NoModulesSpecified",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "InterchainDB__SameChainId",
+      "inputs": []
+    }
+  ]
+}
