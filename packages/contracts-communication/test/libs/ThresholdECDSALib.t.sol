@@ -5,6 +5,9 @@ import {ThresholdECDSALib, ThresholdECDSALibHarness} from "../harnesses/Threshol
 
 import {Test} from "forge-std/Test.sol";
 
+// solhint-disable func-name-mixedcase
+// solhint-disable ordering
+// solhint-disable var-name-mixedcase
 contract ThresholdECDSALibTest is Test {
     ThresholdECDSALibHarness public libHarness;
 
@@ -68,6 +71,10 @@ contract ThresholdECDSALibTest is Test {
 
     function expectRecoveredSignersNotSortedError() internal {
         vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__RecoveredSignersNotSorted.selector));
+    }
+
+    function expectZeroAddressError() internal {
+        vm.expectRevert(ThresholdECDSALib.ThresholdECDSA__ZeroAddress.selector);
     }
 
     function expectZeroThresholdError() internal {
@@ -192,6 +199,11 @@ contract ThresholdECDSALibTest is Test {
         libHarness.addSigner(SIGNER_1);
         expectAlreadySignerError(SIGNER_2);
         libHarness.addSigner(SIGNER_2);
+    }
+
+    function test_addSigner_revert_zeroAddress() public {
+        expectZeroAddressError();
+        libHarness.addSigner(address(0));
     }
 
     function test_removeSigner_revert_notSigner() public {

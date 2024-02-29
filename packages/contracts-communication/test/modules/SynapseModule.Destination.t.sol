@@ -4,14 +4,17 @@ pragma solidity 0.8.20;
 import {InterchainModuleEvents} from "../../contracts/events/InterchainModuleEvents.sol";
 import {SynapseModuleEvents} from "../../contracts/events/SynapseModuleEvents.sol";
 import {IInterchainModule} from "../../contracts/interfaces/IInterchainModule.sol";
+import {InterchainEntry} from "../../contracts/libs/InterchainEntry.sol";
 import {ThresholdECDSALib} from "../../contracts/libs/ThresholdECDSA.sol";
-import {SynapseModule, InterchainEntry, ISynapseModule} from "../../contracts/modules/SynapseModule.sol";
+import {SynapseModule} from "../../contracts/modules/SynapseModule.sol";
 
 import {GasOracleMock} from "../mocks/GasOracleMock.sol";
 import {InterchainDBMock, IInterchainDB} from "../mocks/InterchainDBMock.sol";
 
 import {Test} from "forge-std/Test.sol";
 
+// solhint-disable func-name-mixedcase
+// solhint-disable ordering
 contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseModuleEvents {
     SynapseModule public module;
     GasOracleMock public gasOracle;

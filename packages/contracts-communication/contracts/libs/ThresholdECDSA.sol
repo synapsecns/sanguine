@@ -11,8 +11,11 @@ struct ThresholdECDSA {
 
 using ThresholdECDSALib for ThresholdECDSA global;
 
+// solhint-disable code-complexity
 library ThresholdECDSALib {
     using EnumerableSet for EnumerableSet.AddressSet;
+
+    uint256 private constant SIGNATURE_LENGTH = 65;
 
     error ThresholdECDSA__AlreadySigner(address account);
     error ThresholdECDSA__IncorrectSignaturesLength(uint256 length);
@@ -20,13 +23,13 @@ library ThresholdECDSALib {
     error ThresholdECDSA__NotEnoughSignatures(uint256 threshold);
     error ThresholdECDSA__NotSigner(address account);
     error ThresholdECDSA__RecoveredSignersNotSorted();
+    error ThresholdECDSA__ZeroAddress();
     error ThresholdECDSA__ZeroThreshold();
-
-    uint256 private constant SIGNATURE_LENGTH = 65;
 
     /// @notice Adds a new signer to the list of signers.
     /// @dev Will revert if the account is already a signer.
     function addSigner(ThresholdECDSA storage self, address account) internal {
+        if (account == address(0)) revert ThresholdECDSA__ZeroAddress();
         bool added = self._signers.add(account);
         if (!added) {
             revert ThresholdECDSA__AlreadySigner(account);

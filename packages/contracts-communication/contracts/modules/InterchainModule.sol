@@ -38,10 +38,6 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
         emit VerificationRequested(destChainId, encodedEntry, ethSignedEntryHash);
     }
 
-    function decodeEntry(bytes memory entry) external pure returns (InterchainEntry memory) {
-        return abi.decode(entry, (InterchainEntry));
-    }
-
     /// @inheritdoc IInterchainModule
     function getModuleFee(uint256 destChainId) external view returns (uint256) {
         return _getModuleFee(destChainId);
@@ -61,7 +57,8 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
     }
 
     /// @dev Internal logic to request the verification of an entry on the destination chain.
-    function _requestVerification(uint256 destChainId, bytes memory encodedEntry) internal virtual;
+    // solhint-disable-next-line no-empty-blocks
+    function _requestVerification(uint256 destChainId, bytes memory encodedEntry) internal virtual {}
 
     /// @dev Internal logic to get the module fee for verifying an entry on the specified destination chain.
     function _getModuleFee(uint256 destChainId) internal view virtual returns (uint256);
