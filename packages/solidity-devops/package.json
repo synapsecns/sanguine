@@ -7,6 +7,9 @@
     "type": "git",
     "url": "git+https://github.com/synapsecns/sanguine.git"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
     "js",
     "src",
