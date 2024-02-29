@@ -9,7 +9,7 @@
 body {
   font-smooth: always;
   --webkit-font-smoothing: auto;
-  text-rendering: geometricPrecision;
+  text-rendering: optimizeLegibility; /* geometricPrecision;*/
   overscroll-behavior-y: none;
 }
 
