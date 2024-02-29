@@ -5,7 +5,7 @@ const { runCommand } = require('./utils/utils.js')
 const { positionalArgs, options } = parseCommandLineArgs({
   requiredArgsCount: 4,
   usage:
-    'Usage: "yarn sol-run-str <path-to-script> <chain-name> <wallet-name> <string-arg> [-- <options>]"',
+    'Usage: "yarn sol-run-str <path-to-script> <chain-name> <wallet-name> <string-arg> [<options>]"',
 })
 
 const [scriptFN, chainName, walletName, stringArg] = positionalArgs

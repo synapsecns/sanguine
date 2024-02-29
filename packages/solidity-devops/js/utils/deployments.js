@@ -91,7 +91,6 @@ const getNewDeploymentReceipts = (chainName, scriptFN) => {
   const broadcastFN = `broadcast/${scriptBaseName}/${chainId}/run-latest.json`
   // Silent exit if the broadcast file does not exist
   if (!fs.existsSync(broadcastFN)) {
-    logError(`Latest broadcast file not found at ${broadcastFN}`)
     return []
   }
   const broadcast = JSON.parse(fs.readFileSync(broadcastFN))
