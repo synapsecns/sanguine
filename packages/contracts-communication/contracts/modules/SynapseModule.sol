@@ -32,7 +32,7 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     /// @inheritdoc ISynapseModule
     address public gasOracle;
 
-    constructor(address interchainDB, address initialOwner) InterchainModule(interchainDB) Ownable(initialOwner) {
+    constructor(address interchainDB, address owner_) InterchainModule(interchainDB) Ownable(owner_) {
         // ThresholdECDSA throws an explicit error if threshold is not set, so default value is not needed
     }
 

@@ -36,7 +36,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     /// @dev Executor address that completed the transaction. Address(0) if not executed yet.
     mapping(bytes32 transactionId => address executor) internal _txExecutor;
 
-    constructor(address interchainDB) Ownable(msg.sender) {
+    constructor(address interchainDB, address owner_) Ownable(owner_) {
         INTERCHAIN_DB = interchainDB;
     }
 
