@@ -17,7 +17,7 @@
   "draftPR": true,
   "cloneSubmodules": true,
   "forkProcessing": "enabled",
-  "prHourlyLimit": 7,
+  "prHourlyLimit": 20,
   "repositories": ["synapsecns/sanguine"],
   "packageRules": [
     {
@@ -53,8 +53,8 @@
   ],
   "updateInternalDeps": true,
   "transitiveRemediation": true,
-  "branchConcurrentLimit": 9,
-  "prConcurrentLimit": 9,
+  "branchConcurrentLimit": 20,
+  "prConcurrentLimit": 20,
   "git-submodules": {
     "enabled": true
   },
