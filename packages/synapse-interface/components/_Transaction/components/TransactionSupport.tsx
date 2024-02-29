@@ -1,4 +1,5 @@
-// TODO: Add FAQ link
+import { TRANSACTION_SUPPORT_URL, DISCORD_URL } from '@/constants/urls'
+
 export const TransactionSupport = () => {
   return (
     <div
@@ -8,7 +9,7 @@ export const TransactionSupport = () => {
       <div>What's taking so long?</div>
       <div className="flex items-center">
         <a
-          href="https://docs.synapseprotocol.com/synapse-bridge/synapse-bridge/transaction-support-faq"
+          href={TRANSACTION_SUPPORT_URL}
           target="_blank"
           className={`
             px-2 py-1 underline text-[--synapse-text]
@@ -19,7 +20,7 @@ export const TransactionSupport = () => {
         </a>
         <div>/</div>
         <a
-          href="https://discord.gg/synapseprotocol"
+          href={DISCORD_URL}
           target="_blank"
           className={`
             px-2 py-1 underline text-[--synapse-text]
