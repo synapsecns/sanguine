@@ -11,7 +11,8 @@
       "**/typechain",
       "**/@typechain/*",
       "**/@openzeppelin/contracts-upgradeable",
-      "**/@openzeppelin/contracts"
+      "**/@openzeppelin/contracts",
+      "**/@synapsecns/solidity-devops"
     ]
   },
   "repository": {

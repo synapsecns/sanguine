@@ -17,6 +17,7 @@
     "test:coverage": "echo 'Please use foundry'"
   },
   "devDependencies": {
+    "@synapsecns/solidity-devops": "^0.1.2",
     "solhint": "^4.1.1"
   }
 }
