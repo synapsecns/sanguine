@@ -13,7 +13,7 @@ export const TransactionSupport = () => {
           target="_blank"
           className={`
             px-2 py-1 underline text-[--synapse-text]
-            hover:rounded hover:bg-[--synapse-select-bg] hover:no-underline
+            hover:rounded hover:bg-zinc-700 hover:no-underline
           `}
         >
           F.A.Q
@@ -25,7 +25,6 @@ export const TransactionSupport = () => {
           className={`
             px-2 py-1 underline text-[--synapse-text]
             hover:rounded hover:bg-zinc-700 hover:no-underline
-            min-[360px]:after:content-['_(Discord)']
           `}
         >
           Support
