@@ -14,7 +14,8 @@
     "moonbeam": "--skip-simulation --slow",
     "moonriver": "--skip-simulation --slow",
     "optimism": "--with-gas-price 100000000",
-    "polygon": "--slow"
+    "polygon": "--slow",
+    "op_sepolia": "--with-gas-price 100000000"
   },
   "deployConfigs": "configs",
   "deployments": "deployments",
