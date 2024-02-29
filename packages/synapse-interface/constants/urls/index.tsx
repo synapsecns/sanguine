@@ -78,28 +78,26 @@ export const getCompleteUrl = (uriPath: string) => {
   return `${SYNAPSE_BASE_URL}${uriPath}`
 }
 
-export const DOCS_URL = 'https://docs.synapseprotocol.com'
 export const DISCORD_URL = 'https://discord.gg/synapseprotocol'
 export const TELEGRAM_URL = 'https://t.me/synapseprotocol'
 export const FORUM_URL = 'https://forum.synapseprotocol.com/'
 export const TWITTER_URL = 'https://twitter.com/SynapseProtocol'
 
-export const BUILD_ON_URL =
-  'https://docs.synapseprotocol.com/synapse-interchain-network-sin/build-on-the-synapse-interchain-network'
 export const GITHUB_URL = 'https://github.com/synapsecns'
 export const MEDIUM_URL = 'https://synapseprotocol.medium.com/'
 export const MIRROR_URL = 'https://synapse.mirror.xyz/'
 
+/** Synapse Docs Guides */
+export const SYNAPSE_DOCS_URL = 'https://docs.synapseprotocol.com'
 export const HOW_TO_BRIDGE_URL =
   'https://docs.synapseprotocol.com/how-to/bridge'
 export const HOW_TO_SWAP_URL = 'https://docs.synapseprotocol.com/how-to/swap'
 export const HOW_TO_STAKE_URL =
   'https://docs.synapseprotocol.com/how-to/provide-liquidity'
+export const BUILD_ON_URL =
+  'https://docs.synapseprotocol.com/synapse-interchain-network-sin/build-on-the-synapse-interchain-network'
 export const TRANSACTION_SUPPORT_URL =
   'https://docs.synapseprotocol.com/synapse-bridge/synapse-bridge/transaction-support-faq'
-// Patching this as docs for now need to swap w/ git link
-
-export const SYNAPSE_DOCS_URL = 'https://docs.synapseprotocol.com'
 
 const SUSHISWAP_BASE_URL = 'https://app.sushi.com'
 // Need to switch this with fei url
