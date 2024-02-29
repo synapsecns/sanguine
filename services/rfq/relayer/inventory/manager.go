@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"strconv"
 	"sync"
 	"time"
 
@@ -346,7 +347,7 @@ func (i *inventoryManagerImpl) HasSufficientGas(ctx context.Context, origin, des
 // Rebalance checks whether a given token should be rebalanced, and executes the rebalance if necessary.
 // Note that if there are multiple tokens whose balance is below the maintenance balance, only the lowest balance
 // will be rebalanced.
-func (i *inventoryManagerImpl) Rebalance(ctx context.Context, chainID int, token common.Address) error {
+func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int, token common.Address) error {
 	// evaluate the rebalance method
 	method, err := i.cfg.GetRebalanceMethod(chainID, token.Hex())
 	if err != nil {
@@ -355,21 +356,35 @@ func (i *inventoryManagerImpl) Rebalance(ctx context.Context, chainID int, token
 	if method == relconfig.RebalanceMethodNone {
 		return nil
 	}
+	ctx, span := i.handler.Tracer().Start(parentCtx, "Rebalance", trace.WithAttributes(
+		attribute.Int(metrics.ChainID, chainID),
+		attribute.String("token", token.Hex()),
+		attribute.String("rebalance_method", method.String()),
+	))
+	defer func(err error) {
+		metrics.EndSpanWithErr(span, err)
+	}(err)
 
 	// build the rebalance action
-	rebalance, err := getRebalance(i.cfg, i.tokens, chainID, token)
+	rebalance, err := getRebalance(span, i.cfg, i.tokens, chainID, token)
 	if err != nil {
 		return fmt.Errorf("could not get rebalance: %w", err)
 	}
 	if rebalance == nil {
 		return nil
 	}
+	span.SetAttributes(
+		attribute.String("rebalance_origin", strconv.Itoa(rebalance.OriginMetadata.ChainID)),
+		attribute.String("rebalance_dest", strconv.Itoa(rebalance.DestMetadata.ChainID)),
+		attribute.String("rebalance_amount", rebalance.Amount.String()),
+	)
 
 	// make sure there are no pending rebalances that touch the given path
 	pending, err := i.db.HasPendingRebalance(ctx, uint64(rebalance.OriginMetadata.ChainID), uint64(rebalance.DestMetadata.ChainID))
 	if err != nil {
 		return fmt.Errorf("could not check pending rebalance: %w", err)
 	}
+	span.SetAttributes(attribute.Bool("rebalance_pending", pending))
 	if pending {
 		return nil
 	}
@@ -387,7 +402,7 @@ func (i *inventoryManagerImpl) Rebalance(ctx context.Context, chainID int, token
 }
 
 //nolint:cyclop
-func getRebalance(cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, chainID int, token common.Address) (rebalance *RebalanceData, err error) {
+func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, chainID int, token common.Address) (rebalance *RebalanceData, err error) {
 	maintenancePct, err := cfg.GetMaintenanceBalancePct(chainID, token.Hex())
 	if err != nil {
 		return nil, fmt.Errorf("could not get maintenance pct: %w", err)
@@ -431,6 +446,12 @@ func getRebalance(cfg relconfig.Config, tokens map[int]map[common.Address]*Token
 	initialPct, err := cfg.GetInitialBalancePct(maxTokenData.ChainID, maxTokenData.Addr.Hex())
 	if err != nil {
 		return nil, fmt.Errorf("could not get initial pct: %w", err)
+	}
+	if span != nil {
+		span.SetAttributes(attribute.Float64("maintenance_pct", maintenancePct))
+		span.SetAttributes(attribute.Float64("initial_pct", initialPct))
+		span.SetAttributes(attribute.String("max_token_balance", maxTokenData.Balance.String()))
+		span.SetAttributes(attribute.String("min_token_balance", minTokenData.Balance.String()))
 	}
 
 	// check if the minimum balance is below the threshold and trigger rebalance

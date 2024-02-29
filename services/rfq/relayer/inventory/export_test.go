@@ -7,5 +7,5 @@ import (
 
 // GetRebalance is a wrapper around the internal getRebalance function.
 func GetRebalance(cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, chainID int, token common.Address) (*RebalanceData, error) {
-	return getRebalance(cfg, tokens, chainID, token)
+	return getRebalance(nil, cfg, tokens, chainID, token)
 }

@@ -7,6 +7,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/chain/listener"
@@ -14,6 +15,8 @@ import (
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/cctp"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -133,11 +136,19 @@ func (c *rebalanceManagerCCTP) initListeners(ctx context.Context) (err error) {
 	return nil
 }
 
-func (c *rebalanceManagerCCTP) Execute(ctx context.Context, rebalance *RebalanceData) (err error) {
+func (c *rebalanceManagerCCTP) Execute(parentCtx context.Context, rebalance *RebalanceData) (err error) {
 	contract, ok := c.cctpContracts[rebalance.OriginMetadata.ChainID]
 	if !ok {
 		return fmt.Errorf("could not find cctp contract for chain %d", rebalance.OriginMetadata.ChainID)
 	}
+	ctx, span := c.handler.Tracer().Start(parentCtx, "rebalance.Execute", trace.WithAttributes(
+		attribute.Int("rebalance_origin", int(rebalance.OriginMetadata.ChainID)),
+		attribute.Int("rebalance_dest", int(rebalance.DestMetadata.ChainID)),
+		attribute.String("rebalance_amount", rebalance.Amount.String()),
+	))
+	defer func(err error) {
+		metrics.EndSpanWithErr(span, err)
+	}(err)
 
 	// perform rebalance by calling sendCircleToken()
 	_, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(rebalance.OriginMetadata.ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
@@ -174,12 +185,12 @@ func (c *rebalanceManagerCCTP) Execute(ctx context.Context, rebalance *Rebalance
 }
 
 // nolint:cyclop
-func (c *rebalanceManagerCCTP) listen(ctx context.Context, chainID int) (err error) {
+func (c *rebalanceManagerCCTP) listen(parentCtx context.Context, chainID int) (err error) {
 	listener, ok := c.chainListeners[chainID]
 	if !ok {
 		return fmt.Errorf("could not find listener for chain %d", chainID)
 	}
-	ethClient, err := c.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
+	ethClient, err := c.chainClient.GetClient(parentCtx, big.NewInt(int64(chainID)))
 	if err != nil {
 		return fmt.Errorf("could not get chain client: %w", err)
 	}
@@ -189,7 +200,14 @@ func (c *rebalanceManagerCCTP) listen(ctx context.Context, chainID int) (err err
 		return fmt.Errorf("could not get cctp events: %w", err)
 	}
 
-	err = listener.Listen(ctx, func(parentCtx context.Context, log types.Log) (err error) {
+	err = listener.Listen(parentCtx, func(parentCtx context.Context, log types.Log) (err error) {
+		ctx, span := c.handler.Tracer().Start(parentCtx, "rebalance.Listen", trace.WithAttributes(
+			attribute.Int(metrics.ChainID, chainID),
+		))
+		defer func(err error) {
+			metrics.EndSpanWithErr(span, err)
+		}(err)
+
 		switch log.Topics[0] {
 		case cctp.CircleRequestSentTopic:
 			parsedEvent, err := parser.ParseCircleRequestSent(log)
@@ -197,8 +215,12 @@ func (c *rebalanceManagerCCTP) listen(ctx context.Context, chainID int) (err err
 				logger.Warnf("could not parse circle request sent: %w", err)
 				return nil
 			}
+			span.SetAttributes(
+				attribute.String("log_type", "CircleRequestSent"),
+				attribute.String("request_id", hexutil.Encode(parsedEvent.RequestID[:])),
+			)
 			origin := uint64(chainID)
-			err = c.db.UpdateRebalanceStatus(parentCtx, parsedEvent.RequestID, &origin, reldb.RebalancePending)
+			err = c.db.UpdateRebalanceStatus(ctx, parsedEvent.RequestID, &origin, reldb.RebalancePending)
 			if err != nil {
 				logger.Warnf("could not update rebalance status: %w", err)
 				return nil
@@ -209,6 +231,10 @@ func (c *rebalanceManagerCCTP) listen(ctx context.Context, chainID int) (err err
 				logger.Warnf("could not parse circle request fulfilled: %w", err)
 				return nil
 			}
+			span.SetAttributes(
+				attribute.String("log_type", "CircleRequestFulfilled"),
+				attribute.String("request_id", hexutil.Encode(parsedEvent.RequestID[:])),
+			)
 			err = c.db.UpdateRebalanceStatus(parentCtx, parsedEvent.RequestID, nil, reldb.RebalanceCompleted)
 			if err != nil {
 				logger.Warnf("could not update rebalance status: %w", err)
