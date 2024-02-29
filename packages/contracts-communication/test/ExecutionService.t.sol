@@ -11,12 +11,14 @@ contract ExecutionServiceTest is ExecutionServiceEvents, Test {
 
     address icClient = address(0x123);
     address executorEOA = address(0x456);
+    address owner = makeAddr("Owner");
 
     function setUp() public {
         gasOracle = new GasOracleMock();
-        executionService = new ExecutionService();
+        executionService = new ExecutionService(address(this));
         executionService.setInterchainClient(icClient);
         executionService.setExecutorEOA(executorEOA);
         executionService.setGasOracle(address(gasOracle));
+        executionService.transferOwnership(owner);
     }
 }

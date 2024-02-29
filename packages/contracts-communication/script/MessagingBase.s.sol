@@ -27,7 +27,7 @@ contract MessagingBase is Script {
         vm.startBroadcast();
         icDB = new InterchainDB();
         // icClient deployment & config
-        icClient = new InterchainClientV1(address(icDB));
+        icClient = new InterchainClientV1(address(icDB), msg.sender);
 
         synapseModule = new SynapseModule(address(icDB), msg.sender);
         gasOracleMock = new GasOracleMock();
