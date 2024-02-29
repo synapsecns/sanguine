@@ -16,6 +16,8 @@
     "remappings.txt"
   ],
   "scripts": {
+    "build:go": " ",
+    "build:slither": " ",
     "ci:lint": "npm run lint:check",
     "lint": "forge fmt && eslint . --fix --ext js",
     "lint:check": "forge fmt --check && eslint . --max-warnings=0 --ext js",
