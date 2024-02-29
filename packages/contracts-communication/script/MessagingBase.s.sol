@@ -65,7 +65,13 @@ contract MessagingBase is Script {
         uint256 _requiredResponses = 1;
         uint64 _optimisticTimePeriod = 1;
         icApp.setAppConfig(
-            chainIDs, linkedIApps, _sendingModules, _receivingModules, address(0), _requiredResponses, _optimisticTimePeriod
+            chainIDs,
+            linkedIApps,
+            _sendingModules,
+            _receivingModules,
+            address(0),
+            _requiredResponses,
+            _optimisticTimePeriod
         );
         vm.stopBroadcast();
     }
@@ -84,7 +90,13 @@ contract MessagingBase is Script {
         uint256 _requiredResponses = 1;
         uint64 _optimisticTimePeriod = 1;
         icApp.setAppConfig(
-            chainIDs, linkedIApps, _sendingModules, _receivingModules, address(0), _requiredResponses, _optimisticTimePeriod
+            chainIDs,
+            linkedIApps,
+            _sendingModules,
+            _receivingModules,
+            address(0),
+            _requiredResponses,
+            _optimisticTimePeriod
         );
         vm.stopBroadcast();
     }
