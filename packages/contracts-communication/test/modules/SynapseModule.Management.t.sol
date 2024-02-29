@@ -123,6 +123,13 @@ contract SynapseModuleManagementTest is Test, SynapseModuleEvents {
         module.addVerifiers(allVerifiers);
     }
 
+    function test_addVerifiers_revert_containsZeroAddress() public {
+        allVerifiers[1] = address(0);
+        vm.expectRevert(ThresholdECDSALib.ThresholdECDSA__ZeroAddress.selector);
+        vm.prank(owner);
+        module.addVerifiers(allVerifiers);
+    }
+
     function test_removeVerifier_removesVerifier() public {
         basicSetup();
         vm.prank(owner);

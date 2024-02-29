@@ -70,6 +70,10 @@ contract ThresholdECDSALibTest is Test {
         vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__RecoveredSignersNotSorted.selector));
     }
 
+    function expectZeroAddressError() internal {
+        vm.expectRevert(ThresholdECDSALib.ThresholdECDSA__ZeroAddress.selector);
+    }
+
     function expectZeroThresholdError() internal {
         vm.expectRevert(abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__ZeroThreshold.selector));
     }
@@ -192,6 +196,11 @@ contract ThresholdECDSALibTest is Test {
         libHarness.addSigner(SIGNER_1);
         expectAlreadySignerError(SIGNER_2);
         libHarness.addSigner(SIGNER_2);
+    }
+
+    function test_addSigner_revert_zeroAddress() public {
+        expectZeroAddressError();
+        libHarness.addSigner(address(0));
     }
 
     function test_removeSigner_revert_notSigner() public {
