@@ -6,7 +6,7 @@ require (
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/brianvoe/gofakeit/v6 v6.27.0
 	github.com/ethereum/go-ethereum v1.11.6
-	github.com/gen2brain/beeep v0.0.0-20220909211152-5a9ec94374f6
+	github.com/gen2brain/beeep v0.0.0-20240112042604-c7bb2cd88fea
 	github.com/gofrs/flock v0.8.1
 	github.com/ipfs/go-log v1.0.5
 	github.com/markbates/pkger v0.17.1
