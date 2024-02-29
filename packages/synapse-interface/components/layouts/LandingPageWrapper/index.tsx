@@ -13,7 +13,6 @@ import { Wallet } from '@components/Wallet'
 import { SynapseLogoSvg, SynapseLogoWithTitleSvg } from './SynapseLogoSvg'
 import { TopBarNavLink, checkIsRouteMatched } from './TopBarNavLink'
 import {
-  CONTRACTS_PATH,
   DISCORD_URL,
   SYNAPSE_DOCS_URL,
   FORUM_URL,

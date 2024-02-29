@@ -1,7 +1,7 @@
-import { ETH, SYN } from '@constants/tokens/bridgeable'
-import { Token } from '@types'
 import * as CHAINS from '@constants/chains/master'
+import { ETH, SYN } from '@constants/tokens/bridgeable'
 import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
+import { Token } from '@types'
 
 // Hardcoding this shit for now until actual plan around routing
 let SYNAPSE_BASE_URL = ''
@@ -14,21 +14,16 @@ if (process?.env?.NODE_ENV === 'development') {
 export { SYNAPSE_BASE_URL }
 
 /** Internal Route Paths */
-export const BASE_PATH = '/'
 export const BRIDGE_PATH = '/'
-export const AIRDROP_PATH = '/claim'
 export const SWAP_PATH = '/swap'
 export const STAKE_PATH = '/stake'
 export const POOLS_PATH = '/pools'
 export const POOL_PATH = '/pool'
-export const STATISTICS_PATH = '/statistics'
 export const LANDING_PATH = '/landing'
 
-/** External Route Paths */
+/** External Links */
 export const EXPLORER_KAPPA = 'https://explorer.synapseprotocol.com/tx/'
 export const EXPLORER_PATH = 'https://explorer.synapseprotocol.com/'
-export const CONTRACTS_PATH =
-  'https://docs.synapseprotocol.com/reference/contract-addresses'
 export const INTERCHAIN_LINK = 'https://interchain.synapseprotocol.com/'
 export const SOLANA_LINK = 'https://solana.synapseprotocol.com/'
 export const TERMS_OF_SERVICE_PATH =
@@ -46,7 +41,7 @@ export const GITHUB_URL = 'https://github.com/synapsecns'
 export const MEDIUM_URL = 'https://synapseprotocol.medium.com/'
 export const MIRROR_URL = 'https://synapse.mirror.xyz/'
 
-/** Synapse Docs Guides */
+/** Synapse Docs Links */
 export const SYNAPSE_DOCS_URL = 'https://docs.synapseprotocol.com'
 export const HOW_TO_BRIDGE_URL =
   'https://docs.synapseprotocol.com/how-to/bridge'
