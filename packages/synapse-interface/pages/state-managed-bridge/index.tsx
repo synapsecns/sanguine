@@ -79,11 +79,6 @@ import { FromTokenListOverlay } from '@/components/StateManagedBridge/FromTokenL
 import { ToTokenListOverlay } from '@/components/StateManagedBridge/ToTokenListOverlay'
 
 import { waitForTransaction } from '@wagmi/core'
-import {
-  fetchArbPrice,
-  fetchEthPrice,
-  fetchGmxPrice,
-} from '@/slices/priceDataSlice'
 import { SwitchButton } from '@/components/buttons/SwitchButton'
 
 const StateManagedBridge = () => {
@@ -283,10 +278,6 @@ const StateManagedBridge = () => {
         )
 
         toast.dismiss(quoteToastRef.current.id)
-
-        dispatch(fetchEthPrice())
-        dispatch(fetchArbPrice())
-        dispatch(fetchGmxPrice())
 
         const message = `Route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
