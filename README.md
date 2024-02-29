@@ -67,7 +67,7 @@ root
 │   ├── <a href="./packages/coverage-aggregator">coverage-aggregator</a>: Javascript coverage aggregator based on <a href="https://www.npmjs.com/package/nyc">nyc</a>
 │   ├── <a href="./packages/docs">docs</a>: Docasaurus documentation. Note: this is not yet in use, and docs are still maintained on gitbook
 │   ├── <a href="./packages/explorer-ui">explorer-ui</a>: Explorer UI
-│   ├── <a href="./packages/rest-api">explorer-ui</a>: Rest API
+│   ├── <a href="./packages/rest-api">rest-api</a>: Rest API
 │   ├── <a href="./packages/sdk-router">sdk-router</a>: SDK router
 │   ├── <a href="./packages/solidity-devops">solidity-devops</a>: provides a set of tools and scripts to help with the development of Solidity smart contracts
 │   ├── <a href="./packages/synapse-constants">synapse constants</a>: Constants used across synapse
