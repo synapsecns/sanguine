@@ -52,8 +52,6 @@
     "@types/react-dom": "18.0.11",
     "@types/web3": "^1.2.2",
     "@vercel/analytics": "^1.0.2",
-    "@visx/chord": "^3.0.0",
-    "@visx/shape": "^3.0.0",
     "@wagmi/core": "^1.4.12",
     "autoprefixer": "^10.4.13",
     "babel-plugin-transform-bigint": "^1.0.32",
