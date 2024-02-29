@@ -14,7 +14,9 @@
     "lint": "yarn lint:contracts:fix",
     "lint:check": "forge fmt --check && solhint -c .solhint.json '{contracts,script,test}/**/*.sol'",
     "test": "forge test",
-    "test:coverage": "echo 'Please use foundry'"
+    "test:coverage": "echo 'Please use foundry'",
+    "sol-run": "node node_modules/@synapsecns/solidity-devops/js/run.js",
+    "sol-run-str": "node node_modules/@synapsecns/solidity-devops/js/run-str.js"
   },
   "devDependencies": {
     "@synapsecns/solidity-devops": "^0.1.2",
