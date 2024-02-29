@@ -17,7 +17,6 @@
   "draftPR": true,
   "cloneSubmodules": true,
   "forkProcessing": "enabled",
-  "dryRun": "full",
   "repositories": ["synapsecns/sanguine"],
   "packageRules": [
     {
