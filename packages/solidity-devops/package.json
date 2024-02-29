@@ -7,6 +7,14 @@
     "type": "git",
     "url": "git+https://github.com/synapsecns/sanguine.git"
   },
+  "files": [
+    "js",
+    "src",
+    ".env.example",
+    "devops.json",
+    "foundry.toml",
+    "remappings.txt"
+  ],
   "dependencies": {
     "chalk": "^4.1.2",
     "dotenv": "^16.4.5",
