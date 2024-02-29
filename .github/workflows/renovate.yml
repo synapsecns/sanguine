@@ -1,5 +1,9 @@
 name: Renovate
 on:
+  # for testing, will delete
+  push:
+    branches:
+      - feat/renovate-update
   # This lets you dispatch a renovate job with different cache options if you want to reset or disable the cache manually.
   workflow_dispatch:
     inputs:
