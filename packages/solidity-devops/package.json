@@ -1,0 +1,36 @@
+{
+  "name": "@synapsecns/solidity-devops",
+  "version": "0.1.0",
+  "description": "A collection of utils to effortlessly test, deploy and maintain the smart contracts on EVM compatible blockchains",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/synapsecns/sanguine.git"
+  },
+  "files": [
+    "js",
+    "src",
+    ".env.example",
+    "devops.json",
+    "foundry.toml",
+    "remappings.txt"
+  ],
+  "scripts": {
+    "build:go": " ",
+    "build:slither": " ",
+    "ci:lint": "npm run lint:check",
+    "lint": "forge fmt && eslint . --fix --ext js",
+    "lint:check": "forge fmt --check && eslint . --max-warnings=0 --ext js",
+    "test:coverage": "echo 'TODO: Add test coverage'"
+  },
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "dotenv": "^16.4.5",
+    "ds-test": "github:dapphub/ds-test#e282159",
+    "forge-std": "github:foundry-rs/forge-std#v1.7.6"
+  },
+  "bin": {
+    "sol-run": "node js/run.js",
+    "sol-run-str": "node js/run-str.js"
+  }
+}
