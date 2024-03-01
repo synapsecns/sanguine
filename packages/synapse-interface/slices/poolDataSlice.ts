@@ -21,7 +21,6 @@ export interface PoolDataState {
   poolData: any
   poolAPYData: any
   isLoading: boolean
-  isFetching: boolean
 }
 
 const initialState: PoolDataState = {
@@ -40,7 +39,6 @@ const initialState: PoolDataState = {
     yearlyAPRUnvested: undefined,
   },
   isLoading: true,
-  isFetching: false,
 }
 
 export const fetchPoolData = createAsyncThunk(
@@ -120,18 +118,16 @@ export const poolDataSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchPoolData.pending, (state) => {
-        state.isFetching = true
+        state.isLoading = true
       })
       .addCase(fetchPoolData.fulfilled, (state, action) => {
         state.isLoading = false
-        state.isFetching = false
         state.pool = action.payload.pool
         state.poolData = action.payload.poolData
         state.poolAPYData = action.payload.poolAPYData
       })
       .addCase(fetchPoolData.rejected, (state) => {
         state.isLoading = false
-        state.isFetching = false
       })
   },
 })

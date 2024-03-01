@@ -77,7 +77,7 @@ const PoolPage = () => {
         connectedChainId={connectedChainId}
         address={address}
       >
-        {!pool || isLoading || !poolId ? (
+        {!pool || !poolId ? (
           <div className="flex items-center justify-center">
             <LoadingDots />
           </div>
