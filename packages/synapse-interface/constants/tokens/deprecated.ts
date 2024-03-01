@@ -15,7 +15,6 @@ export const FUSDT = new Token({
   logo: fusdtLogo,
   color: 'lime',
   swapableType: 'USD',
-  swapableOn: [CHAINS.FANTOM.id],
   visibilityRank: 100,
   priorityRank: 3,
   routeSymbol: 'fUSDT',
