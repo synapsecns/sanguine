@@ -12,8 +12,8 @@ fi
 shift 2
 options=$@
 
-yarn sol-run-str script/config/ConfigureAppExample.s.sol $chainName $walletName "testnet" $options
-yarn sol-run-str script/config/ConfigureClientV1.s.sol $chainName $walletName "testnet" $options
-yarn sol-run script/config/ConfigureExecutionFees.s.sol $chainName $walletName $options
-yarn sol-run-str script/config/ConfigureExecutionService.s.sol $chainName $walletName "testnet" $options
-yarn sol-run-str script/config/ConfigureSynapseModule.s.sol $chainName $walletName "testnet" $options
+yarn fsr-str script/config/ConfigureAppExample.s.sol $chainName $walletName "testnet" $options
+yarn fsr-str script/config/ConfigureClientV1.s.sol $chainName $walletName "testnet" $options
+yarn fsr script/config/ConfigureExecutionFees.s.sol $chainName $walletName $options
+yarn fsr-str script/config/ConfigureExecutionService.s.sol $chainName $walletName "testnet" $options
+yarn fsr-str script/config/ConfigureSynapseModule.s.sol $chainName $walletName "testnet" $options
