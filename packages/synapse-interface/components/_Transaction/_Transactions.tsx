@@ -44,8 +44,8 @@ export const _Transactions = ({
             kappa={tx?.kappa}
             timestamp={tx.timestamp}
             currentTime={currentTime}
-            isStoredComplete={tx.isComplete}
-            isStoredReverted={tx.isReverted}
+            // isStoredComplete={tx.isComplete}
+            // isStoredReverted={tx.isReverted}
             status={tx.status}
           />
         ))}

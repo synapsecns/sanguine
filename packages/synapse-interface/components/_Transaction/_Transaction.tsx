@@ -31,8 +31,8 @@ interface _TransactionProps {
   timestamp: number
   currentTime: number
   kappa?: string
-  isStoredComplete: boolean
-  isStoredReverted: boolean
+  // isStoredComplete: boolean
+  // isStoredReverted: boolean
   status: 'pending' | 'completed' | 'reverted'
 }
 
@@ -50,8 +50,9 @@ export const _Transaction = ({
   timestamp,
   currentTime,
   kappa,
-  isStoredComplete,
-  isStoredReverted,
+  // isStoredComplete,
+  // isStoredReverted,
+  status,
 }: _TransactionProps) => {
   const dispatch = useAppDispatch()
 
@@ -67,6 +68,10 @@ export const _Transaction = ({
     destinationChain.id,
     connectedAddress
   )
+
+  const isPending = status === 'pending'
+  const isCompleted = status === 'completed'
+  const isReverted = status === 'reverted'
 
   const {
     targetTime,
@@ -85,17 +90,19 @@ export const _Transaction = ({
     originTxHash,
     bridgeModuleName,
     kappa: kappa,
-    checkStatus: isCheckTxStatus && !isStoredComplete && !isStoredReverted,
+    // checkStatus: isCheckTxStatus && !isStoredComplete && !isStoredReverted,
+    checkStatus: isCheckTxStatus && isPending,
     currentTime: currentTime,
   })
-  const isTxFinalized = isStoredComplete ?? isTxComplete
+  // const isTxFinalized = isStoredComplete ?? isTxComplete
 
-  const isReverted = useIsTxReverted(
+  const isTxReverted = useIsTxReverted(
     originTxHash as Address,
     originChain,
-    isCheckTxForRevert && !isStoredComplete && !isStoredReverted
+    // isCheckTxForRevert && !isStoredComplete && !isStoredReverted
+    isCheckTxForRevert && isPending
   )
-  const isTxReverted = isStoredReverted ?? isReverted
+  // const isTxReverted = isStoredReverted ?? isReverted
 
   useBridgeTxUpdater(
     connectedAddress,
@@ -103,13 +110,16 @@ export const _Transaction = ({
     _kappa,
     originTxHash,
     isTxComplete,
-    isReverted
+    isTxReverted
   )
 
   // Show transaction support if the transaction is delayed by more than 5 minutes and not finalized or reverted
+  // const showTransactionSupport =
+  // isTxReverted ||
+  // (!isTxFinalized && delayedTimeInMin && delayedTimeInMin <= -5)
+
   const showTransactionSupport =
-    isTxReverted ||
-    (!isTxFinalized && delayedTimeInMin && delayedTimeInMin <= -5)
+    isReverted || (isPending && delayedTimeInMin && delayedTimeInMin <= -5)
 
   return (
     <div
@@ -143,9 +153,11 @@ export const _Transaction = ({
           <DropdownMenu
             menuTitleElement={
               <TimeRemaining
-                isComplete={isTxFinalized}
+                // isComplete={isTxFinalized}
+                isComplete={isCompleted}
                 isDelayed={isEstimatedTimeReached}
-                isReverted={isStoredReverted}
+                // isReverted={isStoredReverted}
+                isReverted={isReverted}
                 remainingTime={remainingTime}
                 delayedTime={delayedTime}
               />
@@ -179,7 +191,8 @@ export const _Transaction = ({
               text="Contact Support (Discord)"
               link="https://discord.gg/synapseprotocol"
             />
-            {(isTxFinalized || isTxReverted) && (
+            {/* {(isTxFinalized || isTxReverted) && ( */}
+            {!isPending && (
               <MenuItem
                 text={isTxReverted ? 'Clear notification' : 'Clear transaction'}
                 link={null}
@@ -189,16 +202,20 @@ export const _Transaction = ({
           </DropdownMenu>
         </div>
       </div>
-      {showTransactionSupport && (
-        <TransactionSupport isReverted={isTxReverted} />
-      )}
+      {showTransactionSupport ? (
+        // <TransactionSupport isReverted={isTxReverted} />
+        <TransactionSupport isReverted={isReverted} />
+      ) : null}
+
       <div className="px-1">
         <AnimatedProgressBar
           id={originTxHash}
           startTime={timestamp}
           estDuration={estimatedTime * 2} // 2x buffer
-          isComplete={isTxFinalized}
-          isError={isStoredReverted}
+          // isComplete={isTxFinalized}
+          // isError={isStoredReverted}
+          isComplete={isCompleted}
+          isError={isReverted}
         />
       </div>
     </div>
