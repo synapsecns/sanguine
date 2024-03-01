@@ -52,6 +52,7 @@ export const RFQ_SUPPORTED_CHAIN_IDS: number[] = [
   SupportedChainId.ETH,
   SupportedChainId.OPTIMISM,
   SupportedChainId.ARBITRUM,
+  SupportedChainId.BLAST,
 ]
 
 /**
