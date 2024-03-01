@@ -398,6 +398,7 @@ const dailyVolumeBridgeMvPt1 = `
        results[7700]                AS canto,
        results[2000]                AS dogechain,
        results[8453]                AS base,
+	   results[81427]               AS blast,
        arraySum(mapValues(results)) AS total
          FROM (SELECT date, maxMap(map(chain_id, total)) AS results
       FROM (SELECT coalesce(toString(b.date), toString(s.date))   AS date,
@@ -439,6 +440,7 @@ const dailyVolumeBridge = `
        results[7700]                AS canto,
        results[2000]                AS dogechain,
        results[8453]                AS base,
+	   results[81427]               AS blast,
        arraySum(mapValues(results)) AS total
          FROM (SELECT date, maxMap(map(chain_id, total)) AS results
       FROM (SELECT coalesce(toString(b.date), toString(s.date))   AS date,
@@ -532,6 +534,7 @@ SELECT date,
        results[7700]                AS canto,
        results[2000]                AS dogechain,
        results[8453]                AS base,
+	   results[81427]               AS blast,
        arraySum(mapValues(results)) AS total
 FROM (SELECT date, maxMap(map(chain_id, total)) AS results
       FROM (SELECT coalesce(toString(b.date), toString(s.date), toString(m.date)) AS date,
@@ -631,6 +634,7 @@ SELECT date,
        results[7700]                AS canto,
        results[2000]                AS dogechain,
        results[8453]                AS base,
+	   results[81427]               AS blast,
        arraySum(mapValues(results)) AS total
 FROM (
          SELECT date,
@@ -659,6 +663,7 @@ SELECT date,
        results[7700]                AS canto,
        results[2000]                AS dogechain,
        results[8453]                AS base,
+	   results[81427]               AS blast,
        arraySum(mapValues(results)) AS total
 FROM (
          SELECT date,
@@ -688,6 +693,7 @@ SELECT date,
        results[7700]                AS canto,
        results[2000]                AS dogechain,
        results[8453]                AS base,
+	   results[81427]               AS blast,
        arraySum(mapValues(results)) AS total
 FROM (
          SELECT date,
