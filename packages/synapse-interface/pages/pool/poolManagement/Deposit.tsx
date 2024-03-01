@@ -194,7 +194,7 @@ const Deposit = ({
       const resolvedTx = await tx
 
       if (isTransactionUserRejectedError(resolvedTx)) {
-        console.log('rejected transaction')
+        throw Error(resolvedTx)
       }
 
       await waitForTransaction({
