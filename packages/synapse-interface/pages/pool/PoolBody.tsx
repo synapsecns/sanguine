@@ -38,10 +38,6 @@ const PoolBody = ({
   const { pool, poolAPYData } = useSelector(
     (state: RootState) => state.poolData
   )
-  // const [stakedBalance, setStakedBalance] = useState({
-  //   amount: 0n,
-  //   reward: 0n,
-  // })
 
   useEffect(() => {
     setIsClient(true)
@@ -53,22 +49,6 @@ const PoolBody = ({
         poolName: pool?.poolName,
       })
     }
-    // if (address && isClient) {
-    //   getStakedBalance(
-    //     address as Address,
-    //     pool.chainId,
-    //     pool.poolId[pool.chainId],
-    //     pool
-    //   )
-    //     .then((res) => {
-    //       setStakedBalance(res)
-    //     })
-    //     .catch((err) => {
-    //       console.log('Could not get staked balances: ', err)
-    //     })
-    // } else {
-    //   setStakedBalance({ amount: 0n, reward: 0n })
-    // }
   }, [isClient, address, pool])
 
   if (!pool) return null

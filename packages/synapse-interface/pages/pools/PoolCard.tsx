@@ -86,8 +86,6 @@ const PoolCard = memo(({ pool, address }: { pool: Token; address: string }) => {
     }
   }, [address, isDisconnected, popup])
 
-  console.log('pool:', pool)
-
   return (
     <div
       className={`
@@ -182,7 +180,6 @@ const ManageLp = ({ pool, stakedBalance, address }) => {
 }
 
 export const DisplayBalances = ({ pool, stakedBalance, showIcon, address }) => {
-  console.log('stakedBalance:', stakedBalance)
   const { poolTokenBalances } = usePortfolioState()
   const { amount, reward } = stakedBalance
 
@@ -204,14 +201,9 @@ export const DisplayBalances = ({ pool, stakedBalance, showIcon, address }) => {
     }
   }, [pool, poolTokenBalances, address])
 
-  console.log('poolTokenBalances:', poolTokenBalances)
-  console.log('lpTokenBalance: ', lpTokenBalance)
-
   const sum = useMemo(() => {
     const b =
       lpTokenBalance && lpTokenBalance.balance ? lpTokenBalance.balance : 0n
-    console.log('amount:', amount)
-    console.log('b:', b)
     return amount + b
   }, [lpTokenBalance, amount])
 
