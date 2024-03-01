@@ -220,14 +220,10 @@ const Withdraw = ({ address }: { address: string }) => {
 
       const resolvedTx = await tx
 
-      const transactionReceipt = await waitForTransaction({
+      await waitForTransaction({
         hash: resolvedTx?.transactionHash as Address,
         timeout: 60_000,
       })
-
-      /** Remove after testing */
-      console.log('Transaction Receipt:', transactionReceipt)
-      /** Remove after testing */
 
       onSuccessWithdraw()
     } catch (error) {
@@ -236,10 +232,6 @@ const Withdraw = ({ address }: { address: string }) => {
        * Likely to be rpc related issue
        */
       if (isTransactionReceiptError(error)) {
-        /** Remove after testing */
-        console.log('Transaction Receipt Error: ', error)
-        /** Remove after testing */
-
         onSuccessWithdraw()
       }
       txErrorHandler(error)

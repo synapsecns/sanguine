@@ -192,14 +192,10 @@ const Deposit = ({
 
       const resolvedTx = await tx
 
-      const transactionReceipt = await waitForTransaction({
+      await waitForTransaction({
         hash: resolvedTx?.transactionHash as Address,
         timeout: 60_000,
       })
-
-      /** Remove after testing */
-      console.log('Transaction Receipt:', transactionReceipt)
-      /** Remove after testing */
 
       onSuccessDeposit()
     } catch (error) {
@@ -208,10 +204,6 @@ const Deposit = ({
        * Likely to be rpc related issue
        */
       if (isTransactionReceiptError(error)) {
-        /** Remove after testing */
-        console.log('Transaction Receipt Error: ', error)
-        /** Remove after testing */
-
         onSuccessDeposit()
       }
       txErrorHandler(error)
