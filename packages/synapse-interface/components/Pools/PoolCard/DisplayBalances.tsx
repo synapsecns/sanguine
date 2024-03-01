@@ -6,12 +6,7 @@ import { STAKE_PATH, getPoolUrl } from '@urls'
 
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 
-
 import { formatBigIntToString } from '@/utils/bigint/format'
-
-
-
-
 
 
 export const DisplayBalances = ({ pool, stakedBalance, showIcon, address }) => {
@@ -36,8 +31,7 @@ export const DisplayBalances = ({ pool, stakedBalance, showIcon, address }) => {
   }, [pool, poolTokenBalances, address])
 
   const sum = useMemo(() => {
-    const b =
-      lpTokenBalance && lpTokenBalance.balance ? lpTokenBalance.balance : 0n
+    const b = lpTokenBalance?.balance ?? 0n
     return amount + b
   }, [lpTokenBalance, amount])
 
