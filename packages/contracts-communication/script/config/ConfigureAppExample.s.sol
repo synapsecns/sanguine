@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {InterchainAppExample, AppConfigV1} from "../../contracts/apps/InterchainAppExample.sol";
+import {InterchainAppExample} from "../../contracts/apps/InterchainAppExample.sol";
+import {AppConfigV1} from "../../contracts/libs/AppConfig.sol";
 import {TypeCasts} from "../../contracts/libs/TypeCasts.sol";
 
 import {stdJson, SynapseScript} from "@synapsecns/solidity-devops/src/SynapseScript.sol";
