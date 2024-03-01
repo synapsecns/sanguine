@@ -34,6 +34,7 @@ import solarbeamLogo from '@assets/icons/solar.svg'
 import susdLogo from '@assets/icons/susd.svg'
 import synapseLogo from '@assets/icons/syn.svg'
 import unidexLogo from '@assets/icons/unidex.svg'
+import usdbLogo from '@assets/icons/usdb.svg'
 import usdcLogo from '@assets/icons/usdc.svg'
 import usdtLogo from '@assets/icons/usdt.svg'
 import vstaLogo from '@assets/icons/vsta.svg'
@@ -621,6 +622,7 @@ export const SYN = new Token({
     [CHAINS.DOGE.id]: '0xDfA53EeBA61D69E1D2b56b36d78449368F0265c1',
     [CHAINS.CANTO.id]: '0x555982d2E211745b96736665e19D9308B615F78e',
     [CHAINS.BASE.id]: '0x432036208d2717394d2614d6697c46DF3Ed69540',
+    [CHAINS.BLAST.id]: '0x9592f08387134e218327E6E8423400eb845EdE0E',
   },
   decimals: 18,
   symbol: 'SYN',
@@ -682,6 +684,7 @@ export const NUSD = new Token({
     [CHAINS.AVALANCHE.id]: '0xCFc37A6AB183dd4aED08C204D1c2773c0b1BDf46',
     [CHAINS.HARMONY.id]: '0xED2a7edd7413021d440b09D654f3b87712abAB66',
     [CHAINS.AURORA.id]: '0x07379565cD8B0CaE7c60Dc78e7f601b34AF2A21c',
+    [CHAINS.BLAST.id]: '0x3194B0A295D87fDAA54DF852c248F7a6BAF6c6e0',
   },
   decimals: 18,
   symbol: 'nUSD',
@@ -735,6 +738,7 @@ export const NETH = new Token({
     [CHAINS.ARBITRUM.id]: '0x3ea9B0ab55F34Fb188824Ee288CeaEfC63cf908e',
     [CHAINS.AVALANCHE.id]: '0x19E1ae0eE35c0404f835521146206595d37981ae',
     [CHAINS.HARMONY.id]: '0x0b5740c6b4a97f90eF2F0220651Cca420B868FfB',
+    [CHAINS.BLAST.id]: '0xce971282fAAc9faBcF121944956da7142cccC855',
   },
   decimals: 18,
   symbol: 'nETH',
@@ -766,6 +770,7 @@ export const ETH = new Token({
     [CHAINS.BASE.id]: zeroAddress,
     [CHAINS.ARBITRUM.id]: zeroAddress,
     [CHAINS.DFK.id]: '0xfBDF0E31808d0aa7b9509AA6aBC9754E48C58852',
+    [CHAINS.BLAST.id]: zeroAddress,
   },
   decimals: 18,
   symbol: 'ETH',
@@ -1186,6 +1191,7 @@ export const WETH = new Token({
     [CHAINS.KLAYTN.id]: '0xCD6f29dC9Ca217d0973d3D21bF58eDd3CA871a86',
     [CHAINS.BASE.id]: '0x4200000000000000000000000000000000000006',
     [CHAINS.ARBITRUM.id]: '0x82af49447d8a07e3bd95bd0d56f35241523fbab1',
+    [CHAINS.BLAST.id]: '0x4300000000000000000000000000000000000004',
   },
   decimals: 18,
   symbol: 'WETH',
@@ -1249,4 +1255,23 @@ export const USDBC = new Token({
   color: 'blue',
   priorityRank: 125,
   routeSymbol: 'USDbC',
+})
+
+export const USDB = new Token({
+  visibilityRank: 101,
+  addresses: {
+    [CHAINS.BLAST.id]: '0x4300000000000000000000000000000000000003',
+  },
+  decimals: {
+    [CHAINS.BLAST.id]: 18,
+  },
+  swapExceptions: {},
+  symbol: 'USDB',
+  name: 'Blast Rebasing USD',
+  logo: usdbLogo,
+  swapableType: 'USD',
+  swapableOn: [],
+  color: 'yellow',
+  priorityRank: 125,
+  routeSymbol: 'USDB',
 })
