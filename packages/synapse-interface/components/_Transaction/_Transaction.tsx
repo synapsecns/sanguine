@@ -1,4 +1,3 @@
-import { useCallback } from 'react'
 import { isNull } from 'lodash'
 import { useAppDispatch } from '@/store/hooks'
 import { getTxBlockExplorerLink } from './helpers/getTxBlockExplorerLink'
@@ -51,9 +50,9 @@ export const _Transaction = ({
 }: _TransactionProps) => {
   const dispatch = useAppDispatch()
 
-  const handleClearTransaction = useCallback(() => {
+  const handleClearTransaction = () => {
     dispatch(removeTransaction({ originTxHash }))
-  }, [dispatch])
+  }
 
   const [originTxExplorerLink, originExplorerName] = getTxBlockExplorerLink(
     originChain.id,
