@@ -1334,7 +1334,7 @@ export const USDB: BridgeableToken = {
   name: 'Blast Rebasing USD',
   swapableType: 'USD',
   color: 'yellow',
-  priorityRank: 125,
+  priorityRank: 103,
   routeSymbol: 'USDB',
   imgUrl:
     'https://www.synapseprotocol.com/_next/static/media/usdb.33190604.svg',
