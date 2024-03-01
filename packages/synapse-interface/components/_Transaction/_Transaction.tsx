@@ -120,14 +120,14 @@ export const _Transaction = ({
           tokenAmount={originValue}
           isOrigin={true}
           showChain={true}
-          className="py-2 px-2 bg-bgBase/10 rounded-l-md"
+          className={`py-2 px-2 ${isTxFinalized ? "bg-bgBase/10" : "bg-transparent"} rounded-l-md`}
         />
         <TransactionArrow
           className={`
               mr-2
               ${isTxFinalized
               ? 'stroke-white/10 fill-bgBase/10 '
-              : 'stroke-white/10 fill-transparent'}
+              : 'stroke-white/10 fill-transparent' /**fill-bgBase/10 */}
           `}
         />
         <TransactionPayloadDetail

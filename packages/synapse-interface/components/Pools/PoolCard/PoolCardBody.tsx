@@ -93,9 +93,9 @@ const PoolTokenIcons = memo(({ pool }: { pool: Token }) => {
 
 const ApyDisplay = ({ pool, poolApyData }) => {
   const apy =
-    poolApyData.fullCompoundedAPY > 10000
+    poolApyData?.fullCompoundedAPY > 10000
       ? 10000
-      : poolApyData.fullCompoundedAPY
+      : poolApyData?.fullCompoundedAPY
 
   if (!pool.incentivized) {
     return ''
@@ -114,7 +114,7 @@ const ApyDisplay = ({ pool, poolApyData }) => {
       <div className="font-medium text-white text-xxl">
         {apy
           ? `${numeral(apy / 100).format('0,0%')}${
-              poolApyData.fullCompoundedAPY > 10000 ? '+' : ''
+              poolApyData?.fullCompoundedAPY > 10000 ? '+' : ''
             }`
           : `-%`}
       </div>
