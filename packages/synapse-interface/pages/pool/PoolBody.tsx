@@ -19,6 +19,7 @@ import { PoolActionOptions } from '@/components/Pools/PoolActionOptions'
 import PoolTitle from './components/PoolTitle'
 import { DisplayBalances } from '../pools/PoolCard'
 import { getStakedBalance } from '@/utils/actions/getStakedBalance'
+import { useAppSelector } from '@/store/hooks'
 
 const PoolBody = ({
   address,
@@ -33,13 +34,14 @@ const PoolBody = ({
 
   const { isConnected } = useAccount()
 
+  const { poolUserData } = useAppSelector((state) => state.poolUserData)
   const { pool, poolAPYData } = useSelector(
     (state: RootState) => state.poolData
   )
-  const [stakedBalance, setStakedBalance] = useState({
-    amount: 0n,
-    reward: 0n,
-  })
+  // const [stakedBalance, setStakedBalance] = useState({
+  //   amount: 0n,
+  //   reward: 0n,
+  // })
 
   useEffect(() => {
     setIsClient(true)
@@ -51,29 +53,29 @@ const PoolBody = ({
         poolName: pool?.poolName,
       })
     }
-    if (address && isClient) {
-      getStakedBalance(
-        address as Address,
-        pool.chainId,
-        pool.poolId[pool.chainId],
-        pool
-      )
-        .then((res) => {
-          setStakedBalance(res)
-        })
-        .catch((err) => {
-          console.log('Could not get staked balances: ', err)
-        })
-    } else {
-      setStakedBalance({ amount: 0n, reward: 0n })
-    }
+    // if (address && isClient) {
+    //   getStakedBalance(
+    //     address as Address,
+    //     pool.chainId,
+    //     pool.poolId[pool.chainId],
+    //     pool
+    //   )
+    //     .then((res) => {
+    //       setStakedBalance(res)
+    //     })
+    //     .catch((err) => {
+    //       console.log('Could not get staked balances: ', err)
+    //     })
+    // } else {
+    //   setStakedBalance({ amount: 0n, reward: 0n })
+    // }
   }, [isClient, address, pool])
 
   if (!pool) return null
 
   return (
     <>
-      <div className="">
+      <div id="pool-body" className="">
         <Link href={POOLS_PATH}>
           <div className="inline-flex items-center mb-3 text-sm font-light text-white hover:text-opacity-100">
             <ChevronLeftIcon className="w-4 h-4" />
@@ -87,7 +89,7 @@ const PoolBody = ({
               <DisplayBalances
                 pool={pool}
                 address={address}
-                stakedBalance={stakedBalance}
+                stakedBalance={poolUserData?.stakedBalance}
                 showIcon={false}
               />
             </div>
