@@ -6,6 +6,10 @@ import { useAppDispatch } from '@/store/hooks'
 import { fetchPoolData, resetPoolData } from '@/slices/poolDataSlice'
 import { resetPoolDeposit } from '@/slices/poolDepositSlice'
 import { resetPoolWithdraw } from '@/slices/poolWithdrawSlice'
+import {
+  fetchPoolUserData,
+  resetPoolUserData,
+} from '@/slices/poolUserDataSlice'
 import { usePoolDataState } from '@/slices/pools/hooks'
 import { DEFAULT_FROM_CHAIN } from '@/constants/swap'
 import { LandingPageWrapper } from '@layouts/LandingPageWrapper'
@@ -50,6 +54,7 @@ const PoolPage = () => {
       dispatch(resetPoolData())
       dispatch(resetPoolDeposit())
       dispatch(resetPoolWithdraw())
+      dispatch(resetPoolUserData())
     }
 
     router.events.on('routeChangeStart', handleRouteChange)
@@ -69,6 +74,12 @@ const PoolPage = () => {
       dispatch(fetchPoolData({ poolName: String(poolId) }))
     }
   }, [poolId, address, isClient])
+
+  useEffect(() => {
+    if (pool && address) {
+      dispatch(fetchPoolUserData({ pool, address }))
+    }
+  }, [pool])
 
   return (
     <LandingPageWrapper>

@@ -24,6 +24,8 @@ const PoolManagement = ({
   const { pool } = usePoolDataState()
   const { poolUserData, isLoading } = usePoolUserDataState()
 
+  // console.log('hi')
+
   useEffect(() => {
     if (pool && address) {
       dispatch(resetPoolUserData())
