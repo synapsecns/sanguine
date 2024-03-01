@@ -26,6 +26,8 @@ abstract contract ConfigureOwnableApp is SynapseScript {
         linkRemoteChains();
         syncTrustedModules();
         setAppConfig();
+        setExecutionService();
+        setInterchainClient();
         afterAppConfigured();
     }
 
@@ -107,6 +109,28 @@ abstract contract ConfigureOwnableApp is SynapseScript {
             printSuccessWithIndent("Config set");
         }
         decreaseIndent();
+    }
+
+    function setExecutionService() internal virtual {
+        printLog("Setting execution service");
+        address executionService = getDeploymentAddress({contractName: "ExecutionService", revertIfNotFound: true});
+        if (app.getExecutionService() != executionService) {
+            app.setExecutionService(executionService);
+            printSuccessWithIndent(string.concat("Execution service set to ", vm.toString(executionService)));
+        } else {
+            printSkipWithIndent(string.concat("execution service is already set to ", vm.toString(executionService)));
+        }
+    }
+
+    function setInterchainClient() internal virtual {
+        printLog("Setting interchain client");
+        address client = getDeploymentAddress({contractName: "InterchainClientV1", revertIfNotFound: true});
+        if (app.interchain() != client) {
+            app.setInterchainClient(client);
+            printSuccessWithIndent(string.concat("Client set to ", vm.toString(client)));
+        } else {
+            printSkipWithIndent(string.concat("client is already set to ", vm.toString(client)));
+        }
     }
 
     function afterAppConfigured() internal virtual {}
