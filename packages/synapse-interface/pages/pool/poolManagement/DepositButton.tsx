@@ -1,16 +1,15 @@
-import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 import { useEffect, useMemo, useState } from 'react'
-
-import LoadingDots from '@/components/ui/tailwind/LoadingDots'
-import { TransactionButton } from '@/components/buttons/TransactionButton'
-import { DEFAULT_DEPOSIT_QUOTE } from './Deposit'
-import { stringToBigInt } from '@/utils/bigint/format'
+import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 import {
   usePoolDataState,
   usePoolDepositState,
   usePoolUserDataState,
 } from '@/slices/pools/hooks'
+import { stringToBigInt } from '@/utils/bigint/format'
+import { TransactionButton } from '@/components/buttons/TransactionButton'
+import { DEFAULT_DEPOSIT_QUOTE } from './Deposit'
+import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 
 const DepositButton = ({ approveTxn, depositTxn }) => {
   const [isConnected, setIsConnected] = useState(false) // Initialize to false

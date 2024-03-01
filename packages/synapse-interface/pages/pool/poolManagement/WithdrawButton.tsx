@@ -1,15 +1,15 @@
-import { TransactionButton } from '@/components/buttons/TransactionButton'
-import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 import { useEffect, useState } from 'react'
+import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { stringToBigInt } from '@/utils/bigint/format'
-import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 import { DEFAULT_WITHDRAW_QUOTE } from '@/slices/poolWithdrawSlice'
 import {
   usePoolDataState,
   usePoolWithdrawState,
   usePoolUserDataState,
 } from '@/slices/pools/hooks'
+import { stringToBigInt } from '@/utils/bigint/format'
+import { TransactionButton } from '@/components/buttons/TransactionButton'
+import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 
 const WithdrawButton = ({ approveTxn, withdrawTxn, isApproved }) => {
   const { chain } = useNetwork()

@@ -1,28 +1,25 @@
 import _ from 'lodash'
-
 import { ETH, WETHE, WETH } from '@constants/tokens/bridgeable'
 import { AVWETH } from '@/constants/tokens/auxilliary'
-import { stringToBigInt } from '@/utils/bigint/format'
-import { DepositTokenInput } from '@components/TokenInput'
-import PriceImpactDisplay from '../components/PriceImpactDisplay'
-import { Token } from '@types'
-import { useState, useEffect } from 'react'
+import { stringToBigInt, formatBigIntToString } from '@/utils/bigint/format'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import {
   approve,
   deposit,
   emptyPoolDeposit,
 } from '@/utils/actions/approveAndDeposit'
-import LoadingTokenInput from '@components/loading/LoadingTokenInput'
-import { Address, fetchBalance, waitForTransaction } from '@wagmi/core'
+import { getAddress } from '@ethersproject/address'
+import { fetchBalance, waitForTransaction } from '@wagmi/core'
 import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
 import { calculatePriceImpact } from '@/utils/priceImpact'
 import { transformCalculateLiquidityInput } from '@/utils/transformCalculateLiquidityInput'
-import { formatBigIntToString } from '@/utils/bigint/format'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
-
-import { getAddress } from '@ethersproject/address'
-
+import { useState, useEffect } from 'react'
+import { useDispatch } from 'react-redux'
+import { DepositTokenInput } from '@components/TokenInput'
+import { Token } from '@types'
+import { Address } from '@wagmi/core'
+import { zeroAddress } from 'viem'
 import {
   resetPoolDeposit,
   setDepositQuote,
@@ -31,18 +28,18 @@ import {
   setPool,
 } from '@/slices/poolDepositSlice'
 import { fetchPoolData } from '@/slices/poolDataSlice'
-import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
-import { useDispatch } from 'react-redux'
-import DepositButton from './DepositButton'
-import { txErrorHandler } from '@/utils/txErrorHandler'
 import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
-import { swapPoolCalculateAddLiquidity } from '@/actions/swapPoolCalculateAddLiquidity'
-import { zeroAddress } from 'viem'
+import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
 import {
   usePoolDataState,
   usePoolUserDataState,
   usePoolDepositState,
 } from '@/slices/pools/hooks'
+import { swapPoolCalculateAddLiquidity } from '@/actions/swapPoolCalculateAddLiquidity'
+import { txErrorHandler } from '@/utils/txErrorHandler'
+import LoadingTokenInput from '@components/loading/LoadingTokenInput'
+import PriceImpactDisplay from '../components/PriceImpactDisplay'
+import DepositButton from './DepositButton'
 
 export const DEFAULT_DEPOSIT_QUOTE = {
   priceImpact: 0n,

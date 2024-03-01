@@ -1,28 +1,20 @@
 import _ from 'lodash'
-import { useEffect, useMemo, useState } from 'react'
-import Slider from 'react-input-slider'
-import { Address, waitForTransaction } from '@wagmi/core'
-import { Token } from '@types'
-import { useAppDispatch } from '@/store/hooks'
-
 import Grid from '@tw/Grid'
+import Slider from 'react-input-slider'
+import { useEffect, useMemo, useState } from 'react'
+import { Address, waitForTransaction } from '@wagmi/core'
+import { useAppDispatch } from '@/store/hooks'
 import { getCoinTextColorCombined } from '@styles/tokens'
 import { ALL } from '@constants/withdrawTypes'
 import { WithdrawTokenInput } from '@components/TokenInput'
-import RadioButton from '@components/buttons/RadioButton'
-import ReceivedTokenSection from '../components/ReceivedTokenSection'
-import PriceImpactDisplay from '../components/PriceImpactDisplay'
-
 import { approve, withdraw } from '@/utils/actions/approveAndWithdraw'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
 import { calculatePriceImpact } from '@/utils/priceImpact'
-import { formatBigIntToString } from '@/utils/bigint/format'
-import { stringToBigInt } from '@/utils/bigint/format'
+import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
-
 import {
   setInputValue,
   setWithdrawQuote,
@@ -33,12 +25,16 @@ import {
 import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
 import { fetchPoolData } from '@/slices/poolDataSlice'
 import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
-import WithdrawButton from './WithdrawButton'
 import {
   usePoolDataState,
   usePoolUserDataState,
   usePoolWithdrawState,
 } from '@/slices/pools/hooks'
+import { Token } from '@types'
+import RadioButton from '@components/buttons/RadioButton'
+import ReceivedTokenSection from '../components/ReceivedTokenSection'
+import PriceImpactDisplay from '../components/PriceImpactDisplay'
+import WithdrawButton from './WithdrawButton'
 
 const Withdraw = ({ address }: { address: string }) => {
   const dispatch = useAppDispatch()

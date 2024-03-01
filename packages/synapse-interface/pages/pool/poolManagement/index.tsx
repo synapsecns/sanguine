@@ -1,16 +1,15 @@
 import { useEffect, useState } from 'react'
-import { useAppDispatch } from '@/store/hooks'
 import { Address } from 'wagmi'
-
-import LiquidityManagementTabs from '../components/LiquidityManagementTabs'
-import Deposit from './Deposit'
-import Withdraw from './Withdraw'
-import LoadingDots from '@/components/ui/tailwind/LoadingDots'
+import { useAppDispatch } from '@/store/hooks'
 import {
   fetchPoolUserData,
   resetPoolUserData,
 } from '@/slices/poolUserDataSlice'
 import { usePoolDataState, usePoolUserDataState } from '@/slices/pools/hooks'
+import LoadingDots from '@/components/ui/tailwind/LoadingDots'
+import LiquidityManagementTabs from '../components/LiquidityManagementTabs'
+import Deposit from './Deposit'
+import Withdraw from './Withdraw'
 
 const PoolManagement = ({
   address,
