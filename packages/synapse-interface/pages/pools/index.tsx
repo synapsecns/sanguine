@@ -10,6 +10,7 @@ import {
   METIS_POOL_SWAP_TOKEN_MIGRATED,
   METIS_WETH_SWAP_TOKEN_MIGRATED,
 } from '@/constants/tokens/poolMaster'
+import * as CHAINS from '@/constants/chains/master'
 
 
 import StandardPageContainer from '@layouts/StandardPageContainer'
@@ -31,6 +32,8 @@ const PoolsPage = () => {
   const migratedPools = {
     1088: [METIS_POOL_SWAP_TOKEN_MIGRATED, METIS_WETH_SWAP_TOKEN_MIGRATED],
   }
+
+  const blastPools = filterPoolsByBlast()
 
   const incentivizedPools = useMemo(
     () => filterPoolsByIncentivization(true),
@@ -74,6 +77,7 @@ const PoolsPage = () => {
           />
         </div>
         <Grid cols={{ xs: 1, sm: 1, md: 2 }} gap={4} className="mb-5">
+          <PoolCards address={address} pools={blastPools} />
           <PoolCards address={address} pools={incentivizedPools} />
         </Grid>
         <div className="flex-wrap justify-between mt-8 mb-4 md:flex">
@@ -99,10 +103,22 @@ const PoolsPage = () => {
   )
 }
 
+const filterPoolsByBlast = () =>
+  _.pickBy(
+    _.mapValues(DISPLAY_POOLS_BY_CHAIN, (tokens) =>
+      tokens.filter((token) => token.chainId === CHAINS.BLAST.id)
+    ),
+    (tokens) => tokens.length > 0
+  )
+
 const filterPoolsByIncentivization = (incentivized) =>
   _.pickBy(
     _.mapValues(DISPLAY_POOLS_BY_CHAIN, (tokens) =>
-      tokens.filter((token) => token.incentivized === incentivized)
+      tokens.filter(
+        (token) =>
+          token.incentivized === incentivized &&
+          token.chainId !== CHAINS.BLAST.id
+      )
     ),
     (tokens) => tokens.length > 0
   )

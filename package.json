@@ -11,7 +11,9 @@
       "**/typechain",
       "**/@typechain/*",
       "**/@openzeppelin/contracts-upgradeable",
-      "**/@openzeppelin/contracts"
+      "**/@openzeppelin/contracts",
+      "**/ds-test",
+      "**/forge-std"
     ]
   },
   "repository": {

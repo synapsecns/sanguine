@@ -92,6 +92,11 @@ const PoolTokenIcons = memo(({ pool }: { pool: Token }) => {
 })
 
 const ApyDisplay = ({ pool, poolApyData }) => {
+  const apy =
+    poolApyData.fullCompoundedAPY > 10000
+      ? 10000
+      : poolApyData.fullCompoundedAPY
+
   if (!pool.incentivized) {
     return ''
   }
@@ -106,16 +111,12 @@ const ApyDisplay = ({ pool, poolApyData }) => {
 
   return (
     <div>
-      <div className="font-medium text-white text-2xl leading-7">
-        {
-          (
-            !fullCompoundedAPYStr ||
-            isNaN(Number(fullCompoundedAPYStr)) ||
-            fullCompoundedAPYStr === '0.00'
-          )
-            ? <LoaderIcon className='mt-2 mb-2 float-right'/>
-            : numeral(fullCompoundedAPY / 100).format('0.0%')
-        }
+      <div className="font-medium text-white text-xxl">
+        {apy
+          ? `${numeral(apy / 100).format('0,0%')}${
+              poolApyData.fullCompoundedAPY > 10000 ? '+' : ''
+            }`
+          : `-%`}
       </div>
       <div className=" text-[#BFBCC2] text-right">APY</div>
     </div>

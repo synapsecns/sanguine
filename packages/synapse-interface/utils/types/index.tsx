@@ -155,7 +155,6 @@ export class Token {
   forceMeta?: boolean // force meta
   swapableType?: string // swapable type
   isNative = false // is native
-  swapExceptions: number | Record<number, number[]> = {} // for specifying tokens where limited dest chains are available.
   visibilityRank = 0 // rank in which token is displayed, least visible is 0, there is no max
   isMeta = false // is meta
   isEthSwap = false // is eth swap
@@ -164,7 +163,6 @@ export class Token {
     swap: true,
     pool: true,
   } // list of categories on each chain
-  swapableOn: number[] = [] // list of chains where token is swapable
   display = true // display token
   legacy = false // legacy token
   priorityRank: number // priority token ordering
@@ -211,12 +209,10 @@ export class Token {
     forceMeta,
     swapableType,
     isNative = false,
-    swapExceptions,
     visibilityRank,
     isMeta,
     isEthSwap,
     category,
-    swapableOn,
     display,
     legacy,
     priorityRank,
@@ -252,12 +248,10 @@ export class Token {
     forceMeta?: boolean
     swapableType?: string
     isNative?: boolean
-    swapExceptions?: number | Record<number, number[]>
     visibilityRank?: number
     isMeta?: boolean
     isEthSwap?: boolean
     category?: { bridge: boolean; swap: boolean; pool: boolean }
-    swapableOn?: number[]
     display?: boolean
     legacy?: boolean
     priorityRank: number
@@ -310,9 +304,7 @@ export class Token {
     this.isEthSwap = swapEthAddresses ? true : false
     this.isNative = isNative ?? false
     this.swapableType = swapableType
-    this.swapExceptions = swapExceptions ?? []
     this.category = category ?? { bridge: true, swap: true, pool: true }
-    this.swapableOn = swapableOn ?? []
     this.display = display ?? true
     this.legacy = legacy ?? false
     this.priorityRank = priorityRank
