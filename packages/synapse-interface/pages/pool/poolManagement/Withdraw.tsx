@@ -246,8 +246,6 @@ const Withdraw = ({ address }: { address: string }) => {
     }
   }
 
-  // dispatch(fetchPoolData({ poolName: pool.routerIndex }))
-
   return (
     pool && (
       <div>
