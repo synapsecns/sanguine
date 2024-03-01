@@ -36,6 +36,16 @@ interface StakeCardProps {
   pool: Token
 }
 
+const BASE_PROPERTIES = `
+  w-full rounded-md px-4 py-3
+  text-white text-opacity-100 transition-all
+  hover:opacity-80
+  active:opacity-70
+  disabled:opacity-70 disabled:text-white/70
+  disabled:!from-bgBase/10 disabled:!to-bgBase/10
+  bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF]
+`
+
 const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
   const tokenInfo = getTokenOnChain(chainId, pool)
   const stakingPoolLabel: string = tokenInfo?.poolName
@@ -167,13 +177,9 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
           <Button
             disabled={userStakeData.reward === 0n}
             className={`
-             bg-[#564f58]
-              w-full my-2 px-4 py-3 tracking-wide
-              rounded-sm
-              border border-transparent
-              hover:border-[#AC8FFF]
-              disabled:opacity-100
-              disabled:from-bgLight disabled:to-bgLight
+              mt-2
+              ${BASE_PROPERTIES}
+              ${isPending && 'from-[#622e71] to-[#564071] hover:opacity-100'}
             `}
             onClick={() =>
               pendingTxWrapFunc(
@@ -187,7 +193,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                 <span className="animate-pulse">Claiming</span>{' '}
               </div>
             ) : (
-              <div className="font-thin">
+              <div className="">
                 Claim {pool.customRewardToken ?? 'SYN'}
               </div>
             )}
