@@ -214,11 +214,12 @@ const Withdraw = ({ address }: { address: string }) => {
       const resolvedTx = await tx
 
       const transactionReceipt = await waitForTransaction({
-        hash: resolvedTx.transactionHash as Address,
+        hash: resolvedTx?.transactionHash as Address,
         timeout: 60_000,
       })
 
-      console.log('transactionReceipt:', transactionReceipt)
+      /** Remove after testing */
+      console.log('Transaction Receipt:', transactionReceipt)
 
       dispatch(fetchPoolUserData({ pool, address: address as Address }))
       dispatch(fetchPoolData({ poolName: String(pool.routerIndex) }))

@@ -14,11 +14,12 @@ import {
   emptyPoolDeposit,
 } from '@/utils/actions/approveAndDeposit'
 import LoadingTokenInput from '@components/loading/LoadingTokenInput'
-import { Address, fetchBalance } from '@wagmi/core'
+import { Address, fetchBalance, waitForTransaction } from '@wagmi/core'
 import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
 import { calculatePriceImpact } from '@/utils/priceImpact'
 import { transformCalculateLiquidityInput } from '@/utils/transformCalculateLiquidityInput'
 import { formatBigIntToString } from '@/utils/bigint/format'
+import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 
 import { getAddress } from '@ethersproject/address'
 import { useSelector } from 'react-redux'
@@ -31,6 +32,7 @@ import {
   setIsLoading,
   setPool,
 } from '@/slices/poolDepositSlice'
+import { fetchPoolData } from '@/slices/poolDataSlice'
 
 import { useDispatch } from 'react-redux'
 import DepositButton from './DepositButton'
@@ -181,14 +183,26 @@ const Deposit = ({
         tx = deposit(pool, 'ONE_TENTH', null, filteredInputValue.bi, chainId)
       }
 
-      try {
-        await tx
-        dispatch(fetchPoolUserData({ pool, address: address as Address }))
-        dispatch(resetPoolDeposit())
-      } catch (error) {
-        txErrorHandler(error)
-      }
+      const resolvedTx = await tx
+
+      const transactionReceipt = await waitForTransaction({
+        hash: resolvedTx?.transactionHash as Address,
+        timeout: 60_000,
+      })
+
+      /** Remove after testing */
+      console.log('Transaction Receipt:', transactionReceipt)
+
+      dispatch(fetchPoolData({ poolName: String(pool.routerIndex) }))
+      dispatch(fetchPoolUserData({ pool, address: address as Address }))
+      dispatch(resetPoolDeposit())
     } catch (error) {
+      if (isTransactionReceiptError(error)) {
+        dispatch(fetchPoolUserData({ pool, address: address as Address }))
+        dispatch(fetchPoolData({ poolName: String(pool.routerIndex) }))
+        // TODO: Figure out how to reset state when user encounters specific errors
+        dispatch(resetPoolDeposit())
+      }
       txErrorHandler(error)
     }
   }
