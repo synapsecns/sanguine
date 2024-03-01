@@ -205,6 +205,9 @@ export const DisplayBalances = ({ pool, stakedBalance, showIcon, address }) => {
     }
   }, [pool, poolTokenBalances, address])
 
+  console.log('poolTokenBalances:', poolTokenBalances)
+  console.log('lpTokenBalance: ', lpTokenBalance)
+
   const sum = useMemo(() => {
     const b =
       lpTokenBalance && lpTokenBalance.balance ? lpTokenBalance.balance : 0n

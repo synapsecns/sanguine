@@ -33,7 +33,7 @@ import {
 } from '@/slices/poolWithdrawSlice'
 import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
 import { fetchPoolData } from '@/slices/poolDataSlice'
-
+import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
 import WithdrawButton from './WithdrawButton'
 
 const Withdraw = ({ address }: { address: string }) => {
@@ -224,6 +224,9 @@ const Withdraw = ({ address }: { address: string }) => {
 
       dispatch(fetchPoolUserData({ pool, address: address as Address }))
       dispatch(fetchPoolData({ poolName: String(pool.routerIndex) }))
+      dispatch(
+        fetchAndStoreSingleNetworkPortfolioBalances({ address, chainId })
+      )
       dispatch(resetPoolWithdraw())
     } catch (error) {
       if (isTransactionReceiptError(error)) {
@@ -233,6 +236,9 @@ const Withdraw = ({ address }: { address: string }) => {
 
         dispatch(fetchPoolUserData({ pool, address: address as Address }))
         dispatch(fetchPoolData({ poolName: String(pool.routerIndex) }))
+        dispatch(
+          fetchAndStoreSingleNetworkPortfolioBalances({ address, chainId })
+        )
         dispatch(resetPoolWithdraw())
       }
       txErrorHandler(error)
