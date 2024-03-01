@@ -31,8 +31,6 @@ interface _TransactionProps {
   timestamp: number
   currentTime: number
   kappa?: string
-  // isStoredComplete: boolean
-  // isStoredReverted: boolean
   status: 'pending' | 'completed' | 'reverted'
 }
 
@@ -50,8 +48,6 @@ export const _Transaction = ({
   timestamp,
   currentTime,
   kappa,
-  // isStoredComplete,
-  // isStoredReverted,
   status,
 }: _TransactionProps) => {
   const dispatch = useAppDispatch()
@@ -84,40 +80,32 @@ export const _Transaction = ({
     isCheckTxForRevert,
   } = getEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
 
-  const [isTxComplete, _kappa] = useBridgeTxStatus({
+  const [isTxCompleted, _kappa] = useBridgeTxStatus({
     originChainId: originChain.id,
     destinationChainId: destinationChain.id,
     originTxHash,
     bridgeModuleName,
     kappa: kappa,
-    // checkStatus: isCheckTxStatus && !isStoredComplete && !isStoredReverted,
     checkStatus: isCheckTxStatus && isPending,
     currentTime: currentTime,
   })
-  // const isTxFinalized = isStoredComplete ?? isTxComplete
 
   const isTxReverted = useIsTxReverted(
     originTxHash as Address,
     originChain,
-    // isCheckTxForRevert && !isStoredComplete && !isStoredReverted
     isCheckTxForRevert && isPending
   )
-  // const isTxReverted = isStoredReverted ?? isReverted
 
   useBridgeTxUpdater(
     connectedAddress,
     destinationChain,
     _kappa,
     originTxHash,
-    isTxComplete,
+    isTxCompleted,
     isTxReverted
   )
 
   // Show transaction support if the transaction is delayed by more than 5 minutes and not finalized or reverted
-  // const showTransactionSupport =
-  // isTxReverted ||
-  // (!isTxFinalized && delayedTimeInMin && delayedTimeInMin <= -5)
-
   const showTransactionSupport =
     isReverted || (isPending && delayedTimeInMin && delayedTimeInMin <= -5)
 
@@ -153,10 +141,8 @@ export const _Transaction = ({
           <DropdownMenu
             menuTitleElement={
               <TimeRemaining
-                // isComplete={isTxFinalized}
                 isComplete={isCompleted}
                 isDelayed={isEstimatedTimeReached}
-                // isReverted={isStoredReverted}
                 isReverted={isReverted}
                 remainingTime={remainingTime}
                 delayedTime={delayedTime}
@@ -203,7 +189,6 @@ export const _Transaction = ({
         </div>
       </div>
       {showTransactionSupport ? (
-        // <TransactionSupport isReverted={isTxReverted} />
         <TransactionSupport isReverted={isReverted} />
       ) : null}
 
@@ -212,8 +197,6 @@ export const _Transaction = ({
           id={originTxHash}
           startTime={timestamp}
           estDuration={estimatedTime * 2} // 2x buffer
-          // isComplete={isTxFinalized}
-          // isError={isStoredReverted}
           isComplete={isCompleted}
           isError={isReverted}
         />
