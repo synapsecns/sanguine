@@ -877,7 +877,7 @@ export const BLAST_ETH_SWAP_TOKEN = new Token({
   logo: synapseLogo,
   poolName: 'Blast ETH Pool',
   routerIndex: 'blastethpool',
-  poolId: 0,
+  poolId: 1,
   poolType: 'ETH',
   swapAddresses: {
     [CHAINS.BLAST.id]: '0x999fcd13C54B26E02a6Ccd185f71550b3a4641c0',
@@ -908,7 +908,7 @@ export const BLAST_2POOL_SWAP_TOKEN = new Token({
   logo: synapseLogo,
   poolName: 'Blast 2Pool',
   routerIndex: 'blast2pool',
-  poolId: 1,
+  poolId: 0,
   poolType: 'USD',
   swapAddresses: {
     [CHAINS.BLAST.id]: '0xa4bd1AAD7cF04567c10f38FC4355E91bba32aC9c',
