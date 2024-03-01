@@ -1,12 +1,14 @@
 {
   "defaultOriginToken": "ETH",
   "defaultDestinationToken": "ETH",
-  "totalAvailableNetworks": 19,
+  "totalAvailableNetworks": 20,
   "availableNetworks": [
     "Arbitrum",
     "Aurora",
     "Avalanche",
     "BNB Chain",
+    "Base",
+    "Blast",
     "Boba Chain",
     "Canto",
     "Cronos",

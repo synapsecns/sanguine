@@ -67,8 +67,12 @@ root
 │   ├── <a href="./packages/coverage-aggregator">coverage-aggregator</a>: Javascript coverage aggregator based on <a href="https://www.npmjs.com/package/nyc">nyc</a>
 │   ├── <a href="./packages/docs">docs</a>: Docasaurus documentation. Note: this is not yet in use, and docs are still maintained on gitbook
 │   ├── <a href="./packages/explorer-ui">explorer-ui</a>: Explorer UI
+│   ├── <a href="./packages/rest-api">rest-api</a>: Rest API
 │   ├── <a href="./packages/sdk-router">sdk-router</a>: SDK router
+│   ├── <a href="./packages/solidity-devops">solidity-devops</a>: provides a set of tools and scripts to help with the development of Solidity smart contracts
+│   ├── <a href="./packages/synapse-constants">synapse constants</a>: Constants used across synapse
 │   ├── <a href="./packages/sdk-router">synapse-interface</a>: Synapse frontend code
+│   ├── <a href="./packages/widget">widget</a>: Bridge Widget
 ├── <a href="./services">services</a>
 │   ├── <a href="./services/cctp-relayer">CCTP Relayer</a>: CCTP message relayer
 │   ├── <a href="./services/explorer">explorer</a>: Bridge/messaging explorer ba
@@ -80,6 +84,7 @@ root
 │   ├── <a href="./tools/abigen">abigen</a>: Used to generate abigen bindings for go
 │   ├── <a href="./tools/bundle">bundle</a>: Modified version of <a href="https://pkg.go.dev/golang.org/x/tools@v0.5.0/cmd/bundle"> go bundler </a> with improved shadowing support
 │   ├── <a href="./tools/modulecopier">module copier</a>: Used to copy internal modules and export methods for testing
+│   ├── <a href="./tools/revertresolver">revertresolver</a>: Converts hexified solidity errors into their underlying errors.
 </pre>
 
 ## Setup
