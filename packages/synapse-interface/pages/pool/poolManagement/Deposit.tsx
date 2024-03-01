@@ -33,7 +33,7 @@ import {
   setPool,
 } from '@/slices/poolDepositSlice'
 import { fetchPoolData } from '@/slices/poolDataSlice'
-
+import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
 import { useDispatch } from 'react-redux'
 import DepositButton from './DepositButton'
 import { txErrorHandler } from '@/utils/txErrorHandler'
@@ -192,15 +192,25 @@ const Deposit = ({
 
       /** Remove after testing */
       console.log('Transaction Receipt:', transactionReceipt)
+      /** Remove after testing */
 
       dispatch(fetchPoolData({ poolName: String(pool.routerIndex) }))
       dispatch(fetchPoolUserData({ pool, address: address as Address }))
+      dispatch(
+        fetchAndStoreSingleNetworkPortfolioBalances({ address, chainId })
+      )
       dispatch(resetPoolDeposit())
     } catch (error) {
       if (isTransactionReceiptError(error)) {
+        /** Remove after testing */
+        console.log('Transaction Receipt Error: ', error)
+        /** Remove after testing */
+
         dispatch(fetchPoolUserData({ pool, address: address as Address }))
         dispatch(fetchPoolData({ poolName: String(pool.routerIndex) }))
-        // TODO: Figure out how to reset state when user encounters specific errors
+        dispatch(
+          fetchAndStoreSingleNetworkPortfolioBalances({ address, chainId })
+        )
         dispatch(resetPoolDeposit())
       }
       txErrorHandler(error)

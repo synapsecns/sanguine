@@ -20,10 +20,10 @@ const PoolCard = memo(({ pool, address }: { pool: Token; address: string }) => {
   const [isClient, setIsClient] = useState(false)
   const [poolData, setPoolData] = useState(undefined)
   const [poolApyData, setPoolApyData] = useState(undefined)
-  const [stakedBalance, setStakedBalance] = useState({
-    amount: 0n,
-    reward: 0n,
-  })
+  // const [stakedBalance, setStakedBalance] = useState({
+  //   amount: 0n,
+  //   reward: 0n,
+  // })
 
   // Replace above stakedBalance state after testing
   const { poolUserData } = useAppSelector((state) => state.poolUserData)
@@ -60,24 +60,24 @@ const PoolCard = memo(({ pool, address }: { pool: Token; address: string }) => {
     }
   }, [pool, isClient])
 
-  useEffect(() => {
-    if (address && isClient) {
-      getStakedBalance(
-        address as Address,
-        pool.chainId,
-        pool.poolId[pool.chainId],
-        pool
-      )
-        .then((res) => {
-          setStakedBalance(res)
-        })
-        .catch((err) => {
-          console.log('Could not get staked balances: ', err)
-        })
-    } else {
-      setStakedBalance({ amount: 0n, reward: 0n })
-    }
-  }, [address, isClient])
+  // useEffect(() => {
+  //   if (address && isClient) {
+  //     getStakedBalance(
+  //       address as Address,
+  //       pool.chainId,
+  //       pool.poolId[pool.chainId],
+  //       pool
+  //     )
+  //       .then((res) => {
+  //         setStakedBalance(res)
+  //       })
+  //       .catch((err) => {
+  //         console.log('Could not get staked balances: ', err)
+  //       })
+  //   } else {
+  //     setStakedBalance({ amount: 0n, reward: 0n })
+  //   }
+  // }, [address, isClient])
 
   /*
   useEffect triggers: address, isDisconnected, popup
