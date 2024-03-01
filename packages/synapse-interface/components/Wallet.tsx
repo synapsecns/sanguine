@@ -131,7 +131,7 @@ export const Wallet = () => {
                         >
                           {chain.iconUrl && (
                             <img
-                              alt={chain.name ?? 'Chain icon'}
+                              alt={chain?.name ?? 'Chain icon'}
                               src={chain.iconUrl}
                               style={{ width: 20, height: 20 }}
                             />
