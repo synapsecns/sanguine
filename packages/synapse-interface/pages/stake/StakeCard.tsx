@@ -128,7 +128,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
               : formatBigIntToString(
                   lpTokenBalance,
                   tokenInfo.decimals,
-                  6
+                  18
                 )}{' '}
             <span className="text-base text-[#A9A5AD]">
               {pool ? pool.symbol : ''}

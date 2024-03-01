@@ -16,7 +16,10 @@ const initialState: PoolDataState = {
     tokens: undefined,
     lpTokenBalance: undefined,
     nativeTokens: undefined,
-    stakedBalance: undefined,
+    stakedBalance: {
+      amount: 0n,
+      reward: 0n,
+    },
   },
   isLoading: false,
 }

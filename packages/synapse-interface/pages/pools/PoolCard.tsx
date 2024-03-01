@@ -28,6 +28,8 @@ const PoolCard = memo(({ pool, address }: { pool: Token; address: string }) => {
   // Replace above stakedBalance state after testing
   const { poolUserData } = useAppSelector((state) => state.poolUserData)
 
+  console.log('poolUserData:', poolUserData)
+
   const { isDisconnected } = useAccount()
   const { synPrices, ethPrice, avaxPrice, metisPrice } = useAppSelector(
     (state) => state.priceData
@@ -211,6 +213,8 @@ export const DisplayBalances = ({ pool, stakedBalance, showIcon, address }) => {
   const sum = useMemo(() => {
     const b =
       lpTokenBalance && lpTokenBalance.balance ? lpTokenBalance.balance : 0n
+    console.log('amount:', amount)
+    console.log('b:', b)
     return amount + b
   }, [lpTokenBalance, amount])
 
