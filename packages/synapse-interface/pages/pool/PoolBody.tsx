@@ -55,7 +55,7 @@ const PoolBody = ({
 
   return (
     <>
-      <div id="pool-body" className="">
+      <div id="pool-body">
         <Link href={POOLS_PATH}>
           <div className="inline-flex items-center mb-3 text-sm font-light text-white hover:text-opacity-100">
             <ChevronLeftIcon className="w-4 h-4" />
