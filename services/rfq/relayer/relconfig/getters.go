@@ -568,14 +568,14 @@ func (c Config) GetMaxRebalanceAmount(chainID int, addr common.Address) *big.Int
 	if tokenCfg == nil {
 		return defaultMaxRebalanceAmount
 	}
-	maxRebalanceAmount, _ := new(big.Int).SetString(tokenCfg.MaxRebalanceAmount, 10)
-	if maxRebalanceAmount == nil {
+	rebalanceAmountFlt, ok := new(big.Float).SetString(tokenCfg.MaxRebalanceAmount)
+	if !ok || rebalanceAmountFlt == nil {
 		return defaultMaxRebalanceAmount
 	}
 
 	// Scale by the token decimals.
 	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenCfg.Decimals)), nil)
-	maxRebalanceAmountScaled := new(big.Int).Mul(maxRebalanceAmount, denomDecimalsFactor)
+	maxRebalanceAmountScaled, _ := new(big.Float).Mul(rebalanceAmountFlt, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
 	return maxRebalanceAmountScaled
 }
 

@@ -149,13 +149,13 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 	i.Equal(expected, rebalance)
 
 	// Set max rebalance amount
-	cfgWithMax := getConfig("1")
+	cfgWithMax := getConfig("1.1")
 	rebalance, err = inventory.GetRebalance(cfgWithMax, tokens, origin, usdcDataOrigin.Addr)
 	i.NoError(err)
 	expected = &inventory.RebalanceData{
 		OriginMetadata: &usdcDataOrigin,
 		DestMetadata:   &usdcDataDest,
-		Amount:         big.NewInt(1e6),
+		Amount:         big.NewInt(1.1e6),
 	}
 	i.Equal(expected, rebalance)
 
