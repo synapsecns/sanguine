@@ -226,6 +226,7 @@ const Withdraw = ({ address }: { address: string }) => {
       dispatch(resetPoolWithdraw())
     } catch (error) {
       if (isTransactionReceiptError(error)) {
+        console.log('Transaction Receipt Error: ', error)
         dispatch(fetchPoolUserData({ pool, address: address as Address }))
         dispatch(fetchPoolData({ poolName: String(pool.routerIndex) }))
         dispatch(resetPoolWithdraw())
