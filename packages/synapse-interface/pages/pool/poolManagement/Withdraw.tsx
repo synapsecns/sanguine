@@ -231,6 +231,10 @@ const Withdraw = ({ address }: { address: string }) => {
 
       onSuccessWithdraw()
     } catch (error) {
+      /**
+       * Assume transaction success if transaction receipt error
+       * Likely to be rpc related issue
+       */
       if (isTransactionReceiptError(error)) {
         /** Remove after testing */
         console.log('Transaction Receipt Error: ', error)

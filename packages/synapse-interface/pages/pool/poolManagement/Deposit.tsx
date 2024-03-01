@@ -173,6 +173,13 @@ const Deposit = ({
     }
   }
 
+  const onSuccessDeposit = () => {
+    dispatch(fetchPoolData({ poolName: String(pool.routerIndex) }))
+    dispatch(fetchPoolUserData({ pool, address: address as Address }))
+    dispatch(fetchAndStoreSingleNetworkPortfolioBalances({ address, chainId }))
+    dispatch(resetPoolDeposit())
+  }
+
   const depositTxn = async () => {
     try {
       let tx
@@ -194,24 +201,18 @@ const Deposit = ({
       console.log('Transaction Receipt:', transactionReceipt)
       /** Remove after testing */
 
-      dispatch(fetchPoolData({ poolName: String(pool.routerIndex) }))
-      dispatch(fetchPoolUserData({ pool, address: address as Address }))
-      dispatch(
-        fetchAndStoreSingleNetworkPortfolioBalances({ address, chainId })
-      )
-      dispatch(resetPoolDeposit())
+      onSuccessDeposit()
     } catch (error) {
+      /**
+       * Assume transaction success if transaction receipt error
+       * Likely to be rpc related issue
+       */
       if (isTransactionReceiptError(error)) {
         /** Remove after testing */
         console.log('Transaction Receipt Error: ', error)
         /** Remove after testing */
 
-        dispatch(fetchPoolUserData({ pool, address: address as Address }))
-        dispatch(fetchPoolData({ poolName: String(pool.routerIndex) }))
-        dispatch(
-          fetchAndStoreSingleNetworkPortfolioBalances({ address, chainId })
-        )
-        dispatch(resetPoolDeposit())
+        onSuccessDeposit()
       }
       txErrorHandler(error)
     }
