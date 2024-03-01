@@ -4,6 +4,7 @@ import avalancheImg from '../assets/chains/avalanche.svg'
 import baseImg from '../assets/chains/base.svg'
 import bobaImg from '../assets/chains/boba.svg'
 import bscImg from '../assets/chains/bnb.svg'
+import blastImg from '../assets/chains/blast.svg'
 import cantoImg from '../assets/chains/canto.svg'
 import cronosImg from '../assets/chains/cronos.svg'
 import dfkImg from '../assets/chains/dfk.svg'
@@ -36,6 +37,7 @@ import moonbeamExplorerImg from '../assets/explorer/moonbeam.svg'
 import moonriverExplorerImg from '../assets/explorer/moonriver.svg'
 import dogeExplorerImg from '../assets/explorer/dogechain.svg'
 import baseExplorerImg from '../assets/explorer/basescan.svg'
+import blastExplorerImg from '../assets/explorer/blast.svg'
 import { Chain } from '../types'
 
 export const ETH: Chain = {
@@ -425,4 +427,28 @@ export const BASE: Chain = {
     decimals: 18,
   },
   color: 'blue',
+}
+
+export const BLAST: Chain = {
+  priorityRank: 90,
+  id: 81457,
+  chainSymbol: 'ETH',
+  name: 'Blast',
+  codeName: 'blast',
+  chainImg: blastImg,
+  layer: 2,
+  rpcUrls: {
+    primary: 'https://rpc.blast.io',
+    fallback: 'https://blast.blockpi.network/v1/rpc/publicChain',
+  },
+  explorerUrl: 'https://blastscan.io',
+  explorerName: 'Blastscan',
+  explorerImg: blastExplorerImg,
+  blockTime: 3000,
+  nativeCurrency: {
+    name: 'Ether',
+    symbol: 'ETH',
+    decimals: 18,
+  },
+  color: 'yellow',
 }
