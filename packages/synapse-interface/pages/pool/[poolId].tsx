@@ -38,7 +38,7 @@ const PoolPage = () => {
   const [connectedChainId, setConnectedChainId] = useState(0)
   const [isClient, setIsClient] = useState(false)
 
-  const { pool, isLoading } = useSelector((state: RootState) => state.poolData)
+  const { pool } = useSelector((state: RootState) => state.poolData)
 
   const dispatch: any = useDispatch()
 
