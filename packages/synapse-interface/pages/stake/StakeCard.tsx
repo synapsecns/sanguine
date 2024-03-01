@@ -23,6 +23,8 @@ import InfoSectionCard from '../pool/PoolInfoSection/InfoSectionCard'
 import Tabs from '@/components/ui/tailwind/Tabs'
 import TabItem from '@/components/ui/tailwind/TabItem'
 import { InteractiveInputRowButton } from '@/components/InteractiveInputRowButton'
+import { useAppDispatch } from '@/store/hooks'
+import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
 
 interface StakeCardProps {
   address: string
@@ -31,6 +33,7 @@ interface StakeCardProps {
 }
 
 const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
+  const dispatch = useAppDispatch()
   const tokenInfo = getTokenOnChain(chainId, pool)
   const stakingPoolLabel: string = tokenInfo?.poolName
   const stakingPoolTokens: Token[] = tokenInfo?.poolTokens
@@ -309,6 +312,12 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                       )
                       if (tx?.status === 'success') {
                         setDeposit({ bi: 0n, str: '' })
+                        dispatch(
+                          fetchAndStoreSingleNetworkPortfolioBalances({
+                            address,
+                            chainId,
+                          })
+                        )
                       }
                       setTx(tx?.transactionHash)
                     }
@@ -333,6 +342,12 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                 )
                 if (tx?.status === 1) {
                   setWithdraw('')
+                  dispatch(
+                    fetchAndStoreSingleNetworkPortfolioBalances({
+                      address,
+                      chainId,
+                    })
+                  )
                 }
               }}
             />
