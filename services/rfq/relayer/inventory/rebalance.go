@@ -215,6 +215,9 @@ func (c *rebalanceManagerCCTP) listen(parentCtx context.Context, chainID int) (e
 				logger.Warnf("could not parse circle request sent: %w", err)
 				return nil
 			}
+			if parsedEvent.Sender != c.relayerAddress {
+				return nil
+			}
 			span.SetAttributes(
 				attribute.String("log_type", "CircleRequestSent"),
 				attribute.String("request_id", hexutil.Encode(parsedEvent.RequestID[:])),
@@ -229,6 +232,9 @@ func (c *rebalanceManagerCCTP) listen(parentCtx context.Context, chainID int) (e
 			parsedEvent, err := parser.ParseCircleRequestFulfilled(log)
 			if err != nil {
 				logger.Warnf("could not parse circle request fulfilled: %w", err)
+				return nil
+			}
+			if parsedEvent.Recipient != c.relayerAddress {
 				return nil
 			}
 			span.SetAttributes(
