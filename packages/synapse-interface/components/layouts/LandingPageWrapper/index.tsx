@@ -13,9 +13,8 @@ import { Wallet } from '@components/Wallet'
 import { SynapseLogoSvg, SynapseLogoWithTitleSvg } from './SynapseLogoSvg'
 import { TopBarNavLink, checkIsRouteMatched } from './TopBarNavLink'
 import {
-  CONTRACTS_PATH,
   DISCORD_URL,
-  DOCS_URL,
+  SYNAPSE_DOCS_URL,
   FORUM_URL,
   LANDING_PATH,
   TELEGRAM_URL,
@@ -195,7 +194,7 @@ function SocialButtons() {
   return (
     <Grid cols={{ xs: 2, sm: 1 }} gapY={'1'}>
       <MiniInfoItem
-        href={DOCS_URL}
+        href={SYNAPSE_DOCS_URL}
         labelText="Docs"
         icon={<DocumentTextIcon className="inline w-5 mr-2 -ml-1 " />}
       />
