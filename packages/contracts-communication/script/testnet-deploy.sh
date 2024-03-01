@@ -10,16 +10,16 @@ if [ -z "$chainName" ] || [ -z "$walletName" ]; then
 fi
 # Get the rest of the options
 shift 2
-options=$@
+options="$*"
 
-yarn fsr-str script/deploy/DeployNoArgs.s.sol $chainName $walletName "InterchainDB" $options
+yarn fsr-str script/deploy/DeployNoArgs.s.sol "$chainName" "$walletName" "InterchainDB" "$options"
 
-yarn fsr-str script/deploy/DeployWithMsgSender.s.sol $chainName $walletName "InterchainAppExample" $options
+yarn fsr-str script/deploy/DeployWithMsgSender.s.sol "$chainName" "$walletName" "InterchainAppExample" "$options"
 
-yarn fsr script/deploy/DeployInterchainClientV1.s.sol $chainName $walletName $options
-yarn fsr script/deploy/DeploySynapseModule.s.sol $chainName $walletName $options
+yarn fsr script/deploy/DeployInterchainClientV1.s.sol "$chainName" "$walletName" "$options"
+yarn fsr script/deploy/DeploySynapseModule.s.sol "$chainName" "$walletName" "$options"
 
-yarn fsr-str script/deploy/DeployWithMsgSender.s.sol $chainName $walletName "ExecutionFees" $options
-yarn fsr-str script/deploy/DeployWithMsgSender.s.sol $chainName $walletName "ExecutionService" $options
+yarn fsr-str script/deploy/DeployWithMsgSender.s.sol "$chainName" "$walletName" "ExecutionFees" "$options"
+yarn fsr-str script/deploy/DeployWithMsgSender.s.sol "$chainName" "$walletName" "ExecutionService" "$options"
 
-yarn fsr-str script/deploy/DeployNoArgs.s.sol $chainName $walletName "GasOracleMock" $options
+yarn fsr-str script/deploy/DeployNoArgs.s.sol "$chainName" "$walletName" "GasOracleMock" "$options"
