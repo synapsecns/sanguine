@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/alecthomas/assert"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 )
 
@@ -12,6 +14,7 @@ import (
 func TestGetters(t *testing.T) {
 	chainID := 1
 	badChainID := 2
+	usdcAddr := "0x123"
 	cfgWithBase := relconfig.Config{
 		Chains: map[int]relconfig.ChainConfig{
 			chainID: {
@@ -65,6 +68,13 @@ func TestGetters(t *testing.T) {
 				QuotePct:               50,
 				QuoteOffsetBps:         10,
 				FixedFeeMultiplier:     1.1,
+				Tokens: map[string]relconfig.TokenConfig{
+					"USDC": {
+						Address:            usdcAddr,
+						Decimals:           6,
+						MaxRebalanceAmount: "1000",
+					},
+				},
 			},
 		},
 	}
@@ -263,5 +273,13 @@ func TestGetters(t *testing.T) {
 		chainVal, err := cfgWithBase.GetFixedFeeMultiplier(chainID)
 		assert.NoError(t, err)
 		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].FixedFeeMultiplier)
+	})
+
+	t.Run("GetMaxRebalanceAmount", func(t *testing.T) {
+		defaultVal := cfg.GetMaxRebalanceAmount(badChainID, common.HexToAddress(usdcAddr))
+		assert.Equal(t, defaultVal.String(), abi.MaxInt256.String())
+
+		chainVal := cfg.GetMaxRebalanceAmount(chainID, common.HexToAddress(usdcAddr))
+		assert.Equal(t, chainVal.String(), "1000000000")
 	})
 }

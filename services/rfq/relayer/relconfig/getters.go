@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/ethergo/signer/config"
 )
@@ -544,6 +545,38 @@ func (c Config) GetMinQuoteAmount(chainID int, addr common.Address) *big.Int {
 	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenCfg.Decimals)), nil)
 	quoteAmountScaled, _ := new(big.Float).Mul(quoteAmountFlt, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
 	return quoteAmountScaled
+}
+
+var defaultMaxRebalanceAmount = abi.MaxInt256
+
+// GetMaxRebalanceAmount returns the max rebalance amount for the given chain and address.
+// Note that this getter returns the value in native token decimals.
+func (c Config) GetMaxRebalanceAmount(chainID int, addr common.Address) *big.Int {
+	chainCfg, ok := c.Chains[chainID]
+	if !ok {
+		return defaultMaxRebalanceAmount
+	}
+
+	var tokenCfg *TokenConfig
+	for _, cfg := range chainCfg.Tokens {
+		if common.HexToAddress(cfg.Address).Hex() == addr.Hex() {
+			cfgCopy := cfg
+			tokenCfg = &cfgCopy
+			break
+		}
+	}
+	if tokenCfg == nil {
+		return defaultMaxRebalanceAmount
+	}
+	maxRebalanceAmount, _ := new(big.Int).SetString(tokenCfg.MaxRebalanceAmount, 10)
+	if maxRebalanceAmount == nil {
+		return defaultMaxRebalanceAmount
+	}
+
+	// Scale by the token decimals.
+	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenCfg.Decimals)), nil)
+	maxRebalanceAmountScaled := new(big.Int).Mul(maxRebalanceAmount, denomDecimalsFactor)
+	return maxRebalanceAmountScaled
 }
 
 const defaultDBSelectorIntervalSeconds = 1
