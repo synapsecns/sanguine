@@ -88,39 +88,48 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 			usdcDataDest.Addr: &usdcDataDest,
 		},
 	}
-	cfg := relconfig.Config{
-		Chains: map[int]relconfig.ChainConfig{
-			origin: {
-				Tokens: map[string]relconfig.TokenConfig{
-					"USDC": {
-						Address:               usdcDataOrigin.Addr.Hex(),
-						MaintenanceBalancePct: 20,
-						InitialBalancePct:     50,
+	getConfig := func(maxRebalanceAmount string) relconfig.Config {
+		return relconfig.Config{
+			Chains: map[int]relconfig.ChainConfig{
+				origin: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							Address:               usdcDataOrigin.Addr.Hex(),
+							Decimals:              6,
+							MaintenanceBalancePct: 20,
+							InitialBalancePct:     50,
+							MaxRebalanceAmount:    maxRebalanceAmount,
+						},
+					},
+				},
+				dest: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							Address:               usdcDataDest.Addr.Hex(),
+							Decimals:              6,
+							MaintenanceBalancePct: 20,
+							InitialBalancePct:     50,
+							MaxRebalanceAmount:    maxRebalanceAmount,
+						},
+					},
+				},
+				extra: {
+					Tokens: map[string]relconfig.TokenConfig{
+						"USDC": {
+							Address:               usdcDataExtra.Addr.Hex(),
+							Decimals:              6,
+							MaintenanceBalancePct: 0,
+							InitialBalancePct:     0,
+							MaxRebalanceAmount:    maxRebalanceAmount,
+						},
 					},
 				},
 			},
-			dest: {
-				Tokens: map[string]relconfig.TokenConfig{
-					"USDC": {
-						Address:               usdcDataDest.Addr.Hex(),
-						MaintenanceBalancePct: 20,
-						InitialBalancePct:     50,
-					},
-				},
-			},
-			extra: {
-				Tokens: map[string]relconfig.TokenConfig{
-					"USDC": {
-						Address:               usdcDataExtra.Addr.Hex(),
-						MaintenanceBalancePct: 0,
-						InitialBalancePct:     0,
-					},
-				},
-			},
-		},
+		}
 	}
 
 	// 10 USDC on both chains; no rebalance needed
+	cfg := getConfig("")
 	usdcDataOrigin.Balance = big.NewInt(1e7)
 	usdcDataDest.Balance = big.NewInt(1e7)
 	rebalance, err := inventory.GetRebalance(cfg, tokens, origin, usdcDataOrigin.Addr)
@@ -136,6 +145,17 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 		OriginMetadata: &usdcDataOrigin,
 		DestMetadata:   &usdcDataDest,
 		Amount:         big.NewInt(4e6),
+	}
+	i.Equal(expected, rebalance)
+
+	// Set max rebalance amount
+	cfgWithMax := getConfig("1")
+	rebalance, err = inventory.GetRebalance(cfgWithMax, tokens, origin, usdcDataOrigin.Addr)
+	i.NoError(err)
+	expected = &inventory.RebalanceData{
+		OriginMetadata: &usdcDataOrigin,
+		DestMetadata:   &usdcDataDest,
+		Amount:         big.NewInt(1e6),
 	}
 	i.Equal(expected, rebalance)
 

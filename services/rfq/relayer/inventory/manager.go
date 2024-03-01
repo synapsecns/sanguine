@@ -458,23 +458,37 @@ func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[comm
 	}
 
 	// check if the minimum balance is below the threshold and trigger rebalance
-	if minTokenData.Balance.Cmp(maintenanceThresh) < 0 {
-		initialThresh, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(initialPct/100)).Int(nil)
-		amount := new(big.Int).Sub(maxTokenData.Balance, initialThresh)
+	if minTokenData.Balance.Cmp(maintenanceThresh) > 0 {
+		return rebalance, nil
+	}
+
+	// calculate the amount to rebalance vs the initial threshold on origin
+	initialThresh, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(initialPct/100)).Int(nil)
+	amount := new(big.Int).Sub(maxTokenData.Balance, initialThresh)
+
+	// no need to rebalance since amount would be negative
+	if amount.Cmp(big.NewInt(0)) < 0 {
+		//nolint:nilnil
+		return nil, nil
+	}
+
+	// clip the rebalance amount by the configured max
+	maxAmount := cfg.GetMaxRebalanceAmount(maxTokenData.ChainID, maxTokenData.Addr)
+	if amount.Cmp(maxAmount) > 0 {
+		amount = maxAmount
+	}
+	if span != nil {
 		span.SetAttributes(
 			attribute.String("initial_thresh", initialThresh.String()),
 			attribute.String("rebalance_amount", amount.String()),
+			attribute.String("max_rebalance_amount", maxAmount.String()),
 		)
-		if amount.Cmp(big.NewInt(0)) < 0 {
-			// do not rebalance since it would take us below initial threshold
-			//nolint:nilnil
-			return nil, nil
-		}
-		rebalance = &RebalanceData{
-			OriginMetadata: maxTokenData,
-			DestMetadata:   minTokenData,
-			Amount:         amount,
-		}
+	}
+
+	rebalance = &RebalanceData{
+		OriginMetadata: maxTokenData,
+		DestMetadata:   minTokenData,
+		Amount:         amount,
 	}
 	return rebalance, nil
 }
