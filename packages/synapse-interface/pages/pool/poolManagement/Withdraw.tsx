@@ -15,6 +15,7 @@ import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
+import { isTransactionUserRejectedError } from '@/utils/isTransactionUserRejectedError'
 import {
   setInputValue,
   setWithdrawQuote,
@@ -219,6 +220,10 @@ const Withdraw = ({ address }: { address: string }) => {
 
       const resolvedTx = await tx
 
+      if (isTransactionUserRejectedError(resolvedTx)) {
+        throw Error(resolvedTx)
+      }
+
       await waitForTransaction({
         hash: resolvedTx?.transactionHash as Address,
         timeout: 60_000,
@@ -234,6 +239,8 @@ const Withdraw = ({ address }: { address: string }) => {
         onSuccessWithdraw()
       }
       txErrorHandler(error)
+    } finally {
+      dispatch(setIsLoading(false))
     }
   }
 
