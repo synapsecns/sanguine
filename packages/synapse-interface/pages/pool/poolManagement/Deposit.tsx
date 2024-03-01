@@ -40,6 +40,11 @@ import { txErrorHandler } from '@/utils/txErrorHandler'
 import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
 import { swapPoolCalculateAddLiquidity } from '@/actions/swapPoolCalculateAddLiquidity'
 import { zeroAddress } from 'viem'
+import {
+  usePoolDataState,
+  usePoolUserDataState,
+  usePoolDepositState,
+} from '@/slices/pools/hooks'
 
 export const DEFAULT_DEPOSIT_QUOTE = {
   priceImpact: 0n,
@@ -56,10 +61,10 @@ const Deposit = ({
 }) => {
   const dispatch: any = useDispatch()
 
-  const { pool, poolData } = useSelector((state: RootState) => state.poolData)
-  const { poolUserData } = useSelector((state: RootState) => state.poolUserData)
+  const { pool, poolData } = usePoolDataState()
+  const { poolUserData } = usePoolUserDataState()
   const { depositQuote, inputValue, inputSum, filteredInputValue } =
-    useSelector((state: RootState) => state.poolDeposit)
+    usePoolDepositState()
 
   const { poolAddress } = getSwapDepositContractFields(pool, chainId)
 

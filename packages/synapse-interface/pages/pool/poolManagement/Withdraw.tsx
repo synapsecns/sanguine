@@ -4,7 +4,7 @@ import Slider from 'react-input-slider'
 import { Address, waitForTransaction } from '@wagmi/core'
 import { useDispatch, useSelector } from 'react-redux'
 import { Token } from '@types'
-import { RootState } from '@/store/store'
+import { useAppDispatch } from '@/store/hooks'
 
 import Grid from '@tw/Grid'
 import { getCoinTextColorCombined } from '@styles/tokens'
@@ -35,20 +35,24 @@ import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
 import { fetchPoolData } from '@/slices/poolDataSlice'
 import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
 import WithdrawButton from './WithdrawButton'
+import {
+  usePoolDataState,
+  usePoolUserDataState,
+  usePoolWithdrawState,
+} from '@/slices/pools/hooks'
 
 const Withdraw = ({ address }: { address: string }) => {
+  const dispatch = useAppDispatch()
+  const { synapseSDK } = useSynapseContext()
   const [percentage, setPercentage] = useState(0)
-  const { pool, poolData } = useSelector((state: RootState) => state.poolData)
-  const { poolUserData } = useSelector((state: RootState) => state.poolUserData)
-  const { withdrawQuote, inputValue, withdrawType } = useSelector(
-    (state: RootState) => state.poolWithdraw
-  )
+
+  const { pool, poolData } = usePoolDataState()
+  const { poolUserData } = usePoolUserDataState()
+  const { withdrawQuote, inputValue, withdrawType } = usePoolWithdrawState()
+
   const chainId = pool?.chainId
   const poolDecimals = pool?.decimals[pool?.chainId]
   const { poolAddress } = getSwapDepositContractFields(pool, chainId)
-  const { synapseSDK } = useSynapseContext()
-
-  const dispatch: any = useDispatch()
 
   // An ETH swap pool has nativeTokens vs. most other pools have poolTokens
   const poolSpecificTokens = pool ? pool.nativeTokens ?? pool.poolTokens : []

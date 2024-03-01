@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import { useEffect, useState } from 'react'
 import { useAccount, useNetwork } from 'wagmi'
+import { useAppDispatch } from '@/store/hooks'
 import { useDispatch, useSelector } from 'react-redux'
 import { useRouter } from 'next/router'
 import StandardPageContainer from '@layouts/StandardPageContainer'
@@ -14,6 +15,7 @@ import { resetPoolDeposit } from '@/slices/poolDepositSlice'
 import { resetPoolWithdraw } from '@/slices/poolWithdrawSlice'
 import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 import { POOL_BY_ROUTER_INDEX } from '@constants/tokens'
+import { usePoolDataState } from '@/slices/pools/hooks'
 
 export const getStaticPaths = async () => {
   const paths = Object.keys(POOL_BY_ROUTER_INDEX).map((key) => ({
@@ -31,6 +33,7 @@ export const getStaticProps = async (context) => {
 }
 
 const PoolPage = () => {
+  const dispatch = useAppDispatch()
   const router = useRouter()
   const { poolId } = router.query
   const { address } = useAccount()
@@ -38,9 +41,7 @@ const PoolPage = () => {
   const [connectedChainId, setConnectedChainId] = useState(0)
   const [isClient, setIsClient] = useState(false)
 
-  const { pool } = useSelector((state: RootState) => state.poolData)
-
-  const dispatch: any = useDispatch()
+  const { pool } = usePoolDataState()
 
   useEffect(() => {
     setIsClient(true)

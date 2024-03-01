@@ -20,6 +20,7 @@ import PoolTitle from './components/PoolTitle'
 import { DisplayBalances } from '../pools/PoolCard'
 import { getStakedBalance } from '@/utils/actions/getStakedBalance'
 import { useAppSelector } from '@/store/hooks'
+import { usePoolDataState, usePoolUserDataState } from '@/slices/pools/hooks'
 
 const PoolBody = ({
   address,
@@ -31,13 +32,10 @@ const PoolBody = ({
   const [isClient, setIsClient] = useState(false)
   const { chains, switchNetwork } = useSwitchNetwork()
   const { openConnectModal } = useConnectModal()
-
   const { isConnected } = useAccount()
 
-  const { poolUserData } = useAppSelector((state) => state.poolUserData)
-  const { pool, poolAPYData } = useSelector(
-    (state: RootState) => state.poolData
-  )
+  const { poolUserData } = usePoolUserDataState()
+  const { pool, poolAPYData } = usePoolDataState()
 
   useEffect(() => {
     setIsClient(true)

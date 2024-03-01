@@ -8,6 +8,11 @@ import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { DEFAULT_DEPOSIT_QUOTE } from './Deposit'
 import { stringToBigInt } from '@/utils/bigint/format'
+import {
+  usePoolDataState,
+  usePoolDepositState,
+  usePoolUserDataState,
+} from '@/slices/pools/hooks'
 
 const DepositButton = ({ approveTxn, depositTxn }) => {
   const [isConnected, setIsConnected] = useState(false) // Initialize to false
@@ -26,12 +31,10 @@ const DepositButton = ({ approveTxn, depositTxn }) => {
     setIsConnected(isConnectedInit)
   }, [isConnectedInit])
 
-  const { pool, poolData } = useSelector((state: RootState) => state.poolData)
-
-  const { depositQuote, inputValue, isLoading, inputSum } = useSelector(
-    (state: RootState) => state.poolDeposit
-  )
-  const { poolUserData } = useSelector((state: RootState) => state.poolUserData)
+  const { pool, poolData } = usePoolDataState()
+  const { depositQuote, inputValue, isLoading, inputSum } =
+    usePoolDepositState()
+  const { poolUserData } = usePoolUserDataState()
 
   const isBalanceEnough = Object.entries(inputValue.bi).every(
     ([tokenAddr, amount]) =>

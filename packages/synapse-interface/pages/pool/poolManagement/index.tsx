@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useAppDispatch } from '@/store/hooks'
 import { Address } from 'wagmi'
 
 import { RootState } from '@/store/store'
@@ -11,7 +11,7 @@ import {
   fetchPoolUserData,
   resetPoolUserData,
 } from '@/slices/poolUserDataSlice'
-
+import { usePoolDataState, usePoolUserDataState } from '@/slices/pools/hooks'
 const PoolManagement = ({
   address,
   chainId,
@@ -19,14 +19,11 @@ const PoolManagement = ({
   address: Address
   chainId: number
 }) => {
+  const dispatch = useAppDispatch()
   const [cardNav, setCardNav] = useState(getLiquidityMode('#addLiquidity')) // 'addLiquidity'
 
-  const { pool } = useSelector((state: RootState) => state.poolData)
-  const { poolUserData, isLoading } = useSelector(
-    (state: RootState) => state.poolUserData
-  )
-
-  const dispatch: any = useDispatch()
+  const { pool } = usePoolDataState()
+  const { poolUserData, isLoading } = usePoolUserDataState()
 
   useEffect(() => {
     if (pool && address) {
