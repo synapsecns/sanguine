@@ -14,6 +14,7 @@ import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFiel
 import { calculatePriceImpact } from '@/utils/priceImpact'
 import { transformCalculateLiquidityInput } from '@/utils/transformCalculateLiquidityInput'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
+import { isTransactionUserRejectedError } from '@/utils/isTransactionUserRejectedError'
 import { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { DepositTokenInput } from '@components/TokenInput'
@@ -192,6 +193,10 @@ const Deposit = ({
 
       const resolvedTx = await tx
 
+      if (isTransactionUserRejectedError(resolvedTx)) {
+        console.log('rejected transaction')
+      }
+
       await waitForTransaction({
         hash: resolvedTx?.transactionHash as Address,
         timeout: 60_000,
@@ -207,6 +212,8 @@ const Deposit = ({
         onSuccessDeposit()
       }
       txErrorHandler(error)
+    } finally {
+      dispatch(setIsLoading(false))
     }
   }
 
