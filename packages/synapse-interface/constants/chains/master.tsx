@@ -2,6 +2,7 @@ import arbitrumImg from '@assets/chains/arbitrum.svg'
 import auroraImg from '@assets/chains/aurora.svg'
 import avalancheImg from '@assets/chains/avalanche.svg'
 import baseImg from '@assets/chains/base.svg'
+import blastImg from '@assets/chains/blast.svg'
 import bobaImg from '@assets/chains/boba.svg'
 import bscImg from '@assets/chains/bnb.svg'
 import cantoImg from '@assets/chains/canto.svg'
@@ -20,6 +21,7 @@ import polygonImg from '@assets/chains/polygon.svg'
 
 import ethExplorerImg from '@assets/explorer/etherscan.svg'
 import arbitrumExplorerImg from '@assets/explorer/arbitrum.svg'
+import blastExplorerImg from '@assets/explorer/blast.svg'
 import bnbExplorerImg from '@assets/explorer/bscscan.svg'
 import avalancheExplorerImg from '@assets/explorer/avalanche.svg'
 import cantoExplorerImg from '@assets/explorer/canto.svg'
@@ -432,4 +434,30 @@ export const BASE: Chain = {
     decimals: 18,
   },
   color: 'blue',
+}
+
+// TODO: UPDATE ALL PARAMETERS FOR MAINNET
+export const BLAST: Chain = {
+  priorityRank: 90,
+  id: 81457,
+  chainSymbol: 'ETH',
+  name: 'Blast',
+  codeName: 'blast',
+  chainImg: blastImg,
+  layer: 2,
+  rpcUrls: {
+    primary:
+      'https://lingering-indulgent-replica.blast-mainnet.quiknode.pro/6667a8f4be701cb6549b415d567bc706fb2f13a8/',
+    fallback: 'https://blast.blockpi.network/v1/rpc/publicChain',
+  },
+  explorerUrl: 'https://blastscan.io',
+  explorerName: 'Blastscan',
+  explorerImg: blastExplorerImg,
+  blockTime: 3000,
+  nativeCurrency: {
+    name: 'Ether',
+    symbol: 'ETH',
+    decimals: 18,
+  },
+  color: 'yellow',
 }
