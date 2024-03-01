@@ -33,7 +33,7 @@
     "forge-std": "github:foundry-rs/forge-std#v1.7.6"
   },
   "bin": {
-    "sol-run": "node js/run.js",
-    "sol-run-str": "node js/run-str.js"
+    "sol-run": "js/run.js",
+    "sol-run-str": "js/run-str.js"
   }
 }
