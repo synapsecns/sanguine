@@ -21,3 +21,5 @@ yarn sol-run script/deploy/DeploySynapseModule.s.sol $chainName $walletName $opt
 
 yarn sol-run-str script/deploy/DeployWithMsgSender.s.sol $chainName $walletName "ExecutionFees" $options
 yarn sol-run-str script/deploy/DeployWithMsgSender.s.sol $chainName $walletName "ExecutionService" $options
+
+yarn sol-run-str script/deploy/DeployNoArgs.s.sol $chainName $walletName "GasOracleMock" $options
