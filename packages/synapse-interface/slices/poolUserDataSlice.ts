@@ -3,6 +3,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { Address } from '@wagmi/core'
 
 import { getBalanceData } from '@/utils/actions/getPoolData'
+import { getStakedBalance } from '@/utils/actions/getStakedBalance'
 
 export interface PoolDataState {
   poolUserData: PoolUserData
@@ -15,6 +16,7 @@ const initialState: PoolDataState = {
     tokens: undefined,
     lpTokenBalance: undefined,
     nativeTokens: undefined,
+    stakedBalance: undefined,
   },
   isLoading: false,
 }
@@ -40,10 +42,18 @@ export const fetchPoolUserData = createAsyncThunk(
 
     const tokens = tokenBalances.filter((token) => !token.isLP)
 
+    const stakedBalance = await getStakedBalance(
+      address,
+      pool.chainId,
+      pool.poolId[pool.chainId],
+      pool
+    )
+
     return {
       name: pool.name,
       tokens,
       lpTokenBalance,
+      stakedBalance,
       nativeTokens: pool.nativeTokens,
     }
   }

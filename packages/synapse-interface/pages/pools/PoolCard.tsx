@@ -24,6 +24,10 @@ const PoolCard = memo(({ pool, address }: { pool: Token; address: string }) => {
     amount: 0n,
     reward: 0n,
   })
+
+  // Replace above stakedBalance state after testing
+  const { poolUserData } = useAppSelector((state) => state.poolUserData)
+
   const { isDisconnected } = useAccount()
   const { synPrices, ethPrice, avaxPrice, metisPrice } = useAppSelector(
     (state) => state.priceData
@@ -122,7 +126,7 @@ const PoolCard = memo(({ pool, address }: { pool: Token; address: string }) => {
           <>
             <ManageLp
               pool={pool}
-              stakedBalance={stakedBalance}
+              stakedBalance={poolUserData?.stakedBalance}
               address={address}
             />
           </>
@@ -179,6 +183,7 @@ const ManageLp = ({ pool, stakedBalance, address }) => {
 }
 
 export const DisplayBalances = ({ pool, stakedBalance, showIcon, address }) => {
+  console.log('stakedBalance:', stakedBalance)
   const { poolTokenBalances } = usePortfolioState()
   const { amount, reward } = stakedBalance
 
@@ -211,7 +216,7 @@ export const DisplayBalances = ({ pool, stakedBalance, showIcon, address }) => {
   }
 
   return (
-    <div className="flex items-center space-x-2">
+    <div id="display-balance" className="flex items-center space-x-2">
       {showIcon && (
         <img src={pool.icon.src} className="w-[20px] h-[20px] rounded-full" />
       )}
