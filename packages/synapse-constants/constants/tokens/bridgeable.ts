@@ -1280,7 +1280,7 @@ export const USDB = new Token({
     [CHAINS.BLAST.id]: 18,
   },
   swapExceptions: {},
-  symbol: 'USDbC',
+  symbol: 'USDB',
   name: 'Blast Rebasing USD',
   logo: usdbLogo,
   swapableType: 'USD',
