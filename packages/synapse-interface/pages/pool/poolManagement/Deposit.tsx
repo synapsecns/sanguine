@@ -22,8 +22,6 @@ import { formatBigIntToString } from '@/utils/bigint/format'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 
 import { getAddress } from '@ethersproject/address'
-import { useSelector } from 'react-redux'
-import { RootState } from '@/store/store'
 
 import {
   resetPoolDeposit,

@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useAppDispatch } from '@/store/hooks'
 import { Address } from 'wagmi'
 
-import { RootState } from '@/store/store'
 import LiquidityManagementTabs from '../components/LiquidityManagementTabs'
 import Deposit from './Deposit'
 import Withdraw from './Withdraw'
@@ -12,6 +11,7 @@ import {
   resetPoolUserData,
 } from '@/slices/poolUserDataSlice'
 import { usePoolDataState, usePoolUserDataState } from '@/slices/pools/hooks'
+
 const PoolManagement = ({
   address,
   chainId,

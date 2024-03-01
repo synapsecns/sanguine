@@ -2,7 +2,6 @@ import _ from 'lodash'
 import { useEffect, useMemo, useState } from 'react'
 import Slider from 'react-input-slider'
 import { Address, waitForTransaction } from '@wagmi/core'
-import { useDispatch, useSelector } from 'react-redux'
 import { Token } from '@types'
 import { useAppDispatch } from '@/store/hooks'
 
