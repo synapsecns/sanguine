@@ -1733,6 +1733,13 @@ export const BRIDGE_MAP = {
         '0xce971282fAAc9faBcF121944956da7142cccC855',
       ],
     },
+    '0x9592f08387134e218327E6E8423400eb845EdE0E': {
+      decimals: 18,
+      symbol: 'SYN',
+      origin: ['SYN'],
+      destination: ['SYN'],
+      swappable: [],
+    },
     '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': {
       decimals: 18,
       symbol: 'ETH',
