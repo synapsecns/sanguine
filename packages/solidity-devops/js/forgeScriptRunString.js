@@ -12,4 +12,4 @@ const [scriptFN, chainName, walletName, stringArg] = positionalArgs
 
 const newOptions = addOptions(options, `--sig "run(string)" "${stringArg}"`)
 // launch run.js with the new options
-runCommand(`yarn sol-run ${scriptFN} ${chainName} ${walletName} ${newOptions}`)
+runCommand(`yarn fsr-str ${scriptFN} ${chainName} ${walletName} ${newOptions}`)
