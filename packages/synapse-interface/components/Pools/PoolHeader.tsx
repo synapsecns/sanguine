@@ -46,7 +46,7 @@ export const PoolHeader = memo(
             src={chain.chainImg.src}
             className="w-[16px] h-[16px] rounded-full mr-2"
           />
-          <div className="mr-2 text-white text-md">{chain.name}</div>
+          <div className="mr-2 text-white text-md">{chain?.name}</div>
           <div className="text-sm text-[#BFBCC2] mr-4">{pool.symbol}</div>
           {mounted && connectedChain && connectedChain.id === pool.chainId && (
             <ConnectedIndicator />
