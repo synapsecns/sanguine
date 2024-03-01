@@ -70,8 +70,6 @@ export const _Transaction = ({
   const isReverted = status === 'reverted'
 
   const {
-    targetTime,
-    elapsedTime,
     remainingTime,
     delayedTime,
     delayedTimeInMin,
@@ -177,7 +175,6 @@ export const _Transaction = ({
               text="Contact Support (Discord)"
               link="https://discord.gg/synapseprotocol"
             />
-            {/* {(isTxFinalized || isTxReverted) && ( */}
             {!isPending && (
               <MenuItem
                 text={isTxReverted ? 'Clear notification' : 'Clear transaction'}
