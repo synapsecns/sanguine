@@ -1,0 +1,23 @@
+{
+  "chains": {
+    "arbitrum": "--with-gas-price 100000000",
+    "aurora": "--legacy --slow",
+    "base": "--with-gas-price 100000000",
+    "boba": "--legacy --skip-simulation --slow",
+    "canto": "--legacy --slow",
+    "cronos": "--slow",
+    "dfk": "--slow",
+    "dogechain": "--legacy --slow",
+    "harmony": "--legacy --slow",
+    "klaytn": "--skip-simulation",
+    "metis": "--legacy",
+    "moonbeam": "--skip-simulation --slow",
+    "moonriver": "--skip-simulation --slow",
+    "optimism": "--with-gas-price 100000000",
+    "polygon": "--slow"
+  },
+  "deployConfigs": "configs",
+  "deployments": "deployments",
+  "forgeArtifacts": "artifacts",
+  "freshDeployments": ".deployments"
+}

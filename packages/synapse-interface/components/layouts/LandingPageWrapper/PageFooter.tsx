@@ -5,7 +5,7 @@ import {
   BRIDGE_PATH,
   BUILD_ON_URL,
   DISCORD_URL,
-  DOCS_URL,
+  SYNAPSE_DOCS_URL,
   FORUM_URL,
   GITHUB_URL,
   MIRROR_URL,
@@ -72,7 +72,7 @@ const developersList: FooterDataProps[] = [
   {
     text: 'Documentation',
     type: FooterType.URL,
-    url: DOCS_URL,
+    url: SYNAPSE_DOCS_URL,
   },
   {
     text: 'GitHub',
