@@ -33,10 +33,6 @@ export const useBridgeTxStatus = ({
     if (!checkStatus) return
     if (isComplete) return
     ;(async () => {
-      /** Remove after testing */
-      console.log('fetching bridge tx status:', originTxHash)
-      /** Remove after testing */
-
       if (fetchedKappa === null) {
         const _kappa = await getKappa(
           synapseSDK,
