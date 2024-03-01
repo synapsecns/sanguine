@@ -5,11 +5,24 @@ block_timestamp = 1_704_067_200
 evm_version = "paris"
 src = 'contracts'
 out = 'out'
-libs = ["lib"]
+libs = ["lib", "node_modules"]
+ffi = true
+fs_permissions = [
+    { access = "read", path = "./" },
+    { access = "read-write", path = "./.deployments" }
+]
 
 [fmt]
 line_length = 120
 multiline_func_header = 'all'
 number_underscore = 'thousands'
+
+[rpc_endpoints]
+eth_sepolia = "${ETH_SEPOLIA_RPC}"
+op_sepolia = "${OP_SEPOLIA_RPC}"
+
+[etherscan]
+eth_sepolia = { key = "${ETH_SEPOLIA_VERIFIER_KEY}", url = "${ETH_SEPOLIA_VERIFIER_URL}" }
+op_sepolia = { key = "${OP_SEPOLIA_VERIFIER_KEY}", url = "${OP_SEPOLIA_VERIFIER_URL}" }
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config

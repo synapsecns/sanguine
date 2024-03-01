@@ -1,0 +1,92 @@
+{
+  "address": "0x2da1dc487Ec1F1e51a1b86cE53cE71E8EE9DC978",
+  "constructorArgs": "0x",
+  "receipt": {
+    "hash": "0x5381ffd258b1e78434ca298af9d17a2e27a8109696b3c2020790c78b13420001",
+    "blockNumber": 5394842
+  },
+  "abi": [
+    {
+      "type": "function",
+      "name": "convertRemoteValueToLocalUnits",
+      "inputs": [
+        {
+          "name": "remoteChainId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "value",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "estimateTxCostInLocalUnits",
+      "inputs": [
+        {
+          "name": "remoteChainId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "gasLimit",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "calldataSize",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "estimateTxCostInRemoteUnits",
+      "inputs": [
+        {
+          "name": "remoteChainId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "gasLimit",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "calldataSize",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    }
+  ]
+}

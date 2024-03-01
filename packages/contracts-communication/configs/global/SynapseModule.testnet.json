@@ -1,0 +1,18 @@
+{
+  "claimFeeBPS": 10,
+  "feeCollector": "0xD0D45E468ADF3aCB8A98391ff47267783220ba6F",
+  "gasOracleName": "GasOracleMock",
+  "threshold": 6,
+  "verifiers": [
+    "0x0E399F695d72033d598aC2911B8A5e9986d6cbaD",
+    "0x107a281D135ff74eC7d43c5A50B902EF762b20dE",
+    "0x217238ca74d2fba6cc7466f93d691834a252a3ff",
+    "0x48217d9b7ff1048915b09f21d0d818e6e347de6a",
+    "0x65b23e9678f8b3ef331a554865df045ee49a6365",
+    "0x8372eed424f90dca45325362e474def7483d55ba",
+    "0xae61329ce0affa55a7174916214fc2560a1cdd9f",
+    "0xb9a96627bd4b0a8954ac16670ee70eed26b104dc",
+    "0xe144dd3ce6bf60f70d98bc96400c0fea5c3193ac",
+    "0xe29c07938d623621ff9824e2a327a6f811386880"
+  ]
+}
