@@ -1,22 +1,7 @@
-import usdbLogo from '@assets/icons/usdc.svg'
 import fusdtLogo from '@assets/icons/usdt.svg'
 
 import { Token } from '@/utils/types'
 import * as CHAINS from '@/constants/chains/master'
-
-export const USDB = new Token({
-  addresses: {
-    [CHAINS.BNB.id]: '0xc8699abbba90c7479dedccef19ef78969a2fc608',
-  },
-  decimals: 18,
-  symbol: 'USDB',
-  name: 'USDB',
-  logo: usdbLogo,
-  docUrl: '',
-  swapableType: 'USDB',
-  priorityRank: 6,
-  routeSymbol: 'USDB',
-})
 
 export const FUSDT = new Token({
   addresses: {

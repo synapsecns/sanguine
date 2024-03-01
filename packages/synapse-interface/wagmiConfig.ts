@@ -10,6 +10,7 @@ import {
   aurora,
   canto,
   base,
+  blast,
 } from '@constants/extraWagmiChains'
 import { configureChains, createConfig } from 'wagmi'
 import {
@@ -50,6 +51,7 @@ const rawChains = [
   dfk,
   dogechain,
   boba,
+  blast,
 ]
 
 // Add custom icons
