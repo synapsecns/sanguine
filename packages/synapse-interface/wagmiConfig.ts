@@ -37,6 +37,7 @@ const rawChains = [
   aurora,
   avalanche,
   base,
+  blast,
   bsc,
   canto,
   fantom,
@@ -51,7 +52,6 @@ const rawChains = [
   dfk,
   dogechain,
   boba,
-  blast,
 ]
 
 // Add custom icons
