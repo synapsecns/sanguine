@@ -199,6 +199,13 @@ const Withdraw = ({ address }: { address: string }) => {
     }
   }
 
+  const onSuccessWithdraw = () => {
+    dispatch(fetchPoolUserData({ pool, address: address as Address }))
+    dispatch(fetchPoolData({ poolName: String(pool.routerIndex) }))
+    dispatch(fetchAndStoreSingleNetworkPortfolioBalances({ address, chainId }))
+    dispatch(resetPoolWithdraw())
+  }
+
   const withdrawTxn = async () => {
     try {
       const tx = withdraw(
@@ -222,24 +229,14 @@ const Withdraw = ({ address }: { address: string }) => {
       console.log('Transaction Receipt:', transactionReceipt)
       /** Remove after testing */
 
-      dispatch(fetchPoolUserData({ pool, address: address as Address }))
-      dispatch(fetchPoolData({ poolName: String(pool.routerIndex) }))
-      dispatch(
-        fetchAndStoreSingleNetworkPortfolioBalances({ address, chainId })
-      )
-      dispatch(resetPoolWithdraw())
+      onSuccessWithdraw()
     } catch (error) {
       if (isTransactionReceiptError(error)) {
         /** Remove after testing */
         console.log('Transaction Receipt Error: ', error)
         /** Remove after testing */
 
-        dispatch(fetchPoolUserData({ pool, address: address as Address }))
-        dispatch(fetchPoolData({ poolName: String(pool.routerIndex) }))
-        dispatch(
-          fetchAndStoreSingleNetworkPortfolioBalances({ address, chainId })
-        )
-        dispatch(resetPoolWithdraw())
+        onSuccessWithdraw()
       }
       txErrorHandler(error)
     }
