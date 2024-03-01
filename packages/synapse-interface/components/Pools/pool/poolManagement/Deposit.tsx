@@ -205,7 +205,7 @@ export default function Deposit({
         {pool && poolUserData.tokens && poolData ? (
           poolUserData.tokens.map((tokenObj, i) => {
             return (
-              <div className='py-0.5'>
+              <div className='pb-4'>
                 <SerializedDepositInput
                   key={i}
                   tokenObj={tokenObj}

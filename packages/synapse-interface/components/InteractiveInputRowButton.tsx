@@ -1,6 +1,7 @@
 import React from 'react'
 import Button from '@tw/Button'
-import ButtonLoadingDots from './buttons/ButtonLoadingDots'
+import ButtonLoadingDots from '@/components/buttons/ButtonLoadingDots'
+
 
 export const InteractiveInputRowButton = ({
   title,
@@ -19,17 +20,10 @@ export const InteractiveInputRowButton = ({
 }) => {
   return (
     <Button
+      fancy={true}
       className={`
-        w-full self-center
-        rounded-sm my-2 px-4 py-3
-        text-white text-opacity-100
-        border border-purple-500
-        disabled:border-white/10
-        hover:opacity-80  disabled:text-[#88818C]
-        bg-gradient-to-r disabled:from-bgBase/20 disabled:to-bgBase/20
-        mt-5
+        self-center mt-5
         ${isPending && '!from-[#622e71] !to-[#564071]'}
-        ${!disabled && 'from-[rgba(128, 0, 255, 0.2)] to-[rgba(255, 0, 191, 0.2)]'}
       `}
       disabled={disabled}
       onClick={onClick}

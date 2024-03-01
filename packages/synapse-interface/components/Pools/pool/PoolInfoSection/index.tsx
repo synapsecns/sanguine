@@ -1,13 +1,15 @@
 import numeral from 'numeral'
-import AugmentWithUnits from '../components/AugmentWithUnits'
-import InfoSectionCard from './InfoSectionCard'
-import CurrencyReservesCard from './CurrencyReservesCard'
-import LoadingDots from '@tw/LoadingDots'
 import {
   formatBigIntToPercentString,
   formatBigIntToString,
 } from '@/utils/bigint/format'
 import { usePoolDataState } from '@/slices/pool/hooks'
+import LoadingDots from '@tw/LoadingDots'
+import Grid from '@tw/Grid'
+import AugmentWithUnits from '../components/AugmentWithUnits'
+import InfoSectionCard from './InfoSectionCard'
+import CurrencyReservesCard from './CurrencyReservesCard'
+
 
 const PoolInfoSection = () => {
   const { pool, poolData } = usePoolDataState()
@@ -15,7 +17,7 @@ const PoolInfoSection = () => {
   const usdFormat = poolData.totalLockedUSD > 1000000 ? '$0,0.0' : '$0,0'
 
   return (
-    <div className="space-y-4">
+    <Grid cols={{xs: 1}} gap={8}>
       <CurrencyReservesCard />
       <InfoSectionCard title="Pool Info">
         <InfoListItem
@@ -68,7 +70,7 @@ const PoolInfoSection = () => {
           }
         />
       </InfoSectionCard>
-    </div>
+    </Grid>
   )
 }
 

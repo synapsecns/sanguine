@@ -36,15 +36,6 @@ interface StakeCardProps {
   pool: Token
 }
 
-const BASE_PROPERTIES = `
-  w-full rounded-md px-4 py-3
-  text-white text-opacity-100 transition-all
-  hover:opacity-80
-  active:opacity-70
-  disabled:opacity-70 disabled:text-white/70
-  disabled:!from-bgBase/10 disabled:!to-bgBase/10
-  bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF]
-`
 
 const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
   const tokenInfo = getTokenOnChain(chainId, pool)
@@ -128,7 +119,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
   }, [deposit])
 
   return (
-    <div className="flex-wrap space-y-2">
+    <div className="flex-wrap space-y-6">
       <StakeCardTitle
         token={pool}
         poolTokens={stakingPoolTokens}
@@ -146,7 +137,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                   tokenInfo.decimals,
                   6
                 )}{' '}
-            <span className="text-base text-[#A9A5AD]">
+            <span className="text-base text-white/60">
               {pool ? pool.symbol : ''}
             </span>
           </div>
@@ -155,7 +146,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
           <div className="text-[#EEEDEF]">Staked</div>
           <div className="text-white ">
             {formatBigIntToString(userStakeData.amount, tokenInfo.decimals, 6)}{' '}
-            <span className="text-base text-[#A9A5AD]">
+            <span className="text-base text-white/60">
               {pool ? pool.symbol : ''}
             </span>
           </div>
@@ -168,17 +159,17 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             {userStakeData.reward === 0n
               ? '\u2212'
               : formatBigIntToString(userStakeData.reward, 18, 6)}{' '}
-            <span className="text-base text-[#A9A5AD]">
+            <span className="text-base text-white/60">
               {pool?.customRewardToken ?? 'SYN'}
             </span>
           </div>
         </div>
         {userStakeData.reward === 0n ? null : (
           <Button
+            fancy={true}
             disabled={userStakeData.reward === 0n}
             className={`
               mt-2
-              ${BASE_PROPERTIES}
               ${isPending && 'from-[#622e71] to-[#564071] hover:opacity-100'}
             `}
             onClick={() =>
@@ -200,7 +191,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
           </Button>
         )}
       </InfoSectionCard>
-      <Card className="p-0  bg-bgBase/10 border-collapse">
+      <Card className="p-0 rounded-lg bg-bgBase/10 border-collapse">
         <div className="mb-3 border-collapse">
           <Tabs>
             <TabItem
@@ -208,7 +199,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
               onClick={() => {
                 setShowStake(true)
               }}
-              className="rounded-tl-md"
+              className="rounded-tl-lg"
             >
               Stake
             </TabItem>
@@ -217,7 +208,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
               onClick={() => {
                 setShowStake(false)
               }}
-              className="rounded-tr-md"
+              className="rounded-tr-lg"
             >
               Unstake
             </TabItem>

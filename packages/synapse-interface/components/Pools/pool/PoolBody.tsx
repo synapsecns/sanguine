@@ -116,7 +116,7 @@ const PoolBody = ({
       <div>
         <Grid cols={{ xs: 1, sm: 1, md: 1, lg: 2 }} gap={8}>
           <Card
-            className="!p-0 rounded-md bg-bgBase"
+            className="!p-0 rounded-lg"
             divider={false}
           >
             {!isConnected && (

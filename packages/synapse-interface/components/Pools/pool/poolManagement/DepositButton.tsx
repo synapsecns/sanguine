@@ -117,19 +117,6 @@ const DepositButton = ({ approveTxn, depositTxn }) => {
     pool &&
     buttonProperties && (
       <TransactionButton
-        style={
-          isButtonDisabled
-            ? {
-                border: '1px solid #453F47',
-                borderRadius: '4px',
-              }
-            : {
-                background:
-                  'linear-gradient(90deg, rgba(128, 0, 255, 0.2) 0%, rgba(255, 0, 191, 0.2) 100%)',
-                border: '1px solid #9B6DD7',
-                borderRadius: '4px',
-              }
-        }
         {...buttonProperties}
         disabled={isButtonDisabled}
         chainId={pool.chainId}
