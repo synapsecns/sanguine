@@ -447,18 +447,24 @@ func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[comm
 	if err != nil {
 		return nil, fmt.Errorf("could not get initial pct: %w", err)
 	}
+	maintenanceThresh, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(maintenancePct/100)).Int(nil)
 	if span != nil {
 		span.SetAttributes(attribute.Float64("maintenance_pct", maintenancePct))
 		span.SetAttributes(attribute.Float64("initial_pct", initialPct))
 		span.SetAttributes(attribute.String("max_token_balance", maxTokenData.Balance.String()))
 		span.SetAttributes(attribute.String("min_token_balance", minTokenData.Balance.String()))
+		span.SetAttributes(attribute.String("total_balance", totalBalance.String()))
+		span.SetAttributes(attribute.String("maintenance_thresh", maintenanceThresh.String()))
 	}
 
 	// check if the minimum balance is below the threshold and trigger rebalance
-	maintenanceThresh, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(maintenancePct/100)).Int(nil)
 	if minTokenData.Balance.Cmp(maintenanceThresh) < 0 {
 		initialThresh, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(initialPct/100)).Int(nil)
 		amount := new(big.Int).Sub(maxTokenData.Balance, initialThresh)
+		span.SetAttributes(
+			attribute.String("initial_thresh", initialThresh.String()),
+			attribute.String("rebalance_amount", amount.String()),
+		)
 		if amount.Cmp(big.NewInt(0)) < 0 {
 			// do not rebalance since it would take us below initial threshold
 			//nolint:nilnil
@@ -473,7 +479,7 @@ func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[comm
 	return rebalance, nil
 }
 
-// initializes tokens converts the configuration into a data structure we can use to determine inventory
+// initializeTokens converts the configuration into a data structure we can use to determine inventory
 // it gets metadata like name, decimals, etc once and exports these to prometheus for ease of debugging.
 func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg relconfig.Config) (err error) {
 	i.mux.Lock()
