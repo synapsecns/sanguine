@@ -2,7 +2,6 @@
 import _ from 'lodash'
 import numeral from 'numeral'
 import { memo } from 'react'
-import { LoaderIcon } from 'react-hot-toast'
 
 import type { Token } from '@/utils/types'
 import { LoadingHelix } from '@tw/LoadingHelix'
