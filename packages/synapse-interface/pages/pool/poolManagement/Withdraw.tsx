@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import { useEffect, useMemo, useState } from 'react'
 import Slider from 'react-input-slider'
-import { Address } from '@wagmi/core'
+import { Address, waitForTransaction } from '@wagmi/core'
 import { useDispatch, useSelector } from 'react-redux'
 import { Token } from '@types'
 import { RootState } from '@/store/store'
@@ -22,6 +22,7 @@ import { formatBigIntToString } from '@/utils/bigint/format'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { txErrorHandler } from '@/utils/txErrorHandler'
+import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 
 import {
   setInputValue,
@@ -31,6 +32,7 @@ import {
   resetPoolWithdraw,
 } from '@/slices/poolWithdrawSlice'
 import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
+import { fetchPoolData } from '@/slices/poolDataSlice'
 
 import WithdrawButton from './WithdrawButton'
 
@@ -209,17 +211,29 @@ const Withdraw = ({ address }: { address: string }) => {
         withdrawQuote.outputs
       )
 
-      try {
-        await tx
-        dispatch(fetchPoolUserData({ pool, address: address as Address }))
-        dispatch(resetPoolWithdraw())
-      } catch (error) {
-        txErrorHandler(error)
-      }
+      const resolvedTx = await tx
+
+      const transactionReceipt = await waitForTransaction({
+        hash: resolvedTx.transactionHash as Address,
+        timeout: 60_000,
+      })
+
+      console.log('transactionReceipt:', transactionReceipt)
+
+      dispatch(fetchPoolUserData({ pool, address: address as Address }))
+      dispatch(fetchPoolData({ poolName: String(pool.routerIndex) }))
+      dispatch(resetPoolWithdraw())
     } catch (error) {
+      if (isTransactionReceiptError(error)) {
+        dispatch(fetchPoolUserData({ pool, address: address as Address }))
+        dispatch(fetchPoolData({ poolName: String(pool.routerIndex) }))
+        dispatch(resetPoolWithdraw())
+      }
       txErrorHandler(error)
     }
   }
+
+  // dispatch(fetchPoolData({ poolName: pool.routerIndex }))
 
   return (
     pool && (
