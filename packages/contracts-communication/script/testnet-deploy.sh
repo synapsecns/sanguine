@@ -12,12 +12,12 @@ fi
 shift 2
 options=$@
 
-yarn sol-run-str script/DeployNoArgs.s.sol $chainName $walletName "InterchainDB" $options
+yarn sol-run-str script/deploy/DeployNoArgs.s.sol $chainName $walletName "InterchainDB" $options
 
-yarn sol-run-str script/DeployWithMsgSender.s.sol $chainName $walletName "InterchainAppExample" $options
+yarn sol-run-str script/deploy/DeployWithMsgSender.s.sol $chainName $walletName "InterchainAppExample" $options
 
-yarn sol-run script/DeployInterchainClientV1.s.sol $chainName $walletName $options
-yarn sol-run script/DeploySynapseModule.s.sol $chainName $walletName $options
+yarn sol-run script/deploy/DeployInterchainClientV1.s.sol $chainName $walletName $options
+yarn sol-run script/deploy/DeploySynapseModule.s.sol $chainName $walletName $options
 
-yarn sol-run-str script/DeployWithMsgSender.s.sol $chainName $walletName "ExecutionFees" $options
-yarn sol-run-str script/DeployWithMsgSender.s.sol $chainName $walletName "ExecutionService" $options
+yarn sol-run-str script/deploy/DeployWithMsgSender.s.sol $chainName $walletName "ExecutionFees" $options
+yarn sol-run-str script/deploy/DeployWithMsgSender.s.sol $chainName $walletName "ExecutionService" $options
