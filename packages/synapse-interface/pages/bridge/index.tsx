@@ -44,7 +44,7 @@ import type { Token } from '@/utils/types'
 import { getTimeMinutesFromNow } from '@/utils/time'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
-import { approveToken } from '@/utils/approveToken'
+import { approveToken } from '@/utils/actions/approveToken'
 import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 

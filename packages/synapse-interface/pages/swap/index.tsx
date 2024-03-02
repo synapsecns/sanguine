@@ -18,7 +18,7 @@ import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
 import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import type { Token } from '@/utils/types'
 import { txErrorHandler } from '@/utils/txErrorHandler'
-import { approveToken } from '@/utils/approveToken'
+import { approveToken } from '@/utils/actions/approveToken'
 
 import { Transition } from '@headlessui/react'
 

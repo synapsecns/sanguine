@@ -1,11 +1,12 @@
 import type { Address } from '@wagmi/core'
-import { CHAINS_BY_ID } from '@/constants/chains'
-import { txErrorHandler } from './txErrorHandler'
-import toast from 'react-hot-toast'
-import ExplorerToastLink from '@components/ExplorerToastLink'
 import { zeroAddress } from 'viem'
+import toast from 'react-hot-toast'
+
+import { CHAINS_BY_ID } from '@/constants/chains'
 import { approveErc20Token } from '@/actions/approveErc20Token'
+import { txErrorHandler } from '@/utils/txErrorHandler'
 import { segmentAnalyticsEvent } from '@/contexts/segmentAnalyticsEvent'
+import ExplorerToastLink from '@/components/ExplorerToastLink'
 
 export const approveToken = async (
   address: string,

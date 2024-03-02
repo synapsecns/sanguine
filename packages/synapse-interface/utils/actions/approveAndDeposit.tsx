@@ -8,7 +8,7 @@ import type { Token } from '@types'
 
 import { subtractSlippageBigInt } from '@/utils/slippage'
 import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
-import { approveToken } from '@/utils/approveToken'
+import { approveToken } from '@/utils/actions/approveToken'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 
 

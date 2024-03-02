@@ -1,6 +1,6 @@
 import _ from 'lodash'
 
-import { Token } from './types'
+import type { Token } from '@/utils/types'
 
 export const findValidToken = (
   tokens: Token[],
