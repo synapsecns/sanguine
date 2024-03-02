@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Button from '@/components/ui/tailwind/Button'
-import { DOCS_URL, BRIDGE_PATH } from '@/constants/urls'
+import { SYNAPSE_DOCS_URL, BRIDGE_PATH } from '@/constants/urls'
 import { SectionContainer } from '../../../components/landing/shared'
 
 export default function HeroSection() {
@@ -13,11 +13,15 @@ export default function HeroSection() {
           md:text-[46px]
         `}
       >
-        Secure cross-chain<br />communication
+        Secure cross-chain
+        <br />
+        communication
       </h1>
       <p className="hidden text-center text-secondaryTextColor sm:block">
-        Synapse is the most widely used, extensible, secure cross-<br />
-        chain communications network. Build truly cross-chain<br />
+        Synapse is the most widely used, extensible, secure cross-
+        <br />
+        chain communications network. Build truly cross-chain
+        <br />
         applications using the Synapse Protocol.
       </p>
       <p className="text-center text-secondaryTextColor sm:hidden">
@@ -27,7 +31,7 @@ export default function HeroSection() {
       </p>
       <div className="flex justify-center py-4 space-x-2 ">
         <Link
-          href={DOCS_URL}
+          href={SYNAPSE_DOCS_URL}
           target="_blank"
           className={`
             h-12 mr-2 px-4 py-3 flex items-center

@@ -62,9 +62,7 @@ export const PoolActionOptions = ({
                 hover:bg-[#101018] ${open ? 'bg-[#101018]' : ''}`}
             >
               <div className="text-md text-[#BFBCC2]">Actions</div>
-              <div className="mt-1">
-                <DownArrow />
-              </div>
+              <DownArrow />
             </div>
           </Popover.Button>
           <TransactionPopoverContainer>

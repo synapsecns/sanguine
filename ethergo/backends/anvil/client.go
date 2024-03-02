@@ -261,7 +261,7 @@ func bigIntToString(n int64) string {
 	if len(b) == 0 {
 		return "0x00"
 	}
-	return hex.EncodeToString(b)
+	return hexutil.Encode(b)
 }
 
 // Close closes the conn.

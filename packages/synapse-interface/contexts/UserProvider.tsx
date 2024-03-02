@@ -22,8 +22,10 @@ import {
 } from '@/slices/priceDataSlice'
 import { isBlacklisted } from '@/utils/isBlacklisted'
 import { screenAddress } from '@/utils/screenAddress'
-import { getCoingeckoPrices } from '@/utils/actions/getPrices'
-import { fetchFeeAndRebate } from '@/slices/feeAndRebateSlice'
+import {
+  fetchArbStipRewards,
+  fetchFeeAndRebate,
+} from '@/slices/feeAndRebateSlice'
 
 const WalletStatusContext = createContext(undefined)
 
@@ -104,6 +106,10 @@ export const UserProvider = ({ children }) => {
         } catch (error) {
           console.error('Failed to fetch and store portfolio balances:', error)
         }
+      }
+
+      if (address) {
+        dispatch(fetchArbStipRewards(address))
       }
 
       if (!address) {

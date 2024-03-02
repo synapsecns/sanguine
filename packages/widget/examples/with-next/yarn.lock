@@ -915,10 +915,10 @@
   dependencies:
     tslib "^2.4.0"
 
-"@synapsecns/sdk-router@^0.3.22":
-  version "0.3.22"
-  resolved "https://registry.yarnpkg.com/@synapsecns/sdk-router/-/sdk-router-0.3.22.tgz#84eb7d6d1be855e27ba49ce0e593b60c01a2457f"
-  integrity sha512-28VKKo0UBYrrhnSnYiJBJObEgicYzaXR33cNjNcUZX2JRDS34g++IxuABPpEe/fCfalsO5r8zbmvOWucOma35g==
+"@synapsecns/sdk-router@^0.3.24":
+  version "0.3.24"
+  resolved "https://registry.yarnpkg.com/@synapsecns/sdk-router/-/sdk-router-0.3.24.tgz#3fa60c5da609d6f31270fdf05c627408107d969a"
+  integrity sha512-yQNiipBfcVE83nz/oljIjuQFnIh01yF9YXP9N00gVJA4PS3mkwkJwaoXRrYWXFrr0BJbb/Kl9jes63BSIrpWUg==
   dependencies:
     "@babel/core" "^7.20.12"
     "@ethersproject/abi" "^5.7.0"
@@ -937,15 +937,15 @@
     toformat "^2.0.0"
     ts-xor "^1.1.0"
 
-"@synapsecns/widget@^0.0.51":
-  version "0.0.51"
-  resolved "https://registry.yarnpkg.com/@synapsecns/widget/-/widget-0.0.51.tgz#5255d9db5886c4c455d57bf528feec5faf5b275e"
-  integrity sha512-qWqVfexFSjNSQBJUcD5vmZ6LpgW6BNA2KqKaWG7GkL6tOb3VpHk4cMnLRTkX8u9FU82bX5gkCgZ7ofH5mebBJg==
+"@synapsecns/widget@^0.0.57":
+  version "0.0.57"
+  resolved "https://registry.yarnpkg.com/@synapsecns/widget/-/widget-0.0.57.tgz#1867626bae46c8acf8d8222fdaa3b137d62cfc7d"
+  integrity sha512-GpLgie6XwPTMFcuMhCPN6V2MNs2QFAd10vW4iLqbnvMuXBg2q/pCwXZx5GeuuhZu+cfVhoCL/xo50CHbksNakA==
   dependencies:
     "@ethersproject/providers" "^5.7.2"
     "@ethersproject/units" "^5.7.0"
     "@reduxjs/toolkit" "^2.0.1"
-    "@synapsecns/sdk-router" "^0.3.22"
+    "@synapsecns/sdk-router" "^0.3.24"
     ethers "^6.9.1"
     lodash "^4.17.21"
     react-redux "^9.0.2"

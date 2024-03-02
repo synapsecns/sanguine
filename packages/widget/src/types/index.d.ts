@@ -109,6 +109,7 @@ export declare const SYN: BridgeableToken
 export declare const SYNFRAX: BridgeableToken
 export declare const SYNJEWEL: BridgeableToken
 export declare const UNIDX: BridgeableToken
+export declare const USDB: BridgeableToken
 export declare const USDBC: BridgeableToken
 export declare const USDC: BridgeableToken
 export declare const USDCe: BridgeableToken
