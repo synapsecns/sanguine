@@ -1,28 +1,21 @@
 import _ from 'lodash'
-import { useEffect, useMemo, useState } from 'react'
-import Slider from 'react-input-slider'
-import { Address } from '@wagmi/core'
-import { useDispatch, useSelector } from 'react-redux'
-import { Token } from '@types'
-import { RootState } from '@/store/store'
-
 import Grid from '@tw/Grid'
+import Slider from 'react-input-slider'
+import { useEffect, useMemo, useState } from 'react'
+import { Address, waitForTransaction } from '@wagmi/core'
+import { useAppDispatch } from '@/store/hooks'
 import { getCoinTextColorCombined } from '@styles/tokens'
 import { ALL } from '@constants/withdrawTypes'
 import { WithdrawTokenInput } from '@components/TokenInput'
-import RadioButton from '@components/buttons/RadioButton'
-import ReceivedTokenSection from '../components/ReceivedTokenSection'
-import PriceImpactDisplay from '../components/PriceImpactDisplay'
-
 import { approve, withdraw } from '@/utils/actions/approveAndWithdraw'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
 import { calculatePriceImpact } from '@/utils/priceImpact'
-import { formatBigIntToString } from '@/utils/bigint/format'
-import { stringToBigInt } from '@/utils/bigint/format'
+import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { txErrorHandler } from '@/utils/txErrorHandler'
-
+import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
+import { isTransactionUserRejectedError } from '@/utils/isTransactionUserRejectedError'
 import {
   setInputValue,
   setWithdrawQuote,
@@ -31,22 +24,31 @@ import {
   resetPoolWithdraw,
 } from '@/slices/poolWithdrawSlice'
 import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
-
+import { fetchPoolData } from '@/slices/poolDataSlice'
+import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
+import {
+  usePoolDataState,
+  usePoolUserDataState,
+  usePoolWithdrawState,
+} from '@/slices/pools/hooks'
+import { Token } from '@types'
+import RadioButton from '@components/buttons/RadioButton'
+import ReceivedTokenSection from '../components/ReceivedTokenSection'
+import PriceImpactDisplay from '../components/PriceImpactDisplay'
 import WithdrawButton from './WithdrawButton'
 
 const Withdraw = ({ address }: { address: string }) => {
+  const dispatch = useAppDispatch()
+  const { synapseSDK } = useSynapseContext()
   const [percentage, setPercentage] = useState(0)
-  const { pool, poolData } = useSelector((state: RootState) => state.poolData)
-  const { poolUserData } = useSelector((state: RootState) => state.poolUserData)
-  const { withdrawQuote, inputValue, withdrawType } = useSelector(
-    (state: RootState) => state.poolWithdraw
-  )
+
+  const { pool, poolData } = usePoolDataState()
+  const { poolUserData } = usePoolUserDataState()
+  const { withdrawQuote, inputValue, withdrawType } = usePoolWithdrawState()
+
   const chainId = pool?.chainId
   const poolDecimals = pool?.decimals[pool?.chainId]
   const { poolAddress } = getSwapDepositContractFields(pool, chainId)
-  const { synapseSDK } = useSynapseContext()
-
-  const dispatch: any = useDispatch()
 
   // An ETH swap pool has nativeTokens vs. most other pools have poolTokens
   const poolSpecificTokens = pool ? pool.nativeTokens ?? pool.poolTokens : []
@@ -197,6 +199,13 @@ const Withdraw = ({ address }: { address: string }) => {
     }
   }
 
+  const onSuccessWithdraw = () => {
+    dispatch(fetchPoolUserData({ pool, address: address as Address }))
+    dispatch(fetchPoolData({ poolName: String(pool.routerIndex) }))
+    dispatch(fetchAndStoreSingleNetworkPortfolioBalances({ address, chainId }))
+    dispatch(resetPoolWithdraw())
+  }
+
   const withdrawTxn = async () => {
     try {
       const tx = withdraw(
@@ -209,15 +218,29 @@ const Withdraw = ({ address }: { address: string }) => {
         withdrawQuote.outputs
       )
 
-      try {
-        await tx
-        dispatch(fetchPoolUserData({ pool, address: address as Address }))
-        dispatch(resetPoolWithdraw())
-      } catch (error) {
-        txErrorHandler(error)
+      const resolvedTx = await tx
+
+      if (isTransactionUserRejectedError(resolvedTx)) {
+        throw Error(resolvedTx)
       }
+
+      await waitForTransaction({
+        hash: resolvedTx?.transactionHash as Address,
+        timeout: 60_000,
+      })
+
+      onSuccessWithdraw()
     } catch (error) {
+      /**
+       * Assume transaction success if transaction receipt error
+       * Likely to be rpc related issue
+       */
+      if (isTransactionReceiptError(error)) {
+        onSuccessWithdraw()
+      }
       txErrorHandler(error)
+    } finally {
+      dispatch(setIsLoading(false))
     }
   }
 

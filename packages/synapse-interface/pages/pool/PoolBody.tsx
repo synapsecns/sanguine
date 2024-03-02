@@ -1,24 +1,22 @@
 import numeral from 'numeral'
 import Link from 'next/link'
+import { Address } from '@wagmi/core'
+import { useEffect, useState } from 'react'
+import { useAccount, useSwitchNetwork } from 'wagmi'
 import { ChevronLeftIcon } from '@heroicons/react/outline'
-import { POOLS_PATH } from '@urls'
 import Card from '@tw/Card'
 import Grid from '@tw/Grid'
-import PoolInfoSection from './PoolInfoSection'
-import PoolManagement from './poolManagement'
 import { zeroAddress } from 'viem'
-import { useSelector } from 'react-redux'
-import { RootState } from '@/store/store'
-import { Address } from '@wagmi/core'
-import { useAccount, useSwitchNetwork } from 'wagmi'
+import { PoolActionOptions } from '@/components/Pools/PoolActionOptions'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import { useEffect, useState } from 'react'
-import { PoolActionOptions } from '@/components/Pools/PoolActionOptions'
-import PoolTitle from './components/PoolTitle'
 import { DisplayBalances } from '../pools/PoolCard'
-import { getStakedBalance } from '@/utils/actions/getStakedBalance'
+import { usePoolDataState, usePoolUserDataState } from '@/slices/pools/hooks'
+import { POOLS_PATH } from '@urls'
+import PoolTitle from './components/PoolTitle'
+import PoolInfoSection from './PoolInfoSection'
+import PoolManagement from './poolManagement'
 
 const PoolBody = ({
   address,
@@ -30,16 +28,10 @@ const PoolBody = ({
   const [isClient, setIsClient] = useState(false)
   const { chains, switchNetwork } = useSwitchNetwork()
   const { openConnectModal } = useConnectModal()
-
   const { isConnected } = useAccount()
 
-  const { pool, poolAPYData } = useSelector(
-    (state: RootState) => state.poolData
-  )
-  const [stakedBalance, setStakedBalance] = useState({
-    amount: 0n,
-    reward: 0n,
-  })
+  const { poolUserData } = usePoolUserDataState()
+  const { pool, poolAPYData } = usePoolDataState()
 
   useEffect(() => {
     setIsClient(true)
@@ -51,29 +43,13 @@ const PoolBody = ({
         poolName: pool?.poolName,
       })
     }
-    if (address && isClient) {
-      getStakedBalance(
-        address as Address,
-        pool.chainId,
-        pool.poolId[pool.chainId],
-        pool
-      )
-        .then((res) => {
-          setStakedBalance(res)
-        })
-        .catch((err) => {
-          console.log('Could not get staked balances: ', err)
-        })
-    } else {
-      setStakedBalance({ amount: 0n, reward: 0n })
-    }
   }, [isClient, address, pool])
 
   if (!pool) return null
 
   return (
     <>
-      <div className="">
+      <div id="pool-body">
         <Link href={POOLS_PATH}>
           <div className="inline-flex items-center mb-3 text-sm font-light text-white hover:text-opacity-100">
             <ChevronLeftIcon className="w-4 h-4" />
@@ -87,7 +63,7 @@ const PoolBody = ({
               <DisplayBalances
                 pool={pool}
                 address={address}
-                stakedBalance={stakedBalance}
+                stakedBalance={poolUserData?.stakedBalance}
                 showIcon={false}
               />
             </div>

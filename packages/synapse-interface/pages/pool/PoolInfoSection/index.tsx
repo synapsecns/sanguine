@@ -7,11 +7,10 @@ import {
   formatBigIntToPercentString,
   formatBigIntToString,
 } from '@/utils/bigint/format'
-import { useSelector } from 'react-redux'
-import { RootState } from '@/store/store'
+import { usePoolDataState } from '@/slices/pools/hooks'
 
 const PoolInfoSection = () => {
-  const { pool, poolData } = useSelector((state: RootState) => state.poolData)
+  const { pool, poolData, isLoading } = usePoolDataState()
 
   const usdFormat = poolData.totalLockedUSD > 1000000 ? '$0,0.0' : '$0,0'
 
@@ -22,49 +21,49 @@ const PoolInfoSection = () => {
         <InfoListItem
           labelText="Trading Fee"
           content={
-            poolData && poolData.swapFee ? (
+            poolData && poolData.swapFee && !isLoading ? (
               formatBigIntToPercentString(poolData.swapFee, 8, 2, false)
             ) : (
-              <LoadingDots />
+              <LoadingDots className="mr-4" shift={false} />
             )
           }
         />
         <InfoListItem
           labelText="Virtual Price"
           content={
-            poolData && poolData?.virtualPrice ? (
+            poolData && poolData?.virtualPrice && !isLoading ? (
               <AugmentWithUnits
                 content={formatBigIntToString(poolData.virtualPrice, 18, 5)}
                 label={pool.priceUnits}
               />
             ) : (
-              <LoadingDots />
+              <LoadingDots className="mr-4" shift={false} />
             )
           }
         />
         <InfoListItem
           labelText="Total Liquidity"
           content={
-            poolData && poolData?.totalLocked ? (
+            poolData && poolData?.totalLocked && !isLoading ? (
               <AugmentWithUnits
                 content={numeral(poolData.totalLocked).format('0,0')}
                 label={pool.priceUnits}
               />
             ) : (
-              <LoadingDots />
+              <LoadingDots className="mr-4" shift={false} />
             )
           }
         />
         <InfoListItem
           labelText="Total Liquidity USD"
           content={
-            poolData && poolData?.totalLockedUSD ? (
+            poolData && poolData?.totalLockedUSD && !isLoading ? (
               <AugmentWithUnits
                 content={numeral(poolData.totalLockedUSD).format(usdFormat)}
                 label="USD"
               />
             ) : (
-              <LoadingDots />
+              <LoadingDots className="mr-4" shift={false} />
             )
           }
         />
