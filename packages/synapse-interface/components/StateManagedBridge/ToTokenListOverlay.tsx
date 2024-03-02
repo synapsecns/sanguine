@@ -14,7 +14,7 @@ import { segmentAnalyticsEvent } from '@/contexts/segmentAnalyticsEvent'
 import type { Token } from '@/utils/types'
 import { useAlternateBridgeQuotes } from '@/utils/hooks/useAlternateBridgeQuotes'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
-import { getRoutePossibilities } from '@/utils/routeMaker/generateRoutePossibilities'
+import { getRoutePossibilities } from '@/utils/route/bridge/generateRoutePossibilities'
 import { sortByPriorityRank } from '@/utils/helpers/sortByPriorityRank'
 import { formatBigIntToString } from '@/utils/bigint/format'
 

@@ -1,7 +1,7 @@
 import type { Address } from 'viem'
 
 import { usePortfolioState } from '@/slices/portfolio/hooks'
-import { isValidAddress } from '@/utils/isValidAddress'
+import { isValidAddress } from '@/utils/address/isValidAddress'
 
 export const useSearchInputState = () => {
   const { searchInput, searchedBalances } = usePortfolioState()

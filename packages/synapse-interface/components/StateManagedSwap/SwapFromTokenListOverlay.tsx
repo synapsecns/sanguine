@@ -9,7 +9,7 @@ import { CHAINS_BY_ID } from '@/constants/chains'
 import { segmentAnalyticsEvent } from '@/contexts/segmentAnalyticsEvent'
 
 import type { Token } from '@/utils/types'
-import { getSwapPossibilities } from '@/utils/swapFinder/generateSwapPossibilities'
+import { getSwapPossibilities } from '@/utils/route/swap/generateSwapPossibilities'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 import { sortByPriorityRankAndBalance } from '@/utils/helpers/sortByPriorityRankAndBalance'
 

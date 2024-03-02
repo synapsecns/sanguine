@@ -8,7 +8,7 @@ import { CHAINS_BY_ID } from '@/constants/chains'
 import { getTokenFuseOptions } from '@/constants/fuseOptions'
 
 import type { Token } from '@/utils/types'
-import { getSwapPossibilities } from '@/utils/swapFinder/generateSwapPossibilities'
+import { getSwapPossibilities } from '@/utils/route/swap/generateSwapPossibilities'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 import { sortByPriorityRank } from '@/utils/helpers/sortByPriorityRank'
 

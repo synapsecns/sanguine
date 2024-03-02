@@ -3,15 +3,15 @@ import type { Address } from 'wagmi'
 
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import type { BridgeQuote, Token } from '@/utils/types'
+import { getSymbol } from '@/utils/route/getSymbol'
 import {
-  getRoutePossibilities,
-  getSymbol,
-} from '@/utils/routeMaker/generateRoutePossibilities'
-import { getFromChainIds } from '@/utils/routeMaker/getFromChainIds'
-import { getFromTokens } from '@/utils/routeMaker/getFromTokens'
-import { getToChainIds } from '@/utils/routeMaker/getToChainIds'
-import { getToTokens } from '@/utils/routeMaker/getToTokens'
-import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
+  getRoutePossibilities
+} from '@/utils/route/bridge/generateRoutePossibilities'
+import { getFromChainIds } from '@/utils/route/bridge/getFromChainIds'
+import { getFromTokens } from '@/utils/route/bridge/getFromTokens'
+import { getToChainIds } from '@/utils/route/bridge/getToChainIds'
+import { getToTokens } from '@/utils/route/bridge/getToTokens'
+import { findTokenByRouteSymbol } from '@/utils/tokens/findTokenByRouteSymbol'
 import {
   resetFetchedBridgeQuotes,
   resetBridgeInputs,
@@ -20,7 +20,7 @@ import {
 } from './actions'
 import { fetchAndStoreBridgeQuotes } from './hooks'
 import { BridgeQuoteResponse } from '@/utils/actions/fetchBridgeQuotes'
-import { findValidToken } from '@/utils/findValidToken'
+import { findValidToken } from '@/utils/tokens/findValidToken'
 import { FetchState } from '../portfolio/actions'
 
 export interface BridgeState {

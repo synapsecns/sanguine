@@ -1,8 +1,8 @@
 import { AnalyticsBrowser } from '@segment/analytics-next'
 import { getAccount } from '@wagmi/core'
 
-import { isBlacklisted } from '@/utils/isBlacklisted'
-import { screenAddress } from '@/utils/screenAddress'
+import { isBlacklisted } from '@/utils/address/isBlacklisted'
+import { screenAddress } from '@/utils/address/screenAddress'
 
 const writeKey = process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY
 

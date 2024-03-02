@@ -1,13 +1,13 @@
 import _ from 'lodash'
 
-import { flattenPausedTokens } from '../flattenPausedTokens'
-import { Token } from '../types'
+import { flattenPausedTokens } from '../../tokens/flattenPausedTokens'
+import type { Token } from '@/utils/types'
 import { getSwapFromChainIds } from './getSwapFromChainIds'
 import { getSwapFromTokens } from './getSwapFromTokens'
 import { getSwapToTokens } from './getSwapToTokens'
 import { PAUSED_TO_CHAIN_IDS } from '@/constants/chains'
-import { findTokenByRouteSymbol } from '../findTokenByRouteSymbol'
-import { getSymbol } from '@/utils/getSymbol'
+import { findTokenByRouteSymbol } from '@/utils/tokens/findTokenByRouteSymbol'
+import { getSymbol } from '@/utils/route/getSymbol'
 
 export interface RouteQueryFields {
   fromChainId?: number

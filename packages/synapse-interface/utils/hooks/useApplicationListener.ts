@@ -9,7 +9,7 @@ import {
   resetReduxCache,
 } from '@/slices/application/actions'
 import { useAppDispatch } from '@/store/hooks'
-import { isValidAddress, getValidAddress } from '@/utils/isValidAddress'
+import { isValidAddress, getValidAddress } from '@/utils/address/isValidAddress'
 import { getTimeMinutesBeforeNow } from '@/utils/time'
 import { resetTransactionsState } from '@/slices/transactions/actions'
 

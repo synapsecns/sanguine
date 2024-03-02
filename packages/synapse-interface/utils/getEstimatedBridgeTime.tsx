@@ -1,4 +1,4 @@
-import { useSynapseContext } from './providers/SynapseProvider'
+import { useSynapseContext } from '../contexts/SynapseProvider'
 
 import { Chain } from './types'
 

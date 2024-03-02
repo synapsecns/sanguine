@@ -1,18 +1,15 @@
 import _ from 'lodash'
 
-import { EXISTING_BRIDGE_ROUTES } from '@/constants/existingBridgeRoutes'
-import { RouteQueryFields } from './generateRoutePossibilities'
-import { getTokenAndChainId } from './getTokenAndChainId'
+import {
+  EXISTING_SWAP_ROUTES,
+  SWAP_CHAIN_IDS,
+} from '@/constants/existingSwapRoutes'
+import { RouteQueryFields } from './generateSwapPossibilities'
+import { getTokenAndChainId } from '@utils/route/getTokenAndChainId'
 
-export const getAllFromChainIds = () => {
-  return _(EXISTING_BRIDGE_ROUTES)
-    .keys()
-    .map((token) => getTokenAndChainId(token).chainId)
-    .uniq()
-    .value()
-}
+export const getAllFromChainIds = () => SWAP_CHAIN_IDS
 
-export const getFromChainIds = ({
+export const getSwapFromChainIds = ({
   fromChainId,
   fromTokenRouteSymbol,
   toChainId,
@@ -24,7 +21,7 @@ export const getFromChainIds = ({
     toChainId === null &&
     toTokenRouteSymbol === null
   ) {
-    return _(EXISTING_BRIDGE_ROUTES)
+    return _(EXISTING_SWAP_ROUTES)
       .keys()
       .map((token) => getTokenAndChainId(token).chainId)
       .uniq()
@@ -37,7 +34,7 @@ export const getFromChainIds = ({
     toChainId === null &&
     toTokenRouteSymbol === null
   ) {
-    return _(EXISTING_BRIDGE_ROUTES)
+    return _(EXISTING_SWAP_ROUTES)
       .keys()
       .map((token) => getTokenAndChainId(token).chainId)
       .uniq()
@@ -50,7 +47,7 @@ export const getFromChainIds = ({
     toChainId === null &&
     toTokenRouteSymbol === null
   ) {
-    return _(EXISTING_BRIDGE_ROUTES)
+    return _(EXISTING_SWAP_ROUTES)
       .keys()
       .filter((key) => {
         const { symbol } = getTokenAndChainId(key)
@@ -67,7 +64,7 @@ export const getFromChainIds = ({
     toChainId === null &&
     toTokenRouteSymbol === null
   ) {
-    return _(EXISTING_BRIDGE_ROUTES)
+    return _(EXISTING_SWAP_ROUTES)
       .keys()
       .filter((key) => {
         const { symbol } = getTokenAndChainId(key)
@@ -84,7 +81,7 @@ export const getFromChainIds = ({
     toChainId &&
     toTokenRouteSymbol === null
   ) {
-    return _(EXISTING_BRIDGE_ROUTES)
+    return _(EXISTING_SWAP_ROUTES)
       .entries()
       .filter(([_key, values]) =>
         values.some((v) => v.endsWith(`-${toChainId}`))
@@ -100,7 +97,7 @@ export const getFromChainIds = ({
     toChainId &&
     toTokenRouteSymbol === null
   ) {
-    return _(EXISTING_BRIDGE_ROUTES)
+    return _(EXISTING_SWAP_ROUTES)
       .entries()
       .filter(([_key, values]) =>
         values.some((v) => v.endsWith(`-${toChainId}`))
@@ -116,7 +113,7 @@ export const getFromChainIds = ({
     toChainId &&
     toTokenRouteSymbol === null
   ) {
-    return _(EXISTING_BRIDGE_ROUTES)
+    return _(EXISTING_SWAP_ROUTES)
       .entries()
       .filter(([key, _values]) => key.startsWith(`${fromTokenRouteSymbol}-`))
       .filter(([_key, values]) =>
@@ -135,7 +132,7 @@ export const getFromChainIds = ({
     toChainId &&
     toTokenRouteSymbol === null
   ) {
-    return _(EXISTING_BRIDGE_ROUTES)
+    return _(EXISTING_SWAP_ROUTES)
       .pickBy((_values, key) => key.startsWith(`${fromTokenRouteSymbol}-`))
       .keys()
       .map((token) => getTokenAndChainId(token).chainId)
@@ -150,7 +147,7 @@ export const getFromChainIds = ({
     toChainId === null &&
     toTokenRouteSymbol
   ) {
-    return _(EXISTING_BRIDGE_ROUTES)
+    return _(EXISTING_SWAP_ROUTES)
       .chain()
       .filter((values, _key) => {
         return values.some((v) => {
@@ -170,7 +167,7 @@ export const getFromChainIds = ({
     toChainId === null &&
     toTokenRouteSymbol
   ) {
-    return _(EXISTING_BRIDGE_ROUTES)
+    return _(EXISTING_SWAP_ROUTES)
       .chain()
       .filter((values, _key) => {
         return values.some((v) => {
@@ -190,7 +187,7 @@ export const getFromChainIds = ({
     toChainId === null &&
     toTokenRouteSymbol
   ) {
-    return _(EXISTING_BRIDGE_ROUTES)
+    return _(EXISTING_SWAP_ROUTES)
       .entries()
       .filter(([key, _values]) => key.startsWith(`${fromTokenRouteSymbol}-`))
       .map(([key, _values]) => key)
@@ -207,7 +204,7 @@ export const getFromChainIds = ({
     toChainId === null &&
     toTokenRouteSymbol
   ) {
-    return _(EXISTING_BRIDGE_ROUTES)
+    return _(EXISTING_SWAP_ROUTES)
       .chain()
       .filter((values, key) => {
         return (
@@ -229,7 +226,7 @@ export const getFromChainIds = ({
     toChainId &&
     toTokenRouteSymbol
   ) {
-    return _(EXISTING_BRIDGE_ROUTES)
+    return _(EXISTING_SWAP_ROUTES)
       .pickBy((values, _key) => {
         return _.includes(values, `${toTokenRouteSymbol}-${toChainId}`)
       })
@@ -245,7 +242,7 @@ export const getFromChainIds = ({
     toChainId &&
     toTokenRouteSymbol
   ) {
-    return _(EXISTING_BRIDGE_ROUTES)
+    return _(EXISTING_SWAP_ROUTES)
       .pickBy((values, _key) => {
         return _.includes(values, `${toTokenRouteSymbol}-${toChainId}`)
       })
@@ -261,7 +258,7 @@ export const getFromChainIds = ({
     toChainId &&
     toTokenRouteSymbol
   ) {
-    return _(EXISTING_BRIDGE_ROUTES)
+    return _(EXISTING_SWAP_ROUTES)
       .pickBy((values, _key) => {
         return _.includes(values, `${toTokenRouteSymbol}-${toChainId}`)
       })
@@ -273,7 +270,7 @@ export const getFromChainIds = ({
   }
 
   if (fromChainId && fromTokenRouteSymbol && toChainId && toTokenRouteSymbol) {
-    return _(EXISTING_BRIDGE_ROUTES)
+    return _(EXISTING_SWAP_ROUTES)
       .pickBy((values, _key) => {
         return _.includes(values, `${toTokenRouteSymbol}-${toChainId}`)
       })

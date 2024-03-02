@@ -9,13 +9,12 @@ import { PersistGate } from 'redux-persist/integration/react'
 import { Provider } from 'react-redux'
 import { WagmiConfig } from 'wagmi'
 import { RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit'
-import { SynapseProvider } from '@/utils/providers/SynapseProvider'
-import CustomToaster from '@/components/toast'
 
+import CustomToaster from '@/components/toast'
 
 import { store, persistor } from '@/store/store'
 import { UserProvider } from '@/contexts/UserProvider'
-
+import { SynapseProvider } from '@/contexts/SynapseProvider'
 import { wagmiChains, wagmiConfig } from '@/wagmiConfig'
 import { BackgroundListenerProvider } from '@/contexts/BackgroundListenerProvider'
 

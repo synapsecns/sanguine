@@ -13,7 +13,7 @@ import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
 
 import { SECTION_TRANSITION_PROPS } from '@/styles/transitions'
 
-import { useSynapseContext } from '@/utils/providers/SynapseProvider'
+import { useSynapseContext } from '@/contexts/SynapseProvider'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
 import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import type { Token } from '@/utils/types'

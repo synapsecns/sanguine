@@ -1,5 +1,5 @@
-import { sortByTokenBalance } from '../sortTokens'
-import { Chain, Token } from '../types'
+import { sortByTokenBalance } from '@/utils/tokens/sortTokens'
+import type { Chain, Token } from '@/utils/types'
 import { BRIDGABLE_TOKENS, POOLS_BY_CHAIN } from '@/constants/tokens'
 import { FetchState } from '@/slices/portfolio/actions'
 

@@ -1,8 +1,8 @@
 import type { Address } from 'viem'
-import { shortenAddress } from '@/utils/shortenAddress'
+import { shortenAddress } from '@/utils/address/shortenAddress'
 import { convertUnixTimestampToMonthAndDate } from '@/utils/time'
 import { isTimestampToday } from '@/utils/time'
-import { isValidAddress } from '@/utils/isValidAddress'
+import { isValidAddress } from '@/utils/address/isValidAddress'
 
 export const Completed = ({
   transactionCompletedTime,

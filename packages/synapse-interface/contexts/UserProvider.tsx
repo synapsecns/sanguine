@@ -20,8 +20,8 @@ import {
   fetchMusdcPrice,
   fetchSynPrices,
 } from '@/slices/priceDataSlice'
-import { isBlacklisted } from '@/utils/isBlacklisted'
-import { screenAddress } from '@/utils/screenAddress'
+import { isBlacklisted } from '@/utils/address/isBlacklisted'
+import { screenAddress } from '@/utils/address/screenAddress'
 import {
   fetchArbStipRewards,
   fetchFeeAndRebate,

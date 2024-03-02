@@ -2,7 +2,7 @@ import _ from 'lodash'
 
 import { EXISTING_BRIDGE_ROUTES } from '@/constants/existingBridgeRoutes'
 import { RouteQueryFields } from './generateRoutePossibilities'
-import { getTokenAndChainId } from './getTokenAndChainId'
+import { getTokenAndChainId } from '@utils/route/getTokenAndChainId'
 
 export const getAllToChainIds = () => {
   return _(EXISTING_BRIDGE_ROUTES)

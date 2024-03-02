@@ -5,7 +5,7 @@ import Fuse from 'fuse.js'
 
 import type { Token } from '@/utils/types'
 import { sortByPriorityRankAndBalance } from '@/utils/helpers/sortByPriorityRankAndBalance'
-import { getRoutePossibilities } from '@/utils/routeMaker/generateRoutePossibilities'
+import { getRoutePossibilities } from '@/utils/route/bridge/generateRoutePossibilities'
 import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
 
 import { setFromToken } from '@/slices/bridge/reducer'

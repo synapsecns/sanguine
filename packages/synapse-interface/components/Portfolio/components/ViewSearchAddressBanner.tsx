@@ -1,6 +1,6 @@
 import type { Address } from 'viem'
 import { usePortfolioActionHandlers } from '@/slices/portfolio/hooks'
-import { shortenAddress } from '@/utils/shortenAddress'
+import { shortenAddress } from '@/utils/address/shortenAddress'
 import { ClearSearchButton } from './ClearSearchButton'
 
 export const ViewSearchAddressBanner = ({

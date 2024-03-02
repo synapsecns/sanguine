@@ -46,7 +46,7 @@ import { txErrorHandler } from '@/utils/txErrorHandler'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
 import { approveToken } from '@/utils/actions/approveToken'
 import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
-import { useSynapseContext } from '@/utils/providers/SynapseProvider'
+import { useSynapseContext } from '@/contexts/SynapseProvider'
 
 import { SECTION_TRANSITION_PROPS } from '@/styles/transitions'
 

@@ -4,7 +4,7 @@ import { useBridgeState } from '@/slices/bridge/hooks'
 import { findChainIdsWithPausedToken } from '@/constants/tokens'
 import LoadingDots from '@tw/LoadingDots'
 
-import { getUnderlyingBridgeTokens } from '@/utils/getUnderlyingBridgeTokens'
+import { getUnderlyingBridgeTokens } from '@/utils/tokens/getUnderlyingBridgeTokens'
 import { ARBITRUM, AVALANCHE, ETH } from '@/constants/chains/master'
 
 import { SelectTokenButton } from '@/components/bridgeSwap/SelectTokenButton'

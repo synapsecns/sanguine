@@ -3,8 +3,9 @@ import _ from 'lodash'
 import { PAUSED_TO_CHAIN_IDS } from '@/constants/chains'
 
 import type { Token } from '@/utils/types'
-import { flattenPausedTokens } from '@/utils/flattenPausedTokens'
-import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
+import { flattenPausedTokens } from '@/utils/tokens/flattenPausedTokens'
+import { findTokenByRouteSymbol } from '@/utils/tokens/findTokenByRouteSymbol'
+import { getSymbol } from '@/utils/route/getSymbol'
 
 import { getToChainIds } from './getToChainIds'
 import { getFromChainIds } from './getFromChainIds'
@@ -94,6 +95,3 @@ export const getRoutePossibilities = ({
   }
 }
 
-export const getSymbol = (tokenAndChainId: string): string => {
-  return tokenAndChainId.split('-')[0]
-}

@@ -11,8 +11,8 @@ import {
   setToChainId,
   setToToken,
 } from '@/slices/bridge/reducer'
-import { getAllFromChainIds } from '../routeMaker/getFromChainIds'
-import { getAllToChainIds } from '../routeMaker/getToChainIds'
+import { getAllFromChainIds } from '../route/bridge/getFromChainIds'
+import { getAllToChainIds } from '../route/bridge/getToChainIds'
 
 const useSyncQueryParamsWithBridgeState = () => {
   const dispatch = useDispatch()

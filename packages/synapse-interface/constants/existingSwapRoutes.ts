@@ -1,7 +1,7 @@
 import _ from 'lodash'
 
 import { BRIDGE_MAP } from './bridgeMap'
-import { findTokenByAddressAndChain } from '@/utils/findTokenByAddressAndChainId'
+import { findTokenByAddressAndChain } from '@/utils/tokens/findTokenByAddressAndChainId'
 
 export const FILTERED = _(BRIDGE_MAP)
   .mapValues((chainObj) => {

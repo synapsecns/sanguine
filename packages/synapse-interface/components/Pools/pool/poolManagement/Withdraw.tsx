@@ -13,7 +13,7 @@ import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
 import { calculatePriceImpact } from '@/utils/priceImpact'
 import { stringToBigInt, formatBigIntToString } from '@/utils/bigint/format'
-import { useSynapseContext } from '@/utils/providers/SynapseProvider'
+import { useSynapseContext } from '@/contexts/SynapseProvider'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 
 import {

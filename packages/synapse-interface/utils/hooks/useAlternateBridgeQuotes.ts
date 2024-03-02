@@ -9,7 +9,7 @@ import {
 } from '@/slices/bridge/hooks'
 import { BridgeState } from '@/slices/bridge/reducer'
 import { resetFetchedBridgeQuotes } from '@/slices/bridge/actions'
-import { useSynapseContext } from '@/utils/providers/SynapseProvider'
+import { useSynapseContext } from '@/contexts/SynapseProvider'
 import { BridgeQuoteRequest } from '@/utils/actions/fetchBridgeQuotes'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { isEmptyString } from '@/utils/isEmptyString'

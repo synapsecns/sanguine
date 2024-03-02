@@ -8,23 +8,23 @@ import { approve, stake } from '@/utils/actions/approveAndStake'
 import { withdrawStake } from '@/utils/actions/withdrawStake'
 import { claimStake } from '@/utils/actions/claimStake'
 
-import { getTokenOnChain } from '@/utils/getTokenOnChain'
+import { getTokenOnChain } from '@/utils/tokens/getTokenOnChain'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import { stringToBigInt, formatBigIntToString } from '@/utils/bigint/format'
 
 import { usePendingTxWrapper } from '@/utils/hooks/usePendingTxWrapper'
 import { useTokenBalance } from '@/utils/hooks/useTokenBalance'
 
-import ButtonLoadingDots from '@/components/buttons/ButtonLoadingDots'
-import InteractiveInputRow from '@/components/InteractiveInputRow'
-
 import Button from '@tw/Button'
 import Tabs from '@tw/Tabs'
 import TabItem from '@tw/TabItem'
 import Card from '@tw/Card'
 
-import StakeCardTitle from './StakeCardTitle'
+import ButtonLoadingDots from '@/components/buttons/ButtonLoadingDots'
+import InteractiveInputRow from '@/components/InteractiveInputRow'
 
+
+import StakeCardTitle from './StakeCardTitle'
 import InfoSectionCard from '@/components/Pools/pool/PoolInfoSection/InfoSectionCard'
 
 import { InteractiveInputRowButton } from '@/components/InteractiveInputRowButton'
