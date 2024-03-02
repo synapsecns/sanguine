@@ -33,7 +33,7 @@ export default function Button({
   onClick?: (e: any | undefined) => void
 }) {
   const mergedClassName = twMerge(`
-    ${baseClassName} ${className} ${fancy ? fancyClassName : ''}}
+    ${baseClassName} ${className} ${fancy ? fancyClassName : ''}
   `)
 
   return (
