@@ -1,7 +1,7 @@
 import _ from 'lodash'
 
 import { EXISTING_SWAP_ROUTES } from '@/constants/existingSwapRoutes'
-import { RouteQueryFields } from './generateSwapPossibilities'
+import type { RouteQueryFields } from '@/utils/route/types'
 import { getTokenAndChainId } from '@utils/route/getTokenAndChainId'
 
 export const getSwapFromTokens = ({

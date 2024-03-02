@@ -13,13 +13,6 @@ import { getFromTokens } from './getFromTokens'
 import { getToTokens } from './getToTokens'
 
 
-export interface RouteQueryFields {
-  fromChainId?: number
-  fromTokenRouteSymbol?: string
-  toChainId?: number
-  toTokenRouteSymbol?: string
-}
-
 export const getRoutePossibilities = ({
   fromChainId,
   fromToken,

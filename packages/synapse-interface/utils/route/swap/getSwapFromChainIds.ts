@@ -4,7 +4,7 @@ import {
   EXISTING_SWAP_ROUTES,
   SWAP_CHAIN_IDS,
 } from '@/constants/existingSwapRoutes'
-import { RouteQueryFields } from './generateSwapPossibilities'
+import type { RouteQueryFields } from '@/utils/route/types'
 import { getTokenAndChainId } from '@utils/route/getTokenAndChainId'
 
 export const getAllFromChainIds = () => SWAP_CHAIN_IDS

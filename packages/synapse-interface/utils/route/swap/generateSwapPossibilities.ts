@@ -1,20 +1,15 @@
 import _ from 'lodash'
 
-import { flattenPausedTokens } from '../../tokens/flattenPausedTokens'
+
 import type { Token } from '@/utils/types'
+
+import { PAUSED_TO_CHAIN_IDS } from '@/constants/chains'
+import { findTokenByRouteSymbol } from '@/utils/tokens/findTokenByRouteSymbol'
+import { flattenPausedTokens } from '@/utils/tokens/flattenPausedTokens'
+import { getSymbol } from '@/utils/route/getSymbol'
 import { getSwapFromChainIds } from './getSwapFromChainIds'
 import { getSwapFromTokens } from './getSwapFromTokens'
 import { getSwapToTokens } from './getSwapToTokens'
-import { PAUSED_TO_CHAIN_IDS } from '@/constants/chains'
-import { findTokenByRouteSymbol } from '@/utils/tokens/findTokenByRouteSymbol'
-import { getSymbol } from '@/utils/route/getSymbol'
-
-export interface RouteQueryFields {
-  fromChainId?: number
-  fromTokenRouteSymbol?: string
-  toChainId?: number
-  toTokenRouteSymbol?: string
-}
 
 export const getSwapPossibilities = ({
   fromChainId,
