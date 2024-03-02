@@ -1,7 +1,14 @@
-import { WaitForTransactionReceiptTimeoutError } from 'viem'
+import {
+  WaitForTransactionReceiptTimeoutError,
+  TransactionNotFoundError,
+} from 'viem'
 
 export const isTransactionReceiptError = (error: unknown): boolean => {
   if (error instanceof WaitForTransactionReceiptTimeoutError) {
+    return true
+  }
+
+  if (error instanceof TransactionNotFoundError) {
     return true
   }
 
@@ -11,7 +18,7 @@ export const isTransactionReceiptError = (error: unknown): boolean => {
 
     if (typeof message === 'string') {
       const regex =
-        /Timed out while waiting for transaction with hash "0x[0-9a-fA-F]+"/
+        /Timed out while waiting for transaction with hash "0x[0-9a-fA-F]+" | Transaction with hash "0x[0-9a-fA-F]+" could not be found\./
       return regex.test(message)
     }
   }
