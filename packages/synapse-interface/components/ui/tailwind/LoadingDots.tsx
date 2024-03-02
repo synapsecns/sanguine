@@ -6,7 +6,10 @@ export default function LoadingDots({
   shift?: boolean
 }) {
   return (
-    <div data-test-id="loading-dots" className={`flex relative ${className}`}>
+    <div
+      data-test-id="loading-dots"
+      className={`flex relative left-[12px] ${className}`}
+    >
       <div className={`dot-flashing ${shift ? 'left-[12px]' : ''}`}></div>
     </div>
   )
