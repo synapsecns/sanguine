@@ -241,6 +241,16 @@ const StateManagedSwap = () => {
     }
   }
 
+  const onSuccessSwap = () => {
+    dispatch(
+      fetchAndStoreSingleNetworkPortfolioBalances({
+        address,
+        chainId: swapChainId,
+      })
+    )
+    dispatch(setSwapQuote(EMPTY_SWAP_QUOTE_ZERO))
+    dispatch(updateSwapFromValue(''))
+  }
   const executeSwap = async () => {
     const currentChainName = CHAINS_BY_ID[swapChainId]?.name
 
@@ -303,14 +313,7 @@ const StateManagedSwap = () => {
       })
       console.log('Transaction Receipt: ', transactionReceipt)
 
-      /** Update Origin Chain token balances after resolved tx or timeout reached */
-      /** Assume tx has been actually resolved if above times out */
-      dispatch(
-        fetchAndStoreSingleNetworkPortfolioBalances({
-          address,
-          chainId: swapChainId,
-        })
-      )
+      onSuccessSwap()
 
       segmentAnalyticsEvent(`[Swap] swaps successfully`, {
         address,
@@ -340,20 +343,13 @@ const StateManagedSwap = () => {
         duration: 10000,
       })
 
-      dispatch(setSwapQuote(EMPTY_SWAP_QUOTE_ZERO))
-      dispatch(updateSwapFromValue())
       return tx
     } catch (error) {
       console.log(`Swap Execution failed with error: ${error}`)
 
-      /** Fetch balances if await transaction receipt times out */
+      /** Assume successful swap tx if await transaction receipt times out */
       if (isTransactionReceiptError(error)) {
-        dispatch(
-          fetchAndStoreSingleNetworkPortfolioBalances({
-            address,
-            chainId: swapChainId,
-          })
-        )
+        onSuccessSwap()
       }
 
       toast.dismiss(pendingPopup)
