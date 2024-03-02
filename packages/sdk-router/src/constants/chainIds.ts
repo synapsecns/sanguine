@@ -16,6 +16,7 @@ export enum SupportedChainId {
   ARBITRUM = 42161,
   AVALANCHE = 43114,
   DFK = 53935,
+  BLAST = 81457,
   AURORA = 1313161554,
   HARMONY = 1666600000,
 }
@@ -51,4 +52,19 @@ export const RFQ_SUPPORTED_CHAIN_IDS: number[] = [
   SupportedChainId.ETH,
   SupportedChainId.OPTIMISM,
   SupportedChainId.ARBITRUM,
+  SupportedChainId.BLAST,
+]
+
+/**
+ * List of chain ids where hydrating on constructor is supported , ordered by monke
+ *
+ * Note: This is a subset of SUPPORTED_CHAIN_IDS.
+ */
+export const HYDRATION_SUPPORTED_CHAIN_IDS: number[] = [
+  SupportedChainId.ETH,
+  SupportedChainId.AVALANCHE,
+  SupportedChainId.OPTIMISM,
+  SupportedChainId.ARBITRUM,
+  SupportedChainId.BASE,
+  SupportedChainId.BSC,
 ]

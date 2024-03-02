@@ -17,6 +17,8 @@ import { useBridgeState } from '@/slices/bridge/hooks'
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { useAppSelector } from '@/store/hooks'
 
+const MAX_ARB_REBATE_PER_ADDRESS = 2000
+
 const BridgeExchangeRateInfo = () => {
   return (
     <div className="py-3.5 px-1 space-y-3 text-sm md:px-6 tracking-wide">
@@ -68,7 +70,15 @@ const RouteEligibility = () => {
   const { isRouteEligible, isActiveRouteEligible, rebate } =
     useStipEligibility()
 
-  if (!isRouteEligible || !rebate) {
+  const { parsedCumulativeRewards } = useAppSelector(
+    (state) => state.feeAndRebate
+  )
+
+  if (
+    !isRouteEligible ||
+    !rebate ||
+    Number(parsedCumulativeRewards) > MAX_ARB_REBATE_PER_ADDRESS
+  ) {
     return (
       <div className="flex justify-between">
         <div className="flex-grow" />
@@ -120,7 +130,15 @@ const RebateText = () => {
 const Rebate = () => {
   const { isRouteEligible, rebate } = useStipEligibility()
 
-  if (!isRouteEligible || !rebate) {
+  const { parsedCumulativeRewards } = useAppSelector(
+    (state) => state.feeAndRebate
+  )
+
+  if (
+    !isRouteEligible ||
+    !rebate ||
+    Number(parsedCumulativeRewards) > MAX_ARB_REBATE_PER_ADDRESS
+  ) {
     return null
   }
 

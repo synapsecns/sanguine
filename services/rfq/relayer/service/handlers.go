@@ -93,7 +93,7 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 //
 // This is the second step in the bridge process. It is emitted when the relayer sees the request.
 // We check if we have enough inventory to process the request and mark it as committed pending.
-func (q *QuoteRequestHandler) handleSeen(ctx context.Context, _ trace.Span, request reldb.QuoteRequest) (err error) {
+func (q *QuoteRequestHandler) handleSeen(ctx context.Context, span trace.Span, request reldb.QuoteRequest) (err error) {
 	shouldProcess, err := q.Quoter.ShouldProcess(ctx, request)
 	if err != nil {
 		// will retry later
@@ -107,6 +107,19 @@ func (q *QuoteRequestHandler) handleSeen(ctx context.Context, _ trace.Span, requ
 		// shouldn't process from here on out
 		return nil
 	}
+
+	// check if the quote is profitable
+	isProfitable, err := q.Quoter.IsProfitable(ctx, request)
+	if err != nil {
+		// will retry later
+		return fmt.Errorf("could not determine if profitable: %w", err)
+	}
+	if !isProfitable {
+		// will retry later since profitability is dependent on dynamic gas prices
+		span.AddEvent("quote is not profitable")
+		return nil
+	}
+
 	// get destination committable balancs
 	committableBalance, err := q.Inventory.GetCommittableBalance(ctx, int(q.Dest.ChainID), request.Transaction.DestToken)
 	if err != nil {

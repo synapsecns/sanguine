@@ -41,10 +41,10 @@ type Config struct {
 	SubmitterConfig submitterConfig.Config `yaml:"submitter_config"`
 	// FeePricer is the fee pricer config.
 	FeePricer FeePricerConfig `yaml:"fee_pricer"`
-	// ScreenerAPIUrl is the TRM API key.
+	// ScreenerAPIUrl is the TRM API url.
 	ScreenerAPIUrl string `yaml:"screener_api_url"`
-	// BaseDeadlineBufferSeconds is the deadline buffer for relaying a transaction.
-	BaseDeadlineBufferSeconds int `yaml:"base_deadline_buffer_seconds"`
+	// DBSelectorIntervalSeconds is the interval for the db selector.
+	DBSelectorIntervalSeconds int `yaml:"db_selector_interval_seconds"`
 }
 
 // ChainConfig represents the configuration for a chain.
