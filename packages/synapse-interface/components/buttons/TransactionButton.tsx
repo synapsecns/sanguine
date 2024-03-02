@@ -56,7 +56,7 @@ export const TransactionButton = ({
     >
       {isPending ? (
         <div className="inline-flex items-center justify-center">
-          <ButtonLoadingDots className="mr-6" />
+          <ButtonLoadingDots className="mr-8" />
           <span className="opacity-30">{pendingLabel}</span>{' '}
         </div>
       ) : (
