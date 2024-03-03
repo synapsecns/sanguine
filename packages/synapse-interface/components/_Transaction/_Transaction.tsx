@@ -104,7 +104,7 @@ export const _Transaction = ({
       className={`
         bg-bgBase/10 fill-bgBase/20
         border border-white/10 rounded-md
-        text-primary text-xs md:text-base
+        text-primary text-xs md:text-base overflow-hidden
       `}
     >
       <div
@@ -183,9 +183,10 @@ export const _Transaction = ({
       {showTransactionSupport && <TransactionSupport />}
       <div
         className={`
-          px-1
-          h-0 overflow-visible
+          px-0
+          h-0
           ${isTxFinalized ? "" : "-mt-[3px]"}
+          pt-[-3px] pb-[3px]
         `}
       >
         <AnimatedProgressBar
