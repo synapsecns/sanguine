@@ -74,6 +74,8 @@ func (cr *CallerRuler) HasRisk(riskType string) bool {
 }
 
 // HasAddressIndicators returns a list of addressRiskIndicator.
+//
+//nolint:cyclop
 func (cr *CallerRuler) HasAddressIndicators(thresholds []config.VolumeThreshold, riskIndicators ...trmlabs.AddressRiskIndicator) (bool, error) {
 	// Initialize a variable to track if any indicator is blocked
 	anyIndicatorBlocked := false
