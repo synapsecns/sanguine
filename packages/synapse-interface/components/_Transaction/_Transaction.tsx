@@ -185,8 +185,7 @@ export const _Transaction = ({
         className={`
           px-0
           h-0
-          ${isTxFinalized ? "" : "-mt-[3px]"}
-          pt-[-3px] pb-[3px]
+          ${isTxFinalized ? "" : "-mt-[3px] pt-[-3px] pb-[3px]"}
         `}
       >
         <AnimatedProgressBar
