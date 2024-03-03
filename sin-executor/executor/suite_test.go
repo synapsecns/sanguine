@@ -3,6 +3,10 @@ package executor_test
 import (
 	"context"
 	"errors"
+	"math/big"
+	"sync"
+	"testing"
+
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -22,9 +26,6 @@ import (
 	"github.com/synapsecns/sanguine/sin-executor/contracts/interchainclient"
 	"github.com/synapsecns/sanguine/sin-executor/executor"
 	"github.com/synapsecns/sanguine/sin-executor/testutil"
-	"math/big"
-	"sync"
-	"testing"
 )
 
 // InterchainSuite is a test suite for the interchain package.
@@ -135,12 +136,14 @@ func (i *InterchainSuite) makeExecutor() {
 	destOwner, execServiceDest := i.deployManager.GetExecutionService(i.GetTestContext(), i.destChain)
 
 	cfg := config.Config{
-		Chains: map[int]config.ChainConfig{
-			1: {
+		Chains: []config.ChainConfig{
+			{
+				ChainID:          1,
 				ExecutionService: execServiceOrigin.Address().String(),
 				Client:           i.originModule.Address().String(),
 			},
-			2: {
+			{
+				ChainID:          2,
 				ExecutionService: execServiceDest.Address().String(),
 				Client:           i.destModule.Address().String(),
 			},

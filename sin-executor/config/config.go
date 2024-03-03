@@ -9,7 +9,7 @@ import (
 // Config is the config for the Synapse module.
 type Config struct {
 	// Chains is a map of chain IDs to execution service contract addresses.
-	Chains map[int]ChainConfig `yaml:"chains"`
+	Chains []ChainConfig `yaml:"chains"`
 	// OmnirpcURL is the URL of the Omni RPC.
 	OmnirpcURL string `yaml:"omnirpc_url"`
 	// Database is the database config.
@@ -21,6 +21,8 @@ type Config struct {
 }
 
 type ChainConfig struct {
+	// ChainID is the chain ID.
+	ChainID int `yaml:"id"`
 	// ExecutionService is the address of the execution service contract.
 	ExecutionService string `yaml:"execution_service"`
 	// Client is the address of the interchain client contract.
