@@ -43,6 +43,7 @@ type screenerImpl struct {
 	client       trmlabs.Client
 	blacklist    []string
 	blacklistMux sync.RWMutex
+	whitelist    []string
 }
 
 var logger = log.Logger("screener")
@@ -59,6 +60,10 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 		return nil, fmt.Errorf("could not create trm client: %w", err)
 	}
 	screener.thresholds = cfg.VolumeThresholds
+
+	for _, item := range cfg.Whitelist {
+		screener.whitelist = append(screener.whitelist, strings.ToLower(item))
+	}
 
 	screener.rulesManager, err = setupScreener(cfg.Rulesets)
 	if err != nil {
@@ -154,6 +159,11 @@ func (s *screenerImpl) screenAddress(c *gin.Context) {
 		return
 	}
 	s.blacklistMux.RUnlock()
+
+	if slices.Contains(s.whitelist, address) {
+		c.JSON(http.StatusOK, gin.H{"risk": false})
+		return
+	}
 
 	ctx, span := s.metrics.Tracer().Start(c.Request.Context(), "screenAddress", trace.WithAttributes(attribute.String("address", address)))
 	defer func() {
