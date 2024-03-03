@@ -104,7 +104,7 @@ export const _Transaction = ({
       className={`
         bg-bgBase/10 fill-bgBase/20
         border border-white/10 rounded-md
-        text-primary text-xs md:text-base overflow-hidden
+        text-primary text-xs md:text-base
       `}
     >
       <div
@@ -183,7 +183,7 @@ export const _Transaction = ({
       {showTransactionSupport && <TransactionSupport />}
       <div
         className={`
-          px-0
+          px-0.5
           h-0
           ${isTxFinalized ? "" : "-mt-[3px] pt-[-3px] pb-[3px]"}
         `}
