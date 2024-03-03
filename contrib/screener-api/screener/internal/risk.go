@@ -3,9 +3,11 @@ package internal
 
 import (
 	"fmt"
-	"github.com/synapsecns/sanguine/contrib/screener-api/trmlabs"
 	"strconv"
 	"strings"
+
+	"github.com/synapsecns/sanguine/contrib/screener-api/config"
+	"github.com/synapsecns/sanguine/contrib/screener-api/trmlabs"
 )
 
 // rulesetManager manages the rulesets.
@@ -51,7 +53,7 @@ func (rm *rulesetManager) GetRuleset(callerType string) RuleSet {
 // RuleSet interface defines methods to work with risk rules.
 type RuleSet interface {
 	HasRisk(riskType string) bool
-	HasAddressIndicators(riskIndicators ...trmlabs.AddressRiskIndicator) (bool, error)
+	HasAddressIndicators(thresholds []config.VolumeThreshold, riskIndicators ...trmlabs.AddressRiskIndicator) (bool, error)
 }
 
 // CallerRuler implements the RuleSet interface for a specific caller type.
@@ -72,7 +74,10 @@ func (cr *CallerRuler) HasRisk(riskType string) bool {
 }
 
 // HasAddressIndicators returns a list of addressRiskIndicator.
-func (cr *CallerRuler) HasAddressIndicators(riskIndicators ...trmlabs.AddressRiskIndicator) (bool, error) {
+func (cr *CallerRuler) HasAddressIndicators(thresholds []config.VolumeThreshold, riskIndicators ...trmlabs.AddressRiskIndicator) (bool, error) {
+	// Initialize a variable to track if any indicator is blocked
+	anyIndicatorBlocked := false
+
 	for _, ri := range riskIndicators {
 		incoming, err := strconv.ParseFloat(ri.IncomingVolumeUsd, 32)
 		if err != nil {
@@ -84,14 +89,24 @@ func (cr *CallerRuler) HasAddressIndicators(riskIndicators ...trmlabs.AddressRis
 			return false, fmt.Errorf("could not parse outgoing volume: %w", err)
 		}
 
-		riskParam := MakeParam(ri.Category, ri.RiskType)
-		isBlocked, found := cr.riskRules[riskParam]
-		if isBlocked && found && (incoming > 0 || outgoing > 0) {
-			return true, nil
+		// Check against thresholds
+		for _, threshold := range thresholds {
+			if strings.EqualFold(ri.Category, threshold.Category) && strings.EqualFold(ri.RiskType, threshold.TypeOfRisk) {
+				// If either incoming or outgoing volume exceeds the threshold, the indicator is blocked
+				if (threshold.Incoming > 0 && incoming > threshold.Incoming) || (threshold.Outgoing > 0 && outgoing > threshold.Outgoing) {
+					anyIndicatorBlocked = true
+					break // No need to check other thresholds, this indicator is blocked
+				}
+			}
+		}
+
+		if anyIndicatorBlocked {
+			break // No need to check further indicators, at least one indicator is blocked
 		}
 	}
 
-	return false, nil
+	// Return true if any indicator is blocked, otherwise false
+	return anyIndicatorBlocked, nil
 }
 
 // MakeParam creates a risk param from the given category and risk type in a standardized format.
