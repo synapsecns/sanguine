@@ -3,10 +3,11 @@ package executor
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/core"
-	"github.com/synapsecns/sanguine/sin-executor/contracts/executionservice"
 	"math/big"
 	"time"
+
+	"github.com/synapsecns/sanguine/core"
+	"github.com/synapsecns/sanguine/sin-executor/contracts/executionservice"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -60,10 +61,10 @@ func NewExecutor(ctx context.Context, handler metrics.Handler, cfg config.Config
 	executor.chainListeners = make(map[int]listener.ContractListener)
 	executor.clientContracts = make(map[int]*interchainclient.InterchainClientRef)
 
-	for chainID, chainCfg := range cfg.Chains {
+	for _, chainCfg := range cfg.Chains {
 		executionService := common.HexToAddress(chainCfg.ExecutionService)
 		interchainClient := common.HexToAddress(chainCfg.Client)
-		chainClient, err := executor.client.GetChainClient(ctx, chainID)
+		chainClient, err := executor.client.GetChainClient(ctx, chainCfg.ChainID)
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain client: %w", err)
 		}
@@ -72,9 +73,9 @@ func NewExecutor(ctx context.Context, handler metrics.Handler, cfg config.Config
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain listener: %w", err)
 		}
-		executor.chainListeners[chainID] = chainListener
+		executor.chainListeners[chainCfg.ChainID] = chainListener
 
-		executor.clientContracts[chainID], err = interchainclient.NewInterchainClientRef(interchainClient, chainClient)
+		executor.clientContracts[chainCfg.ChainID], err = interchainclient.NewInterchainClientRef(interchainClient, chainClient)
 		if err != nil {
 			return nil, fmt.Errorf("could not get synapse module ref: %w", err)
 		}
@@ -226,8 +227,8 @@ func (e *Executor) startChainIndexers(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
 
 	// TODO: good chance we wanna prepare these chain listeners up front and then listen later.
-	for chainID := range e.cfg.Chains {
-		chainID := chainID // capture func litera
+	for _, chain := range e.cfg.Chains {
+		chainID := chain.ChainID // capture func litera
 
 		g.Go(func() error {
 			err := e.runChainIndexer(ctx, chainID)
