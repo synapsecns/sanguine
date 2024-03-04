@@ -7,11 +7,11 @@ import {
   usePoolUserDataState,
   usePoolDepositState,
 } from '@/slices/pool/hooks'
-import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
+import { stringToBigInt } from '@/utils/bigint/format'
+
 import LoadingDots from '@tw/LoadingDots'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { DEFAULT_DEPOSIT_QUOTE } from './Deposit'
-import { stringToBigInt } from '@/utils/bigint/format'
 
 const DepositButton = ({ approveTxn, depositTxn }) => {
   const [isConnected, setIsConnected] = useState(false) // Initialize to false
