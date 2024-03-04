@@ -55,7 +55,6 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
     amount: 0n,
     reward: 0n,
   })
-  const [tx, setTx] = useState(undefined)
   const miniChefAddress = pool.miniChefAddress
 
   const resetUserStakeData = () => {
@@ -185,7 +184,6 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
               const tx = await pendingTxWrapFunc(
                 claimStake(chainId, address as Address, stakingPoolId, pool)
               )
-              console.log('tx:', tx)
               if (tx?.status === 'success') {
                 await getUserStakedBalance(
                   address as Address,
@@ -193,7 +191,6 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                   pool
                 )
               }
-              setTx(tx?.transactionHash)
             }}
           >
             {isPending ? (
@@ -315,8 +312,6 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                       const tx = await pendingApproveTxWrapFunc(
                         approve(pool, deposit.bi, chainId)
                       )
-
-                      setTx(tx?.transactionHash)
                     }
                   : async (e) => {
                       const tx = await pendingStakeTxWrapFunc(
@@ -337,7 +332,6 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                           })
                         )
                       }
-                      setTx(tx?.transactionHash)
                     }
               }
             />
