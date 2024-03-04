@@ -2,8 +2,9 @@ import { isNull } from 'lodash'
 import { useAppDispatch } from '@/store/hooks'
 import { getTxBlockExplorerLink } from './helpers/getTxBlockExplorerLink'
 import { getExplorerAddressLink } from './helpers/getExplorerAddressLink'
-import { useBridgeTxStatus } from './helpers/useBridgeTxStatus'
 import { getEstimatedTimeStatus } from './helpers/getEstimatedTimeStatus'
+import { useBridgeTxStatus } from './helpers/useBridgeTxStatus'
+import { useBridgeTxUpdater } from './helpers/useBridgeTxUpdater'
 import { removeTransaction } from '@/slices/_transactions/reducer'
 import type { Chain, Token } from '@/utils/types'
 import { TransactionPayloadDetail } from '@/components/Portfolio/Transaction/components/TransactionPayloadDetail'
@@ -11,10 +12,8 @@ import { TransactionArrow } from '@/components/icons/TransactionArrow'
 import { TimeRemaining } from './components/TimeRemaining'
 import { DropdownMenu } from './components/DropdownMenu'
 import { MenuItem } from './components/MenuItem'
-import { useBridgeTxUpdater } from './helpers/useBridgeTxUpdater'
 import { AnimatedProgressBar } from './components/AnimatedProgressBar'
 import { TransactionSupport } from './components/TransactionSupport'
-
 
 interface _TransactionProps {
   connectedAddress: string
