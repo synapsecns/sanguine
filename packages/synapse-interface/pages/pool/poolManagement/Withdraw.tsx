@@ -199,7 +199,7 @@ const Withdraw = ({ address }: { address: string }) => {
     }
   }
 
-  const onSuccessWithdraw = () => {
+  const onResetWithdraw = () => {
     dispatch(fetchPoolUserData({ pool, address: address as Address }))
     dispatch(fetchPoolData({ poolName: String(pool.routerIndex) }))
     dispatch(fetchAndStoreSingleNetworkPortfolioBalances({ address, chainId }))
@@ -229,14 +229,14 @@ const Withdraw = ({ address }: { address: string }) => {
         timeout: 60_000,
       })
 
-      onSuccessWithdraw()
+      onResetWithdraw()
     } catch (error) {
       /**
        * Assume transaction success if transaction receipt error
        * Likely to be rpc related issue
        */
       if (isTransactionReceiptError(error)) {
-        onSuccessWithdraw()
+        onResetWithdraw()
       }
       txErrorHandler(error)
     } finally {

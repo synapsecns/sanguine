@@ -174,7 +174,7 @@ const Deposit = ({
     }
   }
 
-  const onSuccessDeposit = () => {
+  const onResetDeposit = () => {
     dispatch(fetchPoolData({ poolName: String(pool.routerIndex) }))
     dispatch(fetchPoolUserData({ pool, address: address as Address }))
     dispatch(fetchAndStoreSingleNetworkPortfolioBalances({ address, chainId }))
@@ -202,14 +202,14 @@ const Deposit = ({
         timeout: 60_000,
       })
 
-      onSuccessDeposit()
+      onResetDeposit()
     } catch (error) {
       /**
        * Assume transaction success if transaction receipt error
        * Likely to be rpc related issue
        */
       if (isTransactionReceiptError(error)) {
-        onSuccessDeposit()
+        onResetDeposit()
       }
       txErrorHandler(error)
     } finally {
