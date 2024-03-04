@@ -44,44 +44,48 @@ export const getPoolApyData = async (
 
   const minichefAddress: Address = poolToken.miniChefAddress as Address
 
-  const data = await readContracts({
-    contracts: [
-      {
-        address: minichefAddress,
-        abi: MINICHEF_ABI,
-        functionName: 'synapsePerSecond',
-        chainId,
-      },
-      {
-        address: minichefAddress,
-        abi: MINICHEF_ABI,
-        functionName: 'totalAllocPoint',
-        chainId,
-      },
-      {
-        address: minichefAddress,
-        abi: MINICHEF_ABI,
-        functionName: 'poolInfo',
-        chainId,
-        args: [poolToken.poolId[chainId]],
-      },
-      {
-        address: poolToken.addresses[chainId] as Address,
-        abi: erc20ABI,
-        functionName: 'balanceOf',
-        chainId,
-        args: [minichefAddress],
-      },
-      {
-        address: poolToken.addresses[chainId] as Address,
-        abi: erc20ABI,
-        functionName: 'totalSupply',
-        chainId,
-      },
-    ],
-  })
+  const [synPriceData, data] = await Promise.all([
+    synPriceExists ? prices?.synPrices : getSynPrices(),
+    readContracts({
+      contracts: [
+        {
+          address: minichefAddress,
+          abi: MINICHEF_ABI,
+          functionName: 'synapsePerSecond',
+          chainId,
+        },
+        {
+          address: minichefAddress,
+          abi: MINICHEF_ABI,
+          functionName: 'totalAllocPoint',
+          chainId,
+        },
+        {
+          address: minichefAddress,
+          abi: MINICHEF_ABI,
+          functionName: 'poolInfo',
+          chainId,
+          args: [poolToken.poolId[chainId]],
+        },
+        {
+          address: poolToken.addresses[chainId] as Address,
+          abi: erc20ABI,
+          functionName: 'balanceOf',
+          chainId,
+          args: [minichefAddress],
+        },
+        {
+          address: poolToken.addresses[chainId] as Address,
+          abi: erc20ABI,
+          functionName: 'totalSupply',
+          chainId,
+        },
+      ],
+    })
+  ])
 
-  const synPriceData = await synPriceDataPromise
+
+  // const synPriceData = await synPriceDataPromise
   // const metisPrice = prices?.metisPrice ?? (await getMetisPrice())
 
   const synapsePerSecond: bigint = data[0].result ?? 0n
