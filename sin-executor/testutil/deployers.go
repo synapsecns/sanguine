@@ -39,7 +39,7 @@ var (
 			transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 			idb := helpers.Registry().Get(ctx, InterchainDB)
 
-			deployAddress, deployTx, deployIface, err := interchainclient.DeployInterchainClientV1(transactOps, backend, idb.Address())
+			deployAddress, deployTx, deployIface, err := interchainclient.DeployInterchainClientV1(transactOps, backend, idb.Address(), transactOps.From)
 			if err != nil {
 				return common.Address{}, nil, nil, fmt.Errorf("could not deploy interchain client: %w", err)
 			}
