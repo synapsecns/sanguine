@@ -21,4 +21,4 @@ yarn fsr script/deploy/DeploySynapseModule.s.sol "$chainName" "$walletName" "$@"
 yarn fsr-str script/deploy/DeployWithMsgSender.s.sol "$chainName" "$walletName" "ExecutionFees" "$@"
 yarn fsr-str script/deploy/DeployWithMsgSender.s.sol "$chainName" "$walletName" "ExecutionService" "$@"
 
-yarn fsr-str script/deploy/DeployNoArgs.s.sol "$chainName" "$walletName" "GasOracleMock" "$@"
+yarn fsr-str script/deploy/DeployNoArgs.s.sol "$chainName" "$walletName" "SynapseGasOracleMock" "$@"

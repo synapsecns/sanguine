@@ -5,7 +5,7 @@ import {SynapseModuleEvents} from "../../contracts/events/SynapseModuleEvents.so
 import {SynapseModule, ISynapseModule} from "../../contracts/modules/SynapseModule.sol";
 import {ThresholdECDSALib} from "../../contracts/libs/ThresholdECDSA.sol";
 
-import {GasOracleMock} from "../mocks/GasOracleMock.sol";
+import {SynapseGasOracleMock} from "../mocks/SynapseGasOracleMock.sol";
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -15,7 +15,7 @@ import {Test} from "forge-std/Test.sol";
 // solhint-disable ordering
 contract SynapseModuleManagementTest is Test, SynapseModuleEvents {
     SynapseModule public module;
-    GasOracleMock public gasOracle;
+    SynapseGasOracleMock public gasOracle;
 
     address public interchainDB = makeAddr("InterchainDB");
     address public owner = makeAddr("Owner");
@@ -29,7 +29,7 @@ contract SynapseModuleManagementTest is Test, SynapseModuleEvents {
 
     function setUp() public {
         module = new SynapseModule(interchainDB, owner);
-        gasOracle = new GasOracleMock();
+        gasOracle = new SynapseGasOracleMock();
         allVerifiers.push(VERIFIER_1);
         allVerifiers.push(VERIFIER_2);
         allVerifiers.push(VERIFIER_3);

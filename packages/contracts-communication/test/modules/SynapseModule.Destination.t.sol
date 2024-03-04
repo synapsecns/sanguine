@@ -8,7 +8,7 @@ import {InterchainEntry} from "../../contracts/libs/InterchainEntry.sol";
 import {ThresholdECDSALib} from "../../contracts/libs/ThresholdECDSA.sol";
 import {SynapseModule} from "../../contracts/modules/SynapseModule.sol";
 
-import {GasOracleMock} from "../mocks/GasOracleMock.sol";
+import {SynapseGasOracleMock} from "../mocks/SynapseGasOracleMock.sol";
 import {InterchainDBMock, IInterchainDB} from "../mocks/InterchainDBMock.sol";
 
 import {Test} from "forge-std/Test.sol";
@@ -17,7 +17,7 @@ import {Test} from "forge-std/Test.sol";
 // solhint-disable ordering
 contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseModuleEvents {
     SynapseModule public module;
-    GasOracleMock public gasOracle;
+    SynapseGasOracleMock public gasOracle;
     InterchainDBMock public interchainDB;
 
     address public feeCollector = makeAddr("FeeCollector");
@@ -50,7 +50,7 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         vm.chainId(DST_CHAIN_ID);
         interchainDB = new InterchainDBMock();
         module = new SynapseModule(address(interchainDB), owner);
-        gasOracle = new GasOracleMock();
+        gasOracle = new SynapseGasOracleMock();
         vm.startPrank(owner);
         module.setGasOracle(address(gasOracle));
         module.setFeeCollector(feeCollector);

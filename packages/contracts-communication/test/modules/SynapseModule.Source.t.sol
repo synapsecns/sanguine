@@ -7,7 +7,7 @@ import {IInterchainModule} from "../../contracts/interfaces/IInterchainModule.so
 import {InterchainEntry} from "../../contracts/libs/InterchainEntry.sol";
 import {SynapseModule, ISynapseModule} from "../../contracts/modules/SynapseModule.sol";
 
-import {GasOracleMock} from "../mocks/GasOracleMock.sol";
+import {SynapseGasOracleMock} from "../mocks/SynapseGasOracleMock.sol";
 
 import {Test} from "forge-std/Test.sol";
 
@@ -15,7 +15,7 @@ import {Test} from "forge-std/Test.sol";
 // solhint-disable ordering
 contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleEvents {
     SynapseModule public module;
-    GasOracleMock public gasOracle;
+    SynapseGasOracleMock public gasOracle;
 
     address public interchainDB = makeAddr("InterchainDB");
     address public feeCollector = makeAddr("FeeCollector");
@@ -40,7 +40,7 @@ contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleE
     function setUp() public {
         vm.chainId(SRC_CHAIN_ID);
         module = new SynapseModule(interchainDB, owner);
-        gasOracle = new GasOracleMock();
+        gasOracle = new SynapseGasOracleMock();
         vm.startPrank(owner);
         module.setGasOracle(address(gasOracle));
         module.setFeeCollector(feeCollector);
@@ -51,7 +51,7 @@ contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleE
         // Mock: gasOracle.estimateTxCostInLocalUnits(DST_CHAIN_ID, *, *) to return FEE
         vm.mockCall(
             address(gasOracle),
-            abi.encodeWithSelector(GasOracleMock.estimateTxCostInLocalUnits.selector, DST_CHAIN_ID),
+            abi.encodeWithSelector(SynapseGasOracleMock.estimateTxCostInLocalUnits.selector, DST_CHAIN_ID),
             abi.encode(FEE)
         );
     }
