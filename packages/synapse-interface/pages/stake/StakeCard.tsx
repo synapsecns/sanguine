@@ -192,11 +192,20 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
               disabled:opacity-100
               disabled:from-bgLight disabled:to-bgLight
             `}
-            onClick={() =>
-              pendingTxWrapFunc(
+            onClick={async (e) => {
+              const tx = await pendingTxWrapFunc(
                 claimStake(chainId, address as Address, stakingPoolId, pool)
               )
-            }
+              console.log('tx:', tx)
+              if (tx?.status === 'success') {
+                await getUserStakedBalance(
+                  address as Address,
+                  stakingPoolId,
+                  pool
+                )
+              }
+              setTx(tx?.transactionHash)
+            }}
           >
             {isPending ? (
               <div className="flex items-center justify-center space-x-5">
