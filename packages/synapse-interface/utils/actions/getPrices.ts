@@ -71,24 +71,25 @@ export const getMetisPrice = async (): Promise<number> => {
 }
 
 export const getSynPrices = async () => {
-  const ethPrice: number = await getEthPrice()
-  const sushiSynBalance =
-    (
-      await fetchBalance({
-        token: SYN.addresses[ALL_CHAINS.ETH.id] as Address,
-        chainId: ALL_CHAINS.ETH.id,
-        address: SYN_ETH_SUSHI_TOKEN.addresses[ALL_CHAINS.ETH.id] as Address,
-      })
-    )?.value ?? 0n
-
-  const sushiEthBalance =
-    (
-      await fetchBalance({
-        token: WETH.addresses[ALL_CHAINS.ETH.id] as Address,
-        chainId: ALL_CHAINS.ETH.id,
-        address: SYN_ETH_SUSHI_TOKEN.addresses[ALL_CHAINS.ETH.id] as Address,
-      })
-    )?.value ?? 0n
+  const [
+    ethPrice,
+    sushiSynBalanceResult,
+    sushiEthBalanceResult,
+  ] = await Promise.all([
+    getEthPrice(),
+    fetchBalance({
+      token: SYN.addresses[ALL_CHAINS.ETH.id] as Address,
+      chainId: ALL_CHAINS.ETH.id,
+      address: SYN_ETH_SUSHI_TOKEN.addresses[ALL_CHAINS.ETH.id] as Address,
+    }),
+    fetchBalance({
+      token: WETH.addresses[ALL_CHAINS.ETH.id] as Address,
+      chainId: ALL_CHAINS.ETH.id,
+      address: SYN_ETH_SUSHI_TOKEN.addresses[ALL_CHAINS.ETH.id] as Address,
+    }),
+  ])
+  const sushiSynBalance = sushiSynBalanceResult?.value ?? 0n
+  const sushiEthBalance = sushiEthBalanceResult?.value ?? 0n
 
   const synBalanceNumber = Number(sushiSynBalance) / Math.pow(10, 18)
   const ethBalanceNumber = Number(sushiEthBalance) / Math.pow(10, 18)
