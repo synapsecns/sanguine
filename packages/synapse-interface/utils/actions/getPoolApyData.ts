@@ -40,43 +40,44 @@ export const getPoolApyData = async (
   }
 
 
-  const minichefAddress: Address = poolToken.miniChefAddress as Address
+  const minichefAddress = poolToken.miniChefAddress as Address
+
+  const minichefContractInfo = {
+    address: minichefAddress,
+    abi:     MINICHEF_ABI,
+    chainId,
+  }
+  const poolTokenContractInfo = {
+    address: poolToken.addresses[chainId] as Address,
+    abi:     erc20ABI,
+    chainId,
+  }
 
   const [synPriceData, data] = await Promise.all([
     prices?.synPrices?.synPrice ? prices?.synPrices : getSynPrices(),
     readContracts({
       contracts: [
         {
-          address: minichefAddress,
-          abi: MINICHEF_ABI,
+          ...minichefContractInfo,
           functionName: 'synapsePerSecond',
-          chainId,
         },
         {
-          address: minichefAddress,
-          abi: MINICHEF_ABI,
+          ...minichefContractInfo,
           functionName: 'totalAllocPoint',
-          chainId,
         },
         {
-          address: minichefAddress,
-          abi: MINICHEF_ABI,
+          ...minichefContractInfo,
           functionName: 'poolInfo',
-          chainId,
           args: [poolToken.poolId[chainId]],
         },
         {
-          address: poolToken.addresses[chainId] as Address,
-          abi: erc20ABI,
+          ...poolTokenContractInfo,
           functionName: 'balanceOf',
-          chainId,
           args: [minichefAddress],
         },
         {
-          address: poolToken.addresses[chainId] as Address,
-          abi: erc20ABI,
+          ...poolTokenContractInfo,
           functionName: 'totalSupply',
-          chainId,
         },
       ],
     })
@@ -86,7 +87,7 @@ export const getPoolApyData = async (
 
   const synapsePerSecond: bigint = data[0].result ?? 0n
   const totalAllocPoints: bigint = data[1].result ?? 1n
-  const allocPoints: bigint = data[2].result?.[2] ?? 1n
+  const allocPoints: bigint = (data[2].result as PoolInfoResult)?.[2] ?? 1n
   const lpTokenBalance: bigint = data[3].result ?? 0n
   const lpTokenSupply: bigint = data[4].result ?? 0n
 
