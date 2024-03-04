@@ -26,7 +26,6 @@ const BridgeExchangeRateInfo = () => {
       <section className="p-2 space-y-1 text-sm border rounded-sm border-[#504952] text-secondary font-light">
         <GasDropLabel />
         <Router />
-        {/* <Fee /> */}
         <Rebate />
         <Slippage />
       </section>
@@ -146,42 +145,6 @@ const Rebate = () => {
     <div className="flex items-center justify-between">
       <div className="text-green-300">Rebate</div>
       <RebateText />
-    </div>
-  )
-}
-
-const Fee = () => {
-  const {
-    debouncedFromValue,
-    fromToken,
-    fromChainId,
-    isLoading,
-    bridgeQuote: { feeAmount, originQuery },
-  } = useBridgeState()
-
-  if (!originQuery || originQuery.minAmountOut === 0n) return
-
-  const adjustedFeeAmount =
-    (BigInt(feeAmount) *
-      stringToBigInt(
-        `${debouncedFromValue}`,
-        fromToken?.decimals[fromChainId]
-      )) /
-    BigInt(originQuery?.minAmountOut)
-
-  const feeString = formatBigIntToString(
-    adjustedFeeAmount,
-    fromToken?.decimals[fromChainId],
-    4
-  )
-
-  return (
-    <div className="flex items-center justify-between">
-      <div>Fee</div>
-      <div className="text-primaryTextColor">
-        {isLoading ? '-' : feeString}{' '}
-        <span className="e">{fromToken?.symbol}</span>
-      </div>
     </div>
   )
 }
