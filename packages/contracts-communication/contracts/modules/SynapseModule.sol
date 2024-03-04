@@ -29,7 +29,7 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     /// @dev Hash of the last gas data sent to the remote chain.
     mapping(uint256 chainId => bytes32 gasDataHash) internal _lastGasDataHash;
     /// @dev Nonce of the last gas data received from the remote chain.
-    mapping(uint256 chainid => uint256 gasDataNonce) internal _lastGasDataNonce;
+    mapping(uint256 chainId => uint256 gasDataNonce) internal _lastGasDataNonce;
 
     /// @inheritdoc ISynapseModule
     address public feeCollector;
