@@ -2,15 +2,16 @@ import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import type { Address } from 'wagmi'
 
-import LiquidityManagementTabs from '../components/LiquidityManagementTabs'
-import Deposit from './Deposit'
-import Withdraw from './Withdraw'
-import LoadingDots from '@tw/LoadingDots'
 import {
   fetchPoolUserData,
   resetPoolUserData,
 } from '@/slices/poolUserDataSlice'
 import { usePoolDataState, usePoolUserDataState } from '@/slices/pool/hooks'
+
+import LoadingDots from '@tw/LoadingDots'
+import LiquidityManagementTabs from '../components/LiquidityManagementTabs'
+import Deposit from './Deposit'
+import Withdraw from './Withdraw'
 
 const PoolManagement = ({
   address,

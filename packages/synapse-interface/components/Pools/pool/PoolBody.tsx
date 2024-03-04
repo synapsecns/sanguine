@@ -2,24 +2,22 @@ import numeral from 'numeral'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
-import { POOLS_PATH } from '@urls'
-import Card from '@tw/Card'
-import Grid from '@tw/Grid'
-
 import { zeroAddress, Address } from 'viem'
-
 import { useAccount, useSwitchNetwork } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 
 import { ChevronLeftIcon } from '@heroicons/react/outline'
 
+import { POOLS_PATH } from '@urls'
 import { segmentAnalyticsEvent } from '@/contexts/segmentAnalyticsEvent'
 
 import { usePoolDataState } from '@/slices/pool/hooks'
 import { getStakedBalance } from '@/utils/actions/getStakedBalance'
 
-import { TransactionButton } from '@/components/buttons/TransactionButton'
+import Card from '@tw/Card'
+import Grid from '@tw/Grid'
 
+import { TransactionButton } from '@/components/buttons/TransactionButton'
 import PoolInfoSection from '@/components/Pools/pool/PoolInfoSection'
 import PoolManagement from '@/components/Pools/pool/poolManagement'
 import PoolTitle from '@/components/Pools/pool/components/PoolTitle'
@@ -70,7 +68,7 @@ const PoolBody = ({
     } else {
       setStakedBalance({ amount: 0n, reward: 0n })
     }
-  }, [ address, pool])
+  }, [address, pool])
 
   if (!pool) return null
 

@@ -1,8 +1,8 @@
 import _ from 'lodash'
 import { useEffect, useMemo, useState } from 'react'
+import { useDispatch } from 'react-redux'
 import Slider from 'react-input-slider'
 import type { Address } from '@wagmi/core'
-import { useDispatch } from 'react-redux'
 import type { Token } from '@types'
 
 import { getCoinTextColorCombined } from '@styles/tokens'
@@ -12,9 +12,9 @@ import { approve, withdraw } from '@/utils/actions/approveAndWithdraw'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
 import { calculatePriceImpact } from '@/utils/priceImpact'
+import { txErrorHandler } from '@/utils/txErrorHandler'
 import { stringToBigInt, formatBigIntToString } from '@/utils/bigint/format'
 import { useSynapseContext } from '@/contexts/SynapseProvider'
-import { txErrorHandler } from '@/utils/txErrorHandler'
 
 import {
   usePoolDataState,

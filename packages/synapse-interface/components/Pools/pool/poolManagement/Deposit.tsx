@@ -38,7 +38,6 @@ import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFiel
 import { calculatePriceImpact } from '@/utils/priceImpact'
 import { transformCalculateLiquidityInput } from '@/utils/transformCalculateLiquidityInput'
 
-
 import LoadingTokenInput from '@/components/loading/LoadingTokenInput'
 import { DepositTokenInput } from '@/components/TokenInput'
 import PriceImpactDisplay from '../components/PriceImpactDisplay'
