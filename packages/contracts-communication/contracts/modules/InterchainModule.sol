@@ -32,7 +32,8 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
         if (msg.value < requiredFee) {
             revert InterchainModule__InsufficientFee({actual: msg.value, required: requiredFee});
         }
-        bytes memory encodedEntry = abi.encode(entry);
+        bytes memory moduleData = _fillModuleData(destChainId, entry.dbNonce);
+        bytes memory encodedEntry = ModuleEntryLib.encodeModuleEntry(entry, moduleData);
         bytes32 ethSignedEntryHash = MessageHashUtils.toEthSignedMessageHash(keccak256(encodedEntry));
         _requestVerification(destChainId, encodedEntry);
         emit VerificationRequested(destChainId, encodedEntry, ethSignedEntryHash);
@@ -60,6 +61,9 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
     // solhint-disable no-empty-blocks
     /// @dev Internal logic to request the verification of an entry on the destination chain.
     function _requestVerification(uint256 destChainId, bytes memory encodedEntry) internal virtual {}
+
+    /// @dev Internal logic to fill the module data for the specified destination chain.
+    function _fillModuleData(uint256 destChainId, uint256 dbNonce) internal virtual returns (bytes memory) {}
 
     /// @dev Internal logic to handle the auxiliary module data relayed from the remote chain.
     function _receiveModuleData(uint256 srcChainId, uint256 dbNonce, bytes memory moduleData) internal virtual {}
