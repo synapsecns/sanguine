@@ -1,15 +1,13 @@
+import _ from 'lodash'
 import { PAUSED_TOKENS_BY_CHAIN } from '@/constants/tokens'
 
+const FLATTENED_PAUSED_TOKENS = _(PAUSED_TOKENS_BY_CHAIN)
+  .entries()
+  .map(([chainId, tokens]) => tokens.map((token) => `${token}-${chainId}`))
+  .flatten()
+  .value()
+
 export const flattenPausedTokens = () => {
-  const flatList = []
-
-  for (const chainId in PAUSED_TOKENS_BY_CHAIN) {
-    if (PAUSED_TOKENS_BY_CHAIN.hasOwnProperty(chainId)) {
-      PAUSED_TOKENS_BY_CHAIN[chainId].forEach((token) => {
-        flatList.push(`${token}-${chainId}`)
-      })
-    }
-  }
-
-  return flatList
+  return FLATTENED_PAUSED_TOKENS
 }
+
