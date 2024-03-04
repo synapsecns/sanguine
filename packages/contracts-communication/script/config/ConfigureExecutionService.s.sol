@@ -17,6 +17,7 @@ contract ConfigureExecutionFees is SynapseScript {
         loadConfig(environment);
         setExecutorEOA();
         setGasOracle();
+        setInterchainClient();
     }
 
     function loadConfig(string memory environment) internal {
@@ -44,6 +45,18 @@ contract ConfigureExecutionFees is SynapseScript {
             printSuccessWithIndent(string.concat("Set GasOracle to ", vm.toString(gasOracle)));
         } else {
             printSkipWithIndent(string.concat("already set to ", vm.toString(gasOracle)));
+        }
+    }
+
+    function setInterchainClient() internal {
+        address interchainClientV1 = getDeploymentAddress({contractName: "InterchainClientV1", revertIfNotFound: true});
+        printLog(string.concat("Setting InterchainClient on ExecutionService "));
+
+        if (address(service.interchainClient()) != interchainClientV1) {
+            service.setInterchainClient(interchainClientV1);
+            printSuccessWithIndent(string.concat("Set InterchainClient to ", vm.toString(interchainClientV1)));
+        } else {
+            printSkipWithIndent(string.concat("already set to ", vm.toString(interchainClientV1)));
         }
     }
 }

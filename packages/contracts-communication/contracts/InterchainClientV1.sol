@@ -238,7 +238,9 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
                     icTx.dstChainId, transactionId, srcModules
                 )
         );
-        IExecutionFees(executionFees).addExecutionFee{value: executionFee}(icTx.dstChainId, transactionId);
+        if (executionFee > 0) {
+            IExecutionFees(executionFees).addExecutionFee{value: executionFee}(icTx.dstChainId, transactionId);
+        }
         // TODO: consider disallowing the use of empty srcExecutionService
         if (srcExecutionService != address(0)) {
             IExecutionService(srcExecutionService).requestExecution({
