@@ -58,6 +58,13 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
   const [tx, setTx] = useState(undefined)
   const miniChefAddress = pool.miniChefAddress
 
+  const resetUserStakeData = () => {
+    setUserStakeData({
+      amount: 0n,
+      reward: 0n,
+    })
+  }
+
   const getUserStakedBalance = async (
     address: Address,
     stakingPoolId: number,
@@ -78,28 +85,15 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
 
   useEffect(() => {
     if (!address || !chainId || stakingPoolId === null) {
-      setUserStakeData({
-        amount: 0n,
-        reward: 0n,
-      })
+      resetUserStakeData()
       return
     }
-    // getStakedBalance(address as Address, pool.chainId, stakingPoolId, pool)
-    //   .then((data) => {
-    //     setUserStakeData(data)
-    //   })
-    //   .catch((err) => {
-    //     console.log(err)
-    //   })
     getUserStakedBalance(address as Address, stakingPoolId, pool)
   }, [address, chainId, stakingPoolId])
 
   useEffect(() => {
     if (!address) {
-      setUserStakeData({
-        amount: 0n,
-        reward: 0n,
-      })
+      resetUserStakeData()
       return
     }
     ;(async () => {
@@ -110,13 +104,6 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
         chainId
       )
       setAllowance(tkAllowance)
-      // getStakedBalance(address as Address, pool.chainId, stakingPoolId, pool)
-      //   .then((data) => {
-      //     setUserStakeData(data)
-      //   })
-      //   .catch((err) => {
-      //     console.log(err)
-      //   })
       getUserStakedBalance(address as Address, stakingPoolId, pool)
     })()
   }, [lpTokenBalance])
