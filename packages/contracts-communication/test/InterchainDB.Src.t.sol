@@ -148,8 +148,8 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         vm.expectRevert(IInterchainDB.InterchainDB__NoModulesSpecified.selector);
     }
 
-    function expectSameChainId() internal {
-        vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__SameChainId.selector));
+    function expectSameChainId(uint256 chainId) internal {
+        vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__SameChainId.selector, chainId));
     }
 
     // ═══════════════════════════════════════════════ TESTS: SET UP ═══════════════════════════════════════════════════
@@ -340,7 +340,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     }
 
     function test_requestVerification_revert_sameChainId() public {
-        expectSameChainId();
+        expectSameChainId(SRC_CHAIN_ID);
         vm.prank(requestCaller);
         icDB.requestVerification(SRC_CHAIN_ID, 0, oneModule);
     }
@@ -519,7 +519,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
 
     function test_writeEntryWithVerification_revert_sameChainId() public {
         bytes32 dataHash = getMockDataHash(writerF, INITIAL_DB_NONCE);
-        expectSameChainId();
+        expectSameChainId(SRC_CHAIN_ID);
         vm.prank(writerF);
         icDB.writeEntryWithVerification(SRC_CHAIN_ID, dataHash, oneModule);
     }

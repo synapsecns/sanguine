@@ -145,8 +145,8 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         vm.expectRevert(ThresholdECDSALib.ThresholdECDSA__RecoveredSignersNotSorted.selector);
     }
 
-    function expectSameChainIdRevert() internal {
-        vm.expectRevert(IInterchainModule.InterchainModule__SameChainId.selector);
+    function expectSameChainIdRevert(uint256 chainId) internal {
+        vm.expectRevert(abi.encodeWithSelector(IInterchainModule.InterchainModule__SameChainId.selector, chainId));
     }
 
     // ════════════════════════════════════════════ TESTS: VERIFY ENTRY ════════════════════════════════════════════════
@@ -298,7 +298,7 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         InterchainEntry memory entry = mockEntry;
         entry.srcChainId = DST_CHAIN_ID;
         bytes memory signatures = signEntry(entry, toArray(PK_1, PK_0));
-        expectSameChainIdRevert();
+        expectSameChainIdRevert(DST_CHAIN_ID);
         verifyEntry(entry, signatures);
     }
 

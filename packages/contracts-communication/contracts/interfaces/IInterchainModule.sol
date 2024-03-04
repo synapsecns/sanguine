@@ -7,10 +7,10 @@ import {InterchainEntry} from "../libs/InterchainEntry.sol";
 /// @notice Every Module may opt a different method to confirm the verified entries on destination chain,
 /// therefore this is not a part of a common interface.
 interface IInterchainModule {
-    error InterchainModule__NotInterchainDB();
+    error InterchainModule__NotInterchainDB(address caller);
     error InterchainModule__IncorrectSourceChainId(uint256 chainId);
     error InterchainModule__InsufficientFee(uint256 actual, uint256 required);
-    error InterchainModule__SameChainId();
+    error InterchainModule__SameChainId(uint256 chainId);
 
     /// @notice Request the verification of an entry in the Interchain DataBase by the module.
     /// Note: a fee is paid to the module for verification, and could be retrieved by using `getModuleFee`.
