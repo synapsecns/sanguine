@@ -46,7 +46,10 @@ contract ExecutionFees is AccessControl, ExecutionFeesEvents, IExecutionFees {
         onlyRole(RECORDER_ROLE)
     {
         if (executor == address(0)) revert ExecutionFees__ZeroAddress();
-        if (recordedExecutor[dstChainId][transactionId] != address(0)) revert ExecutionFees__AlreadyRecorded();
+        address previousExecutor = recordedExecutor[dstChainId][transactionId];
+        if (previousExecutor != address(0)) {
+            revert ExecutionFees__AlreadyRecorded(dstChainId, transactionId, previousExecutor);
+        }
         uint256 fee = executionFee[dstChainId][transactionId];
         recordedExecutor[dstChainId][transactionId] = executor;
         emit ExecutorRecorded(dstChainId, transactionId, executor);
