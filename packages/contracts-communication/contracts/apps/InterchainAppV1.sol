@@ -211,4 +211,23 @@ abstract contract InterchainAppV1 is InterchainAppV1Events, IInterchainApp {
     )
         internal
         virtual;
+
+    // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
+
+    /// @dev Returns the fee for sending an Interchain message.
+    function _getInterchainFee(
+        uint256 dstChainId,
+        OptionsV1 memory options,
+        bytes memory message
+    )
+        internal
+        view
+        returns (uint256)
+    {
+        address cachedInterchain = interchain;
+        if (cachedInterchain == address(0)) revert InterchainApp__InterchainClientNotSet();
+        return IInterchainClientV1(cachedInterchain).getInterchainFee(
+            dstChainId, getExecutionService(), getSendingModules(), options.encodeOptionsV1(), message
+        );
+    }
 }

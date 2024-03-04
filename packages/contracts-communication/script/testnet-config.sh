@@ -10,10 +10,9 @@ if [ -z "$chainName" ] || [ -z "$walletName" ]; then
 fi
 # Get the rest of the options
 shift 2
-options="$*"
 
-yarn fsr-str script/config/ConfigureAppExample.s.sol "$chainName" "$walletName" "testnet" "$options"
-yarn fsr-str script/config/ConfigureClientV1.s.sol "$chainName" "$walletName" "testnet" "$options"
-yarn fsr script/config/ConfigureExecutionFees.s.sol "$chainName" "$walletName" "$options"
-yarn fsr-str script/config/ConfigureExecutionService.s.sol "$chainName" "$walletName" "testnet" "$options"
-yarn fsr-str script/config/ConfigureSynapseModule.s.sol "$chainName" "$walletName" "testnet" "$options"
+yarn fsr-str script/config/ConfigureClientV1.s.sol "$chainName" "$walletName" "testnet" "$@"
+yarn fsr script/config/ConfigureExecutionFees.s.sol "$chainName" "$walletName" "$@"
+yarn fsr-str script/config/ConfigureExecutionService.s.sol "$chainName" "$walletName" "testnet" "$@"
+yarn fsr-str script/config/ConfigurePingPongApp.s.sol "$chainName" "$walletName" "testnet" "$@"
+yarn fsr-str script/config/ConfigureSynapseModule.s.sol "$chainName" "$walletName" "testnet" "$@"
