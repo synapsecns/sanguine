@@ -2,8 +2,6 @@ module github.com/synapsecns/sanguine/committee
 
 go 1.21
 
-toolchain go1.21.6
-
 replace (
 	// later versions give erros on uint64 being too high.
 	github.com/brianvoe/gofakeit/v6 => github.com/brianvoe/gofakeit/v6 v6.9.0
