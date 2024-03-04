@@ -20,10 +20,10 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
     /// @inheritdoc IInterchainModule
     function requestVerification(uint256 destChainId, InterchainEntry memory entry) external payable {
         if (msg.sender != INTERCHAIN_DB) {
-            revert InterchainModule__NotInterchainDB();
+            revert InterchainModule__NotInterchainDB(msg.sender);
         }
         if (destChainId == block.chainid) {
-            revert InterchainModule__SameChainId();
+            revert InterchainModule__SameChainId(block.chainid);
         }
         if (entry.srcChainId != block.chainid) {
             revert InterchainModule__IncorrectSourceChainId({chainId: entry.srcChainId});
@@ -48,7 +48,7 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
     function _verifyEntry(bytes memory encodedEntry) internal {
         InterchainEntry memory entry = abi.decode(encodedEntry, (InterchainEntry));
         if (entry.srcChainId == block.chainid) {
-            revert InterchainModule__SameChainId();
+            revert InterchainModule__SameChainId(block.chainid);
         }
         IInterchainDB(INTERCHAIN_DB).verifyEntry(entry);
         emit EntryVerified(

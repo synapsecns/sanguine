@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 interface IExecutionFees {
-    error ExecutionFees__AlreadyRecorded();
+    error ExecutionFees__AlreadyRecorded(uint256 dstChainId, bytes32 transactionId, address executor);
     error ExecutionFees__ZeroAddress();
     error ExecutionFees__ZeroAmount();
 

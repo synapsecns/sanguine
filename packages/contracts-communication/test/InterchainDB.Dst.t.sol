@@ -191,8 +191,8 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         );
     }
 
-    function expectSameChainId() internal {
-        vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__SameChainId.selector));
+    function expectSameChainId(uint256 chainId) internal {
+        vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__SameChainId.selector, chainId));
     }
 
     // ═════════════════════════════════════════ TESTS: VERIFYING ENTRIES ══════════════════════════════════════════════
@@ -294,7 +294,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
     function test_verifyEntry_revert_sameChainId() public {
         // Try to verify entry coming from the same chain
         InterchainEntry memory entry = getMockEntry(DST_CHAIN_ID, 0, writerF);
-        expectSameChainId();
+        expectSameChainId(DST_CHAIN_ID);
         verifyEntry(moduleA, entry);
     }
 
@@ -523,7 +523,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
 
     function test_readEntry_revert_sameChainId() public {
         InterchainEntry memory entry = getMockEntry(DST_CHAIN_ID, 0, writerF);
-        expectSameChainId();
+        expectSameChainId(DST_CHAIN_ID);
         icDB.readEntry(address(moduleA), entry);
     }
 }

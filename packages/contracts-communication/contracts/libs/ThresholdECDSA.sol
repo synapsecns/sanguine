@@ -20,7 +20,7 @@ library ThresholdECDSALib {
     error ThresholdECDSA__AlreadySigner(address account);
     error ThresholdECDSA__IncorrectSignaturesLength(uint256 length);
     error ThresholdECDSA__InvalidSignature(bytes signature);
-    error ThresholdECDSA__NotEnoughSignatures(uint256 threshold);
+    error ThresholdECDSA__NotEnoughSignatures(uint256 provided, uint256 threshold);
     error ThresholdECDSA__NotSigner(address account);
     error ThresholdECDSA__RecoveredSignersNotSorted();
     error ThresholdECDSA__ZeroAddress();
@@ -78,16 +78,13 @@ library ThresholdECDSALib {
     function verifySignedHash(ThresholdECDSA storage self, bytes32 hash, bytes calldata signatures) internal view {
         // Figure out the signaturesAmount of signatures provided
         uint256 signaturesAmount = signatures.length / SIGNATURE_LENGTH;
-        if (signaturesAmount == 0 || signaturesAmount * SIGNATURE_LENGTH != signatures.length) {
+        if (signaturesAmount * SIGNATURE_LENGTH != signatures.length) {
             revert ThresholdECDSA__IncorrectSignaturesLength(signatures.length);
         }
         // First, check that threshold is configured and enough signatures are provided
         uint256 threshold = self._threshold;
         if (threshold == 0) {
             revert ThresholdECDSA__ZeroThreshold();
-        }
-        if (signaturesAmount < threshold) {
-            revert ThresholdECDSA__NotEnoughSignatures(threshold);
         }
         uint256 offset = 0;
         uint256 validSignatures = 0;
@@ -110,7 +107,7 @@ library ThresholdECDSALib {
             offset += SIGNATURE_LENGTH;
         }
         if (validSignatures < threshold) {
-            revert ThresholdECDSA__NotEnoughSignatures(threshold);
+            revert ThresholdECDSA__NotEnoughSignatures(validSignatures, threshold);
         }
     }
 }

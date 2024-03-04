@@ -14,7 +14,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
 
     modifier onlyRemoteChainId(uint256 chainId) {
         if (chainId == block.chainid) {
-            revert InterchainDB__SameChainId();
+            revert InterchainDB__SameChainId(block.chainid);
         }
         _;
     }

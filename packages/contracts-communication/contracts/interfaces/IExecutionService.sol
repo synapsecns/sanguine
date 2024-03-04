@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 interface IExecutionService {
-    function executorEOA() external view returns (address);
     /// @notice Request the execution of an Interchain Transaction on a remote chain.
     /// Note: the off-chain actor needs to fetch the transaction payload from the InterchainClient
     /// event with the same transactionId, then execute the transaction on the remote chain:
@@ -24,6 +23,10 @@ interface IExecutionService {
         bytes memory options
     )
         external;
+
+    /// @notice Get the address of the EOA account that will be used to execute transactions on the
+    /// remote chains.
+    function executorEOA() external view returns (address);
 
     /// @notice Get the execution fee for executing an Interchain Transaction on a remote chain.
     /// @param dstChainId           The chain id of the destination chain.

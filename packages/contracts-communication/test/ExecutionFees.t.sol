@@ -408,14 +408,22 @@ contract ExecutionFeesTest is ExecutionFeesEvents, Test {
     function test_recordExecutor_revertExecutorAlreadyRecorded_same() public {
         addExecutionFee(executionFee, dstChainId, transactionId);
         recordExecutor(dstChainId, transactionId, executor);
-        vm.expectRevert(IExecutionFees.ExecutionFees__AlreadyRecorded.selector);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                IExecutionFees.ExecutionFees__AlreadyRecorded.selector, dstChainId, transactionId, executor
+            )
+        );
         recordExecutor(dstChainId, transactionId, executor);
     }
 
     function test_recordExecutor_revertExecutorAlreadyRecorded_different() public {
         addExecutionFee(executionFee, dstChainId, transactionId);
         recordExecutor(dstChainId, transactionId, executor);
-        vm.expectRevert(IExecutionFees.ExecutionFees__AlreadyRecorded.selector);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                IExecutionFees.ExecutionFees__AlreadyRecorded.selector, dstChainId, transactionId, executor
+            )
+        );
         recordExecutor(dstChainId, transactionId, executorA);
     }
 
