@@ -1,9 +1,8 @@
 import { useCallback } from 'react'
-import { useDispatch } from 'react-redux'
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import { getAccount } from '@wagmi/core'
 
-import { AppDispatch, RootState } from '@/store/store'
+import { RootState } from '@/store/store'
 import { FetchState, typeSearchInput, resetSearchState } from './actions'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import {
@@ -79,15 +78,15 @@ export const useFetchPortfolioBalances = (): {
   status: FetchState
   error: string
 } => {
-  const dispatch: AppDispatch = useDispatch()
+  const dispatch = useAppDispatch()
   const { address } = getAccount()
   const { balances, status, error } = usePortfolioState()
 
-  const fetch = () => {
+  const fetchPortfolioBalances = () => {
     if (address) {
       dispatch(fetchAndStorePortfolioBalances(address))
     }
   }
 
-  return { balances, fetchPortfolioBalances: fetch, status, error }
+  return { balances, fetchPortfolioBalances, status, error }
 }
