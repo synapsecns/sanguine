@@ -31,7 +31,7 @@ const SingleStakePage = () => {
   if (!pool) return null
 
   return (
-    <LandingPageWrapper>
+    <LandingPageWrapper nestedPage={true}>
       <StandardPageContainer
         connectedChainId={chain ? chain.id : 0}
         address={address}
