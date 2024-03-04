@@ -1,6 +1,7 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { Address } from '@wagmi/core'
-
+import { useAppDispatch } from '@/store/hooks'
+import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
 import { usePendingTxWrapper } from '@/utils/hooks/usePendingTxWrapper'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { getStakedBalance } from '@/utils/actions/getStakedBalance'
@@ -10,21 +11,17 @@ import { withdrawStake } from '@/utils/actions/withdrawStake'
 import { getTokenOnChain } from '@/utils/hooks/useTokenInfo'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import { claimStake } from '@/utils/actions/claimStake'
+import { formatBigIntToString } from '@/utils/bigint/format'
+import { stringToBigInt } from '@/utils/bigint/format'
 import { Token } from '@/utils/types'
-
+import { InteractiveInputRowButton } from '@/components/InteractiveInputRowButton'
 import ButtonLoadingDots from '@/components/buttons/ButtonLoadingDots'
 import InteractiveInputRow from '@/components/InteractiveInputRow'
 import Button from '@/components/ui/tailwind/Button'
-
-import StakeCardTitle from './StakeCardTitle'
-import { formatBigIntToString } from '@/utils/bigint/format'
-import { stringToBigInt } from '@/utils/bigint/format'
-import InfoSectionCard from '../pool/PoolInfoSection/InfoSectionCard'
-import Tabs from '@/components/ui/tailwind/Tabs'
 import TabItem from '@/components/ui/tailwind/TabItem'
-import { InteractiveInputRowButton } from '@/components/InteractiveInputRowButton'
-import { useAppDispatch } from '@/store/hooks'
-import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
+import Tabs from '@/components/ui/tailwind/Tabs'
+import InfoSectionCard from '../pool/PoolInfoSection/InfoSectionCard'
+import StakeCardTitle from './StakeCardTitle'
 
 interface StakeCardProps {
   address: string
