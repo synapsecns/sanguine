@@ -26,7 +26,7 @@ const BridgeExchangeRateInfo = () => {
       <section className="p-2 space-y-1 text-sm border rounded-sm border-[#504952] text-secondary font-light">
         <GasDropLabel />
         <Router />
-        <Fee />
+        {/* <Fee /> */}
         <Rebate />
         <Slippage />
       </section>
