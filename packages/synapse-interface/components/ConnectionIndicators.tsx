@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { useAccount } from 'wagmi'
 import { switchNetwork } from '@wagmi/core'
@@ -35,7 +35,7 @@ export const ConnectedIndicator = () => {
           className={`
             my-auto ml-auto mr-2 size-2
             bg-green-500 rounded-full
-            `}
+          `}
         />
         Connected
       </div>

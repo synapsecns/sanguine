@@ -38,6 +38,10 @@ export const getPoolApyData = async (
       yearlyAPRUnvested: 0,
     }
   }
+  const synPriceExists = prices?.synPrices?.synPrice
+  const synPriceDataPromise = synPriceExists ? prices?.synPrices : getSynPrices()
+
+
   const minichefAddress: Address = poolToken.miniChefAddress as Address
 
   const data = await readContracts({
@@ -77,22 +81,14 @@ export const getPoolApyData = async (
     ],
   })
 
-  const synapsePerSecondResult: bigint = data[0].result
-  const totalAllocPointsResult: bigint = data[1].result
-  const poolInfoResult: PoolInfoResult = data[2].result
-  const lpTokenBalanceResult: bigint = data[3].result ?? 0n
-  const lpTokenSupplyResult: bigint = data[4].result ?? 0n
-
-  const synPriceData = prices?.synPrices?.synPrice
-    ? prices.synPrices
-    : await getSynPrices()
+  const synPriceData = await synPriceDataPromise
   // const metisPrice = prices?.metisPrice ?? (await getMetisPrice())
 
-  const synapsePerSecond: bigint = synapsePerSecondResult ?? 0n
-  const totalAllocPoints: bigint = totalAllocPointsResult ?? 1n
-  const allocPoints: bigint = poolInfoResult?.[2] ?? 1n
-  const lpTokenBalance: bigint = lpTokenBalanceResult ?? 0n
-  const lpTokenSupply: bigint = lpTokenSupplyResult ?? 0n
+  const synapsePerSecond: bigint = data[0].result ?? 0n
+  const totalAllocPoints: bigint = data[1].result ?? 1n
+  const allocPoints: bigint = data[2].result?.[2] ?? 1n
+  const lpTokenBalance: bigint = data[3].result ?? 0n
+  const lpTokenSupply: bigint = data[4].result ?? 0n
 
   let rewardsPerWeek
   try {

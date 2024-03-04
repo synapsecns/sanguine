@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { memo, useEffect, useMemo, useState } from 'react'
+import { memo, useMemo } from 'react'
 import Link from 'next/link'
 import { Address, useNetwork } from 'wagmi'
 
