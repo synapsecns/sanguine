@@ -61,9 +61,10 @@ export const fetchPortfolioBalances = async (
         currentChainTokens = BRIDGABLE_TOKENS[chainId]
       }
 
-      const [tokenBalances] = await Promise.all([
-        getTokenBalances(address, currentChainTokens, currentChainId),
-      ])
+      const tokenBalances = await getTokenBalances(
+        address, currentChainTokens, currentChainId
+      )
+
       return { currentChainId, tokenBalances }
     })
 
