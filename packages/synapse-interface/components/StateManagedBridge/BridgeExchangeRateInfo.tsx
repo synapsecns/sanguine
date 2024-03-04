@@ -1,21 +1,18 @@
 import numeral from 'numeral'
-import { useMemo } from 'react'
-import {
-  formatBigIntToPercentString,
-  stringToBigInt,
-} from '@/utils/bigint/format'
-import { CHAINS_BY_ID } from '@constants/chains'
-import * as CHAINS from '@constants/chains/master'
-import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
 import Image from 'next/image'
-import { formatBigIntToString } from '@/utils/bigint/format'
+import { useMemo } from 'react'
+import { useAppSelector } from '@/store/hooks'
+import { useBridgeState } from '@/slices/bridge/hooks'
+import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
 import {
   ELIGIBILITY_DEFAULT_TEXT,
   useStipEligibility,
 } from '@/utils/hooks/useStipEligibility'
-import { useBridgeState } from '@/slices/bridge/hooks'
+import { formatBigIntToString } from '@/utils/bigint/format'
+import { formatBigIntToPercentString } from '@/utils/bigint/format'
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
-import { useAppSelector } from '@/store/hooks'
+import { CHAINS_BY_ID } from '@constants/chains'
+import * as CHAINS from '@constants/chains/master'
 
 const MAX_ARB_REBATE_PER_ADDRESS = 2000
 
