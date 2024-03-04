@@ -7,6 +7,7 @@ import { Address, useAccount } from 'wagmi'
 import { arbitrum } from 'viem/chains'
 import arbitrumImg from '@assets/chains/arbitrum.svg'
 import { useAppSelector } from '@/store/hooks'
+import { usePriceDataState } from '@/slices/price/hooks'
 import { useCloseOutsideRef } from '@/utils/hooks/useCloseOutsideRef'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 import { formatBigIntToString } from '@/utils/bigint/format'
@@ -17,6 +18,7 @@ import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
 import { HoverContent } from '@/components/Portfolio/components/HoverContent'
 import { ArrowUpRightIcon } from '@/components/icons/ArrowUpRightIcon'
 import { TransactionArrow } from '@/components/icons/TransactionArrow'
+
 
 
 /** ARB Token */
@@ -36,7 +38,7 @@ const formatValueWithCommas = (value: string | number) => {
 }
 
 export const AirdropRewards = () => {
-  const { arbPrice } = useAppSelector((state) => state.priceData)
+  const { arbPrice } = usePriceDataState()
 
   const { cumulativeRewards, parsedCumulativeRewards, transactions } =
     useAppSelector((state) => state.feeAndRebate)

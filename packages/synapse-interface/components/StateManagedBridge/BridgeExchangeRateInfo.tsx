@@ -18,8 +18,9 @@ import {
   useStipEligibility,
 } from '@/utils/hooks/useStipEligibility'
 import { useBridgeState } from '@/slices/bridge/hooks'
-
+import { usePriceDataState } from '@/slices/price/hooks'
 import { useAppSelector } from '@/store/hooks'
+
 
 const MAX_ARB_REBATE_PER_ADDRESS = 2000
 
@@ -115,7 +116,7 @@ const RouteEligibility = () => {
 
 const RebateText = () => {
   const { rebate } = useStipEligibility()
-  const { arbPrice } = useAppSelector((state) => state.priceData)
+  const { arbPrice } = usePriceDataState()
   const arbInDollars = rebate * arbPrice
 
   return (

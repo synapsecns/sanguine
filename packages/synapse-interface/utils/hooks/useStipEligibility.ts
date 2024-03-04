@@ -4,6 +4,7 @@ import type { Token } from '@/utils/types'
 import { ARBITRUM, AVALANCHE, ETH } from '@/constants/chains/master'
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { useBridgeState } from '@/slices/bridge/hooks'
+import { usePriceDataState } from '@/slices/price/hooks'
 import { useAppSelector } from '@/store/hooks'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { getUnderlyingBridgeTokens } from '@/utils/tokens/getUnderlyingBridgeTokens'
@@ -40,7 +41,7 @@ export const useStipEligibility = () => {
     usdtePrice,
     musdcPrice,
     daiePrice,
-  } = useAppSelector((state) => state.priceData)
+  } = usePriceDataState()
 
   const prices = {
     ETH: ethPrice,

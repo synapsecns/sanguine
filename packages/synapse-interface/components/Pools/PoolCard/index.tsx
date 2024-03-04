@@ -10,8 +10,8 @@ import { getSinglePoolData } from '@utils/actions/getPoolData'
 import { getPoolApyData } from '@utils/actions/getPoolApyData'
 import { getStakedBalance } from '@/utils/actions/getStakedBalance'
 
+import { usePriceDataState } from '@/slices/price/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
-import { useAppSelector } from '@/store/hooks'
 
 import Card from '@tw/Card'
 import { LoadingHelix } from '@tw/LoadingHelix'
@@ -22,6 +22,7 @@ import { PoolHeader } from './PoolHeader'
 import { PoolCardBody } from './PoolCardBody'
 
 
+
 const PoolCard = memo(({ pool, address }: { pool: Token; address: string }) => {
   const [poolData, setPoolData] = useState(undefined)
   const [poolApyData, setPoolApyData] = useState(undefined)
@@ -30,9 +31,7 @@ const PoolCard = memo(({ pool, address }: { pool: Token; address: string }) => {
     reward: 0n,
   })
   const { isDisconnected } = useAccount()
-  const { synPrices, ethPrice, avaxPrice, metisPrice } = useAppSelector(
-    (state) => state.priceData
-  )
+  const { synPrices, ethPrice, avaxPrice, metisPrice } = usePriceDataState()
 
   const prices = { synPrices, ethPrice, avaxPrice, metisPrice }
 

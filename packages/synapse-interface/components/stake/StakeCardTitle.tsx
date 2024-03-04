@@ -6,7 +6,8 @@ import type { Token } from '@/utils/types'
 import { getPoolApyData } from '@/utils/actions/getPoolApyData'
 import ApyTooltip from '@/components/ApyTooltip'
 import { hasAllPrices } from '@/utils/hasAllPrices'
-import { useAppSelector } from '@/store/hooks'
+
+import { usePriceDataState } from '@/slices/price/hooks'
 
 const StakingPoolTokens = ({ poolTokens }: { poolTokens: Token[] }) => {
   if (poolTokens)
@@ -37,9 +38,7 @@ const StakeCardTitle = ({
   lpTokenBalance,
 }: StakeCardTitleProps) => {
   const [poolApyData, setPoolApyData] = useState<any>(null)
-  const { synPrices, ethPrice, avaxPrice, metisPrice } = useAppSelector(
-    (state) => state.priceData
-  )
+  const { synPrices, ethPrice, avaxPrice, metisPrice } = usePriceDataState()
 
   const prices = { synPrices, ethPrice, avaxPrice, metisPrice }
 
