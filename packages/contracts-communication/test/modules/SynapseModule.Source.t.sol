@@ -35,6 +35,7 @@ contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleE
         srcWriter: bytes32(uint256(3)),
         dataHash: bytes32(uint256(4))
     });
+    bytes public mockModuleData = "";
 
     function setUp() public {
         vm.chainId(SRC_CHAIN_ID);
@@ -63,10 +64,10 @@ contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleE
 
     function encodeAndHashEntry(InterchainEntry memory entry)
         internal
-        pure
+        view
         returns (bytes memory encodedEntry, bytes32 ethSignedHash)
     {
-        encodedEntry = abi.encode(entry);
+        encodedEntry = abi.encode(entry, mockModuleData);
         ethSignedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(encodedEntry)));
     }
 
