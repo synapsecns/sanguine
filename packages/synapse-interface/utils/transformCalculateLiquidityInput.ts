@@ -28,7 +28,7 @@ export const transformCalculateLiquidityInput = (
     pool.poolTokens,
     (t) => t.symbol === WETH.symbol
   )
-  const poolHasWeth: boolean = wethIndex > 0
+  const poolHasWeth: boolean = wethIndex !== -1
 
   const wethAddress = poolHasWeth
     ? pool.poolTokens[wethIndex].addresses[chainId]
