@@ -11,6 +11,7 @@ const {
 } = require('./utils/deployments.js')
 const { loadEnv } = require('./utils/env.js')
 const { forgeScript } = require('./utils/forge.js')
+const { logInfo } = require('./utils/logger.js')
 const {
   parseCommandLineArgs,
   isBroadcasted,
@@ -50,6 +51,10 @@ const currentTimestamp = Date.now()
 forgeScript(scriptFN, forgeOptions)
 
 const newDeployments = getNewDeployments(chainName, currentTimestamp)
+if (newDeployments.length === 0) {
+  logInfo('No new deployments found')
+  process.exit(0)
+}
 const newReceipts = getNewDeploymentReceipts(chainName, scriptFN)
 newDeployments.forEach((contractAlias) => {
   const artifact = getConfirmedFreshDeployment(chainName, contractAlias)
