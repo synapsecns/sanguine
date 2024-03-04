@@ -24,7 +24,7 @@ export const SwapInputContainer = () => {
       chainId={swapChainId}
       token={swapFromToken}
       value={swapFromValue}
-      initialStateValue={null} // initialState.fromValue
+      initialStateValue={null}
       dispatchUpdateFunc={(val) => dispatch(updateSwapFromValue(val))}
       chainSelector={
         <ChainSelector
