@@ -1,9 +1,8 @@
 import _ from 'lodash'
 
+import { PAUSED_TO_CHAIN_IDS } from '@/constants/chains'
 
 import type { Token } from '@/utils/types'
-
-import { PAUSED_TO_CHAIN_IDS } from '@/constants/chains'
 import { findTokenByRouteSymbol } from '@/utils/tokens/findTokenByRouteSymbol'
 import { flattenPausedTokens } from '@/utils/tokens/flattenPausedTokens'
 import { getSymbol } from '@/utils/route/getSymbol'
