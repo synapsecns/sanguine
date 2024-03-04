@@ -1,5 +1,5 @@
 import { erc20ABI, multicall } from '@wagmi/core'
-import { Token, PoolData } from '@types'
+import type { Token, PoolData } from '@types'
 import { formatBigIntToString } from '@utils/bigint/format'
 import { getPoolTokenInfoArr, getTokenBalanceInfo } from '@utils/poolDataFuncs'
 import { getEthPrice, getAvaxPrice } from '@utils/actions/getPrices'

@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import { useCallback, useMemo } from 'react'
 import numeral from 'numeral'
 import Image from 'next/image'
@@ -8,13 +9,10 @@ import {
   setFromToken,
   setToToken,
 } from '@/slices/bridge/reducer'
-import { Chain, Token } from '@/utils/types'
+import type { Chain, Token } from '@/utils/types'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 
-function isObject(object): boolean {
-  return typeof object === 'object' && object !== null
-}
 
 export const TransactionPayloadDetail = ({
   chain,
@@ -53,41 +51,37 @@ export const TransactionPayloadDetail = ({
 
   const tokenDecimals = useMemo(() => {
     if (token && chain) {
-      const storedAsObject: boolean = isObject(token?.decimals)
+      const storedAsObject: boolean = _.isObject(token?.decimals)
       return storedAsObject ? token.decimals[chain?.id] : token.decimals
     }
     return null
   }, [tokenAmount, token, chain])
 
-  const buttonStyle =
-    'flex gap-1.5 pl-1.5 pr-2.5 py-0.5 -my-0.5 items-center cursor-pointer rounded border border-transparent hover:border-surface hover:bg-tint active:opacity-70 w-fit'
 
   return (
     <div data-test-id="transaction-payload-detail" className={className}>
       {chain && showChain && (
-        <div
+        <TransactionPayloadDetailButton
           data-test-id="transaction-payload-network"
           onClick={handleSelectChainCallback}
-          className={buttonStyle}
         >
           <Image
             src={chain.chainImg}
-            className="w-4 h-4 pt-0.5 ml-0.5"
+            className="w-4 h-4  mr-1.5"
             alt={`${chain.name} icon`}
           />
-          {chain.name}
-        </div>
+          <span className={tokenAmount ? "text-xs py-0.5" : "" }>{chain.name}</span>
+        </TransactionPayloadDetailButton>
       )}
 
       {token && tokenAmount && (
-        <div
+        <TransactionPayloadDetailButton
           data-test-id="transaction-payload-token"
           onClick={handleSelectTokenCallback}
-          className={buttonStyle}
         >
           <Image
             src={token?.icon}
-            className="items-center w-5 h-5 mt-px"
+            className="w-4 h-4 mt-px mr-1.5"
             alt={`${token?.name} icon`}
           />
           {typeof tokenAmount === 'string' && tokenDecimals ? (
@@ -106,8 +100,24 @@ export const TransactionPayloadDetail = ({
             <span>…</span>
           )}
           <span className="mt-0.5 text-sm">{token?.symbol}</span>
-        </div>
+        </TransactionPayloadDetailButton>
       )}
+
+    </div>
+  )
+}
+
+
+function TransactionPayloadDetailButton({ children, ...props}) {
+  return (
+    <div
+      {...props}
+      className={`
+        flex flex-row px-1 items-center cursor-pointer rounded-sm w-fit
+        hover:bg-slate-400/20 active:opacity-60 space-x-1
+      `}
+    >
+      {children}
     </div>
   )
 }

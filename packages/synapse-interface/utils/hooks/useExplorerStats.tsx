@@ -1,4 +1,3 @@
-import useSWR from 'swr'
 import numeral from 'numeral'
 import _ from 'lodash'
 

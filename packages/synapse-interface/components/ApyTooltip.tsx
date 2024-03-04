@@ -72,7 +72,7 @@ export default function ApyTooltip({
         )
       }
     >
-      <InformationCircleIcon className="w-4 h-4 ml-1 cursor-pointer text-[#252027] fill-bgLighter" />
+      <InformationCircleIcon className="w-4 h-4 ml-1 cursor-pointer text-white/50 hover:text-white/100 fill-transparent" />
     </Tooltip>
   )
 }

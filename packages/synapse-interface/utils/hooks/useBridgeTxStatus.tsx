@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useSynapseContext } from '@/utils/providers/SynapseProvider'
+import { useSynapseContext } from '@/contexts/SynapseProvider'
 
 interface UseBridgeTxStatusProps {
   originChainId: number

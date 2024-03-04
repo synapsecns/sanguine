@@ -2,21 +2,26 @@ import _ from 'lodash'
 
 import toast from 'react-hot-toast'
 
-import { subtractSlippageBigInt } from '@utils/slippage'
+import { zeroAddress } from 'viem'
+
+import type { Token } from '@types'
+
+import { subtractSlippageBigInt } from '@/utils/slippage'
 import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
+import { approveToken } from '@/utils/actions/approveToken'
+import { txErrorHandler } from '@/utils/txErrorHandler'
+
+
+import { CHAINS_BY_ID } from '@/constants/chains'
+import { WETHE, WETH } from '@/constants/tokens/bridgeable'
+import { AVWETH } from '@/constants/tokens/auxilliary'
+
+import { swapPoolCalculateTokenAmount } from '@/actions/swapPoolCalculateTokenAmount'
+import { swapPoolAddLiquidity } from '@/actions/swapPoolAddLiquidity'
+import { segmentAnalyticsEvent } from '@/contexts/segmentAnalyticsEvent'
 
 import ExplorerToastLink from '@components/ExplorerToastLink'
 
-import { CHAINS_BY_ID } from '@/constants/chains'
-import { txErrorHandler } from '@utils/txErrorHandler'
-import { WETHE, WETH } from '@constants/tokens/bridgeable'
-import { AVWETH } from '@/constants/tokens/auxilliary'
-import { approveToken } from '@utils/approveToken'
-import { Token } from '@types'
-import { zeroAddress } from 'viem'
-import { swapPoolCalculateTokenAmount } from '@/actions/swapPoolCalculateTokenAmount'
-import { swapPoolAddLiquidity } from '@/actions/swapPoolAddLiquidity'
-import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 export const approve = async (
   pool: Token,

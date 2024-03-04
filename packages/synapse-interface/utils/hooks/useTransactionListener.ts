@@ -9,7 +9,7 @@ import {
 } from '@slices/transactions/actions'
 import { PortfolioState } from '@/slices/portfolio/reducer'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
-import { getValidAddress } from '@/utils/isValidAddress'
+import { getValidAddress } from '@/utils/address/isValidAddress'
 import { useLazyGetUserHistoricalActivityQuery } from '@/slices/api/generated'
 import { useTransactionsState } from '@/slices/transactions/hooks'
 import { TransactionsState } from '@/slices/transactions/reducer'

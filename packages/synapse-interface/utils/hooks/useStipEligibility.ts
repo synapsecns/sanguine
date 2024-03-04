@@ -1,13 +1,14 @@
 import _ from 'lodash'
 
-import { Token } from '../types'
+import type { Token } from '@/utils/types'
 import { ARBITRUM, AVALANCHE, ETH } from '@/constants/chains/master'
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { stringToBigInt } from '@/utils/bigint/format'
-import { getUnderlyingBridgeTokens } from '@/utils/getUnderlyingBridgeTokens'
+import { usePriceDataState } from '@/slices/price/hooks'
 import { useAppSelector } from '@/store/hooks'
-import { findTokenByAddressAndChain } from '@/utils/findTokenByAddressAndChainId'
+import { stringToBigInt } from '@/utils/bigint/format'
+import { getUnderlyingBridgeTokens } from '@/utils/tokens/getUnderlyingBridgeTokens'
+import { findTokenByAddressAndChain } from '@/utils/tokens/findTokenByAddressAndChainId'
 
 export enum BridgeModules {
   SYNAPSE_RFQ = 'SynapseRFQ',
@@ -40,7 +41,7 @@ export const useStipEligibility = () => {
     usdtePrice,
     musdcPrice,
     daiePrice,
-  } = useAppSelector((state) => state.priceData)
+  } = usePriceDataState()
 
   const prices = {
     ETH: ethPrice,

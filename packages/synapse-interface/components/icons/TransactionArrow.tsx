@@ -1,4 +1,4 @@
-export default function TransactionArrow(props) {
+export function TransactionArrow(props) {
   return (
     <svg
       width="16px"
@@ -9,8 +9,7 @@ export default function TransactionArrow(props) {
     >
       <path
         d="M 0 0 L 16 8 L 0 16"
-        fill="var(--surface)"
-        stroke="var(--separator)"
+
         strokeWidth="1"
         vectorEffect="non-scaling-stroke"
       />

@@ -1,46 +1,42 @@
 import _ from 'lodash'
 
-import { useEffect, useRef, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import Fuse from 'fuse.js'
 
-import { useKeyPress } from '@hooks/useKeyPress'
-import SlideSearchBox from '@pages/bridge/SlideSearchBox'
-import { Token } from '@/utils/types'
+import type { Token } from '@/utils/types'
+import { sortByPriorityRankAndBalance } from '@/utils/helpers/sortByPriorityRankAndBalance'
+import { getRoutePossibilities } from '@/utils/route/bridge/generateRoutePossibilities'
+import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
+
 import { setFromToken } from '@/slices/bridge/reducer'
 import { setShowFromTokenListOverlay } from '@/slices/bridgeDisplaySlice'
-import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { segmentAnalyticsEvent } from '@/contexts/segmentAnalyticsEvent'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import SelectSpecificTokenButton from './components/SelectSpecificTokenButton'
-import { getRoutePossibilities } from '@/utils/routeMaker/generateRoutePossibilities'
-
-import { hasBalance } from './helpers/sortByBalance'
-import { sortByPriorityRank } from './helpers/sortByPriorityRank'
 import { CHAINS_BY_ID } from '@/constants/chains'
-import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
-import { CloseButton } from './components/CloseButton'
-import { SearchResults } from './components/SearchResults'
+import { getTokenFuseOptions } from '@/constants/fuseOptions'
+
+import { SearchResultsContainer } from '@/components/bridgeSwap/SearchResultsContainer'
+import { SearchOverlayContent } from '@/components/bridgeSwap/SearchOverlayContent'
+import { SelectSpecificTokenButton } from './components/SelectSpecificTokenButton'
+
 
 export const FromTokenListOverlay = () => {
-  const [currentIdx, setCurrentIdx] = useState(-1)
-  const [searchStr, setSearchStr] = useState('')
   const dispatch = useDispatch()
-  const overlayRef = useRef(null)
 
   const { fromTokens, fromChainId, fromToken } = useBridgeState()
   const portfolioBalances = usePortfolioBalances()
 
-  let possibleTokens = sortByPriorityRank(fromTokens)
+  const common = {
+    chainId: fromChainId,
+    portfolioBalances: portfolioBalances
+  }
 
-  possibleTokens = [
-    ...possibleTokens.filter((t) =>
-      hasBalance(t, fromChainId, portfolioBalances)
-    ),
-    ...possibleTokens.filter(
-      (t) => !hasBalance(t, fromChainId, portfolioBalances)
-    ),
-  ]
+  let possibleTokens = sortByPriorityRankAndBalance({
+    tokens: fromTokens,
+    source: 'possibleTokens',
+    ...common
+  })
 
   const { fromTokens: allFromChainTokens } = getRoutePossibilities({
     fromChainId,
@@ -49,18 +45,12 @@ export const FromTokenListOverlay = () => {
     toToken: null,
   })
 
-  let remainingTokens = sortByPriorityRank(
-    _.difference(allFromChainTokens, fromTokens)
-  )
+  let remainingTokens = sortByPriorityRankAndBalance({
+    tokens: _.difference(allFromChainTokens, fromTokens),
+    source: 'remainingTokens',
+    ...common
+  })
 
-  remainingTokens = [
-    ...remainingTokens.filter((t) =>
-      hasBalance(t, fromChainId, portfolioBalances)
-    ),
-    ...remainingTokens.filter(
-      (t) => !hasBalance(t, fromChainId, portfolioBalances)
-    ),
-  ]
 
   const { fromTokens: allTokens } = getRoutePossibilities({
     fromChainId: null,
@@ -69,96 +59,39 @@ export const FromTokenListOverlay = () => {
     toToken: null,
   })
 
-  let allOtherFromTokens = sortByPriorityRank(
-    _.difference(allTokens, allFromChainTokens)
-  )
-
-  const possibleTokensWithSource = possibleTokens.map((token) => ({
-    ...token,
-    source: 'possibleTokens',
-  }))
-  const remainingTokensWithSource = remainingTokens.map((token) => ({
-    ...token,
-    source: 'remainingTokens',
-  }))
-  const allOtherFromTokensWithSource = allOtherFromTokens.map((token) => ({
-    ...token,
+  let allOtherFromTokens = sortByPriorityRankAndBalance({
+    tokens: _.difference(allTokens, allFromChainTokens),
     source: 'allOtherFromTokens',
-  }))
+    ...common
+  })
 
   const masterList = [
-    ...possibleTokensWithSource,
-    ...remainingTokensWithSource,
-    ...allOtherFromTokensWithSource,
+    ...possibleTokens,
+    ...remainingTokens,
+    ...allOtherFromTokens,
   ]
 
-  const fuseOptions = {
-    ignoreLocation: true,
-    includeScore: true,
-    threshold: 0.0,
-    keys: [
-      {
-        name: 'symbol',
-        weight: 2,
-      },
-      'routeSymbol',
-      `addresses.${fromChainId}`,
-      'name',
-    ],
+  function onCloseOverlay() {
+    dispatch(setShowFromTokenListOverlay(false))
   }
 
-  const fuse = new Fuse(masterList, fuseOptions)
+  const {
+    overlayRef,
+    onSearch,
+    currentIdx,
+    searchStr,
+    onClose,
+  } = useOverlaySearch(masterList.length, onCloseOverlay)
+
+  const fuse = new Fuse(masterList, getTokenFuseOptions(fromChainId))
 
   if (searchStr?.length > 0) {
     const results = fuse.search(searchStr).map((i) => i.item)
     possibleTokens = results.filter((item) => item.source === 'possibleTokens')
-    remainingTokens = results.filter(
-      (item) => item.source === 'remainingTokens'
-    )
-    allOtherFromTokens = results.filter(
-      (item) => item.source === 'allOtherFromTokens'
-    )
+    remainingTokens = results.filter((item) => item.source === 'remainingTokens')
+    allOtherFromTokens = results.filter((item) => item.source === 'allOtherFromTokens')
   }
 
-  const escPressed = useKeyPress('Escape')
-  const arrowUp = useKeyPress('ArrowUp')
-  const arrowDown = useKeyPress('ArrowDown')
-
-  function onClose() {
-    setCurrentIdx(-1)
-    setSearchStr('')
-    dispatch(setShowFromTokenListOverlay(false))
-  }
-
-  function escFunc() {
-    if (escPressed) {
-      onClose()
-    }
-  }
-
-  function arrowDownFunc() {
-    const nextIdx = currentIdx + 1
-    if (arrowDown && nextIdx < masterList.length) {
-      setCurrentIdx(nextIdx)
-    }
-  }
-
-  function arrowUpFunc() {
-    const nextIdx = currentIdx - 1
-    if (arrowUp && -1 < nextIdx) {
-      setCurrentIdx(nextIdx)
-    }
-  }
-
-  function onSearch(str: string) {
-    setSearchStr(str)
-    setCurrentIdx(-1)
-  }
-
-  useEffect(escFunc, [escPressed])
-  useEffect(arrowDownFunc, [arrowDown])
-  useEffect(arrowUpFunc, [arrowUp])
-  useCloseOnOutsideClick(overlayRef, onClose)
 
   const handleSetFromToken = (oldToken: Token, newToken: Token) => {
     const eventTitle = '[Bridge User Action] Sets new fromToken'
@@ -166,106 +99,84 @@ export const FromTokenListOverlay = () => {
       previousFromToken: oldToken?.symbol,
       newFromToken: newToken?.symbol,
     }
-    segmentAnalyticsEvent(eventTitle, eventData)
+
     dispatch(setFromToken(newToken))
     onClose()
+
+    segmentAnalyticsEvent(eventTitle, eventData)
   }
 
   return (
-    <div
-      ref={overlayRef}
-      data-test-id="token-slide-over"
-      className="max-h-full pb-4 overflow-auto scrollbar-hide"
+    <SearchOverlayContent
+      overlayRef={overlayRef}
+      searchStr={searchStr}
+      onSearch={onSearch}
+      onClose={onClose}
+      type="token"
     >
-      <div className="z-10 w-full px-2 ">
-        <div className="relative flex items-center mt-2 mb-2 font-medium">
-          <SlideSearchBox
-            placeholder="Filter by symbol, contract, or name..."
-            searchStr={searchStr}
-            onSearch={onSearch}
-          />
-          <CloseButton onClick={onClose} />
-        </div>
-      </div>
-      {possibleTokens && possibleTokens.length > 0 && (
-        <>
-          <div className="px-2 pt-2 pb-4 text-sm text-primaryTextColor ">
-            Send…
-          </div>
-          <div className="px-2 pb-2 md:px-2 ">
-            {possibleTokens.map((token, idx) => {
-              return (
-                <SelectSpecificTokenButton
-                  isOrigin={true}
-                  key={idx}
-                  token={token}
-                  selectedToken={fromToken}
-                  active={idx === currentIdx}
-                  showAllChains={false}
-                  onClick={() => {
-                    if (token === fromToken) {
-                      onClose()
-                    } else {
-                      handleSetFromToken(fromToken, token)
-                    }
-                  }}
-                />
-              )
-            })}
-          </div>
-        </>
+      {possibleTokens?.length > 0 && (
+        <SearchResultsContainer label="Send...">
+          {possibleTokens.map((token, idx) =>
+            <SelectSpecificTokenButton
+              isOrigin={true}
+              key={idx}
+              token={token}
+              selectedToken={fromToken}
+              active={idx === currentIdx}
+              showAllChains={false}
+              onClick={() => {
+                if (token === fromToken) {
+                  onClose()
+                } else {
+                  handleSetFromToken(fromToken, token)
+                }
+              }}
+            />
+          )}
+        </SearchResultsContainer>
       )}
-      {remainingTokens && remainingTokens.length > 0 && (
-        <>
-          <div className="px-2 pb-4 text-sm text-primaryTextColor">
-            {fromChainId
+      {remainingTokens?.length > 0 && (
+        <SearchResultsContainer
+          label={
+            fromChainId
               ? `More on ${CHAINS_BY_ID[fromChainId]?.name}`
-              : 'All sendable tokens'}
-          </div>
-          <div className="px-2 pb-2 md:px-2">
-            {remainingTokens.map((token, idx) => {
-              return (
-                <SelectSpecificTokenButton
-                  isOrigin={true}
-                  key={idx}
-                  token={token}
-                  selectedToken={fromToken}
-                  active={idx + possibleTokens.length === currentIdx}
-                  showAllChains={false}
-                  onClick={() => handleSetFromToken(fromToken, token)}
-                />
-              )
-            })}
-          </div>
-        </>
+              : 'All sendable tokens'
+          }
+        >
+          {remainingTokens.map((token, idx) =>
+            <SelectSpecificTokenButton
+              isOrigin={true}
+              key={idx}
+              token={token}
+              selectedToken={fromToken}
+              active={idx + possibleTokens.length === currentIdx}
+              showAllChains={false}
+              onClick={() => handleSetFromToken(fromToken, token)}
+            />
+          )}
+        </SearchResultsContainer>
       )}
-      {allOtherFromTokens && allOtherFromTokens.length > 0 && (
-        <>
-          <div className="px-2 pb-4 text-sm text-primaryTextColor ">
-            All sendable tokens
-          </div>
-          <div className="px-2 pb-2 md:px-2">
-            {allOtherFromTokens.map((token, idx) => {
-              return (
-                <SelectSpecificTokenButton
-                  isOrigin={true}
-                  key={idx}
-                  token={token}
-                  selectedToken={fromToken}
-                  active={
-                    idx + possibleTokens.length + remainingTokens.length ===
-                    currentIdx
-                  }
-                  showAllChains={true}
-                  onClick={() => handleSetFromToken(fromToken, token)}
-                  alternateBackground={true}
-                />
-              )
-            })}
-          </div>
-        </>
+      {allOtherFromTokens?.length > 0 && (
+        <SearchResultsContainer label="All sendable tokens">
+          {allOtherFromTokens.map((token, idx) =>
+            <SelectSpecificTokenButton
+              isOrigin={true}
+              key={idx}
+              token={token}
+              selectedToken={fromToken}
+              active={
+                idx + possibleTokens.length + remainingTokens.length ===
+                currentIdx
+              }
+              showAllChains={true}
+              onClick={() => handleSetFromToken(fromToken, token)}
+              alternateBackground={true}
+            />
+          )}
+        </SearchResultsContainer>
       )}
-      <SearchResults searchStr={searchStr} type="token" />
-    </div>
+    </SearchOverlayContent>
   )
 }
+
+

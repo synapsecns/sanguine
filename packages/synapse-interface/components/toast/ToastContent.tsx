@@ -21,10 +21,10 @@ export default function ToastContent({ toastData, icon, message }) {
   return (
     <div
       className={`
-        flex rounded items-center
+        flex rounded-md items-center
         min-w-[300px]
         px-2 pt-1 pb-2
-        bg-bgBase
+        bg-slate-900/10 backdrop-blur-2xl
         text-white
         border ${borderColor}
       `}

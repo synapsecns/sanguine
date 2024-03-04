@@ -1,5 +1,5 @@
-import { sortByTokenBalance } from '../sortTokens'
-import { Chain, Token } from '../types'
+import { sortByTokenBalance } from '@/utils/tokens/sortTokens'
+import type { Chain, Token } from '@/utils/types'
 import { BRIDGABLE_TOKENS, POOLS_BY_CHAIN } from '@/constants/tokens'
 import { FetchState } from '@/slices/portfolio/actions'
 
@@ -61,9 +61,10 @@ export const fetchPortfolioBalances = async (
         currentChainTokens = BRIDGABLE_TOKENS[chainId]
       }
 
-      const [tokenBalances] = await Promise.all([
-        getTokenBalances(address, currentChainTokens, currentChainId),
-      ])
+      const tokenBalances = await getTokenBalances(
+        address, currentChainTokens, currentChainId
+      )
+
       return { currentChainId, tokenBalances }
     })
 

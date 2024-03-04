@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import {
-  ChevronDoubleDownIcon,
-  ChevronDoubleUpIcon,
-} from '@heroicons/react/outline'
-
+import { ChevronUpIcon } from '@heroicons/react/outline'
+import Card from '@tw/Card'
+import { getNetworkShadow } from '@/styles/chains'
+import { CHAINS_BY_ID } from '@/constants/chains'
+import { Transition } from '@headlessui/react'
+import { PORTFOLIO_ACCORDIAN_TRANSITION_PROPS } from '@/styles/transitions'
 type PortfolioAccordionProps = {
   header: React.ReactNode
   expandedProps: React.ReactNode
@@ -27,42 +28,46 @@ export const PortfolioAccordion = ({
   selectedFromChainId,
   hasNoTokenBalance,
 }: PortfolioAccordionProps) => {
-  const [isHovered, setIsHovered] = useState<boolean>(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const handleToggle = () => setIsExpanded((prevExpanded) => !prevExpanded)
 
   useEffect(() => {
     if (!hasNoTokenBalance) {
-      portfolioChainId === selectedFromChainId
-        ? setIsExpanded(true)
-        : setIsExpanded(false)
+      setIsExpanded(portfolioChainId === selectedFromChainId)
     }
   }, [portfolioChainId, selectedFromChainId, hasNoTokenBalance])
 
   return (
-    <div
+    <Card
       id="portfolio-accordion"
-      className={
-        isExpanded ? 'shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]' : 'shadow-none'
-      }
+      className={`
+        transition-all duration-75
+        ${getNetworkShadow(CHAINS_BY_ID[portfolioChainId].color)}
+        ${isExpanded
+            ?
+              portfolioChainId === selectedFromChainId
+                ? "shadow-md hover:shadow-md hover:!shadow-opacity-80"
+                : "shadow-sm hover:shadow-md"
+            : 'shadow-none hover:shadow-sm'}
+        !p-0 !from-transparent !to-transparent rounded-lg
+      `}
     >
       <div
         id="portfolio-accordion-header"
         className={`
+          group
           flex items-center justify-between border border-transparent pr-2 select-none
-          hover:border-[#3D3D5C] hover:bg-[#272731]
-          active:border-[#3D3D5C] active:opacity-[67%]
+           hover:bg-bgBase/20 active:opacity-[67%]
+           transition-all
           ${
             isExpanded
-              ? 'bg-tint rounded-t-md hover:rounded-t-md'
-              : 'bg-transparent rounded-md'
+              ? 'bg-bgBase/10 rounded-t-lg hover:rounded-t-lg'
+              : 'bg-transparent rounded-lg'
           }
         `}
       >
         <div
           onClick={handleToggle}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
           className="flex-1"
         >
           <div
@@ -77,40 +82,48 @@ export const PortfolioAccordion = ({
         <AccordionIcon
           isExpanded={isExpanded}
           onClick={handleToggle}
-          isHovered={isHovered}
         />
       </div>
-      <div id="portfolio-accordion-contents" className="flex flex-col">
-        {isExpanded && <React.Fragment>{children}</React.Fragment>}
-      </div>
-    </div>
+      <Transition
+        {...PORTFOLIO_ACCORDIAN_TRANSITION_PROPS}
+        show={isExpanded}
+      >
+        <div
+          id="portfolio-accordion-contents"
+          key={portfolioChainId}
+          className="flex flex-col"
+        >
+          {children}
+        </div>
+      </Transition>
+    </Card>
   )
 }
 
 const AccordionIcon = ({
   isExpanded,
   onClick,
-  isHovered,
 }: {
   isExpanded: boolean
   onClick: () => void
-  isHovered: boolean
 }) => {
   return (
     <div
       id="accordion-icon"
       onClick={onClick}
       className={`
-        p-1 mx-2 border border-surface rounded-full
-        cursor-pointer hover:border-transparent active:border-transparent
-        ${isHovered ? 'border-transparent' : 'border-surface'}
+        p-1 mx-2 border border-transparent rounded-full
+        cursor-pointer
+        hover:bg-bgBase/10
+        hover:border-white/10 active:border-white/80 transition-all
       `}
     >
-      {isExpanded ? (
-        <ChevronDoubleUpIcon className="w-4 h-4 stroke-[3] stroke-separator" />
-      ) : (
-        <ChevronDoubleDownIcon className="w-4 h-4 stroke-[3] stroke-separator" />
-      )}
+      <ChevronUpIcon
+        className={`
+          w-4 h-4 stroke-[3] stroke-white/20 group-hover:stroke-white/70 transition-all
+          ${isExpanded ? 'rotate-180' : 'rotate-0'}
+        `}
+      />
     </div>
   )
 }

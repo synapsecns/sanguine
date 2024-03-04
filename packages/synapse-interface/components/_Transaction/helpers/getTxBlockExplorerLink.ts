@@ -1,4 +1,4 @@
-import { Chain } from '@/utils/types'
+import type { Chain } from '@/utils/types'
 import { CHAINS_BY_ID } from '@/constants/chains'
 
 export const getTxBlockExplorerLink = (chainId: number, txHash: string) => {

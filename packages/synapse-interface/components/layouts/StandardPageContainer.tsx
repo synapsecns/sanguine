@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import toast from 'react-hot-toast'
 import { CHAINS_BY_ID } from '@constants/chains'
 import { getNetworkTextColor } from '@styles/chains'
-import { Chain } from '@/utils/types/index'
+
 import { AcceptedChainId } from '@constants/chains'
 
 const StandardPageContainer = ({
@@ -20,16 +20,6 @@ const StandardPageContainer = ({
   address: string
   connectedChainId: number
 }) => {
-  // useEffect(() => {
-  //   if (!address) return
-
-  //   toast(
-  //     <div>
-  //       <div>Switched account to</div>
-  //       <div className="break-all">{address}</div>
-  //     </div>
-  //   )
-  // }, [address])
 
   useEffect(() => {
     if (!connectedChainId) return

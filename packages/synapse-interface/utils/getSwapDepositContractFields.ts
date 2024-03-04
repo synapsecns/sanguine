@@ -1,4 +1,4 @@
-import { Token } from '@types'
+import type { Token } from '@types'
 import { SWAP_ABI } from '@abis/swap'
 import { SWAP_ETH_WRAPPER_ABI } from '@abis/swapEthWrapper'
 
@@ -11,20 +11,20 @@ export const getSwapDepositContractFields = (pool: Token, chainId: number) => {
 
   if (pool?.swapWrapperAddresses?.[chainId]) {
     poolAddress = pool.swapWrapperAddresses[chainId]
-    abi = AV_SWAP_WRAPPER_ABI
-    swapType = 'AV_SWAP'
+    abi         = AV_SWAP_WRAPPER_ABI
+    swapType    = 'AV_SWAP'
   } else if (pool?.swapEthAddresses?.[chainId]) {
     poolAddress = pool.swapEthAddresses[chainId]
-    abi = SWAP_ETH_WRAPPER_ABI
-    swapType = 'SWAP_ETH'
+    abi         = SWAP_ETH_WRAPPER_ABI
+    swapType    = 'SWAP_ETH'
   } else if (pool?.swapAddresses?.[chainId]) {
     poolAddress = pool?.swapAddresses[chainId]
-    abi = SWAP_ABI
-    swapType = 'SWAP'
+    abi         = SWAP_ABI
+    swapType    = 'SWAP'
   } else {
     poolAddress = undefined
-    abi = undefined
-    swapType = undefined
+    abi         = undefined
+    swapType    = undefined
   }
 
   return { poolAddress, abi, swapType }

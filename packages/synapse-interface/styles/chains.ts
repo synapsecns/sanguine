@@ -1,12 +1,5 @@
 /* eslint-disable */
-const CustomColors = {
-  CUSTOM_YELLOW: '[#ecae0b]',
-  CUSTOM_YELLOW_DARK: '[#3c3c44]',
-  ETH_BASE: '[#5170ad]',
-  ETH_DARK: '[#3f4f8c]',
-  ETH_EXTRA_DARK: '[#314367]',
-  ETH_LIGHT: '[#78a5ff]',
-}
+
 
 const ColorOptions = {
   GRAY: 'gray',
@@ -31,39 +24,6 @@ const ColorOptions = {
 // combine all of this in one function with a switch for the different desired classes.
 
 // Revisit if any of these can be deleted.
-
-// export const getNetworkCurrencyColor = (chain: Chain): string => {
-//   const { color, nativeCurrency } = chain
-//   switch (color) {
-//     case ColorOptions.YELLOW:
-//       return `text-[#ecae0b] dark:text-[#ecae0b]`
-//     case ColorOptions.ETH:
-//       return `text-[#5170ad] dark:text-[#78a5ff]`
-//     case ColorOptions.GRAY:
-//       return `text-gray-500 dark:text-gray-500`
-//     case ColorOptions.GREEN:
-//       return `text-green-500 dark:text-green-500`
-//     case ColorOptions.LIME:
-//       return `text-lime-500 dark:text-lime-500`
-//     case ColorOptions.SKY:
-//       return `text-sky-500 dark:text-sky-500`
-//     case ColorOptions.BLUE:
-//       return `text-blue-500 dark:text-blue-500`
-//     case ColorOptions.ORANGE:
-//       return `text-orange-500 dark:text-orange-500`
-//     case ColorOptions.PURPLE:
-//       return `text-purple-500 dark:text-purple-500`
-//     case ColorOptions.INDIGO:
-//       return `text-indigo-500 dark:text-indigo-500`
-//     case ColorOptions.CYAN:
-//       return `text-cyan-500 dark:text-cyan-500`
-//     case ColorOptions.RED:
-//       return `text-red-500 dark:text-red-500`
-//     default:
-//       return `text-gray-500 dark:text-gray-500`
-//   }
-// }
-
 export const getNetworkButtonBgClassName = (chainColor: string): string => {
   switch (chainColor) {
     case ColorOptions.YELLOW:
@@ -478,33 +438,33 @@ export const getNetworkBgClassNameLightDark = (chainColor: string): string => {
 export const getNetworkShadow = (chainColor: string): string => {
   switch (chainColor) {
     case ColorOptions.ETH:
-      return `shadow-blue-xl hover:shadow-blue-2xl`
+      return `shadow-blue-500/30 hover:shadow-blue-500/40`
     case ColorOptions.YELLOW:
-      return `shadow-[#ecae0b] hover:shadow-[#ecae0b]`
+      return `shadow-[#ecae0b]/30 hover:shadow-[#ecae0b]/40`
     case ColorOptions.GRAY:
-      return `shadow-gray-xl hover:shadow-gray-2xl`
+      return `shadow-gray-500/30 hover:shadow-gray-500/40`
     case ColorOptions.GREEN:
-      return `shadow-green-xl hover:shadow-green-2xl`
+      return `shadow-green-500/30 hover:shadow-green-500/40`
     case ColorOptions.LIME:
-      return `shadow-lime-xl hover:shadow-lime-2xl`
+      return `shadow-lime-500/30 hover:shadow-lime-500/40`
     case ColorOptions.SKY:
-      return `shadow-sky-xl hover:shadow-sky-2xl`
+      return `shadow-sky-500/30 hover:shadow-sky-500/40`
     case ColorOptions.BLUE:
-      return `shadow-blue-xl hover:shadow-blue-2xl`
+      return `shadow-blue-500/30 hover:shadow-blue-500/40`
     case ColorOptions.ORANGE:
-      return `shadow-orange-xl hover:shadow-orange-2xl`
+      return `shadow-orange-500/30 hover:shadow-orange-500/40`
     case ColorOptions.PURPLE:
-      return `shadow-purple-xl hover:shadow-purple-2xl`
+      return `shadow-purple-500/30 hover:shadow-purple-500/40`
     case ColorOptions.INDIGO:
-      return `shadow-indigo-xl hover:shadow-indigo-2xl`
+      return `shadow-indigo-500/30 hover:shadow-indigo-500/40`
     case ColorOptions.CYAN:
-      return `shadow-cyan-xl hover:shadow-cyan-2xl`
+      return `shadow-cyan-500/30 hover:shadow-cyan-500/40`
     case ColorOptions.RED:
-      return `shadow-red-xl hover:shadow-red-2xl`
+      return `shadow-red-500/30 hover:shadow-red-500/40`
     case ColorOptions.TEAL:
-      return `shadow-teal-xl hover:shadow-teal-2xl`
+      return `shadow-teal-500/30 hover:shadow-teal-500/40`
     default:
-      return `shadow-gray-xl hover:shadow-gray-2xl`
+      return `shadow-gray-500/30 hover:shadow-gray-500/40`
   }
 }
 

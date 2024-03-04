@@ -2,21 +2,24 @@ import _ from 'lodash'
 import Image from 'next/image'
 import Link from 'next/link'
 import numeral from 'numeral'
-import { Address } from 'wagmi'
+import { useState, useEffect } from 'react'
+import { Address, useAccount } from 'wagmi'
 import { arbitrum } from 'viem/chains'
+import arbitrumImg from '@assets/chains/arbitrum.svg'
 import { useAppSelector } from '@/store/hooks'
-import { useState, useEffect, useRef } from 'react'
+import { usePriceDataState } from '@/slices/price/hooks'
+import { useCloseOutsideRef } from '@/utils/hooks/useCloseOutsideRef'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 import { formatBigIntToString } from '@/utils/bigint/format'
-import { shortenAddress } from '@/utils/shortenAddress'
+import { shortenAddress } from '@/utils/address/shortenAddress'
 import { ARBITRUM } from '@/constants/chains/master'
-import { CloseButton } from '../StateManagedBridge/components/CloseButton'
-import { ArrowUpRightIcon } from '../icons/ArrowUpRightIcon'
+import { CloseButton } from '@/components/buttons/CloseButton'
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
-import { HoverContent } from '../Portfolio/components/PortfolioTokenVisualizer'
-import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
-import TransactionArrow from '../icons/TransactionArrow'
-import arbitrumImg from '@assets/chains/arbitrum.svg'
+import { HoverContent } from '@/components/Portfolio/components/HoverContent'
+import { ArrowUpRightIcon } from '@/components/icons/ArrowUpRightIcon'
+import { TransactionArrow } from '@/components/icons/TransactionArrow'
+
+
 
 /** ARB Token */
 export const ARB = {
@@ -35,7 +38,7 @@ const formatValueWithCommas = (value: string | number) => {
 }
 
 export const AirdropRewards = () => {
-  const { arbPrice } = useAppSelector((state) => state.priceData)
+  const { arbPrice } = usePriceDataState()
 
   const { cumulativeRewards, parsedCumulativeRewards, transactions } =
     useAppSelector((state) => state.feeAndRebate)
@@ -49,7 +52,10 @@ export const AirdropRewards = () => {
     <>
       <div
         id="airdrop-rewards"
-        className="flex items-center mb-2 border rounded-md cursor-pointer text-primary border-greenText bg-[#0A381B] hover:bg-[#17492D]"
+        className={`
+          flex items-center mb-2 border rounded-md cursor-pointer
+          text-primary border-greenText/80 bg-[#0A381B]/90 hover:bg-[#17492D]
+        `}
         onClick={handleToggle}
       >
         <RewardsTitle icon={ARB.icon} />
@@ -106,7 +112,7 @@ const DialogWrapper = ({ open, children }) => {
     <div
       className={`${
         open &&
-        'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80'
+        'fixed inset-0 z-50 flex items-center justify-center bg-slate-900/10 backdrop-blur-lg bg-opacity-80'
       }`}
     >
       {children}
@@ -129,9 +135,7 @@ const RewardsDialog = ({
   rewards: string
   tokenPrice: number
 }) => {
-  const dialogRef = useRef(null)
-
-  useCloseOnOutsideClick(dialogRef, onClose)
+  const dialogRef = useCloseOutsideRef(onClose)
 
   const maxHeight = window.innerHeight > 768 ? 400 : 200
 
@@ -141,11 +145,18 @@ const RewardsDialog = ({
         id="rewards-dialog"
         ref={dialogRef}
         open={open}
-        className="absolute z-50 max-w-md py-5 m-auto border rounded-md cursor-default text-primary bg-background border-separator"
+        className="absolute z-50 max-w-md py-5 m-auto border rounded-md cursor-default text-primary bg-slate-400/20  backdrop-blur-md border-white/20"
       >
         <div className="px-4 space-y-4">
           <div className="flex justify-between mb-2">
-            <div className="text-2xl">ARB Rewards</div>
+
+            <div className="text-2xl">
+              <Image
+              src={ARB.icon}
+              alt="ARB icon"
+              className="w-8 h-8 ml-2 mr-4 rounded-full inline"
+            />
+            ARB Rewards</div>
             <CloseButton onClick={onClose} />
           </div>
 
@@ -231,6 +242,7 @@ const AirdropTransaction = ({
   explorerUrl: string
 }) => {
   const [isHovered, setIsHovered] = useState<boolean>(false)
+
   return (
     <Link
       id="airdrop-transaction"
@@ -239,7 +251,7 @@ const AirdropTransaction = ({
       target="_blank"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="grid grid-cols-3 py-1.5 p-4 text-primary hover:bg-tint cursor-pointer"
+      className="grid grid-cols-3 py-1.5 p-4 text-primary hover:bg-slate-400/10 cursor-pointer rounded"
     >
       <div className="text-greenText">+{tokenValue}</div>
 
@@ -313,10 +325,12 @@ export const HoverContentIcon = ({ children }) => {
     >
       <QuestionMarkCircleIcon
         className="w-5 h-5 fill-white stroke-[#0A381B]"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
       />
-      <HoverContent isHovered={isHovered}>{children}</HoverContent>
+      <HoverContent isHovered={isHovered}>
+        <div className='min-w-48'>
+          {children}
+        </div>
+      </HoverContent>
     </div>
   )
 }

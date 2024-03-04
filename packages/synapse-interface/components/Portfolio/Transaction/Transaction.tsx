@@ -1,11 +1,13 @@
-import React, { useCallback } from 'react'
-import { Chain, Token } from '@/utils/types'
-import { Address } from 'viem'
+import React from 'react'
+import type { Address } from 'viem'
+import type { Chain, Token } from '@/utils/types'
+
+
+import { TransactionArrow } from '@/components/icons/TransactionArrow'
 import { getTransactionExplorerLink } from './components/TransactionExplorerLink'
-import { TransactionPayloadDetail } from './components/TransactionPayloadDetail'
 import { Completed } from './components/Completed'
+import { TransactionPayloadDetail } from './components/TransactionPayloadDetail'
 import { EstimatedDuration } from './components/EstimatedDuration'
-import TransactionArrow from '../../icons/TransactionArrow'
 
 export enum TransactionType {
   PENDING,
@@ -61,29 +63,19 @@ export const Transaction = React.memo(
     children,
     isCompleted,
   }: TransactionProps) => {
-    const handleExplorerClick: () => void = useCallback(() => {
-      if (kappa && originChain && destinationChain) {
-        const explorerLink: string = getTransactionExplorerLink({
-          kappa,
-          fromChainId: originChain.id,
-          toChainId: destinationChain.id,
-        })
-        window.open(explorerLink, '_blank', 'noopener,noreferrer')
-      }
-    }, [
+
+    const explorerLink: string = getTransactionExplorerLink({
       kappa,
-      originChain,
-      destinationChain,
-      transactionStatus,
-      transactionHash,
-    ])
+      fromChainId: originChain.id,
+      toChainId: destinationChain.id,
+    })
 
     return (
       <div
         data-test-id="transaction"
         className={`
-          flex my-2 rounded-md text-secondary border border-surface
-          ${transactionType === TransactionType.HISTORICAL && 'bg-background'}
+          flex my-2 rounded-md text-secondary ring-1 ring-white/10
+          ${transactionType === TransactionType.HISTORICAL && 'bg-bgBase/10'}
         `}
       >
         <TransactionPayloadDetail
@@ -91,16 +83,14 @@ export const Transaction = React.memo(
           token={originToken}
           tokenAmount={originValue}
           isOrigin={true}
-          className="p-2"
+          className="p-2 bg-bgBase/10 rounded-l"
         />
         <TransactionArrow
-          className={`
-        ${
-          transactionType === TransactionType.PENDING
-            ? 'bg-tint fill-surface'
-            : 'stroke-surface fill-transparent'
-        }
-        `}
+          className={
+            transactionType === TransactionType.PENDING
+              ? 'bg-bgBase/20 fill-bgBase/10'
+              : 'stroke-white/10 fill-bgBase/10 '
+          }
         />
         <TransactionPayloadDetail
           chain={destinationChain}
@@ -120,7 +110,11 @@ export const Transaction = React.memo(
               transactionCompletedTime={completedTimestamp}
               connectedAddress={connectedAddress}
               destinationAddress={destinationAddress}
-              handleExplorerClick={handleExplorerClick}
+              explorerLink={
+                (kappa && originChain && destinationChain)
+                  ? explorerLink
+                  : '#'
+              }
             />
           )}
         </div>

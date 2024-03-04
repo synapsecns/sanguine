@@ -63,7 +63,7 @@ export const WarningMessage = ({
 }) => {
   return (
     <div
-      className={`flex flex-col bg-[#353038] text-white text-sm p-3 rounded-md mt-4 ${twClassName}`}
+      className={`flex flex-col bg-slate-400/20 text-white text-sm p-3 rounded-md mt-4 ${twClassName}`}
     >
       {header && <div className="mb-2 font-bold">{header}</div>}
       {message && <div>{message}</div>}

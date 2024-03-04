@@ -1,17 +1,20 @@
-import React, { useCallback } from 'react'
 import _ from 'lodash'
+
+import { useCallback } from 'react'
+import Image from 'next/image'
+
+import type { Token } from '@/utils/types'
+import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'
+import { formatBigIntToString } from '@/utils/bigint/format'
 import { useAppDispatch } from '@/store/hooks'
+import { useBridgeState } from '@/slices/bridge/hooks'
 import {
   setFromChainId,
   setFromToken,
   updateFromValue,
 } from '@/slices/bridge/reducer'
-import { Token } from '@/utils/types'
-import { formatBigIntToString } from '@/utils/bigint/format'
-import { inputRef } from '../../StateManagedBridge/InputContainer'
-import Image from 'next/image'
-import { useBridgeState } from '@/slices/bridge/hooks'
-import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'
+import { inputRef } from '@/components/StateManagedBridge/InputContainer'
+
 import { PortfolioAssetActionButton } from './PortfolioAssetActionButton'
 
 const handleFocusOnBridgeInput = () => {
@@ -57,8 +60,8 @@ export const PortfolioTokenAsset = ({
     <div
       id="portfolio-token-asset"
       className={`
-        p-2 flex items-center border-y text-white justify-between last:rounded-b-md
-        ${isTokenSelected ? 'bg-tint border-surface' : 'border-transparent'}
+        p-2 flex items-center border-y text-white justify-between last:rounded-b-lg
+        ${isTokenSelected ? 'bg-bgBase/20 border-white/10' : 'border-transparent'}
       `}
     >
       <div
@@ -66,7 +69,7 @@ export const PortfolioTokenAsset = ({
         className={`
           flex items-center gap-2
           pl-2 pr-4 py-2 cursor-pointer rounded
-          hover:bg-surface active:opacity-70
+          hover:bg-bgBase/20 active:opacity-70
         `}
         title={`${parsedBalanceLong} ${symbol}`}
       >

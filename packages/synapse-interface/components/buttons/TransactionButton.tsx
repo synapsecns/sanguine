@@ -1,16 +1,9 @@
+import { CSSProperties } from 'react'
+import { TransactionResponse } from '@ethersproject/providers'
+import { usePendingTxWrapper } from '@hooks/usePendingTxWrapper'
 import Button from '@tw/Button'
 import ButtonLoadingDots from '@/components/buttons/ButtonLoadingDots'
-import { usePendingTxWrapper } from '@hooks/usePendingTxWrapper'
-import { TransactionResponse } from '@ethersproject/providers'
-import { CSSProperties } from 'react'
 
-const BASE_PROPERTIES = `
-    w-full rounded-md px-4 py-3
-    text-white text-opacity-100 transition-all
-    hover:opacity-80 disabled:opacity-50 disabled:text-[#88818C]
-    disabled:from-bgLight disabled:to-bgLight
-    bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF]
-  `
 
 const disabledClass = `opacity-30 cursor-default`
 
@@ -26,7 +19,7 @@ export const TransactionButton = ({
   ...props
 }: {
   className?: string
-  onClick: () => Promise<TransactionResponse | any>
+  onClick?: () => Promise<TransactionResponse | any>
   pendingLabel: string
   label: string
   onSuccess?: () => void
@@ -39,13 +32,13 @@ export const TransactionButton = ({
   return (
     <Button
       {...props}
+      fancy={true}
       style={style}
       disabled={disabled}
       className={`
         ${className}
-        ${BASE_PROPERTIES}
         ${disabled && disabledClass}
-        ${isPending && 'from-[#622e71] to-[#564071]'}
+        ${isPending && 'from-[#622e71] to-[#564071] hover:opacity-100'}
       `}
       onClick={async () => {
         const tx = await pendingTxWrapFunc(onClick())

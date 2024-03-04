@@ -1,24 +1,26 @@
-import React, { useState, useEffect } from 'react'
-import { Address } from 'viem'
+import React, { useEffect } from 'react'
+
 import { useDispatch } from 'react-redux'
 import _ from 'lodash'
+import type { Address } from 'viem'
+import type { Chain } from '@/utils/types'
 import { CHAINS_BY_ID } from '@/constants/chains'
+import { TWITTER_URL, DISCORD_URL } from '@/constants/urls'
 import {
   TokenAndBalance,
   sortTokensByBalanceDescending,
 } from '@/utils/actions/fetchPortfolioBalances'
-import { Chain } from '@/utils/types'
+
+import { FetchState } from '@/slices/portfolio/actions'
+import { setFromToken, setToToken } from '@/slices/bridge/reducer'
+
+import { WarningMessage } from '@/components/Warning'
 import { PortfolioAccordion } from './PortfolioAccordion'
 import { PortfolioConnectButton } from './PortfolioConnectButton'
 import { EmptyPortfolioContent } from './EmptyPortfolioContent'
-import { FetchState } from '@/slices/portfolio/actions'
 import { PortfolioTokenAsset } from './PortfolioTokenAsset'
-import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
-import { WarningMessage } from '../../Warning'
-import { TWITTER_URL, DISCORD_URL } from '@/constants/urls'
-import { setFromToken, setToToken } from '@/slices/bridge/reducer'
-import { PortfolioTokenVisualizer } from './PortfolioTokenVisualizer'
 import { PortfolioNetwork } from './PortfolioNetwork'
+import { ChainTokens } from './ChainTokens'
 
 type SingleNetworkPortfolioProps = {
   connectedAddress: Address
@@ -60,7 +62,7 @@ export const SingleNetworkPortfolio = ({
   return (
     <div
       id="single-network-portfolio"
-      className="flex flex-col mb-4 border rounded-md border-surface"
+      className="flex flex-col mb-4 border rounded-lg border-white/10"
     >
       <PortfolioAccordion
         connectedChainId={connectedChainId}
@@ -82,7 +84,7 @@ export const SingleNetworkPortfolio = ({
           />
         }
         collapsedProps={
-          <PortfolioTokenVisualizer portfolioTokens={sortedTokens} />
+          <ChainTokens balanceTokens={sortedTokens} />
         }
       >
         {isUnsupportedChain && (

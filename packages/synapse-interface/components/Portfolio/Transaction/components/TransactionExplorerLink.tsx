@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Address } from 'viem'
+import type { Address } from 'viem'
 import { EXPLORER_KAPPA, EXPLORER_PATH } from '@/constants/urls'
 
 export const getTransactionExplorerLink = ({

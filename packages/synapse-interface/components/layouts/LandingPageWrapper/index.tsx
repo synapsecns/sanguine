@@ -19,36 +19,46 @@ import {
   LANDING_PATH,
   TELEGRAM_URL,
   TWITTER_URL,
-  getBuySynUrl,
 } from '@/constants/urls'
 import { NAVIGATION } from '@/constants/routes'
 import { MoreButton } from './MoreButton'
 import { PageFooter } from './PageFooter'
 
-export function LandingPageWrapper({ children }: { children: any }) {
+export function LandingPageWrapper({ nestedPage=false, children }) {
   return (
     <div
-      style={{
-        background:
-          'radial-gradient(23.86% 33.62% at 50.97% 47.88%, rgba(255, 0, 255, 0.04) 0%, rgba(172, 143, 255, 0.04) 100%), #111111',
-      }}
+      className="from-black via-slate-950 to-black bg-gradient-to-br"
     >
-      <LandingNav />
-
       <div
-        style={{
-          backgroundImage: `url('landingBg.svg')`,
-          backgroundSize: '800px',
-          backgroundPosition: 'top center',
-          backgroundRepeat: 'no-repeat',
-        }}
+          className="bg-[length:100vw_100vh] bg-opacity-50 transition-all bg-fixed"
+          style={{
+            backgroundImage: nestedPage ? `url('../landingBg.svg')` : `url('landingBg.svg')`
+          }}
       >
-        {children}
+        <LandingNav />
+        <div>
+          {children}
+        </div>
+        <PageFooter />
       </div>
-      <PageFooter />
+
     </div>
   )
 }
+
+
+function MobileNavButton({ label, IconComponent }) {
+  return (
+    <Popover.Button
+      data-test-id="mobile-navbar-button"
+      className="group flex items-center p-2 text-opacity-75 bg-bgBase/10 hover:bg-bgBase/20 ring-1 ring-white/10 hover:ring-white/30 text-secondaryTextColor hover:text-white rounded-md"
+    >
+      <span className="sr-only">{label}</span>
+      <IconComponent className="w-6 h-6" aria-hidden="true" />
+    </Popover.Button>
+  )
+}
+
 
 export function LandingNav() {
   return (
@@ -56,13 +66,7 @@ export function LandingNav() {
       <div className="flex gap-4 place-content-between p-8 max-w-[1440px] m-auto">
         <SynapseTitleLogo showText={true} />
         <div className="lg:hidden">
-          <Popover.Button
-            data-test-id="mobile-navbar-button"
-            className="p-2 text-gray-400 rounded-md hover:bg-gray-800 focus:outline-none"
-          >
-            <span className="sr-only">Open menu</span>
-            <MenuIcon className="w-8 h-8" aria-hidden="true" />
-          </Popover.Button>
+          <MobileNavButton label="Open menu" IconComponent={MenuIcon} />
         </div>
         <Popover.Group
           as="nav"
@@ -101,21 +105,15 @@ export function LandingNav() {
         leaveTo=" opacity-0"
       >
         <Popover.Panel focus className="absolute top-0 z-10 w-screen">
-          <div
-            className="bg-bgLight"
-            // data-test-id="mobile-nav"
-          >
-            <div className="flex items-center px-4 pt-4 place-content-between">
+          <div className="bg-bgBase/10 backdrop-blur-lg">
+            <div className="flex items-center p-8 pb-4 place-content-between">
               <SynapseTitleLogo showText={true} />
-              <Popover.Button className="p-2 text-gray-400 rounded-md hover:bg-gray-900 focus:outline-none">
-                <span className="sr-only">Close menu</span>
-                <XIcon className="w-8 h-8" aria-hidden="true" />
-              </Popover.Button>
+              <MobileNavButton label="Close menu" IconComponent={XIcon} />
             </div>
-            <div className="flex flex-col gap-2 py-4" data-test-id="mobile-nav">
+            <div className="flex flex-col gap-2 py-4 pl-4" data-test-id="mobile-nav">
               <MobileBarButtons />
             </div>
-            <div className="px-2 py-4 bg-white/10">
+            <div className="pr-2 pl-8 py-4 bg-white/10">
               <Wallet />
             </div>
           </div>
@@ -149,8 +147,13 @@ export function PopoverPanelContainer({
           mt-3 w-screen max-w-xs sm:px-0
         `}
       >
-        <div className="overflow-hidden rounded-md shadow-xl">
-          <div className="relative grid gap-3 bg-bgLight px-2.5 py-3  sm:p-2">
+        <div className="overflow-hidden rounded-md shadow-xl ring-1 ring-white/10">
+          <div
+            className={`
+              relative grid gap-3 bg-bgBase/10 backdrop-blur-lg
+              px-2.5 py-3 sm:p-2
+            `}
+          >
             {children}
           </div>
         </div>
@@ -196,27 +199,27 @@ function SocialButtons() {
       <MiniInfoItem
         href={SYNAPSE_DOCS_URL}
         labelText="Docs"
-        icon={<DocumentTextIcon className="inline w-5 mr-2 -ml-1 " />}
+        IconComponent={DocumentTextIcon}
       />
       <MiniInfoItem
         href={DISCORD_URL}
         labelText="Discord"
-        icon={<DiscordIcon className="inline w-5 mr-2 -ml-1" />}
+        IconComponent={DiscordIcon}
       />
       <MiniInfoItem
         href={TELEGRAM_URL}
         labelText="Telegram"
-        icon={<TelegramIcon className="inline w-5 mr-2 -ml-1 " />}
+        IconComponent={TelegramIcon}
       />
       <MiniInfoItem
         href={TWITTER_URL}
         labelText="Twitter"
-        icon={<TwitterIcon className="inline w-5 mr-2 -ml-1 " />}
+        IconComponent={TwitterIcon}
       />
       <MiniInfoItem
         href={FORUM_URL}
         labelText="Forum"
-        icon={<ForumIcon className="inline w-5 mr-2 -ml-1" />}
+        IconComponent={ForumIcon}
       />
     </Grid>
   )
@@ -293,12 +296,12 @@ function MoreInfoItem({
 
 function MiniInfoItem({
   href,
-  icon,
   labelText,
+  IconComponent,
 }: {
   href: string
-  icon: JSX.Element
   labelText: string
+  IconComponent: any
 }) {
   return (
     <a
@@ -309,7 +312,7 @@ function MiniInfoItem({
     >
       <div>
         <p className="text-base text-white text-opacity-40 group-hover:text-white">
-          {icon}
+          <IconComponent className="inline w-5 mr-2 -ml-1" />
           <span className="mt-1">{labelText}</span>
         </p>
       </div>

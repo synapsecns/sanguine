@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { useAccount } from 'wagmi'
 import { switchNetwork } from '@wagmi/core'
-import { useConnectModal } from '@rainbow-me/rainbowkit'
+
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 
 import { setFromChainId } from '@/slices/bridge/reducer'
-import { useBridgeState } from '@/slices/bridge/hooks'
+
 import { CHAINS_BY_ID } from '@/constants/chains'
 import {
   getNetworkButtonBgClassNameActive,
@@ -15,6 +15,7 @@ import {
   getNetworkHover,
 } from '@/styles/chains'
 import { LoaderIcon } from 'react-hot-toast'
+import { useHasMounted } from '@/utils/hooks/useHasMounted'
 
 export const ConnectedIndicator = () => {
   return (
@@ -32,9 +33,9 @@ export const ConnectedIndicator = () => {
       <div className="flex flex-row text-sm">
         <div
           className={`
-            my-auto ml-auto mr-2 w-2 h-2
+            my-auto ml-auto mr-2 size-2
             bg-green-500 rounded-full
-            `}
+          `}
         />
         Connected
       </div>
@@ -42,39 +43,7 @@ export const ConnectedIndicator = () => {
   )
 }
 
-const DisconnectedIndicator = () => {
-  const { openConnectModal } = useConnectModal()
-  const { fromChainId } = useBridgeState()
-  const chain = CHAINS_BY_ID[fromChainId]
 
-  return (
-    <button
-      data-test-id="disconnected-button"
-      className={`
-        flex items-center justify-center
-        text-base text-white px-3 py-1 rounded-md
-        text-center transform-gpu transition-all duration-75
-        border border-solid border-transparent
-        h-8
-        ${getNetworkHover(chain?.color)}
-        ${getNetworkButtonBgClassNameActive(chain?.color)}
-        ${getNetworkButtonBorderActive(chain?.color)}
-        ${getNetworkButtonBorderHover(chain?.color)}
-      `}
-      onClick={openConnectModal}
-    >
-      <div className="flex flex-row text-sm">
-        <div
-          className={`
-            my-auto ml-auto mr-2 w-2 h-2
-            bg-red-500 rounded-full
-            `}
-        />
-        Disconnected
-      </div>
-    </button>
-  )
-}
 
 export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
   const [isConnecting, setIsConnecting] = useState<boolean>(false)
@@ -117,7 +86,7 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
         <div className="flex flex-row text-sm">
           <div
             className={`
-              my-auto ml-auto mr-2 text-transparent w-2 h-2
+              my-auto ml-auto mr-2 text-transparent size-2
               border border-green-300 border-solid rounded-full
             `}
           />
@@ -130,7 +99,7 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
         <div className="flex flex-row text-sm">
           <div
             className={`
-              my-auto ml-auto mr-2 text-transparent w-2 h-2
+              my-auto ml-auto mr-2 text-transparent size-2
               border border-indigo-300 border-solid rounded-full
             `}
           />
@@ -142,12 +111,8 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
 }
 
 export function ConnectWalletButton() {
-  const [clientReady, setClientReady] = useState<boolean>(false)
+  const clientReady = useHasMounted()
   const { address } = useAccount()
-
-  useEffect(() => {
-    setClientReady(true)
-  }, [])
 
   return (
     <div data-test-id="">
@@ -161,17 +126,24 @@ export function ConnectWalletButton() {
                     return (
                       <button
                         className={`
-                          flex items-center text-sm text-white mr-2
+                          flex items-right justify-center
+                          text-base text-white px-3 py-1 rounded-lg
+                          text-center transform-gpu transition-all duration-75
+                          border border-solid border-transparent
+                          hover:border-[#3D3D5C]
                         `}
                         onClick={openConnectModal}
                       >
-                        <div
-                          className={`
-                            my-auto ml-auto mr-2 text-transparent w-2 h-2
-                            border border-indigo-300 border-solid rounded-full
-                          `}
-                        />
-                        Connect Wallet
+                        <div className="flex flex-row text-sm">
+                          <div
+                            className={`
+                              my-auto ml-auto mr-2 text-transparent size-2
+                              border border-indigo-300 border-solid rounded-full
+                            `}
+                          />
+                          Connect Wallet
+                        </div>
+
                       </button>
                     )
                   }

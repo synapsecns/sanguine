@@ -1,4 +1,4 @@
-import toast, { Toaster, ToastBar } from 'react-hot-toast'
+import { Toaster, ToastBar } from 'react-hot-toast'
 import ToastContent from './ToastContent'
 
 export default function CustomToaster() {
@@ -16,6 +16,7 @@ export default function CustomToaster() {
             shadow-indigo
             bg-gray-800
             text-gray-400
+            backdrop-blur-2xl
           `,
         duration: 10000,
       }}

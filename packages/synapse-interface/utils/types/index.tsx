@@ -1,4 +1,4 @@
-import { BigNumber } from '@ethersproject/bignumber'
+import type { BigNumber } from '@ethersproject/bignumber'
 import * as CHAINS from '@constants/chains/master'
 import { getAddress } from '@ethersproject/address'
 

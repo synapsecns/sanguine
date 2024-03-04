@@ -1,19 +1,19 @@
-import { Address } from 'viem'
-import { shortenAddress } from '@/utils/shortenAddress'
+import type { Address } from 'viem'
+import { shortenAddress } from '@/utils/address/shortenAddress'
 import { convertUnixTimestampToMonthAndDate } from '@/utils/time'
 import { isTimestampToday } from '@/utils/time'
-import { isValidAddress } from '@/utils/isValidAddress'
+import { isValidAddress } from '@/utils/address/isValidAddress'
 
 export const Completed = ({
   transactionCompletedTime,
   connectedAddress,
   destinationAddress,
-  handleExplorerClick,
+  explorerLink,
 }: {
   transactionCompletedTime: number
   connectedAddress?: Address | string
   destinationAddress: string
-  handleExplorerClick: () => void
+  explorerLink: string
 }) => {
   const formattedTime: string =
     transactionCompletedTime &&
@@ -27,23 +27,24 @@ export const Completed = ({
   const isDestinationValid: boolean = isValidAddress(destinationAddress)
 
   return (
-    <div
-      data-test-id="completed"
-      className="flex flex-col text-right text-[#C2C2D6] gap-1 text-sm whitespace-nowrap"
-      onClick={handleExplorerClick}
-    >
-      {isDestinationValid && !isDestinationSender && (
-        <div>to {shortenAddress(destinationAddress)} </div>
-      )}
-      {isToday ? (
-        <div className="text-[#3BDD77] hover:underline cursor-pointer">
-          Today
-        </div>
-      ) : (
-        <div className="cursor-pointer hover:underline">
-          {formattedTime ? formattedTime : 'Completed'}
-        </div>
-      )}
-    </div>
+    <a href={explorerLink} target="_blank" rel="noreferrer">
+      <div
+        data-test-id="completed"
+        className="flex flex-col text-right text-[#C2C2D6] gap-1 text-sm whitespace-nowrap"
+      >
+        {isDestinationValid && !isDestinationSender && (
+          <div>to {shortenAddress(destinationAddress)} </div>
+        )}
+        {isToday ? (
+          <div className="text-[#3BDD77] hover:underline cursor-pointer">
+            Today
+          </div>
+        ) : (
+          <div className="cursor-pointer hover:underline">
+            {formattedTime ? formattedTime : 'Completed'}
+          </div>
+        )}
+      </div>
+    </a>
   )
 }

@@ -1,14 +1,12 @@
 import { useEffect, useState } from 'react'
+import { useHasMounted } from '@/utils/hooks/useHasMounted'
+
 
 const BANNER_VERSION = '4'
 
 export const Banner = () => {
-  const [hasMounted, setHasMounted] = useState(false)
+  const hasMounted = useHasMounted()
   const [showBanner, setShowBanner] = useState(false)
-
-  useEffect(() => {
-    setHasMounted(true)
-  }, [])
 
   useEffect(() => {
     if (hasMounted) {
@@ -95,12 +93,9 @@ export const Banner = () => {
 }
 
 export const CustomBanner = ({ text, link }: { text: string; link?: any }) => {
-  const [hasMounted, setHasMounted] = useState(false)
+  const hasMounted = useHasMounted()
   const [showBanner, setShowBanner] = useState(false)
 
-  useEffect(() => {
-    setHasMounted(true)
-  }, [])
 
   useEffect(() => {
     if (hasMounted) {
@@ -179,12 +174,8 @@ export const CustomBanner = ({ text, link }: { text: string; link?: any }) => {
 }
 
 export const InterruptedServiceBanner = () => {
-  const [hasMounted, setHasMounted] = useState(false)
+  const hasMounted = useHasMounted()
   const [showBanner, setShowBanner] = useState(false)
-
-  useEffect(() => {
-    setHasMounted(true)
-  }, [])
 
   useEffect(() => {
     if (hasMounted) {

@@ -105,10 +105,6 @@ module.exports = {
           100: 'rgba(0, 0, 0, 1.0)',
         },
       },
-      fontSize: {
-        xxs: ['0.675rem', { lineHeight: '0.75rem' }],
-        xxl: ['1.5rem', { lineHeight: '1.75rem' }],
-      },
       colors: {
         // updated colors
         strong: '#FCFCFD',
@@ -123,7 +119,7 @@ module.exports = {
         greenText: '#66e595',
         greenProgress: 'hsl(105deg 100% 60%)',
         // previous colors
-        bgBase: '#252028',
+        bgBase: `${colors.slate[400]}`,
         bgDarker: '#111111',
         bgLight: '#353038',
         bgLighter: '#443F47',
@@ -180,8 +176,8 @@ module.exports = {
       },
       boxShadow: {
         'custom-shadow': 'inset 0 3px 3px 0 rgba(0, 0, 0, 0.25)', // replace 'custom-shadow' with a more appropriate name
-        ...makeShadow('cool-gray', '71, 85, 104'),
-        ...makeShadow('gray', '75, 85, 98'),
+        ...makeShadow('gray', '71, 85, 104'),
+        ...makeShadow('neutral', '75, 85, 98'),
         ...makeShadow('red', '223, 39, 44'),
         ...makeShadow('orange', '207, 57, 24'),
         ...makeShadow('yellow', '158, 88, 28'),
@@ -193,16 +189,6 @@ module.exports = {
         ...makeShadow('purple', '125, 59, 236'),
         ...makeShadow('pink', '213, 34, 105'),
       },
-      animation: {
-        sheenit: 'sheen 0.42s forwards',
-      },
-      keyframes: {
-        sheen: {
-          '100%': {
-            transform: 'rotateZ(60deg) translate(1em, -30em)',
-          },
-        },
-      },
       linearBorderGradients: ({ theme }) => ({
         colors: {
           'magenta-melrose': ['#ff00ff', '#ac8fff'],
@@ -213,6 +199,15 @@ module.exports = {
           ...colors,
         },
       }),
+      keyframes: {
+        movement: {
+          '0%, 100%': { transform: 'translate3d(0, -25px, 0) scale(1)' },
+          '50%': { transform: 'translate3d(0, 25px, 0) scale(1.5)' },
+        },
+      },
+      animation: {
+        'movement': 'movement 2s ease-in-out infinite',
+      },
     },
   },
   plugins: [

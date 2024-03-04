@@ -1,7 +1,8 @@
 import { twMerge } from 'tailwind-merge'
 
-const baseClassname = "bg-bgBase p-4 rounded-md"
-const titleBaseClassname = "font-medium text-lg text-white"
+const baseClassName = `!bg-transparent bg-gradient-to-r from-slate-400/10 to-slate-400/10
+  rounded-2xl ring-1 ring-white/10 p-4 rounded-md`
+const titleBaseClassName = "font-medium text-lg text-white"
 
 export default function Card({
   title,
@@ -16,12 +17,13 @@ export default function Card({
   className?: string
   children: any
   titleClassName?: string
-  divider: boolean
+  divider?: boolean
   image?: string
+  [x: string]: any
 }) {
-  const mergedClassName = twMerge(`${baseClassname} ${className}`)
+  const mergedClassName = twMerge(`${baseClassName} ${className}`)
   const mergedTitleClassname = twMerge(
-    `${titleBaseClassname} ${titleClassName}`
+    `${titleBaseClassName} ${titleClassName}`
   )
 
   let titleContent = null

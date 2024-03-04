@@ -1,5 +1,4 @@
-import React from 'react'
-import Button from '@tw/Button'
+import MiniMaxButton from '@/components/buttons/MiniMaxButton'
 
 const InteractiveInputRow = ({
   title,
@@ -23,15 +22,15 @@ const InteractiveInputRow = ({
   icon: string
 }) => {
   return (
-    <div className="flex flex-col rounded-sm bg-bgLight">
+    <div className="flex flex-col rounded-sm bg-bgBase/10 ring-1 ring-white/10 group focus-within:ring-white/50">
       <div className="border-none rounded-md">
         <div className="flex space-x-2">
-          <div className="flex items-center flex-grow w-full h-20 pl-3 ">
+          <div className="flex items-center flex-grow w-full h-16 pl-3 ">
             <div className="sm:mt-[-1px]">
               <div
                 className={`
                 group rounded-sm
-                bg-[#564f58]
+                bg-bgBase/10 ring-1 ring-white/10
               `}
               >
                 <div
@@ -48,7 +47,7 @@ const InteractiveInputRow = ({
                   </div>
                   <div className="text-left">
                     <h4 className="text-lg text-white">
-                      <span className="">{title}</span>
+                      <span>{title}</span>
                     </h4>
                   </div>
                 </div>
@@ -72,7 +71,7 @@ const InteractiveInputRow = ({
                     border-none bg-transparent
                     p-0
                     w-[300px] sm:min-w-[170px] sm:w-full scrollbar-none
-                  placeholder:text-[#88818C] text-white
+                  placeholder:text-white/40 text-white
                     text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium
                     overflow-hidden
                 `}
@@ -86,23 +85,10 @@ const InteractiveInputRow = ({
               <div>
                 {isConnected && (
                   <div className="hidden md:block">
-                    <Button
-                      className={`
-                        bg-[#564f58]
-                        font-light border border-transparent 
-                        mr-2 
-                        pl-lg pr-lg pt-sm mt-2 pb-sm 
-                        text-md rounded-sm 
-                        ${
-                          disabled
-                            ? 'opacity-60 cursor-default'
-                            : 'hover:border-[#AC8FFF]'
-                        } 
-                      `}
-                      onClick={disabled ? undefined : onClickBalance}
-                    >
-                      Max
-                    </Button>
+                    <MiniMaxButton
+                      disabled={disabled}
+                      onClickBalance={disabled ? undefined : onClickBalance}
+                    />
                   </div>
                 )}
               </div>

@@ -1,46 +1,43 @@
 import _ from 'lodash'
 
-import { useEffect, useRef, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import Fuse from 'fuse.js'
 
-import { useKeyPress } from '@hooks/useKeyPress'
-import SlideSearchBox from '@pages/bridge/SlideSearchBox'
-import { Token } from '@/utils/types'
-import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import { usePortfolioBalances } from '@/slices/portfolio/hooks'
-import SelectSpecificTokenButton from './components/SelectSpecificTokenButton'
+import { getTokenFuseOptions } from '@/constants/fuseOptions'
+import { CHAINS_BY_ID } from '@/constants/chains'
 
-import { hasBalance } from './helpers/sortByBalance'
-import { sortByPriorityRank } from './helpers/sortByPriorityRank'
-import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
-import { CloseButton } from './components/CloseButton'
-import { SearchResults } from './components/SearchResults'
+import { segmentAnalyticsEvent } from '@/contexts/segmentAnalyticsEvent'
+
+import type { Token } from '@/utils/types'
+import { getSwapPossibilities } from '@/utils/route/swap/generateSwapPossibilities'
+import { useOverlaySearch } from '@/utils/hooks/useOverlaySearch'
+import { sortByPriorityRankAndBalance } from '@/utils/helpers/sortByPriorityRankAndBalance'
+
+import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useSwapState } from '@/slices/swap/hooks'
 import { setShowSwapFromTokenListOverlay } from '@/slices/swapDisplaySlice'
 import { setSwapFromToken } from '@/slices/swap/reducer'
-import { getSwapPossibilities } from '@/utils/swapFinder/generateSwapPossibilities'
-import { CHAINS_BY_ID } from '@/constants/chains'
+
+import { SearchResultsContainer } from '@/components/bridgeSwap/SearchResultsContainer'
+import { SearchOverlayContent } from '@/components/bridgeSwap/SearchOverlayContent'
+import { SelectTokenButton } from '@/components/bridgeSwap/SelectTokenButton'
 
 export const SwapFromTokenListOverlay = () => {
-  const [currentIdx, setCurrentIdx] = useState(-1)
-  const [searchStr, setSearchStr] = useState('')
   const dispatch = useDispatch()
-  const overlayRef = useRef(null)
 
   const { swapFromTokens, swapChainId, swapFromToken } = useSwapState()
   const portfolioBalances = usePortfolioBalances()
 
-  let possibleTokens = sortByPriorityRank(swapFromTokens)
+  const common = {
+    chainId: swapChainId,
+    portfolioBalances: portfolioBalances
+  }
+  let possibleTokens = sortByPriorityRankAndBalance({
+    tokens: swapFromTokens,
+    source: 'possibleTokens',
+    ...common
+  })
 
-  possibleTokens = [
-    ...possibleTokens.filter((t) =>
-      hasBalance(t, swapChainId, portfolioBalances)
-    ),
-    ...possibleTokens.filter(
-      (t) => !hasBalance(t, swapChainId, portfolioBalances)
-    ),
-  ]
 
   const { fromTokens: allSwapChainTokens } = getSwapPossibilities({
     fromChainId: swapChainId,
@@ -49,94 +46,33 @@ export const SwapFromTokenListOverlay = () => {
     toToken: null,
   })
 
-  let remainingTokens = sortByPriorityRank(
-    _.difference(allSwapChainTokens, swapFromTokens)
-  )
-
-  remainingTokens = [
-    ...remainingTokens.filter((t) =>
-      hasBalance(t, swapChainId, portfolioBalances)
-    ),
-    ...remainingTokens.filter(
-      (t) => !hasBalance(t, swapChainId, portfolioBalances)
-    ),
-  ]
-
-  const possibleTokensWithSource = possibleTokens.map((token) => ({
-    ...token,
-    source: 'possibleTokens',
-  }))
-  const remainingTokensWithSource = remainingTokens.map((token) => ({
-    ...token,
+  let remainingTokens = sortByPriorityRankAndBalance({
+    tokens: _.difference(allSwapChainTokens, swapFromTokens),
     source: 'remainingTokens',
-  }))
+    ...common
+  })
 
-  const masterList = [...possibleTokensWithSource, ...remainingTokensWithSource]
+  const masterList = [...possibleTokens, ...remainingTokens]
 
-  const fuseOptions = {
-    ignoreLocation: true,
-    includeScore: true,
-    threshold: 0.0,
-    keys: [
-      {
-        name: 'symbol',
-        weight: 2,
-      },
-      'routeSymbol',
-      `addresses.${swapChainId}`,
-      'name',
-    ],
+  function onCloseOverlay() {
+    dispatch(setShowSwapFromTokenListOverlay(false))
   }
 
-  const fuse = new Fuse(masterList, fuseOptions)
+  const {
+    overlayRef,
+    onSearch,
+    currentIdx,
+    searchStr,
+    onClose,
+  } = useOverlaySearch(masterList.length, onCloseOverlay)
+
+  const fuse = new Fuse(masterList, getTokenFuseOptions(swapChainId))
 
   if (searchStr?.length > 0) {
     const results = fuse.search(searchStr).map((i) => i.item)
     possibleTokens = results.filter((item) => item.source === 'possibleTokens')
-    remainingTokens = results.filter(
-      (item) => item.source === 'remainingTokens'
-    )
+    remainingTokens = results.filter((item) => item.source === 'remainingTokens')
   }
-
-  const escPressed = useKeyPress('Escape')
-  const arrowUp = useKeyPress('ArrowUp')
-  const arrowDown = useKeyPress('ArrowDown')
-
-  function onClose() {
-    setCurrentIdx(-1)
-    setSearchStr('')
-    dispatch(setShowSwapFromTokenListOverlay(false))
-  }
-
-  function escFunc() {
-    if (escPressed) {
-      onClose()
-    }
-  }
-
-  function arrowDownFunc() {
-    const nextIdx = currentIdx + 1
-    if (arrowDown && nextIdx < masterList.length) {
-      setCurrentIdx(nextIdx)
-    }
-  }
-
-  function arrowUpFunc() {
-    const nextIdx = currentIdx - 1
-    if (arrowUp && -1 < nextIdx) {
-      setCurrentIdx(nextIdx)
-    }
-  }
-
-  function onSearch(str: string) {
-    setSearchStr(str)
-    setCurrentIdx(-1)
-  }
-
-  useEffect(escFunc, [escPressed])
-  useEffect(arrowDownFunc, [arrowDown])
-  useEffect(arrowUpFunc, [arrowUp])
-  useCloseOnOutsideClick(overlayRef, onClose)
 
   const handleSetFromToken = (oldToken: Token, newToken: Token) => {
     const eventTitle = '[Swap User Action] Sets new fromToken'
@@ -144,80 +80,65 @@ export const SwapFromTokenListOverlay = () => {
       previousFromToken: oldToken?.symbol,
       newFromToken: newToken?.symbol,
     }
-    segmentAnalyticsEvent(eventTitle, eventData)
+
     dispatch(setSwapFromToken(newToken))
     onClose()
+    segmentAnalyticsEvent(eventTitle, eventData)
   }
 
   return (
-    <div
-      ref={overlayRef}
-      data-test-id="token-slide-over"
-      className="max-h-full pb-4 overflow-auto scrollbar-hide"
+    <SearchOverlayContent
+      overlayRef={overlayRef}
+      searchStr={searchStr}
+      onSearch={onSearch}
+      onClose={onClose}
+      type="token"
     >
-      <div className="z-10 w-full px-2 ">
-        <div className="relative flex items-center mt-2 mb-2 font-medium">
-          <SlideSearchBox
-            placeholder="Filter by symbol, contract, or name..."
-            searchStr={searchStr}
-            onSearch={onSearch}
-          />
-          <CloseButton onClick={onClose} />
-        </div>
-      </div>
-      {possibleTokens && possibleTokens.length > 0 && (
-        <>
-          <div className="px-2 pt-2 pb-4 text-sm text-primaryTextColor ">
-            Swap…
-          </div>
-          <div className="px-2 pb-2 md:px-2 ">
-            {possibleTokens.map((token, idx) => {
-              return (
-                <SelectSpecificTokenButton
-                  isOrigin={true}
-                  key={idx}
-                  token={token}
-                  selectedToken={swapFromToken}
-                  active={idx === currentIdx}
-                  showAllChains={false}
-                  onClick={() => {
-                    if (token === swapFromToken) {
-                      onClose()
-                    } else {
-                      handleSetFromToken(swapFromToken, token)
-                    }
-                  }}
-                />
-              )
-            })}
-          </div>
-        </>
+      {possibleTokens?.length > 0 && (
+        <SearchResultsContainer label="Swap…">
+          {possibleTokens.map((token, idx) =>
+            <SelectTokenButton
+              isOrigin={true}
+              key={idx}
+              token={token}
+              chainId={swapChainId}
+              selectedToken={swapFromToken}
+              active={idx === currentIdx}
+              showAllChains={false}
+              onClick={() => {
+                if (token === swapFromToken) {
+                  onClose()
+                } else {
+                  handleSetFromToken(swapFromToken, token)
+                }
+              }}
+            />
+          )}
+        </SearchResultsContainer>
       )}
-      {remainingTokens && remainingTokens.length > 0 && (
-        <>
-          <div className="px-2 pb-4 text-sm text-primaryTextColor">
-            {swapChainId
+      {remainingTokens?.length > 0 && (
+        <SearchResultsContainer
+          label={
+            swapChainId
               ? `More on ${CHAINS_BY_ID[swapChainId]?.name}`
-              : 'All swappable tokens'}
-          </div>
-          <div className="px-2 pb-2 md:px-2">
-            {remainingTokens.map((token, idx) => {
-              return (
-                <SelectSpecificTokenButton
-                  isOrigin={true}
-                  key={idx}
-                  token={token}
-                  selectedToken={swapFromToken}
-                  active={idx + possibleTokens.length === currentIdx}
-                  showAllChains={false}
-                  onClick={() => handleSetFromToken(swapFromToken, token)}
-                />
-              )
-            })}
-          </div>
-        </>
+              : 'All swappable tokens'
+          }
+        >
+          {remainingTokens.map((token, idx) =>
+            <SelectTokenButton
+              isOrigin={true}
+              key={idx}
+              token={token}
+              chainId={swapChainId}
+              selectedToken={swapFromToken}
+              active={idx + possibleTokens.length === currentIdx}
+              showAllChains={false}
+              onClick={() => handleSetFromToken(swapFromToken, token)}
+            />
+          )}
+        </SearchResultsContainer>
       )}
-      <SearchResults searchStr={searchStr} type="token" />
-    </div>
+    </SearchOverlayContent>
+
   )
 }

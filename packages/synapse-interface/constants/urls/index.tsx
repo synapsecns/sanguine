@@ -1,7 +1,8 @@
 import * as CHAINS from '@constants/chains/master'
 import { ETH, SYN } from '@constants/tokens/bridgeable'
 import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
-import { Token } from '@types'
+import type { Token } from '@types'
+
 
 // Hardcoding this shit for now until actual plan around routing
 let SYNAPSE_BASE_URL = ''
@@ -77,9 +78,10 @@ export const getExplorerTxUrl = ({
   chainId?: number
   type?: string
 }) => {
-  let explorerUrl = Object.values(CHAINS).filter(
+  let chain = Object.values(CHAINS).filter(
     (chain) => chain.id === chainId
-  )[0].explorerUrl
+  )[0]
+  let explorerUrl = chain.explorerUrl
   let baseUrl = explorerUrl ?? CHAINS.ETH.explorerUrl
 
   return `${baseUrl}/${type}/${hash ?? data}`
@@ -113,72 +115,6 @@ const getSushiSwapUrl = ({
   const outputCurrency = toCoin?.addresses?.[chainId] ?? ''
   return `${SUSHISWAP_BASE_URL}/swap?inputCurrency=${inputCurrency}&outputCurrency=${outputCurrency}`
 }
-
-const TRADERJOE_BASE_URL = `https://www.traderjoexyz.com/#`
-
-const getTraderJoeSwapUrl = ({
-  fromCoin,
-  toCoin,
-  chainId,
-}: {
-  fromCoin?: any
-  toCoin?: any
-  chainId: number
-}) => {
-  const inputCurrency = fromCoin?.addresses?.[chainId] ?? ''
-  const outputCurrency = toCoin?.addresses?.[chainId] ?? ''
-  return `${TRADERJOE_BASE_URL}/trade?inputCurrency=${inputCurrency}&outputCurrency=${outputCurrency}`
-}
-
-const FIREBIRD_BASE_URL = 'https://app.firebird.finance'
-
-const getFirebirdSwapUrl = ({
-  fromCoin,
-  toCoin,
-  chainId,
-}: {
-  fromCoin?: any
-  toCoin?: any
-  chainId: number
-}) => {
-  const inputCurrency = fromCoin?.addresses?.[chainId] ?? ''
-  const outputCurrency = toCoin?.addresses?.[chainId] ?? ''
-  return `${FIREBIRD_BASE_URL}/swap?outputCurrency=${outputCurrency}&net=${chainId}`
-}
-
-const UNISWAP_BASE_URL = 'https://app.uniswap.org/#'
-
-const getUniswapSwapUrl = ({
-  fromCoin,
-  toCoin,
-  chainId,
-}: {
-  fromCoin?: any
-  toCoin?: any
-  chainId: number
-}) => {
-  const inputCurrency = fromCoin?.addresses?.[chainId] ?? ''
-  const outputCurrency = toCoin?.addresses?.[chainId] ?? ''
-  return `${UNISWAP_BASE_URL}/swap?outputCurrency=${outputCurrency}`
-}
-
-export const getBuySynUrl = ({ chainId }: { chainId: number }) => {
-  const params = { toCoin: SYN, chainId }
-
-  switch (chainId) {
-    case CHAINS.ETH.id:
-      return getUniswapSwapUrl(params)
-    case CHAINS.AVALANCHE.id:
-      return getTraderJoeSwapUrl(params)
-    case CHAINS.FANTOM.id:
-      return getFirebirdSwapUrl(params)
-    default:
-      return getSushiSwapUrl(params)
-  }
-}
-
-/** Thanks @blaze for building the analytics api */
-export const BLAZE_API_URL = 'https://synapse.dorime.org/api/v1/analytics'
 
 /** Thanks @0xngmi for building defillama as a whole, it may be a thankless job but we appreciate it */
 export const LLAMA_API_URL = 'https://api.llama.fi/protocol/synapse'

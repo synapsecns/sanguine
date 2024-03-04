@@ -4,7 +4,7 @@ import {
   waitForTransaction,
   writeContract,
 } from '@wagmi/core'
-import { TransactionReceipt } from 'viem'
+import type { TransactionReceipt } from 'viem'
 
 import { MINICHEF_ABI } from '@/constants/abis/miniChef'
 

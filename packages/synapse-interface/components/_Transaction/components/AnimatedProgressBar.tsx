@@ -62,7 +62,7 @@ export const AnimatedProgressBar = memo(
             />
           </linearGradient>
           <clipPath id={maskId}>
-            <rect height="100%">
+            <rect height="100%" >
               <animate
                 attributeName="width"
                 values={`${percentElapsed}%; 100%`}

@@ -1,6 +1,6 @@
 import { expect } from '@jest/globals'
 
-import { getToTokens } from '@/utils/routeMaker/getToTokens'
+import { getToTokens } from '@/utils/route/bridge/getToTokens'
 import { mockRoutes } from './__fixtures__/mockRoutes'
 
 jest.mock('../constants/existingBridgeRoutes', () => ({

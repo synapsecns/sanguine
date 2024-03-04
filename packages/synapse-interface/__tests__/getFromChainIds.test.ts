@@ -1,6 +1,6 @@
 import { expect } from '@jest/globals'
 
-import { getFromChainIds } from '@/utils/routeMaker/getFromChainIds'
+import { getFromChainIds } from '@/utils/route/bridge/getFromChainIds'
 import { mockRoutes } from './__fixtures__/mockRoutes'
 
 jest.mock('../constants/existingBridgeRoutes', () => ({

@@ -1,22 +1,16 @@
-import { useSelector } from 'react-redux'
-import { useMemo } from 'react'
-import { TransactionButton } from '@/components/buttons/TransactionButton'
-import { EMPTY_BRIDGE_QUOTE, EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
-import { RootState } from '@/store/store'
+import { useMemo, useEffect, useState } from 'react'
 import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
-import { useEffect, useState } from 'react'
-import { isAddress } from '@ethersproject/address'
-import {} from 'wagmi'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 
-import {
-  useConnectModal,
-  useAccountModal,
-  useChainModal,
-} from '@rainbow-me/rainbowkit'
+import { isAddress } from '@ethersproject/address'
+
 import { stringToBigInt } from '@/utils/bigint/format'
-import { useBridgeState } from '@/slices/bridge/hooks'
+import { useBridgeDisplayState, useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { PAUSED_FROM_CHAIN_IDS, PAUSED_TO_CHAIN_IDS } from '@/constants/chains'
+import { EMPTY_BRIDGE_QUOTE, EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
+
+import { TransactionButton } from '@/components/buttons/TransactionButton'
 
 export const BridgeTransactionButton = ({
   approveTxn,
@@ -50,9 +44,7 @@ export const BridgeTransactionButton = ({
     bridgeQuote,
   } = useBridgeState()
 
-  const { showDestinationAddress } = useSelector(
-    (state: RootState) => state.bridgeDisplay
-  )
+  const { showDestinationAddress } = useBridgeDisplayState()
 
   const balances = usePortfolioBalances()
   const balancesForChain = balances[fromChainId]
@@ -78,8 +70,6 @@ export const BridgeTransactionButton = ({
     PAUSED_FROM_CHAIN_IDS.includes(fromChainId) ||
     PAUSED_TO_CHAIN_IDS.includes(toChainId)
 
-  let buttonProperties
-
   const fromTokenDecimals: number | undefined =
     fromToken && fromToken?.decimals[fromChainId]
 
@@ -87,15 +77,15 @@ export const BridgeTransactionButton = ({
     return fromTokenDecimals ? stringToBigInt(fromValue, fromTokenDecimals) : 0
   }, [fromValue, fromTokenDecimals])
 
+  let buttonProperties
+
   if (!fromChainId) {
     buttonProperties = {
       label: 'Please select Origin network',
-      onClick: null,
     }
   } else if (!toChainId) {
     buttonProperties = {
       label: 'Please select Destination network',
-      onClick: null,
     }
   } else if (
     PAUSED_FROM_CHAIN_IDS.includes(fromChainId) ||
@@ -103,12 +93,10 @@ export const BridgeTransactionButton = ({
   ) {
     buttonProperties = {
       label: `Bridge unavailable`,
-      onClick: null,
     }
   } else if (!fromToken) {
     buttonProperties = {
       label: `Unsupported Network`,
-      onClick: null,
     }
   } else if (
     !isLoading &&
@@ -117,7 +105,6 @@ export const BridgeTransactionButton = ({
   ) {
     buttonProperties = {
       label: `Amount must be greater than fee`,
-      onClick: null,
     }
   } else if (!isConnected && fromValueBigInt > 0) {
     buttonProperties = {
@@ -127,7 +114,6 @@ export const BridgeTransactionButton = ({
   } else if (isConnected && !sufficientBalance) {
     buttonProperties = {
       label: 'Insufficient balance',
-      onClick: null,
     }
   } else if (showDestinationAddress && !destinationAddress) {
     buttonProperties = {
@@ -158,12 +144,10 @@ export const BridgeTransactionButton = ({
   }
 
   return (
-    buttonProperties && (
-      <TransactionButton
-        {...buttonProperties}
-        disabled={isButtonDisabled}
-        chainId={fromChainId}
-      />
-    )
+    <TransactionButton
+      {...buttonProperties}
+      disabled={isButtonDisabled}
+      chainId={fromChainId}
+    />
   )
 }

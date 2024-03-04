@@ -1,4 +1,3 @@
-import Grid from '@tw/Grid'
 import Link from 'next/link'
 
 import {
@@ -136,7 +135,7 @@ export function PageFooter() {
             Terms of Use
           </a>
         </div>
-        <p>｜</p>
+        <p className="opacity-30">｜</p>
         <div className="text-opacity-50 text-secondaryTextColor">
           <a
             className="duration-75 hover:text-white transform-gpu hover:transition-all"

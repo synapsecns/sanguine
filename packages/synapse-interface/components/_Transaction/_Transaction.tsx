@@ -1,22 +1,19 @@
-import { useCallback } from 'react'
+import { isNull } from 'lodash'
 import { useAppDispatch } from '@/store/hooks'
 import { getTxBlockExplorerLink } from './helpers/getTxBlockExplorerLink'
 import { getExplorerAddressLink } from './helpers/getExplorerAddressLink'
-import { useBridgeTxStatus } from './helpers/useBridgeTxStatus'
-import { isNull } from 'lodash'
-import { removeTransaction } from '@/slices/_transactions/reducer'
-import { TransactionPayloadDetail } from '../Portfolio/Transaction/components/TransactionPayloadDetail'
-import { Chain, Token } from '@/utils/types'
-import TransactionArrow from '../icons/TransactionArrow'
-import { TimeRemaining } from './components/TimeRemaining'
-import { TransactionStatus } from './components/TransactionStatus'
 import { getEstimatedTimeStatus } from './helpers/getEstimatedTimeStatus'
+import { useBridgeTxStatus } from './helpers/useBridgeTxStatus'
+import { useBridgeTxUpdater } from './helpers/useBridgeTxUpdater'
+import { removeTransaction } from '@/slices/_transactions/reducer'
+import type { Chain, Token } from '@/utils/types'
+import { TransactionPayloadDetail } from '@/components/Portfolio/Transaction/components/TransactionPayloadDetail'
+import { TransactionArrow } from '@/components/icons/TransactionArrow'
+import { TimeRemaining } from './components/TimeRemaining'
 import { DropdownMenu } from './components/DropdownMenu'
 import { MenuItem } from './components/MenuItem'
-import { useBridgeTxUpdater } from './helpers/useBridgeTxUpdater'
 import { AnimatedProgressBar } from './components/AnimatedProgressBar'
 import { TransactionSupport } from './components/TransactionSupport'
-import { RightArrow } from '@/components/icons/RightArrow'
 
 interface _TransactionProps {
   connectedAddress: string
@@ -52,9 +49,9 @@ export const _Transaction = ({
 }: _TransactionProps) => {
   const dispatch = useAppDispatch()
 
-  const handleClearTransaction = useCallback(() => {
+  const handleClearTransaction = () => {
     dispatch(removeTransaction({ originTxHash }))
-  }, [dispatch])
+  }
 
   const [originTxExplorerLink, originExplorerName] = getTxBlockExplorerLink(
     originChain.id,
@@ -99,18 +96,20 @@ export const _Transaction = ({
     isTxComplete
   )
 
+
   return (
     <div
       data-test-id="_transaction"
       className={`
-        border border-surface rounded-md bg-tint
+        bg-bgBase/10 fill-bgBase/20
+        border border-white/10 rounded-md
         text-primary text-xs md:text-base
       `}
     >
       <div
         className={`
-          flex items-center px-1 pt-2
-          ${showTransactionSupport ? 'pb-0' : 'pb-2'}
+          flex items-center pr-2
+          ${showTransactionSupport ? 'pb-0' : ''}
         `}
       >
         <TransactionPayloadDetail
@@ -118,9 +117,17 @@ export const _Transaction = ({
           token={originToken}
           tokenAmount={originValue}
           isOrigin={true}
-          showChain={false}
+          showChain={true}
+          className={`py-2 px-2 ${isTxFinalized ? "bg-bgBase/10" : "bg-transparent"} rounded-l-md`}
         />
-        <RightArrow className="stroke-secondaryTextColor mt-0.5 mx-1" />
+        <TransactionArrow
+          className={`
+              mr-2
+              ${isTxFinalized
+              ? 'stroke-white/10 fill-bgBase/10 '
+              : 'stroke-white/10 fill-transparent' /**fill-bgBase/10 */}
+          `}
+        />
         <TransactionPayloadDetail
           chain={destinationChain}
           token={destinationToken}
@@ -138,7 +145,7 @@ export const _Transaction = ({
               />
             }
           >
-            <div className="p-2 mt-1 text-xs cursor-default text-zinc-300">
+            <div className="p-2 text-xs cursor-default italic text-slate-300/90">
               Began{' '}
               {new Date(timestamp * 1000).toLocaleString('en-US', {
                 month: 'short',
@@ -173,7 +180,13 @@ export const _Transaction = ({
         </div>
       </div>
       {showTransactionSupport && <TransactionSupport />}
-      <div className="px-1">
+      <div
+        className={`
+          px-0.5
+          h-0
+          ${isTxFinalized ? "" : "-mt-[3px] pt-[-3px] pb-[3px]"}
+        `}
+      >
         <AnimatedProgressBar
           id={originTxHash}
           startTime={timestamp}

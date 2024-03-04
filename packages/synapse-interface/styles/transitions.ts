@@ -14,15 +14,23 @@ export interface TransitionClassesProps extends TransitionClasses {
   className?: string
 }
 
+/**
+ * `transform-gpu transform` were used on the *To/*From classes
+ * but it appears it doesnt have support in conjunction with opacity
+ * in firefox 72-102, 109 and other mis versions easiest fix is to
+ * just not use it for now till either tw or firefox fixes it
+ * whoever wrote firefox deserves to get shot, then brought back
+ * to life and then shot again
+ */
 export const COIN_SLIDE_OVER_PROPS: TransitionClassesProps = {
   appear: true,
   unmount: true,
-  enter: 'duration-25 transition-opacity ease-out',
-  enterFrom: 'transform-gpu transform opacity-0',
-  enterTo: 'transform-gpu transform opacity-100',
-  leave: 'duration-25 transition-opacity ease-out',
-  leaveFrom: 'transform-gpu transform opacity-100',
-  leaveTo: 'transform-gpu transform opacity-0 hidden',
+  enter: 'duration-0 transition-opacity ease-out', //duration-25
+  enterFrom: ' opacity-0',
+  enterTo: ' opacity-100',
+  leave: 'duration-0 transition-opacity ease-out', //duration-25
+  leaveFrom: ' opacity-100',
+  leaveTo: ' opacity-0 hidden',
 }
 
 export const SECTION_TRANSITION_PROPS: TransitionClassesProps = {
@@ -43,8 +51,22 @@ export const TRANSITION_PROPS: TransitionClassesProps = {
     origin-top absolute
     transition-all
     w-full h-full
-    bg-bgBase
+    backdrop-blur-lg
     z-20 rounded-lg
     left-0
   `,
 }
+
+export const PORTFOLIO_ACCORDIAN_TRANSITION_PROPS: TransitionClassesProps = {
+  appear: true,
+  unmount: true,
+  enter: 'transition duration-[42ms] ease-out',
+  enterFrom: 'transform-gpu scale-y-0 opacity-0 max-h-0',
+  enterTo: 'transform-gpu scale-y-100 opacity-100 max-h-[1420px]',
+  leave: 'transition duration-[42ms] scale-y-100 ease-out ',
+  leaveFrom: 'transform-gpu scale-y-100 opacity-100 max-h-[1420px]',
+  leaveTo: 'transform-gpu opacity-0 scale-y-0 max-h-0',
+  className: 'origin-top transition-all',
+}
+
+// max-h-[1420px] is a workaround to make the height smoothly transition

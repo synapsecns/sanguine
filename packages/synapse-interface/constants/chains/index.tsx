@@ -1,5 +1,5 @@
 import * as all from './master'
-import { Chain } from '@/utils/types/index'
+import type { Chain } from '@/utils/types/index'
 
 export type ChainsByChainID = {
   [cID: number]: Chain

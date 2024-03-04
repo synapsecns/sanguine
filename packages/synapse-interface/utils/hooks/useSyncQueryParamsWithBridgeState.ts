@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { useDispatch } from 'react-redux'
-import { Token } from '@types'
+import type { Token } from '@types'
 import * as BRIDGEABLE from '@constants/tokens/bridgeable'
 
 import { useBridgeState } from '@/slices/bridge/hooks'
@@ -11,8 +11,8 @@ import {
   setToChainId,
   setToToken,
 } from '@/slices/bridge/reducer'
-import { getAllFromChainIds } from '../routeMaker/getFromChainIds'
-import { getAllToChainIds } from '../routeMaker/getToChainIds'
+import { getAllFromChainIds } from '../route/bridge/getFromChainIds'
+import { getAllToChainIds } from '../route/bridge/getToChainIds'
 
 const useSyncQueryParamsWithBridgeState = () => {
   const dispatch = useDispatch()

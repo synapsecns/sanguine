@@ -1,47 +1,32 @@
 import React from 'react'
 import Button from '@tw/Button'
-import ButtonLoadingDots from './buttons/ButtonLoadingDots'
+import ButtonLoadingDots from '@/components/buttons/ButtonLoadingDots'
+
 
 export const InteractiveInputRowButton = ({
   title,
   disabled,
   isPending,
-  onClickEnter,
+  onClick,
   buttonLabel,
   loadingLabel,
 }: {
   title: string
   disabled: boolean
   isPending: boolean
-  onClickEnter: (e) => void
+  onClick: (e) => void
   buttonLabel?: string
   loadingLabel?: string
 }) => {
   return (
     <Button
-      style={
-        disabled
-          ? {}
-          : {
-              background:
-                'linear-gradient(90deg, rgba(128, 0, 255, 0.2) 0%, rgba(255, 0, 191, 0.2) 100%)',
-            }
-      }
+      fancy={true}
       className={`
-              w-full self-center
-              rounded-sm my-2 px-4 py-3
-              text-white text-opacity-100
-              border border-purple-500
-              disabled:border-[#4A434C]
-              hover:opacity-80  disabled:text-[#88818C]
-              bg-gradient-to-r disabled:from-bgBase disabled:to-bgBase
-              mt-5
-              ${isPending && 'from-[#622e71] to-[#564071]'}
-            `}
+        self-center mt-5
+        ${isPending && '!from-[#622e71] !to-[#564071]'}
+      `}
       disabled={disabled}
-      onClick={(e) => {
-        onClickEnter(e)
-      }}
+      onClick={onClick}
     >
       {isPending ? (
         <>

@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react'
-import { Address } from 'viem'
+import { useEffect } from 'react'
+import type { Address } from 'viem'
 import { useAppDispatch } from '@/store/hooks'
 import {
   usePortfolioActionHandlers,
@@ -8,15 +8,11 @@ import {
 } from '@/slices/portfolio/hooks'
 import { PortfolioTabs } from '@/slices/portfolio/actions'
 import { PortfolioState } from '@/slices/portfolio/reducer'
-import { getValidAddress } from '@/utils/isValidAddress'
-import { isTransactionHash } from '@/utils/validators'
+import { getValidAddress } from '@/utils/address/isValidAddress'
+import { isTransactionHash } from '@/utils/isTransactionHash'
 import { getTransactionHashExplorerLink } from '../Transaction/components/TransactionExplorerLink'
 import { ClearSearchButton } from './ClearSearchButton'
-import { useIsFocused } from '../helpers/useIsFocused'
-import { useIsMounted } from '../helpers/useIsMounted'
 import { useSearchInputState } from '../helpers/useSearchInputStatus'
-
-export const inputRef = React.createRef<HTMLInputElement>()
 
 export const SearchBar = () => {
   const dispatch = useAppDispatch()
@@ -24,9 +20,6 @@ export const SearchBar = () => {
   const { activeTab, searchInput, searchedBalances }: PortfolioState =
     usePortfolioState()
   const { isSearchInputActive, isMasqueradeActive } = useSearchInputState()
-
-  const isMounted = useIsMounted()
-  const isFocused = useIsFocused(inputRef)
 
   const placeholder = getFilterPlaceholder(activeTab)
 
@@ -55,25 +48,26 @@ export const SearchBar = () => {
     }
   }, [isSearchInputTransactionHash])
 
+
   return (
     <div
       id="portfolio-search-bar"
       className={`
         relative flex items-center ml-auto
         border rounded-xl
-        ${!isMounted && 'border-opacity-30'}
-        ${
-          isFocused || isSearchInputActive
-            ? 'border-synapsePurple bg-tint'
-            : 'border-separator bg-transparent'
-        }
+       border-bgBase/10 bg-transparent transition-all
+        focus-within:!border-synapsePurple focus-within:bg-bgBase/10
+        hover:border-white/10 hover:bg-bgBase/10
+        ${isSearchInputActive && `
+          border-synapsePurple/80 bg-bgBase/10
+          hover:border-synapsePurple/100
+        `}
       `}
     >
       <FilterInput
         placeholder={placeholder}
         searchStr={searchInput}
         onSearch={onSearchInput}
-        disabled={isMounted ? false : true}
       />
       <ClearSearchButton
         show={isSearchInputActive}
@@ -92,12 +86,12 @@ const FilterInput = ({
   searchStr: string
   onSearch: (str: string) => void
   placeholder: string
-  disabled: boolean
+  disabled?: boolean
 }) => {
   return (
     <input
       id="filter-input"
-      ref={inputRef}
+      autoComplete="off"
       placeholder={placeholder}
       onChange={(e) => onSearch(e.target.value)}
       value={searchStr}

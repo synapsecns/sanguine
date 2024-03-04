@@ -1,29 +1,34 @@
 import numeral from 'numeral'
 import { useMemo } from 'react'
+import Image from 'next/image'
+
+import { CHAINS_BY_ID } from '@constants/chains'
+import * as CHAINS from '@constants/chains/master'
+import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
+import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
+
 import {
+  formatBigIntToString,
   formatBigIntToPercentString,
   stringToBigInt,
 } from '@/utils/bigint/format'
-import { CHAINS_BY_ID } from '@constants/chains'
-import * as CHAINS from '@constants/chains/master'
-import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
-import Image from 'next/image'
-import { formatBigIntToString } from '@/utils/bigint/format'
+
 import {
   ELIGIBILITY_DEFAULT_TEXT,
   useStipEligibility,
 } from '@/utils/hooks/useStipEligibility'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
+import { usePriceDataState } from '@/slices/price/hooks'
 import { useAppSelector } from '@/store/hooks'
+
 
 const MAX_ARB_REBATE_PER_ADDRESS = 2000
 
-const BridgeExchangeRateInfo = () => {
+export const BridgeExchangeRateInfo = () => {
   return (
     <div className="py-3.5 px-1 space-y-3 text-sm md:px-6 tracking-wide">
       <RouteEligibility />
-      <section className="p-2 space-y-1 text-sm border rounded-sm border-[#504952] text-secondary font-light">
+      <section className="p-2 space-y-1 text-sm rounded-sm ring-1 ring-slate-400/[0.069] text-secondary font-light">
         <GasDropLabel />
         <Router />
         <Fee />
@@ -48,7 +53,7 @@ const Slippage = () => {
       {safeFromAmount !== '0' && !underFee ? (
         <span className={textColor}>{formattedPercentSlippage}</span>
       ) : (
-        <span className="">—</span>
+        <span>—</span>
       )}
     </div>
   )
@@ -111,7 +116,7 @@ const RouteEligibility = () => {
 
 const RebateText = () => {
   const { rebate } = useStipEligibility()
-  const { arbPrice } = useAppSelector((state) => state.priceData)
+  const { arbPrice } = usePriceDataState()
   const arbInDollars = rebate * arbPrice
 
   return (
@@ -251,7 +256,7 @@ const GasDropLabel = () => {
 
   return (
     <div className="flex items-center text-secondary">
-      <span className="">Will also receive {formattedGasDropAmount} </span>
+      <span>Will also receive {formattedGasDropAmount} </span>
       <span className="ml-1 font-medium text-white">
         {symbol}{' '}
         <span className="font-normal ">
@@ -308,5 +313,3 @@ const getAirdropInDollars = (
     return undefined
   }
 }
-
-export default BridgeExchangeRateInfo

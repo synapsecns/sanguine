@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import { Token } from '@types'
+import type { Token } from '@types'
 
 import { POOL_BY_ROUTER_INDEX } from '@/constants/tokens'
 import { getPoolTokenInfoArr, getTokenBalanceInfo } from '@/utils/poolDataFuncs'

@@ -1,5 +1,5 @@
-import { useSynapseContext } from './providers/SynapseProvider'
-import { BRIDGE_REQUIRED_CONFIRMATIONS } from '@/constants/bridge'
+import { useSynapseContext } from '../contexts/SynapseProvider'
+
 import { Chain } from './types'
 
 enum SynapseBridgeModule {

@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { Token } from '@/utils/types'
+import type { Token } from '@/utils/types'
 import { ALL } from '@/constants/withdrawTypes'
 
 type WithdrawQuote = {

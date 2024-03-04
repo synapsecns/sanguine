@@ -21,7 +21,7 @@ export const useBridgeListener = () => {
    * Delay loading animation when user input updates
    */
   useEffect(() => {
-    const DEBOUNCE_DELAY = 300
+    const DEBOUNCE_DELAY = 200
     const ANIMATION_DELAY = 200
 
     const animationTimer = setTimeout(() => {
@@ -43,7 +43,7 @@ export const useBridgeListener = () => {
 
   // Debounce alternative destination token bridge quotes
   useEffect(() => {
-    const ALTERNATE_OPTIONS_DEBOUNCE_DELAY = 1000
+    const ALTERNATE_OPTIONS_DEBOUNCE_DELAY = 500
 
     const alternativeOptionsDebounceTimer = setTimeout(() => {
       dispatch(updateDebouncedToTokensFromValue(debouncedFromValue))

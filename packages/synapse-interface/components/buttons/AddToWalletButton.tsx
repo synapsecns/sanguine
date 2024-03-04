@@ -1,3 +1,4 @@
+import 'wagmi/window'
 import METAMASK_ICON from '@assets/icons/metamask.svg'
 import { getCompleteUrl } from '@urls'
 
@@ -73,7 +74,7 @@ export function AddToWalletMiniButton({
   )
 }
 
-import 'wagmi/window';
+
 
 export const addTokenToWallet = async ({ token, chainId, icon }) => {
   const provider = window.ethereum

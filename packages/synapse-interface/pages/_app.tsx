@@ -5,19 +5,16 @@ import Head from 'next/head'
 import '@/patch'
 import { Analytics } from '@vercel/analytics/react'
 import { PersistGate } from 'redux-persist/integration/react'
-import LogRocket from 'logrocket'
-import setupLogRocketReact from 'logrocket-react'
-
-import { WagmiConfig } from 'wagmi'
-import { RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit'
-import { SynapseProvider } from '@/utils/providers/SynapseProvider'
-import CustomToaster from '@/components/toast'
-import { SegmentAnalyticsProvider } from '@/contexts/SegmentAnalyticsProvider'
 
 import { Provider } from 'react-redux'
+import { WagmiConfig } from 'wagmi'
+import { RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit'
+
+import CustomToaster from '@/components/toast'
+
 import { store, persistor } from '@/store/store'
 import { UserProvider } from '@/contexts/UserProvider'
-
+import { SynapseProvider } from '@/contexts/SynapseProvider'
 import { wagmiChains, wagmiConfig } from '@/wagmiConfig'
 import { BackgroundListenerProvider } from '@/contexts/BackgroundListenerProvider'
 
@@ -26,6 +23,8 @@ if (
   typeof window !== 'undefined' &&
   !location.hostname.match('synapseprotocol.com')
 ) {
+  const LogRocket = (await import('logrocket')).default
+  const setupLogRocketReact = (await import('logrocket-react')).default
   LogRocket.init('npdhrc/synapse-staging', {
     mergeIframes: true,
   })
@@ -37,6 +36,11 @@ if (
   })
 }
 
+// precompute theme
+let RAINBOW_KIT_THEME = darkTheme({overlayBlur: 'large'})
+RAINBOW_KIT_THEME.colors.modalBackground = '#94a3b825'
+RAINBOW_KIT_THEME.colors.modalBorder = '#FFFFFF51'
+
 const App = ({ Component, pageProps }: AppProps) => {
   return (
     <>
@@ -44,19 +48,20 @@ const App = ({ Component, pageProps }: AppProps) => {
         <title>Synapse Protocol</title>
       </Head>
       <WagmiConfig config={wagmiConfig}>
-        <RainbowKitProvider chains={wagmiChains} theme={darkTheme()}>
+        <RainbowKitProvider
+          chains={wagmiChains}
+          theme={RAINBOW_KIT_THEME}
+        >
           <SynapseProvider chains={wagmiChains}>
             <Provider store={store}>
               <PersistGate loading={null} persistor={persistor}>
-                <SegmentAnalyticsProvider>
-                  <UserProvider>
-                    <BackgroundListenerProvider>
-                      <Component {...pageProps} />
-                    </BackgroundListenerProvider>
-                    <Analytics />
-                    <CustomToaster />
-                  </UserProvider>
-                </SegmentAnalyticsProvider>
+                <UserProvider>
+                  <BackgroundListenerProvider>
+                    <Component {...pageProps} />
+                  </BackgroundListenerProvider>
+                  <Analytics />
+                  <CustomToaster />
+                </UserProvider>
               </PersistGate>
             </Provider>
           </SynapseProvider>

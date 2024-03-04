@@ -1,11 +1,11 @@
 import { formatUnits } from '@ethersproject/units'
 import { readContracts, Address, erc20ABI } from '@wagmi/core'
-import { Token } from '@types'
-import { MINICHEF_ABI } from '@abis/miniChef'
-
-import { getSynPrices } from '@/utils/actions/getPrices'
-import { SYN_ETH_SUSHI_TOKEN } from '@/constants/tokens/sushiMaster'
+import type { Token } from '@/utils/types'
+import { MINICHEF_ABI } from '@/constants/abis/miniChef'
 import { MINICHEF_ADDRESSES } from '@/constants/minichef'
+import { SYN_ETH_SUSHI_TOKEN } from '@/constants/tokens/sushiMaster'
+import { getSynPrices } from '@/utils/actions/getPrices'
+
 
 type PoolInfoResult = readonly [
   accSynapsePerShare: bigint,
@@ -38,61 +38,58 @@ export const getPoolApyData = async (
       yearlyAPRUnvested: 0,
     }
   }
-  const minichefAddress: Address = poolToken.miniChefAddress as Address
 
-  const data = await readContracts({
-    contracts: [
-      {
-        address: minichefAddress,
-        abi: MINICHEF_ABI,
-        functionName: 'synapsePerSecond',
-        chainId,
-      },
-      {
-        address: minichefAddress,
-        abi: MINICHEF_ABI,
-        functionName: 'totalAllocPoint',
-        chainId,
-      },
-      {
-        address: minichefAddress,
-        abi: MINICHEF_ABI,
-        functionName: 'poolInfo',
-        chainId,
-        args: [poolToken.poolId[chainId]],
-      },
-      {
-        address: poolToken.addresses[chainId] as Address,
-        abi: erc20ABI,
-        functionName: 'balanceOf',
-        chainId,
-        args: [minichefAddress],
-      },
-      {
-        address: poolToken.addresses[chainId] as Address,
-        abi: erc20ABI,
-        functionName: 'totalSupply',
-        chainId,
-      },
-    ],
-  })
 
-  const synapsePerSecondResult: bigint = data[0].result
-  const totalAllocPointsResult: bigint = data[1].result
-  const poolInfoResult: PoolInfoResult = data[2].result
-  const lpTokenBalanceResult: bigint = data[3].result ?? 0n
-  const lpTokenSupplyResult: bigint = data[4].result ?? 0n
+  const minichefAddress = poolToken.miniChefAddress as Address
 
-  const synPriceData = prices?.synPrices?.synPrice
-    ? prices.synPrices
-    : await getSynPrices()
+  const minichefContractInfo = {
+    address: minichefAddress,
+    abi:     MINICHEF_ABI,
+    chainId,
+  }
+  const poolTokenContractInfo = {
+    address: poolToken.addresses[chainId] as Address,
+    abi:     erc20ABI,
+    chainId,
+  }
+
+  const [synPriceData, data] = await Promise.all([
+    prices?.synPrices?.synPrice ? prices?.synPrices : getSynPrices(),
+    readContracts({
+      contracts: [
+        {
+          ...minichefContractInfo,
+          functionName: 'synapsePerSecond',
+        },
+        {
+          ...minichefContractInfo,
+          functionName: 'totalAllocPoint',
+        },
+        {
+          ...minichefContractInfo,
+          functionName: 'poolInfo',
+          args: [poolToken.poolId[chainId]],
+        },
+        {
+          ...poolTokenContractInfo,
+          functionName: 'balanceOf',
+          args: [minichefAddress],
+        },
+        {
+          ...poolTokenContractInfo,
+          functionName: 'totalSupply',
+        },
+      ],
+    })
+  ])
+
   // const metisPrice = prices?.metisPrice ?? (await getMetisPrice())
 
-  const synapsePerSecond: bigint = synapsePerSecondResult ?? 0n
-  const totalAllocPoints: bigint = totalAllocPointsResult ?? 1n
-  const allocPoints: bigint = poolInfoResult?.[2] ?? 1n
-  const lpTokenBalance: bigint = lpTokenBalanceResult ?? 0n
-  const lpTokenSupply: bigint = lpTokenSupplyResult ?? 0n
+  const synapsePerSecond: bigint = data[0].result ?? 0n
+  const totalAllocPoints: bigint = data[1].result ?? 1n
+  const allocPoints: bigint = (data[2].result as PoolInfoResult)?.[2] ?? 1n
+  const lpTokenBalance: bigint = data[3].result ?? 0n
+  const lpTokenSupply: bigint = data[4].result ?? 0n
 
   let rewardsPerWeek
   try {

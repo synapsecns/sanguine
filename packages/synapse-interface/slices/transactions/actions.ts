@@ -1,7 +1,8 @@
 import { createAction } from '@reduxjs/toolkit'
 
-import { BridgeTransaction } from '../api/generated'
-import { Chain, Token } from '@/utils/types'
+import type { Chain, Token } from '@/utils/types'
+import type { BridgeTransaction } from '../api/generated'
+
 
 export interface PendingBridgeTransaction {
   id: number

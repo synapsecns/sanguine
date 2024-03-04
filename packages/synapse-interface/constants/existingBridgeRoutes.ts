@@ -1,5 +1,5 @@
 import { BRIDGE_MAP } from '@/constants/bridgeMap'
-import { flattenPausedTokens } from '@/utils/flattenPausedTokens'
+import { flattenPausedTokens } from '@/utils/tokens/flattenPausedTokens'
 
 export type BridgeRoutes = Record<string, string[]>
 
