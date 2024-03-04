@@ -9,9 +9,9 @@ struct AppConfigV1 {
 using AppConfigLib for AppConfigV1 global;
 
 library AppConfigLib {
-    error AppConfigLib__IncorrectVersion(uint8 version);
-
     uint8 constant APP_CONFIG_V1 = 1;
+
+    error AppConfigLib__IncorrectVersion(uint8 version);
 
     /// @notice Encodes versioned app config into a bytes format.
     /// @param version      The version of the app config.

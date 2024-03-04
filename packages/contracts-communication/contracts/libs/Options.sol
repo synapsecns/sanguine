@@ -15,9 +15,9 @@ using OptionsLib for OptionsV1 global;
 /// @title OptionsLib
 /// @notice A library for encoding and decoding Interchain options related to interchain messages.
 library OptionsLib {
-    error OptionsLib__IncorrectVersion(uint8 version);
-
     uint8 constant OPTIONS_V1 = 1;
+
+    error OptionsLib__IncorrectVersion(uint8 version);
 
     /// @notice Encodes versioned options into a bytes format.
     /// @param version      The version of the options.
