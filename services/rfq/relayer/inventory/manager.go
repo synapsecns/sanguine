@@ -401,7 +401,7 @@ func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int,
 	return nil
 }
 
-//nolint:cyclop
+//nolint:cyclop,gocognit
 func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[common.Address]*TokenMetadata, chainID int, token common.Address) (rebalance *RebalanceData, err error) {
 	maintenancePct, err := cfg.GetMaintenanceBalancePct(chainID, token.Hex())
 	if err != nil {

@@ -142,8 +142,8 @@ func (c *rebalanceManagerCCTP) Execute(parentCtx context.Context, rebalance *Reb
 		return fmt.Errorf("could not find cctp contract for chain %d", rebalance.OriginMetadata.ChainID)
 	}
 	ctx, span := c.handler.Tracer().Start(parentCtx, "rebalance.Execute", trace.WithAttributes(
-		attribute.Int("rebalance_origin", int(rebalance.OriginMetadata.ChainID)),
-		attribute.Int("rebalance_dest", int(rebalance.DestMetadata.ChainID)),
+		attribute.Int("rebalance_origin", rebalance.OriginMetadata.ChainID),
+		attribute.Int("rebalance_dest", rebalance.DestMetadata.ChainID),
 		attribute.String("rebalance_amount", rebalance.Amount.String()),
 	))
 	defer func(err error) {
