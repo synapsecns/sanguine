@@ -26,6 +26,8 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     uint256 internal _claimFeeFraction;
     /// @dev Gas limit for the verifyEntry function on the remote chain.
     mapping(uint256 chainId => uint256 gasLimit) internal _verifyGasLimit;
+    /// @dev Hash of the last gas data sent to the remote chain.
+    mapping(uint256 chainId => bytes32 gasDataHash) internal _lastGasDataHash;
 
     /// @inheritdoc ISynapseModule
     address public feeCollector;
@@ -171,6 +173,30 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     function _removeVerifier(address verifier) internal {
         _verifiers.removeSigner(verifier);
         emit VerifierRemoved(verifier);
+    }
+
+    /// @dev Internal logic to fill the module data for the specified destination chain.
+    function _fillModuleData(
+        uint256 destChainId,
+        uint256 dbNonce
+    )
+        internal
+        override
+        returns (bytes memory moduleData)
+    {
+        moduleData = _getSynapseGasOracle().getLocalGasData();
+        // Exit early if data is empty
+        if (moduleData.length == 0) {
+            return moduleData;
+        }
+        bytes32 dataHash = keccak256(moduleData);
+        // Don't send the same data twice
+        if (dataHash == _lastGasDataHash[destChainId]) {
+            moduleData = "";
+        } else {
+            _lastGasDataHash[destChainId] = dataHash;
+            emit GasDataSent(destChainId, moduleData);
+        }
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
