@@ -38,14 +38,12 @@ export const getPoolApyData = async (
       yearlyAPRUnvested: 0,
     }
   }
-  const synPriceExists = prices?.synPrices?.synPrice
-  const synPriceDataPromise = synPriceExists ? prices?.synPrices : getSynPrices()
 
 
   const minichefAddress: Address = poolToken.miniChefAddress as Address
 
   const [synPriceData, data] = await Promise.all([
-    synPriceExists ? prices?.synPrices : getSynPrices(),
+    prices?.synPrices?.synPrice ? prices?.synPrices : getSynPrices(),
     readContracts({
       contracts: [
         {
@@ -84,8 +82,6 @@ export const getPoolApyData = async (
     })
   ])
 
-
-  // const synPriceData = await synPriceDataPromise
   // const metisPrice = prices?.metisPrice ?? (await getMetisPrice())
 
   const synapsePerSecond: bigint = data[0].result ?? 0n
