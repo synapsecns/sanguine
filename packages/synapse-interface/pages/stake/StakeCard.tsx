@@ -78,7 +78,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
       )
       setUserStakeData(data)
     } catch (err) {
-      console.log(err)
+      console.log('getUserStakedBalance: ', err)
     }
   }
 
@@ -96,7 +96,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
       )
       setAllowance(tkAllowance)
     } catch (err) {
-      console.log(err)
+      console.log('getUserLpTokenAllowance: ', err)
     }
   }
 
