@@ -46,7 +46,7 @@ changelog:
   sort: asc
 
 dockers:
-  # Docker AMD64
+  # Linux AMD64
   - goos: linux
     goarch: amd64
     image_templates:
