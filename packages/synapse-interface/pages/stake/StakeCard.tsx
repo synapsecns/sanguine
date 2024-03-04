@@ -309,6 +309,13 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                       const tx = await pendingApproveTxWrapFunc(
                         approve(pool, deposit.bi, chainId)
                       )
+                      if (tx?.status === 'success') {
+                        getUserLpTokenAllowance(
+                          address as Address,
+                          chainId,
+                          pool
+                        )
+                      }
                     }
                   : async (e) => {
                       const tx = await pendingStakeTxWrapFunc(
