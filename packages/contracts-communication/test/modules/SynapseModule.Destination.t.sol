@@ -135,9 +135,9 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         );
     }
 
-    function expectNotEnoughSignaturesRevert(uint256 threshold) internal {
+    function expectNotEnoughSignaturesRevert(uint256 provided, uint256 threshold) internal {
         vm.expectRevert(
-            abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__NotEnoughSignatures.selector, threshold)
+            abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__NotEnoughSignatures.selector, provided, threshold)
         );
     }
 
@@ -157,19 +157,19 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
     // Should be verified if the enough valid signatures, which match the signers ascending order
 
     function test_verifyEntry_zeroSignatures_revertNotEnoughSignatures() public {
-        expectIncorrectSignaturesLengthRevert(0);
+        expectNotEnoughSignaturesRevert(0, 2);
         verifyEntry(mockEntry, "");
     }
 
     function test_verifyEntry_oneSignature_valid_revertNotEnoughSignatures() public {
         bytes memory signatures = signEntry(mockEntry, toArray(PK_0));
-        expectNotEnoughSignaturesRevert(2);
+        expectNotEnoughSignaturesRevert(1, 2);
         verifyEntry(mockEntry, signatures);
     }
 
     function test_verifyEntry_oneSignature_invalid_revertNotEnoughSignatures() public {
         bytes memory signatures = signEntry(mockEntry, toArray(PK_3));
-        expectNotEnoughSignaturesRevert(2);
+        expectNotEnoughSignaturesRevert(0, 2);
         verifyEntry(mockEntry, signatures);
     }
 
@@ -194,7 +194,7 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
 
     function test_verifyEntry_twoSignatures_invalidOne_sorted_revertNotEnoughSignatures() public {
         bytes memory signatures = signEntry(mockEntry, toArray(PK_1, PK_3));
-        expectNotEnoughSignaturesRevert(2);
+        expectNotEnoughSignaturesRevert(1, 2);
         verifyEntry(mockEntry, signatures);
     }
 
@@ -206,7 +206,7 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
 
     function test_verifyEntry_twoSignatures_invalidTwo_sorted_revertNotEnoughSignatures() public {
         bytes memory signatures = signEntry(mockEntry, toArray(PK_4, PK_3));
-        expectNotEnoughSignaturesRevert(2);
+        expectNotEnoughSignaturesRevert(0, 2);
         verifyEntry(mockEntry, signatures);
     }
 
@@ -256,7 +256,7 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
 
     function test_verifyEntry_threeSignatures_invalidTwo_sorted_revertNotEnoughSignatures() public {
         bytes memory signatures = signEntry(mockEntry, toArray(PK_4, PK_3, PK_2));
-        expectNotEnoughSignaturesRevert(2);
+        expectNotEnoughSignaturesRevert(1, 2);
         verifyEntry(mockEntry, signatures);
     }
 
@@ -276,7 +276,7 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         vm.prank(owner);
         module.removeVerifier(SIGNER_0);
         bytes memory signatures = signEntry(mockEntry, toArray(PK_4, PK_0, PK_3));
-        expectNotEnoughSignaturesRevert(2);
+        expectNotEnoughSignaturesRevert(0, 2);
         verifyEntry(mockEntry, signatures);
     }
 
