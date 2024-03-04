@@ -4,6 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
+	"testing"
+	"time"
+
 	"github.com/Flaque/filet"
 	"github.com/gocarina/gocsv"
 	"github.com/phayes/freeport"
@@ -19,9 +23,6 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
-	"strconv"
-	"testing"
-	"time"
 )
 
 type ScreenerSuite struct {
