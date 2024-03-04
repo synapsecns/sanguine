@@ -5,7 +5,6 @@
 
 Core contains common libraries used across the synapse Go repositories.
 
-
 ## Directory Structure
 
 <pre>
