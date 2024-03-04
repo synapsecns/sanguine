@@ -28,6 +28,8 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     mapping(uint256 chainId => uint256 gasLimit) internal _verifyGasLimit;
     /// @dev Hash of the last gas data sent to the remote chain.
     mapping(uint256 chainId => bytes32 gasDataHash) internal _lastGasDataHash;
+    /// @dev Nonce of the last gas data received from the remote chain.
+    mapping(uint256 chainid => uint256 gasDataNonce) internal _lastGasDataNonce;
 
     /// @inheritdoc ISynapseModule
     address public feeCollector;
@@ -196,6 +198,21 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
         } else {
             _lastGasDataHash[destChainId] = dataHash;
             emit GasDataSent(destChainId, moduleData);
+        }
+    }
+
+    /// @dev Internal logic to handle the auxiliary module data relayed from the remote chain.
+    function _receiveModuleData(uint256 srcChainId, uint256 dbNonce, bytes memory moduleData) internal override {
+        // Exit early if data is empty
+        if (moduleData.length == 0) {
+            return;
+        }
+        // Don't process outdated data
+        uint256 lastNonce = _lastGasDataNonce[srcChainId];
+        if (lastNonce == 0 || lastNonce < dbNonce) {
+            _lastGasDataNonce[srcChainId] = dbNonce;
+            _getSynapseGasOracle().receiveRemoteGasData(srcChainId, moduleData);
+            emit GasDataReceived(srcChainId, moduleData);
         }
     }
 
