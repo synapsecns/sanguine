@@ -4,7 +4,7 @@ pragma solidity 0.8.20;
 import {InterchainModule} from "./InterchainModule.sol";
 
 import {SynapseModuleEvents} from "../events/SynapseModuleEvents.sol";
-import {IGasOracle} from "../interfaces/IGasOracle.sol";
+import {ISynapseGasOracle} from "../interfaces/ISynapseGasOracle.sol";
 import {ISynapseModule} from "../interfaces/ISynapseModule.sol";
 
 import {ThresholdECDSA} from "../libs/ThresholdECDSA.sol";
@@ -183,10 +183,18 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
         // entry is 32 (length) + 32*4 (fields) = 160
         // signatures: 32 (length) + 65*threshold (padded up to be a multiple of 32 bytes)
         // Total formula is: 4 + 32 (entry offset) + 32 (signatures offset) + 160 + 32
-        return IGasOracle(gasOracle).estimateTxCostInLocalUnits({
+        return _getSynapseGasOracle().estimateTxCostInLocalUnits({
             remoteChainId: destChainId,
             gasLimit: getVerifyGasLimit(destChainId),
             calldataSize: 292 + 64 * getThreshold()
         });
+    }
+
+    /// @dev Internal logic to get the Synapse Gas Oracle. Reverts if the gas oracle is not set.
+    function _getSynapseGasOracle() internal view returns (ISynapseGasOracle synapseGasOracle) {
+        synapseGasOracle = ISynapseGasOracle(gasOracle);
+        if (address(synapseGasOracle) == address(0)) {
+            revert SynapseModule__GasOracleNotSet();
+        }
     }
 }
