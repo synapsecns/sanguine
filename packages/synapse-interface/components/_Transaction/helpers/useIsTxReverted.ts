@@ -14,10 +14,13 @@ export const useIsTxReverted = (
   const currentTime = useIntervalTimer(60000)
 
   const getTxRevertStatus = async (txHash: Address, chain: Chain) => {
-    const receipt = await getTransactionReceipt(txHash, chain)
-
-    if (receipt?.status === 'reverted') {
-      setIsReverted(true)
+    try {
+      const receipt = await getTransactionReceipt(txHash, chain)
+      if (receipt?.status === 'reverted') {
+        setIsReverted(true)
+      }
+    } catch (error) {
+      console.error('Failed to fetch transaction receipt:', error)
     }
   }
 
