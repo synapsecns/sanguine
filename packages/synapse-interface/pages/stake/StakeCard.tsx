@@ -23,6 +23,7 @@ import InfoSectionCard from '../pool/PoolInfoSection/InfoSectionCard'
 import Tabs from '@/components/ui/tailwind/Tabs'
 import TabItem from '@/components/ui/tailwind/TabItem'
 import { InteractiveInputRowButton } from '@/components/InteractiveInputRowButton'
+import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 
 interface StakeCardProps {
   address: string
@@ -219,13 +220,21 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
               balanceStr={
                 !lpTokenBalance
                   ? '0.0'
-                  : formatBigIntToString(lpTokenBalance, tokenInfo.decimals, 18)
+                  : trimTrailingZeroesAfterDecimal(
+                      formatBigIntToString(
+                        lpTokenBalance,
+                        tokenInfo.decimals,
+                        18
+                      )
+                    )
               }
               onClickBalance={() => {
                 setDeposit({
                   str: !lpTokenBalance
                     ? '0.0000'
-                    : formatBigIntToString(lpTokenBalance, tokenInfo.decimals),
+                    : trimTrailingZeroesAfterDecimal(
+                        formatBigIntToString(lpTokenBalance, tokenInfo.decimals)
+                      ),
                   bi: lpTokenBalance,
                 })
               }}
@@ -245,19 +254,23 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             <InteractiveInputRow
               title={pool?.symbol}
               isConnected={Boolean(address)}
-              balanceStr={formatBigIntToString(
-                userStakeData.amount,
-                tokenInfo.decimals,
-                18
+              balanceStr={trimTrailingZeroesAfterDecimal(
+                formatBigIntToString(
+                  userStakeData.amount,
+                  tokenInfo.decimals,
+                  18
+                )
               )}
               onClickBalance={() => {
                 setWithdraw(
                   !userStakeData.amount
                     ? '0.00000'
-                    : formatBigIntToString(
-                        userStakeData.amount,
-                        tokenInfo.decimals,
-                        18
+                    : trimTrailingZeroesAfterDecimal(
+                        formatBigIntToString(
+                          userStakeData.amount,
+                          tokenInfo.decimals,
+                          18
+                        )
                       )
                 )
               }}
