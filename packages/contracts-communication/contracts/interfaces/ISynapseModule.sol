@@ -53,7 +53,7 @@ interface ISynapseModule is IInterchainModule {
     /// @param gasOracle_   The address of the gas oracle contract
     function setGasOracle(address gasOracle_) external;
 
-    /// @notice Sets the estimated gas limit for verifying an entry on the given chain.
+    /// @notice Sets the estimated gas limit for verifying a batch on the given chain.
     /// @dev Could be only called by the owner.
     /// @param chainId      The chain ID for which to set the gas limit
     /// @param gasLimit     The new gas limit
@@ -68,12 +68,12 @@ interface ISynapseModule is IInterchainModule {
     /// @dev Will revert if the fee collector is not set.
     function claimFees() external;
 
-    /// @notice Verifies an entry using a set of verifier signatures.
-    /// If the threshold is met, the entry will be marked as verified in the Interchain DataBase.
+    /// @notice Verifies a batch from the remote chain using a set of verifier signatures.
+    /// If the threshold is met, the batch will be marked as verified in the Interchain DataBase.
     /// @dev List of recovered signers from the signatures must be sorted in the ascending order.
-    /// @param encodedEntry The encoded entry to verify
-    /// @param signatures   Signatures used to verify the entry, concatenated
-    function verifyEntry(bytes calldata encodedEntry, bytes calldata signatures) external;
+    /// @param encodedBatch The encoded batch to verify
+    /// @param signatures   Signatures used to verify the batch, concatenated
+    function verifyRemoteBatch(bytes calldata encodedBatch, bytes calldata signatures) external;
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
@@ -100,7 +100,7 @@ interface ISynapseModule is IInterchainModule {
     /// @notice Checks if the given account is a verifier for the module.
     function isVerifier(address account) external view returns (bool);
 
-    /// @notice Returns the estimated gas limit for verifying an entry on the given chain.
+    /// @notice Returns the estimated gas limit for verifying a batch on the given chain.
     /// Note: this defaults to DEFAULT_VERIFY_GAS_LIMIT if not set.
     function getVerifyGasLimit(uint256 chainId) external view returns (uint256);
 }

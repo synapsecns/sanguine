@@ -24,7 +24,7 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     ThresholdECDSA internal _verifiers;
     /// @dev Claim fee fraction, 100% = 1e18
     uint256 internal _claimFeeFraction;
-    /// @dev Gas limit for the verifyEntry function on the remote chain.
+    /// @dev Gas limit for the verifyBatch function on the remote chain.
     mapping(uint256 chainId => uint256 gasLimit) internal _verifyGasLimit;
     /// @dev Hash of the last gas data sent to the remote chain.
     mapping(uint256 chainId => bytes32 gasDataHash) internal _lastGasDataHash;
@@ -122,10 +122,10 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     }
 
     /// @inheritdoc ISynapseModule
-    function verifyEntry(bytes calldata encodedEntry, bytes calldata signatures) external {
-        bytes32 ethSignedHash = MessageHashUtils.toEthSignedMessageHash(keccak256(encodedEntry));
+    function verifyRemoteBatch(bytes calldata encodedBatch, bytes calldata signatures) external {
+        bytes32 ethSignedHash = MessageHashUtils.toEthSignedMessageHash(keccak256(encodedBatch));
         _verifiers.verifySignedHash(ethSignedHash, signatures);
-        _verifyEntry(encodedEntry);
+        _verifyBatch(encodedBatch);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
@@ -178,7 +178,14 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     }
 
     /// @dev Internal logic to fill the module data for the specified destination chain.
-    function _fillModuleData(uint256 dstChainId, uint256 dbNonce) internal override returns (bytes memory moduleData) {
+    function _fillModuleData(
+        uint256 dstChainId,
+        uint256 // dbNonce
+    )
+        internal
+        override
+        returns (bytes memory moduleData)
+    {
         moduleData = _getSynapseGasOracle().getLocalGasData();
         // Exit early if data is empty
         if (moduleData.length == 0) {
@@ -211,18 +218,26 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
-    /// @dev Internal logic to get the module fee for verifying an entry on the specified destination chain.
-    function _getModuleFee(uint256 dstChainId) internal view override returns (uint256) {
-        // On the remote chain the verifyEntry(entry, signatures) function will be called.
+    /// @dev Internal logic to get the module fee for verifying an batch on the specified destination chain.
+    function _getModuleFee(
+        uint256 dstChainId,
+        uint256 // dbNonce
+    )
+        internal
+        view
+        override
+        returns (uint256)
+    {
+        // On the remote chain the verifyRemoteBatch(batch, signatures) function will be called.
         // We need to figure out the calldata size for the remote call.
-        // selector (4 bytes) + entry + signatures
-        // entry is 32 (length) + 32*5 (fields) = 192
+        // selector (4 bytes) + batch + signatures
+        // batch is 32 (length) + 32*3 (fields) = 128
         // signatures: 32 (length) + 65*threshold (padded up to be a multiple of 32 bytes)
-        // Total formula is: 4 + 32 (entry offset) + 32 (signatures offset) + 192 + 32
+        // Total formula is: 4 + 32 (batch offset) + 32 (signatures offset) + 128 + 32
         return _getSynapseGasOracle().estimateTxCostInLocalUnits({
             remoteChainId: dstChainId,
             gasLimit: getVerifyGasLimit(dstChainId),
-            calldataSize: 324 + 64 * getThreshold()
+            calldataSize: 260 + 64 * getThreshold()
         });
     }
 
