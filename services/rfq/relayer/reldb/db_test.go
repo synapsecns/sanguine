@@ -2,6 +2,7 @@ package reldb_test
 
 import (
 	"errors"
+	"github.com/synapsecns/sanguine/ethergo/listener"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 )
 
@@ -9,7 +10,7 @@ func (d *DBSuite) TestBlock() {
 	d.RunOnAllDBs(func(testDB reldb.Service) {
 		const testChainID = 5
 		_, err := testDB.LatestBlockForChain(d.GetTestContext(), testChainID)
-		d.True(errors.Is(err, reldb.ErrNoLatestBlockForChainID))
+		d.True(errors.Is(err, listener.ErrNoLatestBlockForChainID))
 
 		testHeight := 10
 

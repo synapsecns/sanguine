@@ -31,15 +31,16 @@ var (
 
 // CounterMetaData contains all meta data concerning the Counter contract.
 var CounterMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"name\":\"decrementCounter\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getCount\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getVitalikCount\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"incrementCounter\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"vitalikIncrement\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"int256\",\"name\":\"count\",\"type\":\"int256\"}],\"name\":\"Decremented\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"int256\",\"name\":\"count\",\"type\":\"int256\"}],\"name\":\"Incremented\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"int256\",\"name\":\"count\",\"type\":\"int256\"}],\"name\":\"IncrementedByUser\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"decrementCounter\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"deployBlock\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getCount\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getVitalikCount\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"incrementCounter\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"vitalikIncrement\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"f5c5ad83": "decrementCounter()",
+		"a3ec191a": "deployBlock()",
 		"a87d942c": "getCount()",
 		"9f6f1ec1": "getVitalikCount()",
 		"5b34b966": "incrementCounter()",
 		"6c573535": "vitalikIncrement()",
 	},
-	Bin: "0x608060405260008055600060015534801561001957600080fd5b506102b0806100296000396000f3fe608060405234801561001057600080fd5b50600436106100675760003560e01c80639f6f1ec1116100505780639f6f1ec11461007e578063a87d942c14610094578063f5c5ad831461009c57600080fd5b80635b34b9661461006c5780636c57353514610076575b600080fd5b6100746100a4565b005b6100746100bd565b6001545b60405190815260200160405180910390f35b600054610082565b610074610151565b60016000808282546100b69190610163565b9091555050565b3373d8da6bf26964af9d7eed9e03e53415d37aa960451461013e576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601c60248201527f4f6e6c7920566974616c696b2063616e20636f756e7420627920313000000000604482015260640160405180910390fd5b600a600160008282546100b69190610163565b60016000808282546100b691906101d7565b6000808212827f7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0384138115161561019d5761019d61024b565b827f80000000000000000000000000000000000000000000000000000000000000000384128116156101d1576101d161024b565b50500190565b6000808312837f8000000000000000000000000000000000000000000000000000000000000000018312811516156102115761021161024b565b837f7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0183138116156102455761024561024b565b50500390565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fdfea26469706673582212201e03c8b68dcbcef6344fae810afa5d485b33bc238c0e8cb1508114b9c0ca702964736f6c63430008040033",
+	Bin: "0x60a060405260008055600060015534801561001957600080fd5b5043608052608051610390610038600039600060a401526103906000f3fe608060405234801561001057600080fd5b50600436106100725760003560e01c8063a3ec191a11610050578063a3ec191a1461009f578063a87d942c146100c6578063f5c5ad83146100ce57600080fd5b80635b34b966146100775780636c573535146100815780639f6f1ec114610089575b600080fd5b61007f6100d6565b005b61007f610126565b6001545b60405190815260200160405180910390f35b61008d7f000000000000000000000000000000000000000000000000000000000000000081565b60005461008d565b61007f6101f9565b60016000808282546100e89190610243565b90915550506000546040519081527fda0bc8b9b52da793a50e130494716550dab510a10a485be3f1b23d4da60ff4be906020015b60405180910390a1565b3373d8da6bf26964af9d7eed9e03e53415d37aa96045146101a7576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152601c60248201527f4f6e6c7920566974616c696b2063616e20636f756e7420627920313000000000604482015260640160405180910390fd5b600a600160008282546101ba9190610243565b90915550506001546040805133815260208101929092527f5832be325e40e91e7a991db4415bdfa9c689e8007072fdb8de3be47757a14557910161011c565b600160008082825461020b91906102b7565b90915550506000546040519081527f22ccb5ba3d32a9221c3efe39ffab06d1ddc4bd6684975ea75fa60f95ccff53de9060200161011c565b6000808212827f7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0384138115161561027d5761027d61032b565b827f80000000000000000000000000000000000000000000000000000000000000000384128116156102b1576102b161032b565b50500190565b6000808312837f8000000000000000000000000000000000000000000000000000000000000000018312811516156102f1576102f161032b565b837f7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0183138116156103255761032561032b565b50500390565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fdfea2646970667358221220dd6810ba2d049a0f7354bf12f6a017744c806f0470f592679a80ef552f69b85164736f6c63430008040033",
 }
 
 // CounterABI is the input ABI used to generate the binding from.
@@ -213,6 +214,37 @@ func (_Counter *CounterTransactorRaw) Transact(opts *bind.TransactOpts, method s
 	return _Counter.Contract.contract.Transact(opts, method, params...)
 }
 
+// DeployBlock is a free data retrieval call binding the contract method 0xa3ec191a.
+//
+// Solidity: function deployBlock() view returns(uint256)
+func (_Counter *CounterCaller) DeployBlock(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _Counter.contract.Call(opts, &out, "deployBlock")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// DeployBlock is a free data retrieval call binding the contract method 0xa3ec191a.
+//
+// Solidity: function deployBlock() view returns(uint256)
+func (_Counter *CounterSession) DeployBlock() (*big.Int, error) {
+	return _Counter.Contract.DeployBlock(&_Counter.CallOpts)
+}
+
+// DeployBlock is a free data retrieval call binding the contract method 0xa3ec191a.
+//
+// Solidity: function deployBlock() view returns(uint256)
+func (_Counter *CounterCallerSession) DeployBlock() (*big.Int, error) {
+	return _Counter.Contract.DeployBlock(&_Counter.CallOpts)
+}
+
 // GetCount is a free data retrieval call binding the contract method 0xa87d942c.
 //
 // Solidity: function getCount() view returns(int256)
@@ -336,4 +368,407 @@ func (_Counter *CounterSession) VitalikIncrement() (*types.Transaction, error) {
 // Solidity: function vitalikIncrement() returns()
 func (_Counter *CounterTransactorSession) VitalikIncrement() (*types.Transaction, error) {
 	return _Counter.Contract.VitalikIncrement(&_Counter.TransactOpts)
+}
+
+// CounterDecrementedIterator is returned from FilterDecremented and is used to iterate over the raw logs and unpacked data for Decremented events raised by the Counter contract.
+type CounterDecrementedIterator struct {
+	Event *CounterDecremented // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *CounterDecrementedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(CounterDecremented)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(CounterDecremented)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *CounterDecrementedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *CounterDecrementedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// CounterDecremented represents a Decremented event raised by the Counter contract.
+type CounterDecremented struct {
+	Count *big.Int
+	Raw   types.Log // Blockchain specific contextual infos
+}
+
+// FilterDecremented is a free log retrieval operation binding the contract event 0x22ccb5ba3d32a9221c3efe39ffab06d1ddc4bd6684975ea75fa60f95ccff53de.
+//
+// Solidity: event Decremented(int256 count)
+func (_Counter *CounterFilterer) FilterDecremented(opts *bind.FilterOpts) (*CounterDecrementedIterator, error) {
+
+	logs, sub, err := _Counter.contract.FilterLogs(opts, "Decremented")
+	if err != nil {
+		return nil, err
+	}
+	return &CounterDecrementedIterator{contract: _Counter.contract, event: "Decremented", logs: logs, sub: sub}, nil
+}
+
+// WatchDecremented is a free log subscription operation binding the contract event 0x22ccb5ba3d32a9221c3efe39ffab06d1ddc4bd6684975ea75fa60f95ccff53de.
+//
+// Solidity: event Decremented(int256 count)
+func (_Counter *CounterFilterer) WatchDecremented(opts *bind.WatchOpts, sink chan<- *CounterDecremented) (event.Subscription, error) {
+
+	logs, sub, err := _Counter.contract.WatchLogs(opts, "Decremented")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(CounterDecremented)
+				if err := _Counter.contract.UnpackLog(event, "Decremented", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseDecremented is a log parse operation binding the contract event 0x22ccb5ba3d32a9221c3efe39ffab06d1ddc4bd6684975ea75fa60f95ccff53de.
+//
+// Solidity: event Decremented(int256 count)
+func (_Counter *CounterFilterer) ParseDecremented(log types.Log) (*CounterDecremented, error) {
+	event := new(CounterDecremented)
+	if err := _Counter.contract.UnpackLog(event, "Decremented", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// CounterIncrementedIterator is returned from FilterIncremented and is used to iterate over the raw logs and unpacked data for Incremented events raised by the Counter contract.
+type CounterIncrementedIterator struct {
+	Event *CounterIncremented // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *CounterIncrementedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(CounterIncremented)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(CounterIncremented)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *CounterIncrementedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *CounterIncrementedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// CounterIncremented represents a Incremented event raised by the Counter contract.
+type CounterIncremented struct {
+	Count *big.Int
+	Raw   types.Log // Blockchain specific contextual infos
+}
+
+// FilterIncremented is a free log retrieval operation binding the contract event 0xda0bc8b9b52da793a50e130494716550dab510a10a485be3f1b23d4da60ff4be.
+//
+// Solidity: event Incremented(int256 count)
+func (_Counter *CounterFilterer) FilterIncremented(opts *bind.FilterOpts) (*CounterIncrementedIterator, error) {
+
+	logs, sub, err := _Counter.contract.FilterLogs(opts, "Incremented")
+	if err != nil {
+		return nil, err
+	}
+	return &CounterIncrementedIterator{contract: _Counter.contract, event: "Incremented", logs: logs, sub: sub}, nil
+}
+
+// WatchIncremented is a free log subscription operation binding the contract event 0xda0bc8b9b52da793a50e130494716550dab510a10a485be3f1b23d4da60ff4be.
+//
+// Solidity: event Incremented(int256 count)
+func (_Counter *CounterFilterer) WatchIncremented(opts *bind.WatchOpts, sink chan<- *CounterIncremented) (event.Subscription, error) {
+
+	logs, sub, err := _Counter.contract.WatchLogs(opts, "Incremented")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(CounterIncremented)
+				if err := _Counter.contract.UnpackLog(event, "Incremented", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseIncremented is a log parse operation binding the contract event 0xda0bc8b9b52da793a50e130494716550dab510a10a485be3f1b23d4da60ff4be.
+//
+// Solidity: event Incremented(int256 count)
+func (_Counter *CounterFilterer) ParseIncremented(log types.Log) (*CounterIncremented, error) {
+	event := new(CounterIncremented)
+	if err := _Counter.contract.UnpackLog(event, "Incremented", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// CounterIncrementedByUserIterator is returned from FilterIncrementedByUser and is used to iterate over the raw logs and unpacked data for IncrementedByUser events raised by the Counter contract.
+type CounterIncrementedByUserIterator struct {
+	Event *CounterIncrementedByUser // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *CounterIncrementedByUserIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(CounterIncrementedByUser)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(CounterIncrementedByUser)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *CounterIncrementedByUserIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *CounterIncrementedByUserIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// CounterIncrementedByUser represents a IncrementedByUser event raised by the Counter contract.
+type CounterIncrementedByUser struct {
+	User  common.Address
+	Count *big.Int
+	Raw   types.Log // Blockchain specific contextual infos
+}
+
+// FilterIncrementedByUser is a free log retrieval operation binding the contract event 0x5832be325e40e91e7a991db4415bdfa9c689e8007072fdb8de3be47757a14557.
+//
+// Solidity: event IncrementedByUser(address user, int256 count)
+func (_Counter *CounterFilterer) FilterIncrementedByUser(opts *bind.FilterOpts) (*CounterIncrementedByUserIterator, error) {
+
+	logs, sub, err := _Counter.contract.FilterLogs(opts, "IncrementedByUser")
+	if err != nil {
+		return nil, err
+	}
+	return &CounterIncrementedByUserIterator{contract: _Counter.contract, event: "IncrementedByUser", logs: logs, sub: sub}, nil
+}
+
+// WatchIncrementedByUser is a free log subscription operation binding the contract event 0x5832be325e40e91e7a991db4415bdfa9c689e8007072fdb8de3be47757a14557.
+//
+// Solidity: event IncrementedByUser(address user, int256 count)
+func (_Counter *CounterFilterer) WatchIncrementedByUser(opts *bind.WatchOpts, sink chan<- *CounterIncrementedByUser) (event.Subscription, error) {
+
+	logs, sub, err := _Counter.contract.WatchLogs(opts, "IncrementedByUser")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(CounterIncrementedByUser)
+				if err := _Counter.contract.UnpackLog(event, "IncrementedByUser", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseIncrementedByUser is a log parse operation binding the contract event 0x5832be325e40e91e7a991db4415bdfa9c689e8007072fdb8de3be47757a14557.
+//
+// Solidity: event IncrementedByUser(address user, int256 count)
+func (_Counter *CounterFilterer) ParseIncrementedByUser(log types.Log) (*CounterIncrementedByUser, error) {
+	event := new(CounterIncrementedByUser)
+	if err := _Counter.contract.UnpackLog(event, "IncrementedByUser", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
 }

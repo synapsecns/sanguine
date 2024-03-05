@@ -38,8 +38,8 @@ type QuoteRequestHandler struct {
 	handlers map[reldb.QuoteRequestStatus]Handler
 	// claimCache is the cache of claims used for figuring out when we should retry the claim method.
 	claimCache *ttlcache.Cache[common.Hash, bool]
-	// RelayerAdress is the relayer RelayerAdress
-	RelayerAdress common.Address
+	// RelayerAddress is the relayer RelayerAddress
+	RelayerAddress common.Address
 	// metrics is the metrics handler.
 	metrics metrics.Handler
 }
@@ -59,15 +59,15 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 	}
 
 	qr := &QuoteRequestHandler{
-		Origin:        *origin,
-		Dest:          *dest,
-		db:            r.db,
-		Inventory:     r.inventory,
-		Quoter:        r.quoter,
-		handlers:      make(map[reldb.QuoteRequestStatus]Handler),
-		metrics:       r.metrics,
-		RelayerAdress: r.signer.Address(),
-		claimCache:    r.claimCache,
+		Origin:         *origin,
+		Dest:           *dest,
+		db:             r.db,
+		Inventory:      r.inventory,
+		Quoter:         r.quoter,
+		handlers:       make(map[reldb.QuoteRequestStatus]Handler),
+		metrics:        r.metrics,
+		RelayerAddress: r.signer.Address(),
+		claimCache:     r.claimCache,
 	}
 
 	qr.handlers[reldb.Seen] = r.deadlineMiddleware(qr.handleSeen)
@@ -76,7 +76,6 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 	// no more need for deadline middleware now, we already relayed.
 	qr.handlers[reldb.RelayCompleted] = r.gasMiddleware(qr.handleRelayCompleted)
 	qr.handlers[reldb.ProvePosted] = qr.handleProofPosted
-	// TODO: we probably want a claim complete state once we've seen that event on chain
 
 	// error handlers only
 	qr.handlers[reldb.NotEnoughInventory] = r.deadlineMiddleware(qr.handleNotEnoughInventory)
@@ -130,7 +129,15 @@ func (r *Relayer) chainIDToChain(ctx context.Context, chainID uint32) (*chain.Ch
 	}
 
 	//nolint: wrapcheck
-	return chain.NewChain(ctx, chainClient, common.HexToAddress(r.cfg.GetChains()[id].Bridge), r.chainListeners[id], r.submitter)
+	rfqAddr, err := r.cfg.GetRFQAddress(id)
+	if err != nil {
+		return nil, fmt.Errorf("could not get rfq address: %w", err)
+	}
+	chain, err := chain.NewChain(ctx, chainClient, common.HexToAddress(rfqAddr), r.chainListeners[id], r.submitter)
+	if err != nil {
+		return nil, fmt.Errorf("could not create chain: %w", err)
+	}
+	return chain, nil
 }
 
 // shouldCheckClaim checks if we should check the claim method.

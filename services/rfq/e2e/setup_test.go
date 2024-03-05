@@ -25,6 +25,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/wallet"
+	cctpTest "github.com/synapsecns/sanguine/services/cctp-relayer/testutil"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/omnirpc/testhelper"
 	apiConfig "github.com/synapsecns/sanguine/services/rfq/api/config"
@@ -33,6 +34,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/contracts/ierc20"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/connect"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 	"github.com/synapsecns/sanguine/services/rfq/testutil"
 )
@@ -113,6 +115,8 @@ func (i *IntegrationSuite) setupBackends() {
 
 	i.omniServer = testhelper.NewOmnirpcServer(i.GetTestContext(), i.T(), i.originBackend, i.destBackend)
 	i.omniClient = omnirpcClient.NewOmnirpcClient(i.omniServer, i.metrics, omnirpcClient.WithCaptureReqRes())
+
+	i.setupCCTP()
 }
 
 // setupBe sets up one backend
@@ -120,7 +124,7 @@ func (i *IntegrationSuite) setupBE(backend backends.SimulatedTestBackend) {
 	// prdeploys are contracts we want to deploy before running the test to speed it up. Obviously, these can be deployed when we need them as well,
 	// but this way we can do something while we're waiting for the other backend to startup.
 	// no need to wait for these to deploy since they can happen in background as soon as the backend is up.
-	predeployTokens := []contracts.ContractType{testutil.DAIType, testutil.USDTType, testutil.USDCType, testutil.WETH9Type}
+	predeployTokens := []contracts.ContractType{testutil.DAIType, testutil.USDTType, testutil.WETH9Type}
 	predeploys := append(predeployTokens, testutil.FastBridgeType)
 	slices.Reverse(predeploys) // return fast bridge first
 
@@ -148,6 +152,50 @@ func (i *IntegrationSuite) setupBE(backend backends.SimulatedTestBackend) {
 		}(user)
 	}
 
+}
+
+func (i *IntegrationSuite) setupCCTP() {
+	// deploy the contract to all backends
+	testBackends := core.ToSlice(i.originBackend, i.destBackend)
+	i.cctpDeployManager.BulkDeploy(i.GetTestContext(), testBackends, cctpTest.SynapseCCTPType, cctpTest.MockMintBurnTokenType)
+
+	// register remote deployments and tokens
+	for _, backend := range testBackends {
+		cctpContract, cctpHandle := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), backend)
+		_, tokenMessengeHandle := i.cctpDeployManager.GetMockTokenMessengerType(i.GetTestContext(), backend)
+
+		// on the above contract, set the remote for each backend
+		for _, backendToSetFrom := range core.ToSlice(i.originBackend, i.destBackend) {
+			// we don't need to set the backends own remote!
+			if backendToSetFrom.GetChainID() == backend.GetChainID() {
+				continue
+			}
+
+			remoteCCTP, _ := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), backendToSetFrom)
+			remoteMessenger, _ := i.cctpDeployManager.GetMockTokenMessengerType(i.GetTestContext(), backendToSetFrom)
+
+			txOpts := backend.GetTxContext(i.GetTestContext(), cctpContract.OwnerPtr())
+			// set the remote cctp contract on this cctp contract
+			// TODO: verify chainID / domain are correct
+			remoteDomain := cctpTest.ChainIDDomainMap[uint32(remoteCCTP.ChainID().Int64())]
+
+			tx, err := cctpHandle.SetRemoteDomainConfig(txOpts.TransactOpts,
+				big.NewInt(remoteCCTP.ChainID().Int64()), remoteDomain, remoteCCTP.Address())
+			i.Require().NoError(err)
+			backend.WaitForConfirmation(i.GetTestContext(), tx)
+
+			// register the remote token messenger on the tokenMessenger contract
+			_, err = tokenMessengeHandle.SetRemoteTokenMessenger(txOpts.TransactOpts, uint32(backendToSetFrom.GetChainID()), addressToBytes32(remoteMessenger.Address()))
+			i.Nil(err)
+		}
+	}
+}
+
+// addressToBytes32 converts an address to a bytes32.
+func addressToBytes32(addr common.Address) [32]byte {
+	var buf [32]byte
+	copy(buf[:], addr[:])
+	return buf
 }
 
 // Approve checks if the token is approved and approves it if not.
@@ -193,11 +241,14 @@ func (i *IntegrationSuite) setupRelayer() {
 	relayerAPIPort, err := freeport.GetFreePort()
 	i.NoError(err)
 	dsn := filet.TmpDir(i.T(), "")
+	cctpContractOrigin, _ := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), i.originBackend)
+	cctpContractDest, _ := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), i.destBackend)
 	cfg := relconfig.Config{
 		// generated ex-post facto
 		Chains: map[int]relconfig.ChainConfig{
 			originBackendChainID: {
-				Bridge:        i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeType).Address().String(),
+				RFQAddress:    i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeType).Address().String(),
+				CCTPAddress:   cctpContractOrigin.Address().Hex(),
 				Confirmations: 0,
 				Tokens: map[string]relconfig.TokenConfig{
 					"ETH": {
@@ -209,7 +260,8 @@ func (i *IntegrationSuite) setupRelayer() {
 				NativeToken: "ETH",
 			},
 			destBackendChainID: {
-				Bridge:        i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeType).Address().String(),
+				RFQAddress:    i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeType).Address().String(),
+				CCTPAddress:   cctpContractDest.Address().Hex(),
 				Confirmations: 0,
 				Tokens: map[string]relconfig.TokenConfig{
 					"ETH": {
@@ -243,15 +295,22 @@ func (i *IntegrationSuite) setupRelayer() {
 			GasPriceCacheTTLSeconds:   60,
 			TokenPriceCacheTTLSeconds: 60,
 		},
+		RebalanceInterval: 0,
 	}
 
 	// in the first backend, we want to deploy a bunch of different tokens
 	// TODO: functionalize me.
 	for _, backend := range core.ToSlice(i.originBackend, i.destBackend) {
-		tokenTypes := []contracts.ContractType{testutil.DAIType, testutil.USDTType, testutil.USDCType, testutil.WETH9Type}
+		tokenTypes := []contracts.ContractType{testutil.DAIType, testutil.USDTType, testutil.WETH9Type, cctpTest.MockMintBurnTokenType}
 
 		for _, tokenType := range tokenTypes {
-			tokenAddress := i.manager.Get(i.GetTestContext(), backend, tokenType).Address().String()
+			useCCTP := tokenType == cctpTest.MockMintBurnTokenType
+			var tokenAddress string
+			if useCCTP {
+				tokenAddress = i.cctpDeployManager.Get(i.GetTestContext(), backend, cctpTest.MockMintBurnTokenType).Address().String()
+			} else {
+				tokenAddress = i.manager.Get(i.GetTestContext(), backend, tokenType).Address().String()
+			}
 			quotableTokenID := fmt.Sprintf("%d-%s", backend.GetChainID(), tokenAddress)
 
 			tokenCaller, err := ierc20.NewIerc20Ref(common.HexToAddress(tokenAddress), backend)
@@ -260,26 +319,47 @@ func (i *IntegrationSuite) setupRelayer() {
 			decimals, err := tokenCaller.Decimals(&bind.CallOpts{Context: i.GetTestContext()})
 			i.NoError(err)
 
+			rebalanceMethod := ""
+			if useCCTP {
+				rebalanceMethod = "cctp"
+			}
+
 			// first the simple part, add the token to the token map
 			cfg.Chains[int(backend.GetChainID())].Tokens[tokenType.Name()] = relconfig.TokenConfig{
-				Address:  tokenAddress,
-				Decimals: decimals,
-				PriceUSD: 1, // TODO: this will break on non-stables
+				Address:               tokenAddress,
+				Decimals:              decimals,
+				PriceUSD:              1, // TODO: this will break on non-stables
+				RebalanceMethod:       rebalanceMethod,
+				MaintenanceBalancePct: 20,
+				InitialBalancePct:     50,
 			}
 
 			compatibleTokens := []contracts.ContractType{tokenType}
-			// DAI/USDT are fungible
-			if tokenType == testutil.DAIType || tokenType == testutil.USDCType {
-				compatibleTokens = []contracts.ContractType{testutil.DAIType, testutil.USDCType}
+			// DAI/USDC are fungible
+			if tokenType == testutil.DAIType || tokenType == cctpTest.MockMintBurnTokenType {
+				compatibleTokens = []contracts.ContractType{testutil.DAIType, cctpTest.MockMintBurnTokenType}
 			}
 
 			// now we need to add the token to the quotable tokens map
 			for _, token := range compatibleTokens {
 				otherBackend := i.getOtherBackend(backend)
-				otherToken := i.manager.Get(i.GetTestContext(), otherBackend, token).Address().String()
+				var otherToken string
+				if token == cctpTest.MockMintBurnTokenType {
+					otherToken = i.cctpDeployManager.Get(i.GetTestContext(), otherBackend, cctpTest.MockMintBurnTokenType).Address().String()
+				} else {
+					otherToken = i.manager.Get(i.GetTestContext(), otherBackend, token).Address().String()
+				}
 
 				cfg.QuotableTokens[quotableTokenID] = append(cfg.QuotableTokens[quotableTokenID], fmt.Sprintf("%d-%s", otherBackend.GetChainID(), otherToken))
 			}
+
+			// register the token with cctp contract
+			cctpContract, cctpHandle := i.cctpDeployManager.GetSynapseCCTP(i.GetTestContext(), backend)
+			txOpts := backend.GetTxContext(i.GetTestContext(), cctpContract.OwnerPtr())
+			tokenName := fmt.Sprintf("CCTP.%s", tokenType.Name())
+			tx, err := cctpHandle.AddToken(txOpts.TransactOpts, tokenName, tokenCaller.Address(), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0))
+			i.Require().NoError(err)
+			backend.WaitForConfirmation(i.GetTestContext(), tx)
 		}
 	}
 
@@ -297,4 +377,9 @@ func (i *IntegrationSuite) setupRelayer() {
 	go func() {
 		err = i.relayer.Start(i.GetTestContext())
 	}()
+
+	dbType, err := dbcommon.DBTypeFromString(cfg.Database.Type)
+	i.NoError(err)
+	i.store, err = connect.Connect(i.GetTestContext(), dbType, cfg.Database.DSN, i.metrics)
+	i.NoError(err)
 }
