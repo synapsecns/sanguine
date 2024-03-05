@@ -22,6 +22,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/cctp"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/circlecctp"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mockmessagetransmitter"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -70,6 +71,8 @@ type CCTPRelayer struct {
 	txSubmitter submitter.TransactionSubmitter
 	// boundSynapseCCTPs is a map from chain ID -> SynapseCCTP.
 	boundSynapseCCTPs map[uint32]*cctp.SynapseCCTP
+	// boundCircleCCTPs is a map from chain ID -> CircleCCTP.
+	boundCircleCCTPs map[uint32]*circlecctp.MessageTransmitter
 	// relayerAPI is the relayer api server for queueing external relay requests.
 	relayerAPI *api.RelayerAPIServer
 	// relayRequestChan is a channel that is used to process relay requests from the api server.
@@ -107,22 +110,50 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelaye
 
 	// Build chainListeners and bound contracts.
 	chainListeners := make(map[uint32]*chainListener)
-	boundSynapseCCTPs := make(map[uint32]*cctp.SynapseCCTP)
-	for _, chain := range cfg.Chains {
-		chainListeners[chain.ChainID] = &chainListener{
-			chainID:         chain.ChainID,
-			closeConnection: make(chan bool, 1),
-			stopListenChan:  make(chan bool, 1),
-			// processChan is buffered to prevent blocking.
+
+	cctpType, err := cfg.GetCCTPType()
+	if err != nil {
+		return nil, fmt.Errorf("could not get cctp type: %w", err)
+	}
+	switch cctpType {
+	case relayTypes.SynapseMessageType:
+		boundSynapseCCTPs := make(map[uint32]*cctp.SynapseCCTP)
+		for _, chain := range cfg.Chains {
+			chainListeners[chain.ChainID] = &chainListener{
+				chainID:         chain.ChainID,
+				closeConnection: make(chan bool, 1),
+				stopListenChan:  make(chan bool, 1),
+				// processChan is buffered to prevent blocking.
+			}
+			cl, err := omniRPCClient.GetConfirmationsClient(ctx, int(chain.ChainID), 1)
+			if err != nil {
+				return nil, fmt.Errorf("could not get client: %w", err)
+			}
+			boundSynapseCCTPs[chain.ChainID], err = cctp.NewSynapseCCTP(chain.GetSynapseCCTPAddress(), cl)
+			if err != nil {
+				return nil, fmt.Errorf("could not build bound contract: %w", err)
+			}
 		}
-		cl, err := omniRPCClient.GetConfirmationsClient(ctx, int(chain.ChainID), 1)
-		if err != nil {
-			return nil, fmt.Errorf("could not get client: %w", err)
+	case relayTypes.CircleMessageType:
+		boundCircleCCTPs := make(map[uint32]*circlecctp.MessageTransmitter)
+		for _, chain := range cfg.Chains {
+			chainListeners[chain.ChainID] = &chainListener{
+				chainID:         chain.ChainID,
+				closeConnection: make(chan bool, 1),
+				stopListenChan:  make(chan bool, 1),
+				// processChan is buffered to prevent blocking.
+			}
+			cl, err := omniRPCClient.GetConfirmationsClient(ctx, int(chain.ChainID), 1)
+			if err != nil {
+				return nil, fmt.Errorf("could not get client: %w", err)
+			}
+			boundCircleCCTPs[chain.ChainID], err = circlecctp.NewMessageTransmitter(chain.GetCircleCCTPAddress(), cl)
+			if err != nil {
+				return nil, fmt.Errorf("could not build bound contract: %w", err)
+			}
 		}
-		boundSynapseCCTPs[chain.ChainID], err = cctp.NewSynapseCCTP(chain.GetSynapseCCTPAddress(), cl)
-		if err != nil {
-			return nil, fmt.Errorf("could not build bound contract: %w", err)
-		}
+	default:
+		return nil, fmt.Errorf("unknown cctp type: %s", cfg.CCTPType)
 	}
 
 	signer, err := signerConfig.SignerFromConfig(ctx, cfg.Signer)
@@ -134,11 +165,6 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelaye
 
 	relayerRequestChan := make(chan *api.RelayRequest, 1000)
 	relayerAPI := api.NewRelayerAPIServer(cfg.Port, cfg.Host, store, relayerRequestChan)
-
-	cctpType, err := cfg.GetCCTPType()
-	if err != nil {
-		return nil, fmt.Errorf("could not get cctp type: %w", err)
-	}
 
 	return &CCTPRelayer{
 		cfg:               cfg,
@@ -757,7 +783,14 @@ func (c *CCTPRelayer) submitReceiveCircleToken(ctx context.Context, msg *relayTy
 		err = fmt.Errorf("could not submit transaction: %w", err)
 		return err
 	}
+
+	// update values in place to be stored by caller
 	msg.DestNonce = int(nonce)
 	msg.DestTxHash = destTxHash.String()
+	return nil
+}
+
+func (c *CCTPRelayer) receiveMessage(ctx context.Context, msg *relayTypes.Message) (err error) {
+	// TODO: implement
 	return nil
 }
