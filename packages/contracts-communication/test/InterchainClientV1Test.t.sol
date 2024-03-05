@@ -143,7 +143,9 @@ contract InterchainClientV1Test is Test {
             message: message
         });
         bytes32 transactionID = keccak256(abi.encode(transaction));
-        bytes memory expectedAppCalldata = abi.encodeCall(icApp.appReceive, (SRC_CHAIN_ID, srcSender, dbNonce, message));
+        // TODO: entryIndex
+        bytes memory expectedAppCalldata =
+            abi.encodeCall(icApp.appReceive, (SRC_CHAIN_ID, srcSender, dbNonce, 0, message));
 
         AppConfigV1 memory mockAppConfig = AppConfigV1({requiredResponses: 1, optimisticPeriod: 1 hours});
         vm.mockCall(
