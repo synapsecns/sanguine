@@ -164,8 +164,8 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
              bg-[#564f58]
               w-full my-2 px-4 py-3 tracking-wide
               rounded-sm
-              border border-transparent 
-              hover:border-[#AC8FFF] 
+              border border-transparent
+              hover:border-[#AC8FFF]
               disabled:opacity-100
               disabled:from-bgLight disabled:to-bgLight
             `}
@@ -279,14 +279,18 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             <InteractiveInputRowButton
               title={pool?.symbol}
               buttonLabel={
-                lpTokenBalance === 0n
+                lpTokenBalance === 0n || lpTokenBalance < deposit.bi
                   ? 'Insufficient Balance'
                   : allowance < deposit.bi
                   ? `Approve ${pool?.symbol}`
                   : 'Stake'
               }
               loadingLabel={isPendingApprove ? 'Approving' : 'Staking'}
-              disabled={lpTokenBalance === 0n || deposit.str === ''}
+              disabled={
+                lpTokenBalance === 0n ||
+                lpTokenBalance < deposit.bi ||
+                deposit.str === ''
+              }
               isPending={isPendingStake || isPendingApprove}
               onClickEnter={
                 allowance < deposit.bi
