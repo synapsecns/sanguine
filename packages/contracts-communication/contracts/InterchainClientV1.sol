@@ -61,7 +61,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     )
         external
         payable
-        returns (bytes32 transactionId, uint256 dbNonce)
+        returns (bytes32 transactionId, uint256 dbNonce, uint64 entryIndex)
     {
         return _interchainSend(dstChainId, receiver, srcExecutionService, srcModules, options, message);
     }
@@ -77,7 +77,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     )
         external
         payable
-        returns (bytes32 transactionId, uint256 dbNonce)
+        returns (bytes32 transactionId, uint256 dbNonce, uint64 entryIndex)
     {
         bytes32 receiverBytes32 = TypeCasts.addressToBytes32(receiver);
         return _interchainSend(dstChainId, receiverBytes32, srcExecutionService, srcModules, options, message);
@@ -211,7 +211,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         bytes calldata message
     )
         internal
-        returns (bytes32 transactionId, uint256 dbNonce)
+        returns (bytes32 transactionId, uint256 dbNonce, uint64 entryIndex)
     {
         _assertLinkedClient(dstChainId);
         // TODO: should check options for being correctly formatted
@@ -223,19 +223,19 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         unchecked {
             executionFee = msg.value - verificationFee;
         }
-        dbNonce = IInterchainDB(INTERCHAIN_DB).getDBNonce();
+        (dbNonce, entryIndex) = IInterchainDB(INTERCHAIN_DB).getNextEntryIndex();
         InterchainTransaction memory icTx = InterchainTransactionLib.constructLocalTransaction({
             srcSender: msg.sender,
             dstReceiver: receiver,
             dstChainId: dstChainId,
             dbNonce: dbNonce,
-            // TODO: entryIndex
-            entryIndex: 0,
+            entryIndex: entryIndex,
             options: options,
             message: message
         });
         transactionId = icTx.transactionId();
         // Sanity check: nonce returned from DB should match the nonce used to construct the transaction
+        // TODO: check both dbNonce and entryIndex
         assert(
             dbNonce
                 == IInterchainDB(INTERCHAIN_DB).writeEntryWithVerification{value: verificationFee}(
@@ -261,6 +261,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         emit InterchainTransactionSent(
             transactionId,
             icTx.dbNonce,
+            icTx.entryIndex,
             icTx.dstChainId,
             icTx.srcSender,
             icTx.dstReceiver,

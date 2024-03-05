@@ -171,7 +171,7 @@ abstract contract InterchainAppV1 is InterchainAppV1Events, IInterchainApp {
         bytes memory message
     )
         internal
-        returns (bytes32 transactionId, uint256 dbNonce)
+        returns (bytes32 transactionId, uint256 dbNonce, uint64 entryIndex)
     {
         return _sendInterchainMessage(dstChainId, getLinkedApp(dstChainId), messageFee, options, message);
     }
@@ -185,7 +185,7 @@ abstract contract InterchainAppV1 is InterchainAppV1Events, IInterchainApp {
         bytes memory message
     )
         internal
-        returns (bytes32 transactionId, uint256 dbNonce)
+        returns (bytes32 transactionId, uint256 dbNonce, uint64 entryIndex)
     {
         return _sendInterchainMessage(dstChainId, TypeCasts.addressToBytes32(receiver), messageFee, options, message);
     }
@@ -199,7 +199,7 @@ abstract contract InterchainAppV1 is InterchainAppV1Events, IInterchainApp {
         bytes memory message
     )
         internal
-        returns (bytes32 transactionId, uint256 dbNonce)
+        returns (bytes32 transactionId, uint256 dbNonce, uint64 entryIndex)
     {
         address cachedInterchain = interchain;
         if (cachedInterchain == address(0)) revert InterchainApp__InterchainClientNotSet();

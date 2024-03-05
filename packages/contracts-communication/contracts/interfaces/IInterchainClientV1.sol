@@ -41,7 +41,8 @@ interface IInterchainClientV1 {
      * @param options Execution options for the message sent, encoded as bytes, currently gas limit + native gas drop.
      * @param message The message being sent.
      * @return transactionId The ID of the transaction that was sent.
-     * @return dbNonce The database nonce of the written entry for the transaction.
+     * @return dbNonce The database nonce of the batch containing the written entry for transaction.
+     * @return entryIndex The index of the written entry for transaction within the batch.
      */
     function interchainSend(
         uint256 dstChainId,
@@ -53,7 +54,7 @@ interface IInterchainClientV1 {
     )
         external
         payable
-        returns (bytes32 transactionId, uint256 dbNonce);
+        returns (bytes32 transactionId, uint256 dbNonce, uint64 entryIndex);
 
     function interchainSendEVM(
         uint256 dstChainId,
@@ -65,7 +66,7 @@ interface IInterchainClientV1 {
     )
         external
         payable
-        returns (bytes32 transactionId, uint256 dbNonce);
+        returns (bytes32 transactionId, uint256 dbNonce, uint64 entryIndex);
 
     /**
      * @notice Executes a transaction that has been sent via the Interchain.

@@ -82,6 +82,11 @@ interface IInterchainDB {
     /// @notice Get the nonce of the database.
     function getDBNonce() external view returns (uint256);
 
+    /// @notice Get the index of the next entry to be written to the database.
+    /// @return dbNonce      The database nonce of the batch including the next entry
+    /// @return entryIndex   The index of the next entry within that batch
+    function getNextEntryIndex() external view returns (uint256 dbNonce, uint64 entryIndex);
+
     /// @notice Read the data written on specific source chain by a specific writer,
     /// and verify it on the destination chain using the provided Interchain Module.
     /// Note: returned zero value indicates that the module has not verified the entry.

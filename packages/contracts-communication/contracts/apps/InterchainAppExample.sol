@@ -6,19 +6,19 @@ import {OptionsV1} from "../libs/Options.sol";
 
 contract InterchainAppExample is OwnableApp {
     event MessageReceived(uint256 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message);
-    event MessageSent(uint256 dstChainId, uint256 dbNonce, bytes32 transactionId);
+    event MessageSent(uint256 dstChainId, uint256 dbNonce, uint64 entryIndex, bytes32 transactionId);
 
     constructor(address owner_) OwnableApp(owner_) {}
 
     /// @notice Sends a basic message to the destination chain.
     function sendMessage(uint256 dstChainId, uint256 gasLimit, bytes calldata message) external payable {
-        (bytes32 transactionId, uint256 dbNonce) = _sendInterchainMessage({
+        (bytes32 transactionId, uint256 dbNonce, uint64 entryIndex) = _sendInterchainMessage({
             dstChainId: dstChainId,
             messageFee: msg.value,
             options: OptionsV1({gasLimit: gasLimit, gasAirdrop: 0}),
             message: message
         });
-        emit MessageSent(dstChainId, dbNonce, transactionId);
+        emit MessageSent(dstChainId, dbNonce, entryIndex, transactionId);
     }
 
     /// @dev Internal logic for receiving messages. At this point the validity of the message is already checked.
