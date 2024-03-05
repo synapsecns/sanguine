@@ -15,8 +15,6 @@ export interface _TransactionDetails {
   estimatedTime: number
   timestamp: number
   kappa?: string
-  isComplete?: boolean
-  isReverted?: boolean
   status: 'pending' | 'completed' | 'reverted'
 }
 
@@ -71,7 +69,6 @@ export const transactionsSlice = createSlice({
         (tx) => tx.originTxHash === originTxHash
       )
       if (txIndex !== -1) {
-        state.transactions[txIndex].isComplete = true
         state.transactions[txIndex].status = 'completed'
       }
     },
@@ -85,7 +82,6 @@ export const transactionsSlice = createSlice({
         (tx) => tx.originTxHash === originTxHash
       )
       if (txIndex !== -1) {
-        state.transactions[txIndex].isReverted = true
         state.transactions[txIndex].status = 'reverted'
       }
     },
