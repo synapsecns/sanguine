@@ -75,7 +75,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
       )
       setUserStakeData(data)
     } catch (err) {
-      console.log('getUserStakedBalance: ', err)
+      console.error('Error fetching user staked balance:', err)
     }
   }
 
@@ -93,7 +93,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
       )
       setAllowance(tkAllowance)
     } catch (err) {
-      console.log('getUserLpTokenAllowance: ', err)
+      console.error('Error fetching user LP token allowance:', err)
     }
   }
 
