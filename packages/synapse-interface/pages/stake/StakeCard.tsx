@@ -126,10 +126,8 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
           <div className="text-white ">
             {!lpTokenBalance
               ? '\u2212'
-              : formatBigIntToString(
-                  lpTokenBalance,
-                  tokenInfo.decimals,
-                  6
+              : trimTrailingZeroesAfterDecimal(
+                  formatBigIntToString(lpTokenBalance, tokenInfo.decimals, 6)
                 )}{' '}
             <span className="text-base text-[#A9A5AD]">
               {pool ? pool.symbol : ''}
@@ -139,7 +137,9 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
         <div className="flex items-center justify-between my-2">
           <div className="text-[#EEEDEF]">Staked</div>
           <div className="text-white ">
-            {formatBigIntToString(userStakeData.amount, tokenInfo.decimals, 6)}{' '}
+            {trimTrailingZeroesAfterDecimal(
+              formatBigIntToString(userStakeData.amount, tokenInfo.decimals, 6)
+            )}{' '}
             <span className="text-base text-[#A9A5AD]">
               {pool ? pool.symbol : ''}
             </span>
@@ -152,7 +152,9 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
           <div className="text-white ">
             {!userStakeData.reward
               ? '\u2212'
-              : formatBigIntToString(userStakeData.reward, 18, 6)}{' '}
+              : trimTrailingZeroesAfterDecimal(
+                  formatBigIntToString(userStakeData.reward, 18, 6)
+                )}{' '}
             <span className="text-base text-[#A9A5AD]">
               {pool?.customRewardToken ?? 'SYN'}
             </span>
