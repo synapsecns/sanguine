@@ -5,6 +5,7 @@ import {InterchainDBEvents} from "./events/InterchainDBEvents.sol";
 import {IInterchainDB} from "./interfaces/IInterchainDB.sol";
 import {IInterchainModule} from "./interfaces/IInterchainModule.sol";
 
+import {InterchainBatch} from "./libs/InterchainBatch.sol";
 import {InterchainEntry, InterchainEntryLib} from "./libs/InterchainEntry.sol";
 import {TypeCasts} from "./libs/TypeCasts.sol";
 
@@ -38,6 +39,11 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     {
         InterchainEntry memory entry = getEntry(dbNonce);
         _requestVerification(dstChainId, entry, srcModules);
+    }
+
+    /// @inheritdoc IInterchainDB
+    function verifyRemoteBatch(InterchainBatch memory batch) external {
+        // TODO: implement
     }
 
     /// @inheritdoc IInterchainDB
@@ -97,7 +103,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
 
     /// @inheritdoc IInterchainDB
     function getInterchainFee(uint256 dstChainId, address[] calldata srcModules) external view returns (uint256 fee) {
-        (, fee) = _getModuleFees(dstChainId, srcModules);
+        (, fee) = _getModuleFees(dstChainId, getDBNonce(), srcModules);
     }
 
     /// @inheritdoc IInterchainDB
@@ -137,13 +143,16 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     )
         internal
     {
-        (uint256[] memory fees, uint256 totalFee) = _getModuleFees(dstChainId, srcModules);
+        (uint256[] memory fees, uint256 totalFee) = _getModuleFees(dstChainId, entry.dbNonce, srcModules);
         if (msg.value != totalFee) {
             revert InterchainDB__IncorrectFeeAmount(msg.value, totalFee);
         }
         uint256 len = srcModules.length;
         for (uint256 i = 0; i < len; ++i) {
-            IInterchainModule(srcModules[i]).requestVerification{value: fees[i]}(dstChainId, entry);
+            // TODO: proper requestBatchVerification
+            IInterchainModule(srcModules[i]).requestBatchVerification{value: fees[i]}(
+                dstChainId, InterchainBatch({srcChainId: block.chainid, dbNonce: entry.dbNonce, batchRoot: 0})
+            );
         }
         emit InterchainVerificationRequested(dstChainId, entry.dbNonce, srcModules);
     }
@@ -153,6 +162,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     /// @dev Get the verification fees for the modules
     function _getModuleFees(
         uint256 dstChainId,
+        uint256 dbNonce,
         address[] calldata srcModules
     )
         internal
@@ -165,7 +175,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         }
         fees = new uint256[](len);
         for (uint256 i = 0; i < len; ++i) {
-            fees[i] = IInterchainModule(srcModules[i]).getModuleFee(dstChainId);
+            fees[i] = IInterchainModule(srcModules[i]).getModuleFee(dstChainId, dbNonce);
             totalFee += fees[i];
         }
     }

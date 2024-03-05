@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {InterchainEntry} from "../libs/InterchainEntry.sol";
+import {InterchainBatch} from "../libs/InterchainBatch.sol";
 
 interface IInterchainDB {
     /// @notice Struct representing an entry from the local Interchain DataBase.
@@ -66,6 +67,10 @@ interface IInterchainDB {
     /// @notice Allows the Interchain Module to verify the entry coming from a remote source chain.
     /// @param entry        The Interchain Entry to confirm
     function verifyEntry(InterchainEntry memory entry) external;
+
+    /// @notice Allows the Interchain Module to verify the batch coming from the remote chain.
+    /// @param batch        The Interchain Batch to confirm
+    function verifyRemoteBatch(InterchainBatch memory batch) external;
 
     /// @notice Get the fee for writing data to the Interchain DataBase, and verifying it on the destination chain
     /// using the provided Interchain Modules.
