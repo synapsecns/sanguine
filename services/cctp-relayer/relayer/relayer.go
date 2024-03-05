@@ -58,6 +58,7 @@ type CCTPRelayer struct {
 	scribeClient  client.ScribeClient
 	grpcClient    pbscribe.ScribeServiceClient
 	grpcConn      *grpc.ClientConn
+	cctpType      relayTypes.MessageType
 	omnirpcClient omniClient.RPCClient
 	// chainListeners is a map from chain ID -> chain relayer.
 	chainListeners map[uint32]*chainListener
@@ -134,6 +135,11 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelaye
 	relayerRequestChan := make(chan *api.RelayRequest, 1000)
 	relayerAPI := api.NewRelayerAPIServer(cfg.Port, cfg.Host, store, relayerRequestChan)
 
+	cctpType, err := cfg.GetCCTPType()
+	if err != nil {
+		return nil, fmt.Errorf("could not get cctp type: %w", err)
+	}
+
 	return &CCTPRelayer{
 		cfg:               cfg,
 		db:                store,
@@ -142,6 +148,7 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelaye
 		scribeClient:      scribeClient,
 		grpcClient:        grpcClient,
 		grpcConn:          conn,
+		cctpType:          cctpType,
 		relayerAPI:        relayerAPI,
 		relayRequestChan:  relayerRequestChan,
 		retryNow:          make(chan bool, 1),
@@ -668,18 +675,42 @@ func (c *CCTPRelayer) fetchAttestation(parentCtx context.Context, msg *relayType
 	return msg, nil
 }
 
-func (c *CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *relayTypes.Message) (err error) {
-	ctx, span := c.handler.Tracer().Start(parentCtx, "submitReceiveCircleToken", trace.WithAttributes(
+func (c *CCTPRelayer) mintTokenOnDestination(parentCtx context.Context, msg *relayTypes.Message) (err error) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "mintTokenOnDestination", trace.WithAttributes(
 		attribute.String(MessageHash, msg.MessageHash),
 		attribute.Int(metrics.Origin, int(msg.OriginChainID)),
 		attribute.Int(metrics.Destination, int(msg.DestChainID)),
 		attribute.String(metrics.TxHash, msg.OriginTxHash),
+		attribute.String("message_type", msg.MessageType.String()),
 	))
 
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
 
+	switch msg.MessageType {
+	case relayTypes.SynapseMessageType:
+		err = c.submitReceiveCircleToken(ctx, msg)
+	case relayTypes.CircleMessageType:
+		err = c.receiveMessage(ctx, msg)
+	default:
+		return fmt.Errorf("invalid message type: %s", msg.MessageType)
+	}
+	if err != nil {
+		return fmt.Errorf("error minting token on destination: %w", err)
+	}
+
+	// Store the completed message.
+	// Note: this can cause double submission sometimes
+	msg.State = relayTypes.Submitted
+	err = c.db.StoreMessage(ctx, *msg)
+	if err != nil {
+		return fmt.Errorf("could not store completed message: %w", err)
+	}
+	return nil
+}
+
+func (c *CCTPRelayer) submitReceiveCircleToken(ctx context.Context, msg *relayTypes.Message) (err error) {
 	contract, ok := c.boundSynapseCCTPs[msg.DestChainID]
 	if !ok {
 		return fmt.Errorf("could not find destination chain %d", msg.DestChainID)
@@ -726,15 +757,7 @@ func (c *CCTPRelayer) submitReceiveCircleToken(parentCtx context.Context, msg *r
 		err = fmt.Errorf("could not submit transaction: %w", err)
 		return err
 	}
-
-	// Store the completed message.
-	// Note: this can cause double submission sometimes
-	msg.State = relayTypes.Submitted
 	msg.DestNonce = int(nonce)
 	msg.DestTxHash = destTxHash.String()
-	err = c.db.StoreMessage(ctx, *msg)
-	if err != nil {
-		return fmt.Errorf("could not store completed message: %w", err)
-	}
 	return nil
 }
