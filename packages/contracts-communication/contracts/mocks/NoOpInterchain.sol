@@ -61,7 +61,7 @@ contract NoOpInterchain is IInterchainDB {
     /// @dev Will revert if the entry with the given nonce does not exist.
     /// @param dbNonce      The database nonce of the written entry on this chain
     function getEntry(uint256 dbNonce) external view returns (InterchainEntry memory) {
-        return InterchainEntry(0, 0, 0, 0);
+        return InterchainEntry(0, 0, 0, 0, 0);
     }
 
     /// @notice Get the nonce of the database.

@@ -223,13 +223,13 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
         // On the remote chain the verifyEntry(entry, signatures) function will be called.
         // We need to figure out the calldata size for the remote call.
         // selector (4 bytes) + entry + signatures
-        // entry is 32 (length) + 32*4 (fields) = 160
+        // entry is 32 (length) + 32*5 (fields) = 192
         // signatures: 32 (length) + 65*threshold (padded up to be a multiple of 32 bytes)
-        // Total formula is: 4 + 32 (entry offset) + 32 (signatures offset) + 160 + 32
+        // Total formula is: 4 + 32 (entry offset) + 32 (signatures offset) + 192 + 32
         return _getSynapseGasOracle().estimateTxCostInLocalUnits({
             remoteChainId: destChainId,
             gasLimit: getVerifyGasLimit(destChainId),
-            calldataSize: 292 + 64 * getThreshold()
+            calldataSize: 324 + 64 * getThreshold()
         });
     }
 

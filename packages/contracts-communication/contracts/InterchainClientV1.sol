@@ -165,6 +165,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
                 dstReceiver: 0,
                 dstChainId: dstChainId,
                 dbNonce: 0,
+                entryIndex: 0,
                 options: options,
                 message: message
             });
@@ -227,6 +228,8 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             dstReceiver: receiver,
             dstChainId: dstChainId,
             dbNonce: dbNonce,
+            // TODO: entryIndex
+            entryIndex: 0,
             options: options,
             message: message
         });
@@ -283,6 +286,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         InterchainEntry memory icEntry = InterchainEntry({
             srcChainId: icTx.srcChainId,
             dbNonce: icTx.dbNonce,
+            entryIndex: icTx.entryIndex,
             srcWriter: linkedClient,
             dataHash: transactionId
         });

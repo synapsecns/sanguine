@@ -52,7 +52,8 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         returns (uint256 dbNonce)
     {
         dbNonce = _writeEntry(dataHash);
-        InterchainEntry memory entry = InterchainEntryLib.constructLocalEntry(dbNonce, msg.sender, dataHash);
+        // TODO: entryIndex
+        InterchainEntry memory entry = InterchainEntryLib.constructLocalEntry(dbNonce, 0, msg.sender, dataHash);
         _requestVerification(destChainId, entry, srcModules);
     }
 
@@ -104,7 +105,8 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         if (getDBNonce() <= dbNonce) {
             revert InterchainDB__EntryDoesNotExist(dbNonce);
         }
-        return InterchainEntryLib.constructLocalEntry(dbNonce, _entries[dbNonce].writer, _entries[dbNonce].dataHash);
+        // TODO: entryIndex
+        return InterchainEntryLib.constructLocalEntry(dbNonce, 0, _entries[dbNonce].writer, _entries[dbNonce].dataHash);
     }
 
     /// @inheritdoc IInterchainDB
