@@ -21,19 +21,22 @@ contract InterchainTransactionLibTest is Test {
         uint256 dstChainId,
         bytes32 dstReceiver,
         uint256 dbNonce,
+        uint64 entryIndex,
         bytes memory options,
         bytes memory message
     )
         public
     {
         vm.chainId(srcChainId);
-        InterchainTransaction memory icTx =
-            libHarness.constructLocalTransaction(srcSender, dstChainId, dstReceiver, dbNonce, options, message);
+        InterchainTransaction memory icTx = libHarness.constructLocalTransaction(
+            srcSender, dstChainId, dstReceiver, dbNonce, entryIndex, options, message
+        );
         assertEq(icTx.srcChainId, srcChainId, "!srcChainId");
         assertEq(icTx.srcSender, bytes32(uint256(uint160(srcSender))), "!srcSender");
         assertEq(icTx.dstChainId, dstChainId, "!dstChainId");
         assertEq(icTx.dstReceiver, dstReceiver, "!dstReceiver");
         assertEq(icTx.dbNonce, dbNonce, "!dbNonce");
+        assertEq(icTx.entryIndex, entryIndex, "!entryIndex");
         assertEq(icTx.options, options, "!options");
         assertEq(icTx.message, message, "!message");
     }
@@ -46,6 +49,7 @@ contract InterchainTransactionLibTest is Test {
         assertEq(decoded.dstChainId, icTx.dstChainId, "!dstChainId");
         assertEq(decoded.dstReceiver, icTx.dstReceiver, "!dstReceiver");
         assertEq(decoded.dbNonce, icTx.dbNonce, "!dbNonce");
+        assertEq(decoded.entryIndex, icTx.entryIndex, "!entryIndex");
         assertEq(decoded.options, icTx.options, "!options");
         assertEq(decoded.message, icTx.message, "!message");
     }

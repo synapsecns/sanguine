@@ -9,6 +9,7 @@ struct InterchainTransaction {
     uint256 dstChainId;
     bytes32 dstReceiver;
     uint256 dbNonce;
+    uint64 entryIndex;
     bytes options;
     bytes message;
 }
@@ -21,6 +22,7 @@ library InterchainTransactionLib {
         uint256 dstChainId,
         bytes32 dstReceiver,
         uint256 dbNonce,
+        uint64 entryIndex,
         bytes memory options,
         bytes memory message
     )
@@ -34,6 +36,7 @@ library InterchainTransactionLib {
             dstChainId: dstChainId,
             dstReceiver: dstReceiver,
             dbNonce: dbNonce,
+            entryIndex: entryIndex,
             options: options,
             message: message
         });
