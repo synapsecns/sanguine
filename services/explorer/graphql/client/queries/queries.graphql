@@ -152,6 +152,7 @@ query GetDailyStatisticsByChain($chainID: Int, $type: DailyStatisticType, $durat
     canto
     dogechain
     base
+    blast
     total
   }
 }

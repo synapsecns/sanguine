@@ -238,10 +238,9 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 // We can do this by looking at the quotableTokens map, and finding the key that matches the destination chain token.
 // Generates quotes for a given chain ID, address, and balance.
 func (m *Manager) generateQuotes(ctx context.Context, chainID int, address common.Address, balance *big.Int) ([]model.PutQuoteRequest, error) {
-
-	destChainCfg, ok := m.config.Chains[chainID]
-	if !ok {
-		return nil, fmt.Errorf("error getting chain config for destination chain ID %d", chainID)
+	destRFQAddr, err := m.config.GetRFQAddress(chainID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting destination RFQ address: %w", err)
 	}
 
 	destTokenID := fmt.Sprintf("%d-%s", chainID, address.Hex())
@@ -277,9 +276,9 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 				if err != nil {
 					return nil, fmt.Errorf("error getting total fee: %w", err)
 				}
-				originChainCfg, ok := m.config.Chains[origin]
-				if !ok {
-					return nil, fmt.Errorf("error getting chain config for origin chain ID %d", origin)
+				originRFQAddr, err := m.config.GetRFQAddress(origin)
+				if err != nil {
+					return nil, fmt.Errorf("error getting RFQ address: %w", err)
 				}
 
 				// Build the quote
@@ -295,8 +294,8 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 					DestAmount:              destAmount.String(),
 					MaxOriginAmount:         quoteAmount.String(),
 					FixedFee:                fee.String(),
-					OriginFastBridgeAddress: originChainCfg.Bridge,
-					DestFastBridgeAddress:   destChainCfg.Bridge,
+					OriginFastBridgeAddress: originRFQAddr,
+					DestFastBridgeAddress:   destRFQAddr,
 				}
 				quotes = append(quotes, quote)
 			}
