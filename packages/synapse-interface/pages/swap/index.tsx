@@ -122,8 +122,6 @@ const StateManagedSwap = () => {
     }
   }, [swapQuote, swapFromToken, swapFromValue, swapChainId])
 
-  let quoteToast
-
   const getAndSetSwapQuote = async () => {
     currentSDKRequestID.current += 1
     const thisRequestId = currentSDKRequestID.current
