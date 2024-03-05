@@ -65,10 +65,6 @@ export const _Transaction = ({
     connectedAddress
   )
 
-  const isPending = status === 'pending'
-  const isCompleted = status === 'completed'
-  const isReverted = status === 'reverted'
-
   const {
     remainingTime,
     delayedTime,
@@ -84,14 +80,14 @@ export const _Transaction = ({
     originTxHash,
     bridgeModuleName,
     kappa: kappa,
-    checkStatus: isCheckTxStatus && isPending,
+    checkStatus: isCheckTxStatus && status === 'pending',
     currentTime: currentTime,
   })
 
   const isTxReverted = useIsTxReverted(
     originTxHash as Address,
     originChain,
-    isCheckTxForRevert && isPending
+    isCheckTxForRevert && status === 'pending'
   )
 
   useBridgeTxUpdater(
@@ -105,7 +101,8 @@ export const _Transaction = ({
 
   // Show transaction support if the transaction is delayed by more than 5 minutes and not finalized or reverted
   const showTransactionSupport =
-    isReverted || (isPending && delayedTimeInMin && delayedTimeInMin <= -5)
+    status === 'reverted' ||
+    (status === 'pending' && delayedTimeInMin && delayedTimeInMin <= -5)
 
   return (
     <div
@@ -139,9 +136,9 @@ export const _Transaction = ({
           <DropdownMenu
             menuTitleElement={
               <TimeRemaining
-                isComplete={isCompleted}
+                isComplete={status === 'completed'}
+                isReverted={status === 'reverted'}
                 isDelayed={isEstimatedTimeReached}
-                isReverted={isReverted}
                 remainingTime={remainingTime}
                 delayedTime={delayedTime}
               />
@@ -175,7 +172,7 @@ export const _Transaction = ({
               text="Contact Support (Discord)"
               link="https://discord.gg/synapseprotocol"
             />
-            {!isPending && (
+            {status !== 'pending' && (
               <MenuItem
                 text={isTxReverted ? 'Clear notification' : 'Clear transaction'}
                 link={null}
@@ -186,7 +183,7 @@ export const _Transaction = ({
         </div>
       </div>
       {showTransactionSupport ? (
-        <TransactionSupport isReverted={isReverted} />
+        <TransactionSupport isReverted={status === 'reverted'} />
       ) : null}
 
       <div className="px-1">
@@ -194,8 +191,8 @@ export const _Transaction = ({
           id={originTxHash}
           startTime={timestamp}
           estDuration={estimatedTime * 2} // 2x buffer
-          isComplete={isCompleted}
-          isError={isReverted}
+          isComplete={status === 'completed'}
+          isError={status === 'reverted'}
         />
       </div>
     </div>
