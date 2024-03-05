@@ -323,7 +323,11 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
               title={pool?.symbol}
               buttonLabel="Unstake"
               loadingLabel="Unstaking"
-              disabled={userStakeData.amount === 0n || withdraw === ''}
+              disabled={
+                userStakeData.amount === 0n ||
+                userStakeData.amount < stringToBigInt(withdraw, 18) ||
+                withdraw === ''
+              }
               isPending={isPendingUnstake}
               onClickEnter={async () => {
                 const tx = await pendingUnstakeTxWrapFunc(
