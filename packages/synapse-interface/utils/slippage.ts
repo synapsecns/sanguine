@@ -9,7 +9,7 @@ export const Slippages = {
   OnePercent: 'ONE_PERCENT',
   Custom: 'CUSTOM',
   OneHundredth: 'ONE_HUNDREDTH',
-}
+} as const
 
 /**
  * Given an input value and slippage redux state values, do the math.
