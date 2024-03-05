@@ -5,6 +5,7 @@ import {
   updateTransactionKappa,
   completeTransaction,
   revertTransaction,
+  _TransactionDetails,
 } from '@/slices/_transactions/reducer'
 import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
 import { use_TransactionsState } from '@/slices/_transactions/hooks'
@@ -30,7 +31,9 @@ export const useBridgeTxUpdater = (
 ) => {
   const dispatch = useAppDispatch()
   const { transactions } = use_TransactionsState()
-  const storedTx = transactions.find((tx) => tx.originTxHash === originTxHash)
+  const storedTx: _TransactionDetails = transactions.find(
+    (tx) => tx.originTxHash === originTxHash
+  )
 
   /** Update stored tx kappa if not updated with fetched kappa */
   useEffect(() => {
@@ -41,7 +44,7 @@ export const useBridgeTxUpdater = (
 
   /** Update tx for reverts in store */
   useEffect(() => {
-    if (isTxReverted && !storedTx.isReverted) {
+    if (isTxReverted && storedTx.status !== 'reverted') {
       dispatch(revertTransaction({ originTxHash }))
     }
   }, [isTxReverted])
@@ -50,7 +53,7 @@ export const useBridgeTxUpdater = (
   useEffect(() => {
     if (isTxComplete && originTxHash && kappa) {
       /** Check that we have not already marked tx as complete */
-      if (!storedTx.isComplete) {
+      if (storedTx.status !== 'completed') {
         dispatch(completeTransaction({ originTxHash, kappa }))
 
         /** Update Destination Chain token balances after tx is marked complete  */
