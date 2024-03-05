@@ -74,7 +74,7 @@ func (r *Relayer) requestToHandler(ctx context.Context, req reldb.QuoteRequest) 
 	qr.handlers[reldb.CommittedPending] = r.deadlineMiddleware(qr.handleCommitPending)
 	qr.handlers[reldb.CommittedConfirmed] = r.deadlineMiddleware(qr.handleCommitConfirmed)
 	// no more need for deadline middleware now, we already relayed.
-	qr.handlers[reldb.RelayCompleted] = r.gasMiddleware(qr.handleRelayCompleted)
+	qr.handlers[reldb.RelayCompleted] = qr.handleRelayCompleted
 	qr.handlers[reldb.ProvePosted] = qr.handleProofPosted
 
 	// error handlers only
