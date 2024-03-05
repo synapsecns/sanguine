@@ -11,7 +11,9 @@ import {IInterchainDB} from "./interfaces/IInterchainDB.sol";
 
 import {AppConfigV1, AppConfigLib} from "./libs/AppConfig.sol";
 import {InterchainEntry} from "./libs/InterchainEntry.sol";
-import {InterchainTransaction, InterchainTransactionLib} from "./libs/InterchainTransaction.sol";
+import {
+    InterchainTransaction, InterchainTxDescriptor, InterchainTransactionLib
+} from "./libs/InterchainTransaction.sol";
 import {OptionsLib, OptionsV1} from "./libs/Options.sol";
 import {TypeCasts} from "./libs/TypeCasts.sol";
 
@@ -61,7 +63,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     )
         external
         payable
-        returns (bytes32 transactionId, uint256 dbNonce, uint64 entryIndex)
+        returns (InterchainTxDescriptor memory desc)
     {
         return _interchainSend(dstChainId, receiver, srcExecutionService, srcModules, options, message);
     }
@@ -77,7 +79,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     )
         external
         payable
-        returns (bytes32 transactionId, uint256 dbNonce, uint64 entryIndex)
+        returns (InterchainTxDescriptor memory desc)
     {
         bytes32 receiverBytes32 = TypeCasts.addressToBytes32(receiver);
         return _interchainSend(dstChainId, receiverBytes32, srcExecutionService, srcModules, options, message);
@@ -211,7 +213,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         bytes calldata message
     )
         internal
-        returns (bytes32 transactionId, uint256 dbNonce, uint64 entryIndex)
+        returns (InterchainTxDescriptor memory desc)
     {
         _assertLinkedClient(dstChainId);
         // TODO: should check options for being correctly formatted
@@ -223,27 +225,27 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         unchecked {
             executionFee = msg.value - verificationFee;
         }
-        (dbNonce, entryIndex) = IInterchainDB(INTERCHAIN_DB).getNextEntryIndex();
+        (desc.dbNonce, desc.entryIndex) = IInterchainDB(INTERCHAIN_DB).getNextEntryIndex();
         InterchainTransaction memory icTx = InterchainTransactionLib.constructLocalTransaction({
             srcSender: msg.sender,
             dstReceiver: receiver,
             dstChainId: dstChainId,
-            dbNonce: dbNonce,
-            entryIndex: entryIndex,
+            dbNonce: desc.dbNonce,
+            entryIndex: desc.entryIndex,
             options: options,
             message: message
         });
-        transactionId = icTx.transactionId();
+        desc.transactionId = icTx.transactionId();
         // Sanity check: nonce returned from DB should match the nonce used to construct the transaction
         // TODO: check both dbNonce and entryIndex
         assert(
-            dbNonce
+            icTx.dbNonce
                 == IInterchainDB(INTERCHAIN_DB).writeEntryWithVerification{value: verificationFee}(
-                    icTx.dstChainId, transactionId, srcModules
+                    icTx.dstChainId, desc.transactionId, srcModules
                 )
         );
         if (executionFee > 0) {
-            IExecutionFees(executionFees).addExecutionFee{value: executionFee}(icTx.dstChainId, transactionId);
+            IExecutionFees(executionFees).addExecutionFee{value: executionFee}(icTx.dstChainId, desc.transactionId);
         }
         // TODO: consider disallowing the use of empty srcExecutionService
         if (srcExecutionService != address(0)) {
@@ -251,15 +253,15 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
                 dstChainId: dstChainId,
                 // TODO: there should be a way to calculate the payload size without encoding the transaction
                 txPayloadSize: icTx.encodeTransaction().length,
-                transactionId: transactionId,
+                transactionId: desc.transactionId,
                 executionFee: executionFee,
                 options: options
             });
             address srcExecutorEOA = IExecutionService(srcExecutionService).executorEOA();
-            IExecutionFees(executionFees).recordExecutor(icTx.dstChainId, transactionId, srcExecutorEOA);
+            IExecutionFees(executionFees).recordExecutor(icTx.dstChainId, desc.transactionId, srcExecutorEOA);
         }
         emit InterchainTransactionSent(
-            transactionId,
+            desc.transactionId,
             icTx.dbNonce,
             icTx.entryIndex,
             icTx.dstChainId,

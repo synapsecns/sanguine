@@ -2,6 +2,7 @@
 pragma solidity 0.8.20;
 
 import {OwnableApp} from "./OwnableApp.sol";
+import {InterchainTxDescriptor} from "../libs/InterchainTransaction.sol";
 import {OptionsV1} from "../libs/Options.sol";
 
 contract InterchainAppExample is OwnableApp {
@@ -12,13 +13,13 @@ contract InterchainAppExample is OwnableApp {
 
     /// @notice Sends a basic message to the destination chain.
     function sendMessage(uint256 dstChainId, uint256 gasLimit, bytes calldata message) external payable {
-        (bytes32 transactionId, uint256 dbNonce, uint64 entryIndex) = _sendInterchainMessage({
+        InterchainTxDescriptor memory desc = _sendInterchainMessage({
             dstChainId: dstChainId,
             messageFee: msg.value,
             options: OptionsV1({gasLimit: gasLimit, gasAirdrop: 0}),
             message: message
         });
-        emit MessageSent(dstChainId, dbNonce, entryIndex, transactionId);
+        emit MessageSent(dstChainId, desc.dbNonce, desc.entryIndex, desc.transactionId);
     }
 
     /// @dev Internal logic for receiving messages. At this point the validity of the message is already checked.

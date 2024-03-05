@@ -6,6 +6,7 @@ import {IInterchainApp} from "../interfaces/IInterchainApp.sol";
 import {IInterchainClientV1} from "../interfaces/IInterchainClientV1.sol";
 
 import {AppConfigV1} from "../libs/AppConfig.sol";
+import {InterchainTxDescriptor} from "../libs/InterchainTransaction.sol";
 import {OptionsV1} from "../libs/Options.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 
@@ -171,7 +172,7 @@ abstract contract InterchainAppV1 is InterchainAppV1Events, IInterchainApp {
         bytes memory message
     )
         internal
-        returns (bytes32 transactionId, uint256 dbNonce, uint64 entryIndex)
+        returns (InterchainTxDescriptor memory desc)
     {
         return _sendInterchainMessage(dstChainId, getLinkedApp(dstChainId), messageFee, options, message);
     }
@@ -185,7 +186,7 @@ abstract contract InterchainAppV1 is InterchainAppV1Events, IInterchainApp {
         bytes memory message
     )
         internal
-        returns (bytes32 transactionId, uint256 dbNonce, uint64 entryIndex)
+        returns (InterchainTxDescriptor memory desc)
     {
         return _sendInterchainMessage(dstChainId, TypeCasts.addressToBytes32(receiver), messageFee, options, message);
     }
@@ -199,7 +200,7 @@ abstract contract InterchainAppV1 is InterchainAppV1Events, IInterchainApp {
         bytes memory message
     )
         internal
-        returns (bytes32 transactionId, uint256 dbNonce, uint64 entryIndex)
+        returns (InterchainTxDescriptor memory desc)
     {
         address cachedInterchain = interchain;
         if (cachedInterchain == address(0)) revert InterchainApp__InterchainClientNotSet();

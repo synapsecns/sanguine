@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import {InterchainTxDescriptor} from "../libs/InterchainTransaction.sol";
+
 interface IInterchainClientV1 {
     error InterchainClientV1__FeeAmountTooLow(uint256 actual, uint256 required);
     error InterchainClientV1__IncorrectDstChainId(uint256 chainId);
@@ -40,9 +42,10 @@ interface IInterchainClientV1 {
      * @param srcModules The source modules involved in the message sending.
      * @param options Execution options for the message sent, encoded as bytes, currently gas limit + native gas drop.
      * @param message The message being sent.
-     * @return transactionId The ID of the transaction that was sent.
-     * @return dbNonce The database nonce of the batch containing the written entry for transaction.
-     * @return entryIndex The index of the written entry for transaction within the batch.
+     * @return desc The descriptor of the sent transaction:
+     * - transactionId: the ID of the transaction that was sent.
+     * - dbNonce: the database nonce of the batch containing the written entry for transaction.
+     * - entryIndex: the index of the written entry for transaction within the batch.
      */
     function interchainSend(
         uint256 dstChainId,
@@ -54,7 +57,7 @@ interface IInterchainClientV1 {
     )
         external
         payable
-        returns (bytes32 transactionId, uint256 dbNonce, uint64 entryIndex);
+        returns (InterchainTxDescriptor memory desc);
 
     function interchainSendEVM(
         uint256 dstChainId,
@@ -66,7 +69,7 @@ interface IInterchainClientV1 {
     )
         external
         payable
-        returns (bytes32 transactionId, uint256 dbNonce, uint64 entryIndex);
+        returns (InterchainTxDescriptor memory desc);
 
     /**
      * @notice Executes a transaction that has been sent via the Interchain.

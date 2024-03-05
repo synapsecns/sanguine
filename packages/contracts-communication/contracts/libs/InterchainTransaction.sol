@@ -14,6 +14,12 @@ struct InterchainTransaction {
     bytes message;
 }
 
+struct InterchainTxDescriptor {
+    bytes32 transactionId;
+    uint256 dbNonce;
+    uint64 entryIndex;
+}
+
 using InterchainTransactionLib for InterchainTransaction global;
 
 library InterchainTransactionLib {
