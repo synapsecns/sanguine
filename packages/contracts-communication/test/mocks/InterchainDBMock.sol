@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {IInterchainDB, InterchainEntry} from "../../contracts/interfaces/IInterchainDB.sol";
+import {IInterchainDB, InterchainEntry, InterchainBatch} from "../../contracts/interfaces/IInterchainDB.sol";
 
 contract InterchainDBMock is IInterchainDB {
     function writeEntry(bytes32 dataHash) external returns (uint256 writerNonce) {}
@@ -19,6 +19,8 @@ contract InterchainDBMock is IInterchainDB {
     {}
 
     function verifyEntry(InterchainEntry memory entry) external {}
+
+    function verifyRemoteBatch(InterchainBatch memory batch) external {}
 
     function getInterchainFee(uint256 dstChainId, address[] memory srcModules) external view returns (uint256) {}
 

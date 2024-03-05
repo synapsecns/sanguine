@@ -59,9 +59,10 @@ contract InterchainClientV1Test is Test {
         mockApprovedModules.push(address(icModule));
     }
 
-    /// @dev Mocks a return value of module.getModuleFee(DST_CHAIN_ID)
+    /// @dev Mocks a return value of module.getModuleFee(DST_CHAIN_ID, *)
     function mockModuleFee(InterchainModuleMock module, uint256 feeValue) internal {
-        bytes memory callData = abi.encodeCall(module.getModuleFee, (DST_CHAIN_ID));
+        // Encode partial calldata so that we can mock the return value for any dbNonce
+        bytes memory callData = abi.encodeWithSelector(module.getModuleFee.selector, DST_CHAIN_ID);
         bytes memory returnData = abi.encode(feeValue);
         vm.mockCall(address(module), callData, returnData);
     }

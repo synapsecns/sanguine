@@ -1,7 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {InterchainDB, InterchainEntry, IInterchainDB, InterchainDBEvents} from "../contracts/InterchainDB.sol";
+import {
+    InterchainDB,
+    InterchainBatch,
+    InterchainEntry,
+    IInterchainDB,
+    InterchainDBEvents
+} from "../contracts/InterchainDB.sol";
 
 import {InterchainModuleMock, IInterchainModule} from "./mocks/InterchainModuleMock.sol";
 
@@ -84,16 +90,21 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     }
 
     function getModuleCalldata(InterchainEntry memory entry) internal pure returns (bytes memory) {
-        return abi.encodeCall(IInterchainModule.requestVerification, (DST_CHAIN_ID, entry));
+        // TODO: proper requestBatchVerification
+        return abi.encodeCall(
+            IInterchainModule.requestBatchVerification,
+            (DST_CHAIN_ID, InterchainBatch({srcChainId: entry.srcChainId, dbNonce: entry.dbNonce, batchRoot: 0}))
+        );
     }
 
     function addressToBytes32(address addr) internal pure returns (bytes32) {
         return bytes32(uint256(uint160(addr)));
     }
 
-    /// @dev Mocks a return value of module.getModuleFee(DST_CHAIN_ID)
+    /// @dev Mocks a return value of module.getModuleFee(DST_CHAIN_ID, *)
     function mockModuleFee(InterchainModuleMock module, uint256 feeValue) internal {
-        bytes memory callData = abi.encodeCall(module.getModuleFee, (DST_CHAIN_ID));
+        // Encode partial calldata so that we can mock the return value for any dbNonce
+        bytes memory callData = abi.encodeWithSelector(module.getModuleFee.selector, DST_CHAIN_ID);
         bytes memory returnData = abi.encode(feeValue);
         vm.mockCall(address(module), callData, returnData);
     }
