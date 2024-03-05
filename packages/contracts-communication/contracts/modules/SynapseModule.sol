@@ -178,14 +178,7 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     }
 
     /// @dev Internal logic to fill the module data for the specified destination chain.
-    function _fillModuleData(
-        uint256 destChainId,
-        uint256 dbNonce
-    )
-        internal
-        override
-        returns (bytes memory moduleData)
-    {
+    function _fillModuleData(uint256 dstChainId, uint256 dbNonce) internal override returns (bytes memory moduleData) {
         moduleData = _getSynapseGasOracle().getLocalGasData();
         // Exit early if data is empty
         if (moduleData.length == 0) {
@@ -193,11 +186,11 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
         }
         bytes32 dataHash = keccak256(moduleData);
         // Don't send the same data twice
-        if (dataHash == _lastGasDataHash[destChainId]) {
+        if (dataHash == _lastGasDataHash[dstChainId]) {
             moduleData = "";
         } else {
-            _lastGasDataHash[destChainId] = dataHash;
-            emit GasDataSent(destChainId, moduleData);
+            _lastGasDataHash[dstChainId] = dataHash;
+            emit GasDataSent(dstChainId, moduleData);
         }
     }
 
@@ -219,7 +212,7 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
     /// @dev Internal logic to get the module fee for verifying an entry on the specified destination chain.
-    function _getModuleFee(uint256 destChainId) internal view override returns (uint256) {
+    function _getModuleFee(uint256 dstChainId) internal view override returns (uint256) {
         // On the remote chain the verifyEntry(entry, signatures) function will be called.
         // We need to figure out the calldata size for the remote call.
         // selector (4 bytes) + entry + signatures
@@ -227,8 +220,8 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
         // signatures: 32 (length) + 65*threshold (padded up to be a multiple of 32 bytes)
         // Total formula is: 4 + 32 (entry offset) + 32 (signatures offset) + 192 + 32
         return _getSynapseGasOracle().estimateTxCostInLocalUnits({
-            remoteChainId: destChainId,
-            gasLimit: getVerifyGasLimit(destChainId),
+            remoteChainId: dstChainId,
+            gasLimit: getVerifyGasLimit(dstChainId),
             calldataSize: 324 + 64 * getThreshold()
         });
     }

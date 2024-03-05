@@ -28,33 +28,33 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
 
     /// @inheritdoc IInterchainDB
     function requestVerification(
-        uint256 destChainId,
+        uint256 dstChainId,
         uint256 dbNonce,
         address[] calldata srcModules
     )
         external
         payable
-        onlyRemoteChainId(destChainId)
+        onlyRemoteChainId(dstChainId)
     {
         InterchainEntry memory entry = getEntry(dbNonce);
-        _requestVerification(destChainId, entry, srcModules);
+        _requestVerification(dstChainId, entry, srcModules);
     }
 
     /// @inheritdoc IInterchainDB
     function writeEntryWithVerification(
-        uint256 destChainId,
+        uint256 dstChainId,
         bytes32 dataHash,
         address[] calldata srcModules
     )
         external
         payable
-        onlyRemoteChainId(destChainId)
+        onlyRemoteChainId(dstChainId)
         returns (uint256 dbNonce)
     {
         dbNonce = _writeEntry(dataHash);
         // TODO: entryIndex
         InterchainEntry memory entry = InterchainEntryLib.constructLocalEntry(dbNonce, 0, msg.sender, dataHash);
-        _requestVerification(destChainId, entry, srcModules);
+        _requestVerification(dstChainId, entry, srcModules);
     }
 
     // ═══════════════════════════════════════════════ MODULE-FACING ═══════════════════════════════════════════════════
@@ -96,8 +96,8 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     }
 
     /// @inheritdoc IInterchainDB
-    function getInterchainFee(uint256 destChainId, address[] calldata srcModules) external view returns (uint256 fee) {
-        (, fee) = _getModuleFees(destChainId, srcModules);
+    function getInterchainFee(uint256 dstChainId, address[] calldata srcModules) external view returns (uint256 fee) {
+        (, fee) = _getModuleFees(dstChainId, srcModules);
     }
 
     /// @inheritdoc IInterchainDB
@@ -131,28 +131,28 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     /// @dev Request the verification of the entry by the modules, and emit the event.
     /// Note: the validity of the passed entry and chain id being remote is enforced in the calling function.
     function _requestVerification(
-        uint256 destChainId,
+        uint256 dstChainId,
         InterchainEntry memory entry,
         address[] calldata srcModules
     )
         internal
     {
-        (uint256[] memory fees, uint256 totalFee) = _getModuleFees(destChainId, srcModules);
+        (uint256[] memory fees, uint256 totalFee) = _getModuleFees(dstChainId, srcModules);
         if (msg.value != totalFee) {
             revert InterchainDB__IncorrectFeeAmount(msg.value, totalFee);
         }
         uint256 len = srcModules.length;
         for (uint256 i = 0; i < len; ++i) {
-            IInterchainModule(srcModules[i]).requestVerification{value: fees[i]}(destChainId, entry);
+            IInterchainModule(srcModules[i]).requestVerification{value: fees[i]}(dstChainId, entry);
         }
-        emit InterchainVerificationRequested(destChainId, entry.dbNonce, srcModules);
+        emit InterchainVerificationRequested(dstChainId, entry.dbNonce, srcModules);
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
     /// @dev Get the verification fees for the modules
     function _getModuleFees(
-        uint256 destChainId,
+        uint256 dstChainId,
         address[] calldata srcModules
     )
         internal
@@ -165,7 +165,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         }
         fees = new uint256[](len);
         for (uint256 i = 0; i < len; ++i) {
-            fees[i] = IInterchainModule(srcModules[i]).getModuleFee(destChainId);
+            fees[i] = IInterchainModule(srcModules[i]).getModuleFee(dstChainId);
             totalFee += fees[i];
         }
     }

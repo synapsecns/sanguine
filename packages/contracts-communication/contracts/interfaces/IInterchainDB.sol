@@ -38,10 +38,10 @@ interface IInterchainDB {
     /// and `msg.value` must be equal to the sum of all fees.
     /// Note: this method is permissionless, and anyone can request verification for any entry.
     /// @dev Will revert if the entry with the given nonce does not exist.
-    /// @param destChainId   The chain id of the destination chain
+    /// @param dstChainId    The chain id of the destination chain
     /// @param dbNonce       The database nonce of the written entry on this chain
     /// @param srcModules    The source chain addresses of the Interchain Modules to use for verification
-    function requestVerification(uint256 destChainId, uint256 dbNonce, address[] memory srcModules) external payable;
+    function requestVerification(uint256 dstChainId, uint256 dbNonce, address[] memory srcModules) external payable;
 
     /// @notice Write data to the Interchain DataBase,
     /// and request the given Interchain Modules to verify it on the destination chain.
@@ -50,12 +50,12 @@ interface IInterchainDB {
     /// Note: additional verification for the same entry could be later done using `requestVerification`
     /// by providing the returned `dbNonce`.
     /// @dev Will revert if the empty array of modules is provided.
-    /// @param destChainId  The chain id of the destination chain
+    /// @param dstChainId   The chain id of the destination chain
     /// @param dataHash     The hash of the data to be written to the Interchain DataBase as a new entry
     /// @param srcModules   The source chain addresses of the Interchain Modules to use for verification
     /// @return dbNonce     The database nonce of the written entry on this chain
     function writeEntryWithVerification(
-        uint256 destChainId,
+        uint256 dstChainId,
         bytes32 dataHash,
         address[] memory srcModules
     )
@@ -70,9 +70,9 @@ interface IInterchainDB {
     /// @notice Get the fee for writing data to the Interchain DataBase, and verifying it on the destination chain
     /// using the provided Interchain Modules.
     /// @dev Will revert if the empty array of modules is provided.
-    /// @param destChainId  The chain id of the destination chain
+    /// @param dstChainId   The chain id of the destination chain
     /// @param srcModules   The source chain addresses of the Interchain Modules to use for verification
-    function getInterchainFee(uint256 destChainId, address[] memory srcModules) external view returns (uint256);
+    function getInterchainFee(uint256 dstChainId, address[] memory srcModules) external view returns (uint256);
 
     /// @notice Get the Interchain Entry by the writer and the writer nonce.
     /// @dev Will revert if the entry with the given nonce does not exist.

@@ -17,11 +17,11 @@ interface IInterchainModule {
     /// Note: this will eventually trigger `InterchainDB.verifyEntry(entry)` function on destination chain,
     /// with no guarantee of ordering.
     /// @dev Could be only called by the Interchain DataBase contract.
-    /// @param destChainId  The chain id of the destination chain
+    /// @param dstChainId   The chain id of the destination chain
     /// @param entry        The entry to verify
-    function requestVerification(uint256 destChainId, InterchainEntry memory entry) external payable;
+    function requestVerification(uint256 dstChainId, InterchainEntry memory entry) external payable;
 
     /// @notice Get the Module fee for verifying an entry on the specified destination chain
-    /// @param destChainId  The chain id of the destination chain
-    function getModuleFee(uint256 destChainId) external view returns (uint256);
+    /// @param dstChainId   The chain id of the destination chain
+    function getModuleFee(uint256 dstChainId) external view returns (uint256);
 }

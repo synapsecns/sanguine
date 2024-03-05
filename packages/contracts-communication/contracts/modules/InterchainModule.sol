@@ -18,30 +18,30 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
     }
 
     /// @inheritdoc IInterchainModule
-    function requestVerification(uint256 destChainId, InterchainEntry memory entry) external payable {
+    function requestVerification(uint256 dstChainId, InterchainEntry memory entry) external payable {
         if (msg.sender != INTERCHAIN_DB) {
             revert InterchainModule__NotInterchainDB(msg.sender);
         }
-        if (destChainId == block.chainid) {
+        if (dstChainId == block.chainid) {
             revert InterchainModule__SameChainId(block.chainid);
         }
         if (entry.srcChainId != block.chainid) {
             revert InterchainModule__IncorrectSourceChainId({chainId: entry.srcChainId});
         }
-        uint256 requiredFee = _getModuleFee(destChainId);
+        uint256 requiredFee = _getModuleFee(dstChainId);
         if (msg.value < requiredFee) {
             revert InterchainModule__InsufficientFee({actual: msg.value, required: requiredFee});
         }
-        bytes memory moduleData = _fillModuleData(destChainId, entry.dbNonce);
+        bytes memory moduleData = _fillModuleData(dstChainId, entry.dbNonce);
         bytes memory encodedEntry = ModuleEntryLib.encodeModuleEntry(entry, moduleData);
         bytes32 ethSignedEntryHash = MessageHashUtils.toEthSignedMessageHash(keccak256(encodedEntry));
-        _requestVerification(destChainId, encodedEntry);
-        emit VerificationRequested(destChainId, encodedEntry, ethSignedEntryHash);
+        _requestVerification(dstChainId, encodedEntry);
+        emit VerificationRequested(dstChainId, encodedEntry, ethSignedEntryHash);
     }
 
     /// @inheritdoc IInterchainModule
-    function getModuleFee(uint256 destChainId) external view returns (uint256) {
-        return _getModuleFee(destChainId);
+    function getModuleFee(uint256 dstChainId) external view returns (uint256) {
+        return _getModuleFee(dstChainId);
     }
 
     /// @dev Should be called once the Module has verified the entry and needs to signal this
@@ -60,14 +60,14 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
 
     // solhint-disable no-empty-blocks
     /// @dev Internal logic to request the verification of an entry on the destination chain.
-    function _requestVerification(uint256 destChainId, bytes memory encodedEntry) internal virtual {}
+    function _requestVerification(uint256 dstChainId, bytes memory encodedEntry) internal virtual {}
 
     /// @dev Internal logic to fill the module data for the specified destination chain.
-    function _fillModuleData(uint256 destChainId, uint256 dbNonce) internal virtual returns (bytes memory) {}
+    function _fillModuleData(uint256 dstChainId, uint256 dbNonce) internal virtual returns (bytes memory) {}
 
     /// @dev Internal logic to handle the auxiliary module data relayed from the remote chain.
     function _receiveModuleData(uint256 srcChainId, uint256 dbNonce, bytes memory moduleData) internal virtual {}
 
     /// @dev Internal logic to get the module fee for verifying an entry on the specified destination chain.
-    function _getModuleFee(uint256 destChainId) internal view virtual returns (uint256);
+    function _getModuleFee(uint256 dstChainId) internal view virtual returns (uint256);
 }
