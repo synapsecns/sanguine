@@ -115,9 +115,10 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelaye
 	if err != nil {
 		return nil, fmt.Errorf("could not get cctp type: %w", err)
 	}
+	boundSynapseCCTPs := make(map[uint32]*cctp.SynapseCCTP)
+	boundCircleCCTPs := make(map[uint32]*circlecctp.MessageTransmitter)
 	switch cctpType {
 	case relayTypes.SynapseMessageType:
-		boundSynapseCCTPs := make(map[uint32]*cctp.SynapseCCTP)
 		for _, chain := range cfg.Chains {
 			chainListeners[chain.ChainID] = &chainListener{
 				chainID:         chain.ChainID,
@@ -135,7 +136,6 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelaye
 			}
 		}
 	case relayTypes.CircleMessageType:
-		boundCircleCCTPs := make(map[uint32]*circlecctp.MessageTransmitter)
 		for _, chain := range cfg.Chains {
 			chainListeners[chain.ChainID] = &chainListener{
 				chainID:         chain.ChainID,
@@ -182,6 +182,7 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelaye
 		attestationAPI:    attestationAPI,
 		txSubmitter:       txSubmitter,
 		boundSynapseCCTPs: boundSynapseCCTPs,
+		boundCircleCCTPs:  boundCircleCCTPs,
 	}, nil
 }
 
@@ -791,6 +792,34 @@ func (c *CCTPRelayer) submitReceiveCircleToken(ctx context.Context, msg *relayTy
 }
 
 func (c *CCTPRelayer) receiveMessage(ctx context.Context, msg *relayTypes.Message) (err error) {
-	// TODO: implement
+	contract, ok := c.boundCircleCCTPs[msg.DestChainID]
+	if !ok {
+		return fmt.Errorf("could not find destination chain %d", msg.DestChainID)
+	}
+
+	// TODO: functionalize this
+	ridBytes := common.Hex2Bytes(msg.RequestID)
+	var rid [32]byte
+	copy(rid[:], ridBytes)
+
+	var nonce uint64
+	var destTxHash common.Hash
+	nonce, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(msg.DestChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+		tx, err = contract.ReceiveMessage(transactor, msg.Message, msg.Attestation)
+		if err != nil {
+			return nil, fmt.Errorf("could not submit transaction: %w", err)
+		}
+
+		destTxHash = tx.Hash()
+		return tx, nil
+	})
+	if err != nil {
+		err = fmt.Errorf("could not submit transaction: %w", err)
+		return err
+	}
+
+	// update values in place to be stored by caller
+	msg.DestNonce = int(nonce)
+	msg.DestTxHash = destTxHash.String()
 	return nil
 }
