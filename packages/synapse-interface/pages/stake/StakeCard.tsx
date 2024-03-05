@@ -217,19 +217,15 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
               title={pool?.symbol}
               isConnected={Boolean(address)}
               balanceStr={
-                lpTokenBalance === 0n
+                !lpTokenBalance
                   ? '0.0'
                   : formatBigIntToString(lpTokenBalance, tokenInfo.decimals, 18)
               }
               onClickBalance={() => {
                 setDeposit({
-                  str:
-                    lpTokenBalance === 0n
-                      ? '0.0000'
-                      : formatBigIntToString(
-                          lpTokenBalance,
-                          tokenInfo.decimals
-                        ),
+                  str: !lpTokenBalance
+                    ? '0.0000'
+                    : formatBigIntToString(lpTokenBalance, tokenInfo.decimals),
                   bi: lpTokenBalance,
                 })
               }}
@@ -242,7 +238,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                   bi: stringToBigInt(val, pool.decimals[chainId]),
                 })
               }}
-              disabled={lpTokenBalance === 0n}
+              disabled={!lpTokenBalance}
               icon={pool?.icon?.src}
             />
           ) : (
@@ -279,7 +275,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             <InteractiveInputRowButton
               title={pool?.symbol}
               buttonLabel={
-                lpTokenBalance === 0n || lpTokenBalance < deposit.bi
+                !lpTokenBalance || lpTokenBalance < deposit.bi
                   ? 'Insufficient Balance'
                   : allowance < deposit.bi
                   ? `Approve ${pool?.symbol}`
@@ -287,7 +283,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
               }
               loadingLabel={isPendingApprove ? 'Approving' : 'Staking'}
               disabled={
-                lpTokenBalance === 0n ||
+                !lpTokenBalance ||
                 lpTokenBalance < deposit.bi ||
                 deposit.str === ''
               }
