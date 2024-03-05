@@ -23,6 +23,8 @@ type Config struct {
 	Host string `yaml:"host"`
 	// CircleAPIURl is the URL for the Circle API
 	CircleAPIURl string `yaml:"circle_api_url"`
+	// CCTPMethod is the method for executing CCTP transactions.
+	CCTPMethod string `yaml:"cctp_method"`
 	// Chains stores all chain information
 	Chains ChainConfigs `yaml:"chains"`
 	// BaseOmnirpcURL is the base url for omnirpc.
@@ -35,8 +37,9 @@ type Config struct {
 	// RetryInterval is the interval for attestation request retries
 	RetryIntervalMS int `yaml:"retry_interval_ms"`
 	// HTTPBackoffMaxElapsedTime is the max elapsed time for attestation request retries
-	HTTPBackoffMaxElapsedTimeMs int                    `yaml:"http_backoff_max_elapsed_time_ms"`
-	SubmitterConfig             submitterConfig.Config `yaml:"submitter_config"`
+	HTTPBackoffMaxElapsedTimeMs int `yaml:"http_backoff_max_elapsed_time_ms"`
+	// SubmitterConfig is the config for the transaction submitter
+	SubmitterConfig submitterConfig.Config `yaml:"submitter_config"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each
@@ -87,3 +90,27 @@ func DecodeConfig(filePath string) (cfg Config, err error) {
 	}
 	return cfg, nil
 }
+
+// GetCCTPMethod returns the CCTP method.
+func (c Config) GetCCTPMethod() (CCTPMethod, error) {
+	switch c.CCTPMethod {
+	case "synapse":
+		return CCTPMethodSynapse, nil
+	case "circle":
+		return CCTPMethodCircle, nil
+	default:
+		return 0, fmt.Errorf("invalid cctp method: %s", c.CCTPMethod)
+	}
+}
+
+// CCTPMethod is the method for executing CCTP transactions.
+//
+//go:generate go run golang.org/x/tools/cmd/stringer -type=CCTPMethod
+type CCTPMethod uint8
+
+const (
+	// CCTPMethodSynapse is the default CCTP method.
+	CCTPMethodSynapse CCTPMethod = iota
+	// CCTPMethodCircle is the CCTP method for using the native circle contracts.
+	CCTPMethodCircle
+)
