@@ -36,11 +36,20 @@ abstract contract InterchainAppV1 is InterchainAppV1Events, IInterchainApp {
     error InterchainApp__SenderNotAllowed(uint256 srcChainId, bytes32 sender);
 
     /// @inheritdoc IInterchainApp
-    function appReceive(uint256 srcChainId, bytes32 sender, uint256 dbNonce, bytes calldata message) external payable {
+    function appReceive(
+        uint256 srcChainId,
+        bytes32 sender,
+        uint256 dbNonce,
+        uint64 entryIndex,
+        bytes calldata message
+    )
+        external
+        payable
+    {
         if (msg.sender != interchain) revert InterchainApp__CallerNotInterchainClient(msg.sender);
         if (srcChainId == block.chainid) revert InterchainApp__SameChainId(srcChainId);
         if (!isAllowedSender(srcChainId, sender)) revert InterchainApp__SenderNotAllowed(srcChainId, sender);
-        _receiveMessage(srcChainId, sender, dbNonce, message);
+        _receiveMessage(srcChainId, sender, dbNonce, entryIndex, message);
         // Note: application may elect to emit an event in `_receiveMessage`, so we don't emit a generic event here.
     }
 
@@ -207,6 +216,7 @@ abstract contract InterchainAppV1 is InterchainAppV1Events, IInterchainApp {
         uint256 srcChainId,
         bytes32 sender,
         uint256 dbNonce,
+        uint64 entryIndex,
         bytes calldata message
     )
         internal

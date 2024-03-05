@@ -5,7 +5,7 @@ import {OwnableApp} from "./OwnableApp.sol";
 import {OptionsV1} from "../libs/Options.sol";
 
 contract InterchainAppExample is OwnableApp {
-    event MessageReceived(uint256 srcChainId, bytes32 sender, uint256 dbNonce, bytes message);
+    event MessageReceived(uint256 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message);
     event MessageSent(uint256 dstChainId, uint256 dbNonce, bytes32 transactionId);
 
     constructor(address owner_) OwnableApp(owner_) {}
@@ -26,11 +26,12 @@ contract InterchainAppExample is OwnableApp {
         uint256 srcChainId,
         bytes32 sender,
         uint256 dbNonce,
+        uint64 entryIndex,
         bytes calldata message
     )
         internal
         override
     {
-        emit MessageReceived(srcChainId, sender, dbNonce, message);
+        emit MessageReceived(srcChainId, sender, dbNonce, entryIndex, message);
     }
 }

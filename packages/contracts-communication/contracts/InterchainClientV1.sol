@@ -103,6 +103,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             srcChainId: icTx.srcChainId,
             sender: icTx.srcSender,
             dbNonce: icTx.dbNonce,
+            entryIndex: icTx.entryIndex,
             message: icTx.message
         });
         emit InterchainTransactionReceived(
