@@ -26,5 +26,7 @@ abstract contract InterchainClientV1Events {
         bytes32 dstReceiver
     );
 
-    event ExecutionProofWritten(bytes32 indexed transactionId, uint256 indexed dbNonce, address executor);
+    event ExecutionProofWritten(
+        bytes32 indexed transactionId, uint256 indexed dbNonce, uint64 indexed entryIndex, address executor
+    );
 }

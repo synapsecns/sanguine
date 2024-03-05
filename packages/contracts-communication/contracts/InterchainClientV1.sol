@@ -114,14 +114,16 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     }
 
     /// @inheritdoc IInterchainClientV1
-    function writeExecutionProof(bytes32 transactionId) external returns (uint256 dbNonce) {
+    function writeExecutionProof(bytes32 transactionId) external returns (uint256 dbNonce, uint64 entryIndex) {
         address executor = _txExecutor[transactionId];
         if (executor == address(0)) {
             revert InterchainClientV1__TxNotExecuted(transactionId);
         }
         bytes memory proof = abi.encode(transactionId, executor);
         dbNonce = IInterchainDB(INTERCHAIN_DB).writeEntry(keccak256(proof));
-        emit ExecutionProofWritten(transactionId, dbNonce, executor);
+        // TODO: entryIndex
+        entryIndex;
+        emit ExecutionProofWritten(transactionId, dbNonce, entryIndex, executor);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
