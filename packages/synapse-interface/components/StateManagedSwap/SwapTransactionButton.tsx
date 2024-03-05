@@ -90,6 +90,11 @@ export const SwapTransactionButton = ({
       label: `Connect Wallet to Swap`,
       onClick: openConnectModal,
     }
+  } else if (swapFromValue === '') {
+    buttonProperties = {
+      label: `Swap`,
+      onClick: null,
+    }
   } else if (isConnected && !sufficientBalance) {
     buttonProperties = {
       label: 'Insufficient balance',
