@@ -137,6 +137,8 @@ contract InterchainClientV1Test is Test {
             dstReceiver: dstReceiver,
             dstChainId: DST_CHAIN_ID,
             dbNonce: dbNonce,
+            // TODO: entryIndex
+            entryIndex: 0,
             options: options,
             message: message
         });
@@ -154,6 +156,8 @@ contract InterchainClientV1Test is Test {
             srcChainId: SRC_CHAIN_ID,
             srcWriter: remoteClient,
             dbNonce: dbNonce,
+            // TODO: entryIndex
+            entryIndex: 0,
             dataHash: transactionID
         });
 

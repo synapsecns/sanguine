@@ -7,6 +7,9 @@ import {InterchainModuleMock, IInterchainModule} from "./mocks/InterchainModuleM
 
 import {Test} from "forge-std/Test.sol";
 
+// solhint-disable custom-errors
+// solhint-disable func-name-mixedcase
+// solhint-disable ordering
 /// @notice Unit tests for InterchainDB interactions on the source chain
 /// Note: we inherit from interface with the events to avoid their copy-pasting.
 contract InterchainDBSourceTest is Test, InterchainDBEvents {
@@ -73,6 +76,8 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         return InterchainEntry({
             srcChainId: SRC_CHAIN_ID,
             dbNonce: dbNonce,
+            // TODO: entryIndex
+            entryIndex: 0,
             srcWriter: addressToBytes32(writer),
             dataHash: getMockDataHash(writer, dbNonce)
         });
