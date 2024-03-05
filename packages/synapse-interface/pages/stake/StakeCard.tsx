@@ -123,7 +123,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
         <div className="flex items-center justify-between my-2">
           <div className="text-[#EEEDEF]">Unstaked</div>
           <div className="text-white ">
-            {lpTokenBalance === 0n
+            {!lpTokenBalance
               ? '\u2212'
               : formatBigIntToString(
                   lpTokenBalance,
@@ -149,7 +149,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             {pool?.customRewardToken ?? 'SYN'} Earned
           </div>
           <div className="text-white ">
-            {userStakeData.reward === 0n
+            {!userStakeData.reward
               ? '\u2212'
               : formatBigIntToString(userStakeData.reward, 18, 6)}{' '}
             <span className="text-base text-[#A9A5AD]">
@@ -157,9 +157,9 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             </span>
           </div>
         </div>
-        {userStakeData.reward === 0n ? null : (
+        {!userStakeData.reward ? null : (
           <Button
-            disabled={userStakeData.reward === 0n}
+            disabled={!userStakeData.reward}
             className={`
              bg-[#564f58]
               w-full my-2 px-4 py-3 tracking-wide
@@ -252,7 +252,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
               )}
               onClickBalance={() => {
                 setWithdraw(
-                  userStakeData.amount === 0n
+                  !userStakeData.amount
                     ? '0.00000'
                     : formatBigIntToString(
                         userStakeData.amount,
@@ -267,7 +267,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                 let val = cleanNumberInput(e.target.value)
                 setWithdraw(val)
               }}
-              disabled={userStakeData.amount === 0n}
+              disabled={!userStakeData.amount}
               icon={pool?.icon?.src}
             />
           )}
@@ -324,7 +324,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
               }
               loadingLabel="Unstaking"
               disabled={
-                userStakeData.amount === 0n ||
+                !userStakeData.amount ||
                 userStakeData.amount < stringToBigInt(withdraw, 18) ||
                 withdraw === ''
               }
