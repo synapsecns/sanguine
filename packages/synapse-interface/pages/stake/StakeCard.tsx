@@ -112,6 +112,8 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
     })()
   }, [deposit])
 
+  console.log('deposit.bi:', deposit.bi)
+
   return (
     <div className="flex-wrap space-y-2">
       <StakeCardTitle
@@ -334,7 +336,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
               title={pool?.symbol}
               buttonLabel={
                 userStakeData.amount < stringToBigInt(withdraw, 18)
-                  ? 'Greater than staked balance'
+                  ? 'Insufficient balance'
                   : 'Unstake'
               }
               loadingLabel="Unstaking"

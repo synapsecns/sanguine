@@ -53,11 +53,11 @@ export const PoolActionOptions = ({
           >
             <div
               className={`
-                flex items-center 
+                flex items-center
                 text-sm
                 rounded-sm
-                border border-[#565058] 
-                pl-2 pr-2 pt-1 pb-1 space-x-2 
+                border border-[#565058]
+                pl-2 pr-2 pt-1 pb-1 space-x-2
                 hover:cursor-pointer
                 hover:bg-[#101018] ${open ? 'bg-[#101018]' : ''}`}
             >
@@ -128,7 +128,7 @@ export function TransactionPopoverContainer({
       <Popover.Panel
         style={{ boxShadow: '0px 4px 4px 0px rgba(0, 0, 0, 0.25)' }}
         className={`
-          absolute z-10 top-[-74px] left-[50px] w-[110px] transform-gpu
+          absolute z-10 top-[33px] left-[85px] w-[110px] transform-gpu
           -translate-x-full border border-separator bg-surface
           rounded-sm overflow-hidden shadow-md
         `}
