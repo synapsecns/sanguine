@@ -12,6 +12,13 @@ export interface BridgeableToken {
   imgUrl: string
 }
 
+export interface BridgeSelections {
+  originChainId: number | null
+  originToken: string | null
+  destinationChainId: number | null
+  destinationToken: string | null
+}
+
 export interface CustomThemeVariables {
   bgColor?: string
   '--synapse-text'?: string
@@ -65,6 +72,8 @@ export interface Chain {
 }
 
 export declare function Bridge(props: BridgeProps): JSX.Element
+
+export declare function useBridgeSelections(): BridgeSelections
 
 export declare const AGEUR: BridgeableToken
 export declare const AVAX: BridgeableToken
