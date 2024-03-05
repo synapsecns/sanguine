@@ -321,7 +321,11 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
           ) : (
             <InteractiveInputRowButton
               title={pool?.symbol}
-              buttonLabel="Unstake"
+              buttonLabel={
+                userStakeData.amount < stringToBigInt(withdraw, 18)
+                  ? 'Greater than staked balance'
+                  : 'Unstake'
+              }
               loadingLabel="Unstaking"
               disabled={
                 userStakeData.amount === 0n ||
