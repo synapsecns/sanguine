@@ -12,6 +12,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jftuga/ellipsis"
 	ethConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/types"
 	"gopkg.in/yaml.v2"
 )
 
@@ -23,8 +24,8 @@ type Config struct {
 	Host string `yaml:"host"`
 	// CircleAPIURl is the URL for the Circle API
 	CircleAPIURl string `yaml:"circle_api_url"`
-	// CCTPMethod is the method for executing CCTP transactions.
-	CCTPMethod string `yaml:"cctp_method"`
+	// CCTPType is the method for executing CCTP transactions.
+	CCTPType string `yaml:"cctp_type"`
 	// Chains stores all chain information
 	Chains ChainConfigs `yaml:"chains"`
 	// BaseOmnirpcURL is the base url for omnirpc.
@@ -91,15 +92,15 @@ func DecodeConfig(filePath string) (cfg Config, err error) {
 	return cfg, nil
 }
 
-// GetCCTPMethod returns the CCTP method.
-func (c Config) GetCCTPMethod() (CCTPMethod, error) {
-	switch c.CCTPMethod {
+// GetCCTPType returns the CCTP method.
+func (c Config) GetCCTPType() (types.MessageType, error) {
+	switch c.CCTPType {
 	case "synapse":
-		return CCTPMethodSynapse, nil
+		return types.SynapseMessageType, nil
 	case "circle":
-		return CCTPMethodCircle, nil
+		return types.CircleMessageType, nil
 	default:
-		return 0, fmt.Errorf("invalid cctp method: %s", c.CCTPMethod)
+		return 0, fmt.Errorf("invalid cctp method: %s", c.CCTPType)
 	}
 }
 

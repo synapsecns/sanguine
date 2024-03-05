@@ -28,4 +28,6 @@ type Message struct {
 	BlockNumber uint64 `gorm:"column:block_number"`
 	// State is the state of the message.
 	State MessageState `gorm:"column:state"`
+	// MessageType is the type of the message.
+	MessageType MessageType `gorm:"column:message_type"`
 }
