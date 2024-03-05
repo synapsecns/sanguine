@@ -1,10 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {InterchainEntry} from "../libs/InterchainEntry.sol";
-
 abstract contract InterchainModuleEvents {
-    event VerificationRequested(uint256 indexed dstChainId, bytes entry, bytes32 ethSignedEntryHash);
+    event BatchVerificationRequested(uint256 indexed dstChainId, bytes batch, bytes32 ethSignedBatchHash);
 
-    event EntryVerified(uint256 indexed srcChainId, bytes entry, bytes32 ethSignedEntryHash);
+    event BatchVerified(uint256 indexed srcChainId, bytes batch, bytes32 ethSignedBatchHash);
 }

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {IInterchainDB} from "./IInterchainDB.sol";
-import {InterchainEntry} from "../libs/InterchainEntry.sol";
+import {InterchainBatch} from "../libs/InterchainBatch.sol";
 
 /// @notice Every Module may opt a different method to confirm the verified entries on destination chain,
 /// therefore this is not a part of a common interface.
@@ -12,16 +12,19 @@ interface IInterchainModule {
     error InterchainModule__InsufficientFee(uint256 actual, uint256 required);
     error InterchainModule__SameChainId(uint256 chainId);
 
-    /// @notice Request the verification of an entry in the Interchain DataBase by the module.
+    /// @notice Request the verification of a batch from the Interchain DataBase by the module.
+    /// If the batch is not yet finalized, the verification on destination chain will be delayed until
+    /// the finalization is done and batch root is saved on the source chain.
     /// Note: a fee is paid to the module for verification, and could be retrieved by using `getModuleFee`.
-    /// Note: this will eventually trigger `InterchainDB.verifyEntry(entry)` function on destination chain,
+    /// Note: this will eventually trigger `InterchainDB.verifyRemoteBatch(batch)` function on destination chain,
     /// with no guarantee of ordering.
     /// @dev Could be only called by the Interchain DataBase contract.
     /// @param dstChainId   The chain id of the destination chain
-    /// @param entry        The entry to verify
-    function requestVerification(uint256 dstChainId, InterchainEntry memory entry) external payable;
+    /// @param batch        The batch to verify
+    function requestBatchVerification(uint256 dstChainId, InterchainBatch memory batch) external payable;
 
-    /// @notice Get the Module fee for verifying an entry on the specified destination chain
+    /// @notice Get the Module fee for verifying a batch on the specified destination chain.
     /// @param dstChainId   The chain id of the destination chain
-    function getModuleFee(uint256 dstChainId) external view returns (uint256);
+    /// @param dbNonce      The database nonce of the batch on the source chain
+    function getModuleFee(uint256 dstChainId, uint256 dbNonce) external view returns (uint256);
 }
