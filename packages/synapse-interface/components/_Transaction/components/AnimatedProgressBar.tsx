@@ -5,27 +5,27 @@ import { getTimeMinutesBeforeNow } from '@/utils/time'
  * @param id unique identifier for progress bar instance
  * @param startTime timestamp in seconds
  * @param estDuration total duration in seconds
- * @param isComplete completion status
- * @param isError error status
+ * @param status txn status
  */
 export const AnimatedProgressBar = memo(
   ({
     id,
     startTime,
     estDuration,
-    isComplete,
-    isError,
+    status,
   }: {
     id: string
     startTime: number
     estDuration: number
-    isComplete: boolean
-    isError: boolean
+    status
   }) => {
     const currentTime = getTimeMinutesBeforeNow(0)
     const elapsedTime = currentTime - startTime
     const remainingTime = estDuration - elapsedTime
     const percentElapsed = (elapsedTime / estDuration) * 100
+
+    const isComplete = status === 'completed'
+    const isError = status === 'error'
 
     let duration = isComplete ? 0.5 : remainingTime
 

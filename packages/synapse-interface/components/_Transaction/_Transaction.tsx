@@ -136,8 +136,7 @@ export const _Transaction = ({
           <DropdownMenu
             menuTitleElement={
               <TimeRemaining
-                isComplete={status === 'completed'}
-                isReverted={status === 'reverted'}
+                status={status}
                 isDelayed={isEstimatedTimeReached}
                 remainingTime={remainingTime}
                 delayedTime={delayedTime}
@@ -191,8 +190,7 @@ export const _Transaction = ({
           id={originTxHash}
           startTime={timestamp}
           estDuration={estimatedTime * 2} // 2x buffer
-          isComplete={status === 'completed'}
-          isError={status === 'reverted'}
+          status={status}
         />
       </div>
     </div>
