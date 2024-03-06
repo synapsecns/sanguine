@@ -122,12 +122,30 @@ Note: Token naming convention is based on the tokens provided by `@synapsecns/wi
 
 ## useBridgeSelections Hook
 
-The widget also provides a `useBridgeSelections` hook that can be used to access the selected tokens and chains. This hook returns an object of type `BridgeSelections` which has fields of `originChainId`, `originToken`, `destinationChainId`, and `destinationToken`.
+The widget also provides a `useBridgeSelections` hook that can be used to access the selected tokens and chains. This hook returns an object of type `BridgeSelections` which has fields of `originChain`, `originToken`, `destinationChain`, and `destinationToken`.
+
+`originChain` and `destinationChain` structure:
+
+```
+{
+  id,
+  name,
+}
+```
+
+`originToken` and `destinationToken` structure:
+
+```
+{
+  symbol,
+  address
+}
+```
 
 In the consumer app:
 
 ```ts
-const { originChainId, originToken, destinationChainId, destinationToken } =
+const { originChain, originToken, destinationChain, destinationToken } =
   useBridgeSelections()
 ```
 

@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
+import { BridgeSelections } from 'types'
 
 import { CHAINS_ARRAY } from '@/constants/chains'
+import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
 
-export const useBridgeSelectionData = () => {
+export const useBridgeSelectionData = (): BridgeSelections => {
   const [originChain, setOriginChain] = useState('')
   const [originToken, setOriginToken] = useState('')
   const [destinationChain, setDestinationChain] = useState('')
@@ -30,9 +32,11 @@ export const useBridgeSelectionData = () => {
         const destinationTokenSymbol =
           destinationTokenSelect.textContent?.trim() || ''
 
-        setOriginChain(originChainName)
+        setOriginChain(originChainName === 'Network' ? null : originChainName)
         setOriginToken(originTokenSymbol === 'Token' ? null : originTokenSymbol)
-        setDestinationChain(destinationChainName)
+        setDestinationChain(
+          destinationChainName === 'Network' ? null : destinationChainName
+        )
         setDestinationToken(
           destinationTokenSymbol === 'Token' ? null : destinationTokenSymbol
         )
@@ -86,5 +90,28 @@ export const useBridgeSelectionData = () => {
     (chain) => chain.name === destinationChain
   )?.id
 
-  return { originChainId, originToken, destinationChainId, destinationToken }
+  const originTokenAddress =
+    findTokenByRouteSymbol(originToken)?.addresses[originChainId] ?? null
+  const destinationTokenAddress =
+    findTokenByRouteSymbol(destinationToken)?.addresses[destinationChainId] ??
+    null
+
+  return {
+    originChain: {
+      id: originChainId,
+      name: originChain,
+    },
+    destinationChain: {
+      id: destinationChainId,
+      name: destinationChain,
+    },
+    originToken: {
+      symbol: originToken,
+      address: originTokenAddress,
+    },
+    destinationToken: {
+      symbol: destinationToken,
+      address: destinationTokenAddress,
+    },
+  }
 }

@@ -13,10 +13,22 @@ export interface BridgeableToken {
 }
 
 export interface BridgeSelections {
-  originChainId: number | null
-  originToken: string | null
-  destinationChainId: number | null
-  destinationToken: string | null
+  originChain: {
+    id: number | null
+    name: string | null
+  }
+  destinationChain: {
+    id: number | null
+    name: string | null
+  }
+  originToken: {
+    symbol: string | null
+    address: string | null
+  }
+  destinationToken: {
+    symbol: string | null
+    address: string | null
+  }
 }
 
 export interface CustomThemeVariables {
