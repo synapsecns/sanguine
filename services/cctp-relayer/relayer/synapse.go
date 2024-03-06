@@ -104,7 +104,7 @@ func (s *synapseCCTPHandler) FetchAndProcessSentEvent(parentCtx context.Context,
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	// check if message already exist before we do anything
+	// check if message already exists before we do anything
 	msg, err = s.db.GetMessageByOriginHash(ctx, txhash)
 	// if we already have the message, we can just return it
 	if err == nil {

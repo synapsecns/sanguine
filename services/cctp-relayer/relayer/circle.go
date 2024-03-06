@@ -17,6 +17,8 @@ import (
 	db2 "github.com/synapsecns/sanguine/services/cctp-relayer/db"
 	relayTypes "github.com/synapsecns/sanguine/services/cctp-relayer/types"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
 )
 
@@ -84,8 +86,17 @@ func (c *circleCCTPHandler) HandleLog(ctx context.Context, log *types.Log, chain
 	}
 }
 
-func (c *circleCCTPHandler) FetchAndProcessSentEvent(ctx context.Context, txHash common.Hash, chainID uint32) (msg *relayTypes.Message, err error) {
-	// check if message already exist before we do anything
+func (c *circleCCTPHandler) FetchAndProcessSentEvent(parentCtx context.Context, txHash common.Hash, chainID uint32) (msg *relayTypes.Message, err error) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "FetchAndProcessSentEvent", trace.WithAttributes(
+		attribute.String(metrics.TxHash, txHash.String()),
+		attribute.Int(metrics.ChainID, int(chainID)),
+	))
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	// check if message already exists before we do anything
 	msg, err = c.db.GetMessageByOriginHash(ctx, txHash)
 	// if we already have the message, we can just return it
 	if err == nil {
@@ -124,7 +135,16 @@ func (c *circleCCTPHandler) FetchAndProcessSentEvent(ctx context.Context, txHash
 	return nil, fmt.Errorf("no message sent event found")
 }
 
-func (c *circleCCTPHandler) SubmitReceiveMessage(ctx context.Context, msg *relayTypes.Message) (err error) {
+func (c *circleCCTPHandler) SubmitReceiveMessage(parentCtx context.Context, msg *relayTypes.Message) (err error) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "SubmitReceiveMessage", trace.WithAttributes(
+		attribute.String("message_hash", msg.MessageHash),
+		attribute.Int(metrics.ChainID, int(msg.DestChainID)),
+	))
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	contract, ok := c.boundCircleCCTPs[msg.DestChainID]
 	if !ok {
 		return fmt.Errorf("no contract found for chain %d", msg.DestChainID)
@@ -147,6 +167,10 @@ func (c *circleCCTPHandler) SubmitReceiveMessage(ctx context.Context, msg *relay
 		err = fmt.Errorf("could not submit transaction: %w", err)
 		return err
 	}
+	span.SetAttributes(
+		attribute.String("dest_tx_hash", destTxHash.String()),
+		attribute.Int("nonce", int(nonce)),
+	)
 
 	// Store the completed message.
 	// Note: this can cause double submission sometimes
@@ -161,7 +185,16 @@ func (c *circleCCTPHandler) SubmitReceiveMessage(ctx context.Context, msg *relay
 	return nil
 }
 
-func (c *circleCCTPHandler) handleMessageSent(ctx context.Context, log *types.Log, chainID uint32) (*relayTypes.Message, error) {
+func (c *circleCCTPHandler) handleMessageSent(parentCtx context.Context, log *types.Log, chainID uint32) (msg *relayTypes.Message, err error) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "handleMessageSent", trace.WithAttributes(
+		attribute.String(metrics.TxHash, log.TxHash.Hex()),
+		attribute.Int(metrics.ChainID, int(chainID)),
+	))
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	ethClient, err := c.omniRPCClient.GetConfirmationsClient(ctx, int(chainID), 1)
 	if err != nil {
 		return nil, fmt.Errorf("could not get chain client: %w", err)
@@ -193,6 +226,12 @@ func (c *circleCCTPHandler) handleMessageSent(ctx context.Context, log *types.Lo
 		BlockNumber: log.BlockNumber,
 	}
 
+	span.SetAttributes(
+		attribute.String("message_hash", rawMsg.MessageHash),
+		attribute.Int(metrics.Origin, int(rawMsg.OriginChainID)),
+		attribute.Int(metrics.Destination, int(rawMsg.DestChainID)),
+	)
+
 	// Store the requested message.
 	rawMsg.State = relayTypes.Pending
 	err = c.db.StoreMessage(ctx, rawMsg)
@@ -203,13 +242,22 @@ func (c *circleCCTPHandler) handleMessageSent(ctx context.Context, log *types.Lo
 	return &rawMsg, nil
 }
 
-func (c *circleCCTPHandler) handleMessageReceived(ctx context.Context, log *types.Log, destChain uint32) (err error) {
+func (c *circleCCTPHandler) handleMessageReceived(parentCtx context.Context, log *types.Log, chainID uint32) (err error) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "handleMessageReceived", trace.WithAttributes(
+		attribute.String(metrics.TxHash, log.TxHash.Hex()),
+		attribute.Int(metrics.ChainID, int(chainID)),
+	))
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	if len(log.Topics) == 0 {
 		return fmt.Errorf("no topics found")
 	}
 
 	// Parse the request id from the log.
-	ethClient, err := c.omniRPCClient.GetConfirmationsClient(ctx, int(destChain), 1)
+	ethClient, err := c.omniRPCClient.GetConfirmationsClient(ctx, int(chainID), 1)
 	if err != nil {
 		return fmt.Errorf("could not get chain client: %w", err)
 	}
@@ -225,16 +273,22 @@ func (c *circleCCTPHandler) handleMessageReceived(ctx context.Context, log *type
 	}
 
 	messageHash := crypto.Keccak256Hash(event.MessageBody)
+	span.SetAttributes(
+		attribute.String("message_hash", messageHash.String()),
+		attribute.Int(metrics.Origin, int(event.SourceDomain)),
+	)
+
 	msg, err := c.db.GetMessageByHash(ctx, messageHash)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			// Reconstruct what we can from the given log.
 			msg = &relayTypes.Message{
 				OriginChainID: event.SourceDomain,
-				DestChainID:   destChain,
+				DestChainID:   chainID,
 				BlockNumber:   log.BlockNumber,
 				MessageHash:   messageHash.String(),
 			}
+			span.AddEvent("message not found; reconstructing")
 		} else {
 			return fmt.Errorf("could not get message by hash: %w", err)
 		}
