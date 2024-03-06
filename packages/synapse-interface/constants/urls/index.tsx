@@ -20,7 +20,7 @@ export const STAKE_PATH = '/stake'
 export const POOLS_PATH = '/pools'
 export const POOL_PATH = '/pool'
 export const LANDING_PATH = '/landing'
-export const COUNTDOWN_PATH = '/countdown'
+export const COUNTDOWN_PATH = '/4844'
 
 /** External Links */
 export const EXPLORER_KAPPA = 'https://explorer.synapseprotocol.com/tx/'

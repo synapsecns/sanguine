@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
-import { useIntervalTimer } from '@/components/_Transaction/helpers/useIntervalTimer'
+import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 import ExternalLinkIcon from '@/components/icons/ExternalLinkIcon'
 
 const Countdown = () => {
