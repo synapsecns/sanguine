@@ -15,8 +15,30 @@ const Countdown = () => {
 
   return (
     <LandingPageWrapper>
-      <section className="flex justify-center py-24">
+      <section className="flex flex-col items-center justify-center py-24 space-y-8">
         <div className="text-3xl text-white">Countdown to Dencun Upgrade</div>
+
+        <div className="flex space-x-4 text-white">
+          <div>
+            <div className="text-7xl">{daysRemaining}</div>
+            <div className="text-xl">Days</div>
+          </div>
+
+          <div>
+            <div className="text-7xl">{hoursRemaining}</div>
+            <div className="text-xl">Hours</div>
+          </div>
+
+          <div>
+            <div className="text-7xl">{minutesRemaining}</div>
+            <div className="text-xl">Minutes</div>
+          </div>
+
+          <div>
+            <div className="text-7xl">{secondsRemaining}</div>
+            <div className="text-xl">Seconds</div>
+          </div>
+        </div>
       </section>
     </LandingPageWrapper>
   )
