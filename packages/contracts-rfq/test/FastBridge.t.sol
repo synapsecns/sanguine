@@ -203,9 +203,9 @@ contract FastBridgeTest is Test {
 
     function setUpRoles() public {
         vm.startPrank(owner);
-        fastBridge.addRelayer(relayer);
-        fastBridge.addGuard(guard);
-        fastBridge.addGovernor(governor);
+        fastBridge.grantRole(fastBridge.RELAYER_ROLE(), relayer);
+        fastBridge.grantRole(fastBridge.GUARD_ROLE(), guard);
+        fastBridge.grantRole(fastBridge.GOVERNOR_ROLE(), governor);
         fastBridge.grantRole(fastBridge.REFUNDER_ROLE(), refunder);
         assertTrue(fastBridge.hasRole(fastBridge.RELAYER_ROLE(), relayer));
         assertTrue(fastBridge.hasRole(fastBridge.GUARD_ROLE(), guard));
@@ -223,16 +223,17 @@ contract FastBridgeTest is Test {
     function test_successfulAddRelayer() public {
         vm.startPrank(owner);
         assertFalse(fastBridge.hasRole(fastBridge.RELAYER_ROLE(), relayer));
-        fastBridge.addRelayer(relayer);
+        fastBridge.grantRole(fastBridge.RELAYER_ROLE(), relayer);
         assertTrue(fastBridge.hasRole(fastBridge.RELAYER_ROLE(), relayer));
     }
 
     /// @notice Test to check if only an admin can add a relayer
     function test_onlyAdminCanAddRelayer() public {
+        bytes32 relayerRole = fastBridge.RELAYER_ROLE();
         vm.startPrank(relayer);
-        assertFalse(fastBridge.hasRole(fastBridge.RELAYER_ROLE(), relayer));
+        assertFalse(fastBridge.hasRole(relayerRole, relayer));
         vm.expectRevert();
-        fastBridge.addRelayer(relayer);
+        fastBridge.grantRole(relayerRole, relayer);
     }
 
     /// @notice Test to check if a relayer can be successfully removed
@@ -240,33 +241,35 @@ contract FastBridgeTest is Test {
         test_successfulAddRelayer();
         assertTrue(fastBridge.hasRole(fastBridge.RELAYER_ROLE(), relayer));
         vm.startPrank(owner);
-        fastBridge.removeRelayer(relayer);
+        fastBridge.revokeRole(fastBridge.RELAYER_ROLE(), relayer);
         assertFalse(fastBridge.hasRole(fastBridge.RELAYER_ROLE(), relayer));
     }
 
     /// @notice Test to check if only an admin can remove a relayer
     function test_onlyAdminCanRemoveRelayer() public {
+        bytes32 relayerRole = fastBridge.RELAYER_ROLE();
         test_successfulAddRelayer();
         vm.startPrank(relayer);
-        assertTrue(fastBridge.hasRole(fastBridge.RELAYER_ROLE(), relayer));
+        assertTrue(fastBridge.hasRole(relayerRole, relayer));
         vm.expectRevert();
-        fastBridge.removeRelayer(relayer);
+        fastBridge.revokeRole(relayerRole, relayer);
     }
 
     /// @notice Test to check if a guard can be successfully added
     function test_successfulAddGuard() public {
         vm.startPrank(owner);
         assertFalse(fastBridge.hasRole(fastBridge.GUARD_ROLE(), guard));
-        fastBridge.addGuard(guard);
+        fastBridge.grantRole(fastBridge.GUARD_ROLE(), guard);
         assertTrue(fastBridge.hasRole(fastBridge.GUARD_ROLE(), guard));
     }
 
     /// @notice Test to check if only an admin can add a guard
     function test_onlyAdminCanAddGuard() public {
+        bytes32 guardRole = fastBridge.GUARD_ROLE();
         vm.startPrank(guard);
-        assertFalse(fastBridge.hasRole(fastBridge.GUARD_ROLE(), guard));
+        assertFalse(fastBridge.hasRole(guardRole, guard));
         vm.expectRevert();
-        fastBridge.addGuard(guard);
+        fastBridge.grantRole(guardRole, guard);
     }
 
     /// @notice Test to check if a guard can be successfully removed
@@ -274,48 +277,83 @@ contract FastBridgeTest is Test {
         test_successfulAddGuard();
         assertTrue(fastBridge.hasRole(fastBridge.GUARD_ROLE(), guard));
         vm.startPrank(owner);
-        fastBridge.removeGuard(guard);
+        fastBridge.revokeRole(fastBridge.GUARD_ROLE(), guard);
         assertFalse(fastBridge.hasRole(fastBridge.GUARD_ROLE(), guard));
     }
 
     /// @notice Test to check if only an admin can remove a guard
     function test_onlyAdminCanRemoveGuard() public {
+        bytes32 guardRole = fastBridge.GUARD_ROLE();
         test_successfulAddGuard();
         vm.startPrank(guard);
-        assertTrue(fastBridge.hasRole(fastBridge.GUARD_ROLE(), guard));
+        assertTrue(fastBridge.hasRole(guardRole, guard));
         vm.expectRevert();
-        fastBridge.removeGuard(guard);
+        fastBridge.revokeRole(guardRole, guard);
     }
 
     /// @notice Tests to check governor add, remove
     function test_successfulAddGovernor() public {
         vm.startPrank(owner);
         assertFalse(fastBridge.hasRole(fastBridge.GOVERNOR_ROLE(), governor));
-        fastBridge.addGovernor(governor);
+        fastBridge.grantRole(fastBridge.GOVERNOR_ROLE(), governor);
         assertTrue(fastBridge.hasRole(fastBridge.GOVERNOR_ROLE(), governor));
     }
 
     function test_onlyAdminCanAddGovernor() public {
+        bytes32 governorRole = fastBridge.GOVERNOR_ROLE();
         vm.startPrank(governor);
-        assertFalse(fastBridge.hasRole(fastBridge.GOVERNOR_ROLE(), governor));
+        assertFalse(fastBridge.hasRole(governorRole, governor));
         vm.expectRevert();
-        fastBridge.addGovernor(governor);
+        fastBridge.grantRole(governorRole, governor);
     }
 
     function test_successfulRemoveGovernor() public {
         test_successfulAddGovernor();
         assertTrue(fastBridge.hasRole(fastBridge.GOVERNOR_ROLE(), governor));
         vm.startPrank(owner);
-        fastBridge.removeGovernor(governor);
+        fastBridge.revokeRole(fastBridge.GOVERNOR_ROLE(), governor);
         assertFalse(fastBridge.hasRole(fastBridge.GOVERNOR_ROLE(), governor));
     }
 
     function test_onlyAdminCanRemoveGovernor() public {
+        bytes32 governorRole = fastBridge.GOVERNOR_ROLE();
         test_successfulAddGovernor();
         vm.startPrank(governor);
-        assertTrue(fastBridge.hasRole(fastBridge.GOVERNOR_ROLE(), governor));
+        assertTrue(fastBridge.hasRole(governorRole, governor));
         vm.expectRevert();
-        fastBridge.removeGovernor(governor);
+        fastBridge.revokeRole(governorRole, governor);
+    }
+
+    function test_successfulAddRefunder() public {
+        vm.startPrank(owner);
+        assertFalse(fastBridge.hasRole(fastBridge.REFUNDER_ROLE(), refunder));
+        fastBridge.grantRole(fastBridge.REFUNDER_ROLE(), refunder);
+        assertTrue(fastBridge.hasRole(fastBridge.REFUNDER_ROLE(), refunder));
+    }
+
+    function test_onlyAdminCanAddRefunder() public {
+        bytes32 refunderRole = fastBridge.REFUNDER_ROLE();
+        vm.startPrank(refunder);
+        assertFalse(fastBridge.hasRole(refunderRole, refunder));
+        vm.expectRevert();
+        fastBridge.grantRole(refunderRole, refunder);
+    }
+
+    function test_successfulRemoveRefunder() public {
+        test_successfulAddRefunder();
+        assertTrue(fastBridge.hasRole(fastBridge.REFUNDER_ROLE(), refunder));
+        vm.startPrank(owner);
+        fastBridge.revokeRole(fastBridge.REFUNDER_ROLE(), refunder);
+        assertFalse(fastBridge.hasRole(fastBridge.REFUNDER_ROLE(), refunder));
+    }
+
+    function test_onlyAdminCanRemoveRefunder() public {
+        bytes32 refunderRole = fastBridge.REFUNDER_ROLE();
+        test_successfulAddRefunder();
+        vm.startPrank(refunder);
+        assertTrue(fastBridge.hasRole(refunderRole, refunder));
+        vm.expectRevert();
+        fastBridge.revokeRole(refunderRole, refunder);
     }
 
     function test_successfulSetProtocolFeeRate() public {
@@ -1172,9 +1210,6 @@ contract FastBridgeTest is Test {
         // Set up the roles for the test
         setUpRoles();
 
-        vm.prank(owner);
-        fastBridge.addRelayer(address(this));
-
         // get bridge request and tx id
         (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(42161, 0, 0);
 
@@ -1196,9 +1231,6 @@ contract FastBridgeTest is Test {
     function test_failedRelayTimeExceeded() public {
         // Set up the roles for the test
         setUpRoles();
-
-        vm.prank(owner);
-        fastBridge.addRelayer(address(this));
 
         // get bridge request and tx id
         (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(42161, 0, 0);
@@ -1593,8 +1625,9 @@ contract FastBridgeTest is Test {
         setUpRoles();
         test_successfulBridge();
 
-        vm.prank(owner);
-        fastBridge.addRelayer(address(this));
+        vm.startPrank(owner);
+        fastBridge.grantRole(fastBridge.RELAYER_ROLE(), address(this));
+        vm.stopPrank();
 
         // get bridge request and tx id
         (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
