@@ -5,6 +5,14 @@ const Countdown = () => {
   const router = useRouter()
   const { query, pathname } = router
 
+  const { daysRemaining, hoursRemaining, minutesRemaining, secondsRemaining } =
+    calculateTimeUntilTarget()
+
+  console.log(`Days Remaining: ${daysRemaining}`)
+  console.log(`Hours Remaining: ${hoursRemaining}`)
+  console.log(`Minutes Remaining: ${minutesRemaining}`)
+  console.log(`Seconds Remaining: ${secondsRemaining}`)
+
   return (
     <LandingPageWrapper>
       <section className="flex justify-center py-24">
@@ -15,3 +23,26 @@ const Countdown = () => {
 }
 
 export default Countdown
+
+const calculateTimeUntilTarget = () => {
+  const currentDate = new Date()
+  const targetDate = new Date(Date.UTC(2024, 2, 13, 13, 55, 0))
+
+  const timeDifference = targetDate.getTime() - currentDate.getTime()
+
+  const daysRemaining = Math.floor(timeDifference / (1000 * 60 * 60 * 24))
+  const hoursRemaining = Math.floor(
+    (timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+  )
+  const minutesRemaining = Math.floor(
+    (timeDifference % (1000 * 60 * 60)) / (1000 * 60)
+  )
+  const secondsRemaining = Math.floor((timeDifference % (1000 * 60)) / 1000)
+
+  return {
+    daysRemaining,
+    hoursRemaining,
+    minutesRemaining,
+    secondsRemaining,
+  }
+}
