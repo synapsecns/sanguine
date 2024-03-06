@@ -16,7 +16,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/config"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/cctp"
-	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/mockmessagetransmitter"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/circlecctp"
 	db2 "github.com/synapsecns/sanguine/services/cctp-relayer/db"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"go.opentelemetry.io/otel/attribute"
@@ -129,7 +129,7 @@ func (s *synapseCCTPHandler) FetchAndProcessSentEvent(parentCtx context.Context,
 	// From this receipt, we expect two different logs:
 	// - `messageSentEvent` gives us the raw bytes of the CCTP message
 	// - `circleRequestSentEvent` gives us auxiliary data for SynapseCCTP
-	var messageSentEvent *mockmessagetransmitter.MessageTransmitterEventsMessageSent
+	var messageSentEvent *circlecctp.MessageTransmitterMessageSent
 	var circleRequestSentEvent *cctp.SynapseCCTPEventsCircleRequestSent
 
 	for _, log := range receipt.Logs {
@@ -150,9 +150,8 @@ func (s *synapseCCTPHandler) FetchAndProcessSentEvent(parentCtx context.Context,
 			if err != nil {
 				return nil, fmt.Errorf("could not parse circle request sent: %w", err)
 			}
-			// TODO: this shouldn't be coming from a mock contract, generate from the abstract contract itself
-		case mockmessagetransmitter.MessageSentTopic:
-			eventParser, err := mockmessagetransmitter.NewMessageTransmitterEvents(log.Address, ethClient)
+		case circlecctp.MessageSentTopic:
+			eventParser, err := circlecctp.NewMessageTransmitterFilterer(log.Address, ethClient)
 			if err != nil {
 				return nil, fmt.Errorf("could not create event parser: %w", err)
 			}
