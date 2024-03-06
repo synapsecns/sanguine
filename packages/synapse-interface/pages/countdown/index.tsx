@@ -1,24 +1,27 @@
 import { useRouter } from 'next/router'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
+import { useIntervalTimer } from '@/components/_Transaction/helpers/useIntervalTimer'
 
 const Countdown = () => {
   const router = useRouter()
-  const { query, pathname } = router
+
+  useIntervalTimer(1000)
 
   const { daysRemaining, hoursRemaining, minutesRemaining, secondsRemaining } =
     calculateTimeUntilTarget()
 
-  console.log(`Days Remaining: ${daysRemaining}`)
-  console.log(`Hours Remaining: ${hoursRemaining}`)
-  console.log(`Minutes Remaining: ${minutesRemaining}`)
-  console.log(`Seconds Remaining: ${secondsRemaining}`)
+  /** Remove logs after testing */
+  // console.log(`Days Remaining: ${daysRemaining}`)
+  // console.log(`Hours Remaining: ${hoursRemaining}`)
+  // console.log(`Minutes Remaining: ${minutesRemaining}`)
+  // console.log(`Seconds Remaining: ${secondsRemaining}`)
 
   return (
     <LandingPageWrapper>
       <section className="flex flex-col items-center justify-center py-24 space-y-8">
         <div className="text-3xl text-white">Countdown to Dencun Upgrade</div>
 
-        <div className="flex space-x-4 text-white">
+        <div className="flex space-x-8 text-center text-white">
           <div>
             <div className="text-7xl">{daysRemaining}</div>
             <div className="text-xl">Days</div>
