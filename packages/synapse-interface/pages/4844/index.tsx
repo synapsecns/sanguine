@@ -4,7 +4,7 @@ import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 import ExternalLinkIcon from '@/components/icons/ExternalLinkIcon'
 
 const Countdown = () => {
-  const router = useRouter()
+  // const router = useRouter()
 
   useIntervalTimer(1000)
 
@@ -19,26 +19,26 @@ const Countdown = () => {
 
   return (
     <LandingPageWrapper>
-      <section className="flex flex-col items-center justify-center py-16 space-y-16">
-        <div className="text-6xl text-white">Countdown to Dencun Upgrade</div>
+      <section className="flex flex-col items-center justify-center py-16 space-y-16 text-center">
+        <div className="text-5xl text-white">Countdown to Dencun Upgrade</div>
 
-        <div className="flex space-x-8 text-center text-white">
-          <div>
-            <div className="text-7xl">{daysRemaining}</div>
+        <div className="flex space-x-3 text-center text-white">
+          <div className="inline-block m-auto">
+            <div className="w-19 text-7xl">{daysRemaining}</div>
             <div className="text-xl">Days</div>
           </div>
 
-          <div>
-            <div className="text-7xl">{hoursRemaining}</div>
+          <div className="inline-block m-auto">
+            <div className="w-24 text-7xl">{hoursRemaining}</div>
             <div className="text-xl">Hours</div>
           </div>
 
-          <div>
+          <div className="inline-block m-auto">
             <div className="w-24 text-7xl">{minutesRemaining}</div>
             <div className="text-xl">Minutes</div>
           </div>
 
-          <div className="mt-auto">
+          <div className="inline-block mt-auto">
             <div className="w-20 text-6xl">{secondsRemaining}</div>
             <div className="text-xl">Seconds</div>
           </div>
@@ -47,10 +47,14 @@ const Countdown = () => {
         <a
           href="https://www.ethernow.xyz/"
           target="_blank"
-          className="flex items-center space-x-2 text-xl text-white"
+          className="flex flex-wrap items-center justify-center space-x-2 text-xl text-center text-white"
         >
-          Upgrade occurring at Beacon Slot 8626176. Watch live on Ethernow.
-          <ExternalLinkIcon height="24px" width="24px" className="ml-1" />
+          <div>Upgrade occurring at Beacon Slot 8626176.</div>
+
+          <div className="flex items-center">
+            Watch live on Ethernow.
+            <ExternalLinkIcon height="20px" width="20px" className="ml-1" />
+          </div>
         </a>
       </section>
     </LandingPageWrapper>
