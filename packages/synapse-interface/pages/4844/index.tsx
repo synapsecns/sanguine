@@ -32,12 +32,12 @@ const Countdown = () => {
           </div>
 
           <div className="inline-block m-auto">
-            <div className="w-24 text-7xl">{minutesRemaining}</div>
+            <div className="w-[5.5rem] text-7xl">{minutesRemaining}</div>
             <div className="text-xl">Minutes</div>
           </div>
 
           <div className="inline-block mt-auto">
-            <div className="w-20 text-6xl">{secondsRemaining}</div>
+            <div className="w-[5.5rem] text-6xl">{secondsRemaining}</div>
             <div className="text-xl">Seconds</div>
           </div>
         </div>
