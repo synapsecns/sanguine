@@ -16,8 +16,8 @@ contract FastBridge is IFastBridge, Admin {
     /// @notice Dispute period for relayed transactions
     uint256 public constant DISPUTE_PERIOD = 30 minutes;
 
-    /// @notice Prove period added to deadline period for proven transactions
-    uint256 public constant PROVE_PERIOD = 60 minutes;
+    /// @notice Delay for a transaction after which it could be permisionlessly refunded
+    uint256 public constant REFUND_DELAY = 7 days;
 
     /// @notice Minimum deadline period to relay a requested bridge transaction
     uint256 public constant MIN_DEADLINE_PERIOD = 30 minutes;
@@ -241,8 +241,13 @@ contract FastBridge is IFastBridge, Admin {
         bytes32 transactionId = keccak256(request);
         BridgeTransaction memory transaction = getBridgeTransaction(request);
 
-        // check exceeded deadline for prove to happen
-        if (block.timestamp <= transaction.deadline + PROVE_PERIOD) revert DeadlineNotExceeded();
+        if (hasRole(REFUNDER_ROLE, msg.sender)) {
+            // Refunder can refund if deadline has passed
+            if (block.timestamp <= transaction.deadline) revert DeadlineNotExceeded();
+        } else {
+            // Permissionless refund is allowed after REFUND_DELAY
+            if (block.timestamp <= transaction.deadline + REFUND_DELAY) revert DeadlineNotExceeded();
+        }
 
         // set status to refunded if still in requested state
         if (bridgeStatuses[transactionId] != BridgeStatus.REQUESTED) revert StatusIncorrect();
