@@ -70,15 +70,15 @@ func (c *circleCCTPHandler) HandleLog(ctx context.Context, log *types.Log, chain
 		if err != nil {
 			return false, fmt.Errorf("could not store message sent: %w", err)
 		}
-
 		if msg != nil {
 			processQueue = true
 		}
-
 		return processQueue, nil
-
 	case circlecctp.MessageReceivedTopic:
 		err = c.handleMessageReceived(ctx, log, chainID)
+		if err != nil {
+			return false, fmt.Errorf("could not handle message received: %w", err)
+		}
 		return false, nil
 	default:
 		logger.Warnf("unknown topic %s", log.Topics[0])
