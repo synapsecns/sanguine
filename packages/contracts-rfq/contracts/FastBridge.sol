@@ -171,11 +171,6 @@ contract FastBridge is IFastBridge, Admin {
     /// @inheritdoc IFastBridge
     function prove(bytes memory request, bytes32 destTxHash) external onlyRelayer {
         bytes32 transactionId = keccak256(request);
-        BridgeTransaction memory transaction = getBridgeTransaction(request);
-
-        // check haven't exceeded deadline for prove to happen
-        if (block.timestamp > transaction.deadline + PROVE_PERIOD) revert DeadlineExceeded();
-
         // update bridge tx status given proof provided
         if (bridgeStatuses[transactionId] != BridgeStatus.REQUESTED) revert StatusIncorrect();
         bridgeStatuses[transactionId] = BridgeStatus.RELAYER_PROVED;
