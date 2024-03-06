@@ -4,8 +4,6 @@ import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 import ExternalLinkIcon from '@/components/icons/ExternalLinkIcon'
 
 const Countdown = () => {
-  // const router = useRouter()
-
   useIntervalTimer(1000)
 
   const { daysRemaining, hoursRemaining, minutesRemaining, secondsRemaining } =
@@ -22,7 +20,7 @@ const Countdown = () => {
       <section className="flex flex-col items-center justify-center py-16 space-y-16 text-center">
         <div className="text-5xl text-white">Countdown to Dencun Upgrade</div>
 
-        <div className="flex space-x-3 text-center text-white">
+        <div className="flex space-x-3 text-center text-synapsePurple">
           <div className="inline-block m-auto">
             <div className="w-19 text-7xl">{daysRemaining}</div>
             <div className="text-xl">Days</div>
