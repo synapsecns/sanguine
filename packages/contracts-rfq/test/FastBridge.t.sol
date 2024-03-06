@@ -11,6 +11,8 @@ import "../contracts/libs/UniversalToken.sol";
 
 import "./MockERC20.sol";
 
+import {IAccessControl} from "@openzeppelin/contracts/access/IAccessControl.sol";
+
 contract FastBridgeTest is Test {
     FastBridge public fastBridge;
 
@@ -199,6 +201,10 @@ contract FastBridgeTest is Test {
             })
         );
         transactionId = keccak256(request);
+    }
+
+    function expectUnauthorized(address caller, bytes32 role) internal {
+        vm.expectRevert(abi.encodeWithSelector(IAccessControl.AccessControlUnauthorizedAccount.selector, caller, role));
     }
 
     function setUpRoles() public {
@@ -1289,8 +1295,8 @@ contract FastBridgeTest is Test {
         ethUSDC.approve(address(fastBridge), type(uint256).max);
 
         // Relay the destination bridge
-        vm.expectRevert("Caller is not a relayer");
         vm.chainId(1); // set to dest chain
+        expectUnauthorized(guard, fastBridge.RELAYER_ROLE());
         fastBridge.relay(request);
 
         // We stop a prank to contain within test
@@ -1426,7 +1432,7 @@ contract FastBridgeTest is Test {
         (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
 
         // We provide the relay proof
-        vm.expectRevert("Caller is not a relayer");
+        expectUnauthorized(address(this), fastBridge.RELAYER_ROLE());
         fastBridge.prove(request, bytes32("0x01"));
 
         // We stop a prank to contain within test
@@ -1667,7 +1673,7 @@ contract FastBridgeTest is Test {
 
         vm.warp(block.timestamp + 31 minutes);
 
-        vm.expectRevert("Caller is not a relayer");
+        expectUnauthorized(address(this), fastBridge.RELAYER_ROLE());
         fastBridge.claim(request, relayer);
     }
 
@@ -1764,7 +1770,7 @@ contract FastBridgeTest is Test {
         // get bridge request and tx id
         (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
 
-        vm.expectRevert("Caller is not a guard");
+        expectUnauthorized(address(this), fastBridge.GUARD_ROLE());
         fastBridge.dispute(transactionId);
     }
 
