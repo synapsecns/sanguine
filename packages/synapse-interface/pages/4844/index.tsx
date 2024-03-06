@@ -9,12 +9,6 @@ const Countdown = () => {
   const { daysRemaining, hoursRemaining, minutesRemaining, secondsRemaining } =
     calculateTimeUntilTarget()
 
-  /** Remove logs after testing */
-  // console.log(`Days Remaining: ${daysRemaining}`)
-  // console.log(`Hours Remaining: ${hoursRemaining}`)
-  // console.log(`Minutes Remaining: ${minutesRemaining}`)
-  // console.log(`Seconds Remaining: ${secondsRemaining}`)
-
   return (
     <LandingPageWrapper>
       <section className="flex flex-col items-center justify-center py-16 space-y-16 text-center">
@@ -42,18 +36,40 @@ const Countdown = () => {
           </div>
         </div>
 
-        <a
-          href="https://www.ethernow.xyz/"
-          target="_blank"
-          className="flex flex-wrap items-center justify-center space-x-2 text-xl text-center text-white"
-        >
-          <div>Upgrade occurring at Beacon Slot 8626176.</div>
-
-          <div className="flex items-center">
-            Watch live on Ethernow.
-            <ExternalLinkIcon height="20px" width="20px" className="ml-1" />
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center justify-center space-x-2 text-xl text-center text-white">
+            Upgrade occurring at Beacon Slot 8626176.
           </div>
-        </a>
+
+          <a
+            href="https://www.eip4844.com/"
+            target="_blank"
+            className="flex flex-wrap items-center justify-center space-x-2 text-xl text-center text-white hover:text-synapsePurple"
+          >
+            Learn more about EIP-4844
+            <ExternalLinkIcon
+              height="20px"
+              width="20px"
+              className="mt-px ml-1"
+            />
+          </a>
+
+          <a
+            href="https://synapse.mirror.xyz/N1dwTpAATINNsCqkXUrJlgYH5szUMBdi-6m8nApDf3I"
+            target="_blank"
+            className="flex flex-wrap items-center justify-center space-x-2 text-xl text-center text-white hover:text-synapsePurple"
+          >
+            <div>Learn about the Synapse Interchain Network,</div>
+            <div className="flex items-center justify-center ">
+              unifying all rollups
+              <ExternalLinkIcon
+                height="20px"
+                width="20px"
+                className="mt-px ml-1"
+              />
+            </div>
+          </a>
+        </div>
       </section>
     </LandingPageWrapper>
   )
