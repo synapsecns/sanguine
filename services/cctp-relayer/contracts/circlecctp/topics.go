@@ -20,7 +20,16 @@ func init() {
 	if MessageSentTopic == (common.Hash{}) {
 		panic("topic is nil")
 	}
+
+	MessageReceivedTopic = parsedMessageTransmitter.Events["MessageReceived"].ID
+
+	if MessageReceivedTopic == (common.Hash{}) {
+		panic("topic is nil")
+	}
 }
 
 // MessageSentTopic is the topic that gets emitted when the sent event is called.
 var MessageSentTopic common.Hash
+
+// MessageReceivedTopic is the topic that gets emitted when the received event is called.
+var MessageReceivedTopic common.Hash
