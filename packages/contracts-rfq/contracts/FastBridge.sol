@@ -124,7 +124,7 @@ contract FastBridge is IFastBridge, Admin {
     }
 
     /// @inheritdoc IFastBridge
-    function relay(bytes memory request) external payable onlyRelayer {
+    function relay(bytes memory request) external payable onlyRole(RELAYER_ROLE) {
         bytes32 transactionId = keccak256(request);
         BridgeTransaction memory transaction = getBridgeTransaction(request);
         if (transaction.destChainId != uint32(block.chainid)) revert ChainIncorrect();
@@ -169,7 +169,7 @@ contract FastBridge is IFastBridge, Admin {
     }
 
     /// @inheritdoc IFastBridge
-    function prove(bytes memory request, bytes32 destTxHash) external onlyRelayer {
+    function prove(bytes memory request, bytes32 destTxHash) external onlyRole(RELAYER_ROLE) {
         bytes32 transactionId = keccak256(request);
         // update bridge tx status given proof provided
         if (bridgeStatuses[transactionId] != BridgeStatus.REQUESTED) revert StatusIncorrect();
@@ -200,7 +200,7 @@ contract FastBridge is IFastBridge, Admin {
     }
 
     /// @inheritdoc IFastBridge
-    function claim(bytes memory request, address to) external onlyRelayer {
+    function claim(bytes memory request, address to) external onlyRole(RELAYER_ROLE) {
         bytes32 transactionId = keccak256(request);
         BridgeTransaction memory transaction = getBridgeTransaction(request);
 
@@ -225,7 +225,7 @@ contract FastBridge is IFastBridge, Admin {
     }
 
     /// @inheritdoc IFastBridge
-    function dispute(bytes32 transactionId) external onlyGuard {
+    function dispute(bytes32 transactionId) external onlyRole(GUARD_ROLE) {
         if (bridgeStatuses[transactionId] != BridgeStatus.RELAYER_PROVED) revert StatusIncorrect();
         if (_timeSince(bridgeProofs[transactionId]) > DISPUTE_PERIOD) revert DisputePeriodPassed();
 
