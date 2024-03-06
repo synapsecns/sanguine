@@ -2,7 +2,8 @@
   "accounts": {
     "admin": "",
     "guards": [],
-    "relayers": []
+    "relayers": [],
+    "refunders": []
   },
   "chainGasAmount": 0,
   "protocolFeeRate": 0
