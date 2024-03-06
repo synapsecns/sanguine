@@ -1,6 +1,7 @@
 import { useRouter } from 'next/router'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import { useIntervalTimer } from '@/components/_Transaction/helpers/useIntervalTimer'
+import ExternalLinkIcon from '@/components/icons/ExternalLinkIcon'
 
 const Countdown = () => {
   const router = useRouter()
@@ -42,6 +43,15 @@ const Countdown = () => {
             <div className="text-xl">Seconds</div>
           </div>
         </div>
+
+        <a
+          href="https://www.ethernow.xyz/"
+          target="_blank"
+          className="flex items-center space-x-2 text-xl text-white"
+        >
+          Upgrade occurring at Beacon Slot 8626176. Watch live on Ethernow.
+          <ExternalLinkIcon height="24px" width="24px" className="ml-1" />
+        </a>
       </section>
     </LandingPageWrapper>
   )
