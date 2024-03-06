@@ -24,7 +24,7 @@ const PoolInfoSection = () => {
             poolData && poolData.swapFee && !isLoading ? (
               formatBigIntToPercentString(poolData.swapFee, 8, 2, false)
             ) : (
-              <LoadingDots className="mr-4" shift={false} />
+              <LoadingDots className="mr-4" />
             )
           }
         />
@@ -37,7 +37,7 @@ const PoolInfoSection = () => {
                 label={pool.priceUnits}
               />
             ) : (
-              <LoadingDots className="mr-4" shift={false} />
+              <LoadingDots className="mr-4" />
             )
           }
         />
@@ -50,7 +50,7 @@ const PoolInfoSection = () => {
                 label={pool.priceUnits}
               />
             ) : (
-              <LoadingDots className="mr-4" shift={false} />
+              <LoadingDots className="mr-4" />
             )
           }
         />
@@ -63,7 +63,7 @@ const PoolInfoSection = () => {
                 label="USD"
               />
             ) : (
-              <LoadingDots className="mr-4" shift={false} />
+              <LoadingDots className="mr-4" />
             )
           }
         />
