@@ -63,7 +63,20 @@ export default Countdown
 
 const calculateTimeUntilTarget = () => {
   const currentDate = new Date()
-  const targetDate = new Date(Date.UTC(2024, 2, 13, 13, 55, 0))
+  const currentDay = currentDate.getDate()
+  const currentHour = currentDate.getHours()
+
+  let targetDate: Date
+
+  /**
+   * Shift target time to actual time after daylight savings
+   * Daylight Savings time occurs on March 10th, 2024 @ 2AM on PST, CST, EST
+   */
+  if (currentDay >= 10 && currentHour >= 2) {
+    targetDate = new Date(Date.UTC(2024, 2, 13, 13, 55, 0))
+  } else {
+    targetDate = new Date(Date.UTC(2024, 2, 13, 12, 55, 0))
+  }
 
   const timeDifference = targetDate.getTime() - currentDate.getTime()
 
