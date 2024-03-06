@@ -64,7 +64,7 @@ func (s *CCTPRelayerSuite) TestHandleCircleRequestSent() {
 	originChain.WaitForConfirmation(s.GetTestContext(), tx)
 
 	// handle send request
-	msg, err := relay.HandleCircleRequestSent(s.GetTestContext(), tx.Hash(), uint32(originChain.GetChainID()))
+	msg, err := relay.FetchAndProcessSentEvent(s.GetTestContext(), tx.Hash(), uint32(originChain.GetChainID()))
 	s.Nil(err)
 	s.Equal(msg.OriginTxHash, tx.Hash().String())
 	s.Equal(msg.State, relayTypes.Pending)
@@ -197,7 +197,7 @@ func (s *CCTPRelayerSuite) TestSubmitReceiveCircleToken() {
 
 	// submit ReceiveCircleToken()
 	// nolint: wrapcheck
-	err = relay.SubmitReceiveCircleToken(s.GetTestContext(), &msg)
+	err = relay.SubmitReceiveMessage(s.GetTestContext(), &msg)
 	s.Nil(err)
 
 	// verify that the attested request is stored in the db
@@ -257,7 +257,7 @@ func (s *CCTPRelayerSuite) TestBridgeUSDC() {
 			break
 		}
 	}
-	err = relay.HandleLog(s.GetTestContext(), sentLog, uint32(originChainID.Int64()))
+	_, err = relay.HandleLog(s.GetTestContext(), sentLog, uint32(originChainID.Int64()))
 	s.Require().Nil(err)
 
 	// verify that the confirmed request is stored in the backend
