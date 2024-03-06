@@ -56,6 +56,8 @@ const calculateTimeUntilTarget = () => {
   const hoursRemaining = Math.floor(
     (timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
   )
+    .toString()
+    .padStart(2, '0')
   const minutesRemaining = Math.floor(
     (timeDifference % (1000 * 60 * 60)) / (1000 * 60)
   )
