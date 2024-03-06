@@ -1,6 +1,7 @@
 import { TRANSACTION_SUPPORT_URL, DISCORD_URL } from '@/constants/urls'
 
-export const TransactionSupport = ({ isReverted }: { isReverted: boolean }) => {
+export const TransactionSupport = ({ status }: { status: string }) => {
+  const isReverted = status === 'reverted'
   return (
     <div
       id="transaction-support"

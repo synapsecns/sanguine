@@ -181,9 +181,7 @@ export const _Transaction = ({
           </DropdownMenu>
         </div>
       </div>
-      {showTransactionSupport ? (
-        <TransactionSupport isReverted={status === 'reverted'} />
-      ) : null}
+      {showTransactionSupport ? <TransactionSupport status={status} /> : null}
 
       <div className="px-1">
         <AnimatedProgressBar
