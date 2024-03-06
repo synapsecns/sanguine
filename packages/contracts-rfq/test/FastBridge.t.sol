@@ -20,6 +20,7 @@ contract FastBridgeTest is Test {
     address user = address(4);
     address dstUser = address(5);
     address governor = address(6);
+    address refunder = address(7);
     MockERC20 arbUSDC;
     MockERC20 ethUSDC;
 
@@ -203,9 +204,11 @@ contract FastBridgeTest is Test {
         fastBridge.addRelayer(relayer);
         fastBridge.addGuard(guard);
         fastBridge.addGovernor(governor);
+        fastBridge.grantRole(fastBridge.REFUNDER_ROLE(), refunder);
         assertTrue(fastBridge.hasRole(fastBridge.RELAYER_ROLE(), relayer));
         assertTrue(fastBridge.hasRole(fastBridge.GUARD_ROLE(), guard));
         assertTrue(fastBridge.hasRole(fastBridge.GOVERNOR_ROLE(), governor));
+        assertTrue(fastBridge.hasRole(fastBridge.REFUNDER_ROLE(), refunder));
         vm.stopPrank();
     }
 

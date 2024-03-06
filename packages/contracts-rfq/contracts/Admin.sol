@@ -10,6 +10,7 @@ contract Admin is IAdmin, AccessControl {
     using UniversalTokenLib for address;
 
     bytes32 public constant RELAYER_ROLE = keccak256("RELAYER_ROLE");
+    bytes32 public constant REFUNDER_ROLE = keccak256("REFUNDER_ROLE");
     bytes32 public constant GUARD_ROLE = keccak256("GUARD_ROLE");
     bytes32 public constant GOVERNOR_ROLE = keccak256("GOVERNOR_ROLE");
 
