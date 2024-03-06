@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import {AccessControlEnumerable} from "@openzeppelin/contracts/access/extensions/AccessControlEnumerable.sol";
 
 import {UniversalTokenLib} from "./libs/UniversalToken.sol";
 import {IAdmin} from "./interfaces/IAdmin.sol";
 
-contract Admin is IAdmin, AccessControl {
+contract Admin is IAdmin, AccessControlEnumerable {
     using UniversalTokenLib for address;
 
     bytes32 public constant RELAYER_ROLE = keccak256("RELAYER_ROLE");
