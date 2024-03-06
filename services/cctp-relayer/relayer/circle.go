@@ -74,7 +74,9 @@ func (c *circleCCTPHandler) HandleLog(ctx context.Context, log *types.Log, chain
 		}
 
 		return processQueue, nil
+
 	case circlecctp.MessageReceivedTopic:
+		err = c.handleMessageReceived(ctx, log, chainID)
 		return false, nil
 	default:
 		logger.Warnf("unknown topic %s", log.Topics[0])
@@ -199,4 +201,55 @@ func (c *circleCCTPHandler) handleMessageSent(ctx context.Context, log *types.Lo
 	}
 
 	return &rawMsg, nil
+}
+
+func (c *circleCCTPHandler) handleMessageReceived(ctx context.Context, log *types.Log, destChain uint32) (err error) {
+	if len(log.Topics) == 0 {
+		return fmt.Errorf("no topics found")
+	}
+
+	// Parse the request id from the log.
+	ethClient, err := c.omniRPCClient.GetConfirmationsClient(ctx, int(destChain), 1)
+	if err != nil {
+		return fmt.Errorf("could not get chain client: %w", err)
+	}
+
+	eventParser, err := circlecctp.NewMessageTransmitterFilterer(log.Address, ethClient)
+	if err != nil {
+		return fmt.Errorf("could not create event parser: %w", err)
+	}
+
+	event, err := eventParser.ParseMessageReceived(*log)
+	if err != nil {
+		return fmt.Errorf("could not parse circle request fulfilled: %w", err)
+	}
+
+	messageHash := crypto.Keccak256Hash(event.MessageBody)
+	msg, err := c.db.GetMessageByHash(ctx, messageHash)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// Reconstruct what we can from the given log.
+			msg = &relayTypes.Message{
+				OriginChainID: event.SourceDomain,
+				DestChainID:   destChain,
+				BlockNumber:   log.BlockNumber,
+				MessageHash:   messageHash.String(),
+			}
+		} else {
+			return fmt.Errorf("could not get message by hash: %w", err)
+		}
+	}
+
+	if msg == nil {
+		return fmt.Errorf("no message found")
+	}
+
+	// Mark as Complete and store the message.
+	msg.State = relayTypes.Complete
+	msg.DestTxHash = log.TxHash.String()
+	err = c.db.StoreMessage(ctx, *msg)
+	if err != nil {
+		return fmt.Errorf("could not store complete message: %w", err)
+	}
+	return nil
 }
