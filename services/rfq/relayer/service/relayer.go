@@ -256,16 +256,17 @@ func (r *Relayer) runDBSelector(ctx context.Context) error {
 
 // startCCTPRelayer starts the CCTP relayer, if a config is specified.
 func (r *Relayer) startCCTPRelayer(parentCtx context.Context) (err error) {
-	// only start the CCTP relayer if the config is specified
-	cctpCfg := r.cfg.CCTPRelayerConfig
-	if cctpCfg == nil {
-		return nil
-	}
-
 	ctx, span := r.metrics.Tracer().Start(parentCtx, "startCCTPRelayer")
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
+
+	// only start the CCTP relayer if the config is specified
+	cctpCfg := r.cfg.CCTPRelayerConfig
+	if cctpCfg == nil {
+		span.AddEvent("no cctp relayer config specified")
+		return nil
+	}
 
 	// build the CCTP relayer
 	dbType, err := dbcommon.DBTypeFromString(r.cfg.Database.Type)
