@@ -1,9 +1,8 @@
 import 'wagmi/window'
 import METAMASK_ICON from '@assets/icons/metamask.svg'
 import { getCompleteUrl } from '@urls'
-
-import Button from '@tw/Button'
 import { getSwapBorderHoverStyleForCoin } from '@styles/tokens'
+import Button from '@tw/Button'
 
 export default function AddToWalletButton({ token, icon, className, chainId }) {
   return (
