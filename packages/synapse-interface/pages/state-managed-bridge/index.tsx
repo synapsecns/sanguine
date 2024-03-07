@@ -73,6 +73,7 @@ import {
   fetchEthPrice,
   fetchGmxPrice,
 } from '@/slices/priceDataSlice'
+import { _DestinationAddressInput } from '@/components/StateManagedBridge/_DestinationAddressInput'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -555,6 +556,7 @@ const StateManagedBridge = () => {
             >
               <BridgeExchangeRateInfo />
             </Transition>
+            <_DestinationAddressInput connectedAddress={address} />
             {showDestinationAddress && (
               <DestinationAddressInput
                 toChainId={toChainId}
