@@ -82,6 +82,7 @@ export const PortfolioTokenAsset = ({
         {parsedBalance} {symbol}
       </div>
       <PortfolioAssetActionButton
+        token={token}
         selectCallback={handleFromSelectionCallback}
         isDisabled={isDisabled || isTokenSelected}
         isSelected={isTokenSelected}
