@@ -20,6 +20,7 @@ const BridgeExchangeRateInfo = () => {
   return (
     <div className="py-3.5 px-1 space-y-3 text-sm md:px-6 tracking-wide">
       {/* <RouteEligibility /> */}
+      <TimeEstimate />
       <section className="p-2 space-y-1 text-sm border rounded-sm border-[#504952] text-secondary font-light">
         <GasDropLabel />
         <Router />
