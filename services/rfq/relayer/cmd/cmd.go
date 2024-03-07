@@ -2,9 +2,11 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/synapsecns/sanguine/core/commandline"
 	"github.com/synapsecns/sanguine/core/config"
 	"github.com/synapsecns/sanguine/core/metrics"
+	cctpCmd "github.com/synapsecns/sanguine/services/cctp-relayer/cmd"
 	"github.com/urfave/cli/v2"
 )
 
@@ -22,7 +24,7 @@ func Start(args []string, buildInfo config.BuildInfo) {
 	}
 
 	// commands
-	app.Commands = cli.Commands{runCommand}
+	app.Commands = cli.Commands{runCommand, cctpCmd.RunCommand}
 	shellCommand := commandline.GenerateShellCommand(app.Commands)
 	app.Commands = append(app.Commands, shellCommand)
 	app.Action = shellCommand.Action
