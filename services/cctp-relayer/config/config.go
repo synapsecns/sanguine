@@ -108,15 +108,3 @@ func (c Config) GetCCTPType() (types.MessageType, error) {
 		return 0, fmt.Errorf("invalid cctp method: %s", c.CCTPType)
 	}
 }
-
-// CCTPMethod is the method for executing CCTP transactions.
-//
-//go:generate go run golang.org/x/tools/cmd/stringer -type=CCTPMethod
-type CCTPMethod uint8
-
-const (
-	// CCTPMethodSynapse is the default CCTP method.
-	CCTPMethodSynapse CCTPMethod = iota
-	// CCTPMethodCircle is the CCTP method for using the native circle contracts.
-	CCTPMethodCircle
-)

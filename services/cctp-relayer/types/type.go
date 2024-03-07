@@ -1,7 +1,9 @@
 package types
 
 // MessageType represents the type of a CCTP transfer.
-type MessageType int
+//
+//go:generate go run golang.org/x/tools/cmd/stringer -type=MessageType
+type MessageType uint
 
 const (
 	// SynapseMessageType indicates the request was generated on a SynapseCCTP contract.
@@ -9,13 +11,3 @@ const (
 	// CircleMessageType indicates that the request was generated on a native Circle contract.
 	CircleMessageType
 )
-
-func (m MessageType) String() string {
-	switch m {
-	case SynapseMessageType:
-		return "Synapse"
-	case CircleMessageType:
-		return "Circle"
-	}
-	return ""
-}
