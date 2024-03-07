@@ -6,6 +6,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/contrib/screener-api/config"
@@ -21,10 +26,6 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/exp/slices"
-	"net/http"
-	"strings"
-	"sync"
-	"time"
 )
 
 // Screener is the interface for the screener.
@@ -34,6 +35,7 @@ type Screener interface {
 
 type screenerImpl struct {
 	rulesManager internal.RulesetManager
+	thresholds   []config.VolumeThreshold
 	db           db.RuleDB
 	router       *gin.Engine
 	metrics      metrics.Handler
@@ -41,6 +43,7 @@ type screenerImpl struct {
 	client       trmlabs.Client
 	blacklist    []string
 	blacklistMux sync.RWMutex
+	whitelist    []string
 }
 
 var logger = log.Logger("screener")
@@ -55,6 +58,11 @@ func NewScreener(ctx context.Context, cfg config.Config, metricHandler metrics.H
 	screener.client, err = trmlabs.NewClient(cfg.TRMKey, core.GetEnv("TRM_URL", "https://api.trmlabs.com"))
 	if err != nil {
 		return nil, fmt.Errorf("could not create trm client: %w", err)
+	}
+	screener.thresholds = cfg.VolumeThresholds
+
+	for _, item := range cfg.Whitelist {
+		screener.whitelist = append(screener.whitelist, strings.ToLower(item))
 	}
 
 	screener.rulesManager, err = setupScreener(cfg.Rulesets)
@@ -152,6 +160,11 @@ func (s *screenerImpl) screenAddress(c *gin.Context) {
 	}
 	s.blacklistMux.RUnlock()
 
+	if slices.Contains(s.whitelist, address) {
+		c.JSON(http.StatusOK, gin.H{"risk": false})
+		return
+	}
+
 	ctx, span := s.metrics.Tracer().Start(c.Request.Context(), "screenAddress", trace.WithAttributes(attribute.String("address", address)))
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
@@ -171,7 +184,7 @@ func (s *screenerImpl) screenAddress(c *gin.Context) {
 	}
 
 	var hasIndicator bool
-	if hasIndicator, err = currentRules.HasAddressIndicators(indicators...); err != nil {
+	if hasIndicator, err = currentRules.HasAddressIndicators(s.thresholds, indicators...); err != nil {
 		c.JSON(http.StatusOK, gin.H{"risk": true})
 		return
 	}

@@ -3,9 +3,10 @@ package node
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/core/metrics"
 	"net/http"
 	"time"
+
+	"github.com/synapsecns/sanguine/core/metrics"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -24,6 +25,7 @@ import (
 
 // ExplorerBackfiller is a backfiller that aggregates all backfilling from ChainBackfillers.
 type ExplorerBackfiller struct {
+
 	// consumerDB is the database to store consumer data in.
 	consumerDB db.ConsumerDB
 	// clients is a mapping of chain IDs -> clients.

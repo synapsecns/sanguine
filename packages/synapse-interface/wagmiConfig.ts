@@ -10,6 +10,7 @@ import {
   aurora,
   canto,
   base,
+  blast,
 } from '@constants/extraWagmiChains'
 import { configureChains, createConfig } from 'wagmi'
 import {
@@ -36,6 +37,7 @@ export const rawChains = [
   aurora,
   avalanche,
   base,
+  blast,
   bsc,
   canto,
   fantom,
