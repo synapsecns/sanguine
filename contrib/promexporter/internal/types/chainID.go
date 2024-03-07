@@ -24,7 +24,6 @@ const (
 	CRONOS    ChainID = 25
 	KOVAN     ChainID = 42
 	BSC       ChainID = 56
-	BLAST     ChainID = 81457
 	POLYGON   ChainID = 137
 	FANTOM    ChainID = 250
 	BOBA      ChainID = 288
