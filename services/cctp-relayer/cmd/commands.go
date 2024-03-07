@@ -52,7 +52,7 @@ var scribeURLFlag = &cli.StringFlag{
 var EmbeddedFlag = &cli.BoolFlag{
 	Name:  "embedded",
 	Usage: "--embedded",
-	Value: false,
+	Value: true,
 }
 
 // RunCommand runs the cctp relayer.

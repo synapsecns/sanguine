@@ -19,8 +19,9 @@ func Start(args []string, buildInfo config.BuildInfo) {
 	app.EnableBashCompletion = true
 
 	// TODO: should we really halt boot on because of metrics?
+	fmt.Printf("Raw args: %v\n", args)
 	app.Before = func(c *cli.Context) error {
-		fmt.Println("Running 'before' setup")
+		fmt.Printf("Running 'before' setup with flags: %v\n", c.Command.Flags)
 		if c.Bool(cctpCmd.EmbeddedFlag.Name) {
 			fmt.Println("Running as embedded service")
 			app.Commands = append(app.Commands, cctpCmd.RunCommand)
