@@ -8,6 +8,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -186,6 +187,7 @@ func (c *circleCCTPHandler) SubmitReceiveMessage(parentCtx context.Context, msg 
 }
 
 func (c *circleCCTPHandler) handleMessageSent(parentCtx context.Context, log *types.Log, chainID uint32) (msg *relayTypes.Message, err error) {
+	fmt.Printf("handleMessageSent with tx hash %v and chain id %v\n", log.TxHash.Hex(), chainID)
 	ctx, span := c.handler.Tracer().Start(parentCtx, "handleMessageSent", trace.WithAttributes(
 		attribute.String(metrics.TxHash, log.TxHash.Hex()),
 		attribute.Int(metrics.ChainID, int(chainID)),
@@ -210,10 +212,14 @@ func (c *circleCCTPHandler) handleMessageSent(parentCtx context.Context, log *ty
 		return nil, fmt.Errorf("could not parse message sent: %w", err)
 	}
 
+	messageHex := hexutil.Encode(messageSentEvent.Message)
+	fmt.Printf("message hex: %v\n", messageHex)
+	fmt.Printf("message hash: %v\n", crypto.Keccak256Hash(messageSentEvent.Message).String())
 	destDomain, err := parseDestDomain(messageSentEvent.Message)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse destination chain from raw message")
 	}
+	fmt.Printf("dest domain: %v\n", destDomain)
 	span.SetAttributes(attribute.Int("dest_domain", int(destDomain)))
 	destChainID, err := circleDomainToChainID(destDomain, isTestnetChainID(chainID))
 	if err != nil {

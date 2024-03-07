@@ -392,7 +392,9 @@ func (c *CCTPRelayer) streamLogs(ctx context.Context, grpcClient pbscribe.Scribe
 
 			shouldProcess, err := c.cctpHandler.HandleLog(ctx, response.GetLog().ToLog(), chainID)
 			if err != nil {
-				return err
+				// TODO should return error here
+				// return err
+				logger.Warn("error handling log: ", err)
 			}
 			if shouldProcess {
 				c.triggerProcessQueue(ctx)
