@@ -390,7 +390,7 @@ func (c *CCTPRelayer) streamLogs(ctx context.Context, grpcClient pbscribe.Scribe
 				return fmt.Errorf("could not receive: %w", err)
 			}
 
-			shouldProcess, err := c.cctpHandler.HandleLog(ctx, response.Log.ToLog(), chainID)
+			shouldProcess, err := c.cctpHandler.HandleLog(ctx, response.GetLog().ToLog(), chainID)
 			if err != nil {
 				return err
 			}
