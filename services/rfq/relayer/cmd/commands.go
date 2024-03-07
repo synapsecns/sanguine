@@ -3,9 +3,11 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/commandline"
 	"github.com/synapsecns/sanguine/core/metrics"
+	cctpCmd "github.com/synapsecns/sanguine/services/cctp-relayer/cmd"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/service"
 	"github.com/urfave/cli/v2"
@@ -21,7 +23,7 @@ var configFlag = &cli.StringFlag{
 var runCommand = &cli.Command{
 	Name:        "run",
 	Description: "run the relayer",
-	Flags:       []cli.Flag{configFlag, &commandline.LogLevel},
+	Flags:       []cli.Flag{configFlag, cctpCmd.EmbeddedFlag, &commandline.LogLevel},
 	Action: func(c *cli.Context) (err error) {
 		commandline.SetLogLevel(c)
 		cfg, err := relconfig.LoadConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
