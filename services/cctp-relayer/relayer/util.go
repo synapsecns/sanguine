@@ -3,13 +3,22 @@ package relayer
 import (
 	"encoding/binary"
 	"errors"
+
+	"github.com/ethereum/go-ethereum/common"
 )
 
 // destinationDomainIndex is the index of the destination domain in the formatted CCTP message.
 const destinationDomainIndex = 8
 
+// senderIndex is the index of the sender in the formatted CCTP message.
+const senderIndex = 20
+
 func parseDestDomain(message []byte) (uint32, error) {
 	return indexUint32(message, destinationDomainIndex, 4)
+}
+
+func parseSender(message []byte) (common.Address, error) {
+	return indexAddress(message, senderIndex)
 }
 
 // indexUint32 parses an unsigned 32-bit integer from a byte slice starting at index with a specified length in bytes.
@@ -31,4 +40,18 @@ func indexUint32(memView []byte, index int, bytes uint8) (uint32, error) {
 	// Convert the bytes to uint32.
 	result := binary.BigEndian.Uint32(padded)
 	return result, nil
+}
+
+// indexAddress parses an Ethereum address from a byte slice starting at index.
+// Requires that the byte slice have at least 20 bytes starting from the index.
+func indexAddress(memView []byte, index int) (common.Address, error) {
+	const addressLength = 20 // Ethereum addresses are 20 bytes long
+
+	if index+addressLength > len(memView) {
+		return common.Address{}, errors.New("slice does not contain enough bytes to extract an address")
+	}
+
+	var addr common.Address
+	copy(addr[:], memView[index:index+addressLength])
+	return addr, nil
 }
