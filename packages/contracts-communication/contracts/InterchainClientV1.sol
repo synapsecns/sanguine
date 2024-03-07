@@ -88,9 +88,16 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     // TODO: Handle the case where receiver does not implement the IInterchainApp interface (or does not exist at all)
     // TODO: Save the executor address outside of the contract to pass the data back to the source chain
     // @inheritdoc IInterchainClientV1
-    function interchainExecute(uint256 gasLimit, bytes calldata transaction) external payable {
+    function interchainExecute(
+        uint256 gasLimit,
+        bytes calldata transaction,
+        bytes32[] calldata proof
+    )
+        external
+        payable
+    {
         InterchainTransaction memory icTx = InterchainTransactionLib.decodeTransaction(transaction);
-        bytes32 transactionId = _assertExecutable(icTx);
+        bytes32 transactionId = _assertExecutable(icTx, proof);
         _txExecutor[transactionId] = msg.sender;
 
         OptionsV1 memory decodedOptions = icTx.options.decodeOptionsV1();
@@ -127,9 +134,9 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     // @inheritdoc IInterchainClientV1
-    function isExecutable(bytes calldata encodedTx) external view returns (bool) {
+    function isExecutable(bytes calldata encodedTx, bytes32[] calldata proof) external view returns (bool) {
         InterchainTransaction memory icTx = InterchainTransactionLib.decodeTransaction(encodedTx);
-        _assertExecutable(icTx);
+        _assertExecutable(icTx, proof);
         return true;
     }
 
@@ -276,7 +283,14 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
     /// @dev Asserts that the transaction is executable. Returns the transactionId for chaining purposes.
-    function _assertExecutable(InterchainTransaction memory icTx) internal view returns (bytes32 transactionId) {
+    function _assertExecutable(
+        InterchainTransaction memory icTx,
+        bytes32[] calldata proof
+    )
+        internal
+        view
+        returns (bytes32 transactionId)
+    {
         bytes32 linkedClient = _assertLinkedClient(icTx.srcChainId);
         if (icTx.dstChainId != block.chainid) {
             revert InterchainClientV1__IncorrectDstChainId(icTx.dstChainId);
@@ -296,7 +310,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         (bytes memory encodedAppConfig, address[] memory approvedDstModules) =
             IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).getReceivingConfig();
         AppConfigV1 memory appConfig = encodedAppConfig.decodeAppConfigV1();
-        uint256 responses = _getFinalizedResponsesCount(approvedDstModules, icEntry, appConfig.optimisticPeriod);
+        uint256 responses = _getFinalizedResponsesCount(approvedDstModules, icEntry, proof, appConfig.optimisticPeriod);
         if (responses < appConfig.requiredResponses) {
             revert InterchainClientV1__NotEnoughResponses(responses, appConfig.requiredResponses);
         }
@@ -323,6 +337,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     function _getFinalizedResponsesCount(
         address[] memory approvedModules,
         InterchainEntry memory icEntry,
+        bytes32[] calldata proof,
         uint256 optimisticPeriod
     )
         internal
@@ -330,7 +345,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         returns (uint256 finalizedResponses)
     {
         for (uint256 i = 0; i < approvedModules.length; ++i) {
-            uint256 confirmedAt = IInterchainDB(INTERCHAIN_DB).readEntry(approvedModules[i], icEntry);
+            uint256 confirmedAt = IInterchainDB(INTERCHAIN_DB).checkVerification(approvedModules[i], icEntry, proof);
             // readEntry() returns 0 if entry hasn't been confirmed by the module, so we check for that as well
             if (confirmedAt != 0 && confirmedAt + optimisticPeriod <= block.timestamp) {
                 ++finalizedResponses;

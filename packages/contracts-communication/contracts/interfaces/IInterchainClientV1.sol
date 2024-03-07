@@ -80,8 +80,15 @@ interface IInterchainClientV1 {
      * This allows to execute the transactions with requested gas limit set too low.
      * @param gasLimit          The gas limit to use for the execution.
      * @param transaction       The transaction data.
+     * @param proof             The Merkle proof for transaction execution, fetched from the source chain.
      */
-    function interchainExecute(uint256 gasLimit, bytes calldata transaction) external payable;
+    function interchainExecute(
+        uint256 gasLimit,
+        bytes calldata transaction,
+        bytes32[] calldata proof
+    )
+        external
+        payable;
 
     /// @notice Writes the proof of execution for a transaction into the InterchainDB.
     /// @dev Will revert if the transaction has not been executed.
@@ -96,10 +103,11 @@ interface IInterchainClientV1 {
      * - If approved modules have written to the InterchainDB
      * - If the threshold of approved modules have been met
      * - If the optimistic window has passed for all modules
-     * @param transaction The InterchainTransaction struct to be checked.
+     * @param transaction       The InterchainTransaction struct to be checked.
+     * @param proof             The Merkle proof for transaction execution, fetched from the source chain.
      * @return bool Returns true if the transaction is executable, false otherwise.
      */
-    function isExecutable(bytes calldata transaction) external view returns (bool);
+    function isExecutable(bytes calldata transaction, bytes32[] calldata proof) external view returns (bool);
 
     /// @notice Returns the fee for sending an Interchain message.
     /// @param dstChainId           The chain ID of the destination chain.

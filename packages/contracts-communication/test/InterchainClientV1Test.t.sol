@@ -171,7 +171,11 @@ contract InterchainClientV1Test is Test {
         skip(mockAppConfig.optimisticPeriod + 1);
         // Expect App to be called with the message
         vm.expectCall({callee: address(icApp), msgValue: GAS_AIRDROP, gas: 200_000, data: expectedAppCalldata, count: 1});
-        icClient.interchainExecute{value: GAS_AIRDROP}({gasLimit: 0, transaction: abi.encode(transaction)});
+        icClient.interchainExecute{value: GAS_AIRDROP}({
+            gasLimit: 0,
+            transaction: abi.encode(transaction),
+            proof: new bytes32[](0)
+        });
     }
 
     function test_getLinkedClient_EVM() public {
