@@ -52,9 +52,11 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         onlyRemoteChainId(dstChainId)
         returns (uint256 dbNonce, uint64 entryIndex)
     {
-        dbNonce = _writeEntry(dataHash);
-        // TODO: entryIndex
-        InterchainEntry memory entry = InterchainEntryLib.constructLocalEntry(dbNonce, 0, msg.sender, dataHash);
+        (dbNonce, entryIndex) = _writeEntry(dataHash);
+        // forgefmt: disable-next-item
+        InterchainEntry memory entry = InterchainEntryLib.constructLocalEntry(
+            dbNonce, entryIndex, msg.sender, dataHash
+        );
         _requestVerification(dstChainId, entry, srcModules);
     }
 
@@ -176,7 +178,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     /// @dev Write the entry to the database and emit the event.
     function _writeEntry(bytes32 dataHash) internal returns (uint256 dbNonce, uint64 entryIndex) {
         dbNonce = _entries.length;
-        // TODO: entryIndex
+        entryIndex = 0;
         _entries.push(LocalEntry(msg.sender, dataHash));
         emit InterchainEntryWritten(block.chainid, dbNonce, TypeCasts.addressToBytes32(msg.sender), dataHash);
     }
