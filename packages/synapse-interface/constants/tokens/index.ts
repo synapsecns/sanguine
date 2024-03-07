@@ -96,12 +96,13 @@ export const BRIDGABLE_TOKENS = getBridgeableTokens()
 
 export const tokenSymbolToToken = (chainId: number, symbol: string) => {
   if (chainId) {
-    const token = BRIDGABLE_TOKENS[chainId].find((token) => {
+    const token = BRIDGABLE_TOKENS[chainId]?.find((token) => {
       return token.symbol === symbol
     })
     return token
   }
 }
+
 export const tokenAddressToToken = (
   chainId: number,
   tokenAddress: string
