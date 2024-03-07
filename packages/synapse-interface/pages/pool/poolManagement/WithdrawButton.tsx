@@ -34,23 +34,17 @@ const WithdrawButton = ({ approveTxn, withdrawTxn, isApproved }) => {
   )
   const { poolUserData } = useSelector((state: RootState) => state.poolUserData)
 
-  const needsInput = stringToBigInt(inputValue, poolDecimals) === 0n
-
   const isBalanceEnough =
     stringToBigInt(inputValue, poolDecimals) !== 0n &&
     stringToBigInt(inputValue, poolDecimals) <= poolUserData.lpTokenBalance
 
-  const isButtonDisabled =
-    isLoading || !isBalanceEnough || withdrawQuote === DEFAULT_WITHDRAW_QUOTE
+  const isValidQuote = withdrawQuote !== DEFAULT_WITHDRAW_QUOTE
+
+  const isButtonDisabled = isLoading || !isBalanceEnough || !isValidQuote
 
   let buttonProperties
 
-  if (needsInput) {
-    buttonProperties = {
-      label: 'Enter amount',
-      onClick: null,
-    }
-  } else if (!isBalanceEnough) {
+  if (!isBalanceEnough && isValidQuote) {
     buttonProperties = {
       label: 'Insufficient Balance',
       onClick: null,
@@ -75,7 +69,7 @@ const WithdrawButton = ({ approveTxn, withdrawTxn, isApproved }) => {
       onClick: () => switchNetwork(pool.chainId),
       pendingLabel: 'Switching chains',
     }
-  } else if (!isApproved) {
+  } else if (!isApproved && isValidQuote) {
     buttonProperties = {
       onClick: approveTxn,
       label: `Approve Token`,
