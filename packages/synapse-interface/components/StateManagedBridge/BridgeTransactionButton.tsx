@@ -111,7 +111,7 @@ export const BridgeTransactionButton = ({
       onClick: null,
     }
   } else if (
-    bridgeQuote?.destQuery &&
+    !isLoading &&
     bridgeQuote?.feeAmount === 0n &&
     fromValueBigInt > 0
   ) {
