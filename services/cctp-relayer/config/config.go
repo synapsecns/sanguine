@@ -92,6 +92,8 @@ func DecodeConfig(filePath string) (cfg Config, err error) {
 	return cfg, nil
 }
 
+const defaultCCTPType = types.SynapseMessageType
+
 // GetCCTPType returns the CCTP method.
 func (c Config) GetCCTPType() (types.MessageType, error) {
 	switch c.CCTPType {
@@ -100,6 +102,9 @@ func (c Config) GetCCTPType() (types.MessageType, error) {
 	case "circle":
 		return types.CircleMessageType, nil
 	default:
+		if len(c.CCTPType) == 0 {
+			return defaultCCTPType, nil
+		}
 		return 0, fmt.Errorf("invalid cctp method: %s", c.CCTPType)
 	}
 }
