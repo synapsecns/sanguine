@@ -126,6 +126,10 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelaye
 			return nil, fmt.Errorf("could not make synapse cctp handler: %w", err)
 		}
 	case relayTypes.CircleMessageType:
+		cctpHandler, err = NewCircleCCTPHandler(ctx, cfg, store, omniRPCClient, txSubmitter, handler)
+		if err != nil {
+			return nil, fmt.Errorf("could not make circle cctp handler: %w", err)
+		}
 	default:
 		return nil, fmt.Errorf("unknown cctp type: %s", cctpType)
 	}
