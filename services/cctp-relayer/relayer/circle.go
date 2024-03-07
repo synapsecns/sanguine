@@ -278,12 +278,18 @@ func (c *circleCCTPHandler) handleMessageReceived(parentCtx context.Context, log
 		attribute.Int(metrics.Origin, int(event.SourceDomain)),
 	)
 
+	// convert the source domain to a chain ID
+	originChainID, err := circleDomainToChainID(event.SourceDomain, isTestnetChainID(chainID))
+	if err != nil {
+		return fmt.Errorf("could not convert circle domain to chain ID: %w", err)
+	}
+
 	msg, err := c.db.GetMessageByHash(ctx, messageHash)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			// Reconstruct what we can from the given log.
 			msg = &relayTypes.Message{
-				OriginChainID: event.SourceDomain,
+				OriginChainID: originChainID,
 				DestChainID:   chainID,
 				BlockNumber:   log.BlockNumber,
 				MessageHash:   messageHash.String(),
