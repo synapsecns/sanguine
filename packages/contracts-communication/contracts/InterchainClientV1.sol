@@ -120,9 +120,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             revert InterchainClientV1__TxNotExecuted(transactionId);
         }
         bytes memory proof = abi.encode(transactionId, executor);
-        dbNonce = IInterchainDB(INTERCHAIN_DB).writeEntry(keccak256(proof));
-        // TODO: entryIndex
-        entryIndex;
+        (dbNonce, entryIndex) = IInterchainDB(INTERCHAIN_DB).writeEntry(keccak256(proof));
         emit ExecutionProofWritten(transactionId, dbNonce, entryIndex, executor);
     }
 
@@ -239,13 +237,12 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         });
         desc.transactionId = icTx.transactionId();
         // Sanity check: nonce returned from DB should match the nonce used to construct the transaction
-        // TODO: check both dbNonce and entryIndex
-        assert(
-            icTx.dbNonce
-                == IInterchainDB(INTERCHAIN_DB).writeEntryWithVerification{value: verificationFee}(
-                    icTx.dstChainId, desc.transactionId, srcModules
-                )
-        );
+        {
+            (uint256 dbNonce, uint64 entryIndex) = IInterchainDB(INTERCHAIN_DB).writeEntryWithVerification{
+                value: verificationFee
+            }(icTx.dstChainId, desc.transactionId, srcModules);
+            assert(dbNonce == desc.dbNonce && entryIndex == desc.entryIndex);
+        }
         if (executionFee > 0) {
             IExecutionFees(executionFees).addExecutionFee{value: executionFee}(icTx.dstChainId, desc.transactionId);
         }
