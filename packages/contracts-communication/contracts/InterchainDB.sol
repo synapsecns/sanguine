@@ -101,6 +101,11 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     }
 
     /// @inheritdoc IInterchainDB
+    function getNextEntryIndex() external view returns (uint256 dbNonce, uint64 entryIndex) {
+        // TODO: implement
+    }
+
+    /// @inheritdoc IInterchainDB
     function getEntry(uint256 dbNonce) public view returns (InterchainEntry memory) {
         if (getDBNonce() <= dbNonce) {
             revert InterchainDB__EntryDoesNotExist(dbNonce);

@@ -26,6 +26,8 @@ contract InterchainDBMock is IInterchainDB {
 
     function getDBNonce() external view returns (uint256) {}
 
+    function getNextEntryIndex() external view returns (uint256 dbNonce, uint64 entryIndex) {}
+
     function readEntry(
         address dstModule,
         InterchainEntry memory entry
