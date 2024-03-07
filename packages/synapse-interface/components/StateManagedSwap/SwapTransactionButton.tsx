@@ -54,10 +54,10 @@ export const SwapTransactionButton = ({
   }, [balanceForToken, swapFromValue, swapChainId, swapFromToken, swapToToken])
 
   const isButtonDisabled =
-    isLoading ||
+    (isLoading && !isApproved) ||
+    (isConnected && !sufficientBalance) ||
     swapQuote === EMPTY_SWAP_QUOTE_ZERO ||
-    swapQuote === EMPTY_SWAP_QUOTE ||
-    (isConnected && !sufficientBalance)
+    swapQuote === EMPTY_SWAP_QUOTE
 
   let buttonProperties
 
@@ -101,7 +101,12 @@ export const SwapTransactionButton = ({
       onClick: () => switchNetwork(swapChainId),
       pendingLabel: 'Switching chains',
     }
-  } else if (!isApproved && fromValueBigInt > 0 && swapQuote?.quote) {
+  } else if (
+    !isApproved &&
+    !isLoading &&
+    fromValueBigInt > 0 &&
+    swapQuote?.quote
+  ) {
     buttonProperties = {
       onClick: approveTxn,
       label: `Approve ${swapFromToken?.symbol}`,
