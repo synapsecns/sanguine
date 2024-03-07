@@ -158,7 +158,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     /// @inheritdoc IInterchainDB
     function getEntry(uint256 dbNonce, uint64 entryIndex) public view returns (InterchainEntry memory) {
         if (getDBNonce() <= dbNonce) {
-            revert InterchainDB__EntryDoesNotExist(dbNonce);
+            revert InterchainDB__BatchDoesNotExist(dbNonce);
         }
         // TODO: entryIndex
         return InterchainEntryLib.constructLocalEntry(dbNonce, 0, _entries[dbNonce].writer, _entries[dbNonce].dataHash);

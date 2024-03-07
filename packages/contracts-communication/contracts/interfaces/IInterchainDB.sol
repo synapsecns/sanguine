@@ -21,8 +21,8 @@ interface IInterchainDB {
         bytes32 entryValue;
     }
 
+    error InterchainDB__BatchDoesNotExist(uint256 dbNonce);
     error InterchainDB__ConflictingEntries(bytes32 existingEntryValue, InterchainEntry newEntry);
-    error InterchainDB__EntryDoesNotExist(uint256 dbNonce);
     error InterchainDB__IncorrectFeeAmount(uint256 actualFee, uint256 expectedFee);
     error InterchainDB__NoModulesSpecified();
     error InterchainDB__SameChainId(uint256 chainId);
