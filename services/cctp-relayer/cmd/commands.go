@@ -65,6 +65,8 @@ var RunCommand = &cli.Command{
 
 		embedded := c.Bool(EmbeddedFlag.Name)
 		var cfg config.Config
+		var dbTypeFromString dbcommon.DBType
+		var path string
 		if embedded {
 			relCfg, err := relconfig.LoadConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 			if err != nil {
@@ -74,24 +76,33 @@ var RunCommand = &cli.Command{
 				return fmt.Errorf("expected cctp relayer config to be set")
 			}
 			cfg = *relCfg.CCTPRelayerConfig
+
+			// inherit db values from parent config
+			dbTypeFromString, err = dbcommon.DBTypeFromString(relCfg.Database.Type)
+			if err != nil {
+				return fmt.Errorf("could not get db type: %w", err)
+			}
+			path = relCfg.Database.DSN
+			if len(path) == 0 {
+				return fmt.Errorf("expected database dsn to be set")
+			}
 		} else {
 			cfg, err = config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 			if err != nil {
 				return fmt.Errorf("could not read config file: %w", err)
 			}
+			dbTypeFromString, err = dbcommon.DBTypeFromString(c.String(dbFlag.Name))
+			if err != nil {
+				return fmt.Errorf("could not get db type from string: %w", err)
+			}
+
+			path = core.ExpandOrReturnPath(c.String(pathFlag.Name))
 		}
 
 		_, err = cfg.IsValid(c.Context)
 		if err != nil {
 			return fmt.Errorf("could not decode config file: %w", err)
 		}
-
-		dbTypeFromString, err := dbcommon.DBTypeFromString(c.String(dbFlag.Name))
-		if err != nil {
-			return fmt.Errorf("could not get db type from string: %w", err)
-		}
-
-		path := core.ExpandOrReturnPath(c.String(pathFlag.Name))
 
 		metricsProvider := metrics.Get()
 
