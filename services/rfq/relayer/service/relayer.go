@@ -16,6 +16,10 @@ import (
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/attestation"
+	cctpSql "github.com/synapsecns/sanguine/services/cctp-relayer/db/sql"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/relayer"
+	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
@@ -25,6 +29,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/connect"
+	"github.com/synapsecns/sanguine/services/scribe/client"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -215,6 +220,14 @@ func (r *Relayer) Start(ctx context.Context) error {
 		return nil
 	})
 
+	g.Go(func() error {
+		err = r.startCCTPRelayer(ctx)
+		if err != nil {
+			return fmt.Errorf("could not start cctp relayer: %w", err)
+		}
+		return nil
+	})
+
 	err = g.Wait()
 	if err != nil {
 		return fmt.Errorf("could not start: %w", err)
@@ -239,6 +252,39 @@ func (r *Relayer) runDBSelector(ctx context.Context) error {
 			}
 		}
 	}
+}
+
+func (r *Relayer) startCCTPRelayer(ctx context.Context) error {
+	// only start the CCTP relayer if the config is specified
+	cctpCfg := r.cfg.CCTPRelayerConfig
+	if cctpCfg == nil {
+		return nil
+	}
+
+	// build the CCTP relayer
+	dbType, err := dbcommon.DBTypeFromString(r.cfg.Database.Type)
+	if err != nil {
+		return fmt.Errorf("could not get db type: %w", err)
+	}
+	store, err := cctpSql.Connect(ctx, dbType, r.cfg.Database.DSN, r.metrics)
+	if err != nil {
+		return fmt.Errorf("could not connect to database: %w", err)
+	}
+	scribeClient := client.NewRemoteScribe(uint16(cctpCfg.ScribePort), cctpCfg.ScribeURL, r.metrics).ScribeClient
+	omnirpcClient := omniClient.NewOmnirpcClient(cctpCfg.BaseOmnirpcURL, r.metrics, omniClient.WithCaptureReqRes())
+	attAPI := attestation.NewCircleAPI(cctpCfg.CircleAPIURl)
+	cctpRelayer, err := relayer.NewCCTPRelayer(ctx, *cctpCfg, store, scribeClient, omnirpcClient, r.metrics, attAPI)
+	if err != nil {
+		return fmt.Errorf("could not create cctp relayer: %w", err)
+	}
+
+	// run the cctp relayer
+	err = cctpRelayer.Run(ctx)
+	if err != nil {
+		return fmt.Errorf("could not run cctp relayer: %w", err)
+	}
+
+	return nil
 }
 
 func (r *Relayer) processDB(ctx context.Context) error {
