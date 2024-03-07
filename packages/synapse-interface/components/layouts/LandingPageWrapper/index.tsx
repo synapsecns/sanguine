@@ -2,16 +2,6 @@ import { Fragment } from 'react'
 import { useRouter } from 'next/router'
 import { Popover, Transition } from '@headlessui/react'
 import { MenuIcon, XIcon } from '@heroicons/react/outline'
-import Grid from '@tw/Grid'
-import ForumIcon from '@icons/ForumIcon'
-import TwitterIcon from '@icons/TwitterIcon'
-import DiscordIcon from '@icons/DiscordIcon'
-import TelegramIcon from '@icons/TelegramIcon'
-import DocumentTextIcon from '@icons/DocsIcon'
-import { Wallet } from '@components/Wallet'
-
-import { SynapseLogoSvg, SynapseLogoWithTitleSvg } from './SynapseLogoSvg'
-import { TopBarNavLink, checkIsRouteMatched } from './TopBarNavLink'
 import {
   DISCORD_URL,
   SYNAPSE_DOCS_URL,
@@ -21,6 +11,15 @@ import {
   TWITTER_URL,
 } from '@/constants/urls'
 import { NAVIGATION } from '@/constants/routes'
+import Grid from '@tw/Grid'
+import ForumIcon from '@icons/ForumIcon'
+import TwitterIcon from '@icons/TwitterIcon'
+import DiscordIcon from '@icons/DiscordIcon'
+import TelegramIcon from '@icons/TelegramIcon'
+import DocumentTextIcon from '@icons/DocsIcon'
+import { Wallet } from '@components/Wallet'
+import { SynapseLogoSvg, SynapseLogoWithTitleSvg } from './SynapseLogoSvg'
+import { TopBarNavLink, checkIsRouteMatched } from './TopBarNavLink'
 import { MoreButton } from './MoreButton'
 import { PageFooter } from './PageFooter'
 
