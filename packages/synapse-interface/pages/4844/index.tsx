@@ -46,28 +46,6 @@ const Countdown = () => {
             target="_blank"
             className="flex flex-wrap items-center justify-center text-xl text-center text-white hover:text-synapsePurple"
           >
-            <div className="lg:whitespace-nowrap">
-              Learn about
-              <div className="inline-block ml-1 text-synapsePurple">
-                Synapse Interchain Network
-              </div>
-              , trustless interchain
-            </div>
-            <div className="flex items-center justify-center ml-1 ">
-              communication and settlement.
-              <ExternalLinkIcon
-                height="20px"
-                width="20px"
-                className="mt-px ml-1"
-              />
-            </div>
-          </a>
-
-          <a
-            href="https://synapse.mirror.xyz/N1dwTpAATINNsCqkXUrJlgYH5szUMBdi-6m8nApDf3I"
-            target="_blank"
-            className="flex flex-wrap items-center justify-center text-xl text-center text-white hover:text-synapsePurple"
-          >
             <div>
               4844 will birth a thousand rollups,
               <div className="inline-block ml-1 text-synapsePurple">
