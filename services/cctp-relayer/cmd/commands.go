@@ -13,7 +13,6 @@ import (
 	"github.com/synapsecns/sanguine/services/cctp-relayer/db/sql"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/relayer"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	"github.com/urfave/cli/v2"
 )
@@ -43,76 +42,34 @@ var scribePortFlag = &cli.UintFlag{
 	Value: 0,
 }
 
-var scribeURLFlag = &cli.StringFlag{
+var scribeURL = &cli.StringFlag{
 	Name:  "scribe-url",
 	Usage: "--scribe-url <url>",
 }
 
-// EmbeddedFlag is a flag to run the cctp relayer as an embedded service.
-var EmbeddedFlag = &cli.BoolFlag{
-	Name:  "embedded",
-	Usage: "--embedded",
-	Value: true,
-}
-
-// RunCommand runs the cctp relayer.
-var RunCommand = &cli.Command{
+// runCommand runs the cctp relayer.
+var runCommand = &cli.Command{
 	Name:        "run",
 	Description: "run the cctp relayer",
-	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag, scribePortFlag, scribeURLFlag, EmbeddedFlag, &commandline.LogLevel},
+	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag, scribePortFlag, scribeURL, &commandline.LogLevel},
 	Action: func(c *cli.Context) (err error) {
-		fmt.Println("Starting run command for CCTP relayer")
 		commandline.SetLogLevel(c)
-
-		embedded := c.Bool(EmbeddedFlag.Name)
-		var cfg config.Config
-		var dbTypeFromString dbcommon.DBType
-		var path string
-		var scribePort uint
-		var scribeURL string
-
-		if embedded {
-			fmt.Println("Building embedded CCTP relayer")
-			relCfg, err := relconfig.LoadConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
-			if err != nil {
-				return fmt.Errorf("could not read config file: %w", err)
-			}
-			if relCfg.CCTPRelayerConfig == nil {
-				return fmt.Errorf("expected cctp relayer config to be set")
-			}
-			cfg = *relCfg.CCTPRelayerConfig
-
-			// inherit db values from parent config
-			dbTypeFromString, err = dbcommon.DBTypeFromString(relCfg.Database.Type)
-			if err != nil {
-				return fmt.Errorf("could not get db type: %w", err)
-			}
-			path = relCfg.Database.DSN
-			if len(path) == 0 {
-				return fmt.Errorf("expected database dsn to be set")
-			}
-			scribePort = cfg.ScribePort
-			scribeURL = cfg.ScribeURL
-		} else {
-			fmt.Println("Building standalone CCTP relayer")
-			cfg, err = config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
-			if err != nil {
-				return fmt.Errorf("could not read config file: %w", err)
-			}
-			dbTypeFromString, err = dbcommon.DBTypeFromString(c.String(dbFlag.Name))
-			if err != nil {
-				return fmt.Errorf("could not get db type from string: %w", err)
-			}
-
-			path = core.ExpandOrReturnPath(c.String(pathFlag.Name))
-			scribePort = c.Uint(scribePortFlag.Name)
-			scribeURL = c.String(scribeURLFlag.Name)
+		cfg, err := config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
+		if err != nil {
+			return fmt.Errorf("could not read config file: %w", err)
 		}
 
 		_, err = cfg.IsValid(c.Context)
 		if err != nil {
 			return fmt.Errorf("could not decode config file: %w", err)
 		}
+
+		dbTypeFromString, err := dbcommon.DBTypeFromString(c.String(dbFlag.Name))
+		if err != nil {
+			return fmt.Errorf("could not get db type from string: %w", err)
+		}
+
+		path := core.ExpandOrReturnPath(c.String(pathFlag.Name))
 
 		metricsProvider := metrics.Get()
 
@@ -121,7 +78,7 @@ var RunCommand = &cli.Command{
 			return fmt.Errorf("could not connect to database: %w", err)
 		}
 
-		scribeClient := client.NewRemoteScribe(uint16(scribePort), scribeURL, metricsProvider).ScribeClient
+		scribeClient := client.NewRemoteScribe(uint16(c.Uint(scribePortFlag.Name)), c.String(scribeURL.Name), metricsProvider).ScribeClient
 		omnirpcClient := omniClient.NewOmnirpcClient(cfg.BaseOmnirpcURL, metricsProvider, omniClient.WithCaptureReqRes())
 		attAPI := attestation.NewCircleAPI(c.String(cfg.CircleAPIURl))
 
