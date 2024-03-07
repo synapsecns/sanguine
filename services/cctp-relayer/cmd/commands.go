@@ -59,7 +59,7 @@ var EmbeddedFlag = &cli.BoolFlag{
 var RunCommand = &cli.Command{
 	Name:        "run",
 	Description: "run the cctp relayer",
-	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag, scribePortFlag, scribeURL, embeddedFlag, &commandline.LogLevel},
+	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag, scribePortFlag, scribeURL, EmbeddedFlag, &commandline.LogLevel},
 	Action: func(c *cli.Context) (err error) {
 		commandline.SetLogLevel(c)
 
