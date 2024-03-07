@@ -12,6 +12,7 @@ import (
 	"github.com/jftuga/ellipsis"
 	"github.com/synapsecns/sanguine/ethergo/signer/config"
 	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
+	cctpConfig "github.com/synapsecns/sanguine/services/cctp-relayer/config"
 	"gopkg.in/yaml.v2"
 
 	"path/filepath"
@@ -48,6 +49,8 @@ type Config struct {
 	DBSelectorInterval time.Duration `yaml:"db_selector_interval"`
 	// RebalanceInterval is the interval for rebalancing.
 	RebalanceInterval time.Duration `yaml:"rebalance_interval"`
+	// CCTPRelayerConfig is the embedded cctp relayer config (optional).
+	CCTPRelayerConfig *cctpConfig.Config `yaml:"cctp_relayer_config"`
 }
 
 // ChainConfig represents the configuration for a chain.
