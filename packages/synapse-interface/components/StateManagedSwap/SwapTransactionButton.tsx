@@ -39,10 +39,6 @@ export const SwapTransactionButton = ({
     swapQuote,
   } = useSwapState()
 
-  console.log('swapQuote:', swapQuote)
-  console.log('isLoading:', isLoading)
-  console.log('isApproved:', isApproved)
-
   const balances = usePortfolioBalances()
   const balancesForChain = balances[swapChainId]
   const balanceForToken = balancesForChain?.find(
@@ -94,11 +90,6 @@ export const SwapTransactionButton = ({
       label: `Connect Wallet to Swap`,
       onClick: openConnectModal,
     }
-  } else if (swapFromValue === '') {
-    buttonProperties = {
-      label: `Swap`,
-      onClick: null,
-    }
   } else if (isConnected && !sufficientBalance) {
     buttonProperties = {
       label: 'Insufficient balance',
@@ -110,7 +101,7 @@ export const SwapTransactionButton = ({
       onClick: () => switchNetwork(swapChainId),
       pendingLabel: 'Switching chains',
     }
-  } else if (!isApproved && !isLoading && swapQuote?.quote) {
+  } else if (!isApproved && fromValueBigInt > 0 && swapQuote?.quote) {
     buttonProperties = {
       onClick: approveTxn,
       label: `Approve ${swapFromToken?.symbol}`,
