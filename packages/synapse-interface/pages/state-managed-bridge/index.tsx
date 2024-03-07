@@ -7,7 +7,13 @@ import { useRouter } from 'next/router'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { BridgeState } from '@/slices/bridge/reducer'
+import {
+  BridgeState,
+  setFromChainId,
+  setFromToken,
+  setToChainId,
+  setToToken,
+} from '@/slices/bridge/reducer'
 import {
   updateFromValue,
   setBridgeQuote,
@@ -79,6 +85,7 @@ import {
   fetchGmxPrice,
 } from '@/slices/priceDataSlice'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
+import { SwitchButton } from '@/components/buttons/SwitchButton'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -277,10 +284,6 @@ const StateManagedBridge = () => {
         )
 
         toast.dismiss(quoteToastRef.current.id)
-
-        dispatch(fetchEthPrice())
-        dispatch(fetchArbPrice())
-        dispatch(fetchGmxPrice())
 
         const message = `Route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
@@ -580,6 +583,14 @@ const StateManagedBridge = () => {
               </animated.div>
             </Transition>
             <InputContainer />
+            <SwitchButton
+              onClick={() => {
+                dispatch(setFromChainId(toChainId))
+                dispatch(setFromToken(toToken))
+                dispatch(setToChainId(fromChainId))
+                dispatch(setToToken(fromToken))
+              }}
+            />
             <OutputContainer />
             <Warning />
             <Transition

@@ -126,7 +126,7 @@ const PoolBody = ({
                     borderRadius: '4px',
                   }}
                   label={`Switch to ${
-                    chains.find((c) => c.id === pool.chainId).name
+                    chains.find((c) => c.id === pool.chainId)?.name
                   }`}
                   pendingLabel="Switching chains"
                   onClick={() =>

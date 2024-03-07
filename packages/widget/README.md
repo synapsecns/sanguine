@@ -120,6 +120,35 @@ const MyApp = () => {
 
 Note: Token naming convention is based on the tokens provided by `@synapsecns/widget`. For example, USDC on Metis is `METISUSDC` instead of simply `USDC`. The package's `src/constants/bridgeable.ts` file contains a detailed list of supported tokens and the chains they live on. Additionally, to see a detailed list of Synapse Protocol supported chains, please see `src/constants/chains.ts`.
 
+## useBridgeSelections Hook
+
+The widget also provides a `useBridgeSelections` hook that can be used to access the selected tokens and chains. This hook returns an object of type `BridgeSelections` which has fields of `originChain`, `originToken`, `destinationChain`, and `destinationToken`.
+
+`originChain` and `destinationChain` structure:
+
+```
+{
+  id,
+  name,
+}
+```
+
+`originToken` and `destinationToken` structure:
+
+```
+{
+  symbol,
+  address
+}
+```
+
+In the consumer app:
+
+```ts
+const { originChain, originToken, destinationChain, destinationToken } =
+  useBridgeSelections()
+```
+
 ## Theme Customization
 
 The widget is designed to be easily customized to match your app's theme. The widget accepts an optional `customTheme` configurable `bgColor` parameter for `'dark'`, `'light'`, and custom color modes:
