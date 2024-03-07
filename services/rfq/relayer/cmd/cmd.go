@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"flag"
 	"fmt"
 
 	"github.com/synapsecns/sanguine/core/commandline"
@@ -18,33 +17,29 @@ func Start(args []string, buildInfo config.BuildInfo) {
 	app.Description = buildInfo.VersionString() + "Synapse RFQ Relayer Server"
 	app.Usage = fmt.Sprintf("%s --help", buildInfo.Name())
 	app.EnableBashCompletion = true
+
 	// TODO: should we really halt boot on because of metrics?
 	app.Before = func(c *cli.Context) error {
+		fmt.Println("Running 'before' setup")
+		if c.Bool(cctpCmd.EmbeddedFlag.Name) {
+			fmt.Println("Running as embedded service")
+			app.Commands = append(app.Commands, cctpCmd.RunCommand)
+		} else {
+			fmt.Println("Not running as embedded service")
+		}
+
 		// nolint:wrapcheck
 		return metrics.Setup(c.Context, buildInfo)
 	}
 
-	// check the embedded flag here to see if we should
-	// include an embedded CCTP relayer command.
-	flagSet := flag.NewFlagSet("RFQFlagSet", flag.ContinueOnError)
-	embedded := flagSet.Bool(cctpCmd.EmbeddedFlag.Name, false, cctpCmd.EmbeddedFlag.DefaultText)
-	err := flagSet.Parse(args)
-	if err != nil {
-		panic(fmt.Errorf("could not parse flags: %w", err))
-	}
-
 	// commands
 	app.Commands = cli.Commands{runCommand}
-	fmt.Printf("Parsed embedded flag: %v\n", *embedded)
-	if *embedded {
-		fmt.Println("Including embedded CCTP relayer command")
-		app.Commands = append(app.Commands, cctpCmd.RunCommand)
-	}
+	fmt.Println("Created commands")
 	shellCommand := commandline.GenerateShellCommand(app.Commands)
 	app.Commands = append(app.Commands, shellCommand)
 	app.Action = shellCommand.Action
 
-	err = app.Run(args)
+	err := app.Run(args)
 	if err != nil {
 		panic(err)
 	}
