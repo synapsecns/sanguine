@@ -53,13 +53,12 @@ export const PoolActionOptions = ({
           >
             <div
               className={`
-                flex items-center
-                text-sm
-                rounded-sm
-                border border-[#565058]
+                flex items-center text-sm
+                rounded-sm border border-[#565058]
                 pl-2 pr-2 pt-1 pb-1 space-x-2
-                hover:cursor-pointer
-                hover:bg-[#101018] ${open ? 'bg-[#101018]' : ''}`}
+                hover:cursor-pointer hover:bg-[#101018]
+                ${open ? 'bg-[#101018]' : ''}
+              `}
             >
               <div className="text-md text-[#BFBCC2]">Actions</div>
               <DownArrow />

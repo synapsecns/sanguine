@@ -112,8 +112,6 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
     })()
   }, [deposit])
 
-  console.log('deposit.bi:', deposit.bi)
-
   return (
     <div className="flex-wrap space-y-2">
       <StakeCardTitle
