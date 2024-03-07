@@ -210,9 +210,14 @@ func (c *circleCCTPHandler) handleMessageSent(parentCtx context.Context, log *ty
 		return nil, fmt.Errorf("could not parse message sent: %w", err)
 	}
 
-	destChainID, err := parseDestChainID(messageSentEvent.Message)
+	destDomain, err := parseDestDomain(messageSentEvent.Message)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse destination chain from raw message")
+	}
+	span.SetAttributes(attribute.Int("dest_domain", int(destDomain)))
+	destChainID, err := circleDomainToChainID(destDomain, isTestnetChainID(chainID))
+	if err != nil {
+		return nil, fmt.Errorf("could not convert circle domain to chain ID: %w", err)
 	}
 
 	rawMsg := relayTypes.Message{
