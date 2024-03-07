@@ -5,6 +5,7 @@ import { getNetworkShadow } from '@/styles/chains'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { Transition } from '@headlessui/react'
 import { PORTFOLIO_ACCORDIAN_TRANSITION_PROPS } from '@/styles/transitions'
+
 type PortfolioAccordionProps = {
   header: React.ReactNode
   expandedProps: React.ReactNode

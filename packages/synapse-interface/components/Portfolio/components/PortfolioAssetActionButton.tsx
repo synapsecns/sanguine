@@ -1,5 +1,6 @@
 import { Token } from "@/utils/types"
 import { getBorderStyleForCoin } from "@/styles/tokens"
+
 type PortfolioAssetActionButtonProps = {
   token: Token
   selectCallback: () => void
