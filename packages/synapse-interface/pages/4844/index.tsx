@@ -42,7 +42,7 @@ const Countdown = () => {
           </div>
 
           <a
-            href="https://www.eip4844.com/"
+            href="https://synapse.mirror.xyz/N1dwTpAATINNsCqkXUrJlgYH5szUMBdi-6m8nApDf3I"
             target="_blank"
             className="flex flex-wrap items-center justify-center text-xl text-center text-white hover:text-synapsePurple"
           >
@@ -53,7 +53,7 @@ const Countdown = () => {
               </div>
               , trustless interchain
             </div>
-            <div className="flex items-center justify-center ml-1">
+            <div className="flex items-center justify-center ml-1 ">
               communication and settlement.
               <ExternalLinkIcon
                 height="20px"
