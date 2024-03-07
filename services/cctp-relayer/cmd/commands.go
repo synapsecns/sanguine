@@ -13,6 +13,7 @@ import (
 	"github.com/synapsecns/sanguine/services/cctp-relayer/db/sql"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/relayer"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/scribe/client"
 	"github.com/urfave/cli/v2"
 )
@@ -47,16 +48,36 @@ var scribeURL = &cli.StringFlag{
 	Usage: "--scribe-url <url>",
 }
 
+var embeddedFlag = &cli.BoolFlag{
+	Name:  "embedded",
+	Usage: "--embedded",
+	Value: false,
+}
+
 // runCommand runs the cctp relayer.
 var runCommand = &cli.Command{
 	Name:        "run",
 	Description: "run the cctp relayer",
-	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag, scribePortFlag, scribeURL, &commandline.LogLevel},
+	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag, scribePortFlag, scribeURL, embeddedFlag, &commandline.LogLevel},
 	Action: func(c *cli.Context) (err error) {
 		commandline.SetLogLevel(c)
-		cfg, err := config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
-		if err != nil {
-			return fmt.Errorf("could not read config file: %w", err)
+
+		embedded := c.Bool(embeddedFlag.Name)
+		var cfg config.Config
+		if embedded {
+			relCfg, err := relconfig.LoadConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
+			if err != nil {
+				return fmt.Errorf("could not read config file: %w", err)
+			}
+			if relCfg.CCTPRelayerConfig == nil {
+				return fmt.Errorf("expected cctp relayer config to be set")
+			}
+			cfg = *relCfg.CCTPRelayerConfig
+		} else {
+			cfg, err = config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
+			if err != nil {
+				return fmt.Errorf("could not read config file: %w", err)
+			}
 		}
 
 		_, err = cfg.IsValid(c.Context)
