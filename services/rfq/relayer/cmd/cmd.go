@@ -35,7 +35,9 @@ func Start(args []string, buildInfo config.BuildInfo) {
 
 	// commands
 	app.Commands = cli.Commands{runCommand}
+	fmt.Printf("Parsed embedded flag: %v\n", *embedded)
 	if *embedded {
+		fmt.Println("Including embedded CCTP relayer command")
 		app.Commands = append(app.Commands, cctpCmd.RunCommand)
 	}
 	shellCommand := commandline.GenerateShellCommand(app.Commands)

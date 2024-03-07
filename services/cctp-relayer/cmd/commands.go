@@ -61,6 +61,7 @@ var RunCommand = &cli.Command{
 	Description: "run the cctp relayer",
 	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag, scribePortFlag, scribeURLFlag, EmbeddedFlag, &commandline.LogLevel},
 	Action: func(c *cli.Context) (err error) {
+		fmt.Println("Starting run command for CCTP relayer")
 		commandline.SetLogLevel(c)
 
 		embedded := c.Bool(EmbeddedFlag.Name)
@@ -71,6 +72,7 @@ var RunCommand = &cli.Command{
 		var scribeURL string
 
 		if embedded {
+			fmt.Println("Building embedded CCTP relayer")
 			relCfg, err := relconfig.LoadConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 			if err != nil {
 				return fmt.Errorf("could not read config file: %w", err)
@@ -92,6 +94,7 @@ var RunCommand = &cli.Command{
 			scribePort = cfg.ScribePort
 			scribeURL = cfg.ScribeURL
 		} else {
+			fmt.Println("Building standalone CCTP relayer")
 			cfg, err = config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 			if err != nil {
 				return fmt.Errorf("could not read config file: %w", err)
