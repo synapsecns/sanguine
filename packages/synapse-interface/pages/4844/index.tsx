@@ -11,7 +11,7 @@ const Countdown = () => {
 
   return (
     <LandingPageWrapper>
-      <section className="flex flex-col items-center justify-center pt-20 pb-32 space-y-16 text-center">
+      <section className="flex flex-col items-center justify-center pt-24 pb-32 space-y-16 text-center">
         <div className="text-5xl text-white">Countdown to Dencun Upgrade</div>
 
         <div className="flex space-x-3 text-center text-synapsePurple">
