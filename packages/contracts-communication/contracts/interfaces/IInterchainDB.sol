@@ -22,8 +22,11 @@ interface IInterchainDB {
     }
 
     error InterchainDB__BatchDoesNotExist(uint256 dbNonce);
+    error InterchainDB__BatchNotFinalized(uint256 dbNonce);
     error InterchainDB__ConflictingEntries(bytes32 existingEntryValue, InterchainEntry newEntry);
+    error InterchainDB__EntryIndexOutOfRange(uint256 dbNonce, uint64 entryIndex, uint64 batchSize);
     error InterchainDB__IncorrectFeeAmount(uint256 actualFee, uint256 expectedFee);
+    error InterchainDB__InvalidEntryRange(uint256 dbNonce, uint64 start, uint64 end);
     error InterchainDB__NoModulesSpecified();
     error InterchainDB__SameChainId(uint256 chainId);
 
