@@ -43,7 +43,7 @@ var scribePortFlag = &cli.UintFlag{
 	Value: 0,
 }
 
-var scribeURL = &cli.StringFlag{
+var scribeURLFlag = &cli.StringFlag{
 	Name:  "scribe-url",
 	Usage: "--scribe-url <url>",
 }
@@ -59,7 +59,7 @@ var EmbeddedFlag = &cli.BoolFlag{
 var RunCommand = &cli.Command{
 	Name:        "run",
 	Description: "run the cctp relayer",
-	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag, scribePortFlag, scribeURL, EmbeddedFlag, &commandline.LogLevel},
+	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag, scribePortFlag, scribeURLFlag, EmbeddedFlag, &commandline.LogLevel},
 	Action: func(c *cli.Context) (err error) {
 		commandline.SetLogLevel(c)
 
@@ -67,6 +67,9 @@ var RunCommand = &cli.Command{
 		var cfg config.Config
 		var dbTypeFromString dbcommon.DBType
 		var path string
+		var scribePort uint
+		var scribeURL string
+
 		if embedded {
 			relCfg, err := relconfig.LoadConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 			if err != nil {
@@ -86,6 +89,8 @@ var RunCommand = &cli.Command{
 			if len(path) == 0 {
 				return fmt.Errorf("expected database dsn to be set")
 			}
+			scribePort = cfg.ScribePort
+			scribeURL = cfg.ScribeURL
 		} else {
 			cfg, err = config.DecodeConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
 			if err != nil {
@@ -97,6 +102,8 @@ var RunCommand = &cli.Command{
 			}
 
 			path = core.ExpandOrReturnPath(c.String(pathFlag.Name))
+			scribePort = c.Uint(scribePortFlag.Name)
+			scribeURL = c.String(scribeURLFlag.Name)
 		}
 
 		_, err = cfg.IsValid(c.Context)
@@ -111,7 +118,7 @@ var RunCommand = &cli.Command{
 			return fmt.Errorf("could not connect to database: %w", err)
 		}
 
-		scribeClient := client.NewRemoteScribe(uint16(c.Uint(scribePortFlag.Name)), c.String(scribeURL.Name), metricsProvider).ScribeClient
+		scribeClient := client.NewRemoteScribe(uint16(scribePort), scribeURL, metricsProvider).ScribeClient
 		omnirpcClient := omniClient.NewOmnirpcClient(cfg.BaseOmnirpcURL, metricsProvider, omniClient.WithCaptureReqRes())
 		attAPI := attestation.NewCircleAPI(c.String(cfg.CircleAPIURl))
 

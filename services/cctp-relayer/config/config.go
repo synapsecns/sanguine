@@ -32,6 +32,10 @@ type Config struct {
 	// The format is "https://omnirpc.url/". Notice the lack of "confirmations" on the URL
 	// in comparison to what `Scribe` uses.
 	BaseOmnirpcURL string `yaml:"base_omnirpc_url"`
+	// ScribePort is the port for the scribe server.
+	ScribePort uint `yaml:"scribe_port"`
+	// ScribeURL is the URL for the scribe server.
+	ScribeURL string `yaml:"scribe_url"`
 	// Signer contains the unbonded signer config for agents
 	// (this is signer used to submit transactions)
 	Signer ethConfig.SignerConfig `yaml:"unbonded_signer"`
