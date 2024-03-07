@@ -4,12 +4,16 @@ import "fmt"
 
 // TODO: this file can be moved to somewhere common
 
-// Mainnet chain IDs
+// Mainnet chain IDs.
+//
+//nolint:deadcode
 const ethereumChainID = 1
 const optimismChainID = 10
 const arbitrumChainID = 42161
 
-// Testnet chain IDs
+// Testnet chain IDs.
+//
+//nolint:deadcode
 const sepoliaChainID = 11155111
 const opSepoliaChainID = 11155420
 const arbitrumSepoliaChainID = 421614
