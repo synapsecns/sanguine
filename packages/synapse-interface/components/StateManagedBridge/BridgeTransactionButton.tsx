@@ -111,7 +111,7 @@ export const BridgeTransactionButton = ({
       onClick: null,
     }
   } else if (
-    !isLoading &&
+    bridgeQuote?.destQuery &&
     bridgeQuote?.feeAmount === 0n &&
     fromValueBigInt > 0
   ) {
@@ -143,7 +143,7 @@ export const BridgeTransactionButton = ({
       onClick: () => switchNetwork(fromChainId),
       pendingLabel: 'Switching chains',
     }
-  } else if (!isApproved) {
+  } else if (!isApproved && fromValueBigInt > 0 && bridgeQuote?.destQuery) {
     buttonProperties = {
       onClick: approveTxn,
       label: `Approve ${fromToken?.symbol}`,
