@@ -11,7 +11,7 @@ const Countdown = () => {
 
   return (
     <LandingPageWrapper>
-      <section className="flex flex-col items-center justify-center py-16 space-y-16 text-center">
+      <section className="flex flex-col items-center justify-center pt-20 pb-32 space-y-16 text-center">
         <div className="text-5xl text-white">Countdown to Dencun Upgrade</div>
 
         <div className="flex space-x-3 text-center text-synapsePurple">
@@ -36,7 +36,7 @@ const Countdown = () => {
           </div>
         </div>
 
-        <div className="space-y-5 max-w-[56rem]">
+        <div className="space-y-8 max-w-[56rem]">
           <div className="flex flex-wrap items-center justify-center space-x-2 text-xl text-center text-white">
             Upgrade occurring at Beacon Slot 8626176.
           </div>
