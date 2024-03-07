@@ -27,7 +27,7 @@ func Start(args []string, buildInfo config.BuildInfo) {
 	// check the embedded flag here to see if we should
 	// include an embedded CCTP relayer command.
 	flagSet := flag.NewFlagSet("RFQFlagSet", flag.ContinueOnError)
-	embedded := flagSet.Bool("embedded", false, "whether to run an embedded CCTP relayer")
+	embedded := flagSet.Bool(cctpCmd.EmbeddedFlag.Name, false, cctpCmd.EmbeddedFlag.DefaultText)
 	err := flagSet.Parse(args)
 	if err != nil {
 		panic(fmt.Errorf("could not parse flags: %w", err))

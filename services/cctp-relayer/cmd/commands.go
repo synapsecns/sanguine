@@ -48,7 +48,8 @@ var scribeURL = &cli.StringFlag{
 	Usage: "--scribe-url <url>",
 }
 
-var embeddedFlag = &cli.BoolFlag{
+// EmbeddedFlag is a flag to run the cctp relayer as an embedded service.
+var EmbeddedFlag = &cli.BoolFlag{
 	Name:  "embedded",
 	Usage: "--embedded",
 	Value: false,
@@ -62,7 +63,7 @@ var RunCommand = &cli.Command{
 	Action: func(c *cli.Context) (err error) {
 		commandline.SetLogLevel(c)
 
-		embedded := c.Bool(embeddedFlag.Name)
+		embedded := c.Bool(EmbeddedFlag.Name)
 		var cfg config.Config
 		if embedded {
 			relCfg, err := relconfig.LoadConfig(core.ExpandOrReturnPath(c.String(configFlag.Name)))
