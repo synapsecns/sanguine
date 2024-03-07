@@ -95,6 +95,8 @@ abstract contract Deployer is ChainAwareReader, Logger {
     {
         bytes memory initCode = getInitCode(contractName, constructorArgs);
         bytes32 salt = getDeploymentSalt();
+        // Print init code hash for potential vanity address mining
+        printLogWithIndent(StringUtils.concat("Init code hash: ", vm.toString(keccak256(initCode))));
         printLogWithIndent(StringUtils.concat("Using salt: ", vm.toString(salt)));
         deployedAt = factoryDeployCreate2(getCreate2Factory(), initCode, getDeploymentSalt());
         // Erase single-use salt

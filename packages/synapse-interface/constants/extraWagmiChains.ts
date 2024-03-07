@@ -279,3 +279,43 @@ export const base = {
     },
   },
 } as const satisfies Chain
+
+// TODO: Update for mainnet params
+export const blast = {
+  id: 81457,
+  name: 'Blast',
+  network: 'blast',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Ether',
+    symbol: 'ETH',
+  },
+  rpcUrls: {
+    default: {
+      http: [
+        'https://lingering-indulgent-replica.blast-mainnet.quiknode.pro/6667a8f4be701cb6549b415d567bc706fb2f13a8',
+      ],
+    },
+    public: {
+      http: [
+        'https://lingering-indulgent-replica.blast-mainnet.quiknode.pro/6667a8f4be701cb6549b415d567bc706fb2f13a8',
+      ],
+    },
+  },
+  blockExplorers: {
+    default: {
+      name: 'Blastscan',
+      url: 'https://blastscan.io',
+    },
+    etherscan: {
+      name: 'Blastscan',
+      url: 'https://blastscan.io',
+    },
+  },
+  contracts: {
+    multicall3: {
+      address: '0xca11bde05977b3631167028862be2a173976ca11',
+      blockCreated: 88189,
+    },
+  },
+} as const satisfies Chain

@@ -3,15 +3,16 @@ package screener
 import (
 	"encoding/csv"
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/gocarina/gocsv"
 	"github.com/synapsecns/sanguine/contrib/screener-api/config"
 	"github.com/synapsecns/sanguine/contrib/screener-api/screener/internal"
-	"os"
-	"strings"
 )
 
-func setupScreener(rulesets map[string]config.RulesetConfig) (internal.RulesetManager, error) {
-	mgr := internal.NewRulesetManager(map[string]map[string]bool{})
+func setupScreener(rulesets map[string]config.RulesetConfig) (mgr internal.RulesetManager, err error) {
+	mgr = internal.NewRulesetManager(map[string]map[string]bool{})
 	for csvName, cfg := range rulesets {
 		csvPath := cfg.Filename
 		parsedCsv, err := parseCsv(csvPath)

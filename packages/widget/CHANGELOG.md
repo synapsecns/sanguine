@@ -3,6 +3,57 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.1.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.0.64...@synapsecns/widget@0.1.0) (2024-03-06)
+
+
+### Features
+
+* **widget:** adds useBridgeSelections helper for consumer selection awareness ([#2217](https://github.com/synapsecns/sanguine/issues/2217)) ([febdab8](https://github.com/synapsecns/sanguine/commit/febdab8ca35494f52099f63f4b83d4901edcf767))
+
+
+
+
+
+## [0.0.64](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.0.63...@synapsecns/widget@0.0.64) (2024-03-04)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.0.63](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.0.62...@synapsecns/widget@0.0.63) (2024-03-01)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.0.62](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.0.61...@synapsecns/widget@0.0.62) (2024-03-01)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.0.61](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.0.60...@synapsecns/widget@0.0.61) (2024-03-01)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.0.60](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.0.59...@synapsecns/widget@0.0.60) (2024-03-01)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
 ## [0.0.59](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.0.58...@synapsecns/widget@0.0.59) (2024-02-22)
 
 **Note:** Version bump only for package @synapsecns/widget
