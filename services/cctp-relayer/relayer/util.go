@@ -10,15 +10,16 @@ import (
 // destinationDomainIndex is the index of the destination domain in the formatted CCTP message.
 const destinationDomainIndex = 8
 
-// senderIndex is the index of the sender in the formatted CCTP message.
-const senderIndex = 20
+// recipientIndex is the index of the recipient in the formatted CCTP message.
+// Note that we add 12 since eth address is only 10 bytes and have placeholder for 32.
+const recipientIndex = 52 + 12
 
 func parseDestDomain(message []byte) (uint32, error) {
 	return indexUint32(message, destinationDomainIndex, 4)
 }
 
-func parseSender(message []byte) (common.Address, error) {
-	return indexAddress(message, senderIndex)
+func parseRecipient(message []byte) (common.Address, error) {
+	return indexAddress(message, recipientIndex)
 }
 
 // indexUint32 parses an unsigned 32-bit integer from a byte slice starting at index with a specified length in bytes.
