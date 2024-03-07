@@ -47,6 +47,7 @@ import * as CHAINS from '@/constants/chains/master'
 // Priority ranks:
 // 100-102: Major stablecoins (native USDC, USDT, DAI)
 // 105: ETH
+// 106-109: Chain's core stablecoin
 // 110: nUSD
 // 115: nETH
 // 120: SYN
@@ -446,7 +447,7 @@ export const METISUSDC = new Token({
   logo: usdcLogo,
   swapableType: 'USD',
   color: 'blue',
-  priorityRank: 125,
+  priorityRank: 109,
   routeSymbol: 'm.USDC',
 })
 
