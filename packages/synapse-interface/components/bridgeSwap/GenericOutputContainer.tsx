@@ -17,7 +17,7 @@ export const GenericOutputContainer = ({
     <div className="mt-[1.125rem] p-md text-left rounded-md bg-bgBase/10 ring-1 ring-white/10">
       {chainSelector &&
         <div className="flex items-center justify-between mb-3">
-            {chainSelector}
+          {chainSelector}
         </div>
       }
       <div className="flex h-16 space-x-2" /**was mb-2 on out */>
