@@ -23,12 +23,12 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     // ═══════════════════════════════════════════════ WRITER-FACING ═══════════════════════════════════════════════════
 
     /// @inheritdoc IInterchainDB
-    function writeEntry(bytes32 dataHash) external returns (uint256 dbNonce) {
+    function writeEntry(bytes32 dataHash) external returns (uint256 dbNonce, uint64 entryIndex) {
         return _writeEntry(dataHash);
     }
 
     /// @inheritdoc IInterchainDB
-    function requestVerification(
+    function requestBatchVerification(
         uint256 dstChainId,
         uint256 dbNonce,
         address[] calldata srcModules
@@ -42,11 +42,6 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     }
 
     /// @inheritdoc IInterchainDB
-    function verifyRemoteBatch(InterchainBatch memory batch) external {
-        // TODO: implement
-    }
-
-    /// @inheritdoc IInterchainDB
     function writeEntryWithVerification(
         uint256 dstChainId,
         bytes32 dataHash,
@@ -55,7 +50,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         external
         payable
         onlyRemoteChainId(dstChainId)
-        returns (uint256 dbNonce)
+        returns (uint256 dbNonce, uint64 entryIndex)
     {
         dbNonce = _writeEntry(dataHash);
         // TODO: entryIndex
@@ -67,6 +62,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
 
     /// @inheritdoc IInterchainDB
     function verifyEntry(InterchainEntry memory entry) external onlyRemoteChainId(entry.srcChainId) {
+        // TODO: deprecated
         bytes32 entryKey = InterchainEntryLib.entryKey(entry);
         bytes32 entryValue = InterchainEntryLib.entryValue(entry);
         RemoteEntry memory existingEntry = _remoteEntries[msg.sender][entryKey];
@@ -83,7 +79,38 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         }
     }
 
+    /// @inheritdoc IInterchainDB
+    function verifyRemoteBatch(InterchainBatch memory batch) external {
+        // TODO: implement
+    }
+
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
+    /// @inheritdoc IInterchainDB
+    function getBatchLeafs(uint256 dbNonce) external view returns (bytes32[] memory) {}
+
+    /// @inheritdoc IInterchainDB
+    function getBatchLeafsPaginated(
+        uint256 dbNonce,
+        uint64 start,
+        uint64 end
+    )
+        external
+        view
+        returns (bytes32[] memory)
+    {
+        // TODO: implement
+    }
+
+    /// @inheritdoc IInterchainDB
+    function getBatchSize(uint256 dbNonce) external view returns (uint64) {
+        // TODO: implement
+    }
+
+    /// @inheritdoc IInterchainDB
+    function getEntryProof(uint256 dbNonce, uint64 entryIndex) external view returns (bytes32[] memory proof) {
+        // TODO: implement
+    }
 
     /// @inheritdoc IInterchainDB
     function readEntry(
@@ -95,6 +122,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         onlyRemoteChainId(entry.srcChainId)
         returns (uint256 moduleVerifiedAt)
     {
+        // TODO: deprecated
         RemoteEntry memory remoteEntry = _remoteEntries[dstModule][InterchainEntryLib.entryKey(entry)];
         bytes32 entryValue = InterchainEntryLib.entryValue(entry);
         // Check entry value against the one verified by the module
@@ -112,7 +140,25 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     }
 
     /// @inheritdoc IInterchainDB
-    function getEntry(uint256 dbNonce) public view returns (InterchainEntry memory) {
+    function checkVerification(
+        address dstModule,
+        InterchainEntry memory entry,
+        bytes32[] memory proof
+    )
+        external
+        view
+        returns (uint256 moduleVerifiedAt)
+    {
+        // TODO: implement
+    }
+
+    /// @inheritdoc IInterchainDB
+    function getBatch(uint256 dbNonce) public view returns (InterchainBatch memory) {
+        // TODO: implement
+    }
+
+    /// @inheritdoc IInterchainDB
+    function getEntry(uint256 dbNonce, uint64 entryIndex) public view returns (InterchainEntry memory) {
         if (getDBNonce() <= dbNonce) {
             revert InterchainDB__EntryDoesNotExist(dbNonce);
         }
@@ -128,8 +174,9 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
     /// @dev Write the entry to the database and emit the event.
-    function _writeEntry(bytes32 dataHash) internal returns (uint256 dbNonce) {
+    function _writeEntry(bytes32 dataHash) internal returns (uint256 dbNonce, uint64 entryIndex) {
         dbNonce = _entries.length;
+        // TODO: entryIndex
         _entries.push(LocalEntry(msg.sender, dataHash));
         emit InterchainEntryWritten(block.chainid, dbNonce, TypeCasts.addressToBytes32(msg.sender), dataHash);
     }

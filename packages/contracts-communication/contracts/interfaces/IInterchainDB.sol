@@ -75,6 +75,8 @@ interface IInterchainDB {
     /// @param batch        The Interchain Batch to confirm
     function verifyRemoteBatch(InterchainBatch memory batch) external;
 
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
     /// @notice Get the fee for writing data to the Interchain DataBase, and verifying it on the destination chain
     /// using the provided Interchain Modules.
     /// @dev Will revert if the empty array of modules is provided.
