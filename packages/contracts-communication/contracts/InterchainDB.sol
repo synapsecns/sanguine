@@ -120,22 +120,6 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         return new bytes32[](0);
     }
 
-    function readEntry(
-        address dstModule,
-        InterchainEntry memory entry
-    )
-        external
-        view
-        onlyRemoteChainId(entry.srcChainId)
-        returns (uint256 moduleVerifiedAt)
-    {
-        // TODO: deprecated
-        RemoteEntry memory remoteEntry = _remoteEntries[dstModule][InterchainEntryLib.entryKey(entry)];
-        bytes32 entryValue = InterchainEntryLib.entryValue(entry);
-        // Check entry value against the one verified by the module
-        return remoteEntry.entryValue == entryValue ? remoteEntry.verifiedAt : 0;
-    }
-
     /// @inheritdoc IInterchainDB
     function getInterchainFee(uint256 dstChainId, address[] calldata srcModules) external view returns (uint256 fee) {
         (, fee) = _getModuleFees(dstChainId, getDBNonce(), srcModules);
@@ -152,13 +136,21 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     function checkVerification(
         address dstModule,
         InterchainEntry memory entry,
-        bytes32[] memory proof
+        bytes32[] calldata proof
     )
         external
         view
         returns (uint256 moduleVerifiedAt)
     {
-        // TODO: implement
+        // In "no batching" mode: the batch root is the same as the entry hash, hence the proof is empty
+        if (proof.length != 0) {
+            // If proof is not empty, the batch root is not verified
+            return 0;
+        }
+        RemoteEntry memory remoteEntry = _remoteEntries[dstModule][InterchainEntryLib.entryKey(entry)];
+        bytes32 entryValue = InterchainEntryLib.entryValue(entry);
+        // Check entry value against the one verified by the module
+        return remoteEntry.entryValue == entryValue ? remoteEntry.verifiedAt : 0;
     }
 
     /// @inheritdoc IInterchainDB
