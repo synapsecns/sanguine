@@ -110,7 +110,7 @@ export const tokenAddressToToken = (
     if (tokenAddress === WETH.addresses[chainId]) {
       return WETH
     } else {
-      const token = BRIDGABLE_TOKENS[chainId].find((token: Token) => {
+      const token = BRIDGABLE_TOKENS[chainId]?.find((token: Token) => {
         return token.addresses[chainId] === tokenAddress
       })
       return token
