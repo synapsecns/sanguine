@@ -54,8 +54,8 @@ var embeddedFlag = &cli.BoolFlag{
 	Value: false,
 }
 
-// runCommand runs the cctp relayer.
-var runCommand = &cli.Command{
+// RunCommand runs the cctp relayer.
+var RunCommand = &cli.Command{
 	Name:        "run",
 	Description: "run the cctp relayer",
 	Flags:       []cli.Flag{configFlag, dbFlag, pathFlag, scribePortFlag, scribeURL, embeddedFlag, &commandline.LogLevel},
