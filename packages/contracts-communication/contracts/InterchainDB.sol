@@ -5,7 +5,7 @@ import {InterchainDBEvents} from "./events/InterchainDBEvents.sol";
 import {IInterchainDB} from "./interfaces/IInterchainDB.sol";
 import {IInterchainModule} from "./interfaces/IInterchainModule.sol";
 
-import {InterchainBatch} from "./libs/InterchainBatch.sol";
+import {InterchainBatch, InterchainBatchLib} from "./libs/InterchainBatch.sol";
 import {InterchainEntry, InterchainEntryLib} from "./libs/InterchainEntry.sol";
 import {TypeCasts} from "./libs/TypeCasts.sol";
 
@@ -37,8 +37,8 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         payable
         onlyRemoteChainId(dstChainId)
     {
-        InterchainEntry memory entry = getEntry(dbNonce);
-        _requestVerification(dstChainId, entry, srcModules);
+        InterchainBatch memory batch = getBatch(dbNonce);
+        _requestVerification(dstChainId, batch, srcModules);
     }
 
     /// @inheritdoc IInterchainDB
@@ -53,11 +53,9 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         returns (uint256 dbNonce, uint64 entryIndex)
     {
         (dbNonce, entryIndex) = _writeEntry(dataHash);
-        // forgefmt: disable-next-item
-        InterchainEntry memory entry = InterchainEntryLib.constructLocalEntry(
-            dbNonce, entryIndex, msg.sender, dataHash
-        );
-        _requestVerification(dstChainId, entry, srcModules);
+        // In "no batching" mode, the batch root is the same as the entry hash
+        InterchainBatch memory batch = InterchainBatchLib.constructLocalBatch(dbNonce, dataHash);
+        _requestVerification(dstChainId, batch, srcModules);
     }
 
     // ═══════════════════════════════════════════════ MODULE-FACING ═══════════════════════════════════════════════════
@@ -187,23 +185,21 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     /// Note: the validity of the passed entry and chain id being remote is enforced in the calling function.
     function _requestVerification(
         uint256 dstChainId,
-        InterchainEntry memory entry,
+        InterchainBatch memory batch,
         address[] calldata srcModules
     )
         internal
     {
-        (uint256[] memory fees, uint256 totalFee) = _getModuleFees(dstChainId, entry.dbNonce, srcModules);
+        (uint256[] memory fees, uint256 totalFee) = _getModuleFees(dstChainId, batch.dbNonce, srcModules);
+        // TODO: handle the case where fees are overpaid
         if (msg.value != totalFee) {
             revert InterchainDB__IncorrectFeeAmount(msg.value, totalFee);
         }
         uint256 len = srcModules.length;
         for (uint256 i = 0; i < len; ++i) {
-            // TODO: proper requestBatchVerification
-            IInterchainModule(srcModules[i]).requestBatchVerification{value: fees[i]}(
-                dstChainId, InterchainBatch({srcChainId: block.chainid, dbNonce: entry.dbNonce, batchRoot: 0})
-            );
+            IInterchainModule(srcModules[i]).requestBatchVerification{value: fees[i]}(dstChainId, batch);
         }
-        emit InterchainVerificationRequested(dstChainId, entry.dbNonce, srcModules);
+        emit InterchainBatchVerificationRequested(dstChainId, batch.dbNonce, batch.batchRoot, srcModules);
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════

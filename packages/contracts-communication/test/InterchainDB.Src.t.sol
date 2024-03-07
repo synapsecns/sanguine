@@ -90,10 +90,12 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     }
 
     function getModuleCalldata(InterchainEntry memory entry) internal pure returns (bytes memory) {
-        // TODO: proper requestBatchVerification
         return abi.encodeCall(
             IInterchainModule.requestBatchVerification,
-            (DST_CHAIN_ID, InterchainBatch({srcChainId: entry.srcChainId, dbNonce: entry.dbNonce, batchRoot: 0}))
+            (
+                DST_CHAIN_ID,
+                InterchainBatch({srcChainId: entry.srcChainId, dbNonce: entry.dbNonce, batchRoot: entry.dataHash})
+            )
         );
     }
 
