@@ -35,4 +35,16 @@ contract InterchainBatchLibTest is Test {
         InterchainBatch memory actual = libHarness.constructLocalBatch(dbNonce, batchRoot);
         assertEq(actual, expected);
     }
+
+    function test_batchKey() public {
+        bytes32 expected = keccak256(abi.encode(1, 2));
+        bytes32 actual = libHarness.batchKey(mockBatch);
+        assertEq(actual, expected);
+    }
+
+    function test_batchKey(InterchainBatch memory batch) public {
+        bytes32 expected = keccak256(abi.encode(batch.srcChainId, batch.dbNonce));
+        bytes32 actual = libHarness.batchKey(batch);
+        assertEq(actual, expected);
+    }
 }

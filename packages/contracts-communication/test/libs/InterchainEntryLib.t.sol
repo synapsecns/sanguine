@@ -79,4 +79,14 @@ contract InterchainEntryLibTest is Test {
         bytes32 expected = keccak256(abi.encode(entry.srcWriter, entry.dataHash));
         assertEq(libHarness.entryValue(entry), expected);
     }
+
+    function test_batchKey() public {
+        bytes32 expected = keccak256(abi.encode(1, 2));
+        assertEq(libHarness.batchKey(mockEntry), expected);
+    }
+
+    function test_batchKey(InterchainEntry memory entry) public {
+        bytes32 expected = keccak256(abi.encode(entry.srcChainId, entry.dbNonce));
+        assertEq(libHarness.batchKey(entry), expected);
+    }
 }

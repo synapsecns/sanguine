@@ -24,4 +24,8 @@ contract InterchainEntryLibHarness {
     function entryValue(InterchainEntry memory entry) external pure returns (bytes32) {
         return InterchainEntryLib.entryValue(entry);
     }
+
+    function batchKey(InterchainEntry memory entry) external pure returns (bytes32) {
+        return InterchainEntryLib.batchKey(entry);
+    }
 }

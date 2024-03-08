@@ -7,4 +7,8 @@ contract InterchainBatchLibHarness {
     function constructLocalBatch(uint256 dbNonce, bytes32 batchRoot) external view returns (InterchainBatch memory) {
         return InterchainBatchLib.constructLocalBatch(dbNonce, batchRoot);
     }
+
+    function batchKey(InterchainBatch memory batch) external pure returns (bytes32) {
+        return InterchainBatchLib.batchKey(batch);
+    }
 }

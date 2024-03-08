@@ -3,6 +3,9 @@ pragma solidity ^0.8.0;
 
 /// @notice Struct representing a batch of entries in the Interchain DataBase.
 /// Batched entries are put together in a Merkle tree, which root is saved.
+/// Batch has a globally unique identifier (key) and a value.
+/// - key: srcChainId + dbNonce
+/// - value: batchRoot
 /// @param srcChainId   The chain id of the source chain
 /// @param dbNonce      The database nonce of the batch
 /// @param batchRoot    The root of the Merkle tree containing the batched entries
@@ -27,5 +30,10 @@ library InterchainBatchLib {
         returns (InterchainBatch memory batch)
     {
         return InterchainBatch({srcChainId: block.chainid, dbNonce: dbNonce, batchRoot: batchRoot});
+    }
+
+    /// @notice Returns the globally unique identifier of the batch
+    function batchKey(InterchainBatch memory batch) internal pure returns (bytes32) {
+        return keccak256(abi.encode(batch.srcChainId, batch.dbNonce));
     }
 }

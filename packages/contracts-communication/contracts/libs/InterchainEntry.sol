@@ -55,4 +55,9 @@ library InterchainEntryLib {
     function entryValue(InterchainEntry memory entry) internal pure returns (bytes32) {
         return keccak256(abi.encode(entry.srcWriter, entry.dataHash));
     }
+
+    /// @notice Returns the globally unique identifier of the batch containing the entry
+    function batchKey(InterchainEntry memory entry) internal pure returns (bytes32) {
+        return keccak256(abi.encode(entry.srcChainId, entry.dbNonce));
+    }
 }
