@@ -1,6 +1,7 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { Address } from '@wagmi/core'
-
+import { useAppDispatch } from '@/store/hooks'
+import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
 import { usePendingTxWrapper } from '@/utils/hooks/usePendingTxWrapper'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { getStakedBalance } from '@/utils/actions/getStakedBalance'
@@ -10,19 +11,17 @@ import { withdrawStake } from '@/utils/actions/withdrawStake'
 import { getTokenOnChain } from '@/utils/hooks/useTokenInfo'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import { claimStake } from '@/utils/actions/claimStake'
+import { formatBigIntToString } from '@/utils/bigint/format'
+import { stringToBigInt } from '@/utils/bigint/format'
 import { Token } from '@/utils/types'
-
+import { InteractiveInputRowButton } from '@/components/InteractiveInputRowButton'
 import ButtonLoadingDots from '@/components/buttons/ButtonLoadingDots'
 import InteractiveInputRow from '@/components/InteractiveInputRow'
 import Button from '@/components/ui/tailwind/Button'
-
-import StakeCardTitle from './StakeCardTitle'
-import { formatBigIntToString } from '@/utils/bigint/format'
-import { stringToBigInt } from '@/utils/bigint/format'
-import InfoSectionCard from '../pool/PoolInfoSection/InfoSectionCard'
-import Tabs from '@/components/ui/tailwind/Tabs'
 import TabItem from '@/components/ui/tailwind/TabItem'
-import { InteractiveInputRowButton } from '@/components/InteractiveInputRowButton'
+import Tabs from '@/components/ui/tailwind/Tabs'
+import InfoSectionCard from '../pool/PoolInfoSection/InfoSectionCard'
+import StakeCardTitle from './StakeCardTitle'
 
 interface StakeCardProps {
   address: string
@@ -31,6 +30,7 @@ interface StakeCardProps {
 }
 
 const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
+  const dispatch = useAppDispatch()
   const tokenInfo = getTokenOnChain(chainId, pool)
   const stakingPoolLabel: string = tokenInfo?.poolName
   const stakingPoolTokens: Token[] = tokenInfo?.poolTokens
@@ -52,63 +52,71 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
     amount: 0n,
     reward: 0n,
   })
-  const [tx, setTx] = useState(undefined)
   const miniChefAddress = pool.miniChefAddress
+
+  const resetUserStakeData = () => {
+    setUserStakeData({
+      amount: 0n,
+      reward: 0n,
+    })
+  }
+
+  const getUserStakedBalance = async (
+    address: Address,
+    stakingPoolId: number,
+    pool: Token
+  ) => {
+    try {
+      const data = await getStakedBalance(
+        address as Address,
+        pool.chainId,
+        stakingPoolId,
+        pool
+      )
+      setUserStakeData(data)
+    } catch (err) {
+      console.error('Error fetching user staked balance:', err)
+    }
+  }
+
+  const getUserLpTokenAllowance = async (
+    address: Address,
+    chainId: number,
+    pool: Token
+  ) => {
+    try {
+      const tkAllowance = await getTokenAllowance(
+        miniChefAddress as Address,
+        pool.addresses[chainId] as Address,
+        address as Address,
+        chainId
+      )
+      setAllowance(tkAllowance)
+    } catch (err) {
+      console.error('Error fetching user LP token allowance:', err)
+    }
+  }
 
   useEffect(() => {
     if (!address || !chainId || stakingPoolId === null) {
-      setUserStakeData({
-        amount: 0n,
-        reward: 0n,
-      })
+      resetUserStakeData()
       return
     }
-    getStakedBalance(address as Address, pool.chainId, stakingPoolId, pool)
-      .then((data) => {
-        setUserStakeData(data)
-      })
-      .catch((err) => {
-        console.log(err)
-      })
+    getUserStakedBalance(address as Address, stakingPoolId, pool)
   }, [address, chainId, stakingPoolId])
 
   useEffect(() => {
     if (!address) {
-      setUserStakeData({
-        amount: 0n,
-        reward: 0n,
-      })
+      resetUserStakeData()
       return
     }
-    ;(async () => {
-      const tkAllowance = await getTokenAllowance(
-        miniChefAddress as Address,
-        pool.addresses[chainId] as Address,
-        address as Address,
-        chainId
-      )
-      setAllowance(tkAllowance)
-      getStakedBalance(address as Address, pool.chainId, stakingPoolId, pool)
-        .then((data) => {
-          setUserStakeData(data)
-        })
-        .catch((err) => {
-          console.log(err)
-        })
-    })()
+    getUserLpTokenAllowance(address as Address, chainId, pool)
+    getUserStakedBalance(address as Address, stakingPoolId, pool)
   }, [lpTokenBalance])
 
   useEffect(() => {
     if (!address) return
-    ;(async () => {
-      const tkAllowance = await getTokenAllowance(
-        miniChefAddress as Address,
-        pool.addresses[chainId] as Address,
-        address as Address,
-        chainId
-      )
-      setAllowance(tkAllowance)
-    })()
+    getUserLpTokenAllowance(address as Address, chainId, pool)
   }, [deposit])
 
   return (
@@ -164,16 +172,23 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
              bg-[#564f58]
               w-full my-2 px-4 py-3 tracking-wide
               rounded-sm
-              border border-transparent 
-              hover:border-[#AC8FFF] 
+              border border-transparent
+              hover:border-[#AC8FFF]
               disabled:opacity-100
               disabled:from-bgLight disabled:to-bgLight
             `}
-            onClick={() =>
-              pendingTxWrapFunc(
+            onClick={async (e) => {
+              const tx = await pendingTxWrapFunc(
                 claimStake(chainId, address as Address, stakingPoolId, pool)
               )
-            }
+              if (tx?.status === 'success') {
+                await getUserStakedBalance(
+                  address as Address,
+                  stakingPoolId,
+                  pool
+                )
+              }
+            }}
           >
             {isPending ? (
               <div className="flex items-center justify-center space-x-5">
@@ -294,8 +309,13 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                       const tx = await pendingApproveTxWrapFunc(
                         approve(pool, deposit.bi, chainId)
                       )
-
-                      setTx(tx?.transactionHash)
+                      if (tx?.status === 'success') {
+                        getUserLpTokenAllowance(
+                          address as Address,
+                          chainId,
+                          pool
+                        )
+                      }
                     }
                   : async (e) => {
                       const tx = await pendingStakeTxWrapFunc(
@@ -309,8 +329,13 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                       )
                       if (tx?.status === 'success') {
                         setDeposit({ bi: 0n, str: '' })
+                        dispatch(
+                          fetchAndStoreSingleNetworkPortfolioBalances({
+                            address,
+                            chainId,
+                          })
+                        )
                       }
-                      setTx(tx?.transactionHash)
                     }
               }
             />
@@ -333,6 +358,12 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                 )
                 if (tx?.status === 1) {
                   setWithdraw('')
+                  dispatch(
+                    fetchAndStoreSingleNetworkPortfolioBalances({
+                      address,
+                      chainId,
+                    })
+                  )
                 }
               }}
             />

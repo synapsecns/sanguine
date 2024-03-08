@@ -85,11 +85,16 @@ export const portfolioSlice = createSlice({
       .addCase(
         fetchAndStoreSingleNetworkPortfolioBalances.fulfilled,
         (state, action) => {
-          const { balances } = action.payload
+          const { balances, poolTokenBalances } = action.payload
 
           Object.entries(balances).forEach(([chainId, tokenBalances]) => {
             state.balances[chainId] = [...tokenBalances]
           })
+          Object.entries(poolTokenBalances).forEach(
+            ([chainId, tokenBalances]) => {
+              state.poolTokenBalances[chainId] = [...tokenBalances]
+            }
+          )
         }
       )
       .addCase(resetSearchState, (state) => {

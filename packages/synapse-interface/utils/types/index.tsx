@@ -39,6 +39,10 @@ export type PoolUserData = {
   name: string
   tokens: PoolToken[]
   lpTokenBalance: bigint
+  stakedBalance: {
+    amount: bigint
+    reward: bigint
+  }
   nativeTokens?: any
 }
 export type PoolData = {
