@@ -148,7 +148,7 @@ func (c *rebalanceManagerCircleCCTP) Execute(parentCtx context.Context, rebalanc
 	var addrBytes32 [32]byte
 	copy(addrBytes32[12:], c.relayerAddress.Bytes())
 
-	// perform rebalance by calling sendCircleToken()
+	// perform rebalance by calling depositForBurn()
 	_, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(rebalance.OriginMetadata.ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		tx, err = contract.DepositForBurn(
 			transactor,
