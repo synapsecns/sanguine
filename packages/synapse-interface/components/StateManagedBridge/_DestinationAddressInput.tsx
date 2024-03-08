@@ -3,6 +3,8 @@ import { useAppDispatch } from '@/store/hooks'
 import { isValidAddress } from '@/utils/isValidAddress'
 import { shortenAddress } from '@/utils/shortenAddress'
 import { useBridgeState } from '@/slices/bridge/hooks'
+import { setDestinationAddress } from '@/slices/bridge/reducer'
+import { Address } from 'viem'
 
 export const _DestinationAddressInput = ({
   connectedAddress,
@@ -45,7 +47,7 @@ export const _DestinationAddressInput = ({
     setEnableInput(false)
   }
 
-  const isInputValidAddress = isValidAddress(inputValue)
+  const isInputValidAddress = isValidAddress(destinationAddress)
 
   let placeholder
 
@@ -60,14 +62,22 @@ export const _DestinationAddressInput = ({
   return (
     <div id="destination-address-input" onClick={handleActivateWarning}>
       <input
-        onChange={(e) => handleInput(e.target.value)}
+        onChange={(e) =>
+          dispatch(setDestinationAddress(e.target.value as Address))
+        }
         onFocus={handleInputFocus}
         onBlur={handleInputBlur}
         placeholder={placeholder}
-        value={inputValue}
+        value={destinationAddress}
         className={`
-          rounded-md bg-surface border-separator text-secondary
-          active:text-white focus:outline-none focus:ring-0 focus:border-separator
+          text-md rounded-sm bg-bgBase border-separator text-secondary min-w-32 py-1 px-2
+          focus:text-white focus:outline-none focus:ring-0
+          ${
+            isInputValidAddress
+              ? 'border-synapsePurple focus:border-synapsePurple'
+              : 'focus:border-separator'
+          }
+          ${isInputFocused ? 'text-left' : 'text-center'}
         `}
       />
       {/* {showWarning && (
@@ -76,7 +86,9 @@ export const _DestinationAddressInput = ({
           onReset={onReset}
         />
       )} */}
-      <div>{isInputValidAddress ? 'Valid Address' : 'Invalid Address'}</div>
+      <div className="text-white">
+        {isInputValidAddress ? 'Valid Address' : 'Invalid Address'}
+      </div>
     </div>
   )
 }
