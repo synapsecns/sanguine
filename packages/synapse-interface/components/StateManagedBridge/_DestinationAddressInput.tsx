@@ -129,12 +129,46 @@ export const _DestinationAddressInput = ({
             className="!static w-fit mr-1"
           />
         )}
+
+        {isInputFocused && (
+          <ul
+            className={`
+            absolute z-50 mt-1 p-0 -right-1 bg-surface
+            border border-solid border-tint rounded shadow
+            popover list-none text-left text-sm
+          `}
+          >
+            {recipientList?.map((recipient) => {
+              return (
+                <ListReceipient
+                  address={recipient?.toAddress}
+                  daysAgo={recipient?.daysAgo}
+                />
+              )
+            })}
+          </ul>
+        )}
       </div>
       <DestinationInputWarning
         show={showWarning}
         onAccept={() => handleAcceptWarning()}
         onCancel={() => handleRejectWarning()}
       />
+    </div>
+  )
+}
+
+const ListReceipient = ({
+  address,
+  daysAgo,
+}: {
+  address: string
+  daysAgo: number
+}) => {
+  return (
+    <div className="flex">
+      <div>{shortenAddress(address)}</div>
+      <div>{daysAgo}d</div>
     </div>
   )
 }
