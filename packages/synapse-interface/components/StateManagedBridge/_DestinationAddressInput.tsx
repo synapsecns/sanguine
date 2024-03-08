@@ -180,12 +180,43 @@ const filterTransactionsByRecipient = (
 ): { toAddress: string | undefined; time: string | undefined }[] => {
   const checkAddress = getValidAddress(connectedAddress)
   return transactions
-    .filter(
+    ?.filter(
       (transaction) =>
         getValidAddress(transaction.toInfo?.address) !== checkAddress
     )
     .map((transaction) => ({
       toAddress: transaction.toInfo?.address,
       time: transaction.toInfo?.formattedTime,
+      daysAgo: calculateDaysAgo(transaction.toInfo?.formattedTime),
     }))
+}
+
+const calculateDaysAgo = (time?: string) => {
+  if (time) {
+    // Assuming timeString is in "YYYY-MM-DD HH:MM:SS +0000 UTC" format
+    const formattedTimeString = time.replace(' +0000 UTC', 'Z')
+
+    const timeDate = new Date(formattedTimeString)
+    const now = new Date()
+
+    return calculateDaysBetween(timeDate, now)
+  } else {
+    return null
+  }
+}
+
+const calculateDaysBetween = (startDate: Date, endDate: Date) => {
+  const msPerDay = 1000 * 60 * 60 * 24
+  const utc1 = Date.UTC(
+    startDate.getFullYear(),
+    startDate.getMonth(),
+    startDate.getDate()
+  )
+  const utc2 = Date.UTC(
+    endDate.getFullYear(),
+    endDate.getMonth(),
+    endDate.getDate()
+  )
+
+  return Math.floor((utc2 - utc1) / msPerDay)
 }
