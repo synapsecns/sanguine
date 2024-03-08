@@ -31,9 +31,7 @@ export const _DestinationAddressInput = ({
     inputRef.current.focus()
   }
 
-  const isDestinationAddressEmpty = destinationAddress === ('' as Address)
   const isInputValidAddress = isValidAddress(destinationAddress)
-  // const isInputInvalid = !isDestinationAddressEmpty && !isInputValidAddress
 
   const isInputInvalid =
     destinationAddress &&
@@ -159,17 +157,3 @@ const DestinationInputWarning = ({
     </div>
   )
 }
-
-// ${
-//   isInputValidAddress
-//     ? 'border-synapsePurple focus:border-synapsePurple'
-//     : isInputInvalid
-//     ? 'border-red-500 focus:border-red-500'
-//     : 'border-separator focus:border-separator'
-// }
-// ${connectedAddress ? 'w-32' : 'w-36'}
-// ${
-//   isInputFocused
-//     ? 'text-left bg-bgBase'
-//     : 'text-center bg-transparent'
-// }
