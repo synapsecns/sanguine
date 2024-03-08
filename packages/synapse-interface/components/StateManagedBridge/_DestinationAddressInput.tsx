@@ -68,15 +68,20 @@ export const _DestinationAddressInput = ({
         onFocus={handleInputFocus}
         onBlur={handleInputBlur}
         placeholder={placeholder}
-        value={destinationAddress}
+        value={
+          isInputValidAddress && !isInputFocused
+            ? shortenAddress(destinationAddress)
+            : destinationAddress
+        }
         className={`
-          text-md rounded-sm bg-bgBase border-separator text-secondary min-w-32 py-1 px-2
+          text-md rounded-sm bg-bgBase border-separator text-secondary py-1 px-2
           focus:text-white focus:outline-none focus:ring-0
           ${
             isInputValidAddress
               ? 'border-synapsePurple focus:border-synapsePurple'
               : 'focus:border-separator'
           }
+          ${connectedAddress ? 'w-32' : 'w-36'}
           ${isInputFocused ? 'text-left' : 'text-center'}
         `}
       />
@@ -96,10 +101,12 @@ export const _DestinationAddressInput = ({
 const DestinationInputWarning = ({ onEnableInput, onReset }) => {
   return (
     <div>
-      Warning!
+      <h3>Warning</h3>
+      <p>Do not send your funds to a custodial wallet or exchange address!</p>
+      <p>It may be impossible to recover your funds</p>
       <div className="flex">
-        <button onClick={onEnableInput}>Accept</button>
         <button onClick={onReset}>Cancel</button>
+        <button onClick={onEnableInput}>Okay</button>
       </div>
     </div>
   )
