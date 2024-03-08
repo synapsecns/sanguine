@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { useAppDispatch } from '@/store/hooks'
 import { isValidAddress } from '@/utils/isValidAddress'
 import { shortenAddress } from '@/utils/shortenAddress'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { setDestinationAddress } from '@/slices/bridge/reducer'
 import { Address } from 'viem'
+
+export const inputRef = React.createRef<HTMLInputElement>()
 
 export const _DestinationAddressInput = ({
   connectedAddress,
@@ -37,6 +39,7 @@ export const _DestinationAddressInput = ({
     setShowWarning(!showWarning)
   }
   const handleAcceptWarning = () => {
+    inputRef.current.focus()
     setShowWarning(false)
   }
   const handleRejectWarning = () => {
@@ -44,8 +47,12 @@ export const _DestinationAddressInput = ({
   }
 
   return (
-    <div id="destination-address-input" onClick={handleActivateWarning}>
+    <div
+      id="destination-address-input"
+      onClick={!showWarning ? handleActivateWarning : null}
+    >
       <input
+        ref={inputRef}
         onChange={(e) =>
           dispatch(setDestinationAddress(e.target.value as Address))
         }
@@ -94,7 +101,7 @@ const DestinationInputWarning = ({
     <div
       className={`
       p-2 border rounded-sm bg-surface border-separator text-secondary
-      top-0 left-0 w-full space-y-2
+      top-0 left-0 w-full space-y-2 z-50
       ${show ? 'absolute' : 'hidden'}
       `}
     >
@@ -105,9 +112,16 @@ const DestinationInputWarning = ({
       <p className="text-secondary">
         It may be impossible to recover your funds
       </p>
-      <div className="flex">
-        <button onClick={onCancel}>Cancel</button>
-        <button onClick={onAccept}>Okay</button>
+      <div className="flex space-x-2">
+        <button onClick={onCancel} className="w-1/2 py-3 bg-separator">
+          Cancel
+        </button>
+        <button
+          onClick={onAccept}
+          className="w-1/2 py-3 bg-transparent border border-separator"
+        >
+          Okay
+        </button>
       </div>
     </div>
   )
