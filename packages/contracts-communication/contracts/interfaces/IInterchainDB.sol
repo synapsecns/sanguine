@@ -13,17 +13,18 @@ interface IInterchainDB {
         bytes32 dataHash;
     }
 
-    /// @notice Struct representing an entry from the remote Interchain DataBase verified by the Interchain Module
+    /// @notice Struct representing a batch of entries from the remote Interchain DataBase,
+    /// verified by the Interchain Module.
     /// @param verifiedAt   The block timestamp at which the entry was verified by the module
-    /// @param entryValue   The value of the entry: writer + dataHash hashed together
-    struct RemoteEntry {
+    /// @param batchRoot    The Merkle root of the batch
+    struct RemoteBatch {
         uint256 verifiedAt;
-        bytes32 entryValue;
+        bytes32 batchRoot;
     }
 
     error InterchainDB__BatchDoesNotExist(uint256 dbNonce);
     error InterchainDB__BatchNotFinalized(uint256 dbNonce);
-    error InterchainDB__ConflictingEntries(bytes32 existingEntryValue, InterchainEntry newEntry);
+    error InterchainDB__ConflictingBatches(address module, bytes32 existingBatchRoot, InterchainBatch newBatch);
     error InterchainDB__EntryIndexOutOfRange(uint256 dbNonce, uint64 entryIndex, uint64 batchSize);
     error InterchainDB__IncorrectFeeAmount(uint256 actualFee, uint256 expectedFee);
     error InterchainDB__InvalidEntryRange(uint256 dbNonce, uint64 start, uint64 end);

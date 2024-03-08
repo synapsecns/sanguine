@@ -11,7 +11,7 @@ import {TypeCasts} from "./libs/TypeCasts.sol";
 
 contract InterchainDB is InterchainDBEvents, IInterchainDB {
     LocalEntry[] internal _entries;
-    mapping(address module => mapping(bytes32 entryKey => RemoteEntry entry)) internal _remoteEntries;
+    mapping(address module => mapping(bytes32 batchKey => RemoteBatch batch)) internal _remoteBatches;
 
     modifier onlyRemoteChainId(uint256 chainId) {
         if (chainId == block.chainid) {
@@ -60,27 +60,22 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
 
     // ═══════════════════════════════════════════════ MODULE-FACING ═══════════════════════════════════════════════════
 
-    function verifyEntry(InterchainEntry memory entry) external onlyRemoteChainId(entry.srcChainId) {
-        // TODO: deprecated
-        bytes32 entryKey = InterchainEntryLib.entryKey(entry);
-        bytes32 entryValue = InterchainEntryLib.entryValue(entry);
-        RemoteEntry memory existingEntry = _remoteEntries[msg.sender][entryKey];
-        // Check if that's the first time module verifies the entry
-        if (existingEntry.verifiedAt == 0) {
-            _remoteEntries[msg.sender][entryKey] = RemoteEntry({verifiedAt: block.timestamp, entryValue: entryValue});
-            emit InterchainEntryVerified(msg.sender, entry.srcChainId, entry.dbNonce, entry.srcWriter, entry.dataHash);
-        } else {
-            // If the module has already verified the entry, check that the entry value is the same
-            if (existingEntry.entryValue != entryValue) {
-                revert InterchainDB__ConflictingEntries(existingEntry.entryValue, entry);
-            }
-            // No-op if the entry value is the same
-        }
-    }
-
     /// @inheritdoc IInterchainDB
     function verifyRemoteBatch(InterchainBatch memory batch) external {
-        // TODO: implement
+        bytes32 batchKey = InterchainBatchLib.batchKey(batch);
+        RemoteBatch memory existingBatch = _remoteBatches[msg.sender][batchKey];
+        // Check if that's the first time module verifies the batch
+        if (existingBatch.verifiedAt == 0) {
+            _remoteBatches[msg.sender][batchKey] =
+                RemoteBatch({verifiedAt: block.timestamp, batchRoot: batch.batchRoot});
+            emit InterchainBatchVerified(msg.sender, batch.srcChainId, batch.dbNonce, batch.batchRoot);
+        } else {
+            // If the module has already verified the batch, check that the batch root is the same
+            if (existingBatch.batchRoot != batch.batchRoot) {
+                revert InterchainDB__ConflictingBatches(msg.sender, existingBatch.batchRoot, batch);
+            }
+            // No-op if the batch root is the same
+        }
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
@@ -147,10 +142,10 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
             // If proof is not empty, the batch root is not verified
             return 0;
         }
-        RemoteEntry memory remoteEntry = _remoteEntries[dstModule][InterchainEntryLib.entryKey(entry)];
+        RemoteBatch memory remoteBatch = _remoteBatches[dstModule][InterchainEntryLib.batchKey(entry)];
         bytes32 entryValue = InterchainEntryLib.entryValue(entry);
-        // Check entry value against the one verified by the module
-        return remoteEntry.entryValue == entryValue ? remoteEntry.verifiedAt : 0;
+        // Check entry value against the batch root verified by the module
+        return remoteBatch.batchRoot == entryValue ? remoteBatch.verifiedAt : 0;
     }
 
     /// @inheritdoc IInterchainDB
