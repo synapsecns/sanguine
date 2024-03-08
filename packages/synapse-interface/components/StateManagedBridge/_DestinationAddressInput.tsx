@@ -94,6 +94,7 @@ const DestinationInputWarning = ({
     <div
       className={`
       p-2 border rounded-sm bg-surface border-separator text-secondary
+      top-0 left-0 w-full h-full
       ${show ? 'absolute' : 'hidden'}
       `}
     >

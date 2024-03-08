@@ -556,7 +556,6 @@ const StateManagedBridge = () => {
             >
               <BridgeExchangeRateInfo />
             </Transition>
-            <_DestinationAddressInput connectedAddress={address} />
             {showDestinationAddress && (
               <DestinationAddressInput
                 toChainId={toChainId}

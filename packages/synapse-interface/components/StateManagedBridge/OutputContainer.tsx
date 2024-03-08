@@ -8,6 +8,7 @@ import { ToTokenSelector } from './ToTokenSelector'
 import { useDispatch } from 'react-redux'
 import { setToChainId, setToToken } from '@/slices/bridge/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
+import { _DestinationAddressInput } from './_DestinationAddressInput'
 
 export const OutputContainer = ({}) => {
   const { bridgeQuote, isLoading, toChainId, toToken } = useBridgeState()
@@ -24,7 +25,7 @@ export const OutputContainer = ({}) => {
   // update address for destination address if we have a destination address
 
   return (
-    <div className="mt-[1.125rem] p-md text-left rounded-md bg-bgLight">
+    <div className="relative mt-[1.125rem] p-md text-left rounded-md bg-bgLight">
       <div className="flex items-center justify-between mb-3">
         <ToChainSelector />
         {/* {address && (
@@ -32,6 +33,7 @@ export const OutputContainer = ({}) => {
             <DisplayAddress address={address} />
           </div>
         )} */}
+        <_DestinationAddressInput connectedAddress={address} />
       </div>
 
       <div className="flex h-16 mb-2 space-x-2">
