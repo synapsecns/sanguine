@@ -129,11 +129,12 @@ export const _DestinationAddressInput = ({
             className="!static w-fit mr-1"
           />
         )}
-
+      </div>
+      <div className="relative">
         {isInputFocused && (
           <ul
             className={`
-            absolute z-50 mt-1 p-0 -right-1 bg-surface
+            absolute right-0 z-50 p-0 top-1 bg-surface
             border border-solid border-tint rounded shadow
             popover list-none text-left text-sm
           `}
@@ -166,7 +167,13 @@ const ListReceipient = ({
   daysAgo: number
 }) => {
   return (
-    <div className="flex">
+    <div
+      className={`
+        flex justify-between p-1 space-x-2
+        cursor-pointer text-strong
+        hover:bg-separator
+      `}
+    >
       <div>{shortenAddress(address)}</div>
       <div>{daysAgo}d</div>
     </div>
