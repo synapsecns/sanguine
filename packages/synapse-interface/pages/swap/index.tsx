@@ -1,4 +1,4 @@
-import { useAccount, useNetwork } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { useSelector } from 'react-redux'
 import { RootState } from '../../store/store'
 import toast from 'react-hot-toast'
@@ -42,7 +42,7 @@ import { SwapFromTokenListOverlay } from '@/components/StateManagedSwap/SwapFrom
 import { SwapInputContainer } from '@/components/StateManagedSwap/SwapInputContainer'
 import { SwapOutputContainer } from '@/components/StateManagedSwap/SwapOutputContainer'
 import { setSwapQuote, updateSwapFromValue } from '@/slices/swap/reducer'
-import { DEFAULT_FROM_CHAIN, EMPTY_SWAP_QUOTE_ZERO } from '@/constants/swap'
+import { EMPTY_SWAP_QUOTE_ZERO } from '@/constants/swap'
 import { SwapToTokenListOverlay } from '@/components/StateManagedSwap/SwapToTokenListOverlay'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import useSyncQueryParamsWithSwapState from '@/utils/hooks/useSyncQueryParamsWithSwapState'
@@ -50,7 +50,6 @@ import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 
 const StateManagedSwap = () => {
   const { address } = useAccount()
-  const { chain } = useNetwork()
   const { synapseSDK } = useSynapseContext()
   const swapDisplayRef = useRef(null)
   const quoteToastRef = useRef({ id: '' })
@@ -125,8 +124,6 @@ const StateManagedSwap = () => {
       }
     }
   }, [swapQuote, swapFromToken, swapFromValue, swapChainId])
-
-  let quoteToast
 
   const getAndSetSwapQuote = async () => {
     currentSDKRequestID.current += 1
