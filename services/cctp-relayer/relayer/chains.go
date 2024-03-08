@@ -32,8 +32,8 @@ var testnetDomainMap = map[uint32]uint32{
 	3: arbitrumSepoliaChainID,
 }
 
-// circleDomainToChainID converts a Circle domain to a chain ID.
-func circleDomainToChainID(domain uint32, isTestnet bool) (chainID uint32, err error) {
+// CircleDomainToChainID converts a Circle domain to a chain ID.
+func CircleDomainToChainID(domain uint32, isTestnet bool) (chainID uint32, err error) {
 	if isTestnet {
 		chainID, ok := testnetDomainMap[domain]
 		if !ok {
