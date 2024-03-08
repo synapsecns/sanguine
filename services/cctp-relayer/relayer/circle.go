@@ -13,7 +13,6 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
-	"github.com/synapsecns/sanguine/ethergo/util"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/config"
 	messagetransmitter "github.com/synapsecns/sanguine/services/cctp-relayer/contracts/messagetransmitter"
 	db2 "github.com/synapsecns/sanguine/services/cctp-relayer/db"
@@ -219,16 +218,12 @@ func (c *circleCCTPHandler) handleMessageSent(parentCtx context.Context, log *ty
 	}
 
 	// check that we sent the tx
-	tx, _, err := ethClient.TransactionByHash(ctx, log.TxHash)
+	sender, err := GetTxSender(ctx, log.TxHash, ethClient)
 	if err != nil {
-		return nil, fmt.Errorf("could not get transaction by hash: %w", err)
+		return nil, fmt.Errorf("could not get transaction sender: %w", err)
 	}
-	call, err := util.TxToCall(tx)
-	if err != nil {
-		return nil, fmt.Errorf("could not convert transaction to call: %w", err)
-	}
-	if call.From != c.relayerAddress {
-		span.AddEvent(fmt.Sprintf("sender %s does not match relayer address %s", call.From.String(), c.relayerAddress.String()))
+	if sender != c.relayerAddress {
+		span.AddEvent(fmt.Sprintf("sender %s does not match relayer address %s", sender.String(), c.relayerAddress.String()))
 		//nolint:nilnil
 		return nil, nil
 	}
@@ -301,16 +296,12 @@ func (c *circleCCTPHandler) handleMessageReceived(parentCtx context.Context, log
 	}
 
 	// check that we sent the tx
-	tx, _, err := ethClient.TransactionByHash(ctx, log.TxHash)
+	sender, err := GetTxSender(ctx, log.TxHash, ethClient)
 	if err != nil {
-		return fmt.Errorf("could not get transaction by hash: %w", err)
+		return fmt.Errorf("could not get transaction sender: %w", err)
 	}
-	call, err := util.TxToCall(tx)
-	if err != nil {
-		return fmt.Errorf("could not convert transaction to call: %w", err)
-	}
-	if call.From != c.relayerAddress {
-		span.AddEvent(fmt.Sprintf("sender %s does not match relayer address %s", call.From.String(), c.relayerAddress.String()))
+	if sender != c.relayerAddress {
+		span.AddEvent(fmt.Sprintf("sender %s does not match relayer address %s", sender.String(), c.relayerAddress.String()))
 		return nil
 	}
 

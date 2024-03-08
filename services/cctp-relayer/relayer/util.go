@@ -1,8 +1,14 @@
 package relayer
 
 import (
+	"context"
 	"encoding/binary"
 	"errors"
+	"fmt"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/synapsecns/sanguine/ethergo/client"
+	"github.com/synapsecns/sanguine/ethergo/util"
 )
 
 // destinationDomainIndex is the index of the destination domain in the formatted CCTP message.
@@ -31,4 +37,17 @@ func indexUint32(memView []byte, index int, bytes uint8) (uint32, error) {
 	// Convert the bytes to uint32.
 	result := binary.BigEndian.Uint32(padded)
 	return result, nil
+}
+
+// GetTxSender gets the sender of a transaction by fetching the transaction metadata.
+func GetTxSender(ctx context.Context, txHash common.Hash, ethClient client.EVM) (sender common.Address, err error) {
+	tx, _, err := ethClient.TransactionByHash(ctx, txHash)
+	if err != nil {
+		return sender, fmt.Errorf("could not get transaction by hash: %w", err)
+	}
+	call, err := util.TxToCall(tx)
+	if err != nil {
+		return sender, fmt.Errorf("could not convert transaction to call: %w", err)
+	}
+	return call.From, nil
 }
