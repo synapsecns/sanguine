@@ -228,7 +228,7 @@ func (c *circleCCTPHandler) handleMessageSent(parentCtx context.Context, log *ty
 		return nil, nil
 	}
 
-	destDomain, err := parseDestDomain(messageSentEvent.Message)
+	destDomain, err := ParseDestDomain(messageSentEvent.Message)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse destination chain from raw message")
 	}
@@ -265,6 +265,7 @@ func (c *circleCCTPHandler) handleMessageSent(parentCtx context.Context, log *ty
 	return &rawMsg, nil
 }
 
+//nolint:cyclop
 func (c *circleCCTPHandler) handleMessageReceived(parentCtx context.Context, log *types.Log, chainID uint32) (err error) {
 	ctx, span := c.handler.Tracer().Start(parentCtx, "handleMessageReceived", trace.WithAttributes(
 		attribute.String(metrics.TxHash, log.TxHash.Hex()),
@@ -284,12 +285,10 @@ func (c *circleCCTPHandler) handleMessageReceived(parentCtx context.Context, log
 	if err != nil {
 		return fmt.Errorf("could not get chain client: %w", err)
 	}
-
 	eventParser, err := messagetransmitter.NewMessageTransmitterFilterer(log.Address, ethClient)
 	if err != nil {
 		return fmt.Errorf("could not create event parser: %w", err)
 	}
-
 	event, err := eventParser.ParseMessageReceived(*log)
 	if err != nil {
 		return fmt.Errorf("could not parse circle request fulfilled: %w", err)

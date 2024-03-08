@@ -14,7 +14,8 @@ import (
 // destinationDomainIndex is the index of the destination domain in the formatted CCTP message.
 const destinationDomainIndex = 8
 
-func parseDestDomain(message []byte) (uint32, error) {
+// ParseDestDomain parses the destination domain from a CCTP message.
+func ParseDestDomain(message []byte) (uint32, error) {
 	return indexUint32(message, destinationDomainIndex, 4)
 }
 

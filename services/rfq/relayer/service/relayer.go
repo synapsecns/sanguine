@@ -20,7 +20,6 @@ import (
 	cctpSql "github.com/synapsecns/sanguine/services/cctp-relayer/db/sql"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/relayer"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
-	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
@@ -38,7 +37,7 @@ type Relayer struct {
 	cfg            relconfig.Config
 	metrics        metrics.Handler
 	db             reldb.Service
-	client         omnirpcClient.RPCClient
+	client         omniClient.RPCClient
 	chainListeners map[int]listener.ContractListener
 	apiServer      *relapi.RelayerAPIServer
 	inventory      inventory.Manager
@@ -54,7 +53,7 @@ var logger = log.Logger("relayer")
 //
 // The relayer is the core of the application. It is responsible for starting the listener and quoter event loops.
 func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfig.Config) (*Relayer, error) {
-	omniClient := omnirpcClient.NewOmnirpcClient(cfg.OmniRPCURL, metricHandler, omnirpcClient.WithCaptureReqRes())
+	omniClient := omniClient.NewOmnirpcClient(cfg.OmniRPCURL, metricHandler, omniClient.WithCaptureReqRes())
 
 	// TODO: pull from config
 	dbType, err := dbcommon.DBTypeFromString(cfg.Database.Type)
