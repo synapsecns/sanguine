@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.4.0...@synapsecns/synapse-interface@0.5.0) (2024-03-08)
+
+
+### Features
+
+* **synapse-interface:** update button states ([#2214](https://github.com/synapsecns/sanguine/issues/2214)) ([90df2bf](https://github.com/synapsecns/sanguine/commit/90df2bf462e74f4c3e492791e26559b9ee5bc72f))
+
+
+
+
+
 # [0.4.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.3.0...@synapsecns/synapse-interface@0.4.0) (2024-03-08)
 
 
