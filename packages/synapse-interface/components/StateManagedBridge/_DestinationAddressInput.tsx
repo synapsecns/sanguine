@@ -102,11 +102,14 @@ export const _DestinationAddressInput = ({
             text-md rounded-sm text-secondary py-1 px-2 z-0 border-0 bg-transparent
             focus:text-white focus:border-transparent focus:outline-none focus:ring-0
             ${connectedAddress ? 'w-32' : 'w-36'}
-            ${isInputFocused ? 'text-left' : 'text-center'}
+            ${isInputFocused || isInputInvalid ? 'text-left' : 'text-center'}
           `}
         />
         {(isInputInvalid || isInputValidAddress) && (
-          <CloseButton onClick={handleClearInput} />
+          <CloseButton
+            onClick={handleClearInput}
+            className="!static w-fit mr-1"
+          />
         )}
       </div>
       <DestinationInputWarning
