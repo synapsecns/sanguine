@@ -12,7 +12,7 @@ export function SwitchButton({ onClick }: { onClick: () => void }) {
     <div
       className={`
         flex items-center justify-center
-        -mt-2 -mb-2
+        relative -mt-2 -mb-2 z-40
         group transform-gpu transition-all duration-200
         ${isActive ? 'rotate-90' : ''}
       `}
