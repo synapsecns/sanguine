@@ -42,7 +42,7 @@ type rebalanceManagerCircleCCTP struct {
 	db reldb.Service
 }
 
-func newrebalanceManagerCircleCCTP(cfg relconfig.Config, handler metrics.Handler, chainClient submitter.ClientFetcher, txSubmitter submitter.TransactionSubmitter, relayerAddress common.Address, db reldb.Service) *rebalanceManagerCircleCCTP {
+func newRebalanceManagerCircleCCTP(cfg relconfig.Config, handler metrics.Handler, chainClient submitter.ClientFetcher, txSubmitter submitter.TransactionSubmitter, relayerAddress common.Address, db reldb.Service) *rebalanceManagerCircleCCTP {
 	return &rebalanceManagerCircleCCTP{
 		cfg:            cfg,
 		handler:        handler,

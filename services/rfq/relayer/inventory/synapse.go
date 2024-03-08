@@ -39,7 +39,7 @@ type rebalanceManagerSynapseCCTP struct {
 	db reldb.Service
 }
 
-func newrebalanceManagerSynapseCCTP(cfg relconfig.Config, handler metrics.Handler, chainClient submitter.ClientFetcher, txSubmitter submitter.TransactionSubmitter, relayerAddress common.Address, db reldb.Service) *rebalanceManagerSynapseCCTP {
+func newRebalanceManagerSynapseCCTP(cfg relconfig.Config, handler metrics.Handler, chainClient submitter.ClientFetcher, txSubmitter submitter.TransactionSubmitter, relayerAddress common.Address, db reldb.Service) *rebalanceManagerSynapseCCTP {
 	return &rebalanceManagerSynapseCCTP{
 		cfg:            cfg,
 		handler:        handler,
