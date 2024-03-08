@@ -404,7 +404,7 @@ func (c Config) GetRebalanceMethod(chainID int, tokenAddr string) (method Rebala
 	}
 	switch tokenConfig.RebalanceMethod {
 	case "cctp":
-		return RebalanceMethodCCTP, nil
+		return RebalanceMethodSynapseCCTP, nil
 	case "native":
 		return RebalanceMethodNative, nil
 	}

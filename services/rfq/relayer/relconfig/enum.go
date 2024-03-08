@@ -8,8 +8,8 @@ type RebalanceMethod uint8
 const (
 	// RebalanceMethodNone is the default rebalance method.
 	RebalanceMethodNone RebalanceMethod = iota
-	// RebalanceMethodCCTP is the rebalance method for CCTP.
-	RebalanceMethodCCTP
+	// RebalanceMethodSynapseCCTP is the rebalance method for CCTP.
+	RebalanceMethodSynapseCCTP
 	// RebalanceMethodNative is the rebalance method for native bridge.
 	RebalanceMethodNative
 )

@@ -9,11 +9,11 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[RebalanceMethodNone-0]
-	_ = x[RebalanceMethodCCTP-1]
+	_ = x[RebalanceMethodSynapseCCTP-1]
 	_ = x[RebalanceMethodNative-2]
 }
 
-const _RebalanceMethod_name = "RebalanceMethodNoneRebalanceMethodCCTPRebalanceMethodNative"
+const _RebalanceMethod_name = "RebalanceMethodNoneRebalanceMethodSynapseCCTPRebalanceMethodNative"
 
 var _RebalanceMethod_index = [...]uint8{0, 19, 38, 59}
 
