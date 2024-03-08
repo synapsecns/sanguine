@@ -6,6 +6,7 @@ import { useBridgeState } from '@/slices/bridge/hooks'
 import { setDestinationAddress } from '@/slices/bridge/reducer'
 import { setShowDestinationWarning } from '@/slices/bridgeDisplaySlice'
 import { Address } from 'viem'
+import { isEmptyString } from '@/utils/isEmptyString'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -26,6 +27,8 @@ export const _DestinationAddressInput = ({
   const handleInputBlur = () => setIsInputFocused(false)
 
   const isInputValidAddress = isValidAddress(destinationAddress)
+  const isInputInvalid =
+    !isEmptyString(destinationAddress) && !isInputValidAddress
 
   let placeholder
 
@@ -58,6 +61,10 @@ export const _DestinationAddressInput = ({
 
   return (
     <div id="destination-address-input" onClick={handleActivateWarning}>
+      {/* <div className="text-xs text-center text-white">
+        {isInputValidAddress ? 'Valid Address' : 'Invalid Address'}
+      </div> */}
+
       <input
         ref={inputRef}
         onChange={(e) =>
@@ -72,15 +79,21 @@ export const _DestinationAddressInput = ({
             : destinationAddress
         }
         className={`
-          text-md rounded-sm bg-bgBase border-separator text-secondary py-1 px-2
+          text-md rounded-sm text-secondary py-1 px-2
           focus:text-white focus:outline-none focus:ring-0
           ${
             isInputValidAddress
               ? 'border-synapsePurple focus:border-synapsePurple'
-              : 'focus:border-separator'
+              : isInputInvalid
+              ? 'border-red-500 focus:border-red-500'
+              : 'border-separator focus:border-separator'
           }
           ${connectedAddress ? 'w-32' : 'w-36'}
-          ${isInputFocused ? 'text-left' : 'text-center'}
+          ${
+            isInputFocused
+              ? 'text-left bg-bgBase'
+              : 'text-center bg-transparent'
+          }
         `}
       />
       <DestinationInputWarning
@@ -88,9 +101,6 @@ export const _DestinationAddressInput = ({
         onAccept={() => handleAcceptWarning()}
         onCancel={() => handleRejectWarning()}
       />
-      <div className="text-white">
-        {isInputValidAddress ? 'Valid Address' : 'Invalid Address'}
-      </div>
     </div>
   )
 }
