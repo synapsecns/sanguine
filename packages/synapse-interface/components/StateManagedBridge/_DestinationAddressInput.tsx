@@ -28,7 +28,9 @@ export const _DestinationAddressInput = ({
 
   const isInputValidAddress = isValidAddress(destinationAddress)
   const isInputInvalid =
-    !isEmptyString(destinationAddress) && !isInputValidAddress
+    destinationAddress &&
+    !isEmptyString(destinationAddress) &&
+    !isInputValidAddress
 
   let placeholder
 
