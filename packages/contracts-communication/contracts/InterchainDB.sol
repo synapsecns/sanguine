@@ -60,7 +60,6 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
 
     // ═══════════════════════════════════════════════ MODULE-FACING ═══════════════════════════════════════════════════
 
-    /// @inheritdoc IInterchainDB
     function verifyEntry(InterchainEntry memory entry) external onlyRemoteChainId(entry.srcChainId) {
         // TODO: deprecated
         bytes32 entryKey = InterchainEntryLib.entryKey(entry);
@@ -112,7 +111,6 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         // TODO: implement
     }
 
-    /// @inheritdoc IInterchainDB
     function readEntry(
         address dstModule,
         InterchainEntry memory entry

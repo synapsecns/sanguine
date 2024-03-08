@@ -15,6 +15,6 @@ contract InterchainModuleMock is IInterchainModule {
     }
 
     function mockVerifyEntry(address interchainDB, InterchainEntry memory entry) external {
-        IInterchainDB(interchainDB).verifyEntry(entry);
+        // TODO: deprecated
     }
 }

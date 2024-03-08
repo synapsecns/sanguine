@@ -113,7 +113,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
 
     function writeEntry(address writer, bytes32 dataHash) internal returns (uint256 dbNonce) {
         vm.prank(writer);
-        dbNonce = icDB.writeEntry(dataHash);
+        (dbNonce,) = icDB.writeEntry(dataHash);
     }
 
     function requestVerification(
@@ -126,7 +126,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     {
         deal(caller, msgValue);
         vm.prank(caller);
-        icDB.requestVerification{value: msgValue}(DST_CHAIN_ID, dbNonce, modules);
+        icDB.requestBatchVerification{value: msgValue}(DST_CHAIN_ID, dbNonce, modules);
     }
 
     function writeEntryWithVerification(
@@ -140,7 +140,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     {
         deal(writer, msgValue);
         vm.prank(writer);
-        dbNonce = icDB.writeEntryWithVerification{value: msgValue}(DST_CHAIN_ID, dataHash, modules);
+        (dbNonce,) = icDB.writeEntryWithVerification{value: msgValue}(DST_CHAIN_ID, dataHash, modules);
     }
 
     // ═══════════════════════════════════════════════ TEST HELPERS ════════════════════════════════════════════════════
@@ -150,6 +150,17 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         assertEq(entry.dbNonce, expected.dbNonce, "!dbNonce");
         assertEq(entry.srcWriter, expected.srcWriter, "!srcWriter");
         assertEq(entry.dataHash, expected.dataHash, "!dataHash");
+    }
+
+    function expectVerificationRequestedEvent(
+        uint256 dbNonce,
+        bytes32 batchRoot,
+        address[] memory srcModules
+    )
+        internal
+    {
+        vm.expectEmit(address(icDB));
+        emit InterchainBatchVerificationRequested(DST_CHAIN_ID, dbNonce, batchRoot, srcModules);
     }
 
     function expectEntryDoesNotExist(uint256 dbNonce) internal {
@@ -178,7 +189,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
 
     function test_setup_getEntry() public {
         for (uint256 i = 0; i < INITIAL_DB_NONCE; ++i) {
-            assertEq(icDB.getEntry(i), getInitialEntry(i));
+            assertEq(icDB.getEntry(i, 0), getInitialEntry(i));
         }
     }
 
@@ -206,7 +217,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_writeEntry_writerF_savesEntry() public {
         InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerF);
         writeEntry(writerF, entry.dataHash);
-        assertEq(icDB.getEntry(INITIAL_DB_NONCE), entry);
+        assertEq(icDB.getEntry(INITIAL_DB_NONCE, 0), entry);
     }
 
     function test_writeEntry_writerS_emitsEvent() public {
@@ -231,15 +242,14 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_writeEntry_writerS_savesEntry() public {
         InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerS);
         writeEntry(writerS, entry.dataHash);
-        assertEq(icDB.getEntry(INITIAL_DB_NONCE), entry);
+        assertEq(icDB.getEntry(INITIAL_DB_NONCE, 0), entry);
     }
 
     // ═══════════════════════════════════════ TESTS: REQUESTING VALIDATION ════════════════════════════════════════════
 
     function test_requestVerification_writerF_oneModule_emitsEvent() public {
         uint256 dbNonce = 0;
-        vm.expectEmit(address(icDB));
-        emit InterchainVerificationRequested(DST_CHAIN_ID, dbNonce, oneModule);
+        expectVerificationRequestedEvent(dbNonce, getInitialEntry(dbNonce).dataHash, oneModule);
         requestVerification(requestCaller, MODULE_A_FEE, dbNonce, oneModule);
     }
 
@@ -253,8 +263,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
 
     function test_requestVerification_writerF_twoModules_emitsEvent() public {
         uint256 dbNonce = 0;
-        vm.expectEmit(address(icDB));
-        emit InterchainVerificationRequested(DST_CHAIN_ID, dbNonce, twoModules);
+        expectVerificationRequestedEvent(dbNonce, getInitialEntry(dbNonce).dataHash, twoModules);        
         requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, dbNonce, twoModules);
     }
 
@@ -269,8 +278,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
 
     function test_requestVerification_writerS_oneModule_emitsEvent() public {
         uint256 dbNonce = 2;
-        vm.expectEmit(address(icDB));
-        emit InterchainVerificationRequested(DST_CHAIN_ID, dbNonce, oneModule);
+        expectVerificationRequestedEvent(dbNonce, getInitialEntry(dbNonce).dataHash, oneModule);
         requestVerification(requestCaller, MODULE_A_FEE, dbNonce, oneModule);
     }
 
@@ -284,8 +292,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
 
     function test_requestVerification_writerS_twoModules_emitsEvent() public {
         uint256 dbNonce = 2;
-        vm.expectEmit(address(icDB));
-        emit InterchainVerificationRequested(DST_CHAIN_ID, dbNonce, twoModules);
+        expectVerificationRequestedEvent(dbNonce, getInitialEntry(dbNonce).dataHash, twoModules);
         requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, dbNonce, twoModules);
     }
 
@@ -360,7 +367,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_requestVerification_revert_sameChainId() public {
         expectSameChainId(SRC_CHAIN_ID);
         vm.prank(requestCaller);
-        icDB.requestVerification(SRC_CHAIN_ID, 0, oneModule);
+        icDB.requestBatchVerification(SRC_CHAIN_ID, 0, oneModule);
     }
 
     // ═════════════════════════════════════ TESTS: WRITE + REQUEST VALIDATION ═════════════════════════════════════════
@@ -375,8 +382,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         bytes32 dataHash = getMockDataHash(writerF, INITIAL_DB_NONCE);
         vm.expectEmit(address(icDB));
         emit InterchainEntryWritten(SRC_CHAIN_ID, INITIAL_DB_NONCE, addressToBytes32(writerF), dataHash);
-        vm.expectEmit(address(icDB));
-        emit InterchainVerificationRequested(DST_CHAIN_ID, INITIAL_DB_NONCE, oneModule);
+        expectVerificationRequestedEvent(INITIAL_DB_NONCE, dataHash, oneModule);
         writeEntryWithVerification(MODULE_A_FEE, writerF, dataHash, oneModule);
     }
 
@@ -395,7 +401,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_writeEntryWithVerification_writerF_oneModule_savesEntry() public {
         InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerF);
         writeEntryWithVerification(MODULE_A_FEE, writerF, entry.dataHash, oneModule);
-        assertEq(icDB.getEntry(INITIAL_DB_NONCE), entry);
+        assertEq(icDB.getEntry(INITIAL_DB_NONCE, 0), entry);
     }
 
     function test_writeEntryWithVerification_writerF_twoModules_callsModules() public {
@@ -409,8 +415,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         bytes32 dataHash = getMockDataHash(writerF, INITIAL_DB_NONCE);
         vm.expectEmit(address(icDB));
         emit InterchainEntryWritten(SRC_CHAIN_ID, INITIAL_DB_NONCE, addressToBytes32(writerF), dataHash);
-        vm.expectEmit(address(icDB));
-        emit InterchainVerificationRequested(DST_CHAIN_ID, INITIAL_DB_NONCE, twoModules);
+        expectVerificationRequestedEvent(INITIAL_DB_NONCE, dataHash, twoModules);
         writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerF, dataHash, twoModules);
     }
 
@@ -429,7 +434,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_writeEntryWithVerification_writerF_twoModules_savesEntry() public {
         InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerF);
         writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerF, entry.dataHash, twoModules);
-        assertEq(icDB.getEntry(INITIAL_DB_NONCE), entry);
+        assertEq(icDB.getEntry(INITIAL_DB_NONCE, 0), entry);
     }
 
     function test_writeEntryWithVerification_writerS_oneModule_callsModule() public {
@@ -442,8 +447,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         bytes32 dataHash = getMockDataHash(writerS, INITIAL_DB_NONCE);
         vm.expectEmit(address(icDB));
         emit InterchainEntryWritten(SRC_CHAIN_ID, INITIAL_DB_NONCE, addressToBytes32(writerS), dataHash);
-        vm.expectEmit(address(icDB));
-        emit InterchainVerificationRequested(DST_CHAIN_ID, INITIAL_DB_NONCE, oneModule);
+        expectVerificationRequestedEvent(INITIAL_DB_NONCE, dataHash, oneModule);
         writeEntryWithVerification(MODULE_A_FEE, writerS, dataHash, oneModule);
     }
 
@@ -462,7 +466,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_writeEntryWithVerification_writerS_oneModule_savesEntry() public {
         InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerS);
         writeEntryWithVerification(MODULE_A_FEE, writerS, entry.dataHash, oneModule);
-        assertEq(icDB.getEntry(INITIAL_DB_NONCE), entry);
+        assertEq(icDB.getEntry(INITIAL_DB_NONCE, 0), entry);
     }
 
     function test_writeEntryWithVerification_writerS_twoModules_callsModules() public {
@@ -476,8 +480,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         bytes32 dataHash = getMockDataHash(writerS, INITIAL_DB_NONCE);
         vm.expectEmit(address(icDB));
         emit InterchainEntryWritten(SRC_CHAIN_ID, INITIAL_DB_NONCE, addressToBytes32(writerS), dataHash);
-        vm.expectEmit(address(icDB));
-        emit InterchainVerificationRequested(DST_CHAIN_ID, INITIAL_DB_NONCE, twoModules);
+        expectVerificationRequestedEvent(INITIAL_DB_NONCE, dataHash, twoModules);
         writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerS, dataHash, twoModules);
     }
 
@@ -496,7 +499,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_writeEntryWithVerification_writerS_twoModules_savesEntry() public {
         InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerS);
         writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerS, entry.dataHash, twoModules);
-        assertEq(icDB.getEntry(INITIAL_DB_NONCE), entry);
+        assertEq(icDB.getEntry(INITIAL_DB_NONCE, 0), entry);
     }
 
     // ════════════════════════════════ TESTS: WRITE + REQUEST VALIDATION (REVERTS) ════════════════════════════════════
