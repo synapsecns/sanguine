@@ -15,7 +15,7 @@ import { formatBigIntToString } from '@/utils/bigint/format'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
 import { useEffect, useRef, useState } from 'react'
 import { Token } from '@/utils/types'
-import { getWalletClient } from '@wagmi/core'
+import { getWalletClient, waitForTransaction } from '@wagmi/core'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { approveToken } from '@/utils/approveToken'
@@ -30,7 +30,10 @@ import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { Address, zeroAddress } from 'viem'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { useAppDispatch } from '@/store/hooks'
-import { useFetchPortfolioBalances } from '@/slices/portfolio/hooks'
+import {
+  useFetchPortfolioBalances,
+  fetchAndStoreSingleNetworkPortfolioBalances,
+} from '@/slices/portfolio/hooks'
 import { SwapTransactionButton } from '@/components/StateManagedSwap/SwapTransactionButton'
 import SwapExchangeRateInfo from '@/components/StateManagedSwap/SwapExchangeRateInfo'
 import { useSwapState } from '@/slices/swap/hooks'
@@ -43,6 +46,7 @@ import { EMPTY_SWAP_QUOTE_ZERO } from '@/constants/swap'
 import { SwapToTokenListOverlay } from '@/components/StateManagedSwap/SwapToTokenListOverlay'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import useSyncQueryParamsWithSwapState from '@/utils/hooks/useSyncQueryParamsWithSwapState'
+import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 
 const StateManagedSwap = () => {
   const { address } = useAccount()
@@ -234,6 +238,16 @@ const StateManagedSwap = () => {
     }
   }
 
+  const onSuccessSwap = () => {
+    dispatch(
+      fetchAndStoreSingleNetworkPortfolioBalances({
+        address,
+        chainId: swapChainId,
+      })
+    )
+    dispatch(setSwapQuote(EMPTY_SWAP_QUOTE_ZERO))
+    dispatch(updateSwapFromValue(''))
+  }
   const executeSwap = async () => {
     const currentChainName = CHAINS_BY_ID[swapChainId]?.name
 
@@ -290,46 +304,51 @@ const StateManagedSwap = () => {
         { id: 'swap-in-progress-popup', duration: Infinity }
       )
 
-      try {
-        const successTx = await tx
+      const transactionReceipt = await waitForTransaction({
+        hash: tx as Address,
+        timeout: 60_000,
+      })
+      console.log('Transaction Receipt: ', transactionReceipt)
 
-        segmentAnalyticsEvent(`[Swap] swaps successfully`, {
-          address,
-          originChainId: swapChainId,
-          inputAmount: swapFromValue,
-          expectedReceivedAmount: swapQuote.outputAmountString,
-          exchangeRate: swapQuote.exchangeRate,
-        })
+      onSuccessSwap()
 
-        toast.dismiss(pendingPopup)
+      segmentAnalyticsEvent(`[Swap] swaps successfully`, {
+        address,
+        originChainId: swapChainId,
+        inputAmount: swapFromValue,
+        expectedReceivedAmount: swapQuote.outputAmountString,
+        exchangeRate: swapQuote.exchangeRate,
+      })
 
-        const successToastContent = (
+      toast.dismiss(pendingPopup)
+
+      const successToastContent = (
+        <div>
           <div>
-            <div>
-              Successfully swapped from {swapFromToken.symbol} to{' '}
-              {swapToToken.symbol} on {currentChainName}
-            </div>
-            <ExplorerToastLink
-              transactionHash={tx ?? zeroAddress}
-              chainId={swapChainId}
-            />
+            Successfully swapped from {swapFromToken.symbol} to{' '}
+            {swapToToken.symbol} on {currentChainName}
           </div>
-        )
+          <ExplorerToastLink
+            transactionHash={tx ?? zeroAddress}
+            chainId={swapChainId}
+          />
+        </div>
+      )
 
-        toast.success(successToastContent, {
-          id: 'swap-successful-popup',
-          duration: 10000,
-        })
+      toast.success(successToastContent, {
+        id: 'swap-successful-popup',
+        duration: 10000,
+      })
 
-        dispatch(setSwapQuote(EMPTY_SWAP_QUOTE_ZERO))
-        dispatch(updateSwapFromValue())
-        return tx
-      } catch (error) {
-        toast.dismiss(pendingPopup)
-        console.log(`Transaction failed with error: ${error}`)
-      }
+      return tx
     } catch (error) {
       console.log(`Swap Execution failed with error: ${error}`)
+
+      /** Assume successful swap tx if await transaction receipt times out */
+      if (isTransactionReceiptError(error)) {
+        onSuccessSwap()
+      }
+
       toast.dismiss(pendingPopup)
       txErrorHandler(error)
     }
