@@ -33,9 +33,15 @@ export const _DestinationAddressInput = ({
   /** Warning State */
   const [showWarning, setShowWarning] = useState<boolean>(false)
 
-  const handleActivateWarning = () => setShowWarning(true)
-  const handleAcceptWarning = () => setShowWarning(false)
-  const handleRejectWarning = () => setShowWarning(false)
+  const handleActivateWarning = () => {
+    setShowWarning(!showWarning)
+  }
+  const handleAcceptWarning = () => {
+    setShowWarning(false)
+  }
+  const handleRejectWarning = () => {
+    setShowWarning(false)
+  }
 
   return (
     <div id="destination-address-input" onClick={handleActivateWarning}>
@@ -63,12 +69,11 @@ export const _DestinationAddressInput = ({
           ${isInputFocused ? 'text-left' : 'text-center'}
         `}
       />
-      {showWarning && (
-        <DestinationInputWarning
-          onAccept={handleAcceptWarning}
-          onCancel={handleRejectWarning}
-        />
-      )}
+      <DestinationInputWarning
+        show={showWarning}
+        onAccept={() => handleAcceptWarning()}
+        onCancel={() => handleRejectWarning()}
+      />
       <div className="text-white">
         {isInputValidAddress ? 'Valid Address' : 'Invalid Address'}
       </div>
@@ -76,9 +81,22 @@ export const _DestinationAddressInput = ({
   )
 }
 
-const DestinationInputWarning = ({ onAccept, onCancel }) => {
+const DestinationInputWarning = ({
+  show,
+  onAccept,
+  onCancel,
+}: {
+  show: boolean
+  onAccept: () => void
+  onCancel: () => void
+}) => {
   return (
-    <div>
+    <div
+      className={`
+      p-2 border rounded-sm bg-surface border-separator text-secondary
+      ${show ? 'absolute' : 'hidden'}
+      `}
+    >
       <h3>Warning</h3>
       <p>Do not send your funds to a custodial wallet or exchange address!</p>
       <p>It may be impossible to recover your funds</p>
