@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
-import { useAppDispatch } from '@/store/hooks'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { isValidAddress } from '@/utils/isValidAddress'
 import { shortenAddress } from '@/utils/shortenAddress'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { setDestinationAddress } from '@/slices/bridge/reducer'
+import { setShowDestinationWarning } from '@/slices/bridgeDisplaySlice'
 import { Address } from 'viem'
 
 export const inputRef = React.createRef<HTMLInputElement>()
@@ -15,6 +16,10 @@ export const _DestinationAddressInput = ({
 }) => {
   const dispatch = useAppDispatch()
   const { destinationAddress } = useBridgeState()
+  const { showDestinationWarning } = useAppSelector(
+    (state) => state.bridgeDisplay
+  )
+
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
 
   const handleInputFocus = () => setIsInputFocused(true)
@@ -36,21 +41,23 @@ export const _DestinationAddressInput = ({
   const [showWarning, setShowWarning] = useState<boolean>(false)
 
   const handleActivateWarning = () => {
-    setShowWarning(!showWarning)
+    if (!showWarning && showDestinationWarning) {
+      setShowWarning(!showWarning)
+    }
   }
+
   const handleAcceptWarning = () => {
     inputRef.current.focus()
     setShowWarning(false)
+    dispatch(setShowDestinationWarning(false))
   }
+
   const handleRejectWarning = () => {
     setShowWarning(false)
   }
 
   return (
-    <div
-      id="destination-address-input"
-      onClick={!showWarning ? handleActivateWarning : null}
-    >
+    <div id="destination-address-input" onClick={handleActivateWarning}>
       <input
         ref={inputRef}
         onChange={(e) =>
