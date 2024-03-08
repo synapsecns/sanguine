@@ -12,40 +12,11 @@ export const _DestinationAddressInput = ({
   connectedAddress: string
 }) => {
   const dispatch = useAppDispatch()
-
   const { destinationAddress } = useBridgeState()
-
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
 
-  const handleInputFocus = () => {
-    setIsInputFocused(true)
-  }
-
-  const handleInputBlur = () => {
-    setIsInputFocused(false)
-  }
-
-  // TODO: Lift state up to Redux slice after working example
-  const [enableInput, setEnableInput] = useState<boolean>(false)
-  const [showWarning, setShowWarning] = useState<boolean>(false)
-  const [inputValue, setInputValue] = useState<string>('')
-
-  const handleInput = (value) => {
-    setInputValue(value)
-  }
-
-  const handleActivateWarning = () => {
-    setShowWarning(true)
-  }
-
-  const onEnableInput = () => {
-    setEnableInput(true)
-  }
-
-  const onReset = () => {
-    setShowWarning(false)
-    setEnableInput(false)
-  }
+  const handleInputFocus = () => setIsInputFocused(true)
+  const handleInputBlur = () => setIsInputFocused(false)
 
   const isInputValidAddress = isValidAddress(destinationAddress)
 
@@ -58,6 +29,13 @@ export const _DestinationAddressInput = ({
       ? shortenAddress(connectedAddress)
       : 'Wallet address'
   }
+
+  /** Warning State */
+  const [showWarning, setShowWarning] = useState<boolean>(false)
+
+  const handleActivateWarning = () => setShowWarning(true)
+  const handleAcceptWarning = () => setShowWarning(false)
+  const handleRejectWarning = () => setShowWarning(false)
 
   return (
     <div id="destination-address-input" onClick={handleActivateWarning}>
@@ -85,12 +63,12 @@ export const _DestinationAddressInput = ({
           ${isInputFocused ? 'text-left' : 'text-center'}
         `}
       />
-      {/* {showWarning && (
+      {showWarning && (
         <DestinationInputWarning
-          onEnableInput={onEnableInput}
-          onReset={onReset}
+          onAccept={handleAcceptWarning}
+          onCancel={handleRejectWarning}
         />
-      )} */}
+      )}
       <div className="text-white">
         {isInputValidAddress ? 'Valid Address' : 'Invalid Address'}
       </div>
@@ -98,15 +76,15 @@ export const _DestinationAddressInput = ({
   )
 }
 
-const DestinationInputWarning = ({ onEnableInput, onReset }) => {
+const DestinationInputWarning = ({ onAccept, onCancel }) => {
   return (
     <div>
       <h3>Warning</h3>
       <p>Do not send your funds to a custodial wallet or exchange address!</p>
       <p>It may be impossible to recover your funds</p>
       <div className="flex">
-        <button onClick={onReset}>Cancel</button>
-        <button onClick={onEnableInput}>Okay</button>
+        <button onClick={onCancel}>Cancel</button>
+        <button onClick={onAccept}>Okay</button>
       </div>
     </div>
   )
