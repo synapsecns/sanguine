@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import _ from 'lodash'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { isValidAddress } from '@/utils/isValidAddress'
@@ -13,6 +13,7 @@ import { useTransactionsState } from '@/slices/transactions/hooks'
 import { TransactionsState } from '@/slices/transactions/reducer'
 import { BridgeTransaction } from '@/slices/api/generated'
 import { getValidAddress } from '@/utils/isValidAddress'
+import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -43,8 +44,14 @@ export const _DestinationAddressInput = ({
 
   console.log('filteredRecipientList:', filteredRecipientList)
 
-  const handleInputFocus = () => setIsInputFocused(true)
-  const handleInputBlur = () => setIsInputFocused(false)
+  const handleInputFocus = () => {
+    setIsInputFocused(true)
+    setShowRecipientList(true)
+  }
+
+  const handleInputBlur = () => {
+    setIsInputFocused(false)
+  }
 
   const handleClearInput = () => {
     dispatch(setDestinationAddress('' as Address))
@@ -68,6 +75,12 @@ export const _DestinationAddressInput = ({
       : 'Wallet address'
   }
 
+  const [showRecipientList, setShowRecipientList] = useState<boolean>(false)
+  const listRef = useRef(null)
+  useCloseOnOutsideClick(listRef, () => setShowRecipientList(false))
+
+  useEffect(() => {}, [filteredRecipientList, isInputFocused])
+
   /** Warning State */
   const [showWarning, setShowWarning] = useState<boolean>(false)
 
@@ -87,10 +100,10 @@ export const _DestinationAddressInput = ({
     setShowWarning(false)
   }
 
+  console.log('isInputFocused:', isInputFocused)
   return (
     <div id="destination-address-input" onClick={handleActivateWarning}>
       <div
-        onFocus={handleInputFocus}
         className={`
            flex border text-md rounded-sm
            ${isInputFocused ? ' bg-bgBase' : 'bg-transparent'}
@@ -131,19 +144,24 @@ export const _DestinationAddressInput = ({
         )}
       </div>
       <div className="relative">
-        {isInputFocused && (
+        {showRecipientList && (
           <ul
+            ref={listRef}
             className={`
-            absolute right-0 z-50 p-0 top-1 bg-surface
-            border border-solid border-tint rounded shadow
-            popover list-none text-left text-sm
-          `}
+              absolute right-0 z-50 p-0 top-1 bg-surface
+              border border-solid border-tint rounded shadow
+              popover list-none text-left text-sm
+            `}
           >
-            {recipientList?.map((recipient) => {
+            {filteredRecipientList?.map((recipient) => {
               return (
-                <ListReceipient
+                <ListRecipient
                   address={recipient?.toAddress}
                   daysAgo={recipient?.daysAgo}
+                  onSelectRecipient={(destinationAddress: Address) => {
+                    dispatch(setDestinationAddress(destinationAddress))
+                  }}
+                  onFocus={handleInputFocus}
                 />
               )
             })}
@@ -159,15 +177,20 @@ export const _DestinationAddressInput = ({
   )
 }
 
-const ListReceipient = ({
+const ListRecipient = ({
   address,
   daysAgo,
+  onSelectRecipient,
+  onFocus,
 }: {
   address: string
   daysAgo: number
+  onSelectRecipient?: (destinationAddress: Address) => void
+  onFocus: () => void
 }) => {
   return (
     <div
+      onClick={() => onSelectRecipient(address as Address)}
       className={`
         flex justify-between p-1 space-x-2
         cursor-pointer text-strong
@@ -234,7 +257,7 @@ const filterTxsByRecipient = (
         getValidAddress(transaction.toInfo?.address) !== checkAddress
     )
     .map((transaction) => ({
-      toAddress: transaction.toInfo?.address,
+      toAddress: getValidAddress(transaction.toInfo?.address),
       time: transaction.toInfo?.formattedTime,
       daysAgo: calculateDaysAgo(transaction.toInfo?.formattedTime),
     }))
