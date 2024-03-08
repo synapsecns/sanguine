@@ -164,7 +164,7 @@ func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetc
 		//nolint:exhaustive
 		switch method {
 		case relconfig.RebalanceMethodSynapseCCTP:
-			rebalanceManagers[method] = newRebalanceManagerCCTP(cfg, handler, clientFetcher, txSubmitter, relayer, db)
+			rebalanceManagers[method] = newrebalanceManagerSynapseCCTP(cfg, handler, clientFetcher, txSubmitter, relayer, db)
 		default:
 			return nil, fmt.Errorf("unsupported rebalance method: %s", method)
 		}
