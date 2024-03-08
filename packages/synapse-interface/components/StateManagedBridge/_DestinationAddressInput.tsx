@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import _ from 'lodash'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { isValidAddress } from '@/utils/isValidAddress'
 import { shortenAddress } from '@/utils/shortenAddress'
@@ -8,6 +9,10 @@ import { setShowDestinationWarning } from '@/slices/bridgeDisplaySlice'
 import { Address } from 'viem'
 import { isEmptyString } from '@/utils/isEmptyString'
 import { CloseButton } from './components/CloseButton'
+import { useTransactionsState } from '@/slices/transactions/hooks'
+import { TransactionsState } from '@/slices/transactions/reducer'
+import { BridgeTransaction } from '@/slices/api/generated'
+import { getValidAddress } from '@/utils/isValidAddress'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -18,10 +23,21 @@ export const _DestinationAddressInput = ({
 }) => {
   const dispatch = useAppDispatch()
   const { destinationAddress } = useBridgeState()
+  const {
+    userHistoricalTransactions,
+    isUserHistoricalTransactionsLoading,
+  }: TransactionsState = useTransactionsState()
   const { showDestinationWarning } = useAppSelector(
     (state) => state.bridgeDisplay
   )
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
+
+  const recipientList = filterTransactionsByRecipient(
+    userHistoricalTransactions,
+    connectedAddress
+  )
+
+  console.log('recipientList:', recipientList)
 
   const handleInputFocus = () => setIsInputFocused(true)
   const handleInputBlur = () => setIsInputFocused(false)
@@ -156,4 +172,20 @@ const DestinationInputWarning = ({
       </div>
     </div>
   )
+}
+
+const filterTransactionsByRecipient = (
+  transactions: BridgeTransaction[],
+  connectedAddress?: string
+): { toAddress: string | undefined; time: string | undefined }[] => {
+  const checkAddress = getValidAddress(connectedAddress)
+  return transactions
+    .filter(
+      (transaction) =>
+        getValidAddress(transaction.toInfo?.address) !== checkAddress
+    )
+    .map((transaction) => ({
+      toAddress: transaction.toInfo?.address,
+      time: transaction.toInfo?.formattedTime,
+    }))
 }
