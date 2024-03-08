@@ -77,8 +77,6 @@ export const _DestinationAddressInput = ({
   const listRef = useRef(null)
   useCloseOnOutsideClick(listRef, () => setShowRecipientList(false))
 
-  useEffect(() => {}, [filteredRecipientList, isInputFocused])
-
   /** Warning State */
   const [showWarning, setShowWarning] = useState<boolean>(false)
 
@@ -98,7 +96,6 @@ export const _DestinationAddressInput = ({
     setShowWarning(false)
   }
 
-  console.log('isInputFocused:', isInputFocused)
   return (
     <div id="destination-address-input" onClick={handleActivateWarning}>
       <div
@@ -127,6 +124,7 @@ export const _DestinationAddressInput = ({
               ? shortenAddress(destinationAddress)
               : destinationAddress
           }
+          disabled={_.isEmpty(connectedAddress)}
           className={`
             text-md rounded-sm text-secondary py-1 px-2 z-0 border-0 bg-transparent
             focus:text-white focus:border-transparent focus:outline-none focus:ring-0
@@ -160,7 +158,6 @@ export const _DestinationAddressInput = ({
                     dispatch(setDestinationAddress(destinationAddress))
                     setShowRecipientList(false)
                   }}
-                  onFocus={handleInputFocus}
                 />
               )
             })}
@@ -180,12 +177,10 @@ const ListRecipient = ({
   address,
   daysAgo,
   onSelectRecipient,
-  onFocus,
 }: {
   address: string
   daysAgo: number
   onSelectRecipient?: (destinationAddress: Address) => void
-  onFocus: () => void
 }) => {
   return (
     <div
@@ -271,7 +266,7 @@ const filterNewestTxByRecipient = (
 ) => {
   const newestTxMap = new Map()
 
-  transactions.forEach((tx) => {
+  transactions?.forEach((tx) => {
     const existingTx = newestTxMap.get(tx.toAddress)
 
     if (!existingTx || tx.daysAgo < existingTx.daysAgo) {
