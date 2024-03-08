@@ -24,10 +24,8 @@ export const _DestinationAddressInput = ({
 }) => {
   const dispatch = useAppDispatch()
   const { destinationAddress } = useBridgeState()
-  const {
-    userHistoricalTransactions,
-    isUserHistoricalTransactionsLoading,
-  }: TransactionsState = useTransactionsState()
+  const { userHistoricalTransactions }: TransactionsState =
+    useTransactionsState()
   const { showDestinationWarning } = useAppSelector(
     (state) => state.bridgeDisplay
   )
@@ -160,6 +158,7 @@ export const _DestinationAddressInput = ({
                   daysAgo={recipient?.daysAgo}
                   onSelectRecipient={(destinationAddress: Address) => {
                     dispatch(setDestinationAddress(destinationAddress))
+                    setShowRecipientList(false)
                   }}
                   onFocus={handleInputFocus}
                 />
