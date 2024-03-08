@@ -15,7 +15,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"github.com/synapsecns/sanguine/ethergo/util"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/config"
-	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/circlecctp"
+	messagetransmitter "github.com/synapsecns/sanguine/services/cctp-relayer/contracts/messagetransmitter"
 	db2 "github.com/synapsecns/sanguine/services/cctp-relayer/db"
 	relayTypes "github.com/synapsecns/sanguine/services/cctp-relayer/types"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
@@ -28,7 +28,7 @@ type circleCCTPHandler struct {
 	cfg              config.Config
 	db               db2.CCTPRelayerDB
 	omniRPCClient    omniClient.RPCClient
-	boundCircleCCTPs map[uint32]*circlecctp.MessageTransmitter
+	boundCircleCCTPs map[uint32]*messagetransmitter.MessageTransmitter
 	txSubmitter      submitter.TransactionSubmitter
 	relayerAddress   common.Address
 	handler          metrics.Handler
@@ -36,13 +36,13 @@ type circleCCTPHandler struct {
 
 // NewCircleCCTPHandler creates a new CircleCCTPHandler.
 func NewCircleCCTPHandler(ctx context.Context, cfg config.Config, db db2.CCTPRelayerDB, omniRPCClient omniClient.RPCClient, txSubmitter submitter.TransactionSubmitter, handler metrics.Handler) (CCTPHandler, error) {
-	boundCircleCCTPs := make(map[uint32]*circlecctp.MessageTransmitter)
+	boundCircleCCTPs := make(map[uint32]*messagetransmitter.MessageTransmitter)
 	for _, chain := range cfg.Chains {
 		cl, err := omniRPCClient.GetConfirmationsClient(ctx, int(chain.ChainID), 1)
 		if err != nil {
 			return nil, fmt.Errorf("could not get client: %w", err)
 		}
-		boundCircleCCTPs[chain.ChainID], err = circlecctp.NewMessageTransmitter(chain.GetCircleCCTPAddress(), cl)
+		boundCircleCCTPs[chain.ChainID], err = messagetransmitter.NewMessageTransmitter(chain.GetCircleCCTPAddress(), cl)
 		if err != nil {
 			return nil, fmt.Errorf("could not build bound contract: %w", err)
 		}
@@ -73,7 +73,7 @@ func (c *circleCCTPHandler) HandleLog(ctx context.Context, log *types.Log, chain
 	}
 
 	switch log.Topics[0] {
-	case circlecctp.MessageSentTopic:
+	case messagetransmitter.MessageSentTopic:
 		msg, err := c.handleMessageSent(ctx, log, chainID)
 		if err != nil {
 			return false, fmt.Errorf("could not store message sent: %w", err)
@@ -82,7 +82,7 @@ func (c *circleCCTPHandler) HandleLog(ctx context.Context, log *types.Log, chain
 			processQueue = true
 		}
 		return processQueue, nil
-	case circlecctp.MessageReceivedTopic:
+	case messagetransmitter.MessageReceivedTopic:
 		err = c.handleMessageReceived(ctx, log, chainID)
 		if err != nil {
 			return false, fmt.Errorf("could not handle message received: %w", err)
@@ -132,7 +132,7 @@ func (c *circleCCTPHandler) FetchAndProcessSentEvent(parentCtx context.Context, 
 			continue
 		}
 
-		if log.Topics[0] == circlecctp.MessageSentTopic {
+		if log.Topics[0] == messagetransmitter.MessageSentTopic {
 			msg, err = c.handleMessageSent(ctx, log, chainID)
 			if err != nil {
 				return nil, fmt.Errorf("could not handle message sent: %w", err)
@@ -208,7 +208,7 @@ func (c *circleCCTPHandler) handleMessageSent(parentCtx context.Context, log *ty
 		return nil, fmt.Errorf("could not get chain client: %w", err)
 	}
 
-	eventParser, err := circlecctp.NewMessageTransmitterFilterer(log.Address, ethClient)
+	eventParser, err := messagetransmitter.NewMessageTransmitterFilterer(log.Address, ethClient)
 	if err != nil {
 		return nil, fmt.Errorf("could not create event parser: %w", err)
 	}
@@ -290,7 +290,7 @@ func (c *circleCCTPHandler) handleMessageReceived(parentCtx context.Context, log
 		return fmt.Errorf("could not get chain client: %w", err)
 	}
 
-	eventParser, err := circlecctp.NewMessageTransmitterFilterer(log.Address, ethClient)
+	eventParser, err := messagetransmitter.NewMessageTransmitterFilterer(log.Address, ethClient)
 	if err != nil {
 		return fmt.Errorf("could not create event parser: %w", err)
 	}

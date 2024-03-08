@@ -1,4 +1,4 @@
-package circlecctp
+package messagetransmitter
 
 import (
 	"strings"

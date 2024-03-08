@@ -16,7 +16,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/config"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/cctp"
-	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/circlecctp"
+	messagetransmitter "github.com/synapsecns/sanguine/services/cctp-relayer/contracts/messagetransmitter"
 	db2 "github.com/synapsecns/sanguine/services/cctp-relayer/db"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"go.opentelemetry.io/otel/attribute"
@@ -129,7 +129,7 @@ func (s *synapseCCTPHandler) FetchAndProcessSentEvent(parentCtx context.Context,
 	// From this receipt, we expect two different logs:
 	// - `messageSentEvent` gives us the raw bytes of the CCTP message
 	// - `circleRequestSentEvent` gives us auxiliary data for SynapseCCTP
-	var messageSentEvent *circlecctp.MessageTransmitterMessageSent
+	var messageSentEvent *messagetransmitter.MessageTransmitterMessageSent
 	var circleRequestSentEvent *cctp.SynapseCCTPEventsCircleRequestSent
 
 	for _, log := range receipt.Logs {
@@ -150,8 +150,8 @@ func (s *synapseCCTPHandler) FetchAndProcessSentEvent(parentCtx context.Context,
 			if err != nil {
 				return nil, fmt.Errorf("could not parse circle request sent: %w", err)
 			}
-		case circlecctp.MessageSentTopic:
-			eventParser, err := circlecctp.NewMessageTransmitterFilterer(log.Address, ethClient)
+		case messagetransmitter.MessageSentTopic:
+			eventParser, err := messagetransmitter.NewMessageTransmitterFilterer(log.Address, ethClient)
 			if err != nil {
 				return nil, fmt.Errorf("could not create event parser: %w", err)
 			}
