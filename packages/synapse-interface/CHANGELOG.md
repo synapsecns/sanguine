@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.4.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.3.0...@synapsecns/synapse-interface@0.4.0) (2024-03-08)
+
+
+### Features
+
+* **synapse-interface:** post transaction balances ([#2079](https://github.com/synapsecns/sanguine/issues/2079)) ([2a95040](https://github.com/synapsecns/sanguine/commit/2a95040c7a6535d21e004b4bf4bcb7d022a9cda7))
+
+
+
+
+
 # [0.3.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.2.2...@synapsecns/synapse-interface@0.3.0) (2024-03-07)
 
 
