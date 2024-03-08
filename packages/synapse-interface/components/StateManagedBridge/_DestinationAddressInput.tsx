@@ -7,6 +7,7 @@ import { setDestinationAddress } from '@/slices/bridge/reducer'
 import { setShowDestinationWarning } from '@/slices/bridgeDisplaySlice'
 import { Address } from 'viem'
 import { isEmptyString } from '@/utils/isEmptyString'
+import { CloseButton } from './components/CloseButton'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -20,6 +21,8 @@ export const _DestinationAddressInput = ({
   const { showDestinationWarning } = useAppSelector(
     (state) => state.bridgeDisplay
   )
+
+  const handleClearInput = () => dispatch(setDestinationAddress('' as Address))
 
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
 
@@ -67,21 +70,22 @@ export const _DestinationAddressInput = ({
         {isInputValidAddress ? 'Valid Address' : 'Invalid Address'}
       </div> */}
 
-      <input
-        ref={inputRef}
-        onChange={(e) =>
-          dispatch(setDestinationAddress(e.target.value as Address))
-        }
-        onFocus={handleInputFocus}
-        onBlur={handleInputBlur}
-        placeholder={placeholder}
-        value={
-          isInputValidAddress && !isInputFocused
-            ? shortenAddress(destinationAddress)
-            : destinationAddress
-        }
-        className={`
-          text-md rounded-sm text-secondary py-1 px-2
+      <div className="flex">
+        <input
+          ref={inputRef}
+          onChange={(e) =>
+            dispatch(setDestinationAddress(e.target.value as Address))
+          }
+          onFocus={handleInputFocus}
+          onBlur={handleInputBlur}
+          placeholder={placeholder}
+          value={
+            isInputValidAddress && !isInputFocused
+              ? shortenAddress(destinationAddress)
+              : destinationAddress
+          }
+          className={`
+          text-md rounded-sm text-secondary py-1 px-2 z-0
           focus:text-white focus:outline-none focus:ring-0
           ${
             isInputValidAddress
@@ -97,7 +101,9 @@ export const _DestinationAddressInput = ({
               : 'text-center bg-transparent'
           }
         `}
-      />
+        />
+        <CloseButton onClick={handleClearInput} />
+      </div>
       <DestinationInputWarning
         show={showWarning}
         onAccept={() => handleAcceptWarning()}
