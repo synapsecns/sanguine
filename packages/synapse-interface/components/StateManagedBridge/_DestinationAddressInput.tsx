@@ -32,12 +32,16 @@ export const _DestinationAddressInput = ({
   )
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
 
-  const recipientList = filterTransactionsByRecipient(
+  const recipientList = filterTxsByRecipient(
     userHistoricalTransactions,
     connectedAddress
   )
 
   console.log('recipientList:', recipientList)
+
+  const filteredRecipientList = filterNewestTxByRecipient(recipientList)
+
+  console.log('filteredRecipientList:', filteredRecipientList)
 
   const handleInputFocus = () => setIsInputFocused(true)
   const handleInputBlur = () => setIsInputFocused(false)
@@ -174,10 +178,14 @@ const DestinationInputWarning = ({
   )
 }
 
-const filterTransactionsByRecipient = (
+const filterTxsByRecipient = (
   transactions: BridgeTransaction[],
   connectedAddress?: string
-): { toAddress: string | undefined; time: string | undefined }[] => {
+): {
+  toAddress: string | undefined
+  time: string | undefined
+  daysAgo: number
+}[] => {
   const checkAddress = getValidAddress(connectedAddress)
   return transactions
     ?.filter(
@@ -189,6 +197,26 @@ const filterTransactionsByRecipient = (
       time: transaction.toInfo?.formattedTime,
       daysAgo: calculateDaysAgo(transaction.toInfo?.formattedTime),
     }))
+}
+
+const filterNewestTxByRecipient = (
+  transactions: {
+    toAddress: string | undefined
+    time: string | undefined
+    daysAgo: number
+  }[]
+) => {
+  const newestTxMap = new Map()
+
+  transactions.forEach((tx) => {
+    const existingTx = newestTxMap.get(tx.toAddress)
+
+    if (!existingTx || tx.daysAgo < existingTx.daysAgo) {
+      newestTxMap.set(tx.toAddress, tx)
+    }
+  })
+
+  return Array.from(newestTxMap.values())
 }
 
 const calculateDaysAgo = (time?: string) => {
