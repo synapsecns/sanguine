@@ -15,6 +15,7 @@ import { formatBigIntToString } from '@/utils/bigint/format'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { Token } from '@/utils/types'
 import { InteractiveInputRowButton } from '@/components/InteractiveInputRowButton'
+import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 import ButtonLoadingDots from '@/components/buttons/ButtonLoadingDots'
 import InteractiveInputRow from '@/components/InteractiveInputRow'
 import Button from '@/components/ui/tailwind/Button'
@@ -131,12 +132,10 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
         <div className="flex items-center justify-between my-2">
           <div className="text-[#EEEDEF]">Unstaked</div>
           <div className="text-white ">
-            {lpTokenBalance === 0n
+            {!lpTokenBalance
               ? '\u2212'
-              : formatBigIntToString(
-                  lpTokenBalance,
-                  tokenInfo.decimals,
-                  6
+              : trimTrailingZeroesAfterDecimal(
+                  formatBigIntToString(lpTokenBalance, tokenInfo.decimals, 6)
                 )}{' '}
             <span className="text-base text-[#A9A5AD]">
               {pool ? pool.symbol : ''}
@@ -146,7 +145,9 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
         <div className="flex items-center justify-between my-2">
           <div className="text-[#EEEDEF]">Staked</div>
           <div className="text-white ">
-            {formatBigIntToString(userStakeData.amount, tokenInfo.decimals, 6)}{' '}
+            {trimTrailingZeroesAfterDecimal(
+              formatBigIntToString(userStakeData.amount, tokenInfo.decimals, 6)
+            )}{' '}
             <span className="text-base text-[#A9A5AD]">
               {pool ? pool.symbol : ''}
             </span>
@@ -157,17 +158,19 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             {pool?.customRewardToken ?? 'SYN'} Earned
           </div>
           <div className="text-white ">
-            {userStakeData.reward === 0n
+            {!userStakeData.reward
               ? '\u2212'
-              : formatBigIntToString(userStakeData.reward, 18, 6)}{' '}
+              : trimTrailingZeroesAfterDecimal(
+                  formatBigIntToString(userStakeData.reward, 18, 6)
+                )}{' '}
             <span className="text-base text-[#A9A5AD]">
               {pool?.customRewardToken ?? 'SYN'}
             </span>
           </div>
         </div>
-        {userStakeData.reward === 0n ? null : (
+        {!userStakeData.reward ? null : (
           <Button
-            disabled={userStakeData.reward === 0n}
+            disabled={!userStakeData.reward}
             className={`
              bg-[#564f58]
               w-full my-2 px-4 py-3 tracking-wide
@@ -232,19 +235,23 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
               title={pool?.symbol}
               isConnected={Boolean(address)}
               balanceStr={
-                lpTokenBalance === 0n
+                !lpTokenBalance
                   ? '0.0'
-                  : formatBigIntToString(lpTokenBalance, tokenInfo.decimals, 18)
+                  : trimTrailingZeroesAfterDecimal(
+                      formatBigIntToString(
+                        lpTokenBalance,
+                        tokenInfo.decimals,
+                        18
+                      )
+                    )
               }
               onClickBalance={() => {
                 setDeposit({
-                  str:
-                    lpTokenBalance === 0n
-                      ? '0.0000'
-                      : formatBigIntToString(
-                          lpTokenBalance,
-                          tokenInfo.decimals
-                        ),
+                  str: !lpTokenBalance
+                    ? '0.0000'
+                    : trimTrailingZeroesAfterDecimal(
+                        formatBigIntToString(lpTokenBalance, tokenInfo.decimals)
+                      ),
                   bi: lpTokenBalance,
                 })
               }}
@@ -257,26 +264,30 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                   bi: stringToBigInt(val, pool.decimals[chainId]),
                 })
               }}
-              disabled={lpTokenBalance === 0n}
+              disabled={!lpTokenBalance}
               icon={pool?.icon?.src}
             />
           ) : (
             <InteractiveInputRow
               title={pool?.symbol}
               isConnected={Boolean(address)}
-              balanceStr={formatBigIntToString(
-                userStakeData.amount,
-                tokenInfo.decimals,
-                18
+              balanceStr={trimTrailingZeroesAfterDecimal(
+                formatBigIntToString(
+                  userStakeData.amount,
+                  tokenInfo.decimals,
+                  18
+                )
               )}
               onClickBalance={() => {
                 setWithdraw(
-                  userStakeData.amount === 0n
+                  !userStakeData.amount
                     ? '0.00000'
-                    : formatBigIntToString(
-                        userStakeData.amount,
-                        tokenInfo.decimals,
-                        18
+                    : trimTrailingZeroesAfterDecimal(
+                        formatBigIntToString(
+                          userStakeData.amount,
+                          tokenInfo.decimals,
+                          18
+                        )
                       )
                 )
               }}
@@ -286,7 +297,7 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                 let val = cleanNumberInput(e.target.value)
                 setWithdraw(val)
               }}
-              disabled={userStakeData.amount === 0n}
+              disabled={!userStakeData.amount}
               icon={pool?.icon?.src}
             />
           )}
@@ -294,14 +305,18 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
             <InteractiveInputRowButton
               title={pool?.symbol}
               buttonLabel={
-                lpTokenBalance === 0n
+                !lpTokenBalance || lpTokenBalance < deposit.bi
                   ? 'Insufficient Balance'
                   : allowance < deposit.bi
                   ? `Approve ${pool?.symbol}`
                   : 'Stake'
               }
               loadingLabel={isPendingApprove ? 'Approving' : 'Staking'}
-              disabled={lpTokenBalance === 0n || deposit.str === ''}
+              disabled={
+                !lpTokenBalance ||
+                lpTokenBalance < deposit.bi ||
+                deposit.str === ''
+              }
               isPending={isPendingStake || isPendingApprove}
               onClickEnter={
                 allowance < deposit.bi
@@ -342,9 +357,17 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
           ) : (
             <InteractiveInputRowButton
               title={pool?.symbol}
-              buttonLabel="Unstake"
+              buttonLabel={
+                userStakeData.amount < stringToBigInt(withdraw, 18)
+                  ? 'Insufficient balance'
+                  : 'Unstake'
+              }
               loadingLabel="Unstaking"
-              disabled={userStakeData.amount === 0n || withdraw === ''}
+              disabled={
+                !userStakeData.amount ||
+                userStakeData.amount < stringToBigInt(withdraw, 18) ||
+                withdraw === ''
+              }
               isPending={isPendingUnstake}
               onClickEnter={async () => {
                 const tx = await pendingUnstakeTxWrapFunc(
