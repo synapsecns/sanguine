@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/core/metrics"
+	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/config"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/circlecctp"
@@ -29,6 +30,7 @@ type circleCCTPHandler struct {
 	omniRPCClient    omniClient.RPCClient
 	boundCircleCCTPs map[uint32]*circlecctp.MessageTransmitter
 	txSubmitter      submitter.TransactionSubmitter
+	relayerAddress   common.Address
 	handler          metrics.Handler
 }
 
@@ -45,12 +47,17 @@ func NewCircleCCTPHandler(ctx context.Context, cfg config.Config, db db2.CCTPRel
 			return nil, fmt.Errorf("could not build bound contract: %w", err)
 		}
 	}
+	signer, err := signerConfig.SignerFromConfig(ctx, cfg.Signer)
+	if err != nil {
+		return nil, fmt.Errorf("could not make cctp signer: %w", err)
+	}
 	return &circleCCTPHandler{
 		cfg:              cfg,
 		db:               db,
 		omniRPCClient:    omniRPCClient,
 		boundCircleCCTPs: boundCircleCCTPs,
 		txSubmitter:      txSubmitter,
+		relayerAddress:   signer.Address(),
 		handler:          handler,
 	}, nil
 }
@@ -212,6 +219,16 @@ func (c *circleCCTPHandler) handleMessageSent(parentCtx context.Context, log *ty
 		return nil, fmt.Errorf("could not parse message sent: %w", err)
 	}
 
+	// check that we are the recipient
+	recipient, err := parseRecipient(messageSentEvent.Message)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse recipient from raw message")
+	}
+	if recipient != c.relayerAddress {
+		span.AddEvent(fmt.Sprintf("recipient %s does not match relayer address %s", recipient.String(), c.relayerAddress.String()))
+		return nil, nil
+	}
+
 	messageHex := hexutil.Encode(messageSentEvent.Message)
 	fmt.Printf("message hex: %v\n", messageHex)
 	fmt.Printf("message hash: %v\n", crypto.Keccak256Hash(messageSentEvent.Message).String())
@@ -281,6 +298,16 @@ func (c *circleCCTPHandler) handleMessageReceived(parentCtx context.Context, log
 	event, err := eventParser.ParseMessageReceived(*log)
 	if err != nil {
 		return fmt.Errorf("could not parse circle request fulfilled: %w", err)
+	}
+
+	// check that we are the recipient
+	recipient, err := parseRecipient(event.MessageBody)
+	if err != nil {
+		return fmt.Errorf("could not parse recipient from raw message")
+	}
+	if recipient != c.relayerAddress {
+		span.AddEvent(fmt.Sprintf("recipient %s does not match relayer address %s", recipient.String(), c.relayerAddress.String()))
+		return nil
 	}
 
 	messageHash := crypto.Keccak256Hash(event.MessageBody)
