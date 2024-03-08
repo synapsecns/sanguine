@@ -21,15 +21,20 @@ export const _DestinationAddressInput = ({
   const { showDestinationWarning } = useAppSelector(
     (state) => state.bridgeDisplay
   )
-
-  const handleClearInput = () => dispatch(setDestinationAddress('' as Address))
-
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
 
   const handleInputFocus = () => setIsInputFocused(true)
   const handleInputBlur = () => setIsInputFocused(false)
 
+  const handleClearInput = () => {
+    dispatch(setDestinationAddress('' as Address))
+    inputRef.current.focus()
+  }
+
+  const isDestinationAddressEmpty = destinationAddress === ('' as Address)
   const isInputValidAddress = isValidAddress(destinationAddress)
+  // const isInputInvalid = !isDestinationAddressEmpty && !isInputValidAddress
+
   const isInputInvalid =
     destinationAddress &&
     !isEmptyString(destinationAddress) &&
@@ -66,11 +71,20 @@ export const _DestinationAddressInput = ({
 
   return (
     <div id="destination-address-input" onClick={handleActivateWarning}>
-      {/* <div className="text-xs text-center text-white">
-        {isInputValidAddress ? 'Valid Address' : 'Invalid Address'}
-      </div> */}
-
-      <div className="flex">
+      <div
+        onFocus={handleInputFocus}
+        className={`
+           flex border text-md rounded-sm
+           ${isInputFocused ? ' bg-bgBase' : 'bg-transparent'}
+          ${
+            isInputValidAddress
+              ? 'border-synapsePurple focus:border-synapsePurple'
+              : isInputInvalid
+              ? 'border-red-500 focus:border-red-500'
+              : 'border-separator focus:border-separator'
+          }
+        `}
+      >
         <input
           ref={inputRef}
           onChange={(e) =>
@@ -85,24 +99,15 @@ export const _DestinationAddressInput = ({
               : destinationAddress
           }
           className={`
-          text-md rounded-sm text-secondary py-1 px-2 z-0
-          focus:text-white focus:outline-none focus:ring-0
-          ${
-            isInputValidAddress
-              ? 'border-synapsePurple focus:border-synapsePurple'
-              : isInputInvalid
-              ? 'border-red-500 focus:border-red-500'
-              : 'border-separator focus:border-separator'
-          }
-          ${connectedAddress ? 'w-32' : 'w-36'}
-          ${
-            isInputFocused
-              ? 'text-left bg-bgBase'
-              : 'text-center bg-transparent'
-          }
-        `}
+            text-md rounded-sm text-secondary py-1 px-2 z-0 border-0 bg-transparent
+            focus:text-white focus:border-transparent focus:outline-none focus:ring-0
+            ${connectedAddress ? 'w-32' : 'w-36'}
+            ${isInputFocused ? 'text-left' : 'text-center'}
+          `}
         />
-        <CloseButton onClick={handleClearInput} />
+        {(isInputInvalid || isInputValidAddress) && (
+          <CloseButton onClick={handleClearInput} />
+        )}
       </div>
       <DestinationInputWarning
         show={showWarning}
@@ -151,3 +156,17 @@ const DestinationInputWarning = ({
     </div>
   )
 }
+
+// ${
+//   isInputValidAddress
+//     ? 'border-synapsePurple focus:border-synapsePurple'
+//     : isInputInvalid
+//     ? 'border-red-500 focus:border-red-500'
+//     : 'border-separator focus:border-separator'
+// }
+// ${connectedAddress ? 'w-32' : 'w-36'}
+// ${
+//   isInputFocused
+//     ? 'text-left bg-bgBase'
+//     : 'text-center bg-transparent'
+// }
