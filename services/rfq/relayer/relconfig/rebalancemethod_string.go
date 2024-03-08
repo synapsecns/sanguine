@@ -10,12 +10,13 @@ func _() {
 	var x [1]struct{}
 	_ = x[RebalanceMethodNone-0]
 	_ = x[RebalanceMethodSynapseCCTP-1]
-	_ = x[RebalanceMethodNative-2]
+	_ = x[RebalanceMethodCircleCCTP-2]
+	_ = x[RebalanceMethodNative-3]
 }
 
-const _RebalanceMethod_name = "RebalanceMethodNoneRebalanceMethodSynapseCCTPRebalanceMethodNative"
+const _RebalanceMethod_name = "RebalanceMethodNoneRebalanceMethodSynapseCCTPRebalanceMethodCircleCCTPRebalanceMethodNative"
 
-var _RebalanceMethod_index = [...]uint8{0, 19, 38, 59}
+var _RebalanceMethod_index = [...]uint8{0, 19, 45, 70, 91}
 
 func (i RebalanceMethod) String() string {
 	if i >= RebalanceMethod(len(_RebalanceMethod_index)-1) {
