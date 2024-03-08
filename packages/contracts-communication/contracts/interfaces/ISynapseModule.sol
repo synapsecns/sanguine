@@ -7,6 +7,7 @@ interface ISynapseModule is IInterchainModule {
     error SynapseModule__ClaimFeeFractionExceedsMax(uint256 claimFeeFraction);
     error SynapseModule__FeeCollectorNotSet();
     error SynapseModule__GasOracleNotContract(address gasOracle);
+    error SynapseModule__GasOracleNotSet();
     error SynapseModule__NoFeesToClaim();
 
     // ═══════════════════════════════════════════════ PERMISSIONED ════════════════════════════════════════════════════

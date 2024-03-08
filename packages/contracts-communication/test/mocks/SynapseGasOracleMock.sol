@@ -1,9 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {IGasOracle} from "../../contracts/interfaces/IGasOracle.sol";
+import {ISynapseGasOracle} from "../../contracts/interfaces/ISynapseGasOracle.sol";
 
-contract GasOracleMock is IGasOracle {
+contract SynapseGasOracleMock is ISynapseGasOracle {
+    function receiveRemoteGasData(uint256 srcChainId, bytes calldata data) external {}
+
+    function getLocalGasData() external view returns (bytes memory) {}
+
     function convertRemoteValueToLocalUnits(
         uint256 remoteChainId,
         uint256 value

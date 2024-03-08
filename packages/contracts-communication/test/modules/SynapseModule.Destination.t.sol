@@ -8,7 +8,7 @@ import {InterchainEntry} from "../../contracts/libs/InterchainEntry.sol";
 import {ThresholdECDSALib} from "../../contracts/libs/ThresholdECDSA.sol";
 import {SynapseModule} from "../../contracts/modules/SynapseModule.sol";
 
-import {GasOracleMock} from "../mocks/GasOracleMock.sol";
+import {SynapseGasOracleMock} from "../mocks/SynapseGasOracleMock.sol";
 import {InterchainDBMock, IInterchainDB} from "../mocks/InterchainDBMock.sol";
 
 import {Test} from "forge-std/Test.sol";
@@ -17,7 +17,7 @@ import {Test} from "forge-std/Test.sol";
 // solhint-disable ordering
 contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseModuleEvents {
     SynapseModule public module;
-    GasOracleMock public gasOracle;
+    SynapseGasOracleMock public gasOracle;
     InterchainDBMock public interchainDB;
 
     address public feeCollector = makeAddr("FeeCollector");
@@ -32,6 +32,7 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         srcWriter: bytes32(uint256(3)),
         dataHash: bytes32(uint256(4))
     });
+    bytes public mockModuleData = "";
 
     uint256 public constant PK_0 = 1000;
     uint256 public constant PK_1 = 2000;
@@ -49,7 +50,7 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         vm.chainId(DST_CHAIN_ID);
         interchainDB = new InterchainDBMock();
         module = new SynapseModule(address(interchainDB), owner);
-        gasOracle = new GasOracleMock();
+        gasOracle = new SynapseGasOracleMock();
         vm.startPrank(owner);
         module.setGasOracle(address(gasOracle));
         module.setFeeCollector(feeCollector);
@@ -88,10 +89,10 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
 
     function encodeAndHashEntry(InterchainEntry memory entry)
         internal
-        pure
+        view
         returns (bytes memory encodedEntry, bytes32 ethSignedHash)
     {
-        encodedEntry = abi.encode(entry);
+        encodedEntry = abi.encode(entry, mockModuleData);
         ethSignedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(encodedEntry)));
     }
 
@@ -100,7 +101,7 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         uint256[] memory pks
     )
         internal
-        pure
+        view
         returns (bytes memory signatures)
     {
         (, bytes32 ethSignedHash) = encodeAndHashEntry(entry);
@@ -112,7 +113,7 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
     }
 
     function verifyEntry(InterchainEntry memory entry, bytes memory signatures) internal {
-        module.verifyEntry(abi.encode(entry), signatures);
+        module.verifyEntry(abi.encode(entry, mockModuleData), signatures);
     }
 
     // ═══════════════════════════════════════════════ TEST HELPERS ════════════════════════════════════════════════════

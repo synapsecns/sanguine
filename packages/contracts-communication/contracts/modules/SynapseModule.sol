@@ -4,7 +4,7 @@ pragma solidity 0.8.20;
 import {InterchainModule} from "./InterchainModule.sol";
 
 import {SynapseModuleEvents} from "../events/SynapseModuleEvents.sol";
-import {IGasOracle} from "../interfaces/IGasOracle.sol";
+import {ISynapseGasOracle} from "../interfaces/ISynapseGasOracle.sol";
 import {ISynapseModule} from "../interfaces/ISynapseModule.sol";
 
 import {ThresholdECDSA} from "../libs/ThresholdECDSA.sol";
@@ -26,6 +26,10 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     uint256 internal _claimFeeFraction;
     /// @dev Gas limit for the verifyEntry function on the remote chain.
     mapping(uint256 chainId => uint256 gasLimit) internal _verifyGasLimit;
+    /// @dev Hash of the last gas data sent to the remote chain.
+    mapping(uint256 chainId => bytes32 gasDataHash) internal _lastGasDataHash;
+    /// @dev Nonce of the last gas data received from the remote chain.
+    mapping(uint256 chainId => uint256 gasDataNonce) internal _lastGasDataNonce;
 
     /// @inheritdoc ISynapseModule
     address public feeCollector;
@@ -173,6 +177,45 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
         emit VerifierRemoved(verifier);
     }
 
+    /// @dev Internal logic to fill the module data for the specified destination chain.
+    function _fillModuleData(
+        uint256 destChainId,
+        uint256 dbNonce
+    )
+        internal
+        override
+        returns (bytes memory moduleData)
+    {
+        moduleData = _getSynapseGasOracle().getLocalGasData();
+        // Exit early if data is empty
+        if (moduleData.length == 0) {
+            return moduleData;
+        }
+        bytes32 dataHash = keccak256(moduleData);
+        // Don't send the same data twice
+        if (dataHash == _lastGasDataHash[destChainId]) {
+            moduleData = "";
+        } else {
+            _lastGasDataHash[destChainId] = dataHash;
+            emit GasDataSent(destChainId, moduleData);
+        }
+    }
+
+    /// @dev Internal logic to handle the auxiliary module data relayed from the remote chain.
+    function _receiveModuleData(uint256 srcChainId, uint256 dbNonce, bytes memory moduleData) internal override {
+        // Exit early if data is empty
+        if (moduleData.length == 0) {
+            return;
+        }
+        // Don't process outdated data
+        uint256 lastNonce = _lastGasDataNonce[srcChainId];
+        if (lastNonce == 0 || lastNonce < dbNonce) {
+            _lastGasDataNonce[srcChainId] = dbNonce;
+            _getSynapseGasOracle().receiveRemoteGasData(srcChainId, moduleData);
+            emit GasDataReceived(srcChainId, moduleData);
+        }
+    }
+
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
     /// @dev Internal logic to get the module fee for verifying an entry on the specified destination chain.
@@ -183,10 +226,18 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
         // entry is 32 (length) + 32*4 (fields) = 160
         // signatures: 32 (length) + 65*threshold (padded up to be a multiple of 32 bytes)
         // Total formula is: 4 + 32 (entry offset) + 32 (signatures offset) + 160 + 32
-        return IGasOracle(gasOracle).estimateTxCostInLocalUnits({
+        return _getSynapseGasOracle().estimateTxCostInLocalUnits({
             remoteChainId: destChainId,
             gasLimit: getVerifyGasLimit(destChainId),
             calldataSize: 292 + 64 * getThreshold()
         });
+    }
+
+    /// @dev Internal logic to get the Synapse Gas Oracle. Reverts if the gas oracle is not set.
+    function _getSynapseGasOracle() internal view returns (ISynapseGasOracle synapseGasOracle) {
+        synapseGasOracle = ISynapseGasOracle(gasOracle);
+        if (address(synapseGasOracle) == address(0)) {
+            revert SynapseModule__GasOracleNotSet();
+        }
     }
 }

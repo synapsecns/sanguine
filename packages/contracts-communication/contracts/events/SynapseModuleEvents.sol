@@ -12,4 +12,7 @@ abstract contract SynapseModuleEvents {
 
     event ClaimFeeFractionChanged(uint256 claimFeeFraction);
     event FeesClaimed(address feeCollector, uint256 collectedFees, address claimer, uint256 claimerFee);
+
+    event GasDataSent(uint256 dstChainId, bytes data);
+    event GasDataReceived(uint256 srcChainId, bytes data);
 }
