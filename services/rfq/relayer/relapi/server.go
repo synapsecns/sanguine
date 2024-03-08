@@ -9,13 +9,15 @@ import (
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
 	"github.com/synapsecns/sanguine/core/metrics"
 	baseServer "github.com/synapsecns/sanguine/core/server"
+	"github.com/synapsecns/sanguine/ethergo/listener"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/chain"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/listener"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 )
@@ -32,6 +34,8 @@ type RelayerAPIServer struct {
 
 // NewRelayerAPI holds the configuration, database connection, gin engine, RPC client, metrics handler, and fast bridge contracts.
 // It is used to initialize and run the API server.
+//
+//nolint:cyclop
 func NewRelayerAPI(
 	ctx context.Context,
 	cfg relconfig.Config,
@@ -59,11 +63,23 @@ func NewRelayerAPI(
 		if err != nil {
 			return nil, fmt.Errorf("could not create omnirpc client: %w", err)
 		}
-		chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(chainCfg.Bridge), handler)
+		rfqAddr, err := cfg.GetRFQAddress(chainID)
+		if err != nil {
+			return nil, fmt.Errorf("could not get rfq address: %w", err)
+		}
+		contract, err := fastbridge.NewFastBridgeRef(common.HexToAddress(rfqAddr), chainClient)
+		if err != nil {
+			return nil, fmt.Errorf("could not create fast bridge contract: %w", err)
+		}
+		startBlock, err := contract.DeployBlock(&bind.CallOpts{Context: ctx})
+		if err != nil {
+			return nil, fmt.Errorf("could not get deploy block: %w", err)
+		}
+		chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(rfqAddr), uint64(startBlock.Int64()), handler)
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain listener: %w", err)
 		}
-		chains[uint32(chainID)], err = chain.NewChain(ctx, chainClient, common.HexToAddress(chainCfg.Bridge), chainListener, submitter)
+		chains[uint32(chainID)], err = chain.NewChain(ctx, chainClient, common.HexToAddress(chainCfg.RFQAddress), chainListener, submitter)
 		if err != nil {
 			return nil, fmt.Errorf("could not create chain: %w", err)
 		}

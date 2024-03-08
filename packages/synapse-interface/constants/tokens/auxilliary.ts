@@ -33,7 +33,6 @@ export const KLAYTN_oUSDT = new Token({
   name: 'Orbit Bridged USDT',
   logo: usdtLogo,
   swapableType: 'KLAYTN_USDT',
-  swapableOn: [CHAINS.KLAYTN.id],
   priorityRank: 6,
   routeSymbol: 'KLAYTN_oUSDT',
 })
@@ -62,7 +61,6 @@ export const MULTIAVAX = new Token({
   name: 'AnySwap Wrapped AVAX',
   logo: avaxLogo,
   swapableType: 'AVAX',
-  swapableOn: [CHAINS.HARMONY.id],
   color: 'red',
   priorityRank: 3,
   routeSymbol: 'MULTIAVAX',
@@ -80,7 +78,6 @@ export const FANTOMUSDC = new Token({
   name: 'USD Coin',
   logo: usdcLogo,
   swapableType: 'USD',
-  swapableOn: [],
   color: 'blue',
   priorityRank: 1,
   routeSymbol: 'USDC',
@@ -90,7 +87,6 @@ export const FANTOMUSDT = new Token({
   addresses: {
     [CHAINS.FANTOM.id]: '0x049d68029688eabf473097a2fc38ef61633a3c7a',
   },
-  swapExceptions: {},
   decimals: {
     [CHAINS.FANTOM.id]: 6,
   },
@@ -99,7 +95,6 @@ export const FANTOMUSDT = new Token({
   logo: usdtLogo,
   color: 'lime',
   swapableType: 'USD',
-  swapableOn: [],
   visibilityRank: 100,
   priorityRank: 1,
   routeSymbol: 'USDT',
@@ -118,6 +113,5 @@ export const FANTOMETH = new Token({
   color: 'sky',
   visibilityRank: 101,
   priorityRank: 2,
-  swapableOn: [],
   routeSymbol: 'ETH',
 })

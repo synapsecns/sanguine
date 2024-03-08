@@ -23,7 +23,7 @@ import {
   reduceToQuery,
 } from '../module'
 import bridgeAbi from '../abi/SynapseBridge.json'
-import { BigintIsh } from '../constants'
+import { BigintIsh, HYDRATION_SUPPORTED_CHAIN_IDS } from '../constants'
 import {
   DestRequest,
   Pool,
@@ -33,6 +33,7 @@ import {
 } from './types'
 import { adjustValueIfNative } from '../utils/handleNativeToken'
 import { getMatchingTxLog } from '../utils/logs'
+import { CACHE_TIMES, RouterCache } from '../utils/RouterCache'
 
 /**
  * Wraps [tokens, lpToken] returned by the SynapseRouter contract into a PoolInfo object.
@@ -101,6 +102,17 @@ export class SynapseRouter extends Router {
       provider
     ) as SynapseRouterContract
     this.address = address
+    this.hydrateCache()
+  }
+
+  private async hydrateCache() {
+    if (HYDRATION_SUPPORTED_CHAIN_IDS.includes(this.chainId)) {
+      try {
+        await Promise.all([this.chainGasAmount()])
+      } catch (e) {
+        console.error('synapseRouter: Error hydrating cache', e)
+      }
+    }
   }
 
   public async getOriginAmountOut(
@@ -126,6 +138,7 @@ export class SynapseRouter extends Router {
       })
   }
 
+  @RouterCache(CACHE_TIMES.TEN_MINUTES)
   public async getConnectedBridgeTokens(
     tokenOut: string
   ): Promise<BridgeToken[]> {
@@ -136,17 +149,15 @@ export class SynapseRouter extends Router {
       })
   }
 
+  @RouterCache(CACHE_TIMES.TEN_MINUTES)
   public async getBridgeFees(
     token: string,
     amount: BigNumber
   ): Promise<{ feeAmount: BigNumber; feeConfig: FeeConfig }> {
-    const feeAmount = await this.routerContract.calculateBridgeFee(
-      token,
-      amount
-    )
-    const feeConfig = await this.routerContract
-      .fee(token)
-      .then(reduceToFeeConfig)
+    const [feeAmount, feeConfig] = await Promise.all([
+      this.routerContract.calculateBridgeFee(token, amount),
+      this.routerContract.fee(token).then(reduceToFeeConfig),
+    ])
     return { feeAmount, feeConfig }
   }
 
@@ -215,11 +226,13 @@ export class SynapseRouter extends Router {
     return this.bridgeContractCache
   }
 
+  @RouterCache(CACHE_TIMES.TEN_MINUTES)
   public async chainGasAmount(): Promise<BigNumber> {
     const bridgeContract = await this.getBridgeContract()
     return bridgeContract.chainGasAmount()
   }
 
+  @RouterCache(CACHE_TIMES.TEN_MINUTES)
   public async getBridgeTokenType(token: string): Promise<BridgeTokenType> {
     const tokenConfig = await this.routerContract.config(token)
     // Check if token is supported
@@ -230,6 +243,7 @@ export class SynapseRouter extends Router {
     return tokenConfig.tokenType
   }
 
+  @RouterCache(CACHE_TIMES.ONE_HOUR)
   public async getPoolTokens(poolAddress: string): Promise<PoolToken[]> {
     return this.routerContract.poolTokens(poolAddress)
   }

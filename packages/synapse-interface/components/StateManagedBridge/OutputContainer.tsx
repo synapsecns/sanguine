@@ -25,7 +25,7 @@ export const OutputContainer = ({}) => {
   // update address for destination address if we have a destination address
 
   return (
-    <div className="relative mt-[1.125rem] p-md text-left rounded-md bg-bgLight">
+    <div className="relative text-left rounded-md p-md bg-bgLight">
       <div className="flex items-center justify-between mb-3">
         <ToChainSelector />
         {/* {address && (

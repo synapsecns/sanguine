@@ -5,33 +5,49 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/synapsecns/sanguine/core/metrics"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
 	"io"
 	"net/http"
 	"os"
+
+	"github.com/synapsecns/sanguine/core/metrics"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // DuneAPIKey is the API key for Dune, fetched from the environment variables.
 var DuneAPIKey = os.Getenv("DUNE_API_KEY")
 
+const dunePerformance = "large"
+
+type duneQueryBody struct {
+	QueryParameters stipQueryParams `json:"query_parameters"`
+	Performance     string          `json:"performance"`
+}
+
+type stipQueryParams struct {
+	LastHours int `json:"last_hours"`
+}
+
 // ExecuteDuneQuery executes a predefined query on the Dune API and returns the http response.
-func (s *STIPRelayer) ExecuteDuneQuery(parentCtx context.Context, queryType string) (executionID string, err error) {
-	ctx, span := s.handler.Tracer().Start(parentCtx, "ExecuteDuneQuery", trace.WithAttributes(attribute.String("queryType", queryType)))
+func (s *STIPRelayer) ExecuteDuneQuery(parentCtx context.Context) (executionID string, err error) {
+	ctx, span := s.handler.Tracer().Start(parentCtx, "ExecuteDuneQuery")
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
 
 	client := &http.Client{}
-	var queryID string
-	if queryType == "bridge" {
-		queryID = "3345214"
-	} else if queryType == "rfq" {
-		queryID = "3348161"
-	}
 	s.handler.ConfigureHTTPClient(client)
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("https://api.dune.com/api/v1/query/%s/execute", queryID), bytes.NewBufferString(`{"performance": "large"}`))
+	params := duneQueryBody{
+		QueryParameters: stipQueryParams{
+			LastHours: s.cfg.GetDuneLookbackHours(),
+		},
+		Performance: dunePerformance,
+	}
+	reqBody, err := json.Marshal(params)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal request body: %w", err)
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("https://api.dune.com/api/v1/query/%d/execute", s.cfg.StipQueryID), bytes.NewBuffer(reqBody))
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %w", err)
 	}
@@ -68,6 +84,7 @@ func (s *STIPRelayer) ExecuteDuneQuery(parentCtx context.Context, queryType stri
 	if !ok {
 		return "", fmt.Errorf("no execution_id found in response")
 	}
+	span.SetAttributes(attribute.String("execution_id", executionID))
 
 	return executionID, nil
 }
