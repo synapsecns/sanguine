@@ -94,13 +94,17 @@ const DestinationInputWarning = ({
     <div
       className={`
       p-2 border rounded-sm bg-surface border-separator text-secondary
-      top-0 left-0 w-full h-full
+      top-0 left-0 w-full space-y-2
       ${show ? 'absolute' : 'hidden'}
       `}
     >
-      <h3>Warning</h3>
-      <p>Do not send your funds to a custodial wallet or exchange address!</p>
-      <p>It may be impossible to recover your funds</p>
+      <h3 className="text-2xl text-white">Warning</h3>
+      <p className="text-white">
+        Do not send your funds to a custodial wallet or exchange address!
+      </p>
+      <p className="text-secondary">
+        It may be impossible to recover your funds
+      </p>
       <div className="flex">
         <button onClick={onCancel}>Cancel</button>
         <button onClick={onAccept}>Okay</button>
