@@ -228,10 +228,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         if (msg.value < verificationFee) {
             revert InterchainClientV1__FeeAmountTooLow(msg.value, verificationFee);
         }
-        uint256 executionFee;
-        unchecked {
-            executionFee = msg.value - verificationFee;
-        }
         (desc.dbNonce, desc.entryIndex) = IInterchainDB(INTERCHAIN_DB).getNextEntryIndex();
         InterchainTransaction memory icTx = InterchainTransactionLib.constructLocalTransaction({
             srcSender: msg.sender,
@@ -249,6 +245,10 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
                 value: verificationFee
             }(icTx.dstChainId, desc.transactionId, srcModules);
             assert(dbNonce == desc.dbNonce && entryIndex == desc.entryIndex);
+        }
+        uint256 executionFee;
+        unchecked {
+            executionFee = msg.value - verificationFee;
         }
         if (executionFee > 0) {
             IExecutionFees(executionFees).addExecutionFee{value: executionFee}(icTx.dstChainId, desc.transactionId);
