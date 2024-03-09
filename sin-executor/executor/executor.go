@@ -168,7 +168,7 @@ func (e *Executor) executeTransaction(ctx context.Context, request db.Transactio
 		return fmt.Errorf("could not get contract for chain %d", request.SrcChainID.Int64())
 	}
 
-	nonce, err := e.submitter.SubmitTransaction(ctx, request.DstChainID, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+	_, err := e.submitter.SubmitTransaction(ctx, request.DstChainID, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		transactor.GasLimit = request.Options.GasLimit.Uint64()
 		transactor.Value = request.Options.GasAirdrop
 
@@ -177,17 +177,6 @@ func (e *Executor) executeTransaction(ctx context.Context, request db.Transactio
 	if err != nil {
 		return fmt.Errorf("could not submit transaction: %w", err)
 	}
-
-	go func() {
-		for {
-			time.Sleep(time.Second * 5)
-			status, _ := e.submitter.GetSubmissionStatus(ctx, request.DstChainID, nonce)
-
-			if status.TxHash().String() != (common.Hash{}).String() {
-				fmt.Printf("cast run %s --rpc-url %s/rpc/2\n", status.TxHash().String(), e.cfg.OmnirpcURL)
-			}
-		}
-	}()
 
 	err = e.db.UpdateInterchainTransactionStatus(ctx, request.TransactionID, db.Executed)
 	if err != nil {
