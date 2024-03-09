@@ -24,6 +24,8 @@ type Config struct {
 	BootstrapPeers []string `yaml:"bootstrap_peers"`
 	// P2PPort is the port for the p2p server.
 	P2PPort int `yaml:"p2p_port"`
+	// UsePeerID is wether or not to use the secp256k1 key for peer identification. This is a beta feature and currently can lead to rate limits/high bills on kms so should be turned off for now.
+	UsePeerID bool `yaml:"use_peer_id"`
 }
 
 // DatabaseConfig represents the configuration for the database.

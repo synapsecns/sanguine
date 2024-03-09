@@ -102,7 +102,7 @@ func (s *P2PTestSuite) makeManager() p2p.LibP2PManager {
 	db, err := connect.Connect(s.GetTestContext(), dbcommon.Sqlite, tmpDir, s.handler)
 	s.Require().NoError(err)
 
-	manager, err := p2p.NewLibP2PManager(s.GetTestContext(), s.handler, signer, db, freeport.GetPort())
+	manager, err := p2p.NewLibP2PManager(s.GetTestContext(), s.handler, signer, db, freeport.GetPort(), true)
 	s.Require().NoError(err)
 
 	return manager

@@ -67,7 +67,10 @@ type libP2PManagerImpl struct {
 	peerstore datastore.Batching
 	// address is the address of the node
 	address common.Address
-	port    int
+	// port is the libp2p port oto expose
+	port int
+	// usePeerID is wether or not the secp256k1 key should be used for peer identification
+	usePeerID bool
 }
 
 const dbTopic = "crdt_db"
@@ -81,10 +84,21 @@ var RebroadcastingInterval = time.Minute
 // validators should be a list of addresses that are allowed to connect to the host. This should include the address of the
 // node itself.
 // whitelist is the list of addresses that are allowed to write to the datastore.
-func NewLibP2PManager(ctx context.Context, handler metrics.Handler, auth signer.Signer, store db.Datstores, port int) (LibP2PManager, error) {
+func NewLibP2PManager(ctx context.Context, handler metrics.Handler, auth signer.Signer, store db.Datstores, port int, usePeerID bool) (_ LibP2PManager, err error) {
 	l := &libP2PManagerImpl{}
 	l.port = port
-	_, err := l.setupHost(ctx, auth.PrivKey()) // call createHost function
+	l.usePeerID = usePeerID
+
+	privKey := auth.PrivKey()
+	// if peerID is disabled, use a random key
+	if !l.usePeerID {
+		privKey, _, err = crypto.GenerateKeyPair(crypto.ECDSA, 2048)
+		if err != nil {
+			return nil, fmt.Errorf("could not use key pair: %w", err)
+		}
+	}
+
+	_, err = l.setupHost(ctx, privKey) // call createHost function
 	if err != nil {
 		return nil, err
 	}
@@ -138,6 +152,7 @@ func (l *libP2PManagerImpl) setupHost(ctx context.Context, privKeyWrapper crypto
 	return l.host, nil
 }
 
+// nolint: cyclop
 func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) error {
 	// setup ipfs
 	peers, err := makePeers(bootstrapPeers)
@@ -316,6 +331,11 @@ func (l *libP2PManagerImpl) addValidator(ctx context.Context, addr common.Addres
 	topic := fmt.Sprintf("crdt_db_%s", addr.String())
 
 	err = l.pubsub.RegisterTopicValidator(topic, func(ctx context.Context, p peer.ID, _ *pubsub.Message) bool {
+		// if peer identification is off, we don't need to validate this at all.
+		if !l.usePeerID {
+			return true
+		}
+
 		address, err := ethAddrFromPeer(p)
 		if err != nil {
 			l.handler.ExperimentalLogger().Warnw(ctx, "could not extract peer address", "peer", p, "error", err)

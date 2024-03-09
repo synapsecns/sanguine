@@ -121,7 +121,7 @@ func (n *Node) Address() common.Address {
 const defaultDBInterval = 3
 
 func (n *Node) createPeerManager(ctx context.Context) (err error) {
-	n.peerManager, err = p2p.NewLibP2PManager(ctx, n.metrics, n.signer, n.db, n.cfg.P2PPort)
+	n.peerManager, err = p2p.NewLibP2PManager(ctx, n.metrics, n.signer, n.db, n.cfg.P2PPort, n.cfg.UsePeerID)
 	if err != nil {
 		return fmt.Errorf("could not get peer manager: %w", err)
 	}
