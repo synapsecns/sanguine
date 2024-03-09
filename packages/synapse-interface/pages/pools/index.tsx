@@ -1,28 +1,19 @@
 import _ from 'lodash'
+import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
 import { useAccount, useNetwork } from 'wagmi'
-
-import {
-  DISPLAY_POOLS_BY_CHAIN,
-  USD_POOLS_BY_CHAIN,
-  ETH_POOLS_BY_CHAIN,
-  LEGACY_POOLS_BY_CHAIN,
-} from '@constants/tokens'
-
-import StandardPageContainer from '@layouts/StandardPageContainer'
-import { LandingPageWrapper } from '@layouts/LandingPageWrapper'
+import { DISPLAY_POOLS_BY_CHAIN } from '@constants/tokens'
 import { DEFAULT_FROM_CHAIN } from '@/constants/swap'
-
-import PoolCards from './PoolCards'
-import { useRouter } from 'next/router'
-
-import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import { PageHeader } from '@/components/PageHeader'
-import Grid from '@/components/ui/tailwind/Grid'
 import {
   METIS_POOL_SWAP_TOKEN_MIGRATED,
   METIS_WETH_SWAP_TOKEN_MIGRATED,
 } from '@/constants/tokens/poolMaster'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { LandingPageWrapper } from '@layouts/LandingPageWrapper'
+import StandardPageContainer from '@layouts/StandardPageContainer'
+import { PageHeader } from '@/components/PageHeader'
+import Grid from '@/components/ui/tailwind/Grid'
+import PoolCards from './PoolCards'
 import * as CHAINS from '@/constants/chains/master'
 
 const PoolsPage = () => {
@@ -64,6 +55,7 @@ const PoolsPage = () => {
   useEffect(() => {
     setConnectedChainId(chain?.id ?? DEFAULT_FROM_CHAIN)
   }, [chain])
+
   useEffect(() => {
     setAddress(currentAddress)
   }, [currentAddress])

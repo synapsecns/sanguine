@@ -1,14 +1,18 @@
+import Image from 'next/image'
+
 export const MenuItem = ({
   text,
   link,
+  iconUrl,
   onClick,
 }: {
   text: string
   link: string
+  iconUrl?: string
   onClick?: () => any
 }) => {
   const className =
-    'flex gap-4 items-center justify-between pl-2 pr-3 py-2 whitespace-nowrap text-[--synapse-text-primary] no-underline'
+    'flex gap-4 items-center justify-between pl-2 pr-3 py-2 space-x-4 whitespace-nowrap text-[--synapse-text-primary] no-underline'
 
   return (
     <li
@@ -32,7 +36,18 @@ export const MenuItem = ({
           rel="noreferrer"
           className={className}
         >
-          {text}
+          <div className="flex space-x-1.5 items-center">
+            {iconUrl && (
+              <Image
+                src={iconUrl}
+                height={14}
+                width={14}
+                alt={`${text} icon`}
+                className="mt-px"
+              />
+            )}
+            <div>{text}</div>
+          </div>
           <div className="mb-0.5">↗</div>
         </a>
       )}

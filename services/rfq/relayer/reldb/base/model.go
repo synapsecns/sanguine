@@ -14,24 +14,18 @@ import (
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
-	"gorm.io/gorm"
 )
 
 func init() {
 	namer := dbcommon.NewNamer(GetAllModels())
-	chainIDFieldName = namer.GetConsistentName("ChainID")
-	blockNumberFieldName = namer.GetConsistentName("BlockNumber")
 	statusFieldName = namer.GetConsistentName("Status")
 	transactionIDFieldName = namer.GetConsistentName("TransactionID")
 	originTxHashFieldName = namer.GetConsistentName("OriginTxHash")
 	destTxHashFieldName = namer.GetConsistentName("DestTxHash")
+	rebalanceIDFieldName = namer.GetConsistentName("RebalanceID")
 }
 
 var (
-	// chainIDFieldName gets the chain id field name.
-	chainIDFieldName string
-	// blockNumberFieldName is the name of the block number field.
-	blockNumberFieldName string
 	// statusFieldName is the status field name.
 	statusFieldName string
 	// transactionIDFieldName is the transactions id field name.
@@ -40,25 +34,9 @@ var (
 	originTxHashFieldName string
 	// destTxHashFieldName is the dest tx hash field name.
 	destTxHashFieldName string
+	// rebalanceIDFieldName is the rebalances id field name.
+	rebalanceIDFieldName string
 )
-
-// LastIndexed is used to make sure we haven't missed any events while offline.
-// since we event source - rather than use a state machine this is needed to make sure we haven't missed any events
-// by allowing us to go back and source any events we may have missed.
-//
-// this does not inherit from gorm.model to allow us to use ChainID as a primary key.
-type LastIndexed struct {
-	// CreatedAt is the creation time
-	CreatedAt time.Time
-	// UpdatedAt is the update time
-	UpdatedAt time.Time
-	// DeletedAt time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
-	// ChainID is the chain id of the chain we're watching blocks on. This is our primary index.
-	ChainID uint64 `gorm:"column:chain_id;primaryKey;autoIncrement:false"`
-	// BlockHeight is the highest height we've seen on the chain
-	BlockNumber int `gorm:"block_number"`
-}
 
 // RequestForQuote is the primary event model.
 type RequestForQuote struct {
@@ -112,6 +90,19 @@ type RequestForQuote struct {
 	SendChainGas bool
 }
 
+// Rebalance is the event model for a rebalance action.
+type Rebalance struct {
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+	RebalanceID  sql.NullString
+	Origin       uint64
+	Destination  uint64
+	OriginAmount string
+	Status       reldb.RebalanceStatus
+	OriginTxHash sql.NullString
+	DestTxHash   sql.NullString
+}
+
 // FromQuoteRequest converts a quote request to an object that can be stored in the db.
 // TODO: add validation for deadline > uint64
 // TODO: roundtripper test.
@@ -138,6 +129,25 @@ func FromQuoteRequest(request reldb.QuoteRequest) RequestForQuote {
 		OriginNonce:          int(request.Transaction.Nonce.Uint64()),
 		Status:               request.Status,
 		BlockNumber:          request.BlockNumber,
+	}
+}
+
+// FromRebalance converts a rebalance to a db object.
+func FromRebalance(rebalance reldb.Rebalance) Rebalance {
+	var id sql.NullString
+	if rebalance.RebalanceID == nil {
+		id = sql.NullString{Valid: false}
+	} else {
+		id = sql.NullString{String: hexutil.Encode(rebalance.RebalanceID[:]), Valid: true}
+	}
+	return Rebalance{
+		RebalanceID:  id,
+		Origin:       rebalance.Origin,
+		Destination:  rebalance.Destination,
+		OriginAmount: rebalance.OriginAmount.String(),
+		Status:       rebalance.Status,
+		OriginTxHash: stringToNullString(rebalance.OriginTxHash.String()),
+		DestTxHash:   stringToNullString(rebalance.DestTxHash.String()),
 	}
 }
 
