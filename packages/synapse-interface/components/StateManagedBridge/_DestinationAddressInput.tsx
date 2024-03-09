@@ -73,6 +73,7 @@ export const _DestinationAddressInput = ({
       : 'Wallet address'
   }
 
+  const [isInputHovered, setIsInputHovered] = useState<boolean>(false)
   const [showRecipientList, setShowRecipientList] = useState<boolean>(false)
   const listRef = useRef(null)
   useCloseOnOutsideClick(listRef, () => setShowRecipientList(false))
@@ -98,7 +99,12 @@ export const _DestinationAddressInput = ({
 
   return (
     <div id="destination-address-input" onClick={handleActivateWarning}>
+      <HoverContent isHovered={isInputHovered}>
+        Destination address
+      </HoverContent>
       <div
+        onMouseEnter={() => setIsInputHovered(true)}
+        onMouseLeave={() => setIsInputHovered(false)}
         className={`
            flex border text-md rounded-sm
            ${isInputFocused ? ' bg-bgBase' : 'bg-transparent'}
@@ -305,4 +311,26 @@ const calculateDaysBetween = (startDate: Date, endDate: Date) => {
   )
 
   return Math.floor((utc2 - utc1) / msPerDay)
+}
+
+export const HoverContent = ({
+  isHovered,
+  children,
+}: {
+  isHovered: boolean
+  children: React.ReactNode
+}) => {
+  if (isHovered) {
+    return (
+      <div
+        className={`
+          absolute top-[-0.5rem] z-50 hover-content py-1 px-2 text-white
+          border border-solid border-separator text-xs
+          bg-[#101018] rounded-sm text-center whitespace-nowrap
+        `}
+      >
+        {children}
+      </div>
+    )
+  }
 }
