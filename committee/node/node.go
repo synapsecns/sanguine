@@ -301,7 +301,7 @@ func (n *Node) submit(ctx context.Context, request db.SignRequest) error {
 	for _, validator := range n.getSortedValidators(request) {
 		signature, err := n.peerManager.GetSignature(ctx, validator, int(request.OriginChainID.Int64()), request.SignedEntryHash)
 		if err != nil {
-			logger.Errorf("could not get signature for peer %s message: %w", validator, err)
+			logger.Errorf("could not get signature for peer %s message (tx hash: %s, signed entry hash %s): %v", validator, request.TXHash, request.SignedEntryHash, err)
 			continue
 		}
 		signatures = append(signatures, signature)
@@ -315,25 +315,10 @@ func (n *Node) submit(ctx context.Context, request db.SignRequest) error {
 		return fmt.Errorf("not enough signatures")
 	}
 
-	nonce, err := n.submitter.SubmitTransaction(ctx, request.DestChainID, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+	_, err = n.submitter.SubmitTransaction(ctx, request.DestChainID, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		//nolint: wrapcheck
 		return contract.VerifyEntry(transactor, request.Entry, flattenSlice(signatures))
 	})
-
-	go func() {
-		for {
-			time.Sleep(time.Second * 5)
-
-			yo, err := n.submitter.GetSubmissionStatus(ctx, request.DestChainID, nonce)
-			if err != nil {
-				logger.Errorf("could not get submission status: %w", err)
-			}
-
-			fmt.Printf("tx hash: %s\n", yo.TxHash().String())
-			fmt.Printf("new signed hash: %s \n", request.SignedEntryHash.String())
-			fmt.Println("you")
-		}
-	}()
 
 	if err != nil {
 		return fmt.Errorf("could not submit transaction: %w", err)
