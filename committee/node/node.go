@@ -301,7 +301,7 @@ func (n *Node) submit(ctx context.Context, request db.SignRequest) error {
 	for _, validator := range n.getSortedValidators(request) {
 		signature, err := n.peerManager.GetSignature(ctx, validator, int(request.OriginChainID.Int64()), request.SignedEntryHash)
 		if err != nil {
-			logger.Errorf("could not get signature for peer %s message (tx hash: %s, signed entry hash %s): %v", validator, request.TXHash, request.SignedEntryHash, err)
+			logger.Errorf("could not get signature for peer %s (have %d rn) message (tx hash: %s, signed entry hash %s): %v", validator, len(signatures), request.TXHash, request.SignedEntryHash, err)
 			continue
 		}
 		signatures = append(signatures, signature)
