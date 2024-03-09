@@ -297,14 +297,14 @@ func (n *Node) submit(ctx context.Context, request db.SignRequest) error {
 		return fmt.Errorf("could not get threshold: %w", err)
 	}
 
-	var signatures []byte
+	var signatures [][]byte
 	for _, validator := range n.getSortedValidators(request) {
 		signature, err := n.peerManager.GetSignature(ctx, validator, int(request.OriginChainID.Int64()), request.SignedEntryHash)
 		if err != nil {
 			logger.Errorf("could not get signature for peer %s message: %w", validator, err)
 			continue
 		}
-		signatures = append(signatures, signature...)
+		signatures = append(signatures, signature)
 
 		if len(signatures) >= int(threshold.Uint64()) {
 			break
@@ -317,7 +317,7 @@ func (n *Node) submit(ctx context.Context, request db.SignRequest) error {
 
 	nonce, err := n.submitter.SubmitTransaction(ctx, request.DestChainID, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		//nolint: wrapcheck
-		return contract.VerifyEntry(transactor, request.Entry, signatures)
+		return contract.VerifyEntry(transactor, request.Entry, flattenSlice(signatures))
 	})
 
 	go func() {
@@ -345,6 +345,14 @@ func (n *Node) submit(ctx context.Context, request db.SignRequest) error {
 	}
 
 	return nil
+}
+
+func flattenSlice(byteSlice [][]byte) (res []byte) {
+	for _, a := range byteSlice {
+		res = append(res, a...)
+	}
+
+	return res
 }
 
 func (n *Node) signAndBroadcast(ctx context.Context, request db.SignRequest) error {
