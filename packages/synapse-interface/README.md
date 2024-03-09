@@ -37,7 +37,7 @@ yarn install
 
 This will handle dependency installation and local package linking.
 
-2. **Watch for changes in `@synapsecns/sdk-router`**
+2. **Watch for changes in [`@synapsecns/sdk-router`](https://www.npmjs.com/package/@synapsecns/sdk-router)**
    Open a terminal, navigate to the workspace root, and run:
 
 ```shell

@@ -1,3 +1,6 @@
+[![npm](https://img.shields.io/npm/v/%40synapsecns%2Fwidget?style=flat-square)](https://www.npmjs.com/package/@synapsecns/widget)
+![NPM Downloads](https://img.shields.io/npm/dy/%40synapsecns%2Fwidget)
+
 This explains how to integrate the bridge widget into your dApp in just a few minutes. This widget enables users to bridge tokens directly on your site, utilizing the Synapse Protocol.
 
 <img src="https://raw.githubusercontent.com/synapsecns/sanguine/master/packages/widget/images/dark.png" alt="Dark Theme" width="400"/>

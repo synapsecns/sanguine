@@ -5,7 +5,7 @@ To run locally:
 
 To make requests, use https://synapse-rest-api-v2.herokuapp.com/
 
-The Synapse Rest API supports four main functions
+The Synapse Rest API supports 4 main functions
 
 ## /swap
 
