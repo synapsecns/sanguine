@@ -61,7 +61,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     // ═══════════════════════════════════════════════ MODULE-FACING ═══════════════════════════════════════════════════
 
     /// @inheritdoc IInterchainDB
-    function verifyRemoteBatch(InterchainBatch memory batch) external {
+    function verifyRemoteBatch(InterchainBatch memory batch) external onlyRemoteChainId(batch.srcChainId) {
         bytes32 batchKey = InterchainBatchLib.batchKey(batch);
         RemoteBatch memory existingBatch = _remoteBatches[msg.sender][batchKey];
         // Check if that's the first time module verifies the batch
@@ -135,6 +135,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     )
         external
         view
+        onlyRemoteChainId(entry.srcChainId)
         returns (uint256 moduleVerifiedAt)
     {
         // In "no batching" mode: the batch root is the same as the entry hash, hence the proof is empty
