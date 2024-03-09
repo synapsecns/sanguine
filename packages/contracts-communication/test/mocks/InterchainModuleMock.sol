@@ -10,11 +10,7 @@ contract InterchainModuleMock is IInterchainModule {
 
     function getModuleFee(uint256 dstChainId, uint256 dbNonce) external view returns (uint256) {}
 
-    function mockVerifyBatch(address interchainDB, InterchainBatch memory batch) external {
+    function mockVerifyRemoteBatch(address interchainDB, InterchainBatch memory batch) external {
         IInterchainDB(interchainDB).verifyRemoteBatch(batch);
-    }
-
-    function mockVerifyEntry(address interchainDB, InterchainEntry memory entry) external {
-        // TODO: deprecated
     }
 }

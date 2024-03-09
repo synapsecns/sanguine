@@ -167,6 +167,10 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__BatchDoesNotExist.selector, dbNonce));
     }
 
+    function expectBatchNotFinalized(uint256 dbNonce) internal {
+        vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__BatchNotFinalized.selector, dbNonce));
+    }
+
     function expectIncorrectFeeAmount(uint256 actualFee, uint256 expectedFee) internal {
         vm.expectRevert(
             abi.encodeWithSelector(IInterchainDB.InterchainDB__IncorrectFeeAmount.selector, actualFee, expectedFee)
@@ -307,31 +311,31 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
 
     // ══════════════════════════════════ TESTS: REQUESTING VALIDATION (REVERTS) ═══════════════════════════════════════
 
-    function test_requestVerification_revert_batchDoesNotExist_oneModule_nextNonce() public {
-        expectBatchDoesNotExist(INITIAL_DB_NONCE);
+    function test_requestVerification_revert_batchNotFinalized_oneModule_nextNonce() public {
+        expectBatchNotFinalized(INITIAL_DB_NONCE);
         requestVerification(requestCaller, MODULE_A_FEE, INITIAL_DB_NONCE, oneModule);
     }
 
-    function test_requestVerification_revert_batchDoesNotExist_oneModule_hugeNonce() public {
-        expectBatchDoesNotExist(2 ** 32);
+    function test_requestVerification_revert_batchNotFinalized_oneModule_hugeNonce() public {
+        expectBatchNotFinalized(2 ** 32);
         requestVerification(requestCaller, MODULE_A_FEE, 2 ** 32, oneModule);
-        expectBatchDoesNotExist(2 ** 64);
+        expectBatchNotFinalized(2 ** 64);
         requestVerification(requestCaller, MODULE_A_FEE, 2 ** 64, oneModule);
-        expectBatchDoesNotExist(type(uint256).max);
+        expectBatchNotFinalized(type(uint256).max);
         requestVerification(requestCaller, MODULE_A_FEE, type(uint256).max, oneModule);
     }
 
-    function test_requestVerification_revert_batchDoesNotExist_twoModules_nextNonce() public {
-        expectBatchDoesNotExist(INITIAL_DB_NONCE);
+    function test_requestVerification_revert_batchNotFinalized_twoModules_nextNonce() public {
+        expectBatchNotFinalized(INITIAL_DB_NONCE);
         requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, INITIAL_DB_NONCE, twoModules);
     }
 
-    function test_requestVerification_revert_batchDoesNotExist_twoModules_hugeNonce() public {
-        expectBatchDoesNotExist(2 ** 32);
+    function test_requestVerification_revert_batchNotFinalized_twoModules_hugeNonce() public {
+        expectBatchNotFinalized(2 ** 32);
         requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, 2 ** 32, twoModules);
-        expectBatchDoesNotExist(2 ** 64);
+        expectBatchNotFinalized(2 ** 64);
         requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, 2 ** 64, twoModules);
-        expectBatchDoesNotExist(type(uint256).max);
+        expectBatchNotFinalized(type(uint256).max);
         requestVerification(requestCaller, MODULE_A_FEE + MODULE_B_FEE, type(uint256).max, twoModules);
     }
 

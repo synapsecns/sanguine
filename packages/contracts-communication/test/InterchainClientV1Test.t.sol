@@ -5,6 +5,7 @@ import {AppConfigV1, InterchainTransaction} from "../contracts/InterchainClientV
 import {InterchainDB} from "../contracts/InterchainDB.sol";
 
 import {IInterchainClientV1} from "../contracts/interfaces/IInterchainClientV1.sol";
+import {InterchainBatch} from "../contracts/libs/InterchainBatch.sol";
 import {InterchainEntry} from "../contracts/libs/InterchainEntry.sol";
 import {OptionsV1} from "../contracts/libs/Options.sol";
 import {TypeCasts} from "../contracts/libs/TypeCasts.sol";
@@ -155,16 +156,14 @@ contract InterchainClientV1Test is Test {
             abi.encode(mockAppConfig.encodeAppConfigV1(), mockApprovedModules)
         );
 
-        InterchainEntry memory entry = InterchainEntry({
+        InterchainBatch memory batch = InterchainBatch({
             srcChainId: SRC_CHAIN_ID,
-            srcWriter: remoteClient,
             dbNonce: dbNonce,
-            // TODO: entryIndex
-            entryIndex: 0,
-            dataHash: transactionID
+            // entryValue = srcWriter + dataHash
+            batchRoot: keccak256(abi.encode(remoteClient, transactionID))
         });
 
-        icModule.mockVerifyEntry(address(icDB), entry);
+        icModule.mockVerifyRemoteBatch(address(icDB), batch);
 
         deal(address(this), GAS_AIRDROP);
         // Skip ahead of optimistic period
