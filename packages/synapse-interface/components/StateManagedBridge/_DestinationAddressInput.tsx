@@ -99,8 +99,8 @@ export const _DestinationAddressInput = ({
 
   return (
     <div id="destination-address-input" onClick={handleActivateWarning}>
-      <HoverContent isHovered={isInputHovered}>
-        Destination address
+      <HoverContent isHovered={!isInputFocused && isInputHovered}>
+        {_.isEmpty(connectedAddress) ? 'Connect Wallet' : 'Destination address'}
       </HoverContent>
       <div
         onMouseEnter={() => setIsInputHovered(true)}
@@ -135,7 +135,11 @@ export const _DestinationAddressInput = ({
             text-md rounded-sm text-secondary py-1 px-2 z-0 border-0 bg-transparent
             focus:text-white focus:border-transparent focus:outline-none focus:ring-0
             ${connectedAddress ? 'w-32' : 'w-36'}
-            ${isInputFocused || isInputInvalid ? 'text-left' : 'text-center'}
+            ${
+              isInputFocused || isInputInvalid
+                ? 'text-left cursor-text'
+                : 'text-center cursor-pointer'
+            }
           `}
         />
         {(isInputInvalid || isInputValidAddress) && (
@@ -324,7 +328,7 @@ export const HoverContent = ({
     return (
       <div
         className={`
-          absolute top-[-0.5rem] z-50 hover-content py-1 px-2 text-white
+          absolute top-[-0.5rem] z-50 hover-content py-1 px-2 text-secondary
           border border-solid border-separator text-xs
           bg-[#101018] rounded-sm text-center whitespace-nowrap
         `}
