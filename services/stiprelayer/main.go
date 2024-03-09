@@ -2,6 +2,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/synapsecns/sanguine/services/stiprelayer/cmd"
@@ -10,5 +11,6 @@ import (
 
 // main is the entry point for the stip relayer.
 func main() {
+	fmt.Print("hi")
 	cmd.Start(os.Args, metadata.BuildInfo())
 }
