@@ -39,7 +39,7 @@ jobs:
             contracts-core: 'packages/contracts-core/**'
             contracts-rfq: 'packages/contracts-rfq/**'
             solidity-devops: 'packages/solidity-devops/**'
-            contracts-communication: 'packages/contracts-communication/**
+            contracts-communication: 'packages/contracts-communication/**'
       - id: length
         run: |
           export FILTER_LENGTH=$(echo $FILTERED_PATHS | jq '. | length')
