@@ -12,4 +12,4 @@ This package is still under development and should be used with caution. It is n
 
 ## Docs
 
-Forge docs are automatically deployed [here](https://solidity-devops.vercel.app)
+Forge docs are automatically deployed [here](https://solidity-devops.vercel.app).
