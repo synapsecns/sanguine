@@ -11,11 +11,11 @@ reviews:
     drafts: true
 
   path_filters:
-    - "!**abigen.go"
-    - "!**metadata.go"
-    - "!**pb.go"
-    - "!**/bundle/*"
-    - "!**/generated/*"
+    - '!**abigen.go'
+    - '!**metadata.go'
+    - '!**pb.go'
+    - '!**/bundle/*'
+    - '!**/generated/*'
 
 
 chat:
