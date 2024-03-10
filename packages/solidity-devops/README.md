@@ -9,3 +9,7 @@ This package provides a set of tools and scripts to help with the development of
 ## Disclaimer
 
 This package is still under development and should be used with caution. It is not recommended to use it in a production environment.
+
+## Docs
+
+Forge docs are automatically deployed [here](https://solidity-devops.vercel.app)
