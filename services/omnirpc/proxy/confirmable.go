@@ -9,12 +9,12 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/hedzr/cmdr/tool"
 	"github.com/synapsecns/sanguine/ethergo/client"
-	rpc2 "github.com/synapsecns/sanguine/ethergo/parser/rpc"
+	ethergoRPC "github.com/synapsecns/sanguine/ethergo/parser/rpc"
 	"golang.org/x/exp/slices"
 	"math/big"
 )
 
-func isConfirmable(r rpc2.Request) (bool, error) {
+func isConfirmable(r ethergoRPC.Request) (bool, error) {
 	// TODO: should we error on default?
 	// TODO: look at RPCMethod.Comparable for lower, necessary?
 	//nolint: exhaustive
@@ -37,7 +37,7 @@ func isConfirmable(r rpc2.Request) (bool, error) {
 	return true, nil
 }
 
-func areConfirmable(r rpc2.Requests) (_ bool, errs error) {
+func areConfirmable(r ethergoRPC.Requests) (_ bool, errs error) {
 	unconfirmable := false
 
 	for i, request := range r {

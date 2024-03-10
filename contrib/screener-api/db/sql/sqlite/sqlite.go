@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/synapsecns/sanguine/contrib/screener-api/db"
 	"github.com/synapsecns/sanguine/contrib/screener-api/db/sql/base"
@@ -33,7 +34,7 @@ func NewSqliteStore(parentCtx context.Context, dbPath string, handler metrics.Ha
 	// create the directory to the store if it doesn't exist
 	err = os.MkdirAll(dbPath, os.ModePerm)
 	if err != nil {
-		return nil, fmt.Errorf("could not create sqlite store")
+		return nil, errors.New("could not create sqlite store")
 	}
 
 	logger.Warnf("api database is at %s/api.db", dbPath)

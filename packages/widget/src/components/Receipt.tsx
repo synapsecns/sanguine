@@ -1,8 +1,12 @@
 import { useMemo } from 'react'
 
 import { DoubleDownArrow } from '@/components/icons/DoubleDownArrow'
+import { useBridgeState } from '@/state/slices/bridge/hooks'
+import { CHAINS_BY_ID } from '@/constants/chains'
 
 export const Receipt = ({ quote, send, receive }) => {
+  const { originChainId, destinationChainId } = useBridgeState()
+
   const estTime = useMemo(() => {
     if (!quote.estimatedTime) {
       return null
@@ -31,9 +35,13 @@ export const Receipt = ({ quote, send, receive }) => {
           {quote?.bridgeModuleName}
         </dd>
         <dt className="text-left">Origin</dt>
-        <dd className="m-0 text-right justify-self-end">Ethereum</dd>
+        <dd className="m-0 text-right justify-self-end">
+          {CHAINS_BY_ID[originChainId]?.name}
+        </dd>
         <dt className="text-left">Destination</dt>
-        <dd className="m-0 text-right justify-self-end">Arbitrum</dd>
+        <dd className="m-0 text-right justify-self-end">
+          {CHAINS_BY_ID[destinationChainId]?.name}
+        </dd>
         <dt className="text-left">Send</dt>
         <dd className="m-0 text-right justify-self-end">{send}</dd>
         <dt className="text-left">Receive</dt>

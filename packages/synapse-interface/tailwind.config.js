@@ -121,6 +121,8 @@ module.exports = {
         synapsePurple: '#D747FF',
         blueText: '#99E6FF',
         greenText: '#66e595',
+        yellowText: '#FFE14D',
+        greenProgress: 'hsl(105deg 100% 60%)',
         // previous colors
         bgBase: '#252028',
         bgDarker: '#111111',
@@ -218,7 +220,6 @@ module.exports = {
     require('@tailwindcss/forms'),
     require('@tailwindcss/typography'),
     require('@tailwindcss/aspect-ratio'),
-    // require('@tailwindcss/line-clamp'),
     require('tailwind-scrollbar-hide'),
     require('tailwindcss-border-gradient-radius'),
   ],

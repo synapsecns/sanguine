@@ -2,7 +2,7 @@ import { JsonRpcApiProvider, BrowserProvider } from 'ethers'
 
 export interface BridgeableToken {
   addresses: {}
-  decimals: number | {}
+  decimals: {}
   symbol: string
   name: string
   swapableType: string
@@ -10,6 +10,25 @@ export interface BridgeableToken {
   priorityRank: number
   routeSymbol: string
   imgUrl: string
+}
+
+export interface BridgeSelections {
+  originChain: {
+    id: number | null
+    name: string | null
+  }
+  destinationChain: {
+    id: number | null
+    name: string | null
+  }
+  originToken: {
+    symbol: string | null
+    address: string | null
+  }
+  destinationToken: {
+    symbol: string | null
+    address: string | null
+  }
 }
 
 export interface CustomThemeVariables {
@@ -30,7 +49,7 @@ export type CustomRpcs = {
 
 export interface BridgeProps {
   /** Consumer Web3 Provider */
-  web3Provider?: JsonRpcApiProvider | BrowserProvider
+  web3Provider: JsonRpcApiProvider | BrowserProvider
 
   /** Consumer selected RPCs */
   customRpcs?: CustomRpcs
@@ -65,6 +84,8 @@ export interface Chain {
 }
 
 export declare function Bridge(props: BridgeProps): JSX.Element
+
+export declare function useBridgeSelections(): BridgeSelections
 
 export declare const AGEUR: BridgeableToken
 export declare const AVAX: BridgeableToken
@@ -109,6 +130,7 @@ export declare const SYN: BridgeableToken
 export declare const SYNFRAX: BridgeableToken
 export declare const SYNJEWEL: BridgeableToken
 export declare const UNIDX: BridgeableToken
+export declare const USDB: BridgeableToken
 export declare const USDBC: BridgeableToken
 export declare const USDC: BridgeableToken
 export declare const USDCe: BridgeableToken

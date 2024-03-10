@@ -135,7 +135,6 @@ export const Widget = ({
   }, [targetTokens, targetChainIds, targetTokens, protocolName])
 
   /** Debounce user input to fetch bridge quote (in ms) */
-  /** TODO: Can this be moved to the input component? */
   useEffect(() => {
     const DEBOUNCE_DELAY = 300
     const debounceTimer = setTimeout(() => {
@@ -148,7 +147,6 @@ export const Widget = ({
   }, [dispatch, inputAmount])
 
   /** Fetch token balances when signer/address connected */
-  /** TODO: Can this be moved into a level above? */
   useEffect(() => {
     if (!signer && !originChainProvider) return
     if (originChainId && allTokens && connectedAddress) {
@@ -384,7 +382,7 @@ export const Widget = ({
     >
       <div
         className={`grid gap-2 text-[--synapse-text] w-full ${containerStyle}`}
-        style={{ background: 'var(--synapse-root' }}
+        style={{ background: 'var(--synapse-root)' }}
       >
         <Transactions connectedAddress={connectedAddress} />
         <section

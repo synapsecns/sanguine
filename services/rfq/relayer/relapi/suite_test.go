@@ -79,10 +79,10 @@ func (c *RelayerServerSuite) SetupTest() {
 	testConfig := relconfig.Config{
 		Chains: map[int]relconfig.ChainConfig{
 			int(c.originChainID): {
-				Bridge: ethFastBridgeAddress.Hex(),
+				RFQAddress: ethFastBridgeAddress.Hex(),
 			},
 			int(c.destChainID): {
-				Bridge: arbFastBridgeAddress.Hex(),
+				RFQAddress: arbFastBridgeAddress.Hex(),
 			},
 		},
 		RelayerAPIPort: strconv.Itoa(port),

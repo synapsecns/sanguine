@@ -1,0 +1,68 @@
+@startuml BridgingWorkflow
+skinparam BoxPadding 15
+skinparam ParticipantPadding 10
+skinparam NoteTextAlignment center
+skinparam SequenceMessageAlign reverseDirection
+title Bridging Workflow
+
+box "Origin Chain" #White
+actor "User" as OU
+participant "Synapse\nRouter" as OSR
+participant "Liquidity\nPool" as OP
+participant "BridgeModule\nContract" as OBM
+end box
+
+box "Synapse Module" #bb77ff
+database " " as SYN
+end box
+
+box "Destination Chain" #White
+participant "BridgeModule\nContract" as DBM
+participant "Liquidity\nPool" as DP
+actor "User" as DU
+end box
+
+OU -> OSR: **tokenIn**
+note over OSR
+    Bridge Module
+    supports tokenIn?
+end note
+opt tokenIn != bridgeToken
+OSR -> OP: **tokenIn**
+note over OP #White
+    Swap is performed
+    into supported token
+end note
+OP -> OSR: //bridgeToken//
+end
+OSR -> OBM: //bridgeToken//
+
+note over OBM #White
+    Bridge Tx is
+    initiated
+end note
+OBM -> SYN
+note over SYN #White
+    Origin Tx is
+    confirmed
+end note
+SYN -> DBM
+note over DBM
+    User requested
+    bridgeToken?
+end note
+opt tokenOut != bridgeToken
+    DBM -> DP: //bridgeToken//
+    note over DP #White
+        Swap is performed
+        into requested token
+    end note
+    DP -> DBM: **tokenOut**
+end
+DBM -> DU: **tokenOut**
+note over DBM #White
+    Bridge Tx is
+    completed
+end note
+
+@enduml

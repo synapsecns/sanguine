@@ -3,7 +3,7 @@ import { use_TransactionsState } from '@/slices/_transactions/hooks'
 import { _TransactionDetails } from '@/slices/_transactions/reducer'
 import { _Transaction } from './_Transaction'
 import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
-import { useIntervalTimer } from './helpers/useIntervalTimer'
+import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 
 /** TODO: Update naming once refactoring of previous Activity/Tx flow is done */
 export const _Transactions = ({
@@ -44,7 +44,7 @@ export const _Transactions = ({
             kappa={tx?.kappa}
             timestamp={tx.timestamp}
             currentTime={currentTime}
-            isStoredComplete={tx.isComplete}
+            status={tx.status}
           />
         ))}
       </TransactionsContainer>
@@ -56,7 +56,7 @@ export const _Transactions = ({
 
 const TransactionsContainer = ({ children }) => {
   return (
-    <div id="transaction-container" className="flex flex-col mt-3">
+    <div id="transaction-container" className="flex flex-col mt-3 space-y-3">
       {children}
     </div>
   )

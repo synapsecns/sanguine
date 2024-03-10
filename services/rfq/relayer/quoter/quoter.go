@@ -41,6 +41,8 @@ type Quoter interface {
 	// The first comparison is does bridge transaction OriginChainID+TokenAddr match with a quote + DestChainID+DestTokenAddr, then we look to see if we have enough amount to relay it + if the price fits our bounds (based on that the Relayer is relaying the destination token for the origin)
 	// validateQuote(BridgeEvent)
 	ShouldProcess(ctx context.Context, quote reldb.QuoteRequest) (bool, error)
+	// IsProfitable determines if a quote is profitable, i.e. we will not lose money on it, net of fees.
+	IsProfitable(ctx context.Context, quote reldb.QuoteRequest) (bool, error)
 }
 
 // Manager submits quotes to the RFQ API.
@@ -159,23 +161,13 @@ func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequ
 		return false, nil
 	}
 
-	// then check if we'll make money on it
-	isProfitable, err := m.isProfitableQuote(ctx, quote)
-	if err != nil {
-		span.RecordError(fmt.Errorf("error checking if quote is profitable: %w", err))
-		return false, err
-	}
-	if !isProfitable {
-		return false, nil
-	}
-
 	// all checks have passed
 	return true, nil
 }
 
-// isProfitableQuote determines if a quote is profitable, i.e. we will not lose money on it, net of fees.
-func (m *Manager) isProfitableQuote(parentCtx context.Context, quote reldb.QuoteRequest) (isProfitable bool, err error) {
-	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "isProfitableQuote")
+// IsProfitable determines if a quote is profitable, i.e. we will not lose money on it, net of fees.
+func (m *Manager) IsProfitable(parentCtx context.Context, quote reldb.QuoteRequest) (isProfitable bool, err error) {
+	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "IsProfitable")
 
 	defer func() {
 		span.AddEvent("result", trace.WithAttributes(attribute.Bool("result", isProfitable)))
@@ -246,10 +238,9 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 // We can do this by looking at the quotableTokens map, and finding the key that matches the destination chain token.
 // Generates quotes for a given chain ID, address, and balance.
 func (m *Manager) generateQuotes(ctx context.Context, chainID int, address common.Address, balance *big.Int) ([]model.PutQuoteRequest, error) {
-
-	destChainCfg, ok := m.config.Chains[chainID]
-	if !ok {
-		return nil, fmt.Errorf("error getting chain config for destination chain ID %d", chainID)
+	destRFQAddr, err := m.config.GetRFQAddress(chainID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting destination RFQ address: %w", err)
 	}
 
 	destTokenID := fmt.Sprintf("%d-%s", chainID, address.Hex())
@@ -285,9 +276,9 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 				if err != nil {
 					return nil, fmt.Errorf("error getting total fee: %w", err)
 				}
-				originChainCfg, ok := m.config.Chains[origin]
-				if !ok {
-					return nil, fmt.Errorf("error getting chain config for origin chain ID %d", origin)
+				originRFQAddr, err := m.config.GetRFQAddress(origin)
+				if err != nil {
+					return nil, fmt.Errorf("error getting RFQ address: %w", err)
 				}
 
 				// Build the quote
@@ -303,8 +294,8 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 					DestAmount:              destAmount.String(),
 					MaxOriginAmount:         quoteAmount.String(),
 					FixedFee:                fee.String(),
-					OriginFastBridgeAddress: originChainCfg.Bridge,
-					DestFastBridgeAddress:   destChainCfg.Bridge,
+					OriginFastBridgeAddress: originRFQAddr,
+					DestFastBridgeAddress:   destRFQAddr,
 				}
 				quotes = append(quotes, quote)
 			}

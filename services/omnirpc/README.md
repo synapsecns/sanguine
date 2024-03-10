@@ -118,3 +118,7 @@ You can also quickly start a server running against all public chainlist rpcs wi
 - Optionally use latest block number instead of latest to make latest queries confirmable
 - Customizable Confirmation Count
 - Real error handling
+
+## Additional functionality
+
+Please see [modules/README.md](modules/README.md) for additional functionality.

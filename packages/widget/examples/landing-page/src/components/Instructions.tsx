@@ -1,6 +1,7 @@
 import { Install, Developer, Support } from './Icons'
 import { PackageInstall } from './PackageInstall'
 import { GetStarted } from './GetStarted'
+import { Appearance } from './Appearance'
 import { RecommendedParameters } from './RecommendedParameters'
 import { TokenAndChainCustomization } from './TokenAndChainCustomization'
 
@@ -24,74 +25,7 @@ export function Instructions() {
       <TokenAndChainCustomization />
 
       <h3>Appearance</h3>
-      <h4>Dark mode</h4>
-      <p>
-        To override the default light theme, set <code>bgColor</code> to{' '}
-        <code>'dark'</code>.
-      </p>
-      <pre>customTheme = &#123; bgColor: 'dark' &#125;</pre>
-      <h4>Auto-palette</h4>
-      <p>
-        Generate a palette based on your brand colors by setting bgColor to any
-        hex, rgb, or hsl color string. Hex values must contain 6 characters.
-      </p>
-      <pre>
-        {`customTheme = {
-        bgColor: '#000A14'
-        bgColor: 'rgb(0 10 20)'
-        bgColor: 'hsl(210deg 100% 4%)'
-      }`}
-      </pre>
-      {/* <h4>Accent Color</h4>
-    Add an accent color to text links and button hover states by setting accentColor to any hex, rgb, or hsl color string.
-    <pre>
-    customTheme = &#123;
-      <br />  accentColor: '#d557ff'
-      <br />  accentColor: 'rgb(213 87 255)'
-      <br />  accentColor: 'hsl(285deg 100% 67%)'
-      <br />&#125;
-    </pre> */}
-      <h4>Global Overrides</h4>
-      <p>
-        The following CSS variables can be added to your CustomTheme to override
-        the generated values. Any valid CSS color string can be used, including
-        var() aliases.
-      </p>
-      <pre>
-        {`customTheme = {
-        --synapse-text: 'white'
-        --synapse-secondary: '#cccccc'
-        --synapse-focus: 'hsl(285deg 100% 33%)'
-        --synapse-border: 'hsl(210deg 100% 25%)'
-        --synapse-object: 'hsl(210deg 100% 50%)'
-        --synapse-surface: 'hsl(210deg 100% 12.5%)'
-        --synapse-root: 'inherit'
-      }`}
-      </pre>
-      <h4>Object Overrides</h4>
-      <p>
-        Select and button elements can be specifically overriddden to introduce
-        brand colors or custom styles.
-      </p>
-      <pre>
-        {`customTheme = {
-        --synapse-select-bg: 'var(--synapse-object)'
-        --synapse-select-text: 'white'
-        --synapse-select-border: 'var(--synapse-object)'
-
-        --synapse-button-bg: 'var(--synapse-object)'
-        --synapse-button-text: 'white'
-        --synapse-button-border: 'var(--synapse-object)'
-      }`}
-      </pre>
-      {/* <h3>Typography — WIP, not reflected in code</h3>
-    <dl>
-      <dt>--synapse-font-size</dt><dd>100%</dd>
-      <dt>--synapse-font-family-display</dt><dd>system-ui</dd>
-      <dt>--synapse-font-family-text</dt><dd>system-ui</dd>
-      <dt>--synapse-font-weight-display</dt><dd>600 (semibold)</dd>
-      <dt>--synapse-font-weight-text</dt><dd>500 (medium)</dd>
-    </dl> */}
+      <Appearance />
       <h2>
         <Support />
         Support

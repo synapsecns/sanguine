@@ -1,11 +1,13 @@
 package internal_test
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/synapsecns/sanguine/contrib/screener-api/config"
 	"github.com/synapsecns/sanguine/contrib/screener-api/screener/internal"
 	"github.com/synapsecns/sanguine/contrib/screener-api/trmlabs"
-	"testing"
 )
 
 func TestNewRulesetManager(t *testing.T) {
@@ -50,13 +52,23 @@ func TestHasAddressIndicators(t *testing.T) {
 		"category1_risktype1": true,
 	}
 
+	// Define thresholds for testing
+	thresholds := []config.VolumeThreshold{
+		{
+			Category:   "Category1",
+			TypeOfRisk: "RiskType1",
+			Incoming:   1500, // Set thresholds to allow the test cases to pass or fail as expected
+			Outgoing:   800,
+		},
+	}
+
 	cr := internal.NewRuleset(riskRules)
 
 	// Test case where the indicator meets risk rules
 	indicators := []trmlabs.AddressRiskIndicator{
-		{IncomingVolumeUsd: "1000", OutgoingVolumeUsd: "500", Category: "Category1", RiskType: "RiskType1"},
+		{IncomingVolumeUsd: "1501", OutgoingVolumeUsd: "500", Category: "Category1", RiskType: "RiskType1"},
 	}
-	result, err := cr.HasAddressIndicators(indicators...)
+	result, err := cr.HasAddressIndicators(thresholds, indicators...)
 	require.NoError(t, err)
 	assert.True(t, result)
 
@@ -64,7 +76,7 @@ func TestHasAddressIndicators(t *testing.T) {
 	indicators = []trmlabs.AddressRiskIndicator{
 		{IncomingVolumeUsd: "100", OutgoingVolumeUsd: "50", Category: "Category2", RiskType: "RiskType2"},
 	}
-	result, err = cr.HasAddressIndicators(indicators...)
+	result, err = cr.HasAddressIndicators(thresholds, indicators...)
 	require.NoError(t, err)
 	assert.False(t, result)
 
@@ -72,13 +84,13 @@ func TestHasAddressIndicators(t *testing.T) {
 	indicators = []trmlabs.AddressRiskIndicator{
 		{IncomingVolumeUsd: "invalid", OutgoingVolumeUsd: "500", Category: "Category1", RiskType: "RiskType1"},
 	}
-	_, err = cr.HasAddressIndicators(indicators...)
+	_, err = cr.HasAddressIndicators(thresholds, indicators...)
 	require.Error(t, err)
 
 	// Test case with invalid outgoing volume
 	indicators = []trmlabs.AddressRiskIndicator{
 		{IncomingVolumeUsd: "1000", OutgoingVolumeUsd: "invalid", Category: "Category1", RiskType: "RiskType1"},
 	}
-	_, err = cr.HasAddressIndicators(indicators...)
+	_, err = cr.HasAddressIndicators(thresholds, indicators...)
 	require.Error(t, err)
 }

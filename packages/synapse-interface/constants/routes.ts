@@ -3,17 +3,19 @@ import {
   SWAP_PATH,
   STAKE_PATH,
   POOLS_PATH,
+  POOL_PATH,
   LANDING_PATH,
   BRIDGE_PATH,
   INTERCHAIN_LINK,
-  SOLANA_LINK,
+  SOLANA_BRIDGE_LINK,
+  COUNTDOWN_PATH,
 } from './urls'
 
 export interface RouteObject {
   [key: string]: {
     path: string
     text: string
-    match: string | RegExp | { startsWith: string; endsWith: string }
+    match: string | { startsWith: string }
   }
 }
 
@@ -21,30 +23,31 @@ export const NAVIGATION: RouteObject = {
   About: {
     path: LANDING_PATH,
     text: 'About',
-    match: '/landing',
+    match: LANDING_PATH,
   },
   Bridge: {
     path: BRIDGE_PATH,
     text: 'Bridge',
-    match: {
-      startsWith: '/',
-      endsWith: '/',
-    },
+    match: BRIDGE_PATH,
   },
   Swap: {
     path: SWAP_PATH,
     text: 'Swap',
-    match: '/swap',
+    match: SWAP_PATH,
   },
   Pools: {
     path: POOLS_PATH,
     text: 'Pools',
-    match: '/pool',
+    match: {
+      startsWith: POOL_PATH,
+    },
   },
   Stake: {
     path: STAKE_PATH,
     text: 'Stake',
-    match: '/stake',
+    match: {
+      startsWith: STAKE_PATH,
+    },
   },
   Analytics: {
     path: EXPLORER_PATH,
@@ -57,8 +60,13 @@ export const NAVIGATION: RouteObject = {
     match: null,
   },
   Solana: {
-    path: SOLANA_LINK,
+    path: SOLANA_BRIDGE_LINK,
     text: 'Solana Bridge',
     match: null,
+  },
+  Countdown: {
+    path: COUNTDOWN_PATH,
+    text: 'Countdown',
+    match: COUNTDOWN_PATH,
   },
 }

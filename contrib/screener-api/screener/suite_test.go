@@ -4,6 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
+	"testing"
+	"time"
+
 	"github.com/Flaque/filet"
 	"github.com/gocarina/gocsv"
 	"github.com/phayes/freeport"
@@ -19,9 +23,6 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/core/metrics/localmetrics"
 	"github.com/synapsecns/sanguine/core/testsuite"
-	"strconv"
-	"testing"
-	"time"
 )
 
 type ScreenerSuite struct {
@@ -165,3 +166,20 @@ func (m mockClient) ScreenAddress(ctx context.Context, address string) ([]trmlab
 }
 
 var _ trmlabs.Client = mockClient{}
+
+const testFile = `Enabled,ID,Category,Name,Type of risk,Severity,FE,RFQ
+true,1,test_category,name,Risk Type,severity,true,false
+false,2,test_category,name,Risk Type,severity,true,false
+true,3,test_category,name,Risk Type,severity,false,true`
+
+func TestSplitCSV(t *testing.T) {
+	testfile := filet.TmpFile(t, "", testFile)
+	out, err := screener.SplitCSV(testfile.Name())
+	Nil(t, err)
+
+	// 2 different files
+	Equal(t, 2, len(out))
+	Equal(t, "true", out["FE"][1].Enabled)
+	Equal(t, "false", out["RFQ"][1].Enabled)
+	Equal(t, "true", out["RFQ"][2].Enabled)
+}

@@ -6,17 +6,19 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ipfs/go-log"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/ethergo/listener"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/listener"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/quoter"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relapi"
@@ -62,15 +64,25 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 	chainListeners := make(map[int]listener.ContractListener)
 
 	// setup chain listeners
-	for chainID, chainCFG := range cfg.GetChains() {
-		// TODO: consider getter for this convert step
-		bridge := common.HexToAddress(chainCFG.Bridge)
+	for chainID := range cfg.GetChains() {
+		rfqAddr, err := cfg.GetRFQAddress(chainID)
+		if err != nil {
+			return nil, fmt.Errorf("could not get rfq address: %w", err)
+		}
 		chainClient, err := omniClient.GetChainClient(ctx, chainID)
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain client: %w", err)
 		}
 
-		chainListener, err := listener.NewChainListener(chainClient, store, bridge, metricHandler)
+		contract, err := fastbridge.NewFastBridgeRef(common.HexToAddress(rfqAddr), chainClient)
+		if err != nil {
+			return nil, fmt.Errorf("could not create fast bridge contract: %w", err)
+		}
+		startBlock, err := contract.DeployBlock(&bind.CallOpts{Context: ctx})
+		if err != nil {
+			return nil, fmt.Errorf("could not get deploy block: %w", err)
+		}
+		chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(rfqAddr), uint64(startBlock.Int64()), metricHandler)
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain listener: %w", err)
 		}
@@ -82,19 +94,20 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		return nil, fmt.Errorf("could not get signer: %w", err)
 	}
 
-	im, err := inventory.NewInventoryManager(ctx, omniClient, metricHandler, cfg, sg.Address(), store)
+	sm := submitter.NewTransactionSubmitter(metricHandler, sg, omniClient, store.SubmitterDB(), &cfg.SubmitterConfig)
+
+	im, err := inventory.NewInventoryManager(ctx, omniClient, metricHandler, cfg, sg.Address(), sm, store)
 	if err != nil {
 		return nil, fmt.Errorf("could not add imanager: %w", err)
 	}
 
-	fp := pricer.NewFeePricer(cfg, omniClient, metricHandler)
+	priceFetcher := pricer.NewCoingeckoPriceFetcher(cfg.GetHTTPTimeout())
+	fp := pricer.NewFeePricer(cfg, omniClient, priceFetcher, metricHandler)
 
 	q, err := quoter.NewQuoterManager(cfg, metricHandler, im, sg, fp)
 	if err != nil {
 		return nil, fmt.Errorf("could not get quoter")
 	}
-
-	sm := submitter.NewTransactionSubmitter(metricHandler, sg, omniClient, store.SubmitterDB(), &cfg.SubmitterConfig)
 
 	apiServer, err := relapi.NewRelayerAPI(ctx, cfg, metricHandler, omniClient, store, sm)
 	if err != nil {
@@ -130,7 +143,7 @@ const defaultPostInterval = 1
 // 4. Start the submitter: This will submit any transactions that need to be submitted.
 // nolint: cyclop
 func (r *Relayer) Start(ctx context.Context) error {
-	err := r.inventory.ApproveAllTokens(ctx, r.submitter)
+	err := r.inventory.ApproveAllTokens(ctx)
 	if err != nil {
 		return fmt.Errorf("could not approve all tokens: %w", err)
 	}
@@ -194,6 +207,14 @@ func (r *Relayer) Start(ctx context.Context) error {
 		return nil
 	})
 
+	g.Go(func() error {
+		err := r.inventory.Start(ctx)
+		if err != nil {
+			return fmt.Errorf("could not start inventory manager: %w", err)
+		}
+		return nil
+	})
+
 	err = g.Wait()
 	if err != nil {
 		return fmt.Errorf("could not start: %w", err)
@@ -202,15 +223,13 @@ func (r *Relayer) Start(ctx context.Context) error {
 	return nil
 }
 
-// TODO: make this configurable.
-const dbSelectorInterval = 1
-
 func (r *Relayer) runDBSelector(ctx context.Context) error {
+	interval := r.cfg.GetDBSelectorInterval()
 	for {
 		select {
 		case <-ctx.Done():
 			return fmt.Errorf("could not run db selector: %w", ctx.Err())
-		case <-time.After(dbSelectorInterval * time.Second):
+		case <-time.After(interval):
 			// TODO: add context w/ timeout
 			// TODO: add trigger
 			// TODO: should not fail on error

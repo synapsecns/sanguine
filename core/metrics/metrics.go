@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/synapsecns/sanguine/core/config"
+	experimentalLogger "github.com/synapsecns/sanguine/core/metrics/logger"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/propagation"
@@ -40,6 +41,8 @@ type Handler interface {
 	// Handler returns the http handler for the metrics endpoint.
 	// right now, this supports only a single route
 	Handler() http.Handler
+	// ExperimentalLogger returns an experimental logger.
+	ExperimentalLogger() experimentalLogger.ExperimentalLogger
 }
 
 // HandlerType is the handler type to use

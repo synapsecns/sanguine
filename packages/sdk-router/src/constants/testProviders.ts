@@ -30,8 +30,8 @@ const PUBLIC_PROVIDER_URLS: Partial<Record<SupportedChainId, string[]>> = {
   ],
   [SupportedChainId.ARBITRUM]: [
     // 'https://arbitrum.llamarpc.com',
-    'https://arbitrum-one.publicnode.com',
-    'https://arb-pokt.nodies.app',
+    // 'https://arbitrum-one.publicnode.com',
+    // 'https://arb-pokt.nodies.app',
   ],
   [SupportedChainId.AVALANCHE]: [
     'https://api.avax.network/ext/bc/C/rpc',

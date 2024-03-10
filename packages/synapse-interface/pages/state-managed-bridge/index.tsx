@@ -7,7 +7,13 @@ import { useRouter } from 'next/router'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { BridgeState } from '@/slices/bridge/reducer'
+import {
+  BridgeState,
+  setFromChainId,
+  setFromToken,
+  setToChainId,
+  setToToken,
+} from '@/slices/bridge/reducer'
 import {
   updateFromValue,
   setBridgeQuote,
@@ -30,7 +36,11 @@ import { formatBigIntToString } from '@/utils/bigint/format'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
 import { useEffect, useRef, useState, useMemo } from 'react'
 import { Token } from '@/utils/types'
-import { getWalletClient } from '@wagmi/core'
+import {
+  getWalletClient,
+  getPublicClient,
+  prepareSendTransaction,
+} from '@wagmi/core'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
 import { approveToken } from '@/utils/approveToken'
@@ -51,7 +61,8 @@ import { DestinationAddressInput } from '@/components/StateManagedBridge/Destina
 import { isAddress } from '@ethersproject/address'
 import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
-import { Address, zeroAddress } from 'viem'
+import { Address, zeroAddress, createPublicClient, http } from 'viem'
+import { polygon } from 'viem/chains'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { Warning } from '@/components/Warning'
 import { useAppDispatch } from '@/store/hooks'
@@ -73,6 +84,8 @@ import {
   fetchEthPrice,
   fetchGmxPrice,
 } from '@/slices/priceDataSlice'
+import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
+import { SwitchButton } from '@/components/buttons/SwitchButton'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -272,10 +285,6 @@ const StateManagedBridge = () => {
 
         toast.dismiss(quoteToastRef.current.id)
 
-        dispatch(fetchEthPrice())
-        dispatch(fetchArbPrice())
-        dispatch(fetchGmxPrice())
-
         const message = `Route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
 
@@ -396,7 +405,25 @@ const StateManagedBridge = () => {
             }
           : data
 
-      const tx = await wallet.sendTransaction(payload)
+      /** Setting custom gas limit for only Polygon transactions */
+      let gasEstimate = undefined
+
+      if (fromChainId === polygon.id) {
+        const publicClient = getPublicClient()
+        gasEstimate = await publicClient.estimateGas({
+          value: payload.value,
+          to: payload.to,
+          account: address,
+          data: payload.data,
+          chainId: fromChainId,
+        })
+        gasEstimate = (gasEstimate * 3n) / 2n
+      }
+
+      const tx = await wallet.sendTransaction({
+        ...payload,
+        gas: gasEstimate,
+      })
 
       const originChainName = CHAINS_BY_ID[fromChainId]?.name
       const destinationChainName = CHAINS_BY_ID[toChainId]?.name
@@ -451,7 +478,7 @@ const StateManagedBridge = () => {
 
       const transactionReceipt = await waitForTransaction({
         hash: tx as Address,
-        timeout: 30_000,
+        timeout: 60_000,
       })
       console.log('Transaction Receipt: ', transactionReceipt)
 
@@ -473,6 +500,17 @@ const StateManagedBridge = () => {
       dispatch(removePendingBridgeTransaction(currentTimestamp))
       console.log('Error executing bridge', error)
       toast.dismiss(pendingPopup)
+
+      /** Fetch balances if await transaction receipt times out */
+      if (isTransactionReceiptError(error)) {
+        dispatch(
+          fetchAndStoreSingleNetworkPortfolioBalances({
+            address,
+            chainId: fromChainId,
+          })
+        )
+      }
+
       return txErrorHandler(error)
     }
   }
@@ -545,6 +583,14 @@ const StateManagedBridge = () => {
               </animated.div>
             </Transition>
             <InputContainer />
+            <SwitchButton
+              onClick={() => {
+                dispatch(setFromChainId(toChainId))
+                dispatch(setFromToken(toToken))
+                dispatch(setToChainId(fromChainId))
+                dispatch(setToToken(fromToken))
+              }}
+            />
             <OutputContainer />
             <Warning />
             <Transition

@@ -1,0 +1,49 @@
+@startuml BridgingWorkflowSimplified
+skinparam BoxPadding 10
+skinparam ParticipantPadding 25
+skinparam NoteTextAlignment center
+title Bridging Workflow (simplified with SDK)
+
+box "Origin Chain" #White
+actor "User" as OU
+participant "Synapse\nRouter" as OSR
+end box
+
+box "             Synapse             " #bb77ff
+database " " as SYN
+end box
+
+box "Destination Chain" #White
+participant "BridgeModule\nContract" as DBM
+actor "User" as DU
+end box
+
+OU --> SYN: Getting a Bridge Quote
+note over SYN #White
+    SDK returns
+    the best quotes for
+    **tokenIn ⟶ tokenOut**
+end note
+SYN --> OU
+note right of OU #White
+    User selects
+    a returned quote
+end note
+OU -> OSR: **tokenIn**
+note over OSR #White
+    Origin token
+    is taken
+    from the user
+end note
+OSR --> SYN
+note over SYN #White
+    Bridge Magic happens
+end note
+SYN --> DBM
+note over DBM #White
+    Destination token
+    is transferred
+    to the user
+end note
+DBM -> DU: **tokenOut**
+@enduml
