@@ -34,7 +34,6 @@ jobs:
         with:
           #  make sure to update run-goreleaser when adding a new package here
           # also add to the get-project-id step
-          # TODO: forge doc, get-project-id for contracts-interchain
           filters: |
             contracts-core: 'packages/contracts-core/**'
             contracts-interchain: 'packages/contracts-interchain/**'
