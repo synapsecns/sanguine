@@ -80,7 +80,7 @@ jobs:
           {
             "contracts-core": "${{ secrets.VERCEL_CONTRACT_DOCS_PROJECT_ID}}",
             "contracts-rfq": "${{ secrets.VERCEL_CONTRACT_RFQ_DOCS_PROJECT_ID }}",
-            "solidity-devops": "${{ secrets.VERCEL_DEVOPS_DOCS_PROJECT_ID }}",
+            "solidity-devops": "${{ secrets.VERCEL_DEVOPS_DOCS_PROJECT_ID }}"
           }
           END
           )
