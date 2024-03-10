@@ -10,5 +10,14 @@ reviews:
       - 'DO NOT MERGE'
     drafts: true
 
+  path_filters:
+    - '!**abigen.go'
+    - '!**metadata.go'
+    - '!**pb.go'
+    - '!**/bundle/*'
+    - '!**/generated/*'
+
+
 chat:
   auto_reply: true
+
