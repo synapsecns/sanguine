@@ -49,7 +49,6 @@ import { InputContainer } from '@/components/StateManagedBridge/InputContainer'
 import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer'
 import Button from '@/components/ui/tailwind/Button'
 import { SettingsIcon } from '@/components/icons/SettingsIcon'
-import { DestinationAddressInput } from '@/components/StateManagedBridge/DestinationAddressInput'
 import { isAddress } from '@ethersproject/address'
 import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
@@ -76,7 +75,6 @@ import {
   fetchEthPrice,
   fetchGmxPrice,
 } from '@/slices/priceDataSlice'
-import { _DestinationAddressInput } from '@/components/StateManagedBridge/_DestinationAddressInput'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { SwitchButton } from '@/components/buttons/SwitchButton'
 
