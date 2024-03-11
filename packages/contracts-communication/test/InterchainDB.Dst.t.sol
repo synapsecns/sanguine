@@ -442,6 +442,46 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         checkVerification(moduleB, getFakeEntry(SRC_CHAIN_ID_1, 0), proof, 0);
     }
 
+    function test_checkVerification_modifySrcChainId() public {
+        // Valid entry
+        InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, 0);
+        assertCorrectInitialVerificationTime(moduleA, entry);
+        entry.srcChainId ^= 1;
+        checkVerification(moduleA, entry, 0);
+    }
+
+    function test_checkVerification_modifyDbNonce() public {
+        // Valid entry
+        InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, 0);
+        assertCorrectInitialVerificationTime(moduleA, entry);
+        entry.dbNonce ^= 1;
+        checkVerification(moduleA, entry, 0);
+    }
+
+    function test_checkVerification_modifyEntryIndex() public {
+        // Valid entry
+        InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, 0);
+        assertCorrectInitialVerificationTime(moduleA, entry);
+        entry.entryIndex ^= 1;
+        checkVerification(moduleA, entry, 0);
+    }
+
+    function test_checkVerification_modifySrcWriter() public {
+        // Valid entry
+        InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, 0);
+        assertCorrectInitialVerificationTime(moduleA, entry);
+        entry.srcWriter ^= bytes32(uint256(1));
+        checkVerification(moduleA, entry, 0);
+    }
+
+    function test_checkVerification_modifyDataHash() public {
+        // Valid entry
+        InterchainEntry memory entry = getMockEntry(SRC_CHAIN_ID_0, 0);
+        assertCorrectInitialVerificationTime(moduleA, entry);
+        entry.dataHash ^= bytes32(uint256(1));
+        checkVerification(moduleA, entry, 0);
+    }
+
     // ═════════════════════════════════════ TESTS: READING BATCHES (REVERTS) ══════════════════════════════════════════
 
     function test_checkVerification_revert_sameChainId() public {
