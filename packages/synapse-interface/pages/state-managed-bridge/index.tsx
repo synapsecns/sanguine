@@ -45,7 +45,7 @@ import { txErrorHandler } from '@/utils/txErrorHandler'
 import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
 import { approveToken } from '@/utils/approveToken'
 import { PageHeader } from '@/components/PageHeader'
-import Card from '@/components/ui/tailwind/Card'
+import BridgeCard from '@/components/ui/BridgeCard'
 import BridgeExchangeRateInfo from '@/components/StateManagedBridge/BridgeExchangeRateInfo'
 import { Transition } from '@headlessui/react'
 import {
@@ -548,14 +548,7 @@ const StateManagedBridge = () => {
             </Button>
           </div>
         </div>
-        <Card
-          divider={false}
-          className={`
-            pb-3 mt-5 overflow-hidden
-            transition-all duration-100 transform rounded-md
-            bg-bgBase
-          `}
-        >
+        <BridgeCard>
           <div ref={bridgeDisplayRef}>
             <Transition show={showSettingsSlideOver} {...TRANSITION_PROPS}>
               <animated.div>
@@ -615,7 +608,7 @@ const StateManagedBridge = () => {
               />
             </div>
           </div>
-        </Card>
+        </BridgeCard>
       </div>
     </div>
   )

@@ -20,7 +20,7 @@ import { txErrorHandler } from '@/utils/txErrorHandler'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { approveToken } from '@/utils/approveToken'
 import { PageHeader } from '@/components/PageHeader'
-import Card from '@/components/ui/tailwind/Card'
+import BridgeCard from '@/components/ui/BridgeCard'
 import { Transition } from '@headlessui/react'
 import {
   SECTION_TRANSITION_PROPS,
@@ -364,14 +364,7 @@ const StateManagedSwap = () => {
           <div className="flex items-center justify-between">
             <PageHeader title="Swap" subtitle="Exchange assets on chain." />
           </div>
-          <Card
-            divider={false}
-            className={`
-              pb-3 mt-5 overflow-hidden
-              transition-all duration-100 transform rounded-md
-              bg-bgBase
-            `}
-          >
+          <BridgeCard>
             <div ref={swapDisplayRef}>
               <Transition show={showSwapChainListOverlay} {...TRANSITION_PROPS}>
                 <animated.div className={springClass}>
@@ -424,7 +417,7 @@ const StateManagedSwap = () => {
                 />
               </div>
             </div>
-          </Card>
+          </BridgeCard>
         </div>
       </div>
     </LandingPageWrapper>
