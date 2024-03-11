@@ -11,6 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/ethergo/client"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/config"
@@ -230,25 +231,9 @@ func (c *circleCCTPHandler) handleDepositForBurn(ctx context.Context, log *types
 		attribute.String("depositor", event.Depositor.Hex()),
 	)
 
-	// now, fetch the transaction receipt so that we can load the message payload from MessageSent event
-	messageSentParser, err := messagetransmitter.NewMessageTransmitterFilterer(c.cfg.Chains[chainID].GetMessageTransmitterAddress(), ethClient)
+	message, err := c.getMessagePayload(ctx, log.TxHash, chainID, ethClient)
 	if err != nil {
-		return nil, fmt.Errorf("could not create message sent event parser: %w", err)
-	}
-	receipt, err := ethClient.TransactionReceipt(ctx, log.TxHash)
-	if err != nil {
-		return nil, fmt.Errorf("could not get transaction receipt: %w", err)
-	}
-	var message []byte
-	for _, log := range receipt.Logs {
-		if log.Topics[0] == messagetransmitter.MessageSentTopic {
-			messageSentEvent, err := messageSentParser.ParseMessageSent(*log)
-			if err != nil {
-				return nil, fmt.Errorf("could not parse message sent event: %w", err)
-			}
-			message = messageSentEvent.Message
-			break
-		}
+		return nil, fmt.Errorf("could not get message payload: %w", err)
 	}
 
 	destChainID, err := CircleDomainToChainID(event.DestinationDomain, IsTestnetChainID(chainID))
@@ -279,6 +264,29 @@ func (c *circleCCTPHandler) handleDepositForBurn(ctx context.Context, log *types
 	}
 
 	return &rawMsg, nil
+}
+
+// getMessagePayload gets the message payload from the MessageSent event by fetching the transaction receipt.
+func (c *circleCCTPHandler) getMessagePayload(ctx context.Context, txHash common.Hash, chainID uint32, ethClient client.EVM) (message []byte, err error) {
+	messageSentParser, err := messagetransmitter.NewMessageTransmitterFilterer(c.cfg.Chains[chainID].GetMessageTransmitterAddress(), ethClient)
+	if err != nil {
+		return nil, fmt.Errorf("could not create message sent event parser: %w", err)
+	}
+	receipt, err := ethClient.TransactionReceipt(ctx, txHash)
+	if err != nil {
+		return nil, fmt.Errorf("could not get transaction receipt: %w", err)
+	}
+	for _, log := range receipt.Logs {
+		if log.Topics[0] == messagetransmitter.MessageSentTopic {
+			messageSentEvent, err := messageSentParser.ParseMessageSent(*log)
+			if err != nil {
+				return nil, fmt.Errorf("could not parse message sent event: %w", err)
+			}
+			message = messageSentEvent.Message
+			return messageSentEvent.Message, nil
+		}
+	}
+	return nil, fmt.Errorf("no message sent event found")
 }
 
 //nolint:cyclop
