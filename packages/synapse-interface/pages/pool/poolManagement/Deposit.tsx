@@ -1,29 +1,26 @@
 import _ from 'lodash'
-
 import { ETH, WETHE, WETH } from '@constants/tokens/bridgeable'
 import { AVWETH } from '@/constants/tokens/auxilliary'
-import { stringToBigInt } from '@/utils/bigint/format'
-import { DepositTokenInput } from '@components/TokenInput'
-import PriceImpactDisplay from '../components/PriceImpactDisplay'
-import { Token } from '@types'
-import { useState, useEffect } from 'react'
+import { stringToBigInt, formatBigIntToString } from '@/utils/bigint/format'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import {
   approve,
   deposit,
   emptyPoolDeposit,
 } from '@/utils/actions/approveAndDeposit'
-import LoadingTokenInput from '@components/loading/LoadingTokenInput'
-import { Address, fetchBalance } from '@wagmi/core'
+import { getAddress } from '@ethersproject/address'
+import { fetchBalance, waitForTransaction } from '@wagmi/core'
 import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
 import { calculatePriceImpact } from '@/utils/priceImpact'
 import { transformCalculateLiquidityInput } from '@/utils/transformCalculateLiquidityInput'
-import { formatBigIntToString } from '@/utils/bigint/format'
-
-import { getAddress } from '@ethersproject/address'
-import { useSelector } from 'react-redux'
-import { RootState } from '@/store/store'
-
+import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
+import { isTransactionUserRejectedError } from '@/utils/isTransactionUserRejectedError'
+import { useState, useEffect } from 'react'
+import { useDispatch } from 'react-redux'
+import { DepositTokenInput } from '@components/TokenInput'
+import { Token } from '@types'
+import { Address } from '@wagmi/core'
+import { zeroAddress } from 'viem'
 import {
   resetPoolDeposit,
   setDepositQuote,
@@ -31,13 +28,19 @@ import {
   setIsLoading,
   setPool,
 } from '@/slices/poolDepositSlice'
-
-import { useDispatch } from 'react-redux'
-import DepositButton from './DepositButton'
-import { txErrorHandler } from '@/utils/txErrorHandler'
+import { fetchPoolData } from '@/slices/poolDataSlice'
 import { fetchPoolUserData } from '@/slices/poolUserDataSlice'
+import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
+import {
+  usePoolDataState,
+  usePoolUserDataState,
+  usePoolDepositState,
+} from '@/slices/pools/hooks'
 import { swapPoolCalculateAddLiquidity } from '@/actions/swapPoolCalculateAddLiquidity'
-import { zeroAddress } from 'viem'
+import { txErrorHandler } from '@/utils/txErrorHandler'
+import LoadingTokenInput from '@components/loading/LoadingTokenInput'
+import PriceImpactDisplay from '../components/PriceImpactDisplay'
+import DepositButton from './DepositButton'
 
 export const DEFAULT_DEPOSIT_QUOTE = {
   priceImpact: 0n,
@@ -54,10 +57,10 @@ const Deposit = ({
 }) => {
   const dispatch: any = useDispatch()
 
-  const { pool, poolData } = useSelector((state: RootState) => state.poolData)
-  const { poolUserData } = useSelector((state: RootState) => state.poolUserData)
+  const { pool, poolData } = usePoolDataState()
+  const { poolUserData } = usePoolUserDataState()
   const { depositQuote, inputValue, inputSum, filteredInputValue } =
-    useSelector((state: RootState) => state.poolDeposit)
+    usePoolDepositState()
 
   const { poolAddress } = getSwapDepositContractFields(pool, chainId)
 
@@ -171,6 +174,13 @@ const Deposit = ({
     }
   }
 
+  const onResetDeposit = () => {
+    dispatch(fetchPoolData({ poolName: String(pool.routerIndex) }))
+    dispatch(fetchPoolUserData({ pool, address: address as Address }))
+    dispatch(fetchAndStoreSingleNetworkPortfolioBalances({ address, chainId }))
+    dispatch(resetPoolDeposit())
+  }
+
   const depositTxn = async () => {
     try {
       let tx
@@ -181,15 +191,29 @@ const Deposit = ({
         tx = deposit(pool, 'ONE_TENTH', null, filteredInputValue.bi, chainId)
       }
 
-      try {
-        await tx
-        dispatch(fetchPoolUserData({ pool, address: address as Address }))
-        dispatch(resetPoolDeposit())
-      } catch (error) {
-        txErrorHandler(error)
+      const resolvedTx = await tx
+
+      if (isTransactionUserRejectedError(resolvedTx)) {
+        throw Error(resolvedTx)
       }
+
+      await waitForTransaction({
+        hash: resolvedTx?.transactionHash as Address,
+        timeout: 60_000,
+      })
+
+      onResetDeposit()
     } catch (error) {
+      /**
+       * Assume transaction success if transaction receipt error
+       * Likely to be rpc related issue
+       */
+      if (isTransactionReceiptError(error)) {
+        onResetDeposit()
+      }
       txErrorHandler(error)
+    } finally {
+      dispatch(setIsLoading(false))
     }
   }
 

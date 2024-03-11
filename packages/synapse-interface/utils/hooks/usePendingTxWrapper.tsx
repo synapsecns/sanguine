@@ -22,6 +22,6 @@ export function usePendingTxWrapper(): usePendingTxWrapperReturnType {
     }
     return tx
   }
-  // return { isPending, pendingTxWrapFunc }
+
   return [isPending, pendingTxWrapFunc]
 }

@@ -13,6 +13,7 @@ import Image from 'next/image'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'
 import { PortfolioAssetActionButton } from './PortfolioAssetActionButton'
+import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 
 const handleFocusOnBridgeInput = () => {
   inputRef.current.focus()
@@ -50,7 +51,11 @@ export const PortfolioTokenAsset = ({
     dispatch(setFromChainId(portfolioChainId))
     dispatch(setFromToken(token))
     handleFocusOnBridgeInput()
-    dispatch(updateFromValue(getParsedBalance(balance, tokenDecimals)))
+    dispatch(
+      updateFromValue(
+        trimTrailingZeroesAfterDecimal(getParsedBalance(balance, tokenDecimals))
+      )
+    )
   }, [token, balance, portfolioChainId])
 
   return (
