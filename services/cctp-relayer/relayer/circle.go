@@ -74,17 +74,17 @@ func (c *circleCCTPHandler) HandleLog(ctx context.Context, log *types.Log, chain
 	}
 
 	switch log.Topics[0] {
-	case messagetransmitter.MessageSentTopic:
+	case tokenmessenger.DepositForBurnTopic:
 		msg, err := c.handleDepositForBurn(ctx, log, chainID)
 		if err != nil {
-			return false, fmt.Errorf("could not store message sent: %w", err)
+			return false, fmt.Errorf("could not store depositForBurn: %w", err)
 		}
 		if msg != nil {
 			processQueue = true
 		}
 		return processQueue, nil
 	case messagetransmitter.MessageReceivedTopic:
-		err = c.handleMintAndWithdraw(ctx, log, chainID)
+		err = c.handleMessageReceived(ctx, log, chainID)
 		if err != nil {
 			return false, fmt.Errorf("could not handle message received: %w", err)
 		}
@@ -136,12 +136,12 @@ func (c *circleCCTPHandler) FetchAndProcessSentEvent(parentCtx context.Context, 
 		if log.Topics[0] == messagetransmitter.MessageSentTopic {
 			msg, err = c.handleDepositForBurn(ctx, log, chainID)
 			if err != nil {
-				return nil, fmt.Errorf("could not handle message sent: %w", err)
+				return nil, fmt.Errorf("could not handle depositForBurn: %w", err)
 			}
 			return msg, nil
 		}
 	}
-	return nil, fmt.Errorf("no message sent event found")
+	return nil, fmt.Errorf("no depositForBurn event found")
 }
 
 func (c *circleCCTPHandler) SubmitReceiveMessage(parentCtx context.Context, msg *relayTypes.Message) (err error) {
@@ -217,7 +217,7 @@ func (c *circleCCTPHandler) handleDepositForBurn(ctx context.Context, log *types
 
 	event, err := eventParser.ParseDepositForBurn(*log)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse message sent: %w", err)
+		return nil, fmt.Errorf("could not parse depositForBurn: %w", err)
 	}
 
 	// check that we sent the tx
@@ -241,7 +241,13 @@ func (c *circleCCTPHandler) handleDepositForBurn(ctx context.Context, log *types
 		return nil, fmt.Errorf("could not convert circle domain to chain ID: %w", err)
 	}
 
+	sourceDomain, err := c.boundMessageTransmitters[chainID].LocalDomain(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return nil, fmt.Errorf("could not get local domain: %w", err)
+	}
+
 	rawMsg := relayTypes.Message{
+		RequestID:     getRequestID(sourceDomain, event.Nonce),
 		OriginTxHash:  log.TxHash.Hex(),
 		OriginChainID: chainID,
 		DestChainID:   destChainID,
@@ -251,6 +257,7 @@ func (c *circleCCTPHandler) handleDepositForBurn(ctx context.Context, log *types
 	}
 
 	span.SetAttributes(
+		attribute.String("request_id", rawMsg.RequestID),
 		attribute.String("message_hash", rawMsg.MessageHash),
 		attribute.Int(metrics.Origin, int(rawMsg.OriginChainID)),
 		attribute.Int(metrics.Destination, int(rawMsg.DestChainID)),
@@ -266,32 +273,9 @@ func (c *circleCCTPHandler) handleDepositForBurn(ctx context.Context, log *types
 	return &rawMsg, nil
 }
 
-// getMessagePayload gets the message payload from the MessageSent event by fetching the transaction receipt.
-func (c *circleCCTPHandler) getMessagePayload(ctx context.Context, txHash common.Hash, chainID uint32, ethClient client.EVM) (message []byte, err error) {
-	messageSentParser, err := messagetransmitter.NewMessageTransmitterFilterer(c.cfg.Chains[chainID].GetMessageTransmitterAddress(), ethClient)
-	if err != nil {
-		return nil, fmt.Errorf("could not create message sent event parser: %w", err)
-	}
-	receipt, err := ethClient.TransactionReceipt(ctx, txHash)
-	if err != nil {
-		return nil, fmt.Errorf("could not get transaction receipt: %w", err)
-	}
-	for _, log := range receipt.Logs {
-		if log.Topics[0] == messagetransmitter.MessageSentTopic {
-			messageSentEvent, err := messageSentParser.ParseMessageSent(*log)
-			if err != nil {
-				return nil, fmt.Errorf("could not parse message sent event: %w", err)
-			}
-			message = messageSentEvent.Message
-			return messageSentEvent.Message, nil
-		}
-	}
-	return nil, fmt.Errorf("no message sent event found")
-}
-
 //nolint:cyclop
-func (c *circleCCTPHandler) handleMintAndWithdraw(ctx context.Context, log *types.Log, chainID uint32) (err error) {
-	ctx, span := c.handler.Tracer().Start(ctx, "handleMintAndWithdraw", trace.WithAttributes(
+func (c *circleCCTPHandler) handleMessageReceived(ctx context.Context, log *types.Log, chainID uint32) (err error) {
+	ctx, span := c.handler.Tracer().Start(ctx, "handleMessageReceived", trace.WithAttributes(
 		attribute.String(metrics.TxHash, log.TxHash.Hex()),
 		attribute.Int(metrics.ChainID, int(chainID)),
 		attribute.Int("block_number", int(log.BlockNumber)),
@@ -305,7 +289,6 @@ func (c *circleCCTPHandler) handleMintAndWithdraw(ctx context.Context, log *type
 		return fmt.Errorf("no topics found")
 	}
 
-	// Parse the request id from the log.
 	ethClient, err := c.omniRPCClient.GetConfirmationsClient(ctx, int(chainID), 1)
 	if err != nil {
 		return fmt.Errorf("could not get chain client: %w", err)
@@ -333,17 +316,17 @@ func (c *circleCCTPHandler) handleMintAndWithdraw(ctx context.Context, log *type
 		attribute.String("sender", sender.Hex()),
 	)
 
-	// convert the source domain to a chain ID
-	originChainID, err := CircleDomainToChainID(event.SourceDomain, IsTestnetChainID(chainID))
-	if err != nil {
-		return fmt.Errorf("could not convert circle domain to chain ID: %w", err)
-	}
-
-	msg, err := c.db.GetMessageByHash(ctx, messageHash)
+	requestID := getRequestID(event.SourceDomain, event.Nonce)
+	msg, err := c.db.GetMessageByRequestID(ctx, requestID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			// Reconstruct what we can from the given log.
+			originChainID, err := CircleDomainToChainID(event.SourceDomain, IsTestnetChainID(chainID))
+			if err != nil {
+				return fmt.Errorf("could not convert circle domain to chain ID: %w", err)
+			}
 			msg = &relayTypes.Message{
+				RequestID:     requestID,
 				OriginChainID: originChainID,
 				DestChainID:   chainID,
 				BlockNumber:   log.BlockNumber,
@@ -367,4 +350,31 @@ func (c *circleCCTPHandler) handleMintAndWithdraw(ctx context.Context, log *type
 		return fmt.Errorf("could not store complete message: %w", err)
 	}
 	return nil
+}
+
+// getMessagePayload gets the message payload from a MessageTransmitter event by fetching the transaction receipt.
+func (c *circleCCTPHandler) getMessagePayload(ctx context.Context, txHash common.Hash, chainID uint32, ethClient client.EVM) (message []byte, err error) {
+	parser, err := messagetransmitter.NewMessageTransmitterFilterer(c.cfg.Chains[chainID].GetMessageTransmitterAddress(), ethClient)
+	if err != nil {
+		return nil, fmt.Errorf("could not create depositForBurn event parser: %w", err)
+	}
+	receipt, err := ethClient.TransactionReceipt(ctx, txHash)
+	if err != nil {
+		return nil, fmt.Errorf("could not get transaction receipt: %w", err)
+	}
+	for _, log := range receipt.Logs {
+		if log.Topics[0] == messagetransmitter.MessageSentTopic {
+			messageSentEvent, err := parser.ParseMessageSent(*log)
+			if err != nil {
+				return nil, fmt.Errorf("could not parse depositForBurn event: %w", err)
+			}
+			message = messageSentEvent.Message
+			return messageSentEvent.Message, nil
+		}
+	}
+	return nil, fmt.Errorf("no depositForBurn event found")
+}
+
+func getRequestID(sourceDomain uint32, nonce uint64) string {
+	return fmt.Sprintf("%d-%d", sourceDomain, nonce)
 }
