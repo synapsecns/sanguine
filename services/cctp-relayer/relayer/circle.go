@@ -196,6 +196,7 @@ func (c *circleCCTPHandler) handleMessageSent(parentCtx context.Context, log *ty
 	ctx, span := c.handler.Tracer().Start(parentCtx, "handleMessageSent", trace.WithAttributes(
 		attribute.String(metrics.TxHash, log.TxHash.Hex()),
 		attribute.Int(metrics.ChainID, int(chainID)),
+		attribute.Int("block_number", int(log.BlockNumber)),
 	))
 
 	defer func() {
@@ -273,6 +274,7 @@ func (c *circleCCTPHandler) handleMessageReceived(parentCtx context.Context, log
 	ctx, span := c.handler.Tracer().Start(parentCtx, "handleMessageReceived", trace.WithAttributes(
 		attribute.String(metrics.TxHash, log.TxHash.Hex()),
 		attribute.Int(metrics.ChainID, int(chainID)),
+		attribute.Int("block_number", int(log.BlockNumber)),
 	))
 
 	defer func() {
