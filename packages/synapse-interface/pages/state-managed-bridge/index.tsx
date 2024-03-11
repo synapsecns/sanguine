@@ -93,6 +93,7 @@ const StateManagedBridge = () => {
   const quoteToastRef = useRef({ id: '' })
   const [isApproved, setIsApproved] = useState(false)
 
+  /** Clear Destination Address on Bridge Page load */
   useEffect(() => {
     dispatch(clearDestinationAddress())
   }, [])
