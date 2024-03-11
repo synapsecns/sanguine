@@ -78,7 +78,7 @@ export const initialState: BridgeState = {
   toTokensBridgeQuotesStatus: FetchState.IDLE,
   isLoading: false,
   deadlineMinutes: null,
-  destinationAddress: null,
+  destinationAddress: '' as Address,
 }
 
 export const bridgeSlice = createSlice({
@@ -459,6 +459,9 @@ export const bridgeSlice = createSlice({
     setDestinationAddress: (state, action: PayloadAction<Address | null>) => {
       state.destinationAddress = action.payload
     },
+    clearDestinationAddress: (state) => {
+      state.destinationAddress = initialState.destinationAddress
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -513,6 +516,7 @@ export const {
   updateFromValue,
   setDeadlineMinutes,
   setDestinationAddress,
+  clearDestinationAddress,
   setIsLoading,
 } = bridgeSlice.actions
 

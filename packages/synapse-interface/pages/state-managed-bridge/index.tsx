@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Transition } from '@headlessui/react'
 import { isAddress } from '@ethersproject/address'
 import { commify } from '@ethersproject/units'
-import { useAccount, useNetwork } from 'wagmi'
+import { useAccount } from 'wagmi'
 import {
   waitForTransaction,
   getWalletClient,
@@ -14,11 +14,11 @@ import { polygon } from 'viem/chains'
 import { animated } from 'react-spring'
 import { useRouter } from 'next/router'
 import { useAppDispatch } from '@/store/hooks'
-import { RootState } from '../../store/store'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { useBridgeState, useBridgeDisplayState } from '@/slices/bridge/hooks'
 import {
   BridgeState,
+  clearDestinationAddress,
   setFromChainId,
   setFromToken,
   setToChainId,
@@ -67,15 +67,11 @@ import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
 import { EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
 
 const StateManagedBridge = () => {
-  const { address } = useAccount()
-  const { chain } = useNetwork()
-  const { synapseSDK } = useSynapseContext()
-  const bridgeDisplayRef = useRef(null)
-  const currentSDKRequestID = useRef(0)
-  const quoteToastRef = useRef({ id: '' })
   const router = useRouter()
   const { query, pathname } = router
-
+  const dispatch = useAppDispatch()
+  const { address } = useAccount()
+  const { synapseSDK } = useSynapseContext()
   const {
     fromChainId,
     toChainId,
@@ -92,9 +88,14 @@ const StateManagedBridge = () => {
     showToTokenListOverlay,
   } = useBridgeDisplayState()
 
+  const bridgeDisplayRef = useRef(null)
+  const currentSDKRequestID = useRef(0)
+  const quoteToastRef = useRef({ id: '' })
   const [isApproved, setIsApproved] = useState(false)
 
-  const dispatch = useAppDispatch()
+  useEffect(() => {
+    dispatch(clearDestinationAddress())
+  }, [])
 
   useEffect(() => {
     segmentAnalyticsEvent(`[Bridge page] arrives`, {
