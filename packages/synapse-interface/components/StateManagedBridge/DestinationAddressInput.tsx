@@ -107,7 +107,7 @@ export const DestinationAddressInput = ({
         onMouseLeave={() => setIsInputHovered(false)}
         className={`
            flex border text-md rounded-sm
-           ${isInputFocused ? ' bg-bgBase' : 'bg-transparent'}
+           ${isInputFocused ? ' bg-bgBase' : 'bg-transparent hover:opacity-80'}
           ${
             isInputValidAddress
               ? 'border-synapsePurple focus:border-synapsePurple'
@@ -219,17 +219,21 @@ const DestinationInputWarning = ({
   return (
     <div
       className={`
-      p-2 border rounded-sm bg-surface border-separator text-secondary
-      top-0 left-0 w-full space-y-2 z-50
-      ${show ? 'absolute' : 'hidden'}
+        p-3 border rounded-sm bg-surface border-separator text-secondary
+        top-0 left-0 w-full space-y-2 z-50
+        ${show ? 'absolute' : 'hidden'}
       `}
     >
-      <h3 className="text-2xl text-white">Warning</h3>
+      <h3 className="text-2xl font-semibold tracking-wide text-white">
+        Warning
+      </h3>
       <p className="text-white">
-        Do not send your funds to a custodial wallet or exchange address!
+        Do not send your funds to a{' '}
+        <div className="inline text-yellowText">custodial wallet</div> or{' '}
+        <div className="inline text-yellowText">exchange</div> address!
       </p>
       <p className="text-secondary">
-        It may be impossible to recover your funds
+        It may be impossible to recover your funds.
       </p>
       <div className="flex space-x-2">
         <button onClick={onCancel} className="w-1/2 py-3 bg-separator">
