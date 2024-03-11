@@ -15,18 +15,17 @@ const Home = () => {
   useSyncQueryParamsWithBridgeState()
 
   return (
-    <LandingPageWrapper>
-      <main
-        data-test-id="bridge-page"
-        className="relative z-0 flex-1 h-full overflow-y-auto focus:outline-none"
-      >
-        <Banner />
-        <div className="flex flex-col-reverse justify-center gap-16 px-4 py-20 mx-auto lg:flex-row 2xl:w-3/4 sm:mt-6 sm:px-8 md:px-12">
-          <Portfolio />
-          <StateManagedBridge />
-        </div>
-      </main>
-    </LandingPageWrapper>
+    <div className="dark">
+      <LandingPageWrapper>
+        <main data-test-id="bridge-page">
+          <Banner />
+          <div className="flex flex-col-reverse justify-center gap-16 px-4 py-20 mx-auto lg:flex-row 2xl:w-3/4 sm:mt-6 sm:px-8 md:px-12">
+            <Portfolio />
+            <StateManagedBridge />
+          </div>
+        </main>
+      </LandingPageWrapper>
+    </div>
   )
 }
 

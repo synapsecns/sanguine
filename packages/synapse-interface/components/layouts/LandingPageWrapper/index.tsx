@@ -25,26 +25,16 @@ import { NAVIGATION } from '@/constants/routes'
 import { MoreButton } from './MoreButton'
 import { PageFooter } from './PageFooter'
 
+const textColor = 'text-zinc-800 dark:text-zinc-200'
+const bgColor =
+  'bg-white bg-gradient-to-b from-white to-[hsl(235deg_75%_96%)] dark:from-black dark:to-[hsl(265deg_25%_7.5%)]'
+const bgFrame = 'w-screen h-screen overflow-scroll'
+
 export function LandingPageWrapper({ children }: { children: any }) {
   return (
-    <div
-      style={{
-        background:
-          'radial-gradient(23.86% 33.62% at 50.97% 47.88%, rgba(255, 0, 255, 0.04) 0%, rgba(172, 143, 255, 0.04) 100%), #111111',
-      }}
-    >
+    <div className={`${textColor} ${bgColor} ${bgFrame} tracking-wide`}>
       <LandingNav />
-
-      <div
-        style={{
-          backgroundImage: `url('landingBg.svg')`,
-          backgroundSize: '800px',
-          backgroundPosition: 'top center',
-          backgroundRepeat: 'no-repeat',
-        }}
-      >
-        {children}
-      </div>
+      {children}
       <PageFooter />
     </div>
   )
