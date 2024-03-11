@@ -70,6 +70,7 @@ export const ChainPopoverSelect = ({
       ref={popoverRef}
     >
       <div
+        id={`${isOrigin ? 'origin' : 'destination'}-chain-select`}
         onClick={() => togglePopover()}
         style={{ background: 'var(--synapse-select-bg)' }}
         className={`

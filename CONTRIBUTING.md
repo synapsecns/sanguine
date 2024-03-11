@@ -39,9 +39,9 @@ If you need to make a new go module, here are the steps to follow:
     ```go
     go 1.21
    use (
-    ./a_module
-    ./another_module
-    ./path/to/your/module
+        ./a_module
+        ./another_module
+        ./path/to/your/module
    )
     ```
 4. Add the module to the [.codecov.yml](.codecov.yml) file under flags in alphabetical order <!--TODO: enforce alphabetical order w/ linter-->. This allows codecov to re-use old coverage information if no changes have been made, which speeds up testing. For an explanation of when changes are ran please see [this post](https://threadreaderapp.com/thread/1693572913662775510.html) <!-- todo: this needs to be moved into ci docs-->, the [go workflow](.github/workflows/go.yml) and the [git-changes-action](contrib/git-changes-action/README.md). For an explanation of the carryforward flag, please see the [codecov docs](https://docs.codecov.com/docs/carryforward-flags):

@@ -13,7 +13,7 @@ import {
 import { SwapChainSelector } from './SwapChainSelector'
 import { SwapFromTokenSelector } from './SwapFromTokenSelector'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
-import { updateSwapFromValue } from '@/slices/swap/reducer'
+import { initialState, updateSwapFromValue } from '@/slices/swap/reducer'
 import { useSwapState } from '@/slices/swap/hooks'
 
 export const SwapInputContainer = () => {
@@ -50,6 +50,10 @@ export const SwapInputContainer = () => {
       stringToBigInt(swapFromValue, swapFromToken.decimals[swapChainId]) !== 0n
     ) {
       setShowValue(swapFromValue)
+    }
+
+    if (swapFromValue === initialState.swapFromValue) {
+      setShowValue(initialState.swapFromValue)
     }
   }, [swapFromValue, swapChainId, swapFromToken])
 

@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/jftuga/ellipsis"
@@ -43,14 +44,18 @@ type Config struct {
 	FeePricer FeePricerConfig `yaml:"fee_pricer"`
 	// ScreenerAPIUrl is the TRM API url.
 	ScreenerAPIUrl string `yaml:"screener_api_url"`
-	// DBSelectorIntervalSeconds is the interval for the db selector.
-	DBSelectorIntervalSeconds int `yaml:"db_selector_interval_seconds"`
+	// DBSelectorInterval is the interval for the db selector.
+	DBSelectorInterval time.Duration `yaml:"db_selector_interval"`
+	// RebalanceInterval is the interval for rebalancing.
+	RebalanceInterval time.Duration `yaml:"rebalance_interval"`
 }
 
 // ChainConfig represents the configuration for a chain.
 type ChainConfig struct {
-	// Bridge is the bridge confirmation count.
-	Bridge string `yaml:"address"`
+	// Bridge is the rfq bridge contract address.
+	RFQAddress string `yaml:"rfq_address"`
+	// CCTPAddress is the cctp contract address.
+	CCTPAddress string `yaml:"cctp_address"`
 	// Confirmations is the number of required confirmations
 	Confirmations uint64 `yaml:"confirmations"`
 	// Tokens is a map of token ID -> token config.
@@ -77,6 +82,8 @@ type ChainConfig struct {
 	QuoteOffsetBps float64 `yaml:"quote_offset_bps"`
 	// FixedFeeMultiplier is the multiplier for the fixed fee.
 	FixedFeeMultiplier float64 `yaml:"fixed_fee_multiplier"`
+	// CCTP start block is the block at which the chain listener will listen for CCTP events.
+	CCTPStartBlock uint64 `yaml:"cctp_start_block"`
 }
 
 // TokenConfig represents the configuration for a token.
@@ -89,6 +96,14 @@ type TokenConfig struct {
 	PriceUSD float64 `yaml:"price_usd"`
 	// MinQuoteAmount is the minimum amount to quote for this token in human-readable units.
 	MinQuoteAmount string `yaml:"min_quote_amount"`
+	// RebalanceMethod is the method to use for rebalancing.
+	RebalanceMethod string `yaml:"rebalance_method"`
+	// MaintenanceBalancePct is the percentage of the total balance under which a rebalance will be triggered.
+	MaintenanceBalancePct float64 `yaml:"maintenance_balance_pct"`
+	// InitialBalancePct is the percentage of the total balance to retain when triggering a rebalance.
+	InitialBalancePct float64 `yaml:"initial_balance_pct"`
+	// MaxRebalanceAmount is the maximum amount to rebalance in human-readable units.
+	MaxRebalanceAmount string `yaml:"max_rebalance_amount"`
 }
 
 // DatabaseConfig represents the configuration for the database.

@@ -38,7 +38,7 @@ const initialState: PoolDataState = {
     weeklyAPR: undefined,
     yearlyAPRUnvested: undefined,
   },
-  isLoading: false,
+  isLoading: true,
 }
 
 export const fetchPoolData = createAsyncThunk(

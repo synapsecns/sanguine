@@ -18,6 +18,19 @@ type Config struct {
 	Port int `yaml:"port"`
 	// Database is the database configuration
 	Database DatabaseConfig `yaml:"database"`
+	// VolumeThresholds is the volume thresholds for each risk type
+	VolumeThresholds []VolumeThreshold `yaml:"volumeThresholds"`
+	// TODO: This HAS to be re-structured somehow
+	// Whitelist is a list of addresses to whitelist
+	Whitelist []string `yaml:"whitelist"`
+}
+
+// VolumeThreshold defines thresholds for different risk categories and types.
+type VolumeThreshold struct {
+	Category   string  `yaml:"category"`
+	TypeOfRisk string  `yaml:"typeOfRisk"`
+	Incoming   float64 `yaml:"incoming"`
+	Outgoing   float64 `yaml:"outgoing"`
 }
 
 // GetCacheTime gets how long to use the cache for a given ruleset.

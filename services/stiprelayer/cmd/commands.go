@@ -1,4 +1,4 @@
-// Package cmd provides the command line interface for the RFQ API service.
+// Package cmd provides the command line interface for the stip relayer service.
 package cmd
 
 import (

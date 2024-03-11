@@ -63,8 +63,14 @@ const StakeCardTitle = ({
   const displayPoolApyData = useMemo(() => {
     if (!poolApyData) return null
 
-    return poolApyData.fullCompoundedAPY
-      ? `${numeral(poolApyData.fullCompoundedAPY / 100).format('0.0%')}`
+    const apy =
+      poolApyData.fullCompoundedAPY > 10000
+        ? 10000
+        : poolApyData.fullCompoundedAPY
+    return apy
+      ? `${numeral(apy / 100).format('0,0%')}${
+          poolApyData.fullCompoundedAPY > 10000 ? '+' : ''
+        }`
       : `-%`
   }, [prices, poolApyData])
 

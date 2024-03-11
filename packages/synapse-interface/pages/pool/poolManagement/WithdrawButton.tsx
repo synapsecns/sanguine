@@ -1,19 +1,21 @@
-import { useSelector } from 'react-redux'
-import { TransactionButton } from '@/components/buttons/TransactionButton'
-import { RootState } from '@/store/store'
-import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 import { useEffect, useState } from 'react'
+import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { stringToBigInt } from '@/utils/bigint/format'
-import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 import { DEFAULT_WITHDRAW_QUOTE } from '@/slices/poolWithdrawSlice'
+import {
+  usePoolDataState,
+  usePoolWithdrawState,
+  usePoolUserDataState,
+} from '@/slices/pools/hooks'
+import { stringToBigInt } from '@/utils/bigint/format'
+import { TransactionButton } from '@/components/buttons/TransactionButton'
+import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 
 const WithdrawButton = ({ approveTxn, withdrawTxn, isApproved }) => {
-  const [isConnected, setIsConnected] = useState(false) // Initialize to false
-  const { openConnectModal } = useConnectModal()
-
   const { chain } = useNetwork()
   const { chains, switchNetwork } = useSwitchNetwork()
+  const { openConnectModal } = useConnectModal()
+  const [isConnected, setIsConnected] = useState(false) // Initialize to false
 
   const { isConnected: isConnectedInit } = useAccount({
     onDisconnect() {
@@ -25,32 +27,23 @@ const WithdrawButton = ({ approveTxn, withdrawTxn, isApproved }) => {
     setIsConnected(isConnectedInit)
   }, [isConnectedInit])
 
-  const { pool } = useSelector((state: RootState) => state.poolData)
+  const { pool } = usePoolDataState()
+  const { poolUserData } = usePoolUserDataState()
+  const { withdrawQuote, inputValue, isLoading } = usePoolWithdrawState()
 
   const poolDecimals = pool?.decimals[pool?.chainId]
-
-  const { withdrawQuote, inputValue, isLoading } = useSelector(
-    (state: RootState) => state.poolWithdraw
-  )
-  const { poolUserData } = useSelector((state: RootState) => state.poolUserData)
-
-  const needsInput = stringToBigInt(inputValue, poolDecimals) === 0n
 
   const isBalanceEnough =
     stringToBigInt(inputValue, poolDecimals) !== 0n &&
     stringToBigInt(inputValue, poolDecimals) <= poolUserData.lpTokenBalance
 
-  const isButtonDisabled =
-    isLoading || !isBalanceEnough || withdrawQuote === DEFAULT_WITHDRAW_QUOTE
+  const isValidInput = stringToBigInt(inputValue, poolDecimals) !== 0n
+  const isValidQuote = withdrawQuote !== DEFAULT_WITHDRAW_QUOTE
+  const isButtonDisabled = isLoading || !isBalanceEnough || !isValidQuote
 
   let buttonProperties
 
-  if (needsInput) {
-    buttonProperties = {
-      label: 'Enter amount',
-      onClick: null,
-    }
-  } else if (!isBalanceEnough) {
+  if (!isBalanceEnough && isValidQuote && isValidInput) {
     buttonProperties = {
       label: 'Insufficient Balance',
       onClick: null,
@@ -75,7 +68,7 @@ const WithdrawButton = ({ approveTxn, withdrawTxn, isApproved }) => {
       onClick: () => switchNetwork(pool.chainId),
       pendingLabel: 'Switching chains',
     }
-  } else if (!isApproved) {
+  } else if (!isApproved && isValidQuote && isValidInput) {
     buttonProperties = {
       onClick: approveTxn,
       label: `Approve Token`,

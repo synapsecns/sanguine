@@ -5,29 +5,34 @@ import { getTimeMinutesBeforeNow } from '@/utils/time'
  * @param id unique identifier for progress bar instance
  * @param startTime timestamp in seconds
  * @param estDuration total duration in seconds
- * @param isComplete completion status
+ * @param status txn status
  */
 export const AnimatedProgressBar = memo(
   ({
     id,
     startTime,
     estDuration,
-    isComplete,
+    status,
   }: {
     id: string
     startTime: number
     estDuration: number
-    isComplete: boolean
+    status
   }) => {
     const currentTime = getTimeMinutesBeforeNow(0)
     const elapsedTime = currentTime - startTime
     const remainingTime = estDuration - elapsedTime
     const percentElapsed = (elapsedTime / estDuration) * 100
 
+    const isComplete = status === 'completed'
+    const isError = status === 'error'
+
     let duration = isComplete ? 0.5 : remainingTime
 
     const synapsePurple = 'hsl(265deg 100% 75%)'
     const tailwindGreen400 = 'rgb(74 222 128)'
+    const yellowText = '#FFE14D'
+
     const height = 3
 
     const progressId = `progress-${id}`
@@ -65,10 +70,12 @@ export const AnimatedProgressBar = memo(
             <rect height="100%">
               <animate
                 attributeName="width"
-                values={`${percentElapsed}%; 100%`}
+                values={`${
+                  isComplete || isError ? 100 : percentElapsed
+                }%; 100%`}
                 dur={duration}
                 fill="freeze"
-                calcMode={isComplete && 'spline'}
+                calcMode={isComplete || isError ? 'spline' : null}
                 keySplines=".8 0 .2 1"
               />
             </rect>
@@ -80,6 +87,15 @@ export const AnimatedProgressBar = memo(
           fill={`url(#${progressId})`}
           clipPath={`url(#${maskId})`}
         >
+          {isError && (
+            <animate
+              attributeName="fill"
+              values={`${yellowText}; ${yellowText}; ${yellowText}`}
+              keyTimes="0; .5; 1"
+              dur={duration}
+              fill="freeze"
+            />
+          )}
           {isComplete && (
             <animate
               attributeName="fill"

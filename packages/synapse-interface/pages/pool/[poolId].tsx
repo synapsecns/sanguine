@@ -1,19 +1,23 @@
 import _ from 'lodash'
 import { useEffect, useState } from 'react'
-import { useAccount, useNetwork } from 'wagmi'
-import { useDispatch, useSelector } from 'react-redux'
 import { useRouter } from 'next/router'
-import StandardPageContainer from '@layouts/StandardPageContainer'
-import { LandingPageWrapper } from '@layouts/LandingPageWrapper'
-import { DEFAULT_FROM_CHAIN } from '@/constants/swap'
-import PoolBody from './PoolBody'
-import NoPoolBody from './NoPoolBody'
+import { useAccount, useNetwork } from 'wagmi'
+import { useAppDispatch } from '@/store/hooks'
 import { fetchPoolData, resetPoolData } from '@/slices/poolDataSlice'
-import { RootState } from '@/store/store'
 import { resetPoolDeposit } from '@/slices/poolDepositSlice'
 import { resetPoolWithdraw } from '@/slices/poolWithdrawSlice'
-import LoadingDots from '@/components/ui/tailwind/LoadingDots'
+import {
+  fetchPoolUserData,
+  resetPoolUserData,
+} from '@/slices/poolUserDataSlice'
+import { usePoolDataState } from '@/slices/pools/hooks'
+import { DEFAULT_FROM_CHAIN } from '@/constants/swap'
+import { LandingPageWrapper } from '@layouts/LandingPageWrapper'
 import { POOL_BY_ROUTER_INDEX } from '@constants/tokens'
+import PoolBody from './PoolBody'
+import NoPoolBody from './NoPoolBody'
+import LoadingDots from '@/components/ui/tailwind/LoadingDots'
+import StandardPageContainer from '@layouts/StandardPageContainer'
 
 export const getStaticPaths = async () => {
   const paths = Object.keys(POOL_BY_ROUTER_INDEX).map((key) => ({
@@ -31,6 +35,7 @@ export const getStaticProps = async (context) => {
 }
 
 const PoolPage = () => {
+  const dispatch = useAppDispatch()
   const router = useRouter()
   const { poolId } = router.query
   const { address } = useAccount()
@@ -38,9 +43,7 @@ const PoolPage = () => {
   const [connectedChainId, setConnectedChainId] = useState(0)
   const [isClient, setIsClient] = useState(false)
 
-  const { pool, isLoading } = useSelector((state: RootState) => state.poolData)
-
-  const dispatch: any = useDispatch()
+  const { pool } = usePoolDataState()
 
   useEffect(() => {
     setIsClient(true)
@@ -51,6 +54,7 @@ const PoolPage = () => {
       dispatch(resetPoolData())
       dispatch(resetPoolDeposit())
       dispatch(resetPoolWithdraw())
+      dispatch(resetPoolUserData())
     }
 
     router.events.on('routeChangeStart', handleRouteChange)
@@ -71,13 +75,19 @@ const PoolPage = () => {
     }
   }, [poolId, address, isClient])
 
+  useEffect(() => {
+    if (pool && address) {
+      dispatch(fetchPoolUserData({ pool, address }))
+    }
+  }, [pool])
+
   return (
     <LandingPageWrapper>
       <StandardPageContainer
         connectedChainId={connectedChainId}
         address={address}
       >
-        {!pool || isLoading || !poolId ? (
+        {!pool || !poolId ? (
           <div className="flex items-center justify-center">
             <LoadingDots />
           </div>

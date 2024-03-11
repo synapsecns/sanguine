@@ -22,7 +22,7 @@ var configFlag = &cli.StringFlag{
 	TakesFile: true,
 }
 
-// runCommand runs the cctp relayer.
+// runCommand runs the rfq api.
 var runCommand = &cli.Command{
 	Name:        "run",
 	Description: "run the API Server",
@@ -53,7 +53,7 @@ var runCommand = &cli.Command{
 
 		err = apiServer.Run(c.Context)
 		if err != nil {
-			return fmt.Errorf("could not run cctp relayer: %w", err)
+			return fmt.Errorf("could not run rfq relayer: %w", err)
 		}
 		return nil
 	},

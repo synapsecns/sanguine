@@ -3,7 +3,7 @@ import Grid from '@/components/ui/tailwind/Grid'
 import Card from '@/components/ui/tailwind/Card'
 import Button from '@/components/ui/tailwind/Button'
 import { SectionContainer } from '../../../components/landing/shared'
-import { GITHUB_URL, DOCS_URL, MEDIUM_URL } from '@/constants/urls'
+import { GITHUB_URL, SYNAPSE_DOCS_URL, MEDIUM_URL } from '@/constants/urls'
 
 export default function ResourcesSection() {
   return (
@@ -30,7 +30,7 @@ export default function ResourcesSection() {
           title="Documentation"
           description="Read a detailed breakdown of our APIs and smart contracts."
           buttonText="Read the docs"
-          linkUrl={DOCS_URL}
+          linkUrl={SYNAPSE_DOCS_URL}
         />
         <ResourceCard
           title="Tutorials"

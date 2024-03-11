@@ -4,21 +4,20 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	db2 "github.com/synapsecns/sanguine/ethergo/listener/db"
+	"math/big"
+	"time"
+
 	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ipfs/go-log"
 	"github.com/jpillora/backoff"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/client"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
-	"math/big"
-	"time"
 )
 
 // ContractListener listens for chain events and calls HandleLog.
@@ -37,11 +36,12 @@ type ContractListener interface {
 type HandleLog func(ctx context.Context, log types.Log) error
 
 type chainListener struct {
-	client   client.EVM
-	contract *fastbridge.FastBridgeRef
-	store    reldb.Service
-	handler  metrics.Handler
-	backoff  *backoff.Backoff
+	client       client.EVM
+	address      common.Address
+	initialBlock uint64
+	store        db2.ChainListenerDB
+	handler      metrics.Handler
+	backoff      *backoff.Backoff
 	// IMPORTANT! These fields cannot be used until they has been set. They are NOT
 	// set in the constructor
 	startBlock, chainID, latestBlock uint64
@@ -49,21 +49,21 @@ type chainListener struct {
 	// latestBlock         uint64
 }
 
-var logger = log.Logger("chainlistener-logger")
+var (
+	logger = log.Logger("chainlistener-logger")
+	// ErrNoLatestBlockForChainID is returned when no block exists for the chain.
+	ErrNoLatestBlockForChainID = db2.ErrNoLatestBlockForChainID
+)
 
 // NewChainListener creates a new chain listener.
-func NewChainListener(omnirpcClient client.EVM, store reldb.Service, address common.Address, handler metrics.Handler) (ContractListener, error) {
-	fastBridge, err := fastbridge.NewFastBridgeRef(address, omnirpcClient)
-	if err != nil {
-		return nil, fmt.Errorf("could not create fast bridge contract: %w", err)
-	}
-
+func NewChainListener(omnirpcClient client.EVM, store db2.ChainListenerDB, address common.Address, initialBlock uint64, handler metrics.Handler) (ContractListener, error) {
 	return &chainListener{
-		handler:  handler,
-		store:    store,
-		client:   omnirpcClient,
-		contract: fastBridge,
-		backoff:  newBackoffConfig(),
+		handler:      handler,
+		address:      address,
+		initialBlock: initialBlock,
+		store:        store,
+		client:       omnirpcClient,
+		backoff:      newBackoffConfig(),
 	}, nil
 }
 
@@ -91,13 +91,12 @@ func (c *chainListener) Listen(ctx context.Context, handler HandleLog) (err erro
 			if err != nil {
 				logger.Warn(err)
 			}
-
 		}
 	}
 }
 
 func (c *chainListener) Address() common.Address {
-	return c.contract.Address()
+	return c.address
 }
 
 func (c *chainListener) LatestBlock() uint64 {
@@ -125,9 +124,8 @@ func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (er
 	}
 
 	// Check if latest block is the same as start block (for chains with slow block times)
-
 	if c.latestBlock == c.startBlock {
-		return
+		return nil
 	}
 
 	// Handle if the listener is more than one get logs range behind the head
@@ -164,7 +162,7 @@ func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (er
 }
 
 func (c chainListener) getMetadata(parentCtx context.Context) (startBlock, chainID uint64, err error) {
-	var deployBlock, lastIndexed uint64
+	var lastIndexed uint64
 	ctx, span := c.handler.Tracer().Start(parentCtx, "getMetadata")
 
 	defer func() {
@@ -174,16 +172,6 @@ func (c chainListener) getMetadata(parentCtx context.Context) (startBlock, chain
 	// TODO: consider some kind of backoff here in case rpcs are down at boot.
 	// this becomes more of an issue as we add more chains
 	g, ctx := errgroup.WithContext(ctx)
-	g.Go(func() error {
-		deployBlock, err := c.contract.DeployBlock(&bind.CallOpts{Context: ctx})
-		if err != nil {
-			return fmt.Errorf("could not get deploy block: %w", err)
-		}
-
-		startBlock = deployBlock.Uint64()
-		return nil
-	})
-
 	g.Go(func() error {
 		// TODO: one thing I've been going back and forth on is whether or not this method should be chain aware
 		// passing in the chain ID would allow us to pull everything directly from the config, but be less testable
@@ -197,7 +185,7 @@ func (c chainListener) getMetadata(parentCtx context.Context) (startBlock, chain
 		chainID = rpcChainID.Uint64()
 
 		lastIndexed, err = c.store.LatestBlockForChain(ctx, chainID)
-		if errors.Is(err, reldb.ErrNoLatestBlockForChainID) {
+		if errors.Is(err, ErrNoLatestBlockForChainID) {
 			// TODO: consider making this negative 1, requires type change
 			lastIndexed = 0
 			return nil
@@ -213,8 +201,10 @@ func (c chainListener) getMetadata(parentCtx context.Context) (startBlock, chain
 		return 0, 0, fmt.Errorf("could not get metadata: %w", err)
 	}
 
-	if lastIndexed > deployBlock {
+	if lastIndexed > c.startBlock {
 		startBlock = lastIndexed
+	} else {
+		startBlock = c.initialBlock
 	}
 
 	return startBlock, chainID, nil
@@ -233,6 +223,6 @@ func (c chainListener) buildFilterQuery(fromBlock, toBlock uint64) ethereum.Filt
 	return ethereum.FilterQuery{
 		FromBlock: new(big.Int).SetUint64(fromBlock),
 		ToBlock:   new(big.Int).SetUint64(toBlock),
-		Addresses: []common.Address{c.contract.Address()},
+		Addresses: []common.Address{c.address},
 	}
 }

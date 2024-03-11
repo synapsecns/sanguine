@@ -69,10 +69,10 @@ func (r *RelayerTestSuite) SetupTest() {
 		},
 		Chains: map[int]relconfig.ChainConfig{
 			int(r.originBackend.GetChainID()): {
-				Bridge: originContract.Address().String(),
+				RFQAddress: originContract.Address().String(),
 			},
 			int(r.destBackend.GetChainID()): {
-				Bridge: destContract.Address().String(),
+				RFQAddress: destContract.Address().String(),
 			},
 		},
 		OmniRPCURL: serverURL,

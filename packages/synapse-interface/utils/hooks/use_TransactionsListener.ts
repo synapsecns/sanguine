@@ -51,6 +51,7 @@ export const use_TransactionsListener = () => {
               bridgeModuleName: tx.bridgeModuleName,
               estimatedTime: tx.estimatedTime,
               timestamp: tx.id,
+              status: 'pending',
             })
           )
         }

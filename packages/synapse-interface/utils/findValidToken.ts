@@ -1,3 +1,5 @@
+import _ from 'lodash'
+
 import { Token } from './types'
 
 export const findValidToken = (
@@ -6,7 +8,10 @@ export const findValidToken = (
   swapableType: string
 ): Token | null => {
   const matchingToken = tokens?.find((t) => t.routeSymbol === routeSymbol)
-  const swapableToken = tokens?.find((t) => t.swapableType === swapableType)
+
+  const swapableToken = _.orderBy(tokens, ['priorityRank'], ['asc'])?.find(
+    (t) => t.swapableType === swapableType
+  )
 
   return matchingToken ? matchingToken : swapableToken ? swapableToken : null
 }

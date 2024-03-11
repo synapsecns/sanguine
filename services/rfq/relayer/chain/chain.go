@@ -11,9 +11,9 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/ethergo/client"
+	"github.com/synapsecns/sanguine/ethergo/listener"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/listener"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 )
 

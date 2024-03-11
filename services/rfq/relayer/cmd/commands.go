@@ -17,10 +17,10 @@ var configFlag = &cli.StringFlag{
 	TakesFile: true,
 }
 
-// runCommand runs the cctp relayer.
+// runCommand runs the rfq relayer.
 var runCommand = &cli.Command{
 	Name:        "run",
-	Description: "run the API Server",
+	Description: "run the relayer",
 	Flags:       []cli.Flag{configFlag, &commandline.LogLevel},
 	Action: func(c *cli.Context) (err error) {
 		commandline.SetLogLevel(c)

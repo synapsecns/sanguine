@@ -2,6 +2,7 @@ import {
   CCTP_SUPPORTED_CHAIN_IDS,
   RFQ_SUPPORTED_CHAIN_IDS,
   SUPPORTED_CHAIN_IDS,
+  SupportedChainId,
 } from './chainIds'
 
 export type AddressMap = {
@@ -33,8 +34,9 @@ const generateAddressMap = (
  * SynapseRouter contract address for all chains except ones from ROUTER_EXCEPTION_MAP.
  */
 const ROUTER_ADDRESS = '0x7E7A0e201FD38d3ADAA9523Da6C109a07118C96a'
-const ROUTER_EXCEPTION_MAP: AddressMap = {}
-
+const ROUTER_EXCEPTION_MAP: AddressMap = {
+  [SupportedChainId.BLAST]: '0x0000000000365b1d5B142732CF4d33BcddED21Fc',
+}
 export const ROUTER_ADDRESS_MAP: AddressMap = generateAddressMap(
   SUPPORTED_CHAIN_IDS,
   ROUTER_ADDRESS,
@@ -46,7 +48,6 @@ export const ROUTER_ADDRESS_MAP: AddressMap = generateAddressMap(
  */
 const CCTP_ROUTER_ADDRESS = '0xd5a597d6e7ddf373a92C8f477DAAA673b0902F48'
 const CCTP_ROUTER_EXCEPTION_MAP: AddressMap = {}
-
 export const CCTP_ROUTER_ADDRESS_MAP: AddressMap = generateAddressMap(
   CCTP_SUPPORTED_CHAIN_IDS,
   CCTP_ROUTER_ADDRESS,

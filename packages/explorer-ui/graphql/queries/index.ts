@@ -208,6 +208,7 @@ export const DAILY_STATISTICS_BY_CHAIN = gql`
       canto
       dogechain
       base
+      blast
       total
     }
   }

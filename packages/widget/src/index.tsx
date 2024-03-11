@@ -10,6 +10,7 @@ import { store } from '@/state/store'
 import * as BRIDGEABLE from '@/constants/bridgeable'
 import { CHAINS_ARRAY } from '@/constants/chains'
 import { BackgroundListenerProvider } from '@/providers/BackgroundListenerProvider'
+import { useBridgeSelectionData } from '@/hooks/useBridgeSelectionData'
 
 export const Bridge = ({
   web3Provider,
@@ -42,6 +43,8 @@ export const Bridge = ({
     </Web3Provider>
   )
 }
+
+export const useBridgeSelections = () => useBridgeSelectionData()
 
 export const AGEUR = BRIDGEABLE.AGEUR
 export const AVAX = BRIDGEABLE.AVAX

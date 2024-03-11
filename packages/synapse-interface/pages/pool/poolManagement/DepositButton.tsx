@@ -1,13 +1,15 @@
-import { useSelector } from 'react-redux'
-import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 import { useEffect, useMemo, useState } from 'react'
-import { RootState } from '@/store/store'
-
-import LoadingDots from '@/components/ui/tailwind/LoadingDots'
+import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
+import {
+  usePoolDataState,
+  usePoolDepositState,
+  usePoolUserDataState,
+} from '@/slices/pools/hooks'
+import { stringToBigInt } from '@/utils/bigint/format'
 import { TransactionButton } from '@/components/buttons/TransactionButton'
 import { DEFAULT_DEPOSIT_QUOTE } from './Deposit'
-import { stringToBigInt } from '@/utils/bigint/format'
+import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 
 const DepositButton = ({ approveTxn, depositTxn }) => {
   const [isConnected, setIsConnected] = useState(false) // Initialize to false
@@ -26,12 +28,10 @@ const DepositButton = ({ approveTxn, depositTxn }) => {
     setIsConnected(isConnectedInit)
   }, [isConnectedInit])
 
-  const { pool, poolData } = useSelector((state: RootState) => state.poolData)
-
-  const { depositQuote, inputValue, isLoading, inputSum } = useSelector(
-    (state: RootState) => state.poolDeposit
-  )
-  const { poolUserData } = useSelector((state: RootState) => state.poolUserData)
+  const { pool, poolData } = usePoolDataState()
+  const { depositQuote, inputValue, isLoading, inputSum } =
+    usePoolDepositState()
+  const { poolUserData } = usePoolUserDataState()
 
   const isBalanceEnough = Object.entries(inputValue.bi).every(
     ([tokenAddr, amount]) =>

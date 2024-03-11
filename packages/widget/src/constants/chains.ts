@@ -265,6 +265,21 @@ export const BASE: Chain = {
     'https://www.synapseprotocol.com/_next/static/media/base.1b390997.svg',
 }
 
+export const BLAST: Chain = {
+  id: 81457,
+  name: 'Blast',
+  rpcUrls: {
+    primary:
+      'https://lingering-indulgent-replica.blast-mainnet.quiknode.pro/6667a8f4be701cb6549b415d567bc706fb2f13a8/',
+    fallback: 'https://blast.blockpi.network/v1/rpc/publicChain',
+  },
+  explorerUrl: 'https://blastscan.io',
+  explorerName: 'Blastscan',
+  blockTime: 3000,
+  imgUrl:
+    'https://www.synapseprotocol.com/_next/static/media/blast.e39807f8.svg',
+}
+
 export const CHAINS = {
   ETHEREUM,
   ARBITRUM,
@@ -285,6 +300,7 @@ export const CHAINS = {
   MOONRIVER,
   DOGE,
   BASE,
+  BLAST,
 }
 
 export const CHAINS_ARRAY = Object.values(CHAINS)

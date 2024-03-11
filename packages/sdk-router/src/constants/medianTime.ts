@@ -24,6 +24,7 @@ export const MEDIAN_TIME_BRIDGE = {
   [SupportedChainId.DFK]: 30,
   [SupportedChainId.AURORA]: 30,
   [SupportedChainId.HARMONY]: 30,
+  [SupportedChainId.BLAST]: 1230,
 }
 
 /**

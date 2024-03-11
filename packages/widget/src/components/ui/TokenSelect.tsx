@@ -111,6 +111,7 @@ export const TokenSelect = ({ label, isOrigin, token, onChange }: Props) => {
         onChange(selected)
       }}
       selected={token}
+      isOrigin={isOrigin}
     />
   )
 }

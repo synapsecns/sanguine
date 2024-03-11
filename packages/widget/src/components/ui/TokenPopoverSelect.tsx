@@ -14,6 +14,7 @@ type PopoverSelectProps = {
   balances: TokenBalance[]
   onSelect: (selected: BridgeableToken) => void
   selected: BridgeableToken
+  isOrigin: boolean
 }
 
 export const TokenPopoverSelect = ({
@@ -22,6 +23,7 @@ export const TokenPopoverSelect = ({
   balances,
   onSelect,
   selected,
+  isOrigin,
 }: PopoverSelectProps) => {
   const { popoverRef, isOpen, togglePopover, closePopover } = usePopover()
 
@@ -74,6 +76,7 @@ export const TokenPopoverSelect = ({
       ref={popoverRef}
     >
       <div
+        id={`${isOrigin ? 'origin' : 'destination'}-token-select`}
         onClick={() => togglePopover()}
         style={{ background: 'var(--synapse-select-bg)' }}
         className={`

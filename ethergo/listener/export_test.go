@@ -5,8 +5,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/client"
-	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
+	"github.com/synapsecns/sanguine/ethergo/listener/db"
 )
 
 // TestChainListener wraps chain listener for testing.
@@ -21,18 +20,19 @@ func (c chainListener) GetMetadata(ctx context.Context) (startBlock, chainID uin
 }
 
 type TestChainListenerArgs struct {
-	Address  common.Address
-	Client   client.EVM
-	Contract *fastbridge.FastBridgeRef
-	Store    reldb.Service
-	Handler  metrics.Handler
+	Address      common.Address
+	InitialBlock uint64
+	Client       client.EVM
+	Store        db.ChainListenerDB
+	Handler      metrics.Handler
 }
 
 func NewTestChainListener(args TestChainListenerArgs) TestChainListener {
 	return &chainListener{
-		client:   args.Client,
-		contract: args.Contract,
-		store:    args.Store,
-		handler:  args.Handler,
+		client:       args.Client,
+		address:      args.Address,
+		initialBlock: args.InitialBlock,
+		store:        args.Store,
+		handler:      args.Handler,
 	}
 }

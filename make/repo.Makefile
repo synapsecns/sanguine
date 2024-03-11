@@ -30,6 +30,9 @@ tidy: ## Runs go mod tidy on all go.mod files in the repo
 	go work sync
 	$(GIT_ROOT)/make/scripts/tidy.sh
 
+lint-go: ## Runs make lint in all go.mod files in the repo.
+	$(GIT_ROOT)/make/scripts/lint.sh
+
 docker-clean: ## stops and removes all containers at once
 	docker ps -aq | xargs docker stop | xargs docker rm
 	docker network prune

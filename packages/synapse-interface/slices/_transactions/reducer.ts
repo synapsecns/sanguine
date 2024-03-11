@@ -14,8 +14,8 @@ export interface _TransactionDetails {
   bridgeModuleName: string
   estimatedTime: number
   timestamp: number
-  kappa: string
-  isComplete: boolean
+  kappa?: string
+  status: 'pending' | 'completed' | 'reverted'
 }
 
 export interface _TransactionsState {
@@ -30,7 +30,7 @@ export const transactionsSlice = createSlice({
   name: '_transactions',
   initialState,
   reducers: {
-    addTransaction: (state, action: PayloadAction<any>) => {
+    addTransaction: (state, action: PayloadAction<_TransactionDetails>) => {
       if (!Array.isArray(state.transactions)) {
         state.transactions = [] // Initialize to an empty array if not already an array
       }
@@ -69,7 +69,20 @@ export const transactionsSlice = createSlice({
         (tx) => tx.originTxHash === originTxHash
       )
       if (txIndex !== -1) {
-        state.transactions[txIndex].isComplete = true
+        state.transactions[txIndex].status = 'completed'
+      }
+    },
+    revertTransaction: (
+      state,
+      action: PayloadAction<{ originTxHash: string }>
+    ) => {
+      const { originTxHash } = action.payload
+
+      const txIndex = state.transactions.findIndex(
+        (tx) => tx.originTxHash === originTxHash
+      )
+      if (txIndex !== -1) {
+        state.transactions[txIndex].status = 'reverted'
       }
     },
     clearTransactions: (state) => {
@@ -83,6 +96,7 @@ export const {
   removeTransaction,
   updateTransactionKappa,
   completeTransaction,
+  revertTransaction,
   clearTransactions,
 } = transactionsSlice.actions
 

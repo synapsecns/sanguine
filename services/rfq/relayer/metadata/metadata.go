@@ -1,4 +1,4 @@
-// Package metadata provides a metadata service for cctp relayer.
+// Package metadata provides a metadata service for rfq.
 package metadata
 
 import "github.com/synapsecns/sanguine/core/config"

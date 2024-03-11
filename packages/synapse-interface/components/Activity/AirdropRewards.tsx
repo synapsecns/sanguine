@@ -203,6 +203,7 @@ const RewardsDialog = ({
           >
             {transactions.map((transaction) => (
               <AirdropTransaction
+                key={transaction.transactionHash}
                 transactionHash={transaction.transactionHash}
                 tokenValue={parseTokenValue(
                   transaction.transferValue,
