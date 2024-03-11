@@ -14,47 +14,28 @@ export const ToTokenSelector = () => {
 
   const { toToken } = useBridgeState()
 
-  let buttonContent
-
-  if (toToken) {
-    const src = toToken?.icon?.src
-    const symbol = toToken?.symbol
-
-    buttonContent = (
-      <div className="flex items-center space-x-2">
-        <div className="flex-none hidden md:inline-block">
-          <img src={src} alt={symbol} className="w-6 h-6" />
-        </div>
-        <div className="text-left">
-          <div className="text-lg text-primaryTextColor">{symbol}</div>
-        </div>
-        <DropDownArrowSvg className="flex-none" />
-      </div>
-    )
-  } else {
-    buttonContent = (
-      <div className="flex items-center space-x-3">
-        <div className="text-left">
-          <div className="text-lg text-primaryTextColor">Out</div>
-        </div>
-        <DropDownArrowSvg className="flex-none" />
-      </div>
-    )
-  }
+  const space = 'p-2 rounded flex-none flex items-center gap-2'
+  const bgColor = `bg-[#565058]`
+  const bgHover = getMenuItemHoverBgForCoin(toToken?.color)
+  const borderColor = `border border-transparent`
+  const borderHover = getBorderStyleForCoinHover(toToken?.color)
+  const textStyle = 'text-lg text-primaryTextColor'
 
   return (
     <button
       data-test-id="bridge-destination-token"
-      className={`
-        p-md rounded-sm min-w-[80px]
-        bg-[#565058]
-        ${getMenuItemHoverBgForCoin(toToken?.color)}
-        border border-transparent
-        ${getBorderStyleForCoinHover(toToken?.color)}
-      `}
+      className={`${space} ${bgColor} ${bgHover} ${borderColor} ${borderHover} ${textStyle}`}
       onClick={() => dispatch(setShowToTokenListOverlay(true))}
     >
-      {buttonContent}
+      {toToken && (
+        <img
+          src={toToken?.icon?.src ?? ''}
+          alt={toToken?.symbol ?? ''}
+          className="w-6 h-6"
+        />
+      )}
+      {toToken?.symbol ?? 'Out'}
+      <DropDownArrowSvg />
     </button>
   )
 }
