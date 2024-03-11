@@ -108,7 +108,7 @@ const supportList: FooterDataProps[] = [
   },
   {
     text: 'Telegram',
-    type: 'url',
+    type: FooterType.URL,
     url: TELEGRAM_URL,
   },
 ]
