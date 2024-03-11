@@ -32,10 +32,12 @@ const bgFrame = 'w-screen h-screen overflow-scroll'
 
 export function LandingPageWrapper({ children }: { children: any }) {
   return (
-    <div className={`${textColor} ${bgColor} ${bgFrame} tracking-wide`}>
-      <LandingNav />
-      {children}
-      <PageFooter />
+    <div className="dark">
+      <div className={`${textColor} ${bgColor} ${bgFrame} tracking-wide`}>
+        <LandingNav />
+        {children}
+        <PageFooter />
+      </div>
     </div>
   )
 }
