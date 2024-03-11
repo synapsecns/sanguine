@@ -36,10 +36,10 @@ export const DestinationAddressInput = ({
     connectedAddress
   )
 
-  console.log('recipientList:', recipientList)
-
   const filteredRecipientList = filterNewestTxByRecipient(recipientList)
 
+  /** TODO: Remove after testing */
+  console.log('recipientList:', recipientList)
   console.log('filteredRecipientList:', filteredRecipientList)
 
   const handleInputFocus = () => {
