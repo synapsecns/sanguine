@@ -7,17 +7,18 @@ export default function MiniMaxButton({
   onClickBalance: () => void
   disabled: boolean
 }) {
-  const baseClassName =
-    'pl-lg pr-lg pt-sm pb-sm mr-2 rounded-md text-md font-light bg-bgLighter border border-transparent'
-
-  const className = disabled
-    ? `${baseClassName} opacity-60 cursor-default`
-    : `${baseClassName} hover:border-[#AC8FFF]`
+  const space = 'px-4 py-1 mr-1 rounded'
+  const bgColor = 'bg-zinc-100 dark:bg-zinc-700'
+  const borderColor = 'border border-zinc-200 dark:border-transparent'
+  const borderHover =
+    'enabled:hover:border-zinc-400 enabled:hover:dark:border-zinc-500'
+  const styleDisabled = 'disabled:opacity-60 disabled:cursor-default'
 
   return (
     <Button
-      className={className}
-      onClick={disabled ? undefined : onClickBalance}
+      className={`${space} ${bgColor} ${borderColor} ${borderHover} ${styleDisabled}`}
+      onClick={onClickBalance}
+      disabled={disabled}
     >
       Max
     </Button>
