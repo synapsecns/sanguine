@@ -159,6 +159,9 @@ func (c *rebalanceManagerCircleCCTP) Execute(parentCtx context.Context, rebalanc
 
 	// perform rebalance by calling depositForBurn()
 	_, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(rebalance.OriginMetadata.ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+		if transactor == nil {
+			return nil, fmt.Errorf("transactor is nil")
+		}
 		tx, err = contract.DepositForBurn(
 			transactor,
 			rebalance.Amount,
