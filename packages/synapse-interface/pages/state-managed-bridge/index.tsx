@@ -20,13 +20,6 @@ import {
   setIsLoading,
   setDestinationAddress,
 } from '@/slices/bridge/reducer'
-
-import {
-  setShowDestinationAddress,
-  setShowFromTokenListOverlay,
-  setShowSettingsSlideOver,
-} from '@/slices/bridgeDisplaySlice'
-
 import { EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
 
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
@@ -54,7 +47,6 @@ import {
 } from '@/styles/transitions'
 import { InputContainer } from '@/components/StateManagedBridge/InputContainer'
 import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer'
-import SettingsSlideOver from '@/components/StateManagedBridge/SettingsSlideOver'
 import Button from '@/components/ui/tailwind/Button'
 import { SettingsIcon } from '@/components/icons/SettingsIcon'
 import { DestinationAddressInput } from '@/components/StateManagedBridge/DestinationAddressInput'
@@ -108,8 +100,6 @@ const StateManagedBridge = () => {
     destinationAddress,
   }: BridgeState = useBridgeState()
   const {
-    showSettingsSlideOver,
-    showDestinationAddress,
     showFromChainListOverlay,
     showToChainListOverlay,
     showFromTokenListOverlay,
@@ -454,7 +444,6 @@ const StateManagedBridge = () => {
       )
       dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
       dispatch(setDestinationAddress(null))
-      dispatch(setShowDestinationAddress(false))
       dispatch(updateFromValue(''))
 
       const successToastContent = (
@@ -527,27 +516,7 @@ const StateManagedBridge = () => {
             title="Bridge"
             subtitle="Send your assets across chains."
           />
-          <div>
-            <Button
-              className="flex items-center p-3 text-opacity-75 bg-bgLight hover:bg-bgLighter text-secondaryTextColor hover:text-white"
-              onClick={() => {
-                if (showSettingsSlideOver === true) {
-                  dispatch(setShowSettingsSlideOver(false))
-                } else {
-                  dispatch(setShowSettingsSlideOver(true))
-                }
-              }}
-            >
-              {!showSettingsSlideOver ? (
-                <>
-                  <SettingsIcon className="w-5 h-5 mr-2" />
-                  <span>Settings</span>
-                </>
-              ) : (
-                <span>Close</span>
-              )}
-            </Button>
-          </div>
+          <div></div>
         </div>
         <Card
           divider={false}
@@ -558,11 +527,6 @@ const StateManagedBridge = () => {
           `}
         >
           <div ref={bridgeDisplayRef}>
-            <Transition show={showSettingsSlideOver} {...TRANSITION_PROPS}>
-              <animated.div>
-                <SettingsSlideOver key="settings" />
-              </animated.div>
-            </Transition>
             <Transition show={showFromChainListOverlay} {...TRANSITION_PROPS}>
               <animated.div className={springClass}>
                 <FromChainListOverlay />
@@ -602,12 +566,6 @@ const StateManagedBridge = () => {
             >
               <BridgeExchangeRateInfo />
             </Transition>
-            {showDestinationAddress && (
-              <DestinationAddressInput
-                toChainId={toChainId}
-                destinationAddress={destinationAddress}
-              />
-            )}
             <div className="md:my-3">
               <BridgeTransactionButton
                 isApproved={isApproved}
