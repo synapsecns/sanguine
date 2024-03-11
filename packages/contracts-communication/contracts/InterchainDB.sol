@@ -143,6 +143,11 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
             // If proof is not empty, the batch root is not verified
             return 0;
         }
+        // In "no batching" mode: entry index is 0, batch size is 1
+        if (entry.entryIndex != 0) {
+            // If entry index is not 0, it does not belong to the batch
+            return 0;
+        }
         RemoteBatch memory remoteBatch = _remoteBatches[dstModule][InterchainEntryLib.batchKey(entry)];
         bytes32 entryValue = InterchainEntryLib.entryValue(entry);
         // Check entry value against the batch root verified by the module
