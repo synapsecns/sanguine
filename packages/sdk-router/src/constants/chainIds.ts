@@ -16,6 +16,7 @@ export enum SupportedChainId {
   ARBITRUM = 42161,
   AVALANCHE = 43114,
   DFK = 53935,
+  BLAST = 81457,
   AURORA = 1313161554,
   HARMONY = 1666600000,
 }
@@ -51,6 +52,7 @@ export const RFQ_SUPPORTED_CHAIN_IDS: number[] = [
   SupportedChainId.ETH,
   SupportedChainId.OPTIMISM,
   SupportedChainId.ARBITRUM,
+  SupportedChainId.BLAST,
 ]
 
 /**

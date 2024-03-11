@@ -90,7 +90,7 @@ func DecodeConfig(filePath string) (_ Config, err error) {
 			Address: "0x230a1ac45690b9ae1176389434610b9526d2f21b",
 			ChainIDs: types.ToInts(types.ETH, types.OPTIMISM, types.CRONOS, types.BSC, types.POLYGON, types.FANTOM, types.BOBA,
 				types.METIS, types.MOONBEAM, types.MOONRIVER, types.DOGECHAIN, types.CANTO, types.KLAYTN,
-				types.BASE, types.ARBITRUM, types.AVALANCHE, types.DFK, types.AURORA, types.HARMONY),
+				types.BASE, types.ARBITRUM, types.AVALANCHE, types.DFK, types.AURORA, types.HARMONY, types.BLAST),
 			Name: "validators",
 		},
 		{
@@ -130,6 +130,7 @@ func DecodeConfig(filePath string) (_ Config, err error) {
 		types.CANTO.Int():     "0xDde5BEC4815E1CeCf336fb973Ca578e8D83606E0",
 		types.DOGECHAIN.Int(): "0x9508BF380c1e6f751D97604732eF1Bae6673f299",
 		types.BASE.Int():      "0xf07d1C752fAb503E47FEF309bf14fbDD3E867089",
+		types.BLAST.Int():     "0x55769bAF6ec39B3bf4aAE948eB890eA33307Ef3C",
 	}
 
 	cfg.VpriceCheckTokens = []string{"nUSD", "nETH"}
