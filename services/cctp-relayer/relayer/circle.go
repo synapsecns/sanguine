@@ -24,24 +24,24 @@ import (
 )
 
 type circleCCTPHandler struct {
-	cfg              config.Config
-	db               db2.CCTPRelayerDB
-	omniRPCClient    omniClient.RPCClient
-	boundCircleCCTPs map[uint32]*messagetransmitter.MessageTransmitter
-	txSubmitter      submitter.TransactionSubmitter
-	relayerAddress   common.Address
-	handler          metrics.Handler
+	cfg                      config.Config
+	db                       db2.CCTPRelayerDB
+	omniRPCClient            omniClient.RPCClient
+	boundMessageTransmitters map[uint32]*messagetransmitter.MessageTransmitter
+	txSubmitter              submitter.TransactionSubmitter
+	relayerAddress           common.Address
+	handler                  metrics.Handler
 }
 
 // NewCircleCCTPHandler creates a new CircleCCTPHandler.
 func NewCircleCCTPHandler(ctx context.Context, cfg config.Config, db db2.CCTPRelayerDB, omniRPCClient omniClient.RPCClient, txSubmitter submitter.TransactionSubmitter, handler metrics.Handler) (CCTPHandler, error) {
-	boundCircleCCTPs := make(map[uint32]*messagetransmitter.MessageTransmitter)
+	boundMessageTransmitters := make(map[uint32]*messagetransmitter.MessageTransmitter)
 	for _, chain := range cfg.Chains {
 		cl, err := omniRPCClient.GetConfirmationsClient(ctx, int(chain.ChainID), 1)
 		if err != nil {
 			return nil, fmt.Errorf("could not get client: %w", err)
 		}
-		boundCircleCCTPs[chain.ChainID], err = messagetransmitter.NewMessageTransmitter(chain.GetCircleCCTPAddress(), cl)
+		boundMessageTransmitters[chain.ChainID], err = messagetransmitter.NewMessageTransmitter(chain.GetMessageTransmitterAddress(), cl)
 		if err != nil {
 			return nil, fmt.Errorf("could not build bound contract: %w", err)
 		}
@@ -51,13 +51,13 @@ func NewCircleCCTPHandler(ctx context.Context, cfg config.Config, db db2.CCTPRel
 		return nil, fmt.Errorf("could not make cctp signer: %w", err)
 	}
 	return &circleCCTPHandler{
-		cfg:              cfg,
-		db:               db,
-		omniRPCClient:    omniRPCClient,
-		boundCircleCCTPs: boundCircleCCTPs,
-		txSubmitter:      txSubmitter,
-		relayerAddress:   signer.Address(),
-		handler:          handler,
+		cfg:                      cfg,
+		db:                       db,
+		omniRPCClient:            omniRPCClient,
+		boundMessageTransmitters: boundMessageTransmitters,
+		txSubmitter:              txSubmitter,
+		relayerAddress:           signer.Address(),
+		handler:                  handler,
 	}, nil
 }
 
@@ -152,7 +152,7 @@ func (c *circleCCTPHandler) SubmitReceiveMessage(parentCtx context.Context, msg 
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	contract, ok := c.boundCircleCCTPs[msg.DestChainID]
+	contract, ok := c.boundMessageTransmitters[msg.DestChainID]
 	if !ok {
 		return fmt.Errorf("no contract found for chain %d", msg.DestChainID)
 	}

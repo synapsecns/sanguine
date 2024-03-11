@@ -13,8 +13,10 @@ type ChainConfig struct { // ChainID is the ID of the chain.
 	ChainID uint32 `yaml:"chain_id"`
 	// SynapseCCTPAddress is the address of the SynapseCCTP contract.
 	SynapseCCTPAddress string `yaml:"synapse_cctp_address"`
-	// CircleCCTPAddress is the address of the CircleCCTP contract.
-	CircleCCTPAddress string `yaml:"circle_cctp_address"`
+	// MessageTransmitterAddress is the address of the MessageTransmitter contract.
+	MessageTransmitterAddress string `yaml:"message_transmitter_address"`
+	// TokenMessengerAddress is the address of the TokenMessenger contract.
+	TokenMessengerAddress string `yaml:"token_messenger_address"`
 }
 
 // GetSynapseCCTPAddress returns the SynapseCCTP address.
@@ -22,9 +24,14 @@ func (c ChainConfig) GetSynapseCCTPAddress() common.Address {
 	return common.HexToAddress(c.SynapseCCTPAddress)
 }
 
-// GetCircleCCTPAddress returns the CircleCCTP address.
-func (c ChainConfig) GetCircleCCTPAddress() common.Address {
-	return common.HexToAddress(c.CircleCCTPAddress)
+// GetMessageTransmitterAddress returns the MessageTransmitter address.
+func (c ChainConfig) GetMessageTransmitterAddress() common.Address {
+	return common.HexToAddress(c.MessageTransmitterAddress)
+}
+
+// GetTokenMessengerAddress returns the TokenMessenger address.
+func (c ChainConfig) GetTokenMessengerAddress() common.Address {
+	return common.HexToAddress(c.TokenMessengerAddress)
 }
 
 // ChainConfigs contains an array of ChainConfigs.
@@ -44,8 +51,16 @@ func (c ChainConfigs) IsValid(_ context.Context) (ok bool, err error) {
 			return false, fmt.Errorf("invalid address %s: %s", cfg.SynapseCCTPAddress, "invalid address")
 		}
 
-		if len(cfg.CircleCCTPAddress) > 0 && !common.IsHexAddress(cfg.CircleCCTPAddress) {
-			return false, fmt.Errorf("invalid address %s: %s", cfg.CircleCCTPAddress, "invalid address")
+		if len(cfg.MessageTransmitterAddress) > 0 && !common.IsHexAddress(cfg.MessageTransmitterAddress) {
+			return false, fmt.Errorf("invalid address %s: %s", cfg.MessageTransmitterAddress, "invalid address")
+		}
+
+		if len(cfg.TokenMessengerAddress) > 0 && !common.IsHexAddress(cfg.TokenMessengerAddress) {
+			return false, fmt.Errorf("invalid address %s: %s", cfg.TokenMessengerAddress, "invalid address")
+		}
+
+		if len(cfg.SynapseCCTPAddress) == 0 && (len(cfg.SynapseCCTPAddress) == 0 && len(cfg.MessageTransmitterAddress) == 0 || len(cfg.TokenMessengerAddress) == 0) {
+			return false, fmt.Errorf("at least one of MessageTransmitterAddress and MessageTransmitterAddress is required if SynapseCCTPAddress is not specified")
 		}
 	}
 
@@ -58,8 +73,8 @@ func (c ChainConfig) IsValid(ctx context.Context) (ok bool, err error) {
 		return false, fmt.Errorf("%s: chain ID cannot be 0", "invalid chain id")
 	}
 
-	if c.SynapseCCTPAddress == "" && c.CircleCCTPAddress == "" {
-		return false, fmt.Errorf("at least one of SynapseCCTPAddress and CircleCCTPAddress is required")
+	if c.SynapseCCTPAddress == "" && c.MessageTransmitterAddress == "" {
+		return false, fmt.Errorf("at least one of SynapseCCTPAddress and MessageTransmitterAddress is required")
 	}
 
 	return true, nil

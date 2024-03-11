@@ -295,7 +295,14 @@ func (c *CCTPRelayer) Run(parentCtx context.Context) error {
 	for _, chain := range c.cfg.Chains {
 		chain := chain
 		g.Go(func() error {
-			return c.streamLogs(ctx, c.grpcClient, c.grpcConn, chain.ChainID, chain.SynapseCCTPAddress, nil)
+			cctpType, _ := c.cfg.GetCCTPType()
+			switch cctpType {
+			case relayTypes.SynapseMessageType:
+				return c.streamLogs(ctx, c.grpcClient, c.grpcConn, chain.ChainID, chain.GetSynapseCCTPAddress().Hex(), nil)
+			case relayTypes.CircleMessageType:
+				return c.streamLogs(ctx, c.grpcClient, c.grpcConn, chain.ChainID, chain.GetTokenMessengerAddress().Hex(), nil)
+			}
+			return fmt.Errorf("invalid cctp type: %s", cctpType.String())
 		})
 	}
 
