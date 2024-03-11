@@ -1,8 +1,8 @@
 import Card from '@tw/Card'
 import Grid from '@tw/Grid'
-import { getNetworkTextColor } from '@styles/chains'
-import { CHAINS_BY_ID } from '@constants/chains'
 import { Token } from '@types'
+import { CHAINS_BY_ID } from '@constants/chains'
+import { getNetworkTextColor } from '@styles/chains'
 
 const NoPoolBody = ({
   pool,

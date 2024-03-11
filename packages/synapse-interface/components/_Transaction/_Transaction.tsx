@@ -7,9 +7,7 @@ import { isNull } from 'lodash'
 import { removeTransaction } from '@/slices/_transactions/reducer'
 import { TransactionPayloadDetail } from '../Portfolio/Transaction/components/TransactionPayloadDetail'
 import { Chain, Token } from '@/utils/types'
-import TransactionArrow from '../icons/TransactionArrow'
 import { TimeRemaining } from './components/TimeRemaining'
-import { TransactionStatus } from './components/TransactionStatus'
 import { getEstimatedTimeStatus } from './helpers/getEstimatedTimeStatus'
 import { DropdownMenu } from './components/DropdownMenu'
 import { MenuItem } from './components/MenuItem'
@@ -17,6 +15,8 @@ import { useBridgeTxUpdater } from './helpers/useBridgeTxUpdater'
 import { AnimatedProgressBar } from './components/AnimatedProgressBar'
 import { TransactionSupport } from './components/TransactionSupport'
 import { RightArrow } from '@/components/icons/RightArrow'
+import { Address } from 'viem'
+import { useIsTxReverted } from './helpers/useIsTxReverted'
 
 interface _TransactionProps {
   connectedAddress: string
@@ -31,7 +31,7 @@ interface _TransactionProps {
   timestamp: number
   currentTime: number
   kappa?: string
-  isStoredComplete: boolean
+  status: 'pending' | 'completed' | 'reverted'
 }
 
 /** TODO: Update naming after refactoring existing Activity / Transaction flow */
@@ -48,7 +48,7 @@ export const _Transaction = ({
   timestamp,
   currentTime,
   kappa,
-  isStoredComplete,
+  status,
 }: _TransactionProps) => {
   const dispatch = useAppDispatch()
 
@@ -66,38 +66,43 @@ export const _Transaction = ({
   )
 
   const {
-    targetTime,
-    elapsedTime,
     remainingTime,
     delayedTime,
     delayedTimeInMin,
     isEstimatedTimeReached,
-    isStartCheckingTimeReached,
+    isCheckTxStatus,
+    isCheckTxForRevert,
   } = getEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
 
-  const [isTxComplete, _kappa] = useBridgeTxStatus({
+  const [isTxCompleted, _kappa] = useBridgeTxStatus({
     originChainId: originChain.id,
     destinationChainId: destinationChain.id,
     originTxHash,
     bridgeModuleName,
     kappa: kappa,
-    checkStatus: !isStoredComplete || isStartCheckingTimeReached,
+    checkStatus: isCheckTxStatus && status === 'pending',
     currentTime: currentTime,
   })
 
-  /** Check if store already marked tx as complete, otherwise check hook status */
-  const isTxFinalized = isStoredComplete ?? isTxComplete
-
-  const showTransactionSupport =
-    !isTxFinalized && delayedTimeInMin ? delayedTimeInMin <= -5 : false
+  const isTxReverted = useIsTxReverted(
+    originTxHash as Address,
+    originChain,
+    isCheckTxForRevert && status === 'pending'
+  )
 
   useBridgeTxUpdater(
     connectedAddress,
     destinationChain,
     _kappa,
     originTxHash,
-    isTxComplete
+    isTxCompleted,
+    isTxReverted
   )
+
+  // Show transaction support if the transaction is delayed by more than 5 minutes and not finalized or reverted
+  const showTransactionSupport =
+    status === 'reverted' ||
+    (status === 'pending' && delayedTimeInMin && delayedTimeInMin <= -5)
 
   return (
     <div
@@ -131,9 +136,9 @@ export const _Transaction = ({
           <DropdownMenu
             menuTitleElement={
               <TimeRemaining
-                isComplete={isTxFinalized}
-                remainingTime={remainingTime}
+                status={status}
                 isDelayed={isEstimatedTimeReached}
+                remainingTime={remainingTime}
                 delayedTime={delayedTime}
               />
             }
@@ -147,24 +152,28 @@ export const _Transaction = ({
                 minute: '2-digit',
                 hour12: true,
               })}
-              {/* <div>{typeof _kappa === 'string' && _kappa?.substring(0, 15)}</div> */}
             </div>
             {!isNull(originTxExplorerLink) && (
-              <MenuItem text={originExplorerName} link={originTxExplorerLink} />
+              <MenuItem
+                text={originExplorerName}
+                link={originTxExplorerLink}
+                iconUrl={originChain?.explorerImg}
+              />
             )}
-            {!isNull(destExplorerAddressLink) && (
+            {!isNull(destExplorerAddressLink) && !isTxReverted && (
               <MenuItem
                 text={destExplorerName}
                 link={destExplorerAddressLink}
+                iconUrl={destinationChain?.explorerImg}
               />
             )}
             <MenuItem
-              text="Contact Support"
+              text="Contact Support (Discord)"
               link="https://discord.gg/synapseprotocol"
             />
-            {isTxFinalized && (
+            {status !== 'pending' && (
               <MenuItem
-                text="Clear Transaction"
+                text={isTxReverted ? 'Clear notification' : 'Clear transaction'}
                 link={null}
                 onClick={handleClearTransaction}
               />
@@ -172,13 +181,14 @@ export const _Transaction = ({
           </DropdownMenu>
         </div>
       </div>
-      {showTransactionSupport && <TransactionSupport />}
+      {showTransactionSupport ? <TransactionSupport status={status} /> : null}
+
       <div className="px-1">
         <AnimatedProgressBar
           id={originTxHash}
           startTime={timestamp}
           estDuration={estimatedTime * 2} // 2x buffer
-          isComplete={isTxFinalized}
+          status={status}
         />
       </div>
     </div>
