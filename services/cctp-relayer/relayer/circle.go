@@ -232,7 +232,10 @@ func (c *circleCCTPHandler) handleMessageSent(parentCtx context.Context, log *ty
 	if err != nil {
 		return nil, fmt.Errorf("could not parse destination chain from raw message")
 	}
-	span.SetAttributes(attribute.Int("dest_domain", int(destDomain)))
+	span.SetAttributes(
+		attribute.Int("dest_domain", int(destDomain)),
+		attribute.String("sender", sender.Hex()),
+	)
 	destChainID, err := CircleDomainToChainID(destDomain, IsTestnetChainID(chainID))
 	if err != nil {
 		return nil, fmt.Errorf("could not convert circle domain to chain ID: %w", err)
@@ -305,6 +308,7 @@ func (c *circleCCTPHandler) handleMessageReceived(parentCtx context.Context, log
 	span.SetAttributes(
 		attribute.String("message_hash", messageHash.String()),
 		attribute.Int(metrics.Origin, int(event.SourceDomain)),
+		attribute.String("sender", sender.Hex()),
 	)
 
 	// convert the source domain to a chain ID
