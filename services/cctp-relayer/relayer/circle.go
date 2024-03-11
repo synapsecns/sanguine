@@ -247,7 +247,7 @@ func (c *circleCCTPHandler) handleDepositForBurn(ctx context.Context, log *types
 	}
 
 	rawMsg := relayTypes.Message{
-		RequestID:     getRequestID(sourceDomain, event.Nonce),
+		RequestID:     GetCircleRequestID(sourceDomain, event.Nonce),
 		OriginTxHash:  log.TxHash.Hex(),
 		OriginChainID: chainID,
 		DestChainID:   destChainID,
@@ -316,7 +316,7 @@ func (c *circleCCTPHandler) handleMessageReceived(ctx context.Context, log *type
 		attribute.String("sender", sender.Hex()),
 	)
 
-	requestID := getRequestID(event.SourceDomain, event.Nonce)
+	requestID := GetCircleRequestID(event.SourceDomain, event.Nonce)
 	msg, err := c.db.GetMessageByRequestID(ctx, requestID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -373,8 +373,4 @@ func (c *circleCCTPHandler) getMessagePayload(ctx context.Context, txHash common
 		}
 	}
 	return nil, fmt.Errorf("no depositForBurn event found")
-}
-
-func getRequestID(sourceDomain uint32, nonce uint64) string {
-	return fmt.Sprintf("%d-%d", sourceDomain, nonce)
 }

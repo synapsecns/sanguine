@@ -3,6 +3,7 @@ package relayer
 import (
 	"encoding/binary"
 	"errors"
+	"fmt"
 
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -75,4 +76,9 @@ func AddressToBytes32(addr common.Address) [32]byte {
 // Bytes32ToAddress converts a bytes32 value to an Ethereum address.
 func Bytes32ToAddress(bytes32 [32]byte) common.Address {
 	return common.BytesToAddress(bytes32[12:])
+}
+
+// GetCircleRequestID returns a request ID from a source domain and nonce.
+func GetCircleRequestID(sourceDomain uint32, nonce uint64) string {
+	return fmt.Sprintf("%d-%d", sourceDomain, nonce)
 }
