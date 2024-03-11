@@ -1,5 +1,4 @@
 import toast from 'react-hot-toast'
-import { useSelector } from 'react-redux'
 import { useEffect, useRef, useState } from 'react'
 import { Transition } from '@headlessui/react'
 import { isAddress } from '@ethersproject/address'
@@ -17,7 +16,7 @@ import { useRouter } from 'next/router'
 import { useAppDispatch } from '@/store/hooks'
 import { RootState } from '../../store/store'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import { useBridgeState } from '@/slices/bridge/hooks'
+import { useBridgeState, useBridgeDisplayState } from '@/slices/bridge/hooks'
 import {
   BridgeState,
   setFromChainId,
@@ -91,7 +90,7 @@ const StateManagedBridge = () => {
     showToChainListOverlay,
     showFromTokenListOverlay,
     showToTokenListOverlay,
-  } = useSelector((state: RootState) => state.bridgeDisplay)
+  } = useBridgeDisplayState()
 
   const [isApproved, setIsApproved] = useState(false)
 

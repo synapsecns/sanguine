@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useRef } from 'react'
 import _ from 'lodash'
-import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { useAppDispatch } from '@/store/hooks'
 import { isValidAddress } from '@/utils/isValidAddress'
 import { shortenAddress } from '@/utils/shortenAddress'
-import { useBridgeState } from '@/slices/bridge/hooks'
+import { useBridgeState, useBridgeDisplayState } from '@/slices/bridge/hooks'
 import { setDestinationAddress } from '@/slices/bridge/reducer'
 import { setShowDestinationWarning } from '@/slices/bridgeDisplaySlice'
 import { Address } from 'viem'
@@ -24,11 +24,10 @@ export const DestinationAddressInput = ({
 }) => {
   const dispatch = useAppDispatch()
   const { destinationAddress } = useBridgeState()
+  const { showDestinationWarning } = useBridgeDisplayState()
   const { userHistoricalTransactions }: TransactionsState =
     useTransactionsState()
-  const { showDestinationWarning } = useAppSelector(
-    (state) => state.bridgeDisplay
-  )
+
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
 
   const recipientList = filterTxsByRecipient(
