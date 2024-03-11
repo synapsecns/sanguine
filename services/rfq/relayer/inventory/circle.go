@@ -7,6 +7,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -132,6 +133,9 @@ func (c *rebalanceManagerCircleCCTP) Execute(parentCtx context.Context, rebalanc
 		attribute.Int("rebalance_origin", rebalance.OriginMetadata.ChainID),
 		attribute.Int("rebalance_dest", rebalance.DestMetadata.ChainID),
 		attribute.String("rebalance_amount", rebalance.Amount.String()),
+		attribute.String("burn_token_addr", rebalance.OriginMetadata.Addr.String()),
+		attribute.String("burn_token_name", rebalance.OriginMetadata.Name),
+		attribute.String("burn_token_balance", rebalance.OriginMetadata.Balance.String()),
 	))
 	defer func(err error) {
 		metrics.EndSpanWithErr(span, err)
@@ -146,6 +150,12 @@ func (c *rebalanceManagerCircleCCTP) Execute(parentCtx context.Context, rebalanc
 	// convert our address to bytes32
 	var addrBytes32 [32]byte
 	copy(addrBytes32[12:], c.relayerAddress.Bytes())
+
+	span.SetAttributes(
+		attribute.Int("dest_domain", int(destDomain)),
+		attribute.String("addr_bytes32", hexutil.Encode(addrBytes32[:])),
+		attribute.String("relayer_address", c.relayerAddress.String()),
+	)
 
 	// perform rebalance by calling depositForBurn()
 	_, err = c.txSubmitter.SubmitTransaction(ctx, big.NewInt(int64(rebalance.OriginMetadata.ChainID)), func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
