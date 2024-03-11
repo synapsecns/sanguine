@@ -14,44 +14,28 @@ export const SwapToTokenSelector = () => {
 
   const { swapToToken } = useSwapState()
 
-  const buttonContent = swapToToken ? (
-    <div className="flex items-center space-x-2">
-      <div className="flex-none hidden md:inline-block">
+  const space = 'p-2 rounded flex-none flex items-center gap-2'
+  const bgColor = `bg-[#565058]`
+  const bgHover = getMenuItemHoverBgForCoin(swapToToken?.color)
+  const borderColor = `border border-transparent`
+  const borderHover = getBorderStyleForCoinHover(swapToToken?.color)
+  const textStyle = 'text-lg text-primaryTextColor'
+
+  return (
+    <button
+      data-test-id="bridge-destination-token"
+      className={`${space} ${bgColor} ${bgHover} ${borderColor} ${borderHover} ${textStyle}`}
+      onClick={() => dispatch(setShowSwapToTokenListOverlay(true))}
+    >
+      {swapToToken && (
         <img
           src={swapToToken?.icon?.src ?? ''}
           alt={swapToToken?.symbol ?? ''}
           className="w-6 h-6"
         />
-      </div>
-      <div className="text-left">
-        <div className="text-lg text-primaryTextColor">
-          {swapToToken?.symbol}
-        </div>
-      </div>
-      <DropDownArrowSvg className="flex-none" />
-    </div>
-  ) : (
-    <div className="flex items-center space-x-3">
-      <div className="text-left">
-        <div className="text-lg text-primaryTextColor">Out</div>
-      </div>
-      <DropDownArrowSvg className="flex-none" />
-    </div>
-  )
-
-  return (
-    <button
-      data-test-id="bridge-destination-token"
-      className={`
-        p-md rounded-sm min-w-[80px]
-        bg-[#565058]
-        ${getMenuItemHoverBgForCoin(swapToToken?.color)}
-        border border-transparent
-        ${getBorderStyleForCoinHover(swapToToken?.color)}
-      `}
-      onClick={() => dispatch(setShowSwapToTokenListOverlay(true))}
-    >
-      {buttonContent}
+      )}
+      {swapToToken?.symbol ?? 'Out'}
+      <DropDownArrowSvg />
     </button>
   )
 }
