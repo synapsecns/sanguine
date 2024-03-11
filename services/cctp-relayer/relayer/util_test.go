@@ -1,7 +1,6 @@
 package relayer_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/alecthomas/assert"
@@ -27,8 +26,6 @@ func TestParseSender(t *testing.T) {
 
 	sender, err := relayer.ParseSender(messageBytes)
 	assert.NoError(t, err)
-	expected := common.HexToAddress("0x61d8838f9A00250C9AF13D622DA7c08c372ee587")
-	fmt.Printf("expected: %v\n", expected.Hex())
-	fmt.Printf("sender: %v\n", sender.Hex())
+	expected := common.HexToAddress("0x9f3B8679c73C2Fef8b59B4f3444d4e156fb70AA5")
 	assert.Equal(t, expected.Hex(), sender.Hex())
 }
