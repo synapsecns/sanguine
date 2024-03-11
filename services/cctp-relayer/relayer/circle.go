@@ -15,6 +15,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/submitter"
 	"github.com/synapsecns/sanguine/services/cctp-relayer/config"
 	messagetransmitter "github.com/synapsecns/sanguine/services/cctp-relayer/contracts/messagetransmitter"
+	tokenmessenger "github.com/synapsecns/sanguine/services/cctp-relayer/contracts/tokenmessenger"
 	db2 "github.com/synapsecns/sanguine/services/cctp-relayer/db"
 	relayTypes "github.com/synapsecns/sanguine/services/cctp-relayer/types"
 	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
@@ -73,7 +74,7 @@ func (c *circleCCTPHandler) HandleLog(ctx context.Context, log *types.Log, chain
 
 	switch log.Topics[0] {
 	case messagetransmitter.MessageSentTopic:
-		msg, err := c.handleMessageSent(ctx, log, chainID)
+		msg, err := c.handleDepositForBurn(ctx, log, chainID)
 		if err != nil {
 			return false, fmt.Errorf("could not store message sent: %w", err)
 		}
@@ -82,7 +83,7 @@ func (c *circleCCTPHandler) HandleLog(ctx context.Context, log *types.Log, chain
 		}
 		return processQueue, nil
 	case messagetransmitter.MessageReceivedTopic:
-		err = c.handleMessageReceived(ctx, log, chainID)
+		err = c.handleMintAndWithdraw(ctx, log, chainID)
 		if err != nil {
 			return false, fmt.Errorf("could not handle message received: %w", err)
 		}
@@ -132,7 +133,7 @@ func (c *circleCCTPHandler) FetchAndProcessSentEvent(parentCtx context.Context, 
 		}
 
 		if log.Topics[0] == messagetransmitter.MessageSentTopic {
-			msg, err = c.handleMessageSent(ctx, log, chainID)
+			msg, err = c.handleDepositForBurn(ctx, log, chainID)
 			if err != nil {
 				return nil, fmt.Errorf("could not handle message sent: %w", err)
 			}
@@ -192,8 +193,8 @@ func (c *circleCCTPHandler) SubmitReceiveMessage(parentCtx context.Context, msg 
 	return nil
 }
 
-func (c *circleCCTPHandler) handleMessageSent(ctx context.Context, log *types.Log, chainID uint32) (msg *relayTypes.Message, err error) {
-	ctx, span := c.handler.Tracer().Start(ctx, "handleMessageSent", trace.WithAttributes(
+func (c *circleCCTPHandler) handleDepositForBurn(ctx context.Context, log *types.Log, chainID uint32) (msg *relayTypes.Message, err error) {
+	ctx, span := c.handler.Tracer().Start(ctx, "handleDepositForBurn", trace.WithAttributes(
 		attribute.String(metrics.TxHash, log.TxHash.Hex()),
 		attribute.Int(metrics.ChainID, int(chainID)),
 		attribute.Int("block_number", int(log.BlockNumber)),
@@ -208,36 +209,49 @@ func (c *circleCCTPHandler) handleMessageSent(ctx context.Context, log *types.Lo
 		return nil, fmt.Errorf("could not get chain client: %w", err)
 	}
 
-	eventParser, err := messagetransmitter.NewMessageTransmitterFilterer(log.Address, ethClient)
+	eventParser, err := tokenmessenger.NewTokenMessengerFilterer(log.Address, ethClient)
 	if err != nil {
 		return nil, fmt.Errorf("could not create event parser: %w", err)
 	}
 
-	messageSentEvent, err := eventParser.ParseMessageSent(*log)
+	event, err := eventParser.ParseDepositForBurn(*log)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse message sent: %w", err)
 	}
 
 	// check that we sent the tx
-	sender, err := ParseSender(messageSentEvent.Message)
-	if err != nil {
-		return nil, fmt.Errorf("could not get transaction sender: %w", err)
-	}
-	if sender != c.relayerAddress {
-		span.AddEvent(fmt.Sprintf("sender %s does not match relayer address %s", sender.String(), c.relayerAddress.String()))
+	if event.Depositor != c.relayerAddress {
+		span.AddEvent(fmt.Sprintf("depositor %s does not match relayer address %s", event.Depositor.String(), c.relayerAddress.String()))
 		//nolint:nilnil
 		return nil, nil
 	}
-
-	destDomain, err := ParseDestDomain(messageSentEvent.Message)
-	if err != nil {
-		return nil, fmt.Errorf("could not parse destination chain from raw message")
-	}
 	span.SetAttributes(
-		attribute.Int("dest_domain", int(destDomain)),
-		attribute.String("sender", sender.Hex()),
+		attribute.Int("dest_domain", int(event.DestinationDomain)),
+		attribute.String("depositor", event.Depositor.Hex()),
 	)
-	destChainID, err := CircleDomainToChainID(destDomain, IsTestnetChainID(chainID))
+
+	// now, fetch the transaction receipt so that we can load the message payload from MessageSent event
+	messageSentParser, err := messagetransmitter.NewMessageTransmitterFilterer(c.cfg.Chains[chainID].GetMessageTransmitterAddress(), ethClient)
+	if err != nil {
+		return nil, fmt.Errorf("could not create message sent event parser: %w", err)
+	}
+	receipt, err := ethClient.TransactionReceipt(ctx, log.TxHash)
+	if err != nil {
+		return nil, fmt.Errorf("could not get transaction receipt: %w", err)
+	}
+	var message []byte
+	for _, log := range receipt.Logs {
+		if log.Topics[0] == messagetransmitter.MessageSentTopic {
+			messageSentEvent, err := messageSentParser.ParseMessageSent(*log)
+			if err != nil {
+				return nil, fmt.Errorf("could not parse message sent event: %w", err)
+			}
+			message = messageSentEvent.Message
+			break
+		}
+	}
+
+	destChainID, err := CircleDomainToChainID(event.DestinationDomain, IsTestnetChainID(chainID))
 	if err != nil {
 		return nil, fmt.Errorf("could not convert circle domain to chain ID: %w", err)
 	}
@@ -246,11 +260,9 @@ func (c *circleCCTPHandler) handleMessageSent(ctx context.Context, log *types.Lo
 		OriginTxHash:  log.TxHash.Hex(),
 		OriginChainID: chainID,
 		DestChainID:   destChainID,
-		Message:       messageSentEvent.Message,
-		MessageHash:   crypto.Keccak256Hash(messageSentEvent.Message).String(),
-
-		//Attestation: //comes from the api
-		BlockNumber: log.BlockNumber,
+		Message:       message,
+		MessageHash:   crypto.Keccak256Hash(message).String(),
+		BlockNumber:   log.BlockNumber,
 	}
 
 	span.SetAttributes(
@@ -270,8 +282,8 @@ func (c *circleCCTPHandler) handleMessageSent(ctx context.Context, log *types.Lo
 }
 
 //nolint:cyclop
-func (c *circleCCTPHandler) handleMessageReceived(ctx context.Context, log *types.Log, chainID uint32) (err error) {
-	ctx, span := c.handler.Tracer().Start(ctx, "handleMessageReceived", trace.WithAttributes(
+func (c *circleCCTPHandler) handleMintAndWithdraw(ctx context.Context, log *types.Log, chainID uint32) (err error) {
+	ctx, span := c.handler.Tracer().Start(ctx, "handleMintAndWithdraw", trace.WithAttributes(
 		attribute.String(metrics.TxHash, log.TxHash.Hex()),
 		attribute.Int(metrics.ChainID, int(chainID)),
 		attribute.Int("block_number", int(log.BlockNumber)),
