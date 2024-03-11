@@ -431,7 +431,6 @@ const StateManagedBridge = () => {
         })
       )
       dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
-      dispatch(setDestinationAddress(null))
       dispatch(updateFromValue(''))
 
       const successToastContent = (
