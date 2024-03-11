@@ -218,7 +218,7 @@ func (c *circleCCTPHandler) handleMessageSent(parentCtx context.Context, log *ty
 	}
 
 	// check that we sent the tx
-	sender, err := GetTxSender(ctx, log.TxHash, ethClient)
+	sender, err := ParseSender(messageSentEvent.Message)
 	if err != nil {
 		return nil, fmt.Errorf("could not get transaction sender: %w", err)
 	}
@@ -295,10 +295,7 @@ func (c *circleCCTPHandler) handleMessageReceived(parentCtx context.Context, log
 	}
 
 	// check that we sent the tx
-	sender, err := GetTxSender(ctx, log.TxHash, ethClient)
-	if err != nil {
-		return fmt.Errorf("could not get transaction sender: %w", err)
-	}
+	sender := Bytes32ToAddress(event.Sender)
 	if sender != c.relayerAddress {
 		span.AddEvent(fmt.Sprintf("sender %s does not match relayer address %s", sender.String(), c.relayerAddress.String()))
 		return nil

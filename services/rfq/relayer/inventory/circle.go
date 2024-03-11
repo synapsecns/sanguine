@@ -148,8 +148,7 @@ func (c *rebalanceManagerCircleCCTP) Execute(parentCtx context.Context, rebalanc
 	}
 
 	// convert our address to bytes32
-	var addrBytes32 [32]byte
-	copy(addrBytes32[12:], c.relayerAddress.Bytes())
+	addrBytes32 := cctpRelay.AddressToBytes32(c.relayerAddress)
 
 	span.SetAttributes(
 		attribute.Int("dest_domain", int(destDomain)),
@@ -225,7 +224,7 @@ func (c *rebalanceManagerCircleCCTP) listen(parentCtx context.Context, chainID i
 			}
 
 			// check that we sent the tx
-			sender, err := cctpRelay.GetTxSender(ctx, log.TxHash, ethClient)
+			sender, err := cctpRelay.ParseSender(parsedEvent.Message)
 			if err != nil {
 				return fmt.Errorf("could not get transaction sender: %w", err)
 			}
@@ -256,10 +255,7 @@ func (c *rebalanceManagerCircleCCTP) listen(parentCtx context.Context, chainID i
 			}
 
 			// check that we sent the tx
-			sender, err := cctpRelay.GetTxSender(ctx, log.TxHash, ethClient)
-			if err != nil {
-				return fmt.Errorf("could not get transaction sender: %w", err)
-			}
+			sender := cctpRelay.Bytes32ToAddress(parsedEvent.Sender)
 			if sender != c.relayerAddress {
 				span.AddEvent(fmt.Sprintf("sender %s does not match relayer address %s", sender.String(), c.relayerAddress.String()))
 				return nil

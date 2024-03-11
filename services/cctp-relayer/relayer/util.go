@@ -1,14 +1,10 @@
 package relayer
 
 import (
-	"context"
 	"encoding/binary"
 	"errors"
-	"fmt"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/synapsecns/sanguine/ethergo/client"
-	"github.com/synapsecns/sanguine/ethergo/util"
 )
 
 // destinationDomainIndex is the index of the destination domain in the formatted CCTP message.
@@ -69,15 +65,14 @@ func indexAddress(memView []byte, index int) (common.Address, error) {
 	return address, nil
 }
 
-// GetTxSender gets the sender of a transaction by fetching the transaction metadata.
-func GetTxSender(ctx context.Context, txHash common.Hash, ethClient client.EVM) (sender common.Address, err error) {
-	tx, _, err := ethClient.TransactionByHash(ctx, txHash)
-	if err != nil {
-		return sender, fmt.Errorf("could not get transaction by hash: %w", err)
-	}
-	call, err := util.TxToCall(tx)
-	if err != nil {
-		return sender, fmt.Errorf("could not convert transaction to call: %w", err)
-	}
-	return call.From, nil
+// AddressToBytes32 converts an Ethereum address to a bytes32 value.
+func AddressToBytes32(addr common.Address) [32]byte {
+	var buf [32]byte
+	copy(buf[12:], addr.Bytes())
+	return buf
+}
+
+// Bytes32ToAddress converts a bytes32 value to an Ethereum address.
+func Bytes32ToAddress(bytes32 [32]byte) common.Address {
+	return common.BytesToAddress(bytes32[12:])
 }
