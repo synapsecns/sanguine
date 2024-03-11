@@ -217,63 +217,17 @@ func (c *rebalanceManagerCircleCCTP) listen(parentCtx context.Context, chainID i
 
 		switch log.Topics[0] {
 		case messagetransmitter.MessageSentTopic:
-			parsedEvent, err := parser.ParseMessageSent(log)
+			err = c.handleMessageSent(ctx, log, parser, chainID)
 			if err != nil {
-				logger.Warnf("could not parse circle request sent: %w", err)
-				return nil
+				return fmt.Errorf("could not handle message sent: %w", err)
 			}
-
-			// check that we sent the tx
-			sender, err := cctpRelay.ParseSender(parsedEvent.Message)
-			if err != nil {
-				return fmt.Errorf("could not get transaction sender: %w", err)
-			}
-			if sender != c.relayerAddress {
-				span.AddEvent(fmt.Sprintf("sender %s does not match relayer address %s", sender.String(), c.relayerAddress.String()))
-				return nil
-			}
-
-			// use message hash as requestID
-			requestID := crypto.Keccak256Hash(parsedEvent.Message)
-			span.SetAttributes(
-				attribute.String("log_type", "MessageSent"),
-				attribute.String("request_id", requestID.String()),
-			)
-			var requestIDBytes [32]byte
-			copy(requestIDBytes[:], requestID.Bytes())
-			origin := uint64(chainID)
-			err = c.db.UpdateRebalanceStatus(ctx, requestIDBytes, &origin, reldb.RebalancePending)
-			if err != nil {
-				logger.Warnf("could not update rebalance status: %w", err)
-				return nil
-			}
+			return nil
 		case messagetransmitter.MessageReceivedTopic:
-			parsedEvent, err := parser.ParseMessageReceived(log)
+			err = c.handleMessageReceived(ctx, log, parser)
 			if err != nil {
-				logger.Warnf("could not parse circle request fulfilled: %w", err)
-				return nil
+				return fmt.Errorf("could not handle message received: %w", err)
 			}
-
-			// check that we sent the tx
-			sender := cctpRelay.Bytes32ToAddress(parsedEvent.Sender)
-			if sender != c.relayerAddress {
-				span.AddEvent(fmt.Sprintf("sender %s does not match relayer address %s", sender.String(), c.relayerAddress.String()))
-				return nil
-			}
-
-			// use message hash as requestID
-			requestID := crypto.Keccak256Hash(parsedEvent.MessageBody)
-			span.SetAttributes(
-				attribute.String("log_type", "MessageReceived"),
-				attribute.String("request_id", requestID.String()),
-			)
-			var requestIDBytes [32]byte
-			copy(requestIDBytes[:], requestID.Bytes())
-			err = c.db.UpdateRebalanceStatus(parentCtx, requestIDBytes, nil, reldb.RebalanceCompleted)
-			if err != nil {
-				logger.Warnf("could not update rebalance status: %w", err)
-				return nil
-			}
+			return nil
 		default:
 			logger.Warnf("unknown event %s", log.Topics[0])
 		}
@@ -281,6 +235,82 @@ func (c *rebalanceManagerCircleCCTP) listen(parentCtx context.Context, chainID i
 	})
 	if err != nil {
 		return fmt.Errorf("could not listen to contract: %w", err)
+	}
+	return nil
+}
+
+func (c *rebalanceManagerCircleCCTP) handleMessageSent(ctx context.Context, log types.Log, parser *messagetransmitter.MessageTransmitterFilterer, chainID int) (err error) {
+	ctx, span := c.handler.Tracer().Start(ctx, "rebalance.handleMessageSent", trace.WithAttributes(
+		attribute.Int(metrics.ChainID, chainID),
+	))
+	defer func(err error) {
+		metrics.EndSpanWithErr(span, err)
+	}(err)
+
+	parsedEvent, err := parser.ParseMessageSent(log)
+	if err != nil {
+		logger.Warnf("could not parse circle request sent: %w", err)
+		return nil
+	}
+
+	// check that we sent the tx
+	sender, err := cctpRelay.ParseSender(parsedEvent.Message)
+	if err != nil {
+		return fmt.Errorf("could not get transaction sender: %w", err)
+	}
+	if sender != c.relayerAddress {
+		span.AddEvent(fmt.Sprintf("sender %s does not match relayer address %s", sender.String(), c.relayerAddress.String()))
+		return nil
+	}
+
+	// use message hash as requestID
+	requestID := crypto.Keccak256Hash(parsedEvent.Message)
+	span.SetAttributes(
+		attribute.String("log_type", "MessageSent"),
+		attribute.String("request_id", requestID.String()),
+	)
+	var requestIDBytes [32]byte
+	copy(requestIDBytes[:], requestID.Bytes())
+	origin := uint64(chainID)
+	err = c.db.UpdateRebalanceStatus(ctx, requestIDBytes, &origin, reldb.RebalancePending)
+	if err != nil {
+		logger.Warnf("could not update rebalance status: %w", err)
+		return nil
+	}
+	return nil
+}
+
+func (c *rebalanceManagerCircleCCTP) handleMessageReceived(ctx context.Context, log types.Log, parser *messagetransmitter.MessageTransmitterFilterer) (err error) {
+	ctx, span := c.handler.Tracer().Start(ctx, "rebalance.handleMessageSent")
+	defer func(err error) {
+		metrics.EndSpanWithErr(span, err)
+	}(err)
+
+	parsedEvent, err := parser.ParseMessageReceived(log)
+	if err != nil {
+		logger.Warnf("could not parse circle request fulfilled: %w", err)
+		return nil
+	}
+
+	// check that we sent the tx
+	sender := cctpRelay.Bytes32ToAddress(parsedEvent.Sender)
+	if sender != c.relayerAddress {
+		span.AddEvent(fmt.Sprintf("sender %s does not match relayer address %s", sender.String(), c.relayerAddress.String()))
+		return nil
+	}
+
+	// use message hash as requestID
+	requestID := crypto.Keccak256Hash(parsedEvent.MessageBody)
+	span.SetAttributes(
+		attribute.String("log_type", "MessageReceived"),
+		attribute.String("request_id", requestID.String()),
+	)
+	var requestIDBytes [32]byte
+	copy(requestIDBytes[:], requestID.Bytes())
+	err = c.db.UpdateRebalanceStatus(ctx, requestIDBytes, nil, reldb.RebalanceCompleted)
+	if err != nil {
+		logger.Warnf("could not update rebalance status: %w", err)
+		return nil
 	}
 	return nil
 }
