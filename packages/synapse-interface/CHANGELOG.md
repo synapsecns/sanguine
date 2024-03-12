@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.6.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.5.1...@synapsecns/synapse-interface@0.6.0) (2024-03-12)
+
+
+### Features
+
+* **synapse-interface:** complete countdown ([#2254](https://github.com/synapsecns/sanguine/issues/2254)) ([fcb685f](https://github.com/synapsecns/sanguine/commit/fcb685f12f70f3623e16bb0260503156568b3f83))
+
+
+
+
+
 ## [0.5.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.5.0...@synapsecns/synapse-interface@0.5.1) (2024-03-12)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
