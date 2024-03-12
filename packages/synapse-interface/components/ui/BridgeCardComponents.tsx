@@ -37,10 +37,9 @@ export function BridgeCard({ children }) {
   /* TODOs
    * Lift margin value up to parent
    * Remove need for popoverDependencies styles
-   * Adjust button to allow for single p-4 padding value
    */
   const className = join({
-    space: 'px-4 pt-4 pb-2 mt-5 rounded-[.75rem]',
+    space: 'p-4 mt-5 rounded-[.75rem]',
     bgColor: 'bg-bgBase', // NEW: 'bg-zinc-100 dark:bg-zinc-900/95 shadow-xl',
     popoverDependencies: 'overflow-hidden transform',
   })
