@@ -3,6 +3,7 @@ pragma solidity 0.8.20;
 
 import {ExecutionFees, ExecutionFeesEvents, IExecutionFees} from "../contracts/ExecutionFees.sol";
 import {Test} from "forge-std/Test.sol";
+import {IAccessControl} from "@openzeppelin/contracts/access/IAccessControl.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
@@ -433,6 +434,16 @@ contract ExecutionFeesTest is ExecutionFeesEvents, Test {
         addExecutionFee(executionFee, dstChainId, transactionId);
         vm.expectRevert(IExecutionFees.ExecutionFees__ZeroAddress.selector);
         recordExecutor(dstChainId, transactionId, address(0));
+    }
+
+    function test_recordExecutor_revertNotRecorder() public {
+        bytes32 recorderRole = executionFees.RECORDER_ROLE();
+        addExecutionFee(executionFee, dstChainId, transactionId);
+        vm.expectRevert(
+            abi.encodeWithSelector(IAccessControl.AccessControlUnauthorizedAccount.selector, executor, recorderRole)
+        );
+        vm.prank(executor);
+        executionFees.recordExecutor(dstChainId, transactionId, executor);
     }
 
     function test_claimExecutionFees_revertNoUnclaimedRewards() public {
