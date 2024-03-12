@@ -368,7 +368,19 @@ func (c *CCTPRelayer) Stop(chainID uint32) {
 // Listens for USDC send events on origin chain, and registers relayTypes.Messages to be signed.
 //
 //nolint:cyclop
-func (c *CCTPRelayer) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chainID uint32, address string, toBlockNumber *uint64) error {
+func (c *CCTPRelayer) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chainID uint32, address string, toBlockNumber *uint64) (err error) {
+	ctx, span := c.handler.Tracer().Start(ctx, "streamLogs", trace.WithAttributes(
+		attribute.Int(metrics.ChainID, int(chainID)),
+		attribute.String("address", address),
+	))
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	if address == "" {
+		return fmt.Errorf("address cannot be empty")
+	}
+
 	lastStoredBlock, err := c.db.GetLastBlockNumber(ctx, chainID)
 	if err != nil {
 		return fmt.Errorf("could not get last stored block: %w", err)

@@ -77,6 +77,15 @@ func (c *circleCCTPHandler) HandleLog(ctx context.Context, log *types.Log, chain
 		return false, fmt.Errorf("not enough topics")
 	}
 
+	ctx, span := c.handler.Tracer().Start(ctx, "handleLog", trace.WithAttributes(
+		attribute.String(metrics.TxHash, log.TxHash.Hex()),
+		attribute.Int(metrics.ChainID, int(chainID)),
+		attribute.String("topic", log.Topics[0].Hex()),
+	))
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	switch log.Topics[0] {
 	case tokenmessenger.DepositForBurnTopic:
 		msg, err := c.handleDepositForBurn(ctx, log, chainID)
