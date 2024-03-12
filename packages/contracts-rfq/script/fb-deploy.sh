@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 # Usage: ./script/fb-deploy.sh <walletName> [...options]
+
+# Trap SIGINT (Ctrl+C) and exit the script
+trap "exit" INT
+
 # Parse command line arguments
 walletName=$1
 # Check that the walletName is not empty
