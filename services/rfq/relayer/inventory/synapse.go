@@ -79,11 +79,20 @@ func (c *rebalanceManagerSynapseCCTP) Start(ctx context.Context) (err error) {
 	return nil
 }
 
-func (c *rebalanceManagerSynapseCCTP) initContracts(ctx context.Context) (err error) {
+func (c *rebalanceManagerSynapseCCTP) initContracts(parentCtx context.Context) (err error) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "initContracts")
+	defer func(err error) {
+		metrics.EndSpanWithErr(span, err)
+	}(err)
+
 	for chainID := range c.cfg.Chains {
 		contractAddr, err := c.cfg.GetSynapseCCTPAddress(chainID)
 		if err != nil {
 			return fmt.Errorf("could not get cctp address: %w", err)
+		}
+		if contractAddr == "" {
+			span.AddEvent(fmt.Sprintf("no synapse cctp address for chain %d; skipping", chainID))
+			continue
 		}
 		chainClient, err := c.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
 		if err != nil {

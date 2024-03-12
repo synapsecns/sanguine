@@ -96,6 +96,10 @@ func (c *rebalanceManagerCircleCCTP) initContracts(parentCtx context.Context) (e
 		if err != nil {
 			return fmt.Errorf("could not get token messenger address: %w", err)
 		}
+		if messengerAddr == "" {
+			span.AddEvent(fmt.Sprintf("no token messenger address for chain %d; skipping", chainID))
+			continue
+		}
 		chainClient, err := c.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
 		if err != nil {
 			return fmt.Errorf("could not get chain client: %w", err)
