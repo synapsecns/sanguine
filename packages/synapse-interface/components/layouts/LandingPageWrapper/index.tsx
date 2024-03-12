@@ -25,21 +25,30 @@ import { NAVIGATION } from '@/constants/routes'
 import { MoreButton } from './MoreButton'
 import { PageFooter } from './PageFooter'
 
-const textColor = 'text-zinc-800 dark:text-zinc-200'
-const bgColor =
-  'bg-white bg-gradient-to-b from-white to-[hsl(235deg_75%_96%)] dark:from-black dark:to-[hsl(265deg_25%_7.5%)]'
-const bgFrame = 'w-screen h-screen overflow-scroll'
+const join = (a) => Object.values(a).join(' ')
+
+const wrapperClassName = join({
+  textColor: 'text-zinc-800 dark:text-zinc-200',
+  font: 'tracking-wide',
+  bgColor: 'bg-gradient-to-b',
+  bgGradient: 'from-white to-[hsl(235deg_75%_96%)]',
+  bgGradientDark: 'dark:from-black dark:to-[hsl(265deg_25%_7.5%)]',
+  // bgFrame: 'w-screen h-screen overflow-scroll', // TODO: Enable once wrapperStyle is removed
+})
+
+const TODO_REMOVE_wrapperStyle = {
+  background:
+    'radial-gradient(23.86% 33.62% at 50.97% 47.88%, rgba(255, 0, 255, 0.04) 0%, rgba(172, 143, 255, 0.04) 100%), #111111',
+  backgroundImage: `url('landingBg.svg')`,
+  backgroundSize: '800px',
+  backgroundPosition: 'center 21%',
+  backgroundRepeat: 'no-repeat',
+}
 
 export function LandingPageWrapper({ children }: { children: any }) {
   return (
     <div className="dark">
-      <div
-        className={`${textColor} tracking-wide`}
-        style={{
-          background:
-            'radial-gradient(23.86% 33.62% at 50.97% 47.88%, rgba(255, 0, 255, 0.04) 0%, rgba(172, 143, 255, 0.04) 100%), #111111',
-        }}
-      >
+      <div className={wrapperClassName} style={TODO_REMOVE_wrapperStyle}>
         <LandingNav />
         {children}
         <PageFooter />
