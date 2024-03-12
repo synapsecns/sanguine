@@ -369,6 +369,7 @@ func (c *CCTPRelayer) Stop(chainID uint32) {
 //
 //nolint:cyclop
 func (c *CCTPRelayer) streamLogs(ctx context.Context, grpcClient pbscribe.ScribeServiceClient, conn *grpc.ClientConn, chainID uint32, address string, toBlockNumber *uint64) (err error) {
+	fmt.Printf("streamLogs on chain %d, address %s\n", chainID, address)
 	ctx, span := c.handler.Tracer().Start(ctx, "streamLogs", trace.WithAttributes(
 		attribute.Int(metrics.ChainID, int(chainID)),
 		attribute.String("address", address),
