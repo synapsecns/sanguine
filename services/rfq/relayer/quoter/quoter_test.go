@@ -119,12 +119,15 @@ func (s *QuoterSuite) TestShouldProcess() {
 	s.True(s.manager.ShouldProcess(s.GetTestContext(), quote))
 
 	// Set different numbers of decimals for origin / dest tokens; should never process this.
-	quote.DestTokenDecimals = 18
-	s.False(s.manager.ShouldProcess(s.GetTestContext(), quote))
+	badQuote := quote
+	badQuote.DestTokenDecimals = 18
+	s.False(s.manager.ShouldProcess(s.GetTestContext(), badQuote))
 
-	// Toggle insufficient gas; should not process.
-	s.setGasSufficiency(false)
+	// Toggle relayPaused
+	s.manager.SetRelayPaused(true)
 	s.False(s.manager.ShouldProcess(s.GetTestContext(), quote))
+	s.manager.SetRelayPaused(false)
+	s.True(s.manager.ShouldProcess(s.GetTestContext(), quote))
 }
 
 func (s *QuoterSuite) TestIsProfitable() {
