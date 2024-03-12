@@ -1,1 +1,4 @@
 @openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/
+@synapsecns/solidity-devops=node_modules/@synapsecns/solidity-devops/
+forge-std/=lib/forge-std/src/
+ds-test/=lib/forge-std/lib/ds-test/src/
