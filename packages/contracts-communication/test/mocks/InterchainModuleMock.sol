@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {InterchainEntry} from "../../contracts/libs/InterchainEntry.sol";
 import {InterchainBatch, IInterchainDB, IInterchainModule} from "../../contracts/interfaces/IInterchainModule.sol";
 
 // solhint-disable ordering
+// solhint-disable no-empty-blocks
 contract InterchainModuleMock is IInterchainModule {
     function requestBatchVerification(uint256 dstChainId, InterchainBatch memory batch) external payable {}
 

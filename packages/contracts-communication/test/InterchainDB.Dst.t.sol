@@ -9,7 +9,7 @@ import {
     InterchainDBEvents
 } from "../contracts/InterchainDB.sol";
 
-import {InterchainModuleMock, IInterchainModule} from "./mocks/InterchainModuleMock.sol";
+import {InterchainModuleMock} from "./mocks/InterchainModuleMock.sol";
 
 import {Test} from "forge-std/Test.sol";
 

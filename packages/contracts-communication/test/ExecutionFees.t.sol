@@ -4,17 +4,19 @@ pragma solidity 0.8.20;
 import {ExecutionFees, ExecutionFeesEvents, IExecutionFees} from "../contracts/ExecutionFees.sol";
 import {Test} from "forge-std/Test.sol";
 
+// solhint-disable func-name-mixedcase
+// solhint-disable ordering
 contract ExecutionFeesTest is ExecutionFeesEvents, Test {
-    ExecutionFees executionFees;
-    address icClient = address(0x123);
-    address executor = address(0x456);
-    address executorA = address(0x789);
+    ExecutionFees public executionFees;
+    address public icClient = makeAddr("InterchainClient");
+    address public executor = makeAddr("Executor");
+    address public executorA = makeAddr("ExecutorA");
     address public admin = makeAddr("Admin");
-    bytes32 transactionId = keccak256("transaction");
-    bytes32 transactionIdA = keccak256("transactionA");
-    uint256 dstChainId = 1;
-    uint256 executionFee = 1 ether;
-    uint256 executionFeeA = 2 ether;
+    bytes32 public transactionId = keccak256("transaction");
+    bytes32 public transactionIdA = keccak256("transactionA");
+    uint256 public dstChainId = 1;
+    uint256 public executionFee = 1 ether;
+    uint256 public executionFeeA = 2 ether;
 
     function setUp() public {
         executionFees = new ExecutionFees(admin);

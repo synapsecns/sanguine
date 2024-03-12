@@ -6,7 +6,6 @@ import {InterchainDB} from "../contracts/InterchainDB.sol";
 
 import {IInterchainClientV1} from "../contracts/interfaces/IInterchainClientV1.sol";
 import {InterchainBatch} from "../contracts/libs/InterchainBatch.sol";
-import {InterchainEntry} from "../contracts/libs/InterchainEntry.sol";
 import {OptionsV1} from "../contracts/libs/Options.sol";
 import {TypeCasts} from "../contracts/libs/TypeCasts.sol";
 
