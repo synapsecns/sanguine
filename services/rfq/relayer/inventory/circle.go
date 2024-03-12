@@ -85,30 +85,40 @@ func (c *rebalanceManagerCircleCCTP) Start(ctx context.Context) (err error) {
 	return nil
 }
 
-func (c *rebalanceManagerCircleCCTP) initContracts(ctx context.Context) (err error) {
+func (c *rebalanceManagerCircleCCTP) initContracts(parentCtx context.Context) (err error) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "initContracts")
+	defer func(err error) {
+		metrics.EndSpanWithErr(span, err)
+	}(err)
+
 	for chainID := range c.cfg.Chains {
-		contractAddr, err := c.cfg.GetTokenMessengerAddress(chainID)
+		messengerAddr, err := c.cfg.GetTokenMessengerAddress(chainID)
 		if err != nil {
-			return fmt.Errorf("could not get cctp address: %w", err)
+			return fmt.Errorf("could not get token messenger address: %w", err)
 		}
 		chainClient, err := c.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
 		if err != nil {
 			return fmt.Errorf("could not get chain client: %w", err)
 		}
-		messengerContract, err := tokenmessenger.NewTokenMessenger(common.HexToAddress(contractAddr), chainClient)
+		messengerContract, err := tokenmessenger.NewTokenMessenger(common.HexToAddress(messengerAddr), chainClient)
 		if err != nil {
-			return fmt.Errorf("could not get cctp: %w", err)
+			return fmt.Errorf("could not get token messenger contract: %w", err)
 		}
 		transmitterAddr, err := messengerContract.LocalMessageTransmitter(&bind.CallOpts{Context: ctx})
 		if err != nil {
-			return fmt.Errorf("could not get message transmitter")
+			return fmt.Errorf("could not get message transmitter addr")
 		}
 		transmitterContract, err := messagetransmitter.NewMessageTransmitter(transmitterAddr, chainClient)
 		if err != nil {
-			return fmt.Errorf("could not get message transmitter: %w", err)
+			return fmt.Errorf("could not get message transmitter contract: %w", err)
 		}
 		c.boundTokenMessengers[chainID] = messengerContract
 		c.boundMessageTransmitters[chainID] = transmitterContract
+		span.AddEvent("assigned contracts", trace.WithAttributes(
+			attribute.Int(metrics.ChainID, chainID),
+			attribute.String("token_messenger", messengerAddr),
+			attribute.String("message_transmitter", transmitterAddr.Hex()),
+		))
 	}
 	return nil
 }
@@ -139,7 +149,7 @@ func (c *rebalanceManagerCircleCCTP) initListeners(ctx context.Context) (err err
 func (c *rebalanceManagerCircleCCTP) Execute(parentCtx context.Context, rebalance *RebalanceData) (err error) {
 	contract, ok := c.boundTokenMessengers[rebalance.OriginMetadata.ChainID]
 	if !ok {
-		return fmt.Errorf("could not find cctp contract for chain %d", rebalance.OriginMetadata.ChainID)
+		return fmt.Errorf("could not find token messenger contract for chain %d", rebalance.OriginMetadata.ChainID)
 	}
 	ctx, span := c.handler.Tracer().Start(parentCtx, "rebalance.Execute", trace.WithAttributes(
 		attribute.Int("rebalance_origin", rebalance.OriginMetadata.ChainID),
