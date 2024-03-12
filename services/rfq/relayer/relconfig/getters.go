@@ -408,6 +408,9 @@ func (c Config) GetRebalanceMethod(chainID int, tokenAddr string) (method Rebala
 	if err != nil {
 		return 0, err
 	}
+	if tokenConfig.RebalanceMethod == "" {
+		return RebalanceMethodNone, nil
+	}
 	for cid, chainCfg := range c.Chains {
 		tokenCfg, ok := chainCfg.Tokens[tokenName]
 		if ok {
