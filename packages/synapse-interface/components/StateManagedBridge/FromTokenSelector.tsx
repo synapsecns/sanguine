@@ -3,11 +3,6 @@ import { useDispatch } from 'react-redux'
 
 import { setShowFromTokenListOverlay } from '@/slices/bridgeDisplaySlice'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { DropDownArrowSvg } from '../icons/DropDownArrowSvg'
-import {
-  getBorderStyleForCoinHover,
-  getMenuItemHoverBgForCoin,
-} from '@/styles/tokens'
 import { TokenSelector } from '../ui/BridgeCardComponents'
 
 export const FromTokenSelector = () => {
