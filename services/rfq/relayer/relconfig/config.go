@@ -58,10 +58,10 @@ type ChainConfig struct {
 	// Bridge is the rfq bridge contract address.
 	RFQAddress string `yaml:"rfq_address"`
 	// SynapseCCTPAddress is the SynapseCCTP address.
-	SynapseCCTPAddress string `yaml:"cctp_address"`
+	SynapseCCTPAddress string `yaml:"synapse_cctp_address"`
 	// TokenMessengerAddress is the TokenMessenger address.
-	TokenMessengerAddress string `yaml:"cctp_address"`
-	// Confirmations is the number of required confirmations
+	TokenMessengerAddress string `yaml:"token_messenger_address"`
+	// Confirmations is the number of required confirmations.
 	Confirmations uint64 `yaml:"confirmations"`
 	// Tokens is a map of token ID -> token config.
 	Tokens map[string]TokenConfig `yaml:"tokens"`
