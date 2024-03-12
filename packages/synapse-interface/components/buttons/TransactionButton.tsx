@@ -4,12 +4,15 @@ import { usePendingTxWrapper } from '@hooks/usePendingTxWrapper'
 import { TransactionResponse } from '@ethersproject/providers'
 import { CSSProperties } from 'react'
 
+
+
 const BASE_PROPERTIES = `
     w-full rounded-md px-4 py-3
     text-white text-opacity-100 transition-all
     hover:opacity-80 disabled:opacity-50 disabled:text-[#88818C]
     disabled:from-bgLight disabled:to-bgLight
     bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF]
+    inline-flex items-center justify-center
   `
 
 const disabledClass = `opacity-30 cursor-default`
@@ -55,12 +58,12 @@ export const TransactionButton = ({
       }}
     >
       {isPending ? (
-        <div className="inline-flex items-center justify-center">
+        <>
           <ButtonLoadingDots className="mr-8" />
           <span className="opacity-30">{pendingLabel}</span>{' '}
-        </div>
+        </>
       ) : (
-        <span>{label}</span>
+        <>{label}</>
       )}
     </Button>
   )

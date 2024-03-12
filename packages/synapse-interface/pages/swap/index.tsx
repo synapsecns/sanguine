@@ -410,13 +410,11 @@ const StateManagedSwap = () => {
                   toChainId={swapChainId}
                 />
               </Transition>
-              <div className="md:my-3">
-                <SwapTransactionButton
-                  isApproved={isApproved}
-                  approveTxn={approveTxn}
-                  executeSwap={executeSwap}
-                />
-              </div>
+              <SwapTransactionButton
+                isApproved={isApproved}
+                approveTxn={approveTxn}
+                executeSwap={executeSwap}
+              />
             </div>
           </BridgeCard>
         </div>
