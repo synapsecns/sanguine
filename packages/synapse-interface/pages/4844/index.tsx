@@ -1,4 +1,3 @@
-import { useRouter } from 'next/router'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 import ExternalLinkIcon from '@/components/icons/ExternalLinkIcon'
