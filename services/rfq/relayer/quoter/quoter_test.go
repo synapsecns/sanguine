@@ -100,13 +100,13 @@ func (s *QuoterSuite) TestGenerateQuotesForNativeToken() {
 }
 
 func (s *QuoterSuite) TestShouldProcess() {
-	// Set different numbers of decimals for origin / dest tokens; should never process this.
+	// Should process a valid quote.
 	balance := big.NewInt(1000_000_000) // 1000 USDC
 	fee := big.NewInt(100_050_000)      // 100.05 USDC
 	quote := reldb.QuoteRequest{
 		BlockNumber:         1,
 		OriginTokenDecimals: 6,
-		DestTokenDecimals:   18,
+		DestTokenDecimals:   6,
 		Transaction: fastbridge.IFastBridgeBridgeTransaction{
 			OriginChainId: s.origin,
 			DestChainId:   s.destination,
@@ -116,6 +116,10 @@ func (s *QuoterSuite) TestShouldProcess() {
 			DestAmount:    new(big.Int).Sub(balance, fee),
 		},
 	}
+	s.True(s.manager.ShouldProcess(s.GetTestContext(), quote))
+
+	// Set different numbers of decimals for origin / dest tokens; should never process this.
+	quote.DestTokenDecimals = 18
 	s.False(s.manager.ShouldProcess(s.GetTestContext(), quote))
 
 	// Toggle insufficient gas; should not process.
