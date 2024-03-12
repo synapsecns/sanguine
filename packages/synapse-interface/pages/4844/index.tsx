@@ -1,4 +1,3 @@
-import { useRouter } from 'next/router'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 import ExternalLinkIcon from '@/components/icons/ExternalLinkIcon'
@@ -6,8 +5,13 @@ import ExternalLinkIcon from '@/components/icons/ExternalLinkIcon'
 const Countdown = () => {
   useIntervalTimer(1000)
 
-  const { daysRemaining, hoursRemaining, minutesRemaining, secondsRemaining } =
-    calculateTimeUntilTarget()
+  const {
+    daysRemaining,
+    hoursRemaining,
+    minutesRemaining,
+    secondsRemaining,
+    isComplete,
+  } = calculateTimeUntilTarget()
 
   return (
     <LandingPageWrapper>
@@ -16,22 +20,30 @@ const Countdown = () => {
 
         <div className="flex space-x-3 text-center text-synapsePurple">
           <div className="inline-block m-auto">
-            <div className="w-19 text-7xl">{daysRemaining}</div>
+            <div className="w-19 text-7xl">
+              {isComplete ? '0' : daysRemaining}
+            </div>
             <div className="text-xl">Days</div>
           </div>
 
           <div className="inline-block m-auto">
-            <div className="w-24 text-7xl">{hoursRemaining}</div>
+            <div className="w-24 text-7xl">
+              {isComplete ? '00' : hoursRemaining}
+            </div>
             <div className="text-xl">Hours</div>
           </div>
 
           <div className="inline-block m-auto">
-            <div className="w-[5.5rem] text-7xl">{minutesRemaining}</div>
+            <div className="w-[5.5rem] text-7xl">
+              {isComplete ? '00' : minutesRemaining}
+            </div>
             <div className="text-xl">Minutes</div>
           </div>
 
           <div className="inline-block mt-auto">
-            <div className="w-[5.5rem] text-6xl">{secondsRemaining}</div>
+            <div className="w-[5.5rem] text-6xl">
+              {isComplete ? '00' : secondsRemaining}
+            </div>
             <div className="text-xl">Seconds</div>
           </div>
         </div>
@@ -88,6 +100,8 @@ const calculateTimeUntilTarget = () => {
 
   const timeDifference = targetDate.getTime() - currentDate.getTime()
 
+  const isComplete = timeDifference <= 0
+
   const daysRemaining = Math.floor(timeDifference / (1000 * 60 * 60 * 24))
   const hoursRemaining = Math.floor(
     (timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
@@ -108,5 +122,6 @@ const calculateTimeUntilTarget = () => {
     hoursRemaining,
     minutesRemaining,
     secondsRemaining,
+    isComplete,
   }
 }

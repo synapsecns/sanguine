@@ -12,6 +12,7 @@
       "**/@typechain/*",
       "**/@openzeppelin/contracts-upgradeable",
       "**/@openzeppelin/contracts",
+      "**/@synapsecns/solidity-devops",
       "**/ds-test",
       "**/forge-std"
     ]

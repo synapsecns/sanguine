@@ -1,0 +1,10 @@
+{
+  "accounts": {
+    "admin": "",
+    "guards": [],
+    "relayers": [],
+    "refunders": []
+  },
+  "chainGasAmount": 0,
+  "protocolFeeRate": 0
+}

@@ -17,7 +17,7 @@ contract DeployFastBridge is Script {
         // add relayers
         for (uint256 i = 0; i < relayers.length; i++) {
             address relayer = relayers[i];
-            bridge.addRelayer(relayer);
+            bridge.grantRole(bridge.RELAYER_ROLE(), relayer);
         }
 
         // set new default admin as owner then renounce if owner != msg.sender

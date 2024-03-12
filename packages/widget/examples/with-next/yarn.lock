@@ -915,10 +915,10 @@
   dependencies:
     tslib "^2.4.0"
 
-"@synapsecns/sdk-router@^0.3.24":
-  version "0.3.24"
-  resolved "https://registry.yarnpkg.com/@synapsecns/sdk-router/-/sdk-router-0.3.24.tgz#3fa60c5da609d6f31270fdf05c627408107d969a"
-  integrity sha512-yQNiipBfcVE83nz/oljIjuQFnIh01yF9YXP9N00gVJA4PS3mkwkJwaoXRrYWXFrr0BJbb/Kl9jes63BSIrpWUg==
+"@synapsecns/sdk-router@^0.3.28":
+  version "0.3.28"
+  resolved "https://registry.yarnpkg.com/@synapsecns/sdk-router/-/sdk-router-0.3.28.tgz#146350ff2f87331380dc3f5cb8c480becfd2ff62"
+  integrity sha512-T+CD/auf5Qt3w/9R+FJFEycacWPwnw/Wfu7mVq3XrNAHb8gs3aY82+9thHqPhEv6L2iicMBkdAdoFn/Cwrjg+g==
   dependencies:
     "@babel/core" "^7.20.12"
     "@ethersproject/abi" "^5.7.0"
@@ -933,19 +933,20 @@
     decimal.js-light "^2.5.1"
     ethers "^5.7.2"
     jsbi "^4.3.0"
+    node-cache "^5.1.2"
     tiny-invariant "^1.2.0"
     toformat "^2.0.0"
     ts-xor "^1.1.0"
 
-"@synapsecns/widget@^0.0.57":
-  version "0.0.57"
-  resolved "https://registry.yarnpkg.com/@synapsecns/widget/-/widget-0.0.57.tgz#1867626bae46c8acf8d8222fdaa3b137d62cfc7d"
-  integrity sha512-GpLgie6XwPTMFcuMhCPN6V2MNs2QFAd10vW4iLqbnvMuXBg2q/pCwXZx5GeuuhZu+cfVhoCL/xo50CHbksNakA==
+"@synapsecns/widget@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@synapsecns/widget/-/widget-0.1.0.tgz#b45ad0536bff44ed6338bd214d942cd0dbb66909"
+  integrity sha512-BF2TaO8rCvEcxlzZvhP7rlpPA2PXBtCIbrRGHJBtsmO3v8YfWF2DoVooCibHtYGsGsTQiDSbdQbqNetRHt5acA==
   dependencies:
     "@ethersproject/providers" "^5.7.2"
     "@ethersproject/units" "^5.7.0"
     "@reduxjs/toolkit" "^2.0.1"
-    "@synapsecns/sdk-router" "^0.3.24"
+    "@synapsecns/sdk-router" "^0.3.28"
     ethers "^6.9.1"
     lodash "^4.17.21"
     react-redux "^9.0.2"
@@ -1554,6 +1555,11 @@ client-only@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/client-only/-/client-only-0.0.1.tgz#38bba5d403c41ab150bff64a95c85013cf73bca1"
   integrity sha512-IV3Ou0jSMzZrd3pZ48nLkT9DA7Ag1pnPzaiQhpW7c3RbcqqzvzzVu+L8gfqMp/8IM2MQtSiqaCxrrcfu8I8rMA==
+
+clone@2.x:
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/clone/-/clone-2.1.2.tgz#1b7f4b9f591f1e8f83670401600345a02887435f"
+  integrity sha512-3Pe/CF1Nn94hyhIYpjtiLhdCoEoz0DqQ+988E9gmeEdQZlojxnOb74wctFyuwWQHzqyf9X7C7MG8juUpqBJT8w==
 
 color-convert@^1.9.0:
   version "1.9.3"
@@ -3029,6 +3035,13 @@ next@14.0.4:
     "@next/swc-win32-arm64-msvc" "14.0.4"
     "@next/swc-win32-ia32-msvc" "14.0.4"
     "@next/swc-win32-x64-msvc" "14.0.4"
+
+node-cache@^5.1.2:
+  version "5.1.2"
+  resolved "https://registry.yarnpkg.com/node-cache/-/node-cache-5.1.2.tgz#f264dc2ccad0a780e76253a694e9fd0ed19c398d"
+  integrity sha512-t1QzWwnk4sjLWaQAS8CHgOJ+RAfmHpxFWmc36IWTiWHQfs0w5JDMBS1b1ZxQteo0vVVuWJvIUKHDkkeK7vIGCg==
+  dependencies:
+    clone "2.x"
 
 node-int64@^0.4.0:
   version "0.4.0"

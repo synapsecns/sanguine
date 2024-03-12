@@ -11,8 +11,12 @@ import "../contracts/libs/UniversalToken.sol";
 
 import "./MockERC20.sol";
 
+import {IAccessControl} from "@openzeppelin/contracts/access/IAccessControl.sol";
+
 contract FastBridgeTest is Test {
     FastBridge public fastBridge;
+
+    uint256 public constant TX_DEADLINE = 60 minutes;
 
     address owner = address(1);
     address relayer = address(2);
@@ -20,11 +24,12 @@ contract FastBridgeTest is Test {
     address user = address(4);
     address dstUser = address(5);
     address governor = address(6);
+    address refunder = address(7);
     MockERC20 arbUSDC;
     MockERC20 ethUSDC;
 
     function setUp() public {
-        vm.chainId(42161);
+        vm.chainId(42_161);
         fastBridge = new FastBridge(owner);
         arbUSDC = new MockERC20("arbUSDC", 6);
         ethUSDC = new MockERC20("ethUSDC", 6);
@@ -42,7 +47,11 @@ contract FastBridgeTest is Test {
         ethUSDC.mint(dstUser, 100 * 10 ** 6);
     }
 
-    function _getBridgeRequestAndId(uint256 chainId, uint256 currentNonce, uint256 protocolFeeRate)
+    function _getBridgeRequestAndId(
+        uint256 chainId,
+        uint256 currentNonce,
+        uint256 protocolFeeRate
+    )
         internal
         returns (bytes memory request, bytes32 transactionId)
     {
@@ -55,7 +64,7 @@ contract FastBridgeTest is Test {
         address destToken = address(ethUSDC);
         uint256 originAmount = 11 * 10 ** 6;
         uint256 destAmount = 10.97e6;
-        uint256 deadline = block.timestamp + 3600;
+        uint256 deadline = block.timestamp + TX_DEADLINE;
 
         uint256 originFeeAmount;
         if (protocolFeeRate > 0) originFeeAmount = (originAmount * protocolFeeRate) / 1e6;
@@ -81,7 +90,11 @@ contract FastBridgeTest is Test {
         transactionId = keccak256(request);
     }
 
-    function _getBridgeRequestAndIdWithETH(uint256 chainId, uint256 currentNonce, uint256 protocolFeeRate)
+    function _getBridgeRequestAndIdWithETH(
+        uint256 chainId,
+        uint256 currentNonce,
+        uint256 protocolFeeRate
+    )
         internal
         returns (bytes memory request, bytes32 transactionId)
     {
@@ -94,7 +107,7 @@ contract FastBridgeTest is Test {
         address destToken = UniversalTokenLib.ETH_ADDRESS;
         uint256 originAmount = 11 * 10 ** 18;
         uint256 destAmount = 10.97e18;
-        uint256 deadline = block.timestamp + 3600;
+        uint256 deadline = block.timestamp + TX_DEADLINE;
 
         uint256 originFeeAmount;
         if (protocolFeeRate > 0) originFeeAmount = (originAmount * protocolFeeRate) / 1e6;
@@ -120,7 +133,11 @@ contract FastBridgeTest is Test {
         transactionId = keccak256(request);
     }
 
-    function _getBridgeRequestAndIdWithChainGas(uint256 chainId, uint256 currentNonce, uint256 protocolFeeRate)
+    function _getBridgeRequestAndIdWithChainGas(
+        uint256 chainId,
+        uint256 currentNonce,
+        uint256 protocolFeeRate
+    )
         internal
         returns (bytes memory request, bytes32 transactionId)
     {
@@ -133,7 +150,7 @@ contract FastBridgeTest is Test {
         address destToken = address(ethUSDC);
         uint256 originAmount = 11 * 10 ** 6;
         uint256 destAmount = 10.97e6;
-        uint256 deadline = block.timestamp + 3600;
+        uint256 deadline = block.timestamp + TX_DEADLINE;
 
         uint256 originFeeAmount;
         if (protocolFeeRate > 0) originFeeAmount = (originAmount * protocolFeeRate) / 1e6;
@@ -159,7 +176,11 @@ contract FastBridgeTest is Test {
         transactionId = keccak256(request);
     }
 
-    function _getBridgeRequestAndIdWithETHAndChainGas(uint256 chainId, uint256 currentNonce, uint256 protocolFeeRate)
+    function _getBridgeRequestAndIdWithETHAndChainGas(
+        uint256 chainId,
+        uint256 currentNonce,
+        uint256 protocolFeeRate
+    )
         internal
         returns (bytes memory request, bytes32 transactionId)
     {
@@ -172,7 +193,7 @@ contract FastBridgeTest is Test {
         address destToken = UniversalTokenLib.ETH_ADDRESS;
         uint256 originAmount = 11 * 10 ** 18;
         uint256 destAmount = 10.97e18;
-        uint256 deadline = block.timestamp + 3600;
+        uint256 deadline = block.timestamp + TX_DEADLINE;
 
         uint256 originFeeAmount;
         if (protocolFeeRate > 0) originFeeAmount = (originAmount * protocolFeeRate) / 1e6;
@@ -196,16 +217,22 @@ contract FastBridgeTest is Test {
             })
         );
         transactionId = keccak256(request);
+    }
+
+    function expectUnauthorized(address caller, bytes32 role) internal {
+        vm.expectRevert(abi.encodeWithSelector(IAccessControl.AccessControlUnauthorizedAccount.selector, caller, role));
     }
 
     function setUpRoles() public {
         vm.startPrank(owner);
-        fastBridge.addRelayer(relayer);
-        fastBridge.addGuard(guard);
-        fastBridge.addGovernor(governor);
+        fastBridge.grantRole(fastBridge.RELAYER_ROLE(), relayer);
+        fastBridge.grantRole(fastBridge.GUARD_ROLE(), guard);
+        fastBridge.grantRole(fastBridge.GOVERNOR_ROLE(), governor);
+        fastBridge.grantRole(fastBridge.REFUNDER_ROLE(), refunder);
         assertTrue(fastBridge.hasRole(fastBridge.RELAYER_ROLE(), relayer));
         assertTrue(fastBridge.hasRole(fastBridge.GUARD_ROLE(), guard));
         assertTrue(fastBridge.hasRole(fastBridge.GOVERNOR_ROLE(), governor));
+        assertTrue(fastBridge.hasRole(fastBridge.REFUNDER_ROLE(), refunder));
         vm.stopPrank();
     }
 
@@ -218,16 +245,17 @@ contract FastBridgeTest is Test {
     function test_successfulAddRelayer() public {
         vm.startPrank(owner);
         assertFalse(fastBridge.hasRole(fastBridge.RELAYER_ROLE(), relayer));
-        fastBridge.addRelayer(relayer);
+        fastBridge.grantRole(fastBridge.RELAYER_ROLE(), relayer);
         assertTrue(fastBridge.hasRole(fastBridge.RELAYER_ROLE(), relayer));
     }
 
     /// @notice Test to check if only an admin can add a relayer
     function test_onlyAdminCanAddRelayer() public {
+        bytes32 relayerRole = fastBridge.RELAYER_ROLE();
         vm.startPrank(relayer);
-        assertFalse(fastBridge.hasRole(fastBridge.RELAYER_ROLE(), relayer));
+        assertFalse(fastBridge.hasRole(relayerRole, relayer));
         vm.expectRevert();
-        fastBridge.addRelayer(relayer);
+        fastBridge.grantRole(relayerRole, relayer);
     }
 
     /// @notice Test to check if a relayer can be successfully removed
@@ -235,33 +263,35 @@ contract FastBridgeTest is Test {
         test_successfulAddRelayer();
         assertTrue(fastBridge.hasRole(fastBridge.RELAYER_ROLE(), relayer));
         vm.startPrank(owner);
-        fastBridge.removeRelayer(relayer);
+        fastBridge.revokeRole(fastBridge.RELAYER_ROLE(), relayer);
         assertFalse(fastBridge.hasRole(fastBridge.RELAYER_ROLE(), relayer));
     }
 
     /// @notice Test to check if only an admin can remove a relayer
     function test_onlyAdminCanRemoveRelayer() public {
+        bytes32 relayerRole = fastBridge.RELAYER_ROLE();
         test_successfulAddRelayer();
         vm.startPrank(relayer);
-        assertTrue(fastBridge.hasRole(fastBridge.RELAYER_ROLE(), relayer));
+        assertTrue(fastBridge.hasRole(relayerRole, relayer));
         vm.expectRevert();
-        fastBridge.removeRelayer(relayer);
+        fastBridge.revokeRole(relayerRole, relayer);
     }
 
     /// @notice Test to check if a guard can be successfully added
     function test_successfulAddGuard() public {
         vm.startPrank(owner);
         assertFalse(fastBridge.hasRole(fastBridge.GUARD_ROLE(), guard));
-        fastBridge.addGuard(guard);
+        fastBridge.grantRole(fastBridge.GUARD_ROLE(), guard);
         assertTrue(fastBridge.hasRole(fastBridge.GUARD_ROLE(), guard));
     }
 
     /// @notice Test to check if only an admin can add a guard
     function test_onlyAdminCanAddGuard() public {
+        bytes32 guardRole = fastBridge.GUARD_ROLE();
         vm.startPrank(guard);
-        assertFalse(fastBridge.hasRole(fastBridge.GUARD_ROLE(), guard));
+        assertFalse(fastBridge.hasRole(guardRole, guard));
         vm.expectRevert();
-        fastBridge.addGuard(guard);
+        fastBridge.grantRole(guardRole, guard);
     }
 
     /// @notice Test to check if a guard can be successfully removed
@@ -269,48 +299,83 @@ contract FastBridgeTest is Test {
         test_successfulAddGuard();
         assertTrue(fastBridge.hasRole(fastBridge.GUARD_ROLE(), guard));
         vm.startPrank(owner);
-        fastBridge.removeGuard(guard);
+        fastBridge.revokeRole(fastBridge.GUARD_ROLE(), guard);
         assertFalse(fastBridge.hasRole(fastBridge.GUARD_ROLE(), guard));
     }
 
     /// @notice Test to check if only an admin can remove a guard
     function test_onlyAdminCanRemoveGuard() public {
+        bytes32 guardRole = fastBridge.GUARD_ROLE();
         test_successfulAddGuard();
         vm.startPrank(guard);
-        assertTrue(fastBridge.hasRole(fastBridge.GUARD_ROLE(), guard));
+        assertTrue(fastBridge.hasRole(guardRole, guard));
         vm.expectRevert();
-        fastBridge.removeGuard(guard);
+        fastBridge.revokeRole(guardRole, guard);
     }
 
     /// @notice Tests to check governor add, remove
     function test_successfulAddGovernor() public {
         vm.startPrank(owner);
         assertFalse(fastBridge.hasRole(fastBridge.GOVERNOR_ROLE(), governor));
-        fastBridge.addGovernor(governor);
+        fastBridge.grantRole(fastBridge.GOVERNOR_ROLE(), governor);
         assertTrue(fastBridge.hasRole(fastBridge.GOVERNOR_ROLE(), governor));
     }
 
     function test_onlyAdminCanAddGovernor() public {
+        bytes32 governorRole = fastBridge.GOVERNOR_ROLE();
         vm.startPrank(governor);
-        assertFalse(fastBridge.hasRole(fastBridge.GOVERNOR_ROLE(), governor));
+        assertFalse(fastBridge.hasRole(governorRole, governor));
         vm.expectRevert();
-        fastBridge.addGovernor(governor);
+        fastBridge.grantRole(governorRole, governor);
     }
 
     function test_successfulRemoveGovernor() public {
         test_successfulAddGovernor();
         assertTrue(fastBridge.hasRole(fastBridge.GOVERNOR_ROLE(), governor));
         vm.startPrank(owner);
-        fastBridge.removeGovernor(governor);
+        fastBridge.revokeRole(fastBridge.GOVERNOR_ROLE(), governor);
         assertFalse(fastBridge.hasRole(fastBridge.GOVERNOR_ROLE(), governor));
     }
 
     function test_onlyAdminCanRemoveGovernor() public {
+        bytes32 governorRole = fastBridge.GOVERNOR_ROLE();
         test_successfulAddGovernor();
         vm.startPrank(governor);
-        assertTrue(fastBridge.hasRole(fastBridge.GOVERNOR_ROLE(), governor));
+        assertTrue(fastBridge.hasRole(governorRole, governor));
         vm.expectRevert();
-        fastBridge.removeGovernor(governor);
+        fastBridge.revokeRole(governorRole, governor);
+    }
+
+    function test_successfulAddRefunder() public {
+        vm.startPrank(owner);
+        assertFalse(fastBridge.hasRole(fastBridge.REFUNDER_ROLE(), refunder));
+        fastBridge.grantRole(fastBridge.REFUNDER_ROLE(), refunder);
+        assertTrue(fastBridge.hasRole(fastBridge.REFUNDER_ROLE(), refunder));
+    }
+
+    function test_onlyAdminCanAddRefunder() public {
+        bytes32 refunderRole = fastBridge.REFUNDER_ROLE();
+        vm.startPrank(refunder);
+        assertFalse(fastBridge.hasRole(refunderRole, refunder));
+        vm.expectRevert();
+        fastBridge.grantRole(refunderRole, refunder);
+    }
+
+    function test_successfulRemoveRefunder() public {
+        test_successfulAddRefunder();
+        assertTrue(fastBridge.hasRole(fastBridge.REFUNDER_ROLE(), refunder));
+        vm.startPrank(owner);
+        fastBridge.revokeRole(fastBridge.REFUNDER_ROLE(), refunder);
+        assertFalse(fastBridge.hasRole(fastBridge.REFUNDER_ROLE(), refunder));
+    }
+
+    function test_onlyAdminCanRemoveRefunder() public {
+        bytes32 refunderRole = fastBridge.REFUNDER_ROLE();
+        test_successfulAddRefunder();
+        vm.startPrank(refunder);
+        assertTrue(fastBridge.hasRole(refunderRole, refunder));
+        vm.expectRevert();
+        fastBridge.revokeRole(refunderRole, refunder);
     }
 
     function test_successfulSetProtocolFeeRate() public {
@@ -406,7 +471,7 @@ contract FastBridgeTest is Test {
             originAmount: 11 * 10 ** 6,
             destAmount: 10.97e6,
             sendChainGas: false,
-            deadline: block.timestamp + 3600
+            deadline: block.timestamp + TX_DEADLINE
         });
         fastBridge.bridge(params);
         // Check the state of the tokens after the bridge transaction
@@ -445,7 +510,7 @@ contract FastBridgeTest is Test {
             originAmount: 11 * 10 ** 18,
             destAmount: 10.97e18,
             sendChainGas: false,
-            deadline: block.timestamp + 3600
+            deadline: block.timestamp + TX_DEADLINE
         });
         fastBridge.bridge{value: params.originAmount}(params);
 
@@ -506,7 +571,7 @@ contract FastBridgeTest is Test {
             originAmount: 11 * 10 ** 6,
             destAmount: 10.97e6,
             sendChainGas: false,
-            deadline: block.timestamp + 3600
+            deadline: block.timestamp + TX_DEADLINE
         });
         fastBridge.bridge(params);
         // Check the state of the tokens after the bridge transaction
@@ -568,7 +633,7 @@ contract FastBridgeTest is Test {
             originAmount: 11 * 10 ** 18,
             destAmount: 10.97e18,
             sendChainGas: false,
-            deadline: block.timestamp + 3600
+            deadline: block.timestamp + TX_DEADLINE
         });
         fastBridge.bridge{value: params.originAmount}(params);
 
@@ -629,7 +694,7 @@ contract FastBridgeTest is Test {
             originAmount: 11 * 10 ** 6,
             destAmount: 10.97e6,
             sendChainGas: true,
-            deadline: block.timestamp + 3600
+            deadline: block.timestamp + TX_DEADLINE
         });
         fastBridge.bridge(params);
         // Check the state of the tokens after the bridge transaction
@@ -678,7 +743,7 @@ contract FastBridgeTest is Test {
             originAmount: 11 * 10 ** 18,
             destAmount: 10.97e18,
             sendChainGas: true,
-            deadline: block.timestamp + 3600
+            deadline: block.timestamp + TX_DEADLINE
         });
         fastBridge.bridge{value: params.originAmount}(params);
 
@@ -729,7 +794,7 @@ contract FastBridgeTest is Test {
             originAmount: 11 * 10 ** 6,
             destAmount: 10.97e6,
             sendChainGas: false,
-            deadline: block.timestamp + 3600
+            deadline: block.timestamp + TX_DEADLINE
         });
         fastBridge.bridge(params);
         // Check the state of the tokens after the bridge transaction
@@ -761,7 +826,7 @@ contract FastBridgeTest is Test {
             originAmount: 11 * 10 ** 6,
             destAmount: 10.97e6,
             sendChainGas: false,
-            deadline: block.timestamp + 3600
+            deadline: block.timestamp + TX_DEADLINE
         });
         vm.expectRevert(abi.encodeWithSelector(ChainIncorrect.selector));
         fastBridge.bridge(params);
@@ -786,7 +851,7 @@ contract FastBridgeTest is Test {
             originAmount: 0,
             destAmount: 10.97e6,
             sendChainGas: false,
-            deadline: block.timestamp + 3600
+            deadline: block.timestamp + TX_DEADLINE
         });
         vm.expectRevert(abi.encodeWithSelector(AmountIncorrect.selector));
         fastBridge.bridge(params);
@@ -811,7 +876,7 @@ contract FastBridgeTest is Test {
             originAmount: 11 * 10 ** 6,
             destAmount: 0,
             sendChainGas: false,
-            deadline: block.timestamp + 3600
+            deadline: block.timestamp + TX_DEADLINE
         });
         vm.expectRevert(abi.encodeWithSelector(AmountIncorrect.selector));
         fastBridge.bridge(params);
@@ -836,7 +901,7 @@ contract FastBridgeTest is Test {
             originAmount: 11 * 10 ** 6,
             destAmount: 10.97e6,
             sendChainGas: false,
-            deadline: block.timestamp + 3600
+            deadline: block.timestamp + TX_DEADLINE
         });
         vm.expectRevert(abi.encodeWithSelector(ZeroAddress.selector));
         fastBridge.bridge(params);
@@ -861,7 +926,7 @@ contract FastBridgeTest is Test {
             originAmount: 11 * 10 ** 6,
             destAmount: 10.97e6,
             sendChainGas: false,
-            deadline: block.timestamp + 3600
+            deadline: block.timestamp + TX_DEADLINE
         });
         vm.expectRevert(abi.encodeWithSelector(ZeroAddress.selector));
         fastBridge.bridge(params);
@@ -920,7 +985,7 @@ contract FastBridgeTest is Test {
         vm.stopPrank();
 
         // get bridge request and tx id
-        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(42161, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(42_161, 0, 0);
 
         // Get the initial information of the bridge transaction; make sure not relayed
         assertEq(fastBridge.bridgeRelays(transactionId), false);
@@ -935,7 +1000,7 @@ contract FastBridgeTest is Test {
         // Expect the BridgeRelayed event to be emitted
         vm.expectEmit();
         emit BridgeRelayed(
-            transactionId, relayer, user, 42161, address(arbUSDC), address(ethUSDC), 11 * 10 ** 6, 10.97e6, 0
+            transactionId, relayer, user, 42_161, address(arbUSDC), address(ethUSDC), 11 * 10 ** 6, 10.97e6, 0
         );
         // Expect not doing any calls to user address
         vm.expectCall(user, "", 0);
@@ -968,7 +1033,7 @@ contract FastBridgeTest is Test {
         vm.stopPrank();
 
         // get bridge request and tx id
-        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithETH(42161, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithETH(42_161, 0, 0);
 
         // Get the initial information of the bridge transaction; make sure not relayed
         assertEq(fastBridge.bridgeRelays(transactionId), false);
@@ -985,7 +1050,7 @@ contract FastBridgeTest is Test {
             transactionId,
             relayer,
             user,
-            42161,
+            42_161,
             UniversalTokenLib.ETH_ADDRESS,
             UniversalTokenLib.ETH_ADDRESS,
             11 * 10 ** 18,
@@ -1026,7 +1091,7 @@ contract FastBridgeTest is Test {
         vm.stopPrank();
 
         // get bridge request and tx id
-        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithETHAndChainGas(42161, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithETHAndChainGas(42_161, 0, 0);
 
         // Get the initial information of the bridge transaction; make sure not relayed
         assertEq(fastBridge.bridgeRelays(transactionId), false);
@@ -1043,7 +1108,7 @@ contract FastBridgeTest is Test {
             transactionId,
             relayer,
             user,
-            42161,
+            42_161,
             UniversalTokenLib.ETH_ADDRESS,
             UniversalTokenLib.ETH_ADDRESS,
             11 * 10 ** 18,
@@ -1084,7 +1149,7 @@ contract FastBridgeTest is Test {
         vm.stopPrank();
 
         // get bridge request and tx id
-        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithChainGas(42161, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithChainGas(42_161, 0, 0);
 
         // Get the initial information of the bridge transaction; make sure not relayed
         assertEq(fastBridge.bridgeRelays(transactionId), false);
@@ -1099,7 +1164,7 @@ contract FastBridgeTest is Test {
         // Expect the BridgeRelayed event to be emitted
         vm.expectEmit();
         emit BridgeRelayed(
-            transactionId, relayer, user, 42161, address(arbUSDC), address(ethUSDC), 11 * 10 ** 6, 10.97e6, 0.005e18
+            transactionId, relayer, user, 42_161, address(arbUSDC), address(ethUSDC), 11 * 10 ** 6, 10.97e6, 0.005e18
         );
         // Expect exactly one call to user address
         vm.expectCall(user, "", 1);
@@ -1128,7 +1193,7 @@ contract FastBridgeTest is Test {
 
         // get bridge request and tx id
         // chain gas param should be true but we forward 0 amount since not set by governor
-        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithChainGas(42161, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithChainGas(42_161, 0, 0);
 
         // Get the initial information of the bridge transaction; make sure not relayed
         assertEq(fastBridge.bridgeRelays(transactionId), false);
@@ -1143,7 +1208,7 @@ contract FastBridgeTest is Test {
         // Expect the BridgeRelayed event to be emitted
         vm.expectEmit();
         emit BridgeRelayed(
-            transactionId, relayer, user, 42161, address(arbUSDC), address(ethUSDC), 11 * 10 ** 6, 10.97e6, 0
+            transactionId, relayer, user, 42_161, address(arbUSDC), address(ethUSDC), 11 * 10 ** 6, 10.97e6, 0
         );
         // Expect not doing any calls to user address
         vm.expectCall(user, "", 0);
@@ -1167,11 +1232,8 @@ contract FastBridgeTest is Test {
         // Set up the roles for the test
         setUpRoles();
 
-        vm.prank(owner);
-        fastBridge.addRelayer(address(this));
-
         // get bridge request and tx id
-        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(42161, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(42_161, 0, 0);
 
         // Start a prank with the relayer
         vm.startPrank(relayer);
@@ -1192,11 +1254,8 @@ contract FastBridgeTest is Test {
         // Set up the roles for the test
         setUpRoles();
 
-        vm.prank(owner);
-        fastBridge.addRelayer(address(this));
-
         // get bridge request and tx id
-        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(42161, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(42_161, 0, 0);
 
         // Start a prank with the relayer
         vm.startPrank(relayer);
@@ -1225,7 +1284,7 @@ contract FastBridgeTest is Test {
         setUpRoles();
 
         // get bridge request and tx id
-        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(42161, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(42_161, 0, 0);
         assertEq(fastBridge.bridgeRelays(transactionId), true);
 
         // We start a prank with the relayer
@@ -1244,7 +1303,7 @@ contract FastBridgeTest is Test {
         setUpRoles();
 
         // get bridge request and tx id
-        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(42161, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(42_161, 0, 0);
 
         // Start a prank with the relayer
         vm.startPrank(guard);
@@ -1252,8 +1311,8 @@ contract FastBridgeTest is Test {
         ethUSDC.approve(address(fastBridge), type(uint256).max);
 
         // Relay the destination bridge
-        vm.expectRevert("Caller is not a relayer");
         vm.chainId(1); // set to dest chain
+        expectUnauthorized(guard, fastBridge.RELAYER_ROLE());
         fastBridge.relay(request);
 
         // We stop a prank to contain within test
@@ -1329,7 +1388,7 @@ contract FastBridgeTest is Test {
         vm.stopPrank();
     }
 
-    function test_failedProveTimeExceeded() public {
+    function test_proveWithHugeDelay() public {
         // First, we successfully initiate the original bridge tx
         test_successfulBridge();
 
@@ -1345,12 +1404,16 @@ contract FastBridgeTest is Test {
         // We define a fake transaction hash to be the proof from dest chain
         bytes32 fakeTxnHash = bytes32("0x01");
 
-        // user relay deadline is 60 minutes, so add prove period of 60 minutes to that
-        vm.warp(block.timestamp + 121 minutes);
+        // At this point the permissionless refund is available
+        skip(30 days);
 
         // We provide the relay proof
-        vm.expectRevert(abi.encodeWithSelector(DeadlineExceeded.selector));
         fastBridge.prove(request, fakeTxnHash);
+
+        // We check if the bridge transaction proof timestamp is set to the timestamp at which the proof was provided
+        (uint96 _timestamp, address _oldRelayer) = fastBridge.bridgeProofs(transactionId);
+        assertEq(_timestamp, uint96(block.timestamp));
+        assertEq(_oldRelayer, relayer);
 
         // We stop a prank to contain within test
         vm.stopPrank();
@@ -1385,7 +1448,7 @@ contract FastBridgeTest is Test {
         (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
 
         // We provide the relay proof
-        vm.expectRevert("Caller is not a relayer");
+        expectUnauthorized(address(this), fastBridge.RELAYER_ROLE());
         fastBridge.prove(request, bytes32("0x01"));
 
         // We stop a prank to contain within test
@@ -1584,8 +1647,9 @@ contract FastBridgeTest is Test {
         setUpRoles();
         test_successfulBridge();
 
-        vm.prank(owner);
-        fastBridge.addRelayer(address(this));
+        vm.startPrank(owner);
+        fastBridge.grantRole(fastBridge.RELAYER_ROLE(), address(this));
+        vm.stopPrank();
 
         // get bridge request and tx id
         (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
@@ -1625,7 +1689,7 @@ contract FastBridgeTest is Test {
 
         vm.warp(block.timestamp + 31 minutes);
 
-        vm.expectRevert("Caller is not a relayer");
+        expectUnauthorized(address(this), fastBridge.RELAYER_ROLE());
         fastBridge.claim(request, relayer);
     }
 
@@ -1722,7 +1786,7 @@ contract FastBridgeTest is Test {
         // get bridge request and tx id
         (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
 
-        vm.expectRevert("Caller is not a guard");
+        expectUnauthorized(address(this), fastBridge.GUARD_ROLE());
         fastBridge.dispute(transactionId);
     }
 
@@ -1735,10 +1799,9 @@ contract FastBridgeTest is Test {
         // get bridge request and tx id
         (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
 
-        vm.startPrank(user);
+        vm.startPrank(refunder);
 
-        // user relay deadline is 60 minutes, so add prove period of 60 minutes to that
-        vm.warp(block.timestamp + 121 minutes);
+        skip(TX_DEADLINE + 1 seconds);
 
         vm.expectEmit();
         emit BridgeDepositRefunded(transactionId, user, address(arbUSDC), 11 * 10 ** 6);
@@ -1769,10 +1832,9 @@ contract FastBridgeTest is Test {
         // get bridge request and tx id
         (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithETH(block.chainid, 0, 0);
 
-        vm.startPrank(user);
+        vm.startPrank(refunder);
 
-        // user relay deadline is 60 minutes, so add prove period of 60 minutes to that
-        vm.warp(block.timestamp + 121 minutes);
+        skip(TX_DEADLINE + 1 seconds);
 
         uint256 preRefundBalanceUser = user.balance;
         uint256 preRefundBalanceBridge = address(fastBridge).balance;
@@ -1798,10 +1860,9 @@ contract FastBridgeTest is Test {
         uint256 protocolFeeRate = fastBridge.protocolFeeRate();
         (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, protocolFeeRate);
 
-        vm.startPrank(user);
+        vm.startPrank(refunder);
 
-        // user relay deadline is 60 minutes, so add prove period of 60 minutes to that
-        vm.warp(block.timestamp + 121 minutes);
+        skip(TX_DEADLINE + 1 seconds);
 
         vm.expectEmit();
         emit BridgeDepositRefunded(transactionId, user, address(arbUSDC), 11 * 10 ** 6);
@@ -1833,10 +1894,9 @@ contract FastBridgeTest is Test {
         uint256 protocolFeeRate = fastBridge.protocolFeeRate();
         (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithETH(block.chainid, 0, protocolFeeRate);
 
-        vm.startPrank(user);
+        vm.startPrank(refunder);
 
-        // user relay deadline is 60 minutes, so add prove period of 60 minutes to that
-        vm.warp(block.timestamp + 121 minutes);
+        skip(TX_DEADLINE + 1 seconds);
 
         uint256 preRefundBalanceUser = user.balance;
         uint256 preRefundBalanceBridge = address(fastBridge).balance;
@@ -1861,10 +1921,9 @@ contract FastBridgeTest is Test {
         // get bridge request and tx id
         (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
 
-        vm.startPrank(user);
+        vm.startPrank(refunder);
 
-        // user relay deadline is 60 minutes, so add prove period of 60 minutes to that
-        vm.warp(block.timestamp + 121 minutes);
+        skip(TX_DEADLINE + 1 seconds);
 
         vm.expectEmit();
         emit BridgeDepositRefunded(transactionId, user, address(arbUSDC), 11 * 10 ** 6);
@@ -1888,15 +1947,36 @@ contract FastBridgeTest is Test {
         vm.stopPrank();
     }
 
-    function test_successfulRefundNotSender() public {
+    function test_failedRefundNotEnoughTime() public {
         setUpRoles();
         test_successfulBridge();
 
         // get bridge request and tx id
         (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
 
-        // user relay deadline is 60 minutes, so add prove period of 60 minutes to that
-        vm.warp(block.timestamp + 121 minutes);
+        vm.startPrank(refunder);
+
+        // user relay deadline is 60 minutes
+        skip(TX_DEADLINE);
+
+        vm.expectRevert(abi.encodeWithSelector(DeadlineNotExceeded.selector));
+        fastBridge.refund(request);
+
+        // We stop a prank to contain within test
+        vm.stopPrank();
+    }
+
+    function test_successfulRefundNotRefunder() public {
+        setUpRoles();
+        test_successfulBridge();
+
+        // get bridge request and tx id
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
+
+        vm.startPrank(user);
+
+        // Should be able to refund permissionlessly 7 days after deadline
+        skip(TX_DEADLINE + 7 days + 1 seconds);
 
         vm.expectEmit();
         emit BridgeDepositRefunded(transactionId, user, address(arbUSDC), 11 * 10 ** 6);
@@ -1915,9 +1995,12 @@ contract FastBridgeTest is Test {
 
         // check bridge status updated
         assertEq(uint256(fastBridge.bridgeStatuses(transactionId)), uint256(FastBridge.BridgeStatus.REFUNDED));
+
+        // We stop a prank to contain within test
+        vm.stopPrank();
     }
 
-    function test_failedRefundNotEnoughTime() public {
+    function test_failedRefundNotRefunderNotEnoughTime() public {
         setUpRoles();
         test_successfulBridge();
 
@@ -1926,7 +2009,8 @@ contract FastBridgeTest is Test {
 
         vm.startPrank(user);
 
-        vm.warp(block.timestamp + 119 minutes);
+        // Permissionless refund is available after 7 days
+        skip(TX_DEADLINE + 7 days);
 
         vm.expectRevert(abi.encodeWithSelector(DeadlineNotExceeded.selector));
         fastBridge.refund(request);
@@ -1938,13 +2022,12 @@ contract FastBridgeTest is Test {
     function test_failedRefundNoBridge() public {
         setUpRoles();
 
-        vm.startPrank(user);
+        vm.startPrank(refunder);
 
         // get bridge request and tx id
         (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(block.chainid, 0, 0);
 
-        // user relay deadline is 60 minutes, so add prove period of 60 minutes to that
-        vm.warp(block.timestamp + 121 minutes);
+        skip(TX_DEADLINE + 1 seconds);
 
         vm.expectRevert(abi.encodeWithSelector(StatusIncorrect.selector));
         fastBridge.refund(request);
