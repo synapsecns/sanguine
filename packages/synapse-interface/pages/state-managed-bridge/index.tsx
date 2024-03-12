@@ -85,7 +85,8 @@ import {
   fetchGmxPrice,
 } from '@/slices/priceDataSlice'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
-import { SwitchButton } from '@/components/buttons/SwitchButton'
+// import { SwitchButton } from '@/components/buttons/SwitchButton'
+import { SwitchButton } from '@/components/ui/BridgeCardComponents'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -549,7 +550,7 @@ const StateManagedBridge = () => {
           </div>
         </div>
         <BridgeCard>
-          <div ref={bridgeDisplayRef}>
+          <div ref={bridgeDisplayRef} className="grid gap-2">
             <Transition show={showSettingsSlideOver} {...TRANSITION_PROPS}>
               <animated.div>
                 <SettingsSlideOver key="settings" />
