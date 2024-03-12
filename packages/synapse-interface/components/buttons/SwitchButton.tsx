@@ -1,3 +1,7 @@
+/*
+  Copied to BridgeCardComponents.tsx
+*/
+
 import { useState } from 'react'
 
 export function SwitchButton({ onClick }: { onClick: () => void }) {

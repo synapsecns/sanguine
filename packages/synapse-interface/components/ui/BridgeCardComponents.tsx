@@ -1,3 +1,5 @@
+import { Token } from '@/utils/types'
+import { useState } from 'react'
 import { DropDownArrowSvg } from '../icons/DropDownArrowSvg'
 import {
   getBorderStyleForCoinHover,
@@ -7,7 +9,7 @@ import LoadingDots from './tailwind/LoadingDots'
 
 type TokenSelectorTypes = {
   dataTestId?: string
-  token: any // TODO: Proper typing
+  token: Token
   placeholder: string
   onClick: () => void
 }
@@ -172,5 +174,44 @@ export function MaxButton({ disabled, onClickBalance }: MaxButtonTypes) {
     <button className={className} onClick={onClickBalance} disabled={disabled}>
       Max
     </button>
+  )
+}
+
+export function SwitchButton({ onClick }: { onClick: () => void }) {
+  const [isActive, setIsActive] = useState(false)
+  const ms = 300
+  const handleClick = () => {
+    onClick()
+    setIsActive(true)
+    setTimeout(() => setIsActive(false), ms)
+    console.log('click')
+  }
+
+  const className = join({
+    space: '-my-3.5 rounded z-10 justify-self-center',
+    bgColor: 'bg-bgLight', // NEW: 'bg-zinc-50 dark:bg-zinc-800',
+    borderColor: 'border border-bgBase', // NEW: 'border border-zinc-100 dark:border-zinc-900/95',
+    stroke: 'stroke-2 stroke-secondary',
+    transition: `hover:opacity-80 cursor-pointer transition-transform ${
+      isActive ? `duration-${ms} rotate-180 ease-in-out` : 'ease-out' // 'duration-0'
+    }`,
+  })
+
+  return (
+    <svg
+      onClick={handleClick}
+      className={className}
+      width="32"
+      height="32"
+      viewBox="0 0 32 32"
+      fill="none"
+      overflow="visible"
+      xmlns="http://www.w3.org/2000/svg"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M11,22V8M11,8L7,12M11,8L15,12" />
+      <path d="M21,9V23M21,23L25,19M21,23L17,19" />
+    </svg>
   )
 }
