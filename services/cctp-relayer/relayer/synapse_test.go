@@ -203,6 +203,7 @@ func (s *CCTPRelayerSuite) TestBridgeSynapseCCTP() {
 			break
 		}
 	}
+	s.Require().NotNil(sentLog)
 	_, err = relay.HandleLog(s.GetTestContext(), sentLog, uint32(originChainID.Int64()))
 	s.Require().Nil(err)
 

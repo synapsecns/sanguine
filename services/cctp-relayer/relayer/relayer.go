@@ -319,8 +319,9 @@ func (c *CCTPRelayer) Run(parentCtx context.Context) error {
 				}
 				return c.streamLogs(ctx, c.grpcClient, c.grpcConn, chain.ChainID, transmitterAddr.Hex(), nil)
 			})
+		default:
+			return fmt.Errorf("invalid cctp type: %s", cctpType.String())
 		}
-		return fmt.Errorf("invalid cctp type: %s", cctpType.String())
 	}
 
 	g.Go(func() error {
