@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-const BANNER_VERSION = '4'
+const BANNER_VERSION = '5'
 
 export const Banner = () => {
   const [hasMounted, setHasMounted] = useState(false)
@@ -225,14 +225,9 @@ export const InterruptedServiceBanner = () => {
           <div className="container mx-auto">
             <p className="text-md">
               <div>
-                Synapse Explorer and the transaction watcher may not appear
-                during planned maintenance on 2023-11-01 from 5am - 7pm UTC.
-                <br className="block lg:hidden" />
-                <br className="block lg:hidden" />
-                <div className="hidden lg:inline"> </div>
-                Transactions will still go through as expected. Please confirm
-                transactions using the native explorer for your destination
-                chain during this time.
+                The Bridge + RFQ will be globally offline 15mins ahead of the
+                Dencun upgrade (March 13, 13:55 UTC, 9:55 EST). Will be back
+                online about 15 - 30 mins after Dencun.
               </div>
             </p>
           </div>
