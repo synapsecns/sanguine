@@ -29,7 +29,7 @@ contract FastBridgeTest is Test {
     MockERC20 ethUSDC;
 
     function setUp() public {
-        vm.chainId(42161);
+        vm.chainId(42_161);
         fastBridge = new FastBridge(owner);
         arbUSDC = new MockERC20("arbUSDC", 6);
         ethUSDC = new MockERC20("ethUSDC", 6);
@@ -47,7 +47,11 @@ contract FastBridgeTest is Test {
         ethUSDC.mint(dstUser, 100 * 10 ** 6);
     }
 
-    function _getBridgeRequestAndId(uint256 chainId, uint256 currentNonce, uint256 protocolFeeRate)
+    function _getBridgeRequestAndId(
+        uint256 chainId,
+        uint256 currentNonce,
+        uint256 protocolFeeRate
+    )
         internal
         returns (bytes memory request, bytes32 transactionId)
     {
@@ -86,7 +90,11 @@ contract FastBridgeTest is Test {
         transactionId = keccak256(request);
     }
 
-    function _getBridgeRequestAndIdWithETH(uint256 chainId, uint256 currentNonce, uint256 protocolFeeRate)
+    function _getBridgeRequestAndIdWithETH(
+        uint256 chainId,
+        uint256 currentNonce,
+        uint256 protocolFeeRate
+    )
         internal
         returns (bytes memory request, bytes32 transactionId)
     {
@@ -125,7 +133,11 @@ contract FastBridgeTest is Test {
         transactionId = keccak256(request);
     }
 
-    function _getBridgeRequestAndIdWithChainGas(uint256 chainId, uint256 currentNonce, uint256 protocolFeeRate)
+    function _getBridgeRequestAndIdWithChainGas(
+        uint256 chainId,
+        uint256 currentNonce,
+        uint256 protocolFeeRate
+    )
         internal
         returns (bytes memory request, bytes32 transactionId)
     {
@@ -164,7 +176,11 @@ contract FastBridgeTest is Test {
         transactionId = keccak256(request);
     }
 
-    function _getBridgeRequestAndIdWithETHAndChainGas(uint256 chainId, uint256 currentNonce, uint256 protocolFeeRate)
+    function _getBridgeRequestAndIdWithETHAndChainGas(
+        uint256 chainId,
+        uint256 currentNonce,
+        uint256 protocolFeeRate
+    )
         internal
         returns (bytes memory request, bytes32 transactionId)
     {
@@ -969,7 +985,7 @@ contract FastBridgeTest is Test {
         vm.stopPrank();
 
         // get bridge request and tx id
-        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(42161, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(42_161, 0, 0);
 
         // Get the initial information of the bridge transaction; make sure not relayed
         assertEq(fastBridge.bridgeRelays(transactionId), false);
@@ -984,7 +1000,7 @@ contract FastBridgeTest is Test {
         // Expect the BridgeRelayed event to be emitted
         vm.expectEmit();
         emit BridgeRelayed(
-            transactionId, relayer, user, 42161, address(arbUSDC), address(ethUSDC), 11 * 10 ** 6, 10.97e6, 0
+            transactionId, relayer, user, 42_161, address(arbUSDC), address(ethUSDC), 11 * 10 ** 6, 10.97e6, 0
         );
         // Expect not doing any calls to user address
         vm.expectCall(user, "", 0);
@@ -1017,7 +1033,7 @@ contract FastBridgeTest is Test {
         vm.stopPrank();
 
         // get bridge request and tx id
-        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithETH(42161, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithETH(42_161, 0, 0);
 
         // Get the initial information of the bridge transaction; make sure not relayed
         assertEq(fastBridge.bridgeRelays(transactionId), false);
@@ -1034,7 +1050,7 @@ contract FastBridgeTest is Test {
             transactionId,
             relayer,
             user,
-            42161,
+            42_161,
             UniversalTokenLib.ETH_ADDRESS,
             UniversalTokenLib.ETH_ADDRESS,
             11 * 10 ** 18,
@@ -1075,7 +1091,7 @@ contract FastBridgeTest is Test {
         vm.stopPrank();
 
         // get bridge request and tx id
-        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithETHAndChainGas(42161, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithETHAndChainGas(42_161, 0, 0);
 
         // Get the initial information of the bridge transaction; make sure not relayed
         assertEq(fastBridge.bridgeRelays(transactionId), false);
@@ -1092,7 +1108,7 @@ contract FastBridgeTest is Test {
             transactionId,
             relayer,
             user,
-            42161,
+            42_161,
             UniversalTokenLib.ETH_ADDRESS,
             UniversalTokenLib.ETH_ADDRESS,
             11 * 10 ** 18,
@@ -1133,7 +1149,7 @@ contract FastBridgeTest is Test {
         vm.stopPrank();
 
         // get bridge request and tx id
-        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithChainGas(42161, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithChainGas(42_161, 0, 0);
 
         // Get the initial information of the bridge transaction; make sure not relayed
         assertEq(fastBridge.bridgeRelays(transactionId), false);
@@ -1148,7 +1164,7 @@ contract FastBridgeTest is Test {
         // Expect the BridgeRelayed event to be emitted
         vm.expectEmit();
         emit BridgeRelayed(
-            transactionId, relayer, user, 42161, address(arbUSDC), address(ethUSDC), 11 * 10 ** 6, 10.97e6, 0.005e18
+            transactionId, relayer, user, 42_161, address(arbUSDC), address(ethUSDC), 11 * 10 ** 6, 10.97e6, 0.005e18
         );
         // Expect exactly one call to user address
         vm.expectCall(user, "", 1);
@@ -1177,7 +1193,7 @@ contract FastBridgeTest is Test {
 
         // get bridge request and tx id
         // chain gas param should be true but we forward 0 amount since not set by governor
-        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithChainGas(42161, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndIdWithChainGas(42_161, 0, 0);
 
         // Get the initial information of the bridge transaction; make sure not relayed
         assertEq(fastBridge.bridgeRelays(transactionId), false);
@@ -1192,7 +1208,7 @@ contract FastBridgeTest is Test {
         // Expect the BridgeRelayed event to be emitted
         vm.expectEmit();
         emit BridgeRelayed(
-            transactionId, relayer, user, 42161, address(arbUSDC), address(ethUSDC), 11 * 10 ** 6, 10.97e6, 0
+            transactionId, relayer, user, 42_161, address(arbUSDC), address(ethUSDC), 11 * 10 ** 6, 10.97e6, 0
         );
         // Expect not doing any calls to user address
         vm.expectCall(user, "", 0);
@@ -1217,7 +1233,7 @@ contract FastBridgeTest is Test {
         setUpRoles();
 
         // get bridge request and tx id
-        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(42161, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(42_161, 0, 0);
 
         // Start a prank with the relayer
         vm.startPrank(relayer);
@@ -1239,7 +1255,7 @@ contract FastBridgeTest is Test {
         setUpRoles();
 
         // get bridge request and tx id
-        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(42161, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(42_161, 0, 0);
 
         // Start a prank with the relayer
         vm.startPrank(relayer);
@@ -1268,7 +1284,7 @@ contract FastBridgeTest is Test {
         setUpRoles();
 
         // get bridge request and tx id
-        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(42161, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(42_161, 0, 0);
         assertEq(fastBridge.bridgeRelays(transactionId), true);
 
         // We start a prank with the relayer
@@ -1287,7 +1303,7 @@ contract FastBridgeTest is Test {
         setUpRoles();
 
         // get bridge request and tx id
-        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(42161, 0, 0);
+        (bytes memory request, bytes32 transactionId) = _getBridgeRequestAndId(42_161, 0, 0);
 
         // Start a prank with the relayer
         vm.startPrank(guard);
