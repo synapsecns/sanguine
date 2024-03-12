@@ -359,7 +359,7 @@ const StateManagedSwap = () => {
 
   return (
     <LandingPageWrapper>
-      <div className="flex justify-center px-4 py-16 mx-auto lg:mx-0">
+      <div className="flex justify-center px-4 py-16 mx-auto max-w-lg">
         <div className="flex flex-col">
           <div className="flex items-center justify-between">
             <PageHeader title="Swap" subtitle="Exchange assets on chain." />
