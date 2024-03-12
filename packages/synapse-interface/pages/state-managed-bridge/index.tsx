@@ -86,7 +86,7 @@ import {
 } from '@/slices/priceDataSlice'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { SwitchButton } from '@/components/buttons/SwitchButton'
-import { UpgradeProgress } from '@/components/StateManagedBridge/UpgradeProgress'
+import { UpgradeProgressBar } from '@/components/StateManagedBridge/UpgradeProgress'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -557,7 +557,7 @@ const StateManagedBridge = () => {
             bg-bgBase
           `}
         >
-          <UpgradeProgress />
+          <UpgradeProgressBar />
           <div ref={bridgeDisplayRef}>
             <Transition show={showSettingsSlideOver} {...TRANSITION_PROPS}>
               <animated.div>
