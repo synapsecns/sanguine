@@ -3,7 +3,8 @@ import { useDispatch } from 'react-redux'
 import { useAccount, useNetwork } from 'wagmi'
 
 import { initialState, updateFromValue } from '@/slices/bridge/reducer'
-import MiniMaxButton from '../buttons/MiniMaxButton'
+// import MiniMaxButton from '../buttons/MiniMaxButton'
+import { AmountInput, MaxButton } from '../ui/BridgeCardComponents'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import {
@@ -15,7 +16,10 @@ import { FromChainSelector } from './FromChainSelector'
 import { FromTokenSelector } from './FromTokenSelector'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
-import { BridgeCardTokenInput, BridgeContainer } from '../ui/BridgeCard'
+import {
+  BridgeAmountContainer,
+  BridgeSectionContainer,
+} from '../ui/BridgeCardComponents'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -92,55 +96,29 @@ export const InputContainer = () => {
   }, [chain, fromChainId, isConnected, hasMounted])
 
   return (
-    <BridgeContainer>
+    <BridgeSectionContainer>
       <div className="flex items-center justify-between">
         <FromChainSelector />
         {connectedStatus}
       </div>
-      <BridgeCardTokenInput>
+      <BridgeAmountContainer>
         <FromTokenSelector />
-        <div>
-          <input
-            ref={inputRef}
-            pattern="^[0-9]*[.,]?[0-9]*$"
-            disabled={false}
-            className={`
-              focus:outline-none focus:ring-0 focus:border-none
-              border-none
-              bg-transparent
-              p-0 block
-              placeholder:text-[#88818C]
-              text-white text-opacity-80 text-xl md:text-2xl font-medium
-            `}
-            placeholder="0.0000"
-            onChange={handleFromValueChange}
-            value={showValue}
-            name="inputRow"
-            autoComplete="off"
-            minLength={1}
-            maxLength={79}
-          />
-          {hasMounted && isConnected && (
-            <label
-              htmlFor="inputRow"
-              className="text-xs text-white transition-all duration-150 transform-gpu hover:text-opacity-70 hover:cursor-pointer block"
-              onClick={onMaxBalance}
-            >
-              {parsedBalance ?? '0.0'}
-              <span className="text-opacity-50 text-secondaryTextColor">
-                {' '}
-                available
-              </span>
-            </label>
-          )}
-        </div>
+        <AmountInput
+          inputRef={inputRef}
+          hasMounted={hasMounted}
+          isConnected={isConnected}
+          showValue={showValue}
+          handleFromValueChange={handleFromValueChange}
+          parsedBalance={parsedBalance}
+          onMaxBalance={onMaxBalance}
+        />
         {hasMounted && isConnected && (
-          <MiniMaxButton
+          <MaxButton
             disabled={!balance || balance === 0n ? true : false}
             onClickBalance={onMaxBalance}
           />
         )}
-      </BridgeCardTokenInput>
-    </BridgeContainer>
+      </BridgeAmountContainer>
+    </BridgeSectionContainer>
   )
 }

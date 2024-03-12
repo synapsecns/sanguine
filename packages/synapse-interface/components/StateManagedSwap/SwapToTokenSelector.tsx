@@ -2,7 +2,7 @@ import React from 'react'
 import { useDispatch } from 'react-redux'
 import { setShowSwapToTokenListOverlay } from '@/slices/swapDisplaySlice'
 import { useSwapState } from '@/slices/swap/hooks'
-import { BridgeTokenSelector } from '../ui/BridgeCard'
+import { TokenSelector } from '../ui/BridgeCardComponents'
 
 export const SwapToTokenSelector = () => {
   const dispatch = useDispatch()
@@ -10,7 +10,7 @@ export const SwapToTokenSelector = () => {
   const { swapToToken } = useSwapState()
 
   return (
-    <BridgeTokenSelector
+    <TokenSelector
       dataTestId="bridge-destination-token"
       token={swapToToken}
       placeholder="Out"
