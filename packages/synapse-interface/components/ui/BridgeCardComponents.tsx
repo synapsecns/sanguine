@@ -26,11 +26,6 @@ type AmountInputTypes = {
   onMaxBalance?: () => void
 }
 
-type MaxButtonTypes = {
-  disabled: boolean
-  onClickBalance: () => void
-}
-
 const join = (a) => Object.values(a).join(' ')
 
 export function BridgeCard({ children }) {
@@ -156,61 +151,5 @@ export function AmountInput({
         </label>
       )}
     </div>
-  )
-}
-
-export function MaxButton({ disabled, onClickBalance }: MaxButtonTypes) {
-  const className = join({
-    space: 'px-4 py-1 mr-1 rounded',
-    bgColor: 'bg-[#565058]', // NEW: 'bg-zinc-100 dark:bg-zinc-700',
-    borderColor: 'border border-zinc-200 dark:border-transparent',
-    borderHover:
-      'enabled:hover:border-zinc-400 enabled:hover:dark:border-zinc-500',
-    styleDisabled: 'disabled:opacity-60 disabled:cursor-default',
-  })
-
-  return (
-    <button className={className} onClick={onClickBalance} disabled={disabled}>
-      Max
-    </button>
-  )
-}
-
-export function SwitchButton({ onClick }: { onClick: () => void }) {
-  const [isActive, setIsActive] = useState(false)
-  const ms = 300
-  const handleClick = () => {
-    onClick()
-    setIsActive(true)
-    setTimeout(() => setIsActive(false), ms)
-    console.log('click')
-  }
-
-  const className = join({
-    space: '-my-3.5 rounded z-10 justify-self-center',
-    bgColor: 'bg-bgLight', // NEW: 'bg-zinc-50 dark:bg-zinc-800',
-    borderColor: 'border border-bgBase', // NEW: 'border border-zinc-100 dark:border-zinc-900/95',
-    stroke: 'stroke-2 stroke-secondary',
-    transition: `hover:opacity-80 cursor-pointer transition-transform ${
-      isActive ? `duration-${ms} rotate-180 ease-in-out` : 'ease-out' // 'duration-0'
-    }`,
-  })
-
-  return (
-    <svg
-      onClick={handleClick}
-      className={className}
-      width="32"
-      height="32"
-      viewBox="0 0 32 32"
-      fill="none"
-      overflow="visible"
-      xmlns="http://www.w3.org/2000/svg"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M11,22V8M11,8L7,12M11,8L15,12" />
-      <path d="M21,9V23M21,23L25,19M21,23L17,19" />
-    </svg>
   )
 }

@@ -3,8 +3,8 @@ import { useDispatch } from 'react-redux'
 import { useAccount, useNetwork } from 'wagmi'
 
 import { initialState, updateFromValue } from '@/slices/bridge/reducer'
-// import MiniMaxButton from '../buttons/MiniMaxButton'
-import { AmountInput, MaxButton } from '../ui/BridgeCardComponents'
+import MiniMaxButton from '../buttons/MiniMaxButton'
+import { AmountInput } from '../ui/BridgeCardComponents'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import {
@@ -113,7 +113,7 @@ export const InputContainer = () => {
           onMaxBalance={onMaxBalance}
         />
         {hasMounted && isConnected && (
-          <MaxButton
+          <MiniMaxButton
             disabled={!balance || balance === 0n ? true : false}
             onClickBalance={onMaxBalance}
           />

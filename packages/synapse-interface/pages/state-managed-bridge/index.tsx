@@ -85,8 +85,7 @@ import {
   fetchGmxPrice,
 } from '@/slices/priceDataSlice'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
-// import { SwitchButton } from '@/components/buttons/SwitchButton'
-import { SwitchButton } from '@/components/ui/BridgeCardComponents'
+import { SwitchButton } from '@/components/buttons/SwitchButton'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
