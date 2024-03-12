@@ -2,8 +2,8 @@ import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { useDispatch } from 'react-redux'
 import { useAccount, useNetwork } from 'wagmi'
 
-// import MiniMaxButton from '../buttons/MiniMaxButton'
-import { AmountInput, MaxButton } from '../ui/BridgeCardComponents'
+import MiniMaxButton from '../buttons/MiniMaxButton'
+import { AmountInput } from '../ui/BridgeCardComponents'
 import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import {
@@ -120,7 +120,7 @@ export const SwapInputContainer = () => {
         />
 
         {hasMounted && isConnected && (
-          <MaxButton
+          <MiniMaxButton
             disabled={!balance || balance === 0n ? true : false}
             onClickBalance={onMaxBalance}
           />
