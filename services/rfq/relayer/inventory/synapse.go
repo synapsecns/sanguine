@@ -81,7 +81,7 @@ func (c *rebalanceManagerSynapseCCTP) Start(ctx context.Context) (err error) {
 
 func (c *rebalanceManagerSynapseCCTP) initContracts(ctx context.Context) (err error) {
 	for chainID := range c.cfg.Chains {
-		contractAddr, err := c.cfg.GetCCTPAddress(chainID)
+		contractAddr, err := c.cfg.GetSynapseCCTPAddress(chainID)
 		if err != nil {
 			return fmt.Errorf("could not get cctp address: %w", err)
 		}
@@ -100,7 +100,7 @@ func (c *rebalanceManagerSynapseCCTP) initContracts(ctx context.Context) (err er
 
 func (c *rebalanceManagerSynapseCCTP) initListeners(ctx context.Context) (err error) {
 	for chainID := range c.cfg.GetChains() {
-		cctpAddr, err := c.cfg.GetCCTPAddress(chainID)
+		cctpAddr, err := c.cfg.GetSynapseCCTPAddress(chainID)
 		if err != nil {
 			return fmt.Errorf("could not get cctp address: %w", err)
 		}
@@ -179,7 +179,7 @@ func (c *rebalanceManagerSynapseCCTP) listen(parentCtx context.Context, chainID 
 	if err != nil {
 		return fmt.Errorf("could not get chain client: %w", err)
 	}
-	cctpAddr := common.HexToAddress(c.cfg.Chains[chainID].CCTPAddress)
+	cctpAddr := common.HexToAddress(c.cfg.Chains[chainID].SynapseCCTPAddress)
 	parser, err := cctp.NewSynapseCCTPEvents(cctpAddr, ethClient)
 	if err != nil {
 		return fmt.Errorf("could not get cctp events: %w", err)
@@ -208,7 +208,8 @@ func (c *rebalanceManagerSynapseCCTP) listen(parentCtx context.Context, chainID 
 				attribute.String("request_id", hexutil.Encode(parsedEvent.RequestID[:])),
 			)
 			origin := uint64(chainID)
-			err = c.db.UpdateRebalanceStatus(ctx, parsedEvent.RequestID, &origin, reldb.RebalancePending)
+			requestIDHex := hexutil.Encode(parsedEvent.RequestID[:])
+			err = c.db.UpdateRebalanceStatus(ctx, requestIDHex, &origin, reldb.RebalancePending)
 			if err != nil {
 				logger.Warnf("could not update rebalance status: %w", err)
 				return nil
@@ -226,7 +227,8 @@ func (c *rebalanceManagerSynapseCCTP) listen(parentCtx context.Context, chainID 
 				attribute.String("log_type", "CircleRequestFulfilled"),
 				attribute.String("request_id", hexutil.Encode(parsedEvent.RequestID[:])),
 			)
-			err = c.db.UpdateRebalanceStatus(parentCtx, parsedEvent.RequestID, nil, reldb.RebalanceCompleted)
+			requestIDHex := hexutil.Encode(parsedEvent.RequestID[:])
+			err = c.db.UpdateRebalanceStatus(parentCtx, requestIDHex, nil, reldb.RebalanceCompleted)
 			if err != nil {
 				logger.Warnf("could not update rebalance status: %w", err)
 				return nil
