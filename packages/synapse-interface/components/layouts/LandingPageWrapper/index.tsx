@@ -33,7 +33,13 @@ const bgFrame = 'w-screen h-screen overflow-scroll'
 export function LandingPageWrapper({ children }: { children: any }) {
   return (
     <div className="dark">
-      <div className={`${textColor} ${bgColor} ${bgFrame} tracking-wide`}>
+      <div
+        className={`${textColor} tracking-wide`}
+        style={{
+          background:
+            'radial-gradient(23.86% 33.62% at 50.97% 47.88%, rgba(255, 0, 255, 0.04) 0%, rgba(172, 143, 255, 0.04) 100%), #111111',
+        }}
+      >
         <LandingNav />
         {children}
         <PageFooter />
