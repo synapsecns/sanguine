@@ -4,7 +4,10 @@ import { Address, useAccount } from 'wagmi'
 import LoadingDots from '../ui/tailwind/LoadingDots'
 import { SwapToTokenSelector } from './SwapToTokenSelector'
 import { useSwapState } from '@/slices/swap/hooks'
-import { BridgeCardTokenInput, BridgeContainer } from '../ui/BridgeCard'
+import {
+  BridgeAmountContainer,
+  BridgeSectionContainer,
+} from '../ui/BridgeCardComponents'
 
 export const SwapOutputContainer = ({}) => {
   const { swapQuote, isLoading, swapToToken } = useSwapState()
@@ -17,8 +20,8 @@ export const SwapOutputContainer = ({}) => {
   }, [isConnectedAddress])
 
   return (
-    <BridgeContainer>
-      <BridgeCardTokenInput>
+    <BridgeSectionContainer>
+      <BridgeAmountContainer>
         <SwapToTokenSelector />
         {isLoading ? (
           <LoadingDots className="opacity-50" />
@@ -44,7 +47,7 @@ export const SwapOutputContainer = ({}) => {
             autoComplete="off"
           />
         )}
-      </BridgeCardTokenInput>
-    </BridgeContainer>
+      </BridgeAmountContainer>
+    </BridgeSectionContainer>
   )
 }

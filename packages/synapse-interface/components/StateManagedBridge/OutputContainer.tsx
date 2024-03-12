@@ -8,7 +8,11 @@ import { ToTokenSelector } from './ToTokenSelector'
 import { useDispatch } from 'react-redux'
 import { setToChainId, setToToken } from '@/slices/bridge/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { BridgeCardTokenInput, BridgeContainer } from '../ui/BridgeCard'
+import {
+  BridgeAmountContainer,
+  BridgeSectionContainer,
+  AmountInput,
+} from '../ui/BridgeCardComponents'
 
 export const OutputContainer = ({}) => {
   const { bridgeQuote, isLoading, toChainId, toToken } = useBridgeState()
@@ -18,6 +22,11 @@ export const OutputContainer = ({}) => {
 
   const dispatch = useDispatch()
 
+  const showValue =
+    bridgeQuote?.outputAmountString === '0'
+      ? ''
+      : bridgeQuote?.outputAmountString
+
   useEffect(() => {
     setAddress(isConnectedAddress)
   }, [isConnectedAddress])
@@ -25,7 +34,7 @@ export const OutputContainer = ({}) => {
   // update address for destination address if we have a destination address
 
   return (
-    <BridgeContainer>
+    <BridgeSectionContainer>
       <div className="flex items-center justify-between">
         <ToChainSelector />
         {/* {address && (
@@ -35,34 +44,15 @@ export const OutputContainer = ({}) => {
         )} */}
       </div>
 
-      <BridgeCardTokenInput>
+      <BridgeAmountContainer>
         <ToTokenSelector />
-        {isLoading ? (
-          <LoadingDots className="opacity-50" />
-        ) : (
-          <input
-            pattern="[0-9.]+"
-            disabled={true}
-            className={`
-              focus:outline-none focus:ring-0 focus:border-none
-              border-none
-              p-0 flex-1
-              bg-transparent
-              placeholder:text-[#88818C]
-              text-white text-opacity-80 text-xl md:text-2xl font-medium
-            `}
-            placeholder="0.0000"
-            value={
-              bridgeQuote?.outputAmountString === '0'
-                ? ''
-                : bridgeQuote?.outputAmountString
-            }
-            name="inputRow"
-            autoComplete="off"
-          />
-        )}
-      </BridgeCardTokenInput>
-    </BridgeContainer>
+        <AmountInput
+          disabled={true}
+          showValue={showValue}
+          isLoading={isLoading}
+        />
+      </BridgeAmountContainer>
+    </BridgeSectionContainer>
   )
 }
 

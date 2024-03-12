@@ -8,7 +8,7 @@ import {
   getBorderStyleForCoinHover,
   getMenuItemHoverBgForCoin,
 } from '@/styles/tokens'
-import { BridgeTokenSelector } from '../ui/BridgeCard'
+import { TokenSelector } from '../ui/BridgeCardComponents'
 
 export const FromTokenSelector = () => {
   const dispatch = useDispatch()
@@ -16,7 +16,7 @@ export const FromTokenSelector = () => {
   const { fromToken } = useBridgeState()
 
   return (
-    <BridgeTokenSelector
+    <TokenSelector
       dataTestId="bridge-origin-token"
       token={fromToken}
       placeholder="In"

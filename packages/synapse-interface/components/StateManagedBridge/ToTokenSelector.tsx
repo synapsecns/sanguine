@@ -2,7 +2,7 @@ import React from 'react'
 import { useDispatch } from 'react-redux'
 import { setShowToTokenListOverlay } from '@/slices/bridgeDisplaySlice'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { BridgeTokenSelector } from '../ui/BridgeCard'
+import { TokenSelector } from '../ui/BridgeCardComponents'
 
 export const ToTokenSelector = () => {
   const dispatch = useDispatch()
@@ -10,7 +10,7 @@ export const ToTokenSelector = () => {
   const { toToken } = useBridgeState()
 
   return (
-    <BridgeTokenSelector
+    <TokenSelector
       dataTestId="bridge-destination-token"
       token={toToken}
       placeholder="Out"
