@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "build": "curl -Lo mdbook.tar.gz https://github.com/rust-lang/mdBook/releases/download/v0.4.32/mdbook-v0.4.32-x86_64-unknown-linux-musl.tar.gz; tar -xvzf mdbook.tar.gz; ./mdbook build --dest-dir build"
+  }
+}

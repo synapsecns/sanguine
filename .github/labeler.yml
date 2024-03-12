@@ -14,7 +14,7 @@ M-integration:
   - any: ['integration-tests/**/*']
 
 M-contracts:
-  - any: ['packages/contracts-core/**/*']
+  - any: ['packages/contracts-core/**/*', 'packages/contracts-interchain/**/*']
 
 M-explorer-ui:
   - any: ['packages/explorer-ui/**/*']

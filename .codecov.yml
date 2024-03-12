@@ -84,6 +84,7 @@ flags:
   solidity-core:
     paths:
       - packages/contracts-core/
+      - packages/contracts-interchain/
     carryforward: true
   solidity-rfq:
     paths:
@@ -113,6 +114,8 @@ ignore:
   - 'packages/contracts-core/contracts/libs/*.sol'
   - 'packages/contracts-core/script/**.sol'
   - 'packages/contracts-core/test/**.sol'
+  - 'packages/contracts-interchain/script/**.sol'
+  - 'packages/contracts-interchain/test/**.sol'
   - 'services/scribe/grpc/client/*'
   - '**/graphql/server/graph/resolver/*'
   - '**/mocks/**.go'
