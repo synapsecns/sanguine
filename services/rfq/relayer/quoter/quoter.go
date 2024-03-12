@@ -65,6 +65,9 @@ type Manager struct {
 	quotableTokens map[string][]string
 	// simpleScreener is used to screen addresses.
 	screener client.ScreenerClient
+	// relayPaused is set when the RFQ API is found to be offline, which
+	// lets the quoter indicate that quotes should not be relayed.
+	relayPaused bool
 }
 
 // NewQuoterManager creates a new QuoterManager.
@@ -124,6 +127,11 @@ func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequ
 		span.AddEvent("result", trace.WithAttributes(attribute.Bool("result", res)))
 		metrics.EndSpanWithErr(span, err)
 	}()
+
+	if m.relayPaused {
+		span.AddEvent("relayPaused is set due to RFQ API being offline")
+		return false, nil
+	}
 
 	if m.screener != nil {
 		blocked, err := m.screener.ScreenAddress(ctx, screenerRuleset, quote.Transaction.OriginSender.String())
@@ -196,7 +204,7 @@ func (m *Manager) IsProfitable(parentCtx context.Context, quote reldb.QuoteReque
 
 // SubmitAllQuotes submits all quotes to the RFQ API.
 func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
-	ctx, span := m.metricsHandler.Tracer().Start(ctx, "submitQuotes")
+	ctx, span := m.metricsHandler.Tracer().Start(ctx, "SubmitAllQuotes")
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
@@ -209,7 +217,12 @@ func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 }
 
 // Prepares and submits quotes based on inventory.
-func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[common.Address]*big.Int) error {
+func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[common.Address]*big.Int) (err error) {
+	ctx, span := m.metricsHandler.Tracer().Start(ctx, "prepareAndSubmitQuotes")
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	var allQuotes []model.PutQuoteRequest
 
 	// First, generate all quotes
@@ -226,9 +239,22 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 	// Now, submit all the generated quotes
 	for _, quote := range allQuotes {
 		if err := m.submitQuote(quote); err != nil {
+			span.AddEvent("error submitting quote; setting relayPaused to true", trace.WithAttributes(
+				attribute.String("error", err.Error()),
+				attribute.Int(metrics.Origin, quote.OriginChainID),
+				attribute.Int(metrics.Destination, quote.DestChainID),
+				attribute.String("origin_token_addr", quote.OriginTokenAddr),
+				attribute.String("dest_token_addr", quote.DestTokenAddr),
+				attribute.String("max_origin_amount", quote.MaxOriginAmount),
+				attribute.String("dest_amount", quote.DestAmount),
+			))
+			m.relayPaused = true
 			return err
 		}
 	}
+
+	// We successfully submitted all quotes, so we can set relayPaused to false
+	m.relayPaused = false
 
 	return nil
 }
