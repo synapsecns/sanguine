@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-const BANNER_VERSION = '6'
+const BANNER_VERSION = '7'
 
 export const Banner = () => {
   const [hasMounted, setHasMounted] = useState(false)
@@ -225,9 +225,9 @@ export const InterruptedServiceBanner = () => {
           <div className="container mx-auto">
             <p className="text-md">
               <div>
-                Optimism + Base Bridging and RFQ will be paused 10 minutes ahead
-                of Ecotone (March 14, 00:00 UTC), and unpause about 10 minutes
-                after the upgrade.
+                Due to a Metis upgrade, bridging to and from Metis will pause 30
+                minutes ahead of March 14, 02:00 UTC, and stay paused for ~12
+                hours.
               </div>
             </p>
           </div>
