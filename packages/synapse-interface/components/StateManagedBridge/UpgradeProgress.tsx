@@ -1,6 +1,10 @@
 import { AnimatedProgressBar } from '../_Transaction/components/AnimatedProgressBar'
 
-export const useUpgradeProgressBar = (startTime: Date, endTime: Date) => {
+export const useUpgradeProgressBar = (
+  eventLabel: string,
+  startTime: Date,
+  endTime: Date
+) => {
   const currentDate = new Date()
   const currentTimeInSeconds = currentDate.getTime() / 1000
 
@@ -34,6 +38,7 @@ export const useUpgradeProgressBar = (startTime: Date, endTime: Date) => {
     UpgradeProgressBar: (
       <>
         <UpgradeProgressBar
+          eventLabel={eventLabel}
           startTime={startTimeInSeconds}
           endTime={endTimeInSeconds}
           status={status}
@@ -51,38 +56,18 @@ export const useUpgradeProgressBar = (startTime: Date, endTime: Date) => {
 // const startDate = new Date(Date.UTC(2024, 2, 13, 13, 40, 0))
 // const endDate = new Date(Date.UTC(2024, 2, 12, 14, 25, 0))
 export const UpgradeProgressBar = ({
+  eventLabel,
   startTime,
   endTime,
   status,
   timeRemaining,
 }: {
+  eventLabel: string
   startTime: number
   endTime: number
   status: 'idle' | 'pending' | 'complete'
   timeRemaining: number
 }) => {
-  // const currentDate = new Date()
-  // const currentTimeInSeconds = currentDate.getTime() / 1000
-
-  // /** Testing countdown, remove after testing */
-  // const startDate = new Date(Date.UTC(2024, 2, 12, 22, 30, 0))
-  // const endDate = new Date(Date.UTC(2024, 2, 12, 23, 30, 0))
-  // /** Testing countdown, remove after testing */
-
-  // const startTimeInSeconds = startDate.getTime() / 1000
-  // const endTimeInSeconds = endDate.getTime() / 1000
-
-  // const timeRemaining = endDate.getTime() - currentDate.getTime()
-  // const timeRemainingInMinutes = Math.floor(timeRemaining / (1000 * 60))
-
-  // const isStarted = currentTimeInSeconds > startTimeInSeconds
-  // const isComplete = timeRemaining <= 0
-
-  // console.log('timeRemainingInMinutes:', timeRemainingInMinutes)
-  // console.log('currentTimeInSeconds:', currentTimeInSeconds)
-  // console.log('startTimeInSeconds:', startTimeInSeconds)
-  // console.log('isStarted: ', isStarted)
-
   if (status === 'pending') {
     return (
       <div
@@ -93,7 +78,7 @@ export const UpgradeProgressBar = ({
         `}
       >
         <div className="flex justify-between px-3 py-2">
-          <div>Dencun upgrade in progress</div>
+          <div>{eventLabel}</div>
           <div>{timeRemaining}m remaining</div>
         </div>
         <div className="px-1">
