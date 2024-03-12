@@ -107,7 +107,7 @@ export const BridgeTransactionButton = ({
     PAUSED_TO_CHAIN_IDS.includes(toChainId)
   ) {
     buttonProperties = {
-      label: `Bridge unavailable`,
+      label: `Bridge on selected chain unavailable`,
       onClick: null,
     }
   } else if (!fromToken) {

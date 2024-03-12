@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-const BANNER_VERSION = '5'
+const BANNER_VERSION = '6'
 
 export const Banner = () => {
   const [hasMounted, setHasMounted] = useState(false)
@@ -225,9 +225,9 @@ export const InterruptedServiceBanner = () => {
           <div className="container mx-auto">
             <p className="text-md">
               <div>
-                The Bridge + RFQ will be globally offline 15mins ahead of the
-                Dencun upgrade (March 13, 13:55 UTC, 9:55 EST). Will be back
-                online about 15 - 30 mins after Dencun.
+                Optimism + Base Bridging and RFQ will be paused 10 minutes ahead
+                of Ecotone (March 14, 00:00 UTC), and unpause about 10 minutes
+                after the upgrade.
               </div>
             </p>
           </div>

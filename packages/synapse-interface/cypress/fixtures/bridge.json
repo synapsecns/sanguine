@@ -1,13 +1,12 @@
 {
   "defaultOriginToken": "ETH",
   "defaultDestinationToken": "ETH",
-  "totalAvailableNetworks": 20,
+  "totalAvailableNetworks": 18,
   "availableNetworks": [
     "Arbitrum",
     "Aurora",
     "Avalanche",
     "BNB Chain",
-    "Base",
     "Blast",
     "Boba Chain",
     "Canto",
@@ -21,7 +20,6 @@
     "Metis",
     "Moonbeam",
     "Moonriver",
-    "Optimism",
     "Polygon"
   ]
 }
