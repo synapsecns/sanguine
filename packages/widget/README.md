@@ -76,6 +76,20 @@ A short name for users of the widget to identify the protocol. Optional. If not 
 - A list of `targetTokens` can be found [here](https://github.com/synapsecns/sanguine/blob/master/packages/widget/src/constants/bridgeable.ts)
 - A list of Synapse Protocol supported chains can be found [here](https://github.com/synapsecns/sanguine/blob/master/packages/widget/src/constants/chains.ts)
 
+## web3Provider prop (required)
+
+ethers v6
+
+```ts
+const web3Provider = new ethers.BrowserProvider(window.ethereum)
+```
+
+ethers v5
+
+```ts
+const web3Provider = new ethers.providers.Web3Provider(window.ethereum, 'any')
+```
+
 ## Enhanced and Reliable Performance
 
 The bridge widget is a React component designed for straightforward integration into any React-based project. Engineered for immediate functionality, and apart from a `web3Provider`, it requires no initial parameters or web3 setup to begin operation. The widget facilitates bridging across all networks where the Synapse Protocol is active.
@@ -201,14 +215,6 @@ The widget additionally supports a `container` property of `true` or `false` to 
 
 ```tsx
 <Bridge web3Provider={web3Provider} container={true} />
-```
-
-## Using ethers v5
-
-If using ethers v5, you can call the browser provider as follows
-
-```ts
-const web3Provider = new ethers.providers.Web3Provider(window.ethereum, 'any')
 ```
 
 ## Example Apps
