@@ -43,7 +43,11 @@ func NewCircleCCTPHandler(ctx context.Context, cfg config.Config, db db2.CCTPRel
 		if err != nil {
 			return nil, fmt.Errorf("could not get client: %w", err)
 		}
-		boundMessageTransmitters[chain.ChainID], err = messagetransmitter.NewMessageTransmitter(chain.GetMessageTransmitterAddress(), cl)
+		transmitterAddr, err := GetMessageTransmitterAddress(ctx, chain.GetTokenMessengerAddress(), cl)
+		if err != nil {
+			return nil, fmt.Errorf("could not get message transmitter address: %w", err)
+		}
+		boundMessageTransmitters[chain.ChainID], err = messagetransmitter.NewMessageTransmitter(transmitterAddr, cl)
 		if err != nil {
 			return nil, fmt.Errorf("could not build bound contract: %w", err)
 		}
@@ -354,7 +358,11 @@ func (c *circleCCTPHandler) handleMessageReceived(ctx context.Context, log *type
 
 // getMessagePayload gets the message payload from a MessageTransmitter event by fetching the transaction receipt.
 func (c *circleCCTPHandler) getMessagePayload(ctx context.Context, txHash common.Hash, chainID uint32, ethClient client.EVM) (message []byte, err error) {
-	parser, err := messagetransmitter.NewMessageTransmitterFilterer(c.cfg.Chains[chainID].GetMessageTransmitterAddress(), ethClient)
+	transmitterAddr, err := GetMessageTransmitterAddress(ctx, c.cfg.Chains[chainID].GetTokenMessengerAddress(), ethClient)
+	if err != nil {
+		return nil, fmt.Errorf("could not get message transmitter address: %w", err)
+	}
+	parser, err := messagetransmitter.NewMessageTransmitterFilterer(transmitterAddr, ethClient)
 	if err != nil {
 		return nil, fmt.Errorf("could not create depositForBurn event parser: %w", err)
 	}

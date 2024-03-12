@@ -1,11 +1,15 @@
 package relayer
 
 import (
+	"context"
 	"encoding/binary"
 	"errors"
 	"fmt"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/synapsecns/sanguine/ethergo/client"
+	tokenmessenger "github.com/synapsecns/sanguine/services/cctp-relayer/contracts/tokenmessenger"
 )
 
 // destinationDomainIndex is the index of the destination domain in the formatted CCTP message.
@@ -81,4 +85,17 @@ func Bytes32ToAddress(bytes32 [32]byte) common.Address {
 // GetCircleRequestID returns a request ID from a source domain and nonce.
 func GetCircleRequestID(sourceDomain uint32, nonce uint64) string {
 	return fmt.Sprintf("%d-%d", sourceDomain, nonce)
+}
+
+// GetMessageTransmitterAddress gets the message transmitter address from a token messenger contract.
+func GetMessageTransmitterAddress(ctx context.Context, tokenMessengerAddr common.Address, ethClient client.EVM) (transmitterAddr common.Address, err error) {
+	messengerContract, err := tokenmessenger.NewTokenMessenger(tokenMessengerAddr, ethClient)
+	if err != nil {
+		return transmitterAddr, fmt.Errorf("could not get token messenger contract: %w", err)
+	}
+	transmitterAddr, err = messengerContract.LocalMessageTransmitter(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return transmitterAddr, fmt.Errorf("could not get local message transmitter: %w", err)
+	}
+	return transmitterAddr, nil
 }

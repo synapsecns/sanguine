@@ -3,6 +3,7 @@ package relayer
 import (
 	"context"
 	"fmt"
+	"math/big"
 	"strconv"
 	"sync"
 	"time"
@@ -294,16 +295,32 @@ func (c *CCTPRelayer) Run(parentCtx context.Context) error {
 	// Listen for USDC burn events on origin chains.
 	for _, chain := range c.cfg.Chains {
 		chain := chain
-		g.Go(func() error {
-			cctpType, _ := c.cfg.GetCCTPType()
-			switch cctpType {
-			case relayTypes.SynapseMessageType:
+		cctpType, _ := c.cfg.GetCCTPType()
+		switch cctpType {
+		case relayTypes.SynapseMessageType:
+			g.Go(func() error {
+				// listen for CircleRequestSentEvent,CircleRequestFulfilledEvent
 				return c.streamLogs(ctx, c.grpcClient, c.grpcConn, chain.ChainID, chain.GetSynapseCCTPAddress().Hex(), nil)
-			case relayTypes.CircleMessageType:
+			})
+		case relayTypes.CircleMessageType:
+			g.Go(func() error {
+				// listen for DepositForBurnEvent
 				return c.streamLogs(ctx, c.grpcClient, c.grpcConn, chain.ChainID, chain.GetTokenMessengerAddress().Hex(), nil)
-			}
-			return fmt.Errorf("invalid cctp type: %s", cctpType.String())
-		})
+			})
+			g.Go(func() error {
+				// listen for MessageReceivedEvent
+				ethClient, err := c.omnirpcClient.GetClient(ctx, big.NewInt(int64(chain.ChainID)))
+				if err != nil {
+					return fmt.Errorf("could not get eth client: %w", err)
+				}
+				transmitterAddr, err := GetMessageTransmitterAddress(ctx, chain.GetTokenMessengerAddress(), ethClient)
+				if err != nil {
+					return fmt.Errorf("could not get message transmitter address: %w", err)
+				}
+				return c.streamLogs(ctx, c.grpcClient, c.grpcConn, chain.ChainID, transmitterAddr.Hex(), nil)
+			})
+		}
+		return fmt.Errorf("invalid cctp type: %s", cctpType.String())
 	}
 
 	g.Go(func() error {
