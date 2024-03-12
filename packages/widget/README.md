@@ -203,6 +203,14 @@ The widget additionally supports a `container` property of `true` or `false` to 
 <Bridge web3Provider={web3Provider} container={true} />
 ```
 
+## Using ethers v5
+
+If using ethers v5, you can call the browser provider as follows
+
+```ts
+const web3Provider = new ethers.providers.Web3Provider(window.ethereum, 'any')
+```
+
 ## Example Apps
 
 Within the repository's `/examples` folder, there are three example apps. The `landing-page` folder contains a fully functional demo with customizations of the widget. The `with-react` and `with-next` folders contain a simple implementation of the widget using React and Next.js, respectively.
