@@ -30,24 +30,24 @@ const useSyncQueryParamsWithBridgeState = () => {
     const fromTokenParam = urlParams.get('fromToken')
     const toTokenParam = urlParams.get('toToken')
 
-    if (fromChainParam !== null) {
+    if (fromChainParam !== null && Number(fromChainParam) !== fromChainId) {
       if (allowedFromChainIds.includes(Number(fromChainParam))) {
         dispatch(setFromChainId(Number(fromChainParam)))
       }
     }
 
-    if (fromTokenParam !== null) {
+    if (fromTokenParam !== null && fromTokenParam !== fromToken?.symbol) {
       const token = findKeyByRouteSymbol(fromTokenParam, BRIDGEABLE)
       dispatch(setFromToken(token))
     }
 
-    if (toChainParam !== null) {
+    if (toChainParam !== null && Number(toChainParam) !== toChainId) {
       if (allowedToChainIds.includes(Number(toChainParam))) {
         dispatch(setToChainId(Number(toChainParam)))
       }
     }
 
-    if (toTokenParam !== null) {
+    if (toTokenParam !== null && toTokenParam !== toToken?.symbol) {
       const token = findKeyByRouteSymbol(toTokenParam, BRIDGEABLE)
       dispatch(setToToken(token))
     }

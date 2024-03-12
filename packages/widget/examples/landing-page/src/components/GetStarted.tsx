@@ -4,6 +4,9 @@ const getStartedCodeBlock = `
   const MyApp = () => {
     const web3Provider = new ethers.BrowserProvider(window.ethereum)
 
+    // If you are using ethers v5:
+    // const web3Provider = new ethers.providers.Web3Provider(window.ethereum, 'any')
+
     return (
       <Bridge
         web3Provider={web3Provider}
@@ -21,14 +24,15 @@ export const GetStarted = () => {
         widget.{' '}
       </p>
       <p>
-        While this demo uses a provider from the <code>ethers</code> library, the component supports any similar provider:
+        While this demo uses a provider from the <code>ethers</code> library,
+        the component supports any similar provider:
       </p>
       <pre>{getStartedCodeBlock}</pre>
       <p>
         Your site should now display a fully operational bridge widget
         integrating the routes and tokens supported by the Synapse protocol. By
-        utilizing Synapse's multiple routers, you'll receive the best
-        quotes for your bridging use case.
+        utilizing Synapse's multiple routers, you'll receive the best quotes for
+        your bridging use case.
       </p>
     </>
   )
