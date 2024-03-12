@@ -5,6 +5,30 @@ import {
 } from '@/styles/tokens'
 import LoadingDots from './tailwind/LoadingDots'
 
+type TokenSelectorTypes = {
+  dataTestId?: string
+  token: any // TODO: Proper typing
+  placeholder: string
+  onClick: () => void
+}
+
+type AmountInputTypes = {
+  inputRef?: React.RefObject<HTMLInputElement>
+  disabled?: boolean
+  hasMounted?: boolean
+  isConnected?: boolean
+  isLoading?: boolean
+  showValue: string
+  handleFromValueChange?: (event: React.ChangeEvent<HTMLInputElement>) => void
+  parsedBalance?: string
+  onMaxBalance?: () => void
+}
+
+type MaxButtonTypes = {
+  disabled: boolean
+  onClickBalance: () => void
+}
+
 const join = (a) => Object.values(a).join(' ')
 
 export function BridgeCard({ children }) {
@@ -47,12 +71,7 @@ export function TokenSelector({
   token,
   placeholder,
   onClick,
-}: {
-  dataTestId?: string
-  token: any // TODO: Proper typing
-  placeholder: string
-  onClick: () => void
-}) {
+}: TokenSelectorTypes) {
   const className = join({
     space: 'flex items-center gap-2 p-2 rounded flex-none',
     text: 'text-lg',
@@ -88,17 +107,7 @@ export function AmountInput({
   handleFromValueChange,
   parsedBalance,
   onMaxBalance,
-}: {
-  inputRef?: React.RefObject<HTMLInputElement>
-  disabled?: boolean
-  hasMounted?: boolean
-  isConnected?: boolean
-  isLoading?: boolean
-  showValue: string
-  handleFromValueChange?: (event: React.ChangeEvent<HTMLInputElement>) => void
-  parsedBalance?: string
-  onMaxBalance?: () => void
-}) {
+}: AmountInputTypes) {
   const inputClassName = join({
     space: 'p-0 w-full',
     bgColor: 'bg-transparent',
@@ -122,7 +131,7 @@ export function AmountInput({
       ) : (
         <input
           ref={inputRef}
-          pattern="^[0-9]*[.,]?[0-9]*$"
+          pattern={disabled ? '[0-9.]+' : '^[0-9]*[.,]?[0-9]*$'}
           disabled={disabled}
           readOnly={disabled}
           className={inputClassName}
@@ -149,13 +158,7 @@ export function AmountInput({
   )
 }
 
-export function MaxButton({
-  onClickBalance,
-  disabled,
-}: {
-  onClickBalance: () => void
-  disabled: boolean
-}) {
+export function MaxButton({ disabled, onClickBalance }: MaxButtonTypes) {
   const className = join({
     space: 'px-4 py-1 mr-1 rounded',
     bgColor: 'bg-[#565058]', // NEW: 'bg-zinc-100 dark:bg-zinc-700',
