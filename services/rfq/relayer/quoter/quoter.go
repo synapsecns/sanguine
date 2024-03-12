@@ -249,7 +249,9 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 				attribute.String("dest_amount", quote.DestAmount),
 			))
 			m.relayPaused = true
-			return err
+
+			// Suppress error so that we can continue submitting quotes
+			return nil
 		}
 	}
 
