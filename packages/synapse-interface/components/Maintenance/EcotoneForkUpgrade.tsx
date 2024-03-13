@@ -13,7 +13,7 @@ export const ECOTONE_FORK_BANNERS_START = new Date(
 export const ECOTONE_FORK_START_DATE = new Date(
   Date.UTC(2024, 2, 13, 23, 50, 0)
 )
-export const ECOTONE_FORK_END_DATE = new Date(Date.UTC(2024, 2, 13, 24, 10, 0))
+export const ECOTONE_FORK_END_DATE = new Date(Date.UTC(2024, 2, 14, 0, 10, 0))
 
 export const EcotoneForkUpgradeBanner = () => {
   return (
