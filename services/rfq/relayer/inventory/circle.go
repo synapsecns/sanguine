@@ -306,7 +306,7 @@ func (c *rebalanceManagerCircleCCTP) handleDepositForBurn(ctx context.Context, l
 }
 
 func (c *rebalanceManagerCircleCCTP) handleMessageReceived(ctx context.Context, log types.Log, chainID int, ethClient client.EVM) (err error) {
-	ctx, span := c.handler.Tracer().Start(ctx, "rebalance.handleDepositForBurn")
+	ctx, span := c.handler.Tracer().Start(ctx, "rebalance.handleMessageReceived")
 	defer func(err error) {
 		metrics.EndSpanWithErr(span, err)
 	}(err)

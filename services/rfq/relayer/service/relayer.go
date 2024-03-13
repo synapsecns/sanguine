@@ -146,17 +146,11 @@ const defaultPostInterval = 1
 // 3. Start the db selector: This will check the db for any requests that need to be processed.
 // 4. Start the submitter: This will submit any transactions that need to be submitted.
 // nolint: cyclop
-func (r *Relayer) Start(parentCtx context.Context) (err error) {
-	ctx, span := r.metrics.Tracer().Start(parentCtx, "rfqRelayer.Start")
-	defer func() {
-		metrics.EndSpanWithErr(span, err)
-	}()
-
+func (r *Relayer) Start(ctx context.Context) (err error) {
 	err = r.inventory.ApproveAllTokens(ctx)
 	if err != nil {
 		return fmt.Errorf("could not approve all tokens: %w", err)
 	}
-	span.AddEvent("approved all tokens")
 
 	g, ctx := errgroup.WithContext(ctx)
 	g.Go(func() error {
