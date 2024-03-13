@@ -527,8 +527,8 @@ const StateManagedBridge = () => {
   // const endDate = new Date(Date.UTC(2024, 2, 12, 14, 25, 0))
 
   /** Test values, remove after testing */
-  const startDate = new Date(Date.UTC(2024, 2, 13, 1, 40, 0))
-  const endDate = new Date(Date.UTC(2024, 2, 13, 1, 42, 0))
+  const startDate = new Date(Date.UTC(2024, 2, 13, 1, 50, 0))
+  const endDate = new Date(Date.UTC(2024, 2, 13, 1, 60, 0))
   /** Test values, remove after testing */
 
   const { isStarted, isComplete, UpgradeProgressBar } = useUpgradeProgressBar(

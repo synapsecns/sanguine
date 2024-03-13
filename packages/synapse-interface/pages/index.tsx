@@ -15,6 +15,9 @@ ReactGA.initialize(TRACKING_ID)
 const Home = () => {
   useSyncQueryParamsWithBridgeState()
 
+  const startDate = new Date(Date.UTC(2024, 2, 13, 1, 50, 0))
+  const endDate = new Date(Date.UTC(2024, 2, 13, 1, 60, 0))
+
   return (
     <LandingPageWrapper>
       <main
@@ -32,8 +35,8 @@ const Home = () => {
               online about 15 - 30 mins after Dencun.
             </div>
           }
-          startDate={new Date(Date.UTC(2024, 2, 12, 24, 20, 0))}
-          endDate={new Date(Date.UTC(2024, 2, 12, 24, 55, 0))}
+          startDate={startDate}
+          endDate={endDate}
         />
         <div className="flex flex-col-reverse justify-center gap-16 px-4 py-20 mx-auto lg:flex-row 2xl:w-3/4 sm:mt-6 sm:px-8 md:px-12">
           <Portfolio />
