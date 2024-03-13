@@ -77,7 +77,7 @@ export const UpgradeProgressBar = ({
         </div>
         <div className="px-1">
           <LinearAnimatedProgressBar
-            id="eth-dencun-countdown"
+            id="linear-animated-progress-bar"
             startTime={startTime}
             endTime={endTime}
             status={status}
