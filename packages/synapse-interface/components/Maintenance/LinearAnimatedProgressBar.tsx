@@ -20,22 +20,14 @@ export const LinearAnimatedProgressBar = memo(
     status: 'idle' | 'pending' | 'complete'
   }) => {
     const currentTime = getTimeMinutesBeforeNow(0)
+
     const elapsedTimeInSeconds = currentTime - startTime
     const remainingTimeInSeconds = endTime - currentTime
     const totalTimeInSeconds = endTime - startTime
 
-    const elapsedTimeInMin = elapsedTimeInSeconds / 60
-    const remainingTimeInMin = remainingTimeInSeconds / 60
     const totalTimeInMin = totalTimeInSeconds / 60
 
     const percentElapsed = (elapsedTimeInSeconds / totalTimeInSeconds) * 100
-
-    console.log('currentTime:', currentTime)
-    console.log('startTime:', startTime)
-
-    console.log('elapsedTimeInMin:', elapsedTimeInMin)
-
-    console.log('percentElapsed:', percentElapsed)
 
     const isComplete = status === 'complete'
 
@@ -79,20 +71,12 @@ export const LinearAnimatedProgressBar = memo(
           </linearGradient>
           <clipPath id={maskId}>
             <rect height="100%">
-              {/* <animate
-                attributeName="width"
-                values={`${isComplete ? 100 : percentElapsed}%; 100%`}
-                dur={duration}
-                fill="freeze"
-                calcMode={isComplete ? 'linear' : null}
-                keySplines=".8 0 .2 1"
-              /> */}
               <animate
                 attributeName="width"
                 values={`${isComplete ? 100 : percentElapsed}%`}
                 dur={`${totalTimeInMin}min`}
                 fill="freeze"
-                calcMode={isComplete ? 'linear' : null}
+                calcMode={'linear'}
               />
             </rect>
           </clipPath>

@@ -13,23 +13,21 @@ export const useUpgradeProgressBar = (
   const endDate = new Date(Date.UTC(2024, 2, 12, 24, 30, 0))
   /** Testing countdown, remove after testing */
 
-  console.log('startDate:', startDate)
-
   const startTimeInSeconds = Math.floor(startDate.getTime() / 1000)
   const endTimeInSeconds = Math.floor(endDate.getTime() / 1000)
 
-  const timeRemaining = endDate.getTime() - currentDate.getTime()
-  const timeRemainingInMinutes = Math.floor(timeRemaining / (1000 * 60))
+  const timeRemainingInSeconds = endDate.getTime() - currentDate.getTime()
+  const timeRemainingInMinutes = Math.floor(
+    timeRemainingInSeconds / (1000 * 60)
+  )
 
   const totalTimeInSeconds = endTimeInSeconds - startTimeInSeconds
   const totalTimeInMin = totalTimeInSeconds / 60
 
-  console.log('timeRemainingInMinutes:', timeRemainingInMinutes)
-
   let status: 'idle' | 'pending' | 'complete'
 
   const isStarted = currentTimeInSeconds > startTimeInSeconds
-  const isComplete = timeRemaining <= 0
+  const isComplete = timeRemainingInSeconds <= 0
 
   if (isComplete) {
     status = 'complete'
