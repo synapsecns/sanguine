@@ -168,7 +168,7 @@ func (e *Executor) executeTransaction(ctx context.Context, request db.Transactio
 		return fmt.Errorf("could not get contract for chain %d", request.SrcChainID.Int64())
 	}
 
-	nonce, err := e.submitter.SubmitTransaction(ctx, request.DstChainID, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+	_, err := e.submitter.SubmitTransaction(ctx, request.DstChainID, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		transactor.GasLimit = request.Options.GasLimit.Uint64()
 		transactor.Value = request.Options.GasAirdrop
 
@@ -177,25 +177,6 @@ func (e *Executor) executeTransaction(ctx context.Context, request db.Transactio
 	if err != nil {
 		return fmt.Errorf("could not submit transaction: %w", err)
 	}
-
-	go func() {
-		for {
-			time.Sleep(time.Second * 1)
-
-			stat, _ := e.submitter.GetSubmissionStatus(ctx, request.DstChainID, nonce)
-			if stat.TxHash().String() != (common.Hash{}).String() {
-				fmt.Println("tx hash: ", stat.TxHash().String())
-
-				re, err := e.client.GetClient(ctx, big.NewInt(request.DstChainID.Int64()))
-				_ = err
-				recp, err := re.TransactionReceipt(ctx, stat.TxHash())
-				_ = err
-
-				fmt.Println(recp)
-			}
-		}
-
-	}()
 
 	err = e.db.UpdateInterchainTransactionStatus(ctx, request.TransactionID, db.Executed)
 	if err != nil {

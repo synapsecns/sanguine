@@ -80,5 +80,5 @@ func (i *InterchainSuite) TestE2E() {
 			i.destChain.GetFundedAccount(i.GetTestContext(), big.NewInt(1))
 		}
 	}()
-	time.Sleep(time.Minute * 10)
+	time.Sleep(time.Minute * 1)
 }
