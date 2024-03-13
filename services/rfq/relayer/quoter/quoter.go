@@ -265,71 +265,91 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 // Essentially, if we know a destination chain token balance, then we just need to find which tokens are bridgeable to it.
 // We can do this by looking at the quotableTokens map, and finding the key that matches the destination chain token.
 // Generates quotes for a given chain ID, address, and balance.
-func (m *Manager) generateQuotes(ctx context.Context, chainID int, address common.Address, balance *big.Int) ([]model.PutQuoteRequest, error) {
+func (m *Manager) generateQuotes(parentCtx context.Context, chainID int, address common.Address, balance *big.Int) (quotes []model.PutQuoteRequest, err error) {
+	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "generateQuotes", trace.WithAttributes(
+		attribute.Int(metrics.Origin, chainID),
+		attribute.String("address", address.String()),
+		attribute.String("balance", balance.String()),
+	))
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	destRFQAddr, err := m.config.GetRFQAddress(chainID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting destination RFQ address: %w", err)
 	}
 
 	destTokenID := fmt.Sprintf("%d-%s", chainID, address.Hex())
-
-	var quotes []model.PutQuoteRequest
+	quotes = []model.PutQuoteRequest{}
 	for keyTokenID, itemTokenIDs := range m.quotableTokens {
 		for _, tokenID := range itemTokenIDs {
 			//nolint:nestif
 			if tokenID == destTokenID {
-				// Parse token info
-				originStr := strings.Split(keyTokenID, "-")[0]
-				origin, err := strconv.Atoi(originStr)
-				if err != nil {
-					return nil, fmt.Errorf("error converting origin chainID: %w", err)
+				quote, quoteErr := m.generateQuote(ctx, keyTokenID, chainID, address, balance, destRFQAddr)
+				if quoteErr != nil {
+					// continue generating quotes even if one fails
+					span.AddEvent("error generating quote", trace.WithAttributes(
+						attribute.String("key_token_id", keyTokenID),
+					))
+					continue
 				}
-				originTokenAddr := common.HexToAddress(strings.Split(keyTokenID, "-")[1])
-
-				// Calculate the quote amount for this route
-				quoteAmount, err := m.getQuoteAmount(ctx, origin, chainID, address, balance)
-				// don't quote if gas exceeds quote
-				if errors.Is(err, errMinGasExceedsQuoteAmount) {
-					quoteAmount = big.NewInt(0)
-				} else if err != nil {
-					return nil, err
-				}
-
-				// Calculate the fee for this route
-				destToken, err := m.config.GetTokenName(uint32(chainID), address.Hex())
-				if err != nil {
-					return nil, fmt.Errorf("error getting dest token ID: %w", err)
-				}
-				fee, err := m.feePricer.GetTotalFee(ctx, uint32(origin), uint32(chainID), destToken, true)
-				if err != nil {
-					return nil, fmt.Errorf("error getting total fee: %w", err)
-				}
-				originRFQAddr, err := m.config.GetRFQAddress(origin)
-				if err != nil {
-					return nil, fmt.Errorf("error getting RFQ address: %w", err)
-				}
-
-				// Build the quote
-				destAmount, err := m.getDestAmount(ctx, quoteAmount, chainID)
-				if err != nil {
-					return nil, fmt.Errorf("error getting dest amount: %w", err)
-				}
-				quote := model.PutQuoteRequest{
-					OriginChainID:           origin,
-					OriginTokenAddr:         originTokenAddr.Hex(),
-					DestChainID:             chainID,
-					DestTokenAddr:           address.Hex(),
-					DestAmount:              destAmount.String(),
-					MaxOriginAmount:         quoteAmount.String(),
-					FixedFee:                fee.String(),
-					OriginFastBridgeAddress: originRFQAddr,
-					DestFastBridgeAddress:   destRFQAddr,
-				}
-				quotes = append(quotes, quote)
+				quotes = append(quotes, *quote)
 			}
 		}
 	}
 	return quotes, nil
+}
+
+func (m *Manager) generateQuote(ctx context.Context, keyTokenID string, chainID int, address common.Address, balance *big.Int, destRFQAddr string) (quote *model.PutQuoteRequest, err error) {
+	// Parse token info
+	originStr := strings.Split(keyTokenID, "-")[0]
+	origin, err := strconv.Atoi(originStr)
+	if err != nil {
+		return nil, fmt.Errorf("error converting origin chainID: %w", err)
+	}
+	originTokenAddr := common.HexToAddress(strings.Split(keyTokenID, "-")[1])
+
+	// Calculate the quote amount for this route
+	quoteAmount, err := m.getQuoteAmount(ctx, origin, chainID, address, balance)
+	// don't quote if gas exceeds quote
+	if errors.Is(err, errMinGasExceedsQuoteAmount) {
+		quoteAmount = big.NewInt(0)
+	} else if err != nil {
+		return nil, err
+	}
+
+	// Calculate the fee for this route
+	destToken, err := m.config.GetTokenName(uint32(chainID), address.Hex())
+	if err != nil {
+		return nil, fmt.Errorf("error getting dest token ID: %w", err)
+	}
+	fee, err := m.feePricer.GetTotalFee(ctx, uint32(origin), uint32(chainID), destToken, true)
+	if err != nil {
+		return nil, fmt.Errorf("error getting total fee: %w", err)
+	}
+	originRFQAddr, err := m.config.GetRFQAddress(origin)
+	if err != nil {
+		return nil, fmt.Errorf("error getting RFQ address: %w", err)
+	}
+
+	// Build the quote
+	destAmount, err := m.getDestAmount(ctx, quoteAmount, chainID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting dest amount: %w", err)
+	}
+	quote = &model.PutQuoteRequest{
+		OriginChainID:           origin,
+		OriginTokenAddr:         originTokenAddr.Hex(),
+		DestChainID:             chainID,
+		DestTokenAddr:           address.Hex(),
+		DestAmount:              destAmount.String(),
+		MaxOriginAmount:         quoteAmount.String(),
+		FixedFee:                fee.String(),
+		OriginFastBridgeAddress: originRFQAddr,
+		DestFastBridgeAddress:   destRFQAddr,
+	}
+	return quote, nil
 }
 
 // getQuoteAmount calculates the quote amount for a given route.
