@@ -553,22 +553,29 @@ const StateManagedBridge = () => {
   //   METIS_DOWNTIME_END_DATE
   // )
 
-  const { isEcotoneForkUpgradePending, EcotoneForkCountdownProgressBar } =
-    useEcotoneForkCountdownProgress()
+  // const isBridgePaused = (): boolean => {
+  //   if (isEcotoneForkUpgradePending) {
+  //     if ([fromChainId, toChainId].includes(OPTIMISM.id)) return true
+  //     if ([fromChainId, toChainId].includes(BASE.id)) return true
+  //   }
+  //   if (isMetisUpgradePending) {
+  //     if ([fromChainId, toChainId].includes(METIS.id)) return true
+  //   }
+  //   return false
+  // }
 
-  const { isMetisUpgradePending, MetisUpgradeCountdownProgressBar } =
-    useMetisDowntimeCountdownProgress()
+  const {
+    isEcotoneForkUpgradePending,
+    isCurrentChainDisabled: isEcotoneUpgradeChainsDisabled,
+    EcotoneForkCountdownProgressBar,
+  } = useEcotoneForkCountdownProgress()
 
-  const isBridgePaused = (): boolean => {
-    if (isEcotoneForkUpgradePending) {
-      if ([fromChainId, toChainId].includes(OPTIMISM.id)) return true
-      if ([fromChainId, toChainId].includes(BASE.id)) return true
-    }
-    if (isMetisUpgradePending) {
-      if ([fromChainId, toChainId].includes(METIS.id)) return true
-    }
-    return false
-  }
+  const {
+    isMetisUpgradePending,
+    isCurrentChainDisabled: isMetisUpgradeChainDisabled,
+    MetisUpgradeCountdownProgressBar,
+  } = useMetisDowntimeCountdownProgress()
+
   /* Remove after upgrades */
 
   return (
@@ -672,7 +679,9 @@ const StateManagedBridge = () => {
                 isApproved={isApproved}
                 approveTxn={approveTxn}
                 executeBridge={executeBridge}
-                isBridgePaused={isBridgePaused()}
+                isBridgePaused={
+                  isEcotoneUpgradeChainsDisabled || isMetisUpgradeChainDisabled
+                }
               />
             </div>
           </div>
