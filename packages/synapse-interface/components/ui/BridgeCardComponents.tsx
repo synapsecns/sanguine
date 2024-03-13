@@ -1,7 +1,6 @@
 import { Chain, Token } from '@/utils/types'
 import { DropDownArrowSvg } from '../icons/DropDownArrowSvg'
-import { getHoverStyleForButton as getHoverStyleForToken } from '@/styles/tokens'
-import { getHoverStyleForButton as getHoverStyleforChain } from '@/styles/chains'
+import { getHoverStyleForButton } from '@/styles/hover'
 import LoadingDots from './tailwind/LoadingDots'
 
 const join = (a) => Object.values(a).join(' ')
@@ -92,7 +91,7 @@ export function TokenSelector({
     border: 'border border-zinc-200 dark:border-transparent',
     space: 'p-2 rounded flex-none',
     font: 'text-lg',
-    hover: getHoverStyleForToken(selectedItem?.color),
+    hover: getHoverStyleForButton(selectedItem?.color),
     active: 'active:opacity-75',
   })
 
@@ -126,7 +125,7 @@ export function ChainSelector({
     background: 'dark:bg-zinc-700',
     border: 'border border-zinc-200 dark:border-transparent',
     font: 'leading-tight',
-    hover: getHoverStyleforChain(selectedItem?.color),
+    hover: getHoverStyleForButton(selectedItem?.color),
     active: 'active:opacity-70',
   })
 
