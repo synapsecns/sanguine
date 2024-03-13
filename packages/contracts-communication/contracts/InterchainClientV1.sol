@@ -45,11 +45,13 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     // @inheritdoc IInterchainClientV1
     function setExecutionFees(address executionFees_) external onlyOwner {
         executionFees = executionFees_;
+        emit ExecutionFeesSet(executionFees_);
     }
 
     // @inheritdoc IInterchainClientV1
     function setLinkedClient(uint256 chainId, bytes32 client) external onlyOwner {
         _linkedClient[chainId] = client;
+        emit LinkedClientSet(chainId, client);
     }
 
     // @inheritdoc IInterchainClientV1
