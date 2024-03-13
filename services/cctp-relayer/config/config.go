@@ -112,3 +112,13 @@ func (c Config) GetCCTPType() (types.MessageType, error) {
 		return 0, fmt.Errorf("invalid cctp method: %s", c.CCTPType)
 	}
 }
+
+// GetChainConfig returns the chain config for a given chain id.
+func (c Config) GetChainConfig(chainID uint32) (cfg ChainConfig, err error) {
+	for _, chainCfg := range c.Chains {
+		if chainCfg.ChainID == chainID {
+			return chainCfg, nil
+		}
+	}
+	return cfg, fmt.Errorf("chain config not found for chain id: %d", chainID)
+}

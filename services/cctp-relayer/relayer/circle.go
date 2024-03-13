@@ -358,7 +358,11 @@ func (c *circleCCTPHandler) handleMessageReceived(parentCtx context.Context, log
 
 // getMessagePayload gets the message payload from a MessageTransmitter event by fetching the transaction receipt.
 func (c *circleCCTPHandler) getMessagePayload(ctx context.Context, txHash common.Hash, chainID uint32, ethClient client.EVM) (message []byte, err error) {
-	transmitterAddr, err := GetMessageTransmitterAddress(ctx, c.cfg.Chains[chainID].GetTokenMessengerAddress(), ethClient)
+	chainCfg, err := c.cfg.GetChainConfig(chainID)
+	if err != nil {
+		return nil, fmt.Errorf("could not get chain config: %w", err)
+	}
+	transmitterAddr, err := GetMessageTransmitterAddress(ctx, chainCfg.GetTokenMessengerAddress(), ethClient)
 	if err != nil {
 		return nil, fmt.Errorf("could not get message transmitter address: %w", err)
 	}
