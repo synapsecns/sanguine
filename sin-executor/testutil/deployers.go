@@ -103,7 +103,7 @@ var (
 	}, []contracts.ContractType{})
 
 	executionService = deployer.NewFunctionalDeployer(ExecutionService, func(ctx context.Context, helpers deployer.IFunctionalDeployer, transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		address, deployTx, iface, err := executionservice.DeployExecutionService(transactOps, backend)
+		address, deployTx, iface, err := executionservice.DeployExecutionService(transactOps, backend, transactOps.From)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy execution service: %w", err)
 		}
