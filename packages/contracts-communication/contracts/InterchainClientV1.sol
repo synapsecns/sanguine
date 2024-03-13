@@ -164,6 +164,8 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         view
         returns (uint256 fee)
     {
+        // Check that options could be decoded on destination chain
+        options.decodeOptionsV1();
         // Verification fee from InterchainDB
         fee = IInterchainDB(INTERCHAIN_DB).getInterchainFee(dstChainId, srcModules);
         // Add execution fee, if ExecutionService is provided
@@ -223,7 +225,8 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         returns (InterchainTxDescriptor memory desc)
     {
         _assertLinkedClient(dstChainId);
-        // TODO: should check options for being correctly formatted
+        // Check that options could be decoded on destination chain
+        options.decodeOptionsV1();
         uint256 verificationFee = IInterchainDB(INTERCHAIN_DB).getInterchainFee(dstChainId, srcModules);
         if (msg.value < verificationFee) {
             revert InterchainClientV1__FeeAmountTooLow(msg.value, verificationFee);
