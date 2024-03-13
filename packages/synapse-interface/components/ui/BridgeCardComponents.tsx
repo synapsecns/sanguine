@@ -35,7 +35,8 @@ export function BridgeCard({ children }) {
    */
   const className = join({
     space: 'p-4 mt-5 rounded-[.75rem]',
-    bgColor: 'bg-bgBase', // NEW: 'bg-zinc-100 dark:bg-zinc-900/95 shadow-xl',
+    // background: 'dark:bg-bgBase', // TODO: Remove
+    background: 'bg-zinc-100 dark:bg-zinc-900/95 shadow-xl',
     popoverDependencies: 'overflow-hidden transform',
   })
 
@@ -45,7 +46,8 @@ export function BridgeCard({ children }) {
 export function BridgeSectionContainer({ children }) {
   const className = join({
     space: 'grid gap-2 p-2 rounded-md',
-    bgColor: 'bg-bgLight', // NEW: 'bg-zinc-50 dark:bg-zinc-800',
+    // background: 'bg-bgLight', // TODO: Remove
+    background: 'bg-zinc-50 dark:bg-zinc-800',
     borderColor: 'border border-zinc-300 dark:border-transparent',
   })
 
@@ -71,8 +73,9 @@ export function TokenSelector({
   const className = join({
     space: 'flex items-center gap-2 p-2 rounded flex-none',
     text: 'text-lg',
-    bgColor: 'bg-[#565058]', // NEW: 'bg-inherit dark:bg-zinc-700',
-    borderColor: `border border-transparent`,
+    // background: 'bg-separator', // TODO: Remove
+    background: 'dark:bg-zinc-700',
+    border: `border border-zinc-200 dark:border-transparent`,
     bgHover: getMenuItemHoverBgForCoin(token?.color),
     borderHover: getBorderStyleForCoinHover(token?.color),
   })
@@ -105,19 +108,18 @@ export function AmountInput({
   onMaxBalance,
 }: AmountInputTypes) {
   const inputClassName = join({
-    space: 'p-0 w-full',
-    bgColor: 'bg-transparent',
-    borderColor: 'border-none',
-    textColor: 'placeholder:text-[#88818C] text-white text-opacity-80',
+    unset: 'bg-transparent border-none p-0',
+    layout: 'w-full',
+    placeholder: 'placeholder:text-zinc-500 placeholder:dark:text-white',
     font: 'text-xl md:text-2xl font-medium',
     focus: 'focus:outline-none focus:ring-0 focus:border-none',
   })
 
   const labelClassName = join({
     space: 'block',
-    textColor: 'text-xs text-white',
+    textColor: 'text-xs',
     animation: 'transition-all duration-150 transform-gpu',
-    hover: 'hover:text-opacity-70 hover:cursor-pointer',
+    hover: 'hover:opacity-70 cursor-pointer',
   })
 
   return (
@@ -147,7 +149,7 @@ export function AmountInput({
           onClick={onMaxBalance}
         >
           {parsedBalance ?? '0.0'}
-          <span className="opacity-50"> available</span>
+          <span className="text-zinc-500"> available</span>
         </label>
       )}
     </div>
