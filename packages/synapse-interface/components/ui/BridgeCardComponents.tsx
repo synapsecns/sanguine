@@ -42,19 +42,30 @@ interface AmountInputTypes {
 
 const join = (a) => Object.values(a).join(' ')
 
-export function BridgeCard({ children }) {
+export function BridgeCard({
+  ref,
+  children,
+}: {
+  ref: React.RefObject<HTMLDivElement>
+  children: React.ReactNode
+}) {
   /* TODOs
    * Lift margin value up to parent
    * Remove need for popoverDependencies styles
    */
   const className = join({
-    space: 'p-4 mt-5 rounded-[.75rem]',
+    grid: 'grid gap-2',
+    space: 'p-3 mt-5 rounded-[.75rem]',
     // background: 'dark:bg-bgBase', // TODO: Remove
     background: 'bg-zinc-100 dark:bg-zinc-900/95 shadow-xl',
     popoverDependencies: 'overflow-hidden transform',
   })
 
-  return <div className={className}>{children}</div>
+  return (
+    <div ref={ref} className={className}>
+      {children}
+    </div>
+  )
 }
 
 export function BridgeSectionContainer({ children }) {
@@ -86,7 +97,7 @@ export function TokenSelector({
 }: TokenSelectorTypes) {
   const className = join({
     flex: 'flex items-center gap-2',
-    space: 'p-2 rounded',
+    space: 'p-2 rounded flex-none',
     // background: 'bg-separator', // TODO: Remove
     background: 'dark:bg-zinc-700',
     border: `border border-zinc-200 dark:border-transparent`,
@@ -122,7 +133,7 @@ export function ChainSelector({
   const className = join({
     unset: 'text-left',
     flex: 'flex items-center gap-2.5',
-    space: 'px-2 py-1.5 mx-0.5 rounded',
+    space: 'px-2 py-1.5 mx-0.5 rounded flex-none',
     background: 'dark:bg-zinc-700',
     border: 'border border-zinc-200 dark:border-transparent',
     font: 'leading-tight',

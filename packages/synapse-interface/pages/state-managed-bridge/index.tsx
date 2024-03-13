@@ -548,64 +548,62 @@ const StateManagedBridge = () => {
             </Button>
           </div>
         </div>
-        <BridgeCard>
-          <div ref={bridgeDisplayRef} className="grid gap-2">
-            <Transition show={showSettingsSlideOver} {...TRANSITION_PROPS}>
-              <animated.div>
-                <SettingsSlideOver key="settings" />
-              </animated.div>
-            </Transition>
-            <Transition show={showFromChainListOverlay} {...TRANSITION_PROPS}>
-              <animated.div className={springClass}>
-                <FromChainListOverlay />
-              </animated.div>
-            </Transition>
-            <Transition show={showFromTokenListOverlay} {...TRANSITION_PROPS}>
-              <animated.div className={springClass}>
-                <FromTokenListOverlay />
-              </animated.div>
-            </Transition>
-            <Transition show={showToChainListOverlay} {...TRANSITION_PROPS}>
-              <animated.div className={springClass}>
-                <ToChainListOverlay />
-              </animated.div>
-            </Transition>
-            <Transition show={showToTokenListOverlay} {...TRANSITION_PROPS}>
-              <animated.div className={springClass}>
-                <ToTokenListOverlay />
-              </animated.div>
-            </Transition>
-            <InputContainer />
-            <SwitchButton
-              onClick={() => {
-                dispatch(setFromChainId(toChainId))
-                dispatch(setFromToken(toToken))
-                dispatch(setToChainId(fromChainId))
-                dispatch(setToToken(fromToken))
-              }}
+        <BridgeCard ref={bridgeDisplayRef}>
+          <Transition show={showSettingsSlideOver} {...TRANSITION_PROPS}>
+            <animated.div>
+              <SettingsSlideOver key="settings" />
+            </animated.div>
+          </Transition>
+          <Transition show={showFromChainListOverlay} {...TRANSITION_PROPS}>
+            <animated.div className={springClass}>
+              <FromChainListOverlay />
+            </animated.div>
+          </Transition>
+          <Transition show={showFromTokenListOverlay} {...TRANSITION_PROPS}>
+            <animated.div className={springClass}>
+              <FromTokenListOverlay />
+            </animated.div>
+          </Transition>
+          <Transition show={showToChainListOverlay} {...TRANSITION_PROPS}>
+            <animated.div className={springClass}>
+              <ToChainListOverlay />
+            </animated.div>
+          </Transition>
+          <Transition show={showToTokenListOverlay} {...TRANSITION_PROPS}>
+            <animated.div className={springClass}>
+              <ToTokenListOverlay />
+            </animated.div>
+          </Transition>
+          <InputContainer />
+          <SwitchButton
+            onClick={() => {
+              dispatch(setFromChainId(toChainId))
+              dispatch(setFromToken(toToken))
+              dispatch(setToChainId(fromChainId))
+              dispatch(setToToken(fromToken))
+            }}
+          />
+          <OutputContainer />
+          <Warning />
+          <Transition
+            appear={true}
+            unmount={false}
+            show={true}
+            {...SECTION_TRANSITION_PROPS}
+          >
+            <BridgeExchangeRateInfo />
+          </Transition>
+          {showDestinationAddress && (
+            <DestinationAddressInput
+              toChainId={toChainId}
+              destinationAddress={destinationAddress}
             />
-            <OutputContainer />
-            <Warning />
-            <Transition
-              appear={true}
-              unmount={false}
-              show={true}
-              {...SECTION_TRANSITION_PROPS}
-            >
-              <BridgeExchangeRateInfo />
-            </Transition>
-            {showDestinationAddress && (
-              <DestinationAddressInput
-                toChainId={toChainId}
-                destinationAddress={destinationAddress}
-              />
-            )}
-            <BridgeTransactionButton
-              isApproved={isApproved}
-              approveTxn={approveTxn}
-              executeBridge={executeBridge}
-            />
-          </div>
+          )}
+          <BridgeTransactionButton
+            isApproved={isApproved}
+            approveTxn={approveTxn}
+            executeBridge={executeBridge}
+          />
         </BridgeCard>
       </div>
     </div>

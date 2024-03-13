@@ -364,58 +364,53 @@ const StateManagedSwap = () => {
           <div className="flex items-center justify-between">
             <PageHeader title="Swap" subtitle="Exchange assets on chain." />
           </div>
-          <BridgeCard>
-            <div ref={swapDisplayRef}>
-              <Transition show={showSwapChainListOverlay} {...TRANSITION_PROPS}>
-                <animated.div className={springClass}>
-                  <SwapChainListOverlay />
-                </animated.div>
-              </Transition>
-              <Transition
-                show={showSwapFromTokenListOverlay}
-                {...TRANSITION_PROPS}
-              >
-                <animated.div className={springClass}>
-                  <SwapFromTokenListOverlay />
-                </animated.div>
-              </Transition>
-              <Transition
-                show={showSwapToTokenListOverlay}
-                {...TRANSITION_PROPS}
-              >
-                <animated.div className={springClass}>
-                  <SwapToTokenListOverlay />
-                </animated.div>
-              </Transition>
-              <SwapInputContainer />
-              <div className="h-4" />
-              <SwapOutputContainer />
-              <Transition
-                appear={true}
-                unmount={false}
-                show={true}
-                {...SECTION_TRANSITION_PROPS}
-              >
-                <SwapExchangeRateInfo
-                  fromAmount={
-                    swapFromToken
-                      ? stringToBigInt(
-                          swapFromValue,
-                          swapFromToken.decimals[swapChainId]
-                        )
-                      : 0n
-                  }
-                  toToken={swapToToken}
-                  exchangeRate={swapQuote.exchangeRate}
-                  toChainId={swapChainId}
-                />
-              </Transition>
-              <SwapTransactionButton
-                isApproved={isApproved}
-                approveTxn={approveTxn}
-                executeSwap={executeSwap}
+          <BridgeCard ref={swapDisplayRef}>
+            <Transition show={showSwapChainListOverlay} {...TRANSITION_PROPS}>
+              <animated.div className={springClass}>
+                <SwapChainListOverlay />
+              </animated.div>
+            </Transition>
+            <Transition
+              show={showSwapFromTokenListOverlay}
+              {...TRANSITION_PROPS}
+            >
+              <animated.div className={springClass}>
+                <SwapFromTokenListOverlay />
+              </animated.div>
+            </Transition>
+            <Transition show={showSwapToTokenListOverlay} {...TRANSITION_PROPS}>
+              <animated.div className={springClass}>
+                <SwapToTokenListOverlay />
+              </animated.div>
+            </Transition>
+            <SwapInputContainer />
+            <div className="h-0" /> {/* TODO: Replace with SwitchButton */}
+            <SwapOutputContainer />
+            <Transition
+              appear={true}
+              unmount={false}
+              show={true}
+              {...SECTION_TRANSITION_PROPS}
+            >
+              <SwapExchangeRateInfo
+                fromAmount={
+                  swapFromToken
+                    ? stringToBigInt(
+                        swapFromValue,
+                        swapFromToken.decimals[swapChainId]
+                      )
+                    : 0n
+                }
+                toToken={swapToToken}
+                exchangeRate={swapQuote.exchangeRate}
+                toChainId={swapChainId}
               />
-            </div>
+            </Transition>
+            <SwapTransactionButton
+              isApproved={isApproved}
+              approveTxn={approveTxn}
+              executeSwap={executeSwap}
+            />
           </BridgeCard>
         </div>
       </div>
