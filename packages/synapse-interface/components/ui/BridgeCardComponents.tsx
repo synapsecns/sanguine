@@ -46,8 +46,8 @@ export function BridgeCard({ ref, children }: BridgeCardTypes) {
   const className = join({
     grid: 'grid gap-2',
     space: 'p-3 mt-5 rounded-[.75rem]',
-    // background: 'dark:bg-bgBase', // TODO: Remove
-    background: 'bg-zinc-100 dark:bg-zinc-900/95 shadow-xl',
+    background: 'bg-zinc-100 dark:bg-bgBase', // TODO: Remove
+    // background: 'bg-zinc-100 dark:bg-zinc-900/95 shadow-xl',
     popoverDependencies: 'overflow-hidden transform',
   })
 
@@ -61,8 +61,8 @@ export function BridgeCard({ ref, children }: BridgeCardTypes) {
 export function BridgeSectionContainer({ children }) {
   const className = join({
     space: 'grid gap-2 p-2 rounded-md',
-    // background: 'bg-bgLight', // TODO: Remove
-    background: 'bg-zinc-50 dark:bg-zinc-800',
+    background: 'bg-zinc-50 dark:bg-bgLight', // TODO: Remove
+    // background: 'bg-zinc-50 dark:bg-zinc-800',
     borderColor: 'border border-zinc-300 dark:border-transparent',
   })
 
@@ -87,7 +87,8 @@ export function TokenSelector({
 }: TokenSelectorTypes) {
   const className = join({
     flex: 'flex items-center gap-2',
-    background: 'bg-white dark:bg-zinc-700',
+    background: 'bg-white dark:bg-separator',
+    // background: 'bg-white dark:bg-zinc-700',
     border: 'border border-zinc-200 dark:border-transparent',
     space: 'p-2 rounded flex-none',
     font: 'text-lg',
@@ -122,7 +123,7 @@ export function ChainSelector({
     unset: 'text-left',
     flex: 'flex items-center gap-2.5',
     space: 'px-2 py-1.5 mx-0.5 rounded flex-none',
-    background: 'dark:bg-zinc-700',
+    background: 'bg-transparent',
     border: 'border border-zinc-200 dark:border-transparent',
     font: 'leading-tight',
     hover: getHoverStyleForButton(selectedItem?.color),
@@ -140,7 +141,7 @@ export function ChainSelector({
         />
       )}
       <span>
-        <div className="text-sm text-zinc-500">{label}</div>
+        <div className="text-sm text-zinc-500 dark:text-zinc-400">{label}</div>
         {selectedItem?.name ?? placeholder ?? 'Network'}
       </span>
       <DropDownArrowSvg />
@@ -162,7 +163,8 @@ export function AmountInput({
   const inputClassName = join({
     unset: 'bg-transparent border-none p-0',
     layout: 'w-full',
-    placeholder: 'placeholder:text-zinc-500 placeholder:dark:text-white',
+    placeholder:
+      'placeholder:text-zinc-500 dark:text-zinc-400 placeholder:dark:text-white',
     font: 'text-xl md:text-2xl font-medium',
     focus: 'focus:outline-none focus:ring-0 focus:border-none',
   })
@@ -201,7 +203,7 @@ export function AmountInput({
           onClick={onMaxBalance}
         >
           {parsedBalance ?? '0.0'}
-          <span className="text-zinc-500"> available</span>
+          <span className="text-zinc-500 dark:text-zinc-400"> available</span>
         </label>
       )}
     </div>

@@ -585,6 +585,11 @@ const StateManagedBridge = () => {
           />
           <OutputContainer />
           <Warning />
+          {/*
+           * Hidden to remove -p-6 value applied by transition from element
+           * Doesn't appear to cause any regressions
+           * Goal: Remove all <Transition> elements from this file
+           */}
           {/* <Transition
             appear={true}
             unmount={false}

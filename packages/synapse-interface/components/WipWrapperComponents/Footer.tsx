@@ -43,7 +43,7 @@ export default function Footer() {
                 <li key={link.label}>
                   <a
                     href={link.url}
-                    className="text-zinc-500 hover:text-inherit hover:bg-slate-200 hover:dark:bg-zinc-900 px-2 py-1 rounded inline-block"
+                    className="text-zinc-500 dark:text-zinc-400 hover:text-inherit hover:bg-slate-200 hover:dark:bg-zinc-900 px-2 py-1 rounded inline-block"
                   >
                     {link.label}
                   </a>

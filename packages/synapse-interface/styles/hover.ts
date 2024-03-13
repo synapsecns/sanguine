@@ -18,7 +18,7 @@ const ColorOptions = {
 export const getHoverStyleForButton = (color: string) => {
   switch (color) {
     case ColorOptions.ETH:
-      return 'hover:bg-[#5170ad44] hover:dark:bg-[#5170ad] hover:border-[#5170ad] hover:dark:border-[#5170ad]'
+      return 'hover:bg-[#5170ad44] hover:dark:bg-[#5170ad44] hover:border-[#5170ad] hover:dark:border-[#5170ad]'
     case ColorOptions.RED:
       return 'hover:bg-red-500/25 hover:dark:bg-red-500/25 hover:border-red-500 hover:dark:border-red-500'
     case ColorOptions.ORANGE:
