@@ -2,14 +2,14 @@ import { useMemo } from 'react'
 import { LinearAnimatedProgressBar } from './LinearAnimatedProgressBar'
 import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 
-export const useUpgradeProgressBar = (
+export const useEventCountdownProgressBar = (
   eventLabel: string,
   startDate: Date,
   endDate: Date
 ): {
   isPending: boolean
   isComplete: boolean
-  UpgradeProgressBar: any
+  EventCountdownProgressBar: JSX.Element
 } => {
   useIntervalTimer(60000)
   const currentDate = new Date()
@@ -37,8 +37,8 @@ export const useUpgradeProgressBar = (
   return {
     isPending,
     isComplete,
-    UpgradeProgressBar: (
-      <UpgradeProgressBar
+    EventCountdownProgressBar: (
+      <EventCountdownProgressBar
         eventLabel={eventLabel}
         startTime={startTimeInSeconds}
         endTime={endTimeInSeconds}
@@ -49,7 +49,7 @@ export const useUpgradeProgressBar = (
   }
 }
 
-export const UpgradeProgressBar = ({
+export const EventCountdownProgressBar = ({
   eventLabel,
   startTime,
   endTime,

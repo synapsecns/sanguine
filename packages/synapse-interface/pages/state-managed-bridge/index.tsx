@@ -86,7 +86,7 @@ import {
 } from '@/slices/priceDataSlice'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { SwitchButton } from '@/components/buttons/SwitchButton'
-import { useUpgradeProgressBar } from '@/components/Maintenance/UpgradeProgressBar'
+import { useEventCountdownProgressBar } from '@/components/Maintenance/EventCountdownProgressBar'
 import {
   ETH_DENCUN_START_DATE,
   ETH_DENCUN_END_DATE,
@@ -525,8 +525,8 @@ const StateManagedBridge = () => {
 
   const {
     isPending: isUpgradePending,
-    UpgradeProgressBar: EthDencunUpgradeProgressBar,
-  } = useUpgradeProgressBar(
+    EventCountdownProgressBar: EthDencunEventCountdownProgressBar,
+  } = useEventCountdownProgressBar(
     'Dencun upgrade in progress',
     ETH_DENCUN_START_DATE,
     ETH_DENCUN_END_DATE
@@ -569,7 +569,7 @@ const StateManagedBridge = () => {
             transition-all duration-100 transform rounded-md
           `}
         >
-          {EthDencunUpgradeProgressBar}
+          {EthDencunEventCountdownProgressBar}
           <div
             className={
               isUpgradePending
