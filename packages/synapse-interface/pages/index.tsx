@@ -3,7 +3,6 @@ import { Portfolio } from '@/components/Portfolio/Portfolio'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import ReactGA from 'react-ga'
 import useSyncQueryParamsWithBridgeState from '@/utils/hooks/useSyncQueryParamsWithBridgeState'
-import { EthDencunUpgradeBanner } from '@/components/Maintenance/EthDencunUpgrade'
 import { EcotoneForkUpgradeBanner } from '@/components/Maintenance/Events/EcotoneForkUpgrade'
 import { MetisDowntimeBanner } from '@/components/Maintenance/Events/MetisUpgrade'
 
