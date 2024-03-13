@@ -6,13 +6,8 @@ import { RootState } from '@/store/store'
 import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
 import { useEffect, useState } from 'react'
 import { isAddress } from '@ethersproject/address'
-import {} from 'wagmi'
 
-import {
-  useConnectModal,
-  useAccountModal,
-  useChainModal,
-} from '@rainbow-me/rainbowkit'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
@@ -22,14 +17,15 @@ export const BridgeTransactionButton = ({
   approveTxn,
   executeBridge,
   isApproved,
+  isBridgePaused,
 }) => {
   const [isConnected, setIsConnected] = useState(false)
   const { openConnectModal } = useConnectModal()
 
   const { chain } = useNetwork()
-  const { chains, error, pendingChainId, switchNetwork } = useSwitchNetwork()
+  const { chains, switchNetwork } = useSwitchNetwork()
 
-  const { address, isConnected: isConnectedInit } = useAccount({
+  const { isConnected: isConnectedInit } = useAccount({
     onDisconnect() {
       setIsConnected(false)
     },
@@ -76,7 +72,8 @@ export const BridgeTransactionButton = ({
     (showDestinationAddress && !destinationAddress) ||
     (isConnected && !sufficientBalance) ||
     PAUSED_FROM_CHAIN_IDS.includes(fromChainId) ||
-    PAUSED_TO_CHAIN_IDS.includes(toChainId)
+    PAUSED_TO_CHAIN_IDS.includes(toChainId) ||
+    isBridgePaused
 
   let buttonProperties
 
@@ -87,7 +84,12 @@ export const BridgeTransactionButton = ({
     return fromTokenDecimals ? stringToBigInt(fromValue, fromTokenDecimals) : 0
   }, [fromValue, fromTokenDecimals])
 
-  if (!fromChainId) {
+  if (isBridgePaused) {
+    buttonProperties = {
+      label: 'Bridge paused',
+      onClick: null,
+    }
+  } else if (!fromChainId) {
     buttonProperties = {
       label: 'Please select Origin network',
       onClick: null,
