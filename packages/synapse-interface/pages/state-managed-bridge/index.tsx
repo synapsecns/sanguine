@@ -92,12 +92,13 @@ import {
   METIS_DOWNTIME_START_DATE,
   METIS_DOWNTIME_END_DATE,
   MetisDowntimeWarningMessage,
+  useMetisDowntimeCountdownProgress,
 } from '@/components/Maintenance/Events/MetisUpgrade'
 import {
   ECOTONE_FORK_START_DATE,
   ECOTONE_FORK_END_DATE,
   EcotoneForkWarningMessage,
-  useEcotoneForkEventCountdownProgress,
+  useEcotoneForkCountdownProgress,
 } from '@/components/Maintenance/Events/EcotoneForkUpgrade'
 
 import { OPTIMISM, BASE, METIS } from '@/constants/chains/master'
@@ -543,17 +544,20 @@ const StateManagedBridge = () => {
   //   ECOTONE_FORK_END_DATE
   // )
 
-  const { isEcotoneForkUpgradePending, EcotoneForkCountdownProgressBar } =
-    useEcotoneForkEventCountdownProgress()
+  // const {
+  //   isPending: isMetisUpgradePending,
+  //   EventCountdownProgressBar: MetisUpgradeCountdownProgressBar,
+  // } = useEventCountdownProgressBar(
+  //   'Metis upgrade in progress',
+  //   METIS_DOWNTIME_START_DATE,
+  //   METIS_DOWNTIME_END_DATE
+  // )
 
-  const {
-    isPending: isMetisUpgradePending,
-    EventCountdownProgressBar: MetisUpgradeCountdownProgressBar,
-  } = useEventCountdownProgressBar(
-    'Metis upgrade in progress',
-    METIS_DOWNTIME_START_DATE,
-    METIS_DOWNTIME_END_DATE
-  )
+  const { isEcotoneForkUpgradePending, EcotoneForkCountdownProgressBar } =
+    useEcotoneForkCountdownProgress()
+
+  const { isMetisUpgradePending, MetisUpgradeCountdownProgressBar } =
+    useMetisDowntimeCountdownProgress()
 
   const isBridgePaused = (): boolean => {
     if (isEcotoneForkUpgradePending) {

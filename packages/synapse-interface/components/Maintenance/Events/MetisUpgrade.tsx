@@ -2,6 +2,7 @@ import { AnnouncementBanner } from '../AnnouncementBanner'
 import { WarningMessage } from '../../Warning'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { METIS } from '@/constants/chains/master'
+import { useEventCountdownProgressBar } from '../EventCountdownProgressBar'
 
 /**
  * Start: 30 min prior to Metis Chain Downtime @ (March 14, 02:00 UTC)
@@ -54,4 +55,26 @@ export const MetisDowntimeWarningMessage = () => {
       />
     )
   } else return null
+}
+
+export const useMetisDowntimeCountdownProgress = () => {
+  const { fromChainId, toChainId } = useBridgeState()
+
+  const isChainMetis = [fromChainId, toChainId].includes(METIS.id)
+
+  const {
+    isPending: isMetisUpgradePending,
+    EventCountdownProgressBar: MetisUpgradeCountdownProgressBar,
+  } = useEventCountdownProgressBar(
+    'Metis upgrade in progress',
+    METIS_DOWNTIME_START_DATE,
+    METIS_DOWNTIME_END_DATE
+  )
+
+  return {
+    isMetisUpgradePending,
+    MetisUpgradeCountdownProgressBar: isChainMetis
+      ? MetisUpgradeCountdownProgressBar
+      : null,
+  }
 }

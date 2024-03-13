@@ -57,7 +57,7 @@ export const EcotoneForkWarningMessage = () => {
   } else return null
 }
 
-export const useEcotoneForkEventCountdownProgress = () => {
+export const useEcotoneForkCountdownProgress = () => {
   const { fromChainId, toChainId } = useBridgeState()
 
   const isChainOptimism = [fromChainId, toChainId].includes(OPTIMISM.id)
