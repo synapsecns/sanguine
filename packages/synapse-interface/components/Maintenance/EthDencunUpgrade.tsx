@@ -11,20 +11,7 @@ import { getTimeMinutesBeforeNow } from '@/utils/time'
 /** Test Values */
 export const ETH_DENCUN_BANNER_START = new Date()
 export const ETH_DENCUN_START_DATE = new Date(Date.UTC(2024, 2, 13, 2, 40, 0))
-export const ETH_DENCUN_END_DATE = new Date(Date.UTC(2024, 2, 13, 2, 44, 0))
-
-export const isEthDencunUpgradeActive = (): boolean => {
-  const currentDate = new Date()
-
-  const isStarted =
-    Math.floor(currentDate.getTime()) >
-    Math.floor(ETH_DENCUN_START_DATE.getTime())
-  const isComplete =
-    Math.floor(currentDate.getTime()) >
-    Math.floor(ETH_DENCUN_END_DATE.getTime())
-
-  return isStarted && !isComplete
-}
+export const ETH_DENCUN_END_DATE = new Date(Date.UTC(2024, 2, 13, 2, 50, 0))
 
 export const EthDencunUpgradeBanner = () => {
   return (

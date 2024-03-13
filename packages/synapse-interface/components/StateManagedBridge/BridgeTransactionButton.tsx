@@ -90,7 +90,7 @@ export const BridgeTransactionButton = ({
 
   if (isBridgePaused) {
     buttonProperties = {
-      label: 'Bridged paused',
+      label: 'Bridge paused',
       onClick: null,
     }
   } else if (!fromChainId) {

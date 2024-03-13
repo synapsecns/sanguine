@@ -90,7 +90,7 @@ import { useUpgradeProgressBar } from '@/components/Maintenance/UpgradeProgressB
 import {
   ETH_DENCUN_START_DATE,
   ETH_DENCUN_END_DATE,
-} from '@/components/Maintenance/events'
+} from '@/components/Maintenance/EthDencunUpgrade'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -573,7 +573,7 @@ const StateManagedBridge = () => {
           <div
             className={
               isUpgradePending
-                ? 'cursor-not-allowed cursor-disabled pointer-events-none brightness-75 contrast-[90%] opacity-75'
+                ? 'cursor-not-allowed pointer-events-none brightness-75 contrast-[90%] opacity-75'
                 : 'cursor-pointer pointer-events-auto'
             }
           >
