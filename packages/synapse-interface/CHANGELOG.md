@@ -3,6 +3,38 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+
+# [0.9.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.8.0...@synapsecns/synapse-interface@0.9.0) (2024-03-13)
+
+
+### Features
+
+* **synapse-interface:** use both rebate displays in bridge card ([#2276](https://github.com/synapsecns/sanguine/issues/2276)) ([45fbfdc](https://github.com/synapsecns/sanguine/commit/45fbfdc245647b8db87b889e252fa4aece49f501))
+
+
+
+
+
+# [0.8.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.7.1...@synapsecns/synapse-interface@0.8.0) (2024-03-13)
+
+
+### Features
+
+* **synapse-interface:** ecotone and metis upgrade downtime, remove eth dencun ([#2274](https://github.com/synapsecns/sanguine/issues/2274)) ([f527ce5](https://github.com/synapsecns/sanguine/commit/f527ce53c883672232f43da90f0614a8a580442a))
+
+
+
+
+
+## [0.7.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.7.0...@synapsecns/synapse-interface@0.7.1) (2024-03-13)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+
 # [0.7.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.6.2...@synapsecns/synapse-interface@0.7.0) (2024-03-13)
 
 
