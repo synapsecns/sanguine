@@ -674,7 +674,9 @@ const StateManagedBridge = () => {
                   isApproved={isApproved}
                   approveTxn={approveTxn}
                   executeBridge={executeBridge}
-                  isBridgePaused={isUpgradePending}
+                  isBridgePaused={
+                    isEcotoneForkUpgradePending || isMetisUpgradeChainDisabled
+                  }
                 />
               </div>
             </div>

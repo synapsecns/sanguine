@@ -69,14 +69,13 @@ export const EventCountdownProgressBar = ({
       >
         <div className="flex justify-between px-3 py-2">
           <div>{eventLabel}</div>
-          <div>{timeRemaining}m remaining</div>
+          <div>{timeRemaining} remaining</div>
         </div>
         <div className="px-1">
           <LinearAnimatedProgressBar
             id="linear-animated-progress-bar"
-            startTime={startTime}
-            endTime={endTime}
-            status={status}
+            startDate={startDate}
+            endDate={endDate}
           />
         </div>
       </div>
@@ -151,4 +150,3 @@ const calculateTimeUntilTarget = (targetDate: Date) => {
     isComplete,
   }
 }
-
