@@ -8,7 +8,7 @@ export const useUpgradeProgressBar = (
 ): {
   isPending: boolean
   isComplete: boolean
-  UpgradeProgressBar: JSX.Element
+  UpgradeProgressBar: any
 } => {
   useIntervalTimer(60000)
   const currentDate = new Date()
@@ -36,16 +36,14 @@ export const useUpgradeProgressBar = (
   return {
     isPending,
     isComplete,
-    UpgradeProgressBar: (
-      <>
-        <UpgradeProgressBar
-          eventLabel={eventLabel}
-          startTime={startTimeInSeconds}
-          endTime={endTimeInSeconds}
-          status={status}
-          timeRemaining={timeRemainingInMinutes}
-        />
-      </>
+    UpgradeProgressBar: () => (
+      <UpgradeProgressBar
+        eventLabel={eventLabel}
+        startTime={startTimeInSeconds}
+        endTime={endTimeInSeconds}
+        status={status}
+        timeRemaining={timeRemainingInMinutes}
+      />
     ),
   }
 }
