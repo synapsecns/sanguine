@@ -5,7 +5,9 @@ import {InterchainClientV1, InterchainClientV1Events, IInterchainClientV1} from 
 import {InterchainTxDescriptor, InterchainTransaction} from "../contracts/libs/InterchainTransaction.sol";
 
 import {ExecutionFeesMock} from "./mocks/ExecutionFeesMock.sol";
+import {ExecutionServiceMock} from "./mocks/ExecutionServiceMock.sol";
 import {InterchainDBMock} from "./mocks/InterchainDBMock.sol";
+import {InterchainModuleMock} from "./mocks/InterchainModuleMock.sol";
 
 import {Test} from "forge-std/Test.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
@@ -23,7 +25,11 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
 
     InterchainClientV1 public icClient;
     address public icDB;
+    address public icModuleA;
+    address public icModuleB;
+
     address public execFees;
+    address public execService;
 
     address public owner = makeAddr("Owner");
 
@@ -32,6 +38,9 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         icDB = address(new InterchainDBMock());
         icClient = new InterchainClientV1(icDB, owner);
         execFees = address(new ExecutionFeesMock());
+        execService = address(new ExecutionServiceMock());
+        icModuleA = address(new InterchainModuleMock());
+        icModuleB = address(new InterchainModuleMock());
     }
 
     function setExecutionFees(address executionFees) public {
@@ -187,5 +196,20 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         assertEq(icTx.entryIndex, expected.entryIndex, "!entryIndex");
         assertEq(icTx.options, expected.options, "!options");
         assertEq(icTx.message, expected.message, "!message");
+    }
+
+    // ═══════════════════════════════════════════════════ UTILS ═══════════════════════════════════════════════════════
+
+    function toArray(address a) internal pure returns (address[] memory) {
+        address[] memory arr = new address[](1);
+        arr[0] = a;
+        return arr;
+    }
+
+    function toArr(address a, address b) internal pure returns (address[] memory) {
+        address[] memory arr = new address[](2);
+        arr[0] = a;
+        arr[1] = b;
+        return arr;
     }
 }
