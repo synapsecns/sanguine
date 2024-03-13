@@ -1,4 +1,5 @@
 import { AnnouncementBanner } from './AnnouncementBanner'
+import { WarningMessage } from '../Warning'
 
 /**
  * Start: 30 min prior to Metis Chain Downtime @ (March 14, 02:00 UTC)
@@ -29,6 +30,20 @@ export const MetisDowntimeBanner = () => {
       }
       startDate={METIS_DOWNTIME_BANNERS_START}
       endDate={METIS_DOWNTIME_END_DATE}
+    />
+  )
+}
+
+export const MetisDowntimeWarningMessage = () => {
+  return (
+    <WarningMessage
+      message={
+        <>
+          <p>
+            The Metis Chain is offline until a planned Metis upgrade completes.
+          </p>
+        </>
+      }
     />
   )
 }

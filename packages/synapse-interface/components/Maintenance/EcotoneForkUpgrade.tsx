@@ -1,5 +1,7 @@
 import { AnnouncementBanner } from './AnnouncementBanner'
 import { WarningMessage } from '../Warning'
+import { useBridgeState } from '@/slices/bridge/hooks'
+import { OPTIMISM, BASE } from '@/constants/chains/master'
 
 /**
  * Start: 10 min prior to Ecotone Fork Upgrade Time @ (March 14, 00:00 UTC)
@@ -43,16 +45,35 @@ export const EcotoneForkUpgradeBanner = () => {
 }
 
 export const EcotoneForkWarningMessage = () => {
-  return (
-    <WarningMessage
-      message={
-        <>
-          <p>
-            Ecotone Fork upgrade will pause bridging to and from Optimism and
-            Base Chains.
-          </p>
-        </>
-      }
-    />
-  )
+  const { fromChainId, toChainId } = useBridgeState()
+
+  const isChainOptimism = [fromChainId, toChainId].includes(OPTIMISM.id)
+  const isChainBase = [fromChainId, toChainId].includes(BASE.id)
+
+  if (isChainOptimism) {
+    return (
+      <WarningMessage
+        message={
+          <>
+            <p>
+              Optimism Chain bridging is paused until the Ecotone upgrade
+              completes.
+            </p>
+          </>
+        }
+      />
+    )
+  } else if (isChainBase) {
+    return (
+      <WarningMessage
+        message={
+          <>
+            <p>
+              Base Chain bridging is paused until the Ecotone upgrade completes.
+            </p>
+          </>
+        }
+      />
+    )
+  } else return null
 }

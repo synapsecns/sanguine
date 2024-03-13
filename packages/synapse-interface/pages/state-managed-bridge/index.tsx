@@ -91,6 +91,7 @@ import { useEventCountdownProgressBar } from '@/components/Maintenance/EventCoun
 import {
   METIS_DOWNTIME_START_DATE,
   METIS_DOWNTIME_END_DATE,
+  MetisDowntimeWarningMessage,
 } from '@/components/Maintenance/MetisUpgrade'
 import {
   ECOTONE_FORK_START_DATE,
@@ -531,6 +532,7 @@ const StateManagedBridge = () => {
   const springClass =
     '-mt-4 fixed z-50 w-full h-full bg-opacity-50 bg-[#343036]'
 
+  /* Remove after upgrades */
   const {
     isPending: isEcotoneForkUpgradePending,
     EventCountdownProgressBar: EcotoneForkCountdownProgressBar,
@@ -559,6 +561,7 @@ const StateManagedBridge = () => {
     }
     return false
   }
+  /* Remove after upgrades */
 
   console.log('isBridgePaused:', isBridgePaused())
 
@@ -638,7 +641,12 @@ const StateManagedBridge = () => {
             />
             <OutputContainer />
             <Warning />
+
+            {/* Remove after upgrades */}
             {isEcotoneForkUpgradePending && <EcotoneForkWarningMessage />}
+            {isMetisUpgradePending && <MetisDowntimeWarningMessage />}
+            {/* Remove after upgrades */}
+
             <Transition
               appear={true}
               unmount={false}
