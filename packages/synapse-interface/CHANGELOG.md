@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.8.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.7.1...@synapsecns/synapse-interface@0.8.0) (2024-03-13)
+
+
+### Features
+
+* **synapse-interface:** ecotone and metis upgrade downtime, remove eth dencun ([#2274](https://github.com/synapsecns/sanguine/issues/2274)) ([f527ce5](https://github.com/synapsecns/sanguine/commit/f527ce53c883672232f43da90f0614a8a580442a))
+
+
+
+
+
 ## [0.7.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.7.0...@synapsecns/synapse-interface@0.7.1) (2024-03-13)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
