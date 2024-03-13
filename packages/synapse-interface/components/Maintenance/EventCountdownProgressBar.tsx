@@ -38,8 +38,8 @@ export const useEventCountdownProgressBar = (
         eventLabel={eventLabel}
         startDate={startDate}
         endDate={endDate}
-        status={status}
         timeRemaining={timeRemaining}
+        status={status}
       />
     ),
   }
@@ -49,14 +49,14 @@ export const EventCountdownProgressBar = ({
   eventLabel,
   startDate,
   endDate,
-  status,
   timeRemaining,
+  status,
 }: {
   eventLabel: string
   startDate: Date
   endDate: Date
-  status: 'idle' | 'pending' | 'complete'
   timeRemaining: string
+  status: 'idle' | 'pending' | 'complete'
 }) => {
   if (status === 'pending') {
     return (
@@ -136,16 +136,10 @@ const calculateTimeUntilTarget = (targetDate: Date) => {
   const hoursRemaining = Math.floor(
     (timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
   )
-    .toString()
-    .padStart(2, '0')
   const minutesRemaining = Math.floor(
     (timeDifference % (1000 * 60 * 60)) / (1000 * 60)
   )
-    .toString()
-    .padStart(2, '0')
   const secondsRemaining = Math.floor((timeDifference % (1000 * 60)) / 1000)
-    .toString()
-    .padStart(2, '0')
 
   return {
     daysRemaining,
