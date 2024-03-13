@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react'
 import { getCountdownTimeStatus } from './EventCountdownProgressBar'
 
 /**
- * Reusable Annoucement Banner with custom Start/End Time
+ * Reusable automated Announcement Banner with custom Start/End Time
+ * Will automatically appear after Start time
+ * Will automatically disappear after End time
  * @param bannerId: store in $MMDDYYYY-$BANNER_NAME format (e.g 03132024-ETH-DENCUN)
  * @param bannerContents: contents to display in banner
  * @param startDate: start date to show banner
