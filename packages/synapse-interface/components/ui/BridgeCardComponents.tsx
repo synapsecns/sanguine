@@ -1,17 +1,39 @@
-import { Token } from '@/utils/types'
+import { Chain, Token } from '@/utils/types'
 import { useState } from 'react'
 import { DropDownArrowSvg } from '../icons/DropDownArrowSvg'
 import {
   getBorderStyleForCoinHover,
   getMenuItemHoverBgForCoin,
 } from '@/styles/tokens'
+import {
+  getNetworkButtonBgClassNameActive,
+  getNetworkButtonBorderActive,
+  getNetworkButtonBorderHover,
+  getNetworkHover,
+} from '@/styles/chains'
 import LoadingDots from './tailwind/LoadingDots'
 
 type TokenSelectorTypes = {
   dataTestId?: string
   token: Token
   placeholder: string
-  onClick: () => void
+  onClick: React.MouseEventHandler<HTMLButtonElement>
+}
+
+type ChainSelectorTypes = {
+  dataTestId?: string
+  chain: Chain
+  label: string
+  placeholder: string
+  onClick: React.MouseEventHandler<HTMLButtonElement>
+}
+
+type SelectorTypes = {
+  dataTestId?: string
+  chain: Chain
+  label?: string
+  placeholder: string
+  onClick: React.MouseEventHandler<HTMLButtonElement>
 }
 
 type AmountInputTypes = {
@@ -71,13 +93,15 @@ export function TokenSelector({
   onClick,
 }: TokenSelectorTypes) {
   const className = join({
-    space: 'flex items-center gap-2 p-2 rounded flex-none',
-    text: 'text-lg',
+    flex: 'flex items-center gap-2',
+    space: 'p-2 rounded',
     // background: 'bg-separator', // TODO: Remove
     background: 'dark:bg-zinc-700',
     border: `border border-zinc-200 dark:border-transparent`,
+    font: 'text-lg',
     bgHover: getMenuItemHoverBgForCoin(token?.color),
     borderHover: getBorderStyleForCoinHover(token?.color),
+    active: 'active:opacity-70',
   })
 
   return (
@@ -91,6 +115,46 @@ export function TokenSelector({
         />
       )}
       {token?.symbol ?? placeholder}
+      <DropDownArrowSvg />
+    </button>
+  )
+}
+
+export function ChainSelector({
+  dataTestId,
+  chain,
+  label,
+  placeholder,
+  onClick,
+}: ChainSelectorTypes) {
+  const className = join({
+    unset: 'text-left',
+    flex: 'flex items-center gap-2.5',
+    space: 'px-2 py-1.5 mx-0.5 rounded',
+    background: 'dark:bg-zinc-700',
+    border: 'border border-zinc-200 dark:border-transparent',
+    font: 'leading-tight',
+    bgHover: getNetworkHover(chain?.color),
+    // bgActive: getNetworkButtonBgClassNameActive(chain?.color),
+    borderHover: getNetworkButtonBorderHover(chain?.color),
+    // borderActive: getNetworkButtonBorderActive(chain?.color),
+    active: 'active:opacity-70',
+  })
+
+  return (
+    <button data-test-id={dataTestId} className={className} onClick={onClick}>
+      {chain && (
+        <img
+          src={chain?.chainImg?.src}
+          alt={chain?.name}
+          width="24"
+          height="24"
+        />
+      )}
+      <span>
+        <div className="text-sm text-zinc-500">{label}</div>
+        {chain?.name ?? 'Network'}
+      </span>
       <DropDownArrowSvg />
     </button>
   )
