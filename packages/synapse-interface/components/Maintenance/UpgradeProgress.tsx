@@ -1,16 +1,18 @@
 import { LinearAnimatedProgressBar } from './LinearAnimatedProgressBar'
+import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 
 export const useUpgradeProgressBar = (
   eventLabel: string,
   startTime: Date,
   endTime: Date
 ) => {
+  useIntervalTimer(60000)
   const currentDate = new Date()
   const currentTimeInSeconds = currentDate.getTime() / 1000
 
   /** Testing countdown, remove after testing */
-  const startDate = new Date(Date.UTC(2024, 2, 12, 24, 20, 0))
-  const endDate = new Date(Date.UTC(2024, 2, 12, 24, 59, 0))
+  const startDate = new Date(Date.UTC(2024, 2, 13, 1, 10, 0))
+  const endDate = new Date(Date.UTC(2024, 2, 13, 1, 20, 0))
   /** Testing countdown, remove after testing */
 
   const startTimeInSeconds = Math.floor(startDate.getTime() / 1000)
@@ -36,6 +38,8 @@ export const useUpgradeProgressBar = (
   } else {
     status = 'idle'
   }
+
+  console.log('status: ', status)
 
   return {
     isStarted,

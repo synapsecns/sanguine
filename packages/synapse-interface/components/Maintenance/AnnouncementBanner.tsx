@@ -20,11 +20,10 @@ export const AnnouncementBanner = ({
   const isComplete =
     Math.floor(currentDate.getTime()) - Math.floor(endDate.getTime()) > 0
 
-  console.log('currentDate:', currentDate)
-  console.log('endDate:', endDate)
-
-  console.log('isStarted: ', isStarted)
-  console.log('isComplete:', isComplete)
+  // console.log('currentDate:', currentDate)
+  // console.log('endDate:', endDate)
+  // console.log('isStarted: ', isStarted)
+  // console.log('isComplete:', isComplete)
 
   useEffect(() => {
     setHasMounted(true)

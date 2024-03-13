@@ -21,11 +21,9 @@ export const LinearAnimatedProgressBar = memo(
   }) => {
     const currentTime = getTimeMinutesBeforeNow(0)
 
-    const elapsedTimeInSeconds = currentTime - startTime
-    const remainingTimeInSeconds = endTime - currentTime
+    const elapsedTimeInSeconds = Math.floor(currentTime) - Math.floor(startTime)
+    const remainingTimeInSeconds = Math.floor(endTime) - Math.floor(currentTime)
     const totalTimeInSeconds = endTime - startTime
-
-    const totalTimeInMin = totalTimeInSeconds / 60
 
     const percentElapsed = (elapsedTimeInSeconds / totalTimeInSeconds) * 100
 
@@ -35,9 +33,7 @@ export const LinearAnimatedProgressBar = memo(
 
     const synapsePurple = 'hsl(265deg 100% 75%)'
     const tailwindGreen400 = 'rgb(74 222 128)'
-
     const height = 3
-
     const progressId = `progress-${id}`
     const maskId = `mask-${id}`
 
@@ -74,7 +70,7 @@ export const LinearAnimatedProgressBar = memo(
               <animate
                 attributeName="width"
                 values={`${isComplete ? 100 : percentElapsed}%`}
-                dur={`${totalTimeInMin}min`}
+                dur={totalTimeInSeconds}
                 fill="freeze"
                 calcMode={'linear'}
               />
