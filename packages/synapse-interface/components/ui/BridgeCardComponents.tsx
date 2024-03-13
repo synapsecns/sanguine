@@ -1,15 +1,7 @@
 import { Chain, Token } from '@/utils/types'
 import { DropDownArrowSvg } from '../icons/DropDownArrowSvg'
-import {
-  getBorderStyleForCoinHover,
-  getMenuItemHoverBgForCoin,
-} from '@/styles/tokens'
-import {
-  getNetworkButtonBgClassNameActive,
-  getNetworkButtonBorderActive,
-  getNetworkButtonBorderHover,
-  getNetworkHover,
-} from '@/styles/chains'
+import { getHoverStyleForButton as getHoverStyleForToken } from '@/styles/tokens'
+import { getHoverStyleForButton as getHoverStyleforChain } from '@/styles/chains'
 import LoadingDots from './tailwind/LoadingDots'
 
 const join = (a) => Object.values(a).join(' ')
@@ -97,14 +89,12 @@ export function TokenSelector({
 }: TokenSelectorTypes) {
   const className = join({
     flex: 'flex items-center gap-2',
+    background: 'bg-white dark:bg-zinc-700',
+    border: 'border border-zinc-200 dark:border-transparent',
     space: 'p-2 rounded flex-none',
-    // background: 'bg-separator', // TODO: Remove
-    background: 'dark:bg-zinc-700',
-    border: `border border-zinc-200 dark:border-transparent`,
     font: 'text-lg',
-    bgHover: getMenuItemHoverBgForCoin(selectedItem?.color),
-    borderHover: getBorderStyleForCoinHover(selectedItem?.color),
-    active: 'active:opacity-70',
+    hover: getHoverStyleForToken(selectedItem?.color),
+    active: 'active:opacity-75',
   })
 
   return (
@@ -137,10 +127,7 @@ export function ChainSelector({
     background: 'dark:bg-zinc-700',
     border: 'border border-zinc-200 dark:border-transparent',
     font: 'leading-tight',
-    bgHover: getNetworkHover(selectedItem?.color),
-    // bgActive: getNetworkButtonBgClassNameActive(selectedItem?.color),
-    borderHover: getNetworkButtonBorderHover(selectedItem?.color),
-    // borderActive: getNetworkButtonBorderActive(selectedItem?.color),
+    hover: getHoverStyleforChain(selectedItem?.color),
     active: 'active:opacity-70',
   })
 
