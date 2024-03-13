@@ -74,6 +74,8 @@ export const useEcotoneForkCountdownProgress = () => {
 
   return {
     isEcotoneForkUpgradePending,
+    isCurrentChainDisabled:
+      (isChainOptimism || isChainBase) && isEcotoneForkUpgradePending,
     EcotoneForkCountdownProgressBar:
       isChainOptimism || isChainBase ? EcotoneForkCountdownProgressBar : null,
   }

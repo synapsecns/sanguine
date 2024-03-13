@@ -73,6 +73,7 @@ export const useMetisDowntimeCountdownProgress = () => {
 
   return {
     isMetisUpgradePending,
+    isCurrentChainDisabled: isChainMetis && isMetisUpgradePending,
     MetisUpgradeCountdownProgressBar: isChainMetis
       ? MetisUpgradeCountdownProgressBar
       : null,
