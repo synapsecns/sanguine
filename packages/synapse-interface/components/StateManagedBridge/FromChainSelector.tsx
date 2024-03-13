@@ -14,9 +14,8 @@ export const FromChainSelector = () => {
   return (
     <ChainSelector
       dataTestId="bridge-origin-chain-list-button"
-      chain={fromChain}
+      selectedItem={fromChain}
       label="From"
-      placeholder="Network"
       onClick={() => dispatch(setShowFromChainListOverlay(true))}
     />
   )
