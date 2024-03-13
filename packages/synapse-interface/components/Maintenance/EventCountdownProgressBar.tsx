@@ -73,7 +73,7 @@ export const EventCountdownProgressBar = ({
         </div>
         <div className="px-1">
           <LinearAnimatedProgressBar
-            id="linear-animated-progress-bar"
+            id="event-countdown-progress-bar"
             startDate={startDate}
             endDate={endDate}
           />
