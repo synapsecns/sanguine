@@ -47,7 +47,7 @@ const TODO_REMOVE_wrapperStyle = {
 
 export function LandingPageWrapper({ children }: { children: any }) {
   return (
-    <div className="">
+    <div className="dark">
       <div className={wrapperClassName} style={TODO_REMOVE_wrapperStyle}>
         <LandingNav />
         {children}

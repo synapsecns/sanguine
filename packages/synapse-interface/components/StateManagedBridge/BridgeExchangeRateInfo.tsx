@@ -17,17 +17,21 @@ import * as CHAINS from '@constants/chains/master'
 const MAX_ARB_REBATE_PER_ADDRESS = 2000
 
 const BridgeExchangeRateInfo = () => {
+  /* TODO: upgrade to collapsable element */
+
   return (
-    <div className="py-3.5 px-1 space-y-3 text-sm md:px-6 tracking-wide">
+    <details open className="my-1 text-sm pointer-events-none">
       {/* <RouteEligibility /> */}
-      <TimeEstimate />
-      <section className="p-2 space-y-1 text-sm border rounded-sm border-[#504952] text-secondary font-light">
+      <summary className="block text-right px-1 mb-2 cursor-default">
+        <TimeEstimate />
+      </summary>
+      <section className="p-2 block rounded leading-relaxed border border-zinc-300 dark:border-zinc-800">
         <GasDropLabel />
         <Router />
         {/* <Rebate /> */}
         <Slippage />
       </section>
-    </div>
+    </details>
   )
 }
 
@@ -41,11 +45,11 @@ const Slippage = () => {
     useExchangeRateInfo(fromValue, exchangeRate)
   return (
     <div className="flex justify-between">
-      <div>Slippage</div>
+      <span className="text-zinc-500 dark:text-zinc-400">Slippage</span>
       {safeFromAmount !== '0' && !underFee ? (
         <span className={textColor}>{formattedPercentSlippage}</span>
       ) : (
-        <span className="">—</span>
+        <span className="">−</span>
       )}
     </div>
   )
@@ -57,8 +61,8 @@ const Router = () => {
   } = useBridgeState()
   return (
     <div className="flex justify-between">
-      <div>Router</div>
-      <div className="text-primaryTextColor">{bridgeModuleName}</div>
+      <span className="text-zinc-500 dark:text-zinc-400">Router</span>
+      {bridgeModuleName}
     </div>
   )
 }
@@ -170,14 +174,18 @@ const TimeEstimate = () => {
     !bridgeQuote ||
     bridgeQuote.outputAmount === EMPTY_BRIDGE_QUOTE.outputAmount
   ) {
-    showText = null
+    showText = (
+      <span className="text-zinc-500 dark:text-zinc-400">
+        Powered by Synapse
+      </span>
+    )
   }
 
   if (!fromToken) {
     showText = `Select origin token`
   }
 
-  return <div className="text-right text-secondary">{showText}</div>
+  return showText
 }
 
 const GasDropLabel = () => {
@@ -211,15 +219,15 @@ const GasDropLabel = () => {
   }
 
   return (
-    <div className="flex items-center text-secondary">
-      <span className="">Will also receive {formattedGasDropAmount} </span>
-      <span className="ml-1 font-medium text-white">
-        {symbol}{' '}
-        <span className="font-normal ">
-          {airdropInDollars && `($${airdropInDollars})`}
-        </span>
+    <>
+      <span className="text-zinc-500 dark:text-zinc-400">
+        Will also receive {formattedGasDropAmount}
       </span>
-    </div>
+      <span>
+        {' '}
+        {symbol} {airdropInDollars && `($${airdropInDollars})`}
+      </span>
+    </>
   )
 }
 
@@ -235,7 +243,7 @@ const useExchangeRateInfo = (fromValue, exchangeRate) => {
 
   const textColor: string = useMemo(() => {
     if (numExchangeRate >= 1) {
-      return 'text-green-300'
+      return 'text-green-500'
     } else if (numExchangeRate > 0.975) {
       return 'text-amber-500'
     } else {
