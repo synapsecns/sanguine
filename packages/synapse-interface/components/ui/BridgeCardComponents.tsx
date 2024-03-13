@@ -12,6 +12,8 @@ import {
 } from '@/styles/chains'
 import LoadingDots from './tailwind/LoadingDots'
 
+const join = (a) => Object.values(a).join(' ')
+
 interface SelectorTypes {
   dataTestId?: string
   placeholder?: string
@@ -39,8 +41,6 @@ interface AmountInputTypes {
   parsedBalance?: string
   onMaxBalance?: () => void
 }
-
-const join = (a) => Object.values(a).join(' ')
 
 export function BridgeCard({
   ref,
