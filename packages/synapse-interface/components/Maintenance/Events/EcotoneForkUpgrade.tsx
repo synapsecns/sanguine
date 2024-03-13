@@ -26,7 +26,7 @@ export const EcotoneForkUpgradeBanner = () => {
     ECOTONE_FORK_END_DATE
   )
 
-  useIntervalTimer(120000, isComplete)
+  useIntervalTimer(60000, isComplete)
 
   return (
     <AnnouncementBanner

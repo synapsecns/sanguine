@@ -21,7 +21,7 @@ export const AnnouncementBanner = ({
 }) => {
   const { isStarted, isComplete } = getCountdownTimeStatus(startDate, endDate)
   const [hasMounted, setHasMounted] = useState(false)
-  const [showBanner, setShowBanner] = useState(false)
+  const [showBanner, setShowBanner] = useState(true)
 
   useEffect(() => {
     setHasMounted(true)
@@ -49,7 +49,7 @@ export const AnnouncementBanner = ({
     }
   }, [showBanner, hasMounted])
 
-  if (!showBanner || !hasMounted || isComplete) return null
+  if (!showBanner || !hasMounted || !isStarted || isComplete) return null
 
   return (
     <div

@@ -10,27 +10,15 @@ import { getCountdownTimeStatus } from '../EventCountdownProgressBar'
  * Start: 30 min prior to Metis Chain Downtime @ (March 14, 02:00 UTC)
  * End: 12 hours after start of Metis Chain Downtime
  */
-// export const METIS_DOWNTIME_BANNERS_START = new Date(
-//   Date.UTC(2024, 2, 14, 1, 0, 0)
-// )
-// export const METIS_DOWNTIME_START_DATE = new Date(
-//   Date.UTC(2024, 2, 14, 1, 30, 0)
-// )
-// export const METIS_DOWNTIME_END_DATE = new Date(
-//   Date.UTC(2024, 2, 14, 13, 30, 0)
-// )
-
-/** Remove after test */
 export const METIS_DOWNTIME_BANNERS_START = new Date(
-  Date.UTC(2024, 2, 13, 19, 36, 0)
+  Date.UTC(2024, 2, 14, 1, 0, 0)
 )
 export const METIS_DOWNTIME_START_DATE = new Date(
-  Date.UTC(2024, 2, 13, 19, 36, 0)
+  Date.UTC(2024, 2, 14, 1, 30, 0)
 )
 export const METIS_DOWNTIME_END_DATE = new Date(
-  Date.UTC(2024, 2, 13, 19, 38, 0)
+  Date.UTC(2024, 2, 14, 13, 30, 0)
 )
-/** Remove after test */
 
 export const MetisDowntimeBanner = () => {
   const { isComplete } = getCountdownTimeStatus(
@@ -39,8 +27,6 @@ export const MetisDowntimeBanner = () => {
   )
 
   useIntervalTimer(60000, isComplete)
-
-  console.log('isComplete: ', isComplete)
 
   return (
     <AnnouncementBanner
