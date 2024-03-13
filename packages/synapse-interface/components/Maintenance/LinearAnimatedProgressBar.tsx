@@ -18,16 +18,16 @@ export const LinearAnimatedProgressBar = memo(
   }) => {
     const {
       totalTimeInSeconds,
-      timeElapsedInSeconds,
-      timeRemainingInSeconds,
+      totalTimeElapsedInSeconds,
+      totalTimeRemainingInSeconds,
       isComplete,
     } = getCountdownTimeStatus(startDate, endDate)
 
     const percentElapsed = Math.floor(
-      (timeElapsedInSeconds / totalTimeInSeconds) * 100
+      (totalTimeElapsedInSeconds / totalTimeInSeconds) * 100
     )
 
-    let duration = isComplete ? 0.5 : timeRemainingInSeconds
+    let duration = isComplete ? 0.5 : totalTimeRemainingInSeconds
 
     const synapsePurple = 'hsl(265deg 100% 75%)'
     const tailwindGreen400 = 'rgb(74 222 128)'
