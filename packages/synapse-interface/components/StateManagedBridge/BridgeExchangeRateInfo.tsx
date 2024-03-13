@@ -23,7 +23,7 @@ const BridgeExchangeRateInfo = () => {
    */
 
   return (
-    <details open className="my-1 text-sm">
+    <details open className="mt-1 mb-2 text-sm">
       {/* <RouteEligibility /> */}
       <summary className="block text-right px-1 mb-2 cursor-default pointer-events-none">
         <TimeEstimate />
