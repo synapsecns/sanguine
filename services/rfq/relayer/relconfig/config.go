@@ -102,6 +102,8 @@ type TokenConfig struct {
 	MaintenanceBalancePct float64 `yaml:"maintenance_balance_pct"`
 	// InitialBalancePct is the percentage of the total balance to retain when triggering a rebalance.
 	InitialBalancePct float64 `yaml:"initial_balance_pct"`
+	// MinRebalanceAmount is the minimum amount to rebalance in human-readable units.
+	MinRebalanceAmount string `yaml:"min_rebalance_amount"`
 	// MaxRebalanceAmount is the maximum amount to rebalance in human-readable units.
 	MaxRebalanceAmount string `yaml:"max_rebalance_amount"`
 }

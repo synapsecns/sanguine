@@ -472,6 +472,12 @@ func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[comm
 		return nil, nil
 	}
 
+	// clip the rebalance amount by the configured min
+	minAmount := cfg.GetMinRebalanceAmount(maxTokenData.ChainID, maxTokenData.Addr)
+	if amount.Cmp(minAmount) < 0 {
+		amount = minAmount
+	}
+
 	// clip the rebalance amount by the configured max
 	maxAmount := cfg.GetMaxRebalanceAmount(maxTokenData.ChainID, maxTokenData.Addr)
 	if amount.Cmp(maxAmount) > 0 {
