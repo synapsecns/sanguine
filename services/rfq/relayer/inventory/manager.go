@@ -480,6 +480,7 @@ func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[comm
 
 	// if the rebalance amount is 0, also do nothing.
 	if amount.Cmp(big.NewInt(0)) == 0 {
+		//nolint:nilnil
 		return nil, nil
 	}
 
