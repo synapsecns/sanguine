@@ -22,13 +22,13 @@ import { getCountdownTimeStatus } from '../EventCountdownProgressBar'
 
 /** Remove after test */
 export const METIS_DOWNTIME_BANNERS_START = new Date(
-  Date.UTC(2024, 2, 13, 19, 30, 0)
+  Date.UTC(2024, 2, 13, 19, 36, 0)
 )
 export const METIS_DOWNTIME_START_DATE = new Date(
-  Date.UTC(2024, 2, 13, 19, 30, 0)
+  Date.UTC(2024, 2, 13, 19, 36, 0)
 )
 export const METIS_DOWNTIME_END_DATE = new Date(
-  Date.UTC(2024, 2, 13, 19, 35, 0)
+  Date.UTC(2024, 2, 13, 19, 38, 0)
 )
 /** Remove after test */
 
@@ -38,7 +38,9 @@ export const MetisDowntimeBanner = () => {
     METIS_DOWNTIME_END_DATE
   )
 
-  useIntervalTimer(120000, isComplete)
+  useIntervalTimer(60000, isComplete)
+
+  console.log('isComplete: ', isComplete)
 
   return (
     <AnnouncementBanner

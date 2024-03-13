@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { getCountdownTimeStatus } from './EventCountdownProgressBar'
 
 /**
  * Reusable Annoucement Banner with custom Start/End Time
@@ -18,15 +19,9 @@ export const AnnouncementBanner = ({
   startDate: Date
   endDate: Date
 }) => {
+  const { isStarted, isComplete } = getCountdownTimeStatus(startDate, endDate)
   const [hasMounted, setHasMounted] = useState(false)
   const [showBanner, setShowBanner] = useState(false)
-
-  const currentDate = new Date()
-
-  const isStarted =
-    Math.floor(currentDate.getTime()) - Math.floor(startDate.getTime()) >= 0
-  const isComplete =
-    Math.floor(currentDate.getTime()) - Math.floor(endDate.getTime()) >= 0
 
   useEffect(() => {
     setHasMounted(true)

@@ -108,6 +108,7 @@ export const getCountdownTimeStatus = (startDate: Date, endDate: Date) => {
   const isPending = isStarted && !isComplete
 
   return {
+    currentDate,
     currentTimeInSeconds,
     startTimeInSeconds,
     endTimeInSeconds,
