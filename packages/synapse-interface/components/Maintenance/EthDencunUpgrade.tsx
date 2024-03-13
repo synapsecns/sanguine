@@ -21,10 +21,12 @@ export const EthDencunUpgradeBanner = () => {
     <AnnouncementBanner
       bannerId="03122024-eth-dencun"
       bannerContents={
-        <div>
-          The Bridge + RFQ will be globally offline 15mins ahead of the Dencun
-          upgrade (March 13, 13:55 UTC, 9:55 EST). Will be back online about 15
-          - 30 mins after Dencun.
+        <div className="flex flex-col justify-center space-y-1 text-center">
+          <div>
+            The Bridge + RFQ will be globally offline 15mins ahead of the Dencun
+            upgrade (March 13, 13:55 UTC, 9:55 EST).
+          </div>
+          <div>Will be back online about 15 - 30 mins after Dencun.</div>
         </div>
       }
       startDate={ETH_DENCUN_BANNER_START}

@@ -58,7 +58,7 @@ export const AnnouncementBanner = ({
 
   return (
     <div
-      className="flex items-center justify-center mx-auto lg:flex-row lg:px-20"
+      className="flex items-center justify-center mx-auto lg:flex-row"
       style={{
         background:
           'linear-gradient(310.65deg, rgba(172, 143, 255, 0.2) -17.9%, rgba(255, 0, 255, 0.2) 86.48%)',
@@ -69,17 +69,14 @@ export const AnnouncementBanner = ({
         className="flex items-center px-8 pt-1 pb-1 rounded-md text-primaryTextColor"
         role="alert"
       >
-        <div className="m-1 font-thin">
-          <div className="container mx-auto">
-            <p className="text-md">{bannerContents}</p>
-          </div>
+        <div className="container p-1 mx-auto">
+          <p className="text-md">{bannerContents}</p>
         </div>
         <button
           type="button"
           className={`
             inline-flex items-center justify-center
-            h-7 w-7
-            ml-auto -mx-1.5 -my-1.5 p-1.5
+            h-7 w-7 p-1.5 ml-3
             text-primaryTextColor
           `}
           data-dismiss-target="#banner-default"
