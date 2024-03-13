@@ -1,4 +1,5 @@
 import { AnnouncementBanner } from './AnnouncementBanner'
+import { WarningMessage } from '../Warning'
 
 /**
  * Start: 10 min prior to Ecotone Fork Upgrade Time @ (March 14, 00:00 UTC)
@@ -37,6 +38,21 @@ export const EcotoneForkUpgradeBanner = () => {
       }
       startDate={ECOTONE_FORK_BANNERS_START}
       endDate={ECOTONE_FORK_END_DATE}
+    />
+  )
+}
+
+export const EcotoneForkWarningMessage = () => {
+  return (
+    <WarningMessage
+      message={
+        <>
+          <p>
+            Ecotone Fork upgrade will pause bridging to and from Optimism and
+            Base Chains.
+          </p>
+        </>
+      }
     />
   )
 }

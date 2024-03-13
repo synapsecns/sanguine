@@ -95,6 +95,7 @@ import {
 import {
   ECOTONE_FORK_START_DATE,
   ECOTONE_FORK_END_DATE,
+  EcotoneForkWarningMessage,
 } from '@/components/Maintenance/EcotoneForkUpgrade'
 
 import { OPTIMISM, BASE, METIS } from '@/constants/chains/master'
@@ -637,6 +638,7 @@ const StateManagedBridge = () => {
             />
             <OutputContainer />
             <Warning />
+            {isEcotoneForkUpgradePending && <EcotoneForkWarningMessage />}
             <Transition
               appear={true}
               unmount={false}
