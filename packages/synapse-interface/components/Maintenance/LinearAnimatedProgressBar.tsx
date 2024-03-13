@@ -40,7 +40,7 @@ export const LinearAnimatedProgressBar = memo(
 
     return (
       <svg
-        id="animated-progress-bar"
+        id="linear-animated-progress-bar"
         key={Date.now()}
         width="100%"
         height={height}
