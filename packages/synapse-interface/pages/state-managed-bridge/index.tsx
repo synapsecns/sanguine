@@ -585,14 +585,14 @@ const StateManagedBridge = () => {
           />
           <OutputContainer />
           <Warning />
-          <Transition
+          {/* <Transition
             appear={true}
             unmount={false}
             show={true}
             {...SECTION_TRANSITION_PROPS}
-          >
-            <BridgeExchangeRateInfo />
-          </Transition>
+          > */}
+          <BridgeExchangeRateInfo />
+          {/* </Transition> */}
           {showDestinationAddress && (
             <DestinationAddressInput
               toChainId={toChainId}
