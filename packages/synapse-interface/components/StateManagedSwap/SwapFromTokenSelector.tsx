@@ -13,7 +13,7 @@ export const SwapFromTokenSelector = () => {
   return (
     <TokenSelector
       dataTestId="bridge-origin-token"
-      token={swapFromToken}
+      selectedItem={swapFromToken}
       placeholder="In"
       onClick={() => dispatch(setShowSwapFromTokenListOverlay(true))}
     />
