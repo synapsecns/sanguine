@@ -6,7 +6,7 @@ import { AnnouncementBanner } from './AnnouncementBanner'
  */
 export const ETH_DENCUN_BANNER_START = new Date(Date.UTC(2024, 2, 12, 0, 0, 0))
 export const ETH_DENCUN_START_DATE = new Date(Date.UTC(2024, 2, 13, 13, 40, 0))
-export const ETH_DENCUN_END_DATE = new Date(Date.UTC(2024, 2, 12, 14, 25, 0))
+export const ETH_DENCUN_END_DATE = new Date(Date.UTC(2024, 2, 13, 14, 25, 0))
 
 export const EthDencunUpgradeBanner = () => {
   return (
