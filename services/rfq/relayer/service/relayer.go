@@ -260,14 +260,12 @@ func (r *Relayer) runDBSelector(ctx context.Context) error {
 }
 
 // startCCTPRelayer starts the CCTP relayer, if a config is specified.
-func (r *Relayer) startCCTPRelayer(parentCtx context.Context) (err error) {
+func (r *Relayer) startCCTPRelayer(ctx context.Context) (err error) {
 	fmt.Println("startCCTPRelayer")
-	ctx, span := r.metrics.Tracer().Start(parentCtx, "startCCTPRelayer")
 
 	// only start the CCTP relayer if the config is specified
 	cctpCfg := r.cfg.CCTPRelayerConfig
 	if cctpCfg == nil {
-		span.AddEvent("no cctp relayer config specified")
 		return nil
 	}
 
@@ -294,7 +292,6 @@ func (r *Relayer) startCCTPRelayer(parentCtx context.Context) (err error) {
 	fmt.Println("relayer created")
 
 	// run the cctp relayer
-	metrics.EndSpanWithErr(span, err)
 	fmt.Println("runCCTPRelayer")
 	err = cctpRelayer.Run(ctx)
 	if err != nil {

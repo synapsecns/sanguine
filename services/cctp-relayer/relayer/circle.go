@@ -198,8 +198,8 @@ func (c *circleCCTPHandler) SubmitReceiveMessage(parentCtx context.Context, msg 
 	return nil
 }
 
-func (c *circleCCTPHandler) handleDepositForBurn(ctx context.Context, log *types.Log, chainID uint32) (msg *relayTypes.Message, err error) {
-	ctx, span := c.handler.Tracer().Start(ctx, "handleDepositForBurn", trace.WithAttributes(
+func (c *circleCCTPHandler) handleDepositForBurn(parentCtx context.Context, log *types.Log, chainID uint32) (msg *relayTypes.Message, err error) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "handleDepositForBurn", trace.WithAttributes(
 		attribute.String(metrics.TxHash, log.TxHash.Hex()),
 		attribute.Int(metrics.ChainID, int(chainID)),
 		attribute.Int("block_number", int(log.BlockNumber)),
@@ -278,8 +278,8 @@ func (c *circleCCTPHandler) handleDepositForBurn(ctx context.Context, log *types
 }
 
 //nolint:cyclop
-func (c *circleCCTPHandler) handleMessageReceived(ctx context.Context, log *types.Log, chainID uint32) (err error) {
-	ctx, span := c.handler.Tracer().Start(ctx, "handleMessageReceived", trace.WithAttributes(
+func (c *circleCCTPHandler) handleMessageReceived(parentCtx context.Context, log *types.Log, chainID uint32) (err error) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "handleMessageReceived", trace.WithAttributes(
 		attribute.String(metrics.TxHash, log.TxHash.Hex()),
 		attribute.Int(metrics.ChainID, int(chainID)),
 		attribute.Int("block_number", int(log.BlockNumber)),
