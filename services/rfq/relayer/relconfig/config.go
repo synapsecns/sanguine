@@ -95,7 +95,6 @@ type TokenConfig struct {
 	// For now, specify the USD price of the token in the config.
 	PriceUSD float64 `yaml:"price_usd"`
 	// MinQuoteAmount is the minimum amount to quote for this token in human-readable units.
-	// for USDC-through-cctp pairs this defualts to $1,000.
 	MinQuoteAmount string `yaml:"min_quote_amount"`
 	// RebalanceMethod is the method to use for rebalancing.
 	RebalanceMethod string `yaml:"rebalance_method"`
@@ -104,6 +103,7 @@ type TokenConfig struct {
 	// InitialBalancePct is the percentage of the total balance to retain when triggering a rebalance.
 	InitialBalancePct float64 `yaml:"initial_balance_pct"`
 	// MinRebalanceAmount is the minimum amount to rebalance in human-readable units.
+	// For USDC-through-cctp pairs this defaults to $1,000.
 	MinRebalanceAmount string `yaml:"min_rebalance_amount"`
 	// MaxRebalanceAmount is the maximum amount to rebalance in human-readable units.
 	MaxRebalanceAmount string `yaml:"max_rebalance_amount"`
