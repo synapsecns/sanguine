@@ -551,6 +551,8 @@ var defaultMinRebalanceAmount = big.NewInt(1000)
 
 // GetMinRebalanceAmount returns the min rebalance amount for the given chain and address.
 // Note that this getter returns the value in native token decimals.
+//
+//nolint:dupl
 func (c Config) GetMinRebalanceAmount(chainID int, addr common.Address) *big.Int {
 	chainCfg, ok := c.Chains[chainID]
 	if !ok {
@@ -583,6 +585,8 @@ var defaultMaxRebalanceAmount = abi.MaxInt256
 
 // GetMaxRebalanceAmount returns the max rebalance amount for the given chain and address.
 // Note that this getter returns the value in native token decimals.
+//
+//nolint:dupl
 func (c Config) GetMaxRebalanceAmount(chainID int, addr common.Address) *big.Int {
 	chainCfg, ok := c.Chains[chainID]
 	if !ok {
