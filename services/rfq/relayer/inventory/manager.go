@@ -370,7 +370,7 @@ func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int,
 	if err != nil {
 		return fmt.Errorf("could not get rebalance: %w", err)
 	}
-	if rebalance == nil {
+	if rebalance == nil || rebalance.Amount.Cmp(big.NewInt(0)) <= 0 {
 		return nil
 	}
 	span.SetAttributes(
