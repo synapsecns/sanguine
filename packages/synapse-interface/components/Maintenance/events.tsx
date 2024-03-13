@@ -1,6 +1,6 @@
 import { AnnouncementBanner } from './AnnouncementBanner'
 import { useUpgradeProgressBar } from './UpgradeProgressBar'
-
+import { getTimeMinutesBeforeNow } from '@/utils/time'
 /**
  * Start: 15 min prior to Eth Dencun Upgrade Time @ 3/13/24 13:55 UTC
  * End: 30 min after start of Eth Decun Upgrade Time
@@ -9,8 +9,22 @@ import { useUpgradeProgressBar } from './UpgradeProgressBar'
 // const endDate = new Date(Date.UTC(2024, 2, 12, 14, 25, 0))
 
 /** Test Values */
-export const ETH_DENCUN_START_DATE = new Date(Date.UTC(2024, 2, 13, 2, 20, 0))
-export const ETH_DENCUN_END_DATE = new Date(Date.UTC(2024, 2, 13, 2, 30, 0))
+export const ETH_DENCUN_BANNER_START = new Date()
+export const ETH_DENCUN_START_DATE = new Date(Date.UTC(2024, 2, 13, 2, 40, 0))
+export const ETH_DENCUN_END_DATE = new Date(Date.UTC(2024, 2, 13, 2, 44, 0))
+
+export const isEthDencunUpgradeActive = (): boolean => {
+  const currentDate = new Date()
+
+  const isStarted =
+    Math.floor(currentDate.getTime()) >
+    Math.floor(ETH_DENCUN_START_DATE.getTime())
+  const isComplete =
+    Math.floor(currentDate.getTime()) >
+    Math.floor(ETH_DENCUN_END_DATE.getTime())
+
+  return isStarted && !isComplete
+}
 
 export const EthDencunUpgradeBanner = () => {
   return (
@@ -23,7 +37,7 @@ export const EthDencunUpgradeBanner = () => {
           - 30 mins after Dencun.
         </div>
       }
-      startDate={ETH_DENCUN_START_DATE}
+      startDate={ETH_DENCUN_BANNER_START}
       endDate={ETH_DENCUN_END_DATE}
     />
   )

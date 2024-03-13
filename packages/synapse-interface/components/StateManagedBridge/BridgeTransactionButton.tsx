@@ -21,6 +21,7 @@ export const BridgeTransactionButton = ({
   approveTxn,
   executeBridge,
   isApproved,
+  isBridgePaused,
 }) => {
   const [isConnected, setIsConnected] = useState(false)
   const { openConnectModal } = useConnectModal()
@@ -76,7 +77,7 @@ export const BridgeTransactionButton = ({
     (isConnected && !sufficientBalance) ||
     PAUSED_FROM_CHAIN_IDS.includes(fromChainId) ||
     PAUSED_TO_CHAIN_IDS.includes(toChainId) ||
-    PAUSED_GLOBAL_BRIDGE
+    isBridgePaused
 
   let buttonProperties
 
@@ -87,7 +88,7 @@ export const BridgeTransactionButton = ({
     return fromTokenDecimals ? stringToBigInt(fromValue, fromTokenDecimals) : 0
   }, [fromValue, fromTokenDecimals])
 
-  if (PAUSED_GLOBAL_BRIDGE) {
+  if (isBridgePaused) {
     buttonProperties = {
       label: 'Bridged paused',
       onClick: null,

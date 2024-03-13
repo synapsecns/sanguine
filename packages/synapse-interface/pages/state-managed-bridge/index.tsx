@@ -633,6 +633,7 @@ const StateManagedBridge = () => {
                   isApproved={isApproved}
                   approveTxn={approveTxn}
                   executeBridge={executeBridge}
+                  isBridgePaused={isUpgradePending}
                 />
               </div>
             </div>
