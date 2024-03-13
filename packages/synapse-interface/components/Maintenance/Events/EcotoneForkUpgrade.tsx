@@ -1,5 +1,5 @@
-import { AnnouncementBanner } from './AnnouncementBanner'
-import { WarningMessage } from '../Warning'
+import { AnnouncementBanner } from '../AnnouncementBanner'
+import { WarningMessage } from '../../Warning'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { OPTIMISM, BASE } from '@/constants/chains/master'
 

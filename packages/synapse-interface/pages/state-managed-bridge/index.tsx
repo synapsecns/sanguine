@@ -92,12 +92,12 @@ import {
   METIS_DOWNTIME_START_DATE,
   METIS_DOWNTIME_END_DATE,
   MetisDowntimeWarningMessage,
-} from '@/components/Maintenance/MetisUpgrade'
+} from '@/components/Maintenance/Events/MetisUpgrade'
 import {
   ECOTONE_FORK_START_DATE,
   ECOTONE_FORK_END_DATE,
   EcotoneForkWarningMessage,
-} from '@/components/Maintenance/EcotoneForkUpgrade'
+} from '@/components/Maintenance/Events/EcotoneForkUpgrade'
 
 import { OPTIMISM, BASE, METIS } from '@/constants/chains/master'
 
