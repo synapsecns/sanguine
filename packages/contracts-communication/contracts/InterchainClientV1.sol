@@ -86,7 +86,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     }
 
     // TODO: Handle the case where receiver does not implement the IInterchainApp interface (or does not exist at all)
-    // TODO: Save the executor address outside of the contract to pass the data back to the source chain
     // @inheritdoc IInterchainClientV1
     function interchainExecute(
         uint256 gasLimit,
@@ -136,6 +135,8 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     // @inheritdoc IInterchainClientV1
     function isExecutable(bytes calldata encodedTx, bytes32[] calldata proof) external view returns (bool) {
         InterchainTransaction memory icTx = InterchainTransactionLib.decodeTransaction(encodedTx);
+        // Check that options could be decoded
+        icTx.options.decodeOptionsV1();
         _assertExecutable(icTx, proof);
         return true;
     }
