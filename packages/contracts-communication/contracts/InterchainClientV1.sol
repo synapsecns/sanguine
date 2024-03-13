@@ -190,11 +190,17 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
 
     /// @inheritdoc IInterchainClientV1
     function getLinkedClient(uint256 chainId) external view returns (bytes32) {
+        if (chainId == block.chainid) {
+            revert InterchainClientV1__NotRemoteChainId(chainId);
+        }
         return _linkedClient[chainId];
     }
 
     /// @inheritdoc IInterchainClientV1
     function getLinkedClientEVM(uint256 chainId) external view returns (address linkedClientEVM) {
+        if (chainId == block.chainid) {
+            revert InterchainClientV1__NotRemoteChainId(chainId);
+        }
         bytes32 linkedClient = _linkedClient[chainId];
         linkedClientEVM = TypeCasts.bytes32ToAddress(linkedClient);
         // Check that the linked client address fits into the EVM address space
