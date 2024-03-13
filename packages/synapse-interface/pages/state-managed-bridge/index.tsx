@@ -88,6 +88,15 @@ import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { SwitchButton } from '@/components/buttons/SwitchButton'
 import { useEventCountdownProgressBar } from '@/components/Maintenance/EventCountdownProgressBar'
 
+import {
+  METIS_DOWNTIME_START_DATE,
+  METIS_DOWNTIME_END_DATE,
+} from '@/components/Maintenance/MetisUpgrade'
+import {
+  ECOTONE_FORK_START_DATE,
+  ECOTONE_FORK_END_DATE,
+} from '@/components/Maintenance/EcotoneForkUpgrade'
+
 const StateManagedBridge = () => {
   const { address } = useAccount()
   const { chain } = useNetwork()
@@ -519,14 +528,23 @@ const StateManagedBridge = () => {
   const springClass =
     '-mt-4 fixed z-50 w-full h-full bg-opacity-50 bg-[#343036]'
 
-  // const {
-  //   isPending: isUpgradePending,
-  //   EventCountdownProgressBar: EthDencunEventCountdownProgressBar,
-  // } = useEventCountdownProgressBar(
-  //   'Dencun upgrade in progress',
-  //   ETH_DENCUN_START_DATE,
-  //   ETH_DENCUN_END_DATE
-  // )
+  const {
+    isPending: isEcotoneForkUpgradePending,
+    EventCountdownProgressBar: EcotoneForkCountdownProgressBar,
+  } = useEventCountdownProgressBar(
+    'Ecotone Fork upgrade in progress',
+    ECOTONE_FORK_START_DATE,
+    ECOTONE_FORK_END_DATE
+  )
+
+  const {
+    isPending: isMetisUpgradePending,
+    EventCountdownProgressBar: MetisUpgradeCountdownProgressBar,
+  } = useEventCountdownProgressBar(
+    'Metis upgrade in progress',
+    METIS_DOWNTIME_START_DATE,
+    METIS_DOWNTIME_END_DATE
+  )
 
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
@@ -565,6 +583,8 @@ const StateManagedBridge = () => {
             transition-all duration-100 transform rounded-md
           `}
         >
+          {EcotoneForkCountdownProgressBar}
+          {MetisUpgradeCountdownProgressBar}
           <div ref={bridgeDisplayRef}>
             <Transition show={showSettingsSlideOver} {...TRANSITION_PROPS}>
               <animated.div>
