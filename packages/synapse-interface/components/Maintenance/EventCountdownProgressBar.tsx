@@ -12,17 +12,20 @@ export const useEventCountdownProgressBar = (
   EventCountdownProgressBar: JSX.Element
 } => {
   useIntervalTimer(60000)
-  const currentDate = new Date()
-  const currentTimeInSeconds = currentDate.getTime() / 1000
-  const startTimeInSeconds = Math.floor(startDate.getTime() / 1000)
-  const endTimeInSeconds = Math.floor(endDate.getTime() / 1000)
+  // const currentDate = new Date()
+  // const currentTimeInSeconds = currentDate.getTime() / 1000
+  // const startTimeInSeconds = Math.floor(startDate.getTime() / 1000)
+  // const endTimeInSeconds = Math.floor(endDate.getTime() / 1000)
 
-  const timeRemainingInSeconds = endTimeInSeconds - currentTimeInSeconds
-  const timeRemainingInMinutes = Math.ceil(timeRemainingInSeconds / 60)
+  // const timeRemainingInSeconds = endTimeInSeconds - currentTimeInSeconds
+  // const timeRemainingInMinutes = Math.ceil(timeRemainingInSeconds / 60)
 
-  const isStarted = currentTimeInSeconds >= startTimeInSeconds
-  const isComplete = timeRemainingInSeconds <= 0
-  const isPending = isStarted && !isComplete
+  // const isStarted = currentTimeInSeconds >= startTimeInSeconds
+  // const isComplete = timeRemainingInSeconds <= 0
+  // const isPending = isStarted && !isComplete
+
+  const { timeRemainingInMinutes, isComplete, isPending } =
+    getCountdownTimeStatus(startDate, endDate)
 
   let status: 'idle' | 'pending' | 'complete'
 
@@ -40,8 +43,8 @@ export const useEventCountdownProgressBar = (
     EventCountdownProgressBar: (
       <EventCountdownProgressBar
         eventLabel={eventLabel}
-        startTime={startTimeInSeconds}
-        endTime={endTimeInSeconds}
+        startDate={startDate}
+        endDate={endDate}
         status={status}
         timeRemaining={timeRemainingInMinutes}
       />
@@ -51,14 +54,14 @@ export const useEventCountdownProgressBar = (
 
 export const EventCountdownProgressBar = ({
   eventLabel,
-  startTime,
-  endTime,
+  startDate,
+  endDate,
   status,
   timeRemaining,
 }: {
   eventLabel: string
-  startTime: number
-  endTime: number
+  startDate: Date
+  endDate: Date
   status: 'idle' | 'pending' | 'complete'
   timeRemaining: number
 }) => {
@@ -78,8 +81,8 @@ export const EventCountdownProgressBar = ({
         <div className="px-1">
           <LinearAnimatedProgressBar
             id="linear-animated-progress-bar"
-            startTime={startTime}
-            endTime={endTime}
+            startDate={startDate}
+            endDate={endDate}
             status={status}
           />
         </div>
@@ -87,5 +90,35 @@ export const EventCountdownProgressBar = ({
     )
   } else {
     return null
+  }
+}
+
+export const getCountdownTimeStatus = (startDate: Date, endDate: Date) => {
+  const currentDate = new Date()
+  const currentTimeInSeconds = Math.floor(currentDate.getTime() / 1000)
+
+  const startTimeInSeconds = Math.floor(startDate.getTime() / 1000)
+  const endTimeInSeconds = Math.floor(endDate.getTime() / 1000)
+  const totalTimeInSeconds = endTimeInSeconds - startTimeInSeconds
+
+  const timeElapsedInSeconds = currentTimeInSeconds - startTimeInSeconds
+  const timeRemainingInSeconds = endTimeInSeconds - currentTimeInSeconds
+  const timeRemainingInMinutes = Math.ceil(timeRemainingInSeconds / 60)
+
+  const isStarted = currentTimeInSeconds >= startTimeInSeconds
+  const isComplete = timeRemainingInSeconds <= 0
+  const isPending = isStarted && !isComplete
+
+  return {
+    currentTimeInSeconds,
+    startTimeInSeconds,
+    endTimeInSeconds,
+    totalTimeInSeconds,
+    timeElapsedInSeconds,
+    timeRemainingInSeconds,
+    timeRemainingInMinutes,
+    isStarted,
+    isComplete,
+    isPending,
   }
 }
