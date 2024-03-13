@@ -13,7 +13,7 @@ export function SwitchButton({ onClick }: { onClick: () => void }) {
   }
 
   const className = join({
-    space: '-my-3.5 rounded z-10 justify-self-center',
+    space: '-mt-4 -mb-4 rounded z-10 justify-self-center',
     // background: 'bg-bgLight', // TODO: Remove
     background: 'bg-zinc-50 dark:bg-zinc-800',
     // border: 'border border-bgBase', // TODO: Remove
