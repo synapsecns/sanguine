@@ -35,7 +35,7 @@ export const ConnectedIndicator = () => {
   })
   return (
     <button data-test-id="connected-button" disabled className={className}>
-      <Indicator className="bg-green-500" />
+      <Indicator className="bg-green-500 dark:bg-green-300" />
       Connected
     </button>
   )
@@ -111,13 +111,13 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
     >
       {isConnecting ? (
         <>
-          <Indicator className="border-green-500" />
+          <Indicator className="border-green-500 dark:border-green-300" />
           Connecting
           <LoaderIcon />
         </>
       ) : (
         <>
-          <Indicator className="border-indigo-500" />
+          <Indicator className="border-indigo-500 dark:border-indigo-300" />
           Switch Network
         </>
       )}

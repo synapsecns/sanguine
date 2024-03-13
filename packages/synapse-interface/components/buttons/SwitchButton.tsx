@@ -14,13 +14,13 @@ export function SwitchButton({ onClick }: { onClick: () => void }) {
 
   const className = join({
     space: '-mt-4 -mb-4 rounded z-10 justify-self-center',
-    // background: 'bg-bgLight', // TODO: Remove
-    background: 'bg-zinc-50 dark:bg-zinc-800',
-    // border: 'border border-bgBase', // TODO: Remove
-    border: 'border border-zinc-200 dark:border-zinc-900/95',
-    // stroke: 'stroke-2 stroke-secondary', // TODO: Remove
-    stroke: 'stroke-2 stroke-zinc-500',
-    transition: `hover:border-zinc-400 hover:dark:border-zinc-500 cursor-pointer transition-transform ${
+    background: 'bg-zinc-50 dark:bg-bgLight', // TODO: Remove
+    // background: 'bg-zinc-50 dark:bg-zinc-800/50',
+    border: 'border border-zinc-200 dark:border-bgBase', // TODO: Remove
+    // border: 'border border-zinc-200 dark:border-zinc-900/95',
+    stroke: 'stroke-2 stroke-zinc-500 dark:stroke-secondary', // TODO: Remove
+    // stroke: 'stroke-2 stroke-zinc-500 dark:stroke-zinc-400',
+    transition: `hover:opacity-80 cursor-pointer transition-transform ${
       isActive ? `duration-${ms} rotate-180 ease-in-out` : 'ease-out' // 'duration-0'
     }`,
   })
@@ -32,8 +32,6 @@ export function SwitchButton({ onClick }: { onClick: () => void }) {
       width="32"
       height="32"
       viewBox="0 0 32 32"
-      fill="none"
-      overflow="visible"
       xmlns="http://www.w3.org/2000/svg"
       strokeLinecap="round"
       strokeLinejoin="round"

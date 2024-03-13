@@ -17,15 +17,19 @@ import * as CHAINS from '@constants/chains/master'
 const MAX_ARB_REBATE_PER_ADDRESS = 2000
 
 const BridgeExchangeRateInfo = () => {
-  /* TODO: upgrade to collapsable element */
+  /* TODO:
+   * Upgrade to collapsable element
+   * Use dark:border-zinc-800 in <section> className
+   */
 
   return (
-    <details open className="my-1 text-sm pointer-events-none">
+    <details open className="my-1 text-sm">
       {/* <RouteEligibility /> */}
-      <summary className="block text-right px-1 mb-2 cursor-default">
+      <summary className="block text-right px-1 mb-2 cursor-default pointer-events-none">
         <TimeEstimate />
       </summary>
-      <section className="p-2 block rounded leading-relaxed border border-zinc-300 dark:border-zinc-800">
+      <section className="p-2 block rounded leading-relaxed border border-zinc-300 dark:border-separator">
+        {' '}
         <GasDropLabel />
         <Router />
         {/* <Rebate /> */}
