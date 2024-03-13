@@ -7,24 +7,14 @@ import { METIS } from '@/constants/chains/master'
  * Start: 30 min prior to Metis Chain Downtime @ (March 14, 02:00 UTC)
  * End: 12 hours after start of Metis Chain Downtime
  */
-// export const METIS_DOWNTIME_BANNERS_START = new Date(
-//   Date.UTC(2024, 2, 14, 1, 0, 0)
-// )
-// export const METIS_DOWNTIME_START_DATE = new Date(
-//   Date.UTC(2024, 2, 14, 1, 30, 0)
-// )
-// export const METIS_DOWNTIME_END_DATE = new Date(
-//   Date.UTC(2024, 2, 14, 13, 30, 0)
-// )
-
 export const METIS_DOWNTIME_BANNERS_START = new Date(
-  Date.UTC(2024, 2, 13, 14, 0, 0)
+  Date.UTC(2024, 2, 14, 1, 0, 0)
 )
 export const METIS_DOWNTIME_START_DATE = new Date(
-  Date.UTC(2024, 2, 13, 14, 30, 0)
+  Date.UTC(2024, 2, 14, 1, 30, 0)
 )
 export const METIS_DOWNTIME_END_DATE = new Date(
-  Date.UTC(2024, 2, 13, 16, 30, 0)
+  Date.UTC(2024, 2, 14, 13, 30, 0)
 )
 
 export const MetisDowntimeBanner = () => {
