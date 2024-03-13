@@ -2,6 +2,7 @@ import { AnnouncementBanner } from '../AnnouncementBanner'
 import { WarningMessage } from '../../Warning'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { OPTIMISM, BASE } from '@/constants/chains/master'
+import { useEventCountdownProgressBar } from '../EventCountdownProgressBar'
 
 /**
  * Start: 10 min prior to Ecotone Fork Upgrade Time @ (March 14, 00:00 UTC)
@@ -54,4 +55,26 @@ export const EcotoneForkWarningMessage = () => {
       />
     )
   } else return null
+}
+
+export const useEcotoneForkEventCountdownProgress = () => {
+  const { fromChainId, toChainId } = useBridgeState()
+
+  const isChainOptimism = [fromChainId, toChainId].includes(OPTIMISM.id)
+  const isChainBase = [fromChainId, toChainId].includes(BASE.id)
+
+  const {
+    isPending: isEcotoneForkUpgradePending,
+    EventCountdownProgressBar: EcotoneForkCountdownProgressBar,
+  } = useEventCountdownProgressBar(
+    'Ecotone Fork upgrade in progress',
+    ECOTONE_FORK_START_DATE,
+    ECOTONE_FORK_END_DATE
+  )
+
+  return {
+    isEcotoneForkUpgradePending,
+    EcotoneForkCountdownProgressBar:
+      isChainOptimism || isChainBase ? EcotoneForkCountdownProgressBar : null,
+  }
 }

@@ -97,6 +97,7 @@ import {
   ECOTONE_FORK_START_DATE,
   ECOTONE_FORK_END_DATE,
   EcotoneForkWarningMessage,
+  useEcotoneForkEventCountdownProgress,
 } from '@/components/Maintenance/Events/EcotoneForkUpgrade'
 
 import { OPTIMISM, BASE, METIS } from '@/constants/chains/master'
@@ -533,14 +534,17 @@ const StateManagedBridge = () => {
     '-mt-4 fixed z-50 w-full h-full bg-opacity-50 bg-[#343036]'
 
   /* Remove after upgrades */
-  const {
-    isPending: isEcotoneForkUpgradePending,
-    EventCountdownProgressBar: EcotoneForkCountdownProgressBar,
-  } = useEventCountdownProgressBar(
-    'Ecotone Fork upgrade in progress',
-    ECOTONE_FORK_START_DATE,
-    ECOTONE_FORK_END_DATE
-  )
+  // const {
+  //   isPending: isEcotoneForkUpgradePending,
+  //   EventCountdownProgressBar: EcotoneForkCountdownProgressBar,
+  // } = useEventCountdownProgressBar(
+  //   'Ecotone Fork upgrade in progress',
+  //   ECOTONE_FORK_START_DATE,
+  //   ECOTONE_FORK_END_DATE
+  // )
+
+  const { isEcotoneForkUpgradePending, EcotoneForkCountdownProgressBar } =
+    useEcotoneForkEventCountdownProgress()
 
   const {
     isPending: isMetisUpgradePending,
