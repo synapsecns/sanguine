@@ -69,7 +69,7 @@ export const LinearAnimatedProgressBar = memo(
             <rect height="100%">
               <animate
                 attributeName="width"
-                values={`${isComplete ? 100 : percentElapsed}%`}
+                values={`${isComplete ? 100 : percentElapsed}%; 100%`}
                 dur={totalTimeInSeconds}
                 fill="freeze"
                 calcMode={'linear'}
