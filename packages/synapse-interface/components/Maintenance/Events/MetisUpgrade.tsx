@@ -7,14 +7,24 @@ import { METIS } from '@/constants/chains/master'
  * Start: 30 min prior to Metis Chain Downtime @ (March 14, 02:00 UTC)
  * End: 12 hours after start of Metis Chain Downtime
  */
+// export const METIS_DOWNTIME_BANNERS_START = new Date(
+//   Date.UTC(2024, 2, 14, 1, 0, 0)
+// )
+// export const METIS_DOWNTIME_START_DATE = new Date(
+//   Date.UTC(2024, 2, 14, 1, 30, 0)
+// )
+// export const METIS_DOWNTIME_END_DATE = new Date(
+//   Date.UTC(2024, 2, 14, 13, 30, 0)
+// )
+
 export const METIS_DOWNTIME_BANNERS_START = new Date(
-  Date.UTC(2024, 2, 14, 1, 0, 0)
+  Date.UTC(2024, 2, 13, 14, 0, 0)
 )
 export const METIS_DOWNTIME_START_DATE = new Date(
-  Date.UTC(2024, 2, 14, 1, 30, 0)
+  Date.UTC(2024, 2, 13, 14, 30, 0)
 )
 export const METIS_DOWNTIME_END_DATE = new Date(
-  Date.UTC(2024, 2, 14, 13, 30, 0)
+  Date.UTC(2024, 2, 13, 16, 30, 0)
 )
 
 export const MetisDowntimeBanner = () => {
@@ -24,8 +34,8 @@ export const MetisDowntimeBanner = () => {
       bannerContents={
         <div className="flex flex-col justify-center space-y-1 text-center">
           <div>
-            Due to a Metis upgrade, bridging to and from Metis will pause 30
-            minutes ahead of March 14, 02:00 UTC,
+            Metis Chain bridging will be paused 30 min ahead of the Metis
+            Upgrade (March 14, 02:00 UTC, 22:00 EST)
           </div>
           <div>and stay paused for ~12 hours.</div>
         </div>

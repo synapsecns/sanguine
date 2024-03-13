@@ -58,7 +58,7 @@ export const AnnouncementBanner = ({
 
   return (
     <div
-      className="flex items-center justify-center mx-auto lg:flex-row"
+      className="flex items-center justify-center mx-auto mb-3 lg:flex-row"
       style={{
         background:
           'linear-gradient(310.65deg, rgba(172, 143, 255, 0.2) -17.9%, rgba(255, 0, 255, 0.2) 86.48%)',
