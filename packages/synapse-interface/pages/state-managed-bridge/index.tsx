@@ -573,7 +573,7 @@ const StateManagedBridge = () => {
           <div
             className={
               isUpgradePending
-                ? 'cursor-not-allowed pointer-events-none brightness-75 contrast-[90%] opacity-75'
+                ? 'cursor-not-allowed pointer-events-none brightness-75 contrast-[90%] opacity-75 aria-disabled'
                 : 'cursor-pointer pointer-events-auto'
             }
           >

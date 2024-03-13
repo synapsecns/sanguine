@@ -20,7 +20,7 @@ export const useUpgradeProgressBar = (
   const timeRemainingInSeconds = endTimeInSeconds - currentTimeInSeconds
   const timeRemainingInMinutes = Math.ceil(timeRemainingInSeconds / 60)
 
-  const isStarted = currentTimeInSeconds > startTimeInSeconds
+  const isStarted = currentTimeInSeconds >= startTimeInSeconds
   const isComplete = timeRemainingInSeconds <= 0
   const isPending = isStarted && !isComplete
 
