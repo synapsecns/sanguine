@@ -182,12 +182,19 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         });
     }
 
-    function expectEventExecutionProofWritten(InterchainTxDescriptor memory desc, address executor) internal {
+    function expectEventExecutionProofWritten(
+        bytes32 transactionId,
+        uint256 localDbNonce,
+        uint64 localEntryIndex,
+        address executor
+    )
+        internal
+    {
         vm.expectEmit(address(icClient));
         emit ExecutionProofWritten({
-            transactionId: desc.transactionId,
-            dbNonce: desc.dbNonce,
-            entryIndex: desc.entryIndex,
+            transactionId: transactionId,
+            dbNonce: localDbNonce,
+            entryIndex: localEntryIndex,
             executor: executor
         });
     }

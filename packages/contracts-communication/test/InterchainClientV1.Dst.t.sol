@@ -33,6 +33,9 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
     uint256 public constant MOCK_DB_NONCE = 444;
     uint64 public constant MOCK_ENTRY_INDEX = 4;
 
+    uint256 public constant MOCK_LOCAL_DB_NONCE = 123;
+    uint64 public constant MOCK_LOCAL_ENTRY_INDEX = 5;
+
     uint256 public constant MOCK_GAS_LIMIT = 100_000;
     uint256 public constant MOCK_GAS_AIRDROP = 1 ether;
 
@@ -116,6 +119,15 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
         vm.mockCall(
             icDB, abi.encodeCall(InterchainDBMock.checkVerification, (dstModule, entry, proof)), abi.encode(verifiedAt)
         );
+    }
+
+    /// @dev Override the local DB's returned next entry index (both for reads and writes)
+    function mockLocalNextEntryIndex(uint256 dbNonce, uint64 entryIndex) internal {
+        bytes memory returnData = abi.encode(dbNonce, entryIndex);
+        // Use partial calldata to override return values for calls to these functions with any arguments.
+        vm.mockCall(icDB, abi.encodeWithSelector(InterchainDBMock.getNextEntryIndex.selector), returnData);
+        vm.mockCall(icDB, abi.encodeWithSelector(InterchainDBMock.writeEntry.selector), returnData);
+        vm.mockCall(icDB, abi.encodeWithSelector(InterchainDBMock.writeEntryWithVerification.selector), returnData);
     }
 
     /// @dev Constructs an interchain transaction and its descriptor for testing.
@@ -945,5 +957,23 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
         });
         expectRevertZeroRequiredResponses();
         icClient.isExecutable(abi.encode(icTx), emptyProof);
+    }
+
+    // ═══════════════════════════════════════ TESTS: WRITE EXECUTION PROOF ════════════════════════════════════════════
+
+    function test_writeExecutionProof() public {
+        (, InterchainTxDescriptor memory desc) = prepareAlreadyExecutedTest(optionsNoAirdrop);
+        bytes32 proofHash = keccak256(abi.encode(desc.transactionId, executor));
+        bytes memory expectedCalldata = abi.encodeCall(InterchainDBMock.writeEntry, (proofHash));
+        mockLocalNextEntryIndex(MOCK_LOCAL_DB_NONCE, MOCK_LOCAL_ENTRY_INDEX);
+        vm.expectCall({callee: icDB, data: expectedCalldata, count: 1});
+        expectEventExecutionProofWritten(desc.transactionId, MOCK_LOCAL_DB_NONCE, MOCK_LOCAL_ENTRY_INDEX, executor);
+        icClient.writeExecutionProof(desc.transactionId);
+    }
+
+    function test_writeExecutionProof_revert_notExecuted() public {
+        bytes32 mockTxId = keccak256("mockTxId");
+        expectRevertTxNotExecuted(mockTxId);
+        icClient.writeExecutionProof(mockTxId);
     }
 }
