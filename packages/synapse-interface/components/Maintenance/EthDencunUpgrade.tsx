@@ -11,7 +11,7 @@ export const ETH_DENCUN_END_DATE = new Date(Date.UTC(2024, 2, 12, 14, 25, 0))
 export const EthDencunUpgradeBanner = () => {
   return (
     <AnnouncementBanner
-      bannerId="03122024-eth-dencun"
+      bannerId="03132024-eth-dencun"
       bannerContents={
         <div className="flex flex-col justify-center space-y-1 text-center">
           <div>
