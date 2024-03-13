@@ -556,7 +556,10 @@ const StateManagedBridge = () => {
     if (isMetisUpgradePending) {
       if (fromChainId === METIS.id || toChainId === METIS.id) return true
     }
+    return false
   }
+
+  console.log('isBridgePaused:', isBridgePaused())
 
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
@@ -653,7 +656,7 @@ const StateManagedBridge = () => {
                 isApproved={isApproved}
                 approveTxn={approveTxn}
                 executeBridge={executeBridge}
-                isBridgePaused={isBridgePaused}
+                isBridgePaused={isBridgePaused()}
               />
             </div>
           </div>
