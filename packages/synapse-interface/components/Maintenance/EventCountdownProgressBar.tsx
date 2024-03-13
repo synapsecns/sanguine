@@ -15,6 +15,11 @@ export const useEventCountdownProgressBar = (
   const { totalTimeRemainingInMinutes, hoursRemaining, isComplete, isPending } =
     getCountdownTimeStatus(startDate, endDate)
 
+  const timeRemaining: string =
+    totalTimeRemainingInMinutes > 90
+      ? `${hoursRemaining}h`
+      : `${totalTimeRemainingInMinutes}min`
+
   let status: 'idle' | 'pending' | 'complete'
 
   if (isComplete) {
@@ -34,7 +39,7 @@ export const useEventCountdownProgressBar = (
         startDate={startDate}
         endDate={endDate}
         status={status}
-        timeRemaining={totalTimeRemainingInMinutes}
+        timeRemaining={timeRemaining}
       />
     ),
   }
@@ -51,7 +56,7 @@ export const EventCountdownProgressBar = ({
   startDate: Date
   endDate: Date
   status: 'idle' | 'pending' | 'complete'
-  timeRemaining: number
+  timeRemaining: string
 }) => {
   if (status === 'pending') {
     return (
@@ -64,7 +69,7 @@ export const EventCountdownProgressBar = ({
       >
         <div className="flex justify-between px-3 py-2">
           <div>{eventLabel}</div>
-          <div>{timeRemaining}m remaining</div>
+          <div>{timeRemaining} remaining</div>
         </div>
         <div className="px-1">
           <LinearAnimatedProgressBar
