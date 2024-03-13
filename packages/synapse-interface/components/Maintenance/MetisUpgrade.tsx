@@ -47,8 +47,7 @@ export const MetisDowntimeWarningMessage = () => {
         message={
           <>
             <p>
-              Metis Chain bridging is paused until a planned Metis upgrade
-              completes.
+              Metis Chain bridging is paused until the Metis upgrade completes.
             </p>
           </>
         }

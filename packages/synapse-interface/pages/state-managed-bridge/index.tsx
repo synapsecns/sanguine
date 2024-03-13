@@ -553,11 +553,11 @@ const StateManagedBridge = () => {
 
   const isBridgePaused = (): boolean => {
     if (isEcotoneForkUpgradePending) {
-      if (fromChainId === OPTIMISM.id || toChainId === OPTIMISM.id) return true
-      if (toChainId === BASE.id || toChainId === BASE.id) return true
+      if ([fromChainId, toChainId].includes(OPTIMISM.id)) return true
+      if ([fromChainId, toChainId].includes(BASE.id)) return true
     }
     if (isMetisUpgradePending) {
-      if (fromChainId === METIS.id || toChainId === METIS.id) return true
+      if ([fromChainId, toChainId].includes(METIS.id)) return true
     }
     return false
   }
