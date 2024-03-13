@@ -11,10 +11,10 @@ import { getCountdownTimeStatus } from '../EventCountdownProgressBar'
  * End: 12 hours after start of Metis Chain Downtime
  */
 export const METIS_DOWNTIME_BANNERS_START = new Date(
-  Date.UTC(2024, 2, 14, 1, 0, 0)
+  Date.UTC(2024, 2, 14, 1, 30, 0)
 )
 export const METIS_DOWNTIME_START_DATE = new Date(
-  Date.UTC(2024, 2, 14, 1, 30, 0)
+  Date.UTC(2024, 2, 14, 1, 45, 0)
 )
 export const METIS_DOWNTIME_END_DATE = new Date(
   Date.UTC(2024, 2, 14, 13, 30, 0)
