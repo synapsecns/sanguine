@@ -39,7 +39,6 @@ export const CHAIN_IDS = getids() // used to be ids
 export const CHAINS_BY_ID = getChainsByID()
 export const ORDERED_CHAINS_BY_ID = CHAINS_ARR.map((chain) => String(chain.id))
 
-export const PAUSED_GLOBAL_BRIDGE = true
 export const PAUSED_FROM_CHAIN_IDS = []
 export const PAUSED_TO_CHAIN_IDS = [all.DOGE.id]
 

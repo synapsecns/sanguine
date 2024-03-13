@@ -11,11 +11,7 @@ import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
-import {
-  PAUSED_FROM_CHAIN_IDS,
-  PAUSED_GLOBAL_BRIDGE,
-  PAUSED_TO_CHAIN_IDS,
-} from '@/constants/chains'
+import { PAUSED_FROM_CHAIN_IDS, PAUSED_TO_CHAIN_IDS } from '@/constants/chains'
 
 export const BridgeTransactionButton = ({
   approveTxn,
