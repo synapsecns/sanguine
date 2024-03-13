@@ -535,35 +535,6 @@ const StateManagedBridge = () => {
     '-mt-4 fixed z-50 w-full h-full bg-opacity-50 bg-[#343036]'
 
   /* Remove after upgrades */
-  // const {
-  //   isPending: isEcotoneForkUpgradePending,
-  //   EventCountdownProgressBar: EcotoneForkCountdownProgressBar,
-  // } = useEventCountdownProgressBar(
-  //   'Ecotone Fork upgrade in progress',
-  //   ECOTONE_FORK_START_DATE,
-  //   ECOTONE_FORK_END_DATE
-  // )
-
-  // const {
-  //   isPending: isMetisUpgradePending,
-  //   EventCountdownProgressBar: MetisUpgradeCountdownProgressBar,
-  // } = useEventCountdownProgressBar(
-  //   'Metis upgrade in progress',
-  //   METIS_DOWNTIME_START_DATE,
-  //   METIS_DOWNTIME_END_DATE
-  // )
-
-  // const isBridgePaused = (): boolean => {
-  //   if (isEcotoneForkUpgradePending) {
-  //     if ([fromChainId, toChainId].includes(OPTIMISM.id)) return true
-  //     if ([fromChainId, toChainId].includes(BASE.id)) return true
-  //   }
-  //   if (isMetisUpgradePending) {
-  //     if ([fromChainId, toChainId].includes(METIS.id)) return true
-  //   }
-  //   return false
-  // }
-
   const {
     isEcotoneForkUpgradePending,
     isCurrentChainDisabled: isEcotoneUpgradeChainsDisabled,
@@ -575,7 +546,6 @@ const StateManagedBridge = () => {
     isCurrentChainDisabled: isMetisUpgradeChainDisabled,
     MetisUpgradeCountdownProgressBar,
   } = useMetisDowntimeCountdownProgress()
-
   /* Remove after upgrades */
 
   return (
