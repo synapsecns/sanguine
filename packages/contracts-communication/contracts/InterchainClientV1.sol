@@ -152,7 +152,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     }
 
     // @inheritdoc IInterchainClientV1
-    // TODO: tests
     function getInterchainFee(
         uint256 dstChainId,
         address srcExecutionService,
@@ -164,6 +163,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         view
         returns (uint256 fee)
     {
+        _assertLinkedClient(dstChainId);
         // Check that options could be decoded on destination chain
         options.decodeOptionsV1();
         // Verification fee from InterchainDB
