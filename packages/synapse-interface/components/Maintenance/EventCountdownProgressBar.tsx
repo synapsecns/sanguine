@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { LinearAnimatedProgressBar } from './LinearAnimatedProgressBar'
 import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 
@@ -12,17 +11,6 @@ export const useEventCountdownProgressBar = (
   EventCountdownProgressBar: JSX.Element
 } => {
   useIntervalTimer(60000)
-  // const currentDate = new Date()
-  // const currentTimeInSeconds = currentDate.getTime() / 1000
-  // const startTimeInSeconds = Math.floor(startDate.getTime() / 1000)
-  // const endTimeInSeconds = Math.floor(endDate.getTime() / 1000)
-
-  // const timeRemainingInSeconds = endTimeInSeconds - currentTimeInSeconds
-  // const timeRemainingInMinutes = Math.ceil(timeRemainingInSeconds / 60)
-
-  // const isStarted = currentTimeInSeconds >= startTimeInSeconds
-  // const isComplete = timeRemainingInSeconds <= 0
-  // const isPending = isStarted && !isComplete
 
   const { timeRemainingInMinutes, isComplete, isPending } =
     getCountdownTimeStatus(startDate, endDate)
@@ -83,7 +71,6 @@ export const EventCountdownProgressBar = ({
             id="linear-animated-progress-bar"
             startDate={startDate}
             endDate={endDate}
-            status={status}
           />
         </div>
       </div>

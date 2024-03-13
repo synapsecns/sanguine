@@ -1,24 +1,20 @@
 import { memo } from 'react'
-import { getTimeMinutesBeforeNow } from '@/utils/time'
 import { getCountdownTimeStatus } from './EventCountdownProgressBar'
 
 /**
  * @param id unique identifier for progress bar instance
  * @param startTime start time in unix seconds
  * @param endTime end time in unix seconds
- * @param status progress status
  */
 export const LinearAnimatedProgressBar = memo(
   ({
     id,
     startDate,
     endDate,
-    status,
   }: {
     id: string
     startDate: Date
     endDate: Date
-    status: 'idle' | 'pending' | 'complete'
   }) => {
     const {
       totalTimeInSeconds,
@@ -27,16 +23,9 @@ export const LinearAnimatedProgressBar = memo(
       isComplete,
     } = getCountdownTimeStatus(startDate, endDate)
 
-    // const currentTime = Math.floor(getTimeMinutesBeforeNow(0))
-    // const elapsedTimeInSeconds = currentTime - startTime
-    // const remainingTimeInSeconds = endTime - currentTime
-    // const totalTimeInSeconds = endTime - startTime
-
     const percentElapsed = Math.floor(
       (timeElapsedInSeconds / totalTimeInSeconds) * 100
     )
-
-    // const isComplete = status === 'complete'
 
     let duration = isComplete ? 0.5 : timeRemainingInSeconds
 
