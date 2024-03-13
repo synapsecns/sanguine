@@ -75,6 +75,16 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         );
     }
 
+    /// @dev Override the ExecutionService's returned execution fee for the given destination chain and transaction.
+    function mockExecutionFee(uint256 dstChainId, InterchainTransaction memory icTx, uint256 executionFee) internal {
+        uint256 txPayloadSize = abi.encode(icTx).length;
+        vm.mockCall(
+            execService,
+            abi.encodeCall(ExecutionServiceMock.getExecutionFee, (dstChainId, txPayloadSize, icTx.options)),
+            abi.encode(executionFee)
+        );
+    }
+
     /// @dev Override the DB's returned next entry index (both for reads and writes)
     function mockNextEntryIndex(uint256 dbNonce, uint64 entryIndex) internal {
         bytes memory returnData = abi.encode(dbNonce, entryIndex);
@@ -676,6 +686,157 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         icClient.interchainSendEVM{value: MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE}({
             dstChainId: REMOTE_CHAIN_ID,
             receiver: dstReceiverEVM,
+            srcExecutionService: execService,
+            srcModules: twoModules,
+            options: invalidOptionsV1,
+            message: message
+        });
+    }
+
+    // ═════════════════════════════════════════ TESTS: GET INTERCHAIN FEE ═════════════════════════════════════════════
+
+    function test_getInterchainFee_withExecService_icFeeNonZero_execFeeNonZero() public {
+        (InterchainTransaction memory icTx,) = constructInterchainTx(dstReceiver);
+        mockInterchainFee(REMOTE_CHAIN_ID, twoModules, MOCK_INTERCHAIN_FEE);
+        mockExecutionFee(REMOTE_CHAIN_ID, icTx, MOCK_EXECUTION_FEE);
+        assertEq(
+            icClient.getInterchainFee({
+                dstChainId: REMOTE_CHAIN_ID,
+                srcExecutionService: execService,
+                srcModules: twoModules,
+                options: encodedOptions,
+                message: message
+            }),
+            MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE
+        );
+    }
+
+    function test_getInterchainFee_withExecService_icFeeNonZero_execFeeZero() public {
+        (InterchainTransaction memory icTx,) = constructInterchainTx(dstReceiver);
+        mockInterchainFee(REMOTE_CHAIN_ID, twoModules, MOCK_INTERCHAIN_FEE);
+        mockExecutionFee(REMOTE_CHAIN_ID, icTx, 0);
+        assertEq(
+            icClient.getInterchainFee({
+                dstChainId: REMOTE_CHAIN_ID,
+                srcExecutionService: execService,
+                srcModules: twoModules,
+                options: encodedOptions,
+                message: message
+            }),
+            MOCK_INTERCHAIN_FEE
+        );
+    }
+
+    function test_getInterchainFee_withExecService_icFeeZero_execFeeNonZero() public {
+        (InterchainTransaction memory icTx,) = constructInterchainTx(dstReceiver);
+        mockInterchainFee(REMOTE_CHAIN_ID, twoModules, 0);
+        mockExecutionFee(REMOTE_CHAIN_ID, icTx, MOCK_EXECUTION_FEE);
+        assertEq(
+            icClient.getInterchainFee({
+                dstChainId: REMOTE_CHAIN_ID,
+                srcExecutionService: execService,
+                srcModules: twoModules,
+                options: encodedOptions,
+                message: message
+            }),
+            MOCK_EXECUTION_FEE
+        );
+    }
+
+    function test_getInterchainFee_withExecService_icFeeZero_execFeeZero() public {
+        (InterchainTransaction memory icTx,) = constructInterchainTx(dstReceiver);
+        mockInterchainFee(REMOTE_CHAIN_ID, twoModules, 0);
+        mockExecutionFee(REMOTE_CHAIN_ID, icTx, 0);
+        assertEq(
+            icClient.getInterchainFee({
+                dstChainId: REMOTE_CHAIN_ID,
+                srcExecutionService: execService,
+                srcModules: twoModules,
+                options: encodedOptions,
+                message: message
+            }),
+            0
+        );
+    }
+
+    function test_getInterchainFee_noExecService_icFeeNonZero() public {
+        mockInterchainFee(REMOTE_CHAIN_ID, twoModules, MOCK_INTERCHAIN_FEE);
+        assertEq(
+            icClient.getInterchainFee({
+                dstChainId: REMOTE_CHAIN_ID,
+                srcExecutionService: address(0),
+                srcModules: twoModules,
+                options: encodedOptions,
+                message: message
+            }),
+            MOCK_INTERCHAIN_FEE
+        );
+    }
+
+    function test_getInterchainFee_noExecService_icFeeZero() public {
+        mockInterchainFee(REMOTE_CHAIN_ID, twoModules, 0);
+        assertEq(
+            icClient.getInterchainFee({
+                dstChainId: REMOTE_CHAIN_ID,
+                srcExecutionService: address(0),
+                srcModules: twoModules,
+                options: encodedOptions,
+                message: message
+            }),
+            0
+        );
+    }
+
+    function test_getInterchainFee_revert_notRemoteChainId() public {
+        expectRevertNotRemoteChainId(LOCAL_CHAIN_ID);
+        icClient.getInterchainFee({
+            dstChainId: LOCAL_CHAIN_ID,
+            srcExecutionService: execService,
+            srcModules: twoModules,
+            options: encodedOptions,
+            message: message
+        });
+    }
+
+    function test_getInterchainFee_revert_noLinkedClient() public {
+        expectRevertNoLinkedClient(UNKNOWN_CHAIN_ID);
+        icClient.getInterchainFee({
+            dstChainId: UNKNOWN_CHAIN_ID,
+            srcExecutionService: execService,
+            srcModules: twoModules,
+            options: encodedOptions,
+            message: message
+        });
+    }
+
+    function test_getInterchainFee_revert_emptyOptions() public {
+        // OptionsLib doesn't have a specific error for this case, so we expect a generic revert during decoding.
+        vm.expectRevert();
+        icClient.getInterchainFee({
+            dstChainId: REMOTE_CHAIN_ID,
+            srcExecutionService: execService,
+            srcModules: twoModules,
+            options: "",
+            message: message
+        });
+    }
+
+    function test_getInterchainFee_revert_invalidOptionsV0() public {
+        expectRevertIncorrectVersion(0);
+        icClient.getInterchainFee({
+            dstChainId: REMOTE_CHAIN_ID,
+            srcExecutionService: execService,
+            srcModules: twoModules,
+            options: invalidOptionsV0,
+            message: message
+        });
+    }
+
+    function test_getInterchainFee_revert_invalidOptionsV1() public {
+        // OptionsLib doesn't have a specific error for this case, so we expect a generic revert during decoding.
+        vm.expectRevert();
+        icClient.getInterchainFee({
+            dstChainId: REMOTE_CHAIN_ID,
             srcExecutionService: execService,
             srcModules: twoModules,
             options: invalidOptionsV1,
