@@ -4,18 +4,15 @@ import { usePendingTxWrapper } from '@hooks/usePendingTxWrapper'
 import { TransactionResponse } from '@ethersproject/providers'
 import { CSSProperties } from 'react'
 
+const join = (a) => Object.values(a).join(' ')
 
-
-const BASE_PROPERTIES = `
-    w-full rounded-md px-4 py-3
-    text-white text-opacity-100 transition-all
-    hover:opacity-80 disabled:opacity-50 disabled:text-[#88818C]
-    disabled:from-bgLight disabled:to-bgLight
-    bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF]
-    inline-flex items-center justify-center
-  `
-
-const disabledClass = `opacity-30 cursor-default`
+const BASE_PROPERTIES = join({
+  space: 'w-full rounded-md px-4 py-3 my-1',
+  hover: 'hover:opacity-80',
+  disabled: 'disabled:opacity-50 disabled:cursor-not-allowed',
+  background: 'bg-zinc-400 dark:bg-bgLight',
+  gradient: 'enabled:bg-gradient-to-r',
+})
 
 export const TransactionButton = ({
   className,
@@ -47,8 +44,11 @@ export const TransactionButton = ({
       className={`
         ${className}
         ${BASE_PROPERTIES}
-        ${disabled && disabledClass}
-        ${isPending && 'from-[#622e71] to-[#564071]'}
+        ${
+          isPending
+            ? 'from-fuchsia-400 dark:from-fuchsia-900 to-purple-400 dark:to-purple-900'
+            : 'from-fuchsia-500 to-purple-500 dark:to-purple-600'
+        }
       `}
       onClick={async () => {
         const tx = await pendingTxWrapFunc(onClick())
