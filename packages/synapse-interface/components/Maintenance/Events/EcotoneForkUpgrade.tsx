@@ -23,7 +23,7 @@ export const EcotoneForkUpgradeBanner = () => {
         <div className="flex flex-col justify-center space-y-1 text-center">
           <div>
             Optimism + Base Bridging and RFQ will be paused 10 minutes ahead of
-            Ecotone (March 14, 00:00 UTC).
+            Ecotone (March 14, 00:00 UTC, 20:00 EST).
           </div>
           <div>Will be back online shortly following the network upgrade.</div>
         </div>
