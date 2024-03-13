@@ -653,6 +653,30 @@ const StateManagedBridge = () => {
                   isEcotoneUpgradeChainsDisabled || isMetisUpgradeChainDisabled
                 }
               />
+              <OutputContainer />
+              <Warning />
+              <Transition
+                appear={true}
+                unmount={false}
+                show={true}
+                {...SECTION_TRANSITION_PROPS}
+              >
+                <BridgeExchangeRateInfo />
+              </Transition>
+              {showDestinationAddress && (
+                <DestinationAddressInput
+                  toChainId={toChainId}
+                  destinationAddress={destinationAddress}
+                />
+              )}
+              <div className="md:my-3">
+                <BridgeTransactionButton
+                  isApproved={isApproved}
+                  approveTxn={approveTxn}
+                  executeBridge={executeBridge}
+                  isBridgePaused={isUpgradePending}
+                />
+              </div>
             </div>
           </div>
         </Card>
