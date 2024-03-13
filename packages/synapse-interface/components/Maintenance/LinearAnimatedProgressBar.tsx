@@ -20,7 +20,6 @@ export const LinearAnimatedProgressBar = memo(
     status: 'idle' | 'pending' | 'complete'
   }) => {
     const currentTime = Math.floor(getTimeMinutesBeforeNow(0))
-
     const elapsedTimeInSeconds = currentTime - startTime
     const remainingTimeInSeconds = endTime - currentTime
     const totalTimeInSeconds = endTime - startTime
@@ -28,8 +27,6 @@ export const LinearAnimatedProgressBar = memo(
     const percentElapsed = Math.floor(
       (elapsedTimeInSeconds / totalTimeInSeconds) * 100
     )
-
-    console.log('percentElapsed:', percentElapsed)
 
     const isComplete = status === 'complete'
 
