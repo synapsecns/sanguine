@@ -3,22 +3,43 @@ import { WarningMessage } from '../../Warning'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { METIS } from '@/constants/chains/master'
 import { useEventCountdownProgressBar } from '../EventCountdownProgressBar'
+import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
+import { getCountdownTimeStatus } from '../EventCountdownProgressBar'
 
 /**
  * Start: 30 min prior to Metis Chain Downtime @ (March 14, 02:00 UTC)
  * End: 12 hours after start of Metis Chain Downtime
  */
+// export const METIS_DOWNTIME_BANNERS_START = new Date(
+//   Date.UTC(2024, 2, 14, 1, 0, 0)
+// )
+// export const METIS_DOWNTIME_START_DATE = new Date(
+//   Date.UTC(2024, 2, 14, 1, 30, 0)
+// )
+// export const METIS_DOWNTIME_END_DATE = new Date(
+//   Date.UTC(2024, 2, 14, 13, 30, 0)
+// )
+
+/** Remove after test */
 export const METIS_DOWNTIME_BANNERS_START = new Date(
-  Date.UTC(2024, 2, 14, 1, 0, 0)
+  Date.UTC(2024, 2, 13, 19, 30, 0)
 )
 export const METIS_DOWNTIME_START_DATE = new Date(
-  Date.UTC(2024, 2, 14, 1, 30, 0)
+  Date.UTC(2024, 2, 13, 19, 30, 0)
 )
 export const METIS_DOWNTIME_END_DATE = new Date(
-  Date.UTC(2024, 2, 14, 13, 30, 0)
+  Date.UTC(2024, 2, 13, 19, 35, 0)
 )
+/** Remove after test */
 
 export const MetisDowntimeBanner = () => {
+  const { isComplete } = getCountdownTimeStatus(
+    METIS_DOWNTIME_BANNERS_START,
+    METIS_DOWNTIME_END_DATE
+  )
+
+  useIntervalTimer(120000, isComplete)
+
   return (
     <AnnouncementBanner
       bannerId="03142024-metis-downtime"

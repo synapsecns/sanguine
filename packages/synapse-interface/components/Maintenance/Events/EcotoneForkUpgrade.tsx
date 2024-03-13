@@ -2,7 +2,11 @@ import { AnnouncementBanner } from '../AnnouncementBanner'
 import { WarningMessage } from '../../Warning'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { OPTIMISM, BASE } from '@/constants/chains/master'
-import { useEventCountdownProgressBar } from '../EventCountdownProgressBar'
+import {
+  useEventCountdownProgressBar,
+  getCountdownTimeStatus,
+} from '../EventCountdownProgressBar'
+import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 
 /**
  * Start: 10 min prior to Ecotone Fork Upgrade Time @ (March 14, 00:00 UTC)
@@ -17,6 +21,13 @@ export const ECOTONE_FORK_START_DATE = new Date(
 export const ECOTONE_FORK_END_DATE = new Date(Date.UTC(2024, 2, 14, 0, 10, 0))
 
 export const EcotoneForkUpgradeBanner = () => {
+  const { isComplete } = getCountdownTimeStatus(
+    ECOTONE_FORK_BANNERS_START,
+    ECOTONE_FORK_END_DATE
+  )
+
+  useIntervalTimer(120000, isComplete)
+
   return (
     <AnnouncementBanner
       bannerId="03142024-ecotone-fork"
