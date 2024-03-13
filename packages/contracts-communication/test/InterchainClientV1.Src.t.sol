@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {OptionsV1} from "../contracts/libs/Options.sol";
+import {OptionsV1, OptionsLib} from "../contracts/libs/Options.sol";
 
 import {
     InterchainClientV1,
@@ -18,7 +18,7 @@ import {InterchainDBMock} from "./mocks/InterchainDBMock.sol";
 // solhint-disable ordering
 
 /// @notice InterchainClientV1 source chain tests.
-/// Happy path for interchainSend and interchainSendEVM:
+/// # Happy path for interchainSend and interchainSendEVM.
 /// 1. Check that provided msg.value covers the interchain fees for the given modules.
 /// 2. Construct the interchain transaction struct, and write its UID to the InterchainDB,
 /// requesting verification from the source modules.
@@ -29,6 +29,12 @@ import {InterchainDBMock} from "./mocks/InterchainDBMock.sol";
 /// We are using the mocks in this test to verify that the correct values are passed to the contracts,
 /// the actual revert "not enough execution fee" test is in the ExecutionService tests, and integration tests.
 /// 5. Finally, the event should be emitted.
+/// # Revert cases for interchainSend and interchainSendEVM.
+/// - Provided msg.value is less than the required interchain fee.
+/// - Destination chain ID is not a remote chain ID.
+/// - Destination chain ID does not have a linked client.
+/// - Receiver is a zero address.
+/// - Options are not encoded correctly.
 contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
     uint256 public constant MOCK_EXECUTION_FEE = 1 ether;
     uint256 public constant MOCK_INTERCHAIN_FEE = 0.5 ether;
@@ -38,6 +44,10 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
 
     OptionsV1 public options = OptionsV1({gasLimit: 100_000, gasAirdrop: 1 ether});
     bytes public encodedOptions = options.encodeOptionsV1();
+
+    bytes public invalidOptionsV0 = OptionsLib.encodeVersionedOptions(0, abi.encode(options));
+    bytes public invalidOptionsV1 = OptionsLib.encodeVersionedOptions(1, abi.encode(options.gasLimit));
+
     bytes public message = "Hello, World!";
 
     address public srcSender = makeAddr("SrcSender");
@@ -307,6 +317,110 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
         });
     }
 
+    // ═════════════════════════════════════════ INTERCHAIN SEND: REVERTS ══════════════════════════════════════════════
+
+    // Pay 1 wei less than required and expect a revert with the correct fee amount.
+    function test_interchainSend_revert_feeTooLow() public {
+        prepareSendTest({receiver: dstReceiver, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
+        deal(srcSender, MOCK_INTERCHAIN_FEE - 1);
+        expectRevertFeeAmountTooLow(MOCK_INTERCHAIN_FEE - 1, MOCK_INTERCHAIN_FEE);
+        vm.prank(srcSender);
+        icClient.interchainSend{value: MOCK_INTERCHAIN_FEE - 1}({
+            dstChainId: REMOTE_CHAIN_ID,
+            receiver: dstReceiver,
+            srcExecutionService: execService,
+            srcModules: twoModules,
+            options: encodedOptions,
+            message: message
+        });
+    }
+
+    function test_interchainSend_revert_notRemoteChainId() public {
+        prepareSendTest({receiver: dstReceiver, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
+        expectRevertNotRemoteChainId(LOCAL_CHAIN_ID);
+        vm.prank(srcSender);
+        icClient.interchainSend{value: MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE}({
+            dstChainId: LOCAL_CHAIN_ID,
+            receiver: dstReceiver,
+            srcExecutionService: execService,
+            srcModules: twoModules,
+            options: encodedOptions,
+            message: message
+        });
+    }
+
+    function test_interchainSend_revert_noLinkedClient() public {
+        prepareSendTest({receiver: dstReceiver, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
+        expectRevertNoLinkedClient(UNKNOWN_CHAIN_ID);
+        vm.prank(srcSender);
+        icClient.interchainSend{value: MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE}({
+            dstChainId: UNKNOWN_CHAIN_ID,
+            receiver: dstReceiver,
+            srcExecutionService: execService,
+            srcModules: twoModules,
+            options: encodedOptions,
+            message: message
+        });
+    }
+
+    function test_interchainSend_revert_zeroReceiver() public {
+        prepareSendTest({receiver: 0, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
+        expectRevertZeroReceiver();
+        vm.prank(srcSender);
+        icClient.interchainSend{value: MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE}({
+            dstChainId: REMOTE_CHAIN_ID,
+            receiver: 0,
+            srcExecutionService: execService,
+            srcModules: twoModules,
+            options: encodedOptions,
+            message: message
+        });
+    }
+
+    function test_interchainSend_revert_emptyOptions() public {
+        prepareSendTest({receiver: dstReceiver, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
+        // OptionsLib doesn't have a specific error for this case, so we expect a generic revert during decoding.
+        vm.expectRevert();
+        vm.prank(srcSender);
+        icClient.interchainSend{value: MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE}({
+            dstChainId: REMOTE_CHAIN_ID,
+            receiver: dstReceiver,
+            srcExecutionService: execService,
+            srcModules: twoModules,
+            options: "",
+            message: message
+        });
+    }
+
+    function test_interchainSend_revert_invalidOptionsV0() public {
+        prepareSendTest({receiver: dstReceiver, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
+        expectRevertIncorrectVersion(0);
+        vm.prank(srcSender);
+        icClient.interchainSend{value: MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE}({
+            dstChainId: REMOTE_CHAIN_ID,
+            receiver: dstReceiver,
+            srcExecutionService: execService,
+            srcModules: twoModules,
+            options: invalidOptionsV0,
+            message: message
+        });
+    }
+
+    function test_interchainSend_revert_invalidOptionsV1() public {
+        prepareSendTest({receiver: dstReceiver, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
+        // OptionsLib doesn't have a specific error for this case, so we expect a generic revert during decoding.
+        vm.expectRevert();
+        vm.prank(srcSender);
+        icClient.interchainSend{value: MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE}({
+            dstChainId: REMOTE_CHAIN_ID,
+            receiver: dstReceiver,
+            srcExecutionService: execService,
+            srcModules: twoModules,
+            options: invalidOptionsV1,
+            message: message
+        });
+    }
+
     // ═══════════════════════════════════════ TESTS: INTERCHAIN SEND TO EVM ═══════════════════════════════════════════
 
     function test_interchainSendEVM_withExecService_icFeeNonZero_execFeeNonZero() public {
@@ -461,6 +575,110 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
             srcExecutionService: address(0),
             srcModules: twoModules,
             options: encodedOptions,
+            message: message
+        });
+    }
+
+    // ═══════════════════════════════════════ INTERCHAIN SEND EVM: REVERTS ════════════════════════════════════════════
+
+    // Pay 1 wei less than required and expect a revert with the correct fee amount.
+    function test_interchainSendEVM_revert_feeTooLow() public {
+        prepareSendTest({receiver: dstReceiverEVMBytes32, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
+        deal(srcSender, MOCK_INTERCHAIN_FEE - 1);
+        expectRevertFeeAmountTooLow(MOCK_INTERCHAIN_FEE - 1, MOCK_INTERCHAIN_FEE);
+        vm.prank(srcSender);
+        icClient.interchainSendEVM{value: MOCK_INTERCHAIN_FEE - 1}({
+            dstChainId: REMOTE_CHAIN_ID,
+            receiver: dstReceiverEVM,
+            srcExecutionService: execService,
+            srcModules: twoModules,
+            options: encodedOptions,
+            message: message
+        });
+    }
+
+    function test_interchainSendEVM_revert_notRemoteChainId() public {
+        prepareSendTest({receiver: dstReceiverEVMBytes32, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
+        expectRevertNotRemoteChainId(LOCAL_CHAIN_ID);
+        vm.prank(srcSender);
+        icClient.interchainSendEVM{value: MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE}({
+            dstChainId: LOCAL_CHAIN_ID,
+            receiver: dstReceiverEVM,
+            srcExecutionService: execService,
+            srcModules: twoModules,
+            options: encodedOptions,
+            message: message
+        });
+    }
+
+    function test_interchainSendEVM_revert_noLinkedClient() public {
+        prepareSendTest({receiver: dstReceiverEVMBytes32, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
+        expectRevertNoLinkedClient(UNKNOWN_CHAIN_ID);
+        vm.prank(srcSender);
+        icClient.interchainSendEVM{value: MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE}({
+            dstChainId: UNKNOWN_CHAIN_ID,
+            receiver: dstReceiverEVM,
+            srcExecutionService: execService,
+            srcModules: twoModules,
+            options: encodedOptions,
+            message: message
+        });
+    }
+
+    function test_interchainSendEVM_revert_zeroReceiver() public {
+        prepareSendTest({receiver: 0, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
+        expectRevertZeroReceiver();
+        vm.prank(srcSender);
+        icClient.interchainSendEVM{value: MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE}({
+            dstChainId: REMOTE_CHAIN_ID,
+            receiver: address(0),
+            srcExecutionService: execService,
+            srcModules: twoModules,
+            options: encodedOptions,
+            message: message
+        });
+    }
+
+    function test_interchainSendEVM_revert_emptyOptions() public {
+        prepareSendTest({receiver: dstReceiverEVMBytes32, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
+        // OptionsLib doesn't have a specific error for this case, so we expect a generic revert during decoding.
+        vm.expectRevert();
+        vm.prank(srcSender);
+        icClient.interchainSendEVM{value: MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE}({
+            dstChainId: REMOTE_CHAIN_ID,
+            receiver: dstReceiverEVM,
+            srcExecutionService: execService,
+            srcModules: twoModules,
+            options: "",
+            message: message
+        });
+    }
+
+    function test_interchainSendEVM_revert_invalidOptionsV0() public {
+        prepareSendTest({receiver: dstReceiverEVMBytes32, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
+        expectRevertIncorrectVersion(0);
+        vm.prank(srcSender);
+        icClient.interchainSendEVM{value: MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE}({
+            dstChainId: REMOTE_CHAIN_ID,
+            receiver: dstReceiverEVM,
+            srcExecutionService: execService,
+            srcModules: twoModules,
+            options: invalidOptionsV0,
+            message: message
+        });
+    }
+
+    function test_interchainSendEVM_revert_invalidOptionsV1() public {
+        prepareSendTest({receiver: dstReceiverEVMBytes32, interchainFee: MOCK_INTERCHAIN_FEE, srcModules: twoModules});
+        // OptionsLib doesn't have a specific error for this case, so we expect a generic revert during decoding.
+        vm.expectRevert();
+        vm.prank(srcSender);
+        icClient.interchainSendEVM{value: MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE}({
+            dstChainId: REMOTE_CHAIN_ID,
+            receiver: dstReceiverEVM,
+            srcExecutionService: execService,
+            srcModules: twoModules,
+            options: invalidOptionsV1,
             message: message
         });
     }

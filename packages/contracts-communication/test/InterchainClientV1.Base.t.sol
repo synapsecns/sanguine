@@ -3,6 +3,7 @@ pragma solidity 0.8.20;
 
 import {InterchainClientV1, InterchainClientV1Events, IInterchainClientV1} from "../contracts/InterchainClientV1.sol";
 import {InterchainTxDescriptor, InterchainTransaction} from "../contracts/libs/InterchainTransaction.sol";
+import {OptionsLib} from "../contracts/libs/Options.sol";
 
 import {ExecutionFeesMock} from "./mocks/ExecutionFeesMock.sol";
 import {ExecutionServiceMock} from "./mocks/ExecutionServiceMock.sol";
@@ -107,6 +108,14 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         vm.expectRevert(
             abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__TxNotExecuted.selector, transactionId)
         );
+    }
+
+    function expectRevertZeroReceiver() internal {
+        vm.expectRevert(IInterchainClientV1.InterchainClientV1__ZeroReceiver.selector);
+    }
+
+    function expectRevertIncorrectVersion(uint8 version) internal {
+        vm.expectRevert(abi.encodeWithSelector(OptionsLib.OptionsLib__IncorrectVersion.selector, version));
     }
 
     function expectRevertOwnableUnauthorizedAccount(address account) internal {
