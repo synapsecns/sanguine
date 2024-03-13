@@ -97,6 +97,8 @@ import {
   ECOTONE_FORK_END_DATE,
 } from '@/components/Maintenance/EcotoneForkUpgrade'
 
+import { OPTIMISM, BASE, METIS } from '@/constants/chains/master'
+
 const StateManagedBridge = () => {
   const { address } = useAccount()
   const { chain } = useNetwork()
@@ -546,6 +548,16 @@ const StateManagedBridge = () => {
     METIS_DOWNTIME_END_DATE
   )
 
+  const isBridgePaused = (): boolean => {
+    if (isEcotoneForkUpgradePending) {
+      if (fromChainId === OPTIMISM.id || toChainId === OPTIMISM.id) return true
+      if (toChainId === BASE.id || toChainId === BASE.id) return true
+    }
+    if (isMetisUpgradePending) {
+      if (fromChainId === METIS.id || toChainId === METIS.id) return true
+    }
+  }
+
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
       <div className="flex flex-col">
@@ -641,7 +653,7 @@ const StateManagedBridge = () => {
                 isApproved={isApproved}
                 approveTxn={approveTxn}
                 executeBridge={executeBridge}
-                isBridgePaused={false}
+                isBridgePaused={isBridgePaused}
               />
             </div>
           </div>
