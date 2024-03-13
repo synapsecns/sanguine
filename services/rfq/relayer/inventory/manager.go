@@ -477,6 +477,12 @@ func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[comm
 	if amount.Cmp(maxAmount) > 0 {
 		amount = maxAmount
 	}
+
+	// if the rebalance amount is 0, also do nothing.
+	if amount.Cmp(big.NewInt(0)) == 0 {
+		return nil, nil
+	}
+
 	if span != nil {
 		span.SetAttributes(
 			attribute.String("initial_thresh", initialThresh.String()),
