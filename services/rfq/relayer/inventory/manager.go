@@ -466,8 +466,8 @@ func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[comm
 	initialThresh, _ := new(big.Float).Mul(new(big.Float).SetInt(totalBalance), big.NewFloat(initialPct/100)).Int(nil)
 	amount := new(big.Int).Sub(maxTokenData.Balance, initialThresh)
 
-	// no need to rebalance since amount would be negative
-	if amount.Cmp(big.NewInt(0)) < 0 {
+	// no need to rebalance since amount would not be positive
+	if amount.Cmp(big.NewInt(0)) <= 0 {
 		//nolint:nilnil
 		return nil, nil
 	}

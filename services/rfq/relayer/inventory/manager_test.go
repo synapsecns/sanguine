@@ -139,6 +139,13 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 	i.NoError(err)
 	i.Nil(rebalance)
 
+	// Set balances to zero
+	usdcDataOrigin.Balance = big.NewInt(0)
+	usdcDataDest.Balance = big.NewInt(0)
+	rebalance, err = inventory.GetRebalance(cfg, tokens, origin, usdcDataOrigin.Addr)
+	i.NoError(err)
+	i.Nil(rebalance)
+
 	// Set origin balance below maintenance threshold; need rebalance
 	usdcDataOrigin.Balance = big.NewInt(9e6)
 	usdcDataDest.Balance = big.NewInt(1e6)
