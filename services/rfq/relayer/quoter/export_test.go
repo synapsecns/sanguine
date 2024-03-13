@@ -25,3 +25,7 @@ func (m *Manager) GetDestAmount(ctx context.Context, quoteAmount *big.Int, chain
 func (m *Manager) SetConfig(cfg relconfig.Config) {
 	m.config = cfg
 }
+
+func (m *Manager) SetRelayPaused(relayPaused bool) {
+	m.relayPaused = relayPaused
+}
