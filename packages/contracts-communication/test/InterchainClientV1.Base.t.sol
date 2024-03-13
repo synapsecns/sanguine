@@ -114,6 +114,10 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         vm.expectRevert(IInterchainClientV1.InterchainClientV1__ZeroReceiver.selector);
     }
 
+    function expectRevertZeroRequiredResponses() internal {
+        vm.expectRevert(IInterchainClientV1.InterchainClientV1__ZeroRequiredResponses.selector);
+    }
+
     function expectRevertIncorrectVersion(uint8 version) internal {
         vm.expectRevert(abi.encodeWithSelector(OptionsLib.OptionsLib__IncorrectVersion.selector, version));
     }
