@@ -1,27 +1,35 @@
 import { useState, useEffect } from 'react'
 
-export const AnnoucementBanner = ({
+export const AnnouncementBanner = ({
   bannerId,
   bannerContents,
+  startDate,
+  endDate,
 }: {
   bannerId: string
   bannerContents: any
+  startDate: Date
+  endDate: Date
 }) => {
   const [hasMounted, setHasMounted] = useState(false)
   const [showBanner, setShowBanner] = useState(false)
+
+  const currentDate = new Date()
+  const isStarted = currentDate.getTime() - startDate.getTime() > 0
+  const isComplete = currentDate.getTime() - endDate.getTime() > 0
 
   useEffect(() => {
     setHasMounted(true)
   }, [])
 
   useEffect(() => {
-    if (hasMounted) {
+    if (hasMounted && isStarted && !isComplete) {
       const storedShowBanner = localStorage.getItem('showAnnoucementBanner')
-      const storedBannerVersion = localStorage.getItem('bannerId')
+      const storedBannerId = localStorage.getItem('bannerId')
 
       setShowBanner(
         Boolean(
-          storedBannerVersion !== bannerId ||
+          storedBannerId !== bannerId ||
             storedShowBanner === null ||
             storedShowBanner === 'true'
         )
@@ -30,13 +38,13 @@ export const AnnoucementBanner = ({
   }, [hasMounted])
 
   useEffect(() => {
-    if (hasMounted) {
+    if (hasMounted && isStarted && !isComplete) {
       localStorage.setItem('showAnnoucementBanner', showBanner.toString())
       localStorage.setItem('bannerId', bannerId)
     }
   }, [showBanner, hasMounted])
 
-  if (!showBanner || !hasMounted) return null
+  if (!showBanner || !hasMounted || isComplete) return null
 
   return (
     <div
