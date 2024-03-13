@@ -10,7 +10,7 @@ export const useUpgradeProgressBar = (
 
   /** Testing countdown, remove after testing */
   const startDate = new Date(Date.UTC(2024, 2, 12, 24, 20, 0))
-  const endDate = new Date(Date.UTC(2024, 2, 12, 24, 30, 0))
+  const endDate = new Date(Date.UTC(2024, 2, 12, 24, 59, 0))
   /** Testing countdown, remove after testing */
 
   const startTimeInSeconds = Math.floor(startDate.getTime() / 1000)
