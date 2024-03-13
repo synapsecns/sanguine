@@ -1,36 +1,33 @@
 import { memo } from 'react'
-import { getTimeMinutesBeforeNow } from '@/utils/time'
+import { getCountdownTimeStatus } from './EventCountdownProgressBar'
 
 /**
  * @param id unique identifier for progress bar instance
  * @param startTime start time in unix seconds
  * @param endTime end time in unix seconds
- * @param status progress status
  */
 export const LinearAnimatedProgressBar = memo(
   ({
     id,
-    startTime,
-    endTime,
-    status,
+    startDate,
+    endDate,
   }: {
     id: string
-    startTime: number
-    endTime: number
-    status: 'idle' | 'pending' | 'complete'
+    startDate: Date
+    endDate: Date
   }) => {
-    const currentTime = Math.floor(getTimeMinutesBeforeNow(0))
-    const elapsedTimeInSeconds = currentTime - startTime
-    const remainingTimeInSeconds = endTime - currentTime
-    const totalTimeInSeconds = endTime - startTime
+    const {
+      totalTimeInSeconds,
+      totalTimeElapsedInSeconds,
+      totalTimeRemainingInSeconds,
+      isComplete,
+    } = getCountdownTimeStatus(startDate, endDate)
 
     const percentElapsed = Math.floor(
-      (elapsedTimeInSeconds / totalTimeInSeconds) * 100
+      (totalTimeElapsedInSeconds / totalTimeInSeconds) * 100
     )
 
-    const isComplete = status === 'complete'
-
-    let duration = isComplete ? 0.5 : remainingTimeInSeconds
+    let duration = isComplete ? 0.5 : totalTimeRemainingInSeconds
 
     const synapsePurple = 'hsl(265deg 100% 75%)'
     const tailwindGreen400 = 'rgb(74 222 128)'
@@ -40,7 +37,7 @@ export const LinearAnimatedProgressBar = memo(
 
     return (
       <svg
-        id="animated-progress-bar"
+        id="linear-animated-progress-bar"
         key={Date.now()}
         width="100%"
         height={height}
