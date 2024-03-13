@@ -78,6 +78,7 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 		case *fastbridge.FastBridgeBridgeRelayed:
 			// it wasn't me
 			if event.Relayer != r.signer.Address() {
+				//nolint: wrapcheck
 				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost)
 			}
 
@@ -88,6 +89,7 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 		case *fastbridge.FastBridgeBridgeProofProvided:
 			// it wasn't me
 			if event.Relayer != r.signer.Address() {
+				//nolint: wrapcheck
 				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost)
 			}
 
@@ -98,7 +100,7 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 		case *fastbridge.FastBridgeBridgeDepositClaimed:
 			// it wasn't me
 			if event.Relayer != r.signer.Address() {
-				//nolint: errwrap
+				//nolint: wrapcheck
 				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost)
 			}
 
