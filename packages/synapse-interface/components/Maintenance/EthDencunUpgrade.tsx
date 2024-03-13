@@ -10,8 +10,8 @@ import { getTimeMinutesBeforeNow } from '@/utils/time'
 
 /** Test Values */
 export const ETH_DENCUN_BANNER_START = new Date()
-export const ETH_DENCUN_START_DATE = new Date(Date.UTC(2024, 2, 13, 2, 40, 0))
-export const ETH_DENCUN_END_DATE = new Date(Date.UTC(2024, 2, 13, 2, 50, 0))
+export const ETH_DENCUN_START_DATE = new Date(Date.UTC(2024, 2, 13, 2, 53, 0))
+export const ETH_DENCUN_END_DATE = new Date(Date.UTC(2024, 2, 13, 2, 56, 0))
 
 export const EthDencunUpgradeBanner = () => {
   return (
