@@ -10,7 +10,7 @@ export const useEventCountdownProgressBar = (
   isComplete: boolean
   EventCountdownProgressBar: JSX.Element
 } => {
-  useIntervalTimer(30000)
+  useIntervalTimer(60000)
 
   const { totalTimeRemainingInMinutes, hoursRemaining, isComplete, isPending } =
     getCountdownTimeStatus(startDate, endDate)
