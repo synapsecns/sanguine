@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { LinearAnimatedProgressBar } from './LinearAnimatedProgressBar'
 import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 
@@ -36,7 +37,7 @@ export const useUpgradeProgressBar = (
   return {
     isPending,
     isComplete,
-    UpgradeProgressBar: () => (
+    UpgradeProgressBar: (
       <UpgradeProgressBar
         eventLabel={eventLabel}
         startTime={startTimeInSeconds}

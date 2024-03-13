@@ -569,7 +569,7 @@ const StateManagedBridge = () => {
             transition-all duration-100 transform rounded-md
           `}
         >
-          <EthDencunUpgradeProgressBar />
+          {EthDencunUpgradeProgressBar}
           <div
             className={
               isUpgradePending
