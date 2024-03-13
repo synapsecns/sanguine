@@ -163,8 +163,7 @@ export function AmountInput({
   const inputClassName = join({
     unset: 'bg-transparent border-none p-0',
     layout: 'w-full',
-    placeholder:
-      'placeholder:text-zinc-500 dark:text-zinc-400 placeholder:dark:text-white',
+    placeholder: 'placeholder:text-zinc-500 placeholder:dark:text-zinc-400',
     font: 'text-xl md:text-2xl font-medium',
     focus: 'focus:outline-none focus:ring-0 focus:border-none',
   })
