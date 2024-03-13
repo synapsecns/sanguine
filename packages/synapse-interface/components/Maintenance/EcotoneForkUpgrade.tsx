@@ -50,26 +50,14 @@ export const EcotoneForkWarningMessage = () => {
   const isChainOptimism = [fromChainId, toChainId].includes(OPTIMISM.id)
   const isChainBase = [fromChainId, toChainId].includes(BASE.id)
 
-  if (isChainOptimism) {
+  if (isChainOptimism || isChainBase) {
     return (
       <WarningMessage
         message={
           <>
             <p>
-              Optimism Chain bridging is paused until the Ecotone upgrade
-              completes.
-            </p>
-          </>
-        }
-      />
-    )
-  } else if (isChainBase) {
-    return (
-      <WarningMessage
-        message={
-          <>
-            <p>
-              Base Chain bridging is paused until the Ecotone upgrade completes.
+              Optimism Chain and Base Chain bridging are paused until the
+              Ecotone Fork upgrade completes.
             </p>
           </>
         }
