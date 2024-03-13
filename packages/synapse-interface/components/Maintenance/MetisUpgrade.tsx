@@ -1,5 +1,7 @@
 import { AnnouncementBanner } from './AnnouncementBanner'
 import { WarningMessage } from '../Warning'
+import { useBridgeState } from '@/slices/bridge/hooks'
+import { METIS } from '@/constants/chains/master'
 
 /**
  * Start: 30 min prior to Metis Chain Downtime @ (March 14, 02:00 UTC)
@@ -35,15 +37,22 @@ export const MetisDowntimeBanner = () => {
 }
 
 export const MetisDowntimeWarningMessage = () => {
-  return (
-    <WarningMessage
-      message={
-        <>
-          <p>
-            The Metis Chain is offline until a planned Metis upgrade completes.
-          </p>
-        </>
-      }
-    />
-  )
+  const { fromChainId, toChainId } = useBridgeState()
+
+  const isChainMetis = [fromChainId, toChainId].includes(METIS.id)
+
+  if (isChainMetis) {
+    return (
+      <WarningMessage
+        message={
+          <>
+            <p>
+              Metis Chain bridging is paused until a planned Metis upgrade
+              completes.
+            </p>
+          </>
+        }
+      />
+    )
+  } else return null
 }
