@@ -6,7 +6,7 @@ export const useUpgradeProgressBar = (
   startDate: Date,
   endDate: Date
 ): {
-  isStarted: boolean
+  isPending: boolean
   isComplete: boolean
   UpgradeProgressBar: JSX.Element
 } => {
@@ -21,19 +21,20 @@ export const useUpgradeProgressBar = (
 
   const isStarted = currentTimeInSeconds > startTimeInSeconds
   const isComplete = timeRemainingInSeconds <= 0
+  const isPending = isStarted && !isComplete
 
   let status: 'idle' | 'pending' | 'complete'
 
   if (isComplete) {
     status = 'complete'
-  } else if (isStarted) {
+  } else if (isPending) {
     status = 'pending'
   } else {
     status = 'idle'
   }
 
   return {
-    isStarted,
+    isPending,
     isComplete,
     UpgradeProgressBar: (
       <>
