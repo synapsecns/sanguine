@@ -86,7 +86,7 @@ import {
 } from '@/slices/priceDataSlice'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { SwitchButton } from '@/components/buttons/SwitchButton'
-import { useUpgradeProgressBar } from '@/components/StateManagedBridge/UpgradeProgress'
+import { useUpgradeProgressBar } from '@/components/Maintenance/UpgradeProgress'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()

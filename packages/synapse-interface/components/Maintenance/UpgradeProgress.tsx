@@ -1,4 +1,4 @@
-import { AnimatedProgressBar } from '../_Transaction/components/AnimatedProgressBar'
+import { LinearAnimatedProgressBar } from './LinearAnimatedProgressBar'
 
 export const useUpgradeProgressBar = (
   eventLabel: string,
@@ -9,15 +9,22 @@ export const useUpgradeProgressBar = (
   const currentTimeInSeconds = currentDate.getTime() / 1000
 
   /** Testing countdown, remove after testing */
-  const startDate = new Date(Date.UTC(2024, 2, 12, 22, 30, 0))
-  const endDate = new Date(Date.UTC(2024, 2, 12, 23, 30, 0))
+  const startDate = new Date(Date.UTC(2024, 2, 12, 24, 20, 0))
+  const endDate = new Date(Date.UTC(2024, 2, 12, 24, 30, 0))
   /** Testing countdown, remove after testing */
 
-  const startTimeInSeconds = startDate.getTime() / 1000
-  const endTimeInSeconds = endDate.getTime() / 1000
+  console.log('startDate:', startDate)
+
+  const startTimeInSeconds = Math.floor(startDate.getTime() / 1000)
+  const endTimeInSeconds = Math.floor(endDate.getTime() / 1000)
 
   const timeRemaining = endDate.getTime() - currentDate.getTime()
   const timeRemainingInMinutes = Math.floor(timeRemaining / (1000 * 60))
+
+  const totalTimeInSeconds = endTimeInSeconds - startTimeInSeconds
+  const totalTimeInMin = totalTimeInSeconds / 60
+
+  console.log('timeRemainingInMinutes:', timeRemainingInMinutes)
 
   let status: 'idle' | 'pending' | 'complete'
 
@@ -82,10 +89,10 @@ export const UpgradeProgressBar = ({
           <div>{timeRemaining}m remaining</div>
         </div>
         <div className="px-1">
-          <AnimatedProgressBar
+          <LinearAnimatedProgressBar
             id="eth-dencun-countdown"
             startTime={startTime}
-            estDuration={45 * 1000} // 45 min
+            endTime={endTime}
             status={status}
           />
         </div>
