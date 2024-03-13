@@ -3,33 +3,26 @@ import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 
 export const useUpgradeProgressBar = (
   eventLabel: string,
-  startTime: Date,
-  endTime: Date
-) => {
+  startDate: Date,
+  endDate: Date
+): {
+  isStarted: boolean
+  isComplete: boolean
+  UpgradeProgressBar: JSX.Element
+} => {
   useIntervalTimer(60000)
   const currentDate = new Date()
   const currentTimeInSeconds = currentDate.getTime() / 1000
-
-  /** Testing countdown, remove after testing */
-  const startDate = new Date(Date.UTC(2024, 2, 13, 1, 20, 0))
-  const endDate = new Date(Date.UTC(2024, 2, 13, 1, 30, 0))
-  /** Testing countdown, remove after testing */
-
   const startTimeInSeconds = Math.floor(startDate.getTime() / 1000)
   const endTimeInSeconds = Math.floor(endDate.getTime() / 1000)
 
-  const timeRemainingInSeconds = endDate.getTime() - currentDate.getTime()
-  const timeRemainingInMinutes = Math.floor(
-    timeRemainingInSeconds / (1000 * 60)
-  )
-
-  const totalTimeInSeconds = endTimeInSeconds - startTimeInSeconds
-  const totalTimeInMin = totalTimeInSeconds / 60
-
-  let status: 'idle' | 'pending' | 'complete'
+  const timeRemainingInSeconds = endTimeInSeconds - currentTimeInSeconds
+  const timeRemainingInMinutes = Math.ceil(timeRemainingInSeconds / 60)
 
   const isStarted = currentTimeInSeconds > startTimeInSeconds
   const isComplete = timeRemainingInSeconds <= 0
+
+  let status: 'idle' | 'pending' | 'complete'
 
   if (isComplete) {
     status = 'complete'
@@ -38,8 +31,6 @@ export const useUpgradeProgressBar = (
   } else {
     status = 'idle'
   }
-
-  console.log('status: ', status)
 
   return {
     isStarted,
@@ -58,12 +49,6 @@ export const useUpgradeProgressBar = (
   }
 }
 
-/**
- * Start: 15 min prior to Eth Dencun Upgrade Time @ 3/13/24 13:55 UTC
- * End: 30 min after start of Eth Decun Upgrade Time
- */
-// const startDate = new Date(Date.UTC(2024, 2, 13, 13, 40, 0))
-// const endDate = new Date(Date.UTC(2024, 2, 12, 14, 25, 0))
 export const UpgradeProgressBar = ({
   eventLabel,
   startTime,

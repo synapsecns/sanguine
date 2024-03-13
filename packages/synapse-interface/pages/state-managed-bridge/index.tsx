@@ -86,7 +86,7 @@ import {
 } from '@/slices/priceDataSlice'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { SwitchButton } from '@/components/buttons/SwitchButton'
-import { useUpgradeProgressBar } from '@/components/Maintenance/UpgradeProgress'
+import { useUpgradeProgressBar } from '@/components/Maintenance/UpgradeProgressBar'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -523,14 +523,22 @@ const StateManagedBridge = () => {
    * Start: 15 min prior to Eth Dencun Upgrade Time @ 3/13/24 13:55 UTC
    * End: 30 min after start of Eth Decun Upgrade Time
    */
-  const startDate = new Date(Date.UTC(2024, 2, 13, 13, 40, 0))
-  const endDate = new Date(Date.UTC(2024, 2, 12, 14, 25, 0))
+  // const startDate = new Date(Date.UTC(2024, 2, 13, 13, 40, 0))
+  // const endDate = new Date(Date.UTC(2024, 2, 12, 14, 25, 0))
+
+  /** Test values, remove after testing */
+  const startDate = new Date(Date.UTC(2024, 2, 13, 1, 40, 0))
+  const endDate = new Date(Date.UTC(2024, 2, 13, 1, 42, 0))
+  /** Test values, remove after testing */
 
   const { isStarted, isComplete, UpgradeProgressBar } = useUpgradeProgressBar(
     'Dencun upgrade in progress',
     startDate,
     endDate
   )
+
+  console.log('isStarted:', isStarted)
+  console.log('isComplete:', isComplete)
 
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">

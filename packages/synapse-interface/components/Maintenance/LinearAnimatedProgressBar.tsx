@@ -3,9 +3,9 @@ import { getTimeMinutesBeforeNow } from '@/utils/time'
 
 /**
  * @param id unique identifier for progress bar instance
- * @param startTime timestamp in seconds
- * @param endTime total duration in seconds
- * @param status txn status
+ * @param startTime start time in unix seconds
+ * @param endTime end time in unix seconds
+ * @param status progress status
  */
 export const LinearAnimatedProgressBar = memo(
   ({
@@ -19,10 +19,10 @@ export const LinearAnimatedProgressBar = memo(
     endTime: number
     status: 'idle' | 'pending' | 'complete'
   }) => {
-    const currentTime = getTimeMinutesBeforeNow(0)
+    const currentTime = Math.floor(getTimeMinutesBeforeNow(0))
 
-    const elapsedTimeInSeconds = Math.floor(currentTime) - Math.floor(startTime)
-    const remainingTimeInSeconds = Math.floor(endTime) - Math.floor(currentTime)
+    const elapsedTimeInSeconds = currentTime - startTime
+    const remainingTimeInSeconds = endTime - currentTime
     const totalTimeInSeconds = endTime - startTime
 
     const percentElapsed = (elapsedTimeInSeconds / totalTimeInSeconds) * 100

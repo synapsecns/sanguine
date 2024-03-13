@@ -1,5 +1,12 @@
 import { useState, useEffect } from 'react'
 
+/**
+ * Reusable Annoucement Banner with custom Start/End Time
+ * @param bannerId: store in $MMDDYYYY-$BANNER_NAME format (e.g 03132024-ETH-DENCUN)
+ * @param bannerContents: contents to display in banner
+ * @param startDate: start date to show banner
+ * @param endDate: end date to remove banner
+ */
 export const AnnouncementBanner = ({
   bannerId,
   bannerContents,
@@ -15,15 +22,11 @@ export const AnnouncementBanner = ({
   const [showBanner, setShowBanner] = useState(false)
 
   const currentDate = new Date()
+
   const isStarted =
     Math.floor(currentDate.getTime()) - Math.floor(startDate.getTime()) > 0
   const isComplete =
     Math.floor(currentDate.getTime()) - Math.floor(endDate.getTime()) > 0
-
-  // console.log('currentDate:', currentDate)
-  // console.log('endDate:', endDate)
-  // console.log('isStarted: ', isStarted)
-  // console.log('isComplete:', isComplete)
 
   useEffect(() => {
     setHasMounted(true)
@@ -68,14 +71,7 @@ export const AnnouncementBanner = ({
       >
         <div className="m-1 font-thin">
           <div className="container mx-auto">
-            <p className="text-md">
-              {/* <div>
-                The Bridge + RFQ will be globally offline 15mins ahead of the
-                Dencun upgrade (March 13, 13:55 UTC, 9:55 EST). Will be back
-                online about 15 - 30 mins after Dencun.
-              </div> */}
-              {bannerContents}
-            </p>
+            <p className="text-md">{bannerContents}</p>
           </div>
         </div>
         <button
