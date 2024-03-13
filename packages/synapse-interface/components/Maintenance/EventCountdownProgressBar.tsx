@@ -18,7 +18,7 @@ export const useEventCountdownProgressBar = (
   const timeRemaining: string =
     totalTimeRemainingInMinutes > 90
       ? `${hoursRemaining}h`
-      : `${totalTimeRemainingInMinutes}min`
+      : `${totalTimeRemainingInMinutes}m`
 
   let status: 'idle' | 'pending' | 'complete'
 
