@@ -7,23 +7,13 @@ import { OPTIMISM, BASE } from '@/constants/chains/master'
  * Start: 10 min prior to Ecotone Fork Upgrade Time @ (March 14, 00:00 UTC)
  * End: 10 min after start of Ecotone Fork Upgrade Time
  */
-// export const ECOTONE_FORK_BANNERS_START = new Date(
-//   Date.UTC(2024, 2, 13, 23, 20, 0)
-// )
-// export const ECOTONE_FORK_START_DATE = new Date(
-//   Date.UTC(2024, 2, 13, 23, 50, 0)
-// )
-// export const ECOTONE_FORK_END_DATE = new Date(Date.UTC(2024, 2, 13, 24, 10, 0))
-
-/** TEST VALUES, REMOVE AFTER TESTING */
 export const ECOTONE_FORK_BANNERS_START = new Date(
-  Date.UTC(2024, 2, 13, 13, 0, 0)
+  Date.UTC(2024, 2, 13, 23, 20, 0)
 )
 export const ECOTONE_FORK_START_DATE = new Date(
-  Date.UTC(2024, 2, 13, 14, 30, 0)
+  Date.UTC(2024, 2, 13, 23, 50, 0)
 )
-export const ECOTONE_FORK_END_DATE = new Date(Date.UTC(2024, 2, 13, 15, 30, 0))
-/** TEST VALUES, REMOVE AFTER TESTING */
+export const ECOTONE_FORK_END_DATE = new Date(Date.UTC(2024, 2, 13, 24, 10, 0))
 
 export const EcotoneForkUpgradeBanner = () => {
   return (

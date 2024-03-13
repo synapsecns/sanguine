@@ -563,8 +563,6 @@ const StateManagedBridge = () => {
   }
   /* Remove after upgrades */
 
-  console.log('isBridgePaused:', isBridgePaused())
-
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
       <div className="flex flex-col">
