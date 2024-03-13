@@ -12,7 +12,7 @@ export const SwapToTokenSelector = () => {
   return (
     <TokenSelector
       dataTestId="bridge-destination-token"
-      token={swapToToken}
+      selectedItem={swapToToken}
       placeholder="Out"
       onClick={() => dispatch(setShowSwapToTokenListOverlay(true))}
     />

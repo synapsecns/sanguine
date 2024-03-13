@@ -1,5 +1,4 @@
 import { Chain, Token } from '@/utils/types'
-import { useState } from 'react'
 import { DropDownArrowSvg } from '../icons/DropDownArrowSvg'
 import {
   getBorderStyleForCoinHover,
@@ -13,30 +12,23 @@ import {
 } from '@/styles/chains'
 import LoadingDots from './tailwind/LoadingDots'
 
-type TokenSelectorTypes = {
+interface SelectorTypes {
   dataTestId?: string
-  token: Token
-  placeholder: string
+  placeholder?: string
+  selectedItem: Token | Chain
   onClick: React.MouseEventHandler<HTMLButtonElement>
 }
 
-type ChainSelectorTypes = {
-  dataTestId?: string
-  chain: Chain
+interface TokenSelectorTypes extends SelectorTypes {
+  selectedItem: Token
+}
+
+interface ChainSelectorTypes extends SelectorTypes {
   label: string
-  placeholder: string
-  onClick: React.MouseEventHandler<HTMLButtonElement>
+  selectedItem: Chain
 }
 
-type SelectorTypes = {
-  dataTestId?: string
-  chain: Chain
-  label?: string
-  placeholder: string
-  onClick: React.MouseEventHandler<HTMLButtonElement>
-}
-
-type AmountInputTypes = {
+interface AmountInputTypes {
   inputRef?: React.RefObject<HTMLInputElement>
   disabled?: boolean
   hasMounted?: boolean
@@ -88,7 +80,7 @@ export function BridgeAmountContainer({ children }) {
 
 export function TokenSelector({
   dataTestId,
-  token,
+  selectedItem,
   placeholder,
   onClick,
 }: TokenSelectorTypes) {
@@ -99,22 +91,22 @@ export function TokenSelector({
     background: 'dark:bg-zinc-700',
     border: `border border-zinc-200 dark:border-transparent`,
     font: 'text-lg',
-    bgHover: getMenuItemHoverBgForCoin(token?.color),
-    borderHover: getBorderStyleForCoinHover(token?.color),
+    bgHover: getMenuItemHoverBgForCoin(selectedItem?.color),
+    borderHover: getBorderStyleForCoinHover(selectedItem?.color),
     active: 'active:opacity-70',
   })
 
   return (
     <button data-test-id={dataTestId} className={className} onClick={onClick}>
-      {token && (
+      {selectedItem && (
         <img
-          src={token?.icon?.src ?? ''}
-          alt={token?.symbol ?? ''}
+          src={selectedItem?.icon?.src ?? ''}
+          alt={selectedItem?.symbol ?? ''}
           width="24"
           height="24"
         />
       )}
-      {token?.symbol ?? placeholder}
+      {selectedItem?.symbol ?? placeholder ?? 'Token'}
       <DropDownArrowSvg />
     </button>
   )
@@ -122,7 +114,7 @@ export function TokenSelector({
 
 export function ChainSelector({
   dataTestId,
-  chain,
+  selectedItem,
   label,
   placeholder,
   onClick,
@@ -134,26 +126,26 @@ export function ChainSelector({
     background: 'dark:bg-zinc-700',
     border: 'border border-zinc-200 dark:border-transparent',
     font: 'leading-tight',
-    bgHover: getNetworkHover(chain?.color),
-    // bgActive: getNetworkButtonBgClassNameActive(chain?.color),
-    borderHover: getNetworkButtonBorderHover(chain?.color),
-    // borderActive: getNetworkButtonBorderActive(chain?.color),
+    bgHover: getNetworkHover(selectedItem?.color),
+    // bgActive: getNetworkButtonBgClassNameActive(selectedItem?.color),
+    borderHover: getNetworkButtonBorderHover(selectedItem?.color),
+    // borderActive: getNetworkButtonBorderActive(selectedItem?.color),
     active: 'active:opacity-70',
   })
 
   return (
     <button data-test-id={dataTestId} className={className} onClick={onClick}>
-      {chain && (
+      {selectedItem && (
         <img
-          src={chain?.chainImg?.src}
-          alt={chain?.name}
+          src={selectedItem?.chainImg?.src}
+          alt={selectedItem?.name}
           width="24"
           height="24"
         />
       )}
       <span>
         <div className="text-sm text-zinc-500">{label}</div>
-        {chain?.name ?? 'Network'}
+        {selectedItem?.name ?? placeholder ?? 'Network'}
       </span>
       <DropDownArrowSvg />
     </button>

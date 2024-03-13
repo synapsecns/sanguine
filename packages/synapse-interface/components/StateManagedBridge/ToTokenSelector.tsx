@@ -12,7 +12,7 @@ export const ToTokenSelector = () => {
   return (
     <TokenSelector
       dataTestId="bridge-destination-token"
-      token={toToken}
+      selectedItem={toToken}
       placeholder="Out"
       onClick={() => dispatch(setShowToTokenListOverlay(true))}
     />
