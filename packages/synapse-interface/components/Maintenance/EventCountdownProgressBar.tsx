@@ -12,7 +12,7 @@ export const useEventCountdownProgressBar = (
 } => {
   useIntervalTimer(60000)
 
-  const { timeRemainingInMinutes, isComplete, isPending } =
+  const { totalTimeRemainingInMinutes, hoursRemaining, isComplete, isPending } =
     getCountdownTimeStatus(startDate, endDate)
 
   let status: 'idle' | 'pending' | 'complete'
@@ -34,7 +34,7 @@ export const useEventCountdownProgressBar = (
         startDate={startDate}
         endDate={endDate}
         status={status}
-        timeRemaining={timeRemainingInMinutes}
+        timeRemaining={totalTimeRemainingInMinutes}
       />
     ),
   }
@@ -82,18 +82,24 @@ export const EventCountdownProgressBar = ({
 
 export const getCountdownTimeStatus = (startDate: Date, endDate: Date) => {
   const currentDate = new Date()
+
+  const { daysRemaining, hoursRemaining, minutesRemaining, secondsRemaining } =
+    calculateTimeUntilTarget(endDate)
+
   const currentTimeInSeconds = Math.floor(currentDate.getTime() / 1000)
 
   const startTimeInSeconds = Math.floor(startDate.getTime() / 1000)
   const endTimeInSeconds = Math.floor(endDate.getTime() / 1000)
   const totalTimeInSeconds = endTimeInSeconds - startTimeInSeconds
 
-  const timeElapsedInSeconds = currentTimeInSeconds - startTimeInSeconds
-  const timeRemainingInSeconds = endTimeInSeconds - currentTimeInSeconds
-  const timeRemainingInMinutes = Math.ceil(timeRemainingInSeconds / 60)
+  const totalTimeElapsedInSeconds = currentTimeInSeconds - startTimeInSeconds
+  const totalTimeRemainingInSeconds = endTimeInSeconds - currentTimeInSeconds
+  const totalTimeRemainingInMinutes = Math.ceil(
+    totalTimeRemainingInSeconds / 60
+  )
 
   const isStarted = currentTimeInSeconds >= startTimeInSeconds
-  const isComplete = timeRemainingInSeconds <= 0
+  const isComplete = totalTimeRemainingInSeconds <= 0
   const isPending = isStarted && !isComplete
 
   return {
@@ -101,11 +107,46 @@ export const getCountdownTimeStatus = (startDate: Date, endDate: Date) => {
     startTimeInSeconds,
     endTimeInSeconds,
     totalTimeInSeconds,
-    timeElapsedInSeconds,
-    timeRemainingInSeconds,
-    timeRemainingInMinutes,
+    totalTimeElapsedInSeconds,
+    totalTimeRemainingInSeconds,
+    totalTimeRemainingInMinutes,
+    daysRemaining,
+    hoursRemaining,
+    minutesRemaining,
+    secondsRemaining,
     isStarted,
     isComplete,
     isPending,
+  }
+}
+
+const calculateTimeUntilTarget = (targetDate: Date) => {
+  const currentDate = new Date()
+
+  const timeDifference = targetDate.getTime() - currentDate.getTime()
+
+  const isComplete = timeDifference <= 0
+
+  const daysRemaining = Math.floor(timeDifference / (1000 * 60 * 60 * 24))
+  const hoursRemaining = Math.floor(
+    (timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+  )
+    .toString()
+    .padStart(2, '0')
+  const minutesRemaining = Math.floor(
+    (timeDifference % (1000 * 60 * 60)) / (1000 * 60)
+  )
+    .toString()
+    .padStart(2, '0')
+  const secondsRemaining = Math.floor((timeDifference % (1000 * 60)) / 1000)
+    .toString()
+    .padStart(2, '0')
+
+  return {
+    daysRemaining,
+    hoursRemaining,
+    minutesRemaining,
+    secondsRemaining,
+    isComplete,
   }
 }
