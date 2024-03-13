@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.7.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.6.2...@synapsecns/synapse-interface@0.7.0) (2024-03-13)
+
+
+### Features
+
+* **synapse-interface:** maintenance notification components + eth dencun pause ([#2260](https://github.com/synapsecns/sanguine/issues/2260)) ([9ffae5b](https://github.com/synapsecns/sanguine/commit/9ffae5b640f904818fdd4b198c069042f05ffb29))
+
+
+
+
+
 ## [0.6.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.6.1...@synapsecns/synapse-interface@0.6.2) (2024-03-13)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
