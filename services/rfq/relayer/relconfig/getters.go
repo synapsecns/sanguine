@@ -554,21 +554,9 @@ var defaultMinRebalanceAmount = big.NewInt(1000)
 //
 //nolint:dupl
 func (c Config) GetMinRebalanceAmount(chainID int, addr common.Address) *big.Int {
-	chainCfg, ok := c.Chains[chainID]
-	if !ok {
-		return defaultMinRebalanceAmount
-	}
-
-	var tokenCfg *TokenConfig
-	for _, cfg := range chainCfg.Tokens {
-		if common.HexToAddress(cfg.Address).Hex() == addr.Hex() {
-			cfgCopy := cfg
-			tokenCfg = &cfgCopy
-			break
-		}
-	}
-	if tokenCfg == nil {
-		return defaultMinRebalanceAmount
+	tokenCfg, _, err := c.getTokenConfigByAddr(chainID, addr.Hex())
+	if err != nil {
+		return defaultMaxRebalanceAmount
 	}
 	rebalanceAmountFlt, ok := new(big.Float).SetString(tokenCfg.MinRebalanceAmount)
 	if !ok || rebalanceAmountFlt == nil {
@@ -588,20 +576,8 @@ var defaultMaxRebalanceAmount = abi.MaxInt256
 //
 //nolint:dupl
 func (c Config) GetMaxRebalanceAmount(chainID int, addr common.Address) *big.Int {
-	chainCfg, ok := c.Chains[chainID]
-	if !ok {
-		return defaultMaxRebalanceAmount
-	}
-
-	var tokenCfg *TokenConfig
-	for _, cfg := range chainCfg.Tokens {
-		if common.HexToAddress(cfg.Address).Hex() == addr.Hex() {
-			cfgCopy := cfg
-			tokenCfg = &cfgCopy
-			break
-		}
-	}
-	if tokenCfg == nil {
+	tokenCfg, _, err := c.getTokenConfigByAddr(chainID, addr.Hex())
+	if err != nil {
 		return defaultMaxRebalanceAmount
 	}
 	rebalanceAmountFlt, ok := new(big.Float).SetString(tokenCfg.MaxRebalanceAmount)
