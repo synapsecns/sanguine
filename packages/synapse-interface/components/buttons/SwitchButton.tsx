@@ -14,10 +14,13 @@ export function SwitchButton({ onClick }: { onClick: () => void }) {
 
   const className = join({
     space: '-my-3.5 rounded z-10 justify-self-center',
-    bgColor: 'bg-bgLight', // NEW: 'bg-zinc-50 dark:bg-zinc-800',
-    borderColor: 'border border-bgBase', // NEW: 'border border-zinc-100 dark:border-zinc-900/95',
-    stroke: 'stroke-2 stroke-secondary',
-    transition: `hover:opacity-80 cursor-pointer transition-transform ${
+    // background: 'bg-bgLight', // TODO: Remove
+    background: 'bg-zinc-50 dark:bg-zinc-800',
+    // border: 'border border-bgBase', // TODO: Remove
+    border: 'border border-zinc-200 dark:border-zinc-900/95',
+    // stroke: 'stroke-2 stroke-secondary', // TODO: Remove
+    stroke: 'stroke-2 stroke-zinc-500',
+    transition: `hover:border-zinc-400 hover:dark:border-zinc-500 cursor-pointer transition-transform ${
       isActive ? `duration-${ms} rotate-180 ease-in-out` : 'ease-out' // 'duration-0'
     }`,
   })
