@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.9.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.8.0...@synapsecns/synapse-interface@0.9.0) (2024-03-13)
+
+
+### Features
+
+* **synapse-interface:** use both rebate displays in bridge card ([#2276](https://github.com/synapsecns/sanguine/issues/2276)) ([45fbfdc](https://github.com/synapsecns/sanguine/commit/45fbfdc245647b8db87b889e252fa4aece49f501))
+
+
+
+
+
 # [0.8.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.7.1...@synapsecns/synapse-interface@0.8.0) (2024-03-13)
 
 
