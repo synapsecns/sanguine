@@ -214,6 +214,15 @@ func (q *QuoteRequestHandler) handleCommitConfirmed(ctx context.Context, _ trace
 // This is the fifth step in the bridge process. Here we check if the relay has been completed on the destination chain.
 // Notably, this is polled from the chain listener rather than the database since we wait for the log to show up.
 func (r *Relayer) handleRelayLog(ctx context.Context, req *fastbridge.FastBridgeBridgeRelayed) (err error) {
+	// handle the case where another relayer beat us to it
+	if req.Relayer != r.signer.Address() {
+		err = r.db.UpdateQuoteRequestStatus(ctx, req.TransactionId, reldb.RelayRaceLost)
+		if err != nil {
+			return fmt.Errorf("could not update request status: %w", err)
+		}
+		return nil
+	}
+
 	reqID, err := r.db.GetQuoteRequestByID(ctx, req.TransactionId)
 	if err != nil {
 		return fmt.Errorf("could not get quote request: %w", err)
