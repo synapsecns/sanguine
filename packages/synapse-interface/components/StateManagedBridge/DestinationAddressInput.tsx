@@ -178,6 +178,7 @@ export const DestinationAddressInput = ({
             {filteredRecipientList?.map((recipient) => {
               return (
                 <ListRecipient
+                  key={recipient?.toAddress}
                   address={recipient?.toAddress}
                   daysAgo={recipient?.daysAgo}
                   onSelectRecipient={(destinationAddress: Address) => {
