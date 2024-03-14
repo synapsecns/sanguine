@@ -253,12 +253,15 @@ const DestinationInputWarning = ({
         It may be impossible to recover your funds.
       </p>
       <div className="flex space-x-2">
-        <button onClick={onCancel} className="w-1/2 py-3 bg-separator">
+        <button
+          onClick={onCancel}
+          className="w-1/2 py-3 border border-transparent bg-separator hover:border-primary"
+        >
           Cancel
         </button>
         <button
           onClick={onAccept}
-          className="w-1/2 py-3 bg-transparent border border-separator"
+          className="w-1/2 py-3 bg-transparent border border-separator hover:border-primary"
         >
           Okay
         </button>
