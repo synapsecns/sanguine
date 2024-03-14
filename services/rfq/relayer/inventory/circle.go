@@ -160,6 +160,11 @@ func (c *rebalanceManagerCircleCCTP) initListeners(parentCtx context.Context) (e
 		if err != nil {
 			return fmt.Errorf("could not get cctp address: %w", err)
 		}
+		if messengerAddr == "" {
+			span.AddEvent(fmt.Sprintf("token messenger address not found for chain %d; skipping", chainID))
+			fmt.Printf("skipping: %v\n", chainID)
+			continue
+		}
 		messengerListener, err := listener.NewChainListener(chainClient, c.db, common.HexToAddress(messengerAddr), initialBlock, c.handler)
 		if err != nil {
 			return fmt.Errorf("could not get messenger listener: %w", err)
