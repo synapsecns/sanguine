@@ -19,6 +19,8 @@ func (s Store) StoreRebalance(ctx context.Context, rebalance reldb.Rebalance) er
 }
 
 // UpdateRebalance updates the rebalance status.
+//
+//nolint:cyclop
 func (s Store) UpdateRebalance(ctx context.Context, rebalance reldb.Rebalance, updateID bool) error {
 	tx := s.DB().WithContext(ctx).Begin()
 	if tx.Error != nil {

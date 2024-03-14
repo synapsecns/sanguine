@@ -351,7 +351,6 @@ func (c *circleCCTPHandler) getMessagePayload(ctx context.Context, txHash common
 			if err != nil {
 				return nil, fmt.Errorf("could not parse depositForBurn event: %w", err)
 			}
-			message = messageSentEvent.Message
 			return messageSentEvent.Message, nil
 		}
 	}
