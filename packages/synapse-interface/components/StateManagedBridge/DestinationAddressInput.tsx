@@ -31,14 +31,13 @@ export const DestinationAddressInput = ({
   const { userHistoricalTransactions }: TransactionsState =
     useTransactionsState()
 
-  const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
-
   const recipientList = filterTxsByRecipient(
     userHistoricalTransactions,
     connectedAddress
   )
-
   const filteredRecipientList = filterNewestTxByRecipient(recipientList)
+
+  const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
 
   const handleInputFocus = () => {
     setIsInputFocused(true)
@@ -49,22 +48,22 @@ export const DestinationAddressInput = ({
     setIsInputFocused(false)
   }
 
-  const activateFocusOnInput = () => {
-    if (inputRef.current) {
-      inputRef.current.focus()
-    }
-  }
-
   const handleClearInput = () => {
     if (inputRef.current) {
       inputRef.current.value = ''
     }
   }
 
+  const handleActivateInputFocus = () => {
+    if (inputRef.current) {
+      inputRef.current.focus()
+    }
+  }
+
   const onClearUserInput = () => {
     dispatch(clearDestinationAddress())
     handleClearInput()
-    activateFocusOnInput()
+    handleActivateInputFocus()
   }
 
   const isInputValidAddress: boolean = destinationAddress
@@ -87,12 +86,21 @@ export const DestinationAddressInput = ({
       : 'Wallet address'
   }
 
-  const [showRecipientList, setShowRecipientList] = useState<boolean>(false)
-  const listRef = useRef(null)
-  useCloseOnOutsideClick(listRef, () => setShowRecipientList(false))
+  let inputValue
 
-  /** Warning State */
+  if (!destinationAddress) {
+    inputValue = ''
+  } else {
+    inputValue =
+      isInputValidAddress && !isInputFocused
+        ? shortenAddress(destinationAddress)
+        : destinationAddress
+  }
+
+  const listRef = useRef(null)
+  const [showRecipientList, setShowRecipientList] = useState<boolean>(false)
   const [showWarning, setShowWarning] = useState<boolean>(false)
+  useCloseOnOutsideClick(listRef, () => setShowRecipientList(false))
 
   const handleActivateWarning = () => {
     if (!showWarning && showDestinationWarning) {
@@ -101,9 +109,9 @@ export const DestinationAddressInput = ({
   }
 
   const handleAcceptWarning = () => {
-    activateFocusOnInput()
-    setShowWarning(false)
     dispatch(setShowDestinationWarning(false))
+    setShowWarning(false)
+    handleActivateInputFocus()
   }
 
   const handleRejectWarning = () => {
@@ -114,17 +122,6 @@ export const DestinationAddressInput = ({
     dispatch(clearDestinationAddress())
     handleClearInput()
   }, [connectedAddress])
-
-  let inputValue
-
-  if (destinationAddress) {
-    inputValue =
-      isInputValidAddress && !isInputFocused
-        ? shortenAddress(destinationAddress)
-        : destinationAddress
-  } else {
-    inputValue = ''
-  }
 
   return (
     <div id="destination-address-input" onClick={handleActivateWarning}>
