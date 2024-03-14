@@ -38,8 +38,10 @@ type rebalanceManagerCircleCCTP struct {
 	boundMessageTransmitters map[int]*messagetransmitter.MessageTransmitter
 	// relayerAddress contains the relayer address
 	relayerAddress common.Address
-	// chainListeners is the map of chain listeners for CCTP events
-	chainListeners map[int]listener.ContractListener
+	// messengerListeners is the map of chain listeners for DepositForBurn events
+	messengerListeners map[int]listener.ContractListener
+	// transmitterListeners is the map of chain listeners for MessageReceived events
+	transmitterListeners map[int]listener.ContractListener
 	// db is the database
 	db reldb.Service
 }
@@ -53,7 +55,8 @@ func newRebalanceManagerCircleCCTP(cfg relconfig.Config, handler metrics.Handler
 		boundTokenMessengers:     make(map[int]*tokenmessenger.TokenMessenger),
 		boundMessageTransmitters: make(map[int]*messagetransmitter.MessageTransmitter),
 		relayerAddress:           relayerAddress,
-		chainListeners:           make(map[int]listener.ContractListener),
+		messengerListeners:       make(map[int]listener.ContractListener),
+		transmitterListeners:     make(map[int]listener.ContractListener),
 		db:                       db,
 	}
 }
@@ -73,8 +76,15 @@ func (c *rebalanceManagerCircleCCTP) Start(ctx context.Context) (err error) {
 	for cid := range c.cfg.Chains {
 		// capture func literal
 		chainID := cid
+		ethClient, err := c.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
+		if err != nil {
+			return fmt.Errorf("could not get chain client: %w", err)
+		}
 		g.Go(func() error {
-			return c.listen(ctx, chainID)
+			return c.listenDepositForBurn(ctx, chainID, ethClient)
+		})
+		g.Go(func() error {
+			return c.listenMessageReceived(ctx, chainID, ethClient)
 		})
 	}
 
@@ -129,10 +139,7 @@ func (c *rebalanceManagerCircleCCTP) initContracts(parentCtx context.Context) (e
 
 func (c *rebalanceManagerCircleCCTP) initListeners(ctx context.Context) (err error) {
 	for chainID := range c.cfg.GetChains() {
-		cctpAddr, err := c.cfg.GetTokenMessengerAddress(chainID)
-		if err != nil {
-			return fmt.Errorf("could not get cctp address: %w", err)
-		}
+		// setup chain utils
 		chainClient, err := c.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
 		if err != nil {
 			return fmt.Errorf("could not get chain client: %w", err)
@@ -141,11 +148,27 @@ func (c *rebalanceManagerCircleCCTP) initListeners(ctx context.Context) (err err
 		if err != nil {
 			return fmt.Errorf("could not get cctp start block: %w", err)
 		}
-		chainListener, err := listener.NewChainListener(chainClient, c.db, common.HexToAddress(cctpAddr), initialBlock, c.handler)
+
+		// build listener for TokenMessenger
+		messengerAddr, err := c.cfg.GetTokenMessengerAddress(chainID)
 		if err != nil {
-			return fmt.Errorf("could not get chain listener: %w", err)
+			return fmt.Errorf("could not get cctp address: %w", err)
 		}
-		c.chainListeners[chainID] = chainListener
+		messengerListener, err := listener.NewChainListener(chainClient, c.db, common.HexToAddress(messengerAddr), initialBlock, c.handler)
+		if err != nil {
+			return fmt.Errorf("could not get messenger listener: %w", err)
+		}
+		c.messengerListeners[chainID] = messengerListener
+
+		// build listener for MessageTransmitter
+		transmitterAddr, err := cctpRelay.GetMessageTransmitterAddress(ctx, common.HexToAddress(messengerAddr), chainClient)
+		if err != nil {
+			return fmt.Errorf("could not get message transmitter addr")
+		}
+		c.transmitterListeners[chainID], err = listener.NewChainListener(chainClient, c.db, transmitterAddr, initialBlock, c.handler)
+		if err != nil {
+			return fmt.Errorf("could not get transmitter listener: %w", err)
+		}
 	}
 	return nil
 }
@@ -218,44 +241,65 @@ func (c *rebalanceManagerCircleCCTP) Execute(parentCtx context.Context, rebalanc
 }
 
 // nolint:cyclop
-func (c *rebalanceManagerCircleCCTP) listen(parentCtx context.Context, chainID int) (err error) {
-	listener, ok := c.chainListeners[chainID]
+func (c *rebalanceManagerCircleCCTP) listenDepositForBurn(parentCtx context.Context, chainID int, ethClient client.EVM) (err error) {
+	listener, ok := c.messengerListeners[chainID]
 	if !ok {
 		return fmt.Errorf("could not find listener for chain %d", chainID)
 	}
-	ethClient, err := c.chainClient.GetClient(parentCtx, big.NewInt(int64(chainID)))
-	if err != nil {
-		return fmt.Errorf("could not get chain client: %w", err)
-	}
 
 	err = listener.Listen(parentCtx, func(parentCtx context.Context, log types.Log) (err error) {
-		ctx, span := c.handler.Tracer().Start(parentCtx, "rebalance.Listen", trace.WithAttributes(
+		ctx, span := c.handler.Tracer().Start(parentCtx, "rebalance.listenDepositForBurn", trace.WithAttributes(
 			attribute.Int(metrics.ChainID, chainID),
 		))
 		defer func(err error) {
 			metrics.EndSpanWithErr(span, err)
 		}(err)
 
-		switch log.Topics[0] {
-		case tokenmessenger.DepositForBurnTopic:
-			err = c.handleDepositForBurn(ctx, log, chainID, ethClient)
-			if err != nil {
-				return fmt.Errorf("could not handle depositForBurn: %w", err)
-			}
+		if log.Topics[0] != tokenmessenger.DepositForBurnTopic {
+			logger.Warnf("unknown event on TokenMessenger: %s", log.Topics[0])
 			return nil
-		case messagetransmitter.MessageReceivedTopic:
-			err = c.handleMessageReceived(ctx, log, chainID, ethClient)
-			if err != nil {
-				return fmt.Errorf("could not handle message received: %w", err)
-			}
-			return nil
-		default:
-			logger.Warnf("unknown event %s", log.Topics[0])
+		}
+
+		err = c.handleDepositForBurn(ctx, log, chainID, ethClient)
+		if err != nil {
+			return fmt.Errorf("could not handle DepositForBurn event: %w", err)
 		}
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("could not listen to contract: %w", err)
+		return fmt.Errorf("could not listen for DepositForBurn events: %w", err)
+	}
+	return nil
+}
+
+//nolint:cyclop
+func (c *rebalanceManagerCircleCCTP) listenMessageReceived(parentCtx context.Context, chainID int, ethClient client.EVM) (err error) {
+	listener, ok := c.messengerListeners[chainID]
+	if !ok {
+		return fmt.Errorf("could not find listener for chain %d", chainID)
+	}
+
+	err = listener.Listen(parentCtx, func(parentCtx context.Context, log types.Log) (err error) {
+		ctx, span := c.handler.Tracer().Start(parentCtx, "rebalance.listenMessageReceived", trace.WithAttributes(
+			attribute.Int(metrics.ChainID, chainID),
+		))
+		defer func(err error) {
+			metrics.EndSpanWithErr(span, err)
+		}(err)
+
+		if log.Topics[0] != messagetransmitter.MessageReceivedTopic {
+			logger.Warnf("unknown event on MessageTransmitter: %s", log.Topics[0])
+			return nil
+		}
+
+		err = c.handleMessageReceived(ctx, log, chainID, ethClient)
+		if err != nil {
+			return fmt.Errorf("could not handle MessageReceived: %w", err)
+		}
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("could not listen for MessageReceived events: %w", err)
 	}
 	return nil
 }
