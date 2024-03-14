@@ -124,10 +124,6 @@ export const BridgeTransactionButton = ({
       label: 'Insufficient balance',
       onClick: null,
     }
-    // } else if (showDestinationAddress && !destinationAddress) {
-    //   buttonProperties = {
-    //     label: 'Please add valid destination address',
-    //   }
   } else if (destinationAddress && !isAddress(destinationAddress)) {
     buttonProperties = {
       label: 'Invalid destination address',

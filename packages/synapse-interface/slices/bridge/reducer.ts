@@ -72,7 +72,6 @@ export const initialState: BridgeState = {
   toTokensBridgeQuotesStatus: FetchState.IDLE,
   isLoading: false,
   deadlineMinutes: null,
-  // destinationAddress: '' as Address,
   destinationAddress: null,
 }
 
