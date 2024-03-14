@@ -30,10 +30,10 @@ func (s Store) UpdateRebalance(ctx context.Context, rebalance reldb.Rebalance, u
 	updates := map[string]interface{}{
 		statusFieldName: rebalance.Status,
 	}
-	if rebalanceModel.OriginTxHash.Valid {
+	if rebalanceModel.OriginTxHash.Valid && rebalanceModel.OriginTxHash.String != "" {
 		updates[originTxHashFieldName] = rebalanceModel.OriginTxHash
 	}
-	if rebalanceModel.DestTxHash.Valid {
+	if rebalanceModel.DestTxHash.Valid && rebalanceModel.DestTxHash.String != "" {
 		updates[destTxHashFieldName] = rebalanceModel.DestTxHash
 	}
 
