@@ -137,7 +137,7 @@ func FromRebalance(rebalance reldb.Rebalance) Rebalance {
 	if rebalance.RebalanceID == nil {
 		id = sql.NullString{Valid: false}
 	} else {
-		id = sql.NullString{String: hexutil.Encode(rebalance.RebalanceID[:]), Valid: true}
+		id = sql.NullString{String: *rebalance.RebalanceID, Valid: true}
 	}
 	return Rebalance{
 		RebalanceID:  id,

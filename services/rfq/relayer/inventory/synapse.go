@@ -216,9 +216,16 @@ func (c *rebalanceManagerSynapseCCTP) listen(parentCtx context.Context, chainID 
 				attribute.String("log_type", "CircleRequestSent"),
 				attribute.String("request_id", hexutil.Encode(parsedEvent.RequestID[:])),
 			)
-			origin := uint64(chainID)
+
+			// update rebalance model in db
 			requestIDHex := hexutil.Encode(parsedEvent.RequestID[:])
-			err = c.db.UpdateRebalanceStatus(ctx, requestIDHex, &origin, reldb.RebalancePending)
+			rebalanceModel := reldb.Rebalance{
+				RebalanceID:  &requestIDHex,
+				Origin:       uint64(chainID),
+				OriginTxHash: log.TxHash,
+				Status:       reldb.RebalancePending,
+			}
+			err = c.db.UpdateRebalance(ctx, rebalanceModel, true)
 			if err != nil {
 				logger.Warnf("could not update rebalance status: %w", err)
 				return nil
@@ -236,8 +243,15 @@ func (c *rebalanceManagerSynapseCCTP) listen(parentCtx context.Context, chainID 
 				attribute.String("log_type", "CircleRequestFulfilled"),
 				attribute.String("request_id", hexutil.Encode(parsedEvent.RequestID[:])),
 			)
+
+			// update rebalance model in db
 			requestIDHex := hexutil.Encode(parsedEvent.RequestID[:])
-			err = c.db.UpdateRebalanceStatus(parentCtx, requestIDHex, nil, reldb.RebalanceCompleted)
+			rebalanceModel := reldb.Rebalance{
+				RebalanceID: &requestIDHex,
+				DestTxHash:  log.TxHash,
+				Status:      reldb.RebalanceCompleted,
+			}
+			err = c.db.UpdateRebalance(parentCtx, rebalanceModel, false)
 			if err != nil {
 				logger.Warnf("could not update rebalance status: %w", err)
 				return nil

@@ -361,7 +361,7 @@ func (c *rebalanceManagerCircleCCTP) handleDepositForBurn(ctx context.Context, l
 		return nil
 	}
 
-	// use message hash as requestID
+	// update rebalance in db
 	sourceDomain, err := c.boundMessageTransmitters[chainID].LocalDomain(&bind.CallOpts{Context: ctx})
 	if err != nil {
 		return fmt.Errorf("could not get local domain: %w", err)
@@ -372,7 +372,13 @@ func (c *rebalanceManagerCircleCCTP) handleDepositForBurn(ctx context.Context, l
 		attribute.String("request_id", requestID),
 	)
 	origin := uint64(chainID)
-	err = c.db.UpdateRebalanceStatus(ctx, requestID, &origin, reldb.RebalancePending)
+	rebalanceModel := reldb.Rebalance{
+		RebalanceID:  &requestID,
+		Origin:       origin,
+		OriginTxHash: log.TxHash,
+		Status:       reldb.RebalancePending,
+	}
+	err = c.db.UpdateRebalance(ctx, rebalanceModel, true)
 	if err != nil {
 		logger.Warnf("could not update rebalance status: %w", err)
 		return nil
@@ -401,12 +407,18 @@ func (c *rebalanceManagerCircleCCTP) handleMessageReceived(ctx context.Context, 
 		return nil
 	}
 
+	// update rebalance model in db
 	requestID := cctpRelay.GetCircleRequestID(parsedEvent.SourceDomain, parsedEvent.Nonce)
 	span.SetAttributes(
 		attribute.String("log_type", "MessageReceived"),
 		attribute.String("request_id", requestID),
 	)
-	err = c.db.UpdateRebalanceStatus(ctx, requestID, nil, reldb.RebalanceCompleted)
+	rebalanceModel := reldb.Rebalance{
+		RebalanceID: &requestID,
+		DestTxHash:  log.TxHash,
+		Status:      reldb.RebalanceCompleted,
+	}
+	err = c.db.UpdateRebalance(ctx, rebalanceModel, false)
 	if err != nil {
 		logger.Warnf("could not update rebalance status: %w", err)
 		return nil

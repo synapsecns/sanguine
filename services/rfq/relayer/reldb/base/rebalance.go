@@ -18,27 +18,41 @@ func (s Store) StoreRebalance(ctx context.Context, rebalance reldb.Rebalance) er
 	return nil
 }
 
-// UpdateRebalanceStatus updates the rebalance status.
-func (s Store) UpdateRebalanceStatus(ctx context.Context, id string, origin *uint64, status reldb.RebalanceStatus) error {
+// UpdateRebalance updates the rebalance status.
+func (s Store) UpdateRebalance(ctx context.Context, rebalance reldb.Rebalance, updateID bool) error {
 	tx := s.DB().WithContext(ctx).Begin()
 	if tx.Error != nil {
 		return fmt.Errorf("could not start transaction: %w", tx.Error)
 	}
+	rebalanceModel := FromRebalance(rebalance)
+
+	// prepare the updates
+	updates := map[string]interface{}{
+		statusFieldName: rebalance.Status,
+	}
+	if rebalanceModel.OriginTxHash.Valid {
+		updates[originTxHashFieldName] = rebalanceModel.OriginTxHash
+	}
+	if rebalanceModel.DestTxHash.Valid {
+		updates[destTxHashFieldName] = rebalanceModel.DestTxHash
+	}
 
 	// prepare the update transaction
 	var result *gorm.DB
-	if origin != nil {
+	if updateID {
+		if rebalance.Origin == 0 {
+			tx.Rollback()
+			return fmt.Errorf("origin chain id is required if id is not set")
+		}
+		updates[rebalanceIDFieldName] = rebalanceModel.RebalanceID
 		result = tx.Model(&Rebalance{}).
-			Where(fmt.Sprintf("%s = ?", "origin"), *origin).
+			Where(fmt.Sprintf("%s = ?", "origin"), rebalance.Origin).
 			Where(fmt.Sprintf("%s = ?", statusFieldName), reldb.RebalanceInitiated.Int()).
-			Updates(map[string]interface{}{
-				rebalanceIDFieldName: id,
-				statusFieldName:      status,
-			})
+			Updates(updates)
 	} else {
 		result = tx.Model(&Rebalance{}).
-			Where(fmt.Sprintf("%s = ?", rebalanceIDFieldName), id).
-			Update(statusFieldName, status)
+			Where(fmt.Sprintf("%s = ?", rebalanceIDFieldName), rebalanceModel.RebalanceID).
+			Updates(updates)
 	}
 
 	// commit the transaction if only one row is affected
