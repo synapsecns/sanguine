@@ -306,6 +306,7 @@ func (m *Manager) generateQuote(ctx context.Context, keyTokenID string, chainID 
 	originStr := strings.Split(keyTokenID, "-")[0]
 	origin, err := strconv.Atoi(originStr)
 	if err != nil {
+		logger.Error("Error converting origin chainID", "error", err)
 		return nil, fmt.Errorf("error converting origin chainID: %w", err)
 	}
 	originTokenAddr := common.HexToAddress(strings.Split(keyTokenID, "-")[1])
@@ -316,26 +317,31 @@ func (m *Manager) generateQuote(ctx context.Context, keyTokenID string, chainID 
 	if errors.Is(err, errMinGasExceedsQuoteAmount) {
 		quoteAmount = big.NewInt(0)
 	} else if err != nil {
+		logger.Error("Error getting quote amount", "error", err)
 		return nil, err
 	}
 
 	// Calculate the fee for this route
 	destToken, err := m.config.GetTokenName(uint32(chainID), address.Hex())
 	if err != nil {
+		logger.Error("Error getting dest token ID", "error", err)
 		return nil, fmt.Errorf("error getting dest token ID: %w", err)
 	}
 	fee, err := m.feePricer.GetTotalFee(ctx, uint32(origin), uint32(chainID), destToken, true)
 	if err != nil {
+		logger.Error("Error getting total fee", "error", err)
 		return nil, fmt.Errorf("error getting total fee: %w", err)
 	}
 	originRFQAddr, err := m.config.GetRFQAddress(origin)
 	if err != nil {
+		logger.Error("Error getting RFQ address", "error", err)
 		return nil, fmt.Errorf("error getting RFQ address: %w", err)
 	}
 
 	// Build the quote
 	destAmount, err := m.getDestAmount(ctx, quoteAmount, chainID)
 	if err != nil {
+		logger.Error("Error getting dest amount", "error", err)
 		return nil, fmt.Errorf("error getting dest amount: %w", err)
 	}
 	quote = &model.PutQuoteRequest{
