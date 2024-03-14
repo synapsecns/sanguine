@@ -7,6 +7,7 @@ import { CSSProperties } from 'react'
 const join = (a) => Object.values(a).join(' ')
 
 const BASE_PROPERTIES = join({
+  flex: 'flex justify-center items-center',
   space: 'w-full rounded-md px-4 py-3 my-1',
   hover: 'hover:opacity-80',
   disabled: 'disabled:opacity-50 disabled:cursor-not-allowed',
