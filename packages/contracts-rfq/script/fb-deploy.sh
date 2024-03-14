@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 # Usage: ./script/fb-deploy.sh <walletName> [...options]
 
-# Trap SIGINT (Ctrl+C) and exit the script
-trap "exit" INT
+trap "echo 'Deployment script terminated by user'; exit" INT
 
 # Parse command line arguments
 walletName=$1

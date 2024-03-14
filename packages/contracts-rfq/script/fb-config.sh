@@ -2,7 +2,7 @@
 # Usage: ./script/fb-config.sh <walletName> [...options]
 
 # Trap SIGINT (Ctrl+C) and exit the script
-trap "exit" INT
+trap "echo 'Script terminated by user'; exit" INT
 
 # Parse command line arguments
 walletName=$1
