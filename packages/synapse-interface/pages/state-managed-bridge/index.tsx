@@ -86,6 +86,11 @@ import {
 } from '@/slices/priceDataSlice'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { SwitchButton } from '@/components/buttons/SwitchButton'
+import { useEventCountdownProgressBar } from '@/components/Maintenance/EventCountdownProgressBar'
+import {
+  ETH_DENCUN_START_DATE,
+  ETH_DENCUN_END_DATE,
+} from '@/components/Maintenance/EthDencunUpgrade'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -518,6 +523,15 @@ const StateManagedBridge = () => {
   const springClass =
     '-mt-4 fixed z-50 w-full h-full bg-opacity-50 bg-[#343036]'
 
+  const {
+    isPending: isUpgradePending,
+    EventCountdownProgressBar: EthDencunEventCountdownProgressBar,
+  } = useEventCountdownProgressBar(
+    'Dencun upgrade in progress',
+    ETH_DENCUN_START_DATE,
+    ETH_DENCUN_END_DATE
+  )
+
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
       <div className="flex flex-col">
@@ -551,68 +565,77 @@ const StateManagedBridge = () => {
         <Card
           divider={false}
           className={`
-            pb-3 mt-5 overflow-hidden
+            pb-3 mt-5 overflow-hidden bg-bgBase
             transition-all duration-100 transform rounded-md
-            bg-bgBase
           `}
         >
-          <div ref={bridgeDisplayRef}>
-            <Transition show={showSettingsSlideOver} {...TRANSITION_PROPS}>
-              <animated.div>
-                <SettingsSlideOver key="settings" />
-              </animated.div>
-            </Transition>
-            <Transition show={showFromChainListOverlay} {...TRANSITION_PROPS}>
-              <animated.div className={springClass}>
-                <FromChainListOverlay />
-              </animated.div>
-            </Transition>
-            <Transition show={showFromTokenListOverlay} {...TRANSITION_PROPS}>
-              <animated.div className={springClass}>
-                <FromTokenListOverlay />
-              </animated.div>
-            </Transition>
-            <Transition show={showToChainListOverlay} {...TRANSITION_PROPS}>
-              <animated.div className={springClass}>
-                <ToChainListOverlay />
-              </animated.div>
-            </Transition>
-            <Transition show={showToTokenListOverlay} {...TRANSITION_PROPS}>
-              <animated.div className={springClass}>
-                <ToTokenListOverlay />
-              </animated.div>
-            </Transition>
-            <InputContainer />
-            <SwitchButton
-              onClick={() => {
-                dispatch(setFromChainId(toChainId))
-                dispatch(setFromToken(toToken))
-                dispatch(setToChainId(fromChainId))
-                dispatch(setToToken(fromToken))
-              }}
-            />
-            <OutputContainer />
-            <Warning />
-            <Transition
-              appear={true}
-              unmount={false}
-              show={true}
-              {...SECTION_TRANSITION_PROPS}
-            >
-              <BridgeExchangeRateInfo />
-            </Transition>
-            {showDestinationAddress && (
-              <DestinationAddressInput
-                toChainId={toChainId}
-                destinationAddress={destinationAddress}
+          {EthDencunEventCountdownProgressBar}
+          <div
+            className={
+              isUpgradePending
+                ? 'cursor-not-allowed pointer-events-none brightness-75 contrast-[90%] opacity-75 aria-disabled'
+                : 'cursor-pointer pointer-events-auto'
+            }
+          >
+            <div ref={bridgeDisplayRef}>
+              <Transition show={showSettingsSlideOver} {...TRANSITION_PROPS}>
+                <animated.div>
+                  <SettingsSlideOver key="settings" />
+                </animated.div>
+              </Transition>
+              <Transition show={showFromChainListOverlay} {...TRANSITION_PROPS}>
+                <animated.div className={springClass}>
+                  <FromChainListOverlay />
+                </animated.div>
+              </Transition>
+              <Transition show={showFromTokenListOverlay} {...TRANSITION_PROPS}>
+                <animated.div className={springClass}>
+                  <FromTokenListOverlay />
+                </animated.div>
+              </Transition>
+              <Transition show={showToChainListOverlay} {...TRANSITION_PROPS}>
+                <animated.div className={springClass}>
+                  <ToChainListOverlay />
+                </animated.div>
+              </Transition>
+              <Transition show={showToTokenListOverlay} {...TRANSITION_PROPS}>
+                <animated.div className={springClass}>
+                  <ToTokenListOverlay />
+                </animated.div>
+              </Transition>
+              <InputContainer />
+              <SwitchButton
+                onClick={() => {
+                  dispatch(setFromChainId(toChainId))
+                  dispatch(setFromToken(toToken))
+                  dispatch(setToChainId(fromChainId))
+                  dispatch(setToToken(fromToken))
+                }}
               />
-            )}
-            <div className="md:my-3">
-              <BridgeTransactionButton
-                isApproved={isApproved}
-                approveTxn={approveTxn}
-                executeBridge={executeBridge}
-              />
+              <OutputContainer />
+              <Warning />
+              <Transition
+                appear={true}
+                unmount={false}
+                show={true}
+                {...SECTION_TRANSITION_PROPS}
+              >
+                <BridgeExchangeRateInfo />
+              </Transition>
+              {showDestinationAddress && (
+                <DestinationAddressInput
+                  toChainId={toChainId}
+                  destinationAddress={destinationAddress}
+                />
+              )}
+              <div className="md:my-3">
+                <BridgeTransactionButton
+                  isApproved={isApproved}
+                  approveTxn={approveTxn}
+                  executeBridge={executeBridge}
+                  isBridgePaused={isUpgradePending}
+                />
+              </div>
             </div>
           </div>
         </Card>
