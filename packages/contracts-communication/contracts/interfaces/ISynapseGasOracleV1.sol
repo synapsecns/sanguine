@@ -31,13 +31,15 @@ interface ISynapseGasOracleV1 is ISynapseGasOracle {
     function setRemoteGasData(uint256 chainId, RemoteGasData memory data) external;
 
     /// @notice Allows the contract owner to set the price of remote chain's calldata.
-    /// @dev Could only be called by the contract owner. Will revert if the chain id is not a remote chain id.
+    /// @dev Could only be called by the contract owner.
+    /// Will revert if the chain id is not a remote chain id, or if native token price for the chain is 0.
     /// @param chainId          The chain id of the remote chain.
     /// @param calldataPrice    The price of 1 byte of calldata in the remote chain's wei.
     function setRemoteCallDataPrice(uint256 chainId, uint256 calldataPrice) external;
 
     /// @notice Allows the contract owner to set the gas price of the remote chain.
-    /// @dev Could only be called by the contract owner. Will revert if the chain id is not a remote chain id.
+    /// @dev Could only be called by the contract owner.
+    /// Will revert if the chain id is not a remote chain id, or if native token price for the chain is 0.
     /// @param chainId          The chain id of the remote chain.
     /// @param gasPrice         The gas price of the remote chain, in remote chain's wei.
     function setRemoteGasPrice(uint256 chainId, uint256 gasPrice) external;

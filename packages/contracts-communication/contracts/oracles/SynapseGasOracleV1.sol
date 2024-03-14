@@ -9,6 +9,23 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOracleV1 {
     uint256 internal _localNativePrice;
+    mapping(uint256 chainId => RemoteGasData data) internal _remoteGasData;
+
+    /// @dev Checks that the chain ID is not the local chain ID.
+    modifier onlyRemoteChainId(uint256 chainId) {
+        if (block.chainid == chainId) {
+            revert SynapseGasOracleV1__NotRemoteChainId(chainId);
+        }
+        _;
+    }
+
+    /// @dev Checks that the native token price is set for a remote chain ID.
+    modifier onlyNativePriceSet(uint256 chainId) {
+        if (_remoteGasData[chainId].nativePrice == 0) {
+            revert SynapseGasOracleV1__NativePriceNotSet(chainId);
+        }
+        _;
+    }
 
     /// @dev Checks that the native token price is non-zero.
     modifier onlyNonZeroNativePrice(uint256 nativePrice) {
@@ -31,16 +48,58 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
     }
 
     /// @inheritdoc ISynapseGasOracleV1
-    function setRemoteGasData(uint256 chainId, RemoteGasData memory data) external {}
+    function setRemoteGasData(
+        uint256 chainId,
+        RemoteGasData memory data
+    )
+        external
+        onlyOwner
+        onlyRemoteChainId(chainId)
+        onlyNonZeroNativePrice(data.nativePrice)
+    {
+        _setRemoteCallDataPrice(chainId, data.calldataPrice);
+        _setRemoteGasPrice(chainId, data.gasPrice);
+        _setRemoteNativePrice(chainId, data.nativePrice);
+    }
 
     /// @inheritdoc ISynapseGasOracleV1
-    function setRemoteCallDataPrice(uint256 chainId, uint256 calldataPrice) external {}
+    function setRemoteCallDataPrice(
+        uint256 chainId,
+        uint256 calldataPrice
+    )
+        external
+        onlyOwner
+        onlyRemoteChainId(chainId)
+        onlyNativePriceSet(chainId)
+    {
+        _setRemoteCallDataPrice(chainId, calldataPrice);
+    }
 
     /// @inheritdoc ISynapseGasOracleV1
-    function setRemoteGasPrice(uint256 chainId, uint256 gasPrice) external {}
+    function setRemoteGasPrice(
+        uint256 chainId,
+        uint256 gasPrice
+    )
+        external
+        onlyOwner
+        onlyRemoteChainId(chainId)
+        onlyNativePriceSet(chainId)
+    {
+        _setRemoteGasPrice(chainId, gasPrice);
+    }
 
     /// @inheritdoc ISynapseGasOracleV1
-    function setRemoteNativePrice(uint256 chainId, uint256 nativePrice) external {}
+    function setRemoteNativePrice(
+        uint256 chainId,
+        uint256 nativePrice
+    )
+        external
+        onlyOwner
+        onlyRemoteChainId(chainId)
+        onlyNonZeroNativePrice(nativePrice)
+    {
+        _setRemoteNativePrice(chainId, nativePrice);
+    }
 
     // ════════════════════════════════════════════════ ONLY MODULE ════════════════════════════════════════════════════
 
@@ -89,5 +148,33 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
     }
 
     /// @inheritdoc ISynapseGasOracleV1
-    function getRemoteGasData(uint256 chainId) external view returns (RemoteGasData memory) {}
+    function getRemoteGasData(uint256 chainId) external view returns (RemoteGasData memory) {
+        return _remoteGasData[chainId];
+    }
+
+    // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
+
+    /// @dev Updates the calldata price for the given remote chain, no-op if the price is already set.
+    function _setRemoteCallDataPrice(uint256 chainId, uint256 calldataPrice) internal {
+        if (_remoteGasData[chainId].calldataPrice != calldataPrice) {
+            _remoteGasData[chainId].calldataPrice = calldataPrice;
+            emit CalldataPriceSet(chainId, calldataPrice);
+        }
+    }
+
+    /// @dev Updates the gas price for the given remote chain, no-op if the price is already set.
+    function _setRemoteGasPrice(uint256 chainId, uint256 gasPrice) internal {
+        if (_remoteGasData[chainId].gasPrice != gasPrice) {
+            _remoteGasData[chainId].gasPrice = gasPrice;
+            emit GasPriceSet(chainId, gasPrice);
+        }
+    }
+
+    /// @dev Updates the native token price for the given remote chain, no-op if the price is already set.
+    function _setRemoteNativePrice(uint256 chainId, uint256 nativePrice) internal {
+        if (_remoteGasData[chainId].nativePrice != nativePrice) {
+            _remoteGasData[chainId].nativePrice = nativePrice;
+            emit NativePriceSet(chainId, nativePrice);
+        }
+    }
 }
