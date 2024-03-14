@@ -248,6 +248,7 @@ func (c *rebalanceManagerCircleCCTP) listenDepositForBurn(parentCtx context.Cont
 	}
 
 	err = listener.Listen(parentCtx, func(parentCtx context.Context, log types.Log) (err error) {
+		fmt.Println("listenDepositForBurn")
 		ctx, span := c.handler.Tracer().Start(parentCtx, "rebalance.listenDepositForBurn", trace.WithAttributes(
 			attribute.Int(metrics.ChainID, chainID),
 		))
@@ -274,12 +275,13 @@ func (c *rebalanceManagerCircleCCTP) listenDepositForBurn(parentCtx context.Cont
 
 //nolint:cyclop
 func (c *rebalanceManagerCircleCCTP) listenMessageReceived(parentCtx context.Context, chainID int, ethClient client.EVM) (err error) {
-	listener, ok := c.messengerListeners[chainID]
+	listener, ok := c.transmitterListeners[chainID]
 	if !ok {
 		return fmt.Errorf("could not find listener for chain %d", chainID)
 	}
 
 	err = listener.Listen(parentCtx, func(parentCtx context.Context, log types.Log) (err error) {
+		fmt.Println("listenMessageReceived")
 		ctx, span := c.handler.Tracer().Start(parentCtx, "rebalance.listenMessageReceived", trace.WithAttributes(
 			attribute.Int(metrics.ChainID, chainID),
 		))
