@@ -40,10 +40,6 @@ export const DestinationAddressInput = ({
 
   const filteredRecipientList = filterNewestTxByRecipient(recipientList)
 
-  /** TODO: Remove after testing */
-  console.log('recipientList:', recipientList)
-  console.log('filteredRecipientList:', filteredRecipientList)
-
   const handleInputFocus = () => {
     setIsInputFocused(true)
     setShowRecipientList(true)
@@ -71,9 +67,11 @@ export const DestinationAddressInput = ({
     activateFocusOnInput()
   }
 
-  const isInputValidAddress = isValidAddress(destinationAddress)
+  const isInputValidAddress: boolean = destinationAddress
+    ? isValidAddress(destinationAddress)
+    : false
 
-  const isInputInvalid =
+  const isInputInvalid: boolean =
     (destinationAddress &&
       isString(destinationAddress) &&
       isEmptyString(destinationAddress)) ||
@@ -117,6 +115,17 @@ export const DestinationAddressInput = ({
     handleClearInput()
   }, [connectedAddress])
 
+  let inputValue
+
+  if (destinationAddress) {
+    inputValue =
+      isInputValidAddress && !isInputFocused
+        ? shortenAddress(destinationAddress)
+        : destinationAddress
+  } else {
+    inputValue = ''
+  }
+
   return (
     <div id="destination-address-input" onClick={handleActivateWarning}>
       <div
@@ -140,11 +149,7 @@ export const DestinationAddressInput = ({
           onFocus={handleInputFocus}
           onBlur={handleInputBlur}
           placeholder={placeholder}
-          value={
-            isInputValidAddress && !isInputFocused
-              ? shortenAddress(destinationAddress)
-              : destinationAddress
-          }
+          value={inputValue}
           disabled={_.isEmpty(connectedAddress)}
           className={`
             text-md rounded-sm text-secondary py-1 px-2 z-0 border-0 bg-transparent
@@ -242,11 +247,11 @@ const DestinationInputWarning = ({
       <h3 className="text-2xl font-semibold tracking-wide text-white">
         Warning
       </h3>
-      <p className="text-white">
+      <div className="text-white">
         Do not send your funds to a{' '}
         <div className="inline text-yellowText">custodial wallet</div> or{' '}
         <div className="inline text-yellowText">exchange</div> address!
-      </p>
+      </div>
       <p className="text-secondary">
         It may be impossible to recover your funds.
       </p>
