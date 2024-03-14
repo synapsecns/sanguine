@@ -172,7 +172,7 @@ export const DestinationAddressInput = ({
             className={`
               absolute right-0 z-50 p-0 top-1 bg-surface
               border border-solid border-tint rounded shadow
-              popover list-none text-left text-sm
+              popover list-none text-left text-sm overflow-hidden
             `}
           >
             {filteredRecipientList?.map((recipient) => {
@@ -213,7 +213,7 @@ const ListRecipient = ({
     <div
       onClick={() => onSelectRecipient(address as Address)}
       className={`
-        flex justify-between p-1 space-x-2
+        flex justify-between px-1.5 py-1 space-x-2
         cursor-pointer text-strong
         hover:bg-separator
       `}
