@@ -1,12 +1,18 @@
-import { AnnouncementBanner } from '../AnnouncementBanner'
-import { WarningMessage } from '../../Warning'
+import { AnnouncementBanner } from '../../AnnouncementBanner'
+import { WarningMessage } from '../../../Warning'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { OPTIMISM, BASE } from '@/constants/chains/master'
 import {
   useEventCountdownProgressBar,
   getCountdownTimeStatus,
-} from '../EventCountdownProgressBar'
+} from '../../EventCountdownProgressBar'
 import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
+
+/**
+ * Leaving this file to serve as an example for how to create
+ * automated annoucement banners and event countdown timer bars
+ * with the ability to pause Bridge by selected chain ids
+ */
 
 /**
  * Start: 25 min prior to Ecotone Fork Upgrade Time @ (March 14, 00:00 UTC)
