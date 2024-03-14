@@ -20,14 +20,6 @@ func ParseDestDomain(message []byte) (uint32, error) {
 	return indexUint32(message, destinationDomainIndex, 4)
 }
 
-// senderIndex is the index of the sender in the formatted CCTP message.
-const senderIndex = 20
-
-// ParseSender parses the sender from a CCTP message.
-func ParseSender(message []byte) (common.Address, error) {
-	return indexAddress(message, senderIndex)
-}
-
 // indexUint32 parses an unsigned 32-bit integer from a byte slice starting at index with a specified length in bytes.
 // Requires that the byte slice have enough bytes starting from the index.
 func indexUint32(memView []byte, index int, bytes uint8) (uint32, error) {
@@ -47,27 +39,6 @@ func indexUint32(memView []byte, index int, bytes uint8) (uint32, error) {
 	// Convert the bytes to uint32.
 	result := binary.BigEndian.Uint32(padded)
 	return result, nil
-}
-
-const addressLength = 20 // Ethereum address length
-const bytes32Length = 32 // bytes32 length
-
-// indexAddress parses a bytes32 value from a byte slice starting at index and converts it to a common.Address.
-// Assumes that the bytes32 value represents an Ethereum address right-padded to 32 bytes.
-func indexAddress(memView []byte, index int) (common.Address, error) {
-	// Ensure the slice has enough bytes to extract bytes32 value
-	if index+bytes32Length > len(memView) {
-		return common.Address{}, errors.New("slice does not have enough bytes to extract bytes32")
-	}
-
-	// Extract the rightmost 20 bytes of the bytes32 value
-	addressBytes := memView[index+bytes32Length-addressLength : index+bytes32Length]
-
-	// Convert the extracted bytes to common.Address
-	var address common.Address
-	copy(address[:], addressBytes)
-
-	return address, nil
 }
 
 // AddressToBytes32 converts an Ethereum address to a bytes32 value.
