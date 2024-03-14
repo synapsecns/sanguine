@@ -326,13 +326,6 @@ func (c *rebalanceManagerCircleCCTP) handleMessageReceived(ctx context.Context, 
 		return nil
 	}
 
-	// check that we sent the tx
-	sender := cctpRelay.Bytes32ToAddress(parsedEvent.Sender)
-	if sender != c.relayerAddress {
-		span.AddEvent(fmt.Sprintf("sender %s does not match relayer address %s", sender.String(), c.relayerAddress.String()))
-		return nil
-	}
-
 	requestID := cctpRelay.GetCircleRequestID(parsedEvent.SourceDomain, parsedEvent.Nonce)
 	span.SetAttributes(
 		attribute.String("log_type", "MessageReceived"),

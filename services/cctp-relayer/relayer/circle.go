@@ -284,14 +284,9 @@ func (c *circleCCTPHandler) handleMessageReceived(parentCtx context.Context, log
 		attribute.Int(metrics.ChainID, int(chainID)),
 		attribute.Int("block_number", int(log.BlockNumber)),
 	))
-
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
-
-	if len(log.Topics) == 0 {
-		return fmt.Errorf("no topics found")
-	}
 
 	ethClient, err := c.omniRPCClient.GetConfirmationsClient(ctx, int(chainID), 1)
 	if err != nil {
@@ -306,42 +301,17 @@ func (c *circleCCTPHandler) handleMessageReceived(parentCtx context.Context, log
 		return fmt.Errorf("could not parse circle request fulfilled: %w", err)
 	}
 
-	// check that we sent the tx
-	sender := Bytes32ToAddress(event.Sender)
-	if sender != c.relayerAddress {
-		span.AddEvent(fmt.Sprintf("sender %s does not match relayer address %s", sender.String(), c.relayerAddress.String()))
-		return nil
-	}
-
-	messageHash := crypto.Keccak256Hash(event.MessageBody)
+	requestID := GetCircleRequestID(event.SourceDomain, event.Nonce)
 	span.SetAttributes(
-		attribute.String("message_hash", messageHash.String()),
-		attribute.Int(metrics.Origin, int(event.SourceDomain)),
-		attribute.String("sender", sender.Hex()),
+		attribute.Int("source_domain", int(event.SourceDomain)),
+		attribute.String("request_id", requestID),
 	)
 
-	requestID := GetCircleRequestID(event.SourceDomain, event.Nonce)
 	msg, err := c.db.GetMessageByRequestID(ctx, requestID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			// Reconstruct what we can from the given log.
-			originChainID, err := CircleDomainToChainID(event.SourceDomain, IsTestnetChainID(chainID))
-			if err != nil {
-				return fmt.Errorf("could not convert circle domain to chain ID: %w", err)
-			}
-			msg = &relayTypes.Message{
-				RequestID:     requestID,
-				OriginChainID: originChainID,
-				DestChainID:   chainID,
-				BlockNumber:   log.BlockNumber,
-				MessageHash:   messageHash.String(),
-			}
-			span.AddEvent("message not found; reconstructing")
-		} else {
-			return fmt.Errorf("could not get message by hash: %w", err)
-		}
+		span.AddEvent(fmt.Sprintf("could not get message with id %s; dropping", requestID))
+		return nil
 	}
-
 	if msg == nil {
 		return fmt.Errorf("no message found")
 	}
@@ -353,6 +323,7 @@ func (c *circleCCTPHandler) handleMessageReceived(parentCtx context.Context, log
 	if err != nil {
 		return fmt.Errorf("could not store complete message: %w", err)
 	}
+	span.AddEvent("message marked as complete")
 	return nil
 }
 
