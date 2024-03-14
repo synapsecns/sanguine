@@ -1025,7 +1025,7 @@ export const BRIDGE_MAP = {
       symbol: 'nETH',
       origin: ['nETH'],
       destination: ['nETH'],
-      swappable: ['0x5FD55A1B9FC24967C4dB09C513C3BA0DFa7FF687'],
+      swappable: [],
     },
     '0x4e71A2E537B7f9D9413D3991D37958c0b5e1e503': {
       decimals: 18,
@@ -1044,13 +1044,6 @@ export const BRIDGE_MAP = {
       origin: ['SYN'],
       destination: ['SYN'],
       swappable: [],
-    },
-    '0x5FD55A1B9FC24967C4dB09C513C3BA0DFa7FF687': {
-      decimals: 18,
-      symbol: 'ETH',
-      origin: ['nETH'],
-      destination: ['nETH'],
-      swappable: ['0x09fEC30669d63A13c666d2129230dD5588E2e240'],
     },
     '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
       decimals: 6,
