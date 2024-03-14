@@ -74,6 +74,7 @@ func (c *rebalanceManagerCircleCCTP) Start(ctx context.Context) (err error) {
 
 	g, _ := errgroup.WithContext(ctx)
 	for cid := range c.cfg.Chains {
+		fmt.Printf("starting listeners on chain %d\n", cid)
 		// capture func literal
 		chainID := cid
 		g.Go(func() error {
@@ -133,7 +134,12 @@ func (c *rebalanceManagerCircleCCTP) initContracts(parentCtx context.Context) (e
 	return nil
 }
 
-func (c *rebalanceManagerCircleCCTP) initListeners(ctx context.Context) (err error) {
+func (c *rebalanceManagerCircleCCTP) initListeners(parentCtx context.Context) (err error) {
+	ctx, span := c.handler.Tracer().Start(parentCtx, "initListeners")
+	defer func(err error) {
+		metrics.EndSpanWithErr(span, err)
+	}(err)
+
 	for chainID := range c.cfg.GetChains() {
 		// setup chain utils
 		chainClient, err := c.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
@@ -155,6 +161,7 @@ func (c *rebalanceManagerCircleCCTP) initListeners(ctx context.Context) (err err
 			return fmt.Errorf("could not get messenger listener: %w", err)
 		}
 		c.messengerListeners[chainID] = messengerListener
+		fmt.Printf("assigned messager listener at %s\n", messengerAddr)
 
 		// build listener for MessageTransmitter
 		transmitterAddr, err := cctpRelay.GetMessageTransmitterAddress(ctx, common.HexToAddress(messengerAddr), chainClient)
@@ -165,6 +172,11 @@ func (c *rebalanceManagerCircleCCTP) initListeners(ctx context.Context) (err err
 		if err != nil {
 			return fmt.Errorf("could not get transmitter listener: %w", err)
 		}
+		fmt.Printf("assigned messager listener at %s\n", transmitterAddr)
+		span.AddEvent(fmt.Sprintf("assigned contracts on chain %d", chainID), trace.WithAttributes(
+			attribute.String("token_messenger", messengerAddr),
+			attribute.String("message_transmitter", transmitterAddr.Hex()),
+		))
 	}
 	return nil
 }
