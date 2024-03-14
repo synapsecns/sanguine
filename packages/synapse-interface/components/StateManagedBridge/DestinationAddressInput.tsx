@@ -18,7 +18,7 @@ import { BridgeTransaction } from '@/slices/api/generated'
 import { getValidAddress } from '@/utils/isValidAddress'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 
-export const inputRef = React.createRef<HTMLInputElement>()
+const inputRef = React.createRef<HTMLInputElement>()
 
 export const DestinationAddressInput = ({
   connectedAddress,
