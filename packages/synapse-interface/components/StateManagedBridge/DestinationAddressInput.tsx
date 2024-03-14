@@ -41,8 +41,9 @@ export const DestinationAddressInput = ({
 
   const handleInputFocus = () => {
     setIsInputFocused(true)
-    if (!showDestinationWarning) {
-      setShowRecipientList(true)
+    setShowRecipientList(true)
+    if (inputRef.current) {
+      inputRef.current.focus()
     }
   }
 
@@ -56,16 +57,10 @@ export const DestinationAddressInput = ({
     }
   }
 
-  const handleActivateInputFocus = () => {
-    if (inputRef.current) {
-      inputRef.current.focus()
-    }
-  }
-
   const onClearUserInput = () => {
     dispatch(clearDestinationAddress())
     handleClearInput()
-    handleActivateInputFocus()
+    handleInputFocus()
   }
 
   const isInputValidAddress: boolean = destinationAddress
@@ -112,8 +107,8 @@ export const DestinationAddressInput = ({
 
   const handleAcceptWarning = () => {
     dispatch(setShowDestinationWarning(false))
+    handleInputFocus()
     setShowWarning(false)
-    handleActivateInputFocus()
   }
 
   const handleRejectWarning = () => {
@@ -145,7 +140,9 @@ export const DestinationAddressInput = ({
           onChange={(e) =>
             dispatch(setDestinationAddress(e.target.value as Address))
           }
-          onFocus={handleInputFocus}
+          onFocus={
+            showDestinationWarning ? handleActivateWarning : handleInputFocus
+          }
           onBlur={handleInputBlur}
           placeholder={placeholder}
           value={inputValue}
