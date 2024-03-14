@@ -99,12 +99,6 @@ export const DestinationAddressInput = ({
     setShowWarning(false)
   }
 
-  console.log(
-    'test: ',
-    isInputValidAddress && !isInputFocused
-      ? shortenAddress(destinationAddress)
-      : destinationAddress
-  )
   return (
     <div id="destination-address-input" onClick={handleActivateWarning}>
       <div
