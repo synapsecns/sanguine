@@ -17,10 +17,7 @@ const Home = () => {
 
   return (
     <LandingPageWrapper>
-      <main
-        data-test-id="bridge-page"
-        className="relative z-0 flex-1 h-full overflow-y-auto focus:outline-none"
-      >
+      <main data-test-id="bridge-page">
         <EcotoneForkUpgradeBanner />
         <MetisDowntimeBanner />
         <div className="flex flex-col-reverse justify-center gap-16 px-4 py-20 mx-auto lg:flex-row 2xl:w-3/4 sm:mt-6 sm:px-8 md:px-12">

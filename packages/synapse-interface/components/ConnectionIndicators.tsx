@@ -16,28 +16,27 @@ import {
 } from '@/styles/chains'
 import { LoaderIcon } from 'react-hot-toast'
 
+const join = (a) => Object.values(a).join(' ')
+
+const Indicator = ({ className }) => (
+  <span
+    className={`w-2 h-2 rounded-full ${
+      className.match(/^border-/) ? `border` : ''
+    } ${className}`}
+  />
+)
+
 export const ConnectedIndicator = () => {
+  const className = join({
+    flex: 'flex items-center gap-2',
+    space: 'px-3 py-1 rounded-full',
+    hover: 'hover:opacity-80',
+    font: 'text-sm',
+  })
   return (
-    <button
-      data-test-id="connected-button"
-      className={`
-        flex items-center justify-center
-        text-base text-white px-3 py-1 rounded-lg
-        text-center transform-gpu transition-all duration-75
-        border border-solid border-transparent
-        hover:cursor-default
-        h-8
-      `}
-    >
-      <div className="flex flex-row text-sm">
-        <div
-          className={`
-            my-auto ml-auto mr-2 w-2 h-2
-            bg-green-500 rounded-full
-            `}
-        />
-        Connected
-      </div>
+    <button data-test-id="connected-button" disabled className={className}>
+      <Indicator className="bg-green-500 dark:bg-green-400" />
+      Connected
     </button>
   )
 }
@@ -47,31 +46,26 @@ const DisconnectedIndicator = () => {
   const { fromChainId } = useBridgeState()
   const chain = CHAINS_BY_ID[fromChainId]
 
+  const className = join({
+    flex: 'flex items-center gap-2',
+    space: 'px-3 py-1 rounded-full',
+    border: 'border border-transparent',
+    font: 'text-sm',
+    bgHover: getNetworkHover(chain?.color),
+    // bgActive: getNetworkButtonBgClassNameActive(chain?.color),
+    borderHover: getNetworkButtonBorderHover(chain?.color),
+    // borderActive: getNetworkButtonBorderActive(chain?.color),
+    active: 'hover:active:opacity-80',
+  })
+
   return (
     <button
       data-test-id="disconnected-button"
-      className={`
-        flex items-center justify-center
-        text-base text-white px-3 py-1 rounded-md
-        text-center transform-gpu transition-all duration-75
-        border border-solid border-transparent
-        h-8
-        ${getNetworkHover(chain?.color)}
-        ${getNetworkButtonBgClassNameActive(chain?.color)}
-        ${getNetworkButtonBorderActive(chain?.color)}
-        ${getNetworkButtonBorderHover(chain?.color)}
-      `}
+      className={className}
       onClick={openConnectModal}
     >
-      <div className="flex flex-row text-sm">
-        <div
-          className={`
-            my-auto ml-auto mr-2 w-2 h-2
-            bg-red-500 rounded-full
-            `}
-        />
-        Disconnected
-      </div>
+      <Indicator className="bg-red-500" />
+      Disconnected
     </button>
   )
 }
@@ -97,46 +91,37 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
     }
   }
 
+  const className = join({
+    flex: 'flex items-center gap-2',
+    space: 'px-3 py-1 rounded-full',
+    border: 'border border-transparent',
+    font: 'text-sm',
+    bgHover: getNetworkHover(chain?.color),
+    // bgActive: getNetworkButtonBgClassNameActive(chain?.color),
+    borderHover: getNetworkButtonBorderHover(chain?.color),
+    // borderActive: getNetworkButtonBorderActive(chain?.color),
+    active: 'hover:active:opacity-80',
+  })
+
   return (
     <button
       data-test-id="connect-button"
-      className={`
-        flex items-center justify-center
-        text-base text-white px-3 py-1 rounded-lg
-        text-center transform-gpu transition-all duration-75
-        border border-solid border-transparent
-        h-8
-        ${getNetworkHover(chain?.color)}
-        ${getNetworkButtonBgClassNameActive(chain?.color)}
-        ${getNetworkButtonBorderActive(chain?.color)}
-        ${getNetworkButtonBorderHover(chain?.color)}
-      `}
+      className={className}
       onClick={handleConnectNetwork}
     >
       {isConnecting ? (
-        <div className="flex flex-row text-sm">
-          <div
-            className={`
-              my-auto ml-auto mr-2 text-transparent w-2 h-2
-              border border-green-300 border-solid rounded-full
-            `}
-          />
-          <div className="flex items-center space-x-2">
-            <div>Connecting</div>
-            <LoaderIcon />
-          </div>
-        </div>
+        <>
+          <Indicator className="border-green-500 dark:border-green-400" />
+          Connecting
+          <LoaderIcon />
+        </>
       ) : (
-        <div className="flex flex-row text-sm">
-          <div
-            className={`
-              my-auto ml-auto mr-2 text-transparent w-2 h-2
-              border border-indigo-300 border-solid rounded-full
-            `}
-          />
+        <>
+          <Indicator className="border-indigo-500 dark:border-indigo-300" />
           Switch Network
-        </div>
+        </>
       )}
+      {/* {isConnecting && <LoaderIcon />} */}
     </button>
   )
 }
@@ -149,6 +134,16 @@ export function ConnectWalletButton() {
     setClientReady(true)
   }, [])
 
+  const className = join({
+    flex: 'flex items-center gap-2',
+    space: 'px-3 py-1 rounded-full',
+    border: 'border border-transparent',
+    hover:
+      'hover:bg-fuchsia-50 hover:border-fuchsia-500 hover:dark:bg-fuchsia-950',
+    font: 'text-sm',
+    active: 'active:opacity-80',
+  })
+
   return (
     <div data-test-id="">
       {clientReady && (
@@ -159,18 +154,8 @@ export function ConnectWalletButton() {
                 {(() => {
                   if (!mounted || !account || !chain || !address) {
                     return (
-                      <button
-                        className={`
-                          flex items-center text-sm text-white mr-2
-                        `}
-                        onClick={openConnectModal}
-                      >
-                        <div
-                          className={`
-                            my-auto ml-auto mr-2 text-transparent w-2 h-2
-                            border border-indigo-300 border-solid rounded-full
-                          `}
-                        />
+                      <button className={className} onClick={openConnectModal}>
+                        <Indicator className="border-fuchsia-500" />
                         Connect Wallet
                       </button>
                     )

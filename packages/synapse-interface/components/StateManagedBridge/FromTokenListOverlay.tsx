@@ -175,7 +175,7 @@ export const FromTokenListOverlay = () => {
     <div
       ref={overlayRef}
       data-test-id="token-slide-over"
-      className="max-h-full pb-4 overflow-auto scrollbar-hide"
+      className="max-h-full pb-4 mt-4 overflow-auto scrollbar-hide"
     >
       <div className="z-10 w-full px-2 ">
         <div className="relative flex items-center mt-2 mb-2 font-medium">

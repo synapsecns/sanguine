@@ -8,6 +8,11 @@ import { ToTokenSelector } from './ToTokenSelector'
 import { useDispatch } from 'react-redux'
 import { setToChainId, setToToken } from '@/slices/bridge/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
+import {
+  BridgeAmountContainer,
+  BridgeSectionContainer,
+  AmountInput,
+} from '../ui/BridgeCardComponents'
 
 export const OutputContainer = ({}) => {
   const { bridgeQuote, isLoading, toChainId, toToken } = useBridgeState()
@@ -17,6 +22,11 @@ export const OutputContainer = ({}) => {
 
   const dispatch = useDispatch()
 
+  const showValue =
+    bridgeQuote?.outputAmountString === '0'
+      ? ''
+      : bridgeQuote?.outputAmountString
+
   useEffect(() => {
     setAddress(isConnectedAddress)
   }, [isConnectedAddress])
@@ -24,8 +34,8 @@ export const OutputContainer = ({}) => {
   // update address for destination address if we have a destination address
 
   return (
-    <div className="text-left rounded-md p-md bg-bgLight">
-      <div className="flex items-center justify-between mb-3">
+    <BridgeSectionContainer>
+      <div className="flex items-center justify-between">
         <ToChainSelector />
         {/* {address && (
           <div className="h-5">
@@ -34,49 +44,15 @@ export const OutputContainer = ({}) => {
         )} */}
       </div>
 
-      <div className="flex h-16 mb-2 space-x-2">
-        <div
-          className={`
-            flex flex-grow items-center
-            pl-md
-            w-full h-16
-            rounded-md
-            border border-white border-opacity-20
-          `}
-        >
-          <ToTokenSelector />
-          <div className="flex ml-4">
-            {isLoading ? (
-              <LoadingDots className="opacity-50" />
-            ) : (
-              <input
-                pattern="[0-9.]+"
-                disabled={true}
-                className={`
-                  focus:outline-none
-                  focus:ring-0
-                  focus:border-none
-                  border-none
-                  p-0
-                  bg-transparent
-                  max-w-[190px]
-                placeholder:text-[#88818C]
-                text-white text-opacity-80 text-xl md:text-2xl font-medium
-                `}
-                placeholder="0.0000"
-                value={
-                  bridgeQuote?.outputAmountString === '0'
-                    ? ''
-                    : bridgeQuote?.outputAmountString
-                }
-                name="inputRow"
-                autoComplete="off"
-              />
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
+      <BridgeAmountContainer>
+        <ToTokenSelector />
+        <AmountInput
+          disabled={true}
+          showValue={showValue}
+          isLoading={isLoading}
+        />
+      </BridgeAmountContainer>
+    </BridgeSectionContainer>
   )
 }
 

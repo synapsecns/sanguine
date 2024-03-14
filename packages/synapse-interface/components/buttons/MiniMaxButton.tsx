@@ -1,25 +1,23 @@
-import Button from '@tw/Button'
-
-export default function MiniMaxButton({
-  onClickBalance,
-  disabled,
-}: {
-  onClickBalance: () => void
+type MaxButtonTypes = {
   disabled: boolean
-}) {
-  const baseClassName =
-    'pl-lg pr-lg pt-sm pb-sm mr-2 rounded-md text-md font-light bg-bgLighter border border-transparent'
+  onClickBalance: () => void
+}
 
-  const className = disabled
-    ? `${baseClassName} opacity-60 cursor-default`
-    : `${baseClassName} hover:border-[#AC8FFF]`
+const join = (a) => Object.values(a).join(' ')
+
+export default function MaxButton({ disabled, onClickBalance }: MaxButtonTypes) {
+  const className = join({
+    space: 'px-4 py-1 -ml-1 mr-1 rounded',
+    background: 'bg-zinc-100 dark:bg-separator', // TODO: Remove
+    // background: 'bg-zinc-100 dark:bg-zinc-700',
+    border: 'border border-zinc-200 dark:border-transparent',
+    hover: 'enabled:hover:border-zinc-400 enabled:hover:dark:border-zinc-500',
+    disabled: 'disabled:opacity-60 disabled:cursor-default',
+  })
 
   return (
-    <Button
-      className={className}
-      onClick={disabled ? undefined : onClickBalance}
-    >
+    <button className={className} onClick={onClickBalance} disabled={disabled}>
       Max
-    </Button>
+    </button>
   )
 }

@@ -45,7 +45,7 @@ import { txErrorHandler } from '@/utils/txErrorHandler'
 import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
 import { approveToken } from '@/utils/approveToken'
 import { PageHeader } from '@/components/PageHeader'
-import Card from '@/components/ui/tailwind/Card'
+import { BridgeCard } from '@/components/ui/BridgeCardComponents'
 import BridgeExchangeRateInfo from '@/components/StateManagedBridge/BridgeExchangeRateInfo'
 import { Transition } from '@headlessui/react'
 import {
@@ -577,84 +577,71 @@ const StateManagedBridge = () => {
             </Button>
           </div>
         </div>
-        <Card
-          divider={false}
-          className={`
-            pb-3 mt-5 overflow-hidden bg-bgBase
-            transition-all duration-100 transform rounded-md
-          `}
-        >
-          {EcotoneForkCountdownProgressBar}
-          {MetisUpgradeCountdownProgressBar}
-          <div ref={bridgeDisplayRef}>
-            <Transition show={showSettingsSlideOver} {...TRANSITION_PROPS}>
-              <animated.div>
-                <SettingsSlideOver key="settings" />
-              </animated.div>
-            </Transition>
-            <Transition show={showFromChainListOverlay} {...TRANSITION_PROPS}>
-              <animated.div className={springClass}>
-                <FromChainListOverlay />
-              </animated.div>
-            </Transition>
-            <Transition show={showFromTokenListOverlay} {...TRANSITION_PROPS}>
-              <animated.div className={springClass}>
-                <FromTokenListOverlay />
-              </animated.div>
-            </Transition>
-            <Transition show={showToChainListOverlay} {...TRANSITION_PROPS}>
-              <animated.div className={springClass}>
-                <ToChainListOverlay />
-              </animated.div>
-            </Transition>
-            <Transition show={showToTokenListOverlay} {...TRANSITION_PROPS}>
-              <animated.div className={springClass}>
-                <ToTokenListOverlay />
-              </animated.div>
-            </Transition>
-            <InputContainer />
-            <SwitchButton
-              onClick={() => {
-                dispatch(setFromChainId(toChainId))
-                dispatch(setFromToken(toToken))
-                dispatch(setToChainId(fromChainId))
-                dispatch(setToToken(fromToken))
-              }}
+        <BridgeCard ref={bridgeDisplayRef}>
+          <Transition show={showSettingsSlideOver} {...TRANSITION_PROPS}>
+            <animated.div>
+              <SettingsSlideOver key="settings" />
+            </animated.div>
+          </Transition>
+          <Transition show={showFromChainListOverlay} {...TRANSITION_PROPS}>
+            <animated.div className={springClass}>
+              <FromChainListOverlay />
+            </animated.div>
+          </Transition>
+          <Transition show={showFromTokenListOverlay} {...TRANSITION_PROPS}>
+            <animated.div className={springClass}>
+              <FromTokenListOverlay />
+            </animated.div>
+          </Transition>
+          <Transition show={showToChainListOverlay} {...TRANSITION_PROPS}>
+            <animated.div className={springClass}>
+              <ToChainListOverlay />
+            </animated.div>
+          </Transition>
+          <Transition show={showToTokenListOverlay} {...TRANSITION_PROPS}>
+            <animated.div className={springClass}>
+              <ToTokenListOverlay />
+            </animated.div>
+          </Transition>
+          <InputContainer />
+          <SwitchButton
+            onClick={() => {
+              dispatch(setFromChainId(toChainId))
+              dispatch(setFromToken(toToken))
+              dispatch(setToChainId(fromChainId))
+              dispatch(setToToken(fromToken))
+            }}
+          />
+          <OutputContainer />
+          <Warning />
+          {/*
+           * Hidden to remove -p-6 value applied by transition from element
+           * Doesn't appear to cause any regressions
+           * Goal: Remove all <Transition> elements from this file
+           */}
+          {/* <Transition
+            appear={true}
+            unmount={false}
+            show={true}
+            {...SECTION_TRANSITION_PROPS}
+          > */}
+          <BridgeExchangeRateInfo />
+          {/* </Transition> */}
+          {showDestinationAddress && (
+            <DestinationAddressInput
+              toChainId={toChainId}
+              destinationAddress={destinationAddress}
             />
-            <OutputContainer />
-            <Warning />
-
-            {/* Remove after upgrades */}
-            {isEcotoneForkUpgradePending && <EcotoneForkWarningMessage />}
-            {isMetisUpgradePending && <MetisDowntimeWarningMessage />}
-            {/* Remove after upgrades */}
-
-            <Transition
-              appear={true}
-              unmount={false}
-              show={true}
-              {...SECTION_TRANSITION_PROPS}
-            >
-              <BridgeExchangeRateInfo />
-            </Transition>
-            {showDestinationAddress && (
-              <DestinationAddressInput
-                toChainId={toChainId}
-                destinationAddress={destinationAddress}
-              />
-            )}
-            <div className="md:my-3">
-              <BridgeTransactionButton
-                isApproved={isApproved}
-                approveTxn={approveTxn}
-                executeBridge={executeBridge}
-                isBridgePaused={
-                  isEcotoneUpgradeChainsDisabled || isMetisUpgradeChainDisabled
-                }
-              />
-            </div>
-          </div>
-        </Card>
+          )}
+          <BridgeTransactionButton
+            isApproved={isApproved}
+            approveTxn={approveTxn}
+            executeBridge={executeBridge}
+            isBridgePaused={
+              isEcotoneForkUpgradePending || isMetisUpgradePending
+            }
+          />
+        </BridgeCard>
       </div>
     </div>
   )
