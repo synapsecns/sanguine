@@ -62,15 +62,18 @@ func newRebalanceManagerCircleCCTP(cfg relconfig.Config, handler metrics.Handler
 }
 
 func (c *rebalanceManagerCircleCCTP) Start(ctx context.Context) (err error) {
+	fmt.Println("startcirclecctprelayer")
 	err = c.initContracts(ctx)
 	if err != nil {
 		return fmt.Errorf("could not initialize contracts: %w", err)
 	}
+	fmt.Println("initted contracts")
 
 	err = c.initListeners(ctx)
 	if err != nil {
 		return fmt.Errorf("could not initialize listeners: %w", err)
 	}
+	fmt.Println("initted listeners")
 
 	g, _ := errgroup.WithContext(ctx)
 	for cid := range c.cfg.Chains {
@@ -84,6 +87,7 @@ func (c *rebalanceManagerCircleCCTP) Start(ctx context.Context) (err error) {
 			return c.listenMessageReceived(ctx, chainID)
 		})
 	}
+	fmt.Println("started listeners")
 
 	err = g.Wait()
 	if err != nil {
