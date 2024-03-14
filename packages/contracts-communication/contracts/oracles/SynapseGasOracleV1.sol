@@ -5,7 +5,11 @@ import {SynapseGasOracleV1Events} from "../events/SynapseGasOracleV1Events.sol";
 import {ISynapseGasOracle, IGasOracle} from "../interfaces/ISynapseGasOracle.sol";
 import {ISynapseGasOracleV1} from "../interfaces/ISynapseGasOracleV1.sol";
 
-contract SynapseGasOracleV1 is SynapseGasOracleV1Events, ISynapseGasOracleV1 {
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+
+contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOracleV1 {
+    constructor(address owner_) Ownable(owner_) {}
+
     // ════════════════════════════════════════════════ ONLY OWNER ═════════════════════════════════════════════════════
 
     /// @inheritdoc ISynapseGasOracleV1
