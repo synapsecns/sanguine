@@ -91,7 +91,7 @@ export const BridgeTransactionButton = ({
     }
   } else if (!fromChainId) {
     buttonProperties = {
-      label: 'Please select Origin network',
+      label: 'Please select Origin Network',
       onClick: null,
     }
   } else if (!toChainId) {
@@ -133,11 +133,11 @@ export const BridgeTransactionButton = ({
     }
   } else if (showDestinationAddress && !destinationAddress) {
     buttonProperties = {
-      label: 'Please add valid destination address',
+      label: 'Please add valid Destination address',
     }
   } else if (destinationAddress && !isAddress(destinationAddress)) {
     buttonProperties = {
-      label: 'Invalid destination address',
+      label: 'Invalid Destination address',
     }
   } else if (chain?.id != fromChainId && fromValueBigInt > 0) {
     buttonProperties = {
