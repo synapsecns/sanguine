@@ -229,7 +229,10 @@ func (i *IntegrationSuite) setupRelayer() {
 			metadata, rfqContract := i.manager.GetFastBridge(i.GetTestContext(), backend)
 
 			txContext := backend.GetTxContext(i.GetTestContext(), metadata.OwnerPtr())
-			tx, err := rfqContract.AddRelayer(txContext.TransactOpts, i.relayerWallet.Address())
+			relayerRole, err := rfqContract.RELAYERROLE(&bind.CallOpts{Context: i.GetTestContext()})
+			i.NoError(err)
+
+			tx, err := rfqContract.GrantRole(txContext.TransactOpts, relayerRole, i.relayerWallet.Address())
 			i.NoError(err)
 
 			backend.WaitForConfirmation(i.GetTestContext(), tx)
