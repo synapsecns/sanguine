@@ -1,10 +1,13 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import _, { isString } from 'lodash'
 import { useAppDispatch } from '@/store/hooks'
 import { isValidAddress } from '@/utils/isValidAddress'
 import { shortenAddress } from '@/utils/shortenAddress'
 import { useBridgeState, useBridgeDisplayState } from '@/slices/bridge/hooks'
-import { setDestinationAddress } from '@/slices/bridge/reducer'
+import {
+  setDestinationAddress,
+  clearDestinationAddress,
+} from '@/slices/bridge/reducer'
 import { setShowDestinationWarning } from '@/slices/bridgeDisplaySlice'
 import { Address } from 'viem'
 import { isEmptyString } from '@/utils/isEmptyString'
@@ -50,12 +53,22 @@ export const DestinationAddressInput = ({
     setIsInputFocused(false)
   }
 
-  const handleClearInput = () => {
-    dispatch(setDestinationAddress(null))
+  const activateFocusOnInput = () => {
     if (inputRef.current) {
-      inputRef.current.value = ''
       inputRef.current.focus()
     }
+  }
+
+  const handleClearInput = () => {
+    if (inputRef.current) {
+      inputRef.current.value = ''
+    }
+  }
+
+  const onClearUserInput = () => {
+    dispatch(clearDestinationAddress())
+    handleClearInput()
+    activateFocusOnInput()
   }
 
   const isInputValidAddress = isValidAddress(destinationAddress)
@@ -99,6 +112,11 @@ export const DestinationAddressInput = ({
     setShowWarning(false)
   }
 
+  useEffect(() => {
+    console.log('input got reset')
+    dispatch(setDestinationAddress(null))
+  }, [connectedAddress])
+
   return (
     <div id="destination-address-input" onClick={handleActivateWarning}>
       <div
@@ -141,7 +159,7 @@ export const DestinationAddressInput = ({
         />
         {destinationAddress && (
           <CloseButton
-            onClick={handleClearInput}
+            onClick={onClearUserInput}
             className="!static w-fit mr-1"
           />
         )}
