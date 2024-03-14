@@ -61,10 +61,10 @@ export const DestinationAddressInput = ({
   const isInputValidAddress = isValidAddress(destinationAddress)
 
   const isInputInvalid =
-    destinationAddress &&
-    isString(destinationAddress) &&
-    isEmptyString(destinationAddress) &&
-    !isInputValidAddress
+    (destinationAddress &&
+      isString(destinationAddress) &&
+      isEmptyString(destinationAddress)) ||
+    (destinationAddress && !isInputValidAddress)
 
   let placeholder
 
@@ -139,7 +139,7 @@ export const DestinationAddressInput = ({
             }
           `}
         />
-        {(isInputInvalid || isInputValidAddress) && (
+        {destinationAddress && (
           <CloseButton
             onClick={handleClearInput}
             className="!static w-fit mr-1"
