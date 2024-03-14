@@ -76,15 +76,11 @@ func (c *rebalanceManagerCircleCCTP) Start(ctx context.Context) (err error) {
 	for cid := range c.cfg.Chains {
 		// capture func literal
 		chainID := cid
-		ethClient, err := c.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
-		if err != nil {
-			return fmt.Errorf("could not get chain client: %w", err)
-		}
 		g.Go(func() error {
-			return c.listenDepositForBurn(ctx, chainID, ethClient)
+			return c.listenDepositForBurn(ctx, chainID)
 		})
 		g.Go(func() error {
-			return c.listenMessageReceived(ctx, chainID, ethClient)
+			return c.listenMessageReceived(ctx, chainID)
 		})
 	}
 
@@ -241,14 +237,20 @@ func (c *rebalanceManagerCircleCCTP) Execute(parentCtx context.Context, rebalanc
 }
 
 // nolint:cyclop
-func (c *rebalanceManagerCircleCCTP) listenDepositForBurn(parentCtx context.Context, chainID int, ethClient client.EVM) (err error) {
+func (c *rebalanceManagerCircleCCTP) listenDepositForBurn(parentCtx context.Context, chainID int) (err error) {
+	fmt.Println("listenDepositForBurn")
+	ethClient, err := c.chainClient.GetClient(parentCtx, big.NewInt(int64(chainID)))
+	if err != nil {
+		return fmt.Errorf("could not get chain client: %w", err)
+	}
+
 	listener, ok := c.messengerListeners[chainID]
 	if !ok {
 		return fmt.Errorf("could not find listener for chain %d", chainID)
 	}
 
 	err = listener.Listen(parentCtx, func(parentCtx context.Context, log types.Log) (err error) {
-		fmt.Println("listenDepositForBurn")
+		fmt.Println("listener.listenDepositForBurn")
 		ctx, span := c.handler.Tracer().Start(parentCtx, "rebalance.listenDepositForBurn", trace.WithAttributes(
 			attribute.Int(metrics.ChainID, chainID),
 		))
@@ -274,14 +276,20 @@ func (c *rebalanceManagerCircleCCTP) listenDepositForBurn(parentCtx context.Cont
 }
 
 //nolint:cyclop
-func (c *rebalanceManagerCircleCCTP) listenMessageReceived(parentCtx context.Context, chainID int, ethClient client.EVM) (err error) {
+func (c *rebalanceManagerCircleCCTP) listenMessageReceived(parentCtx context.Context, chainID int) (err error) {
+	fmt.Println("listenMessageReceived")
+	ethClient, err := c.chainClient.GetClient(parentCtx, big.NewInt(int64(chainID)))
+	if err != nil {
+		return fmt.Errorf("could not get chain client: %w", err)
+	}
+
 	listener, ok := c.transmitterListeners[chainID]
 	if !ok {
 		return fmt.Errorf("could not find listener for chain %d", chainID)
 	}
 
 	err = listener.Listen(parentCtx, func(parentCtx context.Context, log types.Log) (err error) {
-		fmt.Println("listenMessageReceived")
+		fmt.Println("listener.listenMessageReceived")
 		ctx, span := c.handler.Tracer().Start(parentCtx, "rebalance.listenMessageReceived", trace.WithAttributes(
 			attribute.Int(metrics.ChainID, chainID),
 		))
