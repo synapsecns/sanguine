@@ -20,16 +20,16 @@ import optimismImg from '@assets/chains/optimism.svg'
 import polygonImg from '@assets/chains/polygon.svg'
 
 import ethExplorerImg from '@assets/explorer/etherscan.svg'
-import arbitrumExplorerImg from '@assets/explorer/arbitrum.svg'
+import arbitrumExplorerImg from '@assets/explorer/arbiscan.svg'
 import blastExplorerImg from '@assets/explorer/blast.svg'
 import bnbExplorerImg from '@assets/explorer/bscscan.svg'
-import avalancheExplorerImg from '@assets/explorer/avalanche.svg'
+import avalancheExplorerImg from '@assets/explorer/snowscan.svg'
 import cantoExplorerImg from '@assets/explorer/canto.svg'
 import optimismExplorerImg from '@assets/explorer/optimism.svg'
 import polygonExplorerImg from '@assets/explorer/polygon.svg'
 import dfkExplorerImg from '@assets/explorer/dfk-chain.svg'
 import klaytynExplorerImg from '@assets/explorer/klaytn.svg'
-import fantomExplorerImg from '@assets/explorer/fantom.svg'
+import fantomExplorerImg from '@assets/explorer/ftmscan.svg'
 import cronosExplorerImg from '@assets/explorer/cronos.svg'
 import bobaExplorerImg from '@assets/explorer/boba.svg'
 import metisExplorerImg from '@assets/explorer/metis.svg'
@@ -436,7 +436,6 @@ export const BASE: Chain = {
   color: 'blue',
 }
 
-// TODO: UPDATE ALL PARAMETERS FOR MAINNET
 export const BLAST: Chain = {
   priorityRank: 90,
   id: 81457,
