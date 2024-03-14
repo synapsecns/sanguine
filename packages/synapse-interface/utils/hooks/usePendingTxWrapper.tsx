@@ -20,7 +20,6 @@ export function usePendingTxWrapper(): usePendingTxWrapperReturnType {
     } finally {
       setIsPending(false)
     }
-    console.log('tx in pending wrapper: ', tx)
     return tx
   }
 
