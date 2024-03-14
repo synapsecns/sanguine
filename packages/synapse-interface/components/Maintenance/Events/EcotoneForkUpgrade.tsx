@@ -68,6 +68,15 @@ export const EcotoneForkWarningMessage = () => {
   } else return null
 }
 
+/**
+ * Example of how to use hook:
+ *
+ * const {
+    isEcotoneForkUpgradePending,
+    isCurrentChainDisabled: isEcotoneUpgradeChainsDisabled,
+    EcotoneForkCountdownProgressBar,
+  } = useEcotoneForkCountdownProgress()
+ */
 export const useEcotoneForkCountdownProgress = () => {
   const { fromChainId, toChainId } = useBridgeState()
 
