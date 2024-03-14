@@ -41,7 +41,9 @@ export const DestinationAddressInput = ({
 
   const handleInputFocus = () => {
     setIsInputFocused(true)
-    setShowRecipientList(true)
+    if (!showDestinationWarning) {
+      setShowRecipientList(true)
+    }
   }
 
   const handleInputBlur = () => {
