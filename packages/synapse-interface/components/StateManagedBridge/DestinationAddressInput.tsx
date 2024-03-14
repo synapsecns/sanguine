@@ -103,7 +103,7 @@ export const DestinationAddressInput = ({
   }
 
   const handleAcceptWarning = () => {
-    inputRef.current.focus()
+    activateFocusOnInput()
     setShowWarning(false)
     dispatch(setShowDestinationWarning(false))
   }
@@ -113,8 +113,8 @@ export const DestinationAddressInput = ({
   }
 
   useEffect(() => {
-    console.log('input got reset')
-    dispatch(setDestinationAddress(null))
+    dispatch(clearDestinationAddress())
+    handleClearInput()
   }, [connectedAddress])
 
   return (
