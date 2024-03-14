@@ -30,12 +30,12 @@ export const ConnectedIndicator = () => {
   const className = join({
     flex: 'flex items-center gap-2',
     space: 'px-3 py-1 rounded-full',
-    hover: 'hover:opacity-70 cursor-default',
+    hover: 'hover:opacity-80',
     font: 'text-sm',
   })
   return (
     <button data-test-id="connected-button" disabled className={className}>
-      <Indicator className="bg-green-500 dark:bg-green-300" />
+      <Indicator className="bg-green-500 dark:bg-green-400" />
       Connected
     </button>
   )
@@ -111,7 +111,7 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
     >
       {isConnecting ? (
         <>
-          <Indicator className="border-green-500 dark:border-green-300" />
+          <Indicator className="border-green-500 dark:border-green-400" />
           Connecting
           <LoaderIcon />
         </>
