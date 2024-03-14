@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import _, { isString } from 'lodash'
+import { isEmpty, isString } from 'lodash'
 import { useAppDispatch } from '@/store/hooks'
 import { isValidAddress } from '@/utils/isValidAddress'
 import { shortenAddress } from '@/utils/shortenAddress'
@@ -146,7 +146,7 @@ export const DestinationAddressInput = ({
           onBlur={handleInputBlur}
           placeholder={placeholder}
           value={inputValue}
-          disabled={_.isEmpty(connectedAddress)}
+          disabled={isEmpty(connectedAddress)}
           className={`
             text-md rounded-sm text-secondary py-1 px-2 z-0 border-0 bg-transparent
             focus:text-white focus:border-transparent focus:outline-none focus:ring-0
