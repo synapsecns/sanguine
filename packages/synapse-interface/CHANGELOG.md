@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.9.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.9.4...@synapsecns/synapse-interface@0.9.5) (2024-03-14)
+
+
+### Bug Fixes
+
+* **synapse-interface:** fixes explorer images ([#2292](https://github.com/synapsecns/sanguine/issues/2292)) ([98f48b1](https://github.com/synapsecns/sanguine/commit/98f48b165f45b2a9b8f291e3020872029ae20abb))
+
+
+
+
+
 ## [0.9.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.9.3...@synapsecns/synapse-interface@0.9.4) (2024-03-14)
 
 
