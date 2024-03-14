@@ -3,7 +3,6 @@ import '@rainbow-me/rainbowkit/styles.css'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
 import '@/patch'
-import { Analytics } from '@vercel/analytics/react'
 import { PersistGate } from 'redux-persist/integration/react'
 import LogRocket from 'logrocket'
 import setupLogRocketReact from 'logrocket-react'
@@ -53,7 +52,6 @@ const App = ({ Component, pageProps }: AppProps) => {
                     <BackgroundListenerProvider>
                       <Component {...pageProps} />
                     </BackgroundListenerProvider>
-                    <Analytics />
                     <CustomToaster />
                   </UserProvider>
                 </SegmentAnalyticsProvider>
