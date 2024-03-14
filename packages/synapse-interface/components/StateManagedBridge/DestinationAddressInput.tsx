@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react'
-import _ from 'lodash'
+import _, { isString } from 'lodash'
 import { useAppDispatch } from '@/store/hooks'
 import { isValidAddress } from '@/utils/isValidAddress'
 import { shortenAddress } from '@/utils/shortenAddress'
@@ -62,7 +62,8 @@ export const DestinationAddressInput = ({
 
   const isInputInvalid =
     destinationAddress &&
-    !isEmptyString(destinationAddress) &&
+    isString(destinationAddress) &&
+    isEmptyString(destinationAddress) &&
     !isInputValidAddress
 
   let placeholder
