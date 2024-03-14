@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.9.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.9.3...@synapsecns/synapse-interface@0.9.4) (2024-03-14)
+
+
+### Bug Fixes
+
+* **synapse-interface:** deprecate unused dependencies ([#2287](https://github.com/synapsecns/sanguine/issues/2287)) ([e14071b](https://github.com/synapsecns/sanguine/commit/e14071bf1014050036b5e2e0858aa1e84aad2e18))
+
+
+
+
+
 ## [0.9.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.9.2...@synapsecns/synapse-interface@0.9.3) (2024-03-14)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
