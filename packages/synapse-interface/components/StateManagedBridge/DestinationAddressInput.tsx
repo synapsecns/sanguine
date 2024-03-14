@@ -51,8 +51,11 @@ export const DestinationAddressInput = ({
   }
 
   const handleClearInput = () => {
-    dispatch(setDestinationAddress('' as Address))
-    inputRef.current.focus()
+    dispatch(setDestinationAddress(null))
+    if (inputRef.current) {
+      inputRef.current.value = ''
+      inputRef.current.focus()
+    }
   }
 
   const isInputValidAddress = isValidAddress(destinationAddress)
@@ -72,7 +75,6 @@ export const DestinationAddressInput = ({
       : 'Wallet address'
   }
 
-  const [isInputHovered, setIsInputHovered] = useState<boolean>(false)
   const [showRecipientList, setShowRecipientList] = useState<boolean>(false)
   const listRef = useRef(null)
   useCloseOnOutsideClick(listRef, () => setShowRecipientList(false))
@@ -96,14 +98,15 @@ export const DestinationAddressInput = ({
     setShowWarning(false)
   }
 
+  console.log(
+    'test: ',
+    isInputValidAddress && !isInputFocused
+      ? shortenAddress(destinationAddress)
+      : destinationAddress
+  )
   return (
     <div id="destination-address-input" onClick={handleActivateWarning}>
-      <HoverContent isHovered={!isInputFocused && isInputHovered}>
-        {_.isEmpty(connectedAddress) ? 'Connect Wallet' : 'Destination address'}
-      </HoverContent>
       <div
-        onMouseEnter={() => setIsInputHovered(true)}
-        onMouseLeave={() => setIsInputHovered(false)}
         className={`
            flex border text-md rounded-sm
            ${isInputFocused ? ' bg-bgBase' : 'bg-transparent hover:opacity-80'}

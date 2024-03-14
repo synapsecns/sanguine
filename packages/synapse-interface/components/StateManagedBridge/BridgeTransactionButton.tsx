@@ -50,10 +50,6 @@ export const BridgeTransactionButton = ({
     bridgeQuote,
   } = useBridgeState()
 
-  const { showDestinationAddress } = useSelector(
-    (state: RootState) => state.bridgeDisplay
-  )
-
   const balances = usePortfolioBalances()
   const balancesForChain = balances[fromChainId]
   const balanceForToken = balancesForChain?.find(
@@ -73,7 +69,6 @@ export const BridgeTransactionButton = ({
     bridgeQuote === EMPTY_BRIDGE_QUOTE_ZERO ||
     bridgeQuote === EMPTY_BRIDGE_QUOTE ||
     (destinationAddress && !isAddress(destinationAddress)) ||
-    (showDestinationAddress && !destinationAddress) ||
     (isConnected && !sufficientBalance) ||
     PAUSED_FROM_CHAIN_IDS.includes(fromChainId) ||
     PAUSED_TO_CHAIN_IDS.includes(toChainId)
@@ -129,10 +124,10 @@ export const BridgeTransactionButton = ({
       label: 'Insufficient balance',
       onClick: null,
     }
-  } else if (showDestinationAddress && !destinationAddress) {
-    buttonProperties = {
-      label: 'Please add valid destination address',
-    }
+    // } else if (showDestinationAddress && !destinationAddress) {
+    //   buttonProperties = {
+    //     label: 'Please add valid destination address',
+    //   }
   } else if (destinationAddress && !isAddress(destinationAddress)) {
     buttonProperties = {
       label: 'Invalid destination address',
