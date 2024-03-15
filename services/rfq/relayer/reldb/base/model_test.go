@@ -12,7 +12,6 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/base"
-	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/connect"
 )
 
 func TestRoundtripBetweenFromQuoteRequestAndToQuoteRequest(t *testing.T) {
@@ -53,8 +52,4 @@ func TestRoundtripBetweenFromQuoteRequestAndToQuoteRequest(t *testing.T) {
 	if !reflect.DeepEqual(originalRequest, *roundTrippedRequest) {
 		t.Errorf("Round tripped request did not match original request. Original: %+v, RoundTripped: %+v", originalRequest, *roundTrippedRequest)
 	}
-}
-
-func TestStoreAndUpdateRebalance(t *testing.T) {
-	store, err := connect.Connect(t., dbType, cfg.Database.DSN, i.metrics)
 }
