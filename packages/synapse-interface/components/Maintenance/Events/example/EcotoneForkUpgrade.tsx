@@ -1,12 +1,12 @@
-import { AnnouncementBanner } from '../../AnnouncementBanner'
-import { WarningMessage } from '../../../Warning'
 import { useBridgeState } from '@/slices/bridge/hooks'
+import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 import { OPTIMISM, BASE } from '@/constants/chains/master'
 import {
   useEventCountdownProgressBar,
   getCountdownTimeStatus,
 } from '../../EventCountdownProgressBar'
-import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
+import { AnnouncementBanner } from '../../AnnouncementBanner'
+import { WarningMessage } from '../../../Warning'
 
 /**
  * Leaving this file to serve as an example for how to create
