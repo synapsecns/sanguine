@@ -3,6 +3,7 @@ package executor_test
 import (
 	"context"
 	"errors"
+	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainapp"
 	"math/big"
 	"sync"
 	"testing"
@@ -100,19 +101,39 @@ func (i *InterchainSuite) setClientConfigs(backend backends.SimulatedTestBackend
 	// set the receiving module on the app
 	_, appMock := i.deployManager.GetInterchainAppMock(i.GetTestContext(), backend)
 
-	chainIDS := []uint64{backend.GetBigChainID().Uint64(), otherBackend.GetBigChainID().Uint64()}
-	linkedApps := []common.Address{i.deployManager.Get(i.GetTestContext(), backend, testutil.InterchainApp).Address(), i.deployManager.Get(i.GetTestContext(), otherBackend, testutil.InterchainApp).Address()}
+	tx, err = appMock.LinkRemoteAppEVM(auth.TransactOpts, backend.GetBigChainID(), i.deployManager.Get(i.GetTestContext(), backend, testutil.InterchainApp).Address())
+	i.Require().NoError(err)
+	backend.WaitForConfirmation(i.GetTestContext(), tx)
 
-	sendingModules, err := appMock.GetSendingModules0(&bind.CallOpts{Context: i.GetTestContext()})
+	tx, err = appMock.LinkRemoteAppEVM(auth.TransactOpts, otherBackend.GetBigChainID(), i.deployManager.Get(i.GetTestContext(), otherBackend, testutil.InterchainApp).Address())
+	i.Require().NoError(err)
+	backend.WaitForConfirmation(i.GetTestContext(), tx)
+
+	sendingModules, err := appMock.GetSendingModules(&bind.CallOpts{Context: i.GetTestContext()})
 	i.Require().NoError(err)
 
 	receivingModules, err := appMock.GetReceivingModules(&bind.CallOpts{Context: i.GetTestContext()})
 	i.Require().NoError(err)
 
+	for _, module := range append(sendingModules, receivingModules...) {
+		tx, err = appMock.AddTrustedModule(auth.TransactOpts, module)
+
+		i.Require().NoError(err)
+		backend.WaitForConfirmation(i.GetTestContext(), tx)
+	}
+
 	_, executionService := i.deployManager.GetExecutionService(i.GetTestContext(), backend)
 	// same thing
 
-	tx, err = appMock.SetAppConfig(auth.TransactOpts, chainIDS, linkedApps, sendingModules, receivingModules, executionService.Address(), big.NewInt(1), 0)
+	tx, err = appMock.SetExecutionService(auth.TransactOpts, executionService.Address())
+	i.Require().NoError(err)
+	backend.WaitForConfirmation(i.GetTestContext(), tx)
+
+	tx, err = appMock.SetAppConfigV1(auth.TransactOpts, interchainapp.AppConfigV1{
+		RequiredResponses: big.NewInt(1),
+		OptimisticPeriod:  big.NewInt(1),
+	})
+
 	i.Require().NoError(err)
 	backend.WaitForConfirmation(i.GetTestContext(), tx)
 }

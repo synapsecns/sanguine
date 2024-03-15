@@ -16,7 +16,6 @@ import (
 func (i *InterchainSuite) TestE2E() {
 	auth := i.originChain.GetTxContext(i.GetTestContext(), nil)
 
-	receiver := i.addressToBytes32(i.deployManager.Get(i.GetTestContext(), i.destChain, testutil.InterchainApp).Address())
 	message := []byte("hello")
 
 	_, optionsLib := i.deployManager.GetOptionsLib(i.GetTestContext(), i.originChain)
@@ -34,7 +33,7 @@ func (i *InterchainSuite) TestE2E() {
 
 	_, appMock := i.deployManager.GetInterchainAppMock(i.GetTestContext(), i.originChain)
 	auth.TransactOpts.Value = interchainFee
-	tx, err := appMock.Send(auth.TransactOpts, receiver, i.destChain.GetBigChainID(), message)
+	tx, err := appMock.SendMessage(auth.TransactOpts, big.NewInt(1_000_000), i.destChain.GetBigChainID(), message)
 	i.Require().NoError(err)
 	i.Require().NoError(err)
 	i.originChain.WaitForConfirmation(i.GetTestContext(), tx)
@@ -58,11 +57,10 @@ func (i *InterchainSuite) TestE2E() {
 		_, destDB := i.deployManager.GetInterchainDB(i.GetTestContext(), i.destChain)
 
 		destContext := i.destChain.GetTxContext(i.GetTestContext(), nil)
-		mockTX, err := destModule.MockVerifyEntry(destContext.TransactOpts, destDB.Address(), interchainmodulemock.InterchainEntry{
+		mockTX, err := destModule.MockVerifyRemoteBatch(destContext.TransactOpts, destDB.Address(), interchainmodulemock.InterchainBatch{
 			SrcChainId: written.SrcChainId,
 			DbNonce:    written.DbNonce,
-			SrcWriter:  written.SrcWriter,
-			DataHash:   written.DataHash,
+			BatchRoot:  written.DataHash,
 		})
 		i.Require().NoError(err)
 		didMock = true
@@ -70,6 +68,10 @@ func (i *InterchainSuite) TestE2E() {
 		i.destChain.WaitForConfirmation(i.GetTestContext(), mockTX)
 		fmt.Print(mockTX.Hash())
 	}
+
+	fmt.Printf("cast run %s --rpc-url %s/1 \n", recp.TxHash, i.omnirpcURL)
+	time.Sleep(time.Hour)
+
 	i.Require().True(didMock)
 
 	go func() {
