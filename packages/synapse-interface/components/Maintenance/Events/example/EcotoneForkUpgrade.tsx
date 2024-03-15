@@ -26,6 +26,7 @@ export const ECOTONE_FORK_START_DATE = new Date(
 )
 export const ECOTONE_FORK_END_DATE = new Date(Date.UTC(2024, 2, 14, 0, 25, 0))
 
+/** Previous implementation can be seen here: https://github.com/synapsecns/sanguine/pull/2294/files#diff-bbe6298d3dfbc80e46e2ff8b399a3e1822cede80f392b1af91875145ad4eeb19R19 */
 export const EcotoneForkUpgradeBanner = () => {
   const { isComplete } = getCountdownTimeStatus(
     ECOTONE_FORK_BANNERS_START,
@@ -74,6 +75,7 @@ export const EcotoneForkWarningMessage = () => {
 
 /**
  * Previously used in this location: https://github.com/synapsecns/sanguine/blob/f068eff5e86ec97e17fc8e703d7203c12fb7f733/packages/synapse-interface/pages/state-managed-bridge/index.tsx#L588
+ * Bridge pause implemented here: https://github.com/synapsecns/sanguine/blob/f068eff5e86ec97e17fc8e703d7203c12fb7f733/packages/synapse-interface/pages/state-managed-bridge/index.tsx#L652-L654
  *
  * Example of how to use hook:
  * import { useEcotoneForkCountdownProgress } = '@/components/Maintenance/Events/EcotoneForkUpgrade'
