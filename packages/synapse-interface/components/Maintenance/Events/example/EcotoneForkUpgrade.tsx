@@ -15,8 +15,8 @@ import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
  */
 
 /**
- * Start: 25 min prior to Ecotone Fork Upgrade Time @ (March 14, 00:00 UTC)
- * End: 25 min after start of Ecotone Fork Upgrade Time
+ * Start: 15 min prior to Ecotone Fork Upgrade Time @ (March 14, 00:00 UTC)
+ * End: 50 min after start of Ecotone Fork Upgrade Time
  */
 export const ECOTONE_FORK_BANNERS_START = new Date(
   Date.UTC(2024, 2, 13, 23, 20, 0)
