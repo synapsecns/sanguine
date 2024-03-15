@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react'
+import { getCountdownTimeStatus } from './EventCountdownProgressBar'
 
 /**
- * Reusable Annoucement Banner with custom Start/End Time
+ * Reusable automated Announcement Banner with custom Start/End Time
+ * Will automatically appear after Start time
+ * Will automatically disappear after End time
  * @param bannerId: store in $MMDDYYYY-$BANNER_NAME format (e.g 03132024-ETH-DENCUN)
  * @param bannerContents: contents to display in banner
  * @param startDate: start date to show banner
@@ -18,15 +21,9 @@ export const AnnouncementBanner = ({
   startDate: Date
   endDate: Date
 }) => {
+  const { isStarted, isComplete } = getCountdownTimeStatus(startDate, endDate)
   const [hasMounted, setHasMounted] = useState(false)
-  const [showBanner, setShowBanner] = useState(false)
-
-  const currentDate = new Date()
-
-  const isStarted =
-    Math.floor(currentDate.getTime()) - Math.floor(startDate.getTime()) >= 0
-  const isComplete =
-    Math.floor(currentDate.getTime()) - Math.floor(endDate.getTime()) >= 0
+  const [showBanner, setShowBanner] = useState(true)
 
   useEffect(() => {
     setHasMounted(true)
@@ -54,11 +51,11 @@ export const AnnouncementBanner = ({
     }
   }, [showBanner, hasMounted])
 
-  if (!showBanner || !hasMounted || isComplete) return null
+  if (!showBanner || !hasMounted || !isStarted || isComplete) return null
 
   return (
     <div
-      className="flex items-center justify-center mx-auto lg:flex-row"
+      className="flex items-center justify-center mx-auto mb-3 lg:flex-row"
       style={{
         background:
           'linear-gradient(310.65deg, rgba(172, 143, 255, 0.2) -17.9%, rgba(255, 0, 255, 0.2) 86.48%)',
