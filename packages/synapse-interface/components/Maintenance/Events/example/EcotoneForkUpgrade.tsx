@@ -76,12 +76,19 @@ export const EcotoneForkWarningMessage = () => {
 
 /**
  * Example of how to use hook:
+ * import { useEcotoneForkCountdownProgress } = '@/components/Maintenance/Events/EcotoneForkUpgrade'
  *
  * const {
     isEcotoneForkUpgradePending,
     isCurrentChainDisabled: isEcotoneUpgradeChainsDisabled,
     EcotoneForkCountdownProgressBar,
   } = useEcotoneForkCountdownProgress()
+
+  In JSX, render the component:
+
+    <div>
+      {EcotoneForkCountdownProgressBar}
+    </div>
  */
 export const useEcotoneForkCountdownProgress = () => {
   const { fromChainId, toChainId } = useBridgeState()
