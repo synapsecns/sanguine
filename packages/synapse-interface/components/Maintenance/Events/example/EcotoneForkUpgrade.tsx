@@ -75,6 +75,8 @@ export const EcotoneForkWarningMessage = () => {
 }
 
 /**
+ * Previously used in this location: https://github.com/synapsecns/sanguine/blob/f068eff5e86ec97e17fc8e703d7203c12fb7f733/packages/synapse-interface/pages/state-managed-bridge/index.tsx#L588
+ *
  * Example of how to use hook:
  * import { useEcotoneForkCountdownProgress } = '@/components/Maintenance/Events/EcotoneForkUpgrade'
  *
@@ -90,6 +92,7 @@ export const EcotoneForkWarningMessage = () => {
       {EcotoneForkCountdownProgressBar}
     </div>
  */
+
 export const useEcotoneForkCountdownProgress = () => {
   const { fromChainId, toChainId } = useBridgeState()
 
