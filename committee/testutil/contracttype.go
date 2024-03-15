@@ -81,7 +81,7 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	case InterchainDB:
 		return interchaindb.Contracts["solidity/InterchainDB.sol:InterchainDB"]
 	case GasOracleMockType:
-		return gasoraclemock.Contracts["solidity/GasOracleMock.sol:GasOracleMock"]
+		return gasoraclemock.Contracts["solidity/SynapseGasOracleMock.sol:SynapseGasOracleMock"]
 	}
 	return nil
 }

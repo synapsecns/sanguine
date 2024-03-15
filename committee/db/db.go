@@ -26,7 +26,7 @@ type Reader interface {
 type Writer interface {
 	LatestBlockForChain(ctx context.Context, chainID uint64) (uint64, error)
 	UpdateSignRequestStatus(ctx context.Context, txid common.Hash, status SynapseRequestStatus) error
-	StoreInterchainTransactionReceived(ctx context.Context, originChainID int, sr synapsemodule.SynapseModuleVerificationRequested) error
+	StoreInterchainTransactionReceived(ctx context.Context, originChainID int, sr synapsemodule.SynapseModuleBatchVerificationRequested) error
 }
 
 // Datstores contain the datastores for the p2p comms.
