@@ -255,8 +255,6 @@ func (r *Relayer) runDBSelector(ctx context.Context) error {
 
 // startCCTPRelayer starts the CCTP relayer, if a config is specified.
 func (r *Relayer) startCCTPRelayer(ctx context.Context) (err error) {
-	fmt.Println("startCCTPRelayer")
-
 	// only start the CCTP relayer if the config is specified
 	cctpCfg := r.cfg.CCTPRelayerConfig
 	if cctpCfg == nil {
@@ -272,21 +270,15 @@ func (r *Relayer) startCCTPRelayer(ctx context.Context) (err error) {
 	if err != nil {
 		return fmt.Errorf("could not connect to database: %w", err)
 	}
-	fmt.Println("sql connected")
 	scribeClient := client.NewRemoteScribe(uint16(cctpCfg.ScribePort), cctpCfg.ScribeURL, r.metrics).ScribeClient
-	fmt.Println("scribe created")
 	omnirpcClient := omniClient.NewOmnirpcClient(cctpCfg.BaseOmnirpcURL, r.metrics, omniClient.WithCaptureReqRes())
-	fmt.Println("omni created")
 	attAPI := attestation.NewCircleAPI(cctpCfg.CircleAPIURl)
-	fmt.Println("api created")
 	cctpRelayer, err := relayer.NewCCTPRelayer(ctx, *cctpCfg, store, scribeClient, omnirpcClient, r.metrics, attAPI)
 	if err != nil {
 		return fmt.Errorf("could not create cctp relayer: %w", err)
 	}
-	fmt.Println("relayer created")
 
 	// run the cctp relayer
-	fmt.Println("runCCTPRelayer")
 	err = cctpRelayer.Run(ctx)
 	if err != nil {
 		return fmt.Errorf("could not run cctp relayer: %w", err)
