@@ -112,8 +112,8 @@ abstract contract InterchainAppV1 is InterchainAppV1Events, IInterchainApp {
     /// Note: Should be guarded with permissions check.
     function _linkRemoteApp(uint256 chainId, bytes32 remoteApp) internal {
 //        if (chainId == block.chainid) revert InterchainApp__SameChainId(chainId);
-        _linkedApp[chainId] = remoteApp;
-        emit AppLinked(chainId, remoteApp);
+//        _linkedApp[chainId] = remoteApp;
+//        emit AppLinked(chainId, remoteApp);
     }
 
     /// @dev Thin wrapper around _linkRemoteApp to accept EVM address as a parameter.
