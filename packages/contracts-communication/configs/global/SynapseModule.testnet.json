@@ -1,7 +1,7 @@
 {
   "claimFeeBPS": 10,
   "feeCollector": "0xD0D45E468ADF3aCB8A98391ff47267783220ba6F",
-  "gasOracleName": "SynapseGasOracleMock",
+  "gasOracleName": "SynapseGasOracleV1",
   "threshold": 6,
   "verifiers": [
     "0x0E399F695d72033d598aC2911B8A5e9986d6cbaD",

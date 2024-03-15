@@ -13,6 +13,7 @@ shift 2
 
 yarn fsr-str script/config/ConfigureClientV1.s.sol "$chainName" "$walletName" "testnet" "$@"
 yarn fsr script/config/ConfigureExecutionFees.s.sol "$chainName" "$walletName" "$@"
+yarn fsr-str script/config/ConfigureSynapseGasOracleV1.s.sol "$chainName" "$walletName" "testnet" "$@"
 yarn fsr-str script/config/ConfigureExecutionService.s.sol "$chainName" "$walletName" "testnet" "$@"
 yarn fsr-str script/config/ConfigurePingPongApp.s.sol "$chainName" "$walletName" "testnet" "$@"
 yarn fsr-str script/config/ConfigureSynapseModule.s.sol "$chainName" "$walletName" "testnet" "$@"
