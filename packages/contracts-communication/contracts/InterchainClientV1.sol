@@ -222,12 +222,12 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         internal
         returns (InterchainTxDescriptor memory desc)
     {
-        _assertLinkedClient(dstChainId);
+//        _assertLinkedClient(dstChainId);
         // TODO: should check options for being correctly formatted
         uint256 verificationFee = IInterchainDB(INTERCHAIN_DB).getInterchainFee(dstChainId, srcModules);
-        if (msg.value < verificationFee) {
-            revert InterchainClientV1__FeeAmountTooLow(msg.value, verificationFee);
-        }
+//        if (msg.value < verificationFee) {
+//            revert InterchainClientV1__FeeAmountTooLow(msg.value, verificationFee);
+//        }
         (desc.dbNonce, desc.entryIndex) = IInterchainDB(INTERCHAIN_DB).getNextEntryIndex();
         InterchainTransaction memory icTx = InterchainTransactionLib.constructLocalTransaction({
             srcSender: msg.sender,
