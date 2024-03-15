@@ -93,6 +93,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 	if err != nil {
 		return nil, fmt.Errorf("could not get signer: %w", err)
 	}
+	fmt.Printf("loaded signer with address: %s\n", sg.Address().String())
 
 	sm := submitter.NewTransactionSubmitter(metricHandler, sg, omniClient, store.SubmitterDB(), &cfg.SubmitterConfig)
 
