@@ -69,7 +69,7 @@ func (i *InterchainSuite) TestE2E() {
 		fmt.Print(mockTX.Hash())
 	}
 
-	fmt.Printf("cast run %s --rpc-url %s/1 \n", recp.TxHash, i.omnirpcURL)
+	fmt.Printf("cast run %s --rpc-url %s/rpc/1 \n", recp.TxHash, i.omnirpcURL)
 	time.Sleep(time.Hour)
 
 	i.Require().True(didMock)
