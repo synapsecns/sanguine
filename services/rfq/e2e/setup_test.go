@@ -321,7 +321,7 @@ func (i *IntegrationSuite) setupRelayer() {
 
 			rebalanceMethod := ""
 			if useCCTP {
-				rebalanceMethod = "cctp"
+				rebalanceMethod = "synapsecctp"
 			}
 
 			// first the simple part, add the token to the token map
