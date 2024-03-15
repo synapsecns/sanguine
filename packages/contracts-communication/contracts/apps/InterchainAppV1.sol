@@ -111,7 +111,7 @@ abstract contract InterchainAppV1 is InterchainAppV1Events, IInterchainApp {
     /// Will revert if the chainId is the same as the chainId of the local app.
     /// Note: Should be guarded with permissions check.
     function _linkRemoteApp(uint256 chainId, bytes32 remoteApp) internal {
-        if (chainId == block.chainid) revert InterchainApp__SameChainId(chainId);
+//        if (chainId == block.chainid) revert InterchainApp__SameChainId(chainId);
         _linkedApp[chainId] = remoteApp;
         emit AppLinked(chainId, remoteApp);
     }

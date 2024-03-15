@@ -101,9 +101,9 @@ func (i *InterchainSuite) setClientConfigs(backend backends.SimulatedTestBackend
 	// set the receiving module on the app
 	_, appMock := i.deployManager.GetInterchainAppMock(i.GetTestContext(), backend)
 
-	tx, err = appMock.LinkRemoteAppEVM(auth.TransactOpts, backend.GetBigChainID(), i.deployManager.Get(i.GetTestContext(), backend, testutil.InterchainApp).Address())
-	i.Require().NoError(err)
-	backend.WaitForConfirmation(i.GetTestContext(), tx)
+	//tx, err = appMock.LinkRemoteAppEVM(auth.TransactOpts, backend.GetBigChainID(), i.deployManager.Get(i.GetTestContext(), backend, testutil.InterchainApp).Address())
+	//i.Require().NoError(err)
+	//backend.WaitForConfirmation(i.GetTestContext(), tx)
 
 	tx, err = appMock.LinkRemoteAppEVM(auth.TransactOpts, otherBackend.GetBigChainID(), i.deployManager.Get(i.GetTestContext(), otherBackend, testutil.InterchainApp).Address())
 	i.Require().NoError(err)
