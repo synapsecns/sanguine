@@ -145,8 +145,20 @@ func FromRebalance(rebalance reldb.Rebalance) Rebalance {
 		Destination:  rebalance.Destination,
 		OriginAmount: rebalance.OriginAmount.String(),
 		Status:       rebalance.Status,
-		OriginTxHash: stringToNullString(rebalance.OriginTxHash.String()),
-		DestTxHash:   stringToNullString(rebalance.DestTxHash.String()),
+		OriginTxHash: hashToNullString(rebalance.OriginTxHash),
+		DestTxHash:   hashToNullString(rebalance.DestTxHash),
+	}
+}
+
+var emptyHash = common.HexToHash("").Hex()
+
+func hashToNullString(h common.Hash) sql.NullString {
+	if h.Hex() == emptyHash {
+		return sql.NullString{Valid: false}
+	}
+	return sql.NullString{
+		String: h.Hex(),
+		Valid:  true,
 	}
 }
 
