@@ -1,5 +1,7 @@
-import * as ALL_CHAINS from '@constants/chains/master'
-import { Address } from 'wagmi'
+import { Address } from 'viem'
+
+import * as ALL_CHAINS from '@/constants/chains/master'
+
 export interface ChainIdAddressMapping {
   [ChainId: number]: Address
 }

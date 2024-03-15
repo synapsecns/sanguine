@@ -1,13 +1,13 @@
 import {
-  prepareWriteContract,
-  waitForTransaction,
+  simulateContract,
+  waitForTransactionReceipt,
   writeContract,
 } from '@wagmi/core'
-import { TransactionReceipt } from 'viem'
 
 import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
 import { subtractSlippageBigInt } from '@/utils/slippage'
 import { Token } from '@/utils/types'
+import { wagmiConfig } from '@/wagmiConfig'
 
 export const swapPoolRemoveLiquidityOneToken = async ({
   chainId,
@@ -28,8 +28,9 @@ export const swapPoolRemoveLiquidityOneToken = async ({
 }) => {
   const { abi, poolAddress } = getSwapDepositContractFields(pool, chainId)
 
-  const { request } = await prepareWriteContract({
-    chainId,
+  const { request } = await simulateContract(wagmiConfig, {
+    // TODO: fix any
+    chainId: chainId as any,
     address: poolAddress,
     abi,
     functionName: 'removeLiquidityOneToken',
@@ -45,8 +46,10 @@ export const swapPoolRemoveLiquidityOneToken = async ({
     ],
   })
 
-  const { hash } = await writeContract(request)
-  const txReceipt: TransactionReceipt = await waitForTransaction({ hash })
+  const hash = await writeContract(wagmiConfig, request)
+  const txReceipt = await waitForTransactionReceipt(wagmiConfig, {
+    hash,
+  })
 
   return txReceipt
 }

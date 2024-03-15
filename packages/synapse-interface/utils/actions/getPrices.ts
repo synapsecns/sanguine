@@ -1,6 +1,8 @@
-import { readContract, fetchBalance, Address, multicall } from '@wagmi/core'
-import { SYN, WETH } from '@constants/tokens/bridgeable'
-import * as ALL_CHAINS from '@constants/chains/master'
+import { readContract, getBalance, multicall } from '@wagmi/core'
+import { type Address } from 'viem'
+
+import { SYN, WETH } from '@/constants/tokens/bridgeable'
+import * as ALL_CHAINS from '@/constants/chains/master'
 import {
   CHAINLINK_ETH_PRICE_ADDRESSES,
   CHAINLINK_AVAX_PRICE_ADDRESSES,
@@ -12,13 +14,14 @@ import {
   CHAINLINK_USDC_PRICE_ADDRESSES,
   CHAINLINK_CRVUSD_PRICE_ADDRESSES,
   CHAINLINK_DAI_PRICE_ADDRESSES,
-} from '@constants/chainlink'
-import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
-import CHAINLINK_AGGREGATOR_ABI from '@abis/chainlinkAggregator.json'
+} from '@/constants/chainlink'
+import { SYN_ETH_SUSHI_TOKEN } from '@/constants/tokens/sushiMaster'
+import CHAINLINK_AGGREGATOR_ABI from '@/constants/abis/chainlinkAggregator.json'
+import { wagmiConfig } from '@/wagmiConfig'
 
 export const getEthPrice = async (): Promise<number> => {
   // the price result returned by latestAnswer is 8 decimals
-  const ethPriceResult: bigint = (await readContract({
+  const ethPriceResult: bigint = (await readContract(wagmiConfig, {
     address: CHAINLINK_ETH_PRICE_ADDRESSES[ALL_CHAINS.ETH.id] as Address,
     abi: CHAINLINK_AGGREGATOR_ABI,
     functionName: 'latestAnswer',
@@ -36,7 +39,7 @@ export const getEthPrice = async (): Promise<number> => {
 
 export const getAvaxPrice = async (): Promise<number> => {
   // the price result returned by latestAnswer is 8 decimals
-  const avaxPriceResult: bigint = (await readContract({
+  const avaxPriceResult: bigint = (await readContract(wagmiConfig, {
     address: CHAINLINK_AVAX_PRICE_ADDRESSES[ALL_CHAINS.ETH.id] as Address,
     abi: CHAINLINK_AGGREGATOR_ABI,
     functionName: 'latestAnswer',
@@ -54,11 +57,11 @@ export const getAvaxPrice = async (): Promise<number> => {
 
 export const getMetisPrice = async (): Promise<number> => {
   // the price result returned by latestAnswer is 8 decimals
-  const metisPriceResult: bigint = (await readContract({
+  const metisPriceResult: bigint = (await readContract(wagmiConfig, {
     address: CHAINLINK_METIS_PRICE_ADDRESSES[ALL_CHAINS.METIS.id] as Address,
     abi: CHAINLINK_AGGREGATOR_ABI,
     functionName: 'latestAnswer',
-    chainId: ALL_CHAINS.METIS.id,
+    chainId: ALL_CHAINS.METIS.id as any,
   })) as bigint
 
   const metisPriceBigInt = metisPriceResult ?? 0n
@@ -74,18 +77,18 @@ export const getSynPrices = async () => {
   const ethPrice: number = await getEthPrice()
   const sushiSynBalance =
     (
-      await fetchBalance({
+      await getBalance(wagmiConfig, {
         token: SYN.addresses[ALL_CHAINS.ETH.id] as Address,
-        chainId: ALL_CHAINS.ETH.id,
+        chainId: ALL_CHAINS.ETH.id as any,
         address: SYN_ETH_SUSHI_TOKEN.addresses[ALL_CHAINS.ETH.id] as Address,
       })
     )?.value ?? 0n
 
   const sushiEthBalance =
     (
-      await fetchBalance({
+      await getBalance(wagmiConfig, {
         token: WETH.addresses[ALL_CHAINS.ETH.id] as Address,
-        chainId: ALL_CHAINS.ETH.id,
+        chainId: ALL_CHAINS.ETH.id as any,
         address: SYN_ETH_SUSHI_TOKEN.addresses[ALL_CHAINS.ETH.id] as Address,
       })
     )?.value ?? 0n
@@ -105,11 +108,11 @@ export const getSynPrices = async () => {
 
 export const getArbPrice = async (): Promise<number> => {
   // the price result returned by latestAnswer is 8 decimals
-  const arbPriceResult: bigint = (await readContract({
+  const arbPriceResult: bigint = (await readContract(wagmiConfig, {
     address: CHAINLINK_ARB_PRICE_ADDRESSES[ALL_CHAINS.ARBITRUM.id] as Address,
     abi: CHAINLINK_AGGREGATOR_ABI,
     functionName: 'latestAnswer',
-    chainId: ALL_CHAINS.ARBITRUM.id,
+    chainId: ALL_CHAINS.ARBITRUM.id as any,
   })) as bigint
 
   const arbPriceBigInt = arbPriceResult ?? 0n
@@ -123,11 +126,11 @@ export const getArbPrice = async (): Promise<number> => {
 
 export const getGmxPrice = async (): Promise<number> => {
   // the price result returned by latestAnswer is 8 decimals
-  const gmxPriceResult: bigint = (await readContract({
+  const gmxPriceResult: bigint = (await readContract(wagmiConfig, {
     address: CHAINLINK_GMX_PRICE_ADDRESSES[ALL_CHAINS.ARBITRUM.id] as Address,
     abi: CHAINLINK_AGGREGATOR_ABI,
     functionName: 'latestAnswer',
-    chainId: ALL_CHAINS.ARBITRUM.id,
+    chainId: ALL_CHAINS.ARBITRUM.id as any,
   })) as bigint
 
   const gmxPriceBigInt = gmxPriceResult ?? 0n
@@ -180,9 +183,10 @@ export const getAllEthStablecoinPrices =
         },
       ]
 
-      const response = await multicall({
+      // @ts-ignore
+      const response = await multicall(wagmiConfig, {
         contracts: multicallInputs as any,
-        chainId: ALL_CHAINS.ETH.id,
+        chainId: ALL_CHAINS.ETH.id as any,
       })
 
       const prices = {

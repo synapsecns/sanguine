@@ -15,7 +15,11 @@ import { formatBigIntToString } from '@/utils/bigint/format'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
 import { useEffect, useRef, useState } from 'react'
 import { Token } from '@/utils/types'
-import { getWalletClient, waitForTransaction } from '@wagmi/core'
+import {
+  getWalletClient,
+  waitForTransaction,
+  waitForTransactionReceipt,
+} from '@wagmi/core'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { approveToken } from '@/utils/approveToken'
@@ -47,6 +51,7 @@ import { SwapToTokenListOverlay } from '@/components/StateManagedSwap/SwapToToke
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import useSyncQueryParamsWithSwapState from '@/utils/hooks/useSyncQueryParamsWithSwapState'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
+import { wagmiConfig } from '@/wagmiConfig'
 
 const StateManagedSwap = () => {
   const { address } = useAccount()
@@ -270,7 +275,7 @@ const StateManagedSwap = () => {
       true
     )
     try {
-      const wallet = await getWalletClient({
+      const wallet = await getWalletClient(wagmiConfig, {
         chainId: swapChainId,
       })
 
@@ -304,7 +309,7 @@ const StateManagedSwap = () => {
         { id: 'swap-in-progress-popup', duration: Infinity }
       )
 
-      const transactionReceipt = await waitForTransaction({
+      const transactionReceipt = await waitForTransactionReceipt(wagmiConfig, {
         hash: tx as Address,
         timeout: 60_000,
       })

@@ -1,4 +1,4 @@
-import { useAccount, useNetwork } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { useSelector } from 'react-redux'
 import { RootState } from '../../store/store'
 import toast from 'react-hot-toast'
@@ -39,7 +39,7 @@ import { Token } from '@/utils/types'
 import {
   getWalletClient,
   getPublicClient,
-  prepareSendTransaction,
+  waitForTransactionReceipt,
 } from '@wagmi/core'
 import { txErrorHandler } from '@/utils/txErrorHandler'
 import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
@@ -90,9 +90,11 @@ import {
   useMaintenanceCountdownProgress,
 } from '@/components/Maintenance/Events/template/MaintenanceEvent'
 
+import { OPTIMISM, BASE, METIS } from '@/constants/chains/master'
+import { wagmiConfig } from '@/wagmiConfig'
+
 const StateManagedBridge = () => {
   const { address } = useAccount()
-  const { chain } = useNetwork()
   const { synapseSDK } = useSynapseContext()
   const bridgeDisplayRef = useRef(null)
   const currentSDKRequestID = useRef(0)
@@ -375,7 +377,7 @@ const StateManagedBridge = () => {
       })
     )
     try {
-      const wallet = await getWalletClient({
+      const wallet = await getWalletClient(wagmiConfig, {
         chainId: fromChainId,
       })
       const toAddress =
@@ -412,13 +414,14 @@ const StateManagedBridge = () => {
       let gasEstimate = undefined
 
       if (fromChainId === polygon.id) {
-        const publicClient = getPublicClient()
+        const publicClient = getPublicClient(wagmiConfig, {
+          chainId: fromChainId,
+        })
         gasEstimate = await publicClient.estimateGas({
           value: payload.value,
           to: payload.to,
           account: address,
           data: payload.data,
-          chainId: fromChainId,
         })
         gasEstimate = (gasEstimate * 3n) / 2n
       }
@@ -479,7 +482,7 @@ const StateManagedBridge = () => {
 
       toast.dismiss(pendingPopup)
 
-      const transactionReceipt = await waitForTransaction({
+      const transactionReceipt = await waitForTransactionReceipt(wagmiConfig, {
         hash: tx as Address,
         timeout: 60_000,
       })

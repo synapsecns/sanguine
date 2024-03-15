@@ -1,7 +1,7 @@
 import { setDestinationAddress } from '@/slices/bridge/reducer'
 import { CHAINS_BY_ID } from '@constants/chains'
 import { useDispatch } from 'react-redux'
-import { Address } from 'wagmi'
+import { Address } from 'viem'
 
 export const DestinationAddressInput = ({
   toChainId,

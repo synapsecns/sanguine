@@ -1,35 +1,51 @@
-import '@/patch'
+// import '@/patch'
 
 import {
-  boba,
-  cronos,
-  dfk,
-  dogechain,
-  klaytn,
-  metis,
-  aurora,
-  canto,
-  base,
-  blast,
-} from '@constants/extraWagmiChains'
-import { configureChains, createConfig } from 'wagmi'
-import {
   arbitrum,
+  aurora,
   avalanche,
+  base,
   bsc,
+  blast,
+  boba,
+  canto,
+  cronos,
+  dogechain,
+  dfk,
   fantom,
+  klaytn,
   harmonyOne,
   mainnet,
+  metis,
   moonbeam,
   moonriver,
   optimism,
   polygon,
-} from 'wagmi/chains'
-import { getDefaultWallets, connectorsForWallets } from '@rainbow-me/rainbowkit'
-import { rabbyWallet } from '@rainbow-me/rainbowkit/wallets'
-import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
-import { publicProvider } from 'wagmi/providers/public'
-import * as CHAINS from '@constants/chains/master'
+} from '@wagmi/core/chains'
+import { createConfig, http } from '@wagmi/core'
+
+import {
+  ARBITRUM,
+  AURORA,
+  AVALANCHE,
+  BASE,
+  BLAST,
+  BNB,
+  BOBA,
+  CANTO,
+  CRONOS,
+  DFK,
+  DOGE,
+  ETH,
+  FANTOM,
+  HARMONY,
+  KLAYTN,
+  METIS,
+  MOONBEAM,
+  MOONRIVER,
+  OPTIMISM,
+  POLYGON,
+} from '@/constants/chains/master'
 
 export const rawChains = [
   mainnet,
@@ -54,59 +70,49 @@ export const rawChains = [
   boba,
 ]
 
-// Add custom icons
-const chainsMatured = []
-for (const chain of rawChains) {
-  const configChain = Object.values(CHAINS).filter(
-    (chainObj) => chainObj.id === chain.id
-  )[0]
-
-  chainsMatured.push({
-    ...chain,
-    iconUrl: configChain.chainImg.src,
-    configRpc: configChain.rpcUrls.primary,
-    fallbackRpc: configChain.rpcUrls.fallback,
-  })
-}
-
-const { chains, publicClient, webSocketPublicClient } = configureChains(
-  chainsMatured,
-  [
-    jsonRpcProvider({
-      rpc: (chain) => ({
-        http: chain['configRpc'],
-      }),
-    }),
-    jsonRpcProvider({
-      rpc: (chain) => ({
-        http: chain['fallbackRpc'],
-      }),
-    }),
-    publicProvider(),
-  ]
-)
-
-const projectId = 'ab0a846bc693996606734d788cb6561d'
-
-const { wallets } = getDefaultWallets({
-  appName: 'Synapse',
-  projectId,
-  chains,
-})
-
-const connectors = connectorsForWallets([
-  ...wallets,
-  {
-    groupName: 'Other',
-    wallets: [rabbyWallet({ chains })],
-  },
-])
-
-export const wagmiChains = chains
-
 export const wagmiConfig = createConfig({
-  autoConnect: true,
-  connectors,
-  publicClient,
-  webSocketPublicClient,
+  chains: [
+    mainnet,
+    arbitrum,
+    aurora,
+    avalanche,
+    base,
+    blast,
+    bsc,
+    canto,
+    fantom,
+    harmonyOne,
+    metis,
+    moonbeam,
+    moonriver,
+    optimism,
+    polygon,
+    klaytn,
+    cronos,
+    dfk,
+    dogechain,
+    boba,
+  ] as any,
+  transports: {
+    [mainnet.id]: http(ETH.rpcUrls.primary),
+    [arbitrum.id]: http(ARBITRUM.rpcUrls.primary),
+    [aurora.id]: http(AURORA.rpcUrls.primary),
+    [avalanche.id]: http(AVALANCHE.rpcUrls.primary),
+    [base.id]: http(BASE.rpcUrls.primary),
+    [blast.id]: http(BLAST.rpcUrls.primary),
+    [bsc.id]: http(BNB.rpcUrls.primary),
+    [canto.id]: http(CANTO.rpcUrls.primary),
+    [fantom.id]: http(FANTOM.rpcUrls.primary),
+    [harmonyOne.id]: http(HARMONY.rpcUrls.primary),
+    [metis.id]: http(METIS.rpcUrls.primary),
+    [moonbeam.id]: http(MOONBEAM.rpcUrls.primary),
+    [moonriver.id]: http(MOONRIVER.rpcUrls.primary),
+    [optimism.id]: http(OPTIMISM.rpcUrls.primary),
+    [polygon.id]: http(POLYGON.rpcUrls.primary),
+    [klaytn.id]: http(KLAYTN.rpcUrls.primary),
+    [cronos.id]: http(CRONOS.rpcUrls.primary),
+    [dfk.id]: http(DFK.rpcUrls.primary),
+    [dogechain.id]: http(DOGE.rpcUrls.primary),
+    [boba.id]: http(BOBA.rpcUrls.primary),
+  },
 })
