@@ -24,7 +24,7 @@ export const ECOTONE_FORK_BANNERS_START = new Date(
 export const ECOTONE_FORK_START_DATE = new Date(
   Date.UTC(2024, 2, 13, 23, 35, 0)
 )
-export const ECOTONE_FORK_END_DATE = new Date(Date.UTC(2024, 2, 14, 0, 25, 0))
+export const ECOTONE_FORK_END_DATE = new Date(Date.UTC(2024, 2, 24, 0, 25, 0))
 
 export const EcotoneForkUpgradeBanner = () => {
   const { isComplete } = getCountdownTimeStatus(
@@ -38,13 +38,11 @@ export const EcotoneForkUpgradeBanner = () => {
     <AnnouncementBanner
       bannerId="03142024-ecotone-fork"
       bannerContents={
-        <div className="flex flex-col justify-center space-y-1 text-center">
-          <div>
-            Optimism + Base Bridging will be paused 10 minutes ahead of Ecotone
-            (March 14, 00:00 UTC, 20:00 EST).
-          </div>
-          <div>Will be back online shortly following the network upgrade.</div>
-        </div>
+        <p>
+          Optimism + Base Bridging will be paused 10 minutes ahead of Ecotone
+          (March 14, 00:00 UTC, 20:00 EST). Will be back online shortly
+          following the network upgrade.
+        </p>
       }
       startDate={ECOTONE_FORK_BANNERS_START}
       endDate={ECOTONE_FORK_END_DATE}
