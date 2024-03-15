@@ -76,11 +76,15 @@ func (c *rebalanceManagerCircleCCTP) Start(ctx context.Context) (err error) {
 	for cid := range c.cfg.Chains {
 		// capture func literal
 		chainID := cid
+		ethClient, err := c.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
+		if err != nil {
+			return fmt.Errorf("could not get chain client: %w", err)
+		}
 		g.Go(func() error {
-			return c.listenDepositForBurn(ctx, chainID)
+			return c.listenDepositForBurn(ctx, chainID, ethClient)
 		})
 		g.Go(func() error {
-			return c.listenMessageReceived(ctx, chainID)
+			return c.listenMessageReceived(ctx, chainID, ethClient)
 		})
 	}
 
@@ -249,13 +253,8 @@ func (c *rebalanceManagerCircleCCTP) Execute(parentCtx context.Context, rebalanc
 	return nil
 }
 
-// nolint:cyclop
-func (c *rebalanceManagerCircleCCTP) listenDepositForBurn(parentCtx context.Context, chainID int) (err error) {
-	ethClient, err := c.chainClient.GetClient(parentCtx, big.NewInt(int64(chainID)))
-	if err != nil {
-		return fmt.Errorf("could not get chain client: %w", err)
-	}
-
+// nolint:cyclop,dupl
+func (c *rebalanceManagerCircleCCTP) listenDepositForBurn(parentCtx context.Context, chainID int, ethClient client.EVM) (err error) {
 	listener, ok := c.messengerListeners[chainID]
 	if !ok {
 		return fmt.Errorf("could not find listener for chain %d", chainID)
@@ -286,13 +285,8 @@ func (c *rebalanceManagerCircleCCTP) listenDepositForBurn(parentCtx context.Cont
 	return nil
 }
 
-//nolint:cyclop
-func (c *rebalanceManagerCircleCCTP) listenMessageReceived(parentCtx context.Context, chainID int) (err error) {
-	ethClient, err := c.chainClient.GetClient(parentCtx, big.NewInt(int64(chainID)))
-	if err != nil {
-		return fmt.Errorf("could not get chain client: %w", err)
-	}
-
+//nolint:cyclop,dupl
+func (c *rebalanceManagerCircleCCTP) listenMessageReceived(parentCtx context.Context, chainID int, ethClient client.EVM) (err error) {
 	listener, ok := c.transmitterListeners[chainID]
 	if !ok {
 		return fmt.Errorf("could not find listener for chain %d", chainID)
