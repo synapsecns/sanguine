@@ -16,8 +16,11 @@
     "test": "forge test",
     "test:coverage": "echo 'Please use foundry'"
   },
+  "dependencies": {
+    "@openzeppelin/contracts": "5.0.1"
+  },
   "devDependencies": {
-    "@synapsecns/solidity-devops": "^0.1.4",
+    "@synapsecns/solidity-devops": "^0.1.6",
     "solhint": "^4.1.1"
   }
 }
