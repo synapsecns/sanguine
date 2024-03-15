@@ -583,11 +583,11 @@ const StateManagedBridge = () => {
               <SettingsSlideOver key="settings" />
             </animated.div>
           </Transition>
-          <Transition show={showFromChainListOverlay} {...TRANSITION_PROPS}>
+          {/* <Transition show={showFromChainListOverlay} {...TRANSITION_PROPS}>
             <animated.div className={springClass}>
               <FromChainListOverlay />
             </animated.div>
-          </Transition>
+          </Transition> */}
           <Transition show={showFromTokenListOverlay} {...TRANSITION_PROPS}>
             <animated.div className={springClass}>
               <FromTokenListOverlay />

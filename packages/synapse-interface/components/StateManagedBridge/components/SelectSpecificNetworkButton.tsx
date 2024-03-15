@@ -1,15 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { CHAINS_BY_ID } from '@constants/chains'
 import Image from 'next/image'
-import {
-  getNetworkHover,
-  getNetworkButtonBorder,
-  getNetworkButtonBorderHover,
-  getNetworkButtonBgClassName,
-  getNetworkButtonBgClassNameActive,
-  getNetworkButtonBorderActive,
-  getMenuItemStyleForChain,
-} from '@/styles/chains'
+// import {
+//   getNetworkHover,
+//   getNetworkButtonBorder,
+//   getNetworkButtonBorderHover,
+//   getNetworkButtonBgClassName,
+//   getNetworkButtonBgClassNameActive,
+//   getNetworkButtonBorderActive,
+//   getMenuItemStyleForChain,
+// } from '@/styles/chains'
+import { getHoverStyleForButton, getActiveStyleForButton } from '@/styles/hover'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import {
   TokenAndBalance,
@@ -48,15 +49,9 @@ export const SelectSpecificNetworkButton = ({
     }
   }, [active])
 
-  let bgClassName
-
-  if (isCurrentChain) {
-    bgClassName = `
-      ${getNetworkButtonBgClassName(chain.color)}
-      ${getNetworkButtonBorder(chain.color)}
-      bg-opacity-30
-    `
-  }
+  const bgClassName = isCurrentChain
+    ? getActiveStyleForButton(isCurrentChain && chain.color)
+    : ''
 
   return (
     <button
@@ -65,17 +60,11 @@ export const SelectSpecificNetworkButton = ({
       className={`
         flex items-center justify-between
         transition-all duration-75
-        w-full h-[62px]
-        px-2 py-4
-        cursor-pointer
-        border-[1px] border-[#423F44]
-        mb-1
+        w-full py-2 my-1
+
         ${alternateBackground && 'bg-[#282328]'}
         ${bgClassName}
-        ${getNetworkButtonBorderHover(chain.color)}
-        ${getNetworkHover(chain.color)}
-        ${getNetworkButtonBgClassNameActive(chain.color)}
-        ${getNetworkButtonBorderActive(chain.color)}
+        ${getHoverStyleForButton(chain.color)}
       `}
       onClick={onClick}
       data-test-id={`${dataId}-item`}
@@ -111,10 +100,10 @@ function ButtonContent({
         <Image
           src={chain.chainImg}
           alt="Switch Network"
-          className="ml-2 rounded-full w-7 h-7"
+          className="ml-2 rounded-full w-5 h-5"
         />
         <div className="flex-col text-left">
-          <div className="text-lg font-normal text-white">{chain.name}</div>
+          {chain.name}
           {!isOrigin && isEligible && (
             <div className="text-sm text-greenText">
               {ELIGIBILITY_DEFAULT_TEXT}
@@ -166,7 +155,7 @@ const ChainTokens = ({
         <div>
           <Image
             loading="lazy"
-            className="w-6 h-6 rounded-md"
+            className="w-5 h-5 rounded-md"
             alt={`${balanceTokens[0].token.symbol} img`}
             src={balanceTokens[0].token.icon}
             onMouseEnter={() => setIsT1Hovered(true)}
@@ -191,7 +180,7 @@ const ChainTokens = ({
         <div>
           <Image
             loading="lazy"
-            className="w-6 h-6 rounded-md"
+            className="w-5 h-5 rounded-md"
             alt={`${balanceTokens[1].token.symbol} img`}
             src={balanceTokens[1].token.icon}
             onMouseEnter={() => setIsT2Hovered(true)}
