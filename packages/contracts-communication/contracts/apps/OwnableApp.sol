@@ -11,12 +11,12 @@ abstract contract OwnableApp is InterchainAppV1, Ownable {
     /// @notice Allows the owner to link the remote app for the given chain ID.
     /// - This address will be used as the receiver for the messages sent from this chain.
     /// - This address will be the only trusted sender for the messages sent to this chain.
-    function linkRemoteApp(uint256 chainId, bytes32 remoteApp) external  {
+    function linkRemoteApp(uint256 chainId, bytes32 remoteApp) external onlyOwner {
         _linkRemoteApp(chainId, remoteApp);
     }
 
     /// @notice This wrapper for `linkRemoteApp` to accept EVM address as a parameter.
-    function linkRemoteAppEVM(uint256 chainId, address remoteApp) external  {
+    function linkRemoteAppEVM(uint256 chainId, address remoteApp) external onlyOwner {
         _linkRemoteAppEVM(chainId, remoteApp);
     }
 
