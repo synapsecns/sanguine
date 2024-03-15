@@ -41,6 +41,8 @@ type Reader interface {
 	GetQuoteResultsByStatus(ctx context.Context, matchStatuses ...QuoteRequestStatus) (res []QuoteRequest, _ error)
 	// HasPendingRebalance checks if there is a pending rebalance for the given chain ids.
 	HasPendingRebalance(ctx context.Context, chainIDs ...uint64) (bool, error)
+	// GetRebalance gets a rebalance by ID. Should return ErrNoRebalanceForID if not found.
+	GetRebalanceByID(ctx context.Context, rebalanceID string) (*Rebalance, error)
 }
 
 // Service is the interface for the database service.
@@ -57,6 +59,8 @@ var (
 	ErrNoQuoteForID = errors.New("no quote found for tx id")
 	// ErrNoQuoteForTxHash means the quote was not found.
 	ErrNoQuoteForTxHash = errors.New("no quote found for tx hash")
+	// ErrNoRebalanceForID means the rebalance was not found.
+	ErrNoRebalanceForID = errors.New("no rebalance found for id")
 )
 
 // QuoteRequest is the quote request object.

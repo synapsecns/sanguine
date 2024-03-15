@@ -204,6 +204,23 @@ func (r RequestForQuote) ToQuoteRequest() (*reldb.QuoteRequest, error) {
 	}, nil
 }
 
+// ToRebalance converts a db object to a rebalance.
+func (r Rebalance) ToRebalance() (*reldb.Rebalance, error) {
+	originAmount, ok := new(big.Int).SetString(r.OriginAmount, 10)
+	if !ok {
+		return nil, errors.New("could not convert origin amount")
+	}
+	return &reldb.Rebalance{
+		RebalanceID:  &r.RebalanceID.String,
+		Origin:       r.Origin,
+		Destination:  r.Destination,
+		OriginAmount: originAmount,
+		Status:       r.Status,
+		OriginTxHash: common.HexToHash(r.OriginTxHash.String),
+		DestTxHash:   common.HexToHash(r.DestTxHash.String),
+	}, nil
+}
+
 func sliceToArray(slice []byte) ([32]byte, error) {
 	var arr [32]byte
 	if len(slice) != 32 {

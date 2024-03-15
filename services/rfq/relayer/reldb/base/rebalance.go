@@ -2,6 +2,7 @@ package base
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
@@ -98,4 +99,24 @@ func (s Store) HasPendingRebalance(ctx context.Context, chainIDs ...uint64) (boo
 		}
 	}
 	return false, nil
+}
+
+// GetRebalanceByID gets a rebalance by id. Should return ErrNoRebalanceForID if not found.
+func (s Store) GetRebalanceByID(ctx context.Context, rebalanceID string) (*reldb.Rebalance, error) {
+	var modelResult Rebalance
+	tx := s.DB().WithContext(ctx).Where(fmt.Sprintf("%s = ?", rebalanceIDFieldName), rebalanceID).First(&modelResult)
+	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+		return nil, reldb.ErrNoRebalanceForID
+	}
+
+	if tx.Error != nil {
+		return nil, fmt.Errorf("could not get quote")
+	}
+
+	rebalance, err := modelResult.ToRebalance()
+	if err != nil {
+		return nil, fmt.Errorf("could not get rebalance: %w", err)
+	}
+
+	return rebalance, nil
 }

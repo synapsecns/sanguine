@@ -236,13 +236,13 @@ func (c *rebalanceManagerCircleCCTP) Execute(parentCtx context.Context, rebalanc
 	}
 
 	// store the rebalance in the db
-	model := reldb.Rebalance{
+	rebalanceModel := reldb.Rebalance{
 		Origin:       uint64(rebalance.OriginMetadata.ChainID),
 		Destination:  uint64(rebalance.DestMetadata.ChainID),
 		OriginAmount: rebalance.Amount,
 		Status:       reldb.RebalanceInitiated,
 	}
-	err = c.db.StoreRebalance(ctx, model)
+	err = c.db.StoreRebalance(ctx, rebalanceModel)
 	if err != nil {
 		return fmt.Errorf("could not store rebalance: %w", err)
 	}
