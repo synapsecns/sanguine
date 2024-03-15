@@ -1144,7 +1144,7 @@ export const KLAY: BridgeableToken = {
   priorityRank: 300,
   routeSymbol: 'KLAY',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/klay.c4364dd3.svg',
+    'https://www.synapseprotocol.com/_next/static/media/klay.0d2394a9.svg',
 }
 
 export const WKLAY: BridgeableToken = {
@@ -1161,7 +1161,7 @@ export const WKLAY: BridgeableToken = {
   priorityRank: 350,
   routeSymbol: 'WKLAY',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/klay.c4364dd3.svg',
+    'https://www.synapseprotocol.com/_next/static/media/klay.0d2394a9.svg',
 }
 
 export const MATIC: BridgeableToken = {
