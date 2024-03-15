@@ -41,7 +41,7 @@ const TODO_REMOVE_wrapperStyle = {
     'radial-gradient(23.86% 33.62% at 50.97% 47.88%, rgba(255, 0, 255, 0.04) 0%, rgba(172, 143, 255, 0.04) 100%), #111111',
   backgroundImage: `url('landingBg.svg')`,
   backgroundSize: '800px',
-  backgroundPosition: 'center 21%',
+  backgroundPosition: 'center 150px',
   backgroundRepeat: 'no-repeat',
 }
 

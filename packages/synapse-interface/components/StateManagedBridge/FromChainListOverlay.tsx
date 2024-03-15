@@ -130,19 +130,17 @@ export const FromChainListOverlay = () => {
     <div
       ref={overlayRef}
       data-test-id="fromChain-list-overlay"
-      className="max-h-full pb-4 mt-6 overflow-auto scrollbar-hide"
+      className="scrollbar-hide hidden group-hover:block z-20 absolute bg-bgLight border border-separator rounded"
     >
-      <div className="z-10 w-full px-2 ">
-        <div className="relative flex items-center mb-2 font-medium">
-          <SlideSearchBox
-            placeholder="Filter by chain name, id, or native currency"
-            searchStr={searchStr}
-            onSearch={onSearch}
-          />
-          <CloseButton onClick={onClose} />
-        </div>
+      <div className="p-1 relative flex items-center mb-2 font-medium">
+        <SlideSearchBox
+          placeholder="Find"
+          searchStr={searchStr}
+          onSearch={onSearch}
+        />
+        <CloseButton onClick={onClose} />
       </div>
-      <div data-test-id={dataId} className="px-2 pt-2 pb-8 md:px-2">
+      <div data-test-id={dataId}>
         {possibleChains && possibleChains.length > 0 && (
           <>
             <div className="mb-4 text-sm text-primaryTextColor">From…</div>
