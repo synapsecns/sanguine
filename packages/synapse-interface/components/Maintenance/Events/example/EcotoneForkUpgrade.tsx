@@ -29,8 +29,8 @@ export const ECOTONE_FORK_END_DATE = new Date(Date.UTC(2024, 2, 14, 0, 25, 0))
 /** Previous implementation can be seen here: https://github.com/synapsecns/sanguine/pull/2294/files#diff-bbe6298d3dfbc80e46e2ff8b399a3e1822cede80f392b1af91875145ad4eeb19R19 */
 export const EcotoneForkUpgradeBanner = () => {
   const { isComplete } = getCountdownTimeStatus(
-    ECOTONE_FORK_BANNERS_START,
-    ECOTONE_FORK_END_DATE
+    ECOTONE_FORK_BANNERS_START, // Banner will automatically appear after start time
+    ECOTONE_FORK_END_DATE // Banner will automatically disappear when end time is reached
   )
 
   useIntervalTimer(60000, isComplete)
@@ -51,6 +51,12 @@ export const EcotoneForkUpgradeBanner = () => {
   )
 }
 
+/**
+ * Warning Message to place within the Bridge Card
+ * Below example sets to show only when chains are selected (Optimism, Base)
+ *
+ * Example: https://github.com/synapsecns/sanguine/blob/f068eff5e86ec97e17fc8e703d7203c12fb7f733/packages/synapse-interface/pages/state-managed-bridge/index.tsx#L629
+ */
 export const EcotoneForkWarningMessage = () => {
   const { fromChainId, toChainId } = useBridgeState()
 
@@ -74,6 +80,9 @@ export const EcotoneForkWarningMessage = () => {
 }
 
 /**
+ * Countdown Bar with Progress Animation based on time remaining
+ * Below example sets to show only when chains are selected (Optimism, Base)
+ *
  * Previously used in this location: https://github.com/synapsecns/sanguine/blob/f068eff5e86ec97e17fc8e703d7203c12fb7f733/packages/synapse-interface/pages/state-managed-bridge/index.tsx#L588
  * Bridge pause implemented here: https://github.com/synapsecns/sanguine/blob/f068eff5e86ec97e17fc8e703d7203c12fb7f733/packages/synapse-interface/pages/state-managed-bridge/index.tsx#L652-L654
  *
@@ -104,14 +113,14 @@ export const useEcotoneForkCountdownProgress = () => {
     EventCountdownProgressBar: EcotoneForkCountdownProgressBar,
   } = useEventCountdownProgressBar(
     'Ecotone Fork upgrade in progress',
-    ECOTONE_FORK_START_DATE,
-    ECOTONE_FORK_END_DATE
+    ECOTONE_FORK_START_DATE, // Countdown Bar will automatically appear after start time
+    ECOTONE_FORK_END_DATE // Countdown Bar will automatically disappear when end time is reached
   )
 
   return {
     isEcotoneForkUpgradePending,
     isCurrentChainDisabled:
-      (isChainOptimism || isChainBase) && isEcotoneForkUpgradePending,
+      (isChainOptimism || isChainBase) && isEcotoneForkUpgradePending, // Used to pause Bridge
     EcotoneForkCountdownProgressBar:
       isChainOptimism || isChainBase ? EcotoneForkCountdownProgressBar : null,
   }
