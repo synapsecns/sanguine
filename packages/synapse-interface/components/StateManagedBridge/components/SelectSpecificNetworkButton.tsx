@@ -1,15 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { CHAINS_BY_ID } from '@constants/chains'
 import Image from 'next/image'
-// import {
-//   getNetworkHover,
-//   getNetworkButtonBorder,
-//   getNetworkButtonBorderHover,
-//   getNetworkButtonBgClassName,
-//   getNetworkButtonBgClassNameActive,
-//   getNetworkButtonBorderActive,
-//   getMenuItemStyleForChain,
-// } from '@/styles/chains'
 import { getHoverStyleForButton, getActiveStyleForButton } from '@/styles/hover'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import {
@@ -49,27 +40,37 @@ export const SelectSpecificNetworkButton = ({
     }
   }, [active])
 
-  const bgClassName = isCurrentChain
-    ? getActiveStyleForButton(isCurrentChain && chain.color)
-    : ''
+  const join = (a) => Object.values(a).join(' ')
+
+  const buttonClass = join({
+    other: 'whitespace-nowrap',
+    grid: 'grid gap-0.5',
+    space: 'pl-2 pr-1.5 py-2.5 w-full',
+    border: 'border border-transparent',
+    transition: 'transition-all duration-75',
+    hover: getHoverStyleForButton(chain.color),
+    activeStyle: isCurrentChain
+      ? getActiveStyleForButton(isCurrentChain && chain.color)
+      : '',
+  })
+
+  const { fromChainId, fromToken } = useBridgeState()
+  const isEligible = isChainEligible(fromChainId, chain.id, fromToken)
 
   return (
     <button
       ref={ref}
       tabIndex={active ? 1 : 0}
-      className={`
-        flex items-center justify-between
-        transition-all duration-75
-        w-full py-2 my-1
-
-        ${alternateBackground && 'bg-[#282328]'}
-        ${bgClassName}
-        ${getHoverStyleForButton(chain.color)}
-      `}
+      className={buttonClass}
       onClick={onClick}
       data-test-id={`${dataId}-item`}
     >
       <ButtonContent chainId={itemChainId} isOrigin={isOrigin} />
+      {!isOrigin && isEligible && (
+        <div className="text-left text-sm text-green-500 dark:text-green-400">
+          {ELIGIBILITY_DEFAULT_TEXT}
+        </div>
+      )}
     </button>
   )
 }
@@ -83,7 +84,7 @@ function ButtonContent({
 }) {
   const chain = CHAINS_BY_ID[chainId]
   const { balances } = usePortfolioState()
-  const { fromChainId, fromToken } = useBridgeState()
+  // const { fromChainId, fromToken } = useBridgeState()
 
   const balanceTokens =
     balances &&
@@ -92,30 +93,26 @@ function ButtonContent({
       balances[chainId].filter((bt) => bt.balance > 0n)
     )
 
-  const isEligible = isChainEligible(fromChainId, chain.id, fromToken)
+  // const isEligible = isChainEligible(fromChainId, chain.id, fromToken)
 
-  return chain ? (
-    <>
-      <div className="flex items-center space-x-2">
-        <Image
-          src={chain.chainImg}
-          alt="Switch Network"
-          className="ml-2 rounded-full w-5 h-5"
-        />
-        <div className="flex-col text-left">
+  return (
+    chain && (
+      <div className="flex items-center gap-6 justify-between">
+        <span className="flex items-center gap-2">
+          <Image
+            src={chain.chainImg}
+            alt="Switch Network"
+            width="20"
+            height="20"
+            className="max-w-fit"
+          />
           {chain.name}
-          {!isOrigin && isEligible && (
-            <div className="text-sm text-greenText">
-              {ELIGIBILITY_DEFAULT_TEXT}
-            </div>
-          )}
-        </div>
-      </div>
-      {isOrigin && balanceTokens && balanceTokens.length > 0 ? (
+        </span>
         <ChainTokens balanceTokens={balanceTokens} />
-      ) : null}
-    </>
-  ) : null
+        {/* {isOrigin && <ChainTokens balanceTokens={balanceTokens} />} */}
+      </div>
+    )
+  )
 }
 
 const ChainTokens = ({
@@ -123,125 +120,61 @@ const ChainTokens = ({
 }: {
   balanceTokens: TokenAndBalance[]
 }) => {
-  const [isT1Hovered, setIsT1Hovered] = useState<boolean>(false)
-  const [isT2Hovered, setIsT2Hovered] = useState<boolean>(false)
-  const [isT3Hovered, setIsT3Hovered] = useState<boolean>(false)
-
-  const hasNoTokens: boolean =
-    !balanceTokens || (balanceTokens && balanceTokens.length === 0)
-  const hasOneToken: boolean = balanceTokens && balanceTokens.length > 0
-  const hasTwoTokens: boolean = balanceTokens && balanceTokens.length > 1
+  // const hasNoTokens: boolean =
+  //   !balanceTokens || (balanceTokens && balanceTokens.length === 0)
+  // const hasOneToken: boolean = balanceTokens && balanceTokens.length > 0
+  // const hasTwoTokens: boolean = balanceTokens && balanceTokens.length > 1
+  // const hasOnlyOneToken: boolean = balanceTokens && balanceTokens.length === 1
+  // const hasOnlyTwoTokens: boolean = balanceTokens && balanceTokens.length === 2
   const numOverTwoTokens: number =
     balanceTokens && balanceTokens.length - 2 > 0 ? balanceTokens.length - 2 : 0
-  const hasOnlyOneToken: boolean = balanceTokens && balanceTokens.length === 1
-  const hasOnlyTwoTokens: boolean = balanceTokens && balanceTokens.length === 2
 
-  if (hasNoTokens) {
-    return (
-      <div
-        data-test-id="portfolio-token-visualizer"
-        className="flex flex-row items-center mr-4 cursor-pointer hover-trigger text-secondary"
-      >
-        -
-      </div>
-    )
-  }
   return (
-    <div
+    <span
       data-test-id="portfolio-token-visualizer"
-      className="flex flex-row items-center space-x-2 cursor-pointer hover-trigger"
+      className="flex items-center cursor-pointer hover-trigger text-sm text-secondary -space-x-1.5"
     >
-      {hasOneToken && (
-        <div>
-          <Image
-            loading="lazy"
-            className="w-5 h-5 rounded-md"
-            alt={`${balanceTokens[0].token.symbol} img`}
-            src={balanceTokens[0].token.icon}
-            onMouseEnter={() => setIsT1Hovered(true)}
-            onMouseLeave={() => setIsT1Hovered(false)}
-          />
-          <div className="relative">
-            <HoverContent isHovered={isT1Hovered}>
-              <div className="whitespace-nowrap">
-                {balanceTokens[0]?.parsedBalance}{' '}
-                {balanceTokens[0]?.token.symbol}
-              </div>
-            </HoverContent>
-          </div>
-        </div>
-      )}
-      {hasOnlyOneToken && (
-        <div className="text-white whitespace-nowrap">
-          {balanceTokens[0].parsedBalance} {balanceTokens[0].token.symbol}
-        </div>
-      )}
-      {hasTwoTokens && (
-        <div>
-          <Image
-            loading="lazy"
-            className="w-5 h-5 rounded-md"
-            alt={`${balanceTokens[1].token.symbol} img`}
-            src={balanceTokens[1].token.icon}
-            onMouseEnter={() => setIsT2Hovered(true)}
-            onMouseLeave={() => setIsT2Hovered(false)}
-          />
-          <div className="relative">
-            <HoverContent isHovered={isT2Hovered}>
-              <div className="whitespace-nowrap">
-                {balanceTokens[1]?.parsedBalance}{' '}
-                {balanceTokens[1]?.token.symbol}
-              </div>
-            </HoverContent>
-          </div>
-        </div>
-      )}
+      {balanceTokens?.slice(0, 2).map((token: TokenAndBalance, key: number) => {
+        return <HoverIcon token={balanceTokens[key]} />
+      })}
       {numOverTwoTokens > 0 && (
-        <div
-          className="text-white"
-          onMouseEnter={() => setIsT3Hovered(true)}
-          onMouseLeave={() => setIsT3Hovered(false)}
-        >
-          + {numOverTwoTokens}
-        </div>
+        <span className="relative">
+          <div className="peer h-6 w-6 text-[13px] mb-px text-center grid place-content-center bg-bgBase rounded-full">
+            {numOverTwoTokens}
+          </div>
+          <ul className="hidden peer-hover:block absolute z-50 bottom-6 -right-1 -mr-px pl-1 pr-1.5 py-1.5 bg-bgBase rounded text-right space-y-0.5 whitespace-normal max-w-40">
+            {balanceTokens
+              ?.slice(2)
+              .map((token: TokenAndBalance, key: number) => (
+                <li className="px-0.5">{token.token.symbol}</li>
+              ))}
+          </ul>
+        </span>
       )}
-      <div className="relative inline-block">
-        <HoverContent isHovered={isT3Hovered}>
-          {balanceTokens?.map((token: TokenAndBalance, key: number) => {
-            if (key > 1) {
-              const tokenSymbol = token.token.symbol
-              const balance = token.parsedBalance
-              return (
-                <div className="whitespace-nowrap" key={key}>
-                  {balance} {tokenSymbol}
-                </div>
-              )
-            }
-          })}
-        </HoverContent>
-      </div>
-    </div>
+    </span>
   )
 }
 
-export const HoverContent = ({
-  isHovered,
-  children,
-}: {
-  isHovered: boolean
-  children: React.ReactNode
-}) => {
-  if (isHovered) {
-    return (
-      <div
-        className={`
-          absolute -ml-28 z-50 hover-content p-2 text-white
-          border border-solid border-[#252537]
-          bg-[#101018] rounded-md text-left
-        `}
-      >
-        {children}
+function HoverIcon(token) {
+  const symbol = token.token.token.symbol
+  const src = token.token.token.icon
+  const parsedBalance = token.token?.parsedBalance
+
+  console.log(Object.keys(token))
+
+  return (
+    <span className="relative flex justify-items-center justify-center text-center">
+      <Image
+        loading="lazy"
+        className="peer max-w-fit"
+        width="20"
+        height="20"
+        alt={`${symbol} img`}
+        src={src}
+      />
+      <div className="hidden peer-hover:block absolute z-50 bottom-6 -right-2 -mr-px px-2 py-1 bg-bgBase rounded">
+        {parsedBalance} {symbol}
       </div>
-    )
-  }
+    </span>
+  )
 }

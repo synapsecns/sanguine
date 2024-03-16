@@ -1,5 +1,18 @@
 import { useEffect, useRef } from 'react'
 
+const join = (a) => Object.values(a).join(' ')
+
+const className = join({
+  text: 'text-sm font-normal',
+  placeholder: 'placeholder-white/40',
+  focus: 'focus:ring-0',
+  border: 'border-none',
+  flex: 'flex-grow',
+  space: 'px-2 py-1.5',
+  background: 'bg-[#252226]',
+  // shadow: 'custom-shadow',
+})
+
 export default function SlideSearchBox({
   searchStr,
   onSearch,
@@ -15,19 +28,7 @@ export default function SlideSearchBox({
   return (
     <input
       ref={inputRef}
-      className={`
-        text-primaryTextColor
-        focus:outline-none
-        focus:ring-0
-        focus:border-none
-        border-none
-        flex-grow
-        h-full min-w-[70%]
-        py-2 p-2
-        rounded bg-[#252226] custom-shadow
-        font-normal  text-sm
-      placeholder-white placeholder-opacity-40
-      `}
+      className={className}
       placeholder={placeholder}
       onChange={(e) => onSearch(e.target.value)}
       value={searchStr}

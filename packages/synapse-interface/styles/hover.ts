@@ -14,6 +14,8 @@ const ColorOptions = {
   GRAY: 'gray',
 }
 
+/* If border does not appear, set tailwind class 'border' on target element */
+
 export const getHoverStyleForButton = (color: string) => {
   switch (color) {
     case ColorOptions.ETH:
@@ -45,6 +47,8 @@ export const getHoverStyleForButton = (color: string) => {
       return 'hover:dark:bg-zinc-700 hover:border-zinc-400 hover:dark:border-zinc-400'
   }
 }
+
+/* If border does not appear, set tailwind class 'border' on target element */
 
 export const getActiveStyleForButton = (color: string) => {
   switch (color) {
