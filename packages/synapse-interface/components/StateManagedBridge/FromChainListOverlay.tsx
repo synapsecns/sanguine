@@ -130,9 +130,9 @@ export const FromChainListOverlay = () => {
     <div
       ref={overlayRef}
       data-test-id="fromChain-list-overlay"
-      className="scrollbar-hide hidden group-hover:block z-20 absolute bg-bgLight border border-separator rounded"
+      className="hidden group-hover:block z-20 absolute bg-bgLight border border-separator rounded overflow-visible overflow-y-auto max-h-80"
     >
-      <div className="p-1 relative flex items-center mb-2 font-medium">
+      <div className="p-1 flex items-center font-medium">
         <SlideSearchBox
           placeholder="Find"
           searchStr={searchStr}
@@ -143,7 +143,7 @@ export const FromChainListOverlay = () => {
       <div data-test-id={dataId}>
         {possibleChains && possibleChains.length > 0 && (
           <>
-            <div className="mb-4 text-sm text-primaryTextColor">From…</div>
+            <div className="px-2 py-2 text-sm text-secondary">From…</div>
             {possibleChains.map(({ id: mapChainId }, idx) => {
               return (
                 <SelectSpecificNetworkButton
@@ -152,13 +152,11 @@ export const FromChainListOverlay = () => {
                   isCurrentChain={fromChainId === mapChainId}
                   isOrigin={true}
                   active={idx === currentIdx}
-                  onClick={() => {
-                    if (fromChainId === mapChainId) {
-                      onClose()
-                    } else {
-                      handleSetFromChainId(mapChainId)
-                    }
-                  }}
+                  onClick={() =>
+                    fromChainId === mapChainId
+                      ? onClose()
+                      : handleSetFromChainId(mapChainId)
+                  }
                   dataId={dataId}
                 />
               )
@@ -166,10 +164,8 @@ export const FromChainListOverlay = () => {
           </>
         )}
         {remainingChains && remainingChains.length > 0 && (
-          <>
-            <div className="mt-4 mb-4 text-sm font-normal text-primaryTextColor">
-              All chains
-            </div>
+          <div className="bg-bgBase rounded">
+            <div className="px-2 py-2 text-sm text-secondary">All chains</div>
             {remainingChains.map(({ id: mapChainId }, idx) => {
               return (
                 <SelectSpecificNetworkButton
@@ -184,7 +180,7 @@ export const FromChainListOverlay = () => {
                 />
               )
             })}
-          </>
+          </div>
         )}
         <SearchResults searchStr={searchStr} type="chain" />
       </div>
