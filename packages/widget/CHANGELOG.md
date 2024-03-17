@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.1.6...@synapsecns/widget@0.1.7) (2024-03-17)
+
+
+### Bug Fixes
+
+* **widget:** Empty provider/connected address button state, updated image urls ([#2309](https://github.com/synapsecns/sanguine/issues/2309)) ([4dbd4b9](https://github.com/synapsecns/sanguine/commit/4dbd4b9647aa1a53c6130685ff3a658d30e579bc))
+
+
+
+
+
 ## [0.1.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.1.5...@synapsecns/widget@0.1.6) (2024-03-15)
 
 **Note:** Version bump only for package @synapsecns/widget
