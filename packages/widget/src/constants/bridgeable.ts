@@ -41,7 +41,8 @@ export const GOHM: BridgeableToken = {
   color: 'gray',
   priorityRank: 600,
   routeSymbol: 'gOHM',
-  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/ohm.1b779b45.svg',
+  imgUrl:
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/ohm.1b779b45.svg',
 }
 
 export const LINK: BridgeableToken = {
@@ -60,7 +61,7 @@ export const LINK: BridgeableToken = {
   priorityRank: 600,
   routeSymbol: 'LINK',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/link.8c8e30af.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/link.bdd944c9.svg',
 }
 
 export const HIGH: BridgeableToken = {
@@ -76,7 +77,7 @@ export const HIGH: BridgeableToken = {
   priorityRank: 600,
   routeSymbol: 'HIGH',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/highstreet.20cde417.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/highstreet.e8060cc0.svg',
 }
 
 export const JUMP: BridgeableToken = {
@@ -97,7 +98,7 @@ export const JUMP: BridgeableToken = {
   priorityRank: 600,
   routeSymbol: 'JUMP',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/hyperjump.86548b6a.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/hyperjump.e48ce883.svg',
 }
 
 export const SFI: BridgeableToken = {
@@ -115,7 +116,8 @@ export const SFI: BridgeableToken = {
   color: 'red',
   priorityRank: 600,
   routeSymbol: 'SFI',
-  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/sfi.9dcb70d7.svg',
+  imgUrl:
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/sfi.4e35fbac.svg',
 }
 
 export const DOG: BridgeableToken = {
@@ -135,7 +137,8 @@ export const DOG: BridgeableToken = {
   color: 'yellow',
   priorityRank: 600,
   routeSymbol: 'DOG',
-  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/dog.79987f38.svg',
+  imgUrl:
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/dog.b3513f9b.svg',
 }
 
 export const NFD: BridgeableToken = {
@@ -157,7 +160,8 @@ export const NFD: BridgeableToken = {
   color: 'yellow',
   priorityRank: 600,
   routeSymbol: 'NFD',
-  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/nfd.3a66d09f.svg',
+  imgUrl:
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/nfd.1212b18d.svg',
 }
 
 export const SOLAR: BridgeableToken = {
@@ -176,7 +180,7 @@ export const SOLAR: BridgeableToken = {
   priorityRank: 600,
   routeSymbol: 'veSOLAR',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/solar.61253893.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/solar.add1885e.svg',
 }
 
 export const GMX: BridgeableToken = {
@@ -194,7 +198,8 @@ export const GMX: BridgeableToken = {
   priorityRank: 250,
   color: 'blue',
   routeSymbol: 'GMX',
-  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/gmx.43c7de79.svg',
+  imgUrl:
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/gmx.0e372310.svg',
 }
 
 export const SDT: BridgeableToken = {
@@ -218,7 +223,8 @@ export const SDT: BridgeableToken = {
   color: 'gray',
   priorityRank: 600,
   routeSymbol: 'SDT',
-  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/sdt.1a801afc.svg',
+  imgUrl:
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/sdt.c37b0b67.svg',
 }
 
 export const NEWO: BridgeableToken = {
@@ -239,7 +245,7 @@ export const NEWO: BridgeableToken = {
   priorityRank: 600,
   routeSymbol: 'NEWO',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/newo.ac5a1580.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/newo.3c9ae85e.svg',
 }
 
 export const PEPE: BridgeableToken = {
@@ -258,7 +264,7 @@ export const PEPE: BridgeableToken = {
   routeSymbol: 'PEPE',
   color: 'green',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/pepe.45f7866e.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/pepe.5da81140.svg',
 }
 
 export const VSTA: BridgeableToken = {
@@ -277,7 +283,7 @@ export const VSTA: BridgeableToken = {
   priorityRank: 600,
   routeSymbol: 'VSTA',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/vsta.275764cf.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/vsta.56aa9f41.svg',
 }
 
 export const H2O: BridgeableToken = {
@@ -307,7 +313,8 @@ export const H2O: BridgeableToken = {
   color: 'cyan',
   priorityRank: 600,
   routeSymbol: 'H2O',
-  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/h2o.05c699c4.svg',
+  imgUrl:
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/h2o.108c0951.svg',
 }
 
 export const L2DAO: BridgeableToken = {
@@ -326,7 +333,7 @@ export const L2DAO: BridgeableToken = {
   priorityRank: 600,
   routeSymbol: 'L2DAO',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/l2dao.690a213c.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/l2dao.0d1dd411.svg',
 }
 
 export const PLS: BridgeableToken = {
@@ -344,7 +351,8 @@ export const PLS: BridgeableToken = {
   color: 'green',
   priorityRank: 600,
   routeSymbol: 'PLS',
-  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/pls.fd3feef0.svg',
+  imgUrl:
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/pls.a97f40f2.svg',
 }
 
 export const AGEUR: BridgeableToken = {
@@ -365,7 +373,7 @@ export const AGEUR: BridgeableToken = {
   priorityRank: 600,
   routeSymbol: 'agEUR',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/ageur.e7387136.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/ageur.588833db.svg',
 }
 
 export const UNIDX: BridgeableToken = {
@@ -390,7 +398,7 @@ export const UNIDX: BridgeableToken = {
   priorityRank: 600,
   routeSymbol: 'UNIDX',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/unidex.7874478f.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/unidex.29d556df.svg',
 }
 
 export const BUSD: BridgeableToken = {
@@ -409,7 +417,7 @@ export const BUSD: BridgeableToken = {
   priorityRank: 200,
   routeSymbol: 'BUSD',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/busd.1e106d53.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/busd.e8bb5032.svg',
 }
 
 export const USDC: BridgeableToken = {
@@ -450,7 +458,7 @@ export const USDC: BridgeableToken = {
   priorityRank: 100,
   routeSymbol: 'USDC',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/usdc.f9b139bb.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/usdc.d5dcb030.svg',
 }
 
 export const METISUSDC: BridgeableToken = {
@@ -467,7 +475,7 @@ export const METISUSDC: BridgeableToken = {
   priorityRank: 125,
   routeSymbol: 'm.USDC',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/usdc.f9b139bb.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/usdc.d5dcb030.svg',
 }
 
 export const USDT: BridgeableToken = {
@@ -502,7 +510,7 @@ export const USDT: BridgeableToken = {
   priorityRank: 100,
   routeSymbol: 'USDT',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/usdt.afa46e45.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/usdt.3c9cd2f8.svg',
 }
 
 export const DAI: BridgeableToken = {
@@ -532,7 +540,8 @@ export const DAI: BridgeableToken = {
   color: 'yellow',
   priorityRank: 100,
   routeSymbol: 'DAI',
-  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/dai.cba261f0.svg',
+  imgUrl:
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/dai.ba6d3142.svg',
 }
 
 export const WBTC: BridgeableToken = {
@@ -553,7 +562,7 @@ export const WBTC: BridgeableToken = {
   priorityRank: 300,
   routeSymbol: 'WBTC',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/wbtc.3b8846a2.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/wbtc.d5fa58cc.svg',
 }
 
 export const WETHE: BridgeableToken = {
@@ -570,7 +579,7 @@ export const WETHE: BridgeableToken = {
   priorityRank: 150,
   routeSymbol: 'WETH.e',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/weth.490fe9a7.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/weth.19fa93ab.svg',
 }
 
 export const ONEETH: BridgeableToken = {
@@ -587,7 +596,7 @@ export const ONEETH: BridgeableToken = {
   priorityRank: 600,
   routeSymbol: '1ETH',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/weth.490fe9a7.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/weth.19fa93ab.svg',
 }
 
 export const SYN: BridgeableToken = {
@@ -637,7 +646,8 @@ export const SYN: BridgeableToken = {
   color: 'purple',
   priorityRank: 250,
   routeSymbol: 'SYN',
-  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/syn.605ac75e.svg',
+  imgUrl:
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/syn.042f8cd0.svg',
 }
 
 export const FRAX: BridgeableToken = {
@@ -658,7 +668,7 @@ export const FRAX: BridgeableToken = {
   priorityRank: 200,
   routeSymbol: 'FRAX',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/frax.70b0285e.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/frax.0f0670da.svg',
 }
 
 export const SYNFRAX: BridgeableToken = {
@@ -681,7 +691,7 @@ export const SYNFRAX: BridgeableToken = {
   priorityRank: 400,
   routeSymbol: 'synFRAX',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/frax.70b0285e.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/frax.0f0670da.svg',
 }
 
 export const NUSD: BridgeableToken = {
@@ -724,7 +734,7 @@ export const NUSD: BridgeableToken = {
   priorityRank: 500,
   routeSymbol: 'nUSD',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/nusd.15c5a552.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/nusd.c7a22fdb.svg',
 }
 
 export const NOTE: BridgeableToken = {
@@ -741,7 +751,7 @@ export const NOTE: BridgeableToken = {
   priorityRank: 100,
   routeSymbol: 'NOTE',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/note.ace95530.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/note.d5246fbd.svg',
 }
 
 export const NETH: BridgeableToken = {
@@ -776,7 +786,7 @@ export const NETH: BridgeableToken = {
   priorityRank: 500,
   routeSymbol: 'nETH',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/neth.acb4a217.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/neth.7c854d0f.svg',
 }
 
 export const ETH: BridgeableToken = {
@@ -806,7 +816,8 @@ export const ETH: BridgeableToken = {
   color: 'sky',
   priorityRank: 150,
   routeSymbol: 'ETH',
-  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/eth.473b0c81.svg',
+  imgUrl:
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/eth.b3692688.svg',
 }
 
 export const MOVR: BridgeableToken = {
@@ -825,7 +836,7 @@ export const MOVR: BridgeableToken = {
   priorityRank: 300,
   routeSymbol: 'MOVR',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/movr.64e0ee09.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/movr.3fb35010.svg',
 }
 
 export const AVAX: BridgeableToken = {
@@ -850,7 +861,7 @@ export const AVAX: BridgeableToken = {
   priorityRank: 300,
   routeSymbol: 'AVAX',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/avalanche.80034115.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/avax.9d53cbf0.svg',
 }
 
 export const WMOVR: BridgeableToken = {
@@ -867,7 +878,7 @@ export const WMOVR: BridgeableToken = {
   priorityRank: 350,
   routeSymbol: 'WMOVR',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/movr.64e0ee09.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/movr.3fb35010.svg',
 }
 
 export const WAVAX: BridgeableToken = {
@@ -884,7 +895,7 @@ export const WAVAX: BridgeableToken = {
   priorityRank: 350,
   routeSymbol: 'WAVAX',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/avalanche.80034115.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/avax.9d53cbf0.svg',
 }
 
 export const JEWEL: BridgeableToken = {
@@ -907,7 +918,7 @@ export const JEWEL: BridgeableToken = {
   priorityRank: 250,
   routeSymbol: 'JEWEL',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/jewel.5cde781b.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/jewel.bb7c4136.svg',
 }
 
 export const WJEWEL: BridgeableToken = {
@@ -924,7 +935,7 @@ export const WJEWEL: BridgeableToken = {
   priorityRank: 350,
   routeSymbol: 'WJEWEL',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/jewel.5cde781b.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/jewel.bb7c4136.svg',
 }
 
 export const SYNJEWEL: BridgeableToken = {
@@ -941,7 +952,7 @@ export const SYNJEWEL: BridgeableToken = {
   priorityRank: 400,
   routeSymbol: 'synJEWEL',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/jewel.5cde781b.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/jewel.bb7c4136.svg',
 }
 
 export const XJEWEL: BridgeableToken = {
@@ -960,7 +971,7 @@ export const XJEWEL: BridgeableToken = {
   priorityRank: 350,
   routeSymbol: 'xJEWEL',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/jewel.5cde781b.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/jewel.bb7c4136.svg',
 }
 
 export const USDCe: BridgeableToken = {
@@ -983,7 +994,7 @@ export const USDCe: BridgeableToken = {
   priorityRank: 125,
   routeSymbol: 'USDC.e',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/usdc.f9b139bb.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/usdc.d5dcb030.svg',
 }
 
 export const USDTe: BridgeableToken = {
@@ -1002,7 +1013,7 @@ export const USDTe: BridgeableToken = {
   priorityRank: 125,
   routeSymbol: 'USDT.e',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/usdt.afa46e45.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/usdt.3c9cd2f8.svg',
 }
 
 export const SUSD: BridgeableToken = {
@@ -1019,7 +1030,7 @@ export const SUSD: BridgeableToken = {
   priorityRank: 200,
   routeSymbol: 'sUSD',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/susd.8d85059d.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/susd.3aa0b6c4.svg',
 }
 
 export const WSOHM: BridgeableToken = {
@@ -1039,7 +1050,8 @@ export const WSOHM: BridgeableToken = {
   swapableType: 'OHM',
   priorityRank: 600,
   routeSymbol: 'wsOHM',
-  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/ohm.1b779b45.svg',
+  imgUrl:
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/ohm.1b779b45.svg',
 }
 
 export const ONEDAI: BridgeableToken = {
@@ -1055,7 +1067,8 @@ export const ONEDAI: BridgeableToken = {
   color: 'yellow',
   priorityRank: 600,
   routeSymbol: '1DAI',
-  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/dai.cba261f0.svg',
+  imgUrl:
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/dai.ba6d3142.svg',
 }
 
 export const ONEUSDC: BridgeableToken = {
@@ -1072,7 +1085,7 @@ export const ONEUSDC: BridgeableToken = {
   priorityRank: 600,
   routeSymbol: '1USDC',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/usdc.f9b139bb.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/usdc.d5dcb030.svg',
 }
 
 export const ONEUSDT: BridgeableToken = {
@@ -1089,7 +1102,7 @@ export const ONEUSDT: BridgeableToken = {
   priorityRank: 600,
   routeSymbol: '1USDT',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/usdt.afa46e45.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/usdt.3c9cd2f8.svg',
 }
 
 export const BTCB: BridgeableToken = {
@@ -1109,7 +1122,8 @@ export const BTCB: BridgeableToken = {
   color: 'orange',
   priorityRank: 300,
   routeSymbol: 'BTC.b',
-  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/btc.d0fcf0d2.svg',
+  imgUrl:
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/btc.63077225.svg',
 }
 
 export const DAIe: BridgeableToken = {
@@ -1125,7 +1139,8 @@ export const DAIe: BridgeableToken = {
   color: 'yellow',
   priorityRank: 125,
   routeSymbol: 'DAI.e',
-  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/dai.cba261f0.svg',
+  imgUrl:
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/dai.ba6d3142.svg',
 }
 
 export const KLAY: BridgeableToken = {
@@ -1144,7 +1159,7 @@ export const KLAY: BridgeableToken = {
   priorityRank: 300,
   routeSymbol: 'KLAY',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/klay.0d2394a9.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/klay.a50be928.svg',
 }
 
 export const WKLAY: BridgeableToken = {
@@ -1161,7 +1176,7 @@ export const WKLAY: BridgeableToken = {
   priorityRank: 350,
   routeSymbol: 'WKLAY',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/klay.0d2394a9.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/klay.a50be928.svg',
 }
 
 export const MATIC: BridgeableToken = {
@@ -1180,7 +1195,7 @@ export const MATIC: BridgeableToken = {
   priorityRank: 300,
   routeSymbol: 'MATIC',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/matic.30579a57.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/matic.237cd2b6.svg',
 }
 
 export const WMATIC: BridgeableToken = {
@@ -1197,7 +1212,7 @@ export const WMATIC: BridgeableToken = {
   priorityRank: 350,
   routeSymbol: 'WMATIC',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/matic.30579a57.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/matic.237cd2b6.svg',
 }
 
 export const FTM: BridgeableToken = {
@@ -1215,7 +1230,8 @@ export const FTM: BridgeableToken = {
   color: 'blue',
   priorityRank: 300,
   routeSymbol: 'FTM',
-  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/ftm.d3ad16e9.svg',
+  imgUrl:
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/ftm.af71a88f.svg',
 }
 
 export const WFTM: BridgeableToken = {
@@ -1231,7 +1247,8 @@ export const WFTM: BridgeableToken = {
   color: 'blue',
   priorityRank: 350,
   routeSymbol: 'WFTM',
-  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/ftm.d3ad16e9.svg',
+  imgUrl:
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/ftm.af71a88f.svg',
 }
 
 export const WETH: BridgeableToken = {
@@ -1266,7 +1283,7 @@ export const WETH: BridgeableToken = {
   priorityRank: 350,
   routeSymbol: 'WETH',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/weth.490fe9a7.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/weth.19fa93ab.svg',
 }
 
 export const CRVUSD: BridgeableToken = {
@@ -1286,7 +1303,7 @@ export const CRVUSD: BridgeableToken = {
   priorityRank: 200,
   routeSymbol: 'crvUSD',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/crvusd.6da73801.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/crvusd.e65e6479.svg',
 }
 
 export const LUSD: BridgeableToken = {
@@ -1303,7 +1320,7 @@ export const LUSD: BridgeableToken = {
   priorityRank: 200,
   routeSymbol: 'LUSD',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/lusd.1d09460e.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/lusd.1d09460e.svg',
 }
 
 export const USDBC: BridgeableToken = {
@@ -1320,7 +1337,7 @@ export const USDBC: BridgeableToken = {
   priorityRank: 125,
   routeSymbol: 'USDbC',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/usdc.f9b139bb.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/usdc.d5dcb030.svg',
 }
 
 export const USDB: BridgeableToken = {
@@ -1337,5 +1354,5 @@ export const USDB: BridgeableToken = {
   priorityRank: 103,
   routeSymbol: 'USDB',
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/usdb.33190604.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/usdb.33190604.svg',
 }
