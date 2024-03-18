@@ -29,6 +29,8 @@ abstract contract ICSetup is Test {
 
     uint256 public constant APP_OPTIMISTIC_PERIOD = 10 minutes;
 
+    uint256 public constant INITIAL_TS = 1_704_067_200; // 2024-01-01 00:00:00 UTC
+
     ExecutionFees public executionFees;
     ExecutionService public executionService;
     InterchainClientV1 public icClient;
@@ -49,6 +51,7 @@ abstract contract ICSetup is Test {
 
     function setUp() public virtual {
         vm.chainId(localChainId());
+        vm.warp(INITIAL_TS);
         deployInterchainContracts();
         configureInterchainContracts();
         initDBNonce();

@@ -82,6 +82,7 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
     uint256 public constant JUST_NOW = INITIAL_TS - 1;
 
     function setUp() public override {
+        vm.warp(INITIAL_TS);
         super.setUp();
         setLinkedClient(REMOTE_CHAIN_ID, MOCK_REMOTE_CLIENT);
         dstReceiver = address(new InterchainAppMock());

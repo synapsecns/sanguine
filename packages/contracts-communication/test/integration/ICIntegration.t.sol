@@ -34,13 +34,13 @@ abstract contract ICIntegrationTest is
     event PingReceived(uint256 counter, uint256 dbNonce, uint64 entryIndex);
     event PingSent(uint256 counter, uint256 dbNonce, uint64 entryIndex);
 
-    function assertEq(InterchainBatch memory batch, InterchainBatch memory expected) internal  {
+    function assertEq(InterchainBatch memory batch, InterchainBatch memory expected) internal {
         assertEq(batch.srcChainId, expected.srcChainId);
         assertEq(batch.dbNonce, expected.dbNonce);
         assertEq(batch.batchRoot, expected.batchRoot);
     }
 
-    function assertEq(InterchainEntry memory entry, InterchainEntry memory expected) internal  {
+    function assertEq(InterchainEntry memory entry, InterchainEntry memory expected) internal {
         assertEq(entry.srcChainId, expected.srcChainId);
         assertEq(entry.dbNonce, expected.dbNonce);
         assertEq(entry.entryIndex, expected.entryIndex);
@@ -124,14 +124,14 @@ abstract contract ICIntegrationTest is
 
     function expectModuleEventBatchVerificationRequested(InterchainBatch memory batch) internal {
         bytes memory encodedBatch = getModuleBatch(batch);
-        bytes32 digest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(encodedBatch)));
+        bytes32 digest = getEthSignedBatchHash(batch);
         vm.expectEmit(address(module));
         emit BatchVerificationRequested({dstChainId: remoteChainId(), batch: encodedBatch, ethSignedBatchHash: digest});
     }
 
     function expectModuleEventBatchVerified(InterchainBatch memory batch) internal {
         bytes memory encodedBatch = getModuleBatch(batch);
-        bytes32 digest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(encodedBatch)));
+        bytes32 digest = getEthSignedBatchHash(batch);
         vm.expectEmit(address(module));
         emit BatchVerified({srcChainId: batch.srcChainId, batch: encodedBatch, ethSignedBatchHash: digest});
     }
@@ -147,6 +147,20 @@ abstract contract ICIntegrationTest is
     }
 
     // ═══════════════════════════════════════════════ DATA HELPERS ════════════════════════════════════════════════════
+
+    function getModuleSignatures(InterchainBatch memory batch) internal view returns (bytes memory signatures) {
+        bytes32 digest = getEthSignedBatchHash(batch);
+        signatures = "";
+        for (uint256 i = 0; i < signerPKs.length; i++) {
+            (uint8 v, bytes32 r, bytes32 s) = vm.sign(signerPKs[i], digest);
+            signatures = bytes.concat(signatures, abi.encodePacked(r, s, v));
+        }
+    }
+
+    function getEthSignedBatchHash(InterchainBatch memory batch) internal pure returns (bytes32) {
+        bytes memory moduleBatch = getModuleBatch(batch);
+        return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(moduleBatch)));
+    }
 
     function getModuleBatch(InterchainBatch memory batch) internal pure returns (bytes memory) {
         return ModuleBatchLib.encodeModuleBatch(batch, new bytes(0));
