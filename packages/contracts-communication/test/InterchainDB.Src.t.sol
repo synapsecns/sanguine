@@ -562,4 +562,63 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         // [moduleA, moduleB]
         assertEq(icDB.getInterchainFee(DST_CHAIN_ID, twoModules), MODULE_A_FEE + MODULE_B_FEE);
     }
+
+    // ════════════════════════════════════════ TESTS: RETRIEVING DB VALUES ════════════════════════════════════════════
+
+    // TODO; add revert tests
+
+    function checkBatchRoot(bytes32 batchRoot, InterchainEntry memory expectedEntry) internal {
+        bytes32 expectedRoot = InterchainEntryLib.entryValue(expectedEntry);
+        assertEq(batchRoot, expectedRoot, "!batchRoot");
+    }
+
+    function checkBatch(InterchainBatch memory batch, InterchainEntry memory expectedEntry) internal {
+        assertEq(batch.srcChainId, expectedEntry.srcChainId, "!srcChainId");
+        assertEq(batch.dbNonce, expectedEntry.dbNonce, "!dbNonce");
+        checkBatchRoot(batch.batchRoot, expectedEntry);
+    }
+
+    function test_getBatchLeafs() public {
+        for (uint256 nonce = 0; nonce < INITIAL_DB_NONCE; ++nonce) {
+            bytes32[] memory leafs = icDB.getBatchLeafs(nonce);
+            assertEq(leafs.length, 1, "!leafs.length");
+            checkBatchRoot(leafs[0], getInitialEntry(nonce));
+        }
+    }
+
+    function test_getBatchLeafsPaginated() public {
+        for (uint256 nonce = 0; nonce < INITIAL_DB_NONCE; ++nonce) {
+            bytes32[] memory leafs = icDB.getBatchLeafsPaginated(nonce, 0, 1);
+            assertEq(leafs.length, 1, "!leafs.length");
+            checkBatchRoot(leafs[0], getInitialEntry(nonce));
+        }
+    }
+
+    function test_getBatchSize_finalized() public {
+        for (uint256 nonce = 0; nonce < INITIAL_DB_NONCE; ++nonce) {
+            assertEq(icDB.getBatchSize(nonce), 1, "!batchSize");
+        }
+    }
+
+    function test_getBatchSize_pending() public {
+        assertEq(icDB.getBatchSize(INITIAL_DB_NONCE), 0);
+    }
+
+    function test_getBatch() public {
+        for (uint256 nonce = 0; nonce < INITIAL_DB_NONCE; ++nonce) {
+            InterchainBatch memory batch = icDB.getBatch(nonce);
+            checkBatch(batch, getInitialEntry(nonce));
+        }
+    }
+
+    function test_getEntry() public {
+        for (uint256 nonce = 0; nonce < INITIAL_DB_NONCE; ++nonce) {
+            InterchainEntry memory expectedEntry = getInitialEntry(nonce);
+            assertEq(icDB.getEntry(nonce, 0), expectedEntry);
+        }
+    }
+
+    function test_getDBNonce() public {
+        assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE);
+    }
 }
