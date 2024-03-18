@@ -87,8 +87,7 @@ function ButtonContent({
   // const { fromChainId, fromToken } = useBridgeState()
 
   const balanceTokens =
-    balances &&
-    balances[chainId] &&
+    balances?.[chainId] &&
     sortTokensByBalanceDescending(
       balances[chainId].filter((bt) => bt.balance > 0n)
     )
@@ -100,11 +99,12 @@ function ButtonContent({
       <div className="flex items-center gap-6 justify-between">
         <span className="flex items-center gap-2">
           <Image
+            loading="lazy"
             src={chain.chainImg}
             alt="Switch Network"
             width="20"
             height="20"
-            className="max-w-fit"
+            className="max-w-fit w-5 h-5"
           />
           {chain.name}
         </span>
@@ -115,7 +115,7 @@ function ButtonContent({
 }
 
 const ChainTokens = ({
-  balanceTokens = [],
+  balanceTokens,
 }: {
   balanceTokens: TokenAndBalance[]
 }) => {
@@ -130,22 +130,20 @@ const ChainTokens = ({
       data-test-id="portfolio-token-visualizer"
       className="flex items-center cursor-pointer hover-trigger text-sm text-secondary -space-x-1.5"
     >
-      {balanceTokens
-        ?.slice(0, max)
-        .map((token: TokenAndBalance, key: number) => {
-          return <HoverIcon token={balanceTokens[key]} />
-        })}
+      {balanceTokens?.slice(0, max).map((token: TokenAndBalance) => {
+        return <HoverIcon token={token} />
+      })}
       {remainder > 0 && (
         <span className="relative">
           <div className="peer h-6 w-6 text-[13px] mb-px text-center grid place-content-center bg-bgBase rounded-full">
             {remainder}
           </div>
           <ul className="hidden peer-hover:block absolute z-50 bottom-6 -right-1 -mr-px pl-1 pr-1.5 py-1.5 bg-bgBase rounded text-right space-y-0.5 whitespace-normal max-w-40">
-            {balanceTokens
-              ?.slice(max)
-              .map((token: TokenAndBalance, key: number) => (
-                <li className="px-0.5">{token.token.symbol}</li>
-              ))}
+            {balanceTokens?.slice(max).map((token: TokenAndBalance) => (
+              <li key={token.token.symbol} className="px-0.5">
+                {token.token.symbol}
+              </li>
+            ))}
           </ul>
         </span>
       )}
@@ -153,20 +151,23 @@ const ChainTokens = ({
   )
 }
 
-function HoverIcon(token) {
-  const symbol = token.token.token.symbol
-  const src = token.token.token.icon
-  const parsedBalance = token.token?.parsedBalance
+function HoverIcon({ token }) {
+  const symbol = token.token.symbol
+  const src = token.token.icon
+  const parsedBalance = token?.parsedBalance
 
   return (
-    <span className="relative flex justify-items-center justify-center text-center">
+    <span
+      key={symbol}
+      className="relative flex justify-items-center justify-center text-center"
+    >
       <Image
         loading="lazy"
-        className="peer max-w-fit"
         width="20"
         height="20"
         alt={`${symbol} img`}
         src={src}
+        className="peer max-w-fit"
       />
       <div className="hidden peer-hover:block absolute z-50 bottom-6 -right-2 -mr-px px-2 py-1 bg-bgBase rounded">
         {parsedBalance} {symbol}
