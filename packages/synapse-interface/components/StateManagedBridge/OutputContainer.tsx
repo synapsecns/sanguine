@@ -3,10 +3,10 @@ import { Address, useAccount } from 'wagmi'
 
 import LoadingDots from '../ui/tailwind/LoadingDots'
 import { CHAINS_BY_ID } from '@/constants/chains'
-import { ChainSelector } from '../ui/BridgeCardComponents'
+import { ChainSelector, TokenSelector } from '../ui/BridgeCardComponents'
 import { ToChainListOverlay } from './ToChainListOverlay'
 import { shortenAddress } from '@/utils/shortenAddress'
-import { ToTokenSelector } from './ToTokenSelector'
+// import { ToTokenSelector } from './ToTokenSelector'
 import { useDispatch } from 'react-redux'
 import { setToChainId, setToToken } from '@/slices/bridge/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
@@ -15,6 +15,7 @@ import {
   BridgeSectionContainer,
   AmountInput,
 } from '../ui/BridgeCardComponents'
+import { ToTokenListOverlay } from './ToTokenListOverlay'
 
 export const OutputContainer = ({}) => {
   const { bridgeQuote, isLoading, toChainId, toToken } = useBridgeState()
@@ -72,5 +73,14 @@ const ToChainSelector = () => (
     selectedItem={CHAINS_BY_ID[useBridgeState().toChainId]}
     label="To"
     overlay={<ToChainListOverlay />}
+  />
+)
+
+const ToTokenSelector = () => (
+  <TokenSelector
+    dataTestId="bridge-origin-chain-list-button"
+    selectedItem={useBridgeState().fromToken}
+    label=""
+    overlay={<ToTokenListOverlay />}
   />
 )

@@ -10,12 +10,12 @@ export const FromTokenSelector = () => {
 
   const { fromToken } = useBridgeState()
 
-  return (
-    <TokenSelector
-      dataTestId="bridge-origin-token"
-      selectedItem={fromToken}
-      placeholder="In"
-      onClick={() => dispatch(setShowFromTokenListOverlay(true))}
-    />
-  )
+  // return (
+  //   <TokenSelector
+  //     dataTestId="bridge-origin-token"
+  //     selectedItem={fromToken}
+  //     placeholder="In"
+  //     onClick={() => dispatch(setShowFromTokenListOverlay(true))}
+  //   />
+  // )
 }

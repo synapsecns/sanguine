@@ -25,7 +25,10 @@ import { SearchResults } from './components/SearchResults'
 export const FromTokenListOverlay = () => {
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
+  const [open, setOpen] = useState(true)
+
   const dispatch = useDispatch()
+  const dataId = 'bridge-origin-token-list'
   const overlayRef = useRef(null)
 
   const { fromTokens, fromChainId, fromToken } = useBridgeState()
@@ -127,6 +130,7 @@ export const FromTokenListOverlay = () => {
   function onClose() {
     setCurrentIdx(-1)
     setSearchStr('')
+    setOpen(false)
     dispatch(setShowFromTokenListOverlay(false))
   }
 
@@ -171,101 +175,112 @@ export const FromTokenListOverlay = () => {
     onClose()
   }
 
+  useEffect(() => {
+    const ref = overlayRef.current
+    const { y, height } = ref.getBoundingClientRect()
+    const screen = window.innerHeight
+    console.log(ref.style)
+    if (y + height > screen) {
+      ref.style.position = 'fixed'
+      ref.style.bottom = '4px'
+    }
+    if (y < 0) {
+      ref.style.position = 'fixed'
+      ref.style.top = '4px'
+    }
+  }, [])
+
   return (
     <div
+      data-test-id="fromToken-list-overlay"
       ref={overlayRef}
-      data-test-id="token-slide-over"
-      className="max-h-full pb-4 mt-4 overflow-auto scrollbar-hide"
+      className={`pt-1 z-20 absolute animate-slide-down origin-top ${
+        open ? 'block' : 'hidden'
+      }`}
     >
-      <div className="z-10 w-full px-2 ">
-        <div className="relative flex items-center mt-2 mb-2 font-medium">
+      <div className="bg-bgLight border border-separator rounded overflow-y-auto max-h-96 shadow-md">
+        <div className="p-1 flex items-center font-medium">
           <SlideSearchBox
-            placeholder="Filter by symbol, contract, or name..."
+            placeholder="Find"
             searchStr={searchStr}
             onSearch={onSearch}
           />
           <CloseButton onClick={onClose} />
         </div>
-      </div>
-      {possibleTokens && possibleTokens.length > 0 && (
-        <>
-          <div className="px-2 pt-2 pb-4 text-sm text-primaryTextColor ">
-            Send…
-          </div>
-          <div className="px-2 pb-2 md:px-2 ">
-            {possibleTokens.map((token, idx) => {
-              return (
-                <SelectSpecificTokenButton
-                  isOrigin={true}
-                  key={idx}
-                  token={token}
-                  selectedToken={fromToken}
-                  active={idx === currentIdx}
-                  showAllChains={false}
-                  onClick={() => {
-                    if (token === fromToken) {
-                      onClose()
-                    } else {
-                      handleSetFromToken(fromToken, token)
+        <div data-test-id={dataId}>
+          {possibleTokens && possibleTokens.length > 0 && (
+            <>
+              <div className="p-2 text-sm text-secondary">Send…</div>
+              {possibleTokens.map((token, idx) => {
+                return (
+                  <SelectSpecificTokenButton
+                    isOrigin={true}
+                    key={idx}
+                    token={token}
+                    selectedToken={fromToken}
+                    active={idx === currentIdx}
+                    showAllChains={false}
+                    onClick={() => {
+                      if (token === fromToken) {
+                        onClose()
+                      } else {
+                        handleSetFromToken(fromToken, token)
+                      }
+                    }}
+                  />
+                )
+              })}
+            </>
+          )}
+          {remainingTokens && remainingTokens.length > 0 && (
+            <div className="bg-bgBase rounded">
+              <div className="px-2 py-2 text-sm text-secondary">
+                {fromChainId
+                  ? `More on ${CHAINS_BY_ID[fromChainId]?.name}`
+                  : 'All sendable tokens'}
+              </div>
+              {remainingTokens.map((token, idx) => {
+                return (
+                  <SelectSpecificTokenButton
+                    isOrigin={true}
+                    key={idx}
+                    token={token}
+                    selectedToken={fromToken}
+                    active={idx + possibleTokens.length === currentIdx}
+                    showAllChains={false}
+                    onClick={() => handleSetFromToken(fromToken, token)}
+                  />
+                )
+              })}
+            </div>
+          )}
+          {allOtherFromTokens && allOtherFromTokens.length > 0 && (
+            <div className="bg-bgBase rounded">
+              <div className="px-2 py-2 text-sm text-secondary">
+                All sendable tokens
+              </div>
+              {allOtherFromTokens.map((token, idx) => {
+                return (
+                  <SelectSpecificTokenButton
+                    isOrigin={true}
+                    key={idx}
+                    token={token}
+                    selectedToken={fromToken}
+                    active={
+                      idx + possibleTokens.length + remainingTokens.length ===
+                      currentIdx
                     }
-                  }}
-                />
-              )
-            })}
-          </div>
-        </>
-      )}
-      {remainingTokens && remainingTokens.length > 0 && (
-        <>
-          <div className="px-2 pb-4 text-sm text-primaryTextColor">
-            {fromChainId
-              ? `More on ${CHAINS_BY_ID[fromChainId]?.name}`
-              : 'All sendable tokens'}
-          </div>
-          <div className="px-2 pb-2 md:px-2">
-            {remainingTokens.map((token, idx) => {
-              return (
-                <SelectSpecificTokenButton
-                  isOrigin={true}
-                  key={idx}
-                  token={token}
-                  selectedToken={fromToken}
-                  active={idx + possibleTokens.length === currentIdx}
-                  showAllChains={false}
-                  onClick={() => handleSetFromToken(fromToken, token)}
-                />
-              )
-            })}
-          </div>
-        </>
-      )}
-      {allOtherFromTokens && allOtherFromTokens.length > 0 && (
-        <>
-          <div className="px-2 pb-4 text-sm text-primaryTextColor ">
-            All sendable tokens
-          </div>
-          <div className="px-2 pb-2 md:px-2">
-            {allOtherFromTokens.map((token, idx) => {
-              return (
-                <SelectSpecificTokenButton
-                  isOrigin={true}
-                  key={idx}
-                  token={token}
-                  selectedToken={fromToken}
-                  active={
-                    idx + possibleTokens.length + remainingTokens.length ===
-                    currentIdx
-                  }
-                  showAllChains={true}
-                  onClick={() => handleSetFromToken(fromToken, token)}
-                  alternateBackground={true}
-                />
-              )
-            })}
-          </div>
-        </>
-      )}
-      <SearchResults searchStr={searchStr} type="token" />
+                    showAllChains={true}
+                    onClick={() => handleSetFromToken(fromToken, token)}
+                    alternateBackground={true}
+                  />
+                )
+              })}
+            </div>
+          )}
+          <SearchResults searchStr={searchStr} type="token" />
+        </div>
+      </div>
     </div>
   )
 }
