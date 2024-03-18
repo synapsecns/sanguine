@@ -365,6 +365,17 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, origin, dest int, a
 	balanceFlt := new(big.Float).SetInt(balance)
 	quoteAmount, _ = new(big.Float).Mul(balanceFlt, new(big.Float).SetFloat64(quotePct/100)).Int(nil)
 
+	// Apply the quoteOffset
+	tokenName, err := m.config.GetTokenName(uint32(dest), address.Hex())
+	if err != nil {
+		return nil, fmt.Errorf("error getting token name: %w", err)
+	}
+	quoteOffsetBps, err := m.config.GetQuoteOffsetBps(dest, tokenName)
+	if err != nil {
+		return nil, fmt.Errorf("error getting quote offset bps: %w", err)
+	}
+	quoteAmount = m.applyOffset(ctx, quoteOffsetBps, quoteAmount)
+
 	// Clip the quoteAmount by the minQuoteAmount
 	minQuoteAmount := m.config.GetMinQuoteAmount(dest, address)
 	if quoteAmount.Cmp(minQuoteAmount) < 0 {
