@@ -9,7 +9,7 @@ import {InterchainModuleEvents} from "../../contracts/events/InterchainModuleEve
 
 import {InterchainBatch} from "../../contracts/libs/InterchainBatch.sol";
 import {InterchainEntry} from "../../contracts/libs/InterchainEntry.sol";
-import {InterchainTransaction} from "../../contracts/libs/InterchainTransaction.sol";
+import {InterchainTransaction, InterchainTxDescriptor} from "../../contracts/libs/InterchainTransaction.sol";
 import {ModuleBatchLib} from "../../contracts/libs/ModuleBatch.sol";
 import {OptionsV1} from "../../contracts/libs/Options.sol";
 
@@ -30,6 +30,9 @@ abstract contract ICIntegrationTest is
     uint256 public constant COUNTER = 42;
 
     OptionsV1 public ppOptions = OptionsV1({gasLimit: 500_000, gasAirdrop: 0});
+
+    event PingReceived(uint256 counter, uint256 dbNonce, uint64 entryIndex);
+    event PingSent(uint256 counter, uint256 dbNonce, uint64 entryIndex);
 
     function expectFeesEventExecutionFeeAdded(bytes32 transactionId, uint256 totalFee) internal {
         vm.expectEmit(address(executionFees));
@@ -119,6 +122,16 @@ abstract contract ICIntegrationTest is
         emit BatchVerified({srcChainId: batch.srcChainId, batch: encodedBatch, ethSignedBatchHash: digest});
     }
 
+    function expectPingPongEventPingReceived(uint256 counter, InterchainTxDescriptor memory desc) internal {
+        vm.expectEmit(address(pingPongApp));
+        emit PingReceived(counter, desc.dbNonce, desc.entryIndex);
+    }
+
+    function expectPingPongEventPingSent(uint256 counter, InterchainTxDescriptor memory desc) internal {
+        vm.expectEmit(address(pingPongApp));
+        emit PingSent(counter, desc.dbNonce, desc.entryIndex);
+    }
+
     // ═══════════════════════════════════════════════ DATA HELPERS ════════════════════════════════════════════════════
 
     function getModuleBatch(InterchainBatch memory batch) internal pure returns (bytes memory) {
@@ -130,6 +143,18 @@ abstract contract ICIntegrationTest is
             srcChainId: entry.srcChainId,
             dbNonce: entry.dbNonce,
             batchRoot: keccak256(abi.encode(entry.srcWriter, entry.dataHash))
+        });
+    }
+
+    function getInterchainTxDescriptor(InterchainEntry memory entry)
+        internal
+        pure
+        returns (InterchainTxDescriptor memory)
+    {
+        return InterchainTxDescriptor({
+            dbNonce: entry.dbNonce,
+            entryIndex: entry.entryIndex,
+            transactionId: entry.dataHash
         });
     }
 
