@@ -3,6 +3,7 @@ pragma solidity 0.8.20;
 
 import {ISynapseGasOracle} from "../../contracts/interfaces/ISynapseGasOracle.sol";
 
+// solhint-disable no-empty-blocks
 contract SynapseGasOracleMock is ISynapseGasOracle {
     function receiveRemoteGasData(uint256 srcChainId, bytes calldata data) external {}
 

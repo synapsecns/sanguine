@@ -3,6 +3,7 @@ pragma solidity 0.8.20;
 
 import {IExecutionService} from "../../contracts/interfaces/IExecutionService.sol";
 
+// solhint-disable no-empty-blocks
 contract ExecutionServiceMock is IExecutionService {
     address public executorEOA;
 
