@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { CHAINS_BY_ID } from '@constants/chains'
 import Image from 'next/image'
 import { getHoverStyleForButton, getActiveStyleForButton } from '@/styles/hover'
@@ -55,7 +55,8 @@ export const SelectSpecificNetworkButton = ({
   })
 
   const { fromChainId, fromToken } = useBridgeState()
-  const isEligible = isChainEligible(fromChainId, chain.id, fromToken)
+  const isEligible =
+    !isOrigin && isChainEligible(fromChainId, chain.id, fromToken)
 
   return (
     <button
@@ -66,7 +67,7 @@ export const SelectSpecificNetworkButton = ({
       data-test-id={`${dataId}-item`}
     >
       <ButtonContent chainId={itemChainId} isOrigin={isOrigin} />
-      {!isOrigin && isEligible && (
+      {isEligible && (
         <div className="text-left text-sm text-green-500 dark:text-green-400">
           {ELIGIBILITY_DEFAULT_TEXT}
         </div>
@@ -119,7 +120,7 @@ const ChainTokens = ({
 }: {
   balanceTokens: TokenAndBalance[]
 }) => {
-  const max = 2
+  const max = balanceTokens?.length === 2 ? 2 : 1
   const remainder: number =
     balanceTokens && balanceTokens.length - max > 0
       ? balanceTokens.length - max

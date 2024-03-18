@@ -79,10 +79,11 @@ export const FromChainListOverlay = () => {
   const arrowUp = useKeyPress('ArrowUp')
   const arrowDown = useKeyPress('ArrowDown')
 
+  const [open, setOpen] = useState(true)
+
   const onClose = useCallback(() => {
     setCurrentIdx(-1)
     setSearchStr('')
-    dispatch(setShowFromChainListOverlay(false))
     setOpen(false)
   }, [setShowFromChainListOverlay])
 
@@ -126,8 +127,6 @@ export const FromChainListOverlay = () => {
     dispatch(setFromChainId(chainId))
     onClose()
   }
-
-  const [open, setOpen] = useState(true)
 
   useEffect(() => {
     const ref = overlayRef.current

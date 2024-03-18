@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Chain, Token } from '@/utils/types'
 import { DropDownArrowSvg } from '../icons/DropDownArrowSvg'
 import { getHoverStyleForButton } from '@/styles/hover'
@@ -14,16 +15,17 @@ interface SelectorTypes {
   dataTestId?: string
   placeholder?: string
   selectedItem: Token | Chain
-  onClick: React.MouseEventHandler<HTMLButtonElement>
 }
 
 interface TokenSelectorTypes extends SelectorTypes {
   selectedItem: Token
+  onClick: React.MouseEventHandler<HTMLButtonElement>
 }
 
 interface ChainSelectorTypes extends SelectorTypes {
-  label: string
   selectedItem: Chain
+  label: string
+  overlay: React.ReactNode
 }
 
 interface AmountInputTypes {
@@ -41,7 +43,7 @@ interface AmountInputTypes {
 export function BridgeCard({ ref, children }: BridgeCardTypes) {
   /* TODOs
    * Lift margin value up to parent
-   * Remove need for popoverDependencies styles
+   * Remove need for popoverDependencies styles (in progress)
    */
   const className = join({
     grid: 'grid gap-2',
@@ -67,6 +69,59 @@ export function BridgeSectionContainer({ children }) {
   })
 
   return <section className={className}>{children}</section>
+}
+
+export function ChainSelector({
+  dataTestId,
+  selectedItem,
+  label,
+  placeholder,
+  overlay,
+}: ChainSelectorTypes) {
+  const [hover, setHover] = useState(false)
+
+  const buttonClassName = join({
+    unset: 'text-left',
+    flex: 'flex items-center gap-2.5',
+    space: 'px-2 py-1.5 mx-0.5 mb-1 rounded flex-none',
+    background: 'bg-transparent',
+    border: 'border border-zinc-200 dark:border-transparent',
+    font: 'leading-tight',
+    hover: getHoverStyleForButton(selectedItem?.color),
+    active: 'active:opacity-70',
+  })
+
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      onMouseDown={(e) => e.stopPropagation()}
+    >
+      <button
+        data-test-id={dataTestId}
+        onClick={() => setHover(!hover)}
+        className={buttonClassName}
+      >
+        {selectedItem && (
+          <img
+            src={selectedItem?.chainImg?.src}
+            alt={selectedItem?.name}
+            width="24"
+            height="24"
+          />
+        )}
+        <span>
+          <div className="text-sm text-zinc-500 dark:text-zinc-400">
+            {label}
+          </div>
+          {selectedItem?.name ?? placeholder ?? 'Network'}
+        </span>
+        <DropDownArrowSvg />
+      </button>
+      {hover && overlay}
+    </div>
+  )
 }
 
 export function BridgeAmountContainer({ children }) {
@@ -107,44 +162,6 @@ export function TokenSelector({
         />
       )}
       {selectedItem?.symbol ?? placeholder ?? 'Token'}
-      <DropDownArrowSvg />
-    </button>
-  )
-}
-
-export function ChainSelector({
-  dataTestId,
-  selectedItem,
-  label,
-  placeholder,
-  onClick,
-}: ChainSelectorTypes) {
-  const className = join({
-    unset: 'text-left',
-    flex: 'flex items-center gap-2.5',
-    space: 'px-2 py-1.5 mx-0.5 mb-1 rounded flex-none',
-    background: 'bg-transparent',
-    border: 'border border-zinc-200 dark:border-transparent',
-    font: 'leading-tight',
-    hover: getHoverStyleForButton(selectedItem?.color),
-    active: 'active:opacity-70',
-  })
-
-  return (
-    // <button data-test-id={dataTestId} className={className} onClick={onClick}>
-    <button data-test-id={dataTestId} className={className}>
-      {selectedItem && (
-        <img
-          src={selectedItem?.chainImg?.src}
-          alt={selectedItem?.name}
-          width="24"
-          height="24"
-        />
-      )}
-      <span>
-        <div className="text-sm text-zinc-500 dark:text-zinc-400">{label}</div>
-        {selectedItem?.name ?? placeholder ?? 'Network'}
-      </span>
       <DropDownArrowSvg />
     </button>
   )

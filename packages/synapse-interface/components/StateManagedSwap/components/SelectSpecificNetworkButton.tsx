@@ -10,6 +10,7 @@ import {
   getNetworkButtonBorderActive,
   getMenuItemStyleForChain,
 } from '@/styles/chains'
+import { getHoverStyleForButton, getActiveStyleForButton } from '@/styles/hover'
 
 export const SelectSpecificNetworkButton = ({
   itemChainId,
@@ -35,35 +36,25 @@ export const SelectSpecificNetworkButton = ({
     }
   }, [active])
 
-  let bgClassName
+  const join = (a) => Object.values(a).join(' ')
 
-  if (isCurrentChain) {
-    bgClassName = `
-      ${getNetworkButtonBgClassName(chain.color)}
-      ${getNetworkButtonBorder(chain.color)}
-      bg-opacity-30
-    `
-  }
+  const buttonClass = join({
+    other: 'whitespace-nowrap',
+    grid: 'grid gap-0.5',
+    space: 'pl-2 pr-1.5 py-2.5 w-full',
+    border: 'border border-transparent',
+    transition: 'transition-all duration-75',
+    hover: getHoverStyleForButton(chain.color),
+    activeStyle: isCurrentChain
+      ? getActiveStyleForButton(isCurrentChain && chain.color)
+      : '',
+  })
 
   return (
     <button
       ref={ref}
       tabIndex={active ? 1 : 0}
-      className={`
-        flex items-center
-        transition-all duration-75
-        w-full 
-        px-2 py-4
-        cursor-pointer
-        border-[1px] border-[#423F44]
-        mb-1
-        ${alternateBackground && 'bg-[#282328]'}
-        ${bgClassName}
-        ${getNetworkButtonBorderHover(chain.color)}
-        ${getNetworkHover(chain.color)}
-        ${getNetworkButtonBgClassNameActive(chain.color)}
-        ${getNetworkButtonBorderActive(chain.color)}
-      `}
+      className={buttonClass}
       onClick={onClick}
       data-test-id={`${dataId}-item`}
     >
@@ -76,15 +67,16 @@ function ButtonContent({ chainId }: { chainId: number }) {
   const chain = CHAINS_BY_ID[chainId]
 
   return chain ? (
-    <>
+    <span className="flex items-center gap-2">
       <Image
+        loading="lazy"
         src={chain.chainImg}
         alt="Switch Network"
-        className="ml-2 mr-4 rounded-full w-7 h-7"
+        width="20"
+        height="20"
+        className="max-w-fit w-5 h-5"
       />
-      <div className="flex-col text-left">
-        <div className="text-lg font-normal text-white">{chain.name}</div>
-      </div>
-    </>
+      {chain.name}
+    </span>
   ) : null
 }
