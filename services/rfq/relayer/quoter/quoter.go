@@ -422,13 +422,19 @@ func (m *Manager) getDestAmount(parentCtx context.Context, originAmount *big.Int
 		metrics.EndSpan(span)
 	}()
 
+	quoteOffsetBps, err := m.config.GetQuoteOffsetBps(chainID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting quote offset bps: %w", err)
+	}
 	quoteWidthBps, err := m.config.GetQuoteWidthBps(chainID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting quote width bps: %w", err)
 	}
-	destAmount := m.applyOffset(ctx, quoteWidthBps, originAmount)
+	totalOffsetBps := quoteOffsetBps + quoteWidthBps
+	destAmount := m.applyOffset(ctx, totalOffsetBps, originAmount)
 
 	span.SetAttributes(
+		attribute.Float64("quote_offset_bps", quoteOffsetBps),
 		attribute.Float64("quote_width_bps", quoteWidthBps),
 		attribute.String("dest_amount", destAmount.String()),
 	)
