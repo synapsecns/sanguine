@@ -18,8 +18,8 @@ func (m *Manager) GetOriginAmount(ctx context.Context, origin, dest int, address
 	return m.getOriginAmount(ctx, origin, dest, address, balance)
 }
 
-func (m *Manager) GetDestAmount(ctx context.Context, quoteAmount *big.Int, chainID int) (*big.Int, error) {
-	return m.getDestAmount(ctx, quoteAmount, chainID)
+func (m *Manager) GetDestAmount(ctx context.Context, quoteAmount *big.Int, chainID int, tokenName string) (*big.Int, error) {
+	return m.getDestAmount(ctx, quoteAmount, chainID, tokenName)
 }
 
 func (m *Manager) SetConfig(cfg relconfig.Config) {

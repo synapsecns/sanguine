@@ -111,7 +111,8 @@ type TokenConfig struct {
 	// MaxRebalanceAmount is the maximum amount to rebalance in human-readable units.
 	MaxRebalanceAmount string `yaml:"max_rebalance_amount"`
 	// QuoteOffsetBps is the number of basis points to deduct from the dest amount for a given token.
-	// Note that this value can be positive or negative; if positive it effectively increases the quoted price
+	// Note that this value is applied on top of the QuoteWidthBps.
+	// This value can be positive or negative; if positive it effectively increases the quoted price
 	// of the given token, and vice versa.
 	QuoteOffsetBps float64 `yaml:"quote_offset_bps"`
 }
