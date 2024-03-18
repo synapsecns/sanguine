@@ -282,6 +282,4 @@ replace (
 	github.com/synapsecns/sanguine/core => ../../core
 	github.com/synapsecns/sanguine/ethergo => ../../ethergo
 	github.com/synapsecns/sanguine/services/omnirpc => ../omnirpc
-	github.com/synapsecns/sanguine/services/scribe => ../scribe
-	github.com/synapsecns/sanguine/tools => ../../tools
 )
