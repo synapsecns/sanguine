@@ -287,10 +287,10 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 				originTokenAddr := common.HexToAddress(strings.Split(keyTokenID, "-")[1])
 
 				// Calculate the quote amount for this route
-				quoteAmount, err := m.getQuoteAmount(ctx, origin, chainID, address, balance)
+				originAmount, err := m.getOriginAmount(ctx, origin, chainID, address, balance)
 				// don't quote if gas exceeds quote
 				if errors.Is(err, errMinGasExceedsQuoteAmount) {
-					quoteAmount = big.NewInt(0)
+					originAmount = big.NewInt(0)
 				} else if err != nil {
 					return nil, err
 				}
@@ -310,7 +310,7 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 				}
 
 				// Build the quote
-				destAmount, err := m.getDestAmount(ctx, quoteAmount, chainID)
+				destAmount, err := m.getDestAmount(ctx, originAmount, chainID)
 				if err != nil {
 					return nil, fmt.Errorf("error getting dest amount: %w", err)
 				}
@@ -320,7 +320,7 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 					DestChainID:             chainID,
 					DestTokenAddr:           address.Hex(),
 					DestAmount:              destAmount.String(),
-					MaxOriginAmount:         quoteAmount.String(),
+					MaxOriginAmount:         originAmount.String(),
 					FixedFee:                fee.String(),
 					OriginFastBridgeAddress: originRFQAddr,
 					DestFastBridgeAddress:   destRFQAddr,
@@ -332,9 +332,9 @@ func (m *Manager) generateQuotes(ctx context.Context, chainID int, address commo
 	return quotes, nil
 }
 
-// getQuoteAmount calculates the quote amount for a given route.
-func (m *Manager) getQuoteAmount(parentCtx context.Context, origin, dest int, address common.Address, balance *big.Int) (quoteAmount *big.Int, err error) {
-	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "getQuoteAmount", trace.WithAttributes(
+// getOriginAmount calculates the origin quote amount for a given route.
+func (m *Manager) getOriginAmount(parentCtx context.Context, origin, dest int, address common.Address, balance *big.Int) (quoteAmount *big.Int, err error) {
+	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "getOriginAmount", trace.WithAttributes(
 		attribute.String(metrics.Origin, strconv.Itoa(origin)),
 		attribute.String(metrics.Destination, strconv.Itoa(dest)),
 		attribute.String("address", address.String()),
@@ -407,9 +407,9 @@ func (m *Manager) getQuoteAmount(parentCtx context.Context, origin, dest int, ad
 
 var errMinGasExceedsQuoteAmount = errors.New("min gas token exceeds quote amount")
 
-func (m *Manager) getDestAmount(parentCtx context.Context, quoteAmount *big.Int, chainID int) (*big.Int, error) {
+func (m *Manager) getDestAmount(parentCtx context.Context, originAmount *big.Int, chainID int) (*big.Int, error) {
 	_, span := m.metricsHandler.Tracer().Start(parentCtx, "getDestAmount", trace.WithAttributes(
-		attribute.String("quote_amount", quoteAmount.String()),
+		attribute.String("quote_amount", originAmount.String()),
 	))
 	defer func() {
 		metrics.EndSpan(span)
@@ -421,7 +421,7 @@ func (m *Manager) getDestAmount(parentCtx context.Context, quoteAmount *big.Int,
 	}
 	quoteOffsetFraction := new(big.Float).Quo(new(big.Float).SetInt64(int64(quoteOffsetBps)), new(big.Float).SetInt64(10000))
 	quoteOffsetFactor := new(big.Float).Sub(new(big.Float).SetInt64(1), quoteOffsetFraction)
-	destAmount, _ := new(big.Float).Mul(new(big.Float).SetInt(quoteAmount), quoteOffsetFactor).Int(nil)
+	destAmount, _ := new(big.Float).Mul(new(big.Float).SetInt(originAmount), quoteOffsetFactor).Int(nil)
 
 	span.SetAttributes(
 		attribute.Float64("quote_width_bps", quoteOffsetBps),
