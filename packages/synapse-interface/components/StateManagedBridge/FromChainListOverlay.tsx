@@ -20,6 +20,8 @@ export const FromChainListOverlay = () => {
   const { fromChainIds, fromChainId } = useBridgeState()
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
+  const [open, setOpen] = useState(true)
+
   const dispatch = useDispatch()
   const dataId = 'bridge-origin-chain-list'
   const overlayRef = useRef(null)
@@ -78,8 +80,6 @@ export const FromChainListOverlay = () => {
   const escPressed = useKeyPress('Escape')
   const arrowUp = useKeyPress('ArrowUp')
   const arrowDown = useKeyPress('ArrowDown')
-
-  const [open, setOpen] = useState(true)
 
   const onClose = useCallback(() => {
     setCurrentIdx(-1)

@@ -13,19 +13,18 @@ interface BridgeCardTypes {
 
 interface SelectorTypes {
   dataTestId?: string
+  label?: string
   placeholder?: string
   selectedItem: Token | Chain
+  overlay: React.ReactNode
 }
 
 interface TokenSelectorTypes extends SelectorTypes {
   selectedItem: Token
-  onClick: React.MouseEventHandler<HTMLButtonElement>
 }
 
 interface ChainSelectorTypes extends SelectorTypes {
   selectedItem: Chain
-  label: string
-  overlay: React.ReactNode
 }
 
 interface AmountInputTypes {
@@ -138,8 +137,10 @@ export function TokenSelector({
   dataTestId,
   selectedItem,
   placeholder,
-  onClick,
+  overlay,
 }: TokenSelectorTypes) {
+  const [hover, setHover] = useState(false)
+
   const className = join({
     flex: 'flex items-center gap-2',
     background: 'bg-white dark:bg-separator',
@@ -152,18 +153,30 @@ export function TokenSelector({
   })
 
   return (
-    <button data-test-id={dataTestId} className={className} onClick={onClick}>
-      {selectedItem && (
-        <img
-          src={selectedItem?.icon?.src ?? ''}
-          alt={selectedItem?.symbol ?? ''}
-          width="24"
-          height="24"
-        />
-      )}
-      {selectedItem?.symbol ?? placeholder ?? 'Token'}
-      <DropDownArrowSvg />
-    </button>
+    <div
+      className="relative"
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      onMouseDown={(e) => e.stopPropagation()}
+    >
+      <button
+        data-test-id={dataTestId}
+        onClick={() => setHover(!hover)}
+        className={className}
+      >
+        {selectedItem && (
+          <img
+            src={selectedItem?.icon?.src ?? ''}
+            alt={selectedItem?.symbol ?? ''}
+            width="24"
+            height="24"
+          />
+        )}
+        {selectedItem?.symbol ?? placeholder ?? 'Token'}
+        <DropDownArrowSvg />
+      </button>
+      {hover && overlay}
+    </div>
   )
 }
 

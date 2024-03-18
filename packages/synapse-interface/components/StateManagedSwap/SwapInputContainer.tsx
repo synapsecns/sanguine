@@ -11,7 +11,6 @@ import {
   ConnectWalletButton,
   ConnectedIndicator,
 } from '@/components/ConnectionIndicators'
-// import { SwapChainSelector } from './SwapChainSelector'
 import { ChainSelector } from '../ui/BridgeCardComponents'
 import { SwapChainListOverlay } from './SwapChainListOverlay'
 import { SwapFromTokenSelector } from './SwapFromTokenSelector'

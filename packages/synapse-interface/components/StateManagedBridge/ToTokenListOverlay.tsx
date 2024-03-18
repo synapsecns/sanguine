@@ -43,7 +43,9 @@ export const ToTokenListOverlay = () => {
 
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
+  const [open, setOpen] = useState(true)
   const dispatch = useAppDispatch()
+  const dataId = 'bridge-destination-token-list'
   const overlayRef = useRef(null)
 
   /** Fetch Alternative Bridge Quotes when component renders */
@@ -130,6 +132,7 @@ export const ToTokenListOverlay = () => {
   function onClose() {
     setCurrentIdx(-1)
     setSearchStr('')
+    setOpen(false)
     dispatch(setShowToTokenListOverlay(false))
   }
 
@@ -233,115 +236,128 @@ export const ToTokenListOverlay = () => {
     return orderedPossibleTokens.length
   }, [orderedPossibleTokens])
 
+  useEffect(() => {
+    const ref = overlayRef.current
+    const { y, height } = ref.getBoundingClientRect()
+    const screen = window.innerHeight
+    console.log(ref.style)
+    if (y + height > screen) {
+      ref.style.position = 'fixed'
+      ref.style.bottom = '4px'
+    }
+    if (y < 0) {
+      ref.style.position = 'fixed'
+      ref.style.top = '4px'
+    }
+  }, [])
+
   return (
     <div
+      data-test-id="fromToken-list-overlay"
       ref={overlayRef}
-      data-test-id="to-token-list-overlay"
-      className="max-h-full pb-4 mt-6 overflow-auto scrollbar-hide"
+      className={`pt-1 z-20 absolute animate-slide-down origin-top ${
+        open ? 'block' : 'hidden'
+      }`}
     >
-      <div className="z-10 w-full px-2 ">
-        <div className="relative flex items-center mb-2 font-medium">
+      <div className="bg-bgLight border border-separator rounded overflow-y-auto max-h-96 shadow-md">
+        <div className="p-1 flex items-center font-medium">
           <SlideSearchBox
-            placeholder="Filter by symbol, contract, or name..."
+            placeholder="Find"
             searchStr={searchStr}
             onSearch={onSearch}
           />
           <CloseButton onClick={onClose} />
         </div>
-      </div>
-      {orderedPossibleTokens && orderedPossibleTokens.length > 0 && (
-        <>
-          <div className="px-2 pt-2 pb-2 text-sm text-primaryTextColor ">
-            Receive…
-          </div>
-          <div className="px-2 pb-2 md:px-2">
-            {orderedPossibleTokens.map((token: TokenWithRates, idx: number) => {
-              return (
-                <SelectSpecificTokenButton
-                  isOrigin={false}
-                  key={idx}
-                  token={token}
-                  selectedToken={toToken}
-                  active={idx === currentIdx}
-                  showAllChains={false}
-                  isLoadingExchangeRate={isLoadingExchangeRate}
-                  isBestExchangeRate={totalPossibleTokens > 1 && idx === 0}
-                  exchangeRate={formatBigIntToString(
-                    token?.exchangeRate,
-                    18,
-                    4
-                  )}
-                  estimatedDurationInSeconds={
-                    toTokensBridgeQuotesStatus === FetchState.VALID &&
-                    bridgeQuotesMatchDestination &&
-                    token.estimatedTime
-                  }
-                  onClick={() => {
-                    if (token === toToken) {
-                      onClose()
-                    } else {
-                      handleSetToToken(toToken, token)
+        <div data-test-id={dataId}>
+          {orderedPossibleTokens && orderedPossibleTokens.length > 0 && (
+            <>
+              <div className="p-2 text-sm text-secondary">Receive…</div>
+              {orderedPossibleTokens.map(
+                (token: TokenWithRates, idx: number) => {
+                  return (
+                    <SelectSpecificTokenButton
+                      isOrigin={false}
+                      key={idx}
+                      token={token}
+                      selectedToken={toToken}
+                      active={idx === currentIdx}
+                      showAllChains={false}
+                      isLoadingExchangeRate={isLoadingExchangeRate}
+                      isBestExchangeRate={totalPossibleTokens > 1 && idx === 0}
+                      exchangeRate={formatBigIntToString(
+                        token?.exchangeRate,
+                        18,
+                        4
+                      )}
+                      estimatedDurationInSeconds={
+                        toTokensBridgeQuotesStatus === FetchState.VALID &&
+                        bridgeQuotesMatchDestination &&
+                        token.estimatedTime
+                      }
+                      onClick={() => {
+                        if (token === toToken) {
+                          onClose()
+                        } else {
+                          handleSetToToken(toToken, token)
+                        }
+                      }}
+                    />
+                  )
+                }
+              )}
+            </>
+          )}
+          {remainingChainTokens && remainingChainTokens.length > 0 && (
+            <div className="bg-bgBase rounded">
+              <div className="px-2 py-2 text-sm text-secondary">
+                {toChainId
+                  ? `More on ${CHAINS_BY_ID[toChainId]?.name}`
+                  : 'All receivable tokens'}
+              </div>
+              {remainingChainTokens.map((token, idx) => {
+                return (
+                  <SelectSpecificTokenButton
+                    isOrigin={false}
+                    key={idx}
+                    token={token}
+                    selectedToken={toToken}
+                    active={idx + possibleTokens.length === currentIdx}
+                    showAllChains={false}
+                    onClick={() => handleSetToToken(toToken, token)}
+                  />
+                )
+              })}
+            </div>
+          )}
+          {allOtherToTokens && allOtherToTokens.length > 0 && (
+            <div className="bg-bgBase rounded">
+              <div className="px-2 py-2 text-sm text-secondary">
+                All receivable tokens
+              </div>
+              {allOtherToTokens.map((token, idx) => {
+                return (
+                  <SelectSpecificTokenButton
+                    isOrigin={false}
+                    key={idx}
+                    token={token}
+                    selectedToken={toToken}
+                    active={
+                      idx +
+                        possibleTokens.length +
+                        remainingChainTokens.length ===
+                      currentIdx
                     }
-                  }}
-                />
-              )
-            })}
-          </div>
-        </>
-      )}
-      {remainingChainTokens && remainingChainTokens.length > 0 && (
-        <>
-          <div className="px-2 pt-2 pb-2 text-sm text-primaryTextColor ">
-            {toChainId
-              ? `More on ${CHAINS_BY_ID[toChainId]?.name}`
-              : 'All receivable tokens'}
-          </div>
-          <div className="px-2 pb-2 md:px-2">
-            {remainingChainTokens.map((token, idx) => {
-              return (
-                <SelectSpecificTokenButton
-                  isOrigin={false}
-                  key={idx}
-                  token={token}
-                  selectedToken={toToken}
-                  active={idx + possibleTokens.length === currentIdx}
-                  showAllChains={false}
-                  onClick={() => handleSetToToken(toToken, token)}
-                />
-              )
-            })}
-          </div>
-        </>
-      )}
-      {allOtherToTokens && allOtherToTokens.length > 0 && (
-        <>
-          <div className="px-2 pt-2 pb-2 text-sm text-primaryTextColor ">
-            All receivable tokens
-          </div>
-          <div className="px-2 pb-2 md:px-2">
-            {allOtherToTokens.map((token, idx) => {
-              return (
-                <SelectSpecificTokenButton
-                  isOrigin={false}
-                  key={idx}
-                  token={token}
-                  selectedToken={toToken}
-                  active={
-                    idx +
-                      possibleTokens.length +
-                      remainingChainTokens.length ===
-                    currentIdx
-                  }
-                  showAllChains={true}
-                  onClick={() => handleSetToToken(toToken, token)}
-                  alternateBackground={true}
-                />
-              )
-            })}
-          </div>
-        </>
-      )}
-      <SearchResults searchStr={searchStr} type="token" />
+                    showAllChains={true}
+                    onClick={() => handleSetToToken(toToken, token)}
+                    alternateBackground={true}
+                  />
+                )
+              })}
+            </div>
+          )}
+          <SearchResults searchStr={searchStr} type="token" />
+        </div>
+      </div>
     </div>
   )
 }

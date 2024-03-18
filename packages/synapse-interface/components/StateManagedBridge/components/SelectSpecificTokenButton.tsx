@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import { memo, useEffect, useRef, useState } from 'react'
+import Image from 'next/image'
 
 import {
   getBorderStyleForCoin,
@@ -20,6 +21,7 @@ import {
 } from '@/utils/hooks/useStipEligibility'
 import { getUnderlyingBridgeTokens } from '@/utils/getUnderlyingBridgeTokens'
 import { ARBITRUM, AVALANCHE, ETH } from '@/constants/chains/master'
+import { getActiveStyleForButton, getHoverStyleForButton } from '@/styles/hover'
 
 const SelectSpecificTokenButton = ({
   showAllChains,
@@ -47,7 +49,7 @@ const SelectSpecificTokenButton = ({
   estimatedDurationInSeconds?: number
 }) => {
   const ref = useRef<any>(null)
-  const isCurrentlySelected = selectedToken?.routeSymbol === token?.routeSymbol
+  const isCurrentToken = selectedToken?.routeSymbol === token?.routeSymbol
   const { fromChainId, toChainId, fromToken, toToken } = useBridgeState()
 
   useEffect(() => {
@@ -56,19 +58,33 @@ const SelectSpecificTokenButton = ({
     }
   }, [active])
 
+  const join = (a) => Object.values(a).join(' ')
+
+  const buttonClass = join({
+    other: 'whitespace-nowrap',
+    grid: 'grid gap-0.5',
+    space: 'pl-2 pr-1.5 py-2.5 w-full',
+    border: 'border border-transparent',
+    transition: 'transition-all duration-75',
+    hover: getHoverStyleForButton(token.color),
+    activeStyle: isCurrentToken
+      ? getActiveStyleForButton(isCurrentToken && token.color)
+      : '',
+  })
+
   const chainId = isOrigin ? fromChainId : toChainId
 
-  let bgClassName
+  // let bgClassName
 
-  const classNameForMenuItemStyle = getMenuItemStyleForCoin(token?.color)
+  // const classNameForMenuItemStyle = getMenuItemStyleForCoin(token?.color)
 
-  if (isCurrentlySelected) {
-    bgClassName = `${getMenuItemBgForCoin(
-      token?.color
-    )} ${getBorderStyleForCoin(token?.color)}`
-  } else {
-    bgClassName = getBorderStyleForCoinHover(token?.color)
-  }
+  // if (isCurrentToken) {
+  //   bgClassName = `${getMenuItemBgForCoin(
+  //     token?.color
+  //   )} ${getBorderStyleForCoin(token?.color)}`
+  // } else {
+  //   bgClassName = getBorderStyleForCoinHover(token?.color)
+  // }
 
   return (
     <button
@@ -76,18 +92,7 @@ const SelectSpecificTokenButton = ({
       ref={ref}
       tabIndex={active ? 1 : 0}
       onClick={onClick}
-      className={`
-        flex items-center
-        transition-all duration-75
-        w-full
-        px-2 py-1
-        cursor-pointer
-        border-[1px] border-[#423F44]
-        mb-1
-        ${alternateBackground && 'bg-[#282328]'}
-        ${bgClassName}
-        ${classNameForMenuItemStyle}
-      `}
+      className={buttonClass}
     >
       <ButtonContent
         token={token}
@@ -185,13 +190,30 @@ const ButtonContent = memo(
     )?.parsedBalance
 
     return (
-      <div data-test-id="button-content" className="flex items-center w-full">
-        <img
+      <div
+        data-test-id="button-content"
+        className="flex items-center justify-between"
+      >
+        <span className="flex items-center gap-2">
+          <Image
+            loading="lazy"
+            src={token.icon.src}
+            alt="Token Image"
+            width="20"
+            height="20"
+            className="max-w-fit w-5 h-5"
+          />
+          {/* <img
           alt="token image"
           className="w-8 h-8 ml-2 mr-4 rounded-full"
           src={token?.icon?.src}
-        />
-        <Coin token={token} showAllChains={showAllChains} isOrigin={isOrigin} />
+        /> */}
+          <Coin
+            token={token}
+            showAllChains={showAllChains}
+            isOrigin={isOrigin}
+          />
+        </span>
         {isOrigin && (
           <TokenBalance token={token} parsedBalance={parsedBalance} />
         )}
@@ -212,16 +234,17 @@ const Coin = ({
   const isEligible = isTokenEligible(token)
 
   return (
-    <div className="flex-col text-left">
-      <div className="text-lg text-primaryTextColor">{token?.symbol}</div>
-      <div className="flex items-center space-x-2 text-xs text-secondaryTextColor">
+    <div className="flex text-left text-lg justify-between">
+      <div className="">{token?.symbol}</div>
+      <div className="flex items-center space-x-2 text-sm text-secondary">
         {isOrigin && isEligible ? (
           <div className="text-greenText">{ELIGIBILITY_DEFAULT_TEXT}</div>
         ) : (
-          <div>{token?.name}</div>
+          <></>
+          // <div>{token?.name}</div>
         )}
-        {showAllChains && <AvailableChains token={token} />}
       </div>
+      {showAllChains && <AvailableChains token={token} />}
     </div>
   )
 }
@@ -285,13 +308,13 @@ const TokenBalance = ({
   parsedBalance?: string
 }) => {
   return (
-    <div className="ml-auto mr-5 text-md text-primaryTextColor">
+    <div className="text-sm p-1">
       {parsedBalance && parsedBalance !== '0.0' && (
         <div>
           {parsedBalance}
           <span className="text-md text-secondaryTextColor">
-            {' '}
-            {token ? token.symbol : ''}
+            {/* {' '}
+            {token ? token.symbol : ''} */}
           </span>
         </div>
       )}
@@ -310,7 +333,7 @@ const AvailableChains = ({ token }: { token: Token }) => {
   return (
     <div
       data-test-id="available-chains"
-      className="flex flex-row items-center space-x-1 hover-trigger"
+      className="flex items-center space-x-1 hover-trigger text-sm"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
