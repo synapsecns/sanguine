@@ -124,7 +124,9 @@ export const DestinationAddressInput = ({
   const adjustInputSize = () => {
     const addressInput: HTMLElement = document.getElementById('address-input')
 
-    if (inputValue.length > 0) {
+    if (isInputFocused) {
+      addressInput.style.width = '9rem'
+    } else if (inputValue.length > 0) {
       addressInput.style.width = inputValue.length + 2 + 'ch'
     } else {
       addressInput.style.width = placeholder.length + 2 + 'ch'
@@ -165,14 +167,14 @@ export const DestinationAddressInput = ({
             placeholder={placeholder}
             value={inputValue}
             className={`
-            text-md rounded-sm text-primary py-1 px-2 z-0 border-0 bg-transparent
-            focus:text-white focus:border-transparent focus:outline-none focus:ring-0
-            ${
-              isInputFocused || isInputInvalid
-                ? 'text-left cursor-text'
-                : 'text-center cursor-pointer'
-            }
-          `}
+              text-md rounded-sm text-primary py-1 px-2 z-0 border-0 bg-transparent max-w-40
+              focus:text-white focus:border-transparent focus:outline-none focus:ring-0
+              ${
+                isInputFocused || isInputInvalid
+                  ? 'text-left cursor-text '
+                  : 'text-center cursor-pointer'
+              }
+            `}
           />
           {destinationAddress && (
             <CloseButton
