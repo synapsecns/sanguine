@@ -132,7 +132,6 @@ export const FromChainListOverlay = () => {
     const ref = overlayRef.current
     const { y, height } = ref.getBoundingClientRect()
     const screen = window.innerHeight
-    console.log(ref.style)
     if (y + height > screen) {
       ref.style.position = 'fixed'
       ref.style.bottom = '4px'
@@ -162,7 +161,9 @@ export const FromChainListOverlay = () => {
       <div data-test-id={dataId}>
         {possibleChains && possibleChains.length > 0 && (
           <>
-            <div className="p-2 text-sm text-secondary">From…</div>
+            <div className="p-2 text-sm text-secondary sticky top-0 bg-bgLight">
+              From…
+            </div>
             {possibleChains.map(({ id: mapChainId }, idx) => {
               return (
                 <SelectSpecificNetworkButton
@@ -184,7 +185,9 @@ export const FromChainListOverlay = () => {
         )}
         {remainingChains && remainingChains.length > 0 && (
           <div className="bg-bgBase rounded">
-            <div className="px-2 py-2 text-sm text-secondary">All chains</div>
+            <div className="px-2 py-2 text-sm text-secondary sticky top-0 bg-bgBase">
+              All chains
+            </div>
             {remainingChains.map(({ id: mapChainId }, idx) => {
               return (
                 <SelectSpecificNetworkButton

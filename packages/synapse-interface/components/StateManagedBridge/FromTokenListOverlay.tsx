@@ -179,7 +179,6 @@ export const FromTokenListOverlay = () => {
     const ref = overlayRef.current
     const { y, height } = ref.getBoundingClientRect()
     const screen = window.innerHeight
-    console.log(ref.style)
     if (y + height > screen) {
       ref.style.position = 'fixed'
       ref.style.bottom = '4px'
@@ -199,7 +198,7 @@ export const FromTokenListOverlay = () => {
       }`}
     >
       <div className="bg-bgLight border border-separator rounded overflow-y-auto max-h-96 shadow-md">
-        <div className="p-1 flex items-center font-medium">
+        <div className="relative p-1 flex items-center font-medium">
           <SlideSearchBox
             placeholder="Find"
             searchStr={searchStr}
@@ -210,7 +209,9 @@ export const FromTokenListOverlay = () => {
         <div data-test-id={dataId}>
           {possibleTokens && possibleTokens.length > 0 && (
             <>
-              <div className="p-2 text-sm text-secondary">Send…</div>
+              <div className="p-2 text-sm text-secondary sticky top-0 bg-bgLight">
+                Send…
+              </div>
               {possibleTokens.map((token, idx) => {
                 return (
                   <SelectSpecificTokenButton
@@ -234,7 +235,7 @@ export const FromTokenListOverlay = () => {
           )}
           {remainingTokens && remainingTokens.length > 0 && (
             <div className="bg-bgBase rounded">
-              <div className="px-2 py-2 text-sm text-secondary">
+              <div className="px-2 py-2 text-sm text-secondary sticky top-0 bg-bgBase">
                 {fromChainId
                   ? `More on ${CHAINS_BY_ID[fromChainId]?.name}`
                   : 'All sendable tokens'}
@@ -256,7 +257,7 @@ export const FromTokenListOverlay = () => {
           )}
           {allOtherFromTokens && allOtherFromTokens.length > 0 && (
             <div className="bg-bgBase rounded">
-              <div className="px-2 py-2 text-sm text-secondary">
+              <div className="px-2 py-2 text-sm text-secondary sticky top-0 bg-bgBase">
                 All sendable tokens
               </div>
               {allOtherFromTokens.map((token, idx) => {

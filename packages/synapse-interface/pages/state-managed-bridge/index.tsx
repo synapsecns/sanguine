@@ -577,7 +577,7 @@ const StateManagedBridge = () => {
             </Button>
           </div>
         </div>
-        <BridgeCard ref={bridgeDisplayRef}>
+        <BridgeCard bridgeRef={bridgeDisplayRef}>
           <Transition show={showSettingsSlideOver} {...TRANSITION_PROPS}>
             <animated.div>
               <SettingsSlideOver key="settings" />

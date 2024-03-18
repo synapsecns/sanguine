@@ -10,12 +10,14 @@ export const SwapFromTokenSelector = () => {
 
   const { swapFromToken } = useSwapState()
 
-  return (
-    <TokenSelector
-      dataTestId="bridge-origin-token"
-      selectedItem={swapFromToken}
-      placeholder="In"
-      onClick={() => dispatch(setShowSwapFromTokenListOverlay(true))}
-    />
-  )
+  return <div>TODO: Replace</div>
+
+  // return (
+  //   <TokenSelector
+  //     dataTestId="bridge-origin-token"
+  //     selectedItem={swapFromToken}
+  //     placeholder="In"
+  //     onClick={() => dispatch(setShowSwapFromTokenListOverlay(true))}
+  //   />
+  // )
 }
