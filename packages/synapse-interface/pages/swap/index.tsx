@@ -364,7 +364,7 @@ const StateManagedSwap = () => {
           <div className="flex items-center justify-between">
             <PageHeader title="Swap" subtitle="Exchange assets on chain." />
           </div>
-          <BridgeCard ref={swapDisplayRef}>
+          <BridgeCard bridgeRef={swapDisplayRef}>
             <Transition show={showSwapChainListOverlay} {...TRANSITION_PROPS}>
               <animated.div className={springClass}>
                 <SwapChainListOverlay />
