@@ -7,7 +7,13 @@ import { useRouter } from 'next/router'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { BridgeState } from '@/slices/bridge/reducer'
+import {
+  BridgeState,
+  setFromChainId,
+  setFromToken,
+  setToChainId,
+  setToToken,
+} from '@/slices/bridge/reducer'
 import {
   updateFromValue,
   setBridgeQuote,
@@ -52,11 +58,10 @@ import SettingsSlideOver from '@/components/StateManagedBridge/SettingsSlideOver
 import Button from '@/components/ui/tailwind/Button'
 import { SettingsIcon } from '@/components/icons/SettingsIcon'
 import { DestinationAddressInput } from '@/components/StateManagedBridge/DestinationAddressInput'
-import { isAddress } from '@ethersproject/address'
 import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
-import { Address, zeroAddress, createPublicClient, http } from 'viem'
 import { polygon } from 'viem/chains'
+import { Address, zeroAddress, isAddress } from 'viem'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { Warning } from '@/components/Warning'
 import { useAppDispatch } from '@/store/hooks'
@@ -78,6 +83,8 @@ import {
   fetchEthPrice,
   fetchGmxPrice,
 } from '@/slices/priceDataSlice'
+import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
+import { SwitchButton } from '@/components/buttons/SwitchButton'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -277,10 +284,6 @@ const StateManagedBridge = () => {
 
         toast.dismiss(quoteToastRef.current.id)
 
-        dispatch(fetchEthPrice())
-        dispatch(fetchArbPrice())
-        dispatch(fetchGmxPrice())
-
         const message = `Route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         console.log(message)
 
@@ -474,7 +477,7 @@ const StateManagedBridge = () => {
 
       const transactionReceipt = await waitForTransaction({
         hash: tx as Address,
-        timeout: 30_000,
+        timeout: 60_000,
       })
       console.log('Transaction Receipt: ', transactionReceipt)
 
@@ -496,6 +499,17 @@ const StateManagedBridge = () => {
       dispatch(removePendingBridgeTransaction(currentTimestamp))
       console.log('Error executing bridge', error)
       toast.dismiss(pendingPopup)
+
+      /** Fetch balances if await transaction receipt times out */
+      if (isTransactionReceiptError(error)) {
+        dispatch(
+          fetchAndStoreSingleNetworkPortfolioBalances({
+            address,
+            chainId: fromChainId,
+          })
+        )
+      }
+
       return txErrorHandler(error)
     }
   }
@@ -536,9 +550,8 @@ const StateManagedBridge = () => {
         <Card
           divider={false}
           className={`
-            pb-3 mt-5 overflow-hidden
+            pb-3 mt-5 overflow-hidden bg-bgBase
             transition-all duration-100 transform rounded-md
-            bg-bgBase
           `}
         >
           <div ref={bridgeDisplayRef}>
@@ -568,6 +581,14 @@ const StateManagedBridge = () => {
               </animated.div>
             </Transition>
             <InputContainer />
+            <SwitchButton
+              onClick={() => {
+                dispatch(setFromChainId(toChainId))
+                dispatch(setFromToken(toToken))
+                dispatch(setToChainId(fromChainId))
+                dispatch(setToToken(fromToken))
+              }}
+            />
             <OutputContainer />
             <Warning />
             <Transition
@@ -589,6 +610,7 @@ const StateManagedBridge = () => {
                 isApproved={isApproved}
                 approveTxn={approveTxn}
                 executeBridge={executeBridge}
+                isBridgePaused={false}
               />
             </div>
           </div>

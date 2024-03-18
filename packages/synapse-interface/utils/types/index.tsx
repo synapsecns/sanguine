@@ -1,6 +1,6 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import * as CHAINS from '@constants/chains/master'
-import { getAddress } from '@ethersproject/address'
+import { getAddress } from 'viem'
 
 export type Chain = {
   id: number
@@ -39,6 +39,10 @@ export type PoolUserData = {
   name: string
   tokens: PoolToken[]
   lpTokenBalance: bigint
+  stakedBalance: {
+    amount: bigint
+    reward: bigint
+  }
   nativeTokens?: any
 }
 export type PoolData = {

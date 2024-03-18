@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.1.5...@synapsecns/solidity-devops@0.1.6) (2024-03-10)
+
+**Note:** Version bump only for package @synapsecns/solidity-devops
+
+
+
+
+
 ## [0.1.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.2.0...@synapsecns/solidity-devops@0.1.5) (2024-03-06)
 
 
