@@ -277,18 +277,19 @@ func (c Config) GetQuotePct(chainID int) (value float64, err error) {
 	return value, nil
 }
 
-// GetQuoteOffsetBps returns the QuoteOffsetBps for the given chainID.
-func (c Config) GetQuoteOffsetBps(chainID int) (value float64, err error) {
-	rawValue, err := c.getChainConfigValue(chainID, "QuoteOffsetBps")
-	if err != nil {
-		return value, err
+// GetQuoteOffsetBps returns the QuoteOffsetBps for the given chainID and tokenAddr.
+func (c Config) GetQuoteOffsetBps(chainID int, tokenName string) (value float64, err error) {
+	chainCfg, ok := c.Chains[chainID]
+	if !ok {
+		return 0, fmt.Errorf("no chain config for chain %d", chainID)
 	}
 
-	value, ok := rawValue.(float64)
+	tokenCfg, ok := chainCfg.Tokens[tokenName]
 	if !ok {
-		return value, fmt.Errorf("failed to cast QuoteOffsetBps to float")
+		return 0, fmt.Errorf("no token config for chain %d and token %s", chainID, tokenName)
 	}
-	return value, nil
+
+	return tokenCfg.QuoteOffsetBps, nil
 }
 
 // GetQuoteWidthBps returns the QuoteWidthBps for the given chainID.

@@ -83,9 +83,8 @@ type ChainConfig struct {
 	MinGasToken string `yaml:"min_gas_token"`
 	// QuotePct is the percent of balance to quote.
 	QuotePct float64 `yaml:"quote_pct"`
-	// QuoteOffsetBps is the number of basis points to deduct from the dest amount, and add to origin amount.
-	QuoteOffsetBps float64 `yaml:"quote_offset_bps"`
 	// QuoteWidthBps is the number of basis points to deduct from the dest amount.
+	// Note that this parameter is applied on a chain level and must be positive.
 	QuoteWidthBps float64 `yaml:"quote_width_bps"`
 	// FixedFeeMultiplier is the multiplier for the fixed fee.
 	FixedFeeMultiplier float64 `yaml:"fixed_fee_multiplier"`
@@ -111,6 +110,10 @@ type TokenConfig struct {
 	InitialBalancePct float64 `yaml:"initial_balance_pct"`
 	// MaxRebalanceAmount is the maximum amount to rebalance in human-readable units.
 	MaxRebalanceAmount string `yaml:"max_rebalance_amount"`
+	// QuoteOffsetBps is the number of basis points to deduct from the dest amount for a given token.
+	// Note that this value can be positive or negative; if positive it effectively increases the quoted price
+	// of the given token, and vice versa.
+	QuoteOffsetBps float64 `yaml:"quote_offset_bps"`
 }
 
 // DatabaseConfig represents the configuration for the database.
