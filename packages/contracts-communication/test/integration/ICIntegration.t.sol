@@ -146,6 +146,51 @@ abstract contract ICIntegrationTest is
         emit PingSent(counter, desc.dbNonce, desc.entryIndex);
     }
 
+    // ═══════════════════════════════════════════ COMPLEX SERIES CHECKS ═══════════════════════════════════════════════
+
+    function expectEventsPingSent(
+        uint256 counter,
+        InterchainTransaction memory icTx,
+        InterchainEntry memory entry,
+        uint256 verificationFee,
+        uint256 executionFee
+    )
+        internal
+    {
+        InterchainBatch memory batch = getInterchainBatch(entry);
+        InterchainTxDescriptor memory desc = getInterchainTxDescriptor(entry);
+        expectDatabaseEventInterchainEntryWritten(entry);
+        expectModuleEventBatchVerificationRequested(batch);
+        expectDatabaseEventInterchainBatchVerificationRequested(batch);
+        expectFeesEventExecutionFeeAdded(desc.transactionId, executionFee);
+        expectServiceEventExecutionRequested(desc.transactionId);
+        expectClientEventInterchainTransactionSent(icTx, verificationFee, executionFee);
+        expectPingPongEventPingSent(counter, desc);
+    }
+
+    function checkBatchLeafs(InterchainBatch memory batch, bytes32[] memory leafs) internal {
+        assertEq(leafs.length, 1);
+        assertEq(leafs[0], batch.batchRoot);
+    }
+
+    function checkDatabaseStatePingSent(InterchainEntry memory entry, uint256 initialDBNonce) internal {
+        InterchainBatch memory batch = getInterchainBatch(entry);
+        InterchainTxDescriptor memory desc = getInterchainTxDescriptor(entry);
+        assertEq(desc.dbNonce, initialDBNonce);
+        // Check getters related to the txs' dbNonce
+        checkBatchLeafs(batch, icDB.getBatchLeafs(desc.dbNonce));
+        checkBatchLeafs(batch, icDB.getBatchLeafsPaginated(desc.dbNonce, 0, 1));
+        assertEq(icDB.getBatchSize(desc.dbNonce), 1);
+        assertEq(icDB.getBatch(desc.dbNonce), batch);
+        assertEq(icDB.getEntry(desc.dbNonce, 0), entry);
+        assertEq(icDB.getEntryProof(desc.dbNonce, 0).length, 0);
+        // Check getters related to the next dbNonce
+        assertEq(icDB.getDBNonce(), desc.dbNonce + 1);
+        (uint256 dbNonce, uint64 entryIndex) = icDB.getNextEntryIndex();
+        assertEq(dbNonce, desc.dbNonce + 1);
+        assertEq(entryIndex, 0);
+    }
+
     // ═══════════════════════════════════════════════ DATA HELPERS ════════════════════════════════════════════════════
 
     function getModuleSignatures(InterchainBatch memory batch) internal view returns (bytes memory signatures) {

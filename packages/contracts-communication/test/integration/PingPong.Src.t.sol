@@ -36,37 +36,14 @@ contract PingPongSrcIntegrationTest is ICIntegrationTest {
         });
     }
 
-    function checkBatchLeafs(bytes32[] memory leafs) internal {
-        assertEq(leafs.length, 1);
-        assertEq(leafs[0], batch.batchRoot);
-    }
-
     function test_startPingPong_events() public {
-        expectDatabaseEventInterchainEntryWritten(entry);
-        expectModuleEventBatchVerificationRequested(batch);
-        expectDatabaseEventInterchainBatchVerificationRequested(batch);
-        expectFeesEventExecutionFeeAdded(desc.transactionId, executionFee);
-        expectServiceEventExecutionRequested(desc.transactionId);
-        expectClientEventInterchainTransactionSent(icTx, verificationFee, executionFee);
-        expectPingPongEventPingSent(COUNTER, desc);
+        expectEventsPingSent(COUNTER, icTx, entry, verificationFee, executionFee);
         pingPongApp.startPingPong(DST_CHAIN_ID, COUNTER);
     }
 
     function test_startPingPong_state_db() public {
         pingPongApp.startPingPong(DST_CHAIN_ID, COUNTER);
-        // Check getters related to the txs' dbNonce
-        assertEq(desc.dbNonce, SRC_INITIAL_DB_NONCE);
-        checkBatchLeafs(icDB.getBatchLeafs(desc.dbNonce));
-        checkBatchLeafs(icDB.getBatchLeafsPaginated(desc.dbNonce, 0, 1));
-        assertEq(icDB.getBatchSize(desc.dbNonce), 1);
-        assertEq(icDB.getBatch(desc.dbNonce), batch);
-        assertEq(icDB.getEntry(desc.dbNonce, 0), entry);
-        assertEq(icDB.getEntryProof(desc.dbNonce, 0).length, 0);
-        // Check getters related to the next dbNonce
-        assertEq(icDB.getDBNonce(), desc.dbNonce + 1);
-        (uint256 dbNonce, uint64 entryIndex) = icDB.getNextEntryIndex();
-        assertEq(dbNonce, desc.dbNonce + 1);
-        assertEq(entryIndex, 0);
+        checkDatabaseStatePingSent(entry, SRC_INITIAL_DB_NONCE);
     }
 
     function test_startPingPong_state_execFees() public {
