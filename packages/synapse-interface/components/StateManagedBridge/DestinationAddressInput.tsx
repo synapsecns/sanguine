@@ -121,7 +121,12 @@ export const DestinationAddressInput = ({
   }, [connectedAddress])
 
   return (
-    <div id="destination-address-input" onClick={handleActivateWarning}>
+    <div
+      id="destination-address-input"
+      className="flex items-center"
+      onClick={handleActivateWarning}
+    >
+      <div className="mr-1.5 text-secondary">To: </div>
       <div
         className={`
            flex border text-md rounded-sm
