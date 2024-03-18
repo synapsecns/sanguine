@@ -83,14 +83,6 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @inheritdoc IInterchainDB
-    function getBatchLeafs(uint256 dbNonce) external view returns (bytes32[] memory leafs) {
-        // In "no batching" mode: the finalized batch size is 1
-        _assertBatchFinalized(dbNonce);
-        leafs = new bytes32[](1);
-        leafs[0] = _entries[dbNonce].dataHash;
-    }
-
-    /// @inheritdoc IInterchainDB
     function getBatchLeafsPaginated(
         uint256 dbNonce,
         uint64 start,
@@ -100,18 +92,15 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         view
         returns (bytes32[] memory leafs)
     {
-        // In "no batching" mode: the finalized batch size is 1
-        _assertBatchFinalized(dbNonce);
         if (start != 0 || end != 1) {
             revert InterchainDB__InvalidEntryRange(dbNonce, start, end);
         }
-        leafs = new bytes32[](1);
-        leafs[0] = _entries[dbNonce].dataHash;
+        return getBatchLeafs(dbNonce);
     }
 
     /// @inheritdoc IInterchainDB
     function getEntryProof(uint256 dbNonce, uint64 entryIndex) external view returns (bytes32[] memory proof) {
-        // In "no batching" mode: the batch root is the same as the entry hash, hence the proof is empty
+        // In "no batching" mode: the batch root is the same as the entry value, hence the proof is empty
         _assertBatchFinalized(dbNonce);
         _assertEntryExists(dbNonce, entryIndex);
         return new bytes32[](0);
@@ -140,7 +129,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         onlyRemoteChainId(entry.srcChainId)
         returns (uint256 moduleVerifiedAt)
     {
-        // In "no batching" mode: the batch root is the same as the entry hash, hence the proof is empty
+        // In "no batching" mode: the batch root is the same as the entry value, hence the proof is empty
         if (proof.length != 0) {
             // If proof is not empty, the batch root is not verified
             return 0;
@@ -157,6 +146,14 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     }
 
     /// @inheritdoc IInterchainDB
+    function getBatchLeafs(uint256 dbNonce) public view returns (bytes32[] memory leafs) {
+        // In "no batching" mode: the finalized batch size is 1
+        _assertBatchFinalized(dbNonce);
+        leafs = new bytes32[](1);
+        leafs[0] = getEntry(dbNonce, 0).entryValue();
+    }
+
+    /// @inheritdoc IInterchainDB
     function getBatchSize(uint256 dbNonce) public view returns (uint64) {
         // In "no batching" mode: the finalized batch size is 1, the pending batch size is 0
         uint256 pendingNonce = _assertBatchExists(dbNonce);
@@ -167,7 +164,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     function getBatch(uint256 dbNonce) public view returns (InterchainBatch memory) {
         _assertBatchFinalized(dbNonce);
         // In "no batching" mode: the batch root is the same as the entry hash
-        return InterchainBatchLib.constructLocalBatch(dbNonce, _entries[dbNonce].dataHash);
+        return InterchainBatchLib.constructLocalBatch(dbNonce, getEntry(dbNonce, 0).entryValue());
     }
 
     /// @inheritdoc IInterchainDB
