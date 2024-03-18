@@ -10,6 +10,7 @@ import {
 } from "./ICIntegration.t.sol";
 
 // solhint-disable func-name-mixedcase
+// solhint-disable ordering
 contract PingPongSrcIntegrationTest is ICIntegrationTest {
     InterchainBatch public batch;
     InterchainEntry public entry;
@@ -35,6 +36,11 @@ contract PingPongSrcIntegrationTest is ICIntegrationTest {
         });
     }
 
+    function checkBatchLeafs(bytes32[] memory leafs) internal {
+        assertEq(leafs.length, 1);
+        assertEq(leafs[0], batch.batchRoot);
+    }
+
     function test_startPingPong_events() public {
         expectDatabaseEventInterchainEntryWritten(entry);
         expectModuleEventBatchVerificationRequested(batch);
@@ -44,6 +50,39 @@ contract PingPongSrcIntegrationTest is ICIntegrationTest {
         expectClientEventInterchainTransactionSent(icTx, verificationFee, executionFee);
         expectPingPongEventPingSent(COUNTER, desc);
         pingPongApp.startPingPong(DST_CHAIN_ID, COUNTER);
+    }
+
+    function test_startPingPong_state_db() public {
+        pingPongApp.startPingPong(DST_CHAIN_ID, COUNTER);
+        // Check getters related to the txs' dbNonce
+        assertEq(desc.dbNonce, SRC_INITIAL_DB_NONCE);
+        checkBatchLeafs(icDB.getBatchLeafs(desc.dbNonce));
+        checkBatchLeafs(icDB.getBatchLeafsPaginated(desc.dbNonce, 0, 1));
+        assertEq(icDB.getBatchSize(desc.dbNonce), 1);
+        assertEq(icDB.getBatch(desc.dbNonce), batch);
+        assertEq(icDB.getEntry(desc.dbNonce, 0), entry);
+        assertEq(icDB.getEntryProof(desc.dbNonce, 0).length, 0);
+        // Check getters related to the next dbNonce
+        assertEq(icDB.getDBNonce(), desc.dbNonce + 1);
+        (uint256 dbNonce, uint64 entryIndex) = icDB.getNextEntryIndex();
+        assertEq(dbNonce, desc.dbNonce + 1);
+        assertEq(entryIndex, 0);
+    }
+
+    function test_startPingPong_state_execFees() public {
+        pingPongApp.startPingPong(DST_CHAIN_ID, COUNTER);
+        assertEq(address(executionFees).balance, executionFee);
+        assertEq(executionFees.executionFee(DST_CHAIN_ID, desc.transactionId), executionFee);
+    }
+
+    function test_startPingPong_state_pingPongApp() public {
+        pingPongApp.startPingPong(DST_CHAIN_ID, COUNTER);
+        assertEq(address(pingPongApp).balance, PING_PONG_BALANCE - pingFee);
+    }
+
+    function test_startPingPong_state_synapseModule() public {
+        pingPongApp.startPingPong(DST_CHAIN_ID, COUNTER);
+        assertEq(address(module).balance, verificationFee);
     }
 
     function localChainId() internal pure override returns (uint256) {

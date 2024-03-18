@@ -34,6 +34,20 @@ abstract contract ICIntegrationTest is
     event PingReceived(uint256 counter, uint256 dbNonce, uint64 entryIndex);
     event PingSent(uint256 counter, uint256 dbNonce, uint64 entryIndex);
 
+    function assertEq(InterchainBatch memory batch, InterchainBatch memory expected) internal  {
+        assertEq(batch.srcChainId, expected.srcChainId);
+        assertEq(batch.dbNonce, expected.dbNonce);
+        assertEq(batch.batchRoot, expected.batchRoot);
+    }
+
+    function assertEq(InterchainEntry memory entry, InterchainEntry memory expected) internal  {
+        assertEq(entry.srcChainId, expected.srcChainId);
+        assertEq(entry.dbNonce, expected.dbNonce);
+        assertEq(entry.entryIndex, expected.entryIndex);
+        assertEq(entry.srcWriter, expected.srcWriter);
+        assertEq(entry.dataHash, expected.dataHash);
+    }
+
     function expectFeesEventExecutionFeeAdded(bytes32 transactionId, uint256 totalFee) internal {
         vm.expectEmit(address(executionFees));
         emit ExecutionFeeAdded({dstChainId: remoteChainId(), transactionId: transactionId, totalFee: totalFee});
