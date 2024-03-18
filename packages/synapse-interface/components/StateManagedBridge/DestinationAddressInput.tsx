@@ -124,18 +124,18 @@ export const DestinationAddressInput = ({
   const adjustInputSize = () => {
     const addressInput: HTMLElement = document.getElementById('address-input')
 
-    if (isInputFocused) {
-      addressInput.style.width = '9rem'
+    if (isInputFocused || isInputInvalid) {
+      addressInput.style.width = '10rem'
     } else if (inputValue.length > 0) {
       addressInput.style.width = inputValue.length + 2 + 'ch'
     } else {
-      addressInput.style.width = placeholder.length + 2 + 'ch'
+      addressInput.style.width = placeholder.length + 1 + 'ch'
     }
   }
 
   useEffect(() => {
     adjustInputSize()
-  }, [inputValue, placeholder])
+  }, [inputValue, placeholder, isInputFocused])
 
   return (
     <div id="destination-address-input" onClick={handleActivateWarning}>
@@ -167,20 +167,24 @@ export const DestinationAddressInput = ({
             placeholder={placeholder}
             value={inputValue}
             className={`
-              text-md rounded-sm text-primary py-1 px-2 z-0 border-0 bg-transparent max-w-40
+              transform-gpu transition-all duration-75
+              text-md rounded-sm text-strong py-0.5 pl-2 z-0 border-0 bg-transparent max-w-40
               focus:text-white focus:border-transparent focus:outline-none focus:ring-0
               ${
                 isInputFocused || isInputInvalid
                   ? 'text-left cursor-text '
                   : 'text-center cursor-pointer'
               }
+              ${destinationAddress ? 'pr-6' : 'pr-1'}
             `}
           />
           {destinationAddress && (
-            <CloseButton
-              onClick={onClearUserInput}
-              className="!static w-fit mr-1"
-            />
+            <div>
+              <CloseButton
+                onClick={onClearUserInput}
+                className="!w-5 !h-5 mr-1 mt-1"
+              />
+            </div>
           )}
         </div>
       </div>

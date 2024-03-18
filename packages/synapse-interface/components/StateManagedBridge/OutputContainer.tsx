@@ -11,7 +11,7 @@ export const OutputContainer = ({}) => {
 
   return (
     <div className="relative text-left rounded-md p-md bg-bgLight">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between max-w-full mb-3 space-x-4">
         <ToChainSelector />
         <DestinationAddressInput connectedAddress={address} />
       </div>
