@@ -125,7 +125,7 @@ export const DestinationAddressInput = ({
     const addressInput: HTMLElement = document.getElementById('address-input')
 
     if (isInputFocused || isInputInvalid) {
-      addressInput.style.width = '10rem'
+      addressInput.style.width = '8rem'
     } else if (inputValue.length > 0) {
       addressInput.style.width = inputValue.length + 2 + 'ch'
     } else {
@@ -168,7 +168,7 @@ export const DestinationAddressInput = ({
             value={inputValue}
             className={`
               transform-gpu transition-all duration-75
-              text-md rounded-sm text-strong py-0.5 pl-2 z-0 border-0 bg-transparent max-w-40
+              text-md rounded-sm text-strong py-0.5 pl-2 z-0 border-0 bg-transparent max-w-32
               focus:text-white focus:border-transparent focus:outline-none focus:ring-0
               ${
                 isInputFocused || isInputInvalid
