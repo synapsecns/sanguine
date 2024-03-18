@@ -129,13 +129,28 @@ export const FromChainListOverlay = () => {
 
   const [open, setOpen] = useState(true)
 
+  useEffect(() => {
+    const ref = overlayRef.current
+    const { y, height } = ref.getBoundingClientRect()
+    const screen = window.innerHeight
+    console.log(ref.style)
+    if (y + height > screen) {
+      ref.style.position = 'fixed'
+      ref.style.bottom = '4px'
+    }
+    if (y < 0) {
+      ref.style.position = 'fixed'
+      ref.style.top = '4px'
+    }
+  }, [])
+
   return (
     <div
       ref={overlayRef}
       data-test-id="fromChain-list-overlay"
       className={`${
         open ? 'block' : 'hidden'
-      } z-20 absolute bg-bgLight border border-separator rounded overflow-visible overflow-y-auto max-h-80 animate-slide-down origin-top`}
+      } z-20 absolute bg-bgLight border border-separator rounded overflow-y-auto max-h-96 animate-slide-down origin-top shadow-md`}
     >
       <div className="p-1 flex items-center font-medium">
         <SlideSearchBox

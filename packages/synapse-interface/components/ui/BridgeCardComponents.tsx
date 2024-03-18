@@ -48,7 +48,7 @@ export function BridgeCard({ ref, children }: BridgeCardTypes) {
     space: 'p-3 mt-5 rounded-[.75rem]',
     background: 'bg-zinc-100 dark:bg-bgBase', // TODO: Remove
     // background: 'bg-zinc-100 dark:bg-zinc-900/95 shadow-xl',
-    popoverDependencies: 'overflow-hidden transform',
+    // popoverDependencies: 'overflow-hidden transform',
   })
 
   return (
