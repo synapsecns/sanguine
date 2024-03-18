@@ -159,7 +159,7 @@ function HoverIcon({ token }) {
 
   return (
     <span
-      key={symbol}
+      key={token.tokenAddress}
       className="relative flex justify-items-center justify-center text-center"
     >
       <Image

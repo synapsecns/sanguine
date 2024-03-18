@@ -135,7 +135,6 @@ export const SwapChainListOverlay = () => {
     const ref = overlayRef.current
     const { y, height } = ref.getBoundingClientRect()
     const screen = window.innerHeight
-    console.log(ref.style)
     if (y + height > screen) {
       ref.style.position = 'fixed'
       ref.style.bottom = '4px'

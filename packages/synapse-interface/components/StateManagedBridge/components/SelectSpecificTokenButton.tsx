@@ -190,33 +190,41 @@ const ButtonContent = memo(
     )?.parsedBalance
 
     return (
-      <div
-        data-test-id="button-content"
-        className="flex items-center justify-between"
-      >
-        <span className="flex items-center gap-2">
-          <Image
-            loading="lazy"
-            src={token.icon.src}
-            alt="Token Image"
-            width="20"
-            height="20"
-            className="max-w-fit w-5 h-5"
-          />
-          {/* <img
+      <div data-test-id="button-content" className="">
+        <div className="flex items-center justify-between">
+          <span className="flex items-center gap-2">
+            <Image
+              loading="lazy"
+              src={token.icon.src}
+              alt="Token Image"
+              width="20"
+              height="20"
+              className="max-w-fit w-5 h-5"
+            />
+            {/* <img
           alt="token image"
           className="w-8 h-8 ml-2 mr-4 rounded-full"
           src={token?.icon?.src}
         /> */}
-          <Coin
-            token={token}
-            showAllChains={showAllChains}
-            isOrigin={isOrigin}
-          />
-        </span>
-        {isOrigin && (
-          <TokenBalance token={token} parsedBalance={parsedBalance} />
-        )}
+            <Coin
+              token={token}
+              showAllChains={showAllChains}
+              isOrigin={isOrigin}
+            />
+          </span>
+          {showAllChains && <AvailableChains token={token} />}
+          {isOrigin && (
+            <TokenBalance token={token} parsedBalance={parsedBalance} />
+          )}
+        </div>
+        <div className="flex items-center space-x-2 text-sm text-secondary">
+          {isOrigin && isTokenEligible(token) ? (
+            <div className="text-greenText">{ELIGIBILITY_DEFAULT_TEXT}</div>
+          ) : (
+            <></>
+            // <div>{token?.name}</div>
+          )}
+        </div>
       </div>
     )
   }
@@ -234,17 +242,12 @@ const Coin = ({
   const isEligible = isTokenEligible(token)
 
   return (
-    <div className="flex text-left text-lg justify-between">
-      <div className="">{token?.symbol}</div>
-      <div className="flex items-center space-x-2 text-sm text-secondary">
-        {isOrigin && isEligible ? (
-          <div className="text-greenText">{ELIGIBILITY_DEFAULT_TEXT}</div>
-        ) : (
-          <></>
-          // <div>{token?.name}</div>
-        )}
+    <div>
+      <div className="flex text-left text-lg justify-between">
+        <div className="">{token?.symbol}</div>
+
+        {/* {showAllChains && <AvailableChains token={token} />} */}
       </div>
-      {showAllChains && <AvailableChains token={token} />}
     </div>
   )
 }

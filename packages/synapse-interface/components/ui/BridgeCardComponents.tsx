@@ -7,7 +7,7 @@ import LoadingDots from './tailwind/LoadingDots'
 const join = (a) => Object.values(a).join(' ')
 
 interface BridgeCardTypes {
-  ref: React.RefObject<HTMLDivElement>
+  bridgeRef: React.RefObject<HTMLDivElement>
   children: React.ReactNode
 }
 
@@ -39,7 +39,7 @@ interface AmountInputTypes {
   onMaxBalance?: () => void
 }
 
-export function BridgeCard({ ref, children }: BridgeCardTypes) {
+export function BridgeCard({ bridgeRef, children }: BridgeCardTypes) {
   /* TODOs
    * Lift margin value up to parent
    * Remove need for popoverDependencies styles (in progress)
@@ -53,7 +53,7 @@ export function BridgeCard({ ref, children }: BridgeCardTypes) {
   })
 
   return (
-    <div ref={ref} className={className}>
+    <div ref={bridgeRef} className={className}>
       {children}
     </div>
   )

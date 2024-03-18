@@ -240,7 +240,6 @@ export const ToTokenListOverlay = () => {
     const ref = overlayRef.current
     const { y, height } = ref.getBoundingClientRect()
     const screen = window.innerHeight
-    console.log(ref.style)
     if (y + height > screen) {
       ref.style.position = 'fixed'
       ref.style.bottom = '4px'
@@ -260,7 +259,7 @@ export const ToTokenListOverlay = () => {
       }`}
     >
       <div className="bg-bgLight border border-separator rounded overflow-y-auto max-h-96 shadow-md">
-        <div className="p-1 flex items-center font-medium">
+        <div className="relative p-1 flex items-center font-medium">
           <SlideSearchBox
             placeholder="Find"
             searchStr={searchStr}
@@ -271,7 +270,9 @@ export const ToTokenListOverlay = () => {
         <div data-test-id={dataId}>
           {orderedPossibleTokens && orderedPossibleTokens.length > 0 && (
             <>
-              <div className="p-2 text-sm text-secondary">Receive…</div>
+              <div className="p-2 text-sm text-secondary sticky top-0 bg-bgLight">
+                Receive…
+              </div>
               {orderedPossibleTokens.map(
                 (token: TokenWithRates, idx: number) => {
                   return (
@@ -309,7 +310,7 @@ export const ToTokenListOverlay = () => {
           )}
           {remainingChainTokens && remainingChainTokens.length > 0 && (
             <div className="bg-bgBase rounded">
-              <div className="px-2 py-2 text-sm text-secondary">
+              <div className="px-2 py-2 text-sm text-secondary sticky top-0 bg-bgBase">
                 {toChainId
                   ? `More on ${CHAINS_BY_ID[toChainId]?.name}`
                   : 'All receivable tokens'}
@@ -331,7 +332,7 @@ export const ToTokenListOverlay = () => {
           )}
           {allOtherToTokens && allOtherToTokens.length > 0 && (
             <div className="bg-bgBase rounded">
-              <div className="px-2 py-2 text-sm text-secondary">
+              <div className="px-2 py-2 text-sm text-secondary sticky top-0 bg-bgBase">
                 All receivable tokens
               </div>
               {allOtherToTokens.map((token, idx) => {
