@@ -126,7 +126,7 @@ export const DestinationAddressInput = ({
     if (inputValue.length < 1) {
       addressInput.style.width = '3rem'
     } else {
-      addressInput.style.width = inputValue.length + 2 + 'ch'
+      addressInput.style.width = inputValue.length + 1 + 'ch'
     }
   }
 
