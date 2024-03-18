@@ -15,6 +15,7 @@ import {TypeCasts} from "../../contracts/libs/TypeCasts.sol";
 import {Test} from "forge-std/Test.sol";
 
 // solhint-disable custom-errors
+// solhint-disable ordering
 abstract contract ICSetup is Test {
     using TypeCasts for address;
 
@@ -23,6 +24,8 @@ abstract contract ICSetup is Test {
 
     uint256 public constant SRC_INITIAL_DB_NONCE = 10;
     uint256 public constant DST_INITIAL_DB_NONCE = 20;
+
+    uint256 public constant PING_PONG_BALANCE = 1000 ether;
 
     uint256 public constant APP_OPTIMISTIC_PERIOD = 10 minutes;
 
@@ -49,6 +52,7 @@ abstract contract ICSetup is Test {
         deployInterchainContracts();
         configureInterchainContracts();
         initDBNonce();
+        dealEther();
     }
 
     function deployInterchainContracts() internal virtual {
@@ -126,6 +130,10 @@ abstract contract ICSetup is Test {
         require(icDB.getDBNonce() == end, "DB nonce not increased");
     }
 
+    function dealEther() internal virtual {
+        deal(address(pingPongApp), PING_PONG_BALANCE);
+    }
+
     function getGasDataFixture(uint256 chainId)
         internal
         view
@@ -147,7 +155,7 @@ abstract contract ICSetup is Test {
         return isSourceChain(localChainId());
     }
 
-    function isSourceChain(uint256 chainId) internal view returns (bool) {
+    function isSourceChain(uint256 chainId) internal pure returns (bool) {
         if (chainId == SRC_CHAIN_ID) {
             return true;
         } else if (chainId == DST_CHAIN_ID) {
