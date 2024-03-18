@@ -83,6 +83,7 @@ export const FromChainListOverlay = () => {
     setCurrentIdx(-1)
     setSearchStr('')
     dispatch(setShowFromChainListOverlay(false))
+    setOpen(false)
   }, [setShowFromChainListOverlay])
 
   const escFunc = () => {
@@ -126,11 +127,15 @@ export const FromChainListOverlay = () => {
     onClose()
   }
 
+  const [open, setOpen] = useState(true)
+
   return (
     <div
       ref={overlayRef}
       data-test-id="fromChain-list-overlay"
-      className="hidden group-hover:block z-20 absolute bg-bgLight border border-separator rounded overflow-visible overflow-y-auto max-h-80"
+      className={`${
+        open ? 'block' : 'hidden'
+      } z-20 absolute bg-bgLight border border-separator rounded overflow-visible overflow-y-auto max-h-80 animate-slide-down origin-top`}
     >
       <div className="p-1 flex items-center font-medium">
         <SlideSearchBox
@@ -143,7 +148,7 @@ export const FromChainListOverlay = () => {
       <div data-test-id={dataId}>
         {possibleChains && possibleChains.length > 0 && (
           <>
-            <div className="px-2 py-2 text-sm text-secondary">From…</div>
+            <div className="p-2 text-sm text-secondary">From…</div>
             {possibleChains.map(({ id: mapChainId }, idx) => {
               return (
                 <SelectSpecificNetworkButton

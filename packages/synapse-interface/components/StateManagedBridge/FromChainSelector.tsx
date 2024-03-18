@@ -1,6 +1,5 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { useState } from 'react'
 
 import { setShowFromChainListOverlay } from '@/slices/bridgeDisplaySlice'
 import { useBridgeState } from '@/slices/bridge/hooks'
@@ -17,14 +16,21 @@ export const FromChainSelector = () => {
   const [hover, setHover] = useState(false)
 
   return (
-    <div className="group relative">
+    <div
+      className="relative"
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      onMouseDown={(e) => e.stopPropagation()}
+      onClick={() => setHover(!hover)}
+    >
       <ChainSelector
         dataTestId="bridge-origin-chain-list-button"
         selectedItem={fromChain}
         label="From"
-        onClick={() => dispatch(setShowFromChainListOverlay(true))}
+        onClick={() => setHover(true)}
+        // onClick={() => dispatch(setShowFromChainListOverlay(true))}
       />
-      <FromChainListOverlay />
+      {hover && <FromChainListOverlay />}
     </div>
   )
 }

@@ -122,7 +122,7 @@ export function ChainSelector({
   const className = join({
     unset: 'text-left',
     flex: 'flex items-center gap-2.5',
-    space: 'px-2 py-1.5 mx-0.5 rounded flex-none',
+    space: 'px-2 py-1.5 mx-0.5 mb-1 rounded flex-none',
     background: 'bg-transparent',
     border: 'border border-zinc-200 dark:border-transparent',
     font: 'leading-tight',
@@ -131,7 +131,8 @@ export function ChainSelector({
   })
 
   return (
-    <button data-test-id={dataTestId} className={className} onClick={onClick}>
+    // <button data-test-id={dataTestId} className={className} onClick={onClick}>
+    <button data-test-id={dataTestId} className={className}>
       {selectedItem && (
         <img
           src={selectedItem?.chainImg?.src}

@@ -108,8 +108,7 @@ function ButtonContent({
           />
           {chain.name}
         </span>
-        <ChainTokens balanceTokens={balanceTokens} />
-        {/* {isOrigin && <ChainTokens balanceTokens={balanceTokens} />} */}
+        {isOrigin && <ChainTokens balanceTokens={balanceTokens} />}
       </div>
     )
   )
@@ -120,31 +119,30 @@ const ChainTokens = ({
 }: {
   balanceTokens: TokenAndBalance[]
 }) => {
-  // const hasNoTokens: boolean =
-  //   !balanceTokens || (balanceTokens && balanceTokens.length === 0)
-  // const hasOneToken: boolean = balanceTokens && balanceTokens.length > 0
-  // const hasTwoTokens: boolean = balanceTokens && balanceTokens.length > 1
-  // const hasOnlyOneToken: boolean = balanceTokens && balanceTokens.length === 1
-  // const hasOnlyTwoTokens: boolean = balanceTokens && balanceTokens.length === 2
-  const numOverTwoTokens: number =
-    balanceTokens && balanceTokens.length - 2 > 0 ? balanceTokens.length - 2 : 0
+  const max = 2
+  const remainder: number =
+    balanceTokens && balanceTokens.length - max > 0
+      ? balanceTokens.length - max
+      : 0
 
   return (
     <span
       data-test-id="portfolio-token-visualizer"
       className="flex items-center cursor-pointer hover-trigger text-sm text-secondary -space-x-1.5"
     >
-      {balanceTokens?.slice(0, 2).map((token: TokenAndBalance, key: number) => {
-        return <HoverIcon token={balanceTokens[key]} />
-      })}
-      {numOverTwoTokens > 0 && (
+      {balanceTokens
+        ?.slice(0, max)
+        .map((token: TokenAndBalance, key: number) => {
+          return <HoverIcon token={balanceTokens[key]} />
+        })}
+      {remainder > 0 && (
         <span className="relative">
           <div className="peer h-6 w-6 text-[13px] mb-px text-center grid place-content-center bg-bgBase rounded-full">
-            {numOverTwoTokens}
+            {remainder}
           </div>
           <ul className="hidden peer-hover:block absolute z-50 bottom-6 -right-1 -mr-px pl-1 pr-1.5 py-1.5 bg-bgBase rounded text-right space-y-0.5 whitespace-normal max-w-40">
             {balanceTokens
-              ?.slice(2)
+              ?.slice(max)
               .map((token: TokenAndBalance, key: number) => (
                 <li className="px-0.5">{token.token.symbol}</li>
               ))}
@@ -159,8 +157,6 @@ function HoverIcon(token) {
   const symbol = token.token.token.symbol
   const src = token.token.token.icon
   const parsedBalance = token.token?.parsedBalance
-
-  console.log(Object.keys(token))
 
   return (
     <span className="relative flex justify-items-center justify-center text-center">

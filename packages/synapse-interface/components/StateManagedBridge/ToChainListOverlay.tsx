@@ -129,28 +129,28 @@ export const ToChainListOverlay = () => {
     onClose()
   }
 
+  const [open, setOpen] = useState(true)
+
   return (
     <div
       ref={overlayRef}
       data-test-id="toChain-list-overlay"
-      className="max-h-full pb-4 mt-6 overflow-auto scrollbar-hide"
+      className={`${
+        open ? 'block' : 'hidden'
+      } z-20 absolute bg-bgLight border border-separator rounded overflow-visible overflow-y-auto max-h-80 animate-slide-down origin-top`}
     >
-      <div className="z-10 w-full px-2 ">
-        <div className="relative flex items-center mb-2 font-medium">
-          <SlideSearchBox
-            placeholder="Filter by chain name, id, or native currency"
-            searchStr={searchStr}
-            onSearch={onSearch}
-          />
-          <CloseButton onClick={onClose} />
-        </div>
+      <div className="p-1 flex items-center font-medium">
+        <SlideSearchBox
+          placeholder="Find"
+          searchStr={searchStr}
+          onSearch={onSearch}
+        />
+        <CloseButton onClick={onClose} />
       </div>
-      <div data-test-id={dataId} className="px-2 pt-2 pb-8 md:px-2">
+      <div data-test-id={dataId}>
         {possibleChains && possibleChains.length > 0 && (
           <>
-            <div className="mb-4 text-sm font-normal text-primaryTextColor">
-              To…
-            </div>
+            <div className="px-2 py-2 text-sm text-secondary">To…</div>
             {possibleChains.map(({ id: mapChainId }, idx) => {
               return (
                 <SelectSpecificNetworkButton
@@ -174,9 +174,7 @@ export const ToChainListOverlay = () => {
         )}
         {remainingChains && remainingChains.length > 0 && (
           <>
-            <div className="pt-4 mb-4 text-sm font-normal text-primaryTextColor">
-              All chains
-            </div>
+            <div className="px-2 py-2 text-sm text-secondary">All chains</div>
             {remainingChains.map(({ id: mapChainId }, idx) => {
               return (
                 <SelectSpecificNetworkButton
