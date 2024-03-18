@@ -286,10 +286,7 @@ func (c Config) GetQuoteOffsetBps(chainID int) (value float64, err error) {
 
 	value, ok := rawValue.(float64)
 	if !ok {
-		return value, fmt.Errorf("failed to cast QuoteOffsetBps to int")
-	}
-	if value <= 0 {
-		value = DefaultChainConfig.QuoteOffsetBps
+		return value, fmt.Errorf("failed to cast QuoteOffsetBps to float")
 	}
 	return value, nil
 }
@@ -303,7 +300,7 @@ func (c Config) GetQuoteWidthBps(chainID int) (value float64, err error) {
 
 	value, ok := rawValue.(float64)
 	if !ok {
-		return value, fmt.Errorf("failed to cast QuoteWidthBps to int")
+		return value, fmt.Errorf("failed to cast QuoteWidthBps to float")
 	}
 	if value <= 0 {
 		value = DefaultChainConfig.QuoteWidthBps
