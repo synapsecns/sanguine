@@ -79,7 +79,8 @@ export const DestinationAddressInput = ({
     placeholder = ''
   } else {
     placeholder = connectedAddress
-      ? shortenAddress(connectedAddress)
+      ? // ? shortenAddress(connectedAddress)
+        '0x...'
       : 'Wallet address'
   }
 
@@ -120,6 +121,23 @@ export const DestinationAddressInput = ({
     handleClearInput()
   }, [connectedAddress])
 
+  const adjustInputSize = () => {
+    const addressInput = document.getElementById('address-input')
+    if (inputValue.length < 1) {
+      addressInput.style.width = '3rem'
+    } else {
+      addressInput.style.width = inputValue.length + 2 + 'ch'
+    }
+  }
+
+  useEffect(() => {
+    adjustInputSize()
+  }, [inputValue])
+
+  console.log('placeholder.length:', placeholder.length)
+  console.log('inputValue:', inputValue)
+  console.log('inputValue.length:', inputValue.length)
+
   return (
     <div
       id="destination-address-input"
@@ -141,6 +159,7 @@ export const DestinationAddressInput = ({
         `}
       >
         <input
+          id="address-input"
           ref={inputRef}
           onChange={(e) =>
             dispatch(setDestinationAddress(e.target.value as Address))
@@ -153,9 +172,8 @@ export const DestinationAddressInput = ({
           value={inputValue}
           disabled={isEmpty(connectedAddress)}
           className={`
-            text-md rounded-sm text-secondary py-1 px-2 z-0 border-0 bg-transparent
+            text-md rounded-sm text-primary py-1 px-2 z-0 border-0 bg-transparent
             focus:text-white focus:border-transparent focus:outline-none focus:ring-0
-            ${connectedAddress ? 'w-32' : 'w-36'}
             ${
               isInputFocused || isInputInvalid
                 ? 'text-left cursor-text'
@@ -204,7 +222,7 @@ export const DestinationAddressInput = ({
     </div>
   )
 }
-
+// ${connectedAddress ? 'w-32' : 'w-36'}
 const ListRecipient = ({
   address,
   daysAgo,
