@@ -24,7 +24,8 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
 
     /// @inheritdoc IInterchainDB
     function writeEntry(bytes32 dataHash) external returns (uint256 dbNonce, uint64 entryIndex) {
-        return _writeEntry(dataHash);
+        InterchainEntry memory entry = _writeEntry(dataHash);
+        (dbNonce, entryIndex) = (entry.dbNonce, entry.entryIndex);
     }
 
     /// @inheritdoc IInterchainDB
@@ -52,9 +53,10 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         onlyRemoteChainId(dstChainId)
         returns (uint256 dbNonce, uint64 entryIndex)
     {
-        (dbNonce, entryIndex) = _writeEntry(dataHash);
-        // In "no batching" mode: the batch root is the same as the entry hash
-        InterchainBatch memory batch = InterchainBatchLib.constructLocalBatch(dbNonce, dataHash);
+        InterchainEntry memory entry = _writeEntry(dataHash);
+        (dbNonce, entryIndex) = (entry.dbNonce, entry.entryIndex);
+        // In "no batching" mode: the batch root is the same as the entry value
+        InterchainBatch memory batch = InterchainBatchLib.constructLocalBatch(dbNonce, entry.entryValue());
         _requestVerification(dstChainId, batch, srcModules);
     }
 
@@ -184,11 +186,16 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
     /// @dev Write the entry to the database and emit the event.
-    function _writeEntry(bytes32 dataHash) internal returns (uint256 dbNonce, uint64 entryIndex) {
-        dbNonce = _entries.length;
-        entryIndex = 0;
+    function _writeEntry(bytes32 dataHash) internal returns (InterchainEntry memory entry) {
+        entry = InterchainEntryLib.constructLocalEntry({
+            dbNonce: getDBNonce(),
+            entryIndex: 0,
+            writer: msg.sender,
+            dataHash: dataHash
+        });
+        // TODO: do we NEED to save both writer and dataHash instead of entryValue (writer + dataHash, hashed)?
         _entries.push(LocalEntry(msg.sender, dataHash));
-        emit InterchainEntryWritten(block.chainid, dbNonce, TypeCasts.addressToBytes32(msg.sender), dataHash);
+        emit InterchainEntryWritten(block.chainid, entry.dbNonce, entry.srcWriter, dataHash);
     }
 
     /// @dev Request the verification of the entry by the modules, and emit the event.
