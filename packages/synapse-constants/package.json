@@ -1,6 +1,6 @@
 {
   "name": "synapse-constants",
-  "version": "1.3.6",
+  "version": "1.3.61",
   "description": "This is an npm package that maintains all synapse constants",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -19,7 +19,8 @@
     "lint:check": "eslint . --max-warnings=0",
     "build": "node scripts/generateMaps.js && node scripts/findMissing.js",
     "prepublish": "tsc",
-    "compile": "tsc && copyfiles -u 1 \"constants/assets/**/*.*\" dist/constants && webpack"
+    "compile": "tsc && copyfiles -u 1 \"constants/assets/**/*.*\" dist/constants && webpack",
+    "maps:generate": "yarn build && yarn compile"
   },
   "author": "",
   "license": "ISC",
