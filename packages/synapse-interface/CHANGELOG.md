@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.10.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.9.10...@synapsecns/synapse-interface@0.10.0) (2024-03-18)
+
+
+### Features
+
+* **synapse-interface:** create template event maintenance components, remove ecotone + metis event maintenance components ([#2294](https://github.com/synapsecns/sanguine/issues/2294)) ([7780b01](https://github.com/synapsecns/sanguine/commit/7780b010bd5552b2e53db9bf4814dc80318cb57c))
+
+
+
+
+
 ## [0.9.10](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.9.9...@synapsecns/synapse-interface@0.9.10) (2024-03-18)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
