@@ -408,7 +408,7 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, origin, dest int, a
 var errMinGasExceedsQuoteAmount = errors.New("min gas token exceeds quote amount")
 
 func (m *Manager) getDestAmount(parentCtx context.Context, originAmount *big.Int, chainID int) (*big.Int, error) {
-	_, span := m.metricsHandler.Tracer().Start(parentCtx, "getDestAmount", trace.WithAttributes(
+	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "getDestAmount", trace.WithAttributes(
 		attribute.String("quote_amount", originAmount.String()),
 	))
 	defer func() {
@@ -419,17 +419,29 @@ func (m *Manager) getDestAmount(parentCtx context.Context, originAmount *big.Int
 	if err != nil {
 		return nil, fmt.Errorf("error getting quote offset bps: %w", err)
 	}
-	quoteOffsetFraction := new(big.Float).Quo(new(big.Float).SetInt64(int64(quoteOffsetBps)), new(big.Float).SetInt64(10000))
-	quoteOffsetFactor := new(big.Float).Sub(new(big.Float).SetInt64(1), quoteOffsetFraction)
-	destAmount, _ := new(big.Float).Mul(new(big.Float).SetInt(originAmount), quoteOffsetFactor).Int(nil)
+	destAmount := m.applyOffset(ctx, quoteOffsetBps, originAmount)
 
 	span.SetAttributes(
 		attribute.Float64("quote_width_bps", quoteOffsetBps),
-		attribute.String("quote_width_fraction", quoteOffsetFraction.String()),
-		attribute.String("quote_width_factor", quoteOffsetFactor.String()),
 		attribute.String("dest_amount", destAmount.String()),
 	)
 	return destAmount, nil
+}
+
+// applyOffset applies an offset (in bps) to a target.
+func (m *Manager) applyOffset(parentCtx context.Context, offsetBps float64, target *big.Int) (result *big.Int) {
+	_, span := m.metricsHandler.Tracer().Start(parentCtx, "applyOffset", trace.WithAttributes(
+		attribute.Float64("offset_bps", offsetBps),
+		attribute.String("target", target.String()),
+	))
+	defer func() {
+		metrics.EndSpan(span)
+	}()
+
+	offsetFraction := new(big.Float).Quo(new(big.Float).SetInt64(int64(offsetBps)), new(big.Float).SetInt64(10000))
+	offsetFactor := new(big.Float).Sub(new(big.Float).SetInt64(1), offsetFraction)
+	result, _ = new(big.Float).Mul(new(big.Float).SetInt(target), offsetFactor).Int(nil)
+	return result
 }
 
 // Submits a single quote.
