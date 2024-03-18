@@ -365,6 +365,13 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, origin, dest int, a
 	balanceFlt := new(big.Float).SetInt(balance)
 	quoteAmount, _ = new(big.Float).Mul(balanceFlt, new(big.Float).SetFloat64(quotePct/100)).Int(nil)
 
+	// Apply the quoteOffset
+	quoteOffsetBps, err := m.config.GetQuoteOffsetBps(dest)
+	if err != nil {
+		return nil, fmt.Errorf("error getting quote offset bps: %w", err)
+	}
+	quoteAmount = m.applyOffset(ctx, quoteOffsetBps, quoteAmount)
+
 	// Clip the quoteAmount by the minQuoteAmount
 	minQuoteAmount := m.config.GetMinQuoteAmount(dest, address)
 	if quoteAmount.Cmp(minQuoteAmount) < 0 {
@@ -415,14 +422,14 @@ func (m *Manager) getDestAmount(parentCtx context.Context, originAmount *big.Int
 		metrics.EndSpan(span)
 	}()
 
-	quoteOffsetBps, err := m.config.GetQuoteWidthBps(chainID)
+	quoteWidthBps, err := m.config.GetQuoteWidthBps(chainID)
 	if err != nil {
-		return nil, fmt.Errorf("error getting quote offset bps: %w", err)
+		return nil, fmt.Errorf("error getting quote width bps: %w", err)
 	}
-	destAmount := m.applyOffset(ctx, quoteOffsetBps, originAmount)
+	destAmount := m.applyOffset(ctx, quoteWidthBps, originAmount)
 
 	span.SetAttributes(
-		attribute.Float64("quote_width_bps", quoteOffsetBps),
+		attribute.Float64("quote_width_bps", quoteWidthBps),
 		attribute.String("dest_amount", destAmount.String()),
 	)
 	return destAmount, nil
