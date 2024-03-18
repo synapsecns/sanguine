@@ -396,24 +396,44 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, origin, dest int, a
 	}
 
 	// Deduct gas cost from the quote amount, if necessary
-	if chain.IsGasToken(address) {
-		// Deduct the minimum gas token balance from the quote amount
-		var minGasToken *big.Int
-		minGasToken, err = m.config.GetMinGasToken(dest)
-		if err != nil {
-			return nil, fmt.Errorf("error getting min gas token: %w", err)
-		}
-		quoteAmount = new(big.Int).Sub(quoteAmount, minGasToken)
-		if quoteAmount.Cmp(big.NewInt(0)) < 0 {
-			err = errMinGasExceedsQuoteAmount
-			span.AddEvent(err.Error(), trace.WithAttributes(
-				attribute.String("quote_amount", quoteAmount.String()),
-				attribute.String("min_gas_token", minGasToken.String()),
-			))
-			return nil, err
-		}
+	quoteAmount, err = m.deductGasCost(ctx, quoteAmount, address, dest)
+	if err != nil {
+		return nil, fmt.Errorf("error deducting gas cost: %w", err)
 	}
+
 	return quoteAmount, nil
+}
+
+// deductGasCost deducts the gas cost from the quote amount, if necessary.
+func (m *Manager) deductGasCost(parentCtx context.Context, quoteAmount *big.Int, address common.Address, dest int) (quoteAmountAdj *big.Int, err error) {
+	if !chain.IsGasToken(address) {
+		return quoteAmount, nil
+	}
+
+	_, span := m.metricsHandler.Tracer().Start(parentCtx, "deductGasCost", trace.WithAttributes(
+		attribute.String("quote_amount", quoteAmount.String()),
+	))
+	defer func() {
+		span.SetAttributes(attribute.String("quote_amount", quoteAmount.String()))
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	// Deduct the minimum gas token balance from the quote amount
+	var minGasToken *big.Int
+	minGasToken, err = m.config.GetMinGasToken(dest)
+	if err != nil {
+		return nil, fmt.Errorf("error getting min gas token: %w", err)
+	}
+	quoteAmountAdj = new(big.Int).Sub(quoteAmount, minGasToken)
+	if quoteAmountAdj.Cmp(big.NewInt(0)) < 0 {
+		err = errMinGasExceedsQuoteAmount
+		span.AddEvent(err.Error(), trace.WithAttributes(
+			attribute.String("quote_amount_adj", quoteAmountAdj.String()),
+			attribute.String("min_gas_token", minGasToken.String()),
+		))
+		return nil, err
+	}
+	return quoteAmountAdj, nil
 }
 
 var errMinGasExceedsQuoteAmount = errors.New("min gas token exceeds quote amount")
