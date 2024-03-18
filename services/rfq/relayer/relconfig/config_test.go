@@ -31,7 +31,6 @@ func TestGetters(t *testing.T) {
 				L1FeeDestGasEstimate:   40000,
 				MinGasToken:            "1000",
 				QuotePct:               50,
-				QuoteOffsetBps:         20,
 				QuoteWidthBps:          10,
 				FixedFeeMultiplier:     1.1,
 			},
@@ -50,7 +49,6 @@ func TestGetters(t *testing.T) {
 			L1FeeDestGasEstimate:   40001,
 			MinGasToken:            "1001",
 			QuotePct:               51,
-			QuoteOffsetBps:         20,
 			QuoteWidthBps:          11,
 			FixedFeeMultiplier:     1.2,
 		},
@@ -71,7 +69,6 @@ func TestGetters(t *testing.T) {
 				L1FeeDestGasEstimate:   40000,
 				MinGasToken:            "1000",
 				QuotePct:               50,
-				QuoteOffsetBps:         20,
 				QuoteWidthBps:          10,
 				FixedFeeMultiplier:     1.1,
 				Tokens: map[string]relconfig.TokenConfig{
@@ -265,20 +262,6 @@ func TestGetters(t *testing.T) {
 		chainVal, err := cfgWithBase.GetQuotePct(chainID)
 		assert.NoError(t, err)
 		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].QuotePct)
-	})
-
-	t.Run("GetQuoteOffsetBps", func(t *testing.T) {
-		defaultVal, err := cfg.GetQuoteOffsetBps(badChainID)
-		assert.NoError(t, err)
-		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.QuoteOffsetBps)
-
-		baseVal, err := cfgWithBase.GetQuoteOffsetBps(badChainID)
-		assert.NoError(t, err)
-		assert.Equal(t, baseVal, cfgWithBase.BaseChainConfig.QuoteOffsetBps)
-
-		chainVal, err := cfgWithBase.GetQuoteOffsetBps(chainID)
-		assert.NoError(t, err)
-		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].QuoteOffsetBps)
 	})
 
 	t.Run("GetQuoteWidthBps", func(t *testing.T) {
