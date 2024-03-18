@@ -19,6 +19,7 @@ var DefaultChainConfig = ChainConfig{
 	MinGasToken:           "100000000000000000", // 1 ETH
 	QuotePct:              100,
 	QuoteOffsetBps:        0,
+	QuoteWidthBps:         0,
 	FixedFeeMultiplier:    1,
 }
 
@@ -289,6 +290,23 @@ func (c Config) GetQuoteOffsetBps(chainID int) (value float64, err error) {
 	}
 	if value <= 0 {
 		value = DefaultChainConfig.QuoteOffsetBps
+	}
+	return value, nil
+}
+
+// GetQuoteWidthBps returns the QuoteWidthBps for the given chainID.
+func (c Config) GetQuoteWidthBps(chainID int) (value float64, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "QuoteWidthBps")
+	if err != nil {
+		return value, err
+	}
+
+	value, ok := rawValue.(float64)
+	if !ok {
+		return value, fmt.Errorf("failed to cast QuoteWidthBps to int")
+	}
+	if value <= 0 {
+		value = DefaultChainConfig.QuoteWidthBps
 	}
 	return value, nil
 }

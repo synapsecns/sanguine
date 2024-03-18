@@ -83,8 +83,10 @@ type ChainConfig struct {
 	MinGasToken string `yaml:"min_gas_token"`
 	// QuotePct is the percent of balance to quote.
 	QuotePct float64 `yaml:"quote_pct"`
-	// QuoteOffsetBps is the number of basis points to deduct from the dest amount.
+	// QuoteOffsetBps is the number of basis points to deduct from the dest amount, and add to origin amount.
 	QuoteOffsetBps float64 `yaml:"quote_offset_bps"`
+	// QuoteWidthBps is the number of basis points to deduct from the dest amount.
+	QuoteWidthBps float64 `yaml:"quote_width_bps"`
 	// FixedFeeMultiplier is the multiplier for the fixed fee.
 	FixedFeeMultiplier float64 `yaml:"fixed_fee_multiplier"`
 	// CCTP start block is the block at which the chain listener will listen for CCTP events.
