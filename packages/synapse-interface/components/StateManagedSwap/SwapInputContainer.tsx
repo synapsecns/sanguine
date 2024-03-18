@@ -11,7 +11,9 @@ import {
   ConnectWalletButton,
   ConnectedIndicator,
 } from '@/components/ConnectionIndicators'
-import { SwapChainSelector } from './SwapChainSelector'
+// import { SwapChainSelector } from './SwapChainSelector'
+import { ChainSelector } from '../ui/BridgeCardComponents'
+import { SwapChainListOverlay } from './SwapChainListOverlay'
 import { SwapFromTokenSelector } from './SwapFromTokenSelector'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { initialState, updateSwapFromValue } from '@/slices/swap/reducer'
@@ -20,6 +22,7 @@ import {
   BridgeAmountContainer,
   BridgeSectionContainer,
 } from '../ui/BridgeCardComponents'
+import { CHAINS_BY_ID } from '@/constants/chains'
 
 export const SwapInputContainer = () => {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -129,3 +132,12 @@ export const SwapInputContainer = () => {
     </BridgeSectionContainer>
   )
 }
+
+const SwapChainSelector = () => (
+  <ChainSelector
+    dataTestId="bridge-origin-chain-list-button"
+    selectedItem={CHAINS_BY_ID[useSwapState().swapChainId]}
+    label="From"
+    overlay={<SwapChainListOverlay />}
+  />
+)

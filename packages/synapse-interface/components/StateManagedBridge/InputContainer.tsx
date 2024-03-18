@@ -4,7 +4,7 @@ import { useAccount, useNetwork } from 'wagmi'
 
 import { initialState, updateFromValue } from '@/slices/bridge/reducer'
 import MiniMaxButton from '../buttons/MiniMaxButton'
-import { AmountInput } from '../ui/BridgeCardComponents'
+import { AmountInput, ChainSelector } from '../ui/BridgeCardComponents'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import {
@@ -12,8 +12,9 @@ import {
   ConnectWalletButton,
   ConnectedIndicator,
 } from '@/components/ConnectionIndicators'
-import { FromChainSelector } from './FromChainSelector'
+import { CHAINS_BY_ID } from '@/constants/chains'
 import { FromTokenSelector } from './FromTokenSelector'
+import { FromChainListOverlay } from './FromChainListOverlay'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import {
@@ -122,3 +123,12 @@ export const InputContainer = () => {
     </BridgeSectionContainer>
   )
 }
+
+const FromChainSelector = () => (
+  <ChainSelector
+    dataTestId="bridge-origin-chain-list-button"
+    selectedItem={CHAINS_BY_ID[useBridgeState().fromChainId]}
+    label="From"
+    overlay={<FromChainListOverlay />}
+  />
+)

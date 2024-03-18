@@ -8,7 +8,8 @@ import { CHAINS_BY_ID, sortChains } from '@constants/chains'
 import { useDispatch } from 'react-redux'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { setShowFromChainListOverlay } from '@/slices/bridgeDisplaySlice'
-import { SelectSpecificNetworkButton } from './components/SelectSpecificNetworkButton'
+// import { SelectSpecificNetworkButton } from './components/SelectSpecificNetworkButton'
+import { SelectSpecificNetworkButton } from '../StateManagedBridge/components/SelectSpecificNetworkButton'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import { CloseButton } from './components/CloseButton'
 import { SearchResults } from './components/SearchResults'
@@ -83,6 +84,7 @@ export const SwapChainListOverlay = () => {
   const onClose = useCallback(() => {
     setCurrentIdx(-1)
     setSearchStr('')
+    setOpen(false)
     dispatch(setShowSwapChainListOverlay(false))
   }, [dispatch])
 
@@ -127,66 +129,89 @@ export const SwapChainListOverlay = () => {
     onClose()
   }
 
+  const [open, setOpen] = useState(true)
+
+  useEffect(() => {
+    const ref = overlayRef.current
+    const { y, height } = ref.getBoundingClientRect()
+    const screen = window.innerHeight
+    console.log(ref.style)
+    if (y + height > screen) {
+      ref.style.position = 'fixed'
+      ref.style.bottom = '4px'
+    }
+    if (y < 0) {
+      ref.style.position = 'fixed'
+      ref.style.top = '4px'
+    }
+  }, [])
+
   return (
     <div
       ref={overlayRef}
-      data-test-id="fromChain-list-overlay"
-      className="max-h-full pb-4 mt-2 overflow-auto scrollbar-hide"
+      data-test-id="swapChain-list-overlay"
+      className={`${
+        open ? 'block' : 'hidden'
+      } z-20 absolute bg-bgLight border border-separator rounded overflow-y-auto max-h-96 animate-slide-down origin-top shadow-md`}
     >
-      <div className="z-10 w-full px-2 ">
-        <div className="relative flex items-center mb-2 font-medium">
-          <SlideSearchBox
-            placeholder="Filter by chain name, id, or native currency"
-            searchStr={searchStr}
-            onSearch={onSearch}
-          />
-          <CloseButton onClick={onClose} />
-        </div>
+      <div className="p-1 flex items-center font-medium">
+        <SlideSearchBox
+          placeholder="Find"
+          searchStr={searchStr}
+          onSearch={onSearch}
+        />
+        <CloseButton onClick={onClose} />
       </div>
-      <div data-test-id={dataId} className="px-2 pt-2 pb-8 md:px-2">
-        {possibleChains && possibleChains.length > 0 && (
-          <>
-            <div className="mb-4 text-sm text-primaryTextColor">From…</div>
-            {possibleChains.map(({ id: mapChainId }, idx) => {
-              return (
-                <SelectSpecificNetworkButton
-                  key={idx}
-                  itemChainId={mapChainId}
-                  isCurrentChain={swapChainId === mapChainId}
-                  active={idx === currentIdx}
-                  onClick={() => {
-                    if (swapChainId === mapChainId) {
-                      onClose()
-                    } else {
-                      handleSetSwapChainId(mapChainId)
+      <div data-test-id={dataId}>
+        {
+          possibleChains && possibleChains.length > 0 && (
+            <>
+              <div className="p-2 text-sm text-secondary">From…</div>
+              {possibleChains.map(({ id: mapChainId }, idx) => {
+                return (
+                  <SelectSpecificNetworkButton
+                    key={idx}
+                    itemChainId={mapChainId}
+                    isCurrentChain={swapChainId === mapChainId}
+                    active={idx === currentIdx}
+                    onClick={() =>
+                      swapChainId === mapChainId
+                        ? onClose()
+                        : handleSetSwapChainId(mapChainId)
                     }
-                  }}
-                  dataId={dataId}
-                />
-              )
-            })}
-          </>
-        )}
-        {remainingChains && remainingChains.length > 0 && (
-          <>
-            <div className="mt-4 mb-4 text-sm font-normal text-primaryTextColor">
-              All chains
+                    dataId={dataId}
+                    isOrigin={true}
+                  />
+                )
+              })}
+            </>
+          )
+        }
+        {
+          remainingChains && remainingChains.length > 0 && (
+            <div className="bg-bgBase rounded">
+              <div className="px-2 py-2 text-sm text-secondary">All chains</div>
+              {remainingChains.map(({ id: mapChainId }, idx) => {
+                return (
+                  <SelectSpecificNetworkButton
+                    key={mapChainId}
+                    itemChainId={mapChainId}
+                    isCurrentChain={swapChainId === mapChainId}
+                    active={idx + possibleChains.length === currentIdx}
+                    onClick={() =>
+                      swapChainId === mapChainId
+                        ? onClose()
+                        : handleSetSwapChainId(mapChainId)
+                    }
+                    dataId={dataId}
+                    alternateBackground={true}
+                    isOrigin={true}
+                  />
+                )
+              })}
             </div>
-            {remainingChains.map(({ id: mapChainId }, idx) => {
-              return (
-                <SelectSpecificNetworkButton
-                  key={mapChainId}
-                  itemChainId={mapChainId}
-                  isCurrentChain={swapChainId === mapChainId}
-                  active={idx + possibleChains.length === currentIdx}
-                  onClick={() => handleSetSwapChainId(mapChainId)}
-                  dataId={dataId}
-                  alternateBackground={true}
-                />
-              )
-            })}
-          </>
-        )}
+          )
+        }
         <SearchResults searchStr={searchStr} type="chain" />
       </div>
     </div>
