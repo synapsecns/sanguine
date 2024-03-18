@@ -122,31 +122,25 @@ export const DestinationAddressInput = ({
   }, [connectedAddress])
 
   const adjustInputSize = () => {
-    const addressInput = document.getElementById('address-input')
-    if (inputValue.length < 1) {
-      addressInput.style.width = '3rem'
+    const addressInput: HTMLElement = document.getElementById('address-input')
+
+    if (inputValue.length > 0) {
+      addressInput.style.width = inputValue.length + 2 + 'ch'
     } else {
-      addressInput.style.width = inputValue.length + 1 + 'ch'
+      addressInput.style.width = placeholder.length + 2 + 'ch'
     }
   }
 
   useEffect(() => {
     adjustInputSize()
-  }, [inputValue])
-
-  console.log('placeholder.length:', placeholder.length)
-  console.log('inputValue:', inputValue)
-  console.log('inputValue.length:', inputValue.length)
+  }, [inputValue, placeholder])
 
   return (
-    <div
-      id="destination-address-input"
-      className="flex items-center"
-      onClick={handleActivateWarning}
-    >
-      <div className="mr-1.5 text-secondary">To: </div>
-      <div
-        className={`
+    <div id="destination-address-input" onClick={handleActivateWarning}>
+      <div className="flex items-center">
+        <div className="mr-1.5 text-secondary">To: </div>
+        <div
+          className={`
            flex border text-md rounded-sm
            ${isInputFocused ? ' bg-bgBase' : 'bg-transparent hover:opacity-80'}
           ${
@@ -157,21 +151,20 @@ export const DestinationAddressInput = ({
               : 'border-separator focus:border-separator'
           }
         `}
-      >
-        <input
-          id="address-input"
-          ref={inputRef}
-          onChange={(e) =>
-            dispatch(setDestinationAddress(e.target.value as Address))
-          }
-          onFocus={
-            showDestinationWarning ? handleActivateWarning : handleInputFocus
-          }
-          onBlur={handleInputBlur}
-          placeholder={placeholder}
-          value={inputValue}
-          disabled={isEmpty(connectedAddress)}
-          className={`
+        >
+          <input
+            id="address-input"
+            ref={inputRef}
+            onChange={(e) =>
+              dispatch(setDestinationAddress(e.target.value as Address))
+            }
+            onFocus={
+              showDestinationWarning ? handleActivateWarning : handleInputFocus
+            }
+            onBlur={handleInputBlur}
+            placeholder={placeholder}
+            value={inputValue}
+            className={`
             text-md rounded-sm text-primary py-1 px-2 z-0 border-0 bg-transparent
             focus:text-white focus:border-transparent focus:outline-none focus:ring-0
             ${
@@ -180,13 +173,14 @@ export const DestinationAddressInput = ({
                 : 'text-center cursor-pointer'
             }
           `}
-        />
-        {destinationAddress && (
-          <CloseButton
-            onClick={onClearUserInput}
-            className="!static w-fit mr-1"
           />
-        )}
+          {destinationAddress && (
+            <CloseButton
+              onClick={onClearUserInput}
+              className="!static w-fit mr-1"
+            />
+          )}
+        </div>
       </div>
       <div className="relative">
         {showRecipientList && (
