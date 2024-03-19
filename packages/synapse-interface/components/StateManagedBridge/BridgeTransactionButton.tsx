@@ -168,12 +168,16 @@ const ConfirmWarning = () => {
   const dispatch = useAppDispatch()
   const { showDestinationWarning } = useBridgeDisplayState()
 
-  const handleCheckboxChange = (e) => {
+  const handleCheckboxChange = () => {
     dispatch(setShowDestinationWarning(!showDestinationWarning))
   }
 
   return (
-    <div id="confirm-warning" className="flex">
+    <div
+      id="confirm-warning"
+      className="flex cursor-pointer"
+      onClick={handleCheckboxChange}
+    >
       <input
         type="checkbox"
         id="destination-warning"
