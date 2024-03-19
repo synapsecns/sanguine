@@ -150,11 +150,32 @@ export const BridgeTransactionButton = ({
 
   return (
     buttonProperties && (
-      <TransactionButton
-        {...buttonProperties}
-        disabled={isButtonDisabled}
-        chainId={fromChainId}
-      />
+      <>
+        <ConfirmWarning />
+        <TransactionButton
+          {...buttonProperties}
+          disabled={isButtonDisabled}
+          chainId={fromChainId}
+        />
+      </>
     )
+  )
+}
+
+const ConfirmWarning = () => {
+  return (
+    <div id="confirm-warning" className="flex">
+      <input
+        type="checkbox"
+        id="destination-warning"
+        name="destinationWarning"
+        value=""
+      />
+      <div>
+        Required: Verify your destination address to continue. Do not send
+        assets to a custodial or exchange address. It may be impossible to
+        recover your funds.
+      </div>
+    </div>
   )
 }
