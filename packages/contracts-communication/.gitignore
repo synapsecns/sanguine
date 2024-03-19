@@ -1,3 +1,6 @@
 flattened/
 .deployments
 broadcast
+docs
+
+lcov.info

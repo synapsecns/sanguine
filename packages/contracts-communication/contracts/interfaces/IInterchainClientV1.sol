@@ -13,6 +13,8 @@ interface IInterchainClientV1 {
     error InterchainClientV1__NotRemoteChainId(uint256 chainId);
     error InterchainClientV1__TxAlreadyExecuted(bytes32 transactionId);
     error InterchainClientV1__TxNotExecuted(bytes32 transactionId);
+    error InterchainClientV1__ZeroReceiver();
+    error InterchainClientV1__ZeroRequiredResponses();
 
     /**
      * @notice Sets the address of the ExecutionFees contract.

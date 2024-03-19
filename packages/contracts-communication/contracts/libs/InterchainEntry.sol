@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.13;
 
 import {TypeCasts} from "./TypeCasts.sol";
 
@@ -20,6 +20,8 @@ struct InterchainEntry {
     bytes32 srcWriter;
     bytes32 dataHash;
 }
+
+using InterchainEntryLib for InterchainEntry global;
 
 library InterchainEntryLib {
     /// @notice Constructs an InterchainEntry struct to be written on the local chain

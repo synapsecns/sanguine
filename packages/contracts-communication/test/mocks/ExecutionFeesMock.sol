@@ -3,6 +3,7 @@ pragma solidity 0.8.20;
 
 import {IExecutionFees} from "../../contracts/interfaces/IExecutionFees.sol";
 
+// solhint-disable no-empty-blocks
 contract ExecutionFeesMock is IExecutionFees {
     function addExecutionFee(uint256 dstChainId, bytes32 transactionId) external payable {}
 

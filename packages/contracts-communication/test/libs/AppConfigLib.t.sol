@@ -5,6 +5,7 @@ import {Test} from "forge-std/Test.sol";
 
 import {AppConfigLib, AppConfigV1, AppConfigLibHarness} from "../harnesses/AppConfigLibHarness.sol";
 
+// solhint-disable func-name-mixedcase
 contract AppConfigLibTest is Test {
     struct MockAppConfigV2 {
         uint256 requiredResponses;
