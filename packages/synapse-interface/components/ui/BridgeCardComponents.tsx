@@ -13,6 +13,7 @@ import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { useDispatch } from 'react-redux'
 import { FromChainListArray } from '../StateManagedBridge/FromChainListOverlay'
+import SelectSpecificTokenButton from '../StateManagedBridge/components/SelectSpecificTokenButton'
 
 const join = (a) => Object.values(a).join(' ')
 
@@ -26,17 +27,17 @@ interface SelectorTypes {
   label?: string
   placeholder?: string
   selectedItem: Token | Chain
-  overlay?: React.ReactNode
+  itemListFunction?: Function
+  setFunction?: Function
 }
 
 interface TokenSelectorTypes extends SelectorTypes {
+  overlay?: React.ReactNode
   selectedItem: Token
 }
 
 interface ChainSelectorTypes extends SelectorTypes {
   selectedItem: Chain
-  itemListFunction: Function
-  setFunction: Function
 }
 
 interface AmountInputTypes {
@@ -87,10 +88,11 @@ export function ChainSelector({
   selectedItem,
   label,
   placeholder,
-  overlay, // TODO: Remove
   itemListFunction,
   setFunction,
 }: ChainSelectorTypes) {
+  /* TODO: fromChainId / fromToken vs selectedItem */
+
   const { fromChainId } = useBridgeState()
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
@@ -105,7 +107,7 @@ export function ChainSelector({
 
   const isOrigin = label === 'From' // TODO: Improve
 
-  const itemList = itemListFunction?.(searchStr) ?? {}
+  const itemList = itemListFunction?.(searchStr) ?? {} // TODO: Use result instead of variable in context?
 
   const onClose = useCallback(
     () => {
@@ -272,12 +274,100 @@ export function BridgeAmountContainer({ children }) {
 export function TokenSelector({
   dataTestId,
   selectedItem,
+  label,
   placeholder,
-  overlay,
+  itemListFunction,
+  setFunction,
+  overlay, // TODO: Remove
 }: TokenSelectorTypes) {
+  /* TODO: fromChainId / fromToken vs selectedItem */
+
+  const { fromToken } = useBridgeState()
+  const [currentIdx, setCurrentIdx] = useState(-1)
+  const [searchStr, setSearchStr] = useState('')
   const [hover, setHover] = useState(false)
 
-  const className = join({
+  const dispatch = useDispatch()
+  const overlayRef = useRef(null)
+
+  const escPressed = useKeyPress('Escape')
+  const arrowUp = useKeyPress('ArrowUp')
+  const arrowDown = useKeyPress('ArrowDown')
+
+  const isOrigin = true // TODO: Improve
+
+  const itemList = itemListFunction?.(searchStr) ?? {} // TODO: Use result instead of variable in context?
+
+  const onClose = useCallback(
+    () => {
+      setCurrentIdx(-1)
+      setSearchStr('')
+      setHover(false)
+    },
+    [
+      /*setShowFromChainListOverlay*/
+    ]
+  )
+
+  const escFunc = () => {
+    if (escPressed) {
+      onClose()
+    }
+  }
+  const arrowDownFunc = () => {
+    const nextIdx = currentIdx + 1
+    if (arrowDown && nextIdx < 0) {
+      // masterList.length) {
+      setCurrentIdx(nextIdx)
+    }
+  }
+
+  const arrowUpFunc = () => {
+    const nextIdx = currentIdx - 1
+    if (arrowUp && -1 < nextIdx) {
+      setCurrentIdx(nextIdx)
+    }
+  }
+
+  const onSearch = (str: string) => {
+    setSearchStr(str)
+    setCurrentIdx(-1)
+  }
+
+  useEffect(arrowDownFunc, [arrowDown])
+  useEffect(escFunc, [escPressed])
+  useEffect(arrowUpFunc, [arrowUp])
+  useCloseOnOutsideClick(overlayRef, onClose)
+
+  const handleSetFromToken = (token) => {
+    if (fromToken !== token) {
+      const eventTitle = `[Bridge User Action] Sets new fromChainId`
+      const eventData = {
+        previousFromToken: fromToken?.symbol,
+        newFromToken: token?.symbol,
+      }
+      segmentAnalyticsEvent(eventTitle, eventData)
+      dispatch(setFunction(token))
+    }
+    onClose()
+  }
+
+  useEffect(() => {
+    const ref = overlayRef?.current
+    if (!ref) return
+    const { y, height } = ref.getBoundingClientRect()
+    const screen = window.innerHeight
+    if (y + height > screen) {
+      ref.style.position = 'fixed'
+      ref.style.bottom = '4px'
+    }
+    if (y < 0) {
+      ref.style.position = 'fixed'
+      ref.style.top = '4px'
+    }
+  })
+
+  const buttonClassName = join({
     flex: 'flex items-center gap-2',
     background: 'bg-white dark:bg-separator',
     // background: 'bg-white dark:bg-zinc-700',
@@ -298,7 +388,7 @@ export function TokenSelector({
       <button
         data-test-id={dataTestId}
         onClick={() => setHover(!hover)}
-        className={className}
+        className={buttonClassName}
       >
         {selectedItem && (
           <img
@@ -311,7 +401,52 @@ export function TokenSelector({
         {selectedItem?.symbol ?? placeholder ?? 'Token'}
         <DropDownArrowSvg />
       </button>
-      {hover && overlay}
+      {hover && (
+        <div
+          ref={overlayRef}
+          data-test-id="fromChain-list-overlay"
+          className="z-20 absolute bg-bgLight border border-separator rounded overflow-y-auto max-h-96 animate-slide-down origin-top shadow-md"
+        >
+          <div className="p-1 flex items-center font-medium">
+            <SlideSearchBox
+              placeholder="Find"
+              searchStr={searchStr}
+              onSearch={onSearch}
+            />
+            <CloseButton onClick={onClose} />
+          </div>
+          <div data-test-id={dataTestId}>
+            {Object.entries(itemList).map(([key, value]: [string, Token[]]) => {
+              return value.length ? (
+                <div key={key} className="bg-bgBase first:bg-bgLight rounded">
+                  <div className="p-2 text-sm text-secondary sticky top-0 bg-inherit z-10">
+                    {key}
+                  </div>
+                  {value.map((token, idx) => (
+                    <SelectSpecificTokenButton
+                      isOrigin={isOrigin}
+                      key={idx}
+                      token={token}
+                      selectedToken={fromToken}
+                      // active={
+                      //   idx +
+                      //     possibleTokens.length +
+                      //     remainingChainTokens.length ===
+                      //   currentIdx
+                      // }
+                      active={idx === currentIdx}
+                      showAllChains={true}
+                      onClick={() => handleSetFromToken(token)}
+                      alternateBackground={false}
+                    />
+                  ))}
+                </div>
+              ) : null
+            })}
+            <SearchResults searchStr={searchStr} type="chain" />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

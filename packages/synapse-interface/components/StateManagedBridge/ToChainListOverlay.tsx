@@ -17,6 +17,7 @@ import { CloseButton } from './components/CloseButton'
 import { SearchResults } from './components/SearchResults'
 
 import { PAUSED_TO_CHAIN_IDS } from '@constants/chains'
+
 /*
 export const ToChainListOverlay = () => {
   const { toChainIds, toChainId } = useBridgeState()
@@ -201,7 +202,8 @@ export const ToChainListOverlay = () => {
   )
 }
 */
-export const ToChainListArray = (searchStr: string) => {
+
+export const ToChainListArray = (searchStr: string = '') => {
   const { toChainIds } = useBridgeState()
 
   let possibleChains = _(ALL_CHAINS)
