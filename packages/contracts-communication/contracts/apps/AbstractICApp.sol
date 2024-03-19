@@ -40,6 +40,12 @@ abstract contract AbstractICApp is IInterchainApp {
         _receiveMessage(srcChainId, sender, dbNonce, entryIndex, message);
     }
 
+    /// @inheritdoc IInterchainApp
+    function getReceivingConfig() external view returns (bytes memory appConfig, address[] memory modules) {
+        appConfig = _getAppConfig();
+        modules = _getModules();
+    }
+
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
     /// @dev Thin wrapper around _sendInterchainMessage to accept EVM address as a parameter.
@@ -116,6 +122,9 @@ abstract contract AbstractICApp is IInterchainApp {
             dstChainId, _getExecutionService(), _getModules(), options, message
         );
     }
+
+    /// @dev Returns the configuration of the app for validating the received messages.
+    function _getAppConfig() internal view virtual returns (bytes memory);
 
     /// @dev Returns the address of the Execution Service to use for sending messages.
     function _getExecutionService() internal view virtual returns (address);
