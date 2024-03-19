@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { useMemo } from 'react'
 import { useAppSelector } from '@/store/hooks'
 import { useBridgeState } from '@/slices/bridge/hooks'
+import { useAccount } from 'wagmi'
 import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
 import {
   ELIGIBILITY_DEFAULT_TEXT,
@@ -13,6 +14,8 @@ import { formatBigIntToPercentString } from '@/utils/bigint/format'
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { CHAINS_BY_ID } from '@constants/chains'
 import * as CHAINS from '@constants/chains/master'
+import { isEmptyString } from '@/utils/isEmptyString'
+import { getValidAddress } from '@/utils/isValidAddress'
 
 const MAX_ARB_REBATE_PER_ADDRESS = 2000
 
@@ -26,9 +29,29 @@ const BridgeExchangeRateInfo = () => {
         <Router />
         {/* <Rebate /> */}
         <Slippage />
+        <DestinationAddress />
       </section>
     </div>
   )
+}
+
+const DestinationAddress = () => {
+  const { address, isConnected } = useAccount()
+  const { destinationAddress } = useBridgeState()
+
+  const showAddress =
+    address &&
+    destinationAddress &&
+    getValidAddress(address) !== getValidAddress(destinationAddress)
+
+  if (showAddress) {
+    return (
+      <div className="flex space-x-1 align-center">
+        <div>To: </div>
+        <div className="text-primary">{destinationAddress}</div>
+      </div>
+    )
+  }
 }
 
 const Slippage = () => {
