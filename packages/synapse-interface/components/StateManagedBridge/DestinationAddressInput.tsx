@@ -73,6 +73,29 @@ export const DestinationAddressInput = ({
       isEmptyString(destinationAddress)) ||
     (destinationAddress && !isInputValidAddress)
 
+  useEffect(() => {
+    const isSameAddress =
+      connectedAddress &&
+      isInputValidAddress &&
+      getValidAddress(destinationAddress) === getValidAddress(connectedAddress)
+
+    const showWarning = isInputValidAddress && !isSameAddress
+
+    if (showWarning && !showDestinationWarning) {
+      dispatch(setShowDestinationWarning(true))
+    }
+
+    if (!isInputValidAddress && showDestinationWarning) {
+      dispatch(setShowDestinationWarning(false))
+    }
+  }, [
+    destinationAddress,
+    connectedAddress,
+    showDestinationWarning,
+    dispatch,
+    isInputValidAddress,
+  ])
+
   let placeholder
 
   if (isInputFocused) {
@@ -98,25 +121,6 @@ export const DestinationAddressInput = ({
   const listRef = useRef(null)
   const [showRecipientList, setShowRecipientList] = useState<boolean>(false)
   useCloseOnOutsideClick(listRef, () => setShowRecipientList(false))
-
-  useEffect(() => {
-    const isValidDestinationAddress =
-      destinationAddress && isValidAddress(destinationAddress)
-
-    const isDifferentAddress =
-      isValidDestinationAddress &&
-      getValidAddress(destinationAddress) !== getValidAddress(connectedAddress)
-
-    const showWarning = isValidDestinationAddress && isDifferentAddress
-
-    if (showWarning && !showDestinationWarning) {
-      dispatch(setShowDestinationWarning(true))
-    }
-
-    if (!isValidDestinationAddress && showDestinationWarning) {
-      dispatch(setShowDestinationWarning(false))
-    }
-  }, [destinationAddress, connectedAddress, showDestinationWarning, dispatch])
 
   useEffect(() => {
     dispatch(clearDestinationAddress())
