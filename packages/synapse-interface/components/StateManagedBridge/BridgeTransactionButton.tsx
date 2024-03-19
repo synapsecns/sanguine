@@ -153,7 +153,6 @@ export const BridgeTransactionButton = ({
   return (
     buttonProperties && (
       <>
-        <ConfirmWarning />
         <TransactionButton
           {...buttonProperties}
           disabled={isButtonDisabled}
@@ -164,7 +163,7 @@ export const BridgeTransactionButton = ({
   )
 }
 
-const ConfirmWarning = () => {
+export const ConfirmWarning = () => {
   const dispatch = useAppDispatch()
   const { showDestinationWarning } = useBridgeDisplayState()
 
@@ -175,7 +174,7 @@ const ConfirmWarning = () => {
   return (
     <div
       id="confirm-warning"
-      className="flex items-center mb-3 space-x-3 cursor-pointer"
+      className="flex items-center space-x-3 cursor-pointer"
       onClick={handleCheckboxChange}
     >
       <input
@@ -185,6 +184,12 @@ const ConfirmWarning = () => {
         value=""
         checked={!showDestinationWarning}
         onChange={handleCheckboxChange}
+        className={`
+            cursor-pointer border rounded-[4px] border-secondary
+           text-synapsePurple bg-transparent outline-none
+            focus:!outline-0 focus:ring-0 focus:!border-0
+            active:!outline-0 active:ring-0 active:!border-0
+          `}
       />
       <div>
         <p className="text-sm text-secondary">
