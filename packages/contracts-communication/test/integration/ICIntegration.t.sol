@@ -7,6 +7,7 @@ import {InterchainClientV1Events} from "../../contracts/events/InterchainClientV
 import {InterchainDBEvents} from "../../contracts/events/InterchainDBEvents.sol";
 import {InterchainModuleEvents} from "../../contracts/events/InterchainModuleEvents.sol";
 
+import {IInterchainApp} from "../../contracts/interfaces/IInterchainApp.sol";
 import {InterchainBatch} from "../../contracts/libs/InterchainBatch.sol";
 import {InterchainEntry} from "../../contracts/libs/InterchainEntry.sol";
 import {InterchainTransaction, InterchainTxDescriptor} from "../../contracts/libs/InterchainTransaction.sol";
@@ -144,6 +145,19 @@ abstract contract ICIntegrationTest is
     function expectPingPongEventPingSent(uint256 counter, InterchainTxDescriptor memory desc) internal {
         vm.expectEmit(address(pingPongApp));
         emit PingSent(counter, desc.dbNonce, desc.entryIndex);
+    }
+
+    function expectPingPongCall(InterchainTransaction memory icTx, OptionsV1 memory options) internal {
+        bytes memory expectedCalldata = abi.encodeCall(
+            IInterchainApp.appReceive, (icTx.srcChainId, icTx.srcSender, icTx.dbNonce, icTx.entryIndex, icTx.message)
+        );
+        vm.expectCall({
+            callee: address(pingPongApp),
+            msgValue: options.gasAirdrop,
+            gas: uint64(options.gasLimit),
+            data: expectedCalldata,
+            count: 1
+        });
     }
 
     // ═══════════════════════════════════════════ COMPLEX SERIES CHECKS ═══════════════════════════════════════════════

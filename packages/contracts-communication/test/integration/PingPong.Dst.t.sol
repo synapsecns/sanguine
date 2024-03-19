@@ -90,6 +90,31 @@ contract PingPongDstIntegrationTest is ICIntegrationTest {
         assertEq(icDB.checkVerification(address(module), srcEntry, new bytes32[](0)), INITIAL_TS);
     }
 
+    function test_interchainExecute_callPingPongApp() public {
+        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
+        skip(APP_OPTIMISTIC_PERIOD + 1);
+        expectPingPongCall(srcTx, ppOptions);
+        executeTx(ppOptions);
+    }
+
+    function test_interchainExecute_callPingPongApp_lowerGas() public {
+        OptionsV1 memory options = OptionsV1({gasLimit: ppOptions.gasLimit / 2, gasAirdrop: ppOptions.gasAirdrop});
+        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
+        skip(APP_OPTIMISTIC_PERIOD + 1);
+        // Should use the requested gas limit
+        expectPingPongCall(srcTx, ppOptions);
+        executeTx(options);
+    }
+
+    function test_interchainExecute_callPingPongApp_higherGas() public {
+        OptionsV1 memory options = OptionsV1({gasLimit: 2 * ppOptions.gasLimit, gasAirdrop: ppOptions.gasAirdrop});
+        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
+        skip(APP_OPTIMISTIC_PERIOD + 1);
+        // Should allow to use higher gas limit
+        expectPingPongCall(srcTx, options);
+        executeTx(options);
+    }
+
     function test_interchainExecute_events() public {
         module.verifyRemoteBatch(moduleBatch, moduleSignatures);
         skip(APP_OPTIMISTIC_PERIOD + 1);
