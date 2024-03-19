@@ -65,7 +65,7 @@ import { txErrorHandler } from '@/utils/txErrorHandler'
 import { approveToken } from '@/utils/approveToken'
 import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
 import { EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
-import { ConfirmWarning } from '@/components/StateManagedBridge/BridgeTransactionButton'
+import { ConfirmDestinationAddressWarning } from '@/components/StateManagedBridge/BridgeWarnings'
 
 const StateManagedBridge = () => {
   const router = useRouter()
@@ -556,7 +556,7 @@ const StateManagedBridge = () => {
             </Transition>
 
             {/* TODO: Have warning be reusable */}
-            <ConfirmWarning />
+            <ConfirmDestinationAddressWarning />
 
             <div className="md:my-3">
               <BridgeTransactionButton

@@ -14,7 +14,7 @@ const initialState: BridgeState = {
   showToTokenListOverlay: false,
   showFromChainListOverlay: false,
   showToChainListOverlay: false,
-  showDestinationWarning: true,
+  showDestinationWarning: false,
   isDestinationWarningAccepted: false,
 }
 
