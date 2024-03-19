@@ -2,7 +2,11 @@ import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { useDispatch } from 'react-redux'
 import { useAccount, useNetwork } from 'wagmi'
 
-import { initialState, updateFromValue } from '@/slices/bridge/reducer'
+import {
+  initialState,
+  setFromChainId,
+  updateFromValue,
+} from '@/slices/bridge/reducer'
 import MiniMaxButton from '../buttons/MiniMaxButton'
 import {
   AmountInput,
@@ -18,7 +22,10 @@ import {
 } from '@/components/ConnectionIndicators'
 import { CHAINS_BY_ID } from '@/constants/chains'
 // import { FromTokenSelector } from './FromTokenSelector'
-import { FromChainListOverlay } from './FromChainListOverlay'
+import {
+  FromChainListArray,
+  FromChainListOverlay,
+} from './FromChainListOverlay'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import {
@@ -131,9 +138,11 @@ export const InputContainer = () => {
 
 const FromChainSelector = () => (
   <ChainSelector
-    dataTestId="bridge-origin-chain-list-button"
+    dataTestId="bridge-origin-chain-list"
     selectedItem={CHAINS_BY_ID[useBridgeState().fromChainId]}
     label="From"
+    itemListFunction={FromChainListArray}
+    setFunction={setFromChainId}
     overlay={<FromChainListOverlay />}
   />
 )

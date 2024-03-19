@@ -1,8 +1,18 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Chain, Token } from '@/utils/types'
 import { DropDownArrowSvg } from '../icons/DropDownArrowSvg'
 import { getHoverStyleForButton } from '@/styles/hover'
 import LoadingDots from './tailwind/LoadingDots'
+import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
+import SlideSearchBox from '@/pages/bridge/SlideSearchBox'
+import { CloseButton } from '../StateManagedBridge/components/CloseButton'
+import { useKeyPress } from '@/utils/hooks/useKeyPress'
+import { SelectSpecificNetworkButton } from '../StateManagedBridge/components/SelectSpecificNetworkButton'
+import { SearchResults } from '../StateManagedBridge/components/SearchResults'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import { useBridgeState } from '@/slices/bridge/hooks'
+import { useDispatch } from 'react-redux'
+import { FromChainListArray } from '../StateManagedBridge/FromChainListOverlay'
 
 const join = (a) => Object.values(a).join(' ')
 
@@ -25,6 +35,8 @@ interface TokenSelectorTypes extends SelectorTypes {
 
 interface ChainSelectorTypes extends SelectorTypes {
   selectedItem: Chain
+  itemListFunction?: Function
+  setFunction?: Function
 }
 
 interface AmountInputTypes {
@@ -75,9 +87,96 @@ export function ChainSelector({
   selectedItem,
   label,
   placeholder,
-  overlay,
+  overlay, // TODO: Remove
+  itemListFunction,
+  setFunction,
 }: ChainSelectorTypes) {
+  const { fromChainId } = useBridgeState()
+  const [currentIdx, setCurrentIdx] = useState(-1)
+  const [searchStr, setSearchStr] = useState('')
   const [hover, setHover] = useState(false)
+
+  const dispatch = useDispatch()
+  const overlayRef = useRef(null)
+
+  const escPressed = useKeyPress('Escape')
+  const arrowUp = useKeyPress('ArrowUp')
+  const arrowDown = useKeyPress('ArrowDown')
+
+  const isOrigin = label === 'From' // TODO: Improve
+
+  console.log('typeof', typeof itemListFunction, 'result', itemListFunction())
+  const itemList = itemListFunction(searchStr) ?? { a: [] }
+
+  const onClose = useCallback(
+    () => {
+      setCurrentIdx(-1)
+      setSearchStr('')
+      setHover(false)
+    },
+    [
+      /*setShowFromChainListOverlay*/
+    ]
+  )
+
+  const escFunc = () => {
+    if (escPressed) {
+      onClose()
+    }
+  }
+  const arrowDownFunc = () => {
+    const nextIdx = currentIdx + 1
+    if (arrowDown && nextIdx < 0) {
+      // masterList.length) {
+      setCurrentIdx(nextIdx)
+    }
+  }
+
+  const arrowUpFunc = () => {
+    const nextIdx = currentIdx - 1
+    if (arrowUp && -1 < nextIdx) {
+      setCurrentIdx(nextIdx)
+    }
+  }
+
+  const onSearch = (str: string) => {
+    setSearchStr(str)
+    setCurrentIdx(-1)
+  }
+
+  useEffect(arrowDownFunc, [arrowDown])
+  useEffect(escFunc, [escPressed])
+  useEffect(arrowUpFunc, [arrowUp])
+  useCloseOnOutsideClick(overlayRef, onClose)
+
+  const handleSetFromChainId = (chainId) => {
+    if (fromChainId !== chainId) {
+      const eventTitle = `[Bridge User Action] Sets new fromChainId`
+      const eventData = {
+        previousFromChainId: fromChainId,
+        newFromChainId: chainId,
+      }
+
+      segmentAnalyticsEvent(eventTitle, eventData)
+      dispatch(setFunction(chainId))
+    }
+    onClose()
+  }
+
+  useEffect(() => {
+    const ref = overlayRef?.current
+    if (!ref) return
+    const { y, height } = ref.getBoundingClientRect()
+    const screen = window.innerHeight
+    if (y + height > screen) {
+      ref.style.position = 'fixed'
+      ref.style.bottom = '4px'
+    }
+    if (y < 0) {
+      ref.style.position = 'fixed'
+      ref.style.top = '4px'
+    }
+  }, [])
 
   const buttonClassName = join({
     unset: 'text-left',
@@ -98,7 +197,7 @@ export function ChainSelector({
       onMouseDown={(e) => e.stopPropagation()}
     >
       <button
-        data-test-id={dataTestId}
+        data-test-id={`${dataTestId}-button`}
         onClick={() => setHover(!hover)}
         className={buttonClassName}
       >
@@ -118,7 +217,45 @@ export function ChainSelector({
         </span>
         <DropDownArrowSvg />
       </button>
-      {hover && overlay}
+      {hover && (
+        <div
+          ref={overlayRef}
+          data-test-id="fromChain-list-overlay"
+          className="z-20 absolute bg-bgLight border border-separator rounded overflow-y-auto max-h-96 animate-slide-down origin-top shadow-md"
+        >
+          <div className="p-1 flex items-center font-medium">
+            <SlideSearchBox
+              placeholder="Find"
+              searchStr={searchStr}
+              onSearch={onSearch}
+            />
+            <CloseButton onClick={onClose} />
+          </div>
+          <div data-test-id={dataTestId}>
+            {Object.entries(itemList).map(([key, value]: [string, Chain[]]) => {
+              return (
+                <div key={key} className="bg-bgBase first:bg-bgLight rounded">
+                  <div className="p-2 text-sm text-secondary sticky top-0 bg-inherit z-10">
+                    {key}
+                  </div>
+                  {value.map(({ id }, idx) => (
+                    <SelectSpecificNetworkButton
+                      key={id}
+                      itemChainId={id}
+                      isCurrentChain={selectedItem.id === id}
+                      isOrigin={isOrigin}
+                      active={idx === currentIdx}
+                      onClick={() => handleSetFromChainId(id)}
+                      dataId={dataTestId}
+                    />
+                  ))}
+                </div>
+              )
+            })}
+            <SearchResults searchStr={searchStr} type="chain" />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
