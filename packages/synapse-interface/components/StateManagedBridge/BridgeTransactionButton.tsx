@@ -175,7 +175,7 @@ const ConfirmWarning = () => {
   return (
     <div
       id="confirm-warning"
-      className="flex cursor-pointer"
+      className="flex items-center mb-3 space-x-3 cursor-pointer"
       onClick={handleCheckboxChange}
     >
       <input
@@ -187,9 +187,11 @@ const ConfirmWarning = () => {
         onChange={handleCheckboxChange}
       />
       <div>
-        Required: Verify your destination address to continue. Do not send
-        assets to a custodial or exchange address. It may be impossible to
-        recover your funds.
+        <p className="text-sm text-secondary">
+          <span className="text-yellowText">Required:</span> Verify your
+          destination address to continue. Do not send assets to a custodial or
+          exchange address. It may be impossible to recover your funds.
+        </p>
       </div>
     </div>
   )
