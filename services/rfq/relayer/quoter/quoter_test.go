@@ -166,10 +166,12 @@ func (s *QuoterSuite) TestGetOriginAmount() {
 
 	setQuoteParams := func(quotePct, quoteOffset float64, minQuoteAmount string) {
 		s.config.BaseChainConfig.QuotePct = quotePct
-		tokenCfg := s.config.Chains[dest].Tokens["USDC"]
-		tokenCfg.MinQuoteAmount = minQuoteAmount
-		tokenCfg.QuoteOffsetBps = quoteOffset
-		s.config.Chains[dest].Tokens["USDC"] = tokenCfg
+		destTokenCfg := s.config.Chains[dest].Tokens["USDC"]
+		destTokenCfg.MinQuoteAmount = minQuoteAmount
+		originTokenCfg := s.config.Chains[origin].Tokens["USDC"]
+		originTokenCfg.QuoteOffsetBps = quoteOffset
+		s.config.Chains[dest].Tokens["USDC"] = destTokenCfg
+		s.config.Chains[origin].Tokens["USDC"] = originTokenCfg
 		s.manager.SetConfig(s.config)
 	}
 
