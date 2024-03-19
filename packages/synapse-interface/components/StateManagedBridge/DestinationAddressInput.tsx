@@ -43,6 +43,7 @@ export const DestinationAddressInput = ({
   const handleInputFocus = () => {
     setIsInputFocused(true)
     setShowRecipientList(true)
+
     if (inputRef.current) {
       inputRef.current.focus()
     }
