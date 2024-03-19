@@ -18,13 +18,17 @@ import { useBridgeDisplayState, useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { PAUSED_FROM_CHAIN_IDS, PAUSED_TO_CHAIN_IDS } from '@/constants/chains'
 import { useAppDispatch } from '@/store/hooks'
-import { setShowDestinationWarning } from '@/slices/bridgeDisplaySlice'
+import {
+  setIsDestinationWarningAccepted,
+  setShowDestinationWarning,
+} from '@/slices/bridgeDisplaySlice'
 
 export const BridgeTransactionButton = ({
   approveTxn,
   executeBridge,
   isApproved,
 }) => {
+  const dispatch = useAppDispatch()
   const [isConnected, setIsConnected] = useState(false)
   const { openConnectModal } = useConnectModal()
 
@@ -51,6 +55,8 @@ export const BridgeTransactionButton = ({
     isLoading,
     bridgeQuote,
   } = useBridgeState()
+  const { showDestinationWarning, isDestinationWarningAccepted } =
+    useBridgeDisplayState()
 
   const balances = usePortfolioBalances()
   const balancesForChain = balances[fromChainId]
@@ -130,6 +136,11 @@ export const BridgeTransactionButton = ({
     buttonProperties = {
       label: 'Invalid destination address',
     }
+  } else if (showDestinationWarning && !isDestinationWarningAccepted) {
+    buttonProperties = {
+      label: 'Confirm destination address',
+      onClick: () => dispatch(setIsDestinationWarningAccepted(true)),
+    }
   } else if (chain?.id != fromChainId && fromValueBigInt > 0) {
     buttonProperties = {
       label: `Switch to ${chains.find((c) => c.id === fromChainId)?.name}`,
@@ -165,10 +176,11 @@ export const BridgeTransactionButton = ({
 
 export const ConfirmWarning = () => {
   const dispatch = useAppDispatch()
-  const { showDestinationWarning } = useBridgeDisplayState()
+  const { showDestinationWarning, isDestinationWarningAccepted } =
+    useBridgeDisplayState()
 
   const handleCheckboxChange = () => {
-    dispatch(setShowDestinationWarning(!showDestinationWarning))
+    dispatch(setIsDestinationWarningAccepted(!isDestinationWarningAccepted))
   }
 
   return (
@@ -182,7 +194,7 @@ export const ConfirmWarning = () => {
         id="destination-warning"
         name="destinationWarning"
         value=""
-        checked={!showDestinationWarning}
+        checked={isDestinationWarningAccepted}
         onChange={handleCheckboxChange}
         className={`
             cursor-pointer border rounded-[4px] border-secondary
