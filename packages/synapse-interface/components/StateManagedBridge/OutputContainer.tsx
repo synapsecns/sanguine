@@ -69,7 +69,7 @@ const DisplayAddress = ({ address }) => {
 
 const ToChainSelector = () => (
   <ChainSelector
-    dataTestId="bridge-origin-chain-list-button"
+    dataTestId="bridge-origin-chain-list"
     selectedItem={CHAINS_BY_ID[useBridgeState().toChainId]}
     label="To"
     overlay={<ToChainListOverlay />}
