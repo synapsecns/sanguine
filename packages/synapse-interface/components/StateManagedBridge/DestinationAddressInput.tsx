@@ -17,6 +17,7 @@ import { TransactionsState } from '@/slices/transactions/reducer'
 import { BridgeTransaction } from '@/slices/api/generated'
 import { getValidAddress } from '@/utils/isValidAddress'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
+import { useKeyPress } from '@/utils/hooks/useKeyPress'
 
 const inputRef = React.createRef<HTMLInputElement>()
 
@@ -49,6 +50,10 @@ export const DestinationAddressInput = ({
 
   const handleInputBlur = () => {
     setIsInputFocused(false)
+
+    if (inputRef.current) {
+      inputRef.current.blur()
+    }
   }
 
   const handleClearInput = () => {
@@ -120,7 +125,26 @@ export const DestinationAddressInput = ({
 
   const listRef = useRef(null)
   const [showRecipientList, setShowRecipientList] = useState<boolean>(false)
-  useCloseOnOutsideClick(listRef, () => setShowRecipientList(false))
+
+  const handleCloseList = () => {
+    if (showRecipientList) {
+      setShowRecipientList(false)
+    }
+  }
+
+  useCloseOnOutsideClick(listRef, handleCloseList)
+
+  const escPressed = useKeyPress('Escape')
+
+  function escFunc() {
+    if (escPressed) {
+      handleCloseList()
+      handleClearInput()
+      handleInputBlur()
+    }
+  }
+
+  useEffect(escFunc, [escPressed])
 
   useEffect(() => {
     dispatch(clearDestinationAddress())
