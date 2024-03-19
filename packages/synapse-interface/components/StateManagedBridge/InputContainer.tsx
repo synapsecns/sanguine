@@ -5,6 +5,7 @@ import { useAccount, useNetwork } from 'wagmi'
 import {
   initialState,
   setFromChainId,
+  setFromToken,
   updateFromValue,
 } from '@/slices/bridge/reducer'
 import MiniMaxButton from '../buttons/MiniMaxButton'
@@ -29,7 +30,7 @@ import {
   BridgeAmountContainer,
   BridgeSectionContainer,
 } from '../ui/BridgeCardComponents'
-import { FromTokenListOverlay } from './FromTokenListOverlay'
+import { FromTokenListArray } from './FromTokenListOverlay'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -148,6 +149,8 @@ const FromTokenSelector = () => (
     dataTestId="bridge-origin-chain-list-button"
     selectedItem={useBridgeState().fromToken}
     label=""
-    overlay={<FromTokenListOverlay />}
+    placeholder="Out"
+    itemListFunction={FromTokenListArray}
+    setFunction={setFromToken}
   />
 )

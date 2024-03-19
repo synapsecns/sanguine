@@ -212,7 +212,7 @@ export const FromChainListOverlay = () => {
 }
 */
 
-export function FromChainListArray(searchStr = '') {
+export function FromChainListArray(searchStr: string = '') {
   const { fromChainIds } = useBridgeState()
 
   let possibleChains = _(ALL_CHAINS)
