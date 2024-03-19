@@ -195,7 +195,7 @@ export const DestinationAddressInput = ({
             className={`
               absolute right-0 z-50 p-0 top-1 bg-surface
               border border-solid border-tint rounded shadow
-              popover list-none text-left text-sm overflow-hidden
+              popover list-none text-left overflow-hidden
             `}
           >
             {filteredRecipientList?.map((recipient) => {
