@@ -166,6 +166,33 @@ contract PingPongDstIntegrationTest is ICIntegrationTest {
         assertEq(address(module).balance, dstVerificationFee);
     }
 
+    function test_interchainExecute_revert_notConfirmed() public {
+        // No module signatures
+        expectClientRevertNotEnoughResponses({actual: 0, required: 1});
+        executeTx(ppOptions);
+    }
+
+    function test_interchainExecute_revert_confirmed_sameBlock() public {
+        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
+        expectClientRevertNotEnoughResponses({actual: 0, required: 1});
+        executeTx(ppOptions);
+    }
+
+    function test_interchainExecute_revert_confirmed_periodMinusOneSecond() public {
+        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
+        skip(APP_OPTIMISTIC_PERIOD);
+        expectClientRevertNotEnoughResponses({actual: 0, required: 1});
+        executeTx(ppOptions);
+    }
+
+    function test_interchainExecute_revert_alreadyExecuted() public {
+        module.verifyRemoteBatch(moduleBatch, moduleSignatures);
+        skip(APP_OPTIMISTIC_PERIOD + 1);
+        executeTx(ppOptions);
+        expectClientRevertTxAlreadyExecuted(srcDesc);
+        executeTx(ppOptions);
+    }
+
     function localChainId() internal pure override returns (uint256) {
         return DST_CHAIN_ID;
     }

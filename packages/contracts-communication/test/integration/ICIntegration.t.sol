@@ -8,6 +8,7 @@ import {InterchainDBEvents} from "../../contracts/events/InterchainDBEvents.sol"
 import {InterchainModuleEvents} from "../../contracts/events/InterchainModuleEvents.sol";
 
 import {IInterchainApp} from "../../contracts/interfaces/IInterchainApp.sol";
+import {IInterchainClientV1} from "../../contracts/interfaces/IInterchainClientV1.sol";
 import {InterchainBatch} from "../../contracts/libs/InterchainBatch.sol";
 import {InterchainEntry} from "../../contracts/libs/InterchainEntry.sol";
 import {InterchainTransaction, InterchainTxDescriptor} from "../../contracts/libs/InterchainTransaction.sol";
@@ -158,6 +159,24 @@ abstract contract ICIntegrationTest is
             data: expectedCalldata,
             count: 1
         });
+    }
+
+    // ══════════════════════════════════════════════ EXPECT REVERTS ═══════════════════════════════════════════════════
+
+    function expectClientRevertNotEnoughResponses(uint256 actual, uint256 required) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                IInterchainClientV1.InterchainClientV1__NotEnoughResponses.selector, actual, required
+            )
+        );
+    }
+
+    function expectClientRevertTxAlreadyExecuted(InterchainTxDescriptor memory desc) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                IInterchainClientV1.InterchainClientV1__TxAlreadyExecuted.selector, desc.transactionId
+            )
+        );
     }
 
     // ═══════════════════════════════════════════ COMPLEX SERIES CHECKS ═══════════════════════════════════════════════
