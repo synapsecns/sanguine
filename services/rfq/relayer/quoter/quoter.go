@@ -365,12 +365,12 @@ func (m *Manager) getOriginAmount(parentCtx context.Context, origin, dest int, a
 	balanceFlt := new(big.Float).SetInt(balance)
 	quoteAmount, _ = new(big.Float).Mul(balanceFlt, new(big.Float).SetFloat64(quotePct/100)).Int(nil)
 
-	// Apply the quoteOffset
+	// Apply the quoteOffset to origin token.
 	tokenName, err := m.config.GetTokenName(uint32(dest), address.Hex())
 	if err != nil {
 		return nil, fmt.Errorf("error getting token name: %w", err)
 	}
-	quoteOffsetBps, err := m.config.GetQuoteOffsetBps(dest, tokenName)
+	quoteOffsetBps, err := m.config.GetQuoteOffsetBps(origin, tokenName, true)
 	if err != nil {
 		return nil, fmt.Errorf("error getting quote offset bps: %w", err)
 	}
@@ -446,7 +446,7 @@ func (m *Manager) getDestAmount(parentCtx context.Context, originAmount *big.Int
 		metrics.EndSpan(span)
 	}()
 
-	quoteOffsetBps, err := m.config.GetQuoteOffsetBps(chainID, tokenName)
+	quoteOffsetBps, err := m.config.GetQuoteOffsetBps(chainID, tokenName, false)
 	if err != nil {
 		return nil, fmt.Errorf("error getting quote offset bps: %w", err)
 	}

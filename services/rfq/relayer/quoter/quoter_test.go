@@ -186,8 +186,8 @@ func (s *QuoterSuite) TestGetOriginAmount() {
 	expectedAmount = big.NewInt(500_000_000)
 	s.Equal(expectedAmount, quoteAmount)
 
-	// Set QuotePct to 50 with QuoteOffset of 1%. Should be 1% less than 50% of balance.
-	setQuoteParams(50, 100, "0")
+	// Set QuotePct to 50 with QuoteOffset of -1%. Should be 1% less than 50% of balance.
+	setQuoteParams(50, -100, "0")
 	quoteAmount, err = s.manager.GetOriginAmount(s.GetTestContext(), origin, dest, address, balance)
 	s.NoError(err)
 	expectedAmount = big.NewInt(495_000_000)

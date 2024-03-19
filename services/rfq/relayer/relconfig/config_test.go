@@ -11,7 +11,7 @@ import (
 )
 
 //nolint:maintidx
-func TestGetters(t *testing.T) {
+func TestChainGetters(t *testing.T) {
 	chainID := 1
 	badChainID := 2
 	usdcAddr := "0x123"
@@ -298,5 +298,51 @@ func TestGetters(t *testing.T) {
 
 		chainVal := cfg.GetMaxRebalanceAmount(chainID, common.HexToAddress(usdcAddr))
 		assert.Equal(t, chainVal.String(), "1000000000")
+	})
+}
+
+func TestGetQuoteOffset(t *testing.T) {
+	chainID := 1
+	usdcAddr := "0x123"
+	cfg := relconfig.Config{
+		Chains: map[int]relconfig.ChainConfig{
+			chainID: {
+				RFQAddress:             "0x123",
+				SynapseCCTPAddress:     "0x456",
+				TokenMessengerAddress:  "0x789",
+				Confirmations:          1,
+				NativeToken:            "MATIC",
+				DeadlineBufferSeconds:  10,
+				OriginGasEstimate:      10000,
+				DestGasEstimate:        20000,
+				L1FeeChainID:           10,
+				L1FeeOriginGasEstimate: 30000,
+				L1FeeDestGasEstimate:   40000,
+				MinGasToken:            "1000",
+				QuotePct:               50,
+				QuoteWidthBps:          10,
+				FixedFeeMultiplier:     1.1,
+				Tokens: map[string]relconfig.TokenConfig{
+					"USDC": {
+						Address:            usdcAddr,
+						Decimals:           6,
+						MaxRebalanceAmount: "1000",
+						QuoteOffsetBps:     100,
+					},
+				},
+			},
+		},
+	}
+
+	t.Run("GetQuoteOffsetForOrigin", func(t *testing.T) {
+		val, err := cfg.GetQuoteOffsetBps(chainID, "USDC", true)
+		assert.NoError(t, err)
+		assert.Equal(t, -100., val)
+	})
+
+	t.Run("GetQuoteOffsetForDest", func(t *testing.T) {
+		val, err := cfg.GetQuoteOffsetBps(chainID, "USDC", false)
+		assert.NoError(t, err)
+		assert.Equal(t, 100., val)
 	})
 }

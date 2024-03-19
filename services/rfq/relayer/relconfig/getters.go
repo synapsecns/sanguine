@@ -277,7 +277,8 @@ func (c Config) GetQuotePct(chainID int) (value float64, err error) {
 }
 
 // GetQuoteOffsetBps returns the QuoteOffsetBps for the given chainID and tokenAddr.
-func (c Config) GetQuoteOffsetBps(chainID int, tokenName string) (value float64, err error) {
+// If the chainID corresponds to the origin of a quote, we flip the sign.
+func (c Config) GetQuoteOffsetBps(chainID int, tokenName string, isOrigin bool) (value float64, err error) {
 	chainCfg, ok := c.Chains[chainID]
 	if !ok {
 		return 0, fmt.Errorf("no chain config for chain %d", chainID)
@@ -288,7 +289,12 @@ func (c Config) GetQuoteOffsetBps(chainID int, tokenName string) (value float64,
 		return 0, fmt.Errorf("no token config for chain %d and token %s", chainID, tokenName)
 	}
 
-	return tokenCfg.QuoteOffsetBps, nil
+	offset := tokenCfg.QuoteOffsetBps
+	if isOrigin {
+		offset *= -1
+	}
+
+	return offset, nil
 }
 
 // GetQuoteWidthBps returns the QuoteWidthBps for the given chainID.
