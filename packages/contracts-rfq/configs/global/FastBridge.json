@@ -3,7 +3,8 @@
     "admin": "",
     "guards": [],
     "relayers": [],
-    "refunders": []
+    "refunders": [],
+    "governors": []
   },
   "chainGasAmount": 0,
   "protocolFeeRate": 0

@@ -58,11 +58,10 @@ import SettingsSlideOver from '@/components/StateManagedBridge/SettingsSlideOver
 import Button from '@/components/ui/tailwind/Button'
 import { SettingsIcon } from '@/components/icons/SettingsIcon'
 import { DestinationAddressInput } from '@/components/StateManagedBridge/DestinationAddressInput'
-import { isAddress } from '@ethersproject/address'
 import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
-import { Address, zeroAddress, createPublicClient, http } from 'viem'
 import { polygon } from 'viem/chains'
+import { Address, zeroAddress, isAddress } from 'viem'
 import { stringToBigInt } from '@/utils/bigint/format'
 import { Warning } from '@/components/Warning'
 import { useAppDispatch } from '@/store/hooks'
@@ -86,22 +85,6 @@ import {
 } from '@/slices/priceDataSlice'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { SwitchButton } from '@/components/buttons/SwitchButton'
-import { useEventCountdownProgressBar } from '@/components/Maintenance/EventCountdownProgressBar'
-
-import {
-  METIS_DOWNTIME_START_DATE,
-  METIS_DOWNTIME_END_DATE,
-  MetisDowntimeWarningMessage,
-  useMetisDowntimeCountdownProgress,
-} from '@/components/Maintenance/Events/MetisUpgrade'
-import {
-  ECOTONE_FORK_START_DATE,
-  ECOTONE_FORK_END_DATE,
-  EcotoneForkWarningMessage,
-  useEcotoneForkCountdownProgress,
-} from '@/components/Maintenance/Events/EcotoneForkUpgrade'
-
-import { OPTIMISM, BASE, METIS } from '@/constants/chains/master'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -534,20 +517,6 @@ const StateManagedBridge = () => {
   const springClass =
     '-mt-4 fixed z-50 w-full h-full bg-opacity-50 bg-[#343036]'
 
-  /* Remove after upgrades */
-  const {
-    isEcotoneForkUpgradePending,
-    isCurrentChainDisabled: isEcotoneUpgradeChainsDisabled,
-    EcotoneForkCountdownProgressBar,
-  } = useEcotoneForkCountdownProgress()
-
-  const {
-    isMetisUpgradePending,
-    isCurrentChainDisabled: isMetisUpgradeChainDisabled,
-    MetisUpgradeCountdownProgressBar,
-  } = useMetisDowntimeCountdownProgress()
-  /* Remove after upgrades */
-
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
       <div className="flex flex-col">
@@ -585,8 +554,6 @@ const StateManagedBridge = () => {
             transition-all duration-100 transform rounded-md
           `}
         >
-          {EcotoneForkCountdownProgressBar}
-          {MetisUpgradeCountdownProgressBar}
           <div ref={bridgeDisplayRef}>
             <Transition show={showSettingsSlideOver} {...TRANSITION_PROPS}>
               <animated.div>
@@ -624,12 +591,6 @@ const StateManagedBridge = () => {
             />
             <OutputContainer />
             <Warning />
-
-            {/* Remove after upgrades */}
-            {isEcotoneForkUpgradePending && <EcotoneForkWarningMessage />}
-            {isMetisUpgradePending && <MetisDowntimeWarningMessage />}
-            {/* Remove after upgrades */}
-
             <Transition
               appear={true}
               unmount={false}
@@ -649,9 +610,7 @@ const StateManagedBridge = () => {
                 isApproved={isApproved}
                 approveTxn={approveTxn}
                 executeBridge={executeBridge}
-                isBridgePaused={
-                  isEcotoneUpgradeChainsDisabled || isMetisUpgradeChainDisabled
-                }
+                isBridgePaused={false}
               />
             </div>
           </div>
