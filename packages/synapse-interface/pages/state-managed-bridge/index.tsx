@@ -72,8 +72,8 @@ import {
   removePendingBridgeTransaction,
 } from '@/slices/transactions/actions'
 import { getTimeMinutesFromNow } from '@/utils/time'
-import { FromChainListOverlay } from '@/components/StateManagedBridge/FromChainListOverlay'
-import { ToChainListOverlay } from '@/components/StateManagedBridge/ToChainListOverlay'
+// import { FromChainListOverlay } from '@/components/StateManagedBridge/FromChainListOverlay'
+// import { ToChainListOverlay } from '@/components/StateManagedBridge/ToChainListOverlay'
 import { FromTokenListOverlay } from '@/components/StateManagedBridge/FromTokenListOverlay'
 import { ToTokenListOverlay } from '@/components/StateManagedBridge/ToTokenListOverlay'
 
@@ -587,7 +587,7 @@ const StateManagedBridge = () => {
             <animated.div className={springClass}>
               <FromChainListOverlay />
             </animated.div>
-          </Transition> */}
+          </Transition>
           <Transition show={showFromTokenListOverlay} {...TRANSITION_PROPS}>
             <animated.div className={springClass}>
               <FromTokenListOverlay />
@@ -602,7 +602,7 @@ const StateManagedBridge = () => {
             <animated.div className={springClass}>
               <ToTokenListOverlay />
             </animated.div>
-          </Transition>
+          </Transition> */}
           <InputContainer />
           <SwitchButton
             onClick={() => {

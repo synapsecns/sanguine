@@ -26,7 +26,7 @@ interface SelectorTypes {
   label?: string
   placeholder?: string
   selectedItem: Token | Chain
-  overlay: React.ReactNode
+  overlay?: React.ReactNode
 }
 
 interface TokenSelectorTypes extends SelectorTypes {
@@ -35,8 +35,8 @@ interface TokenSelectorTypes extends SelectorTypes {
 
 interface ChainSelectorTypes extends SelectorTypes {
   selectedItem: Chain
-  itemListFunction?: Function
-  setFunction?: Function
+  itemListFunction: Function
+  setFunction: Function
 }
 
 interface AmountInputTypes {
@@ -105,7 +105,7 @@ export function ChainSelector({
 
   const isOrigin = label === 'From' // TODO: Improve
 
-  const itemList = itemListFunction ? itemListFunction(searchStr) : { a: [] }
+  const itemList = itemListFunction?.(searchStr) ?? {}
 
   const onClose = useCallback(
     () => {
@@ -175,7 +175,7 @@ export function ChainSelector({
       ref.style.position = 'fixed'
       ref.style.top = '4px'
     }
-  }, [])
+  })
 
   const buttonClassName = join({
     unset: 'text-left',

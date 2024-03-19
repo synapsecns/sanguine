@@ -16,6 +16,7 @@ import { CloseButton } from './components/CloseButton'
 import { SearchResults } from './components/SearchResults'
 import { PAUSED_FROM_CHAIN_IDS } from '@constants/chains'
 
+/*
 export const FromChainListOverlay = () => {
   const { fromChainIds, fromChainId } = useBridgeState()
   const [currentIdx, setCurrentIdx] = useState(-1)
@@ -209,6 +210,7 @@ export const FromChainListOverlay = () => {
     // </div>
   )
 }
+*/
 
 export function FromChainListArray(searchStr = '') {
   const { fromChainIds } = useBridgeState()
