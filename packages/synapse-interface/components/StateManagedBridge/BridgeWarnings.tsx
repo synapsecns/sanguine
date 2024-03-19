@@ -14,7 +14,6 @@ export const ConfirmDestinationAddressWarning = () => {
   if (showDestinationWarning) {
     return (
       <div
-        id="confirm-warning"
         className="flex items-center space-x-3 cursor-pointer"
         onClick={handleCheckboxChange}
       >
@@ -35,8 +34,10 @@ export const ConfirmDestinationAddressWarning = () => {
         <div>
           <p className="text-sm text-secondary">
             <span className="text-yellowText">Required:</span> Verify your
-            destination address to continue. Do not send assets to a custodial
-            or exchange address. It may be impossible to recover your funds.
+            destination address to continue.
+            <br />
+            Do <strong>not</strong> send assets to a custodial or exchange
+            address. It may be impossible to recover your funds.
           </p>
         </div>
       </div>

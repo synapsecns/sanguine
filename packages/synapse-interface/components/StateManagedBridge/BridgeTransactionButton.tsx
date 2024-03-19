@@ -140,6 +140,7 @@ export const BridgeTransactionButton = ({
     buttonProperties = {
       label: 'Confirm destination address',
       onClick: () => dispatch(setIsDestinationWarningAccepted(true)),
+      className: '!from-bgLight !to-bgLight',
     }
   } else if (chain?.id != fromChainId && fromValueBigInt > 0) {
     buttonProperties = {
