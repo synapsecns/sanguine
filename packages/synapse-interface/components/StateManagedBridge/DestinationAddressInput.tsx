@@ -97,23 +97,26 @@ export const DestinationAddressInput = ({
 
   const listRef = useRef(null)
   const [showRecipientList, setShowRecipientList] = useState<boolean>(false)
-  const [showWarning, setShowWarning] = useState<boolean>(false)
   useCloseOnOutsideClick(listRef, () => setShowRecipientList(false))
 
   useEffect(() => {
-    if (connectedAddress && destinationAddress && !showDestinationWarning) {
-      const isValidDestinationAddress = isValidAddress(destinationAddress)
-      const isSameAddress =
-        getValidAddress(destinationAddress) ===
-        getValidAddress(connectedAddress)
+    const isValidDestinationAddress =
+      destinationAddress && isValidAddress(destinationAddress)
 
-      const showWarning = isValidDestinationAddress && !isSameAddress
+    const isDifferentAddress =
+      isValidDestinationAddress &&
+      getValidAddress(destinationAddress) !== getValidAddress(connectedAddress)
 
-      if (showWarning) {
-        dispatch(setShowDestinationWarning(true))
-      }
+    const showWarning = isValidDestinationAddress && isDifferentAddress
+
+    if (showWarning && !showDestinationWarning) {
+      dispatch(setShowDestinationWarning(true))
     }
-  }, [destinationAddress, connectedAddress])
+
+    if (!isValidDestinationAddress && showDestinationWarning) {
+      dispatch(setShowDestinationWarning(false))
+    }
+  }, [destinationAddress, connectedAddress, showDestinationWarning, dispatch])
 
   useEffect(() => {
     dispatch(clearDestinationAddress())
