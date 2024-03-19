@@ -14,9 +14,11 @@ import {
   useChainModal,
 } from '@rainbow-me/rainbowkit'
 import { stringToBigInt } from '@/utils/bigint/format'
-import { useBridgeState } from '@/slices/bridge/hooks'
+import { useBridgeDisplayState, useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { PAUSED_FROM_CHAIN_IDS, PAUSED_TO_CHAIN_IDS } from '@/constants/chains'
+import { useAppDispatch } from '@/store/hooks'
+import { setShowDestinationWarning } from '@/slices/bridgeDisplaySlice'
 
 export const BridgeTransactionButton = ({
   approveTxn,
@@ -163,6 +165,13 @@ export const BridgeTransactionButton = ({
 }
 
 const ConfirmWarning = () => {
+  const dispatch = useAppDispatch()
+  const { showDestinationWarning } = useBridgeDisplayState()
+
+  const handleCheckboxChange = (e) => {
+    dispatch(setShowDestinationWarning(!showDestinationWarning))
+  }
+
   return (
     <div id="confirm-warning" className="flex">
       <input
@@ -170,6 +179,8 @@ const ConfirmWarning = () => {
         id="destination-warning"
         name="destinationWarning"
         value=""
+        checked={!showDestinationWarning}
+        onChange={handleCheckboxChange}
       />
       <div>
         Required: Verify your destination address to continue. Do not send
