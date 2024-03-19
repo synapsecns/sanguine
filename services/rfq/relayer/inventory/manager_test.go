@@ -88,7 +88,7 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 			usdcDataDest.Addr: &usdcDataDest,
 		},
 	}
-	getConfig := func(maxRebalanceAmount string) relconfig.Config {
+	getConfig := func(minRebalanceAmount, maxRebalanceAmount string) relconfig.Config {
 		return relconfig.Config{
 			Chains: map[int]relconfig.ChainConfig{
 				origin: {
@@ -98,6 +98,7 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 							Decimals:              6,
 							MaintenanceBalancePct: 20,
 							InitialBalancePct:     50,
+							MinRebalanceAmount:    minRebalanceAmount,
 							MaxRebalanceAmount:    maxRebalanceAmount,
 						},
 					},
@@ -109,6 +110,7 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 							Decimals:              6,
 							MaintenanceBalancePct: 20,
 							InitialBalancePct:     50,
+							MinRebalanceAmount:    minRebalanceAmount,
 							MaxRebalanceAmount:    maxRebalanceAmount,
 						},
 					},
@@ -120,6 +122,7 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 							Decimals:              6,
 							MaintenanceBalancePct: 0,
 							InitialBalancePct:     0,
+							MinRebalanceAmount:    minRebalanceAmount,
 							MaxRebalanceAmount:    maxRebalanceAmount,
 						},
 					},
@@ -129,10 +132,17 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 	}
 
 	// 10 USDC on both chains; no rebalance needed
-	cfg := getConfig("")
+	cfg := getConfig("", "")
 	usdcDataOrigin.Balance = big.NewInt(1e7)
 	usdcDataDest.Balance = big.NewInt(1e7)
 	rebalance, err := inventory.GetRebalance(cfg, tokens, origin, usdcDataOrigin.Addr)
+	i.NoError(err)
+	i.Nil(rebalance)
+
+	// Set balances to zero
+	usdcDataOrigin.Balance = big.NewInt(0)
+	usdcDataDest.Balance = big.NewInt(0)
+	rebalance, err = inventory.GetRebalance(cfg, tokens, origin, usdcDataOrigin.Addr)
 	i.NoError(err)
 	i.Nil(rebalance)
 
@@ -148,8 +158,14 @@ func (i *InventoryTestSuite) TestGetRebalance() {
 	}
 	i.Equal(expected, rebalance)
 
+	// Set min rebalance amount
+	cfgWithMax := getConfig("10", "1000000000")
+	rebalance, err = inventory.GetRebalance(cfgWithMax, tokens, origin, usdcDataOrigin.Addr)
+	i.NoError(err)
+	i.Nil(rebalance)
+
 	// Set max rebalance amount
-	cfgWithMax := getConfig("1.1")
+	cfgWithMax = getConfig("0", "1.1")
 	rebalance, err = inventory.GetRebalance(cfgWithMax, tokens, origin, usdcDataOrigin.Addr)
 	i.NoError(err)
 	expected = &inventory.RebalanceData{

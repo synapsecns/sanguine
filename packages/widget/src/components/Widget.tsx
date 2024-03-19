@@ -271,8 +271,9 @@ export const Widget = ({
           signer,
         })
       )
+
       /** Fetch allowance on successful approval tx */
-      if (tx?.payload?.hash) {
+      if (tx?.payload?.hash || tx?.payload?.transactionHash) {
         dispatch(
           fetchAndStoreAllowance({
             spenderAddress: bridgeQuote?.routerAddress,

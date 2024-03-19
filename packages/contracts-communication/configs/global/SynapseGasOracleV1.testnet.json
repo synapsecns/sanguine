@@ -1,0 +1,12 @@
+{
+  "eth_sepolia": {
+    "calldataPrice": 0,
+    "gasPrice": 10000000000,
+    "nativePrice": 1000000000000000000
+  },
+  "op_sepolia": {
+    "calldataPrice": 0,
+    "gasPrice": 100000000,
+    "nativePrice": 1000000000000000000
+  }
+}

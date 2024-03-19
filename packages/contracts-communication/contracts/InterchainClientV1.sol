@@ -45,11 +45,13 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     // @inheritdoc IInterchainClientV1
     function setExecutionFees(address executionFees_) external onlyOwner {
         executionFees = executionFees_;
+        emit ExecutionFeesSet(executionFees_);
     }
 
     // @inheritdoc IInterchainClientV1
     function setLinkedClient(uint256 chainId, bytes32 client) external onlyOwner {
         _linkedClient[chainId] = client;
+        emit LinkedClientSet(chainId, client);
     }
 
     // @inheritdoc IInterchainClientV1
@@ -86,7 +88,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     }
 
     // TODO: Handle the case where receiver does not implement the IInterchainApp interface (or does not exist at all)
-    // TODO: Save the executor address outside of the contract to pass the data back to the source chain
     // @inheritdoc IInterchainClientV1
     function interchainExecute(
         uint256 gasLimit,
@@ -136,6 +137,8 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     // @inheritdoc IInterchainClientV1
     function isExecutable(bytes calldata encodedTx, bytes32[] calldata proof) external view returns (bool) {
         InterchainTransaction memory icTx = InterchainTransactionLib.decodeTransaction(encodedTx);
+        // Check that options could be decoded
+        icTx.options.decodeOptionsV1();
         _assertExecutable(icTx, proof);
         return true;
     }
@@ -152,7 +155,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     }
 
     // @inheritdoc IInterchainClientV1
-    // TODO: tests
     function getInterchainFee(
         uint256 dstChainId,
         address srcExecutionService,
@@ -164,6 +166,9 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         view
         returns (uint256 fee)
     {
+        _assertLinkedClient(dstChainId);
+        // Check that options could be decoded on destination chain
+        options.decodeOptionsV1();
         // Verification fee from InterchainDB
         fee = IInterchainDB(INTERCHAIN_DB).getInterchainFee(dstChainId, srcModules);
         // Add execution fee, if ExecutionService is provided
@@ -185,11 +190,17 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
 
     /// @inheritdoc IInterchainClientV1
     function getLinkedClient(uint256 chainId) external view returns (bytes32) {
+        if (chainId == block.chainid) {
+            revert InterchainClientV1__NotRemoteChainId(chainId);
+        }
         return _linkedClient[chainId];
     }
 
     /// @inheritdoc IInterchainClientV1
     function getLinkedClientEVM(uint256 chainId) external view returns (address linkedClientEVM) {
+        if (chainId == block.chainid) {
+            revert InterchainClientV1__NotRemoteChainId(chainId);
+        }
         bytes32 linkedClient = _linkedClient[chainId];
         linkedClientEVM = TypeCasts.bytes32ToAddress(linkedClient);
         // Check that the linked client address fits into the EVM address space
@@ -223,7 +234,9 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         returns (InterchainTxDescriptor memory desc)
     {
         _assertLinkedClient(dstChainId);
-        // TODO: should check options for being correctly formatted
+        if (receiver == 0) revert InterchainClientV1__ZeroReceiver();
+        // Check that options could be decoded on destination chain
+        options.decodeOptionsV1();
         uint256 verificationFee = IInterchainDB(INTERCHAIN_DB).getInterchainFee(dstChainId, srcModules);
         if (msg.value < verificationFee) {
             revert InterchainClientV1__FeeAmountTooLow(msg.value, verificationFee);
@@ -310,6 +323,9 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         (bytes memory encodedAppConfig, address[] memory approvedDstModules) =
             IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).getReceivingConfig();
         AppConfigV1 memory appConfig = encodedAppConfig.decodeAppConfigV1();
+        if (appConfig.requiredResponses == 0) {
+            revert InterchainClientV1__ZeroRequiredResponses();
+        }
         uint256 responses = _getFinalizedResponsesCount(approvedDstModules, icEntry, proof, appConfig.optimisticPeriod);
         if (responses < appConfig.requiredResponses) {
             revert InterchainClientV1__NotEnoughResponses(responses, appConfig.requiredResponses);
@@ -347,7 +363,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         for (uint256 i = 0; i < approvedModules.length; ++i) {
             uint256 confirmedAt = IInterchainDB(INTERCHAIN_DB).checkVerification(approvedModules[i], icEntry, proof);
             // readEntry() returns 0 if entry hasn't been confirmed by the module, so we check for that as well
-            if (confirmedAt != 0 && confirmedAt + optimisticPeriod <= block.timestamp) {
+            if (confirmedAt != 0 && confirmedAt + optimisticPeriod < block.timestamp) {
                 ++finalizedResponses;
             }
         }

@@ -31,7 +31,7 @@ contract InterchainBatchLibTest is Test {
 
     function test_constructLocalBatch(uint64 chainId, uint256 dbNonce, bytes32 batchRoot) public {
         vm.chainId(chainId);
-        InterchainBatch memory expected = InterchainBatch({srcChainId: chainId, dbNonce: dbNonce, batchRoot: batchRoot});
+        InterchainBatch memory expected = InterchainBatch(chainId, dbNonce, batchRoot);
         InterchainBatch memory actual = libHarness.constructLocalBatch(dbNonce, batchRoot);
         assertEq(actual, expected);
     }

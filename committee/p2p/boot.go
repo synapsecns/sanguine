@@ -189,6 +189,11 @@ func (l *libP2PManagerImpl) Start(ctx context.Context, bootstrapPeers []string) 
 	go func() {
 		for {
 			time.Sleep(time.Second * 4)
+
+			if len(l.pubsub.ListPeers(dbTopic)) == 0 {
+				l.ipfs.Bootstrap(peers)
+			}
+
 			fmt.Println("pubsub peers: ", len(l.pubsub.ListPeers(dbTopic)))
 			fmt.Println("global peers: ", len(l.host.Peerstore().Peers()))
 			fmt.Println("who am I?")

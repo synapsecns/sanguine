@@ -159,7 +159,10 @@ func (c *ClientSuite) SetupSuite() {
 
 			fastBridgeInstance, err := fastbridge.NewFastBridge(fastBridgeAddress, backend)
 			c.Require().NoError(err)
-			tx, err = fastBridgeInstance.AddRelayer(auth, c.testWallet.Address())
+			relayerRole, err := fastBridgeInstance.RELAYERROLE(&bind.CallOpts{Context: c.GetTestContext()})
+			c.NoError(err)
+
+			tx, err = fastBridgeInstance.GrantRole(auth, relayerRole, c.testWallet.Address())
 			c.Require().NoError(err)
 			backend.WaitForConfirmation(c.GetSuiteContext(), tx)
 

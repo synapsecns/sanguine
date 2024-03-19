@@ -24,7 +24,8 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
 
     /// @inheritdoc IInterchainDB
     function writeEntry(bytes32 dataHash) external returns (uint256 dbNonce, uint64 entryIndex) {
-        return _writeEntry(dataHash);
+        InterchainEntry memory entry = _writeEntry(dataHash);
+        (dbNonce, entryIndex) = (entry.dbNonce, entry.entryIndex);
     }
 
     /// @inheritdoc IInterchainDB
@@ -52,9 +53,10 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         onlyRemoteChainId(dstChainId)
         returns (uint256 dbNonce, uint64 entryIndex)
     {
-        (dbNonce, entryIndex) = _writeEntry(dataHash);
-        // In "no batching" mode: the batch root is the same as the entry hash
-        InterchainBatch memory batch = InterchainBatchLib.constructLocalBatch(dbNonce, dataHash);
+        InterchainEntry memory entry = _writeEntry(dataHash);
+        (dbNonce, entryIndex) = (entry.dbNonce, entry.entryIndex);
+        // In "no batching" mode: the batch root is the same as the entry value
+        InterchainBatch memory batch = InterchainBatchLib.constructLocalBatch(dbNonce, entry.entryValue());
         _requestVerification(dstChainId, batch, srcModules);
     }
 
@@ -81,14 +83,6 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     /// @inheritdoc IInterchainDB
-    function getBatchLeafs(uint256 dbNonce) external view returns (bytes32[] memory leafs) {
-        // In "no batching" mode: the finalized batch size is 1
-        _assertBatchFinalized(dbNonce);
-        leafs = new bytes32[](1);
-        leafs[0] = _entries[dbNonce].dataHash;
-    }
-
-    /// @inheritdoc IInterchainDB
     function getBatchLeafsPaginated(
         uint256 dbNonce,
         uint64 start,
@@ -98,18 +92,15 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         view
         returns (bytes32[] memory leafs)
     {
-        // In "no batching" mode: the finalized batch size is 1
-        _assertBatchFinalized(dbNonce);
         if (start != 0 || end != 1) {
             revert InterchainDB__InvalidEntryRange(dbNonce, start, end);
         }
-        leafs = new bytes32[](1);
-        leafs[0] = _entries[dbNonce].dataHash;
+        return getBatchLeafs(dbNonce);
     }
 
     /// @inheritdoc IInterchainDB
     function getEntryProof(uint256 dbNonce, uint64 entryIndex) external view returns (bytes32[] memory proof) {
-        // In "no batching" mode: the batch root is the same as the entry hash, hence the proof is empty
+        // In "no batching" mode: the batch root is the same as the entry value, hence the proof is empty
         _assertBatchFinalized(dbNonce);
         _assertEntryExists(dbNonce, entryIndex);
         return new bytes32[](0);
@@ -138,7 +129,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         onlyRemoteChainId(entry.srcChainId)
         returns (uint256 moduleVerifiedAt)
     {
-        // In "no batching" mode: the batch root is the same as the entry hash, hence the proof is empty
+        // In "no batching" mode: the batch root is the same as the entry value, hence the proof is empty
         if (proof.length != 0) {
             // If proof is not empty, the batch root is not verified
             return 0;
@@ -155,6 +146,14 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     }
 
     /// @inheritdoc IInterchainDB
+    function getBatchLeafs(uint256 dbNonce) public view returns (bytes32[] memory leafs) {
+        // In "no batching" mode: the finalized batch size is 1
+        _assertBatchFinalized(dbNonce);
+        leafs = new bytes32[](1);
+        leafs[0] = getEntry(dbNonce, 0).entryValue();
+    }
+
+    /// @inheritdoc IInterchainDB
     function getBatchSize(uint256 dbNonce) public view returns (uint64) {
         // In "no batching" mode: the finalized batch size is 1, the pending batch size is 0
         uint256 pendingNonce = _assertBatchExists(dbNonce);
@@ -165,7 +164,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     function getBatch(uint256 dbNonce) public view returns (InterchainBatch memory) {
         _assertBatchFinalized(dbNonce);
         // In "no batching" mode: the batch root is the same as the entry hash
-        return InterchainBatchLib.constructLocalBatch(dbNonce, _entries[dbNonce].dataHash);
+        return InterchainBatchLib.constructLocalBatch(dbNonce, getEntry(dbNonce, 0).entryValue());
     }
 
     /// @inheritdoc IInterchainDB
@@ -184,11 +183,16 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
     /// @dev Write the entry to the database and emit the event.
-    function _writeEntry(bytes32 dataHash) internal returns (uint256 dbNonce, uint64 entryIndex) {
-        dbNonce = _entries.length;
-        entryIndex = 0;
+    function _writeEntry(bytes32 dataHash) internal returns (InterchainEntry memory entry) {
+        entry = InterchainEntryLib.constructLocalEntry({
+            dbNonce: getDBNonce(),
+            entryIndex: 0,
+            writer: msg.sender,
+            dataHash: dataHash
+        });
+        // TODO: do we NEED to save both writer and dataHash instead of entryValue (writer + dataHash, hashed)?
         _entries.push(LocalEntry(msg.sender, dataHash));
-        emit InterchainEntryWritten(block.chainid, dbNonce, TypeCasts.addressToBytes32(msg.sender), dataHash);
+        emit InterchainEntryWritten(block.chainid, entry.dbNonce, entry.srcWriter, dataHash);
     }
 
     /// @dev Request the verification of the entry by the modules, and emit the event.

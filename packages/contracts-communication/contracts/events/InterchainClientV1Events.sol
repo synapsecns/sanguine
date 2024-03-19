@@ -2,6 +2,9 @@
 pragma solidity ^0.8.0;
 
 abstract contract InterchainClientV1Events {
+    event ExecutionFeesSet(address executionFees);
+    event LinkedClientSet(uint256 chainId, bytes32 client);
+
     // TODO: figure out indexing
 
     event InterchainTransactionSent(

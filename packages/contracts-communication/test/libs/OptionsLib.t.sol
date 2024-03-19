@@ -5,6 +5,7 @@ import {Test} from "forge-std/Test.sol";
 
 import {OptionsLib, OptionsLibHarness, OptionsV1} from "../harnesses/OptionsLibHarness.sol";
 
+// solhint-disable func-name-mixedcase
 contract OptionsLibTest is Test {
     struct MockOptionsV2 {
         uint256 gasLimit;
