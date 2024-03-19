@@ -1,18 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import {AbstractICAppEvents} from "../events/AbstractICAppEvents.sol";
+
 import {IInterchainApp} from "../interfaces/IInterchainApp.sol";
 import {IInterchainClientV1} from "../interfaces/IInterchainClientV1.sol";
 
 import {InterchainTxDescriptor} from "../libs/InterchainTransaction.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 
-abstract contract AbstractICApp is IInterchainApp {
+abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
     using TypeCasts for address;
 
     error InterchainApp__BalanceTooLow(uint256 actual, uint256 required);
+    error InterchainApp__ClientAlreadyAdded(address client);
     error InterchainApp__InterchainClientZeroAddress();
-    error InterchainApp__NotInterchainClient(address caller);
+    error InterchainApp__NotInterchainClient(address account);
     error InterchainApp__ReceiverNotSet(uint256 chainId);
     error InterchainApp__SameChainId(uint256 chainId);
     error InterchainApp__SenderNotAllowed(uint256 srcChainId, bytes32 sender);
@@ -46,7 +49,65 @@ abstract contract AbstractICApp is IInterchainApp {
         modules = _getModules();
     }
 
-    // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
+    // ═══════════════════════════════════════════ INTERNAL: MANAGEMENT ════════════════════════════════════════════════
+
+    /// @dev Performs necessary checks and adds an Interchain Client.
+    /// Optionally sets the latest client to this one.
+    /// Note: should be guarded with permission checks in the derived contracts.
+    function _addClient(address client, bool updateLatest) internal {
+        if (client == address(0)) {
+            revert InterchainApp__InterchainClientZeroAddress();
+        }
+        if (_isInterchainClient(client)) {
+            revert InterchainApp__ClientAlreadyAdded(client);
+        }
+        _toggleClientState(client, true);
+        emit InterchainClientAdded(client);
+        if (updateLatest) {
+            _setLatestClient(client);
+        }
+    }
+
+    /// @dev Performs necessary checks and removes an Interchain Client. If this client is the latest one,
+    /// the latest client is set to zero address (effectively pausing the app ability to send messages).
+    /// Note: should be guarded with permission checks in the derived contracts.
+    function _removeClient(address client) internal {
+        if (!_isInterchainClient(client)) {
+            revert InterchainApp__NotInterchainClient(client);
+        }
+        _toggleClientState(client, false);
+        emit InterchainClientRemoved(client);
+        if (client == _getLatestClient()) {
+            _setLatestClient(address(0));
+        }
+    }
+
+    /// @dev Sets the latest Interchain Client to one of the allowed clients. Setting the client to zero address
+    /// is allowed and effectively pauses the app ability to send messages (but still allows to receive them).
+    /// Note: should be guarded with permission checks in the derived contracts.
+    function _setLatestClient(address client) internal {
+        // New latest client must be an allowed client or zero address.
+        if (!_isInterchainClient(client) && client != address(0)) {
+            revert InterchainApp__NotInterchainClient(client);
+        }
+        _storeLatestClient(client);
+        emit LatestClientSet(client);
+    }
+
+    /// @dev Stores the address of the latest Interchain Client.
+    /// - The exact storage location is up to the implementation.
+    /// - Must NOT be called directly: use `_setLatestClient` instead.
+    /// - Should not emit any events: this is done in the calling function.
+    function _storeLatestClient(address client) internal virtual;
+
+    /// @dev Toggle the state of the Interchain Client (allowed/disallowed to send messages to this app).
+    /// - The client is checked to be in the opposite state before the change.
+    /// - The exact storage location is up to the implementation.
+    /// - Must NOT be called directly: use `_addClient` and `_removeClient` instead.
+    /// - Should not emit any events: this is done in the calling functions.
+    function _toggleClientState(address client, bool allowed) internal virtual;
+
+    // ════════════════════════════════════════════ INTERNAL: MESSAGING ════════════════════════════════════════════════
 
     /// @dev Thin wrapper around _sendInterchainMessage to accept EVM address as a parameter.
     function _sendInterchainMessageEVM(
