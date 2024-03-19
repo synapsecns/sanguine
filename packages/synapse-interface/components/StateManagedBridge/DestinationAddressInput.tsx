@@ -100,21 +100,20 @@ export const DestinationAddressInput = ({
   const [showWarning, setShowWarning] = useState<boolean>(false)
   useCloseOnOutsideClick(listRef, () => setShowRecipientList(false))
 
-  const handleActivateWarning = () => {
-    if (!showWarning && showDestinationWarning) {
-      setShowWarning(!showWarning)
+  useEffect(() => {
+    if (connectedAddress && destinationAddress && !showDestinationWarning) {
+      const isValidDestinationAddress = isValidAddress(destinationAddress)
+      const isSameAddress =
+        getValidAddress(destinationAddress) ===
+        getValidAddress(connectedAddress)
+
+      const showWarning = isValidDestinationAddress && !isSameAddress
+
+      if (showWarning) {
+        dispatch(setShowDestinationWarning(true))
+      }
     }
-  }
-
-  const handleAcceptWarning = () => {
-    dispatch(setShowDestinationWarning(false))
-    handleInputFocus()
-    setShowWarning(false)
-  }
-
-  const handleRejectWarning = () => {
-    setShowWarning(false)
-  }
+  }, [destinationAddress, connectedAddress])
 
   useEffect(() => {
     dispatch(clearDestinationAddress())
@@ -138,10 +137,7 @@ export const DestinationAddressInput = ({
   }, [inputValue, placeholder, isInputFocused, showRecipientList])
 
   return (
-    <div
-      id="destination-address-input"
-      // onClick={handleActivateWarning}
-    >
+    <div id="destination-address-input">
       <div className="flex items-center">
         <div className="mr-1.5 text-secondary">To: </div>
         <div
@@ -163,9 +159,6 @@ export const DestinationAddressInput = ({
             onChange={(e) =>
               dispatch(setDestinationAddress(e.target.value as Address))
             }
-            // onFocus={
-            //   showDestinationWarning ? handleActivateWarning : handleInputFocus
-            // }
             onFocus={handleInputFocus}
             onBlur={handleInputBlur}
             placeholder={placeholder}
@@ -214,15 +207,10 @@ export const DestinationAddressInput = ({
           </ul>
         )}
       </div>
-      {/* <DestinationInputWarning
-        show={showWarning}
-        onAccept={() => handleAcceptWarning()}
-        onCancel={() => handleRejectWarning()}
-      /> */}
     </div>
   )
 }
-// ${connectedAddress ? 'w-32' : 'w-36'}
+
 const ListRecipient = ({
   address,
   daysAgo,
@@ -243,52 +231,6 @@ const ListRecipient = ({
     >
       <div>{shortenAddress(address)}</div>
       <div>{daysAgo}d</div>
-    </div>
-  )
-}
-
-const DestinationInputWarning = ({
-  show,
-  onAccept,
-  onCancel,
-}: {
-  show: boolean
-  onAccept: () => void
-  onCancel: () => void
-}) => {
-  return (
-    <div
-      className={`
-        p-3 border rounded-sm bg-surface border-separator text-secondary
-        top-0 left-0 w-full space-y-2 z-50
-        ${show ? 'absolute' : 'hidden'}
-      `}
-    >
-      <h3 className="text-2xl font-semibold tracking-wide text-white">
-        Warning
-      </h3>
-      <div className="text-white">
-        Do not send your funds to a{' '}
-        <div className="inline text-yellowText">custodial wallet</div> or{' '}
-        <div className="inline text-yellowText">exchange</div> address!
-      </div>
-      <p className="text-secondary">
-        It may be impossible to recover your funds.
-      </p>
-      <div className="flex space-x-2">
-        <button
-          onClick={onCancel}
-          className="w-1/2 py-3 border border-transparent bg-separator hover:border-primary"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={onAccept}
-          className="w-1/2 py-3 bg-transparent border border-separator hover:border-primary"
-        >
-          Okay
-        </button>
-      </div>
     </div>
   )
 }
