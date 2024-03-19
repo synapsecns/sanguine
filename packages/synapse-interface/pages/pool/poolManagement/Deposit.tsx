@@ -8,7 +8,6 @@ import {
   deposit,
   emptyPoolDeposit,
 } from '@/utils/actions/approveAndDeposit'
-import { getAddress } from '@ethersproject/address'
 import { fetchBalance, waitForTransaction } from '@wagmi/core'
 import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
 import { calculatePriceImpact } from '@/utils/priceImpact'
@@ -20,7 +19,7 @@ import { useDispatch } from 'react-redux'
 import { DepositTokenInput } from '@components/TokenInput'
 import { Token } from '@types'
 import { Address } from '@wagmi/core'
-import { zeroAddress } from 'viem'
+
 import {
   resetPoolDeposit,
   setDepositQuote,
@@ -41,6 +40,7 @@ import { txErrorHandler } from '@/utils/txErrorHandler'
 import LoadingTokenInput from '@components/loading/LoadingTokenInput'
 import PriceImpactDisplay from '../components/PriceImpactDisplay'
 import DepositButton from './DepositButton'
+import { getAddress, zeroAddress } from 'viem'
 
 export const DEFAULT_DEPOSIT_QUOTE = {
   priceImpact: 0n,

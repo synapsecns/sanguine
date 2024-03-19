@@ -84,6 +84,10 @@ func (i *inventoryManagerImpl) GetCommittableBalance(ctx context.Context, chainI
 	// the gas token may not be registered in the inventory tokens map,
 	// but it is always tracked in gasBalances.
 	if balance == nil && token == chain.EthAddress {
+		gasBalance, ok := i.gasBalances[chainID]
+		if !ok || gasBalance == nil {
+			return nil, fmt.Errorf("could not get gas balance for chain %d", chainID)
+		}
 		balance = i.gasBalances[chainID]
 	}
 	return balance, nil

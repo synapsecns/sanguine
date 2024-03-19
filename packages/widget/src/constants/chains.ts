@@ -12,7 +12,7 @@ export const ETHEREUM: Chain = {
   explorerName: 'Etherscan',
   blockTime: 12000,
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/ethereum.ced7bf7d.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/ethereum.4a372106.svg',
 }
 
 export const ARBITRUM: Chain = {
@@ -26,7 +26,7 @@ export const ARBITRUM: Chain = {
   explorerName: 'Arbiscan',
   blockTime: 300,
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/arbitrum.9337c5cb.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/arbitrum.8ddb1b22.svg',
 }
 
 export const BNBCHAIN: Chain = {
@@ -39,7 +39,8 @@ export const BNBCHAIN: Chain = {
   explorerUrl: 'https://bscscan.com',
   explorerName: 'BscScan',
   blockTime: 3000,
-  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/bnb.c7f1e06b.svg',
+  imgUrl:
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/bnb.5948fe5e.svg',
 }
 
 export const AVALANCHE: Chain = {
@@ -53,7 +54,7 @@ export const AVALANCHE: Chain = {
   explorerName: 'Snowtrace',
   blockTime: 2000,
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/avalanche.80034115.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/avalanche.9d53cbf0.svg',
 }
 
 export const CANTO: Chain = {
@@ -67,7 +68,7 @@ export const CANTO: Chain = {
   explorerName: 'Canto Explorer',
   blockTime: 6000,
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/canto.0da5392e.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/canto.cb85e14f.svg',
 }
 
 export const OPTIMISM: Chain = {
@@ -81,7 +82,7 @@ export const OPTIMISM: Chain = {
   explorerName: 'Optimism Explorer',
   blockTime: 2000,
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/optimism.22de1334.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/optimism.84d4f0ef.svg',
 }
 
 export const POLYGON: Chain = {
@@ -95,7 +96,7 @@ export const POLYGON: Chain = {
   explorerName: 'PolygonScan',
   blockTime: 2000,
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/polygon.8d188d92.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/polygon.237cd2b6.svg',
 }
 
 export const DFK: Chain = {
@@ -108,7 +109,8 @@ export const DFK: Chain = {
   explorerUrl: 'https://subnets.avax.network/defi-kingdoms',
   explorerName: 'DFK Subnet Explorer',
   blockTime: 2000,
-  imgUrl: 'https://www.synapseprotocol.com/_next/static/media/dfk.1e8f3773.svg',
+  imgUrl:
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/dfk.2bd1f0e4.svg',
 }
 
 export const KLAYTN: Chain = {
@@ -122,7 +124,7 @@ export const KLAYTN: Chain = {
   explorerName: 'Klaytn Explorer',
   blockTime: 1000,
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/klaytn.0d2394a9.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/klaytn.59495fbb.svg',
 }
 
 export const FANTOM: Chain = {
@@ -136,7 +138,7 @@ export const FANTOM: Chain = {
   explorerName: 'FTMScan',
   blockTime: 1000,
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/fantom.72c20b34.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/fantom.1e444dad.svg',
 }
 
 export const CRONOS: Chain = {
@@ -150,7 +152,7 @@ export const CRONOS: Chain = {
   explorerName: 'CronoScan',
   blockTime: 6000,
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/cronos.805a6c46.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/cronos.b06f8311.svg',
 }
 
 export const BOBA: Chain = {
@@ -164,7 +166,7 @@ export const BOBA: Chain = {
   explorerName: 'Boba Explorer',
   blockTime: 1000,
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/boba.837d03c1.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/boba.2072e50b.svg',
 }
 
 export const METIS: Chain = {
@@ -178,7 +180,7 @@ export const METIS: Chain = {
   explorerName: 'Metis Explorer',
   blockTime: 4000,
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/metis.98d36df7.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/metis.3114f675.svg',
 }
 
 export const AURORA: Chain = {
@@ -192,7 +194,7 @@ export const AURORA: Chain = {
   explorerName: 'Aurora Explorer',
   blockTime: 1000,
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/aurora.46aaee98.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/aurora.5a46037d.svg',
 }
 
 export const HARMONY: Chain = {
@@ -206,7 +208,7 @@ export const HARMONY: Chain = {
   explorerName: 'Harmony Explorer',
   blockTime: 2000,
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/harmony.1c4d7731.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/harmony.af12f77e.svg',
 }
 
 export const MOONBEAM: Chain = {
@@ -220,7 +222,7 @@ export const MOONBEAM: Chain = {
   explorerName: 'Moonbeam Explorer',
   blockTime: 12000,
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/moonbeam.902e3681.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/moonbeam.284ab9b4.svg',
 }
 
 export const MOONRIVER: Chain = {
@@ -234,7 +236,7 @@ export const MOONRIVER: Chain = {
   explorerName: 'Moonriver Explorer',
   blockTime: 12000,
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/moonriver.3e23a112.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/moonriver.3fb35010.svg',
 }
 
 export const DOGE: Chain = {
@@ -248,7 +250,7 @@ export const DOGE: Chain = {
   explorerName: 'Dogechain Explorer',
   blockTime: 2000,
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/dogechain.04c2007a.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/dogechain.36935650.svg',
 }
 
 export const BASE: Chain = {
@@ -262,7 +264,7 @@ export const BASE: Chain = {
   explorerName: 'BaseScan',
   blockTime: 3000,
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/base.1b390997.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/base.d919fbef.svg',
 }
 
 export const BLAST: Chain = {
@@ -277,7 +279,7 @@ export const BLAST: Chain = {
   explorerName: 'Blastscan',
   blockTime: 3000,
   imgUrl:
-    'https://www.synapseprotocol.com/_next/static/media/blast.e39807f8.svg',
+    'https://45a97b3d.sanguine-fe.pages.dev/_next/static/media/blast.e39807f8.svg',
 }
 
 export const CHAINS = {
