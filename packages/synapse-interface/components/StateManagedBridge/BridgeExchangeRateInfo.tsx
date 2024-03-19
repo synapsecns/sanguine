@@ -46,7 +46,7 @@ const DestinationAddress = () => {
 
   if (showAddress) {
     return (
-      <div className="flex space-x-1 align-center">
+      <div className="flex items-center space-x-1">
         <div>To: </div>
         <div className="text-primary">{destinationAddress}</div>
       </div>

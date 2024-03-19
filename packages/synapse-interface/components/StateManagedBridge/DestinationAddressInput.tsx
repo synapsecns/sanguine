@@ -138,7 +138,10 @@ export const DestinationAddressInput = ({
   }, [inputValue, placeholder, isInputFocused, showRecipientList])
 
   return (
-    <div id="destination-address-input" onClick={handleActivateWarning}>
+    <div
+      id="destination-address-input"
+      // onClick={handleActivateWarning}
+    >
       <div className="flex items-center">
         <div className="mr-1.5 text-secondary">To: </div>
         <div
@@ -160,9 +163,10 @@ export const DestinationAddressInput = ({
             onChange={(e) =>
               dispatch(setDestinationAddress(e.target.value as Address))
             }
-            onFocus={
-              showDestinationWarning ? handleActivateWarning : handleInputFocus
-            }
+            // onFocus={
+            //   showDestinationWarning ? handleActivateWarning : handleInputFocus
+            // }
+            onFocus={handleInputFocus}
             onBlur={handleInputBlur}
             placeholder={placeholder}
             value={inputValue}
@@ -210,11 +214,11 @@ export const DestinationAddressInput = ({
           </ul>
         )}
       </div>
-      <DestinationInputWarning
+      {/* <DestinationInputWarning
         show={showWarning}
         onAccept={() => handleAcceptWarning()}
         onCancel={() => handleRejectWarning()}
-      />
+      /> */}
     </div>
   )
 }
