@@ -22,10 +22,7 @@ import {
 } from '@/components/ConnectionIndicators'
 import { CHAINS_BY_ID } from '@/constants/chains'
 // import { FromTokenSelector } from './FromTokenSelector'
-import {
-  FromChainListArray,
-  FromChainListOverlay,
-} from './FromChainListOverlay'
+import { FromChainListArray } from './FromChainListOverlay'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import {
@@ -143,7 +140,6 @@ const FromChainSelector = () => (
     label="From"
     itemListFunction={FromChainListArray}
     setFunction={setFromChainId}
-    overlay={<FromChainListOverlay />}
   />
 )
 
