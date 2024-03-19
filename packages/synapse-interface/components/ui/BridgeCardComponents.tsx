@@ -105,8 +105,7 @@ export function ChainSelector({
 
   const isOrigin = label === 'From' // TODO: Improve
 
-  console.log('typeof', typeof itemListFunction, 'result', itemListFunction())
-  const itemList = itemListFunction(searchStr) ?? { a: [] }
+  const itemList = itemListFunction ? itemListFunction(searchStr) : { a: [] }
 
   const onClose = useCallback(
     () => {
@@ -233,7 +232,7 @@ export function ChainSelector({
           </div>
           <div data-test-id={dataTestId}>
             {Object.entries(itemList).map(([key, value]: [string, Chain[]]) => {
-              return (
+              return value.length ? (
                 <div key={key} className="bg-bgBase first:bg-bgLight rounded">
                   <div className="p-2 text-sm text-secondary sticky top-0 bg-inherit z-10">
                     {key}
@@ -242,7 +241,7 @@ export function ChainSelector({
                     <SelectSpecificNetworkButton
                       key={id}
                       itemChainId={id}
-                      isCurrentChain={selectedItem.id === id}
+                      isCurrentChain={selectedItem?.id === id}
                       isOrigin={isOrigin}
                       active={idx === currentIdx}
                       onClick={() => handleSetFromChainId(id)}
@@ -250,7 +249,7 @@ export function ChainSelector({
                     />
                   ))}
                 </div>
-              )
+              ) : null
             })}
             <SearchResults searchStr={searchStr} type="chain" />
           </div>
