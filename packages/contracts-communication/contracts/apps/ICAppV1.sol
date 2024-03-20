@@ -14,6 +14,7 @@ import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet
 abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainAppV1Events, IInterchainAppV1 {
     using EnumerableSet for EnumerableSet.AddressSet;
     using TypeCasts for address;
+    using TypeCasts for bytes32;
 
     /// @notice Role to manage the Interchain setup of the app.
     bytes32 public constant IC_GOVERNOR_ROLE = keccak256("IC_GOVERNOR_ROLE");
@@ -85,6 +86,47 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
     function setExecutionService(address executionService) external onlyRole(IC_GOVERNOR_ROLE) {
         _executionService = executionService;
         emit ExecutionServiceSet(executionService);
+    }
+
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
+    /// @inheritdoc IInterchainAppV1
+    function getAppConfigV1() external view returns (AppConfigV1 memory) {
+        return _appConfigV1;
+    }
+
+    /// @inheritdoc IInterchainAppV1
+    function getExecutionService() external view returns (address) {
+        return _executionService;
+    }
+
+    /// @inheritdoc IInterchainAppV1
+    function getInterchainClients() external view returns (address[] memory) {
+        return _interchainClients.values();
+    }
+
+    /// @inheritdoc IInterchainAppV1
+    function getLatestInterchainClient() external view returns (address) {
+        return _latestClient;
+    }
+
+    /// @inheritdoc IInterchainAppV1
+    function getLinkedApp(uint256 chainId) external view returns (bytes32) {
+        return _linkedApp[chainId];
+    }
+
+    /// @inheritdoc IInterchainAppV1
+    function getLinkedAppEVM(uint256 chainId) external view returns (address linkedAppEVM) {
+        bytes32 linkedApp = _linkedApp[chainId];
+        linkedAppEVM = linkedApp.bytes32ToAddress();
+        if (linkedAppEVM.addressToBytes32() != linkedApp) {
+            revert InterchainApp__NotEVMLinkedApp(linkedApp);
+        }
+    }
+
+    /// @inheritdoc IInterchainAppV1
+    function getModules() external view returns (address[] memory) {
+        return _trustedModules.values();
     }
 
     // ═══════════════════════════════════════════ INTERNAL: MANAGEMENT ════════════════════════════════════════════════

@@ -6,6 +6,7 @@ import {AppConfigV1} from "../libs/AppConfig.sol";
 interface IInterchainAppV1 {
     error InterchainApp__ModuleAlreadyAdded(address module);
     error InterchainApp__ModuleNotAdded(address module);
+    error InterchainApp__NotEVMLinkedApp(bytes32 linkedApp);
 
     /// @notice Allows the owner to add the interchain client to the allowed clients set,
     /// and optionally set the latest client to this one.
@@ -53,4 +54,30 @@ interface IInterchainAppV1 {
     /// This address will be used to request execution of the messages sent from this chain,
     /// by supplying the Service's execution fee.
     function setExecutionService(address executionService) external;
+
+    // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
+
+    /// @notice Returns the app config for the current app: requiredResponses and optimisticPeriod.
+    function getAppConfigV1() external view returns (AppConfigV1 memory);
+
+    /// @notice Returns the address of the Execution Service used by this app for sending messages.
+    function getExecutionService() external view returns (address);
+
+    /// @notice Returns the list of Interchain Clients allowed to send messages to this app.
+    function getInterchainClients() external view returns (address[] memory);
+
+    /// @notice Returns the address of the latest interchain client.
+    /// This address is used for sending messages from this app.
+    function getLatestInterchainClient() external view returns (address);
+
+    /// @notice Returns the linked app address (as bytes32) for the given chain ID.
+    function getLinkedApp(uint256 chainId) external view returns (bytes32);
+
+    /// @notice Thin wrapper for `getLinkedApp` to return the linked app address as EVM address.
+    /// @dev Will revert if the linked app address is not an EVM address.
+    function getLinkedAppEVM(uint256 chainId) external view returns (address);
+
+    /// @notice Returns the list of Interchain Modules trusted by this app.
+    /// This set of modules will be used to verify both sent and received messages.
+    function getModules() external view returns (address[] memory);
 }
