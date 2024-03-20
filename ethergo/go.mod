@@ -4,6 +4,7 @@ go 1.21
 
 require (
 	cloud.google.com/go/kms v1.15.5
+	github.com/DenrianWeiss/tracely v0.0.0-20220624070317-49cf8afaaf18
 	github.com/Flaque/filet v0.0.0-20201012163910-45f684403088
 	github.com/ImVexed/fasturl v0.0.0-20230304231329-4e41488060f3
 	github.com/aws/aws-sdk-go-v2 v1.21.2
@@ -92,6 +93,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sso v1.15.2 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.17.3 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.23.2 // indirect
+	github.com/bcicen/jstream v1.0.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/btcsuite/btcd/chaincfg/chainhash v1.0.1 // indirect
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce // indirect
