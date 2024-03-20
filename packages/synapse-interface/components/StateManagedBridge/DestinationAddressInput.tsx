@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { isEmpty, isString } from 'lodash'
+import { isString } from 'lodash'
 import { useAppDispatch } from '@/store/hooks'
 import { isValidAddress } from '@/utils/isValidAddress'
 import { shortenAddress } from '@/utils/shortenAddress'
@@ -41,6 +41,41 @@ export const DestinationAddressInput = ({
   )
   const filteredRecipientList = filterNewestTxByRecipient(recipientList)
 
+  const isInputValidAddress: boolean = destinationAddress
+    ? isValidAddress(destinationAddress)
+    : false
+
+  const isInputInvalid: boolean =
+    (destinationAddress &&
+      isString(destinationAddress) &&
+      isEmptyString(destinationAddress)) ||
+    (destinationAddress && !isInputValidAddress)
+
+  /** Conditions for firing off Warning */
+  useEffect(() => {
+    const isSameAddress =
+      connectedAddress &&
+      isInputValidAddress &&
+      getValidAddress(destinationAddress) === getValidAddress(connectedAddress)
+
+    const showWarning = isInputValidAddress && !isSameAddress
+
+    if (showWarning && !showDestinationWarning) {
+      dispatch(setShowDestinationWarning(true))
+    }
+
+    if (!isInputValidAddress && showDestinationWarning) {
+      dispatch(setShowDestinationWarning(false))
+      dispatch(setIsDestinationWarningAccepted(false))
+    }
+  }, [
+    dispatch,
+    connectedAddress,
+    destinationAddress,
+    showDestinationWarning,
+    isInputValidAddress,
+  ])
+
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
 
   const handleInputFocus = () => {
@@ -61,65 +96,29 @@ export const DestinationAddressInput = ({
   }
 
   const handleClearInput = () => {
+    dispatch(clearDestinationAddress())
+
     if (inputRef.current) {
       inputRef.current.value = ''
     }
   }
 
   const onClearUserInput = () => {
-    dispatch(clearDestinationAddress())
     handleClearInput()
     handleInputFocus()
   }
-
-  const isInputValidAddress: boolean = destinationAddress
-    ? isValidAddress(destinationAddress)
-    : false
-
-  const isInputInvalid: boolean =
-    (destinationAddress &&
-      isString(destinationAddress) &&
-      isEmptyString(destinationAddress)) ||
-    (destinationAddress && !isInputValidAddress)
 
   useEffect(() => {
     dispatch(clearDestinationAddress())
     handleClearInput()
   }, [connectedAddress])
 
-  useEffect(() => {
-    const isSameAddress =
-      connectedAddress &&
-      isInputValidAddress &&
-      getValidAddress(destinationAddress) === getValidAddress(connectedAddress)
-
-    const showWarning = isInputValidAddress && !isSameAddress
-
-    if (showWarning && !showDestinationWarning) {
-      dispatch(setShowDestinationWarning(true))
-    }
-
-    if (!isInputValidAddress && showDestinationWarning) {
-      dispatch(setShowDestinationWarning(false))
-      dispatch(setIsDestinationWarningAccepted(false))
-    }
-  }, [
-    destinationAddress,
-    connectedAddress,
-    showDestinationWarning,
-    dispatch,
-    isInputValidAddress,
-  ])
-
   let placeholder
 
   if (isInputFocused) {
     placeholder = ''
   } else {
-    placeholder = connectedAddress
-      ? // ? shortenAddress(connectedAddress)
-        '0x...'
-      : 'Wallet address'
+    placeholder = connectedAddress ? '0x...' : 'Wallet address'
   }
 
   let inputValue
@@ -162,6 +161,8 @@ export const DestinationAddressInput = ({
   const enterPressed = useKeyPress('Enter')
 
   function escFunc() {
+    if (!showRecipientList) return
+
     if (escPressed) {
       handleCloseList()
       handleClearInput()
@@ -214,7 +215,7 @@ export const DestinationAddressInput = ({
     } else if (inputValue.length > 0) {
       addressInput.style.width = inputValue.length + 2 + 'ch'
     } else {
-      addressInput.style.width = placeholder.length + 1 + 'ch'
+      addressInput.style.width = placeholder.length + 'ch'
     }
   }
 
