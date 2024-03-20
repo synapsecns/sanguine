@@ -8,7 +8,7 @@ import { ToChainListArray } from './ToChainListOverlay'
 import { shortenAddress } from '@/utils/shortenAddress'
 // import { ToTokenSelector } from './ToTokenSelector'
 import { useDispatch } from 'react-redux'
-import { setFromToken, setToChainId, setToToken } from '@/slices/bridge/reducer'
+import { setToChainId, setToToken } from '@/slices/bridge/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import {
   BridgeAmountContainer,
@@ -80,9 +80,9 @@ const ToChainSelector = () => (
 const ToTokenSelector = () => (
   <TokenSelector
     dataTestId="bridge-destination-token"
-    selectedItem={useBridgeState().fromToken}
+    selectedItem={useBridgeState().toToken}
     placeholder="In"
     itemListFunction={ToTokenListArray}
-    setFunction={setFromToken}
+    setFunction={setToToken}
   />
 )
