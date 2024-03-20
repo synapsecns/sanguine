@@ -35,9 +35,7 @@ export const MaintenanceBanner = () => {
       bannerId="03142024-ecotone-fork"
       bannerContents={
         <>
-          Optimism + Base Bridging will be paused 10 minutes ahead of Ecotone
-          (March 14, 00:00 UTC, 20:00 EST). Will be back online shortly
-          following the network upgrade.
+          <p>Bridging is paused until maintenance is complete.</p>
         </>
       }
       startDate={MAINTENANCE_BANNERS_START}
@@ -46,7 +44,7 @@ export const MaintenanceBanner = () => {
   )
 }
 
-export const BridgeWarningMessage = () => {
+export const MaintenanceWarningMessage = () => {
   const { fromChainId, toChainId } = useBridgeState()
 
   const isWarningChain = isChainIncluded(
@@ -66,10 +64,7 @@ export const BridgeWarningMessage = () => {
       <WarningMessage
         message={
           <>
-            <p>
-              Optimism Chain and Base Chain bridging are paused until the
-              Ecotone Fork upgrade completes.
-            </p>
+            <p>Bridging is paused until maintenance is complete.</p>
           </>
         }
       />
@@ -91,7 +86,7 @@ export const useMaintenanceCountdownProgress = () => {
     isPending: isMaintenancePending,
     EventCountdownProgressBar: MaintenanceCountdownProgressBar,
   } = useEventCountdownProgressBar(
-    'Ecotone Fork upgrade in progress',
+    'Maintenance in progress',
     MAINTENANCE_START_DATE, // Countdown Bar will automatically appear after start time
     MAINTENANCE_END_DATE // Countdown Bar will automatically disappear when end time is reached
   )
@@ -99,7 +94,7 @@ export const useMaintenanceCountdownProgress = () => {
   return {
     isMaintenancePending,
     isCurrentChainDisabled: isCurrentChain && isMaintenancePending, // Used to pause Bridge
-    EcotoneForkCountdownProgressBar: isCurrentChain
+    MaintenanceCountdownProgressBar: isCurrentChain
       ? MaintenanceCountdownProgressBar
       : null,
   }
