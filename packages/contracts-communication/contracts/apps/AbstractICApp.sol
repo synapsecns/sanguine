@@ -91,6 +91,9 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
         if (!_isInterchainClient(client) && client != address(0)) {
             revert InterchainApp__NotInterchainClient(client);
         }
+        if (client == _getLatestClient()) {
+            revert InterchainApp__AlreadyLatestClient(client);
+        }
         _storeLatestClient(client);
         emit LatestClientSet(client);
     }
