@@ -116,7 +116,7 @@ abstract contract ICSetup is Test {
         pingPongApp.addTrustedModule(address(module));
         pingPongApp.setAppConfigV1(AppConfigV1({requiredResponses: 1, optimisticPeriod: APP_OPTIMISTIC_PERIOD}));
         pingPongApp.setExecutionService(address(executionService));
-        pingPongApp.setInterchainClient(address(icClient));
+        pingPongApp.addInterchainClient({client: address(icClient), updateLatest: true});
     }
 
     function initDBNonce() internal virtual {
