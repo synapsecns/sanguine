@@ -337,7 +337,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         if (chainId == block.chainid) {
             revert InterchainClientV1__NotRemoteChainId(chainId);
         }
-
         linkedClient = _linkedClient[chainId];
         if (linkedClient == 0) {
             revert InterchainClientV1__NoLinkedClient(chainId);

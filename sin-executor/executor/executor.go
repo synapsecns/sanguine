@@ -3,6 +3,7 @@ package executor
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
 	"time"
 
@@ -204,6 +205,12 @@ func (e *Executor) checkReady(ctx context.Context, request db.TransactionSent) e
 	// TODO: REMOVE ME
 	//err := e.db.UpdateInterchainTransactionStatus(ctx, request.TransactionID, db.Ready)
 	// TODO: REMOVE ME
+
+	fmt.Println("contract:")
+	fmt.Printf("cast call %s \"isExecutable(bytes,bytes32)(bool)\" %s --rpc-url %s/rpc/1", contract.Address(), hexutil.Encode(request.EncodedTX), e.cfg.OmnirpcURL)
+	fmt.Println(contract.Address())
+	fmt.Println("test:")
+	fmt.Println(hexutil.Encode(request.EncodedTX))
 
 	isExecutable, err := contract.IsExecutable(&bind.CallOpts{Context: ctx}, request.EncodedTX, nil)
 	if err != nil {

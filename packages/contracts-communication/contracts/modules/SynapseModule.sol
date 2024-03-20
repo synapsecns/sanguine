@@ -13,7 +13,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
-contract SynapseModule is InterchainModule, Ownable, SynapseModuleynapseModule {
+contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynapseModule {
     // TODO: make sure this is a good enough default valueEvents, IS
     uint256 public constant DEFAULT_VERIFY_GAS_LIMIT = 100_000;
 
