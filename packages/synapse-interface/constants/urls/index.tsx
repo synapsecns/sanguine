@@ -31,6 +31,7 @@ export const TERMS_OF_SERVICE_PATH =
 export const PRIVACY_POLICY_PATH =
   'https://explorer.synapseprotocol.com/privacy'
 export const SYNAPSE_PFP_PATH = '/returntomonke'
+export const JOBS_URL = 'https://jobs.ashbyhq.com/Synapse%20Labs'
 
 /** Synapse Social Links */
 export const DISCORD_URL = 'https://discord.gg/synapseprotocol'
