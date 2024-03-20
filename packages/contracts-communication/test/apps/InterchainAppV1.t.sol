@@ -18,6 +18,7 @@ abstract contract InterchainAppV1Test is Test, AbstractICAppEvents, InterchainAp
 
     uint256 public constant LOCAL_CHAIN_ID = 1337;
     uint256 public constant REMOTE_CHAIN_ID = 7331;
+    uint256 public constant UNKNOWN_CHAIN_ID = 420;
     uint256 public constant APP_OPTIMISTIC_PERIOD = 10 minutes;
 
     IInterchainAppV1Harness public appHarness;
