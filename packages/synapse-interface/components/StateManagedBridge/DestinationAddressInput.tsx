@@ -142,6 +142,11 @@ export const DestinationAddressInput = ({
     }
   }
 
+  const handlePaste = async () => {
+    const pastedValue = await navigator.clipboard.readText()
+    setDestinationAddress(pastedValue as Address)
+  }
+
   useCloseOnOutsideClick(listRef, handleCloseList)
 
   const escPressed = useKeyPress('Escape')
@@ -215,14 +220,18 @@ export const DestinationAddressInput = ({
               ${destinationAddress ? 'pr-6' : 'pr-1'}
             `}
           />
-          {destinationAddress && (
+          {destinationAddress ? (
             <div>
               <CloseButton
                 onClick={onClearUserInput}
                 className="!w-5 !h-5 mr-1 mt-1"
               />
             </div>
-          )}
+          ) : isInputFocused ? (
+            <div>
+              <PasteButton onPaste={handlePaste} />
+            </div>
+          ) : null}
         </div>
       </div>
       <div className="relative">
@@ -370,4 +379,21 @@ export const HoverContent = ({
       </div>
     )
   }
+}
+
+const PasteButton = ({ onPaste }: { onPaste: () => void }) => {
+  return (
+    <svg
+      width="32"
+      height="24"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      onClick={onPaste}
+      onMouseDown={(e) => e.preventDefault()}
+      className="self-center block col-start-1 row-start-1 border-transparent cursor-pointer justify-self-end fill-zinc-100 stroke-zinc-100"
+    >
+      <rect x="5.5" y="5.5" width="13" height="16" rx="2" fill="none" />
+      <path d="M9 7.5C8.72386 7.5 8.5 7.27614 8.5 7C8.5 5.067 10.067 3.5 12 3.5C13.933 3.5 15.5 5.067 15.5 7C15.5 7.27614 15.2761 7.5 15 7.5H9Z" />
+    </svg>
+  )
 }
