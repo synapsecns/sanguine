@@ -3,14 +3,20 @@ pragma solidity ^0.8.20;
 
 import {AbstractICApp} from "./AbstractICApp.sol";
 
+import {InterchainAppV1Events} from "../events/InterchainAppV1Events.sol";
 import {IInterchainAppV1} from "../interfaces/IInterchainAppV1.sol";
 import {AppConfigV1} from "../libs/AppConfig.sol";
+import {TypeCasts} from "../libs/TypeCasts.sol";
 
 import {AccessControlEnumerable} from "@openzeppelin/contracts/access/extensions/AccessControlEnumerable.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
-abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, IInterchainAppV1 {
+abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainAppV1Events, IInterchainAppV1 {
     using EnumerableSet for EnumerableSet.AddressSet;
+    using TypeCasts for address;
+
+    /// @notice Role to manage the Interchain setup of the app.
+    bytes32 public constant IC_GOVERNOR_ROLE = keccak256("IC_GOVERNOR_ROLE");
 
     /// @dev Address of the latest Interchain Client, used for sending messages.
     address private _latestClient;
@@ -30,7 +36,69 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, IInterchain
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
     }
 
+    /// @inheritdoc IInterchainAppV1
+    function addInterchainClient(address client, bool updateLatest) external onlyRole(IC_GOVERNOR_ROLE) {
+        _addClient(client, updateLatest);
+    }
+
+    /// @inheritdoc IInterchainAppV1
+    function removeInterchainClient(address client) external onlyRole(IC_GOVERNOR_ROLE) {
+        _removeClient(client);
+    }
+
+    /// @inheritdoc IInterchainAppV1
+    function setLatestInterchainClient(address client) external onlyRole(IC_GOVERNOR_ROLE) {
+        _setLatestClient(client);
+    }
+
+    /// @inheritdoc IInterchainAppV1
+    function linkRemoteApp(uint256 chainId, bytes32 remoteApp) external onlyRole(IC_GOVERNOR_ROLE) {
+        _linkRemoteApp(chainId, remoteApp);
+    }
+
+    /// @inheritdoc IInterchainAppV1
+    function linkRemoteAppEVM(uint256 chainId, address remoteApp) external onlyRole(IC_GOVERNOR_ROLE) {
+        _linkRemoteApp(chainId, remoteApp.addressToBytes32());
+    }
+
+    /// @inheritdoc IInterchainAppV1
+    function addTrustedModule(address module) external onlyRole(IC_GOVERNOR_ROLE) {
+        bool added = _trustedModules.add(module);
+        if (!added) revert InterchainApp__ModuleAlreadyAdded(module);
+        emit TrustedModuleAdded(module);
+    }
+
+    /// @inheritdoc IInterchainAppV1
+    function removeTrustedModule(address module) external onlyRole(IC_GOVERNOR_ROLE) {
+        bool removed = _trustedModules.remove(module);
+        if (!removed) revert InterchainApp__ModuleNotAdded(module);
+        emit TrustedModuleRemoved(module);
+    }
+
+    /// @inheritdoc IInterchainAppV1
+    function setAppConfigV1(AppConfigV1 memory appConfig) external onlyRole(IC_GOVERNOR_ROLE) {
+        _appConfigV1 = appConfig;
+        emit AppConfigV1Set(appConfig.requiredResponses, appConfig.optimisticPeriod);
+    }
+
+    /// @inheritdoc IInterchainAppV1
+    function setExecutionService(address executionService) external onlyRole(IC_GOVERNOR_ROLE) {
+        _executionService = executionService;
+        emit ExecutionServiceSet(executionService);
+    }
+
     // ═══════════════════════════════════════════ INTERNAL: MANAGEMENT ════════════════════════════════════════════════
+
+    /// @dev Links the remote app to the current app.
+    /// Will revert if the chainId is the same as the chainId of the local app.
+    /// Note: Should be guarded with permissions check.
+    function _linkRemoteApp(uint256 chainId, bytes32 remoteApp) internal {
+        if (chainId == block.chainid) {
+            revert InterchainApp__SameChainId(chainId);
+        }
+        _linkedApp[chainId] = remoteApp;
+        emit AppLinked(chainId, remoteApp);
+    }
 
     /// @dev Stores the address of the latest Interchain Client.
     /// - The exact storage location is up to the implementation.
