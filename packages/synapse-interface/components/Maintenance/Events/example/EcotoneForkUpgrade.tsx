@@ -21,8 +21,8 @@ import { WarningMessage } from '../../../Warning'
 export const ECOTONE_FORK_BANNERS_START = new Date(
   Date.UTC(2024, 2, 20, 16, 0, 0)
 )
-export const ECOTONE_FORK_START_DATE = new Date(Date.UTC(2024, 2, 20, 16, 0, 0))
-export const ECOTONE_FORK_END_DATE = new Date(Date.UTC(2024, 2, 20, 18, 0, 0))
+export const ECOTONE_FORK_START_DATE = new Date(Date.UTC(2024, 2, 20, 18, 0, 0))
+export const ECOTONE_FORK_END_DATE = new Date(Date.UTC(2024, 2, 20, 21, 0, 0))
 
 /** Previous implementation can be seen here: https://github.com/synapsecns/sanguine/pull/2294/files#diff-bbe6298d3dfbc80e46e2ff8b399a3e1822cede80f392b1af91875145ad4eeb19R19 */
 export const EcotoneForkUpgradeBanner = () => {
