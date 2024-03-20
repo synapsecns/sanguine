@@ -3,7 +3,6 @@ package executor_test
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainapp"
 	"math/big"
 	"sync"
@@ -109,25 +108,6 @@ func (i *InterchainSuite) setClientConfigs(backend backends.SimulatedTestBackend
 	i.Require().NoError(err)
 	backend.WaitForConfirmation(i.GetTestContext(), tx)
 
-	sendingModules, err := appMock.GetSendingModules(&bind.CallOpts{Context: i.GetTestContext()})
-	i.Require().NoError(err)
-
-	receivingModules, err := appMock.GetReceivingModules(&bind.CallOpts{Context: i.GetTestContext()})
-	i.Require().NoError(err)
-
-	addedModules := make(map[common.Address]struct{})
-	for _, module := range append(sendingModules, receivingModules...) {
-		if _, hasModule := addedModules[module]; hasModule {
-			continue
-		}
-
-		tx, err = appMock.AddTrustedModule(appAuth.TransactOpts, module)
-		i.Require().NoError(err)
-		backend.WaitForConfirmation(i.GetTestContext(), tx)
-
-		addedModules[module] = struct{}{}
-	}
-
 	time.Sleep(time.Second * 5)
 	_, executionService := i.deployManager.GetExecutionService(i.GetTestContext(), backend)
 	// same thing
@@ -139,16 +119,10 @@ func (i *InterchainSuite) setClientConfigs(backend backends.SimulatedTestBackend
 	tx, err = appMock.SetAppConfigV1(auth.TransactOpts, interchainapp.AppConfigV1{
 		RequiredResponses: big.NewInt(1),
 		OptimisticPeriod:  big.NewInt(1),
-	})F""
+	})
 
 	i.Require().NoError(err)
 	backend.WaitForConfirmation(i.GetTestContext(), tx)
-
-	yo, _ := appMock.GetSendingModules(&bind.CallOpts{Context: i.GetTestContext()})
-	fmt.Print(yo)
-
-	dest, _ := appMock.GetReceivingModules(&bind.CallOpts{Context: i.GetTestContext()})
-	fmt.Print(dest)
 }
 
 func (i *InterchainSuite) addressToBytes32(addie common.Address) [32]byte {

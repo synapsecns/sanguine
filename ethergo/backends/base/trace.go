@@ -43,9 +43,9 @@ func (b *Backend) getTransactionLabelMap(tx *types.Transaction, from common.Addr
 		stackRes := map[string]string{}
 		switch frame.Op {
 		case "CALL":
-			stackRes = tracely.ParseCall(frame)
+			stackRes, err = tracely.ParseCall(frame)
 		case "DELEGATECALL", "STATICCALL":
-			stackRes = tracely.ParseDelegateCall(frame)
+			stackRes, err = tracely.ParseDelegateCall(frame)
 		case "REVERT":
 			stackRes = tracely.ParseRevert(frame)
 

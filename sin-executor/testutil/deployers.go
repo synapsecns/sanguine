@@ -83,6 +83,7 @@ var (
 
 	interchainAppMockDeployer = deployer.NewFunctionalDeployer(InterchainApp, func(ctx context.Context, helpers deployer.IFunctionalDeployer, transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		clientContract := helpers.Registry().Get(ctx, InterchainClient)
+		sendingModule := helpers.Registry().Get(ctx, InterchainModuleMock)
 
 		appAddress, appTx, appMock, err := interchainapp.DeployInterchainAppExample(transactOps, backend, transactOps.From)
 		if err != nil {
@@ -93,6 +94,12 @@ var (
 		tx, err := appMock.SetInterchainClient(transactOps, clientContract.Address())
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not set interchain client: %w", err)
+		}
+		helpers.Backend().WaitForConfirmation(ctx, tx)
+
+		tx, err = appMock.AddTrustedModule(transactOps, sendingModule.Address())
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not set trusted module: %w", err)
 		}
 		helpers.Backend().WaitForConfirmation(ctx, tx)
 
