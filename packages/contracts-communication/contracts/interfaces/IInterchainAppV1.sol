@@ -4,8 +4,11 @@ pragma solidity ^0.8.0;
 import {AppConfigV1} from "../libs/AppConfig.sol";
 
 interface IInterchainAppV1 {
+    error InterchainApp__AppZeroAddress();
+    error InterchainApp__InvalidAppConfig(uint256 requiredResponses, uint256 optimisticPeriod);
     error InterchainApp__ModuleAlreadyAdded(address module);
     error InterchainApp__ModuleNotAdded(address module);
+    error InterchainApp__ModuleZeroAddress();
     error InterchainApp__NotEVMLinkedApp(bytes32 linkedApp);
 
     /// @notice Allows the owner to add the interchain client to the allowed clients set,
