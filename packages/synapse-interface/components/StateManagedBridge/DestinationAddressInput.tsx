@@ -147,6 +147,8 @@ export const DestinationAddressInput = ({
     dispatch(setDestinationAddress(pastedValue as Address))
   }
 
+  const [currentIdx, setCurrentIdx] = useState<number>(null)
+
   useCloseOnOutsideClick(listRef, handleCloseList)
 
   const escPressed = useKeyPress('Escape')
@@ -161,9 +163,30 @@ export const DestinationAddressInput = ({
     }
   }
 
-  function arrowDownFunc() {}
+  const listLength = filteredRecipientList.length
 
-  function arrowUpFunc() {}
+  function arrowDownFunc() {
+    if (listLength === 0) return
+    if (!showRecipientList) return
+
+    const nextIdx = currentIdx + 1
+    if (currentIdx === null) {
+      setCurrentIdx(0)
+    } else if (arrowDown && nextIdx < listLength) {
+      setCurrentIdx(nextIdx)
+    }
+  }
+
+  function arrowUpFunc() {
+    if (listLength === 0) return
+    if (!showRecipientList) return
+
+    const nextIdx = currentIdx - 1
+
+    if (arrowUp && -1 < nextIdx) {
+      setCurrentIdx(nextIdx)
+    }
+  }
 
   useEffect(escFunc, [escPressed])
   useEffect(arrowDownFunc, [arrowDown])
@@ -172,7 +195,7 @@ export const DestinationAddressInput = ({
   const adjustInputSize = () => {
     const addressInput: HTMLElement = document.getElementById('address-input')
 
-    if (isInputFocused || isInputInvalid || showRecipientList) {
+    if (isInputFocused || isInputInvalid) {
       addressInput.style.width = '8rem'
     } else if (inputValue.length > 0) {
       addressInput.style.width = inputValue.length + 2 + 'ch'
@@ -223,7 +246,7 @@ export const DestinationAddressInput = ({
           {destinationAddress ? (
             <CloseButton
               onClick={onClearUserInput}
-              className="!w-5 !h-5 mr-1 mt-1"
+              className="!w-5 !h-5 mr-1 mt-1 hover:opacity-70"
             />
           ) : isInputFocused ? (
             <PasteButton onPaste={handlePaste} />
@@ -240,12 +263,14 @@ export const DestinationAddressInput = ({
               popover list-none text-left overflow-hidden
             `}
           >
-            {filteredRecipientList?.map((recipient) => {
+            {filteredRecipientList?.map((recipient, index) => {
               return (
                 <ListRecipient
                   key={recipient?.toAddress}
+                  index={index}
                   address={recipient?.toAddress}
                   daysAgo={recipient?.daysAgo}
+                  selectedListItem={currentIdx}
                   onSelectRecipient={(destinationAddress: Address) => {
                     dispatch(setDestinationAddress(destinationAddress))
                     setShowRecipientList(false)
@@ -261,12 +286,16 @@ export const DestinationAddressInput = ({
 }
 
 const ListRecipient = ({
+  index,
   address,
   daysAgo,
+  selectedListItem,
   onSelectRecipient,
 }: {
+  index: number
   address: string
   daysAgo: number
+  selectedListItem: number | null
   onSelectRecipient?: (destinationAddress: Address) => void
 }) => {
   return (
@@ -276,6 +305,7 @@ const ListRecipient = ({
         flex justify-between px-1.5 py-1 space-x-2
         cursor-pointer text-strong
         hover:bg-separator
+        ${selectedListItem === index && 'bg-separator'}
       `}
     >
       <div>{shortenAddress(address)}</div>
@@ -389,7 +419,7 @@ const PasteButton = ({ onPaste }: { onPaste: () => Promise<void> }) => {
       className={`
         absolute border-transparent cursor-pointer
         right-1.5 mt-px justify-self-end
-        fill-zinc-100 stroke-zinc-100 hover:bg-pink
+        fill-zinc-100 stroke-zinc-100 hover:opacity-70
       `}
     >
       <rect x="5.5" y="5.5" width="13" height="16" rx="2" fill="none" />
