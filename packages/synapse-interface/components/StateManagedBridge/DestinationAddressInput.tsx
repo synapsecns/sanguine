@@ -8,7 +8,10 @@ import {
   setDestinationAddress,
   clearDestinationAddress,
 } from '@/slices/bridge/reducer'
-import { setShowDestinationWarning } from '@/slices/bridgeDisplaySlice'
+import {
+  setShowDestinationWarning,
+  setIsDestinationWarningAccepted,
+} from '@/slices/bridgeDisplaySlice'
 import { Address } from 'viem'
 import { isEmptyString } from '@/utils/isEmptyString'
 import { CloseButton } from './components/CloseButton'
@@ -80,6 +83,11 @@ export const DestinationAddressInput = ({
     (destinationAddress && !isInputValidAddress)
 
   useEffect(() => {
+    dispatch(clearDestinationAddress())
+    handleClearInput()
+  }, [connectedAddress])
+
+  useEffect(() => {
     const isSameAddress =
       connectedAddress &&
       isInputValidAddress &&
@@ -93,6 +101,7 @@ export const DestinationAddressInput = ({
 
     if (!isInputValidAddress && showDestinationWarning) {
       dispatch(setShowDestinationWarning(false))
+      dispatch(setIsDestinationWarningAccepted(false))
     }
   }, [
     destinationAddress,
@@ -136,6 +145,8 @@ export const DestinationAddressInput = ({
   useCloseOnOutsideClick(listRef, handleCloseList)
 
   const escPressed = useKeyPress('Escape')
+  const arrowUp = useKeyPress('ArrowUp')
+  const arrowDown = useKeyPress('ArrowDown')
 
   function escFunc() {
     if (escPressed) {
@@ -145,12 +156,13 @@ export const DestinationAddressInput = ({
     }
   }
 
-  useEffect(escFunc, [escPressed])
+  function arrowDownFunc() {}
 
-  useEffect(() => {
-    dispatch(clearDestinationAddress())
-    handleClearInput()
-  }, [connectedAddress])
+  function arrowUpFunc() {}
+
+  useEffect(escFunc, [escPressed])
+  useEffect(arrowDownFunc, [arrowDown])
+  useEffect(arrowUpFunc, [arrowUp])
 
   const adjustInputSize = () => {
     const addressInput: HTMLElement = document.getElementById('address-input')
