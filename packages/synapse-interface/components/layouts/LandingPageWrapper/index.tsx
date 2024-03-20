@@ -160,16 +160,14 @@ export function PopoverPanelContainer({
 }
 
 function TopBarButtons() {
-  const topBarNavLinks = Object.entries(NAVIGATION)
-    .filter(([key, value]) => value.path !== NAVIGATION.Countdown.path)
-    .map(([key, value]) => (
-      <TopBarNavLink
-        key={key}
-        to={value.path}
-        labelText={value.text}
-        match={value.match}
-      />
-    ))
+  const topBarNavLinks = Object.entries(NAVIGATION).map(([key, value]) => (
+    <TopBarNavLink
+      key={key}
+      to={value.path}
+      labelText={value.text}
+      match={value.match}
+    />
+  ))
 
   return <>{topBarNavLinks}</>
 }
@@ -225,16 +223,14 @@ function SocialButtons() {
 }
 
 function MobileBarButtons() {
-  const mobileBarItems = Object.entries(NAVIGATION)
-    .filter(([key, value]) => value.path !== NAVIGATION.Countdown.path)
-    .map(([key, value]) => (
-      <MobileBarItem
-        key={key}
-        to={value.path}
-        labelText={value.text}
-        match={value.match}
-      />
-    ))
+  const mobileBarItems = Object.entries(NAVIGATION).map(([key, value]) => (
+    <MobileBarItem
+      key={key}
+      to={value.path}
+      labelText={value.text}
+      match={value.match}
+    />
+  ))
 
   return <>{mobileBarItems}</>
 }
