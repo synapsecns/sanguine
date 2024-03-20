@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -104,10 +105,6 @@ func (i *InterchainSuite) setClientConfigs(backend backends.SimulatedTestBackend
 
 	appAuth := backend.GetTxContext(i.GetTestContext(), amInfo.OwnerPtr())
 
-	tx, err = appMock.LinkRemoteAppEVM(appAuth.TransactOpts, backend.GetBigChainID(), i.deployManager.Get(i.GetTestContext(), backend, testutil.InterchainApp).Address())
-	i.Require().NoError(err)
-	backend.WaitForConfirmation(i.GetTestContext(), tx)
-
 	tx, err = appMock.LinkRemoteAppEVM(appAuth.TransactOpts, otherBackend.GetBigChainID(), i.deployManager.Get(i.GetTestContext(), otherBackend, testutil.InterchainApp).Address())
 	i.Require().NoError(err)
 	backend.WaitForConfirmation(i.GetTestContext(), tx)
@@ -118,13 +115,20 @@ func (i *InterchainSuite) setClientConfigs(backend backends.SimulatedTestBackend
 	receivingModules, err := appMock.GetReceivingModules(&bind.CallOpts{Context: i.GetTestContext()})
 	i.Require().NoError(err)
 
+	addedModules := make(map[common.Address]struct{})
 	for _, module := range append(sendingModules, receivingModules...) {
-		tx, err = appMock.AddTrustedModule(appAuth.TransactOpts, module)
+		if _, hasModule := addedModules[module]; hasModule {
+			continue
+		}
 
+		tx, err = appMock.AddTrustedModule(appAuth.TransactOpts, module)
 		i.Require().NoError(err)
 		backend.WaitForConfirmation(i.GetTestContext(), tx)
+
+		addedModules[module] = struct{}{}
 	}
 
+	time.Sleep(time.Second * 5)
 	_, executionService := i.deployManager.GetExecutionService(i.GetTestContext(), backend)
 	// same thing
 
