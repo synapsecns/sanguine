@@ -257,5 +257,5 @@ export const ToChainListArray = (searchStr: string = '') => {
     )
   }
 
-  return { possibleChains, remainingChains }
+  return { 'To…': possibleChains, 'All chains': remainingChains }
 }

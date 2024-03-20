@@ -381,5 +381,9 @@ export const FromTokenListArray = (searchStr: string = '') => {
     )
   }
 
-  return { possibleTokens, remainingTokens, allOtherFromTokens }
+  return {
+    'Send…': possibleTokens,
+    'All sendable tokens': remainingTokens,
+    'All other tokens': allOtherFromTokens,
+  }
 }
