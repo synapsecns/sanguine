@@ -336,10 +336,12 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     /// @dev Asserts that the chain is linked and returns the linked client address.
     function _assertLinkedClient(uint256 chainId) internal view returns (bytes32 linkedClient) {
         if (chainId == block.chainid) {
+            revert("yo");
             revert InterchainClientV1__NotRemoteChainId(chainId);
         }
         linkedClient = _linkedClient[chainId];
         if (linkedClient == 0) {
+            revert("help");
             revert InterchainClientV1__NoLinkedClient(chainId);
         }
     }
