@@ -238,6 +238,8 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         // Check that options could be decoded on destination chain
         options.decodeOptionsV1();
         uint256 verificationFee = IInterchainDB(INTERCHAIN_DB).getInterchainFee(dstChainId, srcModules);
+        revert("test");
+
         if (msg.value < verificationFee) {
             revert InterchainClientV1__FeeAmountTooLow(msg.value, verificationFee);
         }
