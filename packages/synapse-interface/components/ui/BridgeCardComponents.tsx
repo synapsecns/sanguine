@@ -42,7 +42,6 @@ interface SelectorButtonTypes {
 }
 
 interface TokenSelectorTypes extends SelectorTypes {
-  overlay?: React.ReactNode
   selectedItem: Token
 }
 
@@ -93,57 +92,125 @@ export function BridgeSectionContainer({ children }) {
   return <section className={className}>{children}</section>
 }
 
-const SelectorButton = ({
+export function ChainSelector({
   dataTestId,
+  selectedItem,
   label,
   placeholder,
-  itemName,
-  imgSrc,
-  hoverColor,
-  onClick,
-}: SelectorButtonTypes) => {
-  const buttonClassName = join({
-    unset: 'text-left',
-    flex: 'flex items-center',
-    gap: label ? 'gap-2.5' : 'gap-2',
-    space: 'mx-0.5 rounded',
-    padding: label ? 'px-2 py-1.5' : 'p-2',
-    background: label ? 'bg-transparent' : 'bg-white dark:bg-separator',
-    textSize: label ? '' : 'text-lg',
-    border: 'border border-zinc-200 dark:border-transparent',
-    leading: 'leading-tight',
-    hover: getHoverStyleForButton(hoverColor),
-    active: 'active:opacity-80',
-    // bugfix: 'flex-none', // may not be needed any more
-  })
+  itemListFunction,
+  setFunction,
+}: ChainSelectorTypes) {
+  const { fromChainId } = useBridgeState()
+  const [currentIdx, setCurrentIdx] = useState(-1)
+  const [searchStr, setSearchStr] = useState('')
+  // const [hover, setHover] = useState(false)
+
+  const dispatch = useDispatch()
+  // const overlayRef = useRef(null)
+
+  // const escPressed = useKeyPress('Escape')
+  // const arrowUp = useKeyPress('ArrowUp')
+  // const arrowDown = useKeyPress('ArrowDown')
+
+  const isOrigin = label === 'From' // TODO: Improve
+
+  // const onClose = useCallback(() => {
+  //   setCurrentIdx(-1)
+  //   setSearchStr('')
+  //   setHover(false)
+  // }, [])
+
+  // const escFunc = () => {
+  //   if (escPressed) {
+  //     onClose()
+  //   }
+  // }
+  // const arrowDownFunc = () => {
+  //   const nextIdx = currentIdx + 1
+  //   if (arrowDown && nextIdx < 0) {
+  //     // masterList.length) {
+  //     setCurrentIdx(nextIdx)
+  //   }
+  // }
+
+  // const arrowUpFunc = () => {
+  //   const nextIdx = currentIdx - 1
+  //   if (arrowUp && -1 < nextIdx) {
+  //     setCurrentIdx(nextIdx)
+  //   }
+  // }
+
+  const onSearch = (str: string) => {
+    setSearchStr(str)
+    setCurrentIdx(-1)
+  }
+
+  // useEffect(arrowDownFunc, [arrowDown])
+  // useEffect(escFunc, [escPressed])
+  // useEffect(arrowUpFunc, [arrowUp])
+  // useCloseOnOutsideClick(overlayRef, onClose)
+
+  const handleSetFromChainId = (chainId) => {
+    console.log(selectedItem.id, chainId)
+    if (selectedItem.id !== chainId) {
+      const eventTitle = `[Bridge User Action] Sets new fromChainId`
+      const eventData = {
+        previousFromChainId: selectedItem.id,
+        newFromChainId: chainId,
+      }
+
+      segmentAnalyticsEvent(eventTitle, eventData)
+      dispatch(setFunction(chainId))
+    }
+    // onClose()
+  }
+
+  const itemList = itemListFunction(searchStr)
 
   return (
-    <button
-      data-test-id={`${dataTestId}-button`}
-      onClick={onClick}
-      className={buttonClassName}
+    <SelectorWrapper
+      dataTestId={dataTestId}
+      label={label}
+      placeholder={placeholder ?? 'Network'}
+      selectedItem={selectedItem}
+      // hover={hover}
+      // setHover={setHover}
+      searchStr={searchStr}
+      onSearch={onSearch}
+      // onClose={onClose}
     >
-      {itemName && <img src={imgSrc} alt={itemName} width="24" height="24" />}
-      <span>
-        {label && (
-          <div className="text-sm text-zinc-500 dark:text-zinc-400">
-            {label}
-          </div>
-        )}
-        {itemName ?? placeholder}
-      </span>
-      <DropDownArrowSvg />
-    </button>
+      <ChainSelectorList
+        dataTestId={`${dataTestId}-list`}
+        itemList={itemList}
+        selectedItem={selectedItem}
+        currentIdx={currentIdx}
+        isOrigin={isOrigin}
+        handleSetFromChainId={handleSetFromChainId}
+      />
+    </SelectorWrapper>
   )
 }
 
-const ListWrapper = ({
+const SelectorWrapper = ({
   dataTestId,
+  label,
+  placeholder,
+  selectedItem,
+  // hover,
+  // setHover,
+  children,
   searchStr,
   onSearch,
-  onClose,
-  children,
+  // onClose,
 }) => {
+  const [currentIdx, setCurrentIdx] = useState(-1)
+  // const [searchStr, setSearchStr] = useState('')
+  const [hover, setHover] = useState(false)
+
+  const escPressed = useKeyPress('Escape')
+  const arrowUp = useKeyPress('ArrowUp')
+  const arrowDown = useKeyPress('ArrowDown')
+
   const popoverRef = useRef(null)
 
   useEffect(() => {
@@ -161,55 +228,9 @@ const ListWrapper = ({
     }
   })
 
-  return (
-    <div
-      ref={popoverRef}
-      data-test-id={`${dataTestId}-overlay`}
-      className="z-20 absolute animate-slide-down pt-1"
-    >
-      <div className="bg-bgLight border border-separator rounded shadow-md">
-        <div className="p-1 flex items-center font-medium">
-          <SlideSearchBox
-            placeholder="Find"
-            searchStr={searchStr}
-            onSearch={onSearch}
-          />
-          <CloseButton onClick={onClose} />
-        </div>
-        <div data-test-id={dataTestId} className="overflow-y-auto max-h-96">
-          {children}
-        </div>
-        <SearchResults searchStr={searchStr} type="chain" />
-      </div>
-    </div>
-  )
-}
-
-export function ChainSelector({
-  dataTestId,
-  selectedItem,
-  label,
-  placeholder,
-  itemListFunction,
-  setFunction,
-}: SelectorTypes) {
-  const { fromChainId } = useBridgeState()
-  const [currentIdx, setCurrentIdx] = useState(-1)
-  const [searchStr, setSearchStr] = useState('')
-  const [hover, setHover] = useState(false)
-
-  const dispatch = useDispatch()
-  // const overlayRef = useRef(null)
-
-  const escPressed = useKeyPress('Escape')
-  const arrowUp = useKeyPress('ArrowUp')
-  const arrowDown = useKeyPress('ArrowDown')
-
-  const isOrigin = label === 'From' // TODO: Improve
-
   const onClose = useCallback(() => {
     setCurrentIdx(-1)
-    setSearchStr('')
+    // setSearchStr('')
     setHover(false)
   }, [])
 
@@ -233,76 +254,32 @@ export function ChainSelector({
     }
   }
 
-  const onSearch = (str: string) => {
-    setSearchStr(str)
-    setCurrentIdx(-1)
-  }
+  // const onSearch = (str: string) => {
+  //   setSearchStr(str)
+  //   setCurrentIdx(-1)
+  // }
 
   useEffect(arrowDownFunc, [arrowDown])
   useEffect(escFunc, [escPressed])
   useEffect(arrowUpFunc, [arrowUp])
   // useCloseOnOutsideClick(overlayRef, onClose)
 
-  const handleSetFromChainId = (chainId) => {
-    if (fromChainId !== chainId) {
-      const eventTitle = `[Bridge User Action] Sets new fromChainId`
-      const eventData = {
-        previousFromChainId: fromChainId,
-        newFromChainId: chainId,
-      }
+  const buttonClassName = join({
+    flex: 'flex items-center gap-2',
+    space: 'mx-0.5 rounded px-2 py-1.5',
+    border: 'border border-zinc-200 dark:border-transparent',
+    text: 'leading-tight',
+    hover: getHoverStyleForButton(selectedItem?.color),
+    active: 'active:opacity-80',
+    custom: label ? 'bg-transparent' : 'bg-white dark:bg-separator text-lg',
+    // bugfix: 'flex-none', // may not be needed any more
+  })
 
-      segmentAnalyticsEvent(eventTitle, eventData)
-      dispatch(setFunction(chainId))
-    }
-    onClose()
-  }
-
-  const itemList = itemListFunction(searchStr)
-
-  return (
-    <SelectorWrapper
-      dataTestId={dataTestId}
-      label={label}
-      placeholder={placeholder ?? 'Network'}
-      selectedItem={selectedItem}
-      hover={hover}
-      setHover={setHover}
-      searchStr={searchStr}
-      onSearch={onSearch}
-      onClose={onClose}
-    >
-      <ChainSelectorList
-        dataTestId={`${dataTestId}-list`}
-        itemList={itemList}
-        selectedItem={selectedItem}
-        currentIdx={currentIdx}
-        isOrigin={isOrigin}
-        handleSetFromChainId={handleSetFromChainId}
-      />
-    </SelectorWrapper>
-  )
-}
-
-const SelectorWrapper = ({
-  dataTestId,
-  label,
-  placeholder,
-  selectedItem,
-  hover,
-  setHover,
-  children,
-  searchStr,
-  onSearch,
-  onClose,
-}) => {
   // TODO: Unify chainImg/icon properties between Chain and Token types
   const imgSrc =
     selectedItem?.['chainImg' in selectedItem ? 'chainImg' : 'icon']?.src
 
-  const itemName =
-    selectedItem?.[('symbol' in selectedItem && 'symbol') ?? 'name']
-
-  const hoverColor = selectedItem?.color
+  const itemName = selectedItem?.['symbol' in selectedItem ? 'symbol' : 'name']
 
   return (
     <div
@@ -311,24 +288,51 @@ const SelectorWrapper = ({
       onMouseLeave={() => setHover(false)}
       onMouseDown={(e) => e.stopPropagation()}
     >
-      <SelectorButton
-        dataTestId={dataTestId}
-        label={label}
-        placeholder={placeholder ?? 'Network'}
-        itemName={itemName}
-        imgSrc={imgSrc}
-        hoverColor={hoverColor}
+      <button
+        data-test-id={`${dataTestId}-button`}
         onClick={() => setHover(!hover)}
-      />
+        className={buttonClassName}
+      >
+        {itemName && (
+          <img
+            src={imgSrc}
+            alt={itemName}
+            width="24"
+            height="24"
+            className="py-0.5"
+          />
+        )}
+        <span>
+          {label && (
+            <div className="text-sm text-left text-zinc-500 dark:text-zinc-400">
+              {label}
+            </div>
+          )}
+          {itemName ?? placeholder}
+        </span>
+        <DropDownArrowSvg />
+      </button>
       {hover && (
-        <ListWrapper
-          dataTestId={`${dataTestId}-overlay`}
-          searchStr={searchStr}
-          onSearch={onSearch}
-          onClose={onClose}
+        <div
+          ref={popoverRef}
+          data-test-id={`${dataTestId}-overlay`}
+          className="z-20 absolute animate-slide-down pt-1"
         >
-          {children}
-        </ListWrapper>
+          <div className="bg-bgLight border border-separator rounded shadow-md">
+            <div className="p-1 flex items-center font-medium">
+              <SlideSearchBox
+                placeholder="Find"
+                searchStr={searchStr}
+                onSearch={onSearch}
+              />
+              <CloseButton onClick={onClose} />
+            </div>
+            <div data-test-id={dataTestId} className="overflow-y-auto max-h-96">
+              {children}
+            </div>
+            <SearchResults searchStr={searchStr} type="chain" />
+          </div>
+        </div>
       )}
     </div>
   )
@@ -385,7 +389,7 @@ export function TokenSelector({
   placeholder,
   itemListFunction,
   setFunction,
-}: SelectorTypes) {
+}: TokenSelectorTypes) {
   const { fromToken } = useBridgeState()
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
@@ -437,10 +441,10 @@ export function TokenSelector({
   // useCloseOnOutsideClick(overlayRef, onClose)
 
   const handleSetFromToken = (token) => {
-    if (fromToken !== token) {
+    if (selectedItem !== token) {
       const eventTitle = `[Bridge User Action] Sets new fromChainId`
       const eventData = {
-        previousFromToken: fromToken?.symbol,
+        previousFromToken: selectedItem?.symbol,
         newFromToken: token?.symbol,
       }
       segmentAnalyticsEvent(eventTitle, eventData)
@@ -457,11 +461,11 @@ export function TokenSelector({
       label={label}
       placeholder={placeholder ?? 'Network'}
       selectedItem={selectedItem}
-      hover={hover}
-      setHover={setHover}
+      // hover={hover}
+      // setHover={setHover}
       searchStr={searchStr}
       onSearch={onSearch}
-      onClose={onClose}
+      // onClose={onClose}
     >
       <TokenSelectorList
         itemList={itemList}
