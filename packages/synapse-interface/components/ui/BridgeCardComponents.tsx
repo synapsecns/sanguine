@@ -93,6 +93,46 @@ export function BridgeSectionContainer({ children }) {
   return <section className={className}>{children}</section>
 }
 
+const SelectorButton = ({
+  dataTestId,
+  label,
+  placeholder,
+  itemName,
+  imgSrc,
+  hoverColor,
+  onClick,
+}: SelectorButtonTypes) => {
+  const buttonClassName = join({
+    unset: 'text-left',
+    flex: 'flex items-center',
+    gap: label ? 'gap-2.5' : 'gap-2',
+    space: 'mx-0.5 rounded',
+    padding: label ? 'px-2 py-1.5' : 'p-2',
+    background: label ? 'bg-transparent' : 'bg-white dark:bg-separator',
+    textSize: label ? '' : 'text-lg',
+    border: 'border border-zinc-200 dark:border-transparent',
+    leading: 'leading-tight',
+    hover: getHoverStyleForButton(hoverColor),
+    active: 'active:opacity-80',
+    // bugfix: 'flex-none', // may not be needed any more
+  })
+
+  return (
+    <button
+      data-test-id={`${dataTestId}-button`}
+      onClick={onClick}
+      className={buttonClassName}
+    >
+      {itemName && <img src={imgSrc} alt={itemName} width="24" height="24" />}
+      <span>
+        <div className="text-sm text-zinc-500 dark:text-zinc-400">{label}</div>
+        {itemName ?? placeholder}
+      </span>
+      <DropDownArrowSvg />
+    </button>
+  )
+}
+
 export function ChainSelector({
   dataTestId,
   selectedItem,
@@ -240,194 +280,6 @@ export function ChainSelector({
                 </div>
               ) : null
             })}
-            <SearchResults searchStr={searchStr} type="chain" />
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
-const SelectorButton = ({
-  dataTestId,
-  label,
-  placeholder,
-  itemName,
-  imgSrc,
-  hoverColor,
-  onClick,
-}: SelectorButtonTypes) => {
-  const buttonClassName = join({
-    unset: 'text-left',
-    flex: 'flex items-center',
-    gap: label ? 'gap-2.5' : 'gap-2',
-    space: 'mx-0.5 rounded',
-    background: label ? 'bg-transparent' : 'bg-white dark:bg-separator',
-    border: 'border border-zinc-200 dark:border-transparent',
-    leading: 'leading-tight',
-    textSize: label ? '' : 'text-lg',
-    padding: label ? 'px-2 py-1.5' : 'p-2',
-    hover: getHoverStyleForButton(hoverColor),
-    active: 'active:opacity-80',
-    // bugfix: 'flex-none', // may not be needed any more
-  })
-
-  return (
-    <button
-      data-test-id={`${dataTestId}-button`}
-      onClick={onClick}
-      className={buttonClassName}
-    >
-      {itemName && <img src={imgSrc} alt={itemName} width="24" height="24" />}
-      <span>
-        <div className="text-sm text-zinc-500 dark:text-zinc-400">{label}</div>
-        {itemName ?? placeholder}
-      </span>
-      <DropDownArrowSvg />
-    </button>
-  )
-}
-
-export function Popover({
-  dataTestId,
-  selectedItem,
-  label,
-  placeholder,
-  itemListFunction,
-  setFunction,
-}: SelectorTypes) {
-  /* TODO: fromChainId / fromToken vs selectedItem */
-
-  const { fromChainId } = useBridgeState()
-  const [currentIdx, setCurrentIdx] = useState(-1)
-  const [searchStr, setSearchStr] = useState('')
-  const [hover, setHover] = useState(false)
-
-  const dispatch = useDispatch()
-  const overlayRef = useRef(null)
-
-  const escPressed = useKeyPress('Escape')
-  const arrowUp = useKeyPress('ArrowUp')
-  const arrowDown = useKeyPress('ArrowDown')
-
-  const isOrigin = label === 'From' // TODO: Improve
-
-  const itemList = itemListFunction?.(searchStr) ?? {} // TODO: Use result instead of variable in context?
-
-  const onClose = useCallback(
-    () => {
-      setCurrentIdx(-1)
-      setSearchStr('')
-      setHover(false)
-    },
-    [
-      /*setShowFromChainListOverlay*/
-    ]
-  )
-
-  const escFunc = () => {
-    if (escPressed) {
-      onClose()
-    }
-  }
-  const arrowDownFunc = () => {
-    const nextIdx = currentIdx + 1
-    if (arrowDown && nextIdx < 0) {
-      // masterList.length) {
-      setCurrentIdx(nextIdx)
-    }
-  }
-
-  const arrowUpFunc = () => {
-    const nextIdx = currentIdx - 1
-    if (arrowUp && -1 < nextIdx) {
-      setCurrentIdx(nextIdx)
-    }
-  }
-
-  const onSearch = (str: string) => {
-    setSearchStr(str)
-    setCurrentIdx(-1)
-  }
-
-  useEffect(arrowDownFunc, [arrowDown])
-  useEffect(escFunc, [escPressed])
-  useEffect(arrowUpFunc, [arrowUp])
-  useCloseOnOutsideClick(overlayRef, onClose)
-
-  const handleSetFromChainId = (chainId) => {
-    if (fromChainId !== chainId) {
-      const eventTitle = `[Bridge User Action] Sets new fromChainId`
-      const eventData = {
-        previousFromChainId: fromChainId,
-        newFromChainId: chainId,
-      }
-
-      segmentAnalyticsEvent(eventTitle, eventData)
-      dispatch(setFunction(chainId))
-    }
-    onClose()
-  }
-
-  useEffect(() => {
-    const ref = overlayRef?.current
-    if (!ref) return
-    const { y, height } = ref.getBoundingClientRect()
-    const screen = window.innerHeight
-    if (y + height > screen) {
-      ref.style.position = 'fixed'
-      ref.style.bottom = '4px'
-    }
-    if (y < 0) {
-      ref.style.position = 'fixed'
-      ref.style.top = '4px'
-    }
-  })
-
-  const buttonClassName = join({
-    unset: 'text-left',
-    flex: 'flex items-center gap-2.5',
-    space: 'px-2 py-1.5 mx-0.5 mb-1 rounded flex-none',
-    background: 'bg-transparent',
-    border: 'border border-zinc-200 dark:border-transparent',
-    font: 'leading-tight',
-    hover: getHoverStyleForButton(selectedItem?.color),
-    active: 'active:opacity-70',
-  })
-
-  const ButtonContents = ({ label, name, src, color }) => <></>
-  const ListContents = ({ list }) => <></>
-
-  return (
-    <div
-      className="relative"
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      onMouseDown={(e) => e.stopPropagation()}
-    >
-      <button
-        data-test-id={`${dataTestId}-button`}
-        onClick={() => setHover(!hover)}
-        className={buttonClassName}
-      >
-        <ButtonContents label="" name="" src="" color="" />
-      </button>
-      {hover && (
-        <div
-          ref={overlayRef}
-          data-test-id="fromChain-list-overlay"
-          className="z-20 absolute bg-bgLight border border-separator rounded overflow-y-auto max-h-96 animate-slide-down origin-top shadow-md"
-        >
-          <div className="p-1 flex items-center font-medium">
-            <SlideSearchBox
-              placeholder="Find"
-              searchStr={searchStr}
-              onSearch={onSearch}
-            />
-            <CloseButton onClick={onClose} />
-          </div>
-          <div data-test-id={dataTestId}>
-            <ListContents list="" />
             <SearchResults searchStr={searchStr} type="chain" />
           </div>
         </div>
