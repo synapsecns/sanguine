@@ -233,13 +233,12 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         internal
         returns (InterchainTxDescriptor memory desc)
     {
+        revert("idk");
         _assertLinkedClient(dstChainId);
         if (receiver == 0) revert InterchainClientV1__ZeroReceiver();
         // Check that options could be decoded on destination chain
         options.decodeOptionsV1();
         uint256 verificationFee = IInterchainDB(INTERCHAIN_DB).getInterchainFee(dstChainId, srcModules);
-        revert("test");
-
         if (msg.value < verificationFee) {
             revert InterchainClientV1__FeeAmountTooLow(msg.value, verificationFee);
         }

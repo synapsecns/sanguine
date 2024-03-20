@@ -50,9 +50,9 @@ type contractTypeImpl int
 
 const (
 	// InterchainClient is the interchain execution client.
-	InterchainClient contractTypeImpl = iota + 1 // SynapseModule
+	InterchainClient contractTypeImpl = iota + 1 // InterchainClient
 	// InterchainDB is the interchain database.
-	InterchainDB // SynapseModule
+	InterchainDB // InterchainDB
 	// InterchainModuleMock is the interchain module mock.
 	InterchainModuleMock // InterchainModuleMock
 	// InterchainApp is the interchain app mock.
