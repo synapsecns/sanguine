@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {AbstractICApp} from "./AbstractICApp.sol";
+import {AbstractICApp, InterchainTxDescriptor} from "./AbstractICApp.sol";
 
 import {InterchainAppV1Events} from "../events/InterchainAppV1Events.sol";
 import {IInterchainAppV1} from "../interfaces/IInterchainAppV1.sol";
 import {AppConfigV1} from "../libs/AppConfig.sol";
+import {OptionsV1} from "../libs/Options.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 
 import {AccessControlEnumerable} from "@openzeppelin/contracts/access/extensions/AccessControlEnumerable.sol";
@@ -161,6 +162,22 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
         } else {
             _interchainClients.remove(client);
         }
+    }
+
+    // ════════════════════════════════════════════ INTERNAL: MESSAGING ════════════════════════════════════════════════
+
+    /// @dev Thin wrapper around _sendInterchainMessage to send the message to the linked app.
+    function _sendToLinkedApp(
+        uint256 dstChainId,
+        uint256 messageFee,
+        OptionsV1 memory options,
+        bytes memory message
+    )
+        internal
+        returns (InterchainTxDescriptor memory)
+    {
+        bytes memory encodedOptions = options.encodeOptionsV1();
+        return _sendInterchainMessage(dstChainId, _linkedApp[dstChainId], messageFee, encodedOptions, message);
     }
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
