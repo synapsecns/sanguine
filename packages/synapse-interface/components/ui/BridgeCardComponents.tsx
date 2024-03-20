@@ -166,7 +166,7 @@ export function ChainSelector({
   )
 }
 
-export const ListSectionWrapper = ({ sectionKey, children }) => (
+const ListSectionWrapper = ({ sectionKey, children }) => (
   <section key={sectionKey} className="bg-bgBase first:bg-bgLight rounded">
     <header
       className="p-2 text-sm text-secondary sticky top-0 bg-inherit z-10 cursor-default"
@@ -392,7 +392,6 @@ export function TokenSelector({
       segmentAnalyticsEvent(eventTitle, eventData)
       dispatch(setFunction(token))
     }
-    // onClose()
   }
 
   const itemList = itemListFunction(searchStr) // TODO: Use result instead of variable in context?
