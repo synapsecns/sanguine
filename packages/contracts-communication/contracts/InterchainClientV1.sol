@@ -234,7 +234,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         returns (InterchainTxDescriptor memory desc)
     {
         _assertLinkedClient(dstChainId);
-        revert("bro");
         if (receiver == 0) revert InterchainClientV1__ZeroReceiver();
         // Check that options could be decoded on destination chain
         options.decodeOptionsV1();

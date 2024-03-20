@@ -203,10 +203,10 @@ abstract contract InterchainAppV1 is InterchainAppV1Events, IInterchainApp {
         returns (InterchainTxDescriptor memory desc)
     {
         address cachedInterchain = interchain;
-//        if (cachedInterchain == address(0)) revert InterchainApp__InterchainClientNotSet();
-//        if (dstChainId == block.chainid) revert InterchainApp__SameChainId(dstChainId);
-//        if (receiver == 0) revert InterchainApp__ReceiverNotSet(dstChainId);
-//        if (address(this).balance < messageFee) revert InterchainApp__BalanceTooLow(address(this).balance, messageFee);
+        if (cachedInterchain == address(0)) revert("a");
+        if (dstChainId == block.chainid) revert("b");
+        if (receiver == 0) revert("c");
+        if (address(this).balance < messageFee) revert("d");
         return IInterchainClientV1(cachedInterchain).interchainSend{value: messageFee}(
             dstChainId, receiver, getExecutionService(), getSendingModules(), options.encodeOptionsV1(), message
         );
