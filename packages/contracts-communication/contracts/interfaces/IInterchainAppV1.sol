@@ -3,7 +3,9 @@ pragma solidity ^0.8.0;
 
 import {AppConfigV1} from "../libs/AppConfig.sol";
 
-interface IInterchainAppV1 {
+import {IInterchainApp} from "./IInterchainApp.sol";
+
+interface IInterchainAppV1 is IInterchainApp {
     error InterchainApp__AppZeroAddress();
     error InterchainApp__InvalidAppConfig(uint256 requiredResponses, uint256 optimisticPeriod);
     error InterchainApp__ModuleAlreadyAdded(address module);
