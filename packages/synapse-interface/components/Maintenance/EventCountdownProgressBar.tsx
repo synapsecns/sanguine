@@ -143,7 +143,7 @@ const calculateTimeUntilTarget = (targetDate: Date) => {
   const isComplete = timeDifference <= 0
 
   const daysRemaining = Math.floor(timeDifference / (1000 * 60 * 60 * 24))
-  const hoursRemaining = Math.floor(
+  const hoursRemaining = Math.ceil(
     (timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
   )
   const minutesRemaining = Math.floor(
