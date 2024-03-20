@@ -3,7 +3,6 @@ package executor
 import (
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
 	"time"
 
@@ -169,7 +168,7 @@ func (e *Executor) executeTransaction(ctx context.Context, request db.Transactio
 		return fmt.Errorf("could not get contract for chain %d", request.SrcChainID.Int64())
 	}
 
-	nonce, err := e.submitter.SubmitTransaction(ctx, request.DstChainID, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+	_, err := e.submitter.SubmitTransaction(ctx, request.DstChainID, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		transactor.GasLimit = request.Options.GasLimit.Uint64()
 		transactor.Value = request.Options.GasAirdrop
 
@@ -177,15 +176,6 @@ func (e *Executor) executeTransaction(ctx context.Context, request db.Transactio
 	})
 	if err != nil {
 		return fmt.Errorf("could not submit transaction: %w", err)
-	}
-
-	for {
-		time.Sleep(time.Second * 5)
-		status, _ := e.submitter.GetSubmissionStatus(ctx, request.DstChainID, nonce)
-		if status.HasTx() {
-			fmt.Printf("cast run %s --rpc-url %s/rpc/1 \n", status.TxHash().String(), e.cfg.OmnirpcURL)
-		}
-
 	}
 
 	err = e.db.UpdateInterchainTransactionStatus(ctx, request.TransactionID, db.Executed)
@@ -201,16 +191,6 @@ func (e *Executor) checkReady(ctx context.Context, request db.TransactionSent) e
 	if !ok {
 		return fmt.Errorf("could not get contract for chain %d", request.DstChainID.Int64())
 	}
-
-	// TODO: REMOVE ME
-	//err := e.db.UpdateInterchainTransactionStatus(ctx, request.TransactionID, db.Ready)
-	// TODO: REMOVE ME
-
-	fmt.Println("contract:")
-	fmt.Printf("cast call %s \"isExecutable(bytes,bytes32)(bool)\" %s --rpc-url %s/rpc/1", contract.Address(), hexutil.Encode(request.EncodedTX), e.cfg.OmnirpcURL)
-	fmt.Println(contract.Address())
-	fmt.Println("test:")
-	fmt.Println(hexutil.Encode(request.EncodedTX))
 
 	isExecutable, err := contract.IsExecutable(&bind.CallOpts{Context: ctx}, request.EncodedTX, nil)
 	if err != nil {
@@ -347,4 +327,10 @@ func (e *Executor) runChainIndexer(parentCtx context.Context, chainID int) (err 
 		return fmt.Errorf("listener failed: %w", err)
 	}
 	return nil
+}
+
+// DB returns the db service.
+func (e *Executor) DB() db.Service {
+	return e.db
+
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/optionslibexport"
+	"github.com/synapsecns/sanguine/sin-executor/db"
 	"math/big"
 	"time"
 
@@ -79,5 +80,11 @@ func (i *InterchainSuite) TestE2E() {
 			i.destChain.GetFundedAccount(i.GetTestContext(), big.NewInt(1))
 		}
 	}()
-	time.Sleep(time.Minute * 82)
+
+	i.Eventually(func() bool {
+		status, err := i.executor.DB().GetInterchainTXsByStatus(i.GetTestContext(), db.Executed)
+		i.Require().NoError(err)
+
+		return 1 == len(status)
+	})
 }
