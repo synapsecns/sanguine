@@ -215,7 +215,7 @@ export const DestinationAddressInput = ({
     } else if (inputValue.length > 0) {
       addressInput.style.width = inputValue.length + 2 + 'ch'
     } else {
-      addressInput.style.width = placeholder.length + 1 + 'ch'
+      addressInput.style.width = placeholder.length + 'ch'
     }
   }
 
@@ -255,7 +255,7 @@ export const DestinationAddressInput = ({
               text-sm rounded-sm text-strong py-0.5 pl-2 z-0 border-0 bg-transparent max-w-32
               focus:text-white focus:border-transparent focus:outline-none focus:ring-0
               ${isInputFocused || isInputInvalid ? 'text-left ' : 'text-center'}
-              ${destinationAddress ? 'pr-6' : 'pr-1'}
+              ${destinationAddress ? 'pr-6' : 'pr-1.5'}
             `}
           />
           {destinationAddress ? (
