@@ -8,7 +8,6 @@ import {
   BRIDGE_PATH,
   INTERCHAIN_LINK,
   SOLANA_BRIDGE_LINK,
-  COUNTDOWN_PATH,
 } from './urls'
 
 export interface RouteObject {
@@ -63,10 +62,5 @@ export const NAVIGATION: RouteObject = {
     path: SOLANA_BRIDGE_LINK,
     text: 'Solana Bridge',
     match: null,
-  },
-  Countdown: {
-    path: COUNTDOWN_PATH,
-    text: 'Countdown',
-    match: COUNTDOWN_PATH,
   },
 }

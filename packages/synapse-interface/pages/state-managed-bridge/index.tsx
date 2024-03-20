@@ -47,6 +47,15 @@ import { InputContainer } from '@/components/StateManagedBridge/InputContainer'
 import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer'
 import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
+import SettingsSlideOver from '@/components/StateManagedBridge/SettingsSlideOver'
+import Button from '@/components/ui/tailwind/Button'
+import { SettingsIcon } from '@/components/icons/SettingsIcon'
+import { DestinationAddressInput } from '@/components/StateManagedBridge/DestinationAddressInput'
+import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
+import ExplorerToastLink from '@/components/ExplorerToastLink'
+import { polygon } from 'viem/chains'
+import { Address, zeroAddress, isAddress } from 'viem'
+import { stringToBigInt } from '@/utils/bigint/format'
 import { Warning } from '@/components/Warning'
 import { FromChainListOverlay } from '@/components/StateManagedBridge/FromChainListOverlay'
 import { ToChainListOverlay } from '@/components/StateManagedBridge/ToChainListOverlay'
@@ -66,6 +75,10 @@ import { approveToken } from '@/utils/approveToken'
 import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
 import { EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
 import { ConfirmDestinationAddressWarning } from '@/components/StateManagedBridge/BridgeWarnings'
+import {
+  EcotoneForkWarningMessage,
+  useEcotoneForkCountdownProgress,
+} from '@/components/Maintenance/Events/example/EcotoneForkUpgrade'
 
 const StateManagedBridge = () => {
   const router = useRouter()
@@ -496,6 +509,12 @@ const StateManagedBridge = () => {
   const springClass =
     '-mt-4 fixed z-50 w-full h-full bg-opacity-50 bg-[#343036]'
 
+  const {
+    isEcotoneForkUpgradePending,
+    isCurrentChainDisabled,
+    EcotoneForkCountdownProgressBar,
+  } = useEcotoneForkCountdownProgress()
+
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
       <div className="flex flex-col">
@@ -509,11 +528,11 @@ const StateManagedBridge = () => {
         <Card
           divider={false}
           className={`
-            pb-3 mt-5 overflow-hidden
+            pb-3 mt-5 overflow-hidden bg-bgBase
             transition-all duration-100 transform rounded-md
-            bg-bgBase
           `}
         >
+          {EcotoneForkCountdownProgressBar}
           <div ref={bridgeDisplayRef}>
             <Transition show={showFromChainListOverlay} {...TRANSITION_PROPS}>
               <animated.div className={springClass}>
@@ -563,6 +582,7 @@ const StateManagedBridge = () => {
                 isApproved={isApproved}
                 approveTxn={approveTxn}
                 executeBridge={executeBridge}
+                isBridgePaused={isCurrentChainDisabled}
               />
             </div>
           </div>
