@@ -32,9 +32,9 @@ func (i *InterchainSuite) TestE2E() {
 	i.Require().NoError(err)
 
 	_, appMock := i.deployManager.GetInterchainAppMock(i.GetTestContext(), i.originChain)
+
 	auth.TransactOpts.Value = interchainFee
-	tx, err := appMock.SendMessage(auth.TransactOpts, big.NewInt(1_000_000), i.destChain.GetBigChainID(), message)
-	i.Require().NoError(err)
+	tx, err := appMock.SendMessage(auth.TransactOpts, i.destChain.GetBigChainID(), big.NewInt(1_000_000), message)
 	i.Require().NoError(err)
 	i.originChain.WaitForConfirmation(i.GetTestContext(), tx)
 
@@ -70,8 +70,6 @@ func (i *InterchainSuite) TestE2E() {
 	}
 
 	fmt.Printf("cast run %s --rpc-url %s/rpc/1 \n", recp.TxHash, i.omnirpcURL)
-	time.Sleep(time.Hour)
-
 	i.Require().True(didMock)
 
 	go func() {
@@ -82,5 +80,5 @@ func (i *InterchainSuite) TestE2E() {
 			i.destChain.GetFundedAccount(i.GetTestContext(), big.NewInt(1))
 		}
 	}()
-	time.Sleep(time.Minute * 1)
+	time.Sleep(time.Minute * 82)
 }

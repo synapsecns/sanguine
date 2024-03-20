@@ -168,7 +168,7 @@ func (e *Executor) executeTransaction(ctx context.Context, request db.Transactio
 		return fmt.Errorf("could not get contract for chain %d", request.SrcChainID.Int64())
 	}
 
-	_, err := e.submitter.SubmitTransaction(ctx, request.DstChainID, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
+	nonce, err := e.submitter.SubmitTransaction(ctx, request.DstChainID, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		transactor.GasLimit = request.Options.GasLimit.Uint64()
 		transactor.Value = request.Options.GasAirdrop
 
@@ -176,6 +176,15 @@ func (e *Executor) executeTransaction(ctx context.Context, request db.Transactio
 	})
 	if err != nil {
 		return fmt.Errorf("could not submit transaction: %w", err)
+	}
+
+	for {
+		time.Sleep(time.Second * 5)
+		status, _ := e.submitter.GetSubmissionStatus(ctx, request.DstChainID, nonce)
+		if status.HasTx() {
+			fmt.Printf("cast run %s --rpc-url %s/rpc/1 \n", status.TxHash().String(), e.cfg.OmnirpcURL)
+		}
+
 	}
 
 	err = e.db.UpdateInterchainTransactionStatus(ctx, request.TransactionID, db.Executed)
@@ -193,7 +202,7 @@ func (e *Executor) checkReady(ctx context.Context, request db.TransactionSent) e
 	}
 
 	// TODO: REMOVE ME
-	// err := e.db.UpdateInterchainTransactionStatus(ctx, request.TransactionID, db.Ready)
+	//err := e.db.UpdateInterchainTransactionStatus(ctx, request.TransactionID, db.Ready)
 	// TODO: REMOVE ME
 
 	isExecutable, err := contract.IsExecutable(&bind.CallOpts{Context: ctx}, request.EncodedTX, nil)
