@@ -118,7 +118,7 @@ func (i *InterchainSuite) setClientConfigs(backend backends.SimulatedTestBackend
 
 	tx, err = appMock.SetAppConfigV1(appAuth.TransactOpts, interchainapp.AppConfigV1{
 		RequiredResponses: big.NewInt(1),
-		OptimisticPeriod:  big.NewInt(1),
+		OptimisticPeriod:  big.NewInt(0), // no need to worry about mocking period
 	})
 
 	i.Require().NoError(err)

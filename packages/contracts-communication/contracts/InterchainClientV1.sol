@@ -306,11 +306,11 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     {
         bytes32 linkedClient = _assertLinkedClient(icTx.srcChainId);
         if (icTx.dstChainId != block.chainid) {
-            revert("hi");
+            revert InterchainClientV1__IncorrectDstChainId(icTx.dstChainId);
         }
         transactionId = icTx.transactionId();
         if (_txExecutor[transactionId] != address(0)) {
-            revert("hello");
+            revert InterchainClientV1__TxAlreadyExecuted(transactionId);
         }
         // Construct expected entry based on icTransaction data
         InterchainEntry memory icEntry = InterchainEntry({
@@ -324,11 +324,11 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).getReceivingConfig();
         AppConfigV1 memory appConfig = encodedAppConfig.decodeAppConfigV1();
         if (appConfig.requiredResponses == 0) {
-            revert("goodbye");
+            revert InterchainClientV1__ZeroRequiredResponses();
         }
         uint256 responses = _getFinalizedResponsesCount(approvedDstModules, icEntry, proof, appConfig.optimisticPeriod);
         if (responses < appConfig.requiredResponses) {
-            revert("my friend");
+            revert InterchainClientV1__NotEnoughResponses(responses, appConfig.requiredResponses);
         }
     }
 

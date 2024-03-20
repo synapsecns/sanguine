@@ -50,7 +50,7 @@ func (i *InterchainSuite) TestE2E() {
 
 	didMock := false
 	for _, log := range recp.Logs {
-		written, err := parser.ParseInterchainEntryWritten(*log)
+		written, err := parser.ParseInterchainBatchVerificationRequested(*log)
 		if err != nil {
 			continue
 		}
@@ -58,15 +58,14 @@ func (i *InterchainSuite) TestE2E() {
 
 		destContext := i.destChain.GetTxContext(i.GetTestContext(), nil)
 		mockTX, err := destModule.MockVerifyRemoteBatch(destContext.TransactOpts, destDB.Address(), interchainmodulemock.InterchainBatch{
-			SrcChainId: written.SrcChainId,
+			SrcChainId: i.originChain.GetBigChainID(),
 			DbNonce:    written.DbNonce,
-			BatchRoot:  written.DataHash,
+			BatchRoot:  written.BatchRoot,
 		})
 		i.Require().NoError(err)
 		didMock = true
 
 		i.destChain.WaitForConfirmation(i.GetTestContext(), mockTX)
-		fmt.Print(mockTX.Hash())
 	}
 
 	fmt.Printf("cast run %s --rpc-url %s/rpc/1 \n", recp.TxHash, i.omnirpcURL)
