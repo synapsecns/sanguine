@@ -136,7 +136,7 @@ export const InputContainer = () => {
 
 const FromChainSelector = () => (
   <ChainSelector
-    dataTestId="bridge-origin-chain-list"
+    dataTestId="bridge-origin-chain"
     selectedItem={CHAINS_BY_ID[useBridgeState().fromChainId]}
     label="From"
     itemListFunction={FromChainListArray}
@@ -146,7 +146,7 @@ const FromChainSelector = () => (
 
 const FromTokenSelector = () => (
   <TokenSelector
-    dataTestId="bridge-origin-chain-list-button"
+    dataTestId="bridge-origin-token"
     selectedItem={useBridgeState().fromToken}
     label=""
     placeholder="Out"
