@@ -12,6 +12,7 @@ import {TypeCasts} from "../libs/TypeCasts.sol";
 abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
     using TypeCasts for address;
 
+    error InterchainApp__AlreadyLatestClient(address client);
     error InterchainApp__BalanceTooLow(uint256 actual, uint256 required);
     error InterchainApp__ClientAlreadyAdded(address client);
     error InterchainApp__InterchainClientZeroAddress();
