@@ -195,6 +195,20 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
+    /// @dev Returns the fee to send a message to the linked app on the remote chain.
+    function _getMessageFee(
+        uint256 dstChainId,
+        OptionsV1 memory options,
+        bytes memory message
+    )
+        internal
+        view
+        returns (uint256)
+    {
+        bytes memory encodedOptions = options.encodeOptionsV1();
+        return _getInterchainFee(dstChainId, encodedOptions, message);
+    }
+
     /// @dev Returns the configuration of the app for validating the received messages.
     function _getAppConfig() internal view override returns (bytes memory) {
         return _appConfigV1.encodeAppConfigV1();
