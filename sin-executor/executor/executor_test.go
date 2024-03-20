@@ -31,6 +31,9 @@ func (i *InterchainSuite) TestE2E() {
 		i.destChain.GetBigChainID(), i.deployManager.Get(i.GetTestContext(), i.originChain, testutil.ExecutionService).Address(), []common.Address{i.deployManager.Get(i.GetTestContext(), i.originChain, testutil.InterchainModuleMock).Address()}, encodedOptions, message)
 	i.Require().NoError(err)
 
+	yo, err := originClient.GetLinkedClient(&bind.CallOpts{Context: i.GetTestContext()}, i.destChain.GetBigChainID())
+	_ = yo
+
 	_, appMock := i.deployManager.GetInterchainAppMock(i.GetTestContext(), i.originChain)
 	auth.TransactOpts.Value = interchainFee
 	tx, err := appMock.SendMessage(auth.TransactOpts, big.NewInt(1_000_000), i.destChain.GetBigChainID(), message)

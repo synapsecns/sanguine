@@ -98,7 +98,7 @@ func (i *InterchainSuite) setClientConfigs(backend backends.SimulatedTestBackend
 	tx, err := contract.SetLinkedClient(auth.TransactOpts, otherContract.ChainID(), i.addressToBytes32(otherContract.Address()))
 	i.Require().NoError(err)
 	backend.WaitForConfirmation(i.GetTestContext(), tx)
-	
+
 	// set the receiving module on the app
 	amInfo, appMock := i.deployManager.GetInterchainAppMock(i.GetTestContext(), backend)
 
