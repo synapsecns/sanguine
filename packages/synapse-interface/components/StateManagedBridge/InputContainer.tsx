@@ -138,6 +138,7 @@ const FromChainSelector = () => (
   <ChainSelector
     dataTestId="bridge-origin-chain"
     selectedItem={CHAINS_BY_ID[useBridgeState().fromChainId]}
+    isOrigin={true}
     label="From"
     itemListFunction={FromChainListArray}
     setFunction={setFromChainId}
@@ -148,7 +149,7 @@ const FromTokenSelector = () => (
   <TokenSelector
     dataTestId="bridge-origin-token"
     selectedItem={useBridgeState().fromToken}
-    label=""
+    isOrigin={true}
     placeholder="Out"
     itemListFunction={FromTokenListArray}
     setFunction={setFromToken}

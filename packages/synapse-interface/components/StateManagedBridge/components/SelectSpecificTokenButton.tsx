@@ -243,7 +243,7 @@ const Coin = ({
 
   return (
     <div>
-      <div className="flex text-left text-lg justify-between">
+      <div className="flex text-left justify-between">
         <div className="">{token?.symbol}</div>
 
         {/* {showAllChains && <AvailableChains token={token} />} */}
