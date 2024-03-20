@@ -513,5 +513,9 @@ export const ToTokenListArray = (searchStr: string = '') => {
     return orderedPossibleTokens.length
   }, [orderedPossibleTokens])
 
-  return { possibleTokens, remainingChainTokens, allOtherToTokens }
+  return {
+    'Receive…': possibleTokens,
+    'All receivable tokens': remainingChainTokens,
+    'All other tokens': allOtherToTokens,
+  }
 }

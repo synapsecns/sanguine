@@ -154,8 +154,8 @@ export function ChainSelector({
                 key={id}
                 itemChainId={id}
                 isOrigin={isOrigin}
-                isCurrent={selectedItem?.id === id}
-                hasFocus={idx === currentIdx}
+                isCurrentChain={selectedItem?.id === id}
+                active={idx === currentIdx}
                 onClick={() => handleSetChainId(id)}
               />
             ))}

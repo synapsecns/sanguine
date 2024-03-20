@@ -266,5 +266,5 @@ export function FromChainListArray(searchStr: string = '') {
     )
   }
 
-  return { possibleChains, remainingChains }
+  return { 'From…': possibleChains, 'All chains': remainingChains }
 }
