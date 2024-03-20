@@ -150,6 +150,7 @@ export const DestinationAddressInput = ({
 
   const onSelectRecipient = (address) => {
     dispatch(setDestinationAddress(address))
+    handleInputBlur()
     handleCloseList()
   }
 
