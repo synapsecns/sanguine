@@ -135,11 +135,13 @@ export const DestinationAddressInput = ({
 
   const listRef = useRef(null)
   const [showRecipientList, setShowRecipientList] = useState<boolean>(false)
+  const [currentIdx, setCurrentIdx] = useState<number>(null)
 
   const handleCloseList = () => {
     if (showRecipientList) {
       setShowRecipientList(false)
     }
+    setCurrentIdx(null)
   }
 
   const handlePaste = async () => {
@@ -147,7 +149,10 @@ export const DestinationAddressInput = ({
     dispatch(setDestinationAddress(pastedValue as Address))
   }
 
-  const [currentIdx, setCurrentIdx] = useState<number>(null)
+  const onSelectRecipient = (address) => {
+    dispatch(setDestinationAddress(address))
+    handleCloseList()
+  }
 
   useCloseOnOutsideClick(listRef, handleCloseList)
 
@@ -164,22 +169,20 @@ export const DestinationAddressInput = ({
     }
   }
 
-  const listLength = filteredRecipientList.length
-
   function arrowDownFunc() {
-    if (listLength === 0) return
+    if (filteredRecipientList.length === 0) return
     if (!showRecipientList) return
 
     const nextIdx = currentIdx + 1
     if (currentIdx === null) {
       setCurrentIdx(0)
-    } else if (arrowDown && nextIdx < listLength) {
+    } else if (arrowDown && nextIdx < filteredRecipientList.length) {
       setCurrentIdx(nextIdx)
     }
   }
 
   function arrowUpFunc() {
-    if (listLength === 0) return
+    if (filteredRecipientList.length === 0) return
     if (!showRecipientList) return
 
     const nextIdx = currentIdx - 1
@@ -190,14 +193,11 @@ export const DestinationAddressInput = ({
   }
 
   function enterPressedFunc() {
-    if (listLength === 0) return
+    if (filteredRecipientList.length === 0) return
     if (!showRecipientList) return
 
     if (enterPressed && currentIdx > -1) {
-      dispatch(
-        setDestinationAddress(filteredRecipientList[currentIdx]?.toAddress)
-      )
-      setShowRecipientList(false)
+      onSelectRecipient(filteredRecipientList[currentIdx]?.toAddress)
     }
   }
 
@@ -285,10 +285,7 @@ export const DestinationAddressInput = ({
                   address={recipient?.toAddress}
                   daysAgo={recipient?.daysAgo}
                   selectedListItem={currentIdx}
-                  onSelectRecipient={(destinationAddress: Address) => {
-                    dispatch(setDestinationAddress(destinationAddress))
-                    setShowRecipientList(false)
-                  }}
+                  onSelectRecipient={onSelectRecipient}
                 />
               )
             })}
