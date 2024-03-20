@@ -19,10 +19,8 @@ import { useTransactionsState } from '@/slices/transactions/hooks'
 import { TransactionsState } from '@/slices/transactions/reducer'
 import { BridgeTransaction } from '@/slices/api/generated'
 import { getValidAddress } from '@/utils/isValidAddress'
-import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 import { useKeyPress } from '@/utils/hooks/useKeyPress'
-
-const inputRef = React.createRef<HTMLInputElement>()
+import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 
 export const DestinationAddressInput = ({
   connectedAddress,
@@ -76,6 +74,7 @@ export const DestinationAddressInput = ({
     isInputValidAddress,
   ])
 
+  const inputRef = useRef<HTMLInputElement>(null)
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
 
   const handleInputFocus = () => {
