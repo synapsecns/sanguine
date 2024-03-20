@@ -5,7 +5,7 @@ import {ExecutionFees} from "../../contracts/ExecutionFees.sol";
 import {ExecutionService} from "../../contracts/ExecutionService.sol";
 import {InterchainClientV1} from "../../contracts/InterchainClientV1.sol";
 import {InterchainDB} from "../../contracts/InterchainDB.sol";
-import {PingPongApp} from "../../contracts/apps/PingPongApp.sol";
+import {PingPongApp} from "../../contracts/apps/examples/PingPongApp.sol";
 import {AppConfigV1} from "../../contracts/libs/AppConfig.sol";
 import {SynapseModule} from "../../contracts/modules/SynapseModule.sol";
 import {SynapseGasOracleV1, ISynapseGasOracleV1} from "../../contracts/oracles/SynapseGasOracleV1.sol";
