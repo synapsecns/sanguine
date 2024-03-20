@@ -139,7 +139,7 @@ func (i *InterchainSuite) setClientConfigs(backend backends.SimulatedTestBackend
 	tx, err = appMock.SetAppConfigV1(auth.TransactOpts, interchainapp.AppConfigV1{
 		RequiredResponses: big.NewInt(1),
 		OptimisticPeriod:  big.NewInt(1),
-	})
+	})F""
 
 	i.Require().NoError(err)
 	backend.WaitForConfirmation(i.GetTestContext(), tx)
