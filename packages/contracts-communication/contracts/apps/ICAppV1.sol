@@ -65,20 +65,30 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
 
     /// @inheritdoc IInterchainAppV1
     function addTrustedModule(address module) external onlyRole(IC_GOVERNOR_ROLE) {
+        if (module == address(0)) {
+            revert InterchainApp__ModuleZeroAddress();
+        }
         bool added = _trustedModules.add(module);
-        if (!added) revert InterchainApp__ModuleAlreadyAdded(module);
+        if (!added) {
+            revert InterchainApp__ModuleAlreadyAdded(module);
+        }
         emit TrustedModuleAdded(module);
     }
 
     /// @inheritdoc IInterchainAppV1
     function removeTrustedModule(address module) external onlyRole(IC_GOVERNOR_ROLE) {
         bool removed = _trustedModules.remove(module);
-        if (!removed) revert InterchainApp__ModuleNotAdded(module);
+        if (!removed) {
+            revert InterchainApp__ModuleNotAdded(module);
+        }
         emit TrustedModuleRemoved(module);
     }
 
     /// @inheritdoc IInterchainAppV1
     function setAppConfigV1(AppConfigV1 memory appConfig) external onlyRole(IC_GOVERNOR_ROLE) {
+        if (appConfig.requiredResponses == 0 || appConfig.optimisticPeriod == 0) {
+            revert InterchainApp__InvalidAppConfig(appConfig.requiredResponses, appConfig.optimisticPeriod);
+        }
         _appConfigV1 = appConfig;
         emit AppConfigV1Set(appConfig.requiredResponses, appConfig.optimisticPeriod);
     }
@@ -138,6 +148,9 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
     function _linkRemoteApp(uint256 chainId, bytes32 remoteApp) internal {
         if (chainId == block.chainid) {
             revert InterchainApp__SameChainId(chainId);
+        }
+        if (remoteApp == 0) {
+            revert InterchainApp__AppZeroAddress();
         }
         _linkedApp[chainId] = remoteApp;
         emit AppLinked(chainId, remoteApp);
