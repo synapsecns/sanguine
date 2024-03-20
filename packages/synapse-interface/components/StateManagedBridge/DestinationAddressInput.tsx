@@ -210,7 +210,7 @@ export const DestinationAddressInput = ({
   const adjustInputSize = () => {
     const addressInput: HTMLElement = document.getElementById('address-input')
 
-    if (isInputFocused || isInputInvalid) {
+    if (isInputFocused || isInputInvalid || isInputValidAddress) {
       addressInput.style.width = '8rem'
     } else if (inputValue.length > 0) {
       addressInput.style.width = inputValue.length + 2 + 'ch'
