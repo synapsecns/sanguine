@@ -4,6 +4,9 @@ pragma solidity ^0.8.0;
 import {AppConfigV1} from "../libs/AppConfig.sol";
 
 interface IInterchainAppV1 {
+    error InterchainApp__ModuleAlreadyAdded(address module);
+    error InterchainApp__ModuleNotAdded(address module);
+
     /// @notice Allows the owner to add the interchain client to the allowed clients set,
     /// and optionally set the latest client to this one.
     /// Note: only the allowed clients can send messages to this app.
