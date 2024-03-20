@@ -310,9 +310,14 @@ const ListRecipient = ({
   selectedListItem: number | null
   onSelectRecipient?: (destinationAddress: Address) => void
 }) => {
+  const handleMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    onSelectRecipient && onSelectRecipient(address as Address)
+  }
+
   return (
     <div
-      onClick={() => onSelectRecipient(address as Address)}
+      onMouseDown={handleMouseDown}
       className={`
         flex justify-between px-1.5 py-1 space-x-2
         cursor-pointer text-strong
