@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {ICAppV1} from "./ICAppV1.sol";
+import {ICAppV1} from "../ICAppV1.sol";
 
-import {InterchainTxDescriptor} from "../libs/InterchainTransaction.sol";
-import {OptionsV1} from "../libs/Options.sol";
+import {InterchainTxDescriptor} from "../../libs/InterchainTransaction.sol";
+import {OptionsV1} from "../../libs/Options.sol";
 
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
