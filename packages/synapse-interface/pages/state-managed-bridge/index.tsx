@@ -85,6 +85,10 @@ import {
 } from '@/slices/priceDataSlice'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { SwitchButton } from '@/components/buttons/SwitchButton'
+import {
+  EcotoneForkWarningMessage,
+  useEcotoneForkCountdownProgress,
+} from '@/components/Maintenance/Events/example/EcotoneForkUpgrade'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -517,6 +521,12 @@ const StateManagedBridge = () => {
   const springClass =
     '-mt-4 fixed z-50 w-full h-full bg-opacity-50 bg-[#343036]'
 
+  const {
+    isEcotoneForkUpgradePending,
+    isCurrentChainDisabled,
+    EcotoneForkCountdownProgressBar,
+  } = useEcotoneForkCountdownProgress()
+
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
       <div className="flex flex-col">
@@ -554,6 +564,7 @@ const StateManagedBridge = () => {
             transition-all duration-100 transform rounded-md
           `}
         >
+          {EcotoneForkCountdownProgressBar}
           <div ref={bridgeDisplayRef}>
             <Transition show={showSettingsSlideOver} {...TRANSITION_PROPS}>
               <animated.div>
@@ -610,7 +621,7 @@ const StateManagedBridge = () => {
                 isApproved={isApproved}
                 approveTxn={approveTxn}
                 executeBridge={executeBridge}
-                isBridgePaused={false}
+                isBridgePaused={isCurrentChainDisabled}
               />
             </div>
           </div>
