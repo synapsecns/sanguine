@@ -86,10 +86,6 @@ import {
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { SwitchButton } from '@/components/buttons/SwitchButton'
 import {
-  EcotoneForkWarningMessage,
-  useEcotoneForkCountdownProgress,
-} from '@/components/Maintenance/Events/example/EcotoneForkUpgrade'
-import {
   MaintenanceWarningMessage,
   useMaintenanceCountdownProgress,
 } from '@/components/Maintenance/Events/template/MaintenanceEvent'
