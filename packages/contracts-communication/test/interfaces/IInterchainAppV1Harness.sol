@@ -45,4 +45,13 @@ interface IInterchainAppV1Harness is IInterchainAppV1 {
         external
         view
         returns (uint256);
+
+    function exposed__getMessageFee(
+        uint256 dstChainId,
+        OptionsV1 memory options,
+        bytes memory message
+    )
+        external
+        view
+        returns (uint256);
 }

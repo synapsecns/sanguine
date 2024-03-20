@@ -59,6 +59,18 @@ contract ICAppV1Harness is ICAppV1, IInterchainAppV1Harness {
         return _getInterchainFee(dstChainId, options, message);
     }
 
+    function exposed__getMessageFee(
+        uint256 dstChainId,
+        OptionsV1 memory options,
+        bytes memory message
+    )
+        external
+        view
+        returns (uint256)
+    {
+        return _getMessageFee(dstChainId, options, message);
+    }
+
     /// @dev Internal logic for receiving messages. At this point the validity of the message is already checked.
     function _receiveMessage(
         uint256 srcChainId,
