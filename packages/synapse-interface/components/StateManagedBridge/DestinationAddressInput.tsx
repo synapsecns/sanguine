@@ -117,7 +117,7 @@ export const DestinationAddressInput = ({
   if (isInputFocused) {
     placeholder = ''
   } else {
-    placeholder = connectedAddress ? '0x...' : 'Wallet address'
+    placeholder = connectedAddress ? shortenAddress(connectedAddress) : '0x...'
   }
 
   let inputValue
@@ -215,7 +215,7 @@ export const DestinationAddressInput = ({
     } else if (inputValue.length > 0) {
       addressInput.style.width = inputValue.length + 2 + 'ch'
     } else {
-      addressInput.style.width = placeholder.length + 'ch'
+      addressInput.style.width = placeholder.length + 1 + 'ch'
     }
   }
 
@@ -226,7 +226,7 @@ export const DestinationAddressInput = ({
   return (
     <div id="destination-address-input">
       <div className="flex items-center">
-        <div className="mr-1.5 text-secondary">To: </div>
+        <div className="mr-1.5 text-secondary text-sm">To: </div>
         <div
           className={`
            flex border text-md rounded-sm
@@ -252,7 +252,7 @@ export const DestinationAddressInput = ({
             value={inputValue}
             className={`
               transform-gpu transition-all duration-75 cursor-pointer
-              text-md rounded-sm text-strong py-0.5 pl-2 z-0 border-0 bg-transparent max-w-32
+              text-sm rounded-sm text-strong py-0.5 pl-2 z-0 border-0 bg-transparent max-w-32
               focus:text-white focus:border-transparent focus:outline-none focus:ring-0
               ${isInputFocused || isInputInvalid ? 'text-left ' : 'text-center'}
               ${destinationAddress ? 'pr-6' : 'pr-1'}
@@ -261,7 +261,7 @@ export const DestinationAddressInput = ({
           {destinationAddress ? (
             <CloseButton
               onClick={onClearUserInput}
-              className="!w-5 !h-5 mr-1 mt-1 hover:opacity-70"
+              className="!w-5 !h-5 mr-0.5 mt-0.5 hover:opacity-70"
             />
           ) : isInputFocused ? (
             <PasteButton onPaste={handlePaste} />
@@ -427,15 +427,15 @@ export const HoverContent = ({
 const PasteButton = ({ onPaste }: { onPaste: () => Promise<void> }) => {
   return (
     <svg
-      width="34"
-      height="24"
+      width="18"
+      height="18"
       viewBox="0 0 24 24"
       xmlns="http://www.w3.org/2000/svg"
       onClick={onPaste}
       onMouseDown={(e) => e.preventDefault()}
       className={`
         absolute border-transparent cursor-pointer
-        right-1.5 mt-px justify-self-end
+        right-2.5 mt-0.5 justify-self-end
         fill-zinc-100 stroke-zinc-100 hover:opacity-70
       `}
     >
