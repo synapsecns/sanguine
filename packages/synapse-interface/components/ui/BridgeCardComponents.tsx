@@ -199,7 +199,7 @@ const SelectorWrapper = ({
 
   useEffect(() => {
     const ref = popoverRef?.current
-    if (!ref) return
+    if (!ref || window.innerWidth >= 1024) return
 
     if (searchStr) {
       ref.style.position = 'absolute'
