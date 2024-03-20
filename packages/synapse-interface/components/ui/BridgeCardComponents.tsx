@@ -24,6 +24,7 @@ interface BridgeCardTypes {
 
 interface SelectorTypes {
   dataTestId?: string
+  isOrigin: boolean
   label?: string
   placeholder?: string
   selectedItem: Token | Chain
@@ -84,42 +85,16 @@ export function BridgeSectionContainer({ children }) {
 
 export function ChainSelector({
   dataTestId,
+  isOrigin,
   selectedItem,
   label,
   placeholder,
   itemListFunction,
   setFunction,
 }: ChainSelectorTypes) {
-  const [currentIdx, setCurrentIdx] = useState(0)
   const [searchStr, setSearchStr] = useState('')
 
   const dispatch = useDispatch()
-
-  const arrowUp = useKeyPress('ArrowUp')
-  const arrowDown = useKeyPress('ArrowDown')
-
-  const isOrigin = label === 'From' // TODO: Improve
-
-  const arrowDownFunc = () => {
-    const nextIdx = currentIdx + 1
-    console.log('down', currentIdx)
-    if (arrowDown && nextIdx < 0) {
-      // masterList.length) {
-      setCurrentIdx(nextIdx)
-    }
-  }
-
-  const arrowUpFunc = () => {
-    const nextIdx = currentIdx - 1
-    console.log('up', currentIdx)
-    if (arrowUp && -1 < nextIdx) {
-      setCurrentIdx(nextIdx)
-    }
-  }
-
-  useEffect(arrowDownFunc, [arrowDown])
-  useEffect(arrowUpFunc, [arrowUp])
-  // useCloseOnOutsideClick(overlayRef, onClose)
 
   const handleSetChainId = (chainId) => {
     if (selectedItem?.id !== chainId) {
@@ -148,15 +123,15 @@ export function ChainSelector({
       {Object.entries(itemList).map(([key, value]: [string, Chain[]]) => {
         return value.length ? (
           <ListSectionWrapper sectionKey={key}>
-            {value.map(({ id }, idx) => (
+            {value.map((chain, idx) => (
               <SelectSpecificNetworkButton
                 dataId={dataTestId}
-                key={id}
-                itemChainId={id}
+                key={chain.id}
+                itemChainId={chain.id}
                 isOrigin={isOrigin}
-                isCurrentChain={selectedItem?.id === id}
-                active={idx === currentIdx}
-                onClick={() => handleSetChainId(id)}
+                isCurrentChain={selectedItem?.id === chain.id}
+                active={false}
+                onClick={() => handleSetChainId(chain.id)}
               />
             ))}
           </ListSectionWrapper>
@@ -187,19 +162,16 @@ const SelectorWrapper = ({
   searchStr,
   setSearchStr,
 }) => {
-  const [currentIdx, setCurrentIdx] = useState(-1)
-  // const [searchStr, setSearchStr] = useState('')
   const [hover, setHover] = useState(false)
 
   const escPressed = useKeyPress('Escape')
-  const arrowUp = useKeyPress('ArrowUp')
-  const arrowDown = useKeyPress('ArrowDown')
 
   const popoverRef = useRef(null)
 
   useEffect(() => {
     const ref = popoverRef?.current
-    if (!ref || window.innerWidth >= 1024) return
+    if (!ref) return
+    // if (window.innerWidth >= 1024) return
 
     if (searchStr) {
       ref.style.position = 'absolute'
@@ -209,9 +181,12 @@ const SelectorWrapper = ({
       const { y, height } = ref.getBoundingClientRect()
       const screen = window.innerHeight
 
-      if (y + height > screen) {
+      if (y + height * 0.67 > screen) {
         ref.style.position = 'fixed'
         ref.style.bottom = '4px'
+        document.addEventListener('scroll', () => setHover(false), {
+          once: true,
+        })
       }
       if (y < 0) {
         ref.style.position = 'fixed'
@@ -221,7 +196,6 @@ const SelectorWrapper = ({
   })
 
   const onClose = useCallback(() => {
-    setCurrentIdx(-1)
     setSearchStr('')
     setHover(false)
   }, [])
@@ -231,30 +205,12 @@ const SelectorWrapper = ({
       onClose()
     }
   }
-  const arrowDownFunc = () => {
-    const nextIdx = currentIdx + 1
-    if (arrowDown && nextIdx < 0) {
-      // masterList.length) {
-      setCurrentIdx(nextIdx)
-    }
-  }
-
-  const arrowUpFunc = () => {
-    const nextIdx = currentIdx - 1
-    if (arrowUp && -1 < nextIdx) {
-      setCurrentIdx(nextIdx)
-    }
-  }
 
   const onSearch = (str: string) => {
     setSearchStr(str)
-    setCurrentIdx(-1)
   }
 
-  useEffect(arrowDownFunc, [arrowDown])
   useEffect(escFunc, [escPressed])
-  useEffect(arrowUpFunc, [arrowUp])
-  // useCloseOnOutsideClick(overlayRef, onClose)
 
   function handleMouseMove(e) {
     if (
@@ -264,18 +220,18 @@ const SelectorWrapper = ({
       setHover(true)
   }
 
+  function handleMouseLeave() {
+    if (!searchStr) onClose()
+  }
+
   const buttonClassName = join({
     flex: 'flex items-center gap-2',
-    space: 'mx-0.5 rounded px-2 py-1.5',
+    space: 'px-2 py-1.5 rounded',
     border: 'border border-zinc-200 dark:border-transparent',
     text: 'leading-tight',
     hover: getHoverStyleForButton(selectedItem?.color),
     active: 'active:opacity-80',
     custom: label ? 'bg-transparent' : 'bg-white dark:bg-separator text-lg',
-    // border: hover ? 'border' : 'border border-zinc-200 dark:border-transparent',
-    // hover: hover
-    //   ? getActiveStyleForButton(selectedItem?.color)
-    //   : getHoverStyleForButton(selectedItem?.color),
     // bugfix: 'flex-none', // may not be needed any more
   })
 
@@ -286,14 +242,11 @@ const SelectorWrapper = ({
   const itemName = selectedItem?.['symbol' in selectedItem ? 'symbol' : 'name']
 
   return (
-    <div
-      className="relative"
-      onMouseMove={handleMouseMove}
-      onMouseLeave={onClose}
-    >
+    <div className="relative" onMouseLeave={handleMouseLeave}>
       <button
         data-test-id={`${dataTestId}-button`}
         className={buttonClassName}
+        onMouseMove={handleMouseMove}
         onClick={() => setHover(!hover)}
       >
         {itemName && (
@@ -352,35 +305,12 @@ export function TokenSelector({
   placeholder,
   itemListFunction,
   setFunction,
+  isOrigin,
 }: TokenSelectorTypes) {
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
 
   const dispatch = useDispatch()
-
-  // const arrowUp = useKeyPress('ArrowUp')
-  // const arrowDown = useKeyPress('ArrowDown')
-
-  const isOrigin = true // TODO: Improve
-
-  // const arrowDownFunc = () => {
-  //   const nextIdx = currentIdx + 1
-  //   if (arrowDown && nextIdx < 0) {
-  //     // masterList.length) {
-  //     setCurrentIdx(nextIdx)
-  //   }
-  // }
-
-  // const arrowUpFunc = () => {
-  //   const nextIdx = currentIdx - 1
-  //   if (arrowUp && -1 < nextIdx) {
-  //     setCurrentIdx(nextIdx)
-  //   }
-  // }
-
-  // useEffect(arrowDownFunc, [arrowDown])
-  // useEffect(arrowUpFunc, [arrowUp])
-  // useCloseOnOutsideClick(overlayRef, onClose)
 
   const handleSetFromToken = (token) => {
     if (selectedItem !== token) {
@@ -420,7 +350,7 @@ export function TokenSelector({
                 //     remainingChainTokens.length ===
                 //   currentIdx
                 // }
-                active={idx === currentIdx}
+                active={false}
                 // showAllChains={true}
                 onClick={() => handleSetFromToken(token)}
                 alternateBackground={false}

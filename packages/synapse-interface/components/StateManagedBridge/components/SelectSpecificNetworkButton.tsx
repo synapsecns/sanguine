@@ -34,11 +34,11 @@ export const SelectSpecificNetworkButton = ({
   const ref = useRef<any>(null)
   const chain = CHAINS_BY_ID[itemChainId]
 
-  useEffect(() => {
-    if (active) {
-      ref?.current?.focus()
-    }
-  }, [active])
+  // useEffect(() => {
+  //   if (active) {
+  //     ref?.current?.focus()
+  //   }
+  // }, [active])
 
   const join = (a) => Object.values(a).join(' ')
 
@@ -61,7 +61,7 @@ export const SelectSpecificNetworkButton = ({
   return (
     <button
       ref={ref}
-      tabIndex={active ? 1 : 0}
+      // tabIndex={active ? 1 : 0}
       className={buttonClass}
       onClick={onClick}
       data-test-id={`${dataId}-item`}

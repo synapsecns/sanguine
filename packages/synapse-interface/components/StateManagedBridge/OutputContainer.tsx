@@ -70,6 +70,7 @@ const DisplayAddress = ({ address }) => {
 const ToChainSelector = () => (
   <ChainSelector
     dataTestId="bridge-destination-chain"
+    isOrigin={false}
     selectedItem={CHAINS_BY_ID[useBridgeState().toChainId]}
     label="To"
     itemListFunction={ToChainListArray}
@@ -80,6 +81,7 @@ const ToChainSelector = () => (
 const ToTokenSelector = () => (
   <TokenSelector
     dataTestId="bridge-destination-token"
+    isOrigin={false}
     selectedItem={useBridgeState().toToken}
     placeholder="In"
     itemListFunction={ToTokenListArray}
