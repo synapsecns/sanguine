@@ -4,6 +4,7 @@ pragma solidity 0.8.20;
 import {InterchainAppV1Test} from "./InterchainAppV1.t.sol";
 
 // solhint-disable func-name-mixedcase
+// solhint-disable ordering
 abstract contract InterchainAppV1ManagementTest is InterchainAppV1Test {
     address public newClient = makeAddr("New Client");
     address public newModule = makeAddr("New Module");
@@ -23,6 +24,8 @@ abstract contract InterchainAppV1ManagementTest is InterchainAppV1Test {
         vm.prank(governor);
         appHarness.setLatestInterchainClient(client);
     }
+
+    function expectRevertUnauthorizedGovernor(address caller) internal virtual;
 
     function test_addInterchainClient_dontUpdateLatest_noClients() public {
         expectEventInterchainClientAdded(newClient);

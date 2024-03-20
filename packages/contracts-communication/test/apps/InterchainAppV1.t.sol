@@ -14,6 +14,8 @@ import {InterchainClientV1Mock} from "../mocks/InterchainClientV1Mock.sol";
 import {Test} from "forge-std/Test.sol";
 
 abstract contract InterchainAppV1Test is Test, AbstractICAppEvents, InterchainAppV1Events {
+    bytes32 public constant IC_GOVERNOR_ROLE = keccak256("IC_GOVERNOR_ROLE");
+
     uint256 public constant LOCAL_CHAIN_ID = 1337;
     uint256 public constant REMOTE_CHAIN_ID = 7331;
     uint256 public constant APP_OPTIMISTIC_PERIOD = 10 minutes;
@@ -152,8 +154,6 @@ abstract contract InterchainAppV1Test is Test, AbstractICAppEvents, InterchainAp
             abi.encodeWithSelector(AbstractICApp.InterchainApp__SenderNotAllowed.selector, srcChainId, sender)
         );
     }
-
-    function expectRevertUnauthorizedGovernor(address caller) internal virtual;
 
     function toArray(address a) internal pure returns (address[] memory arr) {
         arr = new address[](1);
