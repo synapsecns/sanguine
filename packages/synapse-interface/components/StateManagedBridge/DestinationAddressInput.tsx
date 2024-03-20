@@ -154,6 +154,7 @@ export const DestinationAddressInput = ({
   const escPressed = useKeyPress('Escape')
   const arrowUp = useKeyPress('ArrowUp')
   const arrowDown = useKeyPress('ArrowDown')
+  const enterPressed = useKeyPress('Enter')
 
   function escFunc() {
     if (escPressed) {
@@ -188,6 +189,19 @@ export const DestinationAddressInput = ({
     }
   }
 
+  function enterPressedFunc() {
+    if (listLength === 0) return
+    if (!showRecipientList) return
+
+    if (enterPressed && currentIdx > -1) {
+      dispatch(
+        setDestinationAddress(filteredRecipientList[currentIdx]?.toAddress)
+      )
+      setShowRecipientList(false)
+    }
+  }
+
+  useEffect(enterPressedFunc, [enterPressed])
   useEffect(escFunc, [escPressed])
   useEffect(arrowDownFunc, [arrowDown])
   useEffect(arrowUpFunc, [arrowUp])
