@@ -3,12 +3,19 @@ import { getCountdownTimeStatus } from './EventCountdownProgressBar'
 import { AnnouncementBanner } from './AnnouncementBanner'
 
 /**
- * Creates an Annoucement Banner that automatically appears/disappears based on start/end times.
+ * Component for creating and managing a maintenance announcement banner. This banner automatically
+ * appears and disappears based on specified start and end times, providing users with timely information
+ * about maintenance events.
  *
- * @param {string} id - Unique id that determines instance of banner to track in browser
- * @param {Date} startDate - Date that automatically triggers displaying banner
- * @param {Date} endDate - Date that automatically triggers removing banner
- * @param {any} bannerMessage - Allow for flexibility when constructing banner message
+ * @param {string} id - A unique identifier for the banner instance. This is used to track the banner's state
+ *                      in the browser and avoid conflicts with other instances.
+ * @param {Date} startDate - The starting date and time when the banner should become visible to users.
+ *                           This is the point at which the maintenance is considered to begin.
+ * @param {Date} endDate - The ending date and time when the banner should be removed or hidden from view.
+ *                         This corresponds to the end of the maintenance period.
+ * @param {any} bannerMessage - The content to be displayed within the banner. This parameter allows for
+ *                              flexibility in the message's structure and content, which can include text,
+ *                              links, or even React components.
  */
 export const MaintenanceBanner = ({
   id,

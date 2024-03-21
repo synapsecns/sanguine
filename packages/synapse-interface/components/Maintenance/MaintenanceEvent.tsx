@@ -1,8 +1,7 @@
-import { useBridgeState } from '@/slices/bridge/hooks'
 import { OPTIMISM, BASE } from '@/constants/chains/master'
-import { useEventCountdownProgressBar } from './EventCountdownProgressBar'
 import { MaintenanceBanner } from './MaintenanceBanner'
 import { MaintenanceWarningMessage } from './MaintenanceWarningMessage'
+import { useMaintenanceCountdownProgress } from './useMaintenanceCountdownProgress'
 
 /**
  * Edit this file for Website Maintenance, components already placed on Bridge page
@@ -17,45 +16,6 @@ const MAINTENANCE_BANNERS_START = new Date(Date.UTC(2024, 2, 20, 20, 20, 0))
 const MAINTENANCE_START_DATE = new Date(Date.UTC(2024, 2, 20, 20, 20, 0))
 /** Ends Banner, Countdown Progress Bar, Bridge Warning Message, Bridge Pause */
 const MAINTENANCE_END_DATE = new Date(Date.UTC(2024, 2, 20, 22, 0, 0))
-
-export const useMaintenanceCountdownProgress = ({
-  startDate,
-  endDate,
-  pausedChains,
-  progressBarMessage,
-}: {
-  startDate: Date
-  endDate: Date
-  pausedChains: number[]
-  progressBarMessage: any
-}) => {
-  const { fromChainId, toChainId } = useBridgeState()
-
-  const isCurrentChain = isChainIncluded(
-    [fromChainId, toChainId],
-    // [OPTIMISM.id, BASE.id] // Update for Chains to show maintenance on
-    pausedChains
-  )
-
-  const {
-    isPending: isMaintenancePending,
-    EventCountdownProgressBar: MaintenanceCountdownProgressBar,
-  } = useEventCountdownProgressBar(
-    progressBarMessage,
-    // MAINTENANCE_START_DATE, // Countdown Bar will automatically appear after start time
-    // MAINTENANCE_END_DATE // Countdown Bar will automatically disappear when end time is reached
-    startDate,
-    endDate
-  )
-
-  return {
-    isMaintenancePending,
-    isCurrentChainDisabled: isCurrentChain && isMaintenancePending, // Used to pause Bridge
-    MaintenanceCountdownProgressBar: isCurrentChain
-      ? MaintenanceCountdownProgressBar
-      : null,
-  }
-}
 
 /**
  * Checks if any of the chain IDs in `hasChains` are found within the `chainList` array.

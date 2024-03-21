@@ -87,9 +87,9 @@ import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { SwitchButton } from '@/components/buttons/SwitchButton'
 import {
   MaintenanceWarningMessages,
-  useMaintenanceCountdownProgress,
   useMaintenanceCountdownProgresses,
 } from '@/components/Maintenance/MaintenanceEvent'
+import { useMaintenanceCountdownProgress } from '@/components/Maintenance/useMaintenanceCountdownProgress'
 import { MaintenanceWarningMessage } from '@/components/Maintenance/MaintenanceWarningMessage'
 
 const StateManagedBridge = () => {
