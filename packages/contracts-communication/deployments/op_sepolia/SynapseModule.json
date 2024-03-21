@@ -1,9 +1,9 @@
 {
-  "address": "0xA3a922b21dc09fe429c93F6824F299a0f03e566c",
-  "constructorArgs": "0x0000000000000000000000004d5f1de076e2097320ed1046b88b9c0011357ba2000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
+  "address": "0x79D5c202d2243B7d405eB1b98c79595A692bfD0E",
+  "constructorArgs": "0x000000000000000000000000026f71b34b1ebc52942ad44adc2955aea6252c68000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
   "receipt": {
-    "hash": "0xeac94c5d21f9fee90e182d419a46c6571d23915ff28ffa571254d9f28c58b927",
-    "blockNumber": 8856991
+    "hash": "0xdd22fbbd406749b38a6c15e4ab27c4b0e4d4c9b12dffd7edc57786ecd6713fc1",
+    "blockNumber": 9617319
   },
   "abi": [
     {
@@ -138,7 +138,12 @@
       "name": "getModuleFee",
       "inputs": [
         {
-          "name": "destChainId",
+          "name": "dstChainId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "dbNonce",
           "type": "uint256",
           "internalType": "uint256"
         }
@@ -264,17 +269,17 @@
     },
     {
       "type": "function",
-      "name": "requestVerification",
+      "name": "requestBatchVerification",
       "inputs": [
         {
-          "name": "destChainId",
+          "name": "dstChainId",
           "type": "uint256",
           "internalType": "uint256"
         },
         {
-          "name": "entry",
+          "name": "batch",
           "type": "tuple",
-          "internalType": "struct InterchainEntry",
+          "internalType": "struct InterchainBatch",
           "components": [
             {
               "name": "srcChainId",
@@ -287,12 +292,7 @@
               "internalType": "uint256"
             },
             {
-              "name": "srcWriter",
-              "type": "bytes32",
-              "internalType": "bytes32"
-            },
-            {
-              "name": "dataHash",
+              "name": "batchRoot",
               "type": "bytes32",
               "internalType": "bytes32"
             }
@@ -387,10 +387,10 @@
     },
     {
       "type": "function",
-      "name": "verifyEntry",
+      "name": "verifyRemoteBatch",
       "inputs": [
         {
-          "name": "encodedEntry",
+          "name": "encodedBatch",
           "type": "bytes",
           "internalType": "bytes"
         },
@@ -405,20 +405,32 @@
     },
     {
       "type": "event",
-      "name": "ClaimFeeFractionChanged",
+      "name": "BatchVerificationRequested",
       "inputs": [
         {
-          "name": "claimFeeFraction",
+          "name": "dstChainId",
           "type": "uint256",
-          "indexed": false,
+          "indexed": true,
           "internalType": "uint256"
+        },
+        {
+          "name": "batch",
+          "type": "bytes",
+          "indexed": false,
+          "internalType": "bytes"
+        },
+        {
+          "name": "ethSignedBatchHash",
+          "type": "bytes32",
+          "indexed": false,
+          "internalType": "bytes32"
         }
       ],
       "anonymous": false
     },
     {
       "type": "event",
-      "name": "EntryVerified",
+      "name": "BatchVerified",
       "inputs": [
         {
           "name": "srcChainId",
@@ -427,16 +439,29 @@
           "internalType": "uint256"
         },
         {
-          "name": "entry",
+          "name": "batch",
           "type": "bytes",
           "indexed": false,
           "internalType": "bytes"
         },
         {
-          "name": "ethSignedEntryHash",
+          "name": "ethSignedBatchHash",
           "type": "bytes32",
           "indexed": false,
           "internalType": "bytes32"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "ClaimFeeFractionChanged",
+      "inputs": [
+        {
+          "name": "claimFeeFraction",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
         }
       ],
       "anonymous": false
@@ -487,6 +512,44 @@
     },
     {
       "type": "event",
+      "name": "GasDataReceived",
+      "inputs": [
+        {
+          "name": "srcChainId",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "data",
+          "type": "bytes",
+          "indexed": false,
+          "internalType": "bytes"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "GasDataSent",
+      "inputs": [
+        {
+          "name": "dstChainId",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "data",
+          "type": "bytes",
+          "indexed": false,
+          "internalType": "bytes"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
       "name": "GasOracleChanged",
       "inputs": [
         {
@@ -526,31 +589,6 @@
           "type": "uint256",
           "indexed": false,
           "internalType": "uint256"
-        }
-      ],
-      "anonymous": false
-    },
-    {
-      "type": "event",
-      "name": "VerificationRequested",
-      "inputs": [
-        {
-          "name": "destChainId",
-          "type": "uint256",
-          "indexed": true,
-          "internalType": "uint256"
-        },
-        {
-          "name": "entry",
-          "type": "bytes",
-          "indexed": false,
-          "internalType": "bytes"
-        },
-        {
-          "name": "ethSignedEntryHash",
-          "type": "bytes32",
-          "indexed": false,
-          "internalType": "bytes32"
         }
       ],
       "anonymous": false
@@ -646,12 +684,24 @@
     {
       "type": "error",
       "name": "InterchainModule__NotInterchainDB",
-      "inputs": []
+      "inputs": [
+        {
+          "name": "caller",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
     },
     {
       "type": "error",
       "name": "InterchainModule__SameChainId",
-      "inputs": []
+      "inputs": [
+        {
+          "name": "chainId",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
     },
     {
       "type": "error",
@@ -704,6 +754,11 @@
     },
     {
       "type": "error",
+      "name": "SynapseModule__GasOracleNotSet",
+      "inputs": []
+    },
+    {
+      "type": "error",
       "name": "SynapseModule__NoFeesToClaim",
       "inputs": []
     },
@@ -744,6 +799,11 @@
       "type": "error",
       "name": "ThresholdECDSA__NotEnoughSignatures",
       "inputs": [
+        {
+          "name": "provided",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
         {
           "name": "threshold",
           "type": "uint256",
