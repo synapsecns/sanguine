@@ -26,10 +26,12 @@ export const MaintenanceBanner = ({
   id,
   startDate,
   endDate,
+  bannerMessage,
 }: {
   id: string
   startDate: Date
   endDate: Date
+  bannerMessage: any
 }) => {
   const { isComplete } = getCountdownTimeStatus(
     // MAINTENANCE_BANNERS_START, // Banner will automatically appear after start time
@@ -43,13 +45,7 @@ export const MaintenanceBanner = ({
   return (
     <AnnouncementBanner
       bannerId={id}
-      bannerContents={
-        <>
-          <p className="m-auto">
-            Bridging is paused until maintenance is complete.
-          </p>
-        </>
-      }
+      bannerContents={bannerMessage}
       startDate={startDate}
       endDate={endDate}
     />
@@ -60,10 +56,12 @@ export const MaintenanceWarningMessage = ({
   startDate,
   endDate,
   pausedChains,
+  warningMessage,
 }: {
   startDate: Date
   endDate: Date
   pausedChains: number[]
+  warningMessage: any
 }) => {
   const { fromChainId, toChainId } = useBridgeState()
 
@@ -83,15 +81,7 @@ export const MaintenanceWarningMessage = ({
   if (isComplete) return null
 
   if (isWarningChain) {
-    return (
-      <WarningMessage
-        message={
-          <>
-            <p>Bridging is paused until maintenance is complete.</p>
-          </>
-        }
-      />
-    )
+    return <WarningMessage message={warningMessage} />
   }
 
   return null
@@ -101,10 +91,12 @@ export const useMaintenanceCountdownProgress = ({
   startDate,
   endDate,
   pausedChains,
+  progressBarMessage,
 }: {
   startDate: Date
   endDate: Date
   pausedChains: number[]
+  progressBarMessage: any
 }) => {
   const { fromChainId, toChainId } = useBridgeState()
 
@@ -118,7 +110,7 @@ export const useMaintenanceCountdownProgress = ({
     isPending: isMaintenancePending,
     EventCountdownProgressBar: MaintenanceCountdownProgressBar,
   } = useEventCountdownProgressBar(
-    'Maintenance in progress',
+    progressBarMessage,
     // MAINTENANCE_START_DATE, // Countdown Bar will automatically appear after start time
     // MAINTENANCE_END_DATE // Countdown Bar will automatically disappear when end time is reached
     startDate,
@@ -147,7 +139,19 @@ const isChainIncluded = (chainList: number[], hasChains: number[]) => {
 
 /** Aggregators */
 
-const PAUSED_CHAINS = [
+interface ChainPause {
+  id: string
+  pausedChains: number[]
+  startTime: Date
+  endTime: Date
+  bannerStartTime: Date
+  bannerEndTime: Date
+  warningMessage: any
+  bannerMessage: any
+  progressBarMessage: any
+}
+
+const PAUSED_CHAINS: ChainPause[] = [
   {
     id: 'optimism-chain-pause',
     pausedChains: [OPTIMISM.id],
@@ -155,6 +159,13 @@ const PAUSED_CHAINS = [
     endTime: new Date(Date.UTC(2024, 2, 21, 18, 0, 0)),
     bannerStartTime: new Date(Date.UTC(2024, 2, 21, 17, 0, 0)),
     bannerEndTime: new Date(Date.UTC(2024, 2, 21, 18, 0, 0)),
+    warningMessage: (
+      <p> Optimism bridging is paused until maintenance is complete. </p>
+    ),
+    bannerMessage: (
+      <p> Optimism bridging is paused until maintenance is complete. </p>
+    ),
+    progressBarMessage: <p> Optimism maintenance in progress </p>,
   },
   {
     id: 'base-chain-pause',
@@ -163,6 +174,13 @@ const PAUSED_CHAINS = [
     endTime: new Date(Date.UTC(2024, 2, 21, 17, 30, 0)),
     bannerStartTime: new Date(Date.UTC(2024, 2, 21, 17, 0, 0)),
     bannerEndTime: new Date(Date.UTC(2024, 2, 21, 18, 0, 0)),
+    warningMessage: (
+      <p> Base bridging is paused until maintenance is complete. </p>
+    ),
+    bannerMessage: (
+      <p> Base bridging is paused until maintenance is complete. </p>
+    ),
+    progressBarMessage: <p> Base maintenance in progress </p>,
   },
 ]
 
@@ -173,6 +191,7 @@ export const MaintenanceBanners = () => {
         return (
           <MaintenanceBanner
             id={event.id}
+            bannerMessage={event.bannerMessage}
             startDate={event.bannerStartTime}
             endDate={event.bannerEndTime}
           />
@@ -191,6 +210,7 @@ export const MaintenanceWarningMessages = () => {
             startDate={event.startTime}
             endDate={event.endTime}
             pausedChains={event.pausedChains}
+            warningMessage={event.warningMessage}
           />
         )
       })}
@@ -208,6 +228,7 @@ export const useMaintenanceCountdownProgresses = () => {
       startDate: event.startTime,
       endDate: event.endTime,
       pausedChains: event.pausedChains,
+      progressBarMessage: event.progressBarMessage,
     })
   })
 }
