@@ -13,13 +13,13 @@ reviews:
       - 'DO NOT MERGE'
     drafts: true
 
-  base_branches:
-    # useful for large features, e.g. https://github.com/synapsecns/sanguine/pull/2234
-    - "feat/.*"
-    # the og
-    - "master"
-    # fe-release branch. We're more looking for summaries here
-    - "fe-release"
+    base_branches:
+      # useful for large features, e.g. https://github.com/synapsecns/sanguine/pull/2234
+      - "feat/.*"
+      # the og
+      - "master"
+      # fe-release branch. We're more looking for summaries here
+      - "fe-release"
 
   path_filters:
     - '!**abigen.go'
