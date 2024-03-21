@@ -1,11 +1,8 @@
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { OPTIMISM, BASE } from '@/constants/chains/master'
-import {
-  useEventCountdownProgressBar,
-  getCountdownTimeStatus,
-} from './EventCountdownProgressBar'
-import { WarningMessage } from '../Warning'
+import { useEventCountdownProgressBar } from './EventCountdownProgressBar'
 import { MaintenanceBanner } from './MaintenanceBanner'
+import { MaintenanceWarningMessage } from './MaintenanceWarningMessage'
 
 /**
  * Edit this file for Website Maintenance, components already placed on Bridge page
@@ -20,41 +17,6 @@ const MAINTENANCE_BANNERS_START = new Date(Date.UTC(2024, 2, 20, 20, 20, 0))
 const MAINTENANCE_START_DATE = new Date(Date.UTC(2024, 2, 20, 20, 20, 0))
 /** Ends Banner, Countdown Progress Bar, Bridge Warning Message, Bridge Pause */
 const MAINTENANCE_END_DATE = new Date(Date.UTC(2024, 2, 20, 22, 0, 0))
-
-export const MaintenanceWarningMessage = ({
-  startDate,
-  endDate,
-  pausedChains,
-  warningMessage,
-}: {
-  startDate: Date
-  endDate: Date
-  pausedChains: number[]
-  warningMessage: any
-}) => {
-  const { fromChainId, toChainId } = useBridgeState()
-
-  const isWarningChain = isChainIncluded(
-    [fromChainId, toChainId],
-    // [OPTIMISM.id, BASE.id] // Update for Chains to show warning on
-    pausedChains
-  )
-
-  const { isComplete } = getCountdownTimeStatus(
-    // MAINTENANCE_BANNERS_START, // Banner will automatically appear after start time
-    // MAINTENANCE_END_DATE // Banner will automatically disappear when end time is reached
-    startDate,
-    endDate
-  )
-
-  if (isComplete) return null
-
-  if (isWarningChain) {
-    return <WarningMessage message={warningMessage} />
-  }
-
-  return null
-}
 
 export const useMaintenanceCountdownProgress = ({
   startDate,
@@ -102,7 +64,7 @@ export const useMaintenanceCountdownProgress = ({
  * @param {number[]} hasChains - The array of chain IDs to find within `checkChains`.
  * @returns {boolean} - True if any chain ID from `hasChains` is found in `checkChains`, otherwise false.
  */
-const isChainIncluded = (chainList: number[], hasChains: number[]) => {
+export const isChainIncluded = (chainList: number[], hasChains: number[]) => {
   return hasChains.some((chainId) => chainList.includes(chainId))
 }
 

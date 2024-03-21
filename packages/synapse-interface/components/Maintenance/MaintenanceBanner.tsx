@@ -3,7 +3,7 @@ import { getCountdownTimeStatus } from './EventCountdownProgressBar'
 import { AnnouncementBanner } from './AnnouncementBanner'
 
 /**
- * Creates an automatic Annoucement Banner based on start/end times.
+ * Creates an Annoucement Banner that automatically appears/disappears based on start/end times.
  *
  * @param {string} id - Unique id that determines instance of banner to track in browser
  * @param {Date} startDate - Date that automatically triggers displaying banner
