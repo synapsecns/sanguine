@@ -86,9 +86,9 @@ import {
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { SwitchButton } from '@/components/buttons/SwitchButton'
 import {
-  EcotoneForkWarningMessage,
-  useEcotoneForkCountdownProgress,
-} from '@/components/Maintenance/Events/example/EcotoneForkUpgrade'
+  MaintenanceWarningMessage,
+  useMaintenanceCountdownProgress,
+} from '@/components/Maintenance/Events/template/MaintenanceEvent'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -522,10 +522,10 @@ const StateManagedBridge = () => {
     '-mt-4 fixed z-50 w-full h-full bg-opacity-50 bg-[#343036]'
 
   const {
-    isEcotoneForkUpgradePending,
+    isMaintenancePending,
     isCurrentChainDisabled,
-    EcotoneForkCountdownProgressBar,
-  } = useEcotoneForkCountdownProgress()
+    MaintenanceCountdownProgressBar,
+  } = useMaintenanceCountdownProgress()
 
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
@@ -564,7 +564,7 @@ const StateManagedBridge = () => {
             transition-all duration-100 transform rounded-md
           `}
         >
-          {EcotoneForkCountdownProgressBar}
+          {MaintenanceCountdownProgressBar}
           <div ref={bridgeDisplayRef}>
             <Transition show={showSettingsSlideOver} {...TRANSITION_PROPS}>
               <animated.div>
@@ -602,6 +602,7 @@ const StateManagedBridge = () => {
             />
             <OutputContainer />
             <Warning />
+            {isMaintenancePending && <MaintenanceWarningMessage />}
             <Transition
               appear={true}
               unmount={false}
