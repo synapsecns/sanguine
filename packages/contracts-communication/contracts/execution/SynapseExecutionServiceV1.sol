@@ -13,14 +13,18 @@ contract SynapseExecutionServiceV1 is
     SynapseExecutionServiceEvents,
     ISynapseExecutionServiceV1
 {
+    /// @custom:storage-location erc7201:Synapse.ExecutionService.V1
+    struct SynapseExecutionServiceV1Storage {
+        address executorEOA;
+        address gasOracle;
+    }
+
+    // keccak256(abi.encode(uint256(keccak256("Synapse.ExecutionService.V1")) - 1)) & ~bytes32(uint256(0xff));
+    bytes32 private constant SYNAPSE_EXECUTION_SERVICE_V1_STORAGE_LOCATION =
+        0xabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e3100;
+
     bytes32 public constant GOVERNOR_ROLE = keccak256("GOVERNOR_ROLE");
     bytes32 public constant IC_CLIENT_ROLE = keccak256("IC_CLIENT_ROLE");
-
-    // TODO: Use ERC-7201 to manage storage
-    /// @inheritdoc IExecutionService
-    address public executorEOA;
-    /// @inheritdoc ISynapseExecutionServiceV1
-    address public gasOracle;
 
     constructor() {
         // Ensure that the implementation contract could not be initialized
@@ -36,7 +40,8 @@ contract SynapseExecutionServiceV1 is
         if (executorEOA_ == address(0)) {
             revert SynapseExecutionService__ZeroAddress();
         }
-        executorEOA = executorEOA_;
+        SynapseExecutionServiceV1Storage storage $ = _getSynapseExecutionServiceV1Storage();
+        $.executorEOA = executorEOA_;
         emit ExecutorEOASet(executorEOA_);
     }
 
@@ -45,7 +50,8 @@ contract SynapseExecutionServiceV1 is
         if (gasOracle_ == address(0)) {
             revert SynapseExecutionService__ZeroAddress();
         }
-        gasOracle = gasOracle_;
+        SynapseExecutionServiceV1Storage storage $ = _getSynapseExecutionServiceV1Storage();
+        $.gasOracle = gasOracle_;
         emit GasOracleSet(gasOracle_);
     }
 
@@ -77,7 +83,7 @@ contract SynapseExecutionServiceV1 is
         view
         returns (uint256 executionFee)
     {
-        address cachedGasOracle = gasOracle;
+        address cachedGasOracle = gasOracle();
         if (cachedGasOracle == address(0)) {
             revert SynapseExecutionService__GasOracleNotSet();
         }
@@ -98,6 +104,25 @@ contract SynapseExecutionServiceV1 is
                 remoteChainId: dstChainId,
                 value: optionsV1.gasAirdrop
             });
+        }
+    }
+
+    /// @inheritdoc IExecutionService
+    function executorEOA() public view returns (address) {
+        SynapseExecutionServiceV1Storage storage $ = _getSynapseExecutionServiceV1Storage();
+        return $.executorEOA;
+    }
+
+    /// @inheritdoc ISynapseExecutionServiceV1
+    function gasOracle() public view returns (address) {
+        SynapseExecutionServiceV1Storage storage $ = _getSynapseExecutionServiceV1Storage();
+        return $.gasOracle;
+    }
+
+    /// @dev ERC-7201 slot accessor
+    function _getSynapseExecutionServiceV1Storage() private pure returns (SynapseExecutionServiceV1Storage storage $) {
+        assembly {
+            $.slot := SYNAPSE_EXECUTION_SERVICE_V1_STORAGE_LOCATION
         }
     }
 }
