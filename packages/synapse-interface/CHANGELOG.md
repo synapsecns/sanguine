@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.11.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.10.7...@synapsecns/synapse-interface@0.11.0) (2024-03-21)
+
+
+### Features
+
+* **synapse-interface:** improve maintenance event template, remove Metis pause ([#2328](https://github.com/synapsecns/sanguine/issues/2328)) ([b9b84a2](https://github.com/synapsecns/sanguine/commit/b9b84a229045a6c34f8dbc124fc10367480f6fb3))
+
+
+
+
+
+## [0.10.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.10.6...@synapsecns/synapse-interface@0.10.7) (2024-03-20)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
 ## [0.10.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.10.5...@synapsecns/synapse-interface@0.10.6) (2024-03-20)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
