@@ -3,12 +3,23 @@
 language: 'en'
 early_access: true
 reviews:
+  # trying this out for now. Can be removed if it becomes a nuisance
+  request_changes_workflow: true
+
   auto_review:
     enabled: true
     ignore_title_keywords:
       - 'WIP'
       - 'DO NOT MERGE'
     drafts: true
+
+    base_branches:
+      # useful for large features, e.g. https://github.com/synapsecns/sanguine/pull/2234
+      - 'feat/.*'
+      # the og
+      - 'master'
+      # fe-release branch. We're more looking for summaries here
+      - 'fe-release'
 
   path_filters:
     - '!**abigen.go'
