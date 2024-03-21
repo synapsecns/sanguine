@@ -5,7 +5,8 @@ import { useMaintenanceCountdownProgress } from './components/useMaintenanceCoun
 
 interface ChainPause {
   id: string
-  pausedChains: number[]
+  pausedFromChains: number[]
+  pausedToChains: number[]
   startTime: Date
   endTime: Date
   bannerStartTime: Date
@@ -18,11 +19,12 @@ interface ChainPause {
 const PAUSED_CHAINS: ChainPause[] = [
   {
     id: 'optimism-chain-pause',
-    pausedChains: [OPTIMISM.id],
-    startTime: new Date(Date.UTC(2024, 2, 21, 17, 0, 0)),
-    endTime: new Date(Date.UTC(2024, 2, 21, 17, 40, 0)),
-    bannerStartTime: new Date(Date.UTC(2024, 2, 21, 17, 0, 0)),
-    bannerEndTime: new Date(Date.UTC(2024, 2, 21, 17, 41, 0)),
+    pausedFromChains: [OPTIMISM.id],
+    pausedToChains: [],
+    startTime: new Date(Date.UTC(2024, 2, 21, 18, 0, 0)),
+    endTime: new Date(Date.UTC(2024, 2, 21, 19, 40, 0)),
+    bannerStartTime: new Date(Date.UTC(2024, 2, 21, 18, 0, 0)),
+    bannerEndTime: new Date(Date.UTC(2024, 2, 21, 19, 40, 0)),
     warningMessage: (
       <p> Optimism bridging is paused until maintenance is complete. </p>
     ),
@@ -32,8 +34,9 @@ const PAUSED_CHAINS: ChainPause[] = [
     progressBarMessage: <p> Optimism maintenance in progress </p>,
   },
   {
-    id: 'optimism-chain-pause-2',
-    pausedChains: [BASE.id],
+    id: 'base-chain-pause',
+    pausedFromChains: [BASE.id],
+    pausedToChains: [BASE.id],
     startTime: new Date(Date.UTC(2024, 2, 21, 17, 41, 0)),
     endTime: new Date(Date.UTC(2024, 2, 21, 17, 42, 0)),
     bannerStartTime: new Date(Date.UTC(2024, 2, 21, 17, 40, 0)),
@@ -73,7 +76,8 @@ export const MaintenanceWarningMessages = () => {
           <MaintenanceWarningMessage
             startDate={event.startTime}
             endDate={event.endTime}
-            pausedChains={event.pausedChains}
+            pausedFromChains={event.pausedFromChains}
+            pausedToChains={event.pausedToChains}
             warningMessage={event.warningMessage}
           />
         )
@@ -91,7 +95,8 @@ export const useMaintenanceCountdownProgresses = () => {
     return useMaintenanceCountdownProgress({
       startDate: event.startTime,
       endDate: event.endTime,
-      pausedChains: event.pausedChains,
+      pausedFromChains: event.pausedFromChains,
+      pausedToChains: event.pausedToChains,
       progressBarMessage: event.progressBarMessage,
     })
   })

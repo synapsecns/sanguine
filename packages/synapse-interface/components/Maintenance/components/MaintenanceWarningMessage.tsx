@@ -18,17 +18,21 @@ import { isChainIncluded } from '@/utils/isChainIncluded'
 export const MaintenanceWarningMessage = ({
   startDate,
   endDate,
-  pausedChains,
+  pausedFromChains,
+  pausedToChains,
   warningMessage,
 }: {
   startDate: Date
   endDate: Date
-  pausedChains: number[]
+  pausedFromChains: number[]
+  pausedToChains: number[]
   warningMessage: any
 }) => {
   const { fromChainId, toChainId } = useBridgeState()
 
-  const isWarningChain = isChainIncluded([fromChainId, toChainId], pausedChains)
+  const isWarningChain =
+    isChainIncluded([fromChainId], pausedFromChains) ||
+    isChainIncluded([toChainId], pausedToChains)
 
   const { isComplete } = getCountdownTimeStatus(startDate, endDate)
 

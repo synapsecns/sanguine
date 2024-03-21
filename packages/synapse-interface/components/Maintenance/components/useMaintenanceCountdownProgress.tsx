@@ -18,17 +18,21 @@ import { isChainIncluded } from '@/utils/isChainIncluded'
 export const useMaintenanceCountdownProgress = ({
   startDate,
   endDate,
-  pausedChains,
+  pausedFromChains,
+  pausedToChains,
   progressBarMessage,
 }: {
   startDate: Date
   endDate: Date
-  pausedChains: number[]
+  pausedFromChains: number[]
+  pausedToChains: number[]
   progressBarMessage: any
 }) => {
   const { fromChainId, toChainId } = useBridgeState()
 
-  const isCurrentChain = isChainIncluded([fromChainId, toChainId], pausedChains)
+  const isCurrentChain =
+    isChainIncluded([fromChainId], pausedFromChains) ||
+    isChainIncluded([toChainId], pausedToChains)
 
   const {
     isPending: isMaintenancePending,
