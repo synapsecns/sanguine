@@ -27,8 +27,6 @@
   "devDependencies": {
     "@typechain/ethers-v5": "10.0.0",
     "hardhat": "2.9.7",
-    "prettier": "2.7.1",
-    "prettier-plugin-solidity": "1.0.0-dev.23",
     "rimraf": "3.0.2",
     "solhint": "3.3.8",
     "solhint-plugin-prettier": "0.0.5",
@@ -44,8 +42,6 @@
     "@openzeppelin/contracts": "4.9.3",
     "@openzeppelin/contracts-upgradeable": "4.9.3",
     "dotenv": "16.0.1",
-    "eslint-config-prettier": "8.5.0",
-    "eslint-plugin-prettier": "3.4.1",
     "solidity-coverage": "0.7.21",
     "ts-node": "10.8.1"
   }
