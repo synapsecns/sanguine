@@ -156,9 +156,9 @@ const PAUSED_CHAINS: ChainPause[] = [
     id: 'optimism-chain-pause',
     pausedChains: [OPTIMISM.id],
     startTime: new Date(Date.UTC(2024, 2, 21, 17, 0, 0)),
-    endTime: new Date(Date.UTC(2024, 2, 21, 18, 0, 0)),
+    endTime: new Date(Date.UTC(2024, 2, 21, 17, 40, 0)),
     bannerStartTime: new Date(Date.UTC(2024, 2, 21, 17, 0, 0)),
-    bannerEndTime: new Date(Date.UTC(2024, 2, 21, 18, 0, 0)),
+    bannerEndTime: new Date(Date.UTC(2024, 2, 21, 17, 41, 0)),
     warningMessage: (
       <p> Optimism bridging is paused until maintenance is complete. </p>
     ),
@@ -168,12 +168,12 @@ const PAUSED_CHAINS: ChainPause[] = [
     progressBarMessage: <p> Optimism maintenance in progress </p>,
   },
   {
-    id: 'base-chain-pause',
+    id: 'optimism-chain-pause-2',
     pausedChains: [BASE.id],
-    startTime: new Date(Date.UTC(2024, 2, 21, 17, 0, 0)),
-    endTime: new Date(Date.UTC(2024, 2, 21, 17, 30, 0)),
-    bannerStartTime: new Date(Date.UTC(2024, 2, 21, 17, 0, 0)),
-    bannerEndTime: new Date(Date.UTC(2024, 2, 21, 18, 0, 0)),
+    startTime: new Date(Date.UTC(2024, 2, 21, 17, 41, 0)),
+    endTime: new Date(Date.UTC(2024, 2, 21, 17, 42, 0)),
+    bannerStartTime: new Date(Date.UTC(2024, 2, 21, 17, 40, 0)),
+    bannerEndTime: new Date(Date.UTC(2024, 2, 21, 17, 43, 0)),
     warningMessage: (
       <p> Base bridging is paused until maintenance is complete. </p>
     ),
