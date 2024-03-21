@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux'
 import { useAccount, useNetwork } from 'wagmi'
 
 import MiniMaxButton from '../buttons/MiniMaxButton'
-import { AmountInput } from '../ui/BridgeCardComponents'
+import { AmountInput, TokenSelector } from '../ui/BridgeCardComponents'
 import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import {
@@ -12,16 +12,22 @@ import {
   ConnectedIndicator,
 } from '@/components/ConnectionIndicators'
 import { ChainSelector } from '../ui/BridgeCardComponents'
-import { SwapChainListOverlay } from './SwapChainListOverlay'
-import { SwapFromTokenSelector } from './SwapFromTokenSelector'
+import { SwapChainListArray } from './SwapChainListOverlay'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
-import { initialState, updateSwapFromValue } from '@/slices/swap/reducer'
+import {
+  initialState,
+  setSwapChainId,
+  setSwapFromToken,
+  updateSwapFromValue,
+} from '@/slices/swap/reducer'
 import { useSwapState } from '@/slices/swap/hooks'
 import {
   BridgeAmountContainer,
   BridgeSectionContainer,
 } from '../ui/BridgeCardComponents'
 import { CHAINS_BY_ID } from '@/constants/chains'
+import { FromChainListArray } from '../StateManagedBridge/FromChainListOverlay'
+import { SwapFromTokenListArray } from './SwapFromTokenListOverlay'
 
 export const SwapInputContainer = () => {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -134,9 +140,22 @@ export const SwapInputContainer = () => {
 
 const SwapChainSelector = () => (
   <ChainSelector
-    dataTestId="bridge-origin-chain-list-button"
+    dataTestId="swap-origin-chain"
+    isOrigin={true}
     selectedItem={CHAINS_BY_ID[useSwapState().swapChainId]}
     label="From"
-    overlay={<SwapChainListOverlay />}
+    itemListFunction={SwapChainListArray}
+    setFunction={setSwapChainId}
+  />
+)
+
+const SwapFromTokenSelector = () => (
+  <TokenSelector
+    dataTestId="swap-origin-token"
+    selectedItem={useSwapState().swapFromToken}
+    isOrigin={true}
+    placeholder="In"
+    itemListFunction={SwapFromTokenListArray}
+    setFunction={setSwapFromToken}
   />
 )

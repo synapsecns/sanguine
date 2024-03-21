@@ -17,6 +17,7 @@ import { setShowSwapChainListOverlay } from '@/slices/swapDisplaySlice'
 import { setSwapChainId } from '@/slices/swap/reducer'
 import { useSwapState } from '@/slices/swap/hooks'
 
+/*
 export const SwapChainListOverlay = () => {
   const { swapChainId, swapFromChainIds } = useSwapState()
   const [currentIdx, setCurrentIdx] = useState(-1)
@@ -215,4 +216,65 @@ export const SwapChainListOverlay = () => {
       </div>
     </div>
   )
+}
+*/
+
+export const SwapChainListArray = () => {
+  const { swapChainId, swapFromChainIds } = useSwapState()
+  const [searchStr, setSearchStr] = useState('')
+  const dispatch = useDispatch()
+
+  let possibleChains = sortChains(
+    _(ALL_CHAINS)
+      .pickBy((value) => _.includes(swapFromChainIds, value.id))
+      .values()
+      .value()
+  )
+
+  let remainingChains = swapFromChainIds
+    ? sortChains(
+        _.difference(
+          Object.keys(CHAINS_BY_ID).map((id) => CHAINS_BY_ID[id]),
+          swapFromChainIds.map((id) => CHAINS_BY_ID[id])
+        )
+      )
+    : []
+
+  const possibleChainsWithSource = possibleChains.map((chain) => ({
+    ...chain,
+    source: 'possibleChains',
+  }))
+
+  const remainingChainsWithSource = remainingChains.map((chain) => ({
+    ...chain,
+    source: 'remainingChains',
+  }))
+
+  const masterList = [...possibleChainsWithSource, ...remainingChainsWithSource]
+
+  const fuseOptions = {
+    includeScore: true,
+    threshold: 0.0,
+    keys: [
+      {
+        name: 'name',
+        weight: 2,
+      },
+      'id',
+      'nativeCurrency.symbol',
+    ],
+  }
+
+  const fuse = new Fuse(masterList, fuseOptions)
+
+  if (searchStr?.length > 0) {
+    const results = fuse.search(searchStr).map((i) => i.item)
+
+    possibleChains = results.filter((item) => item.source === 'possibleChains')
+    remainingChains = results.filter(
+      (item) => item.source === 'remainingChains'
+    )
+  }
+
+  return { 'From…': possibleChains, 'All chains': remainingChains }
 }
