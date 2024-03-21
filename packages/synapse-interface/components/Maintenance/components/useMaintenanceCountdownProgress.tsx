@@ -1,6 +1,6 @@
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { useEventCountdownProgressBar } from './EventCountdownProgressBar'
-import { isChainIncluded } from '../Maintenance'
+import { isChainIncluded } from '@/utils/isChainIncluded'
 
 /**
  * A custom hook that provides logic for showing a countdown progress bar and determining if the bridge

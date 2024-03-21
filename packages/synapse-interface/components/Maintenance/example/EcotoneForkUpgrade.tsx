@@ -4,9 +4,9 @@ import { OPTIMISM, BASE } from '@/constants/chains/master'
 import {
   useEventCountdownProgressBar,
   getCountdownTimeStatus,
-} from '../../components/EventCountdownProgressBar'
-import { AnnouncementBanner } from '../../components/AnnouncementBanner'
-import { WarningMessage } from '../../../Warning'
+} from '../components/EventCountdownProgressBar'
+import { AnnouncementBanner } from '../components/AnnouncementBanner'
+import { WarningMessage } from '../../Warning'
 
 /**
  * Leaving this file to serve as an example for how to create
