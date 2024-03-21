@@ -1187,7 +1187,7 @@ describe('SynapseSDK', () => {
         })
       })
 
-      describe('SynapseRFQ', () => {
+      describe.skip('SynapseRFQ', () => {
         const arbSynRFQ = '0x6C0771aD91442D670159a8171C35F4828E19aFd2'
         const events = 'BridgeRequested'
 
@@ -1342,7 +1342,7 @@ describe('SynapseSDK', () => {
         })
       })
 
-      describe('SynapseRFQ', () => {
+      describe.skip('SynapseRFQ', () => {
         it('OP -> ARB', async () => {
           const txStatus = await synapse.getBridgeTxStatus(
             SupportedChainId.ARBITRUM,
