@@ -90,7 +90,7 @@ import {
   MaintenanceWarningMessages,
   useMaintenanceCountdownProgress,
   useMaintenanceCountdownProgresses,
-} from '@/components/Maintenance/Events/template/MaintenanceEvent'
+} from '@/components/Maintenance/MaintenanceEvent'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()

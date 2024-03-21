@@ -1,12 +1,11 @@
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 import { OPTIMISM, BASE } from '@/constants/chains/master'
 import {
   useEventCountdownProgressBar,
   getCountdownTimeStatus,
-} from '../../EventCountdownProgressBar'
-import { AnnouncementBanner } from '../../AnnouncementBanner'
-import { WarningMessage } from '../../../Warning'
+} from './EventCountdownProgressBar'
+import { WarningMessage } from '../Warning'
+import { MaintenanceBanner } from './MaintenanceBanner'
 
 /**
  * Edit this file for Website Maintenance, components already placed on Bridge page
@@ -21,36 +20,6 @@ const MAINTENANCE_BANNERS_START = new Date(Date.UTC(2024, 2, 20, 20, 20, 0))
 const MAINTENANCE_START_DATE = new Date(Date.UTC(2024, 2, 20, 20, 20, 0))
 /** Ends Banner, Countdown Progress Bar, Bridge Warning Message, Bridge Pause */
 const MAINTENANCE_END_DATE = new Date(Date.UTC(2024, 2, 20, 22, 0, 0))
-
-export const MaintenanceBanner = ({
-  id,
-  startDate,
-  endDate,
-  bannerMessage,
-}: {
-  id: string
-  startDate: Date
-  endDate: Date
-  bannerMessage: any
-}) => {
-  const { isComplete } = getCountdownTimeStatus(
-    // MAINTENANCE_BANNERS_START, // Banner will automatically appear after start time
-    // MAINTENANCE_END_DATE // Banner will automatically disappear when end time is reached
-    startDate,
-    endDate
-  )
-
-  useIntervalTimer(60000, isComplete)
-
-  return (
-    <AnnouncementBanner
-      bannerId={id}
-      bannerContents={bannerMessage}
-      startDate={startDate}
-      endDate={endDate}
-    />
-  )
-}
 
 export const MaintenanceWarningMessage = ({
   startDate,
