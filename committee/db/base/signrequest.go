@@ -18,8 +18,9 @@ type VerificationRequest struct {
 	TXHash string `gorm:"column:tx_hash;index;size:256"`
 	// TransactionID is the id of the transaction
 	TransactionID string `gorm:"column:transaction_id;index;size:256;primaryKey"`
-	// DataHash is the hash of the data
-	Entry string `gorm:"column:entry"`
+	// Entry is the entry to be signed
+	// TODO: consider renaming to batch
+	Entry string `gorm:"column:entry;"`
 	// CreatedAt is the time the transaction was created
 	CreatedAt time.Time
 	// Status is the status of the transaction
@@ -42,13 +43,13 @@ func (s *VerificationRequest) ToServiceSignRequest() db.SignRequest {
 	}
 }
 
-func toSignRequest(originChainID int, sr synapsemodule.SynapseModuleVerificationRequested) VerificationRequest {
+func toSignRequest(originChainID int, sr synapsemodule.SynapseModuleBatchVerificationRequested) VerificationRequest {
 	return VerificationRequest{
 		OriginChainID:      originChainID,
 		TXHash:             sr.Raw.TxHash.String(),
-		TransactionID:      common.Bytes2Hex(sr.EthSignedEntryHash[:]),
-		Entry:              common.Bytes2Hex(sr.Entry),
-		DestinationChainID: int(sr.DestChainId.Int64()),
+		TransactionID:      common.Bytes2Hex(sr.EthSignedBatchHash[:]),
+		Entry:              common.Bytes2Hex(sr.Batch),
+		DestinationChainID: int(sr.DstChainId.Int64()),
 		Status:             db.Seen,
 	}
 }
@@ -63,7 +64,7 @@ func (s Store) UpdateSignRequestStatus(ctx context.Context, txid common.Hash, st
 }
 
 // StoreInterchainTransactionReceived stores an interchain transaction received.
-func (s Store) StoreInterchainTransactionReceived(ctx context.Context, originChainID int, sr synapsemodule.SynapseModuleVerificationRequested) error {
+func (s Store) StoreInterchainTransactionReceived(ctx context.Context, originChainID int, sr synapsemodule.SynapseModuleBatchVerificationRequested) error {
 	signRequest := toSignRequest(originChainID, sr)
 
 	tx := s.DB().WithContext(ctx).

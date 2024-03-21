@@ -12,10 +12,10 @@ import (
 type EventType uint
 
 const (
-	// VerificationRequestedEvent is an EventType that represents a verification request event.
-	VerificationRequestedEvent EventType = iota + 1
-	// EntryVerificationEvent is an EventType that represents an entry verification event.
-	EntryVerificationEvent
+	// BatchVerificationRequestedEvent is an EventType that represents a verification request event.
+	BatchVerificationRequestedEvent EventType = iota + 1
+	// BatchVerificationEvent is an EventType that represents an entry verification event.
+	BatchVerificationEvent
 )
 
 // Parser parses events from the module contract.
@@ -55,14 +55,14 @@ func (p parserImpl) ParseEvent(log ethTypes.Log) (_ EventType, event interface{}
 	eventType := *nillableEventType
 
 	switch eventType {
-	case VerificationRequestedEvent:
-		event, err := p.filterer.ParseVerificationRequested(log)
+	case BatchVerificationRequestedEvent:
+		event, err := p.filterer.ParseBatchVerificationRequested(log)
 		if err != nil {
 			return noOpEvent, nil, false
 		}
 		return eventType, event, true
-	case EntryVerificationEvent:
-		event, err := p.filterer.ParseEntryVerified(log)
+	case BatchVerificationEvent:
+		event, err := p.filterer.ParseBatchVerified(log)
 		if err != nil {
 			return noOpEvent, nil, false
 		}
