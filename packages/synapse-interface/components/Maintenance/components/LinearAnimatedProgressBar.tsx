@@ -2,9 +2,12 @@ import { memo } from 'react'
 import { getCountdownTimeStatus } from './EventCountdownProgressBar'
 
 /**
- * @param id unique identifier for progress bar instance
- * @param startTime start time in unix seconds
- * @param endTime end time in unix seconds
+ * Renders a linear, animated progress bar which visually represents the elapsed
+ * and remaining time within a given start and end date range.
+ *
+ * @param {string} id - A unique identifier for the progress bar instance.
+ * @param {Date} startDate - The start date and time from when the countdown begins.
+ * @param {Date} endDate - The end date and time at which the countdown ends.
  */
 export const LinearAnimatedProgressBar = memo(
   ({

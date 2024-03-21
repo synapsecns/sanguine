@@ -1,7 +1,7 @@
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { getCountdownTimeStatus } from './EventCountdownProgressBar'
-import { WarningMessage } from '../Warning'
-import { isChainIncluded } from './MaintenanceEvent'
+import { WarningMessage } from '../../Warning'
+import { isChainIncluded } from '../Maintenance'
 
 /**
  * This component displays a warning message during a specified maintenance window for selected blockchain chains.

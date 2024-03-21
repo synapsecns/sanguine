@@ -4,13 +4,13 @@ import { OPTIMISM, BASE } from '@/constants/chains/master'
 import {
   useEventCountdownProgressBar,
   getCountdownTimeStatus,
-} from '../../EventCountdownProgressBar'
-import { AnnouncementBanner } from '../../AnnouncementBanner'
+} from '../../components/EventCountdownProgressBar'
+import { AnnouncementBanner } from '../../components/AnnouncementBanner'
 import { WarningMessage } from '../../../Warning'
 
 /**
  * Leaving this file to serve as an example for how to create
- * automated annoucement banners and event countdown timer bars
+ * Singular automated annoucement banners and event countdown timer bars
  * with the ability to pause Bridge by selected chain ids
  */
 

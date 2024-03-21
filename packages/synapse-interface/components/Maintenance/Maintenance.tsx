@@ -1,21 +1,7 @@
 import { OPTIMISM, BASE } from '@/constants/chains/master'
-import { MaintenanceBanner } from './MaintenanceBanner'
-import { MaintenanceWarningMessage } from './MaintenanceWarningMessage'
-import { useMaintenanceCountdownProgress } from './useMaintenanceCountdownProgress'
-
-/**
- * Edit this file for Website Maintenance, components already placed on Bridge page
- *
- * If require multiple maintenance events, create another file using this file as a template
- * and add another instance of components on relevant pages
- */
-
-/** Banner start time */
-const MAINTENANCE_BANNERS_START = new Date(Date.UTC(2024, 2, 20, 20, 20, 0))
-/** Countdown Progress Bar, Bridge Warning Message + Bridge Pause start time */
-const MAINTENANCE_START_DATE = new Date(Date.UTC(2024, 2, 20, 20, 20, 0))
-/** Ends Banner, Countdown Progress Bar, Bridge Warning Message, Bridge Pause */
-const MAINTENANCE_END_DATE = new Date(Date.UTC(2024, 2, 20, 22, 0, 0))
+import { MaintenanceBanner } from './components/MaintenanceBanner'
+import { MaintenanceWarningMessage } from './components/MaintenanceWarningMessage'
+import { useMaintenanceCountdownProgress } from './components/useMaintenanceCountdownProgress'
 
 /**
  * Checks if any of the chain IDs in `hasChains` are found within the `chainList` array.

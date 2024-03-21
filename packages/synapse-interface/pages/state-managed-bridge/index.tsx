@@ -88,9 +88,9 @@ import { SwitchButton } from '@/components/buttons/SwitchButton'
 import {
   MaintenanceWarningMessages,
   useMaintenanceCountdownProgresses,
-} from '@/components/Maintenance/MaintenanceEvent'
-import { useMaintenanceCountdownProgress } from '@/components/Maintenance/useMaintenanceCountdownProgress'
-import { MaintenanceWarningMessage } from '@/components/Maintenance/MaintenanceWarningMessage'
+} from '@/components/Maintenance/Maintenance'
+import { useMaintenanceCountdownProgress } from '@/components/Maintenance/components/useMaintenanceCountdownProgress'
+import { MaintenanceWarningMessage } from '@/components/Maintenance/components/MaintenanceWarningMessage'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
