@@ -22,17 +22,52 @@ const MAINTENANCE_START_DATE = new Date(Date.UTC(2024, 2, 20, 20, 20, 0))
 /** Ends Banner, Countdown Progress Bar, Bridge Warning Message, Bridge Pause */
 const MAINTENANCE_END_DATE = new Date(Date.UTC(2024, 2, 20, 22, 0, 0))
 
-export const MaintenanceBanner = () => {
+const PAUSED_CHAINS = [
+  {
+    id: 'optimism-chain-pause',
+    pausedChains: [OPTIMISM.id],
+    startTime: new Date(Date.UTC(2024, 2, 20, 20, 20, 0)),
+    endTime: new Date(Date.UTC(2024, 2, 20, 22, 0, 0)),
+    bannerStartTime: new Date(Date.UTC(2024, 2, 20, 20, 20, 0)),
+    bannerEndTime: new Date(Date.UTC(2024, 2, 20, 22, 0, 0)),
+  },
+]
+
+export const MaintenanceBanners = () => {
+  return (
+    <>
+      {PAUSED_CHAINS.map((event) => {
+        ;<MaintenanceBanner
+          id={event.id}
+          startDate={event.startTime}
+          endDate={event.endTime}
+        />
+      })}
+    </>
+  )
+}
+
+export const MaintenanceBanner = ({
+  id,
+  startDate,
+  endDate,
+}: {
+  id: string
+  startDate: Date
+  endDate: Date
+}) => {
   const { isComplete } = getCountdownTimeStatus(
-    MAINTENANCE_BANNERS_START, // Banner will automatically appear after start time
-    MAINTENANCE_END_DATE // Banner will automatically disappear when end time is reached
+    // MAINTENANCE_BANNERS_START, // Banner will automatically appear after start time
+    // MAINTENANCE_END_DATE // Banner will automatically disappear when end time is reached
+    startDate,
+    endDate
   )
 
   useIntervalTimer(60000, isComplete)
 
   return (
     <AnnouncementBanner
-      bannerId="03202024-maintenance-banner"
+      bannerId={id}
       bannerContents={
         <>
           <p className="m-auto">
@@ -46,17 +81,42 @@ export const MaintenanceBanner = () => {
   )
 }
 
-export const MaintenanceWarningMessage = () => {
+const MaintenanceWarningMessages = () => {
+  return (
+    <>
+      {PAUSED_CHAINS.map((event) => {
+        ;<MaintenanceWarningMessage
+          startDate={event.startTime}
+          endDate={event.endTime}
+          pausedChains={event.pausedChains}
+        />
+      })}
+    </>
+  )
+}
+
+export const MaintenanceWarningMessage = ({
+  startDate,
+  endDate,
+  pausedChains,
+}: {
+  startDate: Date
+  endDate: Date
+  pausedChains: number[]
+}) => {
   const { fromChainId, toChainId } = useBridgeState()
 
   const isWarningChain = isChainIncluded(
     [fromChainId, toChainId],
-    [OPTIMISM.id, BASE.id] // Update for Chains to show warning on
+    // [OPTIMISM.id, BASE.id] // Update for Chains to show warning on
+    pausedChains
   )
 
   const { isComplete } = getCountdownTimeStatus(
-    MAINTENANCE_BANNERS_START, // Banner will automatically appear after start time
-    MAINTENANCE_END_DATE // Banner will automatically disappear when end time is reached
+    // MAINTENANCE_BANNERS_START, // Banner will automatically appear after start time
+    // MAINTENANCE_END_DATE // Banner will automatically disappear when end time is reached
+    startDate,
+    endDate
   )
 
   if (isComplete) return null
@@ -76,12 +136,21 @@ export const MaintenanceWarningMessage = () => {
   return null
 }
 
-export const useMaintenanceCountdownProgress = () => {
+export const useMaintenanceCountdownProgress = ({
+  startDate,
+  endDate,
+  pausedChains,
+}: {
+  startDate: Date
+  endDate: Date
+  pausedChains: number[]
+}) => {
   const { fromChainId, toChainId } = useBridgeState()
 
   const isCurrentChain = isChainIncluded(
     [fromChainId, toChainId],
-    [OPTIMISM.id, BASE.id] // Update for Chains to show maintenance on
+    // [OPTIMISM.id, BASE.id] // Update for Chains to show maintenance on
+    pausedChains
   )
 
   const {
@@ -89,8 +158,10 @@ export const useMaintenanceCountdownProgress = () => {
     EventCountdownProgressBar: MaintenanceCountdownProgressBar,
   } = useEventCountdownProgressBar(
     'Maintenance in progress',
-    MAINTENANCE_START_DATE, // Countdown Bar will automatically appear after start time
-    MAINTENANCE_END_DATE // Countdown Bar will automatically disappear when end time is reached
+    // MAINTENANCE_START_DATE, // Countdown Bar will automatically appear after start time
+    // MAINTENANCE_END_DATE // Countdown Bar will automatically disappear when end time is reached
+    startDate,
+    endDate
   )
 
   return {

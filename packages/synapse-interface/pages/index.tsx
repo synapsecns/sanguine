@@ -3,7 +3,10 @@ import { Portfolio } from '@/components/Portfolio/Portfolio'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import ReactGA from 'react-ga'
 import useSyncQueryParamsWithBridgeState from '@/utils/hooks/useSyncQueryParamsWithBridgeState'
-import { MaintenanceBanner } from '@/components/Maintenance/Events/template/MaintenanceEvent'
+import {
+  MaintenanceBanner,
+  MaintenanceBanners,
+} from '@/components/Maintenance/Events/template/MaintenanceEvent'
 
 // TODO: someone should add this to the .env, disable if blank, etc.
 // this is being added as a hotfix to assess user load on the synapse explorer api
@@ -16,7 +19,7 @@ const Home = () => {
 
   return (
     <>
-      <MaintenanceBanner />
+      <MaintenanceBanners />
       <LandingPageWrapper>
         <main
           data-test-id="bridge-page"

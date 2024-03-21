@@ -87,6 +87,7 @@ import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { SwitchButton } from '@/components/buttons/SwitchButton'
 import {
   MaintenanceWarningMessage,
+  MaintenanceWarningMessages,
   useMaintenanceCountdownProgress,
 } from '@/components/Maintenance/Events/template/MaintenanceEvent'
 
@@ -602,7 +603,7 @@ const StateManagedBridge = () => {
             />
             <OutputContainer />
             <Warning />
-            {isMaintenancePending && <MaintenanceWarningMessage />}
+            {isMaintenancePending && <MaintenanceWarningMessages />}
             <Transition
               appear={true}
               unmount={false}
