@@ -1,20 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {ExecutionService} from "../../contracts/ExecutionService.sol";
+import {SynapseExecutionServiceV1} from "../../contracts/execution/SynapseExecutionServiceV1.sol";
 
 import {SynapseScript, stdJson} from "@synapsecns/solidity-devops/src/SynapseScript.sol";
 
-contract ConfigureExecutionFees is SynapseScript {
+contract ConfigureSynapseExecutionServiceV1 is SynapseScript {
     using stdJson for string;
 
     string public constant NAME = "ExecutionService";
 
-    ExecutionService public service;
+    SynapseExecutionServiceV1 public service;
     string public config;
 
     function run(string memory environment) external broadcastWithHooks {
         loadConfig(environment);
+        setGovernor();
         setExecutorEOA();
         setGasOracle();
         setInterchainClient();
@@ -22,7 +23,18 @@ contract ConfigureExecutionFees is SynapseScript {
 
     function loadConfig(string memory environment) internal {
         config = readGlobalDeployConfig({contractName: NAME, globalProperty: environment, revertIfNotFound: true});
-        service = ExecutionService(getDeploymentAddress({contractName: NAME, revertIfNotFound: true}));
+        service = SynapseExecutionServiceV1(getDeploymentAddress({contractName: NAME, revertIfNotFound: true}));
+    }
+
+    function setGovernor() internal {
+        printLog("Setting Governor");
+        bytes32 governorRole = service.GOVERNOR_ROLE();
+        if (!service.hasRole(governorRole, msg.sender)) {
+            service.grantRole(governorRole, msg.sender);
+            printSuccessWithIndent(string.concat("Granted Governor role to ", vm.toString(msg.sender)));
+        } else {
+            printSkipWithIndent(string.concat("governor role already granted to ", vm.toString(msg.sender)));
+        }
     }
 
     function setExecutorEOA() internal {
@@ -49,14 +61,14 @@ contract ConfigureExecutionFees is SynapseScript {
     }
 
     function setInterchainClient() internal {
+        // TODO: should support multiple clients
         address interchainClientV1 = getDeploymentAddress({contractName: "InterchainClientV1", revertIfNotFound: true});
-        printLog(string.concat("Setting InterchainClient on ExecutionService "));
-
-        if (address(service.interchainClient()) != interchainClientV1) {
-            service.setInterchainClient(interchainClientV1);
-            printSuccessWithIndent(string.concat("Set InterchainClient to ", vm.toString(interchainClientV1)));
+        printLog("Setting InterchainClient on ExecutionService");
+        if (!service.hasRole(service.IC_CLIENT_ROLE(), interchainClientV1)) {
+            service.grantRole(service.IC_CLIENT_ROLE(), interchainClientV1);
+            printSuccessWithIndent(string.concat("Granted IC_CLIENT_ROLE to ", vm.toString(interchainClientV1)));
         } else {
-            printSkipWithIndent(string.concat("already set to ", vm.toString(interchainClientV1)));
+            printSkipWithIndent(string.concat("IC_CLIENT_ROLE already granted to ", vm.toString(interchainClientV1)));
         }
     }
 }
