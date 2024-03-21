@@ -134,15 +134,22 @@ func (i *inventoryManagerImpl) GetCommittableBalances(ctx context.Context, optio
 
 // TokenMetadata contains metadata for a token.
 type TokenMetadata struct {
-	Name               string
-	Balance            *big.Int
-	Decimals           uint8
-	StartAllowanceRFQ  *big.Int
-	StartAllowanceCCTP *big.Int
-	IsGasToken         bool
-	ChainID            int
-	Addr               common.Address
+	Name       string
+	Balance    *big.Int
+	Decimals   uint8
+	Allowances map[spendableContract]*big.Int
+	IsGasToken bool
+	ChainID    int
+	Addr       common.Address
 }
+
+type spendableContract int
+
+const (
+	contractRFQ = iota + 1
+	contractSynapseCCTP
+	contractTokenMessenger
+)
 
 var (
 	funcBalanceOf = w3.MustNewFunc("balanceOf(address)", "uint256")
@@ -167,8 +174,10 @@ func NewInventoryManager(ctx context.Context, clientFetcher submitter.ClientFetc
 	for method := range rebalanceMethods {
 		//nolint:exhaustive
 		switch method {
-		case relconfig.RebalanceMethodCCTP:
-			rebalanceManagers[method] = newRebalanceManagerCCTP(cfg, handler, clientFetcher, txSubmitter, relayer, db)
+		case relconfig.RebalanceMethodSynapseCCTP:
+			rebalanceManagers[method] = newRebalanceManagerSynapseCCTP(cfg, handler, clientFetcher, txSubmitter, relayer, db)
+		case relconfig.RebalanceMethodCircleCCTP:
+			rebalanceManagers[method] = newRebalanceManagerCircleCCTP(cfg, handler, clientFetcher, txSubmitter, relayer, db)
 		default:
 			return nil, fmt.Errorf("unsupported rebalance method: %s", method)
 		}
@@ -276,7 +285,7 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 			// approve RFQ contract.
 			// Note: in the case where submitter hasn't finished from last boot,
 			// this will double submit approvals unfortunately.
-			if address != chain.EthAddress && token.StartAllowanceRFQ.Cmp(big.NewInt(0)) == 0 {
+			if address != chain.EthAddress && token.Allowances[contractRFQ].Cmp(big.NewInt(0)) == 0 {
 				tokenAddr := address // capture func literal
 				contractAddr, err := i.cfg.GetRFQAddress(chainID)
 				if err != nil {
@@ -288,16 +297,29 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 				}
 			}
 
-			// approve CCTP contract
-			if address != chain.EthAddress && token.StartAllowanceCCTP.Cmp(big.NewInt(0)) == 0 {
+			// approve SynapseCCTP contract
+			if address != chain.EthAddress && token.Allowances[contractSynapseCCTP].Cmp(big.NewInt(0)) == 0 {
 				tokenAddr := address // capture func literal
-				contractAddr, err := i.cfg.GetCCTPAddress(chainID)
+				contractAddr, err := i.cfg.GetSynapseCCTPAddress(chainID)
 				if err != nil {
 					return fmt.Errorf("could not get CCTP address: %w", err)
 				}
 				err = i.approve(ctx, tokenAddr, common.HexToAddress(contractAddr), backendClient)
 				if err != nil {
-					return fmt.Errorf("could not approve CCTP contract: %w", err)
+					return fmt.Errorf("could not approve SynapseCCTP contract: %w", err)
+				}
+			}
+
+			// approve TokenMessenger contract
+			if address != chain.EthAddress && token.Allowances[contractTokenMessenger].Cmp(big.NewInt(0)) == 0 {
+				tokenAddr := address // capture func literal
+				contractAddr, err := i.cfg.GetTokenMessengerAddress(chainID)
+				if err != nil {
+					return fmt.Errorf("could not get CCTP address: %w", err)
+				}
+				err = i.approve(ctx, tokenAddr, common.HexToAddress(contractAddr), backendClient)
+				if err != nil {
+					return fmt.Errorf("could not approve TokenMessenger contract: %w", err)
 				}
 			}
 		}
@@ -550,6 +572,7 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 			rtoken := &TokenMetadata{
 				IsGasToken: tokenName == nativeToken,
 				ChainID:    chainID,
+				Allowances: make(map[spendableContract]*big.Int),
 			}
 
 			var token common.Address
@@ -563,8 +586,9 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 
 			// requires non-nil pointer
 			rtoken.Balance = new(big.Int)
-			rtoken.StartAllowanceRFQ = new(big.Int)
-			rtoken.StartAllowanceCCTP = new(big.Int)
+			for _, contract := range []spendableContract{contractRFQ, contractSynapseCCTP, contractTokenMessenger} {
+				rtoken.Allowances[contract] = new(big.Int)
+			}
 
 			if rtoken.IsGasToken {
 				rtoken.Decimals = 18
@@ -576,17 +600,24 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 				if err != nil {
 					return fmt.Errorf("could not get rfq address: %w", err)
 				}
-				cctpAddr, err := cfg.GetCCTPAddress(chainID)
-				if err != nil {
-					return fmt.Errorf("could not get cctp address: %w", err)
-				}
 				deferredCalls[chainID] = append(deferredCalls[chainID],
 					eth.CallFunc(funcBalanceOf, token, i.relayerAddress).Returns(rtoken.Balance),
 					eth.CallFunc(funcDecimals, token).Returns(&rtoken.Decimals),
 					eth.CallFunc(funcName, token).Returns(&rtoken.Name),
-					eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(rfqAddr)).Returns(rtoken.StartAllowanceRFQ),
-					eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(cctpAddr)).Returns(rtoken.StartAllowanceCCTP),
+					eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(rfqAddr)).Returns(rtoken.Allowances[contractRFQ]),
 				)
+				cctpAddr, _ := cfg.GetSynapseCCTPAddress(chainID)
+				if len(cctpAddr) > 0 {
+					deferredCalls[chainID] = append(deferredCalls[chainID],
+						eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(cctpAddr)).Returns(rtoken.Allowances[contractSynapseCCTP]),
+					)
+				}
+				messengerAddr, _ := cfg.GetTokenMessengerAddress(chainID)
+				if len(messengerAddr) > 0 {
+					deferredCalls[chainID] = append(deferredCalls[chainID],
+						eth.CallFunc(funcAllowance, token, i.relayerAddress, common.HexToAddress(messengerAddr)).Returns(rtoken.Allowances[contractTokenMessenger]),
+					)
+				}
 			}
 
 			chainID := chainID // capture func literal
