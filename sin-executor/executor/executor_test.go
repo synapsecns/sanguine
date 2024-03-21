@@ -35,7 +35,7 @@ func (i *InterchainSuite) TestE2E() {
 	_, appMock := i.deployManager.GetInterchainAppMock(i.GetTestContext(), i.originChain)
 
 	auth.TransactOpts.Value = interchainFee
-	tx, err := appMock.SendMessage(auth.TransactOpts, i.destChain.GetBigChainID(), big.NewInt(1_000_000), message)
+	tx, err := appMock.SendMessage(auth.TransactOpts, i.destChain.GetBigChainID(), big.NewInt(1_000_000), big.NewInt(0), message)
 	i.Require().NoError(err)
 	i.originChain.WaitForConfirmation(i.GetTestContext(), tx)
 

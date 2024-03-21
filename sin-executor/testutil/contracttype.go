@@ -98,13 +98,13 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	case InterchainModuleMock:
 		return interchainmodulemock.Contracts["solidity/InterchainModuleMock.sol:InterchainModuleMock"]
 	case InterchainApp:
-		return interchainapp.Contracts["solidity/InterchainAppExample.sol:InterchainAppExample"]
+		return interchainapp.Contracts["solidity/ExampleAppV1.sol:ExampleAppV1"]
 	case OptionsLib:
 		return optionslibexport.Contracts["solidity/OptionsLibExport.sol:OptionsLibMocks"]
 	case ExecutionService:
 		return executionservice.Contracts["solidity/ExecutionService.sol:ExecutionService"]
 	case ExecutionFeesMock:
-		return executionfeesmock.Contracts["solidity/ExecutionfeesMock.sol:ExecutionFeesMock"]
+		return executionfeesmock.Contracts["solidity/ExecutionFeesMock.sol:ExecutionFeesMock"]
 	case GasOracleMock:
 		return gasoraclemock.Contracts["solidity/SynapseGasOracleMock.sol:SynapseGasOracleMock"]
 	}
