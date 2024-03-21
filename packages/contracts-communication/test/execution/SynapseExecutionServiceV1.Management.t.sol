@@ -23,6 +23,13 @@ contract SynapseExecutionServiceV1ManagementTest is SynapseExecutionServiceV1Tes
         assertEq(service.executorEOA(), executorEOA);
     }
 
+    function test_setExecutorEOA_correctSlotERC7201() public {
+        bytes32 slot = getExpectedLocationERC7201({namespaceId: "Synapse.ExecutionService.V1", stolOffset: 0});
+        vm.prank(governor);
+        service.setExecutorEOA(executorEOA);
+        assertStorageAddress(address(service), slot, executorEOA);
+    }
+
     function test_setExecutorEOA_revert_notGovernor(address caller) public {
         vm.assume(caller != governor);
         expectRevertNotGovernor(caller);
@@ -41,6 +48,13 @@ contract SynapseExecutionServiceV1ManagementTest is SynapseExecutionServiceV1Tes
         vm.prank(governor);
         service.setGasOracle(gasOracle);
         assertEq(service.gasOracle(), gasOracle);
+    }
+
+    function test_setGasOracle_correctSlotERC7201() public {
+        bytes32 slot = getExpectedLocationERC7201({namespaceId: "Synapse.ExecutionService.V1", stolOffset: 1});
+        vm.prank(governor);
+        service.setGasOracle(gasOracle);
+        assertStorageAddress(address(service), slot, gasOracle);
     }
 
     function test_setGasOracle_revert_notGovernor(address caller) public {
