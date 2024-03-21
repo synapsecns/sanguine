@@ -3,6 +3,7 @@ pragma solidity 0.8.20;
 
 import {OwnableApp} from "./OwnableApp.sol";
 
+import {InterchainTxDescriptor} from "../libs/InterchainTransaction.sol";
 import {OptionsV1} from "../libs/Options.sol";
 
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
@@ -15,8 +16,8 @@ contract PingPongApp is OwnableApp {
 
     event GasLimitSet(uint256 gasLimit);
     event PingDisrupted(uint256 counter);
-    event PingReceived(uint256 counter);
-    event PingSent(uint256 counter);
+    event PingReceived(uint256 counter, uint256 dbNonce, uint64 entryIndex);
+    event PingSent(uint256 counter, uint256 dbNonce, uint64 entryIndex);
 
     error PingPongApp__LowBalance(uint256 required);
 
@@ -54,15 +55,15 @@ contract PingPongApp is OwnableApp {
     function _receiveMessage(
         uint256 srcChainId,
         bytes32, // sender
-        uint256, // dbNonce
-        uint64, // entryIndex
+        uint256 dbNonce,
+        uint64 entryIndex,
         bytes calldata message
     )
         internal
         override
     {
         uint256 counter = abi.decode(message, (uint256));
-        emit PingReceived(counter);
+        emit PingReceived(counter, dbNonce, entryIndex);
         if (counter > 0) {
             // Don't revert if the balance is low, just stop sending messages.
             _sendPingPongMessage({dstChainId: srcChainId, counter: counter - 1, lowBalanceRevert: false});
@@ -84,8 +85,8 @@ contract PingPongApp is OwnableApp {
                 return;
             }
         }
-        _sendInterchainMessage(dstChainId, messageFee, options, message);
-        emit PingSent(counter);
+        InterchainTxDescriptor memory desc = _sendInterchainMessage(dstChainId, messageFee, options, message);
+        emit PingSent(counter, desc.dbNonce, desc.entryIndex);
     }
 
     /// @dev Sets the gas limit for the interchain messages.
