@@ -34,7 +34,7 @@ jobs:
           wget https://coderabbit.ai/integrations/coderabbit-overrides.v2.json
 
       - name: Validate coderabbit
-        uses: ansible/ansible-lint-action@master
+        uses: ansible/ansible-lint-action@main
         with:
           files-to-validate: '[
             {
