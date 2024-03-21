@@ -108,6 +108,7 @@
     "@types/redux-persist": "^4.3.1",
     "cypress": "^13.0.0",
     "dayjs": "^1.11.7",
+    "esbuild": "0.15.18",
     "jest": "^29.6.1",
     "jest-environment-jsdom": "^29.6.1",
     "start-server-and-test": "^2.0.0"
