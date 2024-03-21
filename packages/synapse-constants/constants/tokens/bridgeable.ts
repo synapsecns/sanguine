@@ -13,7 +13,7 @@ import gmxLogo from '../assets/icons/gmx.svg'
 import h2oLogo from '../assets/icons/h2o.svg'
 import highLogo from '../assets/icons/highstreet.svg'
 import hyperjumpLogo from '../assets/icons/hyperjump.svg'
-import jewelLogo from '../assets/icons/jewel.svg'
+import jewelLogo from '../assets/icons/jewel.png'
 import klayLogo from '../assets/icons/klay.svg'
 import l2daoLogo from '../assets/icons/l2dao.svg'
 import maticLogo from '../assets/icons/matic.svg'
@@ -874,6 +874,8 @@ export const JEWEL = new Token({
     [CHAINS.HARMONY.id]: '0x72cb10c6bfa5624dd07ef608027e366bd690048f',
     [CHAINS.KLAYTN.id]: '0x30C103f8f5A3A732DFe2dCE1Cc9446f545527b43',
     [CHAINS.AVALANCHE.id]: '0x997Ddaa07d716995DE90577C123Db411584E5E46',
+    [CHAINS.METIS.id]: '0x17C09cfC96C865CF546d73365Cedb6dC66986963',
+    [CHAINS.ETH.id]: '0x12f79f8c1A6e47a9b5F0796FDb008Bdc182fa19e',
   },
   decimals: 18,
   symbol: 'JEWEL',
