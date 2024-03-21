@@ -317,7 +317,7 @@ func (n *Node) submit(ctx context.Context, request db.SignRequest) error {
 
 	_, err = n.submitter.SubmitTransaction(ctx, request.DestChainID, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
 		//nolint: wrapcheck
-		return contract.VerifyEntry(transactor, request.Entry, flattenSlice(signatures))
+		return contract.VerifyRemoteBatch(transactor, request.Entry, flattenSlice(signatures))
 	})
 
 	if err != nil {
@@ -419,11 +419,11 @@ func (n *Node) runChainIndexer(parentCtx context.Context, chainID int) (err erro
 		}()
 
 		switch event := parsedEvent.(type) {
-		case *synapsemodule.SynapseModuleVerificationRequested:
+		case *synapsemodule.SynapseModuleBatchVerificationRequested:
 			err = n.handleMessageSent(ctx, chainID, event)
-		case *synapsemodule.SynapseModuleEntryVerified:
+		case *synapsemodule.SynapseModuleBatchVerified:
 			// TODO: This event has changed recently, confirm validity
-			err = n.db.UpdateSignRequestStatus(ctx, event.EthSignedEntryHash, db.Completed)
+			err = n.db.UpdateSignRequestStatus(ctx, event.EthSignedBatchHash, db.Completed)
 		}
 		// stop the world.
 		if err != nil {
@@ -439,7 +439,7 @@ func (n *Node) runChainIndexer(parentCtx context.Context, chainID int) (err erro
 	return nil
 }
 
-func (n *Node) handleMessageSent(ctx context.Context, chainID int, event *synapsemodule.SynapseModuleVerificationRequested) error {
+func (n *Node) handleMessageSent(ctx context.Context, chainID int, event *synapsemodule.SynapseModuleBatchVerificationRequested) error {
 	err := n.db.StoreInterchainTransactionReceived(ctx, chainID, *event)
 	if err != nil {
 		return fmt.Errorf("could not store interchain transaction: %w", err)

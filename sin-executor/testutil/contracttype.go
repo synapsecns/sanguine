@@ -50,9 +50,9 @@ type contractTypeImpl int
 
 const (
 	// InterchainClient is the interchain execution client.
-	InterchainClient contractTypeImpl = iota + 1 // SynapseModule
+	InterchainClient contractTypeImpl = iota + 1 // InterchainClient
 	// InterchainDB is the interchain database.
-	InterchainDB // SynapseModule
+	InterchainDB // InterchainDB
 	// InterchainModuleMock is the interchain module mock.
 	InterchainModuleMock // InterchainModuleMock
 	// InterchainApp is the interchain app mock.
@@ -98,7 +98,7 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	case InterchainModuleMock:
 		return interchainmodulemock.Contracts["solidity/InterchainModuleMock.sol:InterchainModuleMock"]
 	case InterchainApp:
-		return interchainapp.Contracts["solidity/InterchainApp.sol:InterchainApp"]
+		return interchainapp.Contracts["solidity/InterchainAppExample.sol:InterchainAppExample"]
 	case OptionsLib:
 		return optionslibexport.Contracts["solidity/OptionsLibExport.sol:OptionsLibMocks"]
 	case ExecutionService:
@@ -106,7 +106,7 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	case ExecutionFeesMock:
 		return executionfeesmock.Contracts["solidity/ExecutionfeesMock.sol:ExecutionFeesMock"]
 	case GasOracleMock:
-		return gasoraclemock.Contracts["solidity/GasOracleMock.sol:GasOracleMock"]
+		return gasoraclemock.Contracts["solidity/SynapseGasOracleMock.sol:SynapseGasOracleMock"]
 	}
 	return nil
 }

@@ -11,7 +11,9 @@ import {IInterchainDB} from "./interfaces/IInterchainDB.sol";
 
 import {AppConfigV1, AppConfigLib} from "./libs/AppConfig.sol";
 import {InterchainEntry} from "./libs/InterchainEntry.sol";
-import {InterchainTransaction, InterchainTransactionLib} from "./libs/InterchainTransaction.sol";
+import {
+    InterchainTransaction, InterchainTxDescriptor, InterchainTransactionLib
+} from "./libs/InterchainTransaction.sol";
 import {OptionsLib, OptionsV1} from "./libs/Options.sol";
 import {TypeCasts} from "./libs/TypeCasts.sol";
 
@@ -43,11 +45,13 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     // @inheritdoc IInterchainClientV1
     function setExecutionFees(address executionFees_) external onlyOwner {
         executionFees = executionFees_;
+        emit ExecutionFeesSet(executionFees_);
     }
 
     // @inheritdoc IInterchainClientV1
     function setLinkedClient(uint256 chainId, bytes32 client) external onlyOwner {
         _linkedClient[chainId] = client;
+        emit LinkedClientSet(chainId, client);
     }
 
     // @inheritdoc IInterchainClientV1
@@ -61,7 +65,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     )
         external
         payable
-        returns (bytes32 transactionId, uint256 dbNonce)
+        returns (InterchainTxDescriptor memory desc)
     {
         return _interchainSend(dstChainId, receiver, srcExecutionService, srcModules, options, message);
     }
@@ -77,18 +81,24 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     )
         external
         payable
-        returns (bytes32 transactionId, uint256 dbNonce)
+        returns (InterchainTxDescriptor memory desc)
     {
         bytes32 receiverBytes32 = TypeCasts.addressToBytes32(receiver);
         return _interchainSend(dstChainId, receiverBytes32, srcExecutionService, srcModules, options, message);
     }
 
     // TODO: Handle the case where receiver does not implement the IInterchainApp interface (or does not exist at all)
-    // TODO: Save the executor address outside of the contract to pass the data back to the source chain
     // @inheritdoc IInterchainClientV1
-    function interchainExecute(uint256 gasLimit, bytes calldata transaction) external payable {
+    function interchainExecute(
+        uint256 gasLimit,
+        bytes calldata transaction,
+        bytes32[] calldata proof
+    )
+        external
+        payable
+    {
         InterchainTransaction memory icTx = InterchainTransactionLib.decodeTransaction(transaction);
-        bytes32 transactionId = _assertExecutable(icTx);
+        bytes32 transactionId = _assertExecutable(icTx, proof);
         _txExecutor[transactionId] = msg.sender;
 
         OptionsV1 memory decodedOptions = icTx.options.decodeOptionsV1();
@@ -103,30 +113,33 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             srcChainId: icTx.srcChainId,
             sender: icTx.srcSender,
             dbNonce: icTx.dbNonce,
+            entryIndex: icTx.entryIndex,
             message: icTx.message
         });
         emit InterchainTransactionReceived(
-            transactionId, icTx.dbNonce, icTx.srcChainId, icTx.srcSender, icTx.dstReceiver
+            transactionId, icTx.dbNonce, icTx.entryIndex, icTx.srcChainId, icTx.srcSender, icTx.dstReceiver
         );
     }
 
     /// @inheritdoc IInterchainClientV1
-    function writeExecutionProof(bytes32 transactionId) external returns (uint256 dbNonce) {
+    function writeExecutionProof(bytes32 transactionId) external returns (uint256 dbNonce, uint64 entryIndex) {
         address executor = _txExecutor[transactionId];
         if (executor == address(0)) {
             revert InterchainClientV1__TxNotExecuted(transactionId);
         }
         bytes memory proof = abi.encode(transactionId, executor);
-        dbNonce = IInterchainDB(INTERCHAIN_DB).writeEntry(keccak256(proof));
-        emit ExecutionProofWritten(transactionId, dbNonce, executor);
+        (dbNonce, entryIndex) = IInterchainDB(INTERCHAIN_DB).writeEntry(keccak256(proof));
+        emit ExecutionProofWritten(transactionId, dbNonce, entryIndex, executor);
     }
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
     // @inheritdoc IInterchainClientV1
-    function isExecutable(bytes calldata encodedTx) external view returns (bool) {
+    function isExecutable(bytes calldata encodedTx, bytes32[] calldata proof) external view returns (bool) {
         InterchainTransaction memory icTx = InterchainTransactionLib.decodeTransaction(encodedTx);
-        _assertExecutable(icTx);
+        // Check that options could be decoded
+        icTx.options.decodeOptionsV1();
+        _assertExecutable(icTx, proof);
         return true;
     }
 
@@ -142,7 +155,6 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     }
 
     // @inheritdoc IInterchainClientV1
-    // TODO: tests
     function getInterchainFee(
         uint256 dstChainId,
         address srcExecutionService,
@@ -154,6 +166,9 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         view
         returns (uint256 fee)
     {
+        _assertLinkedClient(dstChainId);
+        // Check that options could be decoded on destination chain
+        options.decodeOptionsV1();
         // Verification fee from InterchainDB
         fee = IInterchainDB(INTERCHAIN_DB).getInterchainFee(dstChainId, srcModules);
         // Add execution fee, if ExecutionService is provided
@@ -165,6 +180,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
                 dstReceiver: 0,
                 dstChainId: dstChainId,
                 dbNonce: 0,
+                entryIndex: 0,
                 options: options,
                 message: message
             });
@@ -174,11 +190,17 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
 
     /// @inheritdoc IInterchainClientV1
     function getLinkedClient(uint256 chainId) external view returns (bytes32) {
+        if (chainId == block.chainid) {
+            revert InterchainClientV1__NotRemoteChainId(chainId);
+        }
         return _linkedClient[chainId];
     }
 
     /// @inheritdoc IInterchainClientV1
     function getLinkedClientEVM(uint256 chainId) external view returns (address linkedClientEVM) {
+        if (chainId == block.chainid) {
+            revert InterchainClientV1__NotRemoteChainId(chainId);
+        }
         bytes32 linkedClient = _linkedClient[chainId];
         linkedClientEVM = TypeCasts.bytes32ToAddress(linkedClient);
         // Check that the linked client address fits into the EVM address space
@@ -209,37 +231,40 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         bytes calldata message
     )
         internal
-        returns (bytes32 transactionId, uint256 dbNonce)
+        returns (InterchainTxDescriptor memory desc)
     {
         _assertLinkedClient(dstChainId);
-        // TODO: should check options for being correctly formatted
+        if (receiver == 0) revert InterchainClientV1__ZeroReceiver();
+        // Check that options could be decoded on destination chain
+        options.decodeOptionsV1();
         uint256 verificationFee = IInterchainDB(INTERCHAIN_DB).getInterchainFee(dstChainId, srcModules);
         if (msg.value < verificationFee) {
             revert InterchainClientV1__FeeAmountTooLow(msg.value, verificationFee);
+        }
+        (desc.dbNonce, desc.entryIndex) = IInterchainDB(INTERCHAIN_DB).getNextEntryIndex();
+        InterchainTransaction memory icTx = InterchainTransactionLib.constructLocalTransaction({
+            srcSender: msg.sender,
+            dstReceiver: receiver,
+            dstChainId: dstChainId,
+            dbNonce: desc.dbNonce,
+            entryIndex: desc.entryIndex,
+            options: options,
+            message: message
+        });
+        desc.transactionId = icTx.transactionId();
+        // Sanity check: nonce returned from DB should match the nonce used to construct the transaction
+        {
+            (uint256 dbNonce, uint64 entryIndex) = IInterchainDB(INTERCHAIN_DB).writeEntryWithVerification{
+                value: verificationFee
+            }(icTx.dstChainId, desc.transactionId, srcModules);
+            assert(dbNonce == desc.dbNonce && entryIndex == desc.entryIndex);
         }
         uint256 executionFee;
         unchecked {
             executionFee = msg.value - verificationFee;
         }
-        dbNonce = IInterchainDB(INTERCHAIN_DB).getDBNonce();
-        InterchainTransaction memory icTx = InterchainTransactionLib.constructLocalTransaction({
-            srcSender: msg.sender,
-            dstReceiver: receiver,
-            dstChainId: dstChainId,
-            dbNonce: dbNonce,
-            options: options,
-            message: message
-        });
-        transactionId = icTx.transactionId();
-        // Sanity check: nonce returned from DB should match the nonce used to construct the transaction
-        assert(
-            dbNonce
-                == IInterchainDB(INTERCHAIN_DB).writeEntryWithVerification{value: verificationFee}(
-                    icTx.dstChainId, transactionId, srcModules
-                )
-        );
         if (executionFee > 0) {
-            IExecutionFees(executionFees).addExecutionFee{value: executionFee}(icTx.dstChainId, transactionId);
+            IExecutionFees(executionFees).addExecutionFee{value: executionFee}(icTx.dstChainId, desc.transactionId);
         }
         // TODO: consider disallowing the use of empty srcExecutionService
         if (srcExecutionService != address(0)) {
@@ -247,16 +272,17 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
                 dstChainId: dstChainId,
                 // TODO: there should be a way to calculate the payload size without encoding the transaction
                 txPayloadSize: icTx.encodeTransaction().length,
-                transactionId: transactionId,
+                transactionId: desc.transactionId,
                 executionFee: executionFee,
                 options: options
             });
             address srcExecutorEOA = IExecutionService(srcExecutionService).executorEOA();
-            IExecutionFees(executionFees).recordExecutor(icTx.dstChainId, transactionId, srcExecutorEOA);
+            IExecutionFees(executionFees).recordExecutor(icTx.dstChainId, desc.transactionId, srcExecutorEOA);
         }
         emit InterchainTransactionSent(
-            transactionId,
+            desc.transactionId,
             icTx.dbNonce,
+            icTx.entryIndex,
             icTx.dstChainId,
             icTx.srcSender,
             icTx.dstReceiver,
@@ -270,7 +296,14 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
     /// @dev Asserts that the transaction is executable. Returns the transactionId for chaining purposes.
-    function _assertExecutable(InterchainTransaction memory icTx) internal view returns (bytes32 transactionId) {
+    function _assertExecutable(
+        InterchainTransaction memory icTx,
+        bytes32[] calldata proof
+    )
+        internal
+        view
+        returns (bytes32 transactionId)
+    {
         bytes32 linkedClient = _assertLinkedClient(icTx.srcChainId);
         if (icTx.dstChainId != block.chainid) {
             revert InterchainClientV1__IncorrectDstChainId(icTx.dstChainId);
@@ -283,13 +316,17 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         InterchainEntry memory icEntry = InterchainEntry({
             srcChainId: icTx.srcChainId,
             dbNonce: icTx.dbNonce,
+            entryIndex: icTx.entryIndex,
             srcWriter: linkedClient,
             dataHash: transactionId
         });
         (bytes memory encodedAppConfig, address[] memory approvedDstModules) =
             IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).getReceivingConfig();
         AppConfigV1 memory appConfig = encodedAppConfig.decodeAppConfigV1();
-        uint256 responses = _getFinalizedResponsesCount(approvedDstModules, icEntry, appConfig.optimisticPeriod);
+        if (appConfig.requiredResponses == 0) {
+            revert InterchainClientV1__ZeroRequiredResponses();
+        }
+        uint256 responses = _getFinalizedResponsesCount(approvedDstModules, icEntry, proof, appConfig.optimisticPeriod);
         if (responses < appConfig.requiredResponses) {
             revert InterchainClientV1__NotEnoughResponses(responses, appConfig.requiredResponses);
         }
@@ -316,6 +353,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     function _getFinalizedResponsesCount(
         address[] memory approvedModules,
         InterchainEntry memory icEntry,
+        bytes32[] calldata proof,
         uint256 optimisticPeriod
     )
         internal
@@ -323,9 +361,9 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         returns (uint256 finalizedResponses)
     {
         for (uint256 i = 0; i < approvedModules.length; ++i) {
-            uint256 confirmedAt = IInterchainDB(INTERCHAIN_DB).readEntry(approvedModules[i], icEntry);
+            uint256 confirmedAt = IInterchainDB(INTERCHAIN_DB).checkVerification(approvedModules[i], icEntry, proof);
             // readEntry() returns 0 if entry hasn't been confirmed by the module, so we check for that as well
-            if (confirmedAt != 0 && confirmedAt + optimisticPeriod <= block.timestamp) {
+            if (confirmedAt != 0 && confirmedAt + optimisticPeriod < block.timestamp) {
                 ++finalizedResponses;
             }
         }

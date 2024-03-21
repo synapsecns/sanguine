@@ -14,12 +14,13 @@ contract InterchainClientV1Harness is InterchainClientV1 {
     function getFinalizedResponsesCountHarness(
         address[] memory approvedModules,
         InterchainEntry memory icEntry,
+        bytes32[] calldata proof,
         uint256 optimisticPeriod
     )
         public
         view
         returns (uint256)
     {
-        return _getFinalizedResponsesCount(approvedModules, icEntry, optimisticPeriod);
+        return _getFinalizedResponsesCount(approvedModules, icEntry, proof, optimisticPeriod);
     }
 }

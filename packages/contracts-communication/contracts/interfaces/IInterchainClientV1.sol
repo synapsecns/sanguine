@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import {InterchainTxDescriptor} from "../libs/InterchainTransaction.sol";
+
 interface IInterchainClientV1 {
     error InterchainClientV1__FeeAmountTooLow(uint256 actual, uint256 required);
     error InterchainClientV1__IncorrectDstChainId(uint256 chainId);
@@ -11,6 +13,8 @@ interface IInterchainClientV1 {
     error InterchainClientV1__NotRemoteChainId(uint256 chainId);
     error InterchainClientV1__TxAlreadyExecuted(bytes32 transactionId);
     error InterchainClientV1__TxNotExecuted(bytes32 transactionId);
+    error InterchainClientV1__ZeroReceiver();
+    error InterchainClientV1__ZeroRequiredResponses();
 
     /**
      * @notice Sets the address of the ExecutionFees contract.
@@ -40,8 +44,10 @@ interface IInterchainClientV1 {
      * @param srcModules The source modules involved in the message sending.
      * @param options Execution options for the message sent, encoded as bytes, currently gas limit + native gas drop.
      * @param message The message being sent.
-     * @return transactionId The ID of the transaction that was sent.
-     * @return dbNonce The database nonce of the written entry for the transaction.
+     * @return desc The descriptor of the sent transaction:
+     * - transactionId: the ID of the transaction that was sent.
+     * - dbNonce: the database nonce of the batch containing the written entry for transaction.
+     * - entryIndex: the index of the written entry for transaction within the batch.
      */
     function interchainSend(
         uint256 dstChainId,
@@ -53,7 +59,7 @@ interface IInterchainClientV1 {
     )
         external
         payable
-        returns (bytes32 transactionId, uint256 dbNonce);
+        returns (InterchainTxDescriptor memory desc);
 
     function interchainSendEVM(
         uint256 dstChainId,
@@ -65,7 +71,7 @@ interface IInterchainClientV1 {
     )
         external
         payable
-        returns (bytes32 transactionId, uint256 dbNonce);
+        returns (InterchainTxDescriptor memory desc);
 
     /**
      * @notice Executes a transaction that has been sent via the Interchain.
@@ -76,14 +82,22 @@ interface IInterchainClientV1 {
      * This allows to execute the transactions with requested gas limit set too low.
      * @param gasLimit          The gas limit to use for the execution.
      * @param transaction       The transaction data.
+     * @param proof             The Merkle proof for transaction execution, fetched from the source chain.
      */
-    function interchainExecute(uint256 gasLimit, bytes calldata transaction) external payable;
+    function interchainExecute(
+        uint256 gasLimit,
+        bytes calldata transaction,
+        bytes32[] calldata proof
+    )
+        external
+        payable;
 
     /// @notice Writes the proof of execution for a transaction into the InterchainDB.
     /// @dev Will revert if the transaction has not been executed.
     /// @param transactionId    The ID of the transaction to write the proof for.
-    /// @return dbNonce         The database nonce of the written entry for the proof.
-    function writeExecutionProof(bytes32 transactionId) external returns (uint256 dbNonce);
+    /// @return dbNonce         The database nonce of the batch containing the written proof for transaction.
+    /// @return entryIndex      The index of the written proof for transaction within the batch.
+    function writeExecutionProof(bytes32 transactionId) external returns (uint256 dbNonce, uint64 entryIndex);
 
     /**
      * @notice Checks if a transaction is executable.
@@ -91,10 +105,11 @@ interface IInterchainClientV1 {
      * - If approved modules have written to the InterchainDB
      * - If the threshold of approved modules have been met
      * - If the optimistic window has passed for all modules
-     * @param transaction The InterchainTransaction struct to be checked.
+     * @param transaction       The InterchainTransaction struct to be checked.
+     * @param proof             The Merkle proof for transaction execution, fetched from the source chain.
      * @return bool Returns true if the transaction is executable, false otherwise.
      */
-    function isExecutable(bytes calldata transaction) external view returns (bool);
+    function isExecutable(bytes calldata transaction, bytes32[] calldata proof) external view returns (bool);
 
     /// @notice Returns the fee for sending an Interchain message.
     /// @param dstChainId           The chain ID of the destination chain.

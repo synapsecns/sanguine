@@ -9,7 +9,7 @@ import (
 // GasOracleMockRef is a reference to a Gasoraclemock.
 // nolint: golint
 type GasOracleMockRef struct {
-	*GasOracleMock
+	*SynapseGasOracleMock
 	address common.Address
 }
 
@@ -20,13 +20,13 @@ func (s *GasOracleMockRef) Address() common.Address {
 
 // NewGasOracleMockRef creates a new Gasoraclemock with a contract ref.
 func NewGasOracleMockRef(address common.Address, backend bind.ContractBackend) (*GasOracleMockRef, error) {
-	instance, err := NewGasOracleMock(address, backend)
+	instance, err := NewSynapseGasOracleMock(address, backend)
 	if err != nil {
 		return nil, err
 	}
 	return &GasOracleMockRef{
-		GasOracleMock: instance,
-		address:       address,
+		SynapseGasOracleMock: instance,
+		address:              address,
 	}, nil
 }
 

@@ -103,7 +103,7 @@ func NewGasOracleDeployer(registry deployer.GetOnlyContractRegistry, backend bac
 // Deploy deploys a GasOracle contract.
 func (i GasOracleDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return i.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return gasoraclemock.DeployGasOracleMock(transactOps, backend)
+		return gasoraclemock.DeploySynapseGasOracleMock(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return gasoraclemock.NewGasOracleMockRef(address, backend)
 	})

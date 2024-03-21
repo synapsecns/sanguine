@@ -5,6 +5,7 @@ import {TypeCastsHarness} from "../harnesses/TypeCastsHarness.sol";
 
 import {Test} from "forge-std/Test.sol";
 
+// solhint-disable func-name-mixedcase
 contract TypeCastsLibraryTest is Test {
     TypeCastsHarness public libHarness;
 

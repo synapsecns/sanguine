@@ -8,10 +8,10 @@ import (
 )
 
 var (
-	// VerificationRequestedTopic is the event topic for a verification request.
-	VerificationRequestedTopic common.Hash
-	// EntryVerificationTopic is the topic emitted by a verification.
-	EntryVerificationTopic common.Hash
+	// BatchVerificationRequestedTopic is the event topic for a verification request.
+	BatchVerificationRequestedTopic common.Hash
+	// BatchVerificationTopic is the topic emitted by a verification.
+	BatchVerificationTopic common.Hash
 )
 
 // static checks to make sure topics actually exist.
@@ -23,15 +23,15 @@ func init() {
 		panic(err)
 	}
 
-	VerificationRequestedTopic = parsedABI.Events["VerificationRequested"].ID
-	EntryVerificationTopic = parsedABI.Events["EntryVerified"].ID
+	BatchVerificationRequestedTopic = parsedABI.Events["BatchVerificationRequested"].ID
+	BatchVerificationTopic = parsedABI.Events["BatchVerified"].ID
 
-	_, err = parsedABI.EventByID(VerificationRequestedTopic)
+	_, err = parsedABI.EventByID(BatchVerificationRequestedTopic)
 	if err != nil {
 		panic(err)
 	}
 
-	_, err = parsedABI.EventByID(EntryVerificationTopic)
+	_, err = parsedABI.EventByID(BatchVerificationTopic)
 	if err != nil {
 		panic(err)
 	}
@@ -41,8 +41,8 @@ func init() {
 // this is returned as a function to assert immutability.
 func topicMap() map[EventType]common.Hash {
 	return map[EventType]common.Hash{
-		VerificationRequestedEvent: VerificationRequestedTopic,
-		EntryVerificationEvent:     EntryVerificationTopic,
+		BatchVerificationRequestedEvent: BatchVerificationRequestedTopic,
+		BatchVerificationEvent:          BatchVerificationTopic,
 	}
 }
 

@@ -6,6 +6,7 @@ import {IInterchainApp} from "../interfaces/IInterchainApp.sol";
 import {IInterchainClientV1} from "../interfaces/IInterchainClientV1.sol";
 
 import {AppConfigV1} from "../libs/AppConfig.sol";
+import {InterchainTxDescriptor} from "../libs/InterchainTransaction.sol";
 import {OptionsV1} from "../libs/Options.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 
@@ -36,11 +37,20 @@ abstract contract InterchainAppV1 is InterchainAppV1Events, IInterchainApp {
     error InterchainApp__SenderNotAllowed(uint256 srcChainId, bytes32 sender);
 
     /// @inheritdoc IInterchainApp
-    function appReceive(uint256 srcChainId, bytes32 sender, uint256 dbNonce, bytes calldata message) external payable {
+    function appReceive(
+        uint256 srcChainId,
+        bytes32 sender,
+        uint256 dbNonce,
+        uint64 entryIndex,
+        bytes calldata message
+    )
+        external
+        payable
+    {
         if (msg.sender != interchain) revert InterchainApp__CallerNotInterchainClient(msg.sender);
         if (srcChainId == block.chainid) revert InterchainApp__SameChainId(srcChainId);
         if (!isAllowedSender(srcChainId, sender)) revert InterchainApp__SenderNotAllowed(srcChainId, sender);
-        _receiveMessage(srcChainId, sender, dbNonce, message);
+        _receiveMessage(srcChainId, sender, dbNonce, entryIndex, message);
         // Note: application may elect to emit an event in `_receiveMessage`, so we don't emit a generic event here.
     }
 
@@ -162,7 +172,7 @@ abstract contract InterchainAppV1 is InterchainAppV1Events, IInterchainApp {
         bytes memory message
     )
         internal
-        returns (bytes32 transactionId, uint256 dbNonce)
+        returns (InterchainTxDescriptor memory desc)
     {
         return _sendInterchainMessage(dstChainId, getLinkedApp(dstChainId), messageFee, options, message);
     }
@@ -176,7 +186,7 @@ abstract contract InterchainAppV1 is InterchainAppV1Events, IInterchainApp {
         bytes memory message
     )
         internal
-        returns (bytes32 transactionId, uint256 dbNonce)
+        returns (InterchainTxDescriptor memory desc)
     {
         return _sendInterchainMessage(dstChainId, TypeCasts.addressToBytes32(receiver), messageFee, options, message);
     }
@@ -190,7 +200,7 @@ abstract contract InterchainAppV1 is InterchainAppV1Events, IInterchainApp {
         bytes memory message
     )
         internal
-        returns (bytes32 transactionId, uint256 dbNonce)
+        returns (InterchainTxDescriptor memory desc)
     {
         address cachedInterchain = interchain;
         if (cachedInterchain == address(0)) revert InterchainApp__InterchainClientNotSet();
@@ -207,6 +217,7 @@ abstract contract InterchainAppV1 is InterchainAppV1Events, IInterchainApp {
         uint256 srcChainId,
         bytes32 sender,
         uint256 dbNonce,
+        uint64 entryIndex,
         bytes calldata message
     )
         internal

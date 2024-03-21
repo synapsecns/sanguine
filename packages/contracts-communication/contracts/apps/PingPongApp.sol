@@ -55,6 +55,7 @@ contract PingPongApp is OwnableApp {
         uint256 srcChainId,
         bytes32, // sender
         uint256, // dbNonce
+        uint64, // entryIndex
         bytes calldata message
     )
         internal
