@@ -123,7 +123,7 @@ export function ChainSelector({
       {Object.entries(itemList).map(([key, value]: [string, Chain[]]) => {
         return value.length ? (
           <ListSectionWrapper sectionKey={key}>
-            {value.map((chain, idx) => (
+            {value.map((chain) => (
               <SelectSpecificNetworkButton
                 dataId={dataTestId}
                 key={chain.id}
@@ -247,7 +247,7 @@ const SelectorWrapper = ({
         data-test-id={`${dataTestId}-button`}
         className={buttonClassName}
         onMouseMove={handleMouseMove}
-        onClick={() => setHover(!hover)}
+        onClick={() => setHover(true)}
       >
         {itemName && (
           <img
@@ -255,7 +255,7 @@ const SelectorWrapper = ({
             alt={itemName}
             width="24"
             height="24"
-            className="py-0.5"
+            className="py-0.5 block"
           />
         )}
         <span>
@@ -365,7 +365,7 @@ export function TokenSelector({
 
 export function BridgeAmountContainer({ children }) {
   const className = join({
-    space: 'flex items-center gap-4 p-2 rounded-md',
+    space: 'flex items-center gap-4 p-2 rounded-md w-full',
     bgColor: 'bg-white dark:bg-inherit',
     borderColor: 'border border-zinc-200 dark:border-zinc-700',
   })

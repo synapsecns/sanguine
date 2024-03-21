@@ -20,6 +20,7 @@ import { setSwapToToken } from '@/slices/swap/reducer'
 import { useSwapState } from '@/slices/swap/hooks'
 import { getSwapPossibilities } from '@/utils/swapFinder/generateSwapPossibilities'
 
+/*
 export const SwapToTokenListOverlay = () => {
   const { swapChainId, swapToTokens, swapToToken } = useSwapState()
 
@@ -251,4 +252,90 @@ export const SwapToTokenListOverlay = () => {
       <SearchResults searchStr={searchStr} type="token" />
     </div>
   )
+}
+*/
+
+export const SwapToTokenListArray = () => {
+  const { swapChainId, swapToTokens } = useSwapState()
+
+  const [searchStr, setSearchStr] = useState('')
+
+  let possibleTokens = sortByPriorityRank(swapToTokens)
+
+  const { toTokens: allToChainTokens } = getSwapPossibilities({
+    fromChainId: swapChainId,
+    fromToken: null,
+    toChainId: swapChainId,
+    toToken: null,
+  })
+
+  let remainingChainTokens = swapChainId
+    ? sortByPriorityRank(_.difference(allToChainTokens, swapToTokens))
+    : []
+
+  const { toTokens: allTokens } = getSwapPossibilities({
+    fromChainId: null,
+    fromToken: null,
+    toChainId: null,
+    toToken: null,
+  })
+
+  let allOtherToTokens = swapChainId
+    ? sortByPriorityRank(_.difference(allTokens, allToChainTokens))
+    : sortByPriorityRank(allTokens)
+
+  const possibleTokenswithSource = possibleTokens.map((token) => ({
+    ...token,
+    source: 'possibleTokens',
+  }))
+
+  const remainingChainTokensWithSource = remainingChainTokens.map((token) => ({
+    ...token,
+    source: 'remainingChainTokens',
+  }))
+
+  const allOtherToTokensWithSource = allOtherToTokens.map((token) => ({
+    ...token,
+    source: 'allOtherToTokens',
+  }))
+
+  const masterList = [
+    ...possibleTokenswithSource,
+    ...remainingChainTokensWithSource,
+    ...allOtherToTokensWithSource,
+  ]
+
+  const fuseOptions = {
+    ignoreLocation: true,
+    includeScore: true,
+    threshold: 0.0,
+    keys: [
+      {
+        name: 'symbol',
+        weight: 2,
+      },
+      'routeSymbol',
+      `addresses.${swapChainId}`,
+      'name',
+    ],
+  }
+  const fuse = new Fuse(masterList, fuseOptions)
+
+  if (searchStr?.length > 0) {
+    const results = fuse.search(searchStr).map((i) => i.item)
+
+    possibleTokens = results.filter((item) => item.source === 'possibleTokens')
+    remainingChainTokens = results.filter(
+      (item) => item.source === 'remainingChainTokens'
+    )
+    allOtherToTokens = results.filter(
+      (item) => item.source === 'allOtherToTokens'
+    )
+  }
+
+  return {
+    'Receive…': possibleTokens,
+    'All receivable tokens': remainingChainTokens,
+    'All other tokens': allOtherToTokens,
+  }
 }
