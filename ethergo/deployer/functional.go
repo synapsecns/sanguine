@@ -39,10 +39,9 @@ type FunctionalDeployFunc func(ctx context.Context, helpers IFunctionalDeployer,
 type WrapFunc func(address common.Address, backend bind.ContractBackend) (interface{}, error)
 
 // NewFunctionalDeployer creates a new functional deployer.
-// Deprecated: TODO remove this
+// Deprecated: TODO remove this.
 func NewFunctionalDeployer(contractType contracts.ContractType, deployFunc FunctionalDeployFunc,
 	wrapFunc WrapFunc, autoRecursedDeps []contracts.ContractType) DeployerFunc {
-
 	return func(registry GetOnlyContractRegistry, backend backends.SimulatedTestBackend) ContractDeployer {
 		baseDeployer := NewSimpleDeployer(registry, backend, contractType)
 		functionalDeployer := &FunctionalDeployer{

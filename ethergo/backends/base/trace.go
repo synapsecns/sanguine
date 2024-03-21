@@ -11,7 +11,7 @@ import (
 // if a list of labels cannot be obtained using a trace all registered contracts will be returned.
 //
 // TODO: this should be able to work with a simulated backend but can't right now.
-// returns address->label
+// returns address->label.
 func (b *Backend) getTransactionLabelMap(tx *types.Transaction, from common.Address) (res map[common.Address]string) {
 	b.verifiedMux.RLock()
 	defer b.verifiedMux.RUnlock()
@@ -48,7 +48,6 @@ func (b *Backend) getTransactionLabelMap(tx *types.Transaction, from common.Addr
 			stackRes, err = tracely.ParseDelegateCall(frame)
 		case "REVERT":
 			stackRes, err = tracely.ParseRevert(frame)
-
 		}
 
 		addr := common.HexToAddress(stackRes["addr"])
@@ -69,7 +68,6 @@ func (b *Backend) getTransactionLabelMap(tx *types.Transaction, from common.Addr
 				res[address] = contract.ContractName()
 			}
 		}
-
 	}
 
 	return res

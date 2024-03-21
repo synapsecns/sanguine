@@ -18,7 +18,7 @@ type UnsafeSigner interface {
 
 // MakeUnsafeSigner creates a new unsafe signer.
 //
-// / this is only to be used for testing. It should not be used in production code under any circumstances
+// / this is only to be used for testing. It should not be used in production code under any circumstances.
 func MakeUnsafeSigner(client *kms.Client) UnsafeSigner {
 	return &Signer{
 		client: client,

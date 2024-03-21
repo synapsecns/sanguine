@@ -59,7 +59,6 @@ func GetTxResult(rpc, txid string) ([]model.TraceStep, error) {
 			}
 			result = append(result, r)
 		}
-
 	}
 	return result, nil
 }
