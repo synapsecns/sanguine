@@ -26,10 +26,10 @@ const PAUSED_CHAINS = [
   {
     id: 'optimism-chain-pause',
     pausedChains: [OPTIMISM.id],
-    startTime: new Date(Date.UTC(2024, 2, 20, 20, 20, 0)),
-    endTime: new Date(Date.UTC(2024, 2, 20, 22, 0, 0)),
-    bannerStartTime: new Date(Date.UTC(2024, 2, 20, 20, 20, 0)),
-    bannerEndTime: new Date(Date.UTC(2024, 2, 20, 22, 0, 0)),
+    startTime: new Date(Date.UTC(2024, 2, 21, 17, 0, 0)),
+    endTime: new Date(Date.UTC(2024, 2, 21, 18, 0, 0)),
+    bannerStartTime: new Date(Date.UTC(2024, 2, 21, 17, 0, 0)),
+    bannerEndTime: new Date(Date.UTC(2024, 2, 21, 18, 0, 0)),
   },
 ]
 
@@ -37,11 +37,13 @@ export const MaintenanceBanners = () => {
   return (
     <>
       {PAUSED_CHAINS.map((event) => {
-        ;<MaintenanceBanner
-          id={event.id}
-          startDate={event.startTime}
-          endDate={event.endTime}
-        />
+        return (
+          <MaintenanceBanner
+            id={event.id}
+            startDate={event.bannerStartTime}
+            endDate={event.bannerEndTime}
+          />
+        )
       })}
     </>
   )
@@ -81,15 +83,17 @@ export const MaintenanceBanner = ({
   )
 }
 
-const MaintenanceWarningMessages = () => {
+export const MaintenanceWarningMessages = () => {
   return (
     <>
       {PAUSED_CHAINS.map((event) => {
-        ;<MaintenanceWarningMessage
-          startDate={event.startTime}
-          endDate={event.endTime}
-          pausedChains={event.pausedChains}
-        />
+        return (
+          <MaintenanceWarningMessage
+            startDate={event.startTime}
+            endDate={event.endTime}
+            pausedChains={event.pausedChains}
+          />
+        )
       })}
     </>
   )
@@ -134,6 +138,20 @@ export const MaintenanceWarningMessage = ({
   }
 
   return null
+}
+
+/**
+ * Hook that maps through PAUSED_CHAINS to apply the single chain countdown progress logic to each.
+ * @returns Array of objects containing maintenance status and components for each paused chain.
+ */
+export const useMaintenanceCountdownProgresses = () => {
+  return PAUSED_CHAINS.map((event) => {
+    return useMaintenanceCountdownProgress({
+      startDate: event.startTime,
+      endDate: event.endTime,
+      pausedChains: event.pausedChains,
+    })
+  })
 }
 
 export const useMaintenanceCountdownProgress = ({
