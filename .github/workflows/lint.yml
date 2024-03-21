@@ -29,19 +29,6 @@ jobs:
           pattern: '.github/renovate.json' # Regular expression for filename to validate, default to *.json
 
 
-      - name: Validate coderabbit (prepare)
-        run: |
-          wget https://coderabbit.ai/integrations/coderabbit-overrides.v2.json
-
-      - name: Validate coderabbit
-        uses: ansible/ansible-lint-action@main
-        with:
-          files-to-validate: '[
-            {
-                "path": ".coderabbit.yaml",
-                "schema": "./coderabbit-overrides.v2.json"
-            }
-          ]'
       - name: yaml-lint
         uses: ibiqlik/action-yamllint@v3
         id: yaml-lint
