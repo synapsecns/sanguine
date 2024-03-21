@@ -6,22 +6,18 @@ import {
     TransparentUpgradeableProxy
 } from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 
-import {Test} from "forge-std/Test.sol";
+import {console2, Test} from "forge-std/Test.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 abstract contract ProxyTest is Test {
-    ProxyAdmin public proxyAdmin;
+    bytes32 public constant ADMIN_SLOT = bytes32(uint256(keccak256("eip1967.proxy.admin")) - 1);
 
     function deployProxy(address implementation) internal returns (address proxy) {
         proxy = deployProxy(implementation, "");
     }
 
     function deployProxy(address implementation, bytes memory initData) internal returns (address proxy) {
-        if (address(proxyAdmin) == address(0)) {
-            // Use a single proxy admin owned by this contract for tests simplicity
-            proxyAdmin = new ProxyAdmin(address(this));
-        }
-        proxy = address(new TransparentUpgradeableProxy(implementation, address(proxyAdmin), initData));
+        proxy = address(new TransparentUpgradeableProxy(implementation, address(this), initData));
     }
 
     function expectRevertInvalidInitialization() internal {
@@ -32,6 +28,18 @@ abstract contract ProxyTest is Test {
         bytes32 actual = vm.load(target, slot);
         bytes32 expectedBytes32 = bytes32(uint256(uint160(expected)));
         assertEq(actual, expectedBytes32);
+    }
+
+    /// @dev Function to use in the fuzz tests to assume that the caller is not the proxy admin
+    /// Calls from the proxy admin are not directed to the implementation contract, so they should be
+    /// treated differently in the tests.
+    function assumeNotProxyAdmin(address target, address caller) internal view {
+        vm.assume(caller != getProxyAdmin(target));
+    }
+
+    function getProxyAdmin(address target) internal view returns (address admin) {
+        bytes32 adminBytes32 = vm.load(target, ADMIN_SLOT);
+        admin = address(uint160(uint256(adminBytes32)));
     }
 
     function getExpectedLocationERC7201(
