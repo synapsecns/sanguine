@@ -31,6 +31,14 @@ const PAUSED_CHAINS = [
     bannerStartTime: new Date(Date.UTC(2024, 2, 21, 17, 0, 0)),
     bannerEndTime: new Date(Date.UTC(2024, 2, 21, 18, 0, 0)),
   },
+  {
+    id: 'base-chain-pause',
+    pausedChains: [BASE.id],
+    startTime: new Date(Date.UTC(2024, 2, 21, 17, 0, 0)),
+    endTime: new Date(Date.UTC(2024, 2, 21, 17, 30, 0)),
+    bannerStartTime: new Date(Date.UTC(2024, 2, 21, 17, 0, 0)),
+    bannerEndTime: new Date(Date.UTC(2024, 2, 21, 18, 0, 0)),
+  },
 ]
 
 export const MaintenanceBanners = () => {
@@ -77,8 +85,8 @@ export const MaintenanceBanner = ({
           </p>
         </>
       }
-      startDate={MAINTENANCE_BANNERS_START}
-      endDate={MAINTENANCE_END_DATE}
+      startDate={startDate}
+      endDate={endDate}
     />
   )
 }
