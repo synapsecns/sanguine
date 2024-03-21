@@ -31,6 +31,7 @@ contract SynapseExecutionServiceV1ManagementTest is SynapseExecutionServiceV1Tes
     }
 
     function test_setExecutorEOA_revert_notGovernor(address caller) public {
+        assumeNotProxyAdmin({target: address(service), caller: caller});
         vm.assume(caller != governor);
         expectRevertNotGovernor(caller);
         vm.prank(caller);
@@ -58,6 +59,7 @@ contract SynapseExecutionServiceV1ManagementTest is SynapseExecutionServiceV1Tes
     }
 
     function test_setGasOracle_revert_notGovernor(address caller) public {
+        assumeNotProxyAdmin({target: address(service), caller: caller});
         vm.assume(caller != governor);
         expectRevertNotGovernor(caller);
         vm.prank(caller);

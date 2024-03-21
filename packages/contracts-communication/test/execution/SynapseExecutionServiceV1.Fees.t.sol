@@ -316,6 +316,7 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
     }
 
     function test_requestExecution_noAirdrop_revert_notInterchainClient(address caller) public {
+        assumeNotProxyAdmin({target: address(service), caller: caller});
         vm.assume(caller != icClientA && caller != icClientB);
         expectRevertNotInterchainClient(caller);
         vm.prank(caller);
@@ -329,6 +330,7 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
     }
 
     function test_requestExecution_withAirdrop_revert_notInterchainClient(address caller) public {
+        assumeNotProxyAdmin({target: address(service), caller: caller});
         vm.assume(caller != icClientA && caller != icClientB);
         expectRevertNotInterchainClient(caller);
         vm.prank(caller);
