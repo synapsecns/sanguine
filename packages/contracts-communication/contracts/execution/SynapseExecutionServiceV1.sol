@@ -20,18 +20,31 @@ contract SynapseExecutionServiceV1 is
     /// @inheritdoc ISynapseExecutionServiceV1
     address public gasOracle;
 
-    function initialize(address) external initializer {
-        // TODO: implement
+    constructor() {
+        // Ensure that the implementation contract could not be initialized
+        _disableInitializers();
+    }
+
+    function initialize(address admin) external initializer {
+        _grantRole(DEFAULT_ADMIN_ROLE, admin);
     }
 
     /// @inheritdoc ISynapseExecutionServiceV1
-    function setExecutorEOA(address executorEOA_) external {
-        // TODO: implement
+    function setExecutorEOA(address executorEOA_) external onlyRole(GOVERNOR_ROLE) {
+        if (executorEOA_ == address(0)) {
+            revert SynapseExecutionService__ZeroAddress();
+        }
+        executorEOA = executorEOA_;
+        emit ExecutorEOASet(executorEOA_);
     }
 
     /// @inheritdoc ISynapseExecutionServiceV1
-    function setGasOracle(address gasOracle_) external {
-        // TODO: implement
+    function setGasOracle(address gasOracle_) external onlyRole(GOVERNOR_ROLE) {
+        if (gasOracle_ == address(0)) {
+            revert SynapseExecutionService__ZeroAddress();
+        }
+        gasOracle = gasOracle_;
+        emit GasOracleSet(gasOracle_);
     }
 
     /// @inheritdoc IExecutionService
