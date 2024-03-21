@@ -1,18 +1,12 @@
-import { JsonRpcApiProvider, BrowserProvider, ethers } from 'ethers'
+import { ethers, AbiCoder } from 'ethers'
 
 import { MAX_UINT256 } from '@/constants/index'
-import erc20ABI from '../../constants/abis/erc20.json'
 
 export const approveErc20Token = async ({
   spenderAddress,
   tokenAddress,
   amount,
   signer,
-}: {
-  spenderAddress: string
-  tokenAddress: string
-  amount: bigint
-  signer: JsonRpcApiProvider | BrowserProvider
 }) => {
   try {
     if (!spenderAddress) {
@@ -24,14 +18,26 @@ export const approveErc20Token = async ({
     if (!signer) {
       throw new Error('Require Signer')
     }
-    // Create a new instance of Contract with the signer
-    const tokenContract = new ethers.Contract(tokenAddress, erc20ABI, signer)
 
-    // If amount is not provided, use maximum uint256
-    const approveAmount = amount ?? MAX_UINT256
+    const functionSignature = 'approve(address,uint256)'
+    const abiCoder = AbiCoder.defaultAbiCoder()
+    const data = abiCoder.encode(
+      ['address', 'uint256'],
+      [spenderAddress, amount ?? MAX_UINT256]
+    )
 
-    // Send approve transaction
-    const tx = await tokenContract.approve(spenderAddress, approveAmount)
+    // The function selector is the first 4 bytes of the hash of the function signature
+    const functionSelector = ethers
+      .keccak256(ethers.toUtf8Bytes(functionSignature))
+      .slice(0, 10)
+
+    // The complete data for the transaction combines the selector and the encoded arguments
+    const txData = functionSelector + data.slice(2) // remove 0x from data
+
+    const tx = await signer.sendTransaction({
+      to: tokenAddress,
+      data: txData,
+    })
 
     // Wait for the transaction to be mined
     const receipt = await tx.wait()

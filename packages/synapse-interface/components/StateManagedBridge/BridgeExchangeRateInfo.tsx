@@ -1,21 +1,18 @@
 import numeral from 'numeral'
-import { useMemo } from 'react'
-import {
-  formatBigIntToPercentString,
-  stringToBigInt,
-} from '@/utils/bigint/format'
-import { CHAINS_BY_ID } from '@constants/chains'
-import * as CHAINS from '@constants/chains/master'
-import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
 import Image from 'next/image'
-import { formatBigIntToString } from '@/utils/bigint/format'
+import { useMemo } from 'react'
+import { useAppSelector } from '@/store/hooks'
+import { useBridgeState } from '@/slices/bridge/hooks'
+import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
 import {
   ELIGIBILITY_DEFAULT_TEXT,
   useStipEligibility,
 } from '@/utils/hooks/useStipEligibility'
-import { useBridgeState } from '@/slices/bridge/hooks'
+import { formatBigIntToString } from '@/utils/bigint/format'
+import { formatBigIntToPercentString } from '@/utils/bigint/format'
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
-import { useAppSelector } from '@/store/hooks'
+import { CHAINS_BY_ID } from '@constants/chains'
+import * as CHAINS from '@constants/chains/master'
 
 const MAX_ARB_REBATE_PER_ADDRESS = 2000
 
@@ -23,10 +20,10 @@ const BridgeExchangeRateInfo = () => {
   return (
     <div className="py-3.5 px-1 space-y-3 text-sm md:px-6 tracking-wide">
       <RouteEligibility />
+      {/* <TimeEstimate /> */}
       <section className="p-2 space-y-1 text-sm border rounded-sm border-[#504952] text-secondary font-light">
         <GasDropLabel />
         <Router />
-        <Fee />
         <Rebate />
         <Slippage />
       </section>
@@ -146,42 +143,6 @@ const Rebate = () => {
     <div className="flex items-center justify-between">
       <div className="text-green-300">Rebate</div>
       <RebateText />
-    </div>
-  )
-}
-
-const Fee = () => {
-  const {
-    debouncedFromValue,
-    fromToken,
-    fromChainId,
-    isLoading,
-    bridgeQuote: { feeAmount, originQuery },
-  } = useBridgeState()
-
-  if (!originQuery || originQuery.minAmountOut === 0n) return
-
-  const adjustedFeeAmount =
-    (BigInt(feeAmount) *
-      stringToBigInt(
-        `${debouncedFromValue}`,
-        fromToken?.decimals[fromChainId]
-      )) /
-    BigInt(originQuery?.minAmountOut)
-
-  const feeString = formatBigIntToString(
-    adjustedFeeAmount,
-    fromToken?.decimals[fromChainId],
-    4
-  )
-
-  return (
-    <div className="flex items-center justify-between">
-      <div>Fee</div>
-      <div className="text-primaryTextColor">
-        {isLoading ? '-' : feeString}{' '}
-        <span className="e">{fromToken?.symbol}</span>
-      </div>
     </div>
   )
 }

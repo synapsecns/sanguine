@@ -177,6 +177,7 @@ type DateResultByChain {
   canto: Float
   dogechain: Float
   base: Float
+  blast: Float
   total:  Float
 }
 

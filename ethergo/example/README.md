@@ -195,5 +195,77 @@
       }
       ```
 
+   4. (Optional): Create a typecast getter:
+      To avoid naked casts of contract handle, we can potionally create a typecast getter.
+      To do this, we're going to create a thin wrapper around deploymanager.
+
+      ```go
+      package example
+      import (
+      "context"
+      "github.com/synapsecns/sanguine/ethergo/backends"
+      "github.com/synapsecns/sanguine/ethergo/contracts"
+      "github.com/synapsecns/sanguine/ethergo/manager"
+      "testing"
+      )
+
+      // DeployManager wraps DeployManager and allows typed contract handles to be returned.
+      type DeployManager struct {
+        *manager.DeployerManager
+      }
+
+      // NewDeployManager creates a new DeployManager.
+      func NewDeployManager(t *testing.T) *DeployManager {
+        t.Helper()
+
+        parentManager := manager.NewDeployerManager(t, NewCounterDeployer)
+        return &DeployManager{parentManager}
+      }
+      ```
+
+      Now we can create a handle to get the contract for us;
+
+      ```go
+      package example
+      // see above for imports
+
+      import (
+        "context"
+        "github.com/synapsecns/sanguine/ethergo/backends"
+        "github.com/synapsecns/sanguine/ethergo/contracts"
+        "github.com/synapsecns/sanguine/ethergo/example/counter"
+        "github.com/synapsecns/sanguine/ethergo/manager"
+        "testing"
+      )
+
+      // GetCounter gets the pre-created counter.
+      func (d *DeployManager) GetCounter(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *counter.CounterRef) {
+         d.T().Helper()
+
+        return manager.GetContract[*counter.CounterRef](ctx, d.T(), d, backend, CounterType)
+      }
+      ```
+
+   5. (Optional) Make sure are dependencies are correct: We can also create a test to assert our dependencides are correctly listed in each deployer. That looks like this:
+
+         ```go
+         package example_test
+
+         import (
+            "context"
+            "github.com/synapsecns/sanguine/ethergo/backends"
+            "github.com/synapsecns/sanguine/ethergo/contracts"
+            "github.com/synapsecns/sanguine/ethergo/example"
+            "github.com/synapsecns/sanguine/ethergo/manager"
+            "testing"
+          )
+
+
+           func TestDependenciesCorrect(t *testing.T) {
+              manager.AssertDependenciesCorrect(context.Background(), t, func() manager.IDeployManager {
+                 return example.NewDeployerManager(t)
+           })
+           }
+         ```
 
 That's it! You should be done. As you can see, there's a lot more that can be done here. Passing in a list of all your deployers every time doesn't make sense. You'll want to create a standard testutil and extend it. We also haven't covered that any backend here is interchangable: you can use simulated, ganache, or embedded geth. This tutorial should've covered the basics though

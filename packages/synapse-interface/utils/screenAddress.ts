@@ -14,7 +14,7 @@ export const screenAddress = (address: Address | string) => {
       if (risk) {
         const event = new CustomEvent('riskDetected', {
           detail: {
-            message: `Your address is considered at risk. Please contact <a style="text-decoration: underline; text-underline-offset: 0.2em;" href=${DISCORD_URL} target="_blank" rel="noopener noreferrer">support</a> if you feel this message is in error.`,
+            message: `This address has been flagged for being associated with illicit activities. If you think this is a mistake, please contact <a style="text-decoration: underline; text-underline-offset: 0.2em;" href=${DISCORD_URL} target="_blank" rel="noopener noreferrer">support</a>.`,
           },
         })
 

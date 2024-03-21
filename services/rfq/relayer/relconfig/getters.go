@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/ethergo/signer/config"
 )
@@ -87,16 +88,30 @@ func isNonZero(value interface{}) bool {
 	return reflect.ValueOf(value).Interface() != reflect.Zero(reflect.TypeOf(value)).Interface()
 }
 
-// GetBridge returns the Bridge for the given chainID.
-func (c Config) GetBridge(chainID int) (value string, err error) {
-	rawValue, err := c.getChainConfigValue(chainID, "Bridge")
+// GetRFQAddress returns the RFQ address for the given chainID.
+func (c Config) GetRFQAddress(chainID int) (value string, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "RFQAddress")
 	if err != nil {
 		return value, err
 	}
 
 	value, ok := rawValue.(string)
 	if !ok {
-		return value, fmt.Errorf("failed to cast Bridge to string")
+		return value, fmt.Errorf("failed to cast RFQAddress to string")
+	}
+	return value, nil
+}
+
+// GetCCTPAddress returns the RFQ address for the given chainID.
+func (c Config) GetCCTPAddress(chainID int) (value string, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "CCTPAddress")
+	if err != nil {
+		return value, err
+	}
+
+	value, ok := rawValue.(string)
+	if !ok {
+		return value, fmt.Errorf("failed to cast CCTPAddress to string")
 	}
 	return value, nil
 }
@@ -281,6 +296,20 @@ func (c Config) GetFixedFeeMultiplier(chainID int) (value float64, err error) {
 	return value, nil
 }
 
+// GetCCTPStartBlock returns the CCTPStartBlock for the given chainID.
+func (c Config) GetCCTPStartBlock(chainID int) (value uint64, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "CCTPStartBlock")
+	if err != nil {
+		return value, err
+	}
+
+	value, ok := rawValue.(uint64)
+	if !ok {
+		return value, fmt.Errorf("failed to cast CCTPStartBlock to int")
+	}
+	return value, nil
+}
+
 // GetL1FeeParams returns the L1 fee params for the given chain.
 func (c Config) GetL1FeeParams(chainID uint32, origin bool) (uint32, int, bool) {
 	var gasEstimate int
@@ -344,6 +373,83 @@ func (c Config) GetHTTPTimeout() time.Duration {
 		timeoutMs = feePricerCfg.HTTPTimeoutMs
 	}
 	return time.Duration(timeoutMs) * time.Millisecond
+}
+
+func (c Config) getTokenConfigByAddr(chainID int, tokenAddr string) (cfg TokenConfig, name string, err error) {
+	chainConfig, ok := c.Chains[chainID]
+	if !ok {
+		return cfg, name, fmt.Errorf("no chain config for chain %d", chainID)
+	}
+	for tokenName, tokenConfig := range chainConfig.Tokens {
+		if common.HexToAddress(tokenConfig.Address).Hex() == common.HexToAddress(tokenAddr).Hex() {
+			return tokenConfig, tokenName, nil
+		}
+	}
+	return cfg, name, fmt.Errorf("no token config for chain %d and address %s", chainID, tokenAddr)
+}
+
+// GetRebalanceMethod returns the rebalance method for the given chain and token address.
+func (c Config) GetRebalanceMethod(chainID int, tokenAddr string) (method RebalanceMethod, err error) {
+	tokenConfig, tokenName, err := c.getTokenConfigByAddr(chainID, tokenAddr)
+	if err != nil {
+		return 0, err
+	}
+	for cid, chainCfg := range c.Chains {
+		tokenCfg, ok := chainCfg.Tokens[tokenName]
+		if ok {
+			if tokenConfig.RebalanceMethod != tokenCfg.RebalanceMethod {
+				return RebalanceMethodNone, fmt.Errorf("rebalance method mismatch for token %s on chains %d and %d", tokenName, chainID, cid)
+			}
+		}
+	}
+	switch tokenConfig.RebalanceMethod {
+	case "cctp":
+		return RebalanceMethodCCTP, nil
+	case "native":
+		return RebalanceMethodNative, nil
+	}
+	return RebalanceMethodNone, nil
+}
+
+// GetRebalanceMethods returns all rebalance methods present in the config.
+func (c Config) GetRebalanceMethods() (methods map[RebalanceMethod]bool, err error) {
+	methods = make(map[RebalanceMethod]bool)
+	for chainID, chainCfg := range c.Chains {
+		for _, tokenCfg := range chainCfg.Tokens {
+			method, err := c.GetRebalanceMethod(chainID, tokenCfg.Address)
+			if err != nil {
+				return nil, err
+			}
+			if method != RebalanceMethodNone {
+				methods[method] = true
+			}
+		}
+	}
+	return methods, nil
+}
+
+// GetMaintenanceBalancePct returns the maintenance balance percentage for the given chain and token address.
+func (c Config) GetMaintenanceBalancePct(chainID int, tokenAddr string) (float64, error) {
+	tokenConfig, _, err := c.getTokenConfigByAddr(chainID, tokenAddr)
+	if err != nil {
+		return 0, err
+	}
+	if tokenConfig.MaintenanceBalancePct <= 0 {
+		return 0, fmt.Errorf("maintenance balance pct must be positive: %f", tokenConfig.MaintenanceBalancePct)
+	}
+	return tokenConfig.MaintenanceBalancePct, nil
+}
+
+// GetInitialBalancePct returns the initial balance percentage for the given chain and token address.
+func (c Config) GetInitialBalancePct(chainID int, tokenAddr string) (float64, error) {
+	tokenConfig, _, err := c.getTokenConfigByAddr(chainID, tokenAddr)
+	if err != nil {
+		return 0, err
+	}
+	if tokenConfig.InitialBalancePct <= 0 {
+		return 0, fmt.Errorf("initial balance pct must be positive: %f", tokenConfig.InitialBalancePct)
+	}
+	return tokenConfig.InitialBalancePct, nil
 }
 
 // GetTokenID returns the tokenID for the given chain and address.
@@ -441,13 +547,68 @@ func (c Config) GetMinQuoteAmount(chainID int, addr common.Address) *big.Int {
 	return quoteAmountScaled
 }
 
+var defaultMinRebalanceAmount = big.NewInt(1000)
+
+// GetMinRebalanceAmount returns the min rebalance amount for the given chain and address.
+// Note that this getter returns the value in native token decimals.
+//
+//nolint:dupl
+func (c Config) GetMinRebalanceAmount(chainID int, addr common.Address) *big.Int {
+	tokenCfg, _, err := c.getTokenConfigByAddr(chainID, addr.Hex())
+	if err != nil {
+		return defaultMaxRebalanceAmount
+	}
+	rebalanceAmountFlt, ok := new(big.Float).SetString(tokenCfg.MinRebalanceAmount)
+	if !ok || rebalanceAmountFlt == nil {
+		return defaultMinRebalanceAmount
+	}
+
+	// Scale by the token decimals.
+	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenCfg.Decimals)), nil)
+	minRebalanceAmountScaled, _ := new(big.Float).Mul(rebalanceAmountFlt, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
+	return minRebalanceAmountScaled
+}
+
+var defaultMaxRebalanceAmount = abi.MaxInt256
+
+// GetMaxRebalanceAmount returns the max rebalance amount for the given chain and address.
+// Note that this getter returns the value in native token decimals.
+//
+//nolint:dupl
+func (c Config) GetMaxRebalanceAmount(chainID int, addr common.Address) *big.Int {
+	tokenCfg, _, err := c.getTokenConfigByAddr(chainID, addr.Hex())
+	if err != nil {
+		return defaultMaxRebalanceAmount
+	}
+	rebalanceAmountFlt, ok := new(big.Float).SetString(tokenCfg.MaxRebalanceAmount)
+	if !ok || rebalanceAmountFlt == nil {
+		return defaultMaxRebalanceAmount
+	}
+
+	// Scale by the token decimals.
+	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenCfg.Decimals)), nil)
+	maxRebalanceAmountScaled, _ := new(big.Float).Mul(rebalanceAmountFlt, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
+	return maxRebalanceAmountScaled
+}
+
 const defaultDBSelectorIntervalSeconds = 1
 
 // GetDBSelectorInterval returns the interval for the DB selector.
 func (c Config) GetDBSelectorInterval() time.Duration {
-	interval := c.DBSelectorIntervalSeconds
+	interval := c.DBSelectorInterval
 	if interval <= 0 {
-		return defaultDBSelectorIntervalSeconds
+		interval = time.Duration(defaultDBSelectorIntervalSeconds) * time.Second
 	}
-	return time.Duration(interval) * time.Second
+	return interval
+}
+
+const defaultRebalanceIntervalSeconds = 30
+
+// GetRebalanceInterval returns the interval for rebalancing.
+func (c Config) GetRebalanceInterval() time.Duration {
+	interval := c.RebalanceInterval
+	if interval == 0 {
+		interval = time.Duration(defaultRebalanceIntervalSeconds) * time.Second
+	}
+	return interval
 }

@@ -78,7 +78,8 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 		case *fastbridge.FastBridgeBridgeRelayed:
 			// it wasn't me
 			if event.Relayer != r.signer.Address() {
-				return nil
+				//nolint: wrapcheck
+				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost)
 			}
 
 			err = r.handleRelayLog(ctx, event)
@@ -88,7 +89,8 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 		case *fastbridge.FastBridgeBridgeProofProvided:
 			// it wasn't me
 			if event.Relayer != r.signer.Address() {
-				return nil
+				//nolint: wrapcheck
+				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost)
 			}
 
 			err = r.handleProofProvided(ctx, event)
@@ -98,10 +100,11 @@ func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) 
 		case *fastbridge.FastBridgeBridgeDepositClaimed:
 			// it wasn't me
 			if event.Relayer != r.signer.Address() {
-				return nil
+				//nolint: wrapcheck
+				return r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.RelayRaceLost)
 			}
 
-			err = r.handleDepositClaimed(ctx, event)
+			err = r.handleDepositClaimed(ctx, event, chainID)
 			if err != nil {
 				return fmt.Errorf("could not handle deposit claimed: %w", err)
 			}
@@ -199,8 +202,12 @@ type decimalsRes struct {
 	originDecimals, destDecimals uint8
 }
 
-func (r *Relayer) handleDepositClaimed(ctx context.Context, event *fastbridge.FastBridgeBridgeDepositClaimed) error {
-	err := r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.ClaimCompleted)
+func (r *Relayer) handleDepositClaimed(ctx context.Context, event *fastbridge.FastBridgeBridgeDepositClaimed, chainID int) error {
+	err := r.inventory.Rebalance(ctx, chainID, event.Token)
+	if err != nil {
+		return fmt.Errorf("could not rebalance: %w", err)
+	}
+	err = r.db.UpdateQuoteRequestStatus(ctx, event.TransactionId, reldb.ClaimCompleted)
 	if err != nil {
 		return fmt.Errorf("could not update request status: %w", err)
 	}
