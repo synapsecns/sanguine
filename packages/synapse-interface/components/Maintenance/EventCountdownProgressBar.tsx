@@ -1,6 +1,15 @@
 import { LinearAnimatedProgressBar } from './LinearAnimatedProgressBar'
 import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 
+/**
+ * Automated Event Countdown Progress bar that displays
+ * time remaining for event target end date to be reached.
+ * Displays a visual progress bar with percentage completion.
+ *
+ * @param eventLabel text to display in progress bar
+ * @param startDate starting date for progress bar to activate
+ * @param endDate ending date for progress bar to disappear
+ */
 export const useEventCountdownProgressBar = (
   eventLabel: string,
   startDate: Date,
@@ -10,10 +19,10 @@ export const useEventCountdownProgressBar = (
   isComplete: boolean
   EventCountdownProgressBar: JSX.Element
 } => {
-  useIntervalTimer(60000)
-
   const { totalTimeRemainingInMinutes, hoursRemaining, isComplete, isPending } =
     getCountdownTimeStatus(startDate, endDate)
+
+  useIntervalTimer(60000, isComplete)
 
   const timeRemaining: string =
     totalTimeRemainingInMinutes > 90
@@ -134,7 +143,7 @@ const calculateTimeUntilTarget = (targetDate: Date) => {
   const isComplete = timeDifference <= 0
 
   const daysRemaining = Math.floor(timeDifference / (1000 * 60 * 60 * 24))
-  const hoursRemaining = Math.floor(
+  const hoursRemaining = Math.ceil(
     (timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
   )
   const minutesRemaining = Math.floor(
