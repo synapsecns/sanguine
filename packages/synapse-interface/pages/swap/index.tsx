@@ -37,13 +37,13 @@ import {
 import { SwapTransactionButton } from '@/components/StateManagedSwap/SwapTransactionButton'
 import SwapExchangeRateInfo from '@/components/StateManagedSwap/SwapExchangeRateInfo'
 import { useSwapState } from '@/slices/swap/hooks'
-import { SwapChainListOverlay } from '@/components/StateManagedSwap/SwapChainListOverlay'
-import { SwapFromTokenListOverlay } from '@/components/StateManagedSwap/SwapFromTokenListOverlay'
+// import { SwapChainListOverlay } from '@/components/StateManagedSwap/SwapChainListOverlay'
+// import { SwapFromTokenListOverlay } from '@/components/StateManagedSwap/SwapFromTokenListOverlay'
 import { SwapInputContainer } from '@/components/StateManagedSwap/SwapInputContainer'
 import { SwapOutputContainer } from '@/components/StateManagedSwap/SwapOutputContainer'
 import { setSwapQuote, updateSwapFromValue } from '@/slices/swap/reducer'
 import { EMPTY_SWAP_QUOTE_ZERO } from '@/constants/swap'
-import { SwapToTokenListOverlay } from '@/components/StateManagedSwap/SwapToTokenListOverlay'
+// import { SwapToTokenListOverlay } from '@/components/StateManagedSwap/SwapToTokenListOverlay'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import useSyncQueryParamsWithSwapState from '@/utils/hooks/useSyncQueryParamsWithSwapState'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
@@ -365,7 +365,7 @@ const StateManagedSwap = () => {
             <PageHeader title="Swap" subtitle="Exchange assets on chain." />
           </div>
           <BridgeCard bridgeRef={swapDisplayRef}>
-            <Transition show={showSwapChainListOverlay} {...TRANSITION_PROPS}>
+            {/* <Transition show={showSwapChainListOverlay} {...TRANSITION_PROPS}>
               <animated.div className={springClass}>
                 <SwapChainListOverlay />
               </animated.div>
@@ -382,7 +382,7 @@ const StateManagedSwap = () => {
               <animated.div className={springClass}>
                 <SwapToTokenListOverlay />
               </animated.div>
-            </Transition>
+            </Transition> */}
             <SwapInputContainer />
             <div className="h-0" /> {/* TODO: Replace with SwitchButton */}
             <SwapOutputContainer />

@@ -219,10 +219,8 @@ export const SwapChainListOverlay = () => {
 }
 */
 
-export const SwapChainListArray = () => {
-  const { swapChainId, swapFromChainIds } = useSwapState()
-  const [searchStr, setSearchStr] = useState('')
-  const dispatch = useDispatch()
+export const SwapChainListArray = (searchStr: string) => {
+  const { swapFromChainIds } = useSwapState()
 
   let possibleChains = sortChains(
     _(ALL_CHAINS)
