@@ -3,8 +3,6 @@ import { MaintenanceBanner } from './components/MaintenanceBanner'
 import { MaintenanceWarningMessage } from './components/MaintenanceWarningMessage'
 import { useMaintenanceCountdownProgress } from './components/useMaintenanceCountdownProgress'
 
-/** Aggregators */
-
 interface ChainPause {
   id: string
   pausedChains: number[]
