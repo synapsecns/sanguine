@@ -85,11 +85,23 @@ var (
 		clientContract := helpers.Registry().Get(ctx, InterchainClient)
 		sendingModule := helpers.Registry().Get(ctx, InterchainModuleMock)
 
-		appAddress, appTx, appMock, err := interchainapp.DeployInterchainApp(transactOps, backend, clientContract.Address(), []common.Address{sendingModule.Address()}, []common.Address{sendingModule.Address()})
+		appAddress, appTx, appMock, err := interchainapp.DeployInterchainAppExample(transactOps, backend, transactOps.From)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy interchain app mock: %w", err)
 		}
 		helpers.Backend().WaitForConfirmation(ctx, appTx)
+
+		tx, err := appMock.SetInterchainClient(transactOps, clientContract.Address())
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not set interchain client: %w", err)
+		}
+		helpers.Backend().WaitForConfirmation(ctx, tx)
+
+		tx, err = appMock.AddTrustedModule(transactOps, sendingModule.Address())
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not set trusted module: %w", err)
+		}
+		helpers.Backend().WaitForConfirmation(ctx, tx)
 
 		return appAddress, appTx, appMock, nil
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
@@ -133,7 +145,7 @@ var (
 	}, []contracts.ContractType{})
 
 	gasOracleMock = deployer.NewFunctionalDeployer(GasOracleMock, func(ctx context.Context, helpers deployer.IFunctionalDeployer, transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return gasoraclemock.DeployGasOracleMock(transactOps, backend)
+		return gasoraclemock.DeploySynapseGasOracleMock(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return gasoraclemock.NewGasOracleMockRef(address, backend)
 	}, []contracts.ContractType{})

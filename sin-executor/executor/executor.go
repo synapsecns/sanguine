@@ -172,7 +172,7 @@ func (e *Executor) executeTransaction(ctx context.Context, request db.Transactio
 		transactor.GasLimit = request.Options.GasLimit.Uint64()
 		transactor.Value = request.Options.GasAirdrop
 
-		return contract.InterchainExecute(transactor, request.Options.GasLimit, request.EncodedTX)
+		return contract.InterchainExecute(transactor, request.Options.GasLimit, request.EncodedTX, nil)
 	})
 	if err != nil {
 		return fmt.Errorf("could not submit transaction: %w", err)
@@ -192,11 +192,7 @@ func (e *Executor) checkReady(ctx context.Context, request db.TransactionSent) e
 		return fmt.Errorf("could not get contract for chain %d", request.DstChainID.Int64())
 	}
 
-	// TODO: REMOVE ME
-	// err := e.db.UpdateInterchainTransactionStatus(ctx, request.TransactionID, db.Ready)
-	// TODO: REMOVE ME
-
-	isExecutable, err := contract.IsExecutable(&bind.CallOpts{Context: ctx}, request.EncodedTX)
+	isExecutable, err := contract.IsExecutable(&bind.CallOpts{Context: ctx}, request.EncodedTX, nil)
 	if err != nil {
 		return fmt.Errorf("could not check if executable: %w", err)
 	}
@@ -331,4 +327,10 @@ func (e *Executor) runChainIndexer(parentCtx context.Context, chainID int) (err 
 		return fmt.Errorf("listener failed: %w", err)
 	}
 	return nil
+}
+
+// DB returns the db service.
+func (e *Executor) DB() db.Service {
+	return e.db
+
 }

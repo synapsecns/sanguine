@@ -3,9 +3,11 @@ package executor_test
 import (
 	"context"
 	"errors"
+	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainapp"
 	"math/big"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/Flaque/filet"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -98,23 +100,30 @@ func (i *InterchainSuite) setClientConfigs(backend backends.SimulatedTestBackend
 	backend.WaitForConfirmation(i.GetTestContext(), tx)
 
 	// set the receiving module on the app
-	_, appMock := i.deployManager.GetInterchainAppMock(i.GetTestContext(), backend)
+	amInfo, appMock := i.deployManager.GetInterchainAppMock(i.GetTestContext(), backend)
 
-	chainIDS := []uint64{backend.GetBigChainID().Uint64(), otherBackend.GetBigChainID().Uint64()}
-	linkedApps := []common.Address{i.deployManager.Get(i.GetTestContext(), backend, testutil.InterchainApp).Address(), i.deployManager.Get(i.GetTestContext(), otherBackend, testutil.InterchainApp).Address()}
+	appAuth := backend.GetTxContext(i.GetTestContext(), amInfo.OwnerPtr())
 
-	sendingModules, err := appMock.GetSendingModules0(&bind.CallOpts{Context: i.GetTestContext()})
+	tx, err = appMock.LinkRemoteAppEVM(appAuth.TransactOpts, otherBackend.GetBigChainID(), i.deployManager.Get(i.GetTestContext(), otherBackend, testutil.InterchainApp).Address())
 	i.Require().NoError(err)
+	backend.WaitForConfirmation(i.GetTestContext(), tx)
 
-	receivingModules, err := appMock.GetReceivingModules(&bind.CallOpts{Context: i.GetTestContext()})
-	i.Require().NoError(err)
-
+	time.Sleep(time.Second * 5)
 	_, executionService := i.deployManager.GetExecutionService(i.GetTestContext(), backend)
 	// same thing
 
-	tx, err = appMock.SetAppConfig(auth.TransactOpts, chainIDS, linkedApps, sendingModules, receivingModules, executionService.Address(), big.NewInt(1), 0)
+	tx, err = appMock.SetExecutionService(appAuth.TransactOpts, executionService.Address())
 	i.Require().NoError(err)
 	backend.WaitForConfirmation(i.GetTestContext(), tx)
+
+	tx, err = appMock.SetAppConfigV1(appAuth.TransactOpts, interchainapp.AppConfigV1{
+		RequiredResponses: big.NewInt(1),
+		OptimisticPeriod:  big.NewInt(0), // no need to worry about mocking period
+	})
+
+	i.Require().NoError(err)
+	backend.WaitForConfirmation(i.GetTestContext(), tx)
+
 }
 
 func (i *InterchainSuite) addressToBytes32(addie common.Address) [32]byte {
