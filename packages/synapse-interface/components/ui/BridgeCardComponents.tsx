@@ -173,25 +173,22 @@ const SelectorWrapper = ({
     if (!ref) return
     // if (window.innerWidth >= 1024) return
 
-    if (searchStr) {
-      ref.style.position = 'absolute'
-      ref.style.top = 'auto'
-      ref.style.bottom = 'auto'
-    } else {
-      const { y, height } = ref.getBoundingClientRect()
-      const screen = window.innerHeight
+    const { y, height } = ref.getBoundingClientRect()
+    const screen = window.innerHeight
 
-      if (y + height * 0.67 > screen) {
-        ref.style.position = 'fixed'
-        ref.style.bottom = '4px'
-        document.addEventListener('scroll', () => setHover(false), {
-          once: true,
-        })
-      }
-      if (y < 0) {
-        ref.style.position = 'fixed'
-        ref.style.top = '4px'
-      }
+    if (y + height * 0.67 > screen) {
+      ref.style.position = 'fixed'
+      ref.style.bottom = '4px'
+      document.addEventListener('scroll', () => setHover(false), {
+        once: true,
+      })
+    }
+    if (ref.getBoundingClientRect().y < 0) {
+      ref.style.position = 'fixed'
+      ref.style.top = '4px'
+      const search = ref.firstChild.firstChild
+      const inner = search.nextSibling
+      inner.style.height = `${screen - search.offsetHeight - 16}px`
     }
   })
 
