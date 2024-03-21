@@ -329,8 +329,6 @@ jobs:
     steps:
       - uses: actions/setup-go@v4
         with:
-          # see: https://github.com/golangci/golangci-lint/issues/3420, moving to go 1.20 requires a new golangci-lint version
-          # TODO: with this being 3 behind this should be done sooner rather than later.
           go-version: 1.21.x
 
       - uses: actions/checkout@v4
