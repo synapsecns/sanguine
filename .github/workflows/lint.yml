@@ -36,12 +36,12 @@ jobs:
       - name: Validate coderabbit
         uses: ansible/ansible-lint-action@master
         with:
-          files-to-validate: [
-              {
-                path: ".coderabbit.yaml",
-                schema: "./coderabbit-overrides.v2.json"
-              }
-            ]
+          files-to-validate: '[
+            {
+                "path": ".coderabbit.yaml",
+                "schema": "./coderabbit-overrides.v2.json"
+            }
+          ]'
       - name: yaml-lint
         uses: ibiqlik/action-yamllint@v3
         id: yaml-lint
