@@ -1,9 +1,9 @@
 {
-  "address": "0xfd1884211Aaea68494368CDfDfACdc96375B9514",
+  "address": "0xe60609A91C613c1ca4E91f2f992a5bF40ACedb34",
   "constructorArgs": "0x000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
   "receipt": {
-    "hash": "0xa518e1ded6d8d202cc61cb44ced4fec42d1c03841e60815b6c7571a8bc360595",
-    "blockNumber": 5411644
+    "hash": "0x2e6b84f7dc1c70e8513c6218639926bbf972e4d1b012fe222f81a021a89fefa3",
+    "blockNumber": 5532063
   },
   "abi": [
     {
@@ -52,6 +52,11 @@
           "name": "dbNonce",
           "type": "uint256",
           "internalType": "uint256"
+        },
+        {
+          "name": "entryIndex",
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "message",
@@ -534,6 +539,18 @@
           "type": "uint256",
           "indexed": false,
           "internalType": "uint256"
+        },
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "entryIndex",
+          "type": "uint64",
+          "indexed": false,
+          "internalType": "uint64"
         }
       ],
       "anonymous": false
@@ -547,6 +564,18 @@
           "type": "uint256",
           "indexed": false,
           "internalType": "uint256"
+        },
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "entryIndex",
+          "type": "uint64",
+          "indexed": false,
+          "internalType": "uint64"
         }
       ],
       "anonymous": false

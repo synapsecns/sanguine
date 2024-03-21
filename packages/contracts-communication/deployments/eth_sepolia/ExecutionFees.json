@@ -1,9 +1,9 @@
 {
-  "address": "0x0775ca9DDc25d8A67d793A838FBc6C6eB7532298",
+  "address": "0xD0fd41B442Be26B15B56b47A7F0dE47328521208",
   "constructorArgs": "0x000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
   "receipt": {
-    "hash": "0xc009b5f887ee795be5c6cb00708c9fb51d9e9c471dab782ca28be5ee45d3cca6",
-    "blockNumber": 5411658
+    "hash": "0xb5ab461abab69b657842699771f0c9d29f8f8b419bda9e7a62f7360c05e934f8",
+    "blockNumber": 5532078
   },
   "abi": [
     {
@@ -497,7 +497,23 @@
     {
       "type": "error",
       "name": "ExecutionFees__AlreadyRecorded",
-      "inputs": []
+      "inputs": [
+        {
+          "name": "dstChainId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "transactionId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "executor",
+          "type": "address",
+          "internalType": "address"
+        }
+      ]
     },
     {
       "type": "error",

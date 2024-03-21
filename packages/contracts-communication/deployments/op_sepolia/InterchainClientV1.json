@@ -1,9 +1,9 @@
 {
-  "address": "0x30cF78d1aA719c7408c95164ce9aA3A4211B3985",
-  "constructorArgs": "0x0000000000000000000000004d5f1de076e2097320ed1046b88b9c0011357ba2000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
+  "address": "0x128B2edd9c1496a0369202ed4b194B71FD7fA414",
+  "constructorArgs": "0x000000000000000000000000026f71b34b1ebc52942ad44adc2955aea6252c68000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
   "receipt": {
-    "hash": "0x1a2e823491602282fcc859b4d386178d1eccc790ac3ef63dce874ab5c75239a5",
-    "blockNumber": 8856977
+    "hash": "0x9cf6ecd219675d3d96642b2da8af1757ce112b5d6696fd47042914cbc359757a",
+    "blockNumber": 9617304
   },
   "abi": [
     {
@@ -99,6 +99,11 @@
               "name": "dbNonce",
               "type": "uint256",
               "internalType": "uint256"
+            },
+            {
+              "name": "entryIndex",
+              "type": "uint64",
+              "internalType": "uint64"
             },
             {
               "name": "options",
@@ -263,6 +268,11 @@
           "name": "transaction",
           "type": "bytes",
           "internalType": "bytes"
+        },
+        {
+          "name": "proof",
+          "type": "bytes32[]",
+          "internalType": "bytes32[]"
         }
       ],
       "outputs": [],
@@ -305,14 +315,26 @@
       ],
       "outputs": [
         {
-          "name": "transactionId",
-          "type": "bytes32",
-          "internalType": "bytes32"
-        },
-        {
-          "name": "dbNonce",
-          "type": "uint256",
-          "internalType": "uint256"
+          "name": "desc",
+          "type": "tuple",
+          "internalType": "struct InterchainTxDescriptor",
+          "components": [
+            {
+              "name": "transactionId",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            },
+            {
+              "name": "dbNonce",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "entryIndex",
+              "type": "uint64",
+              "internalType": "uint64"
+            }
+          ]
         }
       ],
       "stateMutability": "payable"
@@ -354,14 +376,26 @@
       ],
       "outputs": [
         {
-          "name": "transactionId",
-          "type": "bytes32",
-          "internalType": "bytes32"
-        },
-        {
-          "name": "dbNonce",
-          "type": "uint256",
-          "internalType": "uint256"
+          "name": "desc",
+          "type": "tuple",
+          "internalType": "struct InterchainTxDescriptor",
+          "components": [
+            {
+              "name": "transactionId",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            },
+            {
+              "name": "dbNonce",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "entryIndex",
+              "type": "uint64",
+              "internalType": "uint64"
+            }
+          ]
         }
       ],
       "stateMutability": "payable"
@@ -374,6 +408,11 @@
           "name": "encodedTx",
           "type": "bytes",
           "internalType": "bytes"
+        },
+        {
+          "name": "proof",
+          "type": "bytes32[]",
+          "internalType": "bytes32[]"
         }
       ],
       "outputs": [
@@ -464,9 +503,27 @@
           "name": "dbNonce",
           "type": "uint256",
           "internalType": "uint256"
+        },
+        {
+          "name": "entryIndex",
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ],
       "stateMutability": "nonpayable"
+    },
+    {
+      "type": "event",
+      "name": "ExecutionFeesSet",
+      "inputs": [
+        {
+          "name": "executionFees",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
     },
     {
       "type": "event",
@@ -483,6 +540,12 @@
           "type": "uint256",
           "indexed": true,
           "internalType": "uint256"
+        },
+        {
+          "name": "entryIndex",
+          "type": "uint64",
+          "indexed": true,
+          "internalType": "uint64"
         },
         {
           "name": "executor",
@@ -508,6 +571,12 @@
           "type": "uint256",
           "indexed": true,
           "internalType": "uint256"
+        },
+        {
+          "name": "entryIndex",
+          "type": "uint64",
+          "indexed": true,
+          "internalType": "uint64"
         },
         {
           "name": "srcChainId",
@@ -545,6 +614,12 @@
           "type": "uint256",
           "indexed": true,
           "internalType": "uint256"
+        },
+        {
+          "name": "entryIndex",
+          "type": "uint64",
+          "indexed": true,
+          "internalType": "uint64"
         },
         {
           "name": "dstChainId",
@@ -587,6 +662,25 @@
           "type": "bytes",
           "indexed": false,
           "internalType": "bytes"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "LinkedClientSet",
+      "inputs": [
+        {
+          "name": "chainId",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "client",
+          "type": "bytes32",
+          "indexed": false,
+          "internalType": "bytes32"
         }
       ],
       "anonymous": false
@@ -734,6 +828,16 @@
           "internalType": "bytes32"
         }
       ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainClientV1__ZeroReceiver",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "InterchainClientV1__ZeroRequiredResponses",
+      "inputs": []
     },
     {
       "type": "error",
