@@ -3,9 +3,6 @@
 language: 'en'
 early_access: true
 reviews:
-  # trying this out for now. Can be removed if it becomes a nuisance
-  request_changes_workflow: true
-
   auto_review:
     enabled: true
     ignore_title_keywords:
