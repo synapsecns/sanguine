@@ -147,11 +147,9 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
 
     // ═══════════════════════════════════════════════ TEST HELPERS ════════════════════════════════════════════════════
 
-    function assertEq(InterchainEntry memory entry, InterchainEntry memory expected) internal {
-        assertEq(entry.srcChainId, expected.srcChainId, "!srcChainId");
-        assertEq(entry.dbNonce, expected.dbNonce, "!dbNonce");
-        assertEq(entry.srcWriter, expected.srcWriter, "!srcWriter");
-        assertEq(entry.dataHash, expected.dataHash, "!dataHash");
+    function assertCorrectValue(bytes32 entryValue, InterchainEntry memory expected) internal {
+        bytes32 expectedValue = keccak256(abi.encode(expected.srcWriter, expected.dataHash));
+        assertEq(entryValue, expectedValue, "!entryValue");
     }
 
     function expectVerificationRequestedEvent(InterchainEntry memory entry, address[] memory srcModules) internal {
@@ -188,9 +186,9 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE);
     }
 
-    function test_setup_getEntry() public {
+    function test_setup_getEntryValue() public {
         for (uint256 i = 0; i < INITIAL_DB_NONCE; ++i) {
-            assertEq(icDB.getEntry(i, 0), getInitialEntry(i));
+            assertCorrectValue(icDB.getEntryValue(i, 0), getInitialEntry(i));
         }
     }
 
@@ -218,7 +216,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_writeEntry_writerF_savesEntry() public {
         InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerF);
         writeEntry(writerF, entry.dataHash);
-        assertEq(icDB.getEntry(INITIAL_DB_NONCE, 0), entry);
+        assertCorrectValue(icDB.getEntryValue(INITIAL_DB_NONCE, 0), entry);
     }
 
     function test_writeEntry_writerS_emitsEvent() public {
@@ -243,7 +241,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_writeEntry_writerS_savesEntry() public {
         InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerS);
         writeEntry(writerS, entry.dataHash);
-        assertEq(icDB.getEntry(INITIAL_DB_NONCE, 0), entry);
+        assertCorrectValue(icDB.getEntryValue(INITIAL_DB_NONCE, 0), entry);
     }
 
     // ═══════════════════════════════════════ TESTS: REQUESTING VALIDATION ════════════════════════════════════════════
@@ -402,7 +400,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_writeEntryWithVerification_writerF_oneModule_savesEntry() public {
         InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerF);
         writeEntryWithVerification(MODULE_A_FEE, writerF, entry.dataHash, oneModule);
-        assertEq(icDB.getEntry(INITIAL_DB_NONCE, 0), entry);
+        assertCorrectValue(icDB.getEntryValue(INITIAL_DB_NONCE, 0), entry);
     }
 
     function test_writeEntryWithVerification_writerF_twoModules_callsModules() public {
@@ -435,7 +433,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_writeEntryWithVerification_writerF_twoModules_savesEntry() public {
         InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerF);
         writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerF, entry.dataHash, twoModules);
-        assertEq(icDB.getEntry(INITIAL_DB_NONCE, 0), entry);
+        assertCorrectValue(icDB.getEntryValue(INITIAL_DB_NONCE, 0), entry);
     }
 
     function test_writeEntryWithVerification_writerS_oneModule_callsModule() public {
@@ -467,7 +465,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_writeEntryWithVerification_writerS_oneModule_savesEntry() public {
         InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerS);
         writeEntryWithVerification(MODULE_A_FEE, writerS, entry.dataHash, oneModule);
-        assertEq(icDB.getEntry(INITIAL_DB_NONCE, 0), entry);
+        assertCorrectValue(icDB.getEntryValue(INITIAL_DB_NONCE, 0), entry);
     }
 
     function test_writeEntryWithVerification_writerS_twoModules_callsModules() public {
@@ -500,7 +498,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     function test_writeEntryWithVerification_writerS_twoModules_savesEntry() public {
         InterchainEntry memory entry = getMockEntry(INITIAL_DB_NONCE, writerS);
         writeEntryWithVerification(MODULE_A_FEE + MODULE_B_FEE, writerS, entry.dataHash, twoModules);
-        assertEq(icDB.getEntry(INITIAL_DB_NONCE, 0), entry);
+        assertCorrectValue(icDB.getEntryValue(INITIAL_DB_NONCE, 0), entry);
     }
 
     // ════════════════════════════════ TESTS: WRITE + REQUEST VALIDATION (REVERTS) ════════════════════════════════════
@@ -611,10 +609,10 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         }
     }
 
-    function test_getEntry() public {
+    function test_getEntryValue() public {
         for (uint256 nonce = 0; nonce < INITIAL_DB_NONCE; ++nonce) {
             InterchainEntry memory expectedEntry = getInitialEntry(nonce);
-            assertEq(icDB.getEntry(nonce, 0), expectedEntry);
+            assertCorrectValue(icDB.getEntryValue(nonce, 0), expectedEntry);
         }
     }
 
