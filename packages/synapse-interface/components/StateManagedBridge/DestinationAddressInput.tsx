@@ -442,7 +442,7 @@ const PasteButton = ({ onPaste }: { onPaste: () => Promise<void> }) => {
   return (
     <svg
       width="19"
-      height="20"
+      height="19"
       viewBox="0 0 24 24"
       xmlns="http://www.w3.org/2000/svg"
       onClick={onPaste}
