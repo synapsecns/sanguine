@@ -166,9 +166,23 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__BatchNotFinalized.selector, dbNonce));
     }
 
+    function expectEntryIndexOutOfRange(uint256 dbNonce, uint64 entryIndex, uint64 batchSize) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                IInterchainDB.InterchainDB__EntryIndexOutOfRange.selector, dbNonce, entryIndex, batchSize
+            )
+        );
+    }
+
     function expectIncorrectFeeAmount(uint256 actualFee, uint256 expectedFee) internal {
         vm.expectRevert(
             abi.encodeWithSelector(IInterchainDB.InterchainDB__IncorrectFeeAmount.selector, actualFee, expectedFee)
+        );
+    }
+
+    function expectInvalidEntryRange(uint256 dbNonce, uint64 start, uint64 end) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(IInterchainDB.InterchainDB__InvalidEntryRange.selector, dbNonce, start, end)
         );
     }
 
@@ -563,8 +577,6 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
 
     // ════════════════════════════════════════ TESTS: RETRIEVING DB VALUES ════════════════════════════════════════════
 
-    // TODO; add revert tests
-
     function checkBatchRoot(bytes32 batchRoot, InterchainEntry memory expectedEntry) internal {
         bytes32 expectedRoot = InterchainEntryLib.entryValue(expectedEntry);
         assertEq(batchRoot, expectedRoot, "!batchRoot");
@@ -584,12 +596,43 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         }
     }
 
+    function test_getBatchLeafs_revert_notFinalized() public {
+        expectBatchNotFinalized(INITIAL_DB_NONCE);
+        icDB.getBatchLeafs(INITIAL_DB_NONCE);
+    }
+
+    function test_getBatchLeafs_revert_nonExistent() public {
+        expectBatchNotFinalized(INITIAL_DB_NONCE + 1);
+        icDB.getBatchLeafs(INITIAL_DB_NONCE + 1);
+    }
+
     function test_getBatchLeafsPaginated() public {
         for (uint256 nonce = 0; nonce < INITIAL_DB_NONCE; ++nonce) {
             bytes32[] memory leafs = icDB.getBatchLeafsPaginated(nonce, 0, 1);
             assertEq(leafs.length, 1, "!leafs.length");
             checkBatchRoot(leafs[0], getInitialEntry(nonce));
         }
+    }
+
+    function test_getBatchLeafsPaginated_revert_notFinalized() public {
+        expectBatchNotFinalized(INITIAL_DB_NONCE);
+        icDB.getBatchLeafsPaginated(INITIAL_DB_NONCE, 0, 1);
+    }
+
+    function test_getBatchLeafsPaginated_revert_nonExistent() public {
+        expectBatchNotFinalized(INITIAL_DB_NONCE + 1);
+        icDB.getBatchLeafsPaginated(INITIAL_DB_NONCE + 1, 0, 1);
+    }
+
+    function test_getBatchLeafsPaginated_revert_invalidRange() public {
+        expectInvalidEntryRange(0, 0, 0);
+        icDB.getBatchLeafsPaginated(0, 0, 0);
+        expectInvalidEntryRange(1, 0, 2);
+        icDB.getBatchLeafsPaginated(1, 0, 2);
+        expectInvalidEntryRange(2, 1, 1);
+        icDB.getBatchLeafsPaginated(2, 1, 1);
+        expectInvalidEntryRange(3, 1, 0);
+        icDB.getBatchLeafsPaginated(3, 1, 0);
     }
 
     function test_getBatchSize_finalized() public {
@@ -602,6 +645,11 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         assertEq(icDB.getBatchSize(INITIAL_DB_NONCE), 0);
     }
 
+    function test_getBatchSize_revert_nonExistent() public {
+        expectBatchDoesNotExist(INITIAL_DB_NONCE + 1);
+        icDB.getBatchSize(INITIAL_DB_NONCE + 1);
+    }
+
     function test_getBatch() public {
         for (uint256 nonce = 0; nonce < INITIAL_DB_NONCE; ++nonce) {
             InterchainBatch memory batch = icDB.getBatch(nonce);
@@ -609,11 +657,31 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         }
     }
 
+    function test_getBatch_revert_notFinalized() public {
+        expectBatchNotFinalized(INITIAL_DB_NONCE);
+        icDB.getBatch(INITIAL_DB_NONCE);
+    }
+
+    function test_getBatch_revert_nonExistent() public {
+        expectBatchNotFinalized(INITIAL_DB_NONCE + 1);
+        icDB.getBatch(INITIAL_DB_NONCE + 1);
+    }
+
     function test_getEntryValue() public {
         for (uint256 nonce = 0; nonce < INITIAL_DB_NONCE; ++nonce) {
             InterchainEntry memory expectedEntry = getInitialEntry(nonce);
             assertCorrectValue(icDB.getEntryValue(nonce, 0), expectedEntry);
         }
+    }
+
+    function test_getEntryValue_revert_finalizedOutOfRange() public {
+        expectEntryIndexOutOfRange(INITIAL_DB_NONCE - 1, 1, 1);
+        icDB.getEntryValue(INITIAL_DB_NONCE - 1, 1);
+    }
+
+    function test_getEntryValue_revert_notFinalizedOutOfRange() public {
+        expectEntryIndexOutOfRange(INITIAL_DB_NONCE, 0, 0);
+        icDB.getEntryValue(INITIAL_DB_NONCE, 0);
     }
 
     function test_getDBNonce() public {
