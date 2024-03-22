@@ -8,7 +8,7 @@ import {
   getMenuItemBgForCoin,
   getMenuItemStyleForCoin,
 } from '@styles/tokens'
-import { Token } from '@/utils/types'
+import { type Token, type ActionTypes } from '@/utils/types'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { CHAINS_BY_ID } from '@/constants/chains'
@@ -49,7 +49,7 @@ const SelectSpecificTokenButton = ({
   exchangeRate?: string
   isBestExchangeRate?: boolean
   estimatedDurationInSeconds?: number
-  action: 'bridge' | 'swap'
+  action: ActionTypes
 }) => {
   const ref = useRef<any>(null)
   const isCurrentToken = selectedToken?.routeSymbol === token?.routeSymbol
@@ -185,7 +185,7 @@ const ButtonContent = memo(
     chainId: number
     isOrigin: boolean
     showAllChains: boolean
-    action: 'bridge' | 'swap'
+    action: ActionTypes
   }) => {
     const portfolioBalances = usePortfolioBalances()
 

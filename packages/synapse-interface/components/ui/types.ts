@@ -1,4 +1,4 @@
-import { type Chain, type Token } from '@/utils/types'
+import { type Chain, type Token, type ActionTypes } from '@/utils/types'
 
 export interface BridgeCardTypes {
   bridgeRef: React.RefObject<HTMLDivElement>
@@ -17,7 +17,7 @@ export interface SelectorTypes {
 
 export interface TokenSelectorTypes extends SelectorTypes {
   selectedItem: Token
-  action: 'bridge' | 'swap'
+  action: ActionTypes
 }
 
 export interface ChainSelectorTypes extends SelectorTypes {

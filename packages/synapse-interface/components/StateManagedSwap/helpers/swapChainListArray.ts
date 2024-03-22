@@ -1,7 +1,8 @@
 import _ from 'lodash'
 import Fuse from 'fuse.js'
-import * as ALL_CHAINS from '@constants/chains/master'
-import { CHAINS_BY_ID, sortChains } from '@constants/chains'
+
+import * as ALL_CHAINS from '@/constants/chains/master'
+import { CHAINS_BY_ID, sortChains } from '@/constants/chains'
 import { useSwapState } from '@/slices/swap/hooks'
 
 export const swapChainListArray = (searchStr: string) => {

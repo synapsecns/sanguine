@@ -1,11 +1,13 @@
 import _ from 'lodash'
 import Fuse from 'fuse.js'
 
-import * as ALL_CHAINS from '@constants/chains/master'
-import { CHAINS_BY_ID, sortChains } from '@constants/chains'
+import * as ALL_CHAINS from '@/constants/chains/master'
+import {
+  CHAINS_BY_ID,
+  sortChains,
+  PAUSED_TO_CHAIN_IDS,
+} from '@/constants/chains'
 import { useBridgeState } from '@/slices/bridge/hooks'
-
-import { PAUSED_TO_CHAIN_IDS } from '@constants/chains'
 
 export const toChainListArray = (searchStr: string = '') => {
   const { toChainIds } = useBridgeState()

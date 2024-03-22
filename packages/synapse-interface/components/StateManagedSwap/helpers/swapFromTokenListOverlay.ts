@@ -1,16 +1,14 @@
 import _ from 'lodash'
-
 import Fuse from 'fuse.js'
 
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
-
-import { hasBalance } from './sortByBalance'
-import { sortByPriorityRank } from './sortByPriorityRank'
 import { useSwapState } from '@/slices/swap/hooks'
 import { getSwapPossibilities } from '@/utils/swapFinder/generateSwapPossibilities'
+import { hasBalance } from './sortByBalance'
+import { sortByPriorityRank } from './sortByPriorityRank'
 
 export const swapFromTokenListArray = (searchStr: string) => {
-  const { swapFromTokens, swapChainId, swapFromToken } = useSwapState()
+  const { swapFromTokens, swapChainId } = useSwapState()
   const portfolioBalances = usePortfolioBalances()
 
   let possibleTokens = sortByPriorityRank(swapFromTokens)
