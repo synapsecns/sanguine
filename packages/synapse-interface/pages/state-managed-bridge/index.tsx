@@ -70,6 +70,10 @@ import {
   EcotoneForkWarningMessage,
   useEcotoneForkCountdownProgress,
 } from '@/components/Maintenance/Events/example/EcotoneForkUpgrade'
+import SettingsSlideOver from '@/components/StateManagedBridge/SettingsSlideOver'
+ import Button from '@/components/ui/tailwind/Button'
+ import { SettingsIcon } from '@/components/icons/SettingsIcon'
+import { setShowSettingsSlideOver } from '@/slices/bridgeDisplaySlice'
 
 const StateManagedBridge = () => {
   const router = useRouter()
@@ -91,6 +95,7 @@ const StateManagedBridge = () => {
     showToChainListOverlay,
     showFromTokenListOverlay,
     showToTokenListOverlay,
+    showSettingsSlideOver
   } = useBridgeDisplayState()
 
   const bridgeDisplayRef = useRef(null)
@@ -514,7 +519,26 @@ const StateManagedBridge = () => {
             title="Bridge"
             subtitle="Send your assets across chains."
           />
-          <div></div>
+          <div>
+            <Button
+               className="flex items-center p-3 text-opacity-75 bg-bgLight hover:bg-bgLighter text-secondaryTextColor hover:text-white"
+               onClick={() => {
+                 if (showSettingsSlideOver === true) {
+                   dispatch(setShowSettingsSlideOver(false))
+                 } else {
+                   dispatch(setShowSettingsSlideOver(true))
+                 }
+               }}
+             >
+               {!showSettingsSlideOver ? (
+                 <>
+                   <SettingsIcon className="w-5 h-5 mr-2" />
+                   <span>Settings</span>
+                 </>
+               ) : (
+                 <span>Close</span>
+               )}
+             </Button>
         </div>
         <Card
           divider={false}
