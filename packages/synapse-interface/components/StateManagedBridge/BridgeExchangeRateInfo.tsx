@@ -15,7 +15,7 @@ import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { CHAINS_BY_ID } from '@constants/chains'
 import * as CHAINS from '@constants/chains/master'
 import { isEmptyString } from '@/utils/isEmptyString'
-import { getValidAddress } from '@/utils/isValidAddress'
+import { getValidAddress, isValidAddress } from '@/utils/isValidAddress'
 
 const MAX_ARB_REBATE_PER_ADDRESS = 2000
 
@@ -44,7 +44,11 @@ const DestinationAddress = () => {
     destinationAddress &&
     getValidAddress(address) !== getValidAddress(destinationAddress)
 
-  if (showAddress) {
+  const isInputValidAddress: boolean = destinationAddress
+    ? isValidAddress(destinationAddress)
+    : false
+
+  if (showAddress && isInputValidAddress) {
     return (
       <div className="flex items-center space-x-1">
         <div>To: </div>
