@@ -11,11 +11,10 @@ import {
 } from '@/utils/hooks/useStipEligibility'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { formatBigIntToPercentString } from '@/utils/bigint/format'
+import { getValidAddress, isValidAddress } from '@/utils/isValidAddress'
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { CHAINS_BY_ID } from '@constants/chains'
 import * as CHAINS from '@constants/chains/master'
-import { isEmptyString } from '@/utils/isEmptyString'
-import { getValidAddress, isValidAddress } from '@/utils/isValidAddress'
 
 const MAX_ARB_REBATE_PER_ADDRESS = 2000
 
@@ -36,7 +35,7 @@ const BridgeExchangeRateInfo = () => {
 }
 
 const DestinationAddress = () => {
-  const { address, isConnected } = useAccount()
+  const { address } = useAccount()
   const { destinationAddress } = useBridgeState()
 
   const showAddress =

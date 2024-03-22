@@ -92,6 +92,10 @@ export const DestinationAddressInput = ({
     if (inputRef.current) {
       inputRef.current.blur()
     }
+
+    if (destinationAddress && isInputInvalid) {
+      handleClearInput()
+    }
   }
 
   const handleClearInput = () => {
