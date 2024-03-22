@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { isString } from 'lodash'
+import { isNull, isString } from 'lodash'
 import { useAppDispatch } from '@/store/hooks'
 import { isValidAddress } from '@/utils/isValidAddress'
 import { shortenAddress } from '@/utils/shortenAddress'
@@ -49,13 +49,12 @@ export const DestinationAddressInput = ({
       isEmptyString(destinationAddress)) ||
     (destinationAddress && !isInputValidAddress)
 
-  /** Conditions for firing off Warning */
-  useEffect(() => {
-    const isSameAddress =
-      connectedAddress &&
-      isInputValidAddress &&
-      getValidAddress(destinationAddress) === getValidAddress(connectedAddress)
+  const isSameAddress =
+    connectedAddress &&
+    isInputValidAddress &&
+    getValidAddress(destinationAddress) === getValidAddress(connectedAddress)
 
+  useEffect(() => {
     const showWarning = isInputValidAddress && !isSameAddress
 
     if (showWarning && !showDestinationWarning) {
@@ -115,6 +114,12 @@ export const DestinationAddressInput = ({
     dispatch(clearDestinationAddress())
     handleClearInput()
   }, [connectedAddress])
+
+  useEffect(() => {
+    if (!isInputFocused && isSameAddress) {
+      handleClearInput()
+    }
+  }, [isSameAddress, destinationAddress, connectedAddress, isInputFocused])
 
   let placeholder
 
@@ -201,8 +206,12 @@ export const DestinationAddressInput = ({
     if (filteredRecipientList.length === 0) return
     if (!showRecipientList) return
 
-    if (enterPressed && currentIdx > -1) {
+    if (enterPressed && !isNull(currentIdx) && currentIdx > -1) {
       onSelectRecipient(filteredRecipientList[currentIdx]?.toAddress)
+    }
+
+    if (enterPressed && isNull(currentIdx)) {
+      onSelectRecipient(destinationAddress)
     }
   }
 
