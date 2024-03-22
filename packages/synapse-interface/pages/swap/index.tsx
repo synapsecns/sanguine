@@ -65,12 +65,6 @@ const StateManagedSwap = () => {
   const { swapChainId, swapFromToken, swapToToken, swapFromValue, swapQuote } =
     useSwapState()
 
-  const {
-    showSwapFromTokenListOverlay,
-    showSwapChainListOverlay,
-    showSwapToTokenListOverlay,
-  } = useSelector((state: RootState) => state.swapDisplay)
-
   const [isApproved, setIsApproved] = useState(false)
 
   const dispatch = useAppDispatch()

@@ -21,12 +21,12 @@ import {
 } from '@/components/ConnectionIndicators'
 import { CHAINS_BY_ID } from '@/constants/chains'
 // import { FromTokenSelector } from './FromTokenSelector'
-import { FromChainListArray } from './FromChainListOverlay'
+import { fromChainListArray } from './helpers/fromChainListArray'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { BridgeSectionContainer } from '@/components/ui/BridgeSectionContainer'
 import { BridgeAmountContainer } from '@/components/ui/BridgeAmountContainer'
-import { FromTokenListArray } from './FromTokenListOverlay'
+import { fromTokenListArray } from './helpers/fromTokenListArray'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -136,7 +136,7 @@ const FromChainSelector = () => (
     selectedItem={CHAINS_BY_ID[useBridgeState().fromChainId]}
     isOrigin={true}
     label="From"
-    itemListFunction={FromChainListArray}
+    itemListFunction={fromChainListArray}
     setFunction={setFromChainId}
   />
 )
@@ -147,7 +147,8 @@ const FromTokenSelector = () => (
     selectedItem={useBridgeState().fromToken}
     isOrigin={true}
     placeholder="Out"
-    itemListFunction={FromTokenListArray}
+    itemListFunction={fromTokenListArray}
     setFunction={setFromToken}
+    action="bridge"
   />
 )
