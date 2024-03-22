@@ -549,35 +549,39 @@ const StateManagedBridge = () => {
         </div>
         <BridgeCard bridgeRef={bridgeDisplayRef}>
           {MaintenanceCountdownProgressBar}
-          <Transition show={showSettingsSlideOver} {...TRANSITION_PROPS}>
-            <animated.div>
+          {showSettingsSlideOver && (
+            <div className="min-h-[472px] ">
               <SettingsSlideOver key="settings" />
-            </animated.div>
-          </Transition>
-          <InputContainer />
-          <SwitchButton
-            onClick={() => {
-              dispatch(setFromChainId(toChainId))
-              dispatch(setFromToken(toToken))
-              dispatch(setToChainId(fromChainId))
-              dispatch(setToToken(fromToken))
-            }}
-          />
-          <OutputContainer />
-          <Warning />
-          <BridgeExchangeRateInfo />
-          {showDestinationAddress && (
-            <DestinationAddressInput
-              toChainId={toChainId}
-              destinationAddress={destinationAddress}
-            />
+            </div>
           )}
-          <BridgeTransactionButton
-            isApproved={isApproved}
-            approveTxn={approveTxn}
-            executeBridge={executeBridge}
-            isBridgePaused={isCurrentChainDisabled}
-          />
+          {!showSettingsSlideOver && (
+            <>
+              <InputContainer />
+              <SwitchButton
+                onClick={() => {
+                  dispatch(setFromChainId(toChainId))
+                  dispatch(setFromToken(toToken))
+                  dispatch(setToChainId(fromChainId))
+                  dispatch(setToToken(fromToken))
+                }}
+              />
+              <OutputContainer />
+              <Warning />
+              <BridgeExchangeRateInfo />
+              {showDestinationAddress && (
+                <DestinationAddressInput
+                  toChainId={toChainId}
+                  destinationAddress={destinationAddress}
+                />
+              )}
+              <BridgeTransactionButton
+                isApproved={isApproved}
+                approveTxn={approveTxn}
+                executeBridge={executeBridge}
+                isBridgePaused={isCurrentChainDisabled}
+              />
+            </>
+          )}
         </BridgeCard>
       </div>
     </div>
