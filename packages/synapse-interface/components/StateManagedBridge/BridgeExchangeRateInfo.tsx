@@ -39,7 +39,6 @@ const DestinationAddress = () => {
   const { destinationAddress } = useBridgeState()
 
   const showAddress =
-    address &&
     destinationAddress &&
     getValidAddress(address) !== getValidAddress(destinationAddress)
 
