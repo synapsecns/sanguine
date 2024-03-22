@@ -1,19 +1,23 @@
 import { useAccount } from 'wagmi'
 import { ToChainSelector } from './ToChainSelector'
 import { ToTokenSelector } from './ToTokenSelector'
-import { useBridgeState } from '@/slices/bridge/hooks'
+import { useBridgeState, useBridgeDisplayState } from '@/slices/bridge/hooks'
 import { DestinationAddressInput } from './DestinationAddressInput'
 import LoadingDots from '../ui/tailwind/LoadingDots'
 
 export const OutputContainer = ({}) => {
   const { address } = useAccount()
   const { bridgeQuote, isLoading } = useBridgeState()
+  const { showDestinationAddress } = useBridgeDisplayState()
 
   return (
     <div className="relative text-left rounded-md p-md bg-bgLight">
       <div className="flex items-center justify-between mb-3">
         <ToChainSelector />
-        <DestinationAddressInput connectedAddress={address} />
+
+        {showDestinationAddress ? (
+          <DestinationAddressInput connectedAddress={address} />
+        ) : null}
       </div>
 
       <div className="flex h-16 mb-2 space-x-2">
