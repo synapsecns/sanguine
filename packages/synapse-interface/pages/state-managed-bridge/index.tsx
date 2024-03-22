@@ -71,8 +71,8 @@ import {
   useEcotoneForkCountdownProgress,
 } from '@/components/Maintenance/Events/example/EcotoneForkUpgrade'
 import SettingsSlideOver from '@/components/StateManagedBridge/SettingsSlideOver'
- import Button from '@/components/ui/tailwind/Button'
- import { SettingsIcon } from '@/components/icons/SettingsIcon'
+import Button from '@/components/ui/tailwind/Button'
+import { SettingsIcon } from '@/components/icons/SettingsIcon'
 import { setShowSettingsSlideOver } from '@/slices/bridgeDisplaySlice'
 
 const StateManagedBridge = () => {
@@ -95,7 +95,7 @@ const StateManagedBridge = () => {
     showToChainListOverlay,
     showFromTokenListOverlay,
     showToTokenListOverlay,
-    showSettingsSlideOver
+    showSettingsSlideOver,
   } = useBridgeDisplayState()
 
   const bridgeDisplayRef = useRef(null)
@@ -521,24 +521,25 @@ const StateManagedBridge = () => {
           />
           <div>
             <Button
-               className="flex items-center p-3 text-opacity-75 bg-bgLight hover:bg-bgLighter text-secondaryTextColor hover:text-white"
-               onClick={() => {
-                 if (showSettingsSlideOver === true) {
-                   dispatch(setShowSettingsSlideOver(false))
-                 } else {
-                   dispatch(setShowSettingsSlideOver(true))
-                 }
-               }}
-             >
-               {!showSettingsSlideOver ? (
-                 <>
-                   <SettingsIcon className="w-5 h-5 mr-2" />
-                   <span>Settings</span>
-                 </>
-               ) : (
-                 <span>Close</span>
-               )}
-             </Button>
+              className="flex items-center p-3 text-opacity-75 bg-bgLight hover:bg-bgLighter text-secondaryTextColor hover:text-white"
+              onClick={() => {
+                if (showSettingsSlideOver === true) {
+                  dispatch(setShowSettingsSlideOver(false))
+                } else {
+                  dispatch(setShowSettingsSlideOver(true))
+                }
+              }}
+            >
+              {!showSettingsSlideOver ? (
+                <>
+                  <SettingsIcon className="w-5 h-5 mr-2" />
+                  <span>Settings</span>
+                </>
+              ) : (
+                <span>Close</span>
+              )}
+            </Button>
+          </div>
         </div>
         <Card
           divider={false}
@@ -549,6 +550,11 @@ const StateManagedBridge = () => {
         >
           {EcotoneForkCountdownProgressBar}
           <div ref={bridgeDisplayRef}>
+            <Transition show={showSettingsSlideOver} {...TRANSITION_PROPS}>
+              <animated.div>
+                <SettingsSlideOver key="settings" />
+              </animated.div>
+            </Transition>
             <Transition show={showFromChainListOverlay} {...TRANSITION_PROPS}>
               <animated.div className={springClass}>
                 <FromChainListOverlay />
