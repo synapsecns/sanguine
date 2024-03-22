@@ -176,6 +176,11 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     }
 
     /// @inheritdoc IInterchainDB
+    function getEntryValue(uint256 dbNonce, uint64 entryIndex) public view returns (bytes32) {
+        // TODO: implement
+    }
+
+    /// @inheritdoc IInterchainDB
     function getDBNonce() public view returns (uint256) {
         return _entries.length;
     }
