@@ -20,7 +20,7 @@ import { txErrorHandler } from '@/utils/txErrorHandler'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { approveToken } from '@/utils/approveToken'
 import { PageHeader } from '@/components/PageHeader'
-import { BridgeCard } from '@/components/ui/BridgeCardComponents'
+import { BridgeCard } from '@/components/ui/BridgeCard'
 import { Transition } from '@headlessui/react'
 import {
   SECTION_TRANSITION_PROPS,
@@ -359,7 +359,7 @@ const StateManagedSwap = () => {
 
   return (
     <LandingPageWrapper>
-      <div className="flex justify-center px-4 py-16 mx-auto max-w-lg">
+      <div className="flex justify-center max-w-lg px-4 py-16 mx-auto">
         <div className="flex flex-col">
           <div className="flex items-center justify-between">
             <PageHeader title="Swap" subtitle="Exchange assets on chain." />

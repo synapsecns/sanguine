@@ -9,11 +9,9 @@ import {
   updateFromValue,
 } from '@/slices/bridge/reducer'
 import MiniMaxButton from '../buttons/MiniMaxButton'
-import {
-  AmountInput,
-  ChainSelector,
-  TokenSelector,
-} from '../ui/BridgeCardComponents'
+import { ChainSelector } from '@/components/ui/ChainSelector'
+import { TokenSelector } from '@/components/ui/TokenSelector'
+import { AmountInput } from '@/components/ui/AmountInput'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import {
@@ -26,10 +24,8 @@ import { CHAINS_BY_ID } from '@/constants/chains'
 import { FromChainListArray } from './FromChainListOverlay'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
-import {
-  BridgeAmountContainer,
-  BridgeSectionContainer,
-} from '../ui/BridgeCardComponents'
+import { BridgeSectionContainer } from '@/components/ui/BridgeSectionContainer'
+import { BridgeAmountContainer } from '@/components/ui/BridgeAmountContainer'
 import { FromTokenListArray } from './FromTokenListOverlay'
 
 export const inputRef = React.createRef<HTMLInputElement>()

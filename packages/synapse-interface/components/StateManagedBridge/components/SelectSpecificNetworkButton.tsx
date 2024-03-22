@@ -13,6 +13,7 @@ import {
   useStipEligibility,
 } from '@/utils/hooks/useStipEligibility'
 import { useBridgeState } from '@/slices/bridge/hooks'
+import { joinClassNames } from '@/utils/joinClassNames'
 
 export const SelectSpecificNetworkButton = ({
   itemChainId,
@@ -40,9 +41,7 @@ export const SelectSpecificNetworkButton = ({
   //   }
   // }, [active])
 
-  const join = (a) => Object.values(a).join(' ')
-
-  const buttonClass = join({
+  const buttonClass = joinClassNames({
     other: 'whitespace-nowrap',
     grid: 'grid gap-0.5',
     space: 'pl-2 pr-1.5 py-2.5 w-full',
@@ -68,7 +67,7 @@ export const SelectSpecificNetworkButton = ({
     >
       <ButtonContent chainId={itemChainId} isOrigin={isOrigin} />
       {isEligible && (
-        <div className="text-left text-sm text-green-500 dark:text-green-400">
+        <div className="text-sm text-left text-green-500 dark:text-green-400">
           {ELIGIBILITY_DEFAULT_TEXT}
         </div>
       )}
@@ -97,7 +96,7 @@ function ButtonContent({
 
   return (
     chain && (
-      <div className="flex items-center gap-6 justify-between">
+      <div className="flex items-center justify-between gap-6">
         <span className="flex items-center gap-2">
           <Image
             loading="lazy"
@@ -105,7 +104,7 @@ function ButtonContent({
             alt="Switch Network"
             width="20"
             height="20"
-            className="max-w-fit w-5 h-5"
+            className="w-5 h-5 max-w-fit"
           />
           {chain.name}
         </span>
@@ -160,7 +159,7 @@ function HoverIcon({ token }) {
   return (
     <span
       key={token.tokenAddress}
-      className="relative flex justify-items-center justify-center text-center"
+      className="relative flex justify-center text-center justify-items-center"
     >
       <Image
         loading="lazy"
@@ -170,7 +169,7 @@ function HoverIcon({ token }) {
         src={src}
         className="peer max-w-fit"
       />
-      <div className="hidden peer-hover:block absolute z-50 bottom-6 -right-2 -mr-px px-2 py-1 bg-bgBase rounded">
+      <div className="absolute z-50 hidden px-2 py-1 -mr-px rounded peer-hover:block bottom-6 -right-2 bg-bgBase">
         {parsedBalance} {symbol}
       </div>
     </span>

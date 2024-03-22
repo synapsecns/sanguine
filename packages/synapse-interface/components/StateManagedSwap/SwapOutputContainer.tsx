@@ -1,25 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Address, useAccount } from 'wagmi'
 
-import LoadingDots from '../ui/tailwind/LoadingDots'
-// import { SwapToTokenSelector } from './SwapToTokenSelector'
+import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 import { useSwapState } from '@/slices/swap/hooks'
-import {
-  BridgeAmountContainer,
-  BridgeSectionContainer,
-  ChainSelector,
-  TokenSelector,
-} from '../ui/BridgeCardComponents'
-import { CHAINS_BY_ID } from '@/constants/chains'
-import { useBridgeState } from '@/slices/bridge/hooks'
-import { SwapChainListArray } from './SwapChainListOverlay'
-import {
-  setSwapChainId,
-  setSwapFromToken,
-  setSwapToToken,
-} from '@/slices/swap/reducer'
-// import { SwapFromTokenListOverlay } from './SwapFromTokenListOverlay'
+import { BridgeSectionContainer } from '@/components/ui/BridgeSectionContainer'
+import { TokenSelector } from '@/components/ui/TokenSelector'
+import { BridgeAmountContainer } from '@/components/ui/BridgeAmountContainer'
+import { setSwapToToken } from '@/slices/swap/reducer'
 import { SwapToTokenListArray } from './SwapToTokenListOverlay'
+import { joinClassNames } from '@/utils/joinClassNames'
 
 export const SwapOutputContainer = ({}) => {
   const { swapQuote, isLoading, swapToToken } = useSwapState()
@@ -31,9 +20,7 @@ export const SwapOutputContainer = ({}) => {
     setAddress(isConnectedAddress)
   }, [isConnectedAddress])
 
-  const join = (a) => Object.values(a).join(' ')
-
-  const inputClassName = join({
+  const inputClassName = joinClassNames({
     unset: 'bg-transparent border-none p-0',
     layout: 'flex-1', // required for Swap Output – different from other inputs for some reason
     placeholder: 'placeholder:text-zinc-500 placeholder:dark:text-zinc-400',

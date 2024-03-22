@@ -22,6 +22,7 @@ import {
 import { getUnderlyingBridgeTokens } from '@/utils/getUnderlyingBridgeTokens'
 import { ARBITRUM, AVALANCHE, ETH } from '@/constants/chains/master'
 import { getActiveStyleForButton, getHoverStyleForButton } from '@/styles/hover'
+import { joinClassNames } from '@/utils/joinClassNames'
 
 const SelectSpecificTokenButton = ({
   showAllChains,
@@ -58,9 +59,7 @@ const SelectSpecificTokenButton = ({
     }
   }, [active])
 
-  const join = (a) => Object.values(a).join(' ')
-
-  const buttonClass = join({
+  const buttonClass = joinClassNames({
     other: 'whitespace-nowrap',
     grid: 'grid gap-0.5',
     space: 'pl-2 pr-1.5 py-2.5 w-full',
@@ -199,7 +198,7 @@ const ButtonContent = memo(
               alt="Token Image"
               width="20"
               height="20"
-              className="max-w-fit w-5 h-5"
+              className="w-5 h-5 max-w-fit"
             />
             {/* <img
           alt="token image"
@@ -243,7 +242,7 @@ const Coin = ({
 
   return (
     <div>
-      <div className="flex text-left justify-between">
+      <div className="flex justify-between text-left">
         <div className="">{token?.symbol}</div>
 
         {/* {showAllChains && <AvailableChains token={token} />} */}
@@ -311,7 +310,7 @@ const TokenBalance = ({
   parsedBalance?: string
 }) => {
   return (
-    <div className="text-sm p-1">
+    <div className="p-1 text-sm">
       {parsedBalance && parsedBalance !== '0.0' && (
         <div>
           {parsedBalance}
@@ -336,7 +335,7 @@ const AvailableChains = ({ token }: { token: Token }) => {
   return (
     <div
       data-test-id="available-chains"
-      className="flex items-center space-x-1 hover-trigger text-sm"
+      className="flex items-center space-x-1 text-sm hover-trigger"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
