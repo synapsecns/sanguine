@@ -46,8 +46,6 @@ contract InterchainDBMock is IInterchainDB {
 
     function getBatch(uint256 dbNonce) external view returns (InterchainBatch memory) {}
 
-    function getEntry(uint256 dbNonce, uint64 entryIndex) external view returns (InterchainEntry memory) {}
-
     function getEntryValue(uint256 dbNonce, uint64 entryIndex) external view returns (bytes32) {}
 
     function getEntryProof(uint256 dbNonce, uint64 entryIndex) external view returns (bytes32[] memory proof) {}

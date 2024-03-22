@@ -11,7 +11,6 @@ import {TypeCasts} from "./libs/TypeCasts.sol";
 
 contract InterchainDB is InterchainDBEvents, IInterchainDB {
     bytes32[] internal _entryValues;
-    LocalEntry[] internal _entries;
     mapping(address module => mapping(bytes32 batchKey => RemoteBatch batch)) internal _remoteBatches;
 
     modifier onlyRemoteChainId(uint256 chainId) {
@@ -151,7 +150,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         // In "no batching" mode: the finalized batch size is 1
         _assertBatchFinalized(dbNonce);
         leafs = new bytes32[](1);
-        leafs[0] = getEntry(dbNonce, 0).entryValue();
+        leafs[0] = getEntryValue(dbNonce, 0);
     }
 
     /// @inheritdoc IInterchainDB
@@ -165,15 +164,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     function getBatch(uint256 dbNonce) public view returns (InterchainBatch memory) {
         _assertBatchFinalized(dbNonce);
         // In "no batching" mode: the batch root is the same as the entry hash
-        return InterchainBatchLib.constructLocalBatch(dbNonce, getEntry(dbNonce, 0).entryValue());
-    }
-
-    /// @inheritdoc IInterchainDB
-    function getEntry(uint256 dbNonce, uint64 entryIndex) public view returns (InterchainEntry memory) {
-        _assertEntryExists(dbNonce, entryIndex);
-        return InterchainEntryLib.constructLocalEntry(
-            dbNonce, entryIndex, _entries[dbNonce].writer, _entries[dbNonce].dataHash
-        );
+        return InterchainBatchLib.constructLocalBatch(dbNonce, getEntryValue(dbNonce, 0));
     }
 
     /// @inheritdoc IInterchainDB
@@ -184,7 +175,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
 
     /// @inheritdoc IInterchainDB
     function getDBNonce() public view returns (uint256) {
-        return _entries.length;
+        return _entryValues.length;
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
@@ -199,7 +190,6 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         });
         // TODO: do we NEED to save both writer and dataHash instead of entryValue (writer + dataHash, hashed)?
         _entryValues.push(entry.entryValue());
-        _entries.push(LocalEntry(msg.sender, dataHash));
         emit InterchainEntryWritten(block.chainid, entry.dbNonce, entry.srcWriter, dataHash);
     }
 
