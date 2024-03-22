@@ -324,7 +324,7 @@ const ListRecipient = ({
     <div
       onMouseDown={handleMouseDown}
       className={`
-        flex justify-between px-2 py-1 space-x-4
+        flex justify-between px-2 py-1 space-x-3.5
         cursor-pointer text-strong text-sm
         hover:bg-separator
         ${selectedListItem === index && 'bg-separator'}
