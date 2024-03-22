@@ -108,7 +108,7 @@ export const DestinationAddressInput = ({
 
   const onClearUserInput = () => {
     handleClearInput()
-    handleInputFocus()
+    handleInputBlur()
   }
 
   useEffect(() => {
