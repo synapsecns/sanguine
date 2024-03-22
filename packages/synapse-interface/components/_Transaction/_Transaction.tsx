@@ -67,8 +67,6 @@ export const _Transaction = ({
     destinationAddress ?? connectedAddress
   )
 
-  console.log('destExplorerAddressLink:', destExplorerAddressLink)
-
   const {
     remainingTime,
     delayedTime,
