@@ -232,9 +232,10 @@ export const DestinationAddressInput = ({
            flex border text-md rounded-sm
            ${isInputFocused ? ' bg-bgBase' : 'bg-transparent hover:opacity-80'}
           ${
-            isInputValidAddress
-              ? 'border-synapsePurple focus:border-synapsePurple'
-              : isInputInvalid
+            // isInputValidAddress
+            //   ? 'border-synapsePurple focus:border-synapsePurple'
+            //   :
+            isInputInvalid
               ? 'border-red-500 focus:border-red-500'
               : 'border-separator focus:border-separator'
           }
@@ -251,7 +252,7 @@ export const DestinationAddressInput = ({
             placeholder={placeholder}
             value={inputValue}
             className={`
-              transform-gpu transition-all duration-75 cursor-pointer
+              transform-gpu transition-all duration-150 cursor-pointer
               text-sm rounded-sm text-strong py-0.5 pl-2 z-0 border-0 bg-transparent max-w-32
               focus:text-white focus:border-transparent focus:outline-none focus:ring-0
               ${isInputFocused || isInputInvalid ? 'text-left ' : 'text-center'}
