@@ -144,6 +144,7 @@ const SwapChainSelector = () => (
     label="From"
     itemListFunction={swapChainListArray}
     setFunction={setSwapChainId}
+    action="Swap"
   />
 )
 
@@ -155,6 +156,6 @@ const SwapFromTokenSelector = () => (
     placeholder="In"
     itemListFunction={swapFromTokenListArray}
     setFunction={setSwapFromToken}
-    action="swap"
+    action="Swap"
   />
 )

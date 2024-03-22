@@ -73,6 +73,7 @@ const ToChainSelector = () => (
     label="To"
     itemListFunction={toChainListArray}
     setFunction={setToChainId}
+    action="Bridge"
   />
 )
 
@@ -84,6 +85,6 @@ const ToTokenSelector = () => (
     placeholder="In"
     itemListFunction={toTokenListArray}
     setFunction={setToToken}
-    action="bridge"
+    action="Bridge"
   />
 )

@@ -63,6 +63,6 @@ const SwapToTokenSelector = () => (
     placeholder="Out"
     itemListFunction={swapToTokenListArray}
     setFunction={setSwapToToken}
-    action="swap"
+    action="Swap"
   />
 )
