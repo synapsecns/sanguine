@@ -285,6 +285,7 @@ const printMaps = async () => {
       console.log('Finished chain: ', chainId)
     })
   )
+  prettyPrintTS(bridgeMap, 'BRIDGE_MAP', './constants/tokens/bridgeMap.ts')
   prettyPrintTS(bridgeMap, 'BRIDGE_MAP', './constants/bridgeMap.ts')
 }
 

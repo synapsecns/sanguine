@@ -1,11 +1,12 @@
 package base_test
 
 import (
-	"github.com/brianvoe/gofakeit/v6"
 	"math/big"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/brianvoe/gofakeit/v6"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"

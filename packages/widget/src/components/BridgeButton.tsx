@@ -26,7 +26,7 @@ export const BridgeButton = ({
 }: BridgeButtonProps) => {
   const web3Context = useContext(Web3Context)
 
-  const { provider } = web3Context.web3Provider
+  const { connectedAddress, provider } = web3Context.web3Provider
 
   const { originChainId } = useBridgeState()
 
@@ -52,6 +52,16 @@ export const BridgeButton = ({
 
   const tooltipPositionStyle = '-top-8'
 
+  if (!provider || !connectedAddress) {
+    return (
+      <Tooltip hoverText="Connect Wallet" positionStyles={tooltipPositionStyle}>
+        <button className={buttonClassName} style={buttonStyle} disabled>
+          Connect Wallet
+        </button>
+      </Tooltip>
+    )
+  }
+
   if (!originChainId) {
     return (
       <Tooltip
@@ -59,7 +69,7 @@ export const BridgeButton = ({
         positionStyles={tooltipPositionStyle}
       >
         <button className={buttonClassName} style={buttonStyle} disabled>
-          Connect
+          Select origin chain
         </button>
       </Tooltip>
     )

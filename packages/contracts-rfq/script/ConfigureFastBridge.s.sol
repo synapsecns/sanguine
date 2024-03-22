@@ -15,6 +15,7 @@ contract ConfigureFastBridge is SynapseScript {
 
     function run() external broadcastWithHooks {
         loadConfig();
+        syncRole("governor", fastBridge.GOVERNOR_ROLE());
         setChainGasAmount();
         setProtocolFeeRate();
         syncRole("guard", fastBridge.GUARD_ROLE());

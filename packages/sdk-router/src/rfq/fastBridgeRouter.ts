@@ -98,6 +98,7 @@ export class FastBridgeRouter implements SynapseModule {
    * @inheritdoc SynapseModule.getSynapseTxId
    */
   public async getSynapseTxId(txHash: string): Promise<string> {
+    // TODO: this should support older instances of FastBridge to track legacy txs
     const fastBridgeContract = await this.getFastBridgeContract()
     const fastBridgeLog = await getMatchingTxLog(
       this.provider,
@@ -114,6 +115,7 @@ export class FastBridgeRouter implements SynapseModule {
    * @inheritdoc SynapseModule.getBridgeTxStatus
    */
   public async getBridgeTxStatus(synapseTxId: string): Promise<boolean> {
+    // TODO: this should support older instances of FastBridge to track legacy txs
     const fastBridgeContract = await this.getFastBridgeContract()
     return fastBridgeContract.bridgeRelays(synapseTxId)
   }

@@ -236,10 +236,10 @@ export const isRfqEligible = (
 
   return (
     (bridgeQuote.bridgeModuleName === BridgeModules.SYNAPSE_RFQ &&
-      token.swapableType === 'USD' &&
+      (token.swapableType === 'USD' || token.routeSymbol === 'ETH') &&
       toChainId === ARBITRUM.id) ||
     (bridgeQuote.bridgeModuleName === BridgeModules.SYNAPSE_RFQ &&
-      token.swapableType === 'USD' &&
+      (token.swapableType === 'USD' || token.routeSymbol === 'ETH') &&
       fromChainId === ARBITRUM.id &&
       toChainId === ETH.id)
   )

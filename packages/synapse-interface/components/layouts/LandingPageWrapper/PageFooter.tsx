@@ -16,6 +16,7 @@ import {
   TELEGRAM_URL,
   TERMS_OF_SERVICE_PATH,
   TWITTER_URL,
+  JOBS_URL,
 } from '@/constants/urls'
 import { SynapseTitleLogo } from '.'
 
@@ -65,9 +66,9 @@ const developersList: FooterDataProps[] = [
     url: null,
   },
   {
-    text: 'Build on Synapse',
+    text: 'Careers',
     type: FooterType.URL,
-    url: BUILD_ON_URL,
+    url: JOBS_URL,
   },
   {
     text: 'Documentation',

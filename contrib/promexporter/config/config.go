@@ -104,8 +104,13 @@ func DecodeConfig(filePath string) (_ Config, err error) {
 			ChainIDs: types.ToInts(types.ETH, types.ARBITRUM, types.AVALANCHE, types.OPTIMISM),
 		},
 		{
-			Address:  "0xb300eff6b57aa09e5fccf7221fcb9e676a74d931",
+			Address:  "0xdd50676f81f607fd8ba7ed3187ddf172db174cd3",
 			Name:     "rfq",
+			ChainIDs: types.ToInts(types.OPTIMISM, types.ARBITRUM, types.ETH),
+		},
+		{
+			Address:  "0xdc927bd56cf9dfc2e3779c7e3d6d28da1c219969",
+			Name:     "rfq2",
 			ChainIDs: types.ToInts(types.OPTIMISM, types.ARBITRUM, types.ETH),
 		},
 	}

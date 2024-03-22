@@ -250,9 +250,9 @@ func (i *IntegrationSuite) setupRelayer() {
 		// generated ex-post facto
 		Chains: map[int]relconfig.ChainConfig{
 			originBackendChainID: {
-				RFQAddress:    i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeType).Address().String(),
-				CCTPAddress:   cctpContractOrigin.Address().Hex(),
-				Confirmations: 0,
+				RFQAddress:         i.manager.Get(i.GetTestContext(), i.originBackend, testutil.FastBridgeType).Address().String(),
+				SynapseCCTPAddress: cctpContractOrigin.Address().Hex(),
+				Confirmations:      0,
 				Tokens: map[string]relconfig.TokenConfig{
 					"ETH": {
 						Address:  chain.EthAddress.String(),
@@ -263,9 +263,9 @@ func (i *IntegrationSuite) setupRelayer() {
 				NativeToken: "ETH",
 			},
 			destBackendChainID: {
-				RFQAddress:    i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeType).Address().String(),
-				CCTPAddress:   cctpContractDest.Address().Hex(),
-				Confirmations: 0,
+				RFQAddress:         i.manager.Get(i.GetTestContext(), i.destBackend, testutil.FastBridgeType).Address().String(),
+				SynapseCCTPAddress: cctpContractDest.Address().Hex(),
+				Confirmations:      0,
 				Tokens: map[string]relconfig.TokenConfig{
 					"ETH": {
 						Address:  chain.EthAddress.String(),
@@ -324,7 +324,7 @@ func (i *IntegrationSuite) setupRelayer() {
 
 			rebalanceMethod := ""
 			if useCCTP {
-				rebalanceMethod = "cctp"
+				rebalanceMethod = "synapsecctp"
 			}
 
 			// first the simple part, add the token to the token map

@@ -5,8 +5,9 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
-	"github.com/synapsecns/sanguine/ethergo/listener/db"
 	"math/big"
+
+	"github.com/synapsecns/sanguine/ethergo/listener/db"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/dbcommon"
@@ -23,9 +24,9 @@ type Writer interface {
 	StoreRebalance(ctx context.Context, rebalance Rebalance) error
 	// UpdateQuoteRequestStatus updates the status of a quote request
 	UpdateQuoteRequestStatus(ctx context.Context, id [32]byte, status QuoteRequestStatus) error
-	// UpdateRebalanceStatus updates the status of a rebalance action.
+	// UpdateRebalance updates the status of a rebalance action.
 	// If the origin is supplied, it will be used to update the ID for the corresponding rebalance model.
-	UpdateRebalanceStatus(ctx context.Context, id [32]byte, origin *uint64, status RebalanceStatus) error
+	UpdateRebalance(ctx context.Context, rebalance Rebalance, updateID bool) error
 	// UpdateDestTxHash updates the dest tx hash of a quote request
 	UpdateDestTxHash(ctx context.Context, id [32]byte, destTxHash common.Hash) error
 }
@@ -40,6 +41,8 @@ type Reader interface {
 	GetQuoteResultsByStatus(ctx context.Context, matchStatuses ...QuoteRequestStatus) (res []QuoteRequest, _ error)
 	// HasPendingRebalance checks if there is a pending rebalance for the given chain ids.
 	HasPendingRebalance(ctx context.Context, chainIDs ...uint64) (bool, error)
+	// GetRebalance gets a rebalance by ID. Should return ErrNoRebalanceForID if not found.
+	GetRebalanceByID(ctx context.Context, rebalanceID string) (*Rebalance, error)
 }
 
 // Service is the interface for the database service.
@@ -56,6 +59,8 @@ var (
 	ErrNoQuoteForID = errors.New("no quote found for tx id")
 	// ErrNoQuoteForTxHash means the quote was not found.
 	ErrNoQuoteForTxHash = errors.New("no quote found for tx hash")
+	// ErrNoRebalanceForID means the rebalance was not found.
+	ErrNoRebalanceForID = errors.New("no rebalance found for id")
 )
 
 // QuoteRequest is the quote request object.
@@ -160,7 +165,7 @@ var _ dbcommon.Enum = (*QuoteRequestStatus)(nil)
 
 // Rebalance represents a rebalance action.
 type Rebalance struct {
-	RebalanceID  *[32]byte
+	RebalanceID  *string
 	Origin       uint64
 	Destination  uint64
 	OriginAmount *big.Int

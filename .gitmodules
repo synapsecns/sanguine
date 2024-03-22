@@ -20,3 +20,6 @@
 [submodule "services/rfq/external/canonical-weth"]
 	path = services/rfq/external/canonical-weth
 	url = https://github.com/gnosis/canonical-weth
+[submodule "services/cctp-relayer/external/evm-cctp-contracts"]
+	path = services/cctp-relayer/external/evm-cctp-contracts
+	url = https://github.com/circlefin/evm-cctp-contracts.git

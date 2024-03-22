@@ -21,6 +21,13 @@ export const BRIDGE_MAP = {
       destination: ['SYN'],
       swappable: [],
     },
+    '0x12f79f8c1A6e47a9b5F0796FDb008Bdc182fa19e': {
+      decimals: 18,
+      symbol: 'JEWEL',
+      origin: ['JEWEL'],
+      destination: ['JEWEL'],
+      swappable: [],
+    },
     '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
       decimals: 18,
       symbol: 'nUSD',
@@ -795,6 +802,13 @@ export const BRIDGE_MAP = {
     },
   },
   '1088': {
+    '0x17C09cfC96C865CF546d73365Cedb6dC66986963': {
+      decimals: 18,
+      symbol: 'JEWEL',
+      origin: ['JEWEL'],
+      destination: ['JEWEL'],
+      swappable: [],
+    },
     '0x420000000000000000000000000000000000000A': {
       decimals: 18,
       symbol: 'WETH',
