@@ -36,6 +36,7 @@ const SelectSpecificTokenButton = ({
   exchangeRate,
   isBestExchangeRate = false,
   estimatedDurationInSeconds,
+  action,
 }: {
   showAllChains?: boolean
   isOrigin: boolean
@@ -48,6 +49,7 @@ const SelectSpecificTokenButton = ({
   exchangeRate?: string
   isBestExchangeRate?: boolean
   estimatedDurationInSeconds?: number
+  action: 'bridge' | 'swap'
 }) => {
   const ref = useRef<any>(null)
   const isCurrentToken = selectedToken?.routeSymbol === token?.routeSymbol
@@ -98,6 +100,7 @@ const SelectSpecificTokenButton = ({
         chainId={chainId}
         isOrigin={isOrigin}
         showAllChains={showAllChains}
+        action={action}
       />
       {isLoadingExchangeRate ? (
         <LoadingDots className="mr-8 opacity-50" />
@@ -176,11 +179,13 @@ const ButtonContent = memo(
     chainId,
     isOrigin,
     showAllChains,
+    action,
   }: {
     token: Token
     chainId: number
     isOrigin: boolean
     showAllChains: boolean
+    action: 'bridge' | 'swap'
   }) => {
     const portfolioBalances = usePortfolioBalances()
 
@@ -217,7 +222,7 @@ const ButtonContent = memo(
           )}
         </div>
         <div className="flex items-center space-x-2 text-sm text-secondary">
-          {isOrigin && isTokenEligible(token) ? (
+          {action === 'bridge' && isOrigin && isTokenEligible(token) ? (
             <div className="text-greenText">{ELIGIBILITY_DEFAULT_TEXT}</div>
           ) : (
             <></>

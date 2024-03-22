@@ -17,6 +17,7 @@ export interface SelectorTypes {
 
 export interface TokenSelectorTypes extends SelectorTypes {
   selectedItem: Token
+  action: 'bridge' | 'swap'
 }
 
 export interface ChainSelectorTypes extends SelectorTypes {

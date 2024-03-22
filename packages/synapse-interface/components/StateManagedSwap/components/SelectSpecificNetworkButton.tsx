@@ -1,15 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { CHAINS_BY_ID } from '@constants/chains'
 import Image from 'next/image'
-import {
-  getNetworkHover,
-  getNetworkButtonBorder,
-  getNetworkButtonBorderHover,
-  getNetworkButtonBgClassName,
-  getNetworkButtonBgClassNameActive,
-  getNetworkButtonBorderActive,
-  getMenuItemStyleForChain,
-} from '@/styles/chains'
 import { getHoverStyleForButton, getActiveStyleForButton } from '@/styles/hover'
 import { joinClassNames } from '@/utils/joinClassNames'
 

@@ -7,15 +7,14 @@ import { useKeyPress } from '@hooks/useKeyPress'
 import SlideSearchBox from '@pages/bridge/SlideSearchBox'
 import { Token } from '@/utils/types'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import SelectSpecificTokenButton from './components/SelectSpecificTokenButton'
+import SelectSpecificTokenButton from '../components/SelectSpecificTokenButton'
 import { getRoutePossibilities } from '@/utils/routeMaker/generateRoutePossibilities'
 
-import { sortByPriorityRank } from './helpers/sortByPriorityRank'
+import { sortByPriorityRank } from './sortByPriorityRank'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
-import { CloseButton } from './components/CloseButton'
-import { SearchResults } from './components/SearchResults'
-import { setShowSwapToTokenListOverlay } from '@/slices/swapDisplaySlice'
+import { CloseButton } from '../components/CloseButton'
+import { SearchResults } from '../components/SearchResults'
 import { setSwapToToken } from '@/slices/swap/reducer'
 import { useSwapState } from '@/slices/swap/hooks'
 import { getSwapPossibilities } from '@/utils/swapFinder/generateSwapPossibilities'
@@ -255,7 +254,7 @@ export const SwapToTokenListOverlay = () => {
 }
 */
 
-export const SwapToTokenListArray = () => {
+export const swapToTokenListArray = () => {
   const { swapChainId, swapToTokens } = useSwapState()
 
   const [searchStr, setSearchStr] = useState('')

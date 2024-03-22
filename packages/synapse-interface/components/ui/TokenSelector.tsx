@@ -16,6 +16,7 @@ export function TokenSelector({
   itemListFunction,
   setFunction,
   isOrigin,
+  action,
 }: TokenSelectorTypes) {
   const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
@@ -64,6 +65,7 @@ export function TokenSelector({
                 // showAllChains={true}
                 onClick={() => handleSetFromToken(token)}
                 alternateBackground={false}
+                action={action}
               />
             ))}
           </ListSectionWrapper>

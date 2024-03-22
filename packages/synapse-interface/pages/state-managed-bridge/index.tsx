@@ -23,7 +23,6 @@ import {
 
 import {
   setShowDestinationAddress,
-  setShowFromTokenListOverlay,
   setShowSettingsSlideOver,
 } from '@/slices/bridgeDisplaySlice'
 
@@ -71,10 +70,6 @@ import {
   removePendingBridgeTransaction,
 } from '@/slices/transactions/actions'
 import { getTimeMinutesFromNow } from '@/utils/time'
-// import { FromChainListOverlay } from '@/components/StateManagedBridge/FromChainListOverlay'
-// import { ToChainListOverlay } from '@/components/StateManagedBridge/ToChainListOverlay'
-// import { FromTokenListOverlay } from '@/components/StateManagedBridge/FromTokenListOverlay'
-// import { ToTokenListOverlay } from '@/components/StateManagedBridge/ToTokenListOverlay'
 
 import { waitForTransaction } from '@wagmi/core'
 import {
@@ -109,14 +104,9 @@ const StateManagedBridge = () => {
     debouncedFromValue,
     destinationAddress,
   }: BridgeState = useBridgeState()
-  const {
-    showSettingsSlideOver,
-    showDestinationAddress,
-    showFromChainListOverlay,
-    showToChainListOverlay,
-    showFromTokenListOverlay,
-    showToTokenListOverlay,
-  } = useSelector((state: RootState) => state.bridgeDisplay)
+  const { showSettingsSlideOver, showDestinationAddress } = useSelector(
+    (state: RootState) => state.bridgeDisplay
+  )
 
   const [isApproved, setIsApproved] = useState(false)
 
@@ -564,26 +554,6 @@ const StateManagedBridge = () => {
               <SettingsSlideOver key="settings" />
             </animated.div>
           </Transition>
-          {/* <Transition show={showFromChainListOverlay} {...TRANSITION_PROPS}>
-            <animated.div className={springClass}>
-              <FromChainListOverlay />
-            </animated.div>
-          </Transition>
-          <Transition show={showFromTokenListOverlay} {...TRANSITION_PROPS}>
-            <animated.div className={springClass}>
-              <FromTokenListOverlay />
-            </animated.div>
-          </Transition>
-          <Transition show={showToChainListOverlay} {...TRANSITION_PROPS}>
-            <animated.div className={springClass}>
-              <ToChainListOverlay />
-            </animated.div>
-          </Transition>
-          <Transition show={showToTokenListOverlay} {...TRANSITION_PROPS}>
-            <animated.div className={springClass}>
-              <ToTokenListOverlay />
-            </animated.div>
-          </Transition> */}
           <InputContainer />
           <SwitchButton
             onClick={() => {
@@ -595,19 +565,7 @@ const StateManagedBridge = () => {
           />
           <OutputContainer />
           <Warning />
-          {/*
-           * Hidden to remove -p-6 value applied by transition from element
-           * Doesn't appear to cause any regressions
-           * Goal: Remove all <Transition> elements from this file
-           */}
-          {/* <Transition
-            appear={true}
-            unmount={false}
-            show={true}
-            {...SECTION_TRANSITION_PROPS}
-          > */}
           <BridgeExchangeRateInfo />
-          {/* </Transition> */}
           {showDestinationAddress && (
             <DestinationAddressInput
               toChainId={toChainId}
