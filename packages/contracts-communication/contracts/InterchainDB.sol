@@ -10,6 +10,7 @@ import {InterchainEntry, InterchainEntryLib} from "./libs/InterchainEntry.sol";
 import {TypeCasts} from "./libs/TypeCasts.sol";
 
 contract InterchainDB is InterchainDBEvents, IInterchainDB {
+    bytes32[] internal _entryValues;
     LocalEntry[] internal _entries;
     mapping(address module => mapping(bytes32 batchKey => RemoteBatch batch)) internal _remoteBatches;
 
@@ -177,7 +178,8 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
 
     /// @inheritdoc IInterchainDB
     function getEntryValue(uint256 dbNonce, uint64 entryIndex) public view returns (bytes32) {
-        // TODO: implement
+        _assertEntryExists(dbNonce, entryIndex);
+        return _entryValues[dbNonce];
     }
 
     /// @inheritdoc IInterchainDB
@@ -196,6 +198,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
             dataHash: dataHash
         });
         // TODO: do we NEED to save both writer and dataHash instead of entryValue (writer + dataHash, hashed)?
+        _entryValues.push(entry.entryValue());
         _entries.push(LocalEntry(msg.sender, dataHash));
         emit InterchainEntryWritten(block.chainid, entry.dbNonce, entry.srcWriter, dataHash);
     }
