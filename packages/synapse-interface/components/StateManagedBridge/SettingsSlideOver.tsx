@@ -64,14 +64,14 @@ const SettingsSlideOver = () => {
                 }
               }}
               className={`
-                bg-gradient-to-r
+                relative inline-flex items-center h-6 rounded-full w-11
+                transition-colors bg-gradient-to-r focus:outline-none
                 ${
                   showDestinationAddress
                     ? ' from-[#FF00FF] to-[#AC8FFF]'
                     : 'from-gray-900 to-gray-900'
                 }
-                relative inline-flex items-center h-6 rounded-full w-11
-                transition-colors focus:outline-none`}
+              `}
             >
               <span
                 className={`
