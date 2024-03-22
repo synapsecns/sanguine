@@ -1,6 +1,5 @@
 import { useState } from 'react'
-
-const join = (a) => Object.values(a).join(' ')
+import { joinClassNames } from '@/utils/joinClassNames'
 
 export function SwitchButton({ onClick }: { onClick: () => void }) {
   const [isActive, setIsActive] = useState(false)
@@ -12,7 +11,7 @@ export function SwitchButton({ onClick }: { onClick: () => void }) {
     console.log('click')
   }
 
-  const className = join({
+  const className = joinClassNames({
     space: '-mt-4 -mb-4 rounded z-10 justify-self-center',
     background: 'bg-zinc-50 dark:bg-bgLight', // TODO: Remove
     // background: 'bg-zinc-50 dark:bg-zinc-800/50',

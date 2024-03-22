@@ -11,6 +11,7 @@ import {
   getMenuItemStyleForChain,
 } from '@/styles/chains'
 import { getHoverStyleForButton, getActiveStyleForButton } from '@/styles/hover'
+import { joinClassNames } from '@/utils/joinClassNames'
 
 export const SelectSpecificNetworkButton = ({
   itemChainId,
@@ -36,9 +37,7 @@ export const SelectSpecificNetworkButton = ({
     }
   }, [active])
 
-  const join = (a) => Object.values(a).join(' ')
-
-  const buttonClass = join({
+  const buttonClass = joinClassNames({
     other: 'whitespace-nowrap',
     grid: 'grid gap-0.5',
     space: 'pl-2 pr-1.5 py-2.5 w-full',
@@ -74,7 +73,7 @@ function ButtonContent({ chainId }: { chainId: number }) {
         alt="Switch Network"
         width="20"
         height="20"
-        className="max-w-fit w-5 h-5"
+        className="w-5 h-5 max-w-fit"
       />
       {chain.name}
     </span>

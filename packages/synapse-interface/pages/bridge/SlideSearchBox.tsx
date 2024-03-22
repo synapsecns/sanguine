@@ -1,8 +1,7 @@
+import { joinClassNames } from '@/utils/joinClassNames'
 import { useEffect, useRef } from 'react'
 
-const join = (a) => Object.values(a).join(' ')
-
-const className = join({
+const className = joinClassNames({
   text: 'text-sm font-normal',
   placeholder: 'placeholder-white/40',
   focus: 'focus:ring-0',

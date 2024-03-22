@@ -1,12 +1,15 @@
+import { joinClassNames } from '@/utils/joinClassNames'
+
 type MaxButtonTypes = {
   disabled: boolean
   onClickBalance: () => void
 }
 
-const join = (a) => Object.values(a).join(' ')
-
-export default function MaxButton({ disabled, onClickBalance }: MaxButtonTypes) {
-  const className = join({
+export default function MaxButton({
+  disabled,
+  onClickBalance,
+}: MaxButtonTypes) {
+  const className = joinClassNames({
     space: 'px-4 py-1 -ml-1 mr-1 rounded',
     background: 'bg-zinc-100 dark:bg-separator', // TODO: Remove
     // background: 'bg-zinc-100 dark:bg-zinc-700',

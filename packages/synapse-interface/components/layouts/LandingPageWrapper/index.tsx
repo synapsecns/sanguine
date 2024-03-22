@@ -24,10 +24,9 @@ import {
 import { NAVIGATION } from '@/constants/routes'
 import { MoreButton } from './MoreButton'
 import { PageFooter } from './PageFooter'
+import { joinClassNames } from '@/utils/joinClassNames'
 
-const join = (a) => Object.values(a).join(' ')
-
-const wrapperClassName = join({
+const wrapperClassName = joinClassNames({
   textColor: 'text-zinc-800 dark:text-zinc-200',
   font: 'tracking-wide',
   bgColor: 'bg-gradient-to-b',

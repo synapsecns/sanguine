@@ -10,7 +10,7 @@ import {
 } from './components/TransactionExplorerLink'
 import { getExplorerAddressUrl, getExplorerTxUrl } from '@/constants/urls'
 import { DISCORD_URL } from '@/constants/urls'
-import Button from '../../ui/tailwind/Button'
+import Button from '@/components/ui/tailwind/Button'
 import SynapseLogo from '@assets/icons/syn.svg'
 import DiscordIcon from '../../icons/DiscordIcon'
 import { DownArrow } from '@/components/icons/DownArrow'

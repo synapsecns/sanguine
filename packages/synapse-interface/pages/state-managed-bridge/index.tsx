@@ -45,7 +45,6 @@ import { txErrorHandler } from '@/utils/txErrorHandler'
 import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
 import { approveToken } from '@/utils/approveToken'
 import { PageHeader } from '@/components/PageHeader'
-import { BridgeCard } from '@/components/ui/BridgeCardComponents'
 import BridgeExchangeRateInfo from '@/components/StateManagedBridge/BridgeExchangeRateInfo'
 import { Transition } from '@headlessui/react'
 import {
@@ -89,6 +88,7 @@ import {
   MaintenanceWarningMessage,
   useMaintenanceCountdownProgress,
 } from '@/components/Maintenance/Events/template/MaintenanceEvent'
+import { BridgeCard } from '@/components/ui/BridgeCard'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()

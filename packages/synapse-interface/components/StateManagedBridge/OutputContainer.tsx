@@ -1,21 +1,19 @@
 import { useEffect, useState } from 'react'
 import { Address, useAccount } from 'wagmi'
 
-import LoadingDots from '../ui/tailwind/LoadingDots'
 import { CHAINS_BY_ID } from '@/constants/chains'
-import { ChainSelector, TokenSelector } from '../ui/BridgeCardComponents'
+import { ChainSelector } from '@/components/ui/ChainSelector'
+import { TokenSelector } from '@/components/ui/TokenSelector'
 import { ToChainListArray } from './ToChainListOverlay'
 import { shortenAddress } from '@/utils/shortenAddress'
 // import { ToTokenSelector } from './ToTokenSelector'
 import { useDispatch } from 'react-redux'
 import { setToChainId, setToToken } from '@/slices/bridge/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import {
-  BridgeAmountContainer,
-  BridgeSectionContainer,
-  AmountInput,
-} from '../ui/BridgeCardComponents'
-import { ToTokenListArray, ToTokenListOverlay } from './ToTokenListOverlay'
+import { BridgeSectionContainer } from '@/components/ui/BridgeSectionContainer'
+import { BridgeAmountContainer } from '@/components/ui/BridgeAmountContainer'
+import { AmountInput } from '@/components/ui/AmountInput'
+import { ToTokenListArray } from './ToTokenListOverlay'
 
 export const OutputContainer = ({}) => {
   const { bridgeQuote, isLoading, toChainId, toToken } = useBridgeState()

@@ -15,8 +15,7 @@ import {
   getNetworkHover,
 } from '@/styles/chains'
 import { LoaderIcon } from 'react-hot-toast'
-
-const join = (a) => Object.values(a).join(' ')
+import { joinClassNames } from '@/utils/joinClassNames'
 
 const Indicator = ({ className }) => (
   <span
@@ -27,7 +26,7 @@ const Indicator = ({ className }) => (
 )
 
 export const ConnectedIndicator = () => {
-  const className = join({
+  const className = joinClassNames({
     flex: 'flex items-center gap-2',
     space: 'px-3 py-1 rounded-full',
     hover: 'hover:opacity-80',
@@ -46,7 +45,7 @@ const DisconnectedIndicator = () => {
   const { fromChainId } = useBridgeState()
   const chain = CHAINS_BY_ID[fromChainId]
 
-  const className = join({
+  const className = joinClassNames({
     flex: 'flex items-center gap-2',
     space: 'px-3 py-1 rounded-full',
     border: 'border border-transparent',
@@ -91,7 +90,7 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
     }
   }
 
-  const className = join({
+  const className = joinClassNames({
     flex: 'flex items-center gap-2',
     space: 'px-3 py-1 rounded-full',
     border: 'border border-transparent',
@@ -134,7 +133,7 @@ export function ConnectWalletButton() {
     setClientReady(true)
   }, [])
 
-  const className = join({
+  const className = joinClassNames({
     flex: 'flex items-center gap-2',
     space: 'px-3 py-1 rounded-full',
     border: 'border border-transparent',

@@ -3,10 +3,9 @@ import ButtonLoadingDots from '@/components/buttons/ButtonLoadingDots'
 import { usePendingTxWrapper } from '@hooks/usePendingTxWrapper'
 import { TransactionResponse } from '@ethersproject/providers'
 import { CSSProperties } from 'react'
+import { joinClassNames } from '@/utils/joinClassNames'
 
-const join = (a) => Object.values(a).join(' ')
-
-const BASE_PROPERTIES = join({
+const BASE_PROPERTIES = joinClassNames({
   flex: 'flex justify-center items-center',
   space: 'w-full rounded-md px-4 py-3 my-1',
   hover: 'hover:opacity-80',

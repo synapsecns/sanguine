@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux'
 import { useAccount, useNetwork } from 'wagmi'
 
 import MiniMaxButton from '../buttons/MiniMaxButton'
-import { AmountInput, TokenSelector } from '../ui/BridgeCardComponents'
+import { TokenSelector } from '@/components/ui/TokenSelector'
 import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import {
@@ -11,7 +11,7 @@ import {
   ConnectWalletButton,
   ConnectedIndicator,
 } from '@/components/ConnectionIndicators'
-import { ChainSelector } from '../ui/BridgeCardComponents'
+import { ChainSelector } from '@/components/ui/ChainSelector'
 import { SwapChainListArray } from './SwapChainListOverlay'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import {
@@ -21,13 +21,11 @@ import {
   updateSwapFromValue,
 } from '@/slices/swap/reducer'
 import { useSwapState } from '@/slices/swap/hooks'
-import {
-  BridgeAmountContainer,
-  BridgeSectionContainer,
-} from '../ui/BridgeCardComponents'
+import { BridgeSectionContainer } from '@/components/ui/BridgeSectionContainer'
+import { BridgeAmountContainer } from '@/components/ui/BridgeAmountContainer'
 import { CHAINS_BY_ID } from '@/constants/chains'
-import { FromChainListArray } from '../StateManagedBridge/FromChainListOverlay'
 import { SwapFromTokenListArray } from './SwapFromTokenListOverlay'
+import { AmountInput } from '@/components/ui/AmountInput'
 
 export const SwapInputContainer = () => {
   const inputRef = useRef<HTMLInputElement>(null)
