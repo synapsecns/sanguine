@@ -4,7 +4,7 @@ import { getHoverStyleForButton } from '@/styles/hover'
 import SlideSearchBox from '@/pages/bridge/SlideSearchBox'
 import { CloseButton } from '../StateManagedBridge/components/CloseButton'
 import { useKeyPress } from '@/utils/hooks/useKeyPress'
-import { SearchResults } from '../StateManagedBridge/components/SearchResults'
+import { SearchResults } from '@/components/ui/SearchResults'
 import { joinClassNames } from '@/utils/joinClassNames'
 
 export const SelectorWrapper = ({
@@ -141,7 +141,7 @@ export const SelectorWrapper = ({
             >
               {children}
             </div>
-            <SearchResults searchStr={searchStr} type="chain" />
+            <SearchResults searchStr={searchStr} />
           </div>
         </div>
       )}
