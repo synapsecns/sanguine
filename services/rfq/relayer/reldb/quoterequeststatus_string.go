@@ -20,11 +20,12 @@ func _() {
 	_ = x[ProvePosted-10]
 	_ = x[ClaimPending-11]
 	_ = x[ClaimCompleted-12]
+	_ = x[RelayRaceLost-13]
 }
 
-const _QuoteRequestStatus_name = "SeenNotEnoughInventoryDeadlineExceededWillNotProcessCommittedPendingCommittedConfirmedRelayStartedRelayCompletedProvePostingProvePostedClaimPendingClaimCompleted"
+const _QuoteRequestStatus_name = "SeenNotEnoughInventoryDeadlineExceededWillNotProcessCommittedPendingCommittedConfirmedRelayStartedRelayCompletedProvePostingProvePostedClaimPendingClaimCompletedRelayRaceLost"
 
-var _QuoteRequestStatus_index = [...]uint8{0, 4, 22, 38, 52, 68, 86, 98, 112, 124, 135, 147, 161}
+var _QuoteRequestStatus_index = [...]uint8{0, 4, 22, 38, 52, 68, 86, 98, 112, 124, 135, 147, 161, 174}
 
 func (i QuoteRequestStatus) String() string {
 	i -= 1

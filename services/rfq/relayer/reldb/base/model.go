@@ -137,7 +137,7 @@ func FromRebalance(rebalance reldb.Rebalance) Rebalance {
 	if rebalance.RebalanceID == nil {
 		id = sql.NullString{Valid: false}
 	} else {
-		id = sql.NullString{String: hexutil.Encode(rebalance.RebalanceID[:]), Valid: true}
+		id = sql.NullString{String: *rebalance.RebalanceID, Valid: true}
 	}
 	return Rebalance{
 		RebalanceID:  id,
@@ -145,8 +145,20 @@ func FromRebalance(rebalance reldb.Rebalance) Rebalance {
 		Destination:  rebalance.Destination,
 		OriginAmount: rebalance.OriginAmount.String(),
 		Status:       rebalance.Status,
-		OriginTxHash: stringToNullString(rebalance.OriginTxHash.String()),
-		DestTxHash:   stringToNullString(rebalance.DestTxHash.String()),
+		OriginTxHash: hashToNullString(rebalance.OriginTxHash),
+		DestTxHash:   hashToNullString(rebalance.DestTxHash),
+	}
+}
+
+var emptyHash = common.HexToHash("").Hex()
+
+func hashToNullString(h common.Hash) sql.NullString {
+	if h.Hex() == emptyHash {
+		return sql.NullString{Valid: false}
+	}
+	return sql.NullString{
+		String: h.Hex(),
+		Valid:  true,
 	}
 }
 
@@ -198,6 +210,23 @@ func (r RequestForQuote) ToQuoteRequest() (*reldb.QuoteRequest, error) {
 			Deadline:   big.NewInt(r.Deadline.Unix()),
 			Nonce:      big.NewInt(int64(r.OriginNonce)),
 		},
+		Status:       r.Status,
+		OriginTxHash: common.HexToHash(r.OriginTxHash.String),
+		DestTxHash:   common.HexToHash(r.DestTxHash.String),
+	}, nil
+}
+
+// ToRebalance converts a db object to a rebalance.
+func (r Rebalance) ToRebalance() (*reldb.Rebalance, error) {
+	originAmount, ok := new(big.Int).SetString(r.OriginAmount, 10)
+	if !ok {
+		return nil, errors.New("could not convert origin amount")
+	}
+	return &reldb.Rebalance{
+		RebalanceID:  &r.RebalanceID.String,
+		Origin:       r.Origin,
+		Destination:  r.Destination,
+		OriginAmount: originAmount,
 		Status:       r.Status,
 		OriginTxHash: common.HexToHash(r.OriginTxHash.String),
 		DestTxHash:   common.HexToHash(r.DestTxHash.String),

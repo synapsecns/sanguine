@@ -198,6 +198,7 @@ func (s *CCTPRelayerSuite) GetTestConfig() config.Config {
 			Type: signerConfig.FileType.String(),
 			File: filet.TmpFile(s.T(), "", s.testWallet.PrivateKeyHex()).Name(),
 		},
+		CCTPType: "synapse",
 	}
 	chains := []config.ChainConfig{}
 	for _, backend := range s.testBackends {

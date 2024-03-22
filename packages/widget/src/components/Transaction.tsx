@@ -4,7 +4,6 @@ import { Chain } from 'types'
 import { useAppDispatch } from '@/state/hooks'
 import { getTxBlockExplorerLink } from '@/utils/getTxBlockExplorerLink'
 import { getExplorerAddressUrl } from '@/utils/getExplorerAddressLink'
-import { getTxSynapseExplorerLink } from '@/utils/getTxSynapseExplorerLink'
 import { useBridgeTxStatus } from '@/hooks/useBridgeTxStatus'
 import { isNull } from '@/utils/isNull'
 import {

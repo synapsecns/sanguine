@@ -69,7 +69,7 @@ export const executeBridgeTxn = createAsyncThunk(
 
     const receipt = await tx.wait()
 
-    const txHash = receipt?.hash
+    const txHash = receipt?.hash ?? receipt?.transactionHash
 
     const timestamp = getTimeMinutesFromNow(0)
 

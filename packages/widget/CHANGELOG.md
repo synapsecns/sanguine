@@ -3,6 +3,92 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.10](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.1.9...@synapsecns/widget@0.1.10) (2024-03-22)
+
+
+### Bug Fixes
+
+* **widget:** Fixes decimal input with no leading zeros, wallet cancel on send ([#2354](https://github.com/synapsecns/sanguine/issues/2354)) ([8c9f382](https://github.com/synapsecns/sanguine/commit/8c9f38222efcb4a911b0dd0e3c7db9914bf2a544))
+
+
+
+
+
+## [0.1.9](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.1.8...@synapsecns/widget@0.1.9) (2024-03-21)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.1.8](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.1.7...@synapsecns/widget@0.1.8) (2024-03-18)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.1.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.1.6...@synapsecns/widget@0.1.7) (2024-03-17)
+
+
+### Bug Fixes
+
+* **widget:** Empty provider/connected address button state, updated image urls ([#2309](https://github.com/synapsecns/sanguine/issues/2309)) ([4dbd4b9](https://github.com/synapsecns/sanguine/commit/4dbd4b9647aa1a53c6130685ff3a658d30e579bc))
+
+
+
+
+
+## [0.1.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.1.5...@synapsecns/widget@0.1.6) (2024-03-15)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.1.5](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.1.4...@synapsecns/widget@0.1.5) (2024-03-14)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.1.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.1.3...@synapsecns/widget@0.1.4) (2024-03-14)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.1.3](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.1.2...@synapsecns/widget@0.1.3) (2024-03-13)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.1.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.1.1...@synapsecns/widget@0.1.2) (2024-03-12)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.1.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.1.0...@synapsecns/widget@0.1.1) (2024-03-12)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
 # [0.1.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.0.64...@synapsecns/widget@0.1.0) (2024-03-06)
 
 

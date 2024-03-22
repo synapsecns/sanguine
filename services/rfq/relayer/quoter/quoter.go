@@ -65,6 +65,9 @@ type Manager struct {
 	quotableTokens map[string][]string
 	// simpleScreener is used to screen addresses.
 	screener client.ScreenerClient
+	// relayPaused is set when the RFQ API is found to be offline, which
+	// lets the quoter indicate that quotes should not be relayed.
+	relayPaused bool
 }
 
 // NewQuoterManager creates a new QuoterManager.
@@ -124,6 +127,11 @@ func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequ
 		span.AddEvent("result", trace.WithAttributes(attribute.Bool("result", res)))
 		metrics.EndSpanWithErr(span, err)
 	}()
+
+	if m.relayPaused {
+		span.AddEvent("relayPaused is set due to RFQ API being offline")
+		return false, nil
+	}
 
 	if m.screener != nil {
 		blocked, err := m.screener.ScreenAddress(ctx, screenerRuleset, quote.Transaction.OriginSender.String())
@@ -196,7 +204,7 @@ func (m *Manager) IsProfitable(parentCtx context.Context, quote reldb.QuoteReque
 
 // SubmitAllQuotes submits all quotes to the RFQ API.
 func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
-	ctx, span := m.metricsHandler.Tracer().Start(ctx, "submitQuotes")
+	ctx, span := m.metricsHandler.Tracer().Start(ctx, "SubmitAllQuotes")
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
@@ -209,7 +217,12 @@ func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 }
 
 // Prepares and submits quotes based on inventory.
-func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[common.Address]*big.Int) error {
+func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[common.Address]*big.Int) (err error) {
+	ctx, span := m.metricsHandler.Tracer().Start(ctx, "prepareAndSubmitQuotes")
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	var allQuotes []model.PutQuoteRequest
 
 	// First, generate all quotes
@@ -226,9 +239,24 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 	// Now, submit all the generated quotes
 	for _, quote := range allQuotes {
 		if err := m.submitQuote(quote); err != nil {
-			return err
+			span.AddEvent("error submitting quote; setting relayPaused to true", trace.WithAttributes(
+				attribute.String("error", err.Error()),
+				attribute.Int(metrics.Origin, quote.OriginChainID),
+				attribute.Int(metrics.Destination, quote.DestChainID),
+				attribute.String("origin_token_addr", quote.OriginTokenAddr),
+				attribute.String("dest_token_addr", quote.DestTokenAddr),
+				attribute.String("max_origin_amount", quote.MaxOriginAmount),
+				attribute.String("dest_amount", quote.DestAmount),
+			))
+			m.relayPaused = true
+
+			// Suppress error so that we can continue submitting quotes
+			return nil
 		}
 	}
+
+	// We successfully submitted all quotes, so we can set relayPaused to false
+	m.relayPaused = false
 
 	return nil
 }
@@ -237,71 +265,97 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 // Essentially, if we know a destination chain token balance, then we just need to find which tokens are bridgeable to it.
 // We can do this by looking at the quotableTokens map, and finding the key that matches the destination chain token.
 // Generates quotes for a given chain ID, address, and balance.
-func (m *Manager) generateQuotes(ctx context.Context, chainID int, address common.Address, balance *big.Int) ([]model.PutQuoteRequest, error) {
+func (m *Manager) generateQuotes(parentCtx context.Context, chainID int, address common.Address, balance *big.Int) (quotes []model.PutQuoteRequest, err error) {
+	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "generateQuotes", trace.WithAttributes(
+		attribute.Int(metrics.Origin, chainID),
+		attribute.String("address", address.String()),
+		attribute.String("balance", balance.String()),
+	))
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	destRFQAddr, err := m.config.GetRFQAddress(chainID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting destination RFQ address: %w", err)
 	}
 
 	destTokenID := fmt.Sprintf("%d-%s", chainID, address.Hex())
-
-	var quotes []model.PutQuoteRequest
+	quotes = []model.PutQuoteRequest{}
 	for keyTokenID, itemTokenIDs := range m.quotableTokens {
 		for _, tokenID := range itemTokenIDs {
 			//nolint:nestif
 			if tokenID == destTokenID {
-				// Parse token info
-				originStr := strings.Split(keyTokenID, "-")[0]
-				origin, err := strconv.Atoi(originStr)
-				if err != nil {
-					return nil, fmt.Errorf("error converting origin chainID: %w", err)
+				quote, quoteErr := m.generateQuote(ctx, keyTokenID, chainID, address, balance, destRFQAddr)
+				if quoteErr != nil {
+					// continue generating quotes even if one fails
+					span.AddEvent("error generating quote", trace.WithAttributes(
+						attribute.String("key_token_id", keyTokenID),
+					))
+					continue
 				}
-				originTokenAddr := common.HexToAddress(strings.Split(keyTokenID, "-")[1])
-
-				// Calculate the quote amount for this route
-				quoteAmount, err := m.getQuoteAmount(ctx, origin, chainID, address, balance)
-				// don't quote if gas exceeds quote
-				if errors.Is(err, errMinGasExceedsQuoteAmount) {
-					quoteAmount = big.NewInt(0)
-				} else if err != nil {
-					return nil, err
-				}
-
-				// Calculate the fee for this route
-				destToken, err := m.config.GetTokenName(uint32(chainID), address.Hex())
-				if err != nil {
-					return nil, fmt.Errorf("error getting dest token ID: %w", err)
-				}
-				fee, err := m.feePricer.GetTotalFee(ctx, uint32(origin), uint32(chainID), destToken, true)
-				if err != nil {
-					return nil, fmt.Errorf("error getting total fee: %w", err)
-				}
-				originRFQAddr, err := m.config.GetRFQAddress(origin)
-				if err != nil {
-					return nil, fmt.Errorf("error getting RFQ address: %w", err)
-				}
-
-				// Build the quote
-				destAmount, err := m.getDestAmount(ctx, quoteAmount, chainID)
-				if err != nil {
-					return nil, fmt.Errorf("error getting dest amount: %w", err)
-				}
-				quote := model.PutQuoteRequest{
-					OriginChainID:           origin,
-					OriginTokenAddr:         originTokenAddr.Hex(),
-					DestChainID:             chainID,
-					DestTokenAddr:           address.Hex(),
-					DestAmount:              destAmount.String(),
-					MaxOriginAmount:         quoteAmount.String(),
-					FixedFee:                fee.String(),
-					OriginFastBridgeAddress: originRFQAddr,
-					DestFastBridgeAddress:   destRFQAddr,
-				}
-				quotes = append(quotes, quote)
+				quotes = append(quotes, *quote)
 			}
 		}
 	}
 	return quotes, nil
+}
+
+func (m *Manager) generateQuote(ctx context.Context, keyTokenID string, chainID int, address common.Address, balance *big.Int, destRFQAddr string) (quote *model.PutQuoteRequest, err error) {
+	// Parse token info
+	originStr := strings.Split(keyTokenID, "-")[0]
+	origin, err := strconv.Atoi(originStr)
+	if err != nil {
+		logger.Error("Error converting origin chainID", "error", err)
+		return nil, fmt.Errorf("error converting origin chainID: %w", err)
+	}
+	originTokenAddr := common.HexToAddress(strings.Split(keyTokenID, "-")[1])
+
+	// Calculate the quote amount for this route
+	quoteAmount, err := m.getQuoteAmount(ctx, origin, chainID, address, balance)
+	// don't quote if gas exceeds quote
+	if errors.Is(err, errMinGasExceedsQuoteAmount) {
+		quoteAmount = big.NewInt(0)
+	} else if err != nil {
+		logger.Error("Error getting quote amount", "error", err)
+		return nil, err
+	}
+
+	// Calculate the fee for this route
+	destToken, err := m.config.GetTokenName(uint32(chainID), address.Hex())
+	if err != nil {
+		logger.Error("Error getting dest token ID", "error", err)
+		return nil, fmt.Errorf("error getting dest token ID: %w", err)
+	}
+	fee, err := m.feePricer.GetTotalFee(ctx, uint32(origin), uint32(chainID), destToken, true)
+	if err != nil {
+		logger.Error("Error getting total fee", "error", err)
+		return nil, fmt.Errorf("error getting total fee: %w", err)
+	}
+	originRFQAddr, err := m.config.GetRFQAddress(origin)
+	if err != nil {
+		logger.Error("Error getting RFQ address", "error", err)
+		return nil, fmt.Errorf("error getting RFQ address: %w", err)
+	}
+
+	// Build the quote
+	destAmount, err := m.getDestAmount(ctx, quoteAmount, chainID)
+	if err != nil {
+		logger.Error("Error getting dest amount", "error", err)
+		return nil, fmt.Errorf("error getting dest amount: %w", err)
+	}
+	quote = &model.PutQuoteRequest{
+		OriginChainID:           origin,
+		OriginTokenAddr:         originTokenAddr.Hex(),
+		DestChainID:             chainID,
+		DestTokenAddr:           address.Hex(),
+		DestAmount:              destAmount.String(),
+		MaxOriginAmount:         quoteAmount.String(),
+		FixedFee:                fee.String(),
+		OriginFastBridgeAddress: originRFQAddr,
+		DestFastBridgeAddress:   destRFQAddr,
+	}
+	return quote, nil
 }
 
 // getQuoteAmount calculates the quote amount for a given route.
