@@ -15,7 +15,7 @@ func (i *InterchainSuite) TestE2E() {
 	auth := i.originChain.GetTxContext(i.GetTestContext(), nil)
 
 	gasLimit := big.NewInt(1_000_000)
-	gasAirdrop := big.NewInt(0)
+	gasAirdrop := big.NewInt(1_337)
 	message := []byte("hello")
 
 	_, appMock := i.deployManager.GetInterchainAppMock(i.GetTestContext(), i.originChain)
