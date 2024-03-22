@@ -188,7 +188,6 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
             writer: msg.sender,
             dataHash: dataHash
         });
-        // TODO: do we NEED to save both writer and dataHash instead of entryValue (writer + dataHash, hashed)?
         _entryValues.push(entry.entryValue());
         emit InterchainEntryWritten(block.chainid, entry.dbNonce, entry.srcWriter, dataHash);
     }
@@ -203,9 +202,11 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         internal
     {
         (uint256[] memory fees, uint256 totalFee) = _getModuleFees(dstChainId, batch.dbNonce, srcModules);
-        // TODO: handle the case where fees are overpaid
-        if (msg.value != totalFee) {
+        if (msg.value < totalFee) {
             revert InterchainDB__IncorrectFeeAmount(msg.value, totalFee);
+        } else if (msg.value > totalFee) {
+            // The exceeding amount goes to the first module
+            fees[0] += msg.value - totalFee;
         }
         uint256 len = srcModules.length;
         for (uint256 i = 0; i < len; ++i) {
