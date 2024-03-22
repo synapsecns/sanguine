@@ -11,6 +11,7 @@ import {
   NetworkTokenBalances,
 } from '@/utils/actions/fetchPortfolioBalances'
 import { initialState } from './reducer'
+import { wagmiConfig } from '@/wagmiConfig'
 
 export const usePortfolioState = (): RootState['portfolio'] => {
   return useAppSelector((state) => state.portfolio)
@@ -80,7 +81,7 @@ export const useFetchPortfolioBalances = (): {
   error: string
 } => {
   const dispatch: AppDispatch = useDispatch()
-  const { address } = getAccount()
+  const { address } = getAccount(wagmiConfig)
   const { balances, status, error } = useSelector(
     (state: RootState) => state.portfolio
   )

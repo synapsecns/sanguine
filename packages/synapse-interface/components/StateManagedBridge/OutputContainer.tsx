@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Address, useAccount } from 'wagmi'
+import { useAccount } from 'wagmi'
+import { Address } from 'viem'
 
 import LoadingDots from '../ui/tailwind/LoadingDots'
 import { ToChainSelector } from './ToChainSelector'

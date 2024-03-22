@@ -2,7 +2,8 @@ import _ from 'lodash'
 import Grid from '@tw/Grid'
 import Slider from 'react-input-slider'
 import { useEffect, useMemo, useState } from 'react'
-import { Address, waitForTransaction } from '@wagmi/core'
+import { waitForTransactionReceipt } from '@wagmi/core'
+import { type Address } from 'viem'
 import { useAppDispatch } from '@/store/hooks'
 import { getCoinTextColorCombined } from '@styles/tokens'
 import { ALL } from '@constants/withdrawTypes'
@@ -36,6 +37,7 @@ import RadioButton from '@components/buttons/RadioButton'
 import ReceivedTokenSection from '../components/ReceivedTokenSection'
 import PriceImpactDisplay from '../components/PriceImpactDisplay'
 import WithdrawButton from './WithdrawButton'
+import { wagmiConfig } from '@/wagmiConfig'
 
 const Withdraw = ({ address }: { address: string }) => {
   const dispatch = useAppDispatch()
@@ -224,7 +226,7 @@ const Withdraw = ({ address }: { address: string }) => {
         throw Error(resolvedTx)
       }
 
-      await waitForTransaction({
+      await waitForTransactionReceipt(wagmiConfig, {
         hash: resolvedTx?.transactionHash as Address,
         timeout: 60_000,
       })

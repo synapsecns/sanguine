@@ -1,11 +1,8 @@
-import {
-  type WalletClient,
-  getWalletClient,
-  type PublicClient,
-  getPublicClient,
-} from '@wagmi/core'
+import { getWalletClient, getPublicClient } from '@wagmi/core'
 import { providers } from 'ethers'
-import { type HttpTransport } from 'viem'
+import { type HttpTransport, type WalletClient, type PublicClient } from 'viem'
+
+import { wagmiConfig } from './wagmiConfig'
 
 export const publicClientToProvider = (publicClient: PublicClient) => {
   const { chain, transport } = publicClient
@@ -26,8 +23,8 @@ export const publicClientToProvider = (publicClient: PublicClient) => {
 
 /** Action to convert a viem Public Client to an ethers.js Provider. */
 export const getEthersProvider = ({ chainId }: { chainId?: number } = {}) => {
-  const publicClient = getPublicClient({ chainId })
-  return publicClientToProvider(publicClient)
+  const publicClient = getPublicClient(wagmiConfig, { chainId: chainId as any })
+  return publicClientToProvider(publicClient as any)
 }
 
 export const walletClientToSigner = (walletClient: WalletClient) => {
@@ -48,7 +45,9 @@ export const walletClientToSigner = (walletClient: WalletClient) => {
 export const getEthersSigner = async ({
   chainId,
 }: { chainId?: number } = {}) => {
-  const walletClient = await getWalletClient({ chainId })
+  const walletClient = await getWalletClient(wagmiConfig, {
+    chainId: chainId as any,
+  })
   if (!walletClient) {
     return undefined
   }

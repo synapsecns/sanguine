@@ -1,7 +1,8 @@
 import _ from 'lodash'
 import { memo, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { Address, useNetwork } from 'wagmi'
+import { useAccount } from 'wagmi'
+import { Address } from 'viem'
 
 import { getPoolUrl } from '@urls'
 import { CHAINS_BY_ID } from '@/constants/chains'
@@ -12,7 +13,7 @@ import { Token } from '@/utils/types'
 export const PoolHeader = memo(
   ({ pool, address }: { pool: Token; address: Address }) => {
     const [mounted, setMounted] = useState(false)
-    const { chain: connectedChain } = useNetwork()
+    const { chain: connectedChain } = useAccount()
     const chain = CHAINS_BY_ID[pool.chainId]
     const { balances } = usePortfolioState()
 

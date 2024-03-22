@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { Address } from 'wagmi'
+import { type Address } from 'viem'
 
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { BridgeQuote, Token } from '@/utils/types'

@@ -6,7 +6,7 @@ import { Token } from '@types'
 import toast from 'react-hot-toast'
 import { approveErc20Token } from '@/actions/approveErc20Token'
 
-import { Address } from 'wagmi'
+import { type Address } from 'viem'
 import { swapPoolRemoveLiquidity } from '@/actions/swapPoolRemoveLiquidity'
 import { swapPoolRemoveLiquidityOneToken } from '@/actions/swapPoolRemoveLiquidityOneToken'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'

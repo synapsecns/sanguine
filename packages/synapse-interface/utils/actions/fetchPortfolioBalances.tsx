@@ -41,7 +41,9 @@ export const fetchPortfolioBalances = async (
 }> => {
   const balanceRecord = {}
   const poolTokenBalances = {}
-  const availableChains: string[] = Object.keys(BRIDGABLE_TOKENS)
+  const availableChains: string[] = Object.keys(BRIDGABLE_TOKENS).filter(
+    (id) => id !== '2000' && id !== '53935'
+  )
   const isSingleNetworkCall: boolean = typeof chainId === 'number'
 
   const filteredChains: string[] = availableChains.filter((chain: string) => {

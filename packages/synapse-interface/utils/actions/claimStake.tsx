@@ -1,4 +1,4 @@
-import { Address } from 'wagmi'
+import { type Address } from 'viem'
 import toast from 'react-hot-toast'
 
 import ExplorerToastLink from '@/components/ExplorerToastLink'

@@ -1,9 +1,8 @@
-import { Address } from '@wagmi/core'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { txErrorHandler } from './txErrorHandler'
 import toast from 'react-hot-toast'
 import ExplorerToastLink from '@components/ExplorerToastLink'
-import { zeroAddress } from 'viem'
+import { type Address, zeroAddress } from 'viem'
 import { approveErc20Token } from '@/actions/approveErc20Token'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 

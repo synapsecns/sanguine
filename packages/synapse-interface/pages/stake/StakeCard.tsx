@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Address } from '@wagmi/core'
+import { type Address } from 'viem'
 import { useAppDispatch } from '@/store/hooks'
 import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
 import { usePendingTxWrapper } from '@/utils/hooks/usePendingTxWrapper'

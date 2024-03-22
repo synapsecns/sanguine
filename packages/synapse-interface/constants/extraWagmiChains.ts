@@ -1,5 +1,3 @@
-import { Chain } from 'wagmi'
-
 export const klaytn = {
   id: 8217,
   name: 'Klaytn',
@@ -23,7 +21,7 @@ export const klaytn = {
       blockCreated: 96002415,
     },
   },
-} as const satisfies Chain
+}
 
 export const boba = {
   id: 288,
@@ -48,7 +46,7 @@ export const boba = {
       blockCreated: 446859,
     },
   },
-} as const satisfies Chain
+}
 
 export const cronos = {
   id: 25,
@@ -73,7 +71,7 @@ export const cronos = {
       blockCreated: 1963112,
     },
   },
-} as const satisfies Chain
+}
 
 export const dfk = {
   id: 53935,
@@ -108,7 +106,7 @@ export const dfk = {
       blockCreated: 14790551,
     },
   },
-} as const satisfies Chain
+}
 
 export const dogechain = {
   id: 2000,
@@ -139,7 +137,7 @@ export const dogechain = {
       blockCreated: 13882887,
     },
   },
-} as const satisfies Chain
+}
 
 export const metis = {
   id: 1088,
@@ -170,7 +168,7 @@ export const metis = {
       blockCreated: 2338552,
     },
   },
-} as const satisfies Chain
+}
 
 export const canto = {
   id: 7700,
@@ -201,7 +199,7 @@ export const canto = {
       blockCreated: 4876481, //update this when cantoscan is working
     },
   },
-} as const satisfies Chain
+}
 
 export const aurora = {
   id: 1313161554,
@@ -239,7 +237,7 @@ export const aurora = {
       blockCreated: 62907816,
     },
   },
-} as const satisfies Chain
+}
 
 export const base = {
   id: 8453,
@@ -278,9 +276,8 @@ export const base = {
       blockCreated: 5022,
     },
   },
-} as const satisfies Chain
+}
 
-// TODO: Update for mainnet params
 export const blast = {
   id: 81457,
   name: 'Blast',
@@ -318,4 +315,4 @@ export const blast = {
       blockCreated: 88189,
     },
   },
-} as const satisfies Chain
+}

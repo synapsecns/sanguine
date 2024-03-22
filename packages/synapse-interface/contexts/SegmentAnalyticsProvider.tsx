@@ -4,6 +4,7 @@ import { createContext, useContext } from 'react'
 
 import { isBlacklisted } from '@/utils/isBlacklisted'
 import { screenAddress } from '@/utils/screenAddress'
+import { wagmiConfig } from '@/wagmiConfig'
 
 const writeKey = process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY
 
@@ -21,7 +22,7 @@ export const segmentAnalyticsEvent = (
 ) => {
   const defaultOptions = { context: { ip: '0.0.0.0' } }
 
-  const { address } = getAccount()
+  const { address } = getAccount(wagmiConfig)
 
   if (isBlacklisted(address)) {
     document.body = document.createElement('body')

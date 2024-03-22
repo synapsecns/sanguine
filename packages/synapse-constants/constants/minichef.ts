@@ -1,4 +1,4 @@
-import { Address } from 'wagmi'
+import { Address } from 'viem'
 
 import * as ALL_CHAINS from './chains/master'
 

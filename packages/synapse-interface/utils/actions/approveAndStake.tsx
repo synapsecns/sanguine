@@ -1,4 +1,4 @@
-import { Address } from 'wagmi'
+import { type Address } from 'viem'
 import toast from 'react-hot-toast'
 
 import { txErrorHandler } from '@utils/txErrorHandler'
@@ -30,7 +30,7 @@ export const approve = async (
   })
 
   try {
-    const txReceipt: TransactionReceipt = await approveErc20Token({
+    const txReceipt = await approveErc20Token({
       chainId,
       tokenAddress: pool.addresses[chainId] as Address,
       spender: miniChefAddress as Address,
@@ -93,7 +93,7 @@ export const stake = async (
       true
     )
 
-    const tx: TransactionReceipt = await stakeLpToken({
+    const tx = await stakeLpToken({
       address,
       chainId,
       poolId,

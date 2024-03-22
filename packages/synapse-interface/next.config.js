@@ -3,7 +3,6 @@ const path = require('path')
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: false,
   // open source project, will not affect performance (one extra comment ot parse)
   productionBrowserSourceMaps: true,
   webpack: (config, { isServer }) => {

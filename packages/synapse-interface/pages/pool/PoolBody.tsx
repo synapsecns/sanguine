@@ -1,8 +1,8 @@
 import numeral from 'numeral'
 import Link from 'next/link'
-import { Address } from '@wagmi/core'
+import { Address } from 'viem'
 import { useEffect, useState } from 'react'
-import { useAccount, useSwitchNetwork } from 'wagmi'
+import { useAccount, useSwitchChain } from 'wagmi'
 import { ChevronLeftIcon } from '@heroicons/react/outline'
 import Card from '@tw/Card'
 import Grid from '@tw/Grid'
@@ -26,7 +26,7 @@ const PoolBody = ({
   connectedChainId?: number
 }) => {
   const [isClient, setIsClient] = useState(false)
-  const { chains, switchNetwork } = useSwitchNetwork()
+  const { chains, switchChain } = useSwitchChain()
   const { openConnectModal } = useConnectModal()
   const { isConnected } = useAccount()
 
@@ -132,7 +132,7 @@ const PoolBody = ({
                   onClick={() =>
                     new Promise((resolve, reject) => {
                       try {
-                        switchNetwork(pool.chainId)
+                        switchChain({ chainId: pool.chainId })
                         resolve(true)
                       } catch (e) {
                         reject(e)

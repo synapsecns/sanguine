@@ -24,7 +24,7 @@ This guide is for running `@synapsecns/synapse-interface` and `@synapsecns/sdk-r
 
 ## Prerequisites
 
-Ensure you've installed Node.js (version >=16.0.0) and Yarn on your machine. This setup assumes you're using Yarn Workspaces and Lerna to manage your project, with `@synapsecns/sdk-router` and `@synapsecns/synapse-interface` as part of the same workspace.
+Ensure you've installed Node.js (version 18.17.0) and Yarn on your machine. This setup assumes you're using Yarn Workspaces and Lerna to manage your project, with `@synapsecns/sdk-router` and `@synapsecns/synapse-interface` as part of the same workspace.
 
 ## Steps
 
