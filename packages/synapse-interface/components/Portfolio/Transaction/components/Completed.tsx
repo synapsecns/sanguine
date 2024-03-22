@@ -2,7 +2,7 @@ import { Address } from 'viem'
 import { shortenAddress } from '@/utils/shortenAddress'
 import { convertUnixTimestampToMonthAndDate } from '@/utils/time'
 import { isTimestampToday } from '@/utils/time'
-import { isValidAddress } from '@/utils/isValidAddress'
+import { isValidAddress, getValidAddress } from '@/utils/isValidAddress'
 
 export const Completed = ({
   transactionCompletedTime,
@@ -22,7 +22,7 @@ export const Completed = ({
   const isToday: boolean = isTimestampToday(transactionCompletedTime)
 
   const isDestinationSender: boolean =
-    String(connectedAddress) === String(destinationAddress)
+    getValidAddress(connectedAddress) === getValidAddress(destinationAddress)
 
   const isDestinationValid: boolean = isValidAddress(destinationAddress)
 
