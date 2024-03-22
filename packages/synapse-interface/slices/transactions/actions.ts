@@ -16,7 +16,7 @@ export interface PendingBridgeTransaction {
   isSubmitted: boolean
   estimatedTime: number
   bridgeModuleName: string
-  destinationAddress?: Address
+  destinationAddress: Address | null
 }
 
 export const addPendingBridgeTransaction =
