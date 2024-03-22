@@ -1,6 +1,6 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import * as CHAINS from '@constants/chains/master'
-import { getAddress } from '@ethersproject/address'
+import { getAddress } from 'viem'
 
 export type Chain = {
   id: number

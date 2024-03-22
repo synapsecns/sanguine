@@ -102,16 +102,30 @@ func (c Config) GetRFQAddress(chainID int) (value string, err error) {
 	return value, nil
 }
 
-// GetCCTPAddress returns the RFQ address for the given chainID.
-func (c Config) GetCCTPAddress(chainID int) (value string, err error) {
-	rawValue, err := c.getChainConfigValue(chainID, "CCTPAddress")
+// GetSynapseCCTPAddress returns the SynapseCCTP address for the given chainID.
+func (c Config) GetSynapseCCTPAddress(chainID int) (value string, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "SynapseCCTPAddress")
 	if err != nil {
 		return value, err
 	}
 
 	value, ok := rawValue.(string)
 	if !ok {
-		return value, fmt.Errorf("failed to cast CCTPAddress to string")
+		return value, fmt.Errorf("failed to cast SynapseCCTPAddress to string")
+	}
+	return value, nil
+}
+
+// GetTokenMessengerAddress returns the TokenMessenger address for the given chainID.
+func (c Config) GetTokenMessengerAddress(chainID int) (value string, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "TokenMessengerAddress")
+	if err != nil {
+		return value, err
+	}
+
+	value, ok := rawValue.(string)
+	if !ok {
+		return value, fmt.Errorf("failed to cast TokenMessengerAddress to string")
 	}
 	return value, nil
 }
@@ -394,6 +408,9 @@ func (c Config) GetRebalanceMethod(chainID int, tokenAddr string) (method Rebala
 	if err != nil {
 		return 0, err
 	}
+	if tokenConfig.RebalanceMethod == "" {
+		return RebalanceMethodNone, nil
+	}
 	for cid, chainCfg := range c.Chains {
 		tokenCfg, ok := chainCfg.Tokens[tokenName]
 		if ok {
@@ -403,8 +420,10 @@ func (c Config) GetRebalanceMethod(chainID int, tokenAddr string) (method Rebala
 		}
 	}
 	switch tokenConfig.RebalanceMethod {
-	case "cctp":
-		return RebalanceMethodCCTP, nil
+	case "synapsecctp":
+		return RebalanceMethodSynapseCCTP, nil
+	case "circlecctp":
+		return RebalanceMethodCircleCCTP, nil
 	case "native":
 		return RebalanceMethodNative, nil
 	}
@@ -547,25 +566,37 @@ func (c Config) GetMinQuoteAmount(chainID int, addr common.Address) *big.Int {
 	return quoteAmountScaled
 }
 
+var defaultMinRebalanceAmount = big.NewInt(1000)
+
+// GetMinRebalanceAmount returns the min rebalance amount for the given chain and address.
+// Note that this getter returns the value in native token decimals.
+//
+//nolint:dupl
+func (c Config) GetMinRebalanceAmount(chainID int, addr common.Address) *big.Int {
+	tokenCfg, _, err := c.getTokenConfigByAddr(chainID, addr.Hex())
+	if err != nil {
+		return defaultMaxRebalanceAmount
+	}
+	rebalanceAmountFlt, ok := new(big.Float).SetString(tokenCfg.MinRebalanceAmount)
+	if !ok || rebalanceAmountFlt == nil {
+		return defaultMinRebalanceAmount
+	}
+
+	// Scale by the token decimals.
+	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenCfg.Decimals)), nil)
+	minRebalanceAmountScaled, _ := new(big.Float).Mul(rebalanceAmountFlt, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
+	return minRebalanceAmountScaled
+}
+
 var defaultMaxRebalanceAmount = abi.MaxInt256
 
 // GetMaxRebalanceAmount returns the max rebalance amount for the given chain and address.
 // Note that this getter returns the value in native token decimals.
+//
+//nolint:dupl
 func (c Config) GetMaxRebalanceAmount(chainID int, addr common.Address) *big.Int {
-	chainCfg, ok := c.Chains[chainID]
-	if !ok {
-		return defaultMaxRebalanceAmount
-	}
-
-	var tokenCfg *TokenConfig
-	for _, cfg := range chainCfg.Tokens {
-		if common.HexToAddress(cfg.Address).Hex() == addr.Hex() {
-			cfgCopy := cfg
-			tokenCfg = &cfgCopy
-			break
-		}
-	}
-	if tokenCfg == nil {
+	tokenCfg, _, err := c.getTokenConfigByAddr(chainID, addr.Hex())
+	if err != nil {
 		return defaultMaxRebalanceAmount
 	}
 	rebalanceAmountFlt, ok := new(big.Float).SetString(tokenCfg.MaxRebalanceAmount)

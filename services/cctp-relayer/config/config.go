@@ -12,6 +12,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/jftuga/ellipsis"
 	ethConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/types"
 	"gopkg.in/yaml.v2"
 )
 
@@ -23,20 +24,27 @@ type Config struct {
 	Host string `yaml:"host"`
 	// CircleAPIURl is the URL for the Circle API
 	CircleAPIURl string `yaml:"circle_api_url"`
+	// CCTPType is the method for executing CCTP transactions.
+	CCTPType string `yaml:"cctp_type"`
 	// Chains stores all chain information
 	Chains ChainConfigs `yaml:"chains"`
 	// BaseOmnirpcURL is the base url for omnirpc.
 	// The format is "https://omnirpc.url/". Notice the lack of "confirmations" on the URL
 	// in comparison to what `Scribe` uses.
 	BaseOmnirpcURL string `yaml:"base_omnirpc_url"`
+	// ScribePort is the port for the scribe server.
+	ScribePort uint `yaml:"scribe_port"`
+	// ScribeURL is the URL for the scribe server.
+	ScribeURL string `yaml:"scribe_url"`
 	// Signer contains the unbonded signer config for agents
 	// (this is signer used to submit transactions)
 	Signer ethConfig.SignerConfig `yaml:"unbonded_signer"`
 	// RetryInterval is the interval for attestation request retries
 	RetryIntervalMS int `yaml:"retry_interval_ms"`
 	// HTTPBackoffMaxElapsedTime is the max elapsed time for attestation request retries
-	HTTPBackoffMaxElapsedTimeMs int                    `yaml:"http_backoff_max_elapsed_time_ms"`
-	SubmitterConfig             submitterConfig.Config `yaml:"submitter_config"`
+	HTTPBackoffMaxElapsedTimeMs int `yaml:"http_backoff_max_elapsed_time_ms"`
+	// SubmitterConfig is the config for the transaction submitter
+	SubmitterConfig submitterConfig.Config `yaml:"submitter_config"`
 }
 
 // IsValid makes sure the config is valid. This is done by calling IsValid() on each
@@ -86,4 +94,31 @@ func DecodeConfig(filePath string) (cfg Config, err error) {
 		return Config{}, fmt.Errorf("could not unmarshall config %s: %w", ellipsis.Shorten(string(input), 30), err)
 	}
 	return cfg, nil
+}
+
+const defaultCCTPType = types.SynapseMessageType
+
+// GetCCTPType returns the CCTP method.
+func (c Config) GetCCTPType() (types.MessageType, error) {
+	switch c.CCTPType {
+	case "synapse":
+		return types.SynapseMessageType, nil
+	case "circle":
+		return types.CircleMessageType, nil
+	default:
+		if len(c.CCTPType) == 0 {
+			return defaultCCTPType, nil
+		}
+		return 0, fmt.Errorf("invalid cctp method: %s", c.CCTPType)
+	}
+}
+
+// GetChainConfig returns the chain config for a given chain id.
+func (c Config) GetChainConfig(chainID uint32) (cfg ChainConfig, err error) {
+	for _, chainCfg := range c.Chains {
+		if chainCfg.ChainID == chainID {
+			return chainCfg, nil
+		}
+	}
+	return cfg, fmt.Errorf("chain config not found for chain id: %d", chainID)
 }
