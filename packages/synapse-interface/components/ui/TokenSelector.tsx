@@ -25,11 +25,19 @@ export function TokenSelector({
 
   const handleSetFromToken = (token) => {
     if (selectedItem !== token) {
-      const eventTitle = `[Bridge User Action] Sets new fromChainId`
-      const eventData = {
-        previousFromToken: selectedItem?.symbol,
-        newFromToken: token?.symbol,
-      }
+      const eventTitle = `[${action} User Action] Sets new ${
+        isOrigin ? 'from' : 'to'
+      }Token`
+
+      const eventData = isOrigin
+        ? {
+            previousFromToken: selectedItem?.symbol,
+            newFromToken: token?.symbol,
+          }
+        : {
+            previousToToken: selectedItem?.symbol,
+            newToToken: token?.symbol,
+          }
       segmentAnalyticsEvent(eventTitle, eventData)
       dispatch(setFunction(token))
     }

@@ -2,23 +2,13 @@ import _ from 'lodash'
 import { memo, useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 
-import {
-  getBorderStyleForCoin,
-  getBorderStyleForCoinHover,
-  getMenuItemBgForCoin,
-  getMenuItemStyleForCoin,
-} from '@styles/tokens'
 import { type Token, type ActionTypes } from '@/utils/types'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { findChainIdsWithPausedToken } from '@/constants/tokens'
 import LoadingDots from '@/components/ui/tailwind/LoadingDots'
-import {
-  BridgeModules,
-  ELIGIBILITY_DEFAULT_TEXT,
-  useStipEligibility,
-} from '@/utils/hooks/useStipEligibility'
+import { ELIGIBILITY_DEFAULT_TEXT } from '@/utils/hooks/useStipEligibility'
 import { getUnderlyingBridgeTokens } from '@/utils/getUnderlyingBridgeTokens'
 import { ARBITRUM, AVALANCHE, ETH } from '@/constants/chains/master'
 import { getActiveStyleForButton, getHoverStyleForButton } from '@/styles/hover'
@@ -74,18 +64,6 @@ const SelectSpecificTokenButton = ({
   })
 
   const chainId = isOrigin ? fromChainId : toChainId
-
-  // let bgClassName
-
-  // const classNameForMenuItemStyle = getMenuItemStyleForCoin(token?.color)
-
-  // if (isCurrentToken) {
-  //   bgClassName = `${getMenuItemBgForCoin(
-  //     token?.color
-  //   )} ${getBorderStyleForCoin(token?.color)}`
-  // } else {
-  //   bgClassName = getBorderStyleForCoinHover(token?.color)
-  // }
 
   return (
     <button
@@ -205,11 +183,6 @@ const ButtonContent = memo(
               height="20"
               className="w-5 h-5 max-w-fit"
             />
-            {/* <img
-          alt="token image"
-          className="w-8 h-8 ml-2 mr-4 rounded-full"
-          src={token?.icon?.src}
-        /> */}
             <Coin
               token={token}
               showAllChains={showAllChains}
@@ -222,11 +195,10 @@ const ButtonContent = memo(
           )}
         </div>
         <div className="flex items-center space-x-2 text-sm text-secondary">
-          {action === 'bridge' && isOrigin && isTokenEligible(token) ? (
+          {action === 'Bridge' && isOrigin && isTokenEligible(token) ? (
             <div className="text-greenText">{ELIGIBILITY_DEFAULT_TEXT}</div>
           ) : (
             <></>
-            // <div>{token?.name}</div>
           )}
         </div>
       </div>
@@ -243,8 +215,6 @@ const Coin = ({
   showAllChains: boolean
   isOrigin: boolean
 }) => {
-  const isEligible = isTokenEligible(token)
-
   return (
     <div>
       <div className="flex justify-between text-left">

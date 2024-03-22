@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
+import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import { useDispatch } from 'react-redux'
 import { useAccount, useNetwork } from 'wagmi'
 
@@ -20,7 +20,6 @@ import {
   ConnectedIndicator,
 } from '@/components/ConnectionIndicators'
 import { CHAINS_BY_ID } from '@/constants/chains'
-// import { FromTokenSelector } from './FromTokenSelector'
 import { fromChainListArray } from './helpers/fromChainListArray'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
@@ -138,6 +137,7 @@ const FromChainSelector = () => (
     label="From"
     itemListFunction={fromChainListArray}
     setFunction={setFromChainId}
+    action="Bridge"
   />
 )
 
@@ -149,6 +149,6 @@ const FromTokenSelector = () => (
     placeholder="Out"
     itemListFunction={fromTokenListArray}
     setFunction={setFromToken}
-    action="bridge"
+    action="Bridge"
   />
 )

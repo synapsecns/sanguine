@@ -22,11 +22,19 @@ export function ChainSelector({
 
   const handleSetChainId = (chainId) => {
     if (selectedItem?.id !== chainId) {
-      const eventTitle = `[Bridge User Action] Sets new fromChainId`
-      const eventData = {
-        previousFromChainId: selectedItem?.id,
-        newFromChainId: chainId,
-      }
+      const eventTitle = `[Bridge User Action] Sets new ${
+        isOrigin ? 'from' : 'to'
+      }ChainId`
+
+      const eventData = isOrigin
+        ? {
+            previousFromChainId: selectedItem?.id,
+            newFromChainId: chainId,
+          }
+        : {
+            previousToChainId: selectedItem?.id,
+            newToChainId: chainId,
+          }
 
       segmentAnalyticsEvent(eventTitle, eventData)
       dispatch(setFunction(chainId))

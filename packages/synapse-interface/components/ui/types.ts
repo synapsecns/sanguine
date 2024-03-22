@@ -22,4 +22,5 @@ export interface TokenSelectorTypes extends SelectorTypes {
 
 export interface ChainSelectorTypes extends SelectorTypes {
   selectedItem: Chain
+  action: ActionTypes
 }

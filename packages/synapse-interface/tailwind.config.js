@@ -196,9 +196,9 @@ module.exports = {
       },
       animation: {
         sheenit: 'sheen 0.42s forwards',
-        'slide-down': 'slide-down .3s cubic-bezier(0, .5, .2, 1)',
-        'slide-up': 'slide-up .3s cubic-bezier(0, .5, .2, 1)',
-        tooltip: 'tooltip .3s cubic-bezier(0, .5, .2, 1)',
+        'slide-down': 'slide-down .4s cubic-bezier(0, .5, .2, 1)',
+        'slide-up': 'slide-up .4s cubic-bezier(0, .5, .2, 1)',
+        tooltip: 'tooltip .4s cubic-bezier(0, .5, .2, 1)',
       },
       keyframes: {
         sheen: {

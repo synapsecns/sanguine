@@ -128,7 +128,7 @@ export type BridgeWatcherTx = {
   contractEmittedFrom: string
 }
 
-export type ActionTypes = 'bridge' | 'swap'
+export type ActionTypes = 'Bridge' | 'Swap'
 
 // TODO
 // Clean up this file as swap and pools get implemented in the sdk and more clarity on the types needed are defined
