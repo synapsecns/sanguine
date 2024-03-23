@@ -19,9 +19,38 @@ import (
 	"strings"
 )
 
+
+func identifyNestedDependencyChange(packageName string, depGraph map[string][]string, ct tree.Tree) (changed bool) {
+  if ct.HasPath(packageName) {
+    return true
+  }
+  deps := depGraph[packageName]
+  changed = false
+
+  for _, dep := range deps {
+    if ct.HasPath(dep) {
+      changed = true
+      break
+    }
+
+    subDeps := depGraph[dep]
+
+    if len(subDeps) != 0 {
+      for _, subDep := range subDeps {
+        changed = identifyNestedDependencyChange(subDep, depGraph, ct)
+
+        if changed == true {
+          break
+        }
+      }
+    }
+  }
+
+  return changed
+}
 // DetectChangedModules is the change detector client.
 // nolint: cyclop
-func DetectChangedModules(repoPath string, ct tree.Tree, includeDeps bool) (modules map[string]bool, err error) {
+func DetectChangedModules(repoPath string, ct tree.Tree, includeDeps bool, typeOfDependency string) (modules map[string]bool, err error) {
 	modules = make(map[string]bool)
 
 	goWorkPath := path.Join(repoPath, "go.work")
@@ -41,28 +70,56 @@ func DetectChangedModules(repoPath string, ct tree.Tree, includeDeps bool) (modu
 		return nil, fmt.Errorf("failed to parse go.work file: %w", err)
 	}
 
-	depGraph, err := getDependencyGraph(repoPath)
+	depGraph, packagesPerModule, err := getDependencyGraph(repoPath, typeOfDependency)
 	if err != nil {
 		return nil, fmt.Errorf("could not get dep graph: %w", err)
 	}
 
-	for _, module := range parsedWorkFile.Use {
-		changed := false
-		if ct.HasPath(module.Path) {
-			changed = true
-		}
+  if (typeOfDependency == "modules") {
+    for _, module := range parsedWorkFile.Use {
+      changed := false
+      if ct.HasPath(module.Path) {
+        changed = true
+      }
 
-		if includeDeps {
-			deps := depGraph[module.Path]
-			for _, dep := range deps {
-				if ct.HasPath(dep) {
-					changed = true
-				}
-			}
-		}
+      if includeDeps {
+        deps := depGraph[module.Path]
+        for _, dep := range deps {
+          if ct.HasPath(dep) {
+            changed = true
+          }
+        }
+      }
 
-		modules[module.Path] = changed
-	}
+      modules[module.Path] = changed
+    }
+  } 
+
+  if typeOfDependency == "packages" {
+    for _, module := range parsedWorkFile.Use {
+      changed := false
+
+      if ct.HasPath(module.Path) {
+        changed = true
+        modules[module.Path] = changed
+
+        continue 
+      }
+
+      if includeDeps {
+        for _, packageName := range packagesPerModule[module.Path] {
+          changed = identifyNestedDependencyChange(packageName, depGraph, ct)
+
+          if changed == true {
+            break
+          }
+        }
+      }
+
+
+      modules[module.Path] = changed
+    }
+  }
 
 	return modules, nil
 }

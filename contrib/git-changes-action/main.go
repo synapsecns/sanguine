@@ -41,12 +41,12 @@ func main() {
 		panic(err)
 	}
 
-	noDepChanged, noDepUnchanged, err := outputModuleChanges(workingDirectory, ct, false)
+	noDepChanged, noDepUnchanged, err := outputModuleChanges(workingDirectory, ct, false, "packages")
 	if err != nil {
 		panic(err)
 	}
 
-	depChanged, depUnchanged, err := outputModuleChanges(workingDirectory, ct, true)
+	depChanged, depUnchanged, err := outputModuleChanges(workingDirectory, ct, true, "packages")
 	if err != nil {
 		panic(err)
 	}
@@ -61,8 +61,8 @@ func main() {
 // outputModuleChanges outputs the changed modules.
 // this wraps detector.DetectChangedModules and handles the output formatting to be parsable by github actions.
 // the final output is a json array of strings.
-func outputModuleChanges(workingDirectory string, ct tree.Tree, includeDeps bool) (changedJSON string, unchangedJson string, err error) {
-	modules, err := detector.DetectChangedModules(workingDirectory, ct, includeDeps)
+func outputModuleChanges(workingDirectory string, ct tree.Tree, includeDeps bool, typeOfDependency string) (changedJSON string, unchangedJson string, err error) {
+	modules, err := detector.DetectChangedModules(workingDirectory, ct, includeDeps, typeOfDependency)
 	if err != nil {
 		return changedJSON, unchangedJson, fmt.Errorf("failed to detect changed modules w/ include deps set to %v: %w", includeDeps, err)
 	}
