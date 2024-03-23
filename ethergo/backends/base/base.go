@@ -229,7 +229,7 @@ type ConfirmationClient interface {
 // nolint: cyclop
 func WaitForConfirmation(ctx context.Context, client ConfirmationClient, transaction *types.Transaction, timeout time.Duration) {
 	// if tx is nil , we should panic here so we can see the call context
-	_ = transaction.Hash()
+	hash := transaction.Hash().String()
 
 	const debugTimeout = time.Second * 5
 
@@ -277,6 +277,7 @@ func WaitForConfirmation(ctx context.Context, client ConfirmationClient, transac
 			if err != nil {
 				if receipt.Status == types.ReceiptStatusFailed {
 					rawJSON, _ := transaction.MarshalJSON()
+					findAndPrintReverts("../../../packages/contracts-core", hash)
 					logger.Errorf("transaction %s with body %s reverted", transaction, string(rawJSON))
 				}
 			}
