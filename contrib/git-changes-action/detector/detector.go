@@ -20,9 +20,14 @@ import (
 )
 
 
-func identifyNestedDependencyChange(packageName string, depGraph map[string][]string, ct tree.Tree) (changed bool) {
+func identifyNestedDependencyChange(packageName string, depGraph map[string][]string, ct tree.Tree, packages map[string]bool) (changed bool) {
   if ct.HasPath(packageName) {
+    packages[packageName] = true
     return true
+  }
+
+  if _, ok := packages[packageName]; ok {
+    return packages[packageName]
   }
 
   deps := depGraph[packageName]
@@ -30,7 +35,7 @@ func identifyNestedDependencyChange(packageName string, depGraph map[string][]st
 
   if len(deps) != 0 {
     for _, dep := range deps {
-      changed = identifyNestedDependencyChange(dep, depGraph, ct)
+      changed = identifyNestedDependencyChange(dep, depGraph, ct, packages)
 
       if changed == true {
         break
@@ -38,6 +43,7 @@ func identifyNestedDependencyChange(packageName string, depGraph map[string][]st
     }
   }
 
+  packages[packageName] = changed
   return changed
 }
 // DetectChangedModules is the change detector client.
@@ -88,19 +94,25 @@ func DetectChangedModules(repoPath string, ct tree.Tree, includeDeps bool, typeO
   } 
 
   if typeOfDependency == "packages" {
+    // This map stores package change identification
+    // map(package->isChanged bool)
+    // Reduces reduntant recursion over packages whose dependency tree has been prevoziously analyzed.
+    // Essentially caching recursion, so if package was found and analyzed through another package's dependency tree, it is not analyzed again.
+    var packages = make(map[string]bool)
+
     for _, module := range parsedWorkFile.Use {
       changed := false
 
       if ct.HasPath(module.Path) {
         changed = true
         modules[module.Path] = changed
-
+        packages[module.Path] = changed
         continue 
       }
 
       if includeDeps {
         for _, packageName := range packagesPerModule[module.Path] {
-          changed = identifyNestedDependencyChange(packageName, depGraph, ct)
+          changed = identifyNestedDependencyChange(packageName, depGraph, ct, packages)
 
           if changed == true {
             break
@@ -108,9 +120,10 @@ func DetectChangedModules(repoPath string, ct tree.Tree, includeDeps bool, typeO
         }
       }
 
-
+      packages[module.Path] = changed
       modules[module.Path] = changed
     }
+
   }
 
 	return modules, nil
