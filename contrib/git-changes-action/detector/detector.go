@@ -24,24 +24,16 @@ func identifyNestedDependencyChange(packageName string, depGraph map[string][]st
   if ct.HasPath(packageName) {
     return true
   }
+
   deps := depGraph[packageName]
   changed = false
 
-  for _, dep := range deps {
-    if ct.HasPath(dep) {
-      changed = true
-      break
-    }
+  if len(deps) != 0 {
+    for _, dep := range deps {
+      changed = identifyNestedDependencyChange(dep, depGraph, ct)
 
-    subDeps := depGraph[dep]
-
-    if len(subDeps) != 0 {
-      for _, subDep := range subDeps {
-        changed = identifyNestedDependencyChange(subDep, depGraph, ct)
-
-        if changed == true {
-          break
-        }
+      if changed == true {
+        break
       }
     }
   }
