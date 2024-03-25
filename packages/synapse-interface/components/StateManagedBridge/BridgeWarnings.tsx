@@ -4,14 +4,17 @@ import { setIsDestinationWarningAccepted } from '@/slices/bridgeDisplaySlice'
 
 export const ConfirmDestinationAddressWarning = () => {
   const dispatch = useAppDispatch()
-  const { showDestinationWarning, isDestinationWarningAccepted } =
-    useBridgeDisplayState()
+  const {
+    showDestinationWarning,
+    isDestinationWarningAccepted,
+    showDestinationAddress,
+  } = useBridgeDisplayState()
 
   const handleCheckboxChange = () => {
     dispatch(setIsDestinationWarningAccepted(!isDestinationWarningAccepted))
   }
 
-  if (showDestinationWarning) {
+  if (showDestinationAddress && showDestinationWarning) {
     return (
       <div
         className="flex items-center mb-2 space-x-3 cursor-pointer"
