@@ -4,8 +4,8 @@ import Fuse from 'fuse.js'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useSwapState } from '@/slices/swap/hooks'
 import { getSwapPossibilities } from '@/utils/swapFinder/generateSwapPossibilities'
-import { hasBalance } from '../helpers/sortByBalance'
-import { sortByPriorityRank } from '../helpers/sortByPriorityRank'
+import { hasBalance } from '@/utils/hasBalance'
+import { sortByPriorityRank } from '@/utils/sortByPriorityRank'
 import { CHAINS_BY_ID } from '@/constants/chains'
 
 export const useSwapFromTokenListArray = (searchStr: string) => {

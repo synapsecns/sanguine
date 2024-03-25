@@ -10,7 +10,7 @@ import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterD
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { shortenAddress } from '@/utils/shortenAddress'
 import { ARBITRUM } from '@/constants/chains/master'
-import { CloseButton } from '../StateManagedBridge/components/CloseButton'
+import { CloseButton } from '@/components/ui/CloseButton'
 import { ArrowUpRightIcon } from '../icons/ArrowUpRightIcon'
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline'
 import { HoverContent } from '../Portfolio/components/PortfolioTokenVisualizer'

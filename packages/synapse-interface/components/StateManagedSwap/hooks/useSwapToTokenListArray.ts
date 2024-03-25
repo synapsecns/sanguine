@@ -4,7 +4,7 @@ import Fuse from 'fuse.js'
 
 import { useSwapState } from '@/slices/swap/hooks'
 import { getSwapPossibilities } from '@/utils/swapFinder/generateSwapPossibilities'
-import { sortByPriorityRank } from '../helpers/sortByPriorityRank'
+import { sortByPriorityRank } from '@/utils/sortByPriorityRank'
 import { CHAINS_BY_ID } from '@/constants/chains'
 
 export const useSwapToTokenListArray = () => {

@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
+import { useDispatch } from 'react-redux'
+
 import { type Token } from '@/utils/types'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import { useDispatch } from 'react-redux'
-import SelectSpecificTokenButton from '../StateManagedBridge/components/SelectSpecificTokenButton'
-
+import { SelectSpecificTokenButton } from '@/components/ui/SelectSpecificTokenButton'
 import { TokenSelectorTypes } from '@/components/ui/types'
 import { SelectorWrapper } from '@/components/ui/SelectorWrapper'
 import { ListSectionWrapper } from '@/components/ui/ListSectionWrapper'
