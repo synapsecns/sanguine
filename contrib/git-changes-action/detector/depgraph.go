@@ -39,7 +39,7 @@ func getDependencyGraph(repoPath string, typeOfDependency string) (moduleDeps ma
 	}
 
 	// map of module->dependencies + replaces
-	var dependencies map[string][]string
+	var dependencies map[string]map[string]struct{}
 	// bidirectional map of module->module name or dependency->dependency
 	var dependencyNames *bimap.BiMap[string, string]
 
@@ -56,8 +56,7 @@ func getDependencyGraph(repoPath string, typeOfDependency string) (moduleDeps ma
 	// build the dependency graph
   if typeOfDependency == "module" {
     for _, module := range parsedWorkFile.Use {
-      moduleDeps := dependencies[module.Path]
-      for _, dep := range moduleDeps {
+      for dep, _ := range dependencies[module.Path] {
         // check if the full package name (e.g. github.com/myorg/myrepo/mymodule) is in the list of modules. If it is, add it as a dependency after renaming
         renamedDep, hasDep := dependencyNames.GetInverse(dep)
         if hasDep {
@@ -90,10 +89,8 @@ func getDependencyGraph(repoPath string, typeOfDependency string) (moduleDeps ma
 
       for _, packageInModule := range allPackagesInModule {
         renamedPackage, hasPackage := dependencyNames.Get(packageInModule) 
-        t := dependencies[renamedPackage]
-
         if hasPackage {
-          for _, dep := range t {
+          for dep, _ := range dependencies[renamedPackage] {
             dep = strings.TrimPrefix(dep, `"`)
             dep = strings.TrimSuffix(dep, `"`)
 
@@ -139,10 +136,10 @@ func extractGoFileNames(pwd string, currentModule string, currentPackage string,
 }
 
 // makeDepMaps makes a dependency map and a bidirectional map of dep<->module.
-func makeDepMaps(repoPath string, uses []*modfile.Use, typeOfDependency string) (dependencies map[string][]string, dependencyNames *bimap.BiMap[string, string], packagesPerModule map[string][]string, err error) {
+func makeDepMaps(repoPath string, uses []*modfile.Use, typeOfDependency string) (dependencies map[string]map[string]struct{}, dependencyNames *bimap.BiMap[string, string], packagesPerModule map[string][]string, err error) {
 	// map of module->dependencies + replaces
   // map of packages -> dependencies
-	dependencies = make(map[string][]string)
+	dependencies = make(map[string]map[string]struct{})
 	// bidirectional map of module->module name
   // bidirectional map of package->package name, relative to public names.
 	dependencyNames = bimap.NewBiMap[string, string]()
@@ -167,14 +164,14 @@ func makeDepMaps(repoPath string, uses []*modfile.Use, typeOfDependency string) 
         }
 
         dependencyNames.Insert(module.Path, parsedModFile.Module.Mod.Path)
-        dependencies[module.Path] = make([]string, 0)
+        dependencies[module.Path] = make(map[string]struct{})
       
         // include all requires and replaces, as they are dependencies
         for _, require := range parsedModFile.Require {
-          dependencies[module.Path] = append(dependencies[module.Path], convertRelPath(repoPath, module.Path, require.Mod.Path))
+          dependencies[module.Path][convertRelPath(repoPath, module.Path, require.Mod.Path)] = struct{}{}
         }
         for _, require := range parsedModFile.Replace {
-          dependencies[module.Path] = append(dependencies[module.Path], convertRelPath(repoPath, module.Path, require.New.Path))
+          dependencies[module.Path][convertRelPath(repoPath,module.Path, require.New.Path)] = struct{}{} 
         }
       }
     }
@@ -219,15 +216,16 @@ func makeDepMaps(repoPath string, uses []*modfile.Use, typeOfDependency string) 
 
       for _, module := range uses {
         for _, packageInModule := range packagesPerModule[module.Path] {
+          publicPackageName, _ := dependencyNames.Get(packageInModule)
+          dependencies[publicPackageName] = make(map[string]struct{})
           for _, file := range extractedGoFileNames[module.Path[1:]][packageInModule] {
               fset := token.NewFileSet()
               f, err := parser.ParseFile(fset, file, nil, parser.ImportsOnly)
               if err != nil {
               }
 
-              publicPackageName, _ := dependencyNames.Get(packageInModule)
               for _, s := range f.Imports {
-                  dependencies[publicPackageName] = append(dependencies[publicPackageName], s.Path.Value)
+                  dependencies[publicPackageName][s.Path.Value] = struct{}{} 
               }
           }
         }
