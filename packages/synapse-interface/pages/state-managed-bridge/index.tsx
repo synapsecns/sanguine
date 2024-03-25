@@ -66,10 +66,6 @@ import { approveToken } from '@/utils/approveToken'
 import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
 import { EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
 import { ConfirmDestinationAddressWarning } from '@/components/StateManagedBridge/BridgeWarnings'
-import {
-  EcotoneForkWarningMessage,
-  useEcotoneForkCountdownProgress,
-} from '@/components/Maintenance/Events/example/EcotoneForkUpgrade'
 import SettingsSlideOver from '@/components/StateManagedBridge/SettingsSlideOver'
 import Button from '@/components/ui/tailwind/Button'
 import { SettingsIcon } from '@/components/icons/SettingsIcon'
@@ -77,6 +73,10 @@ import {
   setShowDestinationAddress,
   setShowSettingsSlideOver,
 } from '@/slices/bridgeDisplaySlice'
+import {
+  MaintenanceWarningMessage,
+  useMaintenanceCountdownProgress,
+} from '@/components/Maintenance/Events/template/MaintenanceEvent'
 
 const StateManagedBridge = () => {
   const router = useRouter()
@@ -510,10 +510,10 @@ const StateManagedBridge = () => {
     '-mt-4 fixed z-50 w-full h-full bg-opacity-50 bg-[#343036]'
 
   const {
-    isEcotoneForkUpgradePending,
+    isMaintenancePending,
     isCurrentChainDisabled,
-    EcotoneForkCountdownProgressBar,
-  } = useEcotoneForkCountdownProgress()
+    MaintenanceCountdownProgressBar,
+  } = useMaintenanceCountdownProgress()
 
   return (
     <div className="flex flex-col w-full max-w-lg mx-auto lg:mx-0">
@@ -552,7 +552,7 @@ const StateManagedBridge = () => {
             transition-all duration-100 transform rounded-md
           `}
         >
-          {EcotoneForkCountdownProgressBar}
+          {MaintenanceCountdownProgressBar}
           <div ref={bridgeDisplayRef}>
             <Transition show={showSettingsSlideOver} {...TRANSITION_PROPS}>
               <animated.div>
@@ -590,6 +590,7 @@ const StateManagedBridge = () => {
             />
             <OutputContainer />
             <Warning />
+            {isMaintenancePending && <MaintenanceWarningMessage />}
             <Transition
               appear={true}
               unmount={false}
