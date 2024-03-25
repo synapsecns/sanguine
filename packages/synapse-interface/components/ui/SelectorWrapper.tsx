@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { DropDownArrowSvg } from '../icons/DropDownArrowSvg'
+
 import { getHoverStyleForButton } from '@/styles/hover'
-import SlideSearchBox from '@/pages/bridge/SlideSearchBox'
+import { DropDownArrowSvg } from '@/components/icons/DropDownArrowSvg'
+import { SlideSearchBox } from '@/components/ui/SlideSearchBox'
 import { CloseButton } from '@/components/ui/CloseButton'
-import { useKeyPress } from '@/utils/hooks/useKeyPress'
 import { SearchResults } from '@/components/ui/SearchResults'
+import { useKeyPress } from '@/utils/hooks/useKeyPress'
 import { joinClassNames } from '@/utils/joinClassNames'
 
 export const SelectorWrapper = ({

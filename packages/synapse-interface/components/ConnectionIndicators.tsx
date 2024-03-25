@@ -2,19 +2,12 @@ import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { useAccount } from 'wagmi'
 import { switchNetwork } from '@wagmi/core'
-import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
+import { LoaderIcon } from 'react-hot-toast'
 
 import { setFromChainId } from '@/slices/bridge/reducer'
-import { useBridgeState } from '@/slices/bridge/hooks'
 import { CHAINS_BY_ID } from '@/constants/chains'
-import {
-  getNetworkButtonBgClassNameActive,
-  getNetworkButtonBorderActive,
-  getNetworkButtonBorderHover,
-  getNetworkHover,
-} from '@/styles/chains'
-import { LoaderIcon } from 'react-hot-toast'
+import { getNetworkButtonBorderHover, getNetworkHover } from '@/styles/chains'
 import { joinClassNames } from '@/utils/joinClassNames'
 
 const Indicator = ({ className }) => (
@@ -36,35 +29,6 @@ export const ConnectedIndicator = () => {
     <button data-test-id="connected-button" disabled className={className}>
       <Indicator className="bg-green-500 dark:bg-green-400" />
       Connected
-    </button>
-  )
-}
-
-const DisconnectedIndicator = () => {
-  const { openConnectModal } = useConnectModal()
-  const { fromChainId } = useBridgeState()
-  const chain = CHAINS_BY_ID[fromChainId]
-
-  const className = joinClassNames({
-    flex: 'flex items-center gap-2',
-    space: 'px-3 py-1 rounded-full',
-    border: 'border border-transparent',
-    font: 'text-sm',
-    bgHover: getNetworkHover(chain?.color),
-    // bgActive: getNetworkButtonBgClassNameActive(chain?.color),
-    borderHover: getNetworkButtonBorderHover(chain?.color),
-    // borderActive: getNetworkButtonBorderActive(chain?.color),
-    active: 'hover:active:opacity-80',
-  })
-
-  return (
-    <button
-      data-test-id="disconnected-button"
-      className={className}
-      onClick={openConnectModal}
-    >
-      <Indicator className="bg-red-500" />
-      Disconnected
     </button>
   )
 }
