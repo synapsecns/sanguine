@@ -85,27 +85,16 @@ func getDependencyGraph(repoPath string, typeOfDependency string) (moduleDeps ma
 
   if typeOfDependency == "packages" {
     for _, module := range parsedWorkFile.Use {
-      allPackagesInModule := packagesPerModule[module.Path]
-
-      for _, packageInModule := range allPackagesInModule {
-        renamedPackage, hasPackage := dependencyNames.Get(packageInModule) 
-        if hasPackage {
-          for dep, _ := range dependencies[renamedPackage] {
-            dep = strings.TrimPrefix(dep, `"`)
-            dep = strings.TrimSuffix(dep, `"`)
-
-            renamedDep, hasDep := dependencyNames.GetInverse(dep)
-            if hasDep {
-              err = depGraph.DependOn(packageInModule, renamedDep) 
-              if err != nil {
-                fmt.Println("THERE IS AN ERROR", err, packageInModule, renamedDep)
-              }
+      for _, relativePackageName := range packagesPerModule[module.Path] {
+          for relativePackageDependencyName, _ := range dependencies[relativePackageName] {
+            err = depGraph.DependOn(relativePackageName, relativePackageDependencyName) 
+            if err != nil {
+              fmt.Println("THERE IS AN ERROR", err, relativePackageName, relativePackageDependencyName)
             }
           }
-        }
 
-        for dep := range depGraph.Dependencies(packageInModule) {
-          moduleDeps[packageInModule] = append(moduleDeps[packageInModule], dep)
+        for dep := range depGraph.Dependencies(relativePackageName) {
+          moduleDeps[relativePackageName] = append(moduleDeps[relativePackageName], dep)
         }
       }
     }
@@ -224,9 +213,9 @@ func makeDepMaps(repoPath string, uses []*modfile.Use, typeOfDependency string) 
 
       for _, module := range uses {
         for packageInModule, files := range extractedGoFileNames[module.Path[1:]] {
-          publicPackageName, _ := dependencyNames.Get(module.Path[1:] + packageInModule)
+          relativePackaeName := module.Path[1:] + packageInModule
 
-          dependencies[publicPackageName] = make(map[string]struct{})
+          dependencies[relativePackaeName] = make(map[string]struct{})
           for _, file := range files {
             fset := token.NewFileSet()
             f, err := parser.ParseFile(fset, file, nil, parser.ImportsOnly)
@@ -235,10 +224,10 @@ func makeDepMaps(repoPath string, uses []*modfile.Use, typeOfDependency string) 
             }
 
             for _, s := range f.Imports {
-              _, hasDep := dependencyNames.GetInverse(s.Path.Value[1:len(s.Path.Value)-1])
+              renamedDep, hasDep := dependencyNames.GetInverse(s.Path.Value[1:len(s.Path.Value)-1])
 
               if hasDep {
-                dependencies[publicPackageName][s.Path.Value] = struct{}{} 
+                dependencies[relativePackaeName][renamedDep] = struct{}{} 
               }
             }
           }
