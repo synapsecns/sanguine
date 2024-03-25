@@ -1,3 +1,4 @@
+// Package cmd contains the cli for executor.
 package cmd
 
 import (
@@ -8,6 +9,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+// Start starts the CLI.
 func Start(args []string, buildInfo config.BuildInfo) {
 	app := cli.NewApp()
 	app.Name = buildInfo.Name()

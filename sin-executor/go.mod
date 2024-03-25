@@ -20,7 +20,6 @@ require (
 	github.com/ethereum/go-ethereum v1.11.6
 	github.com/ipfs/go-datastore v0.6.0
 	github.com/ipfs/go-log v1.0.5
-	github.com/jpillora/backoff v1.0.0
 	github.com/stretchr/testify v1.8.4
 	github.com/synapsecns/sanguine/core v0.0.0-00010101000000-000000000000
 	github.com/synapsecns/sanguine/ethergo v0.0.2
@@ -169,6 +168,7 @@ require (
 	github.com/jftuga/ellipsis v1.0.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
+	github.com/jpillora/backoff v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
 	github.com/klauspost/compress v1.17.6 // indirect

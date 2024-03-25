@@ -11,6 +11,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+// InterchainTransaction is the interchain transaction model.
 type InterchainTransaction struct {
 	// TransactionID is the transaction id.
 	TransactionID string `gorm:"column:transaction_id;primaryKey"`

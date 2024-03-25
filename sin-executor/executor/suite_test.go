@@ -123,7 +123,6 @@ func (i *InterchainSuite) setClientConfigs(backend backends.SimulatedTestBackend
 
 	i.Require().NoError(err)
 	backend.WaitForConfirmation(i.GetTestContext(), tx)
-
 }
 
 func (i *InterchainSuite) addressToBytes32(addie common.Address) [32]byte {

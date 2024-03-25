@@ -14,6 +14,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/ethergo/listener"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
@@ -22,12 +23,13 @@ import (
 	"github.com/synapsecns/sanguine/sin-executor/contracts/interchainclient"
 	"github.com/synapsecns/sanguine/sin-executor/db"
 	"github.com/synapsecns/sanguine/sin-executor/db/connect"
-	"github.com/synapsecns/sanguine/sin-executor/listener"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
 )
 
+// Executor is the executor sturct/core of the program
+// TODO: should consider interfacing this.
 type Executor struct {
 	signer          signer.Signer
 	submitter       submitter.TransactionSubmitter
@@ -69,7 +71,13 @@ func NewExecutor(ctx context.Context, handler metrics.Handler, cfg config.Config
 			return nil, fmt.Errorf("could not get chain client: %w", err)
 		}
 
-		chainListener, err := listener.NewChainListener(chainClient, executor.db, executionService, handler)
+		// TODO: right no a single block missing wills top the whole boot
+		blockNum, err := chainClient.BlockNumber(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("could not get block number: %w", err)
+		}
+
+		chainListener, err := listener.NewChainListener(chainClient, executor.db, executionService, blockNum, handler)
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain listener: %w", err)
 		}
@@ -98,12 +106,12 @@ func (e *Executor) Start(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
 
 	g.Go(func() error {
-		// nolint: errcheck
+		// nolint: wrapcheck
 		return e.submitter.Start(ctx)
 	})
 
 	g.Go(func() error {
-		// nolint: errcheck
+		// nolint: wrapcheck
 		return e.startChainIndexers(ctx)
 	})
 
@@ -128,6 +136,7 @@ func (e *Executor) Start(ctx context.Context) error {
 	return nil
 }
 
+// nolint: cylop
 func (e *Executor) runDBSelector(ctx context.Context) error {
 	for {
 		select {
@@ -151,9 +160,6 @@ func (e *Executor) runDBSelector(ctx context.Context) error {
 					if err != nil {
 						e.metrics.ExperimentalLogger().Errorf(ctx, "could not sign and broadcast: %v", err)
 					}
-				case db.Executed:
-					fmt.Println("executed")
-
 				default:
 					panic("unhandled default case")
 				}
@@ -172,6 +178,7 @@ func (e *Executor) executeTransaction(ctx context.Context, request db.Transactio
 		transactor.GasLimit = request.Options.GasLimit.Uint64()
 		transactor.Value = request.Options.GasAirdrop
 
+		// nolint: wrapcheck
 		return contract.InterchainExecute(transactor, request.Options.GasLimit, request.EncodedTX, nil)
 	})
 	if err != nil {
@@ -235,7 +242,7 @@ const defaultDBInterval = 3
 
 // runChainIndexer runs the chain indexer for a given chain.
 // any events that an action exists for are indexed.
-// nolint: cyclop
+// nolint: cyclop, gocognit
 func (e *Executor) runChainIndexer(parentCtx context.Context, chainID int) (err error) {
 	chainListener := e.chainListeners[chainID]
 
@@ -332,5 +339,4 @@ func (e *Executor) runChainIndexer(parentCtx context.Context, chainID int) (err 
 // DB returns the db service.
 func (e *Executor) DB() db.Service {
 	return e.db
-
 }

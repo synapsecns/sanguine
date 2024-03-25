@@ -1,3 +1,4 @@
+// Package base provides the base model for all models.
 package base
 
 import "github.com/synapsecns/sanguine/core/dbcommon"

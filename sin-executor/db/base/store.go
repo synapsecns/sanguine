@@ -1,7 +1,6 @@
 package base
 
 import (
-	"github.com/ipfs/go-datastore"
 	"github.com/synapsecns/sanguine/core/metrics"
 	submitterDB "github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db/txdb"
@@ -13,7 +12,6 @@ import (
 type Store struct {
 	db             *gorm.DB
 	submitterStore submitterDB.Service
-	datastore      datastore.Datastore
 }
 
 func NewStore(db *gorm.DB, metrics metrics.Handler) *Store {
