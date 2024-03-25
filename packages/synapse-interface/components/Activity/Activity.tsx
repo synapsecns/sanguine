@@ -102,7 +102,7 @@ const renderTransaction = (
     <Transaction
       key={transaction?.kappa}
       connectedAddress={viewingAddress}
-      destinationAddress={transaction?.fromInfo?.address as Address}
+      destinationAddress={transaction?.toInfo?.address as Address}
       startedTimestamp={transaction?.fromInfo?.time}
       completedTimestamp={transaction?.toInfo?.time}
       transactionHash={transaction?.fromInfo?.txnHash}

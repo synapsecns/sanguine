@@ -42,50 +42,46 @@ export const executeBridgeTxn = createAsyncThunk(
     signer: any
     synapseSDK: any
   }) => {
-    try {
-      const data = await synapseSDK.bridge(
-        destinationAddress,
-        originRouterAddress,
-        originChainId,
-        destinationChainId,
-        tokenAddress,
-        amount,
-        originQuery,
-        destQuery
-      )
+    const data = await synapseSDK.bridge(
+      destinationAddress,
+      originRouterAddress,
+      originChainId,
+      destinationChainId,
+      tokenAddress,
+      amount,
+      originQuery,
+      destQuery
+    )
 
-      const payload =
-        tokenAddress === ZeroAddress
-          ? {
-              data: data.data,
-              to: data.to,
-              value: amount,
-            }
-          : {
-              data: data.data,
-              to: data.to,
-            }
+    const payload =
+      tokenAddress === ZeroAddress
+        ? {
+            data: data.data,
+            to: data.to,
+            value: amount,
+          }
+        : {
+            data: data.data,
+            to: data.to,
+          }
 
-      const tx = await signer.sendTransaction(payload)
+    const tx = await signer.sendTransaction(payload)
 
-      const receipt = await tx.wait()
+    const receipt = await tx.wait()
 
-      const txHash = receipt?.hash ?? receipt?.transactionHash
+    const txHash = receipt?.hash ?? receipt?.transactionHash
 
-      const timestamp = getTimeMinutesFromNow(0)
+    const timestamp = getTimeMinutesFromNow(0)
 
-      return {
-        txHash,
-        bridgeModuleName,
-        parsedOriginAmount,
-        originTokenSymbol,
-        originChainId,
-        destinationChainId,
-        estimatedTime,
-        timestamp,
-      }
-    } catch (error) {
-      console.error('Error executing bridge: ', error)
+    return {
+      txHash,
+      bridgeModuleName,
+      parsedOriginAmount,
+      originTokenSymbol,
+      originChainId,
+      destinationChainId,
+      estimatedTime,
+      timestamp,
     }
   }
 )

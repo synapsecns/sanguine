@@ -46,6 +46,7 @@ export const _Transactions = ({
             <_Transaction
               key={tx.timestamp}
               connectedAddress={connectedAddress}
+              destinationAddress={tx.destinationAddress}
               originValue={Number(tx.originValue)}
               originChain={originChain}
               originToken={originToken}

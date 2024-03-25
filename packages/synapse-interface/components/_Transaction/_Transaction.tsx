@@ -20,6 +20,7 @@ import { useIsTxReverted } from './helpers/useIsTxReverted'
 
 interface _TransactionProps {
   connectedAddress: string
+  destinationAddress: Address | null
   originValue: number
   originChain: Chain
   originToken: Token
@@ -37,6 +38,7 @@ interface _TransactionProps {
 /** TODO: Update naming after refactoring existing Activity / Transaction flow */
 export const _Transaction = ({
   connectedAddress,
+  destinationAddress,
   originValue,
   originChain,
   originToken,
@@ -62,7 +64,7 @@ export const _Transaction = ({
   )
   const [destExplorerAddressLink, destExplorerName] = getExplorerAddressLink(
     destinationChain?.id,
-    connectedAddress
+    destinationAddress ?? connectedAddress
   )
 
   const {

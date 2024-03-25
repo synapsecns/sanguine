@@ -1,4 +1,5 @@
 import { createAction } from '@reduxjs/toolkit'
+import { Address } from 'viem'
 
 import { BridgeTransaction } from '../api/generated'
 import { Chain, Token } from '@/utils/types'
@@ -15,6 +16,7 @@ export interface PendingBridgeTransaction {
   isSubmitted: boolean
   estimatedTime: number
   bridgeModuleName: string
+  destinationAddress: Address | null
 }
 
 export const addPendingBridgeTransaction =

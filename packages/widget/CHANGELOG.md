@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.10](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.1.9...@synapsecns/widget@0.1.10) (2024-03-22)
+
+
+### Bug Fixes
+
+* **widget:** Fixes decimal input with no leading zeros, wallet cancel on send ([#2354](https://github.com/synapsecns/sanguine/issues/2354)) ([8c9f382](https://github.com/synapsecns/sanguine/commit/8c9f38222efcb4a911b0dd0e3c7db9914bf2a544))
+
+
+
+
+
 ## [0.1.9](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.1.8...@synapsecns/widget@0.1.9) (2024-03-21)
 
 **Note:** Version bump only for package @synapsecns/widget

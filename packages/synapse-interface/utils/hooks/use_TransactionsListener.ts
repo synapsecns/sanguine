@@ -42,6 +42,7 @@ export const use_TransactionsListener = () => {
           dispatch(
             addTransaction({
               address,
+              destinationAddress: tx.destinationAddress,
               originTxHash: tx.transactionHash,
               originValue: tx.originValue,
               originChain: tx.originChain,

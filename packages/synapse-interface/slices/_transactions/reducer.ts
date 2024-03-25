@@ -1,10 +1,12 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit'
+import { Address } from 'viem'
 
 import { Chain, Token } from '@/utils/types'
 
 /** TODO: Rename entire slice once done refactoring prior Activity flow */
 export interface _TransactionDetails {
   address: string
+  destinationAddress: Address | null
   originChain: Chain
   originToken: Token
   destinationChain: Chain
