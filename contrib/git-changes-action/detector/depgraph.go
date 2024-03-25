@@ -215,24 +215,23 @@ func makeDepMaps(repoPath string, uses []*modfile.Use, typeOfDependency string) 
       }
 
       for _, module := range uses {
-        for _, packageInModule := range packagesPerModule[module.Path] {
+        for packageInModule, files := range extractedGoFileNames[module.Path[1:]] {
           publicPackageName, _ := dependencyNames.Get(packageInModule)
           dependencies[publicPackageName] = make(map[string]struct{})
-          for _, file := range extractedGoFileNames[module.Path[1:]][packageInModule] {
-              fset := token.NewFileSet()
-              f, err := parser.ParseFile(fset, file, nil, parser.ImportsOnly)
-              if err != nil {
-              }
+          for _, file := range files {
+            fset := token.NewFileSet()
+            f, err := parser.ParseFile(fset, file, nil, parser.ImportsOnly)
 
-              for _, s := range f.Imports {
-                  dependencies[publicPackageName][s.Path.Value] = struct{}{} 
-              }
+            if err != nil {
+            }
+
+            for _, s := range f.Imports {
+                dependencies[publicPackageName][s.Path.Value] = struct{}{} 
+            }
           }
         }
       }
     }
-
-    fmt.Println(dependencies)
 
 	return dependencies, dependencyNames, packagesPerModule, nil
 }
