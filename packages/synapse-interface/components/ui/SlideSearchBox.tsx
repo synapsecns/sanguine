@@ -12,7 +12,7 @@ const className = joinClassNames({
   // shadow: 'custom-shadow',
 })
 
-export default function SlideSearchBox({
+export function SlideSearchBox({
   searchStr,
   onSearch,
   placeholder,
