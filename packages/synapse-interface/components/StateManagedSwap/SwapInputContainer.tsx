@@ -12,7 +12,7 @@ import {
   ConnectedIndicator,
 } from '@/components/ConnectionIndicators'
 import { ChainSelector } from '@/components/ui/ChainSelector'
-import { swapChainListArray } from './helpers/swapChainListArray'
+import { useSwapChainListArray } from './hooks/useSwapChainListArray'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import {
   initialState,
@@ -24,7 +24,7 @@ import { useSwapState } from '@/slices/swap/hooks'
 import { BridgeSectionContainer } from '@/components/ui/BridgeSectionContainer'
 import { BridgeAmountContainer } from '@/components/ui/BridgeAmountContainer'
 import { CHAINS_BY_ID } from '@/constants/chains'
-import { swapFromTokenListArray } from './helpers/swapFromTokenListOverlay'
+import { useSwapFromTokenListArray } from './hooks/useSwapFromTokenListOverlay'
 import { AmountInput } from '@/components/ui/AmountInput'
 
 export const SwapInputContainer = () => {
@@ -142,7 +142,7 @@ const SwapChainSelector = () => (
     isOrigin={true}
     selectedItem={CHAINS_BY_ID[useSwapState().swapChainId]}
     label="From"
-    itemListFunction={swapChainListArray}
+    itemListFunction={useSwapChainListArray}
     setFunction={setSwapChainId}
     action="Swap"
   />
@@ -154,7 +154,7 @@ const SwapFromTokenSelector = () => (
     selectedItem={useSwapState().swapFromToken}
     isOrigin={true}
     placeholder="In"
-    itemListFunction={swapFromTokenListArray}
+    itemListFunction={useSwapFromTokenListArray}
     setFunction={setSwapFromToken}
     action="Swap"
   />

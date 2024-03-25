@@ -1,37 +1,36 @@
 import _ from 'lodash'
-import { useState } from 'react'
 import Fuse from 'fuse.js'
 
-import { useSwapState } from '@/slices/swap/hooks'
-import { getSwapPossibilities } from '@/utils/swapFinder/generateSwapPossibilities'
-import { sortByPriorityRank } from './sortByPriorityRank'
+import { getRoutePossibilities } from '@/utils/routeMaker/generateRoutePossibilities'
+import { Token } from '@/utils/types'
+import { BridgeState } from '@/slices/bridge/reducer'
+import { useBridgeState } from '@/slices/bridge/hooks'
+import { sortByPriorityRank } from '../helpers/sortByPriorityRank'
 
-export const swapToTokenListArray = () => {
-  const { swapChainId, swapToTokens } = useSwapState()
+export const useToTokenListArray = (searchStr: string = '') => {
+  const { fromChainId, toTokens, toChainId }: BridgeState = useBridgeState()
 
-  const [searchStr] = useState('')
+  let possibleTokens: Token[] = sortByPriorityRank(toTokens)
 
-  let possibleTokens = sortByPriorityRank(swapToTokens)
-
-  const { toTokens: allToChainTokens } = getSwapPossibilities({
-    fromChainId: swapChainId,
+  const { toTokens: allToChainTokens } = getRoutePossibilities({
+    fromChainId,
     fromToken: null,
-    toChainId: swapChainId,
+    toChainId,
     toToken: null,
   })
 
-  let remainingChainTokens = swapChainId
-    ? sortByPriorityRank(_.difference(allToChainTokens, swapToTokens))
+  let remainingChainTokens = toChainId
+    ? sortByPriorityRank(_.difference(allToChainTokens, toTokens))
     : []
 
-  const { toTokens: allTokens } = getSwapPossibilities({
+  const { toTokens: allTokens } = getRoutePossibilities({
     fromChainId: null,
     fromToken: null,
     toChainId: null,
     toToken: null,
   })
 
-  let allOtherToTokens = swapChainId
+  let allOtherToTokens = toChainId
     ? sortByPriorityRank(_.difference(allTokens, allToChainTokens))
     : sortByPriorityRank(allTokens)
 
@@ -66,7 +65,7 @@ export const swapToTokenListArray = () => {
         weight: 2,
       },
       'routeSymbol',
-      `addresses.${swapChainId}`,
+      `addresses.${toChainId}`,
       'name',
     ],
   }

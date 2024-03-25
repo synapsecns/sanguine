@@ -4,7 +4,7 @@ import { Address, useAccount } from 'wagmi'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { ChainSelector } from '@/components/ui/ChainSelector'
 import { TokenSelector } from '@/components/ui/TokenSelector'
-import { toChainListArray } from './helpers/toChainListArray'
+import { useToChainListArray } from './hooks/useToChainListArray'
 import { shortenAddress } from '@/utils/shortenAddress'
 // import { ToTokenSelector } from './ToTokenSelector'
 import { useDispatch } from 'react-redux'
@@ -13,7 +13,7 @@ import { useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeSectionContainer } from '@/components/ui/BridgeSectionContainer'
 import { BridgeAmountContainer } from '@/components/ui/BridgeAmountContainer'
 import { AmountInput } from '@/components/ui/AmountInput'
-import { toTokenListArray } from '@/components/StateManagedBridge/helpers/toTokenListArray'
+import { useToTokenListArray } from '@/components/StateManagedBridge/hooks/useToTokenListArray'
 
 export const OutputContainer = ({}) => {
   const { bridgeQuote, isLoading, toChainId, toToken } = useBridgeState()
@@ -71,7 +71,7 @@ const ToChainSelector = () => (
     isOrigin={false}
     selectedItem={CHAINS_BY_ID[useBridgeState().toChainId]}
     label="To"
-    itemListFunction={toChainListArray}
+    itemListFunction={useToChainListArray}
     setFunction={setToChainId}
     action="Bridge"
   />
@@ -83,7 +83,7 @@ const ToTokenSelector = () => (
     isOrigin={false}
     selectedItem={useBridgeState().toToken}
     placeholder="In"
-    itemListFunction={toTokenListArray}
+    itemListFunction={useToTokenListArray}
     setFunction={setToToken}
     action="Bridge"
   />

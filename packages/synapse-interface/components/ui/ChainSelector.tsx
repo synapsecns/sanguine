@@ -15,6 +15,7 @@ export function ChainSelector({
   placeholder,
   itemListFunction,
   setFunction,
+  action,
 }: ChainSelectorTypes) {
   const [searchStr, setSearchStr] = useState('')
 
@@ -22,7 +23,7 @@ export function ChainSelector({
 
   const handleSetChainId = (chainId) => {
     if (selectedItem?.id !== chainId) {
-      const eventTitle = `[Bridge User Action] Sets new ${
+      const eventTitle = `[${action} User Action] Sets new ${
         isOrigin ? 'from' : 'to'
       }ChainId`
 

@@ -52,7 +52,7 @@ const SwapExchangeRateInfo = ({
           {safeFromAmount != 0n ? (
             <>
               {formattedExchangeRate}{' '}
-              <span className="text-white">{toToken.symbol}</span>
+              <span className="text-white">{toToken?.symbol}</span>
             </>
           ) : (
             '—'

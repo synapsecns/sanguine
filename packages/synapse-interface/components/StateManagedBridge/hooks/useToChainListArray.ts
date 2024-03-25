@@ -2,27 +2,30 @@ import _ from 'lodash'
 import Fuse from 'fuse.js'
 
 import * as ALL_CHAINS from '@/constants/chains/master'
-import { CHAINS_BY_ID, sortChains } from '@/constants/chains'
-import { useSwapState } from '@/slices/swap/hooks'
+import {
+  CHAINS_BY_ID,
+  sortChains,
+  PAUSED_TO_CHAIN_IDS,
+} from '@/constants/chains'
+import { useBridgeState } from '@/slices/bridge/hooks'
 
-export const swapChainListArray = (searchStr: string) => {
-  const { swapFromChainIds } = useSwapState()
+export const useToChainListArray = (searchStr: string = '') => {
+  const { toChainIds } = useBridgeState()
 
-  let possibleChains = sortChains(
-    _(ALL_CHAINS)
-      .pickBy((value) => _.includes(swapFromChainIds, value.id))
-      .values()
-      .value()
-  )
+  let possibleChains = _(ALL_CHAINS)
+    .pickBy((value) => _.includes(toChainIds, value.id))
+    .values()
+    .value()
+    .filter((chain) => !PAUSED_TO_CHAIN_IDS.includes(chain.id))
 
-  let remainingChains = swapFromChainIds
-    ? sortChains(
-        _.difference(
-          Object.keys(CHAINS_BY_ID).map((id) => CHAINS_BY_ID[id]),
-          swapFromChainIds.map((id) => CHAINS_BY_ID[id])
-        )
-      )
-    : []
+  possibleChains = sortChains(possibleChains)
+
+  let remainingChains = sortChains(
+    _.difference(
+      Object.keys(CHAINS_BY_ID).map((id) => CHAINS_BY_ID[id]),
+      toChainIds.map((id) => CHAINS_BY_ID[id])
+    )
+  ).filter((chain) => !PAUSED_TO_CHAIN_IDS.includes(chain.id))
 
   const possibleChainsWithSource = possibleChains.map((chain) => ({
     ...chain,
@@ -60,5 +63,5 @@ export const swapChainListArray = (searchStr: string) => {
     )
   }
 
-  return { 'From…': possibleChains, 'All chains': remainingChains }
+  return { 'To…': possibleChains, 'All chains': remainingChains }
 }

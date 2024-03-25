@@ -4,12 +4,15 @@ import Fuse from 'fuse.js'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useSwapState } from '@/slices/swap/hooks'
 import { getSwapPossibilities } from '@/utils/swapFinder/generateSwapPossibilities'
-import { hasBalance } from './sortByBalance'
-import { sortByPriorityRank } from './sortByPriorityRank'
+import { hasBalance } from '../helpers/sortByBalance'
+import { sortByPriorityRank } from '../helpers/sortByPriorityRank'
+import { CHAINS_BY_ID } from '@/constants/chains'
 
-export const swapFromTokenListArray = (searchStr: string) => {
+export const useSwapFromTokenListArray = (searchStr: string) => {
   const { swapFromTokens, swapChainId } = useSwapState()
   const portfolioBalances = usePortfolioBalances()
+
+  const chain = CHAINS_BY_ID[swapChainId]
 
   let possibleTokens = sortByPriorityRank(swapFromTokens)
 
@@ -79,7 +82,7 @@ export const swapFromTokenListArray = (searchStr: string) => {
   }
 
   return {
-    'Send…': possibleTokens,
-    'All sendable tokens': remainingTokens,
+    'Swap…': possibleTokens,
+    [`More on ${chain?.name}`]: remainingTokens,
   }
 }

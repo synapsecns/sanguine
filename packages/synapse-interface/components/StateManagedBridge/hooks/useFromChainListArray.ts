@@ -9,7 +9,7 @@ import {
 } from '@/constants/chains'
 import { useBridgeState } from '@/slices/bridge/hooks'
 
-export const fromChainListArray = (searchStr: string = '') => {
+export const useFromChainListArray = (searchStr: string = '') => {
   const { fromChainIds } = useBridgeState()
 
   let possibleChains = _(ALL_CHAINS)

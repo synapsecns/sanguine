@@ -4,10 +4,10 @@ import Fuse from 'fuse.js'
 import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { getRoutePossibilities } from '@/utils/routeMaker/generateRoutePossibilities'
-import { hasBalance } from './sortByBalance'
-import { sortByPriorityRank } from './sortByPriorityRank'
+import { hasBalance } from '../helpers/sortByBalance'
+import { sortByPriorityRank } from '../helpers/sortByPriorityRank'
 
-export const fromTokenListArray = (searchStr: string = '') => {
+export const useFromTokenListArray = (searchStr: string = '') => {
   const { fromTokens, fromChainId } = useBridgeState()
   const portfolioBalances = usePortfolioBalances()
 
