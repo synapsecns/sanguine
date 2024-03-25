@@ -5,7 +5,7 @@ import { getRoutePossibilities } from '@/utils/routeMaker/generateRoutePossibili
 import { Token } from '@/utils/types'
 import { BridgeState } from '@/slices/bridge/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { sortByPriorityRank } from '../helpers/sortByPriorityRank'
+import { sortByPriorityRank } from '@/utils/sortByPriorityRank'
 
 export const useToTokenListArray = (searchStr: string = '') => {
   const { fromChainId, toTokens, toChainId }: BridgeState = useBridgeState()

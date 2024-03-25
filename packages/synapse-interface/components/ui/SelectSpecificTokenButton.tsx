@@ -15,7 +15,7 @@ import { getActiveStyleForButton, getHoverStyleForButton } from '@/styles/hover'
 import { joinClassNames } from '@/utils/joinClassNames'
 import { useSwapState } from '@/slices/swap/hooks'
 
-const SelectSpecificTokenButton = ({
+export const SelectSpecificTokenButton = ({
   showAllChains,
   isOrigin,
   token,
@@ -356,5 +356,3 @@ const AvailableChains = ({ token }: { token: Token }) => {
     </div>
   )
 }
-
-export default SelectSpecificTokenButton
