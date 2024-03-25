@@ -73,7 +73,10 @@ import {
 import SettingsSlideOver from '@/components/StateManagedBridge/SettingsSlideOver'
 import Button from '@/components/ui/tailwind/Button'
 import { SettingsIcon } from '@/components/icons/SettingsIcon'
-import { setShowSettingsSlideOver } from '@/slices/bridgeDisplaySlice'
+import {
+  setShowDestinationAddress,
+  setShowSettingsSlideOver,
+} from '@/slices/bridgeDisplaySlice'
 
 const StateManagedBridge = () => {
   const router = useRouter()
@@ -106,6 +109,7 @@ const StateManagedBridge = () => {
   /** Clear Destination Address on Bridge Page load */
   useEffect(() => {
     dispatch(clearDestinationAddress())
+    dispatch(setShowDestinationAddress(false))
   }, [])
 
   useEffect(() => {
