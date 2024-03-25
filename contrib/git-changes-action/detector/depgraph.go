@@ -124,13 +124,7 @@ func extractGoFileNames(pwd string, currentModule string, currentPackage string,
       extractGoFileNames(pwd + "/" + entry.Name(), currentModule, entry.Name(), goFiles)
     } else if strings.Contains(entry.Name(), ".go") {
       fileName := pwd + "/" + entry.Name()
-      var packageName string 
-      if currentModule == currentPackage {
-        packageName = "/" + currentPackage
-      } else {
-        packageName = "/" + currentModule + "/" + currentPackage
-      }
-      goFiles[packageName] = append(goFiles[packageName], fileName)
+      goFiles["/" + currentPackage] = append(goFiles["/" + currentPackage], fileName)
     }
   }
 }
@@ -201,12 +195,19 @@ func makeDepMaps(repoPath string, uses []*modfile.Use, typeOfDependency string) 
 
         extractGoFileNames(pwd + module.Path[1:], module.Path[2:], module.Path[2:], extractedGoFileNames[module.Path[1:]])
 
-        for relativePackageName, _ := range extractedGoFileNames[module.Path[1:]] {
+        for packageName, _ := range extractedGoFileNames[module.Path[1:]] {
+          var relativePackageName string
+          if strings.Contains(module.Path[1:], packageName) {
+            relativePackageName = module.Path[1:] 
+          } else {
+            relativePackageName = module.Path[1:] + packageName
+          }
+
           var publicPackageName string
-          if strings.Contains(parsedModFile.Module.Mod.Path, relativePackageName) {
+          if strings.Contains(parsedModFile.Module.Mod.Path, packageName) {
             publicPackageName = parsedModFile.Module.Mod.Path
           } else {
-            publicPackageName = parsedModFile.Module.Mod.Path + relativePackageName 
+            publicPackageName = parsedModFile.Module.Mod.Path + packageName 
           }
 
           packagesPerModule[module.Path] = append(packagesPerModule[module.Path], relativePackageName)
@@ -214,9 +215,14 @@ func makeDepMaps(repoPath string, uses []*modfile.Use, typeOfDependency string) 
         }
       }
 
+      fmt.Println(dependencyNames.GetForwardMap())
+
+
+
       for _, module := range uses {
         for packageInModule, files := range extractedGoFileNames[module.Path[1:]] {
-          publicPackageName, _ := dependencyNames.Get(packageInModule)
+          publicPackageName, _ := dependencyNames.Get(module.Path[1:] + packageInModule)
+
           dependencies[publicPackageName] = make(map[string]struct{})
           for _, file := range files {
             fset := token.NewFileSet()
