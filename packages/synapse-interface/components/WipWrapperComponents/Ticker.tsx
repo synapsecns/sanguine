@@ -16,7 +16,7 @@ export default function Ticker() {
   const tickerRef = useRef(null)
   const [txData, setTxData] = useState([])
 
-  const isLoading = !txData.length
+  const isLoading = !txData?.length
 
   let start
   let requestId
@@ -99,7 +99,7 @@ export default function Ticker() {
     tickerRef.current.addEventListener('mouseleave', startTicker)
     requestId = window.requestAnimationFrame(step)
 
-    fetchExplorerTxs(setTxData)
+    // fetchExplorerTxs(setTxData)
 
     return () => {
       tickerRef.current.removeEventListener('mouseenter', stopTicker)

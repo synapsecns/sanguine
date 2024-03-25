@@ -1,0 +1,16 @@
+@keyframes slidein {
+    from {
+        r: 50;
+    }
+
+    to {
+        r: 100;
+    }
+}
+
+.svg {}
+
+.svg circle {
+    animation: 3s ease-in 1s infinite alternate both running slidein;
+    stroke: gold
+}

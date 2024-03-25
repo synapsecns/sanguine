@@ -95,9 +95,7 @@ const Wrapper = ({ children }) => {
             </option>
           </select>
         </nav>
-        <main className="px-2 xs:px-8 grid place-items-center max-w-5xl mx-auto">
-          {children}
-        </main>
+        <main className="grid place-items-center">{children}</main>
         <Footer />
       </div>
     </div>

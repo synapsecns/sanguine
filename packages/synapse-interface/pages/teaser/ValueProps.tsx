@@ -2,7 +2,7 @@ import FauxBridge from './FauxBridge'
 
 export default function ValueProps() {
   return (
-    <article className="grid gap-16 md:gap-24 p-4">
+    <article className="grid gap-16 md:gap-24 p-4 max-w-4xl">
       <section>
         {/* <dl className="w-fit md:w-max grid grid-rows-2 grid-flow-col-dense text-center items-center bg-gradient-to-b from-white to-slate-100 dark:from-zinc-900 dark:to-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md px-8 pt-3 pb-2.5 gap-x-12 shadow-sm mt-6 mx-auto cursor-default">
           <dt className="row-start-2 text-lg text-zinc-500 dark:text-zinc-300/80 tracking-wide">
