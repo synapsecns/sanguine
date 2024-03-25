@@ -127,7 +127,13 @@ func extractGoFileNames(pwd string, currentModule string, currentPackage string,
       extractGoFileNames(pwd + "/" + entry.Name(), currentModule, entry.Name(), goFiles)
     } else if strings.Contains(entry.Name(), ".go") {
       fileName := pwd + "/" + entry.Name()
-      goFiles["/" + currentPackage] = append(goFiles["/" + currentModule + "/" + currentPackage], fileName)
+      var packageName string 
+      if currentModule == currentPackage {
+        packageName = "/" + currentPackage
+      } else {
+        packageName = "/" + currentModule + "/" + currentPackage
+      }
+      goFiles[packageName] = append(goFiles[packageName], fileName)
     }
   }
 }
@@ -146,74 +152,89 @@ func makeDepMaps(repoPath string, uses []*modfile.Use, typeOfDependency string) 
 	// iterate through each module in the go.work file
 	// create a list of dependencies for each module based on modules or packages
 	// and module names or package names
-	for _, module := range uses {
-		//nolint: gosec
-		modContents, err := os.ReadFile(filepath.Join(repoPath, module.Path, "go.mod"))
-		if err != nil {
-			return dependencies, dependencyNames, packagesPerModule, fmt.Errorf("failed to read module file %s: %w", module.Path, err)
-		}
-
-		parsedModFile, err := modfile.Parse(module.Path, modContents, nil)
-		if err != nil {
-			return dependencies, dependencyNames, packagesPerModule, fmt.Errorf("failed to parse module file %s: %w", module.Path, err)
-		}
+		//nolint: gose
 
     if typeOfDependency == "module" {
-      dependencyNames.Insert(module.Path, parsedModFile.Module.Mod.Path)
+    	for _, module := range uses {
+        modContents, err := os.ReadFile(filepath.Join(repoPath, module.Path, "go.mod"))
+        if err != nil {
+          return dependencies, dependencyNames, packagesPerModule, fmt.Errorf("failed to read module file %s: %w", module.Path, err)
+        }
 
-      dependencies[module.Path] = make([]string, 0)
-      // include all requires and replaces, as they are dependencies
-      for _, require := range parsedModFile.Require {
-        dependencies[module.Path] = append(dependencies[module.Path], convertRelPath(repoPath, module.Path, require.Mod.Path))
-      }
-      for _, require := range parsedModFile.Replace {
-        dependencies[module.Path] = append(dependencies[module.Path], convertRelPath(repoPath, module.Path, require.New.Path))
+        parsedModFile, err := modfile.Parse(module.Path, modContents, nil)
+        if err != nil {
+          return dependencies, dependencyNames, packagesPerModule, fmt.Errorf("failed to parse module file %s: %w", module.Path, err)
+        }
+
+        dependencyNames.Insert(module.Path, parsedModFile.Module.Mod.Path)
+        dependencies[module.Path] = make([]string, 0)
+      
+        // include all requires and replaces, as they are dependencies
+        for _, require := range parsedModFile.Require {
+          dependencies[module.Path] = append(dependencies[module.Path], convertRelPath(repoPath, module.Path, require.Mod.Path))
+        }
+        for _, require := range parsedModFile.Replace {
+          dependencies[module.Path] = append(dependencies[module.Path], convertRelPath(repoPath, module.Path, require.New.Path))
+        }
       }
     }
 
 
 
     if typeOfDependency == "packages" {
-      extractedGoFileNames := make(map[string][]string)
+      extractedGoFileNames := make(map[string]map[string][]string)
 
       pwd, err := os.Getwd()
       if err != nil {
       }
 
-      extractGoFileNames(pwd + module.Path[1:], module.Path[2:], module.Path[2:], extractedGoFileNames)
 
-      fset := token.NewFileSet()
+      for _, module := range uses {
+        extractedGoFileNames[module.Path[1:]] = make(map[string][]string)
 
-      for packageName, packageFiles := range extractedGoFileNames {
-        var relativePackageName string
-        if module.Path[1:] == packageName {
-          relativePackageName = packageName
-        } else {
-          relativePackageName = module.Path[1:] + packageName
+        modContents, err := os.ReadFile(filepath.Join(repoPath, module.Path, "go.mod"))
+        if err != nil {
+          return dependencies, dependencyNames, packagesPerModule, fmt.Errorf("failed to read module file %s: %w", module.Path, err)
         }
 
-        var publicPackageName string
-        if strings.Contains(parsedModFile.Module.Mod.Path, packageName) {
-          publicPackageName = parsedModFile.Module.Mod.Path
-        } else {
-          publicPackageName = parsedModFile.Module.Mod.Path + packageName
+        parsedModFile, err := modfile.Parse(module.Path, modContents, nil)
+        if err != nil {
+          return dependencies, dependencyNames, packagesPerModule, fmt.Errorf("failed to parse module file %s: %w", module.Path, err)
         }
 
-        packagesPerModule[module.Path] = append(packagesPerModule[module.Path], relativePackageName)
-        dependencyNames.Insert(relativePackageName, publicPackageName)
+        extractGoFileNames(pwd + module.Path[1:], module.Path[2:], module.Path[2:], extractedGoFileNames[module.Path[1:]])
 
-        for _, file := range packageFiles {
-          f, err := parser.ParseFile(fset, file, nil, parser.ImportsOnly)
-          if err != nil {
+        for relativePackageName, _ := range extractedGoFileNames[module.Path[1:]] {
+          var publicPackageName string
+          if strings.Contains(parsedModFile.Module.Mod.Path, relativePackageName) {
+            publicPackageName = parsedModFile.Module.Mod.Path
+          } else {
+            publicPackageName = parsedModFile.Module.Mod.Path + relativePackageName 
           }
 
-          for _, s := range f.Imports {
-            dependencies[publicPackageName] = append(dependencies[publicPackageName], s.Path.Value)
+          packagesPerModule[module.Path] = append(packagesPerModule[module.Path], relativePackageName)
+          dependencyNames.Insert(relativePackageName, publicPackageName)
+        }
+      }
+
+      for _, module := range uses {
+        for _, packageInModule := range packagesPerModule[module.Path] {
+          for _, file := range extractedGoFileNames[module.Path[1:]][packageInModule] {
+              fset := token.NewFileSet()
+              f, err := parser.ParseFile(fset, file, nil, parser.ImportsOnly)
+              if err != nil {
+              }
+
+              publicPackageName, _ := dependencyNames.Get(packageInModule)
+              for _, s := range f.Imports {
+                  dependencies[publicPackageName] = append(dependencies[publicPackageName], s.Path.Value)
+              }
           }
         }
       }
     }
-	}
+
+    fmt.Println(dependencies)
 
 	return dependencies, dependencyNames, packagesPerModule, nil
 }
