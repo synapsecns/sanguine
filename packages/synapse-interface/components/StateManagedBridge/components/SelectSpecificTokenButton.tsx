@@ -13,6 +13,7 @@ import { getUnderlyingBridgeTokens } from '@/utils/getUnderlyingBridgeTokens'
 import { ARBITRUM, AVALANCHE, ETH } from '@/constants/chains/master'
 import { getActiveStyleForButton, getHoverStyleForButton } from '@/styles/hover'
 import { joinClassNames } from '@/utils/joinClassNames'
+import { useSwapState } from '@/slices/swap/hooks'
 
 const SelectSpecificTokenButton = ({
   showAllChains,
@@ -43,7 +44,9 @@ const SelectSpecificTokenButton = ({
 }) => {
   const ref = useRef<any>(null)
   const isCurrentToken = selectedToken?.routeSymbol === token?.routeSymbol
-  const { fromChainId, toChainId, fromToken, toToken } = useBridgeState()
+  const { fromChainId, toChainId } = useBridgeState()
+
+  const { swapChainId } = useSwapState()
 
   useEffect(() => {
     if (active) {
@@ -63,7 +66,8 @@ const SelectSpecificTokenButton = ({
       : '',
   })
 
-  const chainId = isOrigin ? fromChainId : toChainId
+  const chainId =
+    action === 'Swap' ? swapChainId : isOrigin ? fromChainId : toChainId
 
   return (
     <button
@@ -166,6 +170,8 @@ const ButtonContent = memo(
     action: ActionTypes
   }) => {
     const portfolioBalances = usePortfolioBalances()
+
+    console.log(`chainId`, chainId)
 
     const parsedBalance = portfolioBalances[chainId]?.find(
       (tb) => tb.token.addresses[chainId] === token.addresses[chainId]

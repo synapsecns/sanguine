@@ -7,7 +7,7 @@ import { BridgeSectionContainer } from '@/components/ui/BridgeSectionContainer'
 import { TokenSelector } from '@/components/ui/TokenSelector'
 import { BridgeAmountContainer } from '@/components/ui/BridgeAmountContainer'
 import { setSwapToToken } from '@/slices/swap/reducer'
-import { swapToTokenListArray } from './helpers/swapToTokenListArray'
+import { useSwapToTokenListArray } from './hooks/useSwapToTokenListArray'
 import { joinClassNames } from '@/utils/joinClassNames'
 
 export const SwapOutputContainer = ({}) => {
@@ -61,7 +61,7 @@ const SwapToTokenSelector = () => (
     isOrigin={false}
     selectedItem={useSwapState().swapToToken}
     placeholder="Out"
-    itemListFunction={swapToTokenListArray}
+    itemListFunction={useSwapToTokenListArray}
     setFunction={setSwapToToken}
     action="Swap"
   />

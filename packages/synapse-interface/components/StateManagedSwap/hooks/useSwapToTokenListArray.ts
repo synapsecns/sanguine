@@ -1,36 +1,40 @@
 import _ from 'lodash'
+import { useState } from 'react'
 import Fuse from 'fuse.js'
 
-import { getRoutePossibilities } from '@/utils/routeMaker/generateRoutePossibilities'
-import { Token } from '@/utils/types'
-import { BridgeState } from '@/slices/bridge/reducer'
-import { useBridgeState } from '@/slices/bridge/hooks'
-import { sortByPriorityRank } from './sortByPriorityRank'
+import { useSwapState } from '@/slices/swap/hooks'
+import { getSwapPossibilities } from '@/utils/swapFinder/generateSwapPossibilities'
+import { sortByPriorityRank } from '../helpers/sortByPriorityRank'
+import { CHAINS_BY_ID } from '@/constants/chains'
 
-export const toTokenListArray = (searchStr: string = '') => {
-  const { fromChainId, toTokens, toChainId }: BridgeState = useBridgeState()
+export const useSwapToTokenListArray = () => {
+  const { swapChainId, swapToTokens } = useSwapState()
 
-  let possibleTokens: Token[] = sortByPriorityRank(toTokens)
+  const chain = CHAINS_BY_ID[swapChainId]
 
-  const { toTokens: allToChainTokens } = getRoutePossibilities({
-    fromChainId,
+  const [searchStr] = useState('')
+
+  let possibleTokens = sortByPriorityRank(swapToTokens)
+
+  const { toTokens: allToChainTokens } = getSwapPossibilities({
+    fromChainId: swapChainId,
     fromToken: null,
-    toChainId,
+    toChainId: swapChainId,
     toToken: null,
   })
 
-  let remainingChainTokens = toChainId
-    ? sortByPriorityRank(_.difference(allToChainTokens, toTokens))
+  let remainingChainTokens = swapChainId
+    ? sortByPriorityRank(_.difference(allToChainTokens, swapToTokens))
     : []
 
-  const { toTokens: allTokens } = getRoutePossibilities({
+  const { toTokens: allTokens } = getSwapPossibilities({
     fromChainId: null,
     fromToken: null,
     toChainId: null,
     toToken: null,
   })
 
-  let allOtherToTokens = toChainId
+  let allOtherToTokens = swapChainId
     ? sortByPriorityRank(_.difference(allTokens, allToChainTokens))
     : sortByPriorityRank(allTokens)
 
@@ -65,7 +69,7 @@ export const toTokenListArray = (searchStr: string = '') => {
         weight: 2,
       },
       'routeSymbol',
-      `addresses.${toChainId}`,
+      `addresses.${swapChainId}`,
       'name',
     ],
   }
@@ -85,7 +89,7 @@ export const toTokenListArray = (searchStr: string = '') => {
 
   return {
     'Receive…': possibleTokens,
-    'All receivable tokens': remainingChainTokens,
-    'All other tokens': allOtherToTokens,
+    [`More on ${chain?.name}`]: remainingChainTokens,
+    'All swappable tokens': allOtherToTokens,
   }
 }
