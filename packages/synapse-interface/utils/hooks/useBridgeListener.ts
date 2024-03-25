@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 
 import { useAppDispatch } from '@/store/hooks'
-import { useBridgeState } from '@/slices/bridge/hooks'
+import { useBridgeDisplayState, useBridgeState } from '@/slices/bridge/hooks'
 import {
   BridgeState,
   setIsLoading,
@@ -9,10 +9,13 @@ import {
   updateDebouncedFromValue,
   updateDebouncedToTokensFromValue,
 } from '@/slices/bridge/reducer'
+import { setShowDestinationAddress } from '@/slices/bridgeDisplaySlice'
 
 export const useBridgeListener = () => {
   const dispatch = useAppDispatch()
-  const { fromValue, debouncedFromValue }: BridgeState = useBridgeState()
+  const { fromValue, debouncedFromValue, destinationAddress }: BridgeState =
+    useBridgeState()
+  const { showDestinationAddress } = useBridgeDisplayState()
 
   /**
    * Debounce user input to fetch primary bridge quote (in ms)
@@ -51,6 +54,13 @@ export const useBridgeListener = () => {
       clearTimeout(alternativeOptionsDebounceTimer)
     }
   }, [debouncedFromValue])
+
+  // Ensure destination address clears if settings turned off
+  useEffect(() => {
+    if (!showDestinationAddress && destinationAddress) {
+      dispatch(setShowDestinationAddress(null))
+    }
+  }, [showDestinationAddress])
 
   return null
 }
