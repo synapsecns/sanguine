@@ -159,6 +159,18 @@ const LandingPage = () => {
           fill="var(--fill-synapse"
           stroke="var(--stroke-synapse)"
         />
+        <path
+          id="airpad1"
+          d="m200,-200 60,30 -60,30 -60,-30z"
+          fill="var(--fill-synapse"
+          stroke="var(--stroke-synapse)"
+        />
+        <path
+          id="airpad2"
+          d="m200,-60 60,30 -60,30 -60,-30z"
+          fill="var(--fill-synapse"
+          stroke="var(--stroke-synapse)"
+        />
 
         {/* <ellipse
           cx="0"
@@ -709,15 +721,58 @@ const LandingPage = () => {
           />
         </g>
         <g transform="scale(.25,.25)" stroke="hsl(25deg 100% 50%)">
+          <animateMotion
+            id="airlift"
+            dur="2s"
+            begin="0s; airdrop.end + 5s"
+            path="m200,-180 v-50"
+            fill="freeze"
+          />
+          <animateMotion
+            id="airpath"
+            dur="5s"
+            begin="airlift.end + 1s"
+            path="m200,-230 v150"
+            fill="freeze"
+          />
+          <animateMotion
+            id="airdrop"
+            dur=".5s"
+            begin="airpath.end + 1s"
+            path="m200,-80 v50"
+            fill="freeze"
+          />
           <path
             d="m0,50 100,-50 0,-111.8 -100,-50 -100,50 0,111.8 100,50"
             vectorEffect="non-scaling-stroke"
+            fill="var(--fill-orange)"
           />
           <path
             d="m-100,-111.9 100,50 100,-50 m-100,50 0,111.8"
             vectorEffect="non-scaling-stroke"
             fill="none"
           />
+          <g id="balloon">
+            <animateMotion begin="airlift.begin" path="m0,0" />
+            <animateMotion
+              dur="1s"
+              begin="airdrop.begin"
+              path="m0,0 v-2000"
+              fill="freeze"
+            />
+            <path
+              d="m0,-111.8 v-111.8"
+              vectorEffect="non-scaling-stroke"
+              stroke="var(--stroke-synapse)"
+            />
+            <circle
+              cy="-370"
+              r="150"
+              vectorEffect="non-scaling-stroke"
+              stroke="var(--stroke-synapse)"
+              fill="var(--fill-synapse)"
+            />
+          </g>
         </g>
       </svg>
       <img src={exampleImg.src} />
