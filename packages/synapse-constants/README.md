@@ -3,11 +3,6 @@
 
 This package contains the Synapse Protocol Token and Chain Constants
 
-
-#
-
-
-
 ## Installation
 
 ```bash

@@ -10,6 +10,7 @@
 [![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/synapsecns/sanguine/solidity.yml?style=flat-square&label=Slither)](https://github.com/synapsecns/sanguine/actions/workflows/solidity.yml)
 [![Static Badge](https://img.shields.io/badge/Forge-Docs-f?style=flat-square&logo=gitbook)](https://interchain-contracts.synapseprotocol.com/)
 [![npm](https://img.shields.io/npm/v/%40synapsecns%2Fcontracts-core?style=flat-square)](https://www.npmjs.com/package/@synapsecns/contracts-core)
+![NPM Downloads](https://img.shields.io/npm/dy/%40synapsecns%2Fcontracts-core)
 
 `@synapsecns/contracts-core` contain the Solidity contracts used within the Synapse Interchain Network messaging system.
 
@@ -70,3 +71,4 @@ Now, to make sure it work, you can pull up [scribe](../../services/scribe/) by g
 If everything went well, you will see topic `0x0a72872b9cfe43d6c13b13553f28d4879e427f3b456545649fd0761fdcbe0311` in the logs, which is the topic for the `PingPongClient`'s `Pong` event.
 
 ![graphql screenshot](./assets/screenshot.png)
+
