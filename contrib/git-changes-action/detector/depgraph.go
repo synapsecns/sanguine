@@ -176,7 +176,7 @@ func makeDepMaps(repoPath string, uses []*modfile.Use, typeOfDependency string) 
 
 
       for _, module := range uses {
-        extractedGoFileNames[module.Path[1:]] = make(map[string][]string)
+        extractedGoFileNames[module.Path] = make(map[string][]string)
 
         modContents, err := os.ReadFile(filepath.Join(repoPath, module.Path, "go.mod"))
         if err != nil {
@@ -188,14 +188,14 @@ func makeDepMaps(repoPath string, uses []*modfile.Use, typeOfDependency string) 
           return dependencies, dependencyNames, packagesPerModule, fmt.Errorf("failed to parse module file %s: %w", module.Path, err)
         }
 
-        extractGoFileNames(pwd + module.Path[1:], "", module.Path[2:], extractedGoFileNames[module.Path[1:]])
+        extractGoFileNames(pwd + module.Path[1:], "", module.Path[2:], extractedGoFileNames[module.Path])
 
-        for packageName, _ := range extractedGoFileNames[module.Path[1:]] {
+        for packageName, _ := range extractedGoFileNames[module.Path] {
           var relativePackageName string
-          if strings.HasSuffix(module.Path[1:], packageName) {
-            relativePackageName = module.Path[1:] 
+          if strings.HasSuffix(module.Path, packageName) {
+            relativePackageName = module.Path 
           } else {
-            relativePackageName = module.Path[1:] + packageName
+            relativePackageName = module.Path + packageName
           }
 
           var publicPackageName string
@@ -211,12 +211,12 @@ func makeDepMaps(repoPath string, uses []*modfile.Use, typeOfDependency string) 
       }
 
       for _, module := range uses {
-        for packageInModule, files := range extractedGoFileNames[module.Path[1:]] {
+        for packageInModule, files := range extractedGoFileNames[module.Path] {
           var relativePackageName string
-          if strings.HasSuffix(module.Path[1:], packageInModule) {
-            relativePackageName = module.Path[1:] 
+          if strings.HasSuffix(module.Path, packageInModule) {
+            relativePackageName = module.Path 
           } else {
-            relativePackageName = module.Path[1:] + packageInModule 
+            relativePackageName = module.Path + packageInModule 
           }
 
           dependencies[relativePackageName] = make(map[string]struct{})
@@ -228,6 +228,7 @@ func makeDepMaps(repoPath string, uses []*modfile.Use, typeOfDependency string) 
             }
 
             for _, s := range f.Imports {
+              // s.Path.Value contains double quotation marks that must be removed before indexing dependencyNames 
               renamedDep, hasDep := dependencyNames.GetInverse(s.Path.Value[1:len(s.Path.Value)-1])
 
               if hasDep {
