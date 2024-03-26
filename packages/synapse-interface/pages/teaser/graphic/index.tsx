@@ -165,7 +165,6 @@ const LandingPage = () => {
           }
         >
           <path
-            id="barge"
             d="m50,-75 100,50 -200,100 -100,-50z"
             fill="var(--synapse-fill)"
             stroke="var(--synapse-stroke)"
@@ -337,6 +336,116 @@ const LandingPage = () => {
             fill="freeze"
           />
         </use>
+        <ellipse
+          rx="30"
+          ry="15"
+          cy="260"
+          stroke="var(--synapse-stroke)"
+          fill="var(--synapse-fill)"
+        />
+        <path
+          d="m-20,207.5 0,50"
+          strokeWidth="4"
+          stroke="hsl(300deg 100% 50%)"
+          strokeDasharray="8 6 6 8"
+        >
+          <animate
+            attributeName="stroke-dashoffset"
+            values="0; 28"
+            dur="1s"
+            repeatCount="indefinite"
+          />
+        </path>
+        <path
+          d="m-10,212.5 0,50"
+          strokeWidth="4"
+          stroke="hsl(300deg 100% 50%)"
+          strokeDasharray="8 6 6 8"
+        >
+          <animate
+            attributeName="stroke-dashoffset"
+            values="28; 0"
+            dur=".67s"
+            repeatCount="indefinite"
+          />
+        </path>
+        <path
+          d="m0,207.5 0,50"
+          strokeWidth="4"
+          stroke="hsl(300deg 100% 50%)"
+          strokeDasharray="8 6 6 8"
+        >
+          <animate
+            attributeName="stroke-dashoffset"
+            values="0; 28"
+            dur="1s"
+            repeatCount="indefinite"
+          />
+        </path>
+        <path
+          d="m10,212.5 0,50"
+          strokeWidth="4"
+          stroke="hsl(300deg 100% 50%)"
+          strokeDasharray="8 6 6 8"
+        >
+          <animate
+            attributeName="stroke-dashoffset"
+            values="28; 0"
+            dur=".67s"
+            repeatCount="indefinite"
+          />
+        </path>
+        <path
+          d="m20,207.5 0,50"
+          strokeWidth="4"
+          stroke="hsl(300deg 100% 50%)"
+          strokeDasharray="8 6 6 8"
+        >
+          <animate
+            attributeName="stroke-dashoffset"
+            values="28; 0"
+            dur="1s"
+            repeatCount="indefinite"
+          />
+        </path>
+        <g transform="scale(.25,.25)">
+          <path
+            d="m0,50 100,-50 0,-111.8 -100,-50 -100,50 0,111.8 100,50"
+            vectorEffect="non-scaling-stroke"
+          />
+          <path
+            d="m-100,-111.9 100,50 100,-50 m-100,50 0,111.8"
+            vectorEffect="non-scaling-stroke"
+            fill="none"
+          />
+          <animateMotion
+            id="teleport1BobOut"
+            dur="1s"
+            begin="0s; teleport1BobIn.end"
+            path="m0,240 0,12.5"
+            calcMode="spline"
+            keyTimes="0; 1"
+            keySplines=".33 0 .67 1"
+            fill="freeze"
+          />
+          <animateMotion
+            id="teleport1BobIn"
+            dur="1s"
+            begin="teleport1BobOut.end"
+            path="m0,252.5 0,-12.5"
+            calcMode="spline"
+            keyTimes="0; 1"
+            keySplines=".33 0 .67 1"
+            fill="freeze"
+          />
+        </g>
+        <ellipse
+          rx="30"
+          ry="15"
+          cy="190"
+          stroke="var(--synapse-stroke)"
+          fill="var(--synapse-fill)"
+        />
 
         {/* <use href="#box">
           <animateMotion
