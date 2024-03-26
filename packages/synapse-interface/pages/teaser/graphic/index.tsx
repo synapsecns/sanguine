@@ -41,16 +41,16 @@ const LandingPage = () => {
           {/* {`@keyframes circlePulse { from { r: 50; } to { r: 100; } }`} */}
           {`@keyframes platformBob { from { transform: translate(0, -.25rem); } to { transform: translate(0, 0); } }`}
           {`#hero-graphic {
-            --synapse-fill: hsl(300deg 100% 5%);
-            --synapse-stroke: hsl(300deg 100% 25%);
-            --yellow-fill: hsl(60deg 100% 5%);
-            --yellow-stroke: hsl(60deg 100% 50%);
-            --orange-fill: hsl(25deg 100% 5%);
-            --orange-stroke: hsl(25deg 100% 50%);
-            --blue-fill: hsl(195deg 100% 5%);
-            --blue-stroke: hsl(195deg 100% 50%);
-            --green-fill: hsl(135deg 100% 5%);
-            --green-stroke: hsl(135deg 100% 50%);
+            --fill-synapse: hsl(300deg 100% 5%);
+            --stroke-synapse: hsl(300deg 100% 25%);
+            --fill-yellow: hsl(60deg 30% 3%);
+            --stroke-yellow: hsl(60deg 80% 60%);
+            --fill-orange: hsl(25deg 30% 3%);
+            --stroke-orange: hsl(25deg 80% 60%);
+            --fill-blue: hsl(195deg 30% 3%);
+            --stroke-blue: hsl(195deg 100% 50%);
+            --fill-green: hsl(135deg 30% 3%);
+            --stroke-green: hsl(135deg 80% 60%);
           }`}
         </style>
         <defs>
@@ -130,42 +130,92 @@ const LandingPage = () => {
           </polygon>
         </defs>
         <path
-          id="simple-bridge"
+          id="simple-bridge-ne"
           d="m-120,-160 40,20 -200,100 -40,-20z"
-          fill="var(--synapse-fill"
-          stroke="var(--synapse-stroke)"
+          fill="var(--fill-synapse"
+          stroke="var(--stroke-synapse)"
         />
+        <path
+          id="simple-bridge-sw"
+          d="m280,40 40,20 -200,100 -40,-20z"
+          fill="var(--fill-synapse"
+          stroke="var(--stroke-synapse)"
+        />
+        {/* <path
+          id="simple-bridge-ew"
+          d="m-240,-20 h480 v40 h-480z"
+          fill="var(--fill-synapse"
+          stroke="var(--stroke-synapse)"
+        /> */}
         <path
           id="dock1"
           d="m-80,-300 40,20 -120,60 -40,-20z"
-          fill="var(--synapse-fill"
-          stroke="var(--synapse-stroke)"
+          fill="var(--fill-synapse"
+          stroke="var(--stroke-synapse)"
         />
         <path
           id="dock2"
           d="m-480,-100 40,20 -120,60 -40,-20z"
-          fill="var(--synapse-fill"
-          stroke="var(--synapse-stroke)"
+          fill="var(--fill-synapse"
+          stroke="var(--stroke-synapse)"
         />
+
+        {/* <ellipse
+          cx="0"
+          cy="-200"
+          rx="180"
+          ry="90"
+          stroke="var(--stroke-blue)"
+          fill="var(--fill-blue)"
+        />
+
+        <ellipse
+          cx="-400"
+          cy="0"
+          rx="180"
+          ry="90"
+          stroke="var(--stroke-yellow)"
+          fill="var(--fill-yellow)"
+        />
+        <ellipse
+          cx="400"
+          cy="0"
+          rx="180"
+          ry="90"
+          stroke="var(--stroke-green)"
+          fill="var(--fill-green)"
+        />
+        <ellipse
+          cx="0"
+          cy="200"
+          rx="200"
+          ry="100"
+          stroke="var(--stroke-orange)"
+          fill="var(--fill-orange)"
+        /> */}
         <path
           id="platform-blue"
           d="m0,-300 200,100 -200,100 -200,-100z"
-          stroke="var(--blue-stroke)"
+          stroke="var(--stroke-blue)"
+          fill="hsl(300deg 20% 5%)"
         />
         <path
           id="platform-yellow"
           d="m-400,-100 200,100 -200,100 -200,-100z"
-          stroke="var(--yellow-stroke)"
+          stroke="var(--stroke-yellow)"
+          fill="hsl(300deg 20% 5%)"
         />
         <path
           id="platform-green"
           d="m400,-100 200,100 -200,100 -200,-100z"
-          stroke="var(--green-stroke)"
+          stroke="var(--stroke-green)"
+          fill="hsl(300deg 20% 5%)"
         />
         <path
           id="platform-orange"
           d="m0,100 200,100 -200,100 -200,-100z"
-          stroke="var(--orange-stroke)"
+          stroke="var(--stroke-orange)"
+          fill="hsl(300deg 20% 5%)"
         />
         <g
           id="barge"
@@ -177,8 +227,8 @@ const LandingPage = () => {
         >
           <path
             d="m70,-75 100,50 -200,100 -100,-50z"
-            fill="var(--synapse-fill)"
-            stroke="var(--synapse-stroke)"
+            fill="var(--fill-synapse)"
+            stroke="var(--stroke-synapse)"
           />
           <animateMotion
             id="bargeIn"
@@ -368,8 +418,8 @@ const LandingPage = () => {
             rx="30"
             ry="15"
             cy="260"
-            stroke="var(--synapse-stroke)"
-            fill="var(--synapse-fill)"
+            stroke="var(--stroke-synapse)"
+            fill="var(--fill-synapse)"
           />
           <g transform="scale(.25,.25)" stroke="hsl(25deg 100% 50%)">
             <animate
@@ -508,8 +558,8 @@ const LandingPage = () => {
             rx="30"
             ry="15"
             cy="190"
-            stroke="var(--synapse-stroke)"
-            fill="var(--synapse-fill)"
+            stroke="var(--stroke-synapse)"
+            fill="var(--fill-synapse)"
           />
         </g>
 
@@ -518,8 +568,8 @@ const LandingPage = () => {
             rx="30"
             ry="15"
             cy="260"
-            stroke="var(--synapse-stroke)"
-            fill="var(--synapse-fill)"
+            stroke="var(--stroke-synapse)"
+            fill="var(--fill-synapse)"
           />
           <g transform="scale(.25,.25)" stroke="hsl(25deg 100% 50%)">
             <animate
@@ -654,8 +704,19 @@ const LandingPage = () => {
             rx="30"
             ry="15"
             cy="190"
-            stroke="var(--synapse-stroke)"
-            fill="var(--synapse-fill)"
+            stroke="var(--stroke-synapse)"
+            fill="var(--fill-synapse)"
+          />
+        </g>
+        <g transform="scale(.25,.25)" stroke="hsl(25deg 100% 50%)">
+          <path
+            d="m0,50 100,-50 0,-111.8 -100,-50 -100,50 0,111.8 100,50"
+            vectorEffect="non-scaling-stroke"
+          />
+          <path
+            d="m-100,-111.9 100,50 100,-50 m-100,50 0,111.8"
+            vectorEffect="non-scaling-stroke"
+            fill="none"
           />
         </g>
       </svg>
