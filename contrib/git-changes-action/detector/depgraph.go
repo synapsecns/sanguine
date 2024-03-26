@@ -188,7 +188,6 @@ func makeDepMaps(repoPath string, uses []*modfile.Use, typeOfDependency string) 
           return dependencies, dependencyNames, packagesPerModule, fmt.Errorf("failed to parse module file %s: %w", module.Path, err)
         }
 
-
         extractGoFileNames(pwd + module.Path[1:], "", module.Path[2:], extractedGoFileNames[module.Path[1:]])
 
         for packageName, _ := range extractedGoFileNames[module.Path[1:]] {
@@ -213,9 +212,14 @@ func makeDepMaps(repoPath string, uses []*modfile.Use, typeOfDependency string) 
 
       for _, module := range uses {
         for packageInModule, files := range extractedGoFileNames[module.Path[1:]] {
-          relativePackaeName := module.Path[1:] + packageInModule
+          var relativePackageName string
+          if strings.HasSuffix(module.Path[1:], packageInModule) {
+            relativePackageName = module.Path[1:] 
+          } else {
+            relativePackageName = module.Path[1:] + packageInModule 
+          }
 
-          dependencies[relativePackaeName] = make(map[string]struct{})
+          dependencies[relativePackageName] = make(map[string]struct{})
           for _, file := range files {
             fset := token.NewFileSet()
             f, err := parser.ParseFile(fset, file, nil, parser.ImportsOnly)
@@ -227,7 +231,7 @@ func makeDepMaps(repoPath string, uses []*modfile.Use, typeOfDependency string) 
               renamedDep, hasDep := dependencyNames.GetInverse(s.Path.Value[1:len(s.Path.Value)-1])
 
               if hasDep {
-                dependencies[relativePackaeName][renamedDep] = struct{}{} 
+                dependencies[relativePackageName][renamedDep] = struct{}{} 
               }
             }
           }
