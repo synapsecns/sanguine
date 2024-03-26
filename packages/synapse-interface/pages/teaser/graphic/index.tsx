@@ -855,6 +855,7 @@ const LandingPage = () => {
           <use href="#box" transform="translate(0,25)" />
         </g>
       </svg>
+      <p className="text-center">Reference image</p>
       <img src={exampleImg.src} className="visible" />
       {/* <Hero /> */}
       <section>
