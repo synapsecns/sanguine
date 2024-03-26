@@ -129,26 +129,34 @@ export const InputContainer = () => {
   )
 }
 
-const FromChainSelector = () => (
-  <ChainSelector
-    dataTestId="bridge-origin-chain"
-    selectedItem={CHAINS_BY_ID[useBridgeState().fromChainId]}
-    isOrigin={true}
-    label="From"
-    itemListFunction={useFromChainListArray}
-    setFunction={setFromChainId}
-    action="Bridge"
-  />
-)
+const FromChainSelector = () => {
+  const { fromChainId } = useBridgeState()
 
-const FromTokenSelector = () => (
-  <TokenSelector
-    dataTestId="bridge-origin-token"
-    selectedItem={useBridgeState().fromToken}
-    isOrigin={true}
-    placeholder="Out"
-    itemListFunction={useFromTokenListArray}
-    setFunction={setFromToken}
-    action="Bridge"
-  />
-)
+  return (
+    <ChainSelector
+      dataTestId="bridge-origin-chain"
+      selectedItem={CHAINS_BY_ID[fromChainId]}
+      isOrigin={true}
+      label="From"
+      itemListFunction={useFromChainListArray}
+      setFunction={setFromChainId}
+      action="Bridge"
+    />
+  )
+}
+
+const FromTokenSelector = () => {
+  const { fromToken } = useBridgeState()
+
+  return (
+    <TokenSelector
+      dataTestId="bridge-origin-token"
+      selectedItem={fromToken}
+      isOrigin={true}
+      placeholder="Out"
+      itemListFunction={useFromTokenListArray}
+      setFunction={setFromToken}
+      action="Bridge"
+    />
+  )
+}

@@ -2,7 +2,6 @@ import { useAccount, useNetwork } from 'wagmi'
 import { useSelector } from 'react-redux'
 import { RootState } from '../../store/store'
 import toast from 'react-hot-toast'
-import { animated } from 'react-spring'
 import { useRouter } from 'next/router'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
@@ -45,11 +44,6 @@ import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
 import { approveToken } from '@/utils/approveToken'
 import { PageHeader } from '@/components/PageHeader'
 import BridgeExchangeRateInfo from '@/components/StateManagedBridge/BridgeExchangeRateInfo'
-import { Transition } from '@headlessui/react'
-import {
-  SECTION_TRANSITION_PROPS,
-  TRANSITION_PROPS,
-} from '@/styles/transitions'
 import { InputContainer } from '@/components/StateManagedBridge/InputContainer'
 import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer'
 import SettingsSlideOver from '@/components/StateManagedBridge/SettingsSlideOver'
@@ -72,11 +66,6 @@ import {
 import { getTimeMinutesFromNow } from '@/utils/time'
 
 import { waitForTransaction } from '@wagmi/core'
-import {
-  fetchArbPrice,
-  fetchEthPrice,
-  fetchGmxPrice,
-} from '@/slices/priceDataSlice'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { SwitchButton } from '@/components/buttons/SwitchButton'
 import {
