@@ -112,7 +112,7 @@ func extractGoFileNames(pwd string, currentModule string, currentPackage string,
   for _, entry := range ls {
     if entry.IsDir() {
       extractGoFileNames(pwd + "/" + entry.Name(), currentModule + "/" + entry.Name(), entry.Name(), goFiles)
-    } else if strings.Contains(entry.Name(), ".go") {
+    } else if strings.HasSuffix(entry.Name(), ".go") {
       fileName := pwd + "/" + entry.Name()
       var packageName string
       if currentModule == "" {
