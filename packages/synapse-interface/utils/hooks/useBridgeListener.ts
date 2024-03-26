@@ -58,7 +58,7 @@ export const useBridgeListener = () => {
   // Ensure destination address clears if settings turned off
   useEffect(() => {
     if (!showDestinationAddress && destinationAddress) {
-      dispatch(setShowDestinationAddress(null))
+      dispatch(setShowDestinationAddress(false))
     }
   }, [showDestinationAddress])
 
