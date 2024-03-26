@@ -77,45 +77,43 @@ store.subscribe(() => {
     segmentAnalyticsEvent(eventTitle, eventData)
   }
 
-  /** TODO: Replace below segment events with new tracked events */
+  if (
+    previousState.bridgeDisplay.showDestinationAddress === false &&
+    currentState.bridgeDisplay.showDestinationAddress === true
+  ) {
+    eventTitle = `[Bridge User Action] Show destination address`
+    eventData = {}
 
-  // if (
-  //   previousState.bridgeDisplay.showDestinationAddress === false &&
-  //   currentState.bridgeDisplay.showDestinationAddress === true
-  // ) {
-  //   eventTitle = `[Bridge User Action] Show destination address`
-  //   eventData = {}
+    segmentAnalyticsEvent(eventTitle, eventData)
+  }
 
-  //   segmentAnalyticsEvent(eventTitle, eventData)
-  // }
+  if (
+    previousState.bridgeDisplay.showDestinationAddress === true &&
+    currentState.bridgeDisplay.showDestinationAddress === false
+  ) {
+    eventTitle = `[Bridge User Action] Hide destination address`
+    eventData = {}
 
-  // if (
-  //   previousState.bridgeDisplay.showDestinationAddress === true &&
-  //   currentState.bridgeDisplay.showDestinationAddress === false
-  // ) {
-  //   eventTitle = `[Bridge User Action] Hide destination address`
-  //   eventData = {}
+    segmentAnalyticsEvent(eventTitle, eventData)
+  }
 
-  //   segmentAnalyticsEvent(eventTitle, eventData)
-  // }
+  if (
+    previousState.bridgeDisplay.showSettingsSlideOver === false &&
+    currentState.bridgeDisplay.showSettingsSlideOver === true
+  ) {
+    eventTitle = `[Bridge User Action] Show Settings`
+    eventData = {}
+    segmentAnalyticsEvent(eventTitle, eventData)
+  }
 
-  // if (
-  //   previousState.bridgeDisplay.showSettingsSlideOver === false &&
-  //   currentState.bridgeDisplay.showSettingsSlideOver === true
-  // ) {
-  //   eventTitle = `[Bridge User Action] Show Settings`
-  //   eventData = {}
-  //   segmentAnalyticsEvent(eventTitle, eventData)
-  // }
-
-  // if (
-  //   previousState.bridgeDisplay.showSettingsSlideOver === true &&
-  //   currentState.bridgeDisplay.showSettingsSlideOver === false
-  // ) {
-  //   eventTitle = `[Bridge User Action] Hide Settings`
-  //   eventData = {}
-  //   segmentAnalyticsEvent(eventTitle, eventData)
-  // }
+  if (
+    previousState.bridgeDisplay.showSettingsSlideOver === true &&
+    currentState.bridgeDisplay.showSettingsSlideOver === false
+  ) {
+    eventTitle = `[Bridge User Action] Hide Settings`
+    eventData = {}
+    segmentAnalyticsEvent(eventTitle, eventData)
+  }
 
   previousState = currentState
 })
