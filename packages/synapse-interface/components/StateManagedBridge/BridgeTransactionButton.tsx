@@ -112,7 +112,7 @@ export const BridgeTransactionButton = ({
     }
   } else if (!fromToken) {
     buttonProperties = {
-      label: `Unsupported Network`,
+      label: `Please select an Origin token`,
       onClick: null,
     }
   } else if (
