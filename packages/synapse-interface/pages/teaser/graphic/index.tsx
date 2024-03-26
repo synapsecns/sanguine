@@ -27,12 +27,18 @@ const LandingPage = () => {
 
   return (
     <Wrapper>
+      <Hero />
+      {/* <div className="hidden sm:block text-center text-3xl sm:text-6xl font-semibold mt-16 cursor-default">
+        Secure cross-chain
+        <br />
+        communication
+      </div> */}
       <svg
         id="hero-graphic"
         width="1200"
         height="675"
         viewBox="-700 -437.5 1400 875"
-        className={`border border-zinc-900 mx-auto my-8`}
+        // className={`border border-zinc-900 mx-auto my-8`}
         stroke="#0ff"
         stroke-width="1"
         fill="none"
@@ -48,7 +54,7 @@ const LandingPage = () => {
             --fill-orange: hsl(25deg 30% 3%);
             --stroke-orange: hsl(25deg 80% 60%);
             --fill-blue: hsl(195deg 30% 3%);
-            --stroke-blue: hsl(195deg 100% 50%);
+            --stroke-blue: hsl(195deg 80% 60%);
             --fill-green: hsl(135deg 30% 3%);
             --stroke-green: hsl(135deg 80% 60%);
           }`}
@@ -230,6 +236,29 @@ const LandingPage = () => {
           fill="hsl(300deg 20% 5%)"
         />
         <g
+          id="stack-green"
+          fill="var(--fill-green)"
+          stroke="var(--stroke-green)"
+          transform="translate(400,0)"
+        >
+          <use href="#box" transform="translate(0,-27.95)" />
+          <use href="#box" transform="translate(25,12.5)" />
+          <use href="#box" transform="translate(-25,12.5)" />
+          <use href="#box" transform="translate(0,25)" />
+        </g>
+
+        <g
+          id="stack-orange"
+          fill="var(--fill-orange)"
+          stroke="var(--stroke-orange)"
+          transform="translate(0,150)"
+        >
+          <use href="#box" transform="translate(0,-27.95)" />
+          <use href="#box" transform="translate(25,12.5)" />
+          <use href="#box" transform="translate(-25,12.5)" />
+          <use href="#box" transform="translate(0,25)" />
+        </g>
+        <g
           id="barge"
           style={
             {
@@ -274,9 +303,9 @@ const LandingPage = () => {
           />
         </g>
         <use
-          id="bargeBoxes"
-          href="#boxes"
-          stroke="hsl(195deg 100% 50%)"
+          id="bargeBox"
+          href="#box"
+          stroke="hsl(195deg 80% 60%)"
           fill="hsl(195deg 100% 5%)"
         >
           <animate
@@ -287,18 +316,18 @@ const LandingPage = () => {
           />
           <animate
             attributeName="stroke"
-            values="hsl(195deg 100% 50%)"
+            values="hsl(195deg 80% 60%)"
             begin="bargeIn.begin"
           />
           <animateMotion
-            path="m-70,-225"
+            path="m-50,-225"
             fill="freeze"
             begin="0s; bargeIn.begin"
           />
           <animateMotion
             dur="2s"
             begin="bargeIn.end"
-            path="m-70,-225 -120,-60"
+            path="m-50,-225 -140,-70"
             calcMode="spline"
             keyTimes="0; 1"
             keySplines=".5 0 .2 1"
@@ -307,7 +336,7 @@ const LandingPage = () => {
           <animateMotion
             dur="2s"
             begin="bargeMid.begin"
-            path="m-190,-285 -400,200"
+            path="m-190,-295 -400,200"
             calcMode="spline"
             keyTimes="0; 1"
             keySplines=".5 0 .2 1"
@@ -315,7 +344,7 @@ const LandingPage = () => {
           />
           <animate
             attributeName="stroke"
-            values="hsl(195deg 100% 50%); hsl(300deg 100% 40%); hsl(60deg 100% 50%)"
+            values="hsl(195deg 80% 60%); hsl(300deg 100% 40%); hsl(60deg 80% 60%)"
             begin="bargeMid.begin + .5s"
             dur=".5s"
             calcMode="spline"
@@ -327,7 +356,7 @@ const LandingPage = () => {
             id="bargeBoxEnd"
             dur="2s"
             begin="bargeMid.end"
-            path="m-590,-85 120,60"
+            path="m-590,-95 162.5,81.25"
             calcMode="spline"
             keyTimes="0; 1"
             keySplines=".5 0 .2 1"
@@ -336,17 +365,27 @@ const LandingPage = () => {
           <animate
             attributeName="opacity"
             values="1; 0"
-            dur="5s"
+            dur="4s"
             begin="bargeBoxEnd.end"
           />
         </use>
-
-        <use href="#box" id="simpleBridgeBox">
+        <g
+          id="stack-blue"
+          fill="var(--fill-blue)"
+          stroke="var(--stroke-blue)"
+          transform="translate(0,-225)"
+        >
+          <use href="#box" transform="translate(0,-27.95)" />
+          <use href="#box" transform="translate(25,12.5)" />
+          <use href="#box" transform="translate(-25,12.5)" />
+          {/* <use href="#box" transform="translate(0,25)" /> */}
+        </g>
+        <use href="#box" id="simpleBridgeBoxFromBlue">
           <animateMotion
             id="boxOut"
             dur="3s"
             begin="0s; boxIn.end + 1s"
-            path="M-400,0 0,-200"
+            path="M-375,-12.5 0,-200"
             calcMode="spline"
             keyTimes="0; 1"
             keySplines=".5 0 .2 1"
@@ -356,7 +395,7 @@ const LandingPage = () => {
             id="boxIn"
             dur="3s"
             begin="boxOut.end + 1s"
-            path="M0,-200 -400,0"
+            path="M0,-200 -375,-12.5"
             calcMode="spline"
             keyTimes="0; 1"
             keySplines=".5 0 .2 1"
@@ -364,7 +403,17 @@ const LandingPage = () => {
           />
           <animate
             attributeName="stroke"
-            values="hsl(60deg 100% 50%); hsl(300deg 100% 40%); hsl(195deg 100% 50%)"
+            values="hsl(60deg 80% 60%); hsl(300deg 100% 40%); hsl(195deg 80% 60%)"
+            begin="boxOut.begin + 1s"
+            dur=".33s"
+            calcMode="spline"
+            keyTimes="0; .5; 1"
+            keySplines=".5 0 .2 1; .5 0 .2 1"
+            fill="freeze"
+          />
+          <animate
+            attributeName="fill"
+            values="hsl(60deg 80% 5%); hsl(300deg 100% 5%); hsl(195deg 80% 5%)"
             begin="boxOut.begin + 1s"
             dur=".33s"
             calcMode="spline"
@@ -374,7 +423,17 @@ const LandingPage = () => {
           />
           <animate
             attributeName="stroke"
-            values="hsl(195deg 100% 50%); hsl(300deg 100% 40%); hsl(60deg 100% 50%)"
+            values="hsl(195deg 80% 60%); hsl(300deg 100% 40%); hsl(60deg 80% 60%)"
+            begin="boxIn.begin + 1s"
+            dur=".33s"
+            calcMode="spline"
+            keyTimes="0; .5; 1"
+            keySplines=".5 0 .2 1; .5 0 .2 1"
+            fill="freeze"
+          />
+          <animate
+            attributeName="fill"
+            values="hsl(195deg 80% 5%); hsl(300deg 100% 5%); hsl(60deg 80% 5%)"
             begin="boxIn.begin + 1s"
             dur=".33s"
             calcMode="spline"
@@ -383,12 +442,12 @@ const LandingPage = () => {
             fill="freeze"
           />
         </use>
-        <use href="#boxes" id="simpleBridgeBoxes">
+        <use href="#box" id="simpleBridgeBoxFromYellow">
           <animateMotion
             id="boxesOut"
             dur="3s"
             begin="0s; boxOut.begin"
-            path="M0,-200 -400,0"
+            path="M0,-200 -375,-12.5"
             calcMode="spline"
             keyTimes="0; 1"
             keySplines=".5 0 .2 1"
@@ -398,7 +457,7 @@ const LandingPage = () => {
             id="boxesIn"
             dur="3s"
             begin="boxIn.begin"
-            path="M-400,0 0,-200"
+            path="M-375,-12.5 0,-200"
             calcMode="spline"
             keyTimes="0; 1"
             keySplines=".5 0 .2 1"
@@ -406,7 +465,17 @@ const LandingPage = () => {
           />
           <animate
             attributeName="stroke"
-            values="hsl(60deg 100% 50%); hsl(300deg 100% 40%); hsl(195deg 100% 50%)"
+            values="hsl(60deg 80% 60%); hsl(300deg 100% 40%); hsl(195deg 80% 60%)"
+            begin="boxesIn.begin + 1s"
+            dur=".33s"
+            calcMode="spline"
+            keyTimes="0; .5; 1"
+            keySplines=".5 0 .2 1; .5 0 .2 1"
+            fill="freeze"
+          />
+          <animate
+            attributeName="fill"
+            values="hsl(60deg 80% 5%); hsl(300deg 100% 5%); hsl(195deg 80% 5%)"
             begin="boxesIn.begin + 1s"
             dur=".33s"
             calcMode="spline"
@@ -416,7 +485,17 @@ const LandingPage = () => {
           />
           <animate
             attributeName="stroke"
-            values="hsl(195deg 100% 50%); hsl(300deg 100% 40%); hsl(60deg 100% 50%)"
+            values="hsl(195deg 80% 60%); hsl(300deg 100% 40%); hsl(60deg 80% 60%)"
+            begin="boxesOut.begin + 1s"
+            dur=".33s"
+            calcMode="spline"
+            keyTimes="0; .5; 1"
+            keySplines=".5 0 .2 1; .5 0 .2 1"
+            fill="freeze"
+          />
+          <animate
+            attributeName="fill"
+            values="hsl(195deg 80% 5%); hsl(300deg 100% 5%); hsl(60deg 80% 5%)"
             begin="boxesOut.begin + 1s"
             dur=".33s"
             calcMode="spline"
@@ -433,10 +512,10 @@ const LandingPage = () => {
             stroke="var(--stroke-synapse)"
             fill="var(--fill-synapse)"
           />
-          <g transform="scale(.25,.25)" stroke="hsl(25deg 100% 50%)">
+          <g transform="scale(.25,.25)" stroke="hsl(25deg 80% 60%)">
             <animate
               attributeName="stroke"
-              values="hsl(25deg 100% 50%); hsl(300deg 100% 40%); hsl(135deg 100% 50%)"
+              values="hsl(25deg 80% 60%); hsl(300deg 100% 40%); hsl(135deg 80% 60%)"
               dur="3s"
               begin="teleporterBeamsOut.begin + 1s"
               calcMode="spline"
@@ -446,7 +525,7 @@ const LandingPage = () => {
             />
             <animate
               attributeName="stroke"
-              values="hsl(135deg 100% 50%); hsl(300deg 100% 40%); hsl(25deg 100% 50%)"
+              values="hsl(135deg 80% 60%); hsl(300deg 100% 40%); hsl(25deg 80% 60%)"
               dur="3s"
               begin="teleporterBeamsIn.begin + 1s"
               calcMode="spline"
@@ -484,7 +563,7 @@ const LandingPage = () => {
               fill="freeze"
             />
           </g>
-          <g id="teleporter1Beams" opacity="0">
+          <g id="teleporter1Beams" opacity="0" strokeWidth="3">
             <animate
               id="teleporterBeamsOut"
               attributeName="opacity"
@@ -502,8 +581,7 @@ const LandingPage = () => {
             />
             <path
               d="m-20,207.5 0,50"
-              strokeWidth="4"
-              stroke="hsl(300deg 100% 50%)"
+              stroke="hsl(300deg 80% 60%)"
               strokeDasharray="8 6 6 8"
             >
               <animate
@@ -515,8 +593,7 @@ const LandingPage = () => {
             </path>
             <path
               d="m-10,212.5 0,50"
-              strokeWidth="4"
-              stroke="hsl(285deg 100% 50%)"
+              stroke="hsl(285deg 80% 60%)"
               strokeDasharray="8 6 6 8"
             >
               <animate
@@ -528,8 +605,7 @@ const LandingPage = () => {
             </path>
             <path
               d="m0,207.5 0,50"
-              strokeWidth="4"
-              stroke="hsl(300deg 100% 50%)"
+              stroke="hsl(300deg 80% 60%)"
               strokeDasharray="8 6 6 8"
             >
               <animate
@@ -541,8 +617,7 @@ const LandingPage = () => {
             </path>
             <path
               d="m10,212.5 0,50"
-              strokeWidth="4"
-              stroke="hsl(285deg 100% 50%)"
+              stroke="hsl(285deg 80% 60%)"
               strokeDasharray="8 6 6 8"
             >
               <animate
@@ -554,8 +629,7 @@ const LandingPage = () => {
             </path>
             <path
               d="m20,207.5 0,50"
-              strokeWidth="4"
-              stroke="hsl(300deg 100% 50%)"
+              stroke="hsl(300deg 80% 60%)"
               strokeDasharray="8 6 6 8"
             >
               <animate
@@ -583,10 +657,10 @@ const LandingPage = () => {
             stroke="var(--stroke-synapse)"
             fill="var(--fill-synapse)"
           />
-          <g transform="scale(.25,.25)" stroke="hsl(25deg 100% 50%)">
+          <g transform="scale(.25,.25)" stroke="hsl(25deg 80% 60%)">
             <animate
               attributeName="stroke"
-              values="hsl(135deg 100% 50%); hsl(300deg 100% 40%); hsl(25deg 100% 50%)"
+              values="hsl(135deg 80% 60%); hsl(300deg 100% 40%); hsl(25deg 80% 60%)"
               dur="3s"
               begin="teleporterBeamsOut.begin + 1s"
               calcMode="spline"
@@ -596,7 +670,7 @@ const LandingPage = () => {
             />
             <animate
               attributeName="stroke"
-              values="hsl(25deg 100% 50%); hsl(300deg 100% 40%); hsl(135deg 100% 50%)"
+              values="hsl(25deg 80% 60%); hsl(300deg 100% 40%); hsl(135deg 80% 60%)"
               dur="3s"
               begin="teleporterBeamsIn.begin + 1s"
               calcMode="spline"
@@ -632,7 +706,7 @@ const LandingPage = () => {
               fill="freeze"
             />
           </g>
-          <g id="teleporter1Beams" opacity="0">
+          <g id="teleporter2Beams" opacity="0" strokeWidth="3">
             <animate
               attributeName="opacity"
               values="0; 1; 0"
@@ -648,8 +722,7 @@ const LandingPage = () => {
             />
             <path
               d="m-20,207.5 0,50"
-              strokeWidth="4"
-              stroke="hsl(300deg 100% 50%)"
+              stroke="hsl(300deg 80% 60%)"
               strokeDasharray="8 6 6 8"
             >
               <animate
@@ -661,8 +734,7 @@ const LandingPage = () => {
             </path>
             <path
               d="m-10,212.5 0,50"
-              strokeWidth="4"
-              stroke="hsl(285deg 100% 50%)"
+              stroke="hsl(285deg 80% 60%)"
               strokeDasharray="8 6 6 8"
             >
               <animate
@@ -674,8 +746,7 @@ const LandingPage = () => {
             </path>
             <path
               d="m0,207.5 0,50"
-              strokeWidth="4"
-              stroke="hsl(300deg 100% 50%)"
+              stroke="hsl(300deg 80% 60%)"
               strokeDasharray="8 6 6 8"
             >
               <animate
@@ -687,8 +758,7 @@ const LandingPage = () => {
             </path>
             <path
               d="m10,212.5 0,50"
-              strokeWidth="4"
-              stroke="hsl(285deg 100% 50%)"
+              stroke="hsl(285deg 80% 60%)"
               strokeDasharray="8 6 6 8"
             >
               <animate
@@ -700,8 +770,7 @@ const LandingPage = () => {
             </path>
             <path
               d="m20,207.5 0,50"
-              strokeWidth="4"
-              stroke="hsl(300deg 100% 50%)"
+              stroke="hsl(300deg 80% 60%)"
               strokeDasharray="8 6 6 8"
             >
               <animate
@@ -720,7 +789,7 @@ const LandingPage = () => {
             fill="var(--fill-synapse)"
           />
         </g>
-        <g transform="scale(.25,.25)" stroke="hsl(25deg 100% 50%)">
+        <g transform="scale(.25,.25)" stroke="var(--stroke-blue)">
           <animateMotion
             id="airlift"
             dur="2s"
@@ -774,9 +843,33 @@ const LandingPage = () => {
             />
           </g>
         </g>
+        <g
+          id="stack-yellow"
+          fill="var(--fill-yellow)"
+          stroke="var(--stroke-yellow)"
+          transform="translate(-400,0)"
+        >
+          <use href="#box" transform="translate(0,-27.95)" />
+          <use href="#box" transform="translate(25,12.5)" />
+          <use href="#box" transform="translate(-25,12.5)" />
+          <use href="#box" transform="translate(0,25)" />
+        </g>
       </svg>
-      <img src={exampleImg.src} />
-      <Hero />
+      <img src={exampleImg.src} className="visible" />
+      {/* <Hero /> */}
+      <section>
+        <ul className="w-fit md:w-max grid md:flex text-xl md:text-lg text-center items-center place-center bg-gradient-to-b from-white to-slate-100 dark:from-zinc-900 dark:to-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md px-6 gap-x-8 -mt-8 shadow-sm mx-auto mb-16 cursor-default">
+          <li className="-mt-1 p-3">
+            $<data className="mx-0.5">45.3B</data> Bridge volume
+          </li>
+          <li className="-mt-1 p-3">
+            <data className="mx-0.5">10.6M</data> transactions
+          </li>
+          <li className="-mt-1 p-3">
+            $<data className="mx-0.5">116.7M</data> Total value locked
+          </li>
+        </ul>
+      </section>
       <ValueProps />
     </Wrapper>
   )
