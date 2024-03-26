@@ -10,7 +10,6 @@ import {
   updateDebouncedToTokensFromValue,
   setDestinationAddress,
 } from '@/slices/bridge/reducer'
-import { setShowDestinationAddress } from '@/slices/bridgeDisplaySlice'
 
 export const useBridgeListener = () => {
   const dispatch = useAppDispatch()
