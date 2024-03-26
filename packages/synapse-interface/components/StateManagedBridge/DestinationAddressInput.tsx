@@ -245,9 +245,6 @@ export const DestinationAddressInput = ({
            flex border text-md rounded-sm
            ${isInputFocused ? ' bg-bgBase' : 'bg-transparent hover:opacity-80'}
           ${
-            // isInputValidAddress
-            //   ? 'border-synapsePurple focus:border-synapsePurple'
-            //   :
             isInputInvalid
               ? 'border-red-500 focus:border-red-500'
               : 'border-separator focus:border-separator'
@@ -414,28 +411,6 @@ const calculateDaysBetween = (startDate: Date, endDate: Date) => {
   )
 
   return Math.floor((utc2 - utc1) / msPerDay)
-}
-
-export const HoverContent = ({
-  isHovered,
-  children,
-}: {
-  isHovered: boolean
-  children: React.ReactNode
-}) => {
-  if (isHovered) {
-    return (
-      <div
-        className={`
-          absolute top-[-0.5rem] z-50 hover-content py-1 px-2 text-secondary
-          border border-solid border-separator text-xs
-          bg-[#101018] rounded-sm text-center whitespace-nowrap
-        `}
-      >
-        {children}
-      </div>
-    )
-  }
 }
 
 const PasteButton = ({ onPaste }: { onPaste: () => Promise<void> }) => {
