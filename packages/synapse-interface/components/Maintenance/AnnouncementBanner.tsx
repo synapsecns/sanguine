@@ -54,10 +54,10 @@ export const AnnouncementBanner = ({
   if (!showBanner || !hasMounted || !isStarted || isComplete) return null
 
   return (
-    <div className="flex items-center justify-center mx-auto lg:flex-row text-sm text-left bg-gradient-to-r from-fuchsia-600/25 to-purple-600/25">
+    <div className="flex items-center justify-center mx-auto text-sm text-left lg:flex-row bg-gradient-to-r from-fuchsia-600/25 to-purple-600/25">
       <div
         id="banner-default"
-        className="flex items-center gap-4 px-4 py-2 w-full max-w-[1111px] text-primaryTextColor justify-between leading-normal"
+        className="flex items-center gap-4 px-4 py-2 w-full max-w-[1111px] text-primaryTextColor justify-center leading-normal"
         role="alert"
       >
         {bannerContents}
