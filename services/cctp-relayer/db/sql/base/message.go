@@ -138,3 +138,18 @@ func (s Store) GetMessageByRequestID(ctx context.Context, requestID string) (*ty
 
 	return &message, nil
 }
+
+// GetMessageByHash gets a message by its message hash.
+func (s Store) GetMessageByHash(ctx context.Context, messageHash common.Hash) (*types.Message, error) {
+	var message types.Message
+
+	dbTx := s.DB().WithContext(ctx).
+		Model(&types.Message{}).
+		Where(fmt.Sprintf("%s = ?", MessageHashFieldName), messageHash).
+		First(&message)
+	if dbTx.Error != nil {
+		return nil, fmt.Errorf("failed to get message by hash: %w", dbTx.Error)
+	}
+
+	return &message, nil
+}

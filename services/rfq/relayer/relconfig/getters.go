@@ -102,16 +102,30 @@ func (c Config) GetRFQAddress(chainID int) (value string, err error) {
 	return value, nil
 }
 
-// GetCCTPAddress returns the RFQ address for the given chainID.
-func (c Config) GetCCTPAddress(chainID int) (value string, err error) {
-	rawValue, err := c.getChainConfigValue(chainID, "CCTPAddress")
+// GetSynapseCCTPAddress returns the SynapseCCTP address for the given chainID.
+func (c Config) GetSynapseCCTPAddress(chainID int) (value string, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "SynapseCCTPAddress")
 	if err != nil {
 		return value, err
 	}
 
 	value, ok := rawValue.(string)
 	if !ok {
-		return value, fmt.Errorf("failed to cast CCTPAddress to string")
+		return value, fmt.Errorf("failed to cast SynapseCCTPAddress to string")
+	}
+	return value, nil
+}
+
+// GetTokenMessengerAddress returns the TokenMessenger address for the given chainID.
+func (c Config) GetTokenMessengerAddress(chainID int) (value string, err error) {
+	rawValue, err := c.getChainConfigValue(chainID, "TokenMessengerAddress")
+	if err != nil {
+		return value, err
+	}
+
+	value, ok := rawValue.(string)
+	if !ok {
+		return value, fmt.Errorf("failed to cast TokenMessengerAddress to string")
 	}
 	return value, nil
 }
@@ -394,6 +408,9 @@ func (c Config) GetRebalanceMethod(chainID int, tokenAddr string) (method Rebala
 	if err != nil {
 		return 0, err
 	}
+	if tokenConfig.RebalanceMethod == "" {
+		return RebalanceMethodNone, nil
+	}
 	for cid, chainCfg := range c.Chains {
 		tokenCfg, ok := chainCfg.Tokens[tokenName]
 		if ok {
@@ -403,8 +420,10 @@ func (c Config) GetRebalanceMethod(chainID int, tokenAddr string) (method Rebala
 		}
 	}
 	switch tokenConfig.RebalanceMethod {
-	case "cctp":
-		return RebalanceMethodCCTP, nil
+	case "synapsecctp":
+		return RebalanceMethodSynapseCCTP, nil
+	case "circlecctp":
+		return RebalanceMethodCircleCCTP, nil
 	case "native":
 		return RebalanceMethodNative, nil
 	}

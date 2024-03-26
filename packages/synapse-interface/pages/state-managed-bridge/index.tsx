@@ -372,6 +372,7 @@ const StateManagedBridge = () => {
         isSubmitted: false,
         estimatedTime: bridgeQuote.estimatedTime,
         bridgeModuleName: bridgeQuote.bridgeModuleName,
+        destinationAddress: destinationAddress,
       })
     )
     try {
