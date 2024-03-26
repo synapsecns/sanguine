@@ -47,14 +47,13 @@ func getDependencyGraph(repoPath string, typeOfDependency string) (moduleDeps ma
 	// create a list of dependencies for each module
 	// and module names
 	dependencies, dependencyNames, packagesPerModule, err = makeDepMaps(repoPath, parsedWorkFile.Use, typeOfDependency)
-
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create dependency maps: %w", err)
 	}
 
 	depGraph := depgraph.New()
 	// build the dependency graph
-  if typeOfDependency == "module" {
+  if typeOfDependency == "modules" {
     for _, module := range parsedWorkFile.Use {
       for dep, _ := range dependencies[module.Path] {
         // check if the full package name (e.g. github.com/myorg/myrepo/mymodule) is in the list of modules. If it is, add it as a dependency after renaming
@@ -88,8 +87,9 @@ func getDependencyGraph(repoPath string, typeOfDependency string) (moduleDeps ma
       for _, relativePackageName := range packagesPerModule[module.Path] {
           for relativePackageDependencyName, _ := range dependencies[relativePackageName] {
             err = depGraph.DependOn(relativePackageName, relativePackageDependencyName) 
-            if err != nil {
-              fmt.Println("THERE IS AN ERROR", err, relativePackageName, relativePackageDependencyName)
+            // Circular dependencies are fine as long as both packages are in the same module
+            if err != nil && !(strings.Contains(relativePackageDependencyName, module.Path) && strings.Contains(relativePackageName, module.Path)){
+              return nil, nil, fmt.Errorf("failed to add dependency %s -> %s: %w", relativePackageName, relativePackageDependencyName, err)
             }
           }
 
@@ -103,9 +103,10 @@ func getDependencyGraph(repoPath string, typeOfDependency string) (moduleDeps ma
 	return moduleDeps, packagesPerModule, nil
 }
 
-func extractGoFileNames(pwd string, currentModule string, currentPackage string, goFiles map[string][]string) {
+func extractGoFileNames(pwd string, currentModule string, currentPackage string, goFiles map[string][]string) (err error) {
   ls, err := os.ReadDir(pwd)
   if err != nil {
+    return err
   }
 
   for _, entry := range ls {
@@ -122,6 +123,8 @@ func extractGoFileNames(pwd string, currentModule string, currentPackage string,
       goFiles[packageName] = append(goFiles[packageName], fileName)
     }
   }
+
+  return nil
 }
 
 // makeDepMaps makes a dependency map and a bidirectional map of dep<->module.
@@ -144,7 +147,7 @@ func makeDepMaps(repoPath string, uses []*modfile.Use, typeOfDependency string) 
 	// 1. Create a list of dependencies for each module 
   // 2. Map public names to private names for each module
 		//nolint: gose
-    if typeOfDependency == "module" {
+    if typeOfDependency == "modules" {
     	for _, module := range uses {
         modContents, err := os.ReadFile(filepath.Join(repoPath, module.Path, "go.mod"))
         if err != nil {
@@ -175,6 +178,7 @@ func makeDepMaps(repoPath string, uses []*modfile.Use, typeOfDependency string) 
 
       pwd, err := os.Getwd()
       if err != nil {
+        return dependencies, dependencyNames, packagesPerModule, fmt.Errorf("Failed to read current directory.", err)
       }
 
 
@@ -195,7 +199,11 @@ func makeDepMaps(repoPath string, uses []*modfile.Use, typeOfDependency string) 
           return dependencies, dependencyNames, packagesPerModule, fmt.Errorf("failed to parse module file %s: %w", module.Path, err)
         }
 
-        extractGoFileNames(pwd + module.Path[1:], "", module.Path[2:], extractedGoFileNames[module.Path])
+        // module.Path = ./moduleName
+        err = extractGoFileNames(pwd + module.Path[1:], "", module.Path[2:], extractedGoFileNames[module.Path])
+        if err != nil {
+          return dependencies, dependencyNames, packagesPerModule, fmt.Errorf("failed to extract go files for module %s: %w", module.Path, err)
+        }
 
         for packageName, _ := range extractedGoFileNames[module.Path] {
           var relativePackageName string
@@ -236,6 +244,7 @@ func makeDepMaps(repoPath string, uses []*modfile.Use, typeOfDependency string) 
             f, err := parser.ParseFile(fset, file, nil, parser.ImportsOnly)
 
             if err != nil {
+              return dependencies, dependencyNames, packagesPerModule, fmt.Errorf("failed to parse go file %s in package %s: %w", file, relativePackageName, err)
             }
 
             for _, s := range f.Imports {
