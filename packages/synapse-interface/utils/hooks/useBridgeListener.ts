@@ -8,6 +8,7 @@ import {
   initialState,
   updateDebouncedFromValue,
   updateDebouncedToTokensFromValue,
+  setDestinationAddress,
 } from '@/slices/bridge/reducer'
 import { setShowDestinationAddress } from '@/slices/bridgeDisplaySlice'
 
@@ -58,7 +59,7 @@ export const useBridgeListener = () => {
   // Ensure destination address clears if settings turned off
   useEffect(() => {
     if (!showDestinationAddress && destinationAddress) {
-      dispatch(setShowDestinationAddress(false))
+      dispatch(setDestinationAddress(null))
     }
   }, [showDestinationAddress])
 
