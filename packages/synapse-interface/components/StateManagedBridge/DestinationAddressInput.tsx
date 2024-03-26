@@ -203,15 +203,12 @@ export const DestinationAddressInput = ({
   }
 
   function enterPressedFunc() {
-    if (filteredRecipientList.length === 0) return
-    if (!showRecipientList) return
+    if (enterPressed && isNull(currentIdx)) {
+      onSelectRecipient(destinationAddress)
+    }
 
     if (enterPressed && !isNull(currentIdx) && currentIdx > -1) {
       onSelectRecipient(filteredRecipientList[currentIdx]?.toAddress)
-    }
-
-    if (enterPressed && isNull(currentIdx)) {
-      onSelectRecipient(destinationAddress)
     }
   }
 
