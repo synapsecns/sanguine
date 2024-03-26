@@ -21,13 +21,13 @@ import (
 
 
 func identifyNestedDependencyChange(packageName string, depGraph map[string][]string, ct tree.Tree, packages map[string]bool) (changed bool) {
+  if _, ok := packages[packageName]; ok {
+    return packages[packageName]
+  }
+
   if ct.HasPath(packageName) {
     packages[packageName] = true
     return true
-  }
-
-  if _, ok := packages[packageName]; ok {
-    return packages[packageName]
   }
 
   deps := depGraph[packageName]
@@ -55,7 +55,7 @@ func DetectChangedModules(repoPath string, ct tree.Tree, includeDeps bool, typeO
 
 	if !common.FileExist(goWorkPath) {
 		return nil, fmt.Errorf("go.work file not found in %s", repoPath)
-	}
+  }
 
 	//nolint: gosec
 	workFile, err := os.ReadFile(goWorkPath)
