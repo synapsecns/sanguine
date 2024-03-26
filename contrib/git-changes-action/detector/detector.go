@@ -37,7 +37,7 @@ func identifyNestedDependencyChange(packageName string, depGraph map[string][]st
     for _, dep := range deps {
       changed = identifyNestedDependencyChange(dep, depGraph, ct, packages)
 
-      if changed == true {
+      if changed {
         break
       }
     }
