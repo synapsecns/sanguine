@@ -136,26 +136,34 @@ export const SwapInputContainer = () => {
   )
 }
 
-const SwapChainSelector = () => (
-  <ChainSelector
-    dataTestId="swap-origin-chain"
-    isOrigin={true}
-    selectedItem={CHAINS_BY_ID[useSwapState().swapChainId]}
-    label="From"
-    itemListFunction={useSwapChainListArray}
-    setFunction={setSwapChainId}
-    action="Swap"
-  />
-)
+const SwapChainSelector = () => {
+  const { swapChainId } = useSwapState()
 
-const SwapFromTokenSelector = () => (
-  <TokenSelector
-    dataTestId="swap-origin-token"
-    selectedItem={useSwapState().swapFromToken}
-    isOrigin={true}
-    placeholder="In"
-    itemListFunction={useSwapFromTokenListArray}
-    setFunction={setSwapFromToken}
-    action="Swap"
-  />
-)
+  return (
+    <ChainSelector
+      dataTestId="swap-origin-chain"
+      isOrigin={true}
+      selectedItem={CHAINS_BY_ID[swapChainId]}
+      label="From"
+      itemListFunction={useSwapChainListArray}
+      setFunction={setSwapChainId}
+      action="Swap"
+    />
+  )
+}
+
+const SwapFromTokenSelector = () => {
+  const { swapFromToken } = useSwapState()
+
+  return (
+    <TokenSelector
+      dataTestId="swap-origin-token"
+      selectedItem={swapFromToken}
+      isOrigin={true}
+      placeholder="In"
+      itemListFunction={useSwapFromTokenListArray}
+      setFunction={setSwapFromToken}
+      action="Swap"
+    />
+  )
+}

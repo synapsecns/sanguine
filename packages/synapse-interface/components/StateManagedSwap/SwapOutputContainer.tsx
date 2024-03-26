@@ -1,6 +1,3 @@
-import { useEffect, useState } from 'react'
-import { Address, useAccount } from 'wagmi'
-
 import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 import { useSwapState } from '@/slices/swap/hooks'
 import { BridgeSectionContainer } from '@/components/ui/BridgeSectionContainer'
@@ -10,15 +7,11 @@ import { setSwapToToken } from '@/slices/swap/reducer'
 import { useSwapToTokenListArray } from './hooks/useSwapToTokenListArray'
 import { joinClassNames } from '@/utils/joinClassNames'
 
-export const SwapOutputContainer = ({}) => {
-  const { swapQuote, isLoading, swapToToken } = useSwapState()
+export const SwapOutputContainer = () => {
+  const { swapQuote, isLoading } = useSwapState()
 
-  const { address: isConnectedAddress } = useAccount()
-  const [address, setAddress] = useState<Address>()
-
-  useEffect(() => {
-    setAddress(isConnectedAddress)
-  }, [isConnectedAddress])
+  const showValue =
+    swapQuote.outputAmountString === '0' ? '' : swapQuote.outputAmountString
 
   const inputClassName = joinClassNames({
     unset: 'bg-transparent border-none p-0',
@@ -41,11 +34,7 @@ export const SwapOutputContainer = ({}) => {
             disabled={true}
             className={inputClassName}
             placeholder="0.0000"
-            value={
-              swapQuote.outputAmountString === '0'
-                ? ''
-                : swapQuote.outputAmountString
-            }
+            value={showValue}
             name="inputRow"
             autoComplete="off"
           />
@@ -55,14 +44,18 @@ export const SwapOutputContainer = ({}) => {
   )
 }
 
-const SwapToTokenSelector = () => (
-  <TokenSelector
-    dataTestId="swap-destination-token"
-    isOrigin={false}
-    selectedItem={useSwapState().swapToToken}
-    placeholder="Out"
-    itemListFunction={useSwapToTokenListArray}
-    setFunction={setSwapToToken}
-    action="Swap"
-  />
-)
+const SwapToTokenSelector = () => {
+  const { swapToToken } = useSwapState()
+
+  return (
+    <TokenSelector
+      dataTestId="swap-destination-token"
+      isOrigin={false}
+      selectedItem={swapToToken}
+      placeholder="Out"
+      itemListFunction={useSwapToTokenListArray}
+      setFunction={setSwapToToken}
+      action="Swap"
+    />
+  )
+}

@@ -26,7 +26,6 @@ export const SelectorWrapper = ({
   useEffect(() => {
     const ref = popoverRef?.current
     if (!ref) return
-    // if (window.innerWidth >= 1024) return
 
     const { y, height } = ref.getBoundingClientRect()
     const screen = window.innerHeight
@@ -84,7 +83,6 @@ export const SelectorWrapper = ({
     hover: getHoverStyleForButton(selectedItem?.color),
     active: 'active:opacity-80',
     custom: label ? 'bg-transparent' : 'bg-white dark:bg-separator text-lg',
-    // bugfix: 'flex-none', // may not be needed any more
   })
 
   // TODO: Unify chainImg/icon properties between Chain and Token types

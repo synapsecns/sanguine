@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
+import { useDispatch } from 'react-redux'
+
 import { type Chain } from '@/utils/types'
 import { SelectSpecificNetworkButton } from '@/components/ui/SelectSpecificNetworkButton'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-import { useDispatch } from 'react-redux'
 import { SelectorWrapper } from '@/components/ui/SelectorWrapper'
 import { ListSectionWrapper } from '@/components/ui/ListSectionWrapper'
 import { ChainSelectorTypes } from '@/components/ui/types'

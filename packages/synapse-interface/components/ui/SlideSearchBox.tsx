@@ -1,5 +1,10 @@
-import { joinClassNames } from '@/utils/joinClassNames'
 import { useEffect, useRef } from 'react'
+
+import { joinClassNames } from '@/utils/joinClassNames'
+
+const isMobileDevice = () => {
+  return window.innerWidth <= 768
+}
 
 const className = joinClassNames({
   text: 'text-sm font-normal',
@@ -9,7 +14,6 @@ const className = joinClassNames({
   flex: 'flex-grow',
   space: 'px-2 py-1.5',
   background: 'bg-[#252226]',
-  // shadow: 'custom-shadow',
 })
 
 export function SlideSearchBox({
@@ -21,8 +25,13 @@ export function SlideSearchBox({
   onSearch: (str: string) => void
   placeholder: string
 }) {
-  const inputRef = useRef<any>(null)
-  useEffect(() => inputRef.current?.focus(), [])
+  const inputRef = useRef(null)
+
+  useEffect(() => {
+    if (!isMobileDevice()) {
+      inputRef.current?.focus()
+    }
+  }, [])
 
   return (
     <input

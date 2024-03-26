@@ -1,8 +1,9 @@
 import { USDC, DAI } from '@constants/tokens/bridgeable'
-import { COIN_SLIDE_OVER_PROPS } from '@styles/transitions'
 import * as CHAINS from '@constants/chains/master'
 import { SwapQuote } from '@types'
+
 export const QUOTE_POLLING_INTERVAL = 10000
+
 export const EMPTY_SWAP_QUOTE: SwapQuote = {
   outputAmount: 0n,
   outputAmountString: '',
@@ -12,6 +13,7 @@ export const EMPTY_SWAP_QUOTE: SwapQuote = {
   delta: 0n,
   quote: null,
 }
+
 export const EMPTY_SWAP_QUOTE_ZERO: SwapQuote = {
   outputAmount: 0n,
   outputAmountString: '0',
@@ -50,29 +52,3 @@ export const DEFAULT_FROM_TOKEN = USDC
 export const DEFAULT_TO_TOKEN = DAI
 export const DEFAULT_SWAPABLE_TYPE = 'USD'
 export const DEFAULT_FROM_CHAIN = CHAINS.ETH.id
-
-export const TRANSITIONS_PROPS = {
-  ...COIN_SLIDE_OVER_PROPS,
-  className: `
-    origin-bottom absolute
-    w-full h-full
-    md:w-[95%] md:h-[95%]
-    -ml-0 md:-ml-3
-    md:mt-3
-    bg-bgBase
-    z-20 rounded-lg
-  `,
-}
-
-export const SETTINGS_TRANSITIONS_PROPS = {
-  ...COIN_SLIDE_OVER_PROPS,
-  className: `
-    origin-bottom absolute
-    w-full h-full
-    md:w-[95%]
-    -ml-0 md:-ml-3
-    md:-mt-3
-    bg-bgBase
-    z-20 rounded-lg
-  `,
-}
