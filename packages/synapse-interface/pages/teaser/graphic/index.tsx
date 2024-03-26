@@ -2,6 +2,8 @@ import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 import { useAccount } from 'wagmi'
 
+import exampleImg from '@assets/example.png'
+
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 import Hero from '../Hero'
@@ -26,6 +28,7 @@ const LandingPage = () => {
   return (
     <Wrapper>
       <svg
+        id="hero-graphic"
         width="1200"
         height="675"
         viewBox="-600 -337.5 1200 675"
@@ -34,6 +37,22 @@ const LandingPage = () => {
         stroke-width="1"
         fill="none"
       >
+        <style>
+          {/* {`@keyframes circlePulse { from { r: 50; } to { r: 100; } }`} */}
+          {`@keyframes platformBob { from { transform: translate(0, -.25rem); } to { transform: translate(0, 0); } }`}
+          {`#hero-graphic {
+            --synapse-fill: hsl(300deg 100% 5%);
+            --synapse-stroke: hsl(300deg 100% 25%);
+            --yellow-fill: hsl(60deg 100% 5%);
+            --yellow-stroke: hsl(60deg 100% 50%);
+            --orange-fill: hsl(25deg 100% 5%);
+            --orange-stroke: hsl(25deg 100% 50%);
+            --blue-fill: hsl(195deg 100% 5%);
+            --blue-stroke: hsl(195deg 100% 50%);
+            --green-fill: hsl(135deg 100% 5%);
+            --green-stroke: hsl(135deg 100% 50%);
+          }`}
+        </style>
         <defs>
           <g id="box" transform="scale(.33,.33)">
             <path
@@ -110,30 +129,32 @@ const LandingPage = () => {
             />
           </polygon>
         </defs>
-        <style>
-          {/* {`@keyframes circlePulse { from { r: 50; } to { r: 100; } }`} */}
-          {`@keyframes platformBob { from { transform: translate(0, -.25rem); } to { transform: translate(0, 0); } }`}
-        </style>
         <path
           id="simple-bridge"
-          d="M-120,40 80,-60 120,-40 -80,60z"
-          fill="hsl(300deg 100% 5%)"
-          stroke="hsl(300deg 100% 25%)"
-        />
-        <path
-          id="platform-yellow"
-          d="m-200,0 200,100 -200,100 -200,-100z"
-          stroke="hsl(60deg 100% 50%)"
+          // d="M-120,40 80,-60 120,-40 -80,60z"
+          d="m-120,-160 40,20 -200,100 -40,-20z"
+          fill="var(--synapse-fill"
+          stroke="var(--synapse-stroke)"
         />
         <path
           id="platform-blue"
-          d="m200,-200 200,100 -200,100 -200,-100z"
-          stroke="hsl(195deg 100% 50%)"
+          d="m0,-300 200,100 -200,100 -200,-100z"
+          stroke="var(--blue-stroke)"
+        />
+        <path
+          id="platform-yellow"
+          d="m-400,-100 200,100 -200,100 -200,-100z"
+          stroke="var(--yellow-stroke)"
         />
         <path
           id="platform-green"
-          d="m500,-50 200,100 -200,100 -200,-100z"
-          stroke="hsl(135deg 100% 50%)"
+          d="m400,-100 200,100 -200,100 -200,-100z"
+          stroke="var(--green-stroke)"
+        />
+        <path
+          id="platform-orange"
+          d="m0,100 200,100 -200,100 -200,-100z"
+          stroke="var(--orange-stroke)"
         />
         <g
           id="barge"
@@ -146,14 +167,14 @@ const LandingPage = () => {
           <path
             id="barge"
             d="m50,-75 100,50 -200,100 -100,-50z"
-            stroke="hsl(300deg 100% 25%)"
-            fill="hsl(300deg 100% 5%)"
+            fill="var(--synapse-fill)"
+            stroke="var(--synapse-stroke)"
           />
           <animateMotion
             id="bargeIn"
             dur="2s"
             begin="0s; bargeEnd.end + 2s"
-            path="M400,-400 0,-200"
+            path="M200,-500 -200,-300"
             calcMode="spline"
             keyTimes="0; 1"
             keySplines=".5 0 .2 1"
@@ -163,7 +184,7 @@ const LandingPage = () => {
             id="bargeMid"
             dur="2s"
             begin="bargeIn.end + 2s"
-            path="M0,-200 -400,0"
+            path="M-200,-300 -600,-100"
             calcMode="spline"
             keyTimes="0; 1"
             keySplines=".5 0 .2 1"
@@ -173,28 +194,20 @@ const LandingPage = () => {
             id="bargeEnd"
             dur="2s"
             begin="bargeMid.end + 2s"
-            path="M-400,0 -800,200"
+            path="M-600,-100 -1000,100"
             calcMode="spline"
             keyTimes="0; 1"
             keySplines=".5 0 .2 1"
             fill="freeze"
           />
         </g>
-        <g
-          id="bargeBoxes"
-          style={
-            {
-              // animation: '2s ease-in-out 0s infinite alternate platformBob',
-            }
-          }
+        <use
+          href="#boxes"
+          stroke="hsl(195deg 100% 50%)"
+          fill="hsl(195deg 100% 5%)"
         >
-          <use
-            href="#boxes"
-            stroke="hsl(195deg 100% 50%)"
-            fill="hsl(195deg 100% 5%)"
-          />
           <animateMotion
-            path="M150,-125"
+            path="M-50,-225"
             fill="freeze"
             begin="0s; bargeIn.begin"
           />
@@ -207,7 +220,7 @@ const LandingPage = () => {
           <animateMotion
             dur="2s"
             begin="bargeIn.end"
-            path="M150,-125 0,-200"
+            path="M-50,-225 -200,-300"
             calcMode="spline"
             keyTimes="0; 1"
             keySplines=".5 0 .2 1"
@@ -216,7 +229,7 @@ const LandingPage = () => {
           <animateMotion
             dur="2s"
             begin="bargeMid.begin"
-            path="M0,-200 -400,0"
+            path="M-200,-300 -600,-100"
             calcMode="spline"
             keyTimes="0; 1"
             keySplines=".5 0 .2 1"
@@ -226,7 +239,7 @@ const LandingPage = () => {
             id="bargeBoxEnd"
             dur="2s"
             begin="bargeMid.end"
-            path="M-400,0 -250,75"
+            path="M-600,-100 -450,-25"
             calcMode="spline"
             keyTimes="0; 1"
             keySplines=".5 0 .2 1"
@@ -238,78 +251,90 @@ const LandingPage = () => {
             dur="5s"
             begin="bargeBoxEnd.end"
           />
-        </g>
+        </use>
 
-        <use href="#box" fill="hsl(60deg 100% 5%)" stroke="hsl(60deg 100% 50%)">
+        <use href="#box">
           <animateMotion
-            id="start1"
+            id="boxOut"
             dur="3s"
-            begin="0s; mid1.end + 1s"
-            path="M-200,100 200,-100"
+            begin="0s; boxIn.end + 1s"
+            path="M-400,0 0,-200"
             calcMode="spline"
             keyTimes="0; 1"
             keySplines=".5 0 .2 1"
             fill="freeze"
           />
           <animateMotion
-            id="mid1"
+            id="boxIn"
             dur="3s"
-            begin="start1.end + 1s"
-            path="M200,-100 -200,100"
+            begin="boxOut.end + 1s"
+            path="M0,-200 -400,0"
             calcMode="spline"
             keyTimes="0; 1"
             keySplines=".5 0 .2 1"
             fill="freeze"
           />
-          <set
+          <animate
             attributeName="stroke"
-            to="hsl(195deg 100% 50%)"
-            dur="4s"
-            begin="start1.begin + 1.2s"
+            values="hsl(60deg 100% 50%); hsl(300deg 100% 40%); hsl(195deg 100% 50%)"
+            begin="boxOut.begin + 1s"
+            dur=".33s"
+            calcMode="spline"
+            keyTimes="0; .5; 1"
+            keySplines=".5 0 .2 1; .5 0 .2 1"
+            fill="freeze"
           />
-          <set
-            attributeName="fill"
-            to="hsl(195deg 100% 5%)"
-            dur="4s"
-            begin="start1.begin + 1.2s"
+          <animate
+            attributeName="stroke"
+            values="hsl(195deg 100% 50%); hsl(300deg 100% 40%); hsl(60deg 100% 50%)"
+            begin="boxIn.begin + 1s"
+            dur=".33s"
+            calcMode="spline"
+            keyTimes="0; .5; 1"
+            keySplines=".5 0 .2 1; .5 0 .2 1"
+            fill="freeze"
           />
         </use>
-        <use
-          href="#boxes"
-          stroke="hsl(195deg 100% 50%)"
-          fill="hsl(195deg 100% 5%)"
-        >
+        <use href="#boxes">
           <animateMotion
-            id="start2"
+            id="boxesOut"
             dur="3s"
-            begin="mid1.begin"
-            path="M-200,100 200,-100"
+            begin="0s; boxOut.begin"
+            path="M0,-200 -400,0"
             calcMode="spline"
             keyTimes="0; 1"
             keySplines=".5 0 .2 1"
             fill="freeze"
           />
           <animateMotion
-            id="mid2"
+            id="boxesIn"
             dur="3s"
-            begin="0s; start1.begin"
-            path="M200,-100 -200,100"
+            begin="boxIn.begin"
+            path="M-400,0 0,-200"
             calcMode="spline"
             keyTimes="0; 1"
             keySplines=".5 0 .2 1"
             fill="freeze"
           />
-          <set
+          <animate
             attributeName="stroke"
-            to="hsl(60deg 100% 50%)"
-            dur="4s"
-            begin="mid2.begin + 1.2s"
+            values="hsl(60deg 100% 50%); hsl(300deg 100% 40%); hsl(195deg 100% 50%)"
+            begin="boxesIn.begin + 1s"
+            dur=".33s"
+            calcMode="spline"
+            keyTimes="0; .5; 1"
+            keySplines=".5 0 .2 1; .5 0 .2 1"
+            fill="freeze"
           />
-          <set
-            attributeName="fill"
-            to="hsl(60deg 100% 5%)"
-            dur="4s"
-            begin="mid2.begin + 1.2s"
+          <animate
+            attributeName="stroke"
+            values="hsl(195deg 100% 50%); hsl(300deg 100% 40%); hsl(60deg 100% 50%)"
+            begin="boxesOut.begin + 1s"
+            dur=".33s"
+            calcMode="spline"
+            keyTimes="0; .5; 1"
+            keySplines=".5 0 .2 1; .5 0 .2 1"
+            fill="freeze"
           />
         </use>
 
@@ -323,6 +348,7 @@ const LandingPage = () => {
         </use> */}
         {/* <use href="#boxes" stroke="pink" /> */}
       </svg>
+      <img src={exampleImg.src} />
       <Hero />
       <ValueProps />
     </Wrapper>
