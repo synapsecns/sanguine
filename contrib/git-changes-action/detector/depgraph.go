@@ -126,20 +126,24 @@ func extractGoFileNames(pwd string, currentModule string, currentPackage string,
 
 // makeDepMaps makes a dependency map and a bidirectional map of dep<->module.
 func makeDepMaps(repoPath string, uses []*modfile.Use, typeOfDependency string) (dependencies map[string]map[string]struct{}, dependencyNames *bimap.BiMap[string, string], packagesPerModule map[string][]string, err error) {
-	// map of module->dependencies + replaces
+  // Can be either:
+	// map of module->depndencies
   // map of packages -> dependencies
+  // depends on typeOfDependency
 	dependencies = make(map[string]map[string]struct{})
+
 	// bidirectional map of module->module name
-  // bidirectional map of package->package name, relative to public names.
+  // bidirectional map of package->package name
+  // Maps relative to public names, used to filer out all external libraries/packages.
 	dependencyNames = bimap.NewBiMap[string, string]()
+
   // map of module->packages
   packagesPerModule = make(map[string][]string)
 
 	// iterate through each module in the go.work file
-	// create a list of dependencies for each module based on modules or packages
-	// and module names or package names
+	// 1. Create a list of dependencies for each module 
+  // 2. Map public names to private names for each module
 		//nolint: gose
-
     if typeOfDependency == "module" {
     	for _, module := range uses {
         modContents, err := os.ReadFile(filepath.Join(repoPath, module.Path, "go.mod"))
@@ -166,7 +170,6 @@ func makeDepMaps(repoPath string, uses []*modfile.Use, typeOfDependency string) 
     }
 
 
-
     if typeOfDependency == "packages" {
       extractedGoFileNames := make(map[string]map[string][]string)
 
@@ -175,6 +178,10 @@ func makeDepMaps(repoPath string, uses []*modfile.Use, typeOfDependency string) 
       }
 
 
+	// iterate through each module in the go.work file
+  // 1. Extract all go files filepaths for each package.
+  // 2. Create a map where key is module, value is an array with all packages in the module
+  // 3. Map public name to relative name for each package (used to filter external library/package imports)
       for _, module := range uses {
         extractedGoFileNames[module.Path] = make(map[string][]string)
 
@@ -210,6 +217,10 @@ func makeDepMaps(repoPath string, uses []*modfile.Use, typeOfDependency string) 
         }
       }
 
+      // iterate through each module in the go.work file
+      // For every package in the module
+      // using the filepaths extracted on the previous loop, parse files and extract imports.
+      // Ignore any external library/package imports
       for _, module := range uses {
         for packageInModule, files := range extractedGoFileNames[module.Path] {
           var relativePackageName string
@@ -231,7 +242,7 @@ func makeDepMaps(repoPath string, uses []*modfile.Use, typeOfDependency string) 
               // s.Path.Value contains double quotation marks that must be removed before indexing dependencyNames 
               renamedDep, hasDep := dependencyNames.GetInverse(s.Path.Value[1:len(s.Path.Value)-1])
 
-              if hasDep {
+              if hasDep && (relativePackageName != renamedDep){
                 dependencies[relativePackageName][renamedDep] = struct{}{} 
               }
             }
