@@ -14,6 +14,9 @@ interface ChainPause {
   warningMessage: any
   bannerMessage: any
   progressBarMessage: any
+  disableBanner?: boolean
+  disableWarning?: boolean
+  disableCountdown?: boolean
 }
 
 const PAUSED_CHAINS: ChainPause[] = [
@@ -66,6 +69,7 @@ const PAUSED_CHAINS: ChainPause[] = [
       </p>
     ),
     progressBarMessage: <p> Base maintenance in progress </p>,
+    disableBanner: true,
   },
 ]
 
@@ -79,6 +83,7 @@ export const MaintenanceBanners = () => {
             bannerMessage={event.bannerMessage}
             startDate={event.bannerStartTime}
             endDate={event.bannerEndTime}
+            disabled={event.disableBanner}
           />
         )
       })}
