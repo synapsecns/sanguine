@@ -12,12 +12,6 @@ import { getFromTokens } from '@/utils/routeMaker/getFromTokens'
 import { getToChainIds } from '@/utils/routeMaker/getToChainIds'
 import { getToTokens } from '@/utils/routeMaker/getToTokens'
 import { findTokenByRouteSymbol } from '@/utils/findTokenByRouteSymbol'
-import {
-  resetFetchedBridgeQuotes,
-  resetBridgeInputs,
-  updateDebouncedFromValue,
-  updateDebouncedToTokensFromValue,
-} from './actions'
 import { fetchAndStoreBridgeQuotes } from './hooks'
 import { BridgeQuoteResponse } from '@/utils/actions/fetchBridgeQuotes'
 import { findValidToken } from '@/utils/findValidToken'
@@ -447,11 +441,17 @@ export const bridgeSlice = createSlice({
     setBridgeQuote: (state, action: PayloadAction<BridgeQuote>) => {
       state.bridgeQuote = action.payload
     },
-    resetBridgeQuote: (state) => {
-      state.bridgeQuote = initialState.bridgeQuote
-    },
     updateFromValue: (state, action: PayloadAction<string>) => {
       state.fromValue = action.payload
+    },
+    updateDebouncedFromValue: (state, action: PayloadAction<string>) => {
+      state.debouncedFromValue = action.payload
+    },
+    updateDebouncedToTokensFromValue: (
+      state,
+      action: PayloadAction<string>
+    ) => {
+      state.debouncedToTokensFromValue = action.payload
     },
     setDeadlineMinutes: (state, action: PayloadAction<number | null>) => {
       state.deadlineMinutes = action.payload
@@ -459,29 +459,27 @@ export const bridgeSlice = createSlice({
     setDestinationAddress: (state, action: PayloadAction<Address | null>) => {
       state.destinationAddress = action.payload
     },
+    clearDestinationAddress: (state) => {
+      state.destinationAddress = initialState.destinationAddress
+    },
+    resetBridgeQuote: (state) => {
+      state.bridgeQuote = initialState.bridgeQuote
+    },
+    resetBridgeInputs: (state) => {
+      state.fromChainId = initialState.fromChainId
+      state.fromToken = initialState.fromToken
+      state.toChainId = initialState.toChainId
+      state.toToken = initialState.toToken
+      state.fromValue = initialState.fromValue
+      state.debouncedFromValue = initialState.debouncedFromValue
+    },
+    resetFetchedBridgeQuotes: (state) => {
+      state.toTokensBridgeQuotes = initialState.toTokensBridgeQuotes
+      state.toTokensBridgeQuotesStatus = initialState.toTokensBridgeQuotesStatus
+    },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(
-        updateDebouncedFromValue,
-        (state, action: PayloadAction<string>) => {
-          state.debouncedFromValue = action.payload
-        }
-      )
-      .addCase(
-        updateDebouncedToTokensFromValue,
-        (state, action: PayloadAction<string>) => {
-          state.debouncedToTokensFromValue = action.payload
-        }
-      )
-      .addCase(resetBridgeInputs, (state) => {
-        state.fromChainId = initialState.fromChainId
-        state.fromToken = initialState.fromToken
-        state.toChainId = initialState.toChainId
-        state.toToken = initialState.toToken
-        state.fromValue = initialState.fromValue
-        state.debouncedFromValue = initialState.debouncedFromValue
-      })
       .addCase(fetchAndStoreBridgeQuotes.pending, (state) => {
         state.toTokensBridgeQuotesStatus = FetchState.LOADING
       })
@@ -495,15 +493,12 @@ export const bridgeSlice = createSlice({
       .addCase(fetchAndStoreBridgeQuotes.rejected, (state) => {
         state.toTokensBridgeQuotesStatus = FetchState.INVALID
       })
-      .addCase(resetFetchedBridgeQuotes, (state) => {
-        state.toTokensBridgeQuotes = initialState.toTokensBridgeQuotes
-        state.toTokensBridgeQuotesStatus =
-          initialState.toTokensBridgeQuotesStatus
-      })
   },
 })
 
 export const {
+  updateDebouncedFromValue,
+  updateDebouncedToTokensFromValue,
   setBridgeQuote,
   resetBridgeQuote,
   setFromChainId,
@@ -514,6 +509,9 @@ export const {
   setDeadlineMinutes,
   setDestinationAddress,
   setIsLoading,
+  resetBridgeInputs,
+  clearDestinationAddress,
+  resetFetchedBridgeQuotes,
 } = bridgeSlice.actions
 
 export default bridgeSlice.reducer
