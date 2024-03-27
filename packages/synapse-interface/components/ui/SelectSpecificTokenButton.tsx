@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { memo, useEffect, useRef, useState } from 'react'
+import { memo, useEffect, useRef } from 'react'
 import Image from 'next/image'
 
 import { type Token, type ActionTypes } from '@/utils/types'
@@ -171,35 +171,18 @@ const ButtonContent = memo(
   }) => {
     const portfolioBalances = usePortfolioBalances()
 
-    console.log(`chainId`, chainId)
-
     const parsedBalance = portfolioBalances[chainId]?.find(
       (tb) => tb.token.addresses[chainId] === token.addresses[chainId]
     )?.parsedBalance
 
     return (
       <div data-test-id="button-content" className="">
-        <div className="flex items-center justify-between">
-          <span className="flex items-center gap-2">
-            <Image
-              loading="lazy"
-              src={token.icon.src}
-              alt="Token Image"
-              width="20"
-              height="20"
-              className="w-5 h-5 max-w-fit"
-            />
-            <Coin
-              token={token}
-              showAllChains={showAllChains}
-              isOrigin={isOrigin}
-            />
-          </span>
-          {showAllChains && <AvailableChains token={token} />}
-          {isOrigin && (
-            <TokenBalance token={token} parsedBalance={parsedBalance} />
-          )}
-        </div>
+        <Coin
+          token={token}
+          showAllChains={showAllChains}
+          isOrigin={isOrigin}
+          parsedBalance={parsedBalance}
+        />
         <div className="flex items-center space-x-2 text-sm text-secondary">
           {action === 'Bridge' && isOrigin && isTokenEligible(token) ? (
             <div className="text-greenText">{ELIGIBILITY_DEFAULT_TEXT}</div>
@@ -216,18 +199,31 @@ const Coin = ({
   token,
   showAllChains,
   isOrigin,
+  parsedBalance,
 }: {
   token
   showAllChains: boolean
   isOrigin: boolean
+  parsedBalance: string | undefined
 }) => {
   return (
-    <div>
-      <div className="flex justify-between text-left">
-        <div className="">{token?.symbol}</div>
-
-        {/* {showAllChains && <AvailableChains token={token} />} */}
+    <div className="flex justify-between">
+      <div className="flex items-center gap-2">
+        <Image
+          loading="lazy"
+          src={token.icon.src}
+          alt="Token Image"
+          width="20"
+          height="20"
+          className="w-5 h-5 max-w-fit"
+        />
+        <div>{token?.symbol}</div>
       </div>
+
+      {!showAllChains && isOrigin && (
+        <TokenBalance parsedBalance={parsedBalance} />
+      )}
+      {showAllChains && <AvailableChains token={token} />}
     </div>
   )
 }
@@ -283,30 +279,15 @@ const isTokenEligible = (token: Token) => {
   )
 }
 
-const TokenBalance = ({
-  token,
-  parsedBalance,
-}: {
-  token: Token
-  parsedBalance?: string
-}) => {
+const TokenBalance = ({ parsedBalance }: { parsedBalance?: string }) => {
   return (
     <div className="p-1 text-sm">
-      {parsedBalance && parsedBalance !== '0.0' && (
-        <div>
-          {parsedBalance}
-          <span className="text-md text-secondaryTextColor">
-            {/* {' '}
-            {token ? token.symbol : ''} */}
-          </span>
-        </div>
-      )}
+      {parsedBalance && parsedBalance !== '0.0' && <div>{parsedBalance}</div>}
     </div>
   )
 }
 
 const AvailableChains = ({ token }: { token: Token }) => {
-  const [isHovered, setIsHovered] = useState(false)
   const pausedChainIds = findChainIdsWithPausedToken(token.routeSymbol)
   const chainIds = _.difference(Object.keys(token.addresses), pausedChainIds)
   const hasOneChain = chainIds.length > 0
@@ -317,8 +298,6 @@ const AvailableChains = ({ token }: { token: Token }) => {
     <div
       data-test-id="available-chains"
       className="flex items-center space-x-1 text-sm hover-trigger"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       {hasOneChain && (
         <img
@@ -337,22 +316,6 @@ const AvailableChains = ({ token }: { token: Token }) => {
       {numOverTwoChains > 0 && (
         <div className="ml-1 text-white">+ {numOverTwoChains}</div>
       )}
-      <div className="relative inline-block">
-        {isHovered && (
-          <div
-            className={`
-              absolute z-50 hover-content p-2 text-white
-              border border-solid border-[#252537]
-              bg-[#101018] rounded-md
-            `}
-          >
-            {chainIds.map((chainId) => {
-              const chainName = CHAINS_BY_ID[chainId].name
-              return <div className="whitespace-nowrap">{chainName}</div>
-            })}
-          </div>
-        )}
-      </div>
     </div>
   )
 }

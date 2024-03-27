@@ -18,7 +18,6 @@ export function TokenSelector({
   isOrigin,
   action,
 }: TokenSelectorTypes) {
-  const [currentIdx, setCurrentIdx] = useState(-1)
   const [searchStr, setSearchStr] = useState('')
 
   const dispatch = useDispatch()
@@ -43,7 +42,7 @@ export function TokenSelector({
     }
   }
 
-  const itemList = itemListFunction(searchStr) // TODO: Use result instead of variable in context?
+  const itemList = itemListFunction(searchStr)
 
   return (
     <SelectorWrapper
@@ -63,14 +62,8 @@ export function TokenSelector({
                 key={idx}
                 token={token}
                 selectedToken={selectedItem}
-                // active={
-                //   idx +
-                //     possibleTokens.length +
-                //     remainingChainTokens.length ===
-                //   currentIdx
-                // }
                 active={false}
-                // showAllChains={true}
+                showAllChains={key === 'All other tokens'}
                 onClick={() => handleSetFromToken(token)}
                 alternateBackground={false}
                 action={action}
