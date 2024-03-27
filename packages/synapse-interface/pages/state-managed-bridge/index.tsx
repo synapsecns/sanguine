@@ -78,11 +78,6 @@ import { FromTokenListOverlay } from '@/components/StateManagedBridge/FromTokenL
 import { ToTokenListOverlay } from '@/components/StateManagedBridge/ToTokenListOverlay'
 
 import { waitForTransaction } from '@wagmi/core'
-import {
-  fetchArbPrice,
-  fetchEthPrice,
-  fetchGmxPrice,
-} from '@/slices/priceDataSlice'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { SwitchButton } from '@/components/buttons/SwitchButton'
 import {

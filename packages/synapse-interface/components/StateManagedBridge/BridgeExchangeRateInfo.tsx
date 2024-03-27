@@ -1,30 +1,19 @@
-import numeral from 'numeral'
-import Image from 'next/image'
 import { useMemo } from 'react'
-import { useAppSelector } from '@/store/hooks'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
-import {
-  ELIGIBILITY_DEFAULT_TEXT,
-  useStipEligibility,
-} from '@/utils/hooks/useStipEligibility'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { formatBigIntToPercentString } from '@/utils/bigint/format'
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { CHAINS_BY_ID } from '@constants/chains'
 import * as CHAINS from '@constants/chains/master'
 
-const MAX_ARB_REBATE_PER_ADDRESS = 2000
-
 const BridgeExchangeRateInfo = () => {
   return (
     <div className="py-3.5 px-1 space-y-3 text-sm md:px-6 tracking-wide">
-      <RouteEligibility />
-      {/* <TimeEstimate /> */}
+      <TimeEstimate />
       <section className="p-2 space-y-1 text-sm border rounded-sm border-[#504952] text-secondary font-light">
         <GasDropLabel />
         <Router />
-        <Rebate />
         <Slippage />
       </section>
     </div>
@@ -59,90 +48,6 @@ const Router = () => {
     <div className="flex justify-between">
       <div>Router</div>
       <div className="text-primaryTextColor">{bridgeModuleName}</div>
-    </div>
-  )
-}
-
-const RouteEligibility = () => {
-  const { isRouteEligible, isActiveRouteEligible, rebate } =
-    useStipEligibility()
-
-  const { parsedCumulativeRewards } = useAppSelector(
-    (state) => state.feeAndRebate
-  )
-
-  if (
-    !isRouteEligible ||
-    !rebate ||
-    Number(parsedCumulativeRewards) > MAX_ARB_REBATE_PER_ADDRESS
-  ) {
-    return (
-      <div className="flex justify-between">
-        <div className="flex-grow" />
-        <TimeEstimate />
-      </div>
-    )
-  }
-
-  return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center">
-        <Image
-          src={CHAINS_BY_ID[CHAINS.ARBITRUM.id].chainImg}
-          alt="To chain"
-          className="w-4 h-4 mr-2 rounded-full"
-        />
-
-        <span className="text-green-300">
-          {isActiveRouteEligible && rebate ? (
-            <RebateText />
-          ) : (
-            ELIGIBILITY_DEFAULT_TEXT
-          )}
-        </span>
-      </div>
-      <TimeEstimate />
-    </div>
-  )
-}
-
-const RebateText = () => {
-  const { rebate } = useStipEligibility()
-  const { arbPrice } = useAppSelector((state) => state.priceData)
-  const arbInDollars = rebate * arbPrice
-
-  return (
-    <div className="overflow-hidden whitespace-nowrap overflow-ellipsis">
-      <span className="text-green-300">
-        +{numeral(rebate).format('0,0.000')} ARB
-      </span>
-      <span className="text-secondary"> / </span>
-      <span className="text-green-300">
-        {numeral(arbInDollars).format('$0,0.00')}
-      </span>
-    </div>
-  )
-}
-
-const Rebate = () => {
-  const { isRouteEligible, rebate } = useStipEligibility()
-
-  const { parsedCumulativeRewards } = useAppSelector(
-    (state) => state.feeAndRebate
-  )
-
-  if (
-    !isRouteEligible ||
-    !rebate ||
-    Number(parsedCumulativeRewards) > MAX_ARB_REBATE_PER_ADDRESS
-  ) {
-    return null
-  }
-
-  return (
-    <div className="flex items-center justify-between">
-      <div className="text-green-300">Rebate</div>
-      <RebateText />
     </div>
   )
 }
