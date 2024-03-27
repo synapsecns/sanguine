@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.14.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.13.1...@synapsecns/synapse-interface@0.14.0) (2024-03-27)
+
+
+### Features
+
+* **synapse-interface:** unpause blast ([#2364](https://github.com/synapsecns/sanguine/issues/2364)) ([a2bd1c4](https://github.com/synapsecns/sanguine/commit/a2bd1c4ac5ed3004ccd19aa21abb3ac7d83b8397))
+
+
+
+
+
 ## [0.13.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.13.0...@synapsecns/synapse-interface@0.13.1) (2024-03-27)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
