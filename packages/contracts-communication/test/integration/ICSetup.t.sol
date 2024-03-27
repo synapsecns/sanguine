@@ -4,7 +4,7 @@ pragma solidity 0.8.20;
 import {ExecutionFees} from "../../contracts/ExecutionFees.sol";
 import {InterchainClientV1} from "../../contracts/InterchainClientV1.sol";
 import {InterchainDB} from "../../contracts/InterchainDB.sol";
-import {PingPongApp} from "../../contracts/apps/PingPongApp.sol";
+import {PingPongApp} from "../../contracts/apps/examples/PingPongApp.sol";
 import {SynapseExecutionServiceV1} from "../../contracts/execution/SynapseExecutionServiceV1.sol";
 import {AppConfigV1} from "../../contracts/libs/AppConfig.sol";
 import {SynapseModule} from "../../contracts/modules/SynapseModule.sol";
@@ -120,7 +120,7 @@ abstract contract ICSetup is ProxyTest {
         pingPongApp.addTrustedModule(address(module));
         pingPongApp.setAppConfigV1(AppConfigV1({requiredResponses: 1, optimisticPeriod: APP_OPTIMISTIC_PERIOD}));
         pingPongApp.setExecutionService(address(executionService));
-        pingPongApp.setInterchainClient(address(icClient));
+        pingPongApp.addInterchainClient({client: address(icClient), updateLatest: true});
     }
 
     function initDBNonce() internal virtual {

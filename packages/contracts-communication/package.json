@@ -7,7 +7,7 @@
   ],
   "scripts": {
     "build:contracts": "forge build",
-    "build:go": "./flatten.sh contracts/*.sol contracts/modules/*.sol contracts/mocks/**.sol test/mocks/**.sol contracts/apps/**.sol",
+    "build:go": "./flatten.sh contracts/*.sol contracts/modules/*.sol contracts/mocks/*.sol test/mocks/*.sol contracts/apps/examples/*.sol",
     "build:slither": "forge build --out=out --build-info --force",
     "ci:lint": "yarn lint:check",
     "lint:contracts:fix": "forge fmt && solhint --fix -c .solhint.json '{contracts,script,test}/**/*.sol'",
