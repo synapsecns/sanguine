@@ -41,7 +41,7 @@ func NewSynapseModuleDeployer(registry deployer.GetOnlyContractRegistry, backend
 
 // Deploy deploys a SynapseModule contract.
 // this is deployed with the NoOpInterchain contract as the interchain contract.
-// this can be overridden at any type by owner.
+// this can be overridden at any time by owner.
 func (s SynapseModuleDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 	return s.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		interchainContract := s.Registry().Get(ctx, InterchainDB)
