@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.13.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.12.4...@synapsecns/synapse-interface@0.13.0) (2024-03-27)
+
+
+### Features
+
+* **synapse-interface:** destination address ([#2137](https://github.com/synapsecns/sanguine/issues/2137)) ([44f8af6](https://github.com/synapsecns/sanguine/commit/44f8af611d9dbc9dab475aea805fa591accc347f))
+
+
+
+
+
 ## [0.12.4](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.12.3...@synapsecns/synapse-interface@0.12.4) (2024-03-27)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
