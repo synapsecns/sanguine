@@ -48,6 +48,16 @@ type Backend struct {
 	t *testing.T
 	// store stores the accounts
 	store *InMemoryKeyStore
+	// verifiedContracts is a list of verified contracts
+	verifiedContracts map[common.Address]VerifiedContract
+	// verificationMutex is the mutex for the verification
+	verifiedMux sync.RWMutex
+}
+
+// VerifiedContract is a contract that has been verified.
+type VerifiedContract struct {
+	contracts.ContractType
+	contracts.DeployedContract
 }
 
 // T returns the testing object.
@@ -76,11 +86,12 @@ func NewBaseBackend(ctx context.Context, t *testing.T, chn chain.Chain) (*Backen
 	t.Helper()
 
 	b := &Backend{
-		Chain:   chn,
-		ctx:     ctx,
-		t:       t,
-		Manager: nonce.NewNonceManager(ctx, chn, chn.GetBigChainID()),
-		store:   NewInMemoryKeyStore(),
+		Chain:             chn,
+		ctx:               ctx,
+		t:                 t,
+		Manager:           nonce.NewNonceManager(ctx, chn, chn.GetBigChainID()),
+		store:             NewInMemoryKeyStore(),
+		verifiedContracts: map[common.Address]VerifiedContract{},
 	}
 
 	return b, nil
@@ -147,6 +158,15 @@ func (b *Backend) VerifyContract(contractType contracts.ContractType, contract c
 	}
 
 	wg.Wait()
+
+	b.verifiedMux.Lock()
+	defer b.verifiedMux.Unlock()
+
+	b.verifiedContracts[contract.Address()] = VerifiedContract{
+		ContractType:     contractType,
+		DeployedContract: contract,
+	}
+
 	return errors.Wrap(resError, "error verifying contract")
 }
 
@@ -182,7 +202,7 @@ func (b *Backend) WaitForConfirmation(parentCtx context.Context, transaction *ty
 		if err != nil {
 			errMessage := fmt.Sprintf("could not call contract: %v on tx: %s", err, transaction.Hash())
 			if b.RPCAddress() != "" {
-				errMessage += fmt.Sprintf("\nFor more info run (before the process stops): cast run --rpc-url %s %s --trace-printer", b.RPCAddress(), transaction.Hash())
+				errMessage += fmt.Sprintf("\nFor more info run (before the process stops): cast run --rpc-url %s %s --trace-printer %s", b.RPCAddress(), transaction.Hash(), b.addCastLabels(transaction, callMessage.From))
 			}
 			logger.Error(errMessage)
 			return

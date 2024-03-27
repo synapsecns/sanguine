@@ -176,6 +176,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: debug
+        run: go version
+
+      - name: debug2
+        run: goreleaser -v
+
       - name: Run GoReleaser (Release)
         if: steps.branch-name.outputs.is_default == 'true'
         run: goreleaser  --timeout 900m --clean --debug -f ${{matrix.package}}/.goreleaser.yml

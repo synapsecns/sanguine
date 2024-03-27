@@ -113,11 +113,6 @@ jobs:
           fetch-depth: 1
           submodules: 'recursive'
 
-      - name: Cache Docker images.
-        uses: ScribeMD/docker-cache@0.3.6
-        with:
-          key: docker-test-${{ runner.os }}-${{ matrix.package }}
-
       - name: Go modules cache
         uses: actions/cache@v3
         with:
@@ -408,11 +403,6 @@ jobs:
           fetch-depth: 1
           submodules: 'recursive'
 
-      - name: Cache Docker images.
-        uses: ScribeMD/docker-cache@0.3.6
-        with:
-          key: docker-generate-${{ runner.os }}-${{ matrix.package }}
-
       - name: Setup NodeJS
         uses: ./.github/actions/setup-nodejs
 
@@ -530,29 +520,24 @@ jobs:
           fetch-depth: 1
           submodules: 'recursive'
 
-      - name: Cache Docker images.
-        uses: ScribeMD/docker-cache@0.3.6
-        with:
-          key: docker-generate-${{ runner.os }}-${{ matrix.package }}
-
       - name: Setup NodeJS
         uses: ./.github/actions/setup-nodejs
 
       # Foundry is required for flattening
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
-        if: ${{ contains(matrix.package, 'agents') || contains(matrix.package, 'services/rfq') }}
+        if: ${{ contains(matrix.package, 'agents') || contains(matrix.package, 'services/rfq') || contains(matrix.package, 'sin-executor') || contains(matrix.package, 'committee') }}
         with:
           version: nightly
 
       - name: Install Node Dependencies
         run: yarn install --immutable
-        if: ${{ contains(matrix.package, 'agents') || contains(matrix.package, 'services/rfq') }}
+        if: ${{ contains(matrix.package, 'agents') || contains(matrix.package, 'services/rfq') || contains(matrix.package, 'sin-executor') || contains(matrix.package, 'committee') }}
 
       # Generate flattened files
       - name: Run flattener
         run: npx lerna exec npm run build:go
-        if: ${{ contains(matrix.package, 'agents') || contains(matrix.package, 'services/rfq') }}
+        if: ${{ contains(matrix.package, 'agents') || contains(matrix.package, 'services/rfq') || contains(matrix.package, 'sin-executor') || contains(matrix.package, 'committee') }}
 
       # Setup Go
       - uses: actions/setup-go@v4

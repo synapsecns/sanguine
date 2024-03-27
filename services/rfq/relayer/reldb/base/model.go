@@ -26,6 +26,7 @@ func init() {
 }
 
 var (
+	// statusFieldName is the status field name.
 	statusFieldName string
 	// transactionIDFieldName is the transactions id field name.
 	transactionIDFieldName string

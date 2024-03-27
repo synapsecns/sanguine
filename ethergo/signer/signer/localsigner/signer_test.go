@@ -9,6 +9,7 @@ import (
 	"testing"
 )
 
+// Deprecated: this test is deprecated and will be removed in the future in favor of the signer tests.
 func TestSigner(t *testing.T) {
 	testWallet, err := wallet.FromHex("63e21d10fd50155dbba0e7d3f7431a400b84b4c2ac1ee38872f82448fe3ecfb9")
 	Nil(t, err)

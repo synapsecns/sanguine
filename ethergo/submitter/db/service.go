@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/dbcommon"
-	"golang.org/x/exp/slices"
 	"math/big"
 )
 
@@ -110,7 +109,15 @@ func (s *Status) Scan(src interface{}) error {
 	newStatus := Status(res)
 	*s = newStatus
 
-	if !slices.Contains[Status](allStatusTypes, *s) {
+	found := false
+	for _, status := range allStatusTypes {
+		if status == *s {
+			found = true
+			break
+		}
+	}
+
+	if !found {
 		return fmt.Errorf("invalid status: %d", res)
 	}
 

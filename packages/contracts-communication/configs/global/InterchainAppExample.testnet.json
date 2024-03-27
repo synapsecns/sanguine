@@ -1,0 +1,8 @@
+{
+  "chains": ["eth_sepolia", "op_sepolia"],
+  "trustedModules": ["SynapseModule"],
+  "appConfig": {
+    "0_requiredResponses": 1,
+    "1_optimisticPeriod": 30
+  }
+}
