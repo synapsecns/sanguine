@@ -168,8 +168,11 @@ jobs:
 
       - name: Build Contracts
         if: ${{ matrix.package != 'solidity-devops' }}
+        # TODO: unforunately, as of now concurrency needs to be 1 since if multiple instances of forge try to install the same version
+        # of solc at the same time, we get "text file busy" errors. See https://github.com/synapsecns/sanguine/actions/runs/8457116792/job/23168392860?pr=2234
+        # for an example.
         run: |
-          npx lerna exec npm run build:slither
+          npx lerna exec npm run build:slither --concurrency=1
 
       - name: Run Slither
         if: ${{ matrix.package != 'solidity-devops' }}
