@@ -67,19 +67,12 @@ func DetectChangedModules(repoPath string, ct tree.Tree, includeDeps bool, typeO
   } 
 
   if typeOfDependency == "packages" {
-    // This map stores package change identification
-    // map(package->isChanged bool)
-    // Reduces reduntant recursion over packages whose dependency tree has been prevoziously analyzed.
-    // Essentially caching recursion, so if package was found and analyzed through another package's dependency tree, it is not analyzed again.
-    var packages = make(map[string]bool)
-
     for _, module := range parsedWorkFile.Use {
       changed := false
 
       if ct.HasPath(module.Path) {
         changed = true
         modules[module.Path] = changed
-        packages[module.Path] = changed
         continue 
       }
 
@@ -101,10 +94,8 @@ func DetectChangedModules(repoPath string, ct tree.Tree, includeDeps bool, typeO
         }
       }
 
-      packages[module.Path] = changed
       modules[module.Path] = changed
     }
-
   }
 
 	return modules, nil
