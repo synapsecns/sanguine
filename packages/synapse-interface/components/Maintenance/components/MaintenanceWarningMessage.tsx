@@ -21,12 +21,14 @@ export const MaintenanceWarningMessage = ({
   pausedFromChains,
   pausedToChains,
   warningMessage,
+  disabled = false,
 }: {
   startDate: Date
   endDate: Date
   pausedFromChains: number[]
   pausedToChains: number[]
   warningMessage: any
+  disabled: boolean
 }) => {
   const { fromChainId, toChainId } = useBridgeState()
 
@@ -36,7 +38,7 @@ export const MaintenanceWarningMessage = ({
 
   const { isComplete } = getCountdownTimeStatus(startDate, endDate)
 
-  if (isComplete) return null
+  if (isComplete || disabled) return null
 
   if (isWarningChain) {
     return <WarningMessage message={warningMessage} />

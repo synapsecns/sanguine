@@ -70,6 +70,7 @@ const PAUSED_CHAINS: ChainPause[] = [
     ),
     progressBarMessage: <p> Base maintenance in progress </p>,
     disableBanner: true,
+    disableWarning: true,
   },
 ]
 
@@ -102,6 +103,7 @@ export const MaintenanceWarningMessages = () => {
             pausedFromChains={event.pausedFromChains}
             pausedToChains={event.pausedToChains}
             warningMessage={event.warningMessage}
+            disabled={event.disableWarning}
           />
         )
       })}
