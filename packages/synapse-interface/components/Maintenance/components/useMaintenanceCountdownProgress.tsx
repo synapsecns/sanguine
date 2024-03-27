@@ -21,12 +21,14 @@ export const useMaintenanceCountdownProgress = ({
   pausedFromChains,
   pausedToChains,
   progressBarMessage,
+  disabled = false,
 }: {
   startDate: Date
   endDate: Date | null
   pausedFromChains: number[]
   pausedToChains: number[]
   progressBarMessage: any
+  disabled?: boolean
 }) => {
   const { fromChainId, toChainId } = useBridgeState()
 
@@ -42,8 +44,7 @@ export const useMaintenanceCountdownProgress = ({
   return {
     isMaintenancePending,
     isCurrentChainDisabled: isCurrentChain && isMaintenancePending, // Used to pause Bridge
-    MaintenanceCountdownProgressBar: isCurrentChain
-      ? MaintenanceCountdownProgressBar
-      : null,
+    MaintenanceCountdownProgressBar:
+      isCurrentChain && !disabled ? MaintenanceCountdownProgressBar : null,
   }
 }
