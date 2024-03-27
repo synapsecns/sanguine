@@ -23,14 +23,14 @@ type Parser interface {
 }
 
 type parserImpl struct {
-	filterer *ExecutionServiceFilterer
+	filterer *SynapseExecutionServiceV1HarnessFilterer
 }
 
 // NewParser creates a new parser for the fastbridge contract.
 func NewParser(synapseModuleAddress common.Address) (Parser, error) {
-	parser, err := NewExecutionServiceFilterer(synapseModuleAddress, nil)
+	parser, err := NewSynapseExecutionServiceV1HarnessFilterer(synapseModuleAddress, nil)
 	if err != nil {
-		return nil, fmt.Errorf("could not create %T: %w", ExecutionServiceFilterer{}, err)
+		return nil, fmt.Errorf("could not create %T: %w", SynapseExecutionServiceV1HarnessFilterer{}, err)
 	}
 
 	return &parserImpl{filterer: parser}, nil
