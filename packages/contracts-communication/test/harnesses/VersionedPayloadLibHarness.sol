@@ -3,6 +3,7 @@ pragma solidity 0.8.20;
 
 import {VersionedPayloadLib} from "../../contracts/libs/VersionedPayload.sol";
 
+// solhint-disable ordering
 contract VersionedPayloadLibHarness {
     function encodeVersionedPayload(uint16 version, bytes memory payload) external pure returns (bytes memory) {
         return VersionedPayloadLib.encodeVersionedPayload(version, payload);
@@ -20,7 +21,7 @@ contract VersionedPayloadLibHarness {
         return VersionedPayloadLib.getVersionFromMemory(versionedPayload);
     }
 
-    function getPayloadFromMemory(bytes memory versionedPayload) external pure returns (bytes memory) {
+    function getPayloadFromMemory(bytes memory versionedPayload) external view returns (bytes memory) {
         return VersionedPayloadLib.getPayloadFromMemory(versionedPayload);
     }
 }
