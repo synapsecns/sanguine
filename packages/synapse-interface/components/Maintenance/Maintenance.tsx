@@ -70,9 +70,9 @@ const PAUSED_CHAINS: ChainPause[] = [
       </p>
     ),
     progressBarMessage: <p> Base maintenance in progress </p>,
-    disableBanner: false,
+    disableBanner: true,
     disableWarning: true,
-    disableCountdown: false,
+    disableCountdown: true,
   },
   {
     id: 'doge-chain-pause',
@@ -101,7 +101,7 @@ const PAUSED_CHAINS: ChainPause[] = [
     ),
     disableBanner: true,
     disableWarning: false,
-    disableCountdown: true,
+    disableCountdown: false,
   },
 ]
 
