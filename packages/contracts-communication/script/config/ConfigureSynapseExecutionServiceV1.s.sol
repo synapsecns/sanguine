@@ -8,7 +8,7 @@ import {SynapseScript, stdJson} from "@synapsecns/solidity-devops/src/SynapseScr
 contract ConfigureSynapseExecutionServiceV1 is SynapseScript {
     using stdJson for string;
 
-    string public constant NAME = "ExecutionService";
+    string public constant NAME = "SynapseExecutionServiceV1";
 
     SynapseExecutionServiceV1 public service;
     string public config;
