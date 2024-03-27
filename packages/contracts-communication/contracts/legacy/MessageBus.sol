@@ -84,9 +84,9 @@ contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
     /// @dev Internal logic for receiving messages. At this point the validity of the message is already checked.
     function _receiveMessage(
         uint256 srcChainId,
-        bytes32 sender,
-        uint256 dbNonce,
-        uint64 entryIndex,
+        bytes32, // sender
+        uint256, // dbNonce
+        uint64, // entryIndex
         bytes calldata encodedLegacyMsg
     )
         internal
@@ -111,7 +111,8 @@ contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
         });
     }
 
-    function _icOptionsV1(bytes calldata options) internal view returns (OptionsV1 memory) {
+    /// @dev Convert legacy MessageBus options to Interchain OptionsV1.
+    function _icOptionsV1(bytes calldata options) internal pure returns (OptionsV1 memory) {
         return OptionsV1({gasLimit: LegacyOptionsLib.decodeLegacyOptions(options), gasAirdrop: 0});
     }
 }
