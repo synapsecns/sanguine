@@ -1,6 +1,6 @@
 import { useAccount, useNetwork } from 'wagmi'
 import { useSelector } from 'react-redux'
-import { RootState } from '../../store/store'
+import { RootState } from '@/store/store'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/router'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
