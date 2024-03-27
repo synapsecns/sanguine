@@ -35,9 +35,7 @@ export const MaintenanceBanner = () => {
       bannerId="03262024-pause-blast-banner"
       bannerContents={
         <>
-          <p className="m-auto">
-            Bridging is paused until maintenance is complete.
-          </p>
+          <p className="m-auto">Bridging on Blast is temporarily paused.</p>
         </>
       }
       startDate={MAINTENANCE_BANNERS_START}
@@ -66,7 +64,7 @@ export const MaintenanceWarningMessage = () => {
       <WarningMessage
         message={
           <>
-            <p>Bridging USDB and WETH on Blast paused.</p>
+            <p>Bridging on Blast is temporarily paused.</p>
           </>
         }
       />
@@ -88,7 +86,7 @@ export const useMaintenanceCountdownProgress = () => {
     isPending: isMaintenancePending,
     EventCountdownProgressBar: MaintenanceCountdownProgressBar,
   } = useEventCountdownProgressBar(
-    'Blast bridge is paused.',
+    'Bridging on Blast paused.',
     MAINTENANCE_START_DATE, // Countdown Bar will automatically appear after start time
     MAINTENANCE_END_DATE // Countdown Bar will automatically disappear when end time is reached
   )
