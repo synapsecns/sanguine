@@ -18,7 +18,7 @@ library LegacyMessageLib {
         pure
         returns (bytes memory legacyMsg)
     {
-        // TODO: implement
+        return abi.encode(srcSender, dstReceiver, srcNonce, message);
     }
 
     /// @notice Decodes a message received by the Legacy MessageBus.
@@ -32,6 +32,6 @@ library LegacyMessageLib {
         pure
         returns (address srcSender, address dstReceiver, uint64 srcNonce, bytes memory message)
     {
-        // TODO: implement
+        return abi.decode(legacyMsg, (address, address, uint64, bytes));
     }
 }
