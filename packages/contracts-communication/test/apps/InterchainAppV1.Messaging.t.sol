@@ -98,8 +98,8 @@ abstract contract InterchainAppV1MessagingTest is InterchainAppV1Test {
         });
     }
 
-    function test_appReceive_revert_notInterchainClient(address caller) public {
-        vm.assume(caller != icClient);
+    function test_appReceive_revert_notInterchainClients(address caller) public {
+        vm.assume(caller != icClient && caller != extraClient);
         expectRevertNotInterchainClient(caller);
         vm.prank(caller);
         appHarness.appReceive({
