@@ -185,7 +185,8 @@ func (c chainListener) getMetadata(parentCtx context.Context) (startBlock, chain
 		chainID = rpcChainID.Uint64()
 
 		lastIndexed, err = c.store.LatestBlockForChain(ctx, chainID)
-		if errors.Is(err, ErrNoLatestBlockForChainID) {
+		// Workaround: TODO remove
+		if errors.Is(err, ErrNoLatestBlockForChainID) || err.Error() == ErrNoLatestBlockForChainID.Error() {
 			// TODO: consider making this negative 1, requires type change
 			lastIndexed = 0
 			return nil
