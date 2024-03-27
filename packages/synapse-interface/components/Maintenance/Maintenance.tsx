@@ -1,7 +1,8 @@
-import { OPTIMISM, BASE } from '@/constants/chains/master'
+import { OPTIMISM, BASE, DOGE } from '@/constants/chains/master'
 import { MaintenanceBanner } from './components/MaintenanceBanner'
 import { MaintenanceWarningMessage } from './components/MaintenanceWarningMessage'
 import { useMaintenanceCountdownProgress } from './components/useMaintenanceCountdownProgress'
+import { WarningMessage } from '../Warning'
 
 interface ChainPause {
   id: string
@@ -69,8 +70,37 @@ const PAUSED_CHAINS: ChainPause[] = [
       </p>
     ),
     progressBarMessage: <p> Base maintenance in progress </p>,
-    disableBanner: true,
+    disableBanner: false,
     disableWarning: true,
+    disableCountdown: false,
+  },
+  {
+    id: 'doge-chain-pause',
+    pausedFromChains: [],
+    pausedToChains: [DOGE.id],
+    startTime: new Date(Date.UTC(2024, 2, 21, 17, 41, 0)),
+    endTime: null,
+    bannerStartTime: new Date(Date.UTC(2024, 2, 27, 4, 40, 0)),
+    bannerEndTime: null,
+    warningMessage: (
+      <div className="space-y-2">
+        <strong>
+          Alert: Transactions to Dogechain are temporarily paused.
+        </strong>
+        <p>
+          You may still bridge funds from Dogechain to any supported destination
+          chain.
+        </p>
+      </div>
+    ),
+    bannerMessage: (
+      <p className="m-auto">Bridging to Doge Chain is currently unavailable.</p>
+    ),
+    progressBarMessage: (
+      <p> Bridging to Doge Chain is currently unavailable. </p>
+    ),
+    disableBanner: true,
+    disableWarning: false,
     disableCountdown: true,
   },
 ]

@@ -36,19 +36,19 @@ export const Warning = () => {
       />
     )
   } else if (isChainDoge) {
-    return (
-      <WarningMessage
-        header="Alert: Transactions to Dogechain are temporarily paused."
-        message={
-          <>
-            <p>
-              You may still bridge funds from Dogechain to any supported
-              destination chain.
-            </p>
-          </>
-        }
-      />
-    )
+    // return (
+    //   <WarningMessage
+    //     header="Alert: Transactions to Dogechain are temporarily paused."
+    //     message={
+    //       <>
+    //         <p>
+    //           You may still bridge funds from Dogechain to any supported
+    //           destination chain.
+    //         </p>
+    //       </>
+    //     }
+    //   />
+    // )
   }
 }
 
