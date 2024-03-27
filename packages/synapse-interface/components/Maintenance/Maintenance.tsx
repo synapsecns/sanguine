@@ -69,9 +69,9 @@ const PAUSED_CHAINS: ChainPause[] = [
       </p>
     ),
     progressBarMessage: <p> Base maintenance in progress </p>,
-    disableBanner: true,
-    disableWarning: true,
-    disableCountdown: true,
+    disableBanner: false,
+    disableWarning: false,
+    disableCountdown: false,
   },
 ]
 
