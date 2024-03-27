@@ -12,6 +12,15 @@ import ValueProps from '../ValueProps'
 import Wrapper from '@/components/WipWrapperComponents/Wrapper'
 
 import styles from './keyframes.module.css'
+import { AnyFn } from 'react-spring'
+
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      set: any
+    }
+  }
+}
 
 const LandingPage = () => {
   const { address: currentAddress } = useAccount()
@@ -356,12 +365,13 @@ const LandingPage = () => {
             id="bargeBoxEnd"
             dur="2s"
             begin="bargeMid.end"
-            path="m-590,-95 162.5,81.25"
+            path="m-590,-95 164,82"
             calcMode="spline"
             keyTimes="0; 1"
             keySplines=".5 0 .2 1"
             fill="freeze"
           />
+          <set />
           <animate
             attributeName="opacity"
             values="1; 0"
@@ -504,7 +514,8 @@ const LandingPage = () => {
             fill="freeze"
           />
         </use>
-        <g id="teleporter1">
+
+        <g id="teleportFromOrange" stroke="hsl(25deg 80% 60%)">
           <ellipse
             rx="30"
             ry="15"
@@ -512,10 +523,10 @@ const LandingPage = () => {
             stroke="var(--stroke-synapse)"
             fill="var(--fill-synapse)"
           />
-          <g transform="scale(.25,.25)" stroke="hsl(25deg 80% 60%)">
+          <g transform="scale(.25,.25)">
             <animate
               attributeName="stroke"
-              values="hsl(25deg 80% 60%); hsl(300deg 100% 40%); hsl(135deg 80% 60%)"
+              values="inherit; hsl(300deg 100% 40%); hsl(135deg 80% 60%)"
               dur="3s"
               begin="teleporterBeamsOut.begin + 1s"
               calcMode="spline"
@@ -525,7 +536,7 @@ const LandingPage = () => {
             />
             <animate
               attributeName="stroke"
-              values="hsl(135deg 80% 60%); hsl(300deg 100% 40%); hsl(25deg 80% 60%)"
+              values="hsl(135deg 80% 60%); hsl(300deg 100% 40%); inherit"
               dur="3s"
               begin="teleporterBeamsIn.begin + 1s"
               calcMode="spline"
@@ -649,7 +660,11 @@ const LandingPage = () => {
           />
         </g>
 
-        <g id="teleporter2" transform="translate(520,-260)">
+        <g
+          id="teleportFromGreen"
+          transform="translate(520,-260)"
+          stroke="hsl(135deg 80% 60%)"
+        >
           <ellipse
             rx="30"
             ry="15"
@@ -657,10 +672,10 @@ const LandingPage = () => {
             stroke="var(--stroke-synapse)"
             fill="var(--fill-synapse)"
           />
-          <g transform="scale(.25,.25)" stroke="hsl(25deg 80% 60%)">
+          <g transform="scale(.25,.25)">
             <animate
               attributeName="stroke"
-              values="hsl(135deg 80% 60%); hsl(300deg 100% 40%); hsl(25deg 80% 60%)"
+              values="inherit; hsl(300deg 100% 40%); hsl(25deg 80% 60%)"
               dur="3s"
               begin="teleporterBeamsOut.begin + 1s"
               calcMode="spline"
@@ -670,7 +685,7 @@ const LandingPage = () => {
             />
             <animate
               attributeName="stroke"
-              values="hsl(25deg 80% 60%); hsl(300deg 100% 40%); hsl(135deg 80% 60%)"
+              values="hsl(25deg 80% 60%); hsl(300deg 100% 40%); inherit"
               dur="3s"
               begin="teleporterBeamsIn.begin + 1s"
               calcMode="spline"
@@ -791,24 +806,50 @@ const LandingPage = () => {
         </g>
         <g transform="scale(.25,.25)" stroke="var(--stroke-blue)">
           <animateMotion
+            id="stackOut"
+            dur="1s"
+            begin="0s; stackIn.end + 5s"
+            path="m0,-280 200,100"
+            calcMode="spline"
+            keyTimes="0; 1"
+            keySplines=".5 0 .2 1"
+            fill="freeze"
+          />
+          <animateMotion
             id="airlift"
             dur="2s"
-            begin="0s; airdrop.end + 5s"
+            begin="stackOut.end"
             path="m200,-180 v-50"
             fill="freeze"
           />
           <animateMotion
             id="airpath"
-            dur="5s"
+            dur="4s"
             begin="airlift.end + 1s"
             path="m200,-230 v150"
+            calcMode="spline"
+            keyTimes="0; 1"
+            keySplines=".5 0 .2 1"
             fill="freeze"
           />
           <animateMotion
             id="airdrop"
-            dur=".5s"
-            begin="airpath.end + 1s"
+            dur=".25s"
+            begin="airpath.end"
             path="m200,-80 v50"
+            calcMode="spline"
+            keyTimes="0; 1"
+            keySplines=".33 0 1 1"
+            fill="freeze"
+          />
+          <animateMotion
+            id="stackIn"
+            dur="1s"
+            begin="airdrop.end + .5s"
+            path="m200,-30 174,68"
+            calcMode="spline"
+            keyTimes="0; 1"
+            keySplines=".5 0 .2 1"
             fill="freeze"
           />
           <path
@@ -822,25 +863,65 @@ const LandingPage = () => {
             fill="none"
           />
           <g id="balloon">
-            <animateMotion begin="airlift.begin" path="m0,0" />
+            <animateMotion begin="stackOut.begin" path="m0,0" />
             <animateMotion
               dur="1s"
               begin="airdrop.begin"
               path="m0,0 v-2000"
+              calcMode="spline"
+              keyTimes="0; 1"
+              keySplines="1 0 1 1"
               fill="freeze"
             />
             <path
-              d="m0,-111.8 v-111.8"
               vectorEffect="non-scaling-stroke"
               stroke="var(--stroke-synapse)"
-            />
+            >
+              <animate
+                attributeName="d"
+                values="m0,-111.8 v0"
+                begin="stackOut.begin"
+                fill="freeze"
+              />
+              <animate
+                attributeName="d"
+                values="m0,-111.8 v0; m0,-111.8 v-111.8"
+                begin="airlift.begin"
+                dur="1s"
+                calcMode="spline"
+                keyTimes="0; 1"
+                keySplines=".5 0 .2 1"
+                fill="freeze"
+              />
+            </path>
             <circle
               cy="-370"
-              r="150"
               vectorEffect="non-scaling-stroke"
               stroke="var(--stroke-synapse)"
               fill="var(--fill-synapse)"
-            />
+            >
+              <animate attributeName="r" values="0" begin="stackOut.begin" />
+              <animate
+                attributeName="r"
+                values="0; 150"
+                begin="airlift.begin"
+                dur="2s"
+                calcMode="spline"
+                keyTimes="0; 1"
+                keySplines=".5 0 .2 1"
+                fill="freeze"
+              />
+              <animate
+                attributeName="cy"
+                values="-200; -370"
+                begin="airlift.begin"
+                dur="2s"
+                calcMode="spline"
+                keyTimes="0; 1"
+                keySplines=".5 0 .2 1"
+                fill="freeze"
+              />
+            </circle>
           </g>
         </g>
         <g
@@ -851,6 +932,7 @@ const LandingPage = () => {
         >
           <use href="#box" transform="translate(0,-27.95)" />
           <use href="#box" transform="translate(25,12.5)" />
+          <use href="#box" transform="translate(-50,0)" />
           <use href="#box" transform="translate(-25,12.5)" />
           <use href="#box" transform="translate(0,25)" />
         </g>
