@@ -20,7 +20,11 @@ const MAINTENANCE_BANNERS_START = new Date(Date.UTC(2024, 2, 20, 20, 20, 0))
 /** Countdown Progress Bar, Bridge Warning Message + Bridge Pause start time */
 const MAINTENANCE_START_DATE = new Date(Date.UTC(2024, 2, 20, 20, 20, 0))
 /** Ends Banner, Countdown Progress Bar, Bridge Warning Message, Bridge Pause */
+<<<<<<< HEAD
 const MAINTENANCE_END_DATE = new Date(Date.UTC(2024, 2, 20, 20, 20, 0))
+=======
+const MAINTENANCE_END_DATE = new Date(Date.UTC(2026, 2, 20, 22, 0, 0))
+>>>>>>> master
 
 export const MaintenanceBanner = () => {
   const { isComplete } = getCountdownTimeStatus(
