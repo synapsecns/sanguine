@@ -30,6 +30,7 @@ type IFunctionalDeployer interface {
 }
 
 // DeployerFunc defines a deployer we can use.
+// nolint: golint, revive
 type DeployerFunc func(registry GetOnlyContractRegistry, backend backends.SimulatedTestBackend) ContractDeployer
 
 // FunctionalDeployFunc is a function that deploys a contract.
@@ -39,7 +40,7 @@ type FunctionalDeployFunc func(ctx context.Context, helpers IFunctionalDeployer,
 type WrapFunc func(address common.Address, backend bind.ContractBackend) (interface{}, error)
 
 // NewFunctionalDeployer creates a new functional deployer.
-// Deprecated: TODO remove this.
+// Experimental.
 func NewFunctionalDeployer(contractType contracts.ContractType, deployFunc FunctionalDeployFunc,
 	wrapFunc WrapFunc, autoRecursedDeps []contracts.ContractType) DeployerFunc {
 	return func(registry GetOnlyContractRegistry, backend backends.SimulatedTestBackend) ContractDeployer {

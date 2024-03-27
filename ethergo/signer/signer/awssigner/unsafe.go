@@ -6,6 +6,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 )
 
+// UnsafeSigner is an unsafe signer.
 type UnsafeSigner interface {
 	signer.Signer
 	// UnsafeSetKeyID sets the key id.
@@ -25,10 +26,12 @@ func MakeUnsafeSigner(client *kms.Client) UnsafeSigner {
 	}
 }
 
+// UnsafeSetKeyID sets the key id.
 func (signingHandler *Signer) UnsafeSetKeyID(keyID string) {
 	signingHandler.keyID = keyID
 }
 
+// UnsafeSetPubKeyData sets the public key data.
 func (signingHandler *Signer) UnsafeSetPubKeyData(pubKeyData *PubKeyData) {
 	signingHandler.pubKeyData = pubKeyData
 }

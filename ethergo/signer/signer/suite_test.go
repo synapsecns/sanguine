@@ -97,6 +97,7 @@ func (s *SignerSuite) addSigner(signerType config.SignerType, signer signer.Sign
 
 func (s *SignerSuite) RunOnAllSigners(f func(signer.Signer)) {
 	for _, ts := range s.testSigners {
+		ts := ts // capture range variable
 		s.T().Run(ts.signerType.String(), func(t *testing.T) {
 			f(ts.Signer)
 		})

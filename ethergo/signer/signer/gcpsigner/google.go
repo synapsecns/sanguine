@@ -214,6 +214,7 @@ func (mk *managedKey) Equals(key libp2p.Key) bool {
 }
 
 func (mk *managedKey) Raw() ([]byte, error) {
+	// nolint: wrapcheck
 	return mk.GetPublic().Raw()
 }
 

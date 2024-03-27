@@ -54,6 +54,7 @@ type Backend struct {
 	verifiedMux sync.RWMutex
 }
 
+// VerifiedContract is a contract that has been verified.
 type VerifiedContract struct {
 	contracts.ContractType
 	contracts.DeployedContract

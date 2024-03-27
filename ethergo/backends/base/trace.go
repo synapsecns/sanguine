@@ -12,6 +12,7 @@ import (
 //
 // TODO: this should be able to work with a simulated backend but can't right now.
 // returns address->label.
+// nolint: cyclop, ineffassign, staticcheck, revive, wastedassign
 func (b *Backend) getTransactionLabelMap(tx *types.Transaction, from common.Address) (res map[common.Address]string) {
 	b.verifiedMux.RLock()
 	defer b.verifiedMux.RUnlock()

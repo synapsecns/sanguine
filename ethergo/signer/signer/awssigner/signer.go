@@ -55,14 +55,18 @@ func (signingHandler *Signer) Equals(o libp2p.Key) bool {
 	return signingHandler.GetPublic().Equals(o)
 }
 
+// Raw returns the raw bytes of the public key.
 func (signingHandler *Signer) Raw() ([]byte, error) {
+	// nolint: wrapcheck
 	return signingHandler.GetPublic().Raw()
 }
 
+// Type returns the key type.
 func (signingHandler *Signer) Type() pb.KeyType {
 	return signingHandler.GetPublic().Type()
 }
 
+// Sign signs the bytes.
 func (signingHandler *Signer) Sign(bytes []byte) ([]byte, error) {
 	// TODO: we should figure out a way to respect context here. One possible solution
 	sigBytes, err := signingHandler.SignMessage(context.Background(), bytes, false)
@@ -73,6 +77,7 @@ func (signingHandler *Signer) Sign(bytes []byte) ([]byte, error) {
 	return signer.Encode(sigBytes), nil
 }
 
+// GetPublic gets the libp2p public key.
 func (signingHandler *Signer) GetPublic() libp2p.PubKey {
 	var x, y *secp256k1.FieldVal
 	x = &secp256k1.FieldVal{}
@@ -85,6 +90,7 @@ func (signingHandler *Signer) GetPublic() libp2p.PubKey {
 	return (*libp2p.Secp256k1PublicKey)(pubkey)
 }
 
+// PrivKey returns the private key bytes.
 func (signingHandler *Signer) PrivKey() libp2p.PrivKey {
 	return signingHandler
 }
