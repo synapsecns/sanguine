@@ -47,4 +47,7 @@ interface IMessageBus {
         external
         view
         returns (uint256);
+
+    /// @notice Returns the nonce of MessageBus: the amount of sent messages so far.
+    function nonce() external view returns (uint64);
 }

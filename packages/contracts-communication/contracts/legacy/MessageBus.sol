@@ -8,6 +8,7 @@ import {ICAppV1} from "../apps/ICAppV1.sol";
 
 contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
     uint256 public messageLengthEstimate;
+    uint64 public nonce;
 
     constructor(address admin) ICAppV1(admin) {}
 
