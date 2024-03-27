@@ -22,17 +22,16 @@ export const LinearAnimatedProgressBar = memo(
   }) => {
     const isIndefinite = isNull(endDate)
 
-    let duration
-
-    const synapsePurple = 'hsl(265deg 100% 75%)'
-    const tailwindGreen400 = 'rgb(74 222 128)'
-    const height = 3
     const progressId = `progress-${id}`
     const maskId = `mask-${id}`
+    const height = 3
+    const synapsePurple = 'hsl(265deg 100% 75%)'
+    const tailwindGreen400 = 'rgb(74 222 128)'
+
+    let duration
 
     if (isIndefinite) {
       duration = 'infinite'
-
       return (
         <svg
           id="linear-animated-progress-bar"
@@ -83,28 +82,7 @@ export const LinearAnimatedProgressBar = memo(
             height={height}
             fill={`url(#${progressId})`}
             clipPath={`url(#${maskId})`}
-          >
-            {/* {isComplete && (
-              <animate
-                attributeName="fill"
-                values={`${synapsePurple}; hsl(185deg 100% 40%); ${tailwindGreen400}`}
-                keyTimes="0; .5; 1"
-                dur={duration}
-                fill="freeze"
-              />
-            )} */}
-          </rect>
-          {/* {isComplete && (
-            <animate
-              attributeName="height"
-              values={`${height}; ${height}; 0`}
-              keyTimes="0; .5; 1"
-              calcMode="spline"
-              keySplines="0 0 1 1; .8 0 .2 1"
-              dur={duration * 1.5}
-              fill="freeze"
-            />
-          )} */}
+          ></rect>
         </svg>
       )
     } else {
