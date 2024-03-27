@@ -92,12 +92,16 @@ func getDependencyGraph(repoPath string, typeOfDependency string) (moduleDeps ma
               return nil, nil, fmt.Errorf("failed to add dependency %s -> %s: %w", relativePackageName, relativePackageDependencyName, err)
             }
           }
-
-        for dep := range depGraph.Dependencies(relativePackageName) {
-          moduleDeps[relativePackageName] = append(moduleDeps[relativePackageName], dep)
         }
       }
-    }
+
+      for _, module := range parsedWorkFile.Use {
+        for _, relativePackageName := range packagesPerModule[module.Path] {
+          for dep := range depGraph.Dependencies(relativePackageName) {
+            moduleDeps[relativePackageName] = append(moduleDeps[relativePackageName], dep)
+          }
+        }
+      }
   }
 
 	return moduleDeps, packagesPerModule, nil

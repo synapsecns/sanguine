@@ -19,33 +19,6 @@ import (
 	"strings"
 )
 
-
-func identifyNestedDependencyChange(packageName string, depGraph map[string][]string, ct tree.Tree, packages map[string]bool) (changed bool) {
-  if _, ok := packages[packageName]; ok {
-    return packages[packageName]
-  }
-
-  if ct.HasPath(packageName) {
-    packages[packageName] = true
-    return true
-  }
-
-  deps := depGraph[packageName]
-  changed = false
-
-  if len(deps) != 0 {
-    for _, dep := range deps {
-      changed = identifyNestedDependencyChange(dep, depGraph, ct, packages)
-
-      if changed {
-        break
-      }
-    }
-  }
-
-  packages[packageName] = changed
-  return changed
-}
 // DetectChangedModules is the change detector client.
 // nolint: cyclop
 func DetectChangedModules(repoPath string, ct tree.Tree, includeDeps bool, typeOfDependency string) (modules map[string]bool, err error) {
@@ -112,10 +85,18 @@ func DetectChangedModules(repoPath string, ct tree.Tree, includeDeps bool, typeO
 
       if includeDeps {
         for _, packageName := range packagesPerModule[module.Path] {
-          changed = identifyNestedDependencyChange(packageName, depGraph, ct, packages)
+          for _, dep := range depGraph[packageName] {
+            if ct.HasPath(dep) {
+              changed = true
+            }
 
-          if changed == true {
-            break
+           if changed {
+              break
+            } 
+          }
+          
+          if changed {
+             break
           }
         }
       }
