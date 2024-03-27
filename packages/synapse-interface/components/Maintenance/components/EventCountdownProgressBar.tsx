@@ -1,3 +1,4 @@
+import { isNull } from 'lodash'
 import { LinearAnimatedProgressBar } from './LinearAnimatedProgressBar'
 import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 
@@ -13,12 +14,14 @@ import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 export const useEventCountdownProgressBar = (
   eventLabel: string,
   startDate: Date,
-  endDate: Date
+  endDate: Date | null
 ): {
   isPending: boolean
   isComplete: boolean
   EventCountdownProgressBar: JSX.Element
 } => {
+  let status: 'idle' | 'pending' | 'complete'
+
   const { totalTimeRemainingInMinutes, hoursRemaining, isComplete, isPending } =
     getCountdownTimeStatus(startDate, endDate)
 
@@ -28,8 +31,6 @@ export const useEventCountdownProgressBar = (
     totalTimeRemainingInMinutes > 90
       ? `${hoursRemaining}h`
       : `${totalTimeRemainingInMinutes}m`
-
-  let status: 'idle' | 'pending' | 'complete'
 
   if (isComplete) {
     status = 'complete'
@@ -63,10 +64,12 @@ export const EventCountdownProgressBar = ({
 }: {
   eventLabel: string
   startDate: Date
-  endDate: Date
+  endDate: Date | null
   timeRemaining: string
   status: 'idle' | 'pending' | 'complete'
 }) => {
+  const isIndefinite = isNull(endDate)
+
   if (status === 'pending') {
     return (
       <div
@@ -78,7 +81,7 @@ export const EventCountdownProgressBar = ({
       >
         <div className="flex justify-between px-3 py-2">
           <div>{eventLabel}</div>
-          <div>{timeRemaining} remaining</div>
+          {isIndefinite ? null : <div>{timeRemaining} remaining</div>}
         </div>
         <div className="px-1">
           <LinearAnimatedProgressBar
@@ -94,15 +97,41 @@ export const EventCountdownProgressBar = ({
   }
 }
 
-export const getCountdownTimeStatus = (startDate: Date, endDate: Date) => {
+export const getCountdownTimeStatus = (
+  startDate: Date,
+  endDate: Date | null
+) => {
   const currentDate = new Date()
+
+  const currentTimeInSeconds = Math.floor(currentDate.getTime() / 1000)
+  const startTimeInSeconds = Math.floor(startDate.getTime() / 1000)
+
+  const isStarted = currentTimeInSeconds >= startTimeInSeconds
+  const isIndefinite = isNull(endDate)
+
+  if (isIndefinite) {
+    return {
+      currentDate,
+      currentTimeInSeconds,
+      startTimeInSeconds,
+      endTimeInSeconds: null,
+      totalTimeInSeconds: null,
+      totalTimeElapsedInSeconds: null,
+      totalTimeRemainingInSeconds: null,
+      totalTimeRemainingInMinutes: null,
+      daysRemaining: null,
+      hoursRemaining: null,
+      minutesRemaining: null,
+      secondsRemaining: null,
+      isStarted,
+      isComplete: false,
+      isPending: isStarted,
+    }
+  }
 
   const { daysRemaining, hoursRemaining, minutesRemaining, secondsRemaining } =
     calculateTimeUntilTarget(endDate)
 
-  const currentTimeInSeconds = Math.floor(currentDate.getTime() / 1000)
-
-  const startTimeInSeconds = Math.floor(startDate.getTime() / 1000)
   const endTimeInSeconds = Math.floor(endDate.getTime() / 1000)
   const totalTimeInSeconds = endTimeInSeconds - startTimeInSeconds
 
@@ -112,7 +141,6 @@ export const getCountdownTimeStatus = (startDate: Date, endDate: Date) => {
     totalTimeRemainingInSeconds / 60
   )
 
-  const isStarted = currentTimeInSeconds >= startTimeInSeconds
   const isComplete = totalTimeRemainingInSeconds <= 0
   const isPending = isStarted && !isComplete
 

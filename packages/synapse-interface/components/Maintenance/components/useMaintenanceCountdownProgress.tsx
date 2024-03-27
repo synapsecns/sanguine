@@ -23,7 +23,7 @@ export const useMaintenanceCountdownProgress = ({
   progressBarMessage,
 }: {
   startDate: Date
-  endDate: Date
+  endDate: Date | null
   pausedFromChains: number[]
   pausedToChains: number[]
   progressBarMessage: any

@@ -8,9 +8,9 @@ interface ChainPause {
   pausedFromChains: number[]
   pausedToChains: number[]
   startTime: Date
-  endTime: Date
+  endTime: Date | null // Indefinite if null
   bannerStartTime: Date
-  bannerEndTime: Date
+  bannerEndTime: Date | null // Indefinite if null
   warningMessage: any
   bannerMessage: any
   progressBarMessage: any
@@ -41,6 +41,22 @@ const PAUSED_CHAINS: ChainPause[] = [
     endTime: new Date(Date.UTC(2024, 2, 21, 17, 42, 0)),
     bannerStartTime: new Date(Date.UTC(2024, 2, 21, 17, 40, 0)),
     bannerEndTime: new Date(Date.UTC(2024, 2, 21, 17, 43, 0)),
+    warningMessage: (
+      <p> Base bridging is paused until maintenance is complete. </p>
+    ),
+    bannerMessage: (
+      <p> Base bridging is paused until maintenance is complete. </p>
+    ),
+    progressBarMessage: <p> Base maintenance in progress </p>,
+  },
+  {
+    id: 'base-chain-pause',
+    pausedFromChains: [BASE.id],
+    pausedToChains: [BASE.id],
+    startTime: new Date(Date.UTC(2024, 2, 21, 17, 41, 0)),
+    endTime: null,
+    bannerStartTime: new Date(Date.UTC(2024, 2, 27, 4, 40, 0)),
+    bannerEndTime: null,
     warningMessage: (
       <p> Base bridging is paused until maintenance is complete. </p>
     ),

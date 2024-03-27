@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { getCountdownTimeStatus } from './EventCountdownProgressBar'
+import { isNull } from 'lodash'
 
 /**
  * Reusable automated Announcement Banner with custom Start/End Time
@@ -19,9 +20,17 @@ export const AnnouncementBanner = ({
   bannerId: string
   bannerContents: any
   startDate: Date
-  endDate: Date
+  endDate: Date | null
 }) => {
-  const { isStarted, isComplete } = getCountdownTimeStatus(startDate, endDate)
+  let isBannerStarted = false
+  let isBannerComplete = false
+
+  if (!isNull(endDate)) {
+    const { isStarted, isComplete } = getCountdownTimeStatus(startDate, endDate)
+    isBannerStarted = isStarted
+    isBannerComplete = isComplete
+  }
+
   const [hasMounted, setHasMounted] = useState(false)
   const [showBanner, setShowBanner] = useState(true)
 
@@ -30,7 +39,7 @@ export const AnnouncementBanner = ({
   }, [])
 
   useEffect(() => {
-    if (hasMounted && isStarted && !isComplete) {
+    if (hasMounted && isBannerStarted && !isBannerComplete) {
       const storedShowBanner = localStorage.getItem('showAnnoucementBanner')
       const storedBannerId = localStorage.getItem('bannerId')
 
@@ -45,13 +54,14 @@ export const AnnouncementBanner = ({
   }, [hasMounted])
 
   useEffect(() => {
-    if (hasMounted && isStarted && !isComplete) {
+    if (hasMounted && isBannerStarted && !isBannerComplete) {
       localStorage.setItem('showAnnoucementBanner', showBanner.toString())
       localStorage.setItem('bannerId', bannerId)
     }
   }, [showBanner, hasMounted])
 
-  if (!showBanner || !hasMounted || !isStarted || isComplete) return null
+  if (!showBanner || !hasMounted || !isBannerStarted || isBannerComplete)
+    return null
 
   return (
     <div className="flex items-center justify-center mx-auto text-sm text-left lg:flex-row bg-gradient-to-r from-fuchsia-600/25 to-purple-600/25">
