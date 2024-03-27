@@ -31,3 +31,4 @@ lint: ## lint lints the code with golangci-lint
 	go work sync
 	cd $(CURRENT_PATH)
 	@golangci-lint run --fix --config=$(GIT_ROOT)/.golangci.yml
+
