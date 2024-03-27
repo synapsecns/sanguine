@@ -5,16 +5,16 @@ import {LegacyMessageLibHarness, LegacyMessageLib} from "../harnesses/LegacyMess
 
 import {Test} from "forge-std/Test.sol";
 
+struct LegacyMessage {
+    address srcSender;
+    address dstReceiver;
+    uint64 srcNonce;
+    bytes message;
+}
+
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
 contract LegacyMessageLibTest is Test {
-    struct LegacyMessage {
-        address srcSender;
-        address dstReceiver;
-        uint64 srcNonce;
-        bytes message;
-    }
-
     LegacyMessageLibHarness public libHarness;
 
     function setUp() public {
