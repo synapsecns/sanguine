@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { useDispatch } from 'react-redux'
 import { useAccount, useNetwork } from 'wagmi'
 
-import MiniMaxButton from '../buttons/MiniMaxButton'
+import MiniMaxButton from '@/components/buttons/MiniMaxButton'
 import { TokenSelector } from '@/components/ui/TokenSelector'
 import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
@@ -12,7 +12,6 @@ import {
   ConnectedIndicator,
 } from '@/components/ConnectionIndicators'
 import { ChainSelector } from '@/components/ui/ChainSelector'
-import { useSwapChainListArray } from './hooks/useSwapChainListArray'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import {
   initialState,
@@ -24,7 +23,8 @@ import { useSwapState } from '@/slices/swap/hooks'
 import { BridgeSectionContainer } from '@/components/ui/BridgeSectionContainer'
 import { BridgeAmountContainer } from '@/components/ui/BridgeAmountContainer'
 import { CHAINS_BY_ID } from '@/constants/chains'
-import { useSwapFromTokenListArray } from './hooks/useSwapFromTokenListOverlay'
+import { useSwapChainListArray } from '@/components/StateManagedSwap//hooks/useSwapChainListArray'
+import { useSwapFromTokenListArray } from '@/components/StateManagedSwap/hooks/useSwapFromTokenListOverlay'
 import { AmountInput } from '@/components/ui/AmountInput'
 
 export const SwapInputContainer = () => {

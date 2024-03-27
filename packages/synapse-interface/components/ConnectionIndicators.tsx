@@ -60,9 +60,7 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
     border: 'border border-transparent',
     font: 'text-sm',
     bgHover: getNetworkHover(chain?.color),
-    // bgActive: getNetworkButtonBgClassNameActive(chain?.color),
     borderHover: getNetworkButtonBorderHover(chain?.color),
-    // borderActive: getNetworkButtonBorderActive(chain?.color),
     active: 'hover:active:opacity-80',
   })
 
@@ -84,7 +82,6 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
           Switch Network
         </>
       )}
-      {/* {isConnecting && <LoaderIcon />} */}
     </button>
   )
 }
