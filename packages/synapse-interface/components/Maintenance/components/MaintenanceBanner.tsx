@@ -31,7 +31,9 @@ export const MaintenanceBanner = ({
 }) => {
   const { isComplete } = getCountdownTimeStatus(startDate, endDate)
 
-  useIntervalTimer(60000, isComplete || isNull(endDate))
+  const isIndefinite = isNull(endDate)
+
+  useIntervalTimer(60000, isComplete || isIndefinite)
 
   return (
     <AnnouncementBanner

@@ -61,7 +61,9 @@ const PAUSED_CHAINS: ChainPause[] = [
       <p> Base bridging is paused until maintenance is complete. </p>
     ),
     bannerMessage: (
-      <p> Base bridging is paused until maintenance is complete. </p>
+      <p className="m-auto">
+        Base bridging is paused until maintenance is complete.
+      </p>
     ),
     progressBarMessage: <p> Base maintenance in progress </p>,
   },

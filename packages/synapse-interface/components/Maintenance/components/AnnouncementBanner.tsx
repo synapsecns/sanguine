@@ -22,14 +22,9 @@ export const AnnouncementBanner = ({
   startDate: Date
   endDate: Date | null
 }) => {
-  let isBannerStarted = false
-  let isBannerComplete = false
+  const isIndefinite = isNull(endDate)
 
-  if (!isNull(endDate)) {
-    const { isStarted, isComplete } = getCountdownTimeStatus(startDate, endDate)
-    isBannerStarted = isStarted
-    isBannerComplete = isComplete
-  }
+  const { isStarted, isComplete } = getCountdownTimeStatus(startDate, endDate)
 
   const [hasMounted, setHasMounted] = useState(false)
   const [showBanner, setShowBanner] = useState(true)
@@ -39,7 +34,7 @@ export const AnnouncementBanner = ({
   }, [])
 
   useEffect(() => {
-    if (hasMounted && isBannerStarted && !isBannerComplete) {
+    if (hasMounted && isStarted && !isComplete) {
       const storedShowBanner = localStorage.getItem('showAnnoucementBanner')
       const storedBannerId = localStorage.getItem('bannerId')
 
@@ -54,20 +49,19 @@ export const AnnouncementBanner = ({
   }, [hasMounted])
 
   useEffect(() => {
-    if (hasMounted && isBannerStarted && !isBannerComplete) {
+    if (hasMounted && isStarted && !isComplete) {
       localStorage.setItem('showAnnoucementBanner', showBanner.toString())
       localStorage.setItem('bannerId', bannerId)
     }
   }, [showBanner, hasMounted])
 
-  if (!showBanner || !hasMounted || !isBannerStarted || isBannerComplete)
-    return null
+  if (!showBanner || !hasMounted || !isStarted || isComplete) return null
 
   return (
     <div className="flex items-center justify-center mx-auto text-sm text-left lg:flex-row bg-gradient-to-r from-fuchsia-600/25 to-purple-600/25">
       <div
         id="banner-default"
-        className="flex items-center gap-4 px-4 py-2 w-full max-w-[1111px] text-primaryTextColor justify-between leading-normal"
+        className="flex items-center gap-4 px-4 py-2 w-full max-w-[1111px] text-primaryTextColor justify-center leading-normal"
         role="alert"
       >
         {bannerContents}
