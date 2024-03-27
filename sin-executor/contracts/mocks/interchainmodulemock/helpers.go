@@ -9,6 +9,7 @@ import (
 )
 
 // InterchainModuleMockRef is a reference to an interchain db.
+// nolint: golint
 type InterchainModuleMockRef struct {
 	*InterchainModuleMock
 	// address of the interchain client

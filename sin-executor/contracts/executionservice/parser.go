@@ -52,6 +52,7 @@ func (p parserImpl) ParseEvent(log ethTypes.Log) (_ EventType, event interface{}
 
 	eventType := *nillableEventType
 
+	//nolint: gocritic
 	switch eventType {
 	case ExecutionRequestedEvent:
 		event, err := p.filterer.ParseExecutionRequested(log)

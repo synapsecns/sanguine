@@ -1,3 +1,4 @@
+// Package sqlite provides the sqlite store for the sin-executor.
 package sqlite
 
 import (

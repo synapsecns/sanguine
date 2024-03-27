@@ -9,6 +9,7 @@ import (
 )
 
 // OptionsLibExportRef is a reference to an interchain db.
+// nolint: golint
 type OptionsLibExportRef struct {
 	*OptionsLibMocks
 	// address of the interchain client

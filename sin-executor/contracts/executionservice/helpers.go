@@ -9,6 +9,7 @@ import (
 )
 
 // ExecutionServiceRef is a reference to an interchain db.
+// nolint: golint
 type ExecutionServiceRef struct {
 	*ExecutionService
 	// address of the interchain client

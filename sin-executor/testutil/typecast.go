@@ -48,6 +48,7 @@ func (d *DeployManager) GetInterchainAppMock(ctx context.Context, backend backen
 	return manager.GetContract[*interchainapp.InterchainAppMockRef](ctx, d.T(), d, backend, InterchainApp)
 }
 
+// GetExecutionService gets the execution service.
 func (d *DeployManager) GetExecutionService(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *executionservice.ExecutionServiceRef) {
 	d.T().Helper()
 

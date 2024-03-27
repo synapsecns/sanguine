@@ -14,6 +14,7 @@ type Store struct {
 	submitterStore submitterDB.Service
 }
 
+// NewStore creates a new store.
 func NewStore(db *gorm.DB, metrics metrics.Handler) *Store {
 	txDB := txdb.NewTXStore(db, metrics)
 

@@ -20,6 +20,7 @@ type Config struct {
 	SubmitterConfig submitterConfig.Config `yaml:"submitter_config"`
 }
 
+// ChainConfig represents the configuration for a chain.
 type ChainConfig struct {
 	// ChainID is the chain ID.
 	ChainID int `yaml:"id"`

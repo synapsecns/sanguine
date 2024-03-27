@@ -1,3 +1,4 @@
+// Package main is the entrypoint to the sin-executor.
 package main
 
 import (

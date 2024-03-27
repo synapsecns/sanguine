@@ -75,7 +75,7 @@ var (
 			return interchaindb.NewInterchainDBRef(address, backend)
 		}, []contracts.ContractType{})
 
-	interchainModuleMockDeployer = deployer.NewFunctionalDeployer(InterchainModuleMock, func(ctx context.Context, helpers deployer.IFunctionalDeployer, transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+	interchainModuleMockDeployer = deployer.NewFunctionalDeployer(InterchainModuleMock, func(_ context.Context, _ deployer.IFunctionalDeployer, transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return interchainmodulemock.DeployInterchainModuleMock(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return interchainmodulemock.NewInterchainModuleMockRef(address, backend)
@@ -108,7 +108,7 @@ var (
 		return interchainapp.NewInterchainAppRef(address, backend)
 	}, []contracts.ContractType{InterchainClient, InterchainModuleMock})
 
-	optionsLibMock = deployer.NewFunctionalDeployer(OptionsLib, func(ctx context.Context, helpers deployer.IFunctionalDeployer, transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+	optionsLibMock = deployer.NewFunctionalDeployer(OptionsLib, func(_ context.Context, _ deployer.IFunctionalDeployer, transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return optionslibexport.DeployOptionsLibMocks(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return optionslibexport.NewOptionsLibExportRef(address, backend)
@@ -138,13 +138,13 @@ var (
 		return executionservice.NewExecutionServiceRef(address, backend)
 	}, []contracts.ContractType{GasOracleMock, InterchainClient})
 
-	executionFeesMock = deployer.NewFunctionalDeployer(ExecutionFeesMock, func(ctx context.Context, helpers deployer.IFunctionalDeployer, transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+	executionFeesMock = deployer.NewFunctionalDeployer(ExecutionFeesMock, func(_ context.Context, _ deployer.IFunctionalDeployer, transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return executionfeesmock.DeployExecutionFeesMock(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return executionfeesmock.NewExecutionfeesMockRef(address, backend)
 	}, []contracts.ContractType{})
 
-	gasOracleMock = deployer.NewFunctionalDeployer(GasOracleMock, func(ctx context.Context, helpers deployer.IFunctionalDeployer, transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+	gasOracleMock = deployer.NewFunctionalDeployer(GasOracleMock, func(_ context.Context, _ deployer.IFunctionalDeployer, transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		return gasoraclemock.DeploySynapseGasOracleMock(transactOps, backend)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
 		return gasoraclemock.NewGasOracleMockRef(address, backend)

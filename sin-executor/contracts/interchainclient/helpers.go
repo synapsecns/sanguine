@@ -9,6 +9,7 @@ import (
 )
 
 // InterchainClientRef is a reference to an interchain client.
+// nolint: golint
 type InterchainClientRef struct {
 	*InterchainClientV1
 	// address of the interchain client

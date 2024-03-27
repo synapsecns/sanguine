@@ -29,6 +29,7 @@ type InterchainTransaction struct {
 	EncodedTx string `gorm:"column:encoded_tx"`
 }
 
+// ToTransactionSent converts the interchain transaction to a transaction sent.
 func (s InterchainTransaction) ToTransactionSent() (db.TransactionSent, error) {
 	airdrop, ok := new(big.Int).SetString(s.GasAirdrop, 10)
 	if !ok {
@@ -65,6 +66,7 @@ func fromInterchainTX(chainID *big.Int, interchainTx *interchainclient.Interchai
 	}
 }
 
+// StoreInterchainTransaction stores the interchain transaction.
 func (s Store) StoreInterchainTransaction(ctx context.Context, originChainID *big.Int, interchainTx *interchainclient.InterchainClientV1InterchainTransactionSent, options *interchainclient.OptionsV1, encodedTX []byte) error {
 	dbTx := s.db.WithContext(ctx).Model(&InterchainTransaction{}).Clauses(clause.OnConflict{DoNothing: true}).Create(fromInterchainTX(originChainID, interchainTx, options, encodedTX))
 	if dbTx.Error != nil {
@@ -74,6 +76,7 @@ func (s Store) StoreInterchainTransaction(ctx context.Context, originChainID *bi
 	return nil
 }
 
+// GetInterchainTXsByStatus gets the interchain transactions by status.
 func (s Store) GetInterchainTXsByStatus(ctx context.Context, matchStatuses ...db.ExecutableStatus) (res []db.TransactionSent, err error) {
 	var interchainTransactions []InterchainTransaction
 
@@ -98,6 +101,7 @@ func (s Store) GetInterchainTXsByStatus(ctx context.Context, matchStatuses ...db
 	return res, nil
 }
 
+// UpdateInterchainTransactionStatus updates the interchain transaction status.
 func (s Store) UpdateInterchainTransactionStatus(ctx context.Context, transactionid [32]byte, status db.ExecutableStatus) error {
 	tx := s.DB().WithContext(ctx).Model(&InterchainTransaction{}).Where(fmt.Sprintf("%s = ?", transactionIDFieldName), common.Bytes2Hex(transactionid[:])).Update(statusFieldName, status)
 	if tx.Error != nil {

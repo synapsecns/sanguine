@@ -1,3 +1,4 @@
+// Package executor provides the core executor for the Synapse module.
 package executor
 
 import (
@@ -102,6 +103,7 @@ func NewExecutor(ctx context.Context, handler metrics.Handler, cfg config.Config
 	return executor, nil
 }
 
+// Start starts the executor.
 func (e *Executor) Start(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
 
@@ -136,7 +138,7 @@ func (e *Executor) Start(ctx context.Context) error {
 	return nil
 }
 
-// nolint: cylop
+// nolint: cyclop
 func (e *Executor) runDBSelector(ctx context.Context) error {
 	for {
 		select {
@@ -149,6 +151,7 @@ func (e *Executor) runDBSelector(ctx context.Context) error {
 			}
 
 			for _, request := range dbItems {
+				// nolint: exhaustive
 				switch request.Status {
 				case db.Seen:
 					err := e.checkReady(ctx, request)
@@ -294,6 +297,7 @@ func (e *Executor) runChainIndexer(parentCtx context.Context, chainID int) (err 
 				continue
 			}
 
+			// nolint: gocritic
 			switch event := parsedEvent.(type) {
 			case *interchainclient.InterchainClientV1InterchainTransactionSent:
 				encodedTX, err := e.clientContracts[chainID].EncodeTransaction(&bind.CallOpts{Context: ctx}, interchainclient.InterchainTransaction{

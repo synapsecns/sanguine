@@ -104,7 +104,7 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	case ExecutionService:
 		return executionservice.Contracts["solidity/ExecutionService.sol:ExecutionService"]
 	case ExecutionFeesMock:
-		return executionfeesmock.Contracts["solidity/ExecutionfeesMock.sol:ExecutionFeesMock"]
+		return executionfeesmock.Contracts["solidity/ExecutionFeesMock.sol:ExecutionFeesMock"]
 	case GasOracleMock:
 		return gasoraclemock.Contracts["solidity/SynapseGasOracleMock.sol:SynapseGasOracleMock"]
 	}

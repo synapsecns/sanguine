@@ -9,6 +9,7 @@ import (
 )
 
 // InterchainDBRef is a reference to an interchain db.
+// nolint: golint
 type InterchainDBRef struct {
 	*InterchainDB
 	// address of the interchain client
