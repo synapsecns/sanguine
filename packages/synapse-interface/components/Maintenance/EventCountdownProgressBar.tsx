@@ -24,6 +24,8 @@ export const useEventCountdownProgressBar = (
 
   useIntervalTimer(60000, isComplete)
 
+  const isIndefinite: boolean = totalTimeRemainingInMinutes > 7000
+
   const timeRemaining: string =
     totalTimeRemainingInMinutes > 90
       ? `${hoursRemaining}h`
@@ -49,6 +51,7 @@ export const useEventCountdownProgressBar = (
         endDate={endDate}
         timeRemaining={timeRemaining}
         status={status}
+        isIndefinite={isIndefinite}
       />
     ),
   }
@@ -60,12 +63,14 @@ export const EventCountdownProgressBar = ({
   endDate,
   timeRemaining,
   status,
+  isIndefinite,
 }: {
   eventLabel: string
   startDate: Date
   endDate: Date
   timeRemaining: string
   status: 'idle' | 'pending' | 'complete'
+  isIndefinite: boolean
 }) => {
   if (status === 'pending') {
     return (
@@ -78,15 +83,18 @@ export const EventCountdownProgressBar = ({
       >
         <div className="flex justify-between px-3 py-2">
           <div>{eventLabel}</div>
-          <div>{timeRemaining} remaining</div>
+          {isIndefinite ? null : <div>{timeRemaining} remaining</div>}
         </div>
-        <div className="px-1">
-          <LinearAnimatedProgressBar
-            id="event-countdown-progress-bar"
-            startDate={startDate}
-            endDate={endDate}
-          />
-        </div>
+
+        {isIndefinite ? null : (
+          <div className="px-1">
+            <LinearAnimatedProgressBar
+              id="event-countdown-progress-bar"
+              startDate={startDate}
+              endDate={endDate}
+            />
+          </div>
+        )}
       </div>
     )
   } else {

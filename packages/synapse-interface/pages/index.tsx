@@ -23,12 +23,12 @@ const Home = () => {
           data-test-id="bridge-page"
           className="relative z-0 flex-1 h-full overflow-y-auto focus:outline-none"
         >
-          <AnnouncementBanner
+          {/* <AnnouncementBanner
             bannerId="2024-03-26-blast-bridge-pause"
             bannerContents="Bridging USDB and WETH on Blast paused."
             startDate={new Date(Date.UTC(2024, 2, 20, 20, 20, 0))}
             endDate={new Date(Date.UTC(2026, 2, 20, 22, 0, 0))}
-          />
+          /> */}
           <div className="flex flex-col-reverse justify-center gap-16 px-4 py-20 mx-auto lg:flex-row 2xl:w-3/4 sm:mt-6 sm:px-8 md:px-12">
             <Portfolio />
             <StateManagedBridge />
