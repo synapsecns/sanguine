@@ -23,10 +23,10 @@ func (d *DetectorSuite) TestChangedModules() {
 	ct, err := detector.GetChangeTree(d.GetTestContext(), d.sourceRepo.dir, "", "", "main")
 	Nil(d.T(), err, "should not return an error")
 
-	withDeps, err := detector.DetectChangedModules(d.sourceRepo.dir, ct, true)
+	withDeps, err := detector.DetectChangedModules(d.sourceRepo.dir, ct, true, "modules")
 	Nil(d.T(), err, "should not return an error")
 
-	withoutDeps, err := detector.DetectChangedModules(d.sourceRepo.dir, ct, false)
+	withoutDeps, err := detector.DetectChangedModules(d.sourceRepo.dir, ct, false, "modules")
 	Nil(d.T(), err, "should not return an error")
 
 	False(d.T(), withoutDeps["./cmd/app1"])
@@ -41,7 +41,7 @@ func (d *DetectorSuite) TestChangedModules() {
 }
 
 func (d *DetectorSuite) TestGetDependencyDag() {
-	deps, err := detector.GetDependencyDag(d.sourceRepo.dir)
+	deps, _, err := detector.GetDependencyDag(d.sourceRepo.dir)
 	Nil(d.T(), err, "should not return an error")
 
 	Equal(d.T(), deps["./cmd/app1"], []string{"./lib"})

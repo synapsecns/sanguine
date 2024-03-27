@@ -5,8 +5,8 @@ import (
 	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/actionscore"
 )
 
-func GetDependencyDag(repoPath string) (map[string][]string, error) {
-	return getDependencyGraph(repoPath)
+func GetDependencyDag(repoPath string) (map[string][]string, map[string][]string, error) {
+	return getDependencyGraph(repoPath, "modules")
 }
 
 func GetHead(repo *git.Repository, ghContext *actionscore.Context, head string) (string, error) {
