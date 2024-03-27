@@ -3,6 +3,7 @@ pragma solidity 0.8.20;
 
 import {MessageBusEvents} from "./events/MessageBusEvents.sol";
 import {IMessageBus} from "./interfaces/IMessageBus.sol";
+import {ILegacyReceiver} from "./interfaces/ILegacyReceiver.sol";
 import {LegacyMessageLib} from "./libs/LegacyMessage.sol";
 import {LegacyOptionsLib} from "./libs/LegacyOptions.sol";
 
@@ -30,6 +31,7 @@ contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
             revert MessageBus__NotEVMReceiver(receiver);
         }
         uint64 cachedNonce = nonce++;
+        // TODO: do we want to include dbNonce/entryIndex here to enforce non-replayability?
         bytes memory encodedLegacyMsg = LegacyMessageLib.encodeLegacyMessage({
             srcSender: msg.sender,
             dstReceiver: dstReceiver,
@@ -85,12 +87,28 @@ contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
         bytes32 sender,
         uint256 dbNonce,
         uint64 entryIndex,
-        bytes calldata message
+        bytes calldata encodedLegacyMsg
     )
         internal
         override
     {
-        // TODO: implement
+        (address srcSender, address dstReceiver, uint64 srcNonce, bytes memory message) =
+            LegacyMessageLib.decodeLegacyMessage(encodedLegacyMsg);
+        // TODO: do we want to enforce non-replayability here, or do we rely on InterchainClient?
+        ILegacyReceiver(dstReceiver).executeMessage({
+            srcAddress: TypeCasts.addressToBytes32(srcSender),
+            srcChainId: srcChainId,
+            message: message,
+            // TODO: this is Interchain Client address. Do we need executor EOA instead (tx.origin)?
+            executor: msg.sender
+        });
+        emit Executed({
+            messageId: keccak256(encodedLegacyMsg),
+            status: TxStatus.Success,
+            dstAddress: dstReceiver,
+            srcChainId: uint64(srcChainId),
+            srcNonce: srcNonce
+        });
     }
 
     function _icOptionsV1(bytes calldata options) internal view returns (OptionsV1 memory) {
