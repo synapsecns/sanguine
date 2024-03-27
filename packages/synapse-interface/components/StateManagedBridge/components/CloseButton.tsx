@@ -1,13 +1,19 @@
 import { XIcon } from '@heroicons/react/outline'
 
-export const CloseButton = ({ onClick }: { onClick: () => void }) => {
+export const CloseButton = ({
+  onClick,
+  className,
+}: {
+  onClick: () => void
+  className?: string
+}) => {
   return (
     <button
       className={`
         flex items-center justify-center
-        w-8 h-8
+        absolute right-2 w-8 h-8
         hover:cursor-pointer
-        absolute right-2
+        ${className}
       `}
       onClick={onClick}
     >
