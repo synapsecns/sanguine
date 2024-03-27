@@ -1,14 +1,24 @@
-import { useAccount, useNetwork } from 'wagmi'
-import { useSelector } from 'react-redux'
-import { RootState } from '../../store/store'
 import toast from 'react-hot-toast'
+import { useEffect, useRef, useState } from 'react'
+import { Transition } from '@headlessui/react'
+import { isAddress } from '@ethersproject/address'
+import { commify } from '@ethersproject/units'
+import { useAccount } from 'wagmi'
+import {
+  waitForTransaction,
+  getWalletClient,
+  getPublicClient,
+} from '@wagmi/core'
+import { Address, zeroAddress } from 'viem'
+import { polygon } from 'viem/chains'
 import { animated } from 'react-spring'
 import { useRouter } from 'next/router'
+import { useAppDispatch } from '@/store/hooks'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-
-import { useBridgeState } from '@/slices/bridge/hooks'
+import { useBridgeState, useBridgeDisplayState } from '@/slices/bridge/hooks'
 import {
   BridgeState,
+  clearDestinationAddress,
   setFromChainId,
   setFromToken,
   setToChainId,
@@ -20,81 +30,61 @@ import {
   setIsLoading,
   setDestinationAddress,
 } from '@/slices/bridge/reducer'
-
-import {
-  setShowDestinationAddress,
-  setShowFromTokenListOverlay,
-  setShowSettingsSlideOver,
-} from '@/slices/bridgeDisplaySlice'
-
-import { EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
-
-import { useSynapseContext } from '@/utils/providers/SynapseProvider'
-import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
-import { commify } from '@ethersproject/units'
-import { formatBigIntToString } from '@/utils/bigint/format'
-import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
-import { useEffect, useRef, useState, useMemo } from 'react'
-import { Token } from '@/utils/types'
-import {
-  getWalletClient,
-  getPublicClient,
-  prepareSendTransaction,
-} from '@wagmi/core'
-import { txErrorHandler } from '@/utils/txErrorHandler'
-import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
-import { approveToken } from '@/utils/approveToken'
-import { PageHeader } from '@/components/PageHeader'
-import Card from '@/components/ui/tailwind/Card'
-import BridgeExchangeRateInfo from '@/components/StateManagedBridge/BridgeExchangeRateInfo'
-import { Transition } from '@headlessui/react'
-import {
-  SECTION_TRANSITION_PROPS,
-  TRANSITION_PROPS,
-} from '@/styles/transitions'
-import { InputContainer } from '@/components/StateManagedBridge/InputContainer'
-import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer'
-import SettingsSlideOver from '@/components/StateManagedBridge/SettingsSlideOver'
-import Button from '@/components/ui/tailwind/Button'
-import { SettingsIcon } from '@/components/icons/SettingsIcon'
-import { DestinationAddressInput } from '@/components/StateManagedBridge/DestinationAddressInput'
-import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
-import ExplorerToastLink from '@/components/ExplorerToastLink'
-import { polygon } from 'viem/chains'
-import { Address, zeroAddress, isAddress } from 'viem'
-import { stringToBigInt } from '@/utils/bigint/format'
-import { Warning } from '@/components/Warning'
-import { useAppDispatch } from '@/store/hooks'
 import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
 import {
   updatePendingBridgeTransaction,
   addPendingBridgeTransaction,
   removePendingBridgeTransaction,
 } from '@/slices/transactions/actions'
-import { getTimeMinutesFromNow } from '@/utils/time'
+import { PageHeader } from '@/components/PageHeader'
+import Card from '@/components/ui/tailwind/Card'
+import BridgeExchangeRateInfo from '@/components/StateManagedBridge/BridgeExchangeRateInfo'
+import {
+  SECTION_TRANSITION_PROPS,
+  TRANSITION_PROPS,
+} from '@/styles/transitions'
+import { InputContainer } from '@/components/StateManagedBridge/InputContainer'
+import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer'
+import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
+import ExplorerToastLink from '@/components/ExplorerToastLink'
+import { stringToBigInt } from '@/utils/bigint/format'
+import { Warning } from '@/components/Warning'
 import { FromChainListOverlay } from '@/components/StateManagedBridge/FromChainListOverlay'
 import { ToChainListOverlay } from '@/components/StateManagedBridge/ToChainListOverlay'
 import { FromTokenListOverlay } from '@/components/StateManagedBridge/FromTokenListOverlay'
 import { ToTokenListOverlay } from '@/components/StateManagedBridge/ToTokenListOverlay'
 
-import { waitForTransaction } from '@wagmi/core'
-import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { SwitchButton } from '@/components/buttons/SwitchButton'
+import { getTimeMinutesFromNow } from '@/utils/time'
+import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
+import { useSynapseContext } from '@/utils/providers/SynapseProvider'
+import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
+import { formatBigIntToString } from '@/utils/bigint/format'
+import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
+import { Token } from '@/utils/types'
+import { txErrorHandler } from '@/utils/txErrorHandler'
+import { approveToken } from '@/utils/approveToken'
+import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
+import { EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
+import { ConfirmDestinationAddressWarning } from '@/components/StateManagedBridge/BridgeWarnings'
+import SettingsSlideOver from '@/components/StateManagedBridge/SettingsSlideOver'
+import Button from '@/components/ui/tailwind/Button'
+import { SettingsIcon } from '@/components/icons/SettingsIcon'
+import {
+  setShowDestinationAddress,
+  setShowSettingsSlideOver,
+} from '@/slices/bridgeDisplaySlice'
 import {
   MaintenanceWarningMessage,
   useMaintenanceCountdownProgress,
 } from '@/components/Maintenance/Events/template/MaintenanceEvent'
 
 const StateManagedBridge = () => {
-  const { address } = useAccount()
-  const { chain } = useNetwork()
-  const { synapseSDK } = useSynapseContext()
-  const bridgeDisplayRef = useRef(null)
-  const currentSDKRequestID = useRef(0)
-  const quoteToastRef = useRef({ id: '' })
   const router = useRouter()
   const { query, pathname } = router
-
+  const dispatch = useAppDispatch()
+  const { address } = useAccount()
+  const { synapseSDK } = useSynapseContext()
   const {
     fromChainId,
     toChainId,
@@ -105,17 +95,23 @@ const StateManagedBridge = () => {
     destinationAddress,
   }: BridgeState = useBridgeState()
   const {
-    showSettingsSlideOver,
-    showDestinationAddress,
     showFromChainListOverlay,
     showToChainListOverlay,
     showFromTokenListOverlay,
     showToTokenListOverlay,
-  } = useSelector((state: RootState) => state.bridgeDisplay)
+    showSettingsSlideOver,
+  } = useBridgeDisplayState()
 
+  const bridgeDisplayRef = useRef(null)
+  const currentSDKRequestID = useRef(0)
+  const quoteToastRef = useRef({ id: '' })
   const [isApproved, setIsApproved] = useState(false)
 
-  const dispatch = useAppDispatch()
+  /** Clear Destination Address on Bridge Page load */
+  useEffect(() => {
+    dispatch(clearDestinationAddress())
+    dispatch(setShowDestinationAddress(false))
+  }, [])
 
   useEffect(() => {
     segmentAnalyticsEvent(`[Bridge page] arrives`, {
@@ -451,8 +447,6 @@ const StateManagedBridge = () => {
         })
       )
       dispatch(setBridgeQuote(EMPTY_BRIDGE_QUOTE_ZERO))
-      dispatch(setDestinationAddress(null))
-      dispatch(setShowDestinationAddress(false))
       dispatch(updateFromValue(''))
 
       const successToastContent = (
@@ -607,12 +601,10 @@ const StateManagedBridge = () => {
             >
               <BridgeExchangeRateInfo />
             </Transition>
-            {showDestinationAddress && (
-              <DestinationAddressInput
-                toChainId={toChainId}
-                destinationAddress={destinationAddress}
-              />
-            )}
+
+            {/* TODO: Have warning be reusable */}
+            <ConfirmDestinationAddressWarning />
+
             <div className="md:my-3">
               <BridgeTransactionButton
                 isApproved={isApproved}

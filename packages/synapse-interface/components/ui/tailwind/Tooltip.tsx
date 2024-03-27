@@ -17,7 +17,7 @@ const Tooltip = ({
   const tooltipRef = createRef<HTMLDivElement>()
   const openLeftTooltip = () => {
     createPopper(btnRef.current, tooltipRef.current, {
-      placement: 'bottom',
+      placement: 'top',
     })
     setTooltipShow(true)
   }

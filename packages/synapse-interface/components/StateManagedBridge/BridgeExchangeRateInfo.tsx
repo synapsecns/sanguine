@@ -1,8 +1,10 @@
 import { useMemo } from 'react'
 import { useBridgeState } from '@/slices/bridge/hooks'
+import { useAccount } from 'wagmi'
 import { useCoingeckoPrice } from '@hooks/useCoingeckoPrice'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { formatBigIntToPercentString } from '@/utils/bigint/format'
+import { getValidAddress, isValidAddress } from '@/utils/isValidAddress'
 import { EMPTY_BRIDGE_QUOTE } from '@/constants/bridge'
 import { CHAINS_BY_ID } from '@constants/chains'
 import * as CHAINS from '@constants/chains/master'
@@ -15,9 +17,32 @@ const BridgeExchangeRateInfo = () => {
         <GasDropLabel />
         <Router />
         <Slippage />
+        <DestinationAddress />
       </section>
     </div>
   )
+}
+
+const DestinationAddress = () => {
+  const { address } = useAccount()
+  const { destinationAddress } = useBridgeState()
+
+  const showAddress =
+    destinationAddress &&
+    getValidAddress(address) !== getValidAddress(destinationAddress)
+
+  const isInputValidAddress: boolean = destinationAddress
+    ? isValidAddress(destinationAddress)
+    : false
+
+  if (showAddress && isInputValidAddress) {
+    return (
+      <div className="flex items-center space-x-1">
+        <div>To: </div>
+        <div className="text-primary">{destinationAddress}</div>
+      </div>
+    )
+  }
 }
 
 const Slippage = () => {
