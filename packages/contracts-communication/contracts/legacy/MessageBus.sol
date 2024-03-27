@@ -3,9 +3,11 @@ pragma solidity 0.8.20;
 
 import {MessageBusEvents} from "./events/MessageBusEvents.sol";
 import {IMessageBus} from "./interfaces/IMessageBus.sol";
+import {LegacyMessageLib} from "./libs/LegacyMessage.sol";
 import {LegacyOptionsLib} from "./libs/LegacyOptions.sol";
 
 import {ICAppV1, OptionsV1} from "../apps/ICAppV1.sol";
+import {TypeCasts} from "../libs/TypeCasts.sol";
 
 contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
     uint256 public messageLengthEstimate;
@@ -23,7 +25,34 @@ contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
         external
         payable
     {
-        // TODO: implement
+        address dstReceiver = TypeCasts.bytes32ToAddress(receiver);
+        if (TypeCasts.addressToBytes32(dstReceiver) != receiver) {
+            revert MessageBus__NotEVMReceiver(receiver);
+        }
+        uint64 cachedNonce = nonce++;
+        bytes memory encodedLegacyMsg = LegacyMessageLib.encodeLegacyMessage({
+            srcSender: msg.sender,
+            dstReceiver: dstReceiver,
+            srcNonce: cachedNonce,
+            message: message
+        });
+        _sendToLinkedApp({
+            dstChainId: dstChainId,
+            messageFee: msg.value,
+            options: _icOptionsV1(options),
+            message: encodedLegacyMsg
+        });
+        emit MessageSent({
+            sender: msg.sender,
+            srcChainID: block.chainid,
+            receiver: receiver,
+            dstChainId: dstChainId,
+            message: message,
+            nonce: cachedNonce,
+            options: options,
+            fee: msg.value,
+            messageId: keccak256(encodedLegacyMsg)
+        });
     }
 
     /// @inheritdoc IMessageBus
