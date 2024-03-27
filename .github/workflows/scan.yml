@@ -12,7 +12,8 @@ jobs:
   sonarcloud:
     name: SonarCloud
     runs-on: ubuntu-latest
-# these are pretty disruptive
+    if: github.repository_owner == 'synapsecns'
+    # these are pretty disruptive
 #    permissions:
 #      contents: write
 #      pull-requests: write
