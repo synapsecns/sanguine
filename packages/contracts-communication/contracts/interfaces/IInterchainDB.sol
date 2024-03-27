@@ -5,14 +5,6 @@ import {InterchainEntry} from "../libs/InterchainEntry.sol";
 import {InterchainBatch} from "../libs/InterchainBatch.sol";
 
 interface IInterchainDB {
-    /// @notice Struct representing an entry from the local Interchain DataBase.
-    /// @param writer       The address of the writer on the local chain
-    /// @param dataHash     The hash of the data written on the local chain
-    struct LocalEntry {
-        address writer;
-        bytes32 dataHash;
-    }
-
     /// @notice Struct representing a batch of entries from the remote Interchain DataBase,
     /// verified by the Interchain Module.
     /// @param verifiedAt   The block timestamp at which the entry was verified by the module
@@ -123,13 +115,14 @@ interface IInterchainDB {
     /// @param dbNonce      The database nonce of the finalized batch
     function getBatch(uint256 dbNonce) external view returns (InterchainBatch memory);
 
-    /// @notice Get the Interchain Entry written on the local chain with the given batch nonce and entry index.
-    /// Note: the batch does not have to be finalized to fetch the local entry.
+    /// @notice Get the Interchain Entry's value written on the local chain with the given batch nonce and entry index.
+    /// Entry value is calculated as the hash of the writer address and the written data hash.
+    /// Note: the batch does not have to be finalized to fetch the entry value.
     /// @dev Will revert if the batch with the given nonce does not exist,
     /// or the entry with the given index does not exist within the batch.
     /// @param dbNonce      The database nonce of the existing batch
     /// @param entryIndex   The index of the written entry within the batch
-    function getEntry(uint256 dbNonce, uint64 entryIndex) external view returns (InterchainEntry memory);
+    function getEntryValue(uint256 dbNonce, uint64 entryIndex) external view returns (bytes32);
 
     /// @notice Get the Merkle proof of inclusion for the entry with the given index
     /// in the finalized batch with the given nonce.
