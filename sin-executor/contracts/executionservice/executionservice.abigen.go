@@ -29,113 +29,1376 @@ var (
 	_ = abi.ConvertType
 )
 
-// ContextMetaData contains all meta data concerning the Context contract.
-var ContextMetaData = &bind.MetaData{
-	ABI: "[]",
+// AccessControlUpgradeableMetaData contains all meta data concerning the AccessControlUpgradeable contract.
+var AccessControlUpgradeableMetaData = &bind.MetaData{
+	ABI: "[{\"inputs\":[],\"name\":\"AccessControlBadConfirmation\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"neededRole\",\"type\":\"bytes32\"}],\"name\":\"AccessControlUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidInitialization\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInitializing\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"version\",\"type\":\"uint64\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"callerConfirmation\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	Sigs: map[string]string{
+		"a217fddf": "DEFAULT_ADMIN_ROLE()",
+		"248a9ca3": "getRoleAdmin(bytes32)",
+		"2f2ff15d": "grantRole(bytes32,address)",
+		"91d14854": "hasRole(bytes32,address)",
+		"36568abe": "renounceRole(bytes32,address)",
+		"d547741f": "revokeRole(bytes32,address)",
+		"01ffc9a7": "supportsInterface(bytes4)",
+	},
 }
 
-// ContextABI is the input ABI used to generate the binding from.
-// Deprecated: Use ContextMetaData.ABI instead.
-var ContextABI = ContextMetaData.ABI
+// AccessControlUpgradeableABI is the input ABI used to generate the binding from.
+// Deprecated: Use AccessControlUpgradeableMetaData.ABI instead.
+var AccessControlUpgradeableABI = AccessControlUpgradeableMetaData.ABI
 
-// Context is an auto generated Go binding around an Ethereum contract.
-type Context struct {
-	ContextCaller     // Read-only binding to the contract
-	ContextTransactor // Write-only binding to the contract
-	ContextFilterer   // Log filterer for contract events
+// Deprecated: Use AccessControlUpgradeableMetaData.Sigs instead.
+// AccessControlUpgradeableFuncSigs maps the 4-byte function signature to its string representation.
+var AccessControlUpgradeableFuncSigs = AccessControlUpgradeableMetaData.Sigs
+
+// AccessControlUpgradeable is an auto generated Go binding around an Ethereum contract.
+type AccessControlUpgradeable struct {
+	AccessControlUpgradeableCaller     // Read-only binding to the contract
+	AccessControlUpgradeableTransactor // Write-only binding to the contract
+	AccessControlUpgradeableFilterer   // Log filterer for contract events
 }
 
-// ContextCaller is an auto generated read-only Go binding around an Ethereum contract.
-type ContextCaller struct {
+// AccessControlUpgradeableCaller is an auto generated read-only Go binding around an Ethereum contract.
+type AccessControlUpgradeableCaller struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// ContextTransactor is an auto generated write-only Go binding around an Ethereum contract.
-type ContextTransactor struct {
+// AccessControlUpgradeableTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type AccessControlUpgradeableTransactor struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// ContextFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
-type ContextFilterer struct {
+// AccessControlUpgradeableFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type AccessControlUpgradeableFilterer struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// ContextSession is an auto generated Go binding around an Ethereum contract,
+// AccessControlUpgradeableSession is an auto generated Go binding around an Ethereum contract,
 // with pre-set call and transact options.
-type ContextSession struct {
-	Contract     *Context          // Generic contract binding to set the session for
-	CallOpts     bind.CallOpts     // Call options to use throughout this session
-	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
+type AccessControlUpgradeableSession struct {
+	Contract     *AccessControlUpgradeable // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts             // Call options to use throughout this session
+	TransactOpts bind.TransactOpts         // Transaction auth options to use throughout this session
 }
 
-// ContextCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// AccessControlUpgradeableCallerSession is an auto generated read-only Go binding around an Ethereum contract,
 // with pre-set call options.
-type ContextCallerSession struct {
-	Contract *ContextCaller // Generic contract caller binding to set the session for
-	CallOpts bind.CallOpts  // Call options to use throughout this session
+type AccessControlUpgradeableCallerSession struct {
+	Contract *AccessControlUpgradeableCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts                   // Call options to use throughout this session
 }
 
-// ContextTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// AccessControlUpgradeableTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
 // with pre-set transact options.
-type ContextTransactorSession struct {
-	Contract     *ContextTransactor // Generic contract transactor binding to set the session for
+type AccessControlUpgradeableTransactorSession struct {
+	Contract     *AccessControlUpgradeableTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts                   // Transaction auth options to use throughout this session
+}
+
+// AccessControlUpgradeableRaw is an auto generated low-level Go binding around an Ethereum contract.
+type AccessControlUpgradeableRaw struct {
+	Contract *AccessControlUpgradeable // Generic contract binding to access the raw methods on
+}
+
+// AccessControlUpgradeableCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type AccessControlUpgradeableCallerRaw struct {
+	Contract *AccessControlUpgradeableCaller // Generic read-only contract binding to access the raw methods on
+}
+
+// AccessControlUpgradeableTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type AccessControlUpgradeableTransactorRaw struct {
+	Contract *AccessControlUpgradeableTransactor // Generic write-only contract binding to access the raw methods on
+}
+
+// NewAccessControlUpgradeable creates a new instance of AccessControlUpgradeable, bound to a specific deployed contract.
+func NewAccessControlUpgradeable(address common.Address, backend bind.ContractBackend) (*AccessControlUpgradeable, error) {
+	contract, err := bindAccessControlUpgradeable(address, backend, backend, backend)
+	if err != nil {
+		return nil, err
+	}
+	return &AccessControlUpgradeable{AccessControlUpgradeableCaller: AccessControlUpgradeableCaller{contract: contract}, AccessControlUpgradeableTransactor: AccessControlUpgradeableTransactor{contract: contract}, AccessControlUpgradeableFilterer: AccessControlUpgradeableFilterer{contract: contract}}, nil
+}
+
+// NewAccessControlUpgradeableCaller creates a new read-only instance of AccessControlUpgradeable, bound to a specific deployed contract.
+func NewAccessControlUpgradeableCaller(address common.Address, caller bind.ContractCaller) (*AccessControlUpgradeableCaller, error) {
+	contract, err := bindAccessControlUpgradeable(address, caller, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &AccessControlUpgradeableCaller{contract: contract}, nil
+}
+
+// NewAccessControlUpgradeableTransactor creates a new write-only instance of AccessControlUpgradeable, bound to a specific deployed contract.
+func NewAccessControlUpgradeableTransactor(address common.Address, transactor bind.ContractTransactor) (*AccessControlUpgradeableTransactor, error) {
+	contract, err := bindAccessControlUpgradeable(address, nil, transactor, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &AccessControlUpgradeableTransactor{contract: contract}, nil
+}
+
+// NewAccessControlUpgradeableFilterer creates a new log filterer instance of AccessControlUpgradeable, bound to a specific deployed contract.
+func NewAccessControlUpgradeableFilterer(address common.Address, filterer bind.ContractFilterer) (*AccessControlUpgradeableFilterer, error) {
+	contract, err := bindAccessControlUpgradeable(address, nil, nil, filterer)
+	if err != nil {
+		return nil, err
+	}
+	return &AccessControlUpgradeableFilterer{contract: contract}, nil
+}
+
+// bindAccessControlUpgradeable binds a generic wrapper to an already deployed contract.
+func bindAccessControlUpgradeable(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := AccessControlUpgradeableMetaData.GetAbi()
+	if err != nil {
+		return nil, err
+	}
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_AccessControlUpgradeable *AccessControlUpgradeableRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _AccessControlUpgradeable.Contract.AccessControlUpgradeableCaller.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_AccessControlUpgradeable *AccessControlUpgradeableRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _AccessControlUpgradeable.Contract.AccessControlUpgradeableTransactor.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_AccessControlUpgradeable *AccessControlUpgradeableRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _AccessControlUpgradeable.Contract.AccessControlUpgradeableTransactor.contract.Transact(opts, method, params...)
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_AccessControlUpgradeable *AccessControlUpgradeableCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _AccessControlUpgradeable.Contract.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_AccessControlUpgradeable *AccessControlUpgradeableTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _AccessControlUpgradeable.Contract.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_AccessControlUpgradeable *AccessControlUpgradeableTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _AccessControlUpgradeable.Contract.contract.Transact(opts, method, params...)
+}
+
+// DEFAULTADMINROLE is a free data retrieval call binding the contract method 0xa217fddf.
+//
+// Solidity: function DEFAULT_ADMIN_ROLE() view returns(bytes32)
+func (_AccessControlUpgradeable *AccessControlUpgradeableCaller) DEFAULTADMINROLE(opts *bind.CallOpts) ([32]byte, error) {
+	var out []interface{}
+	err := _AccessControlUpgradeable.contract.Call(opts, &out, "DEFAULT_ADMIN_ROLE")
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
+}
+
+// DEFAULTADMINROLE is a free data retrieval call binding the contract method 0xa217fddf.
+//
+// Solidity: function DEFAULT_ADMIN_ROLE() view returns(bytes32)
+func (_AccessControlUpgradeable *AccessControlUpgradeableSession) DEFAULTADMINROLE() ([32]byte, error) {
+	return _AccessControlUpgradeable.Contract.DEFAULTADMINROLE(&_AccessControlUpgradeable.CallOpts)
+}
+
+// DEFAULTADMINROLE is a free data retrieval call binding the contract method 0xa217fddf.
+//
+// Solidity: function DEFAULT_ADMIN_ROLE() view returns(bytes32)
+func (_AccessControlUpgradeable *AccessControlUpgradeableCallerSession) DEFAULTADMINROLE() ([32]byte, error) {
+	return _AccessControlUpgradeable.Contract.DEFAULTADMINROLE(&_AccessControlUpgradeable.CallOpts)
+}
+
+// GetRoleAdmin is a free data retrieval call binding the contract method 0x248a9ca3.
+//
+// Solidity: function getRoleAdmin(bytes32 role) view returns(bytes32)
+func (_AccessControlUpgradeable *AccessControlUpgradeableCaller) GetRoleAdmin(opts *bind.CallOpts, role [32]byte) ([32]byte, error) {
+	var out []interface{}
+	err := _AccessControlUpgradeable.contract.Call(opts, &out, "getRoleAdmin", role)
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
+}
+
+// GetRoleAdmin is a free data retrieval call binding the contract method 0x248a9ca3.
+//
+// Solidity: function getRoleAdmin(bytes32 role) view returns(bytes32)
+func (_AccessControlUpgradeable *AccessControlUpgradeableSession) GetRoleAdmin(role [32]byte) ([32]byte, error) {
+	return _AccessControlUpgradeable.Contract.GetRoleAdmin(&_AccessControlUpgradeable.CallOpts, role)
+}
+
+// GetRoleAdmin is a free data retrieval call binding the contract method 0x248a9ca3.
+//
+// Solidity: function getRoleAdmin(bytes32 role) view returns(bytes32)
+func (_AccessControlUpgradeable *AccessControlUpgradeableCallerSession) GetRoleAdmin(role [32]byte) ([32]byte, error) {
+	return _AccessControlUpgradeable.Contract.GetRoleAdmin(&_AccessControlUpgradeable.CallOpts, role)
+}
+
+// HasRole is a free data retrieval call binding the contract method 0x91d14854.
+//
+// Solidity: function hasRole(bytes32 role, address account) view returns(bool)
+func (_AccessControlUpgradeable *AccessControlUpgradeableCaller) HasRole(opts *bind.CallOpts, role [32]byte, account common.Address) (bool, error) {
+	var out []interface{}
+	err := _AccessControlUpgradeable.contract.Call(opts, &out, "hasRole", role, account)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
+}
+
+// HasRole is a free data retrieval call binding the contract method 0x91d14854.
+//
+// Solidity: function hasRole(bytes32 role, address account) view returns(bool)
+func (_AccessControlUpgradeable *AccessControlUpgradeableSession) HasRole(role [32]byte, account common.Address) (bool, error) {
+	return _AccessControlUpgradeable.Contract.HasRole(&_AccessControlUpgradeable.CallOpts, role, account)
+}
+
+// HasRole is a free data retrieval call binding the contract method 0x91d14854.
+//
+// Solidity: function hasRole(bytes32 role, address account) view returns(bool)
+func (_AccessControlUpgradeable *AccessControlUpgradeableCallerSession) HasRole(role [32]byte, account common.Address) (bool, error) {
+	return _AccessControlUpgradeable.Contract.HasRole(&_AccessControlUpgradeable.CallOpts, role, account)
+}
+
+// SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
+//
+// Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool)
+func (_AccessControlUpgradeable *AccessControlUpgradeableCaller) SupportsInterface(opts *bind.CallOpts, interfaceId [4]byte) (bool, error) {
+	var out []interface{}
+	err := _AccessControlUpgradeable.contract.Call(opts, &out, "supportsInterface", interfaceId)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
+}
+
+// SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
+//
+// Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool)
+func (_AccessControlUpgradeable *AccessControlUpgradeableSession) SupportsInterface(interfaceId [4]byte) (bool, error) {
+	return _AccessControlUpgradeable.Contract.SupportsInterface(&_AccessControlUpgradeable.CallOpts, interfaceId)
+}
+
+// SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
+//
+// Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool)
+func (_AccessControlUpgradeable *AccessControlUpgradeableCallerSession) SupportsInterface(interfaceId [4]byte) (bool, error) {
+	return _AccessControlUpgradeable.Contract.SupportsInterface(&_AccessControlUpgradeable.CallOpts, interfaceId)
+}
+
+// GrantRole is a paid mutator transaction binding the contract method 0x2f2ff15d.
+//
+// Solidity: function grantRole(bytes32 role, address account) returns()
+func (_AccessControlUpgradeable *AccessControlUpgradeableTransactor) GrantRole(opts *bind.TransactOpts, role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _AccessControlUpgradeable.contract.Transact(opts, "grantRole", role, account)
+}
+
+// GrantRole is a paid mutator transaction binding the contract method 0x2f2ff15d.
+//
+// Solidity: function grantRole(bytes32 role, address account) returns()
+func (_AccessControlUpgradeable *AccessControlUpgradeableSession) GrantRole(role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _AccessControlUpgradeable.Contract.GrantRole(&_AccessControlUpgradeable.TransactOpts, role, account)
+}
+
+// GrantRole is a paid mutator transaction binding the contract method 0x2f2ff15d.
+//
+// Solidity: function grantRole(bytes32 role, address account) returns()
+func (_AccessControlUpgradeable *AccessControlUpgradeableTransactorSession) GrantRole(role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _AccessControlUpgradeable.Contract.GrantRole(&_AccessControlUpgradeable.TransactOpts, role, account)
+}
+
+// RenounceRole is a paid mutator transaction binding the contract method 0x36568abe.
+//
+// Solidity: function renounceRole(bytes32 role, address callerConfirmation) returns()
+func (_AccessControlUpgradeable *AccessControlUpgradeableTransactor) RenounceRole(opts *bind.TransactOpts, role [32]byte, callerConfirmation common.Address) (*types.Transaction, error) {
+	return _AccessControlUpgradeable.contract.Transact(opts, "renounceRole", role, callerConfirmation)
+}
+
+// RenounceRole is a paid mutator transaction binding the contract method 0x36568abe.
+//
+// Solidity: function renounceRole(bytes32 role, address callerConfirmation) returns()
+func (_AccessControlUpgradeable *AccessControlUpgradeableSession) RenounceRole(role [32]byte, callerConfirmation common.Address) (*types.Transaction, error) {
+	return _AccessControlUpgradeable.Contract.RenounceRole(&_AccessControlUpgradeable.TransactOpts, role, callerConfirmation)
+}
+
+// RenounceRole is a paid mutator transaction binding the contract method 0x36568abe.
+//
+// Solidity: function renounceRole(bytes32 role, address callerConfirmation) returns()
+func (_AccessControlUpgradeable *AccessControlUpgradeableTransactorSession) RenounceRole(role [32]byte, callerConfirmation common.Address) (*types.Transaction, error) {
+	return _AccessControlUpgradeable.Contract.RenounceRole(&_AccessControlUpgradeable.TransactOpts, role, callerConfirmation)
+}
+
+// RevokeRole is a paid mutator transaction binding the contract method 0xd547741f.
+//
+// Solidity: function revokeRole(bytes32 role, address account) returns()
+func (_AccessControlUpgradeable *AccessControlUpgradeableTransactor) RevokeRole(opts *bind.TransactOpts, role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _AccessControlUpgradeable.contract.Transact(opts, "revokeRole", role, account)
+}
+
+// RevokeRole is a paid mutator transaction binding the contract method 0xd547741f.
+//
+// Solidity: function revokeRole(bytes32 role, address account) returns()
+func (_AccessControlUpgradeable *AccessControlUpgradeableSession) RevokeRole(role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _AccessControlUpgradeable.Contract.RevokeRole(&_AccessControlUpgradeable.TransactOpts, role, account)
+}
+
+// RevokeRole is a paid mutator transaction binding the contract method 0xd547741f.
+//
+// Solidity: function revokeRole(bytes32 role, address account) returns()
+func (_AccessControlUpgradeable *AccessControlUpgradeableTransactorSession) RevokeRole(role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _AccessControlUpgradeable.Contract.RevokeRole(&_AccessControlUpgradeable.TransactOpts, role, account)
+}
+
+// AccessControlUpgradeableInitializedIterator is returned from FilterInitialized and is used to iterate over the raw logs and unpacked data for Initialized events raised by the AccessControlUpgradeable contract.
+type AccessControlUpgradeableInitializedIterator struct {
+	Event *AccessControlUpgradeableInitialized // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *AccessControlUpgradeableInitializedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(AccessControlUpgradeableInitialized)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(AccessControlUpgradeableInitialized)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *AccessControlUpgradeableInitializedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *AccessControlUpgradeableInitializedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// AccessControlUpgradeableInitialized represents a Initialized event raised by the AccessControlUpgradeable contract.
+type AccessControlUpgradeableInitialized struct {
+	Version uint64
+	Raw     types.Log // Blockchain specific contextual infos
+}
+
+// FilterInitialized is a free log retrieval operation binding the contract event 0xc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d2.
+//
+// Solidity: event Initialized(uint64 version)
+func (_AccessControlUpgradeable *AccessControlUpgradeableFilterer) FilterInitialized(opts *bind.FilterOpts) (*AccessControlUpgradeableInitializedIterator, error) {
+
+	logs, sub, err := _AccessControlUpgradeable.contract.FilterLogs(opts, "Initialized")
+	if err != nil {
+		return nil, err
+	}
+	return &AccessControlUpgradeableInitializedIterator{contract: _AccessControlUpgradeable.contract, event: "Initialized", logs: logs, sub: sub}, nil
+}
+
+// WatchInitialized is a free log subscription operation binding the contract event 0xc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d2.
+//
+// Solidity: event Initialized(uint64 version)
+func (_AccessControlUpgradeable *AccessControlUpgradeableFilterer) WatchInitialized(opts *bind.WatchOpts, sink chan<- *AccessControlUpgradeableInitialized) (event.Subscription, error) {
+
+	logs, sub, err := _AccessControlUpgradeable.contract.WatchLogs(opts, "Initialized")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(AccessControlUpgradeableInitialized)
+				if err := _AccessControlUpgradeable.contract.UnpackLog(event, "Initialized", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseInitialized is a log parse operation binding the contract event 0xc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d2.
+//
+// Solidity: event Initialized(uint64 version)
+func (_AccessControlUpgradeable *AccessControlUpgradeableFilterer) ParseInitialized(log types.Log) (*AccessControlUpgradeableInitialized, error) {
+	event := new(AccessControlUpgradeableInitialized)
+	if err := _AccessControlUpgradeable.contract.UnpackLog(event, "Initialized", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// AccessControlUpgradeableRoleAdminChangedIterator is returned from FilterRoleAdminChanged and is used to iterate over the raw logs and unpacked data for RoleAdminChanged events raised by the AccessControlUpgradeable contract.
+type AccessControlUpgradeableRoleAdminChangedIterator struct {
+	Event *AccessControlUpgradeableRoleAdminChanged // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *AccessControlUpgradeableRoleAdminChangedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(AccessControlUpgradeableRoleAdminChanged)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(AccessControlUpgradeableRoleAdminChanged)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *AccessControlUpgradeableRoleAdminChangedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *AccessControlUpgradeableRoleAdminChangedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// AccessControlUpgradeableRoleAdminChanged represents a RoleAdminChanged event raised by the AccessControlUpgradeable contract.
+type AccessControlUpgradeableRoleAdminChanged struct {
+	Role              [32]byte
+	PreviousAdminRole [32]byte
+	NewAdminRole      [32]byte
+	Raw               types.Log // Blockchain specific contextual infos
+}
+
+// FilterRoleAdminChanged is a free log retrieval operation binding the contract event 0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff.
+//
+// Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
+func (_AccessControlUpgradeable *AccessControlUpgradeableFilterer) FilterRoleAdminChanged(opts *bind.FilterOpts, role [][32]byte, previousAdminRole [][32]byte, newAdminRole [][32]byte) (*AccessControlUpgradeableRoleAdminChangedIterator, error) {
+
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
+	}
+	var previousAdminRoleRule []interface{}
+	for _, previousAdminRoleItem := range previousAdminRole {
+		previousAdminRoleRule = append(previousAdminRoleRule, previousAdminRoleItem)
+	}
+	var newAdminRoleRule []interface{}
+	for _, newAdminRoleItem := range newAdminRole {
+		newAdminRoleRule = append(newAdminRoleRule, newAdminRoleItem)
+	}
+
+	logs, sub, err := _AccessControlUpgradeable.contract.FilterLogs(opts, "RoleAdminChanged", roleRule, previousAdminRoleRule, newAdminRoleRule)
+	if err != nil {
+		return nil, err
+	}
+	return &AccessControlUpgradeableRoleAdminChangedIterator{contract: _AccessControlUpgradeable.contract, event: "RoleAdminChanged", logs: logs, sub: sub}, nil
+}
+
+// WatchRoleAdminChanged is a free log subscription operation binding the contract event 0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff.
+//
+// Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
+func (_AccessControlUpgradeable *AccessControlUpgradeableFilterer) WatchRoleAdminChanged(opts *bind.WatchOpts, sink chan<- *AccessControlUpgradeableRoleAdminChanged, role [][32]byte, previousAdminRole [][32]byte, newAdminRole [][32]byte) (event.Subscription, error) {
+
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
+	}
+	var previousAdminRoleRule []interface{}
+	for _, previousAdminRoleItem := range previousAdminRole {
+		previousAdminRoleRule = append(previousAdminRoleRule, previousAdminRoleItem)
+	}
+	var newAdminRoleRule []interface{}
+	for _, newAdminRoleItem := range newAdminRole {
+		newAdminRoleRule = append(newAdminRoleRule, newAdminRoleItem)
+	}
+
+	logs, sub, err := _AccessControlUpgradeable.contract.WatchLogs(opts, "RoleAdminChanged", roleRule, previousAdminRoleRule, newAdminRoleRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(AccessControlUpgradeableRoleAdminChanged)
+				if err := _AccessControlUpgradeable.contract.UnpackLog(event, "RoleAdminChanged", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseRoleAdminChanged is a log parse operation binding the contract event 0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff.
+//
+// Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
+func (_AccessControlUpgradeable *AccessControlUpgradeableFilterer) ParseRoleAdminChanged(log types.Log) (*AccessControlUpgradeableRoleAdminChanged, error) {
+	event := new(AccessControlUpgradeableRoleAdminChanged)
+	if err := _AccessControlUpgradeable.contract.UnpackLog(event, "RoleAdminChanged", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// AccessControlUpgradeableRoleGrantedIterator is returned from FilterRoleGranted and is used to iterate over the raw logs and unpacked data for RoleGranted events raised by the AccessControlUpgradeable contract.
+type AccessControlUpgradeableRoleGrantedIterator struct {
+	Event *AccessControlUpgradeableRoleGranted // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *AccessControlUpgradeableRoleGrantedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(AccessControlUpgradeableRoleGranted)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(AccessControlUpgradeableRoleGranted)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *AccessControlUpgradeableRoleGrantedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *AccessControlUpgradeableRoleGrantedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// AccessControlUpgradeableRoleGranted represents a RoleGranted event raised by the AccessControlUpgradeable contract.
+type AccessControlUpgradeableRoleGranted struct {
+	Role    [32]byte
+	Account common.Address
+	Sender  common.Address
+	Raw     types.Log // Blockchain specific contextual infos
+}
+
+// FilterRoleGranted is a free log retrieval operation binding the contract event 0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d.
+//
+// Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
+func (_AccessControlUpgradeable *AccessControlUpgradeableFilterer) FilterRoleGranted(opts *bind.FilterOpts, role [][32]byte, account []common.Address, sender []common.Address) (*AccessControlUpgradeableRoleGrantedIterator, error) {
+
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
+	}
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
+	}
+	var senderRule []interface{}
+	for _, senderItem := range sender {
+		senderRule = append(senderRule, senderItem)
+	}
+
+	logs, sub, err := _AccessControlUpgradeable.contract.FilterLogs(opts, "RoleGranted", roleRule, accountRule, senderRule)
+	if err != nil {
+		return nil, err
+	}
+	return &AccessControlUpgradeableRoleGrantedIterator{contract: _AccessControlUpgradeable.contract, event: "RoleGranted", logs: logs, sub: sub}, nil
+}
+
+// WatchRoleGranted is a free log subscription operation binding the contract event 0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d.
+//
+// Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
+func (_AccessControlUpgradeable *AccessControlUpgradeableFilterer) WatchRoleGranted(opts *bind.WatchOpts, sink chan<- *AccessControlUpgradeableRoleGranted, role [][32]byte, account []common.Address, sender []common.Address) (event.Subscription, error) {
+
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
+	}
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
+	}
+	var senderRule []interface{}
+	for _, senderItem := range sender {
+		senderRule = append(senderRule, senderItem)
+	}
+
+	logs, sub, err := _AccessControlUpgradeable.contract.WatchLogs(opts, "RoleGranted", roleRule, accountRule, senderRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(AccessControlUpgradeableRoleGranted)
+				if err := _AccessControlUpgradeable.contract.UnpackLog(event, "RoleGranted", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseRoleGranted is a log parse operation binding the contract event 0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d.
+//
+// Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
+func (_AccessControlUpgradeable *AccessControlUpgradeableFilterer) ParseRoleGranted(log types.Log) (*AccessControlUpgradeableRoleGranted, error) {
+	event := new(AccessControlUpgradeableRoleGranted)
+	if err := _AccessControlUpgradeable.contract.UnpackLog(event, "RoleGranted", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// AccessControlUpgradeableRoleRevokedIterator is returned from FilterRoleRevoked and is used to iterate over the raw logs and unpacked data for RoleRevoked events raised by the AccessControlUpgradeable contract.
+type AccessControlUpgradeableRoleRevokedIterator struct {
+	Event *AccessControlUpgradeableRoleRevoked // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *AccessControlUpgradeableRoleRevokedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(AccessControlUpgradeableRoleRevoked)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(AccessControlUpgradeableRoleRevoked)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *AccessControlUpgradeableRoleRevokedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *AccessControlUpgradeableRoleRevokedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// AccessControlUpgradeableRoleRevoked represents a RoleRevoked event raised by the AccessControlUpgradeable contract.
+type AccessControlUpgradeableRoleRevoked struct {
+	Role    [32]byte
+	Account common.Address
+	Sender  common.Address
+	Raw     types.Log // Blockchain specific contextual infos
+}
+
+// FilterRoleRevoked is a free log retrieval operation binding the contract event 0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b.
+//
+// Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
+func (_AccessControlUpgradeable *AccessControlUpgradeableFilterer) FilterRoleRevoked(opts *bind.FilterOpts, role [][32]byte, account []common.Address, sender []common.Address) (*AccessControlUpgradeableRoleRevokedIterator, error) {
+
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
+	}
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
+	}
+	var senderRule []interface{}
+	for _, senderItem := range sender {
+		senderRule = append(senderRule, senderItem)
+	}
+
+	logs, sub, err := _AccessControlUpgradeable.contract.FilterLogs(opts, "RoleRevoked", roleRule, accountRule, senderRule)
+	if err != nil {
+		return nil, err
+	}
+	return &AccessControlUpgradeableRoleRevokedIterator{contract: _AccessControlUpgradeable.contract, event: "RoleRevoked", logs: logs, sub: sub}, nil
+}
+
+// WatchRoleRevoked is a free log subscription operation binding the contract event 0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b.
+//
+// Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
+func (_AccessControlUpgradeable *AccessControlUpgradeableFilterer) WatchRoleRevoked(opts *bind.WatchOpts, sink chan<- *AccessControlUpgradeableRoleRevoked, role [][32]byte, account []common.Address, sender []common.Address) (event.Subscription, error) {
+
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
+	}
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
+	}
+	var senderRule []interface{}
+	for _, senderItem := range sender {
+		senderRule = append(senderRule, senderItem)
+	}
+
+	logs, sub, err := _AccessControlUpgradeable.contract.WatchLogs(opts, "RoleRevoked", roleRule, accountRule, senderRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(AccessControlUpgradeableRoleRevoked)
+				if err := _AccessControlUpgradeable.contract.UnpackLog(event, "RoleRevoked", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseRoleRevoked is a log parse operation binding the contract event 0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b.
+//
+// Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
+func (_AccessControlUpgradeable *AccessControlUpgradeableFilterer) ParseRoleRevoked(log types.Log) (*AccessControlUpgradeableRoleRevoked, error) {
+	event := new(AccessControlUpgradeableRoleRevoked)
+	if err := _AccessControlUpgradeable.contract.UnpackLog(event, "RoleRevoked", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// ContextUpgradeableMetaData contains all meta data concerning the ContextUpgradeable contract.
+var ContextUpgradeableMetaData = &bind.MetaData{
+	ABI: "[{\"inputs\":[],\"name\":\"InvalidInitialization\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInitializing\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"version\",\"type\":\"uint64\"}],\"name\":\"Initialized\",\"type\":\"event\"}]",
+}
+
+// ContextUpgradeableABI is the input ABI used to generate the binding from.
+// Deprecated: Use ContextUpgradeableMetaData.ABI instead.
+var ContextUpgradeableABI = ContextUpgradeableMetaData.ABI
+
+// ContextUpgradeable is an auto generated Go binding around an Ethereum contract.
+type ContextUpgradeable struct {
+	ContextUpgradeableCaller     // Read-only binding to the contract
+	ContextUpgradeableTransactor // Write-only binding to the contract
+	ContextUpgradeableFilterer   // Log filterer for contract events
+}
+
+// ContextUpgradeableCaller is an auto generated read-only Go binding around an Ethereum contract.
+type ContextUpgradeableCaller struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// ContextUpgradeableTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type ContextUpgradeableTransactor struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// ContextUpgradeableFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type ContextUpgradeableFilterer struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// ContextUpgradeableSession is an auto generated Go binding around an Ethereum contract,
+// with pre-set call and transact options.
+type ContextUpgradeableSession struct {
+	Contract     *ContextUpgradeable // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts       // Call options to use throughout this session
+	TransactOpts bind.TransactOpts   // Transaction auth options to use throughout this session
+}
+
+// ContextUpgradeableCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// with pre-set call options.
+type ContextUpgradeableCallerSession struct {
+	Contract *ContextUpgradeableCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts             // Call options to use throughout this session
+}
+
+// ContextUpgradeableTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// with pre-set transact options.
+type ContextUpgradeableTransactorSession struct {
+	Contract     *ContextUpgradeableTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts             // Transaction auth options to use throughout this session
+}
+
+// ContextUpgradeableRaw is an auto generated low-level Go binding around an Ethereum contract.
+type ContextUpgradeableRaw struct {
+	Contract *ContextUpgradeable // Generic contract binding to access the raw methods on
+}
+
+// ContextUpgradeableCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type ContextUpgradeableCallerRaw struct {
+	Contract *ContextUpgradeableCaller // Generic read-only contract binding to access the raw methods on
+}
+
+// ContextUpgradeableTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type ContextUpgradeableTransactorRaw struct {
+	Contract *ContextUpgradeableTransactor // Generic write-only contract binding to access the raw methods on
+}
+
+// NewContextUpgradeable creates a new instance of ContextUpgradeable, bound to a specific deployed contract.
+func NewContextUpgradeable(address common.Address, backend bind.ContractBackend) (*ContextUpgradeable, error) {
+	contract, err := bindContextUpgradeable(address, backend, backend, backend)
+	if err != nil {
+		return nil, err
+	}
+	return &ContextUpgradeable{ContextUpgradeableCaller: ContextUpgradeableCaller{contract: contract}, ContextUpgradeableTransactor: ContextUpgradeableTransactor{contract: contract}, ContextUpgradeableFilterer: ContextUpgradeableFilterer{contract: contract}}, nil
+}
+
+// NewContextUpgradeableCaller creates a new read-only instance of ContextUpgradeable, bound to a specific deployed contract.
+func NewContextUpgradeableCaller(address common.Address, caller bind.ContractCaller) (*ContextUpgradeableCaller, error) {
+	contract, err := bindContextUpgradeable(address, caller, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &ContextUpgradeableCaller{contract: contract}, nil
+}
+
+// NewContextUpgradeableTransactor creates a new write-only instance of ContextUpgradeable, bound to a specific deployed contract.
+func NewContextUpgradeableTransactor(address common.Address, transactor bind.ContractTransactor) (*ContextUpgradeableTransactor, error) {
+	contract, err := bindContextUpgradeable(address, nil, transactor, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &ContextUpgradeableTransactor{contract: contract}, nil
+}
+
+// NewContextUpgradeableFilterer creates a new log filterer instance of ContextUpgradeable, bound to a specific deployed contract.
+func NewContextUpgradeableFilterer(address common.Address, filterer bind.ContractFilterer) (*ContextUpgradeableFilterer, error) {
+	contract, err := bindContextUpgradeable(address, nil, nil, filterer)
+	if err != nil {
+		return nil, err
+	}
+	return &ContextUpgradeableFilterer{contract: contract}, nil
+}
+
+// bindContextUpgradeable binds a generic wrapper to an already deployed contract.
+func bindContextUpgradeable(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := ContextUpgradeableMetaData.GetAbi()
+	if err != nil {
+		return nil, err
+	}
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_ContextUpgradeable *ContextUpgradeableRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _ContextUpgradeable.Contract.ContextUpgradeableCaller.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_ContextUpgradeable *ContextUpgradeableRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _ContextUpgradeable.Contract.ContextUpgradeableTransactor.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_ContextUpgradeable *ContextUpgradeableRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _ContextUpgradeable.Contract.ContextUpgradeableTransactor.contract.Transact(opts, method, params...)
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_ContextUpgradeable *ContextUpgradeableCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _ContextUpgradeable.Contract.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_ContextUpgradeable *ContextUpgradeableTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _ContextUpgradeable.Contract.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_ContextUpgradeable *ContextUpgradeableTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _ContextUpgradeable.Contract.contract.Transact(opts, method, params...)
+}
+
+// ContextUpgradeableInitializedIterator is returned from FilterInitialized and is used to iterate over the raw logs and unpacked data for Initialized events raised by the ContextUpgradeable contract.
+type ContextUpgradeableInitializedIterator struct {
+	Event *ContextUpgradeableInitialized // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *ContextUpgradeableInitializedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(ContextUpgradeableInitialized)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(ContextUpgradeableInitialized)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *ContextUpgradeableInitializedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *ContextUpgradeableInitializedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// ContextUpgradeableInitialized represents a Initialized event raised by the ContextUpgradeable contract.
+type ContextUpgradeableInitialized struct {
+	Version uint64
+	Raw     types.Log // Blockchain specific contextual infos
+}
+
+// FilterInitialized is a free log retrieval operation binding the contract event 0xc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d2.
+//
+// Solidity: event Initialized(uint64 version)
+func (_ContextUpgradeable *ContextUpgradeableFilterer) FilterInitialized(opts *bind.FilterOpts) (*ContextUpgradeableInitializedIterator, error) {
+
+	logs, sub, err := _ContextUpgradeable.contract.FilterLogs(opts, "Initialized")
+	if err != nil {
+		return nil, err
+	}
+	return &ContextUpgradeableInitializedIterator{contract: _ContextUpgradeable.contract, event: "Initialized", logs: logs, sub: sub}, nil
+}
+
+// WatchInitialized is a free log subscription operation binding the contract event 0xc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d2.
+//
+// Solidity: event Initialized(uint64 version)
+func (_ContextUpgradeable *ContextUpgradeableFilterer) WatchInitialized(opts *bind.WatchOpts, sink chan<- *ContextUpgradeableInitialized) (event.Subscription, error) {
+
+	logs, sub, err := _ContextUpgradeable.contract.WatchLogs(opts, "Initialized")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(ContextUpgradeableInitialized)
+				if err := _ContextUpgradeable.contract.UnpackLog(event, "Initialized", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseInitialized is a log parse operation binding the contract event 0xc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d2.
+//
+// Solidity: event Initialized(uint64 version)
+func (_ContextUpgradeable *ContextUpgradeableFilterer) ParseInitialized(log types.Log) (*ContextUpgradeableInitialized, error) {
+	event := new(ContextUpgradeableInitialized)
+	if err := _ContextUpgradeable.contract.UnpackLog(event, "Initialized", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// ERC165UpgradeableMetaData contains all meta data concerning the ERC165Upgradeable contract.
+var ERC165UpgradeableMetaData = &bind.MetaData{
+	ABI: "[{\"inputs\":[],\"name\":\"InvalidInitialization\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInitializing\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"version\",\"type\":\"uint64\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	Sigs: map[string]string{
+		"01ffc9a7": "supportsInterface(bytes4)",
+	},
+}
+
+// ERC165UpgradeableABI is the input ABI used to generate the binding from.
+// Deprecated: Use ERC165UpgradeableMetaData.ABI instead.
+var ERC165UpgradeableABI = ERC165UpgradeableMetaData.ABI
+
+// Deprecated: Use ERC165UpgradeableMetaData.Sigs instead.
+// ERC165UpgradeableFuncSigs maps the 4-byte function signature to its string representation.
+var ERC165UpgradeableFuncSigs = ERC165UpgradeableMetaData.Sigs
+
+// ERC165Upgradeable is an auto generated Go binding around an Ethereum contract.
+type ERC165Upgradeable struct {
+	ERC165UpgradeableCaller     // Read-only binding to the contract
+	ERC165UpgradeableTransactor // Write-only binding to the contract
+	ERC165UpgradeableFilterer   // Log filterer for contract events
+}
+
+// ERC165UpgradeableCaller is an auto generated read-only Go binding around an Ethereum contract.
+type ERC165UpgradeableCaller struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// ERC165UpgradeableTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type ERC165UpgradeableTransactor struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// ERC165UpgradeableFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type ERC165UpgradeableFilterer struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// ERC165UpgradeableSession is an auto generated Go binding around an Ethereum contract,
+// with pre-set call and transact options.
+type ERC165UpgradeableSession struct {
+	Contract     *ERC165Upgradeable // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts      // Call options to use throughout this session
 	TransactOpts bind.TransactOpts  // Transaction auth options to use throughout this session
 }
 
-// ContextRaw is an auto generated low-level Go binding around an Ethereum contract.
-type ContextRaw struct {
-	Contract *Context // Generic contract binding to access the raw methods on
+// ERC165UpgradeableCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// with pre-set call options.
+type ERC165UpgradeableCallerSession struct {
+	Contract *ERC165UpgradeableCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts            // Call options to use throughout this session
 }
 
-// ContextCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
-type ContextCallerRaw struct {
-	Contract *ContextCaller // Generic read-only contract binding to access the raw methods on
+// ERC165UpgradeableTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// with pre-set transact options.
+type ERC165UpgradeableTransactorSession struct {
+	Contract     *ERC165UpgradeableTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts            // Transaction auth options to use throughout this session
 }
 
-// ContextTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
-type ContextTransactorRaw struct {
-	Contract *ContextTransactor // Generic write-only contract binding to access the raw methods on
+// ERC165UpgradeableRaw is an auto generated low-level Go binding around an Ethereum contract.
+type ERC165UpgradeableRaw struct {
+	Contract *ERC165Upgradeable // Generic contract binding to access the raw methods on
 }
 
-// NewContext creates a new instance of Context, bound to a specific deployed contract.
-func NewContext(address common.Address, backend bind.ContractBackend) (*Context, error) {
-	contract, err := bindContext(address, backend, backend, backend)
+// ERC165UpgradeableCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type ERC165UpgradeableCallerRaw struct {
+	Contract *ERC165UpgradeableCaller // Generic read-only contract binding to access the raw methods on
+}
+
+// ERC165UpgradeableTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type ERC165UpgradeableTransactorRaw struct {
+	Contract *ERC165UpgradeableTransactor // Generic write-only contract binding to access the raw methods on
+}
+
+// NewERC165Upgradeable creates a new instance of ERC165Upgradeable, bound to a specific deployed contract.
+func NewERC165Upgradeable(address common.Address, backend bind.ContractBackend) (*ERC165Upgradeable, error) {
+	contract, err := bindERC165Upgradeable(address, backend, backend, backend)
 	if err != nil {
 		return nil, err
 	}
-	return &Context{ContextCaller: ContextCaller{contract: contract}, ContextTransactor: ContextTransactor{contract: contract}, ContextFilterer: ContextFilterer{contract: contract}}, nil
+	return &ERC165Upgradeable{ERC165UpgradeableCaller: ERC165UpgradeableCaller{contract: contract}, ERC165UpgradeableTransactor: ERC165UpgradeableTransactor{contract: contract}, ERC165UpgradeableFilterer: ERC165UpgradeableFilterer{contract: contract}}, nil
 }
 
-// NewContextCaller creates a new read-only instance of Context, bound to a specific deployed contract.
-func NewContextCaller(address common.Address, caller bind.ContractCaller) (*ContextCaller, error) {
-	contract, err := bindContext(address, caller, nil, nil)
+// NewERC165UpgradeableCaller creates a new read-only instance of ERC165Upgradeable, bound to a specific deployed contract.
+func NewERC165UpgradeableCaller(address common.Address, caller bind.ContractCaller) (*ERC165UpgradeableCaller, error) {
+	contract, err := bindERC165Upgradeable(address, caller, nil, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &ContextCaller{contract: contract}, nil
+	return &ERC165UpgradeableCaller{contract: contract}, nil
 }
 
-// NewContextTransactor creates a new write-only instance of Context, bound to a specific deployed contract.
-func NewContextTransactor(address common.Address, transactor bind.ContractTransactor) (*ContextTransactor, error) {
-	contract, err := bindContext(address, nil, transactor, nil)
+// NewERC165UpgradeableTransactor creates a new write-only instance of ERC165Upgradeable, bound to a specific deployed contract.
+func NewERC165UpgradeableTransactor(address common.Address, transactor bind.ContractTransactor) (*ERC165UpgradeableTransactor, error) {
+	contract, err := bindERC165Upgradeable(address, nil, transactor, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &ContextTransactor{contract: contract}, nil
+	return &ERC165UpgradeableTransactor{contract: contract}, nil
 }
 
-// NewContextFilterer creates a new log filterer instance of Context, bound to a specific deployed contract.
-func NewContextFilterer(address common.Address, filterer bind.ContractFilterer) (*ContextFilterer, error) {
-	contract, err := bindContext(address, nil, nil, filterer)
+// NewERC165UpgradeableFilterer creates a new log filterer instance of ERC165Upgradeable, bound to a specific deployed contract.
+func NewERC165UpgradeableFilterer(address common.Address, filterer bind.ContractFilterer) (*ERC165UpgradeableFilterer, error) {
+	contract, err := bindERC165Upgradeable(address, nil, nil, filterer)
 	if err != nil {
 		return nil, err
 	}
-	return &ContextFilterer{contract: contract}, nil
+	return &ERC165UpgradeableFilterer{contract: contract}, nil
 }
 
-// bindContext binds a generic wrapper to an already deployed contract.
-func bindContext(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := ContextMetaData.GetAbi()
+// bindERC165Upgradeable binds a generic wrapper to an already deployed contract.
+func bindERC165Upgradeable(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := ERC165UpgradeableMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
@@ -146,186 +1409,323 @@ func bindContext(address common.Address, caller bind.ContractCaller, transactor 
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_Context *ContextRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _Context.Contract.ContextCaller.contract.Call(opts, result, method, params...)
+func (_ERC165Upgradeable *ERC165UpgradeableRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _ERC165Upgradeable.Contract.ERC165UpgradeableCaller.contract.Call(opts, result, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
 // its default method if one is available.
-func (_Context *ContextRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _Context.Contract.ContextTransactor.contract.Transfer(opts)
+func (_ERC165Upgradeable *ERC165UpgradeableRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _ERC165Upgradeable.Contract.ERC165UpgradeableTransactor.contract.Transfer(opts)
 }
 
 // Transact invokes the (paid) contract method with params as input values.
-func (_Context *ContextRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _Context.Contract.ContextTransactor.contract.Transact(opts, method, params...)
+func (_ERC165Upgradeable *ERC165UpgradeableRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _ERC165Upgradeable.Contract.ERC165UpgradeableTransactor.contract.Transact(opts, method, params...)
 }
 
 // Call invokes the (constant) contract method with params as input values and
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_Context *ContextCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _Context.Contract.contract.Call(opts, result, method, params...)
+func (_ERC165Upgradeable *ERC165UpgradeableCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _ERC165Upgradeable.Contract.contract.Call(opts, result, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
 // its default method if one is available.
-func (_Context *ContextTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _Context.Contract.contract.Transfer(opts)
+func (_ERC165Upgradeable *ERC165UpgradeableTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _ERC165Upgradeable.Contract.contract.Transfer(opts)
 }
 
 // Transact invokes the (paid) contract method with params as input values.
-func (_Context *ContextTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _Context.Contract.contract.Transact(opts, method, params...)
+func (_ERC165Upgradeable *ERC165UpgradeableTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _ERC165Upgradeable.Contract.contract.Transact(opts, method, params...)
 }
 
-// ExecutionServiceMetaData contains all meta data concerning the ExecutionService contract.
-var ExecutionServiceMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner_\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"}],\"name\":\"OptionsLib__IncorrectVersion\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"ExecutionRequested\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"executorEOA\",\"type\":\"address\"}],\"name\":\"ExecutorEOAUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"GasOracleUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"interchainClient\",\"type\":\"address\"}],\"name\":\"InterchainClientUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"executorEOA\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"gasOracle\",\"outputs\":[{\"internalType\":\"contractIGasOracle\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"getExecutionFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"interchainClient\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"requestExecution\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_executorEOA\",\"type\":\"address\"}],\"name\":\"setExecutorEOA\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_gasOracle\",\"type\":\"address\"}],\"name\":\"setGasOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_interchainClient\",\"type\":\"address\"}],\"name\":\"setInterchainClient\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+// SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
+//
+// Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool)
+func (_ERC165Upgradeable *ERC165UpgradeableCaller) SupportsInterface(opts *bind.CallOpts, interfaceId [4]byte) (bool, error) {
+	var out []interface{}
+	err := _ERC165Upgradeable.contract.Call(opts, &out, "supportsInterface", interfaceId)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
+}
+
+// SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
+//
+// Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool)
+func (_ERC165Upgradeable *ERC165UpgradeableSession) SupportsInterface(interfaceId [4]byte) (bool, error) {
+	return _ERC165Upgradeable.Contract.SupportsInterface(&_ERC165Upgradeable.CallOpts, interfaceId)
+}
+
+// SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
+//
+// Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool)
+func (_ERC165Upgradeable *ERC165UpgradeableCallerSession) SupportsInterface(interfaceId [4]byte) (bool, error) {
+	return _ERC165Upgradeable.Contract.SupportsInterface(&_ERC165Upgradeable.CallOpts, interfaceId)
+}
+
+// ERC165UpgradeableInitializedIterator is returned from FilterInitialized and is used to iterate over the raw logs and unpacked data for Initialized events raised by the ERC165Upgradeable contract.
+type ERC165UpgradeableInitializedIterator struct {
+	Event *ERC165UpgradeableInitialized // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *ERC165UpgradeableInitializedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(ERC165UpgradeableInitialized)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(ERC165UpgradeableInitialized)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *ERC165UpgradeableInitializedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *ERC165UpgradeableInitializedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// ERC165UpgradeableInitialized represents a Initialized event raised by the ERC165Upgradeable contract.
+type ERC165UpgradeableInitialized struct {
+	Version uint64
+	Raw     types.Log // Blockchain specific contextual infos
+}
+
+// FilterInitialized is a free log retrieval operation binding the contract event 0xc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d2.
+//
+// Solidity: event Initialized(uint64 version)
+func (_ERC165Upgradeable *ERC165UpgradeableFilterer) FilterInitialized(opts *bind.FilterOpts) (*ERC165UpgradeableInitializedIterator, error) {
+
+	logs, sub, err := _ERC165Upgradeable.contract.FilterLogs(opts, "Initialized")
+	if err != nil {
+		return nil, err
+	}
+	return &ERC165UpgradeableInitializedIterator{contract: _ERC165Upgradeable.contract, event: "Initialized", logs: logs, sub: sub}, nil
+}
+
+// WatchInitialized is a free log subscription operation binding the contract event 0xc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d2.
+//
+// Solidity: event Initialized(uint64 version)
+func (_ERC165Upgradeable *ERC165UpgradeableFilterer) WatchInitialized(opts *bind.WatchOpts, sink chan<- *ERC165UpgradeableInitialized) (event.Subscription, error) {
+
+	logs, sub, err := _ERC165Upgradeable.contract.WatchLogs(opts, "Initialized")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(ERC165UpgradeableInitialized)
+				if err := _ERC165Upgradeable.contract.UnpackLog(event, "Initialized", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseInitialized is a log parse operation binding the contract event 0xc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d2.
+//
+// Solidity: event Initialized(uint64 version)
+func (_ERC165Upgradeable *ERC165UpgradeableFilterer) ParseInitialized(log types.Log) (*ERC165UpgradeableInitialized, error) {
+	event := new(ERC165UpgradeableInitialized)
+	if err := _ERC165Upgradeable.contract.UnpackLog(event, "Initialized", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// IAccessControlMetaData contains all meta data concerning the IAccessControl contract.
+var IAccessControlMetaData = &bind.MetaData{
+	ABI: "[{\"inputs\":[],\"name\":\"AccessControlBadConfirmation\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"neededRole\",\"type\":\"bytes32\"}],\"name\":\"AccessControlUnauthorizedAccount\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"callerConfirmation\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
-		"62014bad": "executorEOA()",
-		"5d62a8dd": "gasOracle()",
-		"c473e7e8": "getExecutionFee(uint256,uint256,bytes)",
-		"c9a64e91": "interchainClient()",
-		"8da5cb5b": "owner()",
-		"715018a6": "renounceOwnership()",
-		"e4e06522": "requestExecution(uint256,uint256,bytes32,uint256,bytes)",
-		"2d54566c": "setExecutorEOA(address)",
-		"a87b8152": "setGasOracle(address)",
-		"27efcbb7": "setInterchainClient(address)",
-		"f2fde38b": "transferOwnership(address)",
+		"248a9ca3": "getRoleAdmin(bytes32)",
+		"2f2ff15d": "grantRole(bytes32,address)",
+		"91d14854": "hasRole(bytes32,address)",
+		"36568abe": "renounceRole(bytes32,address)",
+		"d547741f": "revokeRole(bytes32,address)",
 	},
-	Bin: "0x608060405234801561001057600080fd5b50604051610d9c380380610d9c83398101604081905261002f916100be565b806001600160a01b03811661005e57604051631e4fbdf760e01b81526000600482015260240160405180910390fd5b6100678161006e565b50506100ee565b600080546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b6000602082840312156100d057600080fd5b81516001600160a01b03811681146100e757600080fd5b9392505050565b610c9f806100fd6000396000f3fe608060405234801561001057600080fd5b50600436106100c95760003560e01c80638da5cb5b11610081578063c9a64e911161005b578063c9a64e91146101ba578063e4e06522146101da578063f2fde38b146101ed57600080fd5b80638da5cb5b14610168578063a87b815214610186578063c473e7e81461019957600080fd5b80635d62a8dd116100b25780635d62a8dd146100f657806362014bad14610140578063715018a61461016057600080fd5b806327efcbb7146100ce5780632d54566c146100e3575b600080fd5b6100e16100dc366004610913565b610200565b005b6100e16100f1366004610913565b610277565b6003546101169073ffffffffffffffffffffffffffffffffffffffff1681565b60405173ffffffffffffffffffffffffffffffffffffffff90911681526020015b60405180910390f35b6002546101169073ffffffffffffffffffffffffffffffffffffffff1681565b6100e16102ee565b60005473ffffffffffffffffffffffffffffffffffffffff16610116565b6100e1610194366004610913565b610302565b6101ac6101a7366004610a63565b610379565b604051908152602001610137565b6001546101169073ffffffffffffffffffffffffffffffffffffffff1681565b6100e16101e8366004610ab3565b6105c4565b6100e16101fb366004610913565b610741565b6102086107a5565b600180547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff83169081179091556040517f33e3a51bf9fedee6e205cd10237a9a8dd3fffed45ac3dee88d2eba92ef8b5d6290600090a250565b61027f6107a5565b600280547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff83169081179091556040517f8a101f72b53416c657555bd234f732510711b6f59f28b161db43892c89b6b3b490600090a250565b6102f66107a5565b61030060006107f8565b565b61030a6107a5565b600380547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff83169081179091556040517f0b987d971d57fe66ec2d0cff095b1b547c3076cdd07fdf5b0863f320700dbb9090600090a250565b60008060006103878461086d565b90925090507fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff60ff8316016105305760006103c18561088f565b60035481516040517f5cbd3c48000000000000000000000000000000000000000000000000000000008152600481018b905260248101919091526044810189905291925060009173ffffffffffffffffffffffffffffffffffffffff90911690635cbd3c4890606401602060405180830381865afa158015610447573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061046b9190610b17565b6020830151909150156105255760035460208301516040517f1e7b9287000000000000000000000000000000000000000000000000000000008152600481018b9052602481019190915273ffffffffffffffffffffffffffffffffffffffff90911690631e7b928790604401602060405180830381865afa1580156104f4573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906105189190610b17565b6105229082610b30565b90505b93506105bd92505050565b6040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152603760248201527f556e737570706f72746564206f7074696f6e732076657273696f6e3a2076657260448201527f73696f6e206d757374206265204f5054494f4e535f563100000000000000000060648201526084015b60405180910390fd5b9392505050565b60015473ffffffffffffffffffffffffffffffffffffffff16331461066b576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152603460248201527f457865637574696f6e536572766963653a2063616c6c6572206973206e6f742060448201527f74686520496e746572636861696e436c69656e7400000000000000000000000060648201526084016105b4565b610676858583610379565b821015610705576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152603260248201527f457865637574696f6e536572766963653a20657865637574696f6e206665652060448201527f6973206e6f74206869676820656e6f756768000000000000000000000000000060648201526084016105b4565b60405133815283907f507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd13829060200160405180910390a25050505050565b6107496107a5565b73ffffffffffffffffffffffffffffffffffffffff8116610799576040517f1e4fbdf7000000000000000000000000000000000000000000000000000000008152600060048201526024016105b4565b6107a2816107f8565b50565b60005473ffffffffffffffffffffffffffffffffffffffff163314610300576040517f118cdaa70000000000000000000000000000000000000000000000000000000081523360048201526024016105b4565b6000805473ffffffffffffffffffffffffffffffffffffffff8381167fffffffffffffffffffffffff0000000000000000000000000000000000000000831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b60006060828060200190518101906108859190610b70565b9094909350915050565b60408051808201909152600080825260208201526000806108af8461086d565b9092509050600160ff831610156108f7576040517fbd91a21500000000000000000000000000000000000000000000000000000000815260ff831660048201526024016105b4565b8080602001905181019061090b9190610c1a565b949350505050565b60006020828403121561092557600080fd5b813573ffffffffffffffffffffffffffffffffffffffff811681146105bd57600080fd5b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b604051601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe016810167ffffffffffffffff811182821017156109bf576109bf610949565b604052919050565b600067ffffffffffffffff8211156109e1576109e1610949565b50601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe01660200190565b600082601f830112610a1e57600080fd5b8135610a31610a2c826109c7565b610978565b818152846020838601011115610a4657600080fd5b816020850160208301376000918101602001919091529392505050565b600080600060608486031215610a7857600080fd5b8335925060208401359150604084013567ffffffffffffffff811115610a9d57600080fd5b610aa986828701610a0d565b9150509250925092565b600080600080600060a08688031215610acb57600080fd5b85359450602086013593506040860135925060608601359150608086013567ffffffffffffffff811115610afe57600080fd5b610b0a88828901610a0d565b9150509295509295909350565b600060208284031215610b2957600080fd5b5051919050565b80820180821115610b6a577f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b92915050565b60008060408385031215610b8357600080fd5b825160ff81168114610b9457600080fd5b8092505060208084015167ffffffffffffffff811115610bb357600080fd5b8401601f81018613610bc457600080fd5b8051610bd2610a2c826109c7565b8181528784838501011115610be657600080fd5b60005b82811015610c04578381018501518282018601528401610be9565b5060009181019093015250919491935090915050565b600060408284031215610c2c57600080fd5b6040516040810181811067ffffffffffffffff82111715610c4f57610c4f610949565b60405282518152602092830151928101929092525091905056fea26469706673582212200641b0b7a9fd32751747fc147907f58c5f85135d24f10373e9d8067e5651333064736f6c63430008140033",
 }
 
-// ExecutionServiceABI is the input ABI used to generate the binding from.
-// Deprecated: Use ExecutionServiceMetaData.ABI instead.
-var ExecutionServiceABI = ExecutionServiceMetaData.ABI
+// IAccessControlABI is the input ABI used to generate the binding from.
+// Deprecated: Use IAccessControlMetaData.ABI instead.
+var IAccessControlABI = IAccessControlMetaData.ABI
 
-// Deprecated: Use ExecutionServiceMetaData.Sigs instead.
-// ExecutionServiceFuncSigs maps the 4-byte function signature to its string representation.
-var ExecutionServiceFuncSigs = ExecutionServiceMetaData.Sigs
+// Deprecated: Use IAccessControlMetaData.Sigs instead.
+// IAccessControlFuncSigs maps the 4-byte function signature to its string representation.
+var IAccessControlFuncSigs = IAccessControlMetaData.Sigs
 
-// ExecutionServiceBin is the compiled bytecode used for deploying new contracts.
-// Deprecated: Use ExecutionServiceMetaData.Bin instead.
-var ExecutionServiceBin = ExecutionServiceMetaData.Bin
-
-// DeployExecutionService deploys a new Ethereum contract, binding an instance of ExecutionService to it.
-func DeployExecutionService(auth *bind.TransactOpts, backend bind.ContractBackend, owner_ common.Address) (common.Address, *types.Transaction, *ExecutionService, error) {
-	parsed, err := ExecutionServiceMetaData.GetAbi()
-	if err != nil {
-		return common.Address{}, nil, nil, err
-	}
-	if parsed == nil {
-		return common.Address{}, nil, nil, errors.New("GetABI returned nil")
-	}
-
-	address, tx, contract, err := bind.DeployContract(auth, *parsed, common.FromHex(ExecutionServiceBin), backend, owner_)
-	if err != nil {
-		return common.Address{}, nil, nil, err
-	}
-	return address, tx, &ExecutionService{ExecutionServiceCaller: ExecutionServiceCaller{contract: contract}, ExecutionServiceTransactor: ExecutionServiceTransactor{contract: contract}, ExecutionServiceFilterer: ExecutionServiceFilterer{contract: contract}}, nil
+// IAccessControl is an auto generated Go binding around an Ethereum contract.
+type IAccessControl struct {
+	IAccessControlCaller     // Read-only binding to the contract
+	IAccessControlTransactor // Write-only binding to the contract
+	IAccessControlFilterer   // Log filterer for contract events
 }
 
-// ExecutionService is an auto generated Go binding around an Ethereum contract.
-type ExecutionService struct {
-	ExecutionServiceCaller     // Read-only binding to the contract
-	ExecutionServiceTransactor // Write-only binding to the contract
-	ExecutionServiceFilterer   // Log filterer for contract events
-}
-
-// ExecutionServiceCaller is an auto generated read-only Go binding around an Ethereum contract.
-type ExecutionServiceCaller struct {
+// IAccessControlCaller is an auto generated read-only Go binding around an Ethereum contract.
+type IAccessControlCaller struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// ExecutionServiceTransactor is an auto generated write-only Go binding around an Ethereum contract.
-type ExecutionServiceTransactor struct {
+// IAccessControlTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type IAccessControlTransactor struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// ExecutionServiceFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
-type ExecutionServiceFilterer struct {
+// IAccessControlFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type IAccessControlFilterer struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// ExecutionServiceSession is an auto generated Go binding around an Ethereum contract,
+// IAccessControlSession is an auto generated Go binding around an Ethereum contract,
 // with pre-set call and transact options.
-type ExecutionServiceSession struct {
-	Contract     *ExecutionService // Generic contract binding to set the session for
+type IAccessControlSession struct {
+	Contract     *IAccessControl   // Generic contract binding to set the session for
 	CallOpts     bind.CallOpts     // Call options to use throughout this session
 	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
 }
 
-// ExecutionServiceCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// IAccessControlCallerSession is an auto generated read-only Go binding around an Ethereum contract,
 // with pre-set call options.
-type ExecutionServiceCallerSession struct {
-	Contract *ExecutionServiceCaller // Generic contract caller binding to set the session for
-	CallOpts bind.CallOpts           // Call options to use throughout this session
+type IAccessControlCallerSession struct {
+	Contract *IAccessControlCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts         // Call options to use throughout this session
 }
 
-// ExecutionServiceTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// IAccessControlTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
 // with pre-set transact options.
-type ExecutionServiceTransactorSession struct {
-	Contract     *ExecutionServiceTransactor // Generic contract transactor binding to set the session for
-	TransactOpts bind.TransactOpts           // Transaction auth options to use throughout this session
+type IAccessControlTransactorSession struct {
+	Contract     *IAccessControlTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts         // Transaction auth options to use throughout this session
 }
 
-// ExecutionServiceRaw is an auto generated low-level Go binding around an Ethereum contract.
-type ExecutionServiceRaw struct {
-	Contract *ExecutionService // Generic contract binding to access the raw methods on
+// IAccessControlRaw is an auto generated low-level Go binding around an Ethereum contract.
+type IAccessControlRaw struct {
+	Contract *IAccessControl // Generic contract binding to access the raw methods on
 }
 
-// ExecutionServiceCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
-type ExecutionServiceCallerRaw struct {
-	Contract *ExecutionServiceCaller // Generic read-only contract binding to access the raw methods on
+// IAccessControlCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type IAccessControlCallerRaw struct {
+	Contract *IAccessControlCaller // Generic read-only contract binding to access the raw methods on
 }
 
-// ExecutionServiceTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
-type ExecutionServiceTransactorRaw struct {
-	Contract *ExecutionServiceTransactor // Generic write-only contract binding to access the raw methods on
+// IAccessControlTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type IAccessControlTransactorRaw struct {
+	Contract *IAccessControlTransactor // Generic write-only contract binding to access the raw methods on
 }
 
-// NewExecutionService creates a new instance of ExecutionService, bound to a specific deployed contract.
-func NewExecutionService(address common.Address, backend bind.ContractBackend) (*ExecutionService, error) {
-	contract, err := bindExecutionService(address, backend, backend, backend)
+// NewIAccessControl creates a new instance of IAccessControl, bound to a specific deployed contract.
+func NewIAccessControl(address common.Address, backend bind.ContractBackend) (*IAccessControl, error) {
+	contract, err := bindIAccessControl(address, backend, backend, backend)
 	if err != nil {
 		return nil, err
 	}
-	return &ExecutionService{ExecutionServiceCaller: ExecutionServiceCaller{contract: contract}, ExecutionServiceTransactor: ExecutionServiceTransactor{contract: contract}, ExecutionServiceFilterer: ExecutionServiceFilterer{contract: contract}}, nil
+	return &IAccessControl{IAccessControlCaller: IAccessControlCaller{contract: contract}, IAccessControlTransactor: IAccessControlTransactor{contract: contract}, IAccessControlFilterer: IAccessControlFilterer{contract: contract}}, nil
 }
 
-// NewExecutionServiceCaller creates a new read-only instance of ExecutionService, bound to a specific deployed contract.
-func NewExecutionServiceCaller(address common.Address, caller bind.ContractCaller) (*ExecutionServiceCaller, error) {
-	contract, err := bindExecutionService(address, caller, nil, nil)
+// NewIAccessControlCaller creates a new read-only instance of IAccessControl, bound to a specific deployed contract.
+func NewIAccessControlCaller(address common.Address, caller bind.ContractCaller) (*IAccessControlCaller, error) {
+	contract, err := bindIAccessControl(address, caller, nil, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &ExecutionServiceCaller{contract: contract}, nil
+	return &IAccessControlCaller{contract: contract}, nil
 }
 
-// NewExecutionServiceTransactor creates a new write-only instance of ExecutionService, bound to a specific deployed contract.
-func NewExecutionServiceTransactor(address common.Address, transactor bind.ContractTransactor) (*ExecutionServiceTransactor, error) {
-	contract, err := bindExecutionService(address, nil, transactor, nil)
+// NewIAccessControlTransactor creates a new write-only instance of IAccessControl, bound to a specific deployed contract.
+func NewIAccessControlTransactor(address common.Address, transactor bind.ContractTransactor) (*IAccessControlTransactor, error) {
+	contract, err := bindIAccessControl(address, nil, transactor, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &ExecutionServiceTransactor{contract: contract}, nil
+	return &IAccessControlTransactor{contract: contract}, nil
 }
 
-// NewExecutionServiceFilterer creates a new log filterer instance of ExecutionService, bound to a specific deployed contract.
-func NewExecutionServiceFilterer(address common.Address, filterer bind.ContractFilterer) (*ExecutionServiceFilterer, error) {
-	contract, err := bindExecutionService(address, nil, nil, filterer)
+// NewIAccessControlFilterer creates a new log filterer instance of IAccessControl, bound to a specific deployed contract.
+func NewIAccessControlFilterer(address common.Address, filterer bind.ContractFilterer) (*IAccessControlFilterer, error) {
+	contract, err := bindIAccessControl(address, nil, nil, filterer)
 	if err != nil {
 		return nil, err
 	}
-	return &ExecutionServiceFilterer{contract: contract}, nil
+	return &IAccessControlFilterer{contract: contract}, nil
 }
 
-// bindExecutionService binds a generic wrapper to an already deployed contract.
-func bindExecutionService(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := ExecutionServiceMetaData.GetAbi()
+// bindIAccessControl binds a generic wrapper to an already deployed contract.
+func bindIAccessControl(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := IAccessControlMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
@@ -336,324 +1736,168 @@ func bindExecutionService(address common.Address, caller bind.ContractCaller, tr
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_ExecutionService *ExecutionServiceRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _ExecutionService.Contract.ExecutionServiceCaller.contract.Call(opts, result, method, params...)
+func (_IAccessControl *IAccessControlRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _IAccessControl.Contract.IAccessControlCaller.contract.Call(opts, result, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
 // its default method if one is available.
-func (_ExecutionService *ExecutionServiceRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _ExecutionService.Contract.ExecutionServiceTransactor.contract.Transfer(opts)
+func (_IAccessControl *IAccessControlRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _IAccessControl.Contract.IAccessControlTransactor.contract.Transfer(opts)
 }
 
 // Transact invokes the (paid) contract method with params as input values.
-func (_ExecutionService *ExecutionServiceRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _ExecutionService.Contract.ExecutionServiceTransactor.contract.Transact(opts, method, params...)
+func (_IAccessControl *IAccessControlRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _IAccessControl.Contract.IAccessControlTransactor.contract.Transact(opts, method, params...)
 }
 
 // Call invokes the (constant) contract method with params as input values and
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_ExecutionService *ExecutionServiceCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _ExecutionService.Contract.contract.Call(opts, result, method, params...)
+func (_IAccessControl *IAccessControlCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _IAccessControl.Contract.contract.Call(opts, result, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
 // its default method if one is available.
-func (_ExecutionService *ExecutionServiceTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _ExecutionService.Contract.contract.Transfer(opts)
+func (_IAccessControl *IAccessControlTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _IAccessControl.Contract.contract.Transfer(opts)
 }
 
 // Transact invokes the (paid) contract method with params as input values.
-func (_ExecutionService *ExecutionServiceTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _ExecutionService.Contract.contract.Transact(opts, method, params...)
+func (_IAccessControl *IAccessControlTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _IAccessControl.Contract.contract.Transact(opts, method, params...)
 }
 
-// ExecutorEOA is a free data retrieval call binding the contract method 0x62014bad.
+// GetRoleAdmin is a free data retrieval call binding the contract method 0x248a9ca3.
 //
-// Solidity: function executorEOA() view returns(address)
-func (_ExecutionService *ExecutionServiceCaller) ExecutorEOA(opts *bind.CallOpts) (common.Address, error) {
+// Solidity: function getRoleAdmin(bytes32 role) view returns(bytes32)
+func (_IAccessControl *IAccessControlCaller) GetRoleAdmin(opts *bind.CallOpts, role [32]byte) ([32]byte, error) {
 	var out []interface{}
-	err := _ExecutionService.contract.Call(opts, &out, "executorEOA")
+	err := _IAccessControl.contract.Call(opts, &out, "getRoleAdmin", role)
 
 	if err != nil {
-		return *new(common.Address), err
+		return *new([32]byte), err
 	}
 
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
 
 	return out0, err
 
 }
 
-// ExecutorEOA is a free data retrieval call binding the contract method 0x62014bad.
+// GetRoleAdmin is a free data retrieval call binding the contract method 0x248a9ca3.
 //
-// Solidity: function executorEOA() view returns(address)
-func (_ExecutionService *ExecutionServiceSession) ExecutorEOA() (common.Address, error) {
-	return _ExecutionService.Contract.ExecutorEOA(&_ExecutionService.CallOpts)
+// Solidity: function getRoleAdmin(bytes32 role) view returns(bytes32)
+func (_IAccessControl *IAccessControlSession) GetRoleAdmin(role [32]byte) ([32]byte, error) {
+	return _IAccessControl.Contract.GetRoleAdmin(&_IAccessControl.CallOpts, role)
 }
 
-// ExecutorEOA is a free data retrieval call binding the contract method 0x62014bad.
+// GetRoleAdmin is a free data retrieval call binding the contract method 0x248a9ca3.
 //
-// Solidity: function executorEOA() view returns(address)
-func (_ExecutionService *ExecutionServiceCallerSession) ExecutorEOA() (common.Address, error) {
-	return _ExecutionService.Contract.ExecutorEOA(&_ExecutionService.CallOpts)
+// Solidity: function getRoleAdmin(bytes32 role) view returns(bytes32)
+func (_IAccessControl *IAccessControlCallerSession) GetRoleAdmin(role [32]byte) ([32]byte, error) {
+	return _IAccessControl.Contract.GetRoleAdmin(&_IAccessControl.CallOpts, role)
 }
 
-// GasOracle is a free data retrieval call binding the contract method 0x5d62a8dd.
+// HasRole is a free data retrieval call binding the contract method 0x91d14854.
 //
-// Solidity: function gasOracle() view returns(address)
-func (_ExecutionService *ExecutionServiceCaller) GasOracle(opts *bind.CallOpts) (common.Address, error) {
+// Solidity: function hasRole(bytes32 role, address account) view returns(bool)
+func (_IAccessControl *IAccessControlCaller) HasRole(opts *bind.CallOpts, role [32]byte, account common.Address) (bool, error) {
 	var out []interface{}
-	err := _ExecutionService.contract.Call(opts, &out, "gasOracle")
+	err := _IAccessControl.contract.Call(opts, &out, "hasRole", role, account)
 
 	if err != nil {
-		return *new(common.Address), err
+		return *new(bool), err
 	}
 
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
 
 	return out0, err
 
 }
 
-// GasOracle is a free data retrieval call binding the contract method 0x5d62a8dd.
+// HasRole is a free data retrieval call binding the contract method 0x91d14854.
 //
-// Solidity: function gasOracle() view returns(address)
-func (_ExecutionService *ExecutionServiceSession) GasOracle() (common.Address, error) {
-	return _ExecutionService.Contract.GasOracle(&_ExecutionService.CallOpts)
+// Solidity: function hasRole(bytes32 role, address account) view returns(bool)
+func (_IAccessControl *IAccessControlSession) HasRole(role [32]byte, account common.Address) (bool, error) {
+	return _IAccessControl.Contract.HasRole(&_IAccessControl.CallOpts, role, account)
 }
 
-// GasOracle is a free data retrieval call binding the contract method 0x5d62a8dd.
+// HasRole is a free data retrieval call binding the contract method 0x91d14854.
 //
-// Solidity: function gasOracle() view returns(address)
-func (_ExecutionService *ExecutionServiceCallerSession) GasOracle() (common.Address, error) {
-	return _ExecutionService.Contract.GasOracle(&_ExecutionService.CallOpts)
+// Solidity: function hasRole(bytes32 role, address account) view returns(bool)
+func (_IAccessControl *IAccessControlCallerSession) HasRole(role [32]byte, account common.Address) (bool, error) {
+	return _IAccessControl.Contract.HasRole(&_IAccessControl.CallOpts, role, account)
 }
 
-// GetExecutionFee is a free data retrieval call binding the contract method 0xc473e7e8.
+// GrantRole is a paid mutator transaction binding the contract method 0x2f2ff15d.
 //
-// Solidity: function getExecutionFee(uint256 dstChainId, uint256 txPayloadSize, bytes options) view returns(uint256)
-func (_ExecutionService *ExecutionServiceCaller) GetExecutionFee(opts *bind.CallOpts, dstChainId *big.Int, txPayloadSize *big.Int, options []byte) (*big.Int, error) {
-	var out []interface{}
-	err := _ExecutionService.contract.Call(opts, &out, "getExecutionFee", dstChainId, txPayloadSize, options)
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
+// Solidity: function grantRole(bytes32 role, address account) returns()
+func (_IAccessControl *IAccessControlTransactor) GrantRole(opts *bind.TransactOpts, role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _IAccessControl.contract.Transact(opts, "grantRole", role, account)
 }
 
-// GetExecutionFee is a free data retrieval call binding the contract method 0xc473e7e8.
+// GrantRole is a paid mutator transaction binding the contract method 0x2f2ff15d.
 //
-// Solidity: function getExecutionFee(uint256 dstChainId, uint256 txPayloadSize, bytes options) view returns(uint256)
-func (_ExecutionService *ExecutionServiceSession) GetExecutionFee(dstChainId *big.Int, txPayloadSize *big.Int, options []byte) (*big.Int, error) {
-	return _ExecutionService.Contract.GetExecutionFee(&_ExecutionService.CallOpts, dstChainId, txPayloadSize, options)
+// Solidity: function grantRole(bytes32 role, address account) returns()
+func (_IAccessControl *IAccessControlSession) GrantRole(role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _IAccessControl.Contract.GrantRole(&_IAccessControl.TransactOpts, role, account)
 }
 
-// GetExecutionFee is a free data retrieval call binding the contract method 0xc473e7e8.
+// GrantRole is a paid mutator transaction binding the contract method 0x2f2ff15d.
 //
-// Solidity: function getExecutionFee(uint256 dstChainId, uint256 txPayloadSize, bytes options) view returns(uint256)
-func (_ExecutionService *ExecutionServiceCallerSession) GetExecutionFee(dstChainId *big.Int, txPayloadSize *big.Int, options []byte) (*big.Int, error) {
-	return _ExecutionService.Contract.GetExecutionFee(&_ExecutionService.CallOpts, dstChainId, txPayloadSize, options)
+// Solidity: function grantRole(bytes32 role, address account) returns()
+func (_IAccessControl *IAccessControlTransactorSession) GrantRole(role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _IAccessControl.Contract.GrantRole(&_IAccessControl.TransactOpts, role, account)
 }
 
-// InterchainClient is a free data retrieval call binding the contract method 0xc9a64e91.
+// RenounceRole is a paid mutator transaction binding the contract method 0x36568abe.
 //
-// Solidity: function interchainClient() view returns(address)
-func (_ExecutionService *ExecutionServiceCaller) InterchainClient(opts *bind.CallOpts) (common.Address, error) {
-	var out []interface{}
-	err := _ExecutionService.contract.Call(opts, &out, "interchainClient")
-
-	if err != nil {
-		return *new(common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-
-	return out0, err
-
+// Solidity: function renounceRole(bytes32 role, address callerConfirmation) returns()
+func (_IAccessControl *IAccessControlTransactor) RenounceRole(opts *bind.TransactOpts, role [32]byte, callerConfirmation common.Address) (*types.Transaction, error) {
+	return _IAccessControl.contract.Transact(opts, "renounceRole", role, callerConfirmation)
 }
 
-// InterchainClient is a free data retrieval call binding the contract method 0xc9a64e91.
+// RenounceRole is a paid mutator transaction binding the contract method 0x36568abe.
 //
-// Solidity: function interchainClient() view returns(address)
-func (_ExecutionService *ExecutionServiceSession) InterchainClient() (common.Address, error) {
-	return _ExecutionService.Contract.InterchainClient(&_ExecutionService.CallOpts)
+// Solidity: function renounceRole(bytes32 role, address callerConfirmation) returns()
+func (_IAccessControl *IAccessControlSession) RenounceRole(role [32]byte, callerConfirmation common.Address) (*types.Transaction, error) {
+	return _IAccessControl.Contract.RenounceRole(&_IAccessControl.TransactOpts, role, callerConfirmation)
 }
 
-// InterchainClient is a free data retrieval call binding the contract method 0xc9a64e91.
+// RenounceRole is a paid mutator transaction binding the contract method 0x36568abe.
 //
-// Solidity: function interchainClient() view returns(address)
-func (_ExecutionService *ExecutionServiceCallerSession) InterchainClient() (common.Address, error) {
-	return _ExecutionService.Contract.InterchainClient(&_ExecutionService.CallOpts)
+// Solidity: function renounceRole(bytes32 role, address callerConfirmation) returns()
+func (_IAccessControl *IAccessControlTransactorSession) RenounceRole(role [32]byte, callerConfirmation common.Address) (*types.Transaction, error) {
+	return _IAccessControl.Contract.RenounceRole(&_IAccessControl.TransactOpts, role, callerConfirmation)
 }
 
-// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
+// RevokeRole is a paid mutator transaction binding the contract method 0xd547741f.
 //
-// Solidity: function owner() view returns(address)
-func (_ExecutionService *ExecutionServiceCaller) Owner(opts *bind.CallOpts) (common.Address, error) {
-	var out []interface{}
-	err := _ExecutionService.contract.Call(opts, &out, "owner")
-
-	if err != nil {
-		return *new(common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-
-	return out0, err
-
+// Solidity: function revokeRole(bytes32 role, address account) returns()
+func (_IAccessControl *IAccessControlTransactor) RevokeRole(opts *bind.TransactOpts, role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _IAccessControl.contract.Transact(opts, "revokeRole", role, account)
 }
 
-// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
+// RevokeRole is a paid mutator transaction binding the contract method 0xd547741f.
 //
-// Solidity: function owner() view returns(address)
-func (_ExecutionService *ExecutionServiceSession) Owner() (common.Address, error) {
-	return _ExecutionService.Contract.Owner(&_ExecutionService.CallOpts)
+// Solidity: function revokeRole(bytes32 role, address account) returns()
+func (_IAccessControl *IAccessControlSession) RevokeRole(role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _IAccessControl.Contract.RevokeRole(&_IAccessControl.TransactOpts, role, account)
 }
 
-// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
+// RevokeRole is a paid mutator transaction binding the contract method 0xd547741f.
 //
-// Solidity: function owner() view returns(address)
-func (_ExecutionService *ExecutionServiceCallerSession) Owner() (common.Address, error) {
-	return _ExecutionService.Contract.Owner(&_ExecutionService.CallOpts)
+// Solidity: function revokeRole(bytes32 role, address account) returns()
+func (_IAccessControl *IAccessControlTransactorSession) RevokeRole(role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _IAccessControl.Contract.RevokeRole(&_IAccessControl.TransactOpts, role, account)
 }
 
-// RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
-//
-// Solidity: function renounceOwnership() returns()
-func (_ExecutionService *ExecutionServiceTransactor) RenounceOwnership(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _ExecutionService.contract.Transact(opts, "renounceOwnership")
-}
-
-// RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
-//
-// Solidity: function renounceOwnership() returns()
-func (_ExecutionService *ExecutionServiceSession) RenounceOwnership() (*types.Transaction, error) {
-	return _ExecutionService.Contract.RenounceOwnership(&_ExecutionService.TransactOpts)
-}
-
-// RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
-//
-// Solidity: function renounceOwnership() returns()
-func (_ExecutionService *ExecutionServiceTransactorSession) RenounceOwnership() (*types.Transaction, error) {
-	return _ExecutionService.Contract.RenounceOwnership(&_ExecutionService.TransactOpts)
-}
-
-// RequestExecution is a paid mutator transaction binding the contract method 0xe4e06522.
-//
-// Solidity: function requestExecution(uint256 dstChainId, uint256 txPayloadSize, bytes32 transactionId, uint256 executionFee, bytes options) returns()
-func (_ExecutionService *ExecutionServiceTransactor) RequestExecution(opts *bind.TransactOpts, dstChainId *big.Int, txPayloadSize *big.Int, transactionId [32]byte, executionFee *big.Int, options []byte) (*types.Transaction, error) {
-	return _ExecutionService.contract.Transact(opts, "requestExecution", dstChainId, txPayloadSize, transactionId, executionFee, options)
-}
-
-// RequestExecution is a paid mutator transaction binding the contract method 0xe4e06522.
-//
-// Solidity: function requestExecution(uint256 dstChainId, uint256 txPayloadSize, bytes32 transactionId, uint256 executionFee, bytes options) returns()
-func (_ExecutionService *ExecutionServiceSession) RequestExecution(dstChainId *big.Int, txPayloadSize *big.Int, transactionId [32]byte, executionFee *big.Int, options []byte) (*types.Transaction, error) {
-	return _ExecutionService.Contract.RequestExecution(&_ExecutionService.TransactOpts, dstChainId, txPayloadSize, transactionId, executionFee, options)
-}
-
-// RequestExecution is a paid mutator transaction binding the contract method 0xe4e06522.
-//
-// Solidity: function requestExecution(uint256 dstChainId, uint256 txPayloadSize, bytes32 transactionId, uint256 executionFee, bytes options) returns()
-func (_ExecutionService *ExecutionServiceTransactorSession) RequestExecution(dstChainId *big.Int, txPayloadSize *big.Int, transactionId [32]byte, executionFee *big.Int, options []byte) (*types.Transaction, error) {
-	return _ExecutionService.Contract.RequestExecution(&_ExecutionService.TransactOpts, dstChainId, txPayloadSize, transactionId, executionFee, options)
-}
-
-// SetExecutorEOA is a paid mutator transaction binding the contract method 0x2d54566c.
-//
-// Solidity: function setExecutorEOA(address _executorEOA) returns()
-func (_ExecutionService *ExecutionServiceTransactor) SetExecutorEOA(opts *bind.TransactOpts, _executorEOA common.Address) (*types.Transaction, error) {
-	return _ExecutionService.contract.Transact(opts, "setExecutorEOA", _executorEOA)
-}
-
-// SetExecutorEOA is a paid mutator transaction binding the contract method 0x2d54566c.
-//
-// Solidity: function setExecutorEOA(address _executorEOA) returns()
-func (_ExecutionService *ExecutionServiceSession) SetExecutorEOA(_executorEOA common.Address) (*types.Transaction, error) {
-	return _ExecutionService.Contract.SetExecutorEOA(&_ExecutionService.TransactOpts, _executorEOA)
-}
-
-// SetExecutorEOA is a paid mutator transaction binding the contract method 0x2d54566c.
-//
-// Solidity: function setExecutorEOA(address _executorEOA) returns()
-func (_ExecutionService *ExecutionServiceTransactorSession) SetExecutorEOA(_executorEOA common.Address) (*types.Transaction, error) {
-	return _ExecutionService.Contract.SetExecutorEOA(&_ExecutionService.TransactOpts, _executorEOA)
-}
-
-// SetGasOracle is a paid mutator transaction binding the contract method 0xa87b8152.
-//
-// Solidity: function setGasOracle(address _gasOracle) returns()
-func (_ExecutionService *ExecutionServiceTransactor) SetGasOracle(opts *bind.TransactOpts, _gasOracle common.Address) (*types.Transaction, error) {
-	return _ExecutionService.contract.Transact(opts, "setGasOracle", _gasOracle)
-}
-
-// SetGasOracle is a paid mutator transaction binding the contract method 0xa87b8152.
-//
-// Solidity: function setGasOracle(address _gasOracle) returns()
-func (_ExecutionService *ExecutionServiceSession) SetGasOracle(_gasOracle common.Address) (*types.Transaction, error) {
-	return _ExecutionService.Contract.SetGasOracle(&_ExecutionService.TransactOpts, _gasOracle)
-}
-
-// SetGasOracle is a paid mutator transaction binding the contract method 0xa87b8152.
-//
-// Solidity: function setGasOracle(address _gasOracle) returns()
-func (_ExecutionService *ExecutionServiceTransactorSession) SetGasOracle(_gasOracle common.Address) (*types.Transaction, error) {
-	return _ExecutionService.Contract.SetGasOracle(&_ExecutionService.TransactOpts, _gasOracle)
-}
-
-// SetInterchainClient is a paid mutator transaction binding the contract method 0x27efcbb7.
-//
-// Solidity: function setInterchainClient(address _interchainClient) returns()
-func (_ExecutionService *ExecutionServiceTransactor) SetInterchainClient(opts *bind.TransactOpts, _interchainClient common.Address) (*types.Transaction, error) {
-	return _ExecutionService.contract.Transact(opts, "setInterchainClient", _interchainClient)
-}
-
-// SetInterchainClient is a paid mutator transaction binding the contract method 0x27efcbb7.
-//
-// Solidity: function setInterchainClient(address _interchainClient) returns()
-func (_ExecutionService *ExecutionServiceSession) SetInterchainClient(_interchainClient common.Address) (*types.Transaction, error) {
-	return _ExecutionService.Contract.SetInterchainClient(&_ExecutionService.TransactOpts, _interchainClient)
-}
-
-// SetInterchainClient is a paid mutator transaction binding the contract method 0x27efcbb7.
-//
-// Solidity: function setInterchainClient(address _interchainClient) returns()
-func (_ExecutionService *ExecutionServiceTransactorSession) SetInterchainClient(_interchainClient common.Address) (*types.Transaction, error) {
-	return _ExecutionService.Contract.SetInterchainClient(&_ExecutionService.TransactOpts, _interchainClient)
-}
-
-// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
-//
-// Solidity: function transferOwnership(address newOwner) returns()
-func (_ExecutionService *ExecutionServiceTransactor) TransferOwnership(opts *bind.TransactOpts, newOwner common.Address) (*types.Transaction, error) {
-	return _ExecutionService.contract.Transact(opts, "transferOwnership", newOwner)
-}
-
-// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
-//
-// Solidity: function transferOwnership(address newOwner) returns()
-func (_ExecutionService *ExecutionServiceSession) TransferOwnership(newOwner common.Address) (*types.Transaction, error) {
-	return _ExecutionService.Contract.TransferOwnership(&_ExecutionService.TransactOpts, newOwner)
-}
-
-// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
-//
-// Solidity: function transferOwnership(address newOwner) returns()
-func (_ExecutionService *ExecutionServiceTransactorSession) TransferOwnership(newOwner common.Address) (*types.Transaction, error) {
-	return _ExecutionService.Contract.TransferOwnership(&_ExecutionService.TransactOpts, newOwner)
-}
-
-// ExecutionServiceExecutionRequestedIterator is returned from FilterExecutionRequested and is used to iterate over the raw logs and unpacked data for ExecutionRequested events raised by the ExecutionService contract.
-type ExecutionServiceExecutionRequestedIterator struct {
-	Event *ExecutionServiceExecutionRequested // Event containing the contract specifics and raw log
+// IAccessControlRoleAdminChangedIterator is returned from FilterRoleAdminChanged and is used to iterate over the raw logs and unpacked data for RoleAdminChanged events raised by the IAccessControl contract.
+type IAccessControlRoleAdminChangedIterator struct {
+	Event *IAccessControlRoleAdminChanged // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -667,7 +1911,7 @@ type ExecutionServiceExecutionRequestedIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *ExecutionServiceExecutionRequestedIterator) Next() bool {
+func (it *IAccessControlRoleAdminChangedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -676,7 +1920,7 @@ func (it *ExecutionServiceExecutionRequestedIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(ExecutionServiceExecutionRequested)
+			it.Event = new(IAccessControlRoleAdminChanged)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -691,7 +1935,7 @@ func (it *ExecutionServiceExecutionRequestedIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(ExecutionServiceExecutionRequested)
+		it.Event = new(IAccessControlRoleAdminChanged)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -707,52 +1951,69 @@ func (it *ExecutionServiceExecutionRequestedIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *ExecutionServiceExecutionRequestedIterator) Error() error {
+func (it *IAccessControlRoleAdminChangedIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *ExecutionServiceExecutionRequestedIterator) Close() error {
+func (it *IAccessControlRoleAdminChangedIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// ExecutionServiceExecutionRequested represents a ExecutionRequested event raised by the ExecutionService contract.
-type ExecutionServiceExecutionRequested struct {
-	TransactionId [32]byte
-	Client        common.Address
-	Raw           types.Log // Blockchain specific contextual infos
+// IAccessControlRoleAdminChanged represents a RoleAdminChanged event raised by the IAccessControl contract.
+type IAccessControlRoleAdminChanged struct {
+	Role              [32]byte
+	PreviousAdminRole [32]byte
+	NewAdminRole      [32]byte
+	Raw               types.Log // Blockchain specific contextual infos
 }
 
-// FilterExecutionRequested is a free log retrieval operation binding the contract event 0x507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd1382.
+// FilterRoleAdminChanged is a free log retrieval operation binding the contract event 0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff.
 //
-// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client)
-func (_ExecutionService *ExecutionServiceFilterer) FilterExecutionRequested(opts *bind.FilterOpts, transactionId [][32]byte) (*ExecutionServiceExecutionRequestedIterator, error) {
+// Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
+func (_IAccessControl *IAccessControlFilterer) FilterRoleAdminChanged(opts *bind.FilterOpts, role [][32]byte, previousAdminRole [][32]byte, newAdminRole [][32]byte) (*IAccessControlRoleAdminChangedIterator, error) {
 
-	var transactionIdRule []interface{}
-	for _, transactionIdItem := range transactionId {
-		transactionIdRule = append(transactionIdRule, transactionIdItem)
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
+	}
+	var previousAdminRoleRule []interface{}
+	for _, previousAdminRoleItem := range previousAdminRole {
+		previousAdminRoleRule = append(previousAdminRoleRule, previousAdminRoleItem)
+	}
+	var newAdminRoleRule []interface{}
+	for _, newAdminRoleItem := range newAdminRole {
+		newAdminRoleRule = append(newAdminRoleRule, newAdminRoleItem)
 	}
 
-	logs, sub, err := _ExecutionService.contract.FilterLogs(opts, "ExecutionRequested", transactionIdRule)
+	logs, sub, err := _IAccessControl.contract.FilterLogs(opts, "RoleAdminChanged", roleRule, previousAdminRoleRule, newAdminRoleRule)
 	if err != nil {
 		return nil, err
 	}
-	return &ExecutionServiceExecutionRequestedIterator{contract: _ExecutionService.contract, event: "ExecutionRequested", logs: logs, sub: sub}, nil
+	return &IAccessControlRoleAdminChangedIterator{contract: _IAccessControl.contract, event: "RoleAdminChanged", logs: logs, sub: sub}, nil
 }
 
-// WatchExecutionRequested is a free log subscription operation binding the contract event 0x507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd1382.
+// WatchRoleAdminChanged is a free log subscription operation binding the contract event 0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff.
 //
-// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client)
-func (_ExecutionService *ExecutionServiceFilterer) WatchExecutionRequested(opts *bind.WatchOpts, sink chan<- *ExecutionServiceExecutionRequested, transactionId [][32]byte) (event.Subscription, error) {
+// Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
+func (_IAccessControl *IAccessControlFilterer) WatchRoleAdminChanged(opts *bind.WatchOpts, sink chan<- *IAccessControlRoleAdminChanged, role [][32]byte, previousAdminRole [][32]byte, newAdminRole [][32]byte) (event.Subscription, error) {
 
-	var transactionIdRule []interface{}
-	for _, transactionIdItem := range transactionId {
-		transactionIdRule = append(transactionIdRule, transactionIdItem)
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
+	}
+	var previousAdminRoleRule []interface{}
+	for _, previousAdminRoleItem := range previousAdminRole {
+		previousAdminRoleRule = append(previousAdminRoleRule, previousAdminRoleItem)
+	}
+	var newAdminRoleRule []interface{}
+	for _, newAdminRoleItem := range newAdminRole {
+		newAdminRoleRule = append(newAdminRoleRule, newAdminRoleItem)
 	}
 
-	logs, sub, err := _ExecutionService.contract.WatchLogs(opts, "ExecutionRequested", transactionIdRule)
+	logs, sub, err := _IAccessControl.contract.WatchLogs(opts, "RoleAdminChanged", roleRule, previousAdminRoleRule, newAdminRoleRule)
 	if err != nil {
 		return nil, err
 	}
@@ -762,8 +2023,8 @@ func (_ExecutionService *ExecutionServiceFilterer) WatchExecutionRequested(opts 
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(ExecutionServiceExecutionRequested)
-				if err := _ExecutionService.contract.UnpackLog(event, "ExecutionRequested", log); err != nil {
+				event := new(IAccessControlRoleAdminChanged)
+				if err := _IAccessControl.contract.UnpackLog(event, "RoleAdminChanged", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -784,21 +2045,21 @@ func (_ExecutionService *ExecutionServiceFilterer) WatchExecutionRequested(opts 
 	}), nil
 }
 
-// ParseExecutionRequested is a log parse operation binding the contract event 0x507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd1382.
+// ParseRoleAdminChanged is a log parse operation binding the contract event 0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff.
 //
-// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client)
-func (_ExecutionService *ExecutionServiceFilterer) ParseExecutionRequested(log types.Log) (*ExecutionServiceExecutionRequested, error) {
-	event := new(ExecutionServiceExecutionRequested)
-	if err := _ExecutionService.contract.UnpackLog(event, "ExecutionRequested", log); err != nil {
+// Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
+func (_IAccessControl *IAccessControlFilterer) ParseRoleAdminChanged(log types.Log) (*IAccessControlRoleAdminChanged, error) {
+	event := new(IAccessControlRoleAdminChanged)
+	if err := _IAccessControl.contract.UnpackLog(event, "RoleAdminChanged", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
 	return event, nil
 }
 
-// ExecutionServiceExecutorEOAUpdatedIterator is returned from FilterExecutorEOAUpdated and is used to iterate over the raw logs and unpacked data for ExecutorEOAUpdated events raised by the ExecutionService contract.
-type ExecutionServiceExecutorEOAUpdatedIterator struct {
-	Event *ExecutionServiceExecutorEOAUpdated // Event containing the contract specifics and raw log
+// IAccessControlRoleGrantedIterator is returned from FilterRoleGranted and is used to iterate over the raw logs and unpacked data for RoleGranted events raised by the IAccessControl contract.
+type IAccessControlRoleGrantedIterator struct {
+	Event *IAccessControlRoleGranted // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -812,7 +2073,7 @@ type ExecutionServiceExecutorEOAUpdatedIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *ExecutionServiceExecutorEOAUpdatedIterator) Next() bool {
+func (it *IAccessControlRoleGrantedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -821,7 +2082,7 @@ func (it *ExecutionServiceExecutorEOAUpdatedIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(ExecutionServiceExecutorEOAUpdated)
+			it.Event = new(IAccessControlRoleGranted)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -836,7 +2097,7 @@ func (it *ExecutionServiceExecutorEOAUpdatedIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(ExecutionServiceExecutorEOAUpdated)
+		it.Event = new(IAccessControlRoleGranted)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -852,51 +2113,69 @@ func (it *ExecutionServiceExecutorEOAUpdatedIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *ExecutionServiceExecutorEOAUpdatedIterator) Error() error {
+func (it *IAccessControlRoleGrantedIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *ExecutionServiceExecutorEOAUpdatedIterator) Close() error {
+func (it *IAccessControlRoleGrantedIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// ExecutionServiceExecutorEOAUpdated represents a ExecutorEOAUpdated event raised by the ExecutionService contract.
-type ExecutionServiceExecutorEOAUpdated struct {
-	ExecutorEOA common.Address
-	Raw         types.Log // Blockchain specific contextual infos
+// IAccessControlRoleGranted represents a RoleGranted event raised by the IAccessControl contract.
+type IAccessControlRoleGranted struct {
+	Role    [32]byte
+	Account common.Address
+	Sender  common.Address
+	Raw     types.Log // Blockchain specific contextual infos
 }
 
-// FilterExecutorEOAUpdated is a free log retrieval operation binding the contract event 0x8a101f72b53416c657555bd234f732510711b6f59f28b161db43892c89b6b3b4.
+// FilterRoleGranted is a free log retrieval operation binding the contract event 0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d.
 //
-// Solidity: event ExecutorEOAUpdated(address indexed executorEOA)
-func (_ExecutionService *ExecutionServiceFilterer) FilterExecutorEOAUpdated(opts *bind.FilterOpts, executorEOA []common.Address) (*ExecutionServiceExecutorEOAUpdatedIterator, error) {
+// Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
+func (_IAccessControl *IAccessControlFilterer) FilterRoleGranted(opts *bind.FilterOpts, role [][32]byte, account []common.Address, sender []common.Address) (*IAccessControlRoleGrantedIterator, error) {
 
-	var executorEOARule []interface{}
-	for _, executorEOAItem := range executorEOA {
-		executorEOARule = append(executorEOARule, executorEOAItem)
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
+	}
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
+	}
+	var senderRule []interface{}
+	for _, senderItem := range sender {
+		senderRule = append(senderRule, senderItem)
 	}
 
-	logs, sub, err := _ExecutionService.contract.FilterLogs(opts, "ExecutorEOAUpdated", executorEOARule)
+	logs, sub, err := _IAccessControl.contract.FilterLogs(opts, "RoleGranted", roleRule, accountRule, senderRule)
 	if err != nil {
 		return nil, err
 	}
-	return &ExecutionServiceExecutorEOAUpdatedIterator{contract: _ExecutionService.contract, event: "ExecutorEOAUpdated", logs: logs, sub: sub}, nil
+	return &IAccessControlRoleGrantedIterator{contract: _IAccessControl.contract, event: "RoleGranted", logs: logs, sub: sub}, nil
 }
 
-// WatchExecutorEOAUpdated is a free log subscription operation binding the contract event 0x8a101f72b53416c657555bd234f732510711b6f59f28b161db43892c89b6b3b4.
+// WatchRoleGranted is a free log subscription operation binding the contract event 0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d.
 //
-// Solidity: event ExecutorEOAUpdated(address indexed executorEOA)
-func (_ExecutionService *ExecutionServiceFilterer) WatchExecutorEOAUpdated(opts *bind.WatchOpts, sink chan<- *ExecutionServiceExecutorEOAUpdated, executorEOA []common.Address) (event.Subscription, error) {
+// Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
+func (_IAccessControl *IAccessControlFilterer) WatchRoleGranted(opts *bind.WatchOpts, sink chan<- *IAccessControlRoleGranted, role [][32]byte, account []common.Address, sender []common.Address) (event.Subscription, error) {
 
-	var executorEOARule []interface{}
-	for _, executorEOAItem := range executorEOA {
-		executorEOARule = append(executorEOARule, executorEOAItem)
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
+	}
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
+	}
+	var senderRule []interface{}
+	for _, senderItem := range sender {
+		senderRule = append(senderRule, senderItem)
 	}
 
-	logs, sub, err := _ExecutionService.contract.WatchLogs(opts, "ExecutorEOAUpdated", executorEOARule)
+	logs, sub, err := _IAccessControl.contract.WatchLogs(opts, "RoleGranted", roleRule, accountRule, senderRule)
 	if err != nil {
 		return nil, err
 	}
@@ -906,8 +2185,8 @@ func (_ExecutionService *ExecutionServiceFilterer) WatchExecutorEOAUpdated(opts 
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(ExecutionServiceExecutorEOAUpdated)
-				if err := _ExecutionService.contract.UnpackLog(event, "ExecutorEOAUpdated", log); err != nil {
+				event := new(IAccessControlRoleGranted)
+				if err := _IAccessControl.contract.UnpackLog(event, "RoleGranted", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -928,21 +2207,21 @@ func (_ExecutionService *ExecutionServiceFilterer) WatchExecutorEOAUpdated(opts 
 	}), nil
 }
 
-// ParseExecutorEOAUpdated is a log parse operation binding the contract event 0x8a101f72b53416c657555bd234f732510711b6f59f28b161db43892c89b6b3b4.
+// ParseRoleGranted is a log parse operation binding the contract event 0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d.
 //
-// Solidity: event ExecutorEOAUpdated(address indexed executorEOA)
-func (_ExecutionService *ExecutionServiceFilterer) ParseExecutorEOAUpdated(log types.Log) (*ExecutionServiceExecutorEOAUpdated, error) {
-	event := new(ExecutionServiceExecutorEOAUpdated)
-	if err := _ExecutionService.contract.UnpackLog(event, "ExecutorEOAUpdated", log); err != nil {
+// Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
+func (_IAccessControl *IAccessControlFilterer) ParseRoleGranted(log types.Log) (*IAccessControlRoleGranted, error) {
+	event := new(IAccessControlRoleGranted)
+	if err := _IAccessControl.contract.UnpackLog(event, "RoleGranted", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
 	return event, nil
 }
 
-// ExecutionServiceGasOracleUpdatedIterator is returned from FilterGasOracleUpdated and is used to iterate over the raw logs and unpacked data for GasOracleUpdated events raised by the ExecutionService contract.
-type ExecutionServiceGasOracleUpdatedIterator struct {
-	Event *ExecutionServiceGasOracleUpdated // Event containing the contract specifics and raw log
+// IAccessControlRoleRevokedIterator is returned from FilterRoleRevoked and is used to iterate over the raw logs and unpacked data for RoleRevoked events raised by the IAccessControl contract.
+type IAccessControlRoleRevokedIterator struct {
+	Event *IAccessControlRoleRevoked // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -956,7 +2235,7 @@ type ExecutionServiceGasOracleUpdatedIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *ExecutionServiceGasOracleUpdatedIterator) Next() bool {
+func (it *IAccessControlRoleRevokedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -965,7 +2244,7 @@ func (it *ExecutionServiceGasOracleUpdatedIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(ExecutionServiceGasOracleUpdated)
+			it.Event = new(IAccessControlRoleRevoked)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -980,7 +2259,7 @@ func (it *ExecutionServiceGasOracleUpdatedIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(ExecutionServiceGasOracleUpdated)
+		it.Event = new(IAccessControlRoleRevoked)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -996,51 +2275,69 @@ func (it *ExecutionServiceGasOracleUpdatedIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *ExecutionServiceGasOracleUpdatedIterator) Error() error {
+func (it *IAccessControlRoleRevokedIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *ExecutionServiceGasOracleUpdatedIterator) Close() error {
+func (it *IAccessControlRoleRevokedIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// ExecutionServiceGasOracleUpdated represents a GasOracleUpdated event raised by the ExecutionService contract.
-type ExecutionServiceGasOracleUpdated struct {
-	GasOracle common.Address
-	Raw       types.Log // Blockchain specific contextual infos
+// IAccessControlRoleRevoked represents a RoleRevoked event raised by the IAccessControl contract.
+type IAccessControlRoleRevoked struct {
+	Role    [32]byte
+	Account common.Address
+	Sender  common.Address
+	Raw     types.Log // Blockchain specific contextual infos
 }
 
-// FilterGasOracleUpdated is a free log retrieval operation binding the contract event 0x0b987d971d57fe66ec2d0cff095b1b547c3076cdd07fdf5b0863f320700dbb90.
+// FilterRoleRevoked is a free log retrieval operation binding the contract event 0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b.
 //
-// Solidity: event GasOracleUpdated(address indexed gasOracle)
-func (_ExecutionService *ExecutionServiceFilterer) FilterGasOracleUpdated(opts *bind.FilterOpts, gasOracle []common.Address) (*ExecutionServiceGasOracleUpdatedIterator, error) {
+// Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
+func (_IAccessControl *IAccessControlFilterer) FilterRoleRevoked(opts *bind.FilterOpts, role [][32]byte, account []common.Address, sender []common.Address) (*IAccessControlRoleRevokedIterator, error) {
 
-	var gasOracleRule []interface{}
-	for _, gasOracleItem := range gasOracle {
-		gasOracleRule = append(gasOracleRule, gasOracleItem)
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
+	}
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
+	}
+	var senderRule []interface{}
+	for _, senderItem := range sender {
+		senderRule = append(senderRule, senderItem)
 	}
 
-	logs, sub, err := _ExecutionService.contract.FilterLogs(opts, "GasOracleUpdated", gasOracleRule)
+	logs, sub, err := _IAccessControl.contract.FilterLogs(opts, "RoleRevoked", roleRule, accountRule, senderRule)
 	if err != nil {
 		return nil, err
 	}
-	return &ExecutionServiceGasOracleUpdatedIterator{contract: _ExecutionService.contract, event: "GasOracleUpdated", logs: logs, sub: sub}, nil
+	return &IAccessControlRoleRevokedIterator{contract: _IAccessControl.contract, event: "RoleRevoked", logs: logs, sub: sub}, nil
 }
 
-// WatchGasOracleUpdated is a free log subscription operation binding the contract event 0x0b987d971d57fe66ec2d0cff095b1b547c3076cdd07fdf5b0863f320700dbb90.
+// WatchRoleRevoked is a free log subscription operation binding the contract event 0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b.
 //
-// Solidity: event GasOracleUpdated(address indexed gasOracle)
-func (_ExecutionService *ExecutionServiceFilterer) WatchGasOracleUpdated(opts *bind.WatchOpts, sink chan<- *ExecutionServiceGasOracleUpdated, gasOracle []common.Address) (event.Subscription, error) {
+// Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
+func (_IAccessControl *IAccessControlFilterer) WatchRoleRevoked(opts *bind.WatchOpts, sink chan<- *IAccessControlRoleRevoked, role [][32]byte, account []common.Address, sender []common.Address) (event.Subscription, error) {
 
-	var gasOracleRule []interface{}
-	for _, gasOracleItem := range gasOracle {
-		gasOracleRule = append(gasOracleRule, gasOracleItem)
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
+	}
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
+	}
+	var senderRule []interface{}
+	for _, senderItem := range sender {
+		senderRule = append(senderRule, senderItem)
 	}
 
-	logs, sub, err := _ExecutionService.contract.WatchLogs(opts, "GasOracleUpdated", gasOracleRule)
+	logs, sub, err := _IAccessControl.contract.WatchLogs(opts, "RoleRevoked", roleRule, accountRule, senderRule)
 	if err != nil {
 		return nil, err
 	}
@@ -1050,8 +2347,8 @@ func (_ExecutionService *ExecutionServiceFilterer) WatchGasOracleUpdated(opts *b
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(ExecutionServiceGasOracleUpdated)
-				if err := _ExecutionService.contract.UnpackLog(event, "GasOracleUpdated", log); err != nil {
+				event := new(IAccessControlRoleRevoked)
+				if err := _IAccessControl.contract.UnpackLog(event, "RoleRevoked", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -1072,422 +2369,132 @@ func (_ExecutionService *ExecutionServiceFilterer) WatchGasOracleUpdated(opts *b
 	}), nil
 }
 
-// ParseGasOracleUpdated is a log parse operation binding the contract event 0x0b987d971d57fe66ec2d0cff095b1b547c3076cdd07fdf5b0863f320700dbb90.
+// ParseRoleRevoked is a log parse operation binding the contract event 0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b.
 //
-// Solidity: event GasOracleUpdated(address indexed gasOracle)
-func (_ExecutionService *ExecutionServiceFilterer) ParseGasOracleUpdated(log types.Log) (*ExecutionServiceGasOracleUpdated, error) {
-	event := new(ExecutionServiceGasOracleUpdated)
-	if err := _ExecutionService.contract.UnpackLog(event, "GasOracleUpdated", log); err != nil {
+// Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
+func (_IAccessControl *IAccessControlFilterer) ParseRoleRevoked(log types.Log) (*IAccessControlRoleRevoked, error) {
+	event := new(IAccessControlRoleRevoked)
+	if err := _IAccessControl.contract.UnpackLog(event, "RoleRevoked", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
 	return event, nil
 }
 
-// ExecutionServiceInterchainClientUpdatedIterator is returned from FilterInterchainClientUpdated and is used to iterate over the raw logs and unpacked data for InterchainClientUpdated events raised by the ExecutionService contract.
-type ExecutionServiceInterchainClientUpdatedIterator struct {
-	Event *ExecutionServiceInterchainClientUpdated // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
+// IERC165MetaData contains all meta data concerning the IERC165 contract.
+var IERC165MetaData = &bind.MetaData{
+	ABI: "[{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	Sigs: map[string]string{
+		"01ffc9a7": "supportsInterface(bytes4)",
+	},
 }
 
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *ExecutionServiceInterchainClientUpdatedIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(ExecutionServiceInterchainClientUpdated)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
+// IERC165ABI is the input ABI used to generate the binding from.
+// Deprecated: Use IERC165MetaData.ABI instead.
+var IERC165ABI = IERC165MetaData.ABI
 
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(ExecutionServiceInterchainClientUpdated)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
+// Deprecated: Use IERC165MetaData.Sigs instead.
+// IERC165FuncSigs maps the 4-byte function signature to its string representation.
+var IERC165FuncSigs = IERC165MetaData.Sigs
 
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
+// IERC165 is an auto generated Go binding around an Ethereum contract.
+type IERC165 struct {
+	IERC165Caller     // Read-only binding to the contract
+	IERC165Transactor // Write-only binding to the contract
+	IERC165Filterer   // Log filterer for contract events
 }
 
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *ExecutionServiceInterchainClientUpdatedIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *ExecutionServiceInterchainClientUpdatedIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// ExecutionServiceInterchainClientUpdated represents a InterchainClientUpdated event raised by the ExecutionService contract.
-type ExecutionServiceInterchainClientUpdated struct {
-	InterchainClient common.Address
-	Raw              types.Log // Blockchain specific contextual infos
-}
-
-// FilterInterchainClientUpdated is a free log retrieval operation binding the contract event 0x33e3a51bf9fedee6e205cd10237a9a8dd3fffed45ac3dee88d2eba92ef8b5d62.
-//
-// Solidity: event InterchainClientUpdated(address indexed interchainClient)
-func (_ExecutionService *ExecutionServiceFilterer) FilterInterchainClientUpdated(opts *bind.FilterOpts, interchainClient []common.Address) (*ExecutionServiceInterchainClientUpdatedIterator, error) {
-
-	var interchainClientRule []interface{}
-	for _, interchainClientItem := range interchainClient {
-		interchainClientRule = append(interchainClientRule, interchainClientItem)
-	}
-
-	logs, sub, err := _ExecutionService.contract.FilterLogs(opts, "InterchainClientUpdated", interchainClientRule)
-	if err != nil {
-		return nil, err
-	}
-	return &ExecutionServiceInterchainClientUpdatedIterator{contract: _ExecutionService.contract, event: "InterchainClientUpdated", logs: logs, sub: sub}, nil
-}
-
-// WatchInterchainClientUpdated is a free log subscription operation binding the contract event 0x33e3a51bf9fedee6e205cd10237a9a8dd3fffed45ac3dee88d2eba92ef8b5d62.
-//
-// Solidity: event InterchainClientUpdated(address indexed interchainClient)
-func (_ExecutionService *ExecutionServiceFilterer) WatchInterchainClientUpdated(opts *bind.WatchOpts, sink chan<- *ExecutionServiceInterchainClientUpdated, interchainClient []common.Address) (event.Subscription, error) {
-
-	var interchainClientRule []interface{}
-	for _, interchainClientItem := range interchainClient {
-		interchainClientRule = append(interchainClientRule, interchainClientItem)
-	}
-
-	logs, sub, err := _ExecutionService.contract.WatchLogs(opts, "InterchainClientUpdated", interchainClientRule)
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(ExecutionServiceInterchainClientUpdated)
-				if err := _ExecutionService.contract.UnpackLog(event, "InterchainClientUpdated", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseInterchainClientUpdated is a log parse operation binding the contract event 0x33e3a51bf9fedee6e205cd10237a9a8dd3fffed45ac3dee88d2eba92ef8b5d62.
-//
-// Solidity: event InterchainClientUpdated(address indexed interchainClient)
-func (_ExecutionService *ExecutionServiceFilterer) ParseInterchainClientUpdated(log types.Log) (*ExecutionServiceInterchainClientUpdated, error) {
-	event := new(ExecutionServiceInterchainClientUpdated)
-	if err := _ExecutionService.contract.UnpackLog(event, "InterchainClientUpdated", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
-// ExecutionServiceOwnershipTransferredIterator is returned from FilterOwnershipTransferred and is used to iterate over the raw logs and unpacked data for OwnershipTransferred events raised by the ExecutionService contract.
-type ExecutionServiceOwnershipTransferredIterator struct {
-	Event *ExecutionServiceOwnershipTransferred // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *ExecutionServiceOwnershipTransferredIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(ExecutionServiceOwnershipTransferred)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(ExecutionServiceOwnershipTransferred)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *ExecutionServiceOwnershipTransferredIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *ExecutionServiceOwnershipTransferredIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// ExecutionServiceOwnershipTransferred represents a OwnershipTransferred event raised by the ExecutionService contract.
-type ExecutionServiceOwnershipTransferred struct {
-	PreviousOwner common.Address
-	NewOwner      common.Address
-	Raw           types.Log // Blockchain specific contextual infos
-}
-
-// FilterOwnershipTransferred is a free log retrieval operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
-//
-// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
-func (_ExecutionService *ExecutionServiceFilterer) FilterOwnershipTransferred(opts *bind.FilterOpts, previousOwner []common.Address, newOwner []common.Address) (*ExecutionServiceOwnershipTransferredIterator, error) {
-
-	var previousOwnerRule []interface{}
-	for _, previousOwnerItem := range previousOwner {
-		previousOwnerRule = append(previousOwnerRule, previousOwnerItem)
-	}
-	var newOwnerRule []interface{}
-	for _, newOwnerItem := range newOwner {
-		newOwnerRule = append(newOwnerRule, newOwnerItem)
-	}
-
-	logs, sub, err := _ExecutionService.contract.FilterLogs(opts, "OwnershipTransferred", previousOwnerRule, newOwnerRule)
-	if err != nil {
-		return nil, err
-	}
-	return &ExecutionServiceOwnershipTransferredIterator{contract: _ExecutionService.contract, event: "OwnershipTransferred", logs: logs, sub: sub}, nil
-}
-
-// WatchOwnershipTransferred is a free log subscription operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
-//
-// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
-func (_ExecutionService *ExecutionServiceFilterer) WatchOwnershipTransferred(opts *bind.WatchOpts, sink chan<- *ExecutionServiceOwnershipTransferred, previousOwner []common.Address, newOwner []common.Address) (event.Subscription, error) {
-
-	var previousOwnerRule []interface{}
-	for _, previousOwnerItem := range previousOwner {
-		previousOwnerRule = append(previousOwnerRule, previousOwnerItem)
-	}
-	var newOwnerRule []interface{}
-	for _, newOwnerItem := range newOwner {
-		newOwnerRule = append(newOwnerRule, newOwnerItem)
-	}
-
-	logs, sub, err := _ExecutionService.contract.WatchLogs(opts, "OwnershipTransferred", previousOwnerRule, newOwnerRule)
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(ExecutionServiceOwnershipTransferred)
-				if err := _ExecutionService.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseOwnershipTransferred is a log parse operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
-//
-// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
-func (_ExecutionService *ExecutionServiceFilterer) ParseOwnershipTransferred(log types.Log) (*ExecutionServiceOwnershipTransferred, error) {
-	event := new(ExecutionServiceOwnershipTransferred)
-	if err := _ExecutionService.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
-// ExecutionServiceEventsMetaData contains all meta data concerning the ExecutionServiceEvents contract.
-var ExecutionServiceEventsMetaData = &bind.MetaData{
-	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"ExecutionRequested\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"executorEOA\",\"type\":\"address\"}],\"name\":\"ExecutorEOAUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"GasOracleUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"interchainClient\",\"type\":\"address\"}],\"name\":\"InterchainClientUpdated\",\"type\":\"event\"}]",
-}
-
-// ExecutionServiceEventsABI is the input ABI used to generate the binding from.
-// Deprecated: Use ExecutionServiceEventsMetaData.ABI instead.
-var ExecutionServiceEventsABI = ExecutionServiceEventsMetaData.ABI
-
-// ExecutionServiceEvents is an auto generated Go binding around an Ethereum contract.
-type ExecutionServiceEvents struct {
-	ExecutionServiceEventsCaller     // Read-only binding to the contract
-	ExecutionServiceEventsTransactor // Write-only binding to the contract
-	ExecutionServiceEventsFilterer   // Log filterer for contract events
-}
-
-// ExecutionServiceEventsCaller is an auto generated read-only Go binding around an Ethereum contract.
-type ExecutionServiceEventsCaller struct {
+// IERC165Caller is an auto generated read-only Go binding around an Ethereum contract.
+type IERC165Caller struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// ExecutionServiceEventsTransactor is an auto generated write-only Go binding around an Ethereum contract.
-type ExecutionServiceEventsTransactor struct {
+// IERC165Transactor is an auto generated write-only Go binding around an Ethereum contract.
+type IERC165Transactor struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// ExecutionServiceEventsFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
-type ExecutionServiceEventsFilterer struct {
+// IERC165Filterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type IERC165Filterer struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// ExecutionServiceEventsSession is an auto generated Go binding around an Ethereum contract,
+// IERC165Session is an auto generated Go binding around an Ethereum contract,
 // with pre-set call and transact options.
-type ExecutionServiceEventsSession struct {
-	Contract     *ExecutionServiceEvents // Generic contract binding to set the session for
-	CallOpts     bind.CallOpts           // Call options to use throughout this session
-	TransactOpts bind.TransactOpts       // Transaction auth options to use throughout this session
+type IERC165Session struct {
+	Contract     *IERC165          // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts     // Call options to use throughout this session
+	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
 }
 
-// ExecutionServiceEventsCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// IERC165CallerSession is an auto generated read-only Go binding around an Ethereum contract,
 // with pre-set call options.
-type ExecutionServiceEventsCallerSession struct {
-	Contract *ExecutionServiceEventsCaller // Generic contract caller binding to set the session for
-	CallOpts bind.CallOpts                 // Call options to use throughout this session
+type IERC165CallerSession struct {
+	Contract *IERC165Caller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts  // Call options to use throughout this session
 }
 
-// ExecutionServiceEventsTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// IERC165TransactorSession is an auto generated write-only Go binding around an Ethereum contract,
 // with pre-set transact options.
-type ExecutionServiceEventsTransactorSession struct {
-	Contract     *ExecutionServiceEventsTransactor // Generic contract transactor binding to set the session for
-	TransactOpts bind.TransactOpts                 // Transaction auth options to use throughout this session
+type IERC165TransactorSession struct {
+	Contract     *IERC165Transactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts  // Transaction auth options to use throughout this session
 }
 
-// ExecutionServiceEventsRaw is an auto generated low-level Go binding around an Ethereum contract.
-type ExecutionServiceEventsRaw struct {
-	Contract *ExecutionServiceEvents // Generic contract binding to access the raw methods on
+// IERC165Raw is an auto generated low-level Go binding around an Ethereum contract.
+type IERC165Raw struct {
+	Contract *IERC165 // Generic contract binding to access the raw methods on
 }
 
-// ExecutionServiceEventsCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
-type ExecutionServiceEventsCallerRaw struct {
-	Contract *ExecutionServiceEventsCaller // Generic read-only contract binding to access the raw methods on
+// IERC165CallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type IERC165CallerRaw struct {
+	Contract *IERC165Caller // Generic read-only contract binding to access the raw methods on
 }
 
-// ExecutionServiceEventsTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
-type ExecutionServiceEventsTransactorRaw struct {
-	Contract *ExecutionServiceEventsTransactor // Generic write-only contract binding to access the raw methods on
+// IERC165TransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type IERC165TransactorRaw struct {
+	Contract *IERC165Transactor // Generic write-only contract binding to access the raw methods on
 }
 
-// NewExecutionServiceEvents creates a new instance of ExecutionServiceEvents, bound to a specific deployed contract.
-func NewExecutionServiceEvents(address common.Address, backend bind.ContractBackend) (*ExecutionServiceEvents, error) {
-	contract, err := bindExecutionServiceEvents(address, backend, backend, backend)
+// NewIERC165 creates a new instance of IERC165, bound to a specific deployed contract.
+func NewIERC165(address common.Address, backend bind.ContractBackend) (*IERC165, error) {
+	contract, err := bindIERC165(address, backend, backend, backend)
 	if err != nil {
 		return nil, err
 	}
-	return &ExecutionServiceEvents{ExecutionServiceEventsCaller: ExecutionServiceEventsCaller{contract: contract}, ExecutionServiceEventsTransactor: ExecutionServiceEventsTransactor{contract: contract}, ExecutionServiceEventsFilterer: ExecutionServiceEventsFilterer{contract: contract}}, nil
+	return &IERC165{IERC165Caller: IERC165Caller{contract: contract}, IERC165Transactor: IERC165Transactor{contract: contract}, IERC165Filterer: IERC165Filterer{contract: contract}}, nil
 }
 
-// NewExecutionServiceEventsCaller creates a new read-only instance of ExecutionServiceEvents, bound to a specific deployed contract.
-func NewExecutionServiceEventsCaller(address common.Address, caller bind.ContractCaller) (*ExecutionServiceEventsCaller, error) {
-	contract, err := bindExecutionServiceEvents(address, caller, nil, nil)
+// NewIERC165Caller creates a new read-only instance of IERC165, bound to a specific deployed contract.
+func NewIERC165Caller(address common.Address, caller bind.ContractCaller) (*IERC165Caller, error) {
+	contract, err := bindIERC165(address, caller, nil, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &ExecutionServiceEventsCaller{contract: contract}, nil
+	return &IERC165Caller{contract: contract}, nil
 }
 
-// NewExecutionServiceEventsTransactor creates a new write-only instance of ExecutionServiceEvents, bound to a specific deployed contract.
-func NewExecutionServiceEventsTransactor(address common.Address, transactor bind.ContractTransactor) (*ExecutionServiceEventsTransactor, error) {
-	contract, err := bindExecutionServiceEvents(address, nil, transactor, nil)
+// NewIERC165Transactor creates a new write-only instance of IERC165, bound to a specific deployed contract.
+func NewIERC165Transactor(address common.Address, transactor bind.ContractTransactor) (*IERC165Transactor, error) {
+	contract, err := bindIERC165(address, nil, transactor, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &ExecutionServiceEventsTransactor{contract: contract}, nil
+	return &IERC165Transactor{contract: contract}, nil
 }
 
-// NewExecutionServiceEventsFilterer creates a new log filterer instance of ExecutionServiceEvents, bound to a specific deployed contract.
-func NewExecutionServiceEventsFilterer(address common.Address, filterer bind.ContractFilterer) (*ExecutionServiceEventsFilterer, error) {
-	contract, err := bindExecutionServiceEvents(address, nil, nil, filterer)
+// NewIERC165Filterer creates a new log filterer instance of IERC165, bound to a specific deployed contract.
+func NewIERC165Filterer(address common.Address, filterer bind.ContractFilterer) (*IERC165Filterer, error) {
+	contract, err := bindIERC165(address, nil, nil, filterer)
 	if err != nil {
 		return nil, err
 	}
-	return &ExecutionServiceEventsFilterer{contract: contract}, nil
+	return &IERC165Filterer{contract: contract}, nil
 }
 
-// bindExecutionServiceEvents binds a generic wrapper to an already deployed contract.
-func bindExecutionServiceEvents(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := ExecutionServiceEventsMetaData.GetAbi()
+// bindIERC165 binds a generic wrapper to an already deployed contract.
+func bindIERC165(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := IERC165MetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
@@ -1498,615 +2505,69 @@ func bindExecutionServiceEvents(address common.Address, caller bind.ContractCall
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_ExecutionServiceEvents *ExecutionServiceEventsRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _ExecutionServiceEvents.Contract.ExecutionServiceEventsCaller.contract.Call(opts, result, method, params...)
+func (_IERC165 *IERC165Raw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _IERC165.Contract.IERC165Caller.contract.Call(opts, result, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
 // its default method if one is available.
-func (_ExecutionServiceEvents *ExecutionServiceEventsRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _ExecutionServiceEvents.Contract.ExecutionServiceEventsTransactor.contract.Transfer(opts)
+func (_IERC165 *IERC165Raw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _IERC165.Contract.IERC165Transactor.contract.Transfer(opts)
 }
 
 // Transact invokes the (paid) contract method with params as input values.
-func (_ExecutionServiceEvents *ExecutionServiceEventsRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _ExecutionServiceEvents.Contract.ExecutionServiceEventsTransactor.contract.Transact(opts, method, params...)
+func (_IERC165 *IERC165Raw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _IERC165.Contract.IERC165Transactor.contract.Transact(opts, method, params...)
 }
 
 // Call invokes the (constant) contract method with params as input values and
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_ExecutionServiceEvents *ExecutionServiceEventsCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _ExecutionServiceEvents.Contract.contract.Call(opts, result, method, params...)
+func (_IERC165 *IERC165CallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _IERC165.Contract.contract.Call(opts, result, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
 // its default method if one is available.
-func (_ExecutionServiceEvents *ExecutionServiceEventsTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _ExecutionServiceEvents.Contract.contract.Transfer(opts)
+func (_IERC165 *IERC165TransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _IERC165.Contract.contract.Transfer(opts)
 }
 
 // Transact invokes the (paid) contract method with params as input values.
-func (_ExecutionServiceEvents *ExecutionServiceEventsTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _ExecutionServiceEvents.Contract.contract.Transact(opts, method, params...)
+func (_IERC165 *IERC165TransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _IERC165.Contract.contract.Transact(opts, method, params...)
 }
 
-// ExecutionServiceEventsExecutionRequestedIterator is returned from FilterExecutionRequested and is used to iterate over the raw logs and unpacked data for ExecutionRequested events raised by the ExecutionServiceEvents contract.
-type ExecutionServiceEventsExecutionRequestedIterator struct {
-	Event *ExecutionServiceEventsExecutionRequested // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *ExecutionServiceEventsExecutionRequestedIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(ExecutionServiceEventsExecutionRequested)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(ExecutionServiceEventsExecutionRequested)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *ExecutionServiceEventsExecutionRequestedIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *ExecutionServiceEventsExecutionRequestedIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// ExecutionServiceEventsExecutionRequested represents a ExecutionRequested event raised by the ExecutionServiceEvents contract.
-type ExecutionServiceEventsExecutionRequested struct {
-	TransactionId [32]byte
-	Client        common.Address
-	Raw           types.Log // Blockchain specific contextual infos
-}
-
-// FilterExecutionRequested is a free log retrieval operation binding the contract event 0x507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd1382.
+// SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
 //
-// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client)
-func (_ExecutionServiceEvents *ExecutionServiceEventsFilterer) FilterExecutionRequested(opts *bind.FilterOpts, transactionId [][32]byte) (*ExecutionServiceEventsExecutionRequestedIterator, error) {
+// Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool)
+func (_IERC165 *IERC165Caller) SupportsInterface(opts *bind.CallOpts, interfaceId [4]byte) (bool, error) {
+	var out []interface{}
+	err := _IERC165.contract.Call(opts, &out, "supportsInterface", interfaceId)
 
-	var transactionIdRule []interface{}
-	for _, transactionIdItem := range transactionId {
-		transactionIdRule = append(transactionIdRule, transactionIdItem)
-	}
-
-	logs, sub, err := _ExecutionServiceEvents.contract.FilterLogs(opts, "ExecutionRequested", transactionIdRule)
 	if err != nil {
-		return nil, err
+		return *new(bool), err
 	}
-	return &ExecutionServiceEventsExecutionRequestedIterator{contract: _ExecutionServiceEvents.contract, event: "ExecutionRequested", logs: logs, sub: sub}, nil
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
-// WatchExecutionRequested is a free log subscription operation binding the contract event 0x507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd1382.
+// SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
 //
-// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client)
-func (_ExecutionServiceEvents *ExecutionServiceEventsFilterer) WatchExecutionRequested(opts *bind.WatchOpts, sink chan<- *ExecutionServiceEventsExecutionRequested, transactionId [][32]byte) (event.Subscription, error) {
-
-	var transactionIdRule []interface{}
-	for _, transactionIdItem := range transactionId {
-		transactionIdRule = append(transactionIdRule, transactionIdItem)
-	}
-
-	logs, sub, err := _ExecutionServiceEvents.contract.WatchLogs(opts, "ExecutionRequested", transactionIdRule)
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(ExecutionServiceEventsExecutionRequested)
-				if err := _ExecutionServiceEvents.contract.UnpackLog(event, "ExecutionRequested", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
+// Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool)
+func (_IERC165 *IERC165Session) SupportsInterface(interfaceId [4]byte) (bool, error) {
+	return _IERC165.Contract.SupportsInterface(&_IERC165.CallOpts, interfaceId)
 }
 
-// ParseExecutionRequested is a log parse operation binding the contract event 0x507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd1382.
+// SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
 //
-// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client)
-func (_ExecutionServiceEvents *ExecutionServiceEventsFilterer) ParseExecutionRequested(log types.Log) (*ExecutionServiceEventsExecutionRequested, error) {
-	event := new(ExecutionServiceEventsExecutionRequested)
-	if err := _ExecutionServiceEvents.contract.UnpackLog(event, "ExecutionRequested", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
-// ExecutionServiceEventsExecutorEOAUpdatedIterator is returned from FilterExecutorEOAUpdated and is used to iterate over the raw logs and unpacked data for ExecutorEOAUpdated events raised by the ExecutionServiceEvents contract.
-type ExecutionServiceEventsExecutorEOAUpdatedIterator struct {
-	Event *ExecutionServiceEventsExecutorEOAUpdated // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *ExecutionServiceEventsExecutorEOAUpdatedIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(ExecutionServiceEventsExecutorEOAUpdated)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(ExecutionServiceEventsExecutorEOAUpdated)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *ExecutionServiceEventsExecutorEOAUpdatedIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *ExecutionServiceEventsExecutorEOAUpdatedIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// ExecutionServiceEventsExecutorEOAUpdated represents a ExecutorEOAUpdated event raised by the ExecutionServiceEvents contract.
-type ExecutionServiceEventsExecutorEOAUpdated struct {
-	ExecutorEOA common.Address
-	Raw         types.Log // Blockchain specific contextual infos
-}
-
-// FilterExecutorEOAUpdated is a free log retrieval operation binding the contract event 0x8a101f72b53416c657555bd234f732510711b6f59f28b161db43892c89b6b3b4.
-//
-// Solidity: event ExecutorEOAUpdated(address indexed executorEOA)
-func (_ExecutionServiceEvents *ExecutionServiceEventsFilterer) FilterExecutorEOAUpdated(opts *bind.FilterOpts, executorEOA []common.Address) (*ExecutionServiceEventsExecutorEOAUpdatedIterator, error) {
-
-	var executorEOARule []interface{}
-	for _, executorEOAItem := range executorEOA {
-		executorEOARule = append(executorEOARule, executorEOAItem)
-	}
-
-	logs, sub, err := _ExecutionServiceEvents.contract.FilterLogs(opts, "ExecutorEOAUpdated", executorEOARule)
-	if err != nil {
-		return nil, err
-	}
-	return &ExecutionServiceEventsExecutorEOAUpdatedIterator{contract: _ExecutionServiceEvents.contract, event: "ExecutorEOAUpdated", logs: logs, sub: sub}, nil
-}
-
-// WatchExecutorEOAUpdated is a free log subscription operation binding the contract event 0x8a101f72b53416c657555bd234f732510711b6f59f28b161db43892c89b6b3b4.
-//
-// Solidity: event ExecutorEOAUpdated(address indexed executorEOA)
-func (_ExecutionServiceEvents *ExecutionServiceEventsFilterer) WatchExecutorEOAUpdated(opts *bind.WatchOpts, sink chan<- *ExecutionServiceEventsExecutorEOAUpdated, executorEOA []common.Address) (event.Subscription, error) {
-
-	var executorEOARule []interface{}
-	for _, executorEOAItem := range executorEOA {
-		executorEOARule = append(executorEOARule, executorEOAItem)
-	}
-
-	logs, sub, err := _ExecutionServiceEvents.contract.WatchLogs(opts, "ExecutorEOAUpdated", executorEOARule)
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(ExecutionServiceEventsExecutorEOAUpdated)
-				if err := _ExecutionServiceEvents.contract.UnpackLog(event, "ExecutorEOAUpdated", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseExecutorEOAUpdated is a log parse operation binding the contract event 0x8a101f72b53416c657555bd234f732510711b6f59f28b161db43892c89b6b3b4.
-//
-// Solidity: event ExecutorEOAUpdated(address indexed executorEOA)
-func (_ExecutionServiceEvents *ExecutionServiceEventsFilterer) ParseExecutorEOAUpdated(log types.Log) (*ExecutionServiceEventsExecutorEOAUpdated, error) {
-	event := new(ExecutionServiceEventsExecutorEOAUpdated)
-	if err := _ExecutionServiceEvents.contract.UnpackLog(event, "ExecutorEOAUpdated", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
-// ExecutionServiceEventsGasOracleUpdatedIterator is returned from FilterGasOracleUpdated and is used to iterate over the raw logs and unpacked data for GasOracleUpdated events raised by the ExecutionServiceEvents contract.
-type ExecutionServiceEventsGasOracleUpdatedIterator struct {
-	Event *ExecutionServiceEventsGasOracleUpdated // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *ExecutionServiceEventsGasOracleUpdatedIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(ExecutionServiceEventsGasOracleUpdated)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(ExecutionServiceEventsGasOracleUpdated)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *ExecutionServiceEventsGasOracleUpdatedIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *ExecutionServiceEventsGasOracleUpdatedIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// ExecutionServiceEventsGasOracleUpdated represents a GasOracleUpdated event raised by the ExecutionServiceEvents contract.
-type ExecutionServiceEventsGasOracleUpdated struct {
-	GasOracle common.Address
-	Raw       types.Log // Blockchain specific contextual infos
-}
-
-// FilterGasOracleUpdated is a free log retrieval operation binding the contract event 0x0b987d971d57fe66ec2d0cff095b1b547c3076cdd07fdf5b0863f320700dbb90.
-//
-// Solidity: event GasOracleUpdated(address indexed gasOracle)
-func (_ExecutionServiceEvents *ExecutionServiceEventsFilterer) FilterGasOracleUpdated(opts *bind.FilterOpts, gasOracle []common.Address) (*ExecutionServiceEventsGasOracleUpdatedIterator, error) {
-
-	var gasOracleRule []interface{}
-	for _, gasOracleItem := range gasOracle {
-		gasOracleRule = append(gasOracleRule, gasOracleItem)
-	}
-
-	logs, sub, err := _ExecutionServiceEvents.contract.FilterLogs(opts, "GasOracleUpdated", gasOracleRule)
-	if err != nil {
-		return nil, err
-	}
-	return &ExecutionServiceEventsGasOracleUpdatedIterator{contract: _ExecutionServiceEvents.contract, event: "GasOracleUpdated", logs: logs, sub: sub}, nil
-}
-
-// WatchGasOracleUpdated is a free log subscription operation binding the contract event 0x0b987d971d57fe66ec2d0cff095b1b547c3076cdd07fdf5b0863f320700dbb90.
-//
-// Solidity: event GasOracleUpdated(address indexed gasOracle)
-func (_ExecutionServiceEvents *ExecutionServiceEventsFilterer) WatchGasOracleUpdated(opts *bind.WatchOpts, sink chan<- *ExecutionServiceEventsGasOracleUpdated, gasOracle []common.Address) (event.Subscription, error) {
-
-	var gasOracleRule []interface{}
-	for _, gasOracleItem := range gasOracle {
-		gasOracleRule = append(gasOracleRule, gasOracleItem)
-	}
-
-	logs, sub, err := _ExecutionServiceEvents.contract.WatchLogs(opts, "GasOracleUpdated", gasOracleRule)
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(ExecutionServiceEventsGasOracleUpdated)
-				if err := _ExecutionServiceEvents.contract.UnpackLog(event, "GasOracleUpdated", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseGasOracleUpdated is a log parse operation binding the contract event 0x0b987d971d57fe66ec2d0cff095b1b547c3076cdd07fdf5b0863f320700dbb90.
-//
-// Solidity: event GasOracleUpdated(address indexed gasOracle)
-func (_ExecutionServiceEvents *ExecutionServiceEventsFilterer) ParseGasOracleUpdated(log types.Log) (*ExecutionServiceEventsGasOracleUpdated, error) {
-	event := new(ExecutionServiceEventsGasOracleUpdated)
-	if err := _ExecutionServiceEvents.contract.UnpackLog(event, "GasOracleUpdated", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
-// ExecutionServiceEventsInterchainClientUpdatedIterator is returned from FilterInterchainClientUpdated and is used to iterate over the raw logs and unpacked data for InterchainClientUpdated events raised by the ExecutionServiceEvents contract.
-type ExecutionServiceEventsInterchainClientUpdatedIterator struct {
-	Event *ExecutionServiceEventsInterchainClientUpdated // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *ExecutionServiceEventsInterchainClientUpdatedIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(ExecutionServiceEventsInterchainClientUpdated)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(ExecutionServiceEventsInterchainClientUpdated)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *ExecutionServiceEventsInterchainClientUpdatedIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *ExecutionServiceEventsInterchainClientUpdatedIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// ExecutionServiceEventsInterchainClientUpdated represents a InterchainClientUpdated event raised by the ExecutionServiceEvents contract.
-type ExecutionServiceEventsInterchainClientUpdated struct {
-	InterchainClient common.Address
-	Raw              types.Log // Blockchain specific contextual infos
-}
-
-// FilterInterchainClientUpdated is a free log retrieval operation binding the contract event 0x33e3a51bf9fedee6e205cd10237a9a8dd3fffed45ac3dee88d2eba92ef8b5d62.
-//
-// Solidity: event InterchainClientUpdated(address indexed interchainClient)
-func (_ExecutionServiceEvents *ExecutionServiceEventsFilterer) FilterInterchainClientUpdated(opts *bind.FilterOpts, interchainClient []common.Address) (*ExecutionServiceEventsInterchainClientUpdatedIterator, error) {
-
-	var interchainClientRule []interface{}
-	for _, interchainClientItem := range interchainClient {
-		interchainClientRule = append(interchainClientRule, interchainClientItem)
-	}
-
-	logs, sub, err := _ExecutionServiceEvents.contract.FilterLogs(opts, "InterchainClientUpdated", interchainClientRule)
-	if err != nil {
-		return nil, err
-	}
-	return &ExecutionServiceEventsInterchainClientUpdatedIterator{contract: _ExecutionServiceEvents.contract, event: "InterchainClientUpdated", logs: logs, sub: sub}, nil
-}
-
-// WatchInterchainClientUpdated is a free log subscription operation binding the contract event 0x33e3a51bf9fedee6e205cd10237a9a8dd3fffed45ac3dee88d2eba92ef8b5d62.
-//
-// Solidity: event InterchainClientUpdated(address indexed interchainClient)
-func (_ExecutionServiceEvents *ExecutionServiceEventsFilterer) WatchInterchainClientUpdated(opts *bind.WatchOpts, sink chan<- *ExecutionServiceEventsInterchainClientUpdated, interchainClient []common.Address) (event.Subscription, error) {
-
-	var interchainClientRule []interface{}
-	for _, interchainClientItem := range interchainClient {
-		interchainClientRule = append(interchainClientRule, interchainClientItem)
-	}
-
-	logs, sub, err := _ExecutionServiceEvents.contract.WatchLogs(opts, "InterchainClientUpdated", interchainClientRule)
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(ExecutionServiceEventsInterchainClientUpdated)
-				if err := _ExecutionServiceEvents.contract.UnpackLog(event, "InterchainClientUpdated", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseInterchainClientUpdated is a log parse operation binding the contract event 0x33e3a51bf9fedee6e205cd10237a9a8dd3fffed45ac3dee88d2eba92ef8b5d62.
-//
-// Solidity: event InterchainClientUpdated(address indexed interchainClient)
-func (_ExecutionServiceEvents *ExecutionServiceEventsFilterer) ParseInterchainClientUpdated(log types.Log) (*ExecutionServiceEventsInterchainClientUpdated, error) {
-	event := new(ExecutionServiceEventsInterchainClientUpdated)
-	if err := _ExecutionServiceEvents.contract.UnpackLog(event, "InterchainClientUpdated", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
+// Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool)
+func (_IERC165 *IERC165CallerSession) SupportsInterface(interfaceId [4]byte) (bool, error) {
+	return _IERC165.Contract.SupportsInterface(&_IERC165.CallOpts, interfaceId)
 }
 
 // IExecutionServiceMetaData contains all meta data concerning the IExecutionService contract.
@@ -2605,10 +3066,614 @@ func (_IGasOracle *IGasOracleCallerSession) EstimateTxCostInRemoteUnits(remoteCh
 	return _IGasOracle.Contract.EstimateTxCostInRemoteUnits(&_IGasOracle.CallOpts, remoteChainId, gasLimit, calldataSize)
 }
 
+// ISynapseExecutionServiceV1MetaData contains all meta data concerning the ISynapseExecutionServiceV1 contract.
+var ISynapseExecutionServiceV1MetaData = &bind.MetaData{
+	ABI: "[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"SynapseExecutionService__FeeAmountTooLow\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseExecutionService__GasOracleNotSet\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"version\",\"type\":\"uint256\"}],\"name\":\"SynapseExecutionService__OptionsVersionNotSupported\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseExecutionService__ZeroAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"executorEOA\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"gasOracle\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"getExecutionFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"requestExecution\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executorEOA_\",\"type\":\"address\"}],\"name\":\"setExecutorEOA\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle_\",\"type\":\"address\"}],\"name\":\"setGasOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	Sigs: map[string]string{
+		"62014bad": "executorEOA()",
+		"5d62a8dd": "gasOracle()",
+		"c473e7e8": "getExecutionFee(uint256,uint256,bytes)",
+		"e4e06522": "requestExecution(uint256,uint256,bytes32,uint256,bytes)",
+		"2d54566c": "setExecutorEOA(address)",
+		"a87b8152": "setGasOracle(address)",
+	},
+}
+
+// ISynapseExecutionServiceV1ABI is the input ABI used to generate the binding from.
+// Deprecated: Use ISynapseExecutionServiceV1MetaData.ABI instead.
+var ISynapseExecutionServiceV1ABI = ISynapseExecutionServiceV1MetaData.ABI
+
+// Deprecated: Use ISynapseExecutionServiceV1MetaData.Sigs instead.
+// ISynapseExecutionServiceV1FuncSigs maps the 4-byte function signature to its string representation.
+var ISynapseExecutionServiceV1FuncSigs = ISynapseExecutionServiceV1MetaData.Sigs
+
+// ISynapseExecutionServiceV1 is an auto generated Go binding around an Ethereum contract.
+type ISynapseExecutionServiceV1 struct {
+	ISynapseExecutionServiceV1Caller     // Read-only binding to the contract
+	ISynapseExecutionServiceV1Transactor // Write-only binding to the contract
+	ISynapseExecutionServiceV1Filterer   // Log filterer for contract events
+}
+
+// ISynapseExecutionServiceV1Caller is an auto generated read-only Go binding around an Ethereum contract.
+type ISynapseExecutionServiceV1Caller struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// ISynapseExecutionServiceV1Transactor is an auto generated write-only Go binding around an Ethereum contract.
+type ISynapseExecutionServiceV1Transactor struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// ISynapseExecutionServiceV1Filterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type ISynapseExecutionServiceV1Filterer struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// ISynapseExecutionServiceV1Session is an auto generated Go binding around an Ethereum contract,
+// with pre-set call and transact options.
+type ISynapseExecutionServiceV1Session struct {
+	Contract     *ISynapseExecutionServiceV1 // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts               // Call options to use throughout this session
+	TransactOpts bind.TransactOpts           // Transaction auth options to use throughout this session
+}
+
+// ISynapseExecutionServiceV1CallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// with pre-set call options.
+type ISynapseExecutionServiceV1CallerSession struct {
+	Contract *ISynapseExecutionServiceV1Caller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts                     // Call options to use throughout this session
+}
+
+// ISynapseExecutionServiceV1TransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// with pre-set transact options.
+type ISynapseExecutionServiceV1TransactorSession struct {
+	Contract     *ISynapseExecutionServiceV1Transactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts                     // Transaction auth options to use throughout this session
+}
+
+// ISynapseExecutionServiceV1Raw is an auto generated low-level Go binding around an Ethereum contract.
+type ISynapseExecutionServiceV1Raw struct {
+	Contract *ISynapseExecutionServiceV1 // Generic contract binding to access the raw methods on
+}
+
+// ISynapseExecutionServiceV1CallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type ISynapseExecutionServiceV1CallerRaw struct {
+	Contract *ISynapseExecutionServiceV1Caller // Generic read-only contract binding to access the raw methods on
+}
+
+// ISynapseExecutionServiceV1TransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type ISynapseExecutionServiceV1TransactorRaw struct {
+	Contract *ISynapseExecutionServiceV1Transactor // Generic write-only contract binding to access the raw methods on
+}
+
+// NewISynapseExecutionServiceV1 creates a new instance of ISynapseExecutionServiceV1, bound to a specific deployed contract.
+func NewISynapseExecutionServiceV1(address common.Address, backend bind.ContractBackend) (*ISynapseExecutionServiceV1, error) {
+	contract, err := bindISynapseExecutionServiceV1(address, backend, backend, backend)
+	if err != nil {
+		return nil, err
+	}
+	return &ISynapseExecutionServiceV1{ISynapseExecutionServiceV1Caller: ISynapseExecutionServiceV1Caller{contract: contract}, ISynapseExecutionServiceV1Transactor: ISynapseExecutionServiceV1Transactor{contract: contract}, ISynapseExecutionServiceV1Filterer: ISynapseExecutionServiceV1Filterer{contract: contract}}, nil
+}
+
+// NewISynapseExecutionServiceV1Caller creates a new read-only instance of ISynapseExecutionServiceV1, bound to a specific deployed contract.
+func NewISynapseExecutionServiceV1Caller(address common.Address, caller bind.ContractCaller) (*ISynapseExecutionServiceV1Caller, error) {
+	contract, err := bindISynapseExecutionServiceV1(address, caller, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &ISynapseExecutionServiceV1Caller{contract: contract}, nil
+}
+
+// NewISynapseExecutionServiceV1Transactor creates a new write-only instance of ISynapseExecutionServiceV1, bound to a specific deployed contract.
+func NewISynapseExecutionServiceV1Transactor(address common.Address, transactor bind.ContractTransactor) (*ISynapseExecutionServiceV1Transactor, error) {
+	contract, err := bindISynapseExecutionServiceV1(address, nil, transactor, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &ISynapseExecutionServiceV1Transactor{contract: contract}, nil
+}
+
+// NewISynapseExecutionServiceV1Filterer creates a new log filterer instance of ISynapseExecutionServiceV1, bound to a specific deployed contract.
+func NewISynapseExecutionServiceV1Filterer(address common.Address, filterer bind.ContractFilterer) (*ISynapseExecutionServiceV1Filterer, error) {
+	contract, err := bindISynapseExecutionServiceV1(address, nil, nil, filterer)
+	if err != nil {
+		return nil, err
+	}
+	return &ISynapseExecutionServiceV1Filterer{contract: contract}, nil
+}
+
+// bindISynapseExecutionServiceV1 binds a generic wrapper to an already deployed contract.
+func bindISynapseExecutionServiceV1(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := ISynapseExecutionServiceV1MetaData.GetAbi()
+	if err != nil {
+		return nil, err
+	}
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1Raw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _ISynapseExecutionServiceV1.Contract.ISynapseExecutionServiceV1Caller.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1Raw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _ISynapseExecutionServiceV1.Contract.ISynapseExecutionServiceV1Transactor.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1Raw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _ISynapseExecutionServiceV1.Contract.ISynapseExecutionServiceV1Transactor.contract.Transact(opts, method, params...)
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1CallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _ISynapseExecutionServiceV1.Contract.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1TransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _ISynapseExecutionServiceV1.Contract.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1TransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _ISynapseExecutionServiceV1.Contract.contract.Transact(opts, method, params...)
+}
+
+// ExecutorEOA is a free data retrieval call binding the contract method 0x62014bad.
+//
+// Solidity: function executorEOA() view returns(address)
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1Caller) ExecutorEOA(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _ISynapseExecutionServiceV1.contract.Call(opts, &out, "executorEOA")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// ExecutorEOA is a free data retrieval call binding the contract method 0x62014bad.
+//
+// Solidity: function executorEOA() view returns(address)
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1Session) ExecutorEOA() (common.Address, error) {
+	return _ISynapseExecutionServiceV1.Contract.ExecutorEOA(&_ISynapseExecutionServiceV1.CallOpts)
+}
+
+// ExecutorEOA is a free data retrieval call binding the contract method 0x62014bad.
+//
+// Solidity: function executorEOA() view returns(address)
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1CallerSession) ExecutorEOA() (common.Address, error) {
+	return _ISynapseExecutionServiceV1.Contract.ExecutorEOA(&_ISynapseExecutionServiceV1.CallOpts)
+}
+
+// GasOracle is a free data retrieval call binding the contract method 0x5d62a8dd.
+//
+// Solidity: function gasOracle() view returns(address)
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1Caller) GasOracle(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _ISynapseExecutionServiceV1.contract.Call(opts, &out, "gasOracle")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// GasOracle is a free data retrieval call binding the contract method 0x5d62a8dd.
+//
+// Solidity: function gasOracle() view returns(address)
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1Session) GasOracle() (common.Address, error) {
+	return _ISynapseExecutionServiceV1.Contract.GasOracle(&_ISynapseExecutionServiceV1.CallOpts)
+}
+
+// GasOracle is a free data retrieval call binding the contract method 0x5d62a8dd.
+//
+// Solidity: function gasOracle() view returns(address)
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1CallerSession) GasOracle() (common.Address, error) {
+	return _ISynapseExecutionServiceV1.Contract.GasOracle(&_ISynapseExecutionServiceV1.CallOpts)
+}
+
+// GetExecutionFee is a free data retrieval call binding the contract method 0xc473e7e8.
+//
+// Solidity: function getExecutionFee(uint256 dstChainId, uint256 txPayloadSize, bytes options) view returns(uint256)
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1Caller) GetExecutionFee(opts *bind.CallOpts, dstChainId *big.Int, txPayloadSize *big.Int, options []byte) (*big.Int, error) {
+	var out []interface{}
+	err := _ISynapseExecutionServiceV1.contract.Call(opts, &out, "getExecutionFee", dstChainId, txPayloadSize, options)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetExecutionFee is a free data retrieval call binding the contract method 0xc473e7e8.
+//
+// Solidity: function getExecutionFee(uint256 dstChainId, uint256 txPayloadSize, bytes options) view returns(uint256)
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1Session) GetExecutionFee(dstChainId *big.Int, txPayloadSize *big.Int, options []byte) (*big.Int, error) {
+	return _ISynapseExecutionServiceV1.Contract.GetExecutionFee(&_ISynapseExecutionServiceV1.CallOpts, dstChainId, txPayloadSize, options)
+}
+
+// GetExecutionFee is a free data retrieval call binding the contract method 0xc473e7e8.
+//
+// Solidity: function getExecutionFee(uint256 dstChainId, uint256 txPayloadSize, bytes options) view returns(uint256)
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1CallerSession) GetExecutionFee(dstChainId *big.Int, txPayloadSize *big.Int, options []byte) (*big.Int, error) {
+	return _ISynapseExecutionServiceV1.Contract.GetExecutionFee(&_ISynapseExecutionServiceV1.CallOpts, dstChainId, txPayloadSize, options)
+}
+
+// RequestExecution is a paid mutator transaction binding the contract method 0xe4e06522.
+//
+// Solidity: function requestExecution(uint256 dstChainId, uint256 txPayloadSize, bytes32 transactionId, uint256 executionFee, bytes options) returns()
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1Transactor) RequestExecution(opts *bind.TransactOpts, dstChainId *big.Int, txPayloadSize *big.Int, transactionId [32]byte, executionFee *big.Int, options []byte) (*types.Transaction, error) {
+	return _ISynapseExecutionServiceV1.contract.Transact(opts, "requestExecution", dstChainId, txPayloadSize, transactionId, executionFee, options)
+}
+
+// RequestExecution is a paid mutator transaction binding the contract method 0xe4e06522.
+//
+// Solidity: function requestExecution(uint256 dstChainId, uint256 txPayloadSize, bytes32 transactionId, uint256 executionFee, bytes options) returns()
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1Session) RequestExecution(dstChainId *big.Int, txPayloadSize *big.Int, transactionId [32]byte, executionFee *big.Int, options []byte) (*types.Transaction, error) {
+	return _ISynapseExecutionServiceV1.Contract.RequestExecution(&_ISynapseExecutionServiceV1.TransactOpts, dstChainId, txPayloadSize, transactionId, executionFee, options)
+}
+
+// RequestExecution is a paid mutator transaction binding the contract method 0xe4e06522.
+//
+// Solidity: function requestExecution(uint256 dstChainId, uint256 txPayloadSize, bytes32 transactionId, uint256 executionFee, bytes options) returns()
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1TransactorSession) RequestExecution(dstChainId *big.Int, txPayloadSize *big.Int, transactionId [32]byte, executionFee *big.Int, options []byte) (*types.Transaction, error) {
+	return _ISynapseExecutionServiceV1.Contract.RequestExecution(&_ISynapseExecutionServiceV1.TransactOpts, dstChainId, txPayloadSize, transactionId, executionFee, options)
+}
+
+// SetExecutorEOA is a paid mutator transaction binding the contract method 0x2d54566c.
+//
+// Solidity: function setExecutorEOA(address executorEOA_) returns()
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1Transactor) SetExecutorEOA(opts *bind.TransactOpts, executorEOA_ common.Address) (*types.Transaction, error) {
+	return _ISynapseExecutionServiceV1.contract.Transact(opts, "setExecutorEOA", executorEOA_)
+}
+
+// SetExecutorEOA is a paid mutator transaction binding the contract method 0x2d54566c.
+//
+// Solidity: function setExecutorEOA(address executorEOA_) returns()
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1Session) SetExecutorEOA(executorEOA_ common.Address) (*types.Transaction, error) {
+	return _ISynapseExecutionServiceV1.Contract.SetExecutorEOA(&_ISynapseExecutionServiceV1.TransactOpts, executorEOA_)
+}
+
+// SetExecutorEOA is a paid mutator transaction binding the contract method 0x2d54566c.
+//
+// Solidity: function setExecutorEOA(address executorEOA_) returns()
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1TransactorSession) SetExecutorEOA(executorEOA_ common.Address) (*types.Transaction, error) {
+	return _ISynapseExecutionServiceV1.Contract.SetExecutorEOA(&_ISynapseExecutionServiceV1.TransactOpts, executorEOA_)
+}
+
+// SetGasOracle is a paid mutator transaction binding the contract method 0xa87b8152.
+//
+// Solidity: function setGasOracle(address gasOracle_) returns()
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1Transactor) SetGasOracle(opts *bind.TransactOpts, gasOracle_ common.Address) (*types.Transaction, error) {
+	return _ISynapseExecutionServiceV1.contract.Transact(opts, "setGasOracle", gasOracle_)
+}
+
+// SetGasOracle is a paid mutator transaction binding the contract method 0xa87b8152.
+//
+// Solidity: function setGasOracle(address gasOracle_) returns()
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1Session) SetGasOracle(gasOracle_ common.Address) (*types.Transaction, error) {
+	return _ISynapseExecutionServiceV1.Contract.SetGasOracle(&_ISynapseExecutionServiceV1.TransactOpts, gasOracle_)
+}
+
+// SetGasOracle is a paid mutator transaction binding the contract method 0xa87b8152.
+//
+// Solidity: function setGasOracle(address gasOracle_) returns()
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1TransactorSession) SetGasOracle(gasOracle_ common.Address) (*types.Transaction, error) {
+	return _ISynapseExecutionServiceV1.Contract.SetGasOracle(&_ISynapseExecutionServiceV1.TransactOpts, gasOracle_)
+}
+
+// InitializableMetaData contains all meta data concerning the Initializable contract.
+var InitializableMetaData = &bind.MetaData{
+	ABI: "[{\"inputs\":[],\"name\":\"InvalidInitialization\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInitializing\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"version\",\"type\":\"uint64\"}],\"name\":\"Initialized\",\"type\":\"event\"}]",
+}
+
+// InitializableABI is the input ABI used to generate the binding from.
+// Deprecated: Use InitializableMetaData.ABI instead.
+var InitializableABI = InitializableMetaData.ABI
+
+// Initializable is an auto generated Go binding around an Ethereum contract.
+type Initializable struct {
+	InitializableCaller     // Read-only binding to the contract
+	InitializableTransactor // Write-only binding to the contract
+	InitializableFilterer   // Log filterer for contract events
+}
+
+// InitializableCaller is an auto generated read-only Go binding around an Ethereum contract.
+type InitializableCaller struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// InitializableTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type InitializableTransactor struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// InitializableFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type InitializableFilterer struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// InitializableSession is an auto generated Go binding around an Ethereum contract,
+// with pre-set call and transact options.
+type InitializableSession struct {
+	Contract     *Initializable    // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts     // Call options to use throughout this session
+	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
+}
+
+// InitializableCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// with pre-set call options.
+type InitializableCallerSession struct {
+	Contract *InitializableCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts        // Call options to use throughout this session
+}
+
+// InitializableTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// with pre-set transact options.
+type InitializableTransactorSession struct {
+	Contract     *InitializableTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts        // Transaction auth options to use throughout this session
+}
+
+// InitializableRaw is an auto generated low-level Go binding around an Ethereum contract.
+type InitializableRaw struct {
+	Contract *Initializable // Generic contract binding to access the raw methods on
+}
+
+// InitializableCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type InitializableCallerRaw struct {
+	Contract *InitializableCaller // Generic read-only contract binding to access the raw methods on
+}
+
+// InitializableTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type InitializableTransactorRaw struct {
+	Contract *InitializableTransactor // Generic write-only contract binding to access the raw methods on
+}
+
+// NewInitializable creates a new instance of Initializable, bound to a specific deployed contract.
+func NewInitializable(address common.Address, backend bind.ContractBackend) (*Initializable, error) {
+	contract, err := bindInitializable(address, backend, backend, backend)
+	if err != nil {
+		return nil, err
+	}
+	return &Initializable{InitializableCaller: InitializableCaller{contract: contract}, InitializableTransactor: InitializableTransactor{contract: contract}, InitializableFilterer: InitializableFilterer{contract: contract}}, nil
+}
+
+// NewInitializableCaller creates a new read-only instance of Initializable, bound to a specific deployed contract.
+func NewInitializableCaller(address common.Address, caller bind.ContractCaller) (*InitializableCaller, error) {
+	contract, err := bindInitializable(address, caller, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &InitializableCaller{contract: contract}, nil
+}
+
+// NewInitializableTransactor creates a new write-only instance of Initializable, bound to a specific deployed contract.
+func NewInitializableTransactor(address common.Address, transactor bind.ContractTransactor) (*InitializableTransactor, error) {
+	contract, err := bindInitializable(address, nil, transactor, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &InitializableTransactor{contract: contract}, nil
+}
+
+// NewInitializableFilterer creates a new log filterer instance of Initializable, bound to a specific deployed contract.
+func NewInitializableFilterer(address common.Address, filterer bind.ContractFilterer) (*InitializableFilterer, error) {
+	contract, err := bindInitializable(address, nil, nil, filterer)
+	if err != nil {
+		return nil, err
+	}
+	return &InitializableFilterer{contract: contract}, nil
+}
+
+// bindInitializable binds a generic wrapper to an already deployed contract.
+func bindInitializable(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := InitializableMetaData.GetAbi()
+	if err != nil {
+		return nil, err
+	}
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_Initializable *InitializableRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _Initializable.Contract.InitializableCaller.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_Initializable *InitializableRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _Initializable.Contract.InitializableTransactor.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_Initializable *InitializableRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _Initializable.Contract.InitializableTransactor.contract.Transact(opts, method, params...)
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_Initializable *InitializableCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _Initializable.Contract.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_Initializable *InitializableTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _Initializable.Contract.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_Initializable *InitializableTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _Initializable.Contract.contract.Transact(opts, method, params...)
+}
+
+// InitializableInitializedIterator is returned from FilterInitialized and is used to iterate over the raw logs and unpacked data for Initialized events raised by the Initializable contract.
+type InitializableInitializedIterator struct {
+	Event *InitializableInitialized // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *InitializableInitializedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(InitializableInitialized)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(InitializableInitialized)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *InitializableInitializedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *InitializableInitializedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// InitializableInitialized represents a Initialized event raised by the Initializable contract.
+type InitializableInitialized struct {
+	Version uint64
+	Raw     types.Log // Blockchain specific contextual infos
+}
+
+// FilterInitialized is a free log retrieval operation binding the contract event 0xc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d2.
+//
+// Solidity: event Initialized(uint64 version)
+func (_Initializable *InitializableFilterer) FilterInitialized(opts *bind.FilterOpts) (*InitializableInitializedIterator, error) {
+
+	logs, sub, err := _Initializable.contract.FilterLogs(opts, "Initialized")
+	if err != nil {
+		return nil, err
+	}
+	return &InitializableInitializedIterator{contract: _Initializable.contract, event: "Initialized", logs: logs, sub: sub}, nil
+}
+
+// WatchInitialized is a free log subscription operation binding the contract event 0xc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d2.
+//
+// Solidity: event Initialized(uint64 version)
+func (_Initializable *InitializableFilterer) WatchInitialized(opts *bind.WatchOpts, sink chan<- *InitializableInitialized) (event.Subscription, error) {
+
+	logs, sub, err := _Initializable.contract.WatchLogs(opts, "Initialized")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(InitializableInitialized)
+				if err := _Initializable.contract.UnpackLog(event, "Initialized", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseInitialized is a log parse operation binding the contract event 0xc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d2.
+//
+// Solidity: event Initialized(uint64 version)
+func (_Initializable *InitializableFilterer) ParseInitialized(log types.Log) (*InitializableInitialized, error) {
+	event := new(InitializableInitialized)
+	if err := _Initializable.contract.UnpackLog(event, "Initialized", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
 // OptionsLibMetaData contains all meta data concerning the OptionsLib contract.
 var OptionsLibMetaData = &bind.MetaData{
 	ABI: "[{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"}],\"name\":\"OptionsLib__IncorrectVersion\",\"type\":\"error\"}]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122092579146fe89b4651b63b94a9c6c15c0f5814d6d2f920060c2750740d224962264736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220fd95bab3cba7ba6a453c77c244bb62e9afd2b539ed4ba4cd185fa16d9562d55264736f6c63430008140033",
 }
 
 // OptionsLibABI is the input ABI used to generate the binding from.
@@ -2778,122 +3843,113 @@ func (_OptionsLib *OptionsLibTransactorRaw) Transact(opts *bind.TransactOpts, me
 	return _OptionsLib.Contract.contract.Transact(opts, method, params...)
 }
 
-// OwnableMetaData contains all meta data concerning the Ownable contract.
-var OwnableMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
-	Sigs: map[string]string{
-		"8da5cb5b": "owner()",
-		"715018a6": "renounceOwnership()",
-		"f2fde38b": "transferOwnership(address)",
-	},
+// SynapseExecutionServiceEventsMetaData contains all meta data concerning the SynapseExecutionServiceEvents contract.
+var SynapseExecutionServiceEventsMetaData = &bind.MetaData{
+	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"ExecutionRequested\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"executorEOA\",\"type\":\"address\"}],\"name\":\"ExecutorEOASet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"GasOracleSet\",\"type\":\"event\"}]",
 }
 
-// OwnableABI is the input ABI used to generate the binding from.
-// Deprecated: Use OwnableMetaData.ABI instead.
-var OwnableABI = OwnableMetaData.ABI
+// SynapseExecutionServiceEventsABI is the input ABI used to generate the binding from.
+// Deprecated: Use SynapseExecutionServiceEventsMetaData.ABI instead.
+var SynapseExecutionServiceEventsABI = SynapseExecutionServiceEventsMetaData.ABI
 
-// Deprecated: Use OwnableMetaData.Sigs instead.
-// OwnableFuncSigs maps the 4-byte function signature to its string representation.
-var OwnableFuncSigs = OwnableMetaData.Sigs
-
-// Ownable is an auto generated Go binding around an Ethereum contract.
-type Ownable struct {
-	OwnableCaller     // Read-only binding to the contract
-	OwnableTransactor // Write-only binding to the contract
-	OwnableFilterer   // Log filterer for contract events
+// SynapseExecutionServiceEvents is an auto generated Go binding around an Ethereum contract.
+type SynapseExecutionServiceEvents struct {
+	SynapseExecutionServiceEventsCaller     // Read-only binding to the contract
+	SynapseExecutionServiceEventsTransactor // Write-only binding to the contract
+	SynapseExecutionServiceEventsFilterer   // Log filterer for contract events
 }
 
-// OwnableCaller is an auto generated read-only Go binding around an Ethereum contract.
-type OwnableCaller struct {
+// SynapseExecutionServiceEventsCaller is an auto generated read-only Go binding around an Ethereum contract.
+type SynapseExecutionServiceEventsCaller struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// OwnableTransactor is an auto generated write-only Go binding around an Ethereum contract.
-type OwnableTransactor struct {
+// SynapseExecutionServiceEventsTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type SynapseExecutionServiceEventsTransactor struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// OwnableFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
-type OwnableFilterer struct {
+// SynapseExecutionServiceEventsFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type SynapseExecutionServiceEventsFilterer struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// OwnableSession is an auto generated Go binding around an Ethereum contract,
+// SynapseExecutionServiceEventsSession is an auto generated Go binding around an Ethereum contract,
 // with pre-set call and transact options.
-type OwnableSession struct {
-	Contract     *Ownable          // Generic contract binding to set the session for
-	CallOpts     bind.CallOpts     // Call options to use throughout this session
-	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
+type SynapseExecutionServiceEventsSession struct {
+	Contract     *SynapseExecutionServiceEvents // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts                  // Call options to use throughout this session
+	TransactOpts bind.TransactOpts              // Transaction auth options to use throughout this session
 }
 
-// OwnableCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// SynapseExecutionServiceEventsCallerSession is an auto generated read-only Go binding around an Ethereum contract,
 // with pre-set call options.
-type OwnableCallerSession struct {
-	Contract *OwnableCaller // Generic contract caller binding to set the session for
-	CallOpts bind.CallOpts  // Call options to use throughout this session
+type SynapseExecutionServiceEventsCallerSession struct {
+	Contract *SynapseExecutionServiceEventsCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts                        // Call options to use throughout this session
 }
 
-// OwnableTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// SynapseExecutionServiceEventsTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
 // with pre-set transact options.
-type OwnableTransactorSession struct {
-	Contract     *OwnableTransactor // Generic contract transactor binding to set the session for
-	TransactOpts bind.TransactOpts  // Transaction auth options to use throughout this session
+type SynapseExecutionServiceEventsTransactorSession struct {
+	Contract     *SynapseExecutionServiceEventsTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts                        // Transaction auth options to use throughout this session
 }
 
-// OwnableRaw is an auto generated low-level Go binding around an Ethereum contract.
-type OwnableRaw struct {
-	Contract *Ownable // Generic contract binding to access the raw methods on
+// SynapseExecutionServiceEventsRaw is an auto generated low-level Go binding around an Ethereum contract.
+type SynapseExecutionServiceEventsRaw struct {
+	Contract *SynapseExecutionServiceEvents // Generic contract binding to access the raw methods on
 }
 
-// OwnableCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
-type OwnableCallerRaw struct {
-	Contract *OwnableCaller // Generic read-only contract binding to access the raw methods on
+// SynapseExecutionServiceEventsCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type SynapseExecutionServiceEventsCallerRaw struct {
+	Contract *SynapseExecutionServiceEventsCaller // Generic read-only contract binding to access the raw methods on
 }
 
-// OwnableTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
-type OwnableTransactorRaw struct {
-	Contract *OwnableTransactor // Generic write-only contract binding to access the raw methods on
+// SynapseExecutionServiceEventsTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type SynapseExecutionServiceEventsTransactorRaw struct {
+	Contract *SynapseExecutionServiceEventsTransactor // Generic write-only contract binding to access the raw methods on
 }
 
-// NewOwnable creates a new instance of Ownable, bound to a specific deployed contract.
-func NewOwnable(address common.Address, backend bind.ContractBackend) (*Ownable, error) {
-	contract, err := bindOwnable(address, backend, backend, backend)
+// NewSynapseExecutionServiceEvents creates a new instance of SynapseExecutionServiceEvents, bound to a specific deployed contract.
+func NewSynapseExecutionServiceEvents(address common.Address, backend bind.ContractBackend) (*SynapseExecutionServiceEvents, error) {
+	contract, err := bindSynapseExecutionServiceEvents(address, backend, backend, backend)
 	if err != nil {
 		return nil, err
 	}
-	return &Ownable{OwnableCaller: OwnableCaller{contract: contract}, OwnableTransactor: OwnableTransactor{contract: contract}, OwnableFilterer: OwnableFilterer{contract: contract}}, nil
+	return &SynapseExecutionServiceEvents{SynapseExecutionServiceEventsCaller: SynapseExecutionServiceEventsCaller{contract: contract}, SynapseExecutionServiceEventsTransactor: SynapseExecutionServiceEventsTransactor{contract: contract}, SynapseExecutionServiceEventsFilterer: SynapseExecutionServiceEventsFilterer{contract: contract}}, nil
 }
 
-// NewOwnableCaller creates a new read-only instance of Ownable, bound to a specific deployed contract.
-func NewOwnableCaller(address common.Address, caller bind.ContractCaller) (*OwnableCaller, error) {
-	contract, err := bindOwnable(address, caller, nil, nil)
+// NewSynapseExecutionServiceEventsCaller creates a new read-only instance of SynapseExecutionServiceEvents, bound to a specific deployed contract.
+func NewSynapseExecutionServiceEventsCaller(address common.Address, caller bind.ContractCaller) (*SynapseExecutionServiceEventsCaller, error) {
+	contract, err := bindSynapseExecutionServiceEvents(address, caller, nil, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &OwnableCaller{contract: contract}, nil
+	return &SynapseExecutionServiceEventsCaller{contract: contract}, nil
 }
 
-// NewOwnableTransactor creates a new write-only instance of Ownable, bound to a specific deployed contract.
-func NewOwnableTransactor(address common.Address, transactor bind.ContractTransactor) (*OwnableTransactor, error) {
-	contract, err := bindOwnable(address, nil, transactor, nil)
+// NewSynapseExecutionServiceEventsTransactor creates a new write-only instance of SynapseExecutionServiceEvents, bound to a specific deployed contract.
+func NewSynapseExecutionServiceEventsTransactor(address common.Address, transactor bind.ContractTransactor) (*SynapseExecutionServiceEventsTransactor, error) {
+	contract, err := bindSynapseExecutionServiceEvents(address, nil, transactor, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &OwnableTransactor{contract: contract}, nil
+	return &SynapseExecutionServiceEventsTransactor{contract: contract}, nil
 }
 
-// NewOwnableFilterer creates a new log filterer instance of Ownable, bound to a specific deployed contract.
-func NewOwnableFilterer(address common.Address, filterer bind.ContractFilterer) (*OwnableFilterer, error) {
-	contract, err := bindOwnable(address, nil, nil, filterer)
+// NewSynapseExecutionServiceEventsFilterer creates a new log filterer instance of SynapseExecutionServiceEvents, bound to a specific deployed contract.
+func NewSynapseExecutionServiceEventsFilterer(address common.Address, filterer bind.ContractFilterer) (*SynapseExecutionServiceEventsFilterer, error) {
+	contract, err := bindSynapseExecutionServiceEvents(address, nil, nil, filterer)
 	if err != nil {
 		return nil, err
 	}
-	return &OwnableFilterer{contract: contract}, nil
+	return &SynapseExecutionServiceEventsFilterer{contract: contract}, nil
 }
 
-// bindOwnable binds a generic wrapper to an already deployed contract.
-func bindOwnable(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := OwnableMetaData.GetAbi()
+// bindSynapseExecutionServiceEvents binds a generic wrapper to an already deployed contract.
+func bindSynapseExecutionServiceEvents(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := SynapseExecutionServiceEventsMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
@@ -2904,116 +3960,43 @@ func bindOwnable(address common.Address, caller bind.ContractCaller, transactor 
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_Ownable *OwnableRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _Ownable.Contract.OwnableCaller.contract.Call(opts, result, method, params...)
+func (_SynapseExecutionServiceEvents *SynapseExecutionServiceEventsRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _SynapseExecutionServiceEvents.Contract.SynapseExecutionServiceEventsCaller.contract.Call(opts, result, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
 // its default method if one is available.
-func (_Ownable *OwnableRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _Ownable.Contract.OwnableTransactor.contract.Transfer(opts)
+func (_SynapseExecutionServiceEvents *SynapseExecutionServiceEventsRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _SynapseExecutionServiceEvents.Contract.SynapseExecutionServiceEventsTransactor.contract.Transfer(opts)
 }
 
 // Transact invokes the (paid) contract method with params as input values.
-func (_Ownable *OwnableRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _Ownable.Contract.OwnableTransactor.contract.Transact(opts, method, params...)
+func (_SynapseExecutionServiceEvents *SynapseExecutionServiceEventsRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _SynapseExecutionServiceEvents.Contract.SynapseExecutionServiceEventsTransactor.contract.Transact(opts, method, params...)
 }
 
 // Call invokes the (constant) contract method with params as input values and
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_Ownable *OwnableCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
-	return _Ownable.Contract.contract.Call(opts, result, method, params...)
+func (_SynapseExecutionServiceEvents *SynapseExecutionServiceEventsCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _SynapseExecutionServiceEvents.Contract.contract.Call(opts, result, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
 // its default method if one is available.
-func (_Ownable *OwnableTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _Ownable.Contract.contract.Transfer(opts)
+func (_SynapseExecutionServiceEvents *SynapseExecutionServiceEventsTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _SynapseExecutionServiceEvents.Contract.contract.Transfer(opts)
 }
 
 // Transact invokes the (paid) contract method with params as input values.
-func (_Ownable *OwnableTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _Ownable.Contract.contract.Transact(opts, method, params...)
+func (_SynapseExecutionServiceEvents *SynapseExecutionServiceEventsTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _SynapseExecutionServiceEvents.Contract.contract.Transact(opts, method, params...)
 }
 
-// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
-//
-// Solidity: function owner() view returns(address)
-func (_Ownable *OwnableCaller) Owner(opts *bind.CallOpts) (common.Address, error) {
-	var out []interface{}
-	err := _Ownable.contract.Call(opts, &out, "owner")
-
-	if err != nil {
-		return *new(common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-
-	return out0, err
-
-}
-
-// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
-//
-// Solidity: function owner() view returns(address)
-func (_Ownable *OwnableSession) Owner() (common.Address, error) {
-	return _Ownable.Contract.Owner(&_Ownable.CallOpts)
-}
-
-// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
-//
-// Solidity: function owner() view returns(address)
-func (_Ownable *OwnableCallerSession) Owner() (common.Address, error) {
-	return _Ownable.Contract.Owner(&_Ownable.CallOpts)
-}
-
-// RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
-//
-// Solidity: function renounceOwnership() returns()
-func (_Ownable *OwnableTransactor) RenounceOwnership(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _Ownable.contract.Transact(opts, "renounceOwnership")
-}
-
-// RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
-//
-// Solidity: function renounceOwnership() returns()
-func (_Ownable *OwnableSession) RenounceOwnership() (*types.Transaction, error) {
-	return _Ownable.Contract.RenounceOwnership(&_Ownable.TransactOpts)
-}
-
-// RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
-//
-// Solidity: function renounceOwnership() returns()
-func (_Ownable *OwnableTransactorSession) RenounceOwnership() (*types.Transaction, error) {
-	return _Ownable.Contract.RenounceOwnership(&_Ownable.TransactOpts)
-}
-
-// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
-//
-// Solidity: function transferOwnership(address newOwner) returns()
-func (_Ownable *OwnableTransactor) TransferOwnership(opts *bind.TransactOpts, newOwner common.Address) (*types.Transaction, error) {
-	return _Ownable.contract.Transact(opts, "transferOwnership", newOwner)
-}
-
-// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
-//
-// Solidity: function transferOwnership(address newOwner) returns()
-func (_Ownable *OwnableSession) TransferOwnership(newOwner common.Address) (*types.Transaction, error) {
-	return _Ownable.Contract.TransferOwnership(&_Ownable.TransactOpts, newOwner)
-}
-
-// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
-//
-// Solidity: function transferOwnership(address newOwner) returns()
-func (_Ownable *OwnableTransactorSession) TransferOwnership(newOwner common.Address) (*types.Transaction, error) {
-	return _Ownable.Contract.TransferOwnership(&_Ownable.TransactOpts, newOwner)
-}
-
-// OwnableOwnershipTransferredIterator is returned from FilterOwnershipTransferred and is used to iterate over the raw logs and unpacked data for OwnershipTransferred events raised by the Ownable contract.
-type OwnableOwnershipTransferredIterator struct {
-	Event *OwnableOwnershipTransferred // Event containing the contract specifics and raw log
+// SynapseExecutionServiceEventsExecutionRequestedIterator is returned from FilterExecutionRequested and is used to iterate over the raw logs and unpacked data for ExecutionRequested events raised by the SynapseExecutionServiceEvents contract.
+type SynapseExecutionServiceEventsExecutionRequestedIterator struct {
+	Event *SynapseExecutionServiceEventsExecutionRequested // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -3027,7 +4010,7 @@ type OwnableOwnershipTransferredIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *OwnableOwnershipTransferredIterator) Next() bool {
+func (it *SynapseExecutionServiceEventsExecutionRequestedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -3036,7 +4019,7 @@ func (it *OwnableOwnershipTransferredIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(OwnableOwnershipTransferred)
+			it.Event = new(SynapseExecutionServiceEventsExecutionRequested)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -3051,7 +4034,7 @@ func (it *OwnableOwnershipTransferredIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(OwnableOwnershipTransferred)
+		it.Event = new(SynapseExecutionServiceEventsExecutionRequested)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -3067,60 +4050,52 @@ func (it *OwnableOwnershipTransferredIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *OwnableOwnershipTransferredIterator) Error() error {
+func (it *SynapseExecutionServiceEventsExecutionRequestedIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *OwnableOwnershipTransferredIterator) Close() error {
+func (it *SynapseExecutionServiceEventsExecutionRequestedIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// OwnableOwnershipTransferred represents a OwnershipTransferred event raised by the Ownable contract.
-type OwnableOwnershipTransferred struct {
-	PreviousOwner common.Address
-	NewOwner      common.Address
+// SynapseExecutionServiceEventsExecutionRequested represents a ExecutionRequested event raised by the SynapseExecutionServiceEvents contract.
+type SynapseExecutionServiceEventsExecutionRequested struct {
+	TransactionId [32]byte
+	Client        common.Address
 	Raw           types.Log // Blockchain specific contextual infos
 }
 
-// FilterOwnershipTransferred is a free log retrieval operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
+// FilterExecutionRequested is a free log retrieval operation binding the contract event 0x507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd1382.
 //
-// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
-func (_Ownable *OwnableFilterer) FilterOwnershipTransferred(opts *bind.FilterOpts, previousOwner []common.Address, newOwner []common.Address) (*OwnableOwnershipTransferredIterator, error) {
+// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client)
+func (_SynapseExecutionServiceEvents *SynapseExecutionServiceEventsFilterer) FilterExecutionRequested(opts *bind.FilterOpts, transactionId [][32]byte) (*SynapseExecutionServiceEventsExecutionRequestedIterator, error) {
 
-	var previousOwnerRule []interface{}
-	for _, previousOwnerItem := range previousOwner {
-		previousOwnerRule = append(previousOwnerRule, previousOwnerItem)
-	}
-	var newOwnerRule []interface{}
-	for _, newOwnerItem := range newOwner {
-		newOwnerRule = append(newOwnerRule, newOwnerItem)
+	var transactionIdRule []interface{}
+	for _, transactionIdItem := range transactionId {
+		transactionIdRule = append(transactionIdRule, transactionIdItem)
 	}
 
-	logs, sub, err := _Ownable.contract.FilterLogs(opts, "OwnershipTransferred", previousOwnerRule, newOwnerRule)
+	logs, sub, err := _SynapseExecutionServiceEvents.contract.FilterLogs(opts, "ExecutionRequested", transactionIdRule)
 	if err != nil {
 		return nil, err
 	}
-	return &OwnableOwnershipTransferredIterator{contract: _Ownable.contract, event: "OwnershipTransferred", logs: logs, sub: sub}, nil
+	return &SynapseExecutionServiceEventsExecutionRequestedIterator{contract: _SynapseExecutionServiceEvents.contract, event: "ExecutionRequested", logs: logs, sub: sub}, nil
 }
 
-// WatchOwnershipTransferred is a free log subscription operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
+// WatchExecutionRequested is a free log subscription operation binding the contract event 0x507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd1382.
 //
-// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
-func (_Ownable *OwnableFilterer) WatchOwnershipTransferred(opts *bind.WatchOpts, sink chan<- *OwnableOwnershipTransferred, previousOwner []common.Address, newOwner []common.Address) (event.Subscription, error) {
+// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client)
+func (_SynapseExecutionServiceEvents *SynapseExecutionServiceEventsFilterer) WatchExecutionRequested(opts *bind.WatchOpts, sink chan<- *SynapseExecutionServiceEventsExecutionRequested, transactionId [][32]byte) (event.Subscription, error) {
 
-	var previousOwnerRule []interface{}
-	for _, previousOwnerItem := range previousOwner {
-		previousOwnerRule = append(previousOwnerRule, previousOwnerItem)
-	}
-	var newOwnerRule []interface{}
-	for _, newOwnerItem := range newOwner {
-		newOwnerRule = append(newOwnerRule, newOwnerItem)
+	var transactionIdRule []interface{}
+	for _, transactionIdItem := range transactionId {
+		transactionIdRule = append(transactionIdRule, transactionIdItem)
 	}
 
-	logs, sub, err := _Ownable.contract.WatchLogs(opts, "OwnershipTransferred", previousOwnerRule, newOwnerRule)
+	logs, sub, err := _SynapseExecutionServiceEvents.contract.WatchLogs(opts, "ExecutionRequested", transactionIdRule)
 	if err != nil {
 		return nil, err
 	}
@@ -3130,8 +4105,8 @@ func (_Ownable *OwnableFilterer) WatchOwnershipTransferred(opts *bind.WatchOpts,
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(OwnableOwnershipTransferred)
-				if err := _Ownable.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
+				event := new(SynapseExecutionServiceEventsExecutionRequested)
+				if err := _SynapseExecutionServiceEvents.contract.UnpackLog(event, "ExecutionRequested", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -3152,12 +4127,3588 @@ func (_Ownable *OwnableFilterer) WatchOwnershipTransferred(opts *bind.WatchOpts,
 	}), nil
 }
 
-// ParseOwnershipTransferred is a log parse operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
+// ParseExecutionRequested is a log parse operation binding the contract event 0x507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd1382.
 //
-// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
-func (_Ownable *OwnableFilterer) ParseOwnershipTransferred(log types.Log) (*OwnableOwnershipTransferred, error) {
-	event := new(OwnableOwnershipTransferred)
-	if err := _Ownable.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
+// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client)
+func (_SynapseExecutionServiceEvents *SynapseExecutionServiceEventsFilterer) ParseExecutionRequested(log types.Log) (*SynapseExecutionServiceEventsExecutionRequested, error) {
+	event := new(SynapseExecutionServiceEventsExecutionRequested)
+	if err := _SynapseExecutionServiceEvents.contract.UnpackLog(event, "ExecutionRequested", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// SynapseExecutionServiceEventsExecutorEOASetIterator is returned from FilterExecutorEOASet and is used to iterate over the raw logs and unpacked data for ExecutorEOASet events raised by the SynapseExecutionServiceEvents contract.
+type SynapseExecutionServiceEventsExecutorEOASetIterator struct {
+	Event *SynapseExecutionServiceEventsExecutorEOASet // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *SynapseExecutionServiceEventsExecutorEOASetIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(SynapseExecutionServiceEventsExecutorEOASet)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(SynapseExecutionServiceEventsExecutorEOASet)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *SynapseExecutionServiceEventsExecutorEOASetIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *SynapseExecutionServiceEventsExecutorEOASetIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// SynapseExecutionServiceEventsExecutorEOASet represents a ExecutorEOASet event raised by the SynapseExecutionServiceEvents contract.
+type SynapseExecutionServiceEventsExecutorEOASet struct {
+	ExecutorEOA common.Address
+	Raw         types.Log // Blockchain specific contextual infos
+}
+
+// FilterExecutorEOASet is a free log retrieval operation binding the contract event 0x4ab11d24f4bb323219ce90846ba579a556c914e8587517e7c8c4264771cd9f71.
+//
+// Solidity: event ExecutorEOASet(address executorEOA)
+func (_SynapseExecutionServiceEvents *SynapseExecutionServiceEventsFilterer) FilterExecutorEOASet(opts *bind.FilterOpts) (*SynapseExecutionServiceEventsExecutorEOASetIterator, error) {
+
+	logs, sub, err := _SynapseExecutionServiceEvents.contract.FilterLogs(opts, "ExecutorEOASet")
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceEventsExecutorEOASetIterator{contract: _SynapseExecutionServiceEvents.contract, event: "ExecutorEOASet", logs: logs, sub: sub}, nil
+}
+
+// WatchExecutorEOASet is a free log subscription operation binding the contract event 0x4ab11d24f4bb323219ce90846ba579a556c914e8587517e7c8c4264771cd9f71.
+//
+// Solidity: event ExecutorEOASet(address executorEOA)
+func (_SynapseExecutionServiceEvents *SynapseExecutionServiceEventsFilterer) WatchExecutorEOASet(opts *bind.WatchOpts, sink chan<- *SynapseExecutionServiceEventsExecutorEOASet) (event.Subscription, error) {
+
+	logs, sub, err := _SynapseExecutionServiceEvents.contract.WatchLogs(opts, "ExecutorEOASet")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(SynapseExecutionServiceEventsExecutorEOASet)
+				if err := _SynapseExecutionServiceEvents.contract.UnpackLog(event, "ExecutorEOASet", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseExecutorEOASet is a log parse operation binding the contract event 0x4ab11d24f4bb323219ce90846ba579a556c914e8587517e7c8c4264771cd9f71.
+//
+// Solidity: event ExecutorEOASet(address executorEOA)
+func (_SynapseExecutionServiceEvents *SynapseExecutionServiceEventsFilterer) ParseExecutorEOASet(log types.Log) (*SynapseExecutionServiceEventsExecutorEOASet, error) {
+	event := new(SynapseExecutionServiceEventsExecutorEOASet)
+	if err := _SynapseExecutionServiceEvents.contract.UnpackLog(event, "ExecutorEOASet", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// SynapseExecutionServiceEventsGasOracleSetIterator is returned from FilterGasOracleSet and is used to iterate over the raw logs and unpacked data for GasOracleSet events raised by the SynapseExecutionServiceEvents contract.
+type SynapseExecutionServiceEventsGasOracleSetIterator struct {
+	Event *SynapseExecutionServiceEventsGasOracleSet // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *SynapseExecutionServiceEventsGasOracleSetIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(SynapseExecutionServiceEventsGasOracleSet)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(SynapseExecutionServiceEventsGasOracleSet)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *SynapseExecutionServiceEventsGasOracleSetIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *SynapseExecutionServiceEventsGasOracleSetIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// SynapseExecutionServiceEventsGasOracleSet represents a GasOracleSet event raised by the SynapseExecutionServiceEvents contract.
+type SynapseExecutionServiceEventsGasOracleSet struct {
+	GasOracle common.Address
+	Raw       types.Log // Blockchain specific contextual infos
+}
+
+// FilterGasOracleSet is a free log retrieval operation binding the contract event 0x3efbbb00c39812fb98647af6e9e2c3f4ec2b53d368cedd1e148330a05b652cfa.
+//
+// Solidity: event GasOracleSet(address gasOracle)
+func (_SynapseExecutionServiceEvents *SynapseExecutionServiceEventsFilterer) FilterGasOracleSet(opts *bind.FilterOpts) (*SynapseExecutionServiceEventsGasOracleSetIterator, error) {
+
+	logs, sub, err := _SynapseExecutionServiceEvents.contract.FilterLogs(opts, "GasOracleSet")
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceEventsGasOracleSetIterator{contract: _SynapseExecutionServiceEvents.contract, event: "GasOracleSet", logs: logs, sub: sub}, nil
+}
+
+// WatchGasOracleSet is a free log subscription operation binding the contract event 0x3efbbb00c39812fb98647af6e9e2c3f4ec2b53d368cedd1e148330a05b652cfa.
+//
+// Solidity: event GasOracleSet(address gasOracle)
+func (_SynapseExecutionServiceEvents *SynapseExecutionServiceEventsFilterer) WatchGasOracleSet(opts *bind.WatchOpts, sink chan<- *SynapseExecutionServiceEventsGasOracleSet) (event.Subscription, error) {
+
+	logs, sub, err := _SynapseExecutionServiceEvents.contract.WatchLogs(opts, "GasOracleSet")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(SynapseExecutionServiceEventsGasOracleSet)
+				if err := _SynapseExecutionServiceEvents.contract.UnpackLog(event, "GasOracleSet", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseGasOracleSet is a log parse operation binding the contract event 0x3efbbb00c39812fb98647af6e9e2c3f4ec2b53d368cedd1e148330a05b652cfa.
+//
+// Solidity: event GasOracleSet(address gasOracle)
+func (_SynapseExecutionServiceEvents *SynapseExecutionServiceEventsFilterer) ParseGasOracleSet(log types.Log) (*SynapseExecutionServiceEventsGasOracleSet, error) {
+	event := new(SynapseExecutionServiceEventsGasOracleSet)
+	if err := _SynapseExecutionServiceEvents.contract.UnpackLog(event, "GasOracleSet", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// SynapseExecutionServiceV1MetaData contains all meta data concerning the SynapseExecutionServiceV1 contract.
+var SynapseExecutionServiceV1MetaData = &bind.MetaData{
+	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"AccessControlBadConfirmation\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"neededRole\",\"type\":\"bytes32\"}],\"name\":\"AccessControlUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidInitialization\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInitializing\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"}],\"name\":\"OptionsLib__IncorrectVersion\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"SynapseExecutionService__FeeAmountTooLow\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseExecutionService__GasOracleNotSet\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"version\",\"type\":\"uint256\"}],\"name\":\"SynapseExecutionService__OptionsVersionNotSupported\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseExecutionService__ZeroAddress\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"ExecutionRequested\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"executorEOA\",\"type\":\"address\"}],\"name\":\"ExecutorEOASet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"GasOracleSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"version\",\"type\":\"uint64\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"GOVERNOR_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"IC_CLIENT_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"executorEOA\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"gasOracle\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"getExecutionFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"callerConfirmation\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"requestExecution\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executorEOA_\",\"type\":\"address\"}],\"name\":\"setExecutorEOA\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle_\",\"type\":\"address\"}],\"name\":\"setGasOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	Sigs: map[string]string{
+		"a217fddf": "DEFAULT_ADMIN_ROLE()",
+		"ccc57490": "GOVERNOR_ROLE()",
+		"08c5c0db": "IC_CLIENT_ROLE()",
+		"62014bad": "executorEOA()",
+		"5d62a8dd": "gasOracle()",
+		"c473e7e8": "getExecutionFee(uint256,uint256,bytes)",
+		"248a9ca3": "getRoleAdmin(bytes32)",
+		"2f2ff15d": "grantRole(bytes32,address)",
+		"91d14854": "hasRole(bytes32,address)",
+		"c4d66de8": "initialize(address)",
+		"36568abe": "renounceRole(bytes32,address)",
+		"e4e06522": "requestExecution(uint256,uint256,bytes32,uint256,bytes)",
+		"d547741f": "revokeRole(bytes32,address)",
+		"2d54566c": "setExecutorEOA(address)",
+		"a87b8152": "setGasOracle(address)",
+		"01ffc9a7": "supportsInterface(bytes4)",
+	},
+	Bin: "0x608060405234801561001057600080fd5b5061001961001e565b6100d0565b7ff0c57e16840df040f15088dc2f81fe391c3923bec73e23a9662efc9c229c6a00805468010000000000000000900460ff161561006e5760405163f92ee8a960e01b815260040160405180910390fd5b80546001600160401b03908116146100cd5780546001600160401b0319166001600160401b0390811782556040519081527fc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d29060200160405180910390a15b50565b611344806100df6000396000f3fe608060405234801561001057600080fd5b50600436106101005760003560e01c806391d1485411610097578063c4d66de811610066578063c4d66de81461030d578063ccc5749014610320578063d547741f14610347578063e4e065221461035a57600080fd5b806391d148541461027a578063a217fddf146102df578063a87b8152146102e7578063c473e7e8146102fa57600080fd5b80632f2ff15d116100d35780632f2ff15d146101b957806336568abe146101cc5780635d62a8dd146101df57806362014bad1461023d57600080fd5b806301ffc9a71461010557806308c5c0db1461012d578063248a9ca3146101625780632d54566c146101a4575b600080fd5b610118610113366004610f22565b61036d565b60405190151581526020015b60405180910390f35b6101547f506033f42d439a89b8dbacb157256b8ef7e613d9e48db1be101b85411778abfb81565b604051908152602001610124565b610154610170366004610f6b565b60009081527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b626800602052604090206001015490565b6101b76101b2366004610fad565b610406565b005b6101b76101c7366004610fc8565b610517565b6101b76101da366004610fc8565b610561565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31015473ffffffffffffffffffffffffffffffffffffffff165b60405173ffffffffffffffffffffffffffffffffffffffff9091168152602001610124565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31005473ffffffffffffffffffffffffffffffffffffffff16610218565b610118610288366004610fc8565b60009182527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020908152604080842073ffffffffffffffffffffffffffffffffffffffff93909316845291905290205460ff1690565b610154600081565b6101b76102f5366004610fad565b6105bf565b61015461030836600461110e565b6106ea565b6101b761031b366004610fad565b610943565b6101547f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f5581565b6101b7610355366004610fc8565b610ac6565b6101b761036836600461115e565b610b0a565b60007fffffffff0000000000000000000000000000000000000000000000000000000082167f7965db0b00000000000000000000000000000000000000000000000000000000148061040057507f01ffc9a7000000000000000000000000000000000000000000000000000000007fffffffff000000000000000000000000000000000000000000000000000000008316145b92915050565b7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f5561043081610bc5565b73ffffffffffffffffffffffffffffffffffffffff821661047d576040517f0a0c2d7000000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e310080547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff841690811782556040519081527f4ab11d24f4bb323219ce90846ba579a556c914e8587517e7c8c4264771cd9f71906020015b60405180910390a1505050565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b626800602052604090206001015461055181610bc5565b61055b8383610bd2565b50505050565b73ffffffffffffffffffffffffffffffffffffffff811633146105b0576040517f6697b23200000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6105ba8282610cf3565b505050565b7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f556105e981610bc5565b73ffffffffffffffffffffffffffffffffffffffff8216610636576040517f0a0c2d7000000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e310180547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff84169081179091556040519081527fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e3100907f3efbbb00c39812fb98647af6e9e2c3f4ec2b53d368cedd1e148330a05b652cfa9060200161050a565b60008061072b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31015473ffffffffffffffffffffffffffffffffffffffff1690565b905073ffffffffffffffffffffffffffffffffffffffff811661077a576040517f38d2192500000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b600061078584610dd1565b509050600160ff821611156107d0576040517fdaa5a14f00000000000000000000000000000000000000000000000000000000815260ff821660048201526024015b60405180910390fd5b60006107db85610df3565b80516040517f5cbd3c48000000000000000000000000000000000000000000000000000000008152600481018a905260248101919091526044810188905290915073ffffffffffffffffffffffffffffffffffffffff841690635cbd3c4890606401602060405180830381865afa15801561085a573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061087e91906111c2565b6020820151909450156109395760208101516040517f1e7b928700000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff851691631e7b9287916108eb918b91600401918252602082015260400190565b602060405180830381865afa158015610908573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061092c91906111c2565b61093690856111db565b93505b5050509392505050565b7ff0c57e16840df040f15088dc2f81fe391c3923bec73e23a9662efc9c229c6a00805468010000000000000000810460ff16159067ffffffffffffffff1660008115801561098e5750825b905060008267ffffffffffffffff1660011480156109ab5750303b155b9050811580156109b9575080155b156109f0576040517ff92ee8a900000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b84547fffffffffffffffffffffffffffffffffffffffffffffffff00000000000000001660011785558315610a515784547fffffffffffffffffffffffffffffffffffffffffffffff00ffffffffffffffff16680100000000000000001785555b610a5c600087610bd2565b508315610abe5784547fffffffffffffffffffffffffffffffffffffffffffffff00ffffffffffffffff168555604051600181527fc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d29060200160405180910390a15b505050505050565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020526040902060010154610b0081610bc5565b61055b8383610cf3565b7f506033f42d439a89b8dbacb157256b8ef7e613d9e48db1be101b85411778abfb610b3481610bc5565b6000610b418787856106ea565b905080841015610b87576040517f4641246a00000000000000000000000000000000000000000000000000000000815260048101859052602481018290526044016107c7565b60405133815285907f507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd13829060200160405180910390a250505050505050565b610bcf8133610e77565b50565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020818152604080842073ffffffffffffffffffffffffffffffffffffffff8616855290915282205460ff16610ce95760008481526020828152604080832073ffffffffffffffffffffffffffffffffffffffff87168452909152902080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00166001179055610c853390565b73ffffffffffffffffffffffffffffffffffffffff168373ffffffffffffffffffffffffffffffffffffffff16857f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d60405160405180910390a46001915050610400565b6000915050610400565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020818152604080842073ffffffffffffffffffffffffffffffffffffffff8616855290915282205460ff1615610ce95760008481526020828152604080832073ffffffffffffffffffffffffffffffffffffffff8716808552925280832080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0016905551339287917ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9190a46001915050610400565b6000606082806020019051810190610de99190611215565b9094909350915050565b6040805180820190915260008082526020820152600080610e1384610dd1565b9092509050600160ff83161015610e5b576040517fbd91a21500000000000000000000000000000000000000000000000000000000815260ff831660048201526024016107c7565b80806020019051810190610e6f91906112bf565b949350505050565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020908152604080832073ffffffffffffffffffffffffffffffffffffffff8516845290915290205460ff16610f1e576040517fe2517d3f00000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff82166004820152602481018390526044016107c7565b5050565b600060208284031215610f3457600080fd5b81357fffffffff0000000000000000000000000000000000000000000000000000000081168114610f6457600080fd5b9392505050565b600060208284031215610f7d57600080fd5b5035919050565b803573ffffffffffffffffffffffffffffffffffffffff81168114610fa857600080fd5b919050565b600060208284031215610fbf57600080fd5b610f6482610f84565b60008060408385031215610fdb57600080fd5b82359150610feb60208401610f84565b90509250929050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b604051601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe016810167ffffffffffffffff8111828210171561106a5761106a610ff4565b604052919050565b600067ffffffffffffffff82111561108c5761108c610ff4565b50601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe01660200190565b600082601f8301126110c957600080fd5b81356110dc6110d782611072565b611023565b8181528460208386010111156110f157600080fd5b816020850160208301376000918101602001919091529392505050565b60008060006060848603121561112357600080fd5b8335925060208401359150604084013567ffffffffffffffff81111561114857600080fd5b611154868287016110b8565b9150509250925092565b600080600080600060a0868803121561117657600080fd5b85359450602086013593506040860135925060608601359150608086013567ffffffffffffffff8111156111a957600080fd5b6111b5888289016110b8565b9150509295509295909350565b6000602082840312156111d457600080fd5b5051919050565b80820180821115610400577f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b6000806040838503121561122857600080fd5b825160ff8116811461123957600080fd5b8092505060208084015167ffffffffffffffff81111561125857600080fd5b8401601f8101861361126957600080fd5b80516112776110d782611072565b818152878483850101111561128b57600080fd5b60005b828110156112a957838101850151828201860152840161128e565b5060009181019093015250919491935090915050565b6000604082840312156112d157600080fd5b6040516040810181811067ffffffffffffffff821117156112f4576112f4610ff4565b60405282518152602092830151928101929092525091905056fea2646970667358221220bbcc271392f71f588c6f9719002a4e868182ef2c705b3f06a78e073201cba31b64736f6c63430008140033",
+}
+
+// SynapseExecutionServiceV1ABI is the input ABI used to generate the binding from.
+// Deprecated: Use SynapseExecutionServiceV1MetaData.ABI instead.
+var SynapseExecutionServiceV1ABI = SynapseExecutionServiceV1MetaData.ABI
+
+// Deprecated: Use SynapseExecutionServiceV1MetaData.Sigs instead.
+// SynapseExecutionServiceV1FuncSigs maps the 4-byte function signature to its string representation.
+var SynapseExecutionServiceV1FuncSigs = SynapseExecutionServiceV1MetaData.Sigs
+
+// SynapseExecutionServiceV1Bin is the compiled bytecode used for deploying new contracts.
+// Deprecated: Use SynapseExecutionServiceV1MetaData.Bin instead.
+var SynapseExecutionServiceV1Bin = SynapseExecutionServiceV1MetaData.Bin
+
+// DeploySynapseExecutionServiceV1 deploys a new Ethereum contract, binding an instance of SynapseExecutionServiceV1 to it.
+func DeploySynapseExecutionServiceV1(auth *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, *SynapseExecutionServiceV1, error) {
+	parsed, err := SynapseExecutionServiceV1MetaData.GetAbi()
+	if err != nil {
+		return common.Address{}, nil, nil, err
+	}
+	if parsed == nil {
+		return common.Address{}, nil, nil, errors.New("GetABI returned nil")
+	}
+
+	address, tx, contract, err := bind.DeployContract(auth, *parsed, common.FromHex(SynapseExecutionServiceV1Bin), backend)
+	if err != nil {
+		return common.Address{}, nil, nil, err
+	}
+	return address, tx, &SynapseExecutionServiceV1{SynapseExecutionServiceV1Caller: SynapseExecutionServiceV1Caller{contract: contract}, SynapseExecutionServiceV1Transactor: SynapseExecutionServiceV1Transactor{contract: contract}, SynapseExecutionServiceV1Filterer: SynapseExecutionServiceV1Filterer{contract: contract}}, nil
+}
+
+// SynapseExecutionServiceV1 is an auto generated Go binding around an Ethereum contract.
+type SynapseExecutionServiceV1 struct {
+	SynapseExecutionServiceV1Caller     // Read-only binding to the contract
+	SynapseExecutionServiceV1Transactor // Write-only binding to the contract
+	SynapseExecutionServiceV1Filterer   // Log filterer for contract events
+}
+
+// SynapseExecutionServiceV1Caller is an auto generated read-only Go binding around an Ethereum contract.
+type SynapseExecutionServiceV1Caller struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// SynapseExecutionServiceV1Transactor is an auto generated write-only Go binding around an Ethereum contract.
+type SynapseExecutionServiceV1Transactor struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// SynapseExecutionServiceV1Filterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type SynapseExecutionServiceV1Filterer struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// SynapseExecutionServiceV1Session is an auto generated Go binding around an Ethereum contract,
+// with pre-set call and transact options.
+type SynapseExecutionServiceV1Session struct {
+	Contract     *SynapseExecutionServiceV1 // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts              // Call options to use throughout this session
+	TransactOpts bind.TransactOpts          // Transaction auth options to use throughout this session
+}
+
+// SynapseExecutionServiceV1CallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// with pre-set call options.
+type SynapseExecutionServiceV1CallerSession struct {
+	Contract *SynapseExecutionServiceV1Caller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts                    // Call options to use throughout this session
+}
+
+// SynapseExecutionServiceV1TransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// with pre-set transact options.
+type SynapseExecutionServiceV1TransactorSession struct {
+	Contract     *SynapseExecutionServiceV1Transactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts                    // Transaction auth options to use throughout this session
+}
+
+// SynapseExecutionServiceV1Raw is an auto generated low-level Go binding around an Ethereum contract.
+type SynapseExecutionServiceV1Raw struct {
+	Contract *SynapseExecutionServiceV1 // Generic contract binding to access the raw methods on
+}
+
+// SynapseExecutionServiceV1CallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type SynapseExecutionServiceV1CallerRaw struct {
+	Contract *SynapseExecutionServiceV1Caller // Generic read-only contract binding to access the raw methods on
+}
+
+// SynapseExecutionServiceV1TransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type SynapseExecutionServiceV1TransactorRaw struct {
+	Contract *SynapseExecutionServiceV1Transactor // Generic write-only contract binding to access the raw methods on
+}
+
+// NewSynapseExecutionServiceV1 creates a new instance of SynapseExecutionServiceV1, bound to a specific deployed contract.
+func NewSynapseExecutionServiceV1(address common.Address, backend bind.ContractBackend) (*SynapseExecutionServiceV1, error) {
+	contract, err := bindSynapseExecutionServiceV1(address, backend, backend, backend)
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1{SynapseExecutionServiceV1Caller: SynapseExecutionServiceV1Caller{contract: contract}, SynapseExecutionServiceV1Transactor: SynapseExecutionServiceV1Transactor{contract: contract}, SynapseExecutionServiceV1Filterer: SynapseExecutionServiceV1Filterer{contract: contract}}, nil
+}
+
+// NewSynapseExecutionServiceV1Caller creates a new read-only instance of SynapseExecutionServiceV1, bound to a specific deployed contract.
+func NewSynapseExecutionServiceV1Caller(address common.Address, caller bind.ContractCaller) (*SynapseExecutionServiceV1Caller, error) {
+	contract, err := bindSynapseExecutionServiceV1(address, caller, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1Caller{contract: contract}, nil
+}
+
+// NewSynapseExecutionServiceV1Transactor creates a new write-only instance of SynapseExecutionServiceV1, bound to a specific deployed contract.
+func NewSynapseExecutionServiceV1Transactor(address common.Address, transactor bind.ContractTransactor) (*SynapseExecutionServiceV1Transactor, error) {
+	contract, err := bindSynapseExecutionServiceV1(address, nil, transactor, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1Transactor{contract: contract}, nil
+}
+
+// NewSynapseExecutionServiceV1Filterer creates a new log filterer instance of SynapseExecutionServiceV1, bound to a specific deployed contract.
+func NewSynapseExecutionServiceV1Filterer(address common.Address, filterer bind.ContractFilterer) (*SynapseExecutionServiceV1Filterer, error) {
+	contract, err := bindSynapseExecutionServiceV1(address, nil, nil, filterer)
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1Filterer{contract: contract}, nil
+}
+
+// bindSynapseExecutionServiceV1 binds a generic wrapper to an already deployed contract.
+func bindSynapseExecutionServiceV1(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := SynapseExecutionServiceV1MetaData.GetAbi()
+	if err != nil {
+		return nil, err
+	}
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Raw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _SynapseExecutionServiceV1.Contract.SynapseExecutionServiceV1Caller.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Raw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.Contract.SynapseExecutionServiceV1Transactor.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Raw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.Contract.SynapseExecutionServiceV1Transactor.contract.Transact(opts, method, params...)
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1CallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _SynapseExecutionServiceV1.Contract.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1TransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.Contract.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1TransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.Contract.contract.Transact(opts, method, params...)
+}
+
+// DEFAULTADMINROLE is a free data retrieval call binding the contract method 0xa217fddf.
+//
+// Solidity: function DEFAULT_ADMIN_ROLE() view returns(bytes32)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Caller) DEFAULTADMINROLE(opts *bind.CallOpts) ([32]byte, error) {
+	var out []interface{}
+	err := _SynapseExecutionServiceV1.contract.Call(opts, &out, "DEFAULT_ADMIN_ROLE")
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
+}
+
+// DEFAULTADMINROLE is a free data retrieval call binding the contract method 0xa217fddf.
+//
+// Solidity: function DEFAULT_ADMIN_ROLE() view returns(bytes32)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) DEFAULTADMINROLE() ([32]byte, error) {
+	return _SynapseExecutionServiceV1.Contract.DEFAULTADMINROLE(&_SynapseExecutionServiceV1.CallOpts)
+}
+
+// DEFAULTADMINROLE is a free data retrieval call binding the contract method 0xa217fddf.
+//
+// Solidity: function DEFAULT_ADMIN_ROLE() view returns(bytes32)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1CallerSession) DEFAULTADMINROLE() ([32]byte, error) {
+	return _SynapseExecutionServiceV1.Contract.DEFAULTADMINROLE(&_SynapseExecutionServiceV1.CallOpts)
+}
+
+// GOVERNORROLE is a free data retrieval call binding the contract method 0xccc57490.
+//
+// Solidity: function GOVERNOR_ROLE() view returns(bytes32)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Caller) GOVERNORROLE(opts *bind.CallOpts) ([32]byte, error) {
+	var out []interface{}
+	err := _SynapseExecutionServiceV1.contract.Call(opts, &out, "GOVERNOR_ROLE")
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
+}
+
+// GOVERNORROLE is a free data retrieval call binding the contract method 0xccc57490.
+//
+// Solidity: function GOVERNOR_ROLE() view returns(bytes32)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) GOVERNORROLE() ([32]byte, error) {
+	return _SynapseExecutionServiceV1.Contract.GOVERNORROLE(&_SynapseExecutionServiceV1.CallOpts)
+}
+
+// GOVERNORROLE is a free data retrieval call binding the contract method 0xccc57490.
+//
+// Solidity: function GOVERNOR_ROLE() view returns(bytes32)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1CallerSession) GOVERNORROLE() ([32]byte, error) {
+	return _SynapseExecutionServiceV1.Contract.GOVERNORROLE(&_SynapseExecutionServiceV1.CallOpts)
+}
+
+// ICCLIENTROLE is a free data retrieval call binding the contract method 0x08c5c0db.
+//
+// Solidity: function IC_CLIENT_ROLE() view returns(bytes32)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Caller) ICCLIENTROLE(opts *bind.CallOpts) ([32]byte, error) {
+	var out []interface{}
+	err := _SynapseExecutionServiceV1.contract.Call(opts, &out, "IC_CLIENT_ROLE")
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
+}
+
+// ICCLIENTROLE is a free data retrieval call binding the contract method 0x08c5c0db.
+//
+// Solidity: function IC_CLIENT_ROLE() view returns(bytes32)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) ICCLIENTROLE() ([32]byte, error) {
+	return _SynapseExecutionServiceV1.Contract.ICCLIENTROLE(&_SynapseExecutionServiceV1.CallOpts)
+}
+
+// ICCLIENTROLE is a free data retrieval call binding the contract method 0x08c5c0db.
+//
+// Solidity: function IC_CLIENT_ROLE() view returns(bytes32)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1CallerSession) ICCLIENTROLE() ([32]byte, error) {
+	return _SynapseExecutionServiceV1.Contract.ICCLIENTROLE(&_SynapseExecutionServiceV1.CallOpts)
+}
+
+// ExecutorEOA is a free data retrieval call binding the contract method 0x62014bad.
+//
+// Solidity: function executorEOA() view returns(address)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Caller) ExecutorEOA(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _SynapseExecutionServiceV1.contract.Call(opts, &out, "executorEOA")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// ExecutorEOA is a free data retrieval call binding the contract method 0x62014bad.
+//
+// Solidity: function executorEOA() view returns(address)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) ExecutorEOA() (common.Address, error) {
+	return _SynapseExecutionServiceV1.Contract.ExecutorEOA(&_SynapseExecutionServiceV1.CallOpts)
+}
+
+// ExecutorEOA is a free data retrieval call binding the contract method 0x62014bad.
+//
+// Solidity: function executorEOA() view returns(address)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1CallerSession) ExecutorEOA() (common.Address, error) {
+	return _SynapseExecutionServiceV1.Contract.ExecutorEOA(&_SynapseExecutionServiceV1.CallOpts)
+}
+
+// GasOracle is a free data retrieval call binding the contract method 0x5d62a8dd.
+//
+// Solidity: function gasOracle() view returns(address)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Caller) GasOracle(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _SynapseExecutionServiceV1.contract.Call(opts, &out, "gasOracle")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// GasOracle is a free data retrieval call binding the contract method 0x5d62a8dd.
+//
+// Solidity: function gasOracle() view returns(address)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) GasOracle() (common.Address, error) {
+	return _SynapseExecutionServiceV1.Contract.GasOracle(&_SynapseExecutionServiceV1.CallOpts)
+}
+
+// GasOracle is a free data retrieval call binding the contract method 0x5d62a8dd.
+//
+// Solidity: function gasOracle() view returns(address)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1CallerSession) GasOracle() (common.Address, error) {
+	return _SynapseExecutionServiceV1.Contract.GasOracle(&_SynapseExecutionServiceV1.CallOpts)
+}
+
+// GetExecutionFee is a free data retrieval call binding the contract method 0xc473e7e8.
+//
+// Solidity: function getExecutionFee(uint256 dstChainId, uint256 txPayloadSize, bytes options) view returns(uint256 executionFee)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Caller) GetExecutionFee(opts *bind.CallOpts, dstChainId *big.Int, txPayloadSize *big.Int, options []byte) (*big.Int, error) {
+	var out []interface{}
+	err := _SynapseExecutionServiceV1.contract.Call(opts, &out, "getExecutionFee", dstChainId, txPayloadSize, options)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetExecutionFee is a free data retrieval call binding the contract method 0xc473e7e8.
+//
+// Solidity: function getExecutionFee(uint256 dstChainId, uint256 txPayloadSize, bytes options) view returns(uint256 executionFee)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) GetExecutionFee(dstChainId *big.Int, txPayloadSize *big.Int, options []byte) (*big.Int, error) {
+	return _SynapseExecutionServiceV1.Contract.GetExecutionFee(&_SynapseExecutionServiceV1.CallOpts, dstChainId, txPayloadSize, options)
+}
+
+// GetExecutionFee is a free data retrieval call binding the contract method 0xc473e7e8.
+//
+// Solidity: function getExecutionFee(uint256 dstChainId, uint256 txPayloadSize, bytes options) view returns(uint256 executionFee)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1CallerSession) GetExecutionFee(dstChainId *big.Int, txPayloadSize *big.Int, options []byte) (*big.Int, error) {
+	return _SynapseExecutionServiceV1.Contract.GetExecutionFee(&_SynapseExecutionServiceV1.CallOpts, dstChainId, txPayloadSize, options)
+}
+
+// GetRoleAdmin is a free data retrieval call binding the contract method 0x248a9ca3.
+//
+// Solidity: function getRoleAdmin(bytes32 role) view returns(bytes32)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Caller) GetRoleAdmin(opts *bind.CallOpts, role [32]byte) ([32]byte, error) {
+	var out []interface{}
+	err := _SynapseExecutionServiceV1.contract.Call(opts, &out, "getRoleAdmin", role)
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
+}
+
+// GetRoleAdmin is a free data retrieval call binding the contract method 0x248a9ca3.
+//
+// Solidity: function getRoleAdmin(bytes32 role) view returns(bytes32)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) GetRoleAdmin(role [32]byte) ([32]byte, error) {
+	return _SynapseExecutionServiceV1.Contract.GetRoleAdmin(&_SynapseExecutionServiceV1.CallOpts, role)
+}
+
+// GetRoleAdmin is a free data retrieval call binding the contract method 0x248a9ca3.
+//
+// Solidity: function getRoleAdmin(bytes32 role) view returns(bytes32)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1CallerSession) GetRoleAdmin(role [32]byte) ([32]byte, error) {
+	return _SynapseExecutionServiceV1.Contract.GetRoleAdmin(&_SynapseExecutionServiceV1.CallOpts, role)
+}
+
+// HasRole is a free data retrieval call binding the contract method 0x91d14854.
+//
+// Solidity: function hasRole(bytes32 role, address account) view returns(bool)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Caller) HasRole(opts *bind.CallOpts, role [32]byte, account common.Address) (bool, error) {
+	var out []interface{}
+	err := _SynapseExecutionServiceV1.contract.Call(opts, &out, "hasRole", role, account)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
+}
+
+// HasRole is a free data retrieval call binding the contract method 0x91d14854.
+//
+// Solidity: function hasRole(bytes32 role, address account) view returns(bool)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) HasRole(role [32]byte, account common.Address) (bool, error) {
+	return _SynapseExecutionServiceV1.Contract.HasRole(&_SynapseExecutionServiceV1.CallOpts, role, account)
+}
+
+// HasRole is a free data retrieval call binding the contract method 0x91d14854.
+//
+// Solidity: function hasRole(bytes32 role, address account) view returns(bool)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1CallerSession) HasRole(role [32]byte, account common.Address) (bool, error) {
+	return _SynapseExecutionServiceV1.Contract.HasRole(&_SynapseExecutionServiceV1.CallOpts, role, account)
+}
+
+// SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
+//
+// Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Caller) SupportsInterface(opts *bind.CallOpts, interfaceId [4]byte) (bool, error) {
+	var out []interface{}
+	err := _SynapseExecutionServiceV1.contract.Call(opts, &out, "supportsInterface", interfaceId)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
+}
+
+// SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
+//
+// Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) SupportsInterface(interfaceId [4]byte) (bool, error) {
+	return _SynapseExecutionServiceV1.Contract.SupportsInterface(&_SynapseExecutionServiceV1.CallOpts, interfaceId)
+}
+
+// SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
+//
+// Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1CallerSession) SupportsInterface(interfaceId [4]byte) (bool, error) {
+	return _SynapseExecutionServiceV1.Contract.SupportsInterface(&_SynapseExecutionServiceV1.CallOpts, interfaceId)
+}
+
+// GrantRole is a paid mutator transaction binding the contract method 0x2f2ff15d.
+//
+// Solidity: function grantRole(bytes32 role, address account) returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Transactor) GrantRole(opts *bind.TransactOpts, role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.contract.Transact(opts, "grantRole", role, account)
+}
+
+// GrantRole is a paid mutator transaction binding the contract method 0x2f2ff15d.
+//
+// Solidity: function grantRole(bytes32 role, address account) returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) GrantRole(role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.Contract.GrantRole(&_SynapseExecutionServiceV1.TransactOpts, role, account)
+}
+
+// GrantRole is a paid mutator transaction binding the contract method 0x2f2ff15d.
+//
+// Solidity: function grantRole(bytes32 role, address account) returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1TransactorSession) GrantRole(role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.Contract.GrantRole(&_SynapseExecutionServiceV1.TransactOpts, role, account)
+}
+
+// Initialize is a paid mutator transaction binding the contract method 0xc4d66de8.
+//
+// Solidity: function initialize(address admin) returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Transactor) Initialize(opts *bind.TransactOpts, admin common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.contract.Transact(opts, "initialize", admin)
+}
+
+// Initialize is a paid mutator transaction binding the contract method 0xc4d66de8.
+//
+// Solidity: function initialize(address admin) returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) Initialize(admin common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.Contract.Initialize(&_SynapseExecutionServiceV1.TransactOpts, admin)
+}
+
+// Initialize is a paid mutator transaction binding the contract method 0xc4d66de8.
+//
+// Solidity: function initialize(address admin) returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1TransactorSession) Initialize(admin common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.Contract.Initialize(&_SynapseExecutionServiceV1.TransactOpts, admin)
+}
+
+// RenounceRole is a paid mutator transaction binding the contract method 0x36568abe.
+//
+// Solidity: function renounceRole(bytes32 role, address callerConfirmation) returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Transactor) RenounceRole(opts *bind.TransactOpts, role [32]byte, callerConfirmation common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.contract.Transact(opts, "renounceRole", role, callerConfirmation)
+}
+
+// RenounceRole is a paid mutator transaction binding the contract method 0x36568abe.
+//
+// Solidity: function renounceRole(bytes32 role, address callerConfirmation) returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) RenounceRole(role [32]byte, callerConfirmation common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.Contract.RenounceRole(&_SynapseExecutionServiceV1.TransactOpts, role, callerConfirmation)
+}
+
+// RenounceRole is a paid mutator transaction binding the contract method 0x36568abe.
+//
+// Solidity: function renounceRole(bytes32 role, address callerConfirmation) returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1TransactorSession) RenounceRole(role [32]byte, callerConfirmation common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.Contract.RenounceRole(&_SynapseExecutionServiceV1.TransactOpts, role, callerConfirmation)
+}
+
+// RequestExecution is a paid mutator transaction binding the contract method 0xe4e06522.
+//
+// Solidity: function requestExecution(uint256 dstChainId, uint256 txPayloadSize, bytes32 transactionId, uint256 executionFee, bytes options) returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Transactor) RequestExecution(opts *bind.TransactOpts, dstChainId *big.Int, txPayloadSize *big.Int, transactionId [32]byte, executionFee *big.Int, options []byte) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.contract.Transact(opts, "requestExecution", dstChainId, txPayloadSize, transactionId, executionFee, options)
+}
+
+// RequestExecution is a paid mutator transaction binding the contract method 0xe4e06522.
+//
+// Solidity: function requestExecution(uint256 dstChainId, uint256 txPayloadSize, bytes32 transactionId, uint256 executionFee, bytes options) returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) RequestExecution(dstChainId *big.Int, txPayloadSize *big.Int, transactionId [32]byte, executionFee *big.Int, options []byte) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.Contract.RequestExecution(&_SynapseExecutionServiceV1.TransactOpts, dstChainId, txPayloadSize, transactionId, executionFee, options)
+}
+
+// RequestExecution is a paid mutator transaction binding the contract method 0xe4e06522.
+//
+// Solidity: function requestExecution(uint256 dstChainId, uint256 txPayloadSize, bytes32 transactionId, uint256 executionFee, bytes options) returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1TransactorSession) RequestExecution(dstChainId *big.Int, txPayloadSize *big.Int, transactionId [32]byte, executionFee *big.Int, options []byte) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.Contract.RequestExecution(&_SynapseExecutionServiceV1.TransactOpts, dstChainId, txPayloadSize, transactionId, executionFee, options)
+}
+
+// RevokeRole is a paid mutator transaction binding the contract method 0xd547741f.
+//
+// Solidity: function revokeRole(bytes32 role, address account) returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Transactor) RevokeRole(opts *bind.TransactOpts, role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.contract.Transact(opts, "revokeRole", role, account)
+}
+
+// RevokeRole is a paid mutator transaction binding the contract method 0xd547741f.
+//
+// Solidity: function revokeRole(bytes32 role, address account) returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) RevokeRole(role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.Contract.RevokeRole(&_SynapseExecutionServiceV1.TransactOpts, role, account)
+}
+
+// RevokeRole is a paid mutator transaction binding the contract method 0xd547741f.
+//
+// Solidity: function revokeRole(bytes32 role, address account) returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1TransactorSession) RevokeRole(role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.Contract.RevokeRole(&_SynapseExecutionServiceV1.TransactOpts, role, account)
+}
+
+// SetExecutorEOA is a paid mutator transaction binding the contract method 0x2d54566c.
+//
+// Solidity: function setExecutorEOA(address executorEOA_) returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Transactor) SetExecutorEOA(opts *bind.TransactOpts, executorEOA_ common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.contract.Transact(opts, "setExecutorEOA", executorEOA_)
+}
+
+// SetExecutorEOA is a paid mutator transaction binding the contract method 0x2d54566c.
+//
+// Solidity: function setExecutorEOA(address executorEOA_) returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) SetExecutorEOA(executorEOA_ common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.Contract.SetExecutorEOA(&_SynapseExecutionServiceV1.TransactOpts, executorEOA_)
+}
+
+// SetExecutorEOA is a paid mutator transaction binding the contract method 0x2d54566c.
+//
+// Solidity: function setExecutorEOA(address executorEOA_) returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1TransactorSession) SetExecutorEOA(executorEOA_ common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.Contract.SetExecutorEOA(&_SynapseExecutionServiceV1.TransactOpts, executorEOA_)
+}
+
+// SetGasOracle is a paid mutator transaction binding the contract method 0xa87b8152.
+//
+// Solidity: function setGasOracle(address gasOracle_) returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Transactor) SetGasOracle(opts *bind.TransactOpts, gasOracle_ common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.contract.Transact(opts, "setGasOracle", gasOracle_)
+}
+
+// SetGasOracle is a paid mutator transaction binding the contract method 0xa87b8152.
+//
+// Solidity: function setGasOracle(address gasOracle_) returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) SetGasOracle(gasOracle_ common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.Contract.SetGasOracle(&_SynapseExecutionServiceV1.TransactOpts, gasOracle_)
+}
+
+// SetGasOracle is a paid mutator transaction binding the contract method 0xa87b8152.
+//
+// Solidity: function setGasOracle(address gasOracle_) returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1TransactorSession) SetGasOracle(gasOracle_ common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.Contract.SetGasOracle(&_SynapseExecutionServiceV1.TransactOpts, gasOracle_)
+}
+
+// SynapseExecutionServiceV1ExecutionRequestedIterator is returned from FilterExecutionRequested and is used to iterate over the raw logs and unpacked data for ExecutionRequested events raised by the SynapseExecutionServiceV1 contract.
+type SynapseExecutionServiceV1ExecutionRequestedIterator struct {
+	Event *SynapseExecutionServiceV1ExecutionRequested // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *SynapseExecutionServiceV1ExecutionRequestedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(SynapseExecutionServiceV1ExecutionRequested)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(SynapseExecutionServiceV1ExecutionRequested)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *SynapseExecutionServiceV1ExecutionRequestedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *SynapseExecutionServiceV1ExecutionRequestedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// SynapseExecutionServiceV1ExecutionRequested represents a ExecutionRequested event raised by the SynapseExecutionServiceV1 contract.
+type SynapseExecutionServiceV1ExecutionRequested struct {
+	TransactionId [32]byte
+	Client        common.Address
+	Raw           types.Log // Blockchain specific contextual infos
+}
+
+// FilterExecutionRequested is a free log retrieval operation binding the contract event 0x507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd1382.
+//
+// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) FilterExecutionRequested(opts *bind.FilterOpts, transactionId [][32]byte) (*SynapseExecutionServiceV1ExecutionRequestedIterator, error) {
+
+	var transactionIdRule []interface{}
+	for _, transactionIdItem := range transactionId {
+		transactionIdRule = append(transactionIdRule, transactionIdItem)
+	}
+
+	logs, sub, err := _SynapseExecutionServiceV1.contract.FilterLogs(opts, "ExecutionRequested", transactionIdRule)
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1ExecutionRequestedIterator{contract: _SynapseExecutionServiceV1.contract, event: "ExecutionRequested", logs: logs, sub: sub}, nil
+}
+
+// WatchExecutionRequested is a free log subscription operation binding the contract event 0x507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd1382.
+//
+// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) WatchExecutionRequested(opts *bind.WatchOpts, sink chan<- *SynapseExecutionServiceV1ExecutionRequested, transactionId [][32]byte) (event.Subscription, error) {
+
+	var transactionIdRule []interface{}
+	for _, transactionIdItem := range transactionId {
+		transactionIdRule = append(transactionIdRule, transactionIdItem)
+	}
+
+	logs, sub, err := _SynapseExecutionServiceV1.contract.WatchLogs(opts, "ExecutionRequested", transactionIdRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(SynapseExecutionServiceV1ExecutionRequested)
+				if err := _SynapseExecutionServiceV1.contract.UnpackLog(event, "ExecutionRequested", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseExecutionRequested is a log parse operation binding the contract event 0x507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd1382.
+//
+// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) ParseExecutionRequested(log types.Log) (*SynapseExecutionServiceV1ExecutionRequested, error) {
+	event := new(SynapseExecutionServiceV1ExecutionRequested)
+	if err := _SynapseExecutionServiceV1.contract.UnpackLog(event, "ExecutionRequested", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// SynapseExecutionServiceV1ExecutorEOASetIterator is returned from FilterExecutorEOASet and is used to iterate over the raw logs and unpacked data for ExecutorEOASet events raised by the SynapseExecutionServiceV1 contract.
+type SynapseExecutionServiceV1ExecutorEOASetIterator struct {
+	Event *SynapseExecutionServiceV1ExecutorEOASet // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *SynapseExecutionServiceV1ExecutorEOASetIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(SynapseExecutionServiceV1ExecutorEOASet)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(SynapseExecutionServiceV1ExecutorEOASet)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *SynapseExecutionServiceV1ExecutorEOASetIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *SynapseExecutionServiceV1ExecutorEOASetIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// SynapseExecutionServiceV1ExecutorEOASet represents a ExecutorEOASet event raised by the SynapseExecutionServiceV1 contract.
+type SynapseExecutionServiceV1ExecutorEOASet struct {
+	ExecutorEOA common.Address
+	Raw         types.Log // Blockchain specific contextual infos
+}
+
+// FilterExecutorEOASet is a free log retrieval operation binding the contract event 0x4ab11d24f4bb323219ce90846ba579a556c914e8587517e7c8c4264771cd9f71.
+//
+// Solidity: event ExecutorEOASet(address executorEOA)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) FilterExecutorEOASet(opts *bind.FilterOpts) (*SynapseExecutionServiceV1ExecutorEOASetIterator, error) {
+
+	logs, sub, err := _SynapseExecutionServiceV1.contract.FilterLogs(opts, "ExecutorEOASet")
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1ExecutorEOASetIterator{contract: _SynapseExecutionServiceV1.contract, event: "ExecutorEOASet", logs: logs, sub: sub}, nil
+}
+
+// WatchExecutorEOASet is a free log subscription operation binding the contract event 0x4ab11d24f4bb323219ce90846ba579a556c914e8587517e7c8c4264771cd9f71.
+//
+// Solidity: event ExecutorEOASet(address executorEOA)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) WatchExecutorEOASet(opts *bind.WatchOpts, sink chan<- *SynapseExecutionServiceV1ExecutorEOASet) (event.Subscription, error) {
+
+	logs, sub, err := _SynapseExecutionServiceV1.contract.WatchLogs(opts, "ExecutorEOASet")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(SynapseExecutionServiceV1ExecutorEOASet)
+				if err := _SynapseExecutionServiceV1.contract.UnpackLog(event, "ExecutorEOASet", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseExecutorEOASet is a log parse operation binding the contract event 0x4ab11d24f4bb323219ce90846ba579a556c914e8587517e7c8c4264771cd9f71.
+//
+// Solidity: event ExecutorEOASet(address executorEOA)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) ParseExecutorEOASet(log types.Log) (*SynapseExecutionServiceV1ExecutorEOASet, error) {
+	event := new(SynapseExecutionServiceV1ExecutorEOASet)
+	if err := _SynapseExecutionServiceV1.contract.UnpackLog(event, "ExecutorEOASet", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// SynapseExecutionServiceV1GasOracleSetIterator is returned from FilterGasOracleSet and is used to iterate over the raw logs and unpacked data for GasOracleSet events raised by the SynapseExecutionServiceV1 contract.
+type SynapseExecutionServiceV1GasOracleSetIterator struct {
+	Event *SynapseExecutionServiceV1GasOracleSet // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *SynapseExecutionServiceV1GasOracleSetIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(SynapseExecutionServiceV1GasOracleSet)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(SynapseExecutionServiceV1GasOracleSet)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *SynapseExecutionServiceV1GasOracleSetIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *SynapseExecutionServiceV1GasOracleSetIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// SynapseExecutionServiceV1GasOracleSet represents a GasOracleSet event raised by the SynapseExecutionServiceV1 contract.
+type SynapseExecutionServiceV1GasOracleSet struct {
+	GasOracle common.Address
+	Raw       types.Log // Blockchain specific contextual infos
+}
+
+// FilterGasOracleSet is a free log retrieval operation binding the contract event 0x3efbbb00c39812fb98647af6e9e2c3f4ec2b53d368cedd1e148330a05b652cfa.
+//
+// Solidity: event GasOracleSet(address gasOracle)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) FilterGasOracleSet(opts *bind.FilterOpts) (*SynapseExecutionServiceV1GasOracleSetIterator, error) {
+
+	logs, sub, err := _SynapseExecutionServiceV1.contract.FilterLogs(opts, "GasOracleSet")
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1GasOracleSetIterator{contract: _SynapseExecutionServiceV1.contract, event: "GasOracleSet", logs: logs, sub: sub}, nil
+}
+
+// WatchGasOracleSet is a free log subscription operation binding the contract event 0x3efbbb00c39812fb98647af6e9e2c3f4ec2b53d368cedd1e148330a05b652cfa.
+//
+// Solidity: event GasOracleSet(address gasOracle)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) WatchGasOracleSet(opts *bind.WatchOpts, sink chan<- *SynapseExecutionServiceV1GasOracleSet) (event.Subscription, error) {
+
+	logs, sub, err := _SynapseExecutionServiceV1.contract.WatchLogs(opts, "GasOracleSet")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(SynapseExecutionServiceV1GasOracleSet)
+				if err := _SynapseExecutionServiceV1.contract.UnpackLog(event, "GasOracleSet", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseGasOracleSet is a log parse operation binding the contract event 0x3efbbb00c39812fb98647af6e9e2c3f4ec2b53d368cedd1e148330a05b652cfa.
+//
+// Solidity: event GasOracleSet(address gasOracle)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) ParseGasOracleSet(log types.Log) (*SynapseExecutionServiceV1GasOracleSet, error) {
+	event := new(SynapseExecutionServiceV1GasOracleSet)
+	if err := _SynapseExecutionServiceV1.contract.UnpackLog(event, "GasOracleSet", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// SynapseExecutionServiceV1InitializedIterator is returned from FilterInitialized and is used to iterate over the raw logs and unpacked data for Initialized events raised by the SynapseExecutionServiceV1 contract.
+type SynapseExecutionServiceV1InitializedIterator struct {
+	Event *SynapseExecutionServiceV1Initialized // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *SynapseExecutionServiceV1InitializedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(SynapseExecutionServiceV1Initialized)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(SynapseExecutionServiceV1Initialized)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *SynapseExecutionServiceV1InitializedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *SynapseExecutionServiceV1InitializedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// SynapseExecutionServiceV1Initialized represents a Initialized event raised by the SynapseExecutionServiceV1 contract.
+type SynapseExecutionServiceV1Initialized struct {
+	Version uint64
+	Raw     types.Log // Blockchain specific contextual infos
+}
+
+// FilterInitialized is a free log retrieval operation binding the contract event 0xc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d2.
+//
+// Solidity: event Initialized(uint64 version)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) FilterInitialized(opts *bind.FilterOpts) (*SynapseExecutionServiceV1InitializedIterator, error) {
+
+	logs, sub, err := _SynapseExecutionServiceV1.contract.FilterLogs(opts, "Initialized")
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1InitializedIterator{contract: _SynapseExecutionServiceV1.contract, event: "Initialized", logs: logs, sub: sub}, nil
+}
+
+// WatchInitialized is a free log subscription operation binding the contract event 0xc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d2.
+//
+// Solidity: event Initialized(uint64 version)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) WatchInitialized(opts *bind.WatchOpts, sink chan<- *SynapseExecutionServiceV1Initialized) (event.Subscription, error) {
+
+	logs, sub, err := _SynapseExecutionServiceV1.contract.WatchLogs(opts, "Initialized")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(SynapseExecutionServiceV1Initialized)
+				if err := _SynapseExecutionServiceV1.contract.UnpackLog(event, "Initialized", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseInitialized is a log parse operation binding the contract event 0xc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d2.
+//
+// Solidity: event Initialized(uint64 version)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) ParseInitialized(log types.Log) (*SynapseExecutionServiceV1Initialized, error) {
+	event := new(SynapseExecutionServiceV1Initialized)
+	if err := _SynapseExecutionServiceV1.contract.UnpackLog(event, "Initialized", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// SynapseExecutionServiceV1RoleAdminChangedIterator is returned from FilterRoleAdminChanged and is used to iterate over the raw logs and unpacked data for RoleAdminChanged events raised by the SynapseExecutionServiceV1 contract.
+type SynapseExecutionServiceV1RoleAdminChangedIterator struct {
+	Event *SynapseExecutionServiceV1RoleAdminChanged // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *SynapseExecutionServiceV1RoleAdminChangedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(SynapseExecutionServiceV1RoleAdminChanged)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(SynapseExecutionServiceV1RoleAdminChanged)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *SynapseExecutionServiceV1RoleAdminChangedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *SynapseExecutionServiceV1RoleAdminChangedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// SynapseExecutionServiceV1RoleAdminChanged represents a RoleAdminChanged event raised by the SynapseExecutionServiceV1 contract.
+type SynapseExecutionServiceV1RoleAdminChanged struct {
+	Role              [32]byte
+	PreviousAdminRole [32]byte
+	NewAdminRole      [32]byte
+	Raw               types.Log // Blockchain specific contextual infos
+}
+
+// FilterRoleAdminChanged is a free log retrieval operation binding the contract event 0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff.
+//
+// Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) FilterRoleAdminChanged(opts *bind.FilterOpts, role [][32]byte, previousAdminRole [][32]byte, newAdminRole [][32]byte) (*SynapseExecutionServiceV1RoleAdminChangedIterator, error) {
+
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
+	}
+	var previousAdminRoleRule []interface{}
+	for _, previousAdminRoleItem := range previousAdminRole {
+		previousAdminRoleRule = append(previousAdminRoleRule, previousAdminRoleItem)
+	}
+	var newAdminRoleRule []interface{}
+	for _, newAdminRoleItem := range newAdminRole {
+		newAdminRoleRule = append(newAdminRoleRule, newAdminRoleItem)
+	}
+
+	logs, sub, err := _SynapseExecutionServiceV1.contract.FilterLogs(opts, "RoleAdminChanged", roleRule, previousAdminRoleRule, newAdminRoleRule)
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1RoleAdminChangedIterator{contract: _SynapseExecutionServiceV1.contract, event: "RoleAdminChanged", logs: logs, sub: sub}, nil
+}
+
+// WatchRoleAdminChanged is a free log subscription operation binding the contract event 0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff.
+//
+// Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) WatchRoleAdminChanged(opts *bind.WatchOpts, sink chan<- *SynapseExecutionServiceV1RoleAdminChanged, role [][32]byte, previousAdminRole [][32]byte, newAdminRole [][32]byte) (event.Subscription, error) {
+
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
+	}
+	var previousAdminRoleRule []interface{}
+	for _, previousAdminRoleItem := range previousAdminRole {
+		previousAdminRoleRule = append(previousAdminRoleRule, previousAdminRoleItem)
+	}
+	var newAdminRoleRule []interface{}
+	for _, newAdminRoleItem := range newAdminRole {
+		newAdminRoleRule = append(newAdminRoleRule, newAdminRoleItem)
+	}
+
+	logs, sub, err := _SynapseExecutionServiceV1.contract.WatchLogs(opts, "RoleAdminChanged", roleRule, previousAdminRoleRule, newAdminRoleRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(SynapseExecutionServiceV1RoleAdminChanged)
+				if err := _SynapseExecutionServiceV1.contract.UnpackLog(event, "RoleAdminChanged", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseRoleAdminChanged is a log parse operation binding the contract event 0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff.
+//
+// Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) ParseRoleAdminChanged(log types.Log) (*SynapseExecutionServiceV1RoleAdminChanged, error) {
+	event := new(SynapseExecutionServiceV1RoleAdminChanged)
+	if err := _SynapseExecutionServiceV1.contract.UnpackLog(event, "RoleAdminChanged", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// SynapseExecutionServiceV1RoleGrantedIterator is returned from FilterRoleGranted and is used to iterate over the raw logs and unpacked data for RoleGranted events raised by the SynapseExecutionServiceV1 contract.
+type SynapseExecutionServiceV1RoleGrantedIterator struct {
+	Event *SynapseExecutionServiceV1RoleGranted // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *SynapseExecutionServiceV1RoleGrantedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(SynapseExecutionServiceV1RoleGranted)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(SynapseExecutionServiceV1RoleGranted)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *SynapseExecutionServiceV1RoleGrantedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *SynapseExecutionServiceV1RoleGrantedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// SynapseExecutionServiceV1RoleGranted represents a RoleGranted event raised by the SynapseExecutionServiceV1 contract.
+type SynapseExecutionServiceV1RoleGranted struct {
+	Role    [32]byte
+	Account common.Address
+	Sender  common.Address
+	Raw     types.Log // Blockchain specific contextual infos
+}
+
+// FilterRoleGranted is a free log retrieval operation binding the contract event 0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d.
+//
+// Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) FilterRoleGranted(opts *bind.FilterOpts, role [][32]byte, account []common.Address, sender []common.Address) (*SynapseExecutionServiceV1RoleGrantedIterator, error) {
+
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
+	}
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
+	}
+	var senderRule []interface{}
+	for _, senderItem := range sender {
+		senderRule = append(senderRule, senderItem)
+	}
+
+	logs, sub, err := _SynapseExecutionServiceV1.contract.FilterLogs(opts, "RoleGranted", roleRule, accountRule, senderRule)
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1RoleGrantedIterator{contract: _SynapseExecutionServiceV1.contract, event: "RoleGranted", logs: logs, sub: sub}, nil
+}
+
+// WatchRoleGranted is a free log subscription operation binding the contract event 0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d.
+//
+// Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) WatchRoleGranted(opts *bind.WatchOpts, sink chan<- *SynapseExecutionServiceV1RoleGranted, role [][32]byte, account []common.Address, sender []common.Address) (event.Subscription, error) {
+
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
+	}
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
+	}
+	var senderRule []interface{}
+	for _, senderItem := range sender {
+		senderRule = append(senderRule, senderItem)
+	}
+
+	logs, sub, err := _SynapseExecutionServiceV1.contract.WatchLogs(opts, "RoleGranted", roleRule, accountRule, senderRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(SynapseExecutionServiceV1RoleGranted)
+				if err := _SynapseExecutionServiceV1.contract.UnpackLog(event, "RoleGranted", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseRoleGranted is a log parse operation binding the contract event 0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d.
+//
+// Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) ParseRoleGranted(log types.Log) (*SynapseExecutionServiceV1RoleGranted, error) {
+	event := new(SynapseExecutionServiceV1RoleGranted)
+	if err := _SynapseExecutionServiceV1.contract.UnpackLog(event, "RoleGranted", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// SynapseExecutionServiceV1RoleRevokedIterator is returned from FilterRoleRevoked and is used to iterate over the raw logs and unpacked data for RoleRevoked events raised by the SynapseExecutionServiceV1 contract.
+type SynapseExecutionServiceV1RoleRevokedIterator struct {
+	Event *SynapseExecutionServiceV1RoleRevoked // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *SynapseExecutionServiceV1RoleRevokedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(SynapseExecutionServiceV1RoleRevoked)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(SynapseExecutionServiceV1RoleRevoked)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *SynapseExecutionServiceV1RoleRevokedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *SynapseExecutionServiceV1RoleRevokedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// SynapseExecutionServiceV1RoleRevoked represents a RoleRevoked event raised by the SynapseExecutionServiceV1 contract.
+type SynapseExecutionServiceV1RoleRevoked struct {
+	Role    [32]byte
+	Account common.Address
+	Sender  common.Address
+	Raw     types.Log // Blockchain specific contextual infos
+}
+
+// FilterRoleRevoked is a free log retrieval operation binding the contract event 0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b.
+//
+// Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) FilterRoleRevoked(opts *bind.FilterOpts, role [][32]byte, account []common.Address, sender []common.Address) (*SynapseExecutionServiceV1RoleRevokedIterator, error) {
+
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
+	}
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
+	}
+	var senderRule []interface{}
+	for _, senderItem := range sender {
+		senderRule = append(senderRule, senderItem)
+	}
+
+	logs, sub, err := _SynapseExecutionServiceV1.contract.FilterLogs(opts, "RoleRevoked", roleRule, accountRule, senderRule)
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1RoleRevokedIterator{contract: _SynapseExecutionServiceV1.contract, event: "RoleRevoked", logs: logs, sub: sub}, nil
+}
+
+// WatchRoleRevoked is a free log subscription operation binding the contract event 0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b.
+//
+// Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) WatchRoleRevoked(opts *bind.WatchOpts, sink chan<- *SynapseExecutionServiceV1RoleRevoked, role [][32]byte, account []common.Address, sender []common.Address) (event.Subscription, error) {
+
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
+	}
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
+	}
+	var senderRule []interface{}
+	for _, senderItem := range sender {
+		senderRule = append(senderRule, senderItem)
+	}
+
+	logs, sub, err := _SynapseExecutionServiceV1.contract.WatchLogs(opts, "RoleRevoked", roleRule, accountRule, senderRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(SynapseExecutionServiceV1RoleRevoked)
+				if err := _SynapseExecutionServiceV1.contract.UnpackLog(event, "RoleRevoked", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseRoleRevoked is a log parse operation binding the contract event 0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b.
+//
+// Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) ParseRoleRevoked(log types.Log) (*SynapseExecutionServiceV1RoleRevoked, error) {
+	event := new(SynapseExecutionServiceV1RoleRevoked)
+	if err := _SynapseExecutionServiceV1.contract.UnpackLog(event, "RoleRevoked", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// SynapseExecutionServiceV1HarnessMetaData contains all meta data concerning the SynapseExecutionServiceV1Harness contract.
+var SynapseExecutionServiceV1HarnessMetaData = &bind.MetaData{
+	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"AccessControlBadConfirmation\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"neededRole\",\"type\":\"bytes32\"}],\"name\":\"AccessControlUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidInitialization\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInitializing\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"}],\"name\":\"OptionsLib__IncorrectVersion\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"SynapseExecutionService__FeeAmountTooLow\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseExecutionService__GasOracleNotSet\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"version\",\"type\":\"uint256\"}],\"name\":\"SynapseExecutionService__OptionsVersionNotSupported\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseExecutionService__ZeroAddress\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"ExecutionRequested\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"executorEOA\",\"type\":\"address\"}],\"name\":\"ExecutorEOASet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"GasOracleSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"version\",\"type\":\"uint64\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"GOVERNOR_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"IC_CLIENT_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"executorEOA\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"gasOracle\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"getExecutionFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"callerConfirmation\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"requestExecution\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executorEOA_\",\"type\":\"address\"}],\"name\":\"setExecutorEOA\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle_\",\"type\":\"address\"}],\"name\":\"setGasOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	Sigs: map[string]string{
+		"a217fddf": "DEFAULT_ADMIN_ROLE()",
+		"ccc57490": "GOVERNOR_ROLE()",
+		"08c5c0db": "IC_CLIENT_ROLE()",
+		"62014bad": "executorEOA()",
+		"5d62a8dd": "gasOracle()",
+		"c473e7e8": "getExecutionFee(uint256,uint256,bytes)",
+		"248a9ca3": "getRoleAdmin(bytes32)",
+		"2f2ff15d": "grantRole(bytes32,address)",
+		"91d14854": "hasRole(bytes32,address)",
+		"c4d66de8": "initialize(address)",
+		"36568abe": "renounceRole(bytes32,address)",
+		"e4e06522": "requestExecution(uint256,uint256,bytes32,uint256,bytes)",
+		"d547741f": "revokeRole(bytes32,address)",
+		"2d54566c": "setExecutorEOA(address)",
+		"a87b8152": "setGasOracle(address)",
+		"01ffc9a7": "supportsInterface(bytes4)",
+	},
+	Bin: "0x608060405234801561001057600080fd5b5061001c60003361004d565b506100477f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f553361004d565b5061011e565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b626800602081815260408084206001600160a01b038616855290915282205460ff16610112576000848152602082815260408083206001600160a01b03871684529091529020805460ff191660011790556100c83390565b6001600160a01b0316836001600160a01b0316857f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d60405160405180910390a46001915050610118565b60009150505b92915050565b6113448061012d6000396000f3fe608060405234801561001057600080fd5b50600436106101005760003560e01c806391d1485411610097578063c4d66de811610066578063c4d66de81461030d578063ccc5749014610320578063d547741f14610347578063e4e065221461035a57600080fd5b806391d148541461027a578063a217fddf146102df578063a87b8152146102e7578063c473e7e8146102fa57600080fd5b80632f2ff15d116100d35780632f2ff15d146101b957806336568abe146101cc5780635d62a8dd146101df57806362014bad1461023d57600080fd5b806301ffc9a71461010557806308c5c0db1461012d578063248a9ca3146101625780632d54566c146101a4575b600080fd5b610118610113366004610f22565b61036d565b60405190151581526020015b60405180910390f35b6101547f506033f42d439a89b8dbacb157256b8ef7e613d9e48db1be101b85411778abfb81565b604051908152602001610124565b610154610170366004610f6b565b60009081527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b626800602052604090206001015490565b6101b76101b2366004610fad565b610406565b005b6101b76101c7366004610fc8565b610517565b6101b76101da366004610fc8565b610561565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31015473ffffffffffffffffffffffffffffffffffffffff165b60405173ffffffffffffffffffffffffffffffffffffffff9091168152602001610124565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31005473ffffffffffffffffffffffffffffffffffffffff16610218565b610118610288366004610fc8565b60009182527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020908152604080842073ffffffffffffffffffffffffffffffffffffffff93909316845291905290205460ff1690565b610154600081565b6101b76102f5366004610fad565b6105bf565b61015461030836600461110e565b6106ea565b6101b761031b366004610fad565b610943565b6101547f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f5581565b6101b7610355366004610fc8565b610ac6565b6101b761036836600461115e565b610b0a565b60007fffffffff0000000000000000000000000000000000000000000000000000000082167f7965db0b00000000000000000000000000000000000000000000000000000000148061040057507f01ffc9a7000000000000000000000000000000000000000000000000000000007fffffffff000000000000000000000000000000000000000000000000000000008316145b92915050565b7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f5561043081610bc5565b73ffffffffffffffffffffffffffffffffffffffff821661047d576040517f0a0c2d7000000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e310080547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff841690811782556040519081527f4ab11d24f4bb323219ce90846ba579a556c914e8587517e7c8c4264771cd9f71906020015b60405180910390a1505050565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b626800602052604090206001015461055181610bc5565b61055b8383610bd2565b50505050565b73ffffffffffffffffffffffffffffffffffffffff811633146105b0576040517f6697b23200000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6105ba8282610cf3565b505050565b7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f556105e981610bc5565b73ffffffffffffffffffffffffffffffffffffffff8216610636576040517f0a0c2d7000000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e310180547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff84169081179091556040519081527fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e3100907f3efbbb00c39812fb98647af6e9e2c3f4ec2b53d368cedd1e148330a05b652cfa9060200161050a565b60008061072b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31015473ffffffffffffffffffffffffffffffffffffffff1690565b905073ffffffffffffffffffffffffffffffffffffffff811661077a576040517f38d2192500000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b600061078584610dd1565b509050600160ff821611156107d0576040517fdaa5a14f00000000000000000000000000000000000000000000000000000000815260ff821660048201526024015b60405180910390fd5b60006107db85610df3565b80516040517f5cbd3c48000000000000000000000000000000000000000000000000000000008152600481018a905260248101919091526044810188905290915073ffffffffffffffffffffffffffffffffffffffff841690635cbd3c4890606401602060405180830381865afa15801561085a573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061087e91906111c2565b6020820151909450156109395760208101516040517f1e7b928700000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff851691631e7b9287916108eb918b91600401918252602082015260400190565b602060405180830381865afa158015610908573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061092c91906111c2565b61093690856111db565b93505b5050509392505050565b7ff0c57e16840df040f15088dc2f81fe391c3923bec73e23a9662efc9c229c6a00805468010000000000000000810460ff16159067ffffffffffffffff1660008115801561098e5750825b905060008267ffffffffffffffff1660011480156109ab5750303b155b9050811580156109b9575080155b156109f0576040517ff92ee8a900000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b84547fffffffffffffffffffffffffffffffffffffffffffffffff00000000000000001660011785558315610a515784547fffffffffffffffffffffffffffffffffffffffffffffff00ffffffffffffffff16680100000000000000001785555b610a5c600087610bd2565b508315610abe5784547fffffffffffffffffffffffffffffffffffffffffffffff00ffffffffffffffff168555604051600181527fc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d29060200160405180910390a15b505050505050565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020526040902060010154610b0081610bc5565b61055b8383610cf3565b7f506033f42d439a89b8dbacb157256b8ef7e613d9e48db1be101b85411778abfb610b3481610bc5565b6000610b418787856106ea565b905080841015610b87576040517f4641246a00000000000000000000000000000000000000000000000000000000815260048101859052602481018290526044016107c7565b60405133815285907f507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd13829060200160405180910390a250505050505050565b610bcf8133610e77565b50565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020818152604080842073ffffffffffffffffffffffffffffffffffffffff8616855290915282205460ff16610ce95760008481526020828152604080832073ffffffffffffffffffffffffffffffffffffffff87168452909152902080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00166001179055610c853390565b73ffffffffffffffffffffffffffffffffffffffff168373ffffffffffffffffffffffffffffffffffffffff16857f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d60405160405180910390a46001915050610400565b6000915050610400565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020818152604080842073ffffffffffffffffffffffffffffffffffffffff8616855290915282205460ff1615610ce95760008481526020828152604080832073ffffffffffffffffffffffffffffffffffffffff8716808552925280832080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0016905551339287917ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9190a46001915050610400565b6000606082806020019051810190610de99190611215565b9094909350915050565b6040805180820190915260008082526020820152600080610e1384610dd1565b9092509050600160ff83161015610e5b576040517fbd91a21500000000000000000000000000000000000000000000000000000000815260ff831660048201526024016107c7565b80806020019051810190610e6f91906112bf565b949350505050565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020908152604080832073ffffffffffffffffffffffffffffffffffffffff8516845290915290205460ff16610f1e576040517fe2517d3f00000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff82166004820152602481018390526044016107c7565b5050565b600060208284031215610f3457600080fd5b81357fffffffff0000000000000000000000000000000000000000000000000000000081168114610f6457600080fd5b9392505050565b600060208284031215610f7d57600080fd5b5035919050565b803573ffffffffffffffffffffffffffffffffffffffff81168114610fa857600080fd5b919050565b600060208284031215610fbf57600080fd5b610f6482610f84565b60008060408385031215610fdb57600080fd5b82359150610feb60208401610f84565b90509250929050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b604051601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe016810167ffffffffffffffff8111828210171561106a5761106a610ff4565b604052919050565b600067ffffffffffffffff82111561108c5761108c610ff4565b50601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe01660200190565b600082601f8301126110c957600080fd5b81356110dc6110d782611072565b611023565b8181528460208386010111156110f157600080fd5b816020850160208301376000918101602001919091529392505050565b60008060006060848603121561112357600080fd5b8335925060208401359150604084013567ffffffffffffffff81111561114857600080fd5b611154868287016110b8565b9150509250925092565b600080600080600060a0868803121561117657600080fd5b85359450602086013593506040860135925060608601359150608086013567ffffffffffffffff8111156111a957600080fd5b6111b5888289016110b8565b9150509295509295909350565b6000602082840312156111d457600080fd5b5051919050565b80820180821115610400577f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b6000806040838503121561122857600080fd5b825160ff8116811461123957600080fd5b8092505060208084015167ffffffffffffffff81111561125857600080fd5b8401601f8101861361126957600080fd5b80516112776110d782611072565b818152878483850101111561128b57600080fd5b60005b828110156112a957838101850151828201860152840161128e565b5060009181019093015250919491935090915050565b6000604082840312156112d157600080fd5b6040516040810181811067ffffffffffffffff821117156112f4576112f4610ff4565b60405282518152602092830151928101929092525091905056fea2646970667358221220c85bc147e200492fc0d534c2dbd44811210a1c077af2781ce72a8d6526c1352864736f6c63430008140033",
+}
+
+// SynapseExecutionServiceV1HarnessABI is the input ABI used to generate the binding from.
+// Deprecated: Use SynapseExecutionServiceV1HarnessMetaData.ABI instead.
+var SynapseExecutionServiceV1HarnessABI = SynapseExecutionServiceV1HarnessMetaData.ABI
+
+// Deprecated: Use SynapseExecutionServiceV1HarnessMetaData.Sigs instead.
+// SynapseExecutionServiceV1HarnessFuncSigs maps the 4-byte function signature to its string representation.
+var SynapseExecutionServiceV1HarnessFuncSigs = SynapseExecutionServiceV1HarnessMetaData.Sigs
+
+// SynapseExecutionServiceV1HarnessBin is the compiled bytecode used for deploying new contracts.
+// Deprecated: Use SynapseExecutionServiceV1HarnessMetaData.Bin instead.
+var SynapseExecutionServiceV1HarnessBin = SynapseExecutionServiceV1HarnessMetaData.Bin
+
+// DeploySynapseExecutionServiceV1Harness deploys a new Ethereum contract, binding an instance of SynapseExecutionServiceV1Harness to it.
+func DeploySynapseExecutionServiceV1Harness(auth *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, *SynapseExecutionServiceV1Harness, error) {
+	parsed, err := SynapseExecutionServiceV1HarnessMetaData.GetAbi()
+	if err != nil {
+		return common.Address{}, nil, nil, err
+	}
+	if parsed == nil {
+		return common.Address{}, nil, nil, errors.New("GetABI returned nil")
+	}
+
+	address, tx, contract, err := bind.DeployContract(auth, *parsed, common.FromHex(SynapseExecutionServiceV1HarnessBin), backend)
+	if err != nil {
+		return common.Address{}, nil, nil, err
+	}
+	return address, tx, &SynapseExecutionServiceV1Harness{SynapseExecutionServiceV1HarnessCaller: SynapseExecutionServiceV1HarnessCaller{contract: contract}, SynapseExecutionServiceV1HarnessTransactor: SynapseExecutionServiceV1HarnessTransactor{contract: contract}, SynapseExecutionServiceV1HarnessFilterer: SynapseExecutionServiceV1HarnessFilterer{contract: contract}}, nil
+}
+
+// SynapseExecutionServiceV1Harness is an auto generated Go binding around an Ethereum contract.
+type SynapseExecutionServiceV1Harness struct {
+	SynapseExecutionServiceV1HarnessCaller     // Read-only binding to the contract
+	SynapseExecutionServiceV1HarnessTransactor // Write-only binding to the contract
+	SynapseExecutionServiceV1HarnessFilterer   // Log filterer for contract events
+}
+
+// SynapseExecutionServiceV1HarnessCaller is an auto generated read-only Go binding around an Ethereum contract.
+type SynapseExecutionServiceV1HarnessCaller struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// SynapseExecutionServiceV1HarnessTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type SynapseExecutionServiceV1HarnessTransactor struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// SynapseExecutionServiceV1HarnessFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type SynapseExecutionServiceV1HarnessFilterer struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// SynapseExecutionServiceV1HarnessSession is an auto generated Go binding around an Ethereum contract,
+// with pre-set call and transact options.
+type SynapseExecutionServiceV1HarnessSession struct {
+	Contract     *SynapseExecutionServiceV1Harness // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts                     // Call options to use throughout this session
+	TransactOpts bind.TransactOpts                 // Transaction auth options to use throughout this session
+}
+
+// SynapseExecutionServiceV1HarnessCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// with pre-set call options.
+type SynapseExecutionServiceV1HarnessCallerSession struct {
+	Contract *SynapseExecutionServiceV1HarnessCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts                           // Call options to use throughout this session
+}
+
+// SynapseExecutionServiceV1HarnessTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// with pre-set transact options.
+type SynapseExecutionServiceV1HarnessTransactorSession struct {
+	Contract     *SynapseExecutionServiceV1HarnessTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts                           // Transaction auth options to use throughout this session
+}
+
+// SynapseExecutionServiceV1HarnessRaw is an auto generated low-level Go binding around an Ethereum contract.
+type SynapseExecutionServiceV1HarnessRaw struct {
+	Contract *SynapseExecutionServiceV1Harness // Generic contract binding to access the raw methods on
+}
+
+// SynapseExecutionServiceV1HarnessCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type SynapseExecutionServiceV1HarnessCallerRaw struct {
+	Contract *SynapseExecutionServiceV1HarnessCaller // Generic read-only contract binding to access the raw methods on
+}
+
+// SynapseExecutionServiceV1HarnessTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type SynapseExecutionServiceV1HarnessTransactorRaw struct {
+	Contract *SynapseExecutionServiceV1HarnessTransactor // Generic write-only contract binding to access the raw methods on
+}
+
+// NewSynapseExecutionServiceV1Harness creates a new instance of SynapseExecutionServiceV1Harness, bound to a specific deployed contract.
+func NewSynapseExecutionServiceV1Harness(address common.Address, backend bind.ContractBackend) (*SynapseExecutionServiceV1Harness, error) {
+	contract, err := bindSynapseExecutionServiceV1Harness(address, backend, backend, backend)
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1Harness{SynapseExecutionServiceV1HarnessCaller: SynapseExecutionServiceV1HarnessCaller{contract: contract}, SynapseExecutionServiceV1HarnessTransactor: SynapseExecutionServiceV1HarnessTransactor{contract: contract}, SynapseExecutionServiceV1HarnessFilterer: SynapseExecutionServiceV1HarnessFilterer{contract: contract}}, nil
+}
+
+// NewSynapseExecutionServiceV1HarnessCaller creates a new read-only instance of SynapseExecutionServiceV1Harness, bound to a specific deployed contract.
+func NewSynapseExecutionServiceV1HarnessCaller(address common.Address, caller bind.ContractCaller) (*SynapseExecutionServiceV1HarnessCaller, error) {
+	contract, err := bindSynapseExecutionServiceV1Harness(address, caller, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1HarnessCaller{contract: contract}, nil
+}
+
+// NewSynapseExecutionServiceV1HarnessTransactor creates a new write-only instance of SynapseExecutionServiceV1Harness, bound to a specific deployed contract.
+func NewSynapseExecutionServiceV1HarnessTransactor(address common.Address, transactor bind.ContractTransactor) (*SynapseExecutionServiceV1HarnessTransactor, error) {
+	contract, err := bindSynapseExecutionServiceV1Harness(address, nil, transactor, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1HarnessTransactor{contract: contract}, nil
+}
+
+// NewSynapseExecutionServiceV1HarnessFilterer creates a new log filterer instance of SynapseExecutionServiceV1Harness, bound to a specific deployed contract.
+func NewSynapseExecutionServiceV1HarnessFilterer(address common.Address, filterer bind.ContractFilterer) (*SynapseExecutionServiceV1HarnessFilterer, error) {
+	contract, err := bindSynapseExecutionServiceV1Harness(address, nil, nil, filterer)
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1HarnessFilterer{contract: contract}, nil
+}
+
+// bindSynapseExecutionServiceV1Harness binds a generic wrapper to an already deployed contract.
+func bindSynapseExecutionServiceV1Harness(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := SynapseExecutionServiceV1HarnessMetaData.GetAbi()
+	if err != nil {
+		return nil, err
+	}
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _SynapseExecutionServiceV1Harness.Contract.SynapseExecutionServiceV1HarnessCaller.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.SynapseExecutionServiceV1HarnessTransactor.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.SynapseExecutionServiceV1HarnessTransactor.contract.Transact(opts, method, params...)
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _SynapseExecutionServiceV1Harness.Contract.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.contract.Transact(opts, method, params...)
+}
+
+// DEFAULTADMINROLE is a free data retrieval call binding the contract method 0xa217fddf.
+//
+// Solidity: function DEFAULT_ADMIN_ROLE() view returns(bytes32)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCaller) DEFAULTADMINROLE(opts *bind.CallOpts) ([32]byte, error) {
+	var out []interface{}
+	err := _SynapseExecutionServiceV1Harness.contract.Call(opts, &out, "DEFAULT_ADMIN_ROLE")
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
+}
+
+// DEFAULTADMINROLE is a free data retrieval call binding the contract method 0xa217fddf.
+//
+// Solidity: function DEFAULT_ADMIN_ROLE() view returns(bytes32)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession) DEFAULTADMINROLE() ([32]byte, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.DEFAULTADMINROLE(&_SynapseExecutionServiceV1Harness.CallOpts)
+}
+
+// DEFAULTADMINROLE is a free data retrieval call binding the contract method 0xa217fddf.
+//
+// Solidity: function DEFAULT_ADMIN_ROLE() view returns(bytes32)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCallerSession) DEFAULTADMINROLE() ([32]byte, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.DEFAULTADMINROLE(&_SynapseExecutionServiceV1Harness.CallOpts)
+}
+
+// GOVERNORROLE is a free data retrieval call binding the contract method 0xccc57490.
+//
+// Solidity: function GOVERNOR_ROLE() view returns(bytes32)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCaller) GOVERNORROLE(opts *bind.CallOpts) ([32]byte, error) {
+	var out []interface{}
+	err := _SynapseExecutionServiceV1Harness.contract.Call(opts, &out, "GOVERNOR_ROLE")
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
+}
+
+// GOVERNORROLE is a free data retrieval call binding the contract method 0xccc57490.
+//
+// Solidity: function GOVERNOR_ROLE() view returns(bytes32)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession) GOVERNORROLE() ([32]byte, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.GOVERNORROLE(&_SynapseExecutionServiceV1Harness.CallOpts)
+}
+
+// GOVERNORROLE is a free data retrieval call binding the contract method 0xccc57490.
+//
+// Solidity: function GOVERNOR_ROLE() view returns(bytes32)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCallerSession) GOVERNORROLE() ([32]byte, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.GOVERNORROLE(&_SynapseExecutionServiceV1Harness.CallOpts)
+}
+
+// ICCLIENTROLE is a free data retrieval call binding the contract method 0x08c5c0db.
+//
+// Solidity: function IC_CLIENT_ROLE() view returns(bytes32)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCaller) ICCLIENTROLE(opts *bind.CallOpts) ([32]byte, error) {
+	var out []interface{}
+	err := _SynapseExecutionServiceV1Harness.contract.Call(opts, &out, "IC_CLIENT_ROLE")
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
+}
+
+// ICCLIENTROLE is a free data retrieval call binding the contract method 0x08c5c0db.
+//
+// Solidity: function IC_CLIENT_ROLE() view returns(bytes32)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession) ICCLIENTROLE() ([32]byte, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.ICCLIENTROLE(&_SynapseExecutionServiceV1Harness.CallOpts)
+}
+
+// ICCLIENTROLE is a free data retrieval call binding the contract method 0x08c5c0db.
+//
+// Solidity: function IC_CLIENT_ROLE() view returns(bytes32)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCallerSession) ICCLIENTROLE() ([32]byte, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.ICCLIENTROLE(&_SynapseExecutionServiceV1Harness.CallOpts)
+}
+
+// ExecutorEOA is a free data retrieval call binding the contract method 0x62014bad.
+//
+// Solidity: function executorEOA() view returns(address)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCaller) ExecutorEOA(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _SynapseExecutionServiceV1Harness.contract.Call(opts, &out, "executorEOA")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// ExecutorEOA is a free data retrieval call binding the contract method 0x62014bad.
+//
+// Solidity: function executorEOA() view returns(address)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession) ExecutorEOA() (common.Address, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.ExecutorEOA(&_SynapseExecutionServiceV1Harness.CallOpts)
+}
+
+// ExecutorEOA is a free data retrieval call binding the contract method 0x62014bad.
+//
+// Solidity: function executorEOA() view returns(address)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCallerSession) ExecutorEOA() (common.Address, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.ExecutorEOA(&_SynapseExecutionServiceV1Harness.CallOpts)
+}
+
+// GasOracle is a free data retrieval call binding the contract method 0x5d62a8dd.
+//
+// Solidity: function gasOracle() view returns(address)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCaller) GasOracle(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _SynapseExecutionServiceV1Harness.contract.Call(opts, &out, "gasOracle")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// GasOracle is a free data retrieval call binding the contract method 0x5d62a8dd.
+//
+// Solidity: function gasOracle() view returns(address)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession) GasOracle() (common.Address, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.GasOracle(&_SynapseExecutionServiceV1Harness.CallOpts)
+}
+
+// GasOracle is a free data retrieval call binding the contract method 0x5d62a8dd.
+//
+// Solidity: function gasOracle() view returns(address)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCallerSession) GasOracle() (common.Address, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.GasOracle(&_SynapseExecutionServiceV1Harness.CallOpts)
+}
+
+// GetExecutionFee is a free data retrieval call binding the contract method 0xc473e7e8.
+//
+// Solidity: function getExecutionFee(uint256 dstChainId, uint256 txPayloadSize, bytes options) view returns(uint256 executionFee)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCaller) GetExecutionFee(opts *bind.CallOpts, dstChainId *big.Int, txPayloadSize *big.Int, options []byte) (*big.Int, error) {
+	var out []interface{}
+	err := _SynapseExecutionServiceV1Harness.contract.Call(opts, &out, "getExecutionFee", dstChainId, txPayloadSize, options)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetExecutionFee is a free data retrieval call binding the contract method 0xc473e7e8.
+//
+// Solidity: function getExecutionFee(uint256 dstChainId, uint256 txPayloadSize, bytes options) view returns(uint256 executionFee)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession) GetExecutionFee(dstChainId *big.Int, txPayloadSize *big.Int, options []byte) (*big.Int, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.GetExecutionFee(&_SynapseExecutionServiceV1Harness.CallOpts, dstChainId, txPayloadSize, options)
+}
+
+// GetExecutionFee is a free data retrieval call binding the contract method 0xc473e7e8.
+//
+// Solidity: function getExecutionFee(uint256 dstChainId, uint256 txPayloadSize, bytes options) view returns(uint256 executionFee)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCallerSession) GetExecutionFee(dstChainId *big.Int, txPayloadSize *big.Int, options []byte) (*big.Int, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.GetExecutionFee(&_SynapseExecutionServiceV1Harness.CallOpts, dstChainId, txPayloadSize, options)
+}
+
+// GetRoleAdmin is a free data retrieval call binding the contract method 0x248a9ca3.
+//
+// Solidity: function getRoleAdmin(bytes32 role) view returns(bytes32)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCaller) GetRoleAdmin(opts *bind.CallOpts, role [32]byte) ([32]byte, error) {
+	var out []interface{}
+	err := _SynapseExecutionServiceV1Harness.contract.Call(opts, &out, "getRoleAdmin", role)
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
+}
+
+// GetRoleAdmin is a free data retrieval call binding the contract method 0x248a9ca3.
+//
+// Solidity: function getRoleAdmin(bytes32 role) view returns(bytes32)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession) GetRoleAdmin(role [32]byte) ([32]byte, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.GetRoleAdmin(&_SynapseExecutionServiceV1Harness.CallOpts, role)
+}
+
+// GetRoleAdmin is a free data retrieval call binding the contract method 0x248a9ca3.
+//
+// Solidity: function getRoleAdmin(bytes32 role) view returns(bytes32)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCallerSession) GetRoleAdmin(role [32]byte) ([32]byte, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.GetRoleAdmin(&_SynapseExecutionServiceV1Harness.CallOpts, role)
+}
+
+// HasRole is a free data retrieval call binding the contract method 0x91d14854.
+//
+// Solidity: function hasRole(bytes32 role, address account) view returns(bool)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCaller) HasRole(opts *bind.CallOpts, role [32]byte, account common.Address) (bool, error) {
+	var out []interface{}
+	err := _SynapseExecutionServiceV1Harness.contract.Call(opts, &out, "hasRole", role, account)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
+}
+
+// HasRole is a free data retrieval call binding the contract method 0x91d14854.
+//
+// Solidity: function hasRole(bytes32 role, address account) view returns(bool)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession) HasRole(role [32]byte, account common.Address) (bool, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.HasRole(&_SynapseExecutionServiceV1Harness.CallOpts, role, account)
+}
+
+// HasRole is a free data retrieval call binding the contract method 0x91d14854.
+//
+// Solidity: function hasRole(bytes32 role, address account) view returns(bool)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCallerSession) HasRole(role [32]byte, account common.Address) (bool, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.HasRole(&_SynapseExecutionServiceV1Harness.CallOpts, role, account)
+}
+
+// SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
+//
+// Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCaller) SupportsInterface(opts *bind.CallOpts, interfaceId [4]byte) (bool, error) {
+	var out []interface{}
+	err := _SynapseExecutionServiceV1Harness.contract.Call(opts, &out, "supportsInterface", interfaceId)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
+}
+
+// SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
+//
+// Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession) SupportsInterface(interfaceId [4]byte) (bool, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.SupportsInterface(&_SynapseExecutionServiceV1Harness.CallOpts, interfaceId)
+}
+
+// SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
+//
+// Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCallerSession) SupportsInterface(interfaceId [4]byte) (bool, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.SupportsInterface(&_SynapseExecutionServiceV1Harness.CallOpts, interfaceId)
+}
+
+// GrantRole is a paid mutator transaction binding the contract method 0x2f2ff15d.
+//
+// Solidity: function grantRole(bytes32 role, address account) returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransactor) GrantRole(opts *bind.TransactOpts, role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.contract.Transact(opts, "grantRole", role, account)
+}
+
+// GrantRole is a paid mutator transaction binding the contract method 0x2f2ff15d.
+//
+// Solidity: function grantRole(bytes32 role, address account) returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession) GrantRole(role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.GrantRole(&_SynapseExecutionServiceV1Harness.TransactOpts, role, account)
+}
+
+// GrantRole is a paid mutator transaction binding the contract method 0x2f2ff15d.
+//
+// Solidity: function grantRole(bytes32 role, address account) returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransactorSession) GrantRole(role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.GrantRole(&_SynapseExecutionServiceV1Harness.TransactOpts, role, account)
+}
+
+// Initialize is a paid mutator transaction binding the contract method 0xc4d66de8.
+//
+// Solidity: function initialize(address admin) returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransactor) Initialize(opts *bind.TransactOpts, admin common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.contract.Transact(opts, "initialize", admin)
+}
+
+// Initialize is a paid mutator transaction binding the contract method 0xc4d66de8.
+//
+// Solidity: function initialize(address admin) returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession) Initialize(admin common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.Initialize(&_SynapseExecutionServiceV1Harness.TransactOpts, admin)
+}
+
+// Initialize is a paid mutator transaction binding the contract method 0xc4d66de8.
+//
+// Solidity: function initialize(address admin) returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransactorSession) Initialize(admin common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.Initialize(&_SynapseExecutionServiceV1Harness.TransactOpts, admin)
+}
+
+// RenounceRole is a paid mutator transaction binding the contract method 0x36568abe.
+//
+// Solidity: function renounceRole(bytes32 role, address callerConfirmation) returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransactor) RenounceRole(opts *bind.TransactOpts, role [32]byte, callerConfirmation common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.contract.Transact(opts, "renounceRole", role, callerConfirmation)
+}
+
+// RenounceRole is a paid mutator transaction binding the contract method 0x36568abe.
+//
+// Solidity: function renounceRole(bytes32 role, address callerConfirmation) returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession) RenounceRole(role [32]byte, callerConfirmation common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.RenounceRole(&_SynapseExecutionServiceV1Harness.TransactOpts, role, callerConfirmation)
+}
+
+// RenounceRole is a paid mutator transaction binding the contract method 0x36568abe.
+//
+// Solidity: function renounceRole(bytes32 role, address callerConfirmation) returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransactorSession) RenounceRole(role [32]byte, callerConfirmation common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.RenounceRole(&_SynapseExecutionServiceV1Harness.TransactOpts, role, callerConfirmation)
+}
+
+// RequestExecution is a paid mutator transaction binding the contract method 0xe4e06522.
+//
+// Solidity: function requestExecution(uint256 dstChainId, uint256 txPayloadSize, bytes32 transactionId, uint256 executionFee, bytes options) returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransactor) RequestExecution(opts *bind.TransactOpts, dstChainId *big.Int, txPayloadSize *big.Int, transactionId [32]byte, executionFee *big.Int, options []byte) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.contract.Transact(opts, "requestExecution", dstChainId, txPayloadSize, transactionId, executionFee, options)
+}
+
+// RequestExecution is a paid mutator transaction binding the contract method 0xe4e06522.
+//
+// Solidity: function requestExecution(uint256 dstChainId, uint256 txPayloadSize, bytes32 transactionId, uint256 executionFee, bytes options) returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession) RequestExecution(dstChainId *big.Int, txPayloadSize *big.Int, transactionId [32]byte, executionFee *big.Int, options []byte) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.RequestExecution(&_SynapseExecutionServiceV1Harness.TransactOpts, dstChainId, txPayloadSize, transactionId, executionFee, options)
+}
+
+// RequestExecution is a paid mutator transaction binding the contract method 0xe4e06522.
+//
+// Solidity: function requestExecution(uint256 dstChainId, uint256 txPayloadSize, bytes32 transactionId, uint256 executionFee, bytes options) returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransactorSession) RequestExecution(dstChainId *big.Int, txPayloadSize *big.Int, transactionId [32]byte, executionFee *big.Int, options []byte) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.RequestExecution(&_SynapseExecutionServiceV1Harness.TransactOpts, dstChainId, txPayloadSize, transactionId, executionFee, options)
+}
+
+// RevokeRole is a paid mutator transaction binding the contract method 0xd547741f.
+//
+// Solidity: function revokeRole(bytes32 role, address account) returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransactor) RevokeRole(opts *bind.TransactOpts, role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.contract.Transact(opts, "revokeRole", role, account)
+}
+
+// RevokeRole is a paid mutator transaction binding the contract method 0xd547741f.
+//
+// Solidity: function revokeRole(bytes32 role, address account) returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession) RevokeRole(role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.RevokeRole(&_SynapseExecutionServiceV1Harness.TransactOpts, role, account)
+}
+
+// RevokeRole is a paid mutator transaction binding the contract method 0xd547741f.
+//
+// Solidity: function revokeRole(bytes32 role, address account) returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransactorSession) RevokeRole(role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.RevokeRole(&_SynapseExecutionServiceV1Harness.TransactOpts, role, account)
+}
+
+// SetExecutorEOA is a paid mutator transaction binding the contract method 0x2d54566c.
+//
+// Solidity: function setExecutorEOA(address executorEOA_) returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransactor) SetExecutorEOA(opts *bind.TransactOpts, executorEOA_ common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.contract.Transact(opts, "setExecutorEOA", executorEOA_)
+}
+
+// SetExecutorEOA is a paid mutator transaction binding the contract method 0x2d54566c.
+//
+// Solidity: function setExecutorEOA(address executorEOA_) returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession) SetExecutorEOA(executorEOA_ common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.SetExecutorEOA(&_SynapseExecutionServiceV1Harness.TransactOpts, executorEOA_)
+}
+
+// SetExecutorEOA is a paid mutator transaction binding the contract method 0x2d54566c.
+//
+// Solidity: function setExecutorEOA(address executorEOA_) returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransactorSession) SetExecutorEOA(executorEOA_ common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.SetExecutorEOA(&_SynapseExecutionServiceV1Harness.TransactOpts, executorEOA_)
+}
+
+// SetGasOracle is a paid mutator transaction binding the contract method 0xa87b8152.
+//
+// Solidity: function setGasOracle(address gasOracle_) returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransactor) SetGasOracle(opts *bind.TransactOpts, gasOracle_ common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.contract.Transact(opts, "setGasOracle", gasOracle_)
+}
+
+// SetGasOracle is a paid mutator transaction binding the contract method 0xa87b8152.
+//
+// Solidity: function setGasOracle(address gasOracle_) returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession) SetGasOracle(gasOracle_ common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.SetGasOracle(&_SynapseExecutionServiceV1Harness.TransactOpts, gasOracle_)
+}
+
+// SetGasOracle is a paid mutator transaction binding the contract method 0xa87b8152.
+//
+// Solidity: function setGasOracle(address gasOracle_) returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransactorSession) SetGasOracle(gasOracle_ common.Address) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.SetGasOracle(&_SynapseExecutionServiceV1Harness.TransactOpts, gasOracle_)
+}
+
+// SynapseExecutionServiceV1HarnessExecutionRequestedIterator is returned from FilterExecutionRequested and is used to iterate over the raw logs and unpacked data for ExecutionRequested events raised by the SynapseExecutionServiceV1Harness contract.
+type SynapseExecutionServiceV1HarnessExecutionRequestedIterator struct {
+	Event *SynapseExecutionServiceV1HarnessExecutionRequested // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *SynapseExecutionServiceV1HarnessExecutionRequestedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(SynapseExecutionServiceV1HarnessExecutionRequested)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(SynapseExecutionServiceV1HarnessExecutionRequested)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *SynapseExecutionServiceV1HarnessExecutionRequestedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *SynapseExecutionServiceV1HarnessExecutionRequestedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// SynapseExecutionServiceV1HarnessExecutionRequested represents a ExecutionRequested event raised by the SynapseExecutionServiceV1Harness contract.
+type SynapseExecutionServiceV1HarnessExecutionRequested struct {
+	TransactionId [32]byte
+	Client        common.Address
+	Raw           types.Log // Blockchain specific contextual infos
+}
+
+// FilterExecutionRequested is a free log retrieval operation binding the contract event 0x507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd1382.
+//
+// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) FilterExecutionRequested(opts *bind.FilterOpts, transactionId [][32]byte) (*SynapseExecutionServiceV1HarnessExecutionRequestedIterator, error) {
+
+	var transactionIdRule []interface{}
+	for _, transactionIdItem := range transactionId {
+		transactionIdRule = append(transactionIdRule, transactionIdItem)
+	}
+
+	logs, sub, err := _SynapseExecutionServiceV1Harness.contract.FilterLogs(opts, "ExecutionRequested", transactionIdRule)
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1HarnessExecutionRequestedIterator{contract: _SynapseExecutionServiceV1Harness.contract, event: "ExecutionRequested", logs: logs, sub: sub}, nil
+}
+
+// WatchExecutionRequested is a free log subscription operation binding the contract event 0x507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd1382.
+//
+// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) WatchExecutionRequested(opts *bind.WatchOpts, sink chan<- *SynapseExecutionServiceV1HarnessExecutionRequested, transactionId [][32]byte) (event.Subscription, error) {
+
+	var transactionIdRule []interface{}
+	for _, transactionIdItem := range transactionId {
+		transactionIdRule = append(transactionIdRule, transactionIdItem)
+	}
+
+	logs, sub, err := _SynapseExecutionServiceV1Harness.contract.WatchLogs(opts, "ExecutionRequested", transactionIdRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(SynapseExecutionServiceV1HarnessExecutionRequested)
+				if err := _SynapseExecutionServiceV1Harness.contract.UnpackLog(event, "ExecutionRequested", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseExecutionRequested is a log parse operation binding the contract event 0x507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd1382.
+//
+// Solidity: event ExecutionRequested(bytes32 indexed transactionId, address client)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) ParseExecutionRequested(log types.Log) (*SynapseExecutionServiceV1HarnessExecutionRequested, error) {
+	event := new(SynapseExecutionServiceV1HarnessExecutionRequested)
+	if err := _SynapseExecutionServiceV1Harness.contract.UnpackLog(event, "ExecutionRequested", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// SynapseExecutionServiceV1HarnessExecutorEOASetIterator is returned from FilterExecutorEOASet and is used to iterate over the raw logs and unpacked data for ExecutorEOASet events raised by the SynapseExecutionServiceV1Harness contract.
+type SynapseExecutionServiceV1HarnessExecutorEOASetIterator struct {
+	Event *SynapseExecutionServiceV1HarnessExecutorEOASet // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *SynapseExecutionServiceV1HarnessExecutorEOASetIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(SynapseExecutionServiceV1HarnessExecutorEOASet)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(SynapseExecutionServiceV1HarnessExecutorEOASet)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *SynapseExecutionServiceV1HarnessExecutorEOASetIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *SynapseExecutionServiceV1HarnessExecutorEOASetIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// SynapseExecutionServiceV1HarnessExecutorEOASet represents a ExecutorEOASet event raised by the SynapseExecutionServiceV1Harness contract.
+type SynapseExecutionServiceV1HarnessExecutorEOASet struct {
+	ExecutorEOA common.Address
+	Raw         types.Log // Blockchain specific contextual infos
+}
+
+// FilterExecutorEOASet is a free log retrieval operation binding the contract event 0x4ab11d24f4bb323219ce90846ba579a556c914e8587517e7c8c4264771cd9f71.
+//
+// Solidity: event ExecutorEOASet(address executorEOA)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) FilterExecutorEOASet(opts *bind.FilterOpts) (*SynapseExecutionServiceV1HarnessExecutorEOASetIterator, error) {
+
+	logs, sub, err := _SynapseExecutionServiceV1Harness.contract.FilterLogs(opts, "ExecutorEOASet")
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1HarnessExecutorEOASetIterator{contract: _SynapseExecutionServiceV1Harness.contract, event: "ExecutorEOASet", logs: logs, sub: sub}, nil
+}
+
+// WatchExecutorEOASet is a free log subscription operation binding the contract event 0x4ab11d24f4bb323219ce90846ba579a556c914e8587517e7c8c4264771cd9f71.
+//
+// Solidity: event ExecutorEOASet(address executorEOA)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) WatchExecutorEOASet(opts *bind.WatchOpts, sink chan<- *SynapseExecutionServiceV1HarnessExecutorEOASet) (event.Subscription, error) {
+
+	logs, sub, err := _SynapseExecutionServiceV1Harness.contract.WatchLogs(opts, "ExecutorEOASet")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(SynapseExecutionServiceV1HarnessExecutorEOASet)
+				if err := _SynapseExecutionServiceV1Harness.contract.UnpackLog(event, "ExecutorEOASet", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseExecutorEOASet is a log parse operation binding the contract event 0x4ab11d24f4bb323219ce90846ba579a556c914e8587517e7c8c4264771cd9f71.
+//
+// Solidity: event ExecutorEOASet(address executorEOA)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) ParseExecutorEOASet(log types.Log) (*SynapseExecutionServiceV1HarnessExecutorEOASet, error) {
+	event := new(SynapseExecutionServiceV1HarnessExecutorEOASet)
+	if err := _SynapseExecutionServiceV1Harness.contract.UnpackLog(event, "ExecutorEOASet", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// SynapseExecutionServiceV1HarnessGasOracleSetIterator is returned from FilterGasOracleSet and is used to iterate over the raw logs and unpacked data for GasOracleSet events raised by the SynapseExecutionServiceV1Harness contract.
+type SynapseExecutionServiceV1HarnessGasOracleSetIterator struct {
+	Event *SynapseExecutionServiceV1HarnessGasOracleSet // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *SynapseExecutionServiceV1HarnessGasOracleSetIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(SynapseExecutionServiceV1HarnessGasOracleSet)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(SynapseExecutionServiceV1HarnessGasOracleSet)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *SynapseExecutionServiceV1HarnessGasOracleSetIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *SynapseExecutionServiceV1HarnessGasOracleSetIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// SynapseExecutionServiceV1HarnessGasOracleSet represents a GasOracleSet event raised by the SynapseExecutionServiceV1Harness contract.
+type SynapseExecutionServiceV1HarnessGasOracleSet struct {
+	GasOracle common.Address
+	Raw       types.Log // Blockchain specific contextual infos
+}
+
+// FilterGasOracleSet is a free log retrieval operation binding the contract event 0x3efbbb00c39812fb98647af6e9e2c3f4ec2b53d368cedd1e148330a05b652cfa.
+//
+// Solidity: event GasOracleSet(address gasOracle)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) FilterGasOracleSet(opts *bind.FilterOpts) (*SynapseExecutionServiceV1HarnessGasOracleSetIterator, error) {
+
+	logs, sub, err := _SynapseExecutionServiceV1Harness.contract.FilterLogs(opts, "GasOracleSet")
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1HarnessGasOracleSetIterator{contract: _SynapseExecutionServiceV1Harness.contract, event: "GasOracleSet", logs: logs, sub: sub}, nil
+}
+
+// WatchGasOracleSet is a free log subscription operation binding the contract event 0x3efbbb00c39812fb98647af6e9e2c3f4ec2b53d368cedd1e148330a05b652cfa.
+//
+// Solidity: event GasOracleSet(address gasOracle)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) WatchGasOracleSet(opts *bind.WatchOpts, sink chan<- *SynapseExecutionServiceV1HarnessGasOracleSet) (event.Subscription, error) {
+
+	logs, sub, err := _SynapseExecutionServiceV1Harness.contract.WatchLogs(opts, "GasOracleSet")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(SynapseExecutionServiceV1HarnessGasOracleSet)
+				if err := _SynapseExecutionServiceV1Harness.contract.UnpackLog(event, "GasOracleSet", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseGasOracleSet is a log parse operation binding the contract event 0x3efbbb00c39812fb98647af6e9e2c3f4ec2b53d368cedd1e148330a05b652cfa.
+//
+// Solidity: event GasOracleSet(address gasOracle)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) ParseGasOracleSet(log types.Log) (*SynapseExecutionServiceV1HarnessGasOracleSet, error) {
+	event := new(SynapseExecutionServiceV1HarnessGasOracleSet)
+	if err := _SynapseExecutionServiceV1Harness.contract.UnpackLog(event, "GasOracleSet", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// SynapseExecutionServiceV1HarnessInitializedIterator is returned from FilterInitialized and is used to iterate over the raw logs and unpacked data for Initialized events raised by the SynapseExecutionServiceV1Harness contract.
+type SynapseExecutionServiceV1HarnessInitializedIterator struct {
+	Event *SynapseExecutionServiceV1HarnessInitialized // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *SynapseExecutionServiceV1HarnessInitializedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(SynapseExecutionServiceV1HarnessInitialized)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(SynapseExecutionServiceV1HarnessInitialized)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *SynapseExecutionServiceV1HarnessInitializedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *SynapseExecutionServiceV1HarnessInitializedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// SynapseExecutionServiceV1HarnessInitialized represents a Initialized event raised by the SynapseExecutionServiceV1Harness contract.
+type SynapseExecutionServiceV1HarnessInitialized struct {
+	Version uint64
+	Raw     types.Log // Blockchain specific contextual infos
+}
+
+// FilterInitialized is a free log retrieval operation binding the contract event 0xc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d2.
+//
+// Solidity: event Initialized(uint64 version)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) FilterInitialized(opts *bind.FilterOpts) (*SynapseExecutionServiceV1HarnessInitializedIterator, error) {
+
+	logs, sub, err := _SynapseExecutionServiceV1Harness.contract.FilterLogs(opts, "Initialized")
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1HarnessInitializedIterator{contract: _SynapseExecutionServiceV1Harness.contract, event: "Initialized", logs: logs, sub: sub}, nil
+}
+
+// WatchInitialized is a free log subscription operation binding the contract event 0xc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d2.
+//
+// Solidity: event Initialized(uint64 version)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) WatchInitialized(opts *bind.WatchOpts, sink chan<- *SynapseExecutionServiceV1HarnessInitialized) (event.Subscription, error) {
+
+	logs, sub, err := _SynapseExecutionServiceV1Harness.contract.WatchLogs(opts, "Initialized")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(SynapseExecutionServiceV1HarnessInitialized)
+				if err := _SynapseExecutionServiceV1Harness.contract.UnpackLog(event, "Initialized", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseInitialized is a log parse operation binding the contract event 0xc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d2.
+//
+// Solidity: event Initialized(uint64 version)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) ParseInitialized(log types.Log) (*SynapseExecutionServiceV1HarnessInitialized, error) {
+	event := new(SynapseExecutionServiceV1HarnessInitialized)
+	if err := _SynapseExecutionServiceV1Harness.contract.UnpackLog(event, "Initialized", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// SynapseExecutionServiceV1HarnessRoleAdminChangedIterator is returned from FilterRoleAdminChanged and is used to iterate over the raw logs and unpacked data for RoleAdminChanged events raised by the SynapseExecutionServiceV1Harness contract.
+type SynapseExecutionServiceV1HarnessRoleAdminChangedIterator struct {
+	Event *SynapseExecutionServiceV1HarnessRoleAdminChanged // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *SynapseExecutionServiceV1HarnessRoleAdminChangedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(SynapseExecutionServiceV1HarnessRoleAdminChanged)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(SynapseExecutionServiceV1HarnessRoleAdminChanged)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *SynapseExecutionServiceV1HarnessRoleAdminChangedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *SynapseExecutionServiceV1HarnessRoleAdminChangedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// SynapseExecutionServiceV1HarnessRoleAdminChanged represents a RoleAdminChanged event raised by the SynapseExecutionServiceV1Harness contract.
+type SynapseExecutionServiceV1HarnessRoleAdminChanged struct {
+	Role              [32]byte
+	PreviousAdminRole [32]byte
+	NewAdminRole      [32]byte
+	Raw               types.Log // Blockchain specific contextual infos
+}
+
+// FilterRoleAdminChanged is a free log retrieval operation binding the contract event 0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff.
+//
+// Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) FilterRoleAdminChanged(opts *bind.FilterOpts, role [][32]byte, previousAdminRole [][32]byte, newAdminRole [][32]byte) (*SynapseExecutionServiceV1HarnessRoleAdminChangedIterator, error) {
+
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
+	}
+	var previousAdminRoleRule []interface{}
+	for _, previousAdminRoleItem := range previousAdminRole {
+		previousAdminRoleRule = append(previousAdminRoleRule, previousAdminRoleItem)
+	}
+	var newAdminRoleRule []interface{}
+	for _, newAdminRoleItem := range newAdminRole {
+		newAdminRoleRule = append(newAdminRoleRule, newAdminRoleItem)
+	}
+
+	logs, sub, err := _SynapseExecutionServiceV1Harness.contract.FilterLogs(opts, "RoleAdminChanged", roleRule, previousAdminRoleRule, newAdminRoleRule)
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1HarnessRoleAdminChangedIterator{contract: _SynapseExecutionServiceV1Harness.contract, event: "RoleAdminChanged", logs: logs, sub: sub}, nil
+}
+
+// WatchRoleAdminChanged is a free log subscription operation binding the contract event 0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff.
+//
+// Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) WatchRoleAdminChanged(opts *bind.WatchOpts, sink chan<- *SynapseExecutionServiceV1HarnessRoleAdminChanged, role [][32]byte, previousAdminRole [][32]byte, newAdminRole [][32]byte) (event.Subscription, error) {
+
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
+	}
+	var previousAdminRoleRule []interface{}
+	for _, previousAdminRoleItem := range previousAdminRole {
+		previousAdminRoleRule = append(previousAdminRoleRule, previousAdminRoleItem)
+	}
+	var newAdminRoleRule []interface{}
+	for _, newAdminRoleItem := range newAdminRole {
+		newAdminRoleRule = append(newAdminRoleRule, newAdminRoleItem)
+	}
+
+	logs, sub, err := _SynapseExecutionServiceV1Harness.contract.WatchLogs(opts, "RoleAdminChanged", roleRule, previousAdminRoleRule, newAdminRoleRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(SynapseExecutionServiceV1HarnessRoleAdminChanged)
+				if err := _SynapseExecutionServiceV1Harness.contract.UnpackLog(event, "RoleAdminChanged", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseRoleAdminChanged is a log parse operation binding the contract event 0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff.
+//
+// Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) ParseRoleAdminChanged(log types.Log) (*SynapseExecutionServiceV1HarnessRoleAdminChanged, error) {
+	event := new(SynapseExecutionServiceV1HarnessRoleAdminChanged)
+	if err := _SynapseExecutionServiceV1Harness.contract.UnpackLog(event, "RoleAdminChanged", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// SynapseExecutionServiceV1HarnessRoleGrantedIterator is returned from FilterRoleGranted and is used to iterate over the raw logs and unpacked data for RoleGranted events raised by the SynapseExecutionServiceV1Harness contract.
+type SynapseExecutionServiceV1HarnessRoleGrantedIterator struct {
+	Event *SynapseExecutionServiceV1HarnessRoleGranted // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *SynapseExecutionServiceV1HarnessRoleGrantedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(SynapseExecutionServiceV1HarnessRoleGranted)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(SynapseExecutionServiceV1HarnessRoleGranted)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *SynapseExecutionServiceV1HarnessRoleGrantedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *SynapseExecutionServiceV1HarnessRoleGrantedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// SynapseExecutionServiceV1HarnessRoleGranted represents a RoleGranted event raised by the SynapseExecutionServiceV1Harness contract.
+type SynapseExecutionServiceV1HarnessRoleGranted struct {
+	Role    [32]byte
+	Account common.Address
+	Sender  common.Address
+	Raw     types.Log // Blockchain specific contextual infos
+}
+
+// FilterRoleGranted is a free log retrieval operation binding the contract event 0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d.
+//
+// Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) FilterRoleGranted(opts *bind.FilterOpts, role [][32]byte, account []common.Address, sender []common.Address) (*SynapseExecutionServiceV1HarnessRoleGrantedIterator, error) {
+
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
+	}
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
+	}
+	var senderRule []interface{}
+	for _, senderItem := range sender {
+		senderRule = append(senderRule, senderItem)
+	}
+
+	logs, sub, err := _SynapseExecutionServiceV1Harness.contract.FilterLogs(opts, "RoleGranted", roleRule, accountRule, senderRule)
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1HarnessRoleGrantedIterator{contract: _SynapseExecutionServiceV1Harness.contract, event: "RoleGranted", logs: logs, sub: sub}, nil
+}
+
+// WatchRoleGranted is a free log subscription operation binding the contract event 0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d.
+//
+// Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) WatchRoleGranted(opts *bind.WatchOpts, sink chan<- *SynapseExecutionServiceV1HarnessRoleGranted, role [][32]byte, account []common.Address, sender []common.Address) (event.Subscription, error) {
+
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
+	}
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
+	}
+	var senderRule []interface{}
+	for _, senderItem := range sender {
+		senderRule = append(senderRule, senderItem)
+	}
+
+	logs, sub, err := _SynapseExecutionServiceV1Harness.contract.WatchLogs(opts, "RoleGranted", roleRule, accountRule, senderRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(SynapseExecutionServiceV1HarnessRoleGranted)
+				if err := _SynapseExecutionServiceV1Harness.contract.UnpackLog(event, "RoleGranted", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseRoleGranted is a log parse operation binding the contract event 0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d.
+//
+// Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) ParseRoleGranted(log types.Log) (*SynapseExecutionServiceV1HarnessRoleGranted, error) {
+	event := new(SynapseExecutionServiceV1HarnessRoleGranted)
+	if err := _SynapseExecutionServiceV1Harness.contract.UnpackLog(event, "RoleGranted", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// SynapseExecutionServiceV1HarnessRoleRevokedIterator is returned from FilterRoleRevoked and is used to iterate over the raw logs and unpacked data for RoleRevoked events raised by the SynapseExecutionServiceV1Harness contract.
+type SynapseExecutionServiceV1HarnessRoleRevokedIterator struct {
+	Event *SynapseExecutionServiceV1HarnessRoleRevoked // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *SynapseExecutionServiceV1HarnessRoleRevokedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(SynapseExecutionServiceV1HarnessRoleRevoked)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(SynapseExecutionServiceV1HarnessRoleRevoked)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *SynapseExecutionServiceV1HarnessRoleRevokedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *SynapseExecutionServiceV1HarnessRoleRevokedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// SynapseExecutionServiceV1HarnessRoleRevoked represents a RoleRevoked event raised by the SynapseExecutionServiceV1Harness contract.
+type SynapseExecutionServiceV1HarnessRoleRevoked struct {
+	Role    [32]byte
+	Account common.Address
+	Sender  common.Address
+	Raw     types.Log // Blockchain specific contextual infos
+}
+
+// FilterRoleRevoked is a free log retrieval operation binding the contract event 0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b.
+//
+// Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) FilterRoleRevoked(opts *bind.FilterOpts, role [][32]byte, account []common.Address, sender []common.Address) (*SynapseExecutionServiceV1HarnessRoleRevokedIterator, error) {
+
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
+	}
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
+	}
+	var senderRule []interface{}
+	for _, senderItem := range sender {
+		senderRule = append(senderRule, senderItem)
+	}
+
+	logs, sub, err := _SynapseExecutionServiceV1Harness.contract.FilterLogs(opts, "RoleRevoked", roleRule, accountRule, senderRule)
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1HarnessRoleRevokedIterator{contract: _SynapseExecutionServiceV1Harness.contract, event: "RoleRevoked", logs: logs, sub: sub}, nil
+}
+
+// WatchRoleRevoked is a free log subscription operation binding the contract event 0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b.
+//
+// Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) WatchRoleRevoked(opts *bind.WatchOpts, sink chan<- *SynapseExecutionServiceV1HarnessRoleRevoked, role [][32]byte, account []common.Address, sender []common.Address) (event.Subscription, error) {
+
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
+	}
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
+	}
+	var senderRule []interface{}
+	for _, senderItem := range sender {
+		senderRule = append(senderRule, senderItem)
+	}
+
+	logs, sub, err := _SynapseExecutionServiceV1Harness.contract.WatchLogs(opts, "RoleRevoked", roleRule, accountRule, senderRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(SynapseExecutionServiceV1HarnessRoleRevoked)
+				if err := _SynapseExecutionServiceV1Harness.contract.UnpackLog(event, "RoleRevoked", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseRoleRevoked is a log parse operation binding the contract event 0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b.
+//
+// Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) ParseRoleRevoked(log types.Log) (*SynapseExecutionServiceV1HarnessRoleRevoked, error) {
+	event := new(SynapseExecutionServiceV1HarnessRoleRevoked)
+	if err := _SynapseExecutionServiceV1Harness.contract.UnpackLog(event, "RoleRevoked", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
