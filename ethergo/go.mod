@@ -63,7 +63,7 @@ require (
 	golang.org/x/sync v0.6.0
 	golang.org/x/time v0.3.0
 	google.golang.org/api v0.149.0
-	google.golang.org/protobuf v1.32.0
+	google.golang.org/protobuf v1.33.0
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/mysql v1.5.4
 	gorm.io/driver/sqlite v1.5.5
