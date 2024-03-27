@@ -13,6 +13,10 @@ export const useBridgeState = (): RootState['bridge'] => {
   return useAppSelector((state) => state.bridge)
 }
 
+export const useBridgeDisplayState = (): RootState['bridgeDisplay'] => {
+  return useAppSelector((state) => state.bridgeDisplay)
+}
+
 export const fetchAndStoreBridgeQuote = createAsyncThunk(
   'bridge/fetchAndStoreBridgeQuote',
   async ({

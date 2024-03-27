@@ -1,3 +1,3 @@
 export const isEmptyString = (str: string) => {
-  return str.trim() === ''
+  return str ? str.trim() === '' : false
 }

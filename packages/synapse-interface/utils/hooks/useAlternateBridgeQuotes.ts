@@ -7,8 +7,7 @@ import {
   useBridgeState,
   fetchAndStoreBridgeQuotes,
 } from '@/slices/bridge/hooks'
-import { BridgeState } from '@/slices/bridge/reducer'
-import { resetFetchedBridgeQuotes } from '@/slices/bridge/actions'
+import { BridgeState, resetFetchedBridgeQuotes } from '@/slices/bridge/reducer'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { BridgeQuoteRequest } from '@/utils/actions/fetchBridgeQuotes'
 import { stringToBigInt } from '@/utils/bigint/format'
