@@ -113,11 +113,6 @@ jobs:
           fetch-depth: 1
           submodules: 'recursive'
 
-      - name: Cache Docker images.
-        uses: ScribeMD/docker-cache@0.3.6
-        with:
-          key: docker-test-${{ runner.os }}-${{ matrix.package }}
-
       - name: Go modules cache
         uses: actions/cache@v3
         with:
@@ -408,11 +403,6 @@ jobs:
           fetch-depth: 1
           submodules: 'recursive'
 
-      - name: Cache Docker images.
-        uses: ScribeMD/docker-cache@0.3.6
-        with:
-          key: docker-generate-${{ runner.os }}-${{ matrix.package }}
-
       - name: Setup NodeJS
         uses: ./.github/actions/setup-nodejs
 
@@ -529,11 +519,6 @@ jobs:
         with:
           fetch-depth: 1
           submodules: 'recursive'
-
-      - name: Cache Docker images.
-        uses: ScribeMD/docker-cache@0.3.6
-        with:
-          key: docker-generate-${{ runner.os }}-${{ matrix.package }}
 
       - name: Setup NodeJS
         uses: ./.github/actions/setup-nodejs
