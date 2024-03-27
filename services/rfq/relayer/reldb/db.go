@@ -97,6 +97,8 @@ func (q QuoteRequest) GetDestIDPair() string {
 //
 // TODO: consider making this an interface and exporting that.
 //
+// EXTREMELY IMPORTANT: DO NOT ADD NEW VALUES TO THIS ENUM UNLESS THEY ARE AT THE END.
+//
 //go:generate go run golang.org/x/tools/cmd/stringer -type=QuoteRequestStatus
 type QuoteRequestStatus uint8
 
@@ -128,6 +130,8 @@ const (
 	ClaimPending
 	// ClaimCompleted means the relayer has called Claim() on the origin chain, and the tx has been confirmed on chain.
 	ClaimCompleted
+	// RelayRaceLost means another relayer has relayed the tx.
+	RelayRaceLost
 )
 
 // Int returns the int value of the quote request status.

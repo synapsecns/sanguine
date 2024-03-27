@@ -21,6 +21,13 @@ export const BRIDGE_MAP = {
       destination: ['SYN'],
       swappable: [],
     },
+    '0x12f79f8c1A6e47a9b5F0796FDb008Bdc182fa19e': {
+      decimals: 18,
+      symbol: 'JEWEL',
+      origin: ['JEWEL'],
+      destination: ['JEWEL'],
+      swappable: [],
+    },
     '0x1B84765dE8B7566e4cEAF4D0fD3c5aF52D3DdE4F': {
       decimals: 18,
       symbol: 'nUSD',
@@ -795,6 +802,13 @@ export const BRIDGE_MAP = {
     },
   },
   '1088': {
+    '0x17C09cfC96C865CF546d73365Cedb6dC66986963': {
+      decimals: 18,
+      symbol: 'JEWEL',
+      origin: ['JEWEL'],
+      destination: ['JEWEL'],
+      swappable: [],
+    },
     '0x420000000000000000000000000000000000000A': {
       decimals: 18,
       symbol: 'WETH',
@@ -1025,7 +1039,7 @@ export const BRIDGE_MAP = {
       symbol: 'nETH',
       origin: ['nETH'],
       destination: ['nETH'],
-      swappable: ['0x5FD55A1B9FC24967C4dB09C513C3BA0DFa7FF687'],
+      swappable: [],
     },
     '0x4e71A2E537B7f9D9413D3991D37958c0b5e1e503': {
       decimals: 18,
@@ -1044,13 +1058,6 @@ export const BRIDGE_MAP = {
       origin: ['SYN'],
       destination: ['SYN'],
       swappable: [],
-    },
-    '0x5FD55A1B9FC24967C4dB09C513C3BA0DFa7FF687': {
-      decimals: 18,
-      symbol: 'ETH',
-      origin: ['nETH'],
-      destination: ['nETH'],
-      swappable: ['0x09fEC30669d63A13c666d2129230dD5588E2e240'],
     },
     '0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd': {
       decimals: 6,

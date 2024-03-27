@@ -20,6 +20,7 @@ import { useIsTxReverted } from './helpers/useIsTxReverted'
 
 interface _TransactionProps {
   connectedAddress: string
+  destinationAddress: Address | null
   originValue: number
   originChain: Chain
   originToken: Token
@@ -37,6 +38,7 @@ interface _TransactionProps {
 /** TODO: Update naming after refactoring existing Activity / Transaction flow */
 export const _Transaction = ({
   connectedAddress,
+  destinationAddress,
   originValue,
   originChain,
   originToken,
@@ -57,12 +59,12 @@ export const _Transaction = ({
   }, [dispatch])
 
   const [originTxExplorerLink, originExplorerName] = getTxBlockExplorerLink(
-    originChain.id,
+    originChain?.id,
     originTxHash
   )
   const [destExplorerAddressLink, destExplorerName] = getExplorerAddressLink(
-    destinationChain.id,
-    connectedAddress
+    destinationChain?.id,
+    destinationAddress ?? connectedAddress
   )
 
   const {
@@ -75,8 +77,8 @@ export const _Transaction = ({
   } = getEstimatedTimeStatus(currentTime, timestamp, estimatedTime)
 
   const [isTxCompleted, _kappa] = useBridgeTxStatus({
-    originChainId: originChain.id,
-    destinationChainId: destinationChain.id,
+    originChainId: originChain?.id,
+    destinationChainId: destinationChain?.id,
     originTxHash,
     bridgeModuleName,
     kappa: kappa,

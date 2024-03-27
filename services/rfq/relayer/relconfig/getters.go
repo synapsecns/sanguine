@@ -587,25 +587,37 @@ func (c Config) GetMinQuoteAmount(chainID int, addr common.Address) *big.Int {
 	return quoteAmountScaled
 }
 
+var defaultMinRebalanceAmount = big.NewInt(1000)
+
+// GetMinRebalanceAmount returns the min rebalance amount for the given chain and address.
+// Note that this getter returns the value in native token decimals.
+//
+//nolint:dupl
+func (c Config) GetMinRebalanceAmount(chainID int, addr common.Address) *big.Int {
+	tokenCfg, _, err := c.getTokenConfigByAddr(chainID, addr.Hex())
+	if err != nil {
+		return defaultMaxRebalanceAmount
+	}
+	rebalanceAmountFlt, ok := new(big.Float).SetString(tokenCfg.MinRebalanceAmount)
+	if !ok || rebalanceAmountFlt == nil {
+		return defaultMinRebalanceAmount
+	}
+
+	// Scale by the token decimals.
+	denomDecimalsFactor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(tokenCfg.Decimals)), nil)
+	minRebalanceAmountScaled, _ := new(big.Float).Mul(rebalanceAmountFlt, new(big.Float).SetInt(denomDecimalsFactor)).Int(nil)
+	return minRebalanceAmountScaled
+}
+
 var defaultMaxRebalanceAmount = abi.MaxInt256
 
 // GetMaxRebalanceAmount returns the max rebalance amount for the given chain and address.
 // Note that this getter returns the value in native token decimals.
+//
+//nolint:dupl
 func (c Config) GetMaxRebalanceAmount(chainID int, addr common.Address) *big.Int {
-	chainCfg, ok := c.Chains[chainID]
-	if !ok {
-		return defaultMaxRebalanceAmount
-	}
-
-	var tokenCfg *TokenConfig
-	for _, cfg := range chainCfg.Tokens {
-		if common.HexToAddress(cfg.Address).Hex() == addr.Hex() {
-			cfgCopy := cfg
-			tokenCfg = &cfgCopy
-			break
-		}
-	}
-	if tokenCfg == nil {
+	tokenCfg, _, err := c.getTokenConfigByAddr(chainID, addr.Hex())
+	if err != nil {
 		return defaultMaxRebalanceAmount
 	}
 	rebalanceAmountFlt, ok := new(big.Float).SetString(tokenCfg.MaxRebalanceAmount)
