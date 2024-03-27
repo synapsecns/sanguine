@@ -13,14 +13,6 @@ import Wrapper from '@/components/WipWrapperComponents/Wrapper'
 
 import styles from './keyframes.module.css'
 
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      set: any
-    }
-  }
-}
-
 const LandingPage = () => {
   const { address: currentAddress } = useAccount()
   const router = useRouter()
@@ -378,141 +370,6 @@ const LandingPage = () => {
             begin="bargeBoxEnd.end"
           />
         </use>
-        <g
-          id="stack-blue"
-          fill="var(--fill-blue)"
-          stroke="var(--stroke-blue)"
-          transform="translate(0,-225)"
-        >
-          <use href="#box" transform="translate(0,-27.95)" />
-          <use href="#box" transform="translate(25,12.5)" />
-          <use href="#box" transform="translate(-25,12.5)" />
-          {/* <use href="#box" transform="translate(0,25)" /> */}
-        </g>
-        <use href="#box" id="simpleBridgeBoxFromBlue">
-          <animateMotion
-            id="boxOut"
-            dur="3s"
-            begin="0s; boxIn.end + 1s"
-            path="M-375,-12.5 0,-200"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
-          />
-          <animateMotion
-            id="boxIn"
-            dur="3s"
-            begin="boxOut.end + 1s"
-            path="M0,-200 -375,-12.5"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
-          />
-          <animate
-            attributeName="stroke"
-            values="hsl(60deg 80% 60%); hsl(300deg 100% 40%); hsl(195deg 80% 60%)"
-            begin="boxOut.begin + 1s"
-            dur=".33s"
-            calcMode="spline"
-            keyTimes="0; .5; 1"
-            keySplines=".5 0 .2 1; .5 0 .2 1"
-            fill="freeze"
-          />
-          <animate
-            attributeName="fill"
-            values="hsl(60deg 80% 5%); hsl(300deg 100% 5%); hsl(195deg 80% 5%)"
-            begin="boxOut.begin + 1s"
-            dur=".33s"
-            calcMode="spline"
-            keyTimes="0; .5; 1"
-            keySplines=".5 0 .2 1; .5 0 .2 1"
-            fill="freeze"
-          />
-          <animate
-            attributeName="stroke"
-            values="hsl(195deg 80% 60%); hsl(300deg 100% 40%); hsl(60deg 80% 60%)"
-            begin="boxIn.begin + 1s"
-            dur=".33s"
-            calcMode="spline"
-            keyTimes="0; .5; 1"
-            keySplines=".5 0 .2 1; .5 0 .2 1"
-            fill="freeze"
-          />
-          <animate
-            attributeName="fill"
-            values="hsl(195deg 80% 5%); hsl(300deg 100% 5%); hsl(60deg 80% 5%)"
-            begin="boxIn.begin + 1s"
-            dur=".33s"
-            calcMode="spline"
-            keyTimes="0; .5; 1"
-            keySplines=".5 0 .2 1; .5 0 .2 1"
-            fill="freeze"
-          />
-        </use>
-        <use href="#box" id="simpleBridgeBoxFromYellow">
-          <animateMotion
-            id="boxesOut"
-            dur="3s"
-            begin="0s; boxOut.begin"
-            path="M0,-200 -375,-12.5"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
-          />
-          <animateMotion
-            id="boxesIn"
-            dur="3s"
-            begin="boxIn.begin"
-            path="M-375,-12.5 0,-200"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
-          />
-          <animate
-            attributeName="stroke"
-            values="hsl(60deg 80% 60%); hsl(300deg 100% 40%); hsl(195deg 80% 60%)"
-            begin="boxesIn.begin + 1s"
-            dur=".33s"
-            calcMode="spline"
-            keyTimes="0; .5; 1"
-            keySplines=".5 0 .2 1; .5 0 .2 1"
-            fill="freeze"
-          />
-          <animate
-            attributeName="fill"
-            values="hsl(60deg 80% 5%); hsl(300deg 100% 5%); hsl(195deg 80% 5%)"
-            begin="boxesIn.begin + 1s"
-            dur=".33s"
-            calcMode="spline"
-            keyTimes="0; .5; 1"
-            keySplines=".5 0 .2 1; .5 0 .2 1"
-            fill="freeze"
-          />
-          <animate
-            attributeName="stroke"
-            values="hsl(195deg 80% 60%); hsl(300deg 100% 40%); hsl(60deg 80% 60%)"
-            begin="boxesOut.begin + 1s"
-            dur=".33s"
-            calcMode="spline"
-            keyTimes="0; .5; 1"
-            keySplines=".5 0 .2 1; .5 0 .2 1"
-            fill="freeze"
-          />
-          <animate
-            attributeName="fill"
-            values="hsl(195deg 80% 5%); hsl(300deg 100% 5%); hsl(60deg 80% 5%)"
-            begin="boxesOut.begin + 1s"
-            dur=".33s"
-            calcMode="spline"
-            keyTimes="0; .5; 1"
-            keySplines=".5 0 .2 1; .5 0 .2 1"
-            fill="freeze"
-          />
-        </use>
 
         <g id="teleportFromOrange" stroke="hsl(25deg 80% 60%)">
           <ellipse
@@ -803,12 +660,16 @@ const LandingPage = () => {
             fill="var(--fill-synapse)"
           />
         </g>
-        <g transform="scale(.25,.25)" stroke="var(--stroke-blue)">
+        <g
+          id="balloonBox"
+          transform="scale(.25,.25)"
+          // stroke="var(--stroke-blue)"
+        >
           <animateMotion
             id="stackOut"
             dur="1s"
             begin="0s; stackIn.end + 5s"
-            path="m0,-280 200,100"
+            path="M25,-227.95 200,-170"
             calcMode="spline"
             keyTimes="0; 1"
             keySplines=".5 0 .2 1"
@@ -817,15 +678,18 @@ const LandingPage = () => {
           <animateMotion
             id="airlift"
             dur="2s"
-            begin="stackOut.end"
-            path="m200,-180 v-50"
+            begin="stackOut.end + 1s"
+            path="m200,-170 v-50"
+            calcMode="spline"
+            keyTimes="0; 1"
+            keySplines=".5 0 .2 1"
             fill="freeze"
           />
           <animateMotion
             id="airpath"
             dur="4s"
-            begin="airlift.end + 1s"
-            path="m200,-230 v150"
+            begin="airlift.end"
+            path="m200,-220 v150"
             calcMode="spline"
             keyTimes="0; 1"
             keySplines=".5 0 .2 1"
@@ -835,7 +699,7 @@ const LandingPage = () => {
             id="airdrop"
             dur=".25s"
             begin="airpath.end"
-            path="m200,-80 v50"
+            path="m200,-70 v40"
             calcMode="spline"
             keyTimes="0; 1"
             keySplines=".33 0 1 1"
@@ -854,75 +718,251 @@ const LandingPage = () => {
           <path
             d="m0,50 100,-50 0,-111.8 -100,-50 -100,50 0,111.8 100,50"
             vectorEffect="non-scaling-stroke"
-            fill="var(--fill-orange)"
           />
           <path
             d="m-100,-111.9 100,50 100,-50 m-100,50 0,111.8"
             vectorEffect="non-scaling-stroke"
-            fill="none"
           />
-          <g id="balloon">
-            <animateMotion begin="stackOut.begin" path="m0,0" />
-            <animateMotion
-              dur="1s"
-              begin="airdrop.begin"
-              path="m0,0 v-2000"
+          <set
+            attributeName="stroke"
+            to="hsl(195deg 80% 60%)"
+            begin="stackOut.begin"
+          />
+          <set
+            attributeName="fill"
+            to="hsl(195deg 80% 5%)"
+            begin="stackOut.begin"
+          />
+          <animate
+            attributeName="stroke"
+            values="hsl(195deg 80% 60%); hsl(300deg 100% 40%); hsl(135deg 80% 60%)"
+            begin="airdrop.begin"
+            dur=".33s"
+            calcMode="spline"
+            keyTimes="0; .5; 1"
+            keySplines=".5 0 .2 1; .5 0 .2 1"
+            fill="freeze"
+          />
+          <animate
+            attributeName="fill"
+            values="hsl(195deg 80% 5%); hsl(300deg 100% 5%); hsl(135deg 80% 5%)"
+            begin="airpath.end"
+            dur=".33s"
+            calcMode="spline"
+            keyTimes="0; .5; 1"
+            keySplines=".5 0 .2 1; .5 0 .2 1"
+            fill="freeze"
+          />
+        </g>
+        <g id="balloon">
+          <animateMotion begin="stackOut.begin" path="m200,-97.5" />
+          <animateMotion
+            dur="2s"
+            begin="airlift.begin"
+            path="m200,-87.5 v-50"
+            calcMode="spline"
+            keyTimes="0; 1"
+            keySplines=".5 0 .2 1"
+            fill="freeze"
+          />
+          <animateMotion
+            dur="4s"
+            begin="airpath.begin"
+            path="m200,-137.5 v150"
+            calcMode="spline"
+            keyTimes="0; 1"
+            keySplines=".5 0 .2 1"
+            fill="freeze"
+          />
+          <animateMotion
+            dur="1s"
+            begin="airdrop.begin"
+            path="m200,12.5 v-875"
+            calcMode="spline"
+            keyTimes="0; 1"
+            keySplines="1 0 1 1"
+            fill="freeze"
+          />
+          <path
+            id="balloonString"
+            vectorEffect="non-scaling-stroke"
+            stroke="var(--stroke-synapse)"
+          >
+            <set attributeName="d" to="m0,-111.8 v0" begin="stackOut.begin" />
+            <animate
+              attributeName="d"
+              values="m0,-101.8 v0; m0,-111.8 v-37.5"
+              begin="airlift.begin"
+              dur="2s"
               calcMode="spline"
               keyTimes="0; 1"
-              keySplines="1 0 1 1"
+              keySplines=".5 0 .2 1"
               fill="freeze"
             />
-            <path
-              vectorEffect="non-scaling-stroke"
-              stroke="var(--stroke-synapse)"
-            >
-              <animate
-                attributeName="d"
-                values="m0,-111.8 v0"
-                begin="stackOut.begin"
-                fill="freeze"
-              />
-              <animate
-                attributeName="d"
-                values="m0,-111.8 v0; m0,-111.8 v-111.8"
-                begin="airlift.begin"
-                dur="1s"
-                calcMode="spline"
-                keyTimes="0; 1"
-                keySplines=".5 0 .2 1"
-                fill="freeze"
-              />
-            </path>
-            <circle
-              cy="-370"
-              vectorEffect="non-scaling-stroke"
-              stroke="var(--stroke-synapse)"
-              fill="var(--fill-synapse)"
-            >
-              <animate attributeName="r" values="0" begin="stackOut.begin" />
-              <animate
-                attributeName="r"
-                values="0; 150"
-                begin="airlift.begin"
-                dur="2s"
-                calcMode="spline"
-                keyTimes="0; 1"
-                keySplines=".5 0 .2 1"
-                fill="freeze"
-              />
-              <animate
-                attributeName="cy"
-                values="-200; -370"
-                begin="airlift.begin"
-                dur="2s"
-                calcMode="spline"
-                keyTimes="0; 1"
-                keySplines=".5 0 .2 1"
-                fill="freeze"
-              />
-            </circle>
-          </g>
+          </path>
+          <circle
+            vectorEffect="non-scaling-stroke"
+            stroke="var(--stroke-synapse)"
+            fill="var(--fill-synapse)"
+          >
+            <animate attributeName="r" values="0" begin="stackOut.begin" />
+            <animate
+              attributeName="r"
+              values="0; 36"
+              begin="airlift.begin"
+              dur="2s"
+              calcMode="spline"
+              keyTimes="0; 1"
+              keySplines=".5 0 .2 1"
+              fill="freeze"
+            />
+            <animate
+              attributeName="cy"
+              values="-111.8; -186.8"
+              begin="airlift.begin"
+              dur="2s"
+              calcMode="spline"
+              keyTimes="0; 1"
+              keySplines=".5 0 .2 1"
+              fill="freeze"
+            />
+          </circle>
         </g>
+        <g
+          id="stack-blue"
+          fill="var(--fill-blue)"
+          stroke="var(--stroke-blue)"
+          transform="translate(0,-225)"
+        >
+          <use href="#box" transform="translate(0,-27.95)" />
+          <use href="#box" transform="translate(25,12.5)" />
+          <use href="#box" transform="translate(-25,12.5)" />
+          {/* <use href="#box" transform="translate(0,25)" /> */}
+        </g>
+        <use href="#box" id="simpleBridgeBoxFromBlue">
+          <animateMotion
+            id="boxOut"
+            dur="3s"
+            begin="0s; boxIn.end + 1s"
+            path="M-375,-12.5 0,-200"
+            calcMode="spline"
+            keyTimes="0; 1"
+            keySplines=".5 0 .2 1"
+            fill="freeze"
+          />
+          <animateMotion
+            id="boxIn"
+            dur="3s"
+            begin="boxOut.end + 1s"
+            path="M0,-200 -375,-12.5"
+            calcMode="spline"
+            keyTimes="0; 1"
+            keySplines=".5 0 .2 1"
+            fill="freeze"
+          />
+          <animate
+            attributeName="stroke"
+            values="hsl(60deg 80% 60%); hsl(300deg 100% 40%); hsl(195deg 80% 60%)"
+            begin="boxOut.begin + 1s"
+            dur=".33s"
+            calcMode="spline"
+            keyTimes="0; .5; 1"
+            keySplines=".5 0 .2 1; .5 0 .2 1"
+            fill="freeze"
+          />
+          <animate
+            attributeName="fill"
+            values="hsl(60deg 80% 5%); hsl(300deg 100% 5%); hsl(195deg 80% 5%)"
+            begin="boxOut.begin + 1s"
+            dur=".33s"
+            calcMode="spline"
+            keyTimes="0; .5; 1"
+            keySplines=".5 0 .2 1; .5 0 .2 1"
+            fill="freeze"
+          />
+          <animate
+            attributeName="stroke"
+            values="hsl(195deg 80% 60%); hsl(300deg 100% 40%); hsl(60deg 80% 60%)"
+            begin="boxIn.begin + 1s"
+            dur=".33s"
+            calcMode="spline"
+            keyTimes="0; .5; 1"
+            keySplines=".5 0 .2 1; .5 0 .2 1"
+            fill="freeze"
+          />
+          <animate
+            attributeName="fill"
+            values="hsl(195deg 80% 5%); hsl(300deg 100% 5%); hsl(60deg 80% 5%)"
+            begin="boxIn.begin + 1s"
+            dur=".33s"
+            calcMode="spline"
+            keyTimes="0; .5; 1"
+            keySplines=".5 0 .2 1; .5 0 .2 1"
+            fill="freeze"
+          />
+        </use>
+        <use href="#box" id="simpleBridgeBoxFromYellow">
+          <animateMotion
+            id="boxesOut"
+            dur="3s"
+            begin="0s; boxOut.begin"
+            path="M0,-200 -375,-12.5"
+            calcMode="spline"
+            keyTimes="0; 1"
+            keySplines=".5 0 .2 1"
+            fill="freeze"
+          />
+          <animateMotion
+            id="boxesIn"
+            dur="3s"
+            begin="boxIn.begin"
+            path="M-375,-12.5 0,-200"
+            calcMode="spline"
+            keyTimes="0; 1"
+            keySplines=".5 0 .2 1"
+            fill="freeze"
+          />
+          <animate
+            attributeName="stroke"
+            values="hsl(60deg 80% 60%); hsl(300deg 100% 40%); hsl(195deg 80% 60%)"
+            begin="boxesIn.begin + 1s"
+            dur=".33s"
+            calcMode="spline"
+            keyTimes="0; .5; 1"
+            keySplines=".5 0 .2 1; .5 0 .2 1"
+            fill="freeze"
+          />
+          <animate
+            attributeName="fill"
+            values="hsl(60deg 80% 5%); hsl(300deg 100% 5%); hsl(195deg 80% 5%)"
+            begin="boxesIn.begin + 1s"
+            dur=".33s"
+            calcMode="spline"
+            keyTimes="0; .5; 1"
+            keySplines=".5 0 .2 1; .5 0 .2 1"
+            fill="freeze"
+          />
+          <animate
+            attributeName="stroke"
+            values="hsl(195deg 80% 60%); hsl(300deg 100% 40%); hsl(60deg 80% 60%)"
+            begin="boxesOut.begin + 1s"
+            dur=".33s"
+            calcMode="spline"
+            keyTimes="0; .5; 1"
+            keySplines=".5 0 .2 1; .5 0 .2 1"
+            fill="freeze"
+          />
+          <animate
+            attributeName="fill"
+            values="hsl(195deg 80% 5%); hsl(300deg 100% 5%); hsl(60deg 80% 5%)"
+            begin="boxesOut.begin + 1s"
+            dur=".33s"
+            calcMode="spline"
+            keyTimes="0; .5; 1"
+            keySplines=".5 0 .2 1; .5 0 .2 1"
+            fill="freeze"
+          />
+        </use>
         <g
           id="stack-yellow"
           fill="var(--fill-yellow)"

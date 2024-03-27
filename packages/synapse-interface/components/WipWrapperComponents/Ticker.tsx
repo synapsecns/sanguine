@@ -141,47 +141,48 @@ export default function Ticker() {
           isLoading ? 'opacity-0' : 'opacity-100'
         } transition-opacity`}
       >
-        {txData
-          .filter((tx) => tx.toInfo.time > tx.fromInfo.time)
-          .map((tx) => (
-            <Fragment key={tx.fromInfo.txnHash}>
-              <dt className="row-start-1">
-                <a
-                  href="#"
-                  className="text-zinc-500 px-4 pt-2 hover:text-inherit hover:underline block"
-                >
-                  {`${formatAmount(tx.fromInfo.formattedValue)} ${
-                    tx.fromInfo.tokenSymbol
-                  } to ${CHAINS_BY_ID[tx.toInfo.chainID]?.name}`}
-                </a>
-              </dt>
-              <dd className="row-start-2 animate-slide-down origin-top p-2 hidden [:hover_+_&]:block hover:block">
-                <a
-                  href="#"
-                  className="absolute px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-900 rounded items-center grid gap-x-4 gap-y-1 shadow-sm"
-                >
-                  <ul className="inline">
-                    <li>
-                      {formatAmount(tx.fromInfo.formattedValue)}{' '}
-                      {tx.fromInfo.tokenSymbol}
-                    </li>
-                    <li>{CHAINS_BY_ID[tx.fromInfo.chainID]?.name}</li>
-                  </ul>
-                  <RightCaret height="12" />
-                  <ul className="inline">
-                    <li>
-                      {formatAmount(tx.toInfo.formattedValue)}{' '}
-                      {tx.toInfo.tokenSymbol}
-                    </li>
-                    <li>{CHAINS_BY_ID[tx.toInfo.chainID]?.name}</li>
-                  </ul>
-                  <header className="text-zinc-500 row-start-2 col-span-3">
-                    {formatTimestamp(tx)}
-                  </header>
-                </a>
-              </dd>
-            </Fragment>
-          ))}
+        {txData &&
+          txData
+            .filter((tx) => tx.toInfo.time > tx.fromInfo.time)
+            .map((tx) => (
+              <Fragment key={tx.fromInfo.txnHash}>
+                <dt className="row-start-1">
+                  <a
+                    href="#"
+                    className="text-zinc-500 px-4 pt-2 hover:text-inherit hover:underline block"
+                  >
+                    {`${formatAmount(tx.fromInfo.formattedValue)} ${
+                      tx.fromInfo.tokenSymbol
+                    } to ${CHAINS_BY_ID[tx.toInfo.chainID]?.name}`}
+                  </a>
+                </dt>
+                <dd className="row-start-2 animate-slide-down origin-top p-2 hidden [:hover_+_&]:block hover:block">
+                  <a
+                    href="#"
+                    className="absolute px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-900 rounded items-center grid gap-x-4 gap-y-1 shadow-sm"
+                  >
+                    <ul className="inline">
+                      <li>
+                        {formatAmount(tx.fromInfo.formattedValue)}{' '}
+                        {tx.fromInfo.tokenSymbol}
+                      </li>
+                      <li>{CHAINS_BY_ID[tx.fromInfo.chainID]?.name}</li>
+                    </ul>
+                    <RightCaret height="12" />
+                    <ul className="inline">
+                      <li>
+                        {formatAmount(tx.toInfo.formattedValue)}{' '}
+                        {tx.toInfo.tokenSymbol}
+                      </li>
+                      <li>{CHAINS_BY_ID[tx.toInfo.chainID]?.name}</li>
+                    </ul>
+                    <header className="text-zinc-500 row-start-2 col-span-3">
+                      {formatTimestamp(tx)}
+                    </header>
+                  </a>
+                </dd>
+              </Fragment>
+            ))}
       </dl>
       <a
         href="#"
