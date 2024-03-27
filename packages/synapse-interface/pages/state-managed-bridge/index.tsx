@@ -73,6 +73,7 @@ import {
   useMaintenanceCountdownProgress,
 } from '@/components/Maintenance/Events/template/MaintenanceEvent'
 import { BridgeCard } from '@/components/ui/BridgeCard'
+import { ConfirmDestinationAddressWarning } from '@/components/StateManagedBridge/BridgeWarnings'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -558,12 +559,7 @@ const StateManagedBridge = () => {
               <OutputContainer />
               <Warning />
               <BridgeExchangeRateInfo />
-              {showDestinationAddress && (
-                <DestinationAddressInput
-                  toChainId={toChainId}
-                  destinationAddress={destinationAddress}
-                />
-              )}
+              <ConfirmDestinationAddressWarning />
               <BridgeTransactionButton
                 isApproved={isApproved}
                 approveTxn={approveTxn}

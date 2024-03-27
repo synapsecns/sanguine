@@ -1,16 +1,21 @@
+import { useAccount } from 'wagmi'
+
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { ChainSelector } from '@/components/ui/ChainSelector'
 import { TokenSelector } from '@/components/ui/TokenSelector'
 import { useToChainListArray } from './hooks/useToChainListArray'
 import { setToChainId, setToToken } from '@/slices/bridge/reducer'
-import { useBridgeState } from '@/slices/bridge/hooks'
+import { useBridgeDisplayState, useBridgeState } from '@/slices/bridge/hooks'
 import { BridgeSectionContainer } from '@/components/ui/BridgeSectionContainer'
 import { BridgeAmountContainer } from '@/components/ui/BridgeAmountContainer'
 import { AmountInput } from '@/components/ui/AmountInput'
 import { useToTokenListArray } from '@/components/StateManagedBridge/hooks/useToTokenListArray'
+import { DestinationAddressInput } from './DestinationAddressInput'
 
-export const OutputContainer = ({}) => {
+export const OutputContainer = () => {
+  const { address } = useAccount()
   const { bridgeQuote, isLoading } = useBridgeState()
+  const { showDestinationAddress } = useBridgeDisplayState()
 
   const showValue =
     bridgeQuote?.outputAmountString === '0'
@@ -21,6 +26,9 @@ export const OutputContainer = ({}) => {
     <BridgeSectionContainer>
       <div className="flex items-center justify-between">
         <ToChainSelector />
+        {showDestinationAddress ? (
+          <DestinationAddressInput connectedAddress={address} />
+        ) : null}
       </div>
 
       <BridgeAmountContainer>
