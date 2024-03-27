@@ -10,6 +10,8 @@ import (
 
 	context "context"
 
+	crypto "github.com/libp2p/go-libp2p/core/crypto"
+
 	mock "github.com/stretchr/testify/mock"
 
 	signer "github.com/synapsecns/sanguine/ethergo/signer/signer"
@@ -57,6 +59,22 @@ func (_m *Signer) GetTransactor(ctx context.Context, chainID *big.Int) (*bind.Tr
 	}
 
 	return r0, r1
+}
+
+// PrivKey provides a mock function with given fields:
+func (_m *Signer) PrivKey() crypto.PrivKey {
+	ret := _m.Called()
+
+	var r0 crypto.PrivKey
+	if rf, ok := ret.Get(0).(func() crypto.PrivKey); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(crypto.PrivKey)
+		}
+	}
+
+	return r0
 }
 
 // SignMessage provides a mock function with given fields: ctx, message, hash
