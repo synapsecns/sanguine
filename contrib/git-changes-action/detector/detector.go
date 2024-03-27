@@ -78,13 +78,12 @@ func DetectChangedModules(repoPath string, ct tree.Tree, includeDeps bool, typeO
 
       if includeDeps {
         for _, packageName := range packagesPerModule[module.Path] {
-          changed = checkPackageDependencies(packageName, ct, depGraph)
-          
-          // If a package is flagged as changed
-          // its not necessary to analyze the rest,
-          // the module can be flagged as changed
-          if changed {
-             break
+          if isPackageChanged(packageName, ct, depGraph) {
+            changed = true
+            // If a package is flagged as changed
+            // its not necessary to analyze the remaining packages,
+            // module can be flagged as changed
+            break 
           }
         }
       }
@@ -96,10 +95,11 @@ func DetectChangedModules(repoPath string, ct tree.Tree, includeDeps bool, typeO
 	return modules, nil
 }
 
-func checkPackageDependencies(packageName string, ct tree.Tree, depGraph map[string][]string) bool {
+func isPackageChanged(packageName string, ct tree.Tree, depGraph map[string][]string) bool {
    if ct.HasPath(packageName) {
      return true
    }
+
    for _, dep := range depGraph[packageName] {
      if ct.HasPath(dep) {
        return true
