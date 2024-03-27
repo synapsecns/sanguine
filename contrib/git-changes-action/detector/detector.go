@@ -78,19 +78,7 @@ func DetectChangedModules(repoPath string, ct tree.Tree, includeDeps bool, typeO
 
       if includeDeps {
         for _, packageName := range packagesPerModule[module.Path] {
-          if ct.HasPath(packageName) {
-            changed = true
-          } else {
-            for _, dep := range depGraph[packageName] {
-              if ct.HasPath(dep) {
-                // If a dependency is flagged as changed
-                // its not necessary to analyze the remaining dependences,
-                // the package can be flagged as changed.
-                changed = true
-                break
-              }
-            }
-          }
+          changed = checkPackageDependencies(packageName, ct, depGraph)
           
           // If a package is flagged as changed
           // its not necessary to analyze the rest,
@@ -107,6 +95,19 @@ func DetectChangedModules(repoPath string, ct tree.Tree, includeDeps bool, typeO
 
 	return modules, nil
 }
+
+func checkPackageDependencies(packageName string, ct tree.Tree, depGraph map[string][]string) bool {
+   if ct.HasPath(packageName) {
+     return true
+   }
+   for _, dep := range depGraph[packageName] {
+     if ct.HasPath(dep) {
+       return true
+     }
+   }
+   return false
+}
+
 
 // getChangeTreeFromGit returns a tree of all the files that have changed between the current commit and the commit with the given hash.
 // nolint: cyclop, gocognit
