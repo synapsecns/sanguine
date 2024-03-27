@@ -12,7 +12,6 @@ import ValueProps from '../ValueProps'
 import Wrapper from '@/components/WipWrapperComponents/Wrapper'
 
 import styles from './keyframes.module.css'
-import { AnyFn } from 'react-spring'
 
 declare global {
   namespace JSX {

@@ -99,7 +99,7 @@ export default function Ticker() {
     tickerRef.current.addEventListener('mouseleave', startTicker)
     requestId = window.requestAnimationFrame(step)
 
-    // fetchExplorerTxs(setTxData)
+    fetchExplorerTxs(setTxData)
 
     return () => {
       tickerRef.current.removeEventListener('mouseenter', stopTicker)
