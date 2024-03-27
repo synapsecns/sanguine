@@ -35,12 +35,6 @@ export const SelectSpecificNetworkButton = ({
   const ref = useRef<any>(null)
   const chain = CHAINS_BY_ID[itemChainId]
 
-  // useEffect(() => {
-  //   if (active) {
-  //     ref?.current?.focus()
-  //   }
-  // }, [active])
-
   const buttonClass = joinClassNames({
     other: 'whitespace-nowrap',
     grid: 'grid gap-0.5',
@@ -60,7 +54,6 @@ export const SelectSpecificNetworkButton = ({
   return (
     <button
       ref={ref}
-      // tabIndex={active ? 1 : 0}
       className={buttonClass}
       onClick={onClick}
       data-test-id={`${dataId}-item`}
@@ -84,15 +77,12 @@ function ButtonContent({
 }) {
   const chain = CHAINS_BY_ID[chainId]
   const { balances } = usePortfolioState()
-  // const { fromChainId, fromToken } = useBridgeState()
 
   const balanceTokens =
     balances?.[chainId] &&
     sortTokensByBalanceDescending(
       balances[chainId].filter((bt) => bt.balance > 0n)
     )
-
-  // const isEligible = isChainEligible(fromChainId, chain.id, fromToken)
 
   return (
     chain && (
