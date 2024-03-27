@@ -3,8 +3,9 @@ pragma solidity 0.8.20;
 
 import {MessageBusEvents} from "./events/MessageBusEvents.sol";
 import {IMessageBus} from "./interfaces/IMessageBus.sol";
+import {LegacyOptionsLib} from "./libs/LegacyOptions.sol";
 
-import {ICAppV1} from "../apps/ICAppV1.sol";
+import {ICAppV1, OptionsV1} from "../apps/ICAppV1.sol";
 
 contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
     uint256 public messageLengthEstimate;
@@ -26,13 +27,14 @@ contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
     }
 
     /// @inheritdoc IMessageBus
-    function setMessageLengthEstimate(uint256 length) external {
-        // TODO: implement
+    function setMessageLengthEstimate(uint256 length) external onlyRole(IC_GOVERNOR_ROLE) {
+        messageLengthEstimate = length;
+        emit MessageLengthEstimateSet(length);
     }
 
     /// @inheritdoc IMessageBus
     function estimateFee(uint256 dstChainId, bytes calldata options) external view returns (uint256) {
-        // TODO: implement
+        return estimateFeeExact(dstChainId, messageLengthEstimate, options);
     }
 
     /// @inheritdoc IMessageBus
@@ -41,11 +43,11 @@ contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
         uint256 messageLen,
         bytes calldata options
     )
-        external
+        public
         view
         returns (uint256)
     {
-        // TODO: implement
+        return _getMessageFee({dstChainId: dstChainId, options: _icOptionsV1(options), message: new bytes(messageLen)});
     }
 
     /// @dev Internal logic for receiving messages. At this point the validity of the message is already checked.
@@ -60,5 +62,9 @@ contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
         override
     {
         // TODO: implement
+    }
+
+    function _icOptionsV1(bytes calldata options) internal view returns (OptionsV1 memory) {
+        return OptionsV1({gasLimit: LegacyOptionsLib.decodeLegacyOptions(options), gasAirdrop: 0});
     }
 }
