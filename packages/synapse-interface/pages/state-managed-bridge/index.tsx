@@ -523,14 +523,10 @@ const StateManagedBridge = () => {
   const springClass =
     '-mt-4 fixed z-50 w-full h-full bg-opacity-50 bg-[#343036]'
 
-  // const {
-  //   isMaintenancePending,
-  //   isCurrentChainDisabled,
-  //   MaintenanceCountdownProgressBar,
-  // } = useMaintenanceCountdownProgress()
+  const maintenanceCountdownProgressInstances =
+    useMaintenanceCountdownProgresses()
 
-  const instances = useMaintenanceCountdownProgresses()
-  const isBridgePaused = instances.some(
+  const isBridgePaused = maintenanceCountdownProgressInstances.some(
     (instance) => instance.isCurrentChainDisabled
   )
 
@@ -571,7 +567,7 @@ const StateManagedBridge = () => {
             transition-all duration-100 transform rounded-md
           `}
         >
-          {instances.map((instance) => (
+          {maintenanceCountdownProgressInstances.map((instance) => (
             <>{instance.MaintenanceCountdownProgressBar}</>
           ))}
 
