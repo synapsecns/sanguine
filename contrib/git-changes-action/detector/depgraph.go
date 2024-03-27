@@ -182,7 +182,7 @@ func makeDepMaps(repoPath string, uses []*modfile.Use, typeOfDependency string) 
 
       pwd, err := os.Getwd()
       if err != nil {
-        return dependencies, dependencyNames, packagesPerModule, fmt.Errorf("Failed to read current directory.", err)
+        return dependencies, dependencyNames, packagesPerModule, fmt.Errorf("Failed to read current directory: %w", err)
       }
 
 
