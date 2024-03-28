@@ -1,6 +1,10 @@
 import { sortByTokenBalance } from '../sortTokens'
 import { Chain, Token } from '../types'
-import { BRIDGABLE_TOKENS, POOLS_BY_CHAIN } from '@/constants/tokens'
+import {
+  BRIDGABLE_TOKENS,
+  POOLS_BY_CHAIN,
+  GAS_TOKENS,
+} from '@/constants/tokens'
 import { FetchState } from '@/slices/portfolio/actions'
 
 export interface TokenAndBalance {
@@ -50,16 +54,24 @@ export const fetchPortfolioBalances = async (
 
   try {
     const balancePromises = filteredChains.map(async (chainId) => {
-      let currentChainTokens
       const currentChainId = Number(chainId)
+      let currentChainTokens
+
+      currentChainTokens = BRIDGABLE_TOKENS[chainId]
 
       if (POOLS_BY_CHAIN[chainId]) {
-        currentChainTokens = BRIDGABLE_TOKENS[chainId].concat(
-          POOLS_BY_CHAIN[chainId]
-        )
-      } else {
-        currentChainTokens = BRIDGABLE_TOKENS[chainId]
+        // currentChainTokens = BRIDGABLE_TOKENS[chainId].concat(
+        //   POOLS_BY_CHAIN[chainId]
+        // )
+        currentChainTokens = currentChainTokens.concat(POOLS_BY_CHAIN[chainId])
       }
+
+      if (GAS_TOKENS[chainId]) {
+        currentChainTokens = currentChainTokens.concat(GAS_TOKENS[chainId])
+      }
+      // else {
+      //   currentChainTokens = BRIDGABLE_TOKENS[chainId]
+      // }
 
       const [tokenBalances] = await Promise.all([
         getTokenBalances(address, currentChainTokens, currentChainId),

@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import * as CHAINS from '@constants/chains/master'
 import * as all from '@constants/tokens/bridgeable'
+import * as allGasTokens from '@constants/tokens/gasTokens'
 import * as allPool from '@constants/tokens/poolMaster'
 import { GMX, ETH, USDC, USDT, WETH } from '@constants/tokens/bridgeable'
 import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
@@ -69,6 +70,25 @@ const getBridgeableTokens = (): TokensByChain => {
   return bridgeableTokens
 }
 
+const getGasTokens = (): TokensByChain => {
+  const gasTokens: TokensByChain = {}
+  Object.entries(allGasTokens).map(([key, token]) => {
+    for (const cID of Object.keys(token.addresses)) {
+      // Skip if the token is paused on the current chain
+      if (PAUSED_TOKENS_BY_CHAIN[cID]?.includes(key)) continue
+
+      if (!gasTokens[cID]) {
+        gasTokens[cID] = [token]
+      } else {
+        if (!gasTokens[cID]?.includes(token)) {
+          gasTokens[cID] = [...gasTokens[cID], token]
+        }
+      }
+    }
+  })
+  return gasTokens
+}
+
 const getTokenHashMap = () => {
   const tokenHashMap = {}
 
@@ -93,6 +113,7 @@ export const TOKENS_SORTED_BY_SYMBOL = Array.from(
   new Set(sortedTokens.map((token) => token.symbol))
 )
 export const BRIDGABLE_TOKENS = getBridgeableTokens()
+export const GAS_TOKENS = getGasTokens()
 
 export const tokenSymbolToToken = (chainId: number, symbol: string) => {
   if (chainId) {
