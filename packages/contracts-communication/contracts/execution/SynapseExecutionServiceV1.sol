@@ -31,12 +31,12 @@ contract SynapseExecutionServiceV1 is
         _disableInitializers();
     }
 
-    function initialize(address admin) external initializer {
+    function initialize(address admin) external virtual initializer {
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
     }
 
     /// @inheritdoc ISynapseExecutionServiceV1
-    function setExecutorEOA(address executorEOA_) external onlyRole(GOVERNOR_ROLE) {
+    function setExecutorEOA(address executorEOA_) external virtual onlyRole(GOVERNOR_ROLE) {
         if (executorEOA_ == address(0)) {
             revert SynapseExecutionService__ZeroAddress();
         }
@@ -46,7 +46,7 @@ contract SynapseExecutionServiceV1 is
     }
 
     /// @inheritdoc ISynapseExecutionServiceV1
-    function setGasOracle(address gasOracle_) external onlyRole(GOVERNOR_ROLE) {
+    function setGasOracle(address gasOracle_) external virtual onlyRole(GOVERNOR_ROLE) {
         if (gasOracle_ == address(0)) {
             revert SynapseExecutionService__ZeroAddress();
         }
@@ -64,6 +64,7 @@ contract SynapseExecutionServiceV1 is
         bytes memory options
     )
         external
+        virtual
         onlyRole(IC_CLIENT_ROLE)
     {
         uint256 requiredFee = getExecutionFee(dstChainId, txPayloadSize, options);
@@ -81,6 +82,7 @@ contract SynapseExecutionServiceV1 is
     )
         public
         view
+        virtual
         returns (uint256 executionFee)
     {
         address cachedGasOracle = gasOracle();
@@ -108,13 +110,13 @@ contract SynapseExecutionServiceV1 is
     }
 
     /// @inheritdoc IExecutionService
-    function executorEOA() public view returns (address) {
+    function executorEOA() public view virtual returns (address) {
         SynapseExecutionServiceV1Storage storage $ = _getSynapseExecutionServiceV1Storage();
         return $.executorEOA;
     }
 
     /// @inheritdoc ISynapseExecutionServiceV1
-    function gasOracle() public view returns (address) {
+    function gasOracle() public view virtual returns (address) {
         SynapseExecutionServiceV1Storage storage $ = _getSynapseExecutionServiceV1Storage();
         return $.gasOracle;
     }
