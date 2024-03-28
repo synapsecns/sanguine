@@ -31,7 +31,9 @@ contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
             revert MessageBus__NotEVMReceiver(receiver);
         }
         uint64 cachedNonce = nonce++;
-        // TODO: do we want to include dbNonce/entryIndex here to enforce non-replayability?
+        // Note: we are using the internal nonce here to generate the unique message ID.
+        // This is used for tracking purposes and is not used for replay protection.
+        // Instead, we rely on the Interchain Client to provide replay protection.
         bytes memory encodedLegacyMsg = LegacyMessageLib.encodeLegacyMessage({
             srcSender: msg.sender,
             dstReceiver: dstReceiver,
@@ -94,12 +96,11 @@ contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
     {
         (address srcSender, address dstReceiver, uint64 srcNonce, bytes memory message) =
             LegacyMessageLib.decodeLegacyMessage(encodedLegacyMsg);
-        // TODO: do we want to enforce non-replayability here, or do we rely on InterchainClient?
+        // Note: we rely on the Interchain Client to provide replay protection.
         ILegacyReceiver(dstReceiver).executeMessage({
             srcAddress: TypeCasts.addressToBytes32(srcSender),
             srcChainId: srcChainId,
             message: message,
-            // TODO: this is Interchain Client address. Do we need executor EOA instead (tx.origin)?
             executor: msg.sender
         });
         emit Executed({
