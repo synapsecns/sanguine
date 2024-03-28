@@ -1,4 +1,4 @@
-package detector_test
+package moduledetector_test
 
 import (
 	"github.com/Flaque/filet"
