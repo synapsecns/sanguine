@@ -199,14 +199,14 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         }
     }
 
+    /// @notice Decodes the encoded options data into a OptionsV1 struct.
+    function decodeOptions(bytes memory encodedOptions) external view returns (OptionsV1 memory) {
+        return encodedOptions.decodeOptionsV1();
+    }
+
     /// @notice Encodes the transaction data into a bytes format.
     function encodeTransaction(InterchainTransaction memory icTx) external pure returns (bytes memory) {
         return icTx.encodeTransaction();
-    }
-
-    /// @notice Decodes the encoded options data into a OptionsV1 struct.
-    function decodeOptions(bytes memory encodedOptions) external pure returns (OptionsV1 memory) {
-        return encodedOptions.decodeOptionsV1();
     }
 
     // ═════════════════════════════════════════════════ INTERNAL ══════════════════════════════════════════════════════
