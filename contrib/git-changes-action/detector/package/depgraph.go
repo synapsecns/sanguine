@@ -39,9 +39,9 @@ func getPackageDependencyGrap(repoPath string) (moduleDeps map[string][]string, 
 	var dependencies map[string]map[string]struct{}
 
 	// iterate through each module in the go.work file
-	// create a list of dependencies for each package 
-	// and generate a list of packages per module 
-  // nolint: gocognit
+	// create a list of dependencies for each package
+	// and generate a list of packages per module
+	// nolint: gocognit
 	dependencies, packagesPerModule, err = makePackageDepMaps(repoPath, parsedWorkFile.Use)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create dependency maps: %w", err)
