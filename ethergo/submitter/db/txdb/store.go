@@ -54,7 +54,7 @@ func (s *Store) MarkAllBeforeOrAtNonceReplacedOrConfirmed(ctx context.Context, s
 		Where(fmt.Sprintf("%s <= ?", nonceFieldName), nonce).
 		Where(fmt.Sprintf("`%s` = ?", fromFieldName), signer.String()).
 		// just in case we're updating a tx already marked as confirmed
-		Where(fmt.Sprintf("%s IN ?", statusFieldName), []int{int(db.Submitted.Int()), int(db.FailedSubmit.Int())}).
+		Where(fmt.Sprintf("%s IN ?", statusFieldName), []int{int(db.Pending.Int()), int(db.Stored.Int()), int(db.Submitted.Int()), int(db.FailedSubmit.Int())}).
 		Updates(map[string]interface{}{statusFieldName: db.ReplacedOrConfirmed.Int()})
 
 	if dbTX.Error != nil {
