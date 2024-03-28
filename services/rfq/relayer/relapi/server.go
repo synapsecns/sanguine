@@ -75,7 +75,7 @@ func NewRelayerAPI(
 		if err != nil {
 			return nil, fmt.Errorf("could not get deploy block: %w", err)
 		}
-		chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(rfqAddr), uint64(startBlock.Int64()), handler)
+		chainListener, err := listener.NewChainListener(chainClient, store, []common.Address{common.HexToAddress(rfqAddr)}, uint64(startBlock.Int64()), handler)
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain listener: %w", err)
 		}

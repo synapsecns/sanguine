@@ -77,6 +77,7 @@ type txSubmitterImpl struct {
 //
 //go:generate go run github.com/vektra/mockery/v2 --name ClientFetcher --output ./mocks --case=underscore
 type ClientFetcher interface {
+	// GetClient returns the chain client for the given chain id.
 	GetClient(ctx context.Context, chainID *big.Int) (client.EVM, error)
 }
 

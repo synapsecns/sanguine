@@ -1,0 +1,24 @@
+type InterchainTransactionSent {
+  transactionId: String
+  dbNonce: Int
+  entryIndex: Int
+  dstChainId: Int
+  srcSender: String
+  dstReceiver: String
+  verificationFee: String
+  executionFee: String
+  options: String
+  message: String
+  raw: String
+}
+
+type InterchainTransactionReceived {
+  transactionId: String
+  dbNonce: Int
+  entryIndex: Int
+  srcChainId: Int
+  srcSender: String
+  dstReceiver: String
+  raw: String
+}
+

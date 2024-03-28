@@ -78,7 +78,7 @@ func NewExecutor(ctx context.Context, handler metrics.Handler, cfg config.Config
 			return nil, fmt.Errorf("could not get block number: %w", err)
 		}
 
-		chainListener, err := listener.NewChainListener(chainClient, executor.db, executionService, blockNum, handler)
+		chainListener, err := listener.NewChainListener(chainClient, executor.db, []common.Address{executionService}, blockNum, handler)
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain listener: %w", err)
 		}
@@ -249,12 +249,12 @@ const defaultDBInterval = 3
 func (e *Executor) runChainIndexer(parentCtx context.Context, chainID int) (err error) {
 	chainListener := e.chainListeners[chainID]
 
-	clientParser, err := interchainclient.NewParser(chainListener.Address())
+	clientParser, err := interchainclient.NewParser(chainListener.Addresses()[0])
 	if err != nil {
 		return fmt.Errorf("could not parse: %w", err)
 	}
 
-	executionServiceParser, err := executionservice.NewParser(chainListener.Address())
+	executionServiceParser, err := executionservice.NewParser(chainListener.Addresses()[0])
 	if err != nil {
 		return fmt.Errorf("could not parse: %w", err)
 	}

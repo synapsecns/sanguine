@@ -121,7 +121,7 @@ func (c *rebalanceManagerSynapseCCTP) initListeners(ctx context.Context) (err er
 		if err != nil {
 			return fmt.Errorf("could not get cctp start block: %w", err)
 		}
-		chainListener, err := listener.NewChainListener(chainClient, c.db, common.HexToAddress(cctpAddr), initialBlock, c.handler)
+		chainListener, err := listener.NewChainListener(chainClient, c.db, []common.Address{common.HexToAddress(cctpAddr)}, initialBlock, c.handler)
 		if err != nil {
 			return fmt.Errorf("could not get chain listener: %w", err)
 		}

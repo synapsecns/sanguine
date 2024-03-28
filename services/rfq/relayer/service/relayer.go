@@ -86,7 +86,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		if err != nil {
 			return nil, fmt.Errorf("could not get deploy block: %w", err)
 		}
-		chainListener, err := listener.NewChainListener(chainClient, store, common.HexToAddress(rfqAddr), uint64(startBlock.Int64()), metricHandler)
+		chainListener, err := listener.NewChainListener(chainClient, store, []common.Address{common.HexToAddress(rfqAddr)}, uint64(startBlock.Int64()), metricHandler)
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain listener: %w", err)
 		}

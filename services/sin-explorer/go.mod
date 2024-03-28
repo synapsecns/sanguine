@@ -12,6 +12,7 @@ replace (
 	github.com/synapsecns/sanguine/ethergo => ./../../ethergo
 	github.com/synapsecns/sanguine/services/omnirpc => ../omnirpc
 	github.com/synapsecns/sanguine/tools => ./../../tools
+	github.com/synapsecns/sanguine/sin-executor => ../../sin-executor
 
 )
 

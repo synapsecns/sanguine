@@ -27,8 +27,8 @@ type ContractListener interface {
 	// LatestBlock gets the last recorded latest block from the rpc.
 	// this is NOT last indexed. It is provided as a helper for checking confirmation count
 	LatestBlock() uint64
-	// Address gets the address of the contract this listener is listening to
-	Address() common.Address
+	// Addresses gets the address of the contract this listener is listening to
+	Addresses() []common.Address
 }
 
 // HandleLog is the handler for a log event
@@ -37,7 +37,7 @@ type HandleLog func(ctx context.Context, log types.Log) error
 
 type chainListener struct {
 	client       client.EVM
-	address      common.Address
+	addresses    []common.Address
 	initialBlock uint64
 	store        db2.ChainListenerDB
 	handler      metrics.Handler
@@ -56,10 +56,10 @@ var (
 )
 
 // NewChainListener creates a new chain listener.
-func NewChainListener(omnirpcClient client.EVM, store db2.ChainListenerDB, address common.Address, initialBlock uint64, handler metrics.Handler) (ContractListener, error) {
+func NewChainListener(omnirpcClient client.EVM, store db2.ChainListenerDB, addresses []common.Address, initialBlock uint64, handler metrics.Handler) (ContractListener, error) {
 	return &chainListener{
 		handler:      handler,
-		address:      address,
+		addresses:    addresses,
 		initialBlock: initialBlock,
 		store:        store,
 		client:       omnirpcClient,
@@ -95,8 +95,8 @@ func (c *chainListener) Listen(ctx context.Context, handler HandleLog) (err erro
 	}
 }
 
-func (c *chainListener) Address() common.Address {
-	return c.address
+func (c *chainListener) Addresses() []common.Address {
+	return c.addresses
 }
 
 func (c *chainListener) LatestBlock() uint64 {
@@ -224,6 +224,6 @@ func (c chainListener) buildFilterQuery(fromBlock, toBlock uint64) ethereum.Filt
 	return ethereum.FilterQuery{
 		FromBlock: new(big.Int).SetUint64(fromBlock),
 		ToBlock:   new(big.Int).SetUint64(toBlock),
-		Addresses: []common.Address{c.address},
+		Addresses: c.addresses,
 	}
 }
