@@ -92,6 +92,17 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
         return OptionsLib.encodeVersionedOptions(2, data);
     }
 
+    function requestExecution(address caller, uint256 executionFee, bytes memory options) internal {
+        vm.prank(caller);
+        service.requestExecution({
+            dstChainId: REMOTE_CHAIN_ID,
+            txPayloadSize: MOCK_CALLDATA_SIZE,
+            transactionId: MOCK_TX_ID,
+            executionFee: executionFee,
+            options: options
+        });
+    }
+
     function test_getExecutionFee_noAirdrop() public {
         uint256 fee = service.getExecutionFee({
             dstChainId: REMOTE_CHAIN_ID,
@@ -121,225 +132,99 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
 
     function test_requestExecution_clientA_noAirdrop_exactFee() public {
         expectEventExecutionRequested(MOCK_TX_ID, icClientA);
-        vm.prank(icClientA);
-        service.requestExecution({
-            dstChainId: REMOTE_CHAIN_ID,
-            txPayloadSize: MOCK_CALLDATA_SIZE,
-            transactionId: MOCK_TX_ID,
-            executionFee: MOCK_FEE_NO_AIRDROP,
-            options: encodedOptionsNoAirdrop
-        });
+        requestExecution(icClientA, MOCK_FEE_NO_AIRDROP, encodedOptionsNoAirdrop);
     }
 
     function test_requestExecution_clientA_noAirdrop_higherFee() public {
         expectEventExecutionRequested(MOCK_TX_ID, icClientA);
-        vm.prank(icClientA);
-        service.requestExecution({
-            dstChainId: REMOTE_CHAIN_ID,
-            txPayloadSize: MOCK_CALLDATA_SIZE,
-            transactionId: MOCK_TX_ID,
-            executionFee: MOCK_FEE_NO_AIRDROP + 1,
-            options: encodedOptionsNoAirdrop
-        });
+        requestExecution(icClientA, MOCK_FEE_NO_AIRDROP + 1, encodedOptionsNoAirdrop);
     }
 
     function test_requestExecution_clientA_noAirdrop_revert_lowerFee() public {
         expectRevertFeeAmountTooLow(MOCK_FEE_NO_AIRDROP - 1, MOCK_FEE_NO_AIRDROP);
-        vm.prank(icClientA);
-        service.requestExecution({
-            dstChainId: REMOTE_CHAIN_ID,
-            txPayloadSize: MOCK_CALLDATA_SIZE,
-            transactionId: MOCK_TX_ID,
-            executionFee: MOCK_FEE_NO_AIRDROP - 1,
-            options: encodedOptionsNoAirdrop
-        });
+        requestExecution(icClientA, MOCK_FEE_NO_AIRDROP - 1, encodedOptionsNoAirdrop);
     }
 
     function test_requestExecution_clientA_noAirdrop_revert_unsupportedOptionsVersion() public {
         bytes memory optionsV2 = getMockOptionsV2();
         expectRevertOptionsVersionNotSupported(2);
-        vm.prank(icClientA);
-        service.requestExecution({
-            dstChainId: REMOTE_CHAIN_ID,
-            txPayloadSize: MOCK_CALLDATA_SIZE,
-            transactionId: MOCK_TX_ID,
-            executionFee: MOCK_FEE_NO_AIRDROP,
-            options: optionsV2
-        });
+        requestExecution(icClientA, MOCK_FEE_NO_AIRDROP, optionsV2);
     }
 
     function test_requestExecution_clientA_withAirdrop_exactFee() public {
         expectEventExecutionRequested(MOCK_TX_ID, icClientA);
-        vm.prank(icClientA);
-        service.requestExecution({
-            dstChainId: REMOTE_CHAIN_ID,
-            txPayloadSize: MOCK_CALLDATA_SIZE,
-            transactionId: MOCK_TX_ID,
-            executionFee: MOCK_FEE_WITH_AIRDROP,
-            options: encodedOptionsWithAirdrop
-        });
+        requestExecution(icClientA, MOCK_FEE_WITH_AIRDROP, encodedOptionsWithAirdrop);
     }
 
     function test_requestExecution_clientA_withAirdrop_higherFee() public {
         expectEventExecutionRequested(MOCK_TX_ID, icClientA);
-        vm.prank(icClientA);
-        service.requestExecution({
-            dstChainId: REMOTE_CHAIN_ID,
-            txPayloadSize: MOCK_CALLDATA_SIZE,
-            transactionId: MOCK_TX_ID,
-            executionFee: MOCK_FEE_WITH_AIRDROP + 1,
-            options: encodedOptionsWithAirdrop
-        });
+        requestExecution(icClientA, MOCK_FEE_WITH_AIRDROP + 1, encodedOptionsWithAirdrop);
     }
 
     function test_requestExecution_clientA_withAirdrop_revert_lowerFee() public {
         expectRevertFeeAmountTooLow(MOCK_FEE_WITH_AIRDROP - 1, MOCK_FEE_WITH_AIRDROP);
-        vm.prank(icClientA);
-        service.requestExecution({
-            dstChainId: REMOTE_CHAIN_ID,
-            txPayloadSize: MOCK_CALLDATA_SIZE,
-            transactionId: MOCK_TX_ID,
-            executionFee: MOCK_FEE_WITH_AIRDROP - 1,
-            options: encodedOptionsWithAirdrop
-        });
+        requestExecution(icClientA, MOCK_FEE_WITH_AIRDROP - 1, encodedOptionsWithAirdrop);
     }
 
     function test_requestExecution_clientA_withAirdrop_revert_unsupportedOptionsVersion() public {
         bytes memory optionsV2 = getMockOptionsV2();
         expectRevertOptionsVersionNotSupported(2);
-        vm.prank(icClientA);
-        service.requestExecution({
-            dstChainId: REMOTE_CHAIN_ID,
-            txPayloadSize: MOCK_CALLDATA_SIZE,
-            transactionId: MOCK_TX_ID,
-            executionFee: MOCK_FEE_WITH_AIRDROP,
-            options: optionsV2
-        });
+        requestExecution(icClientA, MOCK_FEE_WITH_AIRDROP, optionsV2);
     }
 
     function test_requestExecution_clientB_noAirdrop_exactFee() public {
         expectEventExecutionRequested(MOCK_TX_ID, icClientB);
-        vm.prank(icClientB);
-        service.requestExecution({
-            dstChainId: REMOTE_CHAIN_ID,
-            txPayloadSize: MOCK_CALLDATA_SIZE,
-            transactionId: MOCK_TX_ID,
-            executionFee: MOCK_FEE_NO_AIRDROP,
-            options: encodedOptionsNoAirdrop
-        });
+        requestExecution(icClientB, MOCK_FEE_NO_AIRDROP, encodedOptionsNoAirdrop);
     }
 
     function test_requestExecution_clientB_noAirdrop_higherFee() public {
         expectEventExecutionRequested(MOCK_TX_ID, icClientB);
-        vm.prank(icClientB);
-        service.requestExecution({
-            dstChainId: REMOTE_CHAIN_ID,
-            txPayloadSize: MOCK_CALLDATA_SIZE,
-            transactionId: MOCK_TX_ID,
-            executionFee: MOCK_FEE_NO_AIRDROP + 1,
-            options: encodedOptionsNoAirdrop
-        });
+        requestExecution(icClientB, MOCK_FEE_NO_AIRDROP + 1, encodedOptionsNoAirdrop);
     }
 
     function test_requestExecution_clientB_noAirdrop_revert_lowerFee() public {
         expectRevertFeeAmountTooLow(MOCK_FEE_NO_AIRDROP - 1, MOCK_FEE_NO_AIRDROP);
-        vm.prank(icClientB);
-        service.requestExecution({
-            dstChainId: REMOTE_CHAIN_ID,
-            txPayloadSize: MOCK_CALLDATA_SIZE,
-            transactionId: MOCK_TX_ID,
-            executionFee: MOCK_FEE_NO_AIRDROP - 1,
-            options: encodedOptionsNoAirdrop
-        });
+        requestExecution(icClientB, MOCK_FEE_NO_AIRDROP - 1, encodedOptionsNoAirdrop);
     }
 
     function test_requestExecution_clientB_noAirdrop_revert_unsupportedOptionsVersion() public {
         bytes memory optionsV2 = getMockOptionsV2();
         expectRevertOptionsVersionNotSupported(2);
-        vm.prank(icClientB);
-        service.requestExecution({
-            dstChainId: REMOTE_CHAIN_ID,
-            txPayloadSize: MOCK_CALLDATA_SIZE,
-            transactionId: MOCK_TX_ID,
-            executionFee: MOCK_FEE_NO_AIRDROP,
-            options: optionsV2
-        });
+        requestExecution(icClientB, MOCK_FEE_NO_AIRDROP, optionsV2);
     }
 
     function test_requestExecution_clientB_withAirdrop_exactFee() public {
         expectEventExecutionRequested(MOCK_TX_ID, icClientB);
-        vm.prank(icClientB);
-        service.requestExecution({
-            dstChainId: REMOTE_CHAIN_ID,
-            txPayloadSize: MOCK_CALLDATA_SIZE,
-            transactionId: MOCK_TX_ID,
-            executionFee: MOCK_FEE_WITH_AIRDROP,
-            options: encodedOptionsWithAirdrop
-        });
+        requestExecution(icClientB, MOCK_FEE_WITH_AIRDROP, encodedOptionsWithAirdrop);
     }
 
     function test_requestExecution_clientB_withAirdrop_higherFee() public {
         expectEventExecutionRequested(MOCK_TX_ID, icClientB);
-        vm.prank(icClientB);
-        service.requestExecution({
-            dstChainId: REMOTE_CHAIN_ID,
-            txPayloadSize: MOCK_CALLDATA_SIZE,
-            transactionId: MOCK_TX_ID,
-            executionFee: MOCK_FEE_WITH_AIRDROP + 1,
-            options: encodedOptionsWithAirdrop
-        });
+        requestExecution(icClientB, MOCK_FEE_WITH_AIRDROP + 1, encodedOptionsWithAirdrop);
     }
 
     function test_requestExecution_clientB_withAirdrop_revert_lowerFee() public {
         expectRevertFeeAmountTooLow(MOCK_FEE_WITH_AIRDROP - 1, MOCK_FEE_WITH_AIRDROP);
-        vm.prank(icClientB);
-        service.requestExecution({
-            dstChainId: REMOTE_CHAIN_ID,
-            txPayloadSize: MOCK_CALLDATA_SIZE,
-            transactionId: MOCK_TX_ID,
-            executionFee: MOCK_FEE_WITH_AIRDROP - 1,
-            options: encodedOptionsWithAirdrop
-        });
+        requestExecution(icClientB, MOCK_FEE_WITH_AIRDROP - 1, encodedOptionsWithAirdrop);
     }
 
     function test_requestExecution_clientB_withAirdrop_revert_unsupportedOptionsVersion() public {
         bytes memory optionsV2 = getMockOptionsV2();
         expectRevertOptionsVersionNotSupported(2);
-        vm.prank(icClientB);
-        service.requestExecution({
-            dstChainId: REMOTE_CHAIN_ID,
-            txPayloadSize: MOCK_CALLDATA_SIZE,
-            transactionId: MOCK_TX_ID,
-            executionFee: MOCK_FEE_WITH_AIRDROP,
-            options: optionsV2
-        });
+        requestExecution(icClientB, MOCK_FEE_WITH_AIRDROP, optionsV2);
     }
 
     function test_requestExecution_noAirdrop_revert_notInterchainClient(address caller) public {
         assumeNotProxyAdmin({target: address(service), caller: caller});
         vm.assume(caller != icClientA && caller != icClientB);
         expectRevertNotInterchainClient(caller);
-        vm.prank(caller);
-        service.requestExecution({
-            dstChainId: REMOTE_CHAIN_ID,
-            txPayloadSize: MOCK_CALLDATA_SIZE,
-            transactionId: MOCK_TX_ID,
-            executionFee: MOCK_FEE_NO_AIRDROP,
-            options: encodedOptionsNoAirdrop
-        });
+        requestExecution(caller, MOCK_FEE_NO_AIRDROP, encodedOptionsNoAirdrop);
     }
 
     function test_requestExecution_withAirdrop_revert_notInterchainClient(address caller) public {
         assumeNotProxyAdmin({target: address(service), caller: caller});
         vm.assume(caller != icClientA && caller != icClientB);
         expectRevertNotInterchainClient(caller);
-        vm.prank(caller);
-        service.requestExecution({
-            dstChainId: REMOTE_CHAIN_ID,
-            txPayloadSize: MOCK_CALLDATA_SIZE,
-            transactionId: MOCK_TX_ID,
-            executionFee: MOCK_FEE_WITH_AIRDROP,
-            options: encodedOptionsWithAirdrop
-        });
+        requestExecution(caller, MOCK_FEE_WITH_AIRDROP, encodedOptionsWithAirdrop);
     }
 }
