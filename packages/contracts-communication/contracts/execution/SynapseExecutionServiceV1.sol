@@ -23,6 +23,7 @@ contract SynapseExecutionServiceV1 is
     // keccak256(abi.encode(uint256(keccak256("Synapse.ExecutionService.V1")) - 1)) & ~bytes32(uint256(0xff));
     bytes32 private constant SYNAPSE_EXECUTION_SERVICE_V1_STORAGE_LOCATION =
         0xabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e3100;
+    uint256 private constant WAD = 10 ** 18;
 
     bytes32 public constant GOVERNOR_ROLE = keccak256("GOVERNOR_ROLE");
     bytes32 public constant IC_CLIENT_ROLE = keccak256("IC_CLIENT_ROLE");
@@ -103,7 +104,6 @@ contract SynapseExecutionServiceV1 is
             revert SynapseExecutionService__OptionsVersionNotSupported(version);
         }
         OptionsV1 memory optionsV1 = OptionsLib.decodeOptionsV1(options);
-        // TODO: there should be a markup applied to the execution fee
         executionFee = IGasOracle(cachedGasOracle).estimateTxCostInLocalUnits({
             remoteChainId: dstChainId,
             gasLimit: optionsV1.gasLimit,
@@ -115,6 +115,7 @@ contract SynapseExecutionServiceV1 is
                 value: optionsV1.gasAirdrop
             });
         }
+        executionFee += executionFee * globalMarkup() / WAD;
     }
 
     /// @inheritdoc IExecutionService
