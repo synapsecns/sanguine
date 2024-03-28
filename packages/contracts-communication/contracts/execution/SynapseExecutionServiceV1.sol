@@ -5,6 +5,7 @@ import {IExecutionService, ISynapseExecutionServiceV1} from "../interfaces/ISyna
 import {SynapseExecutionServiceEvents} from "../events/SynapseExecutionServiceEvents.sol";
 import {IGasOracle} from "../interfaces/IGasOracle.sol";
 import {OptionsLib, OptionsV1} from "../libs/Options.sol";
+import {VersionedPayloadLib} from "../libs/VersionedPayload.sol";
 
 import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
@@ -70,7 +71,7 @@ contract SynapseExecutionServiceV1 is
         uint256 txPayloadSize,
         bytes32 transactionId,
         uint256 executionFee,
-        bytes memory options
+        bytes calldata options
     )
         external
         virtual
@@ -87,7 +88,7 @@ contract SynapseExecutionServiceV1 is
     function getExecutionFee(
         uint256 dstChainId,
         uint256 txPayloadSize,
-        bytes memory options
+        bytes calldata options
     )
         public
         view
@@ -98,8 +99,9 @@ contract SynapseExecutionServiceV1 is
         if (cachedGasOracle == address(0)) {
             revert SynapseExecutionService__GasOracleNotSet();
         }
-        // TODO: the "exact version" check should be generalized
-        (uint8 version,) = OptionsLib.decodeVersionedOptions(options);
+        // ExecutionServiceV1 implementation only supports Options V1.
+        // Following versions will be supported by the future implementations.
+        uint16 version = VersionedPayloadLib.getVersion(options);
         if (version > OptionsLib.OPTIONS_V1) {
             revert SynapseExecutionService__OptionsVersionNotSupported(version);
         }

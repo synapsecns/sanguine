@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {OptionsLib, OptionsV1} from "../../contracts/libs/Options.sol";
+import {OptionsV1} from "../../contracts/libs/Options.sol";
+import {VersionedPayloadLib} from "../../contracts/libs/VersionedPayload.sol";
 
 import {SynapseExecutionServiceV1Test} from "./SynapseExecutionServiceV1.t.sol";
 
@@ -98,8 +99,8 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
 
     function getMockOptionsV2() internal view returns (bytes memory) {
         bytes memory optionsV1 = optionsNoAirdrop.encodeOptionsV1();
-        (, bytes memory data) = OptionsLib.decodeVersionedOptions(optionsV1);
-        return OptionsLib.encodeVersionedOptions(2, data);
+        bytes memory data = VersionedPayloadLib.getPayloadFromMemory(optionsV1);
+        return VersionedPayloadLib.encodeVersionedPayload(2, data);
     }
 
     function requestExecution(address caller, uint256 executionFee, bytes memory options) internal {
@@ -152,12 +153,9 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
     }
 
     function test_getExecutionFee_revert_unsupportedOptionsVersion() public {
+        bytes memory optionsV2 = getMockOptionsV2();
         expectRevertOptionsVersionNotSupported(2);
-        service.getExecutionFee({
-            dstChainId: REMOTE_CHAIN_ID,
-            txPayloadSize: MOCK_CALLDATA_SIZE,
-            options: getMockOptionsV2()
-        });
+        service.getExecutionFee({dstChainId: REMOTE_CHAIN_ID, txPayloadSize: MOCK_CALLDATA_SIZE, options: optionsV2});
     }
 
     function test_requestExecution_clientA_noAirdrop_exactFee() public {
