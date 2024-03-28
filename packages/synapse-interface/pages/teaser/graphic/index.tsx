@@ -60,7 +60,7 @@ const LandingPage = () => {
           }`}
         </style>
         <defs>
-          <path id="simpleBridgePath" d="m0 -200 -400 200" />
+          <path id="simpleBridgePath" d="m-25 -187.5 -350 175" />
           <g id="box" transform="scale(.25,.25)">
             <path
               d="m0,50 100,-50 0,-111.8 -100,-50 -100,50 0,111.8 100,50"
@@ -131,36 +131,59 @@ const LandingPage = () => {
             fill="freeze"
           />
         </defs>
-        <path
-          id="simple-bridge-ne"
-          d="m-120,-160 40,20 -200,100 -40,-20z"
-          fill="var(--fill-synapse"
-          stroke="var(--stroke-synapse)"
-        />
+        <path fill="var(--fill-synapse" stroke="var(--stroke-synapse)">
+          <animate
+            id="simpleBridgeNe"
+            attributeName="d"
+            values="m-200,-100 0,0 0,0 0,0z; m-100,-150 0,0 -200,100 0,0z; m-120,-160 40,20 -200,100 -40,-20z"
+            dur=".5s"
+            begin="platformYellow.end + 2s"
+            calcMode="spline"
+            keyTimes="0; .5; 1"
+            keySplines=".5 0 .2 1; .5 0 .2 1"
+            fill="freeze"
+          />
+        </path>
         <path
           id="simple-bridge-sw"
           d="m280,40 40,20 -200,100 -40,-20z"
           fill="var(--fill-synapse"
           stroke="var(--stroke-synapse)"
         />
-        {/* <path
-          id="simple-bridge-ew"
-          d="m-240,-20 h480 v40 h-480z"
-          fill="var(--fill-synapse"
-          stroke="var(--stroke-synapse)"
-        /> */}
         <path
           id="dock1"
-          d="m-80,-300 40,20 -120,60 -40,-20z"
           fill="var(--fill-synapse"
           stroke="var(--stroke-synapse)"
-        />
+        >
+          <animate
+            id="dockN"
+            attributeName="d"
+            values="m-40,-240 0,0 0,0 0,0z; m-80,-300 40,20 -120,60 -40,-20z"
+            dur=".5s"
+            begin="simpleBridgeNe.end + 2s"
+            calcMode="spline"
+            keyTimes="0; 1"
+            keySplines=".5 0 .2 1"
+            fill="freeze"
+          />
+        </path>
         <path
-          id="dock2"
-          d="m-480,-100 40,20 -120,60 -40,-20z"
+          id="dock1"
           fill="var(--fill-synapse"
           stroke="var(--stroke-synapse)"
-        />
+        >
+          <animate
+            id="dockE"
+            attributeName="d"
+            values="m-440,-40 0,0 0,0 0,0z; m-480,-100 40,20 -120,60 -40,-20z"
+            dur=".5s"
+            begin="simpleBridgeNe.end + 2s"
+            calcMode="spline"
+            keyTimes="0; 1"
+            keySplines=".5 0 .2 1"
+            fill="freeze"
+          />
+        </path>
         <path
           id="airpad1"
           d="m200,-200 60,30 -60,30 -60,-30z"
@@ -337,23 +360,17 @@ const LandingPage = () => {
           <use href="#box" transform="translate(0,25)" />
         </g> */}
 
-        <g
-          id="barge"
-          style={
-            {
-              // animation: '2s ease-in-out 0s infinite alternate platformBob',
-            }
-          }
-        >
+        <g id="barge">
+          <animateMotion path="M200,-500" />
           <path
             d="m70,-75 100,50 -200,100 -100,-50z"
             fill="var(--fill-synapse)"
             stroke="var(--stroke-synapse)"
           />
           <animateMotion
-            id="bargeIn"
+            id="bargeOut"
             dur="2s"
-            begin="0s; bargeEnd.end + 2s"
+            begin="dockN.end; bargeIn.end"
             path="M200,-500 -200,-300"
             calcMode="spline"
             keyTimes="0; 1"
@@ -361,9 +378,9 @@ const LandingPage = () => {
             fill="freeze"
           />
           <animateMotion
-            id="bargeMid"
+            id="bargeCross"
             dur="2s"
-            begin="bargeIn.end + 2s"
+            begin="bargeOut.end + 2s"
             path="M-200,-300 -600,-100"
             calcMode="spline"
             keyTimes="0; 1"
@@ -371,9 +388,9 @@ const LandingPage = () => {
             fill="freeze"
           />
           <animateMotion
-            id="bargeEnd"
+            id="bargeIn"
             dur="2s"
-            begin="bargeMid.end + 2s"
+            begin="bargeCross.end + 2s"
             path="M-600,-100 -1000,100"
             calcMode="spline"
             keyTimes="0; 1"
@@ -381,73 +398,6 @@ const LandingPage = () => {
             fill="freeze"
           />
         </g>
-        <use
-          id="bargeBox"
-          href="#box"
-          stroke="hsl(195deg 80% 60%)"
-          fill="hsl(195deg 100% 5%)"
-        >
-          <animate
-            attributeName="opacity"
-            values="0; 1"
-            dur="2s"
-            begin="bargeIn.begin"
-          />
-          <animate
-            attributeName="stroke"
-            values="hsl(195deg 80% 60%)"
-            begin="bargeIn.begin"
-          />
-          <animateMotion
-            path="m-50,-225"
-            fill="freeze"
-            begin="0s; bargeIn.begin"
-          />
-          <animateMotion
-            dur="2s"
-            begin="bargeIn.end"
-            path="m-50,-225 -140,-70"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
-          />
-          <animateMotion
-            dur="2s"
-            begin="bargeMid.begin"
-            path="m-190,-295 -400,200"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
-          />
-          <animate
-            attributeName="stroke"
-            values="hsl(195deg 80% 60%); hsl(300deg 100% 40%); hsl(60deg 80% 60%)"
-            begin="bargeMid.begin + .5s"
-            dur=".5s"
-            calcMode="spline"
-            keyTimes="0; .5; 1"
-            keySplines=".33 0 .33 1; .33 0 .33 1"
-            fill="freeze"
-          />
-          <animateMotion
-            id="bargeBoxEnd"
-            dur="2s"
-            begin="bargeMid.end"
-            path="m-590,-95 164,82"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
-          />
-          <animate
-            attributeName="opacity"
-            values="1; 0"
-            dur="4s"
-            begin="bargeBoxEnd.end"
-          />
-        </use>
 
         <g id="teleportFromOrange" stroke="hsl(25deg 80% 60%)">
           <ellipse
@@ -928,16 +878,19 @@ const LandingPage = () => {
           <use href="#box" transform="translate(-25,12.5)" />
           <use href="#box" transform="translate(0,25)" />
         </g> */}
-        <g stroke="var(--stroke-blue)">
+        <g id="bargeCubeGroup" stroke="var(--stroke-blue)">
+          <animateMotion path="m-25 -212.5" />
           <animate
+            id="bargeCube"
             attributeName="opacity"
-            begin="platformBlue.end"
-            dur=".1s"
+            begin="dockN.end"
+            dur=".5s"
             values="0; 1"
+            fill="freeze"
           />
           <animateMotion
-            path="m0 -200 0 -12.5"
-            begin="platformBlue.end + .125s"
+            path="m-25 -212.5 0 -12.5"
+            begin="dockN.end + .125s"
             dur=".5s"
             calcMode="spline"
             keyPoints="0; 1; 0"
@@ -946,34 +899,47 @@ const LandingPage = () => {
             fill="freeze"
           />
           <animateMotion
-            id="blueCubeOut"
-            begin="platformYellow.end + 1s; blueCubeIn.end + 2s"
+            begin="bargeOut.end"
             dur="1s"
+            path="m-25 -212.5 -150 -75"
             calcMode="spline"
-            keyPoints="0; 1"
             keyTimes="0; 1"
             keySplines=".5 0 .2 1"
             fill="freeze"
-          >
-            <mpath href="#simpleBridgePath" />
-          </animateMotion>
+          />
           <animateMotion
-            id="blueCubeIn"
-            begin="blueCubeOut.end + 2s"
-            dur="1s"
+            begin="bargeCross.begin"
+            dur="2s"
+            path="m-175 -287.5 -400 200"
             calcMode="spline"
-            keyPoints="1; 0"
             keyTimes="0; 1"
             keySplines=".5 0 .2 1"
             fill="freeze"
-          >
-            <mpath href="#simpleBridgePath" />
-          </animateMotion>
+          />
+          <animate
+            attributeName="stroke"
+            values="hsl(195deg 80% 60%); hsl(300deg 100% 40%); hsl(60deg 80% 60%)"
+            begin="bargeCross.begin + .5s"
+            dur=".5s"
+            calcMode="spline"
+            keyTimes="0; .5; 1"
+            keySplines=".33 0 .33 1; .33 0 .33 1"
+            fill="freeze"
+          />
+          <animateMotion
+            begin="bargeCross.end"
+            dur="1s"
+            path="m-575 -87.5 150 75"
+            calcMode="spline"
+            keyTimes="0; 1"
+            keySplines=".5 0 .2 1"
+            fill="freeze"
+          />
           <path fill="var(--fill-blue)" vectorEffect="non-scaling-stroke">
             <animate
               attributeName="d"
               values="m0,12.5 25,-12.5 0,0 -25,-12.5 -25,12.5 0,0 25,12.5; m0,12.5 25,-12.5 0,-27.95 -25,-12.5 -25,12.5 0,27.95 25,12.5"
-              begin="platformBlue.end"
+              begin="dockN.end"
               dur=".25s"
               calcMode="spline"
               keyTimes="0; 1"
@@ -981,11 +947,12 @@ const LandingPage = () => {
               fill="freeze"
             />
           </path>
+
           <path vectorEffect="non-scaling-stroke">
             <animate
               attributeName="d"
               values="m-25,0 25,12.5 25,-12.5 m-25,12.5 0,0; m-25,-27.95 25,12.5 25,-12.5 m-25,12.5 0,27.95"
-              begin="platformBlue.end"
+              begin="dockN.end"
               dur=".25s"
               calcMode="spline"
               keyTimes="0; 1"
@@ -994,52 +961,29 @@ const LandingPage = () => {
             />
           </path>
         </g>
-        <g stroke="var(--stroke-yellow)">
+        <g id="platformCubeBlueGroup" stroke="var(--stroke-blue)">
+          <animateMotion path="m0 -200" />
           <animate
+            id="platformCubeBlue"
             attributeName="opacity"
-            begin="platformYellow.end"
-            dur=".1s"
+            begin="platformBlue.end"
+            dur=".5s"
             values="0; 1"
           />
           <animateMotion
-            path="m-400 0 0 -12.5"
-            begin="platformYellow.end + .125s"
+            path="m0 -200 0 -12.5"
+            begin="platformCubeBlue.begin + .125s"
             dur=".5s"
             calcMode="spline"
             keyPoints="0; 1; 0"
             keyTimes="0; .5; 1"
             keySplines="0 0 .5 1; .8 0 .5 1"
-            fill="freeze"
           />
-          <animateMotion
-            id="yellowCubeOut"
-            begin="blueCubeOut.begin"
-            dur="1s"
-            calcMode="spline"
-            keyPoints="1; 0"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
-          >
-            <mpath href="#simpleBridgePath" />
-          </animateMotion>
-          <animateMotion
-            id="yellowCubeIn"
-            begin="blueCubeIn.begin"
-            dur="1s"
-            calcMode="spline"
-            keyPoints="0; 1"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
-          >
-            <mpath href="#simpleBridgePath" />
-          </animateMotion>
-          <path fill="var(--fill-yellow)" vectorEffect="non-scaling-stroke">
+          <path fill="var(--fill-blue)" vectorEffect="non-scaling-stroke">
             <animate
               attributeName="d"
               values="m0,12.5 25,-12.5 0,0 -25,-12.5 -25,12.5 0,0 25,12.5; m0,12.5 25,-12.5 0,-27.95 -25,-12.5 -25,12.5 0,27.95 25,12.5"
-              begin="platformBlue.end"
+              begin="platformCubeBlue.begin"
               dur=".25s"
               calcMode="spline"
               keyTimes="0; 1"
@@ -1051,7 +995,198 @@ const LandingPage = () => {
             <animate
               attributeName="d"
               values="m-25,0 25,12.5 25,-12.5 m-25,12.5 0,0; m-25,-27.95 25,12.5 25,-12.5 m-25,12.5 0,27.95"
-              begin="platformBlue.end"
+              begin="platformCubeBlue.begin"
+              dur=".25s"
+              calcMode="spline"
+              keyTimes="0; 1"
+              keySplines=".5 0 .2 1"
+              fill="freeze"
+            />
+          </path>
+        </g>
+
+        <g id="bridgeCubeBlueGroup" stroke="var(--stroke-blue)">
+          <animateMotion path="m-25 -187.5" />
+          <animate
+            id="bridgeCubeBlue"
+            attributeName="opacity"
+            begin="simpleBridgeNe.begin + .5s"
+            dur=".5s"
+            values="0; 1"
+          />
+          <animateMotion
+            path="m-25 -187.5 0 -12.5"
+            begin="bridgeCubeBlue.begin + .125s"
+            dur=".5s"
+            calcMode="spline"
+            keyPoints="0; 1; 0"
+            keyTimes="0; .5; 1"
+            keySplines="0 0 .5 1; .8 0 .5 1"
+          />
+          <animateMotion
+            id="bridgeCubeBlueOut"
+            begin="bridgeCubeBlue.begin + 2s; bridgeCubeBlueIn.end + 2s"
+            dur="1s"
+            calcMode="spline"
+            keyPoints="0; 1"
+            keyTimes="0; 1"
+            keySplines=".5 0 .2 1"
+          >
+            <mpath href="#simpleBridgePath" />
+          </animateMotion>
+          <animate
+            attributeName="stroke"
+            values="hsl(195deg 80% 60%); hsl(300deg 100% 40%); hsl(60deg 80% 60%)"
+            begin="bridgeCubeBlueOut.begin + .5s; bridgeCubeBlueIn.begin + .5s"
+            dur=".5s"
+            calcMode="spline"
+            keyTimes="0; .5; 1"
+            keySplines=".33 0 .33 1; .33 0 .33 1"
+            fill="freeze"
+          />
+          <animateMotion
+            id="bridgeCubeBlueIn"
+            begin="bridgeCubeBlueOut.end + 2s"
+            dur="1s"
+            calcMode="spline"
+            keyPoints="1; 0"
+            keyTimes="0; 1"
+            keySplines=".5 0 .2 1"
+          >
+            <mpath href="#simpleBridgePath" />
+          </animateMotion>
+          <path fill="var(--fill-blue)" vectorEffect="non-scaling-stroke">
+            <animate
+              attributeName="d"
+              values="m0,12.5 25,-12.5 0,0 -25,-12.5 -25,12.5 0,0 25,12.5; m0,12.5 25,-12.5 0,-27.95 -25,-12.5 -25,12.5 0,27.95 25,12.5"
+              begin="bridgeCubeBlue.begin"
+              dur=".25s"
+              calcMode="spline"
+              keyTimes="0; 1"
+              keySplines=".5 0 .2 1"
+              fill="freeze"
+            />
+          </path>
+          <path vectorEffect="non-scaling-stroke">
+            <animate
+              attributeName="d"
+              values="m-25,0 25,12.5 25,-12.5 m-25,12.5 0,0; m-25,-27.95 25,12.5 25,-12.5 m-25,12.5 0,27.95"
+              begin="bridgeCubeBlue.begin"
+              dur=".25s"
+              calcMode="spline"
+              keyTimes="0; 1"
+              keySplines=".5 0 .2 1"
+              fill="freeze"
+            />
+          </path>
+        </g>
+        <g id="bridgeCubeYellowGroup" stroke="var(--stroke-yellow)">
+          <animateMotion path="m-375 -12.5" />
+          <animate
+            id="bridgeCubeYellow"
+            attributeName="opacity"
+            begin="bridgeCubeBlue.begin + .5s"
+            dur=".5s"
+            values="0; 1"
+          />
+          <animateMotion
+            path="m-375 -12.5 0 -12.5"
+            begin="bridgeCubeYellow.begin + .125s"
+            dur=".5s"
+            calcMode="spline"
+            keyPoints="0; 1; 0"
+            keyTimes="0; .5; 1"
+            keySplines="0 0 .5 1; .8 0 .5 1"
+          />
+          <animateMotion
+            begin="bridgeCubeBlueOut.begin"
+            dur="1s"
+            calcMode="spline"
+            keyPoints="1; 0"
+            keyTimes="0; 1"
+            keySplines=".5 0 .2 1"
+          >
+            <mpath href="#simpleBridgePath" />
+          </animateMotion>
+          <animate
+            attributeName="stroke"
+            values="hsl(60deg 80% 60%); hsl(300deg 100% 40%); hsl(195deg 80% 60%)"
+            begin="bridgeCubeBlueOut.begin + .5s; bridgeCubeBlueIn.begin + .5s"
+            dur=".5s"
+            calcMode="spline"
+            keyTimes="0; .5; 1"
+            keySplines=".33 0 .33 1; .33 0 .33 1"
+          />
+          <animateMotion
+            begin="bridgeCubeBlueIn.begin"
+            dur="1s"
+            calcMode="spline"
+            keyPoints="0; 1"
+            keyTimes="0; 1"
+            keySplines=".5 0 .2 1"
+          >
+            <mpath href="#simpleBridgePath" />
+          </animateMotion>
+          <path fill="var(--fill-yellow)" vectorEffect="non-scaling-stroke">
+            <animate
+              attributeName="d"
+              values="m0,12.5 25,-12.5 0,0 -25,-12.5 -25,12.5 0,0 25,12.5; m0,12.5 25,-12.5 0,-27.95 -25,-12.5 -25,12.5 0,27.95 25,12.5"
+              begin="bridgeCubeYellow.begin"
+              dur=".25s"
+              calcMode="spline"
+              keyTimes="0; 1"
+              keySplines=".5 0 .2 1"
+              fill="freeze"
+            />
+          </path>
+          <path vectorEffect="non-scaling-stroke">
+            <animate
+              attributeName="d"
+              values="m-25,0 25,12.5 25,-12.5 m-25,12.5 0,0; m-25,-27.95 25,12.5 25,-12.5 m-25,12.5 0,27.95"
+              begin="bridgeCubeYellow.begin"
+              dur=".25s"
+              calcMode="spline"
+              keyTimes="0; 1"
+              keySplines=".5 0 .2 1"
+              fill="freeze"
+            />
+          </path>
+        </g>
+        <g id="platformCubeYellowGroup" stroke="var(--stroke-yellow)">
+          <animateMotion path="m-400 0" />
+          <animate
+            id="platformCubeYellow"
+            attributeName="opacity"
+            begin="platformYellow.end"
+            dur=".5s"
+            values="0; 1"
+          />
+          <animateMotion
+            path="m-400 0 0 -12.5"
+            begin="platformCubeYellow.begin + .125s"
+            dur=".5s"
+            calcMode="spline"
+            keyPoints="0; 1; 0"
+            keyTimes="0; .5; 1"
+            keySplines="0 0 .5 1; .8 0 .5 1"
+          />
+          <path fill="var(--fill-blue)" vectorEffect="non-scaling-stroke">
+            <animate
+              attributeName="d"
+              values="m0,12.5 25,-12.5 0,0 -25,-12.5 -25,12.5 0,0 25,12.5; m0,12.5 25,-12.5 0,-27.95 -25,-12.5 -25,12.5 0,27.95 25,12.5"
+              begin="platformCubeYellow.begin"
+              dur=".25s"
+              calcMode="spline"
+              keyTimes="0; 1"
+              keySplines=".5 0 .2 1"
+              fill="freeze"
+            />
+          </path>
+          <path vectorEffect="non-scaling-stroke">
+            <animate
+              attributeName="d"
+              values="m-25,0 25,12.5 25,-12.5 m-25,12.5 0,0; m-25,-27.95 25,12.5 25,-12.5 m-25,12.5 0,27.95"
+              begin="platformCubeYellow.begin"
               dur=".25s"
               calcMode="spline"
               keyTimes="0; 1"
