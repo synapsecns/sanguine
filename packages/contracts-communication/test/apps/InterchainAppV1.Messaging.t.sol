@@ -336,7 +336,7 @@ abstract contract InterchainAppV1MessagingTest is InterchainAppV1Test {
         uint256 fee = appHarness.exposed__getInterchainFee({
             dstChainId: REMOTE_CHAIN_ID,
             options: encodedOptions,
-            message: message
+            messageLen: message.length
         });
         assertEq(fee, MOCK_IC_FEE);
     }
@@ -345,13 +345,20 @@ abstract contract InterchainAppV1MessagingTest is InterchainAppV1Test {
         vm.prank(governor);
         appHarness.setLatestInterchainClient(address(0));
         expectRevertInterchainClientZeroAddress();
-        appHarness.exposed__getInterchainFee({dstChainId: REMOTE_CHAIN_ID, options: encodedOptions, message: message});
+        appHarness.exposed__getInterchainFee({
+            dstChainId: REMOTE_CHAIN_ID,
+            options: encodedOptions,
+            messageLen: message.length
+        });
     }
 
     function test_getMessageFee() public {
         mockInterchainFeeResult();
-        uint256 fee =
-            appHarness.exposed__getMessageFee({dstChainId: REMOTE_CHAIN_ID, options: options, message: message});
+        uint256 fee = appHarness.exposed__getMessageFee({
+            dstChainId: REMOTE_CHAIN_ID,
+            options: options,
+            messageLen: message.length
+        });
         assertEq(fee, MOCK_IC_FEE);
     }
 
@@ -359,6 +366,6 @@ abstract contract InterchainAppV1MessagingTest is InterchainAppV1Test {
         vm.prank(governor);
         appHarness.setLatestInterchainClient(address(0));
         expectRevertInterchainClientZeroAddress();
-        appHarness.exposed__getMessageFee({dstChainId: REMOTE_CHAIN_ID, options: options, message: message});
+        appHarness.exposed__getMessageFee({dstChainId: REMOTE_CHAIN_ID, options: options, messageLen: message.length});
     }
 }

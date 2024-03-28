@@ -11,7 +11,7 @@ contract MessageBusManagementTest is MessageBusBaseTest {
     function mockInterchainFees(uint256 length) internal {
         bytes memory expectedCalldata = abi.encodeCall(
             InterchainClientV1Mock.getInterchainFee,
-            (REMOTE_CHAIN_ID, execService, icModules, icOptions, new bytes(length))
+            (REMOTE_CHAIN_ID, execService, icModules, icOptions, length)
         );
         vm.mockCall(icClient, expectedCalldata, abi.encode(MOCK_FEE));
     }
