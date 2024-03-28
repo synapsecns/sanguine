@@ -121,6 +121,7 @@ contract SynapseExecutionServiceV1 is
 
     /// @dev ERC-7201 slot accessor
     function _getSynapseExecutionServiceV1Storage() private pure returns (SynapseExecutionServiceV1Storage storage $) {
+        // solhint-disable-next-line no-inline-assembly
         assembly {
             $.slot := SYNAPSE_EXECUTION_SERVICE_V1_STORAGE_LOCATION
         }
