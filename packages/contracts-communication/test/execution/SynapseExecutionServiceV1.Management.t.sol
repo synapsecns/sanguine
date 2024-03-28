@@ -72,6 +72,30 @@ contract SynapseExecutionServiceV1ManagementTest is SynapseExecutionServiceV1Tes
         service.setGasOracle(address(0));
     }
 
+    function test_setGlobalMarkup() public {
+        uint256 globalMarkup = 100;
+        expectEventGlobalMarkupSet(globalMarkup);
+        vm.prank(governor);
+        service.setGlobalMarkup(globalMarkup);
+        assertEq(service.globalMarkup(), globalMarkup);
+    }
+
+    function test_setGlobalMarkup_toZero() public {
+        test_setGlobalMarkup();
+        expectEventGlobalMarkupSet(0);
+        vm.prank(governor);
+        service.setGlobalMarkup(0);
+        assertEq(service.globalMarkup(), 0);
+    }
+
+    function test_setGlobalMarkup_revert_notGovernor(address caller) public {
+        assumeNotProxyAdmin({target: address(service), caller: caller});
+        vm.assume(caller != governor);
+        expectRevertNotGovernor(caller);
+        vm.prank(caller);
+        service.setGlobalMarkup(100);
+    }
+
     function test_getExecutionFee_revert_gasOracleNotSet() public {
         expectRevertGasOracleNotSet();
         service.getExecutionFee(1, 2, "");

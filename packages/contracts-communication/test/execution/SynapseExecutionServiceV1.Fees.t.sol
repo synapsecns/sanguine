@@ -28,6 +28,16 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
     uint256 public constant MOCK_FEE_NO_AIRDROP = MOCK_LOCAL_EXEC_COST;
     uint256 public constant MOCK_FEE_WITH_AIRDROP = MOCK_LOCAL_EXEC_COST + MOCK_LOCAL_AIRDROP_COST;
 
+    // 10% markup
+    uint256 public constant MOCK_MARKUP = 0.1e18;
+    uint256 public constant MOCK_GAS_AIRDROP_MARKUP = 0.011 ether;
+    uint256 public constant MOCK_REMOTE_EXEC_COST_MARKUP = 0.11 ether;
+    uint256 public constant MOCK_LOCAL_EXEC_COST_MARKUP = MOCK_REMOTE_EXEC_COST_MARKUP * 2;
+    uint256 public constant MOCK_LOCAL_AIRDROP_COST_MARKUP = MOCK_GAS_AIRDROP_MARKUP * 2;
+
+    uint256 public constant MOCK_FEE_NO_AIRDROP_MARKUP = MOCK_LOCAL_EXEC_COST_MARKUP;
+    uint256 public constant MOCK_FEE_WITH_AIRDROP_MARKUP = MOCK_LOCAL_EXEC_COST_MARKUP + MOCK_LOCAL_AIRDROP_COST_MARKUP;
+
     OptionsV1 public optionsNoAirdrop = OptionsV1({gasLimit: MOCK_GAS_LIMIT, gasAirdrop: 0});
     OptionsV1 public optionsWithAirdrop = OptionsV1({gasLimit: MOCK_GAS_LIMIT, gasAirdrop: MOCK_GAS_AIRDROP});
     bytes public encodedOptionsNoAirdrop = optionsNoAirdrop.encodeOptionsV1();
@@ -112,6 +122,16 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
         assertEq(fee, MOCK_FEE_NO_AIRDROP);
     }
 
+    function test_getExecutionFee_noAirdrop_withMarkup() public {
+        service.setGlobalMarkup(MOCK_MARKUP);
+        uint256 fee = service.getExecutionFee({
+            dstChainId: REMOTE_CHAIN_ID,
+            txPayloadSize: MOCK_CALLDATA_SIZE,
+            options: optionsNoAirdrop.encodeOptionsV1()
+        });
+        assertEq(fee, MOCK_FEE_NO_AIRDROP_MARKUP);
+    }
+
     function test_getExecutionFee_withAirdrop() public {
         uint256 fee = service.getExecutionFee({
             dstChainId: REMOTE_CHAIN_ID,
@@ -119,6 +139,16 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
             options: optionsWithAirdrop.encodeOptionsV1()
         });
         assertEq(fee, MOCK_FEE_WITH_AIRDROP);
+    }
+
+    function test_getExecutionFee_withAirdrop_withMarkup() public {
+        service.setGlobalMarkup(MOCK_MARKUP);
+        uint256 fee = service.getExecutionFee({
+            dstChainId: REMOTE_CHAIN_ID,
+            txPayloadSize: MOCK_CALLDATA_SIZE,
+            options: optionsWithAirdrop.encodeOptionsV1()
+        });
+        assertEq(fee, MOCK_FEE_WITH_AIRDROP_MARKUP);
     }
 
     function test_getExecutionFee_revert_unsupportedOptionsVersion() public {
@@ -145,6 +175,24 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
         requestExecution(icClientA, MOCK_FEE_NO_AIRDROP - 1, encodedOptionsNoAirdrop);
     }
 
+    function test_requestExecution_clientA_noAirdrop_withMarkup_exactFee() public {
+        service.setGlobalMarkup(MOCK_MARKUP);
+        expectEventExecutionRequested(MOCK_TX_ID, icClientA);
+        requestExecution(icClientA, MOCK_FEE_NO_AIRDROP_MARKUP, encodedOptionsNoAirdrop);
+    }
+
+    function test_requestExecution_clientA_noAirdrop_withMarkup_higherFee() public {
+        service.setGlobalMarkup(MOCK_MARKUP);
+        expectEventExecutionRequested(MOCK_TX_ID, icClientA);
+        requestExecution(icClientA, MOCK_FEE_NO_AIRDROP_MARKUP + 1, encodedOptionsNoAirdrop);
+    }
+
+    function test_requestExecution_clientA_noAirdrop_withMarkup_revert_lowerFee() public {
+        service.setGlobalMarkup(MOCK_MARKUP);
+        expectRevertFeeAmountTooLow(MOCK_FEE_NO_AIRDROP_MARKUP - 1, MOCK_FEE_NO_AIRDROP_MARKUP);
+        requestExecution(icClientA, MOCK_FEE_NO_AIRDROP_MARKUP - 1, encodedOptionsNoAirdrop);
+    }
+
     function test_requestExecution_clientA_noAirdrop_revert_unsupportedOptionsVersion() public {
         bytes memory optionsV2 = getMockOptionsV2();
         expectRevertOptionsVersionNotSupported(2);
@@ -164,6 +212,24 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
     function test_requestExecution_clientA_withAirdrop_revert_lowerFee() public {
         expectRevertFeeAmountTooLow(MOCK_FEE_WITH_AIRDROP - 1, MOCK_FEE_WITH_AIRDROP);
         requestExecution(icClientA, MOCK_FEE_WITH_AIRDROP - 1, encodedOptionsWithAirdrop);
+    }
+
+    function test_requestExecution_clientA_withAirdrop_withMarkup_exactFee() public {
+        service.setGlobalMarkup(MOCK_MARKUP);
+        expectEventExecutionRequested(MOCK_TX_ID, icClientA);
+        requestExecution(icClientA, MOCK_FEE_WITH_AIRDROP_MARKUP, encodedOptionsWithAirdrop);
+    }
+
+    function test_requestExecution_clientA_withAirdrop_withMarkup_higherFee() public {
+        service.setGlobalMarkup(MOCK_MARKUP);
+        expectEventExecutionRequested(MOCK_TX_ID, icClientA);
+        requestExecution(icClientA, MOCK_FEE_WITH_AIRDROP_MARKUP + 1, encodedOptionsWithAirdrop);
+    }
+
+    function test_requestExecution_clientA_withAirdrop_withMarkup_revert_lowerFee() public {
+        service.setGlobalMarkup(MOCK_MARKUP);
+        expectRevertFeeAmountTooLow(MOCK_FEE_WITH_AIRDROP_MARKUP - 1, MOCK_FEE_WITH_AIRDROP_MARKUP);
+        requestExecution(icClientA, MOCK_FEE_WITH_AIRDROP_MARKUP - 1, encodedOptionsWithAirdrop);
     }
 
     function test_requestExecution_clientA_withAirdrop_revert_unsupportedOptionsVersion() public {
@@ -193,6 +259,24 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
         requestExecution(icClientB, MOCK_FEE_NO_AIRDROP, optionsV2);
     }
 
+    function test_requestExecution_clientB_noAirdrop_withMarkup_exactFee() public {
+        service.setGlobalMarkup(MOCK_MARKUP);
+        expectEventExecutionRequested(MOCK_TX_ID, icClientB);
+        requestExecution(icClientB, MOCK_FEE_NO_AIRDROP_MARKUP, encodedOptionsNoAirdrop);
+    }
+
+    function test_requestExecution_clientB_noAirdrop_withMarkup_higherFee() public {
+        service.setGlobalMarkup(MOCK_MARKUP);
+        expectEventExecutionRequested(MOCK_TX_ID, icClientB);
+        requestExecution(icClientB, MOCK_FEE_NO_AIRDROP_MARKUP + 1, encodedOptionsNoAirdrop);
+    }
+
+    function test_requestExecution_clientB_noAirdrop_withMarkup_revert_lowerFee() public {
+        service.setGlobalMarkup(MOCK_MARKUP);
+        expectRevertFeeAmountTooLow(MOCK_FEE_NO_AIRDROP_MARKUP - 1, MOCK_FEE_NO_AIRDROP_MARKUP);
+        requestExecution(icClientB, MOCK_FEE_NO_AIRDROP_MARKUP - 1, encodedOptionsNoAirdrop);
+    }
+
     function test_requestExecution_clientB_withAirdrop_exactFee() public {
         expectEventExecutionRequested(MOCK_TX_ID, icClientB);
         requestExecution(icClientB, MOCK_FEE_WITH_AIRDROP, encodedOptionsWithAirdrop);
@@ -212,6 +296,24 @@ contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test
         bytes memory optionsV2 = getMockOptionsV2();
         expectRevertOptionsVersionNotSupported(2);
         requestExecution(icClientB, MOCK_FEE_WITH_AIRDROP, optionsV2);
+    }
+
+    function test_requestExecution_clientB_withAirdrop_withMarkup_exactFee() public {
+        service.setGlobalMarkup(MOCK_MARKUP);
+        expectEventExecutionRequested(MOCK_TX_ID, icClientB);
+        requestExecution(icClientB, MOCK_FEE_WITH_AIRDROP_MARKUP, encodedOptionsWithAirdrop);
+    }
+
+    function test_requestExecution_clientB_withAirdrop_withMarkup_higherFee() public {
+        service.setGlobalMarkup(MOCK_MARKUP);
+        expectEventExecutionRequested(MOCK_TX_ID, icClientB);
+        requestExecution(icClientB, MOCK_FEE_WITH_AIRDROP_MARKUP + 1, encodedOptionsWithAirdrop);
+    }
+
+    function test_requestExecution_clientB_withAirdrop_withMarkup_revert_lowerFee() public {
+        service.setGlobalMarkup(MOCK_MARKUP);
+        expectRevertFeeAmountTooLow(MOCK_FEE_WITH_AIRDROP_MARKUP - 1, MOCK_FEE_WITH_AIRDROP_MARKUP);
+        requestExecution(icClientB, MOCK_FEE_WITH_AIRDROP_MARKUP - 1, encodedOptionsWithAirdrop);
     }
 
     function test_requestExecution_noAirdrop_revert_notInterchainClient(address caller) public {
