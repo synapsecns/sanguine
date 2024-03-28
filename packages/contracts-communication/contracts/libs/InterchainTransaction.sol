@@ -56,6 +56,10 @@ library InterchainTransactionLib {
         return abi.decode(encodedTx, (InterchainTransaction));
     }
 
+    function payloadSize(uint256 optionsLen, uint256 messageLen) internal pure returns (uint256) {
+        // TODO: implement
+    }
+
     function transactionId(InterchainTransaction memory transaction) internal pure returns (bytes32) {
         return keccak256(abi.encode(transaction));
     }
