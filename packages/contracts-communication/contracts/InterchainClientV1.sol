@@ -173,18 +173,8 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         fee = IInterchainDB(INTERCHAIN_DB).getInterchainFee(dstChainId, srcModules);
         // Add execution fee, if ExecutionService is provided
         if (srcExecutionService != address(0)) {
-            // Construct a mock InterchainTransaction to calculate the execution fee.
-            // We don't care about values for static fields, as we are only interested in the payload size.
-            InterchainTransaction memory icTx = InterchainTransactionLib.constructLocalTransaction({
-                srcSender: address(0),
-                dstReceiver: 0,
-                dstChainId: dstChainId,
-                dbNonce: 0,
-                entryIndex: 0,
-                options: options,
-                message: message
-            });
-            fee += IExecutionService(srcExecutionService).getExecutionFee(dstChainId, abi.encode(icTx).length, options);
+            uint256 payloadSize = InterchainTransactionLib.payloadSize(options.length, message.length);
+            fee += IExecutionService(srcExecutionService).getExecutionFee(dstChainId, payloadSize, options);
         }
     }
 
@@ -270,8 +260,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         if (srcExecutionService != address(0)) {
             IExecutionService(srcExecutionService).requestExecution({
                 dstChainId: dstChainId,
-                // TODO: there should be a way to calculate the payload size without encoding the transaction
-                txPayloadSize: icTx.encodeTransaction().length,
+                txPayloadSize: InterchainTransactionLib.payloadSize(options.length, message.length),
                 transactionId: desc.transactionId,
                 executionFee: executionFee,
                 options: options
