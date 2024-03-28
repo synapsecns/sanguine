@@ -17,6 +17,7 @@ import {InterchainModuleMock} from "../mocks/InterchainModuleMock.sol";
 import {IAccessControl} from "@openzeppelin/contracts/access/IAccessControl.sol";
 import {Test} from "forge-std/Test.sol";
 
+// solhint-disable max-states-count
 // solhint-disable ordering
 abstract contract MessageBusBaseTest is MessageBusEvents, Test {
     bytes32 public constant IC_GOVERNOR_ROLE = keccak256("IC_GOVERNOR_ROLE");
