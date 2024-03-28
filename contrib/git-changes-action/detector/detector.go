@@ -72,11 +72,9 @@ func DetectChangedModules(repoPath string, ct tree.Tree, includeDeps bool, typeO
 
       if ct.HasPath(module.Path) {
         changed = true
-        modules[module.Path] = changed
-        continue 
       }
 
-      if includeDeps {
+      if includeDeps && !changed {
         for _, packageName := range packagesPerModule[module.Path] {
           if isPackageChanged(packageName, ct, depGraph) {
             changed = true
