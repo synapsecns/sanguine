@@ -5,14 +5,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/tree"
 	"os"
 	"sort"
 	"strings"
 	"time"
 
+	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/package"
+	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/tree"
+
 	"github.com/sethvargo/go-githubactions"
-	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector"
+	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/git"
 )
 
 const defaultTimeout = "1m"
@@ -36,17 +38,17 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	ct, err := detector.GetChangeTree(ctx, workingDirectory, ref, token, base)
+	ct, err := git.GetChangeTree(ctx, workingDirectory, ref, token, base)
 	if err != nil {
 		panic(err)
 	}
 
-	noDepChanged, noDepUnchanged, err := outputModuleChanges(workingDirectory, ct, false, "packages")
+	noDepChanged, noDepUnchanged, err := outputModuleChanges(workingDirectory, ct, false)
 	if err != nil {
 		panic(err)
 	}
 
-	depChanged, depUnchanged, err := outputModuleChanges(workingDirectory, ct, true, "packages")
+	depChanged, depUnchanged, err := outputModuleChanges(workingDirectory, ct, true)
 	if err != nil {
 		panic(err)
 	}
@@ -61,8 +63,8 @@ func main() {
 // outputModuleChanges outputs the changed modules.
 // this wraps detector.DetectChangedModules and handles the output formatting to be parsable by github actions.
 // the final output is a json array of strings.
-func outputModuleChanges(workingDirectory string, ct tree.Tree, includeDeps bool, typeOfDependency string) (changedJSON string, unchangedJson string, err error) {
-	modules, err := detector.DetectChangedModules(workingDirectory, ct, includeDeps, typeOfDependency)
+func outputModuleChanges(workingDirectory string, ct tree.Tree, includeDeps bool) (changedJSON string, unchangedJson string, err error) {
+	modules, err := packagedetector.DetectChangedModules(workingDirectory, ct, includeDeps)
 	if err != nil {
 		return changedJSON, unchangedJson, fmt.Errorf("failed to detect changed modules w/ include deps set to %v: %w", includeDeps, err)
 	}
