@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.15.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.15.0...@synapsecns/synapse-interface@0.15.1) (2024-03-28)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+# [0.15.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.14.0...@synapsecns/synapse-interface@0.15.0) (2024-03-27)
+
+
+### Features
+
+* **synapse-interface:** remove blast swap pause banner ([#2381](https://github.com/synapsecns/sanguine/issues/2381)) ([c49c60d](https://github.com/synapsecns/sanguine/commit/c49c60d3b8eaf0c555e84e114e92584945bd567a))
+
+
+
+
+
 # [0.14.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.13.1...@synapsecns/synapse-interface@0.14.0) (2024-03-27)
 
 

@@ -16,7 +16,7 @@ func TestScanInvalid(t *testing.T) {
 		status := db.Status(0)
 
 		// skip valid statuses
-		if slices.Contains[uint8](allStatuses, i) {
+		if slices.Contains(allStatuses, i) {
 			continue
 		}
 
