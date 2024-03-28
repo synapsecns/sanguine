@@ -7,7 +7,6 @@ import {IInterchainModule} from "./interfaces/IInterchainModule.sol";
 
 import {InterchainBatch, InterchainBatchLib} from "./libs/InterchainBatch.sol";
 import {InterchainEntry, InterchainEntryLib} from "./libs/InterchainEntry.sol";
-import {TypeCasts} from "./libs/TypeCasts.sol";
 
 contract InterchainDB is InterchainDBEvents, IInterchainDB {
     bytes32[] internal _entryValues;
@@ -63,7 +62,10 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     // ═══════════════════════════════════════════════ MODULE-FACING ═══════════════════════════════════════════════════
 
     /// @inheritdoc IInterchainDB
-    function verifyRemoteBatch(InterchainBatch memory batch) external onlyRemoteChainId(batch.srcChainId) {
+    function verifyRemoteBatch(bytes calldata versionedBatch) external {
+        (uint16 dbVersion, InterchainBatch memory batch) = InterchainBatchLib.decodeVersionedBatch(versionedBatch);
+        // TODO: check version
+        // TODO: onlyRemoteChainId(batch.srcChainId)
         bytes32 batchKey = InterchainBatchLib.batchKey(batch);
         RemoteBatch memory existingBatch = _remoteBatches[msg.sender][batchKey];
         // Check if that's the first time module verifies the batch
@@ -209,8 +211,10 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
             fees[0] += msg.value - totalFee;
         }
         uint256 len = srcModules.length;
+        // TODO: finish the implementation
+        bytes memory versionedBatch;
         for (uint256 i = 0; i < len; ++i) {
-            IInterchainModule(srcModules[i]).requestBatchVerification{value: fees[i]}(dstChainId, batch);
+            IInterchainModule(srcModules[i]).requestBatchVerification{value: fees[i]}(dstChainId, versionedBatch);
         }
         emit InterchainBatchVerificationRequested(dstChainId, batch.dbNonce, batch.batchRoot, srcModules);
     }

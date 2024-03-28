@@ -18,10 +18,12 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
     }
 
     /// @inheritdoc IInterchainModule
-    function requestBatchVerification(uint256 dstChainId, InterchainBatch memory batch) external payable {
+    function requestBatchVerification(uint256 dstChainId, bytes calldata versionedBatch) external payable {
         if (msg.sender != INTERCHAIN_DB) {
             revert InterchainModule__NotInterchainDB(msg.sender);
         }
+        // TODO: Implement the logic to handle versioned batches
+        InterchainBatch memory batch;
         if (dstChainId == block.chainid) {
             revert InterchainModule__SameChainId(block.chainid);
         }
@@ -51,7 +53,8 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
         if (batch.srcChainId == block.chainid) {
             revert InterchainModule__SameChainId(block.chainid);
         }
-        IInterchainDB(INTERCHAIN_DB).verifyRemoteBatch(batch);
+        // TODO: finish the implementation
+        IInterchainDB(INTERCHAIN_DB).verifyRemoteBatch("");
         _receiveModuleData(batch.srcChainId, batch.dbNonce, moduleData);
         emit BatchVerified(
             batch.srcChainId, encodedBatch, MessageHashUtils.toEthSignedMessageHash(keccak256(encodedBatch))
