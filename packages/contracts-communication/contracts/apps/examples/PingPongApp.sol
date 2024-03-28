@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {OwnableApp} from "./OwnableApp.sol";
+import {ICAppV1} from "../ICAppV1.sol";
 
-import {InterchainTxDescriptor} from "../libs/InterchainTransaction.sol";
-import {OptionsV1} from "../libs/Options.sol";
+import {InterchainTxDescriptor} from "../../libs/InterchainTransaction.sol";
+import {OptionsV1} from "../../libs/Options.sol";
 
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 /// @notice A simple app that sends a message to the remote PingPongApp, which will respond with a message back.
 /// This app can be loaded with a native asset, which will be used to pay for the messages sent.
-contract PingPongApp is OwnableApp {
+contract PingPongApp is ICAppV1 {
     uint256 internal constant DEFAULT_GAS_LIMIT = 500_000;
     uint256 public gasLimit;
 
@@ -19,22 +19,21 @@ contract PingPongApp is OwnableApp {
     event PingReceived(uint256 counter, uint256 dbNonce, uint64 entryIndex);
     event PingSent(uint256 counter, uint256 dbNonce, uint64 entryIndex);
 
-    error PingPongApp__LowBalance(uint256 required);
-
-    constructor(address owner_) OwnableApp(owner_) {
+    constructor(address admin) ICAppV1(admin) {
+        _grantRole(IC_GOVERNOR_ROLE, admin);
         _setGasLimit(DEFAULT_GAS_LIMIT);
     }
 
     /// @notice Enables the contract to accept native asset.
     receive() external payable {}
 
-    /// @notice Allows the owner to set the gas limit for the interchain messages.
-    function setGasLimit(uint256 gasLimit_) external onlyOwner {
+    /// @notice Allows the Interchain Governor to set the gas limit for the interchain messages.
+    function setGasLimit(uint256 gasLimit_) external onlyRole(IC_GOVERNOR_ROLE) {
         _setGasLimit(gasLimit_);
     }
 
-    /// @notice Allows the owner to withdraw the native asset from the contract.
-    function withdraw() external onlyOwner {
+    /// @notice Allows the Admin to withdraw the native asset from the contract.
+    function withdraw() external onlyRole(DEFAULT_ADMIN_ROLE) {
         Address.sendValue(payable(msg.sender), address(this).balance);
     }
 
@@ -48,7 +47,7 @@ contract PingPongApp is OwnableApp {
     function getPingFee(uint256 dstChainId) external view returns (uint256) {
         OptionsV1 memory options = OptionsV1({gasLimit: gasLimit, gasAirdrop: 0});
         bytes memory message = abi.encode(uint256(0));
-        return _getInterchainFee(dstChainId, options, message);
+        return _getInterchainFee(dstChainId, options.encodeOptionsV1(), message);
     }
 
     /// @dev Internal logic for receiving messages. At this point the validity of the message is already checked.
@@ -76,16 +75,12 @@ contract PingPongApp is OwnableApp {
     function _sendPingPongMessage(uint256 dstChainId, uint256 counter, bool lowBalanceRevert) internal {
         OptionsV1 memory options = OptionsV1({gasLimit: gasLimit, gasAirdrop: 0});
         bytes memory message = abi.encode(counter);
-        uint256 messageFee = _getInterchainFee(dstChainId, options, message);
-        if (address(this).balance < messageFee) {
-            if (lowBalanceRevert) {
-                revert PingPongApp__LowBalance({required: messageFee});
-            } else {
-                emit PingDisrupted(counter);
-                return;
-            }
+        uint256 messageFee = _getMessageFee(dstChainId, options, message);
+        if (address(this).balance < messageFee && !lowBalanceRevert) {
+            emit PingDisrupted(counter);
+            return;
         }
-        InterchainTxDescriptor memory desc = _sendInterchainMessage(dstChainId, messageFee, options, message);
+        InterchainTxDescriptor memory desc = _sendToLinkedApp(dstChainId, messageFee, options, message);
         emit PingSent(counter, desc.dbNonce, desc.entryIndex);
     }
 

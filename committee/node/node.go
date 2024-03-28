@@ -17,10 +17,10 @@ import (
 	"github.com/synapsecns/sanguine/committee/contracts/synapsemodule"
 	"github.com/synapsecns/sanguine/committee/db"
 	"github.com/synapsecns/sanguine/committee/db/connect"
-	"github.com/synapsecns/sanguine/committee/listener"
 	"github.com/synapsecns/sanguine/committee/p2p"
 	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/synapsecns/sanguine/ethergo/listener"
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
@@ -75,7 +75,12 @@ func NewNode(ctx context.Context, handler metrics.Handler, cfg config.Config) (*
 			return nil, fmt.Errorf("could not get chain client: %w", err)
 		}
 
-		chainListener, err := listener.NewChainListener(chainClient, node.db, synapseModule, handler)
+		latestBlock, err := chainClient.BlockNumber(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("could not get block number: %w", err)
+		}
+
+		chainListener, err := listener.NewChainListener(chainClient, node.db, synapseModule, latestBlock, handler)
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain listener: %w", err)
 		}

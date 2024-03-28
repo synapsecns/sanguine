@@ -5,7 +5,7 @@ import {ExecutionFees} from "../../contracts/ExecutionFees.sol";
 import {ExecutionService} from "../../contracts/ExecutionService.sol";
 import {InterchainClientV1} from "../../contracts/InterchainClientV1.sol";
 import {InterchainDB} from "../../contracts/InterchainDB.sol";
-import {PingPongApp} from "../../contracts/apps/PingPongApp.sol";
+import {PingPongApp} from "../../contracts/apps/examples/PingPongApp.sol";
 import {AppConfigV1} from "../../contracts/libs/AppConfig.sol";
 import {SynapseModule} from "../../contracts/modules/SynapseModule.sol";
 import {SynapseGasOracleV1, ISynapseGasOracleV1} from "../../contracts/oracles/SynapseGasOracleV1.sol";
@@ -116,7 +116,7 @@ abstract contract ICSetup is Test {
         pingPongApp.addTrustedModule(address(module));
         pingPongApp.setAppConfigV1(AppConfigV1({requiredResponses: 1, optimisticPeriod: APP_OPTIMISTIC_PERIOD}));
         pingPongApp.setExecutionService(address(executionService));
-        pingPongApp.setInterchainClient(address(icClient));
+        pingPongApp.addInterchainClient({client: address(icClient), updateLatest: true});
     }
 
     function initDBNonce() internal virtual {

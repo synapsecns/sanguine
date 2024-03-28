@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { CHAINS_BY_ID } from '@constants/chains'
 import Image from 'next/image'
 import { getHoverStyleForButton, getActiveStyleForButton } from '@/styles/hover'
@@ -7,12 +7,6 @@ import {
   TokenAndBalance,
   sortTokensByBalanceDescending,
 } from '@/utils/actions/fetchPortfolioBalances'
-import {
-  ELIGIBILITY_DEFAULT_TEXT,
-  isChainEligible,
-  useStipEligibility,
-} from '@/utils/hooks/useStipEligibility'
-import { useBridgeState } from '@/slices/bridge/hooks'
 import { joinClassNames } from '@/utils/joinClassNames'
 
 export const SelectSpecificNetworkButton = ({
@@ -47,10 +41,6 @@ export const SelectSpecificNetworkButton = ({
       : '',
   })
 
-  const { fromChainId, fromToken } = useBridgeState()
-  const isEligible =
-    !isOrigin && isChainEligible(fromChainId, chain.id, fromToken)
-
   return (
     <button
       ref={ref}
@@ -59,11 +49,6 @@ export const SelectSpecificNetworkButton = ({
       data-test-id={`${dataId}-item`}
     >
       <ButtonContent chainId={itemChainId} isOrigin={isOrigin} />
-      {isEligible && (
-        <div className="text-sm text-left text-green-500 dark:text-green-400">
-          {ELIGIBILITY_DEFAULT_TEXT}
-        </div>
-      )}
     </button>
   )
 }

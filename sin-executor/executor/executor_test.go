@@ -3,39 +3,27 @@ package executor_test
 import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/optionslibexport"
 	"github.com/synapsecns/sanguine/sin-executor/db"
 	"math/big"
 	"time"
 
 	"github.com/synapsecns/sanguine/sin-executor/contracts/interchaindb"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/mocks/interchainmodulemock"
-	"github.com/synapsecns/sanguine/sin-executor/testutil"
 )
 
 func (i *InterchainSuite) TestE2E() {
 	auth := i.originChain.GetTxContext(i.GetTestContext(), nil)
 
+	gasLimit := big.NewInt(1_000_000)
+	gasAirdrop := big.NewInt(1_337)
 	message := []byte("hello")
 
-	_, optionsLib := i.deployManager.GetOptionsLib(i.GetTestContext(), i.originChain)
-	// must match values in the contract
-	encodedOptions, err := optionsLib.EncodeOptions(&bind.CallOpts{Context: i.GetTestContext()}, optionslibexport.OptionsV1{
-		GasLimit:   big.NewInt(200000),
-		GasAirdrop: big.NewInt(0),
-	})
-	i.Require().NoError(err)
-
-	_, originClient := i.deployManager.GetInterchainClient(i.GetTestContext(), i.originChain)
-	interchainFee, err := originClient.GetInterchainFee(&bind.CallOpts{Context: i.GetTestContext()},
-		i.destChain.GetBigChainID(), i.deployManager.Get(i.GetTestContext(), i.originChain, testutil.ExecutionService).Address(), []common.Address{i.deployManager.Get(i.GetTestContext(), i.originChain, testutil.InterchainModuleMock).Address()}, encodedOptions, message)
-	i.Require().NoError(err)
-
 	_, appMock := i.deployManager.GetInterchainAppMock(i.GetTestContext(), i.originChain)
+	messageFee, err := appMock.GetMessageFee(&bind.CallOpts{Context: i.GetTestContext()}, i.destChain.GetBigChainID(), gasLimit, gasAirdrop, message)
+	i.Require().NoError(err)
 
-	auth.TransactOpts.Value = interchainFee
-	tx, err := appMock.SendMessage(auth.TransactOpts, i.destChain.GetBigChainID(), big.NewInt(1_000_000), message)
+	auth.TransactOpts.Value = messageFee
+	tx, err := appMock.SendMessage(auth.TransactOpts, i.destChain.GetBigChainID(), gasLimit, gasAirdrop, message)
 	i.Require().NoError(err)
 	i.originChain.WaitForConfirmation(i.GetTestContext(), tx)
 

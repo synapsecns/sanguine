@@ -85,13 +85,13 @@ var (
 		clientContract := helpers.Registry().Get(ctx, InterchainClient)
 		sendingModule := helpers.Registry().Get(ctx, InterchainModuleMock)
 
-		appAddress, appTx, appMock, err := interchainapp.DeployInterchainAppExample(transactOps, backend, transactOps.From)
+		appAddress, appTx, appMock, err := interchainapp.DeployExampleAppV1(transactOps, backend, transactOps.From)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy interchain app mock: %w", err)
 		}
 		helpers.Backend().WaitForConfirmation(ctx, appTx)
 
-		tx, err := appMock.SetInterchainClient(transactOps, clientContract.Address())
+		tx, err := appMock.AddInterchainClient(transactOps, clientContract.Address(), true)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not set interchain client: %w", err)
 		}

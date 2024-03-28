@@ -14,7 +14,6 @@ import poolDeposit from '@/slices/poolDepositSlice'
 import poolUserData from '@/slices/poolUserDataSlice'
 import poolWithdraw from '@/slices/poolWithdrawSlice'
 import priceData from '@/slices/priceDataSlice'
-import feeAndRebate from '@/slices/feeAndRebateSlice'
 import { api } from '@/slices/api/slice'
 import { RootActions } from '@/slices/application/actions'
 
@@ -43,7 +42,6 @@ export const appReducer = combineReducers({
   poolUserData,
   poolWithdraw,
   priceData,
-  feeAndRebate,
   [api.reducerPath]: api.reducer,
   ...persistedReducers,
 })

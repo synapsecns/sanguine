@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {OwnableApp} from "../../contracts/apps/OwnableApp.sol";
+import {ICAppV1} from "../../contracts/apps/ICAppV1.sol";
 import {AppConfigV1} from "../../contracts/libs/AppConfig.sol";
 
 import {TypeCasts} from "../../contracts/libs/TypeCasts.sol";
@@ -9,13 +9,13 @@ import {TypeCasts} from "../../contracts/libs/TypeCasts.sol";
 import {stdJson, SynapseScript} from "@synapsecns/solidity-devops/src/SynapseScript.sol";
 
 // solhint-disable code-complexity
-abstract contract ConfigureOwnableApp is SynapseScript {
+abstract contract ConfigureAppV1 is SynapseScript {
     using stdJson for string;
 
     string public appName;
 
     string public config;
-    OwnableApp public app;
+    ICAppV1 public app;
 
     constructor(string memory appName_) {
         appName = appName_;
@@ -27,12 +27,13 @@ abstract contract ConfigureOwnableApp is SynapseScript {
         syncTrustedModules();
         setAppConfig();
         setExecutionService();
-        setInterchainClient();
+        setLatestInterchainClient();
+        syncInterchainClients();
         afterAppConfigured();
     }
 
     function loadConfig(string memory environment) internal virtual {
-        app = OwnableApp(getDeploymentAddress({contractName: appName, revertIfNotFound: true}));
+        app = ICAppV1(getDeploymentAddress({contractName: appName, revertIfNotFound: true}));
         config = readGlobalDeployConfig({contractName: appName, globalProperty: environment, revertIfNotFound: true});
     }
 
@@ -63,7 +64,7 @@ abstract contract ConfigureOwnableApp is SynapseScript {
         for (uint256 i = 0; i < moduleNames.length; i++) {
             trustedModules[i] = getDeploymentAddress({contractName: moduleNames[i], revertIfNotFound: true});
         }
-        address[] memory existingModules = app.getReceivingModules();
+        address[] memory existingModules = app.getModules();
         // Remove modules that are not in the config
         uint256 removed = 0;
         for (uint256 i = 0; i < existingModules.length; i++) {
@@ -122,14 +123,54 @@ abstract contract ConfigureOwnableApp is SynapseScript {
         }
     }
 
-    function setInterchainClient() internal virtual {
-        printLog("Setting interchain client");
-        address client = getDeploymentAddress({contractName: "InterchainClientV1", revertIfNotFound: true});
-        if (app.interchain() != client) {
-            app.setInterchainClient(client);
-            printSuccessWithIndent(string.concat("Client set to ", vm.toString(client)));
+    function setLatestInterchainClient() internal virtual {
+        printLog("Setting latest interchain client");
+        string memory clientName = config.readString(".latestInterchainClient");
+        address client = getDeploymentAddress({contractName: clientName, revertIfNotFound: true});
+        string memory desc = string.concat("set to ", clientName, " [", vm.toString(client), "]");
+        if (app.getLatestInterchainClient() != client) {
+            if (contains(app.getInterchainClients(), client)) {
+                app.setLatestInterchainClient(client);
+                printSuccessWithIndent(string.concat("Latest client ", desc));
+            } else {
+                app.addInterchainClient({client: client, updateLatest: true});
+                printSuccessWithIndent(string.concat("Latest client added and ", desc));
+            }
         } else {
             printSkipWithIndent(string.concat("client is already set to ", vm.toString(client)));
+        }
+    }
+
+    function syncInterchainClients() internal virtual {
+        printLog("Syncing interchain clients");
+        string[] memory clientNames = config.readStringArray(".interchainClients");
+        address[] memory clients = new address[](clientNames.length);
+        for (uint256 i = 0; i < clientNames.length; i++) {
+            clients[i] = getDeploymentAddress({contractName: clientNames[i], revertIfNotFound: true});
+        }
+        address[] memory existingClients = app.getInterchainClients();
+        // Remove clients that are not in the config
+        uint256 removed = 0;
+        for (uint256 i = 0; i < existingClients.length; i++) {
+            if (!contains(clients, existingClients[i])) {
+                app.removeInterchainClient(existingClients[i]);
+                printSuccessWithIndent(string.concat("Removed ", vm.toString(existingClients[i])));
+                removed++;
+            }
+        }
+        // Add clients that are in the config but not in the app
+        uint256 added = 0;
+        for (uint256 i = 0; i < clients.length; i++) {
+            if (!contains(existingClients, clients[i])) {
+                printSuccessWithIndent(string.concat("Added ", vm.toString(clients[i]), " [", clientNames[i], "]"));
+                app.addInterchainClient({client: clients[i], updateLatest: false});
+                added++;
+            }
+        }
+        if (removed + added == 0) {
+            printSkipWithIndent("clients are up to date");
+        } else {
+            printLog(string.concat("Added ", vm.toString(added), " clients, removed ", vm.toString(removed)));
         }
     }
 

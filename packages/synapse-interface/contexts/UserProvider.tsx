@@ -10,10 +10,6 @@ import { useAppDispatch } from '@/store/hooks'
 import { resetPortfolioState } from '@/slices/portfolio/actions'
 import { isBlacklisted } from '@/utils/isBlacklisted'
 import { screenAddress } from '@/utils/screenAddress'
-import {
-  fetchArbStipRewards,
-  fetchFeeAndRebate,
-} from '@/slices/feeAndRebateSlice'
 
 const WalletStatusContext = createContext(undefined)
 
@@ -48,12 +44,6 @@ export const UserProvider = ({ children }) => {
   }, [])
 
   useEffect(() => {
-    if (isClient) {
-      dispatch(fetchFeeAndRebate())
-    }
-  }, [isClient])
-
-  useEffect(() => {
     if (chain) {
       dispatch(setSwapChainId(chain.id))
     }
@@ -84,10 +74,6 @@ export const UserProvider = ({ children }) => {
         } catch (error) {
           console.error('Failed to fetch and store portfolio balances:', error)
         }
-      }
-
-      if (address) {
-        dispatch(fetchArbStipRewards(address))
       }
 
       if (!address) {

@@ -8,9 +8,6 @@ import { useBridgeState } from '@/slices/bridge/hooks'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { findChainIdsWithPausedToken } from '@/constants/tokens'
 import LoadingDots from '@/components/ui/tailwind/LoadingDots'
-import { ELIGIBILITY_DEFAULT_TEXT } from '@/utils/hooks/useStipEligibility'
-import { getUnderlyingBridgeTokens } from '@/utils/getUnderlyingBridgeTokens'
-import { ARBITRUM, AVALANCHE, ETH } from '@/constants/chains/master'
 import { getActiveStyleForButton, getHoverStyleForButton } from '@/styles/hover'
 import { joinClassNames } from '@/utils/joinClassNames'
 import { useSwapState } from '@/slices/swap/hooks'
@@ -183,13 +180,6 @@ const ButtonContent = memo(
           isOrigin={isOrigin}
           parsedBalance={parsedBalance}
         />
-        <div className="flex items-center space-x-2 text-sm text-secondary">
-          {action === 'Bridge' && isOrigin && isTokenEligible(token) ? (
-            <div className="text-greenText">{ELIGIBILITY_DEFAULT_TEXT}</div>
-          ) : (
-            <></>
-          )}
-        </div>
       </div>
     )
   }
@@ -225,57 +215,6 @@ const Coin = ({
       )}
       {showAllChains && <AvailableChains token={token} />}
     </div>
-  )
-}
-
-/*
-Synapse:Bridge
-  Tokens: nETH, nUSD, GMX
-  From Any to ARB: all txs (don't limit this to "user has to receive ETH / USDC / ...")
-  ARB to ETH txs: nETH, nUSD
-  ARB to AVAX txs: GMX
-
-Synapse:CCTP
-  Tokens: USDC
-  Any to ARB: all txs
-  ARB to ETH: all txs
-
-Synapse: RFQ
-  Tokens: USDC
-  Any to ARB: all txs
-  ARB to ETH: all txs
-*/
-
-const isTokenEligible = (token: Token) => {
-  const { fromChainId, toChainId, bridgeQuote } = useBridgeState()
-
-  const underlyingBridgeTokens = getUnderlyingBridgeTokens(token, fromChainId)
-
-  if (!underlyingBridgeTokens) {
-    return false
-  }
-
-  return (
-    (underlyingBridgeTokens.includes('USDC') && toChainId === ARBITRUM.id) ||
-    (underlyingBridgeTokens.includes('USDC') &&
-      fromChainId === ARBITRUM.id &&
-      toChainId === ETH.id) ||
-    (underlyingBridgeTokens.includes('USDC') && toChainId === ARBITRUM.id) ||
-    (underlyingBridgeTokens.includes('USDC') &&
-      fromChainId === ARBITRUM.id &&
-      toChainId === ETH.id) ||
-    (_.some(['nETH', 'nUSD', 'GMX'], (value) =>
-      _.includes(underlyingBridgeTokens, value)
-    ) &&
-      toChainId === ARBITRUM.id) ||
-    (_.some(['nETH', 'nUSD'], (value) =>
-      _.includes(underlyingBridgeTokens, value)
-    ) &&
-      fromChainId === ARBITRUM.id &&
-      toChainId === ETH.id) ||
-    (_.some(['GMX'], (value) => _.includes(underlyingBridgeTokens, value)) &&
-      fromChainId === ARBITRUM.id &&
-      toChainId === AVALANCHE.id)
   )
 }
 

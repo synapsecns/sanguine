@@ -206,7 +206,8 @@ func (c *chainQueue) bumpTX(parentCtx context.Context, ogTx db.TX) {
 			return fmt.Errorf("could not sign tx: %w", err)
 		}
 
-		span.AddEvent("add to reprocess queue", trace.WithAttributes(txToAttributes(tx, ogTx.UUID)...))
+		span.AddEvent("add to reprocess queue")
+		span.SetAttributes(txToAttributes(tx, ogTx.UUID)...)
 
 		c.addToReprocessQueue(db.TX{
 			UUID:        ogTx.UUID,

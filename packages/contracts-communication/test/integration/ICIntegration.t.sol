@@ -215,7 +215,7 @@ abstract contract ICIntegrationTest is
         checkBatchLeafs(batch, icDB.getBatchLeafsPaginated(desc.dbNonce, 0, 1));
         assertEq(icDB.getBatchSize(desc.dbNonce), 1);
         assertEq(icDB.getBatch(desc.dbNonce), batch);
-        assertEq(icDB.getEntry(desc.dbNonce, 0), entry);
+        assertEq(icDB.getEntryValue(desc.dbNonce, 0), batch.batchRoot);
         assertEq(icDB.getEntryProof(desc.dbNonce, 0).length, 0);
         // Check getters related to the next dbNonce
         assertEq(icDB.getDBNonce(), desc.dbNonce + 1);
