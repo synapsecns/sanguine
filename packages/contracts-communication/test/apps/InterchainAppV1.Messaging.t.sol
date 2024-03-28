@@ -46,7 +46,7 @@ abstract contract InterchainAppV1MessagingTest is InterchainAppV1Test {
     function mockInterchainFeeResult() internal {
         bytes memory expectedCalldata = abi.encodeCall(
             InterchainClientV1Mock.getInterchainFee,
-            (REMOTE_CHAIN_ID, execServiceMock, toArray(moduleMock), encodedOptions, message)
+            (REMOTE_CHAIN_ID, execServiceMock, toArray(moduleMock), encodedOptions, message.length)
         );
         vm.mockCall(icClient, expectedCalldata, abi.encode(MOCK_IC_FEE));
     }

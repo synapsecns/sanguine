@@ -116,13 +116,13 @@ interface IInterchainClientV1 {
     /// @param srcExecutionService  The address of the execution service to use for the message.
     /// @param srcModules           The source modules involved in the message sending.
     /// @param options              Execution options for the message sent, currently gas limit + native gas drop.
-    /// @param message              The message being sent.
+    /// @param messageLen           The length of the message being sent.
     function getInterchainFee(
         uint256 dstChainId,
         address srcExecutionService,
         address[] calldata srcModules,
         bytes calldata options,
-        bytes calldata message
+        uint256 messageLen
     )
         external
         view

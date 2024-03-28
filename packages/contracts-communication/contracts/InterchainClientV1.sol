@@ -160,7 +160,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         address srcExecutionService,
         address[] calldata srcModules,
         bytes calldata options,
-        bytes calldata message
+        uint256 messageLen
     )
         external
         view
@@ -173,7 +173,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         fee = IInterchainDB(INTERCHAIN_DB).getInterchainFee(dstChainId, srcModules);
         // Add execution fee, if ExecutionService is provided
         if (srcExecutionService != address(0)) {
-            uint256 payloadSize = InterchainTransactionLib.payloadSize(options.length, message.length);
+            uint256 payloadSize = InterchainTransactionLib.payloadSize(options.length, messageLen);
             fee += IExecutionService(srcExecutionService).getExecutionFee(dstChainId, payloadSize, options);
         }
     }
