@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/router'
+
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 
 import { useBridgeState } from '@/slices/bridge/hooks'
@@ -27,6 +28,13 @@ import {
 
 import { EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
 
+import { InputContainer } from '@/components/StateManagedBridge/InputContainer'
+import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer'
+import { BridgeExchangeRateInfo } from '@/components/StateManagedBridge/BridgeExchangeRateInfo'
+import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
+import ExplorerToastLink from '@/components/ExplorerToastLink'
+import { Warning } from '@/components/Warning'
+import { SwitchButton } from '@/components/buttons/SwitchButton'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
 import { commify } from '@ethersproject/units'
@@ -43,19 +51,12 @@ import { txErrorHandler } from '@/utils/txErrorHandler'
 import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
 import { approveToken } from '@/utils/approveToken'
 import { PageHeader } from '@/components/PageHeader'
-import BridgeExchangeRateInfo from '@/components/StateManagedBridge/BridgeExchangeRateInfo'
-import { InputContainer } from '@/components/StateManagedBridge/InputContainer'
-import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer'
 import SettingsSlideOver from '@/components/StateManagedBridge/SettingsSlideOver'
 import Button from '@/components/ui/tailwind/Button'
 import { SettingsIcon } from '@/components/icons/SettingsIcon'
-import { DestinationAddressInput } from '@/components/StateManagedBridge/DestinationAddressInput'
-import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
-import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { polygon } from 'viem/chains'
 import { Address, zeroAddress, isAddress } from 'viem'
 import { stringToBigInt } from '@/utils/bigint/format'
-import { Warning } from '@/components/Warning'
 import { useAppDispatch } from '@/store/hooks'
 import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
 import {
@@ -67,7 +68,6 @@ import { getTimeMinutesFromNow } from '@/utils/time'
 
 import { waitForTransaction } from '@wagmi/core'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
-import { SwitchButton } from '@/components/buttons/SwitchButton'
 import {
   MaintenanceWarningMessage,
   useMaintenanceCountdownProgress,

@@ -1,7 +1,6 @@
 import { useAccount } from 'wagmi'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/router'
-import { Transition } from '@headlessui/react'
 
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import {
@@ -41,7 +40,6 @@ import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import useSyncQueryParamsWithSwapState from '@/utils/hooks/useSyncQueryParamsWithSwapState'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { SwitchButton } from '@/components/buttons/SwitchButton'
-import { AnnouncementBanner } from '@/components/Maintenance/AnnouncementBanner'
 
 const StateManagedSwap = () => {
   const { address } = useAccount()
@@ -344,12 +342,6 @@ const StateManagedSwap = () => {
 
   return (
     <LandingPageWrapper>
-      <AnnouncementBanner
-        bannerId="2024-03-26-blast-swap-pause"
-        bannerContents="Swapping on Blast paused."
-        startDate={new Date(Date.UTC(2024, 2, 20, 20, 20, 0))}
-        endDate={new Date(Date.UTC(2026, 2, 20, 22, 0, 0))}
-      />
       <div className="flex justify-center px-4 py-16 mx-auto lg:mx-0">
         <div className="flex flex-col">
           <div className="flex items-center justify-between">

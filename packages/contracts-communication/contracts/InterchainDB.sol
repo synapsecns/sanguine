@@ -10,7 +10,7 @@ import {InterchainEntry, InterchainEntryLib} from "./libs/InterchainEntry.sol";
 import {TypeCasts} from "./libs/TypeCasts.sol";
 
 contract InterchainDB is InterchainDBEvents, IInterchainDB {
-    LocalEntry[] internal _entries;
+    bytes32[] internal _entryValues;
     mapping(address module => mapping(bytes32 batchKey => RemoteBatch batch)) internal _remoteBatches;
 
     modifier onlyRemoteChainId(uint256 chainId) {
@@ -150,7 +150,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         // In "no batching" mode: the finalized batch size is 1
         _assertBatchFinalized(dbNonce);
         leafs = new bytes32[](1);
-        leafs[0] = getEntry(dbNonce, 0).entryValue();
+        leafs[0] = getEntryValue(dbNonce, 0);
     }
 
     /// @inheritdoc IInterchainDB
@@ -164,20 +164,18 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     function getBatch(uint256 dbNonce) public view returns (InterchainBatch memory) {
         _assertBatchFinalized(dbNonce);
         // In "no batching" mode: the batch root is the same as the entry hash
-        return InterchainBatchLib.constructLocalBatch(dbNonce, getEntry(dbNonce, 0).entryValue());
+        return InterchainBatchLib.constructLocalBatch(dbNonce, getEntryValue(dbNonce, 0));
     }
 
     /// @inheritdoc IInterchainDB
-    function getEntry(uint256 dbNonce, uint64 entryIndex) public view returns (InterchainEntry memory) {
+    function getEntryValue(uint256 dbNonce, uint64 entryIndex) public view returns (bytes32) {
         _assertEntryExists(dbNonce, entryIndex);
-        return InterchainEntryLib.constructLocalEntry(
-            dbNonce, entryIndex, _entries[dbNonce].writer, _entries[dbNonce].dataHash
-        );
+        return _entryValues[dbNonce];
     }
 
     /// @inheritdoc IInterchainDB
     function getDBNonce() public view returns (uint256) {
-        return _entries.length;
+        return _entryValues.length;
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
@@ -190,8 +188,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
             writer: msg.sender,
             dataHash: dataHash
         });
-        // TODO: do we NEED to save both writer and dataHash instead of entryValue (writer + dataHash, hashed)?
-        _entries.push(LocalEntry(msg.sender, dataHash));
+        _entryValues.push(entry.entryValue());
         emit InterchainEntryWritten(block.chainid, entry.dbNonce, entry.srcWriter, dataHash);
     }
 
@@ -205,9 +202,11 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         internal
     {
         (uint256[] memory fees, uint256 totalFee) = _getModuleFees(dstChainId, batch.dbNonce, srcModules);
-        // TODO: handle the case where fees are overpaid
-        if (msg.value != totalFee) {
+        if (msg.value < totalFee) {
             revert InterchainDB__IncorrectFeeAmount(msg.value, totalFee);
+        } else if (msg.value > totalFee) {
+            // The exceeding amount goes to the first module
+            fees[0] += msg.value - totalFee;
         }
         uint256 len = srcModules.length;
         for (uint256 i = 0; i < len; ++i) {

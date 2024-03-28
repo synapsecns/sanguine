@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {PingPongApp} from "../../contracts/apps/PingPongApp.sol";
+import {PingPongApp} from "../../contracts/apps/examples/PingPongApp.sol";
 
-import {ConfigureOwnableApp, stdJson} from "./ConfigureOwnableApp.s.sol";
+import {ConfigureAppV1, stdJson} from "./ConfigureAppV1.s.sol";
 
-contract ConfigurePingPongApp is ConfigureOwnableApp {
+contract ConfigurePingPongApp is ConfigureAppV1 {
     using stdJson for string;
 
-    constructor() ConfigureOwnableApp("PingPongApp") {}
+    constructor() ConfigureAppV1("PingPongApp") {}
 
     function afterAppConfigured() internal override {
         printLog("Setting gas limit");
