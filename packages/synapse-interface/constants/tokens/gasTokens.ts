@@ -1,33 +1,39 @@
+import bscImg from '@assets/chains/bnb.svg'
 import { zeroAddress } from 'viem'
 
 import { Token } from '@/utils/types'
 import * as CHAINS from '@/constants/chains/master'
 
-// type GasToken = {
-//   chainId: number
-//   chainName: string
-//   name: string
-//   symbol: string
-//   decimals: number
-// }
+export type GasToken = {
+  addresses: { [x: number]: string }
+  chainId: number
+  decimals: number
+  symbol: string
+  name: string
+  icon: any
+}
 
-export const BNB = new Token({
+// export const BNB = new Token({
+//   addresses: {
+//     [CHAINS.BNB.id]: zeroAddress,
+//   },
+//   decimals: 18,
+//   symbol: 'BNB',
+//   name: 'Binance Coin',
+//   priorityRank: 1,
+//   logo: bscImg,
+// })
+
+export const BNB_Gas: GasToken = {
   addresses: {
     [CHAINS.BNB.id]: zeroAddress,
   },
+  chainId: 56,
   decimals: 18,
   symbol: 'BNB',
   name: 'Binance Coin',
-  priorityRank: 1,
-})
-
-// export const BNB: GasToken = {
-//   chainId: 56,
-//   chainName: 'BNB Chain',
-//   name: 'Binance Coin',
-//   symbol: 'BNB',
-//   decimals: 18,
-// }
+  icon: bscImg,
+}
 
 // export const METIS: GasToken = {
 //   chainId: 1088,

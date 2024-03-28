@@ -6,12 +6,17 @@ import * as allPool from '@constants/tokens/poolMaster'
 import { GMX, ETH, USDC, USDT, WETH } from '@constants/tokens/bridgeable'
 import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
 import { Token } from '@utils/types'
+import { GasToken } from '@constants/tokens/gasTokens'
 
 const allSwap = [WETH, USDC, USDT]
 
 // TODO change this to token by key
 interface TokensByChain {
   [cID: string]: Token[]
+}
+
+interface GasTokensByChain {
+  [cID: string]: GasToken[]
 }
 
 interface TokenByKey {
@@ -70,8 +75,8 @@ const getBridgeableTokens = (): TokensByChain => {
   return bridgeableTokens
 }
 
-const getGasTokens = (): TokensByChain => {
-  const gasTokens: TokensByChain = {}
+const getGasTokens = (): GasTokensByChain => {
+  const gasTokens: GasTokensByChain = {}
   Object.entries(allGasTokens).map(([key, token]) => {
     for (const cID of Object.keys(token.addresses)) {
       // Skip if the token is paused on the current chain

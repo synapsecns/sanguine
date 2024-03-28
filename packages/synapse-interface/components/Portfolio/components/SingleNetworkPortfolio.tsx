@@ -47,6 +47,11 @@ export const SingleNetworkPortfolio = ({
   const isUnsupportedChain: boolean = !chain
 
   const sortedTokens = sortTokensByBalanceDescending(portfolioTokens)
+
+  if (portfolioChainId === 56) {
+    console.log('sortedTokens:', sortedTokens)
+  }
+
   const hasNoTokenBalance: boolean =
     _.isNull(portfolioTokens) || _.isEmpty(portfolioTokens)
 
