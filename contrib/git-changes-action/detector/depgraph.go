@@ -107,27 +107,36 @@ func getDependencyGraph(repoPath string, typeOfDependency string) (moduleDeps ma
 	return moduleDeps, packagesPerModule, nil
 }
 
-func extractGoFileNames(pwd string, currentModule string, currentPackage string, goFiles map[string][]string) (err error) {
-  ls, err := os.ReadDir(pwd)
-  if err != nil {
-    return err
-  }
+func extractGoFileNames(pwd string, currentPackage string, goFiles map[string][]string) (err error) {
 
-  for _, entry := range ls {
-    if entry.IsDir() {
-      extractGoFileNames(pwd + "/" + entry.Name(), currentModule + "/" + entry.Name(), entry.Name(), goFiles)
-    } else if strings.HasSuffix(entry.Name(), ".go") {
-      fileName := pwd + "/" + entry.Name()
-      var packageName string
-      if currentModule == "" {
-        packageName = "/" + currentPackage
-      } else {
-        packageName = currentModule 
+  searchNext := make(map[string]string)
+  _, packageDir := path.Split(currentPackage)
+  searchNext[pwd] = packageDir
+
+  for len(searchNext) > 0 {
+    discovered := make(map[string]string)
+    for path, dirName := range searchNext {
+      err := filepath.Walk(path, func(filePath string, info os.FileInfo, err error) error {
+        if err != nil {
+          return err
+        }
+
+        if info.IsDir() && !(path == filePath) {
+          discovered[filePath] = info.Name()
+          return filepath.SkipDir
+        } else if strings.HasSuffix(info.Name(), ".go") {
+          goFiles["/" + dirName] = append(goFiles["/" + dirName], filePath)
+        }
+
+        return nil
+      })
+
+      if err != nil {
+        fmt.Println("Error walking the path: ", err)
       }
-      goFiles[packageName] = append(goFiles[packageName], fileName)
     }
+    searchNext = discovered
   }
-
   return nil
 }
 
@@ -191,7 +200,6 @@ func makeDepMaps(repoPath string, uses []*modfile.Use, typeOfDependency string) 
   // 2. Create a map where key is module, value is an array with all packages in the module
   // 3. Map public name to relative name for each package (used to filter external library/package imports)
       for _, module := range uses {
-        extractedGoFileNames[module.Path] = make(map[string][]string)
 
         modContents, err := os.ReadFile(filepath.Join(repoPath, module.Path, "go.mod"))
         if err != nil {
@@ -203,8 +211,8 @@ func makeDepMaps(repoPath string, uses []*modfile.Use, typeOfDependency string) 
           return dependencies, dependencyNames, packagesPerModule, fmt.Errorf("failed to parse module file %s: %w", module.Path, err)
         }
 
-        // module.Path = ./moduleName
-        err = extractGoFileNames(pwd + module.Path[1:], "", module.Path[2:], extractedGoFileNames[module.Path])
+        extractedGoFileNames[module.Path] = make(map[string][]string)
+        err = extractGoFileNames(pwd + module.Path[1:], module.Path[1:], extractedGoFileNames[module.Path])
         if err != nil {
           return dependencies, dependencyNames, packagesPerModule, fmt.Errorf("failed to extract go files for module %s: %w", module.Path, err)
         }
