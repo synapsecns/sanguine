@@ -22,4 +22,23 @@ contract ModuleBatchLibHarness {
     {
         return ModuleBatchLib.decodeModuleBatch(encodedModuleBatch);
     }
+
+    function encodeVersionedModuleBatch(
+        bytes memory versionedBatch,
+        bytes memory moduleData
+    )
+        external
+        pure
+        returns (bytes memory)
+    {
+        return ModuleBatchLib.encodeVersionedModuleBatch(versionedBatch, moduleData);
+    }
+
+    function decodeVersionedModuleBatch(bytes memory encodedModuleBatch)
+        external
+        pure
+        returns (bytes memory, bytes memory)
+    {
+        return ModuleBatchLib.decodeVersionedModuleBatch(encodedModuleBatch);
+    }
 }

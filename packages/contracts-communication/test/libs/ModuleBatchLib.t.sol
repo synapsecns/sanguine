@@ -25,4 +25,12 @@ contract ModuleBatchLibTest is Test {
         assertEq(decodedBatch, batch);
         assertEq(decodedModuleData, moduleData);
     }
+
+    function test_encodeVersionedModuleBatch_roundTrip(bytes memory versionedBatch, bytes memory moduleData) public {
+        bytes memory encoded = libHarness.encodeVersionedModuleBatch(versionedBatch, moduleData);
+        (bytes memory decodedVersionedBatch, bytes memory decodedModuleData) =
+            libHarness.decodeVersionedModuleBatch(encoded);
+        assertEq(decodedVersionedBatch, versionedBatch);
+        assertEq(decodedModuleData, moduleData);
+    }
 }

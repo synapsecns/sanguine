@@ -4,7 +4,7 @@ pragma solidity 0.8.20;
 import {InterchainModuleEvents} from "../../contracts/events/InterchainModuleEvents.sol";
 import {SynapseModuleEvents} from "../../contracts/events/SynapseModuleEvents.sol";
 import {IInterchainModule} from "../../contracts/interfaces/IInterchainModule.sol";
-import {InterchainBatch} from "../../contracts/libs/InterchainBatch.sol";
+import {InterchainBatch, InterchainBatchLib} from "../../contracts/libs/InterchainBatch.sol";
 import {ThresholdECDSALib} from "../../contracts/libs/ThresholdECDSA.sol";
 import {SynapseModule} from "../../contracts/modules/SynapseModule.sol";
 
@@ -25,6 +25,8 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
 
     uint256 public constant SRC_CHAIN_ID = 1337;
     uint256 public constant DST_CHAIN_ID = 7331;
+
+    uint16 public constant MOCK_DB_VERSION = 42;
 
     InterchainBatch public mockBatch =
         InterchainBatch({srcChainId: SRC_CHAIN_ID, dbNonce: 2, batchRoot: bytes32(uint256(3))});
@@ -88,7 +90,8 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         view
         returns (bytes memory encodedBatch, bytes32 ethSignedHash)
     {
-        encodedBatch = abi.encode(batch, mockModuleData);
+        bytes memory versionedBatch = InterchainBatchLib.encodeVersionedBatch(MOCK_DB_VERSION, batch);
+        encodedBatch = abi.encode(versionedBatch, mockModuleData);
         ethSignedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(encodedBatch)));
     }
 
@@ -109,40 +112,42 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
     }
 
     function verifyRemoteBatch(InterchainBatch memory batch, bytes memory signatures) internal {
-        module.verifyRemoteBatch(abi.encode(batch, mockModuleData), signatures);
+        bytes memory versionedBatch = InterchainBatchLib.encodeVersionedBatch(MOCK_DB_VERSION, batch);
+        module.verifyRemoteBatch(abi.encode(versionedBatch, mockModuleData), signatures);
     }
 
     // ═══════════════════════════════════════════════ TEST HELPERS ════════════════════════════════════════════════════
 
-    function expectInterchainDBCall(InterchainBatch memory batch) internal {
-        bytes memory expectedCallData = abi.encodeCall(IInterchainDB.verifyRemoteBatch, (batch));
+    function expectCallVerifyRemoteBatch(InterchainBatch memory batch) internal {
+        bytes memory versionedBatch = InterchainBatchLib.encodeVersionedBatch(MOCK_DB_VERSION, batch);
+        bytes memory expectedCallData = abi.encodeCall(IInterchainDB.verifyRemoteBatch, (versionedBatch));
         // expectCall(address callee, bytes calldata data, uint64 count)
         vm.expectCall(address(interchainDB), expectedCallData, 1);
     }
 
-    function expectBatchVerifiedEvent(InterchainBatch memory batch) internal {
+    function expectEventBatchVerified(InterchainBatch memory batch) internal {
         (bytes memory encodedBatch, bytes32 ethSignedHash) = encodeAndHashBatch(batch);
         vm.expectEmit(address(module));
         emit BatchVerified(batch.srcChainId, encodedBatch, ethSignedHash);
     }
 
-    function expectIncorrectSignaturesLengthRevert(uint256 length) internal {
+    function expectRevertIncorrectSignaturesLength(uint256 length) internal {
         vm.expectRevert(
             abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__IncorrectSignaturesLength.selector, length)
         );
     }
 
-    function expectNotEnoughSignaturesRevert(uint256 provided, uint256 threshold) internal {
+    function expectRevertNotEnoughSignatures(uint256 provided, uint256 threshold) internal {
         vm.expectRevert(
             abi.encodeWithSelector(ThresholdECDSALib.ThresholdECDSA__NotEnoughSignatures.selector, provided, threshold)
         );
     }
 
-    function expectRecoveredSignersNotSortedRevert() internal {
+    function expectRevertRecoveredSignersNotSorted() internal {
         vm.expectRevert(ThresholdECDSALib.ThresholdECDSA__RecoveredSignersNotSorted.selector);
     }
 
-    function expectSameChainIdRevert(uint256 chainId) internal {
+    function expectRevertSameChainId(uint256 chainId) internal {
         vm.expectRevert(abi.encodeWithSelector(IInterchainModule.InterchainModule__SameChainId.selector, chainId));
     }
 
@@ -154,118 +159,118 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
     // Should be verified if the enough valid signatures, which match the signers ascending order
 
     function test_verifyRemoteBatch_zeroSignatures_revertNotEnoughSignatures() public {
-        expectNotEnoughSignaturesRevert(0, 2);
+        expectRevertNotEnoughSignatures(0, 2);
         verifyRemoteBatch(mockBatch, "");
     }
 
     function test_verifyRemoteBatch_oneSignature_valid_revertNotEnoughSignatures() public {
         bytes memory signatures = signBatch(mockBatch, toArray(PK_0));
-        expectNotEnoughSignaturesRevert(1, 2);
+        expectRevertNotEnoughSignatures(1, 2);
         verifyRemoteBatch(mockBatch, signatures);
     }
 
     function test_verifyRemoteBatch_oneSignature_invalid_revertNotEnoughSignatures() public {
         bytes memory signatures = signBatch(mockBatch, toArray(PK_3));
-        expectNotEnoughSignaturesRevert(0, 2);
+        expectRevertNotEnoughSignatures(0, 2);
         verifyRemoteBatch(mockBatch, signatures);
     }
 
     function test_verifyRemoteBatch_twoSignatures_valid_sorted() public {
         bytes memory signatures = signBatch(mockBatch, toArray(PK_1, PK_0));
-        expectInterchainDBCall(mockBatch);
-        expectBatchVerifiedEvent(mockBatch);
+        expectCallVerifyRemoteBatch(mockBatch);
+        expectEventBatchVerified(mockBatch);
         verifyRemoteBatch(mockBatch, signatures);
     }
 
     function test_verifyRemoteBatch_twoSignatures_valid_duplicate_revertNotSorted() public {
         bytes memory signatures = signBatch(mockBatch, toArray(PK_1, PK_1));
-        expectRecoveredSignersNotSortedRevert();
+        expectRevertRecoveredSignersNotSorted();
         verifyRemoteBatch(mockBatch, signatures);
     }
 
     function test_verifyRemoteBatch_twoSignatures_valid_unsorted_revertNotSorted() public {
         bytes memory signatures = signBatch(mockBatch, toArray(PK_0, PK_1));
-        expectRecoveredSignersNotSortedRevert();
+        expectRevertRecoveredSignersNotSorted();
         verifyRemoteBatch(mockBatch, signatures);
     }
 
     function test_verifyRemoteBatch_twoSignatures_invalidOne_sorted_revertNotEnoughSignatures() public {
         bytes memory signatures = signBatch(mockBatch, toArray(PK_1, PK_3));
-        expectNotEnoughSignaturesRevert(1, 2);
+        expectRevertNotEnoughSignatures(1, 2);
         verifyRemoteBatch(mockBatch, signatures);
     }
 
     function test_verifyRemoteBatch_twoSignatures_invalidOne_unsorted_revertNotSorted() public {
         bytes memory signatures = signBatch(mockBatch, toArray(PK_3, PK_1));
-        expectRecoveredSignersNotSortedRevert();
+        expectRevertRecoveredSignersNotSorted();
         verifyRemoteBatch(mockBatch, signatures);
     }
 
     function test_verifyRemoteBatch_twoSignatures_invalidTwo_sorted_revertNotEnoughSignatures() public {
         bytes memory signatures = signBatch(mockBatch, toArray(PK_4, PK_3));
-        expectNotEnoughSignaturesRevert(0, 2);
+        expectRevertNotEnoughSignatures(0, 2);
         verifyRemoteBatch(mockBatch, signatures);
     }
 
     function test_verifyRemoteBatch_twoSignatures_invalidTwo_duplicate_revertNotSorted() public {
         bytes memory signatures = signBatch(mockBatch, toArray(PK_4, PK_4));
-        expectRecoveredSignersNotSortedRevert();
+        expectRevertRecoveredSignersNotSorted();
         verifyRemoteBatch(mockBatch, signatures);
     }
 
     function test_verifyRemoteBatch_threeSignatures_valid_sorted() public {
         bytes memory signatures = signBatch(mockBatch, toArray(PK_1, PK_0, PK_2));
-        expectInterchainDBCall(mockBatch);
-        expectBatchVerifiedEvent(mockBatch);
+        expectCallVerifyRemoteBatch(mockBatch);
+        expectEventBatchVerified(mockBatch);
         verifyRemoteBatch(mockBatch, signatures);
     }
 
     function test_verifyRemoteBatch_threeSignatures_valid_duplicate_revertNotSorted() public {
         bytes memory signatures = signBatch(mockBatch, toArray(PK_1, PK_0, PK_0));
-        expectRecoveredSignersNotSortedRevert();
+        expectRevertRecoveredSignersNotSorted();
         verifyRemoteBatch(mockBatch, signatures);
     }
 
     function test_verifyRemoteBatch_threeSignatures_valid_unsorted_revertNotSorted() public {
         bytes memory signatures = signBatch(mockBatch, toArray(PK_0, PK_2, PK_1));
-        expectRecoveredSignersNotSortedRevert();
+        expectRevertRecoveredSignersNotSorted();
         verifyRemoteBatch(mockBatch, signatures);
     }
 
     function test_verifyRemoteBatch_threeSignatures_invalidOne_sorted() public {
         bytes memory signatures = signBatch(mockBatch, toArray(PK_4, PK_0, PK_2));
-        expectInterchainDBCall(mockBatch);
-        expectBatchVerifiedEvent(mockBatch);
+        expectCallVerifyRemoteBatch(mockBatch);
+        expectEventBatchVerified(mockBatch);
         verifyRemoteBatch(mockBatch, signatures);
     }
 
     function test_verifyRemoteBatch_threeSignatures_invalidOne_duplicate_revertNotSorted() public {
         bytes memory signatures = signBatch(mockBatch, toArray(PK_4, PK_0, PK_0));
-        expectRecoveredSignersNotSortedRevert();
+        expectRevertRecoveredSignersNotSorted();
         verifyRemoteBatch(mockBatch, signatures);
     }
 
     function test_verifyRemoteBatch_threeSignatures_invalidOne_unsorted_revertNotSorted() public {
         bytes memory signatures = signBatch(mockBatch, toArray(PK_0, PK_4, PK_1));
-        expectRecoveredSignersNotSortedRevert();
+        expectRevertRecoveredSignersNotSorted();
         verifyRemoteBatch(mockBatch, signatures);
     }
 
     function test_verifyRemoteBatch_threeSignatures_invalidTwo_sorted_revertNotEnoughSignatures() public {
         bytes memory signatures = signBatch(mockBatch, toArray(PK_4, PK_3, PK_2));
-        expectNotEnoughSignaturesRevert(1, 2);
+        expectRevertNotEnoughSignatures(1, 2);
         verifyRemoteBatch(mockBatch, signatures);
     }
 
     function test_verifyRemoteBatch_threeSignatures_invalidTwo_duplicate_revertNotSorted() public {
         bytes memory signatures = signBatch(mockBatch, toArray(PK_0, PK_3, PK_3));
-        expectRecoveredSignersNotSortedRevert();
+        expectRevertRecoveredSignersNotSorted();
         verifyRemoteBatch(mockBatch, signatures);
     }
 
     function test_verifyRemoteBatch_threeSignatures_invalidTwo_unsorted_revertNotSorted() public {
         bytes memory signatures = signBatch(mockBatch, toArray(PK_3, PK_0, PK_4));
-        expectRecoveredSignersNotSortedRevert();
+        expectRevertRecoveredSignersNotSorted();
         verifyRemoteBatch(mockBatch, signatures);
     }
 
@@ -273,13 +278,13 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         vm.prank(owner);
         module.removeVerifier(SIGNER_0);
         bytes memory signatures = signBatch(mockBatch, toArray(PK_4, PK_0, PK_3));
-        expectNotEnoughSignaturesRevert(0, 2);
+        expectRevertNotEnoughSignatures(0, 2);
         verifyRemoteBatch(mockBatch, signatures);
     }
 
     function test_verifyRemoteBatch_threeSignatures_invalidThree_duplicate_revertNotSorted() public {
         bytes memory signatures = signBatch(mockBatch, toArray(PK_4, PK_3, PK_3));
-        expectRecoveredSignersNotSortedRevert();
+        expectRevertRecoveredSignersNotSorted();
         verifyRemoteBatch(mockBatch, signatures);
     }
 
@@ -287,7 +292,7 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         vm.prank(owner);
         module.removeVerifier(SIGNER_0);
         bytes memory signatures = signBatch(mockBatch, toArray(PK_3, PK_4, PK_0));
-        expectRecoveredSignersNotSortedRevert();
+        expectRevertRecoveredSignersNotSorted();
         verifyRemoteBatch(mockBatch, signatures);
     }
 
@@ -295,7 +300,7 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         InterchainBatch memory batch = mockBatch;
         batch.srcChainId = DST_CHAIN_ID;
         bytes memory signatures = signBatch(batch, toArray(PK_1, PK_0));
-        expectSameChainIdRevert(DST_CHAIN_ID);
+        expectRevertSameChainId(DST_CHAIN_ID);
         verifyRemoteBatch(batch, signatures);
     }
 
@@ -317,14 +322,14 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         for (uint256 i = 0; i < signaturesShort.length; ++i) {
             signaturesShort[i] = signatures[i];
         }
-        expectIncorrectSignaturesLengthRevert(signaturesShort.length);
+        expectRevertIncorrectSignaturesLength(signaturesShort.length);
         verifyRemoteBatch(mockBatch, signaturesShort);
     }
 
     function test_verifyRemoteBatch_revertIncorrectSignaturesLengthTooLong() public {
         bytes memory signatures = signBatch(mockBatch, toArray(PK_1, PK_0));
         bytes memory signaturesLong = bytes.concat(signatures, bytes1(0x2A));
-        expectIncorrectSignaturesLengthRevert(signaturesLong.length);
+        expectRevertIncorrectSignaturesLength(signaturesLong.length);
         verifyRemoteBatch(mockBatch, signaturesLong);
     }
 }

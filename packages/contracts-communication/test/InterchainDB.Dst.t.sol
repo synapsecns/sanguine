@@ -4,6 +4,7 @@ pragma solidity 0.8.20;
 import {
     InterchainDB,
     InterchainBatch,
+    InterchainBatchLib,
     InterchainEntry,
     IInterchainDB,
     InterchainDBEvents
@@ -21,6 +22,8 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
     uint256 public constant SRC_CHAIN_ID_0 = 1337;
     uint256 public constant SRC_CHAIN_ID_1 = 1338;
     uint256 public constant DST_CHAIN_ID = 7331;
+
+    uint16 public constant DB_VERSION = 1;
 
     InterchainDB public icDB;
     InterchainModuleMock public moduleA;
@@ -48,9 +51,10 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
     }
 
     function verifyBatch(InterchainModuleMock module, InterchainBatch memory batch) internal {
+        bytes memory versionedBatch = InterchainBatchLib.encodeVersionedBatch(DB_VERSION, batch);
         skip(1 minutes);
         verifiedAt[address(module)][keccak256(abi.encode(batch))] = block.timestamp;
-        module.mockVerifyRemoteBatch(address(icDB), batch);
+        module.mockVerifyRemoteBatch(address(icDB), versionedBatch);
     }
 
     function introduceConflicts() public {
@@ -182,12 +186,12 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         assertEq(timestamp, expectedVerificationTime);
     }
 
-    function expectBatchVerifiedEvent(InterchainModuleMock module, InterchainBatch memory batch) internal {
+    function expectEventBatchVerified(InterchainModuleMock module, InterchainBatch memory batch) internal {
         vm.expectEmit(address(icDB));
         emit InterchainBatchVerified(address(module), batch.srcChainId, batch.dbNonce, batch.batchRoot);
     }
 
-    function expectConflictingBatches(
+    function expectRevertConflictingBatches(
         InterchainModuleMock module,
         InterchainBatch memory existingBatch,
         InterchainBatch memory newBatch
@@ -204,6 +208,10 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         );
     }
 
+    function expectRevertInvalidBatchVersion(uint16 version) internal {
+        vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__InvalidBatchVersion.selector, version));
+    }
+
     function expectSameChainId(uint256 chainId) internal {
         vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__SameChainId.selector, chainId));
     }
@@ -213,7 +221,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
     function test_verifyBatch_new_emitsEvent() public {
         skip(1 days);
         InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_0, 20);
-        expectBatchVerifiedEvent(moduleA, batch);
+        expectEventBatchVerified(moduleA, batch);
         verifyBatch(moduleA, batch);
     }
 
@@ -227,7 +235,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
     function test_verifyBatch_existing_diffModule_emitsEvent() public {
         // {1: 0} was already verified by module B
         InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_1, 0);
-        expectBatchVerifiedEvent(moduleA, batch);
+        expectEventBatchVerified(moduleA, batch);
         verifyBatch(moduleA, batch);
     }
 
@@ -267,7 +275,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
     function test_verifyBatch_conflict_diffModule_emitsEvent() public {
         // {1: 0} was already verified by module B
         InterchainBatch memory batch = getFakeBatch(SRC_CHAIN_ID_1, 0);
-        expectBatchVerifiedEvent(moduleA, batch);
+        expectEventBatchVerified(moduleA, batch);
         verifyBatch(moduleA, batch);
     }
 
@@ -293,7 +301,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         // {0:0} was already verified by module A
         InterchainBatch memory existingBatch = getMockBatch(SRC_CHAIN_ID_0, 0);
         InterchainBatch memory conflictingBatch = getFakeBatch(SRC_CHAIN_ID_0, 0);
-        expectConflictingBatches(moduleA, existingBatch, conflictingBatch);
+        expectRevertConflictingBatches(moduleA, existingBatch, conflictingBatch);
         verifyBatch(moduleA, conflictingBatch);
     }
 
@@ -302,6 +310,14 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         InterchainBatch memory batch = getMockBatch(DST_CHAIN_ID, 0);
         expectSameChainId(DST_CHAIN_ID);
         verifyBatch(moduleA, batch);
+    }
+
+    function test_verifyBatch_revert_wrongVersion(uint16 version) public {
+        vm.assume(version != DB_VERSION);
+        InterchainBatch memory batch = getMockBatch(SRC_CHAIN_ID_0, 0);
+        bytes memory versionedBatch = InterchainBatchLib.encodeVersionedBatch(version, batch);
+        expectRevertInvalidBatchVersion(version);
+        moduleA.mockVerifyRemoteBatch(address(icDB), versionedBatch);
     }
 
     // ══════════════════════════════════════════ TESTS: READING BATCHES ═══════════════════════════════════════════════
