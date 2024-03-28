@@ -32,7 +32,7 @@ func DetectChangedModules(repoPath string, ct tree.Tree, includeDeps bool) (modu
 		return nil, fmt.Errorf("failed to parse go.work file: %w", err)
 	}
 
-	depGraph, packagesPerModule, err := getPackageDependencyGrap(repoPath)
+	depGraph, packagesPerModule, err := getPackageDependencyGraph(repoPath)
 	if err != nil {
 		return nil, fmt.Errorf("could not get dep graph: %w", err)
 	}

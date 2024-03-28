@@ -79,9 +79,9 @@ func extractGoFileNames(pwd string, currentPackage string, goFiles map[string][]
 	for len(searchNext) > 0 {
 		discovered := make(map[string]string)
 		for path, dirName := range searchNext {
-      // see https://stackoverflow.com/a/68559720
-      dirName := dirName
-      path := path
+			// see https://stackoverflow.com/a/68559720
+			dirName := dirName
+			path := path
 			err := filepath.Walk(path, func(filePath string, info os.FileInfo, err error) error {
 				if err != nil {
 					return err
