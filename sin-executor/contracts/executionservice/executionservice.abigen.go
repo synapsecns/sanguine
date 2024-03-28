@@ -3068,14 +3068,16 @@ func (_IGasOracle *IGasOracleCallerSession) EstimateTxCostInRemoteUnits(remoteCh
 
 // ISynapseExecutionServiceV1MetaData contains all meta data concerning the ISynapseExecutionServiceV1 contract.
 var ISynapseExecutionServiceV1MetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"SynapseExecutionService__FeeAmountTooLow\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseExecutionService__GasOracleNotSet\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"version\",\"type\":\"uint256\"}],\"name\":\"SynapseExecutionService__OptionsVersionNotSupported\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseExecutionService__ZeroAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"executorEOA\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"gasOracle\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"getExecutionFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"requestExecution\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executorEOA_\",\"type\":\"address\"}],\"name\":\"setExecutorEOA\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle_\",\"type\":\"address\"}],\"name\":\"setGasOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"SynapseExecutionService__FeeAmountTooLow\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseExecutionService__GasOracleNotSet\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"version\",\"type\":\"uint256\"}],\"name\":\"SynapseExecutionService__OptionsVersionNotSupported\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseExecutionService__ZeroAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"executorEOA\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"gasOracle\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"getExecutionFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"globalMarkup\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"requestExecution\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executorEOA_\",\"type\":\"address\"}],\"name\":\"setExecutorEOA\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle_\",\"type\":\"address\"}],\"name\":\"setGasOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"globalMarkup_\",\"type\":\"uint256\"}],\"name\":\"setGlobalMarkup\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"62014bad": "executorEOA()",
 		"5d62a8dd": "gasOracle()",
 		"c473e7e8": "getExecutionFee(uint256,uint256,bytes)",
+		"efd07ec2": "globalMarkup()",
 		"e4e06522": "requestExecution(uint256,uint256,bytes32,uint256,bytes)",
 		"2d54566c": "setExecutorEOA(address)",
 		"a87b8152": "setGasOracle(address)",
+		"cf4f578f": "setGlobalMarkup(uint256)",
 	},
 }
 
@@ -3322,6 +3324,37 @@ func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1CallerSession) GetE
 	return _ISynapseExecutionServiceV1.Contract.GetExecutionFee(&_ISynapseExecutionServiceV1.CallOpts, dstChainId, txPayloadSize, options)
 }
 
+// GlobalMarkup is a free data retrieval call binding the contract method 0xefd07ec2.
+//
+// Solidity: function globalMarkup() view returns(uint256)
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1Caller) GlobalMarkup(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _ISynapseExecutionServiceV1.contract.Call(opts, &out, "globalMarkup")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GlobalMarkup is a free data retrieval call binding the contract method 0xefd07ec2.
+//
+// Solidity: function globalMarkup() view returns(uint256)
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1Session) GlobalMarkup() (*big.Int, error) {
+	return _ISynapseExecutionServiceV1.Contract.GlobalMarkup(&_ISynapseExecutionServiceV1.CallOpts)
+}
+
+// GlobalMarkup is a free data retrieval call binding the contract method 0xefd07ec2.
+//
+// Solidity: function globalMarkup() view returns(uint256)
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1CallerSession) GlobalMarkup() (*big.Int, error) {
+	return _ISynapseExecutionServiceV1.Contract.GlobalMarkup(&_ISynapseExecutionServiceV1.CallOpts)
+}
+
 // RequestExecution is a paid mutator transaction binding the contract method 0xe4e06522.
 //
 // Solidity: function requestExecution(uint256 dstChainId, uint256 txPayloadSize, bytes32 transactionId, uint256 executionFee, bytes options) returns()
@@ -3383,6 +3416,27 @@ func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1Session) SetGasOrac
 // Solidity: function setGasOracle(address gasOracle_) returns()
 func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1TransactorSession) SetGasOracle(gasOracle_ common.Address) (*types.Transaction, error) {
 	return _ISynapseExecutionServiceV1.Contract.SetGasOracle(&_ISynapseExecutionServiceV1.TransactOpts, gasOracle_)
+}
+
+// SetGlobalMarkup is a paid mutator transaction binding the contract method 0xcf4f578f.
+//
+// Solidity: function setGlobalMarkup(uint256 globalMarkup_) returns()
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1Transactor) SetGlobalMarkup(opts *bind.TransactOpts, globalMarkup_ *big.Int) (*types.Transaction, error) {
+	return _ISynapseExecutionServiceV1.contract.Transact(opts, "setGlobalMarkup", globalMarkup_)
+}
+
+// SetGlobalMarkup is a paid mutator transaction binding the contract method 0xcf4f578f.
+//
+// Solidity: function setGlobalMarkup(uint256 globalMarkup_) returns()
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1Session) SetGlobalMarkup(globalMarkup_ *big.Int) (*types.Transaction, error) {
+	return _ISynapseExecutionServiceV1.Contract.SetGlobalMarkup(&_ISynapseExecutionServiceV1.TransactOpts, globalMarkup_)
+}
+
+// SetGlobalMarkup is a paid mutator transaction binding the contract method 0xcf4f578f.
+//
+// Solidity: function setGlobalMarkup(uint256 globalMarkup_) returns()
+func (_ISynapseExecutionServiceV1 *ISynapseExecutionServiceV1TransactorSession) SetGlobalMarkup(globalMarkup_ *big.Int) (*types.Transaction, error) {
+	return _ISynapseExecutionServiceV1.Contract.SetGlobalMarkup(&_ISynapseExecutionServiceV1.TransactOpts, globalMarkup_)
 }
 
 // InitializableMetaData contains all meta data concerning the Initializable contract.
@@ -3673,7 +3727,7 @@ func (_Initializable *InitializableFilterer) ParseInitialized(log types.Log) (*I
 // OptionsLibMetaData contains all meta data concerning the OptionsLib contract.
 var OptionsLibMetaData = &bind.MetaData{
 	ABI: "[{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"}],\"name\":\"OptionsLib__IncorrectVersion\",\"type\":\"error\"}]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220c7d3988c027a3c54c7bf91aed1aa489e76fe334af64e5e17f96e2cade4d2794064736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122098c6b1c0716cd02d2f7d3144e98d2bcb208bfdafd0b8a5b3826489026072c7e564736f6c63430008140033",
 }
 
 // OptionsLibABI is the input ABI used to generate the binding from.
@@ -3845,7 +3899,7 @@ func (_OptionsLib *OptionsLibTransactorRaw) Transact(opts *bind.TransactOpts, me
 
 // SynapseExecutionServiceEventsMetaData contains all meta data concerning the SynapseExecutionServiceEvents contract.
 var SynapseExecutionServiceEventsMetaData = &bind.MetaData{
-	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"ExecutionRequested\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"executorEOA\",\"type\":\"address\"}],\"name\":\"ExecutorEOASet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"GasOracleSet\",\"type\":\"event\"}]",
+	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"ExecutionRequested\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"executorEOA\",\"type\":\"address\"}],\"name\":\"ExecutorEOASet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"GasOracleSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"globalMarkup\",\"type\":\"uint256\"}],\"name\":\"GlobalMarkupSet\",\"type\":\"event\"}]",
 }
 
 // SynapseExecutionServiceEventsABI is the input ABI used to generate the binding from.
@@ -4407,9 +4461,143 @@ func (_SynapseExecutionServiceEvents *SynapseExecutionServiceEventsFilterer) Par
 	return event, nil
 }
 
+// SynapseExecutionServiceEventsGlobalMarkupSetIterator is returned from FilterGlobalMarkupSet and is used to iterate over the raw logs and unpacked data for GlobalMarkupSet events raised by the SynapseExecutionServiceEvents contract.
+type SynapseExecutionServiceEventsGlobalMarkupSetIterator struct {
+	Event *SynapseExecutionServiceEventsGlobalMarkupSet // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *SynapseExecutionServiceEventsGlobalMarkupSetIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(SynapseExecutionServiceEventsGlobalMarkupSet)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(SynapseExecutionServiceEventsGlobalMarkupSet)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *SynapseExecutionServiceEventsGlobalMarkupSetIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *SynapseExecutionServiceEventsGlobalMarkupSetIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// SynapseExecutionServiceEventsGlobalMarkupSet represents a GlobalMarkupSet event raised by the SynapseExecutionServiceEvents contract.
+type SynapseExecutionServiceEventsGlobalMarkupSet struct {
+	GlobalMarkup *big.Int
+	Raw          types.Log // Blockchain specific contextual infos
+}
+
+// FilterGlobalMarkupSet is a free log retrieval operation binding the contract event 0x1957a4f563f2f13a7e7c1f9d8d6e719a1e6f687ac787704c33069f0a7997d75d.
+//
+// Solidity: event GlobalMarkupSet(uint256 globalMarkup)
+func (_SynapseExecutionServiceEvents *SynapseExecutionServiceEventsFilterer) FilterGlobalMarkupSet(opts *bind.FilterOpts) (*SynapseExecutionServiceEventsGlobalMarkupSetIterator, error) {
+
+	logs, sub, err := _SynapseExecutionServiceEvents.contract.FilterLogs(opts, "GlobalMarkupSet")
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceEventsGlobalMarkupSetIterator{contract: _SynapseExecutionServiceEvents.contract, event: "GlobalMarkupSet", logs: logs, sub: sub}, nil
+}
+
+// WatchGlobalMarkupSet is a free log subscription operation binding the contract event 0x1957a4f563f2f13a7e7c1f9d8d6e719a1e6f687ac787704c33069f0a7997d75d.
+//
+// Solidity: event GlobalMarkupSet(uint256 globalMarkup)
+func (_SynapseExecutionServiceEvents *SynapseExecutionServiceEventsFilterer) WatchGlobalMarkupSet(opts *bind.WatchOpts, sink chan<- *SynapseExecutionServiceEventsGlobalMarkupSet) (event.Subscription, error) {
+
+	logs, sub, err := _SynapseExecutionServiceEvents.contract.WatchLogs(opts, "GlobalMarkupSet")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(SynapseExecutionServiceEventsGlobalMarkupSet)
+				if err := _SynapseExecutionServiceEvents.contract.UnpackLog(event, "GlobalMarkupSet", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseGlobalMarkupSet is a log parse operation binding the contract event 0x1957a4f563f2f13a7e7c1f9d8d6e719a1e6f687ac787704c33069f0a7997d75d.
+//
+// Solidity: event GlobalMarkupSet(uint256 globalMarkup)
+func (_SynapseExecutionServiceEvents *SynapseExecutionServiceEventsFilterer) ParseGlobalMarkupSet(log types.Log) (*SynapseExecutionServiceEventsGlobalMarkupSet, error) {
+	event := new(SynapseExecutionServiceEventsGlobalMarkupSet)
+	if err := _SynapseExecutionServiceEvents.contract.UnpackLog(event, "GlobalMarkupSet", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
 // SynapseExecutionServiceV1MetaData contains all meta data concerning the SynapseExecutionServiceV1 contract.
 var SynapseExecutionServiceV1MetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"AccessControlBadConfirmation\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"neededRole\",\"type\":\"bytes32\"}],\"name\":\"AccessControlUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidInitialization\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInitializing\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"}],\"name\":\"OptionsLib__IncorrectVersion\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"SynapseExecutionService__FeeAmountTooLow\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseExecutionService__GasOracleNotSet\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"version\",\"type\":\"uint256\"}],\"name\":\"SynapseExecutionService__OptionsVersionNotSupported\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseExecutionService__ZeroAddress\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"ExecutionRequested\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"executorEOA\",\"type\":\"address\"}],\"name\":\"ExecutorEOASet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"GasOracleSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"version\",\"type\":\"uint64\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"GOVERNOR_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"IC_CLIENT_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"executorEOA\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"gasOracle\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"getExecutionFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"callerConfirmation\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"requestExecution\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executorEOA_\",\"type\":\"address\"}],\"name\":\"setExecutorEOA\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle_\",\"type\":\"address\"}],\"name\":\"setGasOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"AccessControlBadConfirmation\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"neededRole\",\"type\":\"bytes32\"}],\"name\":\"AccessControlUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidInitialization\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInitializing\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"}],\"name\":\"OptionsLib__IncorrectVersion\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"SynapseExecutionService__FeeAmountTooLow\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseExecutionService__GasOracleNotSet\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"version\",\"type\":\"uint256\"}],\"name\":\"SynapseExecutionService__OptionsVersionNotSupported\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseExecutionService__ZeroAddress\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"ExecutionRequested\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"executorEOA\",\"type\":\"address\"}],\"name\":\"ExecutorEOASet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"GasOracleSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"globalMarkup\",\"type\":\"uint256\"}],\"name\":\"GlobalMarkupSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"version\",\"type\":\"uint64\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"GOVERNOR_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"IC_CLIENT_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"executorEOA\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"gasOracle\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"getExecutionFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"globalMarkup\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"callerConfirmation\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"requestExecution\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executorEOA_\",\"type\":\"address\"}],\"name\":\"setExecutorEOA\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle_\",\"type\":\"address\"}],\"name\":\"setGasOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"globalMarkup_\",\"type\":\"uint256\"}],\"name\":\"setGlobalMarkup\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"a217fddf": "DEFAULT_ADMIN_ROLE()",
 		"ccc57490": "GOVERNOR_ROLE()",
@@ -4418,6 +4606,7 @@ var SynapseExecutionServiceV1MetaData = &bind.MetaData{
 		"5d62a8dd": "gasOracle()",
 		"c473e7e8": "getExecutionFee(uint256,uint256,bytes)",
 		"248a9ca3": "getRoleAdmin(bytes32)",
+		"efd07ec2": "globalMarkup()",
 		"2f2ff15d": "grantRole(bytes32,address)",
 		"91d14854": "hasRole(bytes32,address)",
 		"c4d66de8": "initialize(address)",
@@ -4426,9 +4615,10 @@ var SynapseExecutionServiceV1MetaData = &bind.MetaData{
 		"d547741f": "revokeRole(bytes32,address)",
 		"2d54566c": "setExecutorEOA(address)",
 		"a87b8152": "setGasOracle(address)",
+		"cf4f578f": "setGlobalMarkup(uint256)",
 		"01ffc9a7": "supportsInterface(bytes4)",
 	},
-	Bin: "0x608060405234801561001057600080fd5b5061001961001e565b6100d0565b7ff0c57e16840df040f15088dc2f81fe391c3923bec73e23a9662efc9c229c6a00805468010000000000000000900460ff161561006e5760405163f92ee8a960e01b815260040160405180910390fd5b80546001600160401b03908116146100cd5780546001600160401b0319166001600160401b0390811782556040519081527fc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d29060200160405180910390a15b50565b611344806100df6000396000f3fe608060405234801561001057600080fd5b50600436106101005760003560e01c806391d1485411610097578063c4d66de811610066578063c4d66de81461030d578063ccc5749014610320578063d547741f14610347578063e4e065221461035a57600080fd5b806391d148541461027a578063a217fddf146102df578063a87b8152146102e7578063c473e7e8146102fa57600080fd5b80632f2ff15d116100d35780632f2ff15d146101b957806336568abe146101cc5780635d62a8dd146101df57806362014bad1461023d57600080fd5b806301ffc9a71461010557806308c5c0db1461012d578063248a9ca3146101625780632d54566c146101a4575b600080fd5b610118610113366004610f22565b61036d565b60405190151581526020015b60405180910390f35b6101547f506033f42d439a89b8dbacb157256b8ef7e613d9e48db1be101b85411778abfb81565b604051908152602001610124565b610154610170366004610f6b565b60009081527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b626800602052604090206001015490565b6101b76101b2366004610fad565b610406565b005b6101b76101c7366004610fc8565b610517565b6101b76101da366004610fc8565b610561565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31015473ffffffffffffffffffffffffffffffffffffffff165b60405173ffffffffffffffffffffffffffffffffffffffff9091168152602001610124565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31005473ffffffffffffffffffffffffffffffffffffffff16610218565b610118610288366004610fc8565b60009182527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020908152604080842073ffffffffffffffffffffffffffffffffffffffff93909316845291905290205460ff1690565b610154600081565b6101b76102f5366004610fad565b6105bf565b61015461030836600461110e565b6106ea565b6101b761031b366004610fad565b610943565b6101547f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f5581565b6101b7610355366004610fc8565b610ac6565b6101b761036836600461115e565b610b0a565b60007fffffffff0000000000000000000000000000000000000000000000000000000082167f7965db0b00000000000000000000000000000000000000000000000000000000148061040057507f01ffc9a7000000000000000000000000000000000000000000000000000000007fffffffff000000000000000000000000000000000000000000000000000000008316145b92915050565b7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f5561043081610bc5565b73ffffffffffffffffffffffffffffffffffffffff821661047d576040517f0a0c2d7000000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e310080547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff841690811782556040519081527f4ab11d24f4bb323219ce90846ba579a556c914e8587517e7c8c4264771cd9f71906020015b60405180910390a1505050565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b626800602052604090206001015461055181610bc5565b61055b8383610bd2565b50505050565b73ffffffffffffffffffffffffffffffffffffffff811633146105b0576040517f6697b23200000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6105ba8282610cf3565b505050565b7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f556105e981610bc5565b73ffffffffffffffffffffffffffffffffffffffff8216610636576040517f0a0c2d7000000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e310180547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff84169081179091556040519081527fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e3100907f3efbbb00c39812fb98647af6e9e2c3f4ec2b53d368cedd1e148330a05b652cfa9060200161050a565b60008061072b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31015473ffffffffffffffffffffffffffffffffffffffff1690565b905073ffffffffffffffffffffffffffffffffffffffff811661077a576040517f38d2192500000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b600061078584610dd1565b509050600160ff821611156107d0576040517fdaa5a14f00000000000000000000000000000000000000000000000000000000815260ff821660048201526024015b60405180910390fd5b60006107db85610df3565b80516040517f5cbd3c48000000000000000000000000000000000000000000000000000000008152600481018a905260248101919091526044810188905290915073ffffffffffffffffffffffffffffffffffffffff841690635cbd3c4890606401602060405180830381865afa15801561085a573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061087e91906111c2565b6020820151909450156109395760208101516040517f1e7b928700000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff851691631e7b9287916108eb918b91600401918252602082015260400190565b602060405180830381865afa158015610908573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061092c91906111c2565b61093690856111db565b93505b5050509392505050565b7ff0c57e16840df040f15088dc2f81fe391c3923bec73e23a9662efc9c229c6a00805468010000000000000000810460ff16159067ffffffffffffffff1660008115801561098e5750825b905060008267ffffffffffffffff1660011480156109ab5750303b155b9050811580156109b9575080155b156109f0576040517ff92ee8a900000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b84547fffffffffffffffffffffffffffffffffffffffffffffffff00000000000000001660011785558315610a515784547fffffffffffffffffffffffffffffffffffffffffffffff00ffffffffffffffff16680100000000000000001785555b610a5c600087610bd2565b508315610abe5784547fffffffffffffffffffffffffffffffffffffffffffffff00ffffffffffffffff168555604051600181527fc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d29060200160405180910390a15b505050505050565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020526040902060010154610b0081610bc5565b61055b8383610cf3565b7f506033f42d439a89b8dbacb157256b8ef7e613d9e48db1be101b85411778abfb610b3481610bc5565b6000610b418787856106ea565b905080841015610b87576040517f4641246a00000000000000000000000000000000000000000000000000000000815260048101859052602481018290526044016107c7565b60405133815285907f507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd13829060200160405180910390a250505050505050565b610bcf8133610e77565b50565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020818152604080842073ffffffffffffffffffffffffffffffffffffffff8616855290915282205460ff16610ce95760008481526020828152604080832073ffffffffffffffffffffffffffffffffffffffff87168452909152902080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00166001179055610c853390565b73ffffffffffffffffffffffffffffffffffffffff168373ffffffffffffffffffffffffffffffffffffffff16857f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d60405160405180910390a46001915050610400565b6000915050610400565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020818152604080842073ffffffffffffffffffffffffffffffffffffffff8616855290915282205460ff1615610ce95760008481526020828152604080832073ffffffffffffffffffffffffffffffffffffffff8716808552925280832080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0016905551339287917ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9190a46001915050610400565b6000606082806020019051810190610de99190611215565b9094909350915050565b6040805180820190915260008082526020820152600080610e1384610dd1565b9092509050600160ff83161015610e5b576040517fbd91a21500000000000000000000000000000000000000000000000000000000815260ff831660048201526024016107c7565b80806020019051810190610e6f91906112bf565b949350505050565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020908152604080832073ffffffffffffffffffffffffffffffffffffffff8516845290915290205460ff16610f1e576040517fe2517d3f00000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff82166004820152602481018390526044016107c7565b5050565b600060208284031215610f3457600080fd5b81357fffffffff0000000000000000000000000000000000000000000000000000000081168114610f6457600080fd5b9392505050565b600060208284031215610f7d57600080fd5b5035919050565b803573ffffffffffffffffffffffffffffffffffffffff81168114610fa857600080fd5b919050565b600060208284031215610fbf57600080fd5b610f6482610f84565b60008060408385031215610fdb57600080fd5b82359150610feb60208401610f84565b90509250929050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b604051601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe016810167ffffffffffffffff8111828210171561106a5761106a610ff4565b604052919050565b600067ffffffffffffffff82111561108c5761108c610ff4565b50601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe01660200190565b600082601f8301126110c957600080fd5b81356110dc6110d782611072565b611023565b8181528460208386010111156110f157600080fd5b816020850160208301376000918101602001919091529392505050565b60008060006060848603121561112357600080fd5b8335925060208401359150604084013567ffffffffffffffff81111561114857600080fd5b611154868287016110b8565b9150509250925092565b600080600080600060a0868803121561117657600080fd5b85359450602086013593506040860135925060608601359150608086013567ffffffffffffffff8111156111a957600080fd5b6111b5888289016110b8565b9150509295509295909350565b6000602082840312156111d457600080fd5b5051919050565b80820180821115610400577f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b6000806040838503121561122857600080fd5b825160ff8116811461123957600080fd5b8092505060208084015167ffffffffffffffff81111561125857600080fd5b8401601f8101861361126957600080fd5b80516112776110d782611072565b818152878483850101111561128b57600080fd5b60005b828110156112a957838101850151828201860152840161128e565b5060009181019093015250919491935090915050565b6000604082840312156112d157600080fd5b6040516040810181811067ffffffffffffffff821117156112f4576112f4610ff4565b60405282518152602092830151928101929092525091905056fea2646970667358221220745b4e567f21a5618393da03be5353828309dbd2ab1956db2c4b7eb403d51bda64736f6c63430008140033",
+	Bin: "0x608060405234801561001057600080fd5b5061001961001e565b6100d0565b7ff0c57e16840df040f15088dc2f81fe391c3923bec73e23a9662efc9c229c6a00805468010000000000000000900460ff161561006e5760405163f92ee8a960e01b815260040160405180910390fd5b80546001600160401b03908116146100cd5780546001600160401b0319166001600160401b0390811782556040519081527fc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d29060200160405180910390a15b50565b6114fe806100df6000396000f3fe608060405234801561001057600080fd5b50600436106101365760003560e01c8063a217fddf116100b2578063ccc5749011610081578063d547741f11610066578063d547741f14610390578063e4e06522146103a3578063efd07ec2146103b657600080fd5b8063ccc5749014610356578063cf4f578f1461037d57600080fd5b8063a217fddf14610315578063a87b81521461031d578063c473e7e814610330578063c4d66de81461034357600080fd5b80632f2ff15d116101095780635d62a8dd116100ee5780635d62a8dd1461021557806362014bad1461027357806391d14854146102b057600080fd5b80632f2ff15d146101ef57806336568abe1461020257600080fd5b806301ffc9a71461013b57806308c5c0db14610163578063248a9ca3146101985780632d54566c146101da575b600080fd5b61014e610149366004611082565b6103dd565b60405190151581526020015b60405180910390f35b61018a7f506033f42d439a89b8dbacb157256b8ef7e613d9e48db1be101b85411778abfb81565b60405190815260200161015a565b61018a6101a63660046110cb565b60009081527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b626800602052604090206001015490565b6101ed6101e836600461110d565b610476565b005b6101ed6101fd366004611128565b610587565b6101ed610210366004611128565b6105d1565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31015473ffffffffffffffffffffffffffffffffffffffff165b60405173ffffffffffffffffffffffffffffffffffffffff909116815260200161015a565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31005473ffffffffffffffffffffffffffffffffffffffff1661024e565b61014e6102be366004611128565b60009182527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020908152604080842073ffffffffffffffffffffffffffffffffffffffff93909316845291905290205460ff1690565b61018a600081565b6101ed61032b36600461110d565b61062f565b61018a61033e36600461126e565b61075a565b6101ed61035136600461110d565b610a03565b61018a7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f5581565b6101ed61038b3660046110cb565b610b86565b6101ed61039e366004611128565b610c26565b6101ed6103b13660046112be565b610c6a565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31025461018a565b60007fffffffff0000000000000000000000000000000000000000000000000000000082167f7965db0b00000000000000000000000000000000000000000000000000000000148061047057507f01ffc9a7000000000000000000000000000000000000000000000000000000007fffffffff000000000000000000000000000000000000000000000000000000008316145b92915050565b7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f556104a081610d25565b73ffffffffffffffffffffffffffffffffffffffff82166104ed576040517f0a0c2d7000000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e310080547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff841690811782556040519081527f4ab11d24f4bb323219ce90846ba579a556c914e8587517e7c8c4264771cd9f71906020015b60405180910390a1505050565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b62680060205260409020600101546105c181610d25565b6105cb8383610d32565b50505050565b73ffffffffffffffffffffffffffffffffffffffff81163314610620576040517f6697b23200000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b61062a8282610e53565b505050565b7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f5561065981610d25565b73ffffffffffffffffffffffffffffffffffffffff82166106a6576040517f0a0c2d7000000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e310180547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff84169081179091556040519081527fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e3100907f3efbbb00c39812fb98647af6e9e2c3f4ec2b53d368cedd1e148330a05b652cfa9060200161057a565b60008061079b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31015473ffffffffffffffffffffffffffffffffffffffff1690565b905073ffffffffffffffffffffffffffffffffffffffff81166107ea576040517f38d2192500000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b60006107f584610f31565b509050600160ff82161115610840576040517fdaa5a14f00000000000000000000000000000000000000000000000000000000815260ff821660048201526024015b60405180910390fd5b600061084b85610f53565b80516040517f5cbd3c48000000000000000000000000000000000000000000000000000000008152600481018a905260248101919091526044810188905290915073ffffffffffffffffffffffffffffffffffffffff841690635cbd3c4890606401602060405180830381865afa1580156108ca573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906108ee9190611322565b6020820151909450156109a95760208101516040517f1e7b928700000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff851691631e7b92879161095b918b91600401918252602082015260400190565b602060405180830381865afa158015610978573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061099c9190611322565b6109a6908561136a565b93505b670de0b6b3a76400006109da7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31025490565b6109e4908661137d565b6109ee9190611394565b6109f8908561136a565b979650505050505050565b7ff0c57e16840df040f15088dc2f81fe391c3923bec73e23a9662efc9c229c6a00805468010000000000000000810460ff16159067ffffffffffffffff16600081158015610a4e5750825b905060008267ffffffffffffffff166001148015610a6b5750303b155b905081158015610a79575080155b15610ab0576040517ff92ee8a900000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b84547fffffffffffffffffffffffffffffffffffffffffffffffff00000000000000001660011785558315610b115784547fffffffffffffffffffffffffffffffffffffffffffffff00ffffffffffffffff16680100000000000000001785555b610b1c600087610d32565b508315610b7e5784547fffffffffffffffffffffffffffffffffffffffffffffff00ffffffffffffffff168555604051600181527fc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d29060200160405180910390a15b505050505050565b7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f55610bb081610d25565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31028290556040518281527fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e3100907f1957a4f563f2f13a7e7c1f9d8d6e719a1e6f687ac787704c33069f0a7997d75d9060200161057a565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020526040902060010154610c6081610d25565b6105cb8383610e53565b7f506033f42d439a89b8dbacb157256b8ef7e613d9e48db1be101b85411778abfb610c9481610d25565b6000610ca187878561075a565b905080841015610ce7576040517f4641246a0000000000000000000000000000000000000000000000000000000081526004810185905260248101829052604401610837565b60405133815285907f507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd13829060200160405180910390a250505050505050565b610d2f8133610fd7565b50565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020818152604080842073ffffffffffffffffffffffffffffffffffffffff8616855290915282205460ff16610e495760008481526020828152604080832073ffffffffffffffffffffffffffffffffffffffff87168452909152902080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00166001179055610de53390565b73ffffffffffffffffffffffffffffffffffffffff168373ffffffffffffffffffffffffffffffffffffffff16857f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d60405160405180910390a46001915050610470565b6000915050610470565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020818152604080842073ffffffffffffffffffffffffffffffffffffffff8616855290915282205460ff1615610e495760008481526020828152604080832073ffffffffffffffffffffffffffffffffffffffff8716808552925280832080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0016905551339287917ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9190a46001915050610470565b6000606082806020019051810190610f4991906113cf565b9094909350915050565b6040805180820190915260008082526020820152600080610f7384610f31565b9092509050600160ff83161015610fbb576040517fbd91a21500000000000000000000000000000000000000000000000000000000815260ff83166004820152602401610837565b80806020019051810190610fcf9190611479565b949350505050565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020908152604080832073ffffffffffffffffffffffffffffffffffffffff8516845290915290205460ff1661107e576040517fe2517d3f00000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff8216600482015260248101839052604401610837565b5050565b60006020828403121561109457600080fd5b81357fffffffff00000000000000000000000000000000000000000000000000000000811681146110c457600080fd5b9392505050565b6000602082840312156110dd57600080fd5b5035919050565b803573ffffffffffffffffffffffffffffffffffffffff8116811461110857600080fd5b919050565b60006020828403121561111f57600080fd5b6110c4826110e4565b6000806040838503121561113b57600080fd5b8235915061114b602084016110e4565b90509250929050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b604051601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe016810167ffffffffffffffff811182821017156111ca576111ca611154565b604052919050565b600067ffffffffffffffff8211156111ec576111ec611154565b50601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe01660200190565b600082601f83011261122957600080fd5b813561123c611237826111d2565b611183565b81815284602083860101111561125157600080fd5b816020850160208301376000918101602001919091529392505050565b60008060006060848603121561128357600080fd5b8335925060208401359150604084013567ffffffffffffffff8111156112a857600080fd5b6112b486828701611218565b9150509250925092565b600080600080600060a086880312156112d657600080fd5b85359450602086013593506040860135925060608601359150608086013567ffffffffffffffff81111561130957600080fd5b61131588828901611218565b9150509295509295909350565b60006020828403121561133457600080fd5b5051919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b808201808211156104705761047061133b565b80820281158282048414176104705761047061133b565b6000826113ca577f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b500490565b600080604083850312156113e257600080fd5b825160ff811681146113f357600080fd5b8092505060208084015167ffffffffffffffff81111561141257600080fd5b8401601f8101861361142357600080fd5b8051611431611237826111d2565b818152878483850101111561144557600080fd5b60005b82811015611463578381018501518282018601528401611448565b5060009181019093015250919491935090915050565b60006040828403121561148b57600080fd5b6040516040810181811067ffffffffffffffff821117156114ae576114ae611154565b60405282518152602092830151928101929092525091905056fea2646970667358221220372fc3746b9ff8ba16657a8bb619d07d869c044f1b63406c5221adea75c6096d64736f6c63430008140033",
 }
 
 // SynapseExecutionServiceV1ABI is the input ABI used to generate the binding from.
@@ -4819,6 +5009,37 @@ func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1CallerSession) GetRol
 	return _SynapseExecutionServiceV1.Contract.GetRoleAdmin(&_SynapseExecutionServiceV1.CallOpts, role)
 }
 
+// GlobalMarkup is a free data retrieval call binding the contract method 0xefd07ec2.
+//
+// Solidity: function globalMarkup() view returns(uint256)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Caller) GlobalMarkup(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _SynapseExecutionServiceV1.contract.Call(opts, &out, "globalMarkup")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GlobalMarkup is a free data retrieval call binding the contract method 0xefd07ec2.
+//
+// Solidity: function globalMarkup() view returns(uint256)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) GlobalMarkup() (*big.Int, error) {
+	return _SynapseExecutionServiceV1.Contract.GlobalMarkup(&_SynapseExecutionServiceV1.CallOpts)
+}
+
+// GlobalMarkup is a free data retrieval call binding the contract method 0xefd07ec2.
+//
+// Solidity: function globalMarkup() view returns(uint256)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1CallerSession) GlobalMarkup() (*big.Int, error) {
+	return _SynapseExecutionServiceV1.Contract.GlobalMarkup(&_SynapseExecutionServiceV1.CallOpts)
+}
+
 // HasRole is a free data retrieval call binding the contract method 0x91d14854.
 //
 // Solidity: function hasRole(bytes32 role, address account) view returns(bool)
@@ -5026,6 +5247,27 @@ func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) SetGasOracle
 // Solidity: function setGasOracle(address gasOracle_) returns()
 func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1TransactorSession) SetGasOracle(gasOracle_ common.Address) (*types.Transaction, error) {
 	return _SynapseExecutionServiceV1.Contract.SetGasOracle(&_SynapseExecutionServiceV1.TransactOpts, gasOracle_)
+}
+
+// SetGlobalMarkup is a paid mutator transaction binding the contract method 0xcf4f578f.
+//
+// Solidity: function setGlobalMarkup(uint256 globalMarkup_) returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Transactor) SetGlobalMarkup(opts *bind.TransactOpts, globalMarkup_ *big.Int) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.contract.Transact(opts, "setGlobalMarkup", globalMarkup_)
+}
+
+// SetGlobalMarkup is a paid mutator transaction binding the contract method 0xcf4f578f.
+//
+// Solidity: function setGlobalMarkup(uint256 globalMarkup_) returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Session) SetGlobalMarkup(globalMarkup_ *big.Int) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.Contract.SetGlobalMarkup(&_SynapseExecutionServiceV1.TransactOpts, globalMarkup_)
+}
+
+// SetGlobalMarkup is a paid mutator transaction binding the contract method 0xcf4f578f.
+//
+// Solidity: function setGlobalMarkup(uint256 globalMarkup_) returns()
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1TransactorSession) SetGlobalMarkup(globalMarkup_ *big.Int) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1.Contract.SetGlobalMarkup(&_SynapseExecutionServiceV1.TransactOpts, globalMarkup_)
 }
 
 // SynapseExecutionServiceV1ExecutionRequestedIterator is returned from FilterExecutionRequested and is used to iterate over the raw logs and unpacked data for ExecutionRequested events raised by the SynapseExecutionServiceV1 contract.
@@ -5435,6 +5677,140 @@ func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) WatchGasOra
 func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) ParseGasOracleSet(log types.Log) (*SynapseExecutionServiceV1GasOracleSet, error) {
 	event := new(SynapseExecutionServiceV1GasOracleSet)
 	if err := _SynapseExecutionServiceV1.contract.UnpackLog(event, "GasOracleSet", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// SynapseExecutionServiceV1GlobalMarkupSetIterator is returned from FilterGlobalMarkupSet and is used to iterate over the raw logs and unpacked data for GlobalMarkupSet events raised by the SynapseExecutionServiceV1 contract.
+type SynapseExecutionServiceV1GlobalMarkupSetIterator struct {
+	Event *SynapseExecutionServiceV1GlobalMarkupSet // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *SynapseExecutionServiceV1GlobalMarkupSetIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(SynapseExecutionServiceV1GlobalMarkupSet)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(SynapseExecutionServiceV1GlobalMarkupSet)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *SynapseExecutionServiceV1GlobalMarkupSetIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *SynapseExecutionServiceV1GlobalMarkupSetIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// SynapseExecutionServiceV1GlobalMarkupSet represents a GlobalMarkupSet event raised by the SynapseExecutionServiceV1 contract.
+type SynapseExecutionServiceV1GlobalMarkupSet struct {
+	GlobalMarkup *big.Int
+	Raw          types.Log // Blockchain specific contextual infos
+}
+
+// FilterGlobalMarkupSet is a free log retrieval operation binding the contract event 0x1957a4f563f2f13a7e7c1f9d8d6e719a1e6f687ac787704c33069f0a7997d75d.
+//
+// Solidity: event GlobalMarkupSet(uint256 globalMarkup)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) FilterGlobalMarkupSet(opts *bind.FilterOpts) (*SynapseExecutionServiceV1GlobalMarkupSetIterator, error) {
+
+	logs, sub, err := _SynapseExecutionServiceV1.contract.FilterLogs(opts, "GlobalMarkupSet")
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1GlobalMarkupSetIterator{contract: _SynapseExecutionServiceV1.contract, event: "GlobalMarkupSet", logs: logs, sub: sub}, nil
+}
+
+// WatchGlobalMarkupSet is a free log subscription operation binding the contract event 0x1957a4f563f2f13a7e7c1f9d8d6e719a1e6f687ac787704c33069f0a7997d75d.
+//
+// Solidity: event GlobalMarkupSet(uint256 globalMarkup)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) WatchGlobalMarkupSet(opts *bind.WatchOpts, sink chan<- *SynapseExecutionServiceV1GlobalMarkupSet) (event.Subscription, error) {
+
+	logs, sub, err := _SynapseExecutionServiceV1.contract.WatchLogs(opts, "GlobalMarkupSet")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(SynapseExecutionServiceV1GlobalMarkupSet)
+				if err := _SynapseExecutionServiceV1.contract.UnpackLog(event, "GlobalMarkupSet", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseGlobalMarkupSet is a log parse operation binding the contract event 0x1957a4f563f2f13a7e7c1f9d8d6e719a1e6f687ac787704c33069f0a7997d75d.
+//
+// Solidity: event GlobalMarkupSet(uint256 globalMarkup)
+func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) ParseGlobalMarkupSet(log types.Log) (*SynapseExecutionServiceV1GlobalMarkupSet, error) {
+	event := new(SynapseExecutionServiceV1GlobalMarkupSet)
+	if err := _SynapseExecutionServiceV1.contract.UnpackLog(event, "GlobalMarkupSet", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
@@ -6063,7 +6439,7 @@ func (_SynapseExecutionServiceV1 *SynapseExecutionServiceV1Filterer) ParseRoleRe
 
 // SynapseExecutionServiceV1HarnessMetaData contains all meta data concerning the SynapseExecutionServiceV1Harness contract.
 var SynapseExecutionServiceV1HarnessMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"AccessControlBadConfirmation\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"neededRole\",\"type\":\"bytes32\"}],\"name\":\"AccessControlUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidInitialization\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInitializing\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"}],\"name\":\"OptionsLib__IncorrectVersion\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"SynapseExecutionService__FeeAmountTooLow\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseExecutionService__GasOracleNotSet\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"version\",\"type\":\"uint256\"}],\"name\":\"SynapseExecutionService__OptionsVersionNotSupported\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseExecutionService__ZeroAddress\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"ExecutionRequested\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"executorEOA\",\"type\":\"address\"}],\"name\":\"ExecutorEOASet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"GasOracleSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"version\",\"type\":\"uint64\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"GOVERNOR_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"IC_CLIENT_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"executorEOA\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"gasOracle\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"getExecutionFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"callerConfirmation\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"requestExecution\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executorEOA_\",\"type\":\"address\"}],\"name\":\"setExecutorEOA\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle_\",\"type\":\"address\"}],\"name\":\"setGasOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"AccessControlBadConfirmation\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"neededRole\",\"type\":\"bytes32\"}],\"name\":\"AccessControlUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidInitialization\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInitializing\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"}],\"name\":\"OptionsLib__IncorrectVersion\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"SynapseExecutionService__FeeAmountTooLow\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseExecutionService__GasOracleNotSet\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"version\",\"type\":\"uint256\"}],\"name\":\"SynapseExecutionService__OptionsVersionNotSupported\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseExecutionService__ZeroAddress\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"ExecutionRequested\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"executorEOA\",\"type\":\"address\"}],\"name\":\"ExecutorEOASet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"GasOracleSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"globalMarkup\",\"type\":\"uint256\"}],\"name\":\"GlobalMarkupSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"version\",\"type\":\"uint64\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"GOVERNOR_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"IC_CLIENT_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"executorEOA\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"gasOracle\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"getExecutionFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"globalMarkup\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"callerConfirmation\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txPayloadSize\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"executionFee\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"}],\"name\":\"requestExecution\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executorEOA_\",\"type\":\"address\"}],\"name\":\"setExecutorEOA\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle_\",\"type\":\"address\"}],\"name\":\"setGasOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"globalMarkup_\",\"type\":\"uint256\"}],\"name\":\"setGlobalMarkup\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"a217fddf": "DEFAULT_ADMIN_ROLE()",
 		"ccc57490": "GOVERNOR_ROLE()",
@@ -6072,6 +6448,7 @@ var SynapseExecutionServiceV1HarnessMetaData = &bind.MetaData{
 		"5d62a8dd": "gasOracle()",
 		"c473e7e8": "getExecutionFee(uint256,uint256,bytes)",
 		"248a9ca3": "getRoleAdmin(bytes32)",
+		"efd07ec2": "globalMarkup()",
 		"2f2ff15d": "grantRole(bytes32,address)",
 		"91d14854": "hasRole(bytes32,address)",
 		"c4d66de8": "initialize(address)",
@@ -6080,9 +6457,10 @@ var SynapseExecutionServiceV1HarnessMetaData = &bind.MetaData{
 		"d547741f": "revokeRole(bytes32,address)",
 		"2d54566c": "setExecutorEOA(address)",
 		"a87b8152": "setGasOracle(address)",
+		"cf4f578f": "setGlobalMarkup(uint256)",
 		"01ffc9a7": "supportsInterface(bytes4)",
 	},
-	Bin: "0x608060405234801561001057600080fd5b5061001c60003361004d565b506100477f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f553361004d565b5061011e565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b626800602081815260408084206001600160a01b038616855290915282205460ff16610112576000848152602082815260408083206001600160a01b03871684529091529020805460ff191660011790556100c83390565b6001600160a01b0316836001600160a01b0316857f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d60405160405180910390a46001915050610118565b60009150505b92915050565b6113448061012d6000396000f3fe608060405234801561001057600080fd5b50600436106101005760003560e01c806391d1485411610097578063c4d66de811610066578063c4d66de81461030d578063ccc5749014610320578063d547741f14610347578063e4e065221461035a57600080fd5b806391d148541461027a578063a217fddf146102df578063a87b8152146102e7578063c473e7e8146102fa57600080fd5b80632f2ff15d116100d35780632f2ff15d146101b957806336568abe146101cc5780635d62a8dd146101df57806362014bad1461023d57600080fd5b806301ffc9a71461010557806308c5c0db1461012d578063248a9ca3146101625780632d54566c146101a4575b600080fd5b610118610113366004610f22565b61036d565b60405190151581526020015b60405180910390f35b6101547f506033f42d439a89b8dbacb157256b8ef7e613d9e48db1be101b85411778abfb81565b604051908152602001610124565b610154610170366004610f6b565b60009081527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b626800602052604090206001015490565b6101b76101b2366004610fad565b610406565b005b6101b76101c7366004610fc8565b610517565b6101b76101da366004610fc8565b610561565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31015473ffffffffffffffffffffffffffffffffffffffff165b60405173ffffffffffffffffffffffffffffffffffffffff9091168152602001610124565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31005473ffffffffffffffffffffffffffffffffffffffff16610218565b610118610288366004610fc8565b60009182527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020908152604080842073ffffffffffffffffffffffffffffffffffffffff93909316845291905290205460ff1690565b610154600081565b6101b76102f5366004610fad565b6105bf565b61015461030836600461110e565b6106ea565b6101b761031b366004610fad565b610943565b6101547f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f5581565b6101b7610355366004610fc8565b610ac6565b6101b761036836600461115e565b610b0a565b60007fffffffff0000000000000000000000000000000000000000000000000000000082167f7965db0b00000000000000000000000000000000000000000000000000000000148061040057507f01ffc9a7000000000000000000000000000000000000000000000000000000007fffffffff000000000000000000000000000000000000000000000000000000008316145b92915050565b7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f5561043081610bc5565b73ffffffffffffffffffffffffffffffffffffffff821661047d576040517f0a0c2d7000000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e310080547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff841690811782556040519081527f4ab11d24f4bb323219ce90846ba579a556c914e8587517e7c8c4264771cd9f71906020015b60405180910390a1505050565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b626800602052604090206001015461055181610bc5565b61055b8383610bd2565b50505050565b73ffffffffffffffffffffffffffffffffffffffff811633146105b0576040517f6697b23200000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6105ba8282610cf3565b505050565b7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f556105e981610bc5565b73ffffffffffffffffffffffffffffffffffffffff8216610636576040517f0a0c2d7000000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e310180547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff84169081179091556040519081527fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e3100907f3efbbb00c39812fb98647af6e9e2c3f4ec2b53d368cedd1e148330a05b652cfa9060200161050a565b60008061072b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31015473ffffffffffffffffffffffffffffffffffffffff1690565b905073ffffffffffffffffffffffffffffffffffffffff811661077a576040517f38d2192500000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b600061078584610dd1565b509050600160ff821611156107d0576040517fdaa5a14f00000000000000000000000000000000000000000000000000000000815260ff821660048201526024015b60405180910390fd5b60006107db85610df3565b80516040517f5cbd3c48000000000000000000000000000000000000000000000000000000008152600481018a905260248101919091526044810188905290915073ffffffffffffffffffffffffffffffffffffffff841690635cbd3c4890606401602060405180830381865afa15801561085a573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061087e91906111c2565b6020820151909450156109395760208101516040517f1e7b928700000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff851691631e7b9287916108eb918b91600401918252602082015260400190565b602060405180830381865afa158015610908573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061092c91906111c2565b61093690856111db565b93505b5050509392505050565b7ff0c57e16840df040f15088dc2f81fe391c3923bec73e23a9662efc9c229c6a00805468010000000000000000810460ff16159067ffffffffffffffff1660008115801561098e5750825b905060008267ffffffffffffffff1660011480156109ab5750303b155b9050811580156109b9575080155b156109f0576040517ff92ee8a900000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b84547fffffffffffffffffffffffffffffffffffffffffffffffff00000000000000001660011785558315610a515784547fffffffffffffffffffffffffffffffffffffffffffffff00ffffffffffffffff16680100000000000000001785555b610a5c600087610bd2565b508315610abe5784547fffffffffffffffffffffffffffffffffffffffffffffff00ffffffffffffffff168555604051600181527fc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d29060200160405180910390a15b505050505050565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020526040902060010154610b0081610bc5565b61055b8383610cf3565b7f506033f42d439a89b8dbacb157256b8ef7e613d9e48db1be101b85411778abfb610b3481610bc5565b6000610b418787856106ea565b905080841015610b87576040517f4641246a00000000000000000000000000000000000000000000000000000000815260048101859052602481018290526044016107c7565b60405133815285907f507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd13829060200160405180910390a250505050505050565b610bcf8133610e77565b50565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020818152604080842073ffffffffffffffffffffffffffffffffffffffff8616855290915282205460ff16610ce95760008481526020828152604080832073ffffffffffffffffffffffffffffffffffffffff87168452909152902080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00166001179055610c853390565b73ffffffffffffffffffffffffffffffffffffffff168373ffffffffffffffffffffffffffffffffffffffff16857f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d60405160405180910390a46001915050610400565b6000915050610400565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020818152604080842073ffffffffffffffffffffffffffffffffffffffff8616855290915282205460ff1615610ce95760008481526020828152604080832073ffffffffffffffffffffffffffffffffffffffff8716808552925280832080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0016905551339287917ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9190a46001915050610400565b6000606082806020019051810190610de99190611215565b9094909350915050565b6040805180820190915260008082526020820152600080610e1384610dd1565b9092509050600160ff83161015610e5b576040517fbd91a21500000000000000000000000000000000000000000000000000000000815260ff831660048201526024016107c7565b80806020019051810190610e6f91906112bf565b949350505050565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020908152604080832073ffffffffffffffffffffffffffffffffffffffff8516845290915290205460ff16610f1e576040517fe2517d3f00000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff82166004820152602481018390526044016107c7565b5050565b600060208284031215610f3457600080fd5b81357fffffffff0000000000000000000000000000000000000000000000000000000081168114610f6457600080fd5b9392505050565b600060208284031215610f7d57600080fd5b5035919050565b803573ffffffffffffffffffffffffffffffffffffffff81168114610fa857600080fd5b919050565b600060208284031215610fbf57600080fd5b610f6482610f84565b60008060408385031215610fdb57600080fd5b82359150610feb60208401610f84565b90509250929050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b604051601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe016810167ffffffffffffffff8111828210171561106a5761106a610ff4565b604052919050565b600067ffffffffffffffff82111561108c5761108c610ff4565b50601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe01660200190565b600082601f8301126110c957600080fd5b81356110dc6110d782611072565b611023565b8181528460208386010111156110f157600080fd5b816020850160208301376000918101602001919091529392505050565b60008060006060848603121561112357600080fd5b8335925060208401359150604084013567ffffffffffffffff81111561114857600080fd5b611154868287016110b8565b9150509250925092565b600080600080600060a0868803121561117657600080fd5b85359450602086013593506040860135925060608601359150608086013567ffffffffffffffff8111156111a957600080fd5b6111b5888289016110b8565b9150509295509295909350565b6000602082840312156111d457600080fd5b5051919050565b80820180821115610400577f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b6000806040838503121561122857600080fd5b825160ff8116811461123957600080fd5b8092505060208084015167ffffffffffffffff81111561125857600080fd5b8401601f8101861361126957600080fd5b80516112776110d782611072565b818152878483850101111561128b57600080fd5b60005b828110156112a957838101850151828201860152840161128e565b5060009181019093015250919491935090915050565b6000604082840312156112d157600080fd5b6040516040810181811067ffffffffffffffff821117156112f4576112f4610ff4565b60405282518152602092830151928101929092525091905056fea26469706673582212203783962d7488eaaaf42240573064a59111e821c7349ad4508ca68b5c6328106364736f6c63430008140033",
+	Bin: "0x608060405234801561001057600080fd5b5061001c60003361004d565b506100477f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f553361004d565b5061011e565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b626800602081815260408084206001600160a01b038616855290915282205460ff16610112576000848152602082815260408083206001600160a01b03871684529091529020805460ff191660011790556100c83390565b6001600160a01b0316836001600160a01b0316857f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d60405160405180910390a46001915050610118565b60009150505b92915050565b6114fe8061012d6000396000f3fe608060405234801561001057600080fd5b50600436106101365760003560e01c8063a217fddf116100b2578063ccc5749011610081578063d547741f11610066578063d547741f14610390578063e4e06522146103a3578063efd07ec2146103b657600080fd5b8063ccc5749014610356578063cf4f578f1461037d57600080fd5b8063a217fddf14610315578063a87b81521461031d578063c473e7e814610330578063c4d66de81461034357600080fd5b80632f2ff15d116101095780635d62a8dd116100ee5780635d62a8dd1461021557806362014bad1461027357806391d14854146102b057600080fd5b80632f2ff15d146101ef57806336568abe1461020257600080fd5b806301ffc9a71461013b57806308c5c0db14610163578063248a9ca3146101985780632d54566c146101da575b600080fd5b61014e610149366004611082565b6103dd565b60405190151581526020015b60405180910390f35b61018a7f506033f42d439a89b8dbacb157256b8ef7e613d9e48db1be101b85411778abfb81565b60405190815260200161015a565b61018a6101a63660046110cb565b60009081527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b626800602052604090206001015490565b6101ed6101e836600461110d565b610476565b005b6101ed6101fd366004611128565b610587565b6101ed610210366004611128565b6105d1565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31015473ffffffffffffffffffffffffffffffffffffffff165b60405173ffffffffffffffffffffffffffffffffffffffff909116815260200161015a565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31005473ffffffffffffffffffffffffffffffffffffffff1661024e565b61014e6102be366004611128565b60009182527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020908152604080842073ffffffffffffffffffffffffffffffffffffffff93909316845291905290205460ff1690565b61018a600081565b6101ed61032b36600461110d565b61062f565b61018a61033e36600461126e565b61075a565b6101ed61035136600461110d565b610a03565b61018a7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f5581565b6101ed61038b3660046110cb565b610b86565b6101ed61039e366004611128565b610c26565b6101ed6103b13660046112be565b610c6a565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31025461018a565b60007fffffffff0000000000000000000000000000000000000000000000000000000082167f7965db0b00000000000000000000000000000000000000000000000000000000148061047057507f01ffc9a7000000000000000000000000000000000000000000000000000000007fffffffff000000000000000000000000000000000000000000000000000000008316145b92915050565b7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f556104a081610d25565b73ffffffffffffffffffffffffffffffffffffffff82166104ed576040517f0a0c2d7000000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e310080547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff841690811782556040519081527f4ab11d24f4bb323219ce90846ba579a556c914e8587517e7c8c4264771cd9f71906020015b60405180910390a1505050565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b62680060205260409020600101546105c181610d25565b6105cb8383610d32565b50505050565b73ffffffffffffffffffffffffffffffffffffffff81163314610620576040517f6697b23200000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b61062a8282610e53565b505050565b7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f5561065981610d25565b73ffffffffffffffffffffffffffffffffffffffff82166106a6576040517f0a0c2d7000000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e310180547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff84169081179091556040519081527fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e3100907f3efbbb00c39812fb98647af6e9e2c3f4ec2b53d368cedd1e148330a05b652cfa9060200161057a565b60008061079b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31015473ffffffffffffffffffffffffffffffffffffffff1690565b905073ffffffffffffffffffffffffffffffffffffffff81166107ea576040517f38d2192500000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b60006107f584610f31565b509050600160ff82161115610840576040517fdaa5a14f00000000000000000000000000000000000000000000000000000000815260ff821660048201526024015b60405180910390fd5b600061084b85610f53565b80516040517f5cbd3c48000000000000000000000000000000000000000000000000000000008152600481018a905260248101919091526044810188905290915073ffffffffffffffffffffffffffffffffffffffff841690635cbd3c4890606401602060405180830381865afa1580156108ca573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906108ee9190611322565b6020820151909450156109a95760208101516040517f1e7b928700000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff851691631e7b92879161095b918b91600401918252602082015260400190565b602060405180830381865afa158015610978573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061099c9190611322565b6109a6908561136a565b93505b670de0b6b3a76400006109da7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31025490565b6109e4908661137d565b6109ee9190611394565b6109f8908561136a565b979650505050505050565b7ff0c57e16840df040f15088dc2f81fe391c3923bec73e23a9662efc9c229c6a00805468010000000000000000810460ff16159067ffffffffffffffff16600081158015610a4e5750825b905060008267ffffffffffffffff166001148015610a6b5750303b155b905081158015610a79575080155b15610ab0576040517ff92ee8a900000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b84547fffffffffffffffffffffffffffffffffffffffffffffffff00000000000000001660011785558315610b115784547fffffffffffffffffffffffffffffffffffffffffffffff00ffffffffffffffff16680100000000000000001785555b610b1c600087610d32565b508315610b7e5784547fffffffffffffffffffffffffffffffffffffffffffffff00ffffffffffffffff168555604051600181527fc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d29060200160405180910390a15b505050505050565b7f7935bd0ae54bc31f548c14dba4d37c5c64b3f8ca900cb468fb8abd54d5894f55610bb081610d25565b7fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e31028290556040518281527fabc861e0f8da03757893d41bb54770e6953c799ce2884f80d6b14b66ba8e3100907f1957a4f563f2f13a7e7c1f9d8d6e719a1e6f687ac787704c33069f0a7997d75d9060200161057a565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020526040902060010154610c6081610d25565b6105cb8383610e53565b7f506033f42d439a89b8dbacb157256b8ef7e613d9e48db1be101b85411778abfb610c9481610d25565b6000610ca187878561075a565b905080841015610ce7576040517f4641246a0000000000000000000000000000000000000000000000000000000081526004810185905260248101829052604401610837565b60405133815285907f507e9bdb8950e371753b8570704cf098fb0d67ca247f09a0629971ac80bd13829060200160405180910390a250505050505050565b610d2f8133610fd7565b50565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020818152604080842073ffffffffffffffffffffffffffffffffffffffff8616855290915282205460ff16610e495760008481526020828152604080832073ffffffffffffffffffffffffffffffffffffffff87168452909152902080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00166001179055610de53390565b73ffffffffffffffffffffffffffffffffffffffff168373ffffffffffffffffffffffffffffffffffffffff16857f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d60405160405180910390a46001915050610470565b6000915050610470565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020818152604080842073ffffffffffffffffffffffffffffffffffffffff8616855290915282205460ff1615610e495760008481526020828152604080832073ffffffffffffffffffffffffffffffffffffffff8716808552925280832080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0016905551339287917ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9190a46001915050610470565b6000606082806020019051810190610f4991906113cf565b9094909350915050565b6040805180820190915260008082526020820152600080610f7384610f31565b9092509050600160ff83161015610fbb576040517fbd91a21500000000000000000000000000000000000000000000000000000000815260ff83166004820152602401610837565b80806020019051810190610fcf9190611479565b949350505050565b60008281527f02dd7bc7dec4dceedda775e58dd541e08a116c6c53815c0bd028192f7b6268006020908152604080832073ffffffffffffffffffffffffffffffffffffffff8516845290915290205460ff1661107e576040517fe2517d3f00000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff8216600482015260248101839052604401610837565b5050565b60006020828403121561109457600080fd5b81357fffffffff00000000000000000000000000000000000000000000000000000000811681146110c457600080fd5b9392505050565b6000602082840312156110dd57600080fd5b5035919050565b803573ffffffffffffffffffffffffffffffffffffffff8116811461110857600080fd5b919050565b60006020828403121561111f57600080fd5b6110c4826110e4565b6000806040838503121561113b57600080fd5b8235915061114b602084016110e4565b90509250929050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b604051601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe016810167ffffffffffffffff811182821017156111ca576111ca611154565b604052919050565b600067ffffffffffffffff8211156111ec576111ec611154565b50601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe01660200190565b600082601f83011261122957600080fd5b813561123c611237826111d2565b611183565b81815284602083860101111561125157600080fd5b816020850160208301376000918101602001919091529392505050565b60008060006060848603121561128357600080fd5b8335925060208401359150604084013567ffffffffffffffff8111156112a857600080fd5b6112b486828701611218565b9150509250925092565b600080600080600060a086880312156112d657600080fd5b85359450602086013593506040860135925060608601359150608086013567ffffffffffffffff81111561130957600080fd5b61131588828901611218565b9150509295509295909350565b60006020828403121561133457600080fd5b5051919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b808201808211156104705761047061133b565b80820281158282048414176104705761047061133b565b6000826113ca577f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b500490565b600080604083850312156113e257600080fd5b825160ff811681146113f357600080fd5b8092505060208084015167ffffffffffffffff81111561141257600080fd5b8401601f8101861361142357600080fd5b8051611431611237826111d2565b818152878483850101111561144557600080fd5b60005b82811015611463578381018501518282018601528401611448565b5060009181019093015250919491935090915050565b60006040828403121561148b57600080fd5b6040516040810181811067ffffffffffffffff821117156114ae576114ae611154565b60405282518152602092830151928101929092525091905056fea26469706673582212204d9603c91ccf537ac623341f0d5212043f170827bd01b4adbdf6152bb060fd1f64736f6c63430008140033",
 }
 
 // SynapseExecutionServiceV1HarnessABI is the input ABI used to generate the binding from.
@@ -6473,6 +6851,37 @@ func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCallerS
 	return _SynapseExecutionServiceV1Harness.Contract.GetRoleAdmin(&_SynapseExecutionServiceV1Harness.CallOpts, role)
 }
 
+// GlobalMarkup is a free data retrieval call binding the contract method 0xefd07ec2.
+//
+// Solidity: function globalMarkup() view returns(uint256)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCaller) GlobalMarkup(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _SynapseExecutionServiceV1Harness.contract.Call(opts, &out, "globalMarkup")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GlobalMarkup is a free data retrieval call binding the contract method 0xefd07ec2.
+//
+// Solidity: function globalMarkup() view returns(uint256)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession) GlobalMarkup() (*big.Int, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.GlobalMarkup(&_SynapseExecutionServiceV1Harness.CallOpts)
+}
+
+// GlobalMarkup is a free data retrieval call binding the contract method 0xefd07ec2.
+//
+// Solidity: function globalMarkup() view returns(uint256)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessCallerSession) GlobalMarkup() (*big.Int, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.GlobalMarkup(&_SynapseExecutionServiceV1Harness.CallOpts)
+}
+
 // HasRole is a free data retrieval call binding the contract method 0x91d14854.
 //
 // Solidity: function hasRole(bytes32 role, address account) view returns(bool)
@@ -6680,6 +7089,27 @@ func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession
 // Solidity: function setGasOracle(address gasOracle_) returns()
 func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransactorSession) SetGasOracle(gasOracle_ common.Address) (*types.Transaction, error) {
 	return _SynapseExecutionServiceV1Harness.Contract.SetGasOracle(&_SynapseExecutionServiceV1Harness.TransactOpts, gasOracle_)
+}
+
+// SetGlobalMarkup is a paid mutator transaction binding the contract method 0xcf4f578f.
+//
+// Solidity: function setGlobalMarkup(uint256 globalMarkup_) returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransactor) SetGlobalMarkup(opts *bind.TransactOpts, globalMarkup_ *big.Int) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.contract.Transact(opts, "setGlobalMarkup", globalMarkup_)
+}
+
+// SetGlobalMarkup is a paid mutator transaction binding the contract method 0xcf4f578f.
+//
+// Solidity: function setGlobalMarkup(uint256 globalMarkup_) returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessSession) SetGlobalMarkup(globalMarkup_ *big.Int) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.SetGlobalMarkup(&_SynapseExecutionServiceV1Harness.TransactOpts, globalMarkup_)
+}
+
+// SetGlobalMarkup is a paid mutator transaction binding the contract method 0xcf4f578f.
+//
+// Solidity: function setGlobalMarkup(uint256 globalMarkup_) returns()
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessTransactorSession) SetGlobalMarkup(globalMarkup_ *big.Int) (*types.Transaction, error) {
+	return _SynapseExecutionServiceV1Harness.Contract.SetGlobalMarkup(&_SynapseExecutionServiceV1Harness.TransactOpts, globalMarkup_)
 }
 
 // SynapseExecutionServiceV1HarnessExecutionRequestedIterator is returned from FilterExecutionRequested and is used to iterate over the raw logs and unpacked data for ExecutionRequested events raised by the SynapseExecutionServiceV1Harness contract.
@@ -7089,6 +7519,140 @@ func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFiltere
 func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) ParseGasOracleSet(log types.Log) (*SynapseExecutionServiceV1HarnessGasOracleSet, error) {
 	event := new(SynapseExecutionServiceV1HarnessGasOracleSet)
 	if err := _SynapseExecutionServiceV1Harness.contract.UnpackLog(event, "GasOracleSet", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// SynapseExecutionServiceV1HarnessGlobalMarkupSetIterator is returned from FilterGlobalMarkupSet and is used to iterate over the raw logs and unpacked data for GlobalMarkupSet events raised by the SynapseExecutionServiceV1Harness contract.
+type SynapseExecutionServiceV1HarnessGlobalMarkupSetIterator struct {
+	Event *SynapseExecutionServiceV1HarnessGlobalMarkupSet // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *SynapseExecutionServiceV1HarnessGlobalMarkupSetIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(SynapseExecutionServiceV1HarnessGlobalMarkupSet)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(SynapseExecutionServiceV1HarnessGlobalMarkupSet)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *SynapseExecutionServiceV1HarnessGlobalMarkupSetIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *SynapseExecutionServiceV1HarnessGlobalMarkupSetIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// SynapseExecutionServiceV1HarnessGlobalMarkupSet represents a GlobalMarkupSet event raised by the SynapseExecutionServiceV1Harness contract.
+type SynapseExecutionServiceV1HarnessGlobalMarkupSet struct {
+	GlobalMarkup *big.Int
+	Raw          types.Log // Blockchain specific contextual infos
+}
+
+// FilterGlobalMarkupSet is a free log retrieval operation binding the contract event 0x1957a4f563f2f13a7e7c1f9d8d6e719a1e6f687ac787704c33069f0a7997d75d.
+//
+// Solidity: event GlobalMarkupSet(uint256 globalMarkup)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) FilterGlobalMarkupSet(opts *bind.FilterOpts) (*SynapseExecutionServiceV1HarnessGlobalMarkupSetIterator, error) {
+
+	logs, sub, err := _SynapseExecutionServiceV1Harness.contract.FilterLogs(opts, "GlobalMarkupSet")
+	if err != nil {
+		return nil, err
+	}
+	return &SynapseExecutionServiceV1HarnessGlobalMarkupSetIterator{contract: _SynapseExecutionServiceV1Harness.contract, event: "GlobalMarkupSet", logs: logs, sub: sub}, nil
+}
+
+// WatchGlobalMarkupSet is a free log subscription operation binding the contract event 0x1957a4f563f2f13a7e7c1f9d8d6e719a1e6f687ac787704c33069f0a7997d75d.
+//
+// Solidity: event GlobalMarkupSet(uint256 globalMarkup)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) WatchGlobalMarkupSet(opts *bind.WatchOpts, sink chan<- *SynapseExecutionServiceV1HarnessGlobalMarkupSet) (event.Subscription, error) {
+
+	logs, sub, err := _SynapseExecutionServiceV1Harness.contract.WatchLogs(opts, "GlobalMarkupSet")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(SynapseExecutionServiceV1HarnessGlobalMarkupSet)
+				if err := _SynapseExecutionServiceV1Harness.contract.UnpackLog(event, "GlobalMarkupSet", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseGlobalMarkupSet is a log parse operation binding the contract event 0x1957a4f563f2f13a7e7c1f9d8d6e719a1e6f687ac787704c33069f0a7997d75d.
+//
+// Solidity: event GlobalMarkupSet(uint256 globalMarkup)
+func (_SynapseExecutionServiceV1Harness *SynapseExecutionServiceV1HarnessFilterer) ParseGlobalMarkupSet(log types.Log) (*SynapseExecutionServiceV1HarnessGlobalMarkupSet, error) {
+	event := new(SynapseExecutionServiceV1HarnessGlobalMarkupSet)
+	if err := _SynapseExecutionServiceV1Harness.contract.UnpackLog(event, "GlobalMarkupSet", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
