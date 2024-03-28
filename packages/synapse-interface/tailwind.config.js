@@ -196,12 +196,38 @@ module.exports = {
       },
       animation: {
         sheenit: 'sheen 0.42s forwards',
+        'slide-down': 'slide-down .4s cubic-bezier(0, .5, .2, 1)',
+        'slide-up': 'slide-up .4s cubic-bezier(0, .5, .2, 1)',
+        tooltip: 'tooltip .4s cubic-bezier(0, .5, .2, 1)',
       },
       keyframes: {
         sheen: {
           '100%': {
             transform: 'rotateZ(60deg) translate(1em, -30em)',
           },
+        },
+        'slide-down': {
+          '0%': {
+            // transform: 'translateY(-6px) scale(1, .95)',
+            transform: 'translateY(-6px)',
+            opacity: 0.67,
+          },
+          '100%': { transform: 'translateY(0)', opacity: 1 },
+        },
+        'slide-up': {
+          '0%': {
+            transform: 'translateY(4px) scale(1, .95)',
+            pointerEvents: 'auto',
+            opacity: 0.67,
+          },
+          '100%': { transform: 'translateY(0) scale(1, 1)', opacity: 1 },
+        },
+        tooltip: {
+          '0%': {
+            transform: 'translateY(2px)',
+            opacity: 0.67,
+          },
+          '100%': { transform: 'translateY(0)', opacity: 1 },
         },
       },
       linearBorderGradients: ({ theme }) => ({
@@ -223,5 +249,4 @@ module.exports = {
     require('tailwind-scrollbar-hide'),
     require('tailwindcss-border-gradient-radius'),
   ],
-  safelist: [...Array(300).keys()].map((i) => `h-[${i + 1}px]`),
 }

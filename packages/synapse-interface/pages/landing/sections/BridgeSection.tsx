@@ -3,10 +3,6 @@ import {
   SectionContainer,
   SupportCard,
 } from '../../../components/landing/shared'
-import {
-  BridgeImage,
-  BridgeImageSmall,
-} from '@/components/icons/LandingIcons/BridgeImage'
 import FauxBridge from '@/components/icons/LandingIcons/FauxBridge'
 import { DeepLiquidityIcon } from '@/components/icons/LandingIcons/DeepLiquidityIcon'
 import { WideSupportIcon } from '@/components/icons/LandingIcons/WideSupportIcon'

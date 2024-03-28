@@ -14,7 +14,7 @@ import {
 } from '@/slices/bridgeDisplaySlice'
 import { Address } from 'viem'
 import { isEmptyString } from '@/utils/isEmptyString'
-import { CloseButton } from './components/CloseButton'
+import { CloseButton } from '@/components/ui/CloseButton'
 import { useTransactionsState } from '@/slices/transactions/hooks'
 import { TransactionsState } from '@/slices/transactions/reducer'
 import { BridgeTransaction } from '@/slices/api/generated'

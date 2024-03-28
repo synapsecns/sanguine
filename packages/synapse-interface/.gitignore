@@ -7,7 +7,6 @@
 
 # testing
 /coverage
-/cypress/visual-states/*
 
 # next.js
 /.next/
