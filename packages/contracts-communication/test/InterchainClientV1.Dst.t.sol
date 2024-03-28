@@ -3,7 +3,8 @@ pragma solidity 0.8.20;
 
 import {AppConfigV1} from "../contracts/libs/AppConfig.sol";
 import {InterchainEntry} from "../contracts/libs/InterchainEntry.sol";
-import {OptionsV1, OptionsLib} from "../contracts/libs/Options.sol";
+import {OptionsV1} from "../contracts/libs/Options.sol";
+import {VersionedPayloadLib} from "../contracts/libs/VersionedPayload.sol";
 
 import {
     InterchainClientV1,
@@ -48,8 +49,8 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
     OptionsV1 public optionsAirdrop = OptionsV1({gasLimit: MOCK_GAS_LIMIT, gasAirdrop: MOCK_GAS_AIRDROP});
     OptionsV1 public optionsNoAirdrop = OptionsV1({gasLimit: MOCK_GAS_LIMIT, gasAirdrop: 0});
 
-    bytes public invalidOptionsV0 = OptionsLib.encodeVersionedOptions(0, abi.encode(optionsAirdrop));
-    bytes public invalidOptionsV1 = OptionsLib.encodeVersionedOptions(1, abi.encode(optionsAirdrop.gasLimit));
+    bytes public invalidOptionsV0 = VersionedPayloadLib.encodeVersionedPayload(0, abi.encode(optionsAirdrop));
+    bytes public invalidOptionsV1 = VersionedPayloadLib.encodeVersionedPayload(1, abi.encode(optionsAirdrop.gasLimit));
 
     AppConfigV1 public oneConfNoOP = AppConfigV1({requiredResponses: 1, optimisticPeriod: 0});
     AppConfigV1 public oneConfWithOP = AppConfigV1({requiredResponses: 1, optimisticPeriod: MOCK_OPTIMISTIC_PERIOD});

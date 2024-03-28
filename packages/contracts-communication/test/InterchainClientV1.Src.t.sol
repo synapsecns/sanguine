@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {OptionsV1, OptionsLib} from "../contracts/libs/Options.sol";
+import {OptionsV1} from "../contracts/libs/Options.sol";
+import {VersionedPayloadLib} from "../contracts/libs/VersionedPayload.sol";
 
 import {
     InterchainClientV1,
@@ -45,8 +46,8 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
     OptionsV1 public options = OptionsV1({gasLimit: 100_000, gasAirdrop: 1 ether});
     bytes public encodedOptions = options.encodeOptionsV1();
 
-    bytes public invalidOptionsV0 = OptionsLib.encodeVersionedOptions(0, abi.encode(options));
-    bytes public invalidOptionsV1 = OptionsLib.encodeVersionedOptions(1, abi.encode(options.gasLimit));
+    bytes public invalidOptionsV0 = VersionedPayloadLib.encodeVersionedPayload(0, abi.encode(options));
+    bytes public invalidOptionsV1 = VersionedPayloadLib.encodeVersionedPayload(1, abi.encode(options.gasLimit));
 
     bytes public message = "Hello, World!";
 
