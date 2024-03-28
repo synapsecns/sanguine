@@ -15,7 +15,7 @@ import (
 )
 
 // nolint: cyclop
-func getPackageDependencyGrap(repoPath string) (moduleDeps map[string][]string, packagesPerModule map[string][]string, err error) {
+func getPackageDependencyGraph(repoPath string) (moduleDeps map[string][]string, packagesPerModule map[string][]string, err error) {
 	moduleDeps = make(map[string][]string)
 	// parse the go.work file
 	goWorkPath := path.Join(repoPath, "go.work")
