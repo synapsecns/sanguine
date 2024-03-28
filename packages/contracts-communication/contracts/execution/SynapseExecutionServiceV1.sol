@@ -17,6 +17,7 @@ contract SynapseExecutionServiceV1 is
     struct SynapseExecutionServiceV1Storage {
         address executorEOA;
         address gasOracle;
+        uint256 globalMarkup;
     }
 
     // keccak256(abi.encode(uint256(keccak256("Synapse.ExecutionService.V1")) - 1)) & ~bytes32(uint256(0xff));
@@ -53,6 +54,13 @@ contract SynapseExecutionServiceV1 is
         SynapseExecutionServiceV1Storage storage $ = _getSynapseExecutionServiceV1Storage();
         $.gasOracle = gasOracle_;
         emit GasOracleSet(gasOracle_);
+    }
+
+    /// @inheritdoc ISynapseExecutionServiceV1
+    function setGlobalMarkup(uint256 globalMarkup_) external virtual onlyRole(GOVERNOR_ROLE) {
+        SynapseExecutionServiceV1Storage storage $ = _getSynapseExecutionServiceV1Storage();
+        $.globalMarkup = globalMarkup_;
+        emit GlobalMarkupSet(globalMarkup_);
     }
 
     /// @inheritdoc IExecutionService
@@ -119,6 +127,12 @@ contract SynapseExecutionServiceV1 is
     function gasOracle() public view virtual returns (address) {
         SynapseExecutionServiceV1Storage storage $ = _getSynapseExecutionServiceV1Storage();
         return $.gasOracle;
+    }
+
+    /// @inheritdoc ISynapseExecutionServiceV1
+    function globalMarkup() public view virtual returns (uint256) {
+        SynapseExecutionServiceV1Storage storage $ = _getSynapseExecutionServiceV1Storage();
+        return $.globalMarkup;
     }
 
     /// @dev ERC-7201 slot accessor
