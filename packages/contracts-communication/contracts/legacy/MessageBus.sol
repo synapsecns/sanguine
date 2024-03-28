@@ -67,14 +67,14 @@ contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
 
     /// @inheritdoc IMessageBus
     function estimateFee(uint256 dstChainId, bytes calldata options) external view returns (uint256) {
-        return estimateFeeExact(dstChainId, messageLengthEstimate, options);
+        return estimateFeeExact(dstChainId, options, messageLengthEstimate);
     }
 
     /// @inheritdoc IMessageBus
     function estimateFeeExact(
         uint256 dstChainId,
-        uint256 messageLen,
-        bytes calldata options
+        bytes calldata options,
+        uint256 messageLen
     )
         public
         view

@@ -46,7 +46,7 @@ contract MessageBusManagementTest is MessageBusBaseTest {
         mockInterchainFees(2 * LENGTH_ESTIMATE);
         vm.prank(governor);
         messageBus.setMessageLengthEstimate(LENGTH_ESTIMATE);
-        uint256 fee = messageBus.estimateFeeExact(REMOTE_CHAIN_ID, 2 * LENGTH_ESTIMATE, legacyOptions);
+        uint256 fee = messageBus.estimateFeeExact(REMOTE_CHAIN_ID, legacyOptions, 2 * LENGTH_ESTIMATE);
         assertEq(fee, MOCK_FEE);
     }
 }

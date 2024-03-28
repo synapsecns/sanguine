@@ -91,12 +91,12 @@ contract MessageBusSrcTest is MessageBusBaseTest {
         vm.assume(version != LegacyOptionsLib.LEGACY_OPTIONS_VERSION);
         bytes memory invalidOpts = abi.encodePacked(version, uint256(1));
         expectRevertInvalidOptions(invalidOpts);
-        messageBus.estimateFeeExact(REMOTE_CHAIN_ID, MESSAGE.length, invalidOpts);
+        messageBus.estimateFeeExact(REMOTE_CHAIN_ID, invalidOpts, MESSAGE.length);
     }
 
     function test_estimateFeeExact_revert_incorrectOptionsLength(bytes memory invalidOpts) public {
         vm.assume(invalidOpts.length != legacyOptions.length);
         expectRevertInvalidOptions(invalidOpts);
-        messageBus.estimateFeeExact(REMOTE_CHAIN_ID, MESSAGE.length, invalidOpts);
+        messageBus.estimateFeeExact(REMOTE_CHAIN_ID, invalidOpts, MESSAGE.length);
     }
 }

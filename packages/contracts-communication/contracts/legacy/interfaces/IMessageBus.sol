@@ -37,12 +37,12 @@ interface IMessageBus {
     /// @notice Returns srcGasToken fee to charge in wei for the cross-chain message based on the message length
     /// and the gas limit.
     /// @param dstChainId   The destination chain ID - typically, standard EVM chain ID, but differs on nonEVM chains
-    /// @param messageLen   The length of the message to be sent in bytes
     /// @param options      Versioned struct used to instruct relayer on how to proceed with gas limits
+    /// @param messageLen   The length of the message to be sent in bytes
     function estimateFeeExact(
         uint256 dstChainId,
-        uint256 messageLen,
-        bytes memory options
+        bytes memory options,
+        uint256 messageLen
     )
         external
         view
