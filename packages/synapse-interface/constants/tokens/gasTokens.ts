@@ -1,4 +1,9 @@
 import bscImg from '@assets/chains/bnb.svg'
+import metisImg from '@assets/chains/metis.svg'
+import moonbeamImg from '@assets/chains/moonbeam.svg'
+import moonriverImg from '@assets/chains/moonriver.svg'
+import harmonyImg from '@assets/chains/harmony.svg'
+import cantoImg from '@assets/chains/canto.svg'
 import { zeroAddress } from 'viem'
 
 import { Token } from '@/utils/types'
@@ -35,42 +40,57 @@ export const BNB_Gas: GasToken = {
   icon: bscImg,
 }
 
-// export const METIS: GasToken = {
-//   chainId: 1088,
-//   chainName: 'Metis',
-//   name: 'Metis',
-//   symbol: 'METIS',
-//   decimals: 18,
-// }
+export const METIS: GasToken = {
+  addresses: {
+    [CHAINS.METIS.id]: zeroAddress,
+  },
+  chainId: 1088,
+  name: 'Metis',
+  symbol: 'METIS',
+  decimals: 18,
+  icon: metisImg,
+}
 
-// export const NOTE: GasToken = {
-//   chainId: 7700,
-//   chainName: 'Canto',
-//   name: 'Canto',
-//   symbol: 'NOTE',
-//   decimals: 18,
-// }
+export const NOTE: GasToken = {
+  addresses: {
+    [CHAINS.CANTO.id]: zeroAddress,
+  },
+  chainId: 7700,
+  name: 'Canto',
+  symbol: 'NOTE',
+  decimals: 18,
+  icon: cantoImg,
+}
 
-// export const MOVR: GasToken = {
-//   chainId: 1285,
-//   chainName: 'Moonriver',
-//   name: 'Moonriver',
-//   symbol: 'MOVR',
-//   decimals: 18,
-// }
+export const MOVR: GasToken = {
+  addresses: {
+    [CHAINS.MOONRIVER.id]: zeroAddress,
+  },
+  chainId: 1285,
+  name: 'Moonriver',
+  symbol: 'MOVR',
+  decimals: 18,
+  icon: moonriverImg,
+}
 
-// export const GLMR: GasToken = {
-//   chainId: 1284,
-//   chainName: 'Moonbeam',
-//   name: 'Glimmer',
-//   symbol: 'GLMR',
-//   decimals: 18,
-// }
+export const GLMR: GasToken = {
+  addresses: {
+    [CHAINS.MOONBEAM.id]: zeroAddress,
+  },
+  chainId: 1284,
+  name: 'Glimmer',
+  symbol: 'GLMR',
+  decimals: 18,
+  icon: moonbeamImg,
+}
 
-// export const ONE: GasToken = {
-//   chainId: 1666600000,
-//   chainName: 'Harmony',
-//   name: 'Harmony One',
-//   symbol: 'ONE',
-//   decimals: 18,
-// }
+export const ONE: GasToken = {
+  addresses: {
+    [CHAINS.HARMONY.id]: zeroAddress,
+  },
+  chainId: 1666600000,
+  name: 'Harmony One',
+  symbol: 'ONE',
+  decimals: 18,
+  icon: harmonyImg,
+}
