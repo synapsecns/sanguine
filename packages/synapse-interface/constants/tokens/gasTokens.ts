@@ -1,12 +1,11 @@
+import { zeroAddress } from 'viem'
 import bscImg from '@assets/chains/bnb.svg'
 import metisImg from '@assets/chains/metis.svg'
 import moonbeamImg from '@assets/chains/moonbeam.svg'
 import moonriverImg from '@assets/chains/moonriver.svg'
 import harmonyImg from '@assets/chains/harmony.svg'
 import cantoImg from '@assets/chains/canto.svg'
-import { zeroAddress } from 'viem'
 
-import { Token } from '@/utils/types'
 import * as CHAINS from '@/constants/chains/master'
 
 export type GasToken = {
@@ -17,6 +16,8 @@ export type GasToken = {
   name: string
   icon: any
 }
+
+// import { Token } from '@/utils/types'
 
 // export const BNB = new Token({
 //   addresses: {
