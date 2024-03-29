@@ -1,9 +1,9 @@
 {
-  "address": "0x026F71B34b1eBC52942Ad44aDc2955AeA6252c68",
+  "address": "0xcD9903C5501E4afEbB6B1c4E271Afa3bae1DA969",
   "constructorArgs": "0x",
   "receipt": {
-    "hash": "0x308d698fba00fde7717a6705c9dcc1772c8272e0eb2541101486247edaac60ea",
-    "blockNumber": 9617275
+    "hash": "0xccdc9f0c4f0f70ef2ec6f357b8ccf6dce77cfbe1aba64168b85e84a4d99cab30",
+    "blockNumber": 9964103
   },
   "abi": [
     {
@@ -180,57 +180,6 @@
     },
     {
       "type": "function",
-      "name": "getEntry",
-      "inputs": [
-        {
-          "name": "dbNonce",
-          "type": "uint256",
-          "internalType": "uint256"
-        },
-        {
-          "name": "entryIndex",
-          "type": "uint64",
-          "internalType": "uint64"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "",
-          "type": "tuple",
-          "internalType": "struct InterchainEntry",
-          "components": [
-            {
-              "name": "srcChainId",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
-              "name": "dbNonce",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
-              "name": "entryIndex",
-              "type": "uint64",
-              "internalType": "uint64"
-            },
-            {
-              "name": "srcWriter",
-              "type": "bytes32",
-              "internalType": "bytes32"
-            },
-            {
-              "name": "dataHash",
-              "type": "bytes32",
-              "internalType": "bytes32"
-            }
-          ]
-        }
-      ],
-      "stateMutability": "view"
-    },
-    {
-      "type": "function",
       "name": "getEntryProof",
       "inputs": [
         {
@@ -249,6 +198,30 @@
           "name": "proof",
           "type": "bytes32[]",
           "internalType": "bytes32[]"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getEntryValue",
+      "inputs": [
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "entryIndex",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "internalType": "bytes32"
         }
       ],
       "stateMutability": "view"
