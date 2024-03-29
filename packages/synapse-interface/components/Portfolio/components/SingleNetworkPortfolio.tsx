@@ -37,24 +37,24 @@ const filterOutGasTokens = (
 ): [TokenAndBalance[], TokenAndBalance[]] => {
   const gasTokens = GAS_TOKENS[chainId]
 
-  // const filteredGasTokensList = gasTokens.filter(
-  //   (token) => token.chainId === chainId
-  // )
+  let filteredGasTokens: TokenAndBalance[] = []
+  let remainingTokens: TokenAndBalance[] = []
 
-  const gasTokenAddresses = gasTokens.flatMap((token) =>
-    Object.values(token.addresses)
-  )
+  if (!gasTokens) {
+    remainingTokens = [...tokens]
+  } else {
+    const gasTokenAddresses = gasTokens?.flatMap((token) =>
+      Object.values(token.addresses)
+    )
 
-  const filteredGasTokens: TokenAndBalance[] = []
-  const remainingTokens: TokenAndBalance[] = []
-
-  tokens.forEach((token) => {
-    if (gasTokenAddresses.includes(token.tokenAddress)) {
-      filteredGasTokens.push(token)
-    } else {
-      remainingTokens.push(token)
-    }
-  })
+    tokens.forEach((token) => {
+      if (gasTokenAddresses.includes(token.tokenAddress)) {
+        filteredGasTokens.push(token)
+      } else {
+        remainingTokens.push(token)
+      }
+    })
+  }
 
   return [filteredGasTokens, remainingTokens]
 }
@@ -77,15 +77,10 @@ export const SingleNetworkPortfolio = ({
 
   const sortedTokens = sortTokensByBalanceDescending(portfolioTokens)
 
-  if (portfolioChainId === 56) {
-    console.log('GAS_TOKENS: ', GAS_TOKENS[portfolioChainId])
-    console.log('sortedTokens:', sortedTokens)
-    console.log('portfolioTokens:', portfolioTokens)
-
-    const filteredTokens = filterOutGasTokens(sortedTokens, portfolioChainId)
-
-    console.log('filteredTokens:', filteredTokens)
-  }
+  const [gasTokens, bridgeableTokens] = filterOutGasTokens(
+    sortedTokens,
+    portfolioChainId
+  )
 
   const hasNoTokenBalance: boolean =
     _.isNull(portfolioTokens) || _.isEmpty(portfolioTokens)
@@ -150,9 +145,9 @@ export const SingleNetworkPortfolio = ({
             connectedChain={chain}
           />
         )}
-        {sortedTokens &&
-          sortedTokens.length > 0 &&
-          sortedTokens.map(({ token, balance }: TokenAndBalance) => (
+        {bridgeableTokens &&
+          bridgeableTokens.length > 0 &&
+          bridgeableTokens.map(({ token, balance }: TokenAndBalance) => (
             <PortfolioTokenAsset
               key={token.symbol}
               token={token}
