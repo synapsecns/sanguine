@@ -55,6 +55,19 @@ contract InterchainTransactionLibTest is Test {
         assertEq(decoded.message, icTx.message, "!message");
     }
 
+    function test_encodeTransaction_roundTrip(InterchainTransaction memory icTx) public {
+        bytes memory encoded = libHarness.encodeTransaction(icTx);
+        InterchainTransaction memory decoded = libHarness.decodeTransaction(encoded);
+        assertEq(decoded.srcChainId, icTx.srcChainId, "!srcChainId");
+        assertEq(decoded.srcSender, icTx.srcSender, "!srcSender");
+        assertEq(decoded.dstChainId, icTx.dstChainId, "!dstChainId");
+        assertEq(decoded.dstReceiver, icTx.dstReceiver, "!dstReceiver");
+        assertEq(decoded.dbNonce, icTx.dbNonce, "!dbNonce");
+        assertEq(decoded.entryIndex, icTx.entryIndex, "!entryIndex");
+        assertEq(decoded.options, icTx.options, "!options");
+        assertEq(decoded.message, icTx.message, "!message");
+    }
+
     function test_payloadSize(InterchainTransaction memory icTx) public {
         uint256 size = libHarness.payloadSize(icTx.options.length, icTx.message.length);
         uint256 expectedSize = libHarness.encodeVersionedTransaction(0, icTx).length;

@@ -78,6 +78,21 @@ library InterchainBatchLib {
         versionedBatch = VersionedPayloadLib.encodeVersionedPayload(dbVersion, abi.encode(batch));
     }
 
+    /// @notice Encodes the InterchainBatch struct into a non-versioned batch payload.
+    function encodeBatch(InterchainBatch memory batch) internal pure returns (bytes memory) {
+        return abi.encode(batch);
+    }
+
+    /// @notice Decodes the InterchainBatch struct from a non-versioned batch payload in calldata.
+    function decodeBatch(bytes calldata data) internal pure returns (InterchainBatch memory) {
+        return abi.decode(data, (InterchainBatch));
+    }
+
+    /// @notice Decodes the InterchainBatch struct from a non-versioned batch payload in memory.
+    function decodeBatchFromMemory(bytes memory data) internal pure returns (InterchainBatch memory) {
+        return abi.decode(data, (InterchainBatch));
+    }
+
     /// @notice Returns the globally unique identifier of the batch
     function batchKey(InterchainBatch memory batch) internal pure returns (bytes32) {
         return keccak256(abi.encode(batch.srcChainId, batch.dbNonce));

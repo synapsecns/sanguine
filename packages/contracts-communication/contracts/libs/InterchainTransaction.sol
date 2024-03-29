@@ -73,6 +73,14 @@ library InterchainTransactionLib {
         transaction = abi.decode(versionedTx.getPayload(), (InterchainTransaction));
     }
 
+    function encodeTransaction(InterchainTransaction memory transaction) internal pure returns (bytes memory) {
+        return abi.encode(transaction);
+    }
+
+    function decodeTransaction(bytes calldata transaction) internal pure returns (InterchainTransaction memory) {
+        return abi.decode(transaction, (InterchainTransaction));
+    }
+
     function payloadSize(uint256 optionsLen, uint256 messageLen) internal pure returns (uint256) {
         // 2 bytes are reserved for the transaction version
         // + 8 fields * 32 bytes (6 values for static, 2 offsets for dynamic) + 2 * 32 bytes (lengths for dynamic) = 322
