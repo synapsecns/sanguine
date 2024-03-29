@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.4](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.0.3...contracts-communication@1.0.4) (2024-03-29)
+
+
+### Bug Fixes
+
+* **contracts-communication:** cleanup scripts ([#2394](https://github.com/synapsecns/sanguine/issues/2394)) ([3e1cf27](https://github.com/synapsecns/sanguine/commit/3e1cf27824e4dc9c1ec91a6e560da393a1ccbdbd))
+
+
+
+
+
 ## [1.0.3](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.0.2...contracts-communication@1.0.3) (2024-03-29)
 
 
