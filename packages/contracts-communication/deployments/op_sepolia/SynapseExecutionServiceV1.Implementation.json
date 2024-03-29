@@ -1,20 +1,14 @@
 {
-  "address": "0xc46bf3759CD170b90Eb71fad8958936d11FeDCdE",
-  "constructorArgs": "0x000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
+  "address": "0x5869d8406da435D92a5213d32EfB805eF0A616b4",
+  "constructorArgs": "0x",
   "receipt": {
-    "hash": "0xefea31247fe62b885ebd7f9f75dfa1b29f147a7182ff6f0eebe4ba41044935e7",
-    "blockNumber": 5586578
+    "hash": "0x30870e5548e262dab8d6d21fa1c1cd5d9ac09b427e57725b76197b6e8d47744e",
+    "blockNumber": 9964183
   },
   "abi": [
     {
       "type": "constructor",
-      "inputs": [
-        {
-          "name": "admin",
-          "type": "address",
-          "internalType": "address"
-        }
-      ],
+      "inputs": [],
       "stateMutability": "nonpayable"
     },
     {
@@ -32,7 +26,7 @@
     },
     {
       "type": "function",
-      "name": "RECORDER_ROLE",
+      "name": "GOVERNOR_ROLE",
       "inputs": [],
       "outputs": [
         {
@@ -45,26 +39,46 @@
     },
     {
       "type": "function",
-      "name": "accumulatedRewards",
-      "inputs": [
-        {
-          "name": "executor",
-          "type": "address",
-          "internalType": "address"
-        }
-      ],
+      "name": "IC_CLIENT_ROLE",
+      "inputs": [],
       "outputs": [
         {
-          "name": "totalAccumulated",
-          "type": "uint256",
-          "internalType": "uint256"
+          "name": "",
+          "type": "bytes32",
+          "internalType": "bytes32"
         }
       ],
       "stateMutability": "view"
     },
     {
       "type": "function",
-      "name": "addExecutionFee",
+      "name": "executorEOA",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "gasOracle",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getExecutionFee",
       "inputs": [
         {
           "name": "dstChainId",
@@ -72,45 +86,19 @@
           "internalType": "uint256"
         },
         {
-          "name": "transactionId",
-          "type": "bytes32",
-          "internalType": "bytes32"
-        }
-      ],
-      "outputs": [],
-      "stateMutability": "payable"
-    },
-    {
-      "type": "function",
-      "name": "claimExecutionFees",
-      "inputs": [
-        {
-          "name": "executor",
-          "type": "address",
-          "internalType": "address"
-        }
-      ],
-      "outputs": [],
-      "stateMutability": "nonpayable"
-    },
-    {
-      "type": "function",
-      "name": "executionFee",
-      "inputs": [
-        {
-          "name": "chainId",
+          "name": "txPayloadSize",
           "type": "uint256",
           "internalType": "uint256"
         },
         {
-          "name": "transactionId",
-          "type": "bytes32",
-          "internalType": "bytes32"
+          "name": "options",
+          "type": "bytes",
+          "internalType": "bytes"
         }
       ],
       "outputs": [
         {
-          "name": "fee",
+          "name": "executionFee",
           "type": "uint256",
           "internalType": "uint256"
         }
@@ -132,6 +120,19 @@
           "name": "",
           "type": "bytes32",
           "internalType": "bytes32"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "globalMarkup",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
         }
       ],
       "stateMutability": "view"
@@ -180,50 +181,16 @@
     },
     {
       "type": "function",
-      "name": "recordExecutor",
+      "name": "initialize",
       "inputs": [
         {
-          "name": "dstChainId",
-          "type": "uint256",
-          "internalType": "uint256"
-        },
-        {
-          "name": "transactionId",
-          "type": "bytes32",
-          "internalType": "bytes32"
-        },
-        {
-          "name": "executor",
+          "name": "admin",
           "type": "address",
           "internalType": "address"
         }
       ],
       "outputs": [],
       "stateMutability": "nonpayable"
-    },
-    {
-      "type": "function",
-      "name": "recordedExecutor",
-      "inputs": [
-        {
-          "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
-        },
-        {
-          "name": "transactionId",
-          "type": "bytes32",
-          "internalType": "bytes32"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "executor",
-          "type": "address",
-          "internalType": "address"
-        }
-      ],
-      "stateMutability": "view"
     },
     {
       "type": "function",
@@ -238,6 +205,39 @@
           "name": "callerConfirmation",
           "type": "address",
           "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "requestExecution",
+      "inputs": [
+        {
+          "name": "dstChainId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "txPayloadSize",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "transactionId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "executionFee",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "options",
+          "type": "bytes",
+          "internalType": "bytes"
         }
       ],
       "outputs": [],
@@ -263,6 +263,45 @@
     },
     {
       "type": "function",
+      "name": "setExecutorEOA",
+      "inputs": [
+        {
+          "name": "executorEOA_",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setGasOracle",
+      "inputs": [
+        {
+          "name": "gasOracle_",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setGlobalMarkup",
+      "inputs": [
+        {
+          "name": "globalMarkup_",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
       "name": "supportsInterface",
       "inputs": [
         {
@@ -281,34 +320,9 @@
       "stateMutability": "view"
     },
     {
-      "type": "function",
-      "name": "unclaimedRewards",
-      "inputs": [
-        {
-          "name": "executor",
-          "type": "address",
-          "internalType": "address"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "totalClaimed",
-          "type": "uint256",
-          "internalType": "uint256"
-        }
-      ],
-      "stateMutability": "view"
-    },
-    {
       "type": "event",
-      "name": "ExecutionFeeAdded",
+      "name": "ExecutionRequested",
       "inputs": [
-        {
-          "name": "dstChainId",
-          "type": "uint256",
-          "indexed": false,
-          "internalType": "uint256"
-        },
         {
           "name": "transactionId",
           "type": "bytes32",
@@ -316,7 +330,46 @@
           "internalType": "bytes32"
         },
         {
-          "name": "totalFee",
+          "name": "client",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "ExecutorEOASet",
+      "inputs": [
+        {
+          "name": "executorEOA",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "GasOracleSet",
+      "inputs": [
+        {
+          "name": "gasOracle",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "GlobalMarkupSet",
+      "inputs": [
+        {
+          "name": "globalMarkup",
           "type": "uint256",
           "indexed": false,
           "internalType": "uint256"
@@ -326,63 +379,13 @@
     },
     {
       "type": "event",
-      "name": "ExecutionFeesAwarded",
+      "name": "Initialized",
       "inputs": [
         {
-          "name": "executor",
-          "type": "address",
-          "indexed": true,
-          "internalType": "address"
-        },
-        {
-          "name": "amount",
-          "type": "uint256",
+          "name": "version",
+          "type": "uint64",
           "indexed": false,
-          "internalType": "uint256"
-        }
-      ],
-      "anonymous": false
-    },
-    {
-      "type": "event",
-      "name": "ExecutionFeesClaimed",
-      "inputs": [
-        {
-          "name": "executor",
-          "type": "address",
-          "indexed": true,
-          "internalType": "address"
-        },
-        {
-          "name": "amount",
-          "type": "uint256",
-          "indexed": false,
-          "internalType": "uint256"
-        }
-      ],
-      "anonymous": false
-    },
-    {
-      "type": "event",
-      "name": "ExecutorRecorded",
-      "inputs": [
-        {
-          "name": "dstChainId",
-          "type": "uint256",
-          "indexed": false,
-          "internalType": "uint256"
-        },
-        {
-          "name": "transactionId",
-          "type": "bytes32",
-          "indexed": true,
-          "internalType": "bytes32"
-        },
-        {
-          "name": "executor",
-          "type": "address",
-          "indexed": true,
-          "internalType": "address"
+          "internalType": "uint64"
         }
       ],
       "anonymous": false
@@ -485,49 +488,60 @@
     },
     {
       "type": "error",
-      "name": "AddressInsufficientBalance",
+      "name": "InvalidInitialization",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "NotInitializing",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "OptionsLib__IncorrectVersion",
       "inputs": [
         {
-          "name": "account",
-          "type": "address",
-          "internalType": "address"
+          "name": "version",
+          "type": "uint8",
+          "internalType": "uint8"
         }
       ]
     },
     {
       "type": "error",
-      "name": "ExecutionFees__AlreadyRecorded",
+      "name": "SynapseExecutionService__FeeAmountTooLow",
       "inputs": [
         {
-          "name": "dstChainId",
+          "name": "actual",
           "type": "uint256",
           "internalType": "uint256"
         },
         {
-          "name": "transactionId",
-          "type": "bytes32",
-          "internalType": "bytes32"
-        },
-        {
-          "name": "executor",
-          "type": "address",
-          "internalType": "address"
+          "name": "required",
+          "type": "uint256",
+          "internalType": "uint256"
         }
       ]
     },
     {
       "type": "error",
-      "name": "ExecutionFees__ZeroAddress",
+      "name": "SynapseExecutionService__GasOracleNotSet",
       "inputs": []
     },
     {
       "type": "error",
-      "name": "ExecutionFees__ZeroAmount",
-      "inputs": []
+      "name": "SynapseExecutionService__OptionsVersionNotSupported",
+      "inputs": [
+        {
+          "name": "version",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
     },
     {
       "type": "error",
-      "name": "FailedInnerCall",
+      "name": "SynapseExecutionService__ZeroAddress",
       "inputs": []
     }
   ]
