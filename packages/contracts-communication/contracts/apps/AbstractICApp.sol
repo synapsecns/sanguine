@@ -115,7 +115,7 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
 
     /// @dev Thin wrapper around _sendInterchainMessage to accept EVM address as a parameter.
     function _sendInterchainMessageEVM(
-        uint256 dstChainId,
+        uint64 dstChainId,
         address receiver,
         uint256 messageFee,
         bytes memory options,
@@ -129,7 +129,7 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
 
     /// @dev Performs necessary checks and sends an interchain message.
     function _sendInterchainMessage(
-        uint256 dstChainId,
+        uint64 dstChainId,
         bytes32 receiver,
         uint256 messageFee,
         bytes memory options,
@@ -171,7 +171,7 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
 
     /// @dev Returns the fee for sending an Interchain message.
     function _getInterchainFee(
-        uint256 dstChainId,
+        uint64 dstChainId,
         bytes memory options,
         uint256 messageLen
     )

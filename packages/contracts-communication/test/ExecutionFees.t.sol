@@ -15,7 +15,7 @@ contract ExecutionFeesTest is ExecutionFeesEvents, Test {
     address public admin = makeAddr("Admin");
     bytes32 public transactionId = keccak256("transaction");
     bytes32 public transactionIdA = keccak256("transactionA");
-    uint256 public dstChainId = 1;
+    uint64 public dstChainId = 1;
     uint256 public executionFee = 1 ether;
     uint256 public executionFeeA = 2 ether;
 

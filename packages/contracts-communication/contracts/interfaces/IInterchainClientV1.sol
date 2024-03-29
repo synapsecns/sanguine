@@ -51,7 +51,7 @@ interface IInterchainClientV1 {
      * - entryIndex: the index of the written entry for transaction within the batch.
      */
     function interchainSend(
-        uint256 dstChainId,
+        uint64 dstChainId,
         bytes32 receiver,
         address srcExecutionService,
         address[] calldata srcModules,
@@ -63,7 +63,7 @@ interface IInterchainClientV1 {
         returns (InterchainTxDescriptor memory desc);
 
     function interchainSendEVM(
-        uint256 dstChainId,
+        uint64 dstChainId,
         address receiver,
         address srcExecutionService,
         address[] calldata srcModules,
@@ -119,7 +119,7 @@ interface IInterchainClientV1 {
     /// @param options              Execution options for the message sent, currently gas limit + native gas drop.
     /// @param messageLen           The length of the message being sent.
     function getInterchainFee(
-        uint256 dstChainId,
+        uint64 dstChainId,
         address srcExecutionService,
         address[] calldata srcModules,
         bytes calldata options,

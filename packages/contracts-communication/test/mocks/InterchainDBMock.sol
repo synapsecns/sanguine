@@ -10,7 +10,7 @@ contract InterchainDBMock is IInterchainDB {
     function writeEntry(bytes32 dataHash) external returns (uint256 writerNonce, uint64 entryIndex) {}
 
     function requestBatchVerification(
-        uint256 dstChainId,
+        uint64 dstChainId,
         uint256 dbNonce,
         address[] memory srcModules
     )
@@ -19,7 +19,7 @@ contract InterchainDBMock is IInterchainDB {
     {}
 
     function writeEntryWithVerification(
-        uint256 dstChainId,
+        uint64 dstChainId,
         bytes32 dataHash,
         address[] memory srcModules
     )
@@ -30,7 +30,7 @@ contract InterchainDBMock is IInterchainDB {
 
     function verifyRemoteBatch(bytes calldata versionedBatch) external {}
 
-    function getInterchainFee(uint256 dstChainId, address[] memory srcModules) external view returns (uint256) {}
+    function getInterchainFee(uint64 dstChainId, address[] memory srcModules) external view returns (uint256) {}
 
     function getBatchLeafs(uint256 dbNonce) external view returns (bytes32[] memory) {}
 

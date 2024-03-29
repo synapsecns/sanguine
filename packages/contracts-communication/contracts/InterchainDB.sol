@@ -34,7 +34,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
 
     /// @inheritdoc IInterchainDB
     function requestBatchVerification(
-        uint256 dstChainId,
+        uint64 dstChainId,
         uint256 dbNonce,
         address[] calldata srcModules
     )
@@ -48,7 +48,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
 
     /// @inheritdoc IInterchainDB
     function writeEntryWithVerification(
-        uint256 dstChainId,
+        uint64 dstChainId,
         bytes32 dataHash,
         address[] calldata srcModules
     )
@@ -119,7 +119,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     }
 
     /// @inheritdoc IInterchainDB
-    function getInterchainFee(uint256 dstChainId, address[] calldata srcModules) external view returns (uint256 fee) {
+    function getInterchainFee(uint64 dstChainId, address[] calldata srcModules) external view returns (uint256 fee) {
         (, fee) = _getModuleFees(dstChainId, getDBNonce(), srcModules);
     }
 
@@ -207,7 +207,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     /// @dev Request the verification of the entry by the modules, and emit the event.
     /// Note: the validity of the passed entry and chain id being remote is enforced in the calling function.
     function _requestVerification(
-        uint256 dstChainId,
+        uint64 dstChainId,
         InterchainBatch memory batch,
         address[] calldata srcModules
     )
@@ -260,7 +260,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
 
     /// @dev Get the verification fees for the modules
     function _getModuleFees(
-        uint256 dstChainId,
+        uint64 dstChainId,
         uint256 dbNonce,
         address[] calldata srcModules
     )

@@ -22,7 +22,7 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
     }
 
     /// @inheritdoc IInterchainModule
-    function requestBatchVerification(uint256 dstChainId, bytes calldata versionedBatch) external payable {
+    function requestBatchVerification(uint64 dstChainId, bytes calldata versionedBatch) external payable {
         if (msg.sender != INTERCHAIN_DB) {
             revert InterchainModule__NotInterchainDB(msg.sender);
         }
@@ -45,7 +45,7 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
     }
 
     /// @inheritdoc IInterchainModule
-    function getModuleFee(uint256 dstChainId, uint256 dbNonce) external view returns (uint256) {
+    function getModuleFee(uint64 dstChainId, uint256 dbNonce) external view returns (uint256) {
         return _getModuleFee(dstChainId, dbNonce);
     }
 
@@ -67,14 +67,14 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
 
     // solhint-disable no-empty-blocks
     /// @dev Internal logic to request the verification of an batch on the destination chain.
-    function _requestVerification(uint256 dstChainId, bytes memory encodedBatch) internal virtual {}
+    function _requestVerification(uint64 dstChainId, bytes memory encodedBatch) internal virtual {}
 
     /// @dev Internal logic to fill the module data for the specified destination chain.
-    function _fillModuleData(uint256 dstChainId, uint256 dbNonce) internal virtual returns (bytes memory) {}
+    function _fillModuleData(uint64 dstChainId, uint256 dbNonce) internal virtual returns (bytes memory) {}
 
     /// @dev Internal logic to handle the auxiliary module data relayed from the remote chain.
     function _receiveModuleData(uint64 srcChainId, uint256 dbNonce, bytes memory moduleData) internal virtual {}
 
     /// @dev Internal logic to get the module fee for verifying an batch on the specified destination chain.
-    function _getModuleFee(uint256 dstChainId, uint256 dbNonce) internal view virtual returns (uint256);
+    function _getModuleFee(uint64 dstChainId, uint256 dbNonce) internal view virtual returns (uint256);
 }

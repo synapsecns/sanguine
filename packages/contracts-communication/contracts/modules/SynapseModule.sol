@@ -179,7 +179,7 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
 
     /// @dev Internal logic to fill the module data for the specified destination chain.
     function _fillModuleData(
-        uint256 dstChainId,
+        uint64 dstChainId,
         uint256 // dbNonce
     )
         internal
@@ -220,7 +220,7 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
 
     /// @dev Internal logic to get the module fee for verifying an batch on the specified destination chain.
     function _getModuleFee(
-        uint256 dstChainId,
+        uint64 dstChainId,
         uint256 // dbNonce
     )
         internal

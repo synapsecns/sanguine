@@ -8,6 +8,6 @@ abstract contract InterchainDBEvents {
     event InterchainBatchVerified(address module, uint64 srcChainId, uint256 dbNonce, bytes32 batchRoot);
 
     event InterchainBatchVerificationRequested(
-        uint256 dstChainId, uint256 dbNonce, bytes32 batchRoot, address[] srcModules
+        uint64 dstChainId, uint256 dbNonce, bytes32 batchRoot, address[] srcModules
     );
 }

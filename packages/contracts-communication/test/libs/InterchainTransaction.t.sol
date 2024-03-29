@@ -21,7 +21,7 @@ contract InterchainTransactionLibTest is Test {
     function test_constructLocalTransaction(
         uint64 srcChainId,
         address srcSender,
-        uint256 dstChainId,
+        uint64 dstChainId,
         bytes32 dstReceiver,
         uint256 dbNonce,
         uint64 entryIndex,

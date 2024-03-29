@@ -43,7 +43,7 @@ interface IInterchainDB {
     /// @param dbNonce       The database nonce of the existing batch
     /// @param srcModules    The source chain addresses of the Interchain Modules to use for verification
     function requestBatchVerification(
-        uint256 dstChainId,
+        uint64 dstChainId,
         uint256 dbNonce,
         address[] memory srcModules
     )
@@ -60,7 +60,7 @@ interface IInterchainDB {
     /// @return dbNonce     The database nonce of the batch containing the written entry
     /// @return entryIndex  The index of the written entry within the batch
     function writeEntryWithVerification(
-        uint256 dstChainId,
+        uint64 dstChainId,
         bytes32 dataHash,
         address[] memory srcModules
     )
@@ -80,7 +80,7 @@ interface IInterchainDB {
     /// @dev Will revert if the empty array of modules is provided.
     /// @param dstChainId   The chain id of the destination chain
     /// @param srcModules   The source chain addresses of the Interchain Modules to use for verification
-    function getInterchainFee(uint256 dstChainId, address[] memory srcModules) external view returns (uint256);
+    function getInterchainFee(uint64 dstChainId, address[] memory srcModules) external view returns (uint256);
 
     /// @notice Returns the list of leafs of the finalized batch with the given nonce.
     /// Note: the leafs are ordered by the index of the written entry in the current batch,

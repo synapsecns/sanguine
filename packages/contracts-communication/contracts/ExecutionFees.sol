@@ -24,7 +24,7 @@ contract ExecutionFees is AccessControl, ExecutionFeesEvents, IExecutionFees {
     }
 
     // @inheritdoc IExecutionFees
-    function addExecutionFee(uint256 dstChainId, bytes32 transactionId) external payable {
+    function addExecutionFee(uint64 dstChainId, bytes32 transactionId) external payable {
         if (msg.value == 0) revert ExecutionFees__ZeroAmount();
         executionFee[dstChainId][transactionId] += msg.value;
         // Use the new total fee as the event parameter.
@@ -38,7 +38,7 @@ contract ExecutionFees is AccessControl, ExecutionFeesEvents, IExecutionFees {
 
     // @inheritdoc IExecutionFees
     function recordExecutor(
-        uint256 dstChainId,
+        uint64 dstChainId,
         bytes32 transactionId,
         address executor
     )

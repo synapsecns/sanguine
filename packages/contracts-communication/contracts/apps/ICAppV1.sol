@@ -181,7 +181,7 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
 
     /// @dev Thin wrapper around _sendInterchainMessage to send the message to the linked app.
     function _sendToLinkedApp(
-        uint256 dstChainId,
+        uint64 dstChainId,
         uint256 messageFee,
         OptionsV1 memory options,
         bytes memory message
@@ -197,7 +197,7 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
 
     /// @dev Returns the fee to send a message to the linked app on the remote chain.
     function _getMessageFee(
-        uint256 dstChainId,
+        uint64 dstChainId,
         OptionsV1 memory options,
         uint256 messageLen
     )

@@ -10,7 +10,7 @@ contract InterchainClientV1Mock is IInterchainClientV1 {
     function setLinkedClient(uint256 chainId, bytes32 client) external {}
 
     function interchainSend(
-        uint256 dstChainId,
+        uint64 dstChainId,
         bytes32 receiver,
         address srcExecutionService,
         address[] calldata srcModules,
@@ -23,7 +23,7 @@ contract InterchainClientV1Mock is IInterchainClientV1 {
     {}
 
     function interchainSendEVM(
-        uint256 dstChainId,
+        uint64 dstChainId,
         address receiver,
         address srcExecutionService,
         address[] calldata srcModules,
@@ -49,7 +49,7 @@ contract InterchainClientV1Mock is IInterchainClientV1 {
     function isExecutable(bytes calldata transaction, bytes32[] calldata proof) external view returns (bool) {}
 
     function getInterchainFee(
-        uint256 dstChainId,
+        uint64 dstChainId,
         address srcExecutionService,
         address[] calldata srcModules,
         bytes calldata options,

@@ -61,7 +61,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
 
     // @inheritdoc IInterchainClientV1
     function interchainSend(
-        uint256 dstChainId,
+        uint64 dstChainId,
         bytes32 receiver,
         address srcExecutionService,
         address[] calldata srcModules,
@@ -77,7 +77,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
 
     // @inheritdoc IInterchainClientV1
     function interchainSendEVM(
-        uint256 dstChainId,
+        uint64 dstChainId,
         address receiver,
         address srcExecutionService,
         address[] calldata srcModules,
@@ -162,7 +162,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
 
     // @inheritdoc IInterchainClientV1
     function getInterchainFee(
-        uint256 dstChainId,
+        uint64 dstChainId,
         address srcExecutionService,
         address[] calldata srcModules,
         bytes calldata options,
@@ -222,7 +222,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
 
     /// @dev Internal logic for sending a message to another chain.
     function _interchainSend(
-        uint256 dstChainId,
+        uint64 dstChainId,
         bytes32 receiver,
         address srcExecutionService,
         address[] calldata srcModules,

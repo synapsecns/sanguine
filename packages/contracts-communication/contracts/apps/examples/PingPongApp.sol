@@ -38,13 +38,13 @@ contract PingPongApp is ICAppV1 {
     }
 
     /// @notice Starts the ping-pong message exchange with the remote PingPongApp.
-    function startPingPong(uint256 dstChainId, uint256 counter) external {
+    function startPingPong(uint64 dstChainId, uint256 counter) external {
         // Revert if the balance is lower than the message fee.
         _sendPingPongMessage(dstChainId, counter, true);
     }
 
     /// @notice Returns the fee to send a single ping message to the remote PingPongApp.
-    function getPingFee(uint256 dstChainId) external view returns (uint256) {
+    function getPingFee(uint64 dstChainId) external view returns (uint256) {
         OptionsV1 memory options = OptionsV1({gasLimit: gasLimit, gasAirdrop: 0});
         bytes memory message = abi.encode(uint256(0));
         return _getInterchainFee(dstChainId, options.encodeOptionsV1(), message.length);
@@ -72,7 +72,7 @@ contract PingPongApp is ICAppV1 {
     /// @dev Sends a message to the PingPongApp on the remote chain.
     /// If `counter > 0`, the remote app will respond with a message to this app, decrementing the counter.
     /// Once the counter reaches 0, the remote app will not respond.
-    function _sendPingPongMessage(uint256 dstChainId, uint256 counter, bool lowBalanceRevert) internal {
+    function _sendPingPongMessage(uint64 dstChainId, uint256 counter, bool lowBalanceRevert) internal {
         OptionsV1 memory options = OptionsV1({gasLimit: gasLimit, gasAirdrop: 0});
         bytes memory message = abi.encode(counter);
         uint256 messageFee = _getMessageFee(dstChainId, options, message.length);

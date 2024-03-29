@@ -8,7 +8,7 @@ import {VersionedPayloadLib} from "./VersionedPayload.sol";
 struct InterchainTransaction {
     uint64 srcChainId;
     bytes32 srcSender;
-    uint256 dstChainId;
+    uint64 dstChainId;
     bytes32 dstReceiver;
     uint256 dbNonce;
     uint64 entryIndex;
@@ -30,7 +30,7 @@ library InterchainTransactionLib {
 
     function constructLocalTransaction(
         address srcSender,
-        uint256 dstChainId,
+        uint64 dstChainId,
         bytes32 dstReceiver,
         uint256 dbNonce,
         uint64 entryIndex,
