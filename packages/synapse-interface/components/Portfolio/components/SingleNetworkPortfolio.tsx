@@ -20,7 +20,7 @@ import { setFromToken, setToToken } from '@/slices/bridge/reducer'
 import { PortfolioTokenVisualizer } from './PortfolioTokenVisualizer'
 import { PortfolioNetwork } from './PortfolioNetwork'
 import { GAS_TOKENS } from '@/constants/tokens'
-import { GasTokenAsset } from './PortfolioTokenAsset'
+import { GasTokenAsset } from './GasTokenAsset'
 import { GasToken } from '@/constants/tokens/gasTokens'
 
 type SingleNetworkPortfolioProps = {
