@@ -51,6 +51,7 @@ export const CCTP_SUPPORTED_CHAIN_IDS: number[] = [
 export const RFQ_SUPPORTED_CHAIN_IDS: number[] = [
   SupportedChainId.ETH,
   SupportedChainId.OPTIMISM,
+  SupportedChainId.BASE,
   SupportedChainId.ARBITRUM,
   SupportedChainId.BLAST,
 ]
