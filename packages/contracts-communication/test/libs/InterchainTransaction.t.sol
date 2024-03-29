@@ -41,9 +41,10 @@ contract InterchainTransactionLibTest is Test {
         assertEq(icTx.message, message, "!message");
     }
 
-    function test_encodeRoundtrip(InterchainTransaction memory icTx) public {
-        bytes memory encoded = libHarness.encodeTransaction(icTx);
-        InterchainTransaction memory decoded = libHarness.decodeTransaction(encoded);
+    function test_encodeVersionedTransaction_roundTrip(uint16 version, InterchainTransaction memory icTx) public {
+        bytes memory encoded = libHarness.encodeVersionedTransaction(version, icTx);
+        (uint16 version_, InterchainTransaction memory decoded) = libHarness.decodeVersionedTransaction(encoded);
+        assertEq(version_, version, "!version");
         assertEq(decoded.srcChainId, icTx.srcChainId, "!srcChainId");
         assertEq(decoded.srcSender, icTx.srcSender, "!srcSender");
         assertEq(decoded.dstChainId, icTx.dstChainId, "!dstChainId");
@@ -54,14 +55,9 @@ contract InterchainTransactionLibTest is Test {
         assertEq(decoded.message, icTx.message, "!message");
     }
 
-    function test_transactionId(InterchainTransaction memory icTx) public {
-        bytes32 expected = keccak256(abi.encode(icTx));
-        assertEq(libHarness.transactionId(icTx), expected);
-    }
-
     function test_payloadSize(InterchainTransaction memory icTx) public {
         uint256 size = libHarness.payloadSize(icTx.options.length, icTx.message.length);
-        uint256 expectedSize = abi.encode(icTx).length;
+        uint256 expectedSize = libHarness.encodeVersionedTransaction(0, icTx).length;
         assertEq(size, expectedSize);
     }
 

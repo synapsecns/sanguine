@@ -42,7 +42,7 @@ contract PingPongDstIntegrationTest is ICIntegrationTest {
         srcEntry = getSrcInterchainEntry();
         srcDesc = getInterchainTxDescriptor(srcEntry);
         srcBatch = getInterchainBatch(srcEntry);
-        encodedSrcTx = abi.encode(srcTx);
+        encodedSrcTx = getEncodedTx(srcTx);
 
         moduleBatch = getModuleBatch(srcBatch);
         moduleSignatures = getModuleSignatures(srcBatch);
@@ -56,7 +56,7 @@ contract PingPongDstIntegrationTest is ICIntegrationTest {
         dstVerificationFee = icDB.getInterchainFee(SRC_CHAIN_ID, toArray(address(module)));
         dstExecutionFee = executionService.getExecutionFee({
             dstChainId: SRC_CHAIN_ID,
-            txPayloadSize: abi.encode(dstTx).length,
+            txPayloadSize: getEncodedTx(dstTx).length,
             options: ppOptions.encodeOptionsV1()
         });
     }

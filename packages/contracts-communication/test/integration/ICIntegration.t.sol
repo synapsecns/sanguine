@@ -12,6 +12,7 @@ import {IInterchainClientV1} from "../../contracts/interfaces/IInterchainClientV
 import {InterchainBatch, InterchainBatchLib} from "../../contracts/libs/InterchainBatch.sol";
 import {InterchainEntry} from "../../contracts/libs/InterchainEntry.sol";
 import {InterchainTransaction, InterchainTxDescriptor} from "../../contracts/libs/InterchainTransaction.sol";
+import {VersionedPayloadLib} from "../../contracts/libs/VersionedPayload.sol";
 import {ModuleBatchLib} from "../../contracts/libs/ModuleBatch.sol";
 import {OptionsV1} from "../../contracts/libs/Options.sol";
 
@@ -69,7 +70,7 @@ abstract contract ICIntegrationTest is
     {
         vm.expectEmit(address(icClient));
         emit InterchainTransactionSent({
-            transactionId: icTx.transactionId(),
+            transactionId: getTxId(icTx),
             dbNonce: icTx.dbNonce,
             entryIndex: icTx.entryIndex,
             dstChainId: icTx.dstChainId,
@@ -85,7 +86,7 @@ abstract contract ICIntegrationTest is
     function expectClientEventInterchainTransactionReceived(InterchainTransaction memory icTx) internal {
         vm.expectEmit(address(icClient));
         emit InterchainTransactionReceived({
-            transactionId: icTx.transactionId(),
+            transactionId: getTxId(icTx),
             dbNonce: icTx.dbNonce,
             entryIndex: icTx.entryIndex,
             srcChainId: icTx.srcChainId,
@@ -271,7 +272,7 @@ abstract contract ICIntegrationTest is
             dbNonce: SRC_INITIAL_DB_NONCE,
             entryIndex: 0,
             srcWriter: address(icClient).addressToBytes32(),
-            dataHash: getSrcTransaction().transactionId()
+            dataHash: getTxId(getSrcTransaction())
         });
     }
 
@@ -281,8 +282,16 @@ abstract contract ICIntegrationTest is
             dbNonce: DST_INITIAL_DB_NONCE,
             entryIndex: 0,
             srcWriter: address(icClient).addressToBytes32(),
-            dataHash: getDstTransaction().transactionId()
+            dataHash: getTxId(getDstTransaction())
         });
+    }
+
+    function getTxId(InterchainTransaction memory icTx) internal pure returns (bytes32) {
+        return keccak256(getEncodedTx(icTx));
+    }
+
+    function getEncodedTx(InterchainTransaction memory icTx) internal pure returns (bytes memory) {
+        return VersionedPayloadLib.encodeVersionedPayload(CLIENT_VERSION, abi.encode(icTx));
     }
 
     function getSrcTransaction() internal view returns (InterchainTransaction memory) {

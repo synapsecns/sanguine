@@ -27,6 +27,9 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     using AppConfigLib for bytes;
     using OptionsLib for bytes;
 
+    /// @notice Version of the InterchainClient contract. Sent and received transactions must have the same version.
+    uint16 public constant CLIENT_VERSION = 1;
+
     /// @notice Address of the InterchainDB contract, set at the time of deployment.
     address public immutable INTERCHAIN_DB;
 
@@ -97,8 +100,9 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         external
         payable
     {
-        InterchainTransaction memory icTx = InterchainTransactionLib.decodeTransaction(transaction);
-        bytes32 transactionId = _assertExecutable(icTx, proof);
+        InterchainTransaction memory icTx = _assertCorrectVersion(transaction);
+        bytes32 transactionId = keccak256(transaction);
+        _assertExecutable(icTx, transactionId, proof);
         _txExecutor[transactionId] = msg.sender;
 
         OptionsV1 memory decodedOptions = icTx.options.decodeOptionsV1();
@@ -136,17 +140,17 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
 
     // @inheritdoc IInterchainClientV1
     function isExecutable(bytes calldata encodedTx, bytes32[] calldata proof) external view returns (bool) {
-        InterchainTransaction memory icTx = InterchainTransactionLib.decodeTransaction(encodedTx);
+        InterchainTransaction memory icTx = _assertCorrectVersion(encodedTx);
         // Check that options could be decoded
         icTx.options.decodeOptionsV1();
-        _assertExecutable(icTx, proof);
+        bytes32 transactionId = keccak256(encodedTx);
+        _assertExecutable(icTx, transactionId, proof);
         return true;
     }
 
     // @inheritdoc IInterchainClientV1
     function getExecutor(bytes calldata encodedTx) external view returns (address) {
-        InterchainTransaction memory icTx = InterchainTransactionLib.decodeTransaction(encodedTx);
-        return _txExecutor[icTx.transactionId()];
+        return _txExecutor[keccak256(encodedTx)];
     }
 
     // @inheritdoc IInterchainClientV1
@@ -206,7 +210,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
 
     /// @notice Encodes the transaction data into a bytes format.
     function encodeTransaction(InterchainTransaction memory icTx) external pure returns (bytes memory) {
-        return icTx.encodeTransaction();
+        return InterchainTransactionLib.encodeVersionedTransaction(CLIENT_VERSION, icTx);
     }
 
     // ═════════════════════════════════════════════════ INTERNAL ══════════════════════════════════════════════════════
@@ -241,7 +245,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             options: options,
             message: message
         });
-        desc.transactionId = icTx.transactionId();
+        desc.transactionId = keccak256(InterchainTransactionLib.encodeVersionedTransaction(CLIENT_VERSION, icTx));
         // Sanity check: nonce returned from DB should match the nonce used to construct the transaction
         {
             (uint256 dbNonce, uint64 entryIndex) = IInterchainDB(INTERCHAIN_DB).writeEntryWithVerification{
@@ -284,20 +288,19 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
 
     // ══════════════════════════════════════════════ INTERNAL VIEWS ═══════════════════════════════════════════════════
 
-    /// @dev Asserts that the transaction is executable. Returns the transactionId for chaining purposes.
+    /// @dev Asserts that the transaction is executable.
     function _assertExecutable(
         InterchainTransaction memory icTx,
+        bytes32 transactionId,
         bytes32[] calldata proof
     )
         internal
         view
-        returns (bytes32 transactionId)
     {
         bytes32 linkedClient = _assertLinkedClient(icTx.srcChainId);
         if (icTx.dstChainId != block.chainid) {
             revert InterchainClientV1__IncorrectDstChainId(icTx.dstChainId);
         }
-        transactionId = icTx.transactionId();
         if (_txExecutor[transactionId] != address(0)) {
             revert InterchainClientV1__TxAlreadyExecuted(transactionId);
         }
@@ -355,6 +358,19 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             if (confirmedAt != 0 && confirmedAt + optimisticPeriod < block.timestamp) {
                 ++finalizedResponses;
             }
+        }
+    }
+
+    /// @dev Asserts that the transaction version is correct. Returns the decoded transaction for chaining purposes.
+    function _assertCorrectVersion(bytes calldata encodedTx)
+        internal
+        pure
+        returns (InterchainTransaction memory icTx)
+    {
+        uint16 version;
+        (version, icTx) = InterchainTransactionLib.decodeVersionedTransaction(encodedTx);
+        if (version != CLIENT_VERSION) {
+            revert InterchainClientV1__InvalidTransactionVersion(version);
         }
     }
 }
