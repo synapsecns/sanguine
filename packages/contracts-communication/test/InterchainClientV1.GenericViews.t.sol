@@ -3,15 +3,19 @@ pragma solidity 0.8.20;
 
 import {OptionsV1} from "../contracts/libs/Options.sol";
 
-import {InterchainClientV1, InterchainClientV1BaseTest, InterchainTransaction} from "./InterchainClientV1.Base.t.sol";
+import {InterchainClientV1BaseTest, InterchainTransaction} from "./InterchainClientV1.Base.t.sol";
+import {InterchainTransactionLibHarness} from "./harnesses/InterchainTransactionLibHarness.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
 contract InterchainClientV1GenericViewsTest is InterchainClientV1BaseTest {
+    InterchainTransactionLibHarness public libHarness;
+
     function setUp() public override {
         super.setUp();
         setExecutionFees(execFees);
         setLinkedClient(REMOTE_CHAIN_ID, MOCK_REMOTE_CLIENT);
+        libHarness = new InterchainTransactionLibHarness();
     }
 
     function test_getLinkedClient_chainIdKnown() public {
@@ -48,7 +52,8 @@ contract InterchainClientV1GenericViewsTest is InterchainClientV1BaseTest {
 
     function test_encodeTransaction(InterchainTransaction memory icTx) public {
         bytes memory encoded = icClient.encodeTransaction(icTx);
-        InterchainTransaction memory decoded = abi.decode(encoded, (InterchainTransaction));
+        (uint16 version, InterchainTransaction memory decoded) = libHarness.decodeVersionedTransaction(encoded);
+        assertEq(version, CLIENT_VERSION);
         assertEq(decoded, icTx);
     }
 
