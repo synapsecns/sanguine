@@ -61,6 +61,11 @@ export function TokenSelector({
     setHover(false)
   }
 
+  const onSearch = (str: string) => {
+    setSearchStr(str)
+    setCurrentIdx(-1)
+  }
+
   const arrowUp = useKeyPress('ArrowUp', hover)
   const arrowDown = useKeyPress('ArrowDown', hover)
   const enterPress = useKeyPress('Enter', hover)
@@ -112,7 +117,7 @@ export function TokenSelector({
       placeholder={placeholder ?? 'Network'}
       selectedItem={selectedItem}
       searchStr={searchStr}
-      setSearchStr={setSearchStr}
+      onSearch={onSearch}
       onClose={onClose}
       hover={hover}
       setHover={setHover}
