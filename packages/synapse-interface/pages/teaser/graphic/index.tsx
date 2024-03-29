@@ -18,7 +18,7 @@ const begin = {
     platform: 0,
     anchor: 0.5,
     bridge: 1,
-    barge: 2,
+    barge: 4,
     balloon: 4,
   },
   green: {
@@ -399,7 +399,7 @@ const LandingPage = () => {
           <animateMotion
             id="bargeOut"
             dur="2s"
-            begin="0s; bargeIn.end" // dockN.end; bargeIn.end"
+            begin="dockN.end; bargeIn.end"
             path="M200,-500 -200,-300"
             {...animAttrs()}
           />
@@ -770,15 +770,14 @@ const LandingPage = () => {
           </circle>
         </g>
 
-        <Cube color="blue" translate="-25 -212.5" begin={0}>
+        <Cube color="blue" translate="-25 -212.5" begin={begin.blue.barge}>
           <set attributeName="stroke" to={stroke.blue} begin="bargeOut.begin" />
           <animateTransform
             attributeName="transform"
             type="translate"
             begin="bargeOut.end"
             dur="1s"
-            from="-25 -212.5"
-            by="-150 -75"
+            by="-162.5 -81.25"
             {...animAttrs()}
           />
           <animateTransform
@@ -794,7 +793,7 @@ const LandingPage = () => {
             type="translate"
             begin="bargeCross.end"
             dur="1s"
-            by="150 75"
+            by="137.5 68.75"
             {...animAttrs()}
           />
           <animate
@@ -811,13 +810,12 @@ const LandingPage = () => {
             dur="2s"
             fill="freeze"
           />
-
           <animateTransform
             attributeName="transform"
             type="translate"
             begin="bargeOut.begin"
             dur="1ms"
-            by="400 -200"
+            to="-25 -212.5"
             fill="freeze"
           />
           <animate
@@ -895,9 +893,14 @@ const LandingPage = () => {
           />
         </Cube>
 
-        <Cube color="yellow" translate="-400 0" begin={3} />
-        <Cube color="green" translate="400 0" begin={2} />
-        <Cube color="orange" translate="0 150" begin={2.5} />
+        <Cube color="green" translate="400 0" begin={begin.green.anchor} />
+        <Cube color="orange" translate="0 150" begin={begin.orange.anchor} />
+        <Cube color="yellow" translate="-400 0" begin={begin.yellow.anchor} />
+
+        <Cube color="yellow" translate="-450 0" begin={11} />
+        <Cube color="yellow" translate="-425 12.5" begin={12} />
+        <Cube color="yellow" translate="-425 -27.95" begin={10} />
+        {/* <Cube color="yellow" translate="-437.5 -20.9625" begin={13} /> */}
 
         {/* <rect
           width="40"
