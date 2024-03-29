@@ -25,10 +25,10 @@ abstract contract DeployProxy is SynapseScript {
     {
         require(implementation != address(0), "No implementation provided");
         require(proxyAdminOwner != address(0), "No proxy admin owner provided");
-        // Deploy the proxy and save the artifact with Proxy ABI as ContractName.Proxy
+        // Deploy the proxy and save the artifact with Proxy ABI as TransparentUpgradeableProxy.ContractName
         deployedAt = deployAndSaveAs({
             contractName: "TransparentUpgradeableProxy",
-            contractAlias: contractName.concat(".Proxy"),
+            contractAlias: string.concat("TransparentUpgradeableProxy.", contractName),
             constructorArgs: abi.encode(implementation, proxyAdminOwner, initData),
             deployCodeFunc: cdDeployTransparentUpgradeableProxy
         });
