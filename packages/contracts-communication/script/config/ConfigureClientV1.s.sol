@@ -6,6 +6,7 @@ import {TypeCasts} from "../../contracts/libs/TypeCasts.sol";
 
 import {stdJson, SynapseScript} from "@synapsecns/solidity-devops/src/SynapseScript.sol";
 
+// solhint-disable custom-errors
 contract ConfigureClientV1 is SynapseScript {
     using stdJson for string;
 

@@ -705,7 +705,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
                 srcExecutionService: execService,
                 srcModules: twoModules,
                 options: encodedOptions,
-                message: message
+                messageLen: message.length
             }),
             MOCK_INTERCHAIN_FEE + MOCK_EXECUTION_FEE
         );
@@ -721,7 +721,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
                 srcExecutionService: execService,
                 srcModules: twoModules,
                 options: encodedOptions,
-                message: message
+                messageLen: message.length
             }),
             MOCK_INTERCHAIN_FEE
         );
@@ -737,7 +737,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
                 srcExecutionService: execService,
                 srcModules: twoModules,
                 options: encodedOptions,
-                message: message
+                messageLen: message.length
             }),
             MOCK_EXECUTION_FEE
         );
@@ -753,7 +753,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
                 srcExecutionService: execService,
                 srcModules: twoModules,
                 options: encodedOptions,
-                message: message
+                messageLen: message.length
             }),
             0
         );
@@ -767,7 +767,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
                 srcExecutionService: address(0),
                 srcModules: twoModules,
                 options: encodedOptions,
-                message: message
+                messageLen: message.length
             }),
             MOCK_INTERCHAIN_FEE
         );
@@ -781,7 +781,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
                 srcExecutionService: address(0),
                 srcModules: twoModules,
                 options: encodedOptions,
-                message: message
+                messageLen: message.length
             }),
             0
         );
@@ -794,7 +794,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
             srcExecutionService: execService,
             srcModules: twoModules,
             options: encodedOptions,
-            message: message
+            messageLen: message.length
         });
     }
 
@@ -805,7 +805,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
             srcExecutionService: execService,
             srcModules: twoModules,
             options: encodedOptions,
-            message: message
+            messageLen: message.length
         });
     }
 
@@ -817,7 +817,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
             srcExecutionService: execService,
             srcModules: twoModules,
             options: "",
-            message: message
+            messageLen: message.length
         });
     }
 
@@ -828,7 +828,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
             srcExecutionService: execService,
             srcModules: twoModules,
             options: invalidOptionsV0,
-            message: message
+            messageLen: message.length
         });
     }
 
@@ -840,7 +840,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
             srcExecutionService: execService,
             srcModules: twoModules,
             options: invalidOptionsV1,
-            message: message
+            messageLen: message.length
         });
     }
 }

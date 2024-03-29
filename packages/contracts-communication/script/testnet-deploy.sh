@@ -19,6 +19,6 @@ yarn fsr script/deploy/DeployInterchainClientV1.s.sol "$chainName" "$walletName"
 yarn fsr script/deploy/DeploySynapseModule.s.sol "$chainName" "$walletName" "$@"
 
 yarn fsr-str script/deploy/DeployWithMsgSender.s.sol "$chainName" "$walletName" "ExecutionFees" "$@"
-yarn fsr-str script/deploy/DeployWithMsgSender.s.sol "$chainName" "$walletName" "ExecutionService" "$@"
+yarn fsr script/deploy/DeploySynapseExecutionServiceV1.s.sol "$chainName" "$walletName" "$@"
 
 yarn fsr-str script/deploy/DeployWithMsgSender.s.sol "$chainName" "$walletName" "SynapseGasOracleV1" "$@"

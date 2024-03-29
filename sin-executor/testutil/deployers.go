@@ -115,7 +115,7 @@ var (
 	}, []contracts.ContractType{})
 
 	executionService = deployer.NewFunctionalDeployer(ExecutionService, func(ctx context.Context, helpers deployer.IFunctionalDeployer, transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		address, deployTx, iface, err := executionservice.DeployExecutionService(transactOps, backend, transactOps.From)
+		address, deployTx, iface, err := executionservice.DeploySynapseExecutionServiceV1Harness(transactOps, backend)
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not deploy execution service: %w", err)
 		}
@@ -127,7 +127,12 @@ var (
 		}
 		helpers.Backend().WaitForConfirmation(ctx, tx)
 
-		tx, err = iface.SetInterchainClient(transactOps, helpers.Registry().Get(ctx, InterchainClient).Address())
+		icClientRole, err := iface.ICCLIENTROLE(&bind.CallOpts{Context: ctx})
+		if err != nil {
+			return common.Address{}, nil, nil, fmt.Errorf("could not get ic client role: %w", err)
+		}
+
+		tx, err = iface.GrantRole(transactOps, icClientRole, helpers.Registry().Get(ctx, InterchainClient).Address())
 		if err != nil {
 			return common.Address{}, nil, nil, fmt.Errorf("could not set interchain client: %w", err)
 		}
@@ -135,7 +140,7 @@ var (
 
 		return address, tx, iface, nil
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return executionservice.NewExecutionServiceRef(address, backend)
+		return executionservice.NewSynapseExecutionServiceV1HarnessRef(address, backend)
 	}, []contracts.ContractType{GasOracleMock, InterchainClient})
 
 	executionFeesMock = deployer.NewFunctionalDeployer(ExecutionFeesMock, func(_ context.Context, _ deployer.IFunctionalDeployer, transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
