@@ -114,7 +114,7 @@ abstract contract ConfigureAppV1 is SynapseScript {
 
     function setExecutionService() internal virtual {
         printLog("Setting execution service");
-        address executionService = getDeploymentAddress({contractName: "ExecutionService", revertIfNotFound: true});
+        address executionService = getDeploymentAddress({contractName: "SynapseExecutionServiceV1", revertIfNotFound: true});
         if (app.getExecutionService() != executionService) {
             app.setExecutionService(executionService);
             printSuccessWithIndent(string.concat("Execution service set to ", vm.toString(executionService)));
