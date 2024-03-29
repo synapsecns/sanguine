@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Address } from 'viem'
 import { useDispatch } from 'react-redux'
-import _ from 'lodash'
+import _, { isArray } from 'lodash'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import {
   TokenAndBalance,
@@ -42,7 +42,11 @@ const filterOutGasTokens = (
   let filteredGasTokens: TokenAndBalance[] = []
   let remainingTokens: TokenAndBalance[] = []
 
-  if (!gasTokens) {
+  if (!gasTokens && !isArray(tokens)) {
+    return [filteredGasTokens, remainingTokens]
+  }
+
+  if (!gasTokens && isArray(tokens)) {
     remainingTokens = [...tokens]
   } else {
     const gasTokenAddresses = gasTokens?.flatMap((token) =>
