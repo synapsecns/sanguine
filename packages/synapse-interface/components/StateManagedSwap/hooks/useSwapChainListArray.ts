@@ -19,7 +19,7 @@ export const useSwapChainListArray = (searchStr: string) => {
     ? sortChains(
         _.difference(
           Object.keys(CHAINS_BY_ID).map((id) => CHAINS_BY_ID[id]),
-          swapFromChainIds.map((id) => CHAINS_BY_ID[id])
+          swapFromChainIds?.map((id) => CHAINS_BY_ID[id])
         )
       )
     : []

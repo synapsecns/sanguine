@@ -23,7 +23,7 @@ export const useToChainListArray = (searchStr: string = '') => {
   let remainingChains = sortChains(
     _.difference(
       Object.keys(CHAINS_BY_ID).map((id) => CHAINS_BY_ID[id]),
-      toChainIds.map((id) => CHAINS_BY_ID[id])
+      toChainIds?.map((id) => CHAINS_BY_ID[id])
     )
   ).filter((chain) => !PAUSED_TO_CHAIN_IDS.includes(chain.id))
 

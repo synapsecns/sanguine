@@ -25,6 +25,7 @@ export const SelectSpecificTokenButton = ({
   isBestExchangeRate = false,
   estimatedDurationInSeconds,
   action,
+  isCurrentToken,
 }: {
   showAllChains?: boolean
   isOrigin: boolean
@@ -38,9 +39,9 @@ export const SelectSpecificTokenButton = ({
   isBestExchangeRate?: boolean
   estimatedDurationInSeconds?: number
   action: ActionTypes
+  isCurrentToken: boolean
 }) => {
   const ref = useRef<any>(null)
-  const isCurrentToken = selectedToken?.routeSymbol === token?.routeSymbol
   const { fromChainId, toChainId } = useBridgeState()
 
   const { swapChainId } = useSwapState()

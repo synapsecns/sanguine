@@ -164,10 +164,10 @@ export const DestinationAddressInput = ({
 
   useCloseOnOutsideClick(listRef, handleCloseList)
 
-  const escPressed = useKeyPress('Escape')
-  const arrowUp = useKeyPress('ArrowUp')
-  const arrowDown = useKeyPress('ArrowDown')
-  const enterPressed = useKeyPress('Enter')
+  const escPressed = useKeyPress('Escape', true)
+  const arrowUp = useKeyPress('ArrowUp', true)
+  const arrowDown = useKeyPress('ArrowDown', true)
+  const enterPressed = useKeyPress('Enter', true)
 
   function escFunc() {
     if (!showRecipientList) return
