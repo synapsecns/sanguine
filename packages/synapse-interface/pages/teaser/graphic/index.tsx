@@ -25,6 +25,15 @@ const LandingPage = () => {
     })
   }, [])
 
+  function animAttrs(x1 = 0.5, x2 = 0.2, y1 = 0, y2 = 1) {
+    return {
+      calcMode: 'spline',
+      keyTimes: '0; 1',
+      keySplines: `${x1} ${y1} ${x2} ${y2}`,
+      fill: 'freeze',
+    }
+  }
+
   return (
     <Wrapper>
       <Hero />
@@ -61,19 +70,19 @@ const LandingPage = () => {
         </style>
         <defs>
           <path id="simpleBridgePath" d="m-25 -187.5 -350 175" />
-          <g id="box" transform="scale(.25,.25)">
+          {/* <g id="box" transform="scale(.25,.25)">
             <path
               d="m0,50 100,-50 0,-111.8 -100,-50 -100,50 0,111.8 100,50"
               vectorEffect="non-scaling-stroke"
               pathLength="1"
               strokeDasharray="1"
             >
-              {/* <animate
+              <animate
                 attributeName="stroke-dashoffset"
                 values="1; 0"
                 dur="2s"
                 repeatCount="1"
-              /> */}
+              />
             </path>
             <path
               d="m-100,-111.9 100,50 100,-50 m-100,50 0,111.8"
@@ -82,27 +91,27 @@ const LandingPage = () => {
               pathLength="1"
               strokeDasharray="1"
             >
-              {/* <animate
+              <animate
                 attributeName="stroke-dashoffset"
                 values="1; 0"
                 dur="3s"
                 repeatCount="1"
-              /> */}
+              />
             </path>
-          </g>
-          <g id="boxes" transform="scale(.25,.25)">
+          </g> */}
+          {/* <g id="boxes" transform="scale(.25,.25)">
             <path
               d="m0,50 100,-50 0,-111.8 -100,-50 -100,50 0,111.8 100,50"
               vectorEffect="non-scaling-stroke"
               pathLength="1"
               strokeDasharray="1"
             >
-              {/* <animate
+              <animate
                 attributeName="stroke-dashoffset"
                 values="1; 0"
                 dur="2s"
                 repeatCount="1"
-              /> */}
+              />
             </path>
             <path
               d="m100,-111.8 -100,50 -100,-50 m0,55.9 100,50 100,-50 m-50,80.9 0,-111.8 -100,-50 m100,0 -100,50 0,111.8 m50,27.95 0,-111.8"
@@ -118,18 +127,7 @@ const LandingPage = () => {
                 repeatCount="1"
               />
             </path>
-          </g>
-          <animate
-            id="platformBuildIn"
-            attributeName="d"
-            values="m0,1 2,1 -2,1 -2,-1z; m0,-100 200,100 -200,100 -200,-100z"
-            dur=".25s"
-            begin="0s; click"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
-          />
+          </g> */}
         </defs>
         <path fill="var(--fill-synapse" stroke="var(--stroke-synapse)">
           <animate
@@ -161,10 +159,7 @@ const LandingPage = () => {
             values="m-40,-240 0,0 0,0 0,0z; m-80,-300 40,20 -120,60 -40,-20z"
             dur=".5s"
             begin="simpleBridgeNe.end + 2s"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
+            {...animAttrs()}
           />
         </path>
         <path
@@ -177,11 +172,8 @@ const LandingPage = () => {
             attributeName="d"
             values="m-440,-40 0,0 0,0 0,0z; m-480,-100 40,20 -120,60 -40,-20z"
             dur=".5s"
-            begin="simpleBridgeNe.end + 2s"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
+            begin="simpleBridgeNe.end + 2.5s"
+            {...animAttrs()}
           />
         </path>
         <path
@@ -204,10 +196,7 @@ const LandingPage = () => {
             values="m0,1 2,1 -2,1 -2,-1z; m0,-100 200,100 -200,100 -200,-100z"
             dur=".25s"
             begin="0s; click"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
+            {...animAttrs()}
           />
           <animate
             attributeName="opacity"
@@ -223,10 +212,7 @@ const LandingPage = () => {
             values="0 -150; 0 -200"
             dur=".5s"
             begin="platformBlue.begin"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
+            {...animAttrs()}
           />
         </path>
         <path stroke="var(--stroke-green)" fill="var(--fill-green)">
@@ -236,10 +222,7 @@ const LandingPage = () => {
             values="m0,1 2,1 -2,1 -2,-1z; m0,-100 200,100 -200,100 -200,-100z"
             dur=".25s"
             begin="platformBlue.begin + .1s"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
+            {...animAttrs()}
           />
           <animate
             attributeName="opacity"
@@ -255,10 +238,7 @@ const LandingPage = () => {
             values="400 50; 400 0"
             dur=".5s"
             begin="platformGreen.begin"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
+            {...animAttrs()}
           />
         </path>
         <path stroke="var(--stroke-orange)" fill="var(--fill-orange)">
@@ -268,10 +248,7 @@ const LandingPage = () => {
             values="m0,1 2,1 -2,1 -2,-1z; m0,-100 200,100 -200,100 -200,-100z"
             dur=".25s"
             begin="platformGreen.begin + .1s"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
+            {...animAttrs()}
           />
           <animate
             attributeName="opacity"
@@ -287,10 +264,7 @@ const LandingPage = () => {
             values="0 250; 0 200"
             dur=".5s"
             begin="platformOrange.begin"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
+            {...animAttrs()}
           />
         </path>
         <path stroke="var(--stroke-yellow)" fill="var(--fill-yellow)">
@@ -300,10 +274,7 @@ const LandingPage = () => {
             values="m0,1 2,1 -2,1 -2,-1z; m0,-100 200,100 -200,100 -200,-100z"
             dur=".25s"
             begin="platformOrange.begin + .1s"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
+            {...animAttrs()}
           />
           <animate
             attributeName="opacity"
@@ -319,10 +290,7 @@ const LandingPage = () => {
             values="-400 50; -400 0"
             dur=".5s"
             begin="platformYellow.begin"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
+            {...animAttrs()}
           />
         </path>
 
@@ -372,30 +340,21 @@ const LandingPage = () => {
             dur="2s"
             begin="dockN.end; bargeIn.end"
             path="M200,-500 -200,-300"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
+            {...animAttrs()}
           />
           <animateMotion
             id="bargeCross"
             dur="2s"
             begin="bargeOut.end + 2s"
             path="M-200,-300 -600,-100"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
+            {...animAttrs()}
           />
           <animateMotion
             id="bargeIn"
             dur="2s"
             begin="bargeCross.end + 2s"
             path="M-600,-100 -1000,100"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
+            {...animAttrs()}
           />
         </g>
 
@@ -698,30 +657,21 @@ const LandingPage = () => {
             dur="1s"
             begin="0s; stackIn.end + 5s"
             path="M25,-227.95 200,-170"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
+            {...animAttrs()}
           />
           <animateMotion
             id="airlift"
             dur="2s"
             begin="stackOut.end + 1s"
             path="m200,-170 v-50"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
+            {...animAttrs()}
           />
           <animateMotion
             id="airpath"
             dur="4s"
             begin="airlift.end"
             path="m200,-220 v150"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
+            {...animAttrs()}
           />
           <animateMotion
             id="airdrop"
@@ -738,10 +688,7 @@ const LandingPage = () => {
             dur="1s"
             begin="airdrop.end + .5s"
             path="m200,-30 174,68"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
+            {...animAttrs()}
           />
           <path
             d="m0,50 100,-50 0,-111.8 -100,-50 -100,50 0,111.8 100,50"
@@ -788,19 +735,13 @@ const LandingPage = () => {
             dur="2s"
             begin="airlift.begin"
             path="m200,-87.5 v-50"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
+            {...animAttrs()}
           />
           <animateMotion
             dur="4s"
             begin="airpath.begin"
             path="m200,-137.5 v150"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
+            {...animAttrs()}
           />
           <animateMotion
             dur="1s"
@@ -822,10 +763,7 @@ const LandingPage = () => {
               values="m0,-101.8 v0; m0,-111.8 v-37.5"
               begin="airlift.begin"
               dur="2s"
-              calcMode="spline"
-              keyTimes="0; 1"
-              keySplines=".5 0 .2 1"
-              fill="freeze"
+              {...animAttrs()}
             />
           </path>
           <circle
@@ -839,20 +777,14 @@ const LandingPage = () => {
               values="0; 36"
               begin="airlift.begin"
               dur="2s"
-              calcMode="spline"
-              keyTimes="0; 1"
-              keySplines=".5 0 .2 1"
-              fill="freeze"
+              {...animAttrs()}
             />
             <animate
               attributeName="cy"
               values="-111.8; -186.8"
               begin="airlift.begin"
               dur="2s"
-              calcMode="spline"
-              keyTimes="0; 1"
-              keySplines=".5 0 .2 1"
-              fill="freeze"
+              {...animAttrs()}
             />
           </circle>
         </g>
@@ -902,19 +834,13 @@ const LandingPage = () => {
             begin="bargeOut.end"
             dur="1s"
             path="m-25 -212.5 -150 -75"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
+            {...animAttrs()}
           />
           <animateMotion
             begin="bargeCross.begin"
             dur="2s"
             path="m-175 -287.5 -400 200"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
+            {...animAttrs()}
           />
           <animate
             attributeName="stroke"
@@ -930,10 +856,7 @@ const LandingPage = () => {
             begin="bargeCross.end"
             dur="1s"
             path="m-575 -87.5 150 75"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-            fill="freeze"
+            {...animAttrs()}
           />
           <path fill="var(--fill-blue)" vectorEffect="non-scaling-stroke">
             <animate
@@ -941,10 +864,7 @@ const LandingPage = () => {
               values="m0,12.5 25,-12.5 0,0 -25,-12.5 -25,12.5 0,0 25,12.5; m0,12.5 25,-12.5 0,-27.95 -25,-12.5 -25,12.5 0,27.95 25,12.5"
               begin="dockN.end"
               dur=".25s"
-              calcMode="spline"
-              keyTimes="0; 1"
-              keySplines=".5 0 .2 1"
-              fill="freeze"
+              {...animAttrs()}
             />
           </path>
 
@@ -954,10 +874,7 @@ const LandingPage = () => {
               values="m-25,0 25,12.5 25,-12.5 m-25,12.5 0,0; m-25,-27.95 25,12.5 25,-12.5 m-25,12.5 0,27.95"
               begin="dockN.end"
               dur=".25s"
-              calcMode="spline"
-              keyTimes="0; 1"
-              keySplines=".5 0 .2 1"
-              fill="freeze"
+              {...animAttrs()}
             />
           </path>
         </g>
@@ -985,10 +902,7 @@ const LandingPage = () => {
               values="m0,12.5 25,-12.5 0,0 -25,-12.5 -25,12.5 0,0 25,12.5; m0,12.5 25,-12.5 0,-27.95 -25,-12.5 -25,12.5 0,27.95 25,12.5"
               begin="platformCubeBlue.begin"
               dur=".25s"
-              calcMode="spline"
-              keyTimes="0; 1"
-              keySplines=".5 0 .2 1"
-              fill="freeze"
+              {...animAttrs()}
             />
           </path>
           <path vectorEffect="non-scaling-stroke">
@@ -997,10 +911,7 @@ const LandingPage = () => {
               values="m-25,0 25,12.5 25,-12.5 m-25,12.5 0,0; m-25,-27.95 25,12.5 25,-12.5 m-25,12.5 0,27.95"
               begin="platformCubeBlue.begin"
               dur=".25s"
-              calcMode="spline"
-              keyTimes="0; 1"
-              keySplines=".5 0 .2 1"
-              fill="freeze"
+              {...animAttrs()}
             />
           </path>
         </g>
@@ -1061,10 +972,7 @@ const LandingPage = () => {
               values="m0,12.5 25,-12.5 0,0 -25,-12.5 -25,12.5 0,0 25,12.5; m0,12.5 25,-12.5 0,-27.95 -25,-12.5 -25,12.5 0,27.95 25,12.5"
               begin="bridgeCubeBlue.begin"
               dur=".25s"
-              calcMode="spline"
-              keyTimes="0; 1"
-              keySplines=".5 0 .2 1"
-              fill="freeze"
+              {...animAttrs()}
             />
           </path>
           <path vectorEffect="non-scaling-stroke">
@@ -1073,10 +981,7 @@ const LandingPage = () => {
               values="m-25,0 25,12.5 25,-12.5 m-25,12.5 0,0; m-25,-27.95 25,12.5 25,-12.5 m-25,12.5 0,27.95"
               begin="bridgeCubeBlue.begin"
               dur=".25s"
-              calcMode="spline"
-              keyTimes="0; 1"
-              keySplines=".5 0 .2 1"
-              fill="freeze"
+              {...animAttrs()}
             />
           </path>
         </g>
@@ -1133,10 +1038,7 @@ const LandingPage = () => {
               values="m0,12.5 25,-12.5 0,0 -25,-12.5 -25,12.5 0,0 25,12.5; m0,12.5 25,-12.5 0,-27.95 -25,-12.5 -25,12.5 0,27.95 25,12.5"
               begin="bridgeCubeYellow.begin"
               dur=".25s"
-              calcMode="spline"
-              keyTimes="0; 1"
-              keySplines=".5 0 .2 1"
-              fill="freeze"
+              {...animAttrs()}
             />
           </path>
           <path vectorEffect="non-scaling-stroke">
@@ -1145,10 +1047,7 @@ const LandingPage = () => {
               values="m-25,0 25,12.5 25,-12.5 m-25,12.5 0,0; m-25,-27.95 25,12.5 25,-12.5 m-25,12.5 0,27.95"
               begin="bridgeCubeYellow.begin"
               dur=".25s"
-              calcMode="spline"
-              keyTimes="0; 1"
-              keySplines=".5 0 .2 1"
-              fill="freeze"
+              {...animAttrs()}
             />
           </path>
         </g>
@@ -1176,10 +1075,7 @@ const LandingPage = () => {
               values="m0,12.5 25,-12.5 0,0 -25,-12.5 -25,12.5 0,0 25,12.5; m0,12.5 25,-12.5 0,-27.95 -25,-12.5 -25,12.5 0,27.95 25,12.5"
               begin="platformCubeYellow.begin"
               dur=".25s"
-              calcMode="spline"
-              keyTimes="0; 1"
-              keySplines=".5 0 .2 1"
-              fill="freeze"
+              {...animAttrs()}
             />
           </path>
           <path vectorEffect="non-scaling-stroke">
@@ -1188,10 +1084,7 @@ const LandingPage = () => {
               values="m-25,0 25,12.5 25,-12.5 m-25,12.5 0,0; m-25,-27.95 25,12.5 25,-12.5 m-25,12.5 0,27.95"
               begin="platformCubeYellow.begin"
               dur=".25s"
-              calcMode="spline"
-              keyTimes="0; 1"
-              keySplines=".5 0 .2 1"
-              fill="freeze"
+              {...animAttrs()}
             />
           </path>
         </g>
