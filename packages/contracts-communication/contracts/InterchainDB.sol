@@ -9,6 +9,8 @@ import {InterchainBatch, InterchainBatchLib} from "./libs/InterchainBatch.sol";
 import {InterchainEntry, InterchainEntryLib} from "./libs/InterchainEntry.sol";
 import {VersionedPayloadLib} from "./libs/VersionedPayload.sol";
 
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
+
 contract InterchainDB is InterchainDBEvents, IInterchainDB {
     using VersionedPayloadLib for bytes;
 
@@ -19,7 +21,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
 
     modifier onlyRemoteChainId(uint64 chainId) {
         if (chainId == block.chainid) {
-            revert InterchainDB__SameChainId(block.chainid);
+            revert InterchainDB__SameChainId(chainId);
         }
         _;
     }
@@ -201,7 +203,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
             dataHash: dataHash
         });
         _entryValues.push(entry.entryValue());
-        emit InterchainEntryWritten(block.chainid, entry.dbNonce, entry.srcWriter, dataHash);
+        emit InterchainEntryWritten(SafeCast.toUint64(block.chainid), entry.dbNonce, entry.srcWriter, dataHash);
     }
 
     /// @dev Request the verification of the entry by the modules, and emit the event.

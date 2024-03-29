@@ -5,6 +5,8 @@ import {MathLib} from "./Math.sol";
 import {TypeCasts} from "./TypeCasts.sol";
 import {VersionedPayloadLib} from "./VersionedPayload.sol";
 
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
+
 struct InterchainTransaction {
     uint64 srcChainId;
     bytes32 srcSender;
@@ -42,7 +44,7 @@ library InterchainTransactionLib {
         returns (InterchainTransaction memory transaction)
     {
         return InterchainTransaction({
-            srcChainId: block.chainid,
+            srcChainId: SafeCast.toUint64(block.chainid),
             srcSender: TypeCasts.addressToBytes32(srcSender),
             dstChainId: dstChainId,
             dstReceiver: dstReceiver,

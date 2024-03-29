@@ -5,6 +5,7 @@ import {SynapseGasOracleV1Events} from "../events/SynapseGasOracleV1Events.sol";
 import {ISynapseGasOracle, IGasOracle} from "../interfaces/ISynapseGasOracle.sol";
 import {ISynapseGasOracleV1} from "../interfaces/ISynapseGasOracleV1.sol";
 
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOracleV1 {
@@ -212,7 +213,7 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
         returns (uint256)
     {
         if (_localNativePrice == 0) {
-            revert SynapseGasOracleV1__NativePriceNotSet(block.chainid);
+            revert SynapseGasOracleV1__NativePriceNotSet(SafeCast.toUint64(block.chainid));
         }
         return (remoteValue * _remoteGasData[remoteChainId].nativePrice) / _localNativePrice;
     }

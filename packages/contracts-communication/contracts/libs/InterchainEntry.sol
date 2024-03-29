@@ -3,6 +3,8 @@ pragma solidity ^0.8.13;
 
 import {TypeCasts} from "./TypeCasts.sol";
 
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
+
 /// @notice Struct representing an entry in the Interchain DataBase.
 /// Entry has a globally unique identifier (key) and a value.
 /// - key: srcChainId + dbNonce + entryIndex
@@ -40,7 +42,7 @@ library InterchainEntryLib {
         returns (InterchainEntry memory entry)
     {
         return InterchainEntry({
-            srcChainId: block.chainid,
+            srcChainId: SafeCast.toUint64(block.chainid),
             dbNonce: dbNonce,
             entryIndex: entryIndex,
             srcWriter: TypeCasts.addressToBytes32(writer),

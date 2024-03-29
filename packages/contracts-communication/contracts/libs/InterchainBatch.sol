@@ -3,6 +3,8 @@ pragma solidity ^0.8.0;
 
 import {VersionedPayloadLib} from "./VersionedPayload.sol";
 
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
+
 /// @notice Struct representing a batch of entries in the Interchain DataBase.
 /// Batched entries are put together in a Merkle tree, which root is saved.
 /// Batch has a globally unique identifier (key) and a value.
@@ -33,7 +35,7 @@ library InterchainBatchLib {
         view
         returns (InterchainBatch memory batch)
     {
-        return InterchainBatch({srcChainId: block.chainid, dbNonce: dbNonce, batchRoot: batchRoot});
+        return InterchainBatch({srcChainId: SafeCast.toUint64(block.chainid), dbNonce: dbNonce, batchRoot: batchRoot});
     }
 
     /// @notice Encodes the InterchainBatch struct into a non-versioned batch payload.

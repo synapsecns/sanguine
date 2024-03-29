@@ -3,6 +3,7 @@ pragma solidity 0.8.20;
 
 import {SynapseGasOracleV1, ISynapseGasOracleV1} from "../../contracts/oracles/SynapseGasOracleV1.sol";
 
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import {stdJson, StringUtils, SynapseScript} from "@synapsecns/solidity-devops/src/SynapseScript.sol";
 
 // solhint-disable custom-errors
@@ -43,7 +44,7 @@ contract ConfigureSynapseGasOracleV1 is SynapseScript {
         string[] memory chains = vm.parseJsonKeys(config, ".");
         for (uint256 i = 0; i < chains.length; i++) {
             string memory chain = chains[i];
-            uint64 chainId = chainIds[chain];
+            uint64 chainId = SafeCast.toUint64(chainIds[chain]);
             require(chainId != 0, string.concat("Chain not found: ", chain));
             // Skip current chain
             if (chainId == blockChainId()) continue;
