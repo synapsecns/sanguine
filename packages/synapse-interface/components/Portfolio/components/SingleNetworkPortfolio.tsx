@@ -20,6 +20,8 @@ import { setFromToken, setToToken } from '@/slices/bridge/reducer'
 import { PortfolioTokenVisualizer } from './PortfolioTokenVisualizer'
 import { PortfolioNetwork } from './PortfolioNetwork'
 import { GAS_TOKENS } from '@/constants/tokens'
+import { GasTokenAsset } from './PortfolioTokenAsset'
+import { GasToken } from '@/constants/tokens/gasTokens'
 
 type SingleNetworkPortfolioProps = {
   connectedAddress: Address
@@ -46,7 +48,6 @@ const filterOutGasTokens = (
     const gasTokenAddresses = gasTokens?.flatMap((token) =>
       Object.values(token.addresses)
     )
-
     tokens.forEach((token) => {
       if (gasTokenAddresses.includes(token.tokenAddress)) {
         filteredGasTokens.push(token)
@@ -145,6 +146,17 @@ export const SingleNetworkPortfolio = ({
             connectedChain={chain}
           />
         )}
+        {gasTokens &&
+          gasTokens.length > 0 &&
+          gasTokens.map(({ token, balance }: TokenAndBalance) => (
+            <GasTokenAsset
+              key={token.symbol}
+              token={token}
+              balance={balance}
+              portfolioChainId={portfolioChainId}
+              connectedChainId={connectedChainId}
+            />
+          ))}
         {bridgeableTokens &&
           bridgeableTokens.length > 0 &&
           bridgeableTokens.map(({ token, balance }: TokenAndBalance) => (

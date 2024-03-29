@@ -14,6 +14,7 @@ import { useBridgeState } from '@/slices/bridge/hooks'
 import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'
 import { PortfolioAssetActionButton } from './PortfolioAssetActionButton'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
+import { GasToken } from '@/constants/tokens/gasTokens'
 
 const handleFocusOnBridgeInput = () => {
   inputRef.current.focus()
@@ -24,6 +25,37 @@ type PortfolioTokenAssetProps = {
   balance: bigint
   portfolioChainId: number
   connectedChainId: number
+}
+
+export const GasTokenAsset = ({
+  token,
+  balance,
+}: {
+  token: Token
+  balance: bigint
+}) => {
+  const { icon, symbol, decimals } = token
+  const parsedBalance = getParsedBalance(balance, decimals as number, 3)
+
+  return (
+    <div
+      id="gas-token-asset"
+      className={`
+        p-2 flex items-center border-y text-white
+        justify-between last:rounded-b-md border-transparent
+      `}
+    >
+      <div className="flex items-center gap-2 py-2 pl-2 pr-4 rounded">
+        <Image
+          loading="lazy"
+          alt={`${symbol} img`}
+          className="w-6 h-6 rounded-md"
+          src={icon}
+        />
+        {parsedBalance} {symbol}
+      </div>
+    </div>
+  )
 }
 
 export const PortfolioTokenAsset = ({
