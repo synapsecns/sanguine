@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
 import { getHoverStyleForButton } from '@/styles/hover'
 import { DropDownArrowSvg } from '@/components/icons/DropDownArrowSvg'
@@ -16,10 +16,11 @@ export const SelectorWrapper = ({
   children,
   searchStr,
   setSearchStr,
+  onClose,
+  hover,
+  setHover,
 }) => {
-  const [hover, setHover] = useState(false)
-
-  const escPressed = useKeyPress('Escape')
+  const escPressed = useKeyPress('Escape', hover)
 
   const popoverRef = useRef(null)
 
@@ -45,11 +46,6 @@ export const SelectorWrapper = ({
       inner.style.height = `${screen - search.offsetHeight - 16}px`
     }
   })
-
-  const onClose = useCallback(() => {
-    setSearchStr('')
-    setHover(false)
-  }, [])
 
   const escFunc = () => {
     if (escPressed) {
