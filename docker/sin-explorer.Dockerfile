@@ -10,6 +10,6 @@ LABEL org.opencontainers.image.description="SIN Explorer Docker image"
 USER nonroot:nonroot
 
 WORKDIR /app
-COPY --chown=nonroot:nonroot explorer /app/sin-explorer
+COPY --chown=nonroot:nonroot sin-explorer /app/sin-explorer
 
 ENTRYPOINT ["/app/sin-explorer"]
