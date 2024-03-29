@@ -17,20 +17,7 @@ export type GasToken = {
   icon: any
 }
 
-// import { Token } from '@/utils/types'
-
-// export const BNB = new Token({
-//   addresses: {
-//     [CHAINS.BNB.id]: zeroAddress,
-//   },
-//   decimals: 18,
-//   symbol: 'BNB',
-//   name: 'Binance Coin',
-//   priorityRank: 1,
-//   logo: bscImg,
-// })
-
-export const BNB_Gas: GasToken = {
+export const BNB: GasToken = {
   addresses: {
     [CHAINS.BNB.id]: zeroAddress,
   },

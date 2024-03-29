@@ -48,8 +48,8 @@ const filterOutGasTokens = (
     const gasTokenAddresses = gasTokens?.flatMap((token) =>
       Object.values(token.addresses)
     )
-    tokens.forEach((token) => {
-      if (gasTokenAddresses.includes(token.tokenAddress)) {
+    tokens?.forEach((token) => {
+      if (gasTokenAddresses?.includes(token.tokenAddress)) {
         filteredGasTokens.push(token)
       } else {
         remainingTokens.push(token)
