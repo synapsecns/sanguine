@@ -22,14 +22,6 @@ contract InterchainTransactionLibHarness {
         );
     }
 
-    function encodeTransaction(InterchainTransaction memory transaction) external pure returns (bytes memory) {
-        return InterchainTransactionLib.encodeTransaction(transaction);
-    }
-
-    function decodeTransaction(bytes memory encodedTx) external pure returns (InterchainTransaction memory) {
-        return InterchainTransactionLib.decodeTransaction(encodedTx);
-    }
-
     function encodeVersionedTransaction(
         uint16 clientVersion,
         InterchainTransaction memory transaction
@@ -51,9 +43,5 @@ contract InterchainTransactionLibHarness {
 
     function payloadSize(uint256 optionsLen, uint256 messageLen) external pure returns (uint256) {
         return InterchainTransactionLib.payloadSize(optionsLen, messageLen);
-    }
-
-    function transactionId(InterchainTransaction memory transaction) external pure returns (bytes32) {
-        return InterchainTransactionLib.transactionId(transaction);
     }
 }

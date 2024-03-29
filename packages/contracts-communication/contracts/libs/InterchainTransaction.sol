@@ -53,14 +53,6 @@ library InterchainTransactionLib {
         });
     }
 
-    function encodeTransaction(InterchainTransaction memory transaction) internal pure returns (bytes memory) {
-        return abi.encode(transaction);
-    }
-
-    function decodeTransaction(bytes memory encodedTx) internal pure returns (InterchainTransaction memory) {
-        return abi.decode(encodedTx, (InterchainTransaction));
-    }
-
     function encodeVersionedTransaction(
         uint16 clientVersion,
         InterchainTransaction memory transaction
@@ -87,9 +79,5 @@ library InterchainTransactionLib {
         // abi.encode() also prepends the global offset (which is always 0x20) if there's a dynamic field, making it 354
         // Both options and message are dynamic fields, which are padded up to 32 bytes
         return 354 + optionsLen.roundUpToWord() + messageLen.roundUpToWord();
-    }
-
-    function transactionId(InterchainTransaction memory transaction) internal pure returns (bytes32) {
-        return keccak256(abi.encode(transaction));
     }
 }
