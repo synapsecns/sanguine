@@ -16,7 +16,7 @@ import (
 	"github.com/integralist/go-findroot/find"
 )
 
-//go:generate go run github.com/synapsecns/sanguine/services/sin-explorer/graphql/contrib/client
+// go:generate go run github.com/synapsecns/sanguine/services/sin-explorer/graphql/contrib/client
 
 func main() {
 	root, err := find.Repo()

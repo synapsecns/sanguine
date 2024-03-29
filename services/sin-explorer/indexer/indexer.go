@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/synapsecns/sanguine/core/dbcommon"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/listener"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/sin-explorer/config"
 	"github.com/synapsecns/sanguine/services/sin-explorer/db"
+	"github.com/synapsecns/sanguine/services/sin-explorer/db/connect"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/interchainclient"
+	"golang.org/x/sync/errgroup"
 	"math/big"
 )
 
@@ -27,30 +30,46 @@ type indexer struct {
 
 // Indexer is the interface for the indexer.
 type Indexer interface {
+	Start(ctx context.Context) error
 }
 
 // NewIndexer creates a new indexer.
-func NewIndexer(db db.Service, cfg config.Config, handler metrics.Handler) Indexer {
+func NewIndexer(ctx context.Context, cfg config.Config, handler metrics.Handler) (Indexer, error) {
+	dbType, err := dbcommon.DBTypeFromString(cfg.Database.Type)
+	if err != nil {
+		return nil, fmt.Errorf("could not get db type: %w", err)
+	}
+
+	idb, err := connect.Connect(ctx, dbType, cfg.Database.DSN, handler)
+	if err != nil {
+		return nil, fmt.Errorf("could not connect to db: %w", err)
+	}
+
 	omniClient := omnirpcClient.NewOmnirpcClient(cfg.OmnirpcURL, handler, omnirpcClient.WithCaptureReqRes(), omnirpcClient.WithDefaultConfirmations(1))
 
 	return &indexer{
 		handler:       handler,
 		cfg:           cfg,
-		db:            db,
+		db:            idb,
 		omnirpcClient: omniClient,
-	}
+	}, nil
 }
 
 func (i *indexer) Start(ctx context.Context) error {
+	g, ctx := errgroup.WithContext(ctx)
+
 	for chainID, chain := range i.cfg.Chains {
 		chainClient, err := i.omnirpcClient.GetClient(ctx, new(big.Int).SetInt64(int64(chainID)))
 		if err != nil {
 			return fmt.Errorf("failed to get client for chain %d: %w", chainID, err)
 		}
 
-		blockNumber, err := chainClient.BlockNumber(ctx)
-		if err != nil {
-			return fmt.Errorf("failed to get block number for chain %d: %w", chainID, err)
+		blockNumber := uint64(i.cfg.Chains[chainID].StartBlock)
+		if blockNumber == 0 {
+			blockNumber, err = chainClient.BlockNumber(ctx)
+			if err != nil {
+				return fmt.Errorf("failed to get block number for chain %d: %w", chainID, err)
+			}
 		}
 
 		contractListener, err := listener.NewChainListener(chainClient, i.db, []common.Address{common.HexToAddress(chain.InterchainClientAddress)}, blockNumber, i.handler)
@@ -59,11 +78,19 @@ func (i *indexer) Start(ctx context.Context) error {
 		}
 
 		// TODO: go func this out
-		err = contractListener.Listen(ctx, i.parseLog())
-		if err != nil {
-			return fmt.Errorf("failed to listen for chain %d: %w", chainID, err)
-		}
+		g.Go(func() error {
+			err = contractListener.Listen(ctx, i.parseLog())
+			if err != nil {
+				return fmt.Errorf("failed to listen for chain %d: %w", chainID, err)
+			}
+			return nil
+		})
 	}
+	err := g.Wait()
+	if err != nil {
+		return fmt.Errorf("failed to wait for chain listeners: %w", err)
+	}
+
 	return nil
 }
 

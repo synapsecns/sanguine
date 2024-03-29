@@ -1,0 +1,8 @@
+type Query {
+  interchainTransactions(pending: Boolean, page: Int!): [InterchainTransaction]
+}
+
+type InterchainTransaction {
+  sent: InterchainTransactionSent
+  received: InterchainTransactionReceived
+}

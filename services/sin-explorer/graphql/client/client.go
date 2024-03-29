@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/Yamashou/gqlgenc/client"
+	"github.com/synapsecns/sanguine/services/sin-explorer/graphql/server/graph/model"
 )
 
 type Client struct {
@@ -16,4 +17,6 @@ func NewClient(cli *http.Client, baseURL string, options ...client.HTTPRequestOp
 	return &Client{Client: client.NewClient(cli, baseURL, options...)}
 }
 
-type Query struct{}
+type Query struct {
+	InterchainTransactions []*model.InterchainTransaction "json:\"interchainTransactions\" graphql:\"interchainTransactions\""
+}
