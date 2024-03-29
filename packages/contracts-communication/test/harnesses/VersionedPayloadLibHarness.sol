@@ -24,4 +24,56 @@ contract VersionedPayloadLibHarness {
     function getPayloadFromMemory(bytes memory versionedPayload) external view returns (bytes memory) {
         return VersionedPayloadLib.getPayloadFromMemory(versionedPayload);
     }
+
+    function decodePayloadSurrounded(
+        bytes calldata a,
+        bytes memory b,
+        bytes calldata versionedPayload,
+        bytes memory c,
+        bytes calldata d
+    )
+        external
+        pure
+        returns (
+            bytes memory a_,
+            bytes memory b_,
+            uint16 version,
+            bytes memory payload,
+            bytes memory c_,
+            bytes memory d_
+        )
+    {
+        a_ = a;
+        b_ = b;
+        version = VersionedPayloadLib.getVersion(versionedPayload);
+        payload = VersionedPayloadLib.getPayload(versionedPayload);
+        c_ = c;
+        d_ = d;
+    }
+
+    function decodePayloadFromMemorySurrounded(
+        bytes calldata a,
+        bytes memory b,
+        bytes memory versionedPayload,
+        bytes memory c,
+        bytes memory d
+    )
+        external
+        view
+        returns (
+            bytes memory a_,
+            bytes memory b_,
+            uint16 version,
+            bytes memory payload,
+            bytes memory c_,
+            bytes memory d_
+        )
+    {
+        a_ = a;
+        b_ = b;
+        version = VersionedPayloadLib.getVersionFromMemory(versionedPayload);
+        payload = VersionedPayloadLib.getPayloadFromMemory(versionedPayload);
+        c_ = c;
+        d_ = d;
+    }
 }

@@ -60,4 +60,47 @@ contract VersionedPayloadLibraryTest is Test {
         expectRevertTooShort(invalidPayload);
         libHarness.getPayloadFromMemory(invalidPayload);
     }
+
+    // Tests to check that surrounding memory is preserved, and has no impact on the payload.
+    function test_decodeVersionedPayload_roundtrip_surrounded(
+        bytes memory a,
+        bytes memory b,
+        uint16 version,
+        bytes memory payload,
+        bytes memory c,
+        bytes memory d
+    )
+        public
+    {
+        bytes memory versionedPayload = libHarness.encodeVersionedPayload(version, payload);
+        (bytes memory a_, bytes memory b_, uint16 version_, bytes memory payload_, bytes memory c_, bytes memory d_) =
+            libHarness.decodePayloadSurrounded(a, b, versionedPayload, c, d);
+        assertEq(a_, a);
+        assertEq(b_, b);
+        assertEq(version_, version);
+        assertEq(payload_, payload);
+        assertEq(c_, c);
+        assertEq(d_, d);
+    }
+
+    function test_decodeVersionedPayloadFromMemory_roundtrip_surrounded(
+        bytes memory a,
+        bytes memory b,
+        uint16 version,
+        bytes memory payload,
+        bytes memory c,
+        bytes memory d
+    )
+        public
+    {
+        bytes memory versionedPayload = libHarness.encodeVersionedPayload(version, payload);
+        (bytes memory a_, bytes memory b_, uint16 version_, bytes memory payload_, bytes memory c_, bytes memory d_) =
+            libHarness.decodePayloadFromMemorySurrounded(a, b, versionedPayload, c, d);
+        assertEq(a_, a);
+        assertEq(b_, b);
+        assertEq(version_, version);
+        assertEq(payload_, payload);
+        assertEq(c_, c);
+        assertEq(d_, d);
+    }
 }
