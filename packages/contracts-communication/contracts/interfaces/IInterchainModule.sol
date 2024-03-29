@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {IInterchainDB} from "./IInterchainDB.sol";
-import {InterchainBatch} from "../libs/InterchainBatch.sol";
-
 /// @notice Every Module may opt a different method to confirm the verified entries on destination chain,
 /// therefore this is not a part of a common interface.
 interface IInterchainModule {
@@ -19,9 +16,9 @@ interface IInterchainModule {
     /// Note: this will eventually trigger `InterchainDB.verifyRemoteBatch(batch)` function on destination chain,
     /// with no guarantee of ordering.
     /// @dev Could be only called by the Interchain DataBase contract.
-    /// @param dstChainId   The chain id of the destination chain
-    /// @param batch        The batch to verify
-    function requestBatchVerification(uint256 dstChainId, InterchainBatch memory batch) external payable;
+    /// @param dstChainId       The chain id of the destination chain
+    /// @param versionedBatch   The versioned batch to verify
+    function requestBatchVerification(uint256 dstChainId, bytes memory versionedBatch) external payable;
 
     /// @notice Get the Module fee for verifying a batch on the specified destination chain.
     /// @param dstChainId   The chain id of the destination chain
