@@ -10,8 +10,8 @@ import {Test} from "forge-std/Test.sol";
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
 contract SynapseGasOracleV1ManagementTest is Test, SynapseGasOracleV1Events {
-    uint256 public constant LOCAL_CHAIN_ID = 1337;
-    uint256 public constant REMOTE_CHAIN_ID = 7331;
+    uint64 public constant LOCAL_CHAIN_ID = 1337;
+    uint64 public constant REMOTE_CHAIN_ID = 7331;
 
     uint256 public constant MOCK_CALLDATA_PRICE = 1000;
     uint256 public constant MOCK_GAS_PRICE = 2000;

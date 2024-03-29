@@ -21,9 +21,9 @@ import {Test} from "forge-std/Test.sol";
 /// @notice Unit tests for InterchainDB interactions on the destination chain
 /// Note: we inherit from interface with the events to avoid their copy-pasting.
 contract InterchainDBDestinationTest is Test, InterchainDBEvents {
-    uint256 public constant SRC_CHAIN_ID_0 = 1337;
-    uint256 public constant SRC_CHAIN_ID_1 = 1338;
-    uint256 public constant DST_CHAIN_ID = 7331;
+    uint64 public constant SRC_CHAIN_ID_0 = 1337;
+    uint64 public constant SRC_CHAIN_ID_1 = 1338;
+    uint64 public constant DST_CHAIN_ID = 7331;
 
     uint16 public constant DB_VERSION = 1;
 

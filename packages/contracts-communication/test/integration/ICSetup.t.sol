@@ -21,8 +21,8 @@ import {ProxyTest} from "../proxy/ProxyTest.t.sol";
 abstract contract ICSetup is ProxyTest {
     using TypeCasts for address;
 
-    uint256 public constant SRC_CHAIN_ID = 1337;
-    uint256 public constant DST_CHAIN_ID = 7331;
+    uint64 public constant SRC_CHAIN_ID = 1337;
+    uint64 public constant DST_CHAIN_ID = 7331;
 
     uint16 public constant DB_VERSION = 1;
     uint16 public constant CLIENT_VERSION = 1;

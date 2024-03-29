@@ -29,8 +29,8 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
     address public feeCollector = makeAddr("FeeCollector");
     address public owner = makeAddr("Owner");
 
-    uint256 public constant SRC_CHAIN_ID = 1337;
-    uint256 public constant DST_CHAIN_ID = 7331;
+    uint64 public constant SRC_CHAIN_ID = 1337;
+    uint64 public constant DST_CHAIN_ID = 7331;
 
     uint16 public constant MOCK_DB_VERSION = 42;
 

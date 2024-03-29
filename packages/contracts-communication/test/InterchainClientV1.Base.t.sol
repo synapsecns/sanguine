@@ -22,9 +22,9 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
 abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
-    uint256 public constant LOCAL_CHAIN_ID = 1337;
-    uint256 public constant REMOTE_CHAIN_ID = 7331;
-    uint256 public constant UNKNOWN_CHAIN_ID = 42;
+    uint64 public constant LOCAL_CHAIN_ID = 1337;
+    uint64 public constant REMOTE_CHAIN_ID = 7331;
+    uint64 public constant UNKNOWN_CHAIN_ID = 42;
     bytes32 public constant MOCK_REMOTE_CLIENT = keccak256("RemoteClient");
     uint16 public constant CLIENT_VERSION = 1;
 
