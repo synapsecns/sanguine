@@ -9,7 +9,7 @@ import {OptionsV1} from "../../libs/Options.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 contract ExampleAppV1 is ICAppV1 {
-    event MessageReceived(uint256 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message);
+    event MessageReceived(uint64 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message);
     event MessageSent(uint256 dstChainId, uint256 dbNonce, uint64 entryIndex, bytes32 transactionId);
 
     constructor(address admin) ICAppV1(admin) {
@@ -56,7 +56,7 @@ contract ExampleAppV1 is ICAppV1 {
 
     /// @dev Internal logic for receiving messages. At this point the validity of the message is already checked.
     function _receiveMessage(
-        uint256 srcChainId,
+        uint64 srcChainId,
         bytes32 sender,
         uint256 dbNonce,
         uint64 entryIndex,

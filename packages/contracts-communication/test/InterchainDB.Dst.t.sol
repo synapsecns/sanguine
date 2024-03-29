@@ -101,7 +101,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         return keccak256(abi.encode(writerT, getMockDataHash(nonce)));
     }
 
-    function getMockBatch(uint256 srcChainId, uint256 dbNonce) internal view returns (InterchainBatch memory batch) {
+    function getMockBatch(uint64 srcChainId, uint256 dbNonce) internal view returns (InterchainBatch memory batch) {
         return InterchainBatch(srcChainId, dbNonce, getMockBatchRoot(dbNonce));
     }
 
@@ -109,7 +109,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         return keccak256(abi.encode(nonce));
     }
 
-    function getMockEntry(uint256 srcChainId, uint256 dbNonce) internal view returns (InterchainEntry memory entry) {
+    function getMockEntry(uint64 srcChainId, uint256 dbNonce) internal view returns (InterchainEntry memory entry) {
         return InterchainEntry({
             srcChainId: srcChainId,
             dbNonce: dbNonce,
@@ -123,7 +123,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         return keccak256(abi.encode(writerT, getFakeDataHash(nonce)));
     }
 
-    function getFakeBatch(uint256 srcChainId, uint256 dbNonce) internal view returns (InterchainBatch memory batch) {
+    function getFakeBatch(uint64 srcChainId, uint256 dbNonce) internal view returns (InterchainBatch memory batch) {
         return InterchainBatch(srcChainId, dbNonce, getFakeBatchRoot(dbNonce));
     }
 
@@ -131,7 +131,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         return keccak256(abi.encode(nonce, "Fake data"));
     }
 
-    function getFakeEntry(uint256 srcChainId, uint256 dbNonce) internal view returns (InterchainEntry memory entry) {
+    function getFakeEntry(uint64 srcChainId, uint256 dbNonce) internal view returns (InterchainEntry memory entry) {
         return InterchainEntry({
             srcChainId: srcChainId,
             dbNonce: dbNonce,
@@ -145,11 +145,11 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         return keccak256(abi.encode(writerT, 0));
     }
 
-    function getEmptyBatch(uint256 srcChainId, uint256 dbNonce) internal view returns (InterchainBatch memory batch) {
+    function getEmptyBatch(uint64 srcChainId, uint256 dbNonce) internal view returns (InterchainBatch memory batch) {
         return InterchainBatch({srcChainId: srcChainId, dbNonce: dbNonce, batchRoot: getEmptyBatchRoot()});
     }
 
-    function getEmptyEntry(uint256 srcChainId, uint256 dbNonce) internal view returns (InterchainEntry memory entry) {
+    function getEmptyEntry(uint64 srcChainId, uint256 dbNonce) internal view returns (InterchainEntry memory entry) {
         return InterchainEntry({
             srcChainId: srcChainId,
             dbNonce: dbNonce,

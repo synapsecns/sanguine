@@ -19,11 +19,11 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
     error InterchainApp__NotInterchainClient(address account);
     error InterchainApp__ReceiverNotSet(uint256 chainId);
     error InterchainApp__SameChainId(uint256 chainId);
-    error InterchainApp__SenderNotAllowed(uint256 srcChainId, bytes32 sender);
+    error InterchainApp__SenderNotAllowed(uint64 srcChainId, bytes32 sender);
 
     /// @inheritdoc IInterchainApp
     function appReceive(
-        uint256 srcChainId,
+        uint64 srcChainId,
         bytes32 sender,
         uint256 dbNonce,
         uint64 entryIndex,
@@ -158,7 +158,7 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
 
     /// @dev Internal logic for receiving messages. At this point the validity of the message is already checked.
     function _receiveMessage(
-        uint256 srcChainId,
+        uint64 srcChainId,
         bytes32 sender,
         uint256 dbNonce,
         uint64 entryIndex,
@@ -201,7 +201,7 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
     function _getModules() internal view virtual returns (address[] memory);
 
     /// @dev Checks if the sender is allowed to send messages to this app.
-    function _isAllowedSender(uint256 srcChainId, bytes32 sender) internal view virtual returns (bool);
+    function _isAllowedSender(uint64 srcChainId, bytes32 sender) internal view virtual returns (bool);
 
     /// @dev Checks if the caller is an Interchain Client.
     /// Both latest and legacy Interchain Clients are allowed to call `appReceive`.

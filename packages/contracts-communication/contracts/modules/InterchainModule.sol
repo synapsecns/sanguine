@@ -73,7 +73,7 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
     function _fillModuleData(uint256 dstChainId, uint256 dbNonce) internal virtual returns (bytes memory) {}
 
     /// @dev Internal logic to handle the auxiliary module data relayed from the remote chain.
-    function _receiveModuleData(uint256 srcChainId, uint256 dbNonce, bytes memory moduleData) internal virtual {}
+    function _receiveModuleData(uint64 srcChainId, uint256 dbNonce, bytes memory moduleData) internal virtual {}
 
     /// @dev Internal logic to get the module fee for verifying an batch on the specified destination chain.
     function _getModuleFee(uint256 dstChainId, uint256 dbNonce) internal view virtual returns (uint256);

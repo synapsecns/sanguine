@@ -150,7 +150,7 @@ abstract contract InterchainAppV1Test is Test, AbstractICAppEvents, InterchainAp
         vm.expectRevert(abi.encodeWithSelector(AbstractICApp.InterchainApp__SameChainId.selector, chainId));
     }
 
-    function expectRevertSenderNotAllowed(uint256 srcChainId, bytes32 sender) internal {
+    function expectRevertSenderNotAllowed(uint64 srcChainId, bytes32 sender) internal {
         vm.expectRevert(
             abi.encodeWithSelector(AbstractICApp.InterchainApp__SenderNotAllowed.selector, srcChainId, sender)
         );

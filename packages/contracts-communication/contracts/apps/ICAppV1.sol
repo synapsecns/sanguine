@@ -230,7 +230,7 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
     }
 
     /// @dev Checks if the sender is allowed to send messages to this app.
-    function _isAllowedSender(uint256 srcChainId, bytes32 sender) internal view override returns (bool) {
+    function _isAllowedSender(uint64 srcChainId, bytes32 sender) internal view override returns (bool) {
         return _linkedApp[srcChainId] == sender;
     }
 

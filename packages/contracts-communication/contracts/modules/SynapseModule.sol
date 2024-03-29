@@ -202,7 +202,7 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     }
 
     /// @dev Internal logic to handle the auxiliary module data relayed from the remote chain.
-    function _receiveModuleData(uint256 srcChainId, uint256 dbNonce, bytes memory moduleData) internal override {
+    function _receiveModuleData(uint64 srcChainId, uint256 dbNonce, bytes memory moduleData) internal override {
         // Exit early if data is empty
         if (moduleData.length == 0) {
             return;

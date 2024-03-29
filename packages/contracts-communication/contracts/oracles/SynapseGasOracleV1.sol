@@ -105,7 +105,7 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
 
     // solhint-disable no-empty-blocks
     /// @inheritdoc ISynapseGasOracle
-    function receiveRemoteGasData(uint256 srcChainId, bytes calldata data) external {
+    function receiveRemoteGasData(uint64 srcChainId, bytes calldata data) external {
         // The V1 version has this function as a no-op, hence we skip the permission check.
     }
 

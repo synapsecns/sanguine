@@ -14,7 +14,7 @@ import {TypeCasts} from "./TypeCasts.sol";
 /// @param dataHash     The hash of the data written on the source chain
 struct InterchainEntry {
     // TODO: can we use uint64 for chain id?
-    uint256 srcChainId;
+    uint64 srcChainId;
     uint256 dbNonce;
     uint64 entryIndex;
     bytes32 srcWriter;

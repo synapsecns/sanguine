@@ -24,7 +24,7 @@ abstract contract InterchainClientV1Events {
         bytes32 indexed transactionId,
         uint256 indexed dbNonce,
         uint64 indexed entryIndex,
-        uint256 srcChainId,
+        uint64 srcChainId,
         bytes32 srcSender,
         bytes32 dstReceiver
     );

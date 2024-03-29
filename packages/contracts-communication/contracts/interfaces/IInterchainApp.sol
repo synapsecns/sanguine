@@ -11,7 +11,7 @@ interface IInterchainApp {
     /// @param entryIndex   The index of the message entry within the batch.
     /// @param message      The message being sent.
     function appReceive(
-        uint256 srcChainId,
+        uint64 srcChainId,
         bytes32 sender,
         uint256 dbNonce,
         uint64 entryIndex,

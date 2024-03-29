@@ -14,5 +14,5 @@ abstract contract SynapseModuleEvents {
     event FeesClaimed(address feeCollector, uint256 collectedFees, address claimer, uint256 claimerFee);
 
     event GasDataSent(uint256 dstChainId, bytes data);
-    event GasDataReceived(uint256 srcChainId, bytes data);
+    event GasDataReceived(uint64 srcChainId, bytes data);
 }

@@ -13,7 +13,7 @@ import {VersionedPayloadLib} from "./VersionedPayload.sol";
 /// @param batchRoot    The root of the Merkle tree containing the batched entries
 struct InterchainBatch {
     // TODO: can we use uint64 for chain id?
-    uint256 srcChainId;
+    uint64 srcChainId;
     uint256 dbNonce;
     bytes32 batchRoot;
 }

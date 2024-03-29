@@ -6,7 +6,7 @@ import {TypeCasts} from "./TypeCasts.sol";
 import {VersionedPayloadLib} from "./VersionedPayload.sol";
 
 struct InterchainTransaction {
-    uint256 srcChainId;
+    uint64 srcChainId;
     bytes32 srcSender;
     uint256 dstChainId;
     bytes32 dstReceiver;

@@ -52,7 +52,7 @@ contract PingPongApp is ICAppV1 {
 
     /// @dev Internal logic for receiving messages. At this point the validity of the message is already checked.
     function _receiveMessage(
-        uint256 srcChainId,
+        uint64 srcChainId,
         bytes32, // sender
         uint256 dbNonce,
         uint64 entryIndex,

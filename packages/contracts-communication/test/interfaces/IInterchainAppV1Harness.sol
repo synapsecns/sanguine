@@ -7,7 +7,7 @@ import {OptionsV1} from "../../contracts/libs/Options.sol";
 
 // solhint-disable func-name-mixedcase
 interface IInterchainAppV1Harness is IInterchainAppV1 {
-    event MessageReceived(uint256 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message);
+    event MessageReceived(uint64 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message);
 
     function exposed__sendInterchainMessageEVM(
         uint256 dstChainId,

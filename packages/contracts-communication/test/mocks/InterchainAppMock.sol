@@ -6,7 +6,7 @@ import {IInterchainApp} from "../../contracts/interfaces/IInterchainApp.sol";
 // solhint-disable no-empty-blocks
 contract InterchainAppMock is IInterchainApp {
     function appReceive(
-        uint256 srcChainId,
+        uint64 srcChainId,
         bytes32 sender,
         uint256 dbNonce,
         uint64 entryIndex,

@@ -5,7 +5,7 @@ import {ISynapseGasOracle} from "../../contracts/interfaces/ISynapseGasOracle.so
 
 // solhint-disable no-empty-blocks
 contract SynapseGasOracleMock is ISynapseGasOracle {
-    function receiveRemoteGasData(uint256 srcChainId, bytes calldata data) external {}
+    function receiveRemoteGasData(uint64 srcChainId, bytes calldata data) external {}
 
     function getLocalGasData() external view returns (bytes memory) {}
 
