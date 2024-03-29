@@ -13,6 +13,38 @@ import Wrapper from '@/components/WipWrapperComponents/Wrapper'
 
 import styles from './keyframes.module.css'
 
+const begin = {
+  blue: {
+    platform: 0,
+    anchor: 0.5,
+    bridge: 1,
+    barge: 2,
+    balloon: 4,
+  },
+  green: {
+    platform: 0.1,
+    anchor: 0.6,
+    teleporter: 5,
+  },
+  orange: {
+    platform: 0.2,
+    anchor: 0.7,
+    teleporter: 5.1,
+  },
+  yellow: {
+    platform: 0.3,
+    anchor: 0.8,
+    bridge: 1.1,
+  },
+  synapse: {
+    bridgeNw: 2,
+    dockN: 2,
+    dockE: 2,
+    padN: 2,
+    padE: 2,
+  },
+}
+
 const LandingPage = () => {
   const { address: currentAddress } = useAccount()
   const router = useRouter()
@@ -25,13 +57,168 @@ const LandingPage = () => {
     })
   }, [])
 
-  function animAttrs(x1 = 0.5, x2 = 0.2, y1 = 0, y2 = 1) {
+  const animAttrs = (x1 = 0.5, x2 = 0.2, y1 = 0, y2 = 1) => {
     return {
       calcMode: 'spline',
       keyTimes: '0; 1',
       keySplines: `${x1} ${y1} ${x2} ${y2}`,
       fill: 'freeze',
     }
+  }
+
+  const flashAttrs = (from, to, dur = '.4s') => {
+    return {
+      values: `${stroke[from]}; ${stroke.flash}; ${stroke[to]}`,
+      dur: dur,
+      calcMode: 'spline',
+      keyTimes: `0; .5; 1`,
+      keySplines: '.5 0 .2 1; .5 0 .2 1',
+      fill: 'freeze',
+    }
+  }
+
+  const AnimateFlash = ({
+    hasStroke = true,
+    hasFill = false,
+    from,
+    to,
+    begin,
+    dur = '.4s',
+  }) => {
+    return (
+      <>
+        {hasStroke && (
+          <animate
+            attributeName="stroke"
+            begin={begin}
+            dur={dur}
+            values={`${stroke[from]}; ${stroke.flash}; ${stroke[to]}`}
+            calcMode="spline"
+            keyTimes="0; .5; 1"
+            keySplines=".5 0 .2 1; .5 0 .2 1"
+            fill="freeze"
+          />
+        )}
+        {hasFill && (
+          <animate
+            attributeName="fill"
+            begin={begin}
+            dur={dur}
+            values={`${fill[from]}; ${fill.synapse}; ${fill[to]}`}
+            calcMode="spline"
+            keyTimes="0; .5; 1"
+            keySplines=".5 0 .2 1; .5 0 .2 1"
+            fill="freeze"
+          />
+        )}
+      </>
+    )
+  }
+
+  const paint = (color) => {
+    return {
+      stroke: stroke[color],
+      fill: fill[color],
+    }
+  }
+
+  const hslStr = (h, s, l, a = undefined) =>
+    `hsl(${h}deg ${s}% ${l}%${a === undefined ? '' : ` / ${a}%`})`
+
+  const stroke = {
+    inherit: 'inherit',
+    synapse: hslStr(300, 100, 25),
+    flash: hslStr(300, 100, 40),
+    yellow: hslStr(60, 80, 60),
+    orange: hslStr(25, 80, 60),
+    blue: hslStr(195, 80, 60),
+    green: hslStr(135, 80, 60),
+  }
+  const fill = {
+    inherit: 'inherit',
+    synapse: hslStr(300, 100, 5),
+    yellow: hslStr(60, 30, 3),
+    orange: hslStr(25, 30, 3),
+    blue: hslStr(195, 30, 3),
+    green: hslStr(135, 30, 3),
+  }
+
+  const AnimateHop = ({ begin }) => {
+    return (
+      <animateMotion
+        path="m0 0 0 -12.5"
+        additive="sum"
+        begin={begin}
+        dur=".5s"
+        calcMode="spline"
+        keyPoints="0; 1; 0"
+        keyTimes="0; .5; 1"
+        keySplines="0 0 .5 1; .8 0 .5 1"
+      />
+    )
+  }
+
+  const Cube = ({
+    color = 'synapse',
+    translate,
+    begin = 0,
+    children,
+  }: {
+    color?: string
+    translate?: string
+    begin?: number
+    children?: React.ReactNode
+  }) => {
+    return (
+      <g
+        transform={translate ? `translate(${translate})` : undefined}
+        stroke={stroke[color]}
+      >
+        <animate
+          attributeName="opacity"
+          begin={begin + 's'}
+          dur=".5s"
+          values="0; 1"
+          fill="freeze"
+        />
+        <animateMotion
+          path="m0 0 v-12.5"
+          additive="sum"
+          begin={begin + 0.125 + 's'}
+          dur=".5s"
+          calcMode="spline"
+          keyPoints="0; 1; 0"
+          keyTimes="0; .5; 1"
+          keySplines="0 0 .5 1; .8 0 .5 1"
+          fill="freeze"
+        />
+        {children}
+        <path fill={fill[color]} vectorEffect="non-scaling-stroke">
+          <animate
+            attributeName="d"
+            values="m0,12.5 25,-12.5 0,0 -25,-12.5 -25,12.5 0,0 25,12.5; m0,12.5 25,-12.5 0,-27.95 -25,-12.5 -25,12.5 0,27.95 25,12.5"
+            begin={begin + 's'}
+            dur=".25s"
+            calcMode="spline"
+            keyTimes="0; 1"
+            keySplines=".5 0 .2 1"
+            fill="freeze"
+          />
+        </path>
+        <path vectorEffect="non-scaling-stroke">
+          <animate
+            attributeName="d"
+            values="m-25,0 25,12.5 25,-12.5 m-25,12.5 0,0; m-25,-27.95 25,12.5 25,-12.5 m-25,12.5 0,27.95"
+            begin={begin + 's'}
+            dur=".25s"
+            calcMode="spline"
+            keyTimes="0; 1"
+            keySplines=".5 0 .2 1"
+            fill="freeze"
+          />
+        </path>
+      </g>
+    )
   }
 
   return (
@@ -54,82 +241,9 @@ const LandingPage = () => {
       >
         <style>
           {/* {`@keyframes circlePulse { from { r: 50; } to { r: 100; } }`} */}
-          {`@keyframes platformBob { from { transform: translate(0, -.25rem); } to { transform: translate(0, 0); } }`}
-          {`#hero-graphic {
-            --fill-synapse: hsl(300deg 100% 5%);
-            --stroke-synapse: hsl(300deg 100% 25%);
-            --fill-yellow: hsl(60deg 30% 3%);
-            --stroke-yellow: hsl(60deg 80% 60%);
-            --fill-orange: hsl(25deg 30% 3%);
-            --stroke-orange: hsl(25deg 80% 60%);
-            --fill-blue: hsl(195deg 30% 3%);
-            --stroke-blue: hsl(195deg 80% 60%);
-            --fill-green: hsl(135deg 30% 3%);
-            --stroke-green: hsl(135deg 80% 60%);
-          }`}
         </style>
-        <defs>
-          <path id="simpleBridgePath" d="m-25 -187.5 -350 175" />
-          {/* <g id="box" transform="scale(.25,.25)">
-            <path
-              d="m0,50 100,-50 0,-111.8 -100,-50 -100,50 0,111.8 100,50"
-              vectorEffect="non-scaling-stroke"
-              pathLength="1"
-              strokeDasharray="1"
-            >
-              <animate
-                attributeName="stroke-dashoffset"
-                values="1; 0"
-                dur="2s"
-                repeatCount="1"
-              />
-            </path>
-            <path
-              d="m-100,-111.9 100,50 100,-50 m-100,50 0,111.8"
-              vectorEffect="non-scaling-stroke"
-              fill="none"
-              pathLength="1"
-              strokeDasharray="1"
-            >
-              <animate
-                attributeName="stroke-dashoffset"
-                values="1; 0"
-                dur="3s"
-                repeatCount="1"
-              />
-            </path>
-          </g> */}
-          {/* <g id="boxes" transform="scale(.25,.25)">
-            <path
-              d="m0,50 100,-50 0,-111.8 -100,-50 -100,50 0,111.8 100,50"
-              vectorEffect="non-scaling-stroke"
-              pathLength="1"
-              strokeDasharray="1"
-            >
-              <animate
-                attributeName="stroke-dashoffset"
-                values="1; 0"
-                dur="2s"
-                repeatCount="1"
-              />
-            </path>
-            <path
-              d="m100,-111.8 -100,50 -100,-50 m0,55.9 100,50 100,-50 m-50,80.9 0,-111.8 -100,-50 m100,0 -100,50 0,111.8 m50,27.95 0,-111.8"
-              vectorEffect="non-scaling-stroke"
-              fill="none"
-              pathLength="1"
-              strokeDasharray="1"
-            >
-              <animate
-                attributeName="stroke-dashoffset"
-                values="1; 0"
-                dur="3s"
-                repeatCount="1"
-              />
-            </path>
-          </g> */}
-        </defs>
-        <path fill="var(--fill-synapse" stroke="var(--stroke-synapse)">
+        <defs></defs>
+        <path {...paint('synapse')}>
           <animate
             id="simpleBridgeNe"
             attributeName="d"
@@ -145,14 +259,9 @@ const LandingPage = () => {
         <path
           id="simple-bridge-sw"
           d="m280,40 40,20 -200,100 -40,-20z"
-          fill="var(--fill-synapse"
-          stroke="var(--stroke-synapse)"
+          {...paint('synapse')}
         />
-        <path
-          id="dock1"
-          fill="var(--fill-synapse"
-          stroke="var(--stroke-synapse)"
-        >
+        <path {...paint('synapse')}>
           <animate
             id="dockN"
             attributeName="d"
@@ -162,11 +271,7 @@ const LandingPage = () => {
             {...animAttrs()}
           />
         </path>
-        <path
-          id="dock1"
-          fill="var(--fill-synapse"
-          stroke="var(--stroke-synapse)"
-        >
+        <path {...paint('synapse')}>
           <animate
             id="dockE"
             attributeName="d"
@@ -179,23 +284,21 @@ const LandingPage = () => {
         <path
           id="airpad1"
           d="m200,-200 60,30 -60,30 -60,-30z"
-          fill="var(--fill-synapse"
-          stroke="var(--stroke-synapse)"
+          {...paint('synapse')}
         />
         <path
           id="airpad2"
           d="m200,-60 60,30 -60,30 -60,-30z"
-          fill="var(--fill-synapse"
-          stroke="var(--stroke-synapse)"
+          {...paint('synapse')}
         ></path>
 
-        <path stroke="var(--stroke-blue)" fill="var(--fill-blue)">
+        <path {...paint('blue')}>
           <animate
             id="platformBlue"
             attributeName="d"
             values="m0,1 2,1 -2,1 -2,-1z; m0,-100 200,100 -200,100 -200,-100z"
             dur=".25s"
-            begin="0s; click"
+            begin={begin.blue.platform + 's'}
             {...animAttrs()}
           />
           <animate
@@ -207,7 +310,6 @@ const LandingPage = () => {
           />
           <animateTransform
             attributeName="transform"
-            attributeType="XML"
             type="translate"
             values="0 -150; 0 -200"
             dur=".5s"
@@ -215,7 +317,7 @@ const LandingPage = () => {
             {...animAttrs()}
           />
         </path>
-        <path stroke="var(--stroke-green)" fill="var(--fill-green)">
+        <path {...paint('green')}>
           <animate
             id="platformGreen"
             attributeName="d"
@@ -233,7 +335,6 @@ const LandingPage = () => {
           />
           <animateTransform
             attributeName="transform"
-            attributeType="XML"
             type="translate"
             values="400 50; 400 0"
             dur=".5s"
@@ -241,7 +342,7 @@ const LandingPage = () => {
             {...animAttrs()}
           />
         </path>
-        <path stroke="var(--stroke-orange)" fill="var(--fill-orange)">
+        <path {...paint('orange')}>
           <animate
             id="platformOrange"
             attributeName="d"
@@ -259,7 +360,6 @@ const LandingPage = () => {
           />
           <animateTransform
             attributeName="transform"
-            attributeType="XML"
             type="translate"
             values="0 250; 0 200"
             dur=".5s"
@@ -267,7 +367,7 @@ const LandingPage = () => {
             {...animAttrs()}
           />
         </path>
-        <path stroke="var(--stroke-yellow)" fill="var(--fill-yellow)">
+        <path {...paint('yellow')}>
           <animate
             id="platformYellow"
             attributeName="d"
@@ -285,7 +385,6 @@ const LandingPage = () => {
           />
           <animateTransform
             attributeName="transform"
-            attributeType="XML"
             type="translate"
             values="-400 50; -400 0"
             dur=".5s"
@@ -294,51 +393,13 @@ const LandingPage = () => {
           />
         </path>
 
-        {/* <g
-          id="stack-green"
-          fill="var(--fill-green)"
-          stroke="var(--stroke-green)"
-          transform="translate(400,0)"
-          visibility="hidden"
-        >
-          <set
-            attributeName="visibility"
-            to="visible"
-            begin="platformYellow.end"
-          />
-          <set
-            attributeName="visibility"
-            to="hidden"
-            begin="platformBlue.begin"
-          />
-          <use href="#box" transform="translate(0,-27.95)" />
-          <use href="#box" transform="translate(25,12.5)" />
-          <use href="#box" transform="translate(-25,12.5)" />
-          <use href="#box" transform="translate(0,25)" />
-        </g>
-        <g
-          id="stack-orange"
-          fill="var(--fill-orange)"
-          stroke="var(--stroke-orange)"
-          transform="translate(0,150)"
-        >
-          <use href="#box" transform="translate(0,-27.95)" />
-          <use href="#box" transform="translate(25,12.5)" />
-          <use href="#box" transform="translate(-25,12.5)" />
-          <use href="#box" transform="translate(0,25)" />
-        </g> */}
-
         <g id="barge">
           <animateMotion path="M200,-500" />
-          <path
-            d="m70,-75 100,50 -200,100 -100,-50z"
-            fill="var(--fill-synapse)"
-            stroke="var(--stroke-synapse)"
-          />
+          <path d="m70,-75 100,50 -200,100 -100,-50z" {...paint('synapse')} />
           <animateMotion
             id="bargeOut"
             dur="2s"
-            begin="dockN.end; bargeIn.end"
+            begin="0s; bargeIn.end" // dockN.end; bargeIn.end"
             path="M200,-500 -200,-300"
             {...animAttrs()}
           />
@@ -358,65 +419,31 @@ const LandingPage = () => {
           />
         </g>
 
-        <g id="teleportFromOrange" stroke="hsl(25deg 80% 60%)">
-          <ellipse
-            rx="30"
-            ry="15"
-            cy="260"
-            stroke="var(--stroke-synapse)"
-            fill="var(--fill-synapse)"
-          />
-          <g transform="scale(.25,.25)">
-            <animate
-              attributeName="stroke"
-              values="inherit; hsl(300deg 100% 40%); hsl(135deg 80% 60%)"
-              dur="3s"
+        <g id="teleportFromOrange" stroke={stroke.orange}>
+          <ellipse rx="30" ry="15" cy="260" {...paint('synapse')} />
+          <Cube color="orange" begin={0}>
+            <AnimateFlash
+              from="orange"
+              to="green"
               begin="teleporterBeamsOut.begin + 1s"
-              calcMode="spline"
-              keyTimes="0; .5; 1"
-              keySplines=".5 0 .2 1; .5 0 .2 1"
-              fill="freeze"
-            />
-            <animate
-              attributeName="stroke"
-              values="hsl(135deg 80% 60%); hsl(300deg 100% 40%); inherit"
               dur="3s"
+            />
+            <AnimateFlash
+              from="green"
+              to="orange"
               begin="teleporterBeamsIn.begin + 1s"
-              calcMode="spline"
-              keyTimes="0; .5; 1"
-              keySplines=".5 0 .2 1; .5 0 .2 1"
-              fill="freeze"
-            />
-            <path
-              d="m0,50 100,-50 0,-111.8 -100,-50 -100,50 0,111.8 100,50"
-              vectorEffect="non-scaling-stroke"
-            />
-            <path
-              d="m-100,-111.9 100,50 100,-50 m-100,50 0,111.8"
-              vectorEffect="non-scaling-stroke"
-              fill="none"
+              dur="3s"
             />
             <animateMotion
-              id="teleport1BobOut"
-              dur="1s"
-              begin="0s; teleport1BobIn.end"
-              path="m0,240 0,12.5"
+              dur="2s"
+              path="m0,240 v12.5"
               calcMode="spline"
-              keyTimes="0; 1"
-              keySplines=".33 0 .67 1"
-              fill="freeze"
+              keyPoints="0; 1; 0"
+              keyTimes="0; 0.5; 1"
+              keySplines=".33 0 .67 1; .33 0 .67 1"
+              repeatCount="indefinite"
             />
-            <animateMotion
-              id="teleport1BobIn"
-              dur="1s"
-              begin="teleport1BobOut.end"
-              path="m0,252.5 0,-12.5"
-              calcMode="spline"
-              keyTimes="0; 1"
-              keySplines=".33 0 .67 1"
-              fill="freeze"
-            />
-          </g>
+          </Cube>
           <g id="teleporter1Beams" opacity="0" strokeWidth="3">
             <animate
               id="teleporterBeamsOut"
@@ -498,72 +525,38 @@ const LandingPage = () => {
             rx="30"
             ry="15"
             cy="190"
-            stroke="var(--stroke-synapse)"
-            fill="var(--fill-synapse)"
+            stroke={stroke.synapse}
+            fill={fill.synapse}
           />
         </g>
 
         <g
           id="teleportFromGreen"
           transform="translate(520,-260)"
-          stroke="hsl(135deg 80% 60%)"
+          stroke={stroke.green}
         >
-          <ellipse
-            rx="30"
-            ry="15"
-            cy="260"
-            stroke="var(--stroke-synapse)"
-            fill="var(--fill-synapse)"
-          />
-          <g transform="scale(.25,.25)">
+          <ellipse rx="30" ry="15" cy="260" {...paint('synapse')} />
+          <Cube color="green">
             <animate
               attributeName="stroke"
-              values="inherit; hsl(300deg 100% 40%); hsl(25deg 80% 60%)"
-              dur="3s"
               begin="teleporterBeamsOut.begin + 1s"
-              calcMode="spline"
-              keyTimes="0; .5; 1"
-              keySplines=".5 0 .2 1; .5 0 .2 1"
-              fill="freeze"
+              {...flashAttrs('inherit', 'orange', '3s')}
             />
             <animate
               attributeName="stroke"
-              values="hsl(25deg 80% 60%); hsl(300deg 100% 40%); inherit"
-              dur="3s"
               begin="teleporterBeamsIn.begin + 1s"
+              {...flashAttrs('orange', 'inherit', '3s')}
+            />
+            <animateMotion
+              dur="2s"
+              path="m0,240 v12.5"
               calcMode="spline"
+              keyPoints="0; 1; 0"
               keyTimes="0; .5; 1"
-              keySplines=".5 0 .2 1; .5 0 .2 1"
-              fill="freeze"
+              keySplines=".33 0 .67 1; .33 0 .67 1"
+              repeatCount="indefinite"
             />
-            <path
-              d="m0,50 100,-50 0,-111.8 -100,-50 -100,50 0,111.8 100,50"
-              vectorEffect="non-scaling-stroke"
-            />
-            <path
-              d="m-100,-111.9 100,50 100,-50 m-100,50 0,111.8"
-              vectorEffect="non-scaling-stroke"
-              fill="none"
-            />
-            <animateMotion
-              dur="1s"
-              begin="teleport1BobOut.end"
-              path="m0,240 0,12.5"
-              calcMode="spline"
-              keyTimes="0; 1"
-              keySplines=".33 0 .67 1"
-              fill="freeze"
-            />
-            <animateMotion
-              dur="1s"
-              begin="0s; teleport1BobIn.end"
-              path="m0,252.5 0,-12.5"
-              calcMode="spline"
-              keyTimes="0; 1"
-              keySplines=".33 0 .67 1"
-              fill="freeze"
-            />
-          </g>
+          </Cube>
           <g id="teleporter2Beams" opacity="0" strokeWidth="3">
             <animate
               attributeName="opacity"
@@ -643,14 +636,14 @@ const LandingPage = () => {
             rx="30"
             ry="15"
             cy="190"
-            stroke="var(--stroke-synapse)"
-            fill="var(--fill-synapse)"
+            stroke={stroke.synapse}
+            fill={fill.synapse}
           />
         </g>
         <g
           id="balloonBox"
           transform="scale(.25,.25)"
-          // stroke="var(--stroke-blue)"
+          // stroke={stroke.blue}
         >
           <animateMotion
             id="stackOut"
@@ -698,31 +691,19 @@ const LandingPage = () => {
             d="m-100,-111.9 100,50 100,-50 m-100,50 0,111.8"
             vectorEffect="non-scaling-stroke"
           />
-          <set
-            attributeName="stroke"
-            to="hsl(195deg 80% 60%)"
-            begin="stackOut.begin"
-          />
-          <set
-            attributeName="fill"
-            to="hsl(195deg 80% 5%)"
-            begin="stackOut.begin"
-          />
+          <set attributeName="stroke" to={stroke.blue} begin="stackOut.begin" />
+          <set attributeName="fill" to={fill.blue} begin="stackOut.begin" />
           <animate
             attributeName="stroke"
-            values="hsl(195deg 80% 60%); hsl(300deg 100% 40%); hsl(135deg 80% 60%)"
             begin="airdrop.begin"
             dur=".33s"
-            calcMode="spline"
-            keyTimes="0; .5; 1"
-            keySplines=".5 0 .2 1; .5 0 .2 1"
-            fill="freeze"
+            {...flashAttrs('inherit', 'green')}
           />
           <animate
             attributeName="fill"
-            values="hsl(195deg 80% 5%); hsl(300deg 100% 5%); hsl(135deg 80% 5%)"
             begin="airpath.end"
             dur=".33s"
+            values="hsl(195deg 80% 5%); hsl(300deg 100% 5%); hsl(135deg 80% 5%)"
             calcMode="spline"
             keyTimes="0; .5; 1"
             keySplines=".5 0 .2 1; .5 0 .2 1"
@@ -755,7 +736,7 @@ const LandingPage = () => {
           <path
             id="balloonString"
             vectorEffect="non-scaling-stroke"
-            stroke="var(--stroke-synapse)"
+            stroke={stroke.synapse}
           >
             <set attributeName="d" to="m0,-111.8 v0" begin="stackOut.begin" />
             <animate
@@ -768,8 +749,8 @@ const LandingPage = () => {
           </path>
           <circle
             vectorEffect="non-scaling-stroke"
-            stroke="var(--stroke-synapse)"
-            fill="var(--fill-synapse)"
+            stroke={stroke.synapse}
+            fill={fill.synapse}
           >
             <animate attributeName="r" values="0" begin="stackOut.begin" />
             <animate
@@ -788,306 +769,143 @@ const LandingPage = () => {
             />
           </circle>
         </g>
-        {/* <g
-          id="stack-blue"
-          fill="var(--fill-blue)"
-          stroke="var(--stroke-blue)"
-          transform="translate(0,-225)"
-        >
-          <use href="#box" transform="translate(0,-27.95)" />
-          <use href="#box" transform="translate(25,12.5)" />
-          <use href="#box" transform="translate(-25,12.5)" />
-        </g> */}
-        {/* <g
-          id="stack-yellow"
-          fill="var(--fill-yellow)"
-          stroke="var(--stroke-yellow)"
-          transform="translate(-400,0)"
-        >
-          <use href="#box" transform="translate(0,-27.95)" />
-          <use href="#box" transform="translate(25,12.5)" />
-          <use href="#box" transform="translate(-50,0)" />
-          <use href="#box" transform="translate(-25,12.5)" />
-          <use href="#box" transform="translate(0,25)" />
-        </g> */}
-        <g id="bargeCubeGroup" stroke="var(--stroke-blue)">
-          <animateMotion path="m-25 -212.5" />
-          <animate
-            id="bargeCube"
-            attributeName="opacity"
-            begin="dockN.end"
-            dur=".5s"
-            values="0; 1"
-            fill="freeze"
-          />
-          <animateMotion
-            path="m-25 -212.5 0 -12.5"
-            begin="dockN.end + .125s"
-            dur=".5s"
-            calcMode="spline"
-            keyPoints="0; 1; 0"
-            keyTimes="0; .5; 1"
-            keySplines="0 0 .5 1; .8 0 .5 1"
-            fill="freeze"
-          />
-          <animateMotion
+
+        <Cube color="blue" translate="-25 -212.5" begin={0}>
+          <set attributeName="stroke" to={stroke.blue} begin="bargeOut.begin" />
+          <animateTransform
+            attributeName="transform"
+            type="translate"
             begin="bargeOut.end"
             dur="1s"
-            path="m-25 -212.5 -150 -75"
+            from="-25 -212.5"
+            by="-150 -75"
             {...animAttrs()}
           />
-          <animateMotion
+          <animateTransform
+            attributeName="transform"
+            type="translate"
             begin="bargeCross.begin"
             dur="2s"
-            path="m-175 -287.5 -400 200"
+            by="-400 200"
             {...animAttrs()}
           />
-          <animate
-            attributeName="stroke"
-            values="hsl(195deg 80% 60%); hsl(300deg 100% 40%); hsl(60deg 80% 60%)"
-            begin="bargeCross.begin + .5s"
-            dur=".5s"
-            calcMode="spline"
-            keyTimes="0; .5; 1"
-            keySplines=".33 0 .33 1; .33 0 .33 1"
-            fill="freeze"
-          />
-          <animateMotion
+          <animateTransform
+            attributeName="transform"
+            type="translate"
             begin="bargeCross.end"
             dur="1s"
-            path="m-575 -87.5 150 75"
+            by="150 75"
             {...animAttrs()}
           />
-          <path fill="var(--fill-blue)" vectorEffect="non-scaling-stroke">
-            <animate
-              attributeName="d"
-              values="m0,12.5 25,-12.5 0,0 -25,-12.5 -25,12.5 0,0 25,12.5; m0,12.5 25,-12.5 0,-27.95 -25,-12.5 -25,12.5 0,27.95 25,12.5"
-              begin="dockN.end"
-              dur=".25s"
-              {...animAttrs()}
-            />
-          </path>
-
-          <path vectorEffect="non-scaling-stroke">
-            <animate
-              attributeName="d"
-              values="m-25,0 25,12.5 25,-12.5 m-25,12.5 0,0; m-25,-27.95 25,12.5 25,-12.5 m-25,12.5 0,27.95"
-              begin="dockN.end"
-              dur=".25s"
-              {...animAttrs()}
-            />
-          </path>
-        </g>
-        <g id="platformCubeBlueGroup" stroke="var(--stroke-blue)">
-          <animateMotion path="m0 -200" />
           <animate
-            id="platformCubeBlue"
             attributeName="opacity"
-            begin="platformBlue.end"
-            dur=".5s"
-            values="0; 1"
-          />
-          <animateMotion
-            path="m0 -200 0 -12.5"
-            begin="platformCubeBlue.begin + .125s"
-            dur=".5s"
-            calcMode="spline"
-            keyPoints="0; 1; 0"
-            keyTimes="0; .5; 1"
-            keySplines="0 0 .5 1; .8 0 .5 1"
-          />
-          <path fill="var(--fill-blue)" vectorEffect="non-scaling-stroke">
-            <animate
-              attributeName="d"
-              values="m0,12.5 25,-12.5 0,0 -25,-12.5 -25,12.5 0,0 25,12.5; m0,12.5 25,-12.5 0,-27.95 -25,-12.5 -25,12.5 0,27.95 25,12.5"
-              begin="platformCubeBlue.begin"
-              dur=".25s"
-              {...animAttrs()}
-            />
-          </path>
-          <path vectorEffect="non-scaling-stroke">
-            <animate
-              attributeName="d"
-              values="m-25,0 25,12.5 25,-12.5 m-25,12.5 0,0; m-25,-27.95 25,12.5 25,-12.5 m-25,12.5 0,27.95"
-              begin="platformCubeBlue.begin"
-              dur=".25s"
-              {...animAttrs()}
-            />
-          </path>
-        </g>
-
-        <g id="bridgeCubeBlueGroup" stroke="var(--stroke-blue)">
-          <animateMotion path="m-25 -187.5" />
-          <animate
-            id="bridgeCubeBlue"
-            attributeName="opacity"
-            begin="simpleBridgeNe.begin + .5s"
-            dur=".5s"
-            values="0; 1"
-          />
-          <animateMotion
-            path="m-25 -187.5 0 -12.5"
-            begin="bridgeCubeBlue.begin + .125s"
-            dur=".5s"
-            calcMode="spline"
-            keyPoints="0; 1; 0"
-            keyTimes="0; .5; 1"
-            keySplines="0 0 .5 1; .8 0 .5 1"
-          />
-          <animateMotion
-            id="bridgeCubeBlueOut"
-            begin="bridgeCubeBlue.begin + 2s; bridgeCubeBlueIn.end + 2s"
-            dur="1s"
-            calcMode="spline"
-            keyPoints="0; 1"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-          >
-            <mpath href="#simpleBridgePath" />
-          </animateMotion>
-          <animate
-            attributeName="stroke"
-            values="hsl(195deg 80% 60%); hsl(300deg 100% 40%); hsl(60deg 80% 60%)"
-            begin="bridgeCubeBlueOut.begin + .5s; bridgeCubeBlueIn.begin + .5s"
-            dur=".5s"
-            calcMode="spline"
-            keyTimes="0; .5; 1"
-            keySplines=".33 0 .33 1; .33 0 .33 1"
+            begin="bargeCross.end + 1s"
+            to="0"
+            dur="2s"
             fill="freeze"
           />
-          <animateMotion
-            id="bridgeCubeBlueIn"
-            begin="bridgeCubeBlueOut.end + 2s"
-            dur="1s"
-            calcMode="spline"
-            keyPoints="1; 0"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-          >
-            <mpath href="#simpleBridgePath" />
-          </animateMotion>
-          <path fill="var(--fill-blue)" vectorEffect="non-scaling-stroke">
-            <animate
-              attributeName="d"
-              values="m0,12.5 25,-12.5 0,0 -25,-12.5 -25,12.5 0,0 25,12.5; m0,12.5 25,-12.5 0,-27.95 -25,-12.5 -25,12.5 0,27.95 25,12.5"
-              begin="bridgeCubeBlue.begin"
-              dur=".25s"
-              {...animAttrs()}
-            />
-          </path>
-          <path vectorEffect="non-scaling-stroke">
-            <animate
-              attributeName="d"
-              values="m-25,0 25,12.5 25,-12.5 m-25,12.5 0,0; m-25,-27.95 25,12.5 25,-12.5 m-25,12.5 0,27.95"
-              begin="bridgeCubeBlue.begin"
-              dur=".25s"
-              {...animAttrs()}
-            />
-          </path>
-        </g>
-        <g id="bridgeCubeYellowGroup" stroke="var(--stroke-yellow)">
-          <animateMotion path="m-375 -12.5" />
           <animate
-            id="bridgeCubeYellow"
             attributeName="opacity"
-            begin="bridgeCubeBlue.begin + .5s"
-            dur=".5s"
-            values="0; 1"
+            begin="bargeOut.begin"
+            to="1"
+            dur="2s"
+            fill="freeze"
           />
-          <animateMotion
-            path="m-375 -12.5 0 -12.5"
-            begin="bridgeCubeYellow.begin + .125s"
-            dur=".5s"
-            calcMode="spline"
-            keyPoints="0; 1; 0"
-            keyTimes="0; .5; 1"
-            keySplines="0 0 .5 1; .8 0 .5 1"
+
+          <animateTransform
+            attributeName="transform"
+            type="translate"
+            begin="bargeOut.begin"
+            dur="1ms"
+            by="400 -200"
+            fill="freeze"
           />
-          <animateMotion
-            begin="bridgeCubeBlueOut.begin"
-            dur="1s"
-            calcMode="spline"
-            keyPoints="1; 0"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-          >
-            <mpath href="#simpleBridgePath" />
-          </animateMotion>
           <animate
             attributeName="stroke"
-            values="hsl(60deg 80% 60%); hsl(300deg 100% 40%); hsl(195deg 80% 60%)"
-            begin="bridgeCubeBlueOut.begin + .5s; bridgeCubeBlueIn.begin + .5s"
+            begin="bargeCross.begin + .5s"
             dur=".5s"
-            calcMode="spline"
-            keyTimes="0; .5; 1"
-            keySplines=".33 0 .33 1; .33 0 .33 1"
+            {...flashAttrs('inherit', 'yellow')}
           />
-          <animateMotion
-            begin="bridgeCubeBlueIn.begin"
+        </Cube>
+
+        <Cube color="blue" translate="0 -200" begin={1.5} />
+
+        <Cube color="blue" translate="-25 -187.5" begin={2}>
+          <animateTransform
+            id="bridgeCubeOut"
+            attributeName="transform"
+            type="translate"
+            from="-25 -187.5"
+            by="-350 175"
+            begin="3s; bridgeCubeIn.end + 2s"
             dur="1s"
-            calcMode="spline"
-            keyPoints="0; 1"
-            keyTimes="0; 1"
-            keySplines=".5 0 .2 1"
-          >
-            <mpath href="#simpleBridgePath" />
-          </animateMotion>
-          <path fill="var(--fill-yellow)" vectorEffect="non-scaling-stroke">
-            <animate
-              attributeName="d"
-              values="m0,12.5 25,-12.5 0,0 -25,-12.5 -25,12.5 0,0 25,12.5; m0,12.5 25,-12.5 0,-27.95 -25,-12.5 -25,12.5 0,27.95 25,12.5"
-              begin="bridgeCubeYellow.begin"
-              dur=".25s"
-              {...animAttrs()}
-            />
-          </path>
-          <path vectorEffect="non-scaling-stroke">
-            <animate
-              attributeName="d"
-              values="m-25,0 25,12.5 25,-12.5 m-25,12.5 0,0; m-25,-27.95 25,12.5 25,-12.5 m-25,12.5 0,27.95"
-              begin="bridgeCubeYellow.begin"
-              dur=".25s"
-              {...animAttrs()}
-            />
-          </path>
-        </g>
-        <g id="platformCubeYellowGroup" stroke="var(--stroke-yellow)">
-          <animateMotion path="m-400 0" />
+            {...animAttrs()}
+          />
+          <animateTransform
+            id="bridgeCubeIn"
+            attributeName="transform"
+            type="translate"
+            by="350 -175"
+            begin="bridgeCubeOut.end + 2s"
+            dur="1s"
+            {...animAttrs()}
+          />
           <animate
-            id="platformCubeYellow"
-            attributeName="opacity"
-            begin="platformYellow.end"
+            attributeName="stroke"
+            begin="bridgeCubeOut.begin + .3s"
             dur=".5s"
-            values="0; 1"
+            {...flashAttrs('blue', 'yellow')}
           />
-          <animateMotion
-            path="m-400 0 0 -12.5"
-            begin="platformCubeYellow.begin + .125s"
+          <animate
+            attributeName="stroke"
+            begin="bridgeCubeIn.begin + .3s"
             dur=".5s"
-            calcMode="spline"
-            keyPoints="0; 1; 0"
-            keyTimes="0; .5; 1"
-            keySplines="0 0 .5 1; .8 0 .5 1"
+            {...flashAttrs('yellow', 'blue')}
           />
-          <path fill="var(--fill-blue)" vectorEffect="non-scaling-stroke">
-            <animate
-              attributeName="d"
-              values="m0,12.5 25,-12.5 0,0 -25,-12.5 -25,12.5 0,0 25,12.5; m0,12.5 25,-12.5 0,-27.95 -25,-12.5 -25,12.5 0,27.95 25,12.5"
-              begin="platformCubeYellow.begin"
-              dur=".25s"
-              {...animAttrs()}
-            />
-          </path>
-          <path vectorEffect="non-scaling-stroke">
-            <animate
-              attributeName="d"
-              values="m-25,0 25,12.5 25,-12.5 m-25,12.5 0,0; m-25,-27.95 25,12.5 25,-12.5 m-25,12.5 0,27.95"
-              begin="platformCubeYellow.begin"
-              dur=".25s"
-              {...animAttrs()}
-            />
-          </path>
-        </g>
+        </Cube>
+        <Cube color="yellow" translate="-375 -12.5" begin={2}>
+          <animateTransform
+            attributeName="transform"
+            type="translate"
+            from="-25 -187.5"
+            by="-350 175"
+            begin="bridgeCubeIn.begin"
+            dur="1s"
+            {...animAttrs()}
+          />
+          <animateTransform
+            attributeName="transform"
+            type="translate"
+            by="350 -175"
+            begin="bridgeCubeOut.begin"
+            dur="1s"
+            {...animAttrs()}
+          />
+          <animate
+            attributeName="stroke"
+            begin="bridgeCubeOut.begin + .3s"
+            dur=".5s"
+            {...flashAttrs('yellow', 'blue')}
+          />
+          <animate
+            attributeName="stroke"
+            begin="bridgeCubeIn.begin + .3s"
+            dur=".5s"
+            {...flashAttrs('blue', 'yellow')}
+          />
+        </Cube>
+
+        <Cube color="yellow" translate="-400 0" begin={3} />
+        <Cube color="green" translate="400 0" begin={2} />
+        <Cube color="orange" translate="0 150" begin={2.5} />
+
+        {/* <rect
+          width="40"
+          height="200"
+          transform-origin="20 100"
+          vectorEffect="non-scaling-stroke"
+          transform="translate(-20 -100) matrix(1 .5 -1 .5 0 0) rotate(90)"
+        /> */}
       </svg>
       <p className="text-center">Reference image</p>
       <img src={exampleImg.src} className="visible" />
