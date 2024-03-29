@@ -51,7 +51,7 @@ contract ExampleAppV1 is ICAppV1 {
         view
         returns (uint256)
     {
-        return _getMessageFee(dstChainId, OptionsV1({gasLimit: gasLimit, gasAirdrop: gasAirdrop}), message);
+        return _getMessageFee(dstChainId, OptionsV1({gasLimit: gasLimit, gasAirdrop: gasAirdrop}), message.length);
     }
 
     /// @dev Internal logic for receiving messages. At this point the validity of the message is already checked.

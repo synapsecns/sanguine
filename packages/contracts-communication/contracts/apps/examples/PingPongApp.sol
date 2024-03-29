@@ -47,7 +47,7 @@ contract PingPongApp is ICAppV1 {
     function getPingFee(uint256 dstChainId) external view returns (uint256) {
         OptionsV1 memory options = OptionsV1({gasLimit: gasLimit, gasAirdrop: 0});
         bytes memory message = abi.encode(uint256(0));
-        return _getInterchainFee(dstChainId, options.encodeOptionsV1(), message);
+        return _getInterchainFee(dstChainId, options.encodeOptionsV1(), message.length);
     }
 
     /// @dev Internal logic for receiving messages. At this point the validity of the message is already checked.
@@ -75,7 +75,7 @@ contract PingPongApp is ICAppV1 {
     function _sendPingPongMessage(uint256 dstChainId, uint256 counter, bool lowBalanceRevert) internal {
         OptionsV1 memory options = OptionsV1({gasLimit: gasLimit, gasAirdrop: 0});
         bytes memory message = abi.encode(counter);
-        uint256 messageFee = _getMessageFee(dstChainId, options, message);
+        uint256 messageFee = _getMessageFee(dstChainId, options, message.length);
         if (address(this).balance < messageFee && !lowBalanceRevert) {
             emit PingDisrupted(counter);
             return;

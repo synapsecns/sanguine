@@ -173,7 +173,7 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
     function _getInterchainFee(
         uint256 dstChainId,
         bytes memory options,
-        bytes memory message
+        uint256 messageLen
     )
         internal
         view
@@ -184,7 +184,7 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
             revert InterchainApp__InterchainClientZeroAddress();
         }
         return IInterchainClientV1(client).getInterchainFee(
-            dstChainId, _getExecutionService(), _getModules(), options, message
+            dstChainId, _getExecutionService(), _getModules(), options, messageLen
         );
     }
 

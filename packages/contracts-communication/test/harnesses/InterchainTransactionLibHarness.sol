@@ -30,6 +30,10 @@ contract InterchainTransactionLibHarness {
         return InterchainTransactionLib.decodeTransaction(encodedTx);
     }
 
+    function payloadSize(uint256 optionsLen, uint256 messageLen) external pure returns (uint256) {
+        return InterchainTransactionLib.payloadSize(optionsLen, messageLen);
+    }
+
     function transactionId(InterchainTransaction memory transaction) external pure returns (bytes32) {
         return InterchainTransactionLib.transactionId(transaction);
     }

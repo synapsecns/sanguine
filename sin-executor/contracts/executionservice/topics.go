@@ -16,7 +16,7 @@ var (
 func init() {
 	var err error
 
-	parsedABI, err := abi.JSON(strings.NewReader(ExecutionServiceMetaData.ABI))
+	parsedABI, err := abi.JSON(strings.NewReader(SynapseExecutionServiceV1HarnessMetaData.ABI))
 	if err != nil {
 		panic(err)
 	}

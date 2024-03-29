@@ -199,14 +199,14 @@ abstract contract ICAppV1 is AbstractICApp, AccessControlEnumerable, InterchainA
     function _getMessageFee(
         uint256 dstChainId,
         OptionsV1 memory options,
-        bytes memory message
+        uint256 messageLen
     )
         internal
         view
         returns (uint256)
     {
         bytes memory encodedOptions = options.encodeOptionsV1();
-        return _getInterchainFee(dstChainId, encodedOptions, message);
+        return _getInterchainFee(dstChainId, encodedOptions, messageLen);
     }
 
     /// @dev Returns the configuration of the app for validating the received messages.

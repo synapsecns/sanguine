@@ -53,7 +53,7 @@ contract InterchainClientV1Mock is IInterchainClientV1 {
         address srcExecutionService,
         address[] calldata srcModules,
         bytes calldata options,
-        bytes calldata message
+        uint256 messageLen
     )
         external
         view

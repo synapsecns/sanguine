@@ -8,29 +8,29 @@ import (
 	"github.com/ethereum/go-ethereum/core/vm"
 )
 
-// ExecutionServiceRef is a reference to an interchain db.
+// SynapseExecutionServiceV1HarnessRef is a reference to an interchain db.
 // nolint: golint
-type ExecutionServiceRef struct {
-	*ExecutionService
+type SynapseExecutionServiceV1HarnessRef struct {
+	*SynapseExecutionServiceV1Harness
 	// address of the interchain client
 	address common.Address
 }
 
 // Address is the contract address.
-func (i *ExecutionServiceRef) Address() common.Address {
+func (i *SynapseExecutionServiceV1HarnessRef) Address() common.Address {
 	return i.address
 }
 
-// NewExecutionServiceRef creates a new interchain client with a contract ref.
-func NewExecutionServiceRef(address common.Address, backend bind.ContractBackend) (*ExecutionServiceRef, error) {
-	instance, err := NewExecutionService(address, backend)
+// NewSynapseExecutionServiceV1HarnessRef creates a new interchain client with a contract ref.
+func NewSynapseExecutionServiceV1HarnessRef(address common.Address, backend bind.ContractBackend) (*SynapseExecutionServiceV1HarnessRef, error) {
+	instance, err := NewSynapseExecutionServiceV1Harness(address, backend)
 	if err != nil {
 		return nil, fmt.Errorf("could not create instance of InterchainClient: %w", err)
 	}
-	return &ExecutionServiceRef{
-		ExecutionService: instance,
-		address:          address,
+	return &SynapseExecutionServiceV1HarnessRef{
+		SynapseExecutionServiceV1Harness: instance,
+		address:                          address,
 	}, nil
 }
 
-var _ vm.ContractRef = &ExecutionServiceRef{}
+var _ vm.ContractRef = &SynapseExecutionServiceV1HarnessRef{}
