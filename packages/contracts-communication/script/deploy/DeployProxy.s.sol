@@ -41,8 +41,8 @@ abstract contract DeployProxy is SynapseScript {
                 constructorArgs: ""
             });
         }
-        // Save the ProxyAdmin artifact as ContractName.ProxyAdmin
-        string memory proxyAdminAlias = contractName.concat(".ProxyAdmin");
+        // Save the ProxyAdmin artifact as ProxyAdmin.ContractName
+        string memory proxyAdminAlias = string.concat("ProxyAdmin.", contractName);
         if (!isDeployed(proxyAdminAlias)) {
             saveDeployment({
                 contractName: "ProxyAdmin",
