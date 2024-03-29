@@ -153,13 +153,7 @@ export const SingleNetworkPortfolio = ({
         {gasTokens &&
           gasTokens.length > 0 &&
           gasTokens.map(({ token, balance }: TokenAndBalance) => (
-            <GasTokenAsset
-              key={token.symbol}
-              token={token}
-              balance={balance}
-              portfolioChainId={portfolioChainId}
-              connectedChainId={connectedChainId}
-            />
+            <GasTokenAsset key={token.symbol} token={token} balance={balance} />
           ))}
         {bridgeableTokens &&
           bridgeableTokens.length > 0 &&
