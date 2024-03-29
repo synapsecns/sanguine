@@ -42,7 +42,7 @@ func (r *Relayer) startChainIndexers(ctx context.Context) error {
 func (r *Relayer) runChainIndexer(ctx context.Context, chainID int) (err error) {
 	chainListener := r.chainListeners[chainID]
 
-	parser, err := fastbridge.NewParser(chainListener.Address())
+	parser, err := fastbridge.NewParser(chainListener.Addresses()[0])
 	if err != nil {
 		return fmt.Errorf("could not parse: %w", err)
 	}
