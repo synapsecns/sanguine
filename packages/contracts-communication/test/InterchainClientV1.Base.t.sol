@@ -9,6 +9,8 @@ import {
 } from "../contracts/libs/InterchainTransaction.sol";
 import {OptionsLib} from "../contracts/libs/Options.sol";
 
+import {InterchainTransactionLibHarness} from "./harnesses/InterchainTransactionLibHarness.sol";
+import {VersionedPayloadLibHarness} from "./harnesses/VersionedPayloadLibHarness.sol";
 import {ExecutionFeesMock} from "./mocks/ExecutionFeesMock.sol";
 import {ExecutionServiceMock} from "./mocks/ExecutionServiceMock.sol";
 import {InterchainDBMock} from "./mocks/InterchainDBMock.sol";
@@ -25,6 +27,9 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
     uint256 public constant UNKNOWN_CHAIN_ID = 42;
     bytes32 public constant MOCK_REMOTE_CLIENT = keccak256("RemoteClient");
     uint16 public constant CLIENT_VERSION = 1;
+
+    InterchainTransactionLibHarness public txLibHarness;
+    VersionedPayloadLibHarness public payloadLibHarness;
 
     address public mockRemoteClientEVM = makeAddr("RemoteClientEVM");
     bytes32 public mockRemoteClientEVMBytes32 = bytes32(uint256(uint160(mockRemoteClientEVM)));
@@ -47,6 +52,8 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         execService = address(new ExecutionServiceMock());
         icModuleA = address(new InterchainModuleMock());
         icModuleB = address(new InterchainModuleMock());
+        txLibHarness = new InterchainTransactionLibHarness();
+        payloadLibHarness = new VersionedPayloadLibHarness();
     }
 
     function setExecutionFees(address executionFees) public {
@@ -229,8 +236,8 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         assertEq(icTx.message, expected.message, "!message");
     }
 
-    function getEncodedTx(InterchainTransaction memory icTx) internal pure returns (bytes memory) {
-        return InterchainTransactionLib.encodeVersionedTransaction(CLIENT_VERSION, icTx);
+    function getEncodedTx(InterchainTransaction memory icTx) internal view returns (bytes memory) {
+        return payloadLibHarness.encodeVersionedPayload(CLIENT_VERSION, txLibHarness.encodeTransaction(icTx));
     }
 
     // ═══════════════════════════════════════════════════ UTILS ═══════════════════════════════════════════════════════
