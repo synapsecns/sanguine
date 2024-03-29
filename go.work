@@ -17,9 +17,9 @@ use (
 	./services/cctp-relayer
 	./services/explorer
 	./services/omnirpc
-	./services/sin-explorer
 	./services/rfq
 	./services/scribe
+	./services/sin-explorer
 	./services/stiprelayer
 	./sin-executor
 	./tools

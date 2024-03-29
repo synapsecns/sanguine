@@ -30,7 +30,7 @@ type TestChainListenerArgs struct {
 func NewTestChainListener(args TestChainListenerArgs) TestChainListener {
 	return &chainListener{
 		client:       args.Client,
-		address:      args.Address,
+		addresses:    []common.Address{args.Address},
 		initialBlock: args.InitialBlock,
 		store:        args.Store,
 		handler:      args.Handler,
