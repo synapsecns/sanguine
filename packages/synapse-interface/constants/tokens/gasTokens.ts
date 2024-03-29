@@ -5,6 +5,8 @@ import moonbeamImg from '@assets/chains/moonbeam.svg'
 import moonriverImg from '@assets/chains/moonriver.svg'
 import harmonyImg from '@assets/chains/harmony.svg'
 import cantoImg from '@assets/chains/canto.svg'
+import dogechainImg from '@assets/chains/dogechain.svg'
+import cronosImg from '@assets/chains/cronos.svg'
 
 import * as CHAINS from '@/constants/chains/master'
 
@@ -81,4 +83,26 @@ export const ONE: GasToken = {
   symbol: 'ONE',
   decimals: 18,
   icon: harmonyImg,
+}
+
+export const CRO: GasToken = {
+  addresses: {
+    [CHAINS.CRONOS.id]: zeroAddress,
+  },
+  chainId: 25,
+  name: 'Cronos',
+  symbol: 'CRO',
+  decimals: 18,
+  icon: cronosImg,
+}
+
+export const DOGE: GasToken = {
+  addresses: {
+    [CHAINS.DOGE.id]: zeroAddress,
+  },
+  chainId: 2000,
+  name: 'DOGE',
+  symbol: 'DOGE',
+  decimals: 18,
+  icon: dogechainImg,
 }
