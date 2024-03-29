@@ -16,6 +16,7 @@ import {
 } from "./libs/InterchainTransaction.sol";
 import {OptionsLib, OptionsV1} from "./libs/Options.sol";
 import {TypeCasts} from "./libs/TypeCasts.sol";
+import {VersionedPayloadLib} from "./libs/VersionedPayload.sol";
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -26,6 +27,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainClientV1 {
     using AppConfigLib for bytes;
     using OptionsLib for bytes;
+    using VersionedPayloadLib for bytes;
 
     /// @notice Version of the InterchainClient contract. Sent and received transactions must have the same version.
     uint16 public constant CLIENT_VERSION = 1;
@@ -209,8 +211,11 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     }
 
     /// @notice Encodes the transaction data into a bytes format.
-    function encodeTransaction(InterchainTransaction memory icTx) external pure returns (bytes memory) {
-        return InterchainTransactionLib.encodeVersionedTransaction(CLIENT_VERSION, icTx);
+    function encodeTransaction(InterchainTransaction memory icTx) public pure returns (bytes memory) {
+        return VersionedPayloadLib.encodeVersionedPayload({
+            version: CLIENT_VERSION,
+            payload: InterchainTransactionLib.encodeTransaction(icTx)
+        });
     }
 
     // ═════════════════════════════════════════════════ INTERNAL ══════════════════════════════════════════════════════
@@ -245,7 +250,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
             options: options,
             message: message
         });
-        desc.transactionId = keccak256(InterchainTransactionLib.encodeVersionedTransaction(CLIENT_VERSION, icTx));
+        desc.transactionId = keccak256(encodeTransaction(icTx));
         // Sanity check: nonce returned from DB should match the nonce used to construct the transaction
         {
             (uint256 dbNonce, uint64 entryIndex) = IInterchainDB(INTERCHAIN_DB).writeEntryWithVerification{
@@ -362,15 +367,15 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     }
 
     /// @dev Asserts that the transaction version is correct. Returns the decoded transaction for chaining purposes.
-    function _assertCorrectVersion(bytes calldata encodedTx)
+    function _assertCorrectVersion(bytes calldata versionedTx)
         internal
         pure
         returns (InterchainTransaction memory icTx)
     {
-        uint16 version;
-        (version, icTx) = InterchainTransactionLib.decodeVersionedTransaction(encodedTx);
+        uint16 version = versionedTx.getVersion();
         if (version != CLIENT_VERSION) {
             revert InterchainClientV1__InvalidTransactionVersion(version);
         }
+        icTx = InterchainTransactionLib.decodeTransaction(versionedTx.getPayload());
     }
 }
