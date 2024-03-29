@@ -4,7 +4,7 @@ pragma solidity 0.8.20;
 import {InterchainModuleEvents} from "../../contracts/events/InterchainModuleEvents.sol";
 import {SynapseModuleEvents} from "../../contracts/events/SynapseModuleEvents.sol";
 import {IInterchainModule} from "../../contracts/interfaces/IInterchainModule.sol";
-import {InterchainBatch} from "../../contracts/libs/InterchainBatch.sol";
+import {InterchainBatch, InterchainBatchLib} from "../../contracts/libs/InterchainBatch.sol";
 import {SynapseModule, ISynapseModule} from "../../contracts/modules/SynapseModule.sol";
 
 import {SynapseGasOracleMock} from "../mocks/SynapseGasOracleMock.sol";
@@ -24,6 +24,8 @@ contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleE
 
     uint256 public constant SRC_CHAIN_ID = 1337;
     uint256 public constant DST_CHAIN_ID = 7331;
+
+    uint16 public constant MOCK_DB_VERSION = 42;
 
     uint256 public constant DEFAULT_GAS_LIMIT = 100_000;
 
@@ -52,10 +54,11 @@ contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleE
         );
     }
 
-    function mockRequestBatchVerification(uint256 msgValue, InterchainBatch memory batch) internal {
+    function requestBatchVerification(uint256 msgValue, InterchainBatch memory batch) internal {
+        bytes memory versionedBatch = InterchainBatchLib.encodeVersionedBatch(MOCK_DB_VERSION, batch);
         deal(interchainDB, msgValue);
         vm.prank(interchainDB);
-        module.requestBatchVerification{value: msgValue}(DST_CHAIN_ID, batch);
+        module.requestBatchVerification{value: msgValue}(DST_CHAIN_ID, versionedBatch);
     }
 
     function encodeAndHashBatch(InterchainBatch memory batch)
@@ -63,7 +66,8 @@ contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleE
         view
         returns (bytes memory encodedBatch, bytes32 ethSignedHash)
     {
-        encodedBatch = abi.encode(batch, mockModuleData);
+        bytes memory versionedBatch = InterchainBatchLib.encodeVersionedBatch(MOCK_DB_VERSION, batch);
+        encodedBatch = abi.encode(versionedBatch, mockModuleData);
         ethSignedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(encodedBatch)));
     }
 
@@ -79,12 +83,12 @@ contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleE
         (bytes memory encodedBatch, bytes32 ethSignedHash) = encodeAndHashBatch(mockBatch);
         vm.expectEmit(address(module));
         emit BatchVerificationRequested(DST_CHAIN_ID, encodedBatch, ethSignedHash);
-        mockRequestBatchVerification(FEE, mockBatch);
+        requestBatchVerification(FEE, mockBatch);
     }
 
     function test_requestVerification_accumulatesFee() public {
         deal(address(module), 5 ether);
-        mockRequestBatchVerification(FEE, mockBatch);
+        requestBatchVerification(FEE, mockBatch);
         assertEq(address(module).balance, 5 ether + FEE);
     }
 
@@ -92,12 +96,12 @@ contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleE
         (bytes memory encodedBatch, bytes32 ethSignedHash) = encodeAndHashBatch(mockBatch);
         vm.expectEmit(address(module));
         emit BatchVerificationRequested(DST_CHAIN_ID, encodedBatch, ethSignedHash);
-        mockRequestBatchVerification(FEE + 1, mockBatch);
+        requestBatchVerification(FEE + 1, mockBatch);
     }
 
     function test_requestVerification_feeAboveRequired_accumulatesFee() public {
         deal(address(module), 5 ether);
-        mockRequestBatchVerification(FEE + 1, mockBatch);
+        requestBatchVerification(FEE + 1, mockBatch);
         assertEq(address(module).balance, 5 ether + FEE + 1);
     }
 
@@ -105,7 +109,7 @@ contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleE
         vm.expectRevert(
             abi.encodeWithSelector(IInterchainModule.InterchainModule__InsufficientFee.selector, FEE - 1, FEE)
         );
-        mockRequestBatchVerification(FEE - 1, mockBatch);
+        requestBatchVerification(FEE - 1, mockBatch);
     }
 
     function test_claimFees_zeroClaimFee_emitsEvent() public {

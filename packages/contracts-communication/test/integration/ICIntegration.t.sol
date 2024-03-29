@@ -9,7 +9,7 @@ import {InterchainModuleEvents} from "../../contracts/events/InterchainModuleEve
 
 import {IInterchainApp} from "../../contracts/interfaces/IInterchainApp.sol";
 import {IInterchainClientV1} from "../../contracts/interfaces/IInterchainClientV1.sol";
-import {InterchainBatch} from "../../contracts/libs/InterchainBatch.sol";
+import {InterchainBatch, InterchainBatchLib} from "../../contracts/libs/InterchainBatch.sol";
 import {InterchainEntry} from "../../contracts/libs/InterchainEntry.sol";
 import {InterchainTransaction, InterchainTxDescriptor} from "../../contracts/libs/InterchainTransaction.sol";
 import {VersionedPayloadLib} from "../../contracts/libs/VersionedPayload.sol";
@@ -242,7 +242,8 @@ abstract contract ICIntegrationTest is
     }
 
     function getModuleBatch(InterchainBatch memory batch) internal pure returns (bytes memory) {
-        return ModuleBatchLib.encodeModuleBatch(batch, new bytes(0));
+        bytes memory versionedBatch = InterchainBatchLib.encodeVersionedBatch(DB_VERSION, batch);
+        return ModuleBatchLib.encodeVersionedModuleBatch(versionedBatch, new bytes(0));
     }
 
     function getInterchainBatch(InterchainEntry memory entry) internal pure returns (InterchainBatch memory) {
