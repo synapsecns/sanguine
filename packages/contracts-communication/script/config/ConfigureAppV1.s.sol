@@ -9,6 +9,7 @@ import {TypeCasts} from "../../contracts/libs/TypeCasts.sol";
 import {stdJson, SynapseScript} from "@synapsecns/solidity-devops/src/SynapseScript.sol";
 
 // solhint-disable code-complexity
+// solhint-disable custom-errors
 abstract contract ConfigureAppV1 is SynapseScript {
     using stdJson for string;
 
@@ -174,6 +175,7 @@ abstract contract ConfigureAppV1 is SynapseScript {
         }
     }
 
+    // solhint-disable-next-line no-empty-blocks
     function afterAppConfigured() internal virtual {}
 
     function contains(address[] memory array, address value) internal pure returns (bool) {
