@@ -5,6 +5,7 @@ import {SynapseModule} from "../../contracts/modules/SynapseModule.sol";
 
 import {stdJson, SynapseScript} from "@synapsecns/solidity-devops/src/SynapseScript.sol";
 
+// solhint-disable code-complexity
 contract ConfigureSynapseModule is SynapseScript {
     using stdJson for string;
 

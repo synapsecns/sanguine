@@ -159,3 +159,49 @@ func (t *TXSubmitterDBSuite) TestGetNonceStatus() {
 		}
 	})
 }
+
+func (t *TXSubmitterDBSuite) TestGetChainIDsByStatus() {
+	t.RunOnAllDBs(func(testDB db.Service) {
+		chainIDToStatus := map[int64]db.Status{
+			1: db.Pending,
+			3: db.Stored,
+			4: db.FailedSubmit,
+		}
+		expectedPendingChainIDs := []int64{1}
+
+		for _, mockAccount := range t.mockAccounts {
+			for _, backend := range t.testBackends {
+				manager := t.managers[backend.GetChainID()]
+
+				// create some test transactions
+				var txs []*types.Transaction
+				for i := 0; i < 50; i++ {
+					legacyTx := &types.LegacyTx{
+						To:    &mockAccount.Address,
+						Value: big.NewInt(0),
+						Nonce: uint64(i),
+					}
+					tx, err := manager.SignTx(types.NewTx(legacyTx), backend.Signer(), mockAccount.PrivateKey)
+					t.Require().NoError(err)
+					txs = append(txs, tx)
+				}
+
+				// put the transactions in the database
+				for _, tx := range txs {
+					err := testDB.PutTXS(t.GetTestContext(), db.NewTX(tx, chainIDToStatus[backend.GetBigChainID().Int64()], uuid.New().String()))
+					t.Require().NoError(err)
+				}
+			}
+
+			// check which chainIDs are stored with pending status
+			result, err := testDB.GetChainIDsByStatus(t.GetTestContext(), mockAccount.Address, db.Pending)
+			t.Require().NoError(err)
+
+			resultInt64 := make([]int64, len(result))
+			for i, chainID := range result {
+				resultInt64[i] = chainID.Int64()
+			}
+			t.Equal(expectedPendingChainIDs, resultInt64)
+		}
+	})
+}

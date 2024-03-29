@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.4.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.3.29...@synapsecns/sdk-router@0.4.0) (2024-03-29)
+
+
+### Features
+
+* **sdk-router:** Add Base to the list of supported RFQ chains ([#2398](https://github.com/synapsecns/sanguine/issues/2398)) ([0425595](https://github.com/synapsecns/sanguine/commit/0425595c026bbc698a5f8a9ffd8f500fd2db1ae9))
+
+
+
+
+
 ## [0.3.29](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.3.28...@synapsecns/sdk-router@0.3.29) (2024-03-21)
 
 **Note:** Version bump only for package @synapsecns/sdk-router

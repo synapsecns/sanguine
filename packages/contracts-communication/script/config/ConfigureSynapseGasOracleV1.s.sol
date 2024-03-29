@@ -5,6 +5,7 @@ import {SynapseGasOracleV1, ISynapseGasOracleV1} from "../../contracts/oracles/S
 
 import {stdJson, StringUtils, SynapseScript} from "@synapsecns/solidity-devops/src/SynapseScript.sol";
 
+// solhint-disable custom-errors
 contract ConfigureSynapseGasOracleV1 is SynapseScript {
     using stdJson for string;
     using StringUtils for *;
@@ -52,26 +53,27 @@ contract ConfigureSynapseGasOracleV1 is SynapseScript {
 
     function setRemoteGasData(uint256 chainId, string memory chain) internal withIndent {
         printLog(chain);
-        bytes memory chainConfig = config.parseRaw(string.concat(".", chain));
-        ISynapseGasOracleV1.RemoteGasData memory config = abi.decode(chainConfig, (ISynapseGasOracleV1.RemoteGasData));
+        bytes memory chainConfigRaw = config.parseRaw(string.concat(".", chain));
+        ISynapseGasOracleV1.RemoteGasData memory chainConfig =
+            abi.decode(chainConfigRaw, (ISynapseGasOracleV1.RemoteGasData));
         ISynapseGasOracleV1.RemoteGasData memory current = gasOracle.getRemoteGasData(chainId);
-        if (!equals(config, current)) {
-            gasOracle.setRemoteGasData(chainId, config);
+        if (!equals(chainConfig, current)) {
+            gasOracle.setRemoteGasData(chainId, chainConfig);
         }
-        string memory desc = string.concat(config.calldataPrice.fromFloat(9), " gwei");
-        if (current.calldataPrice != config.calldataPrice) {
+        string memory desc = string.concat(chainConfig.calldataPrice.fromFloat(9), " gwei");
+        if (current.calldataPrice != chainConfig.calldataPrice) {
             printSuccessWithIndent(string.concat("Set calldataPrice to ", desc));
         } else {
             printSkipWithIndent(string.concat("calldataPrice already set to ", desc));
         }
-        desc = string.concat(config.gasPrice.fromFloat(9), " gwei");
-        if (current.gasPrice != config.gasPrice) {
+        desc = string.concat(chainConfig.gasPrice.fromFloat(9), " gwei");
+        if (current.gasPrice != chainConfig.gasPrice) {
             printSuccessWithIndent(string.concat("Set gasPrice to ", desc));
         } else {
             printSkipWithIndent(string.concat("gasPrice already set to ", desc));
         }
-        desc = string.concat(config.nativePrice.fromWei(), " ETH");
-        if (current.nativePrice != config.nativePrice) {
+        desc = string.concat(chainConfig.nativePrice.fromWei(), " ETH");
+        if (current.nativePrice != chainConfig.nativePrice) {
             printSuccessWithIndent(string.concat("Set nativePrice to ", desc));
         } else {
             printSkipWithIndent(string.concat("nativePrice already set to ", desc));
