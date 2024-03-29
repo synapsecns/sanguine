@@ -10,6 +10,8 @@ import {LegacyOptionsLib} from "./libs/LegacyOptions.sol";
 import {ICAppV1, OptionsV1} from "../apps/ICAppV1.sol";
 import {TypeCasts} from "../libs/TypeCasts.sol";
 
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
+
 contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
     uint256 public messageLengthEstimate;
     uint64 public nonce;
@@ -41,7 +43,7 @@ contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
             message: message
         });
         _sendToLinkedApp({
-            dstChainId: dstChainId,
+            dstChainId: SafeCast.toUint64(dstChainId),
             messageFee: msg.value,
             options: _icOptionsV1(options),
             message: encodedLegacyMsg
@@ -80,12 +82,16 @@ contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
         view
         returns (uint256)
     {
-        return _getMessageFee({dstChainId: dstChainId, options: _icOptionsV1(options), messageLen: messageLen});
+        return _getMessageFee({
+            dstChainId: SafeCast.toUint64(dstChainId),
+            options: _icOptionsV1(options),
+            messageLen: messageLen
+        });
     }
 
     /// @dev Internal logic for receiving messages. At this point the validity of the message is already checked.
     function _receiveMessage(
-        uint256 srcChainId,
+        uint64 srcChainId,
         bytes32, // sender
         uint256, // dbNonce
         uint64, // entryIndex
