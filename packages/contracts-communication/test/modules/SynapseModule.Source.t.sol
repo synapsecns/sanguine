@@ -7,6 +7,8 @@ import {IInterchainModule} from "../../contracts/interfaces/IInterchainModule.so
 import {InterchainBatch, InterchainBatchLib} from "../../contracts/libs/InterchainBatch.sol";
 import {SynapseModule, ISynapseModule} from "../../contracts/modules/SynapseModule.sol";
 
+import {InterchainBatchLibHarness} from "../harnesses/InterchainBatchLibHarness.sol";
+import {VersionedPayloadLibHarness} from "../harnesses/VersionedPayloadLibHarness.sol";
 import {SynapseGasOracleMock} from "../mocks/SynapseGasOracleMock.sol";
 
 import {Test} from "forge-std/Test.sol";
@@ -14,6 +16,9 @@ import {Test} from "forge-std/Test.sol";
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
 contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleEvents {
+    InterchainBatchLibHarness public batchLibHarness;
+    VersionedPayloadLibHarness public payloadLibHarness;
+
     SynapseModule public module;
     SynapseGasOracleMock public gasOracle;
 
@@ -39,6 +44,8 @@ contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleE
         vm.chainId(SRC_CHAIN_ID);
         module = new SynapseModule(interchainDB, owner);
         gasOracle = new SynapseGasOracleMock();
+        batchLibHarness = new InterchainBatchLibHarness();
+        payloadLibHarness = new VersionedPayloadLibHarness();
         vm.startPrank(owner);
         module.setGasOracle(address(gasOracle));
         module.setFeeCollector(feeCollector);
@@ -54,8 +61,11 @@ contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleE
         );
     }
 
-    function requestBatchVerification(uint256 msgValue, InterchainBatch memory batch) internal {
-        bytes memory versionedBatch = InterchainBatchLib.encodeVersionedBatch(MOCK_DB_VERSION, batch);
+    function getVersionedBatch(InterchainBatch memory batch) internal view returns (bytes memory) {
+        return payloadLibHarness.encodeVersionedPayload(MOCK_DB_VERSION, batchLibHarness.encodeBatch(batch));
+    }
+
+    function requestBatchVerification(uint256 msgValue, bytes memory versionedBatch) internal {
         deal(interchainDB, msgValue);
         vm.prank(interchainDB);
         module.requestBatchVerification{value: msgValue}(DST_CHAIN_ID, versionedBatch);
@@ -66,7 +76,8 @@ contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleE
         view
         returns (bytes memory encodedBatch, bytes32 ethSignedHash)
     {
-        bytes memory versionedBatch = InterchainBatchLib.encodeVersionedBatch(MOCK_DB_VERSION, batch);
+        bytes memory versionedBatch =
+            payloadLibHarness.encodeVersionedPayload(MOCK_DB_VERSION, batchLibHarness.encodeBatch(batch));
         encodedBatch = abi.encode(versionedBatch, mockModuleData);
         ethSignedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(encodedBatch)));
     }
@@ -81,35 +92,40 @@ contract SynapseModuleSourceTest is Test, InterchainModuleEvents, SynapseModuleE
 
     function test_requestVerification_emitsEvent() public {
         (bytes memory encodedBatch, bytes32 ethSignedHash) = encodeAndHashBatch(mockBatch);
+        bytes memory versionedBatch = getVersionedBatch(mockBatch);
         vm.expectEmit(address(module));
         emit BatchVerificationRequested(DST_CHAIN_ID, encodedBatch, ethSignedHash);
-        requestBatchVerification(FEE, mockBatch);
+        requestBatchVerification(FEE, versionedBatch);
     }
 
     function test_requestVerification_accumulatesFee() public {
         deal(address(module), 5 ether);
-        requestBatchVerification(FEE, mockBatch);
+        bytes memory versionedBatch = getVersionedBatch(mockBatch);
+        requestBatchVerification(FEE, versionedBatch);
         assertEq(address(module).balance, 5 ether + FEE);
     }
 
     function test_requestVerification_feeAboveRequired_emitsEvent() public {
         (bytes memory encodedBatch, bytes32 ethSignedHash) = encodeAndHashBatch(mockBatch);
+        bytes memory versionedBatch = getVersionedBatch(mockBatch);
         vm.expectEmit(address(module));
         emit BatchVerificationRequested(DST_CHAIN_ID, encodedBatch, ethSignedHash);
-        requestBatchVerification(FEE + 1, mockBatch);
+        requestBatchVerification(FEE + 1, versionedBatch);
     }
 
     function test_requestVerification_feeAboveRequired_accumulatesFee() public {
         deal(address(module), 5 ether);
-        requestBatchVerification(FEE + 1, mockBatch);
+        bytes memory versionedBatch = getVersionedBatch(mockBatch);
+        requestBatchVerification(FEE + 1, versionedBatch);
         assertEq(address(module).balance, 5 ether + FEE + 1);
     }
 
     function test_requestVerification_revert_feeBelowRequired() public {
+        bytes memory versionedBatch = getVersionedBatch(mockBatch);
         vm.expectRevert(
             abi.encodeWithSelector(IInterchainModule.InterchainModule__InsufficientFee.selector, FEE - 1, FEE)
         );
-        requestBatchVerification(FEE - 1, mockBatch);
+        requestBatchVerification(FEE - 1, versionedBatch);
     }
 
     function test_claimFees_zeroClaimFee_emitsEvent() public {

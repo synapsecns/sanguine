@@ -12,6 +12,8 @@ import {SynapseGasOracleV1, ISynapseGasOracleV1} from "../../contracts/oracles/S
 
 import {TypeCasts} from "../../contracts/libs/TypeCasts.sol";
 
+import {InterchainBatchLibHarness} from "../harnesses/InterchainBatchLibHarness.sol";
+import {VersionedPayloadLibHarness} from "../harnesses/VersionedPayloadLibHarness.sol";
 import {ProxyTest} from "../proxy/ProxyTest.t.sol";
 
 // solhint-disable custom-errors
@@ -33,6 +35,9 @@ abstract contract ICSetup is ProxyTest {
     uint256 public constant APP_OPTIMISTIC_PERIOD = 10 minutes;
 
     uint256 public constant INITIAL_TS = 1_704_067_200; // 2024-01-01 00:00:00 UTC
+
+    InterchainBatchLibHarness public batchLibHarness;
+    VersionedPayloadLibHarness public payloadLibHarness;
 
     ExecutionFees public executionFees;
     address public executionServiceImpl;
@@ -56,10 +61,16 @@ abstract contract ICSetup is ProxyTest {
     function setUp() public virtual {
         vm.chainId(localChainId());
         vm.warp(INITIAL_TS);
+        deployLibraryHarnesses();
         deployInterchainContracts();
         configureInterchainContracts();
         initDBNonce();
         dealEther();
+    }
+
+    function deployLibraryHarnesses() internal virtual {
+        batchLibHarness = new InterchainBatchLibHarness();
+        payloadLibHarness = new VersionedPayloadLibHarness();
     }
 
     function deployInterchainContracts() internal virtual {

@@ -11,6 +11,8 @@ import {
     InterchainDBEvents
 } from "../contracts/InterchainDB.sol";
 
+import {InterchainBatchLibHarness} from "./harnesses/InterchainBatchLibHarness.sol";
+import {VersionedPayloadLibHarness} from "./harnesses/VersionedPayloadLibHarness.sol";
 import {InterchainModuleMock, IInterchainModule} from "./mocks/InterchainModuleMock.sol";
 
 import {Test} from "forge-std/Test.sol";
@@ -33,6 +35,9 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     uint256 public constant MODULE_A_FEE = 100;
     uint256 public constant MODULE_B_FEE = 200;
 
+    InterchainBatchLibHarness public batchLibHarness;
+    VersionedPayloadLibHarness public payloadLibHarness;
+
     InterchainDB public icDB;
     InterchainModuleMock public moduleA;
     InterchainModuleMock public moduleB;
@@ -52,6 +57,8 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         icDB = new InterchainDB();
         moduleA = new InterchainModuleMock();
         moduleB = new InterchainModuleMock();
+        batchLibHarness = new InterchainBatchLibHarness();
+        payloadLibHarness = new VersionedPayloadLibHarness();
         oneModule.push(address(moduleA));
         twoModules.push(address(moduleA));
         twoModules.push(address(moduleB));
@@ -93,10 +100,13 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         });
     }
 
-    function getModuleCalldata(InterchainEntry memory entry) internal pure returns (bytes memory) {
+    function getModuleCalldata(InterchainEntry memory entry) internal view returns (bytes memory) {
         bytes32 batchRoot = keccak256(abi.encode(entry.srcWriter, entry.dataHash));
-        bytes memory versionedBatch = InterchainBatchLib.encodeVersionedBatch(
-            DB_VERSION, InterchainBatch({srcChainId: entry.srcChainId, dbNonce: entry.dbNonce, batchRoot: batchRoot})
+        bytes memory versionedBatch = payloadLibHarness.encodeVersionedPayload(
+            DB_VERSION,
+            batchLibHarness.encodeBatch(
+                InterchainBatch({srcChainId: entry.srcChainId, dbNonce: entry.dbNonce, batchRoot: batchRoot})
+            )
         );
         return abi.encodeCall(IInterchainModule.requestBatchVerification, (DST_CHAIN_ID, versionedBatch));
     }
