@@ -7,7 +7,6 @@ import {OptionsV1} from "../contracts/libs/Options.sol";
 import {VersionedPayloadLib} from "../contracts/libs/VersionedPayload.sol";
 
 import {
-    InterchainClientV1,
     InterchainClientV1BaseTest,
     InterchainTransaction,
     InterchainTxDescriptor
