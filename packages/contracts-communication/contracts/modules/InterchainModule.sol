@@ -7,11 +7,14 @@ import {IInterchainModule} from "../interfaces/IInterchainModule.sol";
 
 import {InterchainBatch, InterchainBatchLib} from "../libs/InterchainBatch.sol";
 import {ModuleBatchLib} from "../libs/ModuleBatch.sol";
+import {VersionedPayloadLib} from "../libs/VersionedPayload.sol";
 
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 /// @notice Common logic for all Interchain Modules.
 abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule {
+    using VersionedPayloadLib for bytes;
+
     address public immutable INTERCHAIN_DB;
 
     constructor(address interchainDB) {
@@ -23,7 +26,7 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
         if (msg.sender != INTERCHAIN_DB) {
             revert InterchainModule__NotInterchainDB(msg.sender);
         }
-        (, InterchainBatch memory batch) = InterchainBatchLib.decodeVersionedBatch(versionedBatch);
+        InterchainBatch memory batch = InterchainBatchLib.decodeBatch(versionedBatch.getPayload());
         if (dstChainId == block.chainid) {
             revert InterchainModule__SameChainId(block.chainid);
         }
@@ -51,7 +54,7 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
     function _verifyBatch(bytes memory encodedModuleBatch) internal {
         (bytes memory versionedBatch, bytes memory moduleData) =
             ModuleBatchLib.decodeVersionedModuleBatch(encodedModuleBatch);
-        (, InterchainBatch memory batch) = InterchainBatchLib.decodeVersionedBatchFromMemory(versionedBatch);
+        InterchainBatch memory batch = InterchainBatchLib.decodeBatchFromMemory(versionedBatch.getPayloadFromMemory());
         if (batch.srcChainId == block.chainid) {
             revert InterchainModule__SameChainId(block.chainid);
         }
