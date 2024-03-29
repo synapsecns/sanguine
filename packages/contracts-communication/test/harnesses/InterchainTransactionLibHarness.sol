@@ -30,6 +30,25 @@ contract InterchainTransactionLibHarness {
         return InterchainTransactionLib.decodeTransaction(encodedTx);
     }
 
+    function encodeVersionedTransaction(
+        uint16 clientVersion,
+        InterchainTransaction memory transaction
+    )
+        external
+        pure
+        returns (bytes memory)
+    {
+        return InterchainTransactionLib.encodeVersionedTransaction(clientVersion, transaction);
+    }
+
+    function decodeVersionedTransaction(bytes calldata encodedTx)
+        external
+        pure
+        returns (uint16, InterchainTransaction memory)
+    {
+        return InterchainTransactionLib.decodeVersionedTransaction(encodedTx);
+    }
+
     function payloadSize(uint256 optionsLen, uint256 messageLen) external pure returns (uint256) {
         return InterchainTransactionLib.payloadSize(optionsLen, messageLen);
     }
