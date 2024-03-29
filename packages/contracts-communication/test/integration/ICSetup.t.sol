@@ -187,7 +187,7 @@ abstract contract ICSetup is ProxyTest {
     }
 
     /// @notice Should return either `SRC_CHAIN_ID` or `DST_CHAIN_ID`.
-    function localChainId() internal view virtual returns (uint256);
+    function localChainId() internal view virtual returns (uint64);
     /// @notice Should return either `SRC_CHAIN_ID` or `DST_CHAIN_ID`.
-    function remoteChainId() internal view virtual returns (uint256);
+    function remoteChainId() internal view virtual returns (uint64);
 }

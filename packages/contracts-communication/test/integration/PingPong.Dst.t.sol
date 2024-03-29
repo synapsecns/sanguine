@@ -225,11 +225,11 @@ contract PingPongDstIntegrationTest is ICIntegrationTest {
         icClient.isExecutable(encodedSrcTx, new bytes32[](0));
     }
 
-    function localChainId() internal pure override returns (uint256) {
+    function localChainId() internal pure override returns (uint64) {
         return DST_CHAIN_ID;
     }
 
-    function remoteChainId() internal pure override returns (uint256) {
+    function remoteChainId() internal pure override returns (uint64) {
         return SRC_CHAIN_ID;
     }
 }

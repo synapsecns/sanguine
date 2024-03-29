@@ -119,7 +119,7 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
 
     /// @inheritdoc IGasOracle
     function convertRemoteValueToLocalUnits(
-        uint256 remoteChainId,
+        uint64 remoteChainId,
         uint256 value
     )
         external
@@ -134,7 +134,7 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
 
     /// @inheritdoc IGasOracle
     function estimateTxCostInLocalUnits(
-        uint256 remoteChainId,
+        uint64 remoteChainId,
         uint256 gasLimit,
         uint256 calldataSize
     )
@@ -151,7 +151,7 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
 
     /// @inheritdoc IGasOracle
     function estimateTxCostInRemoteUnits(
-        uint256 remoteChainId,
+        uint64 remoteChainId,
         uint256 gasLimit,
         uint256 calldataSize
     )
@@ -204,7 +204,7 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
     /// @dev Converts value denominated in remote chain's units to local chain's units.
     /// Note: the check for non-zero remote native token price is done outside this function.
     function _convertRemoteValueToLocalUnits(
-        uint256 remoteChainId,
+        uint64 remoteChainId,
         uint256 remoteValue
     )
         internal
@@ -220,7 +220,7 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
     /// @dev Estimates the transaction cost in remote chain's units.
     /// Note: the check for non-zero remote native token price is done outside this function.
     function _estimateTxCostInRemoteUnits(
-        uint256 remoteChainId,
+        uint64 remoteChainId,
         uint256 gasLimit,
         uint256 calldataSize
     )
