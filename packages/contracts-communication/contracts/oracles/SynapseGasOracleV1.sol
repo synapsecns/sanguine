@@ -9,10 +9,10 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOracleV1 {
     uint256 internal _localNativePrice;
-    mapping(uint256 chainId => RemoteGasData data) internal _remoteGasData;
+    mapping(uint64 chainId => RemoteGasData data) internal _remoteGasData;
 
     /// @dev Checks that the chain ID is not the local chain ID.
-    modifier onlyRemoteChainId(uint256 chainId) {
+    modifier onlyRemoteChainId(uint64 chainId) {
         if (block.chainid == chainId) {
             revert SynapseGasOracleV1__NotRemoteChainId(chainId);
         }
@@ -20,7 +20,7 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
     }
 
     /// @dev Checks that the native token price is set for a remote chain ID.
-    modifier onlyNativePriceSet(uint256 chainId) {
+    modifier onlyNativePriceSet(uint64 chainId) {
         if (_remoteGasData[chainId].nativePrice == 0) {
             revert SynapseGasOracleV1__NativePriceNotSet(chainId);
         }
@@ -49,7 +49,7 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
 
     /// @inheritdoc ISynapseGasOracleV1
     function setRemoteGasData(
-        uint256 chainId,
+        uint64 chainId,
         RemoteGasData memory data
     )
         external
@@ -64,7 +64,7 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
 
     /// @inheritdoc ISynapseGasOracleV1
     function setRemoteCallDataPrice(
-        uint256 chainId,
+        uint64 chainId,
         uint256 calldataPrice
     )
         external
@@ -77,7 +77,7 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
 
     /// @inheritdoc ISynapseGasOracleV1
     function setRemoteGasPrice(
-        uint256 chainId,
+        uint64 chainId,
         uint256 gasPrice
     )
         external
@@ -90,7 +90,7 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
 
     /// @inheritdoc ISynapseGasOracleV1
     function setRemoteNativePrice(
-        uint256 chainId,
+        uint64 chainId,
         uint256 nativePrice
     )
         external
@@ -171,14 +171,14 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
     }
 
     /// @inheritdoc ISynapseGasOracleV1
-    function getRemoteGasData(uint256 chainId) external view returns (RemoteGasData memory) {
+    function getRemoteGasData(uint64 chainId) external view returns (RemoteGasData memory) {
         return _remoteGasData[chainId];
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
     /// @dev Updates the calldata price for the given remote chain, no-op if the price is already set.
-    function _setRemoteCallDataPrice(uint256 chainId, uint256 calldataPrice) internal {
+    function _setRemoteCallDataPrice(uint64 chainId, uint256 calldataPrice) internal {
         if (_remoteGasData[chainId].calldataPrice != calldataPrice) {
             _remoteGasData[chainId].calldataPrice = calldataPrice;
             emit CalldataPriceSet(chainId, calldataPrice);
@@ -186,7 +186,7 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
     }
 
     /// @dev Updates the gas price for the given remote chain, no-op if the price is already set.
-    function _setRemoteGasPrice(uint256 chainId, uint256 gasPrice) internal {
+    function _setRemoteGasPrice(uint64 chainId, uint256 gasPrice) internal {
         if (_remoteGasData[chainId].gasPrice != gasPrice) {
             _remoteGasData[chainId].gasPrice = gasPrice;
             emit GasPriceSet(chainId, gasPrice);
@@ -194,7 +194,7 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
     }
 
     /// @dev Updates the native token price for the given remote chain, no-op if the price is already set.
-    function _setRemoteNativePrice(uint256 chainId, uint256 nativePrice) internal {
+    function _setRemoteNativePrice(uint64 chainId, uint256 nativePrice) internal {
         if (_remoteGasData[chainId].nativePrice != nativePrice) {
             _remoteGasData[chainId].nativePrice = nativePrice;
             emit NativePriceSet(chainId, nativePrice);

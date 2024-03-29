@@ -223,7 +223,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__InvalidBatchVersion.selector, version));
     }
 
-    function expectSameChainId(uint256 chainId) internal {
+    function expectSameChainId(uint64 chainId) internal {
         vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__SameChainId.selector, chainId));
     }
 

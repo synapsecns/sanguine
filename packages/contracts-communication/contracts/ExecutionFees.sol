@@ -11,13 +11,13 @@ contract ExecutionFees is AccessControl, ExecutionFeesEvents, IExecutionFees {
     bytes32 public constant RECORDER_ROLE = keccak256("RECORDER_ROLE");
 
     /// @inheritdoc IExecutionFees
-    mapping(uint256 chainId => mapping(bytes32 transactionId => uint256 fee)) public executionFee;
+    mapping(uint64 chainId => mapping(bytes32 transactionId => uint256 fee)) public executionFee;
     /// @inheritdoc IExecutionFees
     mapping(address executor => uint256 totalAccumulated) public accumulatedRewards;
     /// @inheritdoc IExecutionFees
     mapping(address executor => uint256 totalClaimed) public unclaimedRewards;
     /// @inheritdoc IExecutionFees
-    mapping(uint256 chainId => mapping(bytes32 transactionId => address executor)) public recordedExecutor;
+    mapping(uint64 chainId => mapping(bytes32 transactionId => address executor)) public recordedExecutor;
 
     constructor(address admin) {
         _grantRole(DEFAULT_ADMIN_ROLE, admin);

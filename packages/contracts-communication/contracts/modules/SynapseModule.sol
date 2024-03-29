@@ -25,11 +25,11 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     /// @dev Claim fee fraction, 100% = 1e18
     uint256 internal _claimFeeFraction;
     /// @dev Gas limit for the verifyBatch function on the remote chain.
-    mapping(uint256 chainId => uint256 gasLimit) internal _verifyGasLimit;
+    mapping(uint64 chainId => uint256 gasLimit) internal _verifyGasLimit;
     /// @dev Hash of the last gas data sent to the remote chain.
-    mapping(uint256 chainId => bytes32 gasDataHash) internal _lastGasDataHash;
+    mapping(uint64 chainId => bytes32 gasDataHash) internal _lastGasDataHash;
     /// @dev Nonce of the last gas data received from the remote chain.
-    mapping(uint256 chainId => uint256 gasDataNonce) internal _lastGasDataNonce;
+    mapping(uint64 chainId => uint256 gasDataNonce) internal _lastGasDataNonce;
 
     /// @inheritdoc ISynapseModule
     address public feeCollector;
@@ -99,7 +99,7 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     }
 
     /// @inheritdoc ISynapseModule
-    function setVerifyGasLimit(uint256 chainId, uint256 gasLimit) external onlyOwner {
+    function setVerifyGasLimit(uint64 chainId, uint256 gasLimit) external onlyOwner {
         _verifyGasLimit[chainId] = gasLimit;
         emit VerifyGasLimitChanged(chainId, gasLimit);
     }
@@ -156,7 +156,7 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     }
 
     /// @inheritdoc ISynapseModule
-    function getVerifyGasLimit(uint256 chainId) public view override returns (uint256 gasLimit) {
+    function getVerifyGasLimit(uint64 chainId) public view override returns (uint256 gasLimit) {
         gasLimit = _verifyGasLimit[chainId];
         if (gasLimit == 0) {
             gasLimit = DEFAULT_VERIFY_GAS_LIMIT;

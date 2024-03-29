@@ -7,7 +7,7 @@ import {IInterchainClientV1, InterchainTxDescriptor} from "../../contracts/inter
 contract InterchainClientV1Mock is IInterchainClientV1 {
     function setExecutionFees(address executionFees_) external {}
 
-    function setLinkedClient(uint256 chainId, bytes32 client) external {}
+    function setLinkedClient(uint64 chainId, bytes32 client) external {}
 
     function interchainSend(
         uint64 dstChainId,
@@ -64,7 +64,7 @@ contract InterchainClientV1Mock is IInterchainClientV1 {
 
     function getExecutorById(bytes32 transactionId) external view returns (address) {}
 
-    function getLinkedClient(uint256 chainId) external view returns (bytes32) {}
+    function getLinkedClient(uint64 chainId) external view returns (bytes32) {}
 
-    function getLinkedClientEVM(uint256 chainId) external view returns (address) {}
+    function getLinkedClientEVM(uint64 chainId) external view returns (address) {}
 }

@@ -61,7 +61,7 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         icClient.setExecutionFees(executionFees);
     }
 
-    function setLinkedClient(uint256 chainId, bytes32 client) public {
+    function setLinkedClient(uint64 chainId, bytes32 client) public {
         vm.prank(owner);
         icClient.setLinkedClient(chainId, client);
     }
@@ -74,7 +74,7 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         );
     }
 
-    function expectRevertIncorrectDstChainId(uint256 chainId) internal {
+    function expectRevertIncorrectDstChainId(uint64 chainId) internal {
         vm.expectRevert(
             abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__IncorrectDstChainId.selector, chainId)
         );
@@ -92,7 +92,7 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         );
     }
 
-    function expectRevertNoLinkedClient(uint256 chainId) internal {
+    function expectRevertNoLinkedClient(uint64 chainId) internal {
         vm.expectRevert(
             abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__NoLinkedClient.selector, chainId)
         );
@@ -110,7 +110,7 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         vm.expectRevert(abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__NotEVMClient.selector, client));
     }
 
-    function expectRevertNotRemoteChainId(uint256 chainId) internal {
+    function expectRevertNotRemoteChainId(uint64 chainId) internal {
         vm.expectRevert(
             abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__NotRemoteChainId.selector, chainId)
         );
@@ -151,7 +151,7 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         emit ExecutionFeesSet(executionFees);
     }
 
-    function expectEventLinkedClientSet(uint256 chainId, bytes32 client) internal {
+    function expectEventLinkedClientSet(uint64 chainId, bytes32 client) internal {
         vm.expectEmit(address(icClient));
         emit LinkedClientSet(chainId, client);
     }

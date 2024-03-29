@@ -155,7 +155,7 @@ abstract contract ICSetup is ProxyTest {
         deal(address(pingPongApp), PING_PONG_BALANCE);
     }
 
-    function getGasDataFixture(uint256 chainId)
+    function getGasDataFixture(uint64 chainId)
         internal
         view
         virtual
@@ -176,7 +176,7 @@ abstract contract ICSetup is ProxyTest {
         return isSourceChain(localChainId());
     }
 
-    function isSourceChain(uint256 chainId) internal pure returns (bool) {
+    function isSourceChain(uint64 chainId) internal pure returns (bool) {
         if (chainId == SRC_CHAIN_ID) {
             return true;
         } else if (chainId == DST_CHAIN_ID) {

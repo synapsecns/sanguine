@@ -43,7 +43,7 @@ abstract contract ConfigureAppV1 is SynapseScript {
         string[] memory chains = config.readStringArray(".chains");
         for (uint256 i = 0; i < chains.length; i++) {
             string memory chain = chains[i];
-            uint256 chainId = chainIds[chain];
+            uint64 chainId = chainIds[chain];
             require(chainId != 0, string.concat("Chain not found: ", chain));
             // Skip current chain
             if (chainId == blockChainId()) continue;

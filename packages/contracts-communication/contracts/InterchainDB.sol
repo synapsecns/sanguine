@@ -17,7 +17,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     bytes32[] internal _entryValues;
     mapping(address module => mapping(bytes32 batchKey => RemoteBatch batch)) internal _remoteBatches;
 
-    modifier onlyRemoteChainId(uint256 chainId) {
+    modifier onlyRemoteChainId(uint64 chainId) {
         if (chainId == block.chainid) {
             revert InterchainDB__SameChainId(block.chainid);
         }

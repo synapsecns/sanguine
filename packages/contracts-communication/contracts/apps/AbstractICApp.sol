@@ -17,8 +17,8 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
     error InterchainApp__ClientAlreadyAdded(address client);
     error InterchainApp__InterchainClientZeroAddress();
     error InterchainApp__NotInterchainClient(address account);
-    error InterchainApp__ReceiverNotSet(uint256 chainId);
-    error InterchainApp__SameChainId(uint256 chainId);
+    error InterchainApp__ReceiverNotSet(uint64 chainId);
+    error InterchainApp__SameChainId(uint64 chainId);
     error InterchainApp__SenderNotAllowed(uint64 srcChainId, bytes32 sender);
 
     /// @inheritdoc IInterchainApp

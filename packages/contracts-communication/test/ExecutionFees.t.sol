@@ -26,12 +26,12 @@ contract ExecutionFeesTest is ExecutionFeesEvents, Test {
         executionFees.grantRole(recorderRole, icClient);
     }
 
-    function addExecutionFee(uint256 fee, uint256 chainId, bytes32 txId) internal {
+    function addExecutionFee(uint256 fee, uint64 chainId, bytes32 txId) internal {
         vm.deal(address(this), fee);
         executionFees.addExecutionFee{value: fee}(chainId, txId);
     }
 
-    function recordExecutor(uint256 chainId, bytes32 txId, address executorAddr) internal {
+    function recordExecutor(uint64 chainId, bytes32 txId, address executorAddr) internal {
         vm.prank(address(icClient));
         executionFees.recordExecutor(chainId, txId, executorAddr);
     }

@@ -22,7 +22,7 @@ interface IInterchainDB {
     error InterchainDB__InvalidBatchVersion(uint16 version);
     error InterchainDB__InvalidEntryRange(uint256 dbNonce, uint64 start, uint64 end);
     error InterchainDB__NoModulesSpecified();
-    error InterchainDB__SameChainId(uint256 chainId);
+    error InterchainDB__SameChainId(uint64 chainId);
 
     /// @notice Write data to the Interchain DataBase as a new entry in the current batch.
     /// Note: there are no guarantees that this entry will be available for reading on any of the remote chains.

@@ -5,13 +5,13 @@ import {InterchainTxDescriptor} from "../libs/InterchainTransaction.sol";
 
 interface IInterchainClientV1 {
     error InterchainClientV1__FeeAmountTooLow(uint256 actual, uint256 required);
-    error InterchainClientV1__IncorrectDstChainId(uint256 chainId);
+    error InterchainClientV1__IncorrectDstChainId(uint64 chainId);
     error InterchainClientV1__IncorrectMsgValue(uint256 actual, uint256 required);
     error InterchainClientV1__InvalidTransactionVersion(uint16 version);
-    error InterchainClientV1__NoLinkedClient(uint256 chainId);
+    error InterchainClientV1__NoLinkedClient(uint64 chainId);
     error InterchainClientV1__NotEnoughResponses(uint256 actual, uint256 required);
     error InterchainClientV1__NotEVMClient(bytes32 client);
-    error InterchainClientV1__NotRemoteChainId(uint256 chainId);
+    error InterchainClientV1__NotRemoteChainId(uint64 chainId);
     error InterchainClientV1__TxAlreadyExecuted(bytes32 transactionId);
     error InterchainClientV1__TxNotExecuted(bytes32 transactionId);
     error InterchainClientV1__ZeroReceiver();
@@ -30,7 +30,7 @@ interface IInterchainClientV1 {
      * @param chainId The chain ID for which the client is being set.
      * @param client The address of the client being linked.
      */
-    function setLinkedClient(uint256 chainId, bytes32 client) external;
+    function setLinkedClient(uint64 chainId, bytes32 client) external;
 
     /**
      * @notice Sends a message to another chain via the Interchain Communication Protocol.
@@ -137,10 +137,10 @@ interface IInterchainClientV1 {
 
     /// @notice Returns the address of the linked client (as bytes32) for a specific chain ID.
     /// @dev Will return 0x0 if no client is linked for the chain ID.
-    function getLinkedClient(uint256 chainId) external view returns (bytes32);
+    function getLinkedClient(uint64 chainId) external view returns (bytes32);
 
     /// @notice Returns the EVM address of the linked client for a specific chain ID.
     /// @dev Will return 0x0 if no client is linked for the chain ID.
     /// Will revert if the client is not an EVM client.
-    function getLinkedClientEVM(uint256 chainId) external view returns (address);
+    function getLinkedClientEVM(uint64 chainId) external view returns (address);
 }

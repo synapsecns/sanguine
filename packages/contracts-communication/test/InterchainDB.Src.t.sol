@@ -200,7 +200,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         vm.expectRevert(IInterchainDB.InterchainDB__NoModulesSpecified.selector);
     }
 
-    function expectRevertSameChainId(uint256 chainId) internal {
+    function expectRevertSameChainId(uint64 chainId) internal {
         vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__SameChainId.selector, chainId));
     }
 

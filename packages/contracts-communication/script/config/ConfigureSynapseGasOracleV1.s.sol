@@ -43,7 +43,7 @@ contract ConfigureSynapseGasOracleV1 is SynapseScript {
         string[] memory chains = vm.parseJsonKeys(config, ".");
         for (uint256 i = 0; i < chains.length; i++) {
             string memory chain = chains[i];
-            uint256 chainId = chainIds[chain];
+            uint64 chainId = chainIds[chain];
             require(chainId != 0, string.concat("Chain not found: ", chain));
             // Skip current chain
             if (chainId == blockChainId()) continue;
@@ -51,7 +51,7 @@ contract ConfigureSynapseGasOracleV1 is SynapseScript {
         }
     }
 
-    function setRemoteGasData(uint256 chainId, string memory chain) internal withIndent {
+    function setRemoteGasData(uint64 chainId, string memory chain) internal withIndent {
         printLog(chain);
         bytes memory chainConfigRaw = config.parseRaw(string.concat(".", chain));
         ISynapseGasOracleV1.RemoteGasData memory chainConfig =

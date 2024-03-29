@@ -50,13 +50,13 @@ contract SynapseGasOracleV1GettersTest is Test {
         oracle = new SynapseGasOracleV1(address(this));
     }
 
-    function expectRevertNotRemoteChainId(uint256 chainId) internal {
+    function expectRevertNotRemoteChainId(uint64 chainId) internal {
         vm.expectRevert(
             abi.encodeWithSelector(ISynapseGasOracleV1.SynapseGasOracleV1__NotRemoteChainId.selector, chainId)
         );
     }
 
-    function expectRevertNativePriceNotSet(uint256 chainId) internal {
+    function expectRevertNativePriceNotSet(uint64 chainId) internal {
         vm.expectRevert(
             abi.encodeWithSelector(ISynapseGasOracleV1.SynapseGasOracleV1__NativePriceNotSet.selector, chainId)
         );

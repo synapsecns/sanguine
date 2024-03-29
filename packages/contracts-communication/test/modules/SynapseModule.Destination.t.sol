@@ -161,7 +161,7 @@ contract SynapseModuleDestinationTest is Test, InterchainModuleEvents, SynapseMo
         vm.expectRevert(ThresholdECDSALib.ThresholdECDSA__RecoveredSignersNotSorted.selector);
     }
 
-    function expectRevertSameChainId(uint256 chainId) internal {
+    function expectRevertSameChainId(uint64 chainId) internal {
         vm.expectRevert(abi.encodeWithSelector(IInterchainModule.InterchainModule__SameChainId.selector, chainId));
     }
 

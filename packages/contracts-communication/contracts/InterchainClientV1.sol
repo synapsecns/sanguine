@@ -39,7 +39,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     address public executionFees;
 
     /// @dev Address of the InterchainClient contract on the remote chain
-    mapping(uint256 chainId => bytes32 remoteClient) internal _linkedClient;
+    mapping(uint64 chainId => bytes32 remoteClient) internal _linkedClient;
     /// @dev Executor address that completed the transaction. Address(0) if not executed yet.
     mapping(bytes32 transactionId => address executor) internal _txExecutor;
 
@@ -54,7 +54,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     }
 
     // @inheritdoc IInterchainClientV1
-    function setLinkedClient(uint256 chainId, bytes32 client) external onlyOwner {
+    function setLinkedClient(uint64 chainId, bytes32 client) external onlyOwner {
         _linkedClient[chainId] = client;
         emit LinkedClientSet(chainId, client);
     }
@@ -185,7 +185,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     }
 
     /// @inheritdoc IInterchainClientV1
-    function getLinkedClient(uint256 chainId) external view returns (bytes32) {
+    function getLinkedClient(uint64 chainId) external view returns (bytes32) {
         if (chainId == block.chainid) {
             revert InterchainClientV1__NotRemoteChainId(chainId);
         }
@@ -193,7 +193,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     }
 
     /// @inheritdoc IInterchainClientV1
-    function getLinkedClientEVM(uint256 chainId) external view returns (address linkedClientEVM) {
+    function getLinkedClientEVM(uint64 chainId) external view returns (address linkedClientEVM) {
         if (chainId == block.chainid) {
             revert InterchainClientV1__NotRemoteChainId(chainId);
         }
@@ -330,7 +330,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     }
 
     /// @dev Asserts that the chain is linked and returns the linked client address.
-    function _assertLinkedClient(uint256 chainId) internal view returns (bytes32 linkedClient) {
+    function _assertLinkedClient(uint64 chainId) internal view returns (bytes32 linkedClient) {
         if (chainId == block.chainid) {
             revert InterchainClientV1__NotRemoteChainId(chainId);
         }
