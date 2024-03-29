@@ -15,8 +15,8 @@ export const SelectorWrapper = ({
   selectedItem,
   children,
   searchStr,
-  setSearchStr,
   onClose,
+  onSearch,
   hover,
   setHover,
 }) => {
@@ -51,10 +51,6 @@ export const SelectorWrapper = ({
     if (escPressed) {
       onClose()
     }
-  }
-
-  const onSearch = (str: string) => {
-    setSearchStr(str)
   }
 
   useEffect(escFunc, [escPressed])

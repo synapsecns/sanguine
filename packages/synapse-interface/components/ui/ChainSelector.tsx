@@ -57,6 +57,11 @@ export function ChainSelector({
     setHover(false)
   }
 
+  const onSearch = (str: string) => {
+    setSearchStr(str)
+    setCurrentIdx(-1)
+  }
+
   const arrowUp = useKeyPress('ArrowUp', hover)
   const arrowDown = useKeyPress('ArrowDown', hover)
   const enterPress = useKeyPress('Enter', hover)
@@ -100,7 +105,7 @@ export function ChainSelector({
       placeholder={placeholder ?? 'Network'}
       selectedItem={selectedItem}
       searchStr={searchStr}
-      setSearchStr={setSearchStr}
+      onSearch={onSearch}
       hover={hover}
       setHover={setHover}
       onClose={onClose}
