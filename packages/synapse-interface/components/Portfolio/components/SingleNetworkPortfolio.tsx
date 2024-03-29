@@ -19,6 +19,7 @@ import { TWITTER_URL, DISCORD_URL } from '@/constants/urls'
 import { setFromToken, setToToken } from '@/slices/bridge/reducer'
 import { PortfolioTokenVisualizer } from './PortfolioTokenVisualizer'
 import { PortfolioNetwork } from './PortfolioNetwork'
+import { GAS_TOKENS } from '@/constants/tokens'
 
 type SingleNetworkPortfolioProps = {
   connectedAddress: Address
@@ -28,6 +29,34 @@ type SingleNetworkPortfolioProps = {
   portfolioTokens: TokenAndBalance[]
   initializeExpanded: boolean
   fetchState: FetchState
+}
+
+const filterOutGasTokens = (
+  tokens: TokenAndBalance[],
+  chainId: number
+): [TokenAndBalance[], TokenAndBalance[]] => {
+  const gasTokens = GAS_TOKENS[chainId]
+
+  // const filteredGasTokensList = gasTokens.filter(
+  //   (token) => token.chainId === chainId
+  // )
+
+  const gasTokenAddresses = gasTokens.flatMap((token) =>
+    Object.values(token.addresses)
+  )
+
+  const filteredGasTokens: TokenAndBalance[] = []
+  const remainingTokens: TokenAndBalance[] = []
+
+  tokens.forEach((token) => {
+    if (gasTokenAddresses.includes(token.tokenAddress)) {
+      filteredGasTokens.push(token)
+    } else {
+      remainingTokens.push(token)
+    }
+  })
+
+  return [filteredGasTokens, remainingTokens]
 }
 
 export const SingleNetworkPortfolio = ({
@@ -49,7 +78,13 @@ export const SingleNetworkPortfolio = ({
   const sortedTokens = sortTokensByBalanceDescending(portfolioTokens)
 
   if (portfolioChainId === 56) {
+    console.log('GAS_TOKENS: ', GAS_TOKENS[portfolioChainId])
     console.log('sortedTokens:', sortedTokens)
+    console.log('portfolioTokens:', portfolioTokens)
+
+    const filteredTokens = filterOutGasTokens(sortedTokens, portfolioChainId)
+
+    console.log('filteredTokens:', filteredTokens)
   }
 
   const hasNoTokenBalance: boolean =
