@@ -17,3 +17,4 @@ shift 1
 yarn fsr script/ConfigureFastBridge.s.sol arbitrum "$walletName" "$@"
 yarn fsr script/ConfigureFastBridge.s.sol mainnet "$walletName" "$@"
 yarn fsr script/ConfigureFastBridge.s.sol optimism "$walletName" "$@"
+yarn fsr script/ConfigureFastBridge.s.sol base "$walletName" "$@"
