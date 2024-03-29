@@ -5,6 +5,7 @@ import {SynapseGasOracleV1, ISynapseGasOracleV1} from "../../contracts/oracles/S
 
 import {stdJson, StringUtils, SynapseScript} from "@synapsecns/solidity-devops/src/SynapseScript.sol";
 
+// solhint-disable custom-errors
 contract ConfigureSynapseGasOracleV1 is SynapseScript {
     using stdJson for string;
     using StringUtils for *;
