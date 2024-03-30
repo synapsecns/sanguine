@@ -19,7 +19,7 @@ const begin = {
     anchor: 0.5,
     bridge: 1,
     barge: 4,
-    balloon: 4,
+    balloon: 6,
   },
   green: {
     platform: 0.1,
@@ -243,6 +243,7 @@ const LandingPage = () => {
           {/* {`@keyframes circlePulse { from { r: 50; } to { r: 100; } }`} */}
         </style>
         <defs></defs>
+
         <path {...paint('synapse')}>
           <animate
             id="simpleBridgeNe"
@@ -281,16 +282,59 @@ const LandingPage = () => {
             {...animAttrs()}
           />
         </path>
-        <path
-          id="airpad1"
-          d="m200,-200 60,30 -60,30 -60,-30z"
-          {...paint('synapse')}
-        />
-        <path
-          id="airpad2"
-          d="m200,-60 60,30 -60,30 -60,-30z"
-          {...paint('synapse')}
-        ></path>
+
+        <path {...paint('synapse')}>
+          <animate
+            id="airpad1"
+            attributeName="d"
+            dur=".5s"
+            values="m200,-170 0,0 -0,0 -0,-0z; m200,-200 60,30 -60,30 -60,-30z"
+            begin={begin.blue.balloon}
+            {...animAttrs()}
+          />
+          <animate
+            attributeName="opacity"
+            values="0;1"
+            repeatCount="3"
+            dur=".1s"
+            begin="airpad1.begin"
+          />
+          <animateTransform
+            attributeName="transform"
+            additive="sum"
+            type="translate"
+            values="0 30; 0 0"
+            dur=".5s"
+            begin="airpad1.begin"
+            {...animAttrs()}
+          />
+        </path>
+        <path {...paint('synapse')}>
+          <animate
+            id="airpad2"
+            attributeName="d"
+            dur=".5s"
+            values="m200,-30 0,0 -0,0 -0,-0z; m200,-60 60,30 -60,30 -60,-30z"
+            begin={begin.blue.balloon}
+            {...animAttrs()}
+          />
+          <animate
+            attributeName="opacity"
+            values="0;1"
+            repeatCount="3"
+            dur=".1s"
+            begin="airpad2.begin"
+          />
+          <animateTransform
+            attributeName="transform"
+            additive="sum"
+            type="translate"
+            values="0 30; 0 0"
+            dur=".5s"
+            begin="airpad2.begin"
+            {...animAttrs()}
+          />
+        </path>
 
         <path {...paint('blue')}>
           <animate
@@ -419,7 +463,7 @@ const LandingPage = () => {
           />
         </g>
 
-        <g id="teleportFromOrange" stroke={stroke.orange}>
+        <g stroke={stroke.orange}>
           <ellipse rx="30" ry="15" cy="260" {...paint('synapse')} />
           <Cube color="orange" begin={0}>
             <AnimateFlash
@@ -530,11 +574,7 @@ const LandingPage = () => {
           />
         </g>
 
-        <g
-          id="teleportFromGreen"
-          transform="translate(520,-260)"
-          stroke={stroke.green}
-        >
+        <g stroke={stroke.green} transform="translate(520,-260)">
           <ellipse rx="30" ry="15" cy="260" {...paint('synapse')} />
           <Cube color="green">
             <animate
@@ -640,88 +680,144 @@ const LandingPage = () => {
             fill={fill.synapse}
           />
         </g>
-        <g
-          id="balloonBox"
-          transform="scale(.25,.25)"
-          // stroke={stroke.blue}
-        >
-          <animateMotion
+
+        <Cube color="green" translate="400 0" begin={begin.green.anchor} />
+        <Cube color="green" translate="375 12.5" begin={10.5} />
+
+        <Cube color="orange" translate="0 150" begin={begin.orange.anchor} />
+        <Cube color="orange" translate="25 162.5" begin={11.5} />
+        <Cube color="orange" translate="-25 162.5" begin={13.5} />
+        <Cube color="orange" translate="0 122.05" begin={20} />
+
+        <Cube color="blue" begin={begin.blue.balloon}>
+          <animateTransform
+            id="balloonReset"
+            attributeName="transform"
+            type="translate"
+            to="100 -225"
+            begin="0s; balloonFadeOut.end"
+            dur="1ms"
+            {...animAttrs()}
+          />
+          <animateTransform
             id="stackOut"
+            attributeName="transform"
+            type="translate"
+            by="100 50"
+            begin={`${begin.blue.balloon + 2}s; balloonFadeIn.end`}
             dur="1s"
-            begin="0s; stackIn.end + 5s"
-            path="M25,-227.95 200,-170"
             {...animAttrs()}
           />
-          <animateMotion
+          <animateTransform
             id="airlift"
+            attributeName="transform"
+            type="translate"
+            by="0 -50"
+            begin="balloon.begin + .1s"
             dur="2s"
-            begin="stackOut.end + 1s"
-            path="m200,-170 v-50"
             {...animAttrs()}
           />
-          <animateMotion
+          <animateTransform
             id="airpath"
-            dur="4s"
+            attributeName="transform"
+            type="translate"
+            by="0 150"
             begin="airlift.end"
-            path="m200,-220 v150"
+            dur="4s"
             {...animAttrs()}
           />
-          <animateMotion
+          <animateTransform
             id="airdrop"
-            dur=".25s"
+            attributeName="transform"
+            type="translate"
+            by="0 40"
             begin="airpath.end"
-            path="m200,-70 v40"
-            calcMode="spline"
-            keyTimes="0; 1"
-            keySplines=".33 0 1 1"
-            fill="freeze"
+            dur=".25s"
+            {...animAttrs(0.33, 1)}
           />
-          <animateMotion
-            id="stackIn"
-            dur="1s"
-            begin="airdrop.end + .5s"
-            path="m200,-30 174,68"
-            {...animAttrs()}
-          />
-          <path
-            d="m0,50 100,-50 0,-111.8 -100,-50 -100,50 0,111.8 100,50"
-            vectorEffect="non-scaling-stroke"
-          />
-          <path
-            d="m-100,-111.9 100,50 100,-50 m-100,50 0,111.8"
-            vectorEffect="non-scaling-stroke"
-          />
-          <set attributeName="stroke" to={stroke.blue} begin="stackOut.begin" />
-          <set attributeName="fill" to={fill.blue} begin="stackOut.begin" />
           <animate
             attributeName="stroke"
             begin="airdrop.begin"
             dur=".33s"
             {...flashAttrs('inherit', 'green')}
           />
+          <animateTransform
+            id="airdropOut"
+            attributeName="transform"
+            type="translate"
+            by="137.5 68.75"
+            begin="airdrop.end + .1s"
+            dur=".75s"
+            {...animAttrs()}
+          />
+          <animateTransform
+            id="ricochet"
+            attributeName="transform"
+            type="translate"
+            by="-287.5 141"
+            begin="airdropOut.end"
+            dur=".75s"
+            {...animAttrs()}
+          />
           <animate
+            attributeName="stroke"
+            begin="ricochet.begin + .25s"
+            dur=".33s"
+            {...flashAttrs('green', 'orange')}
+          />
+          <animate
+            id="balloonFadeOut"
+            attributeName="opacity"
+            to="0"
+            dur="3s"
+            begin="ricochet.end + 1s"
+          />
+
+          <animate
+            id="balloonFadeIn"
+            attributeName="opacity"
+            values="0; 1"
+            dur="3s"
+            begin="balloonFadeOut.end"
+          />
+          <set
+            attributeName="stroke"
+            to={stroke.blue}
+            begin="balloonFadeIn.begin"
+          />
+          <set
+            attributeName="fill"
+            to={fill.blue}
+            begin="balloonFadeIn.begin"
+          />
+
+          {/* <animate
             attributeName="fill"
             begin="airpath.end"
+            // {...flashAttrs('blue', 'green')} // TODO: 'fill' version
             dur=".33s"
             values="hsl(195deg 80% 5%); hsl(300deg 100% 5%); hsl(135deg 80% 5%)"
             calcMode="spline"
             keyTimes="0; .5; 1"
             keySplines=".5 0 .2 1; .5 0 .2 1"
             fill="freeze"
-          />
-        </g>
-        <g id="balloon">
+          /> */}
+        </Cube>
+
+        <g>
           <animateMotion begin="stackOut.begin" path="m200,-97.5" />
           <animateMotion
+            id="balloon"
             dur="2s"
-            begin="airlift.begin"
-            path="m200,-87.5 v-50"
+            begin="stackOut.end"
+            path="m200 -87.5 v-50"
             {...animAttrs()}
           />
           <animateMotion
             dur="4s"
+            additive="sum"
             begin="airpath.begin"
-            path="m200,-137.5 v150"
+            path="m0 0 v150"
             {...animAttrs()}
           />
           <animateMotion
@@ -741,8 +837,8 @@ const LandingPage = () => {
             <set attributeName="d" to="m0,-111.8 v0" begin="stackOut.begin" />
             <animate
               attributeName="d"
-              values="m0,-101.8 v0; m0,-111.8 v-37.5"
-              begin="airlift.begin"
+              values="m0,-111.8 v0; m0,-111.8 v-37.5"
+              begin="balloon.begin"
               dur="2s"
               {...animAttrs()}
             />
@@ -756,14 +852,14 @@ const LandingPage = () => {
             <animate
               attributeName="r"
               values="0; 36"
-              begin="airlift.begin"
+              begin="balloon.begin"
               dur="2s"
               {...animAttrs()}
             />
             <animate
               attributeName="cy"
               values="-111.8; -186.8"
-              begin="airlift.begin"
+              begin="balloon.begin"
               dur="2s"
               {...animAttrs()}
             />
@@ -826,9 +922,9 @@ const LandingPage = () => {
           />
         </Cube>
 
-        <Cube color="blue" translate="0 -200" begin={1.5} />
+        <Cube color="blue" translate="0 -200" begin={begin.blue.anchor} />
 
-        <Cube color="blue" translate="-25 -187.5" begin={2}>
+        <Cube color="blue" translate="-25 -187.5" begin={begin.blue.bridge}>
           <animateTransform
             id="bridgeCubeOut"
             attributeName="transform"
@@ -861,7 +957,7 @@ const LandingPage = () => {
             {...flashAttrs('yellow', 'blue')}
           />
         </Cube>
-        <Cube color="yellow" translate="-375 -12.5" begin={2}>
+        <Cube color="yellow" translate="-375 -12.5" begin={begin.yellow.bridge}>
           <animateTransform
             attributeName="transform"
             type="translate"
@@ -893,14 +989,14 @@ const LandingPage = () => {
           />
         </Cube>
 
-        <Cube color="green" translate="400 0" begin={begin.green.anchor} />
-        <Cube color="orange" translate="0 150" begin={begin.orange.anchor} />
         <Cube color="yellow" translate="-400 0" begin={begin.yellow.anchor} />
 
-        <Cube color="yellow" translate="-450 0" begin={11} />
-        <Cube color="yellow" translate="-425 12.5" begin={12} />
-        <Cube color="yellow" translate="-425 -27.95" begin={10} />
-        {/* <Cube color="yellow" translate="-437.5 -20.9625" begin={13} /> */}
+        <Cube color="yellow" translate="-450 0" begin={15} />
+        <Cube color="yellow" translate="-425 12.5" begin={16} />
+        <Cube color="yellow" translate="-425 -27.95" begin={18} />
+
+        <Cube color="blue" translate="25 -187.5" begin={17} />
+        <Cube color="blue" translate="0 -175" begin={19} />
 
         {/* <rect
           width="40"
