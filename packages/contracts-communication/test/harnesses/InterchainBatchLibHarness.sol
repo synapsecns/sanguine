@@ -8,31 +8,16 @@ contract InterchainBatchLibHarness {
         return InterchainBatchLib.constructLocalBatch(dbNonce, batchRoot);
     }
 
-    function decodeVersionedBatchFromMemory(bytes memory versionedBatch)
-        external
-        view
-        returns (uint16, InterchainBatch memory)
-    {
-        return InterchainBatchLib.decodeVersionedBatchFromMemory(versionedBatch);
+    function encodeBatch(InterchainBatch memory batch) external pure returns (bytes memory) {
+        return InterchainBatchLib.encodeBatch(batch);
     }
 
-    function decodeVersionedBatch(bytes calldata versionedBatch)
-        external
-        pure
-        returns (uint16, InterchainBatch memory)
-    {
-        return InterchainBatchLib.decodeVersionedBatch(versionedBatch);
+    function decodeBatch(bytes calldata batch) external pure returns (InterchainBatch memory) {
+        return InterchainBatchLib.decodeBatch(batch);
     }
 
-    function encodeVersionedBatch(
-        uint16 dbVersion,
-        InterchainBatch memory batch
-    )
-        external
-        pure
-        returns (bytes memory)
-    {
-        return InterchainBatchLib.encodeVersionedBatch(dbVersion, batch);
+    function decodeBatchFromMemory(bytes memory batch) external pure returns (InterchainBatch memory) {
+        return InterchainBatchLib.decodeBatchFromMemory(batch);
     }
 
     function batchKey(InterchainBatch memory batch) external pure returns (bytes32) {

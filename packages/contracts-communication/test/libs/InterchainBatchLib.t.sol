@@ -48,17 +48,15 @@ contract InterchainBatchLibTest is Test {
         assertEq(actual, expected);
     }
 
-    function test_encodeVersionedBatchFromMemory_roundTrip(uint16 dbVersion, InterchainBatch memory batch) public {
-        bytes memory versionedBatch = libHarness.encodeVersionedBatch(dbVersion, batch);
-        (uint16 dbVersion_, InterchainBatch memory batch_) = libHarness.decodeVersionedBatchFromMemory(versionedBatch);
-        assertEq(dbVersion_, dbVersion);
-        assertEq(batch_, batch);
+    function test_encodeBatch_roundTrip(InterchainBatch memory batch) public {
+        bytes memory encoded = libHarness.encodeBatch(batch);
+        InterchainBatch memory decoded = libHarness.decodeBatch(encoded);
+        assertEq(decoded, batch);
     }
 
-    function test_encodeVersionedBatch_roundTrip(uint16 dbVersion, InterchainBatch memory batch) public {
-        bytes memory versionedBatch = libHarness.encodeVersionedBatch(dbVersion, batch);
-        (uint16 dbVersion_, InterchainBatch memory batch_) = libHarness.decodeVersionedBatch(versionedBatch);
-        assertEq(dbVersion_, dbVersion);
-        assertEq(batch_, batch);
+    function test_encodeBatchFromMemory_roundTrip(InterchainBatch memory batch) public {
+        bytes memory encoded = libHarness.encodeBatch(batch);
+        InterchainBatch memory decoded = libHarness.decodeBatchFromMemory(encoded);
+        assertEq(decoded, batch);
     }
 }

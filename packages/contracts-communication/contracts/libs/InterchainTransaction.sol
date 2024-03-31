@@ -53,24 +53,12 @@ library InterchainTransactionLib {
         });
     }
 
-    function encodeVersionedTransaction(
-        uint16 clientVersion,
-        InterchainTransaction memory transaction
-    )
-        internal
-        pure
-        returns (bytes memory)
-    {
-        return VersionedPayloadLib.encodeVersionedPayload(clientVersion, abi.encode(transaction));
+    function encodeTransaction(InterchainTransaction memory transaction) internal pure returns (bytes memory) {
+        return abi.encode(transaction);
     }
 
-    function decodeVersionedTransaction(bytes calldata versionedTx)
-        internal
-        pure
-        returns (uint16 clientVersion, InterchainTransaction memory transaction)
-    {
-        clientVersion = versionedTx.getVersion();
-        transaction = abi.decode(versionedTx.getPayload(), (InterchainTransaction));
+    function decodeTransaction(bytes calldata transaction) internal pure returns (InterchainTransaction memory) {
+        return abi.decode(transaction, (InterchainTransaction));
     }
 
     function payloadSize(uint256 optionsLen, uint256 messageLen) internal pure returns (uint256) {

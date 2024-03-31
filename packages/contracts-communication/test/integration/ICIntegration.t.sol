@@ -236,13 +236,14 @@ abstract contract ICIntegrationTest is
         }
     }
 
-    function getEthSignedBatchHash(InterchainBatch memory batch) internal pure returns (bytes32) {
+    function getEthSignedBatchHash(InterchainBatch memory batch) internal view returns (bytes32) {
         bytes memory moduleBatch = getModuleBatch(batch);
         return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(moduleBatch)));
     }
 
-    function getModuleBatch(InterchainBatch memory batch) internal pure returns (bytes memory) {
-        bytes memory versionedBatch = InterchainBatchLib.encodeVersionedBatch(DB_VERSION, batch);
+    function getModuleBatch(InterchainBatch memory batch) internal view returns (bytes memory) {
+        bytes memory versionedBatch =
+            payloadLibHarness.encodeVersionedPayload(DB_VERSION, batchLibHarness.encodeBatch(batch));
         return ModuleBatchLib.encodeVersionedModuleBatch(versionedBatch, new bytes(0));
     }
 

@@ -7,8 +7,11 @@ import {IInterchainModule} from "./interfaces/IInterchainModule.sol";
 
 import {InterchainBatch, InterchainBatchLib} from "./libs/InterchainBatch.sol";
 import {InterchainEntry, InterchainEntryLib} from "./libs/InterchainEntry.sol";
+import {VersionedPayloadLib} from "./libs/VersionedPayload.sol";
 
 contract InterchainDB is InterchainDBEvents, IInterchainDB {
+    using VersionedPayloadLib for bytes;
+
     uint16 public constant DB_VERSION = 1;
 
     bytes32[] internal _entryValues;
@@ -65,10 +68,11 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
 
     /// @inheritdoc IInterchainDB
     function verifyRemoteBatch(bytes calldata versionedBatch) external {
-        (uint16 dbVersion, InterchainBatch memory batch) = InterchainBatchLib.decodeVersionedBatch(versionedBatch);
+        uint16 dbVersion = versionedBatch.getVersion();
         if (dbVersion != DB_VERSION) {
             revert InterchainDB__InvalidBatchVersion(dbVersion);
         }
+        InterchainBatch memory batch = InterchainBatchLib.decodeBatch(versionedBatch.getPayload());
         if (batch.srcChainId == block.chainid) {
             revert InterchainDB__SameChainId(batch.srcChainId);
         }
@@ -217,7 +221,10 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
             fees[0] += msg.value - totalFee;
         }
         uint256 len = srcModules.length;
-        bytes memory versionedBatch = InterchainBatchLib.encodeVersionedBatch(DB_VERSION, batch);
+        bytes memory versionedBatch = VersionedPayloadLib.encodeVersionedPayload({
+            version: DB_VERSION,
+            payload: InterchainBatchLib.encodeBatch(batch)
+        });
         for (uint256 i = 0; i < len; ++i) {
             IInterchainModule(srcModules[i]).requestBatchVerification{value: fees[i]}(dstChainId, versionedBatch);
         }

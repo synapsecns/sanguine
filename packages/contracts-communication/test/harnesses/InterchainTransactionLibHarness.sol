@@ -22,23 +22,12 @@ contract InterchainTransactionLibHarness {
         );
     }
 
-    function encodeVersionedTransaction(
-        uint16 clientVersion,
-        InterchainTransaction memory transaction
-    )
-        external
-        pure
-        returns (bytes memory)
-    {
-        return InterchainTransactionLib.encodeVersionedTransaction(clientVersion, transaction);
+    function encodeTransaction(InterchainTransaction memory transaction) external pure returns (bytes memory) {
+        return InterchainTransactionLib.encodeTransaction(transaction);
     }
 
-    function decodeVersionedTransaction(bytes calldata encodedTx)
-        external
-        pure
-        returns (uint16, InterchainTransaction memory)
-    {
-        return InterchainTransactionLib.decodeVersionedTransaction(encodedTx);
+    function decodeTransaction(bytes calldata encodedTx) external pure returns (InterchainTransaction memory) {
+        return InterchainTransactionLib.decodeTransaction(encodedTx);
     }
 
     function payloadSize(uint256 optionsLen, uint256 messageLen) external pure returns (uint256) {
