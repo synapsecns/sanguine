@@ -159,4 +159,8 @@ interface IInterchainDB {
         external
         view
         returns (uint256 moduleVerifiedAt);
+
+    /// @notice Get the version of the Interchain DataBase.
+    // solhint-disable-next-line func-name-mixedcase
+    function DB_VERSION() external pure returns (uint16);
 }
