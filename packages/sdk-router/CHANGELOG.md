@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.4.1...@synapsecns/sdk-router@0.4.2) (2024-03-31)
+
+
+### Bug Fixes
+
+* **sdk-router:** Update default dest deadline ([#2407](https://github.com/synapsecns/sanguine/issues/2407)) ([8a9b628](https://github.com/synapsecns/sanguine/commit/8a9b62831beffe7e382332093be12d95b42f4bc2))
+
+
+
+
+
 ## [0.4.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/sdk-router@0.4.0...@synapsecns/sdk-router@0.4.1) (2024-03-29)
 
 **Note:** Version bump only for package @synapsecns/sdk-router
