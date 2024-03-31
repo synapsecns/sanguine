@@ -171,7 +171,7 @@ export class FastBridgeRouterSet extends SynapseModuleSet {
   } {
     return {
       originPeriod: TEN_MINUTES,
-      destPeriod: ONE_HOUR,
+      destPeriod: 4 * ONE_HOUR,
     }
   }
 
