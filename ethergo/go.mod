@@ -20,7 +20,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0
 	github.com/dgraph-io/ristretto v0.1.0
-	github.com/ethereum/go-ethereum v1.11.6
+	github.com/ethereum/go-ethereum v1.12.0
 	github.com/goccy/go-json v0.10.2
 	github.com/google/go-cmp v0.6.0
 	github.com/google/uuid v1.5.0

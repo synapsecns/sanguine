@@ -119,7 +119,7 @@ func NewEmbeddedBackendWithConfig(ctx context.Context, t *testing.T, config *par
 	embedded.ethBackend.SetEtherbase(acct.Address)
 
 	embedded.ethBackend.TxPool().SetGasPrice(big.NewInt(0))
-	err = embedded.ethBackend.APIBackend.StartMining(0)
+	err = embedded.ethBackend.APIBackend.StartMining()
 	assert.Nil(t, err)
 
 	// add debugger for node stop
@@ -139,7 +139,7 @@ func NewEmbeddedBackendWithConfig(ctx context.Context, t *testing.T, config *par
 		if embedded.ethBackend.IsMining() {
 			cancelMiningCtx()
 		} else {
-			_ = embedded.ethBackend.APIBackend.StartMining(0)
+			_ = embedded.ethBackend.APIBackend.StartMining()
 		}
 	}, time.Millisecond*50)
 
@@ -182,7 +182,7 @@ func (f *Backend) Signer() types.Signer {
 	latestBlock, err := f.BlockByNumber(f.Context(), nil)
 	assert.Nil(f.T(), err)
 
-	return types.MakeSigner(f.ChainConfig(), latestBlock.Number())
+	return types.MakeSigner(f.ChainConfig(), latestBlock.Number(), latestBlock.Time())
 }
 
 // GethBackendName is the name of the geth backend.

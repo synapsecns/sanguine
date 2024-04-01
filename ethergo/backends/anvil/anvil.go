@@ -4,14 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/ipfs/go-log"
-	"github.com/lmittmann/w3/w3types"
-	"github.com/ory/dockertest/v3"
 	"math"
 	"math/big"
 	"strings"
 	"sync"
 	"testing"
+
+	"github.com/ipfs/go-log"
+	"github.com/lmittmann/w3/w3types"
+	"github.com/ory/dockertest/v3"
 
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -286,10 +287,11 @@ func (f *Backend) ChainConfig() *params.ChainConfig {
 
 // Signer gets the signer for the chain.
 func (f *Backend) Signer() types.Signer {
-	latestBlock, err := f.BlockNumber(f.Context())
+	// Get latest block by nil
+	latestBlock, err := f.BlockByNumber(f.Context(), nil)
 	require.Nil(f.T(), err)
 
-	return types.MakeSigner(f.ChainConfig(), new(big.Int).SetUint64(latestBlock))
+	return types.MakeSigner(f.ChainConfig(), latestBlock.Number(), latestBlock.Time())
 }
 
 // FundAccount funds an account with the given amount.
