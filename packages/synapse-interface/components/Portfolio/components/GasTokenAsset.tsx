@@ -32,7 +32,7 @@ export const GasTokenAsset = ({
         <div className="text-sm opacity-70">gas token</div>
       </div>
 
-      <div className="p-2 text-sm opacity-70">Not bridgable</div>
+      <div className="p-2 text-sm opacity-70">Not bridgeable</div>
     </div>
   )
 }
