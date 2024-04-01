@@ -14,7 +14,7 @@ import {
 } from '@/slices/bridgeDisplaySlice'
 import { Address } from 'viem'
 import { isEmptyString } from '@/utils/isEmptyString'
-import { CloseButton } from './components/CloseButton'
+import { CloseButton } from '@/components/ui/CloseButton'
 import { useTransactionsState } from '@/slices/transactions/hooks'
 import { TransactionsState } from '@/slices/transactions/reducer'
 import { BridgeTransaction } from '@/slices/api/generated'
@@ -164,10 +164,10 @@ export const DestinationAddressInput = ({
 
   useCloseOnOutsideClick(listRef, handleCloseList)
 
-  const escPressed = useKeyPress('Escape')
-  const arrowUp = useKeyPress('ArrowUp')
-  const arrowDown = useKeyPress('ArrowDown')
-  const enterPressed = useKeyPress('Enter')
+  const escPressed = useKeyPress('Escape', true)
+  const arrowUp = useKeyPress('ArrowUp', true)
+  const arrowDown = useKeyPress('ArrowDown', true)
+  const enterPressed = useKeyPress('Enter', true)
 
   function escFunc() {
     if (!showRecipientList) return
