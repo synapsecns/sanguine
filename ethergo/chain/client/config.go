@@ -1,9 +1,10 @@
 package client
 
 import (
+	"math/big"
+
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
-	"math/big"
 )
 
 // Config contains the configuration needed to connect to the chain.
@@ -333,8 +334,7 @@ var (
 
 // chainConfigs is a list of chain configs.
 var chainConfigs = []*params.ChainConfig{
-	params.MainnetChainConfig, params.SepoliaChainConfig,
-	params.RinkebyChainConfig, params.RinkebyChainConfig, params.GoerliChainConfig,
+	params.MainnetChainConfig, params.SepoliaChainConfig, params.GoerliChainConfig,
 	params.AllEthashProtocolChanges, BSCChainConfig, ChapelChainConfig, RialtoChainConfig,
 	SimulatedConfig, MaticMumbaiConfig, MaticMainnetConfig, AvalancheMainnetChainConfig, AvalancheLocalChainConfig,
 	ArbitrumMainnetConfig, FtmMainnetConfig, HarmonyConfig, BobaConfig, MoonRiverConfig, OptimisticEthereum,

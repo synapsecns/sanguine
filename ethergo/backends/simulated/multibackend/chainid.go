@@ -1,14 +1,16 @@
 package multibackend
 
 import (
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/consensus/ethash"
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/rawdb"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/eth/filters"
 	"github.com/ethereum/go-ethereum/params"
+	"github.com/ethereum/go-ethereum/trie"
 	util "github.com/synapsecns/sanguine/core"
-	"math/big"
 )
 
 // NewConfigWithChainID creates a new *params.ChainConfig and changes only the chain id
@@ -46,9 +48,10 @@ func NewConfigWithChainID(chainID *big.Int) *params.ChainConfig {
 // NewSimulatedBackendWithConfig creates a new simulated backend with the given chain id.
 func NewSimulatedBackendWithConfig(alloc core.GenesisAlloc, gasLimit uint64, config *params.ChainConfig) *SimulatedBackend {
 	database := rawdb.NewMemoryDatabase()
+	triedb := trie.NewDatabase(database, nil)
 
 	genesis := core.Genesis{Config: config, GasLimit: gasLimit, Alloc: alloc}
-	genesis.MustCommit(database)
+	genesis.MustCommit(database, triedb)
 	blockchain, _ := core.NewBlockChain(database, nil, &genesis, nil, ethash.NewFaker(), vm.Config{}, nil, nil)
 
 	backend := &SimulatedBackend{

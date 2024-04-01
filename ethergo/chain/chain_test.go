@@ -14,7 +14,7 @@ func (s *ChainSuite) TestChainWatcher() {
 
 // make sure a chain client can be started form a url.
 func (s *ChainSuite) TestNewFromURL() {
-	rinkeby := preset.GetRinkeby().Geth(s.GetTestContext(), s.T())
+	rinkeby := preset.GetSepolia().Geth(s.GetTestContext(), s.T())
 	chnRPC, err := chain.NewFromURL(s.GetTestContext(), rinkeby.RPCAddress())
 	Nil(s.T(), err)
 

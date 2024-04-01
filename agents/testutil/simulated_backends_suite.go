@@ -417,12 +417,12 @@ func (a *SimulatedBackendsTestSuite) SetupBackends() {
 		defer wg.Done()
 		if useAnvil {
 			anvilOptsOrigin := anvil.NewAnvilOptionBuilder()
-			anvilOptsOrigin.SetChainID(uint64(params.RinkebyChainConfig.ChainID.Int64()))
+			anvilOptsOrigin.SetChainID(uint64(params.SepoliaChainConfig.ChainID.Int64()))
 			anvilOptsOrigin.SetBlockTime(1 * time.Second)
 			a.TestBackendOrigin = anvil.NewAnvilBackend(a.GetTestContext(), a.T(), anvilOptsOrigin)
 			a.TestSuite.DeferAfterTest(a.TestBackendOrigin.(*anvil.Backend).TearDown)
 		} else {
-			a.TestBackendOrigin = preset.GetRinkeby().Geth(a.GetTestContext(), a.T())
+			a.TestBackendOrigin = preset.GetSepolia().Geth(a.GetTestContext(), a.T())
 		}
 	}()
 	go func() {
