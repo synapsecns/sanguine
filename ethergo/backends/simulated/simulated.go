@@ -3,6 +3,10 @@ package simulated
 import (
 	"context"
 	"errors"
+	"math/big"
+	"testing"
+	"time"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
@@ -20,9 +24,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 	"github.com/synapsecns/sanguine/ethergo/signer/nonce"
 	"github.com/teivah/onecontext"
-	"math/big"
-	"testing"
-	"time"
 )
 
 var logger = log.Logger("simulated-logger")
@@ -51,7 +52,7 @@ func (s *Backend) Signer() types.Signer {
 	latestBlock, err := s.BlockByNumber(s.Context(), nil)
 	assert.Nil(s.T(), err)
 
-	return types.MakeSigner(s.chainConfig, latestBlock.Number())
+	return types.MakeSigner(s.chainConfig, latestBlock.Number(), latestBlock.Time())
 }
 
 // T gets the testing object for the backend.
