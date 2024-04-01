@@ -42,7 +42,7 @@ func GetMaticMumbai() Backend {
 	chainConfig := *params.AllCliqueProtocolChanges
 	chainConfig.ChainID = client.MaticMainnetConfig.ChainID
 	// london is not activated on bsc
-	chainConfig.LondonBlock = nil
+	chainConfig.LondonBlock = big.NewInt(0)
 
 	return Backend{
 		config:     &chainConfig,
