@@ -28,10 +28,10 @@ ENV DOCKER_DOWNLOAD_FILE=docker-${DOCKER_VERSION}.tgz
 ENV DOCKER_DOWNLOAD_URL=https://download.docker.com/linux/static/stable/x86_64/${DOCKER_DOWNLOAD_FILE}
 
 # Install cross compiling tools
-RUN apt-get update && apt-get install -y build-essential wget git cmake \
+RUN apt-get update && apt-get install --no-install-recommends -y build-essential wget git cmake \
 	libc6-dev-armel-cross libc6-dev-armel-cross binutils-arm-linux-gnueabi libncurses5-dev \
 	gcc-mingw-w64 g++-mingw-w64 \
-	gcc-aarch64-linux-gnu g++-aarch64-linux-gnu && \
+	gcc-aarch64-linux-gnu g++-aarch64-linux-gnu  && \
 	apt-get -y autoremove
 
 
@@ -104,7 +104,7 @@ RUN \
 ENV PATH=${PATH}:/etc/musl/x86_64-linux-musl-native/bin:/etc/musl/aarch64-linux-musl-cross/bin:/usr/local/go/bin
 
 # Install node 20
-RUN apt-get install -y curl ca-certificates gnupg zip jq
+RUN apt-get install -y --no-install-recommends curl ca-certificates gnupg zip jq
 
 RUN mkdir -p /etc/apt/keyrings
 
@@ -114,8 +114,11 @@ ENV NODE_MAJOR=20
 
 RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" |  tee /etc/apt/sources.list.d/nodesource.list
 
-RUN apt-get update && apt-get install -y nodejs
+RUN apt-get update && apt-get install --no-install-recommends -y nodejs
 
 # Install syft
 
 RUN curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+
+# cleanup
+RUN apt clean && rm -rf /var/lib/apt/lists/\* /tmp/\* /var/tmp/*
