@@ -362,8 +362,17 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 	}()
 
 	// TODO: cache both of these values
+	shouldBump := true
 	if t.config.SupportsEIP1559(int(bigChainID.Uint64())) {
-		transactor.GasFeeCap = t.config.GetMaxGasPrice(chainID)
+		transactor.GasFeeCap, err = client.SuggestGasPrice(ctx)
+		if err != nil {
+			return fmt.Errorf("could not get gas price: %w", err)
+		}
+		// don't bump fee cap if we hit the max configured gas price
+		if transactor.GasFeeCap.Cmp(maxPrice) > 0 {
+			transactor.GasFeeCap = maxPrice
+			shouldBump = false
+		}
 
 		transactor.GasTipCap, err = client.SuggestGasTipCap(ctx)
 		if err != nil {
@@ -378,7 +387,7 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 	t.applyBaseGasPrice(transactor, chainID)
 
 	//nolint: nestif
-	if prevTx != nil {
+	if prevTx != nil && shouldBump {
 		gasBlock, err := t.getGasBlock(ctx, client, chainID)
 		if err != nil {
 			span.AddEvent("could not get gas block", trace.WithAttributes(attribute.String("error", err.Error())))
