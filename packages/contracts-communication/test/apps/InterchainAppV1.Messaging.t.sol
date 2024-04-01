@@ -11,7 +11,7 @@ import {InterchainClientV1Mock} from "../mocks/InterchainClientV1Mock.sol";
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
 abstract contract InterchainAppV1MessagingTest is InterchainAppV1Test {
-    uint256 public constant MOCK_DB_NONCE = 42;
+    uint64 public constant MOCK_DB_NONCE = 42;
     uint64 public constant MOCK_ENTRY_INDEX = 4;
 
     uint256 public constant MOCK_IC_FEE = 4844;

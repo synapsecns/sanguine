@@ -37,7 +37,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
     uint256 public constant MOCK_EXECUTION_FEE = 1 ether;
     uint256 public constant MOCK_INTERCHAIN_FEE = 0.5 ether;
 
-    uint256 public constant MOCK_DB_NONCE = 444;
+    uint64 public constant MOCK_DB_NONCE = 444;
     uint64 public constant MOCK_ENTRY_INDEX = 4;
 
     OptionsV1 public options = OptionsV1({gasLimit: 100_000, gasAirdrop: 1 ether});

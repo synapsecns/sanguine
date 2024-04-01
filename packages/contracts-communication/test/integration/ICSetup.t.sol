@@ -27,8 +27,8 @@ abstract contract ICSetup is ProxyTest {
     uint16 public constant DB_VERSION = 1;
     uint16 public constant CLIENT_VERSION = 1;
 
-    uint256 public constant SRC_INITIAL_DB_NONCE = 10;
-    uint256 public constant DST_INITIAL_DB_NONCE = 20;
+    uint64 public constant SRC_INITIAL_DB_NONCE = 10;
+    uint64 public constant DST_INITIAL_DB_NONCE = 20;
 
     uint256 public constant PING_PONG_BALANCE = 1000 ether;
 

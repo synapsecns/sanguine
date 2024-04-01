@@ -30,7 +30,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
 
     uint256 public constant INITIAL_WRITER_F = 1;
     uint256 public constant INITIAL_WRITER_S = 2;
-    uint256 public constant INITIAL_DB_NONCE = INITIAL_WRITER_F + INITIAL_WRITER_S;
+    uint64 public constant INITIAL_DB_NONCE = INITIAL_WRITER_F + INITIAL_WRITER_S;
 
     uint256 public constant MODULE_A_FEE = 100;
     uint256 public constant MODULE_B_FEE = 200;
