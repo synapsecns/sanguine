@@ -57,7 +57,8 @@ const (
 	DefaultBumpIntervalSeconds = 30
 
 	// DefaultGasBumpPercentage is the default percentage to bump the gas price by.
-	DefaultGasBumpPercentage = 5
+	// See: https://github.com/ethereum/go-ethereum/blob/8c5576b1ac89473c7ec15c9b03d1ca02e9499dcc/core/txpool/legacypool/legacypool.go#L146
+	DefaultGasBumpPercentage = 10
 
 	// DefaultGasEstimate is the default gas estimate to use for transactions.
 	DefaultGasEstimate = uint64(1200000)
