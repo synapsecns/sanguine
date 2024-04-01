@@ -2,6 +2,7 @@ import React from 'react'
 import { Token } from '@/utils/types'
 import Image from 'next/image'
 import { getParsedBalance } from './PortfolioTokenAsset'
+import GasIcon from '@/components/icons/GasIcon'
 
 export const GasTokenAsset = ({
   token,
@@ -29,7 +30,7 @@ export const GasTokenAsset = ({
           src={icon}
         />
         {parsedBalance} {symbol}
-        <div className="text-sm opacity-70">gas token</div>
+        <GasIcon className="w-3 pt-px m-auto fill-secondary" />
       </div>
 
       <div className="p-2 text-sm opacity-70">Not bridgeable</div>

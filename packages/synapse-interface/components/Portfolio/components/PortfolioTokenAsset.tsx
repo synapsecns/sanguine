@@ -15,6 +15,7 @@ import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'
 import { PortfolioAssetActionButton } from './PortfolioAssetActionButton'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 import { zeroAddress } from 'viem'
+import GasIcon from '@/components/icons/GasIcon'
 
 const handleFocusOnBridgeInput = () => {
   inputRef.current.focus()
@@ -86,7 +87,7 @@ export const PortfolioTokenAsset = ({
         />
         {parsedBalance} {symbol}
         {isBridgeableGasToken ? (
-          <div className="text-sm opacity-70">gas token</div>
+          <GasIcon className="w-3 pt-px m-auto fill-secondary" />
         ) : null}
       </div>
       <PortfolioAssetActionButton
