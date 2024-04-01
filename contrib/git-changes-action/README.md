@@ -1,11 +1,6 @@
-Git Changes Action
+# Git Changes Action
 
-This GitHub Action exports a variable that contains the list of Go modules changed in the current pull request. This can be useful for automating build, test, or deployment workflows that involve Go projects. 
-
-The library can take two approaches to dependency resolution:
-
-1. Module to module. This means that if any package in  ModuleA that is part of the dependency tree of  ModuleB will be flagged as changed, regardless of whether the change at hand affects a package that moduleB directly imports or not. 
-2. Module to package. This means that if packageA in ModuleA is changed, only modules directly or indirectly depending on packageA will be flagged as changed.
+This GitHub Action exports a variable that contains the list of Go modules changed in the current pull request, and if desierd, along with any dependent modules. This can be useful for automating build, test, or deployment workflows that involve Go projects.
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/synapsecns/sanguine/contrib/git-changes-action.svg)](https://pkg.go.dev/github.com/synapsecns/sanguine/contrib/git-changes-action)
 [![Go Report Card](https://goreportcard.com/badge/github.com/synapsecns/sanguine/contrib/git-changes-action)](https://goreportcard.com/report/github.com/synapsecns/sanguine/contrib/git-changes-action)
@@ -16,17 +11,16 @@ The library can take two approaches to dependency resolution:
 
     Check out the current pull request using the actions/checkout action. It's recommended to set fetch-depth to 0 and submodules to recursive to ensure that all necessary dependencies are fetched.
 
-
-
 ```yaml
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: 'recursive'
+          packageOfLevelResolution: "modules"
 ```
 
-2. Use the synapsecns/sanguine/git-changes-action Docker image to run the git-changes script, which exports a variable that contains the list of changed Go modules.
+1. Use the synapsecns/sanguine/git-changes-action Docker image to run the git-changes script, which exports a variable that contains the list of changed Go modules.
 
 ```yaml
       - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
@@ -34,16 +28,14 @@ The library can take two approaches to dependency resolution:
         with:
           github_token: ${{ secrets.github_token }}
           timeout: "1m" # optional, defaults to 1m
+          packageLevelResolution: "modules" "packages"
 ```
 
-3. You can customize the behavior of the git-changes script by using the following inputs:
+You can customize the behavior of the git-changes script by using the following inputs:
 
  - `github_token`: The token to use for authentication with the GitHub API. This is required to fetch information about the current pull request.
  - `timeout`: The maximum time to wait for the GitHub API to respond. Defaults to 1 minute.
- - `levelOfDependencyResolution`: This parameter will determine if its dependency resolution is be based from
-   1. "modules" `module to module`
-   2. "packages" `module to packages`
-
+ - 'packageLevelResolution: "modules" or "packages"
 
 The output of the git-changes script is a comma-separated list of Go module paths. You can access this list using the `filter_go` output variable, like so:
 
@@ -53,78 +45,6 @@ The output of the git-changes script is a comma-separated list of Go module path
       - run: echo "Changed modules (including dependencies): ${{ steps.filter_go.outputs.changed_modules_deps }}"
       - run: echo "Unchanged modules (including dependencies): ${{ steps.filter_go.outputs.unchanged_modules_deps }}"
 ```
-
-Note that the result will be heavily influenced by the type of `levelOfDependencyResolution` chosen by the user.
-
-## Example 1
-
-Here's an example workflow that uses the `git-changes` action to run tests for changed Go modules on a modules `levelOfDepencencyResolution`:
-
-```yaml
-name: Test Go Modules
-
-on:
-  pull_request:
-    types: [opened, synchronize]
-
-jobs:
-  test_go_modules:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          submodules: 'recursive'
-
-      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
-        id: filter_go
-        with:
-          github_token: ${{ secrets.github_token }}
-          timeout: "1m"
-          typeOfDependencyResolution: "modules"
-
-
-      - name: Run tests
-        run: go test -v ${{ steps.filter_go.outputs.changed_modules }}
-```
-
-This workflow will run tests for all changed Go modules and their dependencies whenever a pull request is opened or synchronized. Modules will be flagged as changed if their module dependencies have been changed.
-
-
-## Example 2
-
-Here's an example workflow that uses the `git-changes` action to run tests for changed Go modules on a packages `levelOfDepencencyResolution`:
-
-```yaml
-name: Test Go Modules
-
-on:
-  pull_request:
-    types: [opened, synchronize]
-
-jobs:
-  test_go_modules:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          submodules: 'recursive'
-
-      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
-        id: filter_go
-        with:
-          github_token: ${{ secrets.github_token }}
-          timeout: "1m"
-          typeOfDependencyResolution: "packages"
-
-
-      - name: Run tests
-        run: go test -v ${{ steps.filter_go.outputs.changed_modules }}
-```
-
-This workflow will run tests for all changed Go modules and their dependencies whenever a pull request is opened or synchronized. Modules will be flagged as changed if any of the package dependencies in their dependency tree have been changed.
-
 
 ## How It Works
 
@@ -141,3 +61,111 @@ graph TB
     E --> G
     F --> G
 ```
+
+
+## Module Level Dependency Resolution
+
+Here's an example workflow that uses the `git-changes` action to run tests for changed Go modules:
+
+```yaml
+name: Test Go Modules
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  test_go_modules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: 'recursive'
+
+      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
+        id: filter_go
+        with:
+          packageLevelResolution: "modules"
+          github_token: ${{ secrets.github_token }}
+          timeout: "1m"
+
+      - name: Run tests
+        run: go test -v ${{ steps.filter_go.outputs.changed_modules }}
+```
+
+This workflow will run tests for all changed Go modules and their module dependencies whenever a pull request is opened or synchronized.
+
+
+## Module Level Resolution
+
+Each module in the `go.work` is visited. If any changes were detected, the module itself it is added to the list of changed modules. If `include_dependencies` is on, and their direct or indirect module dependencies are modified the module is flagged as changed. This process is repeated until all modules in the `go.work` have been visited.
+
+```mermaid
+sequenceDiagram
+  participant GW as go.work
+  participant M as Module
+  participant P as Package
+  participant CML as Changed_Module_List
+  participant UML as Unchanged_Module_List
+  participant D as Dependency
+
+  GW->>M: Visit Module
+  M->>P:Extract all packages for each Module
+  P->>M: Returns [module]: [package1,package2]
+M->>M: Changes detected?
+M->>P: Loop over packages
+  P-->>GW: Changes Detected?
+  alt Changes Detected
+    GW->>CML: Add Module to Changed_Module_List
+    M->>D: Has Dependency in go.work?
+    alt Has Dependency
+      GW->>CML: Add Dependency to Changed_Module_List
+    else No Dependency
+      M-->>GW: No Dependency to Add
+    end
+  else No Changes Detected
+    GW->>UML: Add Module to Unchanged_Module_List
+    M->>D: Has Dependency in go.work?
+    alt Has Dependency
+      GW->>UML: Add Dependency to Unchanged_Module_List
+    else No Dependency
+      M-->>GW: No Dependency to Add
+    end
+  end
+  GW->>GW: Continue Until All Modules Visited
+```
+
+## Package Level Resolution
+
+Each module in the `go.work` is visited. And the module has been changed, the module itself is added to the list of changed modules. If `include_dependencies` is on, if their direct or indirect package dependencies are modified the module is flagged as changed. This process is repeated until all modules dependencies been visited.
+
+```yaml
+name: Test Go Modules
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  test_go_modules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: 'recursive'
+
+      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
+        id: filter_go
+        with:
+          packageLevelResolution: "modules"
+          github_token: ${{ secrets.github_token }}
+          timeout: "1m"
+
+      - name: Run tests
+        run: go test -v ${{ steps.filter_go.outputs.changed_modules }}
+```
+
+This workflow will run tests for all changed Go modules and their dependencies whenever a pull request is opened or synchronized.
+
