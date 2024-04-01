@@ -34,7 +34,7 @@ export function AmountInput({
 
   const labelClassName = joinClassNames({
     space: 'block',
-    textColor: 'text-xs',
+    textColor: 'text-xxs md:text-xs',
     animation: 'transition-all duration-150 transform-gpu',
     hover: 'hover:opacity-70 cursor-pointer',
   })
