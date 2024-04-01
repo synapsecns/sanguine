@@ -84,7 +84,12 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 			continue
 		}
 
-		cq.bumpTX(gCtx, tx)
+		// should only bump the gas price if we are at current nonce
+		if tx.Nonce() == currentNonce {
+			cq.bumpTX(gCtx, tx, true)
+		} else {
+			cq.bumpTX(gCtx, tx, false)
+		}
 	}
 	cq.updateOldTxStatuses(gCtx)
 
@@ -144,7 +149,7 @@ func (c *chainQueue) storeAndSubmit(ctx context.Context, calls []w3types.Caller,
 }
 
 // nolint: cyclop
-func (c *chainQueue) bumpTX(parentCtx context.Context, ogTx db.TX) {
+func (c *chainQueue) bumpTX(parentCtx context.Context, ogTx db.TX, bumpGasPrice bool) {
 	c.g.Go(func() (err error) {
 		if !c.isBumpIntervalElapsed(ogTx) {
 			c.addToReprocessQueue(ogTx)
@@ -171,7 +176,11 @@ func (c *chainQueue) bumpTX(parentCtx context.Context, ogTx db.TX) {
 		transactor.Nonce = new(big.Int).SetUint64(tx.Nonce())
 		transactor.GasLimit = newGasEstimate
 
-		err = c.setGasPrice(ctx, c.client, transactor, c.chainID, ogTx.Transaction)
+		prevTx := ogTx.Transaction
+		if !bumpGasPrice {
+			prevTx = nil
+		}
+		err = c.setGasPrice(ctx, c.client, transactor, c.chainID, prevTx)
 		if err != nil {
 			return fmt.Errorf("could not set gas price: %w", err)
 		}
