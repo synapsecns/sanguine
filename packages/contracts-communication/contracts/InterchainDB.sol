@@ -5,7 +5,7 @@ import {InterchainDBEvents} from "./events/InterchainDBEvents.sol";
 import {IInterchainDB} from "./interfaces/IInterchainDB.sol";
 import {IInterchainModule} from "./interfaces/IInterchainModule.sol";
 
-import {InterchainBatch, InterchainBatchLib} from "./libs/InterchainBatch.sol";
+import {InterchainBatch, InterchainBatchLib, BatchKey} from "./libs/InterchainBatch.sol";
 import {InterchainEntry, InterchainEntryLib} from "./libs/InterchainEntry.sol";
 import {VersionedPayloadLib} from "./libs/VersionedPayload.sol";
 
@@ -17,7 +17,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
     uint16 public constant DB_VERSION = 1;
 
     bytes32[] internal _entryValues;
-    mapping(address module => mapping(bytes32 batchKey => RemoteBatch batch)) internal _remoteBatches;
+    mapping(address module => mapping(BatchKey batchKey => RemoteBatch batch)) internal _remoteBatches;
 
     modifier onlyRemoteChainId(uint64 chainId) {
         if (chainId == block.chainid) {
@@ -78,7 +78,7 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
         if (batch.srcChainId == block.chainid) {
             revert InterchainDB__SameChainId(batch.srcChainId);
         }
-        bytes32 batchKey = InterchainBatchLib.batchKey(batch);
+        BatchKey batchKey = InterchainBatchLib.encodeBatchKey({srcChainId: batch.srcChainId, dbNonce: batch.dbNonce});
         RemoteBatch memory existingBatch = _remoteBatches[msg.sender][batchKey];
         // Check if that's the first time module verifies the batch
         if (existingBatch.verifiedAt == 0) {
@@ -153,7 +153,8 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
             // If entry index is not 0, it does not belong to the batch
             return 0;
         }
-        RemoteBatch memory remoteBatch = _remoteBatches[dstModule][InterchainEntryLib.batchKey(entry)];
+        BatchKey batchKey = InterchainBatchLib.encodeBatchKey({srcChainId: entry.srcChainId, dbNonce: entry.dbNonce});
+        RemoteBatch memory remoteBatch = _remoteBatches[dstModule][batchKey];
         bytes32 entryValue = InterchainEntryLib.entryValue(entry);
         // Check entry value against the batch root verified by the module
         return remoteBatch.batchRoot == entryValue ? remoteBatch.verifiedAt : 0;
