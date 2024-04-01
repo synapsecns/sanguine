@@ -29,7 +29,10 @@ export const GasTokenAsset = ({
           src={icon}
         />
         {parsedBalance} {symbol}
+        <div className="text-sm text-secondary">gas token</div>
       </div>
+
+      <div className="p-1 text-sm text-secondary">Not bridgable</div>
     </div>
   )
 }
