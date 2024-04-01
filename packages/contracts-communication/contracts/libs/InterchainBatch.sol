@@ -58,11 +58,6 @@ library InterchainBatchLib {
         (batch.srcChainId, batch.dbNonce) = decodeBatchKey(key);
     }
 
-    /// @notice Returns the globally unique identifier of the batch
-    function batchKey(InterchainBatch memory batch) internal pure returns (bytes32) {
-        return keccak256(abi.encode(batch.srcChainId, batch.dbNonce));
-    }
-
     /// @notice Encodes the uint128 key of the batch from uint64 srcChainId and uint64 dbNonce.
     function encodeBatchKey(uint64 srcChainId, uint64 dbNonce) internal pure returns (BatchKey) {
         return BatchKey.wrap((uint128(srcChainId) << 64) | dbNonce);

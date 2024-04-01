@@ -20,10 +20,6 @@ contract InterchainBatchLibHarness {
         return InterchainBatchLib.decodeBatchFromMemory(batch);
     }
 
-    function batchKey(InterchainBatch memory batch) external pure returns (bytes32) {
-        return InterchainBatchLib.batchKey(batch);
-    }
-
     function encodeBatchKey(uint64 srcChainId, uint64 dbNonce) external pure returns (BatchKey) {
         return InterchainBatchLib.encodeBatchKey(srcChainId, dbNonce);
     }

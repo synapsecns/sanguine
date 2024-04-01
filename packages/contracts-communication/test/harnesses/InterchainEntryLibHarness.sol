@@ -17,15 +17,7 @@ contract InterchainEntryLibHarness {
         return InterchainEntryLib.constructLocalEntry(dbNonce, entryIndex, srcWriter, dataHash);
     }
 
-    function entryKey(InterchainEntry memory entry) external pure returns (bytes32) {
-        return InterchainEntryLib.entryKey(entry);
-    }
-
     function entryValue(InterchainEntry memory entry) external pure returns (bytes32) {
         return InterchainEntryLib.entryValue(entry);
-    }
-
-    function batchKey(InterchainEntry memory entry) external pure returns (bytes32) {
-        return InterchainEntryLib.batchKey(entry);
     }
 }

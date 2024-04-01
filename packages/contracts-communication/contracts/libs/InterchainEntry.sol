@@ -15,7 +15,6 @@ import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 /// @param srcWriter    The address of the writer on the source chain
 /// @param dataHash     The hash of the data written on the source chain
 struct InterchainEntry {
-    // TODO: can we use uint64 for chain id?
     uint64 srcChainId;
     uint64 dbNonce;
     uint64 entryIndex;
@@ -50,18 +49,8 @@ library InterchainEntryLib {
         });
     }
 
-    /// @notice Returns the globally unique identifier of the entry
-    function entryKey(InterchainEntry memory entry) internal pure returns (bytes32) {
-        return keccak256(abi.encode(entry.srcChainId, entry.dbNonce, entry.entryIndex));
-    }
-
     /// @notice Returns the value of the entry: writer + dataHash hashed together
     function entryValue(InterchainEntry memory entry) internal pure returns (bytes32) {
         return keccak256(abi.encode(entry.srcWriter, entry.dataHash));
-    }
-
-    /// @notice Returns the globally unique identifier of the batch containing the entry
-    function batchKey(InterchainEntry memory entry) internal pure returns (bytes32) {
-        return keccak256(abi.encode(entry.srcChainId, entry.dbNonce));
     }
 }
