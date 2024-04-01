@@ -98,7 +98,7 @@ interface IInterchainClientV1 {
     /// @param transactionId    The ID of the transaction to write the proof for.
     /// @return dbNonce         The database nonce of the batch containing the written proof for transaction.
     /// @return entryIndex      The index of the written proof for transaction within the batch.
-    function writeExecutionProof(bytes32 transactionId) external returns (uint256 dbNonce, uint64 entryIndex);
+    function writeExecutionProof(bytes32 transactionId) external returns (uint64 dbNonce, uint64 entryIndex);
 
     /**
      * @notice Checks if a transaction is executable.

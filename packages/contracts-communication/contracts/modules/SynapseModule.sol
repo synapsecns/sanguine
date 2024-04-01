@@ -29,7 +29,7 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     /// @dev Hash of the last gas data sent to the remote chain.
     mapping(uint64 chainId => bytes32 gasDataHash) internal _lastGasDataHash;
     /// @dev Nonce of the last gas data received from the remote chain.
-    mapping(uint64 chainId => uint256 gasDataNonce) internal _lastGasDataNonce;
+    mapping(uint64 chainId => uint64 gasDataNonce) internal _lastGasDataNonce;
 
     /// @inheritdoc ISynapseModule
     address public feeCollector;
@@ -180,7 +180,7 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     /// @dev Internal logic to fill the module data for the specified destination chain.
     function _fillModuleData(
         uint64 dstChainId,
-        uint256 // dbNonce
+        uint64 // dbNonce
     )
         internal
         override
@@ -202,13 +202,13 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     }
 
     /// @dev Internal logic to handle the auxiliary module data relayed from the remote chain.
-    function _receiveModuleData(uint64 srcChainId, uint256 dbNonce, bytes memory moduleData) internal override {
+    function _receiveModuleData(uint64 srcChainId, uint64 dbNonce, bytes memory moduleData) internal override {
         // Exit early if data is empty
         if (moduleData.length == 0) {
             return;
         }
         // Don't process outdated data
-        uint256 lastNonce = _lastGasDataNonce[srcChainId];
+        uint64 lastNonce = _lastGasDataNonce[srcChainId];
         if (lastNonce == 0 || lastNonce < dbNonce) {
             _lastGasDataNonce[srcChainId] = dbNonce;
             _getSynapseGasOracle().receiveRemoteGasData(srcChainId, moduleData);
@@ -221,7 +221,7 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     /// @dev Internal logic to get the module fee for verifying an batch on the specified destination chain.
     function _getModuleFee(
         uint64 dstChainId,
-        uint256 // dbNonce
+        uint64 // dbNonce
     )
         internal
         view

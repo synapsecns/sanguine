@@ -23,5 +23,5 @@ interface IInterchainModule {
     /// @notice Get the Module fee for verifying a batch on the specified destination chain.
     /// @param dstChainId   The chain id of the destination chain
     /// @param dbNonce      The database nonce of the batch on the source chain
-    function getModuleFee(uint64 dstChainId, uint256 dbNonce) external view returns (uint256);
+    function getModuleFee(uint64 dstChainId, uint64 dbNonce) external view returns (uint256);
 }

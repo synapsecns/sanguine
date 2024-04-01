@@ -17,7 +17,7 @@ import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 struct InterchainEntry {
     // TODO: can we use uint64 for chain id?
     uint64 srcChainId;
-    uint256 dbNonce;
+    uint64 dbNonce;
     uint64 entryIndex;
     bytes32 srcWriter;
     bytes32 dataHash;
@@ -32,7 +32,7 @@ library InterchainEntryLib {
     /// @param dataHash     The hash of the data written on the local chain
     /// @return entry       The constructed InterchainEntry struct
     function constructLocalEntry(
-        uint256 dbNonce,
+        uint64 dbNonce,
         uint64 entryIndex,
         address writer,
         bytes32 dataHash

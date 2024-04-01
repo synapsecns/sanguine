@@ -14,13 +14,13 @@ interface IInterchainDB {
         bytes32 batchRoot;
     }
 
-    error InterchainDB__BatchDoesNotExist(uint256 dbNonce);
-    error InterchainDB__BatchNotFinalized(uint256 dbNonce);
+    error InterchainDB__BatchDoesNotExist(uint64 dbNonce);
+    error InterchainDB__BatchNotFinalized(uint64 dbNonce);
     error InterchainDB__ConflictingBatches(address module, bytes32 existingBatchRoot, InterchainBatch newBatch);
-    error InterchainDB__EntryIndexOutOfRange(uint256 dbNonce, uint64 entryIndex, uint64 batchSize);
+    error InterchainDB__EntryIndexOutOfRange(uint64 dbNonce, uint64 entryIndex, uint64 batchSize);
     error InterchainDB__IncorrectFeeAmount(uint256 actualFee, uint256 expectedFee);
     error InterchainDB__InvalidBatchVersion(uint16 version);
-    error InterchainDB__InvalidEntryRange(uint256 dbNonce, uint64 start, uint64 end);
+    error InterchainDB__InvalidEntryRange(uint64 dbNonce, uint64 start, uint64 end);
     error InterchainDB__NoModulesSpecified();
     error InterchainDB__SameChainId(uint64 chainId);
 
@@ -30,7 +30,7 @@ interface IInterchainDB {
     /// @param dataHash     The hash of the data to be written to the Interchain DataBase as a new entry
     /// @return dbNonce     The database nonce of the batch containing the written entry
     /// @return entryIndex  The index of the written entry within the batch
-    function writeEntry(bytes32 dataHash) external returns (uint256 dbNonce, uint64 entryIndex);
+    function writeEntry(bytes32 dataHash) external returns (uint64 dbNonce, uint64 entryIndex);
 
     /// @notice Request the given Interchain Modules to verify an existing batch.
     /// If the batch is not finalized, the module will verify it after finalization.
@@ -44,7 +44,7 @@ interface IInterchainDB {
     /// @param srcModules    The source chain addresses of the Interchain Modules to use for verification
     function requestBatchVerification(
         uint64 dstChainId,
-        uint256 dbNonce,
+        uint64 dbNonce,
         address[] memory srcModules
     )
         external
@@ -66,7 +66,7 @@ interface IInterchainDB {
     )
         external
         payable
-        returns (uint256 dbNonce, uint64 entryIndex);
+        returns (uint64 dbNonce, uint64 entryIndex);
 
     /// @notice Allows the Interchain Module to verify the batch coming from the remote chain.
     /// Note: The DB will only accept the batch of the same version as the DB itself.
@@ -87,7 +87,7 @@ interface IInterchainDB {
     /// and the leafs value match the value of the written entry (srcWriter + dataHash hashed together).
     /// @dev Will revert if the batch with the given nonce does not exist, or is not finalized.
     /// @param dbNonce      The database nonce of the finalized batch
-    function getBatchLeafs(uint256 dbNonce) external view returns (bytes32[] memory);
+    function getBatchLeafs(uint64 dbNonce) external view returns (bytes32[] memory);
 
     /// @notice Returns the list of leafs of the finalized batch with the given nonce,
     /// paginated by the given start and end indexes. The end index is exclusive.
@@ -99,7 +99,7 @@ interface IInterchainDB {
     /// @param start        The start index of the paginated leafs, inclusive
     /// @param end          The end index of the paginated leafs, exclusive
     function getBatchLeafsPaginated(
-        uint256 dbNonce,
+        uint64 dbNonce,
         uint64 start,
         uint64 end
     )
@@ -110,12 +110,12 @@ interface IInterchainDB {
     /// @notice Returns the size of the finalized batch with the given nonce.
     /// @dev Will revert if the batch with the given nonce does not exist, or is not finalized.
     /// @param dbNonce      The database nonce of the finalized batch
-    function getBatchSize(uint256 dbNonce) external view returns (uint64);
+    function getBatchSize(uint64 dbNonce) external view returns (uint64);
 
     /// @notice Get the finalized Interchain Batch with the given nonce.
     /// @dev Will revert if the batch with the given nonce does not exist, or is not finalized.
     /// @param dbNonce      The database nonce of the finalized batch
-    function getBatch(uint256 dbNonce) external view returns (InterchainBatch memory);
+    function getBatch(uint64 dbNonce) external view returns (InterchainBatch memory);
 
     /// @notice Get the Interchain Entry's value written on the local chain with the given batch nonce and entry index.
     /// Entry value is calculated as the hash of the writer address and the written data hash.
@@ -124,7 +124,7 @@ interface IInterchainDB {
     /// or the entry with the given index does not exist within the batch.
     /// @param dbNonce      The database nonce of the existing batch
     /// @param entryIndex   The index of the written entry within the batch
-    function getEntryValue(uint256 dbNonce, uint64 entryIndex) external view returns (bytes32);
+    function getEntryValue(uint64 dbNonce, uint64 entryIndex) external view returns (bytes32);
 
     /// @notice Get the Merkle proof of inclusion for the entry with the given index
     /// in the finalized batch with the given nonce.
@@ -133,16 +133,16 @@ interface IInterchainDB {
     /// @param dbNonce      The database nonce of the finalized batch
     /// @param entryIndex   The index of the written entry within the batch
     /// @return proof       The Merkle proof of inclusion for the entry
-    function getEntryProof(uint256 dbNonce, uint64 entryIndex) external view returns (bytes32[] memory proof);
+    function getEntryProof(uint64 dbNonce, uint64 entryIndex) external view returns (bytes32[] memory proof);
 
     /// @notice Get the nonce of the database, which is incremented every time a new batch is finalized.
     /// This is the nonce of the current non-finalized batch.
-    function getDBNonce() external view returns (uint256);
+    function getDBNonce() external view returns (uint64);
 
     /// @notice Get the index of the next entry to be written to the database.
     /// @return dbNonce      The database nonce of the batch including the next entry
     /// @return entryIndex   The index of the next entry within that batch
-    function getNextEntryIndex() external view returns (uint256 dbNonce, uint64 entryIndex);
+    function getNextEntryIndex() external view returns (uint64 dbNonce, uint64 entryIndex);
 
     /// @notice Read the data written on specific source chain by a specific writer,
     /// and verify it on the destination chain using the provided Interchain Module.

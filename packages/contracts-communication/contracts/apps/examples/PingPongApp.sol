@@ -16,8 +16,8 @@ contract PingPongApp is ICAppV1 {
 
     event GasLimitSet(uint256 gasLimit);
     event PingDisrupted(uint256 counter);
-    event PingReceived(uint256 counter, uint256 dbNonce, uint64 entryIndex);
-    event PingSent(uint256 counter, uint256 dbNonce, uint64 entryIndex);
+    event PingReceived(uint256 counter, uint64 dbNonce, uint64 entryIndex);
+    event PingSent(uint256 counter, uint64 dbNonce, uint64 entryIndex);
 
     constructor(address admin) ICAppV1(admin) {
         _grantRole(IC_GOVERNOR_ROLE, admin);
@@ -54,7 +54,7 @@ contract PingPongApp is ICAppV1 {
     function _receiveMessage(
         uint64 srcChainId,
         bytes32, // sender
-        uint256 dbNonce,
+        uint64 dbNonce,
         uint64 entryIndex,
         bytes calldata message
     )

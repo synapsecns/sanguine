@@ -9,8 +9,8 @@ import {OptionsV1} from "../../libs/Options.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 contract ExampleAppV1 is ICAppV1 {
-    event MessageReceived(uint64 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message);
-    event MessageSent(uint64 dstChainId, uint256 dbNonce, uint64 entryIndex, bytes32 transactionId);
+    event MessageReceived(uint64 srcChainId, bytes32 sender, uint64 dbNonce, uint64 entryIndex, bytes message);
+    event MessageSent(uint64 dstChainId, uint64 dbNonce, uint64 entryIndex, bytes32 transactionId);
 
     constructor(address admin) ICAppV1(admin) {
         _grantRole(IC_GOVERNOR_ROLE, admin);
@@ -58,7 +58,7 @@ contract ExampleAppV1 is ICAppV1 {
     function _receiveMessage(
         uint64 srcChainId,
         bytes32 sender,
-        uint256 dbNonce,
+        uint64 dbNonce,
         uint64 entryIndex,
         bytes calldata message
     )

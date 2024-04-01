@@ -16,7 +16,7 @@ import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 struct InterchainBatch {
     // TODO: can we use uint64 for chain id?
     uint64 srcChainId;
-    uint256 dbNonce;
+    uint64 dbNonce;
     bytes32 batchRoot;
 }
 
@@ -28,7 +28,7 @@ library InterchainBatchLib {
     /// @param batchRoot    The root of the Merkle tree containing the batched entries
     /// @return batch       The constructed InterchainBatch struct
     function constructLocalBatch(
-        uint256 dbNonce,
+        uint64 dbNonce,
         bytes32 batchRoot
     )
         internal

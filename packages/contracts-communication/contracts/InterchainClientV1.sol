@@ -128,7 +128,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     }
 
     /// @inheritdoc IInterchainClientV1
-    function writeExecutionProof(bytes32 transactionId) external returns (uint256 dbNonce, uint64 entryIndex) {
+    function writeExecutionProof(bytes32 transactionId) external returns (uint64 dbNonce, uint64 entryIndex) {
         address executor = _txExecutor[transactionId];
         if (executor == address(0)) {
             revert InterchainClientV1__TxNotExecuted(transactionId);
@@ -253,7 +253,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         desc.transactionId = keccak256(encodeTransaction(icTx));
         // Sanity check: nonce returned from DB should match the nonce used to construct the transaction
         {
-            (uint256 dbNonce, uint64 entryIndex) = IInterchainDB(INTERCHAIN_DB).writeEntryWithVerification{
+            (uint64 dbNonce, uint64 entryIndex) = IInterchainDB(INTERCHAIN_DB).writeEntryWithVerification{
                 value: verificationFee
             }(icTx.dstChainId, desc.transactionId, srcModules);
             assert(dbNonce == desc.dbNonce && entryIndex == desc.entryIndex);

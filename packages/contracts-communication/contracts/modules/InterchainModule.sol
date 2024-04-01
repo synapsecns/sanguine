@@ -45,7 +45,7 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
     }
 
     /// @inheritdoc IInterchainModule
-    function getModuleFee(uint64 dstChainId, uint256 dbNonce) external view returns (uint256) {
+    function getModuleFee(uint64 dstChainId, uint64 dbNonce) external view returns (uint256) {
         return _getModuleFee(dstChainId, dbNonce);
     }
 
@@ -70,11 +70,11 @@ abstract contract InterchainModule is InterchainModuleEvents, IInterchainModule 
     function _requestVerification(uint64 dstChainId, bytes memory encodedBatch) internal virtual {}
 
     /// @dev Internal logic to fill the module data for the specified destination chain.
-    function _fillModuleData(uint64 dstChainId, uint256 dbNonce) internal virtual returns (bytes memory) {}
+    function _fillModuleData(uint64 dstChainId, uint64 dbNonce) internal virtual returns (bytes memory) {}
 
     /// @dev Internal logic to handle the auxiliary module data relayed from the remote chain.
-    function _receiveModuleData(uint64 srcChainId, uint256 dbNonce, bytes memory moduleData) internal virtual {}
+    function _receiveModuleData(uint64 srcChainId, uint64 dbNonce, bytes memory moduleData) internal virtual {}
 
     /// @dev Internal logic to get the module fee for verifying an batch on the specified destination chain.
-    function _getModuleFee(uint64 dstChainId, uint256 dbNonce) internal view virtual returns (uint256);
+    function _getModuleFee(uint64 dstChainId, uint64 dbNonce) internal view virtual returns (uint256);
 }

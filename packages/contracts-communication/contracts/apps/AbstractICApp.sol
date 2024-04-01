@@ -25,7 +25,7 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
     function appReceive(
         uint64 srcChainId,
         bytes32 sender,
-        uint256 dbNonce,
+        uint64 dbNonce,
         uint64 entryIndex,
         bytes calldata message
     )
@@ -160,7 +160,7 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
     function _receiveMessage(
         uint64 srcChainId,
         bytes32 sender,
-        uint256 dbNonce,
+        uint64 dbNonce,
         uint64 entryIndex,
         bytes calldata message
     )
