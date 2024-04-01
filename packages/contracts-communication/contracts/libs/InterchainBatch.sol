@@ -41,17 +41,21 @@ library InterchainBatchLib {
 
     /// @notice Encodes the InterchainBatch struct into a non-versioned batch payload.
     function encodeBatch(InterchainBatch memory batch) internal pure returns (bytes memory) {
-        return abi.encode(batch);
+        return abi.encode(encodeBatchKey(batch.srcChainId, batch.dbNonce), batch.batchRoot);
     }
 
     /// @notice Decodes the InterchainBatch struct from a non-versioned batch payload in calldata.
-    function decodeBatch(bytes calldata data) internal pure returns (InterchainBatch memory) {
-        return abi.decode(data, (InterchainBatch));
+    function decodeBatch(bytes calldata data) internal pure returns (InterchainBatch memory batch) {
+        BatchKey key;
+        (key, batch.batchRoot) = abi.decode(data, (BatchKey, bytes32));
+        (batch.srcChainId, batch.dbNonce) = decodeBatchKey(key);
     }
 
     /// @notice Decodes the InterchainBatch struct from a non-versioned batch payload in memory.
-    function decodeBatchFromMemory(bytes memory data) internal pure returns (InterchainBatch memory) {
-        return abi.decode(data, (InterchainBatch));
+    function decodeBatchFromMemory(bytes memory data) internal pure returns (InterchainBatch memory batch) {
+        BatchKey key;
+        (key, batch.batchRoot) = abi.decode(data, (BatchKey, bytes32));
+        (batch.srcChainId, batch.dbNonce) = decodeBatchKey(key);
     }
 
     /// @notice Returns the globally unique identifier of the batch
