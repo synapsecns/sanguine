@@ -74,7 +74,10 @@ type CCTPRelayer struct {
 }
 
 // NewCCTPRelayer creates a new CCTPRelayer.
-func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelayerDB, scribeClient client.ScribeClient, omniRPCClient omniClient.RPCClient, handler metrics.Handler, attestationAPI attestation.CCTPAPI) (*CCTPRelayer, error) {
+// nolint: cyclop
+func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelayerDB, scribeClient client.ScribeClient, omniRPCClient omniClient.RPCClient, handler metrics.Handler, attestationAPI attestation.CCTPAPI, rawOpts ...OptionsArgsOption) (*CCTPRelayer, error) {
+	opts := makeOptions(rawOpts)
+
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%d", scribeClient.URL, scribeClient.Port),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor(otelgrpc.WithTracerProvider(handler.GetTracerProvider()))),
@@ -111,7 +114,10 @@ func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelaye
 		return nil, fmt.Errorf("could not make cctp signer: %w", err)
 	}
 
-	txSubmitter := submitter.NewTransactionSubmitter(handler, signer, omniRPCClient, store.SubmitterDB(), &cfg.SubmitterConfig)
+	txSubmitter := opts.submitter
+	if txSubmitter == nil {
+		txSubmitter = submitter.NewTransactionSubmitter(handler, signer, omniRPCClient, store.SubmitterDB(), &cfg.SubmitterConfig)
+	}
 	relayerRequestChan := make(chan *api.RelayRequest, 1000)
 	relayerAPI := api.NewRelayerAPIServer(cfg.Port, cfg.Host, store, relayerRequestChan)
 

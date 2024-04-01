@@ -274,7 +274,7 @@ func (r *Relayer) startCCTPRelayer(ctx context.Context) (err error) {
 	scribeClient := client.NewRemoteScribe(uint16(cctpCfg.ScribePort), cctpCfg.ScribeURL, r.metrics).ScribeClient
 	omnirpcClient := omniClient.NewOmnirpcClient(cctpCfg.BaseOmnirpcURL, r.metrics, omniClient.WithCaptureReqRes())
 	attAPI := attestation.NewCircleAPI(cctpCfg.CircleAPIURl)
-	cctpRelayer, err := relayer.NewCCTPRelayer(ctx, *cctpCfg, store, scribeClient, omnirpcClient, r.metrics, attAPI)
+	cctpRelayer, err := relayer.NewCCTPRelayer(ctx, *cctpCfg, store, scribeClient, omnirpcClient, r.metrics, attAPI, relayer.WithSubmitter(r.submitter))
 	if err != nil {
 		return fmt.Errorf("could not create cctp relayer: %w", err)
 	}
