@@ -358,6 +358,11 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 			transactor.GasFeeCap = maxPrice
 		}
 
+		span.SetAttributes(
+			attribute.String("gas_price", bigPtrToString(transactor.GasPrice)),
+			attribute.String("gas_fee_cap", bigPtrToString(transactor.GasFeeCap)),
+			attribute.String("gas_tip_cap", bigPtrToString(transactor.GasTipCap)),
+		)
 		metrics.EndSpanWithErr(span, err)
 	}()
 
@@ -372,6 +377,7 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 		if transactor.GasFeeCap.Cmp(maxPrice) > 0 {
 			transactor.GasFeeCap = maxPrice
 			shouldBump = false
+			span.AddEvent("not bumping fee cap since max price is reached")
 		}
 
 		transactor.GasTipCap, err = client.SuggestGasTipCap(ctx)
