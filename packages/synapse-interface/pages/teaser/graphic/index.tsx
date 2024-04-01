@@ -19,7 +19,7 @@ const begin = {
     anchor: 0.5,
     bridge: 1,
     barge: 4,
-    balloon: 6,
+    balloon: 10,
   },
   green: {
     platform: 0.1,
@@ -37,11 +37,11 @@ const begin = {
     bridge: 1.1,
   },
   synapse: {
-    bridgeNw: 2,
+    bridgeNe: 2,
     dockN: 2,
-    dockE: 2,
-    padN: 2,
-    padE: 2,
+    dockE: 2.5,
+    padN: 10,
+    padE: 10.5,
   },
 }
 
@@ -115,7 +115,7 @@ const LandingPage = () => {
     )
   }
 
-  const paint = (color) => {
+  const paint = (color = 'synapse') => {
     return {
       stroke: stroke[color],
       fill: fill[color],
@@ -143,18 +143,44 @@ const LandingPage = () => {
     green: hslStr(135, 30, 3),
   }
 
-  const AnimateHop = ({ begin }) => {
+  const Platform = ({
+    id,
+    color,
+    translate,
+    begin = '0s',
+  }: {
+    id: string
+    color?: string
+    translate?: string
+    begin?: string
+  }) => {
     return (
-      <animateMotion
-        path="m0 0 0 -12.5"
-        additive="sum"
-        begin={begin}
-        dur=".5s"
-        calcMode="spline"
-        keyPoints="0; 1; 0"
-        keyTimes="0; .5; 1"
-        keySplines="0 0 .5 1; .8 0 .5 1"
-      />
+      <path
+        transform={translate ? `translate(${translate})` : null}
+        {...paint(color)}
+      >
+        <animate
+          id={id}
+          attributeName="d"
+          values="m0 0 0 0 0 0 0 0z; m0 -100 200 100 -200 100 -200 -100z"
+          dur=".25s"
+          begin={begin}
+          {...animAttrs()}
+        />
+        <animateMotion
+          path="M0 50 0 0"
+          dur=".5s"
+          begin={`${id}.begin`}
+          {...animAttrs()}
+        />
+        <animate
+          attributeName="opacity"
+          values="0;1"
+          repeatCount="3"
+          dur=".1s"
+          begin={`${id}.begin + .1s`}
+        />
+      </path>
     )
   }
 
@@ -166,9 +192,10 @@ const LandingPage = () => {
   }: {
     color?: string
     translate?: string
-    begin?: number
+    begin?: number | string
     children?: React.ReactNode
   }) => {
+    if (typeof begin === 'number') begin = begin + 's'
     return (
       <g
         transform={translate ? `translate(${translate})` : undefined}
@@ -176,15 +203,15 @@ const LandingPage = () => {
       >
         <animate
           attributeName="opacity"
-          begin={begin + 's'}
-          dur=".5s"
-          values="0; 1"
+          begin={begin}
+          dur=".375s"
+          values=".25; 1"
           fill="freeze"
         />
         <animateMotion
           path="m0 0 v-12.5"
           additive="sum"
-          begin={begin + 0.125 + 's'}
+          begin={begin}
           dur=".5s"
           calcMode="spline"
           keyPoints="0; 1; 0"
@@ -197,7 +224,7 @@ const LandingPage = () => {
           <animate
             attributeName="d"
             values="m0,12.5 25,-12.5 0,0 -25,-12.5 -25,12.5 0,0 25,12.5; m0,12.5 25,-12.5 0,-27.95 -25,-12.5 -25,12.5 0,27.95 25,12.5"
-            begin={begin + 's'}
+            begin={begin}
             dur=".25s"
             calcMode="spline"
             keyTimes="0; 1"
@@ -209,7 +236,7 @@ const LandingPage = () => {
           <animate
             attributeName="d"
             values="m-25,0 25,12.5 25,-12.5 m-25,12.5 0,0; m-25,-27.95 25,12.5 25,-12.5 m-25,12.5 0,27.95"
-            begin={begin + 's'}
+            begin={begin}
             dur=".25s"
             calcMode="spline"
             keyTimes="0; 1"
@@ -242,11 +269,11 @@ const LandingPage = () => {
         <style>
           {/* {`@keyframes circlePulse { from { r: 50; } to { r: 100; } }`} */}
         </style>
-        <defs></defs>
+        <defs> </defs>
 
         <path {...paint('synapse')}>
           <animate
-            id="simpleBridgeNe"
+            id="bridgeNe"
             attributeName="d"
             values="m-200,-100 0,0 0,0 0,0z; m-100,-150 0,0 -200,100 0,0z; m-120,-160 40,20 -200,100 -40,-20z"
             dur=".5s"
@@ -257,39 +284,53 @@ const LandingPage = () => {
             fill="freeze"
           />
         </path>
-        <path
-          id="simple-bridge-sw"
-          d="m280,40 40,20 -200,100 -40,-20z"
-          {...paint('synapse')}
-        />
-        <path {...paint('synapse')}>
+        <path transform="translate(400 200)" {...paint('synapse')}>
+          <animate
+            id="bridgeSw"
+            attributeName="d"
+            values="m-200,-100 0,0 0,0 0,0z; m-100,-150 0,0 -200,100 0,0z; m-120,-160 40,20 -200,100 -40,-20z"
+            dur=".5s"
+            begin="platformYellow.end + 12s"
+            calcMode="spline"
+            keyTimes="0; .5; 1"
+            keySplines=".5 0 .2 1; .5 0 .2 1"
+            fill="freeze"
+          />
+        </path>
+        <path transform="translate(-40 -240)" {...paint('synapse')}>
           <animate
             id="dockN"
             attributeName="d"
-            values="m-40,-240 0,0 0,0 0,0z; m-80,-300 40,20 -120,60 -40,-20z"
+            values="m0 0 0 0 0 0 0 0z; m-40 -60 40 20 -120 60 -40 -20z"
             dur=".5s"
-            begin="simpleBridgeNe.end + 2s"
+            begin="bridgeNe.end + 3.5s"
             {...animAttrs()}
           />
         </path>
-        <path {...paint('synapse')}>
+        <path transform="translate(-440 -40)" {...paint('synapse')}>
           <animate
             id="dockE"
             attributeName="d"
-            values="m-440,-40 0,0 0,0 0,0z; m-480,-100 40,20 -120,60 -40,-20z"
+            values="m0 0 0 0 0 0 0 0z; m-40 -60 40 20 -120 60 -40 -20z"
             dur=".5s"
-            begin="simpleBridgeNe.end + 2.5s"
+            begin="dockN.begin + 1s"
             {...animAttrs()}
           />
         </path>
 
-        <path {...paint('synapse')}>
+        <path transform="translate(200 -200)" {...paint('synapse')}>
           <animate
             id="airpad1"
             attributeName="d"
             dur=".5s"
-            values="m200,-170 0,0 -0,0 -0,-0z; m200,-200 60,30 -60,30 -60,-30z"
-            begin={begin.blue.balloon}
+            values="m0 0 0 0 0 0 0 0z; m0 -30 60 30 -60 30 -60 -30z"
+            begin="10s"
+            {...animAttrs()}
+          />
+          <animateMotion
+            path="m0 30 0 0"
+            dur=".5s"
+            begin="airpad1.begin"
             {...animAttrs()}
           />
           <animate
@@ -297,171 +338,89 @@ const LandingPage = () => {
             values="0;1"
             repeatCount="3"
             dur=".1s"
-            begin="airpad1.begin"
-          />
-          <animateTransform
-            attributeName="transform"
-            additive="sum"
-            type="translate"
-            values="0 30; 0 0"
-            dur=".5s"
-            begin="airpad1.begin"
-            {...animAttrs()}
+            begin="airpad1.begin + .1s"
           />
         </path>
-        <path {...paint('synapse')}>
+        <path transform="translate(200 -60)" {...paint('synapse')}>
           <animate
             id="airpad2"
             attributeName="d"
             dur=".5s"
-            values="m200,-30 0,0 -0,0 -0,-0z; m200,-60 60,30 -60,30 -60,-30z"
-            begin={begin.blue.balloon}
+            values="m0 0 0 0 0 0 0 0z; m0 -30 60 30 -60 30 -60 -30z"
+            begin="airpad1.begin + .5s"
             {...animAttrs()}
           />
-          <animate
-            attributeName="opacity"
-            values="0;1"
-            repeatCount="3"
-            dur=".1s"
-            begin="airpad2.begin"
-          />
-          <animateTransform
-            attributeName="transform"
-            additive="sum"
-            type="translate"
-            values="0 30; 0 0"
+
+          <animateMotion
+            path="m0 30 0 0"
             dur=".5s"
             begin="airpad2.begin"
             {...animAttrs()}
           />
-        </path>
-
-        <path {...paint('blue')}>
-          <animate
-            id="platformBlue"
-            attributeName="d"
-            values="m0,1 2,1 -2,1 -2,-1z; m0,-100 200,100 -200,100 -200,-100z"
-            dur=".25s"
-            begin={begin.blue.platform + 's'}
-            {...animAttrs()}
-          />
           <animate
             attributeName="opacity"
             values="0;1"
             repeatCount="3"
             dur=".1s"
-            begin="platformBlue.begin + .1s"
-          />
-          <animateTransform
-            attributeName="transform"
-            type="translate"
-            values="0 -150; 0 -200"
-            dur=".5s"
-            begin="platformBlue.begin"
-            {...animAttrs()}
-          />
-        </path>
-        <path {...paint('green')}>
-          <animate
-            id="platformGreen"
-            attributeName="d"
-            values="m0,1 2,1 -2,1 -2,-1z; m0,-100 200,100 -200,100 -200,-100z"
-            dur=".25s"
-            begin="platformBlue.begin + .1s"
-            {...animAttrs()}
-          />
-          <animate
-            attributeName="opacity"
-            values="0;1"
-            repeatCount="3"
-            dur=".1s"
-            begin="platformGreen.begin + .1s"
-          />
-          <animateTransform
-            attributeName="transform"
-            type="translate"
-            values="400 50; 400 0"
-            dur=".5s"
-            begin="platformGreen.begin"
-            {...animAttrs()}
-          />
-        </path>
-        <path {...paint('orange')}>
-          <animate
-            id="platformOrange"
-            attributeName="d"
-            values="m0,1 2,1 -2,1 -2,-1z; m0,-100 200,100 -200,100 -200,-100z"
-            dur=".25s"
-            begin="platformGreen.begin + .1s"
-            {...animAttrs()}
-          />
-          <animate
-            attributeName="opacity"
-            values="0;1"
-            repeatCount="3"
-            dur=".1s"
-            begin="platformOrange.begin + .1s"
-          />
-          <animateTransform
-            attributeName="transform"
-            type="translate"
-            values="0 250; 0 200"
-            dur=".5s"
-            begin="platformOrange.begin"
-            {...animAttrs()}
-          />
-        </path>
-        <path {...paint('yellow')}>
-          <animate
-            id="platformYellow"
-            attributeName="d"
-            values="m0,1 2,1 -2,1 -2,-1z; m0,-100 200,100 -200,100 -200,-100z"
-            dur=".25s"
-            begin="platformOrange.begin + .1s"
-            {...animAttrs()}
-          />
-          <animate
-            attributeName="opacity"
-            values="0;1"
-            repeatCount="3"
-            dur=".1s"
-            begin="platformYellow.begin + .1s"
-          />
-          <animateTransform
-            attributeName="transform"
-            type="translate"
-            values="-400 50; -400 0"
-            dur=".5s"
-            begin="platformYellow.begin"
-            {...animAttrs()}
+            begin="airpad2.begin + .1s"
           />
         </path>
 
-        <g id="barge">
-          <animateMotion path="M200,-500" />
-          <path d="m70,-75 100,50 -200,100 -100,-50z" {...paint('synapse')} />
+        <Platform
+          id="platformBlue"
+          translate="0 -200"
+          color="blue"
+          begin="0s"
+        />
+        <Platform
+          id="platformGreen"
+          translate="400 0"
+          color="green"
+          begin=".1s"
+        />
+        <Platform
+          id="platformOrange"
+          translate="0 200"
+          color="orange"
+          begin=".2s"
+        />
+        <Platform
+          id="platformYellow"
+          translate="-400 0"
+          color="yellow"
+          begin=".3s"
+        />
+
+        <path
+          id="barge"
+          d="m50,-75 100,50 -200,100 -100,-50z"
+          transform="translate(250 -515)"
+          {...paint('synapse')}
+        >
           <animateMotion
             id="bargeOut"
             dur="2s"
             begin="dockN.end; bargeIn.end"
-            path="M200,-500 -200,-300"
+            path="m0 0 -440 220"
             {...animAttrs()}
           />
           <animateMotion
             id="bargeCross"
             dur="2s"
             begin="bargeOut.end + 2s"
-            path="M-200,-300 -600,-100"
+            path="m0 0 -400 200"
+            additive="sum"
             {...animAttrs()}
           />
           <animateMotion
             id="bargeIn"
             dur="2s"
             begin="bargeCross.end + 2s"
-            path="M-600,-100 -1000,100"
+            path="m0 0 -400 200"
+            additive="sum"
             {...animAttrs()}
           />
-        </g>
+        </path>
 
         <g stroke={stroke.orange}>
           <ellipse rx="30" ry="15" cy="260" {...paint('synapse')} />
@@ -685,53 +644,39 @@ const LandingPage = () => {
         <Cube color="green" translate="375 12.5" begin={10.5} />
 
         <Cube color="orange" translate="0 150" begin={begin.orange.anchor} />
-        <Cube color="orange" translate="25 162.5" begin={11.5} />
-        <Cube color="orange" translate="-25 162.5" begin={13.5} />
-        <Cube color="orange" translate="0 122.05" begin={20} />
+        <Cube color="orange" translate="25 162.5" begin={20} />
+        <Cube color="orange" translate="-25 162.5" begin={21} />
+        <Cube color="orange" translate="0 122.05" begin={22} />
 
-        <Cube color="blue" begin={begin.blue.balloon}>
-          <animateTransform
-            id="balloonReset"
-            attributeName="transform"
-            type="translate"
-            to="100 -225"
-            begin="0s; balloonFadeOut.end"
-            dur="1ms"
-            {...animAttrs()}
-          />
-          <animateTransform
+        <Cube
+          translate="100 -225"
+          color="blue"
+          begin="0s; airdropOut.end + 1ms"
+        >
+          <animateMotion
             id="stackOut"
-            attributeName="transform"
-            type="translate"
-            by="100 50"
-            begin={`${begin.blue.balloon + 2}s; balloonFadeIn.end`}
+            path="m0 0 100 50"
+            begin="2s; airdropOut.end + 2s"
             dur="1s"
             {...animAttrs()}
           />
-          <animateTransform
+          <animateMotion
             id="airlift"
-            attributeName="transform"
-            type="translate"
-            by="0 -50"
-            begin="balloon.begin + .1s"
-            dur="2s"
-            {...animAttrs()}
+            additive="sum"
+            path="m0 0 v-50 150"
+            begin="stackOut.end"
+            keyPoints="0; .25; 1"
+            keyTimes="0; .33; 1"
+            calcMode="spline"
+            keySplines=".5 0 .2 1; .5 0 .2 1"
+            dur="6s"
+            fill="freeze"
           />
-          <animateTransform
-            id="airpath"
-            attributeName="transform"
-            type="translate"
-            by="0 150"
-            begin="airlift.end"
-            dur="4s"
-            {...animAttrs()}
-          />
-          <animateTransform
+          <animateMotion
             id="airdrop"
-            attributeName="transform"
-            type="translate"
-            by="0 40"
-            begin="airpath.end"
+            additive="sum"
+            path="m0 0 v40"
+            begin="airlift.end"
             dur=".25s"
             {...animAttrs(0.33, 1)}
           />
@@ -741,16 +686,19 @@ const LandingPage = () => {
             dur=".33s"
             {...flashAttrs('inherit', 'green')}
           />
-          <animateTransform
+          <animateMotion
             id="airdropOut"
-            attributeName="transform"
-            type="translate"
-            by="137.5 68.75"
-            begin="airdrop.end + .1s"
+            additive="sum"
+            path="m0 0 137.5 68.75 12.5 -8.75"
+            begin="airdrop.end"
             dur=".75s"
             {...animAttrs()}
           />
-          <animateTransform
+          <set attributeName="opacity" to="0" begin="airdropOut.end" />
+          <set attributeName="stroke" to={stroke.blue} begin="airdropOut.end" />
+          <animateMotion path="m0 0" begin="airdropOut.end" />
+
+          {/* <animateTransform
             id="ricochet"
             attributeName="transform"
             type="translate"
@@ -758,13 +706,7 @@ const LandingPage = () => {
             begin="airdropOut.end"
             dur=".75s"
             {...animAttrs()}
-          />
-          <animate
-            attributeName="stroke"
-            begin="ricochet.begin + .25s"
-            dur=".33s"
-            {...flashAttrs('green', 'orange')}
-          />
+          /> */}
           <animate
             id="balloonFadeOut"
             attributeName="opacity"
@@ -772,101 +714,58 @@ const LandingPage = () => {
             dur="3s"
             begin="ricochet.end + 1s"
           />
-
-          <animate
-            id="balloonFadeIn"
-            attributeName="opacity"
-            values="0; 1"
-            dur="3s"
-            begin="balloonFadeOut.end"
-          />
-          <set
-            attributeName="stroke"
-            to={stroke.blue}
-            begin="balloonFadeIn.begin"
-          />
-          <set
-            attributeName="fill"
-            to={fill.blue}
-            begin="balloonFadeIn.begin"
-          />
-
-          {/* <animate
-            attributeName="fill"
-            begin="airpath.end"
-            // {...flashAttrs('blue', 'green')} // TODO: 'fill' version
-            dur=".33s"
-            values="hsl(195deg 80% 5%); hsl(300deg 100% 5%); hsl(135deg 80% 5%)"
-            calcMode="spline"
-            keyTimes="0; .5; 1"
-            keySplines=".5 0 .2 1; .5 0 .2 1"
-            fill="freeze"
-          /> */}
         </Cube>
 
-        <g>
-          <animateMotion begin="stackOut.begin" path="m200,-97.5" />
+        <g transform="translate(200 -200)">
           <animateMotion
-            id="balloon"
-            dur="2s"
-            begin="stackOut.end"
-            path="m200 -87.5 v-50"
-            {...animAttrs()}
-          />
-          <animateMotion
-            dur="4s"
-            additive="sum"
-            begin="airpath.begin"
-            path="m0 0 v150"
-            {...animAttrs()}
+            dur="6s"
+            begin="airlift.begin"
+            path="m0 0 v-50 150"
+            keyPoints="0; .25; 1"
+            keyTimes="0; .33; 1"
+            calcMode="spline"
+            keySplines=".5 0 .2 1; .5 0 .2 1"
+            fill="freeze"
           />
           <animateMotion
             dur="1s"
             begin="airdrop.begin"
-            path="m200,12.5 v-875"
+            additive="sum"
+            path="m0 0 v-400"
             calcMode="spline"
             keyTimes="0; 1"
             keySplines="1 0 1 1"
             fill="freeze"
           />
-          <path
-            id="balloonString"
-            vectorEffect="non-scaling-stroke"
-            stroke={stroke.synapse}
-          >
-            <set attributeName="d" to="m0,-111.8 v0" begin="stackOut.begin" />
+          <path stroke={stroke.synapse}>
             <animate
               attributeName="d"
-              values="m0,-111.8 v0; m0,-111.8 v-37.5"
-              begin="balloon.begin"
+              values="m0 -2 v0; m0 -50 v48"
+              begin="airlift.begin"
               dur="2s"
               {...animAttrs()}
             />
           </path>
-          <circle
-            vectorEffect="non-scaling-stroke"
-            stroke={stroke.synapse}
-            fill={fill.synapse}
-          >
-            <animate attributeName="r" values="0" begin="stackOut.begin" />
+          <circle {...paint('synapse')}>
             <animate
               attributeName="r"
               values="0; 36"
-              begin="balloon.begin"
+              begin="airlift.begin"
               dur="2s"
               {...animAttrs()}
             />
-            <animate
-              attributeName="cy"
-              values="-111.8; -186.8"
-              begin="balloon.begin"
+            <animateMotion
+              path="m0 0 v-86"
+              begin="airlift.begin"
               dur="2s"
               {...animAttrs()}
             />
           </circle>
         </g>
 
-        <Cube color="blue" translate="-25 -212.5" begin={begin.blue.barge}>
+        <Cube color="green" translate="350 25" begin="airdropOut.end" />
+
+        <Cube color="blue" translate="-25 -212.5" begin="bargeOut.begin">
           <set attributeName="stroke" to={stroke.blue} begin="bargeOut.begin" />
           <animateTransform
             attributeName="transform"
@@ -924,68 +823,58 @@ const LandingPage = () => {
 
         <Cube color="blue" translate="0 -200" begin={begin.blue.anchor} />
 
-        <Cube color="blue" translate="-25 -187.5" begin={begin.blue.bridge}>
-          <animateTransform
+        {/* Simple Bridge Blue/Yellow Swap */}
+
+        <Cube color="blue" translate="-25 -187.5" begin="bridgeNe.end + .5s">
+          <animateMotion
             id="bridgeCubeOut"
-            attributeName="transform"
-            type="translate"
-            from="-25 -187.5"
-            by="-350 175"
-            begin="3s; bridgeCubeIn.end + 2s"
-            dur="1s"
-            {...animAttrs()}
-          />
-          <animateTransform
-            id="bridgeCubeIn"
-            attributeName="transform"
-            type="translate"
-            by="350 -175"
-            begin="bridgeCubeOut.end + 2s"
-            dur="1s"
-            {...animAttrs()}
+            dur="4s"
+            begin="bridgeNe.end + 2.5s; bridgeCubeOut.end + 2s"
+            path="M0 0 -350 175"
+            calcMode="spline"
+            keyPoints="0; 1; 1; 0"
+            keyTimes="0; .25; .75; 1"
+            keySplines=".5 0 .2 1; 0 0 1 1; .5 0 .2 1"
           />
           <animate
             attributeName="stroke"
-            begin="bridgeCubeOut.begin + .3s"
-            dur=".5s"
-            {...flashAttrs('blue', 'yellow')}
+            begin="bridgeCubeOut.begin + .3s;"
+            values={`${stroke.blue}; ${stroke.synapse}; ${stroke.yellow}; ${stroke.yellow}; ${stroke.synapse}; ${stroke.blue}`}
+            keyTimes="0; .06; .12; .88; .94; 1"
+            dur="3.4s"
           />
           <animate
-            attributeName="stroke"
-            begin="bridgeCubeIn.begin + .3s"
-            dur=".5s"
-            {...flashAttrs('yellow', 'blue')}
+            attributeName="fill"
+            begin="bridgeCubeOut.begin + .3s;"
+            values={`${fill.blue}; ${fill.synapse}; ${fill.yellow}; ${fill.yellow}; ${fill.synapse}; ${fill.blue}`}
+            keyTimes="0; .06; .12; .88; .94; 1"
+            dur="3.4s"
           />
         </Cube>
-        <Cube color="yellow" translate="-375 -12.5" begin={begin.yellow.bridge}>
-          <animateTransform
-            attributeName="transform"
-            type="translate"
-            from="-25 -187.5"
-            by="-350 175"
-            begin="bridgeCubeIn.begin"
-            dur="1s"
-            {...animAttrs()}
-          />
-          <animateTransform
-            attributeName="transform"
-            type="translate"
-            by="350 -175"
-            begin="bridgeCubeOut.begin"
-            dur="1s"
-            {...animAttrs()}
+
+        <Cube color="yellow" translate="-375 -12.5" begin="bridgeNe.end + 1s">
+          <animateMotion
+            dur="4s"
+            begin="bridgeNe.end + 2.5s; bridgeCubeOut.end + 2s"
+            path="M0 0 350 -175"
+            calcMode="spline"
+            keyPoints="0; 1; 1; 0"
+            keyTimes="0; .25; .75; 1"
+            keySplines=".5 0 .2 1; 0 0 1 1; .5 0 .2 1"
           />
           <animate
             attributeName="stroke"
-            begin="bridgeCubeOut.begin + .3s"
-            dur=".5s"
-            {...flashAttrs('yellow', 'blue')}
+            begin="bridgeCubeOut.begin + .3s;"
+            values={`${stroke.yellow}; ${stroke.synapse}; ${stroke.blue}; ${stroke.blue}; ${stroke.synapse}; ${stroke.yellow}`}
+            keyTimes="0; .06; .12; .88; .94; 1"
+            dur="3.4s"
           />
           <animate
-            attributeName="stroke"
-            begin="bridgeCubeIn.begin + .3s"
-            dur=".5s"
-            {...flashAttrs('blue', 'yellow')}
+            attributeName="fill"
+            begin="bridgeCubeOut.begin + .3s;"
+            values={`${fill.yellow}; ${fill.synapse}; ${fill.blue}; ${fill.blue}; ${fill.synapse}; ${fill.yellow}`}
+            keyTimes="0; .06; .12; .88; .94; 1"
+            dur="3.4s"
           />
         </Cube>
 
@@ -997,14 +886,6 @@ const LandingPage = () => {
 
         <Cube color="blue" translate="25 -187.5" begin={17} />
         <Cube color="blue" translate="0 -175" begin={19} />
-
-        {/* <rect
-          width="40"
-          height="200"
-          transform-origin="20 100"
-          vectorEffect="non-scaling-stroke"
-          transform="translate(-20 -100) matrix(1 .5 -1 .5 0 0) rotate(90)"
-        /> */}
       </svg>
       <p className="text-center">Reference image</p>
       <img src={exampleImg.src} className="visible" />
