@@ -182,7 +182,7 @@ func (c *chainQueue) bumpTX(parentCtx context.Context, ogTx db.TX) {
 			return fmt.Errorf("could not set gas price: %w", err)
 		}
 
-		switch ogTx.Type() {
+		switch tx.Type() {
 		case types.LegacyTxType:
 			tx = types.NewTx(&types.LegacyTx{
 				Nonce:    tx.Nonce(),
