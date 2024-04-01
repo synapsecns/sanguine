@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {InterchainBatch, InterchainBatchLibHarness} from "../harnesses/InterchainBatchLibHarness.sol";
+import {InterchainBatch, InterchainBatchLibHarness, BatchKey} from "../harnesses/InterchainBatchLibHarness.sol";
 
 import {Test} from "forge-std/Test.sol";
 
@@ -58,5 +58,12 @@ contract InterchainBatchLibTest is Test {
         bytes memory encoded = libHarness.encodeBatch(batch);
         InterchainBatch memory decoded = libHarness.decodeBatchFromMemory(encoded);
         assertEq(decoded, batch);
+    }
+
+    function test_encodeBatchKey_roundTrip(uint64 srcChainId, uint64 dbNonce) public {
+        BatchKey key = libHarness.encodeBatchKey(srcChainId, dbNonce);
+        (uint64 decodedSrcChainId, uint64 decodedDbNonce) = libHarness.decodeBatchKey(key);
+        assertEq(decodedSrcChainId, srcChainId);
+        assertEq(decodedDbNonce, dbNonce);
     }
 }

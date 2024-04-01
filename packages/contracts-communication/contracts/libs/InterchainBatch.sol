@@ -5,6 +5,8 @@ import {VersionedPayloadLib} from "./VersionedPayload.sol";
 
 import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
+type BatchKey is uint128;
+
 /// @notice Struct representing a batch of entries in the Interchain DataBase.
 /// Batched entries are put together in a Merkle tree, which root is saved.
 /// Batch has a globally unique identifier (key) and a value.
@@ -14,7 +16,6 @@ import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 /// @param dbNonce      The database nonce of the batch
 /// @param batchRoot    The root of the Merkle tree containing the batched entries
 struct InterchainBatch {
-    // TODO: can we use uint64 for chain id?
     uint64 srcChainId;
     uint64 dbNonce;
     bytes32 batchRoot;
@@ -56,5 +57,16 @@ library InterchainBatchLib {
     /// @notice Returns the globally unique identifier of the batch
     function batchKey(InterchainBatch memory batch) internal pure returns (bytes32) {
         return keccak256(abi.encode(batch.srcChainId, batch.dbNonce));
+    }
+
+    /// @notice Encodes the uint128 key of the batch from uint64 srcChainId and uint64 dbNonce.
+    function encodeBatchKey(uint64 srcChainId, uint64 dbNonce) internal pure returns (BatchKey) {
+        return BatchKey.wrap((uint128(srcChainId) << 64) | dbNonce);
+    }
+
+    /// @notice Decodes the uint128 key of the batch into uint64 srcChainId and uint64 dbNonce.
+    function decodeBatchKey(BatchKey key) internal pure returns (uint64 srcChainId, uint64 dbNonce) {
+        srcChainId = uint64(BatchKey.unwrap(key) >> 64);
+        dbNonce = uint64(BatchKey.unwrap(key));
     }
 }
