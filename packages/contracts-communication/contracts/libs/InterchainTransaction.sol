@@ -11,11 +11,11 @@ type ICTxHeader is uint256;
 
 struct InterchainTransaction {
     uint64 srcChainId;
-    bytes32 srcSender;
     uint64 dstChainId;
-    bytes32 dstReceiver;
     uint64 dbNonce;
     uint64 entryIndex;
+    bytes32 srcSender;
+    bytes32 dstReceiver;
     bytes options;
     bytes message;
 }
@@ -58,19 +58,28 @@ library InterchainTransactionLib {
     }
 
     function encodeTransaction(InterchainTransaction memory transaction) internal pure returns (bytes memory) {
-        return abi.encode(transaction);
+        return abi.encode(
+            encodeTxHeader(transaction.srcChainId, transaction.dstChainId, transaction.dbNonce, transaction.entryIndex),
+            transaction.srcSender,
+            transaction.dstReceiver,
+            transaction.options,
+            transaction.message
+        );
     }
 
-    function decodeTransaction(bytes calldata transaction) internal pure returns (InterchainTransaction memory) {
-        return abi.decode(transaction, (InterchainTransaction));
+    function decodeTransaction(bytes calldata transaction) internal pure returns (InterchainTransaction memory icTx) {
+        ICTxHeader header;
+        (header, icTx.srcSender, icTx.dstReceiver, icTx.options, icTx.message) =
+            abi.decode(transaction, (ICTxHeader, bytes32, bytes32, bytes, bytes));
+        (icTx.srcChainId, icTx.dstChainId, icTx.dbNonce, icTx.entryIndex) = decodeTxHeader(header);
     }
 
     function payloadSize(uint256 optionsLen, uint256 messageLen) internal pure returns (uint256) {
         // 2 bytes are reserved for the transaction version
-        // + 8 fields * 32 bytes (6 values for static, 2 offsets for dynamic) + 2 * 32 bytes (lengths for dynamic) = 322
-        // abi.encode() also prepends the global offset (which is always 0x20) if there's a dynamic field, making it 354
+        // + 5 fields * 32 bytes (3 values for static, 2 offsets for dynamic) + 2 * 32 bytes (lengths for dynamic) = 226
+        // (srcChainId, dstChainId, dbNonce, entryIndex) are merged into a single 32 bytes field
         // Both options and message are dynamic fields, which are padded up to 32 bytes
-        return 354 + optionsLen.roundUpToWord() + messageLen.roundUpToWord();
+        return 226 + optionsLen.roundUpToWord() + messageLen.roundUpToWord();
     }
 
     function encodeTxHeader(
