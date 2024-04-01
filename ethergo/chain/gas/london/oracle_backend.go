@@ -6,6 +6,7 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/consensus/misc/eip4844"
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/eth/gasprice"
@@ -64,7 +65,12 @@ func (h HeightOracleBackend) GetReceipts(ctx context.Context, hash common.Hash) 
 
 	var receipts types.Receipts
 
-	err = receipts.DeriveFields(h.ChainConfig(), hash, block.NumberU64(), block.Time(), block.BaseFee(), block.Transactions())
+	var blobGasPrice *big.Int
+	if block.ExcessBlobGas() != nil {
+		blobGasPrice = eip4844.CalcBlobFee(*block.ExcessBlobGas())
+	}
+
+	err = receipts.DeriveFields(h.ChainConfig(), hash, block.NumberU64(), block.Time(), block.BaseFee(), blobGasPrice, block.Transactions())
 	if err != nil {
 		return nil, fmt.Errorf("could not derive receipts from block: %w", err)
 	}
