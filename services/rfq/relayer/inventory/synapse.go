@@ -3,6 +3,7 @@ package inventory
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/contracts/cctp"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -12,7 +13,6 @@ import (
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/listener"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"go.opentelemetry.io/otel/attribute"
