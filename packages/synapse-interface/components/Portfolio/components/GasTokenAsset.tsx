@@ -34,7 +34,7 @@ export const GasTokenAsset = ({
         <HoverTooltip
           hoverContent={<div className="whitespace-nowrap">Gas token</div>}
         >
-          <GasIcon className="w-3 pt-px m-auto fill-secondary" />
+          <GasIcon className="w-3 pt-0.5 m-auto fill-secondary" />
         </HoverTooltip>
       </div>
 
