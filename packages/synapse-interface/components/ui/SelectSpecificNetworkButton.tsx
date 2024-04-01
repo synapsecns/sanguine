@@ -11,20 +11,18 @@ import { joinClassNames } from '@/utils/joinClassNames'
 
 export const SelectSpecificNetworkButton = ({
   itemChainId,
-  isCurrentChain,
-  active,
   onClick,
   dataId,
   isOrigin,
-  alternateBackground = false,
+  isSelected,
+  isActive,
 }: {
   itemChainId: number
-  isCurrentChain: boolean
-  active: boolean
   onClick: () => void
   dataId: string
   isOrigin: boolean
-  alternateBackground?: boolean
+  isSelected: boolean
+  isActive: boolean
 }) => {
   const ref = useRef<any>(null)
   const chain = CHAINS_BY_ID[itemChainId]
@@ -35,10 +33,9 @@ export const SelectSpecificNetworkButton = ({
     space: 'pl-2 pr-1.5 py-2.5 w-full',
     border: 'border border-transparent',
     transition: 'transition-all duration-75',
-    hover: getHoverStyleForButton(chain.color),
-    activeStyle: isCurrentChain
-      ? getActiveStyleForButton(isCurrentChain && chain.color)
-      : '',
+    hover: getHoverStyleForButton(chain?.color),
+    activeStyle:
+      isActive || isSelected ? getActiveStyleForButton(chain?.color) : '',
   })
 
   return (
