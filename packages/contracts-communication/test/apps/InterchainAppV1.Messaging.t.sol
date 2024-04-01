@@ -28,7 +28,7 @@ abstract contract InterchainAppV1MessagingTest is InterchainAppV1Test {
         entryIndex: MOCK_ENTRY_INDEX
     });
 
-    event MessageReceived(uint64 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message);
+    event MessageReceived(uint64 srcChainId, bytes32 sender, uint64 dbNonce, uint64 entryIndex, bytes message);
 
     function configureICAppV1() internal override {
         appHarness.addInterchainClient({client: icClient, updateLatest: true});

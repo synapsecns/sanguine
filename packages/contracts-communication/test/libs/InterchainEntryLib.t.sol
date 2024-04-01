@@ -31,7 +31,7 @@ contract InterchainEntryLibTest is Test {
 
     function test_constructLocalEntry() public {
         vm.chainId(1);
-        uint256 dbNonce = 2;
+        uint64 dbNonce = 2;
         uint64 entryIndex = 3;
         address srcWriter = address(4);
         bytes32 dataHash = bytes32(uint256(5));
@@ -41,7 +41,7 @@ contract InterchainEntryLibTest is Test {
 
     function test_constructLocalEntry(
         uint64 chainId,
-        uint256 dbNonce,
+        uint64 dbNonce,
         uint64 entryIndex,
         address srcWriter,
         bytes32 dataHash

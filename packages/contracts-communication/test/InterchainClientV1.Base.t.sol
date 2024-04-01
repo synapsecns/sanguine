@@ -202,7 +202,7 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
 
     function expectEventExecutionProofWritten(
         bytes32 transactionId,
-        uint256 localDbNonce,
+        uint64 localDbNonce,
         uint64 localEntryIndex,
         address executor
     )

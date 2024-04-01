@@ -84,7 +84,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
     }
 
     /// @dev Override the DB's returned next entry index (both for reads and writes)
-    function mockNextEntryIndex(uint256 dbNonce, uint64 entryIndex) internal {
+    function mockNextEntryIndex(uint64 dbNonce, uint64 entryIndex) internal {
         bytes memory returnData = abi.encode(dbNonce, entryIndex);
         // Use partial calldata to override return values for calls to these functions with any arguments.
         vm.mockCall(icDB, abi.encodeWithSelector(InterchainDBMock.getNextEntryIndex.selector), returnData);

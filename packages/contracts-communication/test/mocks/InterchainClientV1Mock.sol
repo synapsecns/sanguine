@@ -44,7 +44,7 @@ contract InterchainClientV1Mock is IInterchainClientV1 {
         payable
     {}
 
-    function writeExecutionProof(bytes32 transactionId) external returns (uint256 dbNonce, uint64 entryIndex) {}
+    function writeExecutionProof(bytes32 transactionId) external returns (uint64 dbNonce, uint64 entryIndex) {}
 
     function isExecutable(bytes calldata transaction, bytes32[] calldata proof) external view returns (bool) {}
 

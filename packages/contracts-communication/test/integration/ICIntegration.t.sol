@@ -34,8 +34,8 @@ abstract contract ICIntegrationTest is
 
     OptionsV1 public ppOptions = OptionsV1({gasLimit: 500_000, gasAirdrop: 0});
 
-    event PingReceived(uint256 counter, uint256 dbNonce, uint64 entryIndex);
-    event PingSent(uint256 counter, uint256 dbNonce, uint64 entryIndex);
+    event PingReceived(uint256 counter, uint64 dbNonce, uint64 entryIndex);
+    event PingSent(uint256 counter, uint64 dbNonce, uint64 entryIndex);
 
     function assertEq(InterchainBatch memory batch, InterchainBatch memory expected) internal {
         assertEq(batch.srcChainId, expected.srcChainId);
@@ -207,7 +207,7 @@ abstract contract ICIntegrationTest is
         assertEq(leafs[0], batch.batchRoot);
     }
 
-    function checkDatabaseStatePingSent(InterchainEntry memory entry, uint256 initialDBNonce) internal {
+    function checkDatabaseStatePingSent(InterchainEntry memory entry, uint64 initialDBNonce) internal {
         InterchainBatch memory batch = getInterchainBatch(entry);
         InterchainTxDescriptor memory desc = getInterchainTxDescriptor(entry);
         assertEq(desc.dbNonce, initialDBNonce);
@@ -220,7 +220,7 @@ abstract contract ICIntegrationTest is
         assertEq(icDB.getEntryProof(desc.dbNonce, 0).length, 0);
         // Check getters related to the next dbNonce
         assertEq(icDB.getDBNonce(), desc.dbNonce + 1);
-        (uint256 dbNonce, uint64 entryIndex) = icDB.getNextEntryIndex();
+        (uint64 dbNonce, uint64 entryIndex) = icDB.getNextEntryIndex();
         assertEq(dbNonce, desc.dbNonce + 1);
         assertEq(entryIndex, 0);
     }

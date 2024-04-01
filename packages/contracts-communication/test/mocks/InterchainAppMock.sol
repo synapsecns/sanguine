@@ -8,7 +8,7 @@ contract InterchainAppMock is IInterchainApp {
     function appReceive(
         uint64 srcChainId,
         bytes32 sender,
-        uint256 dbNonce,
+        uint64 dbNonce,
         uint64 entryIndex,
         bytes calldata message
     )

@@ -11,7 +11,7 @@ import {VersionedPayloadLib} from "../../contracts/libs/VersionedPayload.sol";
 contract InterchainModuleMock is IInterchainModule {
     function requestBatchVerification(uint64 dstChainId, bytes calldata versionedBatch) external payable {}
 
-    function getModuleFee(uint64 dstChainId, uint256 dbNonce) external view returns (uint256) {}
+    function getModuleFee(uint64 dstChainId, uint64 dbNonce) external view returns (uint256) {}
 
     function mockVerifyRemoteBatch(address interchainDB, bytes calldata versionedBatch) external {
         IInterchainDB(interchainDB).verifyRemoteBatch(versionedBatch);

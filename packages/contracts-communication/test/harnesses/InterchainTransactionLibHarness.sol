@@ -8,7 +8,7 @@ contract InterchainTransactionLibHarness {
         address srcSender,
         uint64 dstChainId,
         bytes32 dstReceiver,
-        uint256 dbNonce,
+        uint64 dbNonce,
         uint64 entryIndex,
         bytes memory options,
         bytes memory message

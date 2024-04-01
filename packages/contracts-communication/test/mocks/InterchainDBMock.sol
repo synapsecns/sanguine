@@ -7,11 +7,11 @@ import {IInterchainDB, InterchainEntry, InterchainBatch} from "../../contracts/i
 contract InterchainDBMock is IInterchainDB {
     uint16 public constant DB_VERSION = 1;
 
-    function writeEntry(bytes32 dataHash) external returns (uint256 writerNonce, uint64 entryIndex) {}
+    function writeEntry(bytes32 dataHash) external returns (uint64 writerNonce, uint64 entryIndex) {}
 
     function requestBatchVerification(
         uint64 dstChainId,
-        uint256 dbNonce,
+        uint64 dbNonce,
         address[] memory srcModules
     )
         external
@@ -25,17 +25,17 @@ contract InterchainDBMock is IInterchainDB {
     )
         external
         payable
-        returns (uint256 writerNonce, uint64 entryIndex)
+        returns (uint64 writerNonce, uint64 entryIndex)
     {}
 
     function verifyRemoteBatch(bytes calldata versionedBatch) external {}
 
     function getInterchainFee(uint64 dstChainId, address[] memory srcModules) external view returns (uint256) {}
 
-    function getBatchLeafs(uint256 dbNonce) external view returns (bytes32[] memory) {}
+    function getBatchLeafs(uint64 dbNonce) external view returns (bytes32[] memory) {}
 
     function getBatchLeafsPaginated(
-        uint256 dbNonce,
+        uint64 dbNonce,
         uint64 start,
         uint64 end
     )
@@ -44,17 +44,17 @@ contract InterchainDBMock is IInterchainDB {
         returns (bytes32[] memory)
     {}
 
-    function getBatchSize(uint256 dbNonce) external view returns (uint64) {}
+    function getBatchSize(uint64 dbNonce) external view returns (uint64) {}
 
-    function getBatch(uint256 dbNonce) external view returns (InterchainBatch memory) {}
+    function getBatch(uint64 dbNonce) external view returns (InterchainBatch memory) {}
 
-    function getEntryValue(uint256 dbNonce, uint64 entryIndex) external view returns (bytes32) {}
+    function getEntryValue(uint64 dbNonce, uint64 entryIndex) external view returns (bytes32) {}
 
-    function getEntryProof(uint256 dbNonce, uint64 entryIndex) external view returns (bytes32[] memory proof) {}
+    function getEntryProof(uint64 dbNonce, uint64 entryIndex) external view returns (bytes32[] memory proof) {}
 
-    function getDBNonce() external view returns (uint256) {}
+    function getDBNonce() external view returns (uint64) {}
 
-    function getNextEntryIndex() external view returns (uint256 dbNonce, uint64 entryIndex) {}
+    function getNextEntryIndex() external view returns (uint64 dbNonce, uint64 entryIndex) {}
 
     function checkVerification(
         address dstModule,
