@@ -16,6 +16,7 @@ import { PortfolioAssetActionButton } from './PortfolioAssetActionButton'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 import { zeroAddress } from 'viem'
 import GasIcon from '@/components/icons/GasIcon'
+import { HoverTooltip } from './HoverTooltip'
 
 const handleFocusOnBridgeInput = () => {
   inputRef.current.focus()
@@ -87,7 +88,11 @@ export const PortfolioTokenAsset = ({
         />
         {parsedBalance} {symbol}
         {isBridgeableGasToken ? (
-          <GasIcon className="w-3 pt-px m-auto fill-secondary" />
+          <HoverTooltip
+            hoverContent={<div className="whitespace-nowrap">Gas token</div>}
+          >
+            <GasIcon className="w-3 pt-px m-auto fill-secondary" />
+          </HoverTooltip>
         ) : null}
       </div>
       <PortfolioAssetActionButton
