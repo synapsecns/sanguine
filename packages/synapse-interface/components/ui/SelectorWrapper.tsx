@@ -84,7 +84,7 @@ export const SelectorWrapper = ({
   const itemName = selectedItem?.['symbol' in selectedItem ? 'symbol' : 'name']
 
   return (
-    <div className="relative" onMouseLeave={handleMouseLeave}>
+    <div className="relative flex" onMouseLeave={handleMouseLeave}>
       <button
         data-test-id={`${dataTestId}-button`}
         className={buttonClassName}
@@ -110,32 +110,34 @@ export const SelectorWrapper = ({
         </span>
         <DropDownArrowSvg />
       </button>
-      {hover && (
-        <div
-          ref={popoverRef}
-          data-test-id={`${dataTestId}-overlay`}
-          className="absolute z-20 pt-1 animate-slide-down"
-        >
-          <div className="border rounded shadow-md bg-bgLight border-separator">
-            <div className="flex items-center p-1 font-medium">
-              <SlideSearchBox
-                placeholder="Find"
-                searchStr={searchStr}
-                onSearch={onSearch}
-              />
-              <CloseButton onClick={onClose} />
+      <div className="relative">
+        {hover && (
+          <div
+            ref={popoverRef}
+            data-test-id={`${dataTestId}-overlay`}
+            className="absolute z-20 pt-1 animate-slide-down"
+          >
+            <div className="border rounded shadow-md bg-bgLight border-separator">
+              <div className="flex items-center p-1 font-medium">
+                <SlideSearchBox
+                  placeholder="Find"
+                  searchStr={searchStr}
+                  onSearch={onSearch}
+                />
+                <CloseButton onClick={onClose} />
+              </div>
+              <div
+                data-test-id={`${dataTestId}-list`}
+                className="overflow-y-auto max-h-96"
+                onClick={onClose}
+              >
+                {children}
+              </div>
+              <SearchResults searchStr={searchStr} />
             </div>
-            <div
-              data-test-id={`${dataTestId}-list`}
-              className="overflow-y-auto max-h-96"
-              onClick={onClose}
-            >
-              {children}
-            </div>
-            <SearchResults searchStr={searchStr} />
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }
