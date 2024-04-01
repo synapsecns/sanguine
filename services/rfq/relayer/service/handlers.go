@@ -57,6 +57,11 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 		return fmt.Errorf("could not get bridge transaction: %w", err)
 	}
 
+	_, hasChain := r.cfg.Chains[int(bridgeTx.DestChainId)]
+	if !hasChain {
+		return fmt.Errorf("chain id %d is not supported", bridgeTx.DestChainId)
+	}
+
 	// TODO: you can just pull these out of inventory. If they don't exist mark as invalid.
 	decimals, err := r.getDecimals(ctx, bridgeTx)
 	// can't use errors.is here
