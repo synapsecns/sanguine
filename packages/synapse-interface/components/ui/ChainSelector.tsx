@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 
 import { type Chain } from '@/utils/types'
@@ -22,7 +22,7 @@ export function ChainSelector({
   const [searchStr, setSearchStr] = useState('')
   const [hover, setHover] = useState(false)
 
-  const [currentIdx, setCurrentIdx] = useState(-1)
+  const [currentId, setCurrentId] = useState(null)
   const dispatch = useDispatch()
 
   const handleSetChainId = (chainId) => {
@@ -52,20 +52,15 @@ export function ChainSelector({
     []
   )
 
-  console.log(
-    `flatItemList`,
-    flatItemList.map((c, i) => `${i}: ${c.name}`)
-  )
-
   const onClose = () => {
     setSearchStr('')
-    setCurrentIdx(-1)
+    setCurrentId(null)
     setHover(false)
   }
 
   const onSearch = (str: string) => {
     setSearchStr(str)
-    setCurrentIdx(-1)
+    setCurrentId(null)
   }
 
   const arrowUp = useKeyPress('ArrowUp', hover)
@@ -73,20 +68,18 @@ export function ChainSelector({
   const enterPress = useKeyPress('Enter', hover)
 
   const arrowDownFunc = () => {
-    console.log(`in isOrigin: ${isOrigin}, down fn`)
-    console.log(`flatItemList[currentIdx]`, flatItemList[currentIdx])
-    const nextIdx = currentIdx + 1
-    if (arrowDown && nextIdx < flatItemList.length) {
-      setCurrentIdx(nextIdx)
+    const currentIndex = flatItemList.findIndex((item) => item.id === currentId)
+    const nextIndex = currentIndex + 1
+    if (arrowDown && nextIndex < flatItemList.length) {
+      setCurrentId(flatItemList[nextIndex].id)
     }
   }
 
   const arrowUpFunc = () => {
-    console.log(`in isOrigin: ${isOrigin}, up fn`)
-    console.log(`flatItemList[currentIdx]`, flatItemList[currentIdx])
-    const nextIdx = currentIdx - 1
-    if (arrowUp && -1 < nextIdx) {
-      setCurrentIdx(nextIdx)
+    const currentIndex = flatItemList.findIndex((item) => item.id === currentId)
+    const prevIndex = currentIndex - 1
+    if (arrowUp && prevIndex >= 0) {
+      setCurrentId(flatItemList[prevIndex].id)
     }
   }
 
@@ -94,13 +87,10 @@ export function ChainSelector({
   useEffect(arrowUpFunc, [arrowUp])
 
   useEffect(() => {
-    console.log(`currentIdx`, currentIdx)
-    console.log(`flatItemList`, flatItemList[currentIdx])
-    if (currentIdx >= 0 && flatItemList[currentIdx]) {
-      console.log(`flatItemList[currentIdx]`, flatItemList[currentIdx])
-      handleSetChainId(flatItemList[currentIdx].id)
+    if (currentId !== null) {
+      handleSetChainId(currentId)
+      onClose()
     }
-    onClose()
   }, [enterPress])
 
   return (
@@ -116,25 +106,23 @@ export function ChainSelector({
       setHover={setHover}
       onClose={onClose}
     >
-      {Object.entries(itemList).map(
-        ([key, value]: [string, Chain[]], index) => {
-          return value.length ? (
-            <ListSectionWrapper sectionKey={key} key={key}>
-              {value.map((chain, chainIndex) => (
-                <SelectSpecificNetworkButton
-                  dataId={dataTestId}
-                  key={chain.id}
-                  itemChainId={chain.id}
-                  isOrigin={isOrigin}
-                  isSelected={selectedItem?.id === chain.id}
-                  isActive={currentIdx === index + chainIndex}
-                  onClick={() => handleSetChainId(chain.id)}
-                />
-              ))}
-            </ListSectionWrapper>
-          ) : null
-        }
-      )}
+      {Object.entries(itemList).map(([key, value]: [string, Chain[]]) => {
+        return value.length ? (
+          <ListSectionWrapper sectionKey={key} key={key}>
+            {value.map((chain) => (
+              <SelectSpecificNetworkButton
+                dataId={dataTestId}
+                key={chain.id}
+                itemChainId={chain.id}
+                isOrigin={isOrigin}
+                isSelected={selectedItem?.id === chain.id}
+                isActive={chain.id === currentId}
+                onClick={() => handleSetChainId(chain.id)}
+              />
+            ))}
+          </ListSectionWrapper>
+        ) : null
+      })}
     </SelectorWrapper>
   )
 }
