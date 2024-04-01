@@ -22,7 +22,7 @@ export function TokenSelector({
   const [searchStr, setSearchStr] = useState('')
   const [hover, setHover] = useState(false)
 
-  const [currentIdx, setCurrentIdx] = useState(-1)
+  const [currentRouteSymbol, setCurrentRouteSymbol] = useState(null)
   const dispatch = useDispatch()
 
   const handleSetToken = (token) => {
@@ -51,20 +51,15 @@ export function TokenSelector({
     []
   )
 
-  console.log(
-    `flatItemList`,
-    flatItemList.map((t, i) => `${i}: ${t.routeSymbol}`)
-  )
-
   const onClose = () => {
     setSearchStr('')
-    setCurrentIdx(-1)
+    setCurrentRouteSymbol(null)
     setHover(false)
   }
 
   const onSearch = (str: string) => {
     setSearchStr(str)
-    setCurrentIdx(-1)
+    setCurrentRouteSymbol(null)
   }
 
   const arrowUp = useKeyPress('ArrowUp', hover)
@@ -72,26 +67,22 @@ export function TokenSelector({
   const enterPress = useKeyPress('Enter', hover)
 
   const arrowDownFunc = () => {
-    console.log(`in isOrigin: ${isOrigin}, down fn`)
-    console.log(
-      `flatItemList[currentIdx]`,
-      flatItemList[currentIdx]?.routeSymbol
+    const currentIndex = flatItemList.findIndex(
+      (item) => item.routeSymbol === currentRouteSymbol
     )
-    const nextIdx = currentIdx + 1
-    if (arrowDown && nextIdx < flatItemList.length) {
-      setCurrentIdx(nextIdx)
+    const nextIndex = currentIndex + 1
+    if (arrowDown && nextIndex < flatItemList.length) {
+      setCurrentRouteSymbol(flatItemList[nextIndex].routeSymbol)
     }
   }
 
   const arrowUpFunc = () => {
-    console.log(`in isOrigin: ${isOrigin}, up fn`)
-    console.log(
-      `flatItemList[currentIdx]`,
-      flatItemList[currentIdx]?.routeSymbol
+    const currentIndex = flatItemList.findIndex(
+      (item) => item.routeSymbol === currentRouteSymbol
     )
-    const nextIdx = currentIdx - 1
-    if (arrowUp && -1 < nextIdx) {
-      setCurrentIdx(nextIdx)
+    const prevIndex = currentIndex - 1
+    if (arrowUp && prevIndex >= 0) {
+      setCurrentRouteSymbol(flatItemList[prevIndex].routeSymbol)
     }
   }
 
@@ -99,16 +90,13 @@ export function TokenSelector({
   useEffect(arrowUpFunc, [arrowUp])
 
   useEffect(() => {
-    console.log(`currentIdx`, currentIdx)
-    console.log(`flatItemList`, flatItemList[currentIdx])
-    if (currentIdx >= 0 && flatItemList[currentIdx]) {
-      console.log(
-        `in enter flatItemList[currentIdx]`,
-        flatItemList[currentIdx]?.routeSymbol
+    if (currentRouteSymbol !== null) {
+      const token = flatItemList.find(
+        (item) => item.routeSymbol === currentRouteSymbol
       )
-      handleSetToken(flatItemList[currentIdx])
+      handleSetToken(token)
+      onClose()
     }
-    onClose()
   }, [enterPress])
 
   return (
@@ -123,30 +111,24 @@ export function TokenSelector({
       hover={hover}
       setHover={setHover}
     >
-      {Object.entries(itemList).map(
-        ([key, value]: [string, Token[]], index) => {
-          console.log(`key`, key)
-          console.log(`value`, value)
-          return value.length ? (
-            <ListSectionWrapper sectionKey={key} key={key}>
-              {value.map((token, tokenIndex) => {
-                return (
-                  <SelectSpecificTokenButton
-                    isOrigin={isOrigin}
-                    key={token.routeSymbol}
-                    token={token}
-                    showAllChains={key === 'All other tokens'}
-                    action={action}
-                    isSelected={selectedItem?.routeSymbol === token.routeSymbol}
-                    isActive={currentIdx === index + tokenIndex}
-                    onClick={() => handleSetToken(token)}
-                  />
-                )
-              })}
-            </ListSectionWrapper>
-          ) : null
-        }
-      )}
+      {Object.entries(itemList).map(([key, value]: [string, Token[]]) => {
+        return value.length ? (
+          <ListSectionWrapper sectionKey={key} key={key}>
+            {value.map((token) => (
+              <SelectSpecificTokenButton
+                isOrigin={isOrigin}
+                key={token.routeSymbol}
+                token={token}
+                showAllChains={key === 'All other tokens'}
+                action={action}
+                isSelected={selectedItem?.routeSymbol === token.routeSymbol}
+                isActive={token.routeSymbol === currentRouteSymbol}
+                onClick={() => handleSetToken(token)}
+              />
+            ))}
+          </ListSectionWrapper>
+        ) : null
+      })}
     </SelectorWrapper>
   )
 }
