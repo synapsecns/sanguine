@@ -74,6 +74,7 @@ type CCTPRelayer struct {
 }
 
 // NewCCTPRelayer creates a new CCTPRelayer.
+// nolint: cyclop
 func NewCCTPRelayer(ctx context.Context, cfg config.Config, store db2.CCTPRelayerDB, scribeClient client.ScribeClient, omniRPCClient omniClient.RPCClient, handler metrics.Handler, attestationAPI attestation.CCTPAPI, rawOpts ...OptionsArgsOption) (*CCTPRelayer, error) {
 	opts := makeOptions(rawOpts)
 
