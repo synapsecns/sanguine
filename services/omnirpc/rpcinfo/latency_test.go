@@ -2,27 +2,28 @@ package rpcinfo_test
 
 import (
 	"context"
+	"net/http"
+	"net/http/httptest"
+	"sync"
+	"time"
+
 	. "github.com/stretchr/testify/assert"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/ethergo/backends/geth"
 	"github.com/synapsecns/sanguine/ethergo/backends/preset"
 	"github.com/synapsecns/sanguine/services/omnirpc/rpcinfo"
 	"golang.org/x/sync/errgroup"
-	"net/http"
-	"net/http/httptest"
-	"sync"
-	"time"
 )
 
 func (r *LatencySuite) TestRPCLatency() {
 	var bsc, avalanche *geth.Backend
 	g, _ := errgroup.WithContext(r.GetTestContext())
 	g.Go(func() error {
-		bsc = preset.GetBSCTestnet().Geth(r.GetTestContext(), r.T())
+		bsc = preset.GetMaticMumbai().Geth(r.GetTestContext(), r.T())
 		return nil
 	})
 	g.Go(func() error {
-		avalanche = preset.GetAvalancheLocal().Geth(r.GetTestContext(), r.T())
+		avalanche = preset.GetSepolia().Geth(r.GetTestContext(), r.T())
 		return nil
 	})
 	Nil(r.T(), g.Wait())
