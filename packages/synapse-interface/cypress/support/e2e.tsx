@@ -1,2 +1,0 @@
-// required for cypress
-export {}
