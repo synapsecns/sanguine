@@ -412,6 +412,11 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 		}
 		gas.BumpGasFees(transactor, t.config.GetGasBumpPercentage(chainID), gasBlock.BaseFee, maxPrice)
 	}
+
+	err = t.checkGasBalance(ctx, client, chainID, transactor)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -498,6 +503,27 @@ func (t *txSubmitterImpl) getGasEstimate(ctx context.Context, chainClient client
 	}
 
 	return gasEstimate, nil
+}
+
+func (t *txSubmitterImpl) checkGasBalance(ctx context.Context, chainClient client.EVM, chainID int, transactor *bind.TransactOpts) (err error) {
+	balance, err := chainClient.BalanceAt(ctx, transactor.From, nil)
+	if err != nil {
+		return fmt.Errorf("could not get balance: %w", err)
+	}
+
+	var cost *big.Int
+	if t.config.SupportsEIP1559(chainID) {
+		cost = new(big.Int).Mul(transactor.GasFeeCap, big.NewInt(int64(transactor.GasLimit)))
+	} else {
+		cost = new(big.Int).Mul(transactor.GasPrice, big.NewInt(int64(transactor.GasLimit)))
+	}
+	if transactor.Value != nil {
+		cost.Add(cost, transactor.Value)
+	}
+	if balance.Cmp(cost) >= 0 {
+		return nil
+	}
+	return fmt.Errorf("insufficient balance: %s < %s", balance.String(), cost.String())
 }
 
 var _ TransactionSubmitter = &txSubmitterImpl{}
