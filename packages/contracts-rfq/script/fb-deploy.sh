@@ -14,6 +14,6 @@ fi
 shift 1
 
 yarn fsr script/DeployFastBridge.CREATE2.s.sol arbitrum "$walletName" "$@"
+yarn fsr script/DeployFastBridge.CREATE2.s.sol base "$walletName" "$@"
 yarn fsr script/DeployFastBridge.CREATE2.s.sol mainnet "$walletName" "$@"
 yarn fsr script/DeployFastBridge.CREATE2.s.sol optimism "$walletName" "$@"
-yarn fsr script/DeployFastBridge.CREATE2.s.sol base "$walletName" "$@"
