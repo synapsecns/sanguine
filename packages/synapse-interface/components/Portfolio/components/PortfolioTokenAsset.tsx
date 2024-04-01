@@ -86,7 +86,7 @@ export const PortfolioTokenAsset = ({
         />
         {parsedBalance} {symbol}
         {isBridgeableGasToken ? (
-          <div className="text-sm text-secondary">gas token</div>
+          <div className="text-sm opacity-70">gas token</div>
         ) : null}
       </div>
       <PortfolioAssetActionButton
