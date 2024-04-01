@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {InterchainTransaction, InterchainTransactionLib} from "../../contracts/libs/InterchainTransaction.sol";
+import {
+    InterchainTransaction, InterchainTransactionLib, ICTxHeader
+} from "../../contracts/libs/InterchainTransaction.sol";
 
 contract InterchainTransactionLibHarness {
     function constructLocalTransaction(
@@ -32,5 +34,26 @@ contract InterchainTransactionLibHarness {
 
     function payloadSize(uint256 optionsLen, uint256 messageLen) external pure returns (uint256) {
         return InterchainTransactionLib.payloadSize(optionsLen, messageLen);
+    }
+
+    function encodeTxHeader(
+        uint64 srcChainId,
+        uint64 dstChainId,
+        uint64 dbNonce,
+        uint64 entryIndex
+    )
+        external
+        pure
+        returns (ICTxHeader)
+    {
+        return InterchainTransactionLib.encodeTxHeader(srcChainId, dstChainId, dbNonce, entryIndex);
+    }
+
+    function decodeTxHeader(ICTxHeader header)
+        external
+        pure
+        returns (uint64 srcChainId, uint64 dstChainId, uint64 dbNonce, uint64 entryIndex)
+    {
+        return InterchainTransactionLib.decodeTxHeader(header);
     }
 }

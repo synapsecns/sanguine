@@ -7,6 +7,8 @@ import {VersionedPayloadLib} from "./VersionedPayload.sol";
 
 import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
+type ICTxHeader is uint256;
+
 struct InterchainTransaction {
     uint64 srcChainId;
     bytes32 srcSender;
@@ -69,5 +71,31 @@ library InterchainTransactionLib {
         // abi.encode() also prepends the global offset (which is always 0x20) if there's a dynamic field, making it 354
         // Both options and message are dynamic fields, which are padded up to 32 bytes
         return 354 + optionsLen.roundUpToWord() + messageLen.roundUpToWord();
+    }
+
+    function encodeTxHeader(
+        uint64 srcChainId,
+        uint64 dstChainId,
+        uint64 dbNonce,
+        uint64 entryIndex
+    )
+        internal
+        pure
+        returns (ICTxHeader)
+    {
+        return ICTxHeader.wrap(
+            (uint256(srcChainId) << 192) | (uint256(dstChainId) << 128) | (uint256(dbNonce) << 64) | uint256(entryIndex)
+        );
+    }
+
+    function decodeTxHeader(ICTxHeader header)
+        internal
+        pure
+        returns (uint64 srcChainId, uint64 dstChainId, uint64 dbNonce, uint64 entryIndex)
+    {
+        srcChainId = uint64(ICTxHeader.unwrap(header) >> 192);
+        dstChainId = uint64(ICTxHeader.unwrap(header) >> 128);
+        dbNonce = uint64(ICTxHeader.unwrap(header) >> 64);
+        entryIndex = uint64(ICTxHeader.unwrap(header));
     }
 }
