@@ -235,7 +235,7 @@ export const DestinationAddressInput = ({
 
   return (
     <div id="destination-address-input">
-      <div className="flex items-center">
+      <div className="relative flex items-center">
         <div className="mr-1.5 text-secondary text-sm">To: </div>
         <div
           className={`
@@ -269,7 +269,7 @@ export const DestinationAddressInput = ({
           {destinationAddress ? (
             <CloseButton
               onClick={onClearUserInput}
-              className="!w-5 !h-5 mr-0.5 mt-0.5 hover:opacity-70"
+              className="!right-0 !w-5 !h-5 mr-0.5 mt-0.5 hover:opacity-70"
             />
           ) : isInputFocused ? (
             <PasteButton onPaste={handlePaste} />
@@ -421,7 +421,7 @@ const PasteButton = ({ onPaste }: { onPaste: () => Promise<void> }) => {
       onMouseDown={(e) => e.preventDefault()}
       className={`
         absolute border-transparent cursor-pointer
-        right-2.5 mt-0.5 justify-self-end
+        right-0.5 mt-0.5 justify-self-end
         fill-zinc-100 stroke-zinc-100 hover:opacity-70
       `}
     >
