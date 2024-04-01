@@ -3,6 +3,7 @@ package submitter
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/ethergo/util"
 	"math/big"
 	"sort"
 	"sync"
@@ -150,7 +151,12 @@ func (c *chainQueue) bumpTX(parentCtx context.Context, ogTx db.TX) {
 			c.addToReprocessQueue(ogTx)
 			return nil
 		}
-		tx := ogTx.Transaction
+		// copy the transaction, switching the type if we need to.
+		// this is required if the config changes to use legacy transactions on a tx that is already bumped.
+		tx, err := util.CopyTX(ogTx.Transaction, util.WithTxType(c.txTypeForChain(c.chainID)))
+		if err != nil {
+			return fmt.Errorf("could not copy tx: %w", err)
+		}
 
 		ctx, span := c.metrics.Tracer().Start(parentCtx, "chainPendingQueue.bumpTX", trace.WithAttributes(attribute.Stringer(metrics.TxHash, tx.Hash())))
 		defer func() {
@@ -176,7 +182,7 @@ func (c *chainQueue) bumpTX(parentCtx context.Context, ogTx db.TX) {
 			return fmt.Errorf("could not set gas price: %w", err)
 		}
 
-		switch ogTx.Type() {
+		switch tx.Type() {
 		case types.LegacyTxType:
 			tx = types.NewTx(&types.LegacyTx{
 				Nonce:    tx.Nonce(),
