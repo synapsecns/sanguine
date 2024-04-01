@@ -14,7 +14,6 @@ export const HoverTooltip = ({ children, hoverContent }) => {
       className="relative"
     >
       {children}
-
       <HoverContent isHovered={showTooltip}>{hoverContent}</HoverContent>
     </div>
   )
