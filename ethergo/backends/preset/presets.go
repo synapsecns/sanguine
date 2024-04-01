@@ -9,15 +9,15 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/chain/client"
 )
 
-// GetRinkeby gets the rinkeby preset backend.
-func GetRinkeby() Backend {
+// GetSepolia gets the rinkeby preset backend.
+func GetSepolia() Backend {
 	chainConfig := *params.AllCliqueProtocolChanges
-	chainConfig.ChainID = params.RinkebyChainConfig.ChainID
+	chainConfig.ChainID = params.SepoliaChainConfig.ChainID
 
 	return Backend{
 		config:     &chainConfig,
-		rpcURL:     core.GetEnv("RINEKBY_RPC_URL", "ws://0.0.0.0:8045"),
-		name:       "Rinkeby",
+		rpcURL:     core.GetEnv("SEPOLIA_RPC_URL", "ws://0.0.0.0:8045"),
+		name:       "Sepolia",
 		privateKey: os.Getenv("EXPORT_KEY"),
 	}
 }
