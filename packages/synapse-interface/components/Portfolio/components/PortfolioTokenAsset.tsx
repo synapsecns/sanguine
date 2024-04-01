@@ -14,6 +14,7 @@ import { useBridgeState } from '@/slices/bridge/hooks'
 import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'
 import { PortfolioAssetActionButton } from './PortfolioAssetActionButton'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
+import { zeroAddress } from 'viem'
 
 const handleFocusOnBridgeInput = () => {
   inputRef.current.focus()
@@ -34,7 +35,7 @@ export const PortfolioTokenAsset = ({
 }: PortfolioTokenAssetProps) => {
   const dispatch = useAppDispatch()
   const { fromChainId, fromToken } = useBridgeState()
-  const { icon, symbol, decimals } = token
+  const { icon, symbol, decimals, addresses } = token
 
   const tokenDecimals = _.isNumber(decimals)
     ? decimals
@@ -57,6 +58,8 @@ export const PortfolioTokenAsset = ({
       )
     )
   }, [token, balance, portfolioChainId])
+
+  const isBridgeableGasToken = addresses[portfolioChainId] === zeroAddress
 
   return (
     <div
@@ -82,6 +85,9 @@ export const PortfolioTokenAsset = ({
           src={icon}
         />
         {parsedBalance} {symbol}
+        {isBridgeableGasToken ? (
+          <div className="text-sm text-secondary">gas token</div>
+        ) : null}
       </div>
       <PortfolioAssetActionButton
         selectCallback={handleFromSelectionCallback}
