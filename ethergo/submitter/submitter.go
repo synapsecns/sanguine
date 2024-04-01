@@ -308,11 +308,9 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 			return nil, fmt.Errorf("could not sign tx: %w", err)
 		}
 
-		var txType uint8
+		txType := transaction.Type()
 		if t.config.SupportsEIP1559(int(chainID.Uint64())) {
 			txType = types.DynamicFeeTxType
-		} else {
-			txType = types.LegacyTxType
 		}
 
 		transaction, err = util.CopyTX(transaction, util.WithNonce(newNonce), util.WithTxType(txType))
