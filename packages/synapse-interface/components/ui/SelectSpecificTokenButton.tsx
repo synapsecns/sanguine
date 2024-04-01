@@ -7,7 +7,6 @@ import { usePortfolioBalances } from '@/slices/portfolio/hooks'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { findChainIdsWithPausedToken } from '@/constants/tokens'
-import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 import { getActiveStyleForButton, getHoverStyleForButton } from '@/styles/hover'
 import { joinClassNames } from '@/utils/joinClassNames'
 import { useSwapState } from '@/slices/swap/hooks'
@@ -16,41 +15,23 @@ export const SelectSpecificTokenButton = ({
   showAllChains,
   isOrigin,
   token,
-  active,
-  selectedToken,
   onClick,
-  alternateBackground = false,
-  isLoadingExchangeRate = false,
-  exchangeRate,
-  isBestExchangeRate = false,
-  estimatedDurationInSeconds,
   action,
-  isCurrentToken,
+  isSelected,
+  isActive,
 }: {
   showAllChains?: boolean
   isOrigin: boolean
   token: Token
-  active: boolean
-  selectedToken: Token
   onClick: () => void
-  alternateBackground?: boolean
-  isLoadingExchangeRate?: boolean
-  exchangeRate?: string
-  isBestExchangeRate?: boolean
-  estimatedDurationInSeconds?: number
   action: ActionTypes
-  isCurrentToken: boolean
+  isSelected: boolean
+  isActive: boolean
 }) => {
   const ref = useRef<any>(null)
   const { fromChainId, toChainId } = useBridgeState()
 
   const { swapChainId } = useSwapState()
-
-  useEffect(() => {
-    if (active) {
-      ref?.current?.focus()
-    }
-  }, [active])
 
   const buttonClass = joinClassNames({
     other: 'whitespace-nowrap',
@@ -58,10 +39,9 @@ export const SelectSpecificTokenButton = ({
     space: 'pl-2 pr-1.5 py-2.5 w-full',
     border: 'border border-transparent',
     transition: 'transition-all duration-75',
-    hover: getHoverStyleForButton(token.color),
-    activeStyle: isCurrentToken
-      ? getActiveStyleForButton(isCurrentToken && token.color)
-      : '',
+    hover: getHoverStyleForButton(token?.color),
+    activeStyle:
+      isActive || isSelected ? getActiveStyleForButton(token?.color) : '',
   })
 
   const chainId =
@@ -71,7 +51,6 @@ export const SelectSpecificTokenButton = ({
     <button
       data-test-id="select-specific-token-button"
       ref={ref}
-      tabIndex={active ? 1 : 0}
       onClick={onClick}
       className={buttonClass}
     >
@@ -82,22 +61,6 @@ export const SelectSpecificTokenButton = ({
         showAllChains={showAllChains}
         action={action}
       />
-      {isLoadingExchangeRate ? (
-        <LoadingDots className="mr-8 opacity-50" />
-      ) : (
-        <>
-          {exchangeRate && isBestExchangeRate && (
-            <OptionTag type={BestOptionType.RATE} />
-          )}
-
-          {exchangeRate && (
-            <OptionDetails
-              exchangeRate={exchangeRate}
-              estimatedDurationInSeconds={estimatedDurationInSeconds}
-            />
-          )}
-        </>
-      )}
     </button>
   )
 }

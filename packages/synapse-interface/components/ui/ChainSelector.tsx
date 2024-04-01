@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useDispatch } from 'react-redux'
 
 import { type Chain } from '@/utils/types'
@@ -52,8 +52,14 @@ export function ChainSelector({
     []
   )
 
+  console.log(
+    `flatItemList`,
+    flatItemList.map((c, i) => `${i}: ${c.name}`)
+  )
+
   const onClose = () => {
     setSearchStr('')
+    setCurrentIdx(-1)
     setHover(false)
   }
 
@@ -113,15 +119,15 @@ export function ChainSelector({
       {Object.entries(itemList).map(
         ([key, value]: [string, Chain[]], index) => {
           return value.length ? (
-            <ListSectionWrapper sectionKey={key}>
+            <ListSectionWrapper sectionKey={key} key={key}>
               {value.map((chain, chainIndex) => (
                 <SelectSpecificNetworkButton
                   dataId={dataTestId}
                   key={chain.id}
                   itemChainId={chain.id}
                   isOrigin={isOrigin}
-                  isCurrentChain={currentIdx === index + chainIndex}
-                  active={false}
+                  isSelected={selectedItem?.id === chain.id}
+                  isActive={currentIdx === index + chainIndex}
                   onClick={() => handleSetChainId(chain.id)}
                 />
               ))}

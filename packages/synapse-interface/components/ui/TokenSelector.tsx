@@ -58,6 +58,7 @@ export function TokenSelector({
 
   const onClose = () => {
     setSearchStr('')
+    setCurrentIdx(-1)
     setHover(false)
   }
 
@@ -124,22 +125,24 @@ export function TokenSelector({
     >
       {Object.entries(itemList).map(
         ([key, value]: [string, Token[]], index) => {
+          console.log(`key`, key)
+          console.log(`value`, value)
           return value.length ? (
-            <ListSectionWrapper sectionKey={key}>
-              {value.map((token, tokenIndex) => (
-                <SelectSpecificTokenButton
-                  isOrigin={isOrigin}
-                  key={token.routeSymbol}
-                  token={token}
-                  selectedToken={selectedItem}
-                  active={false}
-                  showAllChains={key === 'All other tokens'}
-                  onClick={() => handleSetToken(token)}
-                  alternateBackground={false}
-                  action={action}
-                  isCurrentToken={currentIdx === index + tokenIndex}
-                />
-              ))}
+            <ListSectionWrapper sectionKey={key} key={key}>
+              {value.map((token, tokenIndex) => {
+                return (
+                  <SelectSpecificTokenButton
+                    isOrigin={isOrigin}
+                    key={token.routeSymbol}
+                    token={token}
+                    showAllChains={key === 'All other tokens'}
+                    action={action}
+                    isSelected={selectedItem?.routeSymbol === token.routeSymbol}
+                    isActive={currentIdx === index + tokenIndex}
+                    onClick={() => handleSetToken(token)}
+                  />
+                )
+              })}
             </ListSectionWrapper>
           ) : null
         }
