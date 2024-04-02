@@ -121,8 +121,8 @@ func (c *clientImpl) BatchCallContext(ctx context.Context, b []rpc.BatchElem) (e
 	return c.captureClient.rpcClient.BatchCallContext(requestCtx, b)
 }
 
-func (c *clientImpl) startSpan(parentCtx context.Context, method RPCMethod) (context.Context, trace.Span) {
-	ctx, span := c.tracing.Tracer().Start(parentCtx, method.String())
+func (c *clientImpl) startSpan(parentCtx context.Context, method RPCMethod, opts ...trace.SpanStartOption) (context.Context, trace.Span) {
+	ctx, span := c.tracing.Tracer().Start(parentCtx, method.String(), opts...)
 	span.SetAttributes(attribute.String("endpoint", c.endpoint))
 
 	return ctx, span
@@ -132,7 +132,7 @@ func (c *clientImpl) startSpan(parentCtx context.Context, method RPCMethod) (con
 //
 //nolint:wrapcheck
 func (c *clientImpl) CallContract(ctx context.Context, call ethereum.CallMsg, blockNumber *big.Int) (contractResponse []byte, err error) {
-	requestCtx, span := c.startSpan(ctx, CallMethod)
+	requestCtx, span := c.startSpan(ctx, CallMethod, trace.WithAttributes(attribute.String(metrics.ContractAddress, addressToString(call.To)), attribute.String("data", common.Bytes2Hex(call.Data)), attribute.Bool("pending", false)))
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
@@ -144,7 +144,7 @@ func (c *clientImpl) CallContract(ctx context.Context, call ethereum.CallMsg, bl
 //
 //nolint:wrapcheck
 func (c *clientImpl) PendingCallContract(ctx context.Context, call ethereum.CallMsg) (contractResponse []byte, err error) {
-	requestCtx, span := c.startSpan(ctx, CallMethod)
+	requestCtx, span := c.startSpan(ctx, CallMethod, trace.WithAttributes(attribute.String(metrics.ContractAddress, addressToString(call.To)), attribute.String("data", common.Bytes2Hex(call.Data)), attribute.Bool("pending", true)))
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
