@@ -168,13 +168,30 @@ func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (er
 }
 
 func (c chainListener) getMetadata(parentCtx context.Context) (startBlock, chainID uint64, err error) {
+	var lastIndexed uint64
 	ctx, span := c.handler.Tracer().Start(parentCtx, "getMetadata")
 
 	defer func() {
+		span.SetAttributes(
+			attribute.Int64("start_block", int64(startBlock)),
+			attribute.Int64("last_indexed", int64(lastIndexed)),
+			attribute.Int(metrics.ChainID, int(chainID)),
+		)
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	lastIndexed, err := c.getLastIndexed(ctx)
+	// TODO: one thing I've been going back and forth on is whether or not this method should be chain aware
+	// passing in the chain ID would allow us to pull everything directly from the config, but be less testable
+	// for now, this is probably the best solution for testability, but it's certainly a bit annoying we need to do
+	// an rpc call in order to get the chain id
+	//
+	rpcChainID, err := c.client.ChainID(ctx)
+	if err != nil {
+		return 0, 0, fmt.Errorf("could not get chain ID: %w", err)
+	}
+	chainID = rpcChainID.Uint64()
+
+	lastIndexed, err = c.getLastIndexed(ctx, chainID)
 	if err != nil {
 		return 0, 0, fmt.Errorf("could not get last indexed: %w", err)
 	}
@@ -190,18 +207,7 @@ func (c chainListener) getMetadata(parentCtx context.Context) (startBlock, chain
 
 // TODO: consider some kind of backoff here in case rpcs are down at boot.
 // this becomes more of an issue as we add more chains
-func (c chainListener) getLastIndexed(ctx context.Context) (lastIndexed uint64, err error) {
-	// TODO: one thing I've been going back and forth on is whether or not this method should be chain aware
-	// passing in the chain ID would allow us to pull everything directly from the config, but be less testable
-	// for now, this is probably the best solution for testability, but it's certainly a bit annoying we need to do
-	// an rpc call in order to get the chain id
-	//
-	rpcChainID, err := c.client.ChainID(ctx)
-	if err != nil {
-		return 0, fmt.Errorf("could not get chain ID: %w", err)
-	}
-	chainID := rpcChainID.Uint64()
-
+func (c chainListener) getLastIndexed(ctx context.Context, chainID uint64) (lastIndexed uint64, err error) {
 	lastIndexed, err = c.store.LatestBlockForChain(ctx, chainID)
 	// Workaround: TODO remove
 	if errors.Is(err, ErrNoLatestBlockForChainID) || err != nil && err.Error() == ErrNoLatestBlockForChainID.Error() {
