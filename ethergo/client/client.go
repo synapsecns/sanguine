@@ -121,8 +121,8 @@ func (c *clientImpl) BatchCallContext(ctx context.Context, b []rpc.BatchElem) (e
 	return c.captureClient.rpcClient.BatchCallContext(requestCtx, b)
 }
 
-func (c *clientImpl) startSpan(parentCtx context.Context, method RPCMethod) (context.Context, trace.Span) {
-	ctx, span := c.tracing.Tracer().Start(parentCtx, method.String())
+func (c *clientImpl) startSpan(parentCtx context.Context, method RPCMethod, opts ...trace.SpanStartOption) (context.Context, trace.Span) {
+	ctx, span := c.tracing.Tracer().Start(parentCtx, method.String(), opts...)
 	span.SetAttributes(attribute.String("endpoint", c.endpoint))
 
 	return ctx, span
@@ -132,7 +132,7 @@ func (c *clientImpl) startSpan(parentCtx context.Context, method RPCMethod) (con
 //
 //nolint:wrapcheck
 func (c *clientImpl) CallContract(ctx context.Context, call ethereum.CallMsg, blockNumber *big.Int) (contractResponse []byte, err error) {
-	requestCtx, span := c.startSpan(ctx, CallMethod)
+	requestCtx, span := c.startSpan(ctx, CallMethod, trace.WithAttributes(attribute.String(metrics.ContractAddress, nillableToString(call.To)), attribute.String("data", common.Bytes2Hex(call.Data)), attribute.Bool("pending", false)))
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
@@ -140,11 +140,26 @@ func (c *clientImpl) CallContract(ctx context.Context, call ethereum.CallMsg, bl
 	return c.getEthClient().CallContract(requestCtx, call, blockNumber)
 }
 
+// toStrings converts a slice of any type that satisfies the Stringer interface into a slice of strings.
+func toStrings[T fmt.Stringer](items []T) (res []string) {
+	for _, item := range items {
+		res = append(res, item.String())
+	}
+	return res
+}
+
+func nillableToString(nillable fmt.Stringer) string {
+	if nillable == nil {
+		return ""
+	}
+	return nillable.String()
+}
+
 // PendingCallContract calls contract on the underlying client
 //
 //nolint:wrapcheck
 func (c *clientImpl) PendingCallContract(ctx context.Context, call ethereum.CallMsg) (contractResponse []byte, err error) {
-	requestCtx, span := c.startSpan(ctx, CallMethod)
+	requestCtx, span := c.startSpan(ctx, CallMethod, trace.WithAttributes(attribute.String(metrics.ContractAddress, nillableToString(call.To)), attribute.String("data", common.Bytes2Hex(call.Data)), attribute.Bool("pending", true)))
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
@@ -271,11 +286,21 @@ func (c *clientImpl) SendTransaction(ctx context.Context, tx *types.Transaction)
 	return c.getEthClient().SendTransaction(requestCtx, tx)
 }
 
+func queryToTraceParams(query ethereum.FilterQuery) (res []attribute.KeyValue) {
+	res = append(res, attribute.String(metrics.BlockHash, nillableToString(query.BlockHash)))
+	res = append(res, attribute.String(metrics.FromBlock, nillableToString(query.FromBlock)))
+	res = append(res, attribute.String(metrics.ToBlock, nillableToString(query.ToBlock)))
+	res = append(res, attribute.StringSlice("addresses", toStrings(query.Addresses)))
+	// TODO: add topics
+
+	return res
+}
+
 // FilterLogs calls FilterLogs on the underlying client
 //
 //nolint:wrapcheck
 func (c *clientImpl) FilterLogs(ctx context.Context, query ethereum.FilterQuery) (logs []types.Log, err error) {
-	requestCtx, span := c.startSpan(ctx, GetLogsMethod)
+	requestCtx, span := c.startSpan(ctx, GetLogsMethod, trace.WithAttributes(queryToTraceParams(query)...))
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
