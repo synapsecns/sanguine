@@ -86,7 +86,7 @@ jobs:
     name: Change Detection
     runs-on: ubuntu-latest
     # see: https://stackoverflow.com/a/68414395
-    if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref || contains(github.event.head_commit.message, '[goreleaser]') }}
+    if: ${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref || contains(github.event.head_commit.message, '[goreleaser]') || contains(github.event.head_commit.message, '[fastbuild]') }}
     outputs:
       # Expose matched filters as job 'packages' output variable
       packages: ${{ steps.filter_go.outputs.changed_modules_deps }}
@@ -108,6 +108,47 @@ jobs:
           echo "##[set-output name=FILTER_LENGTH;]$(echo $FILTER_LENGTH)"
         env:
           FILTERED_PATHS: ${{ steps.filter_go.outputs.changed_modules_deps }}
+
+  fast-build:
+    runs-on: ubuntu-latest
+    needs: [build-goreleaser,changes]
+    if: ${{ needs.changes.outputs.package_count > 0 }}
+    permissions:
+      # always required
+      packages: write
+      # only required for private repos
+      actions: read
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        # list of packages, if you update this update changes as well
+        package: ${{ fromJSON(needs.changes.outputs.packages) }}
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: 'recursive'
+      -
+        name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get Project Name
+        id: project_id
+        run: |
+          project_name=$(yq '.project_name' ${{matrix.package}}/.goreleaser.yml)
+          echo "##[set-output name=project_name;]$(echo $project_name)"
+      - name: Fast Build
+        run: |
+          docker build -t ghcr.io/synapsecns/sanguine-goreleaser:latest -f docker/goreleaser/Dockerfile .
+          docker push ghcr.io/synapsecns/sanguine-goreleaser:latest
+        env:
+          image_name: ${{ steps.project_id.outputs.project_name }}
+
 
   # TODO: we may want to dry run this on prs
   run-goreleaser:
