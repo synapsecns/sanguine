@@ -50,6 +50,11 @@ export const InputContainer = () => {
     (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
   )?.balance
 
+  /**
+   * Gas static calculations
+   * Hardcoding gas limit to 200k for now
+   * TODO: update this to become dynamic with Bridge requests
+   */
   const estimatedGasCostInGwei = 200_000 * parseFloat(gasPrice)
   const oneGwei = parseFloat(formatGwei(1n))
   const formattedEstimatedGasCost = estimatedGasCostInGwei
@@ -57,9 +62,6 @@ export const InputContainer = () => {
     : null
 
   const isNativeToken = fromToken?.addresses[fromChainId] === zeroAddress
-
-  console.log('parsedBalance:', typeof parsedBalance)
-  console.log('formattedEstimatedGasCost:', typeof formattedEstimatedGasCost)
 
   useEffect(() => {
     if (fromToken && fromToken?.decimals[fromChainId]) {
