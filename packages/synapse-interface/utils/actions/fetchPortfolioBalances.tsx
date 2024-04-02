@@ -60,18 +60,12 @@ export const fetchPortfolioBalances = async (
       currentChainTokens = BRIDGABLE_TOKENS[chainId]
 
       if (POOLS_BY_CHAIN[chainId]) {
-        // currentChainTokens = BRIDGABLE_TOKENS[chainId].concat(
-        //   POOLS_BY_CHAIN[chainId]
-        // )
         currentChainTokens = currentChainTokens.concat(POOLS_BY_CHAIN[chainId])
       }
 
       if (GAS_TOKENS[chainId]) {
         currentChainTokens = currentChainTokens.concat(GAS_TOKENS[chainId])
       }
-      // else {
-      //   currentChainTokens = BRIDGABLE_TOKENS[chainId]
-      // }
 
       const [tokenBalances] = await Promise.all([
         getTokenBalances(address, currentChainTokens, currentChainId),

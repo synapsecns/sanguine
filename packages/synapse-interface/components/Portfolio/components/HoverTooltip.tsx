@@ -13,12 +13,12 @@ export const HoverTooltip = ({ children, hoverContent }) => {
       className="relative"
     >
       {children}
-      <HoverContent isHovered={showTooltip}>{hoverContent}</HoverContent>
+      <Tooltip isHovered={showTooltip}>{hoverContent}</Tooltip>
     </div>
   )
 }
 
-const HoverContent = ({
+const Tooltip = ({
   isHovered,
   children,
 }: {
