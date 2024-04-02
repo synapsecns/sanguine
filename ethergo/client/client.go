@@ -15,6 +15,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"math/big"
+	"reflect"
 )
 
 // EVM is the set of functions that the scribe needs from a client.
@@ -152,6 +153,13 @@ func nillableToString(nillable fmt.Stringer) string {
 	if nillable == nil {
 		return ""
 	}
+
+	// Use reflection to check if the interface's underlying value is nil.
+	val := reflect.ValueOf(nillable)
+	if val.Kind() == reflect.Ptr && val.IsNil() {
+		return ""
+	}
+
 	return nillable.String()
 }
 
