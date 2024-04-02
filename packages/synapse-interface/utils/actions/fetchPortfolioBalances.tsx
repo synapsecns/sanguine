@@ -55,22 +55,35 @@ export const fetchPortfolioBalances = async (
   try {
     const balancePromises = filteredChains.map(async (chainId) => {
       const currentChainId = Number(chainId)
-      let currentChainTokens
 
-      currentChainTokens = BRIDGABLE_TOKENS[chainId]
+      return (async () => {
+        try {
+          let currentChainTokens
 
-      if (POOLS_BY_CHAIN[chainId]) {
-        currentChainTokens = currentChainTokens.concat(POOLS_BY_CHAIN[chainId])
-      }
+          currentChainTokens = BRIDGABLE_TOKENS[chainId]
 
-      if (GAS_TOKENS[chainId]) {
-        currentChainTokens = currentChainTokens.concat(GAS_TOKENS[chainId])
-      }
+          if (POOLS_BY_CHAIN[chainId]) {
+            currentChainTokens = currentChainTokens.concat(
+              POOLS_BY_CHAIN[chainId]
+            )
+          }
 
-      const [tokenBalances] = await Promise.all([
-        getTokenBalances(address, currentChainTokens, currentChainId),
-      ])
-      return { currentChainId, tokenBalances }
+          if (GAS_TOKENS[chainId]) {
+            currentChainTokens = currentChainTokens.concat(GAS_TOKENS[chainId])
+          }
+
+          const [tokenBalances] = await Promise.all([
+            getTokenBalances(address, currentChainTokens, currentChainId),
+          ])
+          return { currentChainId, tokenBalances }
+        } catch (error) {
+          console.error(
+            `Error fetching balances for chainId ${chainId}:`,
+            error
+          )
+          return null
+        }
+      })()
     })
 
     const balances = await Promise.all(balancePromises)
