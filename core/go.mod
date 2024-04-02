@@ -40,7 +40,6 @@ require (
 	github.com/uptrace/opentelemetry-go-extra/otelgorm v0.1.21
 	github.com/uptrace/opentelemetry-go-extra/otelzap v0.2.3
 	github.com/urfave/cli/v2 v2.27.1
-	github.com/valyala/fastjson v1.6.4
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.42.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.42.0
 	go.opentelemetry.io/contrib/propagators/b3 v1.21.0
