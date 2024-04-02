@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	db2 "github.com/synapsecns/sanguine/ethergo/listener/db"
 	"math/big"
 	"time"
+
+	db2 "github.com/synapsecns/sanguine/ethergo/listener/db"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
@@ -108,7 +109,13 @@ func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (er
 	c.pollInterval = defaultPollInterval
 
 	// Note: in the case of an error, you don't have to handle the poll interval by calling b.duration.
+	var endBlock uint64
 	defer func() {
+		span.SetAttributes(
+			attribute.Int64("start_block", int64(c.startBlock)),
+			attribute.Int64("end_block", int64(endBlock)),
+			attribute.Int64("latest_block", int64(c.latestBlock)),
+		)
 		metrics.EndSpanWithErr(span, err)
 		if err != nil {
 			c.backoff.Attempt()
@@ -130,7 +137,7 @@ func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (er
 
 	// Handle if the listener is more than one get logs range behind the head
 	// Note: this does not cover the edge case of a reorg that includes a new tx
-	endBlock := c.latestBlock
+	endBlock = c.latestBlock
 	lastUnconfirmedBlock := c.latestBlock
 	if c.startBlock+maxGetLogsRange < c.latestBlock {
 		endBlock = c.startBlock + maxGetLogsRange
@@ -154,7 +161,7 @@ func (c *chainListener) doPoll(parentCtx context.Context, handler HandleLog) (er
 
 	err = c.store.PutLatestBlock(ctx, c.chainID, endBlock)
 	if err != nil {
-		return fmt.Errorf("could not put lastest block: %w", err)
+		return fmt.Errorf("could not put latest block: %w", err)
 	}
 
 	c.startBlock = lastUnconfirmedBlock
