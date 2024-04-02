@@ -18,6 +18,7 @@ export interface GasDataState {
 const getGasData = async (chainId: number) => {
   const feeData = await fetchFeeData({
     chainId,
+    formatUnits: 'gwei',
   })
 
   return feeData
