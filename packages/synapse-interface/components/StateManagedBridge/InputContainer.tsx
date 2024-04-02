@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
+import { useAppSelector } from '@/store/hooks'
 import { useDispatch } from 'react-redux'
 import { useAccount, useNetwork } from 'wagmi'
 
@@ -15,11 +16,17 @@ import { FromChainSelector } from './FromChainSelector'
 import { FromTokenSelector } from './FromTokenSelector'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
+import { zeroAddress } from 'viem'
+import { formatGwei } from 'viem'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
 export const InputContainer = () => {
   const { fromChainId, fromToken, fromValue } = useBridgeState()
+  const { gasData } = useAppSelector((state) => state.gasData)
+
+  const { gasPrice, maxFeePerGas } = gasData?.formatted
+
   const [showValue, setShowValue] = useState('')
 
   const [hasMounted, setHasMounted] = useState(false)
@@ -42,6 +49,17 @@ export const InputContainer = () => {
   const balance = balances[fromChainId]?.find(
     (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
   )?.balance
+
+  const estimatedGasCostInGwei = 200_000 * parseFloat(gasPrice)
+  const oneGwei = parseFloat(formatGwei(1n))
+  const formattedEstimatedGasCost = estimatedGasCostInGwei
+    ? estimatedGasCostInGwei * oneGwei
+    : null
+
+  const isNativeToken = fromToken?.addresses[fromChainId] === zeroAddress
+
+  console.log('parsedBalance:', typeof parsedBalance)
+  console.log('formattedEstimatedGasCost:', typeof formattedEstimatedGasCost)
 
   useEffect(() => {
     if (fromToken && fromToken?.decimals[fromChainId]) {
@@ -73,12 +91,36 @@ export const InputContainer = () => {
   }
 
   const onMaxBalance = useCallback(() => {
-    dispatch(
-      updateFromValue(
-        formatBigIntToString(balance, fromToken?.decimals[fromChainId])
+    if (formattedEstimatedGasCost && isNativeToken) {
+      const maxBalance = Number(parsedBalance) - formattedEstimatedGasCost
+
+      if (maxBalance < 0) {
+        updateFromValue(
+          formatBigIntToString(0n, fromToken?.decimals[fromChainId])
+        )
+      } else {
+        updateFromValue(
+          formatBigIntToString(
+            BigInt(maxBalance),
+            fromToken?.decimals[fromChainId]
+          )
+        )
+      }
+    } else {
+      dispatch(
+        updateFromValue(
+          formatBigIntToString(balance, fromToken?.decimals[fromChainId])
+        )
       )
-    )
-  }, [balance, fromChainId, fromToken])
+    }
+  }, [
+    parsedBalance,
+    balance,
+    fromChainId,
+    fromToken,
+    formattedEstimatedGasCost,
+    isNativeToken,
+  ])
 
   const connectedStatus = useMemo(() => {
     if (hasMounted && !isConnected) {
