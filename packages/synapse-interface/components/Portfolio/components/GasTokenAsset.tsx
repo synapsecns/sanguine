@@ -31,9 +31,17 @@ export const GasTokenAsset = ({
           className="w-6 h-6 rounded-md"
           src={icon}
         />
-        <data title={`${parsedBalanceLong} ${symbol}`}>
-          {parsedBalance} {symbol}
-        </data>
+        <HoverTooltip
+          hoverContent={
+            <div className="whitespace-nowrap">
+              {parsedBalanceLong} {symbol}
+            </div>
+          }
+        >
+          <div>
+            {parsedBalance} {symbol}
+          </div>
+        </HoverTooltip>
         <HoverTooltip
           hoverContent={<div className="whitespace-nowrap">Gas token</div>}
         >
