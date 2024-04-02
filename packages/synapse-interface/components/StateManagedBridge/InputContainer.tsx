@@ -95,16 +95,15 @@ export const InputContainer = () => {
       const maxBalance = Number(parsedBalance) - formattedEstimatedGasCost
 
       if (maxBalance < 0) {
-        updateFromValue(
-          formatBigIntToString(0n, fromToken?.decimals[fromChainId])
-        )
-      } else {
-        updateFromValue(
-          formatBigIntToString(
-            BigInt(maxBalance),
-            fromToken?.decimals[fromChainId]
+        console.log('max balance less than 0: ', maxBalance)
+        dispatch(
+          updateFromValue(
+            formatBigIntToString(0n, fromToken?.decimals[fromChainId])
           )
         )
+      } else {
+        console.log('max balance greater than 0', maxBalance)
+        dispatch(updateFromValue(maxBalance.toString()))
       }
     } else {
       dispatch(
