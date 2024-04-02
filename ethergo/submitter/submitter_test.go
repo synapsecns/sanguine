@@ -44,7 +44,7 @@ func (s *SubmitterSuite) TestSetGasPrice() {
 	maxPrice := new(big.Int).Add(gasPrice, new(big.Int).SetUint64(1))
 	cfg.SetGlobalMaxGasPrice(maxPrice)
 
-	client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Twice().Return(gasPrice, nil)
+	client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Times(3).Return(gasPrice, nil)
 	err = ts.SetGasPrice(s.GetTestContext(), client, transactor, chainID, nil)
 	s.Require().NoError(err)
 
