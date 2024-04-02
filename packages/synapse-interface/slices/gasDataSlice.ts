@@ -12,9 +12,10 @@ export interface GasDataState {
       maxPriorityFeePerGas: string
     }
   }
+  isLoadingGasData: boolean
 }
 
-const getFeeData = async (chainId: number) => {
+const getGasData = async (chainId: number) => {
   const feeData = await fetchFeeData({
     chainId,
   })
@@ -25,7 +26,7 @@ const getFeeData = async (chainId: number) => {
 export const fetchGasData = createAsyncThunk(
   'gasData/fetchGasData',
   async (chainId: number) => {
-    const gasData = await getFeeData(chainId)
+    const gasData = await getGasData(chainId)
     return gasData
   }
 )
@@ -41,4 +42,27 @@ const initialState: GasDataState = {
       maxPriorityFeePerGas: null,
     },
   },
+  isLoadingGasData: true,
 }
+
+export const gasDataSlice = createSlice({
+  name: 'gasData',
+  initialState,
+  reducers: {},
+  extraReducers: (builder) => {
+    builder.addCase(fetchGasData.pending, (state) => {
+      state.isLoadingGasData = true
+    })
+    builder
+      .addCase(fetchGasData.fulfilled, (state, action) => {
+        state.isLoadingGasData = false
+        state.gasData = action.payload
+      })
+      .addCase(fetchGasData.rejected, (state) => {
+        state.isLoadingGasData = false
+        console.error('Error fetching gas data')
+      })
+  },
+})
+
+export default gasDataSlice.reducer
