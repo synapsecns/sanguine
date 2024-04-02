@@ -206,7 +206,7 @@ func (c chainListener) getMetadata(parentCtx context.Context) (startBlock, chain
 }
 
 // TODO: consider some kind of backoff here in case rpcs are down at boot.
-// this becomes more of an issue as we add more chains
+// this becomes more of an issue as we add more chains.
 func (c chainListener) getLastIndexed(ctx context.Context, chainID uint64) (lastIndexed uint64, err error) {
 	lastIndexed, err = c.store.LatestBlockForChain(ctx, chainID)
 	// Workaround: TODO remove
