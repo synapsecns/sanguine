@@ -4,6 +4,15 @@ const getChainIdRPC = (rpcUrl) => {
   return getCommandOutput(`cast chain-id --rpc-url ${rpcUrl}`)
 }
 
+const getChainGasPricingRPC = (rpcUrl) => {
+  const baseFee = getCommandOutput(`cast base-fee --rpc-url ${rpcUrl}`)
+  const gasPrice = getCommandOutput(`cast gas-price --rpc-url ${rpcUrl}`)
+  return {
+    baseFee,
+    gasPrice,
+  }
+}
+
 const getAccountBalanceRPC = (rpcUrl, address) => {
   return getCommandOutput(`cast balance --ether --rpc-url ${rpcUrl} ${address}`)
 }
@@ -20,6 +29,7 @@ const hasCodeRPC = (rpcUrl, address) => {
 
 module.exports = {
   getChainIdRPC,
+  getChainGasPricingRPC,
   getAccountBalanceRPC,
   getAccountNonceRPC,
   hasCodeRPC,

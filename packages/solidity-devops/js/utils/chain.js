@@ -1,5 +1,6 @@
 const {
   getChainIdRPC,
+  getChainGasPricingRPC,
   getAccountBalanceRPC,
   getAccountNonceRPC,
   hasCodeRPC,
@@ -35,6 +36,10 @@ const getChainId = (chainName) => {
   return getChainIdRPC(readChainRPC(chainName))
 }
 
+const getChainGasPricing = (chainName) => {
+  return getChainGasPricingRPC(readChainRPC(chainName))
+}
+
 const getAccountBalance = (chainName, address) => {
   return getAccountBalanceRPC(readChainRPC(chainName), address)
 }
@@ -61,6 +66,7 @@ module.exports = {
   readChainRPC,
   readChainSpecificOptions,
   getChainId,
+  getChainGasPricing,
   getAccountBalance,
   getAccountNonce,
   hasCode,
