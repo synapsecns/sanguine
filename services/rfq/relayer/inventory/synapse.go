@@ -206,7 +206,7 @@ func (c *rebalanceManagerSynapseCCTP) listen(parentCtx context.Context, chainID 
 		case cctp.CircleRequestSentTopic:
 			parsedEvent, err := parser.ParseCircleRequestSent(log)
 			if err != nil {
-				logger.Warnf("could not parse circle request sent: %w", err)
+				logger.Warnf("could not parse circle request sent: %v", err)
 				return nil
 			}
 			if parsedEvent.Sender != c.relayerAddress {
@@ -227,13 +227,13 @@ func (c *rebalanceManagerSynapseCCTP) listen(parentCtx context.Context, chainID 
 			}
 			err = c.db.UpdateRebalance(ctx, rebalanceModel, true)
 			if err != nil {
-				logger.Warnf("could not update rebalance status: %w", err)
+				logger.Warnf("could not update rebalance status: %v", err)
 				return nil
 			}
 		case cctp.CircleRequestFulfilledTopic:
 			parsedEvent, err := parser.ParseCircleRequestFulfilled(log)
 			if err != nil {
-				logger.Warnf("could not parse circle request fulfilled: %w", err)
+				logger.Warnf("could not parse circle request fulfilled: %v", err)
 				return nil
 			}
 			if parsedEvent.Recipient != c.relayerAddress {
@@ -253,7 +253,7 @@ func (c *rebalanceManagerSynapseCCTP) listen(parentCtx context.Context, chainID 
 			}
 			err = c.db.UpdateRebalance(parentCtx, rebalanceModel, false)
 			if err != nil {
-				logger.Warnf("could not update rebalance status: %w", err)
+				logger.Warnf("could not update rebalance status: %v", err)
 				return nil
 			}
 		default:
