@@ -78,7 +78,6 @@ export const PortfolioTokenAsset = ({
           pl-2 pr-4 py-2 cursor-pointer rounded
           hover:bg-surface active:opacity-70
         `}
-        title={`${parsedBalanceLong} ${symbol}`}
       >
         <Image
           loading="lazy"
@@ -86,7 +85,9 @@ export const PortfolioTokenAsset = ({
           className="w-6 h-6 rounded-md"
           src={icon}
         />
-        {parsedBalance} {symbol}
+        <data title={`${parsedBalanceLong} ${symbol}`}>
+          {parsedBalance} {symbol}
+        </data>
         {isBridgeableGasToken ? (
           <HoverTooltip
             hoverContent={<div className="whitespace-nowrap">Gas token</div>}
