@@ -1,10 +1,11 @@
 package gas
 
 import (
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core"
-	"math/big"
 )
 
 // CompareGas allows for gas comparisons between txes. In the case of an eip-1559 txOpts and a
@@ -92,7 +93,13 @@ func bumpDynamicTxFees(opts *bind.TransactOpts, percentIncrease int, baseFee, ma
 		logger.Warnf("new tip cap %s still less than fee cap %s + base fee %s, bumping tip not and not fee", newTipCap, maxPrice, baseFee)
 	}
 
-	opts.GasFeeCap = maxPrice
+	newFeeCap := BumpByPercent(opts.GasFeeCap, percentIncrease)
+	if maxPrice.Cmp(newFeeCap) > 0 {
+		opts.GasFeeCap = newFeeCap
+	} else {
+		opts.GasFeeCap = maxPrice
+		logger.Warnf("new fee cap %s exceeds max price %s, using max price", newFeeCap, maxPrice)
+	}
 }
 
 // BumpByPercent bumps a gas price by a percentage.
