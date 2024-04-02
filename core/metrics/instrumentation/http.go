@@ -117,7 +117,3 @@ func (t *captureTransport) RoundTrip(req *http.Request) (_ *http.Response, err e
 	//nolint: wrapcheck
 	return resp, err
 }
-
-func (t *captureTransport) trackID() {
-
-}
