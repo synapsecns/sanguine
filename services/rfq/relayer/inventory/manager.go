@@ -297,6 +297,11 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 				}
 			}
 
+			cctpType, err := i.cfg.CCTPRelayerConfig.GetCCTPType()
+			if err != nil {
+				return fmt.Errorf("could not get cctp type: %w", err)
+			}
+
 			// approve SynapseCCTP contract
 			if address != chain.EthAddress && token.Allowances[contractSynapseCCTP].Cmp(big.NewInt(0)) == 0 {
 				tokenAddr := address // capture func literal
