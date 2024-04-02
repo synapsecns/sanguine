@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/valyala/fastjson"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"io"
@@ -38,32 +39,32 @@ const (
 func (t *captureTransport) RoundTrip(req *http.Request) (_ *http.Response, err error) {
 	var response string
 
-	_, span := t.metrics.Tracer().Start(req.Context(), RequestSpanName)
-	defer func() {
-		metrics.EndSpanWithErr(span, err)
-	}()
-
 	// Perform the HTTP request using the underlying transport
 	transport := t.transport
 	if transport == nil {
 		transport = http.DefaultTransport
 	}
 
-	// no need to capture if we're not recording
-	if !span.IsRecording() {
-		// nolint: wrapcheck
-		return transport.RoundTrip(req)
+	// Capture the request body
+	var requestBody []byte
+	if req.Body != nil {
+		var requestBuffer bytes.Buffer
+		tee := io.TeeReader(req.Body, &requestBuffer)
+		req.Body = io.NopCloser(tee)
+
+		if req.ContentLength == 0 && req.Header.Get("Content-Encoding") == "" {
+			req.ContentLength = int64(requestBuffer.Len())
+		}
+
 	}
 
-	// Capture the request body
-	var requestBody bytes.Buffer
-	if req.Body != nil {
-		tee := io.TeeReader(req.Body, &requestBody)
-		req.Body = io.NopCloser(tee)
-		if req.ContentLength == 0 && req.Header.Get("Content-Encoding") == "" {
-			req.ContentLength = int64(requestBody.Len())
-		}
-	}
+	// will be 0 if the request body is empty
+	id := fastjson.GetInt(requestBody, "id")
+
+	_, span := t.metrics.Tracer().Start(req.Context(), RequestSpanName, trace.WithAttributes(attribute.Int("id", id)))
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
 
 	resp, err := transport.RoundTrip(req)
 	if err != nil {
@@ -96,8 +97,8 @@ func (t *captureTransport) RoundTrip(req *http.Request) (_ *http.Response, err e
 	// Add the request to the list of captured requests
 
 	// Add the request/response body as events to the span
-	if requestBody.Len() > 0 {
-		span.AddEvent(RequestEventName, trace.WithAttributes(attribute.String("body", requestBody.String())))
+	if len(requestBody) > 0 {
+		span.AddEvent(RequestEventName, trace.WithAttributes(attribute.String("body", string(requestBody))))
 	}
 	if len(response) > 0 {
 		span.AddEvent(ResponseEventName, trace.WithAttributes(attribute.String("body", response)))
