@@ -105,7 +105,7 @@ func (t *captureTransport) RoundTrip(req *http.Request) (_ *http.Response, err e
 		// will not work on batch requests.
 		id := fastjson.GetInt(requestBytes, "id")
 		if id != 0 {
-			span.SetAttributes(attribute.Int("id", id))
+			span.SetAttributes(attribute.Int(IDSpanName, id))
 		}
 
 		span.AddEvent(RequestEventName, trace.WithAttributes(attribute.String("body", string(requestBytes))))
