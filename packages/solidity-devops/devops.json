@@ -16,7 +16,8 @@
     "moonbeam": "--auto-gas-1559 --skip-simulation --slow",
     "moonriver": "--auto-gas-1559 --skip-simulation --slow",
     "optimism": "--auto-gas-1559",
-    "polygon": "--auto-gas-1559 --slow"
+    "polygon": "--auto-gas-1559 --slow",
+    "eth_sepolia": "--auto-gas-1559"
   },
   "deployConfigs": "configs",
   "deployments": "deployments",

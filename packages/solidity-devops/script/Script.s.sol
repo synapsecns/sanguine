@@ -6,7 +6,6 @@ import {SynapseScript} from "../src/SynapseScript.sol";
 
 contract Script is SynapseScript {
     function run() external broadcastWithHooks {
-        payable(msg.sender).transfer(0);
         deployAndSave("BasicContract", cbDeployBasicContract);
     }
 
