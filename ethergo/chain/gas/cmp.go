@@ -87,12 +87,6 @@ func bumpLegacyTxFees(opts *bind.TransactOpts, percentIncrease int, maxPrice *bi
 func bumpDynamicTxFees(opts *bind.TransactOpts, percentIncrease int, baseFee, maxPrice *big.Int) {
 	newTipCap := BumpByPercent(opts.GasTipCap, percentIncrease)
 
-	// if new fee cap less than tip cap AND base (fee + fee cap) > tip cap
-	if maxPrice.Cmp(newTipCap) > 0 && big.NewInt(0).Sub(maxPrice, baseFee).Cmp(newTipCap) > 0 {
-		opts.GasTipCap = newTipCap
-		logger.Warnf("new tip cap %s still less than fee cap %s + base fee %s, bumping tip not and not fee", newTipCap, maxPrice, baseFee)
-	}
-
 	newFeeCap := BumpByPercent(opts.GasFeeCap, percentIncrease)
 	if maxPrice.Cmp(newFeeCap) > 0 {
 		opts.GasFeeCap = newFeeCap
@@ -100,6 +94,14 @@ func bumpDynamicTxFees(opts *bind.TransactOpts, percentIncrease int, baseFee, ma
 		opts.GasFeeCap = maxPrice
 		logger.Warnf("new fee cap %s exceeds max price %s, using max price", newFeeCap, maxPrice)
 	}
+
+	// if new fee cap less than tip cap AND base (fee + fee cap) > tip cap
+	if newFeeCap.Cmp(newTipCap) > 0 && big.NewInt(0).Sub(newFeeCap, baseFee).Cmp(newTipCap) > 0 {
+		opts.GasTipCap = newTipCap
+	} else {
+		logger.Warnf("new tip cap %s still less than fee cap %s + base fee %s, bumping tip not and not fee", newTipCap, newFeeCap, baseFee)
+	}
+
 }
 
 // BumpByPercent bumps a gas price by a percentage.

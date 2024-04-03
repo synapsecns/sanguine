@@ -417,8 +417,19 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 			}
 		}
 		gas.BumpGasFees(transactor, t.config.GetGasBumpPercentage(chainID), gasBlock.BaseFee, maxPrice)
+	} else {
+		// if we're not bumping, we should still make sure the gas price is at least 10 because 10% of 10 wei is a whole number.
+		// TODO: this should be customizable.
+		transactor.GasTipCap = maxOfBig(transactor.GasTipCap, big.NewInt(10))
 	}
 	return nil
+}
+
+func maxOfBig(a, b *big.Int) *big.Int {
+	if a.Cmp(b) > 0 {
+		return a
+	}
+	return b
 }
 
 // applyBaseGasPrice applies the base gas price to the transactor if a gas price value is zero.
