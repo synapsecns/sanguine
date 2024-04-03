@@ -28,19 +28,7 @@ import {
   POLYGON,
 } from '@/constants/chains/master'
 
-import { type Chain } from 'viem'
-
-import {
-  RainbowKitProvider,
-  getDefaultWallets,
-  Locale,
-  getDefaultConfig,
-} from '@rainbow-me/rainbowkit'
-import {
-  argentWallet,
-  trustWallet,
-  ledgerWallet,
-} from '@rainbow-me/rainbowkit/wallets'
+import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
 import {
   mainnet,
   arbitrum,
@@ -63,7 +51,6 @@ import {
   dogechain,
   boba,
 } from '@wagmi/core/chains'
-import { useEffect, useState } from 'react'
 import { Provider } from 'react-redux'
 import { store, persistor } from '@/store/store'
 import { SegmentAnalyticsProvider } from '@/contexts/SegmentAnalyticsProvider'
@@ -77,8 +64,6 @@ import { SynapseProvider } from '@/utils/providers/SynapseProvider'
 import LogRocket from 'logrocket'
 import setupLogRocketReact from 'logrocket-react'
 import { wagmiConfig } from '@/wagmiConfig'
-
-const { wallets } = getDefaultWallets()
 
 // only initialize when in the browser
 // if (
@@ -95,8 +80,6 @@ const { wallets } = getDefaultWallets()
 //     console.log('session url for debugging ' + sessionURL)
 //   })
 // }
-
-console.log(`wallets`, wallets)
 
 const chains = [
   {

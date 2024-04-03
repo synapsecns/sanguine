@@ -30,6 +30,10 @@ import {
   coinbaseWallet,
   rainbowWallet,
   walletConnectWallet,
+  trustWallet,
+  ledgerWallet,
+  frameWallet,
+  safeWallet,
 } from '@rainbow-me/rainbowkit/wallets'
 
 import {
@@ -91,6 +95,10 @@ const connectors = connectorsForWallets(
         coinbaseWallet,
         rainbowWallet,
         rabbyWallet,
+        trustWallet,
+        ledgerWallet,
+        frameWallet,
+        safeWallet,
       ],
     },
   ],
