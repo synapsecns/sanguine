@@ -34,6 +34,7 @@
   },
   "bin": {
     "fsr": "js/forgeScriptRun.js",
-    "fsr-str": "js/forgeScriptRunString.js"
+    "fsr-str": "js/forgeScriptRunString.js",
+    "sd": "js/saveDeployment.js"
   }
 }

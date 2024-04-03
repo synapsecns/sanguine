@@ -3,7 +3,7 @@ const path = require('path')
 
 const { getChainId, hasCode } = require('./chain.js')
 const { readConfigValue } = require('./config.js')
-const { logSuccess, logError, logWarning } = require('./logger.js')
+const { logSuccess, logInfo, logError, logWarning } = require('./logger.js')
 const { createDir } = require('./utils.js')
 const { assertCondition } = require('./utils.js')
 
@@ -30,9 +30,41 @@ const createChainIdFile = (deployments, chainName) => {
   fs.writeFileSync(chainIdFile, chainId)
 }
 
+const saveNewDeployment = (chainName, contractAlias, potentialReceipts) => {
+  // No-op if artifact has already been saved
+  const deploymentFN = getDeploymentFN(chainName, contractAlias)
+  if (fs.existsSync(deploymentFN)) {
+    logInfo(`Deployment artifact already exists for ${contractAlias}`)
+    return
+  }
+  const artifact = getConfirmedFreshDeployment(chainName, contractAlias)
+  if (!artifact) {
+    return
+  }
+  // Find the matching receipt
+  const receipt = potentialReceipts.find((r) => r.address === artifact.address)
+  if (!receipt) {
+    logInfo(`No receipt found for ${contractAlias} at ${artifact.address}`)
+    return
+  }
+  // Add receipt.hash and receipt.blockNumber to the artifact, but don't add receipt.address
+  artifact.receipt = {
+    hash: receipt.hash,
+    blockNumber: receipt.blockNumber,
+  }
+  // Add ABI from the build artifact
+  const buildArtifact = getBuildArtifact(contractAlias)
+  if (!buildArtifact || !buildArtifact.abi) {
+    logInfo(`No ABI found for ${contractAlias}`)
+  } else {
+    artifact.abi = buildArtifact.abi
+  }
+  // Save the artifact
+  saveDeploymentArtifact(chainName, contractAlias, artifact)
+}
+
 const saveDeploymentArtifact = (chainName, contractAlias, artifact) => {
-  const deployments = readConfigValue('deployments')
-  const deploymentFN = `${deployments}/${chainName}/${contractAlias}.json`
+  const deploymentFN = getDeploymentFN(chainName, contractAlias)
   fs.writeFileSync(deploymentFN, JSON.stringify(artifact, null, 2))
 }
 
@@ -47,10 +79,24 @@ const getContractName = (contractAlias) => {
   return contractAlias.split('.')[0]
 }
 
-const getBuildArtifact = (contractAlias) => {
+const getDeploymentFN = (chainName, contractAlias) => {
+  const deployments = readConfigValue('deployments')
+  return `${deployments}/${chainName}/${contractAlias}.json`
+}
+
+const getFreshDeploymentFN = (chainName, contractAlias) => {
+  const freshDeployments = readConfigValue('freshDeployments')
+  return `${freshDeployments}/${chainName}/${contractAlias}.json`
+}
+
+const getBuildArtifactFN = (contractAlias) => {
   const contractName = getContractName(contractAlias)
   const forgeArtifacts = readConfigValue('forgeArtifacts')
-  const artifactFN = `${forgeArtifacts}/${contractName}.sol/${contractName}.json`
+  return `${forgeArtifacts}/${contractName}.sol/${contractName}.json`
+}
+
+const getBuildArtifact = (contractAlias) => {
+  const artifactFN = getBuildArtifactFN(contractAlias)
   // Silent exit if the artifact file does not exist
   if (!fs.existsSync(artifactFN)) {
     logError(`No artifact file found for ${contractAlias} at ${artifactFN}`)
@@ -60,8 +106,7 @@ const getBuildArtifact = (contractAlias) => {
 }
 
 const getConfirmedFreshDeployment = (chainName, contractAlias) => {
-  const freshDeployments = readConfigValue('freshDeployments')
-  const freshDeploymentFN = `${freshDeployments}/${chainName}/${contractAlias}.json`
+  const freshDeploymentFN = getFreshDeploymentFN(chainName, contractAlias)
   // Silent exit if the fresh deployment file does not exist
   if (!fs.existsSync(freshDeploymentFN)) {
     logError(
@@ -98,10 +143,36 @@ const getNewDeployments = (chainName, timestamp) => {
     .map((file) => file.slice(0, -5))
 }
 
+const getAllDeploymentReceipts = (chainName) => {
+  // Get the list of script-related directories in the 'broadcast' directory, excluding files
+  const scriptDirs = fs
+    .readdirSync('broadcast', { withFileTypes: true })
+    .filter((d) => d.isDirectory())
+    .map((d) => d.name)
+  const chainId = getChainId(chainName)
+  // We are interested in all 'broadcast/scriptDir/chainId/*.json' files for every scriptDir in the list
+  return scriptDirs.flatMap((scriptDir) => {
+    const scriptDirPath = path.join('broadcast', scriptDir, chainId)
+    if (!fs.existsSync(scriptDirPath)) {
+      return []
+    }
+    return fs
+      .readdirSync(scriptDirPath)
+      .filter((f) => f.endsWith('.json'))
+      .flatMap((broadcastFN) =>
+        extractDeploymentReceipts(path.join(scriptDirPath, broadcastFN))
+      )
+  })
+}
+
 const getNewDeploymentReceipts = (chainName, scriptFN) => {
   const chainId = getChainId(chainName)
   const scriptBaseName = path.basename(scriptFN)
   const broadcastFN = `broadcast/${scriptBaseName}/${chainId}/run-latest.json`
+  return extractDeploymentReceipts(broadcastFN)
+}
+
+const extractDeploymentReceipts = (broadcastFN) => {
   // Silent exit if the broadcast file does not exist
   if (!fs.existsSync(broadcastFN)) {
     return []
@@ -151,10 +222,12 @@ const getNewDeploymentReceipts = (chainName, scriptFN) => {
 
 module.exports = {
   createDeploymentDirs,
+  saveNewDeployment,
   saveDeploymentArtifact,
   getContractName,
   getBuildArtifact,
   getConfirmedFreshDeployment,
   getNewDeployments,
   getNewDeploymentReceipts,
+  getAllDeploymentReceipts,
 }
