@@ -12,7 +12,8 @@ export default function Hero() {
 
   const ctas = {
     default: {
-      tag: 'Synapse 2.0: The Modular Interchain Network',
+      // tag: 'with the Synapse blockchain protocol suite.',
+      tag: 'The web connects devices. Synapse connects blockchains.',
     },
     bridge: {
       tag: 'Any asset to any chain',
@@ -29,6 +30,7 @@ export default function Hero() {
   const sleep = (time) => new Promise((resolve) => setTimeout(resolve, time))
 
   useEffect(() => {
+    return
     if (index < tag.length) {
       sleep((index / tag.length) * 5 + 5).then(() => setH1([cta, +index + 1]))
     } else {
@@ -74,11 +76,11 @@ export default function Hero() {
   return (
     // <header className="my-0 xs:my-4 md:my-8 lg:my-12 text-center max-w-3xl grid place-items-center">
     <header className="text-center max-w-3xl grid place-items-center mt-8 -mb-8 z-[1]">
-      <div className="hidden sm:block text-3xl sm:text-6xl font-semibold my-4 cursor-default">
-        Modular Interchain Messages
+      <div className="hidden sm:block text-3xl sm:text-6xl font-semibold mt-8 mb-3">
+        Reach every chain.
       </div>
       <div className="pt-4 grid gap-4" onMouseMove={(e) => e.stopPropagation()}>
-        <h1 className="max-w-xl text-3xl md:text-2xl font-medium cursor-default">
+        <h1 className="max-w-xl text-3xl md:text-2xl font-medium">
           {url ? (
             <a
               href={url}
@@ -95,7 +97,7 @@ export default function Hero() {
             <Tagline />
           )}
         </h1>
-        <div>
+        <div className="m-2">
           <a
             ref={cta !== 'bridge' ? bridgeRef : null}
             className={`${ctaButtonBaseStyle} border-zinc-500 hover:border-black hover:dark:border-white bg-white hover:bg-zinc-100 dark:bg-zinc-950 hover:dark:bg-zinc-900`}

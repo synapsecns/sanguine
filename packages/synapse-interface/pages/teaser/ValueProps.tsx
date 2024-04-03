@@ -3,7 +3,6 @@ import FauxBridge from './FauxBridge'
 export default function ValueProps() {
   return (
     <article className="grid gap-16 md:gap-24 p-4 max-w-4xl">
-
       <section className="flex odd:flex-col even:flex-col-reverse md:grid grid-cols-2 gap-x-12 gap-y-4 items-center">
         <div className="grid place-items-center">
           <svg
@@ -44,7 +43,7 @@ export default function ValueProps() {
           </p>
         </div>
       </section>
-      {/* <section>
+      <section>
         <ul className="flex flex-wrap gap-12 bg-white dark:bg-zinc-950 px-8 py-6 border border-zinc-300 dark:border-zinc-800 rounded-lg shadow-lg">
           <li className="basis-56 grow">
             <h2 className="text-4xl font-medium mb-4">Extensible</h2>
@@ -68,7 +67,7 @@ export default function ValueProps() {
             </p>
           </li>
         </ul>
-      </section> */}
+      </section>
       <section className="flex odd:flex-col even:flex-col-reverse md:grid grid-cols-2 gap-12 items-center">
         <div>
           <h2 className="text-4xl font-medium mb-4">
@@ -85,7 +84,7 @@ export default function ValueProps() {
           <FauxBridge />
         </div>
       </section>
-      {/* <section>
+      <section>
         <ul className="flex flex-wrap gap-12 bg-white dark:bg-zinc-950 px-8 py-6 border border-zinc-300 dark:border-zinc-800 rounded-lg shadow-lg">
           <li className="basis-56 grow">
             <h2 className="text-4xl font-medium mb-4">Deep Liquidity</h2>
@@ -108,7 +107,7 @@ export default function ValueProps() {
             </p>
           </li>
         </ul>
-      </section> */}
+      </section>
       {/* <section className="w-full">
         <header className="p-4">
           <h2 className="text-4xl font-medium mb-4">Widely Integrated</h2>

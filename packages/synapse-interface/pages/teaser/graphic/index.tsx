@@ -12,6 +12,7 @@ import ValueProps from '../ValueProps'
 import Wrapper from '@/components/WipWrapperComponents/Wrapper'
 
 import styles from './keyframes.module.css'
+import FauxBridge from '../FauxBridge'
 
 const LandingPage = () => {
   const { address: currentAddress } = useAccount()
@@ -24,6 +25,64 @@ const LandingPage = () => {
       pathname: router.pathname,
     })
   }, [])
+
+  const hslStr = (h, s, l, a = undefined) =>
+    `hsl(${h}deg ${s}% ${l}%${a === undefined ? '' : ` / ${a}%`})`
+
+  const ethereum = {
+    stroke: hslStr(260, 77, 83), // lavender // mint: 176, 87, 85
+    fill: hslStr(240, 78, 7), // l: 40
+    text: hslStr(14, 61, 85), // peach
+  }
+  const arbitrum = {
+    stroke: hslStr(204, 87, 55),
+    fill: hslStr(216, 58, 9), // l: 19
+    text: hslStr(204, 87, 65),
+  }
+  const avalanche = {
+    stroke: hslStr(360, 78, 58),
+    fill: hslStr(360, 78, 3),
+    text: hslStr(360, 78, 58),
+  }
+  const blast = {
+    stroke: hslStr(60, 88, 45), // 60 98 50
+    fill: hslStr(60, 98, 3),
+    text: hslStr(60, 98, 65),
+  }
+
+  const stroke = {
+    inherit: 'inherit',
+    synapse: hslStr(300, 100, 25),
+    flash: hslStr(300, 100, 40),
+    beam: hslStr(300, 80, 60),
+    yellow: hslStr(60, 80, 60),
+    orange: hslStr(25, 80, 60),
+    blue: hslStr(195, 80, 60),
+    green: hslStr(135, 80, 60),
+    north: arbitrum.stroke,
+    west: ethereum.stroke,
+    east: avalanche.stroke,
+    south: blast.stroke,
+  }
+  const fill = {
+    inherit: 'inherit',
+    synapse: hslStr(300, 100, 5),
+    yellow: hslStr(60, 30, 3),
+    orange: hslStr(25, 30, 3),
+    blue: hslStr(195, 30, 3),
+    green: hslStr(135, 30, 3),
+    north: arbitrum.fill,
+    west: ethereum.fill,
+    east: avalanche.fill,
+    south: blast.fill,
+  }
+
+  const text = {
+    north: arbitrum.text,
+    west: ethereum.text,
+    east: avalanche.text,
+    south: blast.text,
+  }
 
   const animAttrs = (x1 = 0.5, x2 = 0.2, y1 = 0, y2 = 1) => {
     return {
@@ -88,27 +147,6 @@ const LandingPage = () => {
       stroke: stroke[color],
       fill: fill[color],
     }
-  }
-
-  const hslStr = (h, s, l, a = undefined) =>
-    `hsl(${h}deg ${s}% ${l}%${a === undefined ? '' : ` / ${a}%`})`
-
-  const stroke = {
-    inherit: 'inherit',
-    synapse: hslStr(300, 100, 25),
-    flash: hslStr(300, 100, 40),
-    yellow: hslStr(60, 80, 60),
-    orange: hslStr(25, 80, 60),
-    blue: hslStr(195, 80, 60),
-    green: hslStr(135, 80, 60),
-  }
-  const fill = {
-    inherit: 'inherit',
-    synapse: hslStr(300, 100, 5),
-    yellow: hslStr(60, 30, 3),
-    orange: hslStr(25, 30, 3),
-    blue: hslStr(195, 30, 3),
-    green: hslStr(135, 30, 3),
   }
 
   const Platform = ({
@@ -180,14 +218,14 @@ const LandingPage = () => {
           restart={restart}
         />
         <animateMotion
-          path="m0 0 v-12.5"
+          path="m0 0 v-6.25"
           additive="sum"
           begin={begin}
-          dur=".5s"
+          dur=".375s"
           calcMode="spline"
           keyPoints="0; 1; 0"
           keyTimes="0; .5; 1"
-          keySplines="0 0 .5 1; .8 0 .5 1"
+          keySplines=".5 0 .2 1; .5 0 .2 1"
           fill="freeze"
           restart={restart}
         />
@@ -205,7 +243,7 @@ const LandingPage = () => {
             restart={restart}
           />
         </path>
-        <path vectorEffect="non-scaling-stroke">
+        <path fill="none" vectorEffect="non-scaling-stroke">
           <animate
             attributeName="d"
             values="m-25,0 25,12.5 25,-12.5 m-25,12.5 0,0; m-25,-27.95 25,12.5 25,-12.5 m-25,12.5 0,27.95"
@@ -225,25 +263,29 @@ const LandingPage = () => {
   return (
     <Wrapper>
       <Hero />
-      {/* <div className="hidden sm:block text-center text-3xl sm:text-6xl font-semibold mt-16 cursor-default">
-        Secure cross-chain
-        <br />
-        communication
-      </div> */}
       <svg
         id="hero-graphic"
         width="1200"
         height="675"
         viewBox="-700 -437.5 1400 875"
         // className={`border border-zinc-900 mx-auto my-8`}
-        stroke="#0ff"
-        stroke-width="1"
+        // stroke="#0ff"
+        // stroke-width="1"
         fill="none"
       >
         <style>
+          {`text { font-size: 90%; letter-spacing: 1px }`}
           {/* {`@keyframes circlePulse { from { r: 50; } to { r: 100; } }`} */}
         </style>
-        <defs> </defs>
+        <defs>
+          <linearGradient id="a">
+            <stop stop-color="#E54DE5" />
+            <stop offset="1" stop-color="#B580FF" />
+          </linearGradient>
+          <marker id="b" viewBox="-.5 -.5 1 1">
+            <circle r=".4" fill="url(#a)" />
+          </marker>
+        </defs>
 
         <path {...paint('synapse')}>
           <animate
@@ -345,27 +387,77 @@ const LandingPage = () => {
         <Platform
           id="platformBlue"
           translate="0 -200"
-          color="blue"
+          color="north"
           begin="0s"
         />
         <Platform
           id="platformGreen"
           translate="400 0"
-          color="green"
+          color="east"
           begin=".1s"
         />
         <Platform
           id="platformOrange"
           translate="0 200"
-          color="orange"
+          color="south"
           begin=".2s"
         />
         <Platform
           id="platformYellow"
           translate="-400 0"
-          color="yellow"
+          color="west"
           begin=".3s"
         />
+
+        <g transform="translate(125 -290) scale(1.2)">
+          <rect width="100" height="52" rx="4" fill="#111" stroke="#333" />
+          <text x="10" y="20" fill={text.north}>
+            Arbitrum
+          </text>
+          <text x="10" y="42" fill="white" opacity=".8">
+            $2.55B
+          </text>
+        </g>
+
+        <g transform="translate(-380 -140) scale(1.2)">
+          <rect width="100" height="52" rx="4" fill="#111" stroke="#333" />
+          <text x="10" y="20" fill={text.west}>
+            Ethereum
+          </text>
+          <text x="10" y="42" fill="white" opacity=".8">
+            $1.72B
+          </text>
+        </g>
+
+        <g transform="translate(425 52) scale(1.2)">
+          <rect width="100" height="52" rx="4" fill="#111" stroke="#333" />
+          <text x="10" y="20" fill={text.east}>
+            Avalanche
+          </text>
+          <text x="10" y="42" fill="white" opacity=".8">
+            $885.41M
+          </text>
+        </g>
+
+        <g transform="translate(50 240) scale(1.2)">
+          <rect width="110" height="52" rx="4" fill="#111" stroke="#333" />
+          <text x="10" y="20" fill={text.south}>
+            New! Blast
+          </text>
+          <text x="10" y="42" fill="white" opacity=".8">
+            $452.12M
+          </text>
+        </g>
+
+        {/* <g transform="translate(-600 -400) scale(1.2)">
+            <rect width="120" height="52" rx="4" fill="#111" stroke="#333" />
+            <text x="10" y="20" fill={text.west}>
+              60d volume
+            </text>
+            <text x="10" y="42" fill="white" opacity=".8">
+              $7.01B
+            </text>
+          </g> */}
 
         <path
           id="barge"
@@ -398,240 +490,28 @@ const LandingPage = () => {
           />
         </path>
 
-        <g stroke={stroke.orange}>
-          <ellipse rx="30" ry="15" cy="260" {...paint('synapse')} />
-          <Cube color="orange" begin={0}>
-            <AnimateFlash
-              from="orange"
-              to="green"
-              begin="teleporterBeamsOut.begin + 1s"
-              dur="3s"
-            />
-            <AnimateFlash
-              from="green"
-              to="orange"
-              begin="teleporterBeamsIn.begin + 1s"
-              dur="3s"
-            />
-            <animateMotion
-              dur="2s"
-              path="m0,240 v12.5"
-              calcMode="spline"
-              keyPoints="0; 1; 0"
-              keyTimes="0; 0.5; 1"
-              keySplines=".33 0 .67 1; .33 0 .67 1"
-              repeatCount="indefinite"
-            />
-          </Cube>
-          <g id="teleporter1Beams" opacity="0" strokeWidth="3">
-            <animate
-              id="teleporterBeamsOut"
-              attributeName="opacity"
-              values="0; 1; 0"
-              begin="2s; teleporterBeamsIn.end + 2s"
-              dur="5s"
-              fill="freeze"
-            />
-            <animate
-              id="teleporterBeamsIn"
-              attributeName="opacity"
-              values="0; 1; 0"
-              begin="teleporterBeamsOut.end + 2s"
-              dur="5s"
-            />
-            <path
-              d="m-20,207.5 0,50"
-              stroke="hsl(300deg 80% 60%)"
-              strokeDasharray="8 6 6 8"
-            >
-              <animate
-                attributeName="stroke-dashoffset"
-                values="0; 28"
-                dur="1s"
-                repeatCount="indefinite"
-              />
-            </path>
-            <path
-              d="m-10,212.5 0,50"
-              stroke="hsl(285deg 80% 60%)"
-              strokeDasharray="8 6 6 8"
-            >
-              <animate
-                attributeName="stroke-dashoffset"
-                values="28; 0"
-                dur=".67s"
-                repeatCount="indefinite"
-              />
-            </path>
-            <path
-              d="m0,207.5 0,50"
-              stroke="hsl(300deg 80% 60%)"
-              strokeDasharray="8 6 6 8"
-            >
-              <animate
-                attributeName="stroke-dashoffset"
-                values="0; 28"
-                dur="1s"
-                repeatCount="indefinite"
-              />
-            </path>
-            <path
-              d="m10,212.5 0,50"
-              stroke="hsl(285deg 80% 60%)"
-              strokeDasharray="8 6 6 8"
-            >
-              <animate
-                attributeName="stroke-dashoffset"
-                values="28; 0"
-                dur=".67s"
-                repeatCount="indefinite"
-              />
-            </path>
-            <path
-              d="m20,207.5 0,50"
-              stroke="hsl(300deg 80% 60%)"
-              strokeDasharray="8 6 6 8"
-            >
-              <animate
-                attributeName="stroke-dashoffset"
-                values="28; 0"
-                dur="1s"
-                repeatCount="indefinite"
-              />
-            </path>
-          </g>
-          <ellipse
-            rx="30"
-            ry="15"
-            cy="190"
-            stroke={stroke.synapse}
-            fill={fill.synapse}
-          />
-        </g>
-
-        <g stroke={stroke.green} transform="translate(520,-260)">
-          <ellipse rx="30" ry="15" cy="260" {...paint('synapse')} />
-          <Cube color="green">
-            <animate
-              attributeName="stroke"
-              begin="teleporterBeamsOut.begin + 1s"
-              {...flashAttrs('inherit', 'orange', '3s')}
-            />
-            <animate
-              attributeName="stroke"
-              begin="teleporterBeamsIn.begin + 1s"
-              {...flashAttrs('orange', 'inherit', '3s')}
-            />
-            <animateMotion
-              dur="2s"
-              path="m0,240 v12.5"
-              calcMode="spline"
-              keyPoints="0; 1; 0"
-              keyTimes="0; .5; 1"
-              keySplines=".33 0 .67 1; .33 0 .67 1"
-              repeatCount="indefinite"
-            />
-          </Cube>
-          <g id="teleporter2Beams" opacity="0" strokeWidth="3">
-            <animate
-              attributeName="opacity"
-              values="0; 1; 0"
-              begin="2s; teleporterBeamsIn.end + 2s"
-              dur="5s"
-              fill="freeze"
-            />
-            <animate
-              attributeName="opacity"
-              values="0; 1; 0"
-              begin="teleporterBeamsOut.end + 2s"
-              dur="5s"
-            />
-            <path
-              d="m-20,207.5 0,50"
-              stroke="hsl(300deg 80% 60%)"
-              strokeDasharray="8 6 6 8"
-            >
-              <animate
-                attributeName="stroke-dashoffset"
-                values="0; 28"
-                dur="1s"
-                repeatCount="indefinite"
-              />
-            </path>
-            <path
-              d="m-10,212.5 0,50"
-              stroke="hsl(285deg 80% 60%)"
-              strokeDasharray="8 6 6 8"
-            >
-              <animate
-                attributeName="stroke-dashoffset"
-                values="28; 0"
-                dur=".67s"
-                repeatCount="indefinite"
-              />
-            </path>
-            <path
-              d="m0,207.5 0,50"
-              stroke="hsl(300deg 80% 60%)"
-              strokeDasharray="8 6 6 8"
-            >
-              <animate
-                attributeName="stroke-dashoffset"
-                values="0; 28"
-                dur="1s"
-                repeatCount="indefinite"
-              />
-            </path>
-            <path
-              d="m10,212.5 0,50"
-              stroke="hsl(285deg 80% 60%)"
-              strokeDasharray="8 6 6 8"
-            >
-              <animate
-                attributeName="stroke-dashoffset"
-                values="28; 0"
-                dur=".67s"
-                repeatCount="indefinite"
-              />
-            </path>
-            <path
-              d="m20,207.5 0,50"
-              stroke="hsl(300deg 80% 60%)"
-              strokeDasharray="8 6 6 8"
-            >
-              <animate
-                attributeName="stroke-dashoffset"
-                values="28; 0"
-                dur="1s"
-                repeatCount="indefinite"
-              />
-            </path>
-          </g>
-          <ellipse
-            rx="30"
-            ry="15"
-            cy="190"
-            stroke={stroke.synapse}
-            fill={fill.synapse}
-          />
-        </g>
-
-        <Cube color="green" translate="400 0" begin=".6s" />
         <Cube
-          color="green"
+          color="east"
+          translate="400 0"
+          begin="teleportE.begin + 4s"
+          restart="never"
+        />
+
+        <Cube
+          color="east"
           translate="375 12.5"
           begin="airDropOut.end + .5s"
           restart="never"
         />
 
-        <Cube color="orange" translate="0 150" begin=".7s" />
-        <Cube color="orange" translate="25 162.5" begin={20} />
-        <Cube color="orange" translate="-25 162.5" begin={21} />
-        <Cube color="orange" translate="0 122.05" begin={22} />
+        <Cube color="south" translate="0 150" begin=".7s" />
+        <Cube color="south" translate="25 162.5" begin={20} />
+        <Cube color="south" translate="-25 162.5" begin={21} />
+        <Cube color="south" translate="0 122.05" begin={22} />
 
         <Cube
           translate="100 -225"
-          color="blue"
+          color="north"
           begin="airpadN.end; airDropOut.end + 1ms"
         >
           <animateMotion
@@ -665,7 +545,7 @@ const LandingPage = () => {
             attributeName="stroke"
             begin="airDrop.begin"
             dur=".33s"
-            {...flashAttrs('inherit', 'green')}
+            {...flashAttrs('north', 'east')}
           />
           <animateMotion
             id="airDropOut"
@@ -676,7 +556,11 @@ const LandingPage = () => {
             {...animAttrs()}
           />
           <set attributeName="opacity" to="0" begin="airDropOut.end" />
-          <set attributeName="stroke" to={stroke.blue} begin="airDropOut.end" />
+          <set
+            attributeName="stroke"
+            to={stroke.north}
+            begin="airDropOut.end"
+          />
           <animateMotion path="m0 0" begin="airDropOut.end" />
         </Cube>
 
@@ -727,11 +611,11 @@ const LandingPage = () => {
           </circle>
         </g>
 
-        <g transform="translate(350 25)" stroke={stroke.green} opacity="0">
+        <g transform="translate(350 25)" stroke={stroke.east} opacity="0">
           <set
             id="airBridge"
             attributeName="stroke"
-            to={stroke.green}
+            to={stroke.east}
             begin="airDropOut.end"
           />
           <set
@@ -747,11 +631,7 @@ const LandingPage = () => {
             path="m0 0 -325 162.5 -25 -12.5"
             {...animAttrs()}
           />
-          <AnimateFlash
-            from="green"
-            to="orange"
-            begin="airBridge.begin + 2.3s"
-          />
+          <AnimateFlash from="east" to="south" begin="airBridge.begin + 2.3s" />
           <animate
             attributeName="opacity"
             values="1; 0"
@@ -770,8 +650,12 @@ const LandingPage = () => {
           />
         </g>
 
-        <Cube color="blue" translate="-25 -212.5" begin="bargeOut.begin">
-          <set attributeName="stroke" to={stroke.blue} begin="bargeOut.begin" />
+        <Cube color="north" translate="-25 -212.5" begin="bargeOut.begin">
+          <set
+            attributeName="stroke"
+            to={stroke.north}
+            begin="bargeOut.begin"
+          />
           <animateTransform
             attributeName="transform"
             type="translate"
@@ -822,15 +706,15 @@ const LandingPage = () => {
             attributeName="stroke"
             begin="bargeCross.begin + .5s"
             dur=".5s"
-            {...flashAttrs('inherit', 'yellow')}
+            {...flashAttrs('north', 'west')}
           />
         </Cube>
 
-        <Cube color="blue" translate="0 -200" begin=".5s" />
+        <Cube color="north" translate="0 -200" begin=".5s" />
 
         {/* Simple Bridge Blue/Yellow Swap */}
 
-        <Cube color="blue" translate="-25 -187.5" begin="bridgeNw.end + .5s">
+        <Cube color="north" translate="-25 -187.5" begin="bridgeNw.end + .5s">
           <animateMotion
             id="bridgeCubeOut"
             dur="4s"
@@ -844,7 +728,7 @@ const LandingPage = () => {
           <animate
             attributeName="stroke"
             begin="bridgeCubeOut.begin + .3s;"
-            values={`${stroke.blue}; ${stroke.synapse}; ${stroke.yellow}; ${stroke.yellow}; ${stroke.synapse}; ${stroke.blue}`}
+            values={`${stroke.north}; ${stroke.synapse}; ${stroke.west}; ${stroke.west}; ${stroke.synapse}; ${stroke.north}`}
             keyTimes="0; .06; .12; .88; .94; 1"
             dur="3.4s"
           />
@@ -857,7 +741,7 @@ const LandingPage = () => {
           />
         </Cube>
 
-        <Cube color="yellow" translate="-375 -12.5" begin="bridgeNw.end + 1s">
+        <Cube color="west" translate="-375 -12.5" begin="bridgeNw.end + 1s">
           <animateMotion
             dur="4s"
             begin="bridgeNw.end + 2.5s; bridgeCubeOut.end + 2s"
@@ -870,7 +754,7 @@ const LandingPage = () => {
           <animate
             attributeName="stroke"
             begin="bridgeCubeOut.begin + .3s;"
-            values={`${stroke.yellow}; ${stroke.synapse}; ${stroke.blue}; ${stroke.blue}; ${stroke.synapse}; ${stroke.yellow}`}
+            values={`${stroke.west}; ${stroke.synapse}; ${stroke.north}; ${stroke.north}; ${stroke.synapse}; ${stroke.west}`}
             keyTimes="0; .06; .12; .88; .94; 1"
             dur="3.4s"
           />
@@ -883,18 +767,263 @@ const LandingPage = () => {
           />
         </Cube>
 
-        <Cube color="yellow" translate="-400 0" begin=".8s" />
+        <g stroke={stroke.east} transform="translate(520,0)">
+          <ellipse {...paint('synapse')}>
+            <animate
+              begin="teleportE.begin"
+              attributeName="rx"
+              by="30"
+              dur=".5s"
+              {...animAttrs()}
+            />
+            <animate
+              begin="teleportE.begin"
+              attributeName="ry"
+              by="15"
+              dur=".5s"
+              {...animAttrs()}
+            />
+          </ellipse>
+          <Cube
+            color="east"
+            translate="-120"
+            begin="airLift.begin"
+            restart="never"
+          >
+            <animateTransform
+              attributeName="transform"
+              type="translate"
+              by="120 -12.5"
+              dur="1s"
+              begin="teleportE.begin"
+              {...animAttrs()}
+            />
+            <animateMotion
+              dur="2s"
+              begin="teleportE.begin + .33s"
+              path="m0 0 v-12.5"
+              calcMode="spline"
+              keyPoints="0; 1; 0"
+              keyTimes="0; .5; 1"
+              keySplines=".33 0 .67 1; .33 0 .67 1"
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="stroke"
+              begin="teleportBeams.begin + 1s"
+              {...flashAttrs('east', 'south', '3s')}
+            />
+            <animate
+              attributeName="stroke"
+              begin="teleportBeams.begin + 8s"
+              {...flashAttrs('south', 'east', '3s')}
+            />
+          </Cube>
+          <path
+            d="m-20 0 v-56.25 m10 3.5 v56.25 m10 3 v-62.5 m10 3.25 v56.25 m10 -3.5 v-56.25"
+            opacity="0"
+            strokeWidth="3"
+            stroke={stroke.flash}
+            strokeDasharray="8 6 6 8"
+          >
+            <animate
+              id="teleportBeams"
+              attributeName="opacity"
+              values="0; 1; 0; 0; 1; 0"
+              keyTimes="0; .2; .4; .6; .8; 1"
+              begin="teleportE.begin + 2s; teleportBeams.end + 2s"
+              dur="12s"
+            />
+            <animate
+              attributeName="stroke-dashoffset"
+              values="0; 28"
+              dur="1s"
+              repeatCount="indefinite"
+            />
+          </path>
+          <ellipse {...paint('synapse')}>
+            <animate
+              id="teleportE"
+              begin="airDropOut.end"
+              restart="never"
+              attributeName="cy"
+              by="-75"
+              dur=".5s"
+              {...animAttrs()}
+            />
+            <animate
+              begin="teleportE.begin"
+              attributeName="rx"
+              by="30"
+              dur=".5s"
+              {...animAttrs()}
+            />
+            <animate
+              begin="teleportE.begin"
+              attributeName="ry"
+              by="15"
+              dur=".5s"
+              {...animAttrs()}
+            />
+          </ellipse>
+        </g>
 
-        <Cube color="yellow" translate="-450 0" begin={15} />
-        <Cube color="yellow" translate="-425 12.5" begin={16} />
-        <Cube color="yellow" translate="-425 -27.95" begin={18} />
+        <g stroke={stroke.south} transform="translate(0,260)">
+          <ellipse {...paint('synapse')}>
+            <animate
+              begin="teleportE.begin"
+              attributeName="rx"
+              by="30"
+              dur=".5s"
+              {...animAttrs()}
+            />
+            <animate
+              begin="teleportE.begin"
+              attributeName="ry"
+              by="15"
+              dur=".5s"
+              {...animAttrs()}
+            />
+          </ellipse>
+          <Cube color="south" begin="bargeCross.begin" restart="never">
+            <AnimateFlash
+              from="south"
+              to="east"
+              begin="teleportBeams.begin + 1s"
+              dur="3s"
+            />
+            <AnimateFlash
+              from="east"
+              to="south"
+              begin="teleportBeams.begin + 8s"
+              dur="3s"
+            />
+            <animateMotion
+              dur="2s"
+              path="m0 -25 v12.5"
+              calcMode="spline"
+              keyPoints="0; 1; 0"
+              keyTimes="0; .5; 1"
+              keySplines=".33 0 .67 1; .33 0 .67 1"
+              repeatCount="indefinite"
+            />
+          </Cube>
+          <path
+            d="m-20 0 v-56.25 m10 3.5 v56.25 m10 3 v-62.5 m10 3.25 v56.25 m10 -3.5 v-56.25"
+            opacity="0"
+            strokeWidth="3"
+            stroke={stroke.flash}
+            strokeDasharray="8 6 6 8"
+          >
+            <animate
+              attributeName="opacity"
+              values="0; 1; 0; 0; 1; 0"
+              keyTimes="0; .2; .4; .6; .8; 1"
+              begin="teleportBeams.begin"
+              dur="12s"
+            />
+            <animate
+              attributeName="stroke-dashoffset"
+              values="0; 28"
+              dur="1s"
+              repeatCount="indefinite"
+            />
+          </path>
+          <ellipse {...paint('synapse')}>
+            <animate
+              begin="teleportE.begin + .5s"
+              attributeName="cy"
+              by="-75"
+              dur=".5s"
+              {...animAttrs()}
+            />
+            <animate
+              begin="teleportE.begin + .5s"
+              attributeName="rx"
+              by="30"
+              dur=".5s"
+              {...animAttrs()}
+            />
+            <animate
+              begin="teleportE.begin + .5s"
+              attributeName="ry"
+              by="15"
+              dur=".5s"
+              {...animAttrs()}
+            />
+          </ellipse>
+        </g>
 
-        <Cube color="blue" translate="25 -187.5" begin={17} />
-        <Cube color="blue" translate="0 -175" begin={19} />
+        <Cube color="west" translate="-400 0" begin=".8s" />
+
+        <Cube color="west" translate="-450 0" begin={15} />
+        <Cube color="west" translate="-425 12.5" begin={16} />
+        <Cube color="west" translate="-425 -27.95" begin={18} />
+
+        <Cube color="north" translate="25 -187.5" begin={17} />
+        <Cube color="north" translate="0 -175" begin={19} />
+
+        {/* <g {...paint('synapse')}>
+          <path vectorEffect="non-scaling-stroke">
+            <animate
+              attributeName="d"
+              values="M0,12.5 25,0 25,-27.95 0,-40.45 -25,-27.95 -25,0z; M17.7,8.85 17.7,-21.15 17.7,-38.85 -17.7,-38.85 -17.7,-21.15 -17.7,8.85z; M25,0 25,-27.95 0,-40.45 -25,-27.95 -25,0 0,12.5z"
+              dur="1s"
+              repeatCount="indefinite"
+              fill="freeze"
+            />
+          </path>
+          <path vectorEffect="non-scaling-stroke">
+            <animate
+              attributeName="d"
+              values="M0,12.5 0,-15.45 25,-27.95 M0,-15.45 -25,-27.95; M17.7,8.85 17.7,-21.15 17.7,-38.85 M17.7,-21.15 -17.7,-21.15; M0 0 0 0 0 0 M0 0 0 0"
+              dur="1s"
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="visibility"
+              values="visible; hidden"
+              dur="1s"
+              repeatCount="indefinite"
+            />
+          </path>
+          <path vectorEffect="non-scaling-stroke">
+            <animate
+              attributeName="d"
+              values="M0 0 0 0 0 0 M0 0 0 0; M-17.7,8.85 -17.7,-21.15 -17.7,-38.85 M-17.7,-21.15 17.7,-21.15; M0,12.5 0,-15.45 -25,-27.95 M0,-15.45 25,-27.95"
+              dur="1s"
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="visibility"
+              values="hidden; visible"
+              dur="1s"
+              repeatCount="indefinite"
+            />
+          </path>
+        </g> */}
+        {/* <path
+          d="M0 18 18 0 -18 0 0 -18"
+          stroke-width="5"
+          stroke-linejoin="bevel"
+          stroke="url(#a)"
+          stroke-opacity=".5"
+          marker-start="url(#b)"
+          marker-mid="url(#b)"
+          marker-end="url(#b)"
+          // transform="matrix(1 .5 -1 .5 0 0) rotate(-45)"
+          transform="scale(1.25)"
+        >
+          <animateTransform
+            attributeName="transform"
+            attributeType="XML"
+            type="rotate"
+            by="360"
+            // dur="2s"
+            repeatCount="indefinite"
+          />
+        </path> */}
       </svg>
-      <p className="text-center">Reference image</p>
-      <img src={exampleImg.src} className="visible" />
-      {/* <Hero /> */}
       <section>
         <ul className="w-fit md:w-max grid md:flex text-xl md:text-lg text-center items-center place-center bg-gradient-to-b from-white to-slate-100 dark:from-zinc-900 dark:to-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md px-6 gap-x-8 -mt-8 shadow-sm mx-auto mb-16 cursor-default">
           <li className="-mt-1 p-3">
@@ -908,7 +1037,20 @@ const LandingPage = () => {
           </li>
         </ul>
       </section>
-      <ValueProps />
+      <section className="flex odd:flex-col even:flex-col-reverse md:grid grid-cols-2 gap-12 items-center p-4 max-w-4xl">
+        <div>
+          <h2 className="text-4xl font-medium mb-4">Interchain apps</h2>
+          <p className="text-lg leading-relaxed mb-4">
+            Synapse Bridge is built on top of the cross-chain infrastructure
+            enabling users to seamlessly transfer assets across all blockchains.
+            The Bridge has become the most widely-used method to move assets
+            cross-chain, offering low cost, fast, and secure bridging.
+          </p>
+        </div>
+        <div className="grid justify-center">
+          <FauxBridge />
+        </div>
+      </section>
     </Wrapper>
   )
 }
