@@ -155,6 +155,8 @@ type RFQEvent struct {
 	Recipient sql.NullString `gorm:"column:recipient"`
 	// Sender is the address of the sender.
 	Sender string `gorm:"column:sender"`
+	// Relayer is the address of the relayer in a RFQ transaction
+	Relayer string `gorm:"column:relayer"`
 	// Request is the request of the RFQ transfer.
 	Request *[]byte `gorm:"column:request"`
 	// OriginChainID is the chain ID of the RFQ transfer.

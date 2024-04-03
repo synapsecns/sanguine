@@ -22,8 +22,8 @@ type EventLog interface {
 	GetEventIndex() uint64
 	// GetTransactionID returns the transaction id of the RFQ transfer.
 	GetTransactionID() [32]byte
-	// GetAddress returns the address of the RFQ relayer.
-	GetAddress() string
+	// GetRelayer returns the address of the RFQ relayer.
+	GetRelayer() string
 	// GetRecipient returns the destination address of the RFQ transfer.
 	GetRecipient() string
 	// GetSender returns the sender of the RFQ transfer.
