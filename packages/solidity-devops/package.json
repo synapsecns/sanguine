@@ -36,6 +36,7 @@
     "fsr": "js/forgeScriptRun.js",
     "fsr-str": "js/forgeScriptRunString.js",
     "fvc": "js/forgeVerifyContract.js",
-    "sd": "js/saveDeployment.js"
+    "sd": "js/saveDeployment.js",
+    "vp": "js/verifyProxy.js"
   }
 }

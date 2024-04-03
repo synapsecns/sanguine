@@ -142,4 +142,7 @@ module.exports = {
   getAccountNonce,
   hasCode,
   logWallet,
+  VERIFIER_ETHERSCAN,
+  VERIFIER_BLOCKSCOUT,
+  VERIFIER_SOURCIFY,
 }
