@@ -41,6 +41,8 @@ export const fetchPortfolioBalances = async (
 }> => {
   const balanceRecord = {}
   const poolTokenBalances = {}
+
+  // TODO: Why "Chain "DFK Chain" does not support contract "multicall3"." error from viem?
   const availableChains: string[] = Object.keys(BRIDGABLE_TOKENS).filter(
     (id) => id !== '2000' && id !== '53935'
   )
