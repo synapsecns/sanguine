@@ -48,7 +48,14 @@ import {
   POLYGON,
 } from '@/constants/chains/master'
 
-import { injected } from '@wagmi/connectors'
+import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
+import {
+  metaMaskWallet,
+  rabbyWallet,
+  coinbaseWallet,
+  rainbowWallet,
+  walletConnectWallet,
+} from '@rainbow-me/rainbowkit/wallets'
 
 export const rawChains = [
   mainnet,
@@ -73,7 +80,30 @@ export const rawChains = [
   boba,
 ]
 
+const appName = 'Synapse'
+const projectId = 'ab0a846bc693996606734d788cb6561d'
+
+const connectors = connectorsForWallets(
+  [
+    {
+      groupName: 'Wallets',
+      wallets: [
+        metaMaskWallet,
+        walletConnectWallet,
+        coinbaseWallet,
+        rainbowWallet,
+        rabbyWallet,
+      ],
+    },
+  ],
+  {
+    projectId: projectId,
+    appName: appName,
+  }
+)
+
 export const wagmiConfig = createConfig({
+  connectors,
   chains: [
     mainnet,
     arbitrum,
@@ -96,7 +126,6 @@ export const wagmiConfig = createConfig({
     dogechain,
     boba,
   ],
-  connectors: [injected()],
   transports: {
     [mainnet.id]: http(ETH.rpcUrls.primary),
     [arbitrum.id]: http(ARBITRUM.rpcUrls.primary),
@@ -119,5 +148,4 @@ export const wagmiConfig = createConfig({
     [dogechain.id]: http(DOGE.rpcUrls.primary),
     [boba.id]: http(BOBA.rpcUrls.primary),
   },
-  ssr: true,
 })

@@ -62,7 +62,7 @@ import {
   dfk,
   dogechain,
   boba,
-} from 'wagmi/chains'
+} from '@wagmi/core/chains'
 import { useEffect, useState } from 'react'
 import { Provider } from 'react-redux'
 import { store, persistor } from '@/store/store'
@@ -76,6 +76,7 @@ import { SynapseProvider } from '@/utils/providers/SynapseProvider'
 
 import LogRocket from 'logrocket'
 import setupLogRocketReact from 'logrocket-react'
+import { wagmiConfig } from '@/wagmiConfig'
 
 const { wallets } = getDefaultWallets()
 
@@ -96,35 +97,6 @@ const { wallets } = getDefaultWallets()
 // }
 
 console.log(`wallets`, wallets)
-
-const config = getDefaultConfig({
-  appName: 'Synapse',
-  projectId: 'ab0a846bc693996606734d788cb6561d',
-  wallets: [...wallets],
-  chains: [
-    mainnet,
-    arbitrum,
-    aurora,
-    avalanche,
-    base as Chain, // some issue with this chain in typing
-    blast,
-    bsc,
-    canto,
-    fantom,
-    harmonyOne,
-    metis,
-    moonbeam,
-    moonriver,
-    optimism as Chain, // some issue with this chain in typing
-    polygon,
-    klaytn,
-    cronos,
-    dfk,
-    dogechain,
-    boba,
-  ],
-  ssr: true,
-})
 
 const chains = [
   {
@@ -237,7 +209,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       <Head>
         <title>Synapse Protocol</title>
       </Head>
-      <WagmiProvider config={config}>
+      <WagmiProvider config={wagmiConfig}>
         <QueryClientProvider client={queryClient}>
           <RainbowKitProvider>
             <SynapseProvider chains={chains}>
