@@ -25,9 +25,9 @@ type EventLog interface {
 	// GetRelayer returns the address of the RFQ relayer.
 	GetRelayer() string
 	// GetRecipient returns the destination address of the RFQ transfer.
-	GetRecipient() string
+	GetRecipient() *string
 	// GetSender returns the sender of the RFQ transfer.
-	GetSender() string
+	GetSender() *string
 	// GetRequest returns the request info of the RFQ transfer.
 	GetRequest() *[]byte
 	// GetOriginChainID returns the chain id of the RFQ transfer.
