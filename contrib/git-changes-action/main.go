@@ -94,12 +94,12 @@ func outputModuleChanges(workingDirectory string, ct tree.Tree, includeDeps bool
 
 	marshalledChanged, err := json.Marshal(changedModules)
 	if err != nil {
-		return changedJSON, unchangedJson, fmt.Errorf("failed to marshall changed module json w/ include deps set to %v: %w", includeDeps, err)
+		return changedJSON, unchangedJSON, fmt.Errorf("failed to marshall changed module json w/ include deps set to %v: %w", includeDeps, err)
 	}
 
 	marshalledUnchanged, err := json.Marshal(unchangedModules)
 	if err != nil {
-		return changedJSON, unchangedJson, fmt.Errorf("failed to marshall unchanged module json w/ include deps set to %v: %w", includeDeps, err)
+		return changedJSON, unchangedJSON, fmt.Errorf("failed to marshall unchanged module json w/ include deps set to %v: %w", includeDeps, err)
 	}
 
 	return string(marshalledChanged), string(marshalledUnchanged), nil
