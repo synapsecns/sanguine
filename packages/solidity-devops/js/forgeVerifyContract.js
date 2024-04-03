@@ -20,7 +20,7 @@ const contractName = getContractName(contractAlias)
 const chainId = getChainId(chainName)
 const deployment = getSavedDeployment(chainName, contractAlias)
 if (!deployment) {
-  process.exit(0)
+  process.exit(1)
 }
 const chainVerificationOptions = readChainVerificationOptions(chainName)
 if (!chainVerificationOptions) {
@@ -30,7 +30,6 @@ const { address, constructorArgs } = deployment
 if (!address) {
   logError(`Missing address in deployment file for ${contractAlias}`)
   process.exit(1)
-  process.exit(0)
 }
 if (!constructorArgs) {
   constructorArgs = '0x'

@@ -1,6 +1,7 @@
 const { VERIFIER_ETHERSCAN } = require('./chain.js')
 const { readEnv } = require('./env.js')
-const { getCommandOutput, runCommand, syncSleep } = require('./utils.js')
+const { logError, logInfo } = require('./logger.js')
+const { getCommandOutput, syncSleep } = require('./utils.js')
 
 const MAX_ATTEMPTS = 10
 

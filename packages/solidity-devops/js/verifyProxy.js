@@ -17,7 +17,7 @@ const { positionalArgs } = parseCommandLineArgs({
 const [chainName, contractAlias] = positionalArgs
 const deployment = getSavedDeployment(chainName, contractAlias)
 if (!deployment) {
-  process.exit(0)
+  process.exit(1)
 }
 const { address } = deployment
 if (!address) {
@@ -29,13 +29,13 @@ const guid = initiateVerifyProxy(chainName, address)
 if (!guid) {
   process.exit(1)
 }
-}
 const response = getRequestStatus(chainName, 'checkproxyverification', guid)
 if (!response) {
   process.exit(1)
 }
 if (response.status === '0') {
   logError(`Verification failed: ${response.result}`)
+  process.exit(1)
 } else {
   logSuccess(response.result)
 }

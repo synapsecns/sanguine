@@ -7,7 +7,7 @@ const {
 } = require('./cast.js')
 const { tryReadConfigValue } = require('./config.js')
 const { readEnv } = require('./env.js')
-const { logInfo } = require('./logger.js')
+const { logError, logInfo } = require('./logger.js')
 const { readWalletAddress, readWalletType } = require('./wallet.js')
 
 const OPTION_AUTO_FILL_GAS_PRICE_LEGACY = '--auto-gas-legacy'

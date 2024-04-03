@@ -8,8 +8,8 @@ const getChainGasPricingRPC = (rpcUrl) => {
   const baseFee = getCommandOutput(`cast base-fee --rpc-url ${rpcUrl}`)
   const gasPrice = getCommandOutput(`cast gas-price --rpc-url ${rpcUrl}`)
   return {
-    baseFee,
-    gasPrice,
+    baseFee: Number(baseFee),
+    gasPrice: Number(gasPrice),
   }
 }
 
