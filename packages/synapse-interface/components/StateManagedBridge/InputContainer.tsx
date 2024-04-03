@@ -42,13 +42,18 @@ export const InputContainer = () => {
 
   const dispatch = useDispatch()
 
-  const parsedBalance = balances[fromChainId]?.find(
-    (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
-  )?.parsedBalance
-
   const balance = balances[fromChainId]?.find(
     (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
   )?.balance
+
+  const shortenedParsedBalance = balances[fromChainId]?.find(
+    (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
+  )?.parsedBalance
+
+  const fullParsedBalance = formatBigIntToString(
+    balance,
+    fromToken?.decimals[fromChainId]
+  )
 
   const estimatedGasCostInGwei = calculateGasFeeInGwei(gasPrice, 200_000)
 
@@ -93,7 +98,10 @@ export const InputContainer = () => {
 
   const onMaxBridgeableBalance = useCallback(() => {
     if (estimatedGasCostInGwei && isNativeToken) {
-      const maxBalance = Number(parsedBalance) - estimatedGasCostInGwei
+      const maxBalance = Number(fullParsedBalance) - estimatedGasCostInGwei
+
+      console.log('fullParsedBalance; ', fullParsedBalance)
+      console.log('estimatedGasCostInGwei:', estimatedGasCostInGwei)
 
       if (maxBalance < 0) {
         toast.error(`Balance is less than estimated gas fee.`, {
@@ -117,7 +125,7 @@ export const InputContainer = () => {
       )
     }
   }, [
-    parsedBalance,
+    shortenedParsedBalance,
     balance,
     fromChainId,
     fromToken,
@@ -189,7 +197,7 @@ export const InputContainer = () => {
                   className="text-xs text-white transition-all duration-150 transform-gpu hover:text-opacity-70 hover:cursor-pointer"
                   onClick={onMaxBalance}
                 >
-                  {parsedBalance ?? '0.0'}
+                  {shortenedParsedBalance ?? '0.0'}
                   <span className="text-opacity-50 text-secondaryTextColor">
                     {' '}
                     available
