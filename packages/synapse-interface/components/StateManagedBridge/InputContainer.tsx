@@ -1,8 +1,9 @@
+import toast from 'react-hot-toast'
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { useAppSelector } from '@/store/hooks'
 import { useDispatch } from 'react-redux'
+import { zeroAddress, formatGwei } from 'viem'
 import { useAccount, useNetwork } from 'wagmi'
-
 import { initialState, updateFromValue } from '@/slices/bridge/reducer'
 import MiniMaxButton from '../buttons/MiniMaxButton'
 import { formatBigIntToString } from '@/utils/bigint/format'
@@ -16,8 +17,6 @@ import { FromChainSelector } from './FromChainSelector'
 import { FromTokenSelector } from './FromTokenSelector'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
-import { zeroAddress } from 'viem'
-import { formatGwei } from 'viem'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -105,14 +104,17 @@ export const InputContainer = () => {
       const maxBalance = Number(parsedBalance) - formattedEstimatedGasCost
 
       if (maxBalance < 0) {
-        console.log('max balance less than 0: ', maxBalance)
+        toast.error(`Balance is less than estimated gas fee.`, {
+          id: 'not-enough-balance-popup',
+          duration: 5000,
+        })
+
         dispatch(
           updateFromValue(
             formatBigIntToString(0n, fromToken?.decimals[fromChainId])
           )
         )
       } else {
-        console.log('max balance greater than 0', maxBalance)
         dispatch(updateFromValue(maxBalance.toString()))
       }
     } else {
