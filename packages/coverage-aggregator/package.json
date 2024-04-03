@@ -8,6 +8,9 @@
   "directories": {
     "lib": "lib"
   },
+  "engines": {
+    "node": ">=18.17.0"
+  },
   "files": [
     "bin",
     "lib"

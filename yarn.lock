@@ -8566,6 +8566,16 @@
     ts-jest "^29.0.5"
     yargs "^17.6.2"
 
+"@synapsecns/solidity-devops@^0.1.5", "@synapsecns/solidity-devops@^0.1.6":
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/@synapsecns/solidity-devops/-/solidity-devops-0.1.6.tgz#cf6b62c5a744f8efcf9fd7e60d86cdd6c238dad9"
+  integrity sha512-1ROEUgKV7NVRCjNbpMAEYKUUHP4Hu63n8C8l9Dbi9F+PncagvBobTuxNjOYJLcUxI6cugMkk8Q5lnONLQg8b4g==
+  dependencies:
+    chalk "^4.1.2"
+    dotenv "^16.4.5"
+    ds-test "github:dapphub/ds-test#e282159"
+    forge-std "github:foundry-rs/forge-std#v1.7.6"
+
 "@szmarczak/http-timer@^1.1.2":
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@szmarczak/http-timer/-/http-timer-1.1.2.tgz#b1665e2c461a2cd92f4c1bbf50d5454de0d4b421"
