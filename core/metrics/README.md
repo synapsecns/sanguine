@@ -27,11 +27,12 @@ Pass in the `PYROSCOPE_ENDPOINT` environment variable
 
 The metrics endpoint is exposed on `/metrics` on port `8080` by default and is compatible with prometheus. The following options control the metrics endpoint:
 
-| Enviornment Variable   | Description                                   | Default    |
-|------------------------|-----------------------------------------------|------------|
-| `METRICS_PORT_ENABLED` | Wether or not to enable the metrics endpoint. | `true`     |
-| `METRICS_PORT`         | Port to serve metrics on.                     | `8080`     |
-| `METRICS_PATH`         | Path to serve metrics on                      | `/metrics` |
+| Enviornment Variable   | Description                                                                 | Default    |
+|------------------------|-----------------------------------------------------------------------------|------------|
+| `METRICS_PORT_ENABLED` | Wether or not to enable the metrics endpoint.                               | `true`     |
+| `METRICS_PORT`         | Port to serve metrics on.                                                   | `8080`     |
+| `METRICS_PATH`         | Path to serve metrics on                                                    | `/metrics` |
+| `METRICS_ALWAYS_SYNC`  | Wether or not to wait until metrics have been exported before ending a span | `false`    |
 
 **Note: this server failing to bind to `METRICS_PORT` will not cause the application to fail to start. The error will be logged.**
 
