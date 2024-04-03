@@ -408,12 +408,16 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 		}
 
 		// if the prev tx was greater than this one, we should bump the gas price from that point
-		comparison := gas.CompareGas(prevTx, gas.OptsToComparableTx(transactor), gasBlock.BaseFee)
-		if comparison > 0 {
-			if prevTx.Type() == types.LegacyTxType {
+		if prevTx.Type() == types.LegacyTxType {
+			if prevTx.GasPrice().Cmp(transactor.GasPrice) > 0 {
 				transactor.GasPrice = core.CopyBigInt(prevTx.GasPrice())
-			} else {
+			}
+		} else {
+			if prevTx.GasTipCap().Cmp(transactor.GasTipCap) > 0 {
 				transactor.GasTipCap = core.CopyBigInt(prevTx.GasTipCap())
+			}
+
+			if prevTx.GasFeeCap().Cmp(transactor.GasFeeCap) > 0 {
 				transactor.GasFeeCap = core.CopyBigInt(prevTx.GasFeeCap())
 			}
 		}
