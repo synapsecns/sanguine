@@ -24,11 +24,12 @@ if (!deployment) {
 }
 const chainVerificationOptions = readChainVerificationOptions(chainName)
 if (!chainVerificationOptions) {
-  process.exit(0)
+  process.exit(1)
 }
 const { address, constructorArgs } = deployment
 if (!address) {
   logError(`Missing address in deployment file for ${contractAlias}`)
+  process.exit(1)
   process.exit(0)
 }
 if (!constructorArgs) {

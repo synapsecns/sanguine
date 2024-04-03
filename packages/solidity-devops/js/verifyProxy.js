@@ -22,16 +22,17 @@ if (!deployment) {
 const { address } = deployment
 if (!address) {
   logError(`Missing address in deployment file for ${contractAlias}`)
-  process.exit(0)
+  process.exit(1)
 }
 
 const guid = initiateVerifyProxy(chainName, address)
 if (!guid) {
-  process.exit(0)
+  process.exit(1)
+}
 }
 const response = getRequestStatus(chainName, 'checkproxyverification', guid)
 if (!response) {
-  process.exit(0)
+  process.exit(1)
 }
 if (response.status === '0') {
   logError(`Verification failed: ${response.result}`)
