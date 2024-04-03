@@ -329,7 +329,7 @@ func (i *inventoryManagerImpl) ApproveAllTokens(ctx context.Context) error {
 
 // approve submits an ERC20 approval for a given token and contract address.
 func (i *inventoryManagerImpl) approve(parentCtx context.Context, tokenAddr, contractAddr common.Address, backendClient client.EVM) (err error) {
-	ctx, span := c.handler.Tracer().Start(parentCtx, "approve", trace.WithAttributes(
+	ctx, span := i.handler.Tracer().Start(parentCtx, "approve", trace.WithAttributes(
 		attribute.String("token_address", tokenAddr.Hex()),
 		attribute.String("contract_address", contractAddr.Hex()),
 	))
@@ -337,7 +337,7 @@ func (i *inventoryManagerImpl) approve(parentCtx context.Context, tokenAddr, con
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	if contractAddr == common.Address{} {
+	if contractAddr == (common.Address{}) {
 		span.AddEvent("not approving to zero address")
 		return nil
 	}
