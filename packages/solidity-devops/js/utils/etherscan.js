@@ -64,7 +64,9 @@ const getRequestStatus = (chainName, actionName, guid) => {
     }
     return response
   }
-  logError(`Request with GUID ${guid} not completed after ${MAX_ATTEMPTS} attempts. Consider checking the network status or increasing the retry interval.`)
+  logError(
+    `Request with GUID ${guid} not completed after ${MAX_ATTEMPTS} attempts. Consider checking the network status or increasing the retry interval.`
+  )
   return null
 }
 
