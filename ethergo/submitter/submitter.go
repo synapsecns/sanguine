@@ -412,8 +412,8 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 		// in the case where this is our first attempt, use market prices!.
 		if t.config.SupportsEIP1559(chainID) {
 			transactor.GasFeeCap = new(big.Int).Mul(marketFeeCap, big.NewInt(2))
-			// use 10 wei if tip cap is zero. 10 wei allows us to bump 10% as a whole number (10% of 10 is 1)
-			transactor.GasTipCap = bigMax(marketTipCap, big.NewInt(10))
+			// use 1 wei if tip cap is zero
+			transactor.GasTipCap = bigMax(marketTipCap, big.NewInt(1))
 		} else {
 			transactor.GasPrice = marketGasPrice
 		}
