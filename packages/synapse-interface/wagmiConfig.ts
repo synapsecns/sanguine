@@ -1,5 +1,5 @@
 // import '@/patch'
-
+import { type Chain } from 'viem'
 import {
   arbitrum,
   aurora,
@@ -23,7 +23,14 @@ import {
   polygon,
 } from '@wagmi/core/chains'
 import { createConfig, http } from '@wagmi/core'
-import { type Chain } from 'viem'
+import { connectorsForWallets } from '@rainbow-me/rainbowkit'
+import {
+  metaMaskWallet,
+  rabbyWallet,
+  coinbaseWallet,
+  rainbowWallet,
+  walletConnectWallet,
+} from '@rainbow-me/rainbowkit/wallets'
 
 import {
   ARBITRUM,
@@ -47,15 +54,6 @@ import {
   OPTIMISM,
   POLYGON,
 } from '@/constants/chains/master'
-
-import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit'
-import {
-  metaMaskWallet,
-  rabbyWallet,
-  coinbaseWallet,
-  rainbowWallet,
-  walletConnectWallet,
-} from '@rainbow-me/rainbowkit/wallets'
 
 export const rawChains = [
   mainnet,
@@ -97,8 +95,8 @@ const connectors = connectorsForWallets(
     },
   ],
   {
-    projectId: projectId,
-    appName: appName,
+    projectId,
+    appName,
   }
 )
 
