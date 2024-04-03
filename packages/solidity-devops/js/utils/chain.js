@@ -13,6 +13,10 @@ const { readWalletAddress, readWalletType } = require('./wallet.js')
 const OPTION_AUTO_FILL_GAS_PRICE_LEGACY = '--auto-gas-legacy'
 const OPTION_AUTO_FILL_GAS_PRICE_1559 = '--auto-gas-1559'
 
+const VERIFIER_ETHERSCAN = 'etherscan'
+const VERIFIER_BLOCKSCOUT = 'blockscout'
+const VERIFIER_SOURCIFY = 'sourcify'
+
 /**
  * Reads the URL of the chain's RPC from the environment variables.
  *
@@ -33,6 +37,36 @@ const readChainRPC = (chainName) => {
 const readChainSpecificOptions = (chainName) => {
   const options = tryReadConfigValue('chains', chainName) || ''
   return applyAutoFillGasPrice(chainName, options)
+}
+
+const readChainVerificationOptions = (chainName) => {
+  const verifier = readEnv(chainName, 'VERIFIER')
+  switch (verifier) {
+    case VERIFIER_ETHERSCAN:
+      return readEtherscanOptions(chainName)
+    case VERIFIER_BLOCKSCOUT:
+      return readBlockscoutOptions(chainName)
+    case VERIFIER_SOURCIFY:
+      return readSourcifyOptions(chainName)
+    default:
+      logError(`Unknown verifier: ${verifier}`)
+      return null
+  }
+}
+
+const readEtherscanOptions = (chainName) => {
+  const url = readEnv(chainName, 'VERIFIER_URL')
+  const key = readEnv(chainName, 'VERIFIER_KEY')
+  return `--verifier etherscan --verifier-url ${url} --etherscan-api-key ${key}`
+}
+
+const readBlockscoutOptions = (chainName) => {
+  const url = readEnv(chainName, 'VERIFIER_URL')
+  return `--verifier blockscout --verifier-url ${url}`
+}
+
+const readSourcifyOptions = (chainName) => {
+  return '--verifier sourcify'
 }
 
 /**
@@ -101,6 +135,7 @@ const logWallet = (chainName, walletName) => {
 module.exports = {
   readChainRPC,
   readChainSpecificOptions,
+  readChainVerificationOptions,
   getChainId,
   getChainGasPricing,
   getAccountBalance,

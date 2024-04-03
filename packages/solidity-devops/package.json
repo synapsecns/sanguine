@@ -35,6 +35,7 @@
   "bin": {
     "fsr": "js/forgeScriptRun.js",
     "fsr-str": "js/forgeScriptRunString.js",
+    "fvc": "js/forgeVerifyContract.js",
     "sd": "js/saveDeployment.js"
   }
 }

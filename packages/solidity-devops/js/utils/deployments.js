@@ -129,6 +129,16 @@ const getConfirmedFreshDeployment = (chainName, contractAlias) => {
   return artifact
 }
 
+const getSavedDeployment = (chainName, contractAlias) => {
+  const deploymentFN = getDeploymentFN(chainName, contractAlias)
+  // Silent exit if the deployment file does not exist
+  if (!fs.existsSync(deploymentFN)) {
+    logError(`No deployment file found for ${contractAlias} at ${deploymentFN}`)
+    return null
+  }
+  return JSON.parse(fs.readFileSync(deploymentFN))
+}
+
 const getNewDeployments = (chainName, timestamp) => {
   const freshDeployments = readConfigValue('freshDeployments')
   const chainDir = `${freshDeployments}/${chainName}`
@@ -227,6 +237,7 @@ module.exports = {
   getContractName,
   getBuildArtifact,
   getConfirmedFreshDeployment,
+  getSavedDeployment,
   getNewDeployments,
   getNewDeploymentReceipts,
   getAllDeploymentReceipts,
