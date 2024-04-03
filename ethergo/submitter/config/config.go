@@ -38,8 +38,6 @@ type ChainConfig struct {
 	// GasBumpPercentages is the percentage to bump the gas price by
 	// this is applied to the greatrer of the chainprice or the last price
 	GasBumpPercentage int `yaml:"gas_bump_percentage"`
-	// IsL2 is whether or not this chain is an L2 chain
-	IsL2 bool `yaml:"is_l2"`
 	// GasEstimate is the gas estimate to use for transactions
 	// if dynamic gas estimation is enabled, this is only used as a default if the estimate fails
 	GasEstimate uint64 `yaml:"gas_estimate"`
@@ -143,16 +141,6 @@ func (c *Config) GetBumpInterval(chainID int) time.Duration {
 		bumpInterval = DefaultBumpIntervalSeconds
 	}
 	return time.Duration(bumpInterval) * time.Second
-}
-
-// IsL2 returns whether or not this chain is an L2 chain.
-func (c *Config) IsL2(chainID int) bool {
-	chainConfig, ok := c.Chains[chainID]
-	if ok {
-		return chainConfig.IsL2
-	}
-
-	return c.ChainConfig.IsL2
 }
 
 // GetGasBumpPercentage returns the percentage to bump the gas price by
