@@ -18,6 +18,27 @@ import { FromTokenSelector } from './FromTokenSelector'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 
+/**
+ * Calculates the estimated gas fee in Gwei.
+ * TODO: Hardcoding gas limit to 200k for now, update dynamically
+ * @param {string} gasPrice - The current gas price in Gwei as a string.
+ * @param {number} gasLimit - Function to format a value as Gwei.
+ * @returns {number|null} The formatted estimated gas cost, or null if the calculation is not possible.
+ */
+const calculateGasFeeInGwei = (gasPrice?: string, gasLimit = 200_000) => {
+  if (!gasPrice) return null
+
+  const estimatedGasCostInGwei = gasLimit * parseFloat(gasPrice)
+
+  const oneGwei = parseFloat(formatGwei(1n))
+
+  const formattedEstimatedGasCost = estimatedGasCostInGwei
+    ? estimatedGasCostInGwei * oneGwei
+    : null
+
+  return formattedEstimatedGasCost
+}
+
 export const inputRef = React.createRef<HTMLInputElement>()
 
 export const InputContainer = () => {
@@ -49,16 +70,7 @@ export const InputContainer = () => {
     (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
   )?.balance
 
-  /**
-   * Gas static calculations
-   * Hardcoding gas limit to 200k for now
-   * TODO: update this to become dynamic with Bridge requests
-   */
-  const estimatedGasCostInGwei = 200_000 * parseFloat(gasPrice)
-  const oneGwei = parseFloat(formatGwei(1n))
-  const formattedEstimatedGasCost = estimatedGasCostInGwei
-    ? estimatedGasCostInGwei * oneGwei
-    : null
+  const estimatedGasCostInGwei = calculateGasFeeInGwei(gasPrice, 200_000)
 
   const isNativeToken = fromToken?.addresses[fromChainId] === zeroAddress
 
@@ -100,8 +112,8 @@ export const InputContainer = () => {
   }, [balance, fromChainId, fromToken])
 
   const onMaxBridgeableBalance = useCallback(() => {
-    if (formattedEstimatedGasCost && isNativeToken) {
-      const maxBalance = Number(parsedBalance) - formattedEstimatedGasCost
+    if (estimatedGasCostInGwei && isNativeToken) {
+      const maxBalance = Number(parsedBalance) - estimatedGasCostInGwei
 
       if (maxBalance < 0) {
         toast.error(`Balance is less than estimated gas fee.`, {
@@ -129,7 +141,7 @@ export const InputContainer = () => {
     balance,
     fromChainId,
     fromToken,
-    formattedEstimatedGasCost,
+    estimatedGasCostInGwei,
     isNativeToken,
   ])
 
