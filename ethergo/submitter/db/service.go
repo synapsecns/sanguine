@@ -5,10 +5,10 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/synapsecns/sanguine/core/dbcommon"
-	"golang.org/x/exp/slices"
-	"math/big"
 )
 
 // Service is the interface for the tx queue database.
@@ -35,6 +35,8 @@ type Service interface {
 	GetNonceStatus(ctx context.Context, fromAddress common.Address, chainID *big.Int, nonce uint64) (status Status, err error)
 	// GetNonceAttemptsByStatus gets all txs for a given address and chain id with a given status and nonce.
 	GetNonceAttemptsByStatus(ctx context.Context, fromAddress common.Address, chainID *big.Int, nonce uint64, matchStatuses ...Status) (txs []TX, err error)
+	// GetChainIDsByStatus gets the distinct chain ids for a given address and status.
+	GetChainIDsByStatus(ctx context.Context, fromAddress common.Address, matchStatuses ...Status) (chainIDs []*big.Int, err error)
 }
 
 // TransactionFunc is a function that can be passed to DBTransaction.
@@ -110,7 +112,15 @@ func (s *Status) Scan(src interface{}) error {
 	newStatus := Status(res)
 	*s = newStatus
 
-	if !slices.Contains[Status](allStatusTypes, *s) {
+	found := false
+	for _, status := range allStatusTypes {
+		if status == *s {
+			found = true
+			break
+		}
+	}
+
+	if !found {
 		return fmt.Errorf("invalid status: %d", res)
 	}
 

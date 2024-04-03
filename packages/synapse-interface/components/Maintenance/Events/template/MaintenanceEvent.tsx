@@ -1,6 +1,6 @@
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
-import { OPTIMISM, BASE } from '@/constants/chains/master'
+import { OPTIMISM, BASE, BLAST } from '@/constants/chains/master'
 import {
   useEventCountdownProgressBar,
   getCountdownTimeStatus,
@@ -20,7 +20,7 @@ const MAINTENANCE_BANNERS_START = new Date(Date.UTC(2024, 2, 20, 20, 20, 0))
 /** Countdown Progress Bar, Bridge Warning Message + Bridge Pause start time */
 const MAINTENANCE_START_DATE = new Date(Date.UTC(2024, 2, 20, 20, 20, 0))
 /** Ends Banner, Countdown Progress Bar, Bridge Warning Message, Bridge Pause */
-const MAINTENANCE_END_DATE = new Date(Date.UTC(2024, 2, 20, 22, 0, 0))
+const MAINTENANCE_END_DATE = new Date(Date.UTC(2024, 2, 20, 20, 20, 0))
 
 export const MaintenanceBanner = () => {
   const { isComplete } = getCountdownTimeStatus(
@@ -32,12 +32,10 @@ export const MaintenanceBanner = () => {
 
   return (
     <AnnouncementBanner
-      bannerId="03202024-maintenance-banner"
+      bannerId="03262024-pause-blast-banner"
       bannerContents={
         <>
-          <p className="m-auto">
-            Bridging is paused until maintenance is complete.
-          </p>
+          <p className="m-auto">Bridging on Blast is temporarily paused.</p>
         </>
       }
       startDate={MAINTENANCE_BANNERS_START}
@@ -51,7 +49,7 @@ export const MaintenanceWarningMessage = () => {
 
   const isWarningChain = isChainIncluded(
     [fromChainId, toChainId],
-    [OPTIMISM.id, BASE.id] // Update for Chains to show warning on
+    [BLAST.id] // Update for Chains to show warning on
   )
 
   const { isComplete } = getCountdownTimeStatus(
@@ -66,7 +64,7 @@ export const MaintenanceWarningMessage = () => {
       <WarningMessage
         message={
           <>
-            <p>Bridging is paused until maintenance is complete.</p>
+            <p>Bridging on Blast is temporarily paused.</p>
           </>
         }
       />
@@ -81,14 +79,14 @@ export const useMaintenanceCountdownProgress = () => {
 
   const isCurrentChain = isChainIncluded(
     [fromChainId, toChainId],
-    [OPTIMISM.id, BASE.id] // Update for Chains to show maintenance on
+    [BLAST.id] // Update for Chains to show maintenance on
   )
 
   const {
     isPending: isMaintenancePending,
     EventCountdownProgressBar: MaintenanceCountdownProgressBar,
   } = useEventCountdownProgressBar(
-    'Maintenance in progress',
+    'Bridging on Blast paused.',
     MAINTENANCE_START_DATE, // Countdown Bar will automatically appear after start time
     MAINTENANCE_END_DATE // Countdown Bar will automatically disappear when end time is reached
   )

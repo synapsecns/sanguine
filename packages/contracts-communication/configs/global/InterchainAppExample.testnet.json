@@ -1,0 +1,10 @@
+{
+  "chains": ["eth_sepolia", "op_sepolia"],
+  "interchainClients": ["InterchainClientV1"],
+  "latestInterchainClient": "InterchainClientV1",
+  "trustedModules": ["SynapseModule"],
+  "appConfig": {
+    "0_requiredResponses": 1,
+    "1_optimisticPeriod": 30
+  }
+}

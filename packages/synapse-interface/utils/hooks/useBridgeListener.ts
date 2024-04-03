@@ -6,11 +6,9 @@ import {
   BridgeState,
   setIsLoading,
   initialState,
-} from '@/slices/bridge/reducer'
-import {
   updateDebouncedFromValue,
   updateDebouncedToTokensFromValue,
-} from '@/slices/bridge/actions'
+} from '@/slices/bridge/reducer'
 
 export const useBridgeListener = () => {
   const dispatch = useAppDispatch()

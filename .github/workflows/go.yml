@@ -40,16 +40,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # TODO: this can be shorter, maybe 500-1,000? This may be slower (see: https://github.com/CocoaPods/CocoaPods/issues/4989#issuecomment-193772935)
           fetch-depth: 0
-          # TODO: is this neccesary?
-          submodules: 'recursive'
 
       # note: after this action is pushed, whatever this ends up being should go back to latest.
-      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:latest
+      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:07a4696bbbafbba2d3ad7ee828b4c8adb21b4d20
         id: filter_go
         with:
-          github_token: ${{ secrets.WORKFLOW_PAT }}
+          github_token: ${{ secrets.WORKFLOW_PAT || secrets.GITHUB_TOKEN }}
           timeout: '10m'
 
       - name: Check For Solidity Changes
@@ -112,11 +109,6 @@ jobs:
         with:
           fetch-depth: 1
           submodules: 'recursive'
-
-      - name: Cache Docker images.
-        uses: ScribeMD/docker-cache@0.3.6
-        with:
-          key: docker-test-${{ runner.os }}-${{ matrix.package }}
 
       - name: Go modules cache
         uses: actions/cache@v3
@@ -349,7 +341,7 @@ jobs:
           args: --timeout=60m
         env:
           # GitHub token for annotations (optional)
-          GITHUB_TOKEN: ${{ secrets.WORKFLOW_PAT }}
+          GITHUB_TOKEN: ${{ secrets.WORKFLOW_PAT || secrets.GITHUB_TOKEN }}
           GOMEMLIMIT: 6GiB
           GOGC: -1
 
@@ -407,11 +399,6 @@ jobs:
         with:
           fetch-depth: 1
           submodules: 'recursive'
-
-      - name: Cache Docker images.
-        uses: ScribeMD/docker-cache@0.3.6
-        with:
-          key: docker-generate-${{ runner.os }}-${{ matrix.package }}
 
       - name: Setup NodeJS
         uses: ./.github/actions/setup-nodejs
@@ -530,29 +517,24 @@ jobs:
           fetch-depth: 1
           submodules: 'recursive'
 
-      - name: Cache Docker images.
-        uses: ScribeMD/docker-cache@0.3.6
-        with:
-          key: docker-generate-${{ runner.os }}-${{ matrix.package }}
-
       - name: Setup NodeJS
         uses: ./.github/actions/setup-nodejs
 
       # Foundry is required for flattening
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
-        if: ${{ contains(matrix.package, 'agents') || contains(matrix.package, 'services/rfq') }}
+        if: ${{ contains(matrix.package, 'agents') || contains(matrix.package, 'services/rfq') || contains(matrix.package, 'sin-executor') || contains(matrix.package, 'committee') }}
         with:
           version: nightly
 
       - name: Install Node Dependencies
         run: yarn install --immutable
-        if: ${{ contains(matrix.package, 'agents') || contains(matrix.package, 'services/rfq') }}
+        if: ${{ contains(matrix.package, 'agents') || contains(matrix.package, 'services/rfq') || contains(matrix.package, 'sin-executor') || contains(matrix.package, 'committee') }}
 
       # Generate flattened files
       - name: Run flattener
         run: npx lerna exec npm run build:go
-        if: ${{ contains(matrix.package, 'agents') || contains(matrix.package, 'services/rfq') }}
+        if: ${{ contains(matrix.package, 'agents') || contains(matrix.package, 'services/rfq') || contains(matrix.package, 'sin-executor') || contains(matrix.package, 'committee') }}
 
       # Setup Go
       - uses: actions/setup-go@v4
