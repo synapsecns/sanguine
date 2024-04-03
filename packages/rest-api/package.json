@@ -3,7 +3,7 @@
   "version": "1.0.60",
   "private": "true",
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.17.0"
   },
   "scripts": {
     "test": "tsdx test",
