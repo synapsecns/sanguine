@@ -400,7 +400,6 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 
 	//nolint: nestif
 	if prevTx != nil && shouldBump {
-		fmt.Println("IM BUMPIING")
 		gasBlock, err := t.getGasBlock(ctx, client, chainID)
 		if err != nil {
 			span.AddEvent("could not get gas block", trace.WithAttributes(attribute.String("error", err.Error())))

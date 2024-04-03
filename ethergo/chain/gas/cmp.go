@@ -1,7 +1,6 @@
 package gas
 
 import (
-	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -64,12 +63,9 @@ func OptsToComparableTx(opts *bind.TransactOpts) (comparableTx *types.Transactio
 // in the case of fees, this bumps both the tip and fee cap by percent. If the fee cap exceeds the percent bump
 // but the fee cap doesn't and the fee cap is still below the tip cap the new fee cap is used without bumping the tip cap.
 func BumpGasFees(opts *bind.TransactOpts, percentIncrease int, baseFee *big.Int, maxPrice *big.Int) {
-	fmt.Println("https://twitter.com/trajan0x/status/1775385857492443503")
 	if IsDynamicTx(opts) {
-		fmt.Println("dynamic")
 		bumpDynamicTxFees(opts, percentIncrease, baseFee, maxPrice)
 	} else {
-		fmt.Println("legacy")
 		bumpLegacyTxFees(opts, percentIncrease, maxPrice)
 	}
 }
@@ -89,29 +85,21 @@ func bumpLegacyTxFees(opts *bind.TransactOpts, percentIncrease int, maxPrice *bi
 
 // bumpDynamicTxFees bumps a dynamicFeeTx fee.
 func bumpDynamicTxFees(opts *bind.TransactOpts, percentIncrease int, baseFee, maxPrice *big.Int) {
-	fmt.Println("oldTipCap", opts.GasTipCap.String())
 	newTipCap := BumpByPercent(opts.GasTipCap, percentIncrease)
-	fmt.Println("newTipCap", newTipCap.String())
 
-	fmt.Println("oldFeeCap", opts.GasFeeCap.String())
 	newFeeCap := BumpByPercent(opts.GasFeeCap, percentIncrease)
-	fmt.Println("newFeeCap", newFeeCap.String())
 	if maxPrice.Cmp(newFeeCap) > 0 {
-		fmt.Println("bumped fee cap")
 		opts.GasFeeCap = newFeeCap
 	} else {
-		fmt.Println("did not bump fee cap")
 		opts.GasFeeCap = maxPrice
 		logger.Warnf("new fee cap %s exceeds max price %s, using max price", newFeeCap, maxPrice)
 	}
 
 	// if new fee cap less than tip cap AND base (fee + fee cap) > tip cap
 	if newFeeCap.Cmp(newTipCap) > 0 && big.NewInt(0).Sub(newFeeCap, baseFee).Cmp(newTipCap) > 0 {
-		fmt.Println("bumped tip cap")
 		opts.GasTipCap = newTipCap
 	} else {
 		logger.Warnf("new tip cap %s still less than fee cap %s + base fee %s, bumping tip not and not fee", newTipCap, newFeeCap, baseFee)
-		fmt.Println("did not bump tip cap")
 	}
 
 }
