@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.3.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.1.6...@synapsecns/solidity-devops@0.3.0) (2024-04-03)
+
+
+### Bug Fixes
+
+* **solidity-devops:** skip 0.2.0 ([#2440](https://github.com/synapsecns/sanguine/issues/2440)) ([17cbd4f](https://github.com/synapsecns/sanguine/commit/17cbd4f820da545619b367a11747a0e1458ebda3))
+
+
+### Features
+
+* **solidity-devops:** gas pricing, verification and deployment utils ([#2439](https://github.com/synapsecns/sanguine/issues/2439)) ([c42d7f4](https://github.com/synapsecns/sanguine/commit/c42d7f4db96ee453b9f19ca421564d16f07dd3fb))
+
+
+
+
+
 ## [0.1.6](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.1.5...@synapsecns/solidity-devops@0.1.6) (2024-03-10)
 
 **Note:** Version bump only for package @synapsecns/solidity-devops
