@@ -43,6 +43,8 @@
     "@types/web3": "^1.2.2",
     "@visx/chord": "^3.0.0",
     "@visx/shape": "^3.0.0",
+    "@wagmi/connectors": "^4.1.24",
+    "@wagmi/core": "^2.6.15",
     "babel-plugin-transform-bigint": "^1.0.32",
     "eslint": "^8.37.0",
     "eslint-config-next": "^13.5.6",
@@ -72,7 +74,6 @@
     "use-persisted-state": "^0.3.3",
     "viem": "^2.9.8",
     "wagmi": "^2.5.18",
-    "@wagmi/core": "^2.6.15",
     "yarn": "^1.22.19"
   },
   "browserslist": {

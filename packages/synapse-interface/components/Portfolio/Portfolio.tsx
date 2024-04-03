@@ -49,8 +49,6 @@ export const Portfolio = () => {
   const { balances: portfolioData, status: fetchState } =
     useFetchPortfolioBalances()
 
-  console.log(`portfolioData`, portfolioData)
-
   const filteredPortfolioData: NetworkTokenBalances =
     filterPortfolioBalancesWithBalances(portfolioData)
 
