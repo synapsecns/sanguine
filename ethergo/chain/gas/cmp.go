@@ -85,21 +85,45 @@ func bumpLegacyTxFees(opts *bind.TransactOpts, percentIncrease int, maxPrice *bi
 
 // bumpDynamicTxFees bumps a dynamicFeeTx fee.
 func bumpDynamicTxFees(opts *bind.TransactOpts, percentIncrease int, baseFee, maxPrice *big.Int) {
-	newFeeCap := BumpByPercent(opts.GasFeeCap, percentIncrease)
-	if maxPrice.Cmp(newFeeCap) > 0 {
-		opts.GasFeeCap = newFeeCap
-	} else {
-		opts.GasFeeCap = maxPrice
-		logger.Warnf("new fee cap %s exceeds max price %s, using max price", newFeeCap, maxPrice)
+	// Calculate new tip cap as a percentage increase over the current tip cap
+	newTipCap := BumpByPercent(opts.GasTipCap, percentIncrease)
+
+	// Update bumpedTipCap if currentTipCap is higher than bumpedTipCap and within maxGasPrice
+	newTipCap = maxBumpedFee(opts.GasTipCap, newTipCap, maxPrice, "tip cap")
+
+	// Adjust the new tip cap if it exceeds max price
+	if newTipCap.Cmp(maxPrice) > 0 {
+		newTipCap = maxPrice
+		logger.Warnf("Adjusted new tip cap %s exceeds max price %s, using max price as tip cap", newTipCap, maxPrice)
 	}
 
-	newTipCap := BumpByPercent(opts.GasTipCap, percentIncrease)
-	// if new fee cap less than tip cap AND base (fee + fee cap) > tip cap
-	if opts.GasFeeCap.Cmp(newTipCap) > 0 && big.NewInt(0).Sub(opts.GasFeeCap, baseFee).Cmp(newTipCap) > 0 {
-		opts.GasTipCap = newTipCap
-	} else {
-		logger.Warnf("new tip cap %s still less than fee cap %s + base fee %s, bumping tip not and not fee", newTipCap, maxPrice, baseFee)
+	// Calculate new fee cap as a percentage increase over the current fee cap
+	newFeeCap := BumpByPercent(opts.GasFeeCap, percentIncrease)
+
+	// Ensure the bumped fee cap does not exceed the max gas price
+	if newFeeCap.Cmp(maxPrice) > 0 {
+		logger.Errorf("bumped fee cap of %s would exceed configured max gas price of %s (original fee: tip cap %s, fee cap %s).",
+			newFeeCap.String(), maxPrice, opts.GasTipCap.String(), opts.GasFeeCap.String())
+		newFeeCap = maxPrice
 	}
+
+	// Apply the calculated tip cap and fee cap to the transaction options
+	opts.GasTipCap = newTipCap
+	opts.GasFeeCap = newFeeCap
+}
+
+func maxBumpedFee(currentFeePrice, bumpedFeePrice, maxGasPrice *big.Int, feeType string) *big.Int {
+	if currentFeePrice != nil {
+		if currentFeePrice.Cmp(maxGasPrice) > 0 {
+			// Shouldn't happen because the estimator should not be allowed to
+			// estimate a higher gas than the maximum allowed
+			logger.Warnf("Ignoring current %s of %s that would exceed max %s of %s", feeType, currentFeePrice.String(), feeType, maxGasPrice.String())
+		} else if bumpedFeePrice.Cmp(currentFeePrice) < 0 {
+			// If the current gas price is higher than the old price bumped, use that instead
+			bumpedFeePrice = currentFeePrice
+		}
+	}
+	return bumpedFeePrice
 }
 
 // BumpByPercent bumps a gas price by a percentage.
