@@ -11,6 +11,8 @@ import { resetPortfolioState } from '@/slices/portfolio/actions'
 import { isBlacklisted } from '@/utils/isBlacklisted'
 import { screenAddress } from '@/utils/screenAddress'
 
+import { useConnectors } from 'wagmi'
+
 const WalletStatusContext = createContext(undefined)
 
 export const UserProvider = ({ children }) => {
@@ -19,6 +21,10 @@ export const UserProvider = ({ children }) => {
   const [isClient, setIsClient] = useState(false)
   const router = useRouter()
   const { query, pathname } = router
+
+  const connectors = useConnectors()
+  console.log(`connectors`, connectors)
+
   useAccountEffect({
     onConnect() {
       segmentAnalyticsEvent(`[Wallet Analytics] connects`, {

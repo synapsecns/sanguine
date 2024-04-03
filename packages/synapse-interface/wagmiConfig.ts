@@ -23,6 +23,7 @@ import {
   polygon,
 } from '@wagmi/core/chains'
 import { createConfig, http } from '@wagmi/core'
+import { type Chain } from 'viem'
 
 import {
   ARBITRUM,
@@ -46,6 +47,8 @@ import {
   OPTIMISM,
   POLYGON,
 } from '@/constants/chains/master'
+
+import { injected } from '@wagmi/connectors'
 
 export const rawChains = [
   mainnet,
@@ -76,7 +79,7 @@ export const wagmiConfig = createConfig({
     arbitrum,
     aurora,
     avalanche,
-    base,
+    base as Chain,
     blast,
     bsc,
     canto,
@@ -85,14 +88,15 @@ export const wagmiConfig = createConfig({
     metis,
     moonbeam,
     moonriver,
-    optimism,
+    optimism as Chain,
     polygon,
     klaytn,
     cronos,
     dfk,
     dogechain,
     boba,
-  ] as any,
+  ],
+  connectors: [injected()],
   transports: {
     [mainnet.id]: http(ETH.rpcUrls.primary),
     [arbitrum.id]: http(ARBITRUM.rpcUrls.primary),
@@ -115,4 +119,5 @@ export const wagmiConfig = createConfig({
     [dogechain.id]: http(DOGE.rpcUrls.primary),
     [boba.id]: http(BOBA.rpcUrls.primary),
   },
+  ssr: true,
 })

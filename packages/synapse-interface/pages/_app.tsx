@@ -28,6 +28,8 @@ import {
   POLYGON,
 } from '@/constants/chains/master'
 
+import { type Chain } from 'viem'
+
 import {
   RainbowKitProvider,
   getDefaultWallets,
@@ -93,22 +95,18 @@ const { wallets } = getDefaultWallets()
 //   })
 // }
 
+console.log(`wallets`, wallets)
+
 const config = getDefaultConfig({
   appName: 'Synapse',
   projectId: 'ab0a846bc693996606734d788cb6561d',
-  wallets: [
-    ...wallets,
-    {
-      groupName: 'Other',
-      wallets: [argentWallet, trustWallet, ledgerWallet],
-    },
-  ],
+  wallets: [...wallets],
   chains: [
     mainnet,
     arbitrum,
     aurora,
     avalanche,
-    base,
+    base as Chain, // some issue with this chain in typing
     blast,
     bsc,
     canto,
@@ -117,14 +115,14 @@ const config = getDefaultConfig({
     metis,
     moonbeam,
     moonriver,
-    optimism,
+    optimism as Chain, // some issue with this chain in typing
     polygon,
     klaytn,
     cronos,
     dfk,
     dogechain,
     boba,
-  ] as any,
+  ],
   ssr: true,
 })
 
@@ -231,74 +229,35 @@ const chains = [
   },
 ]
 
+const queryClient = new QueryClient()
+
 function MyApp({ Component, pageProps }: AppProps) {
-  const [isMounted, setIsMounted] = useState(false)
-
-  const [queryClient, setQueryClient] = useState<any>(null)
-
-  useEffect(() => {
-    setIsMounted(true)
-
-    setQueryClient(
-      new QueryClient()
-      // new QueryClient({
-      //   defaultOptions: {
-      //     queries: {
-      //       // With SSR, we usually want to set some default staleTime
-      //       // above 0 to avoid refetching immediately on the client
-      //       staleTime: 60 * 1000,
-      //     },
-      //   },
-      // })
-    )
-  }, [])
-
-  // const [queryClient] = useState(
-  //   () =>
-  //     new QueryClient({
-  //       defaultOptions: {
-  //         queries: {
-  //           // With SSR, we usually want to set some default staleTime
-  //           // above 0 to avoid refetching immediately on the client
-  //           staleTime: 60 * 1000,
-  //         },
-  //       },
-  //     })
-  // )
-
-  // if (Object.values(queryClient).length === 0) {
-  //   return null
-  // }
-
   return (
-    isMounted &&
-    queryClient && (
-      <>
-        <Head>
-          <title>Synapse Protocol</title>
-        </Head>
-        <WagmiProvider config={config}>
-          <QueryClientProvider client={queryClient}>
-            <RainbowKitProvider>
-              <SynapseProvider chains={chains}>
-                <Provider store={store}>
-                  <PersistGate loading={null} persistor={persistor}>
-                    <SegmentAnalyticsProvider>
-                      <UserProvider>
-                        <BackgroundListenerProvider>
-                          <Component {...pageProps} />
-                        </BackgroundListenerProvider>
-                        <CustomToaster />
-                      </UserProvider>
-                    </SegmentAnalyticsProvider>
-                  </PersistGate>
-                </Provider>
-              </SynapseProvider>
-            </RainbowKitProvider>
-          </QueryClientProvider>
-        </WagmiProvider>
-      </>
-    )
+    <>
+      <Head>
+        <title>Synapse Protocol</title>
+      </Head>
+      <WagmiProvider config={config}>
+        <QueryClientProvider client={queryClient}>
+          <RainbowKitProvider>
+            <SynapseProvider chains={chains}>
+              <Provider store={store}>
+                <PersistGate loading={null} persistor={persistor}>
+                  <SegmentAnalyticsProvider>
+                    <UserProvider>
+                      <BackgroundListenerProvider>
+                        <Component {...pageProps} />
+                      </BackgroundListenerProvider>
+                      <CustomToaster />
+                    </UserProvider>
+                  </SegmentAnalyticsProvider>
+                </PersistGate>
+              </Provider>
+            </SynapseProvider>
+          </RainbowKitProvider>
+        </QueryClientProvider>
+      </WagmiProvider>
+    </>
   )
 }
 

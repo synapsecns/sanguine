@@ -82,7 +82,6 @@ export const sortByTokenBalance = async (
       contracts: multicallInputs,
       chainId: chainId as any,
     })
-    console.log(`multicallData`, multicallData)
     return sortArrayByBalance(
       sortByVisibilityRank(
         multicallData.map(
