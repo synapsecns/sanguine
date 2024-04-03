@@ -93,6 +93,14 @@ export const InputContainer = () => {
   }
 
   const onMaxBalance = useCallback(() => {
+    dispatch(
+      updateFromValue(
+        formatBigIntToString(balance, fromToken?.decimals[fromChainId])
+      )
+    )
+  }, [balance, fromChainId, fromToken])
+
+  const onMaxBridgeableBalance = useCallback(() => {
     if (formattedEstimatedGasCost && isNativeToken) {
       const maxBalance = Number(parsedBalance) - formattedEstimatedGasCost
 
@@ -201,7 +209,7 @@ export const InputContainer = () => {
               <div className="m">
                 <MiniMaxButton
                   disabled={!balance || balance === 0n ? true : false}
-                  onClickBalance={onMaxBalance}
+                  onClickBalance={onMaxBridgeableBalance}
                 />
               </div>
             )}
