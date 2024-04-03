@@ -21,7 +21,7 @@ jobs:
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@master
         with:
-          ignore_paths: ./contrib/terraform-provider-iap/scripts/add-tfmac.sh ./contrib/terraform-provider-helmproxy/scripts/add-tfmac.sh ./contrib/terraform-provider-kubeproxy/scripts/add-tfmac.sh
+          ignore_paths: ./contrib/terraform-provider-iap/scripts/add-tfmac.sh ./contrib/terraform-provider-helmproxy/scripts/add-tfmac.sh ./contrib/terraform-provider-kubeproxy/scripts/add-tfmac.sh ./contrib/scripts/txdecoder.sh
 
       - name: Validate renovate
         uses: rinchsan/renovate-config-validator@v0.0.12
