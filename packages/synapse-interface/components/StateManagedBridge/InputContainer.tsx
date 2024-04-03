@@ -2,7 +2,7 @@ import toast from 'react-hot-toast'
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { useAppSelector } from '@/store/hooks'
 import { useDispatch } from 'react-redux'
-import { zeroAddress, formatGwei } from 'viem'
+import { zeroAddress } from 'viem'
 import { useAccount, useNetwork } from 'wagmi'
 import { initialState, updateFromValue } from '@/slices/bridge/reducer'
 import MiniMaxButton from '../buttons/MiniMaxButton'
@@ -17,27 +17,7 @@ import { FromChainSelector } from './FromChainSelector'
 import { FromTokenSelector } from './FromTokenSelector'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
-
-/**
- * Calculates the estimated gas fee in Gwei.
- * TODO: Hardcoding gas limit to 200k for now, update dynamically
- * @param {string} gasPrice - The current gas price in Gwei as a string.
- * @param {number} gasLimit - Function to format a value as Gwei.
- * @returns {number|null} The formatted estimated gas cost, or null if the calculation is not possible.
- */
-const calculateGasFeeInGwei = (gasPrice?: string, gasLimit = 200_000) => {
-  if (!gasPrice) return null
-
-  const estimatedGasCostInGwei = gasLimit * parseFloat(gasPrice)
-
-  const oneGwei = parseFloat(formatGwei(1n))
-
-  const formattedEstimatedGasCost = estimatedGasCostInGwei
-    ? estimatedGasCostInGwei * oneGwei
-    : null
-
-  return formattedEstimatedGasCost
-}
+import { calculateGasFeeInGwei } from '../../utils/calculateGasFeeInGwei'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
