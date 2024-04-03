@@ -33,10 +33,30 @@ const createChainIdFile = (deployments, chainName) => {
 const saveDeploymentArtifact = (chainName, contractAlias, artifact) => {
   const deployments = readConfigValue('deployments')
   const deploymentFN = `${deployments}/${chainName}/${contractAlias}.json`
-  fs.writeFileSync(
-    deploymentFN,
-    JSON.stringify(refactorArtifact(artifact), null, 2)
-  )
+  fs.writeFileSync(deploymentFN, JSON.stringify(artifact, null, 2))
+}
+
+/**
+ * Extracts the contract name from the contract alias: everything before the first dot.
+ * Example: 'LinkedPool' from 'LinkedPool.USDC'
+ *
+ * @param {string} contractAlias - The contract alias
+ * @returns {string} The contract name
+ */
+const getContractName = (contractAlias) => {
+  return contractAlias.split('.')[0]
+}
+
+const getBuildArtifact = (contractAlias) => {
+  const contractName = getContractName(contractAlias)
+  const forgeArtifacts = readConfigValue('forgeArtifacts')
+  const artifactFN = `${forgeArtifacts}/${contractName}.sol/${contractName}.json`
+  // Silent exit if the artifact file does not exist
+  if (!fs.existsSync(artifactFN)) {
+    logError(`No artifact file found for ${contractAlias} at ${artifactFN}`)
+    return null
+  }
+  return JSON.parse(fs.readFileSync(artifactFN))
 }
 
 const getConfirmedFreshDeployment = (chainName, contractAlias) => {
@@ -44,7 +64,9 @@ const getConfirmedFreshDeployment = (chainName, contractAlias) => {
   const freshDeploymentFN = `${freshDeployments}/${chainName}/${contractAlias}.json`
   // Silent exit if the fresh deployment file does not exist
   if (!fs.existsSync(freshDeploymentFN)) {
-    logError(`No fresh deployment file found for ${contractAlias}`)
+    logError(
+      `No fresh deployment file found for ${contractAlias} at ${freshDeploymentFN}`
+    )
     return null
   }
   const artifact = JSON.parse(fs.readFileSync(freshDeploymentFN))
@@ -60,15 +82,6 @@ const getConfirmedFreshDeployment = (chainName, contractAlias) => {
   }
   logSuccess(`${contractAlias} is deployed at ${address} on ${chainName}`)
   return artifact
-}
-
-// Refactor the artifact in a way that its abi property is printed last in the JSON
-const refactorArtifact = (artifact) => {
-  if (!artifact.abi) {
-    return artifact
-  }
-  const { abi, ...rest } = artifact
-  return { ...rest, abi }
 }
 
 const getNewDeployments = (chainName, timestamp) => {
@@ -139,6 +152,8 @@ const getNewDeploymentReceipts = (chainName, scriptFN) => {
 module.exports = {
   createDeploymentDirs,
   saveDeploymentArtifact,
+  getContractName,
+  getBuildArtifact,
   getConfirmedFreshDeployment,
   getNewDeployments,
   getNewDeploymentReceipts,

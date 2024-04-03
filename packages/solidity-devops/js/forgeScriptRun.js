@@ -4,6 +4,7 @@ const fs = require('fs')
 const { readChainSpecificOptions, logWallet } = require('./utils/chain.js')
 const {
   createDeploymentDirs,
+  getBuildArtifact,
   getConfirmedFreshDeployment,
   getNewDeployments,
   getNewDeploymentReceipts,
@@ -71,6 +72,12 @@ newDeployments.forEach((contractAlias) => {
   artifact.receipt = {
     hash: receipt.hash,
     blockNumber: receipt.blockNumber,
+  }
+  const buildArtifact = getBuildArtifact(contractAlias)
+  if (!buildArtifact || !buildArtifact.abi) {
+    logInfo(`No ABI found for ${contractAlias}`)
+  } else {
+    artifact.abi = buildArtifact.abi
   }
   saveDeploymentArtifact(chainName, contractAlias, artifact)
 })
