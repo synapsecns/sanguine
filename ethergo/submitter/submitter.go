@@ -427,9 +427,10 @@ func (t *txSubmitterImpl) applyBaseGasPrice(transactor *bind.TransactOpts, chain
 		if transactor.GasFeeCap == nil || transactor.GasFeeCap.Cmp(big.NewInt(0)) == 0 {
 			transactor.GasFeeCap = t.config.GetBaseGasPrice(chainID)
 		}
-		if transactor.GasTipCap == nil || transactor.GasTipCap.Cmp(big.NewInt(0)) == 0 {
-			transactor.GasTipCap = t.config.GetBaseGasPrice(chainID)
-		}
+		// gas tip cap can actually be zero.
+		//if transactor.GasTipCap == nil || transactor.GasTipCap.Cmp(big.NewInt(0)) == 0 {
+		//	transactor.GasTipCap = t.config.GetBaseGasPrice(chainID)
+		//}
 	} else {
 		if transactor.GasPrice == nil || transactor.GasPrice.Cmp(big.NewInt(0)) == 0 {
 			transactor.GasPrice = t.config.GetBaseGasPrice(chainID)
