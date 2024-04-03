@@ -429,7 +429,11 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 	return nil
 }
 
+// b must not be nil.
 func maxOfBig(a, b *big.Int) *big.Int {
+	if a == nil {
+		return b
+	}
 	if a.Cmp(b) > 0 {
 		return a
 	}
