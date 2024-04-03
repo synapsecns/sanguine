@@ -130,6 +130,62 @@ type CCTPEvent struct {
 	TimeStamp *uint64 `gorm:"column:timestamp"`
 }
 
+// RFQEvent stores a rfq event.
+type RFQEvent struct {
+	// InsertTime is the time the event was inserted into the database.
+	InsertTime uint64 `gorm:"column:insert_time"`
+	// ChainID is the chain ID of the chain in which the indexed event occurred.
+	ChainID uint32 `gorm:"column:chain_id"`
+	// TxHash is the transaction hash of the event.
+	TxHash string `gorm:"column:tx_hash"`
+	// ContractAddress is the address of the contract that generated the event.
+	ContractAddress string `gorm:"column:contract_address"`
+	// BlockNumber is the timestamp.
+	BlockNumber uint64 `gorm:"column:block_number"`
+	// EventType is the type of the event.
+	EventType uint8 `gorm:"column:event_type"`
+	// EventIndex is the index of the log.
+	EventIndex uint64 `gorm:"column:event_index"`
+	// TransactionID is the Transaction ID of the RFQ transfer.
+	TransactionID string `gorm:"column:transaction_id"`
+
+	// Address is the address of the RFQ relayer.
+	Address string `gorm:"column:address"`
+	// Recipient is the recipient of the CCTP transfer.
+	Recipient sql.NullString `gorm:"column:recipient"`
+	// Sender is the address of the sender.
+	Sender string `gorm:"column:sender"`
+	// Request is the request of the RFQ transfer.
+	Request *[]byte `gorm:"column:request"`
+	// OriginChainID is the chain ID of the RFQ transfer.
+	OriginChainID *big.Int `gorm:"column:origin_chain_id;type:UInt256"`
+	// DestinationChainID is the chain ID of the RFQ transfer.
+	DestinationChainID *big.Int `gorm:"column:destination_chain_id;type:UInt256"`
+	// OriginToken is the address of the origin token
+	OriginToken string `gorm:"column:origin_token"`
+	// DestinationToken is the address of the destination token
+	DestinationToken string `gorm:"column:destination_token"`
+	// OriginAmount is the originAmount of the RFQ transfer.
+	OriginAmount *big.Int `gorm:"column:origin_amount;type:UInt256"`
+	// DestinationAmount is the DestinationAmount of the RFQ transfer.
+	DestinationAmount *big.Int `gorm:"column:destination_amount;type:UInt256"`
+	// AmountUSD is the amount of the RFQ transfer in USD.
+	AmountUSD float64 `gorm:"column:amount_usd;type:Float64"`
+	// ChainGas is whether the chain gas is used for the RFQ transfer.
+	ChainGas bool `gorm:"column:chain_gas"`
+	// ChainGasAmount is the amount of gas sent on the destination chain to the recipient.
+	ChainGasAmount *big.Int `gorm:"column:chain_gas_amount;type:UInt256"`
+
+	// TokenPrices are the prices of each token at the given time.
+	TokenPrice map[uint8]float64 `gorm:"column:token_price;type:Map(UInt8, Float64)"`
+	// TokenDecimal is the token's decimal.
+	TokenDecimal *uint8 `gorm:"column:token_decimal"`
+	// TokenSymbol is the token's symbol from coin gecko.
+	TokenSymbol string `gorm:"column:token_symbol"`
+	// TimeStamp is the timestamp in which the record was inserted.
+	TimeStamp *uint64 `gorm:"column:timestamp"`
+}
+
 // BridgeEvent stores data for emitted events from the Bridge contract.
 type BridgeEvent struct {
 	// InsertTime is the time the event was inserted into the database.
