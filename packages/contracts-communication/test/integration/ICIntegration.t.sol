@@ -2,7 +2,7 @@
 pragma solidity 0.8.20;
 
 import {ExecutionFeesEvents} from "../../contracts/events/ExecutionFeesEvents.sol";
-import {ExecutionServiceEvents} from "../../contracts/events/ExecutionServiceEvents.sol";
+import {SynapseExecutionServiceEvents} from "../../contracts/events/SynapseExecutionServiceEvents.sol";
 import {InterchainClientV1Events} from "../../contracts/events/InterchainClientV1Events.sol";
 import {InterchainDBEvents} from "../../contracts/events/InterchainDBEvents.sol";
 import {InterchainModuleEvents} from "../../contracts/events/InterchainModuleEvents.sol";
@@ -22,7 +22,7 @@ import {ICSetup, TypeCasts} from "./ICSetup.t.sol";
 abstract contract ICIntegrationTest is
     ICSetup,
     ExecutionFeesEvents,
-    ExecutionServiceEvents,
+    SynapseExecutionServiceEvents,
     InterchainClientV1Events,
     InterchainDBEvents,
     InterchainModuleEvents

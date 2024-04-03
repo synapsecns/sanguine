@@ -5,6 +5,7 @@ import {IInterchainAppV1} from "../../contracts/interfaces/IInterchainAppV1.sol"
 import {InterchainTxDescriptor} from "../../contracts/libs/InterchainTransaction.sol";
 import {OptionsV1} from "../../contracts/libs/Options.sol";
 
+// solhint-disable func-name-mixedcase
 interface IInterchainAppV1Harness is IInterchainAppV1 {
     event MessageReceived(uint256 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message);
 
@@ -40,7 +41,7 @@ interface IInterchainAppV1Harness is IInterchainAppV1 {
     function exposed__getInterchainFee(
         uint256 dstChainId,
         bytes memory options,
-        bytes memory message
+        uint256 messageLen
     )
         external
         view
@@ -49,7 +50,7 @@ interface IInterchainAppV1Harness is IInterchainAppV1 {
     function exposed__getMessageFee(
         uint256 dstChainId,
         OptionsV1 memory options,
-        bytes memory message
+        uint256 messageLen
     )
         external
         view

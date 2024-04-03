@@ -58,4 +58,17 @@ contract InterchainTransactionLibTest is Test {
         bytes32 expected = keccak256(abi.encode(icTx));
         assertEq(libHarness.transactionId(icTx), expected);
     }
+
+    function test_payloadSize(InterchainTransaction memory icTx) public {
+        uint256 size = libHarness.payloadSize(icTx.options.length, icTx.message.length);
+        uint256 expectedSize = abi.encode(icTx).length;
+        assertEq(size, expectedSize);
+    }
+
+    function test_payloadSize_fuzzBytesOnly(bytes memory options, bytes memory message) public {
+        InterchainTransaction memory icTx;
+        icTx.options = options;
+        icTx.message = message;
+        test_payloadSize(icTx);
+    }
 }
