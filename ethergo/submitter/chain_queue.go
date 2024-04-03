@@ -257,7 +257,7 @@ func (c *chainQueue) updateOldTxStatuses(parentCtx context.Context) {
 			metrics.EndSpanWithErr(span, err)
 		}()
 
-		err = c.db.MarkAllBeforeOrAtNonceReplacedOrConfirmed(ctx, c.signer.Address(), c.chainID, c.nonce)
+		err = c.db.MarkAllBeforeNonceReplacedOrConfirmed(ctx, c.signer.Address(), c.chainID, c.nonce)
 		if err != nil {
 			return fmt.Errorf("could not mark txes: %w", err)
 		}

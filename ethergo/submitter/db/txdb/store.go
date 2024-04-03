@@ -47,11 +47,11 @@ func (s *Store) DBTransaction(parentCtx context.Context, f db.TransactionFunc) (
 	})
 }
 
-// MarkAllBeforeOrAtNonceReplacedOrConfirmed marks all transactions before or at the given nonce as replaced or confirmed.
-func (s *Store) MarkAllBeforeOrAtNonceReplacedOrConfirmed(ctx context.Context, signer common.Address, chainID *big.Int, nonce uint64) error {
+// MarkAllBeforeNonceReplacedOrConfirmed marks all transactions before or at the given nonce as replaced or confirmed.
+func (s *Store) MarkAllBeforeNonceReplacedOrConfirmed(ctx context.Context, signer common.Address, chainID *big.Int, nonce uint64) error {
 	dbTX := s.db.WithContext(ctx).Model(&ETHTX{}).
 		Where(fmt.Sprintf("%s = ?", chainIDFieldName), chainID.Uint64()).
-		Where(fmt.Sprintf("%s <= ?", nonceFieldName), nonce).
+		Where(fmt.Sprintf("%s < ?", nonceFieldName), nonce).
 		Where(fmt.Sprintf("`%s` = ?", fromFieldName), signer.String()).
 		// just in case we're updating a tx already marked as confirmed
 		Updates(map[string]interface{}{statusFieldName: db.ReplacedOrConfirmed.Int()})
