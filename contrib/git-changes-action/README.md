@@ -9,7 +9,7 @@ This GitHub Action exports a variable that contains the list of Go modules chang
 
 1. To use this action, add the following steps to your workflow:
 
-    Check out the current pull request using the actions/checkout action. It's recommended to set fetch-depth to 0 and submodules to recursive to ensure that all necessary dependencies are fetched.
+    Check out the current pull request using the actions/checkout action. It's recommended to set fetch-depth to 0 and submodules to 'recursive' to ensure that all necessary dependencies are fetched.
 
 ```yaml
     steps:
@@ -17,7 +17,7 @@ This GitHub Action exports a variable that contains the list of Go modules chang
         with:
           fetch-depth: 0
           submodules: 'recursive'
-          packageOfLevelResolution: "modules"
+          dependencyLevelResolution: "modules"
 ```
 
 1. Use the synapsecns/sanguine/git-changes-action Docker image to run the git-changes script, which exports a variable that contains the list of changed Go modules.
@@ -28,14 +28,15 @@ This GitHub Action exports a variable that contains the list of Go modules chang
         with:
           github_token: ${{ secrets.github_token }}
           timeout: "1m" # optional, defaults to 1m
-          dependencyLevelResolution: "modules" or "packages"
+          dependencyLevelResolution: "modules" 
+          # For package level resolution, use "packages" instead of "modules"
 ```
 
 You can customize the behavior of the git-changes script by using the following inputs:
 
  - `github_token`: The token to use for authentication with the GitHub API. This is required to fetch information about the current pull request.
  - `timeout`: The maximum time to wait for the GitHub API to respond. Defaults to 1 minute.
- - `dependencyLevelResolution`: "modules" or "packages"
+ - `dependencyLevelResolution`: "modules" or "packages".
 
 The output of the git-changes script is a comma-separated list of Go module paths. You can access this list using the `filter_go` output variable, like so:
 
