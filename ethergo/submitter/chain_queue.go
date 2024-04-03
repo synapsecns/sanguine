@@ -196,8 +196,8 @@ func (c *chainQueue) bumpTX(parentCtx context.Context, ogTx db.TX) {
 			tx = types.NewTx(&types.DynamicFeeTx{
 				ChainID:   tx.ChainId(),
 				Nonce:     tx.Nonce(),
-				GasTipCap: tx.GasTipCap(),
-				GasFeeCap: tx.GasFeeCap(),
+				GasTipCap: core.CopyBigInt(transactor.GasTipCap),
+				GasFeeCap: core.CopyBigInt(transactor.GasFeeCap),
 				Gas:       transactor.GasLimit,
 				To:        tx.To(),
 				Value:     tx.Value(),
