@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/explorer-ui",
-  "version": "0.1.41",
+  "version": "0.1.42",
   "private": true,
   "engines": {
     "node": ">=18.17.0"
