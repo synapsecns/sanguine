@@ -357,11 +357,18 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 	maxPrice := t.config.GetMaxGasPrice(chainID)
 
 	defer func() {
+		maxHit := false
 		if transactor.GasPrice != nil && maxPrice.Cmp(transactor.GasPrice) < 0 {
 			transactor.GasPrice = maxPrice
+			maxHit = true
 		}
 		if transactor.GasFeeCap != nil && maxPrice.Cmp(transactor.GasFeeCap) < 0 {
 			transactor.GasFeeCap = maxPrice
+			maxHit = true
+		}
+
+		if maxHit {
+			span.AddEvent("ceiling hit", trace.WithAttributes(attribute.String("max_price", maxPrice.String())))
 		}
 
 		span.SetAttributes(
@@ -372,26 +379,20 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 		metrics.EndSpanWithErr(span, err)
 	}()
 
+	var marketFeeCap, marketTipCap, marketGasPrice *big.Int
 	// TODO: cache both of these values
-	shouldBump := true
 	if t.config.SupportsEIP1559(int(bigChainID.Uint64())) {
-		transactor.GasFeeCap, err = client.SuggestGasPrice(ctx)
+		marketFeeCap, err = client.SuggestGasPrice(ctx)
 		if err != nil {
 			return fmt.Errorf("could not get gas price: %w", err)
 		}
-		// don't bump fee cap if we hit the max configured gas price
-		if transactor.GasFeeCap.Cmp(maxPrice) > 0 {
-			transactor.GasFeeCap = maxPrice
-			shouldBump = false
-			span.AddEvent("not bumping fee cap since max price is reached")
-		}
 
-		transactor.GasTipCap, err = client.SuggestGasTipCap(ctx)
+		marketTipCap, err = client.SuggestGasTipCap(ctx)
 		if err != nil {
 			return fmt.Errorf("could not get gas tip cap: %w", err)
 		}
 	} else {
-		transactor.GasPrice, err = client.SuggestGasPrice(ctx)
+		marketGasPrice, err = client.SuggestGasPrice(ctx)
 		if err != nil {
 			return fmt.Errorf("could not get gas price: %w", err)
 		}
@@ -399,26 +400,33 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 	t.applyBaseGasPrice(transactor, chainID)
 
 	//nolint: nestif
-	if prevTx != nil && shouldBump {
+	if prevTx != nil {
 		gasBlock, err := t.getGasBlock(ctx, client, chainID)
 		if err != nil {
 			span.AddEvent("could not get gas block", trace.WithAttributes(attribute.String("error", err.Error())))
 			return err
 		}
 
-		// if the prev tx was greater than this one, we should bump the gas price from that point
-		comparison := gas.CompareGas(prevTx, gas.OptsToComparableTx(transactor), gasBlock.BaseFee)
-		if comparison > 0 {
-			if prevTx.Type() == types.LegacyTxType {
-				transactor.GasPrice = core.CopyBigInt(prevTx.GasPrice())
-			} else {
-				transactor.GasTipCap = core.CopyBigInt(prevTx.GasTipCap())
-				transactor.GasFeeCap = core.CopyBigInt(prevTx.GasFeeCap())
-			}
-		}
 		gas.BumpGasFees(transactor, t.config.GetGasBumpPercentage(chainID), gasBlock.BaseFee, maxPrice)
+	} else {
+		// in the case where this is our first attempt, use market prices!.
+		if t.config.SupportsEIP1559(chainID) {
+			transactor.GasFeeCap = new(big.Int).Mul(marketFeeCap, big.NewInt(2))
+			// use 1 wei if tip cap is zero
+			transactor.GasTipCap = bigMax(marketTipCap, big.NewInt(1))
+		} else {
+			transactor.GasPrice = marketGasPrice
+		}
 	}
 	return nil
+}
+
+// bigMax returns the larger of two big ints.
+func bigMax(a, b *big.Int) *big.Int {
+	if a.Cmp(b) > 0 {
+		return a
+	}
+	return b
 }
 
 // applyBaseGasPrice applies the base gas price to the transactor if a gas price value is zero.
@@ -427,10 +435,6 @@ func (t *txSubmitterImpl) applyBaseGasPrice(transactor *bind.TransactOpts, chain
 		if transactor.GasFeeCap == nil || transactor.GasFeeCap.Cmp(big.NewInt(0)) == 0 {
 			transactor.GasFeeCap = t.config.GetBaseGasPrice(chainID)
 		}
-		// gas tip cap can actually be zero.
-		//if transactor.GasTipCap == nil || transactor.GasTipCap.Cmp(big.NewInt(0)) == 0 {
-		//	transactor.GasTipCap = t.config.GetBaseGasPrice(chainID)
-		//}
 	} else {
 		if transactor.GasPrice == nil || transactor.GasPrice.Cmp(big.NewInt(0)) == 0 {
 			transactor.GasPrice = t.config.GetBaseGasPrice(chainID)
