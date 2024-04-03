@@ -1,12 +1,12 @@
 import { useEffect } from 'react'
-import { useNetwork } from 'wagmi'
 
 import { useAppDispatch } from '@/store/hooks'
 import { fetchGasData } from '@/slices/gasDataSlice'
+import { useBridgeState } from '@/slices/bridge/hooks'
 
 export const useFetchGasDataOnInterval = () => {
   const dispatch = useAppDispatch()
-  const { chain } = useNetwork()
+  const { fromChainId } = useBridgeState()
 
   const fetchData = (chainId: number) => {
     dispatch(fetchGasData(chainId))
@@ -14,13 +14,13 @@ export const useFetchGasDataOnInterval = () => {
 
   useEffect(() => {
     // Fetch when chainId available
-    if (chain?.id) {
-      fetchData(chain?.id)
+    if (fromChainId) {
+      fetchData(fromChainId)
     }
 
     // Fetch every 60 seconds
     const interval = setInterval(fetchGasData, 60000)
 
     return () => clearInterval(interval)
-  }, [dispatch, chain?.id])
+  }, [dispatch, fromChainId])
 }
