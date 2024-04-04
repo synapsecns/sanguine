@@ -2,7 +2,8 @@ import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { useDispatch } from 'react-redux'
 import { useAccount } from 'wagmi'
 
-import MiniMaxButton from '../buttons/MiniMaxButton'
+import MiniMaxButton from '@/components/buttons/MiniMaxButton'
+import { TokenSelector } from '@/components/ui/TokenSelector'
 import { formatBigIntToString, stringToBigInt } from '@/utils/bigint/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import {
@@ -10,11 +11,21 @@ import {
   ConnectWalletButton,
   ConnectedIndicator,
 } from '@/components/ConnectionIndicators'
-import { SwapChainSelector } from './SwapChainSelector'
-import { SwapFromTokenSelector } from './SwapFromTokenSelector'
+import { ChainSelector } from '@/components/ui/ChainSelector'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
-import { initialState, updateSwapFromValue } from '@/slices/swap/reducer'
+import {
+  initialState,
+  setSwapChainId,
+  setSwapFromToken,
+  updateSwapFromValue,
+} from '@/slices/swap/reducer'
 import { useSwapState } from '@/slices/swap/hooks'
+import { BridgeSectionContainer } from '@/components/ui/BridgeSectionContainer'
+import { BridgeAmountContainer } from '@/components/ui/BridgeAmountContainer'
+import { CHAINS_BY_ID } from '@/constants/chains'
+import { useSwapChainListArray } from '@/components/StateManagedSwap//hooks/useSwapChainListArray'
+import { useSwapFromTokenListArray } from '@/components/StateManagedSwap/hooks/useSwapFromTokenListOverlay'
+import { AmountInput } from '@/components/ui/AmountInput'
 
 export const SwapInputContainer = () => {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -97,80 +108,62 @@ export const SwapInputContainer = () => {
   }, [chain, swapChainId, isConnected, hasMounted])
 
   return (
-    <div
-      data-test-id="input-container"
-      className="text-left rounded-md p-md bg-bgLight"
-    >
-      <div className="flex items-center justify-between mb-3">
+    <BridgeSectionContainer>
+      <div className="flex items-center justify-between">
         <SwapChainSelector />
         {connectedStatus}
       </div>
-      <div className="flex h-16 mb-2 space-x-2">
-        <div
-          className={`
-            flex flex-grow items-center justify-between
-            pl-md
-            w-full h-16
-            rounded-md
-            border border-white border-opacity-20
-          `}
-        >
-          <div className="flex items-center">
-            <SwapFromTokenSelector />
-            <div className="flex flex-col justify-between ml-4">
-              <div style={{ display: 'table' }}>
-                <input
-                  ref={inputRef}
-                  pattern="^[0-9]*[.,]?[0-9]*$"
-                  disabled={false}
-                  className={`
-                    focus:outline-none
-                    focus:ring-0
-                    focus:border-none
-                    border-none
-                    bg-transparent
-                    max-w-[190px]
-                    p-0
-                    placeholder:text-[#88818C]
-                    text-white text-opacity-80 text-xl md:text-2xl font-medium
-                  `}
-                  placeholder="0.0000"
-                  onChange={handleFromValueChange}
-                  value={showValue}
-                  name="inputRow"
-                  autoComplete="off"
-                  minLength={1}
-                  maxLength={79}
-                  style={{ display: 'table-cell', width: '100%' }}
-                />
-              </div>
-              {hasMounted && isConnected && (
-                <label
-                  htmlFor="inputRow"
-                  className="text-xs text-white transition-all duration-150 transform-gpu hover:text-opacity-70 hover:cursor-pointer"
-                  onClick={onMaxBalance}
-                >
-                  {parsedBalance ?? '0.0'}
-                  <span className="text-opacity-50 text-secondaryTextColor">
-                    {' '}
-                    available
-                  </span>
-                </label>
-              )}
-            </div>
-          </div>
-          <div>
-            {hasMounted && isConnected && (
-              <div className="m">
-                <MiniMaxButton
-                  disabled={!balance || balance === 0n}
-                  onClickBalance={onMaxBalance}
-                />
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
+      <BridgeAmountContainer>
+        <SwapFromTokenSelector />
+        <AmountInput
+          inputRef={inputRef}
+          hasMounted={hasMounted}
+          isConnected={isConnected}
+          showValue={showValue}
+          handleFromValueChange={handleFromValueChange}
+          parsedBalance={parsedBalance}
+          onMaxBalance={onMaxBalance}
+        />
+
+        {hasMounted && isConnected && (
+          <MiniMaxButton
+            disabled={!balance || balance === 0n ? true : false}
+            onClickBalance={onMaxBalance}
+          />
+        )}
+      </BridgeAmountContainer>
+    </BridgeSectionContainer>
+  )
+}
+
+const SwapChainSelector = () => {
+  const { swapChainId } = useSwapState()
+
+  return (
+    <ChainSelector
+      dataTestId="swap-origin-chain"
+      isOrigin={true}
+      selectedItem={CHAINS_BY_ID[swapChainId]}
+      label="From"
+      itemListFunction={useSwapChainListArray}
+      setFunction={setSwapChainId}
+      action="Swap"
+    />
+  )
+}
+
+const SwapFromTokenSelector = () => {
+  const { swapFromToken } = useSwapState()
+
+  return (
+    <TokenSelector
+      dataTestId="swap-origin-token"
+      selectedItem={swapFromToken}
+      isOrigin={true}
+      placeholder="In"
+      itemListFunction={useSwapFromTokenListArray}
+      setFunction={setSwapFromToken}
+      action="Swap"
+    />
   )
 }

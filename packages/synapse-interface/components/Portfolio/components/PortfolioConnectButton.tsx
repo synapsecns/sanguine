@@ -44,7 +44,7 @@ const ConnectedButton = () => {
         <div
           className={`
             my-auto ml-auto mr-2 w-2 h-2
-            bg-green-500 rounded-full
+            bg-green-400 rounded-full
           `}
         />
         Connected
@@ -92,7 +92,7 @@ const ConnectButton = ({ chainId }: { chainId: number }) => {
           <div
             className={`
               my-auto ml-auto mr-2 text-transparent w-2 h-2
-              border border-green-300 border-solid rounded-full
+              border border-green-400 border-solid rounded-full
             `}
           />
           Connecting...
