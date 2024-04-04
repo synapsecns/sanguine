@@ -232,16 +232,14 @@ const Cube = ({
   )
 }
 
-export default function () {
+export default function ({ className = '' }) {
   return (
     <svg
       id="hero-graphic"
       width="1200"
-      height="675"
       viewBox="-700 -437.5 1400 875"
-      // className={`border border-zinc-900 mx-auto my-8`}
-      // stroke="#0ff"
-      // stroke-width="1"
+      overflow="visible"
+      className={className}
       fill="none"
     >
       <style>

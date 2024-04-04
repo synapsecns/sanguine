@@ -70,10 +70,14 @@ const Wrapper = ({ children }) => {
   }
 
   return (
-    <div className={prefersDark && 'dark'}>
-      <div className="w-screen h-screen bg-white bg-gradient-to-b from-white to-[hsl(235deg_75%_96%)] dark:from-black dark:to-[hsl(265deg_25%_7.5%)] overflow-scroll text-zinc-800 dark:text-zinc-200 tracking-wide">
-        <Ticker />
-        <nav className="mt-12 md:mt-16 px-2 sm:px-4 md:px-8 grid gap-y-4 md:gap-y-6 items-center max-w-7xl m-auto">
+    <div
+      className={`${
+        prefersDark ? 'dark text-zinc-200 bg-black' : 'text-zinc-800 bg-white'
+      } tracking-wide`}
+    >
+      <Ticker />
+      <div className="bg-white bg-gradient-to-b from-white to-[hsl(235deg_75%_96%)] dark:from-black dark:to-[hsl(265deg_25%_7.5%)]">
+        <nav className="py-6 px-2 sm:px-4 md:px-8 grid gap-y-4 md:gap-y-6 items-center">
           <SynapseAnchor />
           <NavMenu />
           <select
@@ -95,7 +99,7 @@ const Wrapper = ({ children }) => {
             </option>
           </select>
         </nav>
-        <main className="grid place-items-center">{children}</main>
+        <main className="overflow-hidden">{children}</main>
         <Footer />
       </div>
     </div>

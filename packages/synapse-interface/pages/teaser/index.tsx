@@ -16,13 +16,13 @@ import FauxBridge from './FauxBridge'
 import PlatformAnimation from './PlatformAnimation'
 import { Chain } from '@/utils/types'
 
-const chainTagClassName = 'pl-2 pr-4 py-1 border rounded h-min'
+const chainTagClassName = 'pl-2 pr-6 py-2 border-l h-min'
 
 function ChainTag({ chain }: { chain: Chain }): React.ReactNode {
   return (
     <a
       href="#"
-      className={`grid grid-cols-[auto_auto] gap-x-2 items-center border-separator ${chainTagClassName}`}
+      className={`grid grid-cols-[auto_auto] gap-x-2 items-center border-zinc-800 ${chainTagClassName}`}
     >
       <img
         src={chain.chainImg.src}
@@ -51,26 +51,50 @@ const LandingPage = () => {
 
   return (
     <Wrapper>
-      <Hero />
-      <PlatformAnimation />
-      <section id="chain-list" className="-mt-12 mb-12">
-        <dl className="flex gap-2 text-sm whitespace-nowrap">
+      {/* <Hero /> */}
+      <section className="w-full">
+        <div className="text-4xl sm:text-6xl font-semibold text-center mt-2 lg:mt-16 mb-4">
+          Reach every chain.
+        </div>
+        <h1 className="text-2xl font-medium text-center">
+          The web connects devices. We connect blockchains.
+        </h1>
+        <div className="flex text-sm border-y border-zinc-800 whitespace-nowrap justify-center mt-12">
+          <a
+            href="#"
+            className={`px-4 py-3 text-lg border-l border-fuchsia-500`}
+          >
+            Build
+          </a>
+          <a href="#" className={`px-4 py-3 text-lg border-x border-zinc-800`}>
+            Bridge
+          </a>
+        </div>
+      </section>
+      <section className="grid justify-center">
+        <PlatformAnimation className="w-full min-w-[640px]" />
+      </section>
+      <section id="chain-list" className="-mt-12 mb-12 justify-center">
+        <dl className="flex text-sm border-y border-zinc-800 whitespace-nowrap justify-center">
           <a href="#" className={`${chainTagClassName} border-fuchsia-500`}>
             <dt>6 month vol.</dt>
             <dd>$7.03B</dd>
           </a>
-          {CHAINS_ARR.slice(4, 11).map((a) => (
+          {CHAINS_ARR.slice(0, 15).map((a) => (
             <ChainTag chain={a} />
           ))}
-          <dt className={`${chainTagClassName} border-separator`}>
+          <dt className={`${chainTagClassName} border-zinc-800`}>
             DFK, Klaytn,
             <br />
             Cronos & more
           </dt>
         </dl>
       </section>
-      <section id="entry-points" className="text-center w-full">
-        <h2 className="text-5xl font-medium my-6">The future is interchain</h2>
+      <section
+        id="entry-points"
+        className="text-center max-w-screen-xl mx-auto"
+      >
+        <h2 className="text-6xl font-medium my-8">The future is interchain</h2>
         <p className="max-w-lg mx-auto">
           The interchain network brings the federated blockchain universe
           together. Access new technologies, trade, loan, stake, and participate
@@ -143,7 +167,10 @@ const LandingPage = () => {
           </li>
         </ul>
       </section>
-      <section id="trusted-by" className="text-center w-full my-24 grid gap-12">
+      <section
+        id="trusted-by"
+        className="text-center w-full my-24 grid gap-12 max-w-screen-xl mx-auto"
+      >
         <h2 className="text-5xl font-medium">Trusted by</h2>
         <ul className="flex">
           <li className="max-w-lg mx-auto">[ GMX ]</li>
@@ -152,7 +179,10 @@ const LandingPage = () => {
           <li className="max-w-lg mx-auto">[ Hercules ]</li>
         </ul>
       </section>
-      <section id="community" className="text-center w-full">
+      <section
+        id="community"
+        className="text-center w-full max-w-screen-xl mx-auto"
+      >
         <h2 className="text-5xl font-medium my-6">Community</h2>
         <a href="#" className="underline text-sky-300">
           Discord

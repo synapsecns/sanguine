@@ -112,7 +112,7 @@ export default function Ticker() {
 
   return (
     <article
-      className={`flex w-full z-10 text-sm bg-zinc-50 dark:bg-zinc-950 absolute border-b border-zinc-300 dark:border-zinc-900 overflow-x-clip justify-between cursor-default ${
+      className={`flex w-full z-50 text-sm bg-zinc-50 dark:bg-zinc-950 sticky top-0 border-b border-zinc-300 dark:border-zinc-900 overflow-x-clip justify-between cursor-default ${
         isLoading ? 'opacity-70' : 'opacity-100'
       }`}
     >

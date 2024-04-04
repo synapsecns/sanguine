@@ -123,7 +123,7 @@ const sections = [
 
 export default function Header() {
   return (
-    <ul className="flex flex-wrap text-base xs:text-lg justify-center row-start-2 col-span-3 min-[960px]:row-start-1 min-[960px]:col-start-2 min-[960px]:col-span-1">
+    <ul className="flex flex-wrap text-base xs:text-lg justify-center row-start-2 col-span-3 lg:row-start-1 lg:col-start-2 lg:col-span-1">
       {sections.map((section) => (
         <li
           key={section.label}
