@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # Usage: ./script/testnet-deploy.sh <chainName> <walletName>
+# Trap SIGINT (Ctrl+C) and exit the script
+trap "echo 'Script terminated by user'; exit" INT
 # Parse command line arguments
 chainName=$1
 walletName=$2
