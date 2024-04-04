@@ -1,12 +1,12 @@
 {
+  "arb_sepolia": {
+    "calldataPrice": 0,
+    "gasPrice": 1000000,
+    "nativePrice": 1000000000000000000
+  },
   "eth_sepolia": {
     "calldataPrice": 0,
     "gasPrice": 2000000,
-    "nativePrice": 1000000000000000000
-  },
-  "op_sepolia": {
-    "calldataPrice": 0,
-    "gasPrice": 1000000,
     "nativePrice": 1000000000000000000
   }
 }

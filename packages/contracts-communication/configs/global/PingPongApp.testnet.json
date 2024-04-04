@@ -1,5 +1,5 @@
 {
-  "chains": ["eth_sepolia", "op_sepolia"],
+  "chains": ["arb_sepolia", "eth_sepolia"],
   "interchainClients": ["InterchainClientV1"],
   "latestInterchainClient": "InterchainClientV1",
   "trustedModules": ["SynapseModule"],
