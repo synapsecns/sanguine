@@ -16,6 +16,8 @@ yarn fsr-str script/deploy/DeployNoArgs.s.sol "$chainName" "$walletName" "Interc
 yarn fsr script/deploy/DeploySynapseModule.s.sol "$chainName" "$walletName" "$@"
 yarn fsr script/deploy/DeploySynapseExecutionServiceV1.s.sol "$chainName" "$walletName" "$@"
 yarn fsr-str script/deploy/DeployWithMsgSender.s.sol "$chainName" "$walletName" "SynapseGasOracleV1" "$@"
+# Verify Proxy on Etherscan
+yarn vp "$chainName" SynapseExecutionServiceV1
 # Client contracts
 yarn fsr script/deploy/DeployInterchainClientV1.s.sol "$chainName" "$walletName" "$@"
 yarn fsr-str script/deploy/DeployWithMsgSender.s.sol "$chainName" "$walletName" "ExecutionFees" "$@"
