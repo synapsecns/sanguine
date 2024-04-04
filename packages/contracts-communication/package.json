@@ -21,7 +21,7 @@
     "@openzeppelin/contracts-upgradeable": "5.0.1"
   },
   "devDependencies": {
-    "@synapsecns/solidity-devops": "^0.3.0",
+    "@synapsecns/solidity-devops": "^0.3.1",
     "solhint": "^4.1.1"
   }
 }
