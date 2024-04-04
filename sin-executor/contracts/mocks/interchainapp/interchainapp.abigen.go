@@ -38,15 +38,15 @@ type AppConfigV1 struct {
 // InterchainTxDescriptor is an auto generated low-level Go binding around an user-defined struct.
 type InterchainTxDescriptor struct {
 	TransactionId [32]byte
-	DbNonce       *big.Int
+	DbNonce       uint64
 	EntryIndex    uint64
 }
 
 // AbstractICAppMetaData contains all meta data concerning the AbstractICApp contract.
 var AbstractICAppMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"InterchainApp__AlreadyLatestClient\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"InterchainApp__BalanceTooLow\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"InterchainApp__ClientAlreadyAdded\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainApp__InterchainClientZeroAddress\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"InterchainApp__NotInterchainClient\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"}],\"name\":\"InterchainApp__ReceiverNotSet\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"}],\"name\":\"InterchainApp__SameChainId\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"sender\",\"type\":\"bytes32\"}],\"name\":\"InterchainApp__SenderNotAllowed\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"InterchainClientAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"InterchainClientRemoved\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"LatestClientSet\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"sender\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"},{\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"}],\"name\":\"appReceive\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getReceivingConfig\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"appConfig\",\"type\":\"bytes\"},{\"internalType\":\"address[]\",\"name\":\"modules\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"InterchainApp__AlreadyLatestClient\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"InterchainApp__BalanceTooLow\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"InterchainApp__ClientAlreadyAdded\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainApp__InterchainClientZeroAddress\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"InterchainApp__NotInterchainClient\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"InterchainApp__ReceiverNotSet\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"InterchainApp__SameChainId\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"internalType\":\"bytes32\",\"name\":\"sender\",\"type\":\"bytes32\"}],\"name\":\"InterchainApp__SenderNotAllowed\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"InterchainClientAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"InterchainClientRemoved\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"LatestClientSet\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"internalType\":\"bytes32\",\"name\":\"sender\",\"type\":\"bytes32\"},{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"},{\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"}],\"name\":\"appReceive\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getReceivingConfig\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"appConfig\",\"type\":\"bytes\"},{\"internalType\":\"address[]\",\"name\":\"modules\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
-		"68a69847": "appReceive(uint256,bytes32,uint256,uint64,bytes)",
+		"6e9fd609": "appReceive(uint64,bytes32,uint64,uint64,bytes)",
 		"287bc057": "getReceivingConfig()",
 	},
 }
@@ -246,24 +246,24 @@ func (_AbstractICApp *AbstractICAppCallerSession) GetReceivingConfig() (struct {
 	return _AbstractICApp.Contract.GetReceivingConfig(&_AbstractICApp.CallOpts)
 }
 
-// AppReceive is a paid mutator transaction binding the contract method 0x68a69847.
+// AppReceive is a paid mutator transaction binding the contract method 0x6e9fd609.
 //
-// Solidity: function appReceive(uint256 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message) payable returns()
-func (_AbstractICApp *AbstractICAppTransactor) AppReceive(opts *bind.TransactOpts, srcChainId *big.Int, sender [32]byte, dbNonce *big.Int, entryIndex uint64, message []byte) (*types.Transaction, error) {
+// Solidity: function appReceive(uint64 srcChainId, bytes32 sender, uint64 dbNonce, uint64 entryIndex, bytes message) payable returns()
+func (_AbstractICApp *AbstractICAppTransactor) AppReceive(opts *bind.TransactOpts, srcChainId uint64, sender [32]byte, dbNonce uint64, entryIndex uint64, message []byte) (*types.Transaction, error) {
 	return _AbstractICApp.contract.Transact(opts, "appReceive", srcChainId, sender, dbNonce, entryIndex, message)
 }
 
-// AppReceive is a paid mutator transaction binding the contract method 0x68a69847.
+// AppReceive is a paid mutator transaction binding the contract method 0x6e9fd609.
 //
-// Solidity: function appReceive(uint256 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message) payable returns()
-func (_AbstractICApp *AbstractICAppSession) AppReceive(srcChainId *big.Int, sender [32]byte, dbNonce *big.Int, entryIndex uint64, message []byte) (*types.Transaction, error) {
+// Solidity: function appReceive(uint64 srcChainId, bytes32 sender, uint64 dbNonce, uint64 entryIndex, bytes message) payable returns()
+func (_AbstractICApp *AbstractICAppSession) AppReceive(srcChainId uint64, sender [32]byte, dbNonce uint64, entryIndex uint64, message []byte) (*types.Transaction, error) {
 	return _AbstractICApp.Contract.AppReceive(&_AbstractICApp.TransactOpts, srcChainId, sender, dbNonce, entryIndex, message)
 }
 
-// AppReceive is a paid mutator transaction binding the contract method 0x68a69847.
+// AppReceive is a paid mutator transaction binding the contract method 0x6e9fd609.
 //
-// Solidity: function appReceive(uint256 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message) payable returns()
-func (_AbstractICApp *AbstractICAppTransactorSession) AppReceive(srcChainId *big.Int, sender [32]byte, dbNonce *big.Int, entryIndex uint64, message []byte) (*types.Transaction, error) {
+// Solidity: function appReceive(uint64 srcChainId, bytes32 sender, uint64 dbNonce, uint64 entryIndex, bytes message) payable returns()
+func (_AbstractICApp *AbstractICAppTransactorSession) AppReceive(srcChainId uint64, sender [32]byte, dbNonce uint64, entryIndex uint64, message []byte) (*types.Transaction, error) {
 	return _AbstractICApp.Contract.AppReceive(&_AbstractICApp.TransactOpts, srcChainId, sender, dbNonce, entryIndex, message)
 }
 
@@ -2963,7 +2963,7 @@ func (_AccessControlEnumerable *AccessControlEnumerableFilterer) ParseRoleRevoke
 // AddressMetaData contains all meta data concerning the Address contract.
 var AddressMetaData = &bind.MetaData{
 	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"target\",\"type\":\"address\"}],\"name\":\"AddressEmptyCode\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"AddressInsufficientBalance\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FailedInnerCall\",\"type\":\"error\"}]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220089e13278c2e9cdc867c778539c5b924b9d2724f38252ec2dae1fcb7abcbcdde64736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220c86b5647abede2e95e02fb0563a3c31ebac92bddbcd7b17efb253d8fe49f8de464736f6c63430008140033",
 }
 
 // AddressABI is the input ABI used to generate the binding from.
@@ -3136,7 +3136,7 @@ func (_Address *AddressTransactorRaw) Transact(opts *bind.TransactOpts, method s
 // AppConfigLibMetaData contains all meta data concerning the AppConfigLib contract.
 var AppConfigLibMetaData = &bind.MetaData{
 	ABI: "[{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"version\",\"type\":\"uint16\"}],\"name\":\"AppConfigLib__IncorrectVersion\",\"type\":\"error\"}]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122025fc0c24cee5ca1d12049ff9c60fbc03afa9952c0f43dace4005924f46e6a8a364736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212207f5a5fc2b1b57d902f5269f0f64b9691427845200fda18736bce7a8f8b0c461f64736f6c63430008140033",
 }
 
 // AppConfigLibABI is the input ABI used to generate the binding from.
@@ -3649,7 +3649,7 @@ func (_ERC165 *ERC165CallerSession) SupportsInterface(interfaceId [4]byte) (bool
 // EnumerableSetMetaData contains all meta data concerning the EnumerableSet contract.
 var EnumerableSetMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212203692355668a4d335ce27def24727ac62b31772b2ab73e13c6105675512f4ada464736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220b18aa442994ad0e61023595a84bece6378adb1ce15152b78d6c2b3089764558b64736f6c63430008140033",
 }
 
 // EnumerableSetABI is the input ABI used to generate the binding from.
@@ -3821,20 +3821,20 @@ func (_EnumerableSet *EnumerableSetTransactorRaw) Transact(opts *bind.TransactOp
 
 // ExampleAppV1MetaData contains all meta data concerning the ExampleAppV1 contract.
 var ExampleAppV1MetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"AccessControlBadConfirmation\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"neededRole\",\"type\":\"bytes32\"}],\"name\":\"AccessControlUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"AddressInsufficientBalance\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FailedInnerCall\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"InterchainApp__AlreadyLatestClient\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainApp__AppZeroAddress\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"InterchainApp__BalanceTooLow\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"InterchainApp__ClientAlreadyAdded\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainApp__InterchainClientZeroAddress\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"requiredResponses\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"optimisticPeriod\",\"type\":\"uint256\"}],\"name\":\"InterchainApp__InvalidAppConfig\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"InterchainApp__ModuleAlreadyAdded\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"InterchainApp__ModuleNotAdded\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainApp__ModuleZeroAddress\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"linkedApp\",\"type\":\"bytes32\"}],\"name\":\"InterchainApp__NotEVMLinkedApp\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"InterchainApp__NotInterchainClient\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"}],\"name\":\"InterchainApp__ReceiverNotSet\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"}],\"name\":\"InterchainApp__SameChainId\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"sender\",\"type\":\"bytes32\"}],\"name\":\"InterchainApp__SenderNotAllowed\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"requiredResponses\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"optimisticPeriod\",\"type\":\"uint256\"}],\"name\":\"AppConfigV1Set\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"remoteApp\",\"type\":\"bytes32\"}],\"name\":\"AppLinked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"executionService\",\"type\":\"address\"}],\"name\":\"ExecutionServiceSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"InterchainClientAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"InterchainClientRemoved\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"LatestClientSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"sender\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"}],\"name\":\"MessageReceived\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"}],\"name\":\"MessageSent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"TrustedModuleAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"TrustedModuleRemoved\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"IC_GOVERNOR_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"updateLatest\",\"type\":\"bool\"}],\"name\":\"addInterchainClient\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"addTrustedModule\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"sender\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"},{\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"}],\"name\":\"appReceive\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAppConfigV1\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"requiredResponses\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"optimisticPeriod\",\"type\":\"uint256\"}],\"internalType\":\"structAppConfigV1\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getExecutionService\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getInterchainClients\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getLatestInterchainClient\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"}],\"name\":\"getLinkedApp\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"}],\"name\":\"getLinkedAppEVM\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"linkedAppEVM\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"gasAirdrop\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"}],\"name\":\"getMessageFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getModules\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getReceivingConfig\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"appConfig\",\"type\":\"bytes\"},{\"internalType\":\"address[]\",\"name\":\"modules\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"getRoleMember\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleMemberCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"remoteApp\",\"type\":\"bytes32\"}],\"name\":\"linkRemoteApp\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"remoteApp\",\"type\":\"address\"}],\"name\":\"linkRemoteAppEVM\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"removeInterchainClient\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"removeTrustedModule\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"callerConfirmation\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"gasAirdrop\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"}],\"name\":\"sendMessage\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"requiredResponses\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"optimisticPeriod\",\"type\":\"uint256\"}],\"internalType\":\"structAppConfigV1\",\"name\":\"appConfig\",\"type\":\"tuple\"}],\"name\":\"setAppConfigV1\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executionService\",\"type\":\"address\"}],\"name\":\"setExecutionService\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"setLatestInterchainClient\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"withdraw\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"AccessControlBadConfirmation\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"neededRole\",\"type\":\"bytes32\"}],\"name\":\"AccessControlUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"AddressInsufficientBalance\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FailedInnerCall\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"InterchainApp__AlreadyLatestClient\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainApp__AppZeroAddress\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"InterchainApp__BalanceTooLow\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"InterchainApp__ClientAlreadyAdded\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainApp__InterchainClientZeroAddress\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"requiredResponses\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"optimisticPeriod\",\"type\":\"uint256\"}],\"name\":\"InterchainApp__InvalidAppConfig\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"InterchainApp__ModuleAlreadyAdded\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"InterchainApp__ModuleNotAdded\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainApp__ModuleZeroAddress\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"linkedApp\",\"type\":\"bytes32\"}],\"name\":\"InterchainApp__NotEVMLinkedApp\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"InterchainApp__NotInterchainClient\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"InterchainApp__ReceiverNotSet\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"InterchainApp__SameChainId\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"internalType\":\"bytes32\",\"name\":\"sender\",\"type\":\"bytes32\"}],\"name\":\"InterchainApp__SenderNotAllowed\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"requiredResponses\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"optimisticPeriod\",\"type\":\"uint256\"}],\"name\":\"AppConfigV1Set\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"remoteApp\",\"type\":\"bytes32\"}],\"name\":\"AppLinked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"executionService\",\"type\":\"address\"}],\"name\":\"ExecutionServiceSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"InterchainClientAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"InterchainClientRemoved\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"LatestClientSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"sender\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"}],\"name\":\"MessageReceived\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"}],\"name\":\"MessageSent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"TrustedModuleAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"TrustedModuleRemoved\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"IC_GOVERNOR_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"updateLatest\",\"type\":\"bool\"}],\"name\":\"addInterchainClient\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"addTrustedModule\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"internalType\":\"bytes32\",\"name\":\"sender\",\"type\":\"bytes32\"},{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"},{\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"}],\"name\":\"appReceive\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAppConfigV1\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"requiredResponses\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"optimisticPeriod\",\"type\":\"uint256\"}],\"internalType\":\"structAppConfigV1\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getExecutionService\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getInterchainClients\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getLatestInterchainClient\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"getLinkedApp\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"getLinkedAppEVM\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"linkedAppEVM\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"gasAirdrop\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"}],\"name\":\"getMessageFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getModules\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getReceivingConfig\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"appConfig\",\"type\":\"bytes\"},{\"internalType\":\"address[]\",\"name\":\"modules\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"getRoleMember\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleMemberCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"},{\"internalType\":\"bytes32\",\"name\":\"remoteApp\",\"type\":\"bytes32\"}],\"name\":\"linkRemoteApp\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"},{\"internalType\":\"address\",\"name\":\"remoteApp\",\"type\":\"address\"}],\"name\":\"linkRemoteAppEVM\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"removeInterchainClient\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"removeTrustedModule\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"callerConfirmation\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"gasAirdrop\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"}],\"name\":\"sendMessage\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"requiredResponses\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"optimisticPeriod\",\"type\":\"uint256\"}],\"internalType\":\"structAppConfigV1\",\"name\":\"appConfig\",\"type\":\"tuple\"}],\"name\":\"setAppConfigV1\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executionService\",\"type\":\"address\"}],\"name\":\"setExecutionService\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"setLatestInterchainClient\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"withdraw\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"a217fddf": "DEFAULT_ADMIN_ROLE()",
 		"1c489e4f": "IC_GOVERNOR_ROLE()",
 		"f22ba23d": "addInterchainClient(address,bool)",
 		"cb5038fb": "addTrustedModule(address)",
-		"68a69847": "appReceive(uint256,bytes32,uint256,uint64,bytes)",
+		"6e9fd609": "appReceive(uint64,bytes32,uint64,uint64,bytes)",
 		"7717a647": "getAppConfigV1()",
 		"c313c807": "getExecutionService()",
 		"a1aa5d68": "getInterchainClients()",
 		"bc0d912c": "getLatestInterchainClient()",
-		"b9b74b18": "getLinkedApp(uint256)",
-		"a9ac04b6": "getLinkedAppEVM(uint256)",
-		"764ca1e8": "getMessageFee(uint256,uint256,uint256,bytes)",
+		"4e6427e7": "getLinkedApp(uint64)",
+		"90a92c16": "getLinkedAppEVM(uint64)",
+		"8b41db04": "getMessageFee(uint64,uint256,uint256,bytes)",
 		"b2494df3": "getModules()",
 		"287bc057": "getReceivingConfig()",
 		"248a9ca3": "getRoleAdmin(bytes32)",
@@ -3842,20 +3842,20 @@ var ExampleAppV1MetaData = &bind.MetaData{
 		"ca15c873": "getRoleMemberCount(bytes32)",
 		"2f2ff15d": "grantRole(bytes32,address)",
 		"91d14854": "hasRole(bytes32,address)",
-		"51a30802": "linkRemoteApp(uint256,bytes32)",
-		"af8fcc8e": "linkRemoteAppEVM(uint256,address)",
+		"f6b266fd": "linkRemoteApp(uint64,bytes32)",
+		"1856ddfe": "linkRemoteAppEVM(uint64,address)",
 		"0fb59156": "removeInterchainClient(address)",
 		"b70c40b3": "removeTrustedModule(address)",
 		"36568abe": "renounceRole(bytes32,address)",
 		"d547741f": "revokeRole(bytes32,address)",
-		"282be0e9": "sendMessage(uint256,uint256,uint256,bytes)",
+		"06039e4b": "sendMessage(uint64,uint256,uint256,bytes)",
 		"0d32b505": "setAppConfigV1((uint256,uint256))",
 		"496774b1": "setExecutionService(address)",
 		"eb53b44e": "setLatestInterchainClient(address)",
 		"01ffc9a7": "supportsInterface(bytes4)",
 		"3ccfd60b": "withdraw()",
 	},
-	Bin: "0x60806040523480156200001157600080fd5b50604051620024f0380380620024f08339810160408190526200003491620001be565b806200004260008262000079565b506200007190507f67458b9c8206fd7556afadce1bc8e28c7a8942ecb92d9d9fad69bb6c8cf75c848262000079565b5050620001e9565b600080620000888484620000b6565b90508015620000ad576000848152600160205260409020620000ab908462000164565b505b90505b92915050565b6000828152602081815260408083206001600160a01b038516845290915281205460ff166200015b576000838152602081815260408083206001600160a01b03861684529091529020805460ff19166001179055620001123390565b6001600160a01b0316826001600160a01b0316847f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d60405160405180910390a4506001620000b0565b506000620000b0565b6000620000ad836001600160a01b03841660008181526001830160205260408120546200015b57508154600181810184556000848152602080822090930184905584548482528286019093526040902091909155620000b0565b600060208284031215620001d157600080fd5b81516001600160a01b0381168114620000ad57600080fd5b6122f780620001f96000396000f3fe6080604052600436106101d85760003560e01c80639010d07c11610102578063b9b74b1811610095578063cb5038fb11610064578063cb5038fb146105b7578063d547741f146105d7578063eb53b44e146105f7578063f22ba23d1461061757600080fd5b8063b9b74b181461052e578063bc0d912c1461055b578063c313c80714610579578063ca15c8731461059757600080fd5b8063a9ac04b6116100d1578063a9ac04b6146104b9578063af8fcc8e146104d9578063b2494df3146104f9578063b70c40b31461050e57600080fd5b80639010d07c1461040657806391d148541461043e578063a1aa5d6814610482578063a217fddf146104a457600080fd5b80632f2ff15d1161017a57806351a308021161014957806351a308021461037157806368a6984714610391578063764ca1e8146103a45780637717a647146103c457600080fd5b80632f2ff15d146102fc57806336568abe1461031c5780633ccfd60b1461033c578063496774b11461035157600080fd5b80631c489e4f116101b65780631c489e4f14610254578063248a9ca314610296578063282be0e9146102c6578063287bc057146102d957600080fd5b806301ffc9a7146101dd5780630d32b505146102125780630fb5915614610234575b600080fd5b3480156101e957600080fd5b506101fd6101f8366004611b55565b610637565b60405190151581526020015b60405180910390f35b34801561021e57600080fd5b5061023261022d366004611c15565b610693565b005b34801561024057600080fd5b5061023261024f366004611c80565b610766565b34801561026057600080fd5b506102887f67458b9c8206fd7556afadce1bc8e28c7a8942ecb92d9d9fad69bb6c8cf75c8481565b604051908152602001610209565b3480156102a257600080fd5b506102886102b1366004611c9b565b60009081526020819052604090206001015490565b6102326102d4366004611cfd565b61079d565b3480156102e557600080fd5b506102ee61085b565b604051610209929190611e10565b34801561030857600080fd5b50610232610317366004611e35565b610876565b34801561032857600080fd5b50610232610337366004611e35565b6108a1565b34801561034857600080fd5b506102326108f2565b34801561035d57600080fd5b5061023261036c366004611c80565b61090a565b34801561037d57600080fd5b5061023261038c366004611e61565b61099a565b61023261039f366004611e99565b6109ce565b3480156103b057600080fd5b506102886103bf366004611f0c565b610ab2565b3480156103d057600080fd5b50604080518082018252600080825260209182015281518083019092526003548252600454908201526040516102099190611fdc565b34801561041257600080fd5b50610426610421366004611e61565b610add565b6040516001600160a01b039091168152602001610209565b34801561044a57600080fd5b506101fd610459366004611e35565b6000918252602082815260408084206001600160a01b0393909316845291905290205460ff1690565b34801561048e57600080fd5b50610497610afc565b6040516102099190611ff3565b3480156104b057600080fd5b50610288600081565b3480156104c557600080fd5b506104266104d4366004611c9b565b610b0d565b3480156104e557600080fd5b506102326104f4366004611e35565b610b68565b34801561050557600080fd5b50610497610ba5565b34801561051a57600080fd5b50610232610529366004611c80565b610bb1565b34801561053a57600080fd5b50610288610549366004611c9b565b60009081526005602052604090205490565b34801561056757600080fd5b506002546001600160a01b0316610426565b34801561058557600080fd5b50600a546001600160a01b0316610426565b3480156105a357600080fd5b506102886105b2366004611c9b565b610c6e565b3480156105c357600080fd5b506102326105d2366004611c80565b610c85565b3480156105e357600080fd5b506102326105f2366004611e35565b610d79565b34801561060357600080fd5b50610232610612366004611c80565b610d9e565b34801561062357600080fd5b50610232610632366004612006565b610dd1565b60007fffffffff0000000000000000000000000000000000000000000000000000000082167f5a05180f00000000000000000000000000000000000000000000000000000000148061068d575061068d82610e05565b92915050565b7f67458b9c8206fd7556afadce1bc8e28c7a8942ecb92d9d9fad69bb6c8cf75c846106bd81610e9c565b815115806106cd57506020820151155b1561071957815160208301516040517f8bdc31dd000000000000000000000000000000000000000000000000000000008152600481019290925260248201526044015b60405180910390fd5b81516003819055602080840151600481905560408051938452918301527f156e53f21add5e964d33e39e015675e24d4568202b47744bd8cc6080f76deabf91015b60405180910390a15050565b7f67458b9c8206fd7556afadce1bc8e28c7a8942ecb92d9d9fad69bb6c8cf75c8461079081610e9c565b61079982610ea6565b5050565b60006107f5863460405180604001604052808981526020018881525086868080601f016020809104026020016040519081016040528093929190818152602001838380828437600092019190915250610f6592505050565b602080820151604080840151845182518c81529485019390935267ffffffffffffffff169083015260608201529091507f2ef16db2691a32543ce5591798c4992f4cfbbcd446874f1437d99da53d600e7c906080015b60405180910390a1505050505050565b606080610866610fb5565b9150610870610ba5565b90509091565b60008281526020819052604090206001015461089181610e9c565b61089b8383610fd8565b50505050565b6001600160a01b03811633146108e3576040517f6697b23200000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6108ed828261100d565b505050565b60006108fd81610e9c565b610907334761103a565b50565b7f67458b9c8206fd7556afadce1bc8e28c7a8942ecb92d9d9fad69bb6c8cf75c8461093481610e9c565b600a80547fffffffffffffffffffffffff0000000000000000000000000000000000000000166001600160a01b0384169081179091556040519081527f56f2046f579030345e1c12cfd7e2d297e4059c24d30ac1a5cb27a8ee1d53526e9060200161075a565b7f67458b9c8206fd7556afadce1bc8e28c7a8942ecb92d9d9fad69bb6c8cf75c846109c481610e9c565b6108ed8383611103565b6109d7336111b9565b610a0f576040517f0578f695000000000000000000000000000000000000000000000000000000008152336004820152602401610710565b468603610a4b576040517fbfae2eb700000000000000000000000000000000000000000000000000000000815260048101879052602401610710565b6000868152600560205260409020548514610a9c576040517f327f41230000000000000000000000000000000000000000000000000000000081526004810187905260248101869052604401610710565b610aaa8686868686866111c6565b505050505050565b6000610ad48560405180604001604052808781526020018681525084516111ff565b95945050505050565b6000828152600160205260408120610af59083611218565b9392505050565b6060610b086006611224565b905090565b600081815260056020526040902054806001600160a01b0381168114610b62576040517ff04c4a4500000000000000000000000000000000000000000000000000000000815260048101829052602401610710565b50919050565b7f67458b9c8206fd7556afadce1bc8e28c7a8942ecb92d9d9fad69bb6c8cf75c84610b9281610e9c565b6108ed836001600160a01b038416611103565b6060610b086008611224565b7f67458b9c8206fd7556afadce1bc8e28c7a8942ecb92d9d9fad69bb6c8cf75c84610bdb81610e9c565b6000610be8600884611231565b905080610c2c576040517fb12a48e60000000000000000000000000000000000000000000000000000000081526001600160a01b0384166004820152602401610710565b6040516001600160a01b03841681527f91071153b5721fdadecd5ab74cedca9c0faa62c94f02ef659df2241602698385906020015b60405180910390a1505050565b600081815260016020526040812061068d90611246565b7f67458b9c8206fd7556afadce1bc8e28c7a8942ecb92d9d9fad69bb6c8cf75c84610caf81610e9c565b6001600160a01b038216610cef576040517fa8ce0c2e00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6000610cfc600884611250565b905080610d40576040517f856e38ac0000000000000000000000000000000000000000000000000000000081526001600160a01b0384166004820152602401610710565b6040516001600160a01b03841681527f0f92a0308a1fb283891a96a4cf077b8499cca0159d8e6ccc8d12096a5011750990602001610c61565b600082815260208190526040902060010154610d9481610e9c565b61089b838361100d565b7f67458b9c8206fd7556afadce1bc8e28c7a8942ecb92d9d9fad69bb6c8cf75c84610dc881610e9c565b61079982611265565b7f67458b9c8206fd7556afadce1bc8e28c7a8942ecb92d9d9fad69bb6c8cf75c84610dfb81610e9c565b6108ed8383611398565b60007fffffffff0000000000000000000000000000000000000000000000000000000082167f7965db0b00000000000000000000000000000000000000000000000000000000148061068d57507f01ffc9a7000000000000000000000000000000000000000000000000000000007fffffffff0000000000000000000000000000000000000000000000000000000083161461068d565b6109078133611479565b610eaf816111b9565b610ef0576040517f0578f6950000000000000000000000000000000000000000000000000000000081526001600160a01b0382166004820152602401610710565b610efb8160006114e5565b6040516001600160a01b03821681527fc0d64f9e088893f1e4aea6d42c0e815f158ca62962029260f3c2b079d97feccc9060200160405180910390a16002546001600160a01b03166001600160a01b0316816001600160a01b031603610907576109076000611265565b6040805160608101825260008082526020820181905291810182905290610f8b84611501565b600087815260056020526040902054909150610fab90879087848761152d565b9695505050505050565b6040805180820190915260035481526004546020820152606090610b0890611501565b600080610fe584846116fa565b90508015610af55760008481526001602052604090206110059084611250565b509392505050565b60008061101a84846117c2565b90508015610af55760008481526001602052604090206110059084611231565b80471015611076576040517fcd786059000000000000000000000000000000000000000000000000000000008152306004820152602401610710565b6000826001600160a01b03168260405160006040518083038185875af1925050503d80600081146110c3576040519150601f19603f3d011682016040523d82523d6000602084013e6110c8565b606091505b50509050806108ed576040517f1425ea4200000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b46820361113f576040517fbfae2eb700000000000000000000000000000000000000000000000000000000815260048101839052602401610710565b600081900361117a576040517fe04fb69600000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b60008281526005602052604080822083905551829184917f622d488f4fb24881af2fe5b552b249253a21e4a6fa77d12e69f61ee0fdfb9a319190a35050565b600061068d600683611863565b7fc5b07cf0d424748241636d3a67366b44ac88118c42bef024abcb7fd138df79a686868686868660405161084b96959493929190612042565b60008061120b84611501565b9050610ad4858285611885565b6000610af58383611969565b60606000610af583611993565b6000610af5836001600160a01b0384166119ef565b600061068d825490565b6000610af5836001600160a01b038416611ae2565b61126e816111b9565b15801561128357506001600160a01b03811615155b156112c5576040517f0578f6950000000000000000000000000000000000000000000000000000000081526001600160a01b0382166004820152602401610710565b6002546001600160a01b03166001600160a01b0316816001600160a01b031603611326576040517f56c309440000000000000000000000000000000000000000000000000000000081526001600160a01b0382166004820152602401610710565b600280547fffffffffffffffffffffffff0000000000000000000000000000000000000000166001600160a01b0383161790556040516001600160a01b03821681527fd6c4ff3ce819d1fe47a30bb776376d847d8085a73ebf92dbf4058c36fdd5c1699060200160405180910390a150565b6001600160a01b0382166113d8576040517f6be4ac5200000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6113e1826111b9565b15611423576040517f4ea647680000000000000000000000000000000000000000000000000000000081526001600160a01b0383166004820152602401610710565b61142e8260016114e5565b6040516001600160a01b03831681527f9963c5d146abd18838e0638ea82ec86b9a726e15fd852cab94aeebcd8bf438d19060200160405180910390a180156107995761079982611265565b6000828152602081815260408083206001600160a01b038516845290915290205460ff16610799576040517fe2517d3f0000000000000000000000000000000000000000000000000000000081526001600160a01b038216600482015260248101839052604401610710565b80156114f6576108ed600683611250565b6108ed600683611231565b606061068d6001836040516020016115199190611fdc565b604051602081830303815290604052611b29565b6040805160608101825260008082526020820181905291810191909152600061155e6002546001600160a01b031690565b90506001600160a01b0381166115a0576040517f6be4ac5200000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b4687036115dc576040517fbfae2eb700000000000000000000000000000000000000000000000000000000815260048101889052602401610710565b600086900361161a576040517f9a3e6bd400000000000000000000000000000000000000000000000000000000815260048101889052602401610710565b8447101561165d576040517f5b59cdf200000000000000000000000000000000000000000000000000000000815247600482015260248101869052604401610710565b806001600160a01b03166398939d28868989611681600a546001600160a01b031690565b611689610ba5565b8a8a6040518863ffffffff1660e01b81526004016116ac969594939291906120b5565b60606040518083038185885af11580156116ca573d6000803e3d6000fd5b50505050506040513d601f19601f820116820180604052508101906116ef9190612116565b979650505050505050565b6000828152602081815260408083206001600160a01b038516845290915281205460ff166117ba576000838152602081815260408083206001600160a01b0386168452909152902080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff001660011790556117723390565b6001600160a01b0316826001600160a01b0316847f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d60405160405180910390a450600161068d565b50600061068d565b6000828152602081815260408083206001600160a01b038516845290915281205460ff16156117ba576000838152602081815260408083206001600160a01b038616808552925280832080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0016905551339286917ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9190a450600161068d565b6001600160a01b03811660009081526001830160205260408120541515610af5565b60008061189a6002546001600160a01b031690565b90506001600160a01b0381166118dc576040517f6be4ac5200000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b806001600160a01b0316637a1277db866118fe600a546001600160a01b031690565b611906610ba5565b88886040518663ffffffff1660e01b8152600401611928959493929190612178565b602060405180830381865afa158015611945573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610ad491906121c5565b6000826000018281548110611980576119806121de565b9060005260206000200154905092915050565b6060816000018054806020026020016040519081016040528092919081815260200182805480156119e357602002820191906000526020600020905b8154815260200190600101908083116119cf575b50505050509050919050565b60008181526001830160205260408120548015611ad8576000611a1360018361220d565b8554909150600090611a279060019061220d565b9050808214611a8c576000866000018281548110611a4757611a476121de565b9060005260206000200154905080876000018481548110611a6a57611a6a6121de565b6000918252602080832090910192909255918252600188019052604090208390555b8554869080611a9d57611a9d612247565b60019003818190600052602060002001600090559055856001016000868152602001908152602001600020600090556001935050505061068d565b600091505061068d565b60008181526001830160205260408120546117ba5750815460018181018455600084815260208082209093018490558454848252828601909352604090209190915561068d565b60608282604051602001611b3e929190612276565b604051602081830303815290604052905092915050565b600060208284031215611b6757600080fd5b81357fffffffff0000000000000000000000000000000000000000000000000000000081168114610af557600080fd5b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b604051601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe016810167ffffffffffffffff81118282101715611c0d57611c0d611b97565b604052919050565b600060408284031215611c2757600080fd5b6040516040810181811067ffffffffffffffff82111715611c4a57611c4a611b97565b604052823581526020928301359281019290925250919050565b80356001600160a01b0381168114611c7b57600080fd5b919050565b600060208284031215611c9257600080fd5b610af582611c64565b600060208284031215611cad57600080fd5b5035919050565b60008083601f840112611cc657600080fd5b50813567ffffffffffffffff811115611cde57600080fd5b602083019150836020828501011115611cf657600080fd5b9250929050565b600080600080600060808688031215611d1557600080fd5b853594506020860135935060408601359250606086013567ffffffffffffffff811115611d4157600080fd5b611d4d88828901611cb4565b969995985093965092949392505050565b60005b83811015611d79578181015183820152602001611d61565b50506000910152565b60008151808452611d9a816020860160208601611d5e565b601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0169290920160200192915050565b600081518084526020808501945080840160005b83811015611e055781516001600160a01b031687529582019590820190600101611de0565b509495945050505050565b604081526000611e236040830185611d82565b8281036020840152610ad48185611dcc565b60008060408385031215611e4857600080fd5b82359150611e5860208401611c64565b90509250929050565b60008060408385031215611e7457600080fd5b50508035926020909101359150565b67ffffffffffffffff8116811461090757600080fd5b60008060008060008060a08789031215611eb257600080fd5b8635955060208701359450604087013593506060870135611ed281611e83565b9250608087013567ffffffffffffffff811115611eee57600080fd5b611efa89828a01611cb4565b979a9699509497509295939492505050565b60008060008060808587031215611f2257600080fd5b84359350602080860135935060408601359250606086013567ffffffffffffffff80821115611f5057600080fd5b818801915088601f830112611f6457600080fd5b813581811115611f7657611f76611b97565b611fa6847fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f84011601611bc6565b91508082528984828501011115611fbc57600080fd5b808484018584013760008482840101525080935050505092959194509250565b81518152602080830151908201526040810161068d565b602081526000610af56020830184611dcc565b6000806040838503121561201957600080fd5b61202283611c64565b91506020830135801515811461203757600080fd5b809150509250929050565b86815285602082015284604082015267ffffffffffffffff8416606082015260a060808201528160a0820152818360c0830137600081830160c090810191909152601f9092017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe016010195945050505050565b8681528560208201526001600160a01b038516604082015260c0606082015260006120e360c0830186611dcc565b82810360808401526120f58186611d82565b905082810360a08401526121098185611d82565b9998505050505050505050565b60006060828403121561212857600080fd5b6040516060810181811067ffffffffffffffff8211171561214b5761214b611b97565b80604052508251815260208301516020820152604083015161216c81611e83565b60408201529392505050565b8581526001600160a01b038516602082015260a0604082015260006121a060a0830186611dcc565b82810360608401526121b28186611d82565b9150508260808301529695505050505050565b6000602082840312156121d757600080fd5b5051919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b8181038181111561068d577f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603160045260246000fd5b7fffff0000000000000000000000000000000000000000000000000000000000008360f01b168152600082516122b3816002850160208701611d5e565b91909101600201939250505056fea2646970667358221220448a97fd14e932f600e83c01c26d648a1b1d894824d404b2c363da8b9ecdb16864736f6c63430008140033",
+	Bin: "0x60806040523480156200001157600080fd5b5060405162002632380380620026328339810160408190526200003491620001be565b806200004260008262000079565b506200007190507f67458b9c8206fd7556afadce1bc8e28c7a8942ecb92d9d9fad69bb6c8cf75c848262000079565b5050620001e9565b600080620000888484620000b6565b90508015620000ad576000848152600160205260409020620000ab908462000164565b505b90505b92915050565b6000828152602081815260408083206001600160a01b038516845290915281205460ff166200015b576000838152602081815260408083206001600160a01b03861684529091529020805460ff19166001179055620001123390565b6001600160a01b0316826001600160a01b0316847f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d60405160405180910390a4506001620000b0565b506000620000b0565b6000620000ad836001600160a01b03841660008181526001830160205260408120546200015b57508154600181810184556000848152602080822090930184905584548482528286019093526040902091909155620000b0565b600060208284031215620001d157600080fd5b81516001600160a01b0381168114620000ad57600080fd5b61243980620001f96000396000f3fe6080604052600436106101d85760003560e01c80638b41db0411610102578063bc0d912c11610095578063d547741f11610064578063d547741f146105c1578063eb53b44e146105e1578063f22ba23d14610601578063f6b266fd1461062157600080fd5b8063bc0d912c14610545578063c313c80714610563578063ca15c87314610581578063cb5038fb146105a157600080fd5b8063a1aa5d68116100d1578063a1aa5d68146104d9578063a217fddf146104fb578063b2494df314610510578063b70c40b31461052557600080fd5b80638b41db041461041d5780639010d07c1461043d57806390a92c161461047557806391d148541461049557600080fd5b8063287bc0571161017a578063496774b111610149578063496774b1146103715780634e6427e7146103915780636e9fd609146103c85780637717a647146103db57600080fd5b8063287bc057146102f95780632f2ff15d1461031c57806336568abe1461033c5780633ccfd60b1461035c57600080fd5b80630fb59156116101b65780630fb59156146102475780631856ddfe146102675780631c489e4f14610287578063248a9ca3146102c957600080fd5b806301ffc9a7146101dd57806306039e4b146102125780630d32b50514610227575b600080fd5b3480156101e957600080fd5b506101fd6101f8366004611bda565b610641565b60405190151581526020015b60405180910390f35b610225610220366004611c7b565b61069d565b005b34801561023357600080fd5b50610225610242366004611d63565b610761565b34801561025357600080fd5b50610225610262366004611dce565b610834565b34801561027357600080fd5b50610225610282366004611de9565b61086b565b34801561029357600080fd5b506102bb7f67458b9c8206fd7556afadce1bc8e28c7a8942ecb92d9d9fad69bb6c8cf75c8481565b604051908152602001610209565b3480156102d557600080fd5b506102bb6102e4366004611e1e565b60009081526020819052604090206001015490565b34801561030557600080fd5b5061030e6108ad565b604051610209929190611ee9565b34801561032857600080fd5b50610225610337366004611f0e565b6108c8565b34801561034857600080fd5b50610225610357366004611f0e565b6108f3565b34801561036857600080fd5b5061022561093f565b34801561037d57600080fd5b5061022561038c366004611dce565b610957565b34801561039d57600080fd5b506102bb6103ac366004611f31565b67ffffffffffffffff1660009081526005602052604090205490565b6102256103d6366004611f4e565b6109e7565b3480156103e757600080fd5b50604080518082018252600080825260209182015281518083019092526003548252600454908201526040516102099190611fd3565b34801561042957600080fd5b506102bb610438366004611fea565b610af2565b34801561044957600080fd5b5061045d6104583660046120c3565b610b1d565b6040516001600160a01b039091168152602001610209565b34801561048157600080fd5b5061045d610490366004611f31565b610b3c565b3480156104a157600080fd5b506101fd6104b0366004611f0e565b6000918252602082815260408084206001600160a01b0393909316845291905290205460ff1690565b3480156104e557600080fd5b506104ee610ba2565b60405161020991906120e5565b34801561050757600080fd5b506102bb600081565b34801561051c57600080fd5b506104ee610bb3565b34801561053157600080fd5b50610225610540366004611dce565b610bbf565b34801561055157600080fd5b506002546001600160a01b031661045d565b34801561056f57600080fd5b50600a546001600160a01b031661045d565b34801561058d57600080fd5b506102bb61059c366004611e1e565b610c7c565b3480156105ad57600080fd5b506102256105bc366004611dce565b610c93565b3480156105cd57600080fd5b506102256105dc366004611f0e565b610d87565b3480156105ed57600080fd5b506102256105fc366004611dce565b610dac565b34801561060d57600080fd5b5061022561061c3660046120f8565b610ddf565b34801561062d57600080fd5b5061022561063c366004612134565b610e13565b60007fffffffff0000000000000000000000000000000000000000000000000000000082167f5a05180f000000000000000000000000000000000000000000000000000000001480610697575061069782610e47565b92915050565b60006106f5863460405180604001604052808981526020018881525086868080601f016020809104026020016040519081016040528093929190818152602001838380828437600092019190915250610ede92505050565b6020808201516040808401518451825167ffffffffffffffff808e1682529485169581019590955292169083015260608201529091507facd206517737a1387f9ae09d956edd387fd49c710ac2d4c72993f67fffb06aa8906080015b60405180910390a1505050505050565b7f67458b9c8206fd7556afadce1bc8e28c7a8942ecb92d9d9fad69bb6c8cf75c8461078b81610f39565b8151158061079b57506020820151155b156107e757815160208301516040517f8bdc31dd000000000000000000000000000000000000000000000000000000008152600481019290925260248201526044015b60405180910390fd5b81516003819055602080840151600481905560408051938452918301527f156e53f21add5e964d33e39e015675e24d4568202b47744bd8cc6080f76deabf91015b60405180910390a15050565b7f67458b9c8206fd7556afadce1bc8e28c7a8942ecb92d9d9fad69bb6c8cf75c8461085e81610f39565b61086782610f43565b5050565b7f67458b9c8206fd7556afadce1bc8e28c7a8942ecb92d9d9fad69bb6c8cf75c8461089581610f39565b6108a8836001600160a01b038416611002565b505050565b6060806108b86110d4565b91506108c2610bb3565b90509091565b6000828152602081905260409020600101546108e381610f39565b6108ed83836110f7565b50505050565b6001600160a01b0381163314610935576040517f6697b23200000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6108a8828261112c565b600061094a81610f39565b6109543347611159565b50565b7f67458b9c8206fd7556afadce1bc8e28c7a8942ecb92d9d9fad69bb6c8cf75c8461098181610f39565b600a80547fffffffffffffffffffffffff0000000000000000000000000000000000000000166001600160a01b0384169081179091556040519081527f56f2046f579030345e1c12cfd7e2d297e4059c24d30ac1a5cb27a8ee1d53526e90602001610828565b6109f033611222565b610a28576040517f0578f6950000000000000000000000000000000000000000000000000000000081523360048201526024016107de565b468667ffffffffffffffff1603610a77576040517fc1888df600000000000000000000000000000000000000000000000000000000815267ffffffffffffffff871660048201526024016107de565b67ffffffffffffffff86166000908152600560205260409020548514610adc576040517f69b2b5e400000000000000000000000000000000000000000000000000000000815267ffffffffffffffff87166004820152602481018690526044016107de565b610aea86868686868661122f565b505050505050565b6000610b14856040518060400160405280878152602001868152508451611268565b95945050505050565b6000828152600160205260408120610b359083611281565b9392505050565b67ffffffffffffffff8116600090815260056020526040902054806001600160a01b0381168114610b9c576040517ff04c4a45000000000000000000000000000000000000000000000000000000008152600481018290526024016107de565b50919050565b6060610bae600661128d565b905090565b6060610bae600861128d565b7f67458b9c8206fd7556afadce1bc8e28c7a8942ecb92d9d9fad69bb6c8cf75c84610be981610f39565b6000610bf660088461129a565b905080610c3a576040517fb12a48e60000000000000000000000000000000000000000000000000000000081526001600160a01b03841660048201526024016107de565b6040516001600160a01b03841681527f91071153b5721fdadecd5ab74cedca9c0faa62c94f02ef659df2241602698385906020015b60405180910390a1505050565b6000818152600160205260408120610697906112af565b7f67458b9c8206fd7556afadce1bc8e28c7a8942ecb92d9d9fad69bb6c8cf75c84610cbd81610f39565b6001600160a01b038216610cfd576040517fa8ce0c2e00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6000610d0a6008846112b9565b905080610d4e576040517f856e38ac0000000000000000000000000000000000000000000000000000000081526001600160a01b03841660048201526024016107de565b6040516001600160a01b03841681527f0f92a0308a1fb283891a96a4cf077b8499cca0159d8e6ccc8d12096a5011750990602001610c6f565b600082815260208190526040902060010154610da281610f39565b6108ed838361112c565b7f67458b9c8206fd7556afadce1bc8e28c7a8942ecb92d9d9fad69bb6c8cf75c84610dd681610f39565b610867826112ce565b7f67458b9c8206fd7556afadce1bc8e28c7a8942ecb92d9d9fad69bb6c8cf75c84610e0981610f39565b6108a88383611401565b7f67458b9c8206fd7556afadce1bc8e28c7a8942ecb92d9d9fad69bb6c8cf75c84610e3d81610f39565b6108a88383611002565b60007fffffffff0000000000000000000000000000000000000000000000000000000082167f7965db0b00000000000000000000000000000000000000000000000000000000148061069757507f01ffc9a7000000000000000000000000000000000000000000000000000000007fffffffff00000000000000000000000000000000000000000000000000000000831614610697565b6040805160608101825260008082526020820181905291810182905290610f04846114e2565b67ffffffffffffffff8716600090815260056020526040902054909150610f2f90879087848761150e565b9695505050505050565b61095481336116f7565b610f4c81611222565b610f8d576040517f0578f6950000000000000000000000000000000000000000000000000000000081526001600160a01b03821660048201526024016107de565b610f98816000611763565b6040516001600160a01b03821681527fc0d64f9e088893f1e4aea6d42c0e815f158ca62962029260f3c2b079d97feccc9060200160405180910390a16002546001600160a01b03166001600160a01b0316816001600160a01b0316036109545761095460006112ce565b468267ffffffffffffffff1603611051576040517fc1888df600000000000000000000000000000000000000000000000000000000815267ffffffffffffffff831660048201526024016107de565b600081900361108c576040517fe04fb69600000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b67ffffffffffffffff8216600081815260056020526040808220849055518392917f622d488f4fb24881af2fe5b552b249253a21e4a6fa77d12e69f61ee0fdfb9a3191a35050565b6040805180820190915260035481526004546020820152606090610bae906114e2565b600080611104848461177f565b90508015610b3557600084815260016020526040902061112490846112b9565b509392505050565b6000806111398484611847565b90508015610b35576000848152600160205260409020611124908461129a565b80471015611195576040517fcd7860590000000000000000000000000000000000000000000000000000000081523060048201526024016107de565b6000826001600160a01b03168260405160006040518083038185875af1925050503d80600081146111e2576040519150601f19603f3d011682016040523d82523d6000602084013e6111e7565b606091505b50509050806108a8576040517f1425ea4200000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b60006106976006836118e8565b7faab00190e6c2e4b0ef940711bb1674ed236de699daf36f611aaf834f3d8eb00286868686868660405161075196959493929190612160565b600080611274846114e2565b9050610b1485828561190a565b6000610b3583836119ee565b60606000610b3583611a18565b6000610b35836001600160a01b038416611a74565b6000610697825490565b6000610b35836001600160a01b038416611b67565b6112d781611222565b1580156112ec57506001600160a01b03811615155b1561132e576040517f0578f6950000000000000000000000000000000000000000000000000000000081526001600160a01b03821660048201526024016107de565b6002546001600160a01b03166001600160a01b0316816001600160a01b03160361138f576040517f56c309440000000000000000000000000000000000000000000000000000000081526001600160a01b03821660048201526024016107de565b600280547fffffffffffffffffffffffff0000000000000000000000000000000000000000166001600160a01b0383161790556040516001600160a01b03821681527fd6c4ff3ce819d1fe47a30bb776376d847d8085a73ebf92dbf4058c36fdd5c1699060200160405180910390a150565b6001600160a01b038216611441576040517f6be4ac5200000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b61144a82611222565b1561148c576040517f4ea647680000000000000000000000000000000000000000000000000000000081526001600160a01b03831660048201526024016107de565b611497826001611763565b6040516001600160a01b03831681527f9963c5d146abd18838e0638ea82ec86b9a726e15fd852cab94aeebcd8bf438d19060200160405180910390a1801561086757610867826112ce565b60606106976001836040516020016114fa9190611fd3565b604051602081830303815290604052611bae565b6040805160608101825260008082526020820181905291810191909152600061153f6002546001600160a01b031690565b90506001600160a01b038116611581576040517f6be4ac5200000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b468767ffffffffffffffff16036115d0576040517fc1888df600000000000000000000000000000000000000000000000000000000815267ffffffffffffffff881660048201526024016107de565b6000869003611617576040517f95ccdac900000000000000000000000000000000000000000000000000000000815267ffffffffffffffff881660048201526024016107de565b8447101561165a576040517f5b59cdf2000000000000000000000000000000000000000000000000000000008152476004820152602481018690526044016107de565b806001600160a01b031663547efb8486898961167e600a546001600160a01b031690565b611686610bb3565b8a8a6040518863ffffffff1660e01b81526004016116a9969594939291906121dc565b60606040518083038185885af11580156116c7573d6000803e3d6000fd5b50505050506040513d601f19601f820116820180604052508101906116ec9190612247565b979650505050505050565b6000828152602081815260408083206001600160a01b038516845290915290205460ff16610867576040517fe2517d3f0000000000000000000000000000000000000000000000000000000081526001600160a01b0382166004820152602481018390526044016107de565b8015611774576108a86006836112b9565b6108a860068361129a565b6000828152602081815260408083206001600160a01b038516845290915281205460ff1661183f576000838152602081815260408083206001600160a01b0386168452909152902080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff001660011790556117f73390565b6001600160a01b0316826001600160a01b0316847f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d60405160405180910390a4506001610697565b506000610697565b6000828152602081815260408083206001600160a01b038516845290915281205460ff161561183f576000838152602081815260408083206001600160a01b038616808552925280832080547fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0016905551339286917ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9190a4506001610697565b6001600160a01b03811660009081526001830160205260408120541515610b35565b60008061191f6002546001600160a01b031690565b90506001600160a01b038116611961576040517f6be4ac5200000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b806001600160a01b031663cbb3c63186611983600a546001600160a01b031690565b61198b610bb3565b88886040518663ffffffff1660e01b81526004016119ad9594939291906122b0565b602060405180830381865afa1580156119ca573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610b149190612307565b6000826000018281548110611a0557611a05612320565b9060005260206000200154905092915050565b606081600001805480602002602001604051908101604052809291908181526020018280548015611a6857602002820191906000526020600020905b815481526020019060010190808311611a54575b50505050509050919050565b60008181526001830160205260408120548015611b5d576000611a9860018361234f565b8554909150600090611aac9060019061234f565b9050808214611b11576000866000018281548110611acc57611acc612320565b9060005260206000200154905080876000018481548110611aef57611aef612320565b6000918252602080832090910192909255918252600188019052604090208390555b8554869080611b2257611b22612389565b600190038181906000526020600020016000905590558560010160008681526020019081526020016000206000905560019350505050610697565b6000915050610697565b600081815260018301602052604081205461183f57508154600181810184556000848152602080822090930184905584548482528286019093526040902091909155610697565b60608282604051602001611bc39291906123b8565b604051602081830303815290604052905092915050565b600060208284031215611bec57600080fd5b81357fffffffff0000000000000000000000000000000000000000000000000000000081168114610b3557600080fd5b67ffffffffffffffff8116811461095457600080fd5b60008083601f840112611c4457600080fd5b50813567ffffffffffffffff811115611c5c57600080fd5b602083019150836020828501011115611c7457600080fd5b9250929050565b600080600080600060808688031215611c9357600080fd5b8535611c9e81611c1c565b94506020860135935060408601359250606086013567ffffffffffffffff811115611cc857600080fd5b611cd488828901611c32565b969995985093965092949392505050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b604051601f82017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe016810167ffffffffffffffff81118282101715611d5b57611d5b611ce5565b604052919050565b600060408284031215611d7557600080fd5b6040516040810181811067ffffffffffffffff82111715611d9857611d98611ce5565b604052823581526020928301359281019290925250919050565b80356001600160a01b0381168114611dc957600080fd5b919050565b600060208284031215611de057600080fd5b610b3582611db2565b60008060408385031215611dfc57600080fd5b8235611e0781611c1c565b9150611e1560208401611db2565b90509250929050565b600060208284031215611e3057600080fd5b5035919050565b60005b83811015611e52578181015183820152602001611e3a565b50506000910152565b60008151808452611e73816020860160208601611e37565b601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0169290920160200192915050565b600081518084526020808501945080840160005b83811015611ede5781516001600160a01b031687529582019590820190600101611eb9565b509495945050505050565b604081526000611efc6040830185611e5b565b8281036020840152610b148185611ea5565b60008060408385031215611f2157600080fd5b82359150611e1560208401611db2565b600060208284031215611f4357600080fd5b8135610b3581611c1c565b60008060008060008060a08789031215611f6757600080fd5b8635611f7281611c1c565b9550602087013594506040870135611f8981611c1c565b93506060870135611f9981611c1c565b9250608087013567ffffffffffffffff811115611fb557600080fd5b611fc189828a01611c32565b979a9699509497509295939492505050565b815181526020808301519082015260408101610697565b6000806000806080858703121561200057600080fd5b843561200b81611c1c565b9350602085810135935060408601359250606086013567ffffffffffffffff8082111561203757600080fd5b818801915088601f83011261204b57600080fd5b81358181111561205d5761205d611ce5565b61208d847fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f84011601611d14565b915080825289848285010111156120a357600080fd5b808484018584013760008482840101525080935050505092959194509250565b600080604083850312156120d657600080fd5b50508035926020909101359150565b602081526000610b356020830184611ea5565b6000806040838503121561210b57600080fd5b61211483611db2565b91506020830135801515811461212957600080fd5b809150509250929050565b6000806040838503121561214757600080fd5b823561215281611c1c565b946020939093013593505050565b600067ffffffffffffffff8089168352876020840152808716604084015280861660608401525060a060808301528260a0830152828460c0840137600060c0848401015260c07fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f8501168301019050979650505050505050565b67ffffffffffffffff871681528560208201526001600160a01b038516604082015260c06060820152600061221460c0830186611ea5565b82810360808401526122268186611e5b565b905082810360a084015261223a8185611e5b565b9998505050505050505050565b60006060828403121561225957600080fd5b6040516060810181811067ffffffffffffffff8211171561227c5761227c611ce5565b60405282518152602083015161229181611c1c565b602082015260408301516122a481611c1c565b60408201529392505050565b67ffffffffffffffff861681526001600160a01b038516602082015260a0604082015260006122e260a0830186611ea5565b82810360608401526122f48186611e5b565b9150508260808301529695505050505050565b60006020828403121561231957600080fd5b5051919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b81810381811115610697577f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603160045260246000fd5b7fffff0000000000000000000000000000000000000000000000000000000000008360f01b168152600082516123f5816002850160208701611e37565b91909101600201939250505056fea2646970667358221220267a48a849f4a04b1bee6e7e913f0ea0f8fed75ffdb9d9070b2602219e5b031b64736f6c63430008140033",
 }
 
 // ExampleAppV1ABI is the input ABI used to generate the binding from.
@@ -4215,10 +4215,10 @@ func (_ExampleAppV1 *ExampleAppV1CallerSession) GetLatestInterchainClient() (com
 	return _ExampleAppV1.Contract.GetLatestInterchainClient(&_ExampleAppV1.CallOpts)
 }
 
-// GetLinkedApp is a free data retrieval call binding the contract method 0xb9b74b18.
+// GetLinkedApp is a free data retrieval call binding the contract method 0x4e6427e7.
 //
-// Solidity: function getLinkedApp(uint256 chainId) view returns(bytes32)
-func (_ExampleAppV1 *ExampleAppV1Caller) GetLinkedApp(opts *bind.CallOpts, chainId *big.Int) ([32]byte, error) {
+// Solidity: function getLinkedApp(uint64 chainId) view returns(bytes32)
+func (_ExampleAppV1 *ExampleAppV1Caller) GetLinkedApp(opts *bind.CallOpts, chainId uint64) ([32]byte, error) {
 	var out []interface{}
 	err := _ExampleAppV1.contract.Call(opts, &out, "getLinkedApp", chainId)
 
@@ -4232,24 +4232,24 @@ func (_ExampleAppV1 *ExampleAppV1Caller) GetLinkedApp(opts *bind.CallOpts, chain
 
 }
 
-// GetLinkedApp is a free data retrieval call binding the contract method 0xb9b74b18.
+// GetLinkedApp is a free data retrieval call binding the contract method 0x4e6427e7.
 //
-// Solidity: function getLinkedApp(uint256 chainId) view returns(bytes32)
-func (_ExampleAppV1 *ExampleAppV1Session) GetLinkedApp(chainId *big.Int) ([32]byte, error) {
+// Solidity: function getLinkedApp(uint64 chainId) view returns(bytes32)
+func (_ExampleAppV1 *ExampleAppV1Session) GetLinkedApp(chainId uint64) ([32]byte, error) {
 	return _ExampleAppV1.Contract.GetLinkedApp(&_ExampleAppV1.CallOpts, chainId)
 }
 
-// GetLinkedApp is a free data retrieval call binding the contract method 0xb9b74b18.
+// GetLinkedApp is a free data retrieval call binding the contract method 0x4e6427e7.
 //
-// Solidity: function getLinkedApp(uint256 chainId) view returns(bytes32)
-func (_ExampleAppV1 *ExampleAppV1CallerSession) GetLinkedApp(chainId *big.Int) ([32]byte, error) {
+// Solidity: function getLinkedApp(uint64 chainId) view returns(bytes32)
+func (_ExampleAppV1 *ExampleAppV1CallerSession) GetLinkedApp(chainId uint64) ([32]byte, error) {
 	return _ExampleAppV1.Contract.GetLinkedApp(&_ExampleAppV1.CallOpts, chainId)
 }
 
-// GetLinkedAppEVM is a free data retrieval call binding the contract method 0xa9ac04b6.
+// GetLinkedAppEVM is a free data retrieval call binding the contract method 0x90a92c16.
 //
-// Solidity: function getLinkedAppEVM(uint256 chainId) view returns(address linkedAppEVM)
-func (_ExampleAppV1 *ExampleAppV1Caller) GetLinkedAppEVM(opts *bind.CallOpts, chainId *big.Int) (common.Address, error) {
+// Solidity: function getLinkedAppEVM(uint64 chainId) view returns(address linkedAppEVM)
+func (_ExampleAppV1 *ExampleAppV1Caller) GetLinkedAppEVM(opts *bind.CallOpts, chainId uint64) (common.Address, error) {
 	var out []interface{}
 	err := _ExampleAppV1.contract.Call(opts, &out, "getLinkedAppEVM", chainId)
 
@@ -4263,24 +4263,24 @@ func (_ExampleAppV1 *ExampleAppV1Caller) GetLinkedAppEVM(opts *bind.CallOpts, ch
 
 }
 
-// GetLinkedAppEVM is a free data retrieval call binding the contract method 0xa9ac04b6.
+// GetLinkedAppEVM is a free data retrieval call binding the contract method 0x90a92c16.
 //
-// Solidity: function getLinkedAppEVM(uint256 chainId) view returns(address linkedAppEVM)
-func (_ExampleAppV1 *ExampleAppV1Session) GetLinkedAppEVM(chainId *big.Int) (common.Address, error) {
+// Solidity: function getLinkedAppEVM(uint64 chainId) view returns(address linkedAppEVM)
+func (_ExampleAppV1 *ExampleAppV1Session) GetLinkedAppEVM(chainId uint64) (common.Address, error) {
 	return _ExampleAppV1.Contract.GetLinkedAppEVM(&_ExampleAppV1.CallOpts, chainId)
 }
 
-// GetLinkedAppEVM is a free data retrieval call binding the contract method 0xa9ac04b6.
+// GetLinkedAppEVM is a free data retrieval call binding the contract method 0x90a92c16.
 //
-// Solidity: function getLinkedAppEVM(uint256 chainId) view returns(address linkedAppEVM)
-func (_ExampleAppV1 *ExampleAppV1CallerSession) GetLinkedAppEVM(chainId *big.Int) (common.Address, error) {
+// Solidity: function getLinkedAppEVM(uint64 chainId) view returns(address linkedAppEVM)
+func (_ExampleAppV1 *ExampleAppV1CallerSession) GetLinkedAppEVM(chainId uint64) (common.Address, error) {
 	return _ExampleAppV1.Contract.GetLinkedAppEVM(&_ExampleAppV1.CallOpts, chainId)
 }
 
-// GetMessageFee is a free data retrieval call binding the contract method 0x764ca1e8.
+// GetMessageFee is a free data retrieval call binding the contract method 0x8b41db04.
 //
-// Solidity: function getMessageFee(uint256 dstChainId, uint256 gasLimit, uint256 gasAirdrop, bytes message) view returns(uint256)
-func (_ExampleAppV1 *ExampleAppV1Caller) GetMessageFee(opts *bind.CallOpts, dstChainId *big.Int, gasLimit *big.Int, gasAirdrop *big.Int, message []byte) (*big.Int, error) {
+// Solidity: function getMessageFee(uint64 dstChainId, uint256 gasLimit, uint256 gasAirdrop, bytes message) view returns(uint256)
+func (_ExampleAppV1 *ExampleAppV1Caller) GetMessageFee(opts *bind.CallOpts, dstChainId uint64, gasLimit *big.Int, gasAirdrop *big.Int, message []byte) (*big.Int, error) {
 	var out []interface{}
 	err := _ExampleAppV1.contract.Call(opts, &out, "getMessageFee", dstChainId, gasLimit, gasAirdrop, message)
 
@@ -4294,17 +4294,17 @@ func (_ExampleAppV1 *ExampleAppV1Caller) GetMessageFee(opts *bind.CallOpts, dstC
 
 }
 
-// GetMessageFee is a free data retrieval call binding the contract method 0x764ca1e8.
+// GetMessageFee is a free data retrieval call binding the contract method 0x8b41db04.
 //
-// Solidity: function getMessageFee(uint256 dstChainId, uint256 gasLimit, uint256 gasAirdrop, bytes message) view returns(uint256)
-func (_ExampleAppV1 *ExampleAppV1Session) GetMessageFee(dstChainId *big.Int, gasLimit *big.Int, gasAirdrop *big.Int, message []byte) (*big.Int, error) {
+// Solidity: function getMessageFee(uint64 dstChainId, uint256 gasLimit, uint256 gasAirdrop, bytes message) view returns(uint256)
+func (_ExampleAppV1 *ExampleAppV1Session) GetMessageFee(dstChainId uint64, gasLimit *big.Int, gasAirdrop *big.Int, message []byte) (*big.Int, error) {
 	return _ExampleAppV1.Contract.GetMessageFee(&_ExampleAppV1.CallOpts, dstChainId, gasLimit, gasAirdrop, message)
 }
 
-// GetMessageFee is a free data retrieval call binding the contract method 0x764ca1e8.
+// GetMessageFee is a free data retrieval call binding the contract method 0x8b41db04.
 //
-// Solidity: function getMessageFee(uint256 dstChainId, uint256 gasLimit, uint256 gasAirdrop, bytes message) view returns(uint256)
-func (_ExampleAppV1 *ExampleAppV1CallerSession) GetMessageFee(dstChainId *big.Int, gasLimit *big.Int, gasAirdrop *big.Int, message []byte) (*big.Int, error) {
+// Solidity: function getMessageFee(uint64 dstChainId, uint256 gasLimit, uint256 gasAirdrop, bytes message) view returns(uint256)
+func (_ExampleAppV1 *ExampleAppV1CallerSession) GetMessageFee(dstChainId uint64, gasLimit *big.Int, gasAirdrop *big.Int, message []byte) (*big.Int, error) {
 	return _ExampleAppV1.Contract.GetMessageFee(&_ExampleAppV1.CallOpts, dstChainId, gasLimit, gasAirdrop, message)
 }
 
@@ -4581,24 +4581,24 @@ func (_ExampleAppV1 *ExampleAppV1TransactorSession) AddTrustedModule(module comm
 	return _ExampleAppV1.Contract.AddTrustedModule(&_ExampleAppV1.TransactOpts, module)
 }
 
-// AppReceive is a paid mutator transaction binding the contract method 0x68a69847.
+// AppReceive is a paid mutator transaction binding the contract method 0x6e9fd609.
 //
-// Solidity: function appReceive(uint256 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message) payable returns()
-func (_ExampleAppV1 *ExampleAppV1Transactor) AppReceive(opts *bind.TransactOpts, srcChainId *big.Int, sender [32]byte, dbNonce *big.Int, entryIndex uint64, message []byte) (*types.Transaction, error) {
+// Solidity: function appReceive(uint64 srcChainId, bytes32 sender, uint64 dbNonce, uint64 entryIndex, bytes message) payable returns()
+func (_ExampleAppV1 *ExampleAppV1Transactor) AppReceive(opts *bind.TransactOpts, srcChainId uint64, sender [32]byte, dbNonce uint64, entryIndex uint64, message []byte) (*types.Transaction, error) {
 	return _ExampleAppV1.contract.Transact(opts, "appReceive", srcChainId, sender, dbNonce, entryIndex, message)
 }
 
-// AppReceive is a paid mutator transaction binding the contract method 0x68a69847.
+// AppReceive is a paid mutator transaction binding the contract method 0x6e9fd609.
 //
-// Solidity: function appReceive(uint256 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message) payable returns()
-func (_ExampleAppV1 *ExampleAppV1Session) AppReceive(srcChainId *big.Int, sender [32]byte, dbNonce *big.Int, entryIndex uint64, message []byte) (*types.Transaction, error) {
+// Solidity: function appReceive(uint64 srcChainId, bytes32 sender, uint64 dbNonce, uint64 entryIndex, bytes message) payable returns()
+func (_ExampleAppV1 *ExampleAppV1Session) AppReceive(srcChainId uint64, sender [32]byte, dbNonce uint64, entryIndex uint64, message []byte) (*types.Transaction, error) {
 	return _ExampleAppV1.Contract.AppReceive(&_ExampleAppV1.TransactOpts, srcChainId, sender, dbNonce, entryIndex, message)
 }
 
-// AppReceive is a paid mutator transaction binding the contract method 0x68a69847.
+// AppReceive is a paid mutator transaction binding the contract method 0x6e9fd609.
 //
-// Solidity: function appReceive(uint256 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message) payable returns()
-func (_ExampleAppV1 *ExampleAppV1TransactorSession) AppReceive(srcChainId *big.Int, sender [32]byte, dbNonce *big.Int, entryIndex uint64, message []byte) (*types.Transaction, error) {
+// Solidity: function appReceive(uint64 srcChainId, bytes32 sender, uint64 dbNonce, uint64 entryIndex, bytes message) payable returns()
+func (_ExampleAppV1 *ExampleAppV1TransactorSession) AppReceive(srcChainId uint64, sender [32]byte, dbNonce uint64, entryIndex uint64, message []byte) (*types.Transaction, error) {
 	return _ExampleAppV1.Contract.AppReceive(&_ExampleAppV1.TransactOpts, srcChainId, sender, dbNonce, entryIndex, message)
 }
 
@@ -4623,45 +4623,45 @@ func (_ExampleAppV1 *ExampleAppV1TransactorSession) GrantRole(role [32]byte, acc
 	return _ExampleAppV1.Contract.GrantRole(&_ExampleAppV1.TransactOpts, role, account)
 }
 
-// LinkRemoteApp is a paid mutator transaction binding the contract method 0x51a30802.
+// LinkRemoteApp is a paid mutator transaction binding the contract method 0xf6b266fd.
 //
-// Solidity: function linkRemoteApp(uint256 chainId, bytes32 remoteApp) returns()
-func (_ExampleAppV1 *ExampleAppV1Transactor) LinkRemoteApp(opts *bind.TransactOpts, chainId *big.Int, remoteApp [32]byte) (*types.Transaction, error) {
+// Solidity: function linkRemoteApp(uint64 chainId, bytes32 remoteApp) returns()
+func (_ExampleAppV1 *ExampleAppV1Transactor) LinkRemoteApp(opts *bind.TransactOpts, chainId uint64, remoteApp [32]byte) (*types.Transaction, error) {
 	return _ExampleAppV1.contract.Transact(opts, "linkRemoteApp", chainId, remoteApp)
 }
 
-// LinkRemoteApp is a paid mutator transaction binding the contract method 0x51a30802.
+// LinkRemoteApp is a paid mutator transaction binding the contract method 0xf6b266fd.
 //
-// Solidity: function linkRemoteApp(uint256 chainId, bytes32 remoteApp) returns()
-func (_ExampleAppV1 *ExampleAppV1Session) LinkRemoteApp(chainId *big.Int, remoteApp [32]byte) (*types.Transaction, error) {
+// Solidity: function linkRemoteApp(uint64 chainId, bytes32 remoteApp) returns()
+func (_ExampleAppV1 *ExampleAppV1Session) LinkRemoteApp(chainId uint64, remoteApp [32]byte) (*types.Transaction, error) {
 	return _ExampleAppV1.Contract.LinkRemoteApp(&_ExampleAppV1.TransactOpts, chainId, remoteApp)
 }
 
-// LinkRemoteApp is a paid mutator transaction binding the contract method 0x51a30802.
+// LinkRemoteApp is a paid mutator transaction binding the contract method 0xf6b266fd.
 //
-// Solidity: function linkRemoteApp(uint256 chainId, bytes32 remoteApp) returns()
-func (_ExampleAppV1 *ExampleAppV1TransactorSession) LinkRemoteApp(chainId *big.Int, remoteApp [32]byte) (*types.Transaction, error) {
+// Solidity: function linkRemoteApp(uint64 chainId, bytes32 remoteApp) returns()
+func (_ExampleAppV1 *ExampleAppV1TransactorSession) LinkRemoteApp(chainId uint64, remoteApp [32]byte) (*types.Transaction, error) {
 	return _ExampleAppV1.Contract.LinkRemoteApp(&_ExampleAppV1.TransactOpts, chainId, remoteApp)
 }
 
-// LinkRemoteAppEVM is a paid mutator transaction binding the contract method 0xaf8fcc8e.
+// LinkRemoteAppEVM is a paid mutator transaction binding the contract method 0x1856ddfe.
 //
-// Solidity: function linkRemoteAppEVM(uint256 chainId, address remoteApp) returns()
-func (_ExampleAppV1 *ExampleAppV1Transactor) LinkRemoteAppEVM(opts *bind.TransactOpts, chainId *big.Int, remoteApp common.Address) (*types.Transaction, error) {
+// Solidity: function linkRemoteAppEVM(uint64 chainId, address remoteApp) returns()
+func (_ExampleAppV1 *ExampleAppV1Transactor) LinkRemoteAppEVM(opts *bind.TransactOpts, chainId uint64, remoteApp common.Address) (*types.Transaction, error) {
 	return _ExampleAppV1.contract.Transact(opts, "linkRemoteAppEVM", chainId, remoteApp)
 }
 
-// LinkRemoteAppEVM is a paid mutator transaction binding the contract method 0xaf8fcc8e.
+// LinkRemoteAppEVM is a paid mutator transaction binding the contract method 0x1856ddfe.
 //
-// Solidity: function linkRemoteAppEVM(uint256 chainId, address remoteApp) returns()
-func (_ExampleAppV1 *ExampleAppV1Session) LinkRemoteAppEVM(chainId *big.Int, remoteApp common.Address) (*types.Transaction, error) {
+// Solidity: function linkRemoteAppEVM(uint64 chainId, address remoteApp) returns()
+func (_ExampleAppV1 *ExampleAppV1Session) LinkRemoteAppEVM(chainId uint64, remoteApp common.Address) (*types.Transaction, error) {
 	return _ExampleAppV1.Contract.LinkRemoteAppEVM(&_ExampleAppV1.TransactOpts, chainId, remoteApp)
 }
 
-// LinkRemoteAppEVM is a paid mutator transaction binding the contract method 0xaf8fcc8e.
+// LinkRemoteAppEVM is a paid mutator transaction binding the contract method 0x1856ddfe.
 //
-// Solidity: function linkRemoteAppEVM(uint256 chainId, address remoteApp) returns()
-func (_ExampleAppV1 *ExampleAppV1TransactorSession) LinkRemoteAppEVM(chainId *big.Int, remoteApp common.Address) (*types.Transaction, error) {
+// Solidity: function linkRemoteAppEVM(uint64 chainId, address remoteApp) returns()
+func (_ExampleAppV1 *ExampleAppV1TransactorSession) LinkRemoteAppEVM(chainId uint64, remoteApp common.Address) (*types.Transaction, error) {
 	return _ExampleAppV1.Contract.LinkRemoteAppEVM(&_ExampleAppV1.TransactOpts, chainId, remoteApp)
 }
 
@@ -4749,24 +4749,24 @@ func (_ExampleAppV1 *ExampleAppV1TransactorSession) RevokeRole(role [32]byte, ac
 	return _ExampleAppV1.Contract.RevokeRole(&_ExampleAppV1.TransactOpts, role, account)
 }
 
-// SendMessage is a paid mutator transaction binding the contract method 0x282be0e9.
+// SendMessage is a paid mutator transaction binding the contract method 0x06039e4b.
 //
-// Solidity: function sendMessage(uint256 dstChainId, uint256 gasLimit, uint256 gasAirdrop, bytes message) payable returns()
-func (_ExampleAppV1 *ExampleAppV1Transactor) SendMessage(opts *bind.TransactOpts, dstChainId *big.Int, gasLimit *big.Int, gasAirdrop *big.Int, message []byte) (*types.Transaction, error) {
+// Solidity: function sendMessage(uint64 dstChainId, uint256 gasLimit, uint256 gasAirdrop, bytes message) payable returns()
+func (_ExampleAppV1 *ExampleAppV1Transactor) SendMessage(opts *bind.TransactOpts, dstChainId uint64, gasLimit *big.Int, gasAirdrop *big.Int, message []byte) (*types.Transaction, error) {
 	return _ExampleAppV1.contract.Transact(opts, "sendMessage", dstChainId, gasLimit, gasAirdrop, message)
 }
 
-// SendMessage is a paid mutator transaction binding the contract method 0x282be0e9.
+// SendMessage is a paid mutator transaction binding the contract method 0x06039e4b.
 //
-// Solidity: function sendMessage(uint256 dstChainId, uint256 gasLimit, uint256 gasAirdrop, bytes message) payable returns()
-func (_ExampleAppV1 *ExampleAppV1Session) SendMessage(dstChainId *big.Int, gasLimit *big.Int, gasAirdrop *big.Int, message []byte) (*types.Transaction, error) {
+// Solidity: function sendMessage(uint64 dstChainId, uint256 gasLimit, uint256 gasAirdrop, bytes message) payable returns()
+func (_ExampleAppV1 *ExampleAppV1Session) SendMessage(dstChainId uint64, gasLimit *big.Int, gasAirdrop *big.Int, message []byte) (*types.Transaction, error) {
 	return _ExampleAppV1.Contract.SendMessage(&_ExampleAppV1.TransactOpts, dstChainId, gasLimit, gasAirdrop, message)
 }
 
-// SendMessage is a paid mutator transaction binding the contract method 0x282be0e9.
+// SendMessage is a paid mutator transaction binding the contract method 0x06039e4b.
 //
-// Solidity: function sendMessage(uint256 dstChainId, uint256 gasLimit, uint256 gasAirdrop, bytes message) payable returns()
-func (_ExampleAppV1 *ExampleAppV1TransactorSession) SendMessage(dstChainId *big.Int, gasLimit *big.Int, gasAirdrop *big.Int, message []byte) (*types.Transaction, error) {
+// Solidity: function sendMessage(uint64 dstChainId, uint256 gasLimit, uint256 gasAirdrop, bytes message) payable returns()
+func (_ExampleAppV1 *ExampleAppV1TransactorSession) SendMessage(dstChainId uint64, gasLimit *big.Int, gasAirdrop *big.Int, message []byte) (*types.Transaction, error) {
 	return _ExampleAppV1.Contract.SendMessage(&_ExampleAppV1.TransactOpts, dstChainId, gasLimit, gasAirdrop, message)
 }
 
@@ -5747,17 +5747,17 @@ func (it *ExampleAppV1MessageReceivedIterator) Close() error {
 
 // ExampleAppV1MessageReceived represents a MessageReceived event raised by the ExampleAppV1 contract.
 type ExampleAppV1MessageReceived struct {
-	SrcChainId *big.Int
+	SrcChainId uint64
 	Sender     [32]byte
-	DbNonce    *big.Int
+	DbNonce    uint64
 	EntryIndex uint64
 	Message    []byte
 	Raw        types.Log // Blockchain specific contextual infos
 }
 
-// FilterMessageReceived is a free log retrieval operation binding the contract event 0xc5b07cf0d424748241636d3a67366b44ac88118c42bef024abcb7fd138df79a6.
+// FilterMessageReceived is a free log retrieval operation binding the contract event 0xaab00190e6c2e4b0ef940711bb1674ed236de699daf36f611aaf834f3d8eb002.
 //
-// Solidity: event MessageReceived(uint256 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message)
+// Solidity: event MessageReceived(uint64 srcChainId, bytes32 sender, uint64 dbNonce, uint64 entryIndex, bytes message)
 func (_ExampleAppV1 *ExampleAppV1Filterer) FilterMessageReceived(opts *bind.FilterOpts) (*ExampleAppV1MessageReceivedIterator, error) {
 
 	logs, sub, err := _ExampleAppV1.contract.FilterLogs(opts, "MessageReceived")
@@ -5767,9 +5767,9 @@ func (_ExampleAppV1 *ExampleAppV1Filterer) FilterMessageReceived(opts *bind.Filt
 	return &ExampleAppV1MessageReceivedIterator{contract: _ExampleAppV1.contract, event: "MessageReceived", logs: logs, sub: sub}, nil
 }
 
-// WatchMessageReceived is a free log subscription operation binding the contract event 0xc5b07cf0d424748241636d3a67366b44ac88118c42bef024abcb7fd138df79a6.
+// WatchMessageReceived is a free log subscription operation binding the contract event 0xaab00190e6c2e4b0ef940711bb1674ed236de699daf36f611aaf834f3d8eb002.
 //
-// Solidity: event MessageReceived(uint256 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message)
+// Solidity: event MessageReceived(uint64 srcChainId, bytes32 sender, uint64 dbNonce, uint64 entryIndex, bytes message)
 func (_ExampleAppV1 *ExampleAppV1Filterer) WatchMessageReceived(opts *bind.WatchOpts, sink chan<- *ExampleAppV1MessageReceived) (event.Subscription, error) {
 
 	logs, sub, err := _ExampleAppV1.contract.WatchLogs(opts, "MessageReceived")
@@ -5804,9 +5804,9 @@ func (_ExampleAppV1 *ExampleAppV1Filterer) WatchMessageReceived(opts *bind.Watch
 	}), nil
 }
 
-// ParseMessageReceived is a log parse operation binding the contract event 0xc5b07cf0d424748241636d3a67366b44ac88118c42bef024abcb7fd138df79a6.
+// ParseMessageReceived is a log parse operation binding the contract event 0xaab00190e6c2e4b0ef940711bb1674ed236de699daf36f611aaf834f3d8eb002.
 //
-// Solidity: event MessageReceived(uint256 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message)
+// Solidity: event MessageReceived(uint64 srcChainId, bytes32 sender, uint64 dbNonce, uint64 entryIndex, bytes message)
 func (_ExampleAppV1 *ExampleAppV1Filterer) ParseMessageReceived(log types.Log) (*ExampleAppV1MessageReceived, error) {
 	event := new(ExampleAppV1MessageReceived)
 	if err := _ExampleAppV1.contract.UnpackLog(event, "MessageReceived", log); err != nil {
@@ -5885,16 +5885,16 @@ func (it *ExampleAppV1MessageSentIterator) Close() error {
 
 // ExampleAppV1MessageSent represents a MessageSent event raised by the ExampleAppV1 contract.
 type ExampleAppV1MessageSent struct {
-	DstChainId    *big.Int
-	DbNonce       *big.Int
+	DstChainId    uint64
+	DbNonce       uint64
 	EntryIndex    uint64
 	TransactionId [32]byte
 	Raw           types.Log // Blockchain specific contextual infos
 }
 
-// FilterMessageSent is a free log retrieval operation binding the contract event 0x2ef16db2691a32543ce5591798c4992f4cfbbcd446874f1437d99da53d600e7c.
+// FilterMessageSent is a free log retrieval operation binding the contract event 0xacd206517737a1387f9ae09d956edd387fd49c710ac2d4c72993f67fffb06aa8.
 //
-// Solidity: event MessageSent(uint256 dstChainId, uint256 dbNonce, uint64 entryIndex, bytes32 transactionId)
+// Solidity: event MessageSent(uint64 dstChainId, uint64 dbNonce, uint64 entryIndex, bytes32 transactionId)
 func (_ExampleAppV1 *ExampleAppV1Filterer) FilterMessageSent(opts *bind.FilterOpts) (*ExampleAppV1MessageSentIterator, error) {
 
 	logs, sub, err := _ExampleAppV1.contract.FilterLogs(opts, "MessageSent")
@@ -5904,9 +5904,9 @@ func (_ExampleAppV1 *ExampleAppV1Filterer) FilterMessageSent(opts *bind.FilterOp
 	return &ExampleAppV1MessageSentIterator{contract: _ExampleAppV1.contract, event: "MessageSent", logs: logs, sub: sub}, nil
 }
 
-// WatchMessageSent is a free log subscription operation binding the contract event 0x2ef16db2691a32543ce5591798c4992f4cfbbcd446874f1437d99da53d600e7c.
+// WatchMessageSent is a free log subscription operation binding the contract event 0xacd206517737a1387f9ae09d956edd387fd49c710ac2d4c72993f67fffb06aa8.
 //
-// Solidity: event MessageSent(uint256 dstChainId, uint256 dbNonce, uint64 entryIndex, bytes32 transactionId)
+// Solidity: event MessageSent(uint64 dstChainId, uint64 dbNonce, uint64 entryIndex, bytes32 transactionId)
 func (_ExampleAppV1 *ExampleAppV1Filterer) WatchMessageSent(opts *bind.WatchOpts, sink chan<- *ExampleAppV1MessageSent) (event.Subscription, error) {
 
 	logs, sub, err := _ExampleAppV1.contract.WatchLogs(opts, "MessageSent")
@@ -5941,9 +5941,9 @@ func (_ExampleAppV1 *ExampleAppV1Filterer) WatchMessageSent(opts *bind.WatchOpts
 	}), nil
 }
 
-// ParseMessageSent is a log parse operation binding the contract event 0x2ef16db2691a32543ce5591798c4992f4cfbbcd446874f1437d99da53d600e7c.
+// ParseMessageSent is a log parse operation binding the contract event 0xacd206517737a1387f9ae09d956edd387fd49c710ac2d4c72993f67fffb06aa8.
 //
-// Solidity: event MessageSent(uint256 dstChainId, uint256 dbNonce, uint64 entryIndex, bytes32 transactionId)
+// Solidity: event MessageSent(uint64 dstChainId, uint64 dbNonce, uint64 entryIndex, bytes32 transactionId)
 func (_ExampleAppV1 *ExampleAppV1Filterer) ParseMessageSent(log types.Log) (*ExampleAppV1MessageSent, error) {
 	event := new(ExampleAppV1MessageSent)
 	if err := _ExampleAppV1.contract.UnpackLog(event, "MessageSent", log); err != nil {
@@ -8319,19 +8319,19 @@ func (_IAccessControlEnumerable *IAccessControlEnumerableFilterer) ParseRoleRevo
 
 // ICAppV1MetaData contains all meta data concerning the ICAppV1 contract.
 var ICAppV1MetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"name\":\"AccessControlBadConfirmation\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"neededRole\",\"type\":\"bytes32\"}],\"name\":\"AccessControlUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"InterchainApp__AlreadyLatestClient\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainApp__AppZeroAddress\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"InterchainApp__BalanceTooLow\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"InterchainApp__ClientAlreadyAdded\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainApp__InterchainClientZeroAddress\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"requiredResponses\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"optimisticPeriod\",\"type\":\"uint256\"}],\"name\":\"InterchainApp__InvalidAppConfig\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"InterchainApp__ModuleAlreadyAdded\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"InterchainApp__ModuleNotAdded\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainApp__ModuleZeroAddress\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"linkedApp\",\"type\":\"bytes32\"}],\"name\":\"InterchainApp__NotEVMLinkedApp\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"InterchainApp__NotInterchainClient\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"}],\"name\":\"InterchainApp__ReceiverNotSet\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"}],\"name\":\"InterchainApp__SameChainId\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"sender\",\"type\":\"bytes32\"}],\"name\":\"InterchainApp__SenderNotAllowed\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"requiredResponses\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"optimisticPeriod\",\"type\":\"uint256\"}],\"name\":\"AppConfigV1Set\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"remoteApp\",\"type\":\"bytes32\"}],\"name\":\"AppLinked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"executionService\",\"type\":\"address\"}],\"name\":\"ExecutionServiceSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"InterchainClientAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"InterchainClientRemoved\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"LatestClientSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"TrustedModuleAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"TrustedModuleRemoved\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"IC_GOVERNOR_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"updateLatest\",\"type\":\"bool\"}],\"name\":\"addInterchainClient\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"addTrustedModule\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"sender\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"},{\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"}],\"name\":\"appReceive\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAppConfigV1\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"requiredResponses\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"optimisticPeriod\",\"type\":\"uint256\"}],\"internalType\":\"structAppConfigV1\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getExecutionService\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getInterchainClients\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getLatestInterchainClient\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"}],\"name\":\"getLinkedApp\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"}],\"name\":\"getLinkedAppEVM\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"linkedAppEVM\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getModules\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getReceivingConfig\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"appConfig\",\"type\":\"bytes\"},{\"internalType\":\"address[]\",\"name\":\"modules\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"getRoleMember\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleMemberCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"remoteApp\",\"type\":\"bytes32\"}],\"name\":\"linkRemoteApp\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"remoteApp\",\"type\":\"address\"}],\"name\":\"linkRemoteAppEVM\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"removeInterchainClient\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"removeTrustedModule\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"callerConfirmation\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"requiredResponses\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"optimisticPeriod\",\"type\":\"uint256\"}],\"internalType\":\"structAppConfigV1\",\"name\":\"appConfig\",\"type\":\"tuple\"}],\"name\":\"setAppConfigV1\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executionService\",\"type\":\"address\"}],\"name\":\"setExecutionService\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"setLatestInterchainClient\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"name\":\"AccessControlBadConfirmation\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"neededRole\",\"type\":\"bytes32\"}],\"name\":\"AccessControlUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"InterchainApp__AlreadyLatestClient\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainApp__AppZeroAddress\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"InterchainApp__BalanceTooLow\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"InterchainApp__ClientAlreadyAdded\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainApp__InterchainClientZeroAddress\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"requiredResponses\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"optimisticPeriod\",\"type\":\"uint256\"}],\"name\":\"InterchainApp__InvalidAppConfig\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"InterchainApp__ModuleAlreadyAdded\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"InterchainApp__ModuleNotAdded\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainApp__ModuleZeroAddress\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"linkedApp\",\"type\":\"bytes32\"}],\"name\":\"InterchainApp__NotEVMLinkedApp\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"InterchainApp__NotInterchainClient\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"InterchainApp__ReceiverNotSet\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"InterchainApp__SameChainId\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"internalType\":\"bytes32\",\"name\":\"sender\",\"type\":\"bytes32\"}],\"name\":\"InterchainApp__SenderNotAllowed\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"requiredResponses\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"optimisticPeriod\",\"type\":\"uint256\"}],\"name\":\"AppConfigV1Set\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"remoteApp\",\"type\":\"bytes32\"}],\"name\":\"AppLinked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"executionService\",\"type\":\"address\"}],\"name\":\"ExecutionServiceSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"InterchainClientAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"InterchainClientRemoved\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"LatestClientSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"TrustedModuleAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"TrustedModuleRemoved\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"IC_GOVERNOR_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"updateLatest\",\"type\":\"bool\"}],\"name\":\"addInterchainClient\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"addTrustedModule\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"internalType\":\"bytes32\",\"name\":\"sender\",\"type\":\"bytes32\"},{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"},{\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"}],\"name\":\"appReceive\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAppConfigV1\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"requiredResponses\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"optimisticPeriod\",\"type\":\"uint256\"}],\"internalType\":\"structAppConfigV1\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getExecutionService\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getInterchainClients\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getLatestInterchainClient\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"getLinkedApp\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"getLinkedAppEVM\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"linkedAppEVM\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getModules\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getReceivingConfig\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"appConfig\",\"type\":\"bytes\"},{\"internalType\":\"address[]\",\"name\":\"modules\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"getRoleMember\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleMemberCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"},{\"internalType\":\"bytes32\",\"name\":\"remoteApp\",\"type\":\"bytes32\"}],\"name\":\"linkRemoteApp\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"},{\"internalType\":\"address\",\"name\":\"remoteApp\",\"type\":\"address\"}],\"name\":\"linkRemoteAppEVM\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"removeInterchainClient\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"removeTrustedModule\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"callerConfirmation\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"requiredResponses\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"optimisticPeriod\",\"type\":\"uint256\"}],\"internalType\":\"structAppConfigV1\",\"name\":\"appConfig\",\"type\":\"tuple\"}],\"name\":\"setAppConfigV1\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executionService\",\"type\":\"address\"}],\"name\":\"setExecutionService\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"setLatestInterchainClient\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"a217fddf": "DEFAULT_ADMIN_ROLE()",
 		"1c489e4f": "IC_GOVERNOR_ROLE()",
 		"f22ba23d": "addInterchainClient(address,bool)",
 		"cb5038fb": "addTrustedModule(address)",
-		"68a69847": "appReceive(uint256,bytes32,uint256,uint64,bytes)",
+		"6e9fd609": "appReceive(uint64,bytes32,uint64,uint64,bytes)",
 		"7717a647": "getAppConfigV1()",
 		"c313c807": "getExecutionService()",
 		"a1aa5d68": "getInterchainClients()",
 		"bc0d912c": "getLatestInterchainClient()",
-		"b9b74b18": "getLinkedApp(uint256)",
-		"a9ac04b6": "getLinkedAppEVM(uint256)",
+		"4e6427e7": "getLinkedApp(uint64)",
+		"90a92c16": "getLinkedAppEVM(uint64)",
 		"b2494df3": "getModules()",
 		"287bc057": "getReceivingConfig()",
 		"248a9ca3": "getRoleAdmin(bytes32)",
@@ -8339,8 +8339,8 @@ var ICAppV1MetaData = &bind.MetaData{
 		"ca15c873": "getRoleMemberCount(bytes32)",
 		"2f2ff15d": "grantRole(bytes32,address)",
 		"91d14854": "hasRole(bytes32,address)",
-		"51a30802": "linkRemoteApp(uint256,bytes32)",
-		"af8fcc8e": "linkRemoteAppEVM(uint256,address)",
+		"f6b266fd": "linkRemoteApp(uint64,bytes32)",
+		"1856ddfe": "linkRemoteAppEVM(uint64,address)",
 		"0fb59156": "removeInterchainClient(address)",
 		"b70c40b3": "removeTrustedModule(address)",
 		"36568abe": "renounceRole(bytes32,address)",
@@ -8688,10 +8688,10 @@ func (_ICAppV1 *ICAppV1CallerSession) GetLatestInterchainClient() (common.Addres
 	return _ICAppV1.Contract.GetLatestInterchainClient(&_ICAppV1.CallOpts)
 }
 
-// GetLinkedApp is a free data retrieval call binding the contract method 0xb9b74b18.
+// GetLinkedApp is a free data retrieval call binding the contract method 0x4e6427e7.
 //
-// Solidity: function getLinkedApp(uint256 chainId) view returns(bytes32)
-func (_ICAppV1 *ICAppV1Caller) GetLinkedApp(opts *bind.CallOpts, chainId *big.Int) ([32]byte, error) {
+// Solidity: function getLinkedApp(uint64 chainId) view returns(bytes32)
+func (_ICAppV1 *ICAppV1Caller) GetLinkedApp(opts *bind.CallOpts, chainId uint64) ([32]byte, error) {
 	var out []interface{}
 	err := _ICAppV1.contract.Call(opts, &out, "getLinkedApp", chainId)
 
@@ -8705,24 +8705,24 @@ func (_ICAppV1 *ICAppV1Caller) GetLinkedApp(opts *bind.CallOpts, chainId *big.In
 
 }
 
-// GetLinkedApp is a free data retrieval call binding the contract method 0xb9b74b18.
+// GetLinkedApp is a free data retrieval call binding the contract method 0x4e6427e7.
 //
-// Solidity: function getLinkedApp(uint256 chainId) view returns(bytes32)
-func (_ICAppV1 *ICAppV1Session) GetLinkedApp(chainId *big.Int) ([32]byte, error) {
+// Solidity: function getLinkedApp(uint64 chainId) view returns(bytes32)
+func (_ICAppV1 *ICAppV1Session) GetLinkedApp(chainId uint64) ([32]byte, error) {
 	return _ICAppV1.Contract.GetLinkedApp(&_ICAppV1.CallOpts, chainId)
 }
 
-// GetLinkedApp is a free data retrieval call binding the contract method 0xb9b74b18.
+// GetLinkedApp is a free data retrieval call binding the contract method 0x4e6427e7.
 //
-// Solidity: function getLinkedApp(uint256 chainId) view returns(bytes32)
-func (_ICAppV1 *ICAppV1CallerSession) GetLinkedApp(chainId *big.Int) ([32]byte, error) {
+// Solidity: function getLinkedApp(uint64 chainId) view returns(bytes32)
+func (_ICAppV1 *ICAppV1CallerSession) GetLinkedApp(chainId uint64) ([32]byte, error) {
 	return _ICAppV1.Contract.GetLinkedApp(&_ICAppV1.CallOpts, chainId)
 }
 
-// GetLinkedAppEVM is a free data retrieval call binding the contract method 0xa9ac04b6.
+// GetLinkedAppEVM is a free data retrieval call binding the contract method 0x90a92c16.
 //
-// Solidity: function getLinkedAppEVM(uint256 chainId) view returns(address linkedAppEVM)
-func (_ICAppV1 *ICAppV1Caller) GetLinkedAppEVM(opts *bind.CallOpts, chainId *big.Int) (common.Address, error) {
+// Solidity: function getLinkedAppEVM(uint64 chainId) view returns(address linkedAppEVM)
+func (_ICAppV1 *ICAppV1Caller) GetLinkedAppEVM(opts *bind.CallOpts, chainId uint64) (common.Address, error) {
 	var out []interface{}
 	err := _ICAppV1.contract.Call(opts, &out, "getLinkedAppEVM", chainId)
 
@@ -8736,17 +8736,17 @@ func (_ICAppV1 *ICAppV1Caller) GetLinkedAppEVM(opts *bind.CallOpts, chainId *big
 
 }
 
-// GetLinkedAppEVM is a free data retrieval call binding the contract method 0xa9ac04b6.
+// GetLinkedAppEVM is a free data retrieval call binding the contract method 0x90a92c16.
 //
-// Solidity: function getLinkedAppEVM(uint256 chainId) view returns(address linkedAppEVM)
-func (_ICAppV1 *ICAppV1Session) GetLinkedAppEVM(chainId *big.Int) (common.Address, error) {
+// Solidity: function getLinkedAppEVM(uint64 chainId) view returns(address linkedAppEVM)
+func (_ICAppV1 *ICAppV1Session) GetLinkedAppEVM(chainId uint64) (common.Address, error) {
 	return _ICAppV1.Contract.GetLinkedAppEVM(&_ICAppV1.CallOpts, chainId)
 }
 
-// GetLinkedAppEVM is a free data retrieval call binding the contract method 0xa9ac04b6.
+// GetLinkedAppEVM is a free data retrieval call binding the contract method 0x90a92c16.
 //
-// Solidity: function getLinkedAppEVM(uint256 chainId) view returns(address linkedAppEVM)
-func (_ICAppV1 *ICAppV1CallerSession) GetLinkedAppEVM(chainId *big.Int) (common.Address, error) {
+// Solidity: function getLinkedAppEVM(uint64 chainId) view returns(address linkedAppEVM)
+func (_ICAppV1 *ICAppV1CallerSession) GetLinkedAppEVM(chainId uint64) (common.Address, error) {
 	return _ICAppV1.Contract.GetLinkedAppEVM(&_ICAppV1.CallOpts, chainId)
 }
 
@@ -9023,24 +9023,24 @@ func (_ICAppV1 *ICAppV1TransactorSession) AddTrustedModule(module common.Address
 	return _ICAppV1.Contract.AddTrustedModule(&_ICAppV1.TransactOpts, module)
 }
 
-// AppReceive is a paid mutator transaction binding the contract method 0x68a69847.
+// AppReceive is a paid mutator transaction binding the contract method 0x6e9fd609.
 //
-// Solidity: function appReceive(uint256 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message) payable returns()
-func (_ICAppV1 *ICAppV1Transactor) AppReceive(opts *bind.TransactOpts, srcChainId *big.Int, sender [32]byte, dbNonce *big.Int, entryIndex uint64, message []byte) (*types.Transaction, error) {
+// Solidity: function appReceive(uint64 srcChainId, bytes32 sender, uint64 dbNonce, uint64 entryIndex, bytes message) payable returns()
+func (_ICAppV1 *ICAppV1Transactor) AppReceive(opts *bind.TransactOpts, srcChainId uint64, sender [32]byte, dbNonce uint64, entryIndex uint64, message []byte) (*types.Transaction, error) {
 	return _ICAppV1.contract.Transact(opts, "appReceive", srcChainId, sender, dbNonce, entryIndex, message)
 }
 
-// AppReceive is a paid mutator transaction binding the contract method 0x68a69847.
+// AppReceive is a paid mutator transaction binding the contract method 0x6e9fd609.
 //
-// Solidity: function appReceive(uint256 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message) payable returns()
-func (_ICAppV1 *ICAppV1Session) AppReceive(srcChainId *big.Int, sender [32]byte, dbNonce *big.Int, entryIndex uint64, message []byte) (*types.Transaction, error) {
+// Solidity: function appReceive(uint64 srcChainId, bytes32 sender, uint64 dbNonce, uint64 entryIndex, bytes message) payable returns()
+func (_ICAppV1 *ICAppV1Session) AppReceive(srcChainId uint64, sender [32]byte, dbNonce uint64, entryIndex uint64, message []byte) (*types.Transaction, error) {
 	return _ICAppV1.Contract.AppReceive(&_ICAppV1.TransactOpts, srcChainId, sender, dbNonce, entryIndex, message)
 }
 
-// AppReceive is a paid mutator transaction binding the contract method 0x68a69847.
+// AppReceive is a paid mutator transaction binding the contract method 0x6e9fd609.
 //
-// Solidity: function appReceive(uint256 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message) payable returns()
-func (_ICAppV1 *ICAppV1TransactorSession) AppReceive(srcChainId *big.Int, sender [32]byte, dbNonce *big.Int, entryIndex uint64, message []byte) (*types.Transaction, error) {
+// Solidity: function appReceive(uint64 srcChainId, bytes32 sender, uint64 dbNonce, uint64 entryIndex, bytes message) payable returns()
+func (_ICAppV1 *ICAppV1TransactorSession) AppReceive(srcChainId uint64, sender [32]byte, dbNonce uint64, entryIndex uint64, message []byte) (*types.Transaction, error) {
 	return _ICAppV1.Contract.AppReceive(&_ICAppV1.TransactOpts, srcChainId, sender, dbNonce, entryIndex, message)
 }
 
@@ -9065,45 +9065,45 @@ func (_ICAppV1 *ICAppV1TransactorSession) GrantRole(role [32]byte, account commo
 	return _ICAppV1.Contract.GrantRole(&_ICAppV1.TransactOpts, role, account)
 }
 
-// LinkRemoteApp is a paid mutator transaction binding the contract method 0x51a30802.
+// LinkRemoteApp is a paid mutator transaction binding the contract method 0xf6b266fd.
 //
-// Solidity: function linkRemoteApp(uint256 chainId, bytes32 remoteApp) returns()
-func (_ICAppV1 *ICAppV1Transactor) LinkRemoteApp(opts *bind.TransactOpts, chainId *big.Int, remoteApp [32]byte) (*types.Transaction, error) {
+// Solidity: function linkRemoteApp(uint64 chainId, bytes32 remoteApp) returns()
+func (_ICAppV1 *ICAppV1Transactor) LinkRemoteApp(opts *bind.TransactOpts, chainId uint64, remoteApp [32]byte) (*types.Transaction, error) {
 	return _ICAppV1.contract.Transact(opts, "linkRemoteApp", chainId, remoteApp)
 }
 
-// LinkRemoteApp is a paid mutator transaction binding the contract method 0x51a30802.
+// LinkRemoteApp is a paid mutator transaction binding the contract method 0xf6b266fd.
 //
-// Solidity: function linkRemoteApp(uint256 chainId, bytes32 remoteApp) returns()
-func (_ICAppV1 *ICAppV1Session) LinkRemoteApp(chainId *big.Int, remoteApp [32]byte) (*types.Transaction, error) {
+// Solidity: function linkRemoteApp(uint64 chainId, bytes32 remoteApp) returns()
+func (_ICAppV1 *ICAppV1Session) LinkRemoteApp(chainId uint64, remoteApp [32]byte) (*types.Transaction, error) {
 	return _ICAppV1.Contract.LinkRemoteApp(&_ICAppV1.TransactOpts, chainId, remoteApp)
 }
 
-// LinkRemoteApp is a paid mutator transaction binding the contract method 0x51a30802.
+// LinkRemoteApp is a paid mutator transaction binding the contract method 0xf6b266fd.
 //
-// Solidity: function linkRemoteApp(uint256 chainId, bytes32 remoteApp) returns()
-func (_ICAppV1 *ICAppV1TransactorSession) LinkRemoteApp(chainId *big.Int, remoteApp [32]byte) (*types.Transaction, error) {
+// Solidity: function linkRemoteApp(uint64 chainId, bytes32 remoteApp) returns()
+func (_ICAppV1 *ICAppV1TransactorSession) LinkRemoteApp(chainId uint64, remoteApp [32]byte) (*types.Transaction, error) {
 	return _ICAppV1.Contract.LinkRemoteApp(&_ICAppV1.TransactOpts, chainId, remoteApp)
 }
 
-// LinkRemoteAppEVM is a paid mutator transaction binding the contract method 0xaf8fcc8e.
+// LinkRemoteAppEVM is a paid mutator transaction binding the contract method 0x1856ddfe.
 //
-// Solidity: function linkRemoteAppEVM(uint256 chainId, address remoteApp) returns()
-func (_ICAppV1 *ICAppV1Transactor) LinkRemoteAppEVM(opts *bind.TransactOpts, chainId *big.Int, remoteApp common.Address) (*types.Transaction, error) {
+// Solidity: function linkRemoteAppEVM(uint64 chainId, address remoteApp) returns()
+func (_ICAppV1 *ICAppV1Transactor) LinkRemoteAppEVM(opts *bind.TransactOpts, chainId uint64, remoteApp common.Address) (*types.Transaction, error) {
 	return _ICAppV1.contract.Transact(opts, "linkRemoteAppEVM", chainId, remoteApp)
 }
 
-// LinkRemoteAppEVM is a paid mutator transaction binding the contract method 0xaf8fcc8e.
+// LinkRemoteAppEVM is a paid mutator transaction binding the contract method 0x1856ddfe.
 //
-// Solidity: function linkRemoteAppEVM(uint256 chainId, address remoteApp) returns()
-func (_ICAppV1 *ICAppV1Session) LinkRemoteAppEVM(chainId *big.Int, remoteApp common.Address) (*types.Transaction, error) {
+// Solidity: function linkRemoteAppEVM(uint64 chainId, address remoteApp) returns()
+func (_ICAppV1 *ICAppV1Session) LinkRemoteAppEVM(chainId uint64, remoteApp common.Address) (*types.Transaction, error) {
 	return _ICAppV1.Contract.LinkRemoteAppEVM(&_ICAppV1.TransactOpts, chainId, remoteApp)
 }
 
-// LinkRemoteAppEVM is a paid mutator transaction binding the contract method 0xaf8fcc8e.
+// LinkRemoteAppEVM is a paid mutator transaction binding the contract method 0x1856ddfe.
 //
-// Solidity: function linkRemoteAppEVM(uint256 chainId, address remoteApp) returns()
-func (_ICAppV1 *ICAppV1TransactorSession) LinkRemoteAppEVM(chainId *big.Int, remoteApp common.Address) (*types.Transaction, error) {
+// Solidity: function linkRemoteAppEVM(uint64 chainId, address remoteApp) returns()
+func (_ICAppV1 *ICAppV1TransactorSession) LinkRemoteAppEVM(chainId uint64, remoteApp common.Address) (*types.Transaction, error) {
 	return _ICAppV1.Contract.LinkRemoteAppEVM(&_ICAppV1.TransactOpts, chainId, remoteApp)
 }
 
@@ -11023,9 +11023,9 @@ func (_IERC165 *IERC165CallerSession) SupportsInterface(interfaceId [4]byte) (bo
 
 // IInterchainAppMetaData contains all meta data concerning the IInterchainApp contract.
 var IInterchainAppMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"sender\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"},{\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"}],\"name\":\"appReceive\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getReceivingConfig\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"appConfig\",\"type\":\"bytes\"},{\"internalType\":\"address[]\",\"name\":\"modules\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"internalType\":\"bytes32\",\"name\":\"sender\",\"type\":\"bytes32\"},{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"},{\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"}],\"name\":\"appReceive\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getReceivingConfig\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"appConfig\",\"type\":\"bytes\"},{\"internalType\":\"address[]\",\"name\":\"modules\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
-		"68a69847": "appReceive(uint256,bytes32,uint256,uint64,bytes)",
+		"6e9fd609": "appReceive(uint64,bytes32,uint64,uint64,bytes)",
 		"287bc057": "getReceivingConfig()",
 	},
 }
@@ -11225,44 +11225,44 @@ func (_IInterchainApp *IInterchainAppCallerSession) GetReceivingConfig() (struct
 	return _IInterchainApp.Contract.GetReceivingConfig(&_IInterchainApp.CallOpts)
 }
 
-// AppReceive is a paid mutator transaction binding the contract method 0x68a69847.
+// AppReceive is a paid mutator transaction binding the contract method 0x6e9fd609.
 //
-// Solidity: function appReceive(uint256 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message) payable returns()
-func (_IInterchainApp *IInterchainAppTransactor) AppReceive(opts *bind.TransactOpts, srcChainId *big.Int, sender [32]byte, dbNonce *big.Int, entryIndex uint64, message []byte) (*types.Transaction, error) {
+// Solidity: function appReceive(uint64 srcChainId, bytes32 sender, uint64 dbNonce, uint64 entryIndex, bytes message) payable returns()
+func (_IInterchainApp *IInterchainAppTransactor) AppReceive(opts *bind.TransactOpts, srcChainId uint64, sender [32]byte, dbNonce uint64, entryIndex uint64, message []byte) (*types.Transaction, error) {
 	return _IInterchainApp.contract.Transact(opts, "appReceive", srcChainId, sender, dbNonce, entryIndex, message)
 }
 
-// AppReceive is a paid mutator transaction binding the contract method 0x68a69847.
+// AppReceive is a paid mutator transaction binding the contract method 0x6e9fd609.
 //
-// Solidity: function appReceive(uint256 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message) payable returns()
-func (_IInterchainApp *IInterchainAppSession) AppReceive(srcChainId *big.Int, sender [32]byte, dbNonce *big.Int, entryIndex uint64, message []byte) (*types.Transaction, error) {
+// Solidity: function appReceive(uint64 srcChainId, bytes32 sender, uint64 dbNonce, uint64 entryIndex, bytes message) payable returns()
+func (_IInterchainApp *IInterchainAppSession) AppReceive(srcChainId uint64, sender [32]byte, dbNonce uint64, entryIndex uint64, message []byte) (*types.Transaction, error) {
 	return _IInterchainApp.Contract.AppReceive(&_IInterchainApp.TransactOpts, srcChainId, sender, dbNonce, entryIndex, message)
 }
 
-// AppReceive is a paid mutator transaction binding the contract method 0x68a69847.
+// AppReceive is a paid mutator transaction binding the contract method 0x6e9fd609.
 //
-// Solidity: function appReceive(uint256 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message) payable returns()
-func (_IInterchainApp *IInterchainAppTransactorSession) AppReceive(srcChainId *big.Int, sender [32]byte, dbNonce *big.Int, entryIndex uint64, message []byte) (*types.Transaction, error) {
+// Solidity: function appReceive(uint64 srcChainId, bytes32 sender, uint64 dbNonce, uint64 entryIndex, bytes message) payable returns()
+func (_IInterchainApp *IInterchainAppTransactorSession) AppReceive(srcChainId uint64, sender [32]byte, dbNonce uint64, entryIndex uint64, message []byte) (*types.Transaction, error) {
 	return _IInterchainApp.Contract.AppReceive(&_IInterchainApp.TransactOpts, srcChainId, sender, dbNonce, entryIndex, message)
 }
 
 // IInterchainAppV1MetaData contains all meta data concerning the IInterchainAppV1 contract.
 var IInterchainAppV1MetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"name\":\"InterchainApp__AppZeroAddress\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"requiredResponses\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"optimisticPeriod\",\"type\":\"uint256\"}],\"name\":\"InterchainApp__InvalidAppConfig\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"InterchainApp__ModuleAlreadyAdded\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"InterchainApp__ModuleNotAdded\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainApp__ModuleZeroAddress\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"linkedApp\",\"type\":\"bytes32\"}],\"name\":\"InterchainApp__NotEVMLinkedApp\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"updateLatest\",\"type\":\"bool\"}],\"name\":\"addInterchainClient\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"addTrustedModule\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"sender\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"},{\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"}],\"name\":\"appReceive\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAppConfigV1\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"requiredResponses\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"optimisticPeriod\",\"type\":\"uint256\"}],\"internalType\":\"structAppConfigV1\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getExecutionService\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getInterchainClients\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getLatestInterchainClient\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"}],\"name\":\"getLinkedApp\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"}],\"name\":\"getLinkedAppEVM\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getModules\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getReceivingConfig\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"appConfig\",\"type\":\"bytes\"},{\"internalType\":\"address[]\",\"name\":\"modules\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"remoteApp\",\"type\":\"bytes32\"}],\"name\":\"linkRemoteApp\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"remoteApp\",\"type\":\"address\"}],\"name\":\"linkRemoteAppEVM\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"removeInterchainClient\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"removeTrustedModule\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"requiredResponses\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"optimisticPeriod\",\"type\":\"uint256\"}],\"internalType\":\"structAppConfigV1\",\"name\":\"appConfig\",\"type\":\"tuple\"}],\"name\":\"setAppConfigV1\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executionService\",\"type\":\"address\"}],\"name\":\"setExecutionService\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"setLatestInterchainClient\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"name\":\"InterchainApp__AppZeroAddress\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"requiredResponses\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"optimisticPeriod\",\"type\":\"uint256\"}],\"name\":\"InterchainApp__InvalidAppConfig\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"InterchainApp__ModuleAlreadyAdded\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"InterchainApp__ModuleNotAdded\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainApp__ModuleZeroAddress\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"linkedApp\",\"type\":\"bytes32\"}],\"name\":\"InterchainApp__NotEVMLinkedApp\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"updateLatest\",\"type\":\"bool\"}],\"name\":\"addInterchainClient\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"addTrustedModule\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"internalType\":\"bytes32\",\"name\":\"sender\",\"type\":\"bytes32\"},{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"},{\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"}],\"name\":\"appReceive\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAppConfigV1\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"requiredResponses\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"optimisticPeriod\",\"type\":\"uint256\"}],\"internalType\":\"structAppConfigV1\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getExecutionService\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getInterchainClients\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getLatestInterchainClient\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"getLinkedApp\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"getLinkedAppEVM\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getModules\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getReceivingConfig\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"appConfig\",\"type\":\"bytes\"},{\"internalType\":\"address[]\",\"name\":\"modules\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"},{\"internalType\":\"bytes32\",\"name\":\"remoteApp\",\"type\":\"bytes32\"}],\"name\":\"linkRemoteApp\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"},{\"internalType\":\"address\",\"name\":\"remoteApp\",\"type\":\"address\"}],\"name\":\"linkRemoteAppEVM\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"removeInterchainClient\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"module\",\"type\":\"address\"}],\"name\":\"removeTrustedModule\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"requiredResponses\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"optimisticPeriod\",\"type\":\"uint256\"}],\"internalType\":\"structAppConfigV1\",\"name\":\"appConfig\",\"type\":\"tuple\"}],\"name\":\"setAppConfigV1\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executionService\",\"type\":\"address\"}],\"name\":\"setExecutionService\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"client\",\"type\":\"address\"}],\"name\":\"setLatestInterchainClient\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"f22ba23d": "addInterchainClient(address,bool)",
 		"cb5038fb": "addTrustedModule(address)",
-		"68a69847": "appReceive(uint256,bytes32,uint256,uint64,bytes)",
+		"6e9fd609": "appReceive(uint64,bytes32,uint64,uint64,bytes)",
 		"7717a647": "getAppConfigV1()",
 		"c313c807": "getExecutionService()",
 		"a1aa5d68": "getInterchainClients()",
 		"bc0d912c": "getLatestInterchainClient()",
-		"b9b74b18": "getLinkedApp(uint256)",
-		"a9ac04b6": "getLinkedAppEVM(uint256)",
+		"4e6427e7": "getLinkedApp(uint64)",
+		"90a92c16": "getLinkedAppEVM(uint64)",
 		"b2494df3": "getModules()",
 		"287bc057": "getReceivingConfig()",
-		"51a30802": "linkRemoteApp(uint256,bytes32)",
-		"af8fcc8e": "linkRemoteAppEVM(uint256,address)",
+		"f6b266fd": "linkRemoteApp(uint64,bytes32)",
+		"1856ddfe": "linkRemoteAppEVM(uint64,address)",
 		"0fb59156": "removeInterchainClient(address)",
 		"b70c40b3": "removeTrustedModule(address)",
 		"0d32b505": "setAppConfigV1((uint256,uint256))",
@@ -11545,10 +11545,10 @@ func (_IInterchainAppV1 *IInterchainAppV1CallerSession) GetLatestInterchainClien
 	return _IInterchainAppV1.Contract.GetLatestInterchainClient(&_IInterchainAppV1.CallOpts)
 }
 
-// GetLinkedApp is a free data retrieval call binding the contract method 0xb9b74b18.
+// GetLinkedApp is a free data retrieval call binding the contract method 0x4e6427e7.
 //
-// Solidity: function getLinkedApp(uint256 chainId) view returns(bytes32)
-func (_IInterchainAppV1 *IInterchainAppV1Caller) GetLinkedApp(opts *bind.CallOpts, chainId *big.Int) ([32]byte, error) {
+// Solidity: function getLinkedApp(uint64 chainId) view returns(bytes32)
+func (_IInterchainAppV1 *IInterchainAppV1Caller) GetLinkedApp(opts *bind.CallOpts, chainId uint64) ([32]byte, error) {
 	var out []interface{}
 	err := _IInterchainAppV1.contract.Call(opts, &out, "getLinkedApp", chainId)
 
@@ -11562,24 +11562,24 @@ func (_IInterchainAppV1 *IInterchainAppV1Caller) GetLinkedApp(opts *bind.CallOpt
 
 }
 
-// GetLinkedApp is a free data retrieval call binding the contract method 0xb9b74b18.
+// GetLinkedApp is a free data retrieval call binding the contract method 0x4e6427e7.
 //
-// Solidity: function getLinkedApp(uint256 chainId) view returns(bytes32)
-func (_IInterchainAppV1 *IInterchainAppV1Session) GetLinkedApp(chainId *big.Int) ([32]byte, error) {
+// Solidity: function getLinkedApp(uint64 chainId) view returns(bytes32)
+func (_IInterchainAppV1 *IInterchainAppV1Session) GetLinkedApp(chainId uint64) ([32]byte, error) {
 	return _IInterchainAppV1.Contract.GetLinkedApp(&_IInterchainAppV1.CallOpts, chainId)
 }
 
-// GetLinkedApp is a free data retrieval call binding the contract method 0xb9b74b18.
+// GetLinkedApp is a free data retrieval call binding the contract method 0x4e6427e7.
 //
-// Solidity: function getLinkedApp(uint256 chainId) view returns(bytes32)
-func (_IInterchainAppV1 *IInterchainAppV1CallerSession) GetLinkedApp(chainId *big.Int) ([32]byte, error) {
+// Solidity: function getLinkedApp(uint64 chainId) view returns(bytes32)
+func (_IInterchainAppV1 *IInterchainAppV1CallerSession) GetLinkedApp(chainId uint64) ([32]byte, error) {
 	return _IInterchainAppV1.Contract.GetLinkedApp(&_IInterchainAppV1.CallOpts, chainId)
 }
 
-// GetLinkedAppEVM is a free data retrieval call binding the contract method 0xa9ac04b6.
+// GetLinkedAppEVM is a free data retrieval call binding the contract method 0x90a92c16.
 //
-// Solidity: function getLinkedAppEVM(uint256 chainId) view returns(address)
-func (_IInterchainAppV1 *IInterchainAppV1Caller) GetLinkedAppEVM(opts *bind.CallOpts, chainId *big.Int) (common.Address, error) {
+// Solidity: function getLinkedAppEVM(uint64 chainId) view returns(address)
+func (_IInterchainAppV1 *IInterchainAppV1Caller) GetLinkedAppEVM(opts *bind.CallOpts, chainId uint64) (common.Address, error) {
 	var out []interface{}
 	err := _IInterchainAppV1.contract.Call(opts, &out, "getLinkedAppEVM", chainId)
 
@@ -11593,17 +11593,17 @@ func (_IInterchainAppV1 *IInterchainAppV1Caller) GetLinkedAppEVM(opts *bind.Call
 
 }
 
-// GetLinkedAppEVM is a free data retrieval call binding the contract method 0xa9ac04b6.
+// GetLinkedAppEVM is a free data retrieval call binding the contract method 0x90a92c16.
 //
-// Solidity: function getLinkedAppEVM(uint256 chainId) view returns(address)
-func (_IInterchainAppV1 *IInterchainAppV1Session) GetLinkedAppEVM(chainId *big.Int) (common.Address, error) {
+// Solidity: function getLinkedAppEVM(uint64 chainId) view returns(address)
+func (_IInterchainAppV1 *IInterchainAppV1Session) GetLinkedAppEVM(chainId uint64) (common.Address, error) {
 	return _IInterchainAppV1.Contract.GetLinkedAppEVM(&_IInterchainAppV1.CallOpts, chainId)
 }
 
-// GetLinkedAppEVM is a free data retrieval call binding the contract method 0xa9ac04b6.
+// GetLinkedAppEVM is a free data retrieval call binding the contract method 0x90a92c16.
 //
-// Solidity: function getLinkedAppEVM(uint256 chainId) view returns(address)
-func (_IInterchainAppV1 *IInterchainAppV1CallerSession) GetLinkedAppEVM(chainId *big.Int) (common.Address, error) {
+// Solidity: function getLinkedAppEVM(uint64 chainId) view returns(address)
+func (_IInterchainAppV1 *IInterchainAppV1CallerSession) GetLinkedAppEVM(chainId uint64) (common.Address, error) {
 	return _IInterchainAppV1.Contract.GetLinkedAppEVM(&_IInterchainAppV1.CallOpts, chainId)
 }
 
@@ -11725,66 +11725,66 @@ func (_IInterchainAppV1 *IInterchainAppV1TransactorSession) AddTrustedModule(mod
 	return _IInterchainAppV1.Contract.AddTrustedModule(&_IInterchainAppV1.TransactOpts, module)
 }
 
-// AppReceive is a paid mutator transaction binding the contract method 0x68a69847.
+// AppReceive is a paid mutator transaction binding the contract method 0x6e9fd609.
 //
-// Solidity: function appReceive(uint256 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message) payable returns()
-func (_IInterchainAppV1 *IInterchainAppV1Transactor) AppReceive(opts *bind.TransactOpts, srcChainId *big.Int, sender [32]byte, dbNonce *big.Int, entryIndex uint64, message []byte) (*types.Transaction, error) {
+// Solidity: function appReceive(uint64 srcChainId, bytes32 sender, uint64 dbNonce, uint64 entryIndex, bytes message) payable returns()
+func (_IInterchainAppV1 *IInterchainAppV1Transactor) AppReceive(opts *bind.TransactOpts, srcChainId uint64, sender [32]byte, dbNonce uint64, entryIndex uint64, message []byte) (*types.Transaction, error) {
 	return _IInterchainAppV1.contract.Transact(opts, "appReceive", srcChainId, sender, dbNonce, entryIndex, message)
 }
 
-// AppReceive is a paid mutator transaction binding the contract method 0x68a69847.
+// AppReceive is a paid mutator transaction binding the contract method 0x6e9fd609.
 //
-// Solidity: function appReceive(uint256 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message) payable returns()
-func (_IInterchainAppV1 *IInterchainAppV1Session) AppReceive(srcChainId *big.Int, sender [32]byte, dbNonce *big.Int, entryIndex uint64, message []byte) (*types.Transaction, error) {
+// Solidity: function appReceive(uint64 srcChainId, bytes32 sender, uint64 dbNonce, uint64 entryIndex, bytes message) payable returns()
+func (_IInterchainAppV1 *IInterchainAppV1Session) AppReceive(srcChainId uint64, sender [32]byte, dbNonce uint64, entryIndex uint64, message []byte) (*types.Transaction, error) {
 	return _IInterchainAppV1.Contract.AppReceive(&_IInterchainAppV1.TransactOpts, srcChainId, sender, dbNonce, entryIndex, message)
 }
 
-// AppReceive is a paid mutator transaction binding the contract method 0x68a69847.
+// AppReceive is a paid mutator transaction binding the contract method 0x6e9fd609.
 //
-// Solidity: function appReceive(uint256 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message) payable returns()
-func (_IInterchainAppV1 *IInterchainAppV1TransactorSession) AppReceive(srcChainId *big.Int, sender [32]byte, dbNonce *big.Int, entryIndex uint64, message []byte) (*types.Transaction, error) {
+// Solidity: function appReceive(uint64 srcChainId, bytes32 sender, uint64 dbNonce, uint64 entryIndex, bytes message) payable returns()
+func (_IInterchainAppV1 *IInterchainAppV1TransactorSession) AppReceive(srcChainId uint64, sender [32]byte, dbNonce uint64, entryIndex uint64, message []byte) (*types.Transaction, error) {
 	return _IInterchainAppV1.Contract.AppReceive(&_IInterchainAppV1.TransactOpts, srcChainId, sender, dbNonce, entryIndex, message)
 }
 
-// LinkRemoteApp is a paid mutator transaction binding the contract method 0x51a30802.
+// LinkRemoteApp is a paid mutator transaction binding the contract method 0xf6b266fd.
 //
-// Solidity: function linkRemoteApp(uint256 chainId, bytes32 remoteApp) returns()
-func (_IInterchainAppV1 *IInterchainAppV1Transactor) LinkRemoteApp(opts *bind.TransactOpts, chainId *big.Int, remoteApp [32]byte) (*types.Transaction, error) {
+// Solidity: function linkRemoteApp(uint64 chainId, bytes32 remoteApp) returns()
+func (_IInterchainAppV1 *IInterchainAppV1Transactor) LinkRemoteApp(opts *bind.TransactOpts, chainId uint64, remoteApp [32]byte) (*types.Transaction, error) {
 	return _IInterchainAppV1.contract.Transact(opts, "linkRemoteApp", chainId, remoteApp)
 }
 
-// LinkRemoteApp is a paid mutator transaction binding the contract method 0x51a30802.
+// LinkRemoteApp is a paid mutator transaction binding the contract method 0xf6b266fd.
 //
-// Solidity: function linkRemoteApp(uint256 chainId, bytes32 remoteApp) returns()
-func (_IInterchainAppV1 *IInterchainAppV1Session) LinkRemoteApp(chainId *big.Int, remoteApp [32]byte) (*types.Transaction, error) {
+// Solidity: function linkRemoteApp(uint64 chainId, bytes32 remoteApp) returns()
+func (_IInterchainAppV1 *IInterchainAppV1Session) LinkRemoteApp(chainId uint64, remoteApp [32]byte) (*types.Transaction, error) {
 	return _IInterchainAppV1.Contract.LinkRemoteApp(&_IInterchainAppV1.TransactOpts, chainId, remoteApp)
 }
 
-// LinkRemoteApp is a paid mutator transaction binding the contract method 0x51a30802.
+// LinkRemoteApp is a paid mutator transaction binding the contract method 0xf6b266fd.
 //
-// Solidity: function linkRemoteApp(uint256 chainId, bytes32 remoteApp) returns()
-func (_IInterchainAppV1 *IInterchainAppV1TransactorSession) LinkRemoteApp(chainId *big.Int, remoteApp [32]byte) (*types.Transaction, error) {
+// Solidity: function linkRemoteApp(uint64 chainId, bytes32 remoteApp) returns()
+func (_IInterchainAppV1 *IInterchainAppV1TransactorSession) LinkRemoteApp(chainId uint64, remoteApp [32]byte) (*types.Transaction, error) {
 	return _IInterchainAppV1.Contract.LinkRemoteApp(&_IInterchainAppV1.TransactOpts, chainId, remoteApp)
 }
 
-// LinkRemoteAppEVM is a paid mutator transaction binding the contract method 0xaf8fcc8e.
+// LinkRemoteAppEVM is a paid mutator transaction binding the contract method 0x1856ddfe.
 //
-// Solidity: function linkRemoteAppEVM(uint256 chainId, address remoteApp) returns()
-func (_IInterchainAppV1 *IInterchainAppV1Transactor) LinkRemoteAppEVM(opts *bind.TransactOpts, chainId *big.Int, remoteApp common.Address) (*types.Transaction, error) {
+// Solidity: function linkRemoteAppEVM(uint64 chainId, address remoteApp) returns()
+func (_IInterchainAppV1 *IInterchainAppV1Transactor) LinkRemoteAppEVM(opts *bind.TransactOpts, chainId uint64, remoteApp common.Address) (*types.Transaction, error) {
 	return _IInterchainAppV1.contract.Transact(opts, "linkRemoteAppEVM", chainId, remoteApp)
 }
 
-// LinkRemoteAppEVM is a paid mutator transaction binding the contract method 0xaf8fcc8e.
+// LinkRemoteAppEVM is a paid mutator transaction binding the contract method 0x1856ddfe.
 //
-// Solidity: function linkRemoteAppEVM(uint256 chainId, address remoteApp) returns()
-func (_IInterchainAppV1 *IInterchainAppV1Session) LinkRemoteAppEVM(chainId *big.Int, remoteApp common.Address) (*types.Transaction, error) {
+// Solidity: function linkRemoteAppEVM(uint64 chainId, address remoteApp) returns()
+func (_IInterchainAppV1 *IInterchainAppV1Session) LinkRemoteAppEVM(chainId uint64, remoteApp common.Address) (*types.Transaction, error) {
 	return _IInterchainAppV1.Contract.LinkRemoteAppEVM(&_IInterchainAppV1.TransactOpts, chainId, remoteApp)
 }
 
-// LinkRemoteAppEVM is a paid mutator transaction binding the contract method 0xaf8fcc8e.
+// LinkRemoteAppEVM is a paid mutator transaction binding the contract method 0x1856ddfe.
 //
-// Solidity: function linkRemoteAppEVM(uint256 chainId, address remoteApp) returns()
-func (_IInterchainAppV1 *IInterchainAppV1TransactorSession) LinkRemoteAppEVM(chainId *big.Int, remoteApp common.Address) (*types.Transaction, error) {
+// Solidity: function linkRemoteAppEVM(uint64 chainId, address remoteApp) returns()
+func (_IInterchainAppV1 *IInterchainAppV1TransactorSession) LinkRemoteAppEVM(chainId uint64, remoteApp common.Address) (*types.Transaction, error) {
 	return _IInterchainAppV1.Contract.LinkRemoteAppEVM(&_IInterchainAppV1.TransactOpts, chainId, remoteApp)
 }
 
@@ -11895,19 +11895,19 @@ func (_IInterchainAppV1 *IInterchainAppV1TransactorSession) SetLatestInterchainC
 
 // IInterchainClientV1MetaData contains all meta data concerning the IInterchainClientV1 contract.
 var IInterchainClientV1MetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"InterchainClientV1__FeeAmountTooLow\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"}],\"name\":\"InterchainClientV1__IncorrectDstChainId\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"InterchainClientV1__IncorrectMsgValue\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"version\",\"type\":\"uint16\"}],\"name\":\"InterchainClientV1__InvalidTransactionVersion\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"}],\"name\":\"InterchainClientV1__NoLinkedClient\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"client\",\"type\":\"bytes32\"}],\"name\":\"InterchainClientV1__NotEVMClient\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"InterchainClientV1__NotEnoughResponses\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"}],\"name\":\"InterchainClientV1__NotRemoteChainId\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"}],\"name\":\"InterchainClientV1__TxAlreadyExecuted\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"}],\"name\":\"InterchainClientV1__TxNotExecuted\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainClientV1__ZeroReceiver\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainClientV1__ZeroRequiredResponses\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"transaction\",\"type\":\"bytes\"}],\"name\":\"getExecutor\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"}],\"name\":\"getExecutorById\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"srcExecutionService\",\"type\":\"address\"},{\"internalType\":\"address[]\",\"name\":\"srcModules\",\"type\":\"address[]\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"messageLen\",\"type\":\"uint256\"}],\"name\":\"getInterchainFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"}],\"name\":\"getLinkedClient\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"}],\"name\":\"getLinkedClientEVM\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"transaction\",\"type\":\"bytes\"},{\"internalType\":\"bytes32[]\",\"name\":\"proof\",\"type\":\"bytes32[]\"}],\"name\":\"interchainExecute\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"receiver\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"srcExecutionService\",\"type\":\"address\"},{\"internalType\":\"address[]\",\"name\":\"srcModules\",\"type\":\"address[]\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"}],\"name\":\"interchainSend\",\"outputs\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"}],\"internalType\":\"structInterchainTxDescriptor\",\"name\":\"desc\",\"type\":\"tuple\"}],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"dstChainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"receiver\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"srcExecutionService\",\"type\":\"address\"},{\"internalType\":\"address[]\",\"name\":\"srcModules\",\"type\":\"address[]\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"}],\"name\":\"interchainSendEVM\",\"outputs\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"}],\"internalType\":\"structInterchainTxDescriptor\",\"name\":\"desc\",\"type\":\"tuple\"}],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"transaction\",\"type\":\"bytes\"},{\"internalType\":\"bytes32[]\",\"name\":\"proof\",\"type\":\"bytes32[]\"}],\"name\":\"isExecutable\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executionFees_\",\"type\":\"address\"}],\"name\":\"setExecutionFees\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"client\",\"type\":\"bytes32\"}],\"name\":\"setLinkedClient\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"}],\"name\":\"writeExecutionProof\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"dbNonce\",\"type\":\"uint256\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"InterchainClientV1__FeeAmountTooLow\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"InterchainClientV1__IncorrectDstChainId\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"InterchainClientV1__IncorrectMsgValue\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"version\",\"type\":\"uint16\"}],\"name\":\"InterchainClientV1__InvalidTransactionVersion\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"InterchainClientV1__NoLinkedClient\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"client\",\"type\":\"bytes32\"}],\"name\":\"InterchainClientV1__NotEVMClient\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"InterchainClientV1__NotEnoughResponses\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"InterchainClientV1__NotRemoteChainId\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"}],\"name\":\"InterchainClientV1__TxAlreadyExecuted\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"}],\"name\":\"InterchainClientV1__TxNotExecuted\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainClientV1__ZeroReceiver\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InterchainClientV1__ZeroRequiredResponses\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"transaction\",\"type\":\"bytes\"}],\"name\":\"getExecutor\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"}],\"name\":\"getExecutorById\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"address\",\"name\":\"srcExecutionService\",\"type\":\"address\"},{\"internalType\":\"address[]\",\"name\":\"srcModules\",\"type\":\"address[]\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"messageLen\",\"type\":\"uint256\"}],\"name\":\"getInterchainFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"getLinkedClient\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"getLinkedClientEVM\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"transaction\",\"type\":\"bytes\"},{\"internalType\":\"bytes32[]\",\"name\":\"proof\",\"type\":\"bytes32[]\"}],\"name\":\"interchainExecute\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"bytes32\",\"name\":\"receiver\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"srcExecutionService\",\"type\":\"address\"},{\"internalType\":\"address[]\",\"name\":\"srcModules\",\"type\":\"address[]\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"}],\"name\":\"interchainSend\",\"outputs\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"}],\"internalType\":\"structInterchainTxDescriptor\",\"name\":\"desc\",\"type\":\"tuple\"}],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"address\",\"name\":\"receiver\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"srcExecutionService\",\"type\":\"address\"},{\"internalType\":\"address[]\",\"name\":\"srcModules\",\"type\":\"address[]\"},{\"internalType\":\"bytes\",\"name\":\"options\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"message\",\"type\":\"bytes\"}],\"name\":\"interchainSendEVM\",\"outputs\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"},{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"}],\"internalType\":\"structInterchainTxDescriptor\",\"name\":\"desc\",\"type\":\"tuple\"}],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"transaction\",\"type\":\"bytes\"},{\"internalType\":\"bytes32[]\",\"name\":\"proof\",\"type\":\"bytes32[]\"}],\"name\":\"isExecutable\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"executionFees_\",\"type\":\"address\"}],\"name\":\"setExecutionFees\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"},{\"internalType\":\"bytes32\",\"name\":\"client\",\"type\":\"bytes32\"}],\"name\":\"setLinkedClient\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"transactionId\",\"type\":\"bytes32\"}],\"name\":\"writeExecutionProof\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"entryIndex\",\"type\":\"uint64\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"f92a79ff": "getExecutor(bytes)",
 		"f1a61fac": "getExecutorById(bytes32)",
-		"7a1277db": "getInterchainFee(uint256,address,address[],bytes,uint256)",
-		"aa102ec4": "getLinkedClient(uint256)",
-		"02172a35": "getLinkedClientEVM(uint256)",
+		"cbb3c631": "getInterchainFee(uint64,address,address[],bytes,uint256)",
+		"2e568739": "getLinkedClient(uint64)",
+		"35c4a191": "getLinkedClientEVM(uint64)",
 		"53b67d74": "interchainExecute(uint256,bytes,bytes32[])",
-		"98939d28": "interchainSend(uint256,bytes32,address,address[],bytes,bytes)",
-		"827f940d": "interchainSendEVM(uint256,address,address,address[],bytes,bytes)",
+		"547efb84": "interchainSend(uint64,bytes32,address,address[],bytes,bytes)",
+		"3f34448e": "interchainSendEVM(uint64,address,address,address[],bytes,bytes)",
 		"1450c281": "isExecutable(bytes,bytes32[])",
 		"3dc68b87": "setExecutionFees(address)",
-		"f34234c8": "setLinkedClient(uint256,bytes32)",
+		"f3c66e2b": "setLinkedClient(uint64,bytes32)",
 		"90e81077": "writeExecutionProof(bytes32)",
 	},
 }
@@ -12124,10 +12124,10 @@ func (_IInterchainClientV1 *IInterchainClientV1CallerSession) GetExecutorById(tr
 	return _IInterchainClientV1.Contract.GetExecutorById(&_IInterchainClientV1.CallOpts, transactionId)
 }
 
-// GetInterchainFee is a free data retrieval call binding the contract method 0x7a1277db.
+// GetInterchainFee is a free data retrieval call binding the contract method 0xcbb3c631.
 //
-// Solidity: function getInterchainFee(uint256 dstChainId, address srcExecutionService, address[] srcModules, bytes options, uint256 messageLen) view returns(uint256)
-func (_IInterchainClientV1 *IInterchainClientV1Caller) GetInterchainFee(opts *bind.CallOpts, dstChainId *big.Int, srcExecutionService common.Address, srcModules []common.Address, options []byte, messageLen *big.Int) (*big.Int, error) {
+// Solidity: function getInterchainFee(uint64 dstChainId, address srcExecutionService, address[] srcModules, bytes options, uint256 messageLen) view returns(uint256)
+func (_IInterchainClientV1 *IInterchainClientV1Caller) GetInterchainFee(opts *bind.CallOpts, dstChainId uint64, srcExecutionService common.Address, srcModules []common.Address, options []byte, messageLen *big.Int) (*big.Int, error) {
 	var out []interface{}
 	err := _IInterchainClientV1.contract.Call(opts, &out, "getInterchainFee", dstChainId, srcExecutionService, srcModules, options, messageLen)
 
@@ -12141,24 +12141,24 @@ func (_IInterchainClientV1 *IInterchainClientV1Caller) GetInterchainFee(opts *bi
 
 }
 
-// GetInterchainFee is a free data retrieval call binding the contract method 0x7a1277db.
+// GetInterchainFee is a free data retrieval call binding the contract method 0xcbb3c631.
 //
-// Solidity: function getInterchainFee(uint256 dstChainId, address srcExecutionService, address[] srcModules, bytes options, uint256 messageLen) view returns(uint256)
-func (_IInterchainClientV1 *IInterchainClientV1Session) GetInterchainFee(dstChainId *big.Int, srcExecutionService common.Address, srcModules []common.Address, options []byte, messageLen *big.Int) (*big.Int, error) {
+// Solidity: function getInterchainFee(uint64 dstChainId, address srcExecutionService, address[] srcModules, bytes options, uint256 messageLen) view returns(uint256)
+func (_IInterchainClientV1 *IInterchainClientV1Session) GetInterchainFee(dstChainId uint64, srcExecutionService common.Address, srcModules []common.Address, options []byte, messageLen *big.Int) (*big.Int, error) {
 	return _IInterchainClientV1.Contract.GetInterchainFee(&_IInterchainClientV1.CallOpts, dstChainId, srcExecutionService, srcModules, options, messageLen)
 }
 
-// GetInterchainFee is a free data retrieval call binding the contract method 0x7a1277db.
+// GetInterchainFee is a free data retrieval call binding the contract method 0xcbb3c631.
 //
-// Solidity: function getInterchainFee(uint256 dstChainId, address srcExecutionService, address[] srcModules, bytes options, uint256 messageLen) view returns(uint256)
-func (_IInterchainClientV1 *IInterchainClientV1CallerSession) GetInterchainFee(dstChainId *big.Int, srcExecutionService common.Address, srcModules []common.Address, options []byte, messageLen *big.Int) (*big.Int, error) {
+// Solidity: function getInterchainFee(uint64 dstChainId, address srcExecutionService, address[] srcModules, bytes options, uint256 messageLen) view returns(uint256)
+func (_IInterchainClientV1 *IInterchainClientV1CallerSession) GetInterchainFee(dstChainId uint64, srcExecutionService common.Address, srcModules []common.Address, options []byte, messageLen *big.Int) (*big.Int, error) {
 	return _IInterchainClientV1.Contract.GetInterchainFee(&_IInterchainClientV1.CallOpts, dstChainId, srcExecutionService, srcModules, options, messageLen)
 }
 
-// GetLinkedClient is a free data retrieval call binding the contract method 0xaa102ec4.
+// GetLinkedClient is a free data retrieval call binding the contract method 0x2e568739.
 //
-// Solidity: function getLinkedClient(uint256 chainId) view returns(bytes32)
-func (_IInterchainClientV1 *IInterchainClientV1Caller) GetLinkedClient(opts *bind.CallOpts, chainId *big.Int) ([32]byte, error) {
+// Solidity: function getLinkedClient(uint64 chainId) view returns(bytes32)
+func (_IInterchainClientV1 *IInterchainClientV1Caller) GetLinkedClient(opts *bind.CallOpts, chainId uint64) ([32]byte, error) {
 	var out []interface{}
 	err := _IInterchainClientV1.contract.Call(opts, &out, "getLinkedClient", chainId)
 
@@ -12172,24 +12172,24 @@ func (_IInterchainClientV1 *IInterchainClientV1Caller) GetLinkedClient(opts *bin
 
 }
 
-// GetLinkedClient is a free data retrieval call binding the contract method 0xaa102ec4.
+// GetLinkedClient is a free data retrieval call binding the contract method 0x2e568739.
 //
-// Solidity: function getLinkedClient(uint256 chainId) view returns(bytes32)
-func (_IInterchainClientV1 *IInterchainClientV1Session) GetLinkedClient(chainId *big.Int) ([32]byte, error) {
+// Solidity: function getLinkedClient(uint64 chainId) view returns(bytes32)
+func (_IInterchainClientV1 *IInterchainClientV1Session) GetLinkedClient(chainId uint64) ([32]byte, error) {
 	return _IInterchainClientV1.Contract.GetLinkedClient(&_IInterchainClientV1.CallOpts, chainId)
 }
 
-// GetLinkedClient is a free data retrieval call binding the contract method 0xaa102ec4.
+// GetLinkedClient is a free data retrieval call binding the contract method 0x2e568739.
 //
-// Solidity: function getLinkedClient(uint256 chainId) view returns(bytes32)
-func (_IInterchainClientV1 *IInterchainClientV1CallerSession) GetLinkedClient(chainId *big.Int) ([32]byte, error) {
+// Solidity: function getLinkedClient(uint64 chainId) view returns(bytes32)
+func (_IInterchainClientV1 *IInterchainClientV1CallerSession) GetLinkedClient(chainId uint64) ([32]byte, error) {
 	return _IInterchainClientV1.Contract.GetLinkedClient(&_IInterchainClientV1.CallOpts, chainId)
 }
 
-// GetLinkedClientEVM is a free data retrieval call binding the contract method 0x02172a35.
+// GetLinkedClientEVM is a free data retrieval call binding the contract method 0x35c4a191.
 //
-// Solidity: function getLinkedClientEVM(uint256 chainId) view returns(address)
-func (_IInterchainClientV1 *IInterchainClientV1Caller) GetLinkedClientEVM(opts *bind.CallOpts, chainId *big.Int) (common.Address, error) {
+// Solidity: function getLinkedClientEVM(uint64 chainId) view returns(address)
+func (_IInterchainClientV1 *IInterchainClientV1Caller) GetLinkedClientEVM(opts *bind.CallOpts, chainId uint64) (common.Address, error) {
 	var out []interface{}
 	err := _IInterchainClientV1.contract.Call(opts, &out, "getLinkedClientEVM", chainId)
 
@@ -12203,17 +12203,17 @@ func (_IInterchainClientV1 *IInterchainClientV1Caller) GetLinkedClientEVM(opts *
 
 }
 
-// GetLinkedClientEVM is a free data retrieval call binding the contract method 0x02172a35.
+// GetLinkedClientEVM is a free data retrieval call binding the contract method 0x35c4a191.
 //
-// Solidity: function getLinkedClientEVM(uint256 chainId) view returns(address)
-func (_IInterchainClientV1 *IInterchainClientV1Session) GetLinkedClientEVM(chainId *big.Int) (common.Address, error) {
+// Solidity: function getLinkedClientEVM(uint64 chainId) view returns(address)
+func (_IInterchainClientV1 *IInterchainClientV1Session) GetLinkedClientEVM(chainId uint64) (common.Address, error) {
 	return _IInterchainClientV1.Contract.GetLinkedClientEVM(&_IInterchainClientV1.CallOpts, chainId)
 }
 
-// GetLinkedClientEVM is a free data retrieval call binding the contract method 0x02172a35.
+// GetLinkedClientEVM is a free data retrieval call binding the contract method 0x35c4a191.
 //
-// Solidity: function getLinkedClientEVM(uint256 chainId) view returns(address)
-func (_IInterchainClientV1 *IInterchainClientV1CallerSession) GetLinkedClientEVM(chainId *big.Int) (common.Address, error) {
+// Solidity: function getLinkedClientEVM(uint64 chainId) view returns(address)
+func (_IInterchainClientV1 *IInterchainClientV1CallerSession) GetLinkedClientEVM(chainId uint64) (common.Address, error) {
 	return _IInterchainClientV1.Contract.GetLinkedClientEVM(&_IInterchainClientV1.CallOpts, chainId)
 }
 
@@ -12269,45 +12269,45 @@ func (_IInterchainClientV1 *IInterchainClientV1TransactorSession) InterchainExec
 	return _IInterchainClientV1.Contract.InterchainExecute(&_IInterchainClientV1.TransactOpts, gasLimit, transaction, proof)
 }
 
-// InterchainSend is a paid mutator transaction binding the contract method 0x98939d28.
+// InterchainSend is a paid mutator transaction binding the contract method 0x547efb84.
 //
-// Solidity: function interchainSend(uint256 dstChainId, bytes32 receiver, address srcExecutionService, address[] srcModules, bytes options, bytes message) payable returns((bytes32,uint256,uint64) desc)
-func (_IInterchainClientV1 *IInterchainClientV1Transactor) InterchainSend(opts *bind.TransactOpts, dstChainId *big.Int, receiver [32]byte, srcExecutionService common.Address, srcModules []common.Address, options []byte, message []byte) (*types.Transaction, error) {
+// Solidity: function interchainSend(uint64 dstChainId, bytes32 receiver, address srcExecutionService, address[] srcModules, bytes options, bytes message) payable returns((bytes32,uint64,uint64) desc)
+func (_IInterchainClientV1 *IInterchainClientV1Transactor) InterchainSend(opts *bind.TransactOpts, dstChainId uint64, receiver [32]byte, srcExecutionService common.Address, srcModules []common.Address, options []byte, message []byte) (*types.Transaction, error) {
 	return _IInterchainClientV1.contract.Transact(opts, "interchainSend", dstChainId, receiver, srcExecutionService, srcModules, options, message)
 }
 
-// InterchainSend is a paid mutator transaction binding the contract method 0x98939d28.
+// InterchainSend is a paid mutator transaction binding the contract method 0x547efb84.
 //
-// Solidity: function interchainSend(uint256 dstChainId, bytes32 receiver, address srcExecutionService, address[] srcModules, bytes options, bytes message) payable returns((bytes32,uint256,uint64) desc)
-func (_IInterchainClientV1 *IInterchainClientV1Session) InterchainSend(dstChainId *big.Int, receiver [32]byte, srcExecutionService common.Address, srcModules []common.Address, options []byte, message []byte) (*types.Transaction, error) {
+// Solidity: function interchainSend(uint64 dstChainId, bytes32 receiver, address srcExecutionService, address[] srcModules, bytes options, bytes message) payable returns((bytes32,uint64,uint64) desc)
+func (_IInterchainClientV1 *IInterchainClientV1Session) InterchainSend(dstChainId uint64, receiver [32]byte, srcExecutionService common.Address, srcModules []common.Address, options []byte, message []byte) (*types.Transaction, error) {
 	return _IInterchainClientV1.Contract.InterchainSend(&_IInterchainClientV1.TransactOpts, dstChainId, receiver, srcExecutionService, srcModules, options, message)
 }
 
-// InterchainSend is a paid mutator transaction binding the contract method 0x98939d28.
+// InterchainSend is a paid mutator transaction binding the contract method 0x547efb84.
 //
-// Solidity: function interchainSend(uint256 dstChainId, bytes32 receiver, address srcExecutionService, address[] srcModules, bytes options, bytes message) payable returns((bytes32,uint256,uint64) desc)
-func (_IInterchainClientV1 *IInterchainClientV1TransactorSession) InterchainSend(dstChainId *big.Int, receiver [32]byte, srcExecutionService common.Address, srcModules []common.Address, options []byte, message []byte) (*types.Transaction, error) {
+// Solidity: function interchainSend(uint64 dstChainId, bytes32 receiver, address srcExecutionService, address[] srcModules, bytes options, bytes message) payable returns((bytes32,uint64,uint64) desc)
+func (_IInterchainClientV1 *IInterchainClientV1TransactorSession) InterchainSend(dstChainId uint64, receiver [32]byte, srcExecutionService common.Address, srcModules []common.Address, options []byte, message []byte) (*types.Transaction, error) {
 	return _IInterchainClientV1.Contract.InterchainSend(&_IInterchainClientV1.TransactOpts, dstChainId, receiver, srcExecutionService, srcModules, options, message)
 }
 
-// InterchainSendEVM is a paid mutator transaction binding the contract method 0x827f940d.
+// InterchainSendEVM is a paid mutator transaction binding the contract method 0x3f34448e.
 //
-// Solidity: function interchainSendEVM(uint256 dstChainId, address receiver, address srcExecutionService, address[] srcModules, bytes options, bytes message) payable returns((bytes32,uint256,uint64) desc)
-func (_IInterchainClientV1 *IInterchainClientV1Transactor) InterchainSendEVM(opts *bind.TransactOpts, dstChainId *big.Int, receiver common.Address, srcExecutionService common.Address, srcModules []common.Address, options []byte, message []byte) (*types.Transaction, error) {
+// Solidity: function interchainSendEVM(uint64 dstChainId, address receiver, address srcExecutionService, address[] srcModules, bytes options, bytes message) payable returns((bytes32,uint64,uint64) desc)
+func (_IInterchainClientV1 *IInterchainClientV1Transactor) InterchainSendEVM(opts *bind.TransactOpts, dstChainId uint64, receiver common.Address, srcExecutionService common.Address, srcModules []common.Address, options []byte, message []byte) (*types.Transaction, error) {
 	return _IInterchainClientV1.contract.Transact(opts, "interchainSendEVM", dstChainId, receiver, srcExecutionService, srcModules, options, message)
 }
 
-// InterchainSendEVM is a paid mutator transaction binding the contract method 0x827f940d.
+// InterchainSendEVM is a paid mutator transaction binding the contract method 0x3f34448e.
 //
-// Solidity: function interchainSendEVM(uint256 dstChainId, address receiver, address srcExecutionService, address[] srcModules, bytes options, bytes message) payable returns((bytes32,uint256,uint64) desc)
-func (_IInterchainClientV1 *IInterchainClientV1Session) InterchainSendEVM(dstChainId *big.Int, receiver common.Address, srcExecutionService common.Address, srcModules []common.Address, options []byte, message []byte) (*types.Transaction, error) {
+// Solidity: function interchainSendEVM(uint64 dstChainId, address receiver, address srcExecutionService, address[] srcModules, bytes options, bytes message) payable returns((bytes32,uint64,uint64) desc)
+func (_IInterchainClientV1 *IInterchainClientV1Session) InterchainSendEVM(dstChainId uint64, receiver common.Address, srcExecutionService common.Address, srcModules []common.Address, options []byte, message []byte) (*types.Transaction, error) {
 	return _IInterchainClientV1.Contract.InterchainSendEVM(&_IInterchainClientV1.TransactOpts, dstChainId, receiver, srcExecutionService, srcModules, options, message)
 }
 
-// InterchainSendEVM is a paid mutator transaction binding the contract method 0x827f940d.
+// InterchainSendEVM is a paid mutator transaction binding the contract method 0x3f34448e.
 //
-// Solidity: function interchainSendEVM(uint256 dstChainId, address receiver, address srcExecutionService, address[] srcModules, bytes options, bytes message) payable returns((bytes32,uint256,uint64) desc)
-func (_IInterchainClientV1 *IInterchainClientV1TransactorSession) InterchainSendEVM(dstChainId *big.Int, receiver common.Address, srcExecutionService common.Address, srcModules []common.Address, options []byte, message []byte) (*types.Transaction, error) {
+// Solidity: function interchainSendEVM(uint64 dstChainId, address receiver, address srcExecutionService, address[] srcModules, bytes options, bytes message) payable returns((bytes32,uint64,uint64) desc)
+func (_IInterchainClientV1 *IInterchainClientV1TransactorSession) InterchainSendEVM(dstChainId uint64, receiver common.Address, srcExecutionService common.Address, srcModules []common.Address, options []byte, message []byte) (*types.Transaction, error) {
 	return _IInterchainClientV1.Contract.InterchainSendEVM(&_IInterchainClientV1.TransactOpts, dstChainId, receiver, srcExecutionService, srcModules, options, message)
 }
 
@@ -12332,44 +12332,44 @@ func (_IInterchainClientV1 *IInterchainClientV1TransactorSession) SetExecutionFe
 	return _IInterchainClientV1.Contract.SetExecutionFees(&_IInterchainClientV1.TransactOpts, executionFees_)
 }
 
-// SetLinkedClient is a paid mutator transaction binding the contract method 0xf34234c8.
+// SetLinkedClient is a paid mutator transaction binding the contract method 0xf3c66e2b.
 //
-// Solidity: function setLinkedClient(uint256 chainId, bytes32 client) returns()
-func (_IInterchainClientV1 *IInterchainClientV1Transactor) SetLinkedClient(opts *bind.TransactOpts, chainId *big.Int, client [32]byte) (*types.Transaction, error) {
+// Solidity: function setLinkedClient(uint64 chainId, bytes32 client) returns()
+func (_IInterchainClientV1 *IInterchainClientV1Transactor) SetLinkedClient(opts *bind.TransactOpts, chainId uint64, client [32]byte) (*types.Transaction, error) {
 	return _IInterchainClientV1.contract.Transact(opts, "setLinkedClient", chainId, client)
 }
 
-// SetLinkedClient is a paid mutator transaction binding the contract method 0xf34234c8.
+// SetLinkedClient is a paid mutator transaction binding the contract method 0xf3c66e2b.
 //
-// Solidity: function setLinkedClient(uint256 chainId, bytes32 client) returns()
-func (_IInterchainClientV1 *IInterchainClientV1Session) SetLinkedClient(chainId *big.Int, client [32]byte) (*types.Transaction, error) {
+// Solidity: function setLinkedClient(uint64 chainId, bytes32 client) returns()
+func (_IInterchainClientV1 *IInterchainClientV1Session) SetLinkedClient(chainId uint64, client [32]byte) (*types.Transaction, error) {
 	return _IInterchainClientV1.Contract.SetLinkedClient(&_IInterchainClientV1.TransactOpts, chainId, client)
 }
 
-// SetLinkedClient is a paid mutator transaction binding the contract method 0xf34234c8.
+// SetLinkedClient is a paid mutator transaction binding the contract method 0xf3c66e2b.
 //
-// Solidity: function setLinkedClient(uint256 chainId, bytes32 client) returns()
-func (_IInterchainClientV1 *IInterchainClientV1TransactorSession) SetLinkedClient(chainId *big.Int, client [32]byte) (*types.Transaction, error) {
+// Solidity: function setLinkedClient(uint64 chainId, bytes32 client) returns()
+func (_IInterchainClientV1 *IInterchainClientV1TransactorSession) SetLinkedClient(chainId uint64, client [32]byte) (*types.Transaction, error) {
 	return _IInterchainClientV1.Contract.SetLinkedClient(&_IInterchainClientV1.TransactOpts, chainId, client)
 }
 
 // WriteExecutionProof is a paid mutator transaction binding the contract method 0x90e81077.
 //
-// Solidity: function writeExecutionProof(bytes32 transactionId) returns(uint256 dbNonce, uint64 entryIndex)
+// Solidity: function writeExecutionProof(bytes32 transactionId) returns(uint64 dbNonce, uint64 entryIndex)
 func (_IInterchainClientV1 *IInterchainClientV1Transactor) WriteExecutionProof(opts *bind.TransactOpts, transactionId [32]byte) (*types.Transaction, error) {
 	return _IInterchainClientV1.contract.Transact(opts, "writeExecutionProof", transactionId)
 }
 
 // WriteExecutionProof is a paid mutator transaction binding the contract method 0x90e81077.
 //
-// Solidity: function writeExecutionProof(bytes32 transactionId) returns(uint256 dbNonce, uint64 entryIndex)
+// Solidity: function writeExecutionProof(bytes32 transactionId) returns(uint64 dbNonce, uint64 entryIndex)
 func (_IInterchainClientV1 *IInterchainClientV1Session) WriteExecutionProof(transactionId [32]byte) (*types.Transaction, error) {
 	return _IInterchainClientV1.Contract.WriteExecutionProof(&_IInterchainClientV1.TransactOpts, transactionId)
 }
 
 // WriteExecutionProof is a paid mutator transaction binding the contract method 0x90e81077.
 //
-// Solidity: function writeExecutionProof(bytes32 transactionId) returns(uint256 dbNonce, uint64 entryIndex)
+// Solidity: function writeExecutionProof(bytes32 transactionId) returns(uint64 dbNonce, uint64 entryIndex)
 func (_IInterchainClientV1 *IInterchainClientV1TransactorSession) WriteExecutionProof(transactionId [32]byte) (*types.Transaction, error) {
 	return _IInterchainClientV1.Contract.WriteExecutionProof(&_IInterchainClientV1.TransactOpts, transactionId)
 }
@@ -13218,7 +13218,7 @@ func (_InterchainAppV1Events *InterchainAppV1EventsFilterer) ParseTrustedModuleR
 // InterchainTransactionLibMetaData contains all meta data concerning the InterchainTransactionLib contract.
 var InterchainTransactionLibMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122091ad12c1d41abf9f89799c8ee51e41625348c4028cfa9fce7781f9d5706ed3d064736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212203a492d02a3899980031ef91cf996c44e02997b5dbe4adbdb0fba61f00d54aa0e64736f6c63430008140033",
 }
 
 // InterchainTransactionLibABI is the input ABI used to generate the binding from.
@@ -13391,7 +13391,7 @@ func (_InterchainTransactionLib *InterchainTransactionLibTransactorRaw) Transact
 // MathLibMetaData contains all meta data concerning the MathLib contract.
 var MathLibMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212201ddcd773e0f1c464d97d3209677b12f1776d41cd923db0dc5091c986409d299d64736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122056c4a726ad438123565e231d0bdce72450b84e21bea75262d76ce9054925efa664736f6c63430008140033",
 }
 
 // MathLibABI is the input ABI used to generate the binding from.
@@ -13564,7 +13564,7 @@ func (_MathLib *MathLibTransactorRaw) Transact(opts *bind.TransactOpts, method s
 // OptionsLibMetaData contains all meta data concerning the OptionsLib contract.
 var OptionsLibMetaData = &bind.MetaData{
 	ABI: "[{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"version\",\"type\":\"uint16\"}],\"name\":\"OptionsLib__IncorrectVersion\",\"type\":\"error\"}]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212206e254e60b19ee048dadcdb3313732bbed94d2b0975982a4db63ed172f7d0479064736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122014bd48eaab38897efe9b370b6f8d0e1a25072680ce158c5c0b7375d1c10e513464736f6c63430008140033",
 }
 
 // OptionsLibABI is the input ABI used to generate the binding from.
@@ -13734,10 +13734,183 @@ func (_OptionsLib *OptionsLibTransactorRaw) Transact(opts *bind.TransactOpts, me
 	return _OptionsLib.Contract.contract.Transact(opts, method, params...)
 }
 
+// SafeCastMetaData contains all meta data concerning the SafeCast contract.
+var SafeCastMetaData = &bind.MetaData{
+	ABI: "[{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"bits\",\"type\":\"uint8\"},{\"internalType\":\"int256\",\"name\":\"value\",\"type\":\"int256\"}],\"name\":\"SafeCastOverflowedIntDowncast\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"int256\",\"name\":\"value\",\"type\":\"int256\"}],\"name\":\"SafeCastOverflowedIntToUint\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"bits\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"SafeCastOverflowedUintDowncast\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"SafeCastOverflowedUintToInt\",\"type\":\"error\"}]",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220e95f55fbd153b3834bfd7f26254bb8eee62be5fcadc0e9ec9cab209c23099a2064736f6c63430008140033",
+}
+
+// SafeCastABI is the input ABI used to generate the binding from.
+// Deprecated: Use SafeCastMetaData.ABI instead.
+var SafeCastABI = SafeCastMetaData.ABI
+
+// SafeCastBin is the compiled bytecode used for deploying new contracts.
+// Deprecated: Use SafeCastMetaData.Bin instead.
+var SafeCastBin = SafeCastMetaData.Bin
+
+// DeploySafeCast deploys a new Ethereum contract, binding an instance of SafeCast to it.
+func DeploySafeCast(auth *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, *SafeCast, error) {
+	parsed, err := SafeCastMetaData.GetAbi()
+	if err != nil {
+		return common.Address{}, nil, nil, err
+	}
+	if parsed == nil {
+		return common.Address{}, nil, nil, errors.New("GetABI returned nil")
+	}
+
+	address, tx, contract, err := bind.DeployContract(auth, *parsed, common.FromHex(SafeCastBin), backend)
+	if err != nil {
+		return common.Address{}, nil, nil, err
+	}
+	return address, tx, &SafeCast{SafeCastCaller: SafeCastCaller{contract: contract}, SafeCastTransactor: SafeCastTransactor{contract: contract}, SafeCastFilterer: SafeCastFilterer{contract: contract}}, nil
+}
+
+// SafeCast is an auto generated Go binding around an Ethereum contract.
+type SafeCast struct {
+	SafeCastCaller     // Read-only binding to the contract
+	SafeCastTransactor // Write-only binding to the contract
+	SafeCastFilterer   // Log filterer for contract events
+}
+
+// SafeCastCaller is an auto generated read-only Go binding around an Ethereum contract.
+type SafeCastCaller struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// SafeCastTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type SafeCastTransactor struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// SafeCastFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type SafeCastFilterer struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// SafeCastSession is an auto generated Go binding around an Ethereum contract,
+// with pre-set call and transact options.
+type SafeCastSession struct {
+	Contract     *SafeCast         // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts     // Call options to use throughout this session
+	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
+}
+
+// SafeCastCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// with pre-set call options.
+type SafeCastCallerSession struct {
+	Contract *SafeCastCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts   // Call options to use throughout this session
+}
+
+// SafeCastTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// with pre-set transact options.
+type SafeCastTransactorSession struct {
+	Contract     *SafeCastTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts   // Transaction auth options to use throughout this session
+}
+
+// SafeCastRaw is an auto generated low-level Go binding around an Ethereum contract.
+type SafeCastRaw struct {
+	Contract *SafeCast // Generic contract binding to access the raw methods on
+}
+
+// SafeCastCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type SafeCastCallerRaw struct {
+	Contract *SafeCastCaller // Generic read-only contract binding to access the raw methods on
+}
+
+// SafeCastTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type SafeCastTransactorRaw struct {
+	Contract *SafeCastTransactor // Generic write-only contract binding to access the raw methods on
+}
+
+// NewSafeCast creates a new instance of SafeCast, bound to a specific deployed contract.
+func NewSafeCast(address common.Address, backend bind.ContractBackend) (*SafeCast, error) {
+	contract, err := bindSafeCast(address, backend, backend, backend)
+	if err != nil {
+		return nil, err
+	}
+	return &SafeCast{SafeCastCaller: SafeCastCaller{contract: contract}, SafeCastTransactor: SafeCastTransactor{contract: contract}, SafeCastFilterer: SafeCastFilterer{contract: contract}}, nil
+}
+
+// NewSafeCastCaller creates a new read-only instance of SafeCast, bound to a specific deployed contract.
+func NewSafeCastCaller(address common.Address, caller bind.ContractCaller) (*SafeCastCaller, error) {
+	contract, err := bindSafeCast(address, caller, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &SafeCastCaller{contract: contract}, nil
+}
+
+// NewSafeCastTransactor creates a new write-only instance of SafeCast, bound to a specific deployed contract.
+func NewSafeCastTransactor(address common.Address, transactor bind.ContractTransactor) (*SafeCastTransactor, error) {
+	contract, err := bindSafeCast(address, nil, transactor, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &SafeCastTransactor{contract: contract}, nil
+}
+
+// NewSafeCastFilterer creates a new log filterer instance of SafeCast, bound to a specific deployed contract.
+func NewSafeCastFilterer(address common.Address, filterer bind.ContractFilterer) (*SafeCastFilterer, error) {
+	contract, err := bindSafeCast(address, nil, nil, filterer)
+	if err != nil {
+		return nil, err
+	}
+	return &SafeCastFilterer{contract: contract}, nil
+}
+
+// bindSafeCast binds a generic wrapper to an already deployed contract.
+func bindSafeCast(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := SafeCastMetaData.GetAbi()
+	if err != nil {
+		return nil, err
+	}
+	return bind.NewBoundContract(address, *parsed, caller, transactor, filterer), nil
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_SafeCast *SafeCastRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _SafeCast.Contract.SafeCastCaller.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_SafeCast *SafeCastRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _SafeCast.Contract.SafeCastTransactor.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_SafeCast *SafeCastRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _SafeCast.Contract.SafeCastTransactor.contract.Transact(opts, method, params...)
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_SafeCast *SafeCastCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+	return _SafeCast.Contract.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_SafeCast *SafeCastTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _SafeCast.Contract.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_SafeCast *SafeCastTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _SafeCast.Contract.contract.Transact(opts, method, params...)
+}
+
 // TypeCastsMetaData contains all meta data concerning the TypeCasts contract.
 var TypeCastsMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122027e2063dd1d77ce757566ee8d3b09ac91e90d6e7303245b65d418144776851eb64736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220d86f8a41bc6340f4198fd224f6d75009d365e08304bbe750d0ee633cf62879b464736f6c63430008140033",
 }
 
 // TypeCastsABI is the input ABI used to generate the binding from.
@@ -13910,7 +14083,7 @@ func (_TypeCasts *TypeCastsTransactorRaw) Transact(opts *bind.TransactOpts, meth
 // VersionedPayloadLibMetaData contains all meta data concerning the VersionedPayloadLib contract.
 var VersionedPayloadLibMetaData = &bind.MetaData{
 	ABI: "[{\"inputs\":[],\"name\":\"VersionedPayload__PrecompileFailed\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"versionedPayload\",\"type\":\"bytes\"}],\"name\":\"VersionedPayload__TooShort\",\"type\":\"error\"}]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220cdd762cc42c1bc722e2722f414496bee7ad8c62afceb3ffbec9cea783ab68a4464736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220bfb7d64143b7a3d8c7dd840d1c69c786d48a50afb304b468ba9fad8577fe0b0664736f6c63430008140033",
 }
 
 // VersionedPayloadLibABI is the input ABI used to generate the binding from.
