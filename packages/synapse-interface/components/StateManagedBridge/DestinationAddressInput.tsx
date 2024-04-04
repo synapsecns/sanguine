@@ -14,7 +14,7 @@ import {
 } from '@/slices/bridgeDisplaySlice'
 import { Address } from 'viem'
 import { isEmptyString } from '@/utils/isEmptyString'
-import { CloseButton } from './components/CloseButton'
+import { CloseButton } from '@/components/ui/CloseButton'
 import { useTransactionsState } from '@/slices/transactions/hooks'
 import { TransactionsState } from '@/slices/transactions/reducer'
 import { BridgeTransaction } from '@/slices/api/generated'
@@ -164,10 +164,10 @@ export const DestinationAddressInput = ({
 
   useCloseOnOutsideClick(listRef, handleCloseList)
 
-  const escPressed = useKeyPress('Escape')
-  const arrowUp = useKeyPress('ArrowUp')
-  const arrowDown = useKeyPress('ArrowDown')
-  const enterPressed = useKeyPress('Enter')
+  const escPressed = useKeyPress('Escape', true)
+  const arrowUp = useKeyPress('ArrowUp', true)
+  const arrowDown = useKeyPress('ArrowDown', true)
+  const enterPressed = useKeyPress('Enter', true)
 
   function escFunc() {
     if (!showRecipientList) return
@@ -235,7 +235,7 @@ export const DestinationAddressInput = ({
 
   return (
     <div id="destination-address-input">
-      <div className="flex items-center">
+      <div className="relative flex items-center">
         <div className="mr-1.5 text-secondary text-sm">To: </div>
         <div
           className={`
@@ -269,7 +269,7 @@ export const DestinationAddressInput = ({
           {destinationAddress ? (
             <CloseButton
               onClick={onClearUserInput}
-              className="!w-5 !h-5 mr-0.5 mt-0.5 hover:opacity-70"
+              className="!right-0 !w-5 !h-5 mr-0.5 mt-0.5 hover:opacity-70"
             />
           ) : isInputFocused ? (
             <PasteButton onPaste={handlePaste} />
@@ -421,7 +421,7 @@ const PasteButton = ({ onPaste }: { onPaste: () => Promise<void> }) => {
       onMouseDown={(e) => e.preventDefault()}
       className={`
         absolute border-transparent cursor-pointer
-        right-2.5 mt-0.5 justify-self-end
+        right-0.5 mt-0.5 justify-self-end
         fill-zinc-100 stroke-zinc-100 hover:opacity-70
       `}
     >
