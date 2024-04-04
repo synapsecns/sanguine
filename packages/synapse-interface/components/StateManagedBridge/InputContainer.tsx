@@ -148,10 +148,12 @@ export const InputContainer = () => {
 
   const showMaxOption = () => {
     if (!hasMounted || !isConnected) return false
-    if (!isNativeToken) return true
-
     if (isNativeToken && isNull(estimatedGasCostInGwei)) return false
+
+    return true
   }
+
+  console.log('showMaxOption(): ', showMaxOption())
 
   return (
     <div
@@ -201,7 +203,7 @@ export const InputContainer = () => {
                   style={{ display: 'table-cell', width: '100%' }}
                 />
               </div>
-              {hasMounted && isConnected && (
+              {showMaxOption() && (
                 <label
                   htmlFor="inputRow"
                   className="text-xs text-white transition-all duration-150 transform-gpu hover:text-opacity-70 hover:cursor-pointer"
@@ -217,7 +219,7 @@ export const InputContainer = () => {
             </div>
           </div>
           <div>
-            {hasMounted && isConnected && (
+            {showMaxOption() && (
               <div className="m">
                 <MiniMaxButton
                   disabled={!balance || balance === 0n ? true : false}
