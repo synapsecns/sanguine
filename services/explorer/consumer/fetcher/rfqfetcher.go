@@ -44,6 +44,6 @@ func (p *rfqFetcher) GetTokenSymbol(ctx context.Context, tokenAddress common.Add
 		symbol := "ETH"
 		return &symbol, nil
 	}
-
-	return nil, nil
+	err := fmt.Errorf("could not get rfq token symbol: token address not recognized")
+	return nil, err
 }

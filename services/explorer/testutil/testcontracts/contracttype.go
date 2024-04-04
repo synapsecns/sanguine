@@ -9,6 +9,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp/testcctp"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus/testmessagebus"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap/testmetaswap"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/rfq/testrfq"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/testswap"
 )
 
@@ -57,6 +58,8 @@ const (
 	TestMetaSwapType
 	// TestCCTPType is cctp contract type.
 	TestCCTPType
+	// TestRFQType is rfq contract type.
+	TestRFQType
 )
 
 // ID gets the contract type as an id.
@@ -91,7 +94,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return testmetaswap.Contracts["/solidity/TestMetaSwapV1.sol:TestMetaSwap"]
 	case TestCCTPType:
 		return testcctp.Contracts["solidity/TestSynapseCCTPV1.sol:TestSynapseCCTP"]
-
+	case TestRFQType:
+		return testrfq.Contracts["solidity/TestSynapseRFQV2.sol:TestSynapseRFQV2"]
 	default:
 		panic("not yet implemented")
 	}

@@ -3,8 +3,9 @@ package backfill_test
 import (
 	gosql "database/sql"
 	"fmt"
-	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
 	"math/big"
+
+	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
 
 	"github.com/synapsecns/sanguine/ethergo/mocks"
 	"github.com/synapsecns/sanguine/services/explorer/consumer/fetcher/tokenprice"
@@ -26,6 +27,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/testutil/testcontracts"
 	bridgeTypes "github.com/synapsecns/sanguine/services/explorer/types/bridge"
 	cctpTypes "github.com/synapsecns/sanguine/services/explorer/types/cctp"
+	rfqTypes "github.com/synapsecns/sanguine/services/explorer/types/rfq"
 	swapTypes "github.com/synapsecns/sanguine/services/explorer/types/swap"
 )
 
@@ -47,6 +49,7 @@ func (b *BackfillSuite) TestBackfill() {
 	metaSwapContract, metaSwapRef := b.testDeployManager.GetTestMetaSwap(b.GetTestContext(), b.testBackend)
 	messageBusContract, messageBusRef := b.testDeployManager.GetTestMessageBusUpgradeable(b.GetTestContext(), b.testBackend)
 	cctpContract, cctpRef := b.testDeployManager.GetTestCCTP(b.GetTestContext(), b.testBackend)
+	rfqContract, rfqRef := b.testDeployManager.GetTestRFQ(b.GetTestContext(), b.testBackend)
 	testDeployManagerB := testcontracts.NewDeployManager(b.T())
 
 	swapContractB, swapRefB := testDeployManagerB.GetTestSwapFlashLoan(b.GetTestContext(), b.testBackend)
@@ -93,6 +96,13 @@ func (b *BackfillSuite) TestBackfill() {
 		StartBlock:   0,
 	}
 
+	// RFQ config
+	contractRFQ := indexerConfig.ContractConfig{
+		ContractType: "rfq",
+		Address:      rfqContract.Address().String(),
+		StartBlock:   0,
+	}
+
 	// Create the chain configs
 	chainConfigs := []indexerConfig.ChainConfig{
 		{
@@ -100,7 +110,7 @@ func (b *BackfillSuite) TestBackfill() {
 			RPCURL:              gofakeit.URL(),
 			FetchBlockIncrement: 2,
 			MaxGoroutines:       2,
-			Contracts:           []indexerConfig.ContractConfig{contractConfigBridge, contractConfigSwap1, contractConfigSwap2, contractMessageBus, contractConfigMetaSwap, contractCCTP},
+			Contracts:           []indexerConfig.ContractConfig{contractConfigBridge, contractConfigSwap1, contractConfigSwap2, contractMessageBus, contractConfigMetaSwap, contractCCTP, contractRFQ},
 		},
 	}
 	chainConfigsV1 := []indexerConfig.ChainConfig{
@@ -318,6 +328,23 @@ func (b *BackfillSuite) TestBackfill() {
 	requestFulfilledLog, err := b.storeTestLog(requestFulfilledTx, uint32(testChainID.Uint64()), 6)
 	Nil(b.T(), err)
 
+	// Store every rfq event
+	var transactionID [32]byte
+	transactionIDBytes := common.Hex2Bytes(mocks.NewMockHash(b.T()).String()) // Replace "your_hex_value_here" with an actual hex value if needed
+	copy(transactionID[:], transactionIDBytes)
+
+	bridgeRequestedTx, err := rfqRef.TestBridge(transactOpts.TransactOpts, uint32(testChainID.Uint64()), common.BigToAddress(big.NewInt(gofakeit.Int64())), common.BigToAddress(big.NewInt(gofakeit.Int64())), common.BigToAddress(big.NewInt(gofakeit.Int64())), common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), gofakeit.Bool())
+	Nil(b.T(), err)
+	b.storeEthTx(bridgeRequestedTx, testChainID, big.NewInt(int64(5)), 5)
+	bridgeRequestedLog, err := b.storeTestLog(bridgeRequestedTx, uint32(testChainID.Uint64()), 5)
+	Nil(b.T(), err)
+
+	bridgeRelayedTx, err := rfqRef.TestRelay(transactOpts.TransactOpts, transactionID, common.BigToAddress(big.NewInt(gofakeit.Int64())), common.BigToAddress(big.NewInt(gofakeit.Int64())), uint32(testChainID.Uint64()), common.BigToAddress(big.NewInt(gofakeit.Int64())), common.BigToAddress(big.NewInt(gofakeit.Int64())), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()), big.NewInt(gofakeit.Int64()))
+	Nil(b.T(), err)
+	b.storeEthTx(bridgeRelayedTx, testChainID, big.NewInt(int64(5)), 5)
+	bridgeRelayedLog, err := b.storeTestLog(bridgeRelayedTx, uint32(testChainID.Uint64()), 5)
+	Nil(b.T(), err)
+
 	// Go through each contract and save the end height in scribe
 	for i := range chainConfigs[0].Contracts {
 		//  the last block store per contract
@@ -364,10 +391,16 @@ func (b *BackfillSuite) TestBackfill() {
 	msp, err := parser.NewSwapParser(b.db, metaSwapContract.Address(), true, b.consumerFetcher, msr, tokenDataService, tokenPriceService)
 	Nil(b.T(), err)
 
-	// msr is the meta swap ref for getting token data
+	// cr is the cctp ref for getting token data
 	cr, err := fetcher.NewCCTPFetcher(cctpRef.Address(), b.testBackend)
 	Nil(b.T(), err)
 	cp, err := parser.NewCCTPParser(b.db, cctpRef.Address(), b.consumerFetcher, cr, tokenDataService, tokenPriceService, false)
+	Nil(b.T(), err)
+
+	// pr is the rfq ref for getting token data
+	pr, err := fetcher.NewRFQFetcher(rfqRef.Address(), b.testBackend)
+	Nil(b.T(), err)
+	pp, err := parser.NewRFQParser(b.db, rfqRef.Address(), b.consumerFetcher, pr, tokenDataService, tokenPriceService, false)
 	Nil(b.T(), err)
 
 	spMap := map[common.Address]*parser.SwapParser{}
@@ -381,8 +414,9 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), err)
 
 	// Test the first chain in the config file
-	chainBackfiller := backfill.NewChainBackfiller(b.db, bp, spMap, mbp, cp, f, chainConfigs[0])
-	chainBackfillerV1 := backfill.NewChainBackfiller(b.db, bpv1, spMap, mbp, cp, f, chainConfigsV1[0])
+	//@moses this may break??
+	chainBackfiller := backfill.NewChainBackfiller(b.db, bp, spMap, mbp, cp, pp, f, chainConfigs[0])
+	chainBackfillerV1 := backfill.NewChainBackfiller(b.db, bpv1, spMap, mbp, cp, pp, f, chainConfigsV1[0])
 
 	// Backfill the blocks
 	var count int64
@@ -395,7 +429,7 @@ func (b *BackfillSuite) TestBackfill() {
 
 	bridgeEvents := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.BridgeEvent{}).Count(&count)
 	Nil(b.T(), bridgeEvents.Error)
-	Equal(b.T(), int64(12), count) // 10 + 2 cctp events
+	Equal(b.T(), int64(14), count) // 10 + 2 cctp events + 2 rfq events
 
 	messageEvents := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.MessageBusEvent{}).Count(&count)
 	Nil(b.T(), messageEvents.Error)
@@ -405,10 +439,20 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), cctpEvents.Error)
 	Equal(b.T(), int64(2), count)
 
+	rfqEvents := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.RFQEvent{}).Count(&count)
+	Nil(b.T(), rfqEvents.Error)
+	Equal(b.T(), int64(2), count)
+
 	// Test cctp parity
 	err = b.sendCircleTokenParity(requestSentLog, cp)
 	Nil(b.T(), err)
 	err = b.receiveCircleTokenParity(requestFulfilledLog, cp)
+	Nil(b.T(), err)
+
+	// Test rfq parity
+	err = b.rfqRequestedTokenParity(bridgeRequestedLog, pp)
+	Nil(b.T(), err)
+	err = b.rfqRelayedTokenParity(bridgeRelayedLog, pp)
 	Nil(b.T(), err)
 
 	// Test bridge parity
@@ -487,7 +531,7 @@ func (b *BackfillSuite) TestBackfill() {
 	bridgeEvents = b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Find(&sql.BridgeEvent{}).Count(&count)
 
 	Nil(b.T(), bridgeEvents.Error)
-	Equal(b.T(), int64(18), count) // 16 + 2 cctp events
+	Equal(b.T(), int64(20), count) // 16 + 2 cctp events + 2 rfq events
 
 	lastBlockStored, err := b.db.GetLastStoredBlock(b.GetTestContext(), uint32(testChainID.Uint64()), chainConfigsV1[0].Contracts[0].Address)
 
@@ -589,6 +633,87 @@ func (b *BackfillSuite) receiveCircleTokenParity(log *types.Log, parser *parser.
 			Recipient:       recipient,
 			Fee:             parsedLog.Fee,
 			Token:           parsedLog.Token.String(),
+		}).Count(&count)
+	if events.Error != nil {
+		return fmt.Errorf("error querying for event: %w", events.Error)
+	}
+	Equal(b.T(), int64(1), count)
+	return nil
+}
+
+// @moses to fix
+//
+//nolint:dupl
+func (b *BackfillSuite) rfqRequestedTokenParity(log *types.Log, parser *parser.RFQParser) error {
+	// parse the log
+	parsedLog, err := parser.Filterer.ParseBridgeRequested(*log)
+	if err != nil {
+		return fmt.Errorf("error parsing log: %w", err)
+	}
+	var count int64
+	requester := gosql.NullString{
+		String: parsedLog.Sender.String(),
+		Valid:  true,
+	}
+	// Assuming other relevant fields from the parsed log
+	// and constructing the query accordingly
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.RFQEvent{}).
+		Where(&sql.RFQEvent{
+			ContractAddress:    log.Address.String(),
+			BlockNumber:        log.BlockNumber,
+			TxHash:             log.TxHash.String(),
+			EventType:          rfqTypes.BridgeRequestedEvent.Int(),
+			TransactionID:      common.Bytes2Hex(parsedLog.TransactionId[:]),
+			DestinationChainID: &parsedLog.DestChainId,
+			OriginToken:        parsedLog.OriginToken.String(),
+			DestinationToken:   parsedLog.DestToken.String(),
+			OriginAmount:       parsedLog.OriginAmount,
+			DestinationAmount:  parsedLog.DestAmount,
+			ChainGas:           &parsedLog.SendChainGas,
+			Sender:             requester,
+			// Add other fields from parsedLog as needed
+		}).Count(&count)
+	if events.Error != nil {
+		return fmt.Errorf("error querying for event: %w", events.Error)
+	}
+	Equal(b.T(), int64(1), count)
+	return nil
+}
+
+//nolint:dupl
+func (b *BackfillSuite) rfqRelayedTokenParity(log *types.Log, parser *parser.RFQParser) error {
+	// parse the log
+	parsedLog, err := parser.Filterer.ParseBridgeRelayed(*log)
+	if err != nil {
+		return fmt.Errorf("error parsing log: %w", err)
+	}
+	var count int64
+	relayer := gosql.NullString{
+		String: parsedLog.Relayer.String(),
+		Valid:  true,
+	}
+	recipient := gosql.NullString{
+		String: parsedLog.To.String(),
+		Valid:  true,
+	}
+	// Assuming other relevant fields from the parsed log
+	// and constructing the query accordingly
+	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.RFQEvent{}).
+		Where(&sql.RFQEvent{
+			ContractAddress:   log.Address.String(),
+			BlockNumber:       log.BlockNumber,
+			TxHash:            log.TxHash.String(),
+			EventType:         rfqTypes.BridgeRelayedEvent.Int(),
+			TransactionID:     common.Bytes2Hex(parsedLog.TransactionId[:]),
+			Relayer:           relayer,
+			Recipient:         recipient,
+			OriginChainID:     &parsedLog.OriginChainId,
+			OriginToken:       parsedLog.OriginToken.String(),
+			DestinationToken:  parsedLog.DestToken.String(),
+			OriginAmount:      parsedLog.OriginAmount,
+			DestinationAmount: parsedLog.DestAmount,
+			ChainGasAmount:    parsedLog.ChainGasAmount,
+			// Add other fields from parsedLog as needed
 		}).Count(&count)
 	if events.Error != nil {
 		return fmt.Errorf("error querying for event: %w", events.Error)

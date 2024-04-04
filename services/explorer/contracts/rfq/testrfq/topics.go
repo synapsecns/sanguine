@@ -11,7 +11,7 @@ import (
 
 func init() {
 	var err error
-	parsedRFQEvent, err := abi.JSON(strings.NewReader(FastBridgeMetaData.ABI))
+	parsedRFQEvent, err := abi.JSON(strings.NewReader(SynapseRFQMetaData.ABI))
 	if err != nil {
 		panic(err)
 	}

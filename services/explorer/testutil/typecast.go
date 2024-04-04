@@ -2,6 +2,7 @@ package testutil
 
 import (
 	"context"
+
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/manager"
@@ -11,6 +12,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/rfq"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
 )
 
@@ -61,4 +63,11 @@ func (d *DeployManager) GetCCTP(ctx context.Context, backend backends.SimulatedT
 	d.T().Helper()
 
 	return manager.GetContract[*cctp.CCTPRef](ctx, d.T(), d, backend, CCTPType)
+}
+
+// GetRFQ gets a typecast rfq.
+func (d *DeployManager) GetRFQ(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *rfq.RFQRef) {
+	d.T().Helper()
+
+	return manager.GetContract[*rfq.RFQRef](ctx, d.T(), d, backend, RFQType)
 }

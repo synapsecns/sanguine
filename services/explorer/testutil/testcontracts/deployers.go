@@ -18,6 +18,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp/testcctp"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus/testmessagebus"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap/testmetaswap"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/rfq/testrfq"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/testswap"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
 )
@@ -57,6 +58,11 @@ type TestCCTPDeployer struct {
 	*deployer.BaseDeployer
 }
 
+// TestRFQDeployer is the type of the test rfq deployer.
+type TestRFQDeployer struct {
+	*deployer.BaseDeployer
+}
+
 // NewTestSynapseBridgeDeployer creates a new test bridge deployer.
 func NewTestSynapseBridgeDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return TestSynapseBridgeDeployer{deployer.NewSimpleDeployer(registry, backend, TestSynapseBridgeType)}
@@ -90,6 +96,11 @@ func NewTestMetaSwapDeployer(registry deployer.GetOnlyContractRegistry, backend 
 // NewTestCCTPDeployer creates a new test cctp client.
 func NewTestCCTPDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return TestCCTPDeployer{deployer.NewSimpleDeployer(registry, backend, TestCCTPType)}
+}
+
+// NewTestRFQDeployer creates a new test rfq client
+func NewTestRFQDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return TestRFQDeployer{deployer.NewSimpleDeployer(registry, backend, TestRFQType)}
 }
 
 // Deploy deploys a test bridge.
@@ -194,6 +205,20 @@ func (n TestCCTPDeployer) Deploy(ctx context.Context) (contracts.DeployedContrac
 	})
 }
 
+// Deploy deploys RFQ contract
+//
+//nolint:dupl
+func (n TestRFQDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	// Create mock owner
+	owner := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+
+	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		return testrfq.DeployTestFastBridge(transactOps, backend, owner)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return testrfq.NewTestRFQRef(address, backend)
+	})
+}
+
 var _ deployer.ContractDeployer = &TestSynapseBridgeDeployer{}
 var _ deployer.ContractDeployer = &TestSynapseBridgeV1Deployer{}
 var _ deployer.ContractDeployer = &TestSwapFlashLoanDeployer{}
@@ -201,3 +226,4 @@ var _ deployer.ContractDeployer = &BridgeConfigV3Deployer{}
 var _ deployer.ContractDeployer = &TestMessageBusUpgradeableDeployer{}
 var _ deployer.ContractDeployer = &TestMetaSwapDeployer{}
 var _ deployer.ContractDeployer = &TestCCTPDeployer{}
+var _ deployer.ContractDeployer = &TestRFQDeployer{}

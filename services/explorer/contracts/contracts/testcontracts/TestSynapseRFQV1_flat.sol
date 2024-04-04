@@ -1595,3 +1595,54 @@ contract FastBridge is IFastBridge, Admin {
     emit BridgeDepositRefunded(transactionId, to, token, amount);
   }
 }
+
+contract TestFastBridge is FastBridge {
+  constructor(address _owner) FastBridge(_owner) {}
+
+  function testBridge(
+    uint32 dstChainId,
+    address sender,
+    address to,
+    address originToken,
+    address destToken,
+    uint256 originAmount,
+    uint256 destAmount,
+    bool sendChainGas
+  ) external {
+    emit BridgeRequested(
+      keccak256('dummyTransactionId'),
+      sender,
+      abi.encodePacked('dummyRequest'),
+      dstChainId,
+      originToken,
+      destToken,
+      originAmount,
+      destAmount,
+      sendChainGas
+    );
+  }
+
+  function testRelay(
+    bytes32 transactionId,
+    address relayer,
+    address to,
+    uint32 originChainId,
+    address originToken,
+    address destToken,
+    uint256 originAmount,
+    uint256 destAmount,
+    uint256 rebate
+  ) external {
+    emit BridgeRelayed(
+      transactionId,
+      relayer,
+      to,
+      originChainId,
+      originToken,
+      destToken,
+      originAmount,
+      destAmount,
+      rebate
+    );
+  }
+}
