@@ -374,7 +374,8 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 
 	// TODO: cache both of these values
 	shouldBump := true
-	if t.config.SupportsEIP1559(int(bigChainID.Uint64())) {
+	useEIP1559 := t.config.SupportsEIP1559(chainID)
+	if useEIP1559 {
 		transactor.GasFeeCap, err = client.SuggestGasPrice(ctx)
 		if err != nil {
 			return fmt.Errorf("could not get gas price: %w", err)
@@ -424,7 +425,11 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 	} else {
 		// if we're not bumping, we should still make sure the gas price is at least 10 because 10% of 10 wei is a whole number.
 		// TODO: this should be customizable.
-		transactor.GasTipCap = maxOfBig(transactor.GasTipCap, big.NewInt(10))
+		if useEIP1559 {
+			transactor.GasTipCap = maxOfBig(transactor.GasTipCap, big.NewInt(10))
+		} else {
+			transactor.GasPrice = maxOfBig(transactor.GasPrice, big.NewInt(10))
+		}
 	}
 	return nil
 }
