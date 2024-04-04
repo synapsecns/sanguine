@@ -12,22 +12,23 @@ import * as CHAINS from '@constants/chains/master'
 export const BridgeExchangeRateInfo = () => {
   /* TODO:
    * Upgrade to collapsable element
+   * Convert from div to details (conflict on mobile for details/summary)
    * Use dark:border-zinc-800 in <section> className
    */
 
   return (
-    <details open className="mt-1 mb-2 text-sm">
-      <summary className="block px-1 mb-2 text-right cursor-default pointer-events-none">
+    <div className="mt-1 mb-2 text-sm">
+      <div className="block px-1 mb-2 text-right cursor-default pointer-events-none">
         <TimeEstimate />
-      </summary>
-      <section className="block p-2 leading-relaxed border rounded border-zinc-300 dark:border-separator">
+      </div>
+      <div className="block p-2 leading-relaxed border rounded border-zinc-300 dark:border-separator">
         {' '}
         <GasDropLabel />
         <Router />
         <Slippage />
         <DestinationAddress />
-      </section>
-    </details>
+      </div>
+    </div>
   )
 }
 

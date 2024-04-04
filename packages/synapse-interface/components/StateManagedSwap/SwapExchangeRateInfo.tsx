@@ -42,9 +42,8 @@ const SwapExchangeRateInfo = ({
   }, [toChainId])
 
   return (
-    <details open className="mt-1 mb-2 text-sm">
-      <summary className="block"></summary>
-      <section className="block p-2 leading-relaxed border rounded border-zinc-300 dark:border-separator">
+    <div className="mt-1 mb-2 text-sm">
+      <div className="block p-2 leading-relaxed border rounded border-zinc-300 dark:border-separator">
         <ExpectedPrice
           expectedToChain={expectedToChain}
           safeFromAmount={safeFromAmount}
@@ -57,8 +56,8 @@ const SwapExchangeRateInfo = ({
           textColor={textColor}
           formattedPercentSlippage={formattedPercentSlippage}
         />
-      </section>
-    </details>
+      </div>
+    </div>
   )
 }
 
