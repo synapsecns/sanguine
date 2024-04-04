@@ -60,6 +60,7 @@ export const InputContainer = () => {
 
   const isNativeToken = fromToken?.addresses[fromChainId] === zeroAddress
 
+  console.log('fullParsedBalance:', fullParsedBalance)
   console.log('estimatedGasCostInGwei: ', estimatedGasCostInGwei)
 
   useEffect(() => {
@@ -146,6 +147,17 @@ export const InputContainer = () => {
     }
   }, [chain, fromChainId, isConnected, hasMounted])
 
+  const isGasBalanceLessThanFees = () => {
+    if (isNativeToken && estimatedGasCostInGwei && fullParsedBalance) {
+      const gasBalance = fullParsedBalance
+      const gasFees = estimatedGasCostInGwei
+
+      return gasFees > parseFloat(gasBalance)
+    } else {
+      return false
+    }
+  }
+
   const showMaxOption = () => {
     if (!hasMounted || !isConnected) return false
     if (isNativeToken && isNull(estimatedGasCostInGwei)) return false
@@ -154,7 +166,7 @@ export const InputContainer = () => {
   }
 
   console.log('showMaxOption(): ', showMaxOption())
-
+  console.log('isGasBalanceLessThanFees: ', isGasBalanceLessThanFees())
   return (
     <div
       data-test-id="input-container"
@@ -222,7 +234,11 @@ export const InputContainer = () => {
             {showMaxOption() && (
               <div className="m">
                 <MiniMaxButton
-                  disabled={!balance || balance === 0n ? true : false}
+                  disabled={
+                    !balance || balance === 0n
+                      ? true
+                      : false || isGasBalanceLessThanFees()
+                  }
                   onClickBalance={onMaxBridgeableBalance}
                 />
               </div>
