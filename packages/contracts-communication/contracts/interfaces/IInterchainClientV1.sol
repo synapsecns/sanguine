@@ -7,6 +7,7 @@ interface IInterchainClientV1 {
     error InterchainClientV1__FeeAmountTooLow(uint256 actual, uint256 required);
     error InterchainClientV1__IncorrectDstChainId(uint256 chainId);
     error InterchainClientV1__IncorrectMsgValue(uint256 actual, uint256 required);
+    error InterchainClientV1__InvalidTransactionVersion(uint16 version);
     error InterchainClientV1__NoLinkedClient(uint256 chainId);
     error InterchainClientV1__NotEnoughResponses(uint256 actual, uint256 required);
     error InterchainClientV1__NotEVMClient(bytes32 client);
