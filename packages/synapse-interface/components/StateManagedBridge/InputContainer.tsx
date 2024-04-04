@@ -158,14 +158,13 @@ export const InputContainer = () => {
     }
   }
 
-  const showMaxOption = () => {
+  const showMaxButton = () => {
     if (!hasMounted || !isConnected) return false
     if (isNativeToken && isNull(estimatedGasCostInGwei)) return false
-
     return true
   }
 
-  console.log('showMaxOption(): ', showMaxOption())
+  console.log('showMaxOption(): ', showMaxButton())
   console.log('isGasBalanceLessThanFees: ', isGasBalanceLessThanFees())
 
   return (
@@ -207,7 +206,7 @@ export const InputContainer = () => {
                   disabled={false}
                 />
               </div>
-              {showMaxOption() && (
+              {hasMounted && isConnected && (
                 <label
                   htmlFor="inputRow"
                   onClick={onMaxBalance}
@@ -226,7 +225,7 @@ export const InputContainer = () => {
             </div>
           </div>
           <div>
-            {showMaxOption() && (
+            {showMaxButton() && (
               <div className="m">
                 <MiniMaxButton
                   disabled={
@@ -243,4 +242,50 @@ export const InputContainer = () => {
       </div>
     </div>
   )
+}
+
+const AvailableBalance = (
+  parsedBalance: number,
+  estimatedGasCost: number,
+  isGasToken: boolean,
+  onMaxAvailableBalance: () => void,
+  onMaxBridgeableBalance: () => void
+) => {
+  if (isGasToken) {
+    const hasEnoughGas = parsedBalance - estimatedGasCost > 0
+
+    return (
+      <label
+        htmlFor="inputRow"
+        onClick={onMaxBridgeableBalance}
+        className={`
+        text-xs text-white transition-all duration-150 transform-gpu
+        hover:text-opacity-70 hover:cursor-pointer
+      `}
+      >
+        {parsedBalance ?? '0.0'}
+        <span className="text-opacity-50 text-secondaryTextColor">
+          {' '}
+          available
+        </span>
+      </label>
+    )
+  } else {
+    return (
+      <label
+        htmlFor="inputRow"
+        onClick={onMaxAvailableBalance}
+        className={`
+        text-xs text-white transition-all duration-150 transform-gpu
+        hover:text-opacity-70 hover:cursor-pointer
+      `}
+      >
+        {parsedBalance ?? '0.0'}
+        <span className="text-opacity-50 text-secondaryTextColor">
+          {' '}
+          available
+        </span>
+      </label>
+    )
+  }
 }
