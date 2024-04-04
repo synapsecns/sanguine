@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { useAccount } from 'wagmi'
-import { switchNetwork } from '@wagmi/core'
-import { ConnectButton } from '@rainbow-me/rainbowkit'
+import { switchChain } from '@wagmi/core'
 import { LoaderIcon } from 'react-hot-toast'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
 
-import { setFromChainId } from '@/slices/bridge/reducer'
 import { CHAINS_BY_ID } from '@/constants/chains'
+import { setFromChainId } from '@/slices/bridge/reducer'
 import { getNetworkButtonBorderHover, getNetworkHover } from '@/styles/chains'
 import { joinClassNames } from '@/utils/joinClassNames'
+import { wagmiConfig } from '@/wagmiConfig'
 
 const Indicator = ({ className }) => (
   <span
@@ -45,10 +46,12 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
   const handleConnectNetwork: () => Promise<void> = async () => {
     setIsConnecting(true)
     try {
-      await switchNetwork({ chainId: chainId }).then((success) => {
-        success && dispatch(setFromChainId(chainId))
-        scrollToTop()
-      })
+      await switchChain(wagmiConfig, { chainId: chainId as any }).then(
+        (success) => {
+          success && dispatch(setFromChainId(chainId))
+          scrollToTop()
+        }
+      )
     } catch (error) {
       error && setIsConnecting(false)
     }

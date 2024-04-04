@@ -1,6 +1,10 @@
-import { readContracts, ReadContractResult, Address } from '@wagmi/core'
-import { MINICHEF_ABI } from '@abis/miniChef'
-import { Token } from '@types'
+// @ts-nocheck
+import { readContracts } from '@wagmi/core'
+import { type Address } from 'viem'
+
+import { MINICHEF_ABI } from '@/constants/abis/miniChef'
+import { Token } from '@/types'
+import { wagmiConfig } from '@/wagmiConfig'
 
 type UserInfoResult = {
   result: [amount: bigint, rewardDebt: bigint]
@@ -20,20 +24,21 @@ export const getStakedBalance = async (
 ) => {
   const miniChefContractAddress: Address = pool.miniChefAddress as Address
   try {
-    const data: ReadContractResult = await readContracts({
+    const data = await readContracts(wagmiConfig, {
+      // @ts-ignore
       contracts: [
         {
           address: miniChefContractAddress,
           abi: MINICHEF_ABI,
           functionName: 'userInfo',
-          chainId,
+          chainId: chainId as any,
           args: [BigInt(poolId), address],
         },
         {
           address: miniChefContractAddress,
           abi: MINICHEF_ABI,
           functionName: 'pendingSynapse',
-          chainId,
+          chainId: chainId as any,
           args: [BigInt(poolId), address],
         },
       ],

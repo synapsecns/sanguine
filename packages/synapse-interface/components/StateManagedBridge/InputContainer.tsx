@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import { useDispatch } from 'react-redux'
-import { useAccount, useNetwork } from 'wagmi'
+import { useAccount } from 'wagmi'
 
 import {
   initialState,
@@ -42,7 +42,7 @@ export const InputContainer = () => {
   }, [])
 
   const { isConnected } = useAccount()
-  const { chain } = useNetwork()
+  const { chain } = useAccount()
 
   const dispatch = useDispatch()
 

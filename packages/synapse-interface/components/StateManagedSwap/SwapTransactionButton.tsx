@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
+import { useAccount, useAccountEffect, useSwitchChain } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 
 import { TransactionButton } from '@/components/buttons/TransactionButton'
@@ -17,10 +17,10 @@ export const SwapTransactionButton = ({
   const [isConnected, setIsConnected] = useState(false)
   const { openConnectModal } = useConnectModal()
 
-  const { chain } = useNetwork()
-  const { chains, switchNetwork } = useSwitchNetwork()
+  const { chain, isConnected: isConnectedInit } = useAccount()
+  const { chains, switchChain } = useSwitchChain()
 
-  const { isConnected: isConnectedInit } = useAccount({
+  useAccountEffect({
     onDisconnect() {
       setIsConnected(false)
     },
@@ -98,7 +98,7 @@ export const SwapTransactionButton = ({
   } else if (chain?.id != swapChainId && fromValueBigInt > 0) {
     buttonProperties = {
       label: `Switch to ${chains.find((c) => c.id === swapChainId).name}`,
-      onClick: () => switchNetwork(swapChainId),
+      onClick: () => switchChain({ chainId: swapChainId }),
       pendingLabel: 'Switching chains',
     }
   } else if (
