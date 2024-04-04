@@ -1,9 +1,9 @@
 {
-  "address": "0x86ea76bDa086F9d7912651f766a5A4512c7062EE",
+  "address": "0x59c4B37539afFf22Bba9b285A28a2f4AC9774e3F",
   "constructorArgs": "0x",
   "receipt": {
-    "hash": "0x0a8e2041f40fd1d4831ba3dcff554eed2701ca03db3dbc9f5197ba749e45474d",
-    "blockNumber": 5586583
+    "hash": "0xb732075f8a3e73bec1ff2adcb250c3a7abfea0b712b83d98becf85b9611b014a",
+    "blockNumber": 5628120
   },
   "abi": [
     {
@@ -502,8 +502,8 @@
       "inputs": [
         {
           "name": "version",
-          "type": "uint8",
-          "internalType": "uint8"
+          "type": "uint16",
+          "internalType": "uint16"
         }
       ]
     },
@@ -534,8 +534,8 @@
       "inputs": [
         {
           "name": "version",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint16",
+          "internalType": "uint16"
         }
       ]
     },
@@ -543,6 +543,22 @@
       "type": "error",
       "name": "SynapseExecutionService__ZeroAddress",
       "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "VersionedPayload__PrecompileFailed",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "VersionedPayload__TooShort",
+      "inputs": [
+        {
+          "name": "versionedPayload",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ]
     }
   ]
 }
