@@ -1,9 +1,9 @@
 {
-  "address": "0x30d74341Eb0C556b592eb8b10ef8Fb158A2E7821",
-  "constructorArgs": "0x000000000000000000000000e8fb38f36d298bcac2b2a9f16a91ef1074dc1710000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
+  "address": "0x28f0B8E80e5afd62A20C23BD5098237006634318",
+  "constructorArgs": "0x000000000000000000000000acaaaa98b9e23725046eda88d371b4864d90496b000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
   "receipt": {
-    "hash": "0xb4843a9b29510f2fd6743544d98d0bfe3d57a5b7e530ec1d65855ed280ceaee3",
-    "blockNumber": 5586569
+    "hash": "0x3c947795385db8f7b3f0a48e2920cc6cc57092c16793425fa8ae0e26a6143968",
+    "blockNumber": 5628137
   },
   "abi": [
     {
@@ -21,6 +21,19 @@
         }
       ],
       "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "CLIENT_VERSION",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint16",
+          "internalType": "uint16"
+        }
+      ],
+      "stateMutability": "view"
     },
     {
       "type": "function",
@@ -64,7 +77,7 @@
           ]
         }
       ],
-      "stateMutability": "pure"
+      "stateMutability": "view"
     },
     {
       "type": "function",
@@ -710,8 +723,8 @@
       "inputs": [
         {
           "name": "version",
-          "type": "uint8",
-          "internalType": "uint8"
+          "type": "uint16",
+          "internalType": "uint16"
         }
       ]
     },
@@ -755,6 +768,17 @@
           "name": "required",
           "type": "uint256",
           "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainClientV1__InvalidTransactionVersion",
+      "inputs": [
+        {
+          "name": "version",
+          "type": "uint16",
+          "internalType": "uint16"
         }
       ]
     },
@@ -845,8 +869,8 @@
       "inputs": [
         {
           "name": "version",
-          "type": "uint8",
-          "internalType": "uint8"
+          "type": "uint16",
+          "internalType": "uint16"
         }
       ]
     },
@@ -869,6 +893,22 @@
           "name": "account",
           "type": "address",
           "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "VersionedPayload__PrecompileFailed",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "VersionedPayload__TooShort",
+      "inputs": [
+        {
+          "name": "versionedPayload",
+          "type": "bytes",
+          "internalType": "bytes"
         }
       ]
     }
