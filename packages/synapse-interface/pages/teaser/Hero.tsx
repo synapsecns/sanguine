@@ -13,7 +13,7 @@ export default function Hero() {
   const ctas = {
     default: {
       // tag: 'with the Synapse blockchain protocol suite.',
-      tag: 'The web connects devices. Synapse connects blockchains.',
+      tag: 'The web connects devices. We connect blockchains.',
     },
     bridge: {
       tag: 'Any asset to any chain',
