@@ -6,7 +6,7 @@ import {
   POOL_PATH,
   LANDING_PATH,
   BRIDGE_PATH,
-  INTERCHAIN_LINK,
+  // INTERCHAIN_LINK,
   SOLANA_BRIDGE_LINK,
 } from './urls'
 
@@ -53,11 +53,11 @@ export const NAVIGATION: RouteObject = {
     text: 'Explorer',
     match: null,
   },
-  Contracts: {
-    path: INTERCHAIN_LINK,
-    text: 'Interchain Network',
-    match: null,
-  },
+  // Contracts: {
+  //   path: INTERCHAIN_LINK,
+  //   text: 'Interchain Network',
+  //   match: null,
+  // },
   Solana: {
     path: SOLANA_BRIDGE_LINK,
     text: 'Solana Bridge',
