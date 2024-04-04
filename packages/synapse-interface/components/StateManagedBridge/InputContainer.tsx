@@ -167,6 +167,7 @@ export const InputContainer = () => {
 
   console.log('showMaxOption(): ', showMaxOption())
   console.log('isGasBalanceLessThanFees: ', isGasBalanceLessThanFees())
+
   return (
     <div
       data-test-id="input-container"
@@ -179,11 +180,8 @@ export const InputContainer = () => {
       <div className="flex h-16 mb-2 space-x-2">
         <div
           className={`
-            flex flex-grow items-center justify-between
-            pl-md
-            w-full h-16
-            rounded-md
-            border border-white border-opacity-20
+            flex flex-grow items-center justify-between pl-md w-full h-16
+            rounded-md border border-white border-opacity-20
           `}
         >
           <div className="flex items-center">
@@ -192,34 +190,31 @@ export const InputContainer = () => {
               <div style={{ display: 'table' }}>
                 <input
                   ref={inputRef}
-                  pattern="^[0-9]*[.,]?[0-9]*$"
-                  disabled={false}
-                  className={`
-                    focus:outline-none
-                    focus:ring-0
-                    focus:border-none
-                    border-none
-                    bg-transparent
-                    max-w-[190px]
-                    p-0
-                    placeholder:text-[#88818C]
-                    text-white text-opacity-80 text-xl md:text-2xl font-medium
-                  `}
-                  placeholder="0.0000"
-                  onChange={handleFromValueChange}
                   value={showValue}
+                  placeholder="0.0000"
+                  pattern="^[0-9]*[.,]?[0-9]*$"
+                  onChange={handleFromValueChange}
+                  className={`
+                    border-none bg-transparent max-w-[190px] p-0 font-medium text-opacity-80
+                    placeholder:text-[#88818C]text-white text-xl md:text-2xl
+                    focus:outline-none focus:ring-0 focus:border-none
+                  `}
+                  style={{ display: 'table-cell', width: '100%' }}
                   name="inputRow"
                   autoComplete="off"
                   minLength={1}
                   maxLength={79}
-                  style={{ display: 'table-cell', width: '100%' }}
+                  disabled={false}
                 />
               </div>
               {showMaxOption() && (
                 <label
                   htmlFor="inputRow"
-                  className="text-xs text-white transition-all duration-150 transform-gpu hover:text-opacity-70 hover:cursor-pointer"
                   onClick={onMaxBalance}
+                  className={`
+                    text-xs text-white transition-all duration-150 transform-gpu
+                    hover:text-opacity-70 hover:cursor-pointer
+                  `}
                 >
                   {shortenedParsedBalance ?? '0.0'}
                   <span className="text-opacity-50 text-secondaryTextColor">
