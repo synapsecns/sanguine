@@ -8559,7 +8559,7 @@
     tslib "^2.4.0"
 
 "@synapsecns/coverage-aggregator@file:./packages/coverage-aggregator":
-  version "1.0.1"
+  version "1.0.4"
   dependencies:
     glob "^8.0.3"
     path "^0.12.7"
@@ -8570,16 +8570,6 @@
   version "0.1.6"
   resolved "https://registry.yarnpkg.com/@synapsecns/solidity-devops/-/solidity-devops-0.1.6.tgz#cf6b62c5a744f8efcf9fd7e60d86cdd6c238dad9"
   integrity sha512-1ROEUgKV7NVRCjNbpMAEYKUUHP4Hu63n8C8l9Dbi9F+PncagvBobTuxNjOYJLcUxI6cugMkk8Q5lnONLQg8b4g==
-  dependencies:
-    chalk "^4.1.2"
-    dotenv "^16.4.5"
-    ds-test "github:dapphub/ds-test#e282159"
-    forge-std "github:foundry-rs/forge-std#v1.7.6"
-
-"@synapsecns/solidity-devops@^0.3.1":
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/@synapsecns/solidity-devops/-/solidity-devops-0.3.1.tgz#05ec8d1a6408d29e4b1aee1950c36933faa68d15"
-  integrity sha512-5tUnkJ6J9rifzb4WqAhUaqwi9jtTak9yUysIQ6tNpuUA21ZIC04JP9/Bwm6LlaKFoa0PlzdldoI7FRMyWSTCEA==
   dependencies:
     chalk "^4.1.2"
     dotenv "^16.4.5"
