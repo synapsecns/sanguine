@@ -46,7 +46,7 @@ func (i *InterchainSuite) TestE2E() {
 		_, destDB := i.deployManager.GetInterchainDB(i.GetTestContext(), i.destChain)
 
 		destContext := i.destChain.GetTxContext(i.GetTestContext(), nil)
-		mockTX, err := destModule.MockVerifyRemoteBatch(destContext.TransactOpts, destDB.Address(), interchainmodulemock.InterchainBatch{
+		mockTX, err := destModule.MockVerifyRemoteBatchStruct(destContext.TransactOpts, destDB.Address(), interchainmodulemock.InterchainBatch{
 			SrcChainId: i.originChain.GetBigChainID(),
 			DbNonce:    written.DbNonce,
 			BatchRoot:  written.BatchRoot,

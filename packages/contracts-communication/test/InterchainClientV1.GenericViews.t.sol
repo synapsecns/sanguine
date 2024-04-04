@@ -3,7 +3,9 @@ pragma solidity 0.8.20;
 
 import {OptionsV1} from "../contracts/libs/Options.sol";
 
-import {InterchainClientV1, InterchainClientV1BaseTest, InterchainTransaction} from "./InterchainClientV1.Base.t.sol";
+import {InterchainClientV1BaseTest, InterchainTransaction} from "./InterchainClientV1.Base.t.sol";
+import {InterchainTransactionLibHarness} from "./harnesses/InterchainTransactionLibHarness.sol";
+import {VersionedPayloadLibHarness} from "./harnesses/VersionedPayloadLibHarness.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
@@ -48,7 +50,9 @@ contract InterchainClientV1GenericViewsTest is InterchainClientV1BaseTest {
 
     function test_encodeTransaction(InterchainTransaction memory icTx) public {
         bytes memory encoded = icClient.encodeTransaction(icTx);
-        InterchainTransaction memory decoded = abi.decode(encoded, (InterchainTransaction));
+        uint16 version = payloadLibHarness.getVersion(encoded);
+        InterchainTransaction memory decoded = txLibHarness.decodeTransaction(payloadLibHarness.getPayload(encoded));
+        assertEq(version, CLIENT_VERSION);
         assertEq(decoded, icTx);
     }
 
