@@ -1037,6 +1037,9 @@ const LandingPage = () => {
           </li>
         </ul>
       </section>
+      <section>
+        <h2 className="text-4xl font-medium">The best brands use Synapse</h2>
+      </section>
       <section className="flex odd:flex-col even:flex-col-reverse md:grid grid-cols-2 gap-12 items-center p-4 max-w-4xl">
         <div>
           <h2 className="text-4xl font-medium mb-4">Interchain apps</h2>
