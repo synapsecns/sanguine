@@ -92,11 +92,20 @@ const applyAutoFillGasPrice = (chainName, options) => {
       return options.replace(OPTION_AUTO_FILL_GAS_PRICE_1559, '')
     }
     const priorityFee = gasPrice - baseFee
+    /* 
+    TODO: reenable this once the foundry bug is fixed: https://github.com/foundry-rs/foundry/issues/7486
+    Currently the maxGasPrice is used for both base and priority, rendering the setting of priority fee useless.
+
     // Use 2*base + priority as the max gas price
     const maxGasPrice = 2 * baseFee + priorityFee
     return options.replace(
       OPTION_AUTO_FILL_GAS_PRICE_1559,
       `--with-gas-price ${maxGasPrice} --priority-gas-price ${priorityFee}`
+    )
+    */
+    return options.replace(
+      OPTION_AUTO_FILL_GAS_PRICE_1559,
+      `--priority-gas-price ${priorityFee}`
     )
   }
   return options
