@@ -65,57 +65,6 @@ export const SelectSpecificTokenButton = ({
   )
 }
 
-export enum BestOptionType {
-  RATE = 'Best rate',
-  SPEED = 'Fastest',
-}
-
-export const OptionTag = ({ type }: { type: BestOptionType }) => {
-  return (
-    <div
-      data-test-id="option-tag"
-      className="flex px-3 py-0.5 mr-3 text-sm whitespace-nowrap text-primary rounded-xl"
-      style={{
-        background:
-          'linear-gradient(to right, rgba(128, 0, 255, 0.2), rgba(255, 0, 191, 0.2))',
-      }}
-    >{`${type}`}</div>
-  )
-}
-
-export const OptionDetails = ({
-  exchangeRate,
-  estimatedDurationInSeconds,
-}: {
-  exchangeRate: string
-  estimatedDurationInSeconds: number
-}) => {
-  let showTime
-  let timeUnit
-
-  if (estimatedDurationInSeconds > 60) {
-    showTime = Math.floor(estimatedDurationInSeconds / 60)
-    timeUnit = 'min'
-  } else {
-    showTime = estimatedDurationInSeconds
-    timeUnit = 'seconds'
-  }
-
-  return (
-    <div data-test-id="option-details" className="flex flex-col">
-      <div className="flex items-center font-normal">
-        <div className="flex text-sm text-secondary whitespace-nowrap">
-          1&nbsp;:&nbsp;
-        </div>
-        <div className="mb-[1px] text-primary">{exchangeRate}</div>
-      </div>
-      <div className="text-xs text-right text-secondary">
-        {showTime} {timeUnit}
-      </div>
-    </div>
-  )
-}
-
 const ButtonContent = memo(
   ({
     token,

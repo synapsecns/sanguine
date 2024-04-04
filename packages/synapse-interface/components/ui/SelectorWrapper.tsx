@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 
 import { getHoverStyleForButton } from '@/styles/hover'
 import { DropDownArrowSvg } from '@/components/icons/DropDownArrowSvg'
@@ -116,23 +116,25 @@ export const SelectorWrapper = ({
           data-test-id={`${dataTestId}-overlay`}
           className="absolute z-20 pt-1 animate-slide-down"
         >
-          <div className="border rounded shadow-md bg-bgLight border-separator">
-            <div className="flex items-center p-1 font-medium">
-              <SlideSearchBox
-                placeholder="Find"
-                searchStr={searchStr}
-                onSearch={onSearch}
-              />
-              <CloseButton onClick={onClose} />
+          <div className="relative">
+            <div className="absolute border rounded shadow-md bg-bgLight border-separator">
+              <div className="flex items-center p-1 font-medium">
+                <SlideSearchBox
+                  placeholder="Find"
+                  searchStr={searchStr}
+                  onSearch={onSearch}
+                />
+                <CloseButton onClick={onClose} />
+              </div>
+              <div
+                data-test-id={`${dataTestId}-list`}
+                className="overflow-y-auto max-h-96"
+                onClick={onClose}
+              >
+                {children}
+              </div>
+              <SearchResults searchStr={searchStr} />
             </div>
-            <div
-              data-test-id={`${dataTestId}-list`}
-              className="overflow-y-auto max-h-96"
-              onClick={onClose}
-            >
-              {children}
-            </div>
-            <SearchResults searchStr={searchStr} />
           </div>
         </div>
       )}
