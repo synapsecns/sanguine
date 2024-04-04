@@ -1,5 +1,6 @@
 import toast from 'react-hot-toast'
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
+import { isNull } from 'lodash'
 import { useAppSelector } from '@/store/hooks'
 import { useDispatch } from 'react-redux'
 import { zeroAddress } from 'viem'
@@ -55,9 +56,11 @@ export const InputContainer = () => {
     fromToken?.decimals[fromChainId]
   )
 
-  const estimatedGasCostInGwei = calculateGasFeeInGwei(gasPrice, 200_000)
+  const estimatedGasCostInGwei = calculateGasFeeInGwei(maxFeePerGas, 200_000)
 
   const isNativeToken = fromToken?.addresses[fromChainId] === zeroAddress
+
+  console.log('estimatedGasCostInGwei: ', estimatedGasCostInGwei)
 
   useEffect(() => {
     if (fromToken && fromToken?.decimals[fromChainId]) {
@@ -142,6 +145,13 @@ export const InputContainer = () => {
       return <ConnectToNetworkButton chainId={fromChainId} />
     }
   }, [chain, fromChainId, isConnected, hasMounted])
+
+  const showMaxOption = () => {
+    if (!hasMounted || !isConnected) return false
+    if (!isNativeToken) return true
+
+    if (isNativeToken && isNull(estimatedGasCostInGwei)) return false
+  }
 
   return (
     <div
