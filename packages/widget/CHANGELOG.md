@@ -3,6 +3,65 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.15](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.1.14...@synapsecns/widget@0.1.15) (2024-04-03)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.1.14](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.1.13...@synapsecns/widget@0.1.14) (2024-03-31)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.1.13](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.1.12...@synapsecns/widget@0.1.13) (2024-03-29)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.1.12](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.1.11...@synapsecns/widget@0.1.12) (2024-03-29)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.1.11](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.1.10...@synapsecns/widget@0.1.11) (2024-03-28)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
+## [0.1.10](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.1.9...@synapsecns/widget@0.1.10) (2024-03-22)
+
+
+### Bug Fixes
+
+* **widget:** Fixes decimal input with no leading zeros, wallet cancel on send ([#2354](https://github.com/synapsecns/sanguine/issues/2354)) ([8c9f382](https://github.com/synapsecns/sanguine/commit/8c9f38222efcb4a911b0dd0e3c7db9914bf2a544))
+
+
+
+
+
+## [0.1.9](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.1.8...@synapsecns/widget@0.1.9) (2024-03-21)
+
+**Note:** Version bump only for package @synapsecns/widget
+
+
+
+
+
 ## [0.1.8](https://github.com/synapsecns/sanguine/compare/@synapsecns/widget@0.1.7...@synapsecns/widget@0.1.8) (2024-03-18)
 
 **Note:** Version bump only for package @synapsecns/widget

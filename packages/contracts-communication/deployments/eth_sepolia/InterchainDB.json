@@ -1,0 +1,610 @@
+{
+  "address": "0xe8FB38F36D298BCac2b2A9F16A91ef1074DC1710",
+  "constructorArgs": "0x",
+  "receipt": {
+    "hash": "0x7f2c9ca2bfc416fcb33e480a852659c4e8535b01e0c3c8212e5aeeff34f66b0c",
+    "blockNumber": 5586167
+  },
+  "abi": [
+    {
+      "type": "function",
+      "name": "checkVerification",
+      "inputs": [
+        {
+          "name": "dstModule",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "entry",
+          "type": "tuple",
+          "internalType": "struct InterchainEntry",
+          "components": [
+            {
+              "name": "srcChainId",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "dbNonce",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "entryIndex",
+              "type": "uint64",
+              "internalType": "uint64"
+            },
+            {
+              "name": "srcWriter",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            },
+            {
+              "name": "dataHash",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            }
+          ]
+        },
+        {
+          "name": "proof",
+          "type": "bytes32[]",
+          "internalType": "bytes32[]"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "moduleVerifiedAt",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getBatch",
+      "inputs": [
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "tuple",
+          "internalType": "struct InterchainBatch",
+          "components": [
+            {
+              "name": "srcChainId",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "dbNonce",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "batchRoot",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            }
+          ]
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getBatchLeafs",
+      "inputs": [
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "leafs",
+          "type": "bytes32[]",
+          "internalType": "bytes32[]"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getBatchLeafsPaginated",
+      "inputs": [
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "start",
+          "type": "uint64",
+          "internalType": "uint64"
+        },
+        {
+          "name": "end",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "leafs",
+          "type": "bytes32[]",
+          "internalType": "bytes32[]"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getBatchSize",
+      "inputs": [
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getDBNonce",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getEntryProof",
+      "inputs": [
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "entryIndex",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "proof",
+          "type": "bytes32[]",
+          "internalType": "bytes32[]"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getEntryValue",
+      "inputs": [
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "entryIndex",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getInterchainFee",
+      "inputs": [
+        {
+          "name": "dstChainId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "srcModules",
+          "type": "address[]",
+          "internalType": "address[]"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "fee",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getNextEntryIndex",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "entryIndex",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "requestBatchVerification",
+      "inputs": [
+        {
+          "name": "dstChainId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "srcModules",
+          "type": "address[]",
+          "internalType": "address[]"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "verifyRemoteBatch",
+      "inputs": [
+        {
+          "name": "batch",
+          "type": "tuple",
+          "internalType": "struct InterchainBatch",
+          "components": [
+            {
+              "name": "srcChainId",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "dbNonce",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "batchRoot",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            }
+          ]
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "writeEntry",
+      "inputs": [
+        {
+          "name": "dataHash",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "entryIndex",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "writeEntryWithVerification",
+      "inputs": [
+        {
+          "name": "dstChainId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "dataHash",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "srcModules",
+          "type": "address[]",
+          "internalType": "address[]"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "entryIndex",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "event",
+      "name": "InterchainBatchVerificationRequested",
+      "inputs": [
+        {
+          "name": "dstChainId",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "batchRoot",
+          "type": "bytes32",
+          "indexed": false,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "srcModules",
+          "type": "address[]",
+          "indexed": false,
+          "internalType": "address[]"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "InterchainBatchVerified",
+      "inputs": [
+        {
+          "name": "module",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        },
+        {
+          "name": "srcChainId",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "batchRoot",
+          "type": "bytes32",
+          "indexed": false,
+          "internalType": "bytes32"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "InterchainEntryWritten",
+      "inputs": [
+        {
+          "name": "srcChainId",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "srcWriter",
+          "type": "bytes32",
+          "indexed": false,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "dataHash",
+          "type": "bytes32",
+          "indexed": false,
+          "internalType": "bytes32"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "error",
+      "name": "InterchainDB__BatchDoesNotExist",
+      "inputs": [
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainDB__BatchNotFinalized",
+      "inputs": [
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainDB__ConflictingBatches",
+      "inputs": [
+        {
+          "name": "module",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "existingBatchRoot",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "newBatch",
+          "type": "tuple",
+          "internalType": "struct InterchainBatch",
+          "components": [
+            {
+              "name": "srcChainId",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "dbNonce",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "batchRoot",
+              "type": "bytes32",
+              "internalType": "bytes32"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainDB__EntryIndexOutOfRange",
+      "inputs": [
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "entryIndex",
+          "type": "uint64",
+          "internalType": "uint64"
+        },
+        {
+          "name": "batchSize",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainDB__IncorrectFeeAmount",
+      "inputs": [
+        {
+          "name": "actualFee",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "expectedFee",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainDB__InvalidEntryRange",
+      "inputs": [
+        {
+          "name": "dbNonce",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "start",
+          "type": "uint64",
+          "internalType": "uint64"
+        },
+        {
+          "name": "end",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainDB__NoModulesSpecified",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "InterchainDB__SameChainId",
+      "inputs": [
+        {
+          "name": "chainId",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    }
+  ]
+}

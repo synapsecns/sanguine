@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/imkira/go-interpol"
@@ -15,7 +17,6 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/util"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"math/big"
 )
 
 // NewTXStore creates a new transaction store.
@@ -53,7 +54,6 @@ func (s *Store) MarkAllBeforeOrAtNonceReplacedOrConfirmed(ctx context.Context, s
 		Where(fmt.Sprintf("%s <= ?", nonceFieldName), nonce).
 		Where(fmt.Sprintf("`%s` = ?", fromFieldName), signer.String()).
 		// just in case we're updating a tx already marked as confirmed
-		Where(fmt.Sprintf("%s IN ?", statusFieldName), []int{int(db.Submitted.Int()), int(db.FailedSubmit.Int())}).
 		Updates(map[string]interface{}{statusFieldName: db.ReplacedOrConfirmed.Int()})
 
 	if dbTX.Error != nil {
@@ -66,7 +66,8 @@ func (s *Store) MarkAllBeforeOrAtNonceReplacedOrConfirmed(ctx context.Context, s
 // MaxResultsPerChain is the maximum number of transactions to return per chain id.
 // it is exported for testing.
 // TODO: this should be an option passed to the GetTXs function.
-const MaxResultsPerChain = 50
+// TODO: temporarily reduced from 50 to 1 to increase resiliency.
+const MaxResultsPerChain = 1
 
 func statusToArgs(matchStatuses ...db.Status) []int {
 	inArgs := make([]int, len(matchStatuses))
@@ -351,6 +352,34 @@ func (s *Store) GetNonceAttemptsByStatus(ctx context.Context, fromAddress common
 	}
 
 	return txs, nil
+}
+
+// GetChainIDsByStatus returns the distinct chain ids for a given address and status.
+func (s *Store) GetChainIDsByStatus(ctx context.Context, fromAddress common.Address, matchStatuses ...db.Status) (chainIDs []*big.Int, err error) {
+	chainIDs64 := []uint64{}
+
+	inArgs := statusToArgs(matchStatuses...)
+
+	query := ETHTX{
+		From: fromAddress.String(),
+	}
+
+	tx := s.DB().WithContext(ctx).
+		Model(&ETHTX{}).
+		Select(chainIDFieldName).
+		Distinct().
+		Where(query).
+		Where(fmt.Sprintf("%s IN ?", statusFieldName), inArgs).
+		Find(&chainIDs64)
+	if tx.Error != nil {
+		return nil, fmt.Errorf("could not get chain ids: %w", tx.Error)
+	}
+
+	for _, chainID64 := range chainIDs64 {
+		chainIDs = append(chainIDs, new(big.Int).SetUint64(chainID64))
+	}
+
+	return chainIDs, nil
 }
 
 // DB gets the database.

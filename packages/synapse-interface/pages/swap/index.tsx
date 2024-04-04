@@ -5,9 +5,7 @@ import toast from 'react-hot-toast'
 import { animated } from 'react-spring'
 import { useRouter } from 'next/router'
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-
 import { setIsLoading } from '@/slices/swap/reducer'
-
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
 import { commify } from '@ethersproject/units'

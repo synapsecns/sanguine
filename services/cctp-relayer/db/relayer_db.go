@@ -19,6 +19,8 @@ type CCTPRelayerDBReader interface {
 	GetMessageByOriginHash(ctx context.Context, originHash common.Hash) (*types.Message, error)
 	// GetMessageByRequestID gets a message by its request id.
 	GetMessageByRequestID(ctx context.Context, requestID string) (*types.Message, error)
+	// GetMessageByHash gets a message by its message hash.
+	GetMessageByHash(ctx context.Context, messageHash common.Hash) (*types.Message, error)
 }
 
 // CCTPRelayerDBWriter is the interface for writing to the database.

@@ -308,10 +308,7 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 			return nil, fmt.Errorf("could not sign tx: %w", err)
 		}
 
-		txType := transaction.Type()
-		if t.config.SupportsEIP1559(int(chainID.Uint64())) {
-			txType = types.DynamicFeeTxType
-		}
+		txType := t.txTypeForChain(chainID)
 
 		transaction, err = util.CopyTX(transaction, util.WithNonce(newNonce), util.WithTxType(txType))
 		if err != nil {
@@ -339,6 +336,15 @@ func (t *txSubmitterImpl) SubmitTransaction(parentCtx context.Context, chainID *
 	return tx.Nonce(), nil
 }
 
+func (t *txSubmitterImpl) txTypeForChain(chainID *big.Int) (txType uint8) {
+	if t.config.SupportsEIP1559(int(chainID.Uint64())) {
+		txType = types.DynamicFeeTxType
+	} else {
+		txType = types.LegacyTxType
+	}
+	return txType
+}
+
 // setGasPrice sets the gas price for the transaction.
 // it bumps if prevtx is set
 // nolint: cyclop
@@ -358,12 +364,27 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 			transactor.GasFeeCap = maxPrice
 		}
 
+		span.SetAttributes(
+			attribute.String("gas_price", bigPtrToString(transactor.GasPrice)),
+			attribute.String("gas_fee_cap", bigPtrToString(transactor.GasFeeCap)),
+			attribute.String("gas_tip_cap", bigPtrToString(transactor.GasTipCap)),
+		)
 		metrics.EndSpanWithErr(span, err)
 	}()
 
 	// TODO: cache both of these values
+	shouldBump := true
 	if t.config.SupportsEIP1559(int(bigChainID.Uint64())) {
-		transactor.GasFeeCap = t.config.GetMaxGasPrice(chainID)
+		transactor.GasFeeCap, err = client.SuggestGasPrice(ctx)
+		if err != nil {
+			return fmt.Errorf("could not get gas price: %w", err)
+		}
+		// don't bump fee cap if we hit the max configured gas price
+		if transactor.GasFeeCap.Cmp(maxPrice) > 0 {
+			transactor.GasFeeCap = maxPrice
+			shouldBump = false
+			span.AddEvent("not bumping fee cap since max price is reached")
+		}
 
 		transactor.GasTipCap, err = client.SuggestGasTipCap(ctx)
 		if err != nil {
@@ -378,7 +399,7 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 	t.applyBaseGasPrice(transactor, chainID)
 
 	//nolint: nestif
-	if prevTx != nil {
+	if prevTx != nil && shouldBump {
 		gasBlock, err := t.getGasBlock(ctx, client, chainID)
 		if err != nil {
 			span.AddEvent("could not get gas block", trace.WithAttributes(attribute.String("error", err.Error())))

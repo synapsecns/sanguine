@@ -2,9 +2,9 @@ package base
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"gorm.io/gorm"
 )
@@ -19,27 +19,43 @@ func (s Store) StoreRebalance(ctx context.Context, rebalance reldb.Rebalance) er
 	return nil
 }
 
-// UpdateRebalanceStatus updates the rebalance status.
-func (s Store) UpdateRebalanceStatus(ctx context.Context, id [32]byte, origin *uint64, status reldb.RebalanceStatus) error {
+// UpdateRebalance updates the rebalance status.
+//
+//nolint:cyclop
+func (s Store) UpdateRebalance(ctx context.Context, rebalance reldb.Rebalance, updateID bool) error {
 	tx := s.DB().WithContext(ctx).Begin()
 	if tx.Error != nil {
 		return fmt.Errorf("could not start transaction: %w", tx.Error)
 	}
+	rebalanceModel := FromRebalance(rebalance)
+
+	// prepare the updates
+	updates := map[string]interface{}{
+		statusFieldName: rebalance.Status,
+	}
+	if rebalanceModel.OriginTxHash.Valid {
+		updates[originTxHashFieldName] = rebalanceModel.OriginTxHash
+	}
+	if rebalanceModel.DestTxHash.Valid {
+		updates[destTxHashFieldName] = rebalanceModel.DestTxHash
+	}
 
 	// prepare the update transaction
 	var result *gorm.DB
-	if origin != nil {
+	if updateID {
+		if rebalance.Origin == 0 {
+			tx.Rollback()
+			return fmt.Errorf("origin chain id is required if id is not set")
+		}
+		updates[rebalanceIDFieldName] = rebalanceModel.RebalanceID
 		result = tx.Model(&Rebalance{}).
-			Where(fmt.Sprintf("%s = ?", "origin"), *origin).
+			Where(fmt.Sprintf("%s = ?", "origin"), rebalance.Origin).
 			Where(fmt.Sprintf("%s = ?", statusFieldName), reldb.RebalanceInitiated.Int()).
-			Updates(map[string]interface{}{
-				rebalanceIDFieldName: hexutil.Encode(id[:]),
-				statusFieldName:      status,
-			})
+			Updates(updates)
 	} else {
 		result = tx.Model(&Rebalance{}).
-			Where(fmt.Sprintf("%s = ?", rebalanceIDFieldName), hexutil.Encode(id[:])).
-			Update(statusFieldName, status)
+			Where(fmt.Sprintf("%s = ?", rebalanceIDFieldName), rebalanceModel.RebalanceID).
+			Updates(updates)
 	}
 
 	// commit the transaction if only one row is affected
@@ -83,4 +99,24 @@ func (s Store) HasPendingRebalance(ctx context.Context, chainIDs ...uint64) (boo
 		}
 	}
 	return false, nil
+}
+
+// GetRebalanceByID gets a rebalance by id. Should return ErrNoRebalanceForID if not found.
+func (s Store) GetRebalanceByID(ctx context.Context, rebalanceID string) (*reldb.Rebalance, error) {
+	var modelResult Rebalance
+	tx := s.DB().WithContext(ctx).Where(fmt.Sprintf("%s = ?", rebalanceIDFieldName), rebalanceID).First(&modelResult)
+	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+		return nil, reldb.ErrNoRebalanceForID
+	}
+
+	if tx.Error != nil {
+		return nil, fmt.Errorf("could not get quote")
+	}
+
+	rebalance, err := modelResult.ToRebalance()
+	if err != nil {
+		return nil, fmt.Errorf("could not get rebalance: %w", err)
+	}
+
+	return rebalance, nil
 }

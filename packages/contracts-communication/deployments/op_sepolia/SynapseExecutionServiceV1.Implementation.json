@@ -1,0 +1,548 @@
+{
+  "address": "0x5869d8406da435D92a5213d32EfB805eF0A616b4",
+  "constructorArgs": "0x",
+  "receipt": {
+    "hash": "0x30870e5548e262dab8d6d21fa1c1cd5d9ac09b427e57725b76197b6e8d47744e",
+    "blockNumber": 9964183
+  },
+  "abi": [
+    {
+      "type": "constructor",
+      "inputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "DEFAULT_ADMIN_ROLE",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "GOVERNOR_ROLE",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "IC_CLIENT_ROLE",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "executorEOA",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "gasOracle",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getExecutionFee",
+      "inputs": [
+        {
+          "name": "dstChainId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "txPayloadSize",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "options",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "executionFee",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getRoleAdmin",
+      "inputs": [
+        {
+          "name": "role",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "globalMarkup",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "grantRole",
+      "inputs": [
+        {
+          "name": "role",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "hasRole",
+      "inputs": [
+        {
+          "name": "role",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "initialize",
+      "inputs": [
+        {
+          "name": "admin",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "renounceRole",
+      "inputs": [
+        {
+          "name": "role",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "callerConfirmation",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "requestExecution",
+      "inputs": [
+        {
+          "name": "dstChainId",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "txPayloadSize",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "transactionId",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "executionFee",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "options",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "revokeRole",
+      "inputs": [
+        {
+          "name": "role",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        },
+        {
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setExecutorEOA",
+      "inputs": [
+        {
+          "name": "executorEOA_",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setGasOracle",
+      "inputs": [
+        {
+          "name": "gasOracle_",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setGlobalMarkup",
+      "inputs": [
+        {
+          "name": "globalMarkup_",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "supportsInterface",
+      "inputs": [
+        {
+          "name": "interfaceId",
+          "type": "bytes4",
+          "internalType": "bytes4"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "internalType": "bool"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "event",
+      "name": "ExecutionRequested",
+      "inputs": [
+        {
+          "name": "transactionId",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "client",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "ExecutorEOASet",
+      "inputs": [
+        {
+          "name": "executorEOA",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "GasOracleSet",
+      "inputs": [
+        {
+          "name": "gasOracle",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "GlobalMarkupSet",
+      "inputs": [
+        {
+          "name": "globalMarkup",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "Initialized",
+      "inputs": [
+        {
+          "name": "version",
+          "type": "uint64",
+          "indexed": false,
+          "internalType": "uint64"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "RoleAdminChanged",
+      "inputs": [
+        {
+          "name": "role",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "previousAdminRole",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "newAdminRole",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "RoleGranted",
+      "inputs": [
+        {
+          "name": "role",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "account",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "sender",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "RoleRevoked",
+      "inputs": [
+        {
+          "name": "role",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "account",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "sender",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "error",
+      "name": "AccessControlBadConfirmation",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "AccessControlUnauthorizedAccount",
+      "inputs": [
+        {
+          "name": "account",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "neededRole",
+          "type": "bytes32",
+          "internalType": "bytes32"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "InvalidInitialization",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "NotInitializing",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "OptionsLib__IncorrectVersion",
+      "inputs": [
+        {
+          "name": "version",
+          "type": "uint8",
+          "internalType": "uint8"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "SynapseExecutionService__FeeAmountTooLow",
+      "inputs": [
+        {
+          "name": "actual",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "required",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "SynapseExecutionService__GasOracleNotSet",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "SynapseExecutionService__OptionsVersionNotSupported",
+      "inputs": [
+        {
+          "name": "version",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "SynapseExecutionService__ZeroAddress",
+      "inputs": []
+    }
+  ]
+}
