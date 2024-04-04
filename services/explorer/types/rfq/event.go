@@ -23,7 +23,7 @@ type EventLog interface {
 	// GetTransactionID returns the transaction id of the RFQ transfer.
 	GetTransactionID() [32]byte
 	// GetRelayer returns the address of the RFQ relayer.
-	GetRelayer() string
+	GetRelayer() *string
 	// GetRecipient returns the destination address of the RFQ transfer.
 	GetRecipient() *string
 	// GetSender returns the sender of the RFQ transfer.
@@ -35,9 +35,9 @@ type EventLog interface {
 	// GetDestinationChainID returns the chain id of the RFQ transfer.
 	GetDestinationChainID() *big.Int
 	// GetOriginToken returns the origin token of the RFQ transfer.
-	GetOriginToken() *string
+	GetOriginToken() string
 	// GetDestinationToken returns the destination token of the RFQ transfer.
-	GetDestinationToken() *string
+	GetDestinationToken() string
 	// GetOriginAmount returns the origin amount of the RFQ transfer.
 	GetOriginAmount() *big.Int
 	// GetDestinationAmount returns the destination amount of the RFQ transfer.
