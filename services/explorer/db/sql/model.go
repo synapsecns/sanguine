@@ -149,8 +149,6 @@ type RFQEvent struct {
 	// TransactionID is the Transaction ID of the RFQ transfer.
 	TransactionID string `gorm:"column:transaction_id"`
 
-	// Address is the address of the RFQ relayer.
-	Address string `gorm:"column:address"`
 	// Recipient is the recipient of the CCTP transfer.
 	Recipient sql.NullString `gorm:"column:recipient"`
 	// Sender is the address of the sender.
@@ -160,9 +158,9 @@ type RFQEvent struct {
 	// Request is the request of the RFQ transfer.
 	Request *[]byte `gorm:"column:request"`
 	// OriginChainID is the chain ID of the RFQ transfer.
-	OriginChainID *big.Int `gorm:"column:origin_chain_id;type:UInt256"`
+	OriginChainID *uint32 `gorm:"column:origin_chain_id;type:UInt256"`
 	// DestinationChainID is the chain ID of the RFQ transfer.
-	DestinationChainID *big.Int `gorm:"column:destination_chain_id;type:UInt256"`
+	DestinationChainID *uint32 `gorm:"column:destination_chain_id;type:UInt256"`
 	// OriginToken is the address of the origin token
 	OriginToken string `gorm:"column:origin_token"`
 	// DestinationToken is the address of the destination token
@@ -174,7 +172,7 @@ type RFQEvent struct {
 	// AmountUSD is the amount of the RFQ transfer in USD.
 	AmountUSD float64 `gorm:"column:amount_usd;type:Float64"`
 	// ChainGas is whether the chain gas is used for the RFQ transfer.
-	ChainGas bool `gorm:"column:chain_gas"`
+	ChainGas *bool `gorm:"column:chain_gas"`
 	// ChainGasAmount is the amount of gas sent on the destination chain to the recipient.
 	ChainGasAmount *big.Int `gorm:"column:chain_gas_amount;type:UInt256"`
 

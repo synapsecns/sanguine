@@ -24,26 +24,26 @@ type EventLog interface {
 	GetTransactionID() [32]byte
 	// GetRelayer returns the address of the RFQ relayer.
 	GetRelayer() *string
-	// GetRecipient returns the destination address of the RFQ transfer.
-	GetRecipient() *string
+	// GetRecipient returns the Dest address of the RFQ transfer.
+	GetTo() *string
 	// GetSender returns the sender of the RFQ transfer.
 	GetSender() *string
 	// GetRequest returns the request info of the RFQ transfer.
 	GetRequest() *[]byte
 	// GetOriginChainID returns the chain id of the RFQ transfer.
-	GetOriginChainID() *big.Int
-	// GetDestinationChainID returns the chain id of the RFQ transfer.
-	GetDestinationChainID() *big.Int
+	GetOriginChainID() *uint32
+	// GetDestChainID returns the chain id of the RFQ transfer.
+	GetDestChainID() *uint32
 	// GetOriginToken returns the origin token of the RFQ transfer.
-	GetOriginToken() string
-	// GetDestinationToken returns the destination token of the RFQ transfer.
-	GetDestinationToken() string
+	GetOriginToken() common.Address
+	// GetDestToken returns the Dest token of the RFQ transfer.
+	GetDestToken() common.Address
 	// GetOriginAmount returns the origin amount of the RFQ transfer.
 	GetOriginAmount() *big.Int
-	// GetDestinationAmount returns the destination amount of the RFQ transfer.
-	GetDestinationAmount() *big.Int
+	// GetDestAmount returns the Dest amount of the RFQ transfer.
+	GetDestAmount() *big.Int
 	// GetChainGasAmount returns the chain gas amount of the RFQ transfer.
 	GetChainGasAmount() *big.Int
 	// GetSendChainGas returns if the RFQ transfer will send gas to the recipient.
-	GetSendChainGas() bool
+	GetSendChainGas() *bool
 }

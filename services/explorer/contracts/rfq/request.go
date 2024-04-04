@@ -9,120 +9,147 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-func (e SynapseRFQBridgeRequestedEvent) GetTxHash() common.Hash {
+func (e FastBridgeBridgeRequested) GetTxHash() common.Hash {
 	return e.Raw.TxHash
 }
 
-func (e SynapseRFQBridgeRequestedEvent) GetContractAddress() common.Address {
+func (e FastBridgeBridgeRequested) GetContractAddress() common.Address {
 	return e.Raw.Address
 }
-func (e SynapseRFQBridgeRequestedEvent) GetBlockNumber() uint64 {
+func (e FastBridgeBridgeRequested) GetBlockNumber() uint64 {
 	return e.Raw.BlockNumber
 }
 
-func (e SynapseRFQBridgeRequestedEvent) GetEventType() rfq.EventType {
-
+func (e FastBridgeBridgeRequested) GetEventType() rfq.EventType {
 	return rfq.BridgeRequestedEvent
 }
 
-func (e SynapseRFQBridgeRequestedEvent) GetEventIndex() uint64 {
+func (e FastBridgeBridgeRequested) GetEventIndex() uint64 {
 	return uint64(e.Raw.TxIndex)
 }
 
-func (e SynapseRFQBridgeRequestedEvent) GetTransactionID() [32]byte {
-	return e.TransactionID
+func (e FastBridgeBridgeRequested) GetTransactionID() [32]byte {
+	return e.TransactionId
 }
 
-func (e SynapseRFQBridgeRequestedEvent) GetSender() string {
+func (e FastBridgeBridgeRequested) GetSender() *string {
 	str := e.Sender.String()
 	return &str
 }
 
-func (e SynapseRFQBridgeRequestedEvent) GetRequest() *[]byte {
-	return e.Request
+func (e FastBridgeBridgeRequested) GetRequest() *[]byte {
+	return &e.Request
 }
 
-func (e SynapseRFQBridgeRequestedEvent) GetDestinationChainID() *big.Int {
-	return e.DestinationChainID
+func (e FastBridgeBridgeRequested) GetOriginChainID() *uint32 {
+	return nil
 }
 
-func (e SynapseRFQBridgeRequestedEvent) GetOriginToken() *string {
-	return &e.OriginToken.string()
+func (e FastBridgeBridgeRequested) GetDestChainID() *uint32 {
+	return &e.DestChainId
 }
 
-func (e SynapseRFQBridgeRequestedEvent) GetDestinationToken() *string {
-	return e.DestinationToken.string()
+func (e FastBridgeBridgeRequested) GetOriginToken() common.Address {
+	return e.OriginToken
 }
 
-func (e SynapseRFQBridgeRequestedEvent) GetOriginAmount() *big.Int {
+func (e FastBridgeBridgeRequested) GetDestToken() common.Address {
+	return e.DestToken
+}
+
+func (e FastBridgeBridgeRequested) GetOriginAmount() *big.Int {
 	return e.OriginAmount
 }
 
-func (e SynapseRFQBridgeRequestedEvent) GetDestinationAmount() *big.Int {
-	return e.DestinationAmount
+func (e FastBridgeBridgeRequested) GetDestAmount() *big.Int {
+	return e.DestAmount
 }
 
-func (e SynapseRFQBridgeRequestedEvent) SendChainGas() bool {
-	return e.SendChainGas
+func (e FastBridgeBridgeRequested) GetSendChainGas() *bool {
+	return &e.SendChainGas
 }
 
-var _ rfq.EventLog = &SynapseRFQBridgeRequestedEvent{}
+func (e FastBridgeBridgeRequested) GetChainGasAmount() *big.Int {
+	return nil
+}
 
-func (e SynapseRFQBridgeRelayedEvent) GetTxHash() common.Hash {
+func (e FastBridgeBridgeRequested) GetRelayer() *string {
+	return nil
+}
+func (e FastBridgeBridgeRequested) GetTo() *string {
+	return nil
+}
+
+func (e FastBridgeBridgeRelayed) GetTxHash() common.Hash {
 	return e.Raw.TxHash
 }
 
-func (e SynapseRFQBridgeRelayedEvent) GetContractAddress() common.Address {
+func (e FastBridgeBridgeRelayed) GetContractAddress() common.Address {
 	return e.Raw.Address
 }
-func (e SynapseRFQBridgeRelayedEvent) GetBlockNumber() uint64 {
+func (e FastBridgeBridgeRelayed) GetBlockNumber() uint64 {
 	return e.Raw.BlockNumber
 }
 
-func (e SynapseRFQBridgeRelayedEvent) GetEventType() rfq.EventType {
+func (e FastBridgeBridgeRelayed) GetEventType() rfq.EventType {
 
 	return rfq.BridgeRelayedEvent
 }
 
-func (e SynapseRFQBridgeRelayedEvent) GetEventIndex() uint64 {
+func (e FastBridgeBridgeRelayed) GetEventIndex() uint64 {
 	return uint64(e.Raw.TxIndex)
 }
 
-func (e SynapseRFQBridgeRelayedEvent) GetTransactionID() [32]byte {
-	return e.TransactionID
+func (e FastBridgeBridgeRelayed) GetTransactionID() [32]byte {
+	return e.TransactionId
 }
 
-func (e SynapseRFQBridgeRequestedEvent) GetRelayer() string {
-	return e.Relayer
-}
-
-func (e SynapseRFQBridgeRelayedEvent) GetRecipient() string {
-	str := e.Recipient.String()
+func (e FastBridgeBridgeRelayed) GetRelayer() *string {
+	str := e.Relayer.String()
 	return &str
 }
 
-func (e SynapseRFQBridgeRelayedEvent) GetOriginChainID() *big.Int {
-	return e.OriginChainID
+func (e FastBridgeBridgeRelayed) GetTo() *string {
+	str := e.To.String()
+	return &str
 }
 
-func (e SynapseRFQBridgeRelayedEvent) GetOriginToken() *string {
-	return &e.OriginToken.string()
+func (e FastBridgeBridgeRelayed) GetOriginChainID() *uint32 {
+	return &e.OriginChainId
 }
 
-func (e SynapseRFQBridgeRelayedEvent) GetDestinationToken() *string {
-	return e.DestinationToken.string()
+func (e FastBridgeBridgeRelayed) GetDestChainID() *uint32 {
+	return nil
 }
 
-func (e SynapseRFQBridgeRelayedEvent) GetOriginAmount() *big.Int {
+func (e FastBridgeBridgeRelayed) GetOriginToken() common.Address {
+	return e.OriginToken
+}
+
+func (e FastBridgeBridgeRelayed) GetDestToken() common.Address {
+	return e.DestToken
+}
+
+func (e FastBridgeBridgeRelayed) GetOriginAmount() *big.Int {
 	return e.OriginAmount
 }
 
-func (e SynapseRFQBridgeRelayedEvent) GetDestinationAmount() *big.Int {
-	return e.DestinationAmount
+func (e FastBridgeBridgeRelayed) GetDestAmount() *big.Int {
+	return e.DestAmount
 }
 
-func (e SynapseRFQBridgeRelayedEvent) GetChainGasAmount() *big.Int {
+func (e FastBridgeBridgeRelayed) GetChainGasAmount() *big.Int {
 	return e.ChainGasAmount
 }
 
-var _ rfq.EventLog = &SynapseRFQBridgeRelayedEvent{}
+func (e FastBridgeBridgeRelayed) GetRequest() *[]byte {
+	return nil
+}
+
+func (e FastBridgeBridgeRelayed) GetSendChainGas() *bool {
+	return nil
+}
+
+func (e FastBridgeBridgeRelayed) GetSender() *string {
+	return nil
+}
