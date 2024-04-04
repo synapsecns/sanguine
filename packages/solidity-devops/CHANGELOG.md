@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.3.0...@synapsecns/solidity-devops@0.3.1) (2024-04-04)
+
+
+### Bug Fixes
+
+* **solidity-devops:** use only priority fee for 1559 until foundry bug is fixed ([#2447](https://github.com/synapsecns/sanguine/issues/2447)) ([8720608](https://github.com/synapsecns/sanguine/commit/8720608dcb216042fc10d80b95b9e55eaed29c4e))
+
+
+
+
+
 # [0.3.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.1.6...@synapsecns/solidity-devops@0.3.0) (2024-04-03)
 
 
