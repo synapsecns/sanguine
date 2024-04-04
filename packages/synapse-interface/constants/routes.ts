@@ -53,6 +53,7 @@ export const NAVIGATION: RouteObject = {
     text: 'Explorer',
     match: null,
   },
+  /* Also re-add "Interchain Network" to navigation.json (called from navigation.cy.ts) when turning back on */
   // Contracts: {
   //   path: INTERCHAIN_LINK,
   //   text: 'Interchain Network',
