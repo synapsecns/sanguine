@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {Test} from "forge-std/Test.sol";
+import {VersionedPayloadLib} from "../../contracts/libs/VersionedPayload.sol";
 
 import {AppConfigLib, AppConfigV1, AppConfigLibHarness} from "../harnesses/AppConfigLibHarness.sol";
+
+import {Test} from "forge-std/Test.sol";
 
 // solhint-disable func-name-mixedcase
 contract AppConfigLibTest is Test {
@@ -19,13 +21,6 @@ contract AppConfigLibTest is Test {
         libHarness = new AppConfigLibHarness();
     }
 
-    function test_encodeVersionedAppConfigRoundtrip(uint8 version, bytes memory appConfig) public {
-        bytes memory encoded = libHarness.encodeVersionedAppConfig(version, appConfig);
-        (uint8 newVersion, bytes memory newAppConfig) = libHarness.decodeVersionedAppConfig(encoded);
-        assertEq(newVersion, version);
-        assertEq(newAppConfig, appConfig);
-    }
-
     function test_encodeAppConfigV1Roundtrip(AppConfigV1 memory appConfig) public {
         bytes memory encoded = libHarness.encodeAppConfigV1(appConfig);
         AppConfigV1 memory decoded = libHarness.decodeAppConfigV1(encoded);
@@ -35,7 +30,7 @@ contract AppConfigLibTest is Test {
 
     function test_decodeAppConfigV1_decodesV2(MockAppConfigV2 memory appConfig) public {
         bytes memory encoded =
-            libHarness.encodeVersionedAppConfig(AppConfigLib.APP_CONFIG_V1 + 1, abi.encode(appConfig));
+            VersionedPayloadLib.encodeVersionedPayload(AppConfigLib.APP_CONFIG_V1 + 1, abi.encode(appConfig));
         AppConfigV1 memory decoded = libHarness.decodeAppConfigV1(encoded);
         assertEq(decoded.requiredResponses, appConfig.requiredResponses);
         assertEq(decoded.optimisticPeriod, appConfig.optimisticPeriod);
@@ -43,8 +38,8 @@ contract AppConfigLibTest is Test {
 
     function test_decodeAppConfigV1_revertLowerVersion() public {
         AppConfigV1 memory appConfig = AppConfigV1(3, 100);
-        uint8 incorrectVersion = AppConfigLib.APP_CONFIG_V1 - 1;
-        bytes memory encoded = libHarness.encodeVersionedAppConfig(incorrectVersion, abi.encode(appConfig));
+        uint16 incorrectVersion = AppConfigLib.APP_CONFIG_V1 - 1;
+        bytes memory encoded = VersionedPayloadLib.encodeVersionedPayload(incorrectVersion, abi.encode(appConfig));
         vm.expectRevert(abi.encodeWithSelector(AppConfigLib.AppConfigLib__IncorrectVersion.selector, incorrectVersion));
         libHarness.decodeAppConfigV1(encoded);
     }
