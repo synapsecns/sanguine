@@ -1,7 +1,7 @@
 const fs = require('fs')
 const { execSync } = require('child_process')
 
-const { logCommand, logError } = require('./logger.js')
+const { logCommand, logInfo, logError } = require('./logger.js')
 
 /**
  * Asserts that a condition is true. If not, logs an error message and exits the process.
@@ -73,10 +73,20 @@ const runCommand = (command) => {
   }
 }
 
+const syncSleep = (seconds, reason) => {
+  let logMsg = `Sleeping for ${seconds} seconds`
+  if (reason) {
+    logMsg += `: ${reason}`
+  }
+  logInfo(logMsg)
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, seconds * 1000)
+}
+
 module.exports = {
   assertCondition,
   createDir,
   exitWithError,
   getCommandOutput,
   runCommand,
+  syncSleep,
 }

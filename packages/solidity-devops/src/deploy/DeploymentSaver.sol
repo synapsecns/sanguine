@@ -73,7 +73,7 @@ abstract contract DeploymentSaver is ChainAwareReader, ChainAwareWriter {
         deployedAt = deployCodeFunc(contractName, constructorArgs);
         printSuccessWithIndent(StringUtils.concat("Deployed at ", vm.toString(deployedAt)));
         // Save the deployment JSON
-        saveDeployment(contractName, contractAlias, deployedAt, constructorArgs);
+        saveDeployment(contractAlias, deployedAt, constructorArgs);
     }
 
     /// @notice Deploys a contract and saves the deployment JSON, if the contract hasn't been deployed yet.
@@ -111,7 +111,7 @@ abstract contract DeploymentSaver is ChainAwareReader, ChainAwareWriter {
         (deployedAt, constructorArgs) = deployContractFunc();
         printSuccessWithIndent(StringUtils.concat("Deployed at ", vm.toString(deployedAt)));
         // Save the deployment JSON
-        saveDeployment(contractName, contractAlias, deployedAt, constructorArgs);
+        saveDeployment(contractAlias, deployedAt, constructorArgs);
     }
 
     // ═══════════════════════════════════════════════════ UTILS ═══════════════════════════════════════════════════════
@@ -137,9 +137,8 @@ abstract contract DeploymentSaver is ChainAwareReader, ChainAwareWriter {
     /// @notice Saves the deployment JSON for a contract on a given chain under the specified alias.
     /// Example: contractName = "LinkedPool", contractAlias = "LinkedPool.USDC"
     /// Note: writes to the FRESH deployment path, which is moved to the correct location after the contract is deployed.
-    /// Note: requires ffi to be turned on, and jq to be installed.
+    /// Note: will not include the ABI in the output JSON.
     function saveDeployment(
-        string memory contractName,
         string memory contractAlias,
         address deployedAt,
         bytes memory constructorArgs
@@ -148,27 +147,8 @@ abstract contract DeploymentSaver is ChainAwareReader, ChainAwareWriter {
         withIndent
     {
         writeDeploymentArtifact({
-            contractName: contractName,
             contractAlias: contractAlias,
-            artifactWithoutABI: serializeDeploymentData(deployedAt, constructorArgs)
-        });
-    }
-
-    /// @notice Saves the deployment JSON for a contract on a given chain under the specified alias.
-    /// Example: contractName = "LinkedPool", contractAlias = "LinkedPool.USDC"
-    /// Note: writes to the FRESH deployment path, which is moved to the correct location after the contract is deployed.
-    /// Note: will not include the ABI in the output JSON. Unlike `saveDeployment`, has no dependencies.
-    function saveDeploymentWithoutABI(
-        string memory contractAlias,
-        address deployedAt,
-        bytes memory constructorArgs
-    )
-        internal
-        withIndent
-    {
-        writeDeploymentArtifactWithoutABI({
-            contractAlias: contractAlias,
-            artifactWithoutABI: serializeDeploymentData(deployedAt, constructorArgs)
+            artifact: serializeDeploymentData(deployedAt, constructorArgs)
         });
     }
 }

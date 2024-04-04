@@ -31,7 +31,7 @@ contract PingPongSrcIntegrationTest is ICIntegrationTest {
         verificationFee = icDB.getInterchainFee(DST_CHAIN_ID, toArray(address(module)));
         executionFee = executionService.getExecutionFee({
             dstChainId: DST_CHAIN_ID,
-            txPayloadSize: abi.encode(icTx).length,
+            txPayloadSize: getEncodedTx(icTx).length,
             options: ppOptions.encodeOptionsV1()
         });
     }

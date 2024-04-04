@@ -1,12 +1,12 @@
 {
   "name": "@synapsecns/synapse-interface",
-  "version": "0.15.5",
+  "version": "0.15.8",
   "private": true,
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.17.0"
   },
   "scripts": {
-    "cf:build": "npx @cloudflare/next-on-pages@1",
+    "cf:build": "npx @cloudflare/next-on-pages",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -24,7 +24,7 @@
     "test": "jest --watch"
   },
   "dependencies": {
-    "@cloudflare/next-on-pages": "1",
+    "@cloudflare/next-on-pages": "^1.11.0",
     "@ethersproject/bignumber": "5.7.0",
     "@ethersproject/providers": "5.7.2",
     "@ethersproject/units": "5.7.0",
@@ -34,7 +34,7 @@
     "@reduxjs/toolkit": "^1.9.5",
     "@rtk-query/graphql-request-base-query": "^2.2.0",
     "@segment/analytics-next": "^1.53.0",
-    "@synapsecns/sdk-router": "^0.4.2",
+    "@synapsecns/sdk-router": "^0.4.3",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/typography": "^0.5.9",
@@ -109,6 +109,7 @@
     "dayjs": "^1.11.7",
     "jest": "^29.6.1",
     "jest-environment-jsdom": "^29.6.1",
-    "start-server-and-test": "^2.0.0"
+    "start-server-and-test": "^2.0.0",
+    "vercel": "^33.6.2"
   }
 }

@@ -1,0 +1,34 @@
+{
+  "address": "0x8d0643b5a82360EFFC790D097E2bAd745Cb213D2",
+  "constructorArgs": "0x000000000000000000000000000000000000000000000000000000000000002a",
+  "receipt": {
+    "hash": "0x88bfd2c537609bc5650f2d110f10d690cfd135aa35d7793e20d875c087befcc5",
+    "blockNumber": 5619902
+  },
+  "abi": [
+    {
+      "type": "constructor",
+      "inputs": [
+        {
+          "name": "_value",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "value",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    }
+  ]
+}
