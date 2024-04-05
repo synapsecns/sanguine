@@ -41,8 +41,13 @@ export default function ImageUploader() {
     const img = new Image()
     img.src = URL.createObjectURL(uploadedImage)
     img.onload = () => {
-      canvas.width = img.width
-      canvas.height = img.width
+      if (img.width >= img.height) {
+        canvas.width = img.width
+        canvas.height = img.width
+      } else {
+        canvas.width = img.height
+        canvas.height = img.height
+      }
 
       // Calculate the start positions to center the image
       const startX = (canvas.width - img.width) / 2
