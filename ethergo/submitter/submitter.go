@@ -551,20 +551,6 @@ func maxOfBig(a, b *big.Int) *big.Int {
 	return b
 }
 
-// applyMinGasPrice applies the base gas price to the transactor if a gas price value is zero.
-func (t *txSubmitterImpl) applyMinGasPrice(transactor *bind.TransactOpts, chainID int) {
-	if t.config.SupportsEIP1559(chainID) {
-		if transactor.GasFeeCap == nil || transactor.GasFeeCap.Cmp(big.NewInt(0)) == 0 {
-			transactor.GasFeeCap = t.config.GetMinGasPrice(chainID)
-		}
-		// TODO: we need to keep gas tip cap non-zero, but below the base gas price.
-	} else {
-		if transactor.GasPrice == nil || transactor.GasPrice.Cmp(big.NewInt(0)) == 0 {
-			transactor.GasPrice = t.config.GetMinGasPrice(chainID)
-		}
-	}
-}
-
 // getGasBlock gets the gas block for the given chain.
 func (t *txSubmitterImpl) getGasBlock(ctx context.Context, chainClient client.EVM, chainID int) (gasBlock *types.Header, err error) {
 	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.getGasBlock")
