@@ -19,6 +19,7 @@ import { useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { calculateGasCost } from '../../utils/calculateGasCost'
 import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'
+import { TokenAndBalance } from '@/utils/actions/fetchPortfolioBalances'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -35,19 +36,25 @@ export const InputContainer = () => {
     setHasMounted(true)
   }, [])
 
-  const isGasToken = fromToken?.addresses[fromChainId] === zeroAddress
+  const isGasToken: boolean = fromToken?.addresses[fromChainId] === zeroAddress
 
-  const selectedFromToken = balances[fromChainId]?.find(
+  const selectedFromToken: TokenAndBalance = balances[fromChainId]?.find(
     (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
   )
 
   const { balance: rawBalance, parsedBalance: trimmedParsedBalance } =
     selectedFromToken || {}
 
-  const parsedBalance = formatBigIntToString(
+  const parsedBalance: string = formatBigIntToString(
     rawBalance,
     fromToken?.decimals[fromChainId]
   )
+
+  const isTraceBalance = (): boolean => {
+    if (!rawBalance || !trimmedParsedBalance) return false
+    if (rawBalance && hasOnlyZeroes(trimmedParsedBalance)) return true
+    return false
+  }
 
   useEffect(() => {
     if (fromToken && fromToken?.decimals[fromChainId]) {
@@ -154,19 +161,6 @@ export const InputContainer = () => {
   // console.log('formattedGasCost: ', parsedGasCost)
   // console.log('showMaxOption(): ', showMaxButton())
   // console.log('isGasBalanceLessThanFees: ', isGasBalanceLessThanFees())
-
-  console.log('parsedBalance:', parsedBalance)
-
-  console.log(
-    'isOnlyZeroes(shortenedParsedBalance): ',
-    hasOnlyZeroes(trimmedParsedBalance)
-  )
-
-  const isTraceBalance = () => {
-    if (!rawBalance || !trimmedParsedBalance) return false
-    if (rawBalance && hasOnlyZeroes(trimmedParsedBalance)) return true
-    return false
-  }
 
   return (
     <div
