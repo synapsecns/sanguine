@@ -63,7 +63,9 @@ abstract contract ICSetup is ProxyTest {
         deployLibraryHarnesses();
         deployInterchainContracts();
         srcApp = deployApp();
+        vm.label(srcApp, "Src App");
         dstApp = deployApp();
+        vm.label(dstApp, "Dst App");
         configureInterchainContracts();
         configureLocalApp();
         initDBNonce();
