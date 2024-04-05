@@ -106,6 +106,9 @@ func bumpDynamicTxFees(opts *bind.TransactOpts, percentIncrease int, baseFee, ma
 
 // BumpByPercent bumps a gas price by a percentage.
 func BumpByPercent(gasPrice *big.Int, percentIncrease int) *big.Int {
+	if gasPrice == nil {
+		return nil
+	}
 	price := core.CopyBigInt(gasPrice)
 	calculatedGasPrice := big.NewFloat(0).Mul(big.NewFloat(1+0.01*float64(percentIncrease)), big.NewFloat(0).SetInt(price))
 	price, _ = calculatedGasPrice.Int(price)

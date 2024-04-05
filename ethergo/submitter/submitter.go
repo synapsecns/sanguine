@@ -355,13 +355,11 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 
 	chainID := int(bigChainID.Uint64())
 	useDynamic := t.config.SupportsEIP1559(chainID)
-	shouldBump := prevTx != nil
 
 	defer func() {
 		span.SetAttributes(
 			attribute.Int(metrics.ChainID, chainID),
 			attribute.Bool("use_dynamic", useDynamic),
-			attribute.Bool("should_bump", shouldBump),
 			attribute.String("gas_price", bigPtrToString(transactor.GasPrice)),
 			attribute.String("gas_fee_cap", bigPtrToString(transactor.GasFeeCap)),
 			attribute.String("gas_tip_cap", bigPtrToString(transactor.GasTipCap)),
@@ -369,8 +367,8 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	t.populateGasFromPrevTx(ctx, transactor, prevTx, useDynamic)
-	t.applyGasFloor(ctx, transactor, chainID, useDynamic, shouldBump)
+	t.bumpGasFromPrevTx(ctx, transactor, prevTx, chainID, useDynamic)
+	t.applyGasFloor(ctx, transactor, chainID, useDynamic)
 
 	err = t.applyGasFromOracle(ctx, transactor, client, useDynamic)
 	if err != nil {
@@ -384,17 +382,18 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 	return nil
 }
 
-// populateGasFromPrevTx populates the gas fields from the previous transaction.
+// bumpGasFromPrevTx populates the gas fields from the previous transaction and bumps
+// the appropriate values corresponding to the configured GasBumpPercentage.
 // Note that in the event of a tx type mismatch, gasFeeCap is copied to gasPrice,
 // and gasPrice is copied to both gasFeeCap and gasTipCap in the opposite scenario.
 //
 //nolint:nestif
-func (t *txSubmitterImpl) populateGasFromPrevTx(ctx context.Context, transactor *bind.TransactOpts, prevTx *types.Transaction, currentDynamic bool) {
+func (t *txSubmitterImpl) bumpGasFromPrevTx(ctx context.Context, transactor *bind.TransactOpts, prevTx *types.Transaction, chainID int, currentDynamic bool) {
 	if prevTx == nil {
 		return
 	}
 
-	_, span := t.metrics.Tracer().Start(ctx, "submitter.populateGasFromPrevTx")
+	_, span := t.metrics.Tracer().Start(ctx, "submitter.bumpGasFromPrevTx")
 
 	defer func() {
 		span.SetAttributes(
@@ -406,28 +405,28 @@ func (t *txSubmitterImpl) populateGasFromPrevTx(ctx context.Context, transactor 
 	}()
 
 	prevDynamic := prevTx.Type() == types.DynamicFeeTxType
+	bumpPct := t.config.GetGasBumpPercentage(chainID)
 	if currentDynamic {
 		if prevDynamic {
-			transactor.GasFeeCap = core.CopyBigInt(prevTx.GasFeeCap())
-			transactor.GasTipCap = core.CopyBigInt(prevTx.GasTipCap())
+			transactor.GasFeeCap = gas.BumpByPercent(core.CopyBigInt(prevTx.GasFeeCap()), bumpPct)
+			transactor.GasTipCap = gas.BumpByPercent(core.CopyBigInt(prevTx.GasTipCap()), bumpPct)
 		} else {
-			transactor.GasFeeCap = core.CopyBigInt(prevTx.GasPrice())
-			transactor.GasTipCap = core.CopyBigInt(prevTx.GasPrice())
+			transactor.GasFeeCap = gas.BumpByPercent(core.CopyBigInt(prevTx.GasPrice()), bumpPct)
+			transactor.GasTipCap = gas.BumpByPercent(core.CopyBigInt(prevTx.GasPrice()), bumpPct)
 		}
 	} else {
 		if prevDynamic {
-			transactor.GasPrice = core.CopyBigInt(prevTx.GasFeeCap())
+			transactor.GasPrice = gas.BumpByPercent(core.CopyBigInt(prevTx.GasFeeCap()), bumpPct)
 		} else {
-			transactor.GasPrice = core.CopyBigInt(prevTx.GasPrice())
+			transactor.GasPrice = gas.BumpByPercent(core.CopyBigInt(prevTx.GasPrice()), bumpPct)
 		}
 	}
 }
 
 // applyGasFloor applies the min gas price from the config if values are unset.
-// Otherwise, gas values are bumped by the configured GasBumpPercentage.
 //
 //nolint:cyclop,nestif
-func (t *txSubmitterImpl) applyGasFloor(ctx context.Context, transactor *bind.TransactOpts, chainID int, useDynamic, shouldBump bool) {
+func (t *txSubmitterImpl) applyGasFloor(ctx context.Context, transactor *bind.TransactOpts, chainID int, useDynamic bool) {
 	_, span := t.metrics.Tracer().Start(ctx, "submitter.applyGasFloor")
 
 	defer func() {
@@ -435,41 +434,20 @@ func (t *txSubmitterImpl) applyGasFloor(ctx context.Context, transactor *bind.Tr
 			attribute.String("gas_price", bigPtrToString(transactor.GasPrice)),
 			attribute.String("gas_fee_cap", bigPtrToString(transactor.GasFeeCap)),
 			attribute.String("gas_tip_cap", bigPtrToString(transactor.GasTipCap)),
-			attribute.Bool("should_bump", shouldBump),
 		)
 		metrics.EndSpan(span)
 	}()
 
 	gasFloor := t.config.GetMinGasPrice(chainID)
-	if shouldBump {
-		bumpPct := t.config.GetGasBumpPercentage(chainID)
-		if useDynamic {
-			if transactor.GasFeeCap == nil {
-				transactor.GasFeeCap = gasFloor
-				span.AddEvent("gas fee cap is nil; setting to gas floor")
-			} else {
-				transactor.GasFeeCap = gas.BumpByPercent(transactor.GasFeeCap, bumpPct)
-			}
-			if transactor.GasTipCap == nil {
-				transactor.GasTipCap = gasFloor
-				span.AddEvent("gas tip cap is nil; setting to gas floor")
-			} else {
-				transactor.GasTipCap = gas.BumpByPercent(transactor.GasTipCap, bumpPct)
-			}
-		} else {
-			transactor.GasPrice = gas.BumpByPercent(transactor.GasPrice, bumpPct)
+	if useDynamic {
+		if transactor.GasFeeCap == nil || transactor.GasFeeCap.Cmp(gasFloor) < 0 {
+			transactor.GasFeeCap = gasFloor
 		}
-	} else {
-		if useDynamic {
-			if transactor.GasFeeCap == nil || transactor.GasFeeCap.Cmp(gasFloor) < 0 {
-				transactor.GasFeeCap = gasFloor
-			}
-			if transactor.GasTipCap == nil || transactor.GasTipCap.Cmp(gasFloor) < 0 {
-				transactor.GasTipCap = gasFloor
-			}
-		} else if transactor.GasPrice == nil || transactor.GasPrice.Cmp(gasFloor) < 0 {
-			transactor.GasPrice = gasFloor
+		if transactor.GasTipCap == nil || transactor.GasTipCap.Cmp(gasFloor) < 0 {
+			transactor.GasTipCap = gasFloor
 		}
+	} else if transactor.GasPrice == nil || transactor.GasPrice.Cmp(gasFloor) < 0 {
+		transactor.GasPrice = gasFloor
 	}
 }
 
