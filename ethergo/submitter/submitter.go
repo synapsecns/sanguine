@@ -359,6 +359,9 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 
 	defer func() {
 		span.SetAttributes(
+			attribute.Int(metrics.ChainID, chainID),
+			attribute.Bool("use_dynamic", useDynamic),
+			attribute.Bool("should_bump", shouldBump),
 			attribute.String("gas_price", bigPtrToString(transactor.GasPrice)),
 			attribute.String("gas_fee_cap", bigPtrToString(transactor.GasFeeCap)),
 			attribute.String("gas_tip_cap", bigPtrToString(transactor.GasTipCap)),
@@ -385,6 +388,18 @@ func (t *txSubmitterImpl) populateGasFromPrevTx(ctx context.Context, transactor 
 	if prevTx == nil {
 		return
 	}
+
+	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.populateGasFromPrevTx")
+
+	defer func() {
+		span.SetAttributes(
+			attribute.String("gas_price", bigPtrToString(transactor.GasPrice)),
+			attribute.String("gas_fee_cap", bigPtrToString(transactor.GasFeeCap)),
+			attribute.String("gas_tip_cap", bigPtrToString(transactor.GasTipCap)),
+		)
+		metrics.EndSpan(span)
+	}()
+
 	prevDynamic := prevTx.Type() == types.DynamicFeeTxType
 	if currentDynamic {
 		if prevDynamic {
@@ -454,6 +469,12 @@ func (t *txSubmitterImpl) applyGasFloor(ctx context.Context, transactor *bind.Tr
 }
 
 func (t *txSubmitterImpl) applyGasFromOracle(ctx context.Context, transactor *bind.TransactOpts, client client.EVM, useDynamic bool) (err error) {
+	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.applyGasCeil")
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
 	if useDynamic {
 		suggestedGasFeeCap, err := client.SuggestGasPrice(ctx)
 		if err != nil {
@@ -465,12 +486,22 @@ func (t *txSubmitterImpl) applyGasFromOracle(ctx context.Context, transactor *bi
 			return fmt.Errorf("could not get gas tip cap: %w", err)
 		}
 		transactor.GasTipCap = maxOfBig(transactor.GasTipCap, suggestedGasTipCap)
+		span.SetAttributes(
+			attribute.String("suggested_gas_fee_cap", bigPtrToString(suggestedGasFeeCap)),
+			attribute.String("suggested_gas_tip_cap", bigPtrToString(suggestedGasTipCap)),
+			attribute.String("gas_fee_cap", bigPtrToString(transactor.GasFeeCap)),
+			attribute.String("gas_tip_cap", bigPtrToString(transactor.GasTipCap)),
+		)
 	} else {
 		suggestedGasPrice, err := client.SuggestGasPrice(ctx)
 		if err != nil {
 			return fmt.Errorf("could not get gas price: %w", err)
 		}
 		transactor.GasPrice = maxOfBig(transactor.GasPrice, suggestedGasPrice)
+		span.SetAttributes(
+			attribute.String("suggested_gas_price", bigPtrToString(suggestedGasPrice)),
+			attribute.String("gas_price", bigPtrToString(transactor.GasPrice)),
+		)
 	}
 	return nil
 }
