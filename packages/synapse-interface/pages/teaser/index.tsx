@@ -52,27 +52,30 @@ const LandingPage = () => {
   return (
     <Wrapper>
       {/* <Hero /> */}
-      <section className="w-full">
-        <div className="text-4xl sm:text-6xl font-semibold text-center mt-2 lg:mt-16 mb-4">
+      <section className="w-full px-4">
+        <div className="hidden xs:block text-5xl sm:text-6xl font-semibold text-center mt-8 lg:mt-12 2xl:mt-16 mb-4">
           Reach every chain.
         </div>
-        <h1 className="text-2xl font-medium text-center">
-          The web connects devices. We connect blockchains.
+        <h1 className="text-3xl sm:text-2xl font-medium text-center mt-6 mb-4">
+          The Web connects devices. We connect blockchains.
         </h1>
-        <div className="flex text-sm border-y border-zinc-800 whitespace-nowrap justify-center mt-12">
+        <div className="flex gap-4 text-base sm:text-lg whitespace-nowrap justify-center m-6">
           <a
             href="#"
-            className={`px-4 py-3 text-lg border-l border-fuchsia-500`}
+            className="px-5 py-2 sm:py-3 border border-fuchsia-500 rounded"
           >
             Build
           </a>
-          <a href="#" className={`px-4 py-3 text-lg border-x border-zinc-800`}>
+          <a
+            href="#"
+            className="px-5 py-2 sm:py-3 border border-zinc-800 rounded"
+          >
             Bridge
           </a>
         </div>
       </section>
       <section className="grid justify-center">
-        <PlatformAnimation className="w-full min-w-[640px]" />
+        <PlatformAnimation className="w-full min-w-[480px] xs:min-w-[640px]" />
       </section>
       <section id="chain-list" className="-mt-12 mb-12 justify-center">
         <dl className="flex text-sm border-y border-zinc-800 whitespace-nowrap justify-center">
@@ -94,7 +97,9 @@ const LandingPage = () => {
         id="entry-points"
         className="text-center max-w-screen-xl mx-auto"
       >
-        <h2 className="text-6xl font-medium my-8">The future is interchain</h2>
+        <h2 className="text-4xl xs:text-6xl font-medium my-8">
+          The future is interchain
+        </h2>
         <p className="max-w-lg mx-auto">
           The interchain network brings the federated blockchain universe
           together. Access new technologies, trade, loan, stake, and participate

@@ -50,7 +50,9 @@ const sections = [
     ],
   },
   {
-    label: 'Community',
+    label: 'Co',
+    after: 'nnect',
+    afterXs: 'mmunity',
     url: '#',
     links: [
       {
@@ -86,7 +88,9 @@ const sections = [
     ],
   },
   {
-    label: 'Developers',
+    label: 'Dev',
+    after: 's',
+    afterXs: 'elopers',
     url: '#',
     links: [
       {
@@ -123,49 +127,51 @@ const sections = [
 
 export default function Header() {
   return (
-    <ul className="flex flex-wrap text-base xs:text-lg justify-center row-start-2 col-span-3 lg:row-start-1 lg:col-start-2 lg:col-span-1">
-      {sections.map((section) => (
-        <li
-          key={section.label}
-          className="group relative first:hidden sm:first:inline-block"
-        >
-          <a
-            href={section.url}
-            className="px-1 xs:px-3 pt-0.5 pb-1 hover:bg-zinc-50 hover:dark:bg-zinc-950 border border-transparent hover:border-fuchsia-500 rounded inline-block"
+    <nav className="border-b border-zinc-300 dark:border-zinc-800">
+      <ul className="flex flex-wrap text-sm xs:text-base justify-center">
+        {sections.map((section) => (
+          <li
+            key={section.label}
+            className="group relative sm:first:inline-block"
           >
-            {section.label}
-          </a>
-          {section.links && (
-            <div
-              className="hidden group-hover:block absolute p-2 animate-slide-down origin-top w-max z-10"
-              style={{ lineHeight: '100%' }}
+            <a
+              href={section.url}
+              className={`px-3 xs:px-4 lg:px-5 py-3 hover:bg-zinc-50 hover:dark:bg-zinc-950 border-l border-zinc-300 dark:border-transparent hover:border-fuchsia-500 hover:dark:border-fuchsia-500 inline-block after:content-['${section.after}'] xs:after:content-['${section.afterXs}']`}
             >
-              <dl className="bg-zinc-50 dark:bg-zinc-950 rounded text-base -ml-2 border border-zinc-200 dark:border-zinc-800 shadow-sm grid grid-cols-[auto_auto]">
-                {section.links.map((link) => {
-                  return (
-                    <Fragment key={link.label}>
-                      <dt className="col-start-1">
-                        <a
-                          href={link.url}
-                          className="px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded"
-                        >
-                          {link.label}
-                        </a>
-                      </dt>
-                      <dd className="w-60 col-start-2 row-start-1 row-span-6 px-4 py-3 border-l border-zinc-200 dark:border-zinc-800 cursor-pointer hidden [:hover_+_&]:block hover:block">
-                        <header>{link.label}</header>
-                        <p className="mt-1 font-light tracking-wider">
-                          {link.description}
-                        </p>
-                      </dd>
-                    </Fragment>
-                  )
-                })}
-              </dl>
-            </div>
-          )}
-        </li>
-      ))}
-    </ul>
+              {section.label}
+            </a>
+            {section.links && (
+              <div
+                className="hidden group-hover:block absolute p-2 animate-slide-down origin-top w-max z-10"
+                style={{ lineHeight: '100%' }}
+              >
+                <dl className="bg-zinc-50 dark:bg-zinc-950 rounded text-base -ml-2 border border-zinc-200 dark:border-zinc-800 shadow-sm grid grid-cols-[auto_auto]">
+                  {section.links.map((link) => {
+                    return (
+                      <Fragment key={link.label}>
+                        <dt className="col-start-1">
+                          <a
+                            href={link.url}
+                            className={`px-4 py-3 block border border-transparent hover:border-fuchsia-500 rounded`}
+                          >
+                            {link.label}
+                          </a>
+                        </dt>
+                        <dd className="w-60 col-start-2 row-start-1 row-span-6 px-4 py-3 border-l border-zinc-200 dark:border-zinc-800 cursor-pointer hidden [:hover_+_&]:block hover:block">
+                          <header>{link.label}</header>
+                          <p className="mt-1 font-light tracking-wider">
+                            {link.description}
+                          </p>
+                        </dd>
+                      </Fragment>
+                    )
+                  })}
+                </dl>
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
+    </nav>
   )
 }

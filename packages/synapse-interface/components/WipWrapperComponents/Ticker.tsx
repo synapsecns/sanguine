@@ -116,30 +116,12 @@ export default function Ticker() {
         isLoading ? 'opacity-70' : 'opacity-100'
       }`}
     >
-      <div className="bg-zinc-50 dark:bg-zinc-950 px-4 py-1.5 border-r border-zinc-300 dark:border-zinc-800 flex items-center gap-2 z-10 bg-zinc-50">
-        <PulseDot
-          className={
-            isLoading
-              ? 'fill-zinc-500 stroke-none'
-              : 'fill-green-500 stroke-green-500'
-          }
-        />
-        {isLoading ? (
-          <>Loading…</>
-        ) : (
-          <>
-            {/* <span className="md:after:content-['_–_All_transactions']"> */}
-            Live
-            {/* </span> */}
-            {/* <span className="text-xxs">▼</span> */}
-          </>
-        )}
-      </div>
+      <CortexAnchor />
       <dl
         ref={tickerRef}
-        className={`relative grid grid-flow-col grid-rows-[1fr_0] w-0 grow cursor-pointer whitespace-nowrap ${
+        className={`relative grid grid-flow-col grid-rows-[1fr_0] w-0 grow cursor-pointer whitespace-nowrap transition-opacity ${
           isLoading ? 'opacity-0' : 'opacity-100'
-        } transition-opacity`}
+        }`}
       >
         {txData &&
           txData
@@ -168,7 +150,7 @@ export default function Ticker() {
                       </li>
                       <li>{CHAINS_BY_ID[tx.fromInfo.chainID]?.name}</li>
                     </ul>
-                    <RightCaret height="12" />
+                    <RightCaret height={12} />
                     <ul className="inline">
                       <li>
                         {formatAmount(tx.toInfo.formattedValue)}{' '}
@@ -184,17 +166,27 @@ export default function Ticker() {
               </Fragment>
             ))}
       </dl>
+      <div className="min-h-full w-px bg-zinc-300 dark:bg-zinc-800 block" />
       <a
         href="#"
-        className="bg-inherit px-4 py-1.5 border border-transparent border-l-zinc-300 dark:border-l-zinc-800 inline-block items-center z-10 md:before:content-['Explorer_'] md:before:mr-2.5 flex items-center hover:border-zinc-400 hover:dark:border-zinc-600 hover:rounded"
+        className="min-h-[34px] group bg-zinc-50 dark:bg-zinc-950 px-2.5 xs:px-4 py-1.5 border border-transparent flex items-center gap-2 z-10 bg-zinc-50 hover:border-zinc-400 hover:dark:border-zinc-600 hover:rounded"
       >
-        <RightCaret height="10" />
+        <PulseDot
+          className={
+            isLoading
+              ? 'fill-zinc-500 stroke-none'
+              : 'fill-green-500 stroke-green-500'
+          }
+        />
+        <span className="hidden xs:inline">
+          {isLoading ? 'Loading…' : 'Live'}
+        </span>
       </a>
     </article>
   )
 }
 
-const RightCaret = ({ height }) => {
+const RightCaret = ({ height }: { height: number }) => {
   const width = height / 2
   return (
     <svg
@@ -284,4 +276,72 @@ const formatTimestamp = (tx) => {
       : minutes + 'm' + (roundedSeconds ? ` ${roundedSeconds}` : '')
 
   return `${timeRange} (${elapsedTime})`
+}
+
+function CortexAnchor() {
+  return (
+    <a
+      href="#"
+      className="px-2 pt-px text-base flex gap-0.5 items-center z-50 bg-inherit border-r border-zinc-300 dark:border-zinc-800"
+    >
+      <CortexIcon width={20} height={20} />
+      <span className="hidden xs:block -mt-px">
+        Cor<span className="opacity-50 -ml-px">/</span>tex
+      </span>
+    </a>
+  )
+}
+
+function CortexIcon({ width, height }) {
+  return (
+    <svg
+      width={width}
+      height={height}
+      viewBox="-10 -10 20 20"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <animate id="trigger" begin="1s; mouseenter; mouseleave" />
+      <circle
+        r="9"
+        stroke="white"
+        strokeWidth="2"
+        opacity=".5"
+        strokeDasharray="1 1"
+        pathLength="2"
+        strokeDashoffset="-.5"
+        strokeLinecap="square"
+      >
+        <animate
+          id="rotate"
+          attributeName="stroke-dashoffset"
+          by="2"
+          dur="1s"
+          begin="trigger.begin"
+          calcMode="spline"
+          keyTimes="0; 1"
+          keySplines=".5 0 .2 1"
+          restart="whenNotActive"
+        />
+      </circle>
+      <circle r="6" fill="white">
+        <animate
+          attributeName="opacity"
+          values=".5; 1"
+          repeatCount="3"
+          dur=".1s"
+          begin="rotate.begin"
+        />
+        <animate
+          attributeName="r"
+          values="3; 6"
+          dur=".5s"
+          calcMode="spline"
+          keyTimes="0; 1"
+          keySplines="0 0 .2 1"
+          begin="rotate.begin"
+        />
+      </circle>
+    </svg>
+  )
 }

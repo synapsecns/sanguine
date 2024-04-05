@@ -239,5 +239,10 @@ module.exports = {
     require('tailwind-scrollbar-hide'),
     require('tailwindcss-border-gradient-radius'),
   ],
-  safelist: [...Array(300).keys()].map((i) => `h-[${i + 1}px]`),
+  safelist: [
+    "after:content-['nnect']",
+    "after:content-['s']",
+    "xs:after:content-['mmunity']",
+    "xs:after:content-['elopers']",
+  ],
 }
