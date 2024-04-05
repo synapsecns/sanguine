@@ -20,6 +20,7 @@ import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { calculateGasCost } from '../../utils/calculateGasCost'
 import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'
 import { TokenAndBalance } from '@/utils/actions/fetchPortfolioBalances'
+import { isEmpty } from 'lodash'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -157,6 +158,14 @@ export const InputContainer = () => {
     return true
   }
 
+  const showGasReserved = (): boolean => {
+    if (!hasMounted || !isConnected) return false
+    if (!parsedGasCost) return false
+    if (isGasToken && !isEmpty(fromValue) && !hasOnlyZeroes(fromValue)) {
+      return true
+    }
+  }
+
   // console.log('parsedBalance:', parsedBalance)
   // console.log('formattedGasCost: ', parsedGasCost)
   // console.log('showMaxOption(): ', showMaxButton())
@@ -201,24 +210,36 @@ export const InputContainer = () => {
                   disabled={false}
                 />
               </div>
-              {hasMounted && isConnected && (
-                <label
-                  htmlFor="inputRow"
-                  onClick={onMaxBridgeableBalance}
-                  className={`
-                    text-xs text-white transition-all duration-150 transform-gpu
-                    hover:text-opacity-70 hover:cursor-pointer
-                  `}
-                >
-                  {isTraceBalance()
-                    ? '< 0.0001'
-                    : trimmedParsedBalance ?? '0.0'}
-                  <span className="text-opacity-50 text-secondaryTextColor">
-                    {' '}
-                    available
-                  </span>
-                </label>
-              )}
+              {hasMounted &&
+                isConnected &&
+                (showGasReserved() ? (
+                  <label
+                    htmlFor="inputRow"
+                    className={`
+                      text-xs text-secondaryTextColor transition-all duration-150 transform-gpu
+                    `}
+                  >
+                    {parsedGasCost.toFixed(4)}
+                    <span className="text-opacity-50"> reserved for gas</span>
+                  </label>
+                ) : (
+                  <label
+                    htmlFor="inputRow"
+                    onClick={onMaxBridgeableBalance}
+                    className={`
+                      text-xs text-white transition-all duration-150 transform-gpu
+                      hover:text-opacity-70 hover:cursor-pointer
+                    `}
+                  >
+                    {isTraceBalance()
+                      ? '< 0.0001'
+                      : trimmedParsedBalance ?? '0.0'}
+                    <span className="text-opacity-50 text-secondaryTextColor">
+                      {' '}
+                      available
+                    </span>
+                  </label>
+                ))}
             </div>
           </div>
           <div>
