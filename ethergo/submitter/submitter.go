@@ -387,12 +387,14 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 // populateGasFromPrevTx populates the gas fields from the previous transaction.
 // Note that in the event of a tx type mismatch, gasFeeCap is copied to gasPrice,
 // and gasPrice is copied to both gasFeeCap and gasTipCap in the opposite scenario.
+//
+//nolint:nestif
 func (t *txSubmitterImpl) populateGasFromPrevTx(ctx context.Context, transactor *bind.TransactOpts, prevTx *types.Transaction, currentDynamic bool) {
 	if prevTx == nil {
 		return
 	}
 
-	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.populateGasFromPrevTx")
+	_, span := t.metrics.Tracer().Start(ctx, "submitter.populateGasFromPrevTx")
 
 	defer func() {
 		span.SetAttributes(
@@ -423,8 +425,10 @@ func (t *txSubmitterImpl) populateGasFromPrevTx(ctx context.Context, transactor 
 
 // applyGasFloor applies the min gas price from the config if values are unset.
 // Otherwise, gas values are bumped by the configured GasBumpPercentage.
+//
+//nolint:cyclop,nestif
 func (t *txSubmitterImpl) applyGasFloor(ctx context.Context, transactor *bind.TransactOpts, chainID int, useDynamic, shouldBump bool) {
-	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.applyGasFloor")
+	_, span := t.metrics.Tracer().Start(ctx, "submitter.applyGasFloor")
 
 	defer func() {
 		span.SetAttributes(
@@ -463,19 +467,16 @@ func (t *txSubmitterImpl) applyGasFloor(ctx context.Context, transactor *bind.Tr
 			if transactor.GasTipCap == nil || transactor.GasTipCap.Cmp(gasFloor) < 0 {
 				transactor.GasTipCap = gasFloor
 			}
-		} else {
-			if transactor.GasPrice == nil || transactor.GasPrice.Cmp(gasFloor) < 0 {
-				transactor.GasPrice = gasFloor
-			}
+		} else if transactor.GasPrice == nil || transactor.GasPrice.Cmp(gasFloor) < 0 {
+			transactor.GasPrice = gasFloor
 		}
 	}
-	return
 }
 
 // applyGasFromOracle fetches gas values from a RPC endpoint and attempts to set them.
 // If values are already specified, they will be overridden if the oracle values are higher.
 func (t *txSubmitterImpl) applyGasFromOracle(ctx context.Context, transactor *bind.TransactOpts, client client.EVM, useDynamic bool) (err error) {
-	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.applyGasCeil")
+	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.applyGasFromOracle")
 
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
@@ -515,7 +516,7 @@ func (t *txSubmitterImpl) applyGasFromOracle(ctx context.Context, transactor *bi
 // applyGasCeil evaluates current gas values versus the configured maximum, and
 // returns an error if they exceed the maximum.
 func (t *txSubmitterImpl) applyGasCeil(ctx context.Context, transactor *bind.TransactOpts, chainID int, useDynamic bool) (err error) {
-	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.applyGasCeil")
+	_, span := t.metrics.Tracer().Start(ctx, "submitter.applyGasCeil")
 
 	maxPrice := t.config.GetMaxGasPrice(chainID)
 
