@@ -33,7 +33,6 @@ import {
   safeWallet,
 } from '@rainbow-me/rainbowkit/wallets'
 import { connectorsForWallets } from '@rainbow-me/rainbowkit'
-import { type Chain as SynapseChain } from '@types'
 
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { dfk, dogechain } from '@/constants/extraWagmiChains'
@@ -91,21 +90,21 @@ const connectors = connectorsForWallets(
   }
 )
 
-type Transports = Record<SynapseChain['id'], Transport>
+type Transports = Record<Chain['id'], Transport>
 
-const createTransports = (chains: SynapseChain[]): Transports => {
+const createTransports = (chains: Chain[]): Transports => {
   return chains.reduce<Transports>((acc, chain) => {
+    const synapseChain = CHAINS_BY_ID[chain.id]
+
     acc[chain.id] = fallback([
-      http(chain.rpcUrls.primary),
-      http(chain.rpcUrls.fallback),
+      http(synapseChain.rpcUrls.primary),
+      http(synapseChain.rpcUrls.fallback),
     ])
     return acc
   }, {})
 }
 
-const synapseChains = Object.values(CHAINS_BY_ID)
-
-const transports = createTransports(synapseChains)
+const transports = createTransports(supportedChains as Chain[])
 
 export const wagmiConfig = createConfig({
   connectors,
