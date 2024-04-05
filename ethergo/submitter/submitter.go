@@ -17,6 +17,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/params"
 	"github.com/ipfs/go-log"
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/core/mapmutex"
@@ -423,6 +424,8 @@ func (t *txSubmitterImpl) bumpGasFromPrevTx(ctx context.Context, transactor *bin
 	}
 }
 
+var minTipCap = big.NewInt(1 * params.Wei)
+
 // applyGasFloor applies the min gas price from the config if values are unset.
 //
 //nolint:cyclop,nestif
@@ -444,7 +447,7 @@ func (t *txSubmitterImpl) applyGasFloor(ctx context.Context, transactor *bind.Tr
 			transactor.GasFeeCap = gasFloor
 		}
 		if transactor.GasTipCap == nil || transactor.GasTipCap.Cmp(gasFloor) < 0 {
-			transactor.GasTipCap = gasFloor
+			transactor.GasTipCap = minTipCap
 		}
 	} else if transactor.GasPrice == nil || transactor.GasPrice.Cmp(gasFloor) < 0 {
 		transactor.GasPrice = gasFloor
