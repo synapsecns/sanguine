@@ -1,8 +1,7 @@
 import toast from 'react-hot-toast'
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { isNull } from 'lodash'
-import { useAppSelector } from '@/store/hooks'
-import { useDispatch } from 'react-redux'
+import { useAppSelector, useAppDispatch } from '@/store/hooks'
 import { zeroAddress } from 'viem'
 import { useAccount, useNetwork } from 'wagmi'
 import { initialState, updateFromValue } from '@/slices/bridge/reducer'
@@ -23,42 +22,31 @@ import { calculateGasCost } from '../../utils/calculateGasCost'
 export const inputRef = React.createRef<HTMLInputElement>()
 
 export const InputContainer = () => {
-  const { fromChainId, fromToken, fromValue } = useBridgeState()
-
+  const dispatch = useAppDispatch()
   const [showValue, setShowValue] = useState('')
-
   const [hasMounted, setHasMounted] = useState(false)
-
+  const { chain } = useNetwork()
+  const { isConnected } = useAccount()
+  const { fromChainId, fromToken, fromValue } = useBridgeState()
   const { balances } = usePortfolioState()
 
   useEffect(() => {
     setHasMounted(true)
   }, [])
 
-  const { isConnected } = useAccount()
-  const { chain } = useNetwork()
+  const isGasToken = fromToken?.addresses[fromChainId] === zeroAddress
 
-  const dispatch = useDispatch()
-
-  const balance = balances[fromChainId]?.find(
+  const selectedFromToken = balances[fromChainId]?.find(
     (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
-  )?.balance
-
-  const shortenedParsedBalance = balances[fromChainId]?.find(
-    (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
-  )?.parsedBalance
-
-  const fullParsedBalance = formatBigIntToString(
-    balance,
-    fromToken?.decimals[fromChainId]
   )
 
-  const { gasData } = useAppSelector((state) => state.gasData)
-  const { gasPrice, maxFeePerGas } = gasData?.formatted
+  const { balance: rawBalance, parsedBalance: trimmedParsedBalance } =
+    selectedFromToken
 
-  const { rawGasCost, parsedGasCost } = calculateGasCost(maxFeePerGas, 200_000)
-
-  const isNativeToken = fromToken?.addresses[fromChainId] === zeroAddress
+  const parsedBalance = formatBigIntToString(
+    rawBalance,
+    fromToken?.decimals[fromChainId]
+  )
 
   useEffect(() => {
     if (fromToken && fromToken?.decimals[fromChainId]) {
@@ -92,23 +80,35 @@ export const InputContainer = () => {
   const onMaxBalance = useCallback(() => {
     dispatch(
       updateFromValue(
-        formatBigIntToString(balance, fromToken?.decimals[fromChainId])
+        formatBigIntToString(rawBalance, fromToken?.decimals[fromChainId])
       )
     )
-  }, [balance, fromChainId, fromToken])
+  }, [rawBalance, fromChainId, fromToken])
+
+  const { gasData } = useAppSelector((state) => state.gasData)
+  const { gasPrice, maxFeePerGas } = gasData?.formatted
+  const { rawGasCost, parsedGasCost } = calculateGasCost(maxFeePerGas, 200_000)
+
+  const isGasBalanceLessThanFees = (): boolean => {
+    if (isGasToken && parsedGasCost && parsedBalance) {
+      return parsedGasCost > parseFloat(parsedBalance)
+    } else {
+      return false
+    }
+  }
 
   const calculateMaxBridgeableGas = (
     parsedGasBalance: number,
     parsedGasCost: number
-  ) => {
+  ): number => {
     const maxBridgeable = parsedGasBalance - parsedGasCost
     return maxBridgeable
   }
 
   const onMaxBridgeableBalance = useCallback(() => {
-    if (parsedGasCost && isNativeToken) {
+    if (isGasToken && parsedGasCost) {
       const maxBridgeable = calculateMaxBridgeableGas(
-        parseFloat(fullParsedBalance),
+        parseFloat(parsedBalance),
         parsedGasCost
       )
 
@@ -117,7 +117,6 @@ export const InputContainer = () => {
           id: 'not-enough-balance-popup',
           duration: 5000,
         })
-
         dispatch(
           updateFromValue(
             formatBigIntToString(0n, fromToken?.decimals[fromChainId])
@@ -129,17 +128,17 @@ export const InputContainer = () => {
     } else {
       dispatch(
         updateFromValue(
-          formatBigIntToString(balance, fromToken?.decimals[fromChainId])
+          formatBigIntToString(rawBalance, fromToken?.decimals[fromChainId])
         )
       )
     }
   }, [
-    shortenedParsedBalance,
-    balance,
     fromChainId,
     fromToken,
+    isGasToken,
     parsedGasCost,
-    isNativeToken,
+    rawBalance,
+    trimmedParsedBalance,
   ])
 
   const connectedStatus = useMemo(() => {
@@ -152,21 +151,13 @@ export const InputContainer = () => {
     }
   }, [chain, fromChainId, isConnected, hasMounted])
 
-  const isGasBalanceLessThanFees = () => {
-    if (isNativeToken && parsedGasCost && fullParsedBalance) {
-      return parsedGasCost > parseFloat(fullParsedBalance)
-    } else {
-      return false
-    }
-  }
-
-  const showMaxButton = () => {
+  const showMaxButton = (): boolean => {
     if (!hasMounted || !isConnected) return false
-    if (isNativeToken && isNull(parsedGasCost)) return false
+    if (isGasToken && isNull(parsedGasCost)) return false
     return true
   }
 
-  // console.log('fullParsedBalance:', fullParsedBalance)
+  // console.log('parsedBalance:', parsedBalance)
   // console.log('formattedGasCost: ', parsedGasCost)
   // console.log('showMaxOption(): ', showMaxButton())
   // console.log('isGasBalanceLessThanFees: ', isGasBalanceLessThanFees())
@@ -219,7 +210,7 @@ export const InputContainer = () => {
                     hover:text-opacity-70 hover:cursor-pointer
                   `}
                 >
-                  {shortenedParsedBalance ?? '0.0'}
+                  {trimmedParsedBalance ?? '0.0'}
                   <span className="text-opacity-50 text-secondaryTextColor">
                     {' '}
                     available
@@ -233,7 +224,7 @@ export const InputContainer = () => {
               <div className="m">
                 <MiniMaxButton
                   disabled={
-                    !balance || balance === 0n
+                    !rawBalance || rawBalance === 0n
                       ? true
                       : false || isGasBalanceLessThanFees()
                   }
