@@ -2,11 +2,11 @@ import { formatGwei } from 'viem'
 
 /**
  * Calculates the estimated gas cost for a transaction.
+ *
  * TODO: Hardcoding gas limit to 200k for now, update dynamically
  *
  * @param {string} gasPrice - The current network gas price in Gwei
  * @param {number} gasLimit - Selected gasLimit to execute Transaction
- * @returns {number, number}  returns gas cost in gwei and parsed
  */
 
 export const calculateGasCost = (
