@@ -41,7 +41,7 @@ export const InputContainer = () => {
   )
 
   const { balance: rawBalance, parsedBalance: trimmedParsedBalance } =
-    selectedFromToken
+    selectedFromToken || {}
 
   const parsedBalance = formatBigIntToString(
     rawBalance,
@@ -81,7 +81,7 @@ export const InputContainer = () => {
   const { gasPrice, maxFeePerGas } = gasData?.formatted
   const { rawGasCost, parsedGasCost } = calculateGasCost(maxFeePerGas, 200_000)
 
-  const isGasBalanceLessThanFees = (): boolean => {
+  const isGasBalanceLessThanCost = (): boolean => {
     if (isGasToken && parsedGasCost && parsedBalance) {
       return parsedGasCost > parseFloat(parsedBalance)
     } else {
@@ -182,7 +182,7 @@ export const InputContainer = () => {
                   onChange={handleFromValueChange}
                   className={`
                     border-none bg-transparent max-w-[190px] p-0 font-medium text-opacity-80
-                    placeholder:text-[#88818C]text-white text-xl md:text-2xl
+                    placeholder:text-[#88818C] text-white text-xl md:text-2xl
                     focus:outline-none focus:ring-0 focus:border-none
                   `}
                   style={{ display: 'table-cell', width: '100%' }}
@@ -218,7 +218,7 @@ export const InputContainer = () => {
                   disabled={
                     !rawBalance || rawBalance === 0n
                       ? true
-                      : false || isGasBalanceLessThanFees()
+                      : false || isGasBalanceLessThanCost()
                   }
                   onClickBalance={onMaxBridgeableBalance}
                 />
