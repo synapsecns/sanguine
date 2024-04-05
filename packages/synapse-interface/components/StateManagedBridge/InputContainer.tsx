@@ -60,9 +60,6 @@ export const InputContainer = () => {
 
   const isNativeToken = fromToken?.addresses[fromChainId] === zeroAddress
 
-  console.log('fullParsedBalance:', fullParsedBalance)
-  console.log('formattedGasCost: ', parsedGasCost)
-
   useEffect(() => {
     if (fromToken && fromToken?.decimals[fromChainId]) {
       setShowValue(fromValue)
@@ -157,10 +154,7 @@ export const InputContainer = () => {
 
   const isGasBalanceLessThanFees = () => {
     if (isNativeToken && parsedGasCost && fullParsedBalance) {
-      const gasBalance = fullParsedBalance
-      const gasFees = parsedGasCost
-
-      return gasFees > parseFloat(gasBalance)
+      return parsedGasCost > parseFloat(fullParsedBalance)
     } else {
       return false
     }
@@ -172,8 +166,10 @@ export const InputContainer = () => {
     return true
   }
 
-  console.log('showMaxOption(): ', showMaxButton())
-  console.log('isGasBalanceLessThanFees: ', isGasBalanceLessThanFees())
+  // console.log('fullParsedBalance:', fullParsedBalance)
+  // console.log('formattedGasCost: ', parsedGasCost)
+  // console.log('showMaxOption(): ', showMaxButton())
+  // console.log('isGasBalanceLessThanFees: ', isGasBalanceLessThanFees())
 
   return (
     <div
