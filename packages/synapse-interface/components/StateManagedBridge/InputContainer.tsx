@@ -18,15 +18,12 @@ import { FromChainSelector } from './FromChainSelector'
 import { FromTokenSelector } from './FromTokenSelector'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
-import { calculateGasFeeInGwei } from '../../utils/calculateGasFeeInGwei'
+import { calculateGasFee } from '../../utils/calculateGasCost'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
 export const InputContainer = () => {
   const { fromChainId, fromToken, fromValue } = useBridgeState()
-  const { gasData } = useAppSelector((state) => state.gasData)
-
-  const { gasPrice, maxFeePerGas } = gasData?.formatted
 
   const [showValue, setShowValue] = useState('')
 
@@ -56,12 +53,18 @@ export const InputContainer = () => {
     fromToken?.decimals[fromChainId]
   )
 
-  const estimatedGasCostInGwei = calculateGasFeeInGwei(maxFeePerGas, 200_000)
+  const { gasData } = useAppSelector((state) => state.gasData)
+  const { gasPrice, maxFeePerGas } = gasData?.formatted
+
+  const { rawGasCost, formattedGasCost } = calculateGasFee(
+    maxFeePerGas,
+    200_000
+  )
 
   const isNativeToken = fromToken?.addresses[fromChainId] === zeroAddress
 
   console.log('fullParsedBalance:', fullParsedBalance)
-  console.log('estimatedGasCostInGwei: ', estimatedGasCostInGwei)
+  console.log('formattedGasCost: ', formattedGasCost)
 
   useEffect(() => {
     if (fromToken && fromToken?.decimals[fromChainId]) {
@@ -100,12 +103,11 @@ export const InputContainer = () => {
     )
   }, [balance, fromChainId, fromToken])
 
-  const onMaxBridgeableBalance = useCallback(() => {
-    if (estimatedGasCostInGwei && isNativeToken) {
-      const maxBalance = Number(fullParsedBalance) - estimatedGasCostInGwei
+  const calculateMaxBridgeableGas = (parsedGasBalance) => {}
 
-      console.log('fullParsedBalance; ', fullParsedBalance)
-      console.log('estimatedGasCostInGwei:', estimatedGasCostInGwei)
+  const onMaxBridgeableBalance = useCallback(() => {
+    if (formattedGasCost && isNativeToken) {
+      const maxBalance = Number(fullParsedBalance) - formattedGasCost
 
       if (maxBalance < 0) {
         toast.error(`Balance is less than estimated gas fee.`, {
@@ -133,7 +135,7 @@ export const InputContainer = () => {
     balance,
     fromChainId,
     fromToken,
-    estimatedGasCostInGwei,
+    formattedGasCost,
     isNativeToken,
   ])
 
@@ -148,9 +150,9 @@ export const InputContainer = () => {
   }, [chain, fromChainId, isConnected, hasMounted])
 
   const isGasBalanceLessThanFees = () => {
-    if (isNativeToken && estimatedGasCostInGwei && fullParsedBalance) {
+    if (isNativeToken && formattedGasCost && fullParsedBalance) {
       const gasBalance = fullParsedBalance
-      const gasFees = estimatedGasCostInGwei
+      const gasFees = formattedGasCost
 
       return gasFees > parseFloat(gasBalance)
     } else {
@@ -160,7 +162,7 @@ export const InputContainer = () => {
 
   const showMaxButton = () => {
     if (!hasMounted || !isConnected) return false
-    if (isNativeToken && isNull(estimatedGasCostInGwei)) return false
+    if (isNativeToken && isNull(formattedGasCost)) return false
     return true
   }
 
