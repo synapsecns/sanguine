@@ -507,7 +507,10 @@ func (t *txSubmitterImpl) applyGasCeil(ctx context.Context, transactor *bind.Tra
 		if transactor.GasFeeCap.Cmp(maxPrice) > 0 {
 			return fmt.Errorf("gas fee cap %s exceeds max price %s", transactor.GasFeeCap, maxPrice)
 		}
-		// TODO: should maxPrice apply to GasTipCap as well?
+		if transactor.GasTipCap.Cmp(transactor.GasFeeCap) > 0 {
+			transactor.GasTipCap = core.CopyBigInt(transactor.GasFeeCap)
+			span.AddEvent("tip cap exceeds fee cap; setting tip cap to fee cap")
+		}
 	} else {
 		if transactor.GasPrice.Cmp(maxPrice) > 0 {
 			return fmt.Errorf("gas price %s exceeds max price %s", transactor.GasPrice, maxPrice)
