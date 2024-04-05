@@ -71,15 +71,15 @@ func (s *SubmitterSuite) TestSetGasPrice() {
 
 	// 4. Test with zero gas price, should return base gas price
 	cfg.SetGlobalEIP1559Support(false)
-	baseGasPrice := new(big.Int).SetUint64(uint64(gofakeit.Uint32()))
-	cfg.SetBaseGasPrice(baseGasPrice)
+	minGasPrice := new(big.Int).SetUint64(uint64(gofakeit.Uint32()))
+	cfg.SetMinGasPrice(minGasPrice)
 	gasPrice = big.NewInt(0)
 	client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Return(gasPrice, nil)
 
 	err = ts.SetGasPrice(s.GetTestContext(), client, transactor, chainID, nil)
 	s.Require().NoError(err)
 
-	s.Equal(baseGasPrice, transactor.GasPrice, testsuite.BigIntComparer())
+	s.Equal(minGasPrice, transactor.GasPrice, testsuite.BigIntComparer())
 
 	// 5. Test with zero gas price with EIP1559, should return base gas price
 	cfg.SetGlobalEIP1559Support(true)
@@ -89,7 +89,7 @@ func (s *SubmitterSuite) TestSetGasPrice() {
 	err = ts.SetGasPrice(s.GetTestContext(), client, transactor, chainID, nil)
 	s.Require().NoError(err)
 
-	s.Equal(baseGasPrice, transactor.GasTipCap, testsuite.BigIntComparer())
+	s.Equal(minGasPrice, transactor.GasTipCap, testsuite.BigIntComparer())
 
 	// 6. Test with bump (TODO)
 	// 7. Test with bump and max (TODO)
