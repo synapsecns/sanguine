@@ -20,8 +20,7 @@ export const harvestLpPool = async ({
   lpAddress: Address
 }) => {
   const { request } = await simulateContract(wagmiConfig, {
-    // TODO: Fix any
-    chainId: chainId as any,
+    chainId,
     address: lpAddress,
     abi: MINICHEF_ABI,
     functionName: 'harvest',

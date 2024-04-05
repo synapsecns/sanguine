@@ -78,7 +78,7 @@ export const getBalanceData = async ({
   // @ts-ignore
   const multicallData: any[] = await multicall(wagmiConfig, {
     contracts: multicallInputs,
-    chainId: chainId as any,
+    chainId,
   }).catch((error) => {
     console.error('Multicall failed:', error)
     return []

@@ -16,8 +16,7 @@ export const swapPoolCalculateAddLiquidity = async ({
   inputs: bigint[]
 }) => {
   const amount = await readContract(wagmiConfig, {
-    // TODO: fix as any
-    chainId: chainId as any,
+    chainId,
     address: ROUTER_ADDRESS,
     abi: SYNAPSE_ROUTER_ABI,
     functionName: 'calculateAddLiquidity',

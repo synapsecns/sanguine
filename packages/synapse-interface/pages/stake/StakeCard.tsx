@@ -379,7 +379,8 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
                     stringToBigInt(withdraw, 18)
                   )
                 )
-                if (tx?.status === 1) {
+
+                if (tx?.status === 'success') {
                   setWithdraw('')
                   dispatch(
                     fetchAndStoreSingleNetworkPortfolioBalances({

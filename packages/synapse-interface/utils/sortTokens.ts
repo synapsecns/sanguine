@@ -80,7 +80,7 @@ export const sortByTokenBalance = async (
     // @ts-ignore
     multicallData = await multicall(wagmiConfig, {
       contracts: multicallInputs,
-      chainId: chainId as any,
+      chainId,
     })
     return sortArrayByBalance(
       sortByVisibilityRank(

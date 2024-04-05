@@ -30,13 +30,13 @@ export const getCorePoolData = async (poolAddress: string, chainId: number) => {
         address: poolAddress as Address,
         abi: SWAP_ABI,
         functionName: 'swapStorage',
-        chainId: chainId as any,
+        chainId,
       },
       {
         address: poolAddress as Address,
         abi: SWAP_ABI,
         functionName: 'getVirtualPrice',
-        chainId: chainId as any,
+        chainId,
       },
     ],
   })

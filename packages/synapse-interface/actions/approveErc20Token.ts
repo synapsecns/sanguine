@@ -31,8 +31,7 @@ export const approveErc20Token = async ({
   }
 
   const { request } = await simulateContract(wagmiConfig, {
-    //TODO: Fix any
-    chainId: chainId as any,
+    chainId,
     address: tokenAddress,
     abi,
     functionName: 'approve',

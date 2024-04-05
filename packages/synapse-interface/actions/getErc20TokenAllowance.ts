@@ -16,8 +16,7 @@ export const getErc20TokenAllowance = async ({
 }): Promise<bigint> => {
   try {
     const allowance = await readContract(wagmiConfig, {
-      // TODO: Fix any
-      chainId: chainId as any,
+      chainId,
       address: tokenAddress,
       abi: erc20Abi,
       functionName: 'allowance',
