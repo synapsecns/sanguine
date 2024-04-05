@@ -18,6 +18,7 @@ import { FromTokenSelector } from './FromTokenSelector'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { calculateGasCost } from '../../utils/calculateGasCost'
+import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -154,6 +155,19 @@ export const InputContainer = () => {
   // console.log('showMaxOption(): ', showMaxButton())
   // console.log('isGasBalanceLessThanFees: ', isGasBalanceLessThanFees())
 
+  console.log('parsedBalance:', parsedBalance)
+
+  console.log(
+    'isOnlyZeroes(shortenedParsedBalance): ',
+    hasOnlyZeroes(trimmedParsedBalance)
+  )
+
+  const isTraceBalance = () => {
+    if (!rawBalance || !trimmedParsedBalance) return false
+    if (rawBalance && hasOnlyZeroes(trimmedParsedBalance)) return true
+    return false
+  }
+
   return (
     <div
       data-test-id="input-container"
@@ -202,7 +216,9 @@ export const InputContainer = () => {
                     hover:text-opacity-70 hover:cursor-pointer
                   `}
                 >
-                  {trimmedParsedBalance ?? '0.0'}
+                  {isTraceBalance()
+                    ? '< 0.0001'
+                    : trimmedParsedBalance ?? '0.0'}
                   <span className="text-opacity-50 text-secondaryTextColor">
                     {' '}
                     available
