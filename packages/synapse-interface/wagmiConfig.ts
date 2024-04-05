@@ -114,4 +114,5 @@ export const wagmiConfig = createConfig({
   connectors,
   chains: maturedChains as unknown as readonly [Chain, ...Chain[]],
   transports,
+  ssr: true,
 })
