@@ -424,7 +424,7 @@ func (t *txSubmitterImpl) bumpGasFromPrevTx(ctx context.Context, transactor *bin
 	}
 }
 
-var minTipCap = big.NewInt(1 * params.Wei)
+var minTipCap = big.NewInt(10 * params.Wei)
 
 // applyGasFloor applies the min gas price from the config if values are unset.
 //
