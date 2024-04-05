@@ -7,6 +7,7 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/params"
 	"github.com/stretchr/testify/mock"
 	"github.com/synapsecns/sanguine/core/testsuite"
 	clientMocks "github.com/synapsecns/sanguine/ethergo/client/mocks"
@@ -30,6 +31,140 @@ func (s *SubmitterSuite) TestSetGasPrice() {
 
 	signer := localsigner.NewSigner(wall.PrivateKey())
 
+	legacyChainID := s.testBackends[0].GetBigChainID()
+	dynamicChainID := s.testBackends[1].GetBigChainID()
+
+	client := new(clientMocks.EVM)
+	legacyTransactor, err := signer.GetTransactor(s.GetTestContext(), legacyChainID)
+	s.Require().NoError(err)
+
+	dynamicTransactor, err := signer.GetTransactor(s.GetTestContext(), dynamicChainID)
+	s.Require().NoError(err)
+
+	maxGasPrice := big.NewInt(1000 * params.GWei)
+	minGasPrice := big.NewInt(10 * params.GWei)
+	cfg := &config.Config{
+		Chains: map[int]config.ChainConfig{
+			int(legacyChainID.Int64()): {
+				MinGasPrice:     minGasPrice,
+				MaxGasPrice:     maxGasPrice,
+				SupportsEIP1559: false,
+			},
+			int(dynamicChainID.Int64()): {
+				MinGasPrice:     minGasPrice,
+				MaxGasPrice:     maxGasPrice,
+				SupportsEIP1559: true,
+			},
+		},
+	}
+	ts := submitter.NewTestTransactionSubmitter(s.metrics, signer, s, s.store, cfg)
+
+	resetTransactors := func() {
+		legacyTransactor.GasPrice = nil
+		dynamicTransactor.GasFeeCap = nil
+		dynamicTransactor.GasTipCap = nil
+	}
+
+	getLegacyTx := func(gasPrice *big.Int) *types.Transaction {
+		return types.NewTx(&types.LegacyTx{
+			GasPrice: gasPrice,
+		})
+	}
+
+	getDynamicTx := func(gasFeeCap, gasTipCap *big.Int) *types.Transaction {
+		return types.NewTx(&types.DynamicFeeTx{
+			GasFeeCap: gasFeeCap,
+			GasTipCap: gasTipCap,
+		})
+	}
+
+	s.Run("LegacyTx:FromOracle", func() {
+		resetTransactors()
+		gasPrice := big.NewInt(100 * params.GWei)
+		client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Once().Return(gasPrice, nil)
+		err = ts.SetGasPrice(s.GetTestContext(), client, legacyTransactor, legacyChainID, nil)
+		s.Require().NoError(err)
+		s.Equal(gasPrice, legacyTransactor.GasPrice, testsuite.BigIntComparer())
+	})
+
+	s.Run("DynamicTx:FromOracle", func() {
+		resetTransactors()
+		gasPrice := big.NewInt(120 * params.GWei)
+		gasTipCap := big.NewInt(50 * params.GWei)
+		client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Once().Return(gasPrice, nil)
+		client.On(testsuite.GetFunctionName(client.SuggestGasTipCap), mock.Anything).Once().Return(gasTipCap, nil)
+		err = ts.SetGasPrice(s.GetTestContext(), client, dynamicTransactor, dynamicChainID, nil)
+		s.Require().NoError(err)
+		s.Equal(gasPrice, dynamicTransactor.GasFeeCap, testsuite.BigIntComparer())
+		s.Equal(gasTipCap, dynamicTransactor.GasTipCap, testsuite.BigIntComparer())
+	})
+
+	s.Run("LegacyTx:BelowMin", func() {
+		resetTransactors()
+		gasPrice := big.NewInt(1 * params.GWei)
+		client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Once().Return(gasPrice, nil)
+		err = ts.SetGasPrice(s.GetTestContext(), client, legacyTransactor, legacyChainID, nil)
+		s.Require().NoError(err)
+		s.Equal(minGasPrice, legacyTransactor.GasPrice, testsuite.BigIntComparer())
+	})
+
+	s.Run("DynamicTx:BelowMin", func() {
+		resetTransactors()
+		gasPrice := big.NewInt(2 * params.GWei)
+		gasTipCap := big.NewInt(1 * params.GWei)
+		client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Once().Return(gasPrice, nil)
+		client.On(testsuite.GetFunctionName(client.SuggestGasTipCap), mock.Anything).Once().Return(gasTipCap, nil)
+		err = ts.SetGasPrice(s.GetTestContext(), client, dynamicTransactor, dynamicChainID, nil)
+		s.Require().NoError(err)
+		s.Equal(minGasPrice, dynamicTransactor.GasFeeCap, testsuite.BigIntComparer())
+		s.Equal(minGasPrice, dynamicTransactor.GasTipCap, testsuite.BigIntComparer())
+	})
+
+	s.Run("LegacyTx:AboveMax", func() {
+		resetTransactors()
+		gasPrice := big.NewInt(10000 * params.GWei)
+		client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Once().Return(gasPrice, nil)
+		err = ts.SetGasPrice(s.GetTestContext(), client, legacyTransactor, legacyChainID, nil)
+		s.NotNil(err)
+	})
+
+	s.Run("DynamicTx:AboveMax", func() {
+		resetTransactors()
+		gasPrice := big.NewInt(20000 * params.GWei)
+		gasTipCap := big.NewInt(10000 * params.GWei)
+		client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Once().Return(gasPrice, nil)
+		client.On(testsuite.GetFunctionName(client.SuggestGasTipCap), mock.Anything).Once().Return(gasTipCap, nil)
+		err = ts.SetGasPrice(s.GetTestContext(), client, dynamicTransactor, dynamicChainID, nil)
+		s.NotNil(err)
+	})
+
+	s.Run("LegacyTx:SimpleBump", func() {
+		resetTransactors()
+		prevTx := getLegacyTx(big.NewInt(100 * params.GWei))
+		client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Once().Return(big.NewInt(50*params.GWei), nil)
+		err = ts.SetGasPrice(s.GetTestContext(), client, legacyTransactor, legacyChainID, prevTx)
+		s.Require().NoError(err)
+		s.Equal(big.NewInt(110*params.GWei), legacyTransactor.GasPrice, testsuite.BigIntComparer())
+	})
+
+	s.Run("DynamicTx:SimpleBump", func() {
+		resetTransactors()
+		prevTx := getDynamicTx(big.NewInt(150*params.GWei), big.NewInt(110*params.GWei))
+		client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Once().Return(big.NewInt(70*params.GWei), nil)
+		client.On(testsuite.GetFunctionName(client.SuggestGasTipCap), mock.Anything).Once().Return(big.NewInt(60*params.GWei), nil)
+		err = ts.SetGasPrice(s.GetTestContext(), client, dynamicTransactor, dynamicChainID, prevTx)
+		s.Require().NoError(err)
+		s.Equal(big.NewInt(165*params.GWei), dynamicTransactor.GasFeeCap, testsuite.BigIntComparer())
+		s.Equal(big.NewInt(121*params.GWei), dynamicTransactor.GasTipCap, testsuite.BigIntComparer())
+	})
+}
+
+func (s *SubmitterSuite) ATestSetGasPrice2() {
+	wall, err := wallet.FromRandom()
+	s.Require().NoError(err)
+
+	signer := localsigner.NewSigner(wall.PrivateKey())
+
 	chainID := s.testBackends[0].GetBigChainID()
 	client := new(clientMocks.EVM)
 
@@ -42,54 +177,59 @@ func (s *SubmitterSuite) TestSetGasPrice() {
 	// 1. Test with gas price set, but not one that exceeds max (not eip-1559)
 	gasPrice := new(big.Int).SetUint64(gofakeit.Uint64())
 	maxPrice := new(big.Int).Add(gasPrice, new(big.Int).SetUint64(1))
-	cfg.SetGlobalMaxGasPrice(maxPrice)
+	s.Run("LegacyTxBelowMax", func() {
+		cfg.SetGlobalMaxGasPrice(maxPrice)
 
-	client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Times(3).Return(gasPrice, nil)
-	err = ts.SetGasPrice(s.GetTestContext(), client, transactor, chainID, nil)
-	s.Require().NoError(err)
+		client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Times(3).Return(gasPrice, nil)
+		err = ts.SetGasPrice(s.GetTestContext(), client, transactor, chainID, nil)
+		s.Require().NoError(err)
 
-	s.Equal(gasPrice, transactor.GasPrice, testsuite.BigIntComparer())
+		s.Equal(gasPrice, transactor.GasPrice, testsuite.BigIntComparer())
+	})
 
 	// 2. Test with gas price set, but one that exceeds max, should return max (not eip-1559)
-	maxPrice = new(big.Int).Sub(gasPrice, new(big.Int).SetUint64(1))
-	cfg.SetGlobalMaxGasPrice(maxPrice)
+	s.Run("SetGasPriceLegacyAboveMax", func() {
+		maxPrice = new(big.Int).Sub(gasPrice, new(big.Int).SetUint64(1))
+		cfg.SetGlobalMaxGasPrice(maxPrice)
 
-	err = ts.SetGasPrice(s.GetTestContext(), client, transactor, chainID, nil)
-	s.Require().NoError(err)
-	s.Equal(maxPrice, transactor.GasPrice, testsuite.BigIntComparer())
+		err = ts.SetGasPrice(s.GetTestContext(), client, transactor, chainID, nil)
+		s.NotNil(err)
+	})
 
 	// 3. Test with gas price set, but one that exceeds max, should return max (legacy tx)
-	cfg.SetGlobalEIP1559Support(true)
-	tipCap := new(big.Int).SetUint64(uint64(gofakeit.Uint32()))
-	client.On(testsuite.GetFunctionName(client.SuggestGasTipCap), mock.Anything).Once().Return(tipCap, nil)
+	s.Run("SetGasPriceDynamicAboveMax", func() {
+		cfg.SetGlobalEIP1559Support(true)
+		tipCap := new(big.Int).SetUint64(uint64(gofakeit.Uint32()))
+		client.On(testsuite.GetFunctionName(client.SuggestGasTipCap), mock.Anything).Once().Return(tipCap, nil)
 
-	err = ts.SetGasPrice(s.GetTestContext(), client, transactor, chainID, nil)
-	s.Require().NoError(err)
+		err = ts.SetGasPrice(s.GetTestContext(), client, transactor, chainID, nil)
+		s.NotNil(err)
+	})
 
-	s.Equal(tipCap, transactor.GasTipCap, testsuite.BigIntComparer())
-	s.Equal(maxPrice, transactor.GasFeeCap, testsuite.BigIntComparer())
+	// s.Equal(tipCap, transactor.GasTipCap, testsuite.BigIntComparer())
+	// s.Equal(maxPrice, transactor.GasFeeCap, testsuite.BigIntComparer())
 
-	// 4. Test with zero gas price, should return base gas price
-	cfg.SetGlobalEIP1559Support(false)
-	minGasPrice := new(big.Int).SetUint64(uint64(gofakeit.Uint32()))
-	cfg.SetMinGasPrice(minGasPrice)
-	gasPrice = big.NewInt(0)
-	client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Return(gasPrice, nil)
+	// // 4. Test with zero gas price, should return base gas price
+	// cfg.SetGlobalEIP1559Support(false)
+	// minGasPrice := new(big.Int).SetUint64(uint64(gofakeit.Uint32()))
+	// cfg.SetMinGasPrice(minGasPrice)
+	// gasPrice = big.NewInt(0)
+	// client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Return(gasPrice, nil)
 
-	err = ts.SetGasPrice(s.GetTestContext(), client, transactor, chainID, nil)
-	s.Require().NoError(err)
+	// err = ts.SetGasPrice(s.GetTestContext(), client, transactor, chainID, nil)
+	// s.Require().NoError(err)
 
-	s.Equal(minGasPrice, transactor.GasPrice, testsuite.BigIntComparer())
+	// s.Equal(minGasPrice, transactor.GasPrice, testsuite.BigIntComparer())
 
-	// 5. Test with zero gas price with EIP1559, should return base gas price
-	cfg.SetGlobalEIP1559Support(true)
-	gasPrice = big.NewInt(0)
-	client.On(testsuite.GetFunctionName(client.SuggestGasTipCap), mock.Anything).Return(gasPrice, nil)
+	// // 5. Test with zero gas price with EIP1559, should return base gas price
+	// cfg.SetGlobalEIP1559Support(true)
+	// gasPrice = big.NewInt(0)
+	// client.On(testsuite.GetFunctionName(client.SuggestGasTipCap), mock.Anything).Return(gasPrice, nil)
 
-	err = ts.SetGasPrice(s.GetTestContext(), client, transactor, chainID, nil)
-	s.Require().NoError(err)
+	// err = ts.SetGasPrice(s.GetTestContext(), client, transactor, chainID, nil)
+	// s.Require().NoError(err)
 
-	s.Equal(minGasPrice, transactor.GasTipCap, testsuite.BigIntComparer())
+	// s.Equal(minGasPrice, transactor.GasTipCap, testsuite.BigIntComparer())
 
 	// 6. Test with bump (TODO)
 	// 7. Test with bump and max (TODO)
