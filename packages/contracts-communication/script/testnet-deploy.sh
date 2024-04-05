@@ -13,15 +13,15 @@ fi
 # Get the rest of the options
 shift 2
 # Permisionless DB w/o governance
-yarn fsr-str script/deploy/DeployNoArgs.s.sol "$chainName" "$walletName" "InterchainDB" "$@"
+yarn fsr-str script/deploy/DeployNoArgs.s.sol "$chainName" "$walletName" InterchainDB "$@"
 # Synapse contracts
 yarn fsr script/deploy/DeploySynapseModule.s.sol "$chainName" "$walletName" "$@"
 yarn fsr script/deploy/DeploySynapseExecutionServiceV1.s.sol "$chainName" "$walletName" "$@"
-yarn fsr-str script/deploy/DeployWithMsgSender.s.sol "$chainName" "$walletName" "SynapseGasOracleV1" "$@"
+yarn fsr-str script/deploy/DeployWithMsgSender.s.sol "$chainName" "$walletName" SynapseGasOracleV1 "$@"
 # Verify Proxy on Etherscan
 yarn vp "$chainName" SynapseExecutionServiceV1
 # Client contracts
 yarn fsr script/deploy/DeployInterchainClientV1.s.sol "$chainName" "$walletName" "$@"
-yarn fsr-str script/deploy/DeployWithMsgSender.s.sol "$chainName" "$walletName" "ExecutionFees" "$@"
+yarn fsr-str script/deploy/DeployWithMsgSender.s.sol "$chainName" "$walletName" ExecutionFees "$@"
 # Ping-Pong App
-yarn fsr-str script/deploy/DeployWithMsgSender.s.sol "$chainName" "$walletName" "PingPongApp" "$@"
+yarn fsr-str script/deploy/DeployWithMsgSender.s.sol "$chainName" "$walletName" PingPongApp "$@"
