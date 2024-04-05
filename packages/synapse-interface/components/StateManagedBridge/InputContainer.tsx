@@ -18,7 +18,7 @@ import { FromChainSelector } from './FromChainSelector'
 import { FromTokenSelector } from './FromTokenSelector'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
-import { calculateGasFee } from '../../utils/calculateGasCost'
+import { calculateGasCost } from '../../utils/calculateGasCost'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -56,7 +56,7 @@ export const InputContainer = () => {
   const { gasData } = useAppSelector((state) => state.gasData)
   const { gasPrice, maxFeePerGas } = gasData?.formatted
 
-  const { rawGasCost, formattedGasCost } = calculateGasFee(
+  const { rawGasCost, formattedGasCost } = calculateGasCost(
     maxFeePerGas,
     200_000
   )
