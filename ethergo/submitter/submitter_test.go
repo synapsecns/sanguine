@@ -78,13 +78,19 @@ func (s *SubmitterSuite) TestSetGasPrice() {
 		})
 	}
 
+	assertGasValues := func(transactor *bind.TransactOpts, gasPrice, gasFeeCap, gasTipCap *big.Int) {
+		s.Equal(gasPrice, transactor.GasPrice, testsuite.BigIntComparer())
+		s.Equal(gasFeeCap, transactor.GasFeeCap, testsuite.BigIntComparer())
+		s.Equal(gasTipCap, transactor.GasTipCap, testsuite.BigIntComparer())
+	}
+
 	s.Run("LegacyTx:FromOracle", func() {
 		resetTransactors()
 		gasPrice := big.NewInt(100 * params.GWei)
 		client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Once().Return(gasPrice, nil)
 		err = ts.SetGasPrice(s.GetTestContext(), client, legacyTransactor, legacyChainID, nil)
 		s.Require().NoError(err)
-		s.Equal(gasPrice, legacyTransactor.GasPrice, testsuite.BigIntComparer())
+		assertGasValues(legacyTransactor, gasPrice, nil, nil)
 	})
 
 	s.Run("DynamicTx:FromOracle", func() {
@@ -95,8 +101,7 @@ func (s *SubmitterSuite) TestSetGasPrice() {
 		client.On(testsuite.GetFunctionName(client.SuggestGasTipCap), mock.Anything).Once().Return(gasTipCap, nil)
 		err = ts.SetGasPrice(s.GetTestContext(), client, dynamicTransactor, dynamicChainID, nil)
 		s.Require().NoError(err)
-		s.Equal(gasPrice, dynamicTransactor.GasFeeCap, testsuite.BigIntComparer())
-		s.Equal(gasTipCap, dynamicTransactor.GasTipCap, testsuite.BigIntComparer())
+		assertGasValues(dynamicTransactor, nil, gasPrice, gasTipCap)
 	})
 
 	s.Run("LegacyTx:BelowMin", func() {
@@ -105,7 +110,7 @@ func (s *SubmitterSuite) TestSetGasPrice() {
 		client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Once().Return(gasPrice, nil)
 		err = ts.SetGasPrice(s.GetTestContext(), client, legacyTransactor, legacyChainID, nil)
 		s.Require().NoError(err)
-		s.Equal(minGasPrice, legacyTransactor.GasPrice, testsuite.BigIntComparer())
+		assertGasValues(legacyTransactor, minGasPrice, nil, nil)
 	})
 
 	s.Run("DynamicTx:BelowMin", func() {
@@ -116,8 +121,7 @@ func (s *SubmitterSuite) TestSetGasPrice() {
 		client.On(testsuite.GetFunctionName(client.SuggestGasTipCap), mock.Anything).Once().Return(gasTipCap, nil)
 		err = ts.SetGasPrice(s.GetTestContext(), client, dynamicTransactor, dynamicChainID, nil)
 		s.Require().NoError(err)
-		s.Equal(minGasPrice, dynamicTransactor.GasFeeCap, testsuite.BigIntComparer())
-		s.Equal(minGasPrice, dynamicTransactor.GasTipCap, testsuite.BigIntComparer())
+		assertGasValues(dynamicTransactor, nil, minGasPrice, minGasPrice)
 	})
 
 	s.Run("LegacyTx:AboveMax", func() {
@@ -144,7 +148,7 @@ func (s *SubmitterSuite) TestSetGasPrice() {
 		client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Once().Return(big.NewInt(50*params.GWei), nil)
 		err = ts.SetGasPrice(s.GetTestContext(), client, legacyTransactor, legacyChainID, prevTx)
 		s.Require().NoError(err)
-		s.Equal(big.NewInt(110*params.GWei), legacyTransactor.GasPrice, testsuite.BigIntComparer())
+		assertGasValues(legacyTransactor, big.NewInt(110*params.GWei), nil, nil)
 	})
 
 	s.Run("DynamicTx:SimpleBump", func() {
@@ -154,8 +158,7 @@ func (s *SubmitterSuite) TestSetGasPrice() {
 		client.On(testsuite.GetFunctionName(client.SuggestGasTipCap), mock.Anything).Once().Return(big.NewInt(60*params.GWei), nil)
 		err = ts.SetGasPrice(s.GetTestContext(), client, dynamicTransactor, dynamicChainID, prevTx)
 		s.Require().NoError(err)
-		s.Equal(big.NewInt(165*params.GWei), dynamicTransactor.GasFeeCap, testsuite.BigIntComparer())
-		s.Equal(big.NewInt(121*params.GWei), dynamicTransactor.GasTipCap, testsuite.BigIntComparer())
+		assertGasValues(dynamicTransactor, nil, big.NewInt(165*params.GWei), big.NewInt(121*params.GWei))
 	})
 
 	s.Run("LegacyTx:BumpWithOracleOverride", func() {
@@ -165,7 +168,7 @@ func (s *SubmitterSuite) TestSetGasPrice() {
 		client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Once().Return(gasPrice, nil)
 		err = ts.SetGasPrice(s.GetTestContext(), client, legacyTransactor, legacyChainID, prevTx)
 		s.Require().NoError(err)
-		s.Equal(gasPrice, legacyTransactor.GasPrice, testsuite.BigIntComparer())
+		assertGasValues(legacyTransactor, gasPrice, nil, nil)
 	})
 
 	s.Run("DynamicTx:BumpWithOracleOverride", func() {
@@ -177,8 +180,7 @@ func (s *SubmitterSuite) TestSetGasPrice() {
 		client.On(testsuite.GetFunctionName(client.SuggestGasTipCap), mock.Anything).Once().Return(gasTipCap, nil)
 		err = ts.SetGasPrice(s.GetTestContext(), client, dynamicTransactor, dynamicChainID, prevTx)
 		s.Require().NoError(err)
-		s.Equal(gasPrice, dynamicTransactor.GasFeeCap, testsuite.BigIntComparer())
-		s.Equal(gasTipCap, dynamicTransactor.GasTipCap, testsuite.BigIntComparer())
+		assertGasValues(dynamicTransactor, nil, gasPrice, gasTipCap)
 	})
 
 	s.Run("LegacyTx:BumpWithPrevDynamicTx", func() {
@@ -188,7 +190,7 @@ func (s *SubmitterSuite) TestSetGasPrice() {
 		client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Once().Return(gasPrice, nil)
 		err = ts.SetGasPrice(s.GetTestContext(), client, legacyTransactor, legacyChainID, prevTx)
 		s.Require().NoError(err)
-		s.Equal(big.NewInt(110*params.GWei), legacyTransactor.GasPrice, testsuite.BigIntComparer())
+		assertGasValues(legacyTransactor, big.NewInt(110*params.GWei), nil, nil)
 	})
 
 	s.Run("DynamicTx:BumpWithPrevLegacyTx", func() {
@@ -200,8 +202,7 @@ func (s *SubmitterSuite) TestSetGasPrice() {
 		client.On(testsuite.GetFunctionName(client.SuggestGasTipCap), mock.Anything).Once().Return(gasTipCap, nil)
 		err = ts.SetGasPrice(s.GetTestContext(), client, dynamicTransactor, dynamicChainID, prevTx)
 		s.Require().NoError(err)
-		s.Equal(big.NewInt(110*params.GWei), dynamicTransactor.GasFeeCap, testsuite.BigIntComparer())
-		s.Equal(big.NewInt(110*params.GWei), dynamicTransactor.GasTipCap, testsuite.BigIntComparer())
+		assertGasValues(dynamicTransactor, nil, big.NewInt(110*params.GWei), big.NewInt(110*params.GWei))
 	})
 }
 
