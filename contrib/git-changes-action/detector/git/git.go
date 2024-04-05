@@ -1,11 +1,10 @@
-package detector
+package git
 
 import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
@@ -13,59 +12,9 @@ import (
 	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/actionscore"
 	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/tree"
 	"github.com/synapsecns/sanguine/core"
-	"golang.org/x/mod/modfile"
 	"os"
-	"path"
 	"strings"
 )
-
-// DetectChangedModules is the change detector client.
-// nolint: cyclop
-func DetectChangedModules(repoPath string, ct tree.Tree, includeDeps bool) (modules map[string]bool, err error) {
-	modules = make(map[string]bool)
-
-	goWorkPath := path.Join(repoPath, "go.work")
-
-	if !common.FileExist(goWorkPath) {
-		return nil, fmt.Errorf("go.work file not found in %s", repoPath)
-	}
-
-	//nolint: gosec
-	workFile, err := os.ReadFile(goWorkPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read go.work file: %w", err)
-	}
-
-	parsedWorkFile, err := modfile.ParseWork(goWorkPath, workFile, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse go.work file: %w", err)
-	}
-
-	depGraph, err := getDependencyGraph(repoPath)
-	if err != nil {
-		return nil, fmt.Errorf("could not get dep graph: %w", err)
-	}
-
-	for _, module := range parsedWorkFile.Use {
-		changed := false
-		if ct.HasPath(module.Path) {
-			changed = true
-		}
-
-		if includeDeps {
-			deps := depGraph[module.Path]
-			for _, dep := range deps {
-				if ct.HasPath(dep) {
-					changed = true
-				}
-			}
-		}
-
-		modules[module.Path] = changed
-	}
-
-	return modules, nil
-}
 
 // getChangeTreeFromGit returns a tree of all the files that have changed between the current commit and the commit with the given hash.
 // nolint: cyclop, gocognit
@@ -76,7 +25,7 @@ func getChangeTreeFromGit(repoPath string, ghContext *actionscore.Context, head,
 		return nil, fmt.Errorf("could not open repository %s: %w", repoPath, err)
 	}
 
-	head, err = getHead(repository, ghContext, head)
+	head, err = GetHead(repository, ghContext, head)
 	if err != nil {
 		return nil, fmt.Errorf("could not get head: %w", err)
 	}
@@ -272,9 +221,9 @@ func getHeadBase(repo *git.Repository) (head string, base string, err error) {
 	return co.Hash().String(), lastCommit.Hash.String(), nil
 }
 
-// getHead gets the head of the current branch.
+// GetHead gets the head of the current branch.
 // it attempts to mirror the logic of  https://github.com/dorny/paths-filter/blob/0ef5f0d812dc7b631d69e07d2491d70fcebc25c8/src/main.ts#L104
-func getHead(repo *git.Repository, ghContext *actionscore.Context, head string) (string, error) {
+func GetHead(repo *git.Repository, ghContext *actionscore.Context, head string) (string, error) {
 	if head != "" {
 		return head, nil
 	}
