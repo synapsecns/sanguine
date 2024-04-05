@@ -1,10 +1,17 @@
-import { createPublicClient, http, Address, Chain as ViemChain } from 'viem'
+import {
+  createPublicClient,
+  http,
+  type Address,
+  type Chain as ViemChain,
+} from 'viem'
 
-import { rawChains } from '@/wagmiConfig'
-import { Chain } from '@/utils/types'
+import { supportedChains } from '@/wagmiConfig'
 
-export const getTransactionReceipt = async (txHash: Address, chain: Chain) => {
-  const viemChain = rawChains.find((rawChain) => chain.id === rawChain.id)
+export const getTransactionReceipt = async (
+  txHash: Address,
+  chainId: number
+) => {
+  const viemChain = supportedChains.find((c) => c.id === chainId)
 
   const publicClient = createPublicClient({
     chain: viemChain as ViemChain,
