@@ -370,7 +370,7 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 	}()
 
 	t.populateGasFromPrevTx(ctx, transactor, prevTx, useDynamic)
-	t.applyGasFloor(ctx, transactor, chainID, shouldBump)
+	t.applyGasFloor(ctx, transactor, chainID, useDynamic, shouldBump)
 
 	err = t.applyGasFromOracle(ctx, transactor, client, useDynamic)
 	if err != nil {
@@ -423,7 +423,7 @@ func (t *txSubmitterImpl) populateGasFromPrevTx(ctx context.Context, transactor 
 
 // applyGasFloor applies the min gas price from the config if values are unset.
 // Otherwise, gas values are bumped by the configured GasBumpPercentage.
-func (t *txSubmitterImpl) applyGasFloor(ctx context.Context, transactor *bind.TransactOpts, chainID int, shouldBump bool) {
+func (t *txSubmitterImpl) applyGasFloor(ctx context.Context, transactor *bind.TransactOpts, chainID int, useDynamic, shouldBump bool) {
 	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.applyGasFloor")
 
 	defer func() {
@@ -437,7 +437,6 @@ func (t *txSubmitterImpl) applyGasFloor(ctx context.Context, transactor *bind.Tr
 	}()
 
 	gasFloor := t.config.GetMinGasPrice(chainID)
-	useDynamic := t.config.SupportsEIP1559(chainID)
 	if shouldBump {
 		bumpPct := t.config.GetGasBumpPercentage(chainID)
 		if useDynamic {
