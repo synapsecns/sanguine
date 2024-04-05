@@ -354,16 +354,10 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.setGasPrice")
 
 	chainID := int(bigChainID.Uint64())
-	maxPrice := t.config.GetMaxGasPrice(chainID)
+	useDynamic := t.config.SupportsEIP1559(chainID)
+	shouldBump := prevTx != nil
 
 	defer func() {
-		if transactor.GasPrice != nil && maxPrice.Cmp(transactor.GasPrice) < 0 {
-			transactor.GasPrice = maxPrice
-		}
-		if transactor.GasFeeCap != nil && maxPrice.Cmp(transactor.GasFeeCap) < 0 {
-			transactor.GasFeeCap = maxPrice
-		}
-
 		span.SetAttributes(
 			attribute.String("gas_price", bigPtrToString(transactor.GasPrice)),
 			attribute.String("gas_fee_cap", bigPtrToString(transactor.GasFeeCap)),
@@ -372,72 +366,144 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	// TODO: cache both of these values
-	shouldBump := true
-	useEIP1559 := t.config.SupportsEIP1559(chainID)
-	if useEIP1559 {
-		transactor.GasFeeCap, err = client.SuggestGasPrice(ctx)
-		if err != nil {
-			return fmt.Errorf("could not get gas price: %w", err)
-		}
-		// don't bump fee cap if we hit the max configured gas price
-		if transactor.GasFeeCap.Cmp(maxPrice) > 0 {
-			transactor.GasFeeCap = maxPrice
-			shouldBump = false
-			span.AddEvent("not bumping fee cap since max price is reached")
-		}
+	t.populateGasFromPrevTx(ctx, transactor, prevTx, useDynamic)
+	t.applyGasFloor(ctx, transactor, chainID, shouldBump)
 
-		transactor.GasTipCap, err = client.SuggestGasTipCap(ctx)
+	err = t.applyGasFromOracle(ctx, transactor, client, useDynamic)
+	if err != nil {
+		return fmt.Errorf("could not populate gas from oracle: %w", err)
+	}
+
+	err = t.applyGasCeil(ctx, transactor, chainID, useDynamic)
+	if err != nil {
+		return fmt.Errorf("could not apply gas ceil: %w", err)
+	}
+	return nil
+}
+
+func (t *txSubmitterImpl) populateGasFromPrevTx(ctx context.Context, transactor *bind.TransactOpts, prevTx *types.Transaction, currentDynamic bool) {
+	if prevTx == nil {
+		return
+	}
+	prevDynamic := prevTx.Type() == types.DynamicFeeTxType
+	if currentDynamic {
+		if prevDynamic {
+			transactor.GasFeeCap = core.CopyBigInt(prevTx.GasFeeCap())
+			transactor.GasTipCap = core.CopyBigInt(prevTx.GasTipCap())
+		} else {
+			transactor.GasFeeCap = core.CopyBigInt(prevTx.GasPrice())
+			transactor.GasTipCap = core.CopyBigInt(prevTx.GasPrice())
+		}
+	} else {
+		if prevDynamic {
+			transactor.GasPrice = core.CopyBigInt(prevTx.GasFeeCap())
+		} else {
+			transactor.GasPrice = core.CopyBigInt(prevTx.GasPrice())
+		}
+	}
+}
+
+func (t *txSubmitterImpl) applyGasFloor(ctx context.Context, transactor *bind.TransactOpts, chainID int, shouldBump bool) {
+	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.applyGasFloor")
+
+	defer func() {
+		span.SetAttributes(
+			attribute.String("gas_price", bigPtrToString(transactor.GasPrice)),
+			attribute.String("gas_fee_cap", bigPtrToString(transactor.GasFeeCap)),
+			attribute.String("gas_tip_cap", bigPtrToString(transactor.GasTipCap)),
+			attribute.Bool("should_bump", shouldBump),
+		)
+		metrics.EndSpan(span)
+	}()
+
+	gasFloor := t.config.GetBaseGasPrice(chainID)
+	useDynamic := t.config.SupportsEIP1559(chainID)
+	if shouldBump {
+		bumpPct := t.config.GetGasBumpPercentage(chainID)
+		if useDynamic {
+			if transactor.GasFeeCap == nil {
+				transactor.GasFeeCap = gasFloor
+				span.AddEvent("gas fee cap is nil; setting to gas floor")
+			} else {
+				transactor.GasFeeCap = gas.BumpByPercent(transactor.GasFeeCap, bumpPct)
+			}
+			if transactor.GasTipCap == nil {
+				transactor.GasTipCap = gasFloor
+				span.AddEvent("gas tip cap is nil; setting to gas floor")
+			} else {
+				transactor.GasTipCap = gas.BumpByPercent(transactor.GasTipCap, bumpPct)
+			}
+		} else {
+			transactor.GasPrice = gas.BumpByPercent(transactor.GasPrice, bumpPct)
+		}
+	} else {
+		if useDynamic {
+			if transactor.GasFeeCap == nil || transactor.GasFeeCap.Cmp(gasFloor) < 0 {
+				transactor.GasFeeCap = gasFloor
+			}
+			if transactor.GasTipCap == nil || transactor.GasTipCap.Cmp(gasFloor) < 0 {
+				transactor.GasTipCap = gasFloor
+			}
+		} else {
+			if transactor.GasPrice == nil || transactor.GasPrice.Cmp(gasFloor) < 0 {
+				transactor.GasPrice = gasFloor
+			}
+		}
+	}
+	return
+}
+
+func (t *txSubmitterImpl) applyGasFromOracle(ctx context.Context, transactor *bind.TransactOpts, client client.EVM, useDynamic bool) (err error) {
+	if useDynamic {
+		suggestedGasFeeCap, err := client.SuggestGasPrice(ctx)
+		if err != nil {
+			return fmt.Errorf("could not get gas fee cap: %w", err)
+		}
+		transactor.GasFeeCap = maxOfBig(transactor.GasFeeCap, suggestedGasFeeCap)
+		suggestedGasTipCap, err := client.SuggestGasTipCap(ctx)
 		if err != nil {
 			return fmt.Errorf("could not get gas tip cap: %w", err)
 		}
+		transactor.GasTipCap = maxOfBig(transactor.GasTipCap, suggestedGasTipCap)
 	} else {
-		transactor.GasPrice, err = client.SuggestGasPrice(ctx)
+		suggestedGasPrice, err := client.SuggestGasPrice(ctx)
 		if err != nil {
 			return fmt.Errorf("could not get gas price: %w", err)
 		}
+		transactor.GasPrice = maxOfBig(transactor.GasPrice, suggestedGasPrice)
 	}
-	t.applyBaseGasPrice(transactor, chainID)
+	return nil
+}
 
-	//nolint: nestif
-	if prevTx != nil && shouldBump {
-		gasBlock, err := t.getGasBlock(ctx, client, chainID)
-		if err != nil {
-			span.AddEvent("could not get gas block", trace.WithAttributes(attribute.String("error", err.Error())))
-			return err
+func (t *txSubmitterImpl) applyGasCeil(ctx context.Context, transactor *bind.TransactOpts, chainID int, useDynamic bool) (err error) {
+	ctx, span := t.metrics.Tracer().Start(ctx, "submitter.applyGasCeil")
+
+	maxPrice := t.config.GetMaxGasPrice(chainID)
+
+	defer func() {
+		span.SetAttributes(attribute.String("max_price", bigPtrToString(maxPrice)))
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	if useDynamic {
+		if transactor.GasFeeCap.Cmp(maxPrice) > 0 {
+			return fmt.Errorf("gas fee cap %s exceeds max price %s", transactor.GasFeeCap, maxPrice)
 		}
-
-		// if the prev tx was greater than this one, we should bump the gas price from that point
-		if prevTx.Type() == types.LegacyTxType {
-			if prevTx.GasPrice().Cmp(transactor.GasPrice) > 0 {
-				transactor.GasPrice = core.CopyBigInt(prevTx.GasPrice())
-			}
-		} else {
-			if prevTx.GasTipCap().Cmp(transactor.GasTipCap) > 0 {
-				transactor.GasTipCap = core.CopyBigInt(prevTx.GasTipCap())
-			}
-
-			if prevTx.GasFeeCap().Cmp(transactor.GasFeeCap) > 0 {
-				transactor.GasFeeCap = core.CopyBigInt(prevTx.GasFeeCap())
-			}
-		}
-		gas.BumpGasFees(transactor, t.config.GetGasBumpPercentage(chainID), gasBlock.BaseFee, maxPrice)
+		// TODO: should maxPrice apply to GasTipCap as well?
 	} else {
-		// if we're not bumping, we should still make sure the gas price is at least 10 because 10% of 10 wei is a whole number.
-		// TODO: this should be customizable.
-		if useEIP1559 {
-			transactor.GasTipCap = maxOfBig(transactor.GasTipCap, big.NewInt(10))
-		} else {
-			transactor.GasPrice = maxOfBig(transactor.GasPrice, big.NewInt(10))
+		if transactor.GasPrice.Cmp(maxPrice) > 0 {
+			return fmt.Errorf("gas price %s exceeds max price %s", transactor.GasPrice, maxPrice)
 		}
 	}
 	return nil
 }
 
-// b must not be nil.
 func maxOfBig(a, b *big.Int) *big.Int {
 	if a == nil {
 		return b
+	}
+	if b == nil {
+		return a
 	}
 	if a.Cmp(b) > 0 {
 		return a
