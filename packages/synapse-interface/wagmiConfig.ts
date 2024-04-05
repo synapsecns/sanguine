@@ -1,5 +1,5 @@
 import '@/patch'
-import { type Chain } from 'viem'
+import { Transport, type Chain } from 'viem'
 import {
   arbitrum,
   aurora,
@@ -20,11 +20,7 @@ import {
   optimism,
   polygon,
 } from '@wagmi/core/chains'
-
-import { dfk, dogechain } from '@/constants/extraWagmiChains'
-
-import { createConfig, http } from '@wagmi/core'
-import { connectorsForWallets } from '@rainbow-me/rainbowkit'
+import { createConfig, fallback, http } from '@wagmi/core'
 import {
   metaMaskWallet,
   rabbyWallet,
@@ -36,29 +32,11 @@ import {
   frameWallet,
   safeWallet,
 } from '@rainbow-me/rainbowkit/wallets'
+import { connectorsForWallets } from '@rainbow-me/rainbowkit'
+import { type Chain as SynapseChain } from '@types'
 
-import {
-  ARBITRUM,
-  AURORA,
-  AVALANCHE,
-  BASE,
-  BLAST,
-  BNB,
-  BOBA,
-  CANTO,
-  CRONOS,
-  DFK,
-  DOGE,
-  ETH,
-  FANTOM,
-  HARMONY,
-  KLAYTN,
-  METIS,
-  MOONBEAM,
-  MOONRIVER,
-  OPTIMISM,
-  POLYGON,
-} from '@/constants/chains/master'
+import { CHAINS_BY_ID } from '@/constants/chains'
+import { dfk, dogechain } from '@/constants/extraWagmiChains'
 
 export const rawChains = [
   mainnet,
@@ -109,50 +87,31 @@ const connectors = connectorsForWallets(
   }
 )
 
+type Transports = Record<SynapseChain['id'], Transport>
+
+const createTransports = (chains: SynapseChain[]): Transports => {
+  return chains.reduce<Transports>((acc, chain) => {
+    acc[chain.id] = fallback([
+      http(chain.rpcUrls.primary),
+      http(chain.rpcUrls.fallback),
+    ])
+    return acc
+  }, {})
+}
+
+const synapseChains = Object.values(CHAINS_BY_ID)
+
+const transports = createTransports(synapseChains)
+
+const maturedChains = rawChains.map((chain) => {
+  return {
+    ...chain,
+    iconUrl: CHAINS_BY_ID[chain.id]?.chainImg.src,
+  }
+})
+
 export const wagmiConfig = createConfig({
   connectors,
-  chains: [
-    mainnet,
-    arbitrum,
-    aurora,
-    avalanche,
-    base as Chain,
-    blast,
-    bsc,
-    canto,
-    fantom,
-    harmonyOne,
-    metis,
-    moonbeam,
-    moonriver,
-    optimism as Chain,
-    polygon,
-    klaytn,
-    cronos,
-    dfk as Chain,
-    dogechain as Chain,
-    boba,
-  ],
-  transports: {
-    [mainnet.id]: http(ETH.rpcUrls.primary),
-    [arbitrum.id]: http(ARBITRUM.rpcUrls.primary),
-    [aurora.id]: http(AURORA.rpcUrls.primary),
-    [avalanche.id]: http(AVALANCHE.rpcUrls.primary),
-    [base.id]: http(BASE.rpcUrls.primary),
-    [blast.id]: http(BLAST.rpcUrls.primary),
-    [bsc.id]: http(BNB.rpcUrls.primary),
-    [canto.id]: http(CANTO.rpcUrls.primary),
-    [fantom.id]: http(FANTOM.rpcUrls.primary),
-    [harmonyOne.id]: http(HARMONY.rpcUrls.primary),
-    [metis.id]: http(METIS.rpcUrls.primary),
-    [moonbeam.id]: http(MOONBEAM.rpcUrls.primary),
-    [moonriver.id]: http(MOONRIVER.rpcUrls.primary),
-    [optimism.id]: http(OPTIMISM.rpcUrls.primary),
-    [polygon.id]: http(POLYGON.rpcUrls.primary),
-    [klaytn.id]: http(KLAYTN.rpcUrls.primary),
-    [cronos.id]: http(CRONOS.rpcUrls.primary),
-    [dfk.id]: http(DFK.rpcUrls.primary),
-    [dogechain.id]: http(DOGE.rpcUrls.primary),
-    [boba.id]: http(BOBA.rpcUrls.primary),
-  },
+  chains: maturedChains as unknown as readonly [Chain, ...Chain[]],
+  transports,
 })
