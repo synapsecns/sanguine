@@ -100,13 +100,22 @@ export const InputContainer = () => {
     )
   }, [balance, fromChainId, fromToken])
 
-  const calculateMaxBridgeableGas = (formattedGasCost) => {}
+  const calculateMaxBridgeableGas = (
+    parsedGasBalance: number,
+    parsedGasCost: number
+  ) => {
+    const maxBridgeable = parsedGasBalance - parsedGasCost
+    return maxBridgeable
+  }
 
   const onMaxBridgeableBalance = useCallback(() => {
     if (parsedGasCost && isNativeToken) {
-      const maxBalance = Number(fullParsedBalance) - parsedGasCost
+      const maxBridgeable = calculateMaxBridgeableGas(
+        parseFloat(fullParsedBalance),
+        parsedGasCost
+      )
 
-      if (maxBalance < 0) {
+      if (maxBridgeable < 0) {
         toast.error(`Balance is less than estimated gas fee.`, {
           id: 'not-enough-balance-popup',
           duration: 5000,
@@ -118,7 +127,7 @@ export const InputContainer = () => {
           )
         )
       } else {
-        dispatch(updateFromValue(maxBalance.toString()))
+        dispatch(updateFromValue(maxBridgeable.toString()))
       }
     } else {
       dispatch(
