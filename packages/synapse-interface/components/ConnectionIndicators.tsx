@@ -46,12 +46,10 @@ export const ConnectToNetworkButton = ({ chainId }: { chainId: number }) => {
   const handleConnectNetwork: () => Promise<void> = async () => {
     setIsConnecting(true)
     try {
-      await switchChain(wagmiConfig, { chainId: chainId as any }).then(
-        (success) => {
-          success && dispatch(setFromChainId(chainId))
-          scrollToTop()
-        }
-      )
+      await switchChain(wagmiConfig, { chainId }).then((success) => {
+        success && dispatch(setFromChainId(chainId))
+        scrollToTop()
+      })
     } catch (error) {
       error && setIsConnecting(false)
     }

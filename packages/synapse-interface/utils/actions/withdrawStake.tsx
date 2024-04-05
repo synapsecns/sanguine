@@ -26,7 +26,7 @@ export const withdrawStake = async (
       true
     )
 
-    const tx = await unstakeLpToken({
+    const txReceipt = await unstakeLpToken({
       address,
       chainId,
       poolId,
@@ -37,7 +37,10 @@ export const withdrawStake = async (
     const toastContent = (
       <div>
         <div>Withdraw completed:</div>
-        <ExplorerToastLink transactionHash={tx as any} chainId={chainId} />
+        <ExplorerToastLink
+          transactionHash={txReceipt.transactionHash}
+          chainId={chainId}
+        />
       </div>
     )
 
@@ -47,7 +50,7 @@ export const withdrawStake = async (
       inputValue,
     })
 
-    return tx
+    return txReceipt
   } catch (err) {
     segmentAnalyticsEvent(`[Withdraw Stake] Error`, {
       poolId,

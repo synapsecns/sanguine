@@ -336,7 +336,7 @@ const serializeToken = async (
   if (balanceToken.addresses[chainId] === zeroAddress) {
     fetchedBalance = await getBalance(wagmiConfig, {
       address: address as Address,
-      chainId: chainId as any,
+      chainId,
     })
 
     return {
@@ -351,7 +351,7 @@ const serializeToken = async (
   } else if (balanceToken === WETHE) {
     fetchedBalance = await getBalance(wagmiConfig, {
       address: address as Address,
-      chainId: chainId as any,
+      chainId,
       token: balanceToken.addresses[chainId] as Address,
     })
 

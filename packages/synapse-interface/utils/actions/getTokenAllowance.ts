@@ -16,7 +16,7 @@ export const getTokenAllowance = async (
   if (tokenAddress === zeroAddress) {
     fetchedBalance = await getBalance(wagmiConfig, {
       address,
-      chainId: chainId as any,
+      chainId,
     })
 
     allowance = fetchedBalance.value

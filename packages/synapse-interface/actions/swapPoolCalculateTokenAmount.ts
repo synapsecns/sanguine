@@ -16,7 +16,7 @@ export const swapPoolCalculateTokenAmount = async ({
   const { abi, poolAddress } = getSwapDepositContractFields(pool, chainId)
 
   const minToMint = await readContract(wagmiConfig, {
-    chainId: chainId as any,
+    chainId,
     address: poolAddress,
     abi,
     functionName: 'calculateTokenAmount',

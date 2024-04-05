@@ -23,7 +23,7 @@ export const publicClientToProvider = (publicClient: PublicClient) => {
 
 /** Action to convert a viem Public Client to an ethers.js Provider. */
 export const getEthersProvider = ({ chainId }: { chainId?: number } = {}) => {
-  const publicClient = getPublicClient(wagmiConfig, { chainId: chainId as any })
+  const publicClient = getPublicClient(wagmiConfig, { chainId })
   return publicClientToProvider(publicClient as any)
 }
 
@@ -46,7 +46,7 @@ export const getEthersSigner = async ({
   chainId,
 }: { chainId?: number } = {}) => {
   const walletClient = await getWalletClient(wagmiConfig, {
-    chainId: chainId as any,
+    chainId,
   })
   if (!walletClient) {
     return undefined
