@@ -77,14 +77,6 @@ export const InputContainer = () => {
     }
   }
 
-  const onMaxBalance = useCallback(() => {
-    dispatch(
-      updateFromValue(
-        formatBigIntToString(rawBalance, fromToken?.decimals[fromChainId])
-      )
-    )
-  }, [rawBalance, fromChainId, fromToken])
-
   const { gasData } = useAppSelector((state) => state.gasData)
   const { gasPrice, maxFeePerGas } = gasData?.formatted
   const { rawGasCost, parsedGasCost } = calculateGasCost(maxFeePerGas, 200_000)
@@ -204,7 +196,7 @@ export const InputContainer = () => {
               {hasMounted && isConnected && (
                 <label
                   htmlFor="inputRow"
-                  onClick={onMaxBalance}
+                  onClick={onMaxBridgeableBalance}
                   className={`
                     text-xs text-white transition-all duration-150 transform-gpu
                     hover:text-opacity-70 hover:cursor-pointer
