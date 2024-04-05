@@ -25,3 +25,6 @@ yarn fsr script/deploy/DeployInterchainClientV1.s.sol "$chainName" "$walletName"
 yarn fsr-str script/deploy/DeployWithMsgSender.s.sol "$chainName" "$walletName" ExecutionFees "$@"
 # Ping-Pong App
 yarn fsr-str script/deploy/DeployWithMsgSender.s.sol "$chainName" "$walletName" PingPongApp "$@"
+# Legacy contracts
+yarn fsr-str script/deploy/DeployWithMsgSender.s.sol "$chainName" "$walletName" MessageBus "$@"
+yarn fsr-str script/deploy/DeployWithMsgSender.s.sol "$chainName" "$walletName" LegacyPingPong "$@"
