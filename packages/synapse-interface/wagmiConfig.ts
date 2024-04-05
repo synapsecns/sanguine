@@ -1,4 +1,4 @@
-// import '@/patch'
+import '@/patch'
 import { type Chain } from 'viem'
 import {
   arbitrum,
@@ -10,8 +10,6 @@ import {
   boba,
   canto,
   cronos,
-  dogechain,
-  dfk,
   fantom,
   klaytn,
   harmonyOne,
@@ -22,6 +20,9 @@ import {
   optimism,
   polygon,
 } from '@wagmi/core/chains'
+
+import { dfk, dogechain } from '@/constants/extraWagmiChains'
+
 import { createConfig, http } from '@wagmi/core'
 import { connectorsForWallets } from '@rainbow-me/rainbowkit'
 import {
@@ -128,8 +129,8 @@ export const wagmiConfig = createConfig({
     polygon,
     klaytn,
     cronos,
-    dfk,
-    dogechain,
+    dfk as Chain,
+    dogechain as Chain,
     boba,
   ],
   transports: {
