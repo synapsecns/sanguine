@@ -9,7 +9,7 @@ import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 /// @notice A simple app that sends a message to the remote PingPongApp, which will respond with a message back.
 /// This app can be loaded with a native asset, which will be used to pay for the messages sent.
 /// Note: we deal with uint256 chain IDs in this contract as the legacy MessageBus contract is using uint256 chain IDs.
-contract PingPongApp is LegacyReceiver {
+contract LegacyPingPong is LegacyReceiver {
     uint256 internal constant MESSAGE_LENGTH = 32;
     uint256 internal constant DEFAULT_GAS_LIMIT = 500_000;
     uint256 public gasLimit;
