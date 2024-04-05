@@ -14,12 +14,12 @@ export const calculateGasCost = (
   gasLimit = 200000
 ): {
   rawGasCost: number
-  formattedGasCost: number
+  parsedGasCost: number
 } => {
   if (!gasPrice) {
     return {
       rawGasCost: null,
-      formattedGasCost: null,
+      parsedGasCost: null,
     }
   }
 
@@ -33,6 +33,6 @@ export const calculateGasCost = (
 
   return {
     rawGasCost: estimatedGasCostInGwei,
-    formattedGasCost: formattedEstimatedGasCost,
+    parsedGasCost: formattedEstimatedGasCost,
   }
 }

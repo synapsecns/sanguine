@@ -56,15 +56,12 @@ export const InputContainer = () => {
   const { gasData } = useAppSelector((state) => state.gasData)
   const { gasPrice, maxFeePerGas } = gasData?.formatted
 
-  const { rawGasCost, formattedGasCost } = calculateGasCost(
-    maxFeePerGas,
-    200_000
-  )
+  const { rawGasCost, parsedGasCost } = calculateGasCost(maxFeePerGas, 200_000)
 
   const isNativeToken = fromToken?.addresses[fromChainId] === zeroAddress
 
   console.log('fullParsedBalance:', fullParsedBalance)
-  console.log('formattedGasCost: ', formattedGasCost)
+  console.log('formattedGasCost: ', parsedGasCost)
 
   useEffect(() => {
     if (fromToken && fromToken?.decimals[fromChainId]) {
@@ -103,11 +100,11 @@ export const InputContainer = () => {
     )
   }, [balance, fromChainId, fromToken])
 
-  const calculateMaxBridgeableGas = (parsedGasBalance) => {}
+  const calculateMaxBridgeableGas = (formattedGasCost) => {}
 
   const onMaxBridgeableBalance = useCallback(() => {
-    if (formattedGasCost && isNativeToken) {
-      const maxBalance = Number(fullParsedBalance) - formattedGasCost
+    if (parsedGasCost && isNativeToken) {
+      const maxBalance = Number(fullParsedBalance) - parsedGasCost
 
       if (maxBalance < 0) {
         toast.error(`Balance is less than estimated gas fee.`, {
@@ -135,7 +132,7 @@ export const InputContainer = () => {
     balance,
     fromChainId,
     fromToken,
-    formattedGasCost,
+    parsedGasCost,
     isNativeToken,
   ])
 
@@ -150,9 +147,9 @@ export const InputContainer = () => {
   }, [chain, fromChainId, isConnected, hasMounted])
 
   const isGasBalanceLessThanFees = () => {
-    if (isNativeToken && formattedGasCost && fullParsedBalance) {
+    if (isNativeToken && parsedGasCost && fullParsedBalance) {
       const gasBalance = fullParsedBalance
-      const gasFees = formattedGasCost
+      const gasFees = parsedGasCost
 
       return gasFees > parseFloat(gasBalance)
     } else {
@@ -162,7 +159,7 @@ export const InputContainer = () => {
 
   const showMaxButton = () => {
     if (!hasMounted || !isConnected) return false
-    if (isNativeToken && isNull(formattedGasCost)) return false
+    if (isNativeToken && isNull(parsedGasCost)) return false
     return true
   }
 
