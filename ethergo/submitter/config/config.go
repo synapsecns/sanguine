@@ -110,7 +110,7 @@ func (c *Config) GetMaxGasPrice(chainID int) (maxPrice *big.Int) {
 	return
 }
 
-// GetMinGasPrice returns the maximum gas price to use for transactions.
+// GetMinGasPrice returns the minimum gas price to use for transactions.
 func (c *Config) GetMinGasPrice(chainID int) (minPrice *big.Int) {
 	minPrice = c.MinGasPrice
 
