@@ -38,7 +38,7 @@ import { type Chain as SynapseChain } from '@types'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { dfk, dogechain } from '@/constants/extraWagmiChains'
 
-export const rawChains = [
+export const supportedChains = [
   mainnet,
   arbitrum,
   aurora,
@@ -59,8 +59,12 @@ export const rawChains = [
   dfk,
   dogechain,
   boba,
-]
-
+].map((chain) => {
+  return {
+    ...chain,
+    iconUrl: CHAINS_BY_ID[chain.id]?.chainImg.src,
+  }
+})
 const appName = 'Synapse'
 const projectId = 'ab0a846bc693996606734d788cb6561d'
 
@@ -103,16 +107,9 @@ const synapseChains = Object.values(CHAINS_BY_ID)
 
 const transports = createTransports(synapseChains)
 
-const maturedChains = rawChains.map((chain) => {
-  return {
-    ...chain,
-    iconUrl: CHAINS_BY_ID[chain.id]?.chainImg.src,
-  }
-})
-
 export const wagmiConfig = createConfig({
   connectors,
-  chains: maturedChains as unknown as readonly [Chain, ...Chain[]],
+  chains: supportedChains as unknown as readonly [Chain, ...Chain[]],
   transports,
   ssr: true,
 })
