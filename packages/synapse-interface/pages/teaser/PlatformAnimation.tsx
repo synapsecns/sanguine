@@ -1,3 +1,5 @@
+import { CHAINS_ARR } from '@/constants/chains'
+
 const hslStr = (h, s, l, a = undefined) =>
   `hsl(${h}deg ${s}% ${l}%${a === undefined ? '' : ` / ${a}%`})`
 
@@ -232,13 +234,14 @@ const Cube = ({
   )
 }
 
-export default function ({ className = '' }) {
+export default function ({ animationRef, className = '' }) {
   return (
     <svg
+      ref={animationRef}
       id="hero-graphic"
       width="1200"
       viewBox="-700 -437.5 1400 875"
-      overflow="visible"
+      // overflow="visible"
       className={className}
       fill="none"
     >
@@ -248,8 +251,8 @@ export default function ({ className = '' }) {
       </style>
       <defs>
         <linearGradient id="a">
-          <stop stop-color="#E54DE5" />
-          <stop offset="1" stop-color="#B580FF" />
+          <stop stopColor="#E54DE5" />
+          <stop offset="1" stopColor="#B580FF" />
         </linearGradient>
         <marker id="b" viewBox="-.5 -.5 1 1">
           <circle r=".4" fill="url(#a)" />
@@ -262,7 +265,7 @@ export default function ({ className = '' }) {
           attributeName="d"
           values="m-200,-100 0,0 0,0 0,0z; m-100,-150 0,0 -200,100 0,0z; m-120,-160 40,20 -200,100 -40,-20z"
           dur=".5s"
-          begin="platformYellow.end + 1s"
+          begin="platformSouth.end + 1s"
           calcMode="spline"
           keyTimes="0; .5; 1"
           keySplines=".5 0 .2 1; .5 0 .2 1"
@@ -353,20 +356,30 @@ export default function ({ className = '' }) {
         />
       </path>
 
-      <Platform id="platformBlue" translate="0 -200" color="north" begin="0s" />
-      <Platform id="platformGreen" translate="400 0" color="east" begin=".1s" />
+      <Platform id="platformWest" translate="-400 0" color="west" begin=".3s" />
       <Platform
-        id="platformOrange"
+        id="platformNorth"
+        translate="0 -200"
+        color="north"
+        begin="0s"
+      />
+      <Platform id="platformEast" translate="400 0" color="east" begin=".1s" />
+      <Platform
+        id="platformSouth"
         translate="0 200"
         color="south"
         begin=".2s"
       />
-      <Platform
-        id="platformYellow"
-        translate="-400 0"
-        color="west"
-        begin=".3s"
-      />
+
+      {/* {CHAINS_ARR.slice(0, 4).map((chain) => {
+        return (
+          <>
+            <text x="0" y="0" width="100" height="50" fill="red">
+              {chain.name}
+            </text>
+          </>
+        )
+      })}
 
       <g transform="translate(125 -290) scale(1.2)">
         <rect width="100" height="52" rx="4" fill="#111" stroke="#333" />
@@ -408,7 +421,7 @@ export default function ({ className = '' }) {
         </text>
       </g>
 
-      {/* <g transform="translate(-600 -400) scale(1.2)">
+      <g transform="translate(-600 -400) scale(1.2)">
         <rect width="120" height="52" rx="4" fill="#111" stroke="#333" />
         <text x="10" y="20" fill={text.west}>
           60d volume

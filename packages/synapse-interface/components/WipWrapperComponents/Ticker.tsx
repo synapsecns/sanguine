@@ -8,6 +8,7 @@
 import { Fragment, useRef, useEffect, useState } from 'react'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import PulseDot from '../icons/PulseDot'
+import { CortexAnchor } from './CortexLogo'
 
 const testUrl =
   'https://explorer.omnirpc.io/graphql?query=%7B%0A%20%20bridgeTransactions(useMv%3Atrue%2C%20pending%3A%20false%2C%20startTime%3A1688815939%2C%20page%3A%201)%20%7B%0A%20%20%20%20fromInfo%20%7B%0A%20%20%20%20%20%20chainID%0A%20%20%20%20%20%20destinationChainID%0A%20%20%20%20%20%20address%0A%20%20%20%20%20%20txnHash%0A%20%20%20%20%20%20value%0A%20%20%20%20%20%20formattedValue%0A%20%20%20%20%20%20USDValue%0A%20%20%20%20%20%20tokenAddress%0A%20%20%20%20%20%20tokenSymbol%0A%20%20%20%20%20%20blockNumber%0A%20%20%20%20%20%20time%0A%20%20%20%20%20%20formattedTime%0A%20%20%20%20%20%20formattedEventType%0A%20%20%20%20%20%20eventType%0A%20%20%20%20%7D%0A%20%20%20%20toInfo%20%7B%0A%20%20%20%20%20%20chainID%0A%20%20%20%20%20%20destinationChainID%0A%20%20%20%20%20%20address%0A%20%20%20%20%20%20txnHash%0A%20%20%20%20%20%20value%0A%20%20%20%20%20%20formattedValue%0A%20%20%20%20%20%20USDValue%0A%20%20%20%20%20%20tokenAddress%0A%20%20%20%20%20%20tokenSymbol%0A%20%20%20%20%20%20blockNumber%0A%20%20%20%20%20%20time%0A%20%20%20%20%20%20formattedTime%0A%20%20%20%20%20%20formattedEventType%0A%20%20%20%20%20%20eventType%0A%20%20%20%20%7D%0A%20%20%20%20kappa%0A%20%20%7D%0A%7D%0A'
@@ -116,7 +117,9 @@ export default function Ticker() {
         isLoading ? 'opacity-70' : 'opacity-100'
       }`}
     >
-      <CortexAnchor />
+      <div className="px-2 grid place-content-center z-50 bg-inherit border-r border-zinc-300 dark:border-zinc-800">
+        <CortexAnchor id="tickerLogo" width={20} height={20} />
+      </div>
       <dl
         ref={tickerRef}
         className={`relative grid grid-flow-col grid-rows-[1fr_0] w-0 grow cursor-pointer whitespace-nowrap transition-opacity ${
@@ -278,70 +281,3 @@ const formatTimestamp = (tx) => {
   return `${timeRange} (${elapsedTime})`
 }
 
-function CortexAnchor() {
-  return (
-    <a
-      href="#"
-      className="px-2 pt-px text-base flex gap-0.5 items-center z-50 bg-inherit border-r border-zinc-300 dark:border-zinc-800"
-    >
-      <CortexIcon width={20} height={20} />
-      <span className="hidden xs:block -mt-px">
-        Cor<span className="opacity-50 -ml-px">/</span>tex
-      </span>
-    </a>
-  )
-}
-
-function CortexIcon({ width, height }) {
-  return (
-    <svg
-      width={width}
-      height={height}
-      viewBox="-10 -10 20 20"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <animate id="trigger" begin="1s; mouseenter; mouseleave" />
-      <circle
-        r="9"
-        stroke="white"
-        strokeWidth="2"
-        opacity=".5"
-        strokeDasharray="1 1"
-        pathLength="2"
-        strokeDashoffset="-.5"
-        strokeLinecap="square"
-      >
-        <animate
-          id="rotate"
-          attributeName="stroke-dashoffset"
-          by="2"
-          dur="1s"
-          begin="trigger.begin"
-          calcMode="spline"
-          keyTimes="0; 1"
-          keySplines=".5 0 .2 1"
-          restart="whenNotActive"
-        />
-      </circle>
-      <circle r="6" fill="white">
-        <animate
-          attributeName="opacity"
-          values=".5; 1"
-          repeatCount="3"
-          dur=".1s"
-          begin="rotate.begin"
-        />
-        <animate
-          attributeName="r"
-          values="3; 6"
-          dur=".5s"
-          calcMode="spline"
-          keyTimes="0; 1"
-          keySplines="0 0 .2 1"
-          begin="rotate.begin"
-        />
-      </circle>
-    </svg>
-  )
-}

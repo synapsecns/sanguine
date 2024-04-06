@@ -132,11 +132,11 @@ export default function Header() {
         {sections.map((section) => (
           <li
             key={section.label}
-            className="group relative sm:first:inline-block"
+            className="group relative sm:first:inline-block text-zinc-500 hover:text-white"
           >
             <a
               href={section.url}
-              className={`px-3 xs:px-4 lg:px-5 py-3 hover:bg-zinc-50 hover:dark:bg-zinc-950 border-l border-zinc-300 dark:border-transparent hover:border-fuchsia-500 hover:dark:border-fuchsia-500 inline-block after:content-['${section.after}'] xs:after:content-['${section.afterXs}']`}
+              className={`px-3 xs:px-4 lg:px-5 py-2.5 hover:bg-zinc-50 hover:dark:bg-zinc-950 border-l border-zinc-300 dark:border-transparent hover:border-fuchsia-500 hover:dark:border-fuchsia-500 inline-block after:content-['${section.after}'] xs:after:content-['${section.afterXs}']`}
             >
               {section.label}
             </a>

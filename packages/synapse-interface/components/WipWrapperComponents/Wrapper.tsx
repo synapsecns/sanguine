@@ -8,6 +8,7 @@ import { SynapseAnchor } from './SynapseLogo'
 import Footer from './Footer'
 import NavMenu from './NavMenu'
 import Ticker from './Ticker'
+import CortexCli from './CortexCli'
 
 const Wrapper = ({ children }) => {
   const { address: currentAddress } = useAccount()
@@ -25,34 +26,12 @@ const Wrapper = ({ children }) => {
   https://stackoverflow.com/questions/61117608/how-do-i-set-system-preference-dark-mode-in-a-react-app-but-also-allow-users-to
   */
   const prefersColorScheme = localStorage.getItem('prefers-color-scheme')
-
   const windowPrefersDark = window.matchMedia('(prefers-color-scheme: dark)')
 
   const [prefersDark, setPrefersDark] = useState(
     prefersColorScheme
       ? prefersColorScheme === 'dark'
       : windowPrefersDark.matches
-  )
-
-  function selectPrefersDark(e) {
-    switch (e.target.value) {
-      case 'Dark mode':
-        localStorage.setItem('prefers-color-scheme', 'dark')
-        setPrefersDark(true)
-        break
-      case 'Light mode':
-        localStorage.setItem('prefers-color-scheme', 'light')
-        setPrefersDark(false)
-        break
-      default:
-        localStorage.removeItem('prefers-color-scheme')
-        setPrefersDark(windowPrefersDark.matches)
-    }
-  }
-
-  windowPrefersDark.addEventListener(
-    'change',
-    (e) => !prefersColorScheme && setPrefersDark(e.matches)
   )
 
   /* TODO: Mobile Support */
@@ -72,33 +51,16 @@ const Wrapper = ({ children }) => {
   return (
     <div
       className={`${
-        prefersDark ? 'dark text-zinc-200 bg-black' : 'text-zinc-800 bg-white'
-      } tracking-wide`}
+        prefersDark
+          ? 'dark text-zinc-200 from-black dark:to-[hsl(265deg_25%_7.5%)]'
+          : 'text-zinc-800 from-white to-[hsl(235deg_75%_96%)]'
+      } bg-gradient-to-b tracking-wide`}
     >
       <Ticker />
-      <div className="bg-white bg-gradient-to-b from-white to-[hsl(235deg_75%_96%)] dark:from-black dark:to-[hsl(265deg_25%_7.5%)]">
-        <NavMenu />
-        <main className="overflow-hidden">{children}</main>
-        <Footer />
-        <select
-          className="sticky bottom-0 right-0 bg-white dark:bg-black text-sm text-inherit cursor-pointer rounded border-zinc-200 dark:border-zinc-800 justify-self-end w-min hover:border-zinc-300 hover:dark:bg-zinc-950 hover:dark:border-zinc-700 col-end-4"
-          onChange={selectPrefersDark}
-        >
-          <option
-            defaultValue={prefersColorScheme === 'dark' ? 'true' : 'false'}
-          >
-            Dark mode
-          </option>
-          <option
-            defaultValue={prefersColorScheme === 'light' ? 'true' : 'false'}
-          >
-            Light mode
-          </option>
-          <option defaultValue={!prefersColorScheme ? 'true' : 'false'}>
-            System {windowPrefersDark.matches ? 'dark' : 'light'}
-          </option>
-        </select>
-      </div>
+      <NavMenu />
+      <main className="overflow-hidden">{children}</main>
+      <CortexCli setPrefersDark={setPrefersDark} />
+      <Footer />
     </div>
   )
 }
