@@ -31,8 +31,8 @@ type ChainConfig struct {
 	DoNotBatch bool `yaml:"skip_batching"`
 	// MaxGasPrice is the maximum gas price to use for transactions
 	MaxGasPrice *big.Int `yaml:"max_gas_price"`
-	// BaseGasPrice is the gas price that will be used if 0 is returned from the gas price oracle
-	BaseGasPrice *big.Int `yaml:"base_gas_price"`
+	// MinGasPrice is the gas price that will be used if 0 is returned from the gas price oracle
+	MinGasPrice *big.Int `yaml:"min_gas_price"`
 	// BumpIntervalSeconds is the number of seconds to wait before bumping a transaction
 	BumpIntervalSeconds int `yaml:"bump_interval_seconds"`
 	// GasBumpPercentages is the percentage to bump the gas price by
@@ -67,8 +67,8 @@ const (
 // DefaultMaxPrice is the default max price of a tx.
 var DefaultMaxPrice = big.NewInt(500 * params.GWei)
 
-// DefaultBaseGasPrice is the default max price of a tx.
-var DefaultBaseGasPrice = big.NewInt(1 * params.GWei)
+// DefaultMinGasPrice is the default min price of a tx.
+var DefaultMinGasPrice = big.NewInt(1 * params.GWei)
 
 // note: there's probably a way to clean these getters up with generics, the real problem comes with the fact that
 // that this would require the caller to override the entire struct, which is not ideal..
@@ -110,17 +110,17 @@ func (c *Config) GetMaxGasPrice(chainID int) (maxPrice *big.Int) {
 	return
 }
 
-// GetBaseGasPrice returns the maximum gas price to use for transactions.
-func (c *Config) GetBaseGasPrice(chainID int) (basePrice *big.Int) {
-	basePrice = c.BaseGasPrice
+// GetMinGasPrice returns the minimum gas price to use for transactions.
+func (c *Config) GetMinGasPrice(chainID int) (minPrice *big.Int) {
+	minPrice = c.MinGasPrice
 
 	chainConfig, ok := c.Chains[chainID]
-	if ok && chainConfig.BaseGasPrice != nil {
-		basePrice = chainConfig.BaseGasPrice
+	if ok && chainConfig.MinGasPrice != nil {
+		minPrice = chainConfig.MinGasPrice
 	}
 
-	if basePrice == nil || basePrice == big.NewInt(0) {
-		basePrice = DefaultBaseGasPrice
+	if minPrice == nil || minPrice == big.NewInt(0) {
+		minPrice = DefaultMinGasPrice
 	}
 	return
 }
@@ -217,9 +217,9 @@ func (c *Config) SetGlobalMaxGasPrice(maxPrice *big.Int) {
 	c.MaxGasPrice = maxPrice
 }
 
-// SetBaseGasPrice is a helper function that sets the base gas price.
-func (c *Config) SetBaseGasPrice(basePrice *big.Int) {
-	c.BaseGasPrice = basePrice
+// SetMinGasPrice is a helper function that sets the base gas price.
+func (c *Config) SetMinGasPrice(basePrice *big.Int) {
+	c.MinGasPrice = basePrice
 }
 
 // SetGlobalEIP1559Support is a helper function that sets the global EIP1559 support.
