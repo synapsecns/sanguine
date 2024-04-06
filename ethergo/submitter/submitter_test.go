@@ -41,7 +41,7 @@ func (s *SubmitterSuite) TestSetGasPrice() {
 	s.Require().NoError(err)
 
 	maxGasPrice := big.NewInt(1000 * params.GWei)
-	minGasPrice := big.NewInt(10 * params.GWei)
+	minGasPrice := big.NewInt(1 * params.GWei)
 	cfg := &config.Config{
 		Chains: map[int]config.ChainConfig{
 			int(legacyChainID.Int64()): {
@@ -114,13 +114,13 @@ func (s *SubmitterSuite) TestSetGasPrice() {
 
 	s.Run("DynamicTx:BelowMin", func() {
 		resetTransactors()
-		gasPrice := big.NewInt(2 * params.GWei)
-		gasTipCap := big.NewInt(1 * params.GWei)
+		gasPrice := big.NewInt(0.5 * params.GWei)
+		gasTipCap := big.NewInt(0)
 		client.On(testsuite.GetFunctionName(client.SuggestGasPrice), mock.Anything).Once().Return(gasPrice, nil)
 		client.On(testsuite.GetFunctionName(client.SuggestGasTipCap), mock.Anything).Once().Return(gasTipCap, nil)
 		err = ts.SetGasPrice(s.GetTestContext(), client, dynamicTransactor, dynamicChainID, nil)
 		s.Require().NoError(err)
-		assertGasValues(dynamicTransactor, nil, minGasPrice, minGasPrice)
+		assertGasValues(dynamicTransactor, nil, minGasPrice, big.NewInt(10*params.Wei))
 	})
 
 	s.Run("LegacyTx:AboveMax", func() {
