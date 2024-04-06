@@ -40,9 +40,10 @@ const getAccountNonceRPC = (rpcUrl, address) => {
 }
 
 const hasCodeRPC = (rpcUrl, address) => {
-  const code = getCommandOutput(`cast code --rpc-url ${rpcUrl} ${address}`)
-  // 0x is returned for an address without code
-  return code.length > 2
+  const codeSize = getCommandOutput(
+    `cast codesize --rpc-url ${rpcUrl} ${address}`
+  )
+  return codeSize > 0
 }
 
 module.exports = {
