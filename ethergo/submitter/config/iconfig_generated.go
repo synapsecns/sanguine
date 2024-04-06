@@ -20,8 +20,6 @@ type IConfig interface {
 	// GetBumpInterval returns the number of seconds to wait before bumping a transaction
 	// TODO: test this method.
 	GetBumpInterval(chainID int) time.Duration
-	// IsL2 returns whether or not this chain is an L2 chain.
-	IsL2(chainID int) bool
 	// GetGasBumpPercentage returns the percentage to bump the gas price by
 	// TODO: test this method.
 	GetGasBumpPercentage(chainID int) (gasBumpPercentage int)
