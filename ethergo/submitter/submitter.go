@@ -446,7 +446,7 @@ func (t *txSubmitterImpl) applyGasFloor(ctx context.Context, transactor *bind.Tr
 		if transactor.GasFeeCap == nil || transactor.GasFeeCap.Cmp(gasFloor) < 0 {
 			transactor.GasFeeCap = gasFloor
 		}
-		if transactor.GasTipCap == nil || transactor.GasTipCap.Cmp(gasFloor) < 0 {
+		if transactor.GasTipCap == nil || transactor.GasTipCap.Cmp(minTipCap) < 0 {
 			transactor.GasTipCap = minTipCap
 		}
 	} else if transactor.GasPrice == nil || transactor.GasPrice.Cmp(gasFloor) < 0 {
