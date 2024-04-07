@@ -3,7 +3,10 @@ import { ponder } from '@/generated'
 ponder.on(
   'InterchainClientV1:InterchainTransactionSent',
   async ({ event, context }) => {
-    const { InterchainTransactionSent, InterchainTransaction } = context.db
+    const {
+      db: { InterchainTransactionSent, InterchainTransaction },
+      network: { chainId },
+    } = context
 
     const {
       name,
@@ -26,6 +29,7 @@ ponder.on(
       id: transactionId,
       data: {
         name,
+        chainId,
         transactionId,
         dbNonce,
         entryIndex,
@@ -55,7 +59,10 @@ ponder.on(
 ponder.on(
   'InterchainClientV1:InterchainTransactionReceived',
   async ({ event, context }) => {
-    const { InterchainTransactionReceived, InterchainTransaction } = context.db
+    const {
+      db: { InterchainTransactionReceived, InterchainTransaction },
+      network: { chainId },
+    } = context
 
     const {
       name,
@@ -74,6 +81,7 @@ ponder.on(
       id: transactionId,
       data: {
         name,
+        chainId,
         transactionId,
         dbNonce,
         entryIndex,

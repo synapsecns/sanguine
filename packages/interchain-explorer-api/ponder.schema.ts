@@ -3,6 +3,7 @@ import { createSchema } from '@ponder/core'
 export default createSchema((p) => ({
   InterchainTransactionSent: p.createTable({
     id: p.string(),
+    chainId: p.int(),
     name: p.string(),
     transactionId: p.string(),
     dbNonce: p.bigint(),
@@ -21,6 +22,7 @@ export default createSchema((p) => ({
 
   InterchainTransactionReceived: p.createTable({
     id: p.string(),
+    chainId: p.int(),
     name: p.string(),
     transactionId: p.string(),
     dbNonce: p.bigint(),
