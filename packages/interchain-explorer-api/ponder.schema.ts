@@ -32,4 +32,17 @@ export default createSchema((p) => ({
     blockNumber: p.bigint(),
     transactionHash: p.string(),
   }),
+
+  InterchainTransaction: p.createTable({
+    id: p.string(),
+    interchainTransactionSentId: p
+      .string()
+      .references('InterchainTransactionSent.id'),
+    interchainTransactionSent: p.one('interchainTransactionSentId'),
+    interchainTransactionReceivedId: p
+      .string()
+      .references('InterchainTransactionReceived.id')
+      .optional(),
+    interchainTransactionReceived: p.one('interchainTransactionReceivedId'),
+  }),
 }))
