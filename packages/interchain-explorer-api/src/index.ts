@@ -11,6 +11,7 @@ ponder.on(
     const {
       name,
       log: { address, blockNumber, transactionHash },
+      block: { timestamp },
       args: {
         transactionId,
         dbNonce,
@@ -43,6 +44,7 @@ ponder.on(
         address,
         blockNumber,
         transactionHash,
+        timestamp,
       },
     })
 
@@ -67,6 +69,7 @@ ponder.on(
     const {
       name,
       log: { address, blockNumber, transactionHash },
+      block: { timestamp },
       args: {
         transactionId,
         dbNonce,
@@ -91,6 +94,7 @@ ponder.on(
         address,
         blockNumber,
         transactionHash,
+        timestamp,
       },
     })
 
