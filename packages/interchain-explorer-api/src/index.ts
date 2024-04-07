@@ -3,25 +3,26 @@ import { ponder } from '@/generated'
 ponder.on(
   'InterchainClientV1:InterchainTransactionSent',
   async ({ event, context }) => {
-    const { InterchainTransactionSent } = context.db
-
-    const { name } = event
-    const { address, blockNumber, transactionHash } = event.log
+    const { InterchainTransactionSent, InterchainTransaction } = context.db
 
     const {
-      transactionId,
-      dbNonce,
-      entryIndex,
-      dstChainId,
-      srcSender,
-      dstReceiver,
-      verificationFee,
-      executionFee,
-      options,
-      message,
-    } = event.args
+      name,
+      log: { address, blockNumber, transactionHash },
+      args: {
+        transactionId,
+        dbNonce,
+        entryIndex,
+        dstChainId,
+        srcSender,
+        dstReceiver,
+        verificationFee,
+        executionFee,
+        options,
+        message,
+      },
+    } = event
 
-    await InterchainTransactionSent.create({
+    const record = await InterchainTransactionSent.create({
       id: transactionId,
       data: {
         name,
@@ -40,26 +41,36 @@ ponder.on(
         transactionHash,
       },
     })
+
+    await InterchainTransaction.create({
+      id: transactionId,
+      data: {
+        interchainTransactionSentId: record.id,
+        interchainTransactionReceivedId: undefined,
+      },
+    })
   }
 )
 
 ponder.on(
   'InterchainClientV1:InterchainTransactionReceived',
   async ({ event, context }) => {
-    const { InterchainTransactionReceived } = context.db
+    const { InterchainTransactionReceived, InterchainTransaction } = context.db
 
-    const { name } = event
-    const { address, blockNumber, transactionHash } = event.log
     const {
-      transactionId,
-      dbNonce,
-      entryIndex,
-      srcChainId,
-      srcSender,
-      dstReceiver,
-    } = event.args
+      name,
+      log: { address, blockNumber, transactionHash },
+      args: {
+        transactionId,
+        dbNonce,
+        entryIndex,
+        srcChainId,
+        srcSender,
+        dstReceiver,
+      },
+    } = event
 
-    await InterchainTransactionReceived.create({
+    const record = await InterchainTransactionReceived.create({
       id: transactionId,
       data: {
         name,
@@ -72,6 +83,13 @@ ponder.on(
         address,
         blockNumber,
         transactionHash,
+      },
+    })
+
+    await InterchainTransaction.update({
+      id: transactionId,
+      data: {
+        interchainTransactionReceivedId: record.id,
       },
     })
   }
