@@ -17,7 +17,11 @@ export const useInterchainTransactions = () => {
       try {
         const r = (await client.request(gql`
           {
-            interchainTransactions {
+            interchainTransactions(
+              orderBy: "sentAt"
+              orderDirection: "desc"
+              limit: 1000
+            ) {
               items {
                 id
                 interchainTransactionSent {

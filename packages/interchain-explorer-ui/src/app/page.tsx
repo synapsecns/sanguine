@@ -90,7 +90,11 @@ export default function Home() {
                         />
                       </div>
                     </td>
-                    <td>{transaction.interchainTransactionSent.timestamp}</td>
+                    <td>
+                      {new Date(
+                        transaction.interchainTransactionSent.timestamp * 1000
+                      ).toLocaleString()}
+                    </td>
                     <td className="">
                       {transaction.interchainTransactionReceived && (
                         <div className="flex items-center space-x-2">
@@ -104,7 +108,11 @@ export default function Home() {
                       )}
                     </td>
                     <td>
-                      {transaction.interchainTransactionReceived?.timestamp}
+                      {transaction.interchainTransactionReceived &&
+                        new Date(
+                          transaction.interchainTransactionReceived?.timestamp *
+                            1000
+                        ).toLocaleString()}
                     </td>
                   </tr>
                 )

@@ -4,9 +4,11 @@ import { shortenHash } from '@/utils/shortenHash'
 export function ExplorerLink({
   chainId,
   transactionHash,
+  short = true,
 }: {
   chainId: number
   transactionHash: string
+  short?: boolean
 }) {
   const { explorerUrl } = CHAINS[chainId]
 
@@ -17,7 +19,7 @@ export function ExplorerLink({
       target="_blank"
       rel="noopener noreferrer"
     >
-      {shortenHash(transactionHash)}
+      {short ? shortenHash(transactionHash) : transactionHash}
     </a>
   )
 }

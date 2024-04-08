@@ -1,5 +1,6 @@
 'use client'
 
+import { ExplorerLink } from '@/components/ui/ExplorerLink'
 import { useInterchainTransaction } from '@/hooks/useInterchainTransaction'
 
 export default function TransactionDetailsPage({
@@ -23,81 +24,52 @@ export default function TransactionDetailsPage({
     return <div>Transaction not found.</div>
   }
 
+  const { interchainTransactionSent, interchainTransactionReceived } =
+    interchainTransaction
+
   return (
     <div className=" text-white p-5">
       <h1 className="text-xl font-bold mb-4">Transaction Details</h1>
       <div className="mb-4">
         <p>{interchainTransaction.id}</p>
       </div>
-      {interchainTransaction.interchainTransactionSent && (
+      {interchainTransactionSent && (
         <div className="mb-4">
           <h2 className="text-lg font-semibold">Sent</h2>
-          <p>
-            Address: {interchainTransaction.interchainTransactionSent.address}
-          </p>
-          <p>
-            Chain ID: {interchainTransaction.interchainTransactionSent.chainId}
-          </p>
-          <p>
-            Destination Chain ID:{' '}
-            {interchainTransaction.interchainTransactionSent.dstChainId}
-          </p>
-          <p>
-            Destination Receiver:{' '}
-            {interchainTransaction.interchainTransactionSent.dstReceiver}
-          </p>
-          <p>
-            Source Sender:{' '}
-            {interchainTransaction.interchainTransactionSent.srcSender}
-          </p>
+          <p>Chain ID: {interchainTransactionSent.chainId}</p>
+          <p>Address: {interchainTransactionSent.address}</p>
+          <p>dstChainId: {interchainTransactionSent.dstChainId}</p>
+          <p>dstReceiver: {interchainTransactionSent.dstReceiver}</p>
+          <p>srcSender: {interchainTransactionSent.srcSender}</p>
           <p>
             Timestamp:{' '}
             {new Date(
-              interchainTransaction.interchainTransactionSent.timestamp * 1000
+              interchainTransactionSent.timestamp * 1000
             ).toLocaleString()}
           </p>
           <p>
             Transaction Hash:{' '}
-            {interchainTransaction.interchainTransactionSent.transactionHash}
+            <ExplorerLink short={false} {...interchainTransactionSent} />
           </p>
         </div>
       )}
-      {interchainTransaction.interchainTransactionReceived && (
+      {interchainTransactionReceived && (
         <div>
           <h2 className="text-lg font-semibold">Received</h2>
-          <p>
-            Address:{' '}
-            {interchainTransaction.interchainTransactionReceived.address}
-          </p>
-          <p>
-            Chain ID:{' '}
-            {interchainTransaction.interchainTransactionReceived.chainId}
-          </p>
-          <p>
-            Source Chain ID:{' '}
-            {interchainTransaction.interchainTransactionReceived.srcChainId}
-          </p>
-          <p>
-            Destination Receiver:{' '}
-            {interchainTransaction.interchainTransactionReceived.dstReceiver}
-          </p>
-          <p>
-            Source Sender:{' '}
-            {interchainTransaction.interchainTransactionReceived.srcSender}
-          </p>
+          <p>Chain ID: {interchainTransactionReceived.chainId}</p>
+          <p>Address: {interchainTransactionReceived.address}</p>
+          <p>srcChainId: {interchainTransactionReceived.srcChainId}</p>
+          <p>dstReceiver: {interchainTransactionReceived.dstReceiver}</p>
+          <p>srcSender: {interchainTransactionReceived.srcSender}</p>
           <p>
             Timestamp:{' '}
             {new Date(
-              interchainTransaction.interchainTransactionReceived.timestamp *
-                1000
+              interchainTransactionReceived.timestamp * 1000
             ).toLocaleString()}
           </p>
           <p>
             Transaction Hash:{' '}
-            {
-              interchainTransaction.interchainTransactionReceived
-                .transactionHash
-            }
+            <ExplorerLink short={false} {...interchainTransactionReceived} />
           </p>
         </div>
       )}
