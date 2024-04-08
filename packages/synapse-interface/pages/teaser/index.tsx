@@ -11,7 +11,6 @@ import Hero from './Hero'
 import Wrapper from '@/components/WipWrapperComponents/Wrapper'
 
 import FauxBridge from './FauxBridge'
-import PlatformAnimation from './HeroAnimation'
 import { Chain } from '@/utils/types'
 import HeroAnimation from './HeroAnimation'
 
@@ -20,8 +19,6 @@ const chainTagClassName = 'pl-2 pr-6 py-2 border-l h-min'
 const LandingPage = () => {
   const { address: currentAddress } = useAccount()
   const router = useRouter()
-
-  // const [platforms, setPlatforms] = useState([])
 
   const heroRef = useRef(null)
   const chainRef = useRef(null)
@@ -36,7 +33,6 @@ const LandingPage = () => {
 
   useEffect(() => {
     handleResize()
-
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   })

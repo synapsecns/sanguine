@@ -400,7 +400,7 @@ export const DOGE: Chain = {
 export const BASE: Chain = {
   priorityRank: 90,
   id: 8453,
-  chainSymbol: 'ETH',
+  chainSymbol: 'BASE',
   name: 'Base',
   codeName: 'base',
   chainImg: baseImg,
@@ -425,7 +425,7 @@ export const BASE: Chain = {
 export const BLAST: Chain = {
   priorityRank: 90,
   id: 81457,
-  chainSymbol: 'ETH',
+  chainSymbol: 'BLAST',
   name: 'Blast',
   codeName: 'blast',
   chainImg: blastImg,

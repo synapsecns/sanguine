@@ -1,29 +1,37 @@
 import { CHAINS_ARR } from '@/constants/chains'
 
-import { getStyleForText } from '@/styles/hover'
+const west = CHAINS_ARR[0].chainSymbol
+const north = CHAINS_ARR[1].chainSymbol
+const east = CHAINS_ARR[2].chainSymbol
+const south = CHAINS_ARR[3].chainSymbol
+
+import { Chain } from '@/utils/types'
+
+// console.log(CHAINS_ARR)
 
 const hslStr = (h, s, l, a = undefined) =>
   `hsl(${h}deg ${s}% ${l}%${a === undefined ? '' : ` / ${a}%`})`
 
-const ethereum = {
+const ETH = {
   stroke: hslStr(260, 77, 83), // lavender // mint: 176, 87, 85
   fill: hslStr(240, 78, 7), // l: 40
-  text: hslStr(14, 61, 85), // peach
 }
-const arbitrum = {
+const ARBITRUM = {
   stroke: hslStr(204, 87, 55),
   fill: hslStr(216, 58, 9), // l: 19
-  text: hslStr(204, 87, 65),
 }
-const avalanche = {
+const AVALANCHE = {
   stroke: hslStr(360, 78, 58),
   fill: hslStr(360, 78, 3),
-  text: hslStr(360, 78, 58),
 }
-const blast = {
+const BASE = {
+  stroke: hslStr(220, 100, 60),
+  fill: hslStr(220, 100, 5),
+}
+
+const BLAST = {
   stroke: hslStr(60, 88, 45), // 60 98 50
   fill: hslStr(60, 98, 3),
-  text: hslStr(60, 98, 65),
 }
 
 const stroke = {
@@ -35,10 +43,11 @@ const stroke = {
   orange: hslStr(25, 80, 60),
   blue: hslStr(195, 80, 60),
   green: hslStr(135, 80, 60),
-  north: arbitrum.stroke,
-  west: ethereum.stroke,
-  east: avalanche.stroke,
-  south: blast.stroke,
+  ARBITRUM: ARBITRUM.stroke,
+  ETH: ETH.stroke,
+  AVALANCHE: AVALANCHE.stroke,
+  BASE: BASE.stroke,
+  BLAST: BLAST.stroke,
 }
 const fill = {
   inherit: 'inherit',
@@ -47,17 +56,11 @@ const fill = {
   orange: hslStr(25, 30, 3),
   blue: hslStr(195, 30, 3),
   green: hslStr(135, 30, 3),
-  north: arbitrum.fill,
-  west: ethereum.fill,
-  east: avalanche.fill,
-  south: blast.fill,
-}
-
-const text = {
-  north: arbitrum.text,
-  west: ethereum.text,
-  east: avalanche.text,
-  south: blast.text,
+  ARBITRUM: ARBITRUM.fill,
+  ETH: ETH.fill,
+  AVALANCHE: AVALANCHE.fill,
+  BASE: BASE.fill,
+  BLAST: BLAST.fill,
 }
 
 const animAttrs = (x1 = 0.5, x2 = 0.2, y1 = 0, y2 = 1) => {
@@ -119,6 +122,7 @@ const AnimateFlash = ({
 }
 
 const paint = (color = 'synapse') => {
+  console.log(color, stroke[color])
   return {
     stroke: stroke[color],
     fill: fill[color],
@@ -130,16 +134,20 @@ const Platform = ({
   color,
   translate,
   begin = '0s',
+  chain,
 }: {
   id: string
   color?: string
   translate?: string
   begin?: string
+  chain?: Chain
 }) => {
+  const chainColor = chain.color
   return (
     <path
       transform={translate ? `translate(${translate})` : null}
       {...paint(color)}
+      // className={getStyleForSvg(chain.color)}
     >
       <animate
         id={id}
@@ -358,60 +366,34 @@ export default function ({ heroRef, className = '' }) {
         />
       </path>
 
-      <Platform id="platformW" translate="-400 0" color="west" begin=".3s" />
-      <Platform id="platformN" translate="0 -200" color="north" begin="0s" />
-      <Platform id="platformE" translate="400 0" color="east" begin=".1s" />
-      <Platform id="platformS" translate="0 200" color="south" begin=".2s" />
-
-      {/* <g transform="translate(125 -290) scale(1.2)">
-        <rect width="100" height="52" rx="4" fill="#111" stroke="#333" />
-        <text x="10" y="20" fill={text.north}>
-          Arbitrum
-        </text>
-        <text x="10" y="42" fill="white" opacity=".8">
-          $2.55B
-        </text>
-      </g>
-
-      <g transform="translate(-380 -140) scale(1.2)">
-        <rect width="100" height="52" rx="4" fill="#111" stroke="#333" />
-        <text x="10" y="20" fill={text.west}>
-          Ethereum
-        </text>
-        <text x="10" y="42" fill="white" opacity=".8">
-          $1.72B
-        </text>
-      </g>
-
-      <g transform="translate(425 52) scale(1.2)">
-        <rect width="100" height="52" rx="4" fill="#111" stroke="#333" />
-        <text x="10" y="20" fill={text.east}>
-          Avalanche
-        </text>
-        <text x="10" y="42" fill="white" opacity=".8">
-          $885.41M
-        </text>
-      </g>
-
-      <g transform="translate(50 240) scale(1.2)">
-        <rect width="110" height="52" rx="4" fill="#111" stroke="#333" />
-        <text x="10" y="20" fill={text.south}>
-          New! Blast
-        </text>
-        <text x="10" y="42" fill="white" opacity=".8">
-          $452.12M
-        </text>
-      </g>
-
-      <g transform="translate(-600 -400) scale(1.2)">
-        <rect width="120" height="52" rx="4" fill="#111" stroke="#333" />
-        <text x="10" y="20" fill={text.west}>
-          60d volume
-        </text>
-        <text x="10" y="42" fill="white" opacity=".8">
-          $7.01B
-        </text>
-      </g> */}
+      <Platform
+        id="platformW"
+        translate="-400 0"
+        color={west}
+        begin=".3s"
+        chain={CHAINS_ARR[0]}
+      />
+      <Platform
+        id="platformN"
+        translate="0 -200"
+        color={north}
+        begin="0s"
+        chain={CHAINS_ARR[1]}
+      />
+      <Platform
+        id="platformE"
+        translate="400 0"
+        color={east}
+        begin=".1s"
+        chain={CHAINS_ARR[2]}
+      />
+      <Platform
+        id="platformS"
+        translate="0 200"
+        color={south}
+        begin=".2s"
+        chain={CHAINS_ARR[3]}
+      />
 
       <path
         id="barge"
@@ -445,27 +427,27 @@ export default function ({ heroRef, className = '' }) {
       </path>
 
       <Cube
-        color="east"
+        color={east}
         translate="400 0"
         begin="teleportE.begin + 4s"
         restart="never"
       />
 
       <Cube
-        color="east"
+        color={east}
         translate="375 12.5"
         begin="airDropOut.end + .5s"
         restart="never"
       />
 
-      <Cube color="south" translate="0 150" begin=".7s" />
-      <Cube color="south" translate="25 162.5" begin={20} />
-      <Cube color="south" translate="-25 162.5" begin={21} />
-      <Cube color="south" translate="0 122.05" begin={22} />
+      <Cube color={south} translate="0 150" begin=".7s" />
+      <Cube color={south} translate="25 162.5" begin={20} />
+      <Cube color={south} translate="-25 162.5" begin={21} />
+      <Cube color={south} translate="0 122.05" begin={22} />
 
       <Cube
         translate="100 -225"
-        color="north"
+        color={north}
         begin="airpadN.end; airDropOut.end + 1ms"
       >
         <animateMotion
@@ -499,7 +481,7 @@ export default function ({ heroRef, className = '' }) {
           attributeName="stroke"
           begin="airDrop.begin"
           dur=".33s"
-          {...flashAttrs('north', 'east')}
+          {...flashAttrs(north, east)}
         />
         <animateMotion
           id="airDropOut"
@@ -510,7 +492,7 @@ export default function ({ heroRef, className = '' }) {
           {...animAttrs()}
         />
         <set attributeName="opacity" to="0" begin="airDropOut.end" />
-        <set attributeName="stroke" to={stroke.north} begin="airDropOut.end" />
+        <set attributeName="stroke" to={stroke[north]} begin="airDropOut.end" />
         <animateMotion path="m0 0" begin="airDropOut.end" />
       </Cube>
 
@@ -561,11 +543,11 @@ export default function ({ heroRef, className = '' }) {
         </circle>
       </g>
 
-      <g transform="translate(350 25)" stroke={stroke.east} opacity="0">
+      <g transform="translate(350 25)" stroke={stroke[east]} opacity="0">
         <set
           id="airBridge"
           attributeName="stroke"
-          to={stroke.east}
+          to={stroke[east]}
           begin="airDropOut.end"
         />
         <set
@@ -581,7 +563,7 @@ export default function ({ heroRef, className = '' }) {
           path="m0 0 -325 162.5 -25 -12.5"
           {...animAttrs()}
         />
-        <AnimateFlash from="east" to="south" begin="airBridge.begin + 2.3s" />
+        <AnimateFlash from={east} to={south} begin="airBridge.begin + 2.3s" />
         <animate
           attributeName="opacity"
           values="1; 0"
@@ -600,8 +582,10 @@ export default function ({ heroRef, className = '' }) {
         />
       </g>
 
-      <Cube color="north" translate="-25 -212.5" begin="bargeOut.begin">
-        <set attributeName="stroke" to={stroke.north} begin="bargeOut.begin" />
+      {/* Barge Cube */}
+
+      <Cube color={north} translate="-25 -212.5" begin="bargeOut.begin">
+        <set attributeName="stroke" to={stroke[north]} begin="bargeOut.begin" />
         <animateTransform
           attributeName="transform"
           type="translate"
@@ -652,15 +636,15 @@ export default function ({ heroRef, className = '' }) {
           attributeName="stroke"
           begin="bargeCross.begin + .5s"
           dur=".5s"
-          {...flashAttrs('north', 'west')}
+          {...flashAttrs(north, west)}
         />
       </Cube>
 
-      <Cube color="north" translate="0 -200" begin=".5s" />
+      <Cube color={north} translate="0 -200" begin=".5s" />
 
-      {/* Simple Bridge Blue/Yellow Swap */}
+      {/* Simple Bridge NW Swap */}
 
-      <Cube color="north" translate="-25 -187.5" begin="bridgeNw.end + .5s">
+      <Cube color={north} translate="-25 -187.5" begin="bridgeNw.end + .5s">
         <animateMotion
           id="bridgeCubeOut"
           dur="4s"
@@ -674,7 +658,7 @@ export default function ({ heroRef, className = '' }) {
         <animate
           attributeName="stroke"
           begin="bridgeCubeOut.begin + .3s;"
-          values={`${stroke.north}; ${stroke.synapse}; ${stroke.west}; ${stroke.west}; ${stroke.synapse}; ${stroke.north}`}
+          values={`${stroke[north]}; ${stroke.synapse}; ${stroke[west]}; ${stroke[west]}; ${stroke.synapse}; ${stroke[north]}`}
           keyTimes="0; .06; .12; .88; .94; 1"
           dur="3.4s"
         />
@@ -687,7 +671,7 @@ export default function ({ heroRef, className = '' }) {
         />
       </Cube>
 
-      <Cube color="west" translate="-375 -12.5" begin="bridgeNw.end + 1s">
+      <Cube color={west} translate="-375 -12.5" begin="bridgeNw.end + 1s">
         <animateMotion
           dur="4s"
           begin="bridgeNw.end + 2.5s; bridgeCubeOut.end + 2s"
@@ -700,7 +684,7 @@ export default function ({ heroRef, className = '' }) {
         <animate
           attributeName="stroke"
           begin="bridgeCubeOut.begin + .3s;"
-          values={`${stroke.west}; ${stroke.synapse}; ${stroke.north}; ${stroke.north}; ${stroke.synapse}; ${stroke.west}`}
+          values={`${stroke[west]}; ${stroke.synapse}; ${stroke[north]}; ${stroke[north]}; ${stroke.synapse}; ${stroke[west]}`}
           keyTimes="0; .06; .12; .88; .94; 1"
           dur="3.4s"
         />
@@ -713,7 +697,7 @@ export default function ({ heroRef, className = '' }) {
         />
       </Cube>
 
-      <g stroke={stroke.east} transform="translate(520,0)">
+      <g stroke={stroke[east]} transform="translate(520,0)">
         <ellipse {...paint('synapse')}>
           <animate
             begin="teleportE.begin"
@@ -731,7 +715,7 @@ export default function ({ heroRef, className = '' }) {
           />
         </ellipse>
         <Cube
-          color="east"
+          color={east}
           translate="-120"
           begin="airLift.begin"
           restart="never"
@@ -757,12 +741,12 @@ export default function ({ heroRef, className = '' }) {
           <animate
             attributeName="stroke"
             begin="teleportBeams.begin + 1s"
-            {...flashAttrs('east', 'south', '3s')}
+            {...flashAttrs(east, south, '3s')}
           />
           <animate
             attributeName="stroke"
             begin="teleportBeams.begin + 8s"
-            {...flashAttrs('south', 'east', '3s')}
+            {...flashAttrs(south, east, '3s')}
           />
         </Cube>
         <path
@@ -814,7 +798,7 @@ export default function ({ heroRef, className = '' }) {
         </ellipse>
       </g>
 
-      <g stroke={stroke.south} transform="translate(0,260)">
+      <g stroke={stroke[south]} transform="translate(0,260)">
         <ellipse {...paint('synapse')}>
           <animate
             begin="teleportE.begin"
@@ -831,16 +815,16 @@ export default function ({ heroRef, className = '' }) {
             {...animAttrs()}
           />
         </ellipse>
-        <Cube color="south" begin="bargeCross.begin" restart="never">
+        <Cube color={south} begin="bargeCross.begin" restart="never">
           <AnimateFlash
-            from="south"
-            to="east"
+            from={south}
+            to={east}
             begin="teleportBeams.begin + 1s"
             dur="3s"
           />
           <AnimateFlash
-            from="east"
-            to="south"
+            from={east}
+            to={south}
             begin="teleportBeams.begin + 8s"
             dur="3s"
           />
@@ -900,61 +884,14 @@ export default function ({ heroRef, className = '' }) {
         </ellipse>
       </g>
 
-      <Cube color="west" translate="-400 0" begin=".8s" />
+      <Cube color={west} translate="-400 0" begin=".8s" />
 
-      <Cube color="west" translate="-450 0" begin={15} />
-      <Cube color="west" translate="-425 12.5" begin={16} />
-      <Cube color="west" translate="-425 -27.95" begin={18} />
+      <Cube color={west} translate="-450 0" begin={15} />
+      <Cube color={west} translate="-425 12.5" begin={16} />
+      <Cube color={west} translate="-425 -27.95" begin={18} />
 
-      <Cube color="north" translate="25 -187.5" begin={17} />
-      <Cube color="north" translate="0 -175" begin={19} />
-
-      {/* {CHAINS_ARR.slice(0, 4).map((chain, rank) => {
-        let x = 0,
-          y = 0
-        switch (rank) {
-          case 0:
-            x = -400
-            y = -200
-            break
-          case 1:
-            y = -300
-            break
-          case 2:
-            x = 300
-            y = -100
-            break
-          case 3:
-            x = 100
-            y = 100
-            break
-        }
-
-        return (
-          <foreignObject
-            x={x}
-            y={y}
-            className="text-4xl xs:text-3xl sm:text-2xl md:text-xl overflow-visible"
-          >
-            <div className="px-3 py-1.5 grid grid-cols-[24px_auto] gap-x-2 w-fit rounded bg-zinc-900/25 border border-zinc-800 tracking-wider backdrop-blur-sm">
-              <img
-                src={chain.chainImg.src}
-                width="24"
-                height="24"
-                className="row-span-2 self-center"
-              />
-              <header
-                className={`${getStyleForText(
-                  chain.color
-                )} font-medium tracking-wide`}
-              >
-                {chain.name}
-              </header>
-              $417.83M
-            </div>
-          </foreignObject>
-        )
-      })} */}
+      <Cube color={north} translate="25 -187.5" begin={17} />
+      <Cube color={north} translate="0 -175" begin={19} />
 
       {/* <g {...paint('synapse')}>
       <path vectorEffect="non-scaling-stroke">
