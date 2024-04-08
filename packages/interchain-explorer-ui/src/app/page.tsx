@@ -8,6 +8,7 @@ import { shortenHash } from '@/utils/shortenHash'
 import { ExplorerLink } from '@/components/ui/ExplorerLink'
 import { ChainImage } from '@/components/ui/ChainImage'
 import { SearchInput } from '@/components/SearchInput'
+import { Loader } from '@/components/ui/Loader'
 
 const Home = () => {
   const router = useRouter()
@@ -97,7 +98,7 @@ const Home = () => {
                       ).toLocaleString()}
                     </td>
                     <td className="">
-                      {transaction.interchainTransactionReceived && (
+                      {transaction.interchainTransactionReceived ? (
                         <div className="flex items-center space-x-2">
                           <ChainImage
                             {...transaction.interchainTransactionReceived}
@@ -106,6 +107,8 @@ const Home = () => {
                             {...transaction.interchainTransactionReceived}
                           />
                         </div>
+                      ) : (
+                        <Loader />
                       )}
                     </td>
                     <td>
