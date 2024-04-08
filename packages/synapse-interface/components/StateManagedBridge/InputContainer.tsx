@@ -217,10 +217,15 @@ export const InputContainer = () => {
                     htmlFor="inputRow"
                     className={`
                       text-xs text-secondaryTextColor transition-all duration-150 transform-gpu
+                      ${
+                        isGasToken &&
+                        isGasBalanceLessThanCost() &&
+                        'text-yellow-500'
+                      }
                     `}
                   >
                     {parsedGasCost.toFixed(4)}
-                    <span className="text-opacity-50"> reserved for gas</span>
+                    <span className="text-opacity-50"> estimated gas cost</span>
                   </label>
                 ) : (
                   <label
