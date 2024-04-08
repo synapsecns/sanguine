@@ -1,7 +1,8 @@
-import { CHAINS } from '@/constants/chains'
 import Image from 'next/image'
 
-export function ChainImage({
+import { CHAINS } from '@/constants/chains'
+
+export const ChainImage = ({
   chainId,
   width = 16,
   height = 16,
@@ -9,7 +10,7 @@ export function ChainImage({
   chainId: number
   width?: number
   height?: number
-}) {
+}) => {
   return (
     <Image
       src={CHAINS[chainId].imgUrl}

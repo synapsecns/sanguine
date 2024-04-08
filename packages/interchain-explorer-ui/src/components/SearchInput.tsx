@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-export default function SearchInput() {
+export const SearchInput = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const router = useRouter()
 

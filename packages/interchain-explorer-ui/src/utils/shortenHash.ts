@@ -1,4 +1,4 @@
-export function shortenHash(hash: string): string | null {
+export const shortenHash = (hash: string): string | null => {
   if (!hash) {
     return null
   }
