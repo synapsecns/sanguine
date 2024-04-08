@@ -26,16 +26,16 @@ export const inputRef = React.createRef<HTMLInputElement>()
 
 export const InputContainer = () => {
   const dispatch = useAppDispatch()
-  const [showValue, setShowValue] = useState('')
-  const [hasMounted, setHasMounted] = useState(false)
   const { chain } = useNetwork()
   const { isConnected } = useAccount()
-  const { fromChainId, fromToken, fromValue } = useBridgeState()
   const { balances } = usePortfolioState()
+  const { fromChainId, fromToken, fromValue } = useBridgeState()
+  const [showValue, setShowValue] = useState('')
+  const [hasMounted, setHasMounted] = useState(false)
 
-  useEffect(() => {
-    setHasMounted(true)
-  }, [])
+  const { gasData } = useAppSelector((state) => state.gasData)
+  const { gasPrice, maxFeePerGas } = gasData?.formatted
+  const { rawGasCost, parsedGasCost } = calculateGasCost(maxFeePerGas, 200_000)
 
   const isGasToken: boolean = fromToken?.addresses[fromChainId] === zeroAddress
 
@@ -51,11 +51,9 @@ export const InputContainer = () => {
     fromToken?.decimals[fromChainId]
   )
 
-  const isTraceBalance = (): boolean => {
-    if (!rawBalance || !trimmedParsedBalance) return false
-    if (rawBalance && hasOnlyZeroes(trimmedParsedBalance)) return true
-    return false
-  }
+  useEffect(() => {
+    setHasMounted(true)
+  }, [])
 
   useEffect(() => {
     if (fromToken && fromToken?.decimals[fromChainId]) {
@@ -86,32 +84,20 @@ export const InputContainer = () => {
     }
   }
 
-  const { gasData } = useAppSelector((state) => state.gasData)
-  const { gasPrice, maxFeePerGas } = gasData?.formatted
-  const { rawGasCost, parsedGasCost } = calculateGasCost(maxFeePerGas, 200_000)
-
-  const isGasInputLessThanCost = (): boolean => {
-    if (isGasToken && parsedGasCost && fromValue && parsedBalance) {
-      return parseFloat(fromValue) >= parseFloat(parsedBalance) - parsedGasCost
-    } else {
-      return false
-    }
-  }
-
-  const isGasBalanceLessThanCost = (): boolean => {
-    if (isGasToken && parsedGasCost && parsedBalance) {
-      return parsedGasCost > parseFloat(parsedBalance)
-    } else {
-      return false
-    }
-  }
-
   const calculateMaxBridgeableGas = (
     parsedGasBalance: number,
     parsedGasCost: number
   ): number => {
     const maxBridgeable = parsedGasBalance - parsedGasCost
     return maxBridgeable
+  }
+
+  const onAvailableBalance = () => {
+    dispatch(
+      updateFromValue(
+        formatBigIntToString(rawBalance, fromToken?.decimals[fromChainId])
+      )
+    )
   }
 
   const onMaxBridgeableBalance = useCallback(() => {
@@ -174,10 +160,29 @@ export const InputContainer = () => {
     }
   }
 
-  // console.log('parsedBalance:', parsedBalance)
-  // console.log('formattedGasCost: ', parsedGasCost)
-  // console.log('showMaxOption(): ', showMaxButton())
-  // console.log('isGasBalanceLessThanFees: ', isGasBalanceLessThanFees())
+  const isGasInputLessThanBridgeableMax = (): boolean => {
+    if (isGasToken && parsedGasCost && fromValue && parsedBalance) {
+      return parseFloat(fromValue) >= parseFloat(parsedBalance) - parsedGasCost
+    } else {
+      return false
+    }
+  }
+
+  const isGasBalanceLessThanCost = (): boolean => {
+    if (isGasToken && parsedGasCost && parsedBalance) {
+      return parsedGasCost > parseFloat(parsedBalance)
+    } else {
+      return false
+    }
+  }
+
+  console.log('isGasBalanceLessThanCost:', isGasBalanceLessThanCost())
+
+  const isTraceBalance = (): boolean => {
+    if (!rawBalance || !trimmedParsedBalance) return false
+    if (rawBalance && hasOnlyZeroes(trimmedParsedBalance)) return true
+    return false
+  }
 
   return (
     <div
@@ -220,7 +225,9 @@ export const InputContainer = () => {
               </div>
               {hasMounted &&
                 isConnected &&
-                (isGasToken && showGasReserved() && isGasInputLessThanCost() ? (
+                (isGasToken &&
+                showGasReserved() &&
+                isGasInputLessThanBridgeableMax() ? (
                   <label
                     htmlFor="inputRow"
                     className={`
@@ -234,7 +241,7 @@ export const InputContainer = () => {
                 ) : (
                   <label
                     htmlFor="inputRow"
-                    onClick={onMaxBridgeableBalance}
+                    onClick={onAvailableBalance}
                     className={`
                       text-xs text-white transition-all duration-150 transform-gpu
                       hover:text-opacity-70 hover:cursor-pointer
