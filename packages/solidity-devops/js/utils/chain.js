@@ -1,6 +1,7 @@
 const {
   getChainIdRPC,
-  getChainGasPricingRPC,
+  getChainGasPriceRPC,
+  getChainMaxPriorityFeeRPC,
   getAccountBalanceRPC,
   getAccountNonceRPC,
   hasCodeRPC,
@@ -78,26 +79,19 @@ const readSourcifyOptions = (chainName) => {
  */
 const applyAutoFillGasPrice = (chainName, options) => {
   if (options.includes(OPTION_AUTO_FILL_GAS_PRICE_LEGACY)) {
-    const { gasPrice } = getChainGasPricing(chainName)
+    const gasPrice = getChainGasPrice(chainName)
     return options.replace(
       OPTION_AUTO_FILL_GAS_PRICE_LEGACY,
       `--with-gas-price ${gasPrice}`
     )
   } else if (options.includes(OPTION_AUTO_FILL_GAS_PRICE_1559)) {
-    const { baseFee, gasPrice } = getChainGasPricing(chainName)
-    if (baseFee > gasPrice) {
-      logError(
-        `Base fee (${baseFee}) is greater than gas price (${gasPrice}), using default gas price instead`
-      )
-      return options.replace(OPTION_AUTO_FILL_GAS_PRICE_1559, '')
-    }
-    const priorityFee = gasPrice - baseFee
+    const priorityFee = getChainMaxPriorityFee(chainName)
     /* 
     TODO: reenable this once the foundry bug is fixed: https://github.com/foundry-rs/foundry/issues/7486
     Currently the maxGasPrice is used for both base and priority, rendering the setting of priority fee useless.
 
-    // Use 2*base + priority as the max gas price
-    const maxGasPrice = 2 * baseFee + priorityFee
+    // Use 2*gasPrice as the maxGasPrice
+    const maxGasPrice = 2 * gasPrice
     return options.replace(
       OPTION_AUTO_FILL_GAS_PRICE_1559,
       `--with-gas-price ${maxGasPrice} --priority-gas-price ${priorityFee}`
@@ -115,8 +109,12 @@ const getChainId = (chainName) => {
   return getChainIdRPC(readChainRPC(chainName))
 }
 
-const getChainGasPricing = (chainName) => {
-  return getChainGasPricingRPC(readChainRPC(chainName))
+const getChainGasPrice = (chainName) => {
+  return getChainGasPriceRPC(readChainRPC(chainName))
+}
+
+const getChainMaxPriorityFee = (chainName) => {
+  return getChainMaxPriorityFeeRPC(readChainRPC(chainName))
 }
 
 const getAccountBalance = (chainName, address) => {
@@ -146,7 +144,7 @@ module.exports = {
   readChainSpecificOptions,
   readChainVerificationOptions,
   getChainId,
-  getChainGasPricing,
+  getChainGasPrice,
   getAccountBalance,
   getAccountNonce,
   hasCode,

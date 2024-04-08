@@ -333,7 +333,7 @@ func (c *rebalanceManagerCircleCCTP) handleDepositForBurn(ctx context.Context, l
 
 	event, err := parser.ParseDepositForBurn(log)
 	if err != nil {
-		logger.Warnf("could not parse circle request sent: %w", err)
+		logger.Warnf("could not parse circle request sent: %v", err)
 		return nil
 	}
 
@@ -362,7 +362,7 @@ func (c *rebalanceManagerCircleCCTP) handleDepositForBurn(ctx context.Context, l
 	}
 	err = c.db.UpdateRebalance(ctx, rebalanceModel, true)
 	if err != nil {
-		logger.Warnf("could not update rebalance status: %w", err)
+		logger.Warnf("could not update rebalance status: %v", err)
 		return nil
 	}
 	return nil
@@ -385,7 +385,7 @@ func (c *rebalanceManagerCircleCCTP) handleMessageReceived(ctx context.Context, 
 
 	parsedEvent, err := parser.ParseMessageReceived(log)
 	if err != nil {
-		logger.Warnf("could not parse circle request fulfilled: %w", err)
+		logger.Warnf("could not parse circle request fulfilled: %v", err)
 		return nil
 	}
 
@@ -402,7 +402,7 @@ func (c *rebalanceManagerCircleCCTP) handleMessageReceived(ctx context.Context, 
 	}
 	err = c.db.UpdateRebalance(ctx, rebalanceModel, false)
 	if err != nil {
-		logger.Warnf("could not update rebalance status: %w", err)
+		logger.Warnf("could not update rebalance status: %v", err)
 		return nil
 	}
 	return nil

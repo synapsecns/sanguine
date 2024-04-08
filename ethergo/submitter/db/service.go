@@ -23,9 +23,9 @@ type Service interface {
 	PutTXS(ctx context.Context, txs ...TX) error
 	// GetTXS gets all txs for a given address and chain id. If chain id is nil, it will get all txs for the address.
 	GetTXS(ctx context.Context, fromAddress common.Address, chainID *big.Int, statuses ...Status) (txs []TX, err error)
-	// MarkAllBeforeOrAtNonceReplacedOrConfirmed marks all txs for a given chain id and address before a given nonce as replaced or confirmed.
+	// MarkAllBeforeNonceReplacedOrConfirmed marks all txs for a given chain id and address before a given nonce as replaced or confirmed.
 	// TODO: cleaner function name
-	MarkAllBeforeOrAtNonceReplacedOrConfirmed(ctx context.Context, signer common.Address, chainID *big.Int, nonce uint64) error
+	MarkAllBeforeNonceReplacedOrConfirmed(ctx context.Context, signer common.Address, chainID *big.Int, nonce uint64) error
 	// DBTransaction executes a transaction on the database.
 	// the function passed in will be passed a new service that is scoped to the transaction.
 	DBTransaction(ctx context.Context, f TransactionFunc) error

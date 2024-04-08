@@ -196,8 +196,8 @@ func (c *chainQueue) bumpTX(parentCtx context.Context, ogTx db.TX) {
 			tx = types.NewTx(&types.DynamicFeeTx{
 				ChainID:   tx.ChainId(),
 				Nonce:     tx.Nonce(),
-				GasTipCap: tx.GasTipCap(),
-				GasFeeCap: tx.GasFeeCap(),
+				GasTipCap: core.CopyBigInt(transactor.GasTipCap),
+				GasFeeCap: core.CopyBigInt(transactor.GasFeeCap),
 				Gas:       transactor.GasLimit,
 				To:        tx.To(),
 				Value:     tx.Value(),
@@ -257,7 +257,7 @@ func (c *chainQueue) updateOldTxStatuses(parentCtx context.Context) {
 			metrics.EndSpanWithErr(span, err)
 		}()
 
-		err = c.db.MarkAllBeforeOrAtNonceReplacedOrConfirmed(ctx, c.signer.Address(), c.chainID, c.nonce)
+		err = c.db.MarkAllBeforeNonceReplacedOrConfirmed(ctx, c.signer.Address(), c.chainID, c.nonce)
 		if err != nil {
 			return fmt.Errorf("could not mark txes: %w", err)
 		}

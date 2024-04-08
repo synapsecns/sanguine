@@ -1,11 +1,11 @@
 const { runCommand } = require('./utils.js')
 
-const forgeScript = (scriptFN, options) => {
-  return runCommand(`forge script ${scriptFN} ${options}`)
+const forgeScript = (scriptFN, options, exitOnError = false) => {
+  return runCommand(`forge script ${scriptFN} ${options}`, exitOnError)
 }
 
-const forgeVerify = (options) => {
-  return runCommand(`forge verify-contract ${options}`)
+const forgeVerify = (options, exitOnError = false) => {
+  return runCommand(`forge verify-contract ${options}`, exitOnError)
 }
 
 module.exports = {
