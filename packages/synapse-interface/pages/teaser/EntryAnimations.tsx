@@ -1,13 +1,6 @@
 export function InstructionsSvg() {
   return (
-    <svg
-      viewBox="-100 -50 200 100"
-      className="stroke-zinc-800 hover:stroke-zinc-700 fill-zinc-500/5 hover:fill-zinc-500/10 transition-all duration-500 p-8 pb-0 cursor-pointer"
-      overflow="visible"
-    >
-      <animate id="instructionsEnter" begin="mouseenter" />
-      <animate id="instructionsLeave" begin="mouseleave" />
-      <path d="m-100 0 100 -50 100 50 -100 50z" />
+    <PlatformSvg id="instructions">
       <path
         d="m-25 -15 25 -12.5 25 12.5 -25 12.5z"
         className="stroke-zinc-700 fill-zinc-400/5"
@@ -100,20 +93,13 @@ export function InstructionsSvg() {
           fill="freeze"
         />
       </path>
-    </svg>
+    </PlatformSvg>
   )
 }
 
 export function BatterySvg() {
   return (
-    <svg
-      viewBox="-100 -50 200 100"
-      className="stroke-zinc-800 hover:stroke-zinc-700 fill-zinc-500/5 hover:fill-zinc-500/10 transition-all duration-500 p-8 pb-0 cursor-pointer"
-      overflow="visible"
-    >
-      <animate id="batteriesEnter" begin="mouseenter" />
-      <animate id="batteriesLeave" begin="mouseleave" />
-      <path d="m-100 0 100 -50 100 50 -100 50z" />
+    <PlatformSvg id="batteries">
       <ellipse rx="25" ry="12.5" className="stroke-zinc-700 fill-zinc-400/5" />
       <ellipse
         rx="25"
@@ -159,22 +145,13 @@ export function BatterySvg() {
           fill="freeze"
         />
       </ellipse>
-    </svg>
+    </PlatformSvg>
   )
 }
 
 export function AssemblySvg() {
   return (
-    <svg
-      viewBox="-100 -50 200 100"
-      className="stroke-zinc-800 hover:stroke-zinc-700 fill-zinc-500/5 hover:fill-zinc-500/10 transition-all duration-500 p-8 pb-0 cursor-pointer"
-      overflow="visible"
-    >
-      <animate id="assemblyEnter" begin="mouseenter" />
-      <animate id="assemblyLeave" begin="mouseleave" />
-      {/* Platform */}
-      <path d="m-100 0 100 -50 100 50 -100 50z" />
-
+    <PlatformSvg id="assembly">
       {/* Bottom */}
       <path
         d="m-25 0 25 -12.5 25 12.5 -25 12.5z"
@@ -324,21 +301,36 @@ export function AssemblySvg() {
           fill="freeze"
         />
       </path>
-    </svg>
+    </PlatformSvg>
   )
 }
 
 export function IntegratedSvg() {
+  return <PlatformSvg id="integrated" />
+}
+
+function PlatformSvg({
+  id,
+  children,
+}: {
+  id: string
+  children?: React.ReactNode
+}) {
   return (
     <svg
       viewBox="-100 -50 200 100"
       className="stroke-zinc-800 hover:stroke-zinc-700 fill-zinc-500/5 hover:fill-zinc-500/10 transition-all duration-500 p-8 pb-0 cursor-pointer"
       overflow="visible"
     >
-      <animate id="assemblyEnter" begin="mouseenter" />
-      <animate id="assemblyLeave" begin="mouseleave" />
+      <animate id={`${id}Enter`} begin="mouseenter" />
+      <animate id={`${id}Leave`} begin="mouseleave" />
       {/* Platform */}
       <path d="m-100 0 100 -50 100 50 -100 50z" />
+      {children}
     </svg>
   )
+}
+
+export default function ({ id, children }) {
+  return <PlatformSvg id="id">{children}</PlatformSvg>
 }

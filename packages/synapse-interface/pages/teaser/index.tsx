@@ -88,18 +88,12 @@ const LandingPage = () => {
     })
   }
 
-  function ChainTag({
-    chain,
-    index,
-  }: {
-    chain: Chain
-    index: number
-  }): React.ReactNode {
+  function ChainTag({ chain }: { chain: Chain }): React.ReactNode {
     return (
       <a
         href="#"
         className={`grid grid-cols-[auto_auto] gap-x-2 items-center border-zinc-800 bg-zinc-900/25 backdrop-blur-sm  ${chainTagClassName}`}
-        key={chain.name} // TODO: Solve 'unique key' warning
+        key={chain.chainSymbol} // TODO: Solve 'unique key' warning
       >
         <img
           src={chain.chainImg.src}
@@ -139,7 +133,7 @@ const LandingPage = () => {
           className="w-full min-w-[480px] xs:min-w-[640px]"
         />
       </section>
-      <section id="chain-list" className="mb-12 justify-center">
+      <section className="mb-12 justify-center">
         <dl
           ref={chainRef}
           className="flex text-sm border-y border-zinc-800 whitespace-nowrap justify-center"
@@ -148,8 +142,8 @@ const LandingPage = () => {
             <dt>6 month vol.</dt>
             <dd>$7.03B</dd>
           </a>
-          {CHAINS_ARR.slice(0, 10).map((a, i) => (
-            <ChainTag chain={a} index={i} />
+          {CHAINS_ARR.slice(0, 10).map((a) => (
+            <ChainTag chain={a} />
           ))}
           <dt className={`${chainTagClassName} border-zinc-800`}>
             DFK, Klaytn,

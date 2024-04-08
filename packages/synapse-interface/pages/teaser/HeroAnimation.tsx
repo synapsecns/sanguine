@@ -7,8 +7,6 @@ const south = CHAINS_ARR[4].chainSymbol
 
 import { Chain } from '@/utils/types'
 
-// console.log(CHAINS_ARR)
-
 const hslStr = (h, s, l, a = undefined) =>
   `hsl(${h}deg ${s}% ${l}%${a === undefined ? '' : ` / ${a}%`})`
 
@@ -122,7 +120,6 @@ const AnimateFlash = ({
 }
 
 const paint = (color = 'synapse') => {
-  console.log(color, stroke[color])
   return {
     stroke: stroke[color],
     fill: fill[color],
