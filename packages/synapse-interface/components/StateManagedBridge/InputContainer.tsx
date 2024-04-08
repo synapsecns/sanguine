@@ -241,7 +241,7 @@ export const InputContainer = () => {
                       hoverContent={
                         isGasInputMoreThanBridgeableMax() ? (
                           <div className="whitespace-nowrap">
-                            Gas fees may exceed input
+                            Requested bridge amount may not cover gas fees
                           </div>
                         ) : (
                           <div className="whitespace-nowrap">
