@@ -364,7 +364,6 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 			attribute.String("gas_price", bigPtrToString(transactor.GasPrice)),
 			attribute.String("gas_fee_cap", bigPtrToString(transactor.GasFeeCap)),
 			attribute.String("gas_tip_cap", bigPtrToString(transactor.GasTipCap)),
-			attribute.Int("prev_tx_nonce", int(prevTx.Nonce())),
 		)
 		metrics.EndSpanWithErr(span, err)
 	}()
