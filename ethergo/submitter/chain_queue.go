@@ -48,7 +48,7 @@ func (c *chainQueue) chainIDInt() int {
 
 func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *big.Int, txes []db.TX) (err error) {
 	ctx, span := t.metrics.Tracer().Start(parentCtx, "submitter.ChainQueue", trace.WithAttributes(
-		attribute.String("chainID", chainID.String()),
+		attribute.String("chain_id", chainID.String()),
 	))
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
