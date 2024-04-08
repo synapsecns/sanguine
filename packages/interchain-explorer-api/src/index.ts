@@ -51,8 +51,10 @@ ponder.on(
     await InterchainTransaction.create({
       id: transactionId,
       data: {
+        sentAt: timestamp,
+        // TODO: ms or seconds to match timestamp?
+        createdAt: BigInt(Date.now()),
         interchainTransactionSentId: record.id,
-        interchainTransactionReceivedId: undefined,
       },
     })
   }
@@ -98,9 +100,13 @@ ponder.on(
       },
     })
 
+    // TODO: Investigate update vs upsert
     await InterchainTransaction.update({
       id: transactionId,
       data: {
+        receivedAt: timestamp,
+        // TODO: ms or seconds to match timestamp?
+        updatedAt: BigInt(Date.now()),
         interchainTransactionReceivedId: record.id,
       },
     })
