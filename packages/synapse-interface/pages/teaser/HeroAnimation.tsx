@@ -3,7 +3,7 @@ import { CHAINS_ARR } from '@/constants/chains'
 const west = CHAINS_ARR[0].chainSymbol
 const north = CHAINS_ARR[1].chainSymbol
 const east = CHAINS_ARR[2].chainSymbol
-const south = CHAINS_ARR[3].chainSymbol
+const south = CHAINS_ARR[4].chainSymbol
 
 import { Chain } from '@/utils/types'
 

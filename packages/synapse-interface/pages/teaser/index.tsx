@@ -13,6 +13,12 @@ import Wrapper from '@/components/WipWrapperComponents/Wrapper'
 import FauxBridge from './FauxBridge'
 import { Chain } from '@/utils/types'
 import HeroAnimation from './HeroAnimation'
+import {
+  AssemblySvg,
+  BatterySvg,
+  InstructionsSvg,
+  IntegratedSvg,
+} from './EntryAnimations'
 
 const chainTagClassName = 'pl-2 pr-6 py-2 border-l h-min'
 
@@ -39,9 +45,11 @@ const LandingPage = () => {
 
   function handleResize() {
     const chains = chainRef.current as HTMLElement
-    const tags: HTMLAnchorElement[] = Array.from(
+    const t: HTMLAnchorElement[] = Array.from(
       chains.querySelectorAll<HTMLAnchorElement>('a')
-    ).slice(1, 5)
+    )
+
+    const tags = [t[1], t[2], t[3], t[5]]
 
     heroRef.current.querySelectorAll("[id^='platform']").forEach((a, i) => {
       const { x, y, width, height } = a.parentElement.getBoundingClientRect()
@@ -154,8 +162,8 @@ const LandingPage = () => {
         id="entry-points"
         className="text-center max-w-screen-xl mx-auto mt-24"
       >
-        <h2 className="text-3xl xs:text-5xl md:text-6xl font-medium px-4">
-          Start here
+        <h2 className="text-3xl xs:text-5xl md:text-5xl font-medium px-4">
+          Go interchain today
         </h2>
         <p className="max-w-lg mx-auto px-4 mt-6 mb-8">
           Cortex brings the federated blockchain universe together. Access new
@@ -206,44 +214,24 @@ const LandingPage = () => {
             <h3 className="text-2xl py-2">Instructions provided</h3>
             <p>Make your project interchain today.</p>
           </div>
-          <svg
-            viewBox="-100 -50 200 100"
-            className="stroke-zinc-800 fill-zinc-500/5 p-8 pb-0"
-          >
-            <path d="m-100 0 100 -50 100 50 -100 50z" />
-          </svg>
+          <InstructionsSvg />
           <div className="pl-8 md:p-4 flex-1 col-start-1 md:col-start-auto md:row-start-1">
             <h3 className="text-2xl py-2">Batteries included</h3>
             <p>Production-ready customizable interchain contracts.</p>
           </div>
-          <svg
-            viewBox="-100 -50 200 100"
-            className="stroke-zinc-800 fill-zinc-500/5 p-8 pb-0"
-          >
-            <path d="m-100 0 100 -50 100 50 -100 50z" />
-          </svg>
+          <BatterySvg />
           <div className="pl-8 md:p-4 flex-1 col-start-1 md:col-start-auto md:row-start-1">
             <h3 className="text-2xl py-2">Pre-assembled</h3>
             <p>
               Add the white label interchain Bridge to your existing project.
             </p>
           </div>
-          <svg
-            viewBox="-100 -50 200 100"
-            className="stroke-zinc-800 fill-zinc-500/5 p-8 pb-0"
-          >
-            <path d="m-100 0 100 -50 100 50 -100 50z" />
-          </svg>
+          <AssemblySvg />
           <div className="pl-8 md:p-4 flex-1 col-start-1 md:col-start-auto md:row-start-1">
             <h3 className="text-2xl py-2">Integrated</h3>
             <p>Launch the real-time interchain project explorer.</p>
           </div>
-          <svg
-            viewBox="-100 -50 200 100"
-            className="stroke-zinc-800 fill-zinc-500/5 p-8 pb-0"
-          >
-            <path d="m-100 0 100 -50 100 50 -100 50z" />
-          </svg>
+          <IntegratedSvg />
         </div>
       </section>
       <section
