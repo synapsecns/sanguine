@@ -55,6 +55,16 @@ export const InputContainer = () => {
     setHasMounted(true)
   }, [])
 
+  const connectedStatus = useMemo(() => {
+    if (hasMounted && !isConnected) {
+      return <ConnectWalletButton />
+    } else if (hasMounted && isConnected && fromChainId === chain.id) {
+      return <ConnectedIndicator />
+    } else if (hasMounted && isConnected && fromChainId !== chain.id) {
+      return <ConnectToNetworkButton chainId={fromChainId} />
+    }
+  }, [chain, fromChainId, isConnected, hasMounted])
+
   useEffect(() => {
     if (fromToken && fromToken?.decimals[fromChainId]) {
       setShowValue(fromValue)
@@ -100,25 +110,21 @@ export const InputContainer = () => {
     )
   }
 
-  const onMaxBridgeableBalance = useCallback(() => {
-    if (isGasToken && parsedGasCost) {
-      const maxBridgeable = calculateMaxBridgeableGas(
-        parseFloat(parsedBalance),
-        parsedGasCost
-      )
+  const maxBridgeableGas: number | null =
+    isGasToken && parsedGasCost
+      ? calculateMaxBridgeableGas(parseFloat(parsedBalance), parsedGasCost)
+      : null
 
-      if (maxBridgeable < 0) {
-        toast.error(`Balance is less than estimated gas fee.`, {
-          id: 'not-enough-balance-popup',
-          duration: 5000,
-        })
+  const onMaxBridgeableBalance = useCallback(() => {
+    if (maxBridgeableGas) {
+      if (maxBridgeableGas < 0) {
         dispatch(
           updateFromValue(
             formatBigIntToString(0n, fromToken?.decimals[fromChainId])
           )
         )
       } else {
-        dispatch(updateFromValue(maxBridgeable.toString()))
+        dispatch(updateFromValue(maxBridgeableGas.toString()))
       }
     } else {
       dispatch(
@@ -136,16 +142,6 @@ export const InputContainer = () => {
     trimmedParsedBalance,
   ])
 
-  const connectedStatus = useMemo(() => {
-    if (hasMounted && !isConnected) {
-      return <ConnectWalletButton />
-    } else if (hasMounted && isConnected && fromChainId === chain.id) {
-      return <ConnectedIndicator />
-    } else if (hasMounted && isConnected && fromChainId !== chain.id) {
-      return <ConnectToNetworkButton chainId={fromChainId} />
-    }
-  }, [chain, fromChainId, isConnected, hasMounted])
-
   const showMaxButton = (): boolean => {
     if (!hasMounted || !isConnected) return false
     if (isGasToken && isNull(parsedGasCost)) return false
@@ -160,9 +156,9 @@ export const InputContainer = () => {
     }
   }
 
-  const isGasInputLessThanBridgeableMax = (): boolean => {
+  const isGasInputMoreThanBridgeableMax = (): boolean => {
     if (isGasToken && parsedGasCost && fromValue && parsedBalance) {
-      return parseFloat(fromValue) >= parseFloat(parsedBalance) - parsedGasCost
+      return parseFloat(fromValue) > parseFloat(parsedBalance) - parsedGasCost
     } else {
       return false
     }
@@ -175,8 +171,6 @@ export const InputContainer = () => {
       return false
     }
   }
-
-  console.log('isGasBalanceLessThanCost:', isGasBalanceLessThanCost())
 
   const isTraceBalance = (): boolean => {
     if (!rawBalance || !trimmedParsedBalance) return false
@@ -227,12 +221,16 @@ export const InputContainer = () => {
                 isConnected &&
                 (isGasToken &&
                 showGasReserved() &&
-                isGasInputLessThanBridgeableMax() ? (
+                isGasInputMoreThanBridgeableMax() ? (
                   <label
                     htmlFor="inputRow"
                     className={`
                       text-xs text-secondaryTextColor transition-all duration-150 transform-gpu
-                      ${isGasBalanceLessThanCost() && 'text-yellow-500'}
+                      ${
+                        (isGasBalanceLessThanCost() ||
+                          isGasInputMoreThanBridgeableMax()) &&
+                        'text-yellow-500'
+                      }
                     `}
                   >
                     {parsedGasCost.toFixed(4)}
