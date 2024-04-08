@@ -90,6 +90,14 @@ export const InputContainer = () => {
   const { gasPrice, maxFeePerGas } = gasData?.formatted
   const { rawGasCost, parsedGasCost } = calculateGasCost(maxFeePerGas, 200_000)
 
+  const isGasInputLessThanCost = (): boolean => {
+    if (isGasToken && parsedGasCost && fromValue && parsedBalance) {
+      return parseFloat(fromValue) >= parseFloat(parsedBalance) - parsedGasCost
+    } else {
+      return false
+    }
+  }
+
   const isGasBalanceLessThanCost = (): boolean => {
     if (isGasToken && parsedGasCost && parsedBalance) {
       return parsedGasCost > parseFloat(parsedBalance)
@@ -212,16 +220,12 @@ export const InputContainer = () => {
               </div>
               {hasMounted &&
                 isConnected &&
-                (showGasReserved() ? (
+                (isGasToken && showGasReserved() && isGasInputLessThanCost() ? (
                   <label
                     htmlFor="inputRow"
                     className={`
                       text-xs text-secondaryTextColor transition-all duration-150 transform-gpu
-                      ${
-                        isGasToken &&
-                        isGasBalanceLessThanCost() &&
-                        'text-yellow-500'
-                      }
+                      ${isGasBalanceLessThanCost() && 'text-yellow-500'}
                     `}
                   >
                     {parsedGasCost.toFixed(4)}
