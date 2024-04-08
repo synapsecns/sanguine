@@ -95,7 +95,7 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 	case CCTPType:
 		return cctp.Contracts["solidity/SynapseCCTPV1_flat.sol:SynapseCCTP"]
 	case RFQType:
-		return rfq.Contracts["solidity/SynapseRFQV2_flat.sol:SynapseRFQ"]
+		return rfq.Contracts["solidity/SynapseRFQV2_flat.sol:FastBridge"]
 	default:
 		panic("not yet implemented")
 	}
