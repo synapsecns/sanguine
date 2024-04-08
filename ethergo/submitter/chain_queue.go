@@ -3,11 +3,12 @@ package submitter
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/ethergo/util"
 	"math/big"
 	"sort"
 	"sync"
 	"time"
+
+	"github.com/synapsecns/sanguine/ethergo/util"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -46,7 +47,9 @@ func (c *chainQueue) chainIDInt() int {
 }
 
 func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *big.Int, txes []db.TX) (err error) {
-	ctx, span := t.metrics.Tracer().Start(parentCtx, "submitter.ChainQueue")
+	ctx, span := t.metrics.Tracer().Start(parentCtx, "submitter.ChainQueue", trace.WithAttributes(
+		attribute.String("chainID", chainID.String()),
+	))
 	defer func() {
 		metrics.EndSpanWithErr(span, err)
 	}()
@@ -61,6 +64,7 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 	if err != nil {
 		return fmt.Errorf("could not get nonce: %w", err)
 	}
+	span.SetAttributes(attribute.Int("nonce", int(currentNonce)))
 
 	g, gCtx := errgroup.WithContext(ctx)
 
