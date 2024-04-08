@@ -35,7 +35,7 @@ const Tooltip = ({
           bg-[#101018] rounded-md text-left text-sm
         `}
       >
-        <data title="testing">{children}</data>
+        <data>{children}</data>
       </div>
     )
   }
