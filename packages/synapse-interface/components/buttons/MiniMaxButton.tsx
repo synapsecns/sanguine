@@ -11,7 +11,7 @@ export default function MiniMaxButton({
     'pl-lg pr-lg pt-sm pb-sm mr-2 rounded-md text-md font-light bg-bgLighter border border-transparent'
 
   const className = disabled
-    ? `${baseClassName} opacity-60 cursor-default`
+    ? `${baseClassName} opacity-30 cursor-default`
     : `${baseClassName} hover:border-[#AC8FFF]`
 
   return (
