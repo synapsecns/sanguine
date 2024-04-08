@@ -1,7 +1,7 @@
 import { CHAINS } from '@/constants/chains'
 import { shortenHash } from '@/utils/shortenHash'
 
-export function ExplorerLink({
+export const ExplorerLink = ({
   chainId,
   transactionHash,
   short = true,
@@ -9,7 +9,7 @@ export function ExplorerLink({
   chainId: number
   transactionHash: string
   short?: boolean
-}) {
+}) => {
   const { explorerUrl } = CHAINS[chainId]
 
   return (

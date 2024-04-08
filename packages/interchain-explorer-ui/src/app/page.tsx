@@ -1,14 +1,15 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
+
 import { useInterchainTransactions } from '@/hooks/useInterchainTransactions'
 import { type InterchainTransaction } from '@/types'
 import { shortenHash } from '@/utils/shortenHash'
 import { ExplorerLink } from '@/components/ui/ExplorerLink'
 import { ChainImage } from '@/components/ui/ChainImage'
-import { useRouter } from 'next/navigation'
-import SearchInput from '@/components/SearchInput'
+import { SearchInput } from '@/components/SearchInput'
 
-export default function Home() {
+const Home = () => {
   const router = useRouter()
 
   const response = useInterchainTransactions()
@@ -124,3 +125,5 @@ export default function Home() {
     </div>
   )
 }
+
+export default Home

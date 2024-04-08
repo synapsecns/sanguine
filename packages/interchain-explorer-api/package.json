@@ -8,7 +8,9 @@
     "start": "ponder start",
     "codegen": "ponder codegen",
     "lint": "eslint .",
-    "typecheck": "tsc"
+    "ci:lint": "eslint .",
+    "typecheck": "tsc",
+    "test:coverage": "echo 'No tests defined.'"
   },
   "dependencies": {
     "@ponder/core": "^0.3.11",

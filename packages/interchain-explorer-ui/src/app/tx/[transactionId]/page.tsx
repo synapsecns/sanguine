@@ -3,11 +3,11 @@
 import { ExplorerLink } from '@/components/ui/ExplorerLink'
 import { useInterchainTransaction } from '@/hooks/useInterchainTransaction'
 
-export default function TransactionDetailsPage({
+const TransactionIdPage = ({
   params,
 }: {
   params: { transactionId: string }
-}) {
+}) => {
   const { data: interchainTransaction, status } = useInterchainTransaction(
     params.transactionId
   )
@@ -76,3 +76,5 @@ export default function TransactionDetailsPage({
     </div>
   )
 }
+
+export default TransactionIdPage

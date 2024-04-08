@@ -1,17 +1,18 @@
 import type { Metadata } from 'next'
-import './globals.css'
+
 import { GqlProvider } from '@/providers/GqlProvider'
+import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Interchain Explorer',
   description: 'An explorer for the Synapse Interchain Network',
 }
 
-export default function RootLayout({
+const RootLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode
-}>) {
+}>) => {
   return (
     <html lang="en">
       <body>
@@ -20,3 +21,5 @@ export default function RootLayout({
     </html>
   )
 }
+
+export default RootLayout
