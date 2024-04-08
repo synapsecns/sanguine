@@ -239,15 +239,21 @@ export const InputContainer = () => {
                         isGasInputMoreThanBridgeableMax()
                       }
                       hoverContent={
-                        <div className="whitespace-nowrap">
-                          Gas fees may exceed your available balance
-                        </div>
+                        isGasInputMoreThanBridgeableMax() ? (
+                          <div className="whitespace-nowrap">
+                            Gas fees may exceed input
+                          </div>
+                        ) : (
+                          <div className="whitespace-nowrap">
+                            Gas fees may exceed your available balance
+                          </div>
+                        )
                       }
                     >
                       {parsedGasCost.toFixed(4)}
                       <span className="text-opacity-50">
                         {' '}
-                        estimated gas cost
+                        estimated gas fee
                       </span>
                     </HoverTooltip>
                   </label>
