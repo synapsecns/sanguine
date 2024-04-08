@@ -62,6 +62,6 @@ export const useInterchainTransactions = () => {
       }
     },
     staleTime: 60_000, // 1 minute
-    refetchInterval: 5_000, // 5 seconds
+    refetchInterval: 1_000, // 1 second
   })
 }
