@@ -231,10 +231,25 @@ export const InputContainer = () => {
                           isGasInputMoreThanBridgeableMax()) &&
                         'text-yellow-500'
                       }
-                    `}
+                      `}
                   >
-                    {parsedGasCost.toFixed(4)}
-                    <span className="text-opacity-50"> estimated gas cost</span>
+                    <HoverTooltip
+                      active={
+                        isGasBalanceLessThanCost() ||
+                        isGasInputMoreThanBridgeableMax()
+                      }
+                      hoverContent={
+                        <div className="whitespace-nowrap">
+                          Gas fees may exceed your available balance
+                        </div>
+                      }
+                    >
+                      {parsedGasCost.toFixed(4)}
+                      <span className="text-opacity-50">
+                        {' '}
+                        estimated gas cost
+                      </span>
+                    </HoverTooltip>
                   </label>
                 ) : (
                   <label
@@ -245,13 +260,25 @@ export const InputContainer = () => {
                       hover:text-opacity-70 hover:cursor-pointer
                     `}
                   >
-                    {isTraceBalance()
-                      ? '< 0.0001'
-                      : trimmedParsedBalance ?? '0.0'}
-                    <span className="text-opacity-50 text-secondaryTextColor">
-                      {' '}
-                      available
-                    </span>
+                    <HoverTooltip
+                      active={
+                        isGasBalanceLessThanCost() ||
+                        isGasInputMoreThanBridgeableMax()
+                      }
+                      hoverContent={
+                        <div className="whitespace-nowrap">
+                          Gas fees may exceed your available balance
+                        </div>
+                      }
+                    >
+                      {isTraceBalance()
+                        ? '< 0.0001'
+                        : trimmedParsedBalance ?? '0.0'}
+                      <span className="text-opacity-50 text-secondaryTextColor">
+                        {' '}
+                        available
+                      </span>
+                    </HoverTooltip>
                   </label>
                 ))}
             </div>
@@ -274,4 +301,50 @@ export const InputContainer = () => {
       </div>
     </div>
   )
+}
+
+// TODO: Replace with HoverTooltip in Portfolio once other branch is merged in
+export const HoverTooltip = ({ children, hoverContent, active }) => {
+  const [showTooltip, setShowTooltip] = useState(false)
+
+  const activateTooltip = () => setShowTooltip(true)
+  const hideTooltip = () => setShowTooltip(false)
+
+  if (!active) {
+    return <div>{children}</div>
+  } else {
+    return (
+      <div
+        onMouseEnter={activateTooltip}
+        onMouseLeave={hideTooltip}
+        className="relative w-fit"
+      >
+        {children}
+        <Tooltip isHovered={showTooltip}>{hoverContent}</Tooltip>
+      </div>
+    )
+  }
+}
+
+const Tooltip = ({
+  isHovered,
+  children,
+}: {
+  isHovered: boolean
+  children: React.ReactNode
+}) => {
+  if (isHovered) {
+    return (
+      <div
+        className={`
+           absolute left-1/2 bottom-full translate-x-[-50%]
+           z-50 hover-content px-2 py-1 text-white mb-1
+           border border-solid border-[#252537]
+           bg-[#101018] rounded-md text-left text-sm
+         `}
+      >
+        <data>{children}</data>
+      </div>
+    )
+  }
 }
