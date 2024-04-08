@@ -102,6 +102,8 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         external
         payable
     {
+        // TODO: revert later
+        assert(false);
         InterchainTransaction memory icTx = _assertCorrectVersion(transaction);
         bytes32 transactionId = keccak256(transaction);
         _assertExecutable(icTx, transactionId, proof);
