@@ -48,7 +48,10 @@ export const useInterchainTransaction = (transactionId: string) => {
         )) as InterchainTransactionResponse
         return response.interchainTransaction
       } catch (error) {
-        console.error('Error fetching transaction:', error)
+        console.error(
+          `Error fetching transaction with ID ${transactionId}:`,
+          error
+        )
         throw error
       }
     },

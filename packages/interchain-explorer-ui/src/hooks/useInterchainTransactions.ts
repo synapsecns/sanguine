@@ -56,7 +56,7 @@ export const useInterchainTransactions = () => {
           interchainTransactionReceived: d.interchainTransactionReceived,
         }))
       } catch (error) {
-        console.error('Error fetching deposits:', error)
+        console.error('Error fetching interchain transactions:', error)
         throw error
       }
     },
