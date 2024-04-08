@@ -6,26 +6,38 @@ import "fmt"
 
 // Mainnet chain IDs.
 const ethereumChainID = 1
+const avalancheChainID = 43114
 const optimismChainID = 10
 const arbitrumChainID = 42161
+const baseChainID = 8453
+const polygonChainID = 137
 
 // Testnet chain IDs.
 const sepoliaChainID = 11155111
+const avalancheFujiChainID = 43113
 const opSepoliaChainID = 11155420
 const arbitrumSepoliaChainID = 421614
+const baseSepoliaChainID = 84532
+const polygonAmoyChainID = 80002
 
 // see https://developers.circle.com/stablecoins/docs/evm-smart-contracts#mainnet-contract-addresses
 var mainnetDomainMap = map[uint32]uint32{
 	0: ethereumChainID,
+	1: avalancheChainID,
 	2: optimismChainID,
 	3: arbitrumChainID,
+	6: baseChainID,
+	7: polygonChainID,
 }
 
 // see https://developers.circle.com/stablecoins/docs/evm-smart-contracts#testnet-contract-addresses
 var testnetDomainMap = map[uint32]uint32{
 	0: sepoliaChainID,
+	1: avalancheFujiChainID,
 	2: opSepoliaChainID,
 	3: arbitrumSepoliaChainID,
+	6: baseSepoliaChainID,
+	7: polygonAmoyChainID,
 }
 
 var testnetChainIDMap map[uint32]uint32 // Maps chainID to domain for testnet
