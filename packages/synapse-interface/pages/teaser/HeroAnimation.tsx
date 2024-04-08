@@ -1,5 +1,7 @@
 import { CHAINS_ARR } from '@/constants/chains'
 
+import { getStyleForText } from '@/styles/hover'
+
 const hslStr = (h, s, l, a = undefined) =>
   `hsl(${h}deg ${s}% ${l}%${a === undefined ? '' : ` / ${a}%`})`
 
@@ -234,10 +236,10 @@ const Cube = ({
   )
 }
 
-export default function ({ animationRef, className = '' }) {
+export default function ({ heroRef, className = '' }) {
   return (
     <svg
-      ref={animationRef}
+      ref={heroRef}
       id="hero-graphic"
       width="1200"
       viewBox="-700 -437.5 1400 875"
@@ -265,7 +267,7 @@ export default function ({ animationRef, className = '' }) {
           attributeName="d"
           values="m-200,-100 0,0 0,0 0,0z; m-100,-150 0,0 -200,100 0,0z; m-120,-160 40,20 -200,100 -40,-20z"
           dur=".5s"
-          begin="platformSouth.end + 1s"
+          begin="platformS.end + 1s"
           calcMode="spline"
           keyTimes="0; .5; 1"
           keySplines=".5 0 .2 1; .5 0 .2 1"
@@ -356,32 +358,12 @@ export default function ({ animationRef, className = '' }) {
         />
       </path>
 
-      <Platform id="platformWest" translate="-400 0" color="west" begin=".3s" />
-      <Platform
-        id="platformNorth"
-        translate="0 -200"
-        color="north"
-        begin="0s"
-      />
-      <Platform id="platformEast" translate="400 0" color="east" begin=".1s" />
-      <Platform
-        id="platformSouth"
-        translate="0 200"
-        color="south"
-        begin=".2s"
-      />
+      <Platform id="platformW" translate="-400 0" color="west" begin=".3s" />
+      <Platform id="platformN" translate="0 -200" color="north" begin="0s" />
+      <Platform id="platformE" translate="400 0" color="east" begin=".1s" />
+      <Platform id="platformS" translate="0 200" color="south" begin=".2s" />
 
-      {/* {CHAINS_ARR.slice(0, 4).map((chain) => {
-        return (
-          <>
-            <text x="0" y="0" width="100" height="50" fill="red">
-              {chain.name}
-            </text>
-          </>
-        )
-      })}
-
-      <g transform="translate(125 -290) scale(1.2)">
+      {/* <g transform="translate(125 -290) scale(1.2)">
         <rect width="100" height="52" rx="4" fill="#111" stroke="#333" />
         <text x="10" y="20" fill={text.north}>
           Arbitrum
@@ -926,6 +908,53 @@ export default function ({ animationRef, className = '' }) {
 
       <Cube color="north" translate="25 -187.5" begin={17} />
       <Cube color="north" translate="0 -175" begin={19} />
+
+      {/* {CHAINS_ARR.slice(0, 4).map((chain, rank) => {
+        let x = 0,
+          y = 0
+        switch (rank) {
+          case 0:
+            x = -400
+            y = -200
+            break
+          case 1:
+            y = -300
+            break
+          case 2:
+            x = 300
+            y = -100
+            break
+          case 3:
+            x = 100
+            y = 100
+            break
+        }
+
+        return (
+          <foreignObject
+            x={x}
+            y={y}
+            className="text-4xl xs:text-3xl sm:text-2xl md:text-xl overflow-visible"
+          >
+            <div className="px-3 py-1.5 grid grid-cols-[24px_auto] gap-x-2 w-fit rounded bg-zinc-900/25 border border-zinc-800 tracking-wider backdrop-blur-sm">
+              <img
+                src={chain.chainImg.src}
+                width="24"
+                height="24"
+                className="row-span-2 self-center"
+              />
+              <header
+                className={`${getStyleForText(
+                  chain.color
+                )} font-medium tracking-wide`}
+              >
+                {chain.name}
+              </header>
+              $417.83M
+            </div>
+          </foreignObject>
+        )
+      })} */}
 
       {/* <g {...paint('synapse')}>
       <path vectorEffect="non-scaling-stroke">

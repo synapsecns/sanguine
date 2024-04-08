@@ -11,8 +11,9 @@ import Hero from './Hero'
 import Wrapper from '@/components/WipWrapperComponents/Wrapper'
 
 import FauxBridge from './FauxBridge'
-import PlatformAnimation from './PlatformAnimation'
+import PlatformAnimation from './HeroAnimation'
 import { Chain } from '@/utils/types'
+import HeroAnimation from './HeroAnimation'
 
 const chainTagClassName = 'pl-2 pr-6 py-2 border-l h-min'
 
@@ -20,9 +21,10 @@ const LandingPage = () => {
   const { address: currentAddress } = useAccount()
   const router = useRouter()
 
-  const [platforms, setPlatforms] = useState([])
+  // const [platforms, setPlatforms] = useState([])
 
-  const animationRef = useRef(null)
+  const heroRef = useRef(null)
+  const chainRef = useRef(null)
 
   useEffect(() => {
     segmentAnalyticsEvent(`[Teaser] arrives`, {
@@ -33,19 +35,53 @@ const LandingPage = () => {
   }, [])
 
   useEffect(() => {
-    const arr = []
-    animationRef.current
-      .querySelectorAll("[id^='platform']")
-      .forEach((node) => arr.push(node.parentElement.getBoundingClientRect()))
-
-    setPlatforms(arr)
+    handleResize()
 
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
-  }, [])
+  })
 
-  function handleResize(e) {
-    console.log(e)
+  function handleResize() {
+    const chains = chainRef.current as HTMLElement
+    const tags: HTMLAnchorElement[] = Array.from(
+      chains.querySelectorAll<HTMLAnchorElement>('a')
+    ).slice(1, 5)
+
+    heroRef.current.querySelectorAll("[id^='platform']").forEach((a, i) => {
+      const { x, y, width, height } = a.parentElement.getBoundingClientRect()
+      const w = tags[i].offsetWidth
+      const h = tags[i].offsetHeight
+      // const { left, top } = tags[i].getBoundingClientRect()
+      let left, top
+      switch (i) {
+        case 0:
+          left = x + width * 0.5
+          top = y - h
+          break
+        case 1:
+          left = x + width * 0.5
+          top = y - h
+          break
+        case 2:
+          left = x + width * 0.5
+          top = y + height
+          break
+        case 3:
+          left = x + width / 2
+          top = y + height
+          // top = y + height * 0.625
+          break
+      }
+      if (width) {
+        tags[i].style.position = `absolute`
+        tags[i].style.left = `${left + window.scrollX}px`
+        tags[i].style.top = `${top + window.scrollY}px`
+      } else {
+        // tags[i].style.display = 'none'
+        // tags[i].style.left = `${left}px`
+        // tags[i].style.top = `${top}px`
+      }
+    })
   }
 
   function ChainTag({
@@ -55,29 +91,11 @@ const LandingPage = () => {
     chain: Chain
     index: number
   }): React.ReactNode {
-    let { left, top, width, height } = platforms[index] ?? {}
-    // TODO: Include width & height values
-    switch (index) {
-      case 0:
-      case 1:
-        left += 50
-        top -= 100
-        break
-      case 2:
-      case 3:
-        left += 50
-        top += 25
-        break
-    }
-
     return (
       <a
         href="#"
-        className={`grid grid-cols-[auto_auto] gap-x-2 items-center border-zinc-800 ${chainTagClassName}`}
+        className={`grid grid-cols-[auto_auto] gap-x-2 items-center border-zinc-800 bg-zinc-900/25 backdrop-blur-sm  ${chainTagClassName}`}
         key={chain.name} // TODO: Solve 'unique key' warning
-        style={
-          platforms[index] && { position: 'absolute', left: left, top: top }
-        }
       >
         <img
           src={chain.chainImg.src}
@@ -112,13 +130,16 @@ const LandingPage = () => {
         </div>
       </section>
       <section className="grid justify-center">
-        <PlatformAnimation
-          animationRef={animationRef}
+        <HeroAnimation
+          heroRef={heroRef}
           className="w-full min-w-[480px] xs:min-w-[640px]"
         />
       </section>
-      <section id="chain-list" className="-mt-12 mb-12 justify-center">
-        <dl className="flex text-sm border-y border-zinc-800 whitespace-nowrap justify-center">
+      <section id="chain-list" className="mb-12 justify-center">
+        <dl
+          ref={chainRef}
+          className="flex text-sm border-y border-zinc-800 whitespace-nowrap justify-center"
+        >
           <a href="#" className={`${chainTagClassName} border-fuchsia-500`}>
             <dt>6 month vol.</dt>
             <dd>$7.03B</dd>

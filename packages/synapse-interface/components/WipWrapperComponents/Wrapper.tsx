@@ -58,7 +58,7 @@ const Wrapper = ({ children }) => {
     >
       <Ticker />
       <NavMenu />
-      <main className="overflow-hidden">{children}</main>
+      <main>{children}</main>
       <CortexCli setPrefersDark={setPrefersDark} />
       <Footer />
     </div>
