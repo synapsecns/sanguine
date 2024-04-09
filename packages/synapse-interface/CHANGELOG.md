@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.16.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.16.0...@synapsecns/synapse-interface@0.16.1) (2024-04-04)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
+# [0.16.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.15.8...@synapsecns/synapse-interface@0.16.0) (2024-04-04)
+
+
+### Features
+
+* **synapse-interface:** bridge selector component ([#2312](https://github.com/synapsecns/sanguine/issues/2312)) ([646a6f0](https://github.com/synapsecns/sanguine/commit/646a6f05aed3c4db1db6dce08f9cec2e7197dc75))
+
+
+
+
+
+## [0.15.8](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.15.7...@synapsecns/synapse-interface@0.15.8) (2024-04-04)
+
+**Note:** Version bump only for package @synapsecns/synapse-interface
+
+
+
+
+
 ## [0.15.7](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.15.6...@synapsecns/synapse-interface@0.15.7) (2024-04-03)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface

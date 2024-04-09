@@ -5,6 +5,8 @@ import {IInterchainDB, InterchainEntry, InterchainBatch} from "../../contracts/i
 
 // solhint-disable no-empty-blocks
 contract InterchainDBMock is IInterchainDB {
+    uint16 public constant DB_VERSION = 1;
+
     function writeEntry(bytes32 dataHash) external returns (uint256 writerNonce, uint64 entryIndex) {}
 
     function requestBatchVerification(
@@ -26,7 +28,7 @@ contract InterchainDBMock is IInterchainDB {
         returns (uint256 writerNonce, uint64 entryIndex)
     {}
 
-    function verifyRemoteBatch(InterchainBatch memory batch) external {}
+    function verifyRemoteBatch(bytes calldata versionedBatch) external {}
 
     function getInterchainFee(uint256 dstChainId, address[] memory srcModules) external view returns (uint256) {}
 

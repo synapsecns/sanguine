@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {InterchainClientV1, InterchainClientV1BaseTest} from "./InterchainClientV1.Base.t.sol";
+import {InterchainClientV1BaseTest} from "./InterchainClientV1.Base.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering

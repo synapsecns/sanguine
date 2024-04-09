@@ -80,7 +80,8 @@ contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
         view
         returns (uint256)
     {
-        return _getMessageFee({dstChainId: dstChainId, options: _icOptionsV1(options), messageLen: messageLen});
+        uint256 legacyMsgLen = LegacyMessageLib.payloadSize(messageLen);
+        return _getMessageFee({dstChainId: dstChainId, options: _icOptionsV1(options), messageLen: legacyMsgLen});
     }
 
     /// @dev Internal logic for receiving messages. At this point the validity of the message is already checked.

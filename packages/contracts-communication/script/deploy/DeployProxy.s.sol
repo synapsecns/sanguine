@@ -34,18 +34,12 @@ abstract contract DeployProxy is SynapseScript {
         });
         // Save the proxy artifact with implementation ABI as ContractName
         if (!isDeployed(contractName)) {
-            saveDeployment({
-                contractName: contractName,
-                contractAlias: contractName,
-                deployedAt: deployedAt,
-                constructorArgs: ""
-            });
+            saveDeployment({contractAlias: contractName, deployedAt: deployedAt, constructorArgs: ""});
         }
         // Save the ProxyAdmin artifact as ProxyAdmin.ContractName
         string memory proxyAdminAlias = string.concat("ProxyAdmin.", contractName);
         if (!isDeployed(proxyAdminAlias)) {
             saveDeployment({
-                contractName: "ProxyAdmin",
                 contractAlias: proxyAdminAlias,
                 deployedAt: getProxyAdmin(deployedAt),
                 constructorArgs: abi.encode(proxyAdminOwner)

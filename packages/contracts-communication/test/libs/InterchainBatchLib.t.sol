@@ -47,4 +47,16 @@ contract InterchainBatchLibTest is Test {
         bytes32 actual = libHarness.batchKey(batch);
         assertEq(actual, expected);
     }
+
+    function test_encodeBatch_roundTrip(InterchainBatch memory batch) public {
+        bytes memory encoded = libHarness.encodeBatch(batch);
+        InterchainBatch memory decoded = libHarness.decodeBatch(encoded);
+        assertEq(decoded, batch);
+    }
+
+    function test_encodeBatchFromMemory_roundTrip(InterchainBatch memory batch) public {
+        bytes memory encoded = libHarness.encodeBatch(batch);
+        InterchainBatch memory decoded = libHarness.decodeBatchFromMemory(encoded);
+        assertEq(decoded, batch);
+    }
 }

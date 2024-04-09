@@ -19,6 +19,7 @@ interface IInterchainDB {
     error InterchainDB__ConflictingBatches(address module, bytes32 existingBatchRoot, InterchainBatch newBatch);
     error InterchainDB__EntryIndexOutOfRange(uint256 dbNonce, uint64 entryIndex, uint64 batchSize);
     error InterchainDB__IncorrectFeeAmount(uint256 actualFee, uint256 expectedFee);
+    error InterchainDB__InvalidBatchVersion(uint16 version);
     error InterchainDB__InvalidEntryRange(uint256 dbNonce, uint64 start, uint64 end);
     error InterchainDB__NoModulesSpecified();
     error InterchainDB__SameChainId(uint256 chainId);
@@ -68,8 +69,9 @@ interface IInterchainDB {
         returns (uint256 dbNonce, uint64 entryIndex);
 
     /// @notice Allows the Interchain Module to verify the batch coming from the remote chain.
-    /// @param batch        The Interchain Batch to confirm
-    function verifyRemoteBatch(InterchainBatch memory batch) external;
+    /// Note: The DB will only accept the batch of the same version as the DB itself.
+    /// @param versionedBatch   The versioned Interchain Batch to verify
+    function verifyRemoteBatch(bytes memory versionedBatch) external;
 
     // ═══════════════════════════════════════════════════ VIEWS ═══════════════════════════════════════════════════════
 
@@ -157,4 +159,8 @@ interface IInterchainDB {
         external
         view
         returns (uint256 moduleVerifiedAt);
+
+    /// @notice Get the version of the Interchain DataBase.
+    // solhint-disable-next-line func-name-mixedcase
+    function DB_VERSION() external pure returns (uint16);
 }

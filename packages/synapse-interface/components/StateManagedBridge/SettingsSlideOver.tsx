@@ -23,7 +23,7 @@ const SettingsSlideOver = () => {
     dispatch(setShowSettingsSlideOver(false))
   }
 
-  const escPressed = useKeyPress('Escape')
+  const escPressed = useKeyPress('Escape', true)
 
   const escFunc = () => {
     if (escPressed) {
