@@ -158,9 +158,9 @@ type RFQEvent struct {
 	// FormattedRequest is the request of the RFQ transfer.
 	FormattedRequest sql.NullString `gorm:"column:formatted_request"`
 	// OriginChainID is the chain ID of the RFQ transfer.
-	OriginChainID *uint32 `gorm:"column:origin_chain_id"`
+	OriginChainID *big.Int `gorm:"column:origin_chain_id;type:UInt256"`
 	// DestinationChainID is the chain ID of the RFQ transfer.
-	DestinationChainID *uint32 `gorm:"column:destination_chain_id"`
+	DestinationChainID *big.Int `gorm:"column:destination_chain_id;type:UInt256"`
 	// OriginToken is the address of the origin token
 	OriginToken string `gorm:"column:origin_token"`
 	// DestinationToken is the address of the destination token

@@ -40,12 +40,12 @@ func (e FastBridgeBridgeRequested) GetRequest() *[]byte {
 	return &e.Request
 }
 
-func (e FastBridgeBridgeRequested) GetOriginChainID() *uint32 {
+func (e FastBridgeBridgeRequested) GetOriginChainID() *big.Int {
 	return nil
 }
 
-func (e FastBridgeBridgeRequested) GetDestChainID() *uint32 {
-	return &e.DestChainId
+func (e FastBridgeBridgeRequested) GetDestChainID() *big.Int {
+	return big.NewInt(int64(e.DestChainId))
 }
 
 func (e FastBridgeBridgeRequested) GetOriginToken() common.Address {
@@ -113,11 +113,11 @@ func (e FastBridgeBridgeRelayed) GetTo() *string {
 	return &str
 }
 
-func (e FastBridgeBridgeRelayed) GetOriginChainID() *uint32 {
-	return &e.OriginChainId
+func (e FastBridgeBridgeRelayed) GetOriginChainID() *big.Int {
+	return big.NewInt(int64(e.OriginChainId))
 }
 
-func (e FastBridgeBridgeRelayed) GetDestChainID() *uint32 {
+func (e FastBridgeBridgeRelayed) GetDestChainID() *big.Int {
 	return nil
 }
 

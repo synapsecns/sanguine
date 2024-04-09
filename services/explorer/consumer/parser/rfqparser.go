@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"math/big"
 	"time"
 
 	"github.com/jpillora/backoff"
@@ -158,6 +157,7 @@ func (p *RFQParser) applyPriceData(ctx context.Context, rfqEvent *model.RFQEvent
 	if rfqEvent.OriginAmount != nil {
 		amountUSD := GetAmountUSD(rfqEvent.OriginAmount, *rfqEvent.TokenDecimal, tokenPrice)
 		if amountUSD != nil {
+			logger.Warnf("RFQ GetAmountUSD could not get token price for coingecko token: %s", coinGeckoID)
 			rfqEvent.AmountUSD = *amountUSD
 		}
 	}
@@ -218,10 +218,7 @@ func rfqEventToBridgeEvent(rfqEvent model.RFQEvent) model.BridgeEvent {
 		destinationKappa = ""
 		kappa = &rfqEvent.TransactionID
 	}
-	var destinationChainIDBigInt *big.Int
-	if rfqEvent.DestinationChainID != nil {
-		destinationChainIDBigInt = big.NewInt(int64(*rfqEvent.DestinationChainID))
-	}
+
 	return model.BridgeEvent{
 		InsertTime:       rfqEvent.InsertTime,
 		ContractAddress:  rfqEvent.ContractAddress,
@@ -237,7 +234,7 @@ func rfqEventToBridgeEvent(rfqEvent model.RFQEvent) model.BridgeEvent {
 
 		Recipient:          rfqEvent.Recipient,
 		RecipientBytes:     sql.NullString{},
-		DestinationChainID: destinationChainIDBigInt,
+		DestinationChainID: rfqEvent.DestinationChainID,
 		Fee:                nil,
 		Kappa:              ToNullString(kappa),
 		TokenIndexFrom:     nil,

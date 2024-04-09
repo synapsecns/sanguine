@@ -31,9 +31,9 @@ type EventLog interface {
 	// GetRequest returns the request info of the RFQ transfer.
 	GetRequest() *[]byte
 	// GetOriginChainID returns the chain id of the RFQ transfer.
-	GetOriginChainID() *uint32
+	GetOriginChainID() *big.Int
 	// GetDestChainID returns the chain id of the RFQ transfer.
-	GetDestChainID() *uint32
+	GetDestChainID() *big.Int
 	// GetOriginToken returns the origin token of the RFQ transfer.
 	GetOriginToken() common.Address
 	// GetDestToken returns the Dest token of the RFQ transfer.
