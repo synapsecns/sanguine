@@ -35,7 +35,7 @@ export const InputContainer = () => {
 
   const { gasData } = useAppSelector((state) => state.gasData)
   const { gasPrice, maxFeePerGas } = gasData?.formatted
-  const { rawGasCost, parsedGasCost } = calculateGasCost(maxFeePerGas, 200_000)
+  const { rawGasCost, parsedGasCost } = calculateGasCost(gasPrice, 200_000)
 
   const isGasToken: boolean = fromToken?.addresses[fromChainId] === zeroAddress
 
@@ -114,6 +114,11 @@ export const InputContainer = () => {
     isGasToken && parsedGasCost
       ? calculateMaxBridgeableGas(parseFloat(parsedBalance), parsedGasCost)
       : null
+
+  console.log('rawGasCost:', rawGasCost)
+  console.log('parsedGasCost: ', parsedGasCost)
+  console.log('parsedGasBalance:', parseFloat(parsedBalance))
+  console.log('maxBridgeableGas: ', maxBridgeableGas)
 
   const onMaxBridgeableBalance = useCallback(() => {
     if (maxBridgeableGas) {
@@ -234,7 +239,7 @@ export const InputContainer = () => {
                       `}
                   >
                     <HoverTooltip
-                      active={
+                      isActive={
                         isGasBalanceLessThanCost() ||
                         isGasInputMoreThanBridgeableMax()
                       }
@@ -267,10 +272,7 @@ export const InputContainer = () => {
                     `}
                   >
                     <HoverTooltip
-                      active={
-                        isGasBalanceLessThanCost() ||
-                        isGasInputMoreThanBridgeableMax()
-                      }
+                      isActive={isGasBalanceLessThanCost()}
                       hoverContent={
                         <div className="whitespace-nowrap">
                           Gas fees may exceed your available balance
@@ -310,13 +312,13 @@ export const InputContainer = () => {
 }
 
 // TODO: Replace with HoverTooltip in Portfolio once other branch is merged in
-export const HoverTooltip = ({ children, hoverContent, active }) => {
+export const HoverTooltip = ({ children, hoverContent, isActive }) => {
   const [showTooltip, setShowTooltip] = useState(false)
 
   const activateTooltip = () => setShowTooltip(true)
   const hideTooltip = () => setShowTooltip(false)
 
-  if (!active) {
+  if (!isActive) {
     return <div>{children}</div>
   } else {
     return (
