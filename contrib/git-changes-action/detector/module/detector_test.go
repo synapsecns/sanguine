@@ -1,18 +1,21 @@
-package detector_test
+package moduledetector_test
 
 import (
 	"encoding/hex"
+	"fmt"
 	"github.com/ethereum/go-ethereum/crypto"
 	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector"
 	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/actionscore"
+	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/git"
 	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/gitmock"
+	"github.com/synapsecns/sanguine/contrib/git-changes-action/detector/module"
 	"os"
 	"path/filepath"
 )
 
 func (d *DetectorSuite) TestChangedModules() {
 	testRepo, err := gitmock.NewTestRepo(d.T(), d.sourceRepo.repo, d.sourceRepo.dir)
+	fmt.Println("TEST REPO: ", testRepo)
 	Nil(d.T(), err, "should not return an error")
 
 	_, err = os.Create(filepath.Join(d.sourceRepo.dir, "lib", "newfile.go"))
@@ -20,13 +23,14 @@ func (d *DetectorSuite) TestChangedModules() {
 
 	testRepo.Commit()
 
-	ct, err := detector.GetChangeTree(d.GetTestContext(), d.sourceRepo.dir, "", "", "main")
+	ct, err := git.GetChangeTree(d.GetTestContext(), d.sourceRepo.dir, "", "", "main")
+	fmt.Println(ct)
 	Nil(d.T(), err, "should not return an error")
 
-	withDeps, err := detector.DetectChangedModules(d.sourceRepo.dir, ct, true)
+	withDeps, err := moduledetector.DetectChangedModules(d.sourceRepo.dir, ct, true)
 	Nil(d.T(), err, "should not return an error")
 
-	withoutDeps, err := detector.DetectChangedModules(d.sourceRepo.dir, ct, false)
+	withoutDeps, err := moduledetector.DetectChangedModules(d.sourceRepo.dir, ct, false)
 	Nil(d.T(), err, "should not return an error")
 
 	False(d.T(), withoutDeps["./cmd/app1"])
@@ -41,7 +45,7 @@ func (d *DetectorSuite) TestChangedModules() {
 }
 
 func (d *DetectorSuite) TestGetDependencyDag() {
-	deps, err := detector.GetDependencyDag(d.sourceRepo.dir)
+	deps, err := moduledetector.GetDependencyDag(d.sourceRepo.dir)
 	Nil(d.T(), err, "should not return an error")
 
 	Equal(d.T(), deps["./cmd/app1"], []string{"./lib"})
@@ -57,14 +61,14 @@ func (d *DetectorSuite) TestGetHead() {
 
 	hash := testRepo.Commit()
 
-	head, err := detector.GetHead(d.sourceRepo.repo, &actionscore.Context{
+	head, err := git.GetHead(d.sourceRepo.repo, &actionscore.Context{
 		Ref: hash,
 	}, "")
 	Nil(d.T(), err, "should not return an error")
 	Equal(d.T(), head, hash)
 
 	randHash := hex.EncodeToString(crypto.Keccak256([]byte("random hash")))
-	head, err = detector.GetHead(d.sourceRepo.repo, &actionscore.Context{
+	head, err = git.GetHead(d.sourceRepo.repo, &actionscore.Context{
 		Ref: hash,
 	}, randHash)
 	Nil(d.T(), err, "should not return an error")
@@ -77,7 +81,7 @@ func (d *DetectorSuite) TestChangeTree() {
 
 	addedFiles := testRepo.AddRandomFiles(5)
 
-	changeTree, err := detector.GetChangeTree(d.GetTestContext(), d.sourceRepo.dir, "", "", "main")
+	changeTree, err := git.GetChangeTree(d.GetTestContext(), d.sourceRepo.dir, "", "", "main")
 	Nil(d.T(), err, "should not empty change tree")
 
 	for _, file := range addedFiles {

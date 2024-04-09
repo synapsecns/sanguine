@@ -1,4 +1,4 @@
-package detector
+package moduledetector
 
 import (
 	"fmt"
@@ -36,14 +36,15 @@ func getDependencyGraph(repoPath string) (moduleDeps map[string][]string, err er
 	}
 
 	// map of module->dependencies + replaces
-	var dependencies map[string][]string
-	// bidirectional map of module->module name
-	var moduleNames *bimap.BiMap[string, string]
+	var dependencies map[string]map[string]struct{}
+	// bidirectional map of module->module
+	// moduleRelativeName <-> modulePublicName
+	var dependencyNames *bimap.BiMap[string, string]
 
 	// iterate through each module in the go.work file
 	// create a list of dependencies for each module
 	// and module names
-	dependencies, moduleNames, err = makeDepMaps(repoPath, parsedWorkFile.Use)
+	dependencies, dependencyNames, err = makeDepMaps(repoPath, parsedWorkFile.Use)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create dependency maps: %w", err)
 	}
@@ -51,10 +52,9 @@ func getDependencyGraph(repoPath string) (moduleDeps map[string][]string, err er
 	depGraph := depgraph.New()
 	// build the dependency graph
 	for _, module := range parsedWorkFile.Use {
-		moduleDeps := dependencies[module.Path]
-		for _, dep := range moduleDeps {
+		for dep := range dependencies[module.Path] {
 			// check if the full package name (e.g. github.com/myorg/myrepo/mymodule) is in the list of modules. If it is, add it as a dependency after renaming
-			renamedDep, hasDep := moduleNames.GetInverse(dep)
+			renamedDep, hasDep := dependencyNames.GetInverse(dep)
 			if hasDep {
 				err = depGraph.DependOn(module.Path, renamedDep)
 				if err != nil {
@@ -81,41 +81,45 @@ func getDependencyGraph(repoPath string) (moduleDeps map[string][]string, err er
 	return moduleDeps, nil
 }
 
-// makeDepMaps makes a dependency map and a bidirectional map of dep<->module.
-func makeDepMaps(repoPath string, uses []*modfile.Use) (dependencies map[string][]string, moduleNames *bimap.BiMap[string, string], err error) {
-	// map of module->dependencies + replaces
-	dependencies = make(map[string][]string)
+// makeDepMaps builds a
+// 1. module->dependency map
+// 2. bidirectional map of module<->module (moduleRelativeName to modulePublicName).
+func makeDepMaps(repoPath string, uses []*modfile.Use) (dependencies map[string]map[string]struct{}, dependencyNames *bimap.BiMap[string, string], err error) {
+	// map of module->depndencies
+	dependencies = make(map[string]map[string]struct{})
+
 	// bidirectional map of module->module name
-	moduleNames = bimap.NewBiMap[string, string]()
+	// Maps relative to public names, used to filer out all external libraries/packages.
+	dependencyNames = bimap.NewBiMap[string, string]()
 
 	// iterate through each module in the go.work file
-	// create a list of dependencies for each module
-	// and module names
+	// 1. Create a list of dependencies for each module
+	// 2. Map public names to private names for each module
+	//nolint: gosec
 	for _, module := range uses {
-		//nolint: gosec
 		modContents, err := os.ReadFile(filepath.Join(repoPath, module.Path, "go.mod"))
 		if err != nil {
-			return dependencies, moduleNames, fmt.Errorf("failed to read module file %s: %w", module.Path, err)
+			return dependencies, dependencyNames, fmt.Errorf("failed to read module file %s: %w", module.Path, err)
 		}
 
 		parsedModFile, err := modfile.Parse(module.Path, modContents, nil)
 		if err != nil {
-			return dependencies, moduleNames, fmt.Errorf("failed to parse module file %s: %w", module.Path, err)
+			return dependencies, dependencyNames, fmt.Errorf("failed to parse module file %s: %w", module.Path, err)
 		}
 
-		moduleNames.Insert(module.Path, parsedModFile.Module.Mod.Path)
+		dependencyNames.Insert(module.Path, parsedModFile.Module.Mod.Path)
+		dependencies[module.Path] = make(map[string]struct{})
 
-		dependencies[module.Path] = make([]string, 0)
 		// include all requires and replaces, as they are dependencies
 		for _, require := range parsedModFile.Require {
-			dependencies[module.Path] = append(dependencies[module.Path], convertRelPath(repoPath, module.Path, require.Mod.Path))
+			dependencies[module.Path][convertRelPath(repoPath, module.Path, require.Mod.Path)] = struct{}{}
 		}
 		for _, require := range parsedModFile.Replace {
-			dependencies[module.Path] = append(dependencies[module.Path], convertRelPath(repoPath, module.Path, require.New.Path))
+			dependencies[module.Path][convertRelPath(repoPath, module.Path, require.New.Path)] = struct{}{}
 		}
 	}
 
-	return dependencies, moduleNames, nil
+	return dependencies, dependencyNames, nil
 }
 
 // isRelativeDep returns true if the dependency is relative to the module (starts with ./ or ../).
