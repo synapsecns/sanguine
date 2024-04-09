@@ -252,20 +252,6 @@ export default function ({ heroRef, className = '' }) {
       className={className}
       fill="none"
     >
-      <style>
-        {`text { font-size: 90%; letter-spacing: 1px }`}
-        {/* {`@keyframes circlePulse { from { r: 50; } to { r: 100; } }`} */}
-      </style>
-      <defs>
-        <linearGradient id="a">
-          <stop stopColor="#E54DE5" />
-          <stop offset="1" stopColor="#B580FF" />
-        </linearGradient>
-        <marker id="b" viewBox="-.5 -.5 1 1">
-          <circle r=".4" fill="url(#a)" />
-        </marker>
-      </defs>
-
       <path {...paint('synapse')}>
         <animate
           id="bridgeNw"

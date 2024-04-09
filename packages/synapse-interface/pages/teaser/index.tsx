@@ -44,27 +44,27 @@ const LandingPage = () => {
   })
 
   function handleResize() {
-    const chains = chainRef.current as HTMLElement
-    const t: HTMLAnchorElement[] = Array.from(
-      chains.querySelectorAll<HTMLAnchorElement>('a')
+    const chainRefElement = chainRef.current as HTMLElement
+    const t: HTMLElement[] = Array.from(
+      chainRefElement.querySelectorAll<HTMLAnchorElement>('a')
     )
 
     const tags = [t[1], t[2], t[3], t[5]]
 
     heroRef.current.querySelectorAll("[id^='platform']").forEach((a, i) => {
       const { x, y, width, height } = a.parentElement.getBoundingClientRect()
-      const w = tags[i].offsetWidth
-      const h = tags[i].offsetHeight
-      // const { left, top } = tags[i].getBoundingClientRect()
+      const innerWidth = window.innerWidth
+      const chain = tags[i]
+
       let left, top
       switch (i) {
         case 0:
           left = x + width * 0.5
-          top = y - h
+          top = y - chain.offsetHeight
           break
         case 1:
           left = x + width * 0.5
-          top = y - h
+          top = y - chain.offsetHeight
           break
         case 2:
           left = x + width * 0.5
@@ -73,17 +73,19 @@ const LandingPage = () => {
         case 3:
           left = x + width / 2
           top = y + height
-          // top = y + height * 0.625
           break
       }
+
       if (width) {
-        tags[i].style.position = `absolute`
-        tags[i].style.left = `${left + window.scrollX}px`
-        tags[i].style.top = `${top + window.scrollY}px`
-      } else {
-        // tags[i].style.display = 'none'
-        // tags[i].style.left = `${left}px`
-        // tags[i].style.top = `${top}px`
+        chain.style.position = `absolute`
+        if (left + chain.offsetWidth < innerWidth) {
+          chain.style.left = `${left}px`
+          chain.style.removeProperty('right')
+        } else {
+          chain.style.removeProperty('left')
+          chain.style.right = '0px'
+        }
+        chain.style.top = `${top + window.scrollY}px`
       }
     })
   }
@@ -113,7 +115,7 @@ const LandingPage = () => {
       <section className="px-4 mt-8 xl:mt-12 transition-all">
         <Hero />
       </section>
-      <section className="grid justify-center">
+      <section className="grid justify-center overflow-x-clip">
         <HeroAnimation
           heroRef={heroRef}
           className="w-full min-w-[480px] xs:min-w-[640px]"
@@ -122,7 +124,7 @@ const LandingPage = () => {
       <section className="mb-12 justify-center">
         <dl
           ref={chainRef}
-          className="flex text-sm border-y border-zinc-800 whitespace-nowrap justify-center"
+          className="grid grid-cols-1 lg:flex text-sm border-y border-zinc-800 whitespace-nowrap justify-center"
         >
           <a href="#" className={`${chainTagClassName} border-fuchsia-500`}>
             <dt>6 month vol.</dt>
