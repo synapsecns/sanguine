@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.2](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.1.1...contracts-communication@1.1.2) (2024-04-08)
+
+
+### Bug Fixes
+
+* **contracts-communication:** Integration tests for message bus, testnet deployment ([#2463](https://github.com/synapsecns/sanguine/issues/2463)) ([4829d41](https://github.com/synapsecns/sanguine/commit/4829d413951b11041dc0228daccb0d3ac633d08e))
+
+
+
+
+
+## [1.1.1](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.1.0...contracts-communication@1.1.1) (2024-04-08)
+
+**Note:** Version bump only for package contracts-communication
+
+
+
+
+
 # [1.1.0](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.0.5...contracts-communication@1.1.0) (2024-04-04)
 
 

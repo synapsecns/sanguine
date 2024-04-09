@@ -1,8 +1,9 @@
 package testcontracts
 
 import (
-	"github.com/synapsecns/sanguine/ethergo/manager"
 	"testing"
+
+	"github.com/synapsecns/sanguine/ethergo/manager"
 )
 
 // NewDeployManager creates a deploy manager.
@@ -17,6 +18,7 @@ func NewDeployManager(t *testing.T) *DeployManager {
 		NewTestMessageBusDeployer,
 		NewTestMetaSwapDeployer,
 		NewTestCCTPDeployer,
+		NewTestFastBridgeDeployer,
 	)
 	return &DeployManager{parentManager}
 }

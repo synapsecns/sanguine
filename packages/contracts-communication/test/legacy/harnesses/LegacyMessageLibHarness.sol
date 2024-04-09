@@ -24,4 +24,8 @@ contract LegacyMessageLibHarness {
     {
         return LegacyMessageLib.decodeLegacyMessage(legacyMsg);
     }
+
+    function payloadSize(uint256 messageLen) public pure returns (uint256) {
+        return LegacyMessageLib.payloadSize(messageLen);
+    }
 }

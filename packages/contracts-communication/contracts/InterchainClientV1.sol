@@ -114,6 +114,10 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         // We should always use at least as much as the requested gas limit.
         // The executor can specify a higher gas limit if they wanted.
         if (decodedOptions.gasLimit > gasLimit) gasLimit = decodedOptions.gasLimit;
+        // Check the the Executor has provided big enough gas limit for the whole transaction.
+        if (gasleft() <= gasLimit) {
+            revert InterchainClientV1__NotEnoughGasSupplied();
+        }
         // Pass the full msg.value to the app: we have already checked that it matches the requested gas airdrop.
         IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).appReceive{gas: gasLimit, value: msg.value}({
             srcChainId: icTx.srcChainId,
