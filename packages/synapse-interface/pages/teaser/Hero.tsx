@@ -13,7 +13,7 @@ export default function Hero() {
   const ctas = {
     default: {
       // tag: 'with the Synapse blockchain protocol suite.',
-      tag: 'The web connects devices. We connect blockchains.',
+      tag: 'The Web connects devices. We connect blockchains.',
     },
     bridge: {
       tag: 'Any asset to any chain',
@@ -30,7 +30,7 @@ export default function Hero() {
   const sleep = (time) => new Promise((resolve) => setTimeout(resolve, time))
 
   useEffect(() => {
-    return
+    // return
     if (index < tag.length) {
       sleep((index / tag.length) * 5 + 5).then(() => setH1([cta, +index + 1]))
     } else {
@@ -70,17 +70,15 @@ export default function Hero() {
     )
   }
 
-  const ctaButtonBaseStyle =
-    'px-5 pt-1.5 pb-2 text-lg m-2 border rounded inline-block'
+  const ctaButtonBaseStyle = 'px-6 p-2 text-lg border rounded inline-block'
 
   return (
-    // <header className="my-0 xs:my-4 md:my-8 lg:my-12 text-center max-w-3xl grid place-items-center">
-    <header className="text-center max-w-3xl grid place-items-center mt-8 -mb-8 z-[1]">
-      <div className="hidden sm:block text-3xl sm:text-6xl font-semibold mt-8 mb-3">
+    <>
+      <div className="hidden xs:block text-5xl sm:text-6xl font-semibold text-center mb-4">
         Reach every chain.
       </div>
-      <div className="pt-4 grid gap-4" onMouseMove={(e) => e.stopPropagation()}>
-        <h1 className="max-w-xl text-3xl md:text-2xl font-medium">
+      <div className="pb-10 sm:pb-0" onMouseMove={(e) => e.stopPropagation()}>
+        <h1 className="text-3xl sm:text-2xl font-medium text-center mt-6 mb-4">
           {url ? (
             <a
               href={url}
@@ -97,29 +95,24 @@ export default function Hero() {
             <Tagline />
           )}
         </h1>
-        <div className="m-2">
+        <div className="flex gap-4 text-base sm:text-lg whitespace-nowrap justify-center mt-6">
           <a
             ref={cta !== 'bridge' ? bridgeRef : null}
-            className={`${ctaButtonBaseStyle} border-zinc-500 hover:border-black hover:dark:border-white bg-white hover:bg-zinc-100 dark:bg-zinc-950 hover:dark:bg-zinc-900`}
             href={ctas.bridge.url}
+            className={`${ctaButtonBaseStyle} border-zinc-500 hover:border-black hover:dark:border-white bg-white hover:bg-zinc-100 dark:bg-zinc-950 hover:dark:bg-zinc-900`}
           >
             Bridge
           </a>
           <a
             ref={cta !== 'build' ? buildRef : null}
-            className={`${ctaButtonBaseStyle} border-fuchsia-500 hover:bg-fuchsia-100 hover:dark:bg-fuchsia-950`}
             href={ctas.build.url}
+            className={`${ctaButtonBaseStyle} border-fuchsia-500 hover:bg-fuchsia-100 hover:dark:bg-fuchsia-950`}
           >
             Build
           </a>
         </div>
       </div>
-      {/* <p className="leading-relaxed max-w-xl text-lg dark:font-light tracking-wider -mt-8">
-        Say goodbye to centralized resource pools for cross-chain communication.
-        Synapse lets you customize literally every aspect of your interchain
-        communications.
-      </p> */}
-    </header>
+    </>
   )
 }
 

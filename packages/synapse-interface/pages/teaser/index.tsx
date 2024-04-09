@@ -110,22 +110,8 @@ const LandingPage = () => {
 
   return (
     <Wrapper>
-      {/* <Hero /> */}
-      <section className="w-full px-4">
-        <div className="hidden xs:block text-5xl sm:text-6xl font-semibold text-center mt-8 lg:mt-12 mb-4">
-          Reach every chain.
-        </div>
-        <h1 className="text-3xl sm:text-2xl font-medium text-center mt-6 mb-4">
-          The Web connects devices. We connect blockchains.
-        </h1>
-        <div className="flex gap-4 text-base sm:text-lg whitespace-nowrap justify-center mt-6">
-          <a href="#" className="px-6 py-2 border border-fuchsia-500 rounded">
-            Build
-          </a>
-          <a href="#" className="px-6 py-2 border border-zinc-800 rounded">
-            Bridge
-          </a>
-        </div>
+      <section className="px-4 mt-8 xl:mt-12 transition-all">
+        <Hero />
       </section>
       <section className="grid justify-center">
         <HeroAnimation
