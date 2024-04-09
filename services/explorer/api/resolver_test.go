@@ -3,13 +3,14 @@ package api_test
 import (
 	gosql "database/sql"
 	"fmt"
-	"github.com/ethereum/go-ethereum/crypto"
-	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 	"math"
 	"math/big"
 	"sort"
 	"time"
+
+	"github.com/ethereum/go-ethereum/crypto"
+	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
@@ -728,15 +729,19 @@ func (g APISuite) TestAmountStatistic() {
 func (g APISuite) TestGetBlockHeight() {
 	chainID1 := 1
 	chainID2 := 56
+	chainID3 := 10
 
 	type1 := model.ContractTypeCctp
 	type2 := model.ContractTypeBridge
+	type3 := model.ContractTypeFastBridge
 
 	contract1 := g.config.Chains[uint32(chainID1)].Contracts.CCTP
 	contract2 := g.config.Chains[uint32(chainID2)].Contracts.Bridge
+	contract3 := g.config.Chains[uint32(chainID3)].Contracts.RFQ
 
 	block1 := uint64(3)
 	block2 := uint64(4)
+	block3 := uint64(5)
 
 	contracts := []*model.ContractQuery{
 		{
@@ -747,6 +752,10 @@ func (g APISuite) TestGetBlockHeight() {
 			ChainID: chainID2,
 			Type:    type2,
 		},
+		{
+			ChainID: chainID3,
+			Type:    type3,
+		},
 	}
 
 	// Store blocks in the database.
@@ -756,10 +765,13 @@ func (g APISuite) TestGetBlockHeight() {
 	err = g.db.StoreLastBlock(g.GetTestContext(), uint32(chainID2), block2, contract2)
 	Nil(g.T(), err)
 
+	err = g.db.StoreLastBlock(g.GetTestContext(), uint32(chainID3), block3, contract3)
+	Nil(g.T(), err)
+
 	results, err := g.client.GetBlockHeight(g.GetTestContext(), contracts)
 	Nil(g.T(), err)
-	Equal(g.T(), 2, len(results.Response))
+	Equal(g.T(), 3, len(results.Response))
 	Equal(g.T(), int(block1), *results.Response[0].BlockNumber)
 	Equal(g.T(), int(block2), *results.Response[1].BlockNumber)
-
+	Equal(g.T(), int(block2), *results.Response[2].BlockNumber)
 }
