@@ -2,16 +2,17 @@
 pragma solidity 0.8.20;
 
 import {
-    ICIntegrationTest,
+    PingPongIntegrationTest,
     InterchainBatch,
     InterchainEntry,
     InterchainTransaction,
-    InterchainTxDescriptor
-} from "./ICIntegration.t.sol";
+    InterchainTxDescriptor,
+    PingPongApp
+} from "./PingPong.t.sol";
 
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
-contract PingPongSrcIntegrationTest is ICIntegrationTest {
+contract PingPongSrcIntegrationTest is PingPongIntegrationTest {
     InterchainBatch public batch;
     InterchainEntry public entry;
     InterchainTransaction public icTx;
@@ -27,38 +28,38 @@ contract PingPongSrcIntegrationTest is ICIntegrationTest {
         entry = getSrcInterchainEntry();
         desc = getInterchainTxDescriptor(entry);
         batch = getInterchainBatch(entry);
-        pingFee = pingPongApp.getPingFee(DST_CHAIN_ID);
+        pingFee = srcPingPongApp().getPingFee(DST_CHAIN_ID);
         verificationFee = icDB.getInterchainFee(DST_CHAIN_ID, toArray(address(module)));
         executionFee = executionService.getExecutionFee({
             dstChainId: DST_CHAIN_ID,
-            txPayloadSize: abi.encode(icTx).length,
+            txPayloadSize: getEncodedTx(icTx).length,
             options: ppOptions.encodeOptionsV1()
         });
     }
 
     function test_startPingPong_events() public {
         expectEventsPingSent(COUNTER, icTx, entry, verificationFee, executionFee);
-        pingPongApp.startPingPong(DST_CHAIN_ID, COUNTER);
+        srcPingPongApp().startPingPong(DST_CHAIN_ID, COUNTER);
     }
 
     function test_startPingPong_state_db() public {
-        pingPongApp.startPingPong(DST_CHAIN_ID, COUNTER);
-        checkDatabaseStatePingSent(entry, SRC_INITIAL_DB_NONCE);
+        srcPingPongApp().startPingPong(DST_CHAIN_ID, COUNTER);
+        checkDatabaseStateMsgSent(entry, SRC_INITIAL_DB_NONCE);
     }
 
     function test_startPingPong_state_execFees() public {
-        pingPongApp.startPingPong(DST_CHAIN_ID, COUNTER);
+        srcPingPongApp().startPingPong(DST_CHAIN_ID, COUNTER);
         assertEq(address(executionFees).balance, executionFee);
         assertEq(executionFees.executionFee(DST_CHAIN_ID, desc.transactionId), executionFee);
     }
 
     function test_startPingPong_state_pingPongApp() public {
-        pingPongApp.startPingPong(DST_CHAIN_ID, COUNTER);
-        assertEq(address(pingPongApp).balance, PING_PONG_BALANCE - pingFee);
+        srcPingPongApp().startPingPong(DST_CHAIN_ID, COUNTER);
+        assertEq(srcApp.balance, PING_PONG_BALANCE - pingFee);
     }
 
     function test_startPingPong_state_synapseModule() public {
-        pingPongApp.startPingPong(DST_CHAIN_ID, COUNTER);
+        srcPingPongApp().startPingPong(DST_CHAIN_ID, COUNTER);
         assertEq(address(module).balance, verificationFee);
     }
 

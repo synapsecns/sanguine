@@ -1,9 +1,9 @@
 {
-  "address": "0x3eac3aa2a506eDa3b2eB9bBfa430fd0CC646043D",
-  "constructorArgs": "0x000000000000000000000000e8fb38f36d298bcac2b2a9f16a91ef1074dc1710000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
+  "address": "0x886ade76fBe5b6702C2B61bb1b07ab397A339376",
+  "constructorArgs": "0x000000000000000000000000acaaaa98b9e23725046eda88d371b4864d90496b000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
   "receipt": {
-    "hash": "0x1a2bf67916b54794aaacc2444ec7c2f47cafa0b68646a508e65754e9c95c4191",
-    "blockNumber": 5586573
+    "hash": "0xbe54ed2813ddb97707f28a1bcf09d966db2f2a81dbc165a7f8173f28186d9de0",
+    "blockNumber": 5628113
   },
   "abi": [
     {
@@ -277,26 +277,9 @@
           "internalType": "uint256"
         },
         {
-          "name": "batch",
-          "type": "tuple",
-          "internalType": "struct InterchainBatch",
-          "components": [
-            {
-              "name": "srcChainId",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
-              "name": "dbNonce",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
-              "name": "batchRoot",
-              "type": "bytes32",
-              "internalType": "bytes32"
-            }
-          ]
+          "name": "versionedBatch",
+          "type": "bytes",
+          "internalType": "bytes"
         }
       ],
       "outputs": [],
@@ -836,6 +819,22 @@
       "type": "error",
       "name": "ThresholdECDSA__ZeroThreshold",
       "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "VersionedPayload__PrecompileFailed",
+      "inputs": []
+    },
+    {
+      "type": "error",
+      "name": "VersionedPayload__TooShort",
+      "inputs": [
+        {
+          "name": "versionedPayload",
+          "type": "bytes",
+          "internalType": "bytes"
+        }
+      ]
     }
   ]
 }

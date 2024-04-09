@@ -292,14 +292,6 @@ func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, _ trace.Spa
 		return fmt.Errorf("could not get bridge status: %w", err)
 	}
 
-	if bs == fastbridge.RelayerProved.Int() {
-		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.ClaimPending)
-		if err != nil {
-			return fmt.Errorf("could not update request status: %w", err)
-		}
-		return nil
-	}
-
 	if bs == fastbridge.RelayerClaimed.Int() {
 		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.ClaimCompleted)
 		if err != nil {

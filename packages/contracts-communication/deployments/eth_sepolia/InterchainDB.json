@@ -1,11 +1,24 @@
 {
-  "address": "0xe8FB38F36D298BCac2b2A9F16A91ef1074DC1710",
+  "address": "0xAcAaaa98b9E23725046edA88D371B4864d90496b",
   "constructorArgs": "0x",
   "receipt": {
-    "hash": "0x7f2c9ca2bfc416fcb33e480a852659c4e8535b01e0c3c8212e5aeeff34f66b0c",
-    "blockNumber": 5586167
+    "hash": "0xf8dc43c60ce79d213bd07ba9d615d6030c6345a5a24d8562f1b914b10330047d",
+    "blockNumber": 5628070
   },
   "abi": [
+    {
+      "type": "function",
+      "name": "DB_VERSION",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint16",
+          "internalType": "uint16"
+        }
+      ],
+      "stateMutability": "view"
+    },
     {
       "type": "function",
       "name": "checkVerification",
@@ -296,26 +309,9 @@
       "name": "verifyRemoteBatch",
       "inputs": [
         {
-          "name": "batch",
-          "type": "tuple",
-          "internalType": "struct InterchainBatch",
-          "components": [
-            {
-              "name": "srcChainId",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
-              "name": "dbNonce",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
-              "name": "batchRoot",
-              "type": "bytes32",
-              "internalType": "bytes32"
-            }
-          ]
+          "name": "versionedBatch",
+          "type": "bytes",
+          "internalType": "bytes"
         }
       ],
       "outputs": [],
@@ -571,6 +567,17 @@
     },
     {
       "type": "error",
+      "name": "InterchainDB__InvalidBatchVersion",
+      "inputs": [
+        {
+          "name": "version",
+          "type": "uint16",
+          "internalType": "uint16"
+        }
+      ]
+    },
+    {
+      "type": "error",
       "name": "InterchainDB__InvalidEntryRange",
       "inputs": [
         {
@@ -603,6 +610,17 @@
           "name": "chainId",
           "type": "uint256",
           "internalType": "uint256"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "VersionedPayload__TooShort",
+      "inputs": [
+        {
+          "name": "versionedPayload",
+          "type": "bytes",
+          "internalType": "bytes"
         }
       ]
     }

@@ -19,7 +19,7 @@ import GasIcon from '@/components/icons/GasIcon'
 import { HoverTooltip } from './HoverTooltip'
 
 const handleFocusOnBridgeInput = () => {
-  inputRef.current.focus()
+  inputRef.current?.focus()
 }
 
 type PortfolioTokenAssetProps = {
