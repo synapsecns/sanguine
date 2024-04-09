@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gin-gonic/gin"
@@ -17,13 +20,12 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
 	"github.com/synapsecns/sanguine/services/explorer/static"
 	"github.com/synapsecns/sanguine/services/explorer/types"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
-	"net"
-	"time"
 
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/services/explorer/api/cache"
@@ -74,7 +76,8 @@ func createParsers(ctx context.Context, db db.ConsumerDB, fetcher fetcherpkg.Scr
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("could not create token data service: %w", err)
 	}
-
+	fastbridgeParsers := make(map[uint32]*parser.RFQParser)
+	fastbridgeRefs := make(map[uint32]*fastbridge.FastBridgeRef)
 	cctpParsers := make(map[uint32]*parser.CCTPParser)
 	bridgeParsers := make(map[uint32]*parser.BridgeParser)
 	bridgeRefs := make(map[uint32]*bridge.BridgeRef)
@@ -111,6 +114,23 @@ func createParsers(ctx context.Context, db db.ConsumerDB, fetcher fetcherpkg.Scr
 			}
 			bridgeParsers[chain.ChainID] = bridgeParser
 		}
+		if chain.Contracts.RFQ != "" {
+			rfqService, err := fetcherpkg.NewRFQFetcher(common.HexToAddress(chain.Contracts.RFQ), clients[chain.ChainID])
+			if err != nil {
+				return nil, nil, nil, fmt.Errorf("could not create fast bridge fetcher: %w", err)
+			}
+
+			fastBridgeRef, err := fastbridge.NewFastBridgeRef(common.HexToAddress(chain.Contracts.RFQ), clients[chain.ChainID])
+			if err != nil {
+				return nil, nil, nil, fmt.Errorf("could not create fast bridge ref: %w", err)
+			}
+			fastbridgeRefs[chain.ChainID] = fastBridgeRef
+			rfqParser, err := parser.NewRFQParser(db, common.HexToAddress(chain.Contracts.RFQ), fetcher, rfqService, tokenDataService, priceDataService, true)
+			if err != nil {
+				return nil, nil, nil, fmt.Errorf("could not create fast bridge parser: %w", err)
+			}
+			fastbridgeParsers[chain.ChainID] = rfqParser
+		}
 		if len(chain.Swaps) > 0 {
 			for _, swapAddr := range chain.Swaps {
 				swapFilterer, err := swap.NewSwapFlashLoanFilterer(common.HexToAddress(swapAddr), clients[chain.ChainID])
@@ -124,13 +144,15 @@ func createParsers(ctx context.Context, db db.ConsumerDB, fetcher fetcherpkg.Scr
 		}
 	}
 	serverParser := types.ServerParsers{
-		BridgeParsers: bridgeParsers,
-		CCTParsers:    cctpParsers,
+		BridgeParsers:     bridgeParsers,
+		CCTParsers:        cctpParsers,
+		FastBridgeParsers: fastbridgeParsers,
 	}
 
 	serverRefs := types.ServerRefs{
-		BridgeRefs: bridgeRefs,
-		CCTPRefs:   cctpRefs,
+		BridgeRefs:     bridgeRefs,
+		CCTPRefs:       cctpRefs,
+		FastBridgeRefs: fastbridgeRefs,
 	}
 	return &serverParser, &serverRefs, swapFilterers, nil
 }
