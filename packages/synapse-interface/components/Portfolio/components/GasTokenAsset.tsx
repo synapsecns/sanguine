@@ -1,9 +1,9 @@
 import React from 'react'
-import { Token } from '@/utils/types'
 import Image from 'next/image'
-import { getParsedBalance } from './PortfolioTokenAsset'
-import GasIcon from '@/components/icons/GasIcon'
+import { Token } from '@/utils/types'
+import { getParsedBalance } from '@/utils/getParsedBalance'
 import { HoverTooltip } from './HoverTooltip'
+import GasIcon from '@/components/icons/GasIcon'
 
 export const GasTokenAsset = ({
   token,

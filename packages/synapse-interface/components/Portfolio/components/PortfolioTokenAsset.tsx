@@ -7,16 +7,15 @@ import {
   updateFromValue,
 } from '@/slices/bridge/reducer'
 import { Token } from '@/utils/types'
-import { formatBigIntToString } from '@/utils/bigint/format'
 import { inputRef } from '../../StateManagedBridge/InputContainer'
 import Image from 'next/image'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'
 import { PortfolioAssetActionButton } from './PortfolioAssetActionButton'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 import { zeroAddress } from 'viem'
 import GasIcon from '@/components/icons/GasIcon'
 import { HoverTooltip } from './HoverTooltip'
+import { getParsedBalance } from '@/utils/getParsedBalance'
 
 const handleFocusOnBridgeInput = () => {
   inputRef.current?.focus()
@@ -112,15 +111,4 @@ export const PortfolioTokenAsset = ({
       />
     </div>
   )
-}
-
-export const getParsedBalance = (
-  balance: bigint,
-  decimals: number,
-  places?: number
-) => {
-  const formattedBalance = formatBigIntToString(balance, decimals, places)
-  const verySmallBalance = balance > 0n && hasOnlyZeroes(formattedBalance)
-
-  return verySmallBalance ? '< 0.001' : formattedBalance
 }
