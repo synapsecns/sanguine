@@ -3,92 +3,108 @@ export function InstructionsSvg() {
     <PlatformSvg id="instructions">
       <path
         d="m-25 -15 25 -12.5 25 12.5 -25 12.5z"
-        className="stroke-zinc-700 fill-zinc-400/5"
+        className="stroke-zinc-700 fill-zinc-400/5 hover:stroke-blue-700 hover:fill-blue-400/5 transition-colors duration-250"
       >
-        <animateMotion
+        <animateTransform
+          attributeName="transform"
+          type="translate"
+          to="0 -10"
           begin="instructionsEnter.begin + .3s"
           dur="1s"
-          path="m0 0 0 -10"
-          keyTimes="0; 1"
           calcMode="spline"
+          keyTimes="0; 1"
           keySplines=".5 0 .2 1"
           fill="freeze"
         />
-        <animateMotion
+        <animateTransform
+          attributeName="transform"
+          type="translate"
+          to="0 0"
           begin="instructionsLeave.begin + .3s"
           dur="1s"
-          path="m0 -10 0 10"
-          keyTimes="0; 1"
           calcMode="spline"
+          keyTimes="0; 1"
           keySplines=".5 0 .2 1"
           fill="freeze"
         />
       </path>
       <path
         d="m-25 -25 25 -12.5 25 12.5 -25 12.5z"
-        className="stroke-zinc-700 fill-zinc-400/5"
+        className="stroke-zinc-700 fill-zinc-400/5 hover:stroke-green-700 hover:fill-green-400/5 transition-colors duration-250"
       >
-        <animateMotion
+        <animateTransform
+          attributeName="transform"
+          type="translate"
+          to="0 -15"
           begin="instructionsEnter.begin + .2s"
           dur="1s"
-          path="m0 0 0 -15"
-          keyTimes="0; 1"
           calcMode="spline"
+          keyTimes="0; 1"
           keySplines=".5 0 .2 1"
           fill="freeze"
         />
-        <animateMotion
+        <animateTransform
+          attributeName="transform"
+          type="translate"
+          to="0 0"
           begin="instructionsLeave.begin + .2s"
           dur="1s"
-          path="m0 -15 0 15"
-          keyTimes="0; 1"
           calcMode="spline"
+          keyTimes="0; 1"
           keySplines=".5 0 .2 1"
           fill="freeze"
         />
       </path>
       <path
         d="m-25 -35 25 -12.5 25 12.5 -25 12.5z"
-        className="stroke-zinc-700 fill-zinc-400/5"
+        className="stroke-zinc-700 fill-zinc-400/5 hover:stroke-yellow-700 hover:fill-yellow-400/5 transition-colors duration-250"
       >
-        <animateMotion
+        <animateTransform
+          attributeName="transform"
+          type="translate"
+          to="0 -20"
           begin="instructionsEnter.begin + .1s"
           dur="1s"
-          path="m0 0 0 -20"
-          keyTimes="0; 1"
           calcMode="spline"
+          keyTimes="0; 1"
           keySplines=".5 0 .2 1"
           fill="freeze"
         />
-        <animateMotion
+        <animateTransform
+          attributeName="transform"
+          type="translate"
+          to="0 0"
           begin="instructionsLeave.begin + .1s"
           dur="1s"
-          path="m0 -20 0 20"
-          keyTimes="0; 1"
           calcMode="spline"
+          keyTimes="0; 1"
           keySplines=".5 0 .2 1"
           fill="freeze"
         />
       </path>
       <path
         d="m-25 -45 25 -12.5 25 12.5 -25 12.5z"
-        className="stroke-zinc-700 fill-zinc-400/5"
+        className="stroke-zinc-700 fill-zinc-400/5 hover:stroke-red-700 hover:fill-red-400/5 transition-colors duration-250"
       >
-        <animateMotion
+        <animateTransform
+          attributeName="transform"
+          type="translate"
+          to="0 -25"
           begin="instructionsEnter.begin + .0s"
           dur="1s"
-          path="m0 0 0 -25"
-          keyTimes="0; 1"
           calcMode="spline"
+          keyTimes="0; 1"
           keySplines=".5 0 .2 1"
           fill="freeze"
         />
-        <animateMotion
+        <animateTransform
+          attributeName="transform"
+          type="translate"
+          to="0 0"
           begin="instructionsLeave.begin + .0s"
           dur="1s"
-          path="m0 -25 0 25"
-          keyTimes="0; 1"
           calcMode="spline"
+          keyTimes="0; 1"
           keySplines=".5 0 .2 1"
           fill="freeze"
         />
@@ -122,29 +138,75 @@ export function BatterySvg() {
       <path d="m-25 0 v-50 m50 0 v50" className="stroke-zinc-700" />
       <ellipse
         rx="25"
-        ry="12.5"
-        cy="-7.5"
-        className="stroke-zinc-700 fill-zinc-400/5"
+        cy="-10"
+        className="stroke-zinc-700 fill-emerald-400/10 group-hover:fill-green-400/10"
       >
-        <animateMotion
-          begin="batteriesEnter.begin + .3s"
-          dur=".7s"
-          path="m0 0 0 -42.5"
-          keyTimes="0; 1"
+        <animateTransform
+          attributeName="transform"
+          type="translate"
+          to="0 -35"
+          begin="batteriesEnter.begin"
+          dur="1s"
           calcMode="spline"
-          keySplines="0 0 .2 1"
-          fill="freeze"
-        />
-        <animateMotion
-          begin="batteriesLeave.begin + .3s"
-          dur=".7s"
-          path="m0 -42.5 0 42.5"
           keyTimes="0; 1"
-          calcMode="spline"
           keySplines=".5 0 .2 1"
           fill="freeze"
         />
+        <animateTransform
+          attributeName="transform"
+          type="translate"
+          to="0 0"
+          begin="batteriesLeave.begin"
+          dur="1s"
+          calcMode="spline"
+          keyTimes="0; 1"
+          keySplines=".5 0 .2 1"
+          fill="freeze"
+        />
+        <animateMotion
+          dur="3s"
+          path="m0 3 0 -3"
+          keyPoints="0; 1; 0"
+          keyTimes="0; .5; 1"
+          calcMode="spline"
+          keySplines=".25 0 .75 1; .25 0 .75 1"
+          repeatCount="indefinite"
+        />
+        <animate
+          attributeName="ry"
+          values="12; 13; 12"
+          keyTimes="0; .5; 1"
+          calcMode="spline"
+          keySplines=".25 0 .75 1; .25 0 .75 1"
+          dur="4s"
+          repeatCount="indefinite"
+        />
       </ellipse>
+      <path
+        d="m-25 0 v-0 a25 12.5 0 1 1 50 0 v0 a25 12.5 0 1 1 -50 0z"
+        className="fill-emerald-400/5 group-hover:fill-green-400/10 stroke-none"
+      >
+        <animate
+          attributeName="d"
+          to="m-25 0 v-44 a25 12.5 0 1 1 50 0 v44 a25 12.5 0 1 1 -50 0z"
+          dur="1s"
+          begin="batteriesEnter.begin"
+          calcMode="spline"
+          keyTimes="0; 1"
+          keySplines=".5 0 .2 1"
+          fill="freeze"
+        />
+        <animate
+          attributeName="d"
+          to="m-25 0 v-0 a25 12.5 0 1 1 50 0 v0 a25 12.5 0 1 1 -50 0z"
+          dur="1s"
+          begin="batteriesLeave.begin"
+          calcMode="spline"
+          keyTimes="0; 1"
+          keySplines=".5 0 .2 1"
+          fill="freeze"
+        />
+      </path>
     </PlatformSvg>
   )
 }
@@ -319,13 +381,16 @@ function PlatformSvg({
   return (
     <svg
       viewBox="-100 -50 200 100"
-      className="stroke-zinc-800 hover:stroke-zinc-700 fill-zinc-500/5 hover:fill-zinc-500/10 transition-all duration-500 p-8 pb-0 cursor-pointer"
+      className="group stroke-zinc-800 hover:stroke-zinc-700 fill-zinc-500/5 hover:fill-zinc-500/10 transition-all duration-500 p-8 pb-0 cursor-pointer"
       overflow="visible"
     >
       <animate id={`${id}Enter`} begin="mouseenter" />
       <animate id={`${id}Leave`} begin="mouseleave" />
       {/* Platform */}
-      <path d="m-100 0 100 -50 100 50 -100 50z" />
+      <path
+        d="m-100 0 100 -50 100 50 -100 50z"
+        className="group-hover:translate-y-4 transition-all duration-1000"
+      />
       {children}
     </svg>
   )
