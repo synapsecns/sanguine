@@ -31,12 +31,15 @@ func NewRFQFetcher(rfqAddress common.Address, backend bind.ContractBackend) (RFQ
 
 	return &rfqFetcher{rfqRef, backend, rfqAddress}, nil
 }
-func (p *rfqFetcher) GetTokenSymbol(ctx context.Context, tokenAddress common.Address) (*string, error) {
-	// temporary solution since there are no contract functions we can use
 
-	// Convert the common.Address to a string for comparison
+// GetTokenSymbol gets the token symbol from the rfq ref.
+//
+//nolint:all // havent removed context because it breaks other things.
+func (p *rfqFetcher) GetTokenSymbol(ctx context.Context, tokenAddress common.Address) (*string, error) {
+	// temporary solution since there are no contract functions we can use.
+	// Convert the common.Address to a string for comparison.
 	addressStr := tokenAddress.Hex()
-	// Check if the address matches USDC or ETH and return the symbol directly
+	// Check if the address matches USDC or ETH and return the symbol directly.
 	if addressStr == "0xaf88d065e77c8cC2239327C5EDb3A432268e5831" || addressStr == "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" || addressStr == "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85" || addressStr == "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" {
 		symbol := "USDC"
 		return &symbol, nil

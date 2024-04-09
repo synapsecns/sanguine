@@ -20,7 +20,7 @@ import (
 	rfqTypes "github.com/synapsecns/sanguine/services/explorer/types/fastbridge"
 )
 
-// RFQParser parsers rfq logs
+// RFQParser parsers rfq logs.
 type RFQParser struct {
 	// consumerDB is the database to store parsed data in
 	consumerDB db.ConsumerDB
@@ -40,7 +40,7 @@ type RFQParser struct {
 	fromAPI bool
 }
 
-// NewRFQParser creates a new RFQParser
+// NewRFQParser creates a new RFQParser.
 func NewRFQParser(consumerDB db.ConsumerDB, rfqAddress common.Address, consumerFetcher fetcher.ScribeFetcher, rfqService fetcher.RFQService, tokenDataService tokendata.Service, tokenPriceService tokenprice.Service, fromAPI bool) (*RFQParser, error) {
 	filterer, err := fastbridge.NewFastBridgeFilterer(rfqAddress, nil)
 	if err != nil {
@@ -49,12 +49,14 @@ func NewRFQParser(consumerDB db.ConsumerDB, rfqAddress common.Address, consumerF
 	return &RFQParser{consumerDB, filterer, rfqAddress, consumerFetcher, rfqService, tokenDataService, tokenPriceService, fromAPI}, nil
 }
 
-// ParserType returns the type of parser
+// ParserType returns the type of parser.
 func (p *RFQParser) ParserType() string {
 	return "rfq"
 }
 
-// ParseLog log converts an eth log to a rfq event type
+// ParseLog log converts an eth log to a rfq event type.
+//
+//nolint:dupl
 func (p *RFQParser) ParseLog(log ethTypes.Log, chainID uint32) (*model.RFQEvent, rfqTypes.EventLog, error) {
 	logTopic := log.Topics[0]
 	iFace, err := func(log ethTypes.Log) (rfqTypes.EventLog, error) {
@@ -161,7 +163,6 @@ func (p *RFQParser) applyPriceData(ctx context.Context, rfqEvent *model.RFQEvent
 			rfqEvent.AmountUSD = *amountUSD
 		}
 	}
-
 }
 
 // eventToRFQEvent stores a message event.

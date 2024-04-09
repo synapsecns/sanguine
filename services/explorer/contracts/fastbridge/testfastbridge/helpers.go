@@ -6,7 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/vm"
 )
 
-// RFQRef is a reference to a deployed RFQ contract.
+// TestFastBridgeRef is a reference to a deployed TestFastBridge contract.
 //
 //nolint:golint
 type TestFastBridgeRef struct {
@@ -23,7 +23,7 @@ func (s TestFastBridgeRef) Address() common.Address {
 	return s.address
 }
 
-// NewRFQRef creates a new RFQRef instance.
+// NewTestFastBridgeRef creates a new TestFastBridgeRef instance.
 //
 //nolint:golint
 func NewTestFastBridgeRef(address common.Address, backend bind.ContractBackend) (*TestFastBridgeRef, error) {

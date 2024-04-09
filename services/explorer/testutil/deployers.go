@@ -58,7 +58,7 @@ type CCTPDeployer struct {
 	*deployer.BaseDeployer
 }
 
-// FastBridgeDeployer is the type of the rfq (fastbridge) deployer
+// FastBridgeDeployer is the type of the rfq (fastbridge) deployer.
 type FastBridgeDeployer struct {
 	*deployer.BaseDeployer
 }
@@ -98,7 +98,7 @@ func NewCCTPDeployer(registry deployer.GetOnlyContractRegistry, backend backends
 	return CCTPDeployer{deployer.NewSimpleDeployer(registry, backend, CCTPType)}
 }
 
-// NewFastBridgeDeployer creates a new rfq client.
+// NewFastBridgeDeployer creates a new fastbridge client.
 func NewFastBridgeDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return FastBridgeDeployer{deployer.NewSimpleDeployer(registry, backend, FastBridgeType)}
 }
@@ -219,7 +219,6 @@ func (n CCTPDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, e
 //
 //nolint:dupl
 func (n FastBridgeDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
-
 	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
 		// Create mock owner
 		owner := common.BigToAddress(big.NewInt(gofakeit.Int64()))

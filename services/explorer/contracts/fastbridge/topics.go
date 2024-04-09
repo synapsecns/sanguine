@@ -21,10 +21,10 @@ func init() {
 	BridgeRelayedTopic = parsedRFQEvent.Events["BridgeRelayed"].ID
 }
 
-// CircleRequestSentTopic is when a Circle token is sent with an attached action request.
+// BridgeRequestedTopic is when a FastBridge request is sent out and has additional data.
 var BridgeRequestedTopic common.Hash
 
-// CircleRequestFulfilledTopic is when a Circle token is received with an attached action request.
+// BridgeRelayedTopic is when a FastBridge request is relayed and has additional data.
 var BridgeRelayedTopic common.Hash
 
 // TopicMap maps events to topics.

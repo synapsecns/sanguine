@@ -65,7 +65,7 @@ func (d *DeployManager) GetCCTP(ctx context.Context, backend backends.SimulatedT
 	return manager.GetContract[*cctp.CCTPRef](ctx, d.T(), d, backend, CCTPType)
 }
 
-// GetRFQ gets a typecast rfq (fastbridge).
+// GetFastBridge gets a typecast fastbridge.
 func (d *DeployManager) GetFastBridge(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *fastbridge.FastBridgeRef) {
 	d.T().Helper()
 

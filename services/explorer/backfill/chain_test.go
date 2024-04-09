@@ -414,7 +414,6 @@ func (b *BackfillSuite) TestBackfill() {
 	Nil(b.T(), err)
 
 	// Test the first chain in the config file
-	//@moses this may break??
 	chainBackfiller := backfill.NewChainBackfiller(b.db, bp, spMap, mbp, cp, pp, f, chainConfigs[0])
 	chainBackfillerV1 := backfill.NewChainBackfiller(b.db, bpv1, spMap, mbp, cp, pp, f, chainConfigsV1[0])
 
@@ -641,8 +640,6 @@ func (b *BackfillSuite) receiveCircleTokenParity(log *types.Log, parser *parser.
 	return nil
 }
 
-// @moses to fix
-//
 //nolint:dupl
 func (b *BackfillSuite) rfqRequestedTokenParity(log *types.Log, parser *parser.RFQParser) error {
 	// parse the log
@@ -655,7 +652,7 @@ func (b *BackfillSuite) rfqRequestedTokenParity(log *types.Log, parser *parser.R
 		String: parsedLog.Sender.String(),
 		Valid:  true,
 	}
-	// Hot fix for chainGas
+	// Hot fix for chainGas.
 	var chainGas uint8
 	if parsedLog.SendChainGas {
 		chainGas = 1

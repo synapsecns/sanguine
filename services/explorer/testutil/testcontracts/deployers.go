@@ -98,7 +98,7 @@ func NewTestCCTPDeployer(registry deployer.GetOnlyContractRegistry, backend back
 	return TestCCTPDeployer{deployer.NewSimpleDeployer(registry, backend, TestCCTPType)}
 }
 
-// NewTestFastBridgeDeployer creates a new test rfq (fastbridge) client
+// NewTestFastBridgeDeployer creates a new test rfq (fastbridge) client.
 func NewTestFastBridgeDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return TestFastBridgeDeployer{deployer.NewSimpleDeployer(registry, backend, TestFastBridgeType)}
 }
