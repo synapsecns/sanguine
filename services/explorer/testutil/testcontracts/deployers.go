@@ -16,6 +16,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp/testcctp"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/fastbridge/testfastbridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus/testmessagebus"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap/testmetaswap"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/testswap"
@@ -57,6 +58,11 @@ type TestCCTPDeployer struct {
 	*deployer.BaseDeployer
 }
 
+// TestFastBridgeDeployer is the type of the test rfq (fastbridge) deployer.
+type TestFastBridgeDeployer struct {
+	*deployer.BaseDeployer
+}
+
 // NewTestSynapseBridgeDeployer creates a new test bridge deployer.
 func NewTestSynapseBridgeDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return TestSynapseBridgeDeployer{deployer.NewSimpleDeployer(registry, backend, TestSynapseBridgeType)}
@@ -90,6 +96,11 @@ func NewTestMetaSwapDeployer(registry deployer.GetOnlyContractRegistry, backend 
 // NewTestCCTPDeployer creates a new test cctp client.
 func NewTestCCTPDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return TestCCTPDeployer{deployer.NewSimpleDeployer(registry, backend, TestCCTPType)}
+}
+
+// NewTestFastBridgeDeployer creates a new test rfq (fastbridge) client.
+func NewTestFastBridgeDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return TestFastBridgeDeployer{deployer.NewSimpleDeployer(registry, backend, TestFastBridgeType)}
 }
 
 // Deploy deploys a test bridge.
@@ -194,6 +205,20 @@ func (n TestCCTPDeployer) Deploy(ctx context.Context) (contracts.DeployedContrac
 	})
 }
 
+// Deploy deploys FastBridge contract
+//
+//nolint:dupl
+func (n TestFastBridgeDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		// Create mock owner
+		owner := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+
+		return testfastbridge.DeployTestFastBridge(transactOps, backend, owner)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return testfastbridge.NewTestFastBridgeRef(address, backend)
+	})
+}
+
 var _ deployer.ContractDeployer = &TestSynapseBridgeDeployer{}
 var _ deployer.ContractDeployer = &TestSynapseBridgeV1Deployer{}
 var _ deployer.ContractDeployer = &TestSwapFlashLoanDeployer{}
@@ -201,3 +226,4 @@ var _ deployer.ContractDeployer = &BridgeConfigV3Deployer{}
 var _ deployer.ContractDeployer = &TestMessageBusUpgradeableDeployer{}
 var _ deployer.ContractDeployer = &TestMetaSwapDeployer{}
 var _ deployer.ContractDeployer = &TestCCTPDeployer{}
+var _ deployer.ContractDeployer = &TestFastBridgeDeployer{}

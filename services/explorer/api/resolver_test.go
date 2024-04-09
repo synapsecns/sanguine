@@ -3,13 +3,14 @@ package api_test
 import (
 	gosql "database/sql"
 	"fmt"
-	"github.com/ethereum/go-ethereum/crypto"
-	. "github.com/stretchr/testify/assert"
-	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 	"math"
 	"math/big"
 	"sort"
 	"time"
+
+	"github.com/ethereum/go-ethereum/crypto"
+	. "github.com/stretchr/testify/assert"
+	"github.com/synapsecns/sanguine/services/explorer/graphql/server/graph/model"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/common"
@@ -758,8 +759,8 @@ func (g APISuite) TestGetBlockHeight() {
 
 	results, err := g.client.GetBlockHeight(g.GetTestContext(), contracts)
 	Nil(g.T(), err)
+
 	Equal(g.T(), 2, len(results.Response))
 	Equal(g.T(), int(block1), *results.Response[0].BlockNumber)
 	Equal(g.T(), int(block2), *results.Response[1].BlockNumber)
-
 }
