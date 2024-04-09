@@ -39,13 +39,14 @@ export default createSchema((p) => ({
 
   InterchainTransaction: p.createTable({
     id: p.string(),
-    sentAt: p.bigint(),
+    sentAt: p.bigint().optional(),
     receivedAt: p.bigint().optional(),
-    createdAt: p.bigint(),
+    createdAt: p.bigint().optional(),
     updatedAt: p.bigint().optional(),
     interchainTransactionSentId: p
       .string()
-      .references('InterchainTransactionSent.id'),
+      .references('InterchainTransactionSent.id')
+      .optional(),
     interchainTransactionSent: p.one('interchainTransactionSentId'),
     interchainTransactionReceivedId: p
       .string()
