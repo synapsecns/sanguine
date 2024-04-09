@@ -9,8 +9,6 @@ import {TypeCasts} from "../../contracts/libs/TypeCasts.sol";
 import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import {stdJson, SynapseScript} from "@synapsecns/solidity-devops/src/SynapseScript.sol";
 
-// solhint-disable code-complexity
-// solhint-disable custom-errors
 abstract contract ConfigureAppV1 is SynapseScript {
     using stdJson for string;
 
@@ -25,6 +23,7 @@ abstract contract ConfigureAppV1 is SynapseScript {
 
     function run(string memory environment) external virtual broadcastWithHooks {
         loadConfig(environment);
+        beforeAppConfigured();
         linkRemoteChains();
         syncTrustedModules();
         setAppConfig();
@@ -176,6 +175,9 @@ abstract contract ConfigureAppV1 is SynapseScript {
             printLog(string.concat("Added ", vm.toString(added), " clients, removed ", vm.toString(removed)));
         }
     }
+
+    // solhint-disable-next-line no-empty-blocks
+    function beforeAppConfigured() internal virtual {}
 
     // solhint-disable-next-line no-empty-blocks
     function afterAppConfigured() internal virtual {}

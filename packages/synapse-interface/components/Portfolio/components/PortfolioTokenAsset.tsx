@@ -16,7 +16,7 @@ import { PortfolioAssetActionButton } from './PortfolioAssetActionButton'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 
 const handleFocusOnBridgeInput = () => {
-  inputRef.current.focus()
+  inputRef.current?.focus()
 }
 
 type PortfolioTokenAssetProps = {

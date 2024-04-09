@@ -82,10 +82,11 @@ contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
         view
         returns (uint256)
     {
+        uint256 legacyMsgLen = LegacyMessageLib.payloadSize(messageLen);
         return _getMessageFee({
             dstChainId: SafeCast.toUint64(dstChainId),
             options: _icOptionsV1(options),
-            messageLen: messageLen
+            messageLen: legacyMsgLen
         });
     }
 
