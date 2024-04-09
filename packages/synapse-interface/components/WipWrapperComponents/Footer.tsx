@@ -33,26 +33,28 @@ const sections = [
 
 export default function Footer() {
   return (
-    <footer className="p-4 sm:p-8 flex flex-wrap gap-8 items-start max-w-7xl mx-auto justify-end sm:justify-between cursor-default bg-zinc-50 dark:bg-zinc-950">
-      <CortexAnchor id="footerLogo" width={40} height={40} />
-      <div className="flex flex-wrap gap-4 xs:gap-8 text-right justify-end">
-        {sections.map((section) => (
-          <section key={section.header}>
-            <header className="px-2 py-1">{section.header}</header>
-            <ul>
-              {section.links.map((link) => (
-                <li key={link.label}>
-                  <a
-                    href={link.url}
-                    className="text-zinc-500 hover:text-inherit hover:bg-slate-200 hover:dark:bg-zinc-900 px-2 py-1 rounded inline-block"
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))}
+    <footer className="bg-zinc-50 dark:bg-zinc-950">
+      <div className="max-w-7xl p-4 sm:p-8 flex flex-wrap gap-8 items-start mx-auto sm:justify-between cursor-default">
+        <CortexAnchor id="footerLogo" width={40} height={40} />
+        <div className="flex flex-wrap gap-4 xs:gap-8 text-right justify-end">
+          {sections.map((section) => (
+            <section key={section.header}>
+              <header className="px-2 py-1">{section.header}</header>
+              <ul>
+                {section.links.map((link) => (
+                  <li key={link.label}>
+                    <a
+                      href={link.url}
+                      className="text-zinc-500 hover:text-inherit hover:bg-slate-200 hover:dark:bg-zinc-900 px-2 py-1 rounded inline-block"
+                    >
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
       </div>
     </footer>
   )
