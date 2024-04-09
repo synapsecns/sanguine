@@ -46,10 +46,10 @@ const LandingPage = () => {
   function handleResize() {
     const chainRefElement = chainRef.current as HTMLElement
     const t: HTMLElement[] = Array.from(
-      chainRefElement.querySelectorAll<HTMLAnchorElement>('a')
+      chainRefElement.querySelectorAll<HTMLElement>('.chainTag')
     )
 
-    const tags = [t[1], t[2], t[3], t[5]]
+    const tags = [...t.slice(0, 3), t[4]] // temporary override to show Blast chain in #4 slot
 
     heroRef.current.querySelectorAll("[id^='platform']").forEach((a, i) => {
       const { x, y, width, height } = a.parentElement.getBoundingClientRect()
@@ -92,9 +92,8 @@ const LandingPage = () => {
 
   function ChainTag({ chain }: { chain: Chain }): React.ReactNode {
     return (
-      <a
-        href="#"
-        className={`grid grid-cols-[auto_auto] gap-x-2 items-center border-zinc-800 bg-zinc-900/25 backdrop-blur-sm  ${chainTagClassName}`}
+      <li
+        className={`chainTag grid grid-cols-[24px_auto] gap-x-3 items-center border-zinc-800 bg-zinc-900/25 backdrop-blur-sm  ${chainTagClassName}`}
         key={chain.chainSymbol} // TODO: Solve 'unique key' warning
       >
         <img
@@ -106,7 +105,7 @@ const LandingPage = () => {
         />
         <dt>{chain.name}</dt>
         <dd>$417.83M</dd>
-      </a>
+      </li>
     )
   }
 
@@ -121,28 +120,31 @@ const LandingPage = () => {
           className="w-full min-w-[480px] xs:min-w-[640px]"
         />
       </section>
-      <section className="mb-12 justify-center">
-        <dl
+      <section className="justify-center">
+        <ul
           ref={chainRef}
-          className="grid grid-cols-1 lg:flex text-sm border-y border-zinc-800 whitespace-nowrap justify-center"
+          className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:flex text-sm border-y border-zinc-800 whitespace-nowrap justify-center px-1"
         >
-          <a href="#" className={`${chainTagClassName} border-fuchsia-500`}>
-            <dt>6 month vol.</dt>
-            <dd>$7.03B</dd>
-          </a>
+          <li
+            className={`${chainTagClassName} border-fuchsia-500 col-span-full sm:col-span-1`}
+          >
+            <header>6 month vol.</header>
+            $7.03B
+          </li>
           {CHAINS_ARR.slice(0, 10).map((a) => (
             <ChainTag chain={a} />
           ))}
-          <dt className={`${chainTagClassName} border-zinc-800`}>
-            DFK, Klaytn,
-            <br />
+          <li
+            className={`${chainTagClassName} border-zinc-800 before:content-['Plus_'] sm:before:content-[''] after:content-['!'] sm:after:content-['']`}
+          >
+            DFK, Klaytn, <br className="hidden sm:block" />
             Cronos & more
-          </dt>
-        </dl>
+          </li>
+        </ul>
       </section>
       <section
         id="entry-points"
-        className="text-center max-w-screen-xl mx-auto mt-24"
+        className="text-center max-w-screen-xl mx-auto mt-16 lg:mt-20 xl:mt-24"
       >
         <h2 className="text-3xl xs:text-5xl md:text-5xl font-medium px-4">
           Go interchain today
