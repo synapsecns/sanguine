@@ -61,6 +61,8 @@ export const supportedChains = [
 ].map((chain) => {
   return {
     ...chain,
+    configRpc: CHAINS_BY_ID[chain.id]?.rpcUrls.primary,
+    fallbackRpc: CHAINS_BY_ID[chain.id]?.rpcUrls.fallback,
     iconUrl: CHAINS_BY_ID[chain.id]?.chainImg.src,
   }
 })
