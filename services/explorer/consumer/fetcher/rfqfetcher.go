@@ -6,7 +6,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/rfq"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/fastbridge"
 )
 
 // RFQService --output=mocks --case=underscore.
@@ -17,14 +17,14 @@ type RFQService interface {
 
 // rfqFetcher is the fetcher for token data from the rfq contract.
 type rfqFetcher struct {
-	rfq        *rfq.FastBridge
+	rfq        *fastbridge.FastBridge
 	backend    bind.ContractBackend
 	rfqAddress common.Address
 }
 
 // NewRFQFetcher creates a new rfq fetcher.
 func NewRFQFetcher(rfqAddress common.Address, backend bind.ContractBackend) (RFQService, error) {
-	rfqRef, err := rfq.NewFastBridge(rfqAddress, backend)
+	rfqRef, err := fastbridge.NewFastBridge(rfqAddress, backend)
 	if err != nil {
 		return nil, fmt.Errorf("could not bind rfq contract: %w", err)
 	}

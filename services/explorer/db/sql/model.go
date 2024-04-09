@@ -155,12 +155,12 @@ type RFQEvent struct {
 	Sender sql.NullString `gorm:"column:sender"`
 	// Relayer is the address of the relayer in a RFQ transaction
 	Relayer sql.NullString `gorm:"column:relayer"`
-	// Request is the request of the RFQ transfer.
-	Request *[]byte `gorm:"column:request"`
+	// FormattedRequest is the request of the RFQ transfer.
+	FormattedRequest sql.NullString `gorm:"column:formatted_request"`
 	// OriginChainID is the chain ID of the RFQ transfer.
-	OriginChainID *uint32 `gorm:"column:origin_chain_id;type:UInt256"`
+	OriginChainID *uint32 `gorm:"column:origin_chain_id"`
 	// DestinationChainID is the chain ID of the RFQ transfer.
-	DestinationChainID *uint32 `gorm:"column:destination_chain_id;type:UInt256"`
+	DestinationChainID *uint32 `gorm:"column:destination_chain_id"`
 	// OriginToken is the address of the origin token
 	OriginToken string `gorm:"column:origin_token"`
 	// DestinationToken is the address of the destination token
@@ -172,7 +172,7 @@ type RFQEvent struct {
 	// AmountUSD is the amount of the RFQ transfer in USD.
 	AmountUSD float64 `gorm:"column:amount_usd;type:Float64"`
 	// ChainGas is whether the chain gas is used for the RFQ transfer.
-	ChainGas *bool `gorm:"column:chain_gas"`
+	ChainGas uint8 `gorm:"column:chain_gas;type:UInt8"`
 	// ChainGasAmount is the amount of gas sent on the destination chain to the recipient.
 	ChainGasAmount *big.Int `gorm:"column:chain_gas_amount;type:UInt256"`
 

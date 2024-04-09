@@ -6,8 +6,8 @@ import (
 	"math/big"
 
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/rfq"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -58,8 +58,8 @@ type CCTPDeployer struct {
 	*deployer.BaseDeployer
 }
 
-// RFQDeployer is the type of the rfq deployer
-type RFQDeployer struct {
+// FastBridgeDeployer is the type of the rfq (fastbridge) deployer
+type FastBridgeDeployer struct {
 	*deployer.BaseDeployer
 }
 
@@ -98,9 +98,9 @@ func NewCCTPDeployer(registry deployer.GetOnlyContractRegistry, backend backends
 	return CCTPDeployer{deployer.NewSimpleDeployer(registry, backend, CCTPType)}
 }
 
-// NewRFQDeployer creates a new rfq client.
-func NewRFQDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
-	return RFQDeployer{deployer.NewSimpleDeployer(registry, backend, RFQType)}
+// NewFastBridgeDeployer creates a new rfq client.
+func NewFastBridgeDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return FastBridgeDeployer{deployer.NewSimpleDeployer(registry, backend, FastBridgeType)}
 }
 
 // Deploy deploys bridge config v3 contract
@@ -218,14 +218,15 @@ func (n CCTPDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, e
 // Deploy deploys RFQ contract
 //
 //nolint:dupl
-func (n RFQDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
-	// Create mock owner
-	owner := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+func (n FastBridgeDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
 
 	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
-		return rfq.DeployFastBridge(transactOps, backend, owner)
+		// Create mock owner
+		owner := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+
+		return fastbridge.DeployFastBridge(transactOps, backend, owner)
 	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
-		return rfq.NewRFQRef(address, backend)
+		return fastbridge.NewFastBridgeRef(address, backend)
 	})
 }
 
@@ -235,4 +236,4 @@ var _ deployer.ContractDeployer = &SwapFlashLoanDeployer{}
 var _ deployer.ContractDeployer = &SynapseBridgeV1Deployer{}
 var _ deployer.ContractDeployer = &MetaSwapDeployer{}
 var _ deployer.ContractDeployer = &CCTPDeployer{}
-var _ deployer.ContractDeployer = &RFQDeployer{}
+var _ deployer.ContractDeployer = &FastBridgeDeployer{}

@@ -7,9 +7,9 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp/testcctp"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/fastbridge/testfastbridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus/testmessagebus"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap/testmetaswap"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/rfq/testrfq"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/testswap"
 )
 
@@ -58,8 +58,8 @@ const (
 	TestMetaSwapType
 	// TestCCTPType is cctp contract type.
 	TestCCTPType
-	// TestRFQType is rfq contract type.
-	TestRFQType
+	// TestFastBridgeType is rfq (fastbridge) contract type.
+	TestFastBridgeType
 )
 
 // ID gets the contract type as an id.
@@ -94,8 +94,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return testmetaswap.Contracts["/solidity/TestMetaSwapV1.sol:TestMetaSwap"]
 	case TestCCTPType:
 		return testcctp.Contracts["solidity/TestSynapseCCTPV1.sol:TestSynapseCCTP"]
-	case TestRFQType:
-		return testrfq.Contracts["solidity/TestSynapseRFQV2.sol:TestFastBridge"]
+	case TestFastBridgeType:
+		return testfastbridge.Contracts["solidity/TestSynapseRFQV2.sol:TestFastBridge"]
 	default:
 		panic("not yet implemented")
 	}

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"math/big"
 
+	"gorm.io/gorm/logger"
+
 	scribeTypes "github.com/synapsecns/sanguine/services/scribe/types"
 
 	"github.com/synapsecns/sanguine/ethergo/mocks"
@@ -27,7 +29,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/testutil/testcontracts"
 	bridgeTypes "github.com/synapsecns/sanguine/services/explorer/types/bridge"
 	cctpTypes "github.com/synapsecns/sanguine/services/explorer/types/cctp"
-	rfqTypes "github.com/synapsecns/sanguine/services/explorer/types/rfq"
+	rfqTypes "github.com/synapsecns/sanguine/services/explorer/types/fastbridge"
 	swapTypes "github.com/synapsecns/sanguine/services/explorer/types/swap"
 )
 
@@ -651,10 +653,38 @@ func (b *BackfillSuite) rfqRequestedTokenParity(log *types.Log, parser *parser.R
 		return fmt.Errorf("error parsing log: %w", err)
 	}
 	var count int64
-	requester := gosql.NullString{
-		String: parsedLog.Sender.String(),
-		Valid:  true,
+	// requester := gosql.NullString{
+	// 	String: parsedLog.Sender.String(),
+	// 	Valid:  true,
+	// }
+	// Hot fix for chainGas
+	var chainGas uint8
+	if parsedLog.SendChainGas {
+		chainGas = 1
+	} else {
+		chainGas = 0
 	}
+	db := b.db.UNSAFE_DB()
+	db.Logger = db.Logger.LogMode(logger.Info)
+	rfqEvents := []sql.RFQEvent{}
+	err = db.WithContext(b.GetTestContext()).Find(&rfqEvents).Error
+	Nil(b.T(), err)
+	fmt.Printf("rfqEvents in db: %v\n", rfqEvents)
+	if len(rfqEvents) > 0 {
+		ev := rfqEvents[1]
+		fmt.Printf("ContractAddress: %s", ev.ContractAddress)
+		fmt.Printf("BlockNumber: %d", ev.BlockNumber)
+		fmt.Printf("TxHash: %s", ev.TxHash)
+		fmt.Printf("EventType: %d", ev.EventType)
+		fmt.Printf("TransactionID: %s", ev.TransactionID)
+		fmt.Printf("DestinationChainID: %d", ev.DestinationChainID)
+		fmt.Printf("OriginToken: %s", ev.OriginToken)
+		fmt.Printf("DestinationToken: %s", ev.DestinationToken)
+		fmt.Printf("OriginAmount: %d", ev.OriginAmount)
+		fmt.Printf("DestinationAmount: %d", ev.DestinationAmount)
+		fmt.Printf("ChainGas: %d", ev.ChainGas)
+	}
+
 	// Assuming other relevant fields from the parsed log
 	// and constructing the query accordingly
 	events := b.db.UNSAFE_DB().WithContext(b.GetTestContext()).Model(&sql.RFQEvent{}).
@@ -669,10 +699,12 @@ func (b *BackfillSuite) rfqRequestedTokenParity(log *types.Log, parser *parser.R
 			DestinationToken:   parsedLog.DestToken.String(),
 			OriginAmount:       parsedLog.OriginAmount,
 			DestinationAmount:  parsedLog.DestAmount,
-			ChainGas:           &parsedLog.SendChainGas,
-			Sender:             requester,
+			ChainGas:           chainGas,
+			// Sender:             requester,
 			// Add other fields from parsedLog as needed
 		}).Count(&count)
+	query := b.db.UNSAFE_DB().Dialector.Explain(events.Statement.SQL.String(), events.Statement.Vars...)
+	fmt.Printf("send query: %v\n", query)
 	if events.Error != nil {
 		return fmt.Errorf("error querying for event: %w", events.Error)
 	}

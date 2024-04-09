@@ -1,4 +1,4 @@
-package rfq
+package fastbridge
 
 import (
 	"math/big"

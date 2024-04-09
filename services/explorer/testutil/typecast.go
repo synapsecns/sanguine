@@ -10,9 +10,9 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/bridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/rfq"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
 )
 
@@ -65,9 +65,9 @@ func (d *DeployManager) GetCCTP(ctx context.Context, backend backends.SimulatedT
 	return manager.GetContract[*cctp.CCTPRef](ctx, d.T(), d, backend, CCTPType)
 }
 
-// GetRFQ gets a typecast rfq.
-func (d *DeployManager) GetRFQ(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *rfq.RFQRef) {
+// GetRFQ gets a typecast rfq (fastbridge).
+func (d *DeployManager) GetFastBridge(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *fastbridge.FastBridgeRef) {
 	d.T().Helper()
 
-	return manager.GetContract[*rfq.RFQRef](ctx, d.T(), d, backend, RFQType)
+	return manager.GetContract[*fastbridge.FastBridgeRef](ctx, d.T(), d, backend, FastBridgeType)
 }

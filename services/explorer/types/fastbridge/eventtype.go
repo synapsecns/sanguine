@@ -1,4 +1,4 @@
-package rfq
+package fastbridge
 
 // EventType is the type of the rfq event.
 //

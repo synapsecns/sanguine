@@ -1,12 +1,11 @@
-package rfq
+package fastbridge
 
 import "C"
 import (
 	"math/big"
 
-	"github.com/synapsecns/sanguine/services/explorer/types/rfq"
-
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/synapsecns/sanguine/services/explorer/types/fastbridge"
 )
 
 func (e FastBridgeBridgeRequested) GetTxHash() common.Hash {
@@ -20,8 +19,8 @@ func (e FastBridgeBridgeRequested) GetBlockNumber() uint64 {
 	return e.Raw.BlockNumber
 }
 
-func (e FastBridgeBridgeRequested) GetEventType() rfq.EventType {
-	return rfq.BridgeRequestedEvent
+func (e FastBridgeBridgeRequested) GetEventType() fastbridge.EventType {
+	return fastbridge.BridgeRequestedEvent
 }
 
 func (e FastBridgeBridgeRequested) GetEventIndex() uint64 {
@@ -91,9 +90,9 @@ func (e FastBridgeBridgeRelayed) GetBlockNumber() uint64 {
 	return e.Raw.BlockNumber
 }
 
-func (e FastBridgeBridgeRelayed) GetEventType() rfq.EventType {
+func (e FastBridgeBridgeRelayed) GetEventType() fastbridge.EventType {
 
-	return rfq.BridgeRelayedEvent
+	return fastbridge.BridgeRelayedEvent
 }
 
 func (e FastBridgeBridgeRelayed) GetEventIndex() uint64 {

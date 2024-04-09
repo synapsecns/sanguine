@@ -10,9 +10,9 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp/testcctp"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/fastbridge/testfastbridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus/testmessagebus"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap/testmetaswap"
-	"github.com/synapsecns/sanguine/services/explorer/contracts/rfq/testrfq"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/testswap"
 	"github.com/synapsecns/sanguine/services/explorer/testutil"
 )
@@ -67,8 +67,8 @@ func (d *DeployManager) GetTestCCTP(ctx context.Context, backend backends.Simula
 }
 
 // GetTestRFQ gets a typecast test rfq contract.
-func (d *DeployManager) GetTestRFQ(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testrfq.TestRFQRef) {
+func (d *DeployManager) GetTestRFQ(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testfastbridge.TestFastBridgeRef) {
 	d.T().Helper()
 
-	return manager.GetContract[*testrfq.TestRFQRef](ctx, d.T(), d, backend, TestRFQType)
+	return manager.GetContract[*testfastbridge.TestFastBridgeRef](ctx, d.T(), d, backend, TestFastBridgeType)
 }

@@ -18,7 +18,7 @@ func NewDeployManager(t *testing.T) *DeployManager {
 		NewTestMessageBusDeployer,
 		NewTestMetaSwapDeployer,
 		NewTestCCTPDeployer,
-		NewTestRFQDeployer,
+		NewTestFastBridgeDeployer,
 	)
 	return &DeployManager{parentManager}
 }

@@ -1,4 +1,4 @@
-package rfq
+package testfastbridge
 
 import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -9,8 +9,8 @@ import (
 // RFQRef is a reference to a deployed RFQ contract.
 //
 //nolint:golint
-type RFQRef struct {
-	*FastBridge
+type TestFastBridgeRef struct {
+	*TestFastBridge
 	address common.Address
 }
 
@@ -19,22 +19,22 @@ type RFQRef struct {
 //nolint:golint
 
 // Address is the contract address.
-func (s RFQRef) Address() common.Address {
+func (s TestFastBridgeRef) Address() common.Address {
 	return s.address
 }
 
 // NewRFQRef creates a new RFQRef instance.
 //
 //nolint:golint
-func NewRFQRef(address common.Address, backend bind.ContractBackend) (*RFQRef, error) {
-	fastBridge, err := NewFastBridge(address, backend)
+func NewTestFastBridgeRef(address common.Address, backend bind.ContractBackend) (*TestFastBridgeRef, error) {
+	fastBridge, err := NewTestFastBridge(address, backend)
 	if err != nil {
 		return nil, err
 	}
-	return &RFQRef{
-		FastBridge: fastBridge,
-		address:    address,
+	return &TestFastBridgeRef{
+		TestFastBridge: fastBridge,
+		address:        address,
 	}, nil
 }
 
-var _ vm.ContractRef = &RFQRef{}
+var _ vm.ContractRef = &TestFastBridgeRef{}
