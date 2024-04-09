@@ -66,20 +66,20 @@ import setupLogRocketReact from 'logrocket-react'
 import { wagmiConfig } from '@/wagmiConfig'
 
 // only initialize when in the browser
-// if (
-//   typeof window !== 'undefined' &&
-//   !location.hostname.match('synapseprotocol.com')
-// ) {
-//   LogRocket.init('npdhrc/synapse-staging', {
-//     mergeIframes: true,
-//   })
-//   // plugins should also only be initialized when in the browser
-//   setupLogRocketReact(LogRocket)
+if (
+  typeof window !== 'undefined' &&
+  !location.hostname.match('synapseprotocol.com')
+) {
+  LogRocket.init('npdhrc/synapse-staging', {
+    mergeIframes: true,
+  })
+  // plugins should also only be initialized when in the browser
+  setupLogRocketReact(LogRocket)
 
-//   LogRocket.getSessionURL((sessionURL) => {
-//     console.log('session url for debugging ' + sessionURL)
-//   })
-// }
+  LogRocket.getSessionURL((sessionURL) => {
+    console.log('session url for debugging ' + sessionURL)
+  })
+}
 
 const chains = [
   {
