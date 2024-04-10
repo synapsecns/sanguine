@@ -19,9 +19,8 @@ export type Chain = {
     name: string
     symbol: string
     decimals: number
-    // will contain below fields if not bridgeable
-    icon?: any
     address: string
+    icon: any
   }
   priorityRank?: number
   color?: string
