@@ -365,10 +365,22 @@ func (i *inventoryManagerImpl) approve(parentCtx context.Context, tokenAddr, con
 }
 
 // HasSufficientGas checks if there is sufficient gas for a given route.
-func (i *inventoryManagerImpl) HasSufficientGas(ctx context.Context, origin, dest int) (sufficient bool, err error) {
-	gasThresh, err := i.cfg.GetMinGasToken(dest)
+func (i *inventoryManagerImpl) HasSufficientGas(parentCtx context.Context, origin, dest int) (sufficient bool, err error) {
+	ctx, span := i.handler.Tracer().Start(parentCtx, "HasSufficientGas", trace.WithAttributes(
+		attribute.Int(metrics.Origin, origin),
+		attribute.Int(metrics.Destination, dest),
+	))
+	defer func(err error) {
+		metrics.EndSpanWithErr(span, err)
+	}(err)
+
+	gasThreshOrigin, err := i.cfg.GetMinGasToken(origin)
 	if err != nil {
-		return false, fmt.Errorf("error getting min gas token: %w", err)
+		return false, fmt.Errorf("error getting min gas token on origin: %w", err)
+	}
+	gasThreshDest, err := i.cfg.GetMinGasToken(dest)
+	if err != nil {
+		return false, fmt.Errorf("error getting min gas token on dest: %w", err)
 	}
 	gasOrigin, err := i.GetCommittableBalance(ctx, origin, chain.EthAddress)
 	if err != nil {
@@ -379,7 +391,14 @@ func (i *inventoryManagerImpl) HasSufficientGas(ctx context.Context, origin, des
 		return false, fmt.Errorf("error getting committable gas on dest: %w", err)
 	}
 
-	sufficient = gasOrigin.Cmp(gasThresh) >= 0 && gasDest.Cmp(gasThresh) >= 0
+	sufficient = gasOrigin.Cmp(gasThreshOrigin) >= 0 && gasDest.Cmp(gasThreshDest) >= 0
+	span.SetAttributes(
+		attribute.String("gas_threshold_origin", gasThreshOrigin.String()),
+		attribute.String("gas_threshold_dest", gasThreshDest.String()),
+		attribute.String("gas_origin", gasOrigin.String()),
+		attribute.String("gas_dest", gasDest.String()),
+		attribute.Bool("sufficient", sufficient),
+	)
 	return sufficient, nil
 }
 
