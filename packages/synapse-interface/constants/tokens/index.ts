@@ -75,39 +75,6 @@ const getBridgeableTokens = (): TokensByChain => {
   return bridgeableTokens
 }
 
-const getGasTokens = (): GasTokensByChain => {
-  const gasTokens: GasTokensByChain = {}
-
-  const bridgeableTokens = new Set(
-    Object.values(BRIDGABLE_TOKENS)
-      .flat()
-      .map((token) => token.symbol)
-  )
-
-  const gasTokensPerChain = {}
-
-  Object.values(CHAINS).forEach((chain) => {
-    if (
-      chain.nativeCurrency &&
-      !bridgeableTokens.has(chain.nativeCurrency.symbol)
-    ) {
-      if (!gasTokensPerChain[chain.id]) {
-        gasTokensPerChain[chain.id] = new Set()
-      }
-
-      if (!gasTokensPerChain[chain.id].has(chain.nativeCurrency.symbol)) {
-        gasTokens[chain.id] = gasTokens[chain.id] || []
-        gasTokens[chain.id].push({
-          ...chain.nativeCurrency,
-        })
-
-        gasTokensPerChain[chain.id].add(chain.nativeCurrency.symbol)
-      }
-    }
-  })
-
-  return gasTokens
-}
 const getTokenHashMap = () => {
   const tokenHashMap = {}
 
@@ -132,7 +99,6 @@ export const TOKENS_SORTED_BY_SYMBOL = Array.from(
   new Set(sortedTokens.map((token) => token.symbol))
 )
 export const BRIDGABLE_TOKENS = getBridgeableTokens()
-export const GAS_TOKENS = getGasTokens()
 
 const bridgeableTokens = _(BRIDGABLE_TOKENS)
   .values()
@@ -140,19 +106,18 @@ const bridgeableTokens = _(BRIDGABLE_TOKENS)
   .map((t) => t.symbol)
   .value()
 
-export const NON_BRIDGEABLE_GAS_TOKENS = Object.values(CHAINS_BY_ID).reduce(
-  (acc, chain) => {
-    if (!bridgeableTokens.includes(chain.nativeCurrency.symbol)) {
-      if (acc[chain.id]) {
-        acc[chain.id].concat(chain.nativeCurrency)
-      } else {
-        acc[chain.id] = [chain.nativeCurrency]
-      }
+export const NON_BRIDGEABLE_GAS_TOKENS: GasTokensByChain = Object.values(
+  CHAINS_BY_ID
+).reduce((acc, chain) => {
+  if (!bridgeableTokens.includes(chain.nativeCurrency.symbol)) {
+    if (acc[chain.id]) {
+      acc[chain.id].concat(chain.nativeCurrency)
+    } else {
+      acc[chain.id] = [chain.nativeCurrency]
     }
-    return acc
-  },
-  {}
-)
+  }
+  return acc
+}, {})
 
 export const tokenSymbolToToken = (chainId: number, symbol: string) => {
   if (chainId) {

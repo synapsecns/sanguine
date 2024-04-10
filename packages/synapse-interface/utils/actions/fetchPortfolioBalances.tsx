@@ -3,7 +3,7 @@ import { Chain, Token } from '../types'
 import {
   BRIDGABLE_TOKENS,
   POOLS_BY_CHAIN,
-  GAS_TOKENS,
+  NON_BRIDGEABLE_GAS_TOKENS,
 } from '@/constants/tokens'
 import { FetchState } from '@/slices/portfolio/actions'
 
@@ -69,16 +69,16 @@ export const fetchPortfolioBalances = async (
           }
 
           // Reconstruct shape of Token to batch fetching balances
-          if (GAS_TOKENS[chainId]) {
-            const currentChainGasTokens = GAS_TOKENS[chainId].map(
-              (gasToken) => [
-                {
-                  ...gasToken,
-                  chainId: currentChainId,
-                  addresses: { [currentChainId]: gasToken.address },
-                },
-              ]
-            )
+          if (NON_BRIDGEABLE_GAS_TOKENS[chainId]) {
+            const currentChainGasTokens = NON_BRIDGEABLE_GAS_TOKENS[
+              chainId
+            ].map((gasToken) => [
+              {
+                ...gasToken,
+                chainId: currentChainId,
+                addresses: { [currentChainId]: gasToken.address },
+              },
+            ])
             currentChainTokens = currentChainTokens.concat(
               ...currentChainGasTokens
             )
