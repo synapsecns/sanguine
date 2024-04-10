@@ -83,9 +83,6 @@ export const fetchPortfolioBalances = async (
               ...currentChainGasTokens
             )
           }
-
-          console.log('currentChainTokens:', currentChainTokens)
-          console.log('currentChainId: ', currentChainId)
           const [tokenBalances] = await Promise.all([
             getTokenBalances(address, currentChainTokens, currentChainId),
           ])
@@ -100,7 +97,6 @@ export const fetchPortfolioBalances = async (
       })()
     })
 
-    console.log('balancePromises: ', balancePromises)
     const balances = await Promise.all(balancePromises)
     balances.forEach(({ currentChainId, tokenBalances }) => {
       balanceRecord[currentChainId] = tokenBalances.filter(
