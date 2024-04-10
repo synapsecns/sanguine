@@ -68,10 +68,8 @@ export const fetchPortfolioBalances = async (
             )
           }
 
-          console.log('before currentChainTokens: ', currentChainTokens)
           if (GAS_TOKENS[chainId]) {
             currentChainTokens = currentChainTokens.concat(GAS_TOKENS[chainId])
-            console.log('after currentChainTokens: ', currentChainTokens)
           }
 
           const [tokenBalances] = await Promise.all([

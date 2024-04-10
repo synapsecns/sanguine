@@ -21,7 +21,6 @@ import { PortfolioTokenVisualizer } from './PortfolioTokenVisualizer'
 import { PortfolioNetwork } from './PortfolioNetwork'
 import { GAS_TOKENS } from '@/constants/tokens'
 import { GasTokenAsset } from './GasTokenAsset'
-import { GasToken } from '@/constants/tokens/gasTokens'
 
 type SingleNetworkPortfolioProps = {
   connectedAddress: Address
@@ -86,8 +85,6 @@ export const SingleNetworkPortfolio = ({
     sortedTokens,
     portfolioChainId
   )
-
-  console.log('GAS_TOKENS:', GAS_TOKENS)
 
   const hasNoTokenBalance: boolean =
     _.isNull(portfolioTokens) || _.isEmpty(portfolioTokens)

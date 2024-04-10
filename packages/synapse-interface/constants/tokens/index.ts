@@ -1,7 +1,6 @@
 import _ from 'lodash'
 import * as CHAINS from '@constants/chains/master'
 import * as all from '@constants/tokens/bridgeable'
-import * as allGasTokens from '@constants/tokens/gasTokens'
 import * as allPool from '@constants/tokens/poolMaster'
 import { GMX, ETH, USDC, USDT, WETH } from '@constants/tokens/bridgeable'
 import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
