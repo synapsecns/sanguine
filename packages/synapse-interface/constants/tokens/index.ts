@@ -74,39 +74,38 @@ const getBridgeableTokens = (): TokensByChain => {
 }
 
 const getGasTokens = (): GasTokensByChain => {
-  const uniqueGasTokens: GasTokensByChain = {}
+  const gasTokens: GasTokensByChain = {}
 
-  const bridgeableSymbols = new Set()
-  Object.values(BRIDGABLE_TOKENS)
-    .flat()
-    .forEach((token) => {
-      bridgeableSymbols.add(token.symbol)
-    })
+  const bridgeableTokens = new Set(
+    Object.values(BRIDGABLE_TOKENS)
+      .flat()
+      .map((token) => token.symbol)
+  )
+
+  const gasTokensPerChain = {}
 
   Object.values(CHAINS).forEach((chain) => {
     if (
       chain.nativeCurrency &&
-      !bridgeableSymbols.has(chain.nativeCurrency.symbol)
+      !bridgeableTokens.has(chain.nativeCurrency.symbol)
     ) {
-      if (!uniqueGasTokens[chain.id]) {
-        uniqueGasTokens[chain.id] = []
+      if (!gasTokensPerChain[chain.id]) {
+        gasTokensPerChain[chain.id] = new Set()
       }
 
-      if (
-        !uniqueGasTokens[chain.id].some(
-          (token) => token.symbol === chain.nativeCurrency.symbol
-        )
-      ) {
-        uniqueGasTokens[chain.id].push({
+      if (!gasTokensPerChain[chain.id].has(chain.nativeCurrency.symbol)) {
+        gasTokens[chain.id] = gasTokens[chain.id] || []
+        gasTokens[chain.id].push({
           ...chain.nativeCurrency,
         })
+
+        gasTokensPerChain[chain.id].add(chain.nativeCurrency.symbol)
       }
     }
   })
 
-  return uniqueGasTokens
+  return gasTokens
 }
-
 const getTokenHashMap = () => {
   const tokenHashMap = {}
 
