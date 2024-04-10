@@ -33,7 +33,7 @@ export const METIS: GasToken = {
   icon: CHAINS.METIS.chainImg,
 }
 
-export const NOTE: GasToken = {
+export const CANTO: GasToken = {
   addresses: {
     [CHAINS.CANTO.id]: zeroAddress,
   },

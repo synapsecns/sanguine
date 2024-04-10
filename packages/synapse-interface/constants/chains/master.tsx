@@ -128,7 +128,7 @@ export const CANTO: Chain = {
     primary: 'https://mainnode.plexnode.org:8545',
     fallback: 'https://canto.slingshot.finance',
   },
-  nativeCurrency: { name: 'Canto', symbol: 'NOTE', decimals: 18 },
+  nativeCurrency: { name: 'Canto', symbol: 'CANTO', decimals: 18 },
   explorerUrl: 'https://tuber.build/',
   explorerName: 'Canto Explorer',
   explorerImg: cantoImg,
