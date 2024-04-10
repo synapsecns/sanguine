@@ -19,8 +19,11 @@ import { TWITTER_URL, DISCORD_URL } from '@/constants/urls'
 import { setFromToken, setToToken } from '@/slices/bridge/reducer'
 import { PortfolioTokenVisualizer } from './PortfolioTokenVisualizer'
 import { PortfolioNetwork } from './PortfolioNetwork'
-import { GAS_TOKENS } from '@/constants/tokens'
+import { NON_BRIDGEABLE_GAS_TOKENS, GAS_TOKENS } from '@/constants/tokens'
 import { GasTokenAsset } from './GasTokenAsset'
+
+console.log('NON_BRIDGEABLE_GAS_TOKENS: ', NON_BRIDGEABLE_GAS_TOKENS)
+console.log('GAS_TOKENS: ', GAS_TOKENS)
 
 type SingleNetworkPortfolioProps = {
   connectedAddress: Address
@@ -36,7 +39,7 @@ const filterOutGasTokens = (
   tokens: TokenAndBalance[],
   chainId: number
 ): [TokenAndBalance[], TokenAndBalance[]] => {
-  const gasTokens = GAS_TOKENS[chainId]
+  const gasTokens = NON_BRIDGEABLE_GAS_TOKENS[chainId]
 
   let filteredGasTokens: TokenAndBalance[] = []
   let remainingTokens: TokenAndBalance[] = []

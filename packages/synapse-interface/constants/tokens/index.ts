@@ -6,6 +6,8 @@ import { GMX, ETH, USDC, USDT, WETH } from '@constants/tokens/bridgeable'
 import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
 import { Chain, Token } from '@utils/types'
 
+import { CHAINS_BY_ID } from '@/constants/chains'
+
 const allSwap = [WETH, USDC, USDT]
 
 // TODO change this to token by key
@@ -131,6 +133,26 @@ export const TOKENS_SORTED_BY_SYMBOL = Array.from(
 )
 export const BRIDGABLE_TOKENS = getBridgeableTokens()
 export const GAS_TOKENS = getGasTokens()
+
+const bridgeableTokens = _(BRIDGABLE_TOKENS)
+  .values()
+  .flatten()
+  .map((t) => t.symbol)
+  .value()
+
+export const NON_BRIDGEABLE_GAS_TOKENS = Object.values(CHAINS_BY_ID).reduce(
+  (acc, chain) => {
+    if (!bridgeableTokens.includes(chain.nativeCurrency.symbol)) {
+      if (acc[chain.id]) {
+        acc[chain.id].concat(chain.nativeCurrency)
+      } else {
+        acc[chain.id] = [chain.nativeCurrency]
+      }
+    }
+    return acc
+  },
+  {}
+)
 
 export const tokenSymbolToToken = (chainId: number, symbol: string) => {
   if (chainId) {
