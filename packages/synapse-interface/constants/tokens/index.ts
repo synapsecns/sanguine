@@ -5,8 +5,7 @@ import * as allGasTokens from '@constants/tokens/gasTokens'
 import * as allPool from '@constants/tokens/poolMaster'
 import { GMX, ETH, USDC, USDT, WETH } from '@constants/tokens/bridgeable'
 import { SYN_ETH_SUSHI_TOKEN } from '@constants/tokens/sushiMaster'
-import { Token } from '@utils/types'
-import { GasToken } from '@constants/tokens/gasTokens'
+import { Chain, Token } from '@utils/types'
 
 const allSwap = [WETH, USDC, USDT]
 
@@ -16,7 +15,7 @@ interface TokensByChain {
 }
 
 interface GasTokensByChain {
-  [cID: string]: GasToken[]
+  [cID: string]: Chain['nativeCurrency'][]
 }
 
 interface TokenByKey {
@@ -77,20 +76,30 @@ const getBridgeableTokens = (): TokensByChain => {
 
 const getGasTokens = (): GasTokensByChain => {
   const gasTokens: GasTokensByChain = {}
-  Object.entries(allGasTokens).map(([key, token]) => {
+
+  const bridgeableSymbols = new Set()
+  Object.values(BRIDGABLE_TOKENS)
+    .flat()
+    .forEach((token) => {
+      bridgeableSymbols.add(token.symbol)
+    })
+
+  Object.entries(allGasTokens).forEach(([key, token]) => {
     for (const cID of Object.keys(token.addresses)) {
-      // Skip if the token is paused on the current chain
       if (PAUSED_TOKENS_BY_CHAIN[cID]?.includes(key)) continue
 
-      if (!gasTokens[cID]) {
-        gasTokens[cID] = [token]
-      } else {
-        if (!gasTokens[cID]?.includes(token)) {
-          gasTokens[cID] = [...gasTokens[cID], token]
+      if (!bridgeableSymbols.has(token.symbol)) {
+        if (!gasTokens[cID]) {
+          gasTokens[cID] = [token]
+        } else {
+          if (!gasTokens[cID].includes(token)) {
+            gasTokens[cID] = [...gasTokens[cID], token]
+          }
         }
       }
     }
   })
+
   return gasTokens
 }
 
