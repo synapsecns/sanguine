@@ -68,10 +68,24 @@ export const fetchPortfolioBalances = async (
             )
           }
 
+          // Reconstruct shape of Token to batch fetching balances
           if (GAS_TOKENS[chainId]) {
-            currentChainTokens = currentChainTokens.concat(GAS_TOKENS[chainId])
+            const currentChainGasTokens = GAS_TOKENS[chainId].map(
+              (gasToken) => [
+                {
+                  ...gasToken,
+                  chainId: currentChainId,
+                  addresses: { [currentChainId]: gasToken.address },
+                },
+              ]
+            )
+            currentChainTokens = currentChainTokens.concat(
+              ...currentChainGasTokens
+            )
           }
 
+          console.log('currentChainTokens:', currentChainTokens)
+          console.log('currentChainId: ', currentChainId)
           const [tokenBalances] = await Promise.all([
             getTokenBalances(address, currentChainTokens, currentChainId),
           ])
@@ -86,6 +100,7 @@ export const fetchPortfolioBalances = async (
       })()
     })
 
+    console.log('balancePromises: ', balancePromises)
     const balances = await Promise.all(balancePromises)
     balances.forEach(({ currentChainId, tokenBalances }) => {
       balanceRecord[currentChainId] = tokenBalances.filter(
