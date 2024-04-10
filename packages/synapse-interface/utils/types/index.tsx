@@ -16,12 +16,13 @@ export type Chain = {
   explorerImg: any
   blockTime: number
   nativeCurrency: {
-    addresses: { [x: number]: string }
     name: string
     symbol: string
-    decimals: number | Record<number, number>
-    icon: any
-    chainId?: number // if native to a single chain
+    decimals: number
+    // will contain below fields if not bridgeable
+    icon?: any
+    addresses?: { [x: number]: string }
+    chainId?: number
   }
   priorityRank?: number
   color?: string
