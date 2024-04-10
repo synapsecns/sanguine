@@ -87,6 +87,8 @@ export const SingleNetworkPortfolio = ({
     portfolioChainId
   )
 
+  console.log('GAS_TOKENS:', GAS_TOKENS)
+
   const hasNoTokenBalance: boolean =
     _.isNull(portfolioTokens) || _.isEmpty(portfolioTokens)
 

@@ -78,9 +78,9 @@ export type GasToken = {
 // }
 
 // export const CRO: GasToken = {
-//   addresses: {
-//     [CHAINS.CRONOS.id]: zeroAddress,
-//   },
+// addresses: {
+//   [CHAINS.CRONOS.id]: zeroAddress,
+// },
 //   chainId: CHAINS.CRONOS.id,
 //   name: CHAINS.CRONOS.nativeCurrency.name,
 //   symbol: CHAINS.CRONOS.nativeCurrency.symbol,

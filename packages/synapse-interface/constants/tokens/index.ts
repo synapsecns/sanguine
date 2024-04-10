@@ -75,7 +75,7 @@ const getBridgeableTokens = (): TokensByChain => {
 }
 
 const getGasTokens = (): GasTokensByChain => {
-  const gasTokens: GasTokensByChain = {}
+  const uniqueGasTokens: GasTokensByChain = {}
 
   const bridgeableSymbols = new Set()
   Object.values(BRIDGABLE_TOKENS)
@@ -84,23 +84,28 @@ const getGasTokens = (): GasTokensByChain => {
       bridgeableSymbols.add(token.symbol)
     })
 
-  Object.entries(allGasTokens).forEach(([key, token]) => {
-    for (const cID of Object.keys(token.addresses)) {
-      if (PAUSED_TOKENS_BY_CHAIN[cID]?.includes(key)) continue
+  Object.values(CHAINS).forEach((chain) => {
+    if (
+      chain.nativeCurrency &&
+      !bridgeableSymbols.has(chain.nativeCurrency.symbol)
+    ) {
+      if (!uniqueGasTokens[chain.id]) {
+        uniqueGasTokens[chain.id] = []
+      }
 
-      if (!bridgeableSymbols.has(token.symbol)) {
-        if (!gasTokens[cID]) {
-          gasTokens[cID] = [token]
-        } else {
-          if (!gasTokens[cID].includes(token)) {
-            gasTokens[cID] = [...gasTokens[cID], token]
-          }
-        }
+      if (
+        !uniqueGasTokens[chain.id].some(
+          (token) => token.symbol === chain.nativeCurrency.symbol
+        )
+      ) {
+        uniqueGasTokens[chain.id].push({
+          ...chain.nativeCurrency,
+        })
       }
     }
   })
 
-  return gasTokens
+  return uniqueGasTokens
 }
 
 const getTokenHashMap = () => {
