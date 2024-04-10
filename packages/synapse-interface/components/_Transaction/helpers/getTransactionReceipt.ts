@@ -5,7 +5,7 @@ import {
   type Chain as ViemChain,
 } from 'viem'
 
-import { supportedChains } from '@/wagmiConfig'
+import { supportedChains } from '@/constants/chains/supportedChains'
 
 export const getTransactionReceipt = async (
   txHash: Address,

@@ -1,24 +1,23 @@
 import '@/styles/global.css'
 import '@rainbow-me/rainbowkit/styles.css'
-import type { AppProps } from 'next/app'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-
-import { PersistGate } from 'redux-persist/integration/react'
-
-import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
 import { Provider } from 'react-redux'
+import type { AppProps } from 'next/app'
+import Head from 'next/head'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { PersistGate } from 'redux-persist/integration/react'
+import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
 import { store, persistor } from '@/store/store'
+import { WagmiProvider } from 'wagmi'
+import LogRocket from 'logrocket'
+import setupLogRocketReact from 'logrocket-react'
+
 import { SegmentAnalyticsProvider } from '@/contexts/SegmentAnalyticsProvider'
 import { UserProvider } from '@/contexts/UserProvider'
 import { BackgroundListenerProvider } from '@/contexts/BackgroundListenerProvider'
 import CustomToaster from '@/components/toast'
-import Head from 'next/head'
-import { WagmiProvider } from 'wagmi'
 import { SynapseProvider } from '@/utils/providers/SynapseProvider'
-
-import LogRocket from 'logrocket'
-import setupLogRocketReact from 'logrocket-react'
-import { supportedChains, wagmiConfig } from '@/wagmiConfig'
+import { wagmiConfig } from '@/wagmiConfig'
+import { supportedChains } from '@/constants/chains/supportedChains'
 
 // only initialize when in the browser
 if (
