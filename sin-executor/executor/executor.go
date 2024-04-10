@@ -10,6 +10,7 @@ import (
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/executionservice"
 
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -19,7 +20,6 @@ import (
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
-	"github.com/synapsecns/sanguine/ethergo/util"
 	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/sin-executor/config"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/interchainclient"
@@ -180,16 +180,20 @@ func (e *Executor) executeTransaction(ctx context.Context, request db.Transactio
 	}
 
 	_, err := e.submitter.SubmitTransaction(ctx, request.DstChainID, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-		call, err := util.TxToCall(tx)
-		if err != nil {
-			return nil, fmt.Errorf("could not convert tx to call: %w", err)
-		}
 		chainClient, err := e.client.GetChainClient(ctx, int(request.DstChainID.Int64()))
 		if err != nil {
 			return nil, fmt.Errorf("could not get chain client: %w", err)
 		}
-
-		gasEstimate, err := chainClient.EstimateGas(ctx, *call)
+		contractAddress := contract.Address() // Assign to a variable
+		tempTx, err := contract.InterchainExecute(transactor, request.Options.GasLimit, request.EncodedTX, nil)
+		if err != nil {
+			return nil, fmt.Errorf("could not create transaction mock tx for gas estimation")
+		}
+		gasEstimate, err := chainClient.EstimateGas(ctx, ethereum.CallMsg{
+			From: transactor.From,
+			To:   &contractAddress,
+			Data: tempTx.Data(),
+		})
 		if err != nil {
 			return nil, fmt.Errorf("could not estimate gas: %w", err)
 		}
