@@ -194,6 +194,10 @@ func newBaseHandler(buildInfo config.BuildInfo, extraOpts ...tracesdk.TracerProv
 		logger.Warn("could not merge resources", "error", err)
 	}
 
+	if core.GetEnvBool("METRICS_ALWAYS_SYNC", false) {
+		extraOpts = append(extraOpts, tracesdk.WithSampler(tracesdk.AlwaysSample()))
+	}
+
 	opts := append([]tracesdk.TracerProviderOption{tracesdk.WithResource(rsr)}, extraOpts...)
 
 	// TODO: add a way for users to pass in extra pyroscope options

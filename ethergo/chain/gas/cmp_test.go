@@ -1,6 +1,10 @@
 package gas_test
 
 import (
+	"math/big"
+	"testing"
+	"time"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -9,9 +13,6 @@ import (
 	"github.com/synapsecns/sanguine/core/testsuite"
 	"github.com/synapsecns/sanguine/ethergo/chain/gas"
 	"gotest.tools/assert"
-	"math/big"
-	"testing"
-	"time"
 )
 
 // cmpTestCase is a gas comparison test case.
@@ -406,7 +407,7 @@ func getBumpTestCases() []*bumpTestCase {
 			baseFee:           big.NewInt(1),
 			percentIncrease:   10,
 			expectedGasTipCap: big.NewInt(11),
-			expectedGasFeeCap: testCfg.MaxPrice,
+			expectedGasFeeCap: big.NewInt(110),
 			description:       "bump tip by 10%",
 		},
 		{

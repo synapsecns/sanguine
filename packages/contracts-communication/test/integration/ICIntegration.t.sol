@@ -9,9 +9,10 @@ import {InterchainModuleEvents} from "../../contracts/events/InterchainModuleEve
 
 import {IInterchainApp} from "../../contracts/interfaces/IInterchainApp.sol";
 import {IInterchainClientV1} from "../../contracts/interfaces/IInterchainClientV1.sol";
-import {InterchainBatch} from "../../contracts/libs/InterchainBatch.sol";
+import {InterchainBatch, InterchainBatchLib} from "../../contracts/libs/InterchainBatch.sol";
 import {InterchainEntry} from "../../contracts/libs/InterchainEntry.sol";
 import {InterchainTransaction, InterchainTxDescriptor} from "../../contracts/libs/InterchainTransaction.sol";
+import {VersionedPayloadLib} from "../../contracts/libs/VersionedPayload.sol";
 import {ModuleBatchLib} from "../../contracts/libs/ModuleBatch.sol";
 import {OptionsV1} from "../../contracts/libs/Options.sol";
 
@@ -28,13 +29,6 @@ abstract contract ICIntegrationTest is
     InterchainModuleEvents
 {
     using TypeCasts for address;
-
-    uint256 public constant COUNTER = 42;
-
-    OptionsV1 public ppOptions = OptionsV1({gasLimit: 500_000, gasAirdrop: 0});
-
-    event PingReceived(uint256 counter, uint256 dbNonce, uint64 entryIndex);
-    event PingSent(uint256 counter, uint256 dbNonce, uint64 entryIndex);
 
     function assertEq(InterchainBatch memory batch, InterchainBatch memory expected) internal {
         assertEq(batch.srcChainId, expected.srcChainId);
@@ -69,7 +63,7 @@ abstract contract ICIntegrationTest is
     {
         vm.expectEmit(address(icClient));
         emit InterchainTransactionSent({
-            transactionId: icTx.transactionId(),
+            transactionId: getTxId(icTx),
             dbNonce: icTx.dbNonce,
             entryIndex: icTx.entryIndex,
             dstChainId: icTx.dstChainId,
@@ -85,7 +79,7 @@ abstract contract ICIntegrationTest is
     function expectClientEventInterchainTransactionReceived(InterchainTransaction memory icTx) internal {
         vm.expectEmit(address(icClient));
         emit InterchainTransactionReceived({
-            transactionId: icTx.transactionId(),
+            transactionId: getTxId(icTx),
             dbNonce: icTx.dbNonce,
             entryIndex: icTx.entryIndex,
             srcChainId: icTx.srcChainId,
@@ -138,27 +132,37 @@ abstract contract ICIntegrationTest is
         emit BatchVerified({srcChainId: batch.srcChainId, batch: encodedBatch, ethSignedBatchHash: digest});
     }
 
-    function expectPingPongEventPingReceived(uint256 counter, InterchainTxDescriptor memory desc) internal {
-        vm.expectEmit(address(pingPongApp));
-        emit PingReceived(counter, desc.dbNonce, desc.entryIndex);
-    }
-
-    function expectPingPongEventPingSent(uint256 counter, InterchainTxDescriptor memory desc) internal {
-        vm.expectEmit(address(pingPongApp));
-        emit PingSent(counter, desc.dbNonce, desc.entryIndex);
-    }
-
-    function expectPingPongCall(InterchainTransaction memory icTx, OptionsV1 memory options) internal {
+    function expectAppCall(InterchainTransaction memory icTx, OptionsV1 memory options) internal {
         bytes memory expectedCalldata = abi.encodeCall(
             IInterchainApp.appReceive, (icTx.srcChainId, icTx.srcSender, icTx.dbNonce, icTx.entryIndex, icTx.message)
         );
         vm.expectCall({
-            callee: address(pingPongApp),
+            callee: localApp(),
             msgValue: options.gasAirdrop,
             gas: uint64(options.gasLimit),
             data: expectedCalldata,
             count: 1
         });
+    }
+
+    // ═══════════════════════════════════════════ COMPLEX SERIES CHECKS ═══════════════════════════════════════════════
+
+    function expectEventsMessageSent(
+        InterchainTransaction memory icTx,
+        InterchainEntry memory entry,
+        uint256 verificationFee,
+        uint256 executionFee
+    )
+        internal
+    {
+        InterchainBatch memory batch = getInterchainBatch(entry);
+        InterchainTxDescriptor memory desc = getInterchainTxDescriptor(entry);
+        expectDatabaseEventInterchainEntryWritten(entry);
+        expectModuleEventBatchVerificationRequested(batch);
+        expectDatabaseEventInterchainBatchVerificationRequested(batch);
+        expectFeesEventExecutionFeeAdded(desc.transactionId, executionFee);
+        expectServiceEventExecutionRequested(desc.transactionId);
+        expectClientEventInterchainTransactionSent(icTx, verificationFee, executionFee);
     }
 
     // ══════════════════════════════════════════════ EXPECT REVERTS ═══════════════════════════════════════════════════
@@ -179,34 +183,12 @@ abstract contract ICIntegrationTest is
         );
     }
 
-    // ═══════════════════════════════════════════ COMPLEX SERIES CHECKS ═══════════════════════════════════════════════
-
-    function expectEventsPingSent(
-        uint256 counter,
-        InterchainTransaction memory icTx,
-        InterchainEntry memory entry,
-        uint256 verificationFee,
-        uint256 executionFee
-    )
-        internal
-    {
-        InterchainBatch memory batch = getInterchainBatch(entry);
-        InterchainTxDescriptor memory desc = getInterchainTxDescriptor(entry);
-        expectDatabaseEventInterchainEntryWritten(entry);
-        expectModuleEventBatchVerificationRequested(batch);
-        expectDatabaseEventInterchainBatchVerificationRequested(batch);
-        expectFeesEventExecutionFeeAdded(desc.transactionId, executionFee);
-        expectServiceEventExecutionRequested(desc.transactionId);
-        expectClientEventInterchainTransactionSent(icTx, verificationFee, executionFee);
-        expectPingPongEventPingSent(counter, desc);
-    }
-
     function checkBatchLeafs(InterchainBatch memory batch, bytes32[] memory leafs) internal {
         assertEq(leafs.length, 1);
         assertEq(leafs[0], batch.batchRoot);
     }
 
-    function checkDatabaseStatePingSent(InterchainEntry memory entry, uint256 initialDBNonce) internal {
+    function checkDatabaseStateMsgSent(InterchainEntry memory entry, uint256 initialDBNonce) internal {
         InterchainBatch memory batch = getInterchainBatch(entry);
         InterchainTxDescriptor memory desc = getInterchainTxDescriptor(entry);
         assertEq(desc.dbNonce, initialDBNonce);
@@ -235,13 +217,15 @@ abstract contract ICIntegrationTest is
         }
     }
 
-    function getEthSignedBatchHash(InterchainBatch memory batch) internal pure returns (bytes32) {
+    function getEthSignedBatchHash(InterchainBatch memory batch) internal view returns (bytes32) {
         bytes memory moduleBatch = getModuleBatch(batch);
         return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", keccak256(moduleBatch)));
     }
 
-    function getModuleBatch(InterchainBatch memory batch) internal pure returns (bytes memory) {
-        return ModuleBatchLib.encodeModuleBatch(batch, new bytes(0));
+    function getModuleBatch(InterchainBatch memory batch) internal view returns (bytes memory) {
+        bytes memory versionedBatch =
+            payloadLibHarness.encodeVersionedPayload(DB_VERSION, batchLibHarness.encodeBatch(batch));
+        return ModuleBatchLib.encodeVersionedModuleBatch(versionedBatch, new bytes(0));
     }
 
     function getInterchainBatch(InterchainEntry memory entry) internal pure returns (InterchainBatch memory) {
@@ -270,7 +254,7 @@ abstract contract ICIntegrationTest is
             dbNonce: SRC_INITIAL_DB_NONCE,
             entryIndex: 0,
             srcWriter: address(icClient).addressToBytes32(),
-            dataHash: getSrcTransaction().transactionId()
+            dataHash: getTxId(getSrcTransaction())
         });
     }
 
@@ -280,45 +264,49 @@ abstract contract ICIntegrationTest is
             dbNonce: DST_INITIAL_DB_NONCE,
             entryIndex: 0,
             srcWriter: address(icClient).addressToBytes32(),
-            dataHash: getDstTransaction().transactionId()
+            dataHash: getTxId(getDstTransaction())
         });
+    }
+
+    function getTxId(InterchainTransaction memory icTx) internal pure returns (bytes32) {
+        return keccak256(getEncodedTx(icTx));
+    }
+
+    function getEncodedTx(InterchainTransaction memory icTx) internal pure returns (bytes memory) {
+        return VersionedPayloadLib.encodeVersionedPayload(CLIENT_VERSION, abi.encode(icTx));
     }
 
     function getSrcTransaction() internal view returns (InterchainTransaction memory) {
         return InterchainTransaction({
             srcChainId: SRC_CHAIN_ID,
-            srcSender: address(pingPongApp).addressToBytes32(),
+            srcSender: address(srcApp).addressToBytes32(),
             dstChainId: DST_CHAIN_ID,
-            dstReceiver: address(pingPongApp).addressToBytes32(),
+            dstReceiver: address(dstApp).addressToBytes32(),
             dbNonce: SRC_INITIAL_DB_NONCE,
             entryIndex: 0,
-            options: ppOptions.encodeOptionsV1(),
-            message: getPingPongSrcMessage()
+            options: getSrcOptions().encodeOptionsV1(),
+            message: getSrcMessage()
         });
     }
 
     function getDstTransaction() internal view returns (InterchainTransaction memory) {
         return InterchainTransaction({
             srcChainId: DST_CHAIN_ID,
-            srcSender: address(pingPongApp).addressToBytes32(),
+            srcSender: address(dstApp).addressToBytes32(),
             dstChainId: SRC_CHAIN_ID,
-            dstReceiver: address(pingPongApp).addressToBytes32(),
+            dstReceiver: address(srcApp).addressToBytes32(),
             dbNonce: DST_INITIAL_DB_NONCE,
             entryIndex: 0,
-            options: ppOptions.encodeOptionsV1(),
-            message: getPingPongDstMessage()
+            options: getDstOptions().encodeOptionsV1(),
+            message: getDstMessage()
         });
     }
 
-    /// @notice Message that source chain PingPongApp sends to destination chain.
-    function getPingPongSrcMessage() internal pure returns (bytes memory) {
-        return abi.encode(COUNTER);
-    }
+    function getSrcOptions() internal view virtual returns (OptionsV1 memory);
+    function getSrcMessage() internal view virtual returns (bytes memory);
 
-    /// @notice Message that destination chain PingPongApp sends back to source chain.
-    function getPingPongDstMessage() internal pure returns (bytes memory) {
-        return abi.encode(COUNTER - 1);
-    }
+    function getDstOptions() internal view virtual returns (OptionsV1 memory);
+    function getDstMessage() internal view virtual returns (bytes memory);
 
     function toArray(address addr) internal pure returns (address[] memory arr) {
         arr = new address[](1);

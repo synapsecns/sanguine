@@ -1,10 +1,11 @@
 package gas
 
 import (
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/synapsecns/sanguine/core"
-	"math/big"
 )
 
 // CompareGas allows for gas comparisons between txes. In the case of an eip-1559 txOpts and a
@@ -86,17 +87,28 @@ func bumpLegacyTxFees(opts *bind.TransactOpts, percentIncrease int, maxPrice *bi
 func bumpDynamicTxFees(opts *bind.TransactOpts, percentIncrease int, baseFee, maxPrice *big.Int) {
 	newTipCap := BumpByPercent(opts.GasTipCap, percentIncrease)
 
-	// if new fee cap less than tip cap AND base (fee + fee cap) > tip cap
-	if maxPrice.Cmp(newTipCap) > 0 && big.NewInt(0).Sub(maxPrice, baseFee).Cmp(newTipCap) > 0 {
-		opts.GasTipCap = newTipCap
-		logger.Warnf("new tip cap %s still less than fee cap %s + base fee %s, bumping tip not and not fee", newTipCap, maxPrice, baseFee)
+	newFeeCap := BumpByPercent(opts.GasFeeCap, percentIncrease)
+	if maxPrice.Cmp(newFeeCap) > 0 {
+		opts.GasFeeCap = newFeeCap
+	} else {
+		opts.GasFeeCap = maxPrice
+		logger.Warnf("new fee cap %s exceeds max price %s, using max price", newFeeCap, maxPrice)
 	}
 
-	opts.GasFeeCap = maxPrice
+	// if new fee cap less than tip cap AND base (fee + fee cap) > tip cap
+	if newFeeCap.Cmp(newTipCap) > 0 && big.NewInt(0).Sub(newFeeCap, baseFee).Cmp(newTipCap) > 0 {
+		opts.GasTipCap = newTipCap
+	} else {
+		logger.Warnf("new tip cap %s still less than fee cap %s + base fee %s, bumping tip not and not fee", newTipCap, newFeeCap, baseFee)
+	}
+
 }
 
 // BumpByPercent bumps a gas price by a percentage.
 func BumpByPercent(gasPrice *big.Int, percentIncrease int) *big.Int {
+	if gasPrice == nil {
+		return nil
+	}
 	price := core.CopyBigInt(gasPrice)
 	calculatedGasPrice := big.NewFloat(0).Mul(big.NewFloat(1+0.01*float64(percentIncrease)), big.NewFloat(0).SetInt(price))
 	price, _ = calculatedGasPrice.Int(price)
