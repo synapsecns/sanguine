@@ -833,6 +833,16 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
         executeTransaction(encodedTx, optionsNoAirdrop, emptyProof);
     }
 
+    function test_interchainExecute_revert_notEnoughGasSupplied() public {
+        (InterchainTransaction memory icTx,) = constructInterchainTx(optionsNoAirdrop.encodeOptionsV1());
+        bytes memory encodedTx = getEncodedTx(icTx);
+        prepareExecutableTx(icTx);
+        expectRevertNotEnoughGasSupplied();
+        vm.prank(executor);
+        // Limiting gas for the whole transaction leads to application getting as much gas as it requested.
+        icClient.interchainExecute{gas: MOCK_GAS_LIMIT}(MOCK_GAS_LIMIT, encodedTx, emptyProof);
+    }
+
     function test_interchainExecute_revert_alreadyExecuted() public {
         (InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) =
             prepareAlreadyExecutedTest(optionsNoAirdrop);

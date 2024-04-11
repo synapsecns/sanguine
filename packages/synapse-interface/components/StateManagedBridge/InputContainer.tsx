@@ -1,11 +1,18 @@
-import toast from 'react-hot-toast'
-import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { isNull } from 'lodash'
 import { useAppSelector, useAppDispatch } from '@/store/hooks'
 import { zeroAddress } from 'viem'
+import {
+  initialState,
+  updateFromValue,
+  setFromChainId,
+  setFromToken,
+} from '@/slices/bridge/reducer'
+import React, { useEffect, useState, useCallback, useMemo } from 'react'
+import { useDispatch } from 'react-redux'
 import { useAccount, useNetwork } from 'wagmi'
-import { initialState, updateFromValue } from '@/slices/bridge/reducer'
-import MiniMaxButton from '../buttons/MiniMaxButton'
+import { ChainSelector } from '@/components/ui/ChainSelector'
+import { TokenSelector } from '@/components/ui/TokenSelector'
+import { AmountInput } from '@/components/ui/AmountInput'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
 import {
@@ -13,14 +20,18 @@ import {
   ConnectWalletButton,
   ConnectedIndicator,
 } from '@/components/ConnectionIndicators'
-import { FromChainSelector } from './FromChainSelector'
-import { FromTokenSelector } from './FromTokenSelector'
+import { CHAINS_BY_ID } from '@/constants/chains'
+import { useFromChainListArray } from './hooks/useFromChainListArray'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { calculateGasCost } from '../../utils/calculateGasCost'
 import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'
 import { TokenAndBalance } from '@/utils/actions/fetchPortfolioBalances'
 import { isEmpty } from 'lodash'
+import { BridgeSectionContainer } from '@/components/ui/BridgeSectionContainer'
+import { BridgeAmountContainer } from '@/components/ui/BridgeAmountContainer'
+import { useFromTokenListArray } from './hooks/useFromTokenListArray'
+import MiniMaxButton from '../buttons/MiniMaxButton'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -102,7 +113,7 @@ export const InputContainer = () => {
     return maxBridgeable
   }
 
-  const onAvailableBalance = () => {
+  const onMaxBalance = () => {
     dispatch(
       updateFromValue(
         formatBigIntToString(rawBalance, fromToken?.decimals[fromChainId])
@@ -184,130 +195,62 @@ export const InputContainer = () => {
   }
 
   return (
-    <div
-      data-test-id="input-container"
-      className="text-left rounded-md p-md bg-bgLight"
-    >
-      <div className="flex items-center justify-between mb-3">
+    <BridgeSectionContainer>
+      <div className="flex items-center justify-between">
         <FromChainSelector />
         {connectedStatus}
       </div>
-      <div className="flex h-16 mb-2 space-x-2">
-        <div
-          className={`
-            flex flex-grow items-center justify-between pl-md w-full h-16
-            rounded-md border border-white border-opacity-20
-          `}
-        >
-          <div className="flex items-center">
-            <FromTokenSelector />
-            <div className="flex flex-col justify-between ml-4">
-              <div style={{ display: 'table' }}>
-                <input
-                  ref={inputRef}
-                  value={showValue}
-                  placeholder="0.0000"
-                  pattern="^[0-9]*[.,]?[0-9]*$"
-                  onChange={handleFromValueChange}
-                  className={`
-                    border-none bg-transparent max-w-[190px] p-0 font-medium text-opacity-80
-                    placeholder:text-[#88818C] text-white text-xl md:text-2xl
-                    focus:outline-none focus:ring-0 focus:border-none
-                  `}
-                  style={{ display: 'table-cell', width: '100%' }}
-                  name="inputRow"
-                  autoComplete="off"
-                  minLength={1}
-                  maxLength={79}
-                  disabled={false}
-                />
-              </div>
-              {hasMounted &&
-                isConnected &&
-                (isGasToken &&
-                showGasReserved() &&
-                isGasInputMoreThanBridgeableMax() ? (
-                  <label
-                    htmlFor="inputRow"
-                    className={`
-                      text-xs text-secondaryTextColor transition-all duration-150 transform-gpu
-                      ${
-                        (isGasBalanceLessThanCost() ||
-                          isGasInputMoreThanBridgeableMax()) &&
-                        'text-yellow-500'
-                      }
-                      `}
-                  >
-                    <HoverTooltip
-                      isActive={
-                        isGasBalanceLessThanCost() ||
-                        isGasInputMoreThanBridgeableMax()
-                      }
-                      hoverContent={
-                        isGasInputMoreThanBridgeableMax() ? (
-                          <div className="whitespace-nowrap">
-                            Requested bridge amount may not cover gas fees
-                          </div>
-                        ) : (
-                          <div className="whitespace-nowrap">
-                            Gas fees may exceed your available balance
-                          </div>
-                        )
-                      }
-                    >
-                      {parsedGasCost.toFixed(4)}
-                      <span className="text-opacity-50">
-                        {' '}
-                        estimated gas fee
-                      </span>
-                    </HoverTooltip>
-                  </label>
-                ) : (
-                  <label
-                    htmlFor="inputRow"
-                    onClick={onAvailableBalance}
-                    className={`
-                      text-xs text-white transition-all duration-150 transform-gpu
-                      hover:text-opacity-70 hover:cursor-pointer
-                    `}
-                  >
-                    <HoverTooltip
-                      isActive={isGasBalanceLessThanCost()}
-                      hoverContent={
-                        <div className="whitespace-nowrap">
-                          Gas fees may exceed your available balance
-                        </div>
-                      }
-                    >
-                      {isTraceBalance()
-                        ? '< 0.0001'
-                        : trimmedParsedBalance ?? '0.0'}
-                      <span className="text-opacity-50 text-secondaryTextColor">
-                        {' '}
-                        available
-                      </span>
-                    </HoverTooltip>
-                  </label>
-                ))}
-            </div>
-          </div>
-          <div>
-            {showMaxButton() && (
-              <div className="m">
-                <MiniMaxButton
-                  disabled={
-                    !rawBalance || rawBalance === 0n
-                      ? true
-                      : false || isGasBalanceLessThanCost()
-                  }
-                  onClickBalance={onMaxBridgeableBalance}
-                />
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
+      <BridgeAmountContainer>
+        <FromTokenSelector />
+        <AmountInput
+          inputRef={inputRef}
+          hasMounted={hasMounted}
+          isConnected={isConnected}
+          showValue={showValue}
+          handleFromValueChange={handleFromValueChange}
+          parsedBalance={parsedBalance}
+          onMaxBalance={onMaxBalance}
+        />
+        {hasMounted && isConnected && (
+          <MiniMaxButton
+            disabled={!rawBalance || rawBalance === 0n ? true : false}
+            onClickBalance={onMaxBridgeableBalance}
+          />
+        )}
+      </BridgeAmountContainer>
+    </BridgeSectionContainer>
+  )
+}
+
+const FromChainSelector = () => {
+  const { fromChainId } = useBridgeState()
+
+  return (
+    <ChainSelector
+      dataTestId="bridge-origin-chain"
+      selectedItem={CHAINS_BY_ID[fromChainId]}
+      isOrigin={true}
+      label="From"
+      itemListFunction={useFromChainListArray}
+      setFunction={setFromChainId}
+      action="Bridge"
+    />
+  )
+}
+
+const FromTokenSelector = () => {
+  const { fromToken } = useBridgeState()
+
+  return (
+    <TokenSelector
+      dataTestId="bridge-origin-token"
+      selectedItem={fromToken}
+      isOrigin={true}
+      placeholder="Out"
+      itemListFunction={useFromTokenListArray}
+      setFunction={setFromToken}
+      action="Bridge"
+    />
   )
 }
 
@@ -356,3 +299,71 @@ const Tooltip = ({
     )
   }
 }
+
+// {hasMounted &&
+//   isConnected &&
+//   (isGasToken &&
+//   showGasReserved() &&
+//   isGasInputMoreThanBridgeableMax() ? (
+//     <label
+//       htmlFor="inputRow"
+//       className={`
+//         text-xs text-secondaryTextColor transition-all duration-150 transform-gpu
+//         ${
+//           (isGasBalanceLessThanCost() ||
+//             isGasInputMoreThanBridgeableMax()) &&
+//           'text-yellow-500'
+//         }
+//         `}
+//     >
+//       <HoverTooltip
+//         isActive={
+//           isGasBalanceLessThanCost() ||
+//           isGasInputMoreThanBridgeableMax()
+//         }
+//         hoverContent={
+//           isGasInputMoreThanBridgeableMax() ? (
+//             <div className="whitespace-nowrap">
+//               Requested bridge amount may not cover gas fees
+//             </div>
+//           ) : (
+//             <div className="whitespace-nowrap">
+//               Gas fees may exceed your available balance
+//             </div>
+//           )
+//         }
+//       >
+//         {parsedGasCost.toFixed(4)}
+//         <span className="text-opacity-50">
+//           {' '}
+//           estimated gas fee
+//         </span>
+//       </HoverTooltip>
+//     </label>
+//   ) : (
+//     <label
+//       htmlFor="inputRow"
+//       onClick={onAvailableBalance}
+//       className={`
+//         text-xs text-white transition-all duration-150 transform-gpu
+//         hover:text-opacity-70 hover:cursor-pointer
+//       `}
+//     >
+//       <HoverTooltip
+//         isActive={isGasBalanceLessThanCost()}
+//         hoverContent={
+//           <div className="whitespace-nowrap">
+//             Gas fees may exceed your available balance
+//           </div>
+//         }
+//       >
+//         {isTraceBalance()
+//           ? '< 0.0001'
+//           : trimmedParsedBalance ?? '0.0'}
+//         <span className="text-opacity-50 text-secondaryTextColor">
+//           {' '}
+//           available
+//         </span>
+//       </HoverTooltip>
+//     </label>
+//   ))}

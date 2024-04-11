@@ -98,6 +98,10 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         );
     }
 
+    function expectRevertNotEnoughGasSupplied() internal {
+        vm.expectRevert(IInterchainClientV1.InterchainClientV1__NotEnoughGasSupplied.selector);
+    }
+
     function expectRevertNotEnoughResponses(uint256 actual, uint256 required) internal {
         vm.expectRevert(
             abi.encodeWithSelector(

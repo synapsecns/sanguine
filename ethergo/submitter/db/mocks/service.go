@@ -194,8 +194,8 @@ func (_m *Service) GetTXS(ctx context.Context, fromAddress common.Address, chain
 	return r0, r1
 }
 
-// MarkAllBeforeOrAtNonceReplacedOrConfirmed provides a mock function with given fields: ctx, signer, chainID, nonce
-func (_m *Service) MarkAllBeforeOrAtNonceReplacedOrConfirmed(ctx context.Context, signer common.Address, chainID *big.Int, nonce uint64) error {
+// MarkAllBeforeNonceReplacedOrConfirmed provides a mock function with given fields: ctx, signer, chainID, nonce
+func (_m *Service) MarkAllBeforeNonceReplacedOrConfirmed(ctx context.Context, signer common.Address, chainID *big.Int, nonce uint64) error {
 	ret := _m.Called(ctx, signer, chainID, nonce)
 
 	var r0 error
