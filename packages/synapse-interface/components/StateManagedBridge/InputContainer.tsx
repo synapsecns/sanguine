@@ -32,6 +32,7 @@ import { BridgeSectionContainer } from '@/components/ui/BridgeSectionContainer'
 import { BridgeAmountContainer } from '@/components/ui/BridgeAmountContainer'
 import { useFromTokenListArray } from './hooks/useFromTokenListArray'
 import MiniMaxButton from '../buttons/MiniMaxButton'
+import { joinClassNames } from '@/utils/joinClassNames'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -202,15 +203,24 @@ export const InputContainer = () => {
       </div>
       <BridgeAmountContainer>
         <FromTokenSelector />
-        <AmountInput
-          inputRef={inputRef}
-          hasMounted={hasMounted}
-          isConnected={isConnected}
-          showValue={showValue}
-          handleFromValueChange={handleFromValueChange}
-          parsedBalance={parsedBalance}
-          onMaxBalance={onMaxBalance}
-        />
+        <div>
+          <AmountInput
+            inputRef={inputRef}
+            hasMounted={hasMounted}
+            isConnected={isConnected}
+            showValue={showValue}
+            handleFromValueChange={handleFromValueChange}
+            parsedBalance={parsedBalance}
+            onMaxBalance={onMaxBalance}
+          />
+          <AvailableBalance
+            balance={rawBalance}
+            parsedBalance={parsedBalance}
+            onMaxBalance={onMaxBalance}
+            isConnected={isConnected}
+            hasMounted={hasMounted}
+          />
+        </div>
         {hasMounted && isConnected && (
           <MiniMaxButton
             disabled={!rawBalance || rawBalance === 0n ? true : false}
@@ -252,6 +262,51 @@ const FromTokenSelector = () => {
       action="Bridge"
     />
   )
+}
+
+const AvailableBalance = ({
+  balance,
+  parsedBalance,
+  onMaxBalance,
+  hasMounted,
+  isConnected,
+  isGasToken = false,
+  disabled = false,
+}: {
+  balance?: bigint
+  parsedBalance?: string
+  onMaxBalance?: () => void
+  hasMounted: boolean
+  isConnected: boolean
+  isGasToken?: boolean
+  disabled?: boolean
+}) => {
+  const labelClassName = joinClassNames({
+    space: 'block',
+    textColor: 'text-xxs md:text-xs',
+    animation: 'transition-all duration-150 transform-gpu',
+    hover: 'hover:opacity-70 cursor-pointer',
+  })
+
+  const isTraceBalance = (): boolean => {
+    if (!balance || !parsedBalance) return false
+    if (balance && hasOnlyZeroes(parsedBalance)) return true
+    return false
+  }
+
+  if (hasMounted && isConnected && !disabled) {
+    return (
+      <label
+        htmlFor="inputRow"
+        onClick={onMaxBalance}
+        className={labelClassName}
+      >
+        {isTraceBalance ? '<0.001' : parsedBalance ?? '0.0'}
+        <span className="text-zinc-500 dark:text-zinc-400"> available</span>
+      </label>
+    )
+  }
+  return null
 }
 
 // TODO: Replace with HoverTooltip in Portfolio once other branch is merged in

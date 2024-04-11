@@ -1,6 +1,7 @@
 import React from 'react'
 import LoadingDots from './tailwind/LoadingDots'
 import { joinClassNames } from '@/utils/joinClassNames'
+import { HoverTooltip } from '../StateManagedBridge/InputContainer'
 
 interface AmountInputTypes {
   inputRef?: React.RefObject<HTMLInputElement>
@@ -13,6 +14,7 @@ interface AmountInputTypes {
   parsedBalance?: string
   onMaxBalance?: () => void
 }
+
 export function AmountInput({
   inputRef,
   disabled = false,
@@ -59,7 +61,7 @@ export function AmountInput({
           maxLength={79}
         />
       )}
-      {hasMounted && isConnected && !disabled && (
+      {/* {hasMounted && isConnected && !disabled && (
         <label
           htmlFor="inputRow"
           className={labelClassName}
@@ -68,7 +70,7 @@ export function AmountInput({
           {parsedBalance ?? '0.0'}
           <span className="text-zinc-500 dark:text-zinc-400"> available</span>
         </label>
-      )}
+      )} */}
     </div>
   )
 }
