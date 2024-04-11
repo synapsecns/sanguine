@@ -124,7 +124,10 @@ export const InputContainer = () => {
 
   const maxBridgeableGas: number | null =
     isGasToken && parsedGasCost
-      ? calculateMaxBridgeableGas(parseFloat(parsedBalance), parsedGasCost)
+      ? calculateMaxBridgeableGas(
+          parseFloat(parsedBalance),
+          parseFloat(parsedGasCost)
+        )
       : null
 
   console.log('rawGasCost:', rawGasCost)
@@ -175,7 +178,10 @@ export const InputContainer = () => {
 
   const isGasInputMoreThanBridgeableMax = (): boolean => {
     if (isGasToken && parsedGasCost && fromValue && parsedBalance) {
-      return parseFloat(fromValue) > parseFloat(parsedBalance) - parsedGasCost
+      return (
+        parseFloat(fromValue) >
+        parseFloat(parsedBalance) - parseFloat(parsedGasCost)
+      )
     } else {
       return false
     }
@@ -183,7 +189,7 @@ export const InputContainer = () => {
 
   const isGasBalanceLessThanCost = (): boolean => {
     if (isGasToken && parsedGasCost && parsedBalance) {
-      return parsedGasCost > parseFloat(parsedBalance)
+      return parseFloat(parsedGasCost) > parseFloat(parsedBalance)
     } else {
       return false
     }
@@ -214,8 +220,10 @@ export const InputContainer = () => {
             onMaxBalance={onMaxBalance}
           />
           <AvailableBalance
+            fromValue={fromValue}
             balance={rawBalance}
             parsedBalance={parsedBalance}
+            parsedGasCost={parsedGasCost}
             onMaxBalance={onMaxBalance}
             isConnected={isConnected}
             hasMounted={hasMounted}
@@ -265,20 +273,24 @@ const FromTokenSelector = () => {
 }
 
 const AvailableBalance = ({
+  fromValue,
   balance,
   parsedBalance,
+  isGasToken = false,
+  parsedGasCost,
   onMaxBalance,
   hasMounted,
   isConnected,
-  isGasToken = false,
   disabled = false,
 }: {
+  fromValue: string
   balance?: bigint
   parsedBalance?: string
+  isGasToken?: boolean
+  parsedGasCost?: string
   onMaxBalance?: () => void
   hasMounted: boolean
   isConnected: boolean
-  isGasToken?: boolean
   disabled?: boolean
 }) => {
   const labelClassName = joinClassNames({
