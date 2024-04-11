@@ -40,7 +40,6 @@ type Executor struct {
 	cfg             config.Config
 	chainListeners  map[int]listener.ContractListener
 	clientContracts map[int]*interchainclient.InterchainClientRef
-	gasBuffers      map[int]uint64
 }
 
 // NewExecutor creates a new executor.
@@ -64,7 +63,6 @@ func NewExecutor(ctx context.Context, handler metrics.Handler, cfg config.Config
 
 	executor.chainListeners = make(map[int]listener.ContractListener)
 	executor.clientContracts = make(map[int]*interchainclient.InterchainClientRef)
-	executor.gasBuffers = make(map[int]uint64)
 
 	for _, chainCfg := range cfg.Chains {
 		executionService := common.HexToAddress(chainCfg.ExecutionService)
@@ -90,8 +88,6 @@ func NewExecutor(ctx context.Context, handler metrics.Handler, cfg config.Config
 		if err != nil {
 			return nil, fmt.Errorf("could not get synapse module ref: %w", err)
 		}
-
-		executor.gasBuffers[chainCfg.ChainID] = chainCfg.GetGasBuffer()
 	}
 
 	executor.signer, err = signerConfig.SignerFromConfig(ctx, cfg.Signer)
@@ -180,11 +176,8 @@ func (e *Executor) executeTransaction(ctx context.Context, request db.Transactio
 	if !ok {
 		return fmt.Errorf("could not get contract for chain %d", request.SrcChainID.Int64())
 	}
-	// GasBuffer should be always set if Client contract is set
-	gasBuffer := e.gasBuffers[int(request.DstChainID.Int64())]
 
 	_, err := e.submitter.SubmitTransaction(ctx, request.DstChainID, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-		transactor.GasLimit = request.Options.GasLimit.Uint64() + gasBuffer
 		transactor.Value = request.Options.GasAirdrop
 
 		// nolint: wrapcheck
