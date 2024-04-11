@@ -10,6 +10,9 @@ export const ExplorerLink = ({
   transactionHash: string
   short?: boolean
 }) => {
+  if (!CHAINS[chainId]) {
+    return null
+  }
   const { explorerUrl } = CHAINS[chainId]
 
   return (

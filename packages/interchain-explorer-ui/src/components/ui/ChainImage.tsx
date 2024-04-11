@@ -13,8 +13,8 @@ export const ChainImage = ({
 }) => {
   return (
     <Image
-      src={CHAINS[chainId].imgUrl}
-      alt={`${CHAINS[chainId].name} img`}
+      src={CHAINS[chainId]?.imgUrl}
+      alt={`${CHAINS[chainId]?.name} img`}
       width={width}
       height={height}
     />

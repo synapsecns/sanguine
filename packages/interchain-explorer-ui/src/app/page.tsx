@@ -115,23 +115,27 @@ const Home = () => {
                       </span>
                     </td>
                     <td className="">
-                      <div className="flex items-center space-x-2">
-                        <ChainImage
-                          {...transaction.interchainTransactionSent}
-                        />
-                        <ExplorerLink
-                          {...transaction.interchainTransactionSent}
-                        />
-                      </div>
+                      {transaction.interchainTransactionSent && (
+                        <div className="flex items-center space-x-2">
+                          <ChainImage
+                            {...transaction.interchainTransactionSent}
+                          />
+                          <ExplorerLink
+                            {...transaction.interchainTransactionSent}
+                          />
+                        </div>
+                      )}
                       <span className="opacity-50 text-sm">
-                        {new Date(
-                          transaction.interchainTransactionSent.timestamp * 1000
-                        ).toLocaleString()}
+                        {transaction.interchainTransactionSent &&
+                          new Date(
+                            transaction.interchainTransactionSent?.timestamp *
+                              1000
+                          ).toLocaleString()}
                       </span>
                     </td>
                     <td>
                       {shortenHash(
-                        transaction.interchainTransactionSent.srcSender
+                        transaction.interchainTransactionSent?.srcSender
                       )}
                     </td>
                     <td className="">
@@ -162,7 +166,7 @@ const Home = () => {
                       {transaction.interchainTransactionReceived ? (
                         <span className="text-green-500">✓</span>
                       ) : Date.now() -
-                          transaction.interchainTransactionSent.timestamp *
+                          transaction.interchainTransactionSent?.timestamp *
                             1000 >
                         3600000 ? (
                         <span className="text-red-300">x</span>
