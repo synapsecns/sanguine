@@ -17,7 +17,25 @@ const logInfo = (msg) => {
 }
 
 const logCommand = (command) => {
-  console.log(chalk.blue(command))
+  console.log(chalk.blue(redactKeys(command)))
 }
 
-module.exports = { logSuccess, logWarning, logError, logInfo, logCommand }
+const logCommandError = (command, msg = 'Command failed') => {
+  logError(`${msg}: ${redactKeys(command)}`)
+}
+
+const redactKeys = (command) => {
+  // Find all options that end with -key and redact the following value
+  const keyRegex = /(--\S+-key) (\S+)/g
+  const redactedCommand = command.replace(keyRegex, '$1 <REDACTED-VALUE>')
+  return redactedCommand
+}
+
+module.exports = {
+  logSuccess,
+  logWarning,
+  logError,
+  logInfo,
+  logCommand,
+  logCommandError,
+}

@@ -3,10 +3,11 @@ package serverconfig
 
 import (
 	"fmt"
-	"github.com/richardwilkes/toolbox/collection"
-	"github.com/synapsecns/sanguine/services/explorer/config"
 	"os"
 	"path/filepath"
+
+	"github.com/richardwilkes/toolbox/collection"
+	"github.com/synapsecns/sanguine/services/explorer/config"
 
 	"github.com/jftuga/ellipsis"
 	"gopkg.in/yaml.v2"
@@ -56,6 +57,8 @@ type ContractsConfig struct {
 	CCTP string `yaml:"cctp"`
 	// Bridge is the URL of the Scribe server.
 	Bridge string `yaml:"bridge"`
+	// RFQ is the address of the rfq contract
+	RFQ string `yaml:"rfq"`
 }
 
 // IsValid makes sure the config is valid.
@@ -108,7 +111,7 @@ func (c *ChainConfig) IsValid() error {
 
 // IsValid checks if the entered ContractsConfig is valid.
 func (c ContractsConfig) IsValid() error {
-	if c.CCTP == "" && c.Bridge == "" {
+	if c.CCTP == "" && c.Bridge == "" && c.RFQ == "" {
 		return fmt.Errorf("one contract must be specified on each contract config")
 	}
 	return nil

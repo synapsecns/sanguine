@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/synapsecns/sanguine/core/metrics"
+	"github.com/valyala/fastjson"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"io"
@@ -32,6 +33,8 @@ const (
 	RequestEventName = "http.request.body"
 	// ResponseEventName is the name of the event created for each response body.
 	ResponseEventName = "http.response.body"
+	// IDSpanName is the name of the span created for each request.
+	IDSpanName = "rpc.id"
 )
 
 // nolint: cyclop
@@ -97,7 +100,15 @@ func (t *captureTransport) RoundTrip(req *http.Request) (_ *http.Response, err e
 
 	// Add the request/response body as events to the span
 	if requestBody.Len() > 0 {
-		span.AddEvent(RequestEventName, trace.WithAttributes(attribute.String("body", requestBody.String())))
+		requestBytes := requestBody.Bytes()
+		// now track the id in a way we can search in signoz.
+		// will not work on batch requests.
+		id := fastjson.GetInt(requestBytes, "id")
+		if id != 0 {
+			span.SetAttributes(attribute.Int(IDSpanName, id))
+		}
+
+		span.AddEvent(RequestEventName, trace.WithAttributes(attribute.String("body", string(requestBytes))))
 	}
 	if len(response) > 0 {
 		span.AddEvent(ResponseEventName, trace.WithAttributes(attribute.String("body", response)))

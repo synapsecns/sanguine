@@ -40,13 +40,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # TODO: this can be shorter, maybe 500-1,000? This may be slower (see: https://github.com/CocoaPods/CocoaPods/issues/4989#issuecomment-193772935)
           fetch-depth: 0
-          # TODO: is this neccesary?
-          submodules: 'recursive'
 
       # note: after this action is pushed, whatever this ends up being should go back to latest.
-      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:07a4696bbbafbba2d3ad7ee828b4c8adb21b4d20
+      - uses: docker://ghcr.io/synapsecns/sanguine/git-changes-action:2806c6873f55ef6840e4ebea43a0f27b98f95516
         id: filter_go
         with:
           github_token: ${{ secrets.WORKFLOW_PAT || secrets.GITHUB_TOKEN }}

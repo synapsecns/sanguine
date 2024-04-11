@@ -6,7 +6,7 @@ import {IExecutionService} from "./IExecutionService.sol";
 interface ISynapseExecutionServiceV1 is IExecutionService {
     error SynapseExecutionService__GasOracleNotSet();
     error SynapseExecutionService__FeeAmountTooLow(uint256 actual, uint256 required);
-    error SynapseExecutionService__OptionsVersionNotSupported(uint256 version);
+    error SynapseExecutionService__OptionsVersionNotSupported(uint16 version);
     error SynapseExecutionService__ZeroAddress();
 
     /// @notice Allows the contract governor to set the address of the EOA account that will be used
