@@ -406,12 +406,12 @@ const AvailableBalance = ({
   }
 
   const isGasCostCoveredByBalance = (): boolean => {
-    if (!isGasToken) return true
+    if (!isGasToken && !parsedGasCost) return true
 
     if (isGasToken && parsedGasCost && parsedBalanceFull) {
       return parseFloat(parsedGasCost) < parseFloat(parsedBalanceFull)
     } else {
-      return false
+      return true
     }
   }
 
