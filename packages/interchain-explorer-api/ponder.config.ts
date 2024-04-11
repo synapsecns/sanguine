@@ -21,11 +21,11 @@ export default createConfig({
     InterchainClientV1: {
       network: {
         ethSepolia: {
-          address: '0x28f0B8E80e5afd62A20C23BD5098237006634318',
+          address: '0x5a81Dfa5885058ED838fa750060C804B49F69991',
           startBlock: 5628137,
         },
         arbSepolia: {
-          address: '0x188cA7f9615042654e483Ed840582208009A9ADF',
+          address: '0xBdC170214726a994D9A837b15C0039bdeE090878',
           startBlock: 30278491,
         },
       },
