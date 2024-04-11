@@ -33,6 +33,7 @@ import { BridgeAmountContainer } from '@/components/ui/BridgeAmountContainer'
 import { useFromTokenListArray } from './hooks/useFromTokenListArray'
 import MiniMaxButton from '../buttons/MiniMaxButton'
 import { joinClassNames } from '@/utils/joinClassNames'
+import { Token } from '@/utils/types'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -47,7 +48,7 @@ export const InputContainer = () => {
 
   const { gasData } = useAppSelector((state) => state.gasData)
   const { gasPrice, maxFeePerGas } = gasData?.formatted
-  const { rawGasCost, parsedGasCost } = calculateGasCost(gasPrice, 500_000)
+  const { rawGasCost, parsedGasCost } = calculateGasCost(gasPrice, 200_000)
 
   const isGasToken: boolean = fromToken?.addresses[fromChainId] === zeroAddress
 
@@ -200,12 +201,14 @@ export const InputContainer = () => {
             onMaxBalance={onMaxBalance}
           />
           <AvailableBalance
+            fromChainId={fromChainId}
             fromValue={fromValue}
+            fromToken={fromToken}
             balance={balance}
             parsedBalance={parsedBalance}
             isGasToken={isGasToken}
             parsedGasCost={parsedGasCost}
-            onMaxBalance={onMaxBalance}
+            onMaxBalance={onMaxBridgeableBalance}
             isConnected={isConnected}
             hasMounted={hasMounted}
           />
@@ -254,7 +257,9 @@ const FromTokenSelector = () => {
 }
 
 const AvailableBalance = ({
+  fromChainId,
   fromValue,
+  fromToken,
   balance,
   parsedBalance,
   isGasToken = false,
@@ -264,7 +269,9 @@ const AvailableBalance = ({
   isConnected,
   disabled = false,
 }: {
+  fromChainId: number | null
   fromValue: string
+  fromToken: Token | null
   balance?: bigint
   parsedBalance?: string
   isGasToken?: boolean
@@ -281,17 +288,22 @@ const AvailableBalance = ({
     hover: 'hover:opacity-70 cursor-pointer',
   })
 
+  const parsedBalanceFull = formatBigIntToString(
+    balance,
+    fromToken?.decimals[fromChainId]
+  )
+
   const isTraceBalance = (): boolean => {
-    if (!balance || !parsedBalance) return false
-    if (balance && hasOnlyZeroes(parsedBalance)) return true
+    if (!balance || !parsedBalanceFull) return false
+    if (balance && hasOnlyZeroes(parsedBalanceFull)) return true
     return false
   }
 
   const isGasCostCoveredByInput = (): boolean => {
-    if (isGasToken && parsedGasCost && fromValue && parsedBalance) {
+    if (isGasToken && parsedGasCost && fromValue && parsedBalanceFull) {
       return (
         parseFloat(fromValue) <
-        parseFloat(parsedBalance) - parseFloat(parsedGasCost)
+        parseFloat(parsedBalanceFull) - parseFloat(parsedGasCost)
       )
     } else {
       return true
@@ -299,8 +311,8 @@ const AvailableBalance = ({
   }
 
   const isGasCostCoveredByBalance = (): boolean => {
-    if (isGasToken && parsedGasCost && parsedBalance) {
-      return parseFloat(parsedGasCost) < parseFloat(parsedBalance)
+    if (isGasToken && parsedGasCost && parsedBalanceFull) {
+      return parseFloat(parsedGasCost) < parseFloat(parsedBalanceFull)
     } else {
       return false
     }
