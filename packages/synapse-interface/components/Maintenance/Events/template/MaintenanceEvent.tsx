@@ -1,6 +1,6 @@
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
-import { OPTIMISM, BASE, BLAST } from '@/constants/chains/master'
+import { OPTIMISM, BASE, BLAST, METIS } from '@/constants/chains/master'
 import {
   useEventCountdownProgressBar,
   getCountdownTimeStatus,
@@ -16,11 +16,11 @@ import { WarningMessage } from '../../../Warning'
  */
 
 /** Banner start time */
-const MAINTENANCE_BANNERS_START = new Date(Date.UTC(2024, 2, 20, 20, 20, 0))
+const MAINTENANCE_BANNERS_START = new Date(Date.UTC(2024, 3, 11, 0, 0, 0))
 /** Countdown Progress Bar, Bridge Warning Message + Bridge Pause start time */
-const MAINTENANCE_START_DATE = new Date(Date.UTC(2024, 2, 20, 20, 20, 0))
+const MAINTENANCE_START_DATE = new Date(Date.UTC(2024, 3, 11, 0, 0, 0))
 /** Ends Banner, Countdown Progress Bar, Bridge Warning Message, Bridge Pause */
-const MAINTENANCE_END_DATE = new Date(Date.UTC(2024, 2, 20, 20, 20, 0))
+const MAINTENANCE_END_DATE = new Date(Date.UTC(2025, 3, 20, 20, 20, 0))
 
 export const MaintenanceBanner = () => {
   const { isComplete } = getCountdownTimeStatus(
@@ -35,7 +35,7 @@ export const MaintenanceBanner = () => {
       bannerId="03262024-pause-blast-banner"
       bannerContents={
         <>
-          <p className="m-auto">Bridging on Blast is temporarily paused.</p>
+          <p className="m-auto">Bridging on Metis is temporarily paused.</p>
         </>
       }
       startDate={MAINTENANCE_BANNERS_START}
@@ -49,7 +49,7 @@ export const MaintenanceWarningMessage = () => {
 
   const isWarningChain = isChainIncluded(
     [fromChainId, toChainId],
-    [BLAST.id] // Update for Chains to show warning on
+    [METIS.id] // Update for Chains to show warning on
   )
 
   const { isComplete } = getCountdownTimeStatus(
@@ -64,7 +64,7 @@ export const MaintenanceWarningMessage = () => {
       <WarningMessage
         message={
           <>
-            <p>Bridging on Blast is temporarily paused.</p>
+            <p>Bridging on Metis is temporarily paused.</p>
           </>
         }
       />
@@ -79,14 +79,14 @@ export const useMaintenanceCountdownProgress = () => {
 
   const isCurrentChain = isChainIncluded(
     [fromChainId, toChainId],
-    [BLAST.id] // Update for Chains to show maintenance on
+    [METIS.id] // Update for Chains to show maintenance on
   )
 
   const {
     isPending: isMaintenancePending,
     EventCountdownProgressBar: MaintenanceCountdownProgressBar,
   } = useEventCountdownProgressBar(
-    'Bridging on Blast paused.',
+    'Bridging on METIS paused.',
     MAINTENANCE_START_DATE, // Countdown Bar will automatically appear after start time
     MAINTENANCE_END_DATE // Countdown Bar will automatically disappear when end time is reached
   )
