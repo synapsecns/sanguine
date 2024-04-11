@@ -359,6 +359,8 @@ func (m *Manager) generateQuote(ctx context.Context, keyTokenID string, chainID 
 }
 
 // getQuoteAmount calculates the quote amount for a given route.
+//
+//nolint:cyclop
 func (m *Manager) getQuoteAmount(parentCtx context.Context, origin, dest int, address common.Address, balance *big.Int) (quoteAmount *big.Int, err error) {
 	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "getQuoteAmount", trace.WithAttributes(
 		attribute.String(metrics.Origin, strconv.Itoa(origin)),
