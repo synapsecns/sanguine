@@ -1,9 +1,9 @@
 {
-  "address": "0x28f0B8E80e5afd62A20C23BD5098237006634318",
+  "address": "0x5a81Dfa5885058ED838fa750060C804B49F69991",
   "constructorArgs": "0x000000000000000000000000acaaaa98b9e23725046eda88d371b4864d90496b000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
   "receipt": {
-    "hash": "0x3c947795385db8f7b3f0a48e2920cc6cc57092c16793425fa8ae0e26a6143968",
-    "blockNumber": 5628137
+    "hash": "0x4f95897e9833d15cd2f900065d59fb6d51aca97da096c83d257045be5a7e171a",
+    "blockNumber": 5675682
   },
   "abi": [
     {
@@ -803,6 +803,11 @@
           "internalType": "bytes32"
         }
       ]
+    },
+    {
+      "type": "error",
+      "name": "InterchainClientV1__NotEnoughGasSupplied",
+      "inputs": []
     },
     {
       "type": "error",
