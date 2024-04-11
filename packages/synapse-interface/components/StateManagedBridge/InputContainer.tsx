@@ -316,7 +316,7 @@ const AvailableBalance = ({
   }
 
   const showGasReserved = (): boolean => {
-    return !isGasCostCoveredByInput()
+    return !hasOnlyZeroes(fromValue) && !isGasCostCoveredByInput()
   }
 
   let tooltipContent
