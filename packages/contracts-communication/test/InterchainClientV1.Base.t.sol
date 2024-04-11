@@ -2,9 +2,15 @@
 pragma solidity 0.8.20;
 
 import {InterchainClientV1, InterchainClientV1Events, IInterchainClientV1} from "../contracts/InterchainClientV1.sol";
-import {InterchainTxDescriptor, InterchainTransaction} from "../contracts/libs/InterchainTransaction.sol";
+import {
+    InterchainTxDescriptor,
+    InterchainTransaction,
+    InterchainTransactionLib
+} from "../contracts/libs/InterchainTransaction.sol";
 import {OptionsLib} from "../contracts/libs/Options.sol";
 
+import {InterchainTransactionLibHarness} from "./harnesses/InterchainTransactionLibHarness.sol";
+import {VersionedPayloadLibHarness} from "./harnesses/VersionedPayloadLibHarness.sol";
 import {ExecutionFeesMock} from "./mocks/ExecutionFeesMock.sol";
 import {ExecutionServiceMock} from "./mocks/ExecutionServiceMock.sol";
 import {InterchainDBMock} from "./mocks/InterchainDBMock.sol";
@@ -20,6 +26,10 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
     uint256 public constant REMOTE_CHAIN_ID = 7331;
     uint256 public constant UNKNOWN_CHAIN_ID = 42;
     bytes32 public constant MOCK_REMOTE_CLIENT = keccak256("RemoteClient");
+    uint16 public constant CLIENT_VERSION = 1;
+
+    InterchainTransactionLibHarness public txLibHarness;
+    VersionedPayloadLibHarness public payloadLibHarness;
 
     address public mockRemoteClientEVM = makeAddr("RemoteClientEVM");
     bytes32 public mockRemoteClientEVMBytes32 = bytes32(uint256(uint160(mockRemoteClientEVM)));
@@ -42,6 +52,8 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         execService = address(new ExecutionServiceMock());
         icModuleA = address(new InterchainModuleMock());
         icModuleB = address(new InterchainModuleMock());
+        txLibHarness = new InterchainTransactionLibHarness();
+        payloadLibHarness = new VersionedPayloadLibHarness();
     }
 
     function setExecutionFees(address executionFees) public {
@@ -74,10 +86,20 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         );
     }
 
+    function expectRevertInvalidTransactionVersion(uint16 version) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__InvalidTransactionVersion.selector, version)
+        );
+    }
+
     function expectRevertNoLinkedClient(uint256 chainId) internal {
         vm.expectRevert(
             abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__NoLinkedClient.selector, chainId)
         );
+    }
+
+    function expectRevertNotEnoughGasSupplied() internal {
+        vm.expectRevert(IInterchainClientV1.InterchainClientV1__NotEnoughGasSupplied.selector);
     }
 
     function expectRevertNotEnoughResponses(uint256 actual, uint256 required) internal {
@@ -204,7 +226,7 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
     function assertCorrectDescriptor(InterchainTransaction memory icTx, InterchainTxDescriptor memory desc) internal {
         assertEq(desc.dbNonce, icTx.dbNonce, "!desc.dbNonce");
         assertEq(desc.entryIndex, icTx.entryIndex, "!desc.entryIndex");
-        assertEq(desc.transactionId, icTx.transactionId(), "!desc.transactionId");
+        assertEq(desc.transactionId, keccak256(getEncodedTx(icTx)), "!desc.transactionId");
     }
 
     function assertEq(InterchainTransaction memory icTx, InterchainTransaction memory expected) internal {
@@ -216,6 +238,10 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         assertEq(icTx.entryIndex, expected.entryIndex, "!entryIndex");
         assertEq(icTx.options, expected.options, "!options");
         assertEq(icTx.message, expected.message, "!message");
+    }
+
+    function getEncodedTx(InterchainTransaction memory icTx) internal view returns (bytes memory) {
+        return payloadLibHarness.encodeVersionedPayload(CLIENT_VERSION, txLibHarness.encodeTransaction(icTx));
     }
 
     // ═══════════════════════════════════════════════════ UTILS ═══════════════════════════════════════════════════════

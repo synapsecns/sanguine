@@ -7,7 +7,6 @@ evm_version = "paris"
 optimizer = false
 out = "artifacts"
 src = "src"
-ffi = true
 fs_permissions = [
     { access = "read", path = "./" },
     { access = "read-write", path = "./.deployments" }
@@ -23,9 +22,13 @@ number_underscore = 'thousands'
 arbitrum = "${ARBITRUM_RPC}"
 aurora = "${AURORA_RPC}"
 dfk = "${DFK_RPC}"
+# Testnets
+eth_sepolia = "${ETH_SEPOLIA_RPC}"
 
 # And the list goes on
 [etherscan]
 arbitrum = { key = "${ARBITRUM_VERIFIER_KEY}", url = "${ARBITRUM_VERIFIER_URL}" }
 aurora = { key = "${AURORA_VERIFIER_KEY}", url = "${AURORA_VERIFIER_URL}" }
 # DFK is using Sourcify for verification
+# Testnets
+eth_sepolia = { key = "${ETH_SEPOLIA_VERIFIER_KEY}", url = "${ETH_SEPOLIA_VERIFIER_URL}" }
