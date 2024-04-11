@@ -47,7 +47,7 @@ export const InputContainer = () => {
 
   const { gasData } = useAppSelector((state) => state.gasData)
   const { gasPrice, maxFeePerGas } = gasData?.formatted
-  const { rawGasCost, parsedGasCost } = calculateGasCost(gasPrice, 200_000)
+  const { rawGasCost, parsedGasCost } = calculateGasCost(gasPrice, 500_000)
 
   const isGasToken: boolean = fromToken?.addresses[fromChainId] === zeroAddress
 
@@ -189,6 +189,8 @@ export const InputContainer = () => {
     }
   }
 
+  console.log('isGasBalanceLessThanCost outside:', isGasBalanceLessThanCost())
+
   const isTraceBalance = (): boolean => {
     if (!balance || !parsedBalance) return false
     if (balance && hasOnlyZeroes(parsedBalance)) return true
@@ -217,6 +219,7 @@ export const InputContainer = () => {
             fromValue={fromValue}
             balance={balance}
             parsedBalance={parsedBalance}
+            isGasToken={isGasToken}
             parsedGasCost={parsedGasCost}
             onMaxBalance={onMaxBalance}
             isConnected={isConnected}
@@ -300,7 +303,7 @@ const AvailableBalance = ({
     return false
   }
 
-  const isGasCostCovered = (): boolean => {
+  const isGasCostCoveredByInput = (): boolean => {
     if (!isGasToken) return true
 
     if (isGasToken && parsedGasCost && fromValue && parsedBalance) {
@@ -321,10 +324,12 @@ const AvailableBalance = ({
     }
   }
 
+  console.log('isGasBalanceLessThanCost inside:', isGasBalanceLessThanCost())
+
   if (hasMounted && isConnected && !disabled) {
     return (
       <HoverTooltip
-        isActive={isGasBalanceLessThanCost()}
+        isActive={isGasBalanceLessThanCost() || !isGasCostCoveredByInput()}
         hoverContent={
           <div className="whitespace-nowrap">
             Gas fees may exceed your available balance
