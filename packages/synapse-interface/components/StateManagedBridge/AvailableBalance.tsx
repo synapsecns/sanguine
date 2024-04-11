@@ -4,6 +4,7 @@ import { joinClassNames } from '@/utils/joinClassNames'
 import { HoverTooltip } from './InputContainer'
 import { Token } from '@/utils/types'
 import { formatBigIntToString } from '@/utils/bigint/format'
+import { isUndefined } from 'lodash'
 
 export const AvailableBalance = ({
   fromChainId,
@@ -36,41 +37,38 @@ export const AvailableBalance = ({
   )
 
   const isTraceBalance = (): boolean => {
-    if (!balance || !parsedBalanceFull) return false
-    if (balance && !hasOnlyZeroes(parsedBalanceFull)) return true
-    return false
-  }
-
-  const isTraceInput = (): boolean => {
-    if (!fromValue) return false
-    const shortenedFromValue = parseFloat(fromValue).toFixed(4)
-    if (Number(shortenedFromValue) === 0 && !hasOnlyZeroes(fromValue)) {
+    if (balance && !hasOnlyZeroes(parsedBalanceFull)) {
       return true
     } else {
       return false
+    }
+  }
+
+  const isTraceInput = (): boolean => {
+    if (!fromValue) {
+      return false
+    } else {
+      const shortenedFromValue = parseFloat(fromValue).toFixed(4)
+      return Number(shortenedFromValue) === 0 && !hasOnlyZeroes(fromValue)
     }
   }
 
   const isGasCostCoveredByInput = (): boolean => {
-    if (!isGasToken && !parsedGasCost) return true
-
-    if (isGasToken && parsedGasCost && fromValue && parsedBalanceFull) {
+    if (!isGasToken || !parsedGasCost || !parsedBalanceFull || !fromValue) {
+      return true
+    } else {
       return (
         parseFloat(fromValue) >
         parseFloat(parsedBalanceFull) - parseFloat(parsedGasCost)
       )
-    } else {
-      return true
     }
   }
 
   const isGasCostCoveredByBalance = (): boolean => {
-    if (!isGasToken) return true
-
-    if (isGasToken && parsedGasCost && parsedBalanceFull) {
-      return parseFloat(parsedGasCost) < parseFloat(parsedBalanceFull)
+    if (!isGasToken || !parsedGasCost || !parsedBalanceFull) {
+      return true
     } else {
-      return false
+      return parseFloat(parsedGasCost) < parseFloat(parsedBalanceFull)
     }
   }
 
