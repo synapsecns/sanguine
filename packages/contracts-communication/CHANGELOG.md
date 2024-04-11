@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.3](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.1.2...contracts-communication@1.1.3) (2024-04-11)
+
+**Note:** Version bump only for package contracts-communication
+
+
+
+
+
 ## [1.1.2](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.1.1...contracts-communication@1.1.2) (2024-04-08)
 
 
