@@ -25,6 +25,7 @@ import { NAVIGATION } from '@/constants/routes'
 import { MoreButton } from './MoreButton'
 import { PageFooter } from './PageFooter'
 import { joinClassNames } from '@/utils/joinClassNames'
+import { ToggleChangelogButton } from '@/components/ChangelogFeatures'
 
 const wrapperClassName = joinClassNames({
   textColor: 'text-zinc-800 dark:text-zinc-200',
@@ -79,6 +80,7 @@ export function LandingNav() {
         </Popover.Group>
         <div className="hidden lg:flex h-fit">
           <div className="flex items-center space-x-2">
+            <ToggleChangelogButton />
             <Wallet />
             <Popover className="relative">
               {({ open }) => (

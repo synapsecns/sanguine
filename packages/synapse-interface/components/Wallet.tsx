@@ -6,6 +6,8 @@ import { CoinbaseWalletIcon } from '@icons/WalletIcons/CoinbaseWalletIcon'
 import { WalletConnectIcon } from '@icons/WalletIcons/WalletConnectIcon'
 import { IconProps, WalletId } from '@utils/types'
 import Spinner from './icons/Spinner'
+import { SpeakerphoneIcon } from '@heroicons/react/outline'
+import { ToggleChangelogButton } from './ChangelogFeatures'
 
 const WALLETS = [
   {
