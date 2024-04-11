@@ -1,6 +1,6 @@
 import { isNull } from 'lodash'
 import { useAppSelector, useAppDispatch } from '@/store/hooks'
-import { zeroAddress } from 'viem'
+import { zeroAddress, Address } from 'viem'
 import {
   initialState,
   updateFromValue,
@@ -35,15 +35,81 @@ import MiniMaxButton from '../buttons/MiniMaxButton'
 import { joinClassNames } from '@/utils/joinClassNames'
 import { Token } from '@/utils/types'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
+import { stringToBigInt } from '@/utils/bigint/format'
+import { getPublicClient } from '@wagmi/core'
+import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 
 export const inputRef = React.createRef<HTMLInputElement>()
+
+const getBridgeQuote = async (
+  synapseSDK: any,
+  fromChainId: number,
+  toChainId: number,
+  fromToken: Token,
+  toToken: Token,
+  amount: string
+) => {
+  return await synapseSDK.bridgeQuote(
+    fromChainId,
+    toChainId,
+    fromToken.addresses[fromChainId],
+    toToken.addresses[toChainId],
+    stringToBigInt(amount, fromToken?.decimals[fromChainId])
+  )
+}
+
+const calculateEstimatedBridgeGasLimit = async (
+  synapseSDK: any,
+  bridgeQuote: any,
+  address: string,
+  toAddress: string,
+  fromChainId: number,
+  toChainId: number,
+  fromToken: Token,
+  amount: string
+) => {
+  const data = await synapseSDK.bridge(
+    toAddress,
+    bridgeQuote.routerAddress,
+    fromChainId,
+    toChainId,
+    fromToken?.addresses[fromChainId as keyof Token['addresses']],
+    stringToBigInt(amount, fromToken?.decimals[fromChainId]),
+    bridgeQuote.originQuery,
+    bridgeQuote.destQuery
+  )
+
+  const payload =
+    fromToken?.addresses[fromChainId as keyof Token['addresses']] ===
+      zeroAddress ||
+    fromToken?.addresses[fromChainId as keyof Token['addresses']] === ''
+      ? {
+          data: data.data,
+          to: data.to,
+          value: stringToBigInt(amount, fromToken?.decimals[fromChainId]),
+        }
+      : data
+
+  const publicClient = getPublicClient()
+
+  const gasEstimate = await publicClient.estimateGas({
+    value: payload.value,
+    to: payload.to,
+    account: address as Address,
+    data: payload.data,
+    chainId: fromChainId,
+  })
+
+  return gasEstimate
+}
 
 export const InputContainer = () => {
   const dispatch = useAppDispatch()
   const { chain } = useNetwork()
-  const { isConnected } = useAccount()
+  const { address, isConnected } = useAccount()
   const { balances } = usePortfolioState()
-  const { fromChainId, fromToken, fromValue } = useBridgeState()
+  const { fromChainId, toChainId, fromToken, toToken, fromValue } =
+    useBridgeState()
   const [showValue, setShowValue] = useState('')
   const [hasMounted, setHasMounted] = useState(false)
 
@@ -58,6 +124,43 @@ export const InputContainer = () => {
   )
 
   const { balance, parsedBalance } = selectedFromToken || {}
+
+  const { synapseSDK } = useSynapseContext()
+
+  useEffect(() => {
+    if (
+      fromChainId &&
+      toChainId &&
+      fromToken &&
+      toToken &&
+      address &&
+      isGasToken
+    ) {
+      ;(async () => {
+        const bridgeQuote = await getBridgeQuote(
+          synapseSDK,
+          fromChainId,
+          toChainId,
+          fromToken,
+          toToken,
+          parsedBalance
+        )
+
+        const gasLimit = await calculateEstimatedBridgeGasLimit(
+          synapseSDK,
+          bridgeQuote,
+          address,
+          address,
+          fromChainId,
+          toChainId,
+          fromToken,
+          parsedBalance
+        )
+
+        console.log('gasLimit: ', gasLimit)
+      })()
+    }
+  }, [fromChainId, toChainId, fromToken, toToken, address, isGasToken])
 
   useEffect(() => {
     setHasMounted(true)
@@ -346,8 +449,6 @@ const AvailableBalance = ({
           onClick={onMaxBalance}
           className={labelClassName}
         >
-          {/* {parseFloat(parsedGasCost).toFixed(4)} */}
-          {/* <span> estimated gas required</span> */}
           {isTraceInput() ? '<0.001' : gasReserved.toFixed(4)}
           <span> reserved for gas</span>
         </label>
