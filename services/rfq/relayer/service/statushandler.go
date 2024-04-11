@@ -133,7 +133,7 @@ func (r *Relayer) gasMiddleware(next func(ctx context.Context, span trace.Span, 
 			return fmt.Errorf("could not check gas on dest: %w", err)
 		}
 
-		if !sufficientGasOrigin || sufficientGasDest {
+		if !sufficientGasOrigin || !sufficientGasDest {
 			return nil
 		}
 
