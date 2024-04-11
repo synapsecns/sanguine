@@ -88,7 +88,6 @@ func NewExecutor(ctx context.Context, handler metrics.Handler, cfg config.Config
 		if err != nil {
 			return nil, fmt.Errorf("could not get synapse module ref: %w", err)
 		}
-
 	}
 
 	executor.signer, err = signerConfig.SignerFromConfig(ctx, cfg.Signer)
