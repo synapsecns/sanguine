@@ -6,25 +6,17 @@ import { HoverTooltip } from '../StateManagedBridge/InputContainer'
 interface AmountInputTypes {
   inputRef?: React.RefObject<HTMLInputElement>
   disabled?: boolean
-  hasMounted?: boolean
-  isConnected?: boolean
   isLoading?: boolean
   showValue: string
   handleFromValueChange?: (event: React.ChangeEvent<HTMLInputElement>) => void
-  parsedBalance?: string
-  onMaxBalance?: () => void
 }
 
 export function AmountInput({
   inputRef,
   disabled = false,
-  hasMounted,
-  isConnected,
   isLoading = false,
   showValue,
   handleFromValueChange,
-  parsedBalance,
-  onMaxBalance,
 }: AmountInputTypes) {
   const inputClassName = joinClassNames({
     unset: 'bg-transparent border-none p-0',
@@ -61,16 +53,6 @@ export function AmountInput({
           maxLength={79}
         />
       )}
-      {/* {hasMounted && isConnected && !disabled && (
-        <label
-          htmlFor="inputRow"
-          className={labelClassName}
-          onClick={onMaxBalance}
-        >
-          {parsedBalance ?? '0.0'}
-          <span className="text-zinc-500 dark:text-zinc-400"> available</span>
-        </label>
-      )} */}
     </div>
   )
 }

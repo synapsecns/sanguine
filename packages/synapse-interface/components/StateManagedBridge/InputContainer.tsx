@@ -125,11 +125,6 @@ export const InputContainer = () => {
         )
       : null
 
-  console.log('rawGasCost:', rawGasCost)
-  console.log('parsedGasCost: ', parsedGasCost)
-  console.log('parsedGasBalance:', parseFloat(parsedBalance))
-  console.log('maxBridgeableGas: ', maxBridgeableGas)
-
   const onMaxBridgeableBalance = useCallback(() => {
     if (maxBridgeableGas) {
       if (maxBridgeableGas < 0) {
@@ -157,31 +152,6 @@ export const InputContainer = () => {
     parsedBalance,
   ])
 
-  const showMaxButton = (): boolean => {
-    if (!hasMounted || !isConnected) return false
-    if (isGasToken && isNull(parsedGasCost)) return false
-    return true
-  }
-
-  const showGasReserved = (): boolean => {
-    if (!hasMounted || !isConnected) return false
-    if (!parsedGasCost) return false
-    if (isGasToken && !isEmpty(fromValue) && !hasOnlyZeroes(fromValue)) {
-      return true
-    }
-  }
-
-  const isGasInputMoreThanBridgeableMax = (): boolean => {
-    if (isGasToken && parsedGasCost && fromValue && parsedBalance) {
-      return (
-        parseFloat(fromValue) >
-        parseFloat(parsedBalance) - parseFloat(parsedGasCost)
-      )
-    } else {
-      return false
-    }
-  }
-
   return (
     <BridgeSectionContainer>
       <div className="flex items-center justify-between">
@@ -193,12 +163,8 @@ export const InputContainer = () => {
         <div>
           <AmountInput
             inputRef={inputRef}
-            hasMounted={hasMounted}
-            isConnected={isConnected}
             showValue={showValue}
             handleFromValueChange={handleFromValueChange}
-            parsedBalance={parsedBalance}
-            onMaxBalance={onMaxBalance}
           />
           <AvailableBalance
             fromChainId={fromChainId}
@@ -355,9 +321,9 @@ const AvailableBalance = ({
     hover: 'hover:opacity-70 cursor-pointer',
   })
 
-  console.log('showGasReserved:', showGasReserved())
-  console.log('isGasCostCoveredByInput: ', isGasCostCoveredByInput())
-  console.log('isGasCostCoveredByBalance:', isGasCostCoveredByBalance())
+  // console.log('showGasReserved:', showGasReserved())
+  // console.log('isGasCostCoveredByInput: ', isGasCostCoveredByInput())
+  // console.log('isGasCostCoveredByBalance:', isGasCostCoveredByBalance())
 
   if (showGasReserved()) {
     return (
