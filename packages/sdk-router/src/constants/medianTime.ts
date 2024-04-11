@@ -49,5 +49,4 @@ export const MEDIAN_TIME_RFQ = {
   [SupportedChainId.ETH]: 25,
   [SupportedChainId.OPTIMISM]: 15,
   [SupportedChainId.ARBITRUM]: 15,
-  [SupportedChainId.BASE]: 15,
 }
