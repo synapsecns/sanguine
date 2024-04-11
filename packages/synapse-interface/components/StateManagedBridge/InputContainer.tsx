@@ -49,18 +49,23 @@ const getBridgeQuote = async (
   toToken: Token,
   amount: string
 ) => {
-  return await synapseSDK.bridgeQuote(
-    fromChainId,
-    toChainId,
-    fromToken.addresses[fromChainId],
-    toToken.addresses[toChainId],
-    stringToBigInt(amount, fromToken?.decimals[fromChainId])
-  )
+  try {
+    return await synapseSDK.bridgeQuote(
+      fromChainId,
+      toChainId,
+      fromToken.addresses[fromChainId],
+      toToken.addresses[toChainId],
+      stringToBigInt(amount, fromToken?.decimals[fromChainId])
+    )
+  } catch (error) {
+    console.error('getBridgeQuote: ', error)
+    return null
+  }
 }
 
 const calculateEstimatedBridgeGasLimit = async (
   synapseSDK: any,
-  bridgeQuote: any,
+  bridgeQuote: any | null,
   address: string,
   toAddress: string,
   fromChainId: number,
@@ -68,6 +73,8 @@ const calculateEstimatedBridgeGasLimit = async (
   fromToken: Token,
   amount: string
 ) => {
+  if (!bridgeQuote) return null
+
   const data = await synapseSDK.bridge(
     toAddress,
     bridgeQuote.routerAddress,
@@ -122,6 +129,10 @@ export const InputContainer = () => {
     estimatedGasLimit.toString()
   )
 
+  console.log('estimatedGasLimit:', estimatedGasLimit)
+
+  console.log('parsedGasCost: ', parsedGasCost)
+
   const isGasToken: boolean = fromToken?.addresses[fromChainId] === zeroAddress
 
   const selectedFromToken: TokenAndBalance = balances[fromChainId]?.find(
@@ -164,7 +175,7 @@ export const InputContainer = () => {
           parsedBalance
         )
 
-        setEstimatedGasLimit(gasLimit)
+        setEstimatedGasLimit(gasLimit ?? 0n)
 
         console.log('gasLimit: ', gasLimit)
       })()
