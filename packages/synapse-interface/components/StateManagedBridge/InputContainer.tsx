@@ -34,6 +34,7 @@ import { useFromTokenListArray } from './hooks/useFromTokenListArray'
 import MiniMaxButton from '../buttons/MiniMaxButton'
 import { joinClassNames } from '@/utils/joinClassNames'
 import { Token } from '@/utils/types'
+import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -258,6 +259,16 @@ const AvailableBalance = ({
     return false
   }
 
+  const isTraceInput = (): boolean => {
+    if (!fromValue) return false
+    const shortenedFromValue = parseFloat(fromValue).toFixed(4)
+    if (Number(shortenedFromValue) === 0 && !hasOnlyZeroes(fromValue)) {
+      return true
+    } else {
+      return false
+    }
+  }
+
   const isGasCostCoveredByInput = (): boolean => {
     if (!isGasToken) return true
 
@@ -285,8 +296,10 @@ const AvailableBalance = ({
     return !hasOnlyZeroes(fromValue) && !isGasCostCoveredByInput()
   }
 
-  const requiredAdditionalGas = showGasReserved()
-    ? Math.abs(parseFloat(parsedBalanceFull) - parseFloat(parsedGasCost))
+  const gasReserved = showGasReserved()
+    ? isGasCostCoveredByBalance()
+      ? parseFloat(fromValue) - parseFloat(parsedGasCost)
+      : parseFloat(fromValue)
     : undefined
 
   let tooltipContent
@@ -335,8 +348,8 @@ const AvailableBalance = ({
         >
           {/* {parseFloat(parsedGasCost).toFixed(4)} */}
           {/* <span> estimated gas required</span> */}
-          {requiredAdditionalGas.toFixed(4)}
-          <span> additional gas required</span>
+          {isTraceInput() ? '<0.001' : gasReserved.toFixed(4)}
+          <span> reserved for gas</span>
         </label>
       </HoverTooltip>
     )
@@ -406,71 +419,3 @@ const Tooltip = ({
     )
   }
 }
-
-// {hasMounted &&
-//   isConnected &&
-//   (isGasToken &&
-//   showGasReserved() &&
-//   isGasInputMoreThanBridgeableMax() ? (
-//     <label
-//       htmlFor="inputRow"
-//       className={`
-//         text-xs text-secondaryTextColor transition-all duration-150 transform-gpu
-//         ${
-//           (isGasBalanceLessThanCost() ||
-//             isGasInputMoreThanBridgeableMax()) &&
-//           'text-yellow-500'
-//         }
-//         `}
-//     >
-//       <HoverTooltip
-//         isActive={
-//           isGasBalanceLessThanCost() ||
-//           isGasInputMoreThanBridgeableMax()
-//         }
-//         hoverContent={
-//           isGasInputMoreThanBridgeableMax() ? (
-//             <div className="whitespace-nowrap">
-//               Requested bridge amount may not cover gas fees
-//             </div>
-//           ) : (
-//             <div className="whitespace-nowrap">
-//               Gas fees may exceed your available balance
-//             </div>
-//           )
-//         }
-//       >
-//         {parsedGasCost.toFixed(4)}
-//         <span className="text-opacity-50">
-//           {' '}
-//           estimated gas fee
-//         </span>
-//       </HoverTooltip>
-//     </label>
-//   ) : (
-//     <label
-//       htmlFor="inputRow"
-//       onClick={onAvailableBalance}
-//       className={`
-//         text-xs text-white transition-all duration-150 transform-gpu
-//         hover:text-opacity-70 hover:cursor-pointer
-//       `}
-//     >
-//       <HoverTooltip
-//         isActive={isGasBalanceLessThanCost()}
-//         hoverContent={
-//           <div className="whitespace-nowrap">
-//             Gas fees may exceed your available balance
-//           </div>
-//         }
-//       >
-//         {isTraceBalance()
-//           ? '< 0.0001'
-//           : trimmedParsedBalance ?? '0.0'}
-//         <span className="text-opacity-50 text-secondaryTextColor">
-//           {' '}
-//           available
-//         </span>
-//       </HoverTooltip>
-//     </label>
-//   ))}
