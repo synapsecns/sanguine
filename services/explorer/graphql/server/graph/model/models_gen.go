@@ -256,18 +256,20 @@ func (e BridgeTxType) MarshalGQL(w io.Writer) {
 type BridgeType string
 
 const (
-	BridgeTypeBridge BridgeType = "BRIDGE"
-	BridgeTypeCctp   BridgeType = "CCTP"
+	BridgeTypeBridge 		BridgeType = "BRIDGE"
+	BridgeTypeCctp   		BridgeType = "CCTP"
+	BridgeTypeFastBridge	BridgeType = "FastBridge"
 )
 
 var AllBridgeType = []BridgeType{
 	BridgeTypeBridge,
 	BridgeTypeCctp,
+	BridgeTypeFastBridge,
 }
 
 func (e BridgeType) IsValid() bool {
 	switch e {
-	case BridgeTypeBridge, BridgeTypeCctp:
+	case BridgeTypeBridge, BridgeTypeCctp, BridgeTypeFastBridge:
 		return true
 	}
 	return false
@@ -297,18 +299,20 @@ func (e BridgeType) MarshalGQL(w io.Writer) {
 type ContractType string
 
 const (
-	ContractTypeBridge ContractType = "BRIDGE"
-	ContractTypeCctp   ContractType = "CCTP"
+	ContractTypeBridge 		ContractType = "BRIDGE"
+	ContractTypeCctp   		ContractType = "CCTP"
+	ContractTypeFastBridge	ContractType = "FastBridge"
 )
 
 var AllContractType = []ContractType{
 	ContractTypeBridge,
 	ContractTypeCctp,
+	ContractTypeFastBridge,
 }
 
 func (e ContractType) IsValid() bool {
 	switch e {
-	case ContractTypeBridge, ContractTypeCctp:
+	case ContractTypeBridge, ContractTypeCctp, ContractTypeFastBridge:
 		return true
 	}
 	return false

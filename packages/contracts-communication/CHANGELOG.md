@@ -3,6 +3,45 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.3](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.1.2...contracts-communication@1.1.3) (2024-04-11)
+
+**Note:** Version bump only for package contracts-communication
+
+
+
+
+
+## [1.1.2](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.1.1...contracts-communication@1.1.2) (2024-04-08)
+
+
+### Bug Fixes
+
+* **contracts-communication:** Integration tests for message bus, testnet deployment ([#2463](https://github.com/synapsecns/sanguine/issues/2463)) ([4829d41](https://github.com/synapsecns/sanguine/commit/4829d413951b11041dc0228daccb0d3ac633d08e))
+
+
+
+
+
+## [1.1.1](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.1.0...contracts-communication@1.1.1) (2024-04-08)
+
+**Note:** Version bump only for package contracts-communication
+
+
+
+
+
+# [1.1.0](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.0.5...contracts-communication@1.1.0) (2024-04-04)
+
+
+### Features
+
+* **contracts-communication:** Interchain versioning library ([#2389](https://github.com/synapsecns/sanguine/issues/2389)) ([c21ec2f](https://github.com/synapsecns/sanguine/commit/c21ec2f958feca81f4290f6e5f3c1a04ade2c4e2)), closes [#2390](https://github.com/synapsecns/sanguine/issues/2390) [#2393](https://github.com/synapsecns/sanguine/issues/2393) [#2402](https://github.com/synapsecns/sanguine/issues/2402)
+* v4 SIN testnet deployment ([#2452](https://github.com/synapsecns/sanguine/issues/2452)) ([3b75b7c](https://github.com/synapsecns/sanguine/commit/3b75b7cde0db713b95ca38ab2c8d7ca091dae867))
+
+
+
+
+
 ## [1.0.5](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.0.4...contracts-communication@1.0.5) (2024-03-29)
 
 **Note:** Version bump only for package contracts-communication
