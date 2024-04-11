@@ -10,7 +10,6 @@ import (
 	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/executionservice"
 
-	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -174,42 +173,14 @@ func (e *Executor) runDBSelector(ctx context.Context) error {
 }
 
 func (e *Executor) executeTransaction(ctx context.Context, request db.TransactionSent) error {
-	fmt.Println("executeTransaction: Getting contract")
 	contract, ok := e.clientContracts[int(request.DstChainID.Int64())]
 	if !ok {
-		fmt.Printf("executeTransaction: Could not get contract for chain %d\n", request.SrcChainID.Int64())
 		return fmt.Errorf("could not get contract for chain %d", request.SrcChainID.Int64())
 	}
 
-	fmt.Println("executeTransaction: Submitting transaction")
 	_, err := e.submitter.SubmitTransaction(ctx, request.DstChainID, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-		fmt.Println("executeTransaction: Getting chain client")
-		chainClient, err := e.client.GetChainClient(ctx, int(request.DstChainID.Int64()))
-		if err != nil {
-			fmt.Printf("executeTransaction: Could not get chain client: %v\n", err)
-			return nil, fmt.Errorf("could not get chain client: %w", err)
-		}
-		contractAddress := contract.Address() // Assign to a variable
-		fmt.Println("executeTransaction: Creating transaction mock for gas estimation")
-		tempTx, err := contract.InterchainExecute(transactor, request.Options.GasLimit, request.EncodedTX, nil)
-		if err != nil {
-			fmt.Printf("executeTransaction: Could not create transaction mock tx for gas estimation: %v\n", err)
-			return nil, fmt.Errorf("could not create transaction mock tx for gas estimation")
-		}
-		fmt.Println("executeTransaction: Estimating gas")
-		gasEstimate, err := chainClient.EstimateGas(ctx, ethereum.CallMsg{
-			To:    &contractAddress,
-			Data:  tempTx.Data(),
-			Value: request.Options.GasAirdrop,
-		})
-		if err != nil {
-			fmt.Printf("executeTransaction: Could not estimate gas: %v\n", err)
-			return nil, fmt.Errorf("could not estimate gas: %w", err)
-		}
-		transactor.GasLimit = request.Options.GasLimit.Uint64() + gasEstimate
 		transactor.Value = request.Options.GasAirdrop
 
-		fmt.Println("executeTransaction: Executing interchain transaction")
 		// nolint: wrapcheck
 		return contract.InterchainExecute(transactor, request.Options.GasLimit, request.EncodedTX, nil)
 	})
