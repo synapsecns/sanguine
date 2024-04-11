@@ -319,9 +319,20 @@ const AvailableBalance = ({
     return !hasOnlyZeroes(fromValue) && !isGasCostCoveredByInput()
   }
 
+  const requiredAdditionalGas = showGasReserved()
+    ? Math.abs(parseFloat(parsedBalanceFull) - parseFloat(parsedGasCost))
+    : undefined
+
   let tooltipContent
 
-  if (!isGasCostCoveredByInput()) {
+  if (showGasReserved()) {
+    tooltipContent = (
+      <div className="space-y-2 whitespace-nowrap">
+        <div>You may not have enough to cover gas fees.</div>
+        <div>Estimated gas: {parseFloat(parsedGasCost).toFixed(4)}</div>
+      </div>
+    )
+  } else if (!isGasCostCoveredByInput()) {
     tooltipContent = (
       <div className="whitespace-nowrap">
         You may not have enough to cover gas fees.
@@ -356,8 +367,10 @@ const AvailableBalance = ({
           onClick={onMaxBalance}
           className={labelClassName}
         >
-          {parseFloat(parsedGasCost).toFixed(4)}
-          <span> estimated gas required</span>
+          {/* {parseFloat(parsedGasCost).toFixed(4)} */}
+          {/* <span> estimated gas required</span> */}
+          {requiredAdditionalGas.toFixed(4)}
+          <span> additional gas required</span>
         </label>
       </HoverTooltip>
     )
