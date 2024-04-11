@@ -86,3 +86,13 @@ struct AppConfigV1 {
         bytes32 dstReceiver
     );
 ```
+
+To sum up, the message status lifecycle is currently:
+
+- Sent on the source chain (with verification requested).
+- Waiting for at least `requiredResponses` module verifications on the destination chain.
+- Waiting for `optimisticPeriod` to pass since the last verification.
+- Waiting for execution on the destination chain (anyone could trigger execution at this point).
+- Executed on the destination chain.
+
+> **Note**: once the batching is implemented, there will be an additional step of waiting for the source chain batch to be finalized before it could be verified on the destination chain. The event spec for this is not yet finalized, so it's not included in this document.
