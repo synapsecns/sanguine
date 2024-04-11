@@ -113,9 +113,14 @@ export const InputContainer = () => {
   const [showValue, setShowValue] = useState('')
   const [hasMounted, setHasMounted] = useState(false)
 
+  const [estimatedGasLimit, setEstimatedGasLimit] = useState<bigint>(0n)
+
   const { gasData } = useAppSelector((state) => state.gasData)
   const { gasPrice, maxFeePerGas } = gasData?.formatted
-  const { rawGasCost, parsedGasCost } = calculateGasCost(gasPrice, 500_000)
+  const { rawGasCost, parsedGasCost } = calculateGasCost(
+    gasPrice,
+    estimatedGasLimit.toString()
+  )
 
   const isGasToken: boolean = fromToken?.addresses[fromChainId] === zeroAddress
 
@@ -125,8 +130,9 @@ export const InputContainer = () => {
 
   const { balance, parsedBalance } = selectedFromToken || {}
 
-  const { synapseSDK } = useSynapseContext()
+  /** Fetch gasLimit using Wallet's gas balance */
 
+  const { synapseSDK } = useSynapseContext()
   useEffect(() => {
     if (
       fromChainId &&
@@ -134,7 +140,8 @@ export const InputContainer = () => {
       fromToken &&
       toToken &&
       address &&
-      isGasToken
+      isGasToken &&
+      parsedBalance
     ) {
       ;(async () => {
         const bridgeQuote = await getBridgeQuote(
@@ -156,6 +163,8 @@ export const InputContainer = () => {
           fromToken,
           parsedBalance
         )
+
+        setEstimatedGasLimit(gasLimit)
 
         console.log('gasLimit: ', gasLimit)
       })()

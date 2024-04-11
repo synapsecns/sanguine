@@ -10,13 +10,13 @@ import { formatGwei } from 'viem'
  */
 
 export const calculateGasCost = (
-  gasPrice?: string,
-  gasLimit = 200000
+  gasPrice: string | undefined,
+  gasLimit: string
 ): {
   rawGasCost: string
   parsedGasCost: string
 } => {
-  if (!gasPrice) {
+  if (!gasPrice || !gasLimit) {
     return {
       rawGasCost: null,
       parsedGasCost: null,
@@ -26,7 +26,7 @@ export const calculateGasCost = (
   const upperLimitBuffer = 1.5
 
   const estimatedGasCostInGwei =
-    gasLimit * parseFloat(gasPrice) * upperLimitBuffer
+    parseFloat(gasLimit) * parseFloat(gasPrice) * upperLimitBuffer
 
   const oneGwei = parseFloat(formatGwei(1n))
 
@@ -35,7 +35,7 @@ export const calculateGasCost = (
     : null
 
   return {
-    rawGasCost: estimatedGasCostInGwei.toString(),
-    parsedGasCost: formattedEstimatedGasCost.toString(),
+    rawGasCost: estimatedGasCostInGwei?.toString(),
+    parsedGasCost: formattedEstimatedGasCost?.toString(),
   }
 }
