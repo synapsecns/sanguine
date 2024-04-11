@@ -367,7 +367,7 @@ const AvailableBalance = ({
 
   const isTraceBalance = (): boolean => {
     if (!balance || !parsedBalanceFull) return false
-    if (balance && hasOnlyZeroes(parsedBalanceFull)) return true
+    if (balance && !hasOnlyZeroes(parsedBalanceFull)) return true
     return false
   }
 
