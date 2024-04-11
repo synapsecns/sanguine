@@ -238,6 +238,12 @@ func (i *InventoryTestSuite) TestHasSufficientGas() {
 	i.NoError(err)
 	i.True(sufficient)
 
+	// test with nonzero gasValue
+	gasValue := new(big.Int).Mul(big.NewInt(params.Ether), big.NewInt(10))
+	sufficient, err = im.HasSufficientGas(i.GetTestContext(), origin, gasValue)
+	i.NoError(err)
+	i.False(sufficient)
+
 	// multiply big int to avoid overflow
 	largeBalance := new(big.Int).Mul(big.NewInt(params.Ether), big.NewInt(100))
 	im = getManager([]*big.Int{largeBalance, big.NewInt(params.Ether)})
