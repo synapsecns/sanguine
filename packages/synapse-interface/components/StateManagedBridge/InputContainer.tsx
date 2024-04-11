@@ -48,7 +48,7 @@ export const InputContainer = () => {
 
   const { gasData } = useAppSelector((state) => state.gasData)
   const { gasPrice, maxFeePerGas } = gasData?.formatted
-  const { rawGasCost, parsedGasCost } = calculateGasCost(gasPrice, 200_000)
+  const { rawGasCost, parsedGasCost } = calculateGasCost(gasPrice, 500_000)
 
   const isGasToken: boolean = fromToken?.addresses[fromChainId] === zeroAddress
 
@@ -281,13 +281,6 @@ const AvailableBalance = ({
   isConnected: boolean
   disabled?: boolean
 }) => {
-  const labelClassName = joinClassNames({
-    space: 'block',
-    textColor: 'text-xxs md:text-xs',
-    animation: 'transition-all duration-150 transform-gpu',
-    hover: 'hover:opacity-70 cursor-pointer',
-  })
-
   const parsedBalanceFull = formatBigIntToString(
     balance,
     fromToken?.decimals[fromChainId]
@@ -300,6 +293,8 @@ const AvailableBalance = ({
   }
 
   const isGasCostCoveredByInput = (): boolean => {
+    if (!isGasToken) return true
+
     if (isGasToken && parsedGasCost && fromValue && parsedBalanceFull) {
       return (
         parseFloat(fromValue) <
@@ -311,11 +306,17 @@ const AvailableBalance = ({
   }
 
   const isGasCostCoveredByBalance = (): boolean => {
+    if (!isGasToken) return true
+
     if (isGasToken && parsedGasCost && parsedBalanceFull) {
       return parseFloat(parsedGasCost) < parseFloat(parsedBalanceFull)
     } else {
       return false
     }
+  }
+
+  const showGasReserved = (): boolean => {
+    return !isGasCostCoveredByInput()
   }
 
   let tooltipContent
@@ -334,10 +335,33 @@ const AvailableBalance = ({
     )
   }
 
+  const labelClassName = joinClassNames({
+    space: 'block',
+    textColor: `text-xxs md:text-xs ${
+      showGasReserved() ? '!text-yellowText' : ''
+    }`,
+    animation: 'transition-all duration-150 transform-gpu',
+    hover: 'hover:opacity-70 cursor-pointer',
+  })
+
+  console.log('showGasReserved:', showGasReserved())
   console.log('isGasCostCoveredByInput: ', isGasCostCoveredByInput())
   console.log('isGasCostCoveredByBalance:', isGasCostCoveredByBalance())
 
-  if (hasMounted && isConnected && !disabled) {
+  if (showGasReserved()) {
+    return (
+      <HoverTooltip isActive={true} hoverContent={tooltipContent}>
+        <label
+          htmlFor="inputRow"
+          onClick={onMaxBalance}
+          className={labelClassName}
+        >
+          {parseFloat(parsedGasCost).toFixed(4)}
+          <span> estimated gas required</span>
+        </label>
+      </HoverTooltip>
+    )
+  } else if (hasMounted && isConnected && !disabled) {
     return (
       <HoverTooltip
         isActive={!isGasCostCoveredByBalance() || !isGasCostCoveredByInput()}
@@ -353,8 +377,9 @@ const AvailableBalance = ({
         </label>
       </HoverTooltip>
     )
+  } else {
+    return null
   }
-  return null
 }
 
 // TODO: Replace with HoverTooltip in Portfolio once other branch is merged in
