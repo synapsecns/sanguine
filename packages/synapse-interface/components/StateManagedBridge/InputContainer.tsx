@@ -55,13 +55,7 @@ export const InputContainer = () => {
     (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
   )
 
-  const { balance: rawBalance, parsedBalance: trimmedParsedBalance } =
-    selectedFromToken || {}
-
-  const parsedBalance: string = formatBigIntToString(
-    rawBalance,
-    fromToken?.decimals[fromChainId]
-  )
+  const { balance, parsedBalance } = selectedFromToken || {}
 
   useEffect(() => {
     setHasMounted(true)
@@ -117,7 +111,7 @@ export const InputContainer = () => {
   const onMaxBalance = () => {
     dispatch(
       updateFromValue(
-        formatBigIntToString(rawBalance, fromToken?.decimals[fromChainId])
+        formatBigIntToString(balance, fromToken?.decimals[fromChainId])
       )
     )
   }
@@ -149,7 +143,7 @@ export const InputContainer = () => {
     } else {
       dispatch(
         updateFromValue(
-          formatBigIntToString(rawBalance, fromToken?.decimals[fromChainId])
+          formatBigIntToString(balance, fromToken?.decimals[fromChainId])
         )
       )
     }
@@ -158,8 +152,8 @@ export const InputContainer = () => {
     fromToken,
     isGasToken,
     parsedGasCost,
-    rawBalance,
-    trimmedParsedBalance,
+    balance,
+    parsedBalance,
   ])
 
   const showMaxButton = (): boolean => {
@@ -196,8 +190,8 @@ export const InputContainer = () => {
   }
 
   const isTraceBalance = (): boolean => {
-    if (!rawBalance || !trimmedParsedBalance) return false
-    if (rawBalance && hasOnlyZeroes(trimmedParsedBalance)) return true
+    if (!balance || !parsedBalance) return false
+    if (balance && hasOnlyZeroes(parsedBalance)) return true
     return false
   }
 
@@ -221,7 +215,7 @@ export const InputContainer = () => {
           />
           <AvailableBalance
             fromValue={fromValue}
-            balance={rawBalance}
+            balance={balance}
             parsedBalance={parsedBalance}
             parsedGasCost={parsedGasCost}
             onMaxBalance={onMaxBalance}
@@ -231,7 +225,7 @@ export const InputContainer = () => {
         </div>
         {hasMounted && isConnected && (
           <MiniMaxButton
-            disabled={!rawBalance || rawBalance === 0n ? true : false}
+            disabled={!balance || balance === 0n ? true : false}
             onClickBalance={onMaxBridgeableBalance}
           />
         )}
@@ -306,16 +300,46 @@ const AvailableBalance = ({
     return false
   }
 
+  const isGasCostCovered = (): boolean => {
+    if (!isGasToken) return true
+
+    if (isGasToken && parsedGasCost && fromValue && parsedBalance) {
+      return (
+        parseFloat(fromValue) >
+        parseFloat(parsedBalance) - parseFloat(parsedGasCost)
+      )
+    }
+
+    return true
+  }
+
+  const isGasBalanceLessThanCost = (): boolean => {
+    if (isGasToken && parsedGasCost && parsedBalance) {
+      return parseFloat(parsedGasCost) > parseFloat(parsedBalance)
+    } else {
+      return false
+    }
+  }
+
   if (hasMounted && isConnected && !disabled) {
     return (
-      <label
-        htmlFor="inputRow"
-        onClick={onMaxBalance}
-        className={labelClassName}
+      <HoverTooltip
+        isActive={isGasBalanceLessThanCost()}
+        hoverContent={
+          <div className="whitespace-nowrap">
+            Gas fees may exceed your available balance
+          </div>
+        }
       >
-        {isTraceBalance ? '<0.001' : parsedBalance ?? '0.0'}
-        <span className="text-zinc-500 dark:text-zinc-400"> available</span>
-      </label>
+        <label
+          htmlFor="inputRow"
+          onClick={onMaxBalance}
+          className={labelClassName}
+        >
+          {isTraceBalance() ? '<0.001' : parsedBalance ?? '0.0'}
+          <span className="text-zinc-500 dark:text-zinc-400"> available</span>
+        </label>
+      </HoverTooltip>
     )
   }
   return null
