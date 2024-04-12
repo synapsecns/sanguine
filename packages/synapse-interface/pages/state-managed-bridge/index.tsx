@@ -499,11 +499,8 @@ const StateManagedBridge = () => {
     }
   }
 
-  const springClass =
-    '-mt-4 fixed z-50 w-full h-full bg-opacity-50 bg-[#343036]'
-
   const maintenanceCountdownProgressInstances =
-    useMaintenanceCountdownProgresses()
+    useMaintenanceCountdownProgresses({ type: 'Bridge' })
 
   const isBridgePaused = maintenanceCountdownProgressInstances.some(
     (instance) => instance.isCurrentChainDisabled
@@ -562,7 +559,7 @@ const StateManagedBridge = () => {
               />
               <OutputContainer />
               <Warning />
-              <MaintenanceWarningMessages />
+              <MaintenanceWarningMessages type="Bridge" />
               <BridgeExchangeRateInfo />
               <ConfirmDestinationAddressWarning />
               <BridgeTransactionButton

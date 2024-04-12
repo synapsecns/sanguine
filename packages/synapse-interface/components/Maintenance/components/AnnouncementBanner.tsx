@@ -58,26 +58,36 @@ export const AnnouncementBanner = ({
   if (!showBanner || !hasMounted || !isStarted || isComplete) return null
 
   return (
-    <div className="flex items-center justify-center mx-auto text-sm text-left lg:flex-row bg-gradient-to-r from-fuchsia-600/25 to-purple-600/25">
+    <div
+      className={`
+        flex items-center justify-center mx-auto text-sm
+        text-left lg:flex-row bg-gradient-to-r
+        from-fuchsia-600/25 to-purple-600/25
+      `}
+    >
       <div
         id="banner-default"
-        className="flex items-center gap-4 px-4 py-2 w-full max-w-[1111px] text-primaryTextColor justify-center leading-normal"
+        className={`
+          flex gap-4 px-4 py-2 w-full
+          justify-center leading-normal items-center
+          max-w-[1111px] text-primaryTextColor
+        `}
         role="alert"
       >
         {bannerContents}
         <button
-          type="button"
+          onClick={() => setShowBanner(false)}
           className="inline-flex items-center justify-center text-primaryTextColor"
           data-dismiss-target="#banner-default"
           aria-label="Close"
-          onClick={() => setShowBanner(false)}
+          type="button"
         >
           <svg
             className="w-[9px] h-[9px]"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
             viewBox="0 0 14 14"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+            fill="none"
           >
             <path
               stroke="currentColor"

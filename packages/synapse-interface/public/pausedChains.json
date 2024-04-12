@@ -3,6 +3,8 @@
     "id": "base-chain-pause",
     "pausedFromChains": [8453],
     "pausedToChains": [8453],
+    "pauseBridge": true,
+    "pauseSwap": false,
     "startTime": "2024-04-12T17:41:00Z",
     "endTime": null,
     "bannerStartTime": "2024-04-12T04:40:00Z",
