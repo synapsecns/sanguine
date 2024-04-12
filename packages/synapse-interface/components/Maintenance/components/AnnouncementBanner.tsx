@@ -3,13 +3,14 @@ import { getCountdownTimeStatus } from './EventCountdownProgressBar'
 import { isNull } from 'lodash'
 
 /**
- * Reusable automated Announcement Banner with custom Start/End Time
- * Will automatically appear after Start time
- * Will automatically disappear after End time
- * @param bannerId: store in $MMDDYYYY-$BANNER_NAME format (e.g 03132024-ETH-DENCUN)
- * @param bannerContents: contents to display in banner
- * @param startDate: start date to show banner
- * @param endDate: end date to remove banner
+ * Generic Message Banner that appears between defined start and end time.
+ * If end date is null, banner will appear indefinitely until removed.
+ *
+ * @param bannerId Unique ID to prevent conflicts with other banner instances.
+ *                 Assign ID $MMDDYYYY-$BANNER_NAME format (e.g 03132024-ETH-DENCUN)
+ * @param bannerContents Message to display
+ * @param startDate Start time to display banner
+ * @param endDate End time to remove banner
  */
 export const AnnouncementBanner = ({
   bannerId,
@@ -22,8 +23,6 @@ export const AnnouncementBanner = ({
   startDate: Date
   endDate: Date | null
 }) => {
-  const isIndefinite = isNull(endDate)
-
   const { isStarted, isComplete } = getCountdownTimeStatus(startDate, endDate)
 
   const [hasMounted, setHasMounted] = useState(false)
@@ -66,7 +65,7 @@ export const AnnouncementBanner = ({
       `}
     >
       <div
-        id="banner-default"
+        id={bannerId}
         className={`
           flex gap-4 px-4 py-2 w-full
           justify-center leading-normal items-center

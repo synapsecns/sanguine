@@ -3,17 +3,13 @@ import { useEventCountdownProgressBar } from './EventCountdownProgressBar'
 import { isChainIncluded } from '@/utils/isChainIncluded'
 
 /**
- * A custom hook that provides logic for showing a countdown progress bar and determining if the bridge
- * should be paused based on the current chain and a maintenance schedule.
+ * A hook that will return a constructed progress bar instance
+ * and Event status checks to use for pausing Bridge / Swap.
  *
- * @param {Date} startDate - The start date and time for the maintenance event.
- * @param {Date} endDate - The end date and time for the maintenance event.
- * @param {number[]} pausedChains - An array of chain IDs for which the bridge should be paused during the maintenance event.
- * @param {any} progressBarMessage - The message or content to display in the countdown progress bar.
- * @returns An object containing:
- * - isMaintenancePending: A boolean indicating if the maintenance is currently pending (i.e., ongoing).
- * - isCurrentChainDisabled: A boolean indicating if the current chain selected by the user is affected by the maintenance and should therefore be considered "disabled" or paused.
- * - MaintenanceCountdownProgressBar: A component (or null) that renders the countdown progress bar if the current chain is affected by the maintenance.
+ * @param startDate Start time of event to track
+ * @param endDate End time of event to track
+ * @param pausedChains A list of chain IDs that is paused for Bridge / Swap
+ * @param progressBarMessage The message to be displayed alongside the Progress Bar
  */
 export const useMaintenanceCountdownProgress = ({
   fromChainId,

@@ -4,16 +4,13 @@ import { WarningMessage } from '../../Warning'
 import { isChainIncluded } from '@/utils/isChainIncluded'
 
 /**
- * This component displays a warning message during a specified maintenance window for selected blockchain chains.
- * It checks if the current chain selected by the user is within the paused chains and if the current time is within
- * the maintenance window. If so, it displays a custom warning message.
+ * Displays a warning message based on selected chains for Bridge / Swap.
+ * Able to specify which chains to display warning messages for.
  *
- * @param {Date} startDate - The starting date and time when the warning message should begin appearing.
- * @param {Date} endDate - The ending date and time when the warning message should stop appearing.
- * @param {number[]} pausedChains - An array of chain IDs that the warning message applies to. The message will
- *                                  only appear if the user's current from or to chain is in this list.
- * @param {any} warningMessage - The content of the warning message to be displayed. This allows for flexibility
- *                               in the message's structure and content.
+ * @param startDate Start time to display message
+ * @param endDate End time to remove message
+ * @param pausedChains A list of chainIds to display warning messages for
+ * @param warningMessage Message to display if User is connected to paused chainIds
  */
 export const MaintenanceWarningMessage = ({
   fromChainId,

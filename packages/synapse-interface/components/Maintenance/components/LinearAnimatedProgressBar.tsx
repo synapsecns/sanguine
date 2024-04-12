@@ -3,12 +3,13 @@ import { getCountdownTimeStatus } from './EventCountdownProgressBar'
 import { isNull } from 'lodash'
 
 /**
- * Renders a linear, animated progress bar which visually represents the elapsed
- * and remaining time within a given start and end date range.
+ * Constructs an animated progress bar visualizing the amount of time
+ * remaining between a provided start / end date.
+ * If end date is null, the bar will continuously animate without indication of progress.
  *
- * @param {string} id - A unique identifier for the progress bar instance.
- * @param {Date} startDate - The start date and time from when the countdown begins.
- * @param {Date} endDate - The end date and time at which the countdown ends.
+ * @param id Unique ID to differentiate instances
+ * @param startDate Start time to track event current progress
+ * @param endDate End time to track when event completes
  */
 export const LinearAnimatedProgressBar = memo(
   ({

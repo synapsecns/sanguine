@@ -4,19 +4,14 @@ import { AnnouncementBanner } from './AnnouncementBanner'
 import { isNull } from 'lodash'
 
 /**
- * Component for creating and managing a maintenance announcement banner. This banner automatically
- * appears and disappears based on specified start and end times, providing users with timely information
- * about maintenance events.
+ * Handles constructing and updating instances of Announcement Banners based on specific start / end time.
+ * If end date is null, indefinitely display banner.
  *
- * @param {string} id - A unique identifier for the banner instance. This is used to track the banner's state
- *                      in the browser and avoid conflicts with other instances.
- * @param {Date} startDate - The starting date and time when the banner should become visible to users.
- *                           This is the point at which the maintenance is considered to begin.
- * @param {Date} endDate - The ending date and time when the banner should be removed or hidden from view.
- *                         This corresponds to the end of the maintenance period. If null, banner will persist indefinitely.
- * @param {any} bannerMessage - The content to be displayed within the banner. This parameter allows for
- *                              flexibility in the message's structure and content, which can include text,
- *                              links, or even React components.
+ * @param id Unique ID to prevent conflicts with other banner instances.
+ *           Assign ID $MMDDYYYY-$BANNER_NAME format (e.g 03132024-ETH-DENCUN)
+ * @param startDate Start time to display banner
+ * @param endDate End time to remove banner
+ * @param bannerMessage - Message to display in banner
  */
 export const MaintenanceBanner = ({
   id,

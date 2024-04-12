@@ -105,8 +105,8 @@ export const MaintenanceWarningMessages = ({
 }
 
 /**
- * Hook that maps through PAUSED_CHAINS to apply the single chain countdown progress logic to each.
- * @returns Array of objects containing maintenance status and components for each paused chain.
+ * Hook that maps through PAUSED_CHAINS to apply the single event countdown progress logic to each.
+ * @returns A list of objects containing maintenance status and components for each paused chain.
  */
 export const useMaintenanceCountdownProgresses = ({
   type,

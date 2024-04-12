@@ -3,13 +3,14 @@ import { LinearAnimatedProgressBar } from './LinearAnimatedProgressBar'
 import { useIntervalTimer } from '@/utils/hooks/useIntervalTimer'
 
 /**
- * Automated Event Countdown Progress bar that displays
- * time remaining for event target end date to be reached.
- * Displays a visual progress bar with percentage completion.
+ * Hook to construct an Animated Progress Bar that displays
+ * the remaining time left based on given start / end time.
+ * Hook also provides status updates on whether Event is pending or complete.
+ * If end date is null, progress bar will display an indefinite status.
  *
- * @param eventLabel text to display in progress bar
- * @param startDate starting date for progress bar to activate
- * @param endDate ending date for progress bar to disappear
+ * @param eventLabel Message to display with animated progress bar
+ * @param startDate Start time of event to track
+ * @param endDate End time of event to track
  */
 export const useEventCountdownProgressBar = (
   eventLabel: string,
