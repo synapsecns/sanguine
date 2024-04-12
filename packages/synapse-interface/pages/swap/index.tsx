@@ -345,7 +345,7 @@ const StateManagedSwap = () => {
   }
 
   const maintenanceCountdownProgressInstances =
-    useMaintenanceCountdownProgresses()
+    useMaintenanceCountdownProgresses({ type: 'Swap' })
 
   const isSwapPaused = maintenanceCountdownProgressInstances.some(
     (instance) => instance.isCurrentChainDisabled

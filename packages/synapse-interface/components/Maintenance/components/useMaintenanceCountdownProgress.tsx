@@ -16,6 +16,8 @@ import { isChainIncluded } from '@/utils/isChainIncluded'
  * - MaintenanceCountdownProgressBar: A component (or null) that renders the countdown progress bar if the current chain is affected by the maintenance.
  */
 export const useMaintenanceCountdownProgress = ({
+  fromChainId,
+  toChainId,
   startDate,
   endDate,
   pausedFromChains,
@@ -23,6 +25,8 @@ export const useMaintenanceCountdownProgress = ({
   progressBarMessage,
   disabled = false,
 }: {
+  fromChainId: number
+  toChainId: number
   startDate: Date
   endDate: Date | null
   pausedFromChains: number[]
@@ -30,7 +34,7 @@ export const useMaintenanceCountdownProgress = ({
   progressBarMessage: any
   disabled?: boolean
 }) => {
-  const { fromChainId, toChainId } = useBridgeState()
+  // const { fromChainId, toChainId } = useBridgeState()
 
   const isCurrentChain =
     isChainIncluded([fromChainId], pausedFromChains) ||

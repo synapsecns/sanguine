@@ -165,15 +165,40 @@ export const MaintenanceWarningMessages = ({
  * Hook that maps through PAUSED_CHAINS to apply the single chain countdown progress logic to each.
  * @returns Array of objects containing maintenance status and components for each paused chain.
  */
-export const useMaintenanceCountdownProgresses = () => {
-  return PAUSED_CHAINS.map((event) => {
-    return useMaintenanceCountdownProgress({
-      startDate: event.startTime,
-      endDate: event.endTime,
-      pausedFromChains: event.pausedFromChains,
-      pausedToChains: event.pausedToChains,
-      progressBarMessage: event.progressBarMessage,
-      disabled: event.disableCountdown,
+export const useMaintenanceCountdownProgresses = ({
+  type,
+}: {
+  type: 'Bridge' | 'Swap'
+}) => {
+  const { fromChainId: bridgeFromChainId, toChainId: bridgeToChainId } =
+    useBridgeState()
+  const { swapChainId } = useSwapState()
+
+  if (type === 'Bridge') {
+    return PAUSED_CHAINS.map((event) => {
+      return useMaintenanceCountdownProgress({
+        fromChainId: bridgeFromChainId,
+        toChainId: bridgeToChainId,
+        startDate: event.startTime,
+        endDate: event.endTime,
+        pausedFromChains: event.pausedFromChains,
+        pausedToChains: event.pausedToChains,
+        progressBarMessage: event.progressBarMessage,
+        disabled: event.disableCountdown,
+      })
     })
-  })
+  } else if (type === 'Swap') {
+    return PAUSED_CHAINS.map((event) => {
+      return useMaintenanceCountdownProgress({
+        fromChainId: swapChainId,
+        toChainId: null,
+        startDate: event.startTime,
+        endDate: event.endTime,
+        pausedFromChains: event.pausedFromChains,
+        pausedToChains: event.pausedToChains,
+        progressBarMessage: event.progressBarMessage,
+        disabled: event.disableCountdown,
+      })
+    })
+  }
 }
