@@ -17,9 +17,9 @@ interface ChainPause {
   warningMessage: JSX.Element
   bannerMessage: JSX.Element
   progressBarMessage: JSX.Element
-  disableBanner?: boolean
-  disableWarning?: boolean
-  disableCountdown?: boolean
+  disableBanner: boolean
+  disableWarning: boolean
+  disableCountdown: boolean
 }
 
 const PAUSED_CHAINS: ChainPause[] = pausedChains.map((pause) => ({
