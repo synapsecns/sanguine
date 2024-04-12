@@ -1,0 +1,11 @@
+{
+  "chains": {
+    "arb_sepolia": "--auto-gas-1559",
+    "eth_sepolia": "--auto-gas-1559",
+    "op_sepolia": "--auto-gas-1559"
+  },
+  "deployConfigs": "configs",
+  "deployments": "deployments",
+  "forgeArtifacts": "out",
+  "freshDeployments": ".deployments"
+}

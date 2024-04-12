@@ -20,11 +20,13 @@ func _() {
 	_ = x[RedeemV2Event-9]
 	_ = x[CircleRequestSentEvent-10]
 	_ = x[CircleRequestFulfilledEvent-11]
+	_ = x[BridgeRequestedEvent-12]
+	_ = x[BridgeRelayedEvent-13]
 }
 
-const _EventType_name = "DepositEventRedeemEventWithdrawEventMintEventDepositAndSwapEventMintAndSwapEventRedeemAndSwapEventRedeemAndRemoveEventWithdrawAndRemoveEventRedeemV2EventCircleRequestSentEventCircleRequestFulfilledEvent"
+const _EventType_name = "DepositEventRedeemEventWithdrawEventMintEventDepositAndSwapEventMintAndSwapEventRedeemAndSwapEventRedeemAndRemoveEventWithdrawAndRemoveEventRedeemV2EventCircleRequestSentEventCircleRequestFulfilledEventBridgeRequestedEventBridgeRelayedEvent"
 
-var _EventType_index = [...]uint8{0, 12, 23, 36, 45, 64, 80, 98, 118, 140, 153, 175, 202}
+var _EventType_index = [...]uint8{0, 12, 23, 36, 45, 64, 80, 98, 118, 140, 153, 175, 202, 222, 240}
 
 func (i EventType) String() string {
 	if i >= EventType(len(_EventType_index)-1) {

@@ -285,6 +285,21 @@ func (q *QuoteRequestHandler) handleProofPosted(ctx context.Context, _ trace.Spa
 		return nil
 	}
 
+	// make sure relayer hasn't already proved. This is neeeded in case of an abrupt halt in event sourcing
+	// note:  this assumes caller has already checked the sender is the relayer.
+	bs, err := q.Origin.Bridge.BridgeStatuses(&bind.CallOpts{Context: ctx}, request.TransactionID)
+	if err != nil {
+		return fmt.Errorf("could not get bridge status: %w", err)
+	}
+
+	if bs == fastbridge.RelayerClaimed.Int() {
+		err = q.db.UpdateQuoteRequestStatus(ctx, request.TransactionID, reldb.ClaimCompleted)
+		if err != nil {
+			return fmt.Errorf("could not update request status: %w", err)
+		}
+		return nil
+	}
+
 	canClaim, err := q.Origin.Bridge.CanClaim(&bind.CallOpts{Context: ctx}, request.TransactionID, q.RelayerAddress)
 	if err != nil {
 		return fmt.Errorf("could not check if can claim: %w", err)

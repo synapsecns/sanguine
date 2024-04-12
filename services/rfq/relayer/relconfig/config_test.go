@@ -19,7 +19,8 @@ func TestGetters(t *testing.T) {
 		Chains: map[int]relconfig.ChainConfig{
 			chainID: {
 				RFQAddress:             "0x123",
-				CCTPAddress:            "0x456",
+				SynapseCCTPAddress:     "0x456",
+				TokenMessengerAddress:  "0x789",
 				Confirmations:          1,
 				NativeToken:            "MATIC",
 				DeadlineBufferSeconds:  10,
@@ -36,7 +37,8 @@ func TestGetters(t *testing.T) {
 		},
 		BaseChainConfig: relconfig.ChainConfig{
 			RFQAddress:             "0x1234",
-			CCTPAddress:            "0x456",
+			SynapseCCTPAddress:     "0x456",
+			TokenMessengerAddress:  "0x789",
 			Confirmations:          2,
 			NativeToken:            "ARB",
 			DeadlineBufferSeconds:  11,
@@ -55,7 +57,8 @@ func TestGetters(t *testing.T) {
 		Chains: map[int]relconfig.ChainConfig{
 			chainID: {
 				RFQAddress:             "0x123",
-				CCTPAddress:            "0x456",
+				SynapseCCTPAddress:     "0x456",
+				TokenMessengerAddress:  "0x789",
 				Confirmations:          1,
 				NativeToken:            "MATIC",
 				DeadlineBufferSeconds:  10,
@@ -93,18 +96,32 @@ func TestGetters(t *testing.T) {
 		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].RFQAddress)
 	})
 
-	t.Run("GetCCTPAddress", func(t *testing.T) {
-		defaultVal, err := cfg.GetCCTPAddress(badChainID)
+	t.Run("GetSynapseCCTPAddress", func(t *testing.T) {
+		defaultVal, err := cfg.GetSynapseCCTPAddress(badChainID)
 		assert.NoError(t, err)
-		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.CCTPAddress)
+		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.SynapseCCTPAddress)
 
-		baseVal, err := cfgWithBase.GetCCTPAddress(badChainID)
+		baseVal, err := cfgWithBase.GetSynapseCCTPAddress(badChainID)
 		assert.NoError(t, err)
-		assert.Equal(t, baseVal, cfgWithBase.BaseChainConfig.CCTPAddress)
+		assert.Equal(t, baseVal, cfgWithBase.BaseChainConfig.SynapseCCTPAddress)
 
-		chainVal, err := cfgWithBase.GetCCTPAddress(chainID)
+		chainVal, err := cfgWithBase.GetSynapseCCTPAddress(chainID)
 		assert.NoError(t, err)
-		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].CCTPAddress)
+		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].SynapseCCTPAddress)
+	})
+
+	t.Run("GetTokenMessengerAddress", func(t *testing.T) {
+		defaultVal, err := cfg.GetTokenMessengerAddress(badChainID)
+		assert.NoError(t, err)
+		assert.Equal(t, defaultVal, relconfig.DefaultChainConfig.TokenMessengerAddress)
+
+		baseVal, err := cfgWithBase.GetTokenMessengerAddress(badChainID)
+		assert.NoError(t, err)
+		assert.Equal(t, baseVal, cfgWithBase.BaseChainConfig.TokenMessengerAddress)
+
+		chainVal, err := cfgWithBase.GetTokenMessengerAddress(chainID)
+		assert.NoError(t, err)
+		assert.Equal(t, chainVal, cfgWithBase.Chains[chainID].TokenMessengerAddress)
 	})
 
 	t.Run("GetConfirmations", func(t *testing.T) {

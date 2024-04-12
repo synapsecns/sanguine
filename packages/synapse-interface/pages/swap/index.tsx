@@ -1,13 +1,13 @@
 import { useAccount } from 'wagmi'
-import { useSelector } from 'react-redux'
-import { RootState } from '../../store/store'
 import toast from 'react-hot-toast'
-import { animated } from 'react-spring'
 import { useRouter } from 'next/router'
+
 import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
-
-import { setIsLoading } from '@/slices/swap/reducer'
-
+import {
+  setIsLoading,
+  setSwapFromToken,
+  setSwapToToken,
+} from '@/slices/swap/reducer'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
 import { commify } from '@ethersproject/units'
@@ -20,12 +20,7 @@ import { txErrorHandler } from '@/utils/txErrorHandler'
 import { CHAINS_BY_ID } from '@/constants/chains'
 import { approveToken } from '@/utils/approveToken'
 import { PageHeader } from '@/components/PageHeader'
-import Card from '@/components/ui/tailwind/Card'
-import { Transition } from '@headlessui/react'
-import {
-  SECTION_TRANSITION_PROPS,
-  TRANSITION_PROPS,
-} from '@/styles/transitions'
+import { BridgeCard } from '@/components/ui/BridgeCard'
 import ExplorerToastLink from '@/components/ExplorerToastLink'
 import { Address, zeroAddress } from 'viem'
 import { stringToBigInt } from '@/utils/bigint/format'
@@ -37,16 +32,14 @@ import {
 import { SwapTransactionButton } from '@/components/StateManagedSwap/SwapTransactionButton'
 import SwapExchangeRateInfo from '@/components/StateManagedSwap/SwapExchangeRateInfo'
 import { useSwapState } from '@/slices/swap/hooks'
-import { SwapChainListOverlay } from '@/components/StateManagedSwap/SwapChainListOverlay'
-import { SwapFromTokenListOverlay } from '@/components/StateManagedSwap/SwapFromTokenListOverlay'
 import { SwapInputContainer } from '@/components/StateManagedSwap/SwapInputContainer'
 import { SwapOutputContainer } from '@/components/StateManagedSwap/SwapOutputContainer'
 import { setSwapQuote, updateSwapFromValue } from '@/slices/swap/reducer'
 import { EMPTY_SWAP_QUOTE_ZERO } from '@/constants/swap'
-import { SwapToTokenListOverlay } from '@/components/StateManagedSwap/SwapToTokenListOverlay'
 import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import useSyncQueryParamsWithSwapState from '@/utils/hooks/useSyncQueryParamsWithSwapState'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
+import { SwitchButton } from '@/components/buttons/SwitchButton'
 
 const StateManagedSwap = () => {
   const { address } = useAccount()
@@ -59,17 +52,10 @@ const StateManagedSwap = () => {
 
   useSyncQueryParamsWithSwapState()
 
-  const { balances: portfolioBalances, status: portfolioStatus } =
-    useFetchPortfolioBalances()
+  const { balances: portfolioBalances } = useFetchPortfolioBalances()
 
   const { swapChainId, swapFromToken, swapToToken, swapFromValue, swapQuote } =
     useSwapState()
-
-  const {
-    showSwapFromTokenListOverlay,
-    showSwapChainListOverlay,
-    showSwapToTokenListOverlay,
-  } = useSelector((state: RootState) => state.swapDisplay)
 
   const [isApproved, setIsApproved] = useState(false)
 
@@ -354,9 +340,6 @@ const StateManagedSwap = () => {
     }
   }
 
-  const springClass =
-    '-mt-4 fixed z-50 w-full h-full bg-opacity-50 bg-[#343036]'
-
   return (
     <LandingPageWrapper>
       <div className="flex justify-center px-4 py-16 mx-auto lg:mx-0">
@@ -364,67 +347,34 @@ const StateManagedSwap = () => {
           <div className="flex items-center justify-between">
             <PageHeader title="Swap" subtitle="Exchange assets on chain." />
           </div>
-          <Card
-            divider={false}
-            className={`
-              pb-3 mt-5 overflow-hidden
-              transition-all duration-100 transform rounded-md
-              bg-bgBase
-            `}
-          >
-            <div ref={swapDisplayRef}>
-              <Transition show={showSwapChainListOverlay} {...TRANSITION_PROPS}>
-                <animated.div className={springClass}>
-                  <SwapChainListOverlay />
-                </animated.div>
-              </Transition>
-              <Transition
-                show={showSwapFromTokenListOverlay}
-                {...TRANSITION_PROPS}
-              >
-                <animated.div className={springClass}>
-                  <SwapFromTokenListOverlay />
-                </animated.div>
-              </Transition>
-              <Transition
-                show={showSwapToTokenListOverlay}
-                {...TRANSITION_PROPS}
-              >
-                <animated.div className={springClass}>
-                  <SwapToTokenListOverlay />
-                </animated.div>
-              </Transition>
-              <SwapInputContainer />
-              <SwapOutputContainer />
-              <Transition
-                appear={true}
-                unmount={false}
-                show={true}
-                {...SECTION_TRANSITION_PROPS}
-              >
-                <SwapExchangeRateInfo
-                  fromAmount={
-                    swapFromToken
-                      ? stringToBigInt(
-                          swapFromValue,
-                          swapFromToken.decimals[swapChainId]
-                        )
-                      : 0n
-                  }
-                  toToken={swapToToken}
-                  exchangeRate={swapQuote.exchangeRate}
-                  toChainId={swapChainId}
-                />
-              </Transition>
-              <div className="md:my-3">
-                <SwapTransactionButton
-                  isApproved={isApproved}
-                  approveTxn={approveTxn}
-                  executeSwap={executeSwap}
-                />
-              </div>
-            </div>
-          </Card>
+          <BridgeCard bridgeRef={swapDisplayRef}>
+            <SwapInputContainer />
+            <SwitchButton
+              onClick={() => {
+                dispatch(setSwapFromToken(swapToToken))
+                dispatch(setSwapToToken(swapFromToken))
+              }}
+            />
+            <SwapOutputContainer />
+            <SwapExchangeRateInfo
+              fromAmount={
+                swapFromToken
+                  ? stringToBigInt(
+                      swapFromValue,
+                      swapFromToken.decimals[swapChainId]
+                    )
+                  : 0n
+              }
+              toToken={swapToToken}
+              exchangeRate={swapQuote.exchangeRate}
+              toChainId={swapChainId}
+            />
+            <SwapTransactionButton
+              isApproved={isApproved}
+              approveTxn={approveTxn}
+              executeSwap={executeSwap}
+            />
+          </BridgeCard>
         </div>
       </div>
     </LandingPageWrapper>

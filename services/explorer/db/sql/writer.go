@@ -28,6 +28,11 @@ func (s *Store) StoreEvent(ctx context.Context, event interface{}) error {
 		if dbTx.Error != nil {
 			return fmt.Errorf("failed to store cctp event: %w", dbTx.Error)
 		}
+	case *RFQEvent:
+		dbTx := s.db.WithContext(ctx).Create(conv)
+		if dbTx.Error != nil {
+			return fmt.Errorf("failed to store rfq event: %w", dbTx.Error)
+		}
 	}
 	return nil
 }
@@ -40,6 +45,8 @@ func (s *Store) StoreEvents(ctx context.Context, events []interface{}) error {
 	var swapEvents []SwapEvent
 	var messageBusEvents []MessageBusEvent
 	var cctpEvents []*CCTPEvent
+	var rfqEvents []*RFQEvent
+
 	for _, event := range events {
 		switch conv := event.(type) {
 		case *BridgeEvent:
@@ -50,6 +57,8 @@ func (s *Store) StoreEvents(ctx context.Context, events []interface{}) error {
 			messageBusEvents = append(messageBusEvents, conv)
 		case *CCTPEvent:
 			cctpEvents = append(cctpEvents, conv)
+		case *RFQEvent:
+			rfqEvents = append(rfqEvents, conv)
 		}
 	}
 
@@ -79,6 +88,13 @@ func (s *Store) StoreEvents(ctx context.Context, events []interface{}) error {
 		dbTx := s.db.WithContext(ctx).Create(&cctpEvents)
 		if dbTx.Error != nil {
 			return fmt.Errorf("failed to store cctp event: %w", dbTx.Error)
+		}
+	}
+
+	if len(rfqEvents) > 0 {
+		dbTx := s.db.WithContext(ctx).Create(&rfqEvents)
+		if dbTx.Error != nil {
+			return fmt.Errorf("failed to store rfq event: %w", dbTx.Error)
 		}
 	}
 

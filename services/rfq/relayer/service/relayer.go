@@ -16,7 +16,10 @@ import (
 	signerConfig "github.com/synapsecns/sanguine/ethergo/signer/config"
 	"github.com/synapsecns/sanguine/ethergo/signer/signer"
 	"github.com/synapsecns/sanguine/ethergo/submitter"
-	omnirpcClient "github.com/synapsecns/sanguine/services/omnirpc/client"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/attestation"
+	cctpSql "github.com/synapsecns/sanguine/services/cctp-relayer/db/sql"
+	"github.com/synapsecns/sanguine/services/cctp-relayer/relayer"
+	omniClient "github.com/synapsecns/sanguine/services/omnirpc/client"
 	"github.com/synapsecns/sanguine/services/rfq/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/inventory"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/pricer"
@@ -25,6 +28,7 @@ import (
 	"github.com/synapsecns/sanguine/services/rfq/relayer/relconfig"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb"
 	"github.com/synapsecns/sanguine/services/rfq/relayer/reldb/connect"
+	"github.com/synapsecns/sanguine/services/scribe/client"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -33,7 +37,7 @@ type Relayer struct {
 	cfg            relconfig.Config
 	metrics        metrics.Handler
 	db             reldb.Service
-	client         omnirpcClient.RPCClient
+	client         omniClient.RPCClient
 	chainListeners map[int]listener.ContractListener
 	apiServer      *relapi.RelayerAPIServer
 	inventory      inventory.Manager
@@ -49,7 +53,7 @@ var logger = log.Logger("relayer")
 //
 // The relayer is the core of the application. It is responsible for starting the listener and quoter event loops.
 func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfig.Config) (*Relayer, error) {
-	omniClient := omnirpcClient.NewOmnirpcClient(cfg.OmniRPCURL, metricHandler, omnirpcClient.WithCaptureReqRes())
+	omniClient := omniClient.NewOmnirpcClient(cfg.OmniRPCURL, metricHandler, omniClient.WithCaptureReqRes())
 
 	// TODO: pull from config
 	dbType, err := dbcommon.DBTypeFromString(cfg.Database.Type)
@@ -143,8 +147,8 @@ const defaultPostInterval = 1
 // 3. Start the db selector: This will check the db for any requests that need to be processed.
 // 4. Start the submitter: This will submit any transactions that need to be submitted.
 // nolint: cyclop
-func (r *Relayer) Start(ctx context.Context) error {
-	err := r.inventory.ApproveAllTokens(ctx)
+func (r *Relayer) Start(ctx context.Context) (err error) {
+	err = r.inventory.ApproveAllTokens(ctx)
 	if err != nil {
 		return fmt.Errorf("could not approve all tokens: %w", err)
 	}
@@ -216,6 +220,14 @@ func (r *Relayer) Start(ctx context.Context) error {
 		return nil
 	})
 
+	g.Go(func() error {
+		err = r.startCCTPRelayer(ctx)
+		if err != nil {
+			return fmt.Errorf("could not start cctp relayer: %w", err)
+		}
+		return nil
+	})
+
 	err = g.Wait()
 	if err != nil {
 		return fmt.Errorf("could not start: %w", err)
@@ -240,6 +252,40 @@ func (r *Relayer) runDBSelector(ctx context.Context) error {
 			}
 		}
 	}
+}
+
+// startCCTPRelayer starts the CCTP relayer, if a config is specified.
+func (r *Relayer) startCCTPRelayer(ctx context.Context) (err error) {
+	// only start the CCTP relayer if the config is specified
+	cctpCfg := r.cfg.CCTPRelayerConfig
+	if cctpCfg == nil {
+		return nil
+	}
+
+	// build the CCTP relayer
+	dbType, err := dbcommon.DBTypeFromString(r.cfg.Database.Type)
+	if err != nil {
+		return fmt.Errorf("could not get db type: %w", err)
+	}
+	store, err := cctpSql.Connect(ctx, dbType, r.cfg.Database.DSN, r.metrics)
+	if err != nil {
+		return fmt.Errorf("could not connect to database: %w", err)
+	}
+	scribeClient := client.NewRemoteScribe(uint16(cctpCfg.ScribePort), cctpCfg.ScribeURL, r.metrics).ScribeClient
+	omnirpcClient := omniClient.NewOmnirpcClient(cctpCfg.BaseOmnirpcURL, r.metrics, omniClient.WithCaptureReqRes())
+	attAPI := attestation.NewCircleAPI(cctpCfg.CircleAPIURl)
+	cctpRelayer, err := relayer.NewCCTPRelayer(ctx, *cctpCfg, store, scribeClient, omnirpcClient, r.metrics, attAPI, relayer.WithSubmitter(r.submitter))
+	if err != nil {
+		return fmt.Errorf("could not create cctp relayer: %w", err)
+	}
+
+	// run the cctp relayer
+	err = cctpRelayer.Run(ctx)
+	if err != nil {
+		return fmt.Errorf("could not run cctp relayer: %w", err)
+	}
+
+	return nil
 }
 
 func (r *Relayer) processDB(ctx context.Context) error {

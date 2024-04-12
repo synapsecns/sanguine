@@ -5,6 +5,7 @@ run:
     - grpc/client/rest/*
     - bundle/*
     - generated/*
+    - tracely/*
   timeout: 15m
   skip-files:
     - '.*\\.abigen\\.go$'
@@ -99,6 +100,8 @@ linters:
     - spancheck
     # simply annoying
     - perfsprint
+    # malfunctions on embedded structs
+    - typecheck
   fast: false
 
 issues:
