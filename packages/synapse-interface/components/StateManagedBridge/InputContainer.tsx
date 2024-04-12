@@ -111,6 +111,74 @@ const calculateEstimatedBridgeGasLimit = async (
   return gasEstimate
 }
 
+const useGasEstimator = () => {
+  const { address } = useAccount()
+  const { synapseSDK } = useSynapseContext()
+  const { balances } = usePortfolioState()
+  const { fromChainId, toChainId, fromToken, toToken, fromValue } =
+    useBridgeState()
+  const { gasData } = useAppSelector((state) => state.gasData)
+  const { gasPrice, maxFeePerGas } = gasData?.formatted
+
+  const [estimatedGasLimit, setEstimatedGasLimit] = useState<bigint>(0n)
+
+  const { rawGasCost, parsedGasCost } = calculateGasCost(
+    gasPrice,
+    estimatedGasLimit.toString()
+  )
+
+  const isGasToken: boolean = fromToken?.addresses[fromChainId] === zeroAddress
+
+  const selectedFromToken: TokenAndBalance = balances[fromChainId]?.find(
+    (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
+  )
+
+  const { balance, parsedBalance } = selectedFromToken || {}
+
+  const hasRequiredGasEstimateInputs = (): boolean => {
+    return Boolean(
+      fromChainId &&
+        toChainId &&
+        fromToken &&
+        toToken &&
+        isGasToken &&
+        parsedBalance
+    )
+  }
+
+  useEffect(() => {
+    if (hasRequiredGasEstimateInputs()) {
+      ;(async () => {
+        const bridgeQuote = await getBridgeQuote(
+          synapseSDK,
+          fromChainId,
+          toChainId,
+          fromToken,
+          toToken,
+          parsedBalance
+        )
+
+        const gasLimit = await calculateEstimatedBridgeGasLimit(
+          synapseSDK,
+          bridgeQuote,
+          address,
+          address,
+          fromChainId,
+          toChainId,
+          fromToken,
+          parsedBalance
+        )
+
+        setEstimatedGasLimit(gasLimit ?? 0n)
+
+        console.log('gasLimit: ', gasLimit)
+      })()
+    }
+  }, [fromChainId, toChainId, isGasToken])
+
+  return { rawGasCost, parsedGasCost }
+}
+
 export const InputContainer = () => {
   const dispatch = useAppDispatch()
   const { chain } = useNetwork()
