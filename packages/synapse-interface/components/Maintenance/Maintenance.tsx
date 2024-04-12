@@ -1,11 +1,8 @@
-import { OPTIMISM, BASE } from '@/constants/chains/master'
 import { MaintenanceBanner } from './components/MaintenanceBanner'
 import { MaintenanceWarningMessage } from './components/MaintenanceWarningMessage'
 import { useMaintenanceCountdownProgress } from './components/useMaintenanceCountdownProgress'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { useSwapState } from '@/slices/swap/hooks'
-
-/** Import chain pause public constant */
 import pausedChains from '@/public/pausedChains.json'
 
 interface ChainPause {

@@ -34,8 +34,6 @@ export const MaintenanceWarningMessage = ({
   warningMessage: any
   disabled?: boolean
 }) => {
-  // const { fromChainId, toChainId } = useBridgeState()
-
   const isWarningChain =
     isChainIncluded([fromChainId], pausedFromChains) ||
     isChainIncluded([toChainId], pausedToChains)

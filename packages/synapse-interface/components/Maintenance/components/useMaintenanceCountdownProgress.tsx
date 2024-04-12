@@ -34,8 +34,6 @@ export const useMaintenanceCountdownProgress = ({
   progressBarMessage: any
   disabled?: boolean
 }) => {
-  // const { fromChainId, toChainId } = useBridgeState()
-
   const isCurrentChain =
     isChainIncluded([fromChainId], pausedFromChains) ||
     isChainIncluded([toChainId], pausedToChains)
