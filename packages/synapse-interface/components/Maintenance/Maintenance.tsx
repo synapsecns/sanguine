@@ -4,7 +4,7 @@ import { MaintenanceWarningMessage } from './components/MaintenanceWarningMessag
 import { useMaintenanceCountdownProgress } from './components/useMaintenanceCountdownProgress'
 
 /** Import chain pause public constant */
-import chainPausesData from '@/public/chainPauses.json'
+import pausedChains from '@/public/pausedChains.json'
 
 interface ChainPause {
   id: string
@@ -22,7 +22,7 @@ interface ChainPause {
   disableCountdown?: boolean
 }
 
-const PAUSED_CHAINS: ChainPause[] = chainPausesData.map((pause) => ({
+const PAUSED_CHAINS: ChainPause[] = pausedChains.map((pause) => ({
   ...pause,
   startTime: new Date(pause.startTime),
   endTime: pause.endTime ? new Date(pause.endTime) : null,

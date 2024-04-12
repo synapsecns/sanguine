@@ -74,7 +74,7 @@ export const EventCountdownProgressBar = ({
     return (
       <div
         className={`
-          flex flex-col bg-bgLighter mb-3
+          flex flex-col bg-bgLighter
           border border-surface rounded-md
            text-primary text-xs md:text-base
         `}
