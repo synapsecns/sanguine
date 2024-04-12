@@ -47,7 +47,7 @@ export const useMaintenanceCountdownProgress = ({
 
   return {
     isMaintenancePending,
-    isCurrentChainDisabled: isCurrentChain && isMaintenancePending, // Used to pause Bridge
+    isCurrentChainDisabled: isCurrentChain && isMaintenancePending && !disabled,
     MaintenanceCountdownProgressBar:
       isCurrentChain && !disabled ? MaintenanceCountdownProgressBar : null,
   }

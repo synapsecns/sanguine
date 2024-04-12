@@ -12,6 +12,8 @@ interface ChainPause {
   id: string
   pausedFromChains: number[]
   pausedToChains: number[]
+  pauseBridge: boolean
+  pauseSwap: boolean
   startTime: Date
   endTime: Date | null // Indefinite if null
   bannerStartTime: Date
@@ -34,62 +36,6 @@ const PAUSED_CHAINS: ChainPause[] = pausedChains.map((pause) => ({
   bannerMessage: <p>{pause.bannerMessage}</p>,
   progressBarMessage: <p>{pause.progressBarMessage}</p>,
 }))
-
-// const PAUSED_CHAINS: ChainPause[] = [
-//   {
-//     id: 'optimism-chain-pause',
-//     pausedFromChains: [OPTIMISM.id],
-//     pausedToChains: [],
-//     startTime: new Date(Date.UTC(2024, 2, 21, 18, 0, 0)),
-//     endTime: new Date(Date.UTC(2024, 2, 21, 19, 40, 0)),
-//     bannerStartTime: new Date(Date.UTC(2024, 2, 21, 18, 0, 0)),
-//     bannerEndTime: new Date(Date.UTC(2024, 2, 21, 19, 40, 0)),
-//     warningMessage: (
-//       <p> Optimism bridging is paused until maintenance is complete. </p>
-//     ),
-//     bannerMessage: (
-//       <p> Optimism bridging is paused until maintenance is complete. </p>
-//     ),
-//     progressBarMessage: <p> Optimism maintenance in progress </p>,
-//   },
-//   {
-//     id: 'base-chain-pause',
-//     pausedFromChains: [BASE.id],
-//     pausedToChains: [BASE.id],
-//     startTime: new Date(Date.UTC(2024, 2, 21, 17, 41, 0)),
-//     endTime: new Date(Date.UTC(2024, 2, 21, 17, 42, 0)),
-//     bannerStartTime: new Date(Date.UTC(2024, 2, 21, 17, 40, 0)),
-//     bannerEndTime: new Date(Date.UTC(2024, 2, 21, 17, 43, 0)),
-//     warningMessage: (
-//       <p> Base bridging is paused until maintenance is complete. </p>
-//     ),
-//     bannerMessage: (
-//       <p> Base bridging is paused until maintenance is complete. </p>
-//     ),
-//     progressBarMessage: <p> Base maintenance in progress </p>,
-//   },
-//   {
-//     id: 'base-chain-pause',
-//     pausedFromChains: [BASE.id],
-//     pausedToChains: [BASE.id],
-//     startTime: new Date(Date.UTC(2024, 2, 21, 17, 41, 0)),
-//     endTime: null,
-//     bannerStartTime: new Date(Date.UTC(2024, 2, 27, 4, 40, 0)),
-//     bannerEndTime: null,
-//     warningMessage: (
-//       <p> Base bridging is paused until maintenance is complete. </p>
-//     ),
-//     bannerMessage: (
-//       <p className="m-auto">
-//         Base bridging is paused until maintenance is complete.
-//       </p>
-//     ),
-//     progressBarMessage: <p> Base maintenance in progress </p>,
-//     disableBanner: false,
-//     disableWarning: false,
-//     disableCountdown: false,
-//   },
-// ]
 
 export const MaintenanceBanners = () => {
   return (
@@ -131,7 +77,7 @@ export const MaintenanceWarningMessages = ({
               pausedFromChains={event.pausedFromChains}
               pausedToChains={event.pausedToChains}
               warningMessage={event.warningMessage}
-              disabled={event.disableWarning}
+              disabled={event.disableWarning || !event.pauseBridge}
             />
           )
         })}
@@ -150,7 +96,7 @@ export const MaintenanceWarningMessages = ({
               pausedFromChains={event.pausedFromChains}
               pausedToChains={event.pausedToChains}
               warningMessage={event.warningMessage}
-              disabled={event.disableWarning}
+              disabled={event.disableWarning || !event.pauseSwap}
             />
           )
         })}
@@ -184,7 +130,7 @@ export const useMaintenanceCountdownProgresses = ({
         pausedFromChains: event.pausedFromChains,
         pausedToChains: event.pausedToChains,
         progressBarMessage: event.progressBarMessage,
-        disabled: event.disableCountdown,
+        disabled: event.disableCountdown || !event.pauseBridge,
       })
     })
   } else if (type === 'Swap') {
@@ -197,7 +143,7 @@ export const useMaintenanceCountdownProgresses = ({
         pausedFromChains: event.pausedFromChains,
         pausedToChains: event.pausedToChains,
         progressBarMessage: event.progressBarMessage,
-        disabled: event.disableCountdown,
+        disabled: event.disableCountdown || !event.pauseSwap,
       })
     })
   }
