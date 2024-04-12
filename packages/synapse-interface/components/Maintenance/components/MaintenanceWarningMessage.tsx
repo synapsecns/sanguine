@@ -16,6 +16,8 @@ import { isChainIncluded } from '@/utils/isChainIncluded'
  *                               in the message's structure and content.
  */
 export const MaintenanceWarningMessage = ({
+  fromChainId,
+  toChainId,
   startDate,
   endDate,
   pausedFromChains,
@@ -23,6 +25,8 @@ export const MaintenanceWarningMessage = ({
   warningMessage,
   disabled = false,
 }: {
+  fromChainId: number
+  toChainId: number
   startDate: Date
   endDate: Date
   pausedFromChains: number[]
@@ -30,7 +34,7 @@ export const MaintenanceWarningMessage = ({
   warningMessage: any
   disabled?: boolean
 }) => {
-  const { fromChainId, toChainId } = useBridgeState()
+  // const { fromChainId, toChainId } = useBridgeState()
 
   const isWarningChain =
     isChainIncluded([fromChainId], pausedFromChains) ||

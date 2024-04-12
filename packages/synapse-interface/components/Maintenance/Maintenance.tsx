@@ -2,6 +2,8 @@ import { OPTIMISM, BASE } from '@/constants/chains/master'
 import { MaintenanceBanner } from './components/MaintenanceBanner'
 import { MaintenanceWarningMessage } from './components/MaintenanceWarningMessage'
 import { useMaintenanceCountdownProgress } from './components/useMaintenanceCountdownProgress'
+import { useBridgeState } from '@/slices/bridge/hooks'
+import { useSwapState } from '@/slices/swap/hooks'
 
 /** Import chain pause public constant */
 import pausedChains from '@/public/pausedChains.json'
@@ -107,23 +109,56 @@ export const MaintenanceBanners = () => {
   )
 }
 
-export const MaintenanceWarningMessages = () => {
-  return (
-    <>
-      {PAUSED_CHAINS.map((event) => {
-        return (
-          <MaintenanceWarningMessage
-            startDate={event.startTime}
-            endDate={event.endTime}
-            pausedFromChains={event.pausedFromChains}
-            pausedToChains={event.pausedToChains}
-            warningMessage={event.warningMessage}
-            disabled={event.disableWarning}
-          />
-        )
-      })}
-    </>
-  )
+export const MaintenanceWarningMessages = ({
+  type,
+}: {
+  type: 'Bridge' | 'Swap'
+}) => {
+  const { fromChainId: bridgeFromChainId, toChainId: bridgeToChainId } =
+    useBridgeState()
+  const { swapChainId } = useSwapState()
+
+  if (type === 'Bridge') {
+    return (
+      <>
+        {PAUSED_CHAINS.map((event) => {
+          return (
+            <MaintenanceWarningMessage
+              fromChainId={bridgeFromChainId}
+              toChainId={bridgeToChainId}
+              startDate={event.startTime}
+              endDate={event.endTime}
+              pausedFromChains={event.pausedFromChains}
+              pausedToChains={event.pausedToChains}
+              warningMessage={event.warningMessage}
+              disabled={event.disableWarning}
+            />
+          )
+        })}
+      </>
+    )
+  } else if (type === 'Swap') {
+    return (
+      <>
+        {PAUSED_CHAINS.map((event) => {
+          return (
+            <MaintenanceWarningMessage
+              fromChainId={swapChainId}
+              toChainId={null}
+              startDate={event.startTime}
+              endDate={event.endTime}
+              pausedFromChains={event.pausedFromChains}
+              pausedToChains={event.pausedToChains}
+              warningMessage={event.warningMessage}
+              disabled={event.disableWarning}
+            />
+          )
+        })}
+      </>
+    )
+  } else {
+    return null
+  }
 }
 
 /**

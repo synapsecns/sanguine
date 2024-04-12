@@ -562,7 +562,7 @@ const StateManagedBridge = () => {
               />
               <OutputContainer />
               <Warning />
-              <MaintenanceWarningMessages />
+              <MaintenanceWarningMessages type="Bridge" />
               <BridgeExchangeRateInfo />
               <ConfirmDestinationAddressWarning />
               <BridgeTransactionButton

@@ -40,6 +40,10 @@ import { LandingPageWrapper } from '@/components/layouts/LandingPageWrapper'
 import useSyncQueryParamsWithSwapState from '@/utils/hooks/useSyncQueryParamsWithSwapState'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
 import { SwitchButton } from '@/components/buttons/SwitchButton'
+import {
+  useMaintenanceCountdownProgresses,
+  MaintenanceWarningMessages,
+} from '@/components/Maintenance/Maintenance'
 
 const StateManagedSwap = () => {
   const { address } = useAccount()
@@ -340,6 +344,13 @@ const StateManagedSwap = () => {
     }
   }
 
+  const maintenanceCountdownProgressInstances =
+    useMaintenanceCountdownProgresses()
+
+  const isSwapPaused = maintenanceCountdownProgressInstances.some(
+    (instance) => instance.isCurrentChainDisabled
+  )
+
   return (
     <LandingPageWrapper>
       <div className="flex justify-center px-4 py-16 mx-auto lg:mx-0">
@@ -348,6 +359,10 @@ const StateManagedSwap = () => {
             <PageHeader title="Swap" subtitle="Exchange assets on chain." />
           </div>
           <BridgeCard bridgeRef={swapDisplayRef}>
+            {maintenanceCountdownProgressInstances.map((instance) => (
+              <>{instance.MaintenanceCountdownProgressBar}</>
+            ))}
+
             <SwapInputContainer />
             <SwitchButton
               onClick={() => {
@@ -356,6 +371,7 @@ const StateManagedSwap = () => {
               }}
             />
             <SwapOutputContainer />
+            <MaintenanceWarningMessages type="Swap" />
             <SwapExchangeRateInfo
               fromAmount={
                 swapFromToken
@@ -373,6 +389,7 @@ const StateManagedSwap = () => {
               isApproved={isApproved}
               approveTxn={approveTxn}
               executeSwap={executeSwap}
+              isSwapPaused={isSwapPaused}
             />
           </BridgeCard>
         </div>
