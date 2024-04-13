@@ -123,8 +123,12 @@ func (r *Relayer) gasMiddleware(next func(ctx context.Context, span trace.Span, 
 		}
 
 		// on destination, we need to check transactor.Value as well if we are dealing with ETH
+		// However, all requests with statuses CommittedPending, CommittedConfirmed and RelayStarted are considered
+		// in-flight and their respective amounts are already deducted from the inventory: see Manager.GetCommittableBalances().
+		// Therefore, we only need to check the gas value for requests with all the other statuses.
+		isInFlight := req.Status == reldb.CommittedPending || req.Status == reldb.CommittedConfirmed || req.Status == reldb.RelayStarted
 		var destGasValue *big.Int
-		if req.Transaction.DestToken == chain.EthAddress {
+		if req.Transaction.DestToken == chain.EthAddress && !isInFlight {
 			destGasValue = req.Transaction.DestAmount
 			span.SetAttributes(attribute.String("dest_gas_value", destGasValue.String()))
 		}
