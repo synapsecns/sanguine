@@ -44,7 +44,7 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
     function setLocalNativePrice(uint256 nativePrice) external onlyOwner onlyNonZeroNativePrice(nativePrice) {
         if (_localNativePrice != nativePrice) {
             _localNativePrice = nativePrice;
-            emit NativePriceSet(block.chainid, nativePrice);
+            emit NativePriceSet(SafeCast.toUint64(block.chainid), nativePrice);
         }
     }
 
