@@ -177,7 +177,6 @@ func (e *Executor) executeTransaction(ctx context.Context, request db.Transactio
 	}
 
 	_, err := e.submitter.SubmitTransaction(ctx, request.DstChainID, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-		transactor.GasLimit = request.Options.GasLimit.Uint64()
 		transactor.Value = request.Options.GasAirdrop
 
 		// nolint: wrapcheck

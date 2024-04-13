@@ -69,10 +69,16 @@ func (i *InterchainSuite) TestE2E() {
 		}
 	}()
 
+	_, destApp := i.deployManager.GetInterchainAppMock(i.GetTestContext(), i.destChain)
+
 	i.Eventually(func() bool {
 		status, err := i.executor.DB().GetInterchainTXsByStatus(i.GetTestContext(), db.Executed)
 		i.Require().NoError(err)
 
-		return 1 == len(status)
+		// Destination App balance should match the airdrop amount
+		balance, err := i.destChain.BalanceAt(i.GetTestContext(), destApp.Address(), nil)
+		i.Require().NoError(err)
+
+		return len(status) == 1 && balance.Cmp(gasAirdrop) == 0
 	})
 }
