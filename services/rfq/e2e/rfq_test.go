@@ -231,14 +231,14 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 
 		// check to see if there is a pending rebalance from the destination back to origin
 		// TODO: validate more of the rebalance- expose in db interface just for testing?
-		destPending, err := i.store.HasPendingRebalance(i.GetTestContext(), uint64(i.destBackend.GetChainID()))
+		destPendingRebals, err := i.store.GetPendingRebalances(i.GetTestContext(), uint64(i.destBackend.GetChainID()))
 		i.NoError(err)
-		if !destPending {
+		if len(destPendingRebals) == 0 {
 			return false
 		}
-		originPending, err := i.store.HasPendingRebalance(i.GetTestContext(), uint64(i.originBackend.GetChainID()))
+		originPendingRebals, err := i.store.GetPendingRebalances(i.GetTestContext(), uint64(i.originBackend.GetChainID()))
 		i.NoError(err)
-		return originPending
+		return len(originPendingRebals) > 0
 	})
 }
 

@@ -440,10 +440,11 @@ func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int,
 	)
 
 	// make sure there are no pending rebalances that touch the given path
-	pending, err := i.db.HasPendingRebalance(ctx, uint64(rebalance.OriginMetadata.ChainID), uint64(rebalance.DestMetadata.ChainID))
+	pendingRebalances, err := i.db.GetPendingRebalances(ctx, uint64(rebalance.OriginMetadata.ChainID), uint64(rebalance.DestMetadata.ChainID))
 	if err != nil {
 		return fmt.Errorf("could not check pending rebalance: %w", err)
 	}
+	pending := len(pendingRebalances) > 0
 	span.SetAttributes(attribute.Bool("rebalance_pending", pending))
 	if pending {
 		return nil
