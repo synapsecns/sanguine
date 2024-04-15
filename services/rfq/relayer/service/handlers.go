@@ -65,15 +65,15 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 		return nil
 	}
 
-	if err != nil {
+	if err != nil || originDecimals == nil || destDecimals == nil {
 		return fmt.Errorf("could not get decimals: %w", err)
 	}
 
 	err = r.db.StoreQuoteRequest(ctx, reldb.QuoteRequest{
 		BlockNumber:         req.Raw.BlockNumber,
 		RawRequest:          req.Request,
-		OriginTokenDecimals: originDecimals,
-		DestTokenDecimals:   destDecimals,
+		OriginTokenDecimals: *originDecimals,
+		DestTokenDecimals:   *destDecimals,
 		TransactionID:       req.TransactionId,
 		Sender:              req.Sender,
 		Transaction:         bridgeTx,
