@@ -132,7 +132,7 @@ func (r *Relayer) getDecimalsFromBridgeTx(parentCtx context.Context, bridgeTx fa
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	// do rpc calls to fetch the erc20 decimals.
+	// fetch the token decimals in parallel
 	g, ctx := errgroup.WithContext(ctx)
 	g.Go(func() error {
 		originDecimals, err = r.getDecimals(ctx, bridgeTx.OriginToken, bridgeTx.OriginChainId)
@@ -156,7 +156,11 @@ func (r *Relayer) getDecimalsFromBridgeTx(parentCtx context.Context, bridgeTx fa
 	return originDecimals, destDecimals, nil
 }
 
+// getDecimals gets the decimals for a token on a chain.
+// It will attempt to load a result from the cache first.
+// The cache will be updated if the result is fetched from RPC.
 func (r *Relayer) getDecimals(ctx context.Context, addr common.Address, chainID uint32) (decimals *uint8, err error) {
+	// attempt to load decimal from cache
 	key := getDecimalsKey(addr, chainID)
 	decimals, ok := r.decimalsCache[key]
 	if ok {
@@ -167,6 +171,7 @@ func (r *Relayer) getDecimals(ctx context.Context, addr common.Address, chainID 
 		return &ethDecimals, nil
 	}
 
+	// fetch decimals from RPC
 	client, err := r.client.GetChainClient(ctx, int(chainID))
 	if err != nil {
 		return nil, fmt.Errorf("could not get client for chain %d: %w", chainID, err)
@@ -175,11 +180,12 @@ func (r *Relayer) getDecimals(ctx context.Context, addr common.Address, chainID 
 	if err != nil {
 		return nil, fmt.Errorf("could not get token at %s: %w", addr.String(), err)
 	}
-
 	dec, err := erc20.Decimals(&bind.CallOpts{Context: ctx})
 	if err != nil {
 		return nil, fmt.Errorf("could not get decimals: %w", err)
 	}
+
+	// update the cache
 	r.decimalsCache[key] = &dec
 	return &dec, nil
 }
