@@ -74,6 +74,7 @@ import {
 } from '@/components/Maintenance/Maintenance'
 import { BridgeCard } from '@/components/ui/BridgeCard'
 import { ConfirmDestinationAddressWarning } from '@/components/StateManagedBridge/BridgeWarnings'
+import { usePausedBridgeModules } from '@/components/Maintenance/Maintenance'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -142,6 +143,10 @@ const StateManagedBridge = () => {
       }
     }
   }, [bridgeQuote, fromToken, debouncedFromValue, fromChainId, toChainId])
+
+  const pausedBridgeModules = usePausedBridgeModules()
+
+  console.log('pausedBridgeModules: ', pausedBridgeModules)
 
   const getAndSetBridgeQuote = async () => {
     currentSDKRequestID.current += 1

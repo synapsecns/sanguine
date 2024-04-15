@@ -48,6 +48,10 @@ const PAUSED_CHAINS: ChainPause[] = pausedChains.map((pause) => {
   }
 })
 
+export const usePausedBridgeModules = () => {
+  return PAUSED_CHAINS.map((event) => event.pauseBridgeModule)
+}
+
 export const MaintenanceBanners = () => {
   return (
     <>
