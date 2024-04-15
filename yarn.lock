@@ -6120,10 +6120,10 @@
   resolved "https://registry.yarnpkg.com/@polka/url/-/url-1.0.0-next.25.tgz#f077fdc0b5d0078d30893396ff4827a13f99e817"
   integrity sha512-j7P6Rgr3mmtdkeDGTe0E/aYyWEWVtc5yFXtHCRHs28/jptDEWfaVOc5T7cblqy1XKPPfCxJc/8DwQ5YgLOZOVQ==
 
-"@ponder/core@^0.4.0":
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/@ponder/core/-/core-0.4.0.tgz#5d0389ae0784936731ab328522d26097bec755d9"
-  integrity sha512-out5yz8l6W5bOH4lcWmfi9IqFeNNP8qUSefJEb4KwSGSM9a5SREYGr5/L1cLYyBz2nEtj9KW3bfbdA/694ZylA==
+"@ponder/core@^0.4.3":
+  version "0.4.3"
+  resolved "https://registry.yarnpkg.com/@ponder/core/-/core-0.4.3.tgz#77cc64c490074f7553f25fbf520784b9f7abe2a0"
+  integrity sha512-jzpIaG6xj+Jf6wo9KS6hxfoH1cKdzLeFAFbhdRm7JJPZWWCqPtloB8caH0Fq8ACS4p4IC/IYkp4wmaIAliUkRw==
   dependencies:
     "@babel/code-frame" "^7.23.4"
     "@commander-js/extra-typings" "^12.0.1"
