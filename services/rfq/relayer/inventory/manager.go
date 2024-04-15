@@ -49,6 +49,8 @@ type Manager interface {
 	// Rebalance checks whether a given token should be rebalanced, and
 	// executes the rebalance if necessary.
 	Rebalance(ctx context.Context, chainID int, token common.Address) error
+	// GetTokenMetadata gets the metadata for a token.
+	GetTokenMetadata(chainID int, token common.Address) (*TokenMetadata, error)
 }
 
 type inventoryManagerImpl struct {
@@ -557,6 +559,16 @@ func getRebalance(span trace.Span, cfg relconfig.Config, tokens map[int]map[comm
 		Amount:         amount,
 	}
 	return rebalance, nil
+}
+
+func (i *inventoryManagerImpl) GetTokenMetadata(chainID int, token common.Address) (*TokenMetadata, error) {
+	i.mux.RLock()
+	defer i.mux.RUnlock()
+	tokenData, ok := i.tokens[chainID][token]
+	if !ok {
+		return nil, fmt.Errorf("token not found")
+	}
+	return tokenData, nil
 }
 
 // initializeTokens converts the configuration into a data structure we can use to determine inventory
