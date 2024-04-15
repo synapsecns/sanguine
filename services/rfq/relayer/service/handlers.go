@@ -58,7 +58,7 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 	}
 
 	// TODO: you can just pull these out of inventory. If they don't exist mark as invalid.
-	decimals, err := r.getDecimals(ctx, bridgeTx)
+	originDecimals, destDecimals, err := r.getDecimalsFromBridgeTx(ctx, bridgeTx)
 	// can't use errors.is here
 	if err != nil && strings.Contains(err.Error(), "no contract code at given address") {
 		logger.Warnf("invalid token, skipping")
@@ -72,8 +72,8 @@ func (r *Relayer) handleBridgeRequestedLog(parentCtx context.Context, req *fastb
 	err = r.db.StoreQuoteRequest(ctx, reldb.QuoteRequest{
 		BlockNumber:         req.Raw.BlockNumber,
 		RawRequest:          req.Request,
-		OriginTokenDecimals: decimals.originDecimals,
-		DestTokenDecimals:   decimals.destDecimals,
+		OriginTokenDecimals: originDecimals,
+		DestTokenDecimals:   destDecimals,
 		TransactionID:       req.TransactionId,
 		Sender:              req.Sender,
 		Transaction:         bridgeTx,

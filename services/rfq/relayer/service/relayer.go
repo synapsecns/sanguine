@@ -45,6 +45,7 @@ type Relayer struct {
 	submitter      submitter.TransactionSubmitter
 	signer         signer.Signer
 	claimCache     *ttlcache.Cache[common.Hash, bool]
+	decimalsCache  map[string]*uint8
 }
 
 var logger = log.Logger("relayer")
@@ -126,6 +127,7 @@ func NewRelayer(ctx context.Context, metricHandler metrics.Handler, cfg relconfi
 		quoter:         q,
 		metrics:        metricHandler,
 		claimCache:     cache,
+		decimalsCache:  make(map[string]*uint8),
 		cfg:            cfg,
 		inventory:      im,
 		submitter:      sm,
