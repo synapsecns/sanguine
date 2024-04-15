@@ -24,7 +24,7 @@ type EventLog interface {
 	GetTransactionID() [32]byte
 	// GetRelayer returns the address of the RFQ relayer.
 	GetRelayer() *string
-	// GetRecipient returns the Dest address of the RFQ transfer.
+	// GetTo returns the Dest address of the RFQ transfer.
 	GetTo() *string
 	// GetSender returns the sender of the RFQ transfer.
 	GetSender() *string
