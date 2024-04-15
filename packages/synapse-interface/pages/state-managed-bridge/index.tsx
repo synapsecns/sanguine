@@ -173,6 +173,8 @@ const StateManagedBridge = () => {
 
       let quote
 
+      console.log('allQuotes:', allQuotes)
+
       if (rfqQuote) {
         quote = rfqQuote
       } else {

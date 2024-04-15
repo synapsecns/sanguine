@@ -11,8 +11,8 @@ interface ChainPause {
   pausedToChains: number[]
   pauseBridge: boolean
   pauseSwap: boolean
-  startTime: Date
-  endTime: Date | null // Indefinite if null
+  pauseStartTime: Date
+  pauseEndTime: Date | null // Indefinite if null
   bannerStartTime: Date
   bannerEndTime: Date | null // Indefinite if null
   warningMessage: JSX.Element
@@ -25,8 +25,8 @@ interface ChainPause {
 
 const PAUSED_CHAINS: ChainPause[] = pausedChains.map((pause) => ({
   ...pause,
-  startTime: new Date(pause.startTime),
-  endTime: pause.endTime ? new Date(pause.endTime) : null,
+  pauseStartTime: new Date(pause.pauseStartTime),
+  pauseEndTime: pause.pauseEndTime ? new Date(pause.pauseEndTime) : null,
   bannerStartTime: new Date(pause.bannerStartTime),
   bannerEndTime: pause.bannerEndTime ? new Date(pause.bannerEndTime) : null,
   warningMessage: <p>{pause.warningMessage}</p>,
@@ -69,8 +69,8 @@ export const MaintenanceWarningMessages = ({
             <MaintenanceWarningMessage
               fromChainId={bridgeFromChainId}
               toChainId={bridgeToChainId}
-              startDate={event.startTime}
-              endDate={event.endTime}
+              startDate={event.pauseStartTime}
+              endDate={event.pauseEndTime}
               pausedFromChains={event.pausedFromChains}
               pausedToChains={event.pausedToChains}
               warningMessage={event.warningMessage}
@@ -88,8 +88,8 @@ export const MaintenanceWarningMessages = ({
             <MaintenanceWarningMessage
               fromChainId={swapChainId}
               toChainId={null}
-              startDate={event.startTime}
-              endDate={event.endTime}
+              startDate={event.pauseStartTime}
+              endDate={event.pauseEndTime}
               pausedFromChains={event.pausedFromChains}
               pausedToChains={event.pausedToChains}
               warningMessage={event.warningMessage}
@@ -122,8 +122,8 @@ export const useMaintenanceCountdownProgresses = ({
       return useMaintenanceCountdownProgress({
         fromChainId: bridgeFromChainId,
         toChainId: bridgeToChainId,
-        startDate: event.startTime,
-        endDate: event.endTime,
+        startDate: event.pauseStartTime,
+        endDate: event.pauseEndTime,
         pausedFromChains: event.pausedFromChains,
         pausedToChains: event.pausedToChains,
         progressBarMessage: event.progressBarMessage,
@@ -135,8 +135,8 @@ export const useMaintenanceCountdownProgresses = ({
       return useMaintenanceCountdownProgress({
         fromChainId: swapChainId,
         toChainId: null,
-        startDate: event.startTime,
-        endDate: event.endTime,
+        startDate: event.pauseStartTime,
+        endDate: event.pauseEndTime,
         pausedFromChains: event.pausedFromChains,
         pausedToChains: event.pausedToChains,
         progressBarMessage: event.progressBarMessage,
