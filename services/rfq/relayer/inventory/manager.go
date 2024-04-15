@@ -667,7 +667,7 @@ func (i *inventoryManagerImpl) initializeTokens(parentCtx context.Context, cfg r
 			chainID := chainID // capture func literal
 			deferredRegisters = append(deferredRegisters, func() error {
 				//nolint:wrapcheck
-				return i.registerMetric(meter, chainID, token)
+				return i.registerBalance(meter, chainID, token)
 			})
 		}
 	}
@@ -721,6 +721,8 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 	var wg sync.WaitGroup
 	wg.Add(len(i.tokens))
 
+	meter := i.handler.Meter("github.com/synapsecns/sanguine/services/rfq/relayer/inventory")
+
 	for chainID, tokenMap := range i.tokens {
 		chainClient, err := i.chainClient.GetClient(ctx, big.NewInt(int64(chainID)))
 		if err != nil {
@@ -747,13 +749,17 @@ func (i *inventoryManagerImpl) refreshBalances(ctx context.Context) error {
 			if err != nil {
 				logger.Warnf("could not refresh balances on %d: %v", chainID, err)
 			}
+			err = i.registerBalance(meter, chainID, chain.EthAddress)
+			if err != nil {
+				logger.Warnf("could not register balance: %v", err)
+			}
 		}()
 	}
 	wg.Wait()
 	return nil
 }
 
-func (i *inventoryManagerImpl) registerMetric(meter metric.Meter, chainID int, token common.Address) error {
+func (i *inventoryManagerImpl) registerBalance(meter metric.Meter, chainID int, token common.Address) error {
 	balanceGauge, err := meter.Float64ObservableGauge("inventory_balance")
 	if err != nil {
 		return fmt.Errorf("could not create gauge: %w", err)
