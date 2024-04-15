@@ -107,12 +107,37 @@ func (r *Relayer) deadlineMiddleware(next func(ctx context.Context, span trace.S
 
 // gasMiddleware checks that we have sufficient gas to process a request on origin and destination.
 func (r *Relayer) gasMiddleware(next func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error) func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error {
-	return func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) error {
-		sufficientGas, err := r.inventory.HasSufficientGas(ctx, int(req.Transaction.OriginChainId), int(req.Transaction.DestChainId))
+	return func(ctx context.Context, span trace.Span, req reldb.QuoteRequest) (err error) {
+		var sufficientGasOrigin, sufficientGasDest bool
+
+		defer func() {
+			span.SetAttributes(
+				attribute.Bool("sufficient_gas_origin", sufficientGasOrigin),
+				attribute.Bool("sufficient_gas_dest", sufficientGasDest),
+			)
+		}()
+
+		sufficientGasOrigin, err = r.inventory.HasSufficientGas(ctx, int(req.Transaction.OriginChainId), nil)
 		if err != nil {
-			return fmt.Errorf("could not check gas: %w", err)
+			return fmt.Errorf("could not check gas on origin: %w", err)
 		}
-		if !sufficientGas {
+
+		// on destination, we need to check transactor.Value as well if we are dealing with ETH
+		// However, all requests with statuses CommittedPending, CommittedConfirmed and RelayStarted are considered
+		// in-flight and their respective amounts are already deducted from the inventory: see Manager.GetCommittableBalances().
+		// Therefore, we only need to check the gas value for requests with all the other statuses.
+		isInFlight := req.Status == reldb.CommittedPending || req.Status == reldb.CommittedConfirmed || req.Status == reldb.RelayStarted
+		var destGasValue *big.Int
+		if req.Transaction.DestToken == chain.EthAddress && !isInFlight {
+			destGasValue = req.Transaction.DestAmount
+			span.SetAttributes(attribute.String("dest_gas_value", destGasValue.String()))
+		}
+		sufficientGasDest, err = r.inventory.HasSufficientGas(ctx, int(req.Transaction.DestChainId), destGasValue)
+		if err != nil {
+			return fmt.Errorf("could not check gas on dest: %w", err)
+		}
+
+		if !sufficientGasOrigin || !sufficientGasDest {
 			return nil
 		}
 

@@ -20,7 +20,7 @@ export function TokenSelector({
   action,
 }: TokenSelectorTypes) {
   const [searchStr, setSearchStr] = useState('')
-  const [hover, setHover] = useState(false)
+  const [open, setOpen] = useState(false)
 
   const [currentRouteSymbol, setCurrentRouteSymbol] = useState(null)
   const dispatch = useDispatch()
@@ -54,7 +54,7 @@ export function TokenSelector({
   const onClose = () => {
     setSearchStr('')
     setCurrentRouteSymbol(null)
-    setHover(false)
+    setOpen(false)
   }
 
   const onSearch = (str: string) => {
@@ -62,9 +62,9 @@ export function TokenSelector({
     setCurrentRouteSymbol(null)
   }
 
-  const arrowUp = useKeyPress('ArrowUp', hover)
-  const arrowDown = useKeyPress('ArrowDown', hover)
-  const enterPress = useKeyPress('Enter', hover)
+  const arrowUp = useKeyPress('ArrowUp', open)
+  const arrowDown = useKeyPress('ArrowDown', open)
+  const enterPress = useKeyPress('Enter', open)
 
   const arrowDownFunc = () => {
     const currentIndex = flatItemList.findIndex(
@@ -108,8 +108,8 @@ export function TokenSelector({
       searchStr={searchStr}
       onSearch={onSearch}
       onClose={onClose}
-      hover={hover}
-      setHover={setHover}
+      open={open}
+      setOpen={setOpen}
     >
       {Object.entries(itemList).map(([key, value]: [string, Token[]]) => {
         return value.length ? (
