@@ -449,6 +449,12 @@ func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int,
 	if pending {
 		return nil
 	}
+	for _, pendingReb := range pendingRebalances {
+		registerErr := i.registerPendingRebalance(pendingReb)
+		if registerErr != nil {
+			span.AddEvent("could not register pending rebalance", trace.WithAttributes(attribute.String("error", registerErr.Error())))
+		}
+	}
 
 	// execute the rebalance
 	manager, ok := i.rebalanceManagers[method]
@@ -460,6 +466,32 @@ func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int,
 		return fmt.Errorf("could not execute rebalance: %w", err)
 	}
 	return nil
+}
+
+// registerPendingRebalance registers a callback to update the pending rebalance amount gauge.
+func (i *inventoryManagerImpl) registerPendingRebalance(rebalance *reldb.Rebalance) (err error) {
+	if rebalance == nil {
+		return nil
+	}
+	meter := i.handler.Meter("github.com/synapsecns/sanguine/services/rfq/relayer/inventory")
+	rebalanceGauge, err := meter.Float64ObservableGauge("pending_rebalance_amount")
+	if err != nil {
+		return fmt.Errorf("could not create gauge: %w", err)
+	}
+	_, err = meter.RegisterCallback(func(parentCtx context.Context, o metric.Observer) (err error) {
+		attributes := attribute.NewSet(
+			attribute.Int(metrics.Origin, int(rebalance.Origin)),
+			attribute.Int(metrics.Destination, int(rebalance.Destination)),
+			attribute.String("status", rebalance.Status.String()),
+		)
+		tokenMetadata, err := i.GetTokenMetadata(int(rebalance.Origin), rebalance.OriginTokenAddr)
+		if err != nil {
+			return fmt.Errorf("could not get token metadata: %w", err)
+		}
+		o.ObserveFloat64(rebalanceGauge, core.BigToDecimals(rebalance.OriginAmount, tokenMetadata.Decimals), metric.WithAttributeSet(attributes))
+		return nil
+	})
+	return err
 }
 
 //nolint:cyclop,gocognit
