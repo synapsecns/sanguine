@@ -231,6 +231,15 @@ func rfqEventToBridgeEvent(rfqEvent model.RFQEvent) model.BridgeEvent {
 		kappa = &rfqEvent.TransactionID
 	}
 
+	// Adjust sender and recipient based on null values
+	sender := rfqEvent.Sender.String
+	recipient := rfqEvent.Recipient
+	if sender == "" {
+		sender = recipient.String
+	} else if recipient.String == "" {
+		recipient = sql.NullString{Valid: true, String: sender}
+	}
+
 	return model.BridgeEvent{
 		InsertTime:       rfqEvent.InsertTime,
 		ContractAddress:  rfqEvent.ContractAddress,
@@ -242,9 +251,9 @@ func rfqEventToBridgeEvent(rfqEvent model.RFQEvent) model.BridgeEvent {
 		Amount:           rfqEvent.OriginAmount,
 		EventIndex:       rfqEvent.EventIndex,
 		DestinationKappa: destinationKappa,
-		Sender:           rfqEvent.Sender.String,
+		Sender:           sender,
 
-		Recipient:          rfqEvent.Recipient,
+		Recipient:          recipient,
 		RecipientBytes:     sql.NullString{},
 		DestinationChainID: rfqEvent.DestinationChainID,
 		Fee:                nil,
