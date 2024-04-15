@@ -167,24 +167,29 @@ const StateManagedBridge = () => {
         stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId])
       )
 
-      if (allQuotes.length === 0) {
+      const activeQuotes = allQuotes.filter(
+        (quote) => !pausedBridgeModules.includes(quote.bridgeModuleName)
+      )
+
+      console.log('allQuotes:', allQuotes)
+      console.log('activeQuotes: ', activeQuotes)
+
+      if (activeQuotes.length === 0) {
         const msg = `No route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken?.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         throw new Error(msg)
       }
 
-      const rfqQuote = allQuotes.find(
+      const rfqQuote = activeQuotes.find(
         (quote) => quote.bridgeModuleName === 'SynapseRFQ'
       )
 
       let quote
 
-      console.log('allQuotes:', allQuotes)
-
       if (rfqQuote) {
         quote = rfqQuote
       } else {
         /* allBridgeQuotes returns sorted quotes by maxAmountOut descending */
-        quote = allQuotes[0]
+        quote = activeQuotes[0]
       }
 
       const {
