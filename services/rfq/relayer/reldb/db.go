@@ -165,13 +165,14 @@ var _ dbcommon.Enum = (*QuoteRequestStatus)(nil)
 
 // Rebalance represents a rebalance action.
 type Rebalance struct {
-	RebalanceID  *string
-	Origin       uint64
-	Destination  uint64
-	OriginAmount *big.Int
-	Status       RebalanceStatus
-	OriginTxHash common.Hash
-	DestTxHash   common.Hash
+	RebalanceID     *string
+	Origin          uint64
+	Destination     uint64
+	OriginAmount    *big.Int
+	OriginTokenAddr common.Address
+	Status          RebalanceStatus
+	OriginTxHash    common.Hash
+	DestTxHash      common.Hash
 }
 
 // RebalanceStatus is the status of a rebalance action in the db.
