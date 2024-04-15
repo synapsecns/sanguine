@@ -10,6 +10,7 @@ interface ChainPause {
   pausedFromChains: number[]
   pausedToChains: number[]
   pauseBridge: boolean
+  pauseBridgeModule: 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL'
   pauseSwap: boolean
   pauseStartTime: Date
   pauseEndTime: Date | null // Indefinite if null
@@ -23,16 +24,29 @@ interface ChainPause {
   disableCountdown: boolean
 }
 
-const PAUSED_CHAINS: ChainPause[] = pausedChains.map((pause) => ({
-  ...pause,
-  pauseStartTime: new Date(pause.pauseStartTime),
-  pauseEndTime: pause.pauseEndTime ? new Date(pause.pauseEndTime) : null,
-  bannerStartTime: new Date(pause.bannerStartTime),
-  bannerEndTime: pause.bannerEndTime ? new Date(pause.bannerEndTime) : null,
-  warningMessage: <p>{pause.warningMessage}</p>,
-  bannerMessage: <p>{pause.bannerMessage}</p>,
-  progressBarMessage: <p>{pause.progressBarMessage}</p>,
-}))
+function isValidBridgeModule(
+  module: any
+): module is 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL' {
+  return ['SynapseBridge', 'SynapseRFQ', 'SynapseCCTP', 'ALL'].includes(module)
+}
+
+const PAUSED_CHAINS: ChainPause[] = pausedChains.map((pause) => {
+  if (!isValidBridgeModule(pause.pauseBridgeModule)) {
+    throw new Error(`Invalid module type: ${pause.pauseBridgeModule}`)
+  }
+
+  return {
+    ...pause,
+    pauseBridgeModule: pause.pauseBridgeModule,
+    pauseStartTime: new Date(pause.pauseStartTime),
+    pauseEndTime: pause.pauseEndTime ? new Date(pause.pauseEndTime) : null,
+    bannerStartTime: new Date(pause.bannerStartTime),
+    bannerEndTime: pause.bannerEndTime ? new Date(pause.bannerEndTime) : null,
+    warningMessage: <p>{pause.warningMessage}</p>,
+    bannerMessage: <p>{pause.bannerMessage}</p>,
+    progressBarMessage: <p>{pause.progressBarMessage}</p>,
+  }
+})
 
 export const MaintenanceBanners = () => {
   return (
