@@ -74,7 +74,7 @@ import {
 } from '@/components/Maintenance/Maintenance'
 import { BridgeCard } from '@/components/ui/BridgeCard'
 import { ConfirmDestinationAddressWarning } from '@/components/StateManagedBridge/BridgeWarnings'
-import { usePausedBridgeModules } from '@/components/Maintenance/Maintenance'
+import { PAUSED_MODULES } from '@/components/Maintenance/Maintenance'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -144,10 +144,6 @@ const StateManagedBridge = () => {
     }
   }, [bridgeQuote, fromToken, debouncedFromValue, fromChainId, toChainId])
 
-  const pausedBridgeModules = usePausedBridgeModules()
-
-  console.log('pausedBridgeModules: ', pausedBridgeModules)
-
   const getAndSetBridgeQuote = async () => {
     currentSDKRequestID.current += 1
     const thisRequestId = currentSDKRequestID.current
@@ -167,19 +163,21 @@ const StateManagedBridge = () => {
         stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId])
       )
 
-      const activeQuotes = allQuotes.filter(
-        (quote) => !pausedBridgeModules.includes(quote.bridgeModuleName)
-      )
+      // const activeQuotes = allQuotes.filter((quote) => {
+      //   PAUSED_MODULES.forEach((pausedModule) => {
+      //     if (pausedModule)
+      //   })
+      // })
 
       console.log('allQuotes:', allQuotes)
-      console.log('activeQuotes: ', activeQuotes)
+      // console.log('activeQuotes: ', activeQuotes)
 
-      if (activeQuotes.length === 0) {
+      if (allQuotes.length === 0) {
         const msg = `No route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken?.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         throw new Error(msg)
       }
 
-      const rfqQuote = activeQuotes.find(
+      const rfqQuote = allQuotes.find(
         (quote) => quote.bridgeModuleName === 'SynapseRFQ'
       )
 
@@ -189,7 +187,7 @@ const StateManagedBridge = () => {
         quote = rfqQuote
       } else {
         /* allBridgeQuotes returns sorted quotes by maxAmountOut descending */
-        quote = activeQuotes[0]
+        quote = allQuotes[0]
       }
 
       const {

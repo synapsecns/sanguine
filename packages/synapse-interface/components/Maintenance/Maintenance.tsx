@@ -11,6 +11,7 @@ interface ChainPause {
   pausedFromChains: number[]
   pausedToChains: number[]
   pauseBridge: boolean
+  // bridgeModule: 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL'
   pauseSwap: boolean
   pauseStartTime: Date
   pauseEndTime: Date | null // Indefinite if null
@@ -24,11 +25,8 @@ interface ChainPause {
   disableCountdown: boolean
 }
 
-interface BridgeRoutePause {
-  fromChainId: number
-  toChainId: number
-  fromToken: string
-  toToken: string
+interface BridgeModulePause {
+  chainId: number
   bridgeModule: 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL'
 }
 
@@ -38,7 +36,7 @@ function isValidBridgeModule(
   return ['SynapseBridge', 'SynapseRFQ', 'SynapseCCTP', 'ALL'].includes(module)
 }
 
-const PAUSED_ROUTES: BridgeRoutePause[] = pausedRoutes.map((route) => {
+export const PAUSED_MODULES: BridgeModulePause[] = pausedRoutes.map((route) => {
   if (!isValidBridgeModule(route.bridgeModule)) {
     throw new Error(`Invalid module type: ${route.bridgeModule}`)
   }
@@ -53,6 +51,10 @@ const PAUSED_ROUTES: BridgeRoutePause[] = pausedRoutes.map((route) => {
   }
 })
 
+export const usePausedModules = () => {}
+
+console.log('PAUSED_MODULES: ', PAUSED_MODULES)
+
 const PAUSED_CHAINS: ChainPause[] = pausedChains.map((pause) => {
   return {
     ...pause,
@@ -65,10 +67,6 @@ const PAUSED_CHAINS: ChainPause[] = pausedChains.map((pause) => {
     progressBarMessage: <p>{pause.progressBarMessage}</p>,
   }
 })
-
-export const usePausedBridgeModules = () => {
-  return PAUSED_ROUTES.map((route) => route.bridgeModule)
-}
 
 export const MaintenanceBanners = () => {
   return (
