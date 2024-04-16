@@ -19,6 +19,7 @@ import (
 	"github.com/synapsecns/sanguine/ethergo/client"
 	"github.com/synapsecns/sanguine/ethergo/submitter/db"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
 )
@@ -110,6 +111,11 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 
 	cq.storeAndSubmit(ctx, calls, span)
 
+	registerErr := cq.registerNumPendingTXes(len(cq.reprocessQueue), int(chainID.Int64()))
+	if registerErr != nil {
+		span.AddEvent("could not register pending txes", trace.WithAttributes(attribute.String("error", registerErr.Error())))
+	}
+
 	return nil
 }
 
@@ -146,6 +152,24 @@ func (c *chainQueue) storeAndSubmit(ctx context.Context, calls []w3types.Caller,
 		}
 	}()
 	wg.Wait()
+}
+
+const meterName = "github.com/synapsecns/sanguine/ethergo/submitter"
+
+func (c *chainQueue) registerNumPendingTXes(num, chainID int) (err error) {
+	meter := c.metrics.Meter(meterName)
+	numPendingGauge, err := meter.Int64ObservableGauge("num_pending_txes")
+	if err != nil {
+		return fmt.Errorf("error creating num pending txes gauge: %w", err)
+	}
+	_, err = meter.RegisterCallback(func(ctx context.Context, o metric.Observer) (err error) {
+		attributes := attribute.NewSet(
+			attribute.Int(metrics.ChainID, chainID),
+		)
+		o.ObserveInt64(numPendingGauge, int64(num), metric.WithAttributeSet(attributes))
+		return nil
+	})
+	return nil
 }
 
 // nolint: cyclop
