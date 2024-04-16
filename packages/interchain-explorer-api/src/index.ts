@@ -55,17 +55,16 @@ ponder.on(
       },
     })
 
-    // TODO: ms or seconds to match timestamp?
     await InterchainTransaction.upsert({
       id: transactionId,
       update: {
         sentAt: timestamp,
-        updatedAt: BigInt(Date.now()),
+        updatedAt: BigInt(Math.trunc(Date.now() / 1000)),
         interchainTransactionSentId: record.id,
       },
       create: {
         sentAt: timestamp,
-        createdAt: BigInt(Date.now()),
+        createdAt: BigInt(Math.trunc(Date.now() / 1000)),
         interchainTransactionSentId: record.id,
       },
     })
@@ -116,19 +115,74 @@ ponder.on(
       },
     })
 
-    // TODO: ms or seconds to match timestamp?
     await InterchainTransaction.upsert({
       id: transactionId,
       create: {
         receivedAt: timestamp,
-        createdAt: BigInt(Date.now()),
+        createdAt: BigInt(Math.trunc(Date.now() / 1000)),
         interchainTransactionReceivedId: record.id,
       },
       update: {
         receivedAt: timestamp,
-        updatedAt: BigInt(Date.now()),
+        updatedAt: BigInt(Math.trunc(Date.now() / 1000)),
         interchainTransactionReceivedId: record.id,
       },
     })
   }
 )
+
+ponder.on(
+  'InterchainDB:InterchainBatchVerificationRequested',
+  async ({ event, context }) => {
+    const {
+      db: { InterchainTransactionSent },
+    } = context
+
+    console.log(event.args.dbNonce)
+
+    const entry = await InterchainTransactionSent.findMany({
+      where: { dstChainId: event.args.dstChainId, dbNonce: event.args.dbNonce },
+    })
+
+    console.log('==========')
+    console.log('InterchainDB:InterchainBatchVerificationRequested')
+    console.log(`event.args.dbNonce`, event.args.dbNonce)
+    console.log(`event`, event)
+    console.log(`entry`, entry)
+    console.log('==========')
+  }
+)
+
+ponder.on(
+  'InterchainDB:InterchainBatchVerified',
+  async ({ event, context }) => {
+    const {
+      db: { InterchainTransactionSent },
+    } = context
+
+    const entry = await InterchainTransactionSent.findMany({
+      where: { dbNonce: event.args.dbNonce },
+    })
+
+    console.log('==========')
+    console.log('InterchainDB:InterchainBatchVerified')
+    console.log(`event.args.dbNonce`, event.args.dbNonce)
+    console.log(`event`, event)
+    console.log(`entry`, entry)
+    console.log('==========')
+  }
+)
+
+ponder.on('SynapseModule:BatchVerificationRequested', async ({ event }) => {
+  console.log('==========')
+  console.log('SynapseModule:BatchVerificationRequested')
+  console.log(`event`, event)
+  console.log('==========')
+})
+
+ponder.on('SynapseModule:BatchVerified', async ({ event }) => {
+  console.log('==========')
+  console.log('SynapseModule:BatchVerified')
+  console.log(`event`, event)
+  console.log('==========')
+})
