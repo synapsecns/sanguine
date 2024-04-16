@@ -6,6 +6,7 @@ import {AppConfigV1} from "../../contracts/libs/AppConfig.sol";
 
 import {TypeCasts} from "../../contracts/libs/TypeCasts.sol";
 
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import {stdJson, SynapseScript} from "@synapsecns/solidity-devops/src/SynapseScript.sol";
 
 abstract contract ConfigureAppV1 is SynapseScript {
@@ -42,7 +43,7 @@ abstract contract ConfigureAppV1 is SynapseScript {
         string[] memory chains = config.readStringArray(".chains");
         for (uint256 i = 0; i < chains.length; i++) {
             string memory chain = chains[i];
-            uint256 chainId = chainIds[chain];
+            uint64 chainId = SafeCast.toUint64(chainIds[chain]);
             require(chainId != 0, string.concat("Chain not found: ", chain));
             // Skip current chain
             if (chainId == blockChainId()) continue;

@@ -17,15 +17,15 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
     error InterchainApp__ClientAlreadyAdded(address client);
     error InterchainApp__InterchainClientZeroAddress();
     error InterchainApp__NotInterchainClient(address account);
-    error InterchainApp__ReceiverNotSet(uint256 chainId);
-    error InterchainApp__SameChainId(uint256 chainId);
-    error InterchainApp__SenderNotAllowed(uint256 srcChainId, bytes32 sender);
+    error InterchainApp__ReceiverNotSet(uint64 chainId);
+    error InterchainApp__SameChainId(uint64 chainId);
+    error InterchainApp__SenderNotAllowed(uint64 srcChainId, bytes32 sender);
 
     /// @inheritdoc IInterchainApp
     function appReceive(
-        uint256 srcChainId,
+        uint64 srcChainId,
         bytes32 sender,
-        uint256 dbNonce,
+        uint64 dbNonce,
         uint64 entryIndex,
         bytes calldata message
     )
@@ -115,7 +115,7 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
 
     /// @dev Thin wrapper around _sendInterchainMessage to accept EVM address as a parameter.
     function _sendInterchainMessageEVM(
-        uint256 dstChainId,
+        uint64 dstChainId,
         address receiver,
         uint256 messageFee,
         bytes memory options,
@@ -129,7 +129,7 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
 
     /// @dev Performs necessary checks and sends an interchain message.
     function _sendInterchainMessage(
-        uint256 dstChainId,
+        uint64 dstChainId,
         bytes32 receiver,
         uint256 messageFee,
         bytes memory options,
@@ -158,9 +158,9 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
 
     /// @dev Internal logic for receiving messages. At this point the validity of the message is already checked.
     function _receiveMessage(
-        uint256 srcChainId,
+        uint64 srcChainId,
         bytes32 sender,
-        uint256 dbNonce,
+        uint64 dbNonce,
         uint64 entryIndex,
         bytes calldata message
     )
@@ -171,7 +171,7 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
 
     /// @dev Returns the fee for sending an Interchain message.
     function _getInterchainFee(
-        uint256 dstChainId,
+        uint64 dstChainId,
         bytes memory options,
         uint256 messageLen
     )
@@ -201,7 +201,7 @@ abstract contract AbstractICApp is AbstractICAppEvents, IInterchainApp {
     function _getModules() internal view virtual returns (address[] memory);
 
     /// @dev Checks if the sender is allowed to send messages to this app.
-    function _isAllowedSender(uint256 srcChainId, bytes32 sender) internal view virtual returns (bool);
+    function _isAllowedSender(uint64 srcChainId, bytes32 sender) internal view virtual returns (bool);
 
     /// @dev Checks if the caller is an Interchain Client.
     /// Both latest and legacy Interchain Clients are allowed to call `appReceive`.

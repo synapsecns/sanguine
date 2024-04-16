@@ -22,8 +22,8 @@ import {Test} from "forge-std/Test.sol";
 abstract contract MessageBusBaseTest is MessageBusEvents, Test {
     bytes32 public constant IC_GOVERNOR_ROLE = keccak256("IC_GOVERNOR_ROLE");
 
-    uint256 public constant LOCAL_CHAIN_ID = 1337;
-    uint256 public constant REMOTE_CHAIN_ID = 7331;
+    uint64 public constant LOCAL_CHAIN_ID = 1337;
+    uint64 public constant REMOTE_CHAIN_ID = 7331;
     uint256 public constant BUS_OPTIMISTIC_PERIOD = 1 minutes;
     uint256 public constant MOCK_FEE = 0.001 ether;
     uint256 public constant MOCK_GAS_LIMIT = 400_000;

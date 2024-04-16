@@ -61,7 +61,7 @@ func fromInterchainTX(chainID *big.Int, interchainTx *interchainclient.Interchai
 		GasAirdrop:    options.GasAirdrop.String(),
 		GasLimit:      options.GasLimit.String(),
 		SrcChainID:    chainID.Uint64(),
-		DstChainID:    interchainTx.DstChainId.Uint64(),
+		DstChainID:    interchainTx.DstChainId,
 		Status:        db.Seen,
 	}
 }
