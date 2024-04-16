@@ -21,7 +21,7 @@ export const InterchainClientV1Abi = [
     type: 'error',
   },
   {
-    inputs: [{ internalType: 'uint256', name: 'chainId', type: 'uint256' }],
+    inputs: [{ internalType: 'uint64', name: 'chainId', type: 'uint64' }],
     name: 'InterchainClientV1__IncorrectDstChainId',
     type: 'error',
   },
@@ -39,13 +39,18 @@ export const InterchainClientV1Abi = [
     type: 'error',
   },
   {
-    inputs: [{ internalType: 'uint256', name: 'chainId', type: 'uint256' }],
+    inputs: [{ internalType: 'uint64', name: 'chainId', type: 'uint64' }],
     name: 'InterchainClientV1__NoLinkedClient',
     type: 'error',
   },
   {
     inputs: [{ internalType: 'bytes32', name: 'client', type: 'bytes32' }],
     name: 'InterchainClientV1__NotEVMClient',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'InterchainClientV1__NotEnoughGasSupplied',
     type: 'error',
   },
   {
@@ -57,7 +62,7 @@ export const InterchainClientV1Abi = [
     type: 'error',
   },
   {
-    inputs: [{ internalType: 'uint256', name: 'chainId', type: 'uint256' }],
+    inputs: [{ internalType: 'uint64', name: 'chainId', type: 'uint64' }],
     name: 'InterchainClientV1__NotRemoteChainId',
     type: 'error',
   },
@@ -96,6 +101,14 @@ export const InterchainClientV1Abi = [
     name: 'OwnableUnauthorizedAccount',
     type: 'error',
   },
+  {
+    inputs: [
+      { internalType: 'uint8', name: 'bits', type: 'uint8' },
+      { internalType: 'uint256', name: 'value', type: 'uint256' },
+    ],
+    name: 'SafeCastOverflowedUintDowncast',
+    type: 'error',
+  },
   { inputs: [], name: 'VersionedPayload__PrecompileFailed', type: 'error' },
   {
     inputs: [
@@ -127,19 +140,19 @@ export const InterchainClientV1Abi = [
         type: 'bytes32',
       },
       {
-        indexed: true,
-        internalType: 'uint256',
+        indexed: false,
+        internalType: 'uint64',
         name: 'dbNonce',
-        type: 'uint256',
+        type: 'uint64',
       },
       {
-        indexed: true,
+        indexed: false,
         internalType: 'uint64',
         name: 'entryIndex',
         type: 'uint64',
       },
       {
-        indexed: false,
+        indexed: true,
         internalType: 'address',
         name: 'executor',
         type: 'address',
@@ -158,31 +171,31 @@ export const InterchainClientV1Abi = [
         type: 'bytes32',
       },
       {
-        indexed: true,
-        internalType: 'uint256',
+        indexed: false,
+        internalType: 'uint64',
         name: 'dbNonce',
-        type: 'uint256',
+        type: 'uint64',
       },
       {
-        indexed: true,
+        indexed: false,
         internalType: 'uint64',
         name: 'entryIndex',
         type: 'uint64',
       },
       {
         indexed: false,
-        internalType: 'uint256',
+        internalType: 'uint64',
         name: 'srcChainId',
-        type: 'uint256',
+        type: 'uint64',
       },
       {
-        indexed: false,
+        indexed: true,
         internalType: 'bytes32',
         name: 'srcSender',
         type: 'bytes32',
       },
       {
-        indexed: false,
+        indexed: true,
         internalType: 'bytes32',
         name: 'dstReceiver',
         type: 'bytes32',
@@ -201,31 +214,31 @@ export const InterchainClientV1Abi = [
         type: 'bytes32',
       },
       {
-        indexed: true,
-        internalType: 'uint256',
+        indexed: false,
+        internalType: 'uint64',
         name: 'dbNonce',
-        type: 'uint256',
+        type: 'uint64',
       },
       {
-        indexed: true,
+        indexed: false,
         internalType: 'uint64',
         name: 'entryIndex',
         type: 'uint64',
       },
       {
         indexed: false,
-        internalType: 'uint256',
+        internalType: 'uint64',
         name: 'dstChainId',
-        type: 'uint256',
+        type: 'uint64',
       },
       {
-        indexed: false,
+        indexed: true,
         internalType: 'bytes32',
         name: 'srcSender',
         type: 'bytes32',
       },
       {
-        indexed: false,
+        indexed: true,
         internalType: 'bytes32',
         name: 'dstReceiver',
         type: 'bytes32',
@@ -253,9 +266,9 @@ export const InterchainClientV1Abi = [
     inputs: [
       {
         indexed: false,
-        internalType: 'uint256',
+        internalType: 'uint64',
         name: 'chainId',
-        type: 'uint256',
+        type: 'uint64',
       },
       {
         indexed: false,
@@ -321,12 +334,12 @@ export const InterchainClientV1Abi = [
     inputs: [
       {
         components: [
-          { internalType: 'uint256', name: 'srcChainId', type: 'uint256' },
-          { internalType: 'bytes32', name: 'srcSender', type: 'bytes32' },
-          { internalType: 'uint256', name: 'dstChainId', type: 'uint256' },
-          { internalType: 'bytes32', name: 'dstReceiver', type: 'bytes32' },
-          { internalType: 'uint256', name: 'dbNonce', type: 'uint256' },
+          { internalType: 'uint64', name: 'srcChainId', type: 'uint64' },
+          { internalType: 'uint64', name: 'dstChainId', type: 'uint64' },
+          { internalType: 'uint64', name: 'dbNonce', type: 'uint64' },
           { internalType: 'uint64', name: 'entryIndex', type: 'uint64' },
+          { internalType: 'bytes32', name: 'srcSender', type: 'bytes32' },
+          { internalType: 'bytes32', name: 'dstReceiver', type: 'bytes32' },
           { internalType: 'bytes', name: 'options', type: 'bytes' },
           { internalType: 'bytes', name: 'message', type: 'bytes' },
         ],
@@ -348,6 +361,32 @@ export const InterchainClientV1Abi = [
     type: 'function',
   },
   {
+    inputs: [{ internalType: 'address', name: 'receiver', type: 'address' }],
+    name: 'getAppReceivingConfigV1',
+    outputs: [
+      {
+        components: [
+          {
+            internalType: 'uint256',
+            name: 'requiredResponses',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint256',
+            name: 'optimisticPeriod',
+            type: 'uint256',
+          },
+        ],
+        internalType: 'struct AppConfigV1',
+        name: 'config',
+        type: 'tuple',
+      },
+      { internalType: 'address[]', name: 'modules', type: 'address[]' },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
     inputs: [{ internalType: 'bytes', name: 'encodedTx', type: 'bytes' }],
     name: 'getExecutor',
     outputs: [{ internalType: 'address', name: '', type: 'address' }],
@@ -365,7 +404,7 @@ export const InterchainClientV1Abi = [
   },
   {
     inputs: [
-      { internalType: 'uint256', name: 'dstChainId', type: 'uint256' },
+      { internalType: 'uint64', name: 'dstChainId', type: 'uint64' },
       { internalType: 'address', name: 'srcExecutionService', type: 'address' },
       { internalType: 'address[]', name: 'srcModules', type: 'address[]' },
       { internalType: 'bytes', name: 'options', type: 'bytes' },
@@ -377,14 +416,14 @@ export const InterchainClientV1Abi = [
     type: 'function',
   },
   {
-    inputs: [{ internalType: 'uint256', name: 'chainId', type: 'uint256' }],
+    inputs: [{ internalType: 'uint64', name: 'chainId', type: 'uint64' }],
     name: 'getLinkedClient',
     outputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
     stateMutability: 'view',
     type: 'function',
   },
   {
-    inputs: [{ internalType: 'uint256', name: 'chainId', type: 'uint256' }],
+    inputs: [{ internalType: 'uint64', name: 'chainId', type: 'uint64' }],
     name: 'getLinkedClientEVM',
     outputs: [
       { internalType: 'address', name: 'linkedClientEVM', type: 'address' },
@@ -405,7 +444,7 @@ export const InterchainClientV1Abi = [
   },
   {
     inputs: [
-      { internalType: 'uint256', name: 'dstChainId', type: 'uint256' },
+      { internalType: 'uint64', name: 'dstChainId', type: 'uint64' },
       { internalType: 'bytes32', name: 'receiver', type: 'bytes32' },
       { internalType: 'address', name: 'srcExecutionService', type: 'address' },
       { internalType: 'address[]', name: 'srcModules', type: 'address[]' },
@@ -417,7 +456,7 @@ export const InterchainClientV1Abi = [
       {
         components: [
           { internalType: 'bytes32', name: 'transactionId', type: 'bytes32' },
-          { internalType: 'uint256', name: 'dbNonce', type: 'uint256' },
+          { internalType: 'uint64', name: 'dbNonce', type: 'uint64' },
           { internalType: 'uint64', name: 'entryIndex', type: 'uint64' },
         ],
         internalType: 'struct InterchainTxDescriptor',
@@ -430,7 +469,7 @@ export const InterchainClientV1Abi = [
   },
   {
     inputs: [
-      { internalType: 'uint256', name: 'dstChainId', type: 'uint256' },
+      { internalType: 'uint64', name: 'dstChainId', type: 'uint64' },
       { internalType: 'address', name: 'receiver', type: 'address' },
       { internalType: 'address', name: 'srcExecutionService', type: 'address' },
       { internalType: 'address[]', name: 'srcModules', type: 'address[]' },
@@ -442,7 +481,7 @@ export const InterchainClientV1Abi = [
       {
         components: [
           { internalType: 'bytes32', name: 'transactionId', type: 'bytes32' },
-          { internalType: 'uint256', name: 'dbNonce', type: 'uint256' },
+          { internalType: 'uint64', name: 'dbNonce', type: 'uint64' },
           { internalType: 'uint64', name: 'entryIndex', type: 'uint64' },
         ],
         internalType: 'struct InterchainTxDescriptor',
@@ -488,7 +527,7 @@ export const InterchainClientV1Abi = [
   },
   {
     inputs: [
-      { internalType: 'uint256', name: 'chainId', type: 'uint256' },
+      { internalType: 'uint64', name: 'chainId', type: 'uint64' },
       { internalType: 'bytes32', name: 'client', type: 'bytes32' },
     ],
     name: 'setLinkedClient',
@@ -509,7 +548,7 @@ export const InterchainClientV1Abi = [
     ],
     name: 'writeExecutionProof',
     outputs: [
-      { internalType: 'uint256', name: 'dbNonce', type: 'uint256' },
+      { internalType: 'uint64', name: 'dbNonce', type: 'uint64' },
       { internalType: 'uint64', name: 'entryIndex', type: 'uint64' },
     ],
     stateMutability: 'nonpayable',
