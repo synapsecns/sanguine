@@ -4,8 +4,9 @@ import { useMaintenanceCountdownProgress } from './components/useMaintenanceCoun
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { useSwapState } from '@/slices/swap/hooks'
 import pausedChains from '@/public/pauses/v1/pausedChains.json'
-import pausedRoutes from '@/public/pauses/v1/pausedRoutes.json'
+import pausedBridgeModules from '@/public/pauses/v1/pausedBridgeModules.json'
 
+/** Pause Chain Activity */
 interface ChainPause {
   id: string
   pausedFromChains: number[]
@@ -13,9 +14,9 @@ interface ChainPause {
   pauseBridge: boolean
   pauseSwap: boolean
   pauseStartTime: Date
-  pauseEndTime: Date | null // Indefinite if null
+  pauseEndTime: Date | null // Pause indefinite if null
   bannerStartTime: Date
-  bannerEndTime: Date | null // Indefinite if null
+  bannerEndTime: Date | null // Pause indefinite if null
   warningMessage: JSX.Element
   bannerMessage: JSX.Element
   progressBarMessage: JSX.Element
@@ -23,39 +24,6 @@ interface ChainPause {
   disableWarning: boolean
   disableCountdown: boolean
 }
-
-interface BridgeModulePause {
-  chainId?: number // Will pause for all chains if undefined
-  bridgeModuleName: 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL'
-}
-
-function isValidBridgeModule(
-  module: any
-): module is 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL' {
-  return ['SynapseBridge', 'SynapseRFQ', 'SynapseCCTP', 'ALL'].includes(module)
-}
-
-export function getBridgeModuleNames(module) {
-  if (module.bridgeModuleName === 'ALL') {
-    return ['SynapseRFQ', 'SynapseCCTP', 'SynapseBridge']
-  }
-  return [module.bridgeModuleName]
-}
-
-export const PAUSED_MODULES: BridgeModulePause[] = pausedRoutes.map((route) => {
-  if (!isValidBridgeModule(route.bridgeModuleName)) {
-    throw new Error(`Invalid module type: ${route.bridgeModuleName}`)
-  }
-
-  return {
-    ...route,
-    bridgeModuleName: route.bridgeModuleName as
-      | 'SynapseBridge'
-      | 'SynapseRFQ'
-      | 'SynapseCCTP'
-      | 'ALL',
-  }
-})
 
 const PAUSED_CHAINS: ChainPause[] = pausedChains.map((pause) => {
   return {
@@ -181,3 +149,39 @@ export const useMaintenanceCountdownProgresses = ({
     })
   }
 }
+
+/** Pause Bridge Modules */
+interface BridgeModulePause {
+  chainId?: number // Will pause for all chains if undefined
+  bridgeModuleName: 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL'
+}
+
+function isValidBridgeModule(
+  module: any
+): module is 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL' {
+  return ['SynapseBridge', 'SynapseRFQ', 'SynapseCCTP', 'ALL'].includes(module)
+}
+
+export function getBridgeModuleNames(module) {
+  if (module.bridgeModuleName === 'ALL') {
+    return ['SynapseRFQ', 'SynapseCCTP', 'SynapseBridge']
+  }
+  return [module.bridgeModuleName]
+}
+
+export const PAUSED_MODULES: BridgeModulePause[] = pausedBridgeModules.map(
+  (route) => {
+    if (!isValidBridgeModule(route.bridgeModuleName)) {
+      throw new Error(`Invalid module type: ${route.bridgeModuleName}`)
+    }
+
+    return {
+      ...route,
+      bridgeModuleName: route.bridgeModuleName as
+        | 'SynapseBridge'
+        | 'SynapseRFQ'
+        | 'SynapseCCTP'
+        | 'ALL',
+    }
+  }
+)

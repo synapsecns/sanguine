@@ -176,10 +176,6 @@ const StateManagedBridge = () => {
         (quote) => !pausedBridgeModules.has(quote.bridgeModuleName)
       )
 
-      console.log('pausedBridgeModules: ', pausedBridgeModules)
-      console.log('allQuotes:', allQuotes)
-      console.log('activeQuotes: ', activeQuotes)
-
       if (activeQuotes.length === 0) {
         const msg = `No route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken?.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         throw new Error(msg)
