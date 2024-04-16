@@ -66,6 +66,10 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 		return fmt.Errorf("could not get nonce: %w", err)
 	}
 	span.SetAttributes(attribute.Int("nonce", int(currentNonce)))
+	registerErr := t.registerCurrentNonce(currentNonce, int(chainID.Int64()))
+	if registerErr != nil {
+		span.AddEvent("could not register nonce", trace.WithAttributes(attribute.String("error", registerErr.Error())))
+	}
 
 	g, gCtx := errgroup.WithContext(ctx)
 
@@ -111,12 +115,28 @@ func (t *txSubmitterImpl) chainPendingQueue(parentCtx context.Context, chainID *
 
 	cq.storeAndSubmit(ctx, calls, span)
 
-	registerErr := cq.registerNumPendingTXes(len(cq.reprocessQueue), int(chainID.Int64()))
+	registerErr = cq.registerNumPendingTXes(len(cq.reprocessQueue), int(chainID.Int64()))
 	if registerErr != nil {
 		span.AddEvent("could not register pending txes", trace.WithAttributes(attribute.String("error", registerErr.Error())))
 	}
 
 	return nil
+}
+
+func (t *txSubmitterImpl) registerCurrentNonce(nonce uint64, chainID int) (err error) {
+	meter := t.metrics.Meter(meterName)
+	nonceGauge, err := meter.Int64ObservableGauge("current_nonce")
+	if err != nil {
+		return fmt.Errorf("error creating nonce gauge: %w", err)
+	}
+	_, err = meter.RegisterCallback(func(ctx context.Context, o metric.Observer) (err error) {
+		attributes := attribute.NewSet(
+			attribute.Int(metrics.ChainID, chainID),
+		)
+		o.ObserveInt64(nonceGauge, int64(nonce), metric.WithAttributeSet(attributes))
+		return nil
+	})
+	return err
 }
 
 // storeAndSubmit stores the txes in the database and submits them to the chain.
