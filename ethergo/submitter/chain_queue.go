@@ -249,6 +249,11 @@ func (c *chainQueue) bumpTX(parentCtx context.Context, ogTx db.TX) {
 			Status:      db.Stored,
 		})
 
+		registerErr := c.registerBumpTx(ctx, tx, ogTx.UUID)
+		if registerErr != nil {
+			span.AddEvent("could not register bump tx", trace.WithAttributes(attribute.String("error", registerErr.Error())))
+		}
+
 		return nil
 	})
 }
@@ -267,6 +272,18 @@ func (c *chainQueue) isBumpIntervalElapsed(tx db.TX) bool {
 	elapsedSeconds := time.Since(tx.CreationTime().Add(bumpInterval)).Seconds()
 
 	return elapsedSeconds >= 0
+}
+
+func (c *chainQueue) registerBumpTx(ctx context.Context, tx *types.Transaction, uuid string) (err error) {
+	meter := c.metrics.Meter(meterName)
+	gaugeName := fmt.Sprintf("bump_count:%d-%d", tx.ChainId().Int64(), tx.Nonce())
+	bumpCountGauge, err := meter.Int64Counter(gaugeName)
+	if err != nil {
+		return fmt.Errorf("error creating bump count gauge: %w", err)
+	}
+	attributes := attribute.NewSet(txToAttributes(tx, uuid)...)
+	bumpCountGauge.Add(ctx, 1, metric.WithAttributeSet(attributes))
+	return nil
 }
 
 // updateOldTxStatuses updates the status of txes that are before the current nonce
