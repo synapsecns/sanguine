@@ -19,6 +19,7 @@ export default createSchema((p) => ({
     blockNumber: p.bigint(),
     transactionHash: p.string(),
     timestamp: p.bigint(),
+    count: p.int(),
   }),
 
   InterchainTransactionReceived: p.createTable({
@@ -35,6 +36,7 @@ export default createSchema((p) => ({
     blockNumber: p.bigint(),
     transactionHash: p.string(),
     timestamp: p.bigint(),
+    count: p.int(),
   }),
 
   InterchainTransaction: p.createTable({

@@ -1,5 +1,8 @@
 import { ponder } from '@/generated'
 
+let sentCount = 0
+let receivedCount = 0
+
 ponder.on(
   'InterchainClientV1:InterchainTransactionSent',
   async ({ event, context }) => {
@@ -26,6 +29,9 @@ ponder.on(
       },
     } = event
 
+    // Manually counting until we can do aggregations
+    sentCount = sentCount + 1
+
     const record = await InterchainTransactionSent.create({
       id: transactionId,
       data: {
@@ -45,6 +51,7 @@ ponder.on(
         blockNumber,
         transactionHash,
         timestamp,
+        count: sentCount,
       },
     })
 
@@ -87,6 +94,9 @@ ponder.on(
       },
     } = event
 
+    // Manually counting until we can do aggregations
+    receivedCount = receivedCount + 1
+
     const record = await InterchainTransactionReceived.create({
       id: transactionId,
       data: {
@@ -102,6 +112,7 @@ ponder.on(
         blockNumber,
         transactionHash,
         timestamp,
+        count: receivedCount,
       },
     })
 
