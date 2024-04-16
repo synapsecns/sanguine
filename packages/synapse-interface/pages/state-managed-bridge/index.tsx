@@ -74,7 +74,10 @@ import {
 } from '@/components/Maintenance/Maintenance'
 import { BridgeCard } from '@/components/ui/BridgeCard'
 import { ConfirmDestinationAddressWarning } from '@/components/StateManagedBridge/BridgeWarnings'
-import { PAUSED_MODULES } from '@/components/Maintenance/Maintenance'
+import {
+  PAUSED_MODULES,
+  getBridgeModuleNames,
+} from '@/components/Maintenance/Maintenance'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -163,18 +166,11 @@ const StateManagedBridge = () => {
         stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId])
       )
 
-      const getModuleNames = (module) => {
-        if (module.bridgeModuleName === 'ALL') {
-          return ['SynapseRFQ', 'SynapseCCTP', 'SynapseBridge']
-        }
-        return [module.bridgeModuleName]
-      }
-
-      const pausedModules = PAUSED_MODULES.filter((module) =>
-        module.chainId ? module.chainId === fromChainId : true
-      ).flatMap(getModuleNames)
-
-      const pausedBridgeModules = new Set(pausedModules)
+      const pausedBridgeModules = new Set(
+        PAUSED_MODULES.filter((module) =>
+          module.chainId ? module.chainId === fromChainId : true
+        ).flatMap(getBridgeModuleNames)
+      )
 
       const activeQuotes = allQuotes.filter(
         (quote) => !pausedBridgeModules.has(quote.bridgeModuleName)

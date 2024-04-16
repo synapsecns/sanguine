@@ -11,7 +11,6 @@ interface ChainPause {
   pausedFromChains: number[]
   pausedToChains: number[]
   pauseBridge: boolean
-  // bridgeModule: 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL'
   pauseSwap: boolean
   pauseStartTime: Date
   pauseEndTime: Date | null // Indefinite if null
@@ -34,6 +33,13 @@ function isValidBridgeModule(
   module: any
 ): module is 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL' {
   return ['SynapseBridge', 'SynapseRFQ', 'SynapseCCTP', 'ALL'].includes(module)
+}
+
+export function getBridgeModuleNames(module) {
+  if (module.bridgeModuleName === 'ALL') {
+    return ['SynapseRFQ', 'SynapseCCTP', 'SynapseBridge']
+  }
+  return [module.bridgeModuleName]
 }
 
 export const PAUSED_MODULES: BridgeModulePause[] = pausedRoutes.map((route) => {
