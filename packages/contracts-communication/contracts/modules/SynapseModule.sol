@@ -71,13 +71,13 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     /// @inheritdoc ISynapseModule
     function setThreshold(uint256 threshold) external onlyOwner {
         _verifiers.modifyThreshold(threshold);
-        emit ThresholdChanged(threshold);
+        emit ThresholdSet(threshold);
     }
 
     /// @inheritdoc ISynapseModule
     function setFeeCollector(address feeCollector_) external onlyOwner {
         feeCollector = feeCollector_;
-        emit FeeCollectorChanged(feeCollector_);
+        emit FeeCollectorSet(feeCollector_);
     }
 
     /// @inheritdoc ISynapseModule
@@ -86,7 +86,7 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
             revert SynapseModule__ClaimFeeFractionExceedsMax(claimFeeFraction);
         }
         _claimFeeFraction = claimFeeFraction;
-        emit ClaimFeeFractionChanged(claimFeeFraction);
+        emit ClaimFeeFractionSet(claimFeeFraction);
     }
 
     /// @inheritdoc ISynapseModule
@@ -95,13 +95,13 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
             revert SynapseModule__GasOracleNotContract(gasOracle_);
         }
         gasOracle = gasOracle_;
-        emit GasOracleChanged(gasOracle_);
+        emit GasOracleSet(gasOracle_);
     }
 
     /// @inheritdoc ISynapseModule
     function setVerifyGasLimit(uint64 chainId, uint256 gasLimit) external onlyOwner {
         _verifyGasLimit[chainId] = gasLimit;
-        emit VerifyGasLimitChanged(chainId, gasLimit);
+        emit VerifyGasLimitSet(chainId, gasLimit);
     }
 
     // ══════════════════════════════════════════════ PERMISSIONLESS ═══════════════════════════════════════════════════
