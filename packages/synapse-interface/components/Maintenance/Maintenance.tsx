@@ -3,8 +3,8 @@ import { MaintenanceWarningMessage } from './components/MaintenanceWarningMessag
 import { useMaintenanceCountdownProgress } from './components/useMaintenanceCountdownProgress'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { useSwapState } from '@/slices/swap/hooks'
-import pausedChains from '@/public/pausedChains.json'
-import pausedRoutes from '@/public/pausedRoutes.json'
+import pausedChains from '@/public/pauses/v1/pausedChains.json'
+import pausedRoutes from '@/public/pauses/v1/pausedRoutes.json'
 
 interface ChainPause {
   id: string
