@@ -8,11 +8,11 @@ abstract contract SynapseModuleEvents {
 
     event FeeCollectorChanged(address feeCollector);
     event GasOracleChanged(address gasOracle);
-    event VerifyGasLimitChanged(uint256 chainId, uint256 gasLimit);
+    event VerifyGasLimitChanged(uint64 chainId, uint256 gasLimit);
 
     event ClaimFeeFractionChanged(uint256 claimFeeFraction);
     event FeesClaimed(address feeCollector, uint256 collectedFees, address claimer, uint256 claimerFee);
 
-    event GasDataSent(uint256 dstChainId, bytes data);
-    event GasDataReceived(uint256 srcChainId, bytes data);
+    event GasDataSent(uint64 dstChainId, bytes data);
+    event GasDataReceived(uint64 srcChainId, bytes data);
 }

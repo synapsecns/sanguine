@@ -3,7 +3,7 @@ pragma solidity 0.8.20;
 interface IInterchain {
     function interchainSend(
         bytes32 receiver,
-        uint256 dstChainId,
+        uint64 dstChainId,
         bytes calldata message,
         address[] calldata modules
     )

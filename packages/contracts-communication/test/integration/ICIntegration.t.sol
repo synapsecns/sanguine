@@ -12,7 +12,6 @@ import {IInterchainClientV1} from "../../contracts/interfaces/IInterchainClientV
 import {InterchainBatch, InterchainBatchLib} from "../../contracts/libs/InterchainBatch.sol";
 import {InterchainEntry} from "../../contracts/libs/InterchainEntry.sol";
 import {InterchainTransaction, InterchainTxDescriptor} from "../../contracts/libs/InterchainTransaction.sol";
-import {VersionedPayloadLib} from "../../contracts/libs/VersionedPayload.sol";
 import {ModuleBatchLib} from "../../contracts/libs/ModuleBatch.sol";
 import {OptionsV1} from "../../contracts/libs/Options.sol";
 
@@ -188,7 +187,7 @@ abstract contract ICIntegrationTest is
         assertEq(leafs[0], batch.batchRoot);
     }
 
-    function checkDatabaseStateMsgSent(InterchainEntry memory entry, uint256 initialDBNonce) internal {
+    function checkDatabaseStateMsgSent(InterchainEntry memory entry, uint64 initialDBNonce) internal {
         InterchainBatch memory batch = getInterchainBatch(entry);
         InterchainTxDescriptor memory desc = getInterchainTxDescriptor(entry);
         assertEq(desc.dbNonce, initialDBNonce);
@@ -201,7 +200,7 @@ abstract contract ICIntegrationTest is
         assertEq(icDB.getEntryProof(desc.dbNonce, 0).length, 0);
         // Check getters related to the next dbNonce
         assertEq(icDB.getDBNonce(), desc.dbNonce + 1);
-        (uint256 dbNonce, uint64 entryIndex) = icDB.getNextEntryIndex();
+        (uint64 dbNonce, uint64 entryIndex) = icDB.getNextEntryIndex();
         assertEq(dbNonce, desc.dbNonce + 1);
         assertEq(entryIndex, 0);
     }
@@ -268,12 +267,12 @@ abstract contract ICIntegrationTest is
         });
     }
 
-    function getTxId(InterchainTransaction memory icTx) internal pure returns (bytes32) {
+    function getTxId(InterchainTransaction memory icTx) internal view returns (bytes32) {
         return keccak256(getEncodedTx(icTx));
     }
 
-    function getEncodedTx(InterchainTransaction memory icTx) internal pure returns (bytes memory) {
-        return VersionedPayloadLib.encodeVersionedPayload(CLIENT_VERSION, abi.encode(icTx));
+    function getEncodedTx(InterchainTransaction memory icTx) internal view returns (bytes memory) {
+        return payloadLibHarness.encodeVersionedPayload(CLIENT_VERSION, txLibHarness.encodeTransaction(icTx));
     }
 
     function getSrcTransaction() internal view returns (InterchainTransaction memory) {
