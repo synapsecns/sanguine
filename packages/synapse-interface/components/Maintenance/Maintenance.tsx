@@ -51,10 +51,6 @@ export const PAUSED_MODULES: BridgeModulePause[] = pausedRoutes.map((route) => {
   }
 })
 
-export const usePausedModules = () => {}
-
-console.log('PAUSED_MODULES: ', PAUSED_MODULES)
-
 const PAUSED_CHAINS: ChainPause[] = pausedChains.map((pause) => {
   return {
     ...pause,

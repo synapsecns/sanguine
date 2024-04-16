@@ -1,6 +1,6 @@
 [
   {
     "chainId": 42161,
-    "bridgeModuleName": "SynapseRFQ"
+    "bridgeModuleName": "ALL"
   }
 ]

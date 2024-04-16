@@ -163,17 +163,24 @@ const StateManagedBridge = () => {
         stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId])
       )
 
-      const pausedBridgeModules = new Set(
-        PAUSED_MODULES.filter((module) => module.chainId === fromChainId).map(
-          (module) => module.bridgeModuleName
-        )
-      )
+      const getModuleNames = (module) => {
+        if (module.bridgeModuleName === 'ALL') {
+          return ['SynapseRFQ', 'SynapseCCTP', 'SynapseBridge']
+        }
+        return [module.bridgeModuleName]
+      }
+
+      const pausedModules = PAUSED_MODULES.filter(
+        (module) => module.chainId === fromChainId
+      ).flatMap(getModuleNames)
+
+      const pausedBridgeModules = new Set(pausedModules)
 
       const activeQuotes = allQuotes.filter(
         (quote) => !pausedBridgeModules.has(quote.bridgeModuleName)
       )
 
-      console.log('pausedModuleNames: ', pausedBridgeModules)
+      console.log('pausedBridgeModules: ', pausedBridgeModules)
       console.log('allQuotes:', allQuotes)
       console.log('activeQuotes: ', activeQuotes)
 
@@ -182,7 +189,7 @@ const StateManagedBridge = () => {
         throw new Error(msg)
       }
 
-      const rfqQuote = allQuotes.find(
+      const rfqQuote = activeQuotes.find(
         (quote) => quote.bridgeModuleName === 'SynapseRFQ'
       )
 
@@ -192,7 +199,7 @@ const StateManagedBridge = () => {
         quote = rfqQuote
       } else {
         /* allBridgeQuotes returns sorted quotes by maxAmountOut descending */
-        quote = allQuotes[0]
+        quote = activeQuotes[0]
       }
 
       const {
