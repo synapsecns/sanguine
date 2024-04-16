@@ -94,9 +94,9 @@ export const InputContainer = () => {
   const connectedStatus = useMemo(() => {
     if (hasMounted && !isConnected) {
       return <ConnectWalletButton />
-    } else if (hasMounted && isConnected && fromChainId === chain.id) {
+    } else if (hasMounted && isConnected && fromChainId === chain?.id) {
       return <ConnectedIndicator />
-    } else if (hasMounted && isConnected && fromChainId !== chain.id) {
+    } else if (hasMounted && isConnected && fromChainId !== chain?.id) {
       return <ConnectToNetworkButton chainId={fromChainId} />
     }
   }, [chain, fromChainId, isConnected, hasMounted])
