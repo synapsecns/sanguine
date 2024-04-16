@@ -13,6 +13,7 @@ import {SynapseGasOracleV1, ISynapseGasOracleV1} from "../../contracts/oracles/S
 import {TypeCasts} from "../../contracts/libs/TypeCasts.sol";
 
 import {InterchainBatchLibHarness} from "../harnesses/InterchainBatchLibHarness.sol";
+import {InterchainTransactionLibHarness} from "../harnesses/InterchainTransactionLibHarness.sol";
 import {VersionedPayloadLibHarness} from "../harnesses/VersionedPayloadLibHarness.sol";
 import {ProxyTest} from "../proxy/ProxyTest.t.sol";
 
@@ -21,20 +22,21 @@ import {ProxyTest} from "../proxy/ProxyTest.t.sol";
 abstract contract ICSetup is ProxyTest {
     using TypeCasts for address;
 
-    uint256 public constant SRC_CHAIN_ID = 1337;
-    uint256 public constant DST_CHAIN_ID = 7331;
+    uint64 public constant SRC_CHAIN_ID = 1337;
+    uint64 public constant DST_CHAIN_ID = 7331;
 
     uint16 public constant DB_VERSION = 1;
     uint16 public constant CLIENT_VERSION = 1;
 
-    uint256 public constant SRC_INITIAL_DB_NONCE = 10;
-    uint256 public constant DST_INITIAL_DB_NONCE = 20;
+    uint64 public constant SRC_INITIAL_DB_NONCE = 10;
+    uint64 public constant DST_INITIAL_DB_NONCE = 20;
 
     uint256 public constant APP_OPTIMISTIC_PERIOD = 10 minutes;
 
     uint256 public constant INITIAL_TS = 1_704_067_200; // 2024-01-01 00:00:00 UTC
 
     InterchainBatchLibHarness public batchLibHarness;
+    InterchainTransactionLibHarness public txLibHarness;
     VersionedPayloadLibHarness public payloadLibHarness;
 
     ExecutionFees public executionFees;
@@ -73,6 +75,7 @@ abstract contract ICSetup is ProxyTest {
 
     function deployLibraryHarnesses() internal virtual {
         batchLibHarness = new InterchainBatchLibHarness();
+        txLibHarness = new InterchainTransactionLibHarness();
         payloadLibHarness = new VersionedPayloadLibHarness();
     }
 
@@ -156,7 +159,7 @@ abstract contract ICSetup is ProxyTest {
         require(icDB.getDBNonce() == end, "DB nonce not increased");
     }
 
-    function getGasDataFixture(uint256 chainId)
+    function getGasDataFixture(uint64 chainId)
         internal
         view
         virtual
@@ -177,7 +180,7 @@ abstract contract ICSetup is ProxyTest {
         return isSourceChain(localChainId());
     }
 
-    function isSourceChain(uint256 chainId) internal pure returns (bool) {
+    function isSourceChain(uint64 chainId) internal pure returns (bool) {
         if (chainId == SRC_CHAIN_ID) {
             return true;
         } else if (chainId == DST_CHAIN_ID) {
@@ -196,7 +199,7 @@ abstract contract ICSetup is ProxyTest {
     }
 
     /// @notice Should return either `SRC_CHAIN_ID` or `DST_CHAIN_ID`.
-    function localChainId() internal view virtual returns (uint256);
+    function localChainId() internal view virtual returns (uint64);
     /// @notice Should return either `SRC_CHAIN_ID` or `DST_CHAIN_ID`.
-    function remoteChainId() internal view virtual returns (uint256);
+    function remoteChainId() internal view virtual returns (uint64);
 }
