@@ -8,8 +8,7 @@ import {IInterchainModule} from "./interfaces/IInterchainModule.sol";
 import {InterchainBatch, InterchainBatchLib, BatchKey} from "./libs/InterchainBatch.sol";
 import {InterchainEntry, InterchainEntryLib} from "./libs/InterchainEntry.sol";
 import {VersionedPayloadLib} from "./libs/VersionedPayload.sol";
-
-import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
+import {TypeCasts} from "./libs/TypeCasts.sol";
 
 contract InterchainDB is InterchainDBEvents, IInterchainDB {
     using VersionedPayloadLib for bytes;
@@ -198,14 +197,23 @@ contract InterchainDB is InterchainDBEvents, IInterchainDB {
 
     /// @dev Write the entry to the database and emit the event.
     function _writeEntry(bytes32 dataHash) internal returns (InterchainEntry memory entry) {
+        uint64 dbNonce = getDBNonce();
         entry = InterchainEntryLib.constructLocalEntry({
-            dbNonce: getDBNonce(),
+            dbNonce: dbNonce,
             entryIndex: 0,
             writer: msg.sender,
             dataHash: dataHash
         });
-        _entryValues.push(entry.entryValue());
-        emit InterchainEntryWritten(SafeCast.toUint64(block.chainid), entry.dbNonce, entry.srcWriter, dataHash);
+        bytes32 entryValue = entry.entryValue();
+        _entryValues.push(entryValue);
+        emit InterchainEntryWritten({
+            dbNonce: dbNonce,
+            entryIndex: 0,
+            srcWriter: TypeCasts.addressToBytes32(msg.sender),
+            dataHash: dataHash
+        });
+        // In the InterchainDB V1 the batch is finalized immediately after the entry is written
+        emit InterchainBatchFinalized({dbNonce: dbNonce, batchRoot: entryValue});
     }
 
     /// @dev Request the verification of the entry by the modules, and emit the event.

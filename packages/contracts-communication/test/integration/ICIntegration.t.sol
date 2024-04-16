@@ -90,11 +90,16 @@ abstract contract ICIntegrationTest is
     function expectDatabaseEventInterchainEntryWritten(InterchainEntry memory entry) internal {
         vm.expectEmit(address(icDB));
         emit InterchainEntryWritten({
-            srcChainId: entry.srcChainId,
             dbNonce: entry.dbNonce,
+            entryIndex: entry.entryIndex,
             srcWriter: entry.srcWriter,
             dataHash: entry.dataHash
         });
+    }
+
+    function expectDatabaseEventInterchainBatchFinalized(InterchainBatch memory batch) internal {
+        vm.expectEmit(address(icDB));
+        emit InterchainBatchFinalized({dbNonce: batch.dbNonce, batchRoot: batch.batchRoot});
     }
 
     function expectDatabaseEventInterchainBatchVerified(InterchainBatch memory batch) internal {
@@ -157,6 +162,7 @@ abstract contract ICIntegrationTest is
         InterchainBatch memory batch = getInterchainBatch(entry);
         InterchainTxDescriptor memory desc = getInterchainTxDescriptor(entry);
         expectDatabaseEventInterchainEntryWritten(entry);
+        expectDatabaseEventInterchainBatchFinalized(batch);
         expectModuleEventBatchVerificationRequested(batch);
         expectDatabaseEventInterchainBatchVerificationRequested(batch);
         expectFeesEventExecutionFeeAdded(desc.transactionId, executionFee);

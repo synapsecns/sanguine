@@ -752,6 +752,24 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
         checkSuccessAB(optionsAirdrop, twoConfNoOP, toArr(OVER_VERIFIED, OVER_VERIFIED));
     }
 
+    // ═══════════════════════════════════════════ TESTS: GET APP CONFIG ═══════════════════════════════════════════════
+
+    function test_getAppReceivingConfigV1_oneModule() public {
+        mockReceivingConfig(oneConfWithOP, oneModuleA);
+        (AppConfigV1 memory config, address[] memory modules) = icClient.getAppReceivingConfigV1(dstReceiver);
+        assertEq(config.requiredResponses, oneConfWithOP.requiredResponses);
+        assertEq(config.optimisticPeriod, oneConfWithOP.optimisticPeriod);
+        assertEq(modules, oneModuleA);
+    }
+
+    function test_getAppReceivingConfigV1_twoModules() public {
+        mockReceivingConfig(twoConfWithOP, twoModules);
+        (AppConfigV1 memory config, address[] memory modules) = icClient.getAppReceivingConfigV1(dstReceiver);
+        assertEq(config.requiredResponses, twoConfWithOP.requiredResponses);
+        assertEq(config.optimisticPeriod, twoConfWithOP.optimisticPeriod);
+        assertEq(modules, twoModules);
+    }
+
     // ═══════════════════════════════════════════ EXECUTE: MISC REVERTS ═══════════════════════════════════════════════
 
     function prepareExecutableTx(InterchainTransaction memory icTx) internal {
