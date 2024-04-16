@@ -48,7 +48,7 @@ type InterchainEntry struct {
 // AddressMetaData contains all meta data concerning the Address contract.
 var AddressMetaData = &bind.MetaData{
 	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"target\",\"type\":\"address\"}],\"name\":\"AddressEmptyCode\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"AddressInsufficientBalance\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FailedInnerCall\",\"type\":\"error\"}]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220ebb8f6cafa1e8ba0badf24a9565a85206b72ca2c6f9c3dd38415881c2abab78e64736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122066cdd0aa13120a4fafce7e616e052ee9a4e47afcf1ed1d59ca99135f1e40c93164736f6c63430008140033",
 }
 
 // AddressABI is the input ABI used to generate the binding from.
@@ -372,7 +372,7 @@ func (_Context *ContextTransactorRaw) Transact(opts *bind.TransactOpts, method s
 // ECDSAMetaData contains all meta data concerning the ECDSA contract.
 var ECDSAMetaData = &bind.MetaData{
 	ABI: "[{\"inputs\":[],\"name\":\"ECDSAInvalidSignature\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"length\",\"type\":\"uint256\"}],\"name\":\"ECDSAInvalidSignatureLength\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"ECDSAInvalidSignatureS\",\"type\":\"error\"}]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212206ed82ed15bbc0b4baf30b09cff9b4e26c2bbf7f35bbf2cb1a57714887bb2d7bb64736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220ba952d9344a76b63b62814fef33a6610ba82835dd64158e66fcdd7b8e04f832564736f6c63430008140033",
 }
 
 // ECDSAABI is the input ABI used to generate the binding from.
@@ -545,7 +545,7 @@ func (_ECDSA *ECDSATransactorRaw) Transact(opts *bind.TransactOpts, method strin
 // EnumerableSetMetaData contains all meta data concerning the EnumerableSet contract.
 var EnumerableSetMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220af68574ec51bd2c541d09e0e9a8842c4e545eefa459975c51e1cf06b223d6cd464736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220acc9fa81cd4a427619bd203103598dc2ce22568969600281d5d88f73e42c3bca64736f6c63430008140033",
 }
 
 // EnumerableSetABI is the input ABI used to generate the binding from.
@@ -2809,7 +2809,7 @@ func (_ISynapseModule *ISynapseModuleTransactorSession) VerifyRemoteBatch(encode
 // InterchainBatchLibMetaData contains all meta data concerning the InterchainBatchLib contract.
 var InterchainBatchLibMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122068636289863d0d2da9010fa4abe7030789a7cbe286712b6071bc6315be032e4b64736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122001669feac7ae12b576a7d79ab2c7de1b2c68600307a31cff0a08a227e05902d464736f6c63430008140033",
 }
 
 // InterchainBatchLibABI is the input ABI used to generate the binding from.
@@ -2982,7 +2982,7 @@ func (_InterchainBatchLib *InterchainBatchLibTransactorRaw) Transact(opts *bind.
 // InterchainEntryLibMetaData contains all meta data concerning the InterchainEntryLib contract.
 var InterchainEntryLibMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122012394ee755a7307a7c41ef477f0d4227a46b4813d2f3c09a1668b866aed013dd64736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220d2ce3fc34ae4b47895a757e92cd65cefd5f508427f5afbf2c8198f87e7098a0764736f6c63430008140033",
 }
 
 // InterchainEntryLibABI is the input ABI used to generate the binding from.
@@ -4133,7 +4133,7 @@ func (_InterchainModuleEvents *InterchainModuleEventsFilterer) ParseBatchVerifie
 // MathMetaData contains all meta data concerning the Math contract.
 var MathMetaData = &bind.MetaData{
 	ABI: "[{\"inputs\":[],\"name\":\"MathOverflowedMulDiv\",\"type\":\"error\"}]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220ede5b47f0c03ca843152d837f193dc6e0d0fd776d84c2e366d6700a6fc4ad75b64736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212202365482eb77f9000b012af0a96a8a43711e70bc7978f00499e713f70ce5c054b64736f6c63430008140033",
 }
 
 // MathABI is the input ABI used to generate the binding from.
@@ -4306,7 +4306,7 @@ func (_Math *MathTransactorRaw) Transact(opts *bind.TransactOpts, method string,
 // MessageHashUtilsMetaData contains all meta data concerning the MessageHashUtils contract.
 var MessageHashUtilsMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220cf8c61f053f62c550904ef7a729415d6fffdae9cbf95293672385a677058b53064736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212206b1dfc22db8d1035290895c09be993d064737267939894e7ef9ed4fa0f45882d64736f6c63430008140033",
 }
 
 // MessageHashUtilsABI is the input ABI used to generate the binding from.
@@ -4479,7 +4479,7 @@ func (_MessageHashUtils *MessageHashUtilsTransactorRaw) Transact(opts *bind.Tran
 // ModuleBatchLibMetaData contains all meta data concerning the ModuleBatchLib contract.
 var ModuleBatchLibMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122067fe24376a847dc4671921145efa4366adaf8d453387c2a16651a5c2942dc54964736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122089b0b9881251cd581cc28645a41e052f1271bcfb8af58a1e5f61a5110d1c4c6864736f6c63430008140033",
 }
 
 // ModuleBatchLibABI is the input ABI used to generate the binding from.
@@ -5038,7 +5038,7 @@ func (_Ownable *OwnableFilterer) ParseOwnershipTransferred(log types.Log) (*Owna
 // SafeCastMetaData contains all meta data concerning the SafeCast contract.
 var SafeCastMetaData = &bind.MetaData{
 	ABI: "[{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"bits\",\"type\":\"uint8\"},{\"internalType\":\"int256\",\"name\":\"value\",\"type\":\"int256\"}],\"name\":\"SafeCastOverflowedIntDowncast\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"int256\",\"name\":\"value\",\"type\":\"int256\"}],\"name\":\"SafeCastOverflowedIntToUint\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"bits\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"SafeCastOverflowedUintDowncast\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"SafeCastOverflowedUintToInt\",\"type\":\"error\"}]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212205429f5ff6fc3e17f3a1758f1cf9cd76366b1e92bce7e7bc5a28837bb5b8a717864736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212200201e852d356ec4e13638b31b307539198c93899e97cbdddb4770feb1e59e31d64736f6c63430008140033",
 }
 
 // SafeCastABI is the input ABI used to generate the binding from.
@@ -5211,7 +5211,7 @@ func (_SafeCast *SafeCastTransactorRaw) Transact(opts *bind.TransactOpts, method
 // SignedMathMetaData contains all meta data concerning the SignedMath contract.
 var SignedMathMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220b3b1ae3b1c1a112c58482502aee61e202ee8cd849af964a901b81c548ba348dc64736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212206af848beac6118976eb770c69e271c41795ec262a2434751a48ce0a7333c5b5864736f6c63430008140033",
 }
 
 // SignedMathABI is the input ABI used to generate the binding from.
@@ -5384,7 +5384,7 @@ func (_SignedMath *SignedMathTransactorRaw) Transact(opts *bind.TransactOpts, me
 // StringsMetaData contains all meta data concerning the Strings contract.
 var StringsMetaData = &bind.MetaData{
 	ABI: "[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"length\",\"type\":\"uint256\"}],\"name\":\"StringsInsufficientHexLength\",\"type\":\"error\"}]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220348f2451a2e1c2a25cd62d047ba399eaed780e3f3ec4efba48864ad1187ad7b664736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122093822a20ab5679ce3013dae7ce45380519bc91bc9a195e6f4dddf24e88cd69ba64736f6c63430008140033",
 }
 
 // StringsABI is the input ABI used to generate the binding from.
@@ -5556,7 +5556,7 @@ func (_Strings *StringsTransactorRaw) Transact(opts *bind.TransactOpts, method s
 
 // SynapseModuleMetaData contains all meta data concerning the SynapseModule contract.
 var SynapseModuleMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"interchainDB\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"owner_\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"AddressInsufficientBalance\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FailedInnerCall\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"InterchainModule__IncorrectSourceChainId\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"InterchainModule__InsufficientFee\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"caller\",\"type\":\"address\"}],\"name\":\"InterchainModule__NotInterchainDB\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"InterchainModule__SameChainId\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"claimFeeFraction\",\"type\":\"uint256\"}],\"name\":\"SynapseModule__ClaimFeeFractionExceedsMax\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseModule__FeeCollectorNotSet\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"SynapseModule__GasOracleNotContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseModule__GasOracleNotSet\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseModule__NoFeesToClaim\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"ThresholdECDSA__AlreadySigner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"length\",\"type\":\"uint256\"}],\"name\":\"ThresholdECDSA__IncorrectSignaturesLength\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"ThresholdECDSA__InvalidSignature\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"provided\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"ThresholdECDSA__NotEnoughSignatures\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"ThresholdECDSA__NotSigner\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ThresholdECDSA__RecoveredSignersNotSorted\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ThresholdECDSA__ZeroAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ThresholdECDSA__ZeroThreshold\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"VersionedPayload__PrecompileFailed\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"versionedPayload\",\"type\":\"bytes\"}],\"name\":\"VersionedPayload__TooShort\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"batch\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"ethSignedBatchHash\",\"type\":\"bytes32\"}],\"name\":\"BatchVerificationRequested\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"batch\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"ethSignedBatchHash\",\"type\":\"bytes32\"}],\"name\":\"BatchVerified\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimFeeFraction\",\"type\":\"uint256\"}],\"name\":\"ClaimFeeFractionChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"feeCollector\",\"type\":\"address\"}],\"name\":\"FeeCollectorChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"feeCollector\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"collectedFees\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"claimer\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimerFee\",\"type\":\"uint256\"}],\"name\":\"FeesClaimed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"GasDataReceived\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"GasDataSent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"GasOracleChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"ThresholdChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"}],\"name\":\"VerifierAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"}],\"name\":\"VerifierRemoved\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"}],\"name\":\"VerifyGasLimitChanged\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_VERIFY_GAS_LIMIT\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"INTERCHAIN_DB\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"}],\"name\":\"addVerifier\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"verifiers\",\"type\":\"address[]\"}],\"name\":\"addVerifiers\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"claimFees\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"feeCollector\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"gasOracle\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getClaimFeeAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getClaimFeeFraction\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"}],\"name\":\"getModuleFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getThreshold\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getVerifiers\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"getVerifyGasLimit\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"isVerifier\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"}],\"name\":\"removeVerifier\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"verifiers\",\"type\":\"address[]\"}],\"name\":\"removeVerifiers\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"bytes\",\"name\":\"versionedBatch\",\"type\":\"bytes\"}],\"name\":\"requestBatchVerification\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"claimFeeFraction\",\"type\":\"uint256\"}],\"name\":\"setClaimFeeFraction\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"feeCollector_\",\"type\":\"address\"}],\"name\":\"setFeeCollector\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle_\",\"type\":\"address\"}],\"name\":\"setGasOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"setThreshold\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"}],\"name\":\"setVerifyGasLimit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"encodedBatch\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"signatures\",\"type\":\"bytes\"}],\"name\":\"verifyRemoteBatch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"interchainDB\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"owner_\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"AddressInsufficientBalance\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FailedInnerCall\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"InterchainModule__IncorrectSourceChainId\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"actual\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"required\",\"type\":\"uint256\"}],\"name\":\"InterchainModule__InsufficientFee\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"caller\",\"type\":\"address\"}],\"name\":\"InterchainModule__NotInterchainDB\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"InterchainModule__SameChainId\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"OwnableInvalidOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"OwnableUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"claimFeeFraction\",\"type\":\"uint256\"}],\"name\":\"SynapseModule__ClaimFeeFractionExceedsMax\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseModule__FeeCollectorNotSet\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"SynapseModule__GasOracleNotContract\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseModule__GasOracleNotSet\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SynapseModule__NoFeesToClaim\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"ThresholdECDSA__AlreadySigner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"length\",\"type\":\"uint256\"}],\"name\":\"ThresholdECDSA__IncorrectSignaturesLength\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"ThresholdECDSA__InvalidSignature\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"provided\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"ThresholdECDSA__NotEnoughSignatures\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"ThresholdECDSA__NotSigner\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ThresholdECDSA__RecoveredSignersNotSorted\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ThresholdECDSA__ZeroAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ThresholdECDSA__ZeroThreshold\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"VersionedPayload__PrecompileFailed\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"versionedPayload\",\"type\":\"bytes\"}],\"name\":\"VersionedPayload__TooShort\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"batch\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"ethSignedBatchHash\",\"type\":\"bytes32\"}],\"name\":\"BatchVerificationRequested\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"batch\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"ethSignedBatchHash\",\"type\":\"bytes32\"}],\"name\":\"BatchVerified\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimFeeFraction\",\"type\":\"uint256\"}],\"name\":\"ClaimFeeFractionSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"feeCollector\",\"type\":\"address\"}],\"name\":\"FeeCollectorSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"feeCollector\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"collectedFees\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"claimer\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimerFee\",\"type\":\"uint256\"}],\"name\":\"FeesClaimed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"GasDataReceived\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"GasDataSent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"GasOracleSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"ThresholdSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"}],\"name\":\"VerifierAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"}],\"name\":\"VerifierRemoved\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"}],\"name\":\"VerifyGasLimitSet\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_VERIFY_GAS_LIMIT\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"INTERCHAIN_DB\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"}],\"name\":\"addVerifier\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"verifiers\",\"type\":\"address[]\"}],\"name\":\"addVerifiers\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"claimFees\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"feeCollector\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"gasOracle\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getClaimFeeAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getClaimFeeFraction\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"dbNonce\",\"type\":\"uint64\"}],\"name\":\"getModuleFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getThreshold\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getVerifiers\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"}],\"name\":\"getVerifyGasLimit\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"isVerifier\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"}],\"name\":\"removeVerifier\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"verifiers\",\"type\":\"address[]\"}],\"name\":\"removeVerifiers\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"internalType\":\"bytes\",\"name\":\"versionedBatch\",\"type\":\"bytes\"}],\"name\":\"requestBatchVerification\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"claimFeeFraction\",\"type\":\"uint256\"}],\"name\":\"setClaimFeeFraction\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"feeCollector_\",\"type\":\"address\"}],\"name\":\"setFeeCollector\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gasOracle_\",\"type\":\"address\"}],\"name\":\"setGasOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"setThreshold\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"}],\"name\":\"setVerifyGasLimit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"encodedBatch\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"signatures\",\"type\":\"bytes\"}],\"name\":\"verifyRemoteBatch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
 		"e232d191": "DEFAULT_VERIFY_GAS_LIMIT()",
 		"e4c61247": "INTERCHAIN_DB()",
@@ -5585,7 +5585,7 @@ var SynapseModuleMetaData = &bind.MetaData{
 		"f2fde38b": "transferOwnership(address)",
 		"b80cb14b": "verifyRemoteBatch(bytes,bytes)",
 	},
-	Bin: "0x60a06040523480156200001157600080fd5b5060405162002810380380620028108339810160408190526200003491620000ec565b6001600160a01b03808316608052819081166200006b57604051631e4fbdf760e01b81526000600482015260240160405180910390fd5b62000076816200007f565b50505062000124565b600080546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b80516001600160a01b0381168114620000e757600080fd5b919050565b600080604083850312156200010057600080fd5b6200010b83620000cf565b91506200011b60208401620000cf565b90509250929050565b6080516126c26200014e600039600081816104a701528181610573015261158401526126c26000f3fe6080604052600436106101a15760003560e01c8063a42dce80116100e1578063ca2dfd0a1161008a578063e4c6124711610064578063e4c6124714610495578063e75235b8146104c9578063f0b8cb1d146104de578063f2fde38b146104fe57600080fd5b8063ca2dfd0a14610449578063d294f09314610469578063e232d1911461047e57600080fd5b8063b5344257116100bb578063b5344257146103dc578063b80cb14b146103fc578063c415b95c1461041c57600080fd5b8063a42dce801461037a578063a87b81521461039a578063a935e766146103ba57600080fd5b80636adb16b51161014e5780638da5cb5b116101285780638da5cb5b146102ef5780639000b3d61461031a578063960bfe041461033a5780639a96f35b1461035a57600080fd5b80636adb16b5146102a5578063715018a6146102ba57806386ae47f0146102cf57600080fd5b8063331052181161017f57806333105218146102035780634d8ccff9146102335780635d62a8dd1461025357600080fd5b80631888f4d4146101a657806320c8eed2146101d957806330068e33146101ee575b600080fd5b3480156101b257600080fd5b506101c66101c1366004611f15565b61051e565b6040519081526020015b60405180910390f35b3480156101e557600080fd5b506101c6610533565b6102016101fc366004611f8a565b61055b565b005b34801561020f57600080fd5b5061022361021e366004611fdd565b6107bc565b60405190151581526020016101d0565b34801561023f57600080fd5b5061020161024e366004612013565b6107c9565b34801561025f57600080fd5b506009546102809073ffffffffffffffffffffffffffffffffffffffff1681565b60405173ffffffffffffffffffffffffffffffffffffffff90911681526020016101d0565b3480156102b157600080fd5b506004546101c6565b3480156102c657600080fd5b5061020161082b565b3480156102db57600080fd5b506102016102ea36600461203d565b61083f565b3480156102fb57600080fd5b5060005473ffffffffffffffffffffffffffffffffffffffff16610280565b34801561032657600080fd5b50610201610335366004611fdd565b610898565b34801561034657600080fd5b506102016103553660046120b2565b6108ac565b34801561036657600080fd5b506102016103753660046120b2565b6108f6565b34801561038657600080fd5b50610201610395366004611fdd565b610977565b3480156103a657600080fd5b506102016103b5366004611fdd565b6109f2565b3480156103c657600080fd5b506103cf610ad6565b6040516101d091906120cb565b3480156103e857600080fd5b506102016103f736600461203d565b610ae2565b34801561040857600080fd5b50610201610417366004612125565b610b35565b34801561042857600080fd5b506008546102809073ffffffffffffffffffffffffffffffffffffffff1681565b34801561045557600080fd5b50610201610464366004611fdd565b610bda565b34801561047557600080fd5b50610201610beb565b34801561048a57600080fd5b506101c6620186a081565b3480156104a157600080fd5b506102807f000000000000000000000000000000000000000000000000000000000000000081565b3480156104d557600080fd5b506101c6610d1a565b3480156104ea57600080fd5b506101c66104f9366004612191565b610d25565b34801561050a57600080fd5b50610201610519366004611fdd565b610d52565b600061052a8383610db3565b90505b92915050565b6000670de0b6b3a76400006004544761054c91906121db565b61055691906121f2565b905090565b3373ffffffffffffffffffffffffffffffffffffffff7f000000000000000000000000000000000000000000000000000000000000000016146105d1576040517fb90af10e0000000000000000000000000000000000000000000000000000000081523360048201526024015b60405180910390fd5b60006105e56105e08484610e8f565b610eea565b9050468467ffffffffffffffff1603610636576040517f84b86e4500000000000000000000000000000000000000000000000000000000815267ffffffffffffffff851660048201526024016105c8565b805167ffffffffffffffff1646146106895780516040517f4b48097500000000000000000000000000000000000000000000000000000000815267ffffffffffffffff90911660048201526024016105c8565b6000610699858360200151610db3565b9050803410156106de576040517f87ba450a000000000000000000000000000000000000000000000000000000008152346004820152602481018290526044016105c8565b60006106ee868460200151610f4b565b9050600061073386868080601f016020809104026020016040519081016040528093929190818152602001838380828437600092019190915250869250611090915050565b805160208201207f19457468657265756d205369676e6564204d6573736167653a0a3332000000006000908152601c91909152603c8120919250508767ffffffffffffffff167fb843b64b261f738887ce2abb3c81cf03cb335944dea7923c22f6d97acbda8d4483836040516107aa92919061229b565b60405180910390a25050505050505050565b600061052d6001836110bc565b6107d16110cb565b67ffffffffffffffff8216600081815260056020908152604091829020849055815192835282018390527f91cdd36cc5fc3190651c3c0b7dfbab4efb24b0e0bc4e9bf5522cb9df68015cff91015b60405180910390a15050565b6108336110cb565b61083d600061111e565b565b6108476110cb565b8060005b8181101561089257610882848483818110610868576108686122bd565b905060200201602081019061087d9190611fdd565b611193565b61088b816122ec565b905061084b565b50505050565b6108a06110cb565b6108a9816111e4565b50565b6108b46110cb565b6108bf600182611235565b6040518181527f6c4ce60fd690e1216286a10b875c5662555f10774484e58142cedd7a90781baa906020015b60405180910390a150565b6108fe6110cb565b662386f26fc10000811115610942576040517f8a7acbcd000000000000000000000000000000000000000000000000000000008152600481018290526024016105c8565b60048190556040518181527fff6eea4807f1d9f8369b26f163207ca7fbbc91ec6bf92c3cd02119f9dcbb299b906020016108eb565b61097f6110cb565b600880547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff83169081179091556040519081527f9c1996a14d26c3ecd833c10222d012447ef07b09b15000f3a34318ff039c0bdc906020016108eb565b6109fa6110cb565b8073ffffffffffffffffffffffffffffffffffffffff163b600003610a63576040517fd129a3eb00000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff821660048201526024016105c8565b600980547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff83169081179091556040519081527f1c045b93ecd363a3ccd287c43f9ab97490903b354e7d99b149992b1e244254a9906020016108eb565b60606105566001611273565b610aea6110cb565b8060005b8181101561089257610b25848483818110610b0b57610b0b6122bd565b9050602002016020810190610b209190611fdd565b6111e4565b610b2e816122ec565b9050610aee565b6000610b858585604051610b4a929190612324565b60405180910390207f19457468657265756d205369676e6564204d6573736167653a0a3332000000006000908152601c91909152603c902090565b9050610b946001828585611281565b610bd385858080601f0160208091040260200160405190810160405280939291908181526020018383808284376000920191909152506114cc92505050565b5050505050565b610be26110cb565b6108a981611193565b60085473ffffffffffffffffffffffffffffffffffffffff16610c3a576040517fcaa4422900000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b47600003610c74576040517f1dd7191300000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6000610c7e610533565b90506000610c8c8247612334565b600854909150610cb29073ffffffffffffffffffffffffffffffffffffffff1682611689565b610cbc3383611689565b6008546040805173ffffffffffffffffffffffffffffffffffffffff9092168252602082018390523390820152606081018390527ff4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b19060800161081f565b600061055660015490565b67ffffffffffffffff811660009081526005602052604081205490819003610d4d5750620186a05b919050565b610d5a6110cb565b73ffffffffffffffffffffffffffffffffffffffff8116610daa576040517f1e4fbdf7000000000000000000000000000000000000000000000000000000008152600060048201526024016105c8565b6108a98161111e565b6000610dbd611764565b73ffffffffffffffffffffffffffffffffffffffff1663bf495c8884610de286610d25565b610dea610d1a565b610df59060406121db565b610e0190610104612347565b6040517fffffffff0000000000000000000000000000000000000000000000000000000060e086901b16815267ffffffffffffffff909316600484015260248301919091526044820152606401602060405180830381865afa158015610e6b573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061052a919061235a565b3660006002831015610ed15783836040517f659cf9fa0000000000000000000000000000000000000000000000000000000081526004016105c8929190612373565b610ede83600281876123c0565b915091505b9250929050565b6040805160608101825260008082526020820181905291810182905290610f1384840185612408565b60408401529050610f308167ffffffffffffffff604082901c1691565b67ffffffffffffffff90811660208501521682525092915050565b6060610f55611764565b73ffffffffffffffffffffffffffffffffffffffff16636f928aa76040518163ffffffff1660e01b8152600401600060405180830381865afa158015610f9f573d6000803e3d6000fd5b505050506040513d6000823e601f3d9081017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0168201604052610fe591908101906124fb565b80519091501561052d57805160208083019190912067ffffffffffffffff851660009081526006909252604090912054810361103257604051806020016040528060008152509150611089565b67ffffffffffffffff841660009081526006602052604090819020829055517fb2243d133e6d54117d7ce9f172219373d8c0f601f4976bcb7860abe1addb9b2d906110809086908590612538565b60405180910390a15b5092915050565b606082826040516020016110a592919061255b565b604051602081830303815290604052905092915050565b600061052a60018401836117b7565b60005473ffffffffffffffffffffffffffffffffffffffff16331461083d576040517f118cdaa70000000000000000000000000000000000000000000000000000000081523360048201526024016105c8565b6000805473ffffffffffffffffffffffffffffffffffffffff8381167fffffffffffffffffffffffff0000000000000000000000000000000000000000831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b61119e6001826117e6565b60405173ffffffffffffffffffffffffffffffffffffffff821681527f44a3cd4eb5cc5748f6169df057b1cb2ae4c383e87cd94663c430e095d4cba424906020016108eb565b6111ef600182611846565b60405173ffffffffffffffffffffffffffffffffffffffff821681527f6d05492139c5ea989514a5d2150c028041e5c087e2a39967f67dc7d2655adb81906020016108eb565b8060000361126f576040517f9a6378d400000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b9055565b606061052d826001016118f3565b600061128e6041836121f2565b90508161129c6041836121db565b146112d6576040517fca4f9100000000000000000000000000000000000000000000000000000000008152600481018390526024016105c8565b84546000819003611313576040517f9a6378d400000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6000806000805b8581101561147c576000888589611332604183612347565b9261133f939291906123c0565b8080601f016020809104026020016040519081016040528093929190818152602001838380828437600092018290525093945083925061138391508d905084611907565b509092509050600081600381111561139d5761139d612589565b146113d657826040517fec8565ea0000000000000000000000000000000000000000000000000000000081526004016105c891906125b8565b8473ffffffffffffffffffffffffffffffffffffffff168273ffffffffffffffffffffffffffffffffffffffff161161143b576040517f0da2019900000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b8194506114488d836110bc565b1561145b57611458600187612347565b95505b611466604188612347565b965050505080611475906122ec565b905061131a565b50838210156114c1576040517fdfc0bbc800000000000000000000000000000000000000000000000000000000815260048101839052602481018590526044016105c8565b505050505050505050565b6000806114d883611954565b9150915060006114ef6114ea84611974565b611a6e565b905046816000015167ffffffffffffffff16036115475780516040517f84b86e4500000000000000000000000000000000000000000000000000000000815267ffffffffffffffff90911660048201526024016105c8565b6040517fd961a48e00000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff7f0000000000000000000000000000000000000000000000000000000000000000169063d961a48e906115b99086906004016125b8565b600060405180830381600087803b1580156115d357600080fd5b505af11580156115e7573d6000803e3d6000fd5b505050506115fe8160000151826020015184611ad8565b806000015167ffffffffffffffff167f68f4bb93e8c001407d02d37b4d097d303de40e999c66e924fda668c671578df88561166d87805190602001207f19457468657265756d205369676e6564204d6573736167653a0a3332000000006000908152601c91909152603c902090565b60405161167b92919061229b565b60405180910390a250505050565b804710156116c5576040517fcd7860590000000000000000000000000000000000000000000000000000000081523060048201526024016105c8565b60008273ffffffffffffffffffffffffffffffffffffffff168260405160006040518083038185875af1925050503d806000811461171f576040519150601f19603f3d011682016040523d82523d6000602084013e611724565b606091505b505090508061175f576040517f1425ea4200000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b505050565b60095473ffffffffffffffffffffffffffffffffffffffff16806117b4576040517fb31c611e00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b90565b73ffffffffffffffffffffffffffffffffffffffff81166000908152600183016020526040812054151561052a565b60006117f56001840183611c21565b90508061175f576040517f5689319100000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff831660048201526024016105c8565b73ffffffffffffffffffffffffffffffffffffffff8116611893576040517fe5ff8d7200000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b60006118a26001840183611c43565b90508061175f576040517ff09690b100000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff831660048201526024016105c8565b6060600061190083611c65565b9392505050565b600080600083516041036119415760208401516040850151606086015160001a61193388828585611cc1565b95509550955050505061194d565b50508151600091506002905b9250925092565b6060808280602001905181019061196b91906125cb565b91509150915091565b60606002825110156119b457816040517f659cf9fa0000000000000000000000000000000000000000000000000000000081526004016105c891906125b8565b81517ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe018067ffffffffffffffff8111156119f1576119f1612426565b6040519080825280601f01601f191660200182016040528015611a1b576020820181803683370190505b50915060008160208401836022870160045afa905080611a67576040517f101e44fa00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b5050919050565b6040805160608101825260008082526020820181905291810191909152600082806020019051810190611aa1919061262f565b60408401529050611abe8167ffffffffffffffff604082901c1691565b67ffffffffffffffff908116602085015216825250919050565b8051600003611ae657505050565b67ffffffffffffffff80841660009081526007602052604090205416801580611b2257508267ffffffffffffffff168167ffffffffffffffff16105b156108925767ffffffffffffffff848116600090815260076020526040902080547fffffffffffffffffffffffffffffffffffffffffffffffff000000000000000016918516919091179055611b76611764565b73ffffffffffffffffffffffffffffffffffffffff166383389de785846040518363ffffffff1660e01b8152600401611bb0929190612538565b600060405180830381600087803b158015611bca57600080fd5b505af1158015611bde573d6000803e3d6000fd5b505050507f02c233a01329dc53cb24eb5e8e0131ad57c2d982e4aaa5bf8a75ee90e95b1c008483604051611c13929190612538565b60405180910390a150505050565b600061052a8373ffffffffffffffffffffffffffffffffffffffff8416611dbb565b600061052a8373ffffffffffffffffffffffffffffffffffffffff8416611eae565b606081600001805480602002602001604051908101604052809291908181526020018280548015611cb557602002820191906000526020600020905b815481526020019060010190808311611ca1575b50505050509050919050565b600080807f7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0841115611cfc5750600091506003905082611db1565b604080516000808252602082018084528a905260ff891692820192909252606081018790526080810186905260019060a0016020604051602081039080840390855afa158015611d50573d6000803e3d6000fd5b50506040517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0015191505073ffffffffffffffffffffffffffffffffffffffff8116611da757506000925060019150829050611db1565b9250600091508190505b9450945094915050565b60008181526001830160205260408120548015611ea4576000611ddf600183612334565b8554909150600090611df390600190612334565b9050808214611e58576000866000018281548110611e1357611e136122bd565b9060005260206000200154905080876000018481548110611e3657611e366122bd565b6000918252602080832090910192909255918252600188019052604090208390555b8554869080611e6957611e6961265d565b60019003818190600052602060002001600090559055856001016000868152602001908152602001600020600090556001935050505061052d565b600091505061052d565b6000818152600183016020526040812054611ef55750815460018181018455600084815260208082209093018490558454848252828601909352604090209190915561052d565b50600061052d565b803567ffffffffffffffff81168114610d4d57600080fd5b60008060408385031215611f2857600080fd5b611f3183611efd565b9150611f3f60208401611efd565b90509250929050565b60008083601f840112611f5a57600080fd5b50813567ffffffffffffffff811115611f7257600080fd5b602083019150836020828501011115610ee357600080fd5b600080600060408486031215611f9f57600080fd5b611fa884611efd565b9250602084013567ffffffffffffffff811115611fc457600080fd5b611fd086828701611f48565b9497909650939450505050565b600060208284031215611fef57600080fd5b813573ffffffffffffffffffffffffffffffffffffffff8116811461190057600080fd5b6000806040838503121561202657600080fd5b61202f83611efd565b946020939093013593505050565b6000806020838503121561205057600080fd5b823567ffffffffffffffff8082111561206857600080fd5b818501915085601f83011261207c57600080fd5b81358181111561208b57600080fd5b8660208260051b85010111156120a057600080fd5b60209290920196919550909350505050565b6000602082840312156120c457600080fd5b5035919050565b6020808252825182820181905260009190848201906040850190845b8181101561211957835173ffffffffffffffffffffffffffffffffffffffff16835292840192918401916001016120e7565b50909695505050505050565b6000806000806040858703121561213b57600080fd5b843567ffffffffffffffff8082111561215357600080fd5b61215f88838901611f48565b9096509450602087013591508082111561217857600080fd5b5061218587828801611f48565b95989497509550505050565b6000602082840312156121a357600080fd5b61052a82611efd565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b808202811582820484141761052d5761052d6121ac565b600082612228577f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b500490565b60005b83811015612248578181015183820152602001612230565b50506000910152565b6000815180845261226981602086016020860161222d565b601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0169290920160200192915050565b6040815260006122ae6040830185612251565b90508260208301529392505050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b60007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff820361231d5761231d6121ac565b5060010190565b8183823760009101908152919050565b8181038181111561052d5761052d6121ac565b8082018082111561052d5761052d6121ac565b60006020828403121561236c57600080fd5b5051919050565b60208152816020820152818360408301376000818301604090810191909152601f9092017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0160101919050565b600080858511156123d057600080fd5b838611156123dd57600080fd5b5050820193919092039150565b6fffffffffffffffffffffffffffffffff811681146108a957600080fd5b6000806040838503121561241b57600080fd5b823561202f816123ea565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b600082601f83011261246657600080fd5b815167ffffffffffffffff8082111561248157612481612426565b604051601f83017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f011681019082821181831017156124c7576124c7612426565b816040528381528660208588010111156124e057600080fd5b6124f184602083016020890161222d565b9695505050505050565b60006020828403121561250d57600080fd5b815167ffffffffffffffff81111561252457600080fd5b61253084828501612455565b949350505050565b67ffffffffffffffff831681526040602082015260006125306040830184612251565b60408152600061256e6040830185612251565b82810360208401526125808185612251565b95945050505050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052602160045260246000fd5b60208152600061052a6020830184612251565b600080604083850312156125de57600080fd5b825167ffffffffffffffff808211156125f657600080fd5b61260286838701612455565b9350602085015191508082111561261857600080fd5b5061262585828601612455565b9150509250929050565b6000806040838503121561264257600080fd5b825161264d816123ea565b6020939093015192949293505050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603160045260246000fdfea26469706673582212201f1f18e57df6dcda4b18a5f20756dc0c0c50417d89061ac46612382f83c308d664736f6c63430008140033",
+	Bin: "0x60a06040523480156200001157600080fd5b5060405162002810380380620028108339810160408190526200003491620000ec565b6001600160a01b03808316608052819081166200006b57604051631e4fbdf760e01b81526000600482015260240160405180910390fd5b62000076816200007f565b50505062000124565b600080546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b80516001600160a01b0381168114620000e757600080fd5b919050565b600080604083850312156200010057600080fd5b6200010b83620000cf565b91506200011b60208401620000cf565b90509250929050565b6080516126c26200014e600039600081816104a701528181610573015261158401526126c26000f3fe6080604052600436106101a15760003560e01c8063a42dce80116100e1578063ca2dfd0a1161008a578063e4c6124711610064578063e4c6124714610495578063e75235b8146104c9578063f0b8cb1d146104de578063f2fde38b146104fe57600080fd5b8063ca2dfd0a14610449578063d294f09314610469578063e232d1911461047e57600080fd5b8063b5344257116100bb578063b5344257146103dc578063b80cb14b146103fc578063c415b95c1461041c57600080fd5b8063a42dce801461037a578063a87b81521461039a578063a935e766146103ba57600080fd5b80636adb16b51161014e5780638da5cb5b116101285780638da5cb5b146102ef5780639000b3d61461031a578063960bfe041461033a5780639a96f35b1461035a57600080fd5b80636adb16b5146102a5578063715018a6146102ba57806386ae47f0146102cf57600080fd5b8063331052181161017f57806333105218146102035780634d8ccff9146102335780635d62a8dd1461025357600080fd5b80631888f4d4146101a657806320c8eed2146101d957806330068e33146101ee575b600080fd5b3480156101b257600080fd5b506101c66101c1366004611f15565b61051e565b6040519081526020015b60405180910390f35b3480156101e557600080fd5b506101c6610533565b6102016101fc366004611f8a565b61055b565b005b34801561020f57600080fd5b5061022361021e366004611fdd565b6107bc565b60405190151581526020016101d0565b34801561023f57600080fd5b5061020161024e366004612013565b6107c9565b34801561025f57600080fd5b506009546102809073ffffffffffffffffffffffffffffffffffffffff1681565b60405173ffffffffffffffffffffffffffffffffffffffff90911681526020016101d0565b3480156102b157600080fd5b506004546101c6565b3480156102c657600080fd5b5061020161082b565b3480156102db57600080fd5b506102016102ea36600461203d565b61083f565b3480156102fb57600080fd5b5060005473ffffffffffffffffffffffffffffffffffffffff16610280565b34801561032657600080fd5b50610201610335366004611fdd565b610898565b34801561034657600080fd5b506102016103553660046120b2565b6108ac565b34801561036657600080fd5b506102016103753660046120b2565b6108f6565b34801561038657600080fd5b50610201610395366004611fdd565b610977565b3480156103a657600080fd5b506102016103b5366004611fdd565b6109f2565b3480156103c657600080fd5b506103cf610ad6565b6040516101d091906120cb565b3480156103e857600080fd5b506102016103f736600461203d565b610ae2565b34801561040857600080fd5b50610201610417366004612125565b610b35565b34801561042857600080fd5b506008546102809073ffffffffffffffffffffffffffffffffffffffff1681565b34801561045557600080fd5b50610201610464366004611fdd565b610bda565b34801561047557600080fd5b50610201610beb565b34801561048a57600080fd5b506101c6620186a081565b3480156104a157600080fd5b506102807f000000000000000000000000000000000000000000000000000000000000000081565b3480156104d557600080fd5b506101c6610d1a565b3480156104ea57600080fd5b506101c66104f9366004612191565b610d25565b34801561050a57600080fd5b50610201610519366004611fdd565b610d52565b600061052a8383610db3565b90505b92915050565b6000670de0b6b3a76400006004544761054c91906121db565b61055691906121f2565b905090565b3373ffffffffffffffffffffffffffffffffffffffff7f000000000000000000000000000000000000000000000000000000000000000016146105d1576040517fb90af10e0000000000000000000000000000000000000000000000000000000081523360048201526024015b60405180910390fd5b60006105e56105e08484610e8f565b610eea565b9050468467ffffffffffffffff1603610636576040517f84b86e4500000000000000000000000000000000000000000000000000000000815267ffffffffffffffff851660048201526024016105c8565b805167ffffffffffffffff1646146106895780516040517f4b48097500000000000000000000000000000000000000000000000000000000815267ffffffffffffffff90911660048201526024016105c8565b6000610699858360200151610db3565b9050803410156106de576040517f87ba450a000000000000000000000000000000000000000000000000000000008152346004820152602481018290526044016105c8565b60006106ee868460200151610f4b565b9050600061073386868080601f016020809104026020016040519081016040528093929190818152602001838380828437600092019190915250869250611090915050565b805160208201207f19457468657265756d205369676e6564204d6573736167653a0a3332000000006000908152601c91909152603c8120919250508767ffffffffffffffff167fb843b64b261f738887ce2abb3c81cf03cb335944dea7923c22f6d97acbda8d4483836040516107aa92919061229b565b60405180910390a25050505050505050565b600061052d6001836110bc565b6107d16110cb565b67ffffffffffffffff8216600081815260056020908152604091829020849055815192835282018390527f51178ef7476261c9f8257978aa4f938e564be17543cea415e92527f11dd8149891015b60405180910390a15050565b6108336110cb565b61083d600061111e565b565b6108476110cb565b8060005b8181101561089257610882848483818110610868576108686122bd565b905060200201602081019061087d9190611fdd565b611193565b61088b816122ec565b905061084b565b50505050565b6108a06110cb565b6108a9816111e4565b50565b6108b46110cb565b6108bf600182611235565b6040518181527f6e8a187d7944998085dbd1f16b84c51c903bb727536cdba86962439aded2cfd7906020015b60405180910390a150565b6108fe6110cb565b662386f26fc10000811115610942576040517f8a7acbcd000000000000000000000000000000000000000000000000000000008152600481018290526024016105c8565b60048190556040518181527ff836f881701eb910d11c6ed26b2f706669a227606862a19c12a910ec371917bd906020016108eb565b61097f6110cb565b600880547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff83169081179091556040519081527f12e1d17016b94668449f97876f4a8d5cc2c19f314db337418894734037cc19d4906020016108eb565b6109fa6110cb565b8073ffffffffffffffffffffffffffffffffffffffff163b600003610a63576040517fd129a3eb00000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff821660048201526024016105c8565b600980547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff83169081179091556040519081527f3efbbb00c39812fb98647af6e9e2c3f4ec2b53d368cedd1e148330a05b652cfa906020016108eb565b60606105566001611273565b610aea6110cb565b8060005b8181101561089257610b25848483818110610b0b57610b0b6122bd565b9050602002016020810190610b209190611fdd565b6111e4565b610b2e816122ec565b9050610aee565b6000610b858585604051610b4a929190612324565b60405180910390207f19457468657265756d205369676e6564204d6573736167653a0a3332000000006000908152601c91909152603c902090565b9050610b946001828585611281565b610bd385858080601f0160208091040260200160405190810160405280939291908181526020018383808284376000920191909152506114cc92505050565b5050505050565b610be26110cb565b6108a981611193565b60085473ffffffffffffffffffffffffffffffffffffffff16610c3a576040517fcaa4422900000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b47600003610c74576040517f1dd7191300000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6000610c7e610533565b90506000610c8c8247612334565b600854909150610cb29073ffffffffffffffffffffffffffffffffffffffff1682611689565b610cbc3383611689565b6008546040805173ffffffffffffffffffffffffffffffffffffffff9092168252602082018390523390820152606081018390527ff4e6bc0a6951927d4db8490fb63528b3c4ccb43865870fe4e3db7a090cbb14b19060800161081f565b600061055660015490565b67ffffffffffffffff811660009081526005602052604081205490819003610d4d5750620186a05b919050565b610d5a6110cb565b73ffffffffffffffffffffffffffffffffffffffff8116610daa576040517f1e4fbdf7000000000000000000000000000000000000000000000000000000008152600060048201526024016105c8565b6108a98161111e565b6000610dbd611764565b73ffffffffffffffffffffffffffffffffffffffff1663bf495c8884610de286610d25565b610dea610d1a565b610df59060406121db565b610e0190610104612347565b6040517fffffffff0000000000000000000000000000000000000000000000000000000060e086901b16815267ffffffffffffffff909316600484015260248301919091526044820152606401602060405180830381865afa158015610e6b573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061052a919061235a565b3660006002831015610ed15783836040517f659cf9fa0000000000000000000000000000000000000000000000000000000081526004016105c8929190612373565b610ede83600281876123c0565b915091505b9250929050565b6040805160608101825260008082526020820181905291810182905290610f1384840185612408565b60408401529050610f308167ffffffffffffffff604082901c1691565b67ffffffffffffffff90811660208501521682525092915050565b6060610f55611764565b73ffffffffffffffffffffffffffffffffffffffff16636f928aa76040518163ffffffff1660e01b8152600401600060405180830381865afa158015610f9f573d6000803e3d6000fd5b505050506040513d6000823e601f3d9081017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0168201604052610fe591908101906124fb565b80519091501561052d57805160208083019190912067ffffffffffffffff851660009081526006909252604090912054810361103257604051806020016040528060008152509150611089565b67ffffffffffffffff841660009081526006602052604090819020829055517fb2243d133e6d54117d7ce9f172219373d8c0f601f4976bcb7860abe1addb9b2d906110809086908590612538565b60405180910390a15b5092915050565b606082826040516020016110a592919061255b565b604051602081830303815290604052905092915050565b600061052a60018401836117b7565b60005473ffffffffffffffffffffffffffffffffffffffff16331461083d576040517f118cdaa70000000000000000000000000000000000000000000000000000000081523360048201526024016105c8565b6000805473ffffffffffffffffffffffffffffffffffffffff8381167fffffffffffffffffffffffff0000000000000000000000000000000000000000831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b61119e6001826117e6565b60405173ffffffffffffffffffffffffffffffffffffffff821681527f44a3cd4eb5cc5748f6169df057b1cb2ae4c383e87cd94663c430e095d4cba424906020016108eb565b6111ef600182611846565b60405173ffffffffffffffffffffffffffffffffffffffff821681527f6d05492139c5ea989514a5d2150c028041e5c087e2a39967f67dc7d2655adb81906020016108eb565b8060000361126f576040517f9a6378d400000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b9055565b606061052d826001016118f3565b600061128e6041836121f2565b90508161129c6041836121db565b146112d6576040517fca4f9100000000000000000000000000000000000000000000000000000000008152600481018390526024016105c8565b84546000819003611313576040517f9a6378d400000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6000806000805b8581101561147c576000888589611332604183612347565b9261133f939291906123c0565b8080601f016020809104026020016040519081016040528093929190818152602001838380828437600092018290525093945083925061138391508d905084611907565b509092509050600081600381111561139d5761139d612589565b146113d657826040517fec8565ea0000000000000000000000000000000000000000000000000000000081526004016105c891906125b8565b8473ffffffffffffffffffffffffffffffffffffffff168273ffffffffffffffffffffffffffffffffffffffff161161143b576040517f0da2019900000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b8194506114488d836110bc565b1561145b57611458600187612347565b95505b611466604188612347565b965050505080611475906122ec565b905061131a565b50838210156114c1576040517fdfc0bbc800000000000000000000000000000000000000000000000000000000815260048101839052602481018590526044016105c8565b505050505050505050565b6000806114d883611954565b9150915060006114ef6114ea84611974565b611a6e565b905046816000015167ffffffffffffffff16036115475780516040517f84b86e4500000000000000000000000000000000000000000000000000000000815267ffffffffffffffff90911660048201526024016105c8565b6040517fd961a48e00000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff7f0000000000000000000000000000000000000000000000000000000000000000169063d961a48e906115b99086906004016125b8565b600060405180830381600087803b1580156115d357600080fd5b505af11580156115e7573d6000803e3d6000fd5b505050506115fe8160000151826020015184611ad8565b806000015167ffffffffffffffff167f68f4bb93e8c001407d02d37b4d097d303de40e999c66e924fda668c671578df88561166d87805190602001207f19457468657265756d205369676e6564204d6573736167653a0a3332000000006000908152601c91909152603c902090565b60405161167b92919061229b565b60405180910390a250505050565b804710156116c5576040517fcd7860590000000000000000000000000000000000000000000000000000000081523060048201526024016105c8565b60008273ffffffffffffffffffffffffffffffffffffffff168260405160006040518083038185875af1925050503d806000811461171f576040519150601f19603f3d011682016040523d82523d6000602084013e611724565b606091505b505090508061175f576040517f1425ea4200000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b505050565b60095473ffffffffffffffffffffffffffffffffffffffff16806117b4576040517fb31c611e00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b90565b73ffffffffffffffffffffffffffffffffffffffff81166000908152600183016020526040812054151561052a565b60006117f56001840183611c21565b90508061175f576040517f5689319100000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff831660048201526024016105c8565b73ffffffffffffffffffffffffffffffffffffffff8116611893576040517fe5ff8d7200000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b60006118a26001840183611c43565b90508061175f576040517ff09690b100000000000000000000000000000000000000000000000000000000815273ffffffffffffffffffffffffffffffffffffffff831660048201526024016105c8565b6060600061190083611c65565b9392505050565b600080600083516041036119415760208401516040850151606086015160001a61193388828585611cc1565b95509550955050505061194d565b50508151600091506002905b9250925092565b6060808280602001905181019061196b91906125cb565b91509150915091565b60606002825110156119b457816040517f659cf9fa0000000000000000000000000000000000000000000000000000000081526004016105c891906125b8565b81517ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe018067ffffffffffffffff8111156119f1576119f1612426565b6040519080825280601f01601f191660200182016040528015611a1b576020820181803683370190505b50915060008160208401836022870160045afa905080611a67576040517f101e44fa00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b5050919050565b6040805160608101825260008082526020820181905291810191909152600082806020019051810190611aa1919061262f565b60408401529050611abe8167ffffffffffffffff604082901c1691565b67ffffffffffffffff908116602085015216825250919050565b8051600003611ae657505050565b67ffffffffffffffff80841660009081526007602052604090205416801580611b2257508267ffffffffffffffff168167ffffffffffffffff16105b156108925767ffffffffffffffff848116600090815260076020526040902080547fffffffffffffffffffffffffffffffffffffffffffffffff000000000000000016918516919091179055611b76611764565b73ffffffffffffffffffffffffffffffffffffffff166383389de785846040518363ffffffff1660e01b8152600401611bb0929190612538565b600060405180830381600087803b158015611bca57600080fd5b505af1158015611bde573d6000803e3d6000fd5b505050507f02c233a01329dc53cb24eb5e8e0131ad57c2d982e4aaa5bf8a75ee90e95b1c008483604051611c13929190612538565b60405180910390a150505050565b600061052a8373ffffffffffffffffffffffffffffffffffffffff8416611dbb565b600061052a8373ffffffffffffffffffffffffffffffffffffffff8416611eae565b606081600001805480602002602001604051908101604052809291908181526020018280548015611cb557602002820191906000526020600020905b815481526020019060010190808311611ca1575b50505050509050919050565b600080807f7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0841115611cfc5750600091506003905082611db1565b604080516000808252602082018084528a905260ff891692820192909252606081018790526080810186905260019060a0016020604051602081039080840390855afa158015611d50573d6000803e3d6000fd5b50506040517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0015191505073ffffffffffffffffffffffffffffffffffffffff8116611da757506000925060019150829050611db1565b9250600091508190505b9450945094915050565b60008181526001830160205260408120548015611ea4576000611ddf600183612334565b8554909150600090611df390600190612334565b9050808214611e58576000866000018281548110611e1357611e136122bd565b9060005260206000200154905080876000018481548110611e3657611e366122bd565b6000918252602080832090910192909255918252600188019052604090208390555b8554869080611e6957611e6961265d565b60019003818190600052602060002001600090559055856001016000868152602001908152602001600020600090556001935050505061052d565b600091505061052d565b6000818152600183016020526040812054611ef55750815460018181018455600084815260208082209093018490558454848252828601909352604090209190915561052d565b50600061052d565b803567ffffffffffffffff81168114610d4d57600080fd5b60008060408385031215611f2857600080fd5b611f3183611efd565b9150611f3f60208401611efd565b90509250929050565b60008083601f840112611f5a57600080fd5b50813567ffffffffffffffff811115611f7257600080fd5b602083019150836020828501011115610ee357600080fd5b600080600060408486031215611f9f57600080fd5b611fa884611efd565b9250602084013567ffffffffffffffff811115611fc457600080fd5b611fd086828701611f48565b9497909650939450505050565b600060208284031215611fef57600080fd5b813573ffffffffffffffffffffffffffffffffffffffff8116811461190057600080fd5b6000806040838503121561202657600080fd5b61202f83611efd565b946020939093013593505050565b6000806020838503121561205057600080fd5b823567ffffffffffffffff8082111561206857600080fd5b818501915085601f83011261207c57600080fd5b81358181111561208b57600080fd5b8660208260051b85010111156120a057600080fd5b60209290920196919550909350505050565b6000602082840312156120c457600080fd5b5035919050565b6020808252825182820181905260009190848201906040850190845b8181101561211957835173ffffffffffffffffffffffffffffffffffffffff16835292840192918401916001016120e7565b50909695505050505050565b6000806000806040858703121561213b57600080fd5b843567ffffffffffffffff8082111561215357600080fd5b61215f88838901611f48565b9096509450602087013591508082111561217857600080fd5b5061218587828801611f48565b95989497509550505050565b6000602082840312156121a357600080fd5b61052a82611efd565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b808202811582820484141761052d5761052d6121ac565b600082612228577f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b500490565b60005b83811015612248578181015183820152602001612230565b50506000910152565b6000815180845261226981602086016020860161222d565b601f017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0169290920160200192915050565b6040815260006122ae6040830185612251565b90508260208301529392505050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603260045260246000fd5b60007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff820361231d5761231d6121ac565b5060010190565b8183823760009101908152919050565b8181038181111561052d5761052d6121ac565b8082018082111561052d5761052d6121ac565b60006020828403121561236c57600080fd5b5051919050565b60208152816020820152818360408301376000818301604090810191909152601f9092017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0160101919050565b600080858511156123d057600080fd5b838611156123dd57600080fd5b5050820193919092039150565b6fffffffffffffffffffffffffffffffff811681146108a957600080fd5b6000806040838503121561241b57600080fd5b823561202f816123ea565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052604160045260246000fd5b600082601f83011261246657600080fd5b815167ffffffffffffffff8082111561248157612481612426565b604051601f83017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0908116603f011681019082821181831017156124c7576124c7612426565b816040528381528660208588010111156124e057600080fd5b6124f184602083016020890161222d565b9695505050505050565b60006020828403121561250d57600080fd5b815167ffffffffffffffff81111561252457600080fd5b61253084828501612455565b949350505050565b67ffffffffffffffff831681526040602082015260006125306040830184612251565b60408152600061256e6040830185612251565b82810360208401526125808185612251565b95945050505050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052602160045260246000fd5b60208152600061052a6020830184612251565b600080604083850312156125de57600080fd5b825167ffffffffffffffff808211156125f657600080fd5b61260286838701612455565b9350602085015191508082111561261857600080fd5b5061262585828601612455565b9150509250929050565b6000806040838503121561264257600080fd5b825161264d816123ea565b6020939093015192949293505050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052603160045260246000fdfea26469706673582212203dd3258ee2ad2e7c9a69871248db8b6a4bc2fd07dee87859c4beba15bcd0d33564736f6c63430008140033",
 }
 
 // SynapseModuleABI is the input ABI used to generate the binding from.
@@ -6717,9 +6717,9 @@ func (_SynapseModule *SynapseModuleFilterer) ParseBatchVerified(log types.Log) (
 	return event, nil
 }
 
-// SynapseModuleClaimFeeFractionChangedIterator is returned from FilterClaimFeeFractionChanged and is used to iterate over the raw logs and unpacked data for ClaimFeeFractionChanged events raised by the SynapseModule contract.
-type SynapseModuleClaimFeeFractionChangedIterator struct {
-	Event *SynapseModuleClaimFeeFractionChanged // Event containing the contract specifics and raw log
+// SynapseModuleClaimFeeFractionSetIterator is returned from FilterClaimFeeFractionSet and is used to iterate over the raw logs and unpacked data for ClaimFeeFractionSet events raised by the SynapseModule contract.
+type SynapseModuleClaimFeeFractionSetIterator struct {
+	Event *SynapseModuleClaimFeeFractionSet // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -6733,7 +6733,7 @@ type SynapseModuleClaimFeeFractionChangedIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *SynapseModuleClaimFeeFractionChangedIterator) Next() bool {
+func (it *SynapseModuleClaimFeeFractionSetIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -6742,7 +6742,7 @@ func (it *SynapseModuleClaimFeeFractionChangedIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(SynapseModuleClaimFeeFractionChanged)
+			it.Event = new(SynapseModuleClaimFeeFractionSet)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -6757,7 +6757,7 @@ func (it *SynapseModuleClaimFeeFractionChangedIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(SynapseModuleClaimFeeFractionChanged)
+		it.Event = new(SynapseModuleClaimFeeFractionSet)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -6773,41 +6773,41 @@ func (it *SynapseModuleClaimFeeFractionChangedIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *SynapseModuleClaimFeeFractionChangedIterator) Error() error {
+func (it *SynapseModuleClaimFeeFractionSetIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *SynapseModuleClaimFeeFractionChangedIterator) Close() error {
+func (it *SynapseModuleClaimFeeFractionSetIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// SynapseModuleClaimFeeFractionChanged represents a ClaimFeeFractionChanged event raised by the SynapseModule contract.
-type SynapseModuleClaimFeeFractionChanged struct {
+// SynapseModuleClaimFeeFractionSet represents a ClaimFeeFractionSet event raised by the SynapseModule contract.
+type SynapseModuleClaimFeeFractionSet struct {
 	ClaimFeeFraction *big.Int
 	Raw              types.Log // Blockchain specific contextual infos
 }
 
-// FilterClaimFeeFractionChanged is a free log retrieval operation binding the contract event 0xff6eea4807f1d9f8369b26f163207ca7fbbc91ec6bf92c3cd02119f9dcbb299b.
+// FilterClaimFeeFractionSet is a free log retrieval operation binding the contract event 0xf836f881701eb910d11c6ed26b2f706669a227606862a19c12a910ec371917bd.
 //
-// Solidity: event ClaimFeeFractionChanged(uint256 claimFeeFraction)
-func (_SynapseModule *SynapseModuleFilterer) FilterClaimFeeFractionChanged(opts *bind.FilterOpts) (*SynapseModuleClaimFeeFractionChangedIterator, error) {
+// Solidity: event ClaimFeeFractionSet(uint256 claimFeeFraction)
+func (_SynapseModule *SynapseModuleFilterer) FilterClaimFeeFractionSet(opts *bind.FilterOpts) (*SynapseModuleClaimFeeFractionSetIterator, error) {
 
-	logs, sub, err := _SynapseModule.contract.FilterLogs(opts, "ClaimFeeFractionChanged")
+	logs, sub, err := _SynapseModule.contract.FilterLogs(opts, "ClaimFeeFractionSet")
 	if err != nil {
 		return nil, err
 	}
-	return &SynapseModuleClaimFeeFractionChangedIterator{contract: _SynapseModule.contract, event: "ClaimFeeFractionChanged", logs: logs, sub: sub}, nil
+	return &SynapseModuleClaimFeeFractionSetIterator{contract: _SynapseModule.contract, event: "ClaimFeeFractionSet", logs: logs, sub: sub}, nil
 }
 
-// WatchClaimFeeFractionChanged is a free log subscription operation binding the contract event 0xff6eea4807f1d9f8369b26f163207ca7fbbc91ec6bf92c3cd02119f9dcbb299b.
+// WatchClaimFeeFractionSet is a free log subscription operation binding the contract event 0xf836f881701eb910d11c6ed26b2f706669a227606862a19c12a910ec371917bd.
 //
-// Solidity: event ClaimFeeFractionChanged(uint256 claimFeeFraction)
-func (_SynapseModule *SynapseModuleFilterer) WatchClaimFeeFractionChanged(opts *bind.WatchOpts, sink chan<- *SynapseModuleClaimFeeFractionChanged) (event.Subscription, error) {
+// Solidity: event ClaimFeeFractionSet(uint256 claimFeeFraction)
+func (_SynapseModule *SynapseModuleFilterer) WatchClaimFeeFractionSet(opts *bind.WatchOpts, sink chan<- *SynapseModuleClaimFeeFractionSet) (event.Subscription, error) {
 
-	logs, sub, err := _SynapseModule.contract.WatchLogs(opts, "ClaimFeeFractionChanged")
+	logs, sub, err := _SynapseModule.contract.WatchLogs(opts, "ClaimFeeFractionSet")
 	if err != nil {
 		return nil, err
 	}
@@ -6817,8 +6817,8 @@ func (_SynapseModule *SynapseModuleFilterer) WatchClaimFeeFractionChanged(opts *
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(SynapseModuleClaimFeeFractionChanged)
-				if err := _SynapseModule.contract.UnpackLog(event, "ClaimFeeFractionChanged", log); err != nil {
+				event := new(SynapseModuleClaimFeeFractionSet)
+				if err := _SynapseModule.contract.UnpackLog(event, "ClaimFeeFractionSet", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -6839,21 +6839,21 @@ func (_SynapseModule *SynapseModuleFilterer) WatchClaimFeeFractionChanged(opts *
 	}), nil
 }
 
-// ParseClaimFeeFractionChanged is a log parse operation binding the contract event 0xff6eea4807f1d9f8369b26f163207ca7fbbc91ec6bf92c3cd02119f9dcbb299b.
+// ParseClaimFeeFractionSet is a log parse operation binding the contract event 0xf836f881701eb910d11c6ed26b2f706669a227606862a19c12a910ec371917bd.
 //
-// Solidity: event ClaimFeeFractionChanged(uint256 claimFeeFraction)
-func (_SynapseModule *SynapseModuleFilterer) ParseClaimFeeFractionChanged(log types.Log) (*SynapseModuleClaimFeeFractionChanged, error) {
-	event := new(SynapseModuleClaimFeeFractionChanged)
-	if err := _SynapseModule.contract.UnpackLog(event, "ClaimFeeFractionChanged", log); err != nil {
+// Solidity: event ClaimFeeFractionSet(uint256 claimFeeFraction)
+func (_SynapseModule *SynapseModuleFilterer) ParseClaimFeeFractionSet(log types.Log) (*SynapseModuleClaimFeeFractionSet, error) {
+	event := new(SynapseModuleClaimFeeFractionSet)
+	if err := _SynapseModule.contract.UnpackLog(event, "ClaimFeeFractionSet", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
 	return event, nil
 }
 
-// SynapseModuleFeeCollectorChangedIterator is returned from FilterFeeCollectorChanged and is used to iterate over the raw logs and unpacked data for FeeCollectorChanged events raised by the SynapseModule contract.
-type SynapseModuleFeeCollectorChangedIterator struct {
-	Event *SynapseModuleFeeCollectorChanged // Event containing the contract specifics and raw log
+// SynapseModuleFeeCollectorSetIterator is returned from FilterFeeCollectorSet and is used to iterate over the raw logs and unpacked data for FeeCollectorSet events raised by the SynapseModule contract.
+type SynapseModuleFeeCollectorSetIterator struct {
+	Event *SynapseModuleFeeCollectorSet // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -6867,7 +6867,7 @@ type SynapseModuleFeeCollectorChangedIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *SynapseModuleFeeCollectorChangedIterator) Next() bool {
+func (it *SynapseModuleFeeCollectorSetIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -6876,7 +6876,7 @@ func (it *SynapseModuleFeeCollectorChangedIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(SynapseModuleFeeCollectorChanged)
+			it.Event = new(SynapseModuleFeeCollectorSet)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -6891,7 +6891,7 @@ func (it *SynapseModuleFeeCollectorChangedIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(SynapseModuleFeeCollectorChanged)
+		it.Event = new(SynapseModuleFeeCollectorSet)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -6907,41 +6907,41 @@ func (it *SynapseModuleFeeCollectorChangedIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *SynapseModuleFeeCollectorChangedIterator) Error() error {
+func (it *SynapseModuleFeeCollectorSetIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *SynapseModuleFeeCollectorChangedIterator) Close() error {
+func (it *SynapseModuleFeeCollectorSetIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// SynapseModuleFeeCollectorChanged represents a FeeCollectorChanged event raised by the SynapseModule contract.
-type SynapseModuleFeeCollectorChanged struct {
+// SynapseModuleFeeCollectorSet represents a FeeCollectorSet event raised by the SynapseModule contract.
+type SynapseModuleFeeCollectorSet struct {
 	FeeCollector common.Address
 	Raw          types.Log // Blockchain specific contextual infos
 }
 
-// FilterFeeCollectorChanged is a free log retrieval operation binding the contract event 0x9c1996a14d26c3ecd833c10222d012447ef07b09b15000f3a34318ff039c0bdc.
+// FilterFeeCollectorSet is a free log retrieval operation binding the contract event 0x12e1d17016b94668449f97876f4a8d5cc2c19f314db337418894734037cc19d4.
 //
-// Solidity: event FeeCollectorChanged(address feeCollector)
-func (_SynapseModule *SynapseModuleFilterer) FilterFeeCollectorChanged(opts *bind.FilterOpts) (*SynapseModuleFeeCollectorChangedIterator, error) {
+// Solidity: event FeeCollectorSet(address feeCollector)
+func (_SynapseModule *SynapseModuleFilterer) FilterFeeCollectorSet(opts *bind.FilterOpts) (*SynapseModuleFeeCollectorSetIterator, error) {
 
-	logs, sub, err := _SynapseModule.contract.FilterLogs(opts, "FeeCollectorChanged")
+	logs, sub, err := _SynapseModule.contract.FilterLogs(opts, "FeeCollectorSet")
 	if err != nil {
 		return nil, err
 	}
-	return &SynapseModuleFeeCollectorChangedIterator{contract: _SynapseModule.contract, event: "FeeCollectorChanged", logs: logs, sub: sub}, nil
+	return &SynapseModuleFeeCollectorSetIterator{contract: _SynapseModule.contract, event: "FeeCollectorSet", logs: logs, sub: sub}, nil
 }
 
-// WatchFeeCollectorChanged is a free log subscription operation binding the contract event 0x9c1996a14d26c3ecd833c10222d012447ef07b09b15000f3a34318ff039c0bdc.
+// WatchFeeCollectorSet is a free log subscription operation binding the contract event 0x12e1d17016b94668449f97876f4a8d5cc2c19f314db337418894734037cc19d4.
 //
-// Solidity: event FeeCollectorChanged(address feeCollector)
-func (_SynapseModule *SynapseModuleFilterer) WatchFeeCollectorChanged(opts *bind.WatchOpts, sink chan<- *SynapseModuleFeeCollectorChanged) (event.Subscription, error) {
+// Solidity: event FeeCollectorSet(address feeCollector)
+func (_SynapseModule *SynapseModuleFilterer) WatchFeeCollectorSet(opts *bind.WatchOpts, sink chan<- *SynapseModuleFeeCollectorSet) (event.Subscription, error) {
 
-	logs, sub, err := _SynapseModule.contract.WatchLogs(opts, "FeeCollectorChanged")
+	logs, sub, err := _SynapseModule.contract.WatchLogs(opts, "FeeCollectorSet")
 	if err != nil {
 		return nil, err
 	}
@@ -6951,8 +6951,8 @@ func (_SynapseModule *SynapseModuleFilterer) WatchFeeCollectorChanged(opts *bind
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(SynapseModuleFeeCollectorChanged)
-				if err := _SynapseModule.contract.UnpackLog(event, "FeeCollectorChanged", log); err != nil {
+				event := new(SynapseModuleFeeCollectorSet)
+				if err := _SynapseModule.contract.UnpackLog(event, "FeeCollectorSet", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -6973,12 +6973,12 @@ func (_SynapseModule *SynapseModuleFilterer) WatchFeeCollectorChanged(opts *bind
 	}), nil
 }
 
-// ParseFeeCollectorChanged is a log parse operation binding the contract event 0x9c1996a14d26c3ecd833c10222d012447ef07b09b15000f3a34318ff039c0bdc.
+// ParseFeeCollectorSet is a log parse operation binding the contract event 0x12e1d17016b94668449f97876f4a8d5cc2c19f314db337418894734037cc19d4.
 //
-// Solidity: event FeeCollectorChanged(address feeCollector)
-func (_SynapseModule *SynapseModuleFilterer) ParseFeeCollectorChanged(log types.Log) (*SynapseModuleFeeCollectorChanged, error) {
-	event := new(SynapseModuleFeeCollectorChanged)
-	if err := _SynapseModule.contract.UnpackLog(event, "FeeCollectorChanged", log); err != nil {
+// Solidity: event FeeCollectorSet(address feeCollector)
+func (_SynapseModule *SynapseModuleFilterer) ParseFeeCollectorSet(log types.Log) (*SynapseModuleFeeCollectorSet, error) {
+	event := new(SynapseModuleFeeCollectorSet)
+	if err := _SynapseModule.contract.UnpackLog(event, "FeeCollectorSet", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
@@ -7392,9 +7392,9 @@ func (_SynapseModule *SynapseModuleFilterer) ParseGasDataSent(log types.Log) (*S
 	return event, nil
 }
 
-// SynapseModuleGasOracleChangedIterator is returned from FilterGasOracleChanged and is used to iterate over the raw logs and unpacked data for GasOracleChanged events raised by the SynapseModule contract.
-type SynapseModuleGasOracleChangedIterator struct {
-	Event *SynapseModuleGasOracleChanged // Event containing the contract specifics and raw log
+// SynapseModuleGasOracleSetIterator is returned from FilterGasOracleSet and is used to iterate over the raw logs and unpacked data for GasOracleSet events raised by the SynapseModule contract.
+type SynapseModuleGasOracleSetIterator struct {
+	Event *SynapseModuleGasOracleSet // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -7408,7 +7408,7 @@ type SynapseModuleGasOracleChangedIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *SynapseModuleGasOracleChangedIterator) Next() bool {
+func (it *SynapseModuleGasOracleSetIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -7417,7 +7417,7 @@ func (it *SynapseModuleGasOracleChangedIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(SynapseModuleGasOracleChanged)
+			it.Event = new(SynapseModuleGasOracleSet)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -7432,7 +7432,7 @@ func (it *SynapseModuleGasOracleChangedIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(SynapseModuleGasOracleChanged)
+		it.Event = new(SynapseModuleGasOracleSet)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -7448,41 +7448,41 @@ func (it *SynapseModuleGasOracleChangedIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *SynapseModuleGasOracleChangedIterator) Error() error {
+func (it *SynapseModuleGasOracleSetIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *SynapseModuleGasOracleChangedIterator) Close() error {
+func (it *SynapseModuleGasOracleSetIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// SynapseModuleGasOracleChanged represents a GasOracleChanged event raised by the SynapseModule contract.
-type SynapseModuleGasOracleChanged struct {
+// SynapseModuleGasOracleSet represents a GasOracleSet event raised by the SynapseModule contract.
+type SynapseModuleGasOracleSet struct {
 	GasOracle common.Address
 	Raw       types.Log // Blockchain specific contextual infos
 }
 
-// FilterGasOracleChanged is a free log retrieval operation binding the contract event 0x1c045b93ecd363a3ccd287c43f9ab97490903b354e7d99b149992b1e244254a9.
+// FilterGasOracleSet is a free log retrieval operation binding the contract event 0x3efbbb00c39812fb98647af6e9e2c3f4ec2b53d368cedd1e148330a05b652cfa.
 //
-// Solidity: event GasOracleChanged(address gasOracle)
-func (_SynapseModule *SynapseModuleFilterer) FilterGasOracleChanged(opts *bind.FilterOpts) (*SynapseModuleGasOracleChangedIterator, error) {
+// Solidity: event GasOracleSet(address gasOracle)
+func (_SynapseModule *SynapseModuleFilterer) FilterGasOracleSet(opts *bind.FilterOpts) (*SynapseModuleGasOracleSetIterator, error) {
 
-	logs, sub, err := _SynapseModule.contract.FilterLogs(opts, "GasOracleChanged")
+	logs, sub, err := _SynapseModule.contract.FilterLogs(opts, "GasOracleSet")
 	if err != nil {
 		return nil, err
 	}
-	return &SynapseModuleGasOracleChangedIterator{contract: _SynapseModule.contract, event: "GasOracleChanged", logs: logs, sub: sub}, nil
+	return &SynapseModuleGasOracleSetIterator{contract: _SynapseModule.contract, event: "GasOracleSet", logs: logs, sub: sub}, nil
 }
 
-// WatchGasOracleChanged is a free log subscription operation binding the contract event 0x1c045b93ecd363a3ccd287c43f9ab97490903b354e7d99b149992b1e244254a9.
+// WatchGasOracleSet is a free log subscription operation binding the contract event 0x3efbbb00c39812fb98647af6e9e2c3f4ec2b53d368cedd1e148330a05b652cfa.
 //
-// Solidity: event GasOracleChanged(address gasOracle)
-func (_SynapseModule *SynapseModuleFilterer) WatchGasOracleChanged(opts *bind.WatchOpts, sink chan<- *SynapseModuleGasOracleChanged) (event.Subscription, error) {
+// Solidity: event GasOracleSet(address gasOracle)
+func (_SynapseModule *SynapseModuleFilterer) WatchGasOracleSet(opts *bind.WatchOpts, sink chan<- *SynapseModuleGasOracleSet) (event.Subscription, error) {
 
-	logs, sub, err := _SynapseModule.contract.WatchLogs(opts, "GasOracleChanged")
+	logs, sub, err := _SynapseModule.contract.WatchLogs(opts, "GasOracleSet")
 	if err != nil {
 		return nil, err
 	}
@@ -7492,8 +7492,8 @@ func (_SynapseModule *SynapseModuleFilterer) WatchGasOracleChanged(opts *bind.Wa
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(SynapseModuleGasOracleChanged)
-				if err := _SynapseModule.contract.UnpackLog(event, "GasOracleChanged", log); err != nil {
+				event := new(SynapseModuleGasOracleSet)
+				if err := _SynapseModule.contract.UnpackLog(event, "GasOracleSet", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -7514,12 +7514,12 @@ func (_SynapseModule *SynapseModuleFilterer) WatchGasOracleChanged(opts *bind.Wa
 	}), nil
 }
 
-// ParseGasOracleChanged is a log parse operation binding the contract event 0x1c045b93ecd363a3ccd287c43f9ab97490903b354e7d99b149992b1e244254a9.
+// ParseGasOracleSet is a log parse operation binding the contract event 0x3efbbb00c39812fb98647af6e9e2c3f4ec2b53d368cedd1e148330a05b652cfa.
 //
-// Solidity: event GasOracleChanged(address gasOracle)
-func (_SynapseModule *SynapseModuleFilterer) ParseGasOracleChanged(log types.Log) (*SynapseModuleGasOracleChanged, error) {
-	event := new(SynapseModuleGasOracleChanged)
-	if err := _SynapseModule.contract.UnpackLog(event, "GasOracleChanged", log); err != nil {
+// Solidity: event GasOracleSet(address gasOracle)
+func (_SynapseModule *SynapseModuleFilterer) ParseGasOracleSet(log types.Log) (*SynapseModuleGasOracleSet, error) {
+	event := new(SynapseModuleGasOracleSet)
+	if err := _SynapseModule.contract.UnpackLog(event, "GasOracleSet", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
@@ -7679,9 +7679,9 @@ func (_SynapseModule *SynapseModuleFilterer) ParseOwnershipTransferred(log types
 	return event, nil
 }
 
-// SynapseModuleThresholdChangedIterator is returned from FilterThresholdChanged and is used to iterate over the raw logs and unpacked data for ThresholdChanged events raised by the SynapseModule contract.
-type SynapseModuleThresholdChangedIterator struct {
-	Event *SynapseModuleThresholdChanged // Event containing the contract specifics and raw log
+// SynapseModuleThresholdSetIterator is returned from FilterThresholdSet and is used to iterate over the raw logs and unpacked data for ThresholdSet events raised by the SynapseModule contract.
+type SynapseModuleThresholdSetIterator struct {
+	Event *SynapseModuleThresholdSet // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -7695,7 +7695,7 @@ type SynapseModuleThresholdChangedIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *SynapseModuleThresholdChangedIterator) Next() bool {
+func (it *SynapseModuleThresholdSetIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -7704,7 +7704,7 @@ func (it *SynapseModuleThresholdChangedIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(SynapseModuleThresholdChanged)
+			it.Event = new(SynapseModuleThresholdSet)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -7719,7 +7719,7 @@ func (it *SynapseModuleThresholdChangedIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(SynapseModuleThresholdChanged)
+		it.Event = new(SynapseModuleThresholdSet)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -7735,41 +7735,41 @@ func (it *SynapseModuleThresholdChangedIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *SynapseModuleThresholdChangedIterator) Error() error {
+func (it *SynapseModuleThresholdSetIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *SynapseModuleThresholdChangedIterator) Close() error {
+func (it *SynapseModuleThresholdSetIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// SynapseModuleThresholdChanged represents a ThresholdChanged event raised by the SynapseModule contract.
-type SynapseModuleThresholdChanged struct {
+// SynapseModuleThresholdSet represents a ThresholdSet event raised by the SynapseModule contract.
+type SynapseModuleThresholdSet struct {
 	Threshold *big.Int
 	Raw       types.Log // Blockchain specific contextual infos
 }
 
-// FilterThresholdChanged is a free log retrieval operation binding the contract event 0x6c4ce60fd690e1216286a10b875c5662555f10774484e58142cedd7a90781baa.
+// FilterThresholdSet is a free log retrieval operation binding the contract event 0x6e8a187d7944998085dbd1f16b84c51c903bb727536cdba86962439aded2cfd7.
 //
-// Solidity: event ThresholdChanged(uint256 threshold)
-func (_SynapseModule *SynapseModuleFilterer) FilterThresholdChanged(opts *bind.FilterOpts) (*SynapseModuleThresholdChangedIterator, error) {
+// Solidity: event ThresholdSet(uint256 threshold)
+func (_SynapseModule *SynapseModuleFilterer) FilterThresholdSet(opts *bind.FilterOpts) (*SynapseModuleThresholdSetIterator, error) {
 
-	logs, sub, err := _SynapseModule.contract.FilterLogs(opts, "ThresholdChanged")
+	logs, sub, err := _SynapseModule.contract.FilterLogs(opts, "ThresholdSet")
 	if err != nil {
 		return nil, err
 	}
-	return &SynapseModuleThresholdChangedIterator{contract: _SynapseModule.contract, event: "ThresholdChanged", logs: logs, sub: sub}, nil
+	return &SynapseModuleThresholdSetIterator{contract: _SynapseModule.contract, event: "ThresholdSet", logs: logs, sub: sub}, nil
 }
 
-// WatchThresholdChanged is a free log subscription operation binding the contract event 0x6c4ce60fd690e1216286a10b875c5662555f10774484e58142cedd7a90781baa.
+// WatchThresholdSet is a free log subscription operation binding the contract event 0x6e8a187d7944998085dbd1f16b84c51c903bb727536cdba86962439aded2cfd7.
 //
-// Solidity: event ThresholdChanged(uint256 threshold)
-func (_SynapseModule *SynapseModuleFilterer) WatchThresholdChanged(opts *bind.WatchOpts, sink chan<- *SynapseModuleThresholdChanged) (event.Subscription, error) {
+// Solidity: event ThresholdSet(uint256 threshold)
+func (_SynapseModule *SynapseModuleFilterer) WatchThresholdSet(opts *bind.WatchOpts, sink chan<- *SynapseModuleThresholdSet) (event.Subscription, error) {
 
-	logs, sub, err := _SynapseModule.contract.WatchLogs(opts, "ThresholdChanged")
+	logs, sub, err := _SynapseModule.contract.WatchLogs(opts, "ThresholdSet")
 	if err != nil {
 		return nil, err
 	}
@@ -7779,8 +7779,8 @@ func (_SynapseModule *SynapseModuleFilterer) WatchThresholdChanged(opts *bind.Wa
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(SynapseModuleThresholdChanged)
-				if err := _SynapseModule.contract.UnpackLog(event, "ThresholdChanged", log); err != nil {
+				event := new(SynapseModuleThresholdSet)
+				if err := _SynapseModule.contract.UnpackLog(event, "ThresholdSet", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -7801,12 +7801,12 @@ func (_SynapseModule *SynapseModuleFilterer) WatchThresholdChanged(opts *bind.Wa
 	}), nil
 }
 
-// ParseThresholdChanged is a log parse operation binding the contract event 0x6c4ce60fd690e1216286a10b875c5662555f10774484e58142cedd7a90781baa.
+// ParseThresholdSet is a log parse operation binding the contract event 0x6e8a187d7944998085dbd1f16b84c51c903bb727536cdba86962439aded2cfd7.
 //
-// Solidity: event ThresholdChanged(uint256 threshold)
-func (_SynapseModule *SynapseModuleFilterer) ParseThresholdChanged(log types.Log) (*SynapseModuleThresholdChanged, error) {
-	event := new(SynapseModuleThresholdChanged)
-	if err := _SynapseModule.contract.UnpackLog(event, "ThresholdChanged", log); err != nil {
+// Solidity: event ThresholdSet(uint256 threshold)
+func (_SynapseModule *SynapseModuleFilterer) ParseThresholdSet(log types.Log) (*SynapseModuleThresholdSet, error) {
+	event := new(SynapseModuleThresholdSet)
+	if err := _SynapseModule.contract.UnpackLog(event, "ThresholdSet", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
@@ -8081,9 +8081,9 @@ func (_SynapseModule *SynapseModuleFilterer) ParseVerifierRemoved(log types.Log)
 	return event, nil
 }
 
-// SynapseModuleVerifyGasLimitChangedIterator is returned from FilterVerifyGasLimitChanged and is used to iterate over the raw logs and unpacked data for VerifyGasLimitChanged events raised by the SynapseModule contract.
-type SynapseModuleVerifyGasLimitChangedIterator struct {
-	Event *SynapseModuleVerifyGasLimitChanged // Event containing the contract specifics and raw log
+// SynapseModuleVerifyGasLimitSetIterator is returned from FilterVerifyGasLimitSet and is used to iterate over the raw logs and unpacked data for VerifyGasLimitSet events raised by the SynapseModule contract.
+type SynapseModuleVerifyGasLimitSetIterator struct {
+	Event *SynapseModuleVerifyGasLimitSet // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -8097,7 +8097,7 @@ type SynapseModuleVerifyGasLimitChangedIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *SynapseModuleVerifyGasLimitChangedIterator) Next() bool {
+func (it *SynapseModuleVerifyGasLimitSetIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -8106,7 +8106,7 @@ func (it *SynapseModuleVerifyGasLimitChangedIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(SynapseModuleVerifyGasLimitChanged)
+			it.Event = new(SynapseModuleVerifyGasLimitSet)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -8121,7 +8121,7 @@ func (it *SynapseModuleVerifyGasLimitChangedIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(SynapseModuleVerifyGasLimitChanged)
+		it.Event = new(SynapseModuleVerifyGasLimitSet)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -8137,42 +8137,42 @@ func (it *SynapseModuleVerifyGasLimitChangedIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *SynapseModuleVerifyGasLimitChangedIterator) Error() error {
+func (it *SynapseModuleVerifyGasLimitSetIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *SynapseModuleVerifyGasLimitChangedIterator) Close() error {
+func (it *SynapseModuleVerifyGasLimitSetIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// SynapseModuleVerifyGasLimitChanged represents a VerifyGasLimitChanged event raised by the SynapseModule contract.
-type SynapseModuleVerifyGasLimitChanged struct {
+// SynapseModuleVerifyGasLimitSet represents a VerifyGasLimitSet event raised by the SynapseModule contract.
+type SynapseModuleVerifyGasLimitSet struct {
 	ChainId  uint64
 	GasLimit *big.Int
 	Raw      types.Log // Blockchain specific contextual infos
 }
 
-// FilterVerifyGasLimitChanged is a free log retrieval operation binding the contract event 0x91cdd36cc5fc3190651c3c0b7dfbab4efb24b0e0bc4e9bf5522cb9df68015cff.
+// FilterVerifyGasLimitSet is a free log retrieval operation binding the contract event 0x51178ef7476261c9f8257978aa4f938e564be17543cea415e92527f11dd81498.
 //
-// Solidity: event VerifyGasLimitChanged(uint64 chainId, uint256 gasLimit)
-func (_SynapseModule *SynapseModuleFilterer) FilterVerifyGasLimitChanged(opts *bind.FilterOpts) (*SynapseModuleVerifyGasLimitChangedIterator, error) {
+// Solidity: event VerifyGasLimitSet(uint64 chainId, uint256 gasLimit)
+func (_SynapseModule *SynapseModuleFilterer) FilterVerifyGasLimitSet(opts *bind.FilterOpts) (*SynapseModuleVerifyGasLimitSetIterator, error) {
 
-	logs, sub, err := _SynapseModule.contract.FilterLogs(opts, "VerifyGasLimitChanged")
+	logs, sub, err := _SynapseModule.contract.FilterLogs(opts, "VerifyGasLimitSet")
 	if err != nil {
 		return nil, err
 	}
-	return &SynapseModuleVerifyGasLimitChangedIterator{contract: _SynapseModule.contract, event: "VerifyGasLimitChanged", logs: logs, sub: sub}, nil
+	return &SynapseModuleVerifyGasLimitSetIterator{contract: _SynapseModule.contract, event: "VerifyGasLimitSet", logs: logs, sub: sub}, nil
 }
 
-// WatchVerifyGasLimitChanged is a free log subscription operation binding the contract event 0x91cdd36cc5fc3190651c3c0b7dfbab4efb24b0e0bc4e9bf5522cb9df68015cff.
+// WatchVerifyGasLimitSet is a free log subscription operation binding the contract event 0x51178ef7476261c9f8257978aa4f938e564be17543cea415e92527f11dd81498.
 //
-// Solidity: event VerifyGasLimitChanged(uint64 chainId, uint256 gasLimit)
-func (_SynapseModule *SynapseModuleFilterer) WatchVerifyGasLimitChanged(opts *bind.WatchOpts, sink chan<- *SynapseModuleVerifyGasLimitChanged) (event.Subscription, error) {
+// Solidity: event VerifyGasLimitSet(uint64 chainId, uint256 gasLimit)
+func (_SynapseModule *SynapseModuleFilterer) WatchVerifyGasLimitSet(opts *bind.WatchOpts, sink chan<- *SynapseModuleVerifyGasLimitSet) (event.Subscription, error) {
 
-	logs, sub, err := _SynapseModule.contract.WatchLogs(opts, "VerifyGasLimitChanged")
+	logs, sub, err := _SynapseModule.contract.WatchLogs(opts, "VerifyGasLimitSet")
 	if err != nil {
 		return nil, err
 	}
@@ -8182,8 +8182,8 @@ func (_SynapseModule *SynapseModuleFilterer) WatchVerifyGasLimitChanged(opts *bi
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(SynapseModuleVerifyGasLimitChanged)
-				if err := _SynapseModule.contract.UnpackLog(event, "VerifyGasLimitChanged", log); err != nil {
+				event := new(SynapseModuleVerifyGasLimitSet)
+				if err := _SynapseModule.contract.UnpackLog(event, "VerifyGasLimitSet", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -8204,12 +8204,12 @@ func (_SynapseModule *SynapseModuleFilterer) WatchVerifyGasLimitChanged(opts *bi
 	}), nil
 }
 
-// ParseVerifyGasLimitChanged is a log parse operation binding the contract event 0x91cdd36cc5fc3190651c3c0b7dfbab4efb24b0e0bc4e9bf5522cb9df68015cff.
+// ParseVerifyGasLimitSet is a log parse operation binding the contract event 0x51178ef7476261c9f8257978aa4f938e564be17543cea415e92527f11dd81498.
 //
-// Solidity: event VerifyGasLimitChanged(uint64 chainId, uint256 gasLimit)
-func (_SynapseModule *SynapseModuleFilterer) ParseVerifyGasLimitChanged(log types.Log) (*SynapseModuleVerifyGasLimitChanged, error) {
-	event := new(SynapseModuleVerifyGasLimitChanged)
-	if err := _SynapseModule.contract.UnpackLog(event, "VerifyGasLimitChanged", log); err != nil {
+// Solidity: event VerifyGasLimitSet(uint64 chainId, uint256 gasLimit)
+func (_SynapseModule *SynapseModuleFilterer) ParseVerifyGasLimitSet(log types.Log) (*SynapseModuleVerifyGasLimitSet, error) {
+	event := new(SynapseModuleVerifyGasLimitSet)
+	if err := _SynapseModule.contract.UnpackLog(event, "VerifyGasLimitSet", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
@@ -8218,7 +8218,7 @@ func (_SynapseModule *SynapseModuleFilterer) ParseVerifyGasLimitChanged(log type
 
 // SynapseModuleEventsMetaData contains all meta data concerning the SynapseModuleEvents contract.
 var SynapseModuleEventsMetaData = &bind.MetaData{
-	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimFeeFraction\",\"type\":\"uint256\"}],\"name\":\"ClaimFeeFractionChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"feeCollector\",\"type\":\"address\"}],\"name\":\"FeeCollectorChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"feeCollector\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"collectedFees\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"claimer\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimerFee\",\"type\":\"uint256\"}],\"name\":\"FeesClaimed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"GasDataReceived\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"GasDataSent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"GasOracleChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"ThresholdChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"}],\"name\":\"VerifierAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"}],\"name\":\"VerifierRemoved\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"}],\"name\":\"VerifyGasLimitChanged\",\"type\":\"event\"}]",
+	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimFeeFraction\",\"type\":\"uint256\"}],\"name\":\"ClaimFeeFractionSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"feeCollector\",\"type\":\"address\"}],\"name\":\"FeeCollectorSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"feeCollector\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"collectedFees\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"claimer\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"claimerFee\",\"type\":\"uint256\"}],\"name\":\"FeesClaimed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"GasDataReceived\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"dstChainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"GasDataSent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"gasOracle\",\"type\":\"address\"}],\"name\":\"GasOracleSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"ThresholdSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"}],\"name\":\"VerifierAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"verifier\",\"type\":\"address\"}],\"name\":\"VerifierRemoved\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"chainId\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"}],\"name\":\"VerifyGasLimitSet\",\"type\":\"event\"}]",
 }
 
 // SynapseModuleEventsABI is the input ABI used to generate the binding from.
@@ -8367,9 +8367,9 @@ func (_SynapseModuleEvents *SynapseModuleEventsTransactorRaw) Transact(opts *bin
 	return _SynapseModuleEvents.Contract.contract.Transact(opts, method, params...)
 }
 
-// SynapseModuleEventsClaimFeeFractionChangedIterator is returned from FilterClaimFeeFractionChanged and is used to iterate over the raw logs and unpacked data for ClaimFeeFractionChanged events raised by the SynapseModuleEvents contract.
-type SynapseModuleEventsClaimFeeFractionChangedIterator struct {
-	Event *SynapseModuleEventsClaimFeeFractionChanged // Event containing the contract specifics and raw log
+// SynapseModuleEventsClaimFeeFractionSetIterator is returned from FilterClaimFeeFractionSet and is used to iterate over the raw logs and unpacked data for ClaimFeeFractionSet events raised by the SynapseModuleEvents contract.
+type SynapseModuleEventsClaimFeeFractionSetIterator struct {
+	Event *SynapseModuleEventsClaimFeeFractionSet // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -8383,7 +8383,7 @@ type SynapseModuleEventsClaimFeeFractionChangedIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *SynapseModuleEventsClaimFeeFractionChangedIterator) Next() bool {
+func (it *SynapseModuleEventsClaimFeeFractionSetIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -8392,7 +8392,7 @@ func (it *SynapseModuleEventsClaimFeeFractionChangedIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(SynapseModuleEventsClaimFeeFractionChanged)
+			it.Event = new(SynapseModuleEventsClaimFeeFractionSet)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -8407,7 +8407,7 @@ func (it *SynapseModuleEventsClaimFeeFractionChangedIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(SynapseModuleEventsClaimFeeFractionChanged)
+		it.Event = new(SynapseModuleEventsClaimFeeFractionSet)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -8423,41 +8423,41 @@ func (it *SynapseModuleEventsClaimFeeFractionChangedIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *SynapseModuleEventsClaimFeeFractionChangedIterator) Error() error {
+func (it *SynapseModuleEventsClaimFeeFractionSetIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *SynapseModuleEventsClaimFeeFractionChangedIterator) Close() error {
+func (it *SynapseModuleEventsClaimFeeFractionSetIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// SynapseModuleEventsClaimFeeFractionChanged represents a ClaimFeeFractionChanged event raised by the SynapseModuleEvents contract.
-type SynapseModuleEventsClaimFeeFractionChanged struct {
+// SynapseModuleEventsClaimFeeFractionSet represents a ClaimFeeFractionSet event raised by the SynapseModuleEvents contract.
+type SynapseModuleEventsClaimFeeFractionSet struct {
 	ClaimFeeFraction *big.Int
 	Raw              types.Log // Blockchain specific contextual infos
 }
 
-// FilterClaimFeeFractionChanged is a free log retrieval operation binding the contract event 0xff6eea4807f1d9f8369b26f163207ca7fbbc91ec6bf92c3cd02119f9dcbb299b.
+// FilterClaimFeeFractionSet is a free log retrieval operation binding the contract event 0xf836f881701eb910d11c6ed26b2f706669a227606862a19c12a910ec371917bd.
 //
-// Solidity: event ClaimFeeFractionChanged(uint256 claimFeeFraction)
-func (_SynapseModuleEvents *SynapseModuleEventsFilterer) FilterClaimFeeFractionChanged(opts *bind.FilterOpts) (*SynapseModuleEventsClaimFeeFractionChangedIterator, error) {
+// Solidity: event ClaimFeeFractionSet(uint256 claimFeeFraction)
+func (_SynapseModuleEvents *SynapseModuleEventsFilterer) FilterClaimFeeFractionSet(opts *bind.FilterOpts) (*SynapseModuleEventsClaimFeeFractionSetIterator, error) {
 
-	logs, sub, err := _SynapseModuleEvents.contract.FilterLogs(opts, "ClaimFeeFractionChanged")
+	logs, sub, err := _SynapseModuleEvents.contract.FilterLogs(opts, "ClaimFeeFractionSet")
 	if err != nil {
 		return nil, err
 	}
-	return &SynapseModuleEventsClaimFeeFractionChangedIterator{contract: _SynapseModuleEvents.contract, event: "ClaimFeeFractionChanged", logs: logs, sub: sub}, nil
+	return &SynapseModuleEventsClaimFeeFractionSetIterator{contract: _SynapseModuleEvents.contract, event: "ClaimFeeFractionSet", logs: logs, sub: sub}, nil
 }
 
-// WatchClaimFeeFractionChanged is a free log subscription operation binding the contract event 0xff6eea4807f1d9f8369b26f163207ca7fbbc91ec6bf92c3cd02119f9dcbb299b.
+// WatchClaimFeeFractionSet is a free log subscription operation binding the contract event 0xf836f881701eb910d11c6ed26b2f706669a227606862a19c12a910ec371917bd.
 //
-// Solidity: event ClaimFeeFractionChanged(uint256 claimFeeFraction)
-func (_SynapseModuleEvents *SynapseModuleEventsFilterer) WatchClaimFeeFractionChanged(opts *bind.WatchOpts, sink chan<- *SynapseModuleEventsClaimFeeFractionChanged) (event.Subscription, error) {
+// Solidity: event ClaimFeeFractionSet(uint256 claimFeeFraction)
+func (_SynapseModuleEvents *SynapseModuleEventsFilterer) WatchClaimFeeFractionSet(opts *bind.WatchOpts, sink chan<- *SynapseModuleEventsClaimFeeFractionSet) (event.Subscription, error) {
 
-	logs, sub, err := _SynapseModuleEvents.contract.WatchLogs(opts, "ClaimFeeFractionChanged")
+	logs, sub, err := _SynapseModuleEvents.contract.WatchLogs(opts, "ClaimFeeFractionSet")
 	if err != nil {
 		return nil, err
 	}
@@ -8467,8 +8467,8 @@ func (_SynapseModuleEvents *SynapseModuleEventsFilterer) WatchClaimFeeFractionCh
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(SynapseModuleEventsClaimFeeFractionChanged)
-				if err := _SynapseModuleEvents.contract.UnpackLog(event, "ClaimFeeFractionChanged", log); err != nil {
+				event := new(SynapseModuleEventsClaimFeeFractionSet)
+				if err := _SynapseModuleEvents.contract.UnpackLog(event, "ClaimFeeFractionSet", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -8489,21 +8489,21 @@ func (_SynapseModuleEvents *SynapseModuleEventsFilterer) WatchClaimFeeFractionCh
 	}), nil
 }
 
-// ParseClaimFeeFractionChanged is a log parse operation binding the contract event 0xff6eea4807f1d9f8369b26f163207ca7fbbc91ec6bf92c3cd02119f9dcbb299b.
+// ParseClaimFeeFractionSet is a log parse operation binding the contract event 0xf836f881701eb910d11c6ed26b2f706669a227606862a19c12a910ec371917bd.
 //
-// Solidity: event ClaimFeeFractionChanged(uint256 claimFeeFraction)
-func (_SynapseModuleEvents *SynapseModuleEventsFilterer) ParseClaimFeeFractionChanged(log types.Log) (*SynapseModuleEventsClaimFeeFractionChanged, error) {
-	event := new(SynapseModuleEventsClaimFeeFractionChanged)
-	if err := _SynapseModuleEvents.contract.UnpackLog(event, "ClaimFeeFractionChanged", log); err != nil {
+// Solidity: event ClaimFeeFractionSet(uint256 claimFeeFraction)
+func (_SynapseModuleEvents *SynapseModuleEventsFilterer) ParseClaimFeeFractionSet(log types.Log) (*SynapseModuleEventsClaimFeeFractionSet, error) {
+	event := new(SynapseModuleEventsClaimFeeFractionSet)
+	if err := _SynapseModuleEvents.contract.UnpackLog(event, "ClaimFeeFractionSet", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
 	return event, nil
 }
 
-// SynapseModuleEventsFeeCollectorChangedIterator is returned from FilterFeeCollectorChanged and is used to iterate over the raw logs and unpacked data for FeeCollectorChanged events raised by the SynapseModuleEvents contract.
-type SynapseModuleEventsFeeCollectorChangedIterator struct {
-	Event *SynapseModuleEventsFeeCollectorChanged // Event containing the contract specifics and raw log
+// SynapseModuleEventsFeeCollectorSetIterator is returned from FilterFeeCollectorSet and is used to iterate over the raw logs and unpacked data for FeeCollectorSet events raised by the SynapseModuleEvents contract.
+type SynapseModuleEventsFeeCollectorSetIterator struct {
+	Event *SynapseModuleEventsFeeCollectorSet // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -8517,7 +8517,7 @@ type SynapseModuleEventsFeeCollectorChangedIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *SynapseModuleEventsFeeCollectorChangedIterator) Next() bool {
+func (it *SynapseModuleEventsFeeCollectorSetIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -8526,7 +8526,7 @@ func (it *SynapseModuleEventsFeeCollectorChangedIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(SynapseModuleEventsFeeCollectorChanged)
+			it.Event = new(SynapseModuleEventsFeeCollectorSet)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -8541,7 +8541,7 @@ func (it *SynapseModuleEventsFeeCollectorChangedIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(SynapseModuleEventsFeeCollectorChanged)
+		it.Event = new(SynapseModuleEventsFeeCollectorSet)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -8557,41 +8557,41 @@ func (it *SynapseModuleEventsFeeCollectorChangedIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *SynapseModuleEventsFeeCollectorChangedIterator) Error() error {
+func (it *SynapseModuleEventsFeeCollectorSetIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *SynapseModuleEventsFeeCollectorChangedIterator) Close() error {
+func (it *SynapseModuleEventsFeeCollectorSetIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// SynapseModuleEventsFeeCollectorChanged represents a FeeCollectorChanged event raised by the SynapseModuleEvents contract.
-type SynapseModuleEventsFeeCollectorChanged struct {
+// SynapseModuleEventsFeeCollectorSet represents a FeeCollectorSet event raised by the SynapseModuleEvents contract.
+type SynapseModuleEventsFeeCollectorSet struct {
 	FeeCollector common.Address
 	Raw          types.Log // Blockchain specific contextual infos
 }
 
-// FilterFeeCollectorChanged is a free log retrieval operation binding the contract event 0x9c1996a14d26c3ecd833c10222d012447ef07b09b15000f3a34318ff039c0bdc.
+// FilterFeeCollectorSet is a free log retrieval operation binding the contract event 0x12e1d17016b94668449f97876f4a8d5cc2c19f314db337418894734037cc19d4.
 //
-// Solidity: event FeeCollectorChanged(address feeCollector)
-func (_SynapseModuleEvents *SynapseModuleEventsFilterer) FilterFeeCollectorChanged(opts *bind.FilterOpts) (*SynapseModuleEventsFeeCollectorChangedIterator, error) {
+// Solidity: event FeeCollectorSet(address feeCollector)
+func (_SynapseModuleEvents *SynapseModuleEventsFilterer) FilterFeeCollectorSet(opts *bind.FilterOpts) (*SynapseModuleEventsFeeCollectorSetIterator, error) {
 
-	logs, sub, err := _SynapseModuleEvents.contract.FilterLogs(opts, "FeeCollectorChanged")
+	logs, sub, err := _SynapseModuleEvents.contract.FilterLogs(opts, "FeeCollectorSet")
 	if err != nil {
 		return nil, err
 	}
-	return &SynapseModuleEventsFeeCollectorChangedIterator{contract: _SynapseModuleEvents.contract, event: "FeeCollectorChanged", logs: logs, sub: sub}, nil
+	return &SynapseModuleEventsFeeCollectorSetIterator{contract: _SynapseModuleEvents.contract, event: "FeeCollectorSet", logs: logs, sub: sub}, nil
 }
 
-// WatchFeeCollectorChanged is a free log subscription operation binding the contract event 0x9c1996a14d26c3ecd833c10222d012447ef07b09b15000f3a34318ff039c0bdc.
+// WatchFeeCollectorSet is a free log subscription operation binding the contract event 0x12e1d17016b94668449f97876f4a8d5cc2c19f314db337418894734037cc19d4.
 //
-// Solidity: event FeeCollectorChanged(address feeCollector)
-func (_SynapseModuleEvents *SynapseModuleEventsFilterer) WatchFeeCollectorChanged(opts *bind.WatchOpts, sink chan<- *SynapseModuleEventsFeeCollectorChanged) (event.Subscription, error) {
+// Solidity: event FeeCollectorSet(address feeCollector)
+func (_SynapseModuleEvents *SynapseModuleEventsFilterer) WatchFeeCollectorSet(opts *bind.WatchOpts, sink chan<- *SynapseModuleEventsFeeCollectorSet) (event.Subscription, error) {
 
-	logs, sub, err := _SynapseModuleEvents.contract.WatchLogs(opts, "FeeCollectorChanged")
+	logs, sub, err := _SynapseModuleEvents.contract.WatchLogs(opts, "FeeCollectorSet")
 	if err != nil {
 		return nil, err
 	}
@@ -8601,8 +8601,8 @@ func (_SynapseModuleEvents *SynapseModuleEventsFilterer) WatchFeeCollectorChange
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(SynapseModuleEventsFeeCollectorChanged)
-				if err := _SynapseModuleEvents.contract.UnpackLog(event, "FeeCollectorChanged", log); err != nil {
+				event := new(SynapseModuleEventsFeeCollectorSet)
+				if err := _SynapseModuleEvents.contract.UnpackLog(event, "FeeCollectorSet", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -8623,12 +8623,12 @@ func (_SynapseModuleEvents *SynapseModuleEventsFilterer) WatchFeeCollectorChange
 	}), nil
 }
 
-// ParseFeeCollectorChanged is a log parse operation binding the contract event 0x9c1996a14d26c3ecd833c10222d012447ef07b09b15000f3a34318ff039c0bdc.
+// ParseFeeCollectorSet is a log parse operation binding the contract event 0x12e1d17016b94668449f97876f4a8d5cc2c19f314db337418894734037cc19d4.
 //
-// Solidity: event FeeCollectorChanged(address feeCollector)
-func (_SynapseModuleEvents *SynapseModuleEventsFilterer) ParseFeeCollectorChanged(log types.Log) (*SynapseModuleEventsFeeCollectorChanged, error) {
-	event := new(SynapseModuleEventsFeeCollectorChanged)
-	if err := _SynapseModuleEvents.contract.UnpackLog(event, "FeeCollectorChanged", log); err != nil {
+// Solidity: event FeeCollectorSet(address feeCollector)
+func (_SynapseModuleEvents *SynapseModuleEventsFilterer) ParseFeeCollectorSet(log types.Log) (*SynapseModuleEventsFeeCollectorSet, error) {
+	event := new(SynapseModuleEventsFeeCollectorSet)
+	if err := _SynapseModuleEvents.contract.UnpackLog(event, "FeeCollectorSet", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
@@ -9042,9 +9042,9 @@ func (_SynapseModuleEvents *SynapseModuleEventsFilterer) ParseGasDataSent(log ty
 	return event, nil
 }
 
-// SynapseModuleEventsGasOracleChangedIterator is returned from FilterGasOracleChanged and is used to iterate over the raw logs and unpacked data for GasOracleChanged events raised by the SynapseModuleEvents contract.
-type SynapseModuleEventsGasOracleChangedIterator struct {
-	Event *SynapseModuleEventsGasOracleChanged // Event containing the contract specifics and raw log
+// SynapseModuleEventsGasOracleSetIterator is returned from FilterGasOracleSet and is used to iterate over the raw logs and unpacked data for GasOracleSet events raised by the SynapseModuleEvents contract.
+type SynapseModuleEventsGasOracleSetIterator struct {
+	Event *SynapseModuleEventsGasOracleSet // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -9058,7 +9058,7 @@ type SynapseModuleEventsGasOracleChangedIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *SynapseModuleEventsGasOracleChangedIterator) Next() bool {
+func (it *SynapseModuleEventsGasOracleSetIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -9067,7 +9067,7 @@ func (it *SynapseModuleEventsGasOracleChangedIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(SynapseModuleEventsGasOracleChanged)
+			it.Event = new(SynapseModuleEventsGasOracleSet)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -9082,7 +9082,7 @@ func (it *SynapseModuleEventsGasOracleChangedIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(SynapseModuleEventsGasOracleChanged)
+		it.Event = new(SynapseModuleEventsGasOracleSet)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -9098,41 +9098,41 @@ func (it *SynapseModuleEventsGasOracleChangedIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *SynapseModuleEventsGasOracleChangedIterator) Error() error {
+func (it *SynapseModuleEventsGasOracleSetIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *SynapseModuleEventsGasOracleChangedIterator) Close() error {
+func (it *SynapseModuleEventsGasOracleSetIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// SynapseModuleEventsGasOracleChanged represents a GasOracleChanged event raised by the SynapseModuleEvents contract.
-type SynapseModuleEventsGasOracleChanged struct {
+// SynapseModuleEventsGasOracleSet represents a GasOracleSet event raised by the SynapseModuleEvents contract.
+type SynapseModuleEventsGasOracleSet struct {
 	GasOracle common.Address
 	Raw       types.Log // Blockchain specific contextual infos
 }
 
-// FilterGasOracleChanged is a free log retrieval operation binding the contract event 0x1c045b93ecd363a3ccd287c43f9ab97490903b354e7d99b149992b1e244254a9.
+// FilterGasOracleSet is a free log retrieval operation binding the contract event 0x3efbbb00c39812fb98647af6e9e2c3f4ec2b53d368cedd1e148330a05b652cfa.
 //
-// Solidity: event GasOracleChanged(address gasOracle)
-func (_SynapseModuleEvents *SynapseModuleEventsFilterer) FilterGasOracleChanged(opts *bind.FilterOpts) (*SynapseModuleEventsGasOracleChangedIterator, error) {
+// Solidity: event GasOracleSet(address gasOracle)
+func (_SynapseModuleEvents *SynapseModuleEventsFilterer) FilterGasOracleSet(opts *bind.FilterOpts) (*SynapseModuleEventsGasOracleSetIterator, error) {
 
-	logs, sub, err := _SynapseModuleEvents.contract.FilterLogs(opts, "GasOracleChanged")
+	logs, sub, err := _SynapseModuleEvents.contract.FilterLogs(opts, "GasOracleSet")
 	if err != nil {
 		return nil, err
 	}
-	return &SynapseModuleEventsGasOracleChangedIterator{contract: _SynapseModuleEvents.contract, event: "GasOracleChanged", logs: logs, sub: sub}, nil
+	return &SynapseModuleEventsGasOracleSetIterator{contract: _SynapseModuleEvents.contract, event: "GasOracleSet", logs: logs, sub: sub}, nil
 }
 
-// WatchGasOracleChanged is a free log subscription operation binding the contract event 0x1c045b93ecd363a3ccd287c43f9ab97490903b354e7d99b149992b1e244254a9.
+// WatchGasOracleSet is a free log subscription operation binding the contract event 0x3efbbb00c39812fb98647af6e9e2c3f4ec2b53d368cedd1e148330a05b652cfa.
 //
-// Solidity: event GasOracleChanged(address gasOracle)
-func (_SynapseModuleEvents *SynapseModuleEventsFilterer) WatchGasOracleChanged(opts *bind.WatchOpts, sink chan<- *SynapseModuleEventsGasOracleChanged) (event.Subscription, error) {
+// Solidity: event GasOracleSet(address gasOracle)
+func (_SynapseModuleEvents *SynapseModuleEventsFilterer) WatchGasOracleSet(opts *bind.WatchOpts, sink chan<- *SynapseModuleEventsGasOracleSet) (event.Subscription, error) {
 
-	logs, sub, err := _SynapseModuleEvents.contract.WatchLogs(opts, "GasOracleChanged")
+	logs, sub, err := _SynapseModuleEvents.contract.WatchLogs(opts, "GasOracleSet")
 	if err != nil {
 		return nil, err
 	}
@@ -9142,8 +9142,8 @@ func (_SynapseModuleEvents *SynapseModuleEventsFilterer) WatchGasOracleChanged(o
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(SynapseModuleEventsGasOracleChanged)
-				if err := _SynapseModuleEvents.contract.UnpackLog(event, "GasOracleChanged", log); err != nil {
+				event := new(SynapseModuleEventsGasOracleSet)
+				if err := _SynapseModuleEvents.contract.UnpackLog(event, "GasOracleSet", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -9164,21 +9164,21 @@ func (_SynapseModuleEvents *SynapseModuleEventsFilterer) WatchGasOracleChanged(o
 	}), nil
 }
 
-// ParseGasOracleChanged is a log parse operation binding the contract event 0x1c045b93ecd363a3ccd287c43f9ab97490903b354e7d99b149992b1e244254a9.
+// ParseGasOracleSet is a log parse operation binding the contract event 0x3efbbb00c39812fb98647af6e9e2c3f4ec2b53d368cedd1e148330a05b652cfa.
 //
-// Solidity: event GasOracleChanged(address gasOracle)
-func (_SynapseModuleEvents *SynapseModuleEventsFilterer) ParseGasOracleChanged(log types.Log) (*SynapseModuleEventsGasOracleChanged, error) {
-	event := new(SynapseModuleEventsGasOracleChanged)
-	if err := _SynapseModuleEvents.contract.UnpackLog(event, "GasOracleChanged", log); err != nil {
+// Solidity: event GasOracleSet(address gasOracle)
+func (_SynapseModuleEvents *SynapseModuleEventsFilterer) ParseGasOracleSet(log types.Log) (*SynapseModuleEventsGasOracleSet, error) {
+	event := new(SynapseModuleEventsGasOracleSet)
+	if err := _SynapseModuleEvents.contract.UnpackLog(event, "GasOracleSet", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
 	return event, nil
 }
 
-// SynapseModuleEventsThresholdChangedIterator is returned from FilterThresholdChanged and is used to iterate over the raw logs and unpacked data for ThresholdChanged events raised by the SynapseModuleEvents contract.
-type SynapseModuleEventsThresholdChangedIterator struct {
-	Event *SynapseModuleEventsThresholdChanged // Event containing the contract specifics and raw log
+// SynapseModuleEventsThresholdSetIterator is returned from FilterThresholdSet and is used to iterate over the raw logs and unpacked data for ThresholdSet events raised by the SynapseModuleEvents contract.
+type SynapseModuleEventsThresholdSetIterator struct {
+	Event *SynapseModuleEventsThresholdSet // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -9192,7 +9192,7 @@ type SynapseModuleEventsThresholdChangedIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *SynapseModuleEventsThresholdChangedIterator) Next() bool {
+func (it *SynapseModuleEventsThresholdSetIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -9201,7 +9201,7 @@ func (it *SynapseModuleEventsThresholdChangedIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(SynapseModuleEventsThresholdChanged)
+			it.Event = new(SynapseModuleEventsThresholdSet)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -9216,7 +9216,7 @@ func (it *SynapseModuleEventsThresholdChangedIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(SynapseModuleEventsThresholdChanged)
+		it.Event = new(SynapseModuleEventsThresholdSet)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -9232,41 +9232,41 @@ func (it *SynapseModuleEventsThresholdChangedIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *SynapseModuleEventsThresholdChangedIterator) Error() error {
+func (it *SynapseModuleEventsThresholdSetIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *SynapseModuleEventsThresholdChangedIterator) Close() error {
+func (it *SynapseModuleEventsThresholdSetIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// SynapseModuleEventsThresholdChanged represents a ThresholdChanged event raised by the SynapseModuleEvents contract.
-type SynapseModuleEventsThresholdChanged struct {
+// SynapseModuleEventsThresholdSet represents a ThresholdSet event raised by the SynapseModuleEvents contract.
+type SynapseModuleEventsThresholdSet struct {
 	Threshold *big.Int
 	Raw       types.Log // Blockchain specific contextual infos
 }
 
-// FilterThresholdChanged is a free log retrieval operation binding the contract event 0x6c4ce60fd690e1216286a10b875c5662555f10774484e58142cedd7a90781baa.
+// FilterThresholdSet is a free log retrieval operation binding the contract event 0x6e8a187d7944998085dbd1f16b84c51c903bb727536cdba86962439aded2cfd7.
 //
-// Solidity: event ThresholdChanged(uint256 threshold)
-func (_SynapseModuleEvents *SynapseModuleEventsFilterer) FilterThresholdChanged(opts *bind.FilterOpts) (*SynapseModuleEventsThresholdChangedIterator, error) {
+// Solidity: event ThresholdSet(uint256 threshold)
+func (_SynapseModuleEvents *SynapseModuleEventsFilterer) FilterThresholdSet(opts *bind.FilterOpts) (*SynapseModuleEventsThresholdSetIterator, error) {
 
-	logs, sub, err := _SynapseModuleEvents.contract.FilterLogs(opts, "ThresholdChanged")
+	logs, sub, err := _SynapseModuleEvents.contract.FilterLogs(opts, "ThresholdSet")
 	if err != nil {
 		return nil, err
 	}
-	return &SynapseModuleEventsThresholdChangedIterator{contract: _SynapseModuleEvents.contract, event: "ThresholdChanged", logs: logs, sub: sub}, nil
+	return &SynapseModuleEventsThresholdSetIterator{contract: _SynapseModuleEvents.contract, event: "ThresholdSet", logs: logs, sub: sub}, nil
 }
 
-// WatchThresholdChanged is a free log subscription operation binding the contract event 0x6c4ce60fd690e1216286a10b875c5662555f10774484e58142cedd7a90781baa.
+// WatchThresholdSet is a free log subscription operation binding the contract event 0x6e8a187d7944998085dbd1f16b84c51c903bb727536cdba86962439aded2cfd7.
 //
-// Solidity: event ThresholdChanged(uint256 threshold)
-func (_SynapseModuleEvents *SynapseModuleEventsFilterer) WatchThresholdChanged(opts *bind.WatchOpts, sink chan<- *SynapseModuleEventsThresholdChanged) (event.Subscription, error) {
+// Solidity: event ThresholdSet(uint256 threshold)
+func (_SynapseModuleEvents *SynapseModuleEventsFilterer) WatchThresholdSet(opts *bind.WatchOpts, sink chan<- *SynapseModuleEventsThresholdSet) (event.Subscription, error) {
 
-	logs, sub, err := _SynapseModuleEvents.contract.WatchLogs(opts, "ThresholdChanged")
+	logs, sub, err := _SynapseModuleEvents.contract.WatchLogs(opts, "ThresholdSet")
 	if err != nil {
 		return nil, err
 	}
@@ -9276,8 +9276,8 @@ func (_SynapseModuleEvents *SynapseModuleEventsFilterer) WatchThresholdChanged(o
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(SynapseModuleEventsThresholdChanged)
-				if err := _SynapseModuleEvents.contract.UnpackLog(event, "ThresholdChanged", log); err != nil {
+				event := new(SynapseModuleEventsThresholdSet)
+				if err := _SynapseModuleEvents.contract.UnpackLog(event, "ThresholdSet", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -9298,12 +9298,12 @@ func (_SynapseModuleEvents *SynapseModuleEventsFilterer) WatchThresholdChanged(o
 	}), nil
 }
 
-// ParseThresholdChanged is a log parse operation binding the contract event 0x6c4ce60fd690e1216286a10b875c5662555f10774484e58142cedd7a90781baa.
+// ParseThresholdSet is a log parse operation binding the contract event 0x6e8a187d7944998085dbd1f16b84c51c903bb727536cdba86962439aded2cfd7.
 //
-// Solidity: event ThresholdChanged(uint256 threshold)
-func (_SynapseModuleEvents *SynapseModuleEventsFilterer) ParseThresholdChanged(log types.Log) (*SynapseModuleEventsThresholdChanged, error) {
-	event := new(SynapseModuleEventsThresholdChanged)
-	if err := _SynapseModuleEvents.contract.UnpackLog(event, "ThresholdChanged", log); err != nil {
+// Solidity: event ThresholdSet(uint256 threshold)
+func (_SynapseModuleEvents *SynapseModuleEventsFilterer) ParseThresholdSet(log types.Log) (*SynapseModuleEventsThresholdSet, error) {
+	event := new(SynapseModuleEventsThresholdSet)
+	if err := _SynapseModuleEvents.contract.UnpackLog(event, "ThresholdSet", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
@@ -9578,9 +9578,9 @@ func (_SynapseModuleEvents *SynapseModuleEventsFilterer) ParseVerifierRemoved(lo
 	return event, nil
 }
 
-// SynapseModuleEventsVerifyGasLimitChangedIterator is returned from FilterVerifyGasLimitChanged and is used to iterate over the raw logs and unpacked data for VerifyGasLimitChanged events raised by the SynapseModuleEvents contract.
-type SynapseModuleEventsVerifyGasLimitChangedIterator struct {
-	Event *SynapseModuleEventsVerifyGasLimitChanged // Event containing the contract specifics and raw log
+// SynapseModuleEventsVerifyGasLimitSetIterator is returned from FilterVerifyGasLimitSet and is used to iterate over the raw logs and unpacked data for VerifyGasLimitSet events raised by the SynapseModuleEvents contract.
+type SynapseModuleEventsVerifyGasLimitSetIterator struct {
+	Event *SynapseModuleEventsVerifyGasLimitSet // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -9594,7 +9594,7 @@ type SynapseModuleEventsVerifyGasLimitChangedIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *SynapseModuleEventsVerifyGasLimitChangedIterator) Next() bool {
+func (it *SynapseModuleEventsVerifyGasLimitSetIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -9603,7 +9603,7 @@ func (it *SynapseModuleEventsVerifyGasLimitChangedIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(SynapseModuleEventsVerifyGasLimitChanged)
+			it.Event = new(SynapseModuleEventsVerifyGasLimitSet)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -9618,7 +9618,7 @@ func (it *SynapseModuleEventsVerifyGasLimitChangedIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(SynapseModuleEventsVerifyGasLimitChanged)
+		it.Event = new(SynapseModuleEventsVerifyGasLimitSet)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -9634,42 +9634,42 @@ func (it *SynapseModuleEventsVerifyGasLimitChangedIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *SynapseModuleEventsVerifyGasLimitChangedIterator) Error() error {
+func (it *SynapseModuleEventsVerifyGasLimitSetIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *SynapseModuleEventsVerifyGasLimitChangedIterator) Close() error {
+func (it *SynapseModuleEventsVerifyGasLimitSetIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// SynapseModuleEventsVerifyGasLimitChanged represents a VerifyGasLimitChanged event raised by the SynapseModuleEvents contract.
-type SynapseModuleEventsVerifyGasLimitChanged struct {
+// SynapseModuleEventsVerifyGasLimitSet represents a VerifyGasLimitSet event raised by the SynapseModuleEvents contract.
+type SynapseModuleEventsVerifyGasLimitSet struct {
 	ChainId  uint64
 	GasLimit *big.Int
 	Raw      types.Log // Blockchain specific contextual infos
 }
 
-// FilterVerifyGasLimitChanged is a free log retrieval operation binding the contract event 0x91cdd36cc5fc3190651c3c0b7dfbab4efb24b0e0bc4e9bf5522cb9df68015cff.
+// FilterVerifyGasLimitSet is a free log retrieval operation binding the contract event 0x51178ef7476261c9f8257978aa4f938e564be17543cea415e92527f11dd81498.
 //
-// Solidity: event VerifyGasLimitChanged(uint64 chainId, uint256 gasLimit)
-func (_SynapseModuleEvents *SynapseModuleEventsFilterer) FilterVerifyGasLimitChanged(opts *bind.FilterOpts) (*SynapseModuleEventsVerifyGasLimitChangedIterator, error) {
+// Solidity: event VerifyGasLimitSet(uint64 chainId, uint256 gasLimit)
+func (_SynapseModuleEvents *SynapseModuleEventsFilterer) FilterVerifyGasLimitSet(opts *bind.FilterOpts) (*SynapseModuleEventsVerifyGasLimitSetIterator, error) {
 
-	logs, sub, err := _SynapseModuleEvents.contract.FilterLogs(opts, "VerifyGasLimitChanged")
+	logs, sub, err := _SynapseModuleEvents.contract.FilterLogs(opts, "VerifyGasLimitSet")
 	if err != nil {
 		return nil, err
 	}
-	return &SynapseModuleEventsVerifyGasLimitChangedIterator{contract: _SynapseModuleEvents.contract, event: "VerifyGasLimitChanged", logs: logs, sub: sub}, nil
+	return &SynapseModuleEventsVerifyGasLimitSetIterator{contract: _SynapseModuleEvents.contract, event: "VerifyGasLimitSet", logs: logs, sub: sub}, nil
 }
 
-// WatchVerifyGasLimitChanged is a free log subscription operation binding the contract event 0x91cdd36cc5fc3190651c3c0b7dfbab4efb24b0e0bc4e9bf5522cb9df68015cff.
+// WatchVerifyGasLimitSet is a free log subscription operation binding the contract event 0x51178ef7476261c9f8257978aa4f938e564be17543cea415e92527f11dd81498.
 //
-// Solidity: event VerifyGasLimitChanged(uint64 chainId, uint256 gasLimit)
-func (_SynapseModuleEvents *SynapseModuleEventsFilterer) WatchVerifyGasLimitChanged(opts *bind.WatchOpts, sink chan<- *SynapseModuleEventsVerifyGasLimitChanged) (event.Subscription, error) {
+// Solidity: event VerifyGasLimitSet(uint64 chainId, uint256 gasLimit)
+func (_SynapseModuleEvents *SynapseModuleEventsFilterer) WatchVerifyGasLimitSet(opts *bind.WatchOpts, sink chan<- *SynapseModuleEventsVerifyGasLimitSet) (event.Subscription, error) {
 
-	logs, sub, err := _SynapseModuleEvents.contract.WatchLogs(opts, "VerifyGasLimitChanged")
+	logs, sub, err := _SynapseModuleEvents.contract.WatchLogs(opts, "VerifyGasLimitSet")
 	if err != nil {
 		return nil, err
 	}
@@ -9679,8 +9679,8 @@ func (_SynapseModuleEvents *SynapseModuleEventsFilterer) WatchVerifyGasLimitChan
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(SynapseModuleEventsVerifyGasLimitChanged)
-				if err := _SynapseModuleEvents.contract.UnpackLog(event, "VerifyGasLimitChanged", log); err != nil {
+				event := new(SynapseModuleEventsVerifyGasLimitSet)
+				if err := _SynapseModuleEvents.contract.UnpackLog(event, "VerifyGasLimitSet", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -9701,12 +9701,12 @@ func (_SynapseModuleEvents *SynapseModuleEventsFilterer) WatchVerifyGasLimitChan
 	}), nil
 }
 
-// ParseVerifyGasLimitChanged is a log parse operation binding the contract event 0x91cdd36cc5fc3190651c3c0b7dfbab4efb24b0e0bc4e9bf5522cb9df68015cff.
+// ParseVerifyGasLimitSet is a log parse operation binding the contract event 0x51178ef7476261c9f8257978aa4f938e564be17543cea415e92527f11dd81498.
 //
-// Solidity: event VerifyGasLimitChanged(uint64 chainId, uint256 gasLimit)
-func (_SynapseModuleEvents *SynapseModuleEventsFilterer) ParseVerifyGasLimitChanged(log types.Log) (*SynapseModuleEventsVerifyGasLimitChanged, error) {
-	event := new(SynapseModuleEventsVerifyGasLimitChanged)
-	if err := _SynapseModuleEvents.contract.UnpackLog(event, "VerifyGasLimitChanged", log); err != nil {
+// Solidity: event VerifyGasLimitSet(uint64 chainId, uint256 gasLimit)
+func (_SynapseModuleEvents *SynapseModuleEventsFilterer) ParseVerifyGasLimitSet(log types.Log) (*SynapseModuleEventsVerifyGasLimitSet, error) {
+	event := new(SynapseModuleEventsVerifyGasLimitSet)
+	if err := _SynapseModuleEvents.contract.UnpackLog(event, "VerifyGasLimitSet", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
@@ -9716,7 +9716,7 @@ func (_SynapseModuleEvents *SynapseModuleEventsFilterer) ParseVerifyGasLimitChan
 // ThresholdECDSALibMetaData contains all meta data concerning the ThresholdECDSALib contract.
 var ThresholdECDSALibMetaData = &bind.MetaData{
 	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"ThresholdECDSA__AlreadySigner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"length\",\"type\":\"uint256\"}],\"name\":\"ThresholdECDSA__IncorrectSignaturesLength\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"ThresholdECDSA__InvalidSignature\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"provided\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"threshold\",\"type\":\"uint256\"}],\"name\":\"ThresholdECDSA__NotEnoughSignatures\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"ThresholdECDSA__NotSigner\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ThresholdECDSA__RecoveredSignersNotSorted\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ThresholdECDSA__ZeroAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ThresholdECDSA__ZeroThreshold\",\"type\":\"error\"}]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212205943da9648c5cd9d180c345a868b579047f5571efbe7a1252e91630f16ca99c964736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212205cb8205773de9c0eb641d7c84806960b36ec0900ac6a1c9f24f397c26a25595464736f6c63430008140033",
 }
 
 // ThresholdECDSALibABI is the input ABI used to generate the binding from.
@@ -9889,7 +9889,7 @@ func (_ThresholdECDSALib *ThresholdECDSALibTransactorRaw) Transact(opts *bind.Tr
 // TypeCastsMetaData contains all meta data concerning the TypeCasts contract.
 var TypeCastsMetaData = &bind.MetaData{
 	ABI: "[]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122088f96267bcb85f896fbc727cbf05f3a94f652fdeca2930d6b04f075a797a2d5664736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220ded706e3dfee655212838a506fb556bc8da097bc9daee10dc214d136a5480be764736f6c63430008140033",
 }
 
 // TypeCastsABI is the input ABI used to generate the binding from.
@@ -10062,7 +10062,7 @@ func (_TypeCasts *TypeCastsTransactorRaw) Transact(opts *bind.TransactOpts, meth
 // VersionedPayloadLibMetaData contains all meta data concerning the VersionedPayloadLib contract.
 var VersionedPayloadLibMetaData = &bind.MetaData{
 	ABI: "[{\"inputs\":[],\"name\":\"VersionedPayload__PrecompileFailed\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"versionedPayload\",\"type\":\"bytes\"}],\"name\":\"VersionedPayload__TooShort\",\"type\":\"error\"}]",
-	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220ee26f5d31016cde19c231181bcf322c75620121ea2d0312264c499106161223364736f6c63430008140033",
+	Bin: "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212206f785be4cbe334f3d8b60425d3c36bf0c230d2755c93dac5056264c63192d30d64736f6c63430008140033",
 }
 
 // VersionedPayloadLibABI is the input ABI used to generate the binding from.
