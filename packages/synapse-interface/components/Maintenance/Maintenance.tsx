@@ -4,13 +4,13 @@ import { useMaintenanceCountdownProgress } from './components/useMaintenanceCoun
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { useSwapState } from '@/slices/swap/hooks'
 import pausedChains from '@/public/pausedChains.json'
+import pausedRoutes from '@/public/pausedRoutes.json'
 
 interface ChainPause {
   id: string
   pausedFromChains: number[]
   pausedToChains: number[]
   pauseBridge: boolean
-  pauseBridgeModule: 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL'
   pauseSwap: boolean
   pauseStartTime: Date
   pauseEndTime: Date | null // Indefinite if null
@@ -24,20 +24,38 @@ interface ChainPause {
   disableCountdown: boolean
 }
 
+interface BridgeRoutePause {
+  fromChainId: number
+  toChainId: number
+  fromToken: string
+  toToken: string
+  bridgeModule: 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL'
+}
+
 function isValidBridgeModule(
   module: any
 ): module is 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL' {
   return ['SynapseBridge', 'SynapseRFQ', 'SynapseCCTP', 'ALL'].includes(module)
 }
 
-const PAUSED_CHAINS: ChainPause[] = pausedChains.map((pause) => {
-  if (!isValidBridgeModule(pause.pauseBridgeModule)) {
-    throw new Error(`Invalid module type: ${pause.pauseBridgeModule}`)
+const PAUSED_ROUTES: BridgeRoutePause[] = pausedRoutes.map((route) => {
+  if (!isValidBridgeModule(route.bridgeModule)) {
+    throw new Error(`Invalid module type: ${route.bridgeModule}`)
   }
 
   return {
+    ...route,
+    bridgeModule: route.bridgeModule as
+      | 'SynapseBridge'
+      | 'SynapseRFQ'
+      | 'SynapseCCTP'
+      | 'ALL',
+  }
+})
+
+const PAUSED_CHAINS: ChainPause[] = pausedChains.map((pause) => {
+  return {
     ...pause,
-    pauseBridgeModule: pause.pauseBridgeModule,
     pauseStartTime: new Date(pause.pauseStartTime),
     pauseEndTime: pause.pauseEndTime ? new Date(pause.pauseEndTime) : null,
     bannerStartTime: new Date(pause.bannerStartTime),
@@ -49,7 +67,7 @@ const PAUSED_CHAINS: ChainPause[] = pausedChains.map((pause) => {
 })
 
 export const usePausedBridgeModules = () => {
-  return PAUSED_CHAINS.map((event) => event.pauseBridgeModule)
+  return PAUSED_ROUTES.map((route) => route.bridgeModule)
 }
 
 export const MaintenanceBanners = () => {
