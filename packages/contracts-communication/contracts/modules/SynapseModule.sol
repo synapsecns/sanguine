@@ -25,11 +25,11 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     /// @dev Claim fee fraction, 100% = 1e18
     uint256 internal _claimFeeFraction;
     /// @dev Gas limit for the verifyBatch function on the remote chain.
-    mapping(uint256 chainId => uint256 gasLimit) internal _verifyGasLimit;
+    mapping(uint64 chainId => uint256 gasLimit) internal _verifyGasLimit;
     /// @dev Hash of the last gas data sent to the remote chain.
-    mapping(uint256 chainId => bytes32 gasDataHash) internal _lastGasDataHash;
+    mapping(uint64 chainId => bytes32 gasDataHash) internal _lastGasDataHash;
     /// @dev Nonce of the last gas data received from the remote chain.
-    mapping(uint256 chainId => uint256 gasDataNonce) internal _lastGasDataNonce;
+    mapping(uint64 chainId => uint64 gasDataNonce) internal _lastGasDataNonce;
 
     /// @inheritdoc ISynapseModule
     address public feeCollector;
@@ -99,7 +99,7 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     }
 
     /// @inheritdoc ISynapseModule
-    function setVerifyGasLimit(uint256 chainId, uint256 gasLimit) external onlyOwner {
+    function setVerifyGasLimit(uint64 chainId, uint256 gasLimit) external onlyOwner {
         _verifyGasLimit[chainId] = gasLimit;
         emit VerifyGasLimitChanged(chainId, gasLimit);
     }
@@ -156,7 +156,7 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     }
 
     /// @inheritdoc ISynapseModule
-    function getVerifyGasLimit(uint256 chainId) public view override returns (uint256 gasLimit) {
+    function getVerifyGasLimit(uint64 chainId) public view override returns (uint256 gasLimit) {
         gasLimit = _verifyGasLimit[chainId];
         if (gasLimit == 0) {
             gasLimit = DEFAULT_VERIFY_GAS_LIMIT;
@@ -179,8 +179,8 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
 
     /// @dev Internal logic to fill the module data for the specified destination chain.
     function _fillModuleData(
-        uint256 dstChainId,
-        uint256 // dbNonce
+        uint64 dstChainId,
+        uint64 // dbNonce
     )
         internal
         override
@@ -202,13 +202,13 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
     }
 
     /// @dev Internal logic to handle the auxiliary module data relayed from the remote chain.
-    function _receiveModuleData(uint256 srcChainId, uint256 dbNonce, bytes memory moduleData) internal override {
+    function _receiveModuleData(uint64 srcChainId, uint64 dbNonce, bytes memory moduleData) internal override {
         // Exit early if data is empty
         if (moduleData.length == 0) {
             return;
         }
         // Don't process outdated data
-        uint256 lastNonce = _lastGasDataNonce[srcChainId];
+        uint64 lastNonce = _lastGasDataNonce[srcChainId];
         if (lastNonce == 0 || lastNonce < dbNonce) {
             _lastGasDataNonce[srcChainId] = dbNonce;
             _getSynapseGasOracle().receiveRemoteGasData(srcChainId, moduleData);
@@ -220,8 +220,8 @@ contract SynapseModule is InterchainModule, Ownable, SynapseModuleEvents, ISynap
 
     /// @dev Internal logic to get the module fee for verifying an batch on the specified destination chain.
     function _getModuleFee(
-        uint256 dstChainId,
-        uint256 // dbNonce
+        uint64 dstChainId,
+        uint64 // dbNonce
     )
         internal
         view

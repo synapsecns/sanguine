@@ -6,7 +6,7 @@ interface IGasOracle {
     /// @dev Will revert if no price is available for the remote chain.
     /// @param remoteChainId        The chain id of the remote chain.
     /// @param value                The value to convert.
-    function convertRemoteValueToLocalUnits(uint256 remoteChainId, uint256 value) external view returns (uint256);
+    function convertRemoteValueToLocalUnits(uint64 remoteChainId, uint256 value) external view returns (uint256);
 
     /// @notice Estimate the cost of execution a transaction on a remote chain,
     /// and convert it to the local native token.
@@ -15,7 +15,7 @@ interface IGasOracle {
     /// @param gasLimit             The gas limit of the transaction.
     /// @param calldataSize         The size of the transaction calldata.
     function estimateTxCostInLocalUnits(
-        uint256 remoteChainId,
+        uint64 remoteChainId,
         uint256 gasLimit,
         uint256 calldataSize
     )
@@ -30,7 +30,7 @@ interface IGasOracle {
     /// @param gasLimit             The gas limit of the transaction.
     /// @param calldataSize         The size of the transaction calldata.
     function estimateTxCostInRemoteUnits(
-        uint256 remoteChainId,
+        uint64 remoteChainId,
         uint256 gasLimit,
         uint256 calldataSize
     )

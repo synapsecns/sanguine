@@ -31,11 +31,11 @@ var (
 
 // IGasOracleMetaData contains all meta data concerning the IGasOracle contract.
 var IGasOracleMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"remoteChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"convertRemoteValueToLocalUnits\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"remoteChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"calldataSize\",\"type\":\"uint256\"}],\"name\":\"estimateTxCostInLocalUnits\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"remoteChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"calldataSize\",\"type\":\"uint256\"}],\"name\":\"estimateTxCostInRemoteUnits\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"remoteChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"convertRemoteValueToLocalUnits\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"remoteChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"calldataSize\",\"type\":\"uint256\"}],\"name\":\"estimateTxCostInLocalUnits\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"remoteChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"calldataSize\",\"type\":\"uint256\"}],\"name\":\"estimateTxCostInRemoteUnits\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
-		"1e7b9287": "convertRemoteValueToLocalUnits(uint256,uint256)",
-		"5cbd3c48": "estimateTxCostInLocalUnits(uint256,uint256,uint256)",
-		"fd6a7167": "estimateTxCostInRemoteUnits(uint256,uint256,uint256)",
+		"40658a74": "convertRemoteValueToLocalUnits(uint64,uint256)",
+		"bf495c88": "estimateTxCostInLocalUnits(uint64,uint256,uint256)",
+		"b376a688": "estimateTxCostInRemoteUnits(uint64,uint256,uint256)",
 	},
 }
 
@@ -189,10 +189,10 @@ func (_IGasOracle *IGasOracleTransactorRaw) Transact(opts *bind.TransactOpts, me
 	return _IGasOracle.Contract.contract.Transact(opts, method, params...)
 }
 
-// ConvertRemoteValueToLocalUnits is a free data retrieval call binding the contract method 0x1e7b9287.
+// ConvertRemoteValueToLocalUnits is a free data retrieval call binding the contract method 0x40658a74.
 //
-// Solidity: function convertRemoteValueToLocalUnits(uint256 remoteChainId, uint256 value) view returns(uint256)
-func (_IGasOracle *IGasOracleCaller) ConvertRemoteValueToLocalUnits(opts *bind.CallOpts, remoteChainId *big.Int, value *big.Int) (*big.Int, error) {
+// Solidity: function convertRemoteValueToLocalUnits(uint64 remoteChainId, uint256 value) view returns(uint256)
+func (_IGasOracle *IGasOracleCaller) ConvertRemoteValueToLocalUnits(opts *bind.CallOpts, remoteChainId uint64, value *big.Int) (*big.Int, error) {
 	var out []interface{}
 	err := _IGasOracle.contract.Call(opts, &out, "convertRemoteValueToLocalUnits", remoteChainId, value)
 
@@ -206,24 +206,24 @@ func (_IGasOracle *IGasOracleCaller) ConvertRemoteValueToLocalUnits(opts *bind.C
 
 }
 
-// ConvertRemoteValueToLocalUnits is a free data retrieval call binding the contract method 0x1e7b9287.
+// ConvertRemoteValueToLocalUnits is a free data retrieval call binding the contract method 0x40658a74.
 //
-// Solidity: function convertRemoteValueToLocalUnits(uint256 remoteChainId, uint256 value) view returns(uint256)
-func (_IGasOracle *IGasOracleSession) ConvertRemoteValueToLocalUnits(remoteChainId *big.Int, value *big.Int) (*big.Int, error) {
+// Solidity: function convertRemoteValueToLocalUnits(uint64 remoteChainId, uint256 value) view returns(uint256)
+func (_IGasOracle *IGasOracleSession) ConvertRemoteValueToLocalUnits(remoteChainId uint64, value *big.Int) (*big.Int, error) {
 	return _IGasOracle.Contract.ConvertRemoteValueToLocalUnits(&_IGasOracle.CallOpts, remoteChainId, value)
 }
 
-// ConvertRemoteValueToLocalUnits is a free data retrieval call binding the contract method 0x1e7b9287.
+// ConvertRemoteValueToLocalUnits is a free data retrieval call binding the contract method 0x40658a74.
 //
-// Solidity: function convertRemoteValueToLocalUnits(uint256 remoteChainId, uint256 value) view returns(uint256)
-func (_IGasOracle *IGasOracleCallerSession) ConvertRemoteValueToLocalUnits(remoteChainId *big.Int, value *big.Int) (*big.Int, error) {
+// Solidity: function convertRemoteValueToLocalUnits(uint64 remoteChainId, uint256 value) view returns(uint256)
+func (_IGasOracle *IGasOracleCallerSession) ConvertRemoteValueToLocalUnits(remoteChainId uint64, value *big.Int) (*big.Int, error) {
 	return _IGasOracle.Contract.ConvertRemoteValueToLocalUnits(&_IGasOracle.CallOpts, remoteChainId, value)
 }
 
-// EstimateTxCostInLocalUnits is a free data retrieval call binding the contract method 0x5cbd3c48.
+// EstimateTxCostInLocalUnits is a free data retrieval call binding the contract method 0xbf495c88.
 //
-// Solidity: function estimateTxCostInLocalUnits(uint256 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
-func (_IGasOracle *IGasOracleCaller) EstimateTxCostInLocalUnits(opts *bind.CallOpts, remoteChainId *big.Int, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
+// Solidity: function estimateTxCostInLocalUnits(uint64 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
+func (_IGasOracle *IGasOracleCaller) EstimateTxCostInLocalUnits(opts *bind.CallOpts, remoteChainId uint64, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
 	var out []interface{}
 	err := _IGasOracle.contract.Call(opts, &out, "estimateTxCostInLocalUnits", remoteChainId, gasLimit, calldataSize)
 
@@ -237,24 +237,24 @@ func (_IGasOracle *IGasOracleCaller) EstimateTxCostInLocalUnits(opts *bind.CallO
 
 }
 
-// EstimateTxCostInLocalUnits is a free data retrieval call binding the contract method 0x5cbd3c48.
+// EstimateTxCostInLocalUnits is a free data retrieval call binding the contract method 0xbf495c88.
 //
-// Solidity: function estimateTxCostInLocalUnits(uint256 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
-func (_IGasOracle *IGasOracleSession) EstimateTxCostInLocalUnits(remoteChainId *big.Int, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
+// Solidity: function estimateTxCostInLocalUnits(uint64 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
+func (_IGasOracle *IGasOracleSession) EstimateTxCostInLocalUnits(remoteChainId uint64, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
 	return _IGasOracle.Contract.EstimateTxCostInLocalUnits(&_IGasOracle.CallOpts, remoteChainId, gasLimit, calldataSize)
 }
 
-// EstimateTxCostInLocalUnits is a free data retrieval call binding the contract method 0x5cbd3c48.
+// EstimateTxCostInLocalUnits is a free data retrieval call binding the contract method 0xbf495c88.
 //
-// Solidity: function estimateTxCostInLocalUnits(uint256 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
-func (_IGasOracle *IGasOracleCallerSession) EstimateTxCostInLocalUnits(remoteChainId *big.Int, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
+// Solidity: function estimateTxCostInLocalUnits(uint64 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
+func (_IGasOracle *IGasOracleCallerSession) EstimateTxCostInLocalUnits(remoteChainId uint64, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
 	return _IGasOracle.Contract.EstimateTxCostInLocalUnits(&_IGasOracle.CallOpts, remoteChainId, gasLimit, calldataSize)
 }
 
-// EstimateTxCostInRemoteUnits is a free data retrieval call binding the contract method 0xfd6a7167.
+// EstimateTxCostInRemoteUnits is a free data retrieval call binding the contract method 0xb376a688.
 //
-// Solidity: function estimateTxCostInRemoteUnits(uint256 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
-func (_IGasOracle *IGasOracleCaller) EstimateTxCostInRemoteUnits(opts *bind.CallOpts, remoteChainId *big.Int, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
+// Solidity: function estimateTxCostInRemoteUnits(uint64 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
+func (_IGasOracle *IGasOracleCaller) EstimateTxCostInRemoteUnits(opts *bind.CallOpts, remoteChainId uint64, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
 	var out []interface{}
 	err := _IGasOracle.contract.Call(opts, &out, "estimateTxCostInRemoteUnits", remoteChainId, gasLimit, calldataSize)
 
@@ -268,29 +268,29 @@ func (_IGasOracle *IGasOracleCaller) EstimateTxCostInRemoteUnits(opts *bind.Call
 
 }
 
-// EstimateTxCostInRemoteUnits is a free data retrieval call binding the contract method 0xfd6a7167.
+// EstimateTxCostInRemoteUnits is a free data retrieval call binding the contract method 0xb376a688.
 //
-// Solidity: function estimateTxCostInRemoteUnits(uint256 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
-func (_IGasOracle *IGasOracleSession) EstimateTxCostInRemoteUnits(remoteChainId *big.Int, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
+// Solidity: function estimateTxCostInRemoteUnits(uint64 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
+func (_IGasOracle *IGasOracleSession) EstimateTxCostInRemoteUnits(remoteChainId uint64, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
 	return _IGasOracle.Contract.EstimateTxCostInRemoteUnits(&_IGasOracle.CallOpts, remoteChainId, gasLimit, calldataSize)
 }
 
-// EstimateTxCostInRemoteUnits is a free data retrieval call binding the contract method 0xfd6a7167.
+// EstimateTxCostInRemoteUnits is a free data retrieval call binding the contract method 0xb376a688.
 //
-// Solidity: function estimateTxCostInRemoteUnits(uint256 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
-func (_IGasOracle *IGasOracleCallerSession) EstimateTxCostInRemoteUnits(remoteChainId *big.Int, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
+// Solidity: function estimateTxCostInRemoteUnits(uint64 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
+func (_IGasOracle *IGasOracleCallerSession) EstimateTxCostInRemoteUnits(remoteChainId uint64, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
 	return _IGasOracle.Contract.EstimateTxCostInRemoteUnits(&_IGasOracle.CallOpts, remoteChainId, gasLimit, calldataSize)
 }
 
 // ISynapseGasOracleMetaData contains all meta data concerning the ISynapseGasOracle contract.
 var ISynapseGasOracleMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"remoteChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"convertRemoteValueToLocalUnits\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"remoteChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"calldataSize\",\"type\":\"uint256\"}],\"name\":\"estimateTxCostInLocalUnits\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"remoteChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"calldataSize\",\"type\":\"uint256\"}],\"name\":\"estimateTxCostInRemoteUnits\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getLocalGasData\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"receiveRemoteGasData\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"remoteChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"convertRemoteValueToLocalUnits\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"remoteChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"calldataSize\",\"type\":\"uint256\"}],\"name\":\"estimateTxCostInLocalUnits\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"remoteChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"calldataSize\",\"type\":\"uint256\"}],\"name\":\"estimateTxCostInRemoteUnits\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getLocalGasData\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"receiveRemoteGasData\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
-		"1e7b9287": "convertRemoteValueToLocalUnits(uint256,uint256)",
-		"5cbd3c48": "estimateTxCostInLocalUnits(uint256,uint256,uint256)",
-		"fd6a7167": "estimateTxCostInRemoteUnits(uint256,uint256,uint256)",
+		"40658a74": "convertRemoteValueToLocalUnits(uint64,uint256)",
+		"bf495c88": "estimateTxCostInLocalUnits(uint64,uint256,uint256)",
+		"b376a688": "estimateTxCostInRemoteUnits(uint64,uint256,uint256)",
 		"6f928aa7": "getLocalGasData()",
-		"52999769": "receiveRemoteGasData(uint256,bytes)",
+		"83389de7": "receiveRemoteGasData(uint64,bytes)",
 	},
 }
 
@@ -444,10 +444,10 @@ func (_ISynapseGasOracle *ISynapseGasOracleTransactorRaw) Transact(opts *bind.Tr
 	return _ISynapseGasOracle.Contract.contract.Transact(opts, method, params...)
 }
 
-// ConvertRemoteValueToLocalUnits is a free data retrieval call binding the contract method 0x1e7b9287.
+// ConvertRemoteValueToLocalUnits is a free data retrieval call binding the contract method 0x40658a74.
 //
-// Solidity: function convertRemoteValueToLocalUnits(uint256 remoteChainId, uint256 value) view returns(uint256)
-func (_ISynapseGasOracle *ISynapseGasOracleCaller) ConvertRemoteValueToLocalUnits(opts *bind.CallOpts, remoteChainId *big.Int, value *big.Int) (*big.Int, error) {
+// Solidity: function convertRemoteValueToLocalUnits(uint64 remoteChainId, uint256 value) view returns(uint256)
+func (_ISynapseGasOracle *ISynapseGasOracleCaller) ConvertRemoteValueToLocalUnits(opts *bind.CallOpts, remoteChainId uint64, value *big.Int) (*big.Int, error) {
 	var out []interface{}
 	err := _ISynapseGasOracle.contract.Call(opts, &out, "convertRemoteValueToLocalUnits", remoteChainId, value)
 
@@ -461,24 +461,24 @@ func (_ISynapseGasOracle *ISynapseGasOracleCaller) ConvertRemoteValueToLocalUnit
 
 }
 
-// ConvertRemoteValueToLocalUnits is a free data retrieval call binding the contract method 0x1e7b9287.
+// ConvertRemoteValueToLocalUnits is a free data retrieval call binding the contract method 0x40658a74.
 //
-// Solidity: function convertRemoteValueToLocalUnits(uint256 remoteChainId, uint256 value) view returns(uint256)
-func (_ISynapseGasOracle *ISynapseGasOracleSession) ConvertRemoteValueToLocalUnits(remoteChainId *big.Int, value *big.Int) (*big.Int, error) {
+// Solidity: function convertRemoteValueToLocalUnits(uint64 remoteChainId, uint256 value) view returns(uint256)
+func (_ISynapseGasOracle *ISynapseGasOracleSession) ConvertRemoteValueToLocalUnits(remoteChainId uint64, value *big.Int) (*big.Int, error) {
 	return _ISynapseGasOracle.Contract.ConvertRemoteValueToLocalUnits(&_ISynapseGasOracle.CallOpts, remoteChainId, value)
 }
 
-// ConvertRemoteValueToLocalUnits is a free data retrieval call binding the contract method 0x1e7b9287.
+// ConvertRemoteValueToLocalUnits is a free data retrieval call binding the contract method 0x40658a74.
 //
-// Solidity: function convertRemoteValueToLocalUnits(uint256 remoteChainId, uint256 value) view returns(uint256)
-func (_ISynapseGasOracle *ISynapseGasOracleCallerSession) ConvertRemoteValueToLocalUnits(remoteChainId *big.Int, value *big.Int) (*big.Int, error) {
+// Solidity: function convertRemoteValueToLocalUnits(uint64 remoteChainId, uint256 value) view returns(uint256)
+func (_ISynapseGasOracle *ISynapseGasOracleCallerSession) ConvertRemoteValueToLocalUnits(remoteChainId uint64, value *big.Int) (*big.Int, error) {
 	return _ISynapseGasOracle.Contract.ConvertRemoteValueToLocalUnits(&_ISynapseGasOracle.CallOpts, remoteChainId, value)
 }
 
-// EstimateTxCostInLocalUnits is a free data retrieval call binding the contract method 0x5cbd3c48.
+// EstimateTxCostInLocalUnits is a free data retrieval call binding the contract method 0xbf495c88.
 //
-// Solidity: function estimateTxCostInLocalUnits(uint256 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
-func (_ISynapseGasOracle *ISynapseGasOracleCaller) EstimateTxCostInLocalUnits(opts *bind.CallOpts, remoteChainId *big.Int, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
+// Solidity: function estimateTxCostInLocalUnits(uint64 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
+func (_ISynapseGasOracle *ISynapseGasOracleCaller) EstimateTxCostInLocalUnits(opts *bind.CallOpts, remoteChainId uint64, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
 	var out []interface{}
 	err := _ISynapseGasOracle.contract.Call(opts, &out, "estimateTxCostInLocalUnits", remoteChainId, gasLimit, calldataSize)
 
@@ -492,24 +492,24 @@ func (_ISynapseGasOracle *ISynapseGasOracleCaller) EstimateTxCostInLocalUnits(op
 
 }
 
-// EstimateTxCostInLocalUnits is a free data retrieval call binding the contract method 0x5cbd3c48.
+// EstimateTxCostInLocalUnits is a free data retrieval call binding the contract method 0xbf495c88.
 //
-// Solidity: function estimateTxCostInLocalUnits(uint256 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
-func (_ISynapseGasOracle *ISynapseGasOracleSession) EstimateTxCostInLocalUnits(remoteChainId *big.Int, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
+// Solidity: function estimateTxCostInLocalUnits(uint64 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
+func (_ISynapseGasOracle *ISynapseGasOracleSession) EstimateTxCostInLocalUnits(remoteChainId uint64, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
 	return _ISynapseGasOracle.Contract.EstimateTxCostInLocalUnits(&_ISynapseGasOracle.CallOpts, remoteChainId, gasLimit, calldataSize)
 }
 
-// EstimateTxCostInLocalUnits is a free data retrieval call binding the contract method 0x5cbd3c48.
+// EstimateTxCostInLocalUnits is a free data retrieval call binding the contract method 0xbf495c88.
 //
-// Solidity: function estimateTxCostInLocalUnits(uint256 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
-func (_ISynapseGasOracle *ISynapseGasOracleCallerSession) EstimateTxCostInLocalUnits(remoteChainId *big.Int, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
+// Solidity: function estimateTxCostInLocalUnits(uint64 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
+func (_ISynapseGasOracle *ISynapseGasOracleCallerSession) EstimateTxCostInLocalUnits(remoteChainId uint64, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
 	return _ISynapseGasOracle.Contract.EstimateTxCostInLocalUnits(&_ISynapseGasOracle.CallOpts, remoteChainId, gasLimit, calldataSize)
 }
 
-// EstimateTxCostInRemoteUnits is a free data retrieval call binding the contract method 0xfd6a7167.
+// EstimateTxCostInRemoteUnits is a free data retrieval call binding the contract method 0xb376a688.
 //
-// Solidity: function estimateTxCostInRemoteUnits(uint256 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
-func (_ISynapseGasOracle *ISynapseGasOracleCaller) EstimateTxCostInRemoteUnits(opts *bind.CallOpts, remoteChainId *big.Int, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
+// Solidity: function estimateTxCostInRemoteUnits(uint64 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
+func (_ISynapseGasOracle *ISynapseGasOracleCaller) EstimateTxCostInRemoteUnits(opts *bind.CallOpts, remoteChainId uint64, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
 	var out []interface{}
 	err := _ISynapseGasOracle.contract.Call(opts, &out, "estimateTxCostInRemoteUnits", remoteChainId, gasLimit, calldataSize)
 
@@ -523,17 +523,17 @@ func (_ISynapseGasOracle *ISynapseGasOracleCaller) EstimateTxCostInRemoteUnits(o
 
 }
 
-// EstimateTxCostInRemoteUnits is a free data retrieval call binding the contract method 0xfd6a7167.
+// EstimateTxCostInRemoteUnits is a free data retrieval call binding the contract method 0xb376a688.
 //
-// Solidity: function estimateTxCostInRemoteUnits(uint256 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
-func (_ISynapseGasOracle *ISynapseGasOracleSession) EstimateTxCostInRemoteUnits(remoteChainId *big.Int, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
+// Solidity: function estimateTxCostInRemoteUnits(uint64 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
+func (_ISynapseGasOracle *ISynapseGasOracleSession) EstimateTxCostInRemoteUnits(remoteChainId uint64, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
 	return _ISynapseGasOracle.Contract.EstimateTxCostInRemoteUnits(&_ISynapseGasOracle.CallOpts, remoteChainId, gasLimit, calldataSize)
 }
 
-// EstimateTxCostInRemoteUnits is a free data retrieval call binding the contract method 0xfd6a7167.
+// EstimateTxCostInRemoteUnits is a free data retrieval call binding the contract method 0xb376a688.
 //
-// Solidity: function estimateTxCostInRemoteUnits(uint256 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
-func (_ISynapseGasOracle *ISynapseGasOracleCallerSession) EstimateTxCostInRemoteUnits(remoteChainId *big.Int, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
+// Solidity: function estimateTxCostInRemoteUnits(uint64 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
+func (_ISynapseGasOracle *ISynapseGasOracleCallerSession) EstimateTxCostInRemoteUnits(remoteChainId uint64, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
 	return _ISynapseGasOracle.Contract.EstimateTxCostInRemoteUnits(&_ISynapseGasOracle.CallOpts, remoteChainId, gasLimit, calldataSize)
 }
 
@@ -568,38 +568,38 @@ func (_ISynapseGasOracle *ISynapseGasOracleCallerSession) GetLocalGasData() ([]b
 	return _ISynapseGasOracle.Contract.GetLocalGasData(&_ISynapseGasOracle.CallOpts)
 }
 
-// ReceiveRemoteGasData is a paid mutator transaction binding the contract method 0x52999769.
+// ReceiveRemoteGasData is a paid mutator transaction binding the contract method 0x83389de7.
 //
-// Solidity: function receiveRemoteGasData(uint256 srcChainId, bytes data) returns()
-func (_ISynapseGasOracle *ISynapseGasOracleTransactor) ReceiveRemoteGasData(opts *bind.TransactOpts, srcChainId *big.Int, data []byte) (*types.Transaction, error) {
+// Solidity: function receiveRemoteGasData(uint64 srcChainId, bytes data) returns()
+func (_ISynapseGasOracle *ISynapseGasOracleTransactor) ReceiveRemoteGasData(opts *bind.TransactOpts, srcChainId uint64, data []byte) (*types.Transaction, error) {
 	return _ISynapseGasOracle.contract.Transact(opts, "receiveRemoteGasData", srcChainId, data)
 }
 
-// ReceiveRemoteGasData is a paid mutator transaction binding the contract method 0x52999769.
+// ReceiveRemoteGasData is a paid mutator transaction binding the contract method 0x83389de7.
 //
-// Solidity: function receiveRemoteGasData(uint256 srcChainId, bytes data) returns()
-func (_ISynapseGasOracle *ISynapseGasOracleSession) ReceiveRemoteGasData(srcChainId *big.Int, data []byte) (*types.Transaction, error) {
+// Solidity: function receiveRemoteGasData(uint64 srcChainId, bytes data) returns()
+func (_ISynapseGasOracle *ISynapseGasOracleSession) ReceiveRemoteGasData(srcChainId uint64, data []byte) (*types.Transaction, error) {
 	return _ISynapseGasOracle.Contract.ReceiveRemoteGasData(&_ISynapseGasOracle.TransactOpts, srcChainId, data)
 }
 
-// ReceiveRemoteGasData is a paid mutator transaction binding the contract method 0x52999769.
+// ReceiveRemoteGasData is a paid mutator transaction binding the contract method 0x83389de7.
 //
-// Solidity: function receiveRemoteGasData(uint256 srcChainId, bytes data) returns()
-func (_ISynapseGasOracle *ISynapseGasOracleTransactorSession) ReceiveRemoteGasData(srcChainId *big.Int, data []byte) (*types.Transaction, error) {
+// Solidity: function receiveRemoteGasData(uint64 srcChainId, bytes data) returns()
+func (_ISynapseGasOracle *ISynapseGasOracleTransactorSession) ReceiveRemoteGasData(srcChainId uint64, data []byte) (*types.Transaction, error) {
 	return _ISynapseGasOracle.Contract.ReceiveRemoteGasData(&_ISynapseGasOracle.TransactOpts, srcChainId, data)
 }
 
 // SynapseGasOracleMockMetaData contains all meta data concerning the SynapseGasOracleMock contract.
 var SynapseGasOracleMockMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"remoteChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"convertRemoteValueToLocalUnits\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"remoteChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"calldataSize\",\"type\":\"uint256\"}],\"name\":\"estimateTxCostInLocalUnits\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"remoteChainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"calldataSize\",\"type\":\"uint256\"}],\"name\":\"estimateTxCostInRemoteUnits\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getLocalGasData\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"srcChainId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"receiveRemoteGasData\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"remoteChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"convertRemoteValueToLocalUnits\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"remoteChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"calldataSize\",\"type\":\"uint256\"}],\"name\":\"estimateTxCostInLocalUnits\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"remoteChainId\",\"type\":\"uint64\"},{\"internalType\":\"uint256\",\"name\":\"gasLimit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"calldataSize\",\"type\":\"uint256\"}],\"name\":\"estimateTxCostInRemoteUnits\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getLocalGasData\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"srcChainId\",\"type\":\"uint64\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"receiveRemoteGasData\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 	Sigs: map[string]string{
-		"1e7b9287": "convertRemoteValueToLocalUnits(uint256,uint256)",
-		"5cbd3c48": "estimateTxCostInLocalUnits(uint256,uint256,uint256)",
-		"fd6a7167": "estimateTxCostInRemoteUnits(uint256,uint256,uint256)",
+		"40658a74": "convertRemoteValueToLocalUnits(uint64,uint256)",
+		"bf495c88": "estimateTxCostInLocalUnits(uint64,uint256,uint256)",
+		"b376a688": "estimateTxCostInRemoteUnits(uint64,uint256,uint256)",
 		"6f928aa7": "getLocalGasData()",
-		"52999769": "receiveRemoteGasData(uint256,bytes)",
+		"83389de7": "receiveRemoteGasData(uint64,bytes)",
 	},
-	Bin: "0x608060405234801561001057600080fd5b5061023c806100206000396000f3fe608060405234801561001057600080fd5b50600436106100675760003560e01c80635cbd3c48116100505780635cbd3c48146100aa5780636f928aa7146100c1578063fd6a7167146100aa57600080fd5b80631e7b92871461006c5780635299976914610095575b600080fd5b61008261007a3660046100d0565b600092915050565b6040519081526020015b60405180910390f35b6100a86100a33660046100f2565b505050565b005b6100826100b836600461016e565b60009392505050565b606060405161008c919061019a565b600080604083850312156100e357600080fd5b50508035926020909101359150565b60008060006040848603121561010757600080fd5b83359250602084013567ffffffffffffffff8082111561012657600080fd5b818601915086601f83011261013a57600080fd5b81358181111561014957600080fd5b87602082850101111561015b57600080fd5b6020830194508093505050509250925092565b60008060006060848603121561018357600080fd5b505081359360208301359350604090920135919050565b600060208083528351808285015260005b818110156101c7578581018301518582016040015282016101ab565b5060006040828601015260407fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f830116850101925050509291505056fea2646970667358221220d0742c36df6fecd55d915db5a74284b7d2ee878243149ac6f336ff23e84177c864736f6c63430008140033",
+	Bin: "0x608060405234801561001057600080fd5b5061026f806100206000396000f3fe608060405234801561001057600080fd5b50600436106100675760003560e01c806383389de71161005057806383389de7146100a4578063b376a688146100b9578063bf495c88146100b957600080fd5b806340658a741461006c5780636f928aa714610095575b600080fd5b61008261007a3660046100ed565b600092915050565b6040519081526020015b60405180910390f35b606060405161008c9190610117565b6100b76100b2366004610183565b505050565b005b6100826100c7366004610206565b60009392505050565b803567ffffffffffffffff811681146100e857600080fd5b919050565b6000806040838503121561010057600080fd5b610109836100d0565b946020939093013593505050565b600060208083528351808285015260005b8181101561014457858101830151858201604001528201610128565b5060006040828601015260407fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0601f8301168501019250505092915050565b60008060006040848603121561019857600080fd5b6101a1846100d0565b9250602084013567ffffffffffffffff808211156101be57600080fd5b818601915086601f8301126101d257600080fd5b8135818111156101e157600080fd5b8760208285010111156101f357600080fd5b6020830194508093505050509250925092565b60008060006060848603121561021b57600080fd5b610224846100d0565b9560208501359550604090940135939250505056fea264697066735822122031dbc394294ddb7ff922e1d852851eb8e27e036421dc325a5b4816f7eb19972c64736f6c63430008140033",
 }
 
 // SynapseGasOracleMockABI is the input ABI used to generate the binding from.
@@ -773,10 +773,10 @@ func (_SynapseGasOracleMock *SynapseGasOracleMockTransactorRaw) Transact(opts *b
 	return _SynapseGasOracleMock.Contract.contract.Transact(opts, method, params...)
 }
 
-// ConvertRemoteValueToLocalUnits is a free data retrieval call binding the contract method 0x1e7b9287.
+// ConvertRemoteValueToLocalUnits is a free data retrieval call binding the contract method 0x40658a74.
 //
-// Solidity: function convertRemoteValueToLocalUnits(uint256 remoteChainId, uint256 value) view returns(uint256)
-func (_SynapseGasOracleMock *SynapseGasOracleMockCaller) ConvertRemoteValueToLocalUnits(opts *bind.CallOpts, remoteChainId *big.Int, value *big.Int) (*big.Int, error) {
+// Solidity: function convertRemoteValueToLocalUnits(uint64 remoteChainId, uint256 value) view returns(uint256)
+func (_SynapseGasOracleMock *SynapseGasOracleMockCaller) ConvertRemoteValueToLocalUnits(opts *bind.CallOpts, remoteChainId uint64, value *big.Int) (*big.Int, error) {
 	var out []interface{}
 	err := _SynapseGasOracleMock.contract.Call(opts, &out, "convertRemoteValueToLocalUnits", remoteChainId, value)
 
@@ -790,24 +790,24 @@ func (_SynapseGasOracleMock *SynapseGasOracleMockCaller) ConvertRemoteValueToLoc
 
 }
 
-// ConvertRemoteValueToLocalUnits is a free data retrieval call binding the contract method 0x1e7b9287.
+// ConvertRemoteValueToLocalUnits is a free data retrieval call binding the contract method 0x40658a74.
 //
-// Solidity: function convertRemoteValueToLocalUnits(uint256 remoteChainId, uint256 value) view returns(uint256)
-func (_SynapseGasOracleMock *SynapseGasOracleMockSession) ConvertRemoteValueToLocalUnits(remoteChainId *big.Int, value *big.Int) (*big.Int, error) {
+// Solidity: function convertRemoteValueToLocalUnits(uint64 remoteChainId, uint256 value) view returns(uint256)
+func (_SynapseGasOracleMock *SynapseGasOracleMockSession) ConvertRemoteValueToLocalUnits(remoteChainId uint64, value *big.Int) (*big.Int, error) {
 	return _SynapseGasOracleMock.Contract.ConvertRemoteValueToLocalUnits(&_SynapseGasOracleMock.CallOpts, remoteChainId, value)
 }
 
-// ConvertRemoteValueToLocalUnits is a free data retrieval call binding the contract method 0x1e7b9287.
+// ConvertRemoteValueToLocalUnits is a free data retrieval call binding the contract method 0x40658a74.
 //
-// Solidity: function convertRemoteValueToLocalUnits(uint256 remoteChainId, uint256 value) view returns(uint256)
-func (_SynapseGasOracleMock *SynapseGasOracleMockCallerSession) ConvertRemoteValueToLocalUnits(remoteChainId *big.Int, value *big.Int) (*big.Int, error) {
+// Solidity: function convertRemoteValueToLocalUnits(uint64 remoteChainId, uint256 value) view returns(uint256)
+func (_SynapseGasOracleMock *SynapseGasOracleMockCallerSession) ConvertRemoteValueToLocalUnits(remoteChainId uint64, value *big.Int) (*big.Int, error) {
 	return _SynapseGasOracleMock.Contract.ConvertRemoteValueToLocalUnits(&_SynapseGasOracleMock.CallOpts, remoteChainId, value)
 }
 
-// EstimateTxCostInLocalUnits is a free data retrieval call binding the contract method 0x5cbd3c48.
+// EstimateTxCostInLocalUnits is a free data retrieval call binding the contract method 0xbf495c88.
 //
-// Solidity: function estimateTxCostInLocalUnits(uint256 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
-func (_SynapseGasOracleMock *SynapseGasOracleMockCaller) EstimateTxCostInLocalUnits(opts *bind.CallOpts, remoteChainId *big.Int, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
+// Solidity: function estimateTxCostInLocalUnits(uint64 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
+func (_SynapseGasOracleMock *SynapseGasOracleMockCaller) EstimateTxCostInLocalUnits(opts *bind.CallOpts, remoteChainId uint64, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
 	var out []interface{}
 	err := _SynapseGasOracleMock.contract.Call(opts, &out, "estimateTxCostInLocalUnits", remoteChainId, gasLimit, calldataSize)
 
@@ -821,24 +821,24 @@ func (_SynapseGasOracleMock *SynapseGasOracleMockCaller) EstimateTxCostInLocalUn
 
 }
 
-// EstimateTxCostInLocalUnits is a free data retrieval call binding the contract method 0x5cbd3c48.
+// EstimateTxCostInLocalUnits is a free data retrieval call binding the contract method 0xbf495c88.
 //
-// Solidity: function estimateTxCostInLocalUnits(uint256 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
-func (_SynapseGasOracleMock *SynapseGasOracleMockSession) EstimateTxCostInLocalUnits(remoteChainId *big.Int, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
+// Solidity: function estimateTxCostInLocalUnits(uint64 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
+func (_SynapseGasOracleMock *SynapseGasOracleMockSession) EstimateTxCostInLocalUnits(remoteChainId uint64, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
 	return _SynapseGasOracleMock.Contract.EstimateTxCostInLocalUnits(&_SynapseGasOracleMock.CallOpts, remoteChainId, gasLimit, calldataSize)
 }
 
-// EstimateTxCostInLocalUnits is a free data retrieval call binding the contract method 0x5cbd3c48.
+// EstimateTxCostInLocalUnits is a free data retrieval call binding the contract method 0xbf495c88.
 //
-// Solidity: function estimateTxCostInLocalUnits(uint256 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
-func (_SynapseGasOracleMock *SynapseGasOracleMockCallerSession) EstimateTxCostInLocalUnits(remoteChainId *big.Int, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
+// Solidity: function estimateTxCostInLocalUnits(uint64 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
+func (_SynapseGasOracleMock *SynapseGasOracleMockCallerSession) EstimateTxCostInLocalUnits(remoteChainId uint64, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
 	return _SynapseGasOracleMock.Contract.EstimateTxCostInLocalUnits(&_SynapseGasOracleMock.CallOpts, remoteChainId, gasLimit, calldataSize)
 }
 
-// EstimateTxCostInRemoteUnits is a free data retrieval call binding the contract method 0xfd6a7167.
+// EstimateTxCostInRemoteUnits is a free data retrieval call binding the contract method 0xb376a688.
 //
-// Solidity: function estimateTxCostInRemoteUnits(uint256 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
-func (_SynapseGasOracleMock *SynapseGasOracleMockCaller) EstimateTxCostInRemoteUnits(opts *bind.CallOpts, remoteChainId *big.Int, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
+// Solidity: function estimateTxCostInRemoteUnits(uint64 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
+func (_SynapseGasOracleMock *SynapseGasOracleMockCaller) EstimateTxCostInRemoteUnits(opts *bind.CallOpts, remoteChainId uint64, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
 	var out []interface{}
 	err := _SynapseGasOracleMock.contract.Call(opts, &out, "estimateTxCostInRemoteUnits", remoteChainId, gasLimit, calldataSize)
 
@@ -852,17 +852,17 @@ func (_SynapseGasOracleMock *SynapseGasOracleMockCaller) EstimateTxCostInRemoteU
 
 }
 
-// EstimateTxCostInRemoteUnits is a free data retrieval call binding the contract method 0xfd6a7167.
+// EstimateTxCostInRemoteUnits is a free data retrieval call binding the contract method 0xb376a688.
 //
-// Solidity: function estimateTxCostInRemoteUnits(uint256 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
-func (_SynapseGasOracleMock *SynapseGasOracleMockSession) EstimateTxCostInRemoteUnits(remoteChainId *big.Int, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
+// Solidity: function estimateTxCostInRemoteUnits(uint64 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
+func (_SynapseGasOracleMock *SynapseGasOracleMockSession) EstimateTxCostInRemoteUnits(remoteChainId uint64, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
 	return _SynapseGasOracleMock.Contract.EstimateTxCostInRemoteUnits(&_SynapseGasOracleMock.CallOpts, remoteChainId, gasLimit, calldataSize)
 }
 
-// EstimateTxCostInRemoteUnits is a free data retrieval call binding the contract method 0xfd6a7167.
+// EstimateTxCostInRemoteUnits is a free data retrieval call binding the contract method 0xb376a688.
 //
-// Solidity: function estimateTxCostInRemoteUnits(uint256 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
-func (_SynapseGasOracleMock *SynapseGasOracleMockCallerSession) EstimateTxCostInRemoteUnits(remoteChainId *big.Int, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
+// Solidity: function estimateTxCostInRemoteUnits(uint64 remoteChainId, uint256 gasLimit, uint256 calldataSize) view returns(uint256)
+func (_SynapseGasOracleMock *SynapseGasOracleMockCallerSession) EstimateTxCostInRemoteUnits(remoteChainId uint64, gasLimit *big.Int, calldataSize *big.Int) (*big.Int, error) {
 	return _SynapseGasOracleMock.Contract.EstimateTxCostInRemoteUnits(&_SynapseGasOracleMock.CallOpts, remoteChainId, gasLimit, calldataSize)
 }
 
@@ -897,23 +897,23 @@ func (_SynapseGasOracleMock *SynapseGasOracleMockCallerSession) GetLocalGasData(
 	return _SynapseGasOracleMock.Contract.GetLocalGasData(&_SynapseGasOracleMock.CallOpts)
 }
 
-// ReceiveRemoteGasData is a paid mutator transaction binding the contract method 0x52999769.
+// ReceiveRemoteGasData is a paid mutator transaction binding the contract method 0x83389de7.
 //
-// Solidity: function receiveRemoteGasData(uint256 srcChainId, bytes data) returns()
-func (_SynapseGasOracleMock *SynapseGasOracleMockTransactor) ReceiveRemoteGasData(opts *bind.TransactOpts, srcChainId *big.Int, data []byte) (*types.Transaction, error) {
+// Solidity: function receiveRemoteGasData(uint64 srcChainId, bytes data) returns()
+func (_SynapseGasOracleMock *SynapseGasOracleMockTransactor) ReceiveRemoteGasData(opts *bind.TransactOpts, srcChainId uint64, data []byte) (*types.Transaction, error) {
 	return _SynapseGasOracleMock.contract.Transact(opts, "receiveRemoteGasData", srcChainId, data)
 }
 
-// ReceiveRemoteGasData is a paid mutator transaction binding the contract method 0x52999769.
+// ReceiveRemoteGasData is a paid mutator transaction binding the contract method 0x83389de7.
 //
-// Solidity: function receiveRemoteGasData(uint256 srcChainId, bytes data) returns()
-func (_SynapseGasOracleMock *SynapseGasOracleMockSession) ReceiveRemoteGasData(srcChainId *big.Int, data []byte) (*types.Transaction, error) {
+// Solidity: function receiveRemoteGasData(uint64 srcChainId, bytes data) returns()
+func (_SynapseGasOracleMock *SynapseGasOracleMockSession) ReceiveRemoteGasData(srcChainId uint64, data []byte) (*types.Transaction, error) {
 	return _SynapseGasOracleMock.Contract.ReceiveRemoteGasData(&_SynapseGasOracleMock.TransactOpts, srcChainId, data)
 }
 
-// ReceiveRemoteGasData is a paid mutator transaction binding the contract method 0x52999769.
+// ReceiveRemoteGasData is a paid mutator transaction binding the contract method 0x83389de7.
 //
-// Solidity: function receiveRemoteGasData(uint256 srcChainId, bytes data) returns()
-func (_SynapseGasOracleMock *SynapseGasOracleMockTransactorSession) ReceiveRemoteGasData(srcChainId *big.Int, data []byte) (*types.Transaction, error) {
+// Solidity: function receiveRemoteGasData(uint64 srcChainId, bytes data) returns()
+func (_SynapseGasOracleMock *SynapseGasOracleMockTransactorSession) ReceiveRemoteGasData(srcChainId uint64, data []byte) (*types.Transaction, error) {
 	return _SynapseGasOracleMock.Contract.ReceiveRemoteGasData(&_SynapseGasOracleMock.TransactOpts, srcChainId, data)
 }
