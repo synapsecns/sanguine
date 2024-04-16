@@ -29,13 +29,9 @@ const Home = () => {
 
   const interchainTransactions = response.data
 
-  const numSent = interchainTransactions.filter(
-    (i) => i.interchainTransactionSent
-  ).length
+  const numSent = interchainTransactions[0].interchainTransactionSent.count
 
-  const numRecived = interchainTransactions.filter(
-    (i) => i.interchainTransactionReceived
-  ).length
+  const numRecived = interchainTransactions[0].interchainTransactionSent.count
 
   const handleTransactionClick = (transactionId: string) => {
     router.push(`/tx/${transactionId}`)

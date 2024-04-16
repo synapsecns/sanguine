@@ -35,6 +35,7 @@ export const useInterchainTransactions = () => {
                   transactionHash
                   options
                   timestamp
+                  count
                 }
                 interchainTransactionReceived {
                   id
@@ -45,6 +46,7 @@ export const useInterchainTransactions = () => {
                   transactionHash
                   dstReceiver
                   timestamp
+                  count
                 }
               }
             }

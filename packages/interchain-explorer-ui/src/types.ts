@@ -8,6 +8,7 @@ export type InterchainTransactionSent = {
   transactionHash: string
   options: string
   timestamp: number
+  count: number
 }
 
 export type InterchainTransactionReceived = {
@@ -19,6 +20,7 @@ export type InterchainTransactionReceived = {
   dstReceiver: string
   transactionHash: string
   timestamp: number
+  count: number
 }
 
 export type InterchainTransaction = {
