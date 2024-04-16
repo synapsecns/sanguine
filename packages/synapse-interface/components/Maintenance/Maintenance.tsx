@@ -26,7 +26,7 @@ interface ChainPause {
 }
 
 interface BridgeModulePause {
-  chainId: number
+  chainId?: number // Will pause for all chains if undefined
   bridgeModuleName: 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL'
 }
 

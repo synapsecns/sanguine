@@ -170,8 +170,8 @@ const StateManagedBridge = () => {
         return [module.bridgeModuleName]
       }
 
-      const pausedModules = PAUSED_MODULES.filter(
-        (module) => module.chainId === fromChainId
+      const pausedModules = PAUSED_MODULES.filter((module) =>
+        module.chainId ? module.chainId === fromChainId : true
       ).flatMap(getModuleNames)
 
       const pausedBridgeModules = new Set(pausedModules)

@@ -1,6 +1,5 @@
 [
   {
-    "chainId": 42161,
     "bridgeModuleName": "ALL"
   }
 ]
