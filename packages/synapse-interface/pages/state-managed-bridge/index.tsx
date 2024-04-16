@@ -163,14 +163,19 @@ const StateManagedBridge = () => {
         stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId])
       )
 
-      // const activeQuotes = allQuotes.filter((quote) => {
-      //   PAUSED_MODULES.forEach((pausedModule) => {
-      //     if (pausedModule)
-      //   })
-      // })
+      const activeQuotes = allQuotes.filter((quote) => {
+        let isValidQuote
+        PAUSED_MODULES.forEach((pausedModule) => {
+          if (pausedModule.chainId === fromChainId) {
+            isValidQuote =
+              quote.bridgeModuleName !== pausedModule.bridgeModuleName
+          }
+        })
+        return isValidQuote
+      })
 
       console.log('allQuotes:', allQuotes)
-      // console.log('activeQuotes: ', activeQuotes)
+      console.log('activeQuotes: ', activeQuotes)
 
       if (allQuotes.length === 0) {
         const msg = `No route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken?.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`

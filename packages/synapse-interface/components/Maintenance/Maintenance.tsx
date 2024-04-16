@@ -27,7 +27,7 @@ interface ChainPause {
 
 interface BridgeModulePause {
   chainId: number
-  bridgeModule: 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL'
+  bridgeModuleName: 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL'
 }
 
 function isValidBridgeModule(
@@ -37,13 +37,13 @@ function isValidBridgeModule(
 }
 
 export const PAUSED_MODULES: BridgeModulePause[] = pausedRoutes.map((route) => {
-  if (!isValidBridgeModule(route.bridgeModule)) {
-    throw new Error(`Invalid module type: ${route.bridgeModule}`)
+  if (!isValidBridgeModule(route.bridgeModuleName)) {
+    throw new Error(`Invalid module type: ${route.bridgeModuleName}`)
   }
 
   return {
     ...route,
-    bridgeModule: route.bridgeModule as
+    bridgeModuleName: route.bridgeModuleName as
       | 'SynapseBridge'
       | 'SynapseRFQ'
       | 'SynapseCCTP'
