@@ -74,6 +74,10 @@ import {
 } from '@/components/Maintenance/Maintenance'
 import { BridgeCard } from '@/components/ui/BridgeCard'
 import { ConfirmDestinationAddressWarning } from '@/components/StateManagedBridge/BridgeWarnings'
+import {
+  PAUSED_MODULES,
+  getBridgeModuleNames,
+} from '@/components/Maintenance/Maintenance'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
@@ -162,12 +166,22 @@ const StateManagedBridge = () => {
         stringToBigInt(debouncedFromValue, fromToken?.decimals[fromChainId])
       )
 
-      if (allQuotes.length === 0) {
+      const pausedBridgeModules = new Set(
+        PAUSED_MODULES.filter((module) =>
+          module.chainId ? module.chainId === fromChainId : true
+        ).flatMap(getBridgeModuleNames)
+      )
+
+      const activeQuotes = allQuotes.filter(
+        (quote) => !pausedBridgeModules.has(quote.bridgeModuleName)
+      )
+
+      if (activeQuotes.length === 0) {
         const msg = `No route found for bridging ${debouncedFromValue} ${fromToken?.symbol} on ${CHAINS_BY_ID[fromChainId]?.name} to ${toToken?.symbol} on ${CHAINS_BY_ID[toChainId]?.name}`
         throw new Error(msg)
       }
 
-      const rfqQuote = allQuotes.find(
+      const rfqQuote = activeQuotes.find(
         (quote) => quote.bridgeModuleName === 'SynapseRFQ'
       )
 
@@ -177,7 +191,7 @@ const StateManagedBridge = () => {
         quote = rfqQuote
       } else {
         /* allBridgeQuotes returns sorted quotes by maxAmountOut descending */
-        quote = allQuotes[0]
+        quote = activeQuotes[0]
       }
 
       const {

@@ -3,18 +3,20 @@ import { MaintenanceWarningMessage } from './components/MaintenanceWarningMessag
 import { useMaintenanceCountdownProgress } from './components/useMaintenanceCountdownProgress'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { useSwapState } from '@/slices/swap/hooks'
-import pausedChains from '@/public/pausedChains.json'
+import pausedChains from '@/public/pauses/v1/pausedChains.json'
+import pausedBridgeModules from '@/public/pauses/v1/pausedBridgeModules.json'
 
+/** Pause Chain Activity */
 interface ChainPause {
   id: string
   pausedFromChains: number[]
   pausedToChains: number[]
   pauseBridge: boolean
   pauseSwap: boolean
-  startTime: Date
-  endTime: Date | null // Indefinite if null
+  pauseStartTime: Date
+  pauseEndTime: Date | null // Pause indefinite if null
   bannerStartTime: Date
-  bannerEndTime: Date | null // Indefinite if null
+  bannerEndTime: Date | null // Pause indefinite if null
   warningMessage: JSX.Element
   bannerMessage: JSX.Element
   progressBarMessage: JSX.Element
@@ -23,16 +25,18 @@ interface ChainPause {
   disableCountdown: boolean
 }
 
-const PAUSED_CHAINS: ChainPause[] = pausedChains.map((pause) => ({
-  ...pause,
-  startTime: new Date(pause.startTime),
-  endTime: pause.endTime ? new Date(pause.endTime) : null,
-  bannerStartTime: new Date(pause.bannerStartTime),
-  bannerEndTime: pause.bannerEndTime ? new Date(pause.bannerEndTime) : null,
-  warningMessage: <p>{pause.warningMessage}</p>,
-  bannerMessage: <p>{pause.bannerMessage}</p>,
-  progressBarMessage: <p>{pause.progressBarMessage}</p>,
-}))
+const PAUSED_CHAINS: ChainPause[] = pausedChains.map((pause) => {
+  return {
+    ...pause,
+    pauseStartTime: new Date(pause.pauseStartTime),
+    pauseEndTime: pause.pauseEndTime ? new Date(pause.pauseEndTime) : null,
+    bannerStartTime: new Date(pause.bannerStartTime),
+    bannerEndTime: pause.bannerEndTime ? new Date(pause.bannerEndTime) : null,
+    warningMessage: <p>{pause.warningMessage}</p>,
+    bannerMessage: <p>{pause.bannerMessage}</p>,
+    progressBarMessage: <p>{pause.progressBarMessage}</p>,
+  }
+})
 
 export const MaintenanceBanners = () => {
   return (
@@ -69,8 +73,8 @@ export const MaintenanceWarningMessages = ({
             <MaintenanceWarningMessage
               fromChainId={bridgeFromChainId}
               toChainId={bridgeToChainId}
-              startDate={event.startTime}
-              endDate={event.endTime}
+              startDate={event.pauseStartTime}
+              endDate={event.pauseEndTime}
               pausedFromChains={event.pausedFromChains}
               pausedToChains={event.pausedToChains}
               warningMessage={event.warningMessage}
@@ -88,8 +92,8 @@ export const MaintenanceWarningMessages = ({
             <MaintenanceWarningMessage
               fromChainId={swapChainId}
               toChainId={null}
-              startDate={event.startTime}
-              endDate={event.endTime}
+              startDate={event.pauseStartTime}
+              endDate={event.pauseEndTime}
               pausedFromChains={event.pausedFromChains}
               pausedToChains={event.pausedToChains}
               warningMessage={event.warningMessage}
@@ -122,8 +126,8 @@ export const useMaintenanceCountdownProgresses = ({
       return useMaintenanceCountdownProgress({
         fromChainId: bridgeFromChainId,
         toChainId: bridgeToChainId,
-        startDate: event.startTime,
-        endDate: event.endTime,
+        startDate: event.pauseStartTime,
+        endDate: event.pauseEndTime,
         pausedFromChains: event.pausedFromChains,
         pausedToChains: event.pausedToChains,
         progressBarMessage: event.progressBarMessage,
@@ -135,8 +139,8 @@ export const useMaintenanceCountdownProgresses = ({
       return useMaintenanceCountdownProgress({
         fromChainId: swapChainId,
         toChainId: null,
-        startDate: event.startTime,
-        endDate: event.endTime,
+        startDate: event.pauseStartTime,
+        endDate: event.pauseEndTime,
         pausedFromChains: event.pausedFromChains,
         pausedToChains: event.pausedToChains,
         progressBarMessage: event.progressBarMessage,
@@ -145,3 +149,39 @@ export const useMaintenanceCountdownProgresses = ({
     })
   }
 }
+
+/** Pause Bridge Modules */
+interface BridgeModulePause {
+  chainId?: number // Will pause for all chains if undefined
+  bridgeModuleName: 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL'
+}
+
+function isValidBridgeModule(
+  module: any
+): module is 'SynapseBridge' | 'SynapseRFQ' | 'SynapseCCTP' | 'ALL' {
+  return ['SynapseBridge', 'SynapseRFQ', 'SynapseCCTP', 'ALL'].includes(module)
+}
+
+export function getBridgeModuleNames(module) {
+  if (module.bridgeModuleName === 'ALL') {
+    return ['SynapseRFQ', 'SynapseCCTP', 'SynapseBridge']
+  }
+  return [module.bridgeModuleName]
+}
+
+export const PAUSED_MODULES: BridgeModulePause[] = pausedBridgeModules.map(
+  (route) => {
+    if (!isValidBridgeModule(route.bridgeModuleName)) {
+      throw new Error(`Invalid module type: ${route.bridgeModuleName}`)
+    }
+
+    return {
+      ...route,
+      bridgeModuleName: route.bridgeModuleName as
+        | 'SynapseBridge'
+        | 'SynapseRFQ'
+        | 'SynapseCCTP'
+        | 'ALL',
+    }
+  }
+)
