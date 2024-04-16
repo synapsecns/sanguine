@@ -28,3 +28,10 @@ export type InterchainTransaction = {
   interchainTransactionSent: InterchainTransactionSent
   interchainTransactionReceived: InterchainTransactionReceived
 }
+
+export type PageInfo = {
+  endCursor: string | null
+  startCursor: string | null
+  hasNextPage: boolean
+  hasPreviousPage: boolean
+}
