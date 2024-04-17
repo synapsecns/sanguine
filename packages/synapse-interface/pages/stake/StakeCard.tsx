@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { type Address } from 'viem'
 import { useAppDispatch } from '@/store/hooks'
-import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
+import {
+  fetchAndStoreSingleNetworkPortfolioBalances,
+  usePortfolioState,
+} from '@/slices/portfolio/hooks'
 import { usePendingTxWrapper } from '@/utils/hooks/usePendingTxWrapper'
 import { getTokenAllowance } from '@/utils/actions/getTokenAllowance'
 import { getStakedBalance } from '@/utils/actions/getStakedBalance'
 import { approve, stake } from '@/utils/actions/approveAndStake'
-import { useTokenBalance } from '@/utils/hooks/useTokenBalance'
 import { withdrawStake } from '@/utils/actions/withdrawStake'
 import { getTokenOnChain } from '@/utils/hooks/useTokenInfo'
 import { cleanNumberInput } from '@/utils/cleanNumberInput'
@@ -37,9 +39,11 @@ const StakeCard = ({ address, chainId, pool }: StakeCardProps) => {
   const stakingPoolTokens: Token[] = tokenInfo?.poolTokens
   const stakingPoolId: number = tokenInfo?.poolId
 
-  const balance = useTokenBalance(pool, pool?.chainId)
+  const { poolTokenBalances } = usePortfolioState()
 
-  const lpTokenBalance = balance?.data ? BigInt(balance?.data?.value) : 0n
+  const lpTokenBalance = poolTokenBalances[chainId]?.find(
+    (tokenBalance) => tokenBalance.tokenAddress === pool.addresses[chainId]
+  )?.balance
 
   const [deposit, setDeposit] = useState({ str: '', bi: 0n })
   const [withdraw, setWithdraw] = useState<string>('')

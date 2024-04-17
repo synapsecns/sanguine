@@ -103,7 +103,6 @@ export const sortByTokenBalance = async (
       )
     )
   }
-  console.log(`tokensWithBalances: ${tokensWithBalances}`)
 
   return tokensWithBalances
 }
