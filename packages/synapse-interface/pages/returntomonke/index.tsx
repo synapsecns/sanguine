@@ -1,7 +1,7 @@
 import Grid from '@tw/Grid'
-import { useRouter } from 'next/router'
-import { useEffect, useMemo, useState } from 'react'
-import { useAccount, useNetwork } from 'wagmi'
+import { useEffect, useState } from 'react'
+import { useAccount } from 'wagmi'
+
 import { DEFAULT_FROM_CHAIN } from '@/constants/swap'
 import { LandingPageWrapper } from '@layouts/LandingPageWrapper'
 import StandardPageContainer from '@layouts/StandardPageContainer'
@@ -9,12 +9,9 @@ import StandardPageContainer from '@layouts/StandardPageContainer'
 import PfpGeneratorCard from './PfpGeneratorCard'
 
 const ReturnToMonkePage = () => {
-  const { address: currentAddress } = useAccount()
-  const { chain } = useNetwork()
+  const { address: currentAddress, chain } = useAccount()
   const [connectedChainId, setConnectedChainId] = useState(0)
   const [address, setAddress] = useState(undefined)
-
-  const router = useRouter()
 
   useEffect(() => {
     setConnectedChainId(chain?.id ?? DEFAULT_FROM_CHAIN)
