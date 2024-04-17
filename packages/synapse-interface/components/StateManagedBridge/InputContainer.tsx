@@ -9,7 +9,7 @@ import {
 } from '@/slices/bridge/reducer'
 import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import { useDispatch } from 'react-redux'
-import { useAccount, useNetwork } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { ChainSelector } from '@/components/ui/ChainSelector'
 import { TokenSelector } from '@/components/ui/TokenSelector'
 import { AmountInput } from '@/components/ui/AmountInput'
@@ -39,6 +39,7 @@ import { stringToBigInt } from '@/utils/bigint/format'
 import { getPublicClient } from '@wagmi/core'
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { AvailableBalance } from './AvailableBalance'
+import { wagmiConfig } from '@/wagmiConfig'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
@@ -98,7 +99,7 @@ const calculateEstimatedBridgeGasLimit = async (
         }
       : data
 
-  const publicClient = getPublicClient()
+  const publicClient = getPublicClient(wagmiConfig)
 
   const gasEstimate = await publicClient.estimateGas({
     value: payload.value,
@@ -180,9 +181,8 @@ const useGasEstimator = () => {
 }
 
 export const InputContainer = () => {
-  const dispatch = useAppDispatch()
-  const { chain } = useNetwork()
-  const { address, isConnected } = useAccount()
+  const dispatch = useDispatch()
+  const { address, chain, isConnected } = useAccount()
   const { balances } = usePortfolioState()
   const { fromChainId, toChainId, fromToken, toToken, fromValue } =
     useBridgeState()
@@ -254,9 +254,9 @@ export const InputContainer = () => {
   const connectedStatus = useMemo(() => {
     if (hasMounted && !isConnected) {
       return <ConnectWalletButton />
-    } else if (hasMounted && isConnected && fromChainId === chain.id) {
+    } else if (hasMounted && isConnected && fromChainId === chain?.id) {
       return <ConnectedIndicator />
-    } else if (hasMounted && isConnected && fromChainId !== chain.id) {
+    } else if (hasMounted && isConnected && fromChainId !== chain?.id) {
       return <ConnectToNetworkButton chainId={fromChainId} />
     }
   }, [chain, fromChainId, isConnected, hasMounted])

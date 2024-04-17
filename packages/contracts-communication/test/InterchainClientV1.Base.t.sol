@@ -22,9 +22,9 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
 abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
-    uint256 public constant LOCAL_CHAIN_ID = 1337;
-    uint256 public constant REMOTE_CHAIN_ID = 7331;
-    uint256 public constant UNKNOWN_CHAIN_ID = 42;
+    uint64 public constant LOCAL_CHAIN_ID = 1337;
+    uint64 public constant REMOTE_CHAIN_ID = 7331;
+    uint64 public constant UNKNOWN_CHAIN_ID = 42;
     bytes32 public constant MOCK_REMOTE_CLIENT = keccak256("RemoteClient");
     uint16 public constant CLIENT_VERSION = 1;
 
@@ -61,7 +61,7 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         icClient.setExecutionFees(executionFees);
     }
 
-    function setLinkedClient(uint256 chainId, bytes32 client) public {
+    function setLinkedClient(uint64 chainId, bytes32 client) public {
         vm.prank(owner);
         icClient.setLinkedClient(chainId, client);
     }
@@ -74,7 +74,7 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         );
     }
 
-    function expectRevertIncorrectDstChainId(uint256 chainId) internal {
+    function expectRevertIncorrectDstChainId(uint64 chainId) internal {
         vm.expectRevert(
             abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__IncorrectDstChainId.selector, chainId)
         );
@@ -92,7 +92,7 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         );
     }
 
-    function expectRevertNoLinkedClient(uint256 chainId) internal {
+    function expectRevertNoLinkedClient(uint64 chainId) internal {
         vm.expectRevert(
             abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__NoLinkedClient.selector, chainId)
         );
@@ -114,7 +114,7 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         vm.expectRevert(abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__NotEVMClient.selector, client));
     }
 
-    function expectRevertNotRemoteChainId(uint256 chainId) internal {
+    function expectRevertNotRemoteChainId(uint64 chainId) internal {
         vm.expectRevert(
             abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__NotRemoteChainId.selector, chainId)
         );
@@ -155,7 +155,7 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         emit ExecutionFeesSet(executionFees);
     }
 
-    function expectEventLinkedClientSet(uint256 chainId, bytes32 client) internal {
+    function expectEventLinkedClientSet(uint64 chainId, bytes32 client) internal {
         vm.expectEmit(address(icClient));
         emit LinkedClientSet(chainId, client);
     }
@@ -206,7 +206,7 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
 
     function expectEventExecutionProofWritten(
         bytes32 transactionId,
-        uint256 localDbNonce,
+        uint64 localDbNonce,
         uint64 localEntryIndex,
         address executor
     )

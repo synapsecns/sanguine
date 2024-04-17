@@ -95,7 +95,7 @@ func (i *InterchainSuite) SetupTest() {
 func (i *InterchainSuite) setClientConfigs(backend backends.SimulatedTestBackend, contract *interchainclient.InterchainClientRef, myContract, otherContract contracts.DeployedContract, otherBackend backends.SimulatedTestBackend) {
 	auth := backend.GetTxContext(i.GetTestContext(), myContract.OwnerPtr())
 
-	tx, err := contract.SetLinkedClient(auth.TransactOpts, otherContract.ChainID(), i.addressToBytes32(otherContract.Address()))
+	tx, err := contract.SetLinkedClient(auth.TransactOpts, otherContract.ChainID().Uint64(), i.addressToBytes32(otherContract.Address()))
 	i.Require().NoError(err)
 	backend.WaitForConfirmation(i.GetTestContext(), tx)
 
@@ -104,7 +104,7 @@ func (i *InterchainSuite) setClientConfigs(backend backends.SimulatedTestBackend
 
 	appAuth := backend.GetTxContext(i.GetTestContext(), amInfo.OwnerPtr())
 
-	tx, err = appMock.LinkRemoteAppEVM(appAuth.TransactOpts, otherBackend.GetBigChainID(), i.deployManager.Get(i.GetTestContext(), otherBackend, testutil.InterchainApp).Address())
+	tx, err = appMock.LinkRemoteAppEVM(appAuth.TransactOpts, otherBackend.GetBigChainID().Uint64(), i.deployManager.Get(i.GetTestContext(), otherBackend, testutil.InterchainApp).Address())
 	i.Require().NoError(err)
 	backend.WaitForConfirmation(i.GetTestContext(), tx)
 
