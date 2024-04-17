@@ -1,5 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import { fetchFeeData } from '@wagmi/core'
+import { estimateFeesPerGas } from '@wagmi/core'
+
+import { wagmiConfig } from '@/wagmiConfig'
 
 export interface GasDataState {
   gasData: {
@@ -16,7 +18,7 @@ export interface GasDataState {
 }
 
 const getGasData = async (chainId: number) => {
-  const feeData = await fetchFeeData({
+  const feeData = await estimateFeesPerGas(wagmiConfig, {
     chainId,
     formatUnits: 'gwei',
   })

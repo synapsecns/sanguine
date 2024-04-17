@@ -17,13 +17,14 @@ export const calculateGasCost = (
   parsedGasCost: string
 } => {
   if (!gasPrice || !gasLimit) {
+    console.log('missing gas price or gas limit')
     return {
       rawGasCost: null,
       parsedGasCost: null,
     }
   }
 
-  const upperLimitBuffer = 1.5
+  const upperLimitBuffer = 1.7
 
   const estimatedGasCostInGwei =
     parseFloat(gasLimit) * parseFloat(gasPrice) * upperLimitBuffer
