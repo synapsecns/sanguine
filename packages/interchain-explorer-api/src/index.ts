@@ -148,6 +148,7 @@ ponder.on(
     console.log(`on: ${context.network.name}`)
     console.log(`InterchainClientV1:InterchainTransactionReceived`)
     console.log(`event.args`, event.args)
+    console.log(`event.log.blockHash`, event.log.blockHash)
     console.log('==========')
   }
 )
@@ -164,6 +165,38 @@ ponder.on('InterchainDB:InterchainEntryWritten', async ({ event, context }) => {
   console.log(`event.log.blockHash`, event.log.blockHash)
   console.log('==========')
 })
+
+ponder.on(
+  'InterchainClientV1:ExecutionProofWritten',
+  async ({ event, context }) => {
+    const {
+      db: { InterchainTransactionSent, InterchainTransactionReceived },
+    } = context
+
+    console.log('==========')
+    console.log(`on: ${context.network.name}`)
+    console.log('InterchainClientV1:ExecutionProofWritten')
+    console.log(`event.args`, event.args)
+    console.log(`event.log.blockHash`, event.log.blockHash)
+    console.log('==========')
+  }
+)
+
+ponder.on(
+  'InterchainDB:InterchainBatchFinalized',
+  async ({ event, context }) => {
+    const {
+      db: { InterchainTransactionSent, InterchainTransactionReceived },
+    } = context
+
+    console.log('==========')
+    console.log(`on: ${context.network.name}`)
+    console.log('InterchainDB:InterchainBatchFinalized')
+    console.log(`event.args`, event.args)
+    console.log(`event.log.blockHash`, event.log.blockHash)
+    console.log('==========')
+  }
+)
 
 ponder.on(
   'InterchainDB:InterchainBatchVerificationRequested',
@@ -199,7 +232,7 @@ ponder.on(
     console.log(`on: ${context.network.name}`)
     console.log('InterchainDB:InterchainBatchVerified')
     console.log(`event.args`, event.args)
-    console.log(`entry.items`, entry.items)
+    console.log(`event.log.blockHash`, event.log.blockHash)
     console.log('==========')
 
     entry.items.forEach(async (item) => {
