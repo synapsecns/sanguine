@@ -97,8 +97,6 @@ const Withdraw = ({ address }: { address: string }) => {
         outputs[withdrawType] = transformAmount(amount)
       }
 
-      console.log(`outputs`, outputs)
-
       const outputTokensSum = sumBigInts(pool, outputs, withdrawType)
 
       const priceImpact = calculatePriceImpact(
@@ -114,7 +112,6 @@ const Withdraw = ({ address }: { address: string }) => {
         address as Address,
         chainId
       )
-      console.log(`allowance`, allowance)
       dispatch(
         setWithdrawQuote({
           priceImpact,
