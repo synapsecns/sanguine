@@ -82,6 +82,9 @@ export const Portfolio = () => {
   )
 
   useEffect(() => {
+    if (!chain) {
+      dispatch(setFromChainId(null))
+    }
     if (address && chain?.id) {
       dispatch(setFromChainId(chain.id))
     }
