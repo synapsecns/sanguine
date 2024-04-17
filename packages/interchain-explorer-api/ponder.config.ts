@@ -24,11 +24,11 @@ export default createConfig({
       network: {
         ethSepolia: {
           address: '0xfcb988E117dbAa8c8b48047afd7c22d4a8321bCA',
-          startBlock: 5712788,
+          startBlock: 5628137,
         },
         arbSepolia: {
           address: '0x4AdfEb01C090e14BFA84411b74D0d03dDE12e39b',
-          startBlock: 34358231,
+          startBlock: 30278491,
         },
       },
       abi: InterchainClientV1Abi,
@@ -36,7 +36,7 @@ export default createConfig({
     InterchainDB: {
       network: {
         ethSepolia: {
-          address: '0x4361F461c5Df0DCf109BA2CF0E46dfA26e73f54f',
+          address: '0x1Ce3a9d87A26Ae56a43a5BB1D5e9A8D14550D0a4',
           startBlock: 5628137,
         },
         arbSepolia: {
