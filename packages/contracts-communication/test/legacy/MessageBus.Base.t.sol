@@ -114,6 +114,11 @@ abstract contract MessageBusBaseTest is MessageBusEvents, Test {
         });
     }
 
+    function expectEventGasBufferSet(uint64 gasBuffer) internal {
+        vm.expectEmit(address(messageBus));
+        emit GasBufferSet(gasBuffer);
+    }
+
     function expectEventMessageLengthEstimateSet(uint256 length) internal {
         vm.expectEmit(address(messageBus));
         emit MessageLengthEstimateSet(length);

@@ -62,9 +62,18 @@ contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
     }
 
     /// @inheritdoc IMessageBus
+    function setGasBuffer(uint64 gasBuffer_) external {
+        // TODO: implement
+    }
+
+    /// @inheritdoc IMessageBus
     function setMessageLengthEstimate(uint256 length) external onlyRole(IC_GOVERNOR_ROLE) {
         messageLengthEstimate = length;
         emit MessageLengthEstimateSet(length);
+    }
+
+    function gasBuffer() external view returns (uint64) {
+        // TODO: replace with actual implementation
     }
 
     /// @inheritdoc IMessageBus
