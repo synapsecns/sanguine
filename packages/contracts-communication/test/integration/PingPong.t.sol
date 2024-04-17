@@ -22,8 +22,8 @@ abstract contract PingPongIntegrationTest is ICIntegrationTest {
 
     OptionsV1 public ppOptions = OptionsV1({gasLimit: 500_000, gasAirdrop: 0});
 
-    event PingReceived(uint256 counter, uint256 dbNonce, uint64 entryIndex);
-    event PingSent(uint256 counter, uint256 dbNonce, uint64 entryIndex);
+    event PingReceived(uint256 counter, uint64 dbNonce, uint64 entryIndex);
+    event PingSent(uint256 counter, uint64 dbNonce, uint64 entryIndex);
 
     /// @dev Should deploy the tested app and return its address.
     function deployApp() internal override returns (address app) {
