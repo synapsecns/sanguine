@@ -8,7 +8,7 @@ interface ISynapseGasOracle is IGasOracle {
     /// @dev Could only be called by Synapse Module.
     /// @param srcChainId        The chain id of the remote chain.
     /// @param data              The gas data from the remote chain.
-    function receiveRemoteGasData(uint256 srcChainId, bytes calldata data) external;
+    function receiveRemoteGasData(uint64 srcChainId, bytes calldata data) external;
 
     /// @notice Gets the gas data for the local chain.
     function getLocalGasData() external view returns (bytes memory);

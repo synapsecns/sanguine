@@ -20,7 +20,7 @@ export function ChainSelector({
   action,
 }: ChainSelectorTypes) {
   const [searchStr, setSearchStr] = useState('')
-  const [hover, setHover] = useState(false)
+  const [open, setOpen] = useState(false)
 
   const [currentId, setCurrentId] = useState(null)
   const dispatch = useDispatch()
@@ -55,7 +55,7 @@ export function ChainSelector({
   const onClose = () => {
     setSearchStr('')
     setCurrentId(null)
-    setHover(false)
+    setOpen(false)
   }
 
   const onSearch = (str: string) => {
@@ -63,9 +63,9 @@ export function ChainSelector({
     setCurrentId(null)
   }
 
-  const arrowUp = useKeyPress('ArrowUp', hover)
-  const arrowDown = useKeyPress('ArrowDown', hover)
-  const enterPress = useKeyPress('Enter', hover)
+  const arrowUp = useKeyPress('ArrowUp', open)
+  const arrowDown = useKeyPress('ArrowDown', open)
+  const enterPress = useKeyPress('Enter', open)
 
   const arrowDownFunc = () => {
     const currentIndex = flatItemList.findIndex((item) => item.id === currentId)
@@ -102,8 +102,8 @@ export function ChainSelector({
       selectedItem={selectedItem}
       searchStr={searchStr}
       onSearch={onSearch}
-      hover={hover}
-      setHover={setHover}
+      open={open}
+      setOpen={setOpen}
       onClose={onClose}
     >
       {Object.entries(itemList).map(([key, value]: [string, Chain[]]) => {

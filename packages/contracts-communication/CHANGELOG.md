@@ -3,6 +3,49 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.1.3...contracts-communication@1.2.0) (2024-04-17)
+
+
+### Bug Fixes
+
+* **contracts-communication:** Expose app config, finalize events ([#2506](https://github.com/synapsecns/sanguine/issues/2506)) ([a1cbda0](https://github.com/synapsecns/sanguine/commit/a1cbda0baa46bcbc83c896df829bf7f059792401))
+
+
+### Features
+
+* **contracts-communication:** use uint64 for chain IDs and DB nonces ([#2453](https://github.com/synapsecns/sanguine/issues/2453)) ([1096cfb](https://github.com/synapsecns/sanguine/commit/1096cfb69c8a1d6630255ddab88b4855c3efec8c)), closes [#2454](https://github.com/synapsecns/sanguine/issues/2454)
+
+
+
+
+
+## [1.1.3](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.1.2...contracts-communication@1.1.3) (2024-04-11)
+
+**Note:** Version bump only for package contracts-communication
+
+
+
+
+
+## [1.1.2](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.1.1...contracts-communication@1.1.2) (2024-04-08)
+
+
+### Bug Fixes
+
+* **contracts-communication:** Integration tests for message bus, testnet deployment ([#2463](https://github.com/synapsecns/sanguine/issues/2463)) ([4829d41](https://github.com/synapsecns/sanguine/commit/4829d413951b11041dc0228daccb0d3ac633d08e))
+
+
+
+
+
+## [1.1.1](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.1.0...contracts-communication@1.1.1) (2024-04-08)
+
+**Note:** Version bump only for package contracts-communication
+
+
+
+
+
 # [1.1.0](https://github.com/synapsecns/sanguine/compare/contracts-communication@1.0.5...contracts-communication@1.1.0) (2024-04-04)
 
 

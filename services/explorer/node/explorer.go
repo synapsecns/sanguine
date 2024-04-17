@@ -128,6 +128,8 @@ func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig indexerConfig.Chai
 	var cctpParser *parser.CCTPParser
 	var swapService fetcherpkg.SwapService
 	var cctpService fetcherpkg.CCTPService
+	var rfqParser *parser.RFQParser
+	var rfqService fetcherpkg.RFQService
 
 	swapParsers := make(map[common.Address]*parser.SwapParser)
 
@@ -176,11 +178,19 @@ func getChainBackfiller(consumerDB db.ConsumerDB, chainConfig indexerConfig.Chai
 			if err != nil || cctpParser == nil {
 				return nil, fmt.Errorf("could not create message bus parser: %w", err)
 			}
+		case "rfq":
+			rfqService, err = fetcherpkg.NewRFQFetcher(common.HexToAddress(chainConfig.Contracts[i].Address), client)
+			if err != nil || rfqService == nil {
+				return nil, fmt.Errorf("could not create rfqService: %w", err)
+			}
+			rfqParser, err = parser.NewRFQParser(consumerDB, common.HexToAddress(chainConfig.Contracts[i].Address), fetcher, rfqService, tokenDataService, priceDataService, false)
+			if err != nil || rfqParser == nil {
+				return nil, fmt.Errorf("could not create message bus parser: %w", err)
+			}
 		}
 	}
 
-	// TODO Add the cctp parser
-	chainBackfiller := backfill.NewChainBackfiller(consumerDB, bridgeParser, swapParsers, messageBusParser, cctpParser, fetcher, chainConfig)
+	chainBackfiller := backfill.NewChainBackfiller(consumerDB, bridgeParser, swapParsers, messageBusParser, cctpParser, rfqParser, fetcher, chainConfig)
 
 	return chainBackfiller, nil
 }
