@@ -20,6 +20,10 @@ contract MessageBusManagementTest is MessageBusBaseTest {
         vm.mockCall(icClient, expectedCalldata, abi.encode(MOCK_FEE));
     }
 
+    function test_gasBuffer_defaultValue() public {
+        assertEq(messageBus.gasBuffer(), GAS_BUFFER);
+    }
+
     function test_setGasBuffer_emitsEvent() public {
         expectEventGasBufferSet(BUFFER);
         vm.prank(governor);
