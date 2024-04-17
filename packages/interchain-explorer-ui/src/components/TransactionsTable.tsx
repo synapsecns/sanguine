@@ -88,10 +88,11 @@ export const TransactionsTable = () => {
               <th className="text-left text-transparent">pl</th>
               <th className="text-left">transactionId</th>
               <th className="text-left">source txn hash</th>
-              <th className="text-left">srcSender</th>
+              <th className="text-left">dbNonce</th>
               <th className="text-left">dest txn hash</th>
-              <th className="text-left">dstReceiver</th>
+              <th className="text-left">dbNonce</th>
               <th className="text-left">status</th>
+              <th className="text-left text-transparent">pl</th>
             </tr>
           </thead>
           <tbody>
@@ -148,9 +149,7 @@ export const TransactionsTable = () => {
                     </span>
                   </td>
                   <td>
-                    {shortenHash(
-                      transaction.interchainTransactionSent?.srcSender
-                    )}
+                    {transaction.interchainTransactionSent.dbNonce.toString()}
                   </td>
                   <td className="">
                     {transaction.interchainTransactionReceived && (
@@ -172,9 +171,10 @@ export const TransactionsTable = () => {
                     </span>
                   </td>
                   <td>
-                    {shortenHash(
-                      transaction.interchainTransactionReceived?.srcSender
-                    )}
+                    {transaction.interchainTransactionReceived?.dbNonce.toString()}
+                  </td>
+                  <td className="max-w-[89px] break-words">
+                    {transaction.status}
                   </td>
                   <td>
                     {transaction.interchainTransactionReceived ? (

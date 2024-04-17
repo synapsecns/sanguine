@@ -8,6 +8,7 @@ export type InterchainTransactionSent = {
   transactionHash: string
   options: string
   timestamp: number
+  dbNonce: bigint
   count: number
 }
 
@@ -20,11 +21,13 @@ export type InterchainTransactionReceived = {
   dstReceiver: string
   transactionHash: string
   timestamp: number
+  dbNonce: bigint
   count: number
 }
 
 export type InterchainTransaction = {
   id: string
+  status: string
   interchainTransactionSent: InterchainTransactionSent
   interchainTransactionReceived: InterchainTransactionReceived
 }
