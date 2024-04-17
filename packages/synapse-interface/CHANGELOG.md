@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.17.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.16.9...@synapsecns/synapse-interface@0.17.0) (2024-04-17)
+
+
+### Features
+
+* **synapse-interface:** portfolio gas tokens ([#2401](https://github.com/synapsecns/sanguine/issues/2401)) ([d43f3ee](https://github.com/synapsecns/sanguine/commit/d43f3ee79a0c27ea8e2e27ebe35e6672614e6724))
+
+
+
+
+
 ## [0.16.9](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.16.8...@synapsecns/synapse-interface@0.16.9) (2024-04-17)
 
 **Note:** Version bump only for package @synapsecns/synapse-interface
