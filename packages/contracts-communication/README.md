@@ -10,20 +10,7 @@
 
 1. Message is sent through the `InterchainClientV1` contract. The `InterchainClientV1` contract on source chain emits the `InterchainTransactionSent` event:
 
-```solidity
-    event InterchainTransactionSent(
-        bytes32 indexed transactionId,
-        uint256 indexed dbNonce,
-        uint64 indexed entryIndex,
-        uint256 dstChainId,
-        bytes32 srcSender,
-        bytes32 dstReceiver,
-        uint256 verificationFee,
-        uint256 executionFee,
-        bytes options,
-        bytes message
-    );
-```
+https://github.com/synapsecns/sanguine/blob/10afc7a61561ff39a988470252e165b4fe7f6a0f/packages/contracts-communication/contracts/events/InterchainClientV1Events.sol#L14-L37
 
 > The sent message is added to the current batch in `InterchainDB` contract on the source chain:
 >
@@ -36,11 +23,7 @@
 
 2. In the same transaction, a set of Interchain Modules are called to verify the batch on the destination chain. The `InterchainDB` contract on the source chain emits the `InterchainBatchVerificationRequested` event:
 
-```solidity
-    event InterchainBatchVerificationRequested(
-        uint256 dstChainId, uint256 dbNonce, bytes32 batchRoot, address[] srcModules
-    );
-```
+https://github.com/synapsecns/sanguine/blob/10afc7a61561ff39a988470252e165b4fe7f6a0f/packages/contracts-communication/contracts/events/InterchainDBEvents.sol#L28-L36
 
 3. Message could be executed on destination chain once enough modules have verified the batch. The amount of required verifications, as well as the module addresses are defined by the application config of `dstReceiver` contract.
 
@@ -66,9 +49,7 @@ struct AppConfigV1 {
 
 4. The next step is the verification of batch that contains the message. Once the Interchain Module verifies the batch, the `InterchainDB` contract on the destination chain emits the `InterchainBatchVerified` event:
 
-```solidity
-    event InterchainBatchVerified(address module, uint256 srcChainId, uint256 dbNonce, bytes32 batchRoot);
-```
+https://github.com/synapsecns/sanguine/blob/10afc7a61561ff39a988470252e165b4fe7f6a0f/packages/contracts-communication/contracts/events/InterchainDBEvents.sol#L19-L26
 
 > **Note**: the `module` address is the **destination chain** address of the Interchain Module that verified the batch.
 
@@ -76,16 +57,7 @@ struct AppConfigV1 {
 
 6. Eventually, the message is executed on the destination chain. The `InterchainClientV1` contract on the destination chain emits the `InterchainTransactionReceived` event:
 
-```solidity
-    event InterchainTransactionReceived(
-        bytes32 indexed transactionId,
-        uint256 indexed dbNonce,
-        uint64 indexed entryIndex,
-        uint256 srcChainId,
-        bytes32 srcSender,
-        bytes32 dstReceiver
-    );
-```
+https://github.com/synapsecns/sanguine/blob/10afc7a61561ff39a988470252e165b4fe7f6a0f/packages/contracts-communication/contracts/events/InterchainClientV1Events.sol#L39-L54
 
 To sum up, the message status lifecycle is currently:
 
