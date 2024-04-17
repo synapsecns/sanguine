@@ -25,27 +25,11 @@ https://github.com/synapsecns/sanguine/blob/10afc7a61561ff39a988470252e165b4fe7f
 
 https://github.com/synapsecns/sanguine/blob/10afc7a61561ff39a988470252e165b4fe7f6a0f/packages/contracts-communication/contracts/events/InterchainDBEvents.sol#L28-L36
 
-3. Message could be executed on destination chain once enough modules have verified the batch. The amount of required verifications, as well as the module addresses are defined by the application config of `dstReceiver` contract.
+3. Message could be executed on destination chain once enough modules have verified the batch. The amount of required verifications, as well as the module addresses are defined by the application config of `dstReceiver` contract. This is exposed for the off-chain agents in the InterchainClientV1 contract:
 
-```solidity
-    /// @notice Returns the verification configuration of the Interchain App.
-    /// @dev This configuration is used by the Interchain Client to verify that message has been confirmed
-    /// by the Interchain Modules on the destination chain.
-    /// Note: V1 version of AppConfig includes the required responses count, and optimistic period after which
-    /// the message is considered confirmed by the module. Following versions may include additional fields.
-    /// @return appConfig    The versioned configuration of the Interchain App, encoded as bytes.
-    /// @return modules      The list of Interchain Modules that app is trusting to confirm the messages.
-    function getReceivingConfig() external view returns (bytes memory appConfig, address[] memory modules)
-```
+https://github.com/synapsecns/sanguine/blob/7cda26dcdec16637aaa6ec653c073b0b398c1850/packages/contracts-communication/contracts/InterchainClientV1.sol#L212-L216
 
-> **Note**: there isn't currently an exposed method to decode the `appConfig` bytes into the struct. This will be added SOON (TM).
-
-```solidity
-struct AppConfigV1 {
-  uint256 requiredResponses;
-  uint256 optimisticPeriod;
-}
-```
+https://github.com/synapsecns/sanguine/blob/7cda26dcdec16637aaa6ec653c073b0b398c1850/packages/contracts-communication/contracts/libs/AppConfig.sol#L6-L9
 
 4. The next step is the verification of batch that contains the message. Once the Interchain Module verifies the batch, the `InterchainDB` contract on the destination chain emits the `InterchainBatchVerified` event:
 
@@ -55,7 +39,7 @@ https://github.com/synapsecns/sanguine/blob/10afc7a61561ff39a988470252e165b4fe7f
 
 5. The destination app only accepts the module verification once `optimisticPeriod` has passed since it happened. A message could be executed once at least `requiredResponses` modules have successfully verified the batch (as far the app is concerned).
 
-6. Eventually, the message is executed on the destination chain. The `InterchainClientV1` contract on the destination chain emits the `InterchainTransactionReceived` event:
+6. Once enough module verifications are received, the message could be executed on the destination chain by any executor. The `InterchainClientV1` contract on the destination chain emits the `InterchainTransactionReceived` event:
 
 https://github.com/synapsecns/sanguine/blob/10afc7a61561ff39a988470252e165b4fe7f6a0f/packages/contracts-communication/contracts/events/InterchainClientV1Events.sol#L39-L54
 
