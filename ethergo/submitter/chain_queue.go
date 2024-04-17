@@ -136,7 +136,10 @@ func (t *txSubmitterImpl) registerCurrentNonce(nonce uint64, chainID int) (err e
 		o.ObserveInt64(nonceGauge, int64(nonce), metric.WithAttributeSet(attributes))
 		return nil
 	})
-	return err
+	if err != nil {
+		return fmt.Errorf("error registering nonce callback: %w", err)
+	}
+	return nil
 }
 
 // storeAndSubmit stores the txes in the database and submits them to the chain.
