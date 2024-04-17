@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {InterchainBatch, InterchainBatchLibHarness} from "../harnesses/InterchainBatchLibHarness.sol";
+import {InterchainBatch, InterchainBatchLibHarness, BatchKey} from "../harnesses/InterchainBatchLibHarness.sol";
 
 import {Test} from "forge-std/Test.sol";
 
@@ -23,28 +23,16 @@ contract InterchainBatchLibTest is Test {
 
     function test_constructLocalBatch() public {
         vm.chainId(1);
-        uint256 dbNonce = 2;
+        uint64 dbNonce = 2;
         bytes32 batchRoot = bytes32(uint256(3));
         InterchainBatch memory actual = libHarness.constructLocalBatch(dbNonce, batchRoot);
         assertEq(actual, mockBatch);
     }
 
-    function test_constructLocalBatch(uint64 chainId, uint256 dbNonce, bytes32 batchRoot) public {
+    function test_constructLocalBatch(uint64 chainId, uint64 dbNonce, bytes32 batchRoot) public {
         vm.chainId(chainId);
         InterchainBatch memory expected = InterchainBatch(chainId, dbNonce, batchRoot);
         InterchainBatch memory actual = libHarness.constructLocalBatch(dbNonce, batchRoot);
-        assertEq(actual, expected);
-    }
-
-    function test_batchKey() public {
-        bytes32 expected = keccak256(abi.encode(1, 2));
-        bytes32 actual = libHarness.batchKey(mockBatch);
-        assertEq(actual, expected);
-    }
-
-    function test_batchKey(InterchainBatch memory batch) public {
-        bytes32 expected = keccak256(abi.encode(batch.srcChainId, batch.dbNonce));
-        bytes32 actual = libHarness.batchKey(batch);
         assertEq(actual, expected);
     }
 
@@ -58,5 +46,12 @@ contract InterchainBatchLibTest is Test {
         bytes memory encoded = libHarness.encodeBatch(batch);
         InterchainBatch memory decoded = libHarness.decodeBatchFromMemory(encoded);
         assertEq(decoded, batch);
+    }
+
+    function test_encodeBatchKey_roundTrip(uint64 srcChainId, uint64 dbNonce) public {
+        BatchKey key = libHarness.encodeBatchKey(srcChainId, dbNonce);
+        (uint64 decodedSrcChainId, uint64 decodedDbNonce) = libHarness.decodeBatchKey(key);
+        assertEq(decodedSrcChainId, srcChainId);
+        assertEq(decodedDbNonce, dbNonce);
     }
 }

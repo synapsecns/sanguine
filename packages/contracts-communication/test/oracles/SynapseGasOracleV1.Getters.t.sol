@@ -8,8 +8,8 @@ import {Test} from "forge-std/Test.sol";
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
 contract SynapseGasOracleV1GettersTest is Test {
-    uint256 public constant LOCAL_CHAIN_ID = 1337;
-    uint256 public constant REMOTE_CHAIN_ID = 7331;
+    uint64 public constant LOCAL_CHAIN_ID = 1337;
+    uint64 public constant REMOTE_CHAIN_ID = 7331;
 
     // Per byte of calldata
     uint256 public constant REMOTE_CALLDATA_PRICE = 4844 gwei;
@@ -50,13 +50,13 @@ contract SynapseGasOracleV1GettersTest is Test {
         oracle = new SynapseGasOracleV1(address(this));
     }
 
-    function expectRevertNotRemoteChainId(uint256 chainId) internal {
+    function expectRevertNotRemoteChainId(uint64 chainId) internal {
         vm.expectRevert(
             abi.encodeWithSelector(ISynapseGasOracleV1.SynapseGasOracleV1__NotRemoteChainId.selector, chainId)
         );
     }
 
-    function expectRevertNativePriceNotSet(uint256 chainId) internal {
+    function expectRevertNativePriceNotSet(uint64 chainId) internal {
         vm.expectRevert(
             abi.encodeWithSelector(ISynapseGasOracleV1.SynapseGasOracleV1__NativePriceNotSet.selector, chainId)
         );

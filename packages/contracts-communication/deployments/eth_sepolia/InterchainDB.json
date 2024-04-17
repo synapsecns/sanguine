@@ -1,9 +1,9 @@
 {
-  "address": "0xAcAaaa98b9E23725046edA88D371B4864d90496b",
+  "address": "0x1Ce3a9d87A26Ae56a43a5BB1D5e9A8D14550D0a4",
   "constructorArgs": "0x",
   "receipt": {
-    "hash": "0xf8dc43c60ce79d213bd07ba9d615d6030c6345a5a24d8562f1b914b10330047d",
-    "blockNumber": 5628070
+    "hash": "0x2efd5f79af2d52c4e382c4b016a50323f1e2724d54375d4a31ffd26d2eef2115",
+    "blockNumber": 5712772
   },
   "abi": [
     {
@@ -35,13 +35,13 @@
           "components": [
             {
               "name": "srcChainId",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint64",
+              "internalType": "uint64"
             },
             {
               "name": "dbNonce",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint64",
+              "internalType": "uint64"
             },
             {
               "name": "entryIndex",
@@ -81,8 +81,8 @@
       "inputs": [
         {
           "name": "dbNonce",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ],
       "outputs": [
@@ -93,13 +93,13 @@
           "components": [
             {
               "name": "srcChainId",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint64",
+              "internalType": "uint64"
             },
             {
               "name": "dbNonce",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint64",
+              "internalType": "uint64"
             },
             {
               "name": "batchRoot",
@@ -117,8 +117,8 @@
       "inputs": [
         {
           "name": "dbNonce",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ],
       "outputs": [
@@ -136,8 +136,8 @@
       "inputs": [
         {
           "name": "dbNonce",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "start",
@@ -165,8 +165,8 @@
       "inputs": [
         {
           "name": "dbNonce",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ],
       "outputs": [
@@ -185,8 +185,8 @@
       "outputs": [
         {
           "name": "",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ],
       "stateMutability": "view"
@@ -197,8 +197,8 @@
       "inputs": [
         {
           "name": "dbNonce",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "entryIndex",
@@ -221,8 +221,8 @@
       "inputs": [
         {
           "name": "dbNonce",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "entryIndex",
@@ -245,8 +245,8 @@
       "inputs": [
         {
           "name": "dstChainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "srcModules",
@@ -270,8 +270,8 @@
       "outputs": [
         {
           "name": "dbNonce",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "entryIndex",
@@ -287,13 +287,13 @@
       "inputs": [
         {
           "name": "dstChainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "dbNonce",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "srcModules",
@@ -330,8 +330,8 @@
       "outputs": [
         {
           "name": "dbNonce",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "entryIndex",
@@ -347,8 +347,8 @@
       "inputs": [
         {
           "name": "dstChainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "dataHash",
@@ -364,8 +364,8 @@
       "outputs": [
         {
           "name": "dbNonce",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "entryIndex",
@@ -377,19 +377,38 @@
     },
     {
       "type": "event",
+      "name": "InterchainBatchFinalized",
+      "inputs": [
+        {
+          "name": "dbNonce",
+          "type": "uint64",
+          "indexed": true,
+          "internalType": "uint64"
+        },
+        {
+          "name": "batchRoot",
+          "type": "bytes32",
+          "indexed": false,
+          "internalType": "bytes32"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
       "name": "InterchainBatchVerificationRequested",
       "inputs": [
         {
           "name": "dstChainId",
-          "type": "uint256",
-          "indexed": false,
-          "internalType": "uint256"
+          "type": "uint64",
+          "indexed": true,
+          "internalType": "uint64"
         },
         {
           "name": "dbNonce",
-          "type": "uint256",
-          "indexed": false,
-          "internalType": "uint256"
+          "type": "uint64",
+          "indexed": true,
+          "internalType": "uint64"
         },
         {
           "name": "batchRoot",
@@ -413,20 +432,20 @@
         {
           "name": "module",
           "type": "address",
-          "indexed": false,
+          "indexed": true,
           "internalType": "address"
         },
         {
           "name": "srcChainId",
-          "type": "uint256",
-          "indexed": false,
-          "internalType": "uint256"
+          "type": "uint64",
+          "indexed": true,
+          "internalType": "uint64"
         },
         {
           "name": "dbNonce",
-          "type": "uint256",
-          "indexed": false,
-          "internalType": "uint256"
+          "type": "uint64",
+          "indexed": true,
+          "internalType": "uint64"
         },
         {
           "name": "batchRoot",
@@ -442,21 +461,21 @@
       "name": "InterchainEntryWritten",
       "inputs": [
         {
-          "name": "srcChainId",
-          "type": "uint256",
-          "indexed": false,
-          "internalType": "uint256"
+          "name": "dbNonce",
+          "type": "uint64",
+          "indexed": true,
+          "internalType": "uint64"
         },
         {
-          "name": "dbNonce",
-          "type": "uint256",
+          "name": "entryIndex",
+          "type": "uint64",
           "indexed": false,
-          "internalType": "uint256"
+          "internalType": "uint64"
         },
         {
           "name": "srcWriter",
           "type": "bytes32",
-          "indexed": false,
+          "indexed": true,
           "internalType": "bytes32"
         },
         {
@@ -474,8 +493,8 @@
       "inputs": [
         {
           "name": "dbNonce",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ]
     },
@@ -485,8 +504,8 @@
       "inputs": [
         {
           "name": "dbNonce",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ]
     },
@@ -511,13 +530,13 @@
           "components": [
             {
               "name": "srcChainId",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint64",
+              "internalType": "uint64"
             },
             {
               "name": "dbNonce",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint64",
+              "internalType": "uint64"
             },
             {
               "name": "batchRoot",
@@ -534,8 +553,8 @@
       "inputs": [
         {
           "name": "dbNonce",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "entryIndex",
@@ -582,8 +601,8 @@
       "inputs": [
         {
           "name": "dbNonce",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "start",
@@ -608,6 +627,22 @@
       "inputs": [
         {
           "name": "chainId",
+          "type": "uint64",
+          "internalType": "uint64"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "SafeCastOverflowedUintDowncast",
+      "inputs": [
+        {
+          "name": "bits",
+          "type": "uint8",
+          "internalType": "uint8"
+        },
+        {
+          "name": "value",
           "type": "uint256",
           "internalType": "uint256"
         }
