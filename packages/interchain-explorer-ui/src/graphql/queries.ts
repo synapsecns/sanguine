@@ -21,6 +21,7 @@ export const GET_INTERCHAIN_TRANSACTIONS = gql`
       }
       items {
         id
+        status
         interchainTransactionSent {
           id
           chainId
@@ -31,6 +32,7 @@ export const GET_INTERCHAIN_TRANSACTIONS = gql`
           transactionHash
           options
           timestamp
+          dbNonce
           count
         }
         interchainTransactionReceived {
@@ -42,6 +44,7 @@ export const GET_INTERCHAIN_TRANSACTIONS = gql`
           transactionHash
           dstReceiver
           timestamp
+          dbNonce
           count
         }
       }
@@ -74,6 +77,7 @@ export const GET_INTERCHAIN_TRANSACTION = gql`
   query GetInterchainTransaction($id: String!) {
     interchainTransaction(id: $id) {
       id
+      status
       interchainTransactionSent {
         id
         chainId
@@ -83,6 +87,7 @@ export const GET_INTERCHAIN_TRANSACTION = gql`
         dstReceiver
         transactionHash
         options
+        dbNonce
         timestamp
       }
       interchainTransactionReceived {
@@ -93,6 +98,7 @@ export const GET_INTERCHAIN_TRANSACTION = gql`
         srcChainId
         dstReceiver
         transactionHash
+        dbNonce
         timestamp
       }
     }

@@ -42,6 +42,7 @@ export const useInterchainTransactions = ({
 
         const items = data.interchainTransactions.items.map((d) => ({
           id: d.id,
+          status: d.status,
           interchainTransactionSent: d.interchainTransactionSent,
           interchainTransactionReceived: d.interchainTransactionReceived,
         }))
@@ -53,6 +54,6 @@ export const useInterchainTransactions = ({
       }
     },
     staleTime: 60_000, // 1 minute
-    refetchInterval: 1_000, // 1 second
+    refetchInterval: 500, // 1 second
   })
 }

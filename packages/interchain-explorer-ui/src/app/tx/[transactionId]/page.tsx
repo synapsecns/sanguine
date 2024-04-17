@@ -32,6 +32,7 @@ const TransactionIdPage = ({
       <h1 className="text-xl font-bold mb-4">Transaction Details</h1>
       <div className="mb-4">
         <p>{interchainTransaction.id}</p>
+        <p>{interchainTransaction.status ?? 'In-flight'}</p>
       </div>
       {interchainTransactionSent && (
         <div className="mb-4">
