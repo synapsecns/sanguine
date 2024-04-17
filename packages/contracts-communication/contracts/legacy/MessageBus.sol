@@ -13,8 +13,12 @@ import {TypeCasts} from "../libs/TypeCasts.sol";
 import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
+    /// @notice Default message length value for backwards compatible fee estimation.
     uint256 public messageLengthEstimate;
+    /// @notice Nonce for generating unique message IDs: incremented for each message sent.
     uint64 public nonce;
+    /// @notice Gas buffer to be added to the gas limit of the cross-chain message.
+    uint64 public gasBuffer = 20_000;
 
     constructor(address admin) ICAppV1(admin) {}
 
@@ -32,7 +36,9 @@ contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
         if (TypeCasts.addressToBytes32(dstReceiver) != receiver) {
             revert MessageBus__NotEVMReceiver(receiver);
         }
-        uint64 cachedNonce = nonce++;
+        // Read the nonce and gas buffer from the same storage slot.
+        (uint64 cachedNonce, uint64 cachedGasBuffer) = (nonce, gasBuffer);
+        ++nonce;
         // Note: we are using the internal nonce here to generate the unique message ID.
         // This is used for tracking purposes and is not used for replay protection.
         // Instead, we rely on the Interchain Client to provide replay protection.
@@ -42,10 +48,11 @@ contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
             srcNonce: cachedNonce,
             message: message
         });
+        OptionsV1 memory icOptions = _icOptionsV1(options, cachedGasBuffer);
         _sendToLinkedApp({
             dstChainId: SafeCast.toUint64(dstChainId),
             messageFee: msg.value,
-            options: _icOptionsV1(options),
+            options: icOptions,
             message: encodedLegacyMsg
         });
         emit MessageSent({
@@ -62,18 +69,15 @@ contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
     }
 
     /// @inheritdoc IMessageBus
-    function setGasBuffer(uint64 gasBuffer_) external {
-        // TODO: implement
+    function setGasBuffer(uint64 gasBuffer_) external onlyRole(IC_GOVERNOR_ROLE) {
+        gasBuffer = gasBuffer_;
+        emit GasBufferSet(gasBuffer_);
     }
 
     /// @inheritdoc IMessageBus
     function setMessageLengthEstimate(uint256 length) external onlyRole(IC_GOVERNOR_ROLE) {
         messageLengthEstimate = length;
         emit MessageLengthEstimateSet(length);
-    }
-
-    function gasBuffer() external view returns (uint64) {
-        // TODO: replace with actual implementation
     }
 
     /// @inheritdoc IMessageBus
@@ -94,7 +98,7 @@ contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
         uint256 legacyMsgLen = LegacyMessageLib.payloadSize(messageLen);
         return _getMessageFee({
             dstChainId: SafeCast.toUint64(dstChainId),
-            options: _icOptionsV1(options),
+            options: _icOptionsV1(options, gasBuffer),
             messageLen: legacyMsgLen
         });
     }
@@ -128,8 +132,10 @@ contract MessageBus is ICAppV1, MessageBusEvents, IMessageBus {
         });
     }
 
-    /// @dev Convert legacy MessageBus options to Interchain OptionsV1.
-    function _icOptionsV1(bytes calldata options) internal pure returns (OptionsV1 memory) {
-        return OptionsV1({gasLimit: LegacyOptionsLib.decodeLegacyOptions(options), gasAirdrop: 0});
+    /// @dev Convert legacy MessageBus options to Interchain OptionsV1. A gas buffer is added to reserve gas for the
+    /// destination MessageBus to forward the received message and emit the event after execution. This is necessary
+    /// to ensure that the App's requested gas limit is honored.
+    function _icOptionsV1(bytes calldata options, uint64 sendGasBuffer) internal pure returns (OptionsV1 memory) {
+        return OptionsV1({gasLimit: LegacyOptionsLib.decodeLegacyOptions(options) + sendGasBuffer, gasAirdrop: 0});
     }
 }
