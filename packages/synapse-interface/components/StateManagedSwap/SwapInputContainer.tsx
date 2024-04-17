@@ -117,12 +117,8 @@ export const SwapInputContainer = () => {
         <SwapFromTokenSelector />
         <AmountInput
           inputRef={inputRef}
-          hasMounted={hasMounted}
-          isConnected={isConnected}
           showValue={showValue}
           handleFromValueChange={handleFromValueChange}
-          parsedBalance={parsedBalance}
-          onMaxBalance={onMaxBalance}
         />
 
         {hasMounted && isConnected && (
