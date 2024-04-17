@@ -17,6 +17,9 @@ chains:
       - contract_type: cctp
         address: '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84'
         start_block: 17559791
+      - contract_type: rfq
+        address: '0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E'
+        start_block: 19420718
   - chain_id: 42161
     fetch_block_increment: 200
     max_goroutines: 2
@@ -33,6 +36,9 @@ chains:
       - contract_type: cctp
         address: '0xfB2Bfc368a7edfD51aa2cbEC513ad50edEa74E84'
         start_block: 104920110
+      - contract_type: rfq
+        address: '0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E'
+        start_block: 189700328
   - chain_id: 1313161554
     fetch_block_increment: 200
     max_goroutines: 2
@@ -143,6 +149,9 @@ chains:
       - contract_type: swap #ETH Pool
         address: '0xE27BFf97CE92C3e1Ff7AA9f86781FDd6D48F5eE9'
         start_block: 30819
+      - contract_type: rfq
+        address: '0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E'
+        start_block: 117334308
   - chain_id: 1284
     fetch_block_increment: 200
     max_goroutines: 2
@@ -220,3 +229,6 @@ chains:
       - contract_type: swap
         address: '0x6223bD82010E2fB69F329933De20897e7a4C225f'
         start_block: 1001141
+      - contract_type: rfq
+        address: '0x5523D3c98809DdDB82C686E152F5C58B1B0fB59E'
+        start_block: 12478374

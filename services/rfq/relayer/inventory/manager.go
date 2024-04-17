@@ -45,7 +45,7 @@ type Manager interface {
 	// ApproveAllTokens approves all tokens for the relayer address.
 	ApproveAllTokens(ctx context.Context) error
 	// HasSufficientGas checks if there is sufficient gas for a given route.
-	HasSufficientGas(ctx context.Context, origin, dest int) (bool, error)
+	HasSufficientGas(ctx context.Context, chainID int, gasValue *big.Int) (bool, error)
 	// Rebalance checks whether a given token should be rebalanced, and
 	// executes the rebalance if necessary.
 	Rebalance(ctx context.Context, chainID int, token common.Address) error
@@ -365,38 +365,34 @@ func (i *inventoryManagerImpl) approve(parentCtx context.Context, tokenAddr, con
 }
 
 // HasSufficientGas checks if there is sufficient gas for a given route.
-func (i *inventoryManagerImpl) HasSufficientGas(parentCtx context.Context, origin, dest int) (sufficient bool, err error) {
+func (i *inventoryManagerImpl) HasSufficientGas(parentCtx context.Context, chainID int, gasValue *big.Int) (sufficient bool, err error) {
 	ctx, span := i.handler.Tracer().Start(parentCtx, "HasSufficientGas", trace.WithAttributes(
-		attribute.Int(metrics.Origin, origin),
-		attribute.Int(metrics.Destination, dest),
+		attribute.Int(metrics.ChainID, chainID),
 	))
 	defer func(err error) {
 		metrics.EndSpanWithErr(span, err)
 	}(err)
 
-	gasThreshOrigin, err := i.cfg.GetMinGasToken(origin)
+	gasThreshRaw, err := i.cfg.GetMinGasToken(chainID)
 	if err != nil {
 		return false, fmt.Errorf("error getting min gas token on origin: %w", err)
 	}
-	gasThreshDest, err := i.cfg.GetMinGasToken(dest)
-	if err != nil {
-		return false, fmt.Errorf("error getting min gas token on dest: %w", err)
+	gasThresh := core.CopyBigInt(gasThreshRaw)
+	if gasValue != nil {
+		gasThresh = new(big.Int).Add(gasThresh, gasValue)
+		span.SetAttributes(attribute.String("gas_value", gasValue.String()))
 	}
-	gasOrigin, err := i.GetCommittableBalance(ctx, origin, chain.EthAddress)
+
+	gasBalance, err := i.GetCommittableBalance(ctx, chainID, chain.EthAddress)
 	if err != nil {
 		return false, fmt.Errorf("error getting committable gas on origin: %w", err)
 	}
-	gasDest, err := i.GetCommittableBalance(ctx, dest, chain.EthAddress)
-	if err != nil {
-		return false, fmt.Errorf("error getting committable gas on dest: %w", err)
-	}
 
-	sufficient = gasOrigin.Cmp(gasThreshOrigin) >= 0 && gasDest.Cmp(gasThreshDest) >= 0
+	sufficient = gasBalance.Cmp(gasThresh) >= 0
 	span.SetAttributes(
-		attribute.String("gas_threshold_origin", gasThreshOrigin.String()),
-		attribute.String("gas_threshold_dest", gasThreshDest.String()),
-		attribute.String("gas_origin", gasOrigin.String()),
-		attribute.String("gas_dest", gasDest.String()),
+		attribute.String("gas_threshold_raw", gasThreshRaw.String()),
+		attribute.String("gas_threshold", gasThresh.String()),
+		attribute.String("gas_balance", gasBalance.String()),
 		attribute.Bool("sufficient", sufficient),
 	)
 	return sufficient, nil

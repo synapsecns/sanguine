@@ -5,14 +5,15 @@ import {SynapseGasOracleV1Events} from "../events/SynapseGasOracleV1Events.sol";
 import {ISynapseGasOracle, IGasOracle} from "../interfaces/ISynapseGasOracle.sol";
 import {ISynapseGasOracleV1} from "../interfaces/ISynapseGasOracleV1.sol";
 
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOracleV1 {
     uint256 internal _localNativePrice;
-    mapping(uint256 chainId => RemoteGasData data) internal _remoteGasData;
+    mapping(uint64 chainId => RemoteGasData data) internal _remoteGasData;
 
     /// @dev Checks that the chain ID is not the local chain ID.
-    modifier onlyRemoteChainId(uint256 chainId) {
+    modifier onlyRemoteChainId(uint64 chainId) {
         if (block.chainid == chainId) {
             revert SynapseGasOracleV1__NotRemoteChainId(chainId);
         }
@@ -20,7 +21,7 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
     }
 
     /// @dev Checks that the native token price is set for a remote chain ID.
-    modifier onlyNativePriceSet(uint256 chainId) {
+    modifier onlyNativePriceSet(uint64 chainId) {
         if (_remoteGasData[chainId].nativePrice == 0) {
             revert SynapseGasOracleV1__NativePriceNotSet(chainId);
         }
@@ -43,13 +44,13 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
     function setLocalNativePrice(uint256 nativePrice) external onlyOwner onlyNonZeroNativePrice(nativePrice) {
         if (_localNativePrice != nativePrice) {
             _localNativePrice = nativePrice;
-            emit NativePriceSet(block.chainid, nativePrice);
+            emit NativePriceSet(SafeCast.toUint64(block.chainid), nativePrice);
         }
     }
 
     /// @inheritdoc ISynapseGasOracleV1
     function setRemoteGasData(
-        uint256 chainId,
+        uint64 chainId,
         RemoteGasData memory data
     )
         external
@@ -64,7 +65,7 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
 
     /// @inheritdoc ISynapseGasOracleV1
     function setRemoteCallDataPrice(
-        uint256 chainId,
+        uint64 chainId,
         uint256 calldataPrice
     )
         external
@@ -77,7 +78,7 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
 
     /// @inheritdoc ISynapseGasOracleV1
     function setRemoteGasPrice(
-        uint256 chainId,
+        uint64 chainId,
         uint256 gasPrice
     )
         external
@@ -90,7 +91,7 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
 
     /// @inheritdoc ISynapseGasOracleV1
     function setRemoteNativePrice(
-        uint256 chainId,
+        uint64 chainId,
         uint256 nativePrice
     )
         external
@@ -105,7 +106,7 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
 
     // solhint-disable no-empty-blocks
     /// @inheritdoc ISynapseGasOracle
-    function receiveRemoteGasData(uint256 srcChainId, bytes calldata data) external {
+    function receiveRemoteGasData(uint64 srcChainId, bytes calldata data) external {
         // The V1 version has this function as a no-op, hence we skip the permission check.
     }
 
@@ -119,7 +120,7 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
 
     /// @inheritdoc IGasOracle
     function convertRemoteValueToLocalUnits(
-        uint256 remoteChainId,
+        uint64 remoteChainId,
         uint256 value
     )
         external
@@ -134,7 +135,7 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
 
     /// @inheritdoc IGasOracle
     function estimateTxCostInLocalUnits(
-        uint256 remoteChainId,
+        uint64 remoteChainId,
         uint256 gasLimit,
         uint256 calldataSize
     )
@@ -151,7 +152,7 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
 
     /// @inheritdoc IGasOracle
     function estimateTxCostInRemoteUnits(
-        uint256 remoteChainId,
+        uint64 remoteChainId,
         uint256 gasLimit,
         uint256 calldataSize
     )
@@ -171,14 +172,14 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
     }
 
     /// @inheritdoc ISynapseGasOracleV1
-    function getRemoteGasData(uint256 chainId) external view returns (RemoteGasData memory) {
+    function getRemoteGasData(uint64 chainId) external view returns (RemoteGasData memory) {
         return _remoteGasData[chainId];
     }
 
     // ══════════════════════════════════════════════ INTERNAL LOGIC ═══════════════════════════════════════════════════
 
     /// @dev Updates the calldata price for the given remote chain, no-op if the price is already set.
-    function _setRemoteCallDataPrice(uint256 chainId, uint256 calldataPrice) internal {
+    function _setRemoteCallDataPrice(uint64 chainId, uint256 calldataPrice) internal {
         if (_remoteGasData[chainId].calldataPrice != calldataPrice) {
             _remoteGasData[chainId].calldataPrice = calldataPrice;
             emit CalldataPriceSet(chainId, calldataPrice);
@@ -186,7 +187,7 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
     }
 
     /// @dev Updates the gas price for the given remote chain, no-op if the price is already set.
-    function _setRemoteGasPrice(uint256 chainId, uint256 gasPrice) internal {
+    function _setRemoteGasPrice(uint64 chainId, uint256 gasPrice) internal {
         if (_remoteGasData[chainId].gasPrice != gasPrice) {
             _remoteGasData[chainId].gasPrice = gasPrice;
             emit GasPriceSet(chainId, gasPrice);
@@ -194,7 +195,7 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
     }
 
     /// @dev Updates the native token price for the given remote chain, no-op if the price is already set.
-    function _setRemoteNativePrice(uint256 chainId, uint256 nativePrice) internal {
+    function _setRemoteNativePrice(uint64 chainId, uint256 nativePrice) internal {
         if (_remoteGasData[chainId].nativePrice != nativePrice) {
             _remoteGasData[chainId].nativePrice = nativePrice;
             emit NativePriceSet(chainId, nativePrice);
@@ -204,7 +205,7 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
     /// @dev Converts value denominated in remote chain's units to local chain's units.
     /// Note: the check for non-zero remote native token price is done outside this function.
     function _convertRemoteValueToLocalUnits(
-        uint256 remoteChainId,
+        uint64 remoteChainId,
         uint256 remoteValue
     )
         internal
@@ -212,7 +213,7 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
         returns (uint256)
     {
         if (_localNativePrice == 0) {
-            revert SynapseGasOracleV1__NativePriceNotSet(block.chainid);
+            revert SynapseGasOracleV1__NativePriceNotSet(SafeCast.toUint64(block.chainid));
         }
         return (remoteValue * _remoteGasData[remoteChainId].nativePrice) / _localNativePrice;
     }
@@ -220,7 +221,7 @@ contract SynapseGasOracleV1 is Ownable, SynapseGasOracleV1Events, ISynapseGasOra
     /// @dev Estimates the transaction cost in remote chain's units.
     /// Note: the check for non-zero remote native token price is done outside this function.
     function _estimateTxCostInRemoteUnits(
-        uint256 remoteChainId,
+        uint64 remoteChainId,
         uint256 gasLimit,
         uint256 calldataSize
     )

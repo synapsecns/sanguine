@@ -1,9 +1,9 @@
 {
-  "address": "0x59c4B37539afFf22Bba9b285A28a2f4AC9774e3F",
+  "address": "0xE424490d88562F8123AC756f9A7ffa173630DB4E",
   "constructorArgs": "0x",
   "receipt": {
-    "hash": "0xb732075f8a3e73bec1ff2adcb250c3a7abfea0b712b83d98becf85b9611b014a",
-    "blockNumber": 5628120
+    "hash": "0x221171644ba5b06767d060e6e1d69657b686346f97b3c49847c2dfa8b5a5ca67",
+    "blockNumber": 5712784
   },
   "abi": [
     {
@@ -82,8 +82,8 @@
       "inputs": [
         {
           "name": "dstChainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "txPayloadSize",
@@ -216,8 +216,8 @@
       "inputs": [
         {
           "name": "dstChainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "txPayloadSize",
