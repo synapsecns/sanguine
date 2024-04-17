@@ -69,7 +69,7 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     ;(async () => {
-      if (isClient && address && chain?.id) {
+      if (isClient && address) {
         try {
           await dispatch(fetchAndStorePortfolioBalances(address))
         } catch (error) {
