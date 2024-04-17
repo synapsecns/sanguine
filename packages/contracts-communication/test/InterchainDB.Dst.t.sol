@@ -21,9 +21,9 @@ import {Test} from "forge-std/Test.sol";
 /// @notice Unit tests for InterchainDB interactions on the destination chain
 /// Note: we inherit from interface with the events to avoid their copy-pasting.
 contract InterchainDBDestinationTest is Test, InterchainDBEvents {
-    uint256 public constant SRC_CHAIN_ID_0 = 1337;
-    uint256 public constant SRC_CHAIN_ID_1 = 1338;
-    uint256 public constant DST_CHAIN_ID = 7331;
+    uint64 public constant SRC_CHAIN_ID_0 = 1337;
+    uint64 public constant SRC_CHAIN_ID_1 = 1338;
+    uint64 public constant DST_CHAIN_ID = 7331;
 
     uint16 public constant DB_VERSION = 1;
 
@@ -97,19 +97,19 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
 
     // ══════════════════════════════════════════════ DATA GENERATION ══════════════════════════════════════════════════
 
-    function getMockBatchRoot(uint256 nonce) internal view returns (bytes32) {
+    function getMockBatchRoot(uint64 nonce) internal view returns (bytes32) {
         return keccak256(abi.encode(writerT, getMockDataHash(nonce)));
     }
 
-    function getMockBatch(uint256 srcChainId, uint256 dbNonce) internal view returns (InterchainBatch memory batch) {
+    function getMockBatch(uint64 srcChainId, uint64 dbNonce) internal view returns (InterchainBatch memory batch) {
         return InterchainBatch(srcChainId, dbNonce, getMockBatchRoot(dbNonce));
     }
 
-    function getMockDataHash(uint256 nonce) internal pure returns (bytes32) {
+    function getMockDataHash(uint64 nonce) internal pure returns (bytes32) {
         return keccak256(abi.encode(nonce));
     }
 
-    function getMockEntry(uint256 srcChainId, uint256 dbNonce) internal view returns (InterchainEntry memory entry) {
+    function getMockEntry(uint64 srcChainId, uint64 dbNonce) internal view returns (InterchainEntry memory entry) {
         return InterchainEntry({
             srcChainId: srcChainId,
             dbNonce: dbNonce,
@@ -119,19 +119,19 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         });
     }
 
-    function getFakeBatchRoot(uint256 nonce) internal view returns (bytes32) {
+    function getFakeBatchRoot(uint64 nonce) internal view returns (bytes32) {
         return keccak256(abi.encode(writerT, getFakeDataHash(nonce)));
     }
 
-    function getFakeBatch(uint256 srcChainId, uint256 dbNonce) internal view returns (InterchainBatch memory batch) {
+    function getFakeBatch(uint64 srcChainId, uint64 dbNonce) internal view returns (InterchainBatch memory batch) {
         return InterchainBatch(srcChainId, dbNonce, getFakeBatchRoot(dbNonce));
     }
 
-    function getFakeDataHash(uint256 nonce) internal pure returns (bytes32) {
+    function getFakeDataHash(uint64 nonce) internal pure returns (bytes32) {
         return keccak256(abi.encode(nonce, "Fake data"));
     }
 
-    function getFakeEntry(uint256 srcChainId, uint256 dbNonce) internal view returns (InterchainEntry memory entry) {
+    function getFakeEntry(uint64 srcChainId, uint64 dbNonce) internal view returns (InterchainEntry memory entry) {
         return InterchainEntry({
             srcChainId: srcChainId,
             dbNonce: dbNonce,
@@ -145,11 +145,11 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         return keccak256(abi.encode(writerT, 0));
     }
 
-    function getEmptyBatch(uint256 srcChainId, uint256 dbNonce) internal view returns (InterchainBatch memory batch) {
+    function getEmptyBatch(uint64 srcChainId, uint64 dbNonce) internal view returns (InterchainBatch memory batch) {
         return InterchainBatch({srcChainId: srcChainId, dbNonce: dbNonce, batchRoot: getEmptyBatchRoot()});
     }
 
-    function getEmptyEntry(uint256 srcChainId, uint256 dbNonce) internal view returns (InterchainEntry memory entry) {
+    function getEmptyEntry(uint64 srcChainId, uint64 dbNonce) internal view returns (InterchainEntry memory entry) {
         return InterchainEntry({
             srcChainId: srcChainId,
             dbNonce: dbNonce,
@@ -223,7 +223,7 @@ contract InterchainDBDestinationTest is Test, InterchainDBEvents {
         vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__InvalidBatchVersion.selector, version));
     }
 
-    function expectSameChainId(uint256 chainId) internal {
+    function expectSameChainId(uint64 chainId) internal {
         vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__SameChainId.selector, chainId));
     }
 

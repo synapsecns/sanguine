@@ -38,10 +38,10 @@ interface IInterchainAppV1 is IInterchainApp {
     /// - This address will be the only trusted sender for the messages sent to this chain.
     /// @param chainId      The remote chain ID.
     /// @param remoteApp    The address of the remote app to link.
-    function linkRemoteApp(uint256 chainId, bytes32 remoteApp) external;
+    function linkRemoteApp(uint64 chainId, bytes32 remoteApp) external;
 
     /// @notice Thin wrapper for `linkRemoteApp` to accept EVM address as a parameter.
-    function linkRemoteAppEVM(uint256 chainId, address remoteApp) external;
+    function linkRemoteAppEVM(uint64 chainId, address remoteApp) external;
 
     /// @notice Allows the owner to add the module to the trusted modules set.
     /// - This set of modules will be used to verify both sent and received messages.
@@ -76,11 +76,11 @@ interface IInterchainAppV1 is IInterchainApp {
     function getLatestInterchainClient() external view returns (address);
 
     /// @notice Returns the linked app address (as bytes32) for the given chain ID.
-    function getLinkedApp(uint256 chainId) external view returns (bytes32);
+    function getLinkedApp(uint64 chainId) external view returns (bytes32);
 
     /// @notice Thin wrapper for `getLinkedApp` to return the linked app address as EVM address.
     /// @dev Will revert if the linked app address is not an EVM address.
-    function getLinkedAppEVM(uint256 chainId) external view returns (address);
+    function getLinkedAppEVM(uint64 chainId) external view returns (address);
 
     /// @notice Returns the list of Interchain Modules trusted by this app.
     /// This set of modules will be used to verify both sent and received messages.

@@ -3,8 +3,9 @@ package sql
 import (
 	"context"
 	"fmt"
-	"github.com/synapsecns/sanguine/core/metrics"
 	"time"
+
+	"github.com/synapsecns/sanguine/core/metrics"
 
 	gormClickhouse "gorm.io/driver/clickhouse"
 	"gorm.io/gorm"
@@ -67,6 +68,12 @@ func OpenGormClickhouse(ctx context.Context, address string, readOnly bool, hand
 		}
 		if (!clickhouseDB.WithContext(ctx).Migrator().HasTable(&CCTPEvent{})) {
 			err = clickhouseDB.WithContext(ctx).Set("gorm:table_options", "ENGINE=ReplacingMergeTree(insert_time) ORDER BY (tx_hash, contract_address, block_number, event_type, request_id)").AutoMigrate(&CCTPEvent{})
+			if err != nil {
+				return nil, fmt.Errorf("could not migrate last block number on clickhouse: %w", err)
+			}
+		}
+		if (!clickhouseDB.WithContext(ctx).Migrator().HasTable(&RFQEvent{})) {
+			err = clickhouseDB.WithContext(ctx).Set("gorm:table_options", "ENGINE=ReplacingMergeTree(insert_time) ORDER BY (tx_hash, contract_address, block_number, event_type, transaction_id)").AutoMigrate(&RFQEvent{})
 			if err != nil {
 				return nil, fmt.Errorf("could not migrate last block number on clickhouse: %w", err)
 			}

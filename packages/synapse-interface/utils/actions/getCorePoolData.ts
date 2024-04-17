@@ -1,5 +1,9 @@
-import { Address, readContracts } from '@wagmi/core'
-import { SWAP_ABI } from '@abis/swap'
+// @ts-nocheck
+import { readContracts } from '@wagmi/core'
+import { type Address } from 'viem'
+
+import { SWAP_ABI } from '@/constants/abis/swap'
+import { wagmiConfig } from '@/wagmiConfig'
 
 type PoolFeeResponse = {
   result: [
@@ -20,7 +24,7 @@ type VirtualPriceResponse = {
 }
 
 export const getCorePoolData = async (poolAddress: string, chainId: number) => {
-  const data: any = await readContracts({
+  const data: any = await readContracts(wagmiConfig, {
     contracts: [
       {
         address: poolAddress as Address,

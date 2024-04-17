@@ -67,7 +67,7 @@ contract SynapseExecutionServiceV1 is
 
     /// @inheritdoc IExecutionService
     function requestExecution(
-        uint256 dstChainId,
+        uint64 dstChainId,
         uint256 txPayloadSize,
         bytes32 transactionId,
         uint256 executionFee,
@@ -86,7 +86,7 @@ contract SynapseExecutionServiceV1 is
 
     /// @inheritdoc IExecutionService
     function getExecutionFee(
-        uint256 dstChainId,
+        uint64 dstChainId,
         uint256 txPayloadSize,
         bytes calldata options
     )

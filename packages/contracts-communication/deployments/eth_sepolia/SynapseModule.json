@@ -1,9 +1,9 @@
 {
-  "address": "0x886ade76fBe5b6702C2B61bb1b07ab397A339376",
-  "constructorArgs": "0x000000000000000000000000acaaaa98b9e23725046eda88d371b4864d90496b000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
+  "address": "0x95f2e2fAFE38f2aAdC9F9cBef98785809cc4bb6B",
+  "constructorArgs": "0x0000000000000000000000001ce3a9d87a26ae56a43a5bb1d5e9a8d14550d0a4000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
   "receipt": {
-    "hash": "0xbe54ed2813ddb97707f28a1bcf09d966db2f2a81dbc165a7f8173f28186d9de0",
-    "blockNumber": 5628113
+    "hash": "0x5347793c4471a1d31ce1de3fe07a61ee2f5933e49353ada4673adb4f106e99f3",
+    "blockNumber": 5712781
   },
   "abi": [
     {
@@ -139,13 +139,13 @@
       "inputs": [
         {
           "name": "dstChainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "dbNonce",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ],
       "outputs": [
@@ -189,8 +189,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ],
       "outputs": [
@@ -273,8 +273,8 @@
       "inputs": [
         {
           "name": "dstChainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "versionedBatch",
@@ -343,8 +343,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "gasLimit",
@@ -392,9 +392,9 @@
       "inputs": [
         {
           "name": "dstChainId",
-          "type": "uint256",
+          "type": "uint64",
           "indexed": true,
-          "internalType": "uint256"
+          "internalType": "uint64"
         },
         {
           "name": "batch",
@@ -417,9 +417,9 @@
       "inputs": [
         {
           "name": "srcChainId",
-          "type": "uint256",
+          "type": "uint64",
           "indexed": true,
-          "internalType": "uint256"
+          "internalType": "uint64"
         },
         {
           "name": "batch",
@@ -438,7 +438,7 @@
     },
     {
       "type": "event",
-      "name": "ClaimFeeFractionChanged",
+      "name": "ClaimFeeFractionSet",
       "inputs": [
         {
           "name": "claimFeeFraction",
@@ -451,7 +451,7 @@
     },
     {
       "type": "event",
-      "name": "FeeCollectorChanged",
+      "name": "FeeCollectorSet",
       "inputs": [
         {
           "name": "feeCollector",
@@ -499,9 +499,9 @@
       "inputs": [
         {
           "name": "srcChainId",
-          "type": "uint256",
+          "type": "uint64",
           "indexed": false,
-          "internalType": "uint256"
+          "internalType": "uint64"
         },
         {
           "name": "data",
@@ -518,9 +518,9 @@
       "inputs": [
         {
           "name": "dstChainId",
-          "type": "uint256",
+          "type": "uint64",
           "indexed": false,
-          "internalType": "uint256"
+          "internalType": "uint64"
         },
         {
           "name": "data",
@@ -533,7 +533,7 @@
     },
     {
       "type": "event",
-      "name": "GasOracleChanged",
+      "name": "GasOracleSet",
       "inputs": [
         {
           "name": "gasOracle",
@@ -565,7 +565,7 @@
     },
     {
       "type": "event",
-      "name": "ThresholdChanged",
+      "name": "ThresholdSet",
       "inputs": [
         {
           "name": "threshold",
@@ -604,13 +604,13 @@
     },
     {
       "type": "event",
-      "name": "VerifyGasLimitChanged",
+      "name": "VerifyGasLimitSet",
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
+          "type": "uint64",
           "indexed": false,
-          "internalType": "uint256"
+          "internalType": "uint64"
         },
         {
           "name": "gasLimit",
@@ -643,8 +643,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ]
     },
@@ -681,8 +681,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ]
     },

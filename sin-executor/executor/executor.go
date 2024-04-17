@@ -7,7 +7,6 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/synapsecns/sanguine/core"
 	"github.com/synapsecns/sanguine/sin-executor/contracts/executionservice"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -178,7 +177,6 @@ func (e *Executor) executeTransaction(ctx context.Context, request db.Transactio
 	}
 
 	_, err := e.submitter.SubmitTransaction(ctx, request.DstChainID, func(transactor *bind.TransactOpts) (tx *types.Transaction, err error) {
-		transactor.GasLimit = request.Options.GasLimit.Uint64()
 		transactor.Value = request.Options.GasAirdrop
 
 		// nolint: wrapcheck
@@ -301,9 +299,9 @@ func (e *Executor) runChainIndexer(parentCtx context.Context, chainID int) (err 
 			switch event := parsedEvent.(type) {
 			case *interchainclient.InterchainClientV1InterchainTransactionSent:
 				encodedTX, err := e.clientContracts[chainID].EncodeTransaction(&bind.CallOpts{Context: ctx}, interchainclient.InterchainTransaction{
-					SrcChainId:  big.NewInt(int64(chainID)),
+					SrcChainId:  uint64(chainID),
 					SrcSender:   event.SrcSender,
-					DstChainId:  core.CopyBigInt(event.DstChainId),
+					DstChainId:  event.DstChainId,
 					DstReceiver: event.DstReceiver,
 					DbNonce:     event.DbNonce,
 					Options:     event.Options,

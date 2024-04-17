@@ -369,12 +369,13 @@ func (t *txSubmitterImpl) setGasPrice(ctx context.Context, client client.EVM,
 	}()
 
 	t.bumpGasFromPrevTx(ctx, transactor, prevTx, chainID, useDynamic)
-	t.applyGasFloor(ctx, transactor, chainID, useDynamic)
 
 	err = t.applyGasFromOracle(ctx, transactor, client, useDynamic)
 	if err != nil {
 		return fmt.Errorf("could not populate gas from oracle: %w", err)
 	}
+
+	t.applyGasFloor(ctx, transactor, chainID, useDynamic)
 
 	err = t.applyGasCeil(ctx, transactor, chainID, useDynamic)
 	if err != nil {

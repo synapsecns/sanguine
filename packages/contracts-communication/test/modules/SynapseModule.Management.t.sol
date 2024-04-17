@@ -202,7 +202,7 @@ contract SynapseModuleManagementTest is Test, SynapseModuleEvents {
 
     function test_setThreshold_emitsEvent() public {
         vm.expectEmit(address(module));
-        emit ThresholdChanged(3);
+        emit ThresholdSet(3);
         vm.prank(owner);
         module.setThreshold(3);
     }
@@ -228,7 +228,7 @@ contract SynapseModuleManagementTest is Test, SynapseModuleEvents {
 
     function test_setFeeCollector_emitsEvent() public {
         vm.expectEmit(address(module));
-        emit FeeCollectorChanged(feeCollector);
+        emit FeeCollectorSet(feeCollector);
         vm.prank(owner);
         module.setFeeCollector(feeCollector);
     }
@@ -248,7 +248,7 @@ contract SynapseModuleManagementTest is Test, SynapseModuleEvents {
 
     function test_setFeeFraction_emitsEvent() public {
         vm.expectEmit(address(module));
-        emit ClaimFeeFractionChanged(0.001e18);
+        emit ClaimFeeFractionSet(0.001e18);
         vm.prank(owner);
         module.setClaimFeeFraction(0.001e18);
     }
@@ -256,7 +256,7 @@ contract SynapseModuleManagementTest is Test, SynapseModuleEvents {
     function test_setFeeFraction_exactlyMax() public {
         uint256 maxFeeFraction = 0.01e18;
         vm.expectEmit(address(module));
-        emit ClaimFeeFractionChanged(maxFeeFraction);
+        emit ClaimFeeFractionSet(maxFeeFraction);
         vm.prank(owner);
         module.setClaimFeeFraction(maxFeeFraction);
         assertEq(module.getClaimFeeFraction(), maxFeeFraction);
@@ -286,7 +286,7 @@ contract SynapseModuleManagementTest is Test, SynapseModuleEvents {
 
     function test_setGasOracle_emitsEvent() public {
         vm.expectEmit(address(module));
-        emit GasOracleChanged(address(gasOracle));
+        emit GasOracleSet(address(gasOracle));
         vm.prank(owner);
         module.setGasOracle(address(gasOracle));
     }
@@ -317,7 +317,7 @@ contract SynapseModuleManagementTest is Test, SynapseModuleEvents {
 
     function test_setVerifyGasLimit_emitsEvent() public {
         vm.expectEmit(address(module));
-        emit VerifyGasLimitChanged(1, 1000);
+        emit VerifyGasLimitSet(1, 1000);
         vm.prank(owner);
         module.setVerifyGasLimit(1, 1000);
     }

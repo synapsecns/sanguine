@@ -70,7 +70,6 @@ supports_eip_1559: true`
 	assert.Equal(t, 60, cfg.BumpIntervalSeconds)
 	assert.Equal(t, 10, cfg.GasBumpPercentage)
 	assert.Equal(t, uint64(1000), cfg.GasEstimate)
-	assert.Equal(t, true, cfg.IsL2(0))
 	assert.Equal(t, true, cfg.DynamicGasEstimate)
 	assert.Equal(t, true, cfg.SupportsEIP1559(0))
 }

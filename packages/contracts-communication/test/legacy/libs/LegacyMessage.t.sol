@@ -60,4 +60,18 @@ contract LegacyMessageLibTest is Test {
         assertEq(newSrcNonce, legacyMsg.srcNonce);
         assertEq(newMessage, legacyMsg.message);
     }
+
+    function test_payloadSize(LegacyMessage memory legacyMsg) public {
+        uint256 size = libHarness.payloadSize(legacyMsg.message.length);
+        uint256 expectedSize = libHarness.encodeLegacyMessage(
+            legacyMsg.srcSender, legacyMsg.dstReceiver, legacyMsg.srcNonce, legacyMsg.message
+        ).length;
+        assertEq(size, expectedSize);
+    }
+
+    function test_payloadSize_fuzzBytesOnly(bytes memory message) public {
+        LegacyMessage memory legacyMsg;
+        legacyMsg.message = message;
+        test_payloadSize(legacyMsg);
+    }
 }

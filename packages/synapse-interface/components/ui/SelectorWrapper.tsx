@@ -1,12 +1,13 @@
 import React, { useEffect, useRef } from 'react'
 
-import { getHoverStyleForButton } from '@/styles/hover'
+import { getActiveStyleForButton, getHoverStyleForButton } from '@/styles/hover'
 import { DropDownArrowSvg } from '@/components/icons/DropDownArrowSvg'
 import { SlideSearchBox } from '@/components/ui/SlideSearchBox'
 import { CloseButton } from '@/components/ui/CloseButton'
 import { SearchResults } from '@/components/ui/SearchResults'
 import { useKeyPress } from '@/utils/hooks/useKeyPress'
 import { joinClassNames } from '@/utils/joinClassNames'
+import useCloseOnOutsideClick from '@/utils/hooks/useCloseOnOutsideClick'
 
 export const SelectorWrapper = ({
   dataTestId,
@@ -17,11 +18,12 @@ export const SelectorWrapper = ({
   searchStr,
   onClose,
   onSearch,
-  hover,
-  setHover,
+  open,
+  setOpen,
 }) => {
-  const escPressed = useKeyPress('Escape', hover)
+  const escPressed = useKeyPress('Escape', open)
 
+  const parentRef = useRef(null)
   const popoverRef = useRef(null)
 
   useEffect(() => {
@@ -34,7 +36,7 @@ export const SelectorWrapper = ({
     if (y + height * 0.67 > screen) {
       ref.style.position = 'fixed'
       ref.style.bottom = '4px'
-      document.addEventListener('scroll', () => setHover(false), {
+      document.addEventListener('scroll', () => setOpen(false), {
         once: true,
       })
     }
@@ -55,26 +57,18 @@ export const SelectorWrapper = ({
 
   useEffect(escFunc, [escPressed])
 
-  function handleMouseMove(e) {
-    if (
-      (Math.round(e.movementX) < 1 && !e.movementY) ||
-      (Math.round(e.movementY) < 1 && !e.movementX)
-    )
-      setHover(true)
-  }
-
-  function handleMouseLeave() {
-    if (!searchStr) onClose()
-  }
+  useCloseOnOutsideClick(parentRef, () => onClose())
 
   const buttonClassName = joinClassNames({
     flex: 'flex items-center gap-2',
     space: 'px-2 py-1.5 rounded',
     border: 'border border-zinc-200 dark:border-transparent',
-    text: 'leading-tight',
-    hover: getHoverStyleForButton(selectedItem?.color),
+    text: `leading-tight ${!label && 'text-lg'}`,
+    open: `${getHoverStyleForButton(selectedItem?.color)} ${
+      open && getActiveStyleForButton(selectedItem?.color)
+    }`,
     active: 'active:opacity-80',
-    custom: label ? 'bg-transparent' : 'bg-white dark:bg-separator text-lg',
+    custom: label || open ? 'bg-transparent' : 'bg-white dark:bg-separator',
   })
 
   // TODO: Unify chainImg/icon properties between Chain and Token types
@@ -84,12 +78,11 @@ export const SelectorWrapper = ({
   const itemName = selectedItem?.['symbol' in selectedItem ? 'symbol' : 'name']
 
   return (
-    <div className="relative" onMouseLeave={handleMouseLeave}>
+    <div className="relative" ref={parentRef}>
       <button
         data-test-id={`${dataTestId}-button`}
         className={buttonClassName}
-        onMouseMove={handleMouseMove}
-        onClick={() => setHover(true)}
+        onClick={() => (!open ? setOpen(true) : onClose())}
       >
         {itemName && (
           <img
@@ -110,7 +103,7 @@ export const SelectorWrapper = ({
         </span>
         <DropDownArrowSvg />
       </button>
-      {hover && (
+      {open && (
         <div
           ref={popoverRef}
           data-test-id={`${dataTestId}-overlay`}

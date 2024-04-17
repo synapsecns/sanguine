@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { switchNetwork } from '@wagmi/core'
+import { switchChain } from '@wagmi/core'
 import { setFromChainId } from '@/slices/bridge/reducer'
+import { wagmiConfig } from '@/wagmiConfig'
 
 type PortfolioConnectButton = {
   portfolioChainId: number
@@ -63,7 +64,7 @@ const ConnectButton = ({ chainId }: { chainId: number }) => {
   const handleConnectNetwork: () => Promise<void> = async () => {
     setIsConnecting(true)
     try {
-      await switchNetwork({ chainId: chainId }).then((success) => {
+      await switchChain(wagmiConfig, { chainId }).then((success) => {
         success && dispatch(setFromChainId(chainId))
         scrollToTop()
       })

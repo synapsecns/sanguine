@@ -8,7 +8,7 @@ contract ExecutionServiceMock is IExecutionService {
     address public executorEOA;
 
     function requestExecution(
-        uint256 dstChainId,
+        uint64 dstChainId,
         uint256 txPayloadSize,
         bytes32 transactionId,
         uint256 executionFee,
@@ -18,7 +18,7 @@ contract ExecutionServiceMock is IExecutionService {
     {}
 
     function getExecutionFee(
-        uint256 dstChainId,
+        uint64 dstChainId,
         uint256 txPayloadSize,
         bytes memory options
     )

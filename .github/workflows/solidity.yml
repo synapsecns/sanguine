@@ -6,13 +6,13 @@ on:
       - 'packages/contracts-core/**'
       - 'packages/contracts-rfq/**'
       - '.github/workflows/solidity.yml'
-      - 'packages/contracts-communication'
+      - 'packages/contracts-communication/**'
       - 'packages/solidity-devops/**'
   push:
     paths:
       - 'packages/contracts-core/**'
       - 'packages/contracts-rfq/**'
-      - 'packages/contracts-communication'
+      - 'packages/contracts-communication/**'
       - 'packages/solidity-devops/**'
       - '.github/workflows/solidity.yml'
 

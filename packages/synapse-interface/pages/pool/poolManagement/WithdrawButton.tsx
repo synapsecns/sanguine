@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi'
+import { useAccount, useAccountEffect, useSwitchChain } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { DEFAULT_WITHDRAW_QUOTE } from '@/slices/poolWithdrawSlice'
 import {
@@ -12,12 +12,12 @@ import { TransactionButton } from '@/components/buttons/TransactionButton'
 import LoadingDots from '@/components/ui/tailwind/LoadingDots'
 
 const WithdrawButton = ({ approveTxn, withdrawTxn, isApproved }) => {
-  const { chain } = useNetwork()
-  const { chains, switchNetwork } = useSwitchNetwork()
+  const { chain, isConnected: isConnectedInit } = useAccount()
+  const { chains, switchChain } = useSwitchChain()
   const { openConnectModal } = useConnectModal()
   const [isConnected, setIsConnected] = useState(false) // Initialize to false
 
-  const { isConnected: isConnectedInit } = useAccount({
+  useAccountEffect({
     onDisconnect() {
       setIsConnected(false)
     },
@@ -65,7 +65,7 @@ const WithdrawButton = ({ approveTxn, withdrawTxn, isApproved }) => {
   } else if (chain?.id !== pool.chainId) {
     buttonProperties = {
       label: `Switch to ${chains.find((c) => c.id === pool.chainId).name}`,
-      onClick: () => switchNetwork(pool.chainId),
+      onClick: () => switchChain({ chainId: pool.chainId }),
       pendingLabel: 'Switching chains',
     }
   } else if (!isApproved && isValidQuote && isValidInput) {

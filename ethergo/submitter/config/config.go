@@ -66,7 +66,7 @@ const (
 var DefaultMaxPrice = big.NewInt(500 * params.GWei)
 
 // DefaultMinGasPrice is the default min price of a tx.
-var DefaultMinGasPrice = big.NewInt(1 * params.GWei)
+var DefaultMinGasPrice = big.NewInt(0.01 * params.GWei)
 
 // note: there's probably a way to clean these getters up with generics, the real problem comes with the fact that
 // that this would require the caller to override the entire struct, which is not ideal..

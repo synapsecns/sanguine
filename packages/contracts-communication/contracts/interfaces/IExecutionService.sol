@@ -16,7 +16,7 @@ interface IExecutionService {
     /// @param executionFee         The fee paid for the execution.
     /// @param options              The options to use for the execution.
     function requestExecution(
-        uint256 dstChainId,
+        uint64 dstChainId,
         uint256 txPayloadSize,
         bytes32 transactionId,
         uint256 executionFee,
@@ -33,7 +33,7 @@ interface IExecutionService {
     /// @param txPayloadSize        The size of the transaction payload to use for the execution.
     /// @param options              The options to use for the execution.
     function getExecutionFee(
-        uint256 dstChainId,
+        uint64 dstChainId,
         uint256 txPayloadSize,
         bytes memory options
     )

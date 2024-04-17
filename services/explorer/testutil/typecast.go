@@ -2,6 +2,7 @@ package testutil
 
 import (
 	"context"
+
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/manager"
@@ -9,6 +10,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/bridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
@@ -61,4 +63,11 @@ func (d *DeployManager) GetCCTP(ctx context.Context, backend backends.SimulatedT
 	d.T().Helper()
 
 	return manager.GetContract[*cctp.CCTPRef](ctx, d.T(), d, backend, CCTPType)
+}
+
+// GetFastBridge gets a typecast fastbridge.
+func (d *DeployManager) GetFastBridge(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *fastbridge.FastBridgeRef) {
+	d.T().Helper()
+
+	return manager.GetContract[*fastbridge.FastBridgeRef](ctx, d.T(), d, backend, FastBridgeType)
 }

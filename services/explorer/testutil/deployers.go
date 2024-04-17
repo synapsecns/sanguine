@@ -6,6 +6,7 @@ import (
 	"math/big"
 
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -57,6 +58,11 @@ type CCTPDeployer struct {
 	*deployer.BaseDeployer
 }
 
+// FastBridgeDeployer is the type of the rfq (fastbridge) deployer.
+type FastBridgeDeployer struct {
+	*deployer.BaseDeployer
+}
+
 // NewBridgeConfigV3Deployer creates a new bridge config v2 client.
 func NewBridgeConfigV3Deployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return BridgeConfigV3Deployer{deployer.NewSimpleDeployer(registry, backend, BridgeConfigTypeV3)}
@@ -90,6 +96,11 @@ func NewMetaSwapDeployer(registry deployer.GetOnlyContractRegistry, backend back
 // NewCCTPDeployer creates a new cctp client.
 func NewCCTPDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
 	return CCTPDeployer{deployer.NewSimpleDeployer(registry, backend, CCTPType)}
+}
+
+// NewFastBridgeDeployer creates a new fastbridge client.
+func NewFastBridgeDeployer(registry deployer.GetOnlyContractRegistry, backend backends.SimulatedTestBackend) deployer.ContractDeployer {
+	return FastBridgeDeployer{deployer.NewSimpleDeployer(registry, backend, FastBridgeType)}
 }
 
 // Deploy deploys bridge config v3 contract
@@ -204,9 +215,24 @@ func (n CCTPDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, e
 	})
 }
 
+// Deploy deploys RFQ contract
+//
+//nolint:dupl
+func (n FastBridgeDeployer) Deploy(ctx context.Context) (contracts.DeployedContract, error) {
+	return n.DeploySimpleContract(ctx, func(transactOps *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, interface{}, error) {
+		// Create mock owner
+		owner := common.BigToAddress(big.NewInt(gofakeit.Int64()))
+
+		return fastbridge.DeployFastBridge(transactOps, backend, owner)
+	}, func(address common.Address, backend bind.ContractBackend) (interface{}, error) {
+		return fastbridge.NewFastBridgeRef(address, backend)
+	})
+}
+
 var _ deployer.ContractDeployer = &BridgeConfigV3Deployer{}
 var _ deployer.ContractDeployer = &SynapseBridgeDeployer{}
 var _ deployer.ContractDeployer = &SwapFlashLoanDeployer{}
 var _ deployer.ContractDeployer = &SynapseBridgeV1Deployer{}
 var _ deployer.ContractDeployer = &MetaSwapDeployer{}
 var _ deployer.ContractDeployer = &CCTPDeployer{}
+var _ deployer.ContractDeployer = &FastBridgeDeployer{}

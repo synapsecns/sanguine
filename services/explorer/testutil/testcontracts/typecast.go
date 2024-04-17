@@ -2,6 +2,7 @@ package testcontracts
 
 import (
 	"context"
+
 	"github.com/synapsecns/sanguine/ethergo/backends"
 	"github.com/synapsecns/sanguine/ethergo/contracts"
 	"github.com/synapsecns/sanguine/ethergo/manager"
@@ -9,6 +10,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/testbridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp/testcctp"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/fastbridge/testfastbridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus/testmessagebus"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap/testmetaswap"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap/testswap"
@@ -62,4 +64,11 @@ func (d *DeployManager) GetTestCCTP(ctx context.Context, backend backends.Simula
 	d.T().Helper()
 
 	return manager.GetContract[*testcctp.TestCCTPRef](ctx, d.T(), d, backend, TestCCTPType)
+}
+
+// GetTestRFQ gets a typecast test rfq contract.
+func (d *DeployManager) GetTestRFQ(ctx context.Context, backend backends.SimulatedTestBackend) (contract contracts.DeployedContract, handle *testfastbridge.TestFastBridgeRef) {
+	d.T().Helper()
+
+	return manager.GetContract[*testfastbridge.TestFastBridgeRef](ctx, d.T(), d, backend, TestFastBridgeType)
 }

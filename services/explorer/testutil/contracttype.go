@@ -7,6 +7,7 @@ import (
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridge/bridgev1"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/bridgeconfig"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/cctp"
+	"github.com/synapsecns/sanguine/services/explorer/contracts/fastbridge"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/messagebus"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/metaswap"
 	"github.com/synapsecns/sanguine/services/explorer/contracts/swap"
@@ -57,6 +58,8 @@ const (
 	MetaSwapType
 	// CCTPType is cctp contract type.
 	CCTPType
+	// FastBridgeType is the rfq (fastbridge) contract type.
+	FastBridgeType
 )
 
 // ID gets the contract type as an id.
@@ -91,6 +94,8 @@ func (c contractTypeImpl) ContractInfo() *compiler.Contract {
 		return metaswap.Contracts["/solidity/MetaSwapV1_flat.sol:MetaSwap"]
 	case CCTPType:
 		return cctp.Contracts["solidity/SynapseCCTPV1_flat.sol:SynapseCCTP"]
+	case FastBridgeType:
+		return fastbridge.Contracts["/solidity/SynapseRFQV2_flat.sol:FastBridge"]
 	default:
 		panic("not yet implemented")
 	}

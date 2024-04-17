@@ -3,10 +3,11 @@ package indexerconfig
 
 import (
 	"fmt"
-	"github.com/richardwilkes/toolbox/collection"
-	"github.com/synapsecns/sanguine/services/explorer/config"
 	"os"
 	"path/filepath"
+
+	"github.com/richardwilkes/toolbox/collection"
+	"github.com/synapsecns/sanguine/services/explorer/config"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/jftuga/ellipsis"
@@ -27,10 +28,12 @@ const (
 	MetaSwapContractType
 	// CCTPContractType is the ContractType for the cctp contract.
 	CCTPContractType
+	// RFQContractType is the ContractType for the rfq contract.
+	RFQContractType
 )
 
 func (c ContractType) String() string {
-	return [...]string{"bridge", "swap", "messagebus", "metaswap", "cctp"}[c]
+	return [...]string{"bridge", "swap", "messagebus", "metaswap", "cctp", "rfq"}[c]
 }
 
 // ContractTypeFromString converts a string (intended to be from parsed config) into the ContractType type.
@@ -46,6 +49,8 @@ func ContractTypeFromString(s string) (ContractType, error) {
 		return MetaSwapContractType, nil
 	case "cctp":
 		return CCTPContractType, nil
+	case "rfq":
+		return RFQContractType, nil
 	default:
 		return -1, fmt.Errorf("unknown contract type: %s", s)
 	}

@@ -4,10 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	ethTypes "github.com/ethereum/go-ethereum/core/types"
-	"gopkg.in/yaml.v2"
 	"math/big"
 	"strconv"
+
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"gopkg.in/yaml.v2"
 )
 
 // ErrUnknownTopic is returned when the topic is unknown.
@@ -48,6 +49,20 @@ func ToNullString(str *string) sql.NullString {
 	}
 
 	return newNullStr
+}
+
+// ToNullBool is a helper function to convert values to null bool.
+func ToNullBool(b *bool) sql.NullBool {
+	var newNullBool sql.NullBool
+
+	if b != nil {
+		newNullBool.Valid = true
+		newNullBool.Bool = *b
+	} else {
+		newNullBool.Valid = false
+	}
+
+	return newNullBool
 }
 
 // ToNullInt64 is a helper function to convert values to null string.
