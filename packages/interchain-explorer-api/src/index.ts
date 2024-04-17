@@ -61,11 +61,13 @@ ponder.on(
         sentAt: timestamp,
         updatedAt: BigInt(Math.trunc(Date.now() / 1000)),
         interchainTransactionSentId: record.id,
+        status: 'Sent',
       },
       create: {
         sentAt: timestamp,
         createdAt: BigInt(Math.trunc(Date.now() / 1000)),
         interchainTransactionSentId: record.id,
+        status: 'Sent',
       },
     })
 
@@ -73,6 +75,7 @@ ponder.on(
     console.log(`on: ${context.network.name}`)
     console.log(`InterchainClientV1:InterchainTransactionSent`)
     console.log(`event.args`, event.args)
+    console.log(`event.log.blockHash`, event.log.blockHash)
     console.log('==========')
   }
 )
@@ -158,6 +161,7 @@ ponder.on('InterchainDB:InterchainEntryWritten', async ({ event, context }) => {
   console.log(`on: ${context.network.name}`)
   console.log('InterchainDB:InterchainEntryWritten')
   console.log(`event.args`, event.args)
+  console.log(`event.log.blockHash`, event.log.blockHash)
   console.log('==========')
 })
 
@@ -168,18 +172,11 @@ ponder.on(
       db: { InterchainTransactionSent, InterchainTransactionReceived },
     } = context
 
-    const entrySent = await InterchainTransactionSent.findMany({
-      where: { dbNonce: event.args.dbNonce },
-    })
-
-    const entryReceived = await InterchainTransactionReceived.findMany({
-      where: { dbNonce: event.args.dbNonce },
-    })
-
     console.log('==========')
     console.log(`on: ${context.network.name}`)
     console.log('InterchainDB:InterchainBatchVerificationRequested')
     console.log(`event.args`, event.args)
+    console.log(`event.log.blockHash`, event.log.blockHash)
     console.log('==========')
   }
 )
@@ -216,21 +213,23 @@ ponder.on(
   }
 )
 
-// ponder.on(
-//   'SynapseModule:BatchVerificationRequested',
-//   async ({ event, context }) => {
-//     console.log('==========')
-//     console.log(`on: ${context.network.name}`)
-//     console.log('SynapseModule:BatchVerificationRequested')
-//     // console.log(`event.args`, event.args)
-//     console.log('==========')
-//   }
-// )
+ponder.on(
+  'SynapseModule:BatchVerificationRequested',
+  async ({ event, context }) => {
+    console.log('==========')
+    console.log(`on: ${context.network.name}`)
+    console.log('SynapseModule:BatchVerificationRequested')
+    console.log(`event.args`, event.args)
+    console.log(`event.log.blockHash`, event.log.blockHash)
+    console.log('==========')
+  }
+)
 
-// ponder.on('SynapseModule:BatchVerified', async ({ event, context }) => {
-//   console.log('==========')
-//   console.log(`on: ${context.network.name}`)
-//   console.log('SynapseModule:BatchVerified')
-//   // console.log(`event.args`, event.args)
-//   console.log('==========')
-// })
+ponder.on('SynapseModule:BatchVerified', async ({ event, context }) => {
+  console.log('==========')
+  console.log(`on: ${context.network.name}`)
+  console.log('SynapseModule:BatchVerified')
+  console.log(`event.args`, event.args)
+  console.log(`event.log.blockHash`, event.log.blockHash)
+  console.log('==========')
+})
