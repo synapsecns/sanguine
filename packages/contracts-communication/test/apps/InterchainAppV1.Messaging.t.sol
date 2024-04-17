@@ -11,7 +11,7 @@ import {InterchainClientV1Mock} from "../mocks/InterchainClientV1Mock.sol";
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
 abstract contract InterchainAppV1MessagingTest is InterchainAppV1Test {
-    uint256 public constant MOCK_DB_NONCE = 42;
+    uint64 public constant MOCK_DB_NONCE = 42;
     uint64 public constant MOCK_ENTRY_INDEX = 4;
 
     uint256 public constant MOCK_IC_FEE = 4844;
@@ -28,7 +28,7 @@ abstract contract InterchainAppV1MessagingTest is InterchainAppV1Test {
         entryIndex: MOCK_ENTRY_INDEX
     });
 
-    event MessageReceived(uint256 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message);
+    event MessageReceived(uint64 srcChainId, bytes32 sender, uint64 dbNonce, uint64 entryIndex, bytes message);
 
     function configureICAppV1() internal override {
         appHarness.addInterchainClient({client: icClient, updateLatest: true});
