@@ -12,8 +12,8 @@ import {SynapseGasOracleMock} from "../mocks/SynapseGasOracleMock.sol";
 // solhint-disable ordering
 contract SynapseExecutionServiceV1ExecutionTest is SynapseExecutionServiceV1Test {
     bytes32 public constant MOCK_TX_ID = keccak256("mock-tx-id");
-    uint256 public constant LOCAL_CHAIN_ID = 1337;
-    uint256 public constant REMOTE_CHAIN_ID = 7331;
+    uint64 public constant LOCAL_CHAIN_ID = 1337;
+    uint64 public constant REMOTE_CHAIN_ID = 7331;
 
     uint256 public constant MOCK_GAS_LIMIT = 100_000;
     uint256 public constant MOCK_GAS_AIRDROP = 0.01 ether;

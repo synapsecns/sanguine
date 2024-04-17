@@ -1,9 +1,9 @@
 {
-  "address": "0x08DE617d00e0D6533d2CaB4a67caB268000dec54",
+  "address": "0x012a0311B5e5210E73D9766253A32e14598Ae4d8",
   "constructorArgs": "0x000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
   "receipt": {
-    "hash": "0x260f57e7cf093dcf92a420007fbd34a848f179d2b8be44ce73a41024bd5199ca",
-    "blockNumber": 30708802
+    "hash": "0x1ee71d6c87f77c519a97aa789386b597dd8802261a0eb539f2c53b7b64ed6ca2",
+    "blockNumber": 34358695
   },
   "abi": [
     {
@@ -80,8 +80,8 @@
       "inputs": [
         {
           "name": "srcChainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "sender",
@@ -90,8 +90,8 @@
         },
         {
           "name": "dbNonce",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "entryIndex",
@@ -230,8 +230,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ],
       "outputs": [
@@ -249,8 +249,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ],
       "outputs": [
@@ -403,8 +403,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "remoteApp",
@@ -421,8 +421,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "remoteApp",
@@ -657,14 +657,14 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "indexed": true,
-          "internalType": "uint256"
+          "type": "uint64",
+          "indexed": false,
+          "internalType": "uint64"
         },
         {
           "name": "remoteApp",
           "type": "bytes32",
-          "indexed": true,
+          "indexed": false,
           "internalType": "bytes32"
         }
       ],
@@ -1074,8 +1074,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ]
     },
@@ -1085,8 +1085,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ]
     },
@@ -1096,8 +1096,8 @@
       "inputs": [
         {
           "name": "srcChainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "sender",
@@ -1125,6 +1125,22 @@
           "name": "receiver",
           "type": "bytes32",
           "internalType": "bytes32"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "SafeCastOverflowedUintDowncast",
+      "inputs": [
+        {
+          "name": "bits",
+          "type": "uint8",
+          "internalType": "uint8"
+        },
+        {
+          "name": "value",
+          "type": "uint256",
+          "internalType": "uint256"
         }
       ]
     }

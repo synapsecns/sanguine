@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { useAccount, useNetwork } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { MetamaskIcon } from '@icons/WalletIcons/Metamask'
 import { CoinbaseWalletIcon } from '@icons/WalletIcons/CoinbaseWalletIcon'
 import { WalletConnectIcon } from '@icons/WalletIcons/WalletConnectIcon'
@@ -35,7 +35,7 @@ export const WalletIcon = ({
 
 export const Wallet = () => {
   const { connector: activeConnector, address: connectedAddress } = useAccount()
-  const { chain: currentChain } = useNetwork()
+  const { chain: currentChain } = useAccount()
   const walletId = activeConnector?.id
 
   const [mounted, setMounted] = useState(false)
@@ -84,7 +84,7 @@ export const Wallet = () => {
                     </button>
                   )
                 }
-                if (currentChain?.unsupported || chain?.unsupported) {
+                if (chain?.unsupported) {
                   return (
                     <button
                       onClick={openChainModal}

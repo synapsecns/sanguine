@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/jpillora/backoff"
@@ -19,6 +20,8 @@ import (
 	bridgeTypes "github.com/synapsecns/sanguine/services/explorer/types/bridge"
 	rfqTypes "github.com/synapsecns/sanguine/services/explorer/types/fastbridge"
 )
+
+const ethCoinGeckoID = "ethereum"
 
 // RFQParser parsers rfq logs.
 type RFQParser struct {
@@ -108,16 +111,24 @@ func (p *RFQParser) MatureLogs(ctx context.Context, rfqEvent *model.RFQEvent, iF
 	timeStampBig := uint64(*timeStamp)
 	rfqEvent.TimeStamp = &timeStampBig
 
-	tokenData, err := p.tokenDataService.GetTokenData(ctx, chainID, common.HexToAddress(rfqEvent.OriginToken))
-	if err != nil {
-		logger.Errorf("could not get token data: %v", err)
-		return nil, fmt.Errorf("could not get pool token data: %w", err)
-	}
-	decimals := tokenData.Decimals()
-	rfqEvent.TokenSymbol = tokenData.TokenID()
+	var curCoinGeckoId string
+	tokenAddressStr := common.HexToAddress(rfqEvent.OriginToken).Hex()
+	const ethAddress = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
 
-	rfqEvent.TokenDecimal = &decimals
-	p.applyPriceData(ctx, rfqEvent, usdcCoinGeckoID)
+	if strings.EqualFold(tokenAddressStr, ethAddress) {
+		rfqEvent.TokenSymbol = "ETH"
+		rfqEvent.TokenDecimal = new(uint8)
+		*rfqEvent.TokenDecimal = 18
+		curCoinGeckoId = ethCoinGeckoID
+	} else {
+		// Assuming any other token is USDC
+		rfqEvent.TokenSymbol = "USDC"
+		rfqEvent.TokenDecimal = new(uint8)
+		*rfqEvent.TokenDecimal = 6
+		curCoinGeckoId = usdcCoinGeckoID
+	}
+	// find the price data for that specific token
+	p.applyPriceData(ctx, rfqEvent, curCoinGeckoId)
 
 	// Would store into bridge database with a new goroutine but saw unreliable storage of events w/parent context cancellation.
 	bridgeEvent := rfqEventToBridgeEvent(*rfqEvent)
@@ -159,7 +170,7 @@ func (p *RFQParser) applyPriceData(ctx context.Context, rfqEvent *model.RFQEvent
 	if rfqEvent.OriginAmount != nil {
 		amountUSD := GetAmountUSD(rfqEvent.OriginAmount, *rfqEvent.TokenDecimal, tokenPrice)
 		if amountUSD != nil {
-			logger.Warnf("RFQ GetAmountUSD could not get token price for coingecko token: %s", coinGeckoID)
+			logger.Warnf("RFQ GetAmountUSD properly found the token price for coingecko token: %s", coinGeckoID)
 			rfqEvent.AmountUSD = *amountUSD
 		}
 	}
@@ -220,6 +231,15 @@ func rfqEventToBridgeEvent(rfqEvent model.RFQEvent) model.BridgeEvent {
 		kappa = &rfqEvent.TransactionID
 	}
 
+	// Adjust sender and recipient based on null values
+	sender := rfqEvent.Sender.String
+	recipient := rfqEvent.Recipient
+	if sender == "" {
+		sender = recipient.String
+	} else if recipient.String == "" {
+		recipient = sql.NullString{Valid: true, String: sender}
+	}
+
 	return model.BridgeEvent{
 		InsertTime:       rfqEvent.InsertTime,
 		ContractAddress:  rfqEvent.ContractAddress,
@@ -231,9 +251,9 @@ func rfqEventToBridgeEvent(rfqEvent model.RFQEvent) model.BridgeEvent {
 		Amount:           rfqEvent.OriginAmount,
 		EventIndex:       rfqEvent.EventIndex,
 		DestinationKappa: destinationKappa,
-		Sender:           rfqEvent.Sender.String,
+		Sender:           sender,
 
-		Recipient:          rfqEvent.Recipient,
+		Recipient:          recipient,
 		RecipientBytes:     sql.NullString{},
 		DestinationChainID: rfqEvent.DestinationChainID,
 		Fee:                nil,

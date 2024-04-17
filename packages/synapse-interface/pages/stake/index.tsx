@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNetwork, useAccount } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { Token } from '@/utils/types'
 import { STAKABLE_TOKENS } from '@/constants/tokens'
 import Grid from '@/components/ui/tailwind/Grid'
@@ -14,7 +14,7 @@ import { ChevronLeftIcon } from '@heroicons/react/outline'
 import toast from 'react-hot-toast'
 
 const StakePage = () => {
-  const { chain: connectedChain } = useNetwork()
+  const { chain: connectedChain } = useAccount()
   const { address: currentAddress } = useAccount()
   const [address, setAddress] = useState(undefined)
   const [isClient, setIsClient] = useState<boolean>(false)

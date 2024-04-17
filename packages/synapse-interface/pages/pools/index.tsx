@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
-import { useAccount, useNetwork } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { DISPLAY_POOLS_BY_CHAIN } from '@constants/tokens'
 import { DEFAULT_FROM_CHAIN } from '@/constants/swap'
 import {
@@ -18,7 +18,7 @@ import * as CHAINS from '@/constants/chains/master'
 
 const PoolsPage = () => {
   const { address: currentAddress } = useAccount()
-  const { chain } = useNetwork()
+  const { chain } = useAccount()
   const [connectedChainId, setConnectedChainId] = useState(0)
   const [address, setAddress] = useState(undefined)
 

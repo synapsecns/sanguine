@@ -7,10 +7,10 @@ import {OptionsV1} from "../../contracts/libs/Options.sol";
 
 // solhint-disable func-name-mixedcase
 interface IInterchainAppV1Harness is IInterchainAppV1 {
-    event MessageReceived(uint256 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message);
+    event MessageReceived(uint64 srcChainId, bytes32 sender, uint64 dbNonce, uint64 entryIndex, bytes message);
 
     function exposed__sendInterchainMessageEVM(
-        uint256 dstChainId,
+        uint64 dstChainId,
         address receiver,
         uint256 messageFee,
         bytes memory options,
@@ -20,7 +20,7 @@ interface IInterchainAppV1Harness is IInterchainAppV1 {
         returns (InterchainTxDescriptor memory desc);
 
     function exposed__sendInterchainMessage(
-        uint256 dstChainId,
+        uint64 dstChainId,
         bytes32 receiver,
         uint256 messageFee,
         bytes memory options,
@@ -30,7 +30,7 @@ interface IInterchainAppV1Harness is IInterchainAppV1 {
         returns (InterchainTxDescriptor memory desc);
 
     function exposed__sendToLinkedApp(
-        uint256 dstChainId,
+        uint64 dstChainId,
         uint256 messageFee,
         OptionsV1 memory options,
         bytes memory message
@@ -39,7 +39,7 @@ interface IInterchainAppV1Harness is IInterchainAppV1 {
         returns (InterchainTxDescriptor memory desc);
 
     function exposed__getInterchainFee(
-        uint256 dstChainId,
+        uint64 dstChainId,
         bytes memory options,
         uint256 messageLen
     )
@@ -48,7 +48,7 @@ interface IInterchainAppV1Harness is IInterchainAppV1 {
         returns (uint256);
 
     function exposed__getMessageFee(
-        uint256 dstChainId,
+        uint64 dstChainId,
         OptionsV1 memory options,
         uint256 messageLen
     )

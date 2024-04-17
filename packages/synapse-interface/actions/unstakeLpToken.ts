@@ -1,12 +1,12 @@
 import {
-  Address,
-  prepareWriteContract,
-  waitForTransaction,
+  simulateContract,
+  waitForTransactionReceipt,
   writeContract,
 } from '@wagmi/core'
-import { TransactionReceipt } from 'viem'
+import { Address } from 'viem'
 
 import { MINICHEF_ABI } from '@/constants/abis/miniChef'
+import { wagmiConfig } from '@/wagmiConfig'
 
 export const unstakeLpToken = async ({
   address,
@@ -21,7 +21,7 @@ export const unstakeLpToken = async ({
   amount: bigint
   lpAddress: Address
 }) => {
-  const { request } = await prepareWriteContract({
+  const { request } = await simulateContract(wagmiConfig, {
     chainId,
     address: lpAddress,
     abi: MINICHEF_ABI,
@@ -29,8 +29,8 @@ export const unstakeLpToken = async ({
     args: [poolId, amount, address],
   })
 
-  const { hash } = await writeContract(request)
-  const txReceipt: TransactionReceipt = await waitForTransaction({ hash })
+  const hash = await writeContract(wagmiConfig, request)
+  const txReceipt = await waitForTransactionReceipt(wagmiConfig, { hash })
 
   return txReceipt
 }

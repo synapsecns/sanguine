@@ -9,8 +9,8 @@ import {OptionsV1} from "../../libs/Options.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 contract ExampleAppV1 is ICAppV1 {
-    event MessageReceived(uint256 srcChainId, bytes32 sender, uint256 dbNonce, uint64 entryIndex, bytes message);
-    event MessageSent(uint256 dstChainId, uint256 dbNonce, uint64 entryIndex, bytes32 transactionId);
+    event MessageReceived(uint64 srcChainId, bytes32 sender, uint64 dbNonce, uint64 entryIndex, bytes message);
+    event MessageSent(uint64 dstChainId, uint64 dbNonce, uint64 entryIndex, bytes32 transactionId);
 
     constructor(address admin) ICAppV1(admin) {
         _grantRole(IC_GOVERNOR_ROLE, admin);
@@ -23,7 +23,7 @@ contract ExampleAppV1 is ICAppV1 {
 
     /// @notice Sends a basic message to the destination chain.
     function sendMessage(
-        uint256 dstChainId,
+        uint64 dstChainId,
         uint256 gasLimit,
         uint256 gasAirdrop,
         bytes calldata message
@@ -42,7 +42,7 @@ contract ExampleAppV1 is ICAppV1 {
 
     /// @notice Returns the fee required to send a message using `sendMessage`.
     function getMessageFee(
-        uint256 dstChainId,
+        uint64 dstChainId,
         uint256 gasLimit,
         uint256 gasAirdrop,
         bytes memory message
@@ -56,9 +56,9 @@ contract ExampleAppV1 is ICAppV1 {
 
     /// @dev Internal logic for receiving messages. At this point the validity of the message is already checked.
     function _receiveMessage(
-        uint256 srcChainId,
+        uint64 srcChainId,
         bytes32 sender,
-        uint256 dbNonce,
+        uint64 dbNonce,
         uint64 entryIndex,
         bytes calldata message
     )

@@ -1686,6 +1686,7 @@ type Leaderboard {
 enum BridgeType{
   BRIDGE
   CCTP
+  RFQ
 }
 
 enum KappaStatus{
@@ -1702,6 +1703,7 @@ input ContractQuery {
 enum ContractType{
   BRIDGE
   CCTP
+  RFQ
 }
 
 type BlockHeight {

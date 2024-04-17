@@ -231,19 +231,34 @@ func (i *InventoryTestSuite) TestHasSufficientGas() {
 	}
 
 	im := getManager([]*big.Int{big.NewInt(params.Ether), big.NewInt(params.Ether)})
-	sufficient, err := im.HasSufficientGas(i.GetTestContext(), origin, dest)
+	sufficient, err := im.HasSufficientGas(i.GetTestContext(), origin, nil)
 	i.NoError(err)
 	i.True(sufficient)
+	sufficient, err = im.HasSufficientGas(i.GetTestContext(), dest, nil)
+	i.NoError(err)
+	i.True(sufficient)
+
+	// test with nonzero gasValue
+	gasValue := new(big.Int).Mul(big.NewInt(params.Ether), big.NewInt(10))
+	sufficient, err = im.HasSufficientGas(i.GetTestContext(), origin, gasValue)
+	i.NoError(err)
+	i.False(sufficient)
 
 	// multiply big int to avoid overflow
 	largeBalance := new(big.Int).Mul(big.NewInt(params.Ether), big.NewInt(100))
 	im = getManager([]*big.Int{largeBalance, big.NewInt(params.Ether)})
-	sufficient, err = im.HasSufficientGas(i.GetTestContext(), origin, dest)
+	sufficient, err = im.HasSufficientGas(i.GetTestContext(), origin, nil)
 	i.NoError(err)
 	i.False(sufficient)
+	sufficient, err = im.HasSufficientGas(i.GetTestContext(), dest, nil)
+	i.NoError(err)
+	i.True(sufficient)
 
 	im = getManager([]*big.Int{big.NewInt(params.Ether), largeBalance})
-	sufficient, err = im.HasSufficientGas(i.GetTestContext(), origin, dest)
+	sufficient, err = im.HasSufficientGas(i.GetTestContext(), origin, nil)
+	i.NoError(err)
+	i.True(sufficient)
+	sufficient, err = im.HasSufficientGas(i.GetTestContext(), dest, nil)
 	i.NoError(err)
 	i.False(sufficient)
 }

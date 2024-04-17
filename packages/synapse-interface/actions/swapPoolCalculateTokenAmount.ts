@@ -2,6 +2,7 @@ import { readContract } from '@wagmi/core'
 
 import { getSwapDepositContractFields } from '@/utils/getSwapDepositContractFields'
 import { Token } from '@/utils/types'
+import { wagmiConfig } from '@/wagmiConfig'
 
 export const swapPoolCalculateTokenAmount = async ({
   chainId,
@@ -14,7 +15,7 @@ export const swapPoolCalculateTokenAmount = async ({
 }) => {
   const { abi, poolAddress } = getSwapDepositContractFields(pool, chainId)
 
-  const minToMint = await readContract({
+  const minToMint = await readContract(wagmiConfig, {
     chainId,
     address: poolAddress,
     abi,

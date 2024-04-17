@@ -1,9 +1,9 @@
 {
-  "address": "0x1081030aE08Bcf334f79b78A5E680144060265b2",
+  "address": "0x67829Fee24ae01e2a7F9f09F36BF96FCf7771738",
   "constructorArgs": "0x000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
   "receipt": {
-    "hash": "0x4d725b7de5f87e58ea9823381752ea72b699e71351d872dfa616514a95f6e7da",
-    "blockNumber": 30278724
+    "hash": "0x722568698e764ac5cdb0ffa0b96b38fd3252a360da69a1d3acc88a42437f6f3a",
+    "blockNumber": 34358510
   },
   "abi": [
     {
@@ -84,8 +84,8 @@
       "inputs": [
         {
           "name": "srcChainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "sender",
@@ -94,8 +94,8 @@
         },
         {
           "name": "dbNonce",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "entryIndex",
@@ -194,8 +194,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ],
       "outputs": [
@@ -213,8 +213,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ],
       "outputs": [
@@ -245,8 +245,8 @@
       "inputs": [
         {
           "name": "dstChainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ],
       "outputs": [
@@ -386,8 +386,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "remoteApp",
@@ -404,8 +404,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "remoteApp",
@@ -548,8 +548,8 @@
       "inputs": [
         {
           "name": "dstChainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "counter",
@@ -611,14 +611,14 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "indexed": true,
-          "internalType": "uint256"
+          "type": "uint64",
+          "indexed": false,
+          "internalType": "uint64"
         },
         {
           "name": "remoteApp",
           "type": "bytes32",
-          "indexed": true,
+          "indexed": false,
           "internalType": "bytes32"
         }
       ],
@@ -714,9 +714,9 @@
         },
         {
           "name": "dbNonce",
-          "type": "uint256",
+          "type": "uint64",
           "indexed": false,
-          "internalType": "uint256"
+          "internalType": "uint64"
         },
         {
           "name": "entryIndex",
@@ -739,9 +739,9 @@
         },
         {
           "name": "dbNonce",
-          "type": "uint256",
+          "type": "uint64",
           "indexed": false,
-          "internalType": "uint256"
+          "internalType": "uint64"
         },
         {
           "name": "entryIndex",
@@ -1009,8 +1009,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ]
     },
@@ -1020,8 +1020,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ]
     },
@@ -1031,8 +1031,8 @@
       "inputs": [
         {
           "name": "srcChainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "sender",

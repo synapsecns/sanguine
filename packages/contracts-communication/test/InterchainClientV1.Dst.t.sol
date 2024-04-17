@@ -28,10 +28,10 @@ import {InterchainDBMock} from "./mocks/InterchainDBMock.sol";
 /// 4. Execute the transaction by passing the message to the recipient.
 /// 5. Mark transaction as executed and emit an event.
 contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
-    uint256 public constant MOCK_DB_NONCE = 444;
+    uint64 public constant MOCK_DB_NONCE = 444;
     uint64 public constant MOCK_ENTRY_INDEX = 4;
 
-    uint256 public constant MOCK_LOCAL_DB_NONCE = 123;
+    uint64 public constant MOCK_LOCAL_DB_NONCE = 123;
     uint64 public constant MOCK_LOCAL_ENTRY_INDEX = 5;
 
     uint256 public constant MOCK_GAS_LIMIT = 100_000;
@@ -121,7 +121,7 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
     }
 
     /// @dev Override the local DB's returned next entry index (both for reads and writes)
-    function mockLocalNextEntryIndex(uint256 dbNonce, uint64 entryIndex) internal {
+    function mockLocalNextEntryIndex(uint64 dbNonce, uint64 entryIndex) internal {
         bytes memory returnData = abi.encode(dbNonce, entryIndex);
         // Use partial calldata to override return values for calls to these functions with any arguments.
         vm.mockCall(icDB, abi.encodeWithSelector(InterchainDBMock.getNextEntryIndex.selector), returnData);
@@ -750,6 +750,24 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
 
     function test_interchainExecute_2_AB_periodZero_overVerifiedA_overVerifiedB_withAirdrop_success() public {
         checkSuccessAB(optionsAirdrop, twoConfNoOP, toArr(OVER_VERIFIED, OVER_VERIFIED));
+    }
+
+    // ═══════════════════════════════════════════ TESTS: GET APP CONFIG ═══════════════════════════════════════════════
+
+    function test_getAppReceivingConfigV1_oneModule() public {
+        mockReceivingConfig(oneConfWithOP, oneModuleA);
+        (AppConfigV1 memory config, address[] memory modules) = icClient.getAppReceivingConfigV1(dstReceiver);
+        assertEq(config.requiredResponses, oneConfWithOP.requiredResponses);
+        assertEq(config.optimisticPeriod, oneConfWithOP.optimisticPeriod);
+        assertEq(modules, oneModuleA);
+    }
+
+    function test_getAppReceivingConfigV1_twoModules() public {
+        mockReceivingConfig(twoConfWithOP, twoModules);
+        (AppConfigV1 memory config, address[] memory modules) = icClient.getAppReceivingConfigV1(dstReceiver);
+        assertEq(config.requiredResponses, twoConfWithOP.requiredResponses);
+        assertEq(config.optimisticPeriod, twoConfWithOP.optimisticPeriod);
+        assertEq(modules, twoModules);
     }
 
     // ═══════════════════════════════════════════ EXECUTE: MISC REVERTS ═══════════════════════════════════════════════

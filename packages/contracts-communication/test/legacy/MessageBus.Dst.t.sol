@@ -6,7 +6,7 @@ import {MessageBusBaseTest, LegacyMessage, LegacyReceiverMock} from "./MessageBu
 // solhint-disable func-name-mixedcase
 // solhint-disable ordering
 contract MessageBusDstTest is MessageBusBaseTest {
-    uint256 public constant MOCK_DB_NONCE = 1_234_567;
+    uint64 public constant MOCK_DB_NONCE = 1_234_567;
     uint64 public constant MOCK_ENTRY_INDEX = 4321;
 
     LegacyMessage public legacyMsg;

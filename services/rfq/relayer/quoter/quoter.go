@@ -359,6 +359,8 @@ func (m *Manager) generateQuote(ctx context.Context, keyTokenID string, chainID 
 }
 
 // getQuoteAmount calculates the quote amount for a given route.
+//
+//nolint:cyclop
 func (m *Manager) getQuoteAmount(parentCtx context.Context, origin, dest int, address common.Address, balance *big.Int) (quoteAmount *big.Int, err error) {
 	ctx, span := m.metricsHandler.Tracer().Start(parentCtx, "getQuoteAmount", trace.WithAttributes(
 		attribute.String(metrics.Origin, strconv.Itoa(origin)),
@@ -375,11 +377,19 @@ func (m *Manager) getQuoteAmount(parentCtx context.Context, origin, dest int, ad
 	// First, check if we have enough gas to complete the a bridge for this route
 	// If not, set the quote amount to zero to make sure a stale quote won't be used
 	// TODO: handle in-flight gas; for now we can set a high min_gas_token
-	sufficentGas, err := m.inventoryManager.HasSufficientGas(ctx, origin, dest)
+	sufficentGasOrigin, err := m.inventoryManager.HasSufficientGas(ctx, origin, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error checking sufficient gas: %w", err)
 	}
-	if !sufficentGas {
+	sufficentGasDest, err := m.inventoryManager.HasSufficientGas(ctx, dest, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error checking sufficient gas: %w", err)
+	}
+	span.SetAttributes(
+		attribute.Bool("sufficient_gas_origin", sufficentGasOrigin),
+		attribute.Bool("sufficient_gas_dest", sufficentGasDest),
+	)
+	if !sufficentGasOrigin || !sufficentGasDest {
 		return big.NewInt(0), nil
 	}
 

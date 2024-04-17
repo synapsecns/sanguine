@@ -1,9 +1,9 @@
 {
-  "address": "0x5a81Dfa5885058ED838fa750060C804B49F69991",
-  "constructorArgs": "0x000000000000000000000000acaaaa98b9e23725046eda88d371b4864d90496b000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
+  "address": "0xfcb988E117dbAa8c8b48047afd7c22d4a8321bCA",
+  "constructorArgs": "0x0000000000000000000000001ce3a9d87a26ae56a43a5bb1d5e9a8d14550d0a4000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
   "receipt": {
-    "hash": "0x4f95897e9833d15cd2f900065d59fb6d51aca97da096c83d257045be5a7e171a",
-    "blockNumber": 5675682
+    "hash": "0xddb503be3046c579c38d71df13ac6eda25a43a54adbc7ae1796df99ef419a769",
+    "blockNumber": 5712788
   },
   "abi": [
     {
@@ -90,8 +90,23 @@
           "components": [
             {
               "name": "srcChainId",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint64",
+              "internalType": "uint64"
+            },
+            {
+              "name": "dstChainId",
+              "type": "uint64",
+              "internalType": "uint64"
+            },
+            {
+              "name": "dbNonce",
+              "type": "uint64",
+              "internalType": "uint64"
+            },
+            {
+              "name": "entryIndex",
+              "type": "uint64",
+              "internalType": "uint64"
             },
             {
               "name": "srcSender",
@@ -99,24 +114,9 @@
               "internalType": "bytes32"
             },
             {
-              "name": "dstChainId",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
               "name": "dstReceiver",
               "type": "bytes32",
               "internalType": "bytes32"
-            },
-            {
-              "name": "dbNonce",
-              "type": "uint256",
-              "internalType": "uint256"
-            },
-            {
-              "name": "entryIndex",
-              "type": "uint64",
-              "internalType": "uint64"
             },
             {
               "name": "options",
@@ -149,6 +149,42 @@
           "name": "",
           "type": "address",
           "internalType": "address"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getAppReceivingConfigV1",
+      "inputs": [
+        {
+          "name": "receiver",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "config",
+          "type": "tuple",
+          "internalType": "struct AppConfigV1",
+          "components": [
+            {
+              "name": "requiredResponses",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "optimisticPeriod",
+              "type": "uint256",
+              "internalType": "uint256"
+            }
+          ]
+        },
+        {
+          "name": "modules",
+          "type": "address[]",
+          "internalType": "address[]"
         }
       ],
       "stateMutability": "view"
@@ -197,8 +233,8 @@
       "inputs": [
         {
           "name": "dstChainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "srcExecutionService",
@@ -236,8 +272,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ],
       "outputs": [
@@ -255,8 +291,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ],
       "outputs": [
@@ -297,8 +333,8 @@
       "inputs": [
         {
           "name": "dstChainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "receiver",
@@ -339,8 +375,8 @@
             },
             {
               "name": "dbNonce",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint64",
+              "internalType": "uint64"
             },
             {
               "name": "entryIndex",
@@ -358,8 +394,8 @@
       "inputs": [
         {
           "name": "dstChainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "receiver",
@@ -400,8 +436,8 @@
             },
             {
               "name": "dbNonce",
-              "type": "uint256",
-              "internalType": "uint256"
+              "type": "uint64",
+              "internalType": "uint64"
             },
             {
               "name": "entryIndex",
@@ -476,8 +512,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "client",
@@ -514,8 +550,8 @@
       "outputs": [
         {
           "name": "dbNonce",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         },
         {
           "name": "entryIndex",
@@ -550,20 +586,20 @@
         },
         {
           "name": "dbNonce",
-          "type": "uint256",
-          "indexed": true,
-          "internalType": "uint256"
+          "type": "uint64",
+          "indexed": false,
+          "internalType": "uint64"
         },
         {
           "name": "entryIndex",
           "type": "uint64",
-          "indexed": true,
+          "indexed": false,
           "internalType": "uint64"
         },
         {
           "name": "executor",
           "type": "address",
-          "indexed": false,
+          "indexed": true,
           "internalType": "address"
         }
       ],
@@ -581,32 +617,32 @@
         },
         {
           "name": "dbNonce",
-          "type": "uint256",
-          "indexed": true,
-          "internalType": "uint256"
+          "type": "uint64",
+          "indexed": false,
+          "internalType": "uint64"
         },
         {
           "name": "entryIndex",
           "type": "uint64",
-          "indexed": true,
+          "indexed": false,
           "internalType": "uint64"
         },
         {
           "name": "srcChainId",
-          "type": "uint256",
+          "type": "uint64",
           "indexed": false,
-          "internalType": "uint256"
+          "internalType": "uint64"
         },
         {
           "name": "srcSender",
           "type": "bytes32",
-          "indexed": false,
+          "indexed": true,
           "internalType": "bytes32"
         },
         {
           "name": "dstReceiver",
           "type": "bytes32",
-          "indexed": false,
+          "indexed": true,
           "internalType": "bytes32"
         }
       ],
@@ -624,32 +660,32 @@
         },
         {
           "name": "dbNonce",
-          "type": "uint256",
-          "indexed": true,
-          "internalType": "uint256"
+          "type": "uint64",
+          "indexed": false,
+          "internalType": "uint64"
         },
         {
           "name": "entryIndex",
           "type": "uint64",
-          "indexed": true,
+          "indexed": false,
           "internalType": "uint64"
         },
         {
           "name": "dstChainId",
-          "type": "uint256",
+          "type": "uint64",
           "indexed": false,
-          "internalType": "uint256"
+          "internalType": "uint64"
         },
         {
           "name": "srcSender",
           "type": "bytes32",
-          "indexed": false,
+          "indexed": true,
           "internalType": "bytes32"
         },
         {
           "name": "dstReceiver",
           "type": "bytes32",
-          "indexed": false,
+          "indexed": true,
           "internalType": "bytes32"
         },
         {
@@ -685,9 +721,9 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
+          "type": "uint64",
           "indexed": false,
-          "internalType": "uint256"
+          "internalType": "uint64"
         },
         {
           "name": "client",
@@ -750,8 +786,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ]
     },
@@ -788,8 +824,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ]
     },
@@ -831,8 +867,8 @@
       "inputs": [
         {
           "name": "chainId",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "uint64",
+          "internalType": "uint64"
         }
       ]
     },
@@ -898,6 +934,22 @@
           "name": "account",
           "type": "address",
           "internalType": "address"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "SafeCastOverflowedUintDowncast",
+      "inputs": [
+        {
+          "name": "bits",
+          "type": "uint8",
+          "internalType": "uint8"
+        },
+        {
+          "name": "value",
+          "type": "uint256",
+          "internalType": "uint256"
         }
       ]
     },

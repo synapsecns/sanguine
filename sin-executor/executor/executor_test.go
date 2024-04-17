@@ -19,11 +19,11 @@ func (i *InterchainSuite) TestE2E() {
 	message := []byte("hello")
 
 	_, appMock := i.deployManager.GetInterchainAppMock(i.GetTestContext(), i.originChain)
-	messageFee, err := appMock.GetMessageFee(&bind.CallOpts{Context: i.GetTestContext()}, i.destChain.GetBigChainID(), gasLimit, gasAirdrop, message)
+	messageFee, err := appMock.GetMessageFee(&bind.CallOpts{Context: i.GetTestContext()}, i.destChain.GetBigChainID().Uint64(), gasLimit, gasAirdrop, message)
 	i.Require().NoError(err)
 
 	auth.TransactOpts.Value = messageFee
-	tx, err := appMock.SendMessage(auth.TransactOpts, i.destChain.GetBigChainID(), gasLimit, gasAirdrop, message)
+	tx, err := appMock.SendMessage(auth.TransactOpts, i.destChain.GetBigChainID().Uint64(), gasLimit, gasAirdrop, message)
 	i.Require().NoError(err)
 	i.originChain.WaitForConfirmation(i.GetTestContext(), tx)
 
@@ -47,7 +47,7 @@ func (i *InterchainSuite) TestE2E() {
 
 		destContext := i.destChain.GetTxContext(i.GetTestContext(), nil)
 		mockTX, err := destModule.MockVerifyRemoteBatchStruct(destContext.TransactOpts, destDB.Address(), interchainmodulemock.InterchainBatch{
-			SrcChainId: i.originChain.GetBigChainID(),
+			SrcChainId: i.originChain.GetBigChainID().Uint64(),
 			DbNonce:    written.DbNonce,
 			BatchRoot:  written.BatchRoot,
 		})

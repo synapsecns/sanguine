@@ -1,6 +1,7 @@
 /* eslint-disable */
 import { useEffect, useMemo } from 'react'
-import { useAccount, Address } from 'wagmi'
+import { useAccount, useAccountEffect } from 'wagmi'
+import { type Address } from 'viem'
 
 import {
   resetTransactionsState,
@@ -32,7 +33,9 @@ export const useTransactionListener = () => {
       pollingInterval: POLLING_INTERVAL,
     })
 
-  const { address } = useAccount({
+  const { address } = useAccount()
+
+  useAccountEffect({
     onDisconnect() {
       dispatch(resetTransactionsState())
     },

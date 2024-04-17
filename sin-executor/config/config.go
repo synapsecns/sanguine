@@ -24,8 +24,6 @@ type Config struct {
 type ChainConfig struct {
 	// ChainID is the chain ID.
 	ChainID int `yaml:"id"`
-	// GasBuffer is the gas buffer to use on top of the requested gas limit.
-	GasBuffer uint64 `yaml:"gas_buffer"`
 	// ExecutionService is the address of the execution service contract.
 	ExecutionService string `yaml:"execution_service"`
 	// Client is the address of the interchain client contract.
@@ -36,14 +34,4 @@ type ChainConfig struct {
 type DatabaseConfig struct {
 	Type string `yaml:"type"`
 	DSN  string `yaml:"dsn"` // Data Source Name
-}
-
-const defaultGasBuffer = 1_000_000
-
-// GetGasBuffer returns the configured gas buffer for the chain.
-func (c ChainConfig) GetGasBuffer() uint64 {
-	if c.GasBuffer == 0 {
-		return defaultGasBuffer
-	}
-	return c.GasBuffer
 }

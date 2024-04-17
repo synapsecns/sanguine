@@ -57,7 +57,7 @@ interface ISynapseModule is IInterchainModule {
     /// @dev Could be only called by the owner.
     /// @param chainId      The chain ID for which to set the gas limit
     /// @param gasLimit     The new gas limit
-    function setVerifyGasLimit(uint256 chainId, uint256 gasLimit) external;
+    function setVerifyGasLimit(uint64 chainId, uint256 gasLimit) external;
 
     // ══════════════════════════════════════════════ PERMISSIONLESS ═══════════════════════════════════════════════════
 
@@ -102,5 +102,5 @@ interface ISynapseModule is IInterchainModule {
 
     /// @notice Returns the estimated gas limit for verifying a batch on the given chain.
     /// Note: this defaults to DEFAULT_VERIFY_GAS_LIMIT if not set.
-    function getVerifyGasLimit(uint256 chainId) external view returns (uint256);
+    function getVerifyGasLimit(uint64 chainId) external view returns (uint256);
 }

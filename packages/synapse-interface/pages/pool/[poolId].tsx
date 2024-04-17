@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
-import { useAccount, useNetwork } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { useAppDispatch } from '@/store/hooks'
 import { fetchPoolData, resetPoolData } from '@/slices/poolDataSlice'
 import { resetPoolDeposit } from '@/slices/poolDepositSlice'
@@ -39,7 +39,7 @@ const PoolPage = () => {
   const router = useRouter()
   const { poolId } = router.query
   const { address } = useAccount()
-  const { chain } = useNetwork()
+  const { chain } = useAccount()
   const [connectedChainId, setConnectedChainId] = useState(0)
   const [isClient, setIsClient] = useState(false)
 

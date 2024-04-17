@@ -49,7 +49,7 @@ func toSignRequest(originChainID int, sr synapsemodule.SynapseModuleBatchVerific
 		TXHash:             sr.Raw.TxHash.String(),
 		TransactionID:      common.Bytes2Hex(sr.EthSignedBatchHash[:]),
 		Entry:              common.Bytes2Hex(sr.Batch),
-		DestinationChainID: int(sr.DstChainId.Int64()),
+		DestinationChainID: int(sr.DstChainId),
 		Status:             db.Seen,
 	}
 }
