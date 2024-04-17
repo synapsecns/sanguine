@@ -3,7 +3,7 @@ import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'
 import { joinClassNames } from '@/utils/joinClassNames'
 import { Token } from '@/utils/types'
 import { formatBigIntToString } from '@/utils/bigint/format'
-import { HoverTooltip } from '../Portfolio/components/HoverTooltip'
+import { HoverTooltip } from '../HoverTooltip'
 
 export const AvailableBalance = ({
   fromChainId,

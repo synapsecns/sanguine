@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import { TokenAndBalance } from '@/utils/actions/fetchPortfolioBalances'
-import { HoverTooltip } from './HoverTooltip'
+import { HoverTooltip } from '../../HoverTooltip'
 
 export const PortfolioTokenVisualizer = ({
   portfolioTokens,

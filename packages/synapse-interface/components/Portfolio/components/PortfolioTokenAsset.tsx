@@ -14,7 +14,7 @@ import { PortfolioAssetActionButton } from './PortfolioAssetActionButton'
 import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
 import { zeroAddress } from 'viem'
 import GasIcon from '@/components/icons/GasIcon'
-import { HoverTooltip } from './HoverTooltip'
+import { HoverTooltip } from '../../HoverTooltip'
 import { getParsedBalance } from '@/utils/getParsedBalance'
 
 const handleFocusOnBridgeInput = () => {
