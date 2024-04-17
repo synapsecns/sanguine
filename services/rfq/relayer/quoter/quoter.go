@@ -398,7 +398,10 @@ func (m *Manager) registerQuote(quote *model.PutQuoteRequest) (err error) {
 		o.ObserveFloat64(quoteAmountGauge, core.BigToDecimals(destAmount, tokenMetadata.Decimals), metric.WithAttributeSet(attributes))
 		return nil
 	})
-	return err
+	if err != nil {
+		return fmt.Errorf("error registering callback: %w", err)
+	}
+	return nil
 }
 
 // getQuoteAmount calculates the quote amount for a given route.

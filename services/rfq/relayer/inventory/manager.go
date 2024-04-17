@@ -403,6 +403,8 @@ func (i *inventoryManagerImpl) HasSufficientGas(parentCtx context.Context, chain
 // Rebalance checks whether a given token should be rebalanced, and executes the rebalance if necessary.
 // Note that if there are multiple tokens whose balance is below the maintenance balance, only the lowest balance
 // will be rebalanced.
+//
+//nolint:cyclop
 func (i *inventoryManagerImpl) Rebalance(parentCtx context.Context, chainID int, token common.Address) error {
 	// evaluate the rebalance method
 	method, err := i.cfg.GetRebalanceMethod(chainID, token.Hex())
@@ -474,7 +476,7 @@ func (i *inventoryManagerImpl) registerPendingRebalance(rebalance *reldb.Rebalan
 	if err != nil {
 		return fmt.Errorf("could not create gauge: %w", err)
 	}
-	_, err = meter.RegisterCallback(func(parentCtx context.Context, o metric.Observer) (err error) {
+	_, err = meter.RegisterCallback(func(_ context.Context, o metric.Observer) (err error) {
 		attributes := attribute.NewSet(
 			attribute.Int(metrics.Origin, int(rebalance.Origin)),
 			attribute.Int(metrics.Destination, int(rebalance.Destination)),
@@ -487,7 +489,10 @@ func (i *inventoryManagerImpl) registerPendingRebalance(rebalance *reldb.Rebalan
 		o.ObserveFloat64(rebalanceGauge, core.BigToDecimals(rebalance.OriginAmount, tokenMetadata.Decimals), metric.WithAttributeSet(attributes))
 		return nil
 	})
-	return err
+	if err != nil {
+		return fmt.Errorf("could not register callback: %w", err)
+	}
+	return nil
 }
 
 //nolint:cyclop,gocognit
@@ -794,7 +799,7 @@ func (i *inventoryManagerImpl) registerBalance(meter metric.Meter, chainID int, 
 		return fmt.Errorf("could not create gauge: %w", err)
 	}
 
-	if _, err := meter.RegisterCallback(func(ctx context.Context, observer metric.Observer) error {
+	if _, err := meter.RegisterCallback(func(_ context.Context, observer metric.Observer) error {
 		i.mux.RLock()
 		defer i.mux.RUnlock()
 
