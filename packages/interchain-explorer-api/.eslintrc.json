@@ -1,4 +1,7 @@
 {
   "extends": "ponder",
-  "ignorePatterns": ["ponder-env.d.ts"]
+  "ignorePatterns": ["ponder-env.d.ts"],
+  "rules": {
+    "@typescript-eslint/no-unused-vars": "off"
+  }
 }
