@@ -55,5 +55,6 @@ export default createSchema((p) => ({
       .references('InterchainTransactionReceived.id')
       .optional(),
     interchainTransactionReceived: p.one('interchainTransactionReceivedId'),
+    status: p.string().optional(),
   }),
 }))
