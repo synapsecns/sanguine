@@ -11,7 +11,7 @@ contract ICAppV1Harness is ICAppV1, IInterchainAppV1Harness {
     constructor(address admin) ICAppV1(admin) {}
 
     function exposed__sendInterchainMessageEVM(
-        uint256 dstChainId,
+        uint64 dstChainId,
         address receiver,
         uint256 messageFee,
         bytes memory options,
@@ -24,7 +24,7 @@ contract ICAppV1Harness is ICAppV1, IInterchainAppV1Harness {
     }
 
     function exposed__sendInterchainMessage(
-        uint256 dstChainId,
+        uint64 dstChainId,
         bytes32 receiver,
         uint256 messageFee,
         bytes memory options,
@@ -37,7 +37,7 @@ contract ICAppV1Harness is ICAppV1, IInterchainAppV1Harness {
     }
 
     function exposed__sendToLinkedApp(
-        uint256 dstChainId,
+        uint64 dstChainId,
         uint256 messageFee,
         OptionsV1 memory options,
         bytes memory message
@@ -49,7 +49,7 @@ contract ICAppV1Harness is ICAppV1, IInterchainAppV1Harness {
     }
 
     function exposed__getInterchainFee(
-        uint256 dstChainId,
+        uint64 dstChainId,
         bytes memory options,
         uint256 messageLen
     )
@@ -61,7 +61,7 @@ contract ICAppV1Harness is ICAppV1, IInterchainAppV1Harness {
     }
 
     function exposed__getMessageFee(
-        uint256 dstChainId,
+        uint64 dstChainId,
         OptionsV1 memory options,
         uint256 messageLen
     )
@@ -74,9 +74,9 @@ contract ICAppV1Harness is ICAppV1, IInterchainAppV1Harness {
 
     /// @dev Internal logic for receiving messages. At this point the validity of the message is already checked.
     function _receiveMessage(
-        uint256 srcChainId,
+        uint64 srcChainId,
         bytes32 sender,
-        uint256 dbNonce,
+        uint64 dbNonce,
         uint64 entryIndex,
         bytes calldata message
     )

@@ -92,20 +92,20 @@ func (_m *Manager) GetCommittableBalances(ctx context.Context, options ...invent
 	return r0, r1
 }
 
-// HasSufficientGas provides a mock function with given fields: ctx, origin, dest
-func (_m *Manager) HasSufficientGas(ctx context.Context, origin int, dest int) (bool, error) {
-	ret := _m.Called(ctx, origin, dest)
+// HasSufficientGas provides a mock function with given fields: ctx, chainID, gasValue
+func (_m *Manager) HasSufficientGas(ctx context.Context, chainID int, gasValue *big.Int) (bool, error) {
+	ret := _m.Called(ctx, chainID, gasValue)
 
 	var r0 bool
-	if rf, ok := ret.Get(0).(func(context.Context, int, int) bool); ok {
-		r0 = rf(ctx, origin, dest)
+	if rf, ok := ret.Get(0).(func(context.Context, int, *big.Int) bool); ok {
+		r0 = rf(ctx, chainID, gasValue)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int, int) error); ok {
-		r1 = rf(ctx, origin, dest)
+	if rf, ok := ret.Get(1).(func(context.Context, int, *big.Int) error); ok {
+		r1 = rf(ctx, chainID, gasValue)
 	} else {
 		r1 = ret.Error(1)
 	}
