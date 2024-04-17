@@ -1,10 +1,9 @@
 import React from 'react'
 import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'
 import { joinClassNames } from '@/utils/joinClassNames'
-import { HoverTooltip } from './InputContainer'
 import { Token } from '@/utils/types'
 import { formatBigIntToString } from '@/utils/bigint/format'
-import { isUndefined } from 'lodash'
+import { HoverTooltip } from '../Portfolio/components/HoverTooltip'
 
 export const AvailableBalance = ({
   fromChainId,

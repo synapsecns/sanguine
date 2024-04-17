@@ -1,21 +1,33 @@
 import React, { useState } from 'react'
 
-export const HoverTooltip = ({ children, hoverContent }) => {
+export const HoverTooltip = ({
+  children,
+  hoverContent,
+  isActive = true,
+}: {
+  children: React.ReactNode
+  hoverContent: React.ReactNode
+  isActive?: boolean
+}) => {
   const [showTooltip, setShowTooltip] = useState(false)
 
   const activateTooltip = () => setShowTooltip(true)
   const hideTooltip = () => setShowTooltip(false)
 
-  return (
-    <div
-      onMouseEnter={activateTooltip}
-      onMouseLeave={hideTooltip}
-      className="relative"
-    >
-      {children}
-      <Tooltip isHovered={showTooltip}>{hoverContent}</Tooltip>
-    </div>
-  )
+  if (!isActive) {
+    return <div>{children}</div>
+  } else {
+    return (
+      <div
+        onMouseEnter={activateTooltip}
+        onMouseLeave={hideTooltip}
+        className="relative w-fit"
+      >
+        {children}
+        <Tooltip isHovered={showTooltip}>{hoverContent}</Tooltip>
+      </div>
+    )
+  }
 }
 
 const Tooltip = ({
