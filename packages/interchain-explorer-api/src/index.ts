@@ -68,6 +68,12 @@ ponder.on(
         interchainTransactionSentId: record.id,
       },
     })
+
+    console.log('==========')
+    console.log(`on: ${context.network.name}`)
+    console.log(`InterchainClientV1:InterchainTransactionSent`)
+    console.log(`event.args`, event.args)
+    console.log('==========')
   }
 )
 
@@ -75,7 +81,11 @@ ponder.on(
   'InterchainClientV1:InterchainTransactionReceived',
   async ({ event, context }) => {
     const {
-      db: { InterchainTransactionReceived, InterchainTransaction },
+      db: {
+        InterchainTransactionSent,
+        InterchainTransactionReceived,
+        InterchainTransaction,
+      },
       network: { chainId },
     } = context
 
@@ -121,34 +131,55 @@ ponder.on(
         receivedAt: timestamp,
         createdAt: BigInt(Math.trunc(Date.now() / 1000)),
         interchainTransactionReceivedId: record.id,
+        status: 'Complete',
       },
       update: {
         receivedAt: timestamp,
         updatedAt: BigInt(Math.trunc(Date.now() / 1000)),
         interchainTransactionReceivedId: record.id,
+        status: 'Complete',
       },
     })
+
+    console.log('==========')
+    console.log(`on: ${context.network.name}`)
+    console.log(`InterchainClientV1:InterchainTransactionReceived`)
+    console.log(`event.args`, event.args)
+    console.log('==========')
   }
 )
+
+ponder.on('InterchainDB:InterchainEntryWritten', async ({ event, context }) => {
+  const {
+    db: { InterchainTransactionSent, InterchainTransactionReceived },
+  } = context
+
+  console.log('==========')
+  console.log(`on: ${context.network.name}`)
+  console.log('InterchainDB:InterchainEntryWritten')
+  console.log(`event.args`, event.args)
+  console.log('==========')
+})
 
 ponder.on(
   'InterchainDB:InterchainBatchVerificationRequested',
   async ({ event, context }) => {
     const {
-      db: { InterchainTransactionSent },
+      db: { InterchainTransactionSent, InterchainTransactionReceived },
     } = context
 
-    console.log(event.args.dbNonce)
+    const entrySent = await InterchainTransactionSent.findMany({
+      where: { dbNonce: event.args.dbNonce },
+    })
 
-    const entry = await InterchainTransactionSent.findMany({
-      where: { dstChainId: event.args.dstChainId, dbNonce: event.args.dbNonce },
+    const entryReceived = await InterchainTransactionReceived.findMany({
+      where: { dbNonce: event.args.dbNonce },
     })
 
     console.log('==========')
+    console.log(`on: ${context.network.name}`)
     console.log('InterchainDB:InterchainBatchVerificationRequested')
-    console.log(`event.args.dbNonce`, event.args.dbNonce)
-    console.log(`event`, event)
-    console.log(`entry`, entry)
+    console.log(`event.args`, event.args)
     console.log('==========')
   }
 )
@@ -157,32 +188,49 @@ ponder.on(
   'InterchainDB:InterchainBatchVerified',
   async ({ event, context }) => {
     const {
-      db: { InterchainTransactionSent },
+      db: { InterchainTransactionSent, InterchainTransaction },
     } = context
 
     const entry = await InterchainTransactionSent.findMany({
-      where: { dbNonce: event.args.dbNonce },
+      where: {
+        dbNonce: event.args.dbNonce,
+        chainId: Number(event.args.srcChainId),
+      },
     })
 
     console.log('==========')
+    console.log(`on: ${context.network.name}`)
     console.log('InterchainDB:InterchainBatchVerified')
-    console.log(`event.args.dbNonce`, event.args.dbNonce)
-    console.log(`event`, event)
-    console.log(`entry`, entry)
+    console.log(`event.args`, event.args)
+    console.log(`entry.items`, entry.items)
     console.log('==========')
+
+    entry.items.forEach(async (item) => {
+      await InterchainTransaction.update({
+        id: item.id,
+        data: {
+          status: 'InterchainDB:InterchainBatchVerified',
+        },
+      })
+    })
   }
 )
 
-ponder.on('SynapseModule:BatchVerificationRequested', async ({ event }) => {
-  console.log('==========')
-  console.log('SynapseModule:BatchVerificationRequested')
-  console.log(`event`, event)
-  console.log('==========')
-})
+// ponder.on(
+//   'SynapseModule:BatchVerificationRequested',
+//   async ({ event, context }) => {
+//     console.log('==========')
+//     console.log(`on: ${context.network.name}`)
+//     console.log('SynapseModule:BatchVerificationRequested')
+//     // console.log(`event.args`, event.args)
+//     console.log('==========')
+//   }
+// )
 
-ponder.on('SynapseModule:BatchVerified', async ({ event }) => {
-  console.log('==========')
-  console.log('SynapseModule:BatchVerified')
-  console.log(`event`, event)
-  console.log('==========')
-})
+// ponder.on('SynapseModule:BatchVerified', async ({ event, context }) => {
+//   console.log('==========')
+//   console.log(`on: ${context.network.name}`)
+//   console.log('SynapseModule:BatchVerified')
+//   // console.log(`event.args`, event.args)
+//   console.log('==========')
+// })
