@@ -17,13 +17,13 @@ export const useStats = () => {
     queryKey: ['interchain-transaction-stats'],
     queryFn: async () => {
       try {
-        const variables = { limit: 1 }
+        const variables = { limit: 50 }
 
         const response = (await client.request(
           GET_STATS,
           variables
         )) as StatsResponse
-        return response.interchainTransactions.items[0]
+        return response.interchainTransactions.items
       } catch (error) {
         console.error(`Error fetching transaction stats`, error)
         throw error
