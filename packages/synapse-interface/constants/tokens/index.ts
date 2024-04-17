@@ -16,7 +16,7 @@ interface TokensByChain {
 }
 
 interface GasTokensByChain {
-  [cID: string]: Chain['nativeCurrency'][]
+  [chainId: string]: Chain['nativeCurrency'][]
 }
 
 interface TokenByKey {
