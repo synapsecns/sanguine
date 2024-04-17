@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.2](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.3.1...@synapsecns/solidity-devops@0.3.2) (2024-04-08)
+
+
+### Bug Fixes
+
+* **solidity-devops:** use `eth_maxPriorityFeePerGas`, improve logging ([#2471](https://github.com/synapsecns/sanguine/issues/2471)) ([e940918](https://github.com/synapsecns/sanguine/commit/e9409181f99cd000dea927420fe43c189b8bb2b1))
+
+
+
+
+
 ## [0.3.1](https://github.com/synapsecns/sanguine/compare/@synapsecns/solidity-devops@0.3.0...@synapsecns/solidity-devops@0.3.1) (2024-04-04)
 
 

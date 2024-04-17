@@ -37,7 +37,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
     uint256 public constant MOCK_EXECUTION_FEE = 1 ether;
     uint256 public constant MOCK_INTERCHAIN_FEE = 0.5 ether;
 
-    uint256 public constant MOCK_DB_NONCE = 444;
+    uint64 public constant MOCK_DB_NONCE = 444;
     uint64 public constant MOCK_ENTRY_INDEX = 4;
 
     OptionsV1 public options = OptionsV1({gasLimit: 100_000, gasAirdrop: 1 ether});
@@ -67,14 +67,14 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
     }
 
     /// @dev Override the DB's returned interchain fee for the given destination chain and modules.
-    function mockInterchainFee(uint256 dstChainId, address[] memory modules, uint256 interchainFee) internal {
+    function mockInterchainFee(uint64 dstChainId, address[] memory modules, uint256 interchainFee) internal {
         vm.mockCall(
             icDB, abi.encodeCall(InterchainDBMock.getInterchainFee, (dstChainId, modules)), abi.encode(interchainFee)
         );
     }
 
     /// @dev Override the ExecutionService's returned execution fee for the given destination chain and transaction.
-    function mockExecutionFee(uint256 dstChainId, InterchainTransaction memory icTx, uint256 executionFee) internal {
+    function mockExecutionFee(uint64 dstChainId, InterchainTransaction memory icTx, uint256 executionFee) internal {
         uint256 txPayloadSize = getEncodedTx(icTx).length;
         vm.mockCall(
             execService,
@@ -84,7 +84,7 @@ contract InterchainClientV1SourceTest is InterchainClientV1BaseTest {
     }
 
     /// @dev Override the DB's returned next entry index (both for reads and writes)
-    function mockNextEntryIndex(uint256 dbNonce, uint64 entryIndex) internal {
+    function mockNextEntryIndex(uint64 dbNonce, uint64 entryIndex) internal {
         bytes memory returnData = abi.encode(dbNonce, entryIndex);
         // Use partial calldata to override return values for calls to these functions with any arguments.
         vm.mockCall(icDB, abi.encodeWithSelector(InterchainDBMock.getNextEntryIndex.selector), returnData);

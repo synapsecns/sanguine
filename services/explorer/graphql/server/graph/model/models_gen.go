@@ -258,16 +258,18 @@ type BridgeType string
 const (
 	BridgeTypeBridge BridgeType = "BRIDGE"
 	BridgeTypeCctp   BridgeType = "CCTP"
+	BridgeTypeRfq    BridgeType = "RFQ"
 )
 
 var AllBridgeType = []BridgeType{
 	BridgeTypeBridge,
 	BridgeTypeCctp,
+	BridgeTypeRfq,
 }
 
 func (e BridgeType) IsValid() bool {
 	switch e {
-	case BridgeTypeBridge, BridgeTypeCctp:
+	case BridgeTypeBridge, BridgeTypeCctp, BridgeTypeRfq:
 		return true
 	}
 	return false
@@ -299,16 +301,18 @@ type ContractType string
 const (
 	ContractTypeBridge ContractType = "BRIDGE"
 	ContractTypeCctp   ContractType = "CCTP"
+	ContractTypeRfq    ContractType = "RFQ"
 )
 
 var AllContractType = []ContractType{
 	ContractTypeBridge,
 	ContractTypeCctp,
+	ContractTypeRfq,
 }
 
 func (e ContractType) IsValid() bool {
 	switch e {
-	case ContractTypeBridge, ContractTypeCctp:
+	case ContractTypeBridge, ContractTypeCctp, ContractTypeRfq:
 		return true
 	}
 	return false

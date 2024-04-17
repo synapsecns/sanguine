@@ -1,11 +1,15 @@
+// @ts-nocheck
+
 import { formatUnits } from '@ethersproject/units'
-import { readContracts, Address, erc20ABI } from '@wagmi/core'
+import { readContracts } from '@wagmi/core'
+import { type Address, erc20Abi } from 'viem'
 import { Token } from '@types'
 import { MINICHEF_ABI } from '@abis/miniChef'
 
 import { getSynPrices } from '@/utils/actions/getPrices'
 import { SYN_ETH_SUSHI_TOKEN } from '@/constants/tokens/sushiMaster'
 import { MINICHEF_ADDRESSES } from '@/constants/minichef'
+import { wagmiConfig } from '@/wagmiConfig'
 
 type PoolInfoResult = readonly [
   accSynapsePerShare: bigint,
@@ -40,7 +44,8 @@ export const getPoolApyData = async (
   }
   const minichefAddress: Address = poolToken.miniChefAddress as Address
 
-  const data = await readContracts({
+  const data = await readContracts(wagmiConfig, {
+    allowFailure: true,
     contracts: [
       {
         address: minichefAddress,
@@ -63,14 +68,14 @@ export const getPoolApyData = async (
       },
       {
         address: poolToken.addresses[chainId] as Address,
-        abi: erc20ABI,
+        abi: erc20Abi,
         functionName: 'balanceOf',
         chainId,
         args: [minichefAddress],
       },
       {
         address: poolToken.addresses[chainId] as Address,
-        abi: erc20ABI,
+        abi: erc20Abi,
         functionName: 'totalSupply',
         chainId,
       },
