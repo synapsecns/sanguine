@@ -378,7 +378,7 @@ func (m *Manager) registerQuote(quote *model.PutQuoteRequest) (err error) {
 	if err != nil {
 		return fmt.Errorf("error creating quote amount gauge: %w", err)
 	}
-	_, err = meter.RegisterCallback(func(ctx context.Context, o metric.Observer) (err error) {
+	_, err = meter.RegisterCallback(func(_ context.Context, o metric.Observer) (err error) {
 		attributes := attribute.NewSet(
 			attribute.Int(metrics.Origin, quote.OriginChainID),
 			attribute.Int(metrics.Destination, quote.DestChainID),
