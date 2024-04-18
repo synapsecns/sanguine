@@ -6,6 +6,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/params"
 	"github.com/gin-gonic/gin"
 	"github.com/synapsecns/sanguine/core/ginhelper"
 	"github.com/synapsecns/sanguine/core/metrics"
@@ -17,6 +20,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"io"
+	"math/big"
 	"net/http"
 )
 
@@ -38,16 +42,22 @@ type finalizedProxyImpl struct {
 	proxyURL string
 	// logger is the logger
 	logger experimentalLogger.ExperimentalLogger
+	// maxSubmitAhead is the max number of blocks to submit ahead
+	maxSubmitAhead int
+	// chainID is the chain id
+	chainID int
 }
 
 // NewProxy creates a new simply proxy.
-func NewProxy(proxyURL string, handler metrics.Handler, port int) FinalizedProxy {
+func NewProxy(proxyURL string, handler metrics.Handler, port, maxSubmitAhead, chainID int) FinalizedProxy {
 	return &finalizedProxyImpl{
-		proxyURL: proxyURL,
-		handler:  handler,
-		port:     uint16(port),
-		client:   omniHTTP.NewRestyClient(),
-		logger:   handler.ExperimentalLogger(),
+		proxyURL:       proxyURL,
+		handler:        handler,
+		port:           uint16(port),
+		client:         omniHTTP.NewRestyClient(),
+		logger:         handler.ExperimentalLogger(),
+		maxSubmitAhead: maxSubmitAhead,
+		chainID:        chainID,
 	}
 }
 
@@ -117,6 +127,12 @@ func (r *finalizedProxyImpl) ProxyRequest(c *gin.Context) (err error) {
 
 	rpcRequest = rewriteConfirmableRequest(rpcRequest)
 
+	shouldRequest := r.checkShouldRequest(ctx, rpcRequest)
+	if !shouldRequest {
+		c.Data(http.StatusBadRequest, gin.MIMEJSON, []byte(`{"error": "submitted too far ahead"}`))
+		return nil
+	}
+
 	body, err := json.Marshal(rpcRequest)
 	if err != nil {
 		return errors.New("could not marshal request")
@@ -149,4 +165,57 @@ func rewriteConfirmableRequest(r rpc.Request) rpc.Request {
 		r.Params[0] = bytes.Replace(r.Params[0], latestBlock, finalizedBlock, 1)
 	}
 	return r
+}
+
+func (r *finalizedProxyImpl) checkShouldRequest(parentCtx context.Context, req rpc.Request) bool {
+	// only apply to sendRawTransaction
+	if client.RPCMethod(req.Method) != client.SendRawTransactionMethod {
+		return true
+	}
+
+	ctx, span := r.handler.Tracer().Start(parentCtx, "checkShouldRequest",
+		trace.WithAttributes(attribute.String("endpoint", r.proxyURL)),
+	)
+
+	var err error
+
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	tx := new(types.Transaction)
+	err = tx.UnmarshalJSON(req.Params[0])
+	if err != nil {
+		return false
+	}
+
+	ethParams := params.AllCliqueProtocolChanges
+	ethParams.ChainID = big.NewInt(int64(r.chainID))
+
+	// derive sender
+	signer := types.MakeSigner(ethParams, big.NewInt(1))
+	var from common.Address
+	from, err = types.Sender(signer, tx)
+	if err != nil {
+		return false
+	}
+
+	// evm client is used to get the nonce
+	evmClient, err := client.DialBackend(ctx, r.proxyURL, r.handler)
+	if err != nil {
+		return false
+	}
+
+	var currentNonce uint64
+	currentNonce, err = evmClient.NonceAt(ctx, from, nil)
+	if err != nil {
+		return false
+	}
+
+	span.SetAttributes(attribute.Int("current-nonce", int(currentNonce)))
+	span.SetAttributes(attribute.Int("tx-nonce", int(tx.Nonce())))
+	span.SetAttributes(attribute.Int("max-submit-ahead", r.maxSubmitAhead))
+
+	// if the tx is too far ahead, don't submit
+	return tx.Nonce() <= currentNonce+uint64(r.maxSubmitAhead)
 }
