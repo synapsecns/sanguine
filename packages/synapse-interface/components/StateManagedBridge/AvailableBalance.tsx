@@ -52,7 +52,7 @@ export const AvailableBalance = ({
     }
   }
 
-  const isGasCostCoveredByInput = (): boolean => {
+  const isInputGreaterThanBalanceMinusGasFees = (): boolean => {
     if (!isGasToken || !parsedGasCost || !parsedBalanceFull || !fromValue) {
       return true
     } else {
@@ -63,7 +63,7 @@ export const AvailableBalance = ({
     }
   }
 
-  const isGasCostCoveredByBalance = (): boolean => {
+  const isBalanceGreaterThanGasFees = (): boolean => {
     if (!isGasToken || !parsedGasCost || !parsedBalanceFull) {
       return true
     } else {
@@ -72,11 +72,14 @@ export const AvailableBalance = ({
   }
 
   const showGasReserved = (): boolean => {
-    return !hasOnlyZeroes(fromValue) && !isGasCostCoveredByInput()
+    return (
+      !hasOnlyZeroes(fromValue) && isGasToken
+      // !isInputGreaterThanBalanceMinusGasFees()
+    )
   }
 
   const gasReserved = showGasReserved()
-    ? isGasCostCoveredByBalance()
+    ? isBalanceGreaterThanGasFees()
       ? parseFloat(parsedGasCost)
       : parseFloat(fromValue)
     : undefined
@@ -90,13 +93,13 @@ export const AvailableBalance = ({
         <div>Estimated gas: {parseFloat(parsedGasCost).toFixed(4)}</div>
       </div>
     )
-  } else if (!isGasCostCoveredByInput()) {
+  } else if (!isInputGreaterThanBalanceMinusGasFees()) {
     tooltipContent = (
       <div className="whitespace-nowrap">
         You may not have enough to cover gas fees.
       </div>
     )
-  } else if (!isGasCostCoveredByBalance()) {
+  } else if (!isBalanceGreaterThanGasFees()) {
     tooltipContent = (
       <div className="whitespace-nowrap">
         Gas fees may exceed your available balance.
@@ -121,15 +124,19 @@ export const AvailableBalance = ({
           onClick={onMaxBalance}
           className={labelClassName}
         >
+          <span>Gas est: </span>
           {isTraceInput() ? '<0.001' : gasReserved.toFixed(4)}
-          <span> reserved for gas</span>
+          <span> {fromToken?.symbol}</span>
         </label>
       </HoverTooltip>
     )
   } else if (hasMounted && isConnected && !disabled) {
     return (
       <HoverTooltip
-        isActive={!isGasCostCoveredByBalance() || !isGasCostCoveredByInput()}
+        isActive={
+          !isBalanceGreaterThanGasFees() ||
+          !isInputGreaterThanBalanceMinusGasFees()
+        }
         hoverContent={tooltipContent}
       >
         <label

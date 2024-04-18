@@ -151,7 +151,6 @@ export const InputContainer = () => {
   const { synapseSDK } = useSynapseContext()
 
   useEffect(() => {
-    console.log('parsedBalance: ', parsedBalance)
     if (hasRequiredGasEstimateInputs()) {
       ;(async () => {
         const bridgeQuote = await getBridgeQuote(
@@ -163,7 +162,7 @@ export const InputContainer = () => {
           parsedBalance
         )
 
-        console.log('bridgeQuote: ', bridgeQuote)
+        console.log('Fetched bridge quote: ', bridgeQuote)
 
         const gasLimit = await calculateEstimatedBridgeGasLimit(
           synapseSDK,
@@ -238,14 +237,6 @@ export const InputContainer = () => {
   ): number => {
     const maxBridgeable = parsedGasBalance - parsedGasCost
     return maxBridgeable
-  }
-
-  const onMaxBalance = () => {
-    dispatch(
-      updateFromValue(
-        formatBigIntToString(balance, fromToken?.decimals[fromChainId])
-      )
-    )
   }
 
   const maxBridgeableGas: number | null =
