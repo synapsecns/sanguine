@@ -294,7 +294,9 @@ export const InputContainer = () => {
             fromToken={fromToken}
             balance={balance}
             parsedBalance={parsedBalance}
-            maxBridgeableBalance={maxBridgeableGas.toString() ?? parsedBalance}
+            maxBridgeableBalance={
+              maxBridgeableGas ? maxBridgeableGas.toString() : parsedBalance
+            }
             isGasToken={isGasToken}
             parsedGasCost={parsedGasCost}
             onMaxBalance={onMaxBridgeableBalance}

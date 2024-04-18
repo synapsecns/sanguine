@@ -38,11 +38,7 @@ export const AvailableBalance = ({
   )
 
   const isTraceBalance = (): boolean => {
-    if (balance && !hasOnlyZeroes(parsedBalanceFull)) {
-      return true
-    } else {
-      return false
-    }
+    return balance && !hasOnlyZeroes(parsedBalanceFull)
   }
 
   const isTraceGasCost = (): boolean => {
@@ -77,16 +73,18 @@ export const AvailableBalance = ({
     return (
       fromValue &&
       !hasOnlyZeroes(fromValue) &&
+      parsedGasCost &&
       isGasToken &&
       isInputGreaterThanBalanceMinusGasFees()
     )
   }
 
-  const gasReserved = showGasReserved()
-    ? isBalanceGreaterThanGasFees()
-      ? parseFloat(parsedGasCost)
-      : parseFloat(fromValue)
-    : undefined
+  console.log('maxBridgeableBalance:', maxBridgeableBalance)
+
+  const gasReserved = showGasReserved() ? parseFloat(parsedGasCost) : undefined
+
+  console.log('gasReserved:', gasReserved)
+  console.log('parsedGasCost:', parsedGasCost)
 
   let tooltipContent = null
 
@@ -105,7 +103,11 @@ export const AvailableBalance = ({
         </span>
       </div>
     )
-  } else if (isGasToken && isInputGreaterThanBalanceMinusGasFees()) {
+  } else if (
+    isGasToken &&
+    parsedGasCost &&
+    isInputGreaterThanBalanceMinusGasFees()
+  ) {
     tooltipContent = (
       <div className="whitespace-nowrap">
         You may not have enough to cover gas fees.
@@ -123,6 +125,7 @@ export const AvailableBalance = ({
     space: 'block',
     textColor: `text-xxs md:text-xs ${
       fromValue &&
+      parsedGasCost &&
       !hasOnlyZeroes(fromValue) &&
       isInputGreaterThanBalanceMinusGasFees()
         ? '!text-yellowText'
@@ -140,6 +143,7 @@ export const AvailableBalance = ({
   if (
     fromValue &&
     !hasOnlyZeroes(fromValue) &&
+    showGasReserved() &&
     isInputGreaterThanBalanceMinusGasFees()
   ) {
     return (
@@ -150,7 +154,7 @@ export const AvailableBalance = ({
           className={labelClassName}
         >
           <span>Gas est: </span>
-          {isTraceGasCost() ? '<0.001' : gasReserved?.toFixed(4)}
+          {isTraceGasCost() ? '<0.001' : parsedGasCost}
           <span> {fromToken?.symbol}</span>
         </label>
       </HoverTooltip>
