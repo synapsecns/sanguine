@@ -1,6 +1,6 @@
 {
   "name": "@synapsecns/synapse-interface",
-  "version": "0.17.0",
+  "version": "0.18.0",
   "private": true,
   "engines": {
     "node": ">=18.17.0"
