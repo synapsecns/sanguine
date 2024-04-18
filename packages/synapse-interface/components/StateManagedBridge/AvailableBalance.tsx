@@ -43,12 +43,12 @@ export const AvailableBalance = ({
     }
   }
 
-  const isTraceInput = (): boolean => {
-    if (!fromValue) {
+  const isTraceGasCost = (): boolean => {
+    if (!parsedGasCost) {
       return false
     } else {
-      const shortenedFromValue = parseFloat(fromValue).toFixed(4)
-      return Number(shortenedFromValue) === 0 && !hasOnlyZeroes(fromValue)
+      const shortenedGasCost = parseFloat(parsedGasCost).toFixed(4)
+      return Number(shortenedGasCost) === 0 && !hasOnlyZeroes(parsedGasCost)
     }
   }
 
@@ -73,8 +73,10 @@ export const AvailableBalance = ({
 
   const showGasReserved = (): boolean => {
     return (
-      !hasOnlyZeroes(fromValue) && isGasToken
-      // !isInputGreaterThanBalanceMinusGasFees()
+      fromValue &&
+      !hasOnlyZeroes(fromValue) &&
+      isGasToken &&
+      isInputGreaterThanBalanceMinusGasFees()
     )
   }
 
@@ -86,14 +88,7 @@ export const AvailableBalance = ({
 
   let tooltipContent
 
-  if (showGasReserved()) {
-    tooltipContent = (
-      <div className="space-y-2 whitespace-nowrap">
-        <div>You may not have enough to cover gas fees.</div>
-        <div>Estimated gas: {parseFloat(parsedGasCost).toFixed(4)}</div>
-      </div>
-    )
-  } else if (!isInputGreaterThanBalanceMinusGasFees()) {
+  if (isInputGreaterThanBalanceMinusGasFees()) {
     tooltipContent = (
       <div className="whitespace-nowrap">
         You may not have enough to cover gas fees.
@@ -110,13 +105,26 @@ export const AvailableBalance = ({
   const labelClassName = joinClassNames({
     space: 'block',
     textColor: `text-xxs md:text-xs ${
-      showGasReserved() ? '!text-yellowText' : ''
+      fromValue &&
+      !hasOnlyZeroes(fromValue) &&
+      isInputGreaterThanBalanceMinusGasFees()
+        ? '!text-yellowText'
+        : ''
     }`,
     animation: 'transition-all duration-150 transform-gpu',
     hover: 'hover:opacity-70 cursor-pointer',
   })
 
-  if (showGasReserved()) {
+  console.log(
+    'isInputGreaterThanBalanceMinusGasFees: ',
+    isInputGreaterThanBalanceMinusGasFees()
+  )
+
+  if (
+    fromValue &&
+    !hasOnlyZeroes(fromValue) &&
+    isInputGreaterThanBalanceMinusGasFees()
+  ) {
     return (
       <HoverTooltip isActive={true} hoverContent={tooltipContent}>
         <label
@@ -125,20 +133,14 @@ export const AvailableBalance = ({
           className={labelClassName}
         >
           <span>Gas est: </span>
-          {isTraceInput() ? '<0.001' : gasReserved.toFixed(4)}
+          {isTraceGasCost() ? '<0.001' : gasReserved?.toFixed(4)}
           <span> {fromToken?.symbol}</span>
         </label>
       </HoverTooltip>
     )
   } else if (hasMounted && isConnected && !disabled) {
     return (
-      <HoverTooltip
-        isActive={
-          !isBalanceGreaterThanGasFees() ||
-          !isInputGreaterThanBalanceMinusGasFees()
-        }
-        hoverContent={tooltipContent}
-      >
+      <HoverTooltip isActive={false} hoverContent={tooltipContent}>
         <label
           htmlFor="inputRow"
           onClick={onMaxBalance}
