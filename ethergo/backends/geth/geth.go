@@ -2,6 +2,7 @@ package geth
 
 import (
 	"context"
+	"github.com/synapsecns/sanguine/ethergo/client"
 	"math/big"
 	"os"
 	"testing"
@@ -251,6 +252,14 @@ func (w wrappedClient) CallContext(ctx context.Context, result interface{}, meth
 func (w wrappedClient) BatchCallContext(ctx context.Context, b []rpc.BatchElem) error {
 	//nolint:wrapcheck
 	return w.rpcClient.BatchCallContext(ctx, b)
+}
+
+func (w wrappedClient) Web3Version(ctx context.Context) (version string, err error) {
+	if err := w.rpcClient.CallContext(ctx, &version, client.Web3VersionMethod.String()); err != nil {
+		// nolint: wrapcheck
+		return "", err
+	}
+	return version, nil
 }
 
 func (w wrappedClient) BatchContext(ctx context.Context, calls ...w3types.Caller) error {
