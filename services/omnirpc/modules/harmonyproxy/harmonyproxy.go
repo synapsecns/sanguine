@@ -151,7 +151,7 @@ func (r *HarmonyProxy) ProxyRequest(c *gin.Context) (err error) {
 		return fmt.Errorf("could not get response from %s: %w", r.proxyURL, err)
 	}
 
-	// TODO: caste to rpc response
+	// TODO: cast to rpc response
 
 	c.Data(resp.StatusCode(), gin.MIMEJSON, resp.Body())
 	return nil
@@ -473,25 +473,25 @@ func (r *HarmonyProxy) getLogsHarmonyVerify(parentCtx context.Context, query eth
 func filterLogs(logs []*types.Log, fromBlock, toBlock *big.Int, addresses []common.Address, topics [][]common.Hash) []*types.Log {
 	var ret []*types.Log
 Logs:
-	for _, log := range logs {
-		if fromBlock != nil && fromBlock.Int64() >= 0 && fromBlock.Uint64() > log.BlockNumber {
+	for _, currentLog := range logs {
+		if fromBlock != nil && fromBlock.Int64() >= 0 && fromBlock.Uint64() > currentLog.BlockNumber {
 			continue
 		}
-		if toBlock != nil && toBlock.Int64() >= 0 && toBlock.Uint64() < log.BlockNumber {
+		if toBlock != nil && toBlock.Int64() >= 0 && toBlock.Uint64() < currentLog.BlockNumber {
 			continue
 		}
 
-		if len(addresses) > 0 && !includes(addresses, log.Address) {
+		if len(addresses) > 0 && !includes(addresses, currentLog.Address) {
 			continue
 		}
 		// If the to filtered topics is greater than the amount of topics in logs, skip.
-		if len(topics) > len(log.Topics) {
+		if len(topics) > len(currentLog.Topics) {
 			continue
 		}
 		for i, sub := range topics {
 			match := len(sub) == 0 // empty rule set == wildcard
 			for _, topic := range sub {
-				if log.Topics[i] == topic {
+				if currentLog.Topics[i] == topic {
 					match = true
 					break
 				}
@@ -500,7 +500,7 @@ Logs:
 				continue Logs
 			}
 		}
-		ret = append(ret, log)
+		ret = append(ret, currentLog)
 	}
 	return ret
 }
