@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.18.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.17.0...@synapsecns/synapse-interface@0.18.0) (2024-04-18)
+
+
+### Features
+
+* **synapse-interface:** Added /returntomonke pfp generator ([#2460](https://github.com/synapsecns/sanguine/issues/2460)) ([efdd57c](https://github.com/synapsecns/sanguine/commit/efdd57cf188cb5c1da9a9b53c51c4b1b78cb2748))
+
+
+
+
+
 # [0.17.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.16.9...@synapsecns/synapse-interface@0.17.0) (2024-04-17)
 
 
