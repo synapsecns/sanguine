@@ -24,7 +24,9 @@ export const HoverTooltip = ({
         className="relative w-fit"
       >
         {children}
-        <Tooltip isHovered={showTooltip}>{hoverContent}</Tooltip>
+        {hoverContent ? (
+          <Tooltip isHovered={showTooltip}>{hoverContent}</Tooltip>
+        ) : null}
       </div>
     )
   }

@@ -11,6 +11,7 @@ export const AvailableBalance = ({
   fromToken,
   balance,
   parsedBalance,
+  maxBridgeableBalance,
   isGasToken = false,
   parsedGasCost,
   onMaxBalance,
@@ -23,6 +24,7 @@ export const AvailableBalance = ({
   fromToken: Token | null
   balance?: bigint
   parsedBalance?: string
+  maxBridgeableBalance?: string
   isGasToken?: boolean
   parsedGasCost?: string
   onMaxBalance?: () => void
@@ -86,15 +88,30 @@ export const AvailableBalance = ({
       : parseFloat(fromValue)
     : undefined
 
-  let tooltipContent
+  let tooltipContent = null
 
-  if (isInputGreaterThanBalanceMinusGasFees()) {
+  if (isGasToken && parsedGasCost) {
+    tooltipContent = (
+      <div className="flex flex-col space-y-2 whitespace-nowrap">
+        <span>
+          Available balance: {parsedBalanceFull} {fromToken?.symbol}
+        </span>
+        <span>
+          Estimated bridgeable balance: {maxBridgeableBalance}{' '}
+          {fromToken?.symbol}
+        </span>
+        <span>
+          Estimated gas fee: {parsedGasCost} {fromToken?.symbol}
+        </span>
+      </div>
+    )
+  } else if (isGasToken && isInputGreaterThanBalanceMinusGasFees()) {
     tooltipContent = (
       <div className="whitespace-nowrap">
         You may not have enough to cover gas fees.
       </div>
     )
-  } else if (!isBalanceGreaterThanGasFees()) {
+  } else if (isGasToken && !isBalanceGreaterThanGasFees()) {
     tooltipContent = (
       <div className="whitespace-nowrap">
         Gas fees may exceed your available balance.
@@ -140,7 +157,7 @@ export const AvailableBalance = ({
     )
   } else if (hasMounted && isConnected && !disabled) {
     return (
-      <HoverTooltip isActive={false} hoverContent={tooltipContent}>
+      <HoverTooltip isActive={true} hoverContent={tooltipContent}>
         <label
           htmlFor="inputRow"
           onClick={onMaxBalance}
