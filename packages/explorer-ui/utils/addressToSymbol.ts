@@ -1,4 +1,4 @@
-import { TOKEN_HASH_MAP } from 'synapse-constants'
+import { TOKEN_HASH_MAP, tokenAddressToToken } from 'synapse-constants'
 
 export function addressToSymbol({ tokenAddress, chainId }) {
   if (
@@ -7,9 +7,11 @@ export function addressToSymbol({ tokenAddress, chainId }) {
   ) {
     return 'AVWETH'
   }
+  if (tokenAddress === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE') {
+    return 'ETH'
+  }
 
   const symbol =
     tokenAddress && chainId && TOKEN_HASH_MAP[chainId][tokenAddress]?.symbol
-
   return symbol
 }

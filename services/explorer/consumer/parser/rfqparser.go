@@ -166,9 +166,15 @@ func (p *RFQParser) applyPriceData(ctx context.Context, rfqEvent *model.RFQEvent
 		one := 1.0
 		tokenPrice = &one
 	}
-
-	if rfqEvent.OriginAmount != nil {
+	// We can maybe hardcode this to be the integer of the event type if the second item is incorrect.
+	if rfqEvent.EventType == rfqTypes.BridgeRequestedEvent.Int() {
 		amountUSD := GetAmountUSD(rfqEvent.OriginAmount, *rfqEvent.TokenDecimal, tokenPrice)
+		if amountUSD != nil {
+			logger.Warnf("RFQ GetAmountUSD properly found the token price for coingecko token: %s", coinGeckoID)
+			rfqEvent.AmountUSD = *amountUSD
+		}
+	} else if rfqEvent.EventType == rfqTypes.BridgeRelayedEvent.Int() {
+		amountUSD := GetAmountUSD(rfqEvent.DestinationAmount, *rfqEvent.TokenDecimal, tokenPrice)
 		if amountUSD != nil {
 			logger.Warnf("RFQ GetAmountUSD properly found the token price for coingecko token: %s", coinGeckoID)
 			rfqEvent.AmountUSD = *amountUSD
@@ -222,13 +228,17 @@ func eventToRFQEvent(event rfqTypes.EventLog, chainID uint32) model.RFQEvent {
 
 func rfqEventToBridgeEvent(rfqEvent model.RFQEvent) model.BridgeEvent {
 	bridgeType := bridgeTypes.BridgeRequestedEvent
-
+	token := rfqEvent.OriginToken
+	amount := rfqEvent.OriginAmount
 	destinationKappa := rfqEvent.TransactionID
+
 	var kappa *string
 	if rfqEvent.EventType == rfqTypes.BridgeRelayedEvent.Int() {
 		bridgeType = bridgeTypes.BridgeRelayedEvent
 		destinationKappa = ""
 		kappa = &rfqEvent.TransactionID
+		token = rfqEvent.DestinationToken
+		amount = rfqEvent.DestinationAmount
 	}
 
 	// Adjust sender and recipient based on null values
@@ -247,8 +257,8 @@ func rfqEventToBridgeEvent(rfqEvent model.RFQEvent) model.BridgeEvent {
 		EventType:        bridgeType.Int(),
 		BlockNumber:      rfqEvent.BlockNumber,
 		TxHash:           rfqEvent.TxHash,
-		Token:            rfqEvent.OriginToken,
-		Amount:           rfqEvent.OriginAmount,
+		Token:            token,
+		Amount:           amount,
 		EventIndex:       rfqEvent.EventIndex,
 		DestinationKappa: destinationKappa,
 		Sender:           sender,
