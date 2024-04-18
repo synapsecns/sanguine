@@ -5,6 +5,8 @@ export interface BridgeState {
   showToTokenListOverlay: boolean
   showFromChainListOverlay: boolean
   showToChainListOverlay: boolean
+  showDestinationWarning: boolean
+  isDestinationWarningAccepted: boolean
   showSettingsSlideOver: boolean
   showDestinationAddress: boolean
 }
@@ -14,6 +16,8 @@ const initialState: BridgeState = {
   showToTokenListOverlay: false,
   showFromChainListOverlay: false,
   showToChainListOverlay: false,
+  showDestinationWarning: false,
+  isDestinationWarningAccepted: false,
   showSettingsSlideOver: false,
   showDestinationAddress: false,
 }
@@ -34,6 +38,15 @@ export const bridgeDisplaySlice = createSlice({
     setShowToChainListOverlay: (state, action: PayloadAction<boolean>) => {
       state.showToChainListOverlay = action.payload
     },
+    setShowDestinationWarning: (state, action: PayloadAction<boolean>) => {
+      state.showDestinationWarning = action.payload
+    },
+    setIsDestinationWarningAccepted: (
+      state,
+      action: PayloadAction<boolean>
+    ) => {
+      state.isDestinationWarningAccepted = action.payload
+    },
     setShowSettingsSlideOver: (state, action: PayloadAction<boolean>) => {
       state.showSettingsSlideOver = action.payload
     },
@@ -48,6 +61,8 @@ export const {
   setShowToChainListOverlay,
   setShowFromTokenListOverlay,
   setShowToTokenListOverlay,
+  setShowDestinationWarning,
+  setIsDestinationWarningAccepted,
   setShowSettingsSlideOver,
   setShowDestinationAddress,
 } = bridgeDisplaySlice.actions

@@ -12,7 +12,8 @@ jobs:
   sonarcloud:
     name: SonarCloud
     runs-on: ubuntu-latest
-# these are pretty disruptive
+    if: github.repository_owner == 'synapsecns'
+    # these are pretty disruptive
 #    permissions:
 #      contents: write
 #      pull-requests: write
@@ -26,12 +27,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      - name: 'Qodana Scan'
-        uses: JetBrains/qodana-action@main
-        env:
-          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
-        with:
-          args: --baseline,qodana.sarif.json
-          post-pr-comment: false
-          use-annotations: false
-          upload-result: true

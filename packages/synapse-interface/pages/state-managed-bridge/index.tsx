@@ -1,11 +1,34 @@
-import { useAccount, useNetwork } from 'wagmi'
-import { useSelector } from 'react-redux'
-import { RootState } from '../../store/store'
 import toast from 'react-hot-toast'
-import { animated } from 'react-spring'
+import { useEffect, useRef, useState } from 'react'
+import { commify } from '@ethersproject/units'
+import { Address, zeroAddress, isAddress } from 'viem'
+import { polygon } from 'viem/chains'
+import { useAccount } from 'wagmi'
+import { useSelector } from 'react-redux'
 import { useRouter } from 'next/router'
-import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
+import {
+  getWalletClient,
+  getPublicClient,
+  waitForTransactionReceipt,
+} from '@wagmi/core'
 
+import { InputContainer } from '@/components/StateManagedBridge/InputContainer'
+import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer'
+import { BridgeExchangeRateInfo } from '@/components/StateManagedBridge/BridgeExchangeRateInfo'
+import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
+import ExplorerToastLink from '@/components/ExplorerToastLink'
+import { Warning } from '@/components/Warning'
+import { SwitchButton } from '@/components/buttons/SwitchButton'
+import { PageHeader } from '@/components/PageHeader'
+import SettingsSlideOver from '@/components/StateManagedBridge/SettingsSlideOver'
+import Button from '@/components/ui/tailwind/Button'
+import { SettingsIcon } from '@/components/icons/SettingsIcon'
+import { useMaintenanceCountdownProgress } from '@/components/Maintenance/Events/template/MaintenanceEvent'
+import { BridgeCard } from '@/components/ui/BridgeCard'
+import { ConfirmDestinationAddressWarning } from '@/components/StateManagedBridge/BridgeWarnings'
+import { EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
+import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
+import { segmentAnalyticsEvent } from '@/contexts/SegmentAnalyticsProvider'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import {
   BridgeState,
@@ -20,85 +43,40 @@ import {
   setIsLoading,
   setDestinationAddress,
 } from '@/slices/bridge/reducer'
-
 import {
   setShowDestinationAddress,
-  setShowFromTokenListOverlay,
   setShowSettingsSlideOver,
 } from '@/slices/bridgeDisplaySlice'
-
-import { EMPTY_BRIDGE_QUOTE_ZERO } from '@/constants/bridge'
-
 import { useSynapseContext } from '@/utils/providers/SynapseProvider'
 import { getErc20TokenAllowance } from '@/actions/getErc20TokenAllowance'
-import { commify } from '@ethersproject/units'
 import { formatBigIntToString } from '@/utils/bigint/format'
 import { calculateExchangeRate } from '@/utils/calculateExchangeRate'
-import { useEffect, useRef, useState, useMemo } from 'react'
 import { Token } from '@/utils/types'
-import {
-  getWalletClient,
-  getPublicClient,
-  prepareSendTransaction,
-} from '@wagmi/core'
 import { txErrorHandler } from '@/utils/txErrorHandler'
-import { AcceptedChainId, CHAINS_BY_ID } from '@/constants/chains'
 import { approveToken } from '@/utils/approveToken'
-import { PageHeader } from '@/components/PageHeader'
-import Card from '@/components/ui/tailwind/Card'
-import BridgeExchangeRateInfo from '@/components/StateManagedBridge/BridgeExchangeRateInfo'
-import { Transition } from '@headlessui/react'
-import {
-  SECTION_TRANSITION_PROPS,
-  TRANSITION_PROPS,
-} from '@/styles/transitions'
-import { InputContainer } from '@/components/StateManagedBridge/InputContainer'
-import { OutputContainer } from '@/components/StateManagedBridge/OutputContainer'
-import SettingsSlideOver from '@/components/StateManagedBridge/SettingsSlideOver'
-import Button from '@/components/ui/tailwind/Button'
-import { SettingsIcon } from '@/components/icons/SettingsIcon'
-import { DestinationAddressInput } from '@/components/StateManagedBridge/DestinationAddressInput'
-import { BridgeTransactionButton } from '@/components/StateManagedBridge/BridgeTransactionButton'
-import ExplorerToastLink from '@/components/ExplorerToastLink'
-import { polygon } from 'viem/chains'
-import { Address, zeroAddress, isAddress } from 'viem'
 import { stringToBigInt } from '@/utils/bigint/format'
-import { Warning } from '@/components/Warning'
-import { useAppDispatch } from '@/store/hooks'
+
 import { fetchAndStoreSingleNetworkPortfolioBalances } from '@/slices/portfolio/hooks'
 import {
   updatePendingBridgeTransaction,
   addPendingBridgeTransaction,
   removePendingBridgeTransaction,
 } from '@/slices/transactions/actions'
+import { useAppDispatch } from '@/store/hooks'
+import { RootState } from '@/store/store'
 import { getTimeMinutesFromNow } from '@/utils/time'
-import { FromChainListOverlay } from '@/components/StateManagedBridge/FromChainListOverlay'
-import { ToChainListOverlay } from '@/components/StateManagedBridge/ToChainListOverlay'
-import { FromTokenListOverlay } from '@/components/StateManagedBridge/FromTokenListOverlay'
-import { ToTokenListOverlay } from '@/components/StateManagedBridge/ToTokenListOverlay'
-
-import { waitForTransaction } from '@wagmi/core'
-import {
-  fetchArbPrice,
-  fetchEthPrice,
-  fetchGmxPrice,
-} from '@/slices/priceDataSlice'
 import { isTransactionReceiptError } from '@/utils/isTransactionReceiptError'
-import { SwitchButton } from '@/components/buttons/SwitchButton'
-import {
-  MaintenanceWarningMessage,
-  useMaintenanceCountdownProgress,
-} from '@/components/Maintenance/Events/template/MaintenanceEvent'
+import { wagmiConfig } from '@/wagmiConfig'
 
 const StateManagedBridge = () => {
   const { address } = useAccount()
-  const { chain } = useNetwork()
   const { synapseSDK } = useSynapseContext()
+  const router = useRouter()
+  const { query, pathname } = router
+
   const bridgeDisplayRef = useRef(null)
   const currentSDKRequestID = useRef(0)
   const quoteToastRef = useRef({ id: '' })
-  const router = useRouter()
-  const { query, pathname } = router
 
   const {
     fromChainId,
@@ -109,14 +87,9 @@ const StateManagedBridge = () => {
     debouncedFromValue,
     destinationAddress,
   }: BridgeState = useBridgeState()
-  const {
-    showSettingsSlideOver,
-    showDestinationAddress,
-    showFromChainListOverlay,
-    showToChainListOverlay,
-    showFromTokenListOverlay,
-    showToTokenListOverlay,
-  } = useSelector((state: RootState) => state.bridgeDisplay)
+  const { showSettingsSlideOver, showDestinationAddress } = useSelector(
+    (state: RootState) => state.bridgeDisplay
+  )
 
   const [isApproved, setIsApproved] = useState(false)
 
@@ -372,10 +345,11 @@ const StateManagedBridge = () => {
         isSubmitted: false,
         estimatedTime: bridgeQuote.estimatedTime,
         bridgeModuleName: bridgeQuote.bridgeModuleName,
+        destinationAddress: destinationAddress,
       })
     )
     try {
-      const wallet = await getWalletClient({
+      const wallet = await getWalletClient(wagmiConfig, {
         chainId: fromChainId,
       })
       const toAddress =
@@ -412,13 +386,14 @@ const StateManagedBridge = () => {
       let gasEstimate = undefined
 
       if (fromChainId === polygon.id) {
-        const publicClient = getPublicClient()
+        const publicClient = getPublicClient(wagmiConfig, {
+          chainId: fromChainId,
+        })
         gasEstimate = await publicClient.estimateGas({
           value: payload.value,
           to: payload.to,
           account: address,
           data: payload.data,
-          chainId: fromChainId,
         })
         gasEstimate = (gasEstimate * 3n) / 2n
       }
@@ -479,7 +454,7 @@ const StateManagedBridge = () => {
 
       toast.dismiss(pendingPopup)
 
-      const transactionReceipt = await waitForTransaction({
+      const transactionReceipt = await waitForTransactionReceipt(wagmiConfig, {
         hash: tx as Address,
         timeout: 60_000,
       })
@@ -557,76 +532,37 @@ const StateManagedBridge = () => {
             </Button>
           </div>
         </div>
-        <Card
-          divider={false}
-          className={`
-            pb-3 mt-5 overflow-hidden bg-bgBase
-            transition-all duration-100 transform rounded-md
-          `}
-        >
+        <BridgeCard bridgeRef={bridgeDisplayRef}>
           {MaintenanceCountdownProgressBar}
-          <div ref={bridgeDisplayRef}>
-            <Transition show={showSettingsSlideOver} {...TRANSITION_PROPS}>
-              <animated.div>
-                <SettingsSlideOver key="settings" />
-              </animated.div>
-            </Transition>
-            <Transition show={showFromChainListOverlay} {...TRANSITION_PROPS}>
-              <animated.div className={springClass}>
-                <FromChainListOverlay />
-              </animated.div>
-            </Transition>
-            <Transition show={showFromTokenListOverlay} {...TRANSITION_PROPS}>
-              <animated.div className={springClass}>
-                <FromTokenListOverlay />
-              </animated.div>
-            </Transition>
-            <Transition show={showToChainListOverlay} {...TRANSITION_PROPS}>
-              <animated.div className={springClass}>
-                <ToChainListOverlay />
-              </animated.div>
-            </Transition>
-            <Transition show={showToTokenListOverlay} {...TRANSITION_PROPS}>
-              <animated.div className={springClass}>
-                <ToTokenListOverlay />
-              </animated.div>
-            </Transition>
-            <InputContainer />
-            <SwitchButton
-              onClick={() => {
-                dispatch(setFromChainId(toChainId))
-                dispatch(setFromToken(toToken))
-                dispatch(setToChainId(fromChainId))
-                dispatch(setToToken(fromToken))
-              }}
-            />
-            <OutputContainer />
-            <Warning />
-            {isMaintenancePending && <MaintenanceWarningMessage />}
-            <Transition
-              appear={true}
-              unmount={false}
-              show={true}
-              {...SECTION_TRANSITION_PROPS}
-            >
-              <BridgeExchangeRateInfo />
-            </Transition>
-            {showDestinationAddress && (
-              <DestinationAddressInput
-                toChainId={toChainId}
-                destinationAddress={destinationAddress}
+          {showSettingsSlideOver && (
+            <div className="min-h-[472px] ">
+              <SettingsSlideOver key="settings" />
+            </div>
+          )}
+          {!showSettingsSlideOver && (
+            <>
+              <InputContainer />
+              <SwitchButton
+                onClick={() => {
+                  dispatch(setFromChainId(toChainId))
+                  dispatch(setFromToken(toToken))
+                  dispatch(setToChainId(fromChainId))
+                  dispatch(setToToken(fromToken))
+                }}
               />
-            )}
-            <div className="md:my-3">
+              <OutputContainer />
+              <Warning />
+              <BridgeExchangeRateInfo />
+              <ConfirmDestinationAddressWarning />
               <BridgeTransactionButton
                 isApproved={isApproved}
                 approveTxn={approveTxn}
                 executeBridge={executeBridge}
                 isBridgePaused={isCurrentChainDisabled}
               />
-            </div>
-          </div>
-        </Card>
+            </>
+          )}
+        </BridgeCard>
       </div>
     </div>
   )

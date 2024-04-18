@@ -12,6 +12,7 @@ import (
 	"github.com/jftuga/ellipsis"
 	"github.com/synapsecns/sanguine/ethergo/signer/config"
 	submitterConfig "github.com/synapsecns/sanguine/ethergo/submitter/config"
+	cctpConfig "github.com/synapsecns/sanguine/services/cctp-relayer/config"
 	"gopkg.in/yaml.v2"
 
 	"path/filepath"
@@ -38,7 +39,7 @@ type Config struct {
 	QuotableTokens map[string][]string `yaml:"quotable_tokens"`
 	// Signer is the signer config.
 	Signer config.SignerConfig `yaml:"signer"`
-	// Submitter is the submitter config.
+	// SubmitterConfig is the submitter config.
 	SubmitterConfig submitterConfig.Config `yaml:"submitter_config"`
 	// FeePricer is the fee pricer config.
 	FeePricer FeePricerConfig `yaml:"fee_pricer"`
@@ -48,15 +49,19 @@ type Config struct {
 	DBSelectorInterval time.Duration `yaml:"db_selector_interval"`
 	// RebalanceInterval is the interval for rebalancing.
 	RebalanceInterval time.Duration `yaml:"rebalance_interval"`
+	// CCTPRelayerConfig is the embedded cctp relayer config (optional).
+	CCTPRelayerConfig *cctpConfig.Config `yaml:"cctp_relayer_config"`
 }
 
 // ChainConfig represents the configuration for a chain.
 type ChainConfig struct {
 	// Bridge is the rfq bridge contract address.
 	RFQAddress string `yaml:"rfq_address"`
-	// CCTPAddress is the cctp contract address.
-	CCTPAddress string `yaml:"cctp_address"`
-	// Confirmations is the number of required confirmations
+	// SynapseCCTPAddress is the SynapseCCTP address.
+	SynapseCCTPAddress string `yaml:"synapse_cctp_address"`
+	// TokenMessengerAddress is the TokenMessenger address.
+	TokenMessengerAddress string `yaml:"token_messenger_address"`
+	// Confirmations is the number of required confirmations.
 	Confirmations uint64 `yaml:"confirmations"`
 	// Tokens is a map of token ID -> token config.
 	Tokens map[string]TokenConfig `yaml:"tokens"`

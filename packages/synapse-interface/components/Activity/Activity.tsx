@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react'
 import _ from 'lodash'
 import Fuse from 'fuse.js'
-import { useAccount, Address } from 'wagmi'
+import { useAccount } from 'wagmi'
+import { Address } from 'viem'
 import { useTransactionsState } from '@/slices/transactions/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
 import { BridgeTransaction } from '@/slices/api/generated'
@@ -17,7 +18,6 @@ import {
 import { UserExplorerLink } from '../Portfolio/Transaction/components/TransactionExplorerLink'
 import { NoSearchResultsContent } from '../Portfolio/components/NoSearchResultContent'
 import { checkTransactionsExist } from '@/utils/checkTransactionsExist'
-import { AirdropRewards } from './AirdropRewards'
 
 export const Activity = ({ visibility }: { visibility: boolean }) => {
   const { address } = useAccount()
@@ -75,9 +75,6 @@ export const Activity = ({ visibility }: { visibility: boolean }) => {
 
       {viewingAddress && !isLoading && hasHistoricalTransactions && (
         <ActivitySection title="Recent">
-          {/* TODO: Update AirdropRewards to work for masquerade */}
-          <AirdropRewards />
-
           {userHistoricalTransactions &&
             filteredHistoricalTransactions
               .slice(0, isSearchInputActive ? 100 : 6)
@@ -102,7 +99,7 @@ const renderTransaction = (
     <Transaction
       key={transaction?.kappa}
       connectedAddress={viewingAddress}
-      destinationAddress={transaction?.fromInfo?.address as Address}
+      destinationAddress={transaction?.toInfo?.address as Address}
       startedTimestamp={transaction?.fromInfo?.time}
       completedTimestamp={transaction?.toInfo?.time}
       transactionHash={transaction?.fromInfo?.txnHash}

@@ -2,15 +2,10 @@ import { useEffect } from 'react'
 
 import { useAppDispatch } from '@/store/hooks'
 import {
-  fetchAllEthStablecoinPrices,
-  fetchArbPrice,
   fetchAvaxPrice,
-  fetchCoingeckoPrices,
-  fetchDaiePrice,
   fetchEthPrice,
   fetchGmxPrice,
   fetchMetisPrice,
-  fetchMusdcPrice,
   fetchSynPrices,
 } from '@/slices/priceDataSlice'
 
@@ -23,12 +18,7 @@ export const useFetchPricesOnInterval = () => {
       dispatch(fetchEthPrice())
       dispatch(fetchAvaxPrice())
       dispatch(fetchMetisPrice())
-      dispatch(fetchArbPrice())
       dispatch(fetchGmxPrice())
-      dispatch(fetchAllEthStablecoinPrices())
-      dispatch(fetchCoingeckoPrices())
-      dispatch(fetchMusdcPrice())
-      dispatch(fetchDaiePrice())
     }
 
     // Fetch on mount

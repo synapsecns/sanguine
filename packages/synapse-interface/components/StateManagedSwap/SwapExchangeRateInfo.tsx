@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
-import { CHAINS_BY_ID } from '@constants/chains'
 import Image from 'next/image'
 
+import { CHAINS_BY_ID } from '@constants/chains'
 import { Token } from '@/utils/types'
 import {
   formatBigIntToPercentString,
@@ -42,37 +42,72 @@ const SwapExchangeRateInfo = ({
   }, [toChainId])
 
   return (
-    <div className="py-3.5 px-1 space-y-2 text-xs md:text-base lg:text-base md:px-6">
-      <div className="flex justify-between">
-        <div className="flex space-x-2 text-[#88818C]">
-          <p>Expected Price on</p>
-          {expectedToChain}
-        </div>
-        <span className="text-[#88818C]">
-          {safeFromAmount != 0n ? (
-            <>
-              {formattedExchangeRate}{' '}
-              <span className="text-white">{toToken.symbol}</span>
-            </>
-          ) : (
-            '—'
-          )}
-        </span>
+    <div className="mt-1 mb-2 text-sm">
+      <div className="block p-2 leading-relaxed border rounded border-zinc-300 dark:border-separator">
+        <ExpectedPrice
+          expectedToChain={expectedToChain}
+          safeFromAmount={safeFromAmount}
+          formattedExchangeRate={formattedExchangeRate}
+          toToken={toToken}
+        />
+        <Slippage
+          safeFromAmount={safeFromAmount}
+          underFee={underFee}
+          textColor={textColor}
+          formattedPercentSlippage={formattedPercentSlippage}
+        />
       </div>
-      <div className="flex justify-between">
-        <p className="text-[#88818C] ">Slippage</p>
-        {safeFromAmount != 0n && !underFee ? (
-          <span className={` ${textColor}`}>{formattedPercentSlippage}</span>
+    </div>
+  )
+}
+
+const ExpectedPrice = ({
+  expectedToChain,
+  safeFromAmount,
+  formattedExchangeRate,
+  toToken,
+}) => {
+  return (
+    <div className="flex justify-between">
+      <div className="flex space-x-2 text-[#88818C]">
+        <p>Expected Price on</p>
+        {expectedToChain}
+      </div>
+      <span className="text-[#88818C]">
+        {safeFromAmount != 0n ? (
+          <>
+            {formattedExchangeRate}{' '}
+            <span className="text-white">{toToken?.symbol}</span>
+          </>
         ) : (
-          <span className="text-[#88818C]">—</span>
+          '—'
         )}
-      </div>
+      </span>
+    </div>
+  )
+}
+
+const Slippage = ({
+  safeFromAmount,
+  underFee,
+  textColor,
+  formattedPercentSlippage,
+}) => {
+  return (
+    <div className="flex justify-between">
+      <p className="text-[#88818C] ">Slippage</p>
+      {safeFromAmount != 0n && !underFee ? (
+        <span className={` ${textColor}`}>{formattedPercentSlippage}</span>
+      ) : (
+        <span className="text-[#88818C]">—</span>
+      )}
     </div>
   )
 }
 
 const ChainInfoLabel = ({ chainId }: { chainId: number }) => {
   const chain = CHAINS_BY_ID[chainId]
+
   return chain ? (
     <span className="flex items-center space-x-1">
       <Image

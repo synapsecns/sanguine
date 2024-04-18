@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import Fuse from 'fuse.js'
-import { Address, useAccount, useNetwork } from 'wagmi'
+import { useAccount, useAccountEffect } from 'wagmi'
+import { Address } from 'viem'
 import { useAppDispatch } from '@/store/hooks'
 import { setFromChainId } from '@/slices/bridge/reducer'
 import { PortfolioTabManager } from './components/PortfolioTabManager'
@@ -21,8 +22,7 @@ import {
 import { resetTransactionsState } from '@/slices/transactions/actions'
 import { PortfolioState } from '@/slices/portfolio/reducer'
 import { useBridgeState } from '@/slices/bridge/hooks'
-import { BridgeState } from '@/slices/bridge/reducer'
-import { resetBridgeInputs } from '@/slices/bridge/actions'
+import { BridgeState, resetBridgeInputs } from '@/slices/bridge/reducer'
 import { ViewSearchAddressBanner } from './components/ViewSearchAddressBanner'
 import { Activity } from '../Activity/Activity'
 import { useSearchInputState } from './helpers/useSearchInputStatus'
@@ -36,8 +36,9 @@ export const Portfolio = () => {
     searchStatus,
     searchedBalances,
   }: PortfolioState = usePortfolioState()
-  const { chain } = useNetwork()
-  const { address } = useAccount({
+  const { chain, address } = useAccount()
+
+  useAccountEffect({
     onDisconnect() {
       dispatch(resetPortfolioState())
       dispatch(resetTransactionsState())
@@ -81,6 +82,9 @@ export const Portfolio = () => {
   )
 
   useEffect(() => {
+    if (!chain) {
+      dispatch(setFromChainId(null))
+    }
     if (address && chain?.id) {
       dispatch(setFromChainId(chain.id))
     }
