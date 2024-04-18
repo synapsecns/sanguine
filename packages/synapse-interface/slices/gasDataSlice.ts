@@ -5,11 +5,11 @@ import { wagmiConfig } from '@/wagmiConfig'
 
 export interface GasDataState {
   gasData: {
-    gasPrice: bigint
+    gasPrice?: bigint
     maxFeePerGas: bigint
     maxPriorityFeePerGas: bigint
     formatted: {
-      gasPrice: string
+      gasPrice?: string
       maxFeePerGas: string
       maxPriorityFeePerGas: string
     }

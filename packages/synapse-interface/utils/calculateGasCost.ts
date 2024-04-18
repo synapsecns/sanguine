@@ -24,7 +24,7 @@ export const calculateGasCost = (
     }
   }
 
-  const upperLimitBuffer = 1.7
+  const upperLimitBuffer = 1.5
 
   const estimatedGasCostInGwei =
     parseFloat(gasLimit) * parseFloat(gasPrice) * upperLimitBuffer

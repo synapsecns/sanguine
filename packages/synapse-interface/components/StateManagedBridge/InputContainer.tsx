@@ -101,7 +101,6 @@ const calculateEstimatedBridgeGasLimit = async (
       : data
 
   const gasEstimate = await estimateGas(wagmiConfig, {
-    // maxFeePerGas: parseGwei(Math.ceil(parseFloat(maxFeePerGas)).toString()),
     value: payload.value,
     to: payload.to,
     account: address as Address,
@@ -113,74 +112,6 @@ const calculateEstimatedBridgeGasLimit = async (
 
   return gasEstimate
 }
-
-// const useGasEstimator = () => {
-//   const { address } = useAccount()
-//   const { synapseSDK } = useSynapseContext()
-//   const { balances } = usePortfolioState()
-//   const { fromChainId, toChainId, fromToken, toToken, fromValue } =
-//     useBridgeState()
-//   const { gasData } = useAppSelector((state) => state.gasData)
-//   const { gasPrice, maxFeePerGas } = gasData?.formatted
-
-//   const [estimatedGasLimit, setEstimatedGasLimit] = useState<bigint>(0n)
-
-//   const { rawGasCost, parsedGasCost } = calculateGasCost(
-//     maxFeePerGas,
-//     estimatedGasLimit.toString()
-//   )
-
-//   const isGasToken: boolean = fromToken?.addresses[fromChainId] === zeroAddress
-
-//   const selectedFromToken: TokenAndBalance = balances[fromChainId]?.find(
-//     (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
-//   )
-
-//   const { balance, parsedBalance } = selectedFromToken || {}
-
-//   const hasRequiredGasEstimateInputs = (): boolean => {
-//     return Boolean(
-//       fromChainId &&
-//         toChainId &&
-//         fromToken &&
-//         toToken &&
-//         isGasToken &&
-//         parsedBalance
-//     )
-//   }
-
-//   useEffect(() => {
-//     if (hasRequiredGasEstimateInputs()) {
-//       ;(async () => {
-//         const bridgeQuote = await getBridgeQuote(
-//           synapseSDK,
-//           fromChainId,
-//           toChainId,
-//           fromToken,
-//           toToken,
-//           parsedBalance
-//         )
-
-//         const gasLimit = await calculateEstimatedBridgeGasLimit(
-//           synapseSDK,
-//           bridgeQuote,
-//           address,
-//           address,
-//           fromChainId,
-//           toChainId,
-//           fromToken,
-//           parsedBalance
-//         )
-
-//         setEstimatedGasLimit(gasLimit ?? 0n)
-
-//         // console.log('gasLimit: ', gasLimit)
-//       })()
-//     }
-//   }, [fromChainId, toChainId, isGasToken])
-
-//   return { rawGasCost, parsedGasCost }
-// }
 
 export const InputContainer = () => {
   const dispatch = useDispatch()
@@ -200,11 +131,6 @@ export const InputContainer = () => {
     estimatedGasLimit.toString()
   )
 
-  console.log('gasData:', gasData)
-  console.log('parsedGasCost:', parsedGasCost)
-
-  // console.log('maxFeePerGas: ', maxFeePerGas)
-
   const isGasToken: boolean = fromToken?.addresses[fromChainId] === zeroAddress
 
   const selectedFromToken: TokenAndBalance = balances[fromChainId]?.find(
@@ -213,21 +139,21 @@ export const InputContainer = () => {
 
   const { balance, parsedBalance } = selectedFromToken || {}
 
-  /** Fetch gasLimit using Wallet's gas balance */
+  const hasRequiredGasEstimateInputs = (): boolean => {
+    if (!fromChainId || !toChainId) return false
+    if (!fromToken || !toToken) return false
+    if (!isGasToken) return false
+    if (!parsedBalance) return false
+    return true
+  }
 
+  /** Fetch gasLimit using Wallet's gas balance */
   const { synapseSDK } = useSynapseContext()
+
   useEffect(() => {
-    if (
-      fromChainId &&
-      toChainId &&
-      fromToken &&
-      toToken &&
-      address &&
-      isGasToken &&
-      parsedBalance
-    ) {
+    console.log('parsedBalance: ', parsedBalance)
+    if (hasRequiredGasEstimateInputs()) {
       ;(async () => {
-        console.log('fire off useeffect')
         const bridgeQuote = await getBridgeQuote(
           synapseSDK,
           fromChainId,
@@ -256,11 +182,11 @@ export const InputContainer = () => {
   }, [
     fromChainId,
     toChainId,
+    isGasToken,
+    selectedFromToken,
     fromToken,
     toToken,
     address,
-    isGasToken,
-    maxFeePerGas,
   ])
 
   useEffect(() => {
@@ -426,3 +352,71 @@ const FromTokenSelector = () => {
     />
   )
 }
+
+// const useGasEstimator = () => {
+//   const { address } = useAccount()
+//   const { synapseSDK } = useSynapseContext()
+//   const { balances } = usePortfolioState()
+//   const { fromChainId, toChainId, fromToken, toToken, fromValue } =
+//     useBridgeState()
+//   const { gasData } = useAppSelector((state) => state.gasData)
+//   const { gasPrice, maxFeePerGas } = gasData?.formatted
+
+//   const [estimatedGasLimit, setEstimatedGasLimit] = useState<bigint>(0n)
+
+//   const { rawGasCost, parsedGasCost } = calculateGasCost(
+//     maxFeePerGas,
+//     estimatedGasLimit.toString()
+//   )
+
+//   const isGasToken: boolean = fromToken?.addresses[fromChainId] === zeroAddress
+
+//   const selectedFromToken: TokenAndBalance = balances[fromChainId]?.find(
+//     (token) => token.tokenAddress === fromToken?.addresses[fromChainId]
+//   )
+
+//   const { balance, parsedBalance } = selectedFromToken || {}
+
+//   const hasRequiredGasEstimateInputs = (): boolean => {
+//     return Boolean(
+//       fromChainId &&
+//         toChainId &&
+//         fromToken &&
+//         toToken &&
+//         isGasToken &&
+//         parsedBalance
+//     )
+//   }
+
+//   useEffect(() => {
+//     if (hasRequiredGasEstimateInputs()) {
+//       ;(async () => {
+//         const bridgeQuote = await getBridgeQuote(
+//           synapseSDK,
+//           fromChainId,
+//           toChainId,
+//           fromToken,
+//           toToken,
+//           parsedBalance
+//         )
+
+//         const gasLimit = await calculateEstimatedBridgeGasLimit(
+//           synapseSDK,
+//           bridgeQuote,
+//           address,
+//           address,
+//           fromChainId,
+//           toChainId,
+//           fromToken,
+//           parsedBalance
+//         )
+
+//         setEstimatedGasLimit(gasLimit ?? 0n)
+
+//         // console.log('gasLimit: ', gasLimit)
+//       })()
+//     }
+//   }, [fromChainId, toChainId, isGasToken])
+
+//   return { rawGasCost, parsedGasCost }
+// }
