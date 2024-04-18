@@ -95,7 +95,8 @@ export const AvailableBalance = ({
           Available balance: {parsedBalanceFull} {fromToken?.symbol}
         </span>
         <span>
-          Estimated bridgeable balance: {maxBridgeableBalance}{' '}
+          Estimated bridgeable balance:{' '}
+          {Number(maxBridgeableBalance) > 0 ? maxBridgeableBalance : '0.0'}{' '}
           {fromToken?.symbol}
         </span>
         <span>
@@ -126,6 +127,7 @@ export const AvailableBalance = ({
     textColor: `text-xxs md:text-xs ${
       fromValue &&
       parsedGasCost &&
+      balance &&
       !hasOnlyZeroes(fromValue) &&
       isInputGreaterThanBalanceMinusGasFees()
         ? '!text-yellowText'
