@@ -169,7 +169,8 @@ func rewriteConfirmableRequest(r rpc.Request) rpc.Request {
 
 func (r *finalizedProxyImpl) checkShouldRequest(parentCtx context.Context, req rpc.Request) bool {
 	// only apply to sendRawTransaction
-	if client.RPCMethod(req.Method) != client.SendRawTransactionMethod {
+	// ignore if maxSubmitAhead is 0
+	if client.RPCMethod(req.Method) != client.SendRawTransactionMethod && r.maxSubmitAhead > 0 {
 		return true
 	}
 
@@ -184,7 +185,9 @@ func (r *finalizedProxyImpl) checkShouldRequest(parentCtx context.Context, req r
 	}()
 
 	tx := new(types.Transaction)
-	err = tx.UnmarshalJSON(req.Params[0])
+
+	hex := common.FromHex(string(bytes.ReplaceAll(req.Params[0], []byte{'"'}, []byte{})))
+	err = tx.UnmarshalBinary(hex)
 	if err != nil {
 		return false
 	}
