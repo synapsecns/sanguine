@@ -25,9 +25,15 @@ export type InterchainTransactionReceived = {
   count: number
 }
 
+export type InterchainBatch = {
+  id: string
+  status: string
+}
+
 export type InterchainTransaction = {
   id: string
   status: string
+  interchainBatch: InterchainBatch
   interchainTransactionSent: InterchainTransactionSent
   interchainTransactionReceived: InterchainTransactionReceived
 }

@@ -1,6 +1,17 @@
 import { createSchema } from '@ponder/core'
 
 export default createSchema((p) => ({
+  InterchainBatch: p.createTable({
+    id: p.hex(),
+    batchRoot: p.hex(),
+    srcDbNonce: p.bigint(),
+    srcChainId: p.bigint().optional(),
+    dstDbNonce: p.bigint().optional(),
+    dstChainId: p.bigint().optional(),
+    interchainTransactions: p.many('InterchainTransaction.interchainBatchId'),
+    status: p.string(),
+  }),
+
   InterchainTransactionSent: p.createTable({
     id: p.string(),
     chainId: p.int(),
@@ -56,5 +67,7 @@ export default createSchema((p) => ({
       .optional(),
     interchainTransactionReceived: p.one('interchainTransactionReceivedId'),
     status: p.string().optional(),
+    interchainBatchId: p.hex().references('InterchainBatch.id').optional(),
+    interchainBatch: p.one('interchainBatchId'),
   }),
 }))

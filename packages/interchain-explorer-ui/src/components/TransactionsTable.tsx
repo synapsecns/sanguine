@@ -88,10 +88,11 @@ export const TransactionsTable = () => {
               <th className="text-left text-transparent">pl</th>
               <th className="text-left">transactionId</th>
               <th className="text-left">source txn hash</th>
-              <th className="text-left">dbNonce</th>
+              <th className="text-left">dbN</th>
               <th className="text-left">dest txn hash</th>
-              <th className="text-left">dbNonce</th>
-              <th className="text-left">status</th>
+              <th className="text-left">dbN</th>
+              <th className="text-left">batch status</th>
+              <th className="text-left">txn status</th>
               <th className="text-left text-transparent">pl</th>
             </tr>
           </thead>
@@ -121,7 +122,7 @@ export const TransactionsTable = () => {
                       </div>
                     )}
                   </td>
-                  <td className="pl-2">
+                  <td className="pl-2 max-w-[90px]">
                     <span
                       className="hover:underline hover:text-blue-500 cursor-pointer"
                       onClick={() => handleTransactionClick(transaction.id)}
@@ -129,7 +130,7 @@ export const TransactionsTable = () => {
                       {shortenHash(transaction.id)}
                     </span>
                   </td>
-                  <td className="">
+                  <td className="max-w-[90px]">
                     {transaction.interchainTransactionSent && (
                       <div className="flex items-center space-x-2">
                         <ChainImage
@@ -151,7 +152,7 @@ export const TransactionsTable = () => {
                   <td>
                     {transaction.interchainTransactionSent.dbNonce.toString()}
                   </td>
-                  <td className="">
+                  <td className="max-w-[50px]">
                     {transaction.interchainTransactionReceived && (
                       <div className="flex items-center space-x-2">
                         <ChainImage
@@ -172,6 +173,9 @@ export const TransactionsTable = () => {
                   </td>
                   <td>
                     {transaction.interchainTransactionReceived?.dbNonce.toString()}
+                  </td>
+                  <td className="max-w-[89px] break-words">
+                    {transaction.interchainBatch?.status}
                   </td>
                   <td className="max-w-[89px] break-words">
                     {transaction.status}

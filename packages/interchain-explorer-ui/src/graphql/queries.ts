@@ -22,6 +22,10 @@ export const GET_INTERCHAIN_TRANSACTIONS = gql`
       items {
         id
         status
+        interchainBatch {
+          id
+          status
+        }
         interchainTransactionSent {
           id
           chainId
@@ -78,6 +82,10 @@ export const GET_INTERCHAIN_TRANSACTION = gql`
     interchainTransaction(id: $id) {
       id
       status
+      interchainBatch {
+        id
+        status
+      }
       interchainTransactionSent {
         id
         chainId

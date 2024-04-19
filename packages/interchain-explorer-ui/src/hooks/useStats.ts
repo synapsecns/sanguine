@@ -5,6 +5,7 @@ import { GET_STATS } from '@/graphql/queries'
 import { InterchainTransaction } from '@/types'
 
 const client = new GraphQLClient('https://sanguine-production.up.railway.app')
+// const client = new GraphQLClient('http://localhost:42069')
 
 type StatsResponse = {
   interchainTransactions: {
