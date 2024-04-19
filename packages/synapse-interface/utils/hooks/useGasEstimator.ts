@@ -64,6 +64,7 @@ export const useGasEstimator = () => {
   useEffect(() => {
     if (hasValidGasEstimateInputs()) {
       ;(async () => {
+        setEstimatedGasLimit(0n)
         const gasLimit = await queryEstimatedBridgeGasLimit(
           synapseSDK,
           address,
@@ -76,8 +77,6 @@ export const useGasEstimator = () => {
         )
         setEstimatedGasLimit(gasLimit ?? 0n)
       })()
-    } else {
-      setEstimatedGasLimit(0n)
     }
   }, [
     fromChainId,
