@@ -179,16 +179,7 @@ export const InputContainer = () => {
   const [showValue, setShowValue] = useState('')
   const [hasMounted, setHasMounted] = useState(false)
 
-  const [estimatedGasLimit, setEstimatedGasLimit] = useState<bigint>(0n)
-
-  const { gasData } = useAppSelector((state) => state.gasData)
-  const { gasPrice, maxFeePerGas } = gasData?.formatted
-  const { rawGasCost, parsedGasCost } = calculateGasCost(
-    maxFeePerGas,
-    estimatedGasLimit.toString()
-  )
-
-  console.log('estimatedGasLimit:', estimatedGasLimit)
+  const { rawGasCost, parsedGasCost, maxBridgeableGas } = useGasEstimator()
 
   const isGasToken: boolean = fromToken?.addresses[fromChainId] === zeroAddress
 
@@ -197,44 +188,6 @@ export const InputContainer = () => {
   )
 
   const { balance, parsedBalance } = selectedFromToken || {}
-
-  const hasRequiredGasEstimateInputs = (): boolean => {
-    if (!fromChainId || !toChainId) return false
-    if (!fromToken || !toToken) return false
-    if (!isGasToken) return false
-    if (!parsedBalance) return false
-    return true
-  }
-
-  /** Fetch gasLimit using Wallet's gas balance */
-  const { synapseSDK } = useSynapseContext()
-
-  useEffect(() => {
-    if (hasRequiredGasEstimateInputs()) {
-      ;(async () => {
-        const gasLimit = await queryEstimatedBridgeGasLimit(
-          synapseSDK,
-          address,
-          address,
-          fromChainId,
-          toChainId,
-          fromToken,
-          toToken,
-          parsedBalance
-        )
-
-        setEstimatedGasLimit(gasLimit ?? 0n)
-      })()
-    }
-  }, [
-    fromChainId,
-    toChainId,
-    isGasToken,
-    selectedFromToken,
-    fromToken,
-    toToken,
-    address,
-  ])
 
   useEffect(() => {
     setHasMounted(true)
@@ -278,22 +231,6 @@ export const InputContainer = () => {
       }
     }
   }
-
-  const calculateMaxBridgeableGas = (
-    parsedGasBalance: number,
-    parsedGasCost: number
-  ): number => {
-    const maxBridgeable = parsedGasBalance - parsedGasCost
-    return maxBridgeable
-  }
-
-  const maxBridgeableGas: number | null =
-    isGasToken && parsedGasCost
-      ? calculateMaxBridgeableGas(
-          parseFloat(parsedBalance),
-          parseFloat(parsedGasCost)
-        )
-      : null
 
   const onMaxBridgeableBalance = useCallback(() => {
     if (maxBridgeableGas) {
@@ -420,22 +357,38 @@ const useGasEstimator = () => {
 
   const { balance, parsedBalance } = selectedFromToken || {}
 
-  const hasRequiredGasEstimateInputs = (): boolean => {
-    return Boolean(
-      fromChainId &&
-        toChainId &&
-        fromToken &&
-        toToken &&
-        isGasToken &&
-        parsedBalance
-    )
+  const calculateMaxBridgeableGas = (
+    parsedGasBalance: number,
+    parsedGasCost: number
+  ): number => {
+    const maxBridgeable = parsedGasBalance - parsedGasCost
+    return maxBridgeable
   }
 
+  const maxBridgeableGas: number | null =
+    isGasToken && parsedGasCost
+      ? calculateMaxBridgeableGas(
+          parseFloat(parsedBalance),
+          parseFloat(parsedGasCost)
+        )
+      : null
+
+  const hasRequiredGasEstimateInputs = (): boolean => {
+    if (!fromChainId || !toChainId) return false
+    if (!fromToken || !toToken) return false
+    if (!isGasToken) return false
+    if (!parsedBalance) return false
+    return true
+  }
+
+  /** Fetch gasLimit using Wallet's gas balance */
   useEffect(() => {
     if (hasRequiredGasEstimateInputs()) {
       ;(async () => {
-        const bridgeQuote = await getBridgeQuote(
+        const gasLimit = await queryEstimatedBridgeGasLimit(
           synapseSDK,
+          address,
+          address,
           fromChainId,
           toChainId,
           fromToken,
@@ -443,23 +396,18 @@ const useGasEstimator = () => {
           parsedBalance
         )
 
-        const gasLimit = await calculateEstimatedBridgeGasLimit(
-          synapseSDK,
-          bridgeQuote,
-          address,
-          address,
-          fromChainId,
-          toChainId,
-          fromToken,
-          parsedBalance
-        )
-
         setEstimatedGasLimit(gasLimit ?? 0n)
-
-        // console.log('gasLimit: ', gasLimit)
       })()
     }
-  }, [fromChainId, toChainId, isGasToken])
+  }, [
+    fromChainId,
+    toChainId,
+    isGasToken,
+    selectedFromToken,
+    fromToken,
+    toToken,
+    address,
+  ])
 
-  return { rawGasCost, parsedGasCost }
+  return { rawGasCost, parsedGasCost, maxBridgeableGas }
 }
