@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.19.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.18.0...@synapsecns/synapse-interface@0.19.0) (2024-04-19)
+
+
+### Features
+
+* **synapse-interface:** stable dfk fallback rpc ([#2455](https://github.com/synapsecns/sanguine/issues/2455)) ([f081a0b](https://github.com/synapsecns/sanguine/commit/f081a0bbfb64a2d41713732de9b66f06ec6c4ead))
+
+
+
+
+
 # [0.18.0](https://github.com/synapsecns/sanguine/compare/@synapsecns/synapse-interface@0.17.0...@synapsecns/synapse-interface@0.18.0) (2024-04-18)
 
 
