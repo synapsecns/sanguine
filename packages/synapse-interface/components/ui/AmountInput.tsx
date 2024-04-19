@@ -1,7 +1,6 @@
 import React from 'react'
 import LoadingDots from './tailwind/LoadingDots'
 import { joinClassNames } from '@/utils/joinClassNames'
-import { HoverTooltip } from '../StateManagedBridge/InputContainer'
 
 interface AmountInputTypes {
   inputRef?: React.RefObject<HTMLInputElement>
@@ -24,13 +23,6 @@ export function AmountInput({
     placeholder: 'placeholder:text-zinc-500 placeholder:dark:text-zinc-400',
     font: 'text-xl md:text-2xl font-medium',
     focus: 'focus:outline-none focus:ring-0 focus:border-none',
-  })
-
-  const labelClassName = joinClassNames({
-    space: 'block',
-    textColor: 'text-xxs md:text-xs',
-    animation: 'transition-all duration-150 transform-gpu',
-    hover: 'hover:opacity-70 cursor-pointer',
   })
 
   return (
