@@ -24,5 +24,6 @@ abstract contract MessageBusEvents {
         bytes32 indexed messageId
     );
 
+    event GasBufferSet(uint64 gasBuffer);
     event MessageLengthEstimateSet(uint256 length);
 }

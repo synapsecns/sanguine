@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/synapsecns/sanguine/core/metrics"
 	"github.com/synapsecns/sanguine/services/omnirpc/modules/confirmedtofinalized"
+	"github.com/synapsecns/sanguine/services/omnirpc/modules/harmonyproxy"
 	"os"
 	"time"
 
@@ -165,6 +166,24 @@ var latestRewrite = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		simpleProxy := confirmedtofinalized.NewProxy(c.String(rpcFlag.Name), metrics.Get(), c.Int(portFlag.Name))
+
+		err := simpleProxy.Run(c.Context)
+		if err != nil {
+			return fmt.Errorf("return err: %w", err)
+		}
+		return nil
+	},
+}
+
+var harmonyProxy = &cli.Command{
+	Name:  "harmony-confirm",
+	Usage: "An experimental harmony confirmation client",
+	Flags: []cli.Flag{
+		rpcFlag,
+		portFlag,
+	},
+	Action: func(c *cli.Context) error {
+		simpleProxy := harmonyproxy.NewHarmonyProxy(c.String(rpcFlag.Name), metrics.Get(), c.Int(portFlag.Name))
 
 		err := simpleProxy.Run(c.Context)
 		if err != nil {
