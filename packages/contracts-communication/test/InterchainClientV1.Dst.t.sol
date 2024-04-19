@@ -29,10 +29,10 @@ import {InterchainDBMock} from "./mocks/InterchainDBMock.sol";
 /// 5. Mark transaction as executed and emit an event.
 contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
     uint64 public constant MOCK_DB_NONCE = 444;
-    uint64 public constant MOCK_ENTRY_INDEX = 4;
+    uint64 public constant MOCK_ENTRY_INDEX = 0;
 
     uint64 public constant MOCK_LOCAL_DB_NONCE = 123;
-    uint64 public constant MOCK_LOCAL_ENTRY_INDEX = 5;
+    uint64 public constant MOCK_LOCAL_ENTRY_INDEX = 0;
 
     uint256 public constant MOCK_GAS_LIMIT = 100_000;
     uint256 public constant MOCK_GAS_AIRDROP = 1 ether;
@@ -816,6 +816,21 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
         executeTransaction(encodedTx, optionsNoAirdrop, emptyProof);
     }
 
+    function test_interchainExecute_revert_nonZeroEntryIndex() public {
+        (InterchainTransaction memory icTx,) = constructInterchainTx(optionsNoAirdrop.encodeOptionsV1());
+        icTx.entryIndex = 1;
+        bytes memory encodedTx = getEncodedTx(icTx);
+        expectRevertIncorrectEntryIndex(icTx.entryIndex);
+        executeTransaction(encodedTx, optionsNoAirdrop, emptyProof);
+    }
+
+    function test_interchainExecute_revert_nonEmptyProof() public {
+        (InterchainTransaction memory icTx,) = constructInterchainTx(optionsNoAirdrop.encodeOptionsV1());
+        bytes memory encodedTx = getEncodedTx(icTx);
+        expectRevertIncorrectProof();
+        executeTransaction(encodedTx, optionsNoAirdrop, new bytes32[](1));
+    }
+
     function test_interchainExecute_revert_emptyOptions() public {
         (InterchainTransaction memory icTx,) = constructInterchainTx("");
         bytes memory encodedTx = getEncodedTx(icTx);
@@ -962,6 +977,21 @@ contract InterchainClientV1DestinationTest is InterchainClientV1BaseTest {
         bytes memory encodedTx = getEncodedTx(icTx);
         expectRevertIncorrectDstChainId(UNKNOWN_CHAIN_ID);
         icClient.isExecutable(encodedTx, emptyProof);
+    }
+
+    function test_isExecutable_revert_nonZeroEntryIndex() public {
+        (InterchainTransaction memory icTx,) = constructInterchainTx(optionsNoAirdrop.encodeOptionsV1());
+        icTx.entryIndex = 1;
+        bytes memory encodedTx = getEncodedTx(icTx);
+        expectRevertIncorrectEntryIndex(icTx.entryIndex);
+        icClient.isExecutable(encodedTx, emptyProof);
+    }
+
+    function test_isExecutable_revert_nonEmptyProof() public {
+        (InterchainTransaction memory icTx,) = constructInterchainTx(optionsNoAirdrop.encodeOptionsV1());
+        bytes memory encodedTx = getEncodedTx(icTx);
+        expectRevertIncorrectProof();
+        icClient.isExecutable(encodedTx, new bytes32[](1));
     }
 
     function test_isExecutable_revert_emptyOptions() public {

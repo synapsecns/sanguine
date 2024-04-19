@@ -80,10 +80,20 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
         );
     }
 
+    function expectRevertIncorrectEntryIndex(uint64 entryIndex) internal {
+        vm.expectRevert(
+            abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__IncorrectEntryIndex.selector, entryIndex)
+        );
+    }
+
     function expectRevertIncorrectMsgValue(uint256 actual, uint256 required) internal {
         vm.expectRevert(
             abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__IncorrectMsgValue.selector, actual, required)
         );
+    }
+
+    function expectRevertIncorrectProof() internal {
+        vm.expectRevert(IInterchainClientV1.InterchainClientV1__IncorrectProof.selector);
     }
 
     function expectRevertInvalidTransactionVersion(uint16 version) internal {
