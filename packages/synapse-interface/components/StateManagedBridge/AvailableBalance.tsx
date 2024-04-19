@@ -144,7 +144,7 @@ export const AvailableBalance = ({
           className={labelClassName}
         >
           <span>Gas est: </span>
-          {isTraceGasCost() ? '<0.001' : parsedGasCost}
+          {isTraceGasCost() ? '<0.001' : Number(parsedGasCost).toFixed(4)}
           <span> {fromToken?.symbol}</span>
         </label>
       </HoverTooltip>
