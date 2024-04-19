@@ -1,15 +1,13 @@
-import { isNull } from 'lodash'
+import React, { useEffect, useState, useCallback, useMemo } from 'react'
+import { useAccount } from 'wagmi'
+import { zeroAddress } from 'viem'
 import { useAppDispatch } from '@/store/hooks'
-import { zeroAddress, Address, parseGwei } from 'viem'
 import {
   initialState,
   updateFromValue,
   setFromChainId,
   setFromToken,
 } from '@/slices/bridge/reducer'
-import React, { useEffect, useState, useCallback, useMemo } from 'react'
-import { useDispatch } from 'react-redux'
-import { useAccount } from 'wagmi'
 import { ChainSelector } from '@/components/ui/ChainSelector'
 import { TokenSelector } from '@/components/ui/TokenSelector'
 import { AmountInput } from '@/components/ui/AmountInput'
@@ -24,35 +22,25 @@ import { CHAINS_BY_ID } from '@/constants/chains'
 import { useFromChainListArray } from './hooks/useFromChainListArray'
 import { useBridgeState } from '@/slices/bridge/hooks'
 import { usePortfolioState } from '@/slices/portfolio/hooks'
-import { hasOnlyZeroes } from '@/utils/hasOnlyZeroes'
 import { TokenAndBalance } from '@/utils/actions/fetchPortfolioBalances'
-import { isEmpty } from 'lodash'
 import { BridgeSectionContainer } from '@/components/ui/BridgeSectionContainer'
 import { BridgeAmountContainer } from '@/components/ui/BridgeAmountContainer'
 import { useFromTokenListArray } from './hooks/useFromTokenListArray'
 import MiniMaxButton from '../buttons/MiniMaxButton'
-import { joinClassNames } from '@/utils/joinClassNames'
-import { Token } from '@/utils/types'
-import { trimTrailingZeroesAfterDecimal } from '@/utils/trimTrailingZeroesAfterDecimal'
-import { stringToBigInt } from '@/utils/bigint/format'
-import { getPublicClient } from '@wagmi/core'
 import { AvailableBalance } from './AvailableBalance'
-import { estimateGas } from '@wagmi/core'
-import { wagmiConfig } from '@/wagmiConfig'
 import { useGasEstimator } from '../../utils/hooks/useGasEstimator'
 
 export const inputRef = React.createRef<HTMLInputElement>()
 
 export const InputContainer = () => {
-  const dispatch = useDispatch()
-  const { address, chain, isConnected } = useAccount()
+  const dispatch = useAppDispatch()
+  const { chain, isConnected } = useAccount()
   const { balances } = usePortfolioState()
-  const { fromChainId, toChainId, fromToken, toToken, fromValue } =
-    useBridgeState()
+  const { fromChainId, fromToken, fromValue } = useBridgeState()
   const [showValue, setShowValue] = useState('')
   const [hasMounted, setHasMounted] = useState(false)
 
-  const { rawGasCost, parsedGasCost, maxBridgeableGas } = useGasEstimator()
+  const { parsedGasCost, maxBridgeableGas } = useGasEstimator()
 
   const isGasToken: boolean = fromToken?.addresses[fromChainId] === zeroAddress
 

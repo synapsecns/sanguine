@@ -79,13 +79,6 @@ export const AvailableBalance = ({
     )
   }
 
-  console.log('maxBridgeableBalance:', maxBridgeableBalance)
-
-  const gasReserved = showGasReserved() ? parseFloat(parsedGasCost) : undefined
-
-  console.log('gasReserved:', gasReserved)
-  console.log('parsedGasCost:', parsedGasCost)
-
   let tooltipContent = null
 
   if (isGasToken && parsedGasCost) {
@@ -136,11 +129,6 @@ export const AvailableBalance = ({
     animation: 'transition-all duration-150 transform-gpu',
     hover: 'hover:opacity-70 cursor-pointer',
   })
-
-  console.log(
-    'isInputGreaterThanBalanceMinusGasFees: ',
-    isInputGreaterThanBalanceMinusGasFees()
-  )
 
   if (
     fromValue &&
