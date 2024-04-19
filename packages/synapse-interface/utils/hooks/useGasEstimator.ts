@@ -74,9 +74,10 @@ export const useGasEstimator = () => {
           toToken,
           selectedFromToken?.parsedBalance
         )
-
         setEstimatedGasLimit(gasLimit ?? 0n)
       })()
+    } else {
+      setEstimatedGasLimit(0n)
     }
   }, [
     fromChainId,

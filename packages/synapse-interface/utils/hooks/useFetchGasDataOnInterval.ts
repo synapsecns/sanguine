@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 
 import { useAppDispatch } from '@/store/hooks'
-import { fetchGasData } from '@/slices/gasDataSlice'
+import { fetchGasData, resetGasData } from '@/slices/gasDataSlice'
 import { useBridgeState } from '@/slices/bridge/hooks'
 
 export const useFetchGasDataOnInterval = () => {
@@ -13,6 +13,8 @@ export const useFetchGasDataOnInterval = () => {
   }
 
   useEffect(() => {
+    dispatch(resetGasData())
+
     // Fetch when chainId available
     if (fromChainId) {
       fetchData(fromChainId)

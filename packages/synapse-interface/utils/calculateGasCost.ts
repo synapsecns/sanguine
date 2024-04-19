@@ -24,6 +24,9 @@ export const calculateGasCost = (
     }
   }
 
+  console.log('gasPrice: ', gasPrice)
+  console.log('gasLimit:', gasLimit)
+
   const upperLimitBuffer = 1.5
 
   const estimatedGasCostInGwei =

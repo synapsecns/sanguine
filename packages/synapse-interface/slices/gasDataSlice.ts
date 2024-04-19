@@ -51,7 +51,11 @@ const initialState: GasDataState = {
 export const gasDataSlice = createSlice({
   name: 'gasData',
   initialState,
-  reducers: {},
+  reducers: {
+    resetGasData: (state: GasDataState) => {
+      state.gasData = initialState.gasData
+    },
+  },
   extraReducers: (builder) => {
     builder.addCase(fetchGasData.pending, (state) => {
       state.isLoadingGasData = true
@@ -67,5 +71,7 @@ export const gasDataSlice = createSlice({
       })
   },
 })
+
+export const { resetGasData } = gasDataSlice.actions
 
 export default gasDataSlice.reducer
