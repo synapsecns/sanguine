@@ -212,25 +212,14 @@ export const InputContainer = () => {
   useEffect(() => {
     if (hasRequiredGasEstimateInputs()) {
       ;(async () => {
-        const bridgeQuote = await getBridgeQuote(
+        const gasLimit = await queryEstimatedBridgeGasLimit(
           synapseSDK,
+          address,
+          address,
           fromChainId,
           toChainId,
           fromToken,
           toToken,
-          parsedBalance
-        )
-
-        console.log('Fetched bridge quote: ', bridgeQuote)
-
-        const gasLimit = await calculateEstimatedBridgeGasLimit(
-          synapseSDK,
-          bridgeQuote,
-          address,
-          address,
-          fromChainId,
-          toChainId,
-          fromToken,
           parsedBalance
         )
 
