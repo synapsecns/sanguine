@@ -253,8 +253,8 @@ export const KLAYTN: Chain = {
   codeName: 'klaytn',
   blockTime: 1000,
   rpcUrls: {
-    primary: 'http://internal.klaytn.rpc.defikingdoms.com/api=654302102',
-    fallback: 'https://klaytn.blockpi.network/v1/rpc/public',
+    primary: 'https://klaytn.blockpi.network/v1/rpc/public',
+    fallback: 'http://internal.klaytn.rpc.defikingdoms.com/api=654302102',
   },
   nativeCurrency: {
     name: 'Klaytn',
