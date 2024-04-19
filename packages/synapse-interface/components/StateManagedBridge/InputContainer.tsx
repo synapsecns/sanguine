@@ -78,29 +78,34 @@ const getBridgePayload = async (
 ) => {
   if (!bridgeQuote) return null
 
-  const data = await synapseSDK.bridge(
-    address,
-    bridgeQuote.routerAddress,
-    fromChainId,
-    toChainId,
-    fromToken?.addresses[fromChainId as keyof Token['addresses']],
-    stringToBigInt(amount, fromToken?.decimals[fromChainId]),
-    bridgeQuote.originQuery,
-    bridgeQuote.destQuery
-  )
+  try {
+    const data = await synapseSDK.bridge(
+      address,
+      bridgeQuote.routerAddress,
+      fromChainId,
+      toChainId,
+      fromToken?.addresses[fromChainId as keyof Token['addresses']],
+      stringToBigInt(amount, fromToken?.decimals[fromChainId]),
+      bridgeQuote.originQuery,
+      bridgeQuote.destQuery
+    )
 
-  const payload =
-    fromToken?.addresses[fromChainId as keyof Token['addresses']] ===
-      zeroAddress ||
-    fromToken?.addresses[fromChainId as keyof Token['addresses']] === ''
-      ? {
-          data: data.data,
-          to: data.to,
-          value: stringToBigInt(amount, fromToken?.decimals[fromChainId]),
-        }
-      : data
+    const payload =
+      fromToken?.addresses[fromChainId as keyof Token['addresses']] ===
+        zeroAddress ||
+      fromToken?.addresses[fromChainId as keyof Token['addresses']] === ''
+        ? {
+            data: data.data,
+            to: data.to,
+            value: stringToBigInt(amount, fromToken?.decimals[fromChainId]),
+          }
+        : data
 
-  return payload
+    return payload
+  } catch (error) {
+    console.error('getBridgePayload: ', error)
+    return null
+  }
 }
 
 const calculateEstimatedBridgeGasLimit = async (
@@ -108,15 +113,22 @@ const calculateEstimatedBridgeGasLimit = async (
   fromChainId: number,
   address: string
 ) => {
-  const gasEstimate = await estimateGas(wagmiConfig, {
-    value: bridgePayload.value,
-    to: bridgePayload.to,
-    account: address as Address,
-    data: bridgePayload.data,
-    chainId: fromChainId,
-  })
+  if (!bridgePayload) return null
 
-  return gasEstimate
+  try {
+    const gasEstimate = await estimateGas(wagmiConfig, {
+      value: bridgePayload.value,
+      to: bridgePayload.to,
+      account: address as Address,
+      data: bridgePayload.data,
+      chainId: fromChainId,
+    })
+
+    return gasEstimate
+  } catch (error) {
+    console.error('calculateEstimatedBridgeGasLimit: ', error)
+    return null
+  }
 }
 
 const queryEstimatedBridgeGasLimit = async (
