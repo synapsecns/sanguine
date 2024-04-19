@@ -37,47 +37,54 @@ export const AvailableBalance = ({
     fromToken?.decimals[fromChainId]
   )
 
-  const isTraceBalance = (): boolean => {
-    return balance && !hasOnlyZeroes(parsedBalanceFull)
+  const isValidUserInput = () => {
+    return Boolean(fromValue && !hasOnlyZeroes(fromValue))
   }
 
-  const isTraceGasCost = (): boolean => {
-    if (!parsedGasCost) {
-      return false
-    } else {
-      const shortenedGasCost = parseFloat(parsedGasCost).toFixed(4)
-      return Number(shortenedGasCost) === 0 && !hasOnlyZeroes(parsedGasCost)
-    }
+  const isTraceBalance = () => {
+    return Boolean(
+      balance &&
+        hasOnlyZeroes(parsedBalance) &&
+        !hasOnlyZeroes(parsedBalanceFull)
+    )
   }
+
+  const isTraceGasCost = () => {
+    return Boolean(
+      parsedGasCost &&
+        hasOnlyZeroes(parseFloat(parsedGasCost).toFixed(4)) &&
+        !hasOnlyZeroes(parsedGasCost)
+    )
+  }
+
+  const hasUserInput = isValidUserInput()
+  const hasBalance = Boolean(balance || isTraceBalance())
+  const hasGasCost = Boolean(parsedGasCost || isTraceGasCost())
 
   const isInputGreaterThanBalanceMinusGasFees = (): boolean => {
-    if (!isGasToken || !parsedGasCost || !parsedBalanceFull || !fromValue) {
-      return true
-    } else {
+    if (isGasToken && hasUserInput && hasBalance && hasGasCost) {
       return (
         parseFloat(fromValue) >
         parseFloat(parsedBalanceFull) - parseFloat(parsedGasCost)
       )
+    } else {
+      return false
     }
   }
 
   const isBalanceGreaterThanGasFees = (): boolean => {
-    if (!isGasToken || !parsedGasCost || !parsedBalanceFull) {
-      return true
-    } else {
+    if (isGasToken && hasGasCost && hasBalance) {
       return parseFloat(parsedGasCost) < parseFloat(parsedBalanceFull)
+    } else {
+      return true
     }
   }
 
-  const showGasReserved = (): boolean => {
-    return (
-      fromValue &&
-      !hasOnlyZeroes(fromValue) &&
-      parsedGasCost &&
-      isGasToken &&
-      isInputGreaterThanBalanceMinusGasFees()
-    )
-  }
+  const showGasReserved =
+    isGasToken &&
+    hasGasCost &&
+    hasUserInput &&
+    isInputGreaterThanBalanceMinusGasFees()
 
   let tooltipContent = null
 
@@ -118,10 +125,10 @@ export const AvailableBalance = ({
   const labelClassName = joinClassNames({
     space: 'block',
     textColor: `text-xxs md:text-xs ${
-      fromValue &&
-      parsedGasCost &&
-      balance &&
-      !hasOnlyZeroes(fromValue) &&
+      isGasToken &&
+      hasGasCost &&
+      hasUserInput &&
+      hasBalance &&
       isInputGreaterThanBalanceMinusGasFees()
         ? '!text-yellowText'
         : ''
@@ -131,9 +138,8 @@ export const AvailableBalance = ({
   })
 
   if (
-    fromValue &&
-    !hasOnlyZeroes(fromValue) &&
-    showGasReserved() &&
+    hasUserInput &&
+    showGasReserved &&
     isInputGreaterThanBalanceMinusGasFees()
   ) {
     return (
