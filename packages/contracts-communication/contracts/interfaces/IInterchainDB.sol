@@ -160,6 +160,20 @@ interface IInterchainDB {
         view
         returns (uint256 moduleVerifiedAt);
 
+    /// @notice Check if the batch is verified by the Interchain Module on the destination chain.
+    /// Note: returned zero value indicates that the module has not verified the batch.
+    /// @param dstModule    The destination chain addresses of the Interchain Modules to use for verification
+    /// @param batch        The Interchain Batch to check
+    /// @return moduleVerifiedAt    The block timestamp at which the batch was verified by the module,
+    ///                             or ZERO if the module has not verified the batch.
+    function checkBatchVerification(
+        address dstModule,
+        InterchainBatch memory batch
+    )
+        external
+        view
+        returns (uint256 moduleVerifiedAt);
+
     /// @notice Get the version of the Interchain DataBase.
     // solhint-disable-next-line func-name-mixedcase
     function DB_VERSION() external pure returns (uint16);

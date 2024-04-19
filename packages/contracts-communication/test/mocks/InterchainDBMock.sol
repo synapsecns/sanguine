@@ -65,4 +65,13 @@ contract InterchainDBMock is IInterchainDB {
         view
         returns (uint256 moduleVerifiedAt)
     {}
+
+    function checkBatchVerification(
+        address dstModule,
+        InterchainBatch memory batch
+    )
+        external
+        view
+        returns (uint256 moduleVerifiedAt)
+    {}
 }
