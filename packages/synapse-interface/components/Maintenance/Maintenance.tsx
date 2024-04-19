@@ -14,9 +14,9 @@ interface ChainPause {
   pauseBridge: boolean
   pauseSwap: boolean
   pauseStartTime: Date
-  pauseEndTime: Date | null // Pause indefinite if null
+  pauseEndTime: Date | null // If null, pause indefinitely
   bannerStartTime: Date
-  bannerEndTime: Date | null // Pause indefinite if null
+  bannerEndTime: Date | null // If null, pause indefinitely
   warningMessage: JSX.Element
   bannerMessage: JSX.Element
   progressBarMessage: JSX.Element
