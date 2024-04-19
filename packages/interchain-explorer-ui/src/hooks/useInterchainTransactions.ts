@@ -5,6 +5,7 @@ import { type InterchainTransaction } from '@/types'
 import { GET_INTERCHAIN_TRANSACTIONS } from '@/graphql/queries'
 
 const client = new GraphQLClient('https://sanguine-production.up.railway.app')
+// const client = new GraphQLClient('http://localhost:42069')
 
 type InterchainTransactionsResponse = {
   interchainTransactions: {
@@ -43,6 +44,7 @@ export const useInterchainTransactions = ({
         const items = data.interchainTransactions.items.map((d) => ({
           id: d.id,
           status: d.status,
+          interchainBatch: d.interchainBatch,
           interchainTransactionSent: d.interchainTransactionSent,
           interchainTransactionReceived: d.interchainTransactionReceived,
         }))

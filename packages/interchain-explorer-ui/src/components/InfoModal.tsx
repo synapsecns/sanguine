@@ -23,9 +23,14 @@ export const InfoModal = ({
         <h3 className="text-lg leading-6 font-bold text-white">
           Transaction Details
         </h3>
-        <div className="mb-4">
+        <div className="mb-2">
           <p>{transaction.id}</p>
           <p>{transaction.status ?? 'In-flight'}</p>
+        </div>
+        <div className="mb-4">
+          <h4>Batch info</h4>
+          <p>{transaction.interchainBatch.id}</p>
+          <p>{transaction.interchainBatch.status}</p>
         </div>
         {interchainTransactionSent && (
           <div className="mb-4">
