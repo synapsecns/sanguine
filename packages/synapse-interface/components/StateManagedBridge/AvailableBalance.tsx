@@ -57,8 +57,6 @@ export const AvailableBalance = ({
     )
   }
 
-  console.log('parsedGasCost: ', parsedGasCost)
-
   const hasUserInput = isValidUserInput()
   const hasBalance = Boolean(balance || isTraceBalance())
   const hasGasCost = Boolean(parsedGasCost || isTraceGasCost())

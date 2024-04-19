@@ -3,8 +3,6 @@ import { formatGwei } from 'viem'
 /**
  * Calculates the estimated gas cost for a transaction.
  *
- * TODO: Hardcoding gas limit to 200k for now, update dynamically
- *
  * @param {string} gasPrice - The current network gas price in Gwei
  * @param {number} gasLimit - Selected gasLimit to execute Transaction
  */
@@ -17,15 +15,11 @@ export const calculateGasCost = (
   parsedGasCost: string
 } => {
   if (!gasPrice || !gasLimit) {
-    console.log('missing gas price or gas limit')
     return {
       rawGasCost: null,
       parsedGasCost: null,
     }
   }
-
-  console.log('gasPrice: ', gasPrice)
-  console.log('gasLimit:', gasLimit)
 
   const upperLimitBuffer = 1.5
 

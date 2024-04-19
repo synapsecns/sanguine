@@ -13,6 +13,7 @@ export const useFetchGasDataOnInterval = () => {
   }
 
   useEffect(() => {
+    // Reset gas data when selecting new chain
     dispatch(resetGasData())
 
     // Fetch when chainId available
