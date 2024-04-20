@@ -51,6 +51,7 @@ export default createConfig({
     klaytn: {
       chainId: 8217,
       transport: http(process.env.PONDER_RPC_URL_8217),
+      maxRequestsPerSecond: 20,
     },
   },
   contracts: {
