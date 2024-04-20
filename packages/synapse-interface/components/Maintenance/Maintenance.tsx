@@ -13,10 +13,10 @@ interface ChainPause {
   pausedToChains: number[]
   pauseBridge: boolean
   pauseSwap: boolean
-  pauseStartTime: Date
-  pauseEndTime: Date | null // If null, pause indefinitely
-  bannerStartTime: Date
-  bannerEndTime: Date | null // If null, pause indefinitely
+  startTimePauseChain: Date
+  endTimePauseChain: Date | null // If null, pause indefinitely
+  startTimeBanner: Date
+  endTimeBanner: Date | null // If null, pause indefinitely
   warningMessage: JSX.Element
   bannerMessage: JSX.Element
   progressBarMessage: JSX.Element
@@ -28,10 +28,12 @@ interface ChainPause {
 const PAUSED_CHAINS: ChainPause[] = pausedChains.map((pause) => {
   return {
     ...pause,
-    pauseStartTime: new Date(pause.pauseStartTime),
-    pauseEndTime: pause.pauseEndTime ? new Date(pause.pauseEndTime) : null,
-    bannerStartTime: new Date(pause.bannerStartTime),
-    bannerEndTime: pause.bannerEndTime ? new Date(pause.bannerEndTime) : null,
+    startTimePauseChain: new Date(pause.startTimePauseChain),
+    endTimePauseChain: pause.endTimePauseChain
+      ? new Date(pause.endTimePauseChain)
+      : null,
+    startTimeBanner: new Date(pause.startTimeBanner),
+    endTimeBanner: pause.endTimeBanner ? new Date(pause.endTimeBanner) : null,
     warningMessage: <p>{pause.warningMessage}</p>,
     bannerMessage: <p className="text-left">{pause.bannerMessage}</p>,
     progressBarMessage: <p>{pause.progressBarMessage}</p>,
@@ -46,8 +48,8 @@ export const MaintenanceBanners = () => {
           <MaintenanceBanner
             id={event.id}
             bannerMessage={event.bannerMessage}
-            startDate={event.bannerStartTime}
-            endDate={event.bannerEndTime}
+            startDate={event.startTimeBanner}
+            endDate={event.endTimeBanner}
             disabled={event.disableBanner}
           />
         )
@@ -73,8 +75,8 @@ export const MaintenanceWarningMessages = ({
             <MaintenanceWarningMessage
               fromChainId={bridgeFromChainId}
               toChainId={bridgeToChainId}
-              startDate={event.pauseStartTime}
-              endDate={event.pauseEndTime}
+              startDate={event.startTimePauseChain}
+              endDate={event.endTimePauseChain}
               pausedFromChains={event.pausedFromChains}
               pausedToChains={event.pausedToChains}
               warningMessage={event.warningMessage}
@@ -92,8 +94,8 @@ export const MaintenanceWarningMessages = ({
             <MaintenanceWarningMessage
               fromChainId={swapChainId}
               toChainId={null}
-              startDate={event.pauseStartTime}
-              endDate={event.pauseEndTime}
+              startDate={event.startTimePauseChain}
+              endDate={event.endTimePauseChain}
               pausedFromChains={event.pausedFromChains}
               pausedToChains={event.pausedToChains}
               warningMessage={event.warningMessage}
@@ -126,8 +128,8 @@ export const useMaintenanceCountdownProgresses = ({
       return useMaintenanceCountdownProgress({
         fromChainId: bridgeFromChainId,
         toChainId: bridgeToChainId,
-        startDate: event.pauseStartTime,
-        endDate: event.pauseEndTime,
+        startDate: event.startTimePauseChain,
+        endDate: event.endTimePauseChain,
         pausedFromChains: event.pausedFromChains,
         pausedToChains: event.pausedToChains,
         progressBarMessage: event.progressBarMessage,
@@ -139,8 +141,8 @@ export const useMaintenanceCountdownProgresses = ({
       return useMaintenanceCountdownProgress({
         fromChainId: swapChainId,
         toChainId: null,
-        startDate: event.pauseStartTime,
-        endDate: event.pauseEndTime,
+        startDate: event.startTimePauseChain,
+        endDate: event.endTimePauseChain,
         pausedFromChains: event.pausedFromChains,
         pausedToChains: event.pausedToChains,
         progressBarMessage: event.progressBarMessage,
