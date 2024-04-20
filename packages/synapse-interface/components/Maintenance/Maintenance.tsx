@@ -33,7 +33,7 @@ const PAUSED_CHAINS: ChainPause[] = pausedChains.map((pause) => {
     bannerStartTime: new Date(pause.bannerStartTime),
     bannerEndTime: pause.bannerEndTime ? new Date(pause.bannerEndTime) : null,
     warningMessage: <p>{pause.warningMessage}</p>,
-    bannerMessage: <p>{pause.bannerMessage}</p>,
+    bannerMessage: <p className="text-left">{pause.bannerMessage}</p>,
     progressBarMessage: <p>{pause.progressBarMessage}</p>,
   }
 })

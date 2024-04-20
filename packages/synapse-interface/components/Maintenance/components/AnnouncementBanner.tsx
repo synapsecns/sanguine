@@ -67,7 +67,7 @@ export const AnnouncementBanner = ({
       <div
         id={bannerId}
         className={`
-          flex gap-4 px-4 py-2 w-full
+          flex gap-4 py-1 w-full
           justify-center leading-normal items-center
           max-w-[1111px] text-primaryTextColor
         `}
@@ -76,13 +76,15 @@ export const AnnouncementBanner = ({
         {bannerContents}
         <button
           onClick={() => setShowBanner(false)}
-          className="inline-flex items-center justify-center text-primaryTextColor"
+          className="inline-flex items-center justify-center p-3 text-primaryTextColor hover:opacity-70"
           data-dismiss-target="#banner-default"
           aria-label="Close"
           type="button"
         >
           <svg
-            className="w-[9px] h-[9px]"
+            className="m-auto"
+            width={10}
+            height={10}
             viewBox="0 0 14 14"
             xmlns="http://www.w3.org/2000/svg"
             aria-hidden="true"
