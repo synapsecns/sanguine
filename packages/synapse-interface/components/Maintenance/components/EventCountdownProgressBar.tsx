@@ -81,7 +81,7 @@ export const EventCountdownProgressBar = ({
         `}
       >
         <div className="flex justify-between px-3 py-2">
-          <div>{eventLabel}</div>
+          <div className="text-sm">{eventLabel}</div>
           {isIndefinite ? null : <div>{timeRemaining} remaining</div>}
         </div>
         <div className="px-1">
