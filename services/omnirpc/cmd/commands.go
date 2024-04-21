@@ -163,9 +163,11 @@ var latestRewrite = &cli.Command{
 	Flags: []cli.Flag{
 		rpcFlag,
 		portFlag,
+		maxSubmitAhead,
+		chainIDFlag,
 	},
 	Action: func(c *cli.Context) error {
-		simpleProxy := confirmedtofinalized.NewProxy(c.String(rpcFlag.Name), metrics.Get(), c.Int(portFlag.Name))
+		simpleProxy := confirmedtofinalized.NewProxy(c.String(rpcFlag.Name), metrics.Get(), c.Int(portFlag.Name), c.Int(maxSubmitAhead.Name), c.Int(chainIDFlag.Name))
 
 		err := simpleProxy.Run(c.Context)
 		if err != nil {
