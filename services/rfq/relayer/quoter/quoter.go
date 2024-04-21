@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"strconv"
 	"strings"
+	"sync/atomic"
 
 	"github.com/synapsecns/sanguine/contrib/screener-api/client"
 
@@ -67,7 +68,7 @@ type Manager struct {
 	screener client.ScreenerClient
 	// relayPaused is set when the RFQ API is found to be offline, which
 	// lets the quoter indicate that quotes should not be relayed.
-	relayPaused bool
+	relayPaused atomic.Bool
 }
 
 // NewQuoterManager creates a new QuoterManager.
@@ -128,7 +129,7 @@ func (m *Manager) ShouldProcess(parentCtx context.Context, quote reldb.QuoteRequ
 		metrics.EndSpanWithErr(span, err)
 	}()
 
-	if m.relayPaused {
+	if m.relayPaused.Load() {
 		span.AddEvent("relayPaused is set due to RFQ API being offline")
 		return false, nil
 	}
@@ -248,7 +249,7 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 				attribute.String("max_origin_amount", quote.MaxOriginAmount),
 				attribute.String("dest_amount", quote.DestAmount),
 			))
-			m.relayPaused = true
+			m.relayPaused.Store(true)
 
 			// Suppress error so that we can continue submitting quotes
 			return nil
@@ -256,7 +257,7 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 	}
 
 	// We successfully submitted all quotes, so we can set relayPaused to false
-	m.relayPaused = false
+	m.relayPaused.Store(false)
 
 	return nil
 }
