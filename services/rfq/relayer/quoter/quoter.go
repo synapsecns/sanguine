@@ -236,6 +236,8 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 		}
 	}
 
+	span.SetAttributes(attribute.Int("num_quotes", len(allQuotes)))
+
 	// Now, submit all the generated quotes
 	for _, quote := range allQuotes {
 		if err := m.submitQuote(ctx, quote); err != nil {
