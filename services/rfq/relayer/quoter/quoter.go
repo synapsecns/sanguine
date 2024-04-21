@@ -238,7 +238,7 @@ func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[co
 
 	// Now, submit all the generated quotes
 	for _, quote := range allQuotes {
-		if err := m.submitQuote(quote); err != nil {
+		if err := m.submitQuote(ctx, quote); err != nil {
 			span.AddEvent("error submitting quote; setting relayPaused to true", trace.WithAttributes(
 				attribute.String("error", err.Error()),
 				attribute.Int(metrics.Origin, quote.OriginChainID),
@@ -469,8 +469,8 @@ func (m *Manager) getDestAmount(parentCtx context.Context, quoteAmount *big.Int,
 }
 
 // Submits a single quote.
-func (m *Manager) submitQuote(quote model.PutQuoteRequest) error {
-	err := m.rfqClient.PutQuote(&quote)
+func (m *Manager) submitQuote(ctx context.Context, quote model.PutQuoteRequest) error {
+	err := m.rfqClient.PutQuote(ctx, &quote)
 	if err != nil {
 		return fmt.Errorf("error submitting quote: %w", err)
 	}
