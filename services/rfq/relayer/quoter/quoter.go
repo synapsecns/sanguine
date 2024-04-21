@@ -221,6 +221,7 @@ func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 func (m *Manager) prepareAndSubmitQuotes(ctx context.Context, inv map[int]map[common.Address]*big.Int) (err error) {
 	ctx, span := m.metricsHandler.Tracer().Start(ctx, "prepareAndSubmitQuotes")
 	defer func() {
+		span.SetAttributes(attribute.Bool("relay_paused", m.relayPaused.Load()))
 		metrics.EndSpanWithErr(span, err)
 	}()
 
