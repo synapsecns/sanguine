@@ -5,6 +5,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math/big"
+	"net"
+	"net/http"
+	"os"
+	"time"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/gin-gonic/gin"
@@ -22,11 +28,6 @@ import (
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
-	"math/big"
-	"net"
-	"net/http"
-	"os"
-	"time"
 )
 
 var logger = log.Logger("proxy-logger")
@@ -55,31 +56,16 @@ type exporter struct {
 
 // StartExporterServer starts the exporter server.
 // nolint: cyclop
-func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg config.Config) error {
-	// the main server serves metrics since this is only a prom exporter
-	_ = os.Setenv(metrics.MetricsPortEnabledEnv, "false")
-
-	router := ginhelper.New(logger)
-	router.Use(handler.Gin())
-	router.GET(metrics.MetricsPathDefault, gin.WrapH(handler.Handler()))
-
-	var lc net.ListenConfig
-	listener, err := lc.Listen(ctx, "tcp", fmt.Sprintf(":%d", cfg.Port))
-	if err != nil {
-		return fmt.Errorf("could not listen on port %d", cfg.Port)
-	}
+func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg config.Config) (err error) {
 
 	// TODO: this can probably be removed
 	g, _ := errgroup.WithContext(ctx)
 
 	g.Go(func() error {
-		//nolint: gosec
-		// TODO: consider setting timeouts here:  https://ieftimov.com/posts/make-resilient-golang-net-http-servers-using-timeouts-deadlines-context-cancellation/
-		err := http.Serve(listener, router)
+		err = ServeMetrics(ctx, handler, cfg.Port)
 		if err != nil {
-			return fmt.Errorf("could not serve http: %w", err)
+			return fmt.Errorf("could not serve metrics: %w", err)
 		}
-
 		return nil
 	})
 
@@ -140,6 +126,30 @@ func StartExporterServer(ctx context.Context, handler metrics.Handler, cfg confi
 		return fmt.Errorf("could not start exporter server: %w", err)
 	}
 
+	return nil
+}
+
+// ServeMetrics spins up the HTTP server for metrics.
+func ServeMetrics(ctx context.Context, handler metrics.Handler, port int) (err error) {
+	// the main server serves metrics since this is only a prom exporter
+	_ = os.Setenv(metrics.MetricsPortEnabledEnv, "false")
+
+	router := ginhelper.New(logger)
+	router.Use(handler.Gin())
+	router.GET(metrics.MetricsPathDefault, gin.WrapH(handler.Handler()))
+
+	var lc net.ListenConfig
+	listener, err := lc.Listen(ctx, "tcp", fmt.Sprintf(":%d", port))
+	if err != nil {
+		return fmt.Errorf("could not listen on port %d", port)
+	}
+
+	//nolint: gosec
+	// TODO: consider setting timeouts here:  https://ieftimov.com/posts/make-resilient-golang-net-http-servers-using-timeouts-deadlines-context-cancellation/
+	err = http.Serve(listener, router)
+	if err != nil {
+		return fmt.Errorf("could not serve http: %w", err)
+	}
 	return nil
 }
 
