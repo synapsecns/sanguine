@@ -214,7 +214,10 @@ func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 	if err != nil {
 		return fmt.Errorf("error getting committable balances: %w", err)
 	}
-	return m.prepareAndSubmitQuotes(ctx, inv)
+
+	quoteCtx, quoteCancel := context.WithTimeout(ctx, m.config.GetQuoteSubmissionTimeout())
+	defer quoteCancel()
+	return m.prepareAndSubmitQuotes(quoteCtx, inv)
 }
 
 // Prepares and submits quotes based on inventory.
