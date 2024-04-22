@@ -51,6 +51,8 @@ type EVM interface {
 	BlockNumber(ctx context.Context) (uint64, error)
 	// BatchWithContext batches multiple w3type calls
 	BatchWithContext(ctx context.Context, calls ...w3types.Caller) error
+	// Web3Version gets the web3 version
+	Web3Version(ctx context.Context) (version string, err error)
 }
 
 type clientImpl struct {
@@ -58,6 +60,7 @@ type clientImpl struct {
 	captureClient     *captureClient
 	endpoint          string
 	captureRequestRes bool
+	rpcClient         *rpc.Client
 	// TODO: consider using sync.Pool for capture clients to improve performance
 }
 
@@ -72,10 +75,13 @@ func DialBackend(ctx context.Context, url string, handler metrics.Handler, opts 
 		opt(client)
 	}
 
+	// TODO: port to master wether or not pr gets merged
 	client.captureClient, err = newCaptureClient(ctx, url, handler, client.captureRequestRes)
 	if err != nil {
 		return nil, fmt.Errorf("could not create capture client: %w", err)
 	}
+
+	client.rpcClient = client.captureClient.rpcClient
 
 	return client, nil
 }
@@ -245,6 +251,22 @@ func (c *clientImpl) NetworkID(ctx context.Context) (id *big.Int, err error) {
 	}()
 
 	return c.getEthClient().NetworkID(requestCtx)
+}
+
+// Web3Version calls Web3Version on the underlying client
+//
+//nolint:wrapcheck
+func (c *clientImpl) Web3Version(ctx context.Context) (version string, err error) {
+	requestCtx, span := c.startSpan(ctx, Web3VersionMethod)
+	defer func() {
+		metrics.EndSpanWithErr(span, err)
+	}()
+
+	var ver string
+	if err := c.rpcClient.CallContext(requestCtx, &ver, Web3VersionMethod.String()); err != nil {
+		return "", err
+	}
+	return ver, nil
 }
 
 // SyncProgress calls SyncProgress on the underlying client

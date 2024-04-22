@@ -10,7 +10,8 @@ import {IInterchainClientV1} from "./interfaces/IInterchainClientV1.sol";
 import {IInterchainDB} from "./interfaces/IInterchainDB.sol";
 
 import {AppConfigV1, AppConfigLib} from "./libs/AppConfig.sol";
-import {InterchainEntry} from "./libs/InterchainEntry.sol";
+import {BatchingV1Lib} from "./libs/BatchingV1.sol";
+import {InterchainBatch} from "./libs/InterchainBatch.sol";
 import {
     InterchainTransaction, InterchainTxDescriptor, InterchainTransactionLib
 } from "./libs/InterchainTransaction.sol";
@@ -324,13 +325,16 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         if (_txExecutor[transactionId] != address(0)) {
             revert InterchainClientV1__TxAlreadyExecuted(transactionId);
         }
-        // Construct expected entry based on icTransaction data
-        InterchainEntry memory icEntry = InterchainEntry({
+        // Construct expected batch based on interchain transaction data
+        InterchainBatch memory batch = InterchainBatch({
             srcChainId: icTx.srcChainId,
             dbNonce: icTx.dbNonce,
-            entryIndex: icTx.entryIndex,
-            srcWriter: linkedClient,
-            dataHash: transactionId
+            batchRoot: BatchingV1Lib.getBatchRoot({
+                srcWriter: linkedClient,
+                dataHash: transactionId,
+                entryIndex: icTx.entryIndex,
+                proof: proof
+            })
         });
         (bytes memory encodedAppConfig, address[] memory approvedDstModules) =
             IInterchainApp(TypeCasts.bytes32ToAddress(icTx.dstReceiver)).getReceivingConfig();
@@ -338,7 +342,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         if (appConfig.requiredResponses == 0) {
             revert InterchainClientV1__ZeroRequiredResponses();
         }
-        uint256 responses = _getFinalizedResponsesCount(approvedDstModules, icEntry, proof, appConfig.optimisticPeriod);
+        uint256 responses = _getFinalizedResponsesCount(approvedDstModules, batch, appConfig.optimisticPeriod);
         if (responses < appConfig.requiredResponses) {
             revert InterchainClientV1__NotEnoughResponses(responses, appConfig.requiredResponses);
         }
@@ -358,14 +362,13 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
     /**
      * @dev Calculates the number of responses that are considered finalized within the optimistic time period.
      * @param approvedModules       Approved modules that could have confirmed the entry.
-     * @param icEntry               The InterchainEntry to confirm.
+     * @param batch                 The Interchain Batch to confirm.
      * @param optimisticPeriod      The time period in seconds within which a response is considered valid.
      * @return finalizedResponses   The count of responses that are finalized within the optimistic time period.
      */
     function _getFinalizedResponsesCount(
         address[] memory approvedModules,
-        InterchainEntry memory icEntry,
-        bytes32[] calldata proof,
+        InterchainBatch memory batch,
         uint256 optimisticPeriod
     )
         internal
@@ -373,7 +376,7 @@ contract InterchainClientV1 is Ownable, InterchainClientV1Events, IInterchainCli
         returns (uint256 finalizedResponses)
     {
         for (uint256 i = 0; i < approvedModules.length; ++i) {
-            uint256 confirmedAt = IInterchainDB(INTERCHAIN_DB).checkVerification(approvedModules[i], icEntry, proof);
+            uint256 confirmedAt = IInterchainDB(INTERCHAIN_DB).checkBatchVerification(approvedModules[i], batch);
             // checkVerification() returns 0 if entry hasn't been confirmed by the module, so we check for that as well
             if (confirmedAt != 0 && confirmedAt + optimisticPeriod < block.timestamp) {
                 ++finalizedResponses;

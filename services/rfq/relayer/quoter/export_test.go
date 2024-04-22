@@ -27,5 +27,5 @@ func (m *Manager) SetConfig(cfg relconfig.Config) {
 }
 
 func (m *Manager) SetRelayPaused(relayPaused bool) {
-	m.relayPaused = relayPaused
+	m.relayPaused.Store(relayPaused)
 }

@@ -17,10 +17,10 @@ func (c *ClientSuite) TestPutAndGetQuote() {
 		FixedFee:        "10",
 	}
 
-	err := c.client.PutQuote(&req)
+	err := c.client.PutQuote(c.GetTestContext(), &req)
 	c.Require().NoError(err)
 
-	quotes, err := c.client.GetAllQuotes()
+	quotes, err := c.client.GetAllQuotes(c.GetTestContext())
 	c.Require().NoError(err)
 
 	expectedResp := model.GetQuoteResponse{
@@ -49,10 +49,10 @@ func (c *ClientSuite) TestGetSpecificQuote() {
 		FixedFee:        "10",
 	}
 
-	err := c.client.PutQuote(&req)
+	err := c.client.PutQuote(c.GetTestContext(), &req)
 	c.Require().NoError(err)
 
-	quotes, err := c.client.GetSpecificQuote(&model.GetQuoteSpecificRequest{
+	quotes, err := c.client.GetSpecificQuote(c.GetTestContext(), &model.GetQuoteSpecificRequest{
 		OriginChainID:   1,
 		OriginTokenAddr: "0xOriginTokenAddr",
 		DestChainID:     42161,
@@ -86,11 +86,11 @@ func (c *ClientSuite) TestGetQuoteByRelayerAddress() {
 		FixedFee:        "10",
 	}
 
-	err := c.client.PutQuote(&req)
+	err := c.client.PutQuote(c.GetTestContext(), &req)
 	c.Require().NoError(err)
 
 	relayerAddr := c.testWallet.Address().Hex()
-	quotes, err := c.client.GetQuoteByRelayerAddress(relayerAddr)
+	quotes, err := c.client.GetQuoteByRelayerAddress(c.GetTestContext(), relayerAddr)
 	c.Require().NoError(err)
 
 	c.Len(quotes, 1)

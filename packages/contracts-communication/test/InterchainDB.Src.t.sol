@@ -4,11 +4,11 @@ pragma solidity 0.8.20;
 import {
     InterchainDB,
     InterchainBatch,
-    InterchainBatchLib,
     InterchainEntry,
     InterchainEntryLib,
     IInterchainDB,
-    InterchainDBEvents
+    InterchainDBEvents,
+    BatchingV1Lib
 } from "../contracts/InterchainDB.sol";
 
 import {InterchainBatchLibHarness} from "./harnesses/InterchainBatchLibHarness.sol";
@@ -190,10 +190,18 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
         );
     }
 
+    function expectRevertIncorrectEntryIndex(uint64 entryIndex) internal {
+        vm.expectRevert(abi.encodeWithSelector(BatchingV1Lib.BatchingV1__IncorrectEntryIndex.selector, entryIndex));
+    }
+
     function expectRevertIncorrectFeeAmount(uint256 actualFee, uint256 expectedFee) internal {
         vm.expectRevert(
             abi.encodeWithSelector(IInterchainDB.InterchainDB__IncorrectFeeAmount.selector, actualFee, expectedFee)
         );
+    }
+
+    function expectRevertIncorrectProof() internal {
+        vm.expectRevert(BatchingV1Lib.BatchingV1__IncorrectProof.selector);
     }
 
     function expectRevertInvalidEntryRange(uint64 dbNonce, uint64 start, uint64 end) internal {
@@ -748,5 +756,26 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
 
     function test_getDBNonce() public {
         assertEq(icDB.getDBNonce(), INITIAL_DB_NONCE);
+    }
+
+    // ═══════════════════════════════════════════ TESTS: GET BATCH ROOT ═══════════════════════════════════════════════
+
+    function test_getBatchRoot(InterchainEntry memory entry) public {
+        entry.entryIndex = 0;
+        bytes32 batchRoot = icDB.getBatchRoot(entry, new bytes32[](0));
+        assertEq(batchRoot, InterchainEntryLib.entryValue(entry));
+    }
+
+    function test_getBatchRoot_revert_nonZeroEntryIndex() public {
+        InterchainEntry memory entry = getInitialEntry(0);
+        entry.entryIndex = 1;
+        expectRevertIncorrectEntryIndex(1);
+        icDB.getBatchRoot(entry, new bytes32[](0));
+    }
+
+    function test_getBatchRoot_revert_nonEmptyProof() public {
+        InterchainEntry memory entry = getInitialEntry(0);
+        expectRevertIncorrectProof();
+        icDB.getBatchRoot(entry, new bytes32[](1));
     }
 }

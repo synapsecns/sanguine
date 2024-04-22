@@ -15,7 +15,13 @@ export type Chain = {
   explorerName: string
   explorerImg: any
   blockTime: number
-  nativeCurrency: { name: string; symbol: string; decimals: number }
+  nativeCurrency: {
+    name: string
+    symbol: string
+    decimals: number
+    address: string
+    icon: any
+  }
   priorityRank?: number
   color?: string
 }

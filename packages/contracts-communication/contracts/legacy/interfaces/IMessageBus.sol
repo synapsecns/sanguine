@@ -20,6 +20,11 @@ interface IMessageBus {
         external
         payable;
 
+    /// @notice Allows the Interchain Governor to set the gas buffer for sending the interchain messages.
+    /// Note: The gas buffer is added to the gas limit requested by the sending app to cover the gas usage
+    /// of the MessageBus contract on the destination chain.
+    function setGasBuffer(uint64 gasBuffer_) external;
+
     /// @notice Allows the Interchain Governor to set the message length in bytes to be used for fee estimation.
     /// This does not affect the sendMessage function, but only the fee estimation.
     function setMessageLengthEstimate(uint256 length) external;

@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"fmt"
+	"github.com/synapsecns/sanguine/ethergo/client"
 	"math/big"
 	"net/url"
 	"time"
@@ -53,6 +54,8 @@ type EVMClient interface {
 	// BatchContext uses w3 as a helper method for batch calls
 	// Deprecated: use BatchCallContext and stop using chain/client
 	BatchContext(ctx context.Context, calls ...w3types.Caller) error
+	// Web3Version gets the web3 version
+	Web3Version(ctx context.Context) (version string, err error)
 }
 
 // clientImpl is a client implementation for an ethclient.
@@ -72,6 +75,14 @@ type clientImpl struct {
 	// ctx stores the context of the original client
 	//nolint: containedctx
 	ctx context.Context
+}
+
+func (c *clientImpl) Web3Version(ctx context.Context) (version string, err error) {
+	if err := c.rpcClient.CallContext(ctx, &version, client.Web3VersionMethod.String()); err != nil {
+		// nolint: wrapcheck
+		return "", err
+	}
+	return version, nil
 }
 
 func (c *clientImpl) BatchContext(ctx context.Context, calls ...w3types.Caller) error {

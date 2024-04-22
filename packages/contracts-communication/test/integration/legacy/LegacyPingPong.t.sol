@@ -23,13 +23,18 @@ import {MessageBusHarness} from "../../harnesses/MessageBusHarness.sol";
 abstract contract LegacyPingPongIntegrationTest is ICIntegrationTest {
     uint256 public constant PING_PONG_BALANCE = 1000 ether;
     uint256 public constant COUNTER = 42;
-    uint256 public constant GAS_LIMIT = 500_000;
+    /// @notice Gas limit requested by a Legacy App
+    uint256 public constant APP_GAS_LIMIT = 500_000;
+    /// @notice Gas buffer that Message Bus adds to the gas limit requested by a Legacy App
+    uint256 public constant MESSAGE_BUS_GAS_BUFFER = 20_000;
+    /// @notice Total gas limit requested for the Interchain message
+    uint256 public constant GAS_LIMIT = APP_GAS_LIMIT + MESSAGE_BUS_GAS_BUFFER;
 
     uint64 public constant SRC_MSG_BUS_NONCE = 5;
     uint64 public constant DST_MSG_BUS_NONCE = 15;
 
     OptionsV1 public icOptions = OptionsV1({gasLimit: GAS_LIMIT, gasAirdrop: 0});
-    bytes public legacyOptions = LegacyOptionsLib.encodeLegacyOptions(GAS_LIMIT);
+    bytes public legacyOptions = LegacyOptionsLib.encodeLegacyOptions(APP_GAS_LIMIT);
 
     address public srcPingPong;
     address public dstPingPong;

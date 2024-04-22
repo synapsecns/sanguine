@@ -1,19 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {InterchainEntry} from "../libs/InterchainEntry.sol";
 import {InterchainBatch} from "../libs/InterchainBatch.sol";
+import {InterchainEntry} from "../libs/InterchainEntry.sol";
 
 interface IInterchainDB {
-    /// @notice Struct representing a batch of entries from the remote Interchain DataBase,
-    /// verified by the Interchain Module.
-    /// @param verifiedAt   The block timestamp at which the entry was verified by the module
-    /// @param batchRoot    The Merkle root of the batch
-    struct RemoteBatch {
-        uint256 verifiedAt;
-        bytes32 batchRoot;
-    }
-
     error InterchainDB__BatchDoesNotExist(uint64 dbNonce);
     error InterchainDB__BatchNotFinalized(uint64 dbNonce);
     error InterchainDB__ConflictingBatches(address module, bytes32 existingBatchRoot, InterchainBatch newBatch);
@@ -144,21 +135,24 @@ interface IInterchainDB {
     /// @return entryIndex   The index of the next entry within that batch
     function getNextEntryIndex() external view returns (uint64 dbNonce, uint64 entryIndex);
 
-    /// @notice Read the data written on specific source chain by a specific writer,
-    /// and verify it on the destination chain using the provided Interchain Module.
-    /// Note: returned zero value indicates that the module has not verified the entry.
-    /// @param entry        The Interchain Entry to read
+    /// @notice Check if the batch is verified by the Interchain Module on the destination chain.
+    /// Note: returned zero value indicates that the module has not verified the batch.
     /// @param dstModule    The destination chain addresses of the Interchain Modules to use for verification
-    /// @return moduleVerifiedAt   The block timestamp at which the entry was verified by the module,
-    ///                             or ZERO if the module has not verified the entry.
-    function checkVerification(
+    /// @param batch        The Interchain Batch to check
+    /// @return moduleVerifiedAt    The block timestamp at which the batch was verified by the module,
+    ///                             or ZERO if the module has not verified the batch.
+    function checkBatchVerification(
         address dstModule,
-        InterchainEntry memory entry,
-        bytes32[] memory proof
+        InterchainBatch memory batch
     )
         external
         view
         returns (uint256 moduleVerifiedAt);
+
+    /// @notice Get the batch root containing the Interchain Entry with the given index.
+    /// @param entry         The Interchain Entry to get the batch root for
+    /// @param proof         The Merkle proof of inclusion for the entry in the batch
+    function getBatchRoot(InterchainEntry memory entry, bytes32[] memory proof) external pure returns (bytes32);
 
     /// @notice Get the version of the Interchain DataBase.
     // solhint-disable-next-line func-name-mixedcase

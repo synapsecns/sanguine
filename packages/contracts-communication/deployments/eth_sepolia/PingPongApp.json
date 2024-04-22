@@ -1,9 +1,9 @@
 {
-  "address": "0x521931F62298605de22485bB72a86D599F43F823",
+  "address": "0x8dA1BEd6ff65C7A8f0459822B52f8d40BbB549a0",
   "constructorArgs": "0x000000000000000000000000e7353bedc72d29f99d6ca5cde69f807cce5d57e4",
   "receipt": {
-    "hash": "0xd0e8b84f6af9015f4894d9f6eea6c1672e55a3892b197ce5822038ae4b202c1d",
-    "blockNumber": 5712797
+    "hash": "0xbd6ad3c6ac55bdc6c1a259cb2cc4d0c51a9aa5b0551eed4636c904ef16204928",
+    "blockNumber": 5719541
   },
   "abi": [
     {
@@ -1038,6 +1038,22 @@
           "name": "sender",
           "type": "bytes32",
           "internalType": "bytes32"
+        }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "SafeCastOverflowedUintDowncast",
+      "inputs": [
+        {
+          "name": "bits",
+          "type": "uint8",
+          "internalType": "uint8"
+        },
+        {
+          "name": "value",
+          "type": "uint256",
+          "internalType": "uint256"
         }
       ]
     }

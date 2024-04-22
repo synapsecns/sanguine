@@ -20,4 +20,8 @@ contract InterchainEntryLibHarness {
     function entryValue(InterchainEntry memory entry) external pure returns (bytes32) {
         return InterchainEntryLib.entryValue(entry);
     }
+
+    function getEntryValue(bytes32 srcWriter, bytes32 dataHash) external pure returns (bytes32) {
+        return InterchainEntryLib.getEntryValue(srcWriter, dataHash);
+    }
 }

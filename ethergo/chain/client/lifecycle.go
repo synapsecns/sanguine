@@ -504,6 +504,22 @@ func (m LifecycleClient) SuggestGasTipCap(ctx context.Context) (tip *big.Int, er
 	return m.underlyingClient.SuggestGasTipCap(requestCtx)
 }
 
+// Web3Version calls Web3Version on the underlying client
+//
+//nolint:wrapcheck
+func (m LifecycleClient) Web3Version(ctx context.Context) (version string, err error) {
+	err = m.AcquirePermit(ctx)
+	if err != nil {
+		return version, err
+	}
+	defer m.ReleasePermit()
+
+	requestCtx, cancel := context.WithTimeout(ctx, m.requestTimeout)
+	defer cancel()
+
+	return m.underlyingClient.Web3Version(requestCtx)
+}
+
 // CallContext calls CallContext on the underlying client. Note: this will bypass the rate-limiter.
 //
 //nolint:wrapcheck

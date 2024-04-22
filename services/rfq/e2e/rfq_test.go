@@ -137,7 +137,7 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 		userAPIClient, err := client.NewAuthenticatedClient(metrics.Get(), i.apiServer, localsigner.NewSigner(i.userWallet.PrivateKey()))
 		i.NoError(err)
 
-		allQuotes, err := userAPIClient.GetAllQuotes()
+		allQuotes, err := userAPIClient.GetAllQuotes(i.GetTestContext())
 		i.NoError(err)
 
 		// let's figure out the amount of usdc we need
@@ -200,7 +200,7 @@ func (i *IntegrationSuite) TestUSDCtoUSDC() {
 		relayerAPIClient, err := client.NewAuthenticatedClient(metrics.Get(), i.apiServer, localsigner.NewSigner(i.relayerWallet.PrivateKey()))
 		i.NoError(err)
 
-		allQuotes, err := relayerAPIClient.GetAllQuotes()
+		allQuotes, err := relayerAPIClient.GetAllQuotes(i.GetTestContext())
 		i.NoError(err)
 
 		// let's figure out the amount of usdc we need
@@ -264,7 +264,7 @@ func (i *IntegrationSuite) TestETHtoETH() {
 		userAPIClient, err := client.NewAuthenticatedClient(metrics.Get(), i.apiServer, localsigner.NewSigner(i.userWallet.PrivateKey()))
 		i.NoError(err)
 
-		allQuotes, err := userAPIClient.GetAllQuotes()
+		allQuotes, err := userAPIClient.GetAllQuotes(i.GetTestContext())
 		i.NoError(err)
 
 		// let's figure out the amount of ETH we need
@@ -329,7 +329,7 @@ func (i *IntegrationSuite) TestETHtoETH() {
 		relayerAPIClient, err := client.NewAuthenticatedClient(metrics.Get(), i.apiServer, localsigner.NewSigner(i.relayerWallet.PrivateKey()))
 		i.NoError(err)
 
-		allQuotes, err := relayerAPIClient.GetAllQuotes()
+		allQuotes, err := relayerAPIClient.GetAllQuotes(i.GetTestContext())
 		i.NoError(err)
 
 		// let's figure out the amount of ETH we need

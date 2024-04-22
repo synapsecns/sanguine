@@ -4,7 +4,7 @@ pragma solidity 0.8.20;
 import {InterchainModuleEvents} from "../../contracts/events/InterchainModuleEvents.sol";
 import {SynapseModuleEvents} from "../../contracts/events/SynapseModuleEvents.sol";
 import {IInterchainModule} from "../../contracts/interfaces/IInterchainModule.sol";
-import {InterchainBatch, InterchainBatchLib} from "../../contracts/libs/InterchainBatch.sol";
+import {InterchainBatch} from "../../contracts/libs/InterchainBatch.sol";
 import {ThresholdECDSALib} from "../../contracts/libs/ThresholdECDSA.sol";
 import {SynapseModule} from "../../contracts/modules/SynapseModule.sol";
 
