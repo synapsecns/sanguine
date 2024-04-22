@@ -2,11 +2,8 @@
 pragma solidity 0.8.20;
 
 import {InterchainClientV1, InterchainClientV1Events, IInterchainClientV1} from "../contracts/InterchainClientV1.sol";
-import {
-    InterchainTxDescriptor,
-    InterchainTransaction,
-    InterchainTransactionLib
-} from "../contracts/libs/InterchainTransaction.sol";
+import {InterchainTxDescriptor, InterchainTransaction} from "../contracts/libs/InterchainTransaction.sol";
+import {BatchingV1Lib} from "../contracts/libs/BatchingV1.sol";
 import {OptionsLib} from "../contracts/libs/Options.sol";
 
 import {InterchainTransactionLibHarness} from "./harnesses/InterchainTransactionLibHarness.sol";
@@ -81,9 +78,7 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
     }
 
     function expectRevertIncorrectEntryIndex(uint64 entryIndex) internal {
-        vm.expectRevert(
-            abi.encodeWithSelector(IInterchainClientV1.InterchainClientV1__IncorrectEntryIndex.selector, entryIndex)
-        );
+        vm.expectRevert(abi.encodeWithSelector(BatchingV1Lib.BatchingV1__IncorrectEntryIndex.selector, entryIndex));
     }
 
     function expectRevertIncorrectMsgValue(uint256 actual, uint256 required) internal {
@@ -93,7 +88,7 @@ abstract contract InterchainClientV1BaseTest is Test, InterchainClientV1Events {
     }
 
     function expectRevertIncorrectProof() internal {
-        vm.expectRevert(IInterchainClientV1.InterchainClientV1__IncorrectProof.selector);
+        vm.expectRevert(BatchingV1Lib.BatchingV1__IncorrectProof.selector);
     }
 
     function expectRevertInvalidTransactionVersion(uint16 version) internal {

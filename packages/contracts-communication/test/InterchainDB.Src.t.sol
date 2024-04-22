@@ -4,11 +4,11 @@ pragma solidity 0.8.20;
 import {
     InterchainDB,
     InterchainBatch,
-    InterchainBatchLib,
     InterchainEntry,
     InterchainEntryLib,
     IInterchainDB,
-    InterchainDBEvents
+    InterchainDBEvents,
+    BatchingV1Lib
 } from "../contracts/InterchainDB.sol";
 
 import {InterchainBatchLibHarness} from "./harnesses/InterchainBatchLibHarness.sol";
@@ -191,7 +191,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     }
 
     function expectRevertIncorrectEntryIndex(uint64 entryIndex) internal {
-        vm.expectRevert(abi.encodeWithSelector(IInterchainDB.InterchainDB__IncorrectEntryIndex.selector, entryIndex));
+        vm.expectRevert(abi.encodeWithSelector(BatchingV1Lib.BatchingV1__IncorrectEntryIndex.selector, entryIndex));
     }
 
     function expectRevertIncorrectFeeAmount(uint256 actualFee, uint256 expectedFee) internal {
@@ -201,7 +201,7 @@ contract InterchainDBSourceTest is Test, InterchainDBEvents {
     }
 
     function expectRevertIncorrectProof() internal {
-        vm.expectRevert(IInterchainDB.InterchainDB__IncorrectProof.selector);
+        vm.expectRevert(BatchingV1Lib.BatchingV1__IncorrectProof.selector);
     }
 
     function expectRevertInvalidEntryRange(uint64 dbNonce, uint64 start, uint64 end) internal {

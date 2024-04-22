@@ -4,7 +4,6 @@ pragma solidity 0.8.20;
 import {
     InterchainDB,
     InterchainBatch,
-    InterchainBatchLib,
     InterchainEntry,
     IInterchainDB,
     InterchainDBEvents
