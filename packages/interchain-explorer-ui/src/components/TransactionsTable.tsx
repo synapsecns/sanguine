@@ -88,12 +88,10 @@ export const TransactionsTable = () => {
               <th className="text-left text-transparent">pl</th>
               <th className="text-left">transactionId</th>
               <th className="text-left">source txn hash</th>
-              <th className="text-left">dbN</th>
               <th className="text-left">dest txn hash</th>
-              <th className="text-left">dbN</th>
               <th className="text-left">batch status</th>
               <th className="text-left">txn status</th>
-              <th className="text-left">opC</th>
+              <th className="text-left">counter</th>
               <th className="text-left text-transparent">pl</th>
             </tr>
           </thead>
@@ -150,9 +148,6 @@ export const TransactionsTable = () => {
                         ).toLocaleString()}
                     </span>
                   </td>
-                  <td>
-                    {transaction.interchainTransactionSent.dbNonce.toString()}
-                  </td>
                   <td className="max-w-[50px]">
                     {transaction.interchainTransactionReceived && (
                       <div className="flex items-center space-x-2">
@@ -171,9 +166,6 @@ export const TransactionsTable = () => {
                             1000
                         ).toLocaleString()}
                     </span>
-                  </td>
-                  <td>
-                    {transaction.interchainTransactionReceived?.dbNonce.toString()}
                   </td>
                   <td className="max-w-[89px] break-words">
                     {transaction.interchainBatch?.status}
