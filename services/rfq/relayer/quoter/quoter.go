@@ -217,6 +217,7 @@ func (m *Manager) SubmitAllQuotes(ctx context.Context) (err error) {
 
 	quoteCtx, quoteCancel := context.WithTimeout(ctx, m.config.GetQuoteSubmissionTimeout())
 	defer quoteCancel()
+
 	return m.prepareAndSubmitQuotes(quoteCtx, inv)
 }
 
